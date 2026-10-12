@@ -315,7 +315,7 @@ Inline HTML `<table>` elements in any engine's output (common with MinerU, Paddl
 
 ### Source locators {#source-locators}
 
-Every chunk is stored with a set of `source_locators` that record where it sits in the original file, so clicking a citation in a conversation opens the original and highlights the passage (see [Chat experience](18-chat-experience.md)). Positions are produced per parsing engine, first expressed as a mapping from Markdown spans to original positions (source blocks), then intersected with the chunk spans after chunking to produce each chunk's locators:
+Every chunk is stored with a set of `source_locators` that record where it sits in the original file, so clicking a citation in a conversation opens the original and highlights the passage (see [Chat experience](18-chat-experience.md#view-answers-and-sources)). Positions are produced per parsing engine, first expressed as a mapping from Markdown spans to original positions (source blocks), then intersected with the chunk spans after chunking to produce each chunk's locators:
 
 | Source | How it is produced | locator |
 | --- | --- | --- |

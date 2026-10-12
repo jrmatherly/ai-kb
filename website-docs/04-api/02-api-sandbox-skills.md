@@ -123,7 +123,7 @@ curl -X POST "$BASE/api/v1/skills/catalog/catalog-1/install" \
   -d '{"sandbox_config_ids":["cfg-1"]}'
 ```
 
-来源写法、匿名下载要求和 ZIP 限制见[技能来源](../03-features/22-skills-sandbox.md#支持的来源)。
+Source formats, anonymous download requirements and ZIP limits are in [Skill sources](../03-features/22-skills-sandbox.md#supported-sources).
 
 ## 沙箱内技能
 

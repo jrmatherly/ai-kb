@@ -1,107 +1,113 @@
-# 图片与文件的对外访问
+# External access to images and files
 
-图片和文件在不同渠道中使用不同的访问方式。Web 控制台与嵌入挂件可携带凭证访问代理；IM 平台需要可公开加载的限时链接；API 客户端可按用途选择内部引用或外链。
+Images and files are fetched differently on each channel. The web console and the embed widget call an authenticated proxy with their credentials. IM platforms need a time-limited link that loads without credentials. API clients choose between internal references and external links per request.
 
-接入时需同时确认引用形式、调用者权限和地址可达性。图片无法显示时，可按文末的排查表检查。
+When you integrate, confirm three things together: the reference form, the caller's permissions and whether the address is reachable from where it is used. When an image does not render, work through the troubleshooting table at the end.
 
-## 文件引用与访问方式 {#_1-四种形式}
+## File reference forms
 
-知识库图片和附件保存在文件存储中。正文使用稳定的内部引用，响应或渲染时再按渠道转换为访问地址：
+You are deciding which form of file address your client will receive and what each one requires. Knowledge base images and attachments live in file storage. Content carries a stable internal reference; the response or the renderer converts it to an address for the channel in use:
 
-| 形式 | 地址示例 | 访问条件 | 有效期 |
+| Form | Example | Who can fetch it | Lifetime |
 | --- | --- | --- | --- |
-| **内部引用** | `resource://<handle>` | 服务端解析的稳定句柄，不能直接作为 URL 访问 | — |
-| **鉴权代理** | `/files`、`/api/v1/knowledge-bases/:id/files`、`/api/v1/embed/:channel_id/files`、消息级 `/api/v1/sessions/:id/messages/:message_id/files` | 带对应凭证的客户端（登录态 / KB 访问权 / Embed token） | 随凭证 |
-| **能力短链** | `/r/<token>` | 任何拿到链接的人（**匿名可读**） | WeKnora 签发的 grant，2 小时 |
-| **存储预签名** | 存储后端直接给的 http(s) 链接 | 任何拿到链接的人（**匿名可读**） | 由存储决定，MinIO 默认 24 小时 |
+| **Internal reference** | `resource://<handle>` | Resolved on the server; not fetchable as a URL | None |
+| **Authenticated proxy** | `/files`, `/api/v1/knowledge-bases/:id/files`, `/api/v1/embed/:channel_id/files`, message-level `/api/v1/sessions/:id/messages/:message_id/files` | A client carrying the matching credential (login session, KB access or Embed token) | As long as the credential |
+| **Capability short link** | `/r/<token>` | Anyone holding the link (**anonymous read**) | A grant issued by AI KB, 2 hours |
+| **Storage presigned URL** | An http(s) link issued by the storage backend | Anyone holding the link (**anonymous read**) | Set by the storage; MinIO default 24 hours |
 
-能力短链和存储预签名链接在有效期内允许持有者匿名读取文件。分享或记录这些链接时，应按文件本身的访问范围处理。撤销组织共享或退出组织不会让已经签发的链接提前失效，它们会一直可用到过期（短链 2 小时，存储预签名最长 24 小时）。
+A capability short link and a storage presigned URL let any holder read the file anonymously until they expire. Treat these links with the same care as the file itself when you share or log them. Revoking an organization share or leaving an organization does not expire links that were already issued; they stay valid until they expire (short link 2 hours, storage presigned URL up to 24 hours).
 
-::: tip 默认访问方式
-系统默认返回内部引用，由带凭证的客户端通过鉴权代理读取。外链需要公网可达的存储端点，或配置 `APP_EXTERNAL_URL` 后由 WeKnora 签发访问链接。默认 MinIO 地址 `minio:9000` 仅在容器网络内可达。
+::: tip Default access path
+By default the system returns internal references and a credentialed client reads them through the authenticated proxy. External links need either a storage endpoint reachable from the public internet or `APP_EXTERNAL_URL`, after which AI KB issues access links itself. The default MinIO address `minio:9000` is only reachable inside the container network.
 :::
 
-## 按渠道访问文件 {#_2-各渠道分别怎么取}
+## Access by channel
+
+You are tracing how a `resource://` reference in an answer becomes something the channel can load.
 
 ```mermaid
 flowchart TD
-    R["正文里的 resource:// 引用"] --> Q{"哪个渠道"}
-    Q -->|"Web 控制台"| W["前端改写为 /files 代理<br/>带 Bearer + X-Tenant-ID"]
-    Q -->|"嵌入挂件"| E["/api/v1/embed/:channel_id/files<br/>带 Embed token"]
-    Q -->|"IM 机器人"| I{"存储后端公网可达?"}
-    I -->|"是"| IP["回退存储预签名 URL"]
-    I -->|"否"| IE{"配了 APP_EXTERNAL_URL?"}
-    IE -->|"是"| IR["改写为 APP_EXTERNAL_URL/r/token<br/>需 nginx 代理 /r/"]
-    IE -->|"否"| IF["保留 resource:// 原样<br/>IM 无法加载图片, 日志记录告警"]
+    R["resource:// reference in content"] --> Q{"Which channel"}
+    Q -->|"Web console"| W["Frontend rewrites to the /files proxy<br/>with Bearer + X-Tenant-ID"]
+    Q -->|"Embed widget"| E["/api/v1/embed/:channel_id/files<br/>with the Embed token"]
+    Q -->|"IM bot"| IE{"APP_EXTERNAL_URL set?"}
+    IE -->|"Yes"| IR["Rewritten to APP_EXTERNAL_URL/r/token<br/>nginx must proxy /r/"]
+    IE -->|"No"| I{"Storage backend publicly reachable?"}
+    I -->|"Yes"| IP["Storage presigned URL"]
+    I -->|"No"| IF["resource:// left as is<br/>IM cannot load the image, a warning is logged"]
     Q -->|"REST API"| A{"resource_urls=public?"}
-    A -->|"否 (默认)"| AH["返回 resource://<br/>客户端再调 /files 代理"]
-    A -->|"是"| AP["返回预签名或 /r/token 外链"]
+    A -->|"No (default)"| AH["Returns resource://<br/>client calls the /files proxy"]
+    A -->|"Yes"| AP["Returns a presigned or /r/token link"]
 ```
 
-### Web 控制台
+### Web console
 
-Web 前端将 `resource://` 和 `provider://` 引用转换为鉴权代理地址。普通资源使用 `/files`，请求携带 Bearer token 与 `X-Tenant-ID`；跨空间共享知识库使用 `/api/v1/knowledge-bases/:id/files`，按知识库访问权读取来源空间的文件，无需额外配置。
+The web frontend converts `resource://` and `provider://` references into authenticated proxy addresses. Ordinary resources use `/files` with a Bearer token and `X-Tenant-ID`. A knowledge base shared across workspaces uses `/api/v1/knowledge-bases/:id/files`, which reads the owning workspace's files under the knowledge base access check with no extra configuration.
 
-共享 Agent 或组织共享知识库回答中的图片，优先走 `/api/v1/sessions/:id/messages/:message_id/files?file_path=...`。服务端验证调用者能读到该消息、请求资源确实被消息引用，并重新校验资源所属知识库或共享 Agent 的授权。共享被撤销后，历史消息不继续授予资源访问。普通知识库浏览仍可用 KB 级代理，两者使用各自的上下文。
+Images in answers from a shared agent or an organization-shared knowledge base go through `/api/v1/sessions/:id/messages/:message_id/files?file_path=...` first. The server checks that the caller can read the message, that the requested resource is actually referenced by that message, and re-checks the authorization of the resource's knowledge base or shared agent. Once a share is revoked, old messages no longer grant access to their resources. Ordinary knowledge base browsing keeps using the KB-level proxy; each proxy has its own context.
 
-### IM 机器人 {#im-机器人-最常出问题的一条}
+### IM bots
 
-IM 平台无法携带 WeKnora 凭证，需要可公开访问的 HTTP(S) URL。发送消息前，系统根据存储与部署配置生成外链：
+IM platforms cannot attach AI KB credentials, so they need a publicly reachable HTTP(S) URL. Before a message is sent, the system builds an external link from the storage and deployment configuration, in this order:
 
-1. **存储后端本身公网可达**——对象存储用公网 endpoint，或把 `MINIO_ENDPOINT` 设成公网 host。此时回退到存储预签名 URL，不需要额外配置；
-2. **配置 `APP_EXTERNAL_URL`**——引用被改写成 `<APP_EXTERNAL_URL>/r/<token>`，请求经 nginx 的 `location ^~ /r/` 反代回 app。官方前端镜像已内置该 location，自建反代必须补上，否则请求落进 SPA fallback 返回空白页。
+1. **`APP_EXTERNAL_URL` is set.** A `resource://` reference is rewritten to `<APP_EXTERNAL_URL>/r/<token>`, and the request is proxied back to the app by nginx's `location ^~ /r/`. The official frontend image ships that location; a self-managed reverse proxy must add it, otherwise the request falls into the SPA fallback and returns a blank page.
+2. **The storage backend itself is publicly reachable.** Object storage with a public endpoint, or `MINIO_ENDPOINT` set to a public host. With `APP_EXTERNAL_URL` unset, the link falls back to the storage presigned URL and needs no further configuration.
 
-默认 MinIO 内网部署和 `local` 存储需要配置 `APP_EXTERNAL_URL`。不满足外链条件时，系统保留原引用并记录告警，IM 平台无法直接显示该图片。已启用 IM 渠道但 `APP_EXTERNAL_URL` 为空时，启动阶段也会告警。
+The default in-network MinIO deployment and `local` storage need `APP_EXTERNAL_URL`. When neither condition holds, the system keeps the original reference and logs a warning, and the IM platform cannot show the image. With IM channels enabled and `APP_EXTERNAL_URL` empty, a warning is also logged at startup.
 
-### 嵌入挂件
+### Embed widget
 
-嵌入挂件使用渠道文件代理 `/api/v1/embed/:channel_id/files`。Embed token 确定渠道所属空间，服务端检查资源路径归属。嵌入渠道始终返回内部引用，`RESOURCE_URL_MODE=public` 和 `?resource_urls=public` 均不改变此行为，以确保读取经过渠道鉴权。
+The embed widget uses the channel file proxy `/api/v1/embed/:channel_id/files`. The Embed token identifies the channel's workspace and the server checks that the resource path belongs to it. Embed channels always return internal references; neither `RESOURCE_URL_MODE=public` nor `?resource_urls=public` changes this, so every read goes through channel authentication.
 
-### REST API 与 SDK
+### REST API and SDKs
 
-API 默认返回 `resource://`，客户端通过鉴权代理获取文件。需要直接渲染外链时，可设置：
+You are choosing whether your integration fetches files through the proxy or receives links it can render directly. The API returns `resource://` by default and clients fetch the file through the authenticated proxy. To receive direct external links instead, set one of:
 
-- 单次请求：`?resource_urls=public`
-- 整个部署：`RESOURCE_URL_MODE=public`
+- Per request: `?resource_urls=public`
+- Deployment-wide: `RESOURCE_URL_MODE=public`
 
-单次参数优先于环境变量，因此把部署默认设成 `public` 之后仍可用 `?resource_urls=handle` 单独退回。支持该参数的接口、覆盖范围与安全边界见 [API 总览](../04-api/01-api-overview.md)的「文件引用形式」。
+The request parameter wins over the environment variable, so after setting the deployment default to `public` a single call can still fall back with `?resource_urls=handle`. The endpoints that accept the parameter, what it covers and its security boundary are in [API overview](../04-api/01-api-overview.md) under "File reference forms".
 
-限定知识库范围的 API Key 使用 `public` 会返回 403，该类 Key 也不能访问通用 `/files` 代理。不具备外链条件时，响应保留 `resource://`，有相应权限的客户端可改用鉴权代理。
+An API key restricted to specific knowledge bases gets 403 for `public`, and such a key cannot use the general `/files` proxy either. When the deployment cannot issue external links, the response keeps `resource://` and a client with the right permissions can use the authenticated proxy instead.
 
-## 排查访问问题 {#_3-按症状排查}
+## Troubleshooting
 
-| 现象 | 可能原因 | 处理方式 |
+You have an image that does not render and need to find which link in the chain is broken.
+
+| Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| IM 中图片无法显示 | 未配 `APP_EXTERNAL_URL` 且存储不公网可达 | 配 `APP_EXTERNAL_URL`，确认 nginx 代理了 `/r/`；查 app 日志里 `rewriteStorageURLs no-op` 的 WARN |
-| IM 图片链接能打开但返回空白页面 | nginx 缺 `location ^~ /r/`，请求落进 SPA fallback | 补上该 location（官方前端镜像已内置），见 [Web 前端](../05-clients/01-frontend.md) |
-| `APP_EXTERNAL_URL` 配了内网地址或 `localhost` | IM 平台在公网侧，访问不到 | 换成 IM 平台可达的地址；本地开发用 ngrok / cloudflared / frp |
-| API 返回的图片地址是 `resource://` | 默认就是内部引用 | 加 `?resource_urls=public`，或调 `/files` 代理 |
-| 加了 `resource_urls=public` 仍返回 `resource://` | 部署不具备外链能力（如 `local` 存储且未配 `APP_EXTERNAL_URL`） | 补外链条件，或改用 `/files` 代理 |
-| 加了 `resource_urls=public` 返回 403 | 用的是限定知识库的 API Key | 改用 `handle` 模式，或使用已获授权的 full-access Key |
-| 嵌入挂件里图片不显示，但网页端正常 | 挂件走的是渠道代理，与主站凭证不同 | 确认挂件页面带着有效 Embed token；`resource_urls=public` 对嵌入渠道无效 |
-| 共享回答里的图片 403/404 | 消息上下文缺失、资源未绑定或共享已撤销 | 使用消息级代理并检查当前共享权限；不要拼属主租户的 /files 地址 |
-| 升级或更换密钥后已发出的链接失效 | 签名密钥（`SYSTEM_SIGNING_KEY`，或回退使用的 `SYSTEM_AES_KEY`）变化后旧签名无法校验 | 重新获取链接；多副本部署确认所有实例使用同一密钥 |
-| 外链过一段时间失效 | 外链是限时的（grant 2 小时 / MinIO 预签名 24 小时） | 不要缓存外链本身，需要时重新取；同一文件在有效期内会复用同一链接 |
-| 网页端图片 404，日志显示租户不匹配 | 跨租户共享库的图存在属主租户下 | 该场景应走 `/api/v1/knowledge-bases/:id/files`，确认前端拿到的是 KB 维度的代理地址 |
+| Images do not show in IM | `APP_EXTERNAL_URL` is unset and the storage is not publicly reachable | Set `APP_EXTERNAL_URL` and confirm nginx proxies `/r/`; look for the `storage URL rewrite no-op` WARN in the app log |
+| An IM image link opens but returns a blank page | nginx lacks `location ^~ /r/`, so the request falls into the SPA fallback | Add that location (the official frontend image ships it); see [Web frontend](../05-clients/01-frontend.md) |
+| `APP_EXTERNAL_URL` points at an internal address or `localhost` | The IM platform sits on the public internet and cannot reach it | Use an address the IM platform can reach; for local development use ngrok, cloudflared or frp |
+| Image addresses in API responses are `resource://` | That is the default, an internal reference | Add `?resource_urls=public`, or call the `/files` proxy |
+| `resource_urls=public` is set but `resource://` still comes back | The deployment cannot issue external links (for example `local` storage without `APP_EXTERNAL_URL`) | Meet one of the external-link conditions, or use the `/files` proxy |
+| `resource_urls=public` returns 403 | The caller is an API key restricted to specific knowledge bases | Use `handle` mode, or an authorized full-access key |
+| Images do not show in the embed widget but do on the web | The widget uses the channel proxy, not the main site's credentials | Confirm the widget page carries a valid Embed token; `resource_urls=public` has no effect on embed channels |
+| Images in a shared answer return 403 or 404 | Message context missing, resource not bound to the message, or the share was revoked | Use the message-level proxy and check the current share permissions; do not build an owner-workspace `/files` address by hand |
+| Links already issued stop working after an upgrade or a key change | The signing key (`SYSTEM_SIGNING_KEY`, or `SYSTEM_AES_KEY` as the fallback) changed, so old signatures no longer verify | Fetch the link again; in a multi-replica deployment confirm every instance uses the same key |
+| An external link stops working after a while | External links are time-limited (grant 2 hours, MinIO presigned URL 24 hours) | Do not cache the link itself; fetch it again when needed. With a signing key configured, the same file gets the same link while it is valid |
+| Images return 404 on the web and the log reports a workspace mismatch | The image of a cross-workspace shared knowledge base lives under the owning workspace | That case must use `/api/v1/knowledge-bases/:id/files`; confirm the frontend received the KB-scoped proxy address |
 
-## 配置参考 {#_4-相关配置}
+## Configuration reference
 
-| 配置 | 作用 |
+You are checking which setting controls each part of the link chain.
+
+| Setting | Effect |
 | --- | --- |
-| `APP_EXTERNAL_URL` | IM 渠道图片外链的外部可达地址；`resource://` 改写成 `<APP_EXTERNAL_URL>/r/<token>` 的前提 |
-| `RESOURCE_URL_MODE` | API 响应里文件引用的默认形式（`handle` / `public`） |
-| `MINIO_ENDPOINT` 等存储 endpoint | 设为公网地址时，外链可由存储预签名提供，不必依赖 `APP_EXTERNAL_URL` |
-| `SYSTEM_SIGNING_KEY`（未设置时回退 `SYSTEM_AES_KEY`） | 签名密钥。`/api/v1/files/presigned` 预签名链接依赖它；同时用于在有效期内复用 `/r/<token>` grant、稳定直链 URL，并降低读接口的写入压力。未配置、长度不足 16 或为示例值时无法签发预签名链接；更换后已签发的链接失效 |
+| `APP_EXTERNAL_URL` | The externally reachable address for IM image links; required before `resource://` can be rewritten to `<APP_EXTERNAL_URL>/r/<token>` |
+| `RESOURCE_URL_MODE` | The default file reference form in API responses (`handle` or `public`) |
+| `MINIO_ENDPOINT` and the other storage endpoints | Set to a public address, the storage presigned URL can serve as the external link without `APP_EXTERNAL_URL` |
+| `SYSTEM_SIGNING_KEY` (falls back to `SYSTEM_AES_KEY` when unset) | The signing key. `/api/v1/files/presigned` links depend on it; it also lets a `/r/<token>` grant be reused while valid, which keeps direct links stable and reduces write load on read endpoints. When it is unset, shorter than 16 characters or an example value, presigned links cannot be issued; changing it invalidates links already issued |
 
-## 相关文档 {#_5-相关章节}
+## Related pages
 
-- [IM 集成](12-im-integration.md)：改写逻辑与启动告警
-- [网页嵌入](13-embed-channel.md)：渠道鉴权与匿名会话
-- [API 总览](../04-api/01-api-overview.md)：`resource_urls` 的完整语义
-- [配置详解](../01-getting-started/04-configuration.md)：上述环境变量
-- [Web 前端](../05-clients/01-frontend.md)：nginx 的 `/files` 与 `/r/` 代理
+- [IM integration](12-im-integration.md): the rewrite logic and the startup warning
+- [Embed channel](13-embed-channel.md): channel authentication and anonymous sessions
+- [API overview](../04-api/01-api-overview.md): the full semantics of `resource_urls`
+- [Configuration](../01-getting-started/04-configuration.md): the environment variables above
+- [Web frontend](../05-clients/01-frontend.md): the nginx `/files` and `/r/` proxies
 
-## 实现参考
+## Implementation reference
 
-- `frontend/src/utils/protectedFileAccess.ts`：Web 文件引用与代理路径。
-- IM 消息发送前通过 `rewriteStorageURLs()` 转换外链。
+- `frontend/src/utils/protectedFileAccess.ts`: web file references and proxy paths.
+- IM messages are converted to external links by `rewriteStorageURLs()` before sending.

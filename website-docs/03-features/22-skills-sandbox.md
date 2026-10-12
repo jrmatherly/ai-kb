@@ -1,152 +1,162 @@
-# 技能目录与沙箱
+# Skills and sandboxes
 
-技能由 `SKILL.md` 说明、脚本、模板和资料组成，沙箱提供脚本执行环境。将技能添加到空间目录并安装到沙箱后，在智能体中选择对应沙箱和技能，即可用于智能推理对话。
+A skill is a `SKILL.md` description plus its scripts, templates and reference material. A sandbox is the environment that runs those scripts. Add a skill to the workspace catalog, install it into a sandbox, and select that sandbox and skill in an agent; the skill is then available in Smart Reasoning conversations.
 
-## 配置并使用技能 {#从配置到第一次执行}
+## Configure and use a skill
 
-1. 空间 Admin/Owner 在「设置 → 沙箱配置」创建配置，选择 Docker、CubeSandbox 或 E2B，填写连接信息。
-2. 按向导连接集群、选择模板；需要验证完整链路时运行「完整验证」。完整验证会实际创建沙箱、执行探针并清理。
-3. 在侧边栏「工具箱 → 技能管理」添加 ZIP 或来源链接，再选择要安装的沙箱（旧的「设置 → 技能管理」链接会自动跳转到这里）。目录收录成功只表示安装包已保存；安装状态就绪后才能执行。
-4. 打开智能体编辑器的「技能」分区，选择沙箱，设置技能范围为全部、指定技能或禁用。技能执行用于智能推理模式。
-5. 进入对话提问，或用 `@技能` 提示智能体优先使用该技能。需要文件时上传附件，生成的交付文件在对话右侧「沙箱可视化」面板的「产物」标签中预览、下载。
+To run a skill for the first time you create a sandbox configuration, install the skill into it, bind both to an agent and ask a question.
 
-`@技能` 不会取消智能体对其他已授权技能的访问。未选沙箱（macOS 上的 Lite 桌面版会改用[本机沙箱](#lite-host)）、空间关闭脚本或所需后端能力不可用时，执行工具不会注册；提示词无法绕过这些条件。
+1. A workspace Admin or Owner creates a configuration under Settings → Sandbox Config, picks Docker, CubeSandbox or E2B, and fills in the connection details.
+2. The wizard connects to the cluster and lists templates. Run "Full verification" when the whole chain needs checking: it creates a real sandbox, runs a probe script, checks outbound access and destroys the sandbox.
+3. In the sidebar, Toolbox → Skill Management adds a ZIP or a source link, then selects the sandboxes to install into (the old Settings → Skill Management link redirects here). A catalog entry only means the package was saved; the skill runs only once its install status is ready.
+4. Open the "Skills" section of the agent editor, select the sandbox, and set the skill scope to all, selected or none. Skill execution is a Smart Reasoning mode feature.
+5. Ask a question in a conversation, or write `@skill` to steer the agent toward that skill. Upload attachments when the skill needs files; generated deliverables appear in the "Files" tab of the "Sandbox" panel on the right of the conversation, where they can be previewed and downloaded.
+
+`@skill` does not revoke the agent's access to its other authorized skills. The execution tools are not registered when no sandbox is selected (the Lite desktop app on macOS switches to the [host sandbox](#lite-host) instead), when the workspace has disabled scripts, or when the required backend capability is unavailable; no prompt can bypass these conditions.
 
 <Screenshot
   src="/screenshots/skill-catalog.png"
-  caption="空间技能目录：查看技能与各沙箱安装状态" />
+  caption="Workspace skill catalog: skills and their install status per sandbox" />
 
-## 管理安装与更新 {#目录、安装和更新}
+## Manage installs and updates
 
-技能管理页支持按名称和描述搜索。搜索忽略大小写，空格分隔的关键词需全部匹配。无匹配结果时可清空搜索，或继续添加技能。
+The skill management page is where you add, install, upgrade, disable and remove skills, and where you watch an install run.
 
-空间目录保存一份技能包；每个沙箱配置各有安装记录和包含技能的镜像快照。同一技能可以装到多个沙箱，安装进度和失败原因分别记录。
+The page supports search by name and description. Search is case-insensitive and every space-separated keyword must match. When nothing matches, clear the search or add the skill.
 
-| 操作 | 结果 |
+The workspace catalog holds one copy of each skill package; each sandbox configuration keeps its own install record and an image snapshot that contains the skill. The same skill can be installed into several sandboxes, each with its own progress and failure reason.
+
+| Action | Result |
 | --- | --- |
-| 添加到目录 | 保存包、名称、版本和说明，不执行安装 |
-| 安装 | 在所选沙箱构建运行环境、安装依赖并校验可加载性，成功后发布新快照 |
-| 重试 | 复用该沙箱已保存的包再次安装，可附带安装说明；相同包已正常就绪时可跳过 |
-| 升级 | 目录重新登记新版本后，旧版本安装会标记为可升级；升级把目录中的新版本装到所选沙箱 |
-| 停止安装 | 中止进行中的安装，状态变为 failed，之后可重试或卸载 |
-| 停用 | 保留安装记录，只让智能体不再选用该技能 |
-| 从沙箱卸载 | 更新该沙箱的技能镜像，保留目录中的安装包，便于其他沙箱继续安装 |
-| 删除目录条目 | 要求已无沙箱安装引用；不会隐式卸载全部沙箱 |
+| Add to catalog | Saves the package, name, version and description; does not install |
+| Install | Builds the runtime environment in the selected sandbox, installs dependencies, verifies the skill loads, then publishes a new snapshot |
+| Retry | Installs again from the package already saved for that sandbox, optionally with install notes; a package that is already ready can be skipped |
+| Upgrade | After the catalog registers a new version, older installs are marked upgradable; upgrading installs the catalog version into the selected sandbox |
+| Stop install | Aborts an install in progress; the status becomes failed and the skill can then be retried or uninstalled |
+| Disable | Keeps the install record but stops agents from selecting the skill |
+| Uninstall from sandbox | Updates that sandbox's skill image and keeps the package in the catalog so other sandboxes can still install it |
+| Delete catalog entry | Requires that no sandbox install references it; it never uninstalls from sandboxes implicitly |
 
-安装页面显示百分比、阶段和日志，详细运行过程可在安装记录中查看。关闭进度抽屉或断开进度流不会停止安装。没有实时进度时可刷新技能状态；详细事件日志过期不代表技能安装包已丢失。
+The install page shows a percentage, the current stage and the log; the full run is kept in the install record. Closing the progress drawer or losing the progress stream does not stop the install. When there is no live progress, refresh the skill status; an expired event log does not mean the package is lost.
 
-安装由内置安装智能体完成：它读取 `SKILL.md` 安装依赖，并核对技能需要的外部命令行工具等运行前提。缺少必需命令或存在未解决的前提（例如需要另行部署的服务）时，安装判为失败并给出原因，不会仅因为没有依赖清单就标记就绪。安装进行中，管理员可以在「安装过程」里补充安装说明，例如需要安装的 CLI、安装文档或环境限制；安装结束后也可以携带说明重新安装。
+Installs are run by the built-in installer agent. It reads `SKILL.md`, installs the dependencies and checks the prerequisites the skill needs, such as external command-line tools. When a required command is missing or a prerequisite is unresolved (for example a service that must be deployed separately), the install fails with the reason; a skill is never marked ready merely because it has no dependency list. While an install is running, an administrator can add notes in the install progress drawer, such as a CLI to install, installation docs or environment limits; after the install ends, a reinstall can carry notes as well.
 
-升级或重试失败时，沙箱继续提供上一个就绪版本，智能体仍可使用；新版本安装成功后才替换。
+When an upgrade or retry fails, the sandbox keeps serving the previous ready version and agents can still use it; the new version replaces it only after a successful install.
 
-`skill_rollout` 控制镜像更新：默认 `next_turn` 在已有会话的下一轮重建沙箱；`new_session` 仅让之后创建沙箱的会话使用新镜像。沙箱重建会丢失旧实例临时运行状态，需交付的文件应写入 `/workspace/output` 并由系统收集。
+`skill_rollout` controls image rollout: the default `next_turn` rebuilds the sandbox of an existing session on its next turn; `new_session` makes only sessions created afterwards use the new image. A rebuild discards the temporary runtime state of the old instance, so files to deliver belong in `/workspace/output`, where the system collects them.
 
-### 支持的来源
+### Supported sources
 
-| 输入 | 说明 |
+| Input | Description |
 | --- | --- |
-| ZIP 文件 | 导出技能目录后上传 |
-| `@owner/slug`、`@owner/slug@1.2.0` | ClawHub 指定作者/版本 |
-| `slug`、`slug@1.2.0` | ClawHub slug |
-| ClawHub、SkillHub、自托管 SkillHub 页面 | 通过对应来源解析 |
-| GitHub/GitLab 仓库或目录 URL | 获取对应技能包 |
-| `https://skills.sh/owner/repo/slug`、ClawHub 的 skills.sh 页面 | 经安装解析器解析到仓库的具体版本和目录 |
-| 直接 ZIP 或 SKILL.md URL | 下载包或入口文件 |
+| ZIP file | Export the skill directory and upload it |
+| `@owner/slug`, `@owner/slug@1.2.0` | A ClawHub skill by author and version |
+| `slug`, `slug@1.2.0` | A ClawHub slug |
+| ClawHub, SkillHub and self-hosted SkillHub pages | Resolved through the matching source |
+| GitHub or GitLab repository or directory URL | Fetches the matching skill package |
+| `https://skills.sh/owner/repo/slug`, a ClawHub skills.sh page | Resolved by the install resolver to a specific version and directory in the repository |
+| Direct ZIP or SKILL.md URL | Downloads the package or the entry file |
 
-来源必须可匿名读取，下载不会附带用户的私有仓库凭据。私有技能可先导出 ZIP。`owner/slug` 有歧义，应改用 `@owner/slug` 或完整 URL。
+Sources must be readable anonymously; downloads never carry the user's private repository credentials. Export a private skill as a ZIP first. `owner/slug` is ambiguous; use `@owner/slug` or the full URL.
 
-技能包上限独立于普通文档：`MAX_SKILL_BUNDLE_SIZE_MB` 默认 256 MiB，未设置时至少为 `MAX_FILE_SIZE_MB`，最高 512 MiB。GitHub 下载按整个仓库压缩包计算，不只计算技能子目录。调整后重启 app 和 frontend，使应用与 Nginx 上限一致。
+The skill package limit is separate from the ordinary document limit: `MAX_SKILL_BUNDLE_SIZE_MB` defaults to 256 MiB, is never lower than `MAX_FILE_SIZE_MB` when unset, and caps at 512 MiB. A GitHub download is measured as the whole repository archive, not just the skill subdirectory. After changing it, restart app and frontend so the application and Nginx limits agree.
 
-## 选择沙箱后端
+## Choose a sandbox backend
 
-| 后端 | 需要填写 | 运行方式 |
+To pick a backend you weigh what each one needs from you against how it runs sessions.
+
+| Backend | Required fields | How it runs |
 | --- | --- | --- |
-| Docker | 镜像；可选 daemon 地址、TLS 证书目录、CPU/内存/PID 限制、网络模式、runtime、空闲 TTL | 一个会话一个长驻容器 |
-| CubeSandbox | 控制面地址、数据面代理、沙箱域名、模板；按集群配置 API Key | 会话级远端沙箱 |
-| E2B | API Key、模板；自托管时补 API 地址、沙箱域名和数据面代理 | E2B Cloud 或 E2B 兼容控制面 |
-| host | 不用填写。仅 Lite 桌面版，当前仅 macOS | 智能体未选沙箱配置时，在本机项目目录内执行，越界由操作系统拦截 |
+| Docker | Image; optional daemon address, TLS certificate directory, CPU, memory and PID limits, network mode, runtime, idle TTL | One long-lived container per session |
+| CubeSandbox | Control plane address, data plane proxy, sandbox domain, template; an API key per cluster configuration | A session-scoped remote sandbox |
+| E2B | API key, template; for self-hosting also the API address, sandbox domain and data plane proxy | E2B Cloud or an E2B-compatible control plane |
+| host | Nothing to fill in. Lite desktop app only, macOS only for now | When the agent has no sandbox configuration selected, runs inside the local project directory; the operating system blocks anything outside it |
 
-`local` 宿主机进程后端已移除：它在本机裸跑，没有任何隔离。Lite 的 `host` 不属于上述空间命名配置，也不是 `local` 的替代项。当前配置的完整字段见[沙箱与技能 API](../04-api/02-api-sandbox-skills.md)。
+The `local` host-process backend was removed: it ran bare on the host with no isolation. Lite's `host` is not one of the named workspace configurations above and is not a replacement for `local`. The full field list of the current configuration is in the [Sandbox and skills API](../04-api/02-api-sandbox-skills.md).
 
-Docker 后端默认关闭。系统管理员在「系统设置 → 网络安全」启用，或用 `WEKNORA_SANDBOX_DOCKER_ENABLED=true` 作为未落库时的回退。本机连接还需要把实际 Docker socket 挂给 app；这授予 app 控制宿主机 Docker 的能力。远端 TCP daemon 要配置 TLS 证书目录，其中包括 `ca.pem`、`cert.pem`、`key.pem`。Docker 网络仅接受 `bridge` 或 `none`，可选 `runsc` 等已安装 OCI runtime。
+The Docker backend is off by default. A system administrator enables it under System Settings → Network Security, or sets `AIKB_SANDBOX_DOCKER_ENABLED=true` as the fallback while no setting row exists. A local connection also needs the real Docker socket mounted into app, which gives app control of the host's Docker. A remote TCP daemon needs a TLS certificate directory containing `ca.pem`, `cert.pem` and `key.pem`. The Docker network accepts only `bridge` or `none`, and an installed OCI runtime such as `runsc` can be selected.
 
-自托管 E2B/Cube 的 `proxy_url` 指向数据面网关：WeKnora 连接网关但保留沙箱 Host，用于没有泛域名 DNS 的集群。`allow_private_endpoints` 允许连接私网/回环的集群地址，仍不放行 link-local/云元数据地址；它与沙箱里脚本能否出网是不同配置。
+For self-hosted E2B or Cube, `proxy_url` points at the data plane gateway: AI KB connects to the gateway but keeps the sandbox Host header, for clusters without wildcard DNS. `allow_private_endpoints` permits private-network and loopback cluster addresses; link-local and cloud metadata addresses stay blocked. It is a separate setting from whether scripts inside the sandbox can reach the network.
 
-脚本默认以沙箱内的 `root` 账号执行，模板中的 `user` 账号需显式选择。执行隔离由容器或远端沙箱提供，`/workspace` 只约定工作目录，不限制 root 命令的文件访问权限。
+Scripts run as the sandbox's `root` account by default; the template's `user` account must be selected explicitly. Isolation comes from the container or the remote sandbox. `/workspace` is only the agreed working directory and does not limit what root commands can read or write.
 
-### 网络策略
+### Network policy
 
-Cube/E2B 的 `config.network` 同时用于对话沙箱、技能安装和完整验证：
+`config.network` on Cube and E2B applies to conversation sandboxes, skill installs and full verification alike:
 
-- 默认允许出站；`deny_egress_by_default=true` 改为默认拒绝，再通过 `allow_out` 放行 IP、CIDR 或域名。
-- `deny_out` 接受 IPv4/CIDR；域名允许规则需配合默认拒绝。
-- Cube 的 `cube_rules` 可按 Host/SNI、方法和路径设置规则、调整顺序、配置审计及 HTTPS 头注入；E2B 的 `e2b_host_rules` 配置已放行域名的请求头注入。
-- 注入的凭据加密保存，响应脱敏。入站始终需要凭据，旧字段 `allow_public_inbound` 不会开放匿名入站。
-- Docker 使用 `docker.network_mode` 控制出网，不能照搬 Cube/E2B 的细粒度规则。默认拒绝出网后，安装依赖需要的源站也必须显式放行。
+- Egress is allowed by default; `deny_egress_by_default=true` switches to deny by default, after which `allow_out` admits IPs, CIDRs or domains.
+- `deny_out` accepts IPv4 addresses and CIDRs; domain allow rules require deny by default.
+- Cube's `cube_rules` set rules by Host or SNI, method and path, with ordering, audit level and HTTPS header injection; E2B's `e2b_host_rules` configure request header injection for domains already allowed.
+- Injected credentials are stored encrypted and masked in responses. Inbound always requires credentials; the legacy `allow_public_inbound` field does not open anonymous inbound access.
+- Docker controls egress with `docker.network_mode` and cannot take the fine-grained Cube and E2B rules. With egress denied by default, the package sources that dependency installs need must be allowed explicitly too.
 
-已有实例不会因为修改策略自动获得新配置，应在新建/重建沙箱后验证。修改后端身份或删除配置前，系统会查询运行中/暂停的实例和关联智能体；存在占用时拒绝操作，设置页会展示占用信息。
+Existing instances do not pick up a changed policy automatically; verify after creating or rebuilding a sandbox. Before a backend identity change or a configuration delete, the system queries running and paused instances and the agents bound to the configuration; when any are in use, the operation is refused and the settings page shows what is using it.
 
-### Lite 本机沙箱（host） {#lite-host}
+### Lite host sandbox (host) {#lite-host}
 
-自 v0.8.2 起，[Lite 桌面版](../05-clients/05-desktop.md)在 macOS 上用系统 Seatbelt 隔离运行智能体的命令和文件工具。智能体选了 Docker、E2B 或 Cube 配置时仍走远程沙箱；没有选沙箱配置时才使用本机沙箱。Windows 和 Linux 暂不提供该能力，此时未选配置的智能体不能执行命令。
+Since v0.8.2 the [Lite desktop app](../05-clients/05-desktop.md) on macOS uses the system Seatbelt sandbox to isolate the agent's command and file tools. An agent with a Docker, E2B or Cube configuration selected still uses that remote sandbox; the host sandbox is used only when no sandbox configuration is selected. Windows and Linux do not provide this capability yet, so there an agent without a configuration cannot run commands.
 
-- **工作目录**：在新对话页点「选择项目」，通过系统目录选择框选定项目文件夹，对话标题栏会显示项目名。不选时显示「临时工作区」，自动在 `~/Documents/WeKnoraLite/<日期>/session-*` 下创建会话目录。不能选择主目录本身、包含主目录的目录或 `~/Library` 下的目录。
-- **路径**：工作区是真实的本机路径，没有 `/workspace`、`/workspace/input` 和 `/workspace/output`。智能体直接在项目中修改文件，这些文件不会进入对话的产物列表；删除对话也不会删除本机目录。
-- **限制**：命令默认不能联网，只能写入项目目录，项目内的 `.git` 为只读。主目录中除常用开发工具链（如 `.nvm`、`.pyenv`、`.cargo`）外的内容不可读，`.ssh`、`.aws`、钥匙串等凭据位置始终不可读。
-- **回退**：对话回退不会还原本机项目文件，需要时请自行用 Git 管理。
+- **Working directory**: on the new conversation page, click "Select project" and choose the project folder in the system directory picker; the conversation title bar shows the project name. Without a selection the title shows "Temporary workspace" and a session directory is created under `~/Documents/WeKnoraLite/<date>/session-*`. The home directory itself, a directory that contains it, and directories under `~/Library` cannot be selected.
+- **Paths**: the workspace is a real local path; there is no `/workspace`, `/workspace/input` or `/workspace/output`. The agent edits files in the project directly, those files do not enter the conversation's artifact list, and deleting the conversation does not delete the local directory.
+- **Limits**: commands have no network access by default, can write only inside the project directory, and the project's `.git` is read-only. Apart from common development toolchains (such as `.nvm`, `.pyenv` and `.cargo`) the home directory is unreadable, and credential locations such as `.ssh`, `.aws` and the keychain are never readable.
+- **Rollback**: rolling back a conversation does not restore local project files; manage them with Git when you need that.
 
-## 环境变量与凭据
+## Environment variables and credentials
 
-个人变量入口在「设置 → 沙箱密钥」；空间级技能变量在「工具箱 → 技能管理」的技能卡上配置。列表只显示变量声明、是否设置和来源，不回显秘密值。
+To give a skill a credential you set it at the layer that matches who should see it: the workspace, a skill, or only yourself.
 
-| 层级 | 作用 |
+Personal variables live under Settings → Sandbox secrets; workspace-level skill variables are set on the skill card under Toolbox → Skill Management. Lists show the declaration, whether it is set and where it comes from; secret values are never echoed back.
+
+| Layer | Purpose |
 | --- | --- |
-| 空间沙箱 `config.env_vars` | 注入该配置创建的沙箱，供其脚本使用 |
-| 空间技能变量 | 管理员为技能已声明的变量填默认值 |
-| 个人沙箱变量 | 本人在该沙箱配置执行命令时使用 |
-| 个人技能变量 | 本人在该技能执行时使用 |
+| Workspace sandbox `config.env_vars` | Injected into every sandbox created from that configuration, for its scripts |
+| Workspace skill variables | Default values an administrator fills in for the variables a skill declared |
+| Personal sandbox variables | Used when you run commands in that sandbox configuration |
+| Personal skill variables | Used when you run that skill |
 
-技能变量解析中，**个人技能值 > 个人沙箱值 > 空间技能值**；未设置的名称才回退。空间沙箱环境是运行环境的一部分，不应在其中放脚本不应读取的秘密。删除个人覆盖后重新使用下层值；关闭技能不会删除个人凭据。
+Skill variables resolve as **personal skill value > personal sandbox value > workspace skill value**; a lower layer is used only for names that are unset above it. The workspace sandbox environment is part of the runtime and should not hold secrets that scripts must not read. Deleting a personal override falls back to the lower layer; disabling a skill does not delete personal credentials.
 
-个人技能变量只能使用技能已声明的名称，其中可包含技能所需的 `WEKNORA_*` 凭据。个人沙箱变量不接受 `WEKNORA_*`、`PATH` 等保留名。系统从执行命令中识别的变量只补充未设置的个人值，不覆盖已有个人或空间配置。字段和示例见[个人变量 API](../04-api/02-api-sandbox-skills.md#个人环境变量)。
+Personal skill variables accept only names the skill declared, which may include `AIKB_*` credentials the skill needs. Personal sandbox variables refuse the names reserved by the sandbox: `PATH`, `HOME`, `USER`, `SHELL`, `LD_PRELOAD`, `LD_LIBRARY_PATH`, `PYTHONPATH`, `PYTHONHOME`, `NODE_OPTIONS`, and any `AIKB_SKILL_*` name. Variables the system detects in executed commands only fill in unset personal values; they never overwrite an existing personal or workspace setting. Fields and examples are in the [personal variable API](../04-api/02-api-sandbox-skills.md).
 
-## 生成和下载文件 {#文件和交付}
+## Generate and download files
 
-`read_file(path="skill://<name>/SKILL.md")` 读取说明；技能附带脚本通过 `shell_exec(skill_name=..., command=...)` 执行。命令中的 `$WEKNORA_SKILL_DIR` 指向技能实际安装目录；`skill://` 是读取地址，不能直接当作 shell 路径。
+To produce a deliverable the agent reads the skill, runs its scripts, writes the result under `/workspace/output` and the conversation offers it for download.
 
-附件暂存到 `/workspace/input`，工作脚本放在 `/workspace`，可下载产物放在 `/workspace/output`。用 `write_sandbox_file` 新建/续写，用 `edit_sandbox_file` 局部替换，用 `read_file` 分页读取。文件工具边界、输出预算和重建行为见[Agent 引擎](07-agent.md)，交付入口见[会话与对话体验](18-chat-experience.md)。
+`read_file(path="skill://<name>/SKILL.md")` reads the description; bundled scripts run through `shell_exec(skill_name=..., command=...)`. In a command, `$AIKB_SKILL_DIR` points at the directory the skill is installed in; `skill://` is a read address and cannot be used as a shell path.
+
+Attachments are staged in `/workspace/input`, working scripts go in `/workspace`, and downloadable artifacts go in `/workspace/output`. Use `write_sandbox_file` to create or append, `edit_sandbox_file` for in-place replacement, and `read_file` to read in pages. File tool boundaries, output budgets and rebuild behavior are in [Agent engine](07-agent.md); the delivery entry points are in [Sessions and the chat experience](18-chat-experience.md).
 
 <Screenshot
   src="/screenshots/skill-sandbox-chat.png"
-  caption="沙箱生成 Word 文件后，在对话中预览并下载" />
+  caption="A Word file generated in the sandbox, previewed and downloaded in the conversation" />
 
-命令执行期间，对话中的工具卡片会实时显示输出末尾几行，便于判断长命令的进度；这些中间输出不会写入模型上下文。
+While a command runs, the tool card in the conversation shows the last few lines of its output live, which helps judge the progress of a long command; this intermediate output is not written into the model context.
 
-### 沙箱可视化面板
+### Sandbox panel
 
-使用远程沙箱的对话，右侧「沙箱可视化」面板有三个标签页：
+In a conversation that uses a remote sandbox, the "Sandbox" panel on the right has three tabs:
 
-| 标签页 | 内容 | 可用条件 |
+| Tab | Content | Available on |
 | --- | --- | --- |
-| 产物 | 本轮或全部轮次生成的可下载文件，可按文件名搜索 | 所有远程沙箱 |
-| 终端 | 连接本会话沙箱的交互式 Shell（xterm）。Cube、E2B 刷新页面后可重新接上仍在运行的终端；Docker 断开即结束 Shell（nohup 启动的后台任务保留），重连会打开新 Shell | Cube、E2B、Docker |
-| 桌面 | 通过浏览器操作沙箱内的 XFCE 图形桌面，每个会话同时只允许一个连接 | Cube、E2B 的桌面模板，且配置开启 `desktop_enabled` |
+| Files | Downloadable files generated this turn or across all turns, searchable by file name | Every remote sandbox |
+| Terminal | An interactive shell (xterm) connected to this session's sandbox. On Cube and E2B a page refresh reattaches to a shell that is still running; on Docker a disconnect ends the shell (background jobs started with nohup keep running) and reconnecting opens a new one | Cube, E2B, Docker |
+| Desktop | The XFCE graphical desktop inside the sandbox, driven from the browser; one connection per session at a time | Cube and E2B desktop templates, with `desktop_enabled` on in the configuration |
 
-打开面板不会创建或唤醒沙箱：沙箱正在运行时终端和桌面会直接连上；沙箱已暂停或尚未创建时，需要点「启动终端」「连接桌面」或「创建并启动」，唤醒或新建的沙箱会按空间配置计费。终端或桌面长时间无操作会自动断开，沙箱随后按提供商 TTL 暂停；断开时间由沙箱配置的「终端 / 桌面空闲断开（秒）」控制，默认 900 秒，范围 60 秒到 24 小时。技能更新触发沙箱重建后，原终端和桌面上未保存的内容会丢失。
+Opening the panel does not create or wake a sandbox. When the sandbox is running, the terminal and desktop connect directly; when it is paused or not yet created, click "Start terminal", "Connect desktop" or "Create and start", and the woken or new sandbox is billed per the workspace configuration. A terminal or desktop left idle disconnects automatically, after which the sandbox pauses on the provider's TTL. The idle time is the configuration's "Terminal / desktop idle disconnect (s)", default 900 seconds, range 60 seconds to 24 hours. When a skill update triggers a sandbox rebuild, unsaved work in the previous terminal and desktop is lost.
 
 <Screenshot
   src="/screenshots/sandbox-panel-terminal.png"
-  caption="沙箱可视化面板：在对话旁查看产物、使用终端和桌面"
-  hint="展示一个使用 Cube 或 E2B 沙箱的对话，右侧「沙箱可视化」面板切换到「终端」标签，终端内有带颜色的 user@host 提示符和一条命令输出；面板顶部可见「产物 / 终端 / 桌面」三个标签。" />
+  caption="Sandbox panel: files, terminal and desktop beside the conversation"
+  hint="A conversation using a Cube or E2B sandbox, with the 'Sandbox' panel on the right switched to the 'Terminal' tab: a colored user@host prompt and one command's output in the terminal, and the three tabs 'Files / Terminal / Desktop' visible at the top of the panel." />
 
-## 部署与排障
+## Deployment and troubleshooting
 
-Docker socket/TLS、模板版本、远端网关、多副本 Redis、技能快照磁盘占用、终端与桌面中继以及 Lite 本机沙箱的构建要求见[沙箱部署与排障](../06-development/04-sandbox-deployment.md)。
+Docker socket and TLS, template versions, remote gateways, multi-replica Redis, skill snapshot disk usage, terminal and desktop relays, and the build requirements of the Lite host sandbox are covered in [Sandbox deployment and troubleshooting](../06-development/04-sandbox-deployment.md).
 
-## 实现参考
+## Implementation reference
 
-- `internal/handler/sandbox_config.go`、`sandbox_skill.go`、`skill_catalog.go`、`me_env_var.go`
-- `internal/application/service/tenant_skill_install.go`、`tenant_skill_runtime_verify.go`、`tenant_skill_steer.go`、`user_env_resolver.go`
-- `internal/types/tenant.go`、`sandbox_network_policy.go`
-- `internal/sandbox/remote_client.go`、`docker_remote_client.go`、`gateway_transport.go`、`terminal.go`
-- `internal/localsandbox/`（Lite 本机沙箱：`core/policy_builder.go`、`seatbelt/`、`adapter/`）
+- `internal/handler/sandbox_config.go`, `sandbox_skill.go`, `skill_catalog.go`, `me_env_var.go`
+- `internal/application/service/tenant_skill_install.go`, `tenant_skill_runtime_verify.go`, `tenant_skill_steer.go`, `user_env_resolver.go`
+- `internal/types/tenant.go`, `sandbox_network_policy.go`
+- `internal/sandbox/remote_client.go`, `docker_remote_client.go`, `gateway_transport.go`, `terminal.go`
+- `internal/localsandbox/` (Lite host sandbox: `core/policy_builder.go`, `seatbelt/`, `adapter/`)

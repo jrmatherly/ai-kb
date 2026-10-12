@@ -1,174 +1,174 @@
-# 会话与对话体验
+# Conversation experience
 
-在会话中，可以围绕知识库或上传的附件提问，查看回答来源，并预览智能体生成的文件。回答生成期间可以继续补充要求；对已有对话可以从任意一条消息分叉或回滚。提问目录和历史搜索用于回顾对话，复制为 Markdown 用于保存完整问答记录。
+In a conversation you ask questions about knowledge bases or uploaded attachments, open the sources behind each answer, and preview the files an agent generated. You can add requirements while an answer is still running, and fork or rewind an existing conversation from any message. The question minimap and history search help you revisit a conversation; Copy as Markdown saves the full transcript.
 
-## 查看回答与来源
+## View answers and sources
 
-提问后，进度条显示附件解析、检索、工具调用和回答生成等阶段。智能推理模式还会展示可折叠的思考过程、命令输出和文件写入进度。
+After you ask a question, you want to see what the system is doing and where the answer comes from. The progress bar shows the stages: attachment parsing, retrieval, tool calls and answer generation. Smart Reasoning also shows a collapsible thinking section, command output and file-write progress.
 
-回答正文中的引用角标用于定位原文分块，右侧引用面板列出本轮使用的检索来源，包括 Wiki 工具返回的内容。关闭智能体的引用角标设置后，仍可通过引用面板查看来源。回答结束时，系统可提供追问建议，详见 [Agent 引擎](07-agent.md)。
+Citation markers in the answer body point at the source chunks, and the Sources panel on the right lists every source used in this turn, including content returned by the Wiki tool. If the agent's citation markers are switched off, the panel still shows the sources. When the answer ends the system can offer follow-up suggestions; see [Agent engine](07-agent.md).
 
-点击知识库引用角标，引用面板会直接打开被引用的原始文件，跳到引用所在位置并高亮：
+Clicking a knowledge base citation opens the original file in the panel, jumps to the cited position and highlights it:
 
-| 原文格式 | 定位与高亮 |
+| Original format | Locate and highlight |
 | --- | --- |
-| PDF（文字型） | 跳到所在页，框出引用的段落 |
-| PDF（扫描件） | 跳到所在页；用 MinerU / PaddleOCR-VL 解析时框出段落 |
-| Word | 滚动到引用的段落或表格 |
-| PPT | 滚动到引用的幻灯片并高亮文字 |
-| Excel / CSV | 高亮引用的行 |
-| Markdown / TXT / EPUB | 滚动到引用的文字（EPUB 先定位章节） |
-| 音频 | 从引用片段的时间开始播放（语音识别模型需返回分段时间，如 whisper-1） |
-| 网页导入 | 显示引用片段，并提供按片段定位打开原网页的入口 |
+| PDF (text) | Jumps to the page and outlines the cited paragraph |
+| PDF (scanned) | Jumps to the page; outlines the paragraph when the file was parsed with MinerU or PaddleOCR-VL |
+| Word | Scrolls to the cited paragraph or table |
+| PPT | Scrolls to the cited slide and highlights the text |
+| Excel / CSV | Highlights the cited rows |
+| Markdown / TXT / EPUB | Scrolls to the cited text (EPUB locates the chapter first) |
+| Audio | Plays from the start of the cited segment (the speech-to-text model must return segment timestamps, as whisper-1 does) |
+| Web import | Shows the cited fragment and offers to open the original page at that fragment |
 
-高亮范围按回答中被引用的那句话缩小到最相关的段落。在此功能上线前入库的文档没有位置信息，会在原文中按文字查找，找不到时提示并停留在文档开头；重新解析后即可精确定位。手动录入的知识和 FAQ 没有原始文件，点击引用仍显示引用列表。面板顶部「全部引用」返回列表，列表中文档卡片上的「查看原文」按钮也可以打开原文。嵌入渠道的访客无权读取原文件，只显示引用列表。
+The highlight narrows to the paragraph most relevant to the sentence cited in the answer. Documents imported before this feature shipped carry no position data: the panel searches the original by text, and when nothing matches it says so and leaves the document open at the top. Reparsing the document restores exact positioning. Hand-written knowledge and FAQ entries have no original file, so clicking their citation keeps the source list. "All sources" at the top of the panel returns to the list, and "View in original" on a document card in the list opens the file too. Visitors on an embed channel cannot read original files and only see the source list.
 
 <Screenshot
   src="/screenshots/chat-references-drawer.png"
-  caption="对话页：回答、引用角标与右侧引用面板"
-  hint="展示一轮带引用的回答、展开的引用面板（含来源标题与片段），以及顶部会话操作栏。" />
+  caption="Chat page: an answer, its citation markers and the Sources panel on the right"
+  hint="One answered turn with citations, the expanded Sources panel (source titles and snippets), and the session action bar at the top." />
 
-快速问答完成检索后，等待模型返回内容的阶段显示“正在连接模型并生成回答…”；没有执行检索的问答显示“正在准备回答…”。等待超过 60 秒时，提示变为“模型响应较慢，仍在等待…”。这一提示反映当前等待状态，回答和工具执行结果以实际返回内容为准。
+Once Quick Answer has finished retrieval, the wait for the model shows "Connecting to the model and generating an answer…"; a question that ran no retrieval shows "Preparing an answer…". After 60 seconds the hint changes to "The model is taking longer than usual, still waiting…". The hint only reflects the waiting state; the answer and the tool results are whatever the model actually returns.
 
-回答达到模型单次输出上限而被截断时，回答工具栏会出现提示图标，说明以上为截断前已生成的内容。需要完整回答时，可缩小问题范围，或在智能体配置中调大最大输出长度。
+When an answer hits the model's per-response output limit and is cut off, a hint icon appears in the answer toolbar explaining that what you see is what was generated before the cut. For a complete answer, narrow the question or raise the maximum output length in the agent configuration.
 
-## 调整思考强度
+## Adjust the reasoning effort
 
-所选模型支持分档思考时，输入框底部模型选择旁会显示「思考强度」，可在关闭、自动、极低、低、中、高、极高、最大中选择该模型支持的档位。默认沿用智能体配置；改选后只对当前会话生效，不修改智能体，重新打开会话时会恢复上次的选择。切换到不支持该档位的模型时，选择自动失效。
+When the selected model supports graded thinking, you can change how hard it thinks for this conversation. A "Reasoning effort" control appears next to the model selector at the bottom of the input box, with the levels the model supports among Off, Auto, Minimal, Low, Medium, High, Extra high and Max. The default follows the agent configuration. Changing it affects only the current conversation and does not modify the agent; reopening the conversation restores your last choice. Switching to a model that does not support the chosen level clears the choice automatically.
 
-## 在回答过程中补充要求
+## Add requirements while an answer is running
 
-智能推理模式生成回答时，可以直接在输入框继续输入：
+While Smart Reasoning is generating an answer, you can keep typing in the input box:
 
-| 操作 | 效果 |
+| Action | Effect |
 | --- | --- |
-| Enter 或点击发送 | 排队，当前回答结束后作为下一轮问题发送 |
-| ⌘ Enter（Mac）或 Alt + Enter | 立即补充到当前任务，智能体在下一步读取并调整 |
+| Enter, or click Send | Queues the message; it is sent as the next question once the current answer finishes |
+| ⌘ Enter (Mac) or Alt + Enter | Adds it to the current task immediately; the agent reads it at its next step and adjusts |
 
-排队中的消息显示在输入框上方，可点击「补充当前任务」改为立即补充，或点击「移除」撤回；已被智能体接收的消息无法撤回。输入为空时，发送按钮用于停止生成；停止后，排队中的消息会一并丢弃。追加消息不能带附件或图片，可以使用 @ 提及。每轮最多排队 10 条。快速问答不支持追加，回答结束前需要等待。
+Queued messages appear above the input box. Click "Supplement current task" to switch one to immediate delivery, or "Remove" to withdraw it; a message the agent has already picked up cannot be withdrawn. With an empty input box the send button stops generation, and stopping discards the queued messages. An appended message cannot carry attachments or images, but it can use @ mentions. At most 10 messages can be queued per turn. Quick Answer does not support appending; wait for the answer to finish.
 
 <Screenshot
   src="/screenshots/chat-steer-queue.png"
-  caption="回答生成期间，输入框上方的排队消息"
-  hint="智能推理回答进行中，输入框上方显示一至两条排队消息，每条带「补充当前任务」和「移除」按钮；输入框内有正在输入的文字，发送按钮提示“完成后发送 · Enter”。" />
+  caption="Queued messages above the input box while an answer is generating"
+  hint="A Smart Reasoning answer in progress, one or two queued messages above the input box, each with 'Supplement current task' and 'Remove' buttons; text being typed in the input box, and the send button hinting 'Send after completion · Enter'." />
 
-## 分叉与回滚
+## Fork and rewind
 
-用户消息下方和回答工具栏提供两个操作，回答生成期间均不可用：
+To explore a different direction or undo part of a conversation, use the two actions below a user message and in the answer toolbar. Both are unavailable while an answer is generating.
 
-- **分叉**：以当前对话为基础新建会话，原会话保持不变。从用户消息分叉时，复制该问题之前的对话，并把问题填回输入框，可修改后重新发送；从回答分叉时，复制到这条回答为止的对话。新会话标题为“原标题（分支）”，侧栏以分叉图标标记。
-- **回滚**：在当前会话中删除所选消息之后的对话，操作不可撤销。从用户消息回滚时，该问题本身也会删除并填回输入框。被删除轮次生成的文件、追问建议和历史搜索索引同时清理。
+- **Fork**: creates a new conversation from the current one; the original is unchanged. Forking from a user message copies the conversation up to that question and puts the question back in the input box so you can edit and resend it; forking from an answer copies the conversation up to and including that answer. The new conversation is titled "original title (branch)" and marked with a branch icon in the sidebar.
+- **Rewind**: deletes everything after the selected message in the current conversation; this cannot be undone. Rewinding from a user message deletes that question too and puts it back in the input box. Files generated in the deleted turns, their follow-up suggestions and their history search index entries are cleaned up as well.
 
-智能体绑定沙箱时，系统在每轮回答结束后记录工作区检查点。分叉会带上分叉点对应的工作区文件；无法带上时（如沙箱已回收或更换），分叉仍会成功，新会话使用全新的沙箱。回滚会把工作区一并退回到保留的最后一轮；当前沙箱找不到对应检查点时，为避免文件与对话不一致，回滚会被拒绝。没有沙箱，或使用桌面版本机目录作为工作区时，只回滚对话，不改动文件。
+When the agent is bound to a sandbox, the system records a workspace checkpoint at the end of every turn. A fork carries the workspace files as they were at the fork point; when that is impossible (the sandbox was reclaimed or replaced, for example) the fork still succeeds and the new conversation gets a fresh sandbox. A rewind rolls the workspace back to the last kept turn; when the current sandbox has no matching checkpoint, the rewind is refused so that files and conversation cannot drift apart. Without a sandbox, or with a local directory on the desktop edition as the workspace, only the conversation is rewound and no files change.
 
-## 使用临时附件提问
+## Ask about a temporary attachment
 
-在对话中上传文件，即可围绕文件内容提问。附件仅供当前会话使用，不进入知识库列表或向量索引。需要长期检索、共享的资料应上传到知识库。
+To ask about a file without adding it to a knowledge base, upload it in the conversation. The attachment belongs to the current conversation only; it does not appear in a knowledge base list or in a vector index. Material that needs long-term retrieval or sharing belongs in a knowledge base.
 
-上传后，系统异步解析文件，并显示上传、处理中和就绪状态。发问时尚未完成解析的附件会继续等待，默认等待上限为 60 秒。扫描件和图片型文档可通过视觉模型识别文字。
+After upload, the file is parsed asynchronously and shows the uploaded, processing and ready states. When you ask a question while an attachment is still parsing, the question waits for it, by default up to 60 seconds. Scanned and image-only documents can be read with a vision model.
 
-临时附件从上传时起计算保留期限，默认 24 小时，到期后由后台任务清理。管理员可调整保留期限、解析等待时间及 OCR 参数，具体配置见文末的“配置与接口参考”。
+A temporary attachment is retained for a period counted from its upload time, 24 hours by default, after which a background task removes it. Administrators can change the retention period, the parse wait time and the OCR parameters; see [Configuration and API reference](#configuration-and-api-reference) at the end of this page.
 
-智能体可配置允许上传的文件类型、图片理解开关，以及按文件类型选择的解析引擎。相关说明见 [Agent 引擎](07-agent.md)。
+The agent configuration decides which file types can be uploaded, whether images are understood, and which parsing engine handles each file type. See [Agent engine](07-agent.md).
 
-## 预览和下载生成文件
+## Preview and download generated files
 
-绑定沙箱的智能体可以处理附件并生成文件。回答完成后，点击回答工具栏的「查看本次生成的文件」，或对话页右上角的沙箱按钮，在「沙箱可视化」面板的「产物」页签中查看；该页签可切换本轮或全部文件，并按文件名搜索。支持的文件类型可以直接预览，其余文件可下载后打开。
+An agent bound to a sandbox can process attachments and generate files. Once the answer is complete, open them from the answer toolbar's generated-files button or from the sandbox button at the top right of the chat page, in the "Files" tab of the "Sandbox" panel. That tab switches between this turn and all files, and searches by file name. Supported file types preview in place; the rest can be downloaded and opened locally.
 
-侧栏的「产物」页汇总当前用户各网页会话中生成的文件，可按文档、表格、演示文稿、图片、网页、数据分类筛选或按文件名搜索，并可预览、下载、跳转到所在会话。同一会话中同名路径的文件多次生成时只显示最新一版，并标出版本数。部署未启用沙箱能力时不显示该页。
+The "Artifacts" page in the sidebar collects the files generated across all of your web conversations. It filters by type (documents, spreadsheets, presentations, images, web pages, data) or by file name, and each file can be previewed, downloaded or followed to its conversation. When the same path is generated several times in one conversation, only the latest version is listed, with the version count shown. The page is hidden when the deployment has no sandbox capability.
 
 <Screenshot
   src="/screenshots/artifacts-library.png"
-  caption="「产物」页：汇总各会话生成的文件"
-  hint="侧栏选中「产物」，页面顶部为类型页签（全部/文档/表格/演示文稿/图片/网页/数据）和文件名搜索框，列表按今天/昨天/最近 7 天分组，至少一行显示“N 个版本”，行内可见预览、下载、删除操作。" />
+  caption="The Artifacts page: files generated across conversations"
+  hint="'Artifacts' selected in the sidebar, the type tabs (All / Documents / Spreadsheets / Presentations / Images / Web pages / Data) and the file name search box at the top, the list grouped into Today / Yesterday / Last 7 days, at least one row showing 'N versions', and the preview, download and delete actions in the row." />
 
-需要让智能体生成可下载文件时，产物应保存到 `/workspace/output`，系统会在回答结束时收集并持久化。上传的附件暂存于 `/workspace/input`，脚本和中间文件可放在 `/workspace` 的其他目录。输入附件和输出文件分别管理，删除输入附件不会自动删除已收集的输出文件。
+For an agent to produce a downloadable file, the artifact must be saved under `/workspace/output`; the system collects and persists that directory when the answer ends. Uploaded attachments are staged in `/workspace/input`, and scripts and intermediate files can go anywhere else under `/workspace`. Input attachments and output files are managed separately: deleting an input attachment does not delete collected output files.
 
-不再需要的文件可以在「产物」页签或「产物」页删除。删除会回收存储中的字节，无法恢复，因此会先确认；只有会话归属人能删除，通过共享智能体获得的只读访问只能下载。「产物」页签按每次生成分别列出，删除的是点击的那一版；「产物」页一行代表一个文件，删除会连同该文件在这个会话中的所有历史版本。同一份文件如果已被存入知识库、被后续回答重新引用或随会话分叉复制，那些位置不受影响。删除后沙箱里的同名文件也不会被重新收录。
+Files you no longer need can be deleted in the "Files" tab or on the "Artifacts" page. Deletion frees the stored bytes and cannot be undone, so it asks for confirmation first. Only the conversation's owner can delete; read-only access through a shared agent can only download. The "Files" tab lists every generation separately, and deleting removes the version you clicked; on the "Artifacts" page one row is one file, and deleting removes every historical version of that file in the conversation. A copy of the file that was saved to a knowledge base, cited again by a later answer, or copied by a fork is unaffected. After deletion the same file in the sandbox is not collected again.
 
-文件读取、脚本执行和目录约定见[技能与沙箱](22-skills-sandbox.md)；列表、下载与删除接口见[会话与聊天 API](../04-api/02-api-chat.md)。
+File reading, script execution and the directory conventions are in [Skills and sandbox](22-skills-sandbox.md); the list, download and delete endpoints are in [Session and chat API](../04-api/02-api-chat.md).
 
-## 把回答存入知识库
+## Save an answer to a knowledge base
 
-回答工具栏的「添加到知识库」会在右侧抽屉打开 Markdown 编辑器，预填问题与回答，引用的文档统一列在末尾的“参考来源”下。选择目标知识库（仅文档型知识库）后，可暂存草稿或发布入库；发布后开始索引。编辑器支持编辑、分屏、预览三种视图和全屏，工具栏提供常用格式与插入表格、代码块、图片等操作，Cmd/Ctrl + S 暂存，Cmd/Ctrl + Enter 发布。
+To keep a good answer as a document, click "Add to Knowledge Base" in the answer toolbar. A Markdown editor opens in a drawer on the right, prefilled with the question and the answer, with the cited documents listed under a "References" heading at the end. Choose a target knowledge base (document knowledge bases only), then save a draft or publish it; indexing starts on publish. The editor offers edit, split and preview views plus full screen, a toolbar with the common formats and inserts for tables, code blocks and images, Cmd/Ctrl + S to save a draft and Cmd/Ctrl + Enter to publish.
 
 <Screenshot
   src="/screenshots/chat-save-answer-editor.png"
-  caption="把回答存入知识库的 Markdown 编辑器"
-  hint="对话页右侧抽屉处于分屏视图：顶部为标题输入框与目标知识库选择器，中部左侧 Markdown 源码、右侧预览，底部显示“当前状态：草稿”、字数统计和「暂存草稿」「发布入库」按钮。" />
+  caption="The Markdown editor for saving an answer to a knowledge base"
+  hint="The drawer on the right of the chat page in split view: the title input and target knowledge base selector at the top, Markdown source on the left and preview on the right in the middle, and at the bottom 'Status: draft', the word count and the 'Save draft' and 'Publish' buttons." />
 
-## 回顾和导出对话
+## Review and export a conversation
 
-长对话右侧的提问目录可直接定位到某次提问，悬停时显示轮次、问题和回答摘要。消息之间在日期变化或间隔 5 分钟以上时插入时间分隔；用户消息下方显示发送时间，今天的消息只显示时刻，更早的消息带日期。侧栏以旋转图标标记本浏览器中仍在生成的会话，并为 API 会话标出调用方。
+To find your way around a long conversation, use the question minimap on the right: it jumps straight to a question, and hovering shows the turn number, the question and a summary of the answer. A time separator is inserted between messages when the date changes or more than 5 minutes have passed; the send time appears below each user message, as a time of day for today's messages and with the date for older ones. In the sidebar, a spinning icon marks conversations still generating in this browser, and API conversations carry a tag naming the caller.
 
-会话操作菜单的「复制为 Markdown」把完整对话复制到剪贴板，内容包括会话标题、ID、导出时间和逐轮问答（含附件与引用列表）。复制在浏览器中完成，可用于归档或分享对话记录。
+"Copy as Markdown" in the conversation action menu copies the whole conversation to the clipboard: the title, the ID, the export time and every turn, with attachments and the source list. The copy is produced in the browser and is suitable for archiving or sharing a transcript.
 
-侧栏「搜索」可跨会话查找历史消息。空间管理员在「系统设置 → 空间 → 消息管理」启用消息索引并选择 Embedding 模型后，搜索会同时使用语义匹配；未启用时按关键词匹配。
+"Search" in the sidebar finds past messages across conversations. Once a workspace administrator enables message indexing with an embedding model under Settings → Workspace → Message management, the search also uses semantic matching; otherwise it matches keywords.
 
-## 查看渠道会话
+## View channel sessions
 
-IM、网页嵌入和 API 调用产生的会话，分别按 IM 身份、访客或 API Key 隔离。普通会话列表默认只展示当前调用者自己的会话。
+Conversations created through IM, web embedding and API calls are isolated per IM identity, visitor or API key. The regular conversation list shows only the caller's own conversations.
 
-空间 Admin 或 Owner 可以通过 IM、嵌入和 API 分组查看对应渠道会话；分组在存在会话时显示。管理员通过这一入口进行只读查看，用于检查渠道中的问答记录。API Key 会话的写操作继续受原会话归属限制。
+A workspace Admin or Owner can open the IM, embed and API groups to review the conversations of each channel; a group appears once it has conversations. This is a read-only view for checking the question-and-answer records of a channel. Write operations on API key conversations remain limited to the original owner.
 
-## 使用跨会话记忆
+## Use cross-session memory
 
-空间管理员在「系统设置 → 空间 → 长期记忆」启用后，成员可以在「系统设置 → 账户 → 我的记忆」维护表达偏好、确认待确认条目，并在后续会话中使用。记忆按空间和调用者身份隔离。
+To let the assistant remember you across conversations, a workspace administrator enables long-term memory under Settings → Workspace → Long-term memory. Members then maintain their preferences and confirm pending entries under Settings → Account → My memory, and later conversations use them. Memories are isolated per workspace and caller identity.
 
-关闭个人记忆会暂停使用，删除或清空则用于移除数据。自动提取、主题管理和立即整理的说明见[长期记忆](23-memory.md)。
+Turning personal memory off pauses its use; delete or clear removes the data. Automatic extraction, topic management and consolidation are described in [Long-term memory](23-memory.md).
 
-## 配置与接口参考
+## Configuration and API reference
 
-以下参数供管理员和集成开发者查询。日常对话操作使用前述界面入口即可。
+The parameters below are for administrators and integration developers. Day-to-day conversation operations use the UI described above.
 
-### 附件配置
+### Attachment configuration
 
-| 配置项 | 默认值 | 作用 |
+| Setting | Default | Effect |
 | --- | --- | --- |
-| `WEKNORA_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC` | 60 秒 | 发问时等待附件完成解析的上限 |
-| `WEKNORA_CHAT_ATTACHMENT_TTL_HOURS` | 24 小时 | 从上传时起计算的附件保留期限 |
-| `WEKNORA_CHAT_ATTACHMENT_OCR_CONCURRENCY` | 8 | OCR 并发数 |
-| `WEKNORA_CHAT_ATTACHMENT_OCR_MAX_PAGES` | 8 | OCR 页数上限 |
+| `AIKB_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC` | 60 seconds | How long a question waits for attachments that are still parsing |
+| `AIKB_CHAT_ATTACHMENT_TTL_HOURS` | 24 hours | Attachment retention, counted from upload time |
+| `AIKB_CHAT_ATTACHMENT_OCR_CONCURRENCY` | 8 | OCR concurrency |
+| `AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES` | 8 | Maximum number of pages sent to OCR |
 
-智能体配置中的 `supported_file_types` 限定允许上传的类型，`attachment_image_understanding` 控制图片理解，`chat_parser_engine_rules` 指定附件解析引擎。
+In the agent configuration, `supported_file_types` limits the upload types, `attachment_image_understanding` toggles image understanding and `chat_parser_engine_rules` selects the attachment parsing engine.
 
-附件 API 使用 `/api/v1/sessions` 前缀：
+The attachment API lives under the `/api/v1/sessions` prefix:
 
-| 操作 | 方法与路径 |
+| Operation | Method and path |
 | --- | --- |
-| 上传 | `POST /:session_id/attachments` |
-| 列表 | `GET /:id/attachments` |
-| 详情 | `GET /:id/attachments/:attachment_id` |
-| 预览 | `GET /:id/attachments/:attachment_id/preview` |
-| 删除 | `DELETE /:id/attachments/:attachment_id` |
+| Upload | `POST /:session_id/attachments` |
+| List | `GET /:id/attachments` |
+| Detail | `GET /:id/attachments/:attachment_id` |
+| Preview | `GET /:id/attachments/:attachment_id/preview` |
+| Delete | `DELETE /:id/attachments/:attachment_id` |
 
-完整参数和权限见[会话与聊天 API](../04-api/02-api-chat.md)。
+Full parameters and permissions are in [Session and chat API](../04-api/02-api-chat.md).
 
-### 会话操作接口
+### Session operation endpoints
 
-| 操作 | 方法与路径 |
+| Operation | Method and path |
 | --- | --- |
-| 分叉 | `POST /api/v1/sessions/:session_id/fork` |
-| 回滚 | `POST /api/v1/sessions/:session_id/rewind` |
-| 运行中追加消息 | `POST /api/v1/sessions/:session_id/steer`，另有列出、撤回、改为立即补充 |
-| 本轮思考强度 | 聊天请求的 `reasoning_effort` 字段 |
+| Fork | `POST /api/v1/sessions/:session_id/fork` |
+| Rewind | `POST /api/v1/sessions/:session_id/rewind` |
+| Append a message to a running answer | `POST /api/v1/sessions/:session_id/steer`, plus endpoints to list, withdraw and promote to immediate delivery |
+| Reasoning effort for this turn | The `reasoning_effort` field of the chat request |
 
-请求体、返回码与限制见[会话与聊天 API](../04-api/02-api-chat.md)。
+Request bodies, status codes and limits are in [Session and chat API](../04-api/02-api-chat.md).
 
-### 引用和历史查询
+### Citations and history queries
 
-智能体的 `citation_enabled` 控制回答正文中的引用角标，省略时默认开启；引用面板不受该字段影响。
+The agent's `citation_enabled` controls the citation markers in the answer body and defaults to on when omitted; the Sources panel is not affected by it.
 
-历史搜索使用 `POST /api/v1/messages/search`，索引统计使用 `GET /api/v1/messages/chat-history-stats`，两者要求 Viewer+，API Key 需 `message_history` 能力或 full-access。读取会话历史使用 `GET /api/v1/messages/:session_id/load`，要求 Viewer+；API Key 需 `chat` 能力，并受会话归属校验。
+History search uses `POST /api/v1/messages/search` and index statistics use `GET /api/v1/messages/chat-history-stats`; both require Viewer or above, and an API key needs the `message_history` capability or full access. Loading a conversation's history uses `GET /api/v1/messages/:session_id/load`, which requires Viewer or above; an API key needs the `chat` capability and is subject to the session ownership check.
 
-会话列表的 `source` 为空或 `web` 时查询自己的会话；显式查询 `api`、`im` 或 `embed` 的空间视图要求 Admin+，权限不足返回 403。
+A session list whose `source` is empty or `web` returns the caller's own conversations; explicitly querying `api`, `im` or `embed` is a workspace-wide view that requires Admin or above and returns 403 otherwise.
 
-## 实现参考
+## Implementation reference
 
-- `frontend/src/views/chat/components/`：回答、进度与工具过程展示。
-- `frontend/src/utils/sessionMarkdown.ts`：复制为 Markdown。
-- `internal/application/service/session.go`：会话列表与渠道访问规则。
-- `internal/application/service/session_fork.go`、`session_rewind.go`、`workspace_checkpointer.go`：分叉、回滚与工作区检查点。
-- `internal/handler/session/steer.go`：运行中追加消息。
-- `internal/application/service/temporary_document.go`：临时附件解析、到期与清理。
-- 临时附件存储在 `temporary_documents` 表，表结构见[数据库与迁移](../06-development/02-database-schema.md)。
+- `frontend/src/views/chat/components/`: answer, progress and tool activity display.
+- `frontend/src/utils/sessionMarkdown.ts`: Copy as Markdown.
+- `internal/application/service/session.go`: session listing and channel access rules.
+- `internal/application/service/session_fork.go`, `session_rewind.go`, `workspace_checkpointer.go`: fork, rewind and workspace checkpoints.
+- `internal/handler/session/steer.go`: appending messages to a running answer.
+- `internal/application/service/temporary_document.go`: temporary attachment parsing, expiry and cleanup.
+- Temporary attachments are stored in the `temporary_documents` table; the schema is in [Database and migrations](../06-development/02-database-schema.md).
