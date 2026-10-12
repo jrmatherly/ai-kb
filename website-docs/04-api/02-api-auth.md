@@ -1,24 +1,24 @@
-# API 参考：认证与用户
+# API reference: authentication and users
 
-提供注册、登录、令牌刷新、个人资料和邀请处理接口。认证要求随接口而异，公开接口在各条目中标注。
+Registration, login, token refresh, profile and invitation handling. The authentication requirement varies per route; public routes are marked in their entries.
 
-除特别标注外，本组接口在认证中间件之后仅要求“已登录”（无角色下限）。免认证接口见各条目。
+Unless an entry says otherwise, routes in this group sit behind the authentication middleware and require only a logged-in user (no role floor). Unauthenticated routes are marked in their entries.
 
-## 认证（/api/v1/auth）
+## Authentication (/api/v1/auth)
 
 ### POST /api/v1/auth/register
 
-用途：注册新用户（自助注册模式）。免认证。Handler: `internal/handler/auth.go`
+Purpose: register a new user (self-serve mode). No authentication. Handler: `internal/handler/auth.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `username` | string | 是 | 用户名，2–50 字符 |
-| `email` | string | 是 | 邮箱 |
-| `password` | string | 是 | 密码（8–32 位，字母+数字；复杂模式另需大小写和特殊字符） |
+| `username` | string | yes (`binding:"required,min=2,max=50"`) | Username, 2 to 50 characters |
+| `email` | string | yes (`binding:"required,email"`) | Email address |
+| `password` | string | yes (`binding:"required,min=6"`) | Password (8 to 32 characters with at least one letter and one digit; complex mode also requires upper and lower case and a special character) |
 
-是否自动创建个人空间由服务端的 `auth.default_tenant_mode` 决定，请求体不能指定。`invite_register`（仅限邀请注册）和 `invite_only`（禁止注册）模式下返回 403。
+Whether a personal workspace is created automatically is decided by the server setting `auth.default_tenant_mode`; the request body cannot choose it. In `invite_register` (registration by invitation only) and `invite_only` (registration disabled) modes the route returns 403. A password that fails the policy, or a duplicate email, returns 400.
 
-响应：201 `{"success":true,"message":"...","user":{User}}`
+Response: 201 `{"success":true,"message":"Registration successful","user":{User}}`
 
 ```bash
 curl -X POST $BASE/api/v1/auth/register -H 'Content-Type: application/json' \
@@ -27,18 +27,20 @@ curl -X POST $BASE/api/v1/auth/register -H 'Content-Type: application/json' \
 
 ### POST /api/v1/auth/register-by-invite
 
-仅 `self_serve` 和 `invite_register` 模式允许凭有效邀请链接注册；`invite_only` 模式返回 403。
+Only the `self_serve` and `invite_register` modes allow registration through a valid invitation link; `invite_only` returns 403.
 
-用途：通过邀请/分享链接 token 注册并加入空间。免认证，IP 限流 30 次/分钟。Handler: `internal/handler/auth_register_by_invite.go`
+Purpose: register through an invitation or share-link token and join the workspace. No authentication, rate limited per IP to 30 requests per minute (the budget is shared with `invitations/lookup`). Handler: `internal/handler/auth_register_by_invite.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `token` | string | 是（`binding:"required"`） | 邀请 token |
-| `email` | string | 是（`binding:"required,email"`） | 邮箱 |
-| `username` | string | 是（`binding:"required"`） | 用户名 |
-| `password` | string | 是（`binding:"required,min=6"`） | 密码（8–32 位，字母+数字；复杂模式另需大小写和特殊字符） |
+| `token` | string | yes (`binding:"required"`) | Invitation token |
+| `email` | string | yes (`binding:"required,email"`) | Email address |
+| `username` | string | yes (`binding:"required"`) | Username |
+| `password` | string | yes (`binding:"required,min=6"`) | Password (8 to 32 characters with at least one letter and one digit; complex mode also requires upper and lower case and a special character) |
 
-响应：201，同 Login（`user/active_tenant/memberships/token/refresh_token`）。
+The binding tag only checks length; the full password policy is applied after the token is resolved. An unknown, expired or revoked token returns 410; an email that already has an account returns 409 (log in and use `POST /api/v1/me/invitations/accept-by-token` instead).
+
+Response: 201, same shape as Login (`user/active_tenant/memberships/token/refresh_token`).
 
 ```bash
 curl -X POST $BASE/api/v1/auth/register-by-invite -H 'Content-Type: application/json' \
@@ -47,13 +49,13 @@ curl -X POST $BASE/api/v1/auth/register-by-invite -H 'Content-Type: application/
 
 ### POST /api/v1/auth/invitations/lookup
 
-用途：匿名查询邀请 token 对应的空间信息（注册前预览）。免认证，IP 限流。Handler: `internal/handler/auth_register_by_invite.go`
+Purpose: anonymously resolve an invitation token to its workspace (preview before registering). No authentication, rate limited per IP. The token travels in the body rather than the URL so it stays out of access logs and browser history. Handler: `internal/handler/auth_register_by_invite.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `token` | string | 是（`binding:"required"`） | 邀请 token |
+| `token` | string | yes (`binding:"required"`) | Invitation token |
 
-响应：200 `{"success":true,"data":{"tenant_id","tenant_name","role","expires_at"}}`
+Response: 200 `{"success":true,"data":{"tenant_id","tenant_name","role","expires_at"}}`. An unknown, expired or revoked token returns 410.
 
 ```bash
 curl -X POST $BASE/api/v1/auth/invitations/lookup -H 'Content-Type: application/json' -d '{"token":"<invite_token>"}'
@@ -61,14 +63,14 @@ curl -X POST $BASE/api/v1/auth/invitations/lookup -H 'Content-Type: application/
 
 ### POST /api/v1/auth/login
 
-用途：邮箱密码登录。免认证。Handler: `internal/handler/auth.go`
+Purpose: log in with email and password. No authentication. Handler: `internal/handler/auth.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `email` | string | 是（`binding:"required"`） | 邮箱 |
-| `password` | string | 是（`binding:"required"`） | 密码 |
+| `email` | string | yes (`binding:"required,email"`) | Email address |
+| `password` | string | yes (`binding:"required,min=6"`) | Password |
 
-响应：200 `{"success":true,"user":{...},"active_tenant":{...},"memberships":[...],"token":"...","refresh_token":"..."}`
+Response: 200 `{"success":true,"user":{...},"active_tenant":{...},"memberships":[...],"token":"...","refresh_token":"..."}`. A wrong email or password returns 401.
 
 ```bash
 curl -X POST $BASE/api/v1/auth/login -H 'Content-Type: application/json' -d '{"email":"a@ex.com","password":"secret123"}'
@@ -76,15 +78,15 @@ curl -X POST $BASE/api/v1/auth/login -H 'Content-Type: application/json' -d '{"e
 
 ### POST /api/v1/auth/auto-setup
 
-用途：原生桌面 Lite 自动建号、建空间及登录。必须携带桌面原生桥接提供的每进程随机 `X-WeKnora-Desktop-Token`，不接受匿名 HTTP 请求。普通浏览器使用注册/登录接口。Handler: `internal/handler/auth.go`
+Purpose: native desktop Lite auto-creates the account and workspace and logs in. The request must carry the per-process random `X-WeKnora-Desktop-Token` supplied by the desktop native bridge; anonymous HTTP requests are rejected. Regular browsers use the register and login routes. Handler: `internal/handler/auth.go`
 
-响应：200，同 Login；缺少或错误的桌面凭据返回 401。
+Response: 200, same shape as Login. A non-Lite edition returns 403; a missing or wrong desktop token returns 401.
 
 ### GET /api/v1/auth/config
 
-用途：查询注册模式等认证配置。免认证。Handler: `internal/handler/auth.go`
+Purpose: read the authentication configuration, such as the registration mode. No authentication. Handler: `internal/handler/auth.go`
 
-响应：200 `{"success":true,"registration_mode":"self_serve|invite_register|invite_only","complex_password_enabled":false}`
+Response: 200 `{"success":true,"registration_mode":"self_serve|invite_register|invite_only","complex_password_enabled":false}`
 
 ```bash
 curl $BASE/api/v1/auth/config
@@ -92,16 +94,16 @@ curl $BASE/api/v1/auth/config
 
 ### POST /api/v1/auth/switch-tenant
 
-用途：切换当前活跃空间并换发 token。需登录（无空间也可调用）。Handler: `internal/handler/auth.go`
+Purpose: switch the active workspace and reissue tokens. Requires a logged-in user (callable without a workspace). Handler: `internal/handler/auth.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `tenant_id` | uint64 | 是（`binding:"required"`） | 目标空间 ID |
-| `refresh_token` | string | 否 | 用于换发新 token |
+| `tenant_id` | uint64 | yes (`binding:"required"`) | Target workspace ID |
+| `refresh_token` | string | no | Used to issue the new token pair |
 
-响应：200，同 Login。
+Response: 200, same shape as Login. No active membership in the target workspace (cross-workspace superusers excepted) returns 403.
 
-换签成功会把目标空间写入账号级「最近活跃租户」偏好，下次登录（密码/OIDC/换设备）与 refresh 都回到该空间。refresh JWT 不含 `tenant_id`，因此偏好写入失败则整次换签失败、不会发出新 token。API 客户端无需再补发 `PUT /auth/me/preferences`。Web UI 切空间不走本接口。一次换签会改变该用户所有设备的下次落点。
+A successful switch writes the target workspace into the account-level "last active workspace" preference, so the next login (password, OIDC or another device) and every refresh land there. The refresh JWT carries no `tenant_id`, so if the preference write fails the whole switch fails and no new token is issued. API clients do not need a follow-up `PUT /auth/me/preferences`. The web UI does not switch workspaces through this route. One switch changes where that user lands next on every device.
 
 ```bash
 curl -X POST $BASE/api/v1/auth/switch-tenant -H "Authorization: Bearer $TOKEN" \
@@ -110,9 +112,9 @@ curl -X POST $BASE/api/v1/auth/switch-tenant -H "Authorization: Bearer $TOKEN" \
 
 ### GET /api/v1/auth/oidc/config
 
-用途：查询 OIDC 是否启用及显示名。免认证。Handler: `internal/handler/auth.go`
+Purpose: read whether OIDC is enabled and the provider display name. No authentication. Handler: `internal/handler/auth.go`
 
-响应：200 `{"success":true,"enabled":bool,"provider_display_name":"..."}`
+Response: 200 `{"success":true,"enabled":bool,"provider_display_name":"..."}`
 
 ```bash
 curl $BASE/api/v1/auth/oidc/config
@@ -120,7 +122,7 @@ curl $BASE/api/v1/auth/oidc/config
 
 ### GET /api/v1/auth/oidc/start
 
-免登录，直接返回 302 和指向 IdP 的 Location，可供企业门户链接使用。无需先请求 JSON 授权地址；回调由请求 origin 构造为 `/api/v1/auth/oidc/callback`。回调后的登录结果与原 OIDC 链路一致。
+No login required. Returns 302 with a `Location` pointing at the identity provider, so an enterprise portal can link to it directly. No prior request for the JSON authorization URL is needed; the callback is built from the request origin as `/api/v1/auth/oidc/callback`. The login result after the callback is the same as the regular OIDC flow. OIDC disabled returns 403.
 
 ```bash
 curl -i "$BASE/api/v1/auth/oidc/start"
@@ -128,13 +130,15 @@ curl -i "$BASE/api/v1/auth/oidc/start"
 
 ### GET /api/v1/auth/oidc/url
 
-用途：获取 OIDC 授权跳转 URL。免认证。Handler: `internal/handler/auth.go`
+Purpose: get the OIDC authorization redirect URL. No authentication. Handler: `internal/handler/auth.go`
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `redirect_uri` | string | 是 | 回调地址 |
+| `redirect_uri` | string | yes | Callback address |
 
-响应：200 `{"success":true,"authorization_url":"...","nonce":"..."}`
+Response: 200 `{"success":true,"authorization_url":"...","state":"...","provider_display_name":"..."}`. OIDC disabled returns 403.
+
+The signed `state` carries the nonce, the `redirect_uri` and an issue time. The nonce is also bound to an HttpOnly cookie set by this response (and by `oidc/start`), so the callback must come from the same browser.
 
 ```bash
 curl "$BASE/api/v1/auth/oidc/url?redirect_uri=https://app.example.com/callback"
@@ -142,11 +146,13 @@ curl "$BASE/api/v1/auth/oidc/url?redirect_uri=https://app.example.com/callback"
 
 ### GET /api/v1/auth/oidc/callback
 
-用途：OIDC 授权回调（浏览器重定向进入）。免认证。Handler: `internal/handler/auth.go`
+Purpose: OIDC authorization callback (entered through a browser redirect). No authentication. Handler: `internal/handler/auth.go`
 
-查询参数：`code`、`state`、`error`、`error_description`（均由 OIDC 提供方带回）。
+Query parameters: `code`, `state`, `error`, `error_description` (all returned by the OIDC provider).
 
-响应：302 重定向到前端，成功携带 `#oidc_result=<base64url>`，失败携带 `#oidc_error=...`。
+Response: 302 redirect to the frontend. On success the fragment is `#oidc_result=<base64url>` (a JSON object with `user`, `tenant`, `memberships`, `token`, `refresh_token` and `is_new_user`); on failure it is `#oidc_error=...`, with `&oidc_error_description=...` when the provider or the login step supplied one. Error values: the provider's own error code, `invalid_state`, `missing_code`, `login_failed`, `payload_encode_failed`.
+
+An account auto-provisioned by OIDC gets a 32-byte random password it never receives and the `oidc_only_login` preference, which the profile UI uses to hide self-service password rotation until `change-password` sets a known password.
 
 ```bash
 curl -i "$BASE/api/v1/auth/oidc/callback?code=xxx&state=yyy"
@@ -154,13 +160,13 @@ curl -i "$BASE/api/v1/auth/oidc/callback?code=xxx&state=yyy"
 
 ### POST /api/v1/auth/refresh
 
-用途：用 refresh token 换发新 token。免认证。Handler: `internal/handler/auth.go`
+Purpose: exchange a refresh token for a new token pair. No authentication. Handler: `internal/handler/auth.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `refreshToken` | string | 是（`binding:"required"`） | refresh token |
+| `refreshToken` | string | yes (`binding:"required"`) | Refresh token |
 
-响应：200 `{"success":true,"access_token":"...","refresh_token":"..."}`
+Response: 200 `{"success":true,"message":"Token refreshed successfully","access_token":"...","refresh_token":"..."}`. An invalid refresh token returns 401.
 
 ```bash
 curl -X POST $BASE/api/v1/auth/refresh -H 'Content-Type: application/json' -d '{"refreshToken":"<rt>"}'
@@ -168,9 +174,11 @@ curl -X POST $BASE/api/v1/auth/refresh -H 'Content-Type: application/json' -d '{
 
 ### GET /api/v1/auth/validate
 
-用途：校验当前 token 是否有效。需登录（无空间可调用）。Handler: `internal/handler/auth.go`
+Purpose: check whether the current token is valid. Requires a logged-in user (callable without a workspace). Handler: `internal/handler/auth.go`
 
-响应：200 `{"success":true,"message":"Token is valid","user":{UserInfo}}`
+The check rejects refresh tokens and sandbox terminal tickets presented as access tokens, revoked tokens and disabled accounts; a failed token lookup is reported as an error rather than treated as valid.
+
+Response: 200 `{"success":true,"message":"Token is valid","user":{UserInfo}}`. A rejected token returns 401.
 
 ```bash
 curl $BASE/api/v1/auth/validate -H "Authorization: Bearer $TOKEN"
@@ -178,9 +186,9 @@ curl $BASE/api/v1/auth/validate -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/auth/logout
 
-用途：登出（失效当前 token）。需登录。无请求体。Handler: `internal/handler/auth.go`
+Purpose: log out. Revokes every outstanding session of the user, refresh tokens included, not only the presented token. Requires a logged-in user. No request body. Handler: `internal/handler/auth.go`
 
-响应：200 `{"success":true,"message":"Logout successful"}`
+Response: 200 `{"success":true,"message":"Logout successful"}`
 
 ```bash
 curl -X POST $BASE/api/v1/auth/logout -H "Authorization: Bearer $TOKEN"
@@ -188,9 +196,9 @@ curl -X POST $BASE/api/v1/auth/logout -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/auth/me
 
-用途：查询当前调用者身份（用户/空间/成员关系/能力）。需登录；API key 亦可（策略 `apiKeyAny()`，任何有效 key）。Handler: `internal/handler/auth.go`
+Purpose: read the caller's identity (user, workspace, memberships, capabilities). Requires a logged-in user; an API key also works (policy `apiKeyAny()`, any valid key). Handler: `internal/handler/auth.go`
 
-响应：200 `{"success":true,"data":{"user":{UserInfo},"tenant":{TenantResponse},"memberships":[...],"tenant_required":bool,"capabilities":{"can_create_tenant":bool,"auto_accept_invitation":bool}}}`
+Response: 200 `{"success":true,"data":{"user":{UserInfo},"preference_defaults":{"browser_search_instructions":"..."},"tenant":{TenantResponse},"memberships":[...],"tenant_required":bool,"capabilities":{"can_create_tenant":bool,"auto_accept_invitation":bool}}}`
 
 ```bash
 curl $BASE/api/v1/auth/me -H "X-API-Key: $API_KEY"
@@ -198,42 +206,43 @@ curl $BASE/api/v1/auth/me -H "X-API-Key: $API_KEY"
 
 ### PUT /api/v1/auth/me/preferences
 
-用途：更新个人偏好（最近活跃空间）。需登录。Handler: `internal/handler/auth.go`
+Purpose: update personal preferences (PATCH semantics: only fields present in the body change). Requires a logged-in user. Handler: `internal/handler/auth.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `last_active_tenant_id` | *uint64 | 否 | 正整数设置/替换；`0` 清除（下次登录回 home）；省略则不改。`POST /auth/switch-tenant` 成功时服务端会写同一字段。 |
+| `last_active_tenant_id` | *uint64 | no | A positive value sets or replaces; `0` clears (the next login lands in the home workspace); omitted leaves it unchanged. `POST /auth/switch-tenant` writes the same field on success. |
+| `browser_search_instructions` | *string | no | Local Browser search instructions, at most 4000 characters (`binding:"omitempty,max=4000"`) |
 
-响应：200 `{"success":true,"data":{UserPreferences}}`
+Response: 200 `{"success":true,"data":{UserPreferences}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/auth/me/preferences -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"last_active_tenant_id":2}'
 ```
 
-密码策略由 `GET /auth/config` 提供。复杂模式允许的特殊字符集为 `!@#$%^&*()_+-=[]{}|;:,.<>?`；不能只根据结构体 binding 的长度标签推导完整校验规则。
+The password policy is published by `GET /auth/config`. The special characters accepted in complex mode are `!@#$%^&*()_+-=[]{}|;:,.<>?`; the full validation rule cannot be derived from the struct binding length tags alone.
 
 ### POST /api/v1/auth/change-password
 
-用途：修改密码。需登录。Handler: `internal/handler/auth.go`
+Purpose: change the password. Requires a logged-in user. Handler: `internal/handler/auth.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `old_password` | string | 是（`binding:"required"`） | 旧密码 |
-| `new_password` | string | 是（`binding:"required"`） | 新密码（8–32 位，字母+数字；复杂模式另需大小写和特殊字符） |
+| `old_password` | string | yes (`binding:"required"`) | Current password |
+| `new_password` | string | yes (`binding:"required"`) | New password (8 to 32 characters with at least one letter and one digit; complex mode also requires upper and lower case and a special character) |
 
-响应：200 `{"success":true,"message":"Password changed successfully"}`
+Response: 200 `{"success":true,"message":"Password changed successfully"}`
+
+The current password must be correct and the new password must differ from it; these two checks run before the policy check, so a wrong current password is never masked by a policy error. On success every session is revoked and the user must log in again, and an `oidc_only_login` flag is cleared. The default policy is 8 to 32 characters with letters and digits; complex mode requires upper and lower case letters, digits and a special character. The error detail is `invalid_old_password`, `password_policy` or `same_password`, all with status 400.
 
 ```bash
 curl -X POST $BASE/api/v1/auth/change-password -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"old_password":"old","new_password":"NewPass123!"}'
 ```
 
-修改密码必须提供正确的旧密码，新密码不能与旧密码相同。成功后撤销全部会话，需要重新登录。默认策略 8–32 位、字母和数字；复杂模式要求大小写字母、数字和特殊字符。错误详情可为 `invalid_old_password`、`password_policy`、`same_password`，均返回 400。
-
 ### POST /api/v1/me/invitations/accept-by-token
 
-需登录，仅操作当前用户，无空间的新用户也可调用。请求 `{"token":"<invite-token>"}`；有效共享邀请使当前用户加入对应空间。无效、过期、撤销的链接返回 410；空 token 返回 400。成功响应为 `{success:true,data:{membership:{tenant_id,role,status,joined_at},tenant_name}}`，前端据此切换空间。
+Requires a logged-in user, acts only on the current user, and a new user without a workspace may call it. Request `{"token":"<invite-token>"}`; a valid share-link invitation adds the current user to its workspace, and a user who is already a member gets the same result again. An invalid, expired or revoked link returns 410; an empty token returns 400. The success response is `{success:true,data:{membership:{tenant_id,role,status,joined_at},tenant_name}}`, which the frontend uses to switch workspaces.
 
 ```bash
 curl -X POST "$BASE/api/v1/me/invitations/accept-by-token" \
@@ -241,19 +250,19 @@ curl -X POST "$BASE/api/v1/me/invitations/accept-by-token" \
   -d '{"token":"<invite-token>"}'
 ```
 
-## 我的邀请（/api/v1/me/invitations）
+## My invitations (/api/v1/me/invitations)
 
-服务层保证“仅被邀请人可接受/拒绝”；无角色下限（无空间的新用户也可用）。Handler: `internal/handler/tenant_invitation.go`
+The service layer guarantees that only the invitee can accept or decline; there is no role floor (a new user without a workspace can use these). Handler: `internal/handler/tenant_invitation.go`
 
 ### GET /api/v1/me/invitations
 
-用途：列出发给我的邀请。
+Purpose: list the invitations addressed to me.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `include_terminal` | bool | 否 | `true` 时包含已完结的邀请 |
+| `include_terminal` | bool | no | `true` also returns finished invitations (accepted, declined, revoked, expired) |
 
-响应：200 `{"success":true,"data":{"invitations":[TenantInvitationResponse],"total":N}}`
+Response: 200 `{"success":true,"data":{"invitations":[TenantInvitationResponse],"total":N}}`
 
 ```bash
 curl $BASE/api/v1/me/invitations -H "Authorization: Bearer $TOKEN"
@@ -261,9 +270,9 @@ curl $BASE/api/v1/me/invitations -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/me/invitations/pending-count
 
-用途：待处理邀请计数（轻量轮询）。
+Purpose: count of pending invitations (lightweight polling).
 
-响应：200 `{"success":true,"data":{"pending_count":N}}`
+Response: 200 `{"success":true,"data":{"pending_count":N}}`
 
 ```bash
 curl $BASE/api/v1/me/invitations/pending-count -H "Authorization: Bearer $TOKEN"
@@ -271,9 +280,9 @@ curl $BASE/api/v1/me/invitations/pending-count -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/me/invitations/:inv_id/accept
 
-用途：接受邀请，写入成员关系。路径参数：`inv_id` 邀请 ID。无请求体。
+Purpose: accept an invitation and write the membership. Path parameter: `inv_id`, the invitation ID. No request body. A user without a workspace adopts the first accepted workspace as the default.
 
-响应：200 `{"success":true,"data":{"membership":{"tenant_id","role","status","joined_at"}}}`
+Response: 200 `{"success":true,"data":{"membership":{"tenant_id","role","status","joined_at"}}}`. Unknown invitation 404; not the invitee 403; not pending or expired 409.
 
 ```bash
 curl -X POST $BASE/api/v1/me/invitations/12/accept -H "Authorization: Bearer $TOKEN"
@@ -281,14 +290,14 @@ curl -X POST $BASE/api/v1/me/invitations/12/accept -H "Authorization: Bearer $TO
 
 ### POST /api/v1/me/invitations/:inv_id/decline
 
-用途：拒绝邀请。路径参数：`inv_id`。无请求体。
+Purpose: decline an invitation. Path parameter: `inv_id`. No request body.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`. Same error codes as accept.
 
 ```bash
 curl -X POST $BASE/api/v1/me/invitations/12/decline -H "Authorization: Bearer $TOKEN"
 ```
 
-## 实现参考
+## Implementation reference
 
-路由注册：`internal/router/routes_auth_tenant.go` 的 `RegisterAuthRoutes` 与 `RegisterMyInvitationRoutes`。Handler：`internal/handler/auth.go`、`internal/handler/auth_register_by_invite.go`、`internal/handler/tenant_invitation.go`。
+Route registration: `RegisterAuthRoutes` and `RegisterMyInvitationRoutes` in `internal/router/routes_auth_tenant.go`. Handlers: `internal/handler/auth.go`, `internal/handler/auth_register_by_invite.go`, `internal/handler/tenant_invitation.go`. Registration mode and the complex-password switch: `internal/config/config.go` (`AuthConfig`). Password policy: `internal/application/service/password_policy.go`. OIDC state signing: `internal/utils/oidc_state.go`.

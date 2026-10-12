@@ -1,24 +1,26 @@
-# API 参考：分块与标签
+# API reference: chunks and tags
 
-分块（chunk）是检索的最小单元，标签用于给文档分类。两组接口均属于知识库资源，与[知识库与知识](./02-api-knowledge.md)共用同一套权限规则：读为 Viewer+ 且对父 KB 有 read 权限（API key `retrieve`），写为「KB 创建者 OR Admin+」且有 write 权限（API key `ingest`），均受 API key 的 KB 白名单约束。
+A chunk is the smallest retrieval unit; tags classify documents inside a knowledge base. Both groups are knowledge base resources and share the permission rules of [Knowledge bases and knowledge](./02-api-knowledge.md): reads require Viewer+ and read access to the parent knowledge base (API key `retrieve`), writes require "KB creator OR Admin+" and write access (API key `ingest`), and every API key stays bound to its knowledge base allow-list.
 
-通用约定（Base URL、认证、错误码、分页）见 [API 总览](./01-api-overview.md)。
+Shared conventions (base URL, authentication, error codes, pagination) are in the [API overview](./01-api-overview.md).
 
-## 分块（/api/v1/chunks）
+## Chunks (/api/v1/chunks)
 
-Handler: `internal/handler/chunk.go`。读：Viewer+ 且父 KB read（API key `retrieve`/full）；写：KB 创建者 OR Admin+ 且父 KB write（API key `ingest`/full）。
+Handler: `internal/handler/chunk.go`. Read: Viewer+ and parent KB read (API key `retrieve` or full access). Write: KB creator OR Admin+ and parent KB write (API key `ingest` or full access). Routes addressed by `:knowledge_id/:id` also check that the chunk belongs to that knowledge item: an unknown chunk returns 404, a chunk owned by another knowledge item returns 403.
 
 ### GET /api/v1/chunks/:knowledge_id
 
-用途：知识的分块列表。
+Purpose: list the chunks of a knowledge item.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `page` | int | 否 | 默认 1 |
-| `page_size` | int | 否 | 默认 10，上限 100 |
-| `chunk_type` | string | 否 | 可重复，按分块类型过滤 |
+| `page` | int | no | Default 1 |
+| `page_size` | int | no | Default 10, capped at 100 |
+| `chunk_type` | string | no | Repeatable. Filters by chunk type; without it only `text` chunks are returned |
 
-响应：200 `{"success":true,"data":[Chunk],"total","page","page_size"}`
+Chunk types (`internal/types/chunk.go`): `text`, `parent_text`, `image_ocr`, `image_caption`, `image_vector`, `summary`, `entity`, `relationship`, `faq`, `web_search`, `table_summary`, `table_column`, `wiki_page`.
+
+Response: 200 `{"success":true,"data":[Chunk],"total","page","page_size"}`
 
 ```bash
 curl "$BASE/api/v1/chunks/k-1?page=1" -H "Authorization: Bearer $TOKEN"
@@ -26,9 +28,9 @@ curl "$BASE/api/v1/chunks/k-1?page=1" -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/chunks/by-id/:id
 
-用途：按 chunk ID 获取单个分块（无需 knowledge_id）。
+Purpose: fetch one chunk by chunk ID (no `knowledge_id` needed).
 
-响应：200 `{"success":true,"data":{Chunk}}`。`Chunk.source_locators` 是分块在原始文件中的位置，结构见 [API 概览](01-api-overview.md)中的 `source_locators` 说明。
+Response: 200 `{"success":true,"data":{Chunk}}`. `Chunk.source_locators` is the chunk's position in the original file; the structure is described under `source_locators` in the [API overview](01-api-overview.md).
 
 ```bash
 curl $BASE/api/v1/chunks/by-id/c-1 -H "Authorization: Bearer $TOKEN"
@@ -36,35 +38,35 @@ curl $BASE/api/v1/chunks/by-id/c-1 -H "Authorization: Bearer $TOKEN"
 
 ### PUT /api/v1/chunks/:knowledge_id/:id
 
-用途：编辑分块内容或启停状态（migration `000078` 起为带版本的乐观更新）。
+Purpose: edit a chunk's content or its enabled state (a versioned optimistic update since migration `000078`).
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `content` | string | 否 | 新内容，去除首尾空白后不得为空，长度上限 200000 字节 |
-| `is_enabled` | bool | 否 | 启用/停用该分块 |
-| `expected_revision` | int | 否 | 期望的 `content_revision`，用于乐观并发控制 |
+| `content` | string | no | New content; must not be empty after trimming, at most 200000 bytes |
+| `is_enabled` | bool | no | Enable or disable the chunk |
+| `expected_revision` | int | no | The `content_revision` you expect, for optimistic concurrency control |
 
-约束与副作用：
+Constraints and side effects:
 
-- 仅 `text` 类型分块可编辑，其它类型返回 400；
-- `expected_revision` 与当前 `content_revision` 不一致时返回 **409**（`Chunk was modified by another user; refresh and retry`）；
-- 不允许在编辑中引入源内容里没有的图片 URL；删除 Markdown 图片会同步停用对应的 OCR/caption 子分块；
-- 编辑成功后 `content_revision` +1，旧版本写入 `chunk_revisions` 表，`index_status` 依次经历 `processing` → `ready`；重建检索索引失败时行仍保存但 `index_status = failed`，可再次提交同样内容触发重试；
-- 子分块编辑会按偏移量回写父分块内容（父分块的 `source_content` 保持不可变）；
-- 内容或启停状态变化会入队一次文档摘要刷新。
+- Only `text` chunks can be edited. The intended answer for any other type is 400; the current handler maps the service error to 500 (`only text chunks can be edited`). The same applies to an empty or oversized `content` and to a new image URL (below).
+- When `expected_revision` differs from the current `content_revision` the response is **409** (`Chunk was modified by another user; refresh and retry`).
+- An edit may not introduce an image URL that the source content does not contain. Deleting a Markdown image disables the matching OCR, caption and image-vector child chunks (they are disabled, not deleted, so a revert can re-enable them).
+- A successful edit increments `content_revision`, stores the previous version in the `chunk_revisions` table and moves `index_status` through `processing` to `ready`. When rebuilding the retrieval index fails the row is still saved with `index_status = failed`; submitting the same content again retries the index.
+- Editing a child chunk writes the change back into the parent chunk by offset (the parent's `source_content` stays immutable). An edited chunk loses its `source_locators`.
+- A change to the content or the enabled state queues one document summary refresh.
 
-响应：200 `{"success":true,"data":{Chunk},"summary_status":"pending","description":"..."}`
+Response: 200 `{"success":true,"data":{Chunk},"summary_status":"pending","description":"..."}`
 
 ```bash
 curl -X PUT $BASE/api/v1/chunks/k-1/c-1 -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"content":"修正后的内容","expected_revision":2}'
+  -H 'Content-Type: application/json' -d '{"content":"Corrected content","expected_revision":2}'
 ```
 
 ### GET /api/v1/chunks/:knowledge_id/:id/revisions
 
-用途：分块的历史版本列表（`chunk_revisions` 表，按 revision 倒序）。
+Purpose: the chunk's version history (`chunk_revisions` table, newest revision first).
 
-响应：200 `{"success":true,"data":[{ChunkRevision}]}`，单条包含 `revision`、`content`、`is_enabled`、`editor_id`、`edit_source`、`edited_at`。
+Response: 200 `{"success":true,"data":[{ChunkRevision}]}`. Each item carries `revision`, `content`, `is_enabled`, `editor_id`, `edit_source`, `edited_at`.
 
 ```bash
 curl $BASE/api/v1/chunks/k-1/c-1/revisions -H "Authorization: Bearer $TOKEN"
@@ -72,14 +74,16 @@ curl $BASE/api/v1/chunks/k-1/c-1/revisions -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/chunks/:knowledge_id/:id/revert
 
-用途：回滚到某个历史版本。回滚本身也是一次新编辑：`content_revision` 继续递增，当前内容会被存为新的历史版本。
+Purpose: roll back to a historical revision. A revert is itself a new edit: `content_revision` keeps increasing and the current content is stored as a new historical revision.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `revision` | int | 是 | 目标历史版本号（非负） |
-| `expected_revision` | int | 否 | 乐观锁，语义同上，冲突返回 409 |
+| `revision` | int | yes | Target revision number (non-negative) |
+| `expected_revision` | int | no | Optimistic lock with the same meaning as above; a conflict returns 409 |
 
-响应：200 `{"success":true,"data":{Chunk},"summary_status":"...","description":"..."}`
+An unknown `revision` or a non-`text` chunk returns 400.
+
+Response: 200 `{"success":true,"data":{Chunk},"summary_status":"...","description":"..."}`
 
 ```bash
 curl -X POST $BASE/api/v1/chunks/k-1/c-1/revert -H "Authorization: Bearer $TOKEN" \
@@ -88,9 +92,9 @@ curl -X POST $BASE/api/v1/chunks/k-1/c-1/revert -H "Authorization: Bearer $TOKEN
 
 ### DELETE /api/v1/chunks/:knowledge_id/:id
 
-用途：删除单个分块。
+Purpose: delete one chunk.
 
-响应：200 `{"success":true,"message":"Chunk deleted"}`
+Response: 200 `{"success":true,"message":"Chunk deleted"}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/chunks/k-1/c-1 -H "Authorization: Bearer $TOKEN"
@@ -98,9 +102,9 @@ curl -X DELETE $BASE/api/v1/chunks/k-1/c-1 -H "Authorization: Bearer $TOKEN"
 
 ### DELETE /api/v1/chunks/:knowledge_id
 
-用途：删除知识下全部分块。
+Purpose: delete every chunk of a knowledge item.
 
-响应：200 `{"success":true,"message":"All chunks under knowledge deleted"}`
+Response: 200 `{"success":true,"message":"All chunks under knowledge deleted"}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/chunks/k-1 -H "Authorization: Bearer $TOKEN"
@@ -108,9 +112,9 @@ curl -X DELETE $BASE/api/v1/chunks/k-1 -H "Authorization: Bearer $TOKEN"
 
 ### DELETE /api/v1/chunks/by-id/:id/questions
 
-用途：删除该分块下某条生成的问题。请求体：`{"question_id":"..."}`（`binding:"required"`）。
+Purpose: delete one generated question of the chunk. Request body: `{"question_id":"..."}` (`binding:"required"`).
 
-响应：200 `{"success":true,"message":"Generated question deleted"}`
+Response: 200 `{"success":true,"message":"Generated question deleted"}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/chunks/by-id/c-1/questions -H "Authorization: Bearer $TOKEN" \
@@ -119,34 +123,34 @@ curl -X DELETE $BASE/api/v1/chunks/by-id/c-1/questions -H "Authorization: Bearer
 
 ### PUT /api/v1/chunks/by-id/:id/questions
 
-用途：新增或修改该分块的一条生成问题。请求体：`{"question":"...","question_id":"..."}`，`question` 必填；`question_id` 留空表示新增。
+Purpose: add or edit one generated question of the chunk. Request body: `{"question":"...","question_id":"..."}`; `question` is required, an empty `question_id` adds a new question, an unknown `question_id` returns 400. The saved question records the chunk's current `content_revision`.
 
-响应：200 `{"success":true,"data":{GeneratedQuestion}}`
+Response: 200 `{"success":true,"data":{GeneratedQuestion}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/chunks/by-id/c-1/questions -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"question_id":"q-1","question":"WeKnora 如何配置向量库？"}'
+  -H 'Content-Type: application/json' -d '{"question_id":"q-1","question":"How do I configure the vector store in AI KB?"}'
 ```
 
 ### POST /api/v1/chunks/by-id/:id/questions/regenerate
 
-用途：基于分块当前内容重新生成检索问题。内容编辑后原有问题不会被删除，而是标记为「过期」（revision 与当前正文不匹配），可用本接口刷新。
+Purpose: regenerate the retrieval questions from the chunk's current content. A content edit does not delete the existing questions; they are marked stale (their revision no longer matches the current body) and this endpoint refreshes them. Only `text` chunks qualify, and the knowledge base needs a summary model; otherwise 400.
 
-响应：200 `{"success":true,"data":[{GeneratedQuestion}]}`
+Response: 200 `{"success":true,"data":[{GeneratedQuestion}]}`
 
 ```bash
 curl -X POST $BASE/api/v1/chunks/by-id/c-1/questions/regenerate -H "Authorization: Bearer $TOKEN"
 ```
 
-## 标签（/api/v1/knowledge-bases/:id/tags）
+## Tags (/api/v1/knowledge-bases/:id/tags)
 
-Handler: `internal/handler/tag.go`。读：Viewer+ + KB read（API key `retrieve`/full）；写：KB 创建者 OR Admin+ + KB write（API key `ingest`/full）。
+Handler: `internal/handler/tag.go`. Read: Viewer+ and KB read (API key `retrieve` or full access). Write: KB creator OR Admin+ and KB write (API key `ingest` or full access).
 
 ### GET /api/v1/knowledge-bases/:id/tags
 
-用途：标签列表。查询参数：`page`、`page_size`、`keyword`（均可选）。
+Purpose: list tags. Query parameters: `page`, `page_size` (at most 1000), `keyword` (all optional).
 
-响应：200 `{"success":true,"data":[KnowledgeTag]}`
+Response: 200 `{"success":true,"data":{"total","page","page_size","data":[KnowledgeTagWithStats]}}`. Each item is a `KnowledgeTag` plus `knowledge_count` and `chunk_count`.
 
 ```bash
 curl $BASE/api/v1/knowledge-bases/kb-1/tags -H "Authorization: Bearer $TOKEN"
@@ -154,71 +158,71 @@ curl $BASE/api/v1/knowledge-bases/kb-1/tags -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/knowledge-bases/:id/tags
 
-用途：创建标签。
+Purpose: create a tag.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | 是（`binding:"required"`） | 标签名 |
-| `color` | string | 否 | 颜色 |
-| `sort_order` | int | 否 | 排序 |
+| `name` | string | yes (`binding:"required"`) | Tag name; a name already used in the knowledge base returns 409 |
+| `color` | string | no | Color |
+| `sort_order` | int | no | Sort order |
 
-响应：200 `{"success":true,"data":{KnowledgeTag}}`
+Response: 200 `{"success":true,"data":{KnowledgeTag}}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/tags -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"售后"}'
+  -H 'Content-Type: application/json' -d '{"name":"After-sales"}'
 ```
 
 ### PUT /api/v1/knowledge-bases/:id/tags/:tag_id
 
-用途：更新标签（`tag_id` 支持 UUID 或整数 seq_id）。请求体：`name`/`color`/`sort_order`（指针字段，均可选）。
+Purpose: update a tag (`tag_id` accepts the UUID or the integer `seq_id`). Request body: `name`, `color`, `sort_order` (pointer fields, all optional; an empty `name` returns 400).
 
-响应：200 `{"success":true,"data":{KnowledgeTag}}`
+Response: 200 `{"success":true,"data":{KnowledgeTag}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/tags/t-1 -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"售后支持"}'
+  -H 'Content-Type: application/json' -d '{"name":"After-sales support"}'
 ```
 
 ### DELETE /api/v1/knowledge-bases/:id/tags/:tag_id
 
-用途：删除标签。查询参数：`force`（bool，强制删除被引用的标签）、`content_only`（bool，仅删除标签下的内容、保留标签）。请求体（可选）：`{"exclude_ids":[int64]}`，列出删除时保留的 FAQ 条目 seq_id。
+Purpose: delete a tag. Query parameters: `force` (bool, delete a tag that is still referenced), `content_only` (bool, delete only the content under the tag and keep the tag). Optional request body: `{"exclude_ids":[int64]}`, the `seq_id` values of FAQ entries to keep.
 
-请求体格式不合法或 ID 非正整数返回 400；ID 不存在返回 404；ID 不属于当前知识库的 FAQ 条目返回 403。
+A malformed body or a non-positive ID returns 400; an unknown ID returns 404; an ID that is not an FAQ entry of this knowledge base returns 403.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X DELETE "$BASE/api/v1/knowledge-bases/kb-1/tags/t-1?force=true" -H "Authorization: Bearer $TOKEN"
 ```
 
-## 分块调试
+## Chunk debugging
 
 ### POST /api/v1/chunker/preview
 
-用途：无状态分块预览（KB 编辑器调试面板）。权限：Viewer+；API key `retrieve`/`ingest`/full。Handler: `internal/handler/chunker_debug.go`
+Purpose: stateless chunking preview (the debug panel of the knowledge base editor). Permission: Viewer+; API key `retrieve`, `ingest` or full access. Handler: `internal/handler/chunker_debug.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `text` | string | 是（代码校验非空，≤64k 字符） | 样例文本 |
-| `chunking_config.chunk_size` | int | 否 | 分块字符数 |
-| `chunking_config.chunk_overlap` | int | 否 | 重叠 |
-| `chunking_config.separators` | []string | 否 | 分隔符 |
-| `chunking_config.strategy` | string | 否 | `auto/heading/heuristic/recursive/legacy` |
-| `chunking_config.token_limit` | int | 否 | token 上限 |
-| `chunking_config.languages` | []string | 否 | 语言提示 |
-| `chunking_config.enable_parent_child` | bool | 否 | 按父子分块试切，返回的是子块（与检索粒度一致） |
-| `chunking_config.parent_chunk_size` / `child_chunk_size` | int | 否 | 父/子块大小，缺省 4096 / 384 |
+| `text` | string | yes (checked in code: non-empty, at most 64k characters) | Sample text |
+| `chunking_config.chunk_size` | int | no | Characters per chunk |
+| `chunking_config.chunk_overlap` | int | no | Overlap |
+| `chunking_config.separators` | []string | no | Separators |
+| `chunking_config.strategy` | string | no | `auto`, `heading`, `heuristic`, `recursive` or `legacy` |
+| `chunking_config.token_limit` | int | no | Token limit |
+| `chunking_config.languages` | []string | no | Language hints |
+| `chunking_config.enable_parent_child` | bool | no | Split with the parent-child strategy; the returned chunks are the children (the retrieval granularity) |
+| `chunking_config.parent_chunk_size` / `child_chunk_size` | int | no | Parent and child sizes, defaults 4096 and 384 |
 
-样例文本中的内联 HTML `<table>` 会先转换为 Markdown 表格，与入库时的处理一致。
+Inline HTML `<table>` elements in the sample are converted to Markdown tables first, as during import. The text is neither stored nor embedded nor logged.
 
-响应：200 `{"success":true,"data":{"selected_tier","tier_chain","rejected","profile","chunks":[...],"stats":{count,avg_chars,min_chars,max_chars,stddev_chars,truncated_to}}}`；文本超长 413；分块超时（5s）504。
+Response: 200 `{"success":true,"data":{"selected_tier","tier_chain","rejected","profile","chunks":[{"seq","start","end","size_chars","size_tokens_approx","context_header","content"}],"stats":{count,avg_chars,min_chars,max_chars,stddev_chars,truncated_to}}}`. At most 500 chunks are returned; when the split produced more, `stats.truncated_to` holds the full count and the stats still describe the full set. Text over the limit returns 413, a split that exceeds 5 seconds returns 504; these error bodies are `{"success":false,"error":"..."}` rather than the standard error envelope.
 
 ```bash
 curl -X POST $BASE/api/v1/chunker/preview -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"text":"# 标题\n正文...","chunking_config":{"chunk_size":512}}'
+  -H 'Content-Type: application/json' -d '{"text":"# Title\nBody...","chunking_config":{"chunk_size":512}}'
 ```
 
-## 实现参考
+## Implementation reference
 
-路由注册：`internal/router/routes_knowledge.go` 的 `RegisterChunkRoutes`、`RegisterKnowledgeTagRoutes`、`RegisterChunkerDebugRoutes`。
+Route registration: `RegisterChunkRoutes`, `RegisterKnowledgeTagRoutes` and `RegisterChunkerDebugRoutes` in `internal/router/routes_knowledge.go`.

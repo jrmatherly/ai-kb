@@ -1,36 +1,36 @@
-# API 参考：租户（空间）与成员
+# API reference: workspaces (tenants) and members
 
-管理工作空间、成员、邀请、API Key 和审计日志。操作作用于当前活跃空间，跨空间访问按接口权限校验。
+Manage workspaces, members, invitations, API keys and the audit log. Operations act on the current active workspace; cross-workspace access is checked per route.
 
-所有 `/tenants/:id/*` 路由在组级挂载 `PathTenantMatch()`（`internal/middleware/access.go`）：URL 中的 `:id` 必须等于当前活跃空间（跨空间超管例外），防止越权操作他人空间。
+Every `/tenants/:id/*` route carries `PathTenantMatch()` at the group level (`internal/middleware/access.go`): the `:id` in the URL must equal the current active workspace (cross-workspace superusers are exempt), so an Owner of workspace A cannot operate on workspace B by editing the URL.
 
-租户 `memory_config` 配置字段及个人记忆接口见[长期记忆 API](02-api-memory.md)。空间管理员更新配置时提交要保留的完整对象。
+The workspace `memory_config` fields and the personal memory endpoints are on [Long-term memory API](02-api-memory.md). A workspace admin who updates a configuration submits the complete object to keep.
 
-## 空间生命周期
+## Workspace lifecycle
 
 ### POST /api/v1/tenants
 
-用途：创建空间（自助开新工作区；调用者自动成为 Owner）。权限：任何已登录用户（可无空间）；API key 仅平台 key 且具 `system_tenants_manage`。Handler: `internal/handler/tenant.go`
+Purpose: create a workspace (self-service; the caller becomes its Owner). Permission: any signed-in user, including one with no workspace yet; API keys only platform keys with `system_tenants_manage`. Handler: `internal/handler/tenant.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | 是（`binding:"required,min=1,max=128"`） | 空间名称 |
-| `description` | string | 否（`binding:"max=512"`） | 描述 |
+| `name` | string | yes (`binding:"required,min=1,max=128"`) | Workspace name |
+| `description` | string | no (`binding:"max=512"`) | Description |
 
-跨空间超管可提交完整 `types.Tenant`（含 `storage_quota`、`status` 等）。
+A cross-workspace superuser or a platform key may submit a full `types.Tenant` (with `storage_quota`, `status` and so on); a client-supplied `id` is ignored.
 
-响应：201 `{"success":true,"data":{Tenant}}`（配置允许时可能携带 `api_key`）。自助创建被禁用返回 403（code 2005），超配额返回 429。
+Response: 201 `{"success":true,"data":{Tenant}}` (`data.api_key` carries a plaintext full-access key when `tenant.auto_create_api_key` / `AIKB_TENANT_AUTO_CREATE_API_KEY` is on; off by default). Self-service creation disabled (`tenant.self_service_creation_enabled` / `AIKB_TENANT_SELF_SERVICE_CREATION_ENABLED`) returns 403 (code 2005). A regular user may own at most 10 workspaces by default (`AIKB_TENANT_MAX_OWNED_PER_USER`, `tenant.max_owned_per_user`); over the cap returns 429.
 
 ```bash
 curl -X POST $BASE/api/v1/tenants -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"我的空间"}'
+  -H 'Content-Type: application/json' -d '{"name":"My workspace"}'
 ```
 
 ### GET /api/v1/tenants
 
-用途：列出我可访问的空间。权限：已登录；API key 需 `manage_tenant_settings` 或 full-access。Handler: `internal/handler/tenant.go`
+Purpose: the current active workspace, as a one-element list. Permission: signed in; API key `manage_tenant_settings` or full access. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"data":{"items":[TenantResponse]}}`
+Response: 200 `{"success":true,"data":{"items":[TenantResponse]}}`
 
 ```bash
 curl $BASE/api/v1/tenants -H "Authorization: Bearer $TOKEN"
@@ -38,9 +38,9 @@ curl $BASE/api/v1/tenants -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/tenants/all
 
-用途：列出全部空间（跨空间超管）。权限：`CrossTenant()`（`CanAccessAllTenants` 且集群开启 `EnableCrossTenantAccess`）；平台 key 需 `system_tenants_read|manage`。Handler: `internal/handler/tenant.go`
+Purpose: list every workspace (cross-workspace superuser). Permission: `CrossTenant()` (`CanAccessAllTenants` on the user and `EnableCrossTenantAccess` on the cluster); platform keys need `system_tenants_read` or `system_tenants_manage`. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"data":{"items":[TenantResponse]}}`
+Response: 200 `{"success":true,"data":{"items":[TenantResponse]}}`
 
 ```bash
 curl $BASE/api/v1/tenants/all -H "Authorization: Bearer $TOKEN"
@@ -48,15 +48,15 @@ curl $BASE/api/v1/tenants/all -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/tenants/search
 
-用途：按关键字搜索空间（跨空间超管）。权限：同上。Handler: `internal/handler/tenant.go`
+Purpose: search workspaces by keyword (cross-workspace superuser). Permission: as above. Handler: `internal/handler/tenant.go`
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `keyword` | string | 否 | 关键字 |
-| `tenant_id` | string | 否 | 精确空间 ID |
-| `page` / `page_size` | int | 否 | 分页（默认 1/20，上限 100） |
+| `keyword` | string | no | Keyword |
+| `tenant_id` | string | no | Exact workspace ID |
+| `page` / `page_size` | int | no | Pagination (default 1/20, maximum 100) |
 
-响应：200 `{"success":true,"data":{"items":[...],"total","page","page_size"}}`
+Response: 200 `{"success":true,"data":{"items":[...],"total","page","page_size"}}`
 
 ```bash
 curl "$BASE/api/v1/tenants/search?keyword=demo&page=1" -H "Authorization: Bearer $TOKEN"
@@ -64,9 +64,9 @@ curl "$BASE/api/v1/tenants/search?keyword=demo&page=1" -H "Authorization: Bearer
 
 ### GET /api/v1/tenants/:id
 
-用途：空间详情。权限：Viewer+；平台 key 需 `system_tenants_read|manage`。Handler: `internal/handler/tenant.go`
+Purpose: workspace detail. Permission: Viewer+; platform keys need `system_tenants_read` or `system_tenants_manage`. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"data":{TenantResponse}}`
+Response: 200 `{"success":true,"data":{TenantResponse}}`
 
 ```bash
 curl $BASE/api/v1/tenants/1 -H "Authorization: Bearer $TOKEN"
@@ -74,39 +74,39 @@ curl $BASE/api/v1/tenants/1 -H "Authorization: Bearer $TOKEN"
 
 ### PUT /api/v1/tenants/:id
 
-用途：更新空间配置。权限：Owner；平台 key 需 `system_tenants_manage`。Handler: `internal/handler/tenant.go`
+Purpose: update the workspace. Permission: Owner; platform keys need `system_tenants_manage`. Only `name` and `description` are writable here; quota, status and configuration live behind dedicated endpoints. Handler: `internal/handler/tenant.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | *string | 否（`binding:"omitempty,min=1,max=128"`） | 新名称 |
-| `description` | *string | 否（`binding:"omitempty,max=512"`） | 新描述 |
+| `name` | *string | no (`binding:"omitempty,min=1,max=128"`) | New name |
+| `description` | *string | no (`binding:"omitempty,max=512"`) | New description |
 
-响应：200 `{"success":true,"data":{TenantResponse}}`
+Response: 200 `{"success":true,"data":{TenantResponse}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/tenants/1 -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"新名字"}'
+  -H 'Content-Type: application/json' -d '{"name":"New name"}'
 ```
 
 ### DELETE /api/v1/tenants/:id
 
-用途：删除空间。权限：Owner；平台 key 需 `system_tenants_manage`。空间记录与全部成员关系被软删除，成员随即失去访问；空间内的知识库、模型等数据不会被立即物理清除，已删除空间排队中的 Wiki 任务不再调用模型。Handler: `internal/handler/tenant.go`
+Purpose: delete the workspace. Permission: Owner; platform keys need `system_tenants_manage`. The workspace row and all of its memberships are soft-deleted in one transaction and members lose access at once; knowledge bases, models and other data inside it are not purged immediately, and queued Wiki tasks for a deleted workspace no longer call the model. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"message":"Workspace deleted successfully"}`
+Response: 200 `{"success":true,"message":"Workspace deleted successfully"}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/tenants/1 -H "Authorization: Bearer $TOKEN"
 ```
 
-## 空间 KV 配置
+## Workspace KV configuration
 
-`:key` 为配置键而非空间 ID（空间取自认证上下文），可选值：`web-search-config`、`prompt-templates`、`parser-engine-config`、`storage-engine-config`、`chat-history-config`、`retrieval-config`、`memory-config`。
+`:key` is a configuration key, not a workspace ID (the workspace comes from the authentication context). Keys: `web-search-config`, `prompt-templates` (GET only), `parser-engine-config`, `storage-engine-config`, `chat-history-config`, `retrieval-config`, `memory-config`. An unknown key returns 400. `web-search-config`, `parser-engine-config` and `storage-engine-config` carry integration secrets, so both GET and PUT on them need Admin+ (or a full-access key, or a scoped key with the matching capability).
 
 ### GET /api/v1/tenants/kv/:key
 
-用途：读取空间级 KV 配置。权限：Viewer+；API key 需 `manage_tenant_settings` 或 full-access。Handler: `internal/handler/tenant.go`
+Purpose: read a workspace-level KV configuration. Permission: Viewer+ (Admin+ for the three secret-bearing keys above); API key `manage_tenant_settings` or full access. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"data":{...对应配置对象...}}`
+Response: 200 `{"success":true,"data":{...the configuration object for the key...}}`
 
 ```bash
 curl $BASE/api/v1/tenants/kv/retrieval-config -H "Authorization: Bearer $TOKEN"
@@ -114,22 +114,22 @@ curl $BASE/api/v1/tenants/kv/retrieval-config -H "Authorization: Bearer $TOKEN"
 
 ### PUT /api/v1/tenants/kv/:key
 
-用途：更新空间级 KV 配置。权限：Admin+；API key 需 `manage_tenant_settings` 或 full-access。请求体：与 `:key` 对应的配置 JSON 对象。Handler: `internal/handler/tenant.go`
+Purpose: update a workspace-level KV configuration. Permission: Admin+; API key `manage_tenant_settings` or full access. Request body: the JSON configuration object for `:key`. For `memory-config`, an unknown `write_mode` (anything but `explicit_only` or `auto`) returns 400 and `extract_delay_seconds` must be 0 to 3600. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"message":"Configuration updated"}`
+Response: 200 `{"success":true,"message":"Configuration updated"}`
 
 ```bash
 curl -X PUT $BASE/api/v1/tenants/kv/web-search-config -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"enabled":true}'
 ```
 
-## API Key 与 API 主体
+## API keys and the API principal
 
 ### GET /api/v1/tenants/:id/api-keys
 
-用途：列出空间 API key（掩码显示）。权限：Owner，仅 JWT（API key 默认拒绝）。Handler: `internal/handler/tenant.go`
+Purpose: list the workspace's active API keys (revoked keys are omitted). Permission: Owner, JWT only (API keys are denied by default). Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"data":[{id,scope_type,name,api_key(掩码),full_access,knowledge_base_ids,capabilities,last_used_at,expires_at,created_at}]}`
+Response: 200 `{"success":true,"data":[{id,scope_type,name,api_key,full_access,knowledge_base_ids,capabilities,last_used_at,expires_at,created_at}]}`. `api_key` is the key itself (stored AES-encrypted at rest and decrypted on read, not masked).
 
 ```bash
 curl $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN"
@@ -137,17 +137,17 @@ curl $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/tenants/:id/api-keys
 
-用途：创建空间 API key（明文仅返回一次）。权限：Owner，仅 JWT。Handler: `internal/handler/tenant.go`
+Purpose: create a workspace API key. Permission: Owner, JWT only. Handler: `internal/handler/tenant.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | 是 | key 名称 |
-| `full_access` | bool | 否 | 空间全权 key（默认 false） |
-| `knowledge_base_ids` | []string | 否 | KB 白名单（scoped key） |
-| `capabilities` | []string | 否 | capability 列表（见总览） |
-| `expires_at_unix` | *int64 | 否 | 过期时间戳 |
+| `name` | string | yes | Key name |
+| `full_access` | bool | no | Full workspace access (default false) |
+| `knowledge_base_ids` | []string | no | Knowledge base allow-list (scoped key); an unknown ID returns 400, one from another workspace 403 |
+| `capabilities` | []string | no | Capability list (see the [API overview](./01-api-overview.md)); unknown entries are dropped |
+| `expires_at_unix` | *int64 | no | Expiry timestamp; must be in the future |
 
-响应：201 `{"success":true,"data":{...,"api_key":"<明文>","token":"<明文>"}}`
+Response: 201 `{"success":true,"data":{...,"api_key":"<key>","token":"<key>"}}` (both fields carry the same plaintext key).
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN" \
@@ -157,9 +157,9 @@ curl -X POST $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN" \
 
 ### PUT /api/v1/tenants/:id/api-keys/:key_id
 
-Owner，仅 JWT。更新已有 Key 的 name、full_access、knowledge_base_ids、capabilities、expires_at_unix，授权字段按整份配置提交；不是只改一个字段的 PATCH。expires_at_unix 省略或 null 会清除已有到期时间。更改权限后使用同一 token，新授权在后续认证时生效，不重新返回明文。
+Owner, JWT only. Updates an existing key's `name`, `full_access`, `knowledge_base_ids`, `capabilities` and `expires_at_unix`. The grant fields are submitted as a whole; this is not a one-field PATCH. An omitted or `null` `expires_at_unix` clears the existing expiry. A client that keeps using the same token gets the new grants on its next authenticated request. Handler: `internal/handler/tenant.go`
 
-返回 200 `{success,data:APIKeyResponse}`，Key 脱敏；非法能力/知识库范围返回 400，不存在返回 404。
+Response: 200 `{"success":true,"data":{APIKeyResponse}}` (same fields as the list). Invalid capabilities or an unknown knowledge base return 400, a knowledge base outside the workspace 403, a missing key 404.
 
 ```bash
 curl -X PUT "$BASE/api/v1/tenants/1/api-keys/5" \
@@ -169,9 +169,9 @@ curl -X PUT "$BASE/api/v1/tenants/1/api-keys/5" \
 
 ### DELETE /api/v1/tenants/:id/api-keys/:key_id
 
-用途：删除 API key。权限：Owner，仅 JWT。路径参数：`key_id`。
+Purpose: revoke an API key. Permission: Owner, JWT only. Path parameter: `key_id`. A missing key returns 404.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/tenants/1/api-keys/5 -H "Authorization: Bearer $TOKEN"
@@ -179,9 +179,9 @@ curl -X DELETE $BASE/api/v1/tenants/1/api-keys/5 -H "Authorization: Bearer $TOKE
 
 ### GET /api/v1/tenants/:id/api-principal-config
 
-用途：读取 API 外部用户主体配置。权限：Owner，仅 JWT。Handler: `internal/handler/tenant.go`
+Purpose: read how `X-API-Key` requests map to an external user principal. Permission: Owner, JWT only. Handler: `internal/handler/tenant.go`
 
-响应：200 `{"success":true,"data":{"mode":"tenant|direct|signed_token","direct_header_name","signed_token_header_name","require_direct_header","has_hmac_secret"}}`
+Response: 200 `{"success":true,"data":{"mode":"tenant|direct_header|signed_token","direct_header_name":"X-External-User-ID","signed_token_header_name":"X-External-User-Token","require_direct_header","has_hmac_secret"}}`. The header names are fixed; the HMAC secret is never returned.
 
 ```bash
 curl $BASE/api/v1/tenants/1/api-principal-config -H "Authorization: Bearer $TOKEN"
@@ -189,15 +189,15 @@ curl $BASE/api/v1/tenants/1/api-principal-config -H "Authorization: Bearer $TOKE
 
 ### PUT /api/v1/tenants/:id/api-principal-config
 
-用途：更新 API 外部用户主体配置。权限：Owner，仅 JWT。
+Purpose: update the external user principal configuration. Permission: Owner, JWT only.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `mode` | string | 是 | `tenant` / `direct` / `signed_token` |
-| `require_direct_header` | bool | 否 | direct 模式是否强制 Header |
-| `hmac_secret` | *string | 否 | signed_token 模式密钥（传 `***` 保留原值） |
+| `mode` | string | no | `tenant` (default when empty) / `direct_header` / `signed_token`; any other value returns 400 |
+| `require_direct_header` | bool | no | In `direct_header` mode, reject requests without the header |
+| `hmac_secret` | *string | no | Signing secret for `signed_token` mode (send `***` to keep the stored value); required when `mode` is `signed_token` |
 
-响应：200，同 GET。
+Response: 200, same shape as GET.
 
 ```bash
 curl -X PUT $BASE/api/v1/tenants/1/api-principal-config -H "Authorization: Bearer $TOKEN" \
@@ -206,34 +206,34 @@ curl -X PUT $BASE/api/v1/tenants/1/api-principal-config -H "Authorization: Beare
 
 ### POST /api/v1/tenants/:id/api-principal-test-token
 
-用途：签发用于测试的外部用户 JWT。权限：Owner，仅 JWT。
+Purpose: issue an external user JWT for testing. Permission: Owner, JWT only. Requires `signed_token` mode with a stored secret (otherwise 400).
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `external_user_id` | string | 是 | 外部用户 ID（≤128 字符） |
-| `expires_in_seconds` | int | 否 | 1-3600，默认 900 |
+| `external_user_id` | string | yes | External user ID (at most 128 characters, no control characters) |
+| `expires_in_seconds` | int | no | 1 to 3600, default 900 |
 
-响应：200 `{"success":true,"data":{"token","header_name","expires_in_seconds","expires_at_unix","external_user_id"}}`
+Response: 200 `{"success":true,"data":{"token","header_name":"X-External-User-Token","expires_in_seconds","expires_at_unix","external_user_id"}}`
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/api-principal-test-token -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"external_user_id":"u-123"}'
 ```
 
-## 成员管理（/tenants/:id/members）
+## Member management (/tenants/:id/members)
 
-Handler: `internal/handler/tenant_member.go`。API key 需 `manage_members` 或 full-access。
+Handler: `internal/handler/tenant_member.go`. API key `manage_members` or full access; an API key can never assign the `owner` role (403). The roles are `owner`, `admin`, `contributor` and `viewer`; see [RBAC roles](../03-features/01-tenant-auth.md#rbac-roles-ownership-and-the-guard-matrix).
 
 ### GET /api/v1/tenants/:id/members
 
-用途：成员列表。权限：Viewer+。
+Purpose: member list. Permission: Viewer+.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `q` | string | 否 | 邮箱/用户名过滤 |
-| `page` / `page_size` | int | 否 | 分页 |
+| `q` | string | no | Filter by email or username |
+| `page` / `page_size` | int | no | Pagination (default 1/20, maximum 100; out of range returns 400) |
 
-响应：200 `{"success":true,"data":{"members":[{user_id,email,username,avatar,role,status,invited_by,joined_at}],"total","page","page_size"}}`
+Response: 200 `{"success":true,"data":{"members":[{user_id,email,username,avatar,role,status,invited_by,joined_at}],"total","page","page_size"}}`
 
 ```bash
 curl $BASE/api/v1/tenants/1/members -H "Authorization: Bearer $TOKEN"
@@ -241,14 +241,14 @@ curl $BASE/api/v1/tenants/1/members -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/tenants/:id/members
 
-用途：直接添加成员。权限：Owner。
+Purpose: add a member directly. Permission: Owner.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `email` | string | 是（`binding:"required,email"`） | 成员邮箱（须已注册） |
-| `role` | string | 是（`binding:"required"`） | `owner/admin/contributor/viewer` |
+| `email` | string | yes (`binding:"required,email"`) | Member email (must already be registered; otherwise 404) |
+| `role` | string | yes (`binding:"required"`) | `owner` / `admin` / `contributor` / `viewer` |
 
-响应：201 `{"success":true,"data":{成员对象}}`
+Response: 201 `{"success":true,"data":{member object, same shape as the list}}`. An existing member returns 409.
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/members -H "Authorization: Bearer $TOKEN" \
@@ -257,9 +257,9 @@ curl -X POST $BASE/api/v1/tenants/1/members -H "Authorization: Bearer $TOKEN" \
 
 ### PUT /api/v1/tenants/:id/members/:user_id
 
-用途：修改成员角色。权限：Owner。请求体：`{"role":"admin"}`（`binding:"required"`）。
+Purpose: change a member's role. Permission: Owner. Request body: `{"role":"admin"}` (`binding:"required"`).
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X PUT $BASE/api/v1/tenants/1/members/u-123 -H "Authorization: Bearer $TOKEN" \
@@ -268,9 +268,9 @@ curl -X PUT $BASE/api/v1/tenants/1/members/u-123 -H "Authorization: Bearer $TOKE
 
 ### DELETE /api/v1/tenants/:id/members/:user_id
 
-用途：移除成员。权限：Owner。
+Purpose: remove a member. Permission: Owner.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/tenants/1/members/u-123 -H "Authorization: Bearer $TOKEN"
@@ -278,28 +278,28 @@ curl -X DELETE $BASE/api/v1/tenants/1/members/u-123 -H "Authorization: Bearer $T
 
 ### POST /api/v1/tenants/:id/leave
 
-用途：退出空间（任何成员可自行退出；服务层拒绝导致空间无 Owner 的退出）。权限：Viewer+，仅 JWT。
+Purpose: leave the workspace (any member can leave on their own; the service refuses when the workspace would be left without an Owner, 409). Permission: Viewer+, JWT only.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/leave -H "Authorization: Bearer $TOKEN"
 ```
 
-## 空间邀请（/tenants/:id/invitations 与 invite-links）
+## Workspace invitations (/tenants/:id/invitations and invite-links)
 
-Handler: `internal/handler/tenant_invitation.go`、`internal/handler/tenant_invite_link.go`。API key 需 `manage_members` 或 full-access。
+Handlers: `internal/handler/tenant_invitation.go`, `internal/handler/tenant_invite_link.go`. API key `manage_members` or full access; an API key cannot invite as `owner` (403). Invitations expire after 7 days by default (`AIKB_INVITATION_TTL`, a Go duration or a number of seconds). Share links are described in [Shared invitation links](../03-features/01-tenant-auth.md#shared-invitation-links-invite-link).
 
 ### GET /api/v1/tenants/:id/invitations
 
-用途：空间邀请列表。权限：Viewer+。
+Purpose: the workspace's invitations. Permission: Viewer+.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `include_terminal` | bool | 否 | 包含已完结邀请 |
-| `page` / `page_size` | int | 否 | 分页 |
+| `include_terminal` | bool | no | Also return accepted, declined, revoked and expired rows |
+| `page` / `page_size` | int | no | Pagination |
 
-响应：200 `{"success":true,"data":{"invitations":[{id,tenant_id,invitee_email,inviter_email,role,status,message,expires_at,is_share_link,accepted_count,...}],"total","page","page_size"}}`
+Response: 200 `{"success":true,"data":{"invitations":[{id,tenant_id,tenant_name,invitee_user_id,invitee_email,invitee_name,invited_by,inviter_email,inviter_name,role,status,message,expires_at,responded_at,created_at,invite_url,is_share_link,accepted_count}],"total","page","page_size"}}`. `invite_url` is present only on pending share-link rows.
 
 ```bash
 curl $BASE/api/v1/tenants/1/invitations -H "Authorization: Bearer $TOKEN"
@@ -307,15 +307,15 @@ curl $BASE/api/v1/tenants/1/invitations -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/tenants/:id/invitations
 
-用途：邀请成员（被邀请人在 `/me/invitations` 确认后才入库）。权限：Owner。
+Purpose: invite a member (the invitee joins after confirming under `/me/invitations`; with `tenant.auto_accept_invitation` / `AIKB_TENANT_AUTO_ACCEPT_INVITATION` on, the registered invitee is added at once). Permission: Owner.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `email` | string | 是（`binding:"required,email"`） | 被邀请邮箱 |
-| `role` | string | 是（`binding:"required"`） | 授予角色 |
-| `message` | string | 否 | 附言 |
+| `email` | string | yes (`binding:"required,email"`) | Invitee email (must already be registered; otherwise 404) |
+| `role` | string | yes (`binding:"required"`) | Role granted |
+| `message` | string | no | Note to the invitee |
 
-响应：201 `{"success":true,"data":{TenantInvitationResponse}}`
+Response: 201 `{"success":true,"data":{TenantInvitationResponse}}`. An existing member or a pending invitation for the same user returns 409.
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/invitations -H "Authorization: Bearer $TOKEN" \
@@ -324,9 +324,9 @@ curl -X POST $BASE/api/v1/tenants/1/invitations -H "Authorization: Bearer $TOKEN
 
 ### DELETE /api/v1/tenants/:id/invitations/:inv_id
 
-用途：撤销邀请。权限：Owner。
+Purpose: revoke an invitation. Permission: Owner.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/tenants/1/invitations/12 -H "Authorization: Bearer $TOKEN"
@@ -334,37 +334,37 @@ curl -X DELETE $BASE/api/v1/tenants/1/invitations/12 -H "Authorization: Bearer $
 
 ### POST /api/v1/tenants/:id/invite-links
 
-用途：创建分享链接（多次可用的注册邀请链接）。权限：Owner。Handler: `internal/handler/tenant_invite_link.go`
+Purpose: create a share link (a reusable registration invitation). Permission: Owner. Handler: `internal/handler/tenant_invite_link.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `role` | string | 是（`binding:"required"`） | 链接授予的角色 |
-| `message` | string | 否 | 附言 |
+| `role` | string | yes (`binding:"required"`) | Role granted by the link |
+| `message` | string | no | Note |
 
-响应：201 `{"success":true,"data":{id,token,invite_url,role,status,expires_at,is_share_link:true,accepted_count}}`
+Response: 201 `{"success":true,"data":{id,tenant_id,invite_url,role,status,expires_at,created_at,is_share_link:true,accepted_count}}` (the raw token appears only inside `invite_url`). `invite_url` is `<frontend base URL>/register?token=<token>`.
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/invite-links -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"role":"viewer"}'
 ```
 
-## 审计日志
+## Audit log
 
-Handler: `internal/handler/audit_log.go`。游标分页。
+Handler: `internal/handler/audit_log.go`. Cursor pagination: rows are sorted by `id` descending, `next_cursor` is the smallest `id` on the page (0 when nothing older remains) and is passed back as `after_id`.
 
 ### GET /api/v1/tenants/:id/audit-log
 
-用途：空间审计日志（含被拒绝操作记录）。权限：Admin+，仅 JWT。
+Purpose: the workspace audit log (denied actions included). Permission: Admin+, JWT only.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `after_id` | int | 否 | 游标（上次响应 `next_cursor`） |
-| `limit` | int | 否 | 1-100，默认 50 |
-| `action` | string | 否 | 按动作过滤（如 `rbac.member_added`） |
-| `outcome` | string | 否 | `success` / `denied` |
-| `actor` | string | 否 | 按操作者 user_id 过滤 |
+| `after_id` | int | no | Cursor (the previous response's `next_cursor`); an invalid value starts from the newest row |
+| `limit` | int | no | 1 to 100, default 50 (larger values are capped) |
+| `action` | string | no | Exact action filter (for example `rbac.member_added`) |
+| `outcome` | string | no | `success` / `denied` |
+| `actor` | string | no | Filter by actor `user_id` |
 
-响应：200 `{"success":true,"data":[AuditLog],"next_cursor":N}`
+Response: 200 `{"success":true,"data":[AuditLog],"next_cursor":N}`
 
 ```bash
 curl "$BASE/api/v1/tenants/1/audit-log?limit=50" -H "Authorization: Bearer $TOKEN"
@@ -372,14 +372,14 @@ curl "$BASE/api/v1/tenants/1/audit-log?limit=50" -H "Authorization: Bearer $TOKE
 
 ### GET /api/v1/knowledge-bases/:id/activity
 
-用途：单个 KB 的活动流（只读审计）。权限：KB 创建者 OR Admin+，且对 KB 有 read 权限；仅 JWT。查询参数同上（`after_id/limit/action/outcome/actor`）。注册于 `RegisterKnowledgeBaseActivityRoutes`。
+Purpose: the activity feed of one knowledge base (read-only audit). Permission: KB creator OR Admin+, with read access to the knowledge base, and only from the owner workspace (an organization-shared consumer gets 403); JWT only. Query parameters as above (`after_id`, `limit`, `action`, `outcome`, `actor`). Registered by `RegisterKnowledgeBaseActivityRoutes`.
 
-响应：200 `{"success":true,"data":[AuditLog],"next_cursor":N}`。`details` 为动作负载；若该条由 API Key 触发，会包含 `api_key_id` 与 `api_key_name`（名称快照，不含明文 Key）。
+Response: 200 `{"success":true,"data":[AuditLog],"next_cursor":N}`. `details` is the action payload; when the entry was triggered by an API key it includes `api_key_id` and `api_key_name` (a name snapshot, never the key).
 
 ```bash
 curl $BASE/api/v1/knowledge-bases/kb-1/activity -H "Authorization: Bearer $TOKEN"
 ```
 
-## 实现参考
+## Implementation reference
 
-路由注册：`internal/router/routes_auth_tenant.go` 的 `RegisterTenantRoutes`。Handler：`internal/handler/tenant.go`、`internal/handler/tenant_member.go`、`internal/handler/tenant_invitation.go`、`internal/handler/tenant_invite_link.go`、`internal/handler/audit_log.go`。
+Route registration: `RegisterTenantRoutes` in `internal/router/routes_auth_tenant.go`. Handlers: `internal/handler/tenant.go`, `internal/handler/tenant_member.go`, `internal/handler/tenant_invitation.go`, `internal/handler/tenant_invite_link.go`, `internal/handler/audit_log.go`.

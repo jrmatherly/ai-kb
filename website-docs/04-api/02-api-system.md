@@ -1,34 +1,36 @@
-# API 参考：系统与平台管理
+# API reference: system and platform administration
 
-提供部署级系统信息和平台管理接口，包括全局设置、任务队列、平台 API Key、跨空间审计和用户密码重置。功能说明见[平台管理与系统管理员](../03-features/20-platform-admin.md)。
+Deployment-level system information and platform administration: global settings, task queues, platform API keys, cross-workspace audit and user password reset. The feature description is [Platform administration and system administrators](../03-features/20-platform-admin.md).
 
-`/system/admin/*` 全组挂 `SystemAdmin()` 守卫；平台 API Key 按能力细分（`system_settings_read/manage`、`system_runtime_read/manage`、`system_tenants_read/manage`、`system_audit_read`）。
+The whole `/system/admin/*` group carries the `SystemAdmin()` guard. Platform API keys are scoped per capability (`system_settings_read/manage`, `system_runtime_read/manage`, `system_tenants_read/manage`, `system_audit_read`).
 
-## 系统信息（/api/v1/system）
+## System information (/api/v1/system)
 
-Handler: `internal/handler/system.go`。API key：`manage_vector_stores`/full。本组响应使用 `{"code":0,"msg":"success","data":...}` 包装。
+Handler: `internal/handler/system.go`. API key: `manage_vector_stores` or full access (except where noted). Responses in this group use the `{"code":0,"msg":"success","data":...}` envelope.
 
 ### GET /api/v1/system/capabilities
 
-Viewer+；API Key 可读。返回 `{code:0,data:{edition,capabilities}}`，每个 capability 给出 supported/reason。前端据部署版本、实际注册路由和 Docker 开关控制菜单入口；隐藏菜单不代替后端权限校验。
+Viewer+; any API key can read it. Returns `{code:0,data:{edition,capabilities}}`; each capability carries `supported` and, when unsupported, a `reason`. The frontend uses the edition, the routes actually registered and the Docker switch to show or hide menu entries; a hidden menu does not replace the backend permission check.
 
 ```bash
 curl "$BASE/api/v1/system/capabilities" -H "Authorization: Bearer $TOKEN"
 ```
 
-`capabilities` 中的 `settings.sandbox.host` 表示当前部署能否使用本机操作系统沙箱，目前仅 macOS 原生桌面应用可能为 supported。
+`settings.sandbox.host` in `capabilities` says whether this deployment can use the local operating-system sandbox. Today it is only supported in the native macOS desktop application (other platforms report `platform_unsupported`). `settings.sandbox.docker` is read live, so a System Settings toggle shows up without a restart.
 
 ### POST /api/v1/system/host-project-dir
 
-用途：在运行 WeKnora 的本机弹出系统文件夹选择框，供新会话绑定本机项目目录（v0.8.2 起，仅原生桌面应用）。权限：Viewer+，仅 JWT，API Key 一律拒绝。无请求体。
+Purpose: open the native folder picker on the machine running AI KB so a new session can bind a local project directory (native desktop application only). Permission: Viewer+, JWT only; API keys are always denied. No request body.
 
-响应：200 `{"code":0,"msg":"success","data":{"dir":"/Users/me/project"}}`，用户取消选择时 `dir` 为空字符串；非桌面部署返回 404。
+Response: 200 `{"code":0,"msg":"success","data":{"dir":"/Users/me/project"}}`; `dir` is an empty string when the user cancels. A non-desktop deployment returns 404.
 
 ### GET /api/v1/system/info
 
-用途：系统版本与引擎信息。权限：Viewer+。
+Purpose: system version and engine information. Permission: Viewer+.
 
-响应：200 `{"code":0,"msg":"success","data":{version,edition,commit_id,build_time,go_version,keyword_index_engine,vector_store_engine,graph_database_engine,minio_enabled,db_version,started_at,uptime_seconds}}`
+Response: 200 `{"code":0,"msg":"success","data":{version,edition,commit_id,build_time,go_version,keyword_index_engine,vector_store_engine,graph_database_engine,minio_enabled,db_version,db_migration_error,started_at,uptime_seconds}}`
+
+`db_version` is the migration version; it gets a ` (dirty)` suffix when the last migration left the schema dirty and ` (failed)` when the last startup migration failed, in which case `db_migration_error` carries the message. It is `unknown` when the failure happened before the version could be read.
 
 ```bash
 curl $BASE/api/v1/system/info -H "Authorization: Bearer $TOKEN"
@@ -36,9 +38,9 @@ curl $BASE/api/v1/system/info -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/system/parser-engines
 
-用途：解析引擎列表与 DocReader 连接状态。权限：Viewer+。
+Purpose: parser engine list and DocReader connection state. Permission: Viewer+.
 
-响应：200 `{"code":0,"msg":"success","data":[...],"docreader_addr","docreader_transport","connected"}`
+Response: 200 `{"code":0,"msg":"success","data":[...],"docreader_addr","docreader_transport","connected"}`
 
 ```bash
 curl $BASE/api/v1/system/parser-engines -H "Authorization: Bearer $TOKEN"
@@ -46,9 +48,9 @@ curl $BASE/api/v1/system/parser-engines -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/system/parser-engines/check
 
-用途：用给定配置探测解析引擎（`types.ParserEngineConfig` 请求体）。权限：Admin+。
+Purpose: probe the parser engines with the given configuration (`types.ParserEngineConfig` request body, merged over the stored workspace configuration). Permission: Admin+.
 
-响应：200，同上。
+Response: 200, same shape as above.
 
 ```bash
 curl -X POST $BASE/api/v1/system/parser-engines/check -H "Authorization: Bearer $TOKEN" \
@@ -57,9 +59,9 @@ curl -X POST $BASE/api/v1/system/parser-engines/check -H "Authorization: Bearer 
 
 ### POST /api/v1/system/docreader/reconnect
 
-用途：重连 DocReader。权限：Admin+。请求体：`{"addr":"host:port"}`（`binding:"required"`）。
+Purpose: reconnect DocReader. Permission: Admin+. Request body: `{"addr":"host:port"}` (`binding:"required"`); the address goes through the SSRF check (400 when rejected).
 
-响应：200 `{"code":0,"msg":"连接成功",...,"connected":true}`
+Response: 200 `{"code":0,"msg":"...","data":[...],"docreader_addr","docreader_transport","connected":true}`. A failed connection also returns 200, with `code:1` and the error in `msg`.
 
 ```bash
 curl -X POST $BASE/api/v1/system/docreader/reconnect -H "Authorization: Bearer $TOKEN" \
@@ -68,9 +70,9 @@ curl -X POST $BASE/api/v1/system/docreader/reconnect -H "Authorization: Bearer $
 
 ### GET /api/v1/system/storage-engine-status
 
-用途：对象存储引擎可用性。权限：Viewer+。
+Purpose: object storage engine availability. Permission: Viewer+.
 
-响应：200 `{"code":0,"msg":"success","data":{"engines":[{name,allowed,available,description}],"allowed_providers":[...],"minio_env_available":bool}}`
+Response: 200 `{"code":0,"msg":"success","data":{"engines":[{name,allowed,available,description}],"allowed_providers":[...],"minio_env_available":bool}}`
 
 ```bash
 curl $BASE/api/v1/system/storage-engine-status -H "Authorization: Bearer $TOKEN"
@@ -78,24 +80,35 @@ curl $BASE/api/v1/system/storage-engine-status -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/system/storage-engine-check
 
-用途：校验存储配置（SSRF 防护后探测）。权限：Admin+。请求体：`provider`（必填，`minio/cos/tos/s3/oss/ks3/obs`）+ 对应 `minio|cos|tos|s3|oss|ks3|obs` 配置对象。
+Purpose: validate a storage configuration (probe after the SSRF check). Permission: Admin+. Request body: `provider` (required, one of `minio/cos/tos/s3/oss/ks3/obs`) plus the matching `minio|cos|tos|s3|oss|ks3|obs` configuration object. A malformed body returns 400; a provider disabled by the allow-list returns 403.
 
-响应：200 `{"code":0,"data":{"ok","message","bucket_created"}}`
+Response: 200 `{"code":0,"data":{"ok","message","bucket_created"}}`
 
 ```bash
 curl -X POST $BASE/api/v1/system/storage-engine-check -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"provider":"minio","minio":{"endpoint":"minio:9000"}}'
 ```
 
-## 系统管理（/api/v1/system/admin，SystemAdmin 专属）
+### POST /api/v1/system/sandbox-check
 
-组级挂载 `SystemAdmin()` 守卫（始终强制，不受 EnableRBAC 影响）；平台 API key 需对应 `system_*` capability。本组读取接口多返回原始行/数组（无包装）。Handler: `internal/handler/system.go`、`internal/handler/audit_log.go`。
+Purpose: test a sandbox configuration without saving it. Permission: Admin+. Request body: `config` (`TenantSandboxConfig`), optional `config_id` (test a stored configuration, overriding only the fields sent in `config`) and `deep` (also run a throwaway script; on a remote backend this creates and destroys one sandbox).
+
+Response: 200 `{"success":true,"data":{"ok","provider","checks":[{name,ok,message,reason,latency_ms}],"capabilities"}}`. A check with `ok:null` was skipped and `reason` says why. One failed check makes `ok` false.
+
+```bash
+curl -X POST $BASE/api/v1/system/sandbox-check -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"config_id":"sb-1","deep":false}'
+```
+
+## System administration (/api/v1/system/admin, SystemAdmin only)
+
+The `SystemAdmin()` guard is mounted on the group (always enforced, independent of `EnableRBAC`). Only the routes listed with a `system_*` capability accept a platform API key with that capability; the others are user sessions only. Most read routes in this group return raw rows or arrays (no envelope). Handlers: `internal/handler/system.go`, `internal/handler/audit_log.go`.
 
 ### POST /api/v1/system/admin/promote
 
-用途：授予 SystemAdmin。请求体：`user_id`（UUID，优先）或 `email`（二选一）。
+Purpose: grant SystemAdmin. Request body: `user_id` (UUID, takes priority) or `email` (one of the two). Idempotent: promoting an existing system administrator returns 200 without a write.
 
-响应：200 `UserInfo`（原始对象）。
+Response: 200 `UserInfo` (raw object); 404 when the user is not found.
 
 ```bash
 curl -X POST $BASE/api/v1/system/admin/promote -H "Authorization: Bearer $TOKEN" \
@@ -104,9 +117,9 @@ curl -X POST $BASE/api/v1/system/admin/promote -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/system/admin/revoke
 
-用途：撤销 SystemAdmin。请求体：`{"user_id":"..."}`（`binding:"required"`）。
+Purpose: revoke SystemAdmin. Request body: `{"user_id":"..."}` (`binding:"required"`). Revoking yourself or the last remaining system administrator returns 400; revoking a user who is not an administrator returns 200 unchanged.
 
-响应：200 `UserInfo`
+Response: 200 `UserInfo`
 
 ```bash
 curl -X POST $BASE/api/v1/system/admin/revoke -H "Authorization: Bearer $TOKEN" \
@@ -115,26 +128,47 @@ curl -X POST $BASE/api/v1/system/admin/revoke -H "Authorization: Bearer $TOKEN" 
 
 ### GET /api/v1/system/admin/list
 
-用途：SystemAdmin 列表。查询参数：`offset`（默认 0）、`limit`（默认 50，上限 200）。
+Purpose: list system administrators. Query parameters: `offset` (default 0), `limit` (default 50, capped at 200).
 
-响应：200 `{"total":N,"admins":[UserInfo]}`
+Response: 200 `{"total":N,"admins":[UserInfo]}`
 
 ```bash
 curl $BASE/api/v1/system/admin/list -H "Authorization: Bearer $TOKEN"
 ```
 
+### GET /api/v1/system/admin/users
+
+Purpose: list every user across workspaces. Query parameters: `offset` (default 0), `limit` (default 50, capped at 200). No total count; `has_more` says whether a next page exists.
+
+Response: 200 `{"users":[UserInfo],"offset","limit","has_more"}`
+
+```bash
+curl "$BASE/api/v1/system/admin/users?limit=50" -H "Authorization: Bearer $TOKEN"
+```
+
+### POST /api/v1/system/admin/users/status
+
+Purpose: enable or disable a user account. Disabling revokes the user's active sessions at once. Request body: `user_id` and `is_active` (both `binding:"required"`). Disabling yourself or the last active system administrator returns 400; an unknown user returns 404.
+
+Response: 200 `{"message":"User status updated","user":UserInfo,"is_active":bool}`
+
+```bash
+curl -X POST $BASE/api/v1/system/admin/users/status -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"user_id":"u-1","is_active":false}'
+```
+
 ### POST /api/v1/system/admin/users/create
 
-仅系统管理员；此接口不开放给 platform API Key。请求字段：username（2–50 字符）、email（合法邮箱）、password（可选或 null 自动生成）。显式空字符串仍要经过密码策略校验，不视为自动生成。
+System administrators only; this route is not open to platform API keys. Request fields: `username` (2-50 characters), `email` (valid address), `password` (optional; omitted or `null` generates one). An explicit empty string still goes through the password policy check and is not treated as auto-generation.
 
-| HTTP 状态 | 响应与含义 |
+| HTTP status | Response and meaning |
 | --- | --- |
-| 201 | `{user:UserInfo,generated_password?}`，新建；仅自动生成时返回密码 |
-| 200 | `{user:UserInfo}`，已有身份，不修改账号或密码 |
-| 400 | 参数或密码策略不满足 |
-| 409 | 邮箱与用户名对应不同身份 |
+| 201 | `{user:UserInfo,generated_password?}`, created; the password is returned only when it was generated |
+| 200 | `{user:UserInfo}`, the identity already exists; the account and password are left unchanged |
+| 400 | Parameter or password policy violation |
+| 409 | The email and the username belong to different identities |
 
-这是原始响应对象，没有 success/data 包装，也没有 idempotent 字段。用 HTTP 状态区分新增与已有账号。空间分配遵循 auth.default_tenant_mode。
+This is a raw response object with no success/data envelope and no idempotent field; the HTTP status tells a new account from an existing one. Workspace assignment follows `auth.default_tenant_mode`.
 
 ```bash
 curl -i -X POST "$BASE/api/v1/system/admin/users/create" \
@@ -144,9 +178,9 @@ curl -i -X POST "$BASE/api/v1/system/admin/users/create" \
 
 ### POST /api/v1/system/admin/users/reset-password
 
-用途：重置用户密码。请求体：`email`（`binding:"required,email"`）、`new_password`（`binding:"required"`）。
+Purpose: reset a user's password and revoke all of their sessions. Request body: `email` (`binding:"required,email"`), `new_password` (`binding:"required"`, checked against the password policy). Resetting your own password here returns 400.
 
-响应：200 `{"message":"Password reset successfully"}`
+Response: 200 `{"message":"Password reset successfully"}`
 
 ```bash
 curl -X POST $BASE/api/v1/system/admin/users/reset-password -H "Authorization: Bearer $TOKEN" \
@@ -155,9 +189,9 @@ curl -X POST $BASE/api/v1/system/admin/users/reset-password -H "Authorization: B
 
 ### GET /api/v1/system/admin/api-keys
 
-用途：平台 API key 列表（掩码）。
+Purpose: list platform API keys (masked).
 
-响应：200 `{"success":true,"data":[{id,name,api_key,capabilities,expires_at_unix,...}]}`
+Response: 200 `{"success":true,"data":[{id,scope_type,name,api_key,full_access,knowledge_base_ids,capabilities,last_used_at,expires_at,created_at}]}`
 
 ```bash
 curl $BASE/api/v1/system/admin/api-keys -H "Authorization: Bearer $TOKEN"
@@ -165,9 +199,9 @@ curl $BASE/api/v1/system/admin/api-keys -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/system/admin/api-keys
 
-用途：创建平台 API key（明文仅返回一次）。请求体：`name`（非空）、`capabilities`（`system_*` 列表，必填）、`expires_at_unix`（可选，须为未来时间）。
+Purpose: create a platform API key (the plaintext is returned once). Request body: `name` (non-empty), `capabilities` (list of `system_*` capabilities, required), `expires_at_unix` (optional, must be in the future).
 
-响应：201 `{"success":true,"data":{...,"api_key":"<明文>","token":"<明文>"}}`
+Response: 201 `{"success":true,"data":{...,"api_key":"<masked>","token":"<plaintext>"}}`
 
 ```bash
 curl -X POST $BASE/api/v1/system/admin/api-keys -H "Authorization: Bearer $TOKEN" \
@@ -176,19 +210,19 @@ curl -X POST $BASE/api/v1/system/admin/api-keys -H "Authorization: Bearer $TOKEN
 
 ### DELETE /api/v1/system/admin/api-keys/:key_id
 
-用途：删除平台 API key。
+Purpose: revoke a platform API key.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/system/admin/api-keys/3 -H "Authorization: Bearer $TOKEN"
 ```
 
-### GET /api/v1/system/admin/settings 与 GET /api/v1/system/admin/settings/:key
+### GET /api/v1/system/admin/settings and GET /api/v1/system/admin/settings/:key
 
-用途：平台运行时设置列表 / 单项（平台 key 需 `system_settings_read|manage`）。
+Purpose: list platform runtime settings, or read one (platform key: `system_settings_read|manage`). The keys and their effects are in [Runtime settings reference](../03-features/20-platform-admin.md#runtime-settings-reference).
 
-响应：200 `[SystemSetting]` / `SystemSetting`（原始，无包装；字段：`key,value,value_type,description,last_modified_by,last_modified_at`）。
+Response: 200 `[SystemSetting]` / `SystemSetting` (raw, no envelope; fields `key,value,value_type,description,last_modified_by,last_modified_at`). The single read returns 400 for a key not in the registry and 404 for a known key that has no stored row yet.
 
 ```bash
 curl $BASE/api/v1/system/admin/settings -H "Authorization: Bearer $TOKEN"
@@ -196,30 +230,30 @@ curl $BASE/api/v1/system/admin/settings -H "Authorization: Bearer $TOKEN"
 
 ### PUT /api/v1/system/admin/settings/:key
 
-用途：更新设置（平台 key 需 `system_settings_manage`）。请求体：`{"value":<任意 JSON，按注册表类型校验>}`（必填）。
+Purpose: update a setting (platform key: `system_settings_manage`). Request body: `{"value":<any JSON, validated against the registry type>}` (required). Most keys take effect on the next read; `ssrf.whitelist`, `model.max_concurrency` and the Docker sandbox switch are pushed to their subsystems at once, and the `asynq.*_concurrency` worker pool sizes need a process restart.
 
-响应：200 `SystemSetting`
+Response: 200 `SystemSetting`; 400 for an unknown key or a type mismatch.
 
 ```bash
-curl -X PUT $BASE/api/v1/system/admin/settings/default_storage_quota -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"value":10737418240}'
+curl -X PUT $BASE/api/v1/system/admin/settings/tenant.default_storage_quota_gb -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"value":20}'
 ```
 
 ### DELETE /api/v1/system/admin/settings/:key
 
-用途：恢复设置默认值。
+Purpose: reset a setting to its environment variable or built-in default. Idempotent.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
-curl -X DELETE $BASE/api/v1/system/admin/settings/default_storage_quota -H "Authorization: Bearer $TOKEN"
+curl -X DELETE $BASE/api/v1/system/admin/settings/tenant.default_storage_quota_gb -H "Authorization: Bearer $TOKEN"
 ```
 
 ### GET /api/v1/system/admin/runtime/queues
 
-用途：asynq 队列深度与并发状态（Lite 模式返回 `available:false`；平台 key 需 `system_runtime_read|manage`）。
+Purpose: asynq queue depths and concurrency state (Lite mode returns `available:false`; platform key: `system_runtime_read|manage`). The dashboard built on it is described in [Async tasks](../02-architecture/05-async-tasks.md#task-inspection-cancellation-and-the-runtime-dashboard-taskinspector).
 
-响应：200 `{"available",upstream_concurrency,parse_concurrency,wiki_concurrency,pools,queues,model_limiter_available,models,timestamp}`
+Response: 200 `{"available",upstream_concurrency,parse_concurrency,wiki_concurrency,pools,queues,model_limiter_available,models,timestamp}`
 
 ```bash
 curl $BASE/api/v1/system/admin/runtime/queues -H "Authorization: Bearer $TOKEN"
@@ -227,9 +261,9 @@ curl $BASE/api/v1/system/admin/runtime/queues -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/system/admin/runtime/queues/:queue/tasks
 
-用途：队列任务列表。查询参数：`state`（`pending/active/scheduled/retry/archived/completed`）、`cursor`、`page_size`（默认 20，上限 100）。
+Purpose: list the tasks of one queue. Query parameters: `state` (`pending/active/scheduled/retry/archived/completed`), `cursor`, `page_size` (default 20, capped at 100). An unknown queue or state returns 400; an invalid cursor returns 400 with code `runtime_task_cursor_invalid`, an expired one 409 with `runtime_task_cursor_expired`.
 
-响应：200 `{"available","tasks":[RuntimeTaskInfo],"page_size","has_more","next_cursor"}`
+Response: 200 `{"available","tasks":[RuntimeTaskInfo],"page_size","has_more","next_cursor"}`
 
 ```bash
 curl "$BASE/api/v1/system/admin/runtime/queues/default/tasks?state=pending" -H "Authorization: Bearer $TOKEN"
@@ -237,9 +271,9 @@ curl "$BASE/api/v1/system/admin/runtime/queues/default/tasks?state=pending" -H "
 
 ### POST /api/v1/system/admin/runtime/queues/:queue/tasks/:task_id/actions/:action
 
-用途：任务操作（`action` ∈ `cancel/run_now/delete`；平台 key 需 `system_runtime_manage`）。
+Purpose: act on a task (`action` is one of `cancel/run_now/delete`; platform key: `system_runtime_manage`). The current task state is re-read first; an action the state does not allow, or a task that is gone, returns 409. Lite mode returns 503.
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X POST $BASE/api/v1/system/admin/runtime/queues/default/tasks/t-1/actions/cancel \
@@ -248,9 +282,9 @@ curl -X POST $BASE/api/v1/system/admin/runtime/queues/default/tasks/t-1/actions/
 
 ### DELETE /api/v1/system/admin/runtime/queues/:queue/archived
 
-用途：清空归档任务。
+Purpose: purge the archived (finally failed) tasks of one queue. Live tasks are untouched.
 
-响应：200 `{"success":true,"deleted":N}`
+Response: 200 `{"success":true,"deleted":N}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/system/admin/runtime/queues/default/archived -H "Authorization: Bearer $TOKEN"
@@ -258,9 +292,9 @@ curl -X DELETE $BASE/api/v1/system/admin/runtime/queues/default/archived -H "Aut
 
 ### POST /api/v1/system/admin/tenants/apply-default-storage-quota
 
-用途：把当前默认存储配额批量写到全部空间（平台 key 需 `system_tenants_manage`）。无请求体。
+Purpose: write the current default storage quota (`tenant.default_storage_quota_gb`) to every workspace (platform key: `system_tenants_manage`). No request body. Idempotent.
 
-响应：200 `{"affected":N,"quota_bytes":N,"quota_gb":N}`
+Response: 200 `{"affected":N,"quota_bytes":N,"quota_gb":N}`
 
 ```bash
 curl -X POST $BASE/api/v1/system/admin/tenants/apply-default-storage-quota -H "Authorization: Bearer $TOKEN"
@@ -268,35 +302,30 @@ curl -X POST $BASE/api/v1/system/admin/tenants/apply-default-storage-quota -H "A
 
 ### GET /api/v1/system/admin/audit-log
 
-用途：平台级审计日志（tenant_id=0 行；平台 key 需 `system_audit_read`）。查询参数同空间审计（`after_id/limit/action/outcome/actor`）。Handler: `internal/handler/audit_log.go`
+Purpose: platform-level audit log (`tenant_id=0` rows; platform key: `system_audit_read`). Query parameters match the workspace audit log (`after_id/limit/action/outcome/actor`). Handler: `internal/handler/audit_log.go`
 
-响应：200 `{"success":true,"data":[AuditLog],"next_cursor":N}`
+Response: 200 `{"success":true,"data":[AuditLog],"next_cursor":N}`
 
 ```bash
 curl $BASE/api/v1/system/admin/audit-log -H "Authorization: Bearer $TOKEN"
 ```
 
-## 实现参考
+## Model catalog (/api/v1/system/admin/model-catalog)
 
-路由注册：`internal/router/routes_auth_tenant.go` 的 `RegisterSystemAdminRoutes` 与 `RegisterSystemRoutes`。Handler：`internal/handler/system.go`、`internal/handler/audit_log.go`。
+System administrator user sessions only; API keys cannot reach this group.
 
-
-## 模型目录（/api/v1/system/admin/model-catalog）
-
-仅系统管理员用户会话可访问，API Key 不开放此组接口。
-
-| 方法与路径 | 作用 |
+| Method and path | Effect |
 | --- | --- |
-| `GET /system/admin/model-catalog` | 返回当前 `version`、`baseline`、管理员 `overlay`、最近 20 个历史版本，以及 `builtin` / `deployment` / `effective` 目录 |
-| `POST /system/admin/model-catalog/preview` | 校验覆盖文档并返回候选目录（仅 `effective` 与规范化后的 `overlay`，`history` / `builtin` / `deployment` 为 `null`），不持久化、不发布 |
-| `PUT /system/admin/model-catalog` | 校验、保存新版本并发布；审计仅记录版本元信息 |
+| `GET /system/admin/model-catalog` | Returns the current `version`, `baseline`, the administrator `overlay`, the last 20 historical versions, and the `builtin` / `deployment` / `effective` catalogs |
+| `POST /system/admin/model-catalog/preview` | Validates the overlay document and returns the candidate catalog (only `effective` and the normalized `overlay`; `history` / `builtin` / `deployment` are `null`); nothing is persisted or published |
+| `PUT /system/admin/model-catalog` | Validates, saves a new version and publishes it; the audit row records only the version metadata |
 
-预览和发布使用相同请求体：
+Preview and publish take the same request body:
 
 ```json
 {
   "version": 0,
-  "baseline": "GET 返回的部署基线标识",
+  "baseline": "the deployment baseline identifier returned by GET",
   "overlay": {
     "providers": {
       "openai": {
@@ -308,3 +337,9 @@ curl $BASE/api/v1/system/admin/audit-log -H "Authorization: Bearer $TOKEN"
 ```
 
 The response is the unwrapped catalog status object. Each vendor entry also carries `model_thinking_levels` (the levels selectable per chat model id once thinking is on, merged from the vendor mapping and the protocol capabilities) and `vendor_thinking_levels` (the vendor default levels for models with no level of their own). An invalid document returns 400; a stale version or a deployment baseline that differs from the requesting instance returns 409. Publishing persists first and then switches this instance; other instances sync within about 5 seconds. To roll back, publish a historical `overlay` again with the current `version` / `baseline`. Full rules and limits are in [Model management](../03-features/06-models.md#system-administrators-maintain-the-model-catalog).
+
+The request body is limited to 1 MiB; a larger or malformed body returns 400.
+
+## Implementation reference
+
+Route registration: `RegisterSystemRoutes` and `RegisterSystemAdminRoutes` in `internal/router/routes_auth_tenant.go`. Handlers: `internal/handler/system.go`, `internal/handler/system_model_catalog.go`, `internal/handler/sandbox_check.go`, `internal/handler/deployment_capabilities.go`, `internal/handler/audit_log.go`.

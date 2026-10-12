@@ -25,5 +25,6 @@ helm install weknora\b	helm install ai-kb
 \bwindow\.WeKnora\b	window.AIKB
 \bWeKnora\.(init|open|on|setContext|openWithQuery|setLocale)\b	AIKB.$1
 \bWeKnora-Embed-Webhook\b	AIKB-Embed-Webhook
+\bweknora-memories\.json\b	ai-kb-memories.json
 (?<!Tencent/)(?<!X-)\bWeKnora\b(?!-Chrome-Extension)	AI KB
 chart name `weknora`	chart name `ai-kb`
