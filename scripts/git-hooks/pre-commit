@@ -17,6 +17,9 @@ log_step "pre-commit"
 
 check_whitespace --cached
 
+# English-only copy: block CJK text in added lines (scripts/check-english-only.sh --diff).
+"$ROOT/scripts/check-english-only.sh" --diff
+
 staged_go=()
 while IFS= read -r line; do
   [[ -n "$line" ]] && staged_go+=("$line")

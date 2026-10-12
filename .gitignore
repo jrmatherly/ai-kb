@@ -3,6 +3,7 @@
 # 但不忽略特定隐藏文件和目录
 !.env.example
 !.gitignore
+!.gitkeep
 !.github/
 
 # 敏感文件
@@ -72,4 +73,3 @@ private/
 .claude/settings.local.json
 !.upstream-review/
 !.serena/
-.serena/logs/

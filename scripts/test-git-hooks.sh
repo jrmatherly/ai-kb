@@ -64,4 +64,15 @@ for phase in list vet test; do
   diff -u "$fixture/failure-expected.log" "$HOOK_TEST_LOG"
 done
 
+# English-only gate: an added ASCII line passes, an added CJK line fails and names the file.
+gate="$fixture/gate"
+mkdir -p "$gate" && git -C "$gate" init -q
+cp "$repo_root/scripts/check-english-only.sh" "$gate/check.sh"
+(cd "$gate" && printf 'ok\n' > a.txt && git add a.txt && ./check.sh --diff)
+if (cd "$gate" && printf '\xe4\xb8\xad\n' > b.txt && git add b.txt && ./check.sh --diff > out.log 2>&1); then
+  echo "English-only gate accepted a CJK line" >&2
+  exit 1
+fi
+grep -q '^b.txt: ' "$gate/out.log"
+
 echo 'Git hook coverage checks passed'

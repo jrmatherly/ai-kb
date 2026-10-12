@@ -1,0 +1,156 @@
+---
+name: upstream-review
+description: Review what changed in upstream Tencent/WeKnora (main) since our last review and decide what to adopt into this copied repo. Use for "sync from upstream", "what changed upstream", "review upstream commits", "did WeKnora update", "bring upstream commit X in", "check upstream for new features", or any periodic upstream check. Encodes the copy-not-fork reality, the watermark driver, the per-file divergence markers, the English-only rule and the adoption rules for this repo.
+argument-hint: "[--stat | --urls | --show <sha> | --diverged | --advance <sha>]"
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh *) Bash(scripts/check-english-only.sh *) Bash(git show *) Bash(git log *) Bash(git diff *) Bash(git rev-parse *) Read Grep Glob
+---
+
+# Upstream review
+
+This repo is a copy of `Tencent/WeKnora` taken at upstream commit `97796c637` (2026-10-12, `v0.8.2-268-g97796c637`, "fix(helm): configure app rollouts and document shared storage (#4180)"). It shares no git history with upstream. At the copy the tree was byte-identical to that commit except `.github/` (removed; archived in `private/OLD-.github/`) and `.gitignore`. Run `--diverged` for the current footprint. So:
+
+- `git merge` and `git merge-base` are useless. Every range is `<watermark>..upstream/main`.
+- `git cherry-pick -x <sha>` works once `upstream/main` is fetched: the 3-way merge uses the commit's own parent as the base. A hunk applies cleanly when our copy of those lines equals the parent's (the pre-image), and conflicts otherwise. The merge is per hunk, so a file we changed elsewhere still takes a non-overlapping upstream hunk.
+- The driver compares our HEAD with each commit's pre-image before you pick anything.
+
+## Tooling
+
+| Piece | Path |
+| --- | --- |
+| Driver | `${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh` |
+| English-only check | `scripts/check-english-only.sh` |
+| Watermark (tracked) | `.upstream-review/watermark.json` (`seedSha` fixed, `lastReviewedSha` advances) |
+| Decision logs (tracked) | `.upstream-review/reviews/<YYYY-MM-DD>-review.md` |
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh            # fetch, list un-reviewed commits oldest first
+${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh --stat     # + each touched file with a divergence marker
+${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh --urls     # + github commit URL per commit
+${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh --show <sha>
+${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh --diverged # our footprint: files that differ from the seed
+${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh --advance <tip-sha>  # after the log is written; the listing prints the tip SHA
+scripts/check-english-only.sh [-n | --summary] [pathspec...]   # tracked files; exit 1 while CJK text remains
+scripts/check-english-only.sh --diff [<range>]                  # added lines only: staged by default, or <sha>..HEAD
+```
+
+The first run adds the `upstream` remote and seeds `upstream/main` from `private/OLD-.git` (the archived upstream clone, gitignored) so the network fetch is incremental. Without that directory it fetches the full history once. The driver needs a commit on our side: `HEAD:<path>` is what it compares.
+
+Markers in `--stat`, our HEAD vs the commit's parent (pre-image) for each file it touches:
+
+| | Meaning | Adoption path |
+| --- | --- | --- |
+| `=` | ours equals the pre-image | `git cherry-pick -x <sha>` applies cleanly |
+| `<` | ours equals the seed, not the pre-image | an older un-reviewed upstream commit touched it first (pick in order), or the watermark sits below the seed and we already carry the post-image (ALREADY-HAVE) |
+| `~` | ours differs from both | we changed it; resolve the 3-way or hand-port |
+| `x` | we removed it | check "Deleted or moved paths" below |
+| `+` | new upstream file | cherry-pick creates it |
+| `bin` | binary | inspect by hand |
+
+Merge commits are listed but not expanded: their parents are in the range. A conflict resolution that exists only in the merge is not shown.
+
+## Method
+
+1. Run `--stat`. Group commits by area, the conventional-commit scope upstream uses: `fix(agent):`, `feat(gallery):`, `fix(frontend):`, `docs:`, `fix(helm):`, `test(docreader):`.
+2. For each non-merge commit, `--show <sha>` and read the diff against its own upstream parent.
+3. Classify our state from the markers and the diff: ALREADY-HAVE, ABSENT, DIVERGED, PARTIAL.
+4. Verdict: `ADOPT` (cherry-pick, all files `=`, `<` with its predecessors, or `+`), `ADAPT` (hand-port, some `~`), `SKIP`, `MONITOR`.
+5. Write every verdict with file-level evidence to the dated decision log (template below).
+6. Adopt in a batch on a branch: cherry-pick oldest first, validate per area touched (table below), then the English-only gate on the batch's files (rule below).
+7. Then `--advance <tip-sha>` with the tip SHA from the listing you reviewed (a fresh fetch may have moved on) and commit `.upstream-review/` with the adopted commits. The user pushes; never push.
+
+For a large window (more than about 20 commits), dispatch one reviewer subagent per area with the SHAs, the marker output, and steps 2 to 5. Synthesize into one log.
+
+### Validation per area
+
+The commands are the archived upstream CI's (`private/OLD-.github/workflows/`), which this copy has no workflows for yet.
+
+| Area touched | Validate with |
+| --- | --- |
+| Go (root module) | `go vet $(go list ./... \| grep -v /docreader/) && go test $(go list ./... \| grep -v /docreader/) && go test -tags desktop ./internal/container && golangci-lint run` |
+| `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `python3 scripts/model-catalog/generate.py --check && go test ./internal/models/...` |
+| `cli/**` (own module) | `go -C cli vet ./... && go -C cli test -race ./... && cli/scripts/check-skill-wire-vocab.sh && cli/scripts/check-secret-tokens.sh` |
+| `client/**` (own module) | `go -C client vet ./... && go -C client test ./...` |
+| `frontend/**` | `npm --prefix frontend test && npm --prefix frontend run type-check` |
+| `docreader/**` | `uv run --project docreader python -m unittest discover -s docreader/tests -p "test_*.py"` and `go test ./docreader/client ./docreader/proto` |
+| `scripts/git-hooks/**`, license scripts | `bash scripts/test-git-hooks.sh`, `bash scripts/check-license-bundle.sh && bash scripts/test-license-bundle.sh` |
+
+## Rules for this repo
+
+- Keep `-x` on every cherry-pick so the log line "cherry picked from commit" carries provenance. Upstream `#NNNN` issue and PR numbers autolink to the wrong repo on GitHub; rewrite them to `Tencent/WeKnora#NNNN` in the picked commit message (`git commit --amend`) and in the decision log.
+- Upstream commits that touch `.github/` are SKIP. Ours is removed; the archived copies in `private/OLD-.github/` are the reference when a workflow change reveals a new validation command. Record such a command change in the log so the table above gets updated.
+- **English only.** This copy carries no Chinese (or other CJK) text: comments, log and error messages, prompts, docs, UI copy, fixtures. At the seed about 1,100 files contain CJK text (`scripts/check-english-only.sh --summary`); in Go it is almost entirely string literals (about 7,500 lines) rather than comments (34 lines). Consequences for review:
+  - Translated files show `~` for every upstream commit that touches them. That is expected. Cherry-pick anyway: hunks that do not overlap a translated line merge cleanly, and a conflict is confined to the lines both sides changed. Resolve by taking upstream's logic and our language.
+  - A pick never lands CJK text. After a batch, `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD` is the gate (whole-file mode would also report the seed's untranslated text in those files). Translate every hit before the batch lands.
+  - Upstream commits whose only content is Chinese prose (docs under `website-docs/`, `README_CN.md`, comment edits) are SKIP unless they document behavior we adopted; then write the English equivalent.
+- Generated files are regenerated, never merged by hand. A conflict in one means the source changed; resolve the source, rerun the generator, `git add` the output:
+  - `docs/docs.go`, `docs/swagger.json`, `docs/swagger.yaml` from `make docs` (swag over `cmd/server/main.go`; `docs/swagger_contract_test.go` checks it).
+  - Model catalog output under `internal/models/catalog/` from `make model-catalog-generate` (`scripts/model-catalog/generate.py`; CI runs `--check`).
+  - `docreader` protobuf stubs from `make -C docreader proto`.
+- A watermark advance without a decision log is a lost review. Seed the watermark below any backlog you intend to review, never at today's tip.
+- Commit subjects keep upstream's conventional-commit form, `type(scope): imperative subject`, so adopted commits read consistently in `git log`.
+
+## Deleted or moved paths
+
+An `x` marker means we removed the path, not always that the change is irrelevant.
+
+- `.github/**`: SKIP (see above). Archived in `private/OLD-.github/`.
+- Nothing else is removed at the seed. Add a line here for every later removal, with where the content went or why it is gone.
+
+## Version and changelog
+
+- `CHANGELOG.md` stays as upstream left it, as history. New entries are ours; do not port upstream's entries. Record adopted SHAs in the decision log.
+- Versioning switches to dated CalVer (decided 2026-10-12). Exact format still open: `YYYY-MM-DD` as stated, or `YYYY.M.D[.MICRO]` as `~/dev/ai-workspace` uses, which is also valid semver for `frontend/package.json` and the Helm chart. Until the switch lands, `VERSION`, `frontend/package.json` `version` and `website-docs/VERSION` follow upstream and a release bump is ADOPT. After it, never take upstream's version: keep ours on conflict.
+
+## Dependencies
+
+At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock` and the `cli/` and `client/` module files are upstream's; dependency-only upstream commits are ADOPT while that holds. If this copy later takes its own upgrade policy, flip this section the way the version section will, and expect `~` on every lockfile.
+
+## Deviations decided 2026-10-12 (planned, not landed)
+
+Until a row lands, keep upstream's spelling so picks stay clean. When it lands, move the row into "Name translations when porting" below with the status removed, and add any deleted path to "Deleted or moved paths".
+
+| Upstream | Ours | Notes |
+| --- | --- | --- |
+| product name "WeKnora" | "AI KB" | Display name, docs, UI copy. Keep "WeKnora" where it names upstream: provenance, `Tencent/WeKnora#NNNN` links, `CHANGELOG.md` history. |
+| repo `Tencent/WeKnora`, URLs, images, `WEKNORA_*` env prefixes, binary `WeKnora`, Homebrew formula | `jrmatherly/ai-kb`; the rest decided per surface when the rebrand is scoped | Each renamed surface shows `~` afterwards and is ADAPT: take the behavior, keep our names. |
+| Go module `github.com/Tencent/WeKnora` | `github.com/jrmatherly/ai-kb` | A codemod over about 2,100 Go files. Afterwards every import block differs; a pick that adds an import conflicts there. Resolve by taking upstream's hunk and rerunning the module-path rewrite on that file. |
+| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `WEKNORA_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
+| `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | Upstream commits touching them: SKIP. |
+| `VERSION` semver `0.8.x` | dated CalVer | See "Version and changelog". |
+
+Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
+
+Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --diff` on added lines today (install with `scripts/install-git-hooks.sh`; `git cherry-pick` does not run pre-commit, hence step 6). The tree-wide scan becomes a CI gate once the seed is translated.
+
+## Name translations when porting
+
+Empty until the first rename lands. When you hand-port a `~` hunk, translate upstream's spelling to ours with this table, then grep the diff for the left column; any hit is a miss.
+
+| Upstream | Ours |
+| --- | --- |
+
+## Decision log template
+
+```markdown
+# Upstream review - <YYYY-MM-DD>
+
+Window: `<from>..<full tip sha>` on upstream/main, N commits (M merges). Driver output: `--stat`.
+
+## Headline
+One paragraph: what to adopt now, what to port, what to skip.
+
+## Verdicts
+| # | Commit | Area | Our state | Markers | Verdict | Evidence |
+|---|--------|------|-----------|---------|---------|----------|
+
+## Adopted
+Cherry-picked SHAs in order, validation result per area, `check-english-only.sh --diff` result.
+```
+
+## Red flags
+
+- `git merge upstream/main` or any merge-base based range. Use the watermark.
+- Cherry-picking a `~` file without reading our side first.
+- Review state anywhere except `.upstream-review/`.
+- Advancing the watermark to a SHA other than the tip printed by the listing you classified.
+- A batch that lands with `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD` exiting 1.

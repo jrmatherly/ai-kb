@@ -1,0 +1,12 @@
+{
+  "upstreamUrl": "https://github.com/Tencent/WeKnora.git",
+  "upstreamRemote": "upstream",
+  "upstreamBranch": "main",
+  "seedSha": "97796c637aa53713edc846bd0a39470d687f0fdf",
+  "seedDate": "2026-10-12",
+  "lastReviewedSha": "97796c637aa53713edc846bd0a39470d687f0fdf",
+  "lastReviewedShaShort": "97796c637",
+  "lastReviewedDate": "2026-10-12",
+  "note": "seedSha = the upstream commit this repo was copied from (v0.8.2-268-g97796c637; source identical at our first commit except the files --diverged lists). lastReviewedSha = the last upstream commit reviewed; advance it with .claude/skills/upstream-review/scripts/upstream-review.sh --advance <tip-sha>. Neither SHA is an ancestor of our HEAD.",
+  "lastAdvancedAt": "2026-10-12T19:50:00Z"
+}
