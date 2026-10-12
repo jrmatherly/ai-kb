@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 
 const versionFile = resolve(import.meta.dirname, '../VERSION')
 
-/** website-docs/VERSION 中的站点发布版本，独立构建时无需读取父目录 */
+/** Site release version from website-docs/VERSION, so a standalone build need not read the parent directory */
 export function getRepoVersion(): string {
   if (!existsSync(versionFile)) return 'unknown'
   return readFileSync(versionFile, 'utf-8').trim() || 'unknown'

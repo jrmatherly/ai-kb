@@ -1,6 +1,6 @@
-// 用 mermaid 自带的解析器校验文档里所有 ```mermaid 代码块。
-// 站点构建不会检查图表语法——语法错的图只在浏览器里报错，
-// 所以这里在 CI/本地提前拦住。
+// Validate every ```mermaid block in the docs with mermaid's own parser.
+// The site build does not check diagram syntax, and a broken diagram only errors
+// in the browser, so this catches it in CI or locally first.
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,11 +8,11 @@ import { JSDOM } from 'jsdom'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
-// mermaid 是浏览器库，parse() 需要 DOM 才能初始化。
+// mermaid is a browser library, and parse() needs a DOM to initialize.
 const dom = new JSDOM('<!DOCTYPE html><body></body>', { pretendToBeVisual: true })
 globalThis.window = dom.window
 globalThis.document = dom.window.document
-// Node 22 的 globalThis.navigator 只有 getter，只能用 defineProperty 覆盖。
+// Node 22's globalThis.navigator is getter-only, so only defineProperty can override it.
 Object.defineProperty(globalThis, 'navigator', {
   value: dom.window.navigator,
   configurable: true,
@@ -31,7 +31,7 @@ function walk(dir, out = []) {
   return out
 }
 
-/** 取出每个 mermaid 块及其起始行号，行号用于定位报错。 */
+/** Extract each mermaid block with its start line, used to locate errors. */
 function blocksOf(text) {
   const lines = text.split('\n')
   const blocks = []
@@ -70,7 +70,7 @@ for (const file of walk(root)) {
   }
 }
 
-console.log(`检查 ${total} 个 mermaid 图，失败 ${failures.length} 个`)
+console.log(`Checked ${total} mermaid diagrams, ${failures.length} failed`)
 for (const failure of failures) {
   console.log(`\n--- ${failure.file}:${failure.line}\n${failure.message}`)
 }

@@ -1,6 +1,6 @@
 ---
 layout: page
-title: 快速上手
+title: Quickstart
 sidebar: false
 aside: false
 footer: false
@@ -19,4 +19,4 @@ import { onMounted } from 'vue'
 onMounted(() => window.location.replace('/docs/01-getting-started/03-quickstart.html' + window.location.search + window.location.hash))
 </script>
 
-[进入快速上手](/01-getting-started/03-quickstart)
+[Go to Quickstart](/01-getting-started/03-quickstart)

@@ -28,5 +28,5 @@ watch(() => page.value.relativePath, revealCurrentPage, { flush: 'post' })
 </script>
 
 <template>
-  <p ref="label" class="wk-docs-label">使用文档</p>
+  <p ref="label" class="wk-docs-label">Documentation</p>
 </template>

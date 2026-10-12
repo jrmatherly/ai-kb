@@ -15,7 +15,7 @@ export type GallerySlide = {
   /** One screenshot, or several views of the same capability switched inside the figure. */
   shots: GalleryShot[];
   link?: string;
-  /** Optional external reference shown beside "了解更多", e.g. an upstream repository. */
+  /** Optional external reference shown beside "Learn more", e.g. an upstream repository. */
   external?: { label: string; href: string; logo?: string };
 };
 
@@ -72,7 +72,7 @@ export function ProductGallery({ id, label, slides }: { id: string; label: strin
   }
 
   return <div id={id} ref={root} className={s.showcase} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
-    <div className={s.showcaseList} aria-label={`${label} 功能`}>
+    <div className={s.showcaseList} aria-label={`${label} features`}>
       {slides.map((slide, index) => <div key={slide.name} className={s.showcaseItem} data-active={index === item} onClick={() => { if (index !== item) selectItem(index); }}>
         <h3><button type="button" aria-pressed={index === item} onClick={event => { event.stopPropagation(); selectItem(index); }}>
           <span className={s.showcaseName}><Icon name={slide.icon} />{slide.name}</span>
@@ -80,7 +80,7 @@ export function ProductGallery({ id, label, slides }: { id: string; label: strin
         </button></h3>
         <div className={s.showcaseDetail}>
           <p>{slide.description}</p>
-          {slide.shots.length > 1 && <div className={s.viewChips} aria-label={`${slide.name}截图`}>
+          {slide.shots.length > 1 && <div className={s.viewChips} aria-label={`${slide.name} screenshots`}>
             {slide.shots.map((entry, view) => {
               const current = index === item && view === shot;
               return <button key={entry.image} type="button" aria-pressed={current} onClick={event => { event.stopPropagation(); selectView(index, view); }}>
@@ -91,7 +91,7 @@ export function ProductGallery({ id, label, slides }: { id: string; label: strin
             })}
           </div>}
           {(slide.link || slide.external) && <div className={s.slideLinks}>
-            {slide.link && <a className={s.textLink} href={slide.link}>了解更多 <Icon name="arrow" /></a>}
+            {slide.link && <a className={s.textLink} href={slide.link}>Learn more <Icon name="arrow" /></a>}
             {slide.external && <a className={`${s.textLink} ${s.externalLink}`} href={slide.external.href} target="_blank" rel="noreferrer">{slide.external.logo && <Image src={`${homeAssets}/brands/${slide.external.logo}`} alt="" aria-hidden="true" width={20} height={20} />}{slide.external.label}<Icon name="github" /></a>}
           </div>}
         </div>
@@ -102,8 +102,8 @@ export function ProductGallery({ id, label, slides }: { id: string; label: strin
         <span><Icon name={activeShot.icon ?? active.icon} />{active.name}{active.shots.length > 1 && activeShot.label && <em className={s.viewLabel}>· {activeShot.label}</em>}</span>
         <div className={s.cardActions}>
           {activeShot.available
-            ? <a className={s.textLink} href={`${homeAssets}/product/${activeShot.image}.png`} target="_blank" rel="noreferrer" aria-label={`查看${active.name}原图（新窗口）`}>查看原图 <Icon name="external" /></a>
-            : <span className={s.pendingLabel}>待补充</span>}
+            ? <a className={s.textLink} href={`${homeAssets}/product/${activeShot.image}.png`} target="_blank" rel="noreferrer" aria-label={`View the full-size ${active.name} image (new window)`}>Full size <Icon name="external" /></a>
+            : <span className={s.pendingLabel}>Pending</span>}
         </div>
       </div>
       {/* Every screenshot stays mounted in one cell so switching cross-fades without resizing. */}
@@ -113,7 +113,7 @@ export function ProductGallery({ id, label, slides }: { id: string; label: strin
           return <div key={entry.image} className={s.shotLayer} data-active={current} aria-hidden={!current}>
             {entry.available
               ? <Image src={`${homeAssets}/product/${entry.image}.png`} alt={entry.alt} width={3840} height={2112} sizes="(min-width: 1100px) 60vw, 100vw" />
-              : <div className={s.shotPlaceholder} role="img" aria-label={entry.alt}><span>截图待补充</span><code>{`website-docs/homepage/public${homeAssets}/product/${entry.image}.png`}</code></div>}
+              : <div className={s.shotPlaceholder} role="img" aria-label={entry.alt}><span>Screenshot pending</span><code>{`website-docs/homepage/public${homeAssets}/product/${entry.image}.png`}</code></div>}
           </div>;
         }))}
       </div>

@@ -28,5 +28,7 @@ helm install weknora\b	helm install ai-kb
 \bWeKnora-Embed-Webhook\b	AIKB-Embed-Webhook
 \bWeKnora-Lite-Desktop-App\b	AIKB-Lite-Desktop-App
 \bweknora-memories\.json\b	ai-kb-memories.json
+\bweknora_home_page\b	ai-kb-home-page
+\bweknora-docs-site\b	ai-kb-docs-site
 (?<!Tencent/)(?<!X-)\bWeKnora\b(?!-Chrome-Extension)	AI KB
 chart name `weknora`	chart name `ai-kb`

@@ -1,5 +1,5 @@
-// 校验文档之间的相对链接。拆分章节时最容易留下指向已移动内容的死链，
-// 而 vitepress build 不会因为死链失败。
+// Check relative links between docs pages. Splitting a section easily leaves links
+// to moved content, and vitepress build does not fail on dead links.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join, relative, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -36,7 +36,7 @@ for (const file of files) {
   })
 }
 
-console.log(`检查 ${files.length} 篇文档的 ${checked} 个内部链接，失效 ${failures.length} 个`)
+console.log(`Checked ${checked} internal links in ${files.length} pages, ${failures.length} broken`)
 for (const failure of failures) {
   console.log(`  ${failure.file}:${failure.line} -> ${failure.target}`)
 }

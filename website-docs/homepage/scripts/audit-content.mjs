@@ -6,10 +6,10 @@ const output = join(process.cwd(), 'out');
 const html = await readFile(join(output, 'index.html'), 'utf8');
 const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, '');
 assert.equal((html.match(/<h1\b/g) || []).length, 1, 'The homepage must have one main heading');
-for (const term of ['帮你找到答案', '并将知识付诸实践', 'v0.8.2', 'RAG', 'Agent', 'Wiki', 'ClawHub', 'SkillHub', 'Docker', 'E2B', 'Cube', '长期记忆', '交互终端', '图形桌面', '本机浏览器', 'BrowserSkill', 'MCP Server', '对话控制', 'Confluence', '钉钉', 'GitLab', '腾讯 IMA', 'LiteLLM', 'DeepSeek Harness']) {
+for (const term of ['Find the answers', 'then put knowledge to work', 'v0.8.2', 'RAG', 'Agent', 'Wiki', 'ClawHub', 'SkillHub', 'Docker', 'E2B', 'Cube', 'Long-term memory', 'Interactive terminal', 'Graphical desktop', 'Local Browser', 'BrowserSkill', 'MCP Server', 'Conversation control', 'Confluence', 'DingTalk', 'GitLab', 'Tencent IMA', 'LiteLLM', 'DeepSeek Harness']) {
   assert.ok(visible.includes(term), `Missing product content: ${term}`);
 }
-for (const term of ['三套', '方案选择', '历史 Demo', '18K+', '成为行动力', '从零散文档', '到鲜活知识']) {
+for (const term of ['Three plans', 'Choose a plan', 'Legacy demo', '18K+', 'Turn into action', 'From scattered documents', 'To living knowledge', 'Japanese UI', 'WeChat Dialog Open Platform', 'Tencent Cloud Lighthouse']) {
   assert.ok(!visible.includes(term), `Retired content still visible: ${term}`);
 }
 assert.match(html, /<video[^>]+preload="none"/, 'Video should not load before user interaction');
@@ -17,7 +17,7 @@ assert.match(html, /https:\/\/github.com\/user-attachments\/assets\/2819598d-314
 assert.ok(!/<video[^>]+autoplay/i.test(html), 'Do not autoplay the product film');
 const wiki = html.match(/<section id="wiki"[\s\S]*?<\/section>/)?.[0];
 assert.ok(wiki, 'The homepage must include a dedicated Wiki section');
-for (const term of ['/docs/_home/product/wiki-browser.png', '/docs/_home/product/wiki-graph.png', '/docs/_home/product/wiki-revision-history.png', 'id="wiki-gallery"', '/docs/03-features/14-wiki.html', '来源引用', '知识图谱', '版本差异']) {
+for (const term of ['/docs/_home/product/wiki-browser.png', '/docs/_home/product/wiki-graph.png', '/docs/_home/product/wiki-revision-history.png', 'id="wiki-gallery"', '/docs/03-features/14-wiki.html', 'source citations', 'Wiki graph', 'version diffs']) {
   assert.ok(wiki.includes(term), `Missing Wiki showcase content: ${term}`);
 }
 const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));
@@ -36,5 +36,5 @@ const pendingShots = [...html.matchAll(/website-docs\/homepage\/public(\/docs\/_
 for (const [, image] of html.matchAll(/\\?"image\\?":\\?"([\w-]+)\\?"[^{}]*?\\?"available\\?":false/g)) pendingShots.push(`/docs/_home/product/${image}.png`);
 if (pendingShots.length) console.warn(`Product screenshots still pending (placeholder shown): ${[...new Set(pendingShots)].join(', ')}`);
 assert.match(html, /aria-controls="main-navigation"/);
-assert.match(html, /aria-label="播放 WeKnora 产品介绍视频/);
+assert.match(html, /aria-label="Play the AI KB product introduction video/);
 console.log(`Homepage audit passed: product content, README video, navigation anchors, ${assets.size} local assets, and retired design choices.`);

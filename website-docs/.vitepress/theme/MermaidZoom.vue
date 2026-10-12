@@ -34,8 +34,8 @@ async function show(source: SVGElement) {
   if (!host) return
   host.replaceChildren()
 
-  // mermaid 的 svg 内联样式以 #id 作用域，且插件会对同 id 元素重新渲染，
-  // 因此副本必须换一个 id 并同步改写内部样式表
+  // Mermaid scopes the SVG's inline styles by #id and the plugin re-renders elements with the same id,
+  // so the copy needs a new id and its internal stylesheet rewritten to match
   const clone = source.cloneNode(true) as SVGElement
   const oldId = source.id
   if (oldId) {
@@ -119,15 +119,15 @@ onUnmounted(() => {
         />
 
         <div class="zoom-bar" @mousedown.stop>
-          <button title="缩小" @click="zoomBy(1 / 1.35)">−</button>
+          <button title="Zoom out" @click="zoomBy(1 / 1.35)">−</button>
           <span class="zoom-level">{{ Math.round(scale * 100) }}%</span>
-          <button title="放大" @click="zoomBy(1.35)">+</button>
+          <button title="Zoom in" @click="zoomBy(1.35)">+</button>
           <span class="zoom-sep" />
-          <button class="zoom-word" @click="reset">重置</button>
-          <button class="zoom-word" @click="close">关闭</button>
+          <button class="zoom-word" @click="reset">Reset</button>
+          <button class="zoom-word" @click="close">Close</button>
         </div>
 
-        <p class="zoom-hint">滚轮缩放 · 拖拽平移 · Esc 关闭</p>
+        <p class="zoom-hint">Scroll to zoom · Drag to pan · Esc to close</p>
       </div>
     </Transition>
   </Teleport>

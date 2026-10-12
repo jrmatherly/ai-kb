@@ -1,58 +1,66 @@
 # Claw Skill
 
-Claw Skill 为 OpenClaw 生态中的智能体提供 WeKnora 接入能力，通过 REST API 上传文档、导入网页和执行跨库检索。
+Claw Skill gives agents in the OpenClaw ecosystem access to AI KB. Through the REST API it uploads documents, imports web pages and runs retrieval across knowledge bases.
 
-技能托管在 ClawHub，包名为 [`@lyingbug/weknora`](https://clawhub.ai/lyingbug/weknora)，许可证为 MIT-0。调用能力与权限由所连接的 WeKnora API 决定。
+The skill is hosted on ClawHub as [`@lyingbug/weknora`](https://clawhub.ai/lyingbug/weknora) under the MIT-0 license. What it can call, and with which permissions, is decided by the AI KB API it connects to.
 
-## 主要功能 {#能做什么}
+## Features
 
-| 能力 | 对应接口 |
+This section lists what an OpenClaw agent can do with the skill.
+
+| Capability | What it does |
 | --- | --- |
-| 上传文件 | 把 PDF / Word / Excel 等文档送进知识库并自动解析向量化 |
-| 导入网页 | 按 URL 抓取正文写入知识库，支持轮询解析状态 |
-| 写入 Markdown | 以 Markdown 创建或编辑知识条目，适合会议记录、结构化笔记 |
-| 混合检索 | 单库 `hybrid-search` 与跨库 `knowledge-search`，向量 + 关键词召回 |
-| 浏览知识库 | 列出知识库与条目、查看详情 |
+| Upload files | Sends PDF, Word, Excel and other documents to a knowledge base, where they are parsed and embedded automatically |
+| Import web pages | Fetches the main content of a URL into a knowledge base and can poll the parsing status |
+| Write Markdown | Creates or edits a knowledge item as Markdown, suited to meeting notes and structured notes |
+| Hybrid retrieval | `hybrid-search` within one knowledge base and `knowledge-search` across knowledge bases, with vector and keyword recall |
+| Browse knowledge bases | Lists knowledge bases and their items and shows details |
 
-## 安装与连接 {#怎么配}
+## Install and connect
 
-在「设置 → 发布集成 → Claw Skill」查看安装指引，复制当前实例的 API 地址、环境变量示例和安装命令。
+This section installs the skill and points it at your instance.
 
-1. **获取 API 凭证**：在「设置 → 发布集成 → API 集成」复制 API Key 与 API 地址（引导页的「打开 API 信息」按钮会直接跳转到这里）；
-2. **设置环境变量**：在终端或 `~/.zshrc` / `~/.bashrc` 里设置
+Settings → Publish & Integrations → Claw Skill shows the install steps and lets you copy the current instance's API address, an environment variable example and the install command.
+
+1. **Get API credentials.** Copy the API key and API address from Settings → Publish & Integrations → API Integration. The Open API Info button on the setup page goes straight there.
+2. **Set the environment variables** in your terminal or in `~/.zshrc` / `~/.bashrc`:
 
    ```bash
-   export WEKNORA_BASE_URL=https://your-weknora.example.com/api/v1
-   export WEKNORA_API_KEY=sk-xxxxx
+   export AIKB_BASE_URL=https://your-server.example.com/api/v1
+   export AIKB_API_KEY=sk-xxxxx
    ```
 
-   `WEKNORA_BASE_URL` 需要包含 `/api/v1`，引导页的示例已填入当前实例地址。
+   `AIKB_BASE_URL` must include `/api/v1`. The example on the setup page already has the current instance's address filled in. The skill is published outside this project and reads these variable names, so they keep the `AIKB_` prefix.
 
-3. **安装 Skill**：在装好 OpenClaw CLI 的环境里执行下面的命令，或到 ClawHub 页面按指引安装；
+3. **Install the skill.** Run the command below where the OpenClaw CLI is installed, or follow the instructions on the ClawHub page:
 
    ```bash
    openclaw skills install @lyingbug/weknora
    ```
 
-4. **验证**：让 Agent 列一次知识库或跑一次检索，确认凭证与网络可达。
+4. **Verify.** Ask the agent to list the knowledge bases or run one search to confirm that the credentials work and the instance is reachable.
 
-## 和 MCP 的关系
+## Claw Skill and MCP
 
-Claw Skill 和 MCP Server 均可供外部智能体调用，选择取决于客户端支持的接入方式及所需功能：
+This section helps you choose between Claw Skill and the built-in MCP server.
 
-| | Claw Skill | MCP Server（内置） |
+External agents can call AI KB through either one. The choice depends on how the client connects and which capabilities you need:
+
+| | Claw Skill | MCP server (built in) |
 | --- | --- | --- |
-| 面向 | OpenClaw / ClawHub 生态的 Agent | 支持 MCP 协议的客户端（Claude Desktop、Cursor、Claude Code、VS Code Copilot 等） |
-| 安装 | ClawHub 安装 Skill | 无需额外部署：在「设置 → 发布集成 → MCP Server」创建端点，客户端连接 `/mcp/<endpoint_id>` |
-| 认证 | 空间 API Key（`WEKNORA_API_KEY`） | 每个端点独立令牌，可轮换、停用 |
-| 传输 | 直接调 REST | Streamable HTTP；仅支持 stdio 的客户端通过 `mcp-remote` 桥接 |
-| 能力范围 | 导入、检索、浏览（5 类） | 按端点勾选：检索与阅读、问答（端点默认 Agent）、Wiki、写入；可限定知识库范围 |
-| 文档 | 本篇 | [MCP 集成](../03-features/08-mcp.md) |
+| For | Agents in the OpenClaw / ClawHub ecosystem | Clients that speak MCP (Claude Desktop, Cursor, Claude Code, VS Code Copilot and others) |
+| Installation | Install the skill from ClawHub | Nothing extra to deploy. Create an endpoint under Settings → Publish & Integrations → MCP Server, and the client connects to `/mcp/<endpoint_id>` |
+| Authentication | Workspace API key (`AIKB_API_KEY`) | One token per endpoint, which can be rotated or disabled |
+| Transport | Calls the REST API directly | Streamable HTTP. Clients that only support stdio bridge through `mcp-remote` |
+| Capabilities | Import, retrieval and browsing (5 kinds) | Chosen per endpoint: retrieval and reading, question answering (the endpoint's default agent), Wiki, write. Can be limited to certain knowledge bases |
+| Documentation | This page | [MCP integration](../03-features/08-mcp.md) |
 
-需要问答、Wiki 工具，或希望按端点限定工具和知识库范围时，使用 MCP Server；在 OpenClaw 生态中导入、检索和浏览资料可使用 Claw Skill。仓库 `mcp-server/` 下的 Python MCP 服务已弃用，新接入请使用内置 MCP Server。
+Use the MCP server when you need question answering or the Wiki tools, or want to limit tools and knowledge bases per endpoint. Use Claw Skill to import, search and browse material from the OpenClaw ecosystem. The Python MCP service under `mcp-server/` in the repository is deprecated. Use the built-in MCP server for new integrations.
 
-## 相关文档 {#相关}
+## Related pages
 
-- 凭证与能力收窄：[租户、用户与认证授权](../03-features/01-tenant-auth.md)
-- 底层接口：[API 总览](../04-api/01-api-overview.md)
-- 其它集成方式：[Chrome 插件](06-chrome-extension.md)、[MCP 集成](../03-features/08-mcp.md)
+These pages cover narrowing credentials, the underlying API and the other ways to connect.
+
+- Credentials and narrowing capabilities: [Workspaces, users and authentication](../03-features/01-tenant-auth.md)
+- The underlying API: [API overview](../04-api/01-api-overview.md)
+- Other integrations: [Chrome extension](06-chrome-extension.md), [MCP integration](../03-features/08-mcp.md)

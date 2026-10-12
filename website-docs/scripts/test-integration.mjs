@@ -47,23 +47,23 @@ try {
   assert.equal((await page.goto(origin + '/')).status(), 200);
   await expectTheme(page, false);
   const masthead = await headerGeometry(page);
-  await page.getByRole('switch', { name: '切换到深色' }).click();
+  await page.getByRole('switch', { name: 'Switch to dark mode' }).click();
   await expectTheme(page, true);
   assert.equal(await page.evaluate(k => localStorage.getItem(k), key), 'dark');
   await page.reload();
   await expectTheme(page, true);
-  await page.locator('#main-navigation').getByRole('link', { name: '文档', exact: true }).click();
+  await page.locator('#main-navigation').getByRole('link', { name: 'Docs', exact: true }).click();
   await page.waitForSelector('.VPDoc h1');
   await expectTheme(page, true);
   assert.equal(new URL(page.url()).pathname, '/docs/01-getting-started/03-quickstart.html');
-  assert.match(await page.locator('.VPDoc h1').innerText(), /快速上手/);
-  assert.equal(await page.getByRole('link', { name: '文档首页', exact: true }).count(), 0);
+  assert.match(await page.locator('.VPDoc h1').innerText(), /Quickstart/);
+  assert.equal(await page.getByRole('link', { name: 'Docs home', exact: true }).count(), 0);
   assert.deepEqual((await headerGeometry(page)).controls, masthead.controls);
-  assert.deepEqual((await headerGeometry(page)).links.map(link => link[0]), ['快速开始', '架构', '功能', 'API', '客户端', '开发', '版本', 'GitHub']);
+  assert.deepEqual((await headerGeometry(page)).links.map(link => link[0]), ['Quickstart', 'Architecture', 'Features', 'API', 'Clients', 'Develop', 'Releases', 'GitHub']);
   assert.equal(await page.locator('.wk-header').evaluate(el => el.getBoundingClientRect().height), 64);
   assert.equal(context.pages().length, 1);
   // Switching distant sections must reveal the selected sidebar item in both directions.
-  for (const section of ['客户端', '开发', '快速开始', '功能', '架构']) {
+  for (const section of ['Clients', 'Develop', 'Quickstart', 'Features', 'Architecture']) {
     await page.locator('#main-navigation').getByRole('link', { name: section, exact: true }).click();
     await page.waitForFunction(section => document.querySelector('#main-navigation a[aria-current="page"]')?.textContent.trim() === section, section);
     await currentSidebarLinkVisible(page);
@@ -81,7 +81,7 @@ try {
   const palette = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--wk-paper').trim());
   assert.equal(palette, '#0b1220');
   await page.locator('.wk-header-search button').click();
-  await page.locator('#localsearch-input').fill('长期记忆');
+  await page.locator('#localsearch-input').fill('long-term memory');
   await page.waitForSelector('.VPLocalSearchBox .result');
   await page.keyboard.press('Escape');
   await page.locator('.wk-theme-toggle').click();
@@ -92,10 +92,10 @@ try {
   assert.equal(context.pages().length, 1);
 
   // Navigation to new v0.8.2 docs, returning through the explicit home link.
-  await page.locator('#release').getByRole('link', { name: '了解更多', exact: true }).last().click();
+  await page.locator('#release').getByRole('link', { name: 'Learn more', exact: true }).last().click();
   await page.waitForSelector('.VPDoc h1');
   assert.equal(new URL(page.url()).pathname, '/docs/03-features/18-chat-experience.html');
-  assert.match(await page.locator('.VPDoc h1').innerText(), /会话与对话体验/);
+  assert.match(await page.locator('.VPDoc h1').innerText(), /Conversation experience/);
   await page.locator('.wk-brand').click();
   await homepage();
   assert.equal(context.pages().length, 1);
@@ -107,7 +107,7 @@ try {
   await docs.locator('.wk-theme-toggle').click();
   await expectTheme(docs, true);
   await expectTheme(page, true);
-  await page.getByRole('switch', { name: '切换到浅色' }).click();
+  await page.getByRole('switch', { name: 'Switch to light mode' }).click();
   await expectTheme(page, false);
   await expectTheme(docs, false);
   await docs.close();
@@ -130,18 +130,18 @@ try {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto(origin + '/');
   await checkVisibleControl(page, 'button[role="switch"]');
-  await page.getByRole('switch', { name: '切换到深色' }).click();
+  await page.getByRole('switch', { name: 'Switch to dark mode' }).click();
   await expectTheme(page, true);
-  await page.getByRole('button', { name: '打开导航' }).click();
-  await page.locator('#main-navigation').getByRole('link', { name: '文档', exact: true }).click();
+  await page.getByRole('button', { name: 'Open navigation' }).click();
+  await page.locator('#main-navigation').getByRole('link', { name: 'Docs', exact: true }).click();
   await page.waitForSelector('.VPDoc h1');
   await expectTheme(page, true);
   await checkVisibleControl(page, '.wk-brand');
   await page.locator('.wk-theme-toggle').click();
-  await page.getByRole('button', { name: '打开导航' }).click();
+  await page.getByRole('button', { name: 'Open navigation' }).click();
   await checkVisibleControl(page, '.wk-header-search button');
   await page.locator('.wk-header-search button').click();
-  await page.locator('#localsearch-input').fill('长期记忆');
+  await page.locator('#localsearch-input').fill('long-term memory');
   await page.waitForSelector('.VPLocalSearchBox .result');
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');

@@ -1,45 +1,51 @@
-# DeepSeek Harness 插件
+# DeepSeek Harness plugin
 
-DeepSeek Harness（dsh）插件通过 REST API 连接已有 WeKnora 部署，支持检索原文、读取完整文档和生成带引用的回答。插件源码位于 `packages/dsh-weknora`。
+The DeepSeek Harness (dsh) plugin connects to an existing AI KB deployment over the REST API. It retrieves source passages, reads full documents and produces answers with citations. The plugin source is in `packages/dsh-weknora`.
 
-## 安装与连接
+## Install and connect
+
+This section installs the plugin into a dsh profile and points it at your deployment.
 
 ```sh
 dsh plugin --profile web add @wxg-prc-cpg/dsh-weknora
 
-export WEKNORA_BASE_URL=https://weknora.example.com
-export WEKNORA_API_KEY='<api-key>'
-export WEKNORA_KNOWLEDGE_BASE_IDS=kb-123,kb-456
-export WEKNORA_RESOURCE_URLS=public
+export AIKB_BASE_URL=https://kb.example.com
+export AIKB_API_KEY='<api-key>'
+export AIKB_KNOWLEDGE_BASE_IDS=kb-123,kb-456
+export AIKB_RESOURCE_URLS=public
 dsh web
 ```
 
-也可在仓库根目录运行 `dsh plugin --profile web add ./packages/dsh-weknora`。插件自身要求 Node ≥20.11；仓库验证的 dsh 运行环境需要带 zstd 的 Node（≥22.15 或 ≥24）和 pnpm ≥10。已验证版本为 dsh 0.1.0-rc.8 / WeKnora 0.8.0，其他版本需按其插件接口确认兼容性。
+You can also run `dsh plugin --profile web add ./packages/dsh-weknora` from the repository root. The plugin itself requires Node 20.11 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.1.0-rc.8 and AI KB 0.8.0. For other versions, confirm compatibility against the dsh plugin interface.
 
-服务地址可包含 `/api/v1`，未包含时自动补全。API Key 通过 `X-API-Key` 发送，需要 `retrieve` 能力；调用 `ask` 还需 `chat`。使用平台 Key 时，需配置 `tenantId`，请求将其作为 `X-Tenant-ID` 发送。
+The service address may include `/api/v1`. When it does not, the plugin appends it. The API key is sent in `X-API-Key` and needs the `retrieve` capability. Calling `ask` also needs `chat`. With a platform key, set `tenantId`, which requests send as `X-Tenant-ID`.
 
-## 四个工具
+## The four tools
 
-| 工具 | 用途 |
+This section describes what each tool returns, so you know which one an agent should use.
+
+| Tool | Purpose |
 | --- | --- |
-| `weknora_list_knowledge_bases` | 列出可见知识库及 ID |
-| `weknora_search` | 混合检索片段，同时匹配文档标题；返回知识 ID、分块序号与得分 |
-| `weknora_read_document` | 按文档读取有序正文，首屏含标题/摘要，长文可翻页 |
-| `weknora_ask` | 在 WeKnora 创建或续接会话，返回答案、引用和服务端工具过程 |
+| `weknora_list_knowledge_bases` | Lists the visible knowledge bases and their IDs |
+| `weknora_search` | Hybrid retrieval of passages that also matches document titles. Returns the knowledge item ID, the chunk index and the score |
+| `weknora_read_document` | Reads a document's text in order. The first page includes the title and summary, and long documents can be paged |
+| `weknora_ask` | Creates or continues a session in AI KB and returns the answer, the citations and the server-side tool steps |
 
-`search` 返回检索证据，供 dsh 生成回答；`ask` 在 WeKnora 服务端调用模型并创建会话和消息，适合综合多篇资料。两者均不修改知识库内容。
+`search` returns retrieval evidence for dsh to write its own answer from. `ask` calls the model on the AI KB server and creates a session and messages, which suits questions that draw on many documents. Neither one changes knowledge base content.
 
-未指定知识库范围时，插件解析该凭据可见的全部知识库，进程内缓存并供 search/ask 共用。配置 agentId 后 ask 走 Agent 流程，知识范围由该 Agent 在服务端解析。
+When no knowledge base scope is set, the plugin resolves every knowledge base the credential can see, caches that list in the process and shares it between search and ask. With `agentId` set, ask runs the agent flow and the agent resolves its knowledge scope on the server.
 
-## Profile 配置
+## Profile configuration
 
-在 `$DSH_HOME/profiles/<name>/cordis.patch.yml` 中设置：
+This section sets the plugin options for one dsh profile.
+
+Set them in `$DSH_HOME/profiles/<name>/cordis.patch.yml`:
 
 ```yaml
 - id: weknora
   config:
-    baseUrl: https://weknora.example.com
-    apiKey: !!js process.env.WEKNORA_API_KEY
+    baseUrl: https://kb.example.com
+    apiKey: !!js process.env.AIKB_API_KEY
     knowledgeBaseIds: [kb-product-docs]
     agentId: ''
     maxResults: 8
@@ -55,20 +61,24 @@ dsh web
       ask: true
 ```
 
-配置更新会整体替换该行 `config`，应包含需要保留的字段。`tools.*` 默认全部启用。连接多个部署时，分别设置不同的 `toolPrefix`；名称须以小写字母开头，且仅含小写字母、数字和下划线。
+An update replaces the row's whole `config`, so include every field you want to keep. All `tools.*` entries are on by default. To connect several deployments, give each one its own `toolPrefix`. A prefix must start with a lowercase letter and contain only lowercase letters, digits and underscores.
 
-## 引用图片与排查
+## Cited images and troubleshooting
 
-`resourceUrls` 默认为 `public`，请求服务端将资源句柄转换为可加载链接。限定知识库的 API Key 收到 403 时，插件会自动改用 `handle`，并在后续调用中保持该模式。`resource://` 句柄不能直接在浏览器中加载，外链部署要求见[文件访问](../03-features/21-file-access.md)。
+This section explains how image links in answers are produced and how to fix common failures.
 
-| 现象 | 检查 |
+`resourceUrls` defaults to `public`, which asks the server to turn resource handles into loadable links. When an API key limited to certain knowledge bases gets a 403 for this, the plugin switches to `handle` and keeps that mode for later calls. A browser cannot load a `resource://` handle directly. The requirements for external links are in [External access to images and files](../03-features/21-file-access.md).
+
+| Symptom | Check |
 | --- | --- |
-| 加载阶段配置错误 | 根据逐字段错误修正 baseUrl、参数范围、toolPrefix |
-| 检索 401/403 | Key 是否有效、有 retrieve 能力及目标空间/知识库授权 |
-| ask 被拒绝 | Key 是否另有 chat，平台 Key 是否提供 tenantId |
-| 没有图片直链 | 是否为限定知识库 Key，或部署未配置可访问外链 |
-| 长问题超时 | 调整 chatTimeoutMs，并检查 WeKnora 模型调用 |
+| Configuration error while loading | Fix baseUrl, out-of-range parameters or toolPrefix according to the per-field errors |
+| 401/403 on retrieval | Whether the key is valid, has the retrieve capability, and is authorized for the target workspace or knowledge base |
+| ask is refused | Whether the key also has chat, and whether a platform key comes with tenantId |
+| No direct image links | Whether the key is limited to certain knowledge bases, or the deployment has no externally reachable link configured |
+| Long questions time out | Raise chatTimeoutMs and check the model calls on the AI KB server |
 
-## 实现参考
+## Implementation reference
 
-`packages/dsh-weknora/src/`、`test/fixtures/api-contract.json`、`contract/contract_test.go`。
+This section lists the files to read when changing the plugin or checking its API contract.
+
+`packages/dsh-weknora/src/`, `packages/dsh-weknora/test/fixtures/api-contract.json`, `packages/dsh-weknora/contract/contract_test.go`.

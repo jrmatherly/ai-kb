@@ -8,28 +8,23 @@ import { repoVersionLabel } from './version'
 const root = resolve(import.meta.dirname, '..')
 
 const sections: { dir: string; label: string; newestFirst?: boolean }[] = [
-  { dir: '01-getting-started', label: '快速开始' },
-  { dir: '02-architecture', label: '架构' },
-  { dir: '03-features', label: '功能模块' },
-  { dir: '04-api', label: 'API 参考' },
-  { dir: '05-clients', label: '客户端' },
-  { dir: '06-development', label: '开发指南' },
-  // 每个版本一页（v0.8.2.md），最新版本排在最前
-  { dir: '07-releases', label: '版本发布', newestFirst: true },
+  { dir: '01-getting-started', label: 'Getting started' },
+  { dir: '02-architecture', label: 'Architecture' },
+  { dir: '03-features', label: 'Features' },
+  { dir: '04-api', label: 'API reference' },
+  { dir: '05-clients', label: 'Clients' },
+  { dir: '06-development', label: 'Development' },
+  // One page per release (v0.8.2.md), newest first.
+  { dir: '07-releases', label: 'Releases', newestFirst: true },
 ]
 
-/** 侧边栏条目文字：取正文一级标题，去掉冗余前后缀 */
+/** Sidebar entry text is the page's H1, verbatim. */
 function itemText(dir: string, file: string): string {
   const raw = readFileSync(resolve(root, dir, file), 'utf-8')
-  const heading = raw.match(/^#\s+(.+)$/m)?.[1] ?? file.replace(/\.md$/, '')
-  return heading
-    .replace(/^API 参考[:：]\s*/, '')
-    .replace(/\s*[（(][^（()）]*[)）]\s*/g, ' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim()
+  return (raw.match(/^#\s+(.+)$/m)?.[1] ?? file.replace(/\.md$/, '')).trim()
 }
 
-/** 版本号按数字比较，v0.10.0 排在 v0.9.0 之后 */
+/** Compare versions numerically so v0.10.0 sorts after v0.9.0. */
 function compareVersions(a: string, b: string): number {
   const parts = (f: string) => f.replace(/^v|\.md$/g, '').split('.').map(Number)
   const [x, y] = [parts(a), parts(b)]
@@ -54,28 +49,14 @@ const sidebar: DefaultTheme.SidebarItem[] = sections.map((s) => ({
   items: itemsOf(s.dir, s.newestFirst),
 }))
 
-/** 本地搜索默认按空白分词，中文整段会被当作一个词，这里退化为字粒度切分 */
-function tokenize(text: string): string[] {
-  const tokens: string[] = []
-  for (const part of text.split(/[\s\n\r#%*,=/:;?[\]{}()&+\-!'"$·、，。：；？！（）【】《》…—]+/)) {
-    if (!part) continue
-    if (/[\u4e00-\u9fa5]/.test(part)) {
-      tokens.push(part, ...part.split(''))
-    } else {
-      tokens.push(part)
-    }
-  }
-  return tokens
-}
-
-const repo = 'https://github.com/Tencent/WeKnora'
+const repo = 'https://github.com/jrmatherly/ai-kb'
 
 export default withMermaid(
   defineConfig({
-    title: 'WeKnora',
-    titleTemplate: ':title · WeKnora 文档',
-    description: 'WeKnora（维娜拉）官方文档：部署、配置、功能说明、API 参考与二次开发',
-    lang: 'zh-CN',
+    title: 'AI KB',
+    titleTemplate: ':title · AI KB Docs',
+    description: 'AI KB documentation: deployment, configuration, features, API reference and extension development',
+    lang: 'en-US',
     base: '/docs/',
     cleanUrls: true,
     appearance: { storageKey: 'vitepress-theme-appearance' },
@@ -91,12 +72,12 @@ export default withMermaid(
       ['link', { rel: 'icon', href: '/docs/favicon.ico', type: 'image/x-icon' }],
       ['meta', { name: 'theme-color', content: '#101f38' }],
       ['meta', { property: 'og:type', content: 'website' }],
-      ['meta', { property: 'og:title', content: 'WeKnora 文档' }],
+      ['meta', { property: 'og:title', content: 'AI KB Docs' }],
       [
         'meta',
         {
           property: 'og:description',
-          content: '把 PDF、Word、网页与飞书 / Notion / 语雀的资料收进知识库，做成答案带出处的问答系统',
+          content: 'Bring PDFs, Word files, web pages and Feishu, Notion or Yuque content into a knowledge base, and get answers with cited sources',
         },
       ],
     ],
@@ -106,9 +87,9 @@ export default withMermaid(
       lineNumbers: false,
       toc: { level: [2, 3] },
       config(md) {
-        // 表格外面包一层滚动容器。默认主题把 <table> 本身设成 display:block 来做
-        // 横向滚动，副作用是表格按内容收缩——列少的表比正文列窄一截，页面里宽窄不一。
-        // 把滚动交给包裹层后，表格可以恢复 display:table + width:100%，统一撑满正文列。
+        // Wrap tables in a scroll container. The default theme makes <table> itself
+        // display:block to scroll horizontally, which shrinks narrow tables below the
+        // text column. With the wrapper scrolling, tables keep display:table and width:100%.
         md.renderer.rules.table_open = () => '<div class="wk-table">\n<table>\n'
         md.renderer.rules.table_close = () => '</table>\n</div>\n'
       },
@@ -116,7 +97,7 @@ export default withMermaid(
 
     themeConfig: {
       logoLink: { link: '/', target: '_self' },
-      siteTitle: 'WeKnora',
+      siteTitle: 'AI KB',
 
       nav: [],
 
@@ -126,44 +107,43 @@ export default withMermaid(
 
       socialLinks: [{ icon: 'github', link: repo }],
 
-      outline: { level: [2, 3], label: '本页目录' },
+      outline: { level: [2, 3], label: 'On this page' },
 
-      docFooter: { prev: '上一篇', next: '下一篇' },
-      returnToTopLabel: '回到顶部',
-      sidebarMenuLabel: '目录',
-      darkModeSwitchLabel: '外观',
-      lightModeSwitchTitle: '切换到浅色',
-      darkModeSwitchTitle: '切换到深色',
+      docFooter: { prev: 'Previous page', next: 'Next page' },
+      returnToTopLabel: 'Return to top',
+      sidebarMenuLabel: 'Menu',
+      darkModeSwitchLabel: 'Appearance',
+      lightModeSwitchTitle: 'Switch to light theme',
+      darkModeSwitchTitle: 'Switch to dark theme',
 
       lastUpdated: {
-        text: '最后更新',
+        text: 'Last updated',
         formatOptions: { dateStyle: 'medium', timeStyle: undefined },
       },
 
       editLink: {
         pattern: `${repo}/edit/main/website-docs/:path`,
-        text: '在 GitHub 上编辑此页',
+        text: 'Edit this page on GitHub',
       },
 
       search: {
         provider: 'local',
         options: {
           translations: {
-            button: { buttonText: '搜索文档', buttonAriaLabel: '搜索文档' },
+            button: { buttonText: 'Search docs', buttonAriaLabel: 'Search docs' },
             modal: {
-              displayDetails: '展开详情',
-              resetButtonTitle: '清除',
-              backButtonTitle: '返回',
-              noResultsText: '没有找到结果',
+              displayDetails: 'Display detailed list',
+              resetButtonTitle: 'Reset search',
+              backButtonTitle: 'Close search',
+              noResultsText: 'No results for',
               footer: {
-                selectText: '选择',
-                navigateText: '切换',
-                closeText: '关闭',
+                selectText: 'to select',
+                navigateText: 'to navigate',
+                closeText: 'to close',
               },
             },
           },
           miniSearch: {
-            options: { tokenize },
             searchOptions: {
               fuzzy: 0.2,
               prefix: true,
@@ -174,8 +154,8 @@ export default withMermaid(
       },
 
       footer: {
-        message: `基于 WeKnora ${repoVersionLabel} 源码整理 · MIT License`,
-        copyright: '© Tencent WeKnora',
+        message: `AI KB ${repoVersionLabel} · MIT License`,
+        copyright: '© Tencent',
       },
     },
 

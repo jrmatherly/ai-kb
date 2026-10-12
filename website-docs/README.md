@@ -1,22 +1,22 @@
-# WeKnora 官网与文档
+# AI KB website and documentation
 
-`website-docs/` 包含官网、文档、共享样式和全部构建部署脚本，可独立复制和构建，不依赖仓库外层文件。官网和文档共用一个域名、一次构建和一份部署产物。
+`website-docs/` holds the product website, the documentation, the shared styles and every build and deploy script. It can be copied out and built on its own; nothing outside this directory is needed. The website and the documentation share one domain, one build and one deployable artifact.
 
-产品、部署、API 和开发文档统一在这里维护。旧 `docs/` 的有效内容已按主题合并，过时和重复正文已删除；迁移取舍及仍保留的工程资源见[迁移记录](MIGRATION.md)；该记录仅供维护者使用，不发布到站点。
+Product, deployment, API and development documentation is maintained here. The site is published in English only. Useful content from the old `docs/` directory has been merged by topic, and outdated or duplicate text has been deleted. The [migration record](MIGRATION.md) lists what moved where and which engineering resources remain in `docs/`. It is for maintainers and is not published on the site.
 
-- `/`：产品首页。
-- `/docs/`：直接进入“快速上手”。
-- `/docs/…`：完整文档，保留分类导航、搜索和侧栏。
+- `/`: the product homepage.
+- `/docs/`: redirects straight to the quick start.
+- `/docs/...`: the full documentation, with category navigation, search and sidebar.
 
-站点只占用这两个路径：根目录下只有 `index.html`、`404.html` 和 `docs/`。官网的脚本、样式和图片都放在 `/docs/_home/` 下，所以上游网关只需转发 `/`（精确匹配）和 `/docs/` 前缀。`build` 会拒绝引用这两个路径以外资源的页面。
+The site uses only these two paths. The site root contains only `index.html`, `404.html` and `docs/`. The homepage scripts, styles and images live under `/docs/_home/`, so an upstream gateway only needs to forward `/` (exact match) and the `/docs/` prefix. `build` rejects any page that references a resource outside these two paths.
 
-顶栏高 64px、横向铺满。两边使用 README 原版商标，共用颜色、字体和深浅色偏好；Logo 在当前标签返回官网。官网和文档各自使用适合当前页面的导航。
+The top bar is 64px tall and spans the full width. Both the homepage and the documentation show the logo from the repository README and share colors, fonts and the light or dark preference. The logo returns to the homepage in the current tab. The homepage and the documentation each have navigation suited to their pages.
 
-## 发布方式：静态文件 + Nginx
+## Publishing: static files and Nginx
 
-### 1. 准备部署包
+### 1. Build the deployable archive
 
-使用 Node.js 24，在仓库的 `website-docs/` 目录执行。首次构建或依赖锁文件变更后，先安装依赖：
+Use Node.js 24 and run the commands in the repository's `website-docs/` directory. On the first build, or after a dependency lock file changes, install dependencies first:
 
 ```bash
 cd website-docs
@@ -25,89 +25,91 @@ npm run build
 npm run package:site
 ```
 
-`build` 会编译官网、检查文档链接和 Mermaid、编译文档，并校验合并后的资源路径。全部通过后更新 `static-site/`；`package:site` 将其打包到 `releases/`。
+`build` compiles the homepage, checks documentation links and Mermaid diagrams, compiles the documentation and validates resource paths in the merged output. When every step passes it replaces `static-site/`. `package:site` packs `static-site/` into an archive under `releases/`.
 
-### 2. 上传并解压
+### 2. Upload and extract
 
-只需把压缩包上传到服务器。服务器不需要 Node.js，也不需要 WeKnora 后端或独立文档服务。
+Upload only the archive to the server. The server needs neither Node.js nor the AI KB backend nor a separate documentation service.
 
-每次发布使用一个新的空目录，避免混入旧站点文件。下面的 `20260915-1` 是示例发布编号，后续发布换一个编号：
+Extract each release into a new, empty directory so that files from an older site do not mix in. `20260915-1` below is an example release number; use a new one for each release:
 
 ```bash
 sudo mkdir -p /srv/www/weknora/releases/20260915-1
 sudo tar -xzf weknora-site-v0.8.2.tar.gz -C /srv/www/weknora/releases/20260915-1
 ```
 
-解压后该目录下应直接有 `index.html`、`404.html`、`docs/`，无需再套一层 `static-site/`。
+After extraction the directory contains `index.html`, `404.html` and `docs/` directly, with no extra `static-site/` level.
 
-### 3. 配置域名根目录
+### 3. Point the domain root at the release
 
-以 [deploy/nginx.conf](deploy/nginx.conf) 为模板添加站点配置，修改：
+Add a site configuration based on the [deploy/nginx.conf](deploy/nginx.conf) template and change:
 
 ```nginx
-server_name 你的域名;
+server_name your-domain;
 root /srv/www/weknora/releases/20260915-1;
 ```
 
-如果域名已有 HTTPS 配置，保留原来的证书及监听设置，把模板中的 `root`、`index` 和 `location` 规则合入现有站点配置。域名应指向这台服务器。
+If the domain already has an HTTPS configuration, keep its certificate and listen settings and merge the template's `root`, `index` and `location` rules into the existing site configuration. The domain must resolve to this server.
 
-必须保留文档的 `.html` 路由解析规则；不要把所有未知路径回退到官网 `index.html`。当前构建部署在域名根路径，不支持直接放进 `/weknora/` 等子目录。
+Keep the documentation's `.html` route resolution rule. Do not fall back to the homepage `index.html` for every unknown path. The current build is deployed at the domain root; serving it from a subdirectory such as `/weknora/` is not supported.
 
-检查配置后重载：
+Test the configuration, then reload:
 
 ```bash
 sudo nginx -t
 sudo nginx -s reload
 ```
 
-### 4. 确认上线
+### 4. Confirm the release
 
-访问以下路径：
+Open these paths:
 
-- `/`：官网。
-- `/docs/`：快速上手。
-- `/docs/03-features/23-memory`：长期记忆文档，直接打开和刷新均正常。
-- `/docs/not-found`：返回 404。
+- `/`: the homepage.
+- `/docs/`: the quick start.
+- `/docs/03-features/23-memory`: the long-term memory page; opening it directly and reloading both work.
+- `/docs/not-found`: returns 404.
 
-再确认搜索、深浅色切换和 Logo 返回官网正常。
+Then check that search, the light and dark toggle and the logo link back to the homepage work.
 
-后续更新重复构建、打包、上传到新目录，再修改 Nginx `root` 并重载。需要回滚时，将 `root` 改回上一发布目录。确认新版本稳定后再清理旧发布目录。
+For later updates, repeat the build, package and upload into a new directory, then change the Nginx `root` and reload. To roll back, point `root` back at the previous release directory. Remove old release directories once the new version is stable.
 
-## 可选：Docker 部署
+## Optional: Docker deployment
 
-从干净源码即可构建，无需在宿主机安装 Node.js 或提前生成静态文件。Dockerfile 使用两个阶段：Node.js 24 按两份锁文件安装依赖并构建官网与文档，最终 Nginx 镜像只包含静态产物和服务配置。
+The image builds from a clean checkout. The host needs no Node.js and no pre-generated static files. The Dockerfile has two stages: a Node.js 24 stage installs dependencies from both lock files and builds the homepage and the documentation, and the final Nginx image holds only the static output and the server configuration.
 
-在仓库根目录执行：
+From the repository root:
 
 ```bash
 docker build -t weknora-site:0.8.2 website-docs
 docker run -d --name weknora-site --restart unless-stopped -p 8080:80 weknora-site:0.8.2
 ```
 
-访问 `http://服务器地址:8080/`。如使用域名和 HTTPS，让现有反向代理转发到该端口即可。镜像内已经包含官网、文档和 Nginx 路由配置。
+Open `http://<server-address>:8080/`. For a domain with HTTPS, have the existing reverse proxy forward to that port. The image already contains the homepage, the documentation and the Nginx routing configuration.
 
-容器内的 Nginx 默认监听 80 端口，可以用环境变量 `WEBSITE_NGINX_PORT` 修改，无需重新构建。使用 `--network host`，或者部署平台要求容器监听指定端口时，这样设置：
+Nginx in the container listens on port 80 by default. The image's `/docker-entrypoint.sh` writes the port from the `WEBSITE_NGINX_PORT` environment variable into the Nginx configuration at startup, so you can change it without rebuilding. Set it when you use `--network host` or when the platform requires the container to listen on a given port:
 
 ```bash
 docker run -d --name weknora-site --restart unless-stopped -e WEBSITE_NGINX_PORT=8080 -p 8080:8080 weknora-site:0.8.2
 ```
 
-只是想换一个对外端口时，改 `-p` 左侧的宿主机端口就够了，例如 `-p 9000:80`。
+A platform that replaces the entrypoint with its own startup command skips that substitution. In that case bake the port in at build time with `--build-arg WEBSITE_NGINX_PORT=8080`.
 
-也可以只复制 `website-docs/` 目录，在该目录执行 `docker build -t weknora-site:0.8.2 .`。构建上下文必须是 `website-docs/`，宿主机的依赖、旧构建产物和部署包由 `.dockerignore` 排除。
+To change only the port exposed on the host, change the host side of `-p`, for example `-p 9000:80`.
 
-从旧文档镜像迁移时，将容器端口映射或反向代理目标端口从 `8081` 改为 `80`（宿主机端口可自行选择，例如 `-p 8081:80`）。域名根路径 `/` 现在提供官网，`/docs/` 提供文档，反向代理需覆盖整个站点并保留请求路径。容器使用 Nginx 官方镜像的默认入口，无需额外的 `docker-entrypoint.sh`。
+You can also copy just the `website-docs/` directory and run `docker build -t weknora-site:0.8.2 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
 
-构建后可在安装了 Node.js 24 和 Docker 的机器上执行以下检查，无需安装 npm 依赖。检查会临时启动容器并自动清理，验证两站路由、静态资源、404、压缩和响应头：
+When migrating from the old documentation image, change the container port in the port mapping or the reverse proxy target from `8081` to `80` (choose any host port, for example `-p 8081:80`). The domain root `/` now serves the homepage and `/docs/` serves the documentation, so the reverse proxy must cover the whole site and keep the request path.
+
+After building, you can run the following check on a machine with Node.js 24 and Docker; it needs no npm dependencies. It starts temporary containers, cleans them up, and checks routing for both parts of the site, static assets, 404 pages, compression and response headers:
 
 ```bash
 cd website-docs
 npm run test:docker -- weknora-site:0.8.2
 ```
 
-## 本地开发
+## Local development
 
-使用 Node.js 24 LTS（目录内提供 `.nvmrc`，使用 nvm 时可执行 `nvm use`）。首次获取源码后安装依赖（分别按文档和官网的锁文件安装）：
+Use Node.js 24 LTS (the directory has an `.nvmrc`, so with nvm you can run `nvm use`). After the first checkout, install dependencies (the documentation and the homepage each install from their own lock file):
 
 ```bash
 cd website-docs
@@ -116,29 +118,30 @@ npm run build
 npm run preview
 ```
 
-预览地址：`http://127.0.0.1:3000/`。修改源码后重新构建并刷新；可用 `npm run preview -- --port 8080` 指定其他端口。
+The preview runs at `http://127.0.0.1:3000/`. After changing sources, rebuild and reload. Use `npm run preview -- --port 8080` for another port.
 
 ```bash
 npm run check
 npm run test:integration
 ```
 
-集成检查需要安装 Google Chrome，验证主题同步、两边导航、搜索、手机端控件及直达文档路由。可用 `SITE_TEST_URL` 指定待验证的站点。
+The integration check needs Google Chrome installed. It verifies theme synchronization, navigation on both parts of the site, search, mobile controls and direct documentation routes. Set `SITE_TEST_URL` to test a different site.
 
-开发时可分别使用 `npm run dev:homepage`（官网）和 `npm run dev:docs`（文档）获得热更新；完整站内跳转请使用统一构建后的 `npm run preview`。
+For hot reload during development, use `npm run dev:homepage` (homepage) and `npm run dev:docs` (documentation) separately. For full cross-site navigation, use `npm run preview` on the unified build.
 
-`npm run build:docs` 只编译文档，`npm run build:homepage` 只编译官网；正式发布使用 `npm run build`，输出会同时包含两者。`VERSION` 是这份站点构建使用的发布版本。
+`npm run build:docs` compiles only the documentation and `npm run build:homepage` only the homepage. Releases use `npm run build`, whose output contains both. `VERSION` holds the release version this site build uses.
 
-## 工程目录（相对于 website-docs）
+## Project layout (relative to website-docs)
 
-- `homepage/`：Next.js 官网源码、品牌素材及独立依赖锁文件。
-- `01-getting-started/` 至 `06-development/`：文档正文，原有路径不变。
-- `.vitepress/`：文档站配置与主题。
-- `public/`、`sample-data/`：文档截图和示例。
-- `shared/`：品牌变量、顶栏样式及共用图标。
-- `scripts/`：统一构建、检查、预览和打包。
-- `static-site/`：唯一的部署目录，由构建生成。
-- `deploy/`、`Dockerfile`：Nginx 和 Docker 部署配置。
-- `releases/`：生成的部署压缩包。
+- `homepage/`: the Next.js homepage source, brand assets and its own dependency lock file.
+- `01-getting-started/` to `07-releases/`: documentation pages; their paths are unchanged.
+- `.vitepress/`: documentation site configuration and theme.
+- `public/`: documentation screenshots and static files.
+- `sample-data/`: demo documents for trying out a knowledge base, paired with the MCP demo server in `examples/mcp-demo/server.py`.
+- `shared/`: brand variables, top bar styles and shared icons.
+- `scripts/`: the unified build, checks, preview and packaging.
+- `static-site/`: the only deploy directory, generated by the build.
+- `deploy/`, `Dockerfile`: Nginx and Docker deployment configuration.
+- `releases/`: generated release archives.
 
-品牌素材来源见 [homepage/BRAND-ASSETS.md](homepage/BRAND-ASSETS.md)。产品视频使用 README 中的 GitHub 原始附件，播放需要访问 GitHub；页面、文档和截图随包部署。
+Brand asset sources are listed in [homepage/BRAND-ASSETS.md](homepage/BRAND-ASSETS.md). The product video plays from a GitHub attachment URL, so playback needs access to GitHub. Pages, documentation and screenshots ship in the archive.
