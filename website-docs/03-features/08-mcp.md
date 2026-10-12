@@ -429,7 +429,7 @@ The external tool directory keeps the full JSON Schema. New-protocol tool calls 
 
 The `mcp_endpoints` table (PostgreSQL migration `000102_mcp_endpoints`, SQLite `000022_mcp_endpoints`) holds one row per endpoint: `tenant_id`, `name`, `description`, `enabled`, `token_hash` (SHA-256), `token_hint` (a prefix for display), `knowledge_base_ids` (an empty array means every knowledge base in the workspace), `tools` (the allowlist), `default_agent_id` (empty means the built-in Quick Answer), `rate_limit_per_minute` (default 60, maximum 6000) and `last_used_at`. The type is defined in `internal/types/mcp_endpoint.go` and the tool catalog in `internal/types/mcp_endpoint_tools.go`.
 
-The management API lives under `/api/v1/mcp-endpoints`. Reads need Viewer, changes need Admin, and API keys need the `manage_channels` capability (fields and examples in [MCP API](../04-api/02-api-agent-mcp.md)):
+The management API lives under `/api/v1/mcp-endpoints`. Reads need Viewer, changes need Admin, and API keys need the `manage_channels` capability (fields and examples in [MCP API](../04-api/02-api-agent-mcp.md#mcp-server-endpoints-api-v1-mcp-endpoints)):
 
 | Method | Path | Description |
 |---|---|---|

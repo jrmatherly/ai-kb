@@ -1,30 +1,30 @@
-# API 参考：模型与初始化
+# API reference: models and initialization
 
-管理模型、测试连接、初始化知识库，并发起评估任务。WeKnoraCloud 接口用于相关云服务接入。
+Manage models, test connections, initialize knowledge bases and start evaluation tasks. The WeKnoraCloud endpoints connect that cloud service.
 
-系统信息与系统管理（`/system`、`/system/admin`）接口见[系统与平台管理](./02-api-system.md)。
+System information and system administration (`/system`, `/system/admin`) are in [System and platform administration](./02-api-system.md).
 
-## 模型（/api/v1/models）
+## Models (/api/v1/models)
 
-API key：`manage_models` 或 full-access。
+API key: `manage_models` or full-access.
 
 ### GET /api/v1/models/providers
 
-用途：厂商目录（前端据此动态渲染厂商下拉、图标、额外字段与模型选择）。权限：Viewer+。查询参数：`model_type`（可选：`chat/embedding/rerank/vllm/asr`，也接受 `KnowledgeQA` 等后端取值；未知取值返回 400），指定后只返回支持该类型的厂商及该类型的模型。Handler: `internal/handler/model_catalog.go`
+Purpose: the provider catalog. The frontend renders the provider dropdown, icons, extra fields and model picker from it. Permission: Viewer+. Query parameter: `model_type` (optional: `chat/embedding/rerank/vllm/asr`; backend values such as `KnowledgeQA` are accepted too; an unknown value returns 400). When set, only providers that support that type are returned, with that type's models. Handler: `internal/handler/model_catalog.go`. The provider list itself is described in [Model management](../03-features/06-models.md#built-in-providers).
 
-响应：200 `{"success":true,"data":[ModelProviderDTO]}`，每项：
+Response: 200 `{"success":true,"data":[ModelProviderDTO]}`, each item:
 
-| 字段 | 说明 |
+| Field | Description |
 | --- | --- |
-| `value` / `label` / `labels` / `description` / `descriptions` / `website` | 厂商 id、品牌名、按语言的名称与描述 |
-| `icon` | `data:image/svg+xml;base64,...`，可直接用于 `<img src>` |
-| `api` / `auth` / `requiresAuth` | 默认协议（`openai-completions` 等）、鉴权方式、是否需要密钥 |
-| `defaultUrls` / `modelTypes` | 按模型类型的默认地址与支持的类型。`defaultUrls` 仅对 Admin+（或 full-access / `manage_tenant_settings` API key）返回，其他调用方为空 |
-| `extraFields` | 厂商额外配置字段定义（`key,label,labels,type,required,default,placeholder,options,model_types,secret`），值存入 `parameters.extra_config` |
-| `credentialLabels` | 部分模型类型下凭证输入框的名称与提示（如火山引擎、LKEAP 重排的 API Key 一栏实为 Access Key ID / SecretId） |
-| `models` | 内置模型目录（`id,name,type,api,reasoning,input,context_window,max_output_tokens,dimension,thinking_levels,cost,source`），`source` 为该模型参数所依据的厂商文档链接 |
-| `thinking` | 厂商级思考编码摘要（`format`、`levels`） |
-| `order` | 列表排序值 |
+| `value` / `label` / `labels` / `description` / `descriptions` / `website` | Provider id, brand name, names and descriptions per language |
+| `icon` | `data:image/svg+xml;base64,...`, usable directly as `<img src>` |
+| `api` / `auth` / `requiresAuth` | Default protocol (`openai-completions` and others), auth style, whether a key is required |
+| `defaultUrls` / `modelTypes` | Default URL per model type and the supported types. `defaultUrls` is returned only to Admin+ (or a full-access / `manage_tenant_settings` API key); other callers get an empty value |
+| `extraFields` | Provider extra configuration field definitions (`key,label,labels,type,required,default,placeholder,options,model_types,secret`); values are stored in `parameters.extra_config` |
+| `credentialLabels` | Name and hint of the credential input for some model types (for Volcengine and LKEAP rerank the API Key field is really an Access Key ID / SecretId) |
+| `models` | Built-in model catalog (`id,name,type,api,reasoning,input,context_window,max_output_tokens,dimension,thinking_levels,cost,source`); `source` is the provider documentation link the model's parameters are based on |
+| `thinking` | Provider-level thinking encoding summary (`format`, `levels`) |
+| `order` | Sort value for the list |
 
 ```bash
 curl "$BASE/api/v1/models/providers?model_type=chat" -H "Authorization: Bearer $TOKEN"
@@ -32,11 +32,11 @@ curl "$BASE/api/v1/models/providers?model_type=chat" -H "Authorization: Bearer $
 
 ### GET|POST /api/v1/models/catalog/resolve
 
-用途：按厂商、模型名、`base_url` 与 `extra_config` 解析有效接入配置（协议、思考等级、上下文），供模型编辑器实时展示。权限：Viewer+。
+Purpose: resolve the effective connection configuration (protocol, thinking levels, context) from provider, model name, `base_url` and `extra_config`, so the model editor can show it live. Permission: Viewer+.
 
-参数（GET 用查询参数，POST 用 JSON 请求体，字段相同）：`provider`（厂商 ID）、`model`、`base_url`、`model_type`（默认 `chat`）、`api`、`thinking_control`、`remote_model_name`，以及该厂商声明的非密钥额外字段（如 Azure 的 `api_version`）。POST 请求体还可带 `spec` 对象（与模型 `parameters.spec` 相同），用于预览单行目录覆盖。密钥类字段一律不接受。
+Parameters (query parameters for GET, a JSON body for POST, same fields): `provider` (provider ID), `model`, `base_url`, `model_type` (default `chat`), `api`, `thinking_control`, `remote_model_name`, plus the non-secret extra fields the provider declares (such as `api_version` for Azure). A POST body may also carry a `spec` object (same shape as the model's `parameters.spec`) to preview a per-row catalog override. Secret fields are never accepted.
 
-响应：200 `{"success":true,"data":{provider,api,remote_model,cataloged,model,capabilities,base_url,url}}`，其中 `capabilities` 为 `{provider,api,cataloged,reasoning,thinking_levels,thinking_format,input,context_window,max_output_tokens,max_tokens_field}`。`base_url` 与 `url`（实际请求地址，仅自行计算地址的厂商返回，如 Azure）只对 Admin+（或 full-access / `manage_tenant_settings` API key）返回。无法解析时返回 400。同一 `capabilities` 结构也随远程对话/视觉模型的 `ModelResponse.capabilities` 返回。
+Response: 200 `{"success":true,"data":{provider,api,remote_model,cataloged,model,capabilities,base_url,url}}`, where `capabilities` is `{provider,api,cataloged,reasoning,thinking_levels,thinking_format,input,context_window,max_output_tokens,max_tokens_field}`. `base_url` and `url` (the actual request URL, returned only by providers that compute their own, such as Azure) are returned only to Admin+ (or a full-access / `manage_tenant_settings` API key). An unresolvable request returns 400. The same `capabilities` structure is returned as `ModelResponse.capabilities` for remote chat and vision models.
 
 ```bash
 curl "$BASE/api/v1/models/catalog/resolve?provider=deepseek&model=deepseek-v4-pro" -H "Authorization: Bearer $TOKEN"
@@ -44,24 +44,24 @@ curl "$BASE/api/v1/models/catalog/resolve?provider=deepseek&model=deepseek-v4-pr
 
 ### POST /api/v1/models
 
-用途：创建模型。权限：Admin+。
+Purpose: create a model. Permission: Admin+.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | 是（`binding:"required"`） | 模型名 |
-| `display_name` | string | 否 | 显示名 |
-| `type` | string | 是（`binding:"required"`） | 模型类型：`KnowledgeQA` / `Embedding` / `Rerank` / `VLLM` / `ASR`（按原样保存，不接受 `chat` 等前端写法） |
-| `source` | string | 是（`binding:"required"`） | 来源（`local` / `remote`） |
-| `description` | string | 否 | 描述 |
+| `name` | string | Yes (`binding:"required"`) | Model name |
+| `display_name` | string | No | Display name |
+| `type` | string | Yes (`binding:"required"`) | Model type: `KnowledgeQA` / `Embedding` / `Rerank` / `VLLM` / `ASR` (stored as given; frontend spellings such as `chat` are not accepted) |
+| `source` | string | Yes (`binding:"required"`) | Source (`local` / `remote`) |
+| `description` | string | No | Description |
 | `parameters` | object | Yes (`binding:"required"`) | Connection parameters (`base_url`, `provider`, `extra_config`, `spec`, `context_window` and others; fields in [Model management](../03-features/06-models.md#model-configuration-fields)). `api_key` / `app_secret` can be sent on create and are changed afterwards through the credentials sub-resource |
 
-`parameters` 会按模型目录校验（未知协议、错误的 compat 键、非法思考等级返回 400），`base_url` 经过 SSRF 校验。
+`parameters` is validated against the model catalog (an unknown protocol, a wrong compat key or an invalid thinking level returns 400), and `base_url` goes through SSRF validation.
 
-自部署的 `generic` / `Qwen3-VL-Embedding` 默认通过二维 `messages` 批量提交独立输入（已验证 vLLM 0.29.0）；单条输入保留一维会话格式。文本沿用 `BATCH_EMBED_SIZE` 分批，图片批量调用的默认上限为 5 张，这是客户端的保守分批设置，可通过 `parameters.spec.compat.max_image_batch_size` 调整。上传解析仍按单张图片调度任务，不会跨任务合并图片。旧版服务若不支持二维 `messages`，可设置 `parameters.spec.compat.batch_messages=false` 恢复逐条请求；其他模型仅在显式启用该能力时使用会话批处理。
+Self-hosted `generic` / `Qwen3-VL-Embedding` models submit independent inputs as a batch through a two-dimensional `messages` array by default (verified with vLLM 0.29.0); a single input keeps the one-dimensional conversation format. Text is still batched by `BATCH_EMBED_SIZE`; image batch calls default to at most 5 images, a conservative client-side batch size adjustable through `parameters.spec.compat.max_image_batch_size`. Upload parsing still schedules tasks per image and never merges images across tasks. If an older server does not support two-dimensional `messages`, set `parameters.spec.compat.batch_messages=false` to go back to one request per input; other models use conversation batching only when that capability is enabled explicitly.
 
-批处理保持各输入的会话内容和向量索引映射，但不保证服务端跨批大小计算逐位相同。要求严格可复现时，应验证部署端的数值行为；vLLM 的 [Batch Invariance](https://docs.vllm.ai/en/v0.29.0/features/batch_invariance/) 模式需要在服务端启用，并针对实际模型验证。可设置 `WEKNORA_EMBEDDING_TEST_URL` 和 `WEKNORA_EMBEDDING_TEST_FIXTURE` 后运行 `go test ./internal/models/embedding -run '^TestLiveQwenMessagesBatchParity$' -v -count=1`：fixture 为 `{"texts":[...],"image_paths":[...]}`，文本和图片均至少两个；私有/IP 端点需配置 `SSRF_WHITELIST`，鉴权可使用 `WEKNORA_EMBEDDING_TEST_API_KEY`。该测试比较逐条、分批、倒序和重复逐条请求，记录最大绝对误差与最低余弦相似度，超过严格阈值会失败，不写入知识库。
+Batching keeps each input's conversation content and vector index mapping, but the server is not guaranteed to compute bit-identical results across batch sizes. Where strict reproducibility matters, verify the numeric behavior of the deployment; vLLM's [Batch Invariance](https://docs.vllm.ai/en/v0.29.0/features/batch_invariance/) mode has to be enabled on the server and verified against the actual model. Set `AIKB_EMBEDDING_TEST_URL` and `AIKB_EMBEDDING_TEST_FIXTURE` and run `go test ./internal/models/embedding -run '^TestLiveQwenMessagesBatchParity$' -v -count=1`: the fixture is `{"texts":[...],"image_paths":[...]}` with at least two texts and two images; private or IP endpoints need `SSRF_WHITELIST`, and `AIKB_EMBEDDING_TEST_API_KEY` carries the credential. The test compares single, batched, reversed and repeated single requests, records the maximum absolute error and the minimum cosine similarity, fails above a strict threshold, and writes nothing to a knowledge base.
 
-响应：201 `{"success":true,"data":{ModelResponse}}`（`id,name,type,source,parameters,is_default,is_builtin,status,credentials,capabilities,...`；响应不含密钥）
+Response: 201 `{"success":true,"data":{ModelResponse}}` (`id,name,type,source,parameters,is_default,is_builtin,status,credentials,capabilities,...`; the response carries no secrets)
 
 ```bash
 curl -X POST $BASE/api/v1/models -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
@@ -70,9 +70,9 @@ curl -X POST $BASE/api/v1/models -H "Authorization: Bearer $TOKEN" -H 'Content-T
 
 ### GET /api/v1/models
 
-用途：模型列表。权限：Viewer+。
+Purpose: list models. Permission: Viewer+.
 
-响应：200 `{"success":true,"data":[ModelResponse]}`
+Response: 200 `{"success":true,"data":[ModelResponse]}`
 
 ```bash
 curl $BASE/api/v1/models -H "Authorization: Bearer $TOKEN"
@@ -80,9 +80,9 @@ curl $BASE/api/v1/models -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/models/:id
 
-用途：模型详情。权限：Viewer+。
+Purpose: model details. Permission: Viewer+.
 
-响应：200 `{"success":true,"data":{ModelResponse}}`
+Response: 200 `{"success":true,"data":{ModelResponse}}`
 
 ```bash
 curl $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN"
@@ -90,38 +90,38 @@ curl $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/models/:id/copy
 
-用途：复制当前空间中的非内置模型配置。权限：Admin+。
+Purpose: copy a non-built-in model configuration in the current workspace. Permission: Admin+.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `display_name` | string | 是（`binding:"required"`） | 副本显示名；去除首尾空白后不能为空，最长 255 个字符 |
+| `display_name` | string | Yes (`binding:"required"`) | Display name of the copy; must not be empty after trimming whitespace, at most 255 characters |
 
-服务端按路径中的源模型 ID 读取完整配置：副本的 `name` 保持与源模型一致，`type`、`source`、`description`、`parameters` 及已存凭证一并复制，不接受客户端重传。副本不会继承内置或默认状态；已激活的本地模型不会重复下载，其他未激活的本地模型会重新进入下载流程。
+The server reads the full configuration by the source model ID in the path: the copy keeps the source's `name`, and `type`, `source`, `description`, `parameters` and the stored credentials are copied along; the client cannot resend them. The copy inherits neither built-in nor default status; an already active local model is not downloaded again, while other inactive local models re-enter the download flow.
 
-响应：201 `{"success":true,"data":{ModelResponse}}`（响应不含密钥）
+Response: 201 `{"success":true,"data":{ModelResponse}}` (the response carries no secrets)
 
-源模型不存在时返回 404；源模型为内置模型、ID 或 `display_name` 无效时返回 400。
+A missing source model returns 404; a built-in source model, an invalid ID or an invalid `display_name` returns 400.
 
 ```bash
 curl -X POST $BASE/api/v1/models/m-1/copy -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"display_name":"GPT-4o 副本"}'
+  -H 'Content-Type: application/json' -d '{"display_name":"GPT-4o copy"}'
 ```
 
 ### POST /api/v1/models/:id/debug
 
-用途：调试已保存模型（发起真实上游调用，产生费用）。权限：Admin+。form-data 字段：`input`（≤64KB）、`options`（JSON 编码调试选项：`system_prompt`、`temperature`（0~2）、`top_p`、`max_tokens`（1~8192）、`thinking`、`reasoning_effort`（`off/auto/minimal/low/medium/high/xhigh/max`，设置后覆盖 `thinking`））、`documents`（JSON 数组，≤100 条）、`file`（可选）。
+Purpose: debug a saved model (makes a real upstream call and incurs cost). Permission: Admin+. form-data fields: `input` (at most 64KB), `options` (JSON-encoded debug options: `system_prompt`, `temperature` (0 to 2), `top_p`, `max_tokens` (1 to 8192), `thinking`, `reasoning_effort` (`off/auto/minimal/low/medium/high/xhigh/max`, overrides `thinking` when set)), `documents` (JSON array, at most 100 items), `file` (optional).
 
-响应：200 `{"success":true,"data":{"ok",elapsed_ms,request,raw_response,observations,error}}`
+Response: 200 `{"success":true,"data":{"ok",elapsed_ms,request,raw_response,observations,error}}`
 
 ```bash
-curl -X POST $BASE/api/v1/models/m-1/debug -H "Authorization: Bearer $TOKEN" -F 'input=你好'
+curl -X POST $BASE/api/v1/models/m-1/debug -H "Authorization: Bearer $TOKEN" -F 'input=Hello'
 ```
 
 ### PUT /api/v1/models/:id
 
-用途：更新模型（内置模型由服务层限定 SystemAdmin）。权限：Admin+ 或 SystemAdmin（`AdminOrSystemAdmin`）。请求体：`name`、`display_name`（指针）、`description`、`parameters`（保留已存密钥）、`source`、`type`（均可选）。
+Purpose: update a model (built-in models are limited to SystemAdmin by the service layer). Permission: Admin+ or SystemAdmin (`AdminOrSystemAdmin`). Body: `name`, `display_name` (pointer), `description`, `parameters` (stored secrets are kept), `source`, `type` (all optional).
 
-响应：200 `{"success":true,"data":{ModelResponse}}`
+Response: 200 `{"success":true,"data":{ModelResponse}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN" \
@@ -130,11 +130,11 @@ curl -X PUT $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN" \
 
 ### DELETE /api/v1/models/:id
 
-用途：删除模型。权限：Admin+。
+Purpose: delete a model. Permission: Admin+.
 
-响应：200 `{"success":true,"message":"Model deleted"}`
+Response: 200 `{"success":true,"message":"Model deleted"}`
 
-仍被当前空间的知识库、智能体或长期记忆引用时，响应为 HTTP 400；兼容 message 保留，同时 `error.code=2300`，`error.details` 给出具体对象和引用位置：
+While the model is still referenced by a knowledge base, an agent or long-term memory in the current workspace, the response is HTTP 400. The compatible message is kept, `error.code=2300` is set, and `error.details` names the objects and where they reference the model:
 
 ```json
 {
@@ -156,7 +156,7 @@ curl -X PUT $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN" \
 }
 ```
 
-知识库绑定值：`embedding_model`、`summary_model`、`image_processing_model`、`vlm_model`、`asr_model`、`wiki_synthesis_model`、`auto_tag_model`；智能体绑定值：`chat_model`、`rerank_model`、`vlm_model`、`asr_model`、`query_understand_model`、`follow_up_model`；长期记忆绑定值：`embedding_model`、`extract_model`。详情包含对象 `id`、`name`、合并后的 `bindings`，以及 `knowledge_base_total` / `agent_total`。列表最多各 50 条，删除守卫以总数为准。
+Knowledge base binding values: `embedding_model`, `summary_model`, `image_processing_model`, `vlm_model`, `asr_model`, `wiki_synthesis_model`, `auto_tag_model`. Agent binding values: `chat_model`, `rerank_model`, `vlm_model`, `asr_model`, `query_understand_model`, `follow_up_model`. Long-term memory binding values: `embedding_model`, `extract_model`. The details carry each object's `id`, `name` and merged `bindings`, plus `knowledge_base_total` / `agent_total`. Each list holds at most 50 entries; the delete guard goes by the totals.
 
 ```bash
 curl -X DELETE $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN"
@@ -164,14 +164,14 @@ curl -X DELETE $BASE/api/v1/models/m-1 -H "Authorization: Bearer $TOKEN"
 
 ### PUT /api/v1/models/:id/credentials
 
-用途：设置模型密钥（密钥不经主 PUT 传输）。权限：Admin+ 或 SystemAdmin。Handler: `internal/handler/model_credentials.go`
+Purpose: set model secrets (secrets never travel through the main PUT). Permission: Admin+ or SystemAdmin. Handler: `internal/handler/model_credentials.go`
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `api_key` | *string | 否 | 新 API Key |
-| `app_secret` | *string | 否 | 新 App Secret（两者均省略时仅返回状态） |
+| `api_key` | *string | No | New API key |
+| `app_secret` | *string | No | New App Secret (with both omitted, only the status is returned) |
 
-响应：200 `{"success":true,"data":{"fields":{"api_key":{"configured":bool},"app_secret":{"configured":bool}}}}`
+Response: 200 `{"success":true,"data":{"fields":{"api_key":{"configured":bool},"app_secret":{"configured":bool}}}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/models/m-1/credentials -H "Authorization: Bearer $TOKEN" \
@@ -180,9 +180,9 @@ curl -X PUT $BASE/api/v1/models/m-1/credentials -H "Authorization: Bearer $TOKEN
 
 ### DELETE /api/v1/models/:id/credentials/:field
 
-用途：删除某个密钥字段（`api_key` 或 `app_secret`）。权限：Admin+ 或 SystemAdmin。
+Purpose: delete one secret field (`api_key` or `app_secret`). Permission: Admin+ or SystemAdmin.
 
-响应：204 No Content
+Response: 204 No Content
 
 ```bash
 curl -X DELETE $BASE/api/v1/models/m-1/credentials/api_key -H "Authorization: Bearer $TOKEN"
@@ -190,13 +190,13 @@ curl -X DELETE $BASE/api/v1/models/m-1/credentials/api_key -H "Authorization: Be
 
 ## WeKnoraCloud
 
-Handler: `internal/handler/weknoracloud.go`。API key：`manage_models`/full。
+Handler: `internal/handler/weknoracloud.go`. API key: `manage_models`/full.
 
 ### POST /api/v1/weknoracloud/credentials
 
-用途：保存 WeKnoraCloud SaaS 凭证。权限：Admin+。请求体：`{"app_id":"...","app_secret":"..."}`（均 `binding:"required"`）。
+Purpose: save the WeKnoraCloud SaaS credentials. Permission: Admin+. Body: `{"app_id":"...","app_secret":"..."}` (both `binding:"required"`).
 
-响应：200 `{"success":true,"message":"凭证保存成功"}`
+Response: 200 `{"success":true,"message":"Credentials saved"}`
 
 ```bash
 curl -X POST $BASE/api/v1/weknoracloud/credentials -H "Authorization: Bearer $TOKEN" \
@@ -205,25 +205,25 @@ curl -X POST $BASE/api/v1/weknoracloud/credentials -H "Authorization: Bearer $TO
 
 ### GET /api/v1/models/weknoracloud/status
 
-用途：WeKnoraCloud 就绪状态探测。权限：Viewer+。
+Purpose: WeKnoraCloud readiness probe. Permission: Viewer+.
 
-响应：200 服务状态对象。
+Response: 200, the service status object.
 
 ```bash
 curl $BASE/api/v1/models/weknoracloud/status -H "Authorization: Bearer $TOKEN"
 ```
 
-## 初始化（/api/v1/initialization）
+## Initialization (/api/v1/initialization)
 
-Handler: `internal/handler/initialization.go`。KB 配置类：API key `manage_kbs`（写）/`retrieve`（读）；模型检测类：`manage_models`（均可 full-access）。
+Handler: `internal/handler/initialization.go`. KB configuration endpoints: API key `manage_kbs` (write) / `retrieve` (read); model check endpoints: `manage_models` (full-access works for all).
 
 ### GET /api/v1/initialization/config/:kbId
 
-用途：读取 KB 当前模型/解析配置。权限：Viewer+，KB read。
+Purpose: read the KB's current model and parsing configuration. Permission: Viewer+, KB read.
 
-模型 `baseUrl` 仅对 KB 所属空间的 Admin+（或 full-access / `manage_tenant_settings` API key）返回。通过组织分享访问的空间只能看到凭证是否已配置（`credentials.*`），看不到来源空间的模型地址和存储桶信息。
+A model's `baseUrl` is returned only to Admin+ of the KB's own workspace (or a full-access / `manage_tenant_settings` API key). A workspace that reaches the KB through an organization share sees only whether credentials are configured (`credentials.*`), not the source workspace's model URLs or storage bucket details.
 
-响应：200 `{"success":true,"data":{"hasFiles",llm,embedding,rerank,multimodal,documentSplitting,nodeExtract,questionGeneration}}`
+Response: 200 `{"success":true,"data":{"hasFiles",llm,embedding,rerank,multimodal,documentSplitting,nodeExtract,questionGeneration}}`
 
 ```bash
 curl $BASE/api/v1/initialization/config/kb-1 -H "Authorization: Bearer $TOKEN"
@@ -231,26 +231,26 @@ curl $BASE/api/v1/initialization/config/kb-1 -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/initialization/initialize/:kbId
 
-用途：初始化 KB 的模型与解析配置（首次配置向导）。权限：KB 创建者 OR Admin+，KB write。
+Purpose: initialize the KB's model and parsing configuration (the first-time setup wizard). Permission: KB creator OR Admin+, KB write.
 
-只有 KB 所属空间可以调用；通过组织分享获得编辑权限的空间会被拒绝（403）。KB 已绑定模型时，该接口会原地更新这些模型的配置，这一步需要与 `PUT /models/:id` 相同的权限（Admin+，或拥有 `manage_models` 能力的 API key），否则 403。
+Only the KB's own workspace may call it; a workspace with edit access through an organization share is rejected (403). When the KB already has models bound, this endpoint updates those models in place, which needs the same permission as `PUT /models/:id` (Admin+, or an API key with the `manage_models` capability), otherwise 403.
 
-主要字段（`InitializationRequest`）：
+Main fields (`InitializationRequest`):
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `llm.source` / `llm.modelName` | string | 是 | LLM 来源与模型名 |
-| `llm.baseUrl` / `llm.apiKey` | string | 否 | 连接参数 |
-| `embedding.source` / `embedding.modelName` | string | 是 | Embedding 模型 |
-| `embedding.baseUrl` / `embedding.apiKey` / `embedding.dimension` | — | 否 | 连接与维度 |
-| `rerank.enabled` + `rerank.modelName/baseUrl/apiKey` | — | 否 | Rerank 配置 |
-| `multimodal.enabled` + `multimodal.vlm.*` + `multimodal.storageType` + `multimodal.cos.*|minio.*` | — | 否 | 多模态与图床 |
-| `documentSplitting.chunkSize` / `separators` | int / []string | 是 | 分块配置 |
-| `documentSplitting.chunkOverlap` | int | 否 | 重叠 |
-| `nodeExtract.*` | — | 否 | 图谱抽取（enabled/text/tags/nodes/relations） |
-| `questionGeneration.*` | — | 否 | 问题生成（enabled/questionCount） |
+| `llm.source` / `llm.modelName` | string | Yes | LLM source and model name |
+| `llm.baseUrl` / `llm.apiKey` | string | No | Connection parameters |
+| `embedding.source` / `embedding.modelName` | string | Yes | Embedding model |
+| `embedding.baseUrl` / `embedding.apiKey` / `embedding.dimension` | mixed | No | Connection and dimension |
+| `rerank.enabled` + `rerank.modelName/baseUrl/apiKey` | mixed | No | Rerank configuration |
+| `multimodal.enabled` + `multimodal.vlm.*` + `multimodal.storageType` + `multimodal.cos.*\|minio.*` | mixed | No | Multimodal and image storage |
+| `documentSplitting.chunkSize` / `separators` | int / []string | Yes | Chunking configuration |
+| `documentSplitting.chunkOverlap` | int | No | Overlap |
+| `nodeExtract.*` | mixed | No | Graph extraction (enabled/text/tags/nodes/relations) |
+| `questionGeneration.*` | mixed | No | Question generation (enabled/questionCount) |
 
-响应：200 `{"success":true,"message":"知识库配置更新成功","data":{"models":[Model],"knowledge_base":{KnowledgeBase}}}`
+Response: 200 `{"success":true,"message":"Knowledge base configuration updated","data":{"models":[Model],"knowledge_base":{KnowledgeBase}}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/initialize/kb-1 -H "Authorization: Bearer $TOKEN" \
@@ -260,11 +260,11 @@ curl -X POST $BASE/api/v1/initialization/initialize/kb-1 -H "Authorization: Bear
 
 ### PUT /api/v1/initialization/config/:kbId
 
-用途：更新 KB 模型/分块配置（`KBModelConfigRequest`：`llmModelId` 必填，`embeddingModelId`、`vlm_config`、`asr_config`、`documentSplitting.*`、`multimodal.enabled`、`storageProvider`、`storageBackendId`、`nodeExtract.*`、`questionGeneration.*` 可选）。权限：KB 创建者 OR Admin+，KB write。
+Purpose: update the KB's model and chunking configuration (`KBModelConfigRequest`: `llmModelId` required; `embeddingModelId`, `vlm_config`, `asr_config`, `documentSplitting.*`, `multimodal.enabled`, `storageProvider`, `storageBackendId`, `nodeExtract.*`, `questionGeneration.*` optional). Permission: KB creator OR Admin+, KB write.
 
-通过组织分享访问时，需要有效分享权限为 admin；editor 只能编辑内容，不能改设置（403）。存储绑定（`storageBackendId` / `storageProvider`）只有 KB 所属空间可以修改，其他空间提交与当前不同的值会返回 403。
+Through an organization share, the effective share permission must be admin; an editor can edit content but not settings (403). The storage binding (`storageBackendId` / `storageProvider`) can be changed only by the KB's own workspace; another workspace that submits a value different from the current one gets 403.
 
-响应：200 `{"success":true,"message":"配置更新成功"}`
+Response: 200 `{"success":true,"message":"Configuration updated"}`
 
 ```bash
 curl -X PUT $BASE/api/v1/initialization/config/kb-1 -H "Authorization: Bearer $TOKEN" \
@@ -273,9 +273,9 @@ curl -X PUT $BASE/api/v1/initialization/config/kb-1 -H "Authorization: Bearer $T
 
 ### GET /api/v1/initialization/ollama/status
 
-用途：Ollama 可用性探测。权限：Viewer+。
+Purpose: Ollama availability probe. Permission: Viewer+.
 
-响应：200 `{"success":true,"data":{"available","version","baseUrl","error"}}`
+Response: 200 `{"success":true,"data":{"available","version","baseUrl","error"}}`
 
 ```bash
 curl $BASE/api/v1/initialization/ollama/status -H "Authorization: Bearer $TOKEN"
@@ -283,9 +283,9 @@ curl $BASE/api/v1/initialization/ollama/status -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/initialization/ollama/models
 
-用途：列出本地 Ollama 模型。权限：Viewer+。
+Purpose: list local Ollama models. Permission: Viewer+.
 
-响应：200 `{"success":true,"data":{"models":[...]}}`
+Response: 200 `{"success":true,"data":{"models":[...]}}`
 
 ```bash
 curl $BASE/api/v1/initialization/ollama/models -H "Authorization: Bearer $TOKEN"
@@ -293,9 +293,9 @@ curl $BASE/api/v1/initialization/ollama/models -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/initialization/ollama/models/check
 
-用途：批量检查模型是否已存在。权限：Admin+。请求体：`{"models":["llama3"]}`（`binding:"required"`）。
+Purpose: check in one call whether models already exist. Permission: Admin+. Body: `{"models":["llama3"]}` (`binding:"required"`).
 
-响应：200 `{"success":true,"data":{"models":{"llama3":true}}}`
+Response: 200 `{"success":true,"data":{"models":{"llama3":true}}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/ollama/models/check -H "Authorization: Bearer $TOKEN" \
@@ -304,9 +304,9 @@ curl -X POST $BASE/api/v1/initialization/ollama/models/check -H "Authorization: 
 
 ### POST /api/v1/initialization/ollama/models/download
 
-用途：拉取 Ollama 模型（异步任务）。权限：Admin+。请求体：`{"modelName":"llama3"}`（`binding:"required"`）。
+Purpose: pull an Ollama model (asynchronous task). Permission: Admin+. Body: `{"modelName":"llama3"}` (`binding:"required"`).
 
-响应：200 `{"success":true,"data":{"taskId","modelName","status","progress"}}`
+Response: 200 `{"success":true,"data":{"taskId","modelName","status","progress"}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/ollama/models/download -H "Authorization: Bearer $TOKEN" \
@@ -315,9 +315,9 @@ curl -X POST $BASE/api/v1/initialization/ollama/models/download -H "Authorizatio
 
 ### GET /api/v1/initialization/ollama/download/progress/:taskId
 
-用途：下载任务进度。权限：Viewer+。
+Purpose: download task progress. Permission: Viewer+.
 
-响应：200 `{"success":true,"data":{id,modelName,status,progress,message,startTime,endTime}}`
+Response: 200 `{"success":true,"data":{id,modelName,status,progress,message,startTime,endTime}}`
 
 ```bash
 curl $BASE/api/v1/initialization/ollama/download/progress/task-1 -H "Authorization: Bearer $TOKEN"
@@ -325,35 +325,35 @@ curl $BASE/api/v1/initialization/ollama/download/progress/task-1 -H "Authorizati
 
 ### GET /api/v1/initialization/ollama/download/tasks
 
-用途：全部下载任务列表。权限：Viewer+。
+Purpose: list all download tasks. Permission: Viewer+.
 
-响应：200 `{"success":true,"data":[DownloadTask]}`
+Response: 200 `{"success":true,"data":[DownloadTask]}`
 
 ```bash
 curl $BASE/api/v1/initialization/ollama/download/tasks -H "Authorization: Bearer $TOKEN"
 ```
 
-### 模型连通性检测（均 POST，权限 Admin+）
+### Model connectivity checks (all POST, permission Admin+)
 
-请求体统一为 `ModelTestRequest`：
+The body is always a `ModelTestRequest`:
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `source` | string | 否 | 默认 `remote` |
-| `modelName` | string | 是 | 模型名 |
-| `baseUrl` / `apiKey` / `appSecret` | string | 否 | 连接参数 |
-| `provider` / `interfaceType` | string | 否 | 厂商/接口类型 |
-| `dimension` / `supportsDimensionOverride` | int / bool | 否 | embedding 维度；是否在请求中指定维度 |
-| `customHeaders` / `extraConfig` | map | 否 | 扩展 |
-| `spec` | object | 否 | 单行目录覆盖，与模型 `parameters.spec` 相同 |
-| `modelId` | string | 否 | 已存模型 ID：请求中缺失的密钥、`extraConfig` 与 `spec` 从该模型补齐 |
+| `source` | string | No | Default `remote` |
+| `modelName` | string | Yes | Model name |
+| `baseUrl` / `apiKey` / `appSecret` | string | No | Connection parameters |
+| `provider` / `interfaceType` | string | No | Provider / interface type |
+| `dimension` / `supportsDimensionOverride` | int / bool | No | Embedding dimension; whether the dimension is sent in the request |
+| `customHeaders` / `extraConfig` | map | No | Extensions |
+| `spec` | object | No | Per-row catalog override, same shape as the model's `parameters.spec` |
+| `modelId` | string | No | ID of a stored model: secrets, `extraConfig` and `spec` missing from the request are filled in from that model |
 
-| 端点 | 用途 | 响应 data |
+| Endpoint | Purpose | Response data |
 | --- | --- | --- |
-| `POST /api/v1/initialization/remote/check` | LLM 远程连通性 | `{available,message}` |
-| `POST /api/v1/initialization/embedding/test` | Embedding 测试 | `{available,message,dimension}` |
-| `POST /api/v1/initialization/rerank/check` | Rerank 测试 | `{available,message}` |
-| `POST /api/v1/initialization/asr/check` | ASR 测试 | `{available,message}` |
+| `POST /api/v1/initialization/remote/check` | LLM remote connectivity | `{available,message}` |
+| `POST /api/v1/initialization/embedding/test` | Embedding test | `{available,message,dimension}` |
+| `POST /api/v1/initialization/rerank/check` | Rerank test | `{available,message}` |
+| `POST /api/v1/initialization/asr/check` | ASR test | `{available,message}` |
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/remote/check -H "Authorization: Bearer $TOKEN" \
@@ -362,9 +362,9 @@ curl -X POST $BASE/api/v1/initialization/remote/check -H "Authorization: Bearer 
 
 ### POST /api/v1/initialization/multimodal/test
 
-用途：多模态（VLM+图床）端到端测试。权限：Admin+。multipart 字段：`image`（必填）、`vlm_model`、`vlm_base_url`（必填）、`vlm_api_key`、`vlm_interface_type`、`storage_type`（`cos|minio`，必填）及对应 `cos_*`/`minio_*` 字段、`chunk_size`、`chunk_overlap`、`separators`。
+Purpose: end-to-end multimodal test (VLM plus image storage). Permission: Admin+. multipart fields: `image` (required), `vlm_model`, `vlm_base_url` (required), `vlm_api_key`, `vlm_interface_type`, `storage_type` (`cos|minio`, required) with the matching `cos_*`/`minio_*` fields, `chunk_size`, `chunk_overlap`, `separators`.
 
-响应：200 `{"success":true,"data":{"success","caption","ocr","processing_time"}}`
+Response: 200 `{"success":true,"data":{"success","caption","ocr","processing_time"}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/multimodal/test -H "Authorization: Bearer $TOKEN" \
@@ -373,20 +373,20 @@ curl -X POST $BASE/api/v1/initialization/multimodal/test -H "Authorization: Bear
 
 ### POST /api/v1/initialization/extract/text-relation
 
-用途：文本图谱抽取测试。权限：Admin+。请求体：`text`（必填，≤5000 字符）、`tags`（必填，至少一个）、`model_id`（必填）。
+Purpose: test graph extraction on text. Permission: Admin+. Body: `text` (required, at most 5000 characters), `tags` (required, at least one), `model_id` (required).
 
-响应：200 `{"success":true,"data":{"nodes":[GraphNode],"relations":[GraphRelation]}}`
+Response: 200 `{"success":true,"data":{"nodes":[GraphNode],"relations":[GraphRelation]}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/extract/text-relation -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"text":"小明在腾讯工作","tags":["人物","公司"],"model_id":"m-1"}'
+  -H 'Content-Type: application/json' -d '{"text":"Alice works at Acme","tags":["person","company"],"model_id":"m-1"}'
 ```
 
 ### POST /api/v1/initialization/extract/fabri-tag
 
-用途：生成示例标签。权限：Admin+。无请求体。
+Purpose: generate sample tags. Permission: Admin+. No body.
 
-响应：200 `{"success":true,"data":{"tags":[...]}}`
+Response: 200 `{"success":true,"data":{"tags":[...]}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/extract/fabri-tag -H "Authorization: Bearer $TOKEN"
@@ -394,31 +394,33 @@ curl -X POST $BASE/api/v1/initialization/extract/fabri-tag -H "Authorization: Be
 
 ### POST /api/v1/initialization/extract/fabri-text
 
-用途：按标签生成示例文本。权限：Admin+。请求体：`{"tags":[...],"model_id":"m-1"}`（model_id 必填）。
+Purpose: generate sample text for the given tags. Permission: Admin+. Body: `{"tags":[...],"model_id":"m-1"}` (`model_id` required).
 
-响应：200 `{"success":true,"data":{"text":"..."}}`
+Response: 200 `{"success":true,"data":{"text":"..."}}`
 
 ```bash
 curl -X POST $BASE/api/v1/initialization/extract/fabri-text -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"model_id":"m-1","tags":["人物"]}'
+  -H 'Content-Type: application/json' -d '{"model_id":"m-1","tags":["person"]}'
 ```
 
-## 评估（/api/v1/evaluation）
+## Evaluation (/api/v1/evaluation)
 
-Handler: `internal/handler/evaluation.go`。API key：`run_evaluations`/full。
+Handler: `internal/handler/evaluation.go`. API key: `run_evaluations`/full.
 
 ### POST /api/v1/evaluation
 
-用途：发起评估任务（驱动 LLM 调用，产生费用）。权限：Admin+。
+Purpose: start an evaluation task (drives LLM calls and incurs cost). Permission: Admin+.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `dataset_id` | string | 否 | 数据集 ID |
-| `knowledge_base_id` | string | 否 | 目标 KB |
-| `chat_id` | string | 否 | 对话模型 ID |
-| `rerank_id` | string | 否 | Rerank 模型 ID |
+| `dataset_id` | string | No | Dataset ID |
+| `knowledge_base_id` | string | No | Target KB |
+| `chat_id` | string | No | Chat model ID |
+| `rerank_id` | string | No | Rerank model ID |
 
-响应：200 `{"success":true,"data":{评估任务}}`
+With `chat_id` or `rerank_id` omitted, the first model of that type in the workspace is used. The evaluation KB copies only the source KB's embedding and summary models. Details: [Evaluation](../03-features/15-evaluation.md).
+
+Response: 200 `{"success":true,"data":{evaluation task}}`
 
 ```bash
 curl -X POST $BASE/api/v1/evaluation -H "Authorization: Bearer $TOKEN" \
@@ -427,14 +429,14 @@ curl -X POST $BASE/api/v1/evaluation -H "Authorization: Bearer $TOKEN" \
 
 ### GET /api/v1/evaluation
 
-用途：查询评估结果。权限：Viewer+。查询参数：`task_id`（必填）。
+Purpose: read evaluation results. Permission: Viewer+. Query parameter: `task_id` (required).
 
-响应：200 `{"success":true,"data":{评估结果}}`
+Response: 200 `{"success":true,"data":{evaluation result}}`
 
 ```bash
 curl "$BASE/api/v1/evaluation?task_id=task-1" -H "Authorization: Bearer $TOKEN"
 ```
 
-## 实现参考
+## Implementation reference
 
-路由注册：`internal/router/router.go` 调用 `RegisterModelRoutes`、`RegisterInitializationRoutes`、`RegisterEvaluationRoutes`、`RegisterWeKnoraCloudRoutes`（定义在 `internal/router/routes_infra.go`）。Handler：`internal/handler/model.go`、`internal/handler/model_catalog.go`、`internal/handler/model_credentials.go`、`internal/handler/initialization.go`、`internal/handler/evaluation.go`、`internal/handler/weknoracloud.go`。
+Route registration: `internal/router/router.go` calls `RegisterModelRoutes`, `RegisterInitializationRoutes`, `RegisterEvaluationRoutes` and `RegisterWeKnoraCloudRoutes` (defined in `internal/router/routes_infra.go`). Handlers: `internal/handler/model.go`, `internal/handler/model_catalog.go`, `internal/handler/model_credentials.go`, `internal/handler/initialization.go`, `internal/handler/evaluation.go`, `internal/handler/weknoracloud.go`.
