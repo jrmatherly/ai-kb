@@ -6,7 +6,7 @@ The AI KB HTTP API is mounted under `/api/v1` and accepts JWT, API key and embed
 
 - Every business API lives under the `/api/v1` prefix (`r.Group("/api/v1")` in `router.go`).
 - Health check: `GET /health` (no authentication) returns `{"status":"ok"}`.
-- Swagger UI: `/swagger/index.html` on the backend, registered only outside `release` mode (`GIN_MODE != release`). Docker Compose defaults to `release`. Enabling it, the backend port and troubleshooting a blank page: [Development guide](../06-development/01-dev-guide.md).
+- Swagger UI: `/swagger/index.html` on the backend, registered only outside `release` mode (`GIN_MODE != release`). Docker Compose defaults to `release`. Enabling it, the backend port and troubleshooting a blank page: [Development guide](../06-development/01-dev-guide.md#gin-mode-and-swagger).
 - Paths outside the normal authentication flow: `GET|HEAD /r/:token` (short-lived resource grant URL), `GET /files` (authenticated file proxy), `GET|HEAD /api/v1/files/presigned` (HMAC-signed URL, no authentication), `GET /api/v1/files/presigned-preview` (Admin diagnostics).
 
 ```

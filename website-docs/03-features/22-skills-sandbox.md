@@ -98,7 +98,7 @@ Since v0.8.2 the [Lite desktop app](../05-clients/05-desktop.md) on macOS uses t
 
 - **Working directory**: on the new conversation page, click "Select project" and choose the project folder in the system directory picker; the conversation title bar shows the project name. Without a selection the title shows "Temporary workspace" and a session directory is created under `~/Documents/WeKnoraLite/<date>/session-*`. The home directory itself, a directory that contains it, and directories under `~/Library` cannot be selected.
 - **Paths**: the workspace is a real local path; there is no `/workspace`, `/workspace/input` or `/workspace/output`. The agent edits files in the project directly, those files do not enter the conversation's artifact list, and deleting the conversation does not delete the local directory.
-- **Limits**: commands have no network access by default, can write only inside the project directory, and the project's `.git` is read-only. Apart from common development toolchains (such as `.nvm`, `.pyenv` and `.cargo`) the home directory is unreadable, and credential locations such as `.ssh`, `.aws` and the keychain are never readable.
+- **Limits**: in the default `auto` mode commands keep outbound network access (only `ask` mode denies it), can write only inside the project directory, and the project's `.git` is read-only. Apart from common development toolchains (such as `.nvm`, `.pyenv` and `.cargo`) the home directory is unreadable, and credential locations such as `.ssh`, `.aws` and the keychain are never readable.
 - **Rollback**: rolling back a conversation does not restore local project files; manage them with Git when you need that.
 
 ## Environment variables and credentials

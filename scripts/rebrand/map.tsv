@@ -17,6 +17,7 @@ helm install weknora\b	helm install ai-kb
 -n weknora\b	-n ai-kb
 \bweknora-odl-hybrid\b	ai-kb-odl-hybrid
 /opt/weknora/	/opt/ai-kb/
+/opt/WeKnora\b	/opt/ai-kb
 # --- binaries and artifacts ---
 \bWeKnora-lite\b	ai-kb-lite
 \./WeKnora\b	./ai-kb
@@ -25,6 +26,7 @@ helm install weknora\b	helm install ai-kb
 \bwindow\.WeKnora\b	window.AIKB
 \bWeKnora\.(init|open|on|setContext|openWithQuery|setLocale)\b	AIKB.$1
 \bWeKnora-Embed-Webhook\b	AIKB-Embed-Webhook
+\bWeKnora-Lite-Desktop-App\b	AIKB-Lite-Desktop-App
 \bweknora-memories\.json\b	ai-kb-memories.json
 (?<!Tencent/)(?<!X-)\bWeKnora\b(?!-Chrome-Extension)	AI KB
 chart name `weknora`	chart name `ai-kb`

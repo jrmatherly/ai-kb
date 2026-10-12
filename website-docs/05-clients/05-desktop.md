@@ -1,189 +1,214 @@
-# 桌面客户端（WeKnora Lite Desktop）
+# Desktop client (AI KB Lite Desktop)
 
-::: warning 尚未正式发布
-桌面应用目前没有随 Release 提供安装包，需按[安装部署](../01-getting-started/02-installation.md)自行构建。
+::: warning Not released yet
+The desktop application ships no installer with a release. Build it yourself as described in [Installation](../01-getting-started/02-installation.md#desktop-application-cmd-desktop-wails-v2). This repository has no release workflow yet, so no release carries desktop artifacts.
 :::
 
-WeKnora Lite 桌面应用基于 [Wails v2](https://wails.io)，在桌面进程中运行 Go 后端，使用 SQLite 和本地文件存储。启动后可管理知识库并进行检索问答，无需 Docker 或外部数据库。源码位于 `cmd/desktop/`，基础能力与[单二进制 Lite](../01-getting-started/02-installation.md)一致；桌面版另外提供免登录启动，以及在 macOS 上运行智能体命令的[本机沙箱](../03-features/22-skills-sandbox.md#lite-host)。
+The AI KB Lite desktop application is built on [Wails v2](https://wails.io). It runs the Go backend inside the desktop process with SQLite and local file storage. After it starts you can manage knowledge bases and ask questions, with no Docker and no external database. The source is in `cmd/desktop/`. Its features match the [single Lite binary](../01-getting-started/02-installation.md). The desktop build adds startup without a login and, on macOS, a [host sandbox](../03-features/22-skills-sandbox.md#lite-host) that runs agent commands on the local machine.
 
-## 总体架构 {#_1-总体架构}
+## Architecture
 
-桌面应用由三部分组成（均在同一进程内）：
+This section shows how the window, the backend and the native bindings fit together in one process, so you know which part serves what.
 
-1. **内嵌后端**：`cmd/desktop/main.go` 中通过 `container.BuildContainer()` 构建与服务器版相同的依赖注入容器，在独立 goroutine 中启动 `http.Server`（Gin router）。
-2. **Wails 窗口（WebView）**：`wails.Run()` 创建原生窗口，前端页面通过 `assetserver.Options.Handler` 挂载的 **反向代理**（`httputil.NewSingleHostReverseProxy`）转发到内嵌后端，因此 WebView 加载的就是后端 `./web` 目录提供的 SPA。
-3. **Go 绑定层**：`cmd/desktop/app.go` 中的 `App` 结构体通过 `Bind` 暴露给前端 JS（`window.go.main.App.*`）。
+The desktop application has three parts, all in the same process:
+
+1. **Embedded backend**: `cmd/desktop/main.go` builds the same dependency injection container as the server with `container.BuildContainer()` and starts an `http.Server` (Gin router) in its own goroutine.
+2. **Wails window (WebView)**: `wails.Run()` creates the native window. Page requests go through a **reverse proxy** mounted as `assetserver.Options.Handler` (`httputil.ReverseProxy`) to the embedded backend, so the WebView loads the SPA that the backend serves from its `./web` directory.
+3. **Go binding layer**: the `App` struct in `cmd/desktop/app.go` is exposed to frontend JavaScript through `Bind` (`window.go.main.App.*`).
 
 ```mermaid
 flowchart LR
-    subgraph D["WeKnora Lite 桌面进程"]
-        W["Wails WebView (前端 SPA)"]
-        P["Reverse Proxy (assetserver)"]
-        B["内嵌 Gin 后端 (127.0.0.1:随机或固定端口)"]
-        S["SQLite + 本地文件存储 (Application Support)"]
+    subgraph D["AI KB Lite desktop process"]
+        W["Wails WebView (frontend SPA)"]
+        P["Reverse proxy (assetserver)"]
+        B["Embedded Gin backend (127.0.0.1, random or fixed port)"]
+        S["SQLite + local file storage"]
         W --> P --> B --> S
-        W -- "window.go.main.App.* 绑定" --> A["App 结构体 (app.go)"]
+        W -- "window.go.main.App.* bindings" --> A["App struct (app.go)"]
     end
-    B -. "可选 0.0.0.0 监听" .-> L["局域网其他设备 (LAN API)"]
+    B -. "optional 0.0.0.0 listener" .-> L["Other devices on the LAN (LAN API)"]
 ```
 
-### 端口与监听
+### Port and listener
 
-由 `main.go` 中的 `desktopBackendListenAddr()` 决定：
+`desktopBackendListenAddr()` in `main.go` decides where the backend listens:
 
-- 默认绑定 `127.0.0.1`，端口取 `desktop-prefs.json` 中保存的 `http_port`；未设置（为 0）时使用 `:0` 随机空闲端口，并带指数退避重试（`listenWithRetry`，最多 10 次）。
-- 若偏好项 `http_bind_public` 为 `true`，则改为监听 `0.0.0.0`，并通过 `desktopPreferredLANIPv4()` 探测一个非回环 IPv4（优先私网地址），拼出 `http://<LAN-IP>:<port>/api/v1` 供局域网内其他设备调用。
-- 反向代理与 WebView 的 API 调用始终走回环地址 `http://127.0.0.1:<port>`，不会以 `0.0.0.0` 作为拨号目标。
+- By default it binds `127.0.0.1` on the `http_port` saved in `desktop-prefs.json`. When that is unset (0) it uses `:0`, a random free port. Listening retries with exponential backoff (`listenWithRetry`, at most 10 attempts, delay capped at 3 seconds).
+- When the preference `http_bind_public` is `true` it listens on `0.0.0.0` instead. `desktopPreferredLANIPv4()` then picks a non-loopback IPv4 address (a private address first) and builds `http://<LAN-IP>:<port>/api/v1` for other devices on the LAN.
+- The reverse proxy and the WebView's API calls always use the loopback address `http://127.0.0.1:<port>`. They never dial `0.0.0.0`.
 
-### 数据存储位置（macOS .app 运行时）
+### Where data is stored
 
-`main.go` 的 `configureDesktopStorage()` 在检测到从 `.app/Contents/MacOS` 运行时：
+Data lives in the user's directories, not inside the application bundle. When `main.go` detects that it runs from `.app/Contents/MacOS`, `configureDesktopStorage()` does the following:
 
-- 数据目录定为 `~/Library/Application Support/WeKnora Lite/`（名称取自 .app bundle 名）。
-- SQLite 数据库：`.../data/weknora.db`（通过设置 `DB_PATH` 环境变量注入）。
-- 本地文件存储：`.../data/files`（`LOCAL_STORAGE_BASE_DIR`）。
-- `migrateLegacyDesktopData()` 会把旧版存放在 `.app/Contents/Resources/data` 里的数据一次性迁移到 Application Support。
-- 工作目录会切到 `.app/Contents/Resources`，以便读取打包进去的 `config/config.yaml`、`.env`、`migrations/sqlite` 与 `web/` 前端资源。
+- The data directory is `~/Library/Application Support/AI KB Lite/`, named after the `.app` bundle.
+- The SQLite database is `.../data/weknora.db`, passed in through the `DB_PATH` environment variable. An absolute `DB_PATH` is kept as it is.
+- `migrateLegacyDesktopData()` moves data that older builds kept in `.app/Contents/Resources/data` to Application Support once, if the target does not exist yet.
+- The working directory changes to `.app/Contents/Resources` when it contains `config/config.yaml`, so the packaged `config/config.yaml`, `.env`, `migrations/sqlite` and `web/` frontend are found.
 
-## 主要源码文件 {#_2-主要源码文件}
+Uploaded files are stored separately. For every desktop process, packaged or not, `configureDesktopFileStorage()` sets `LOCAL_STORAGE_BASE_DIR` to `~/.weknora/data/files` unless it already names an absolute directory other than the Docker default `/data/files`. Files that an earlier build kept under Application Support move there once.
 
-| 文件 | 作用 |
-|------|------|
-| `cmd/desktop/main.go` | 主入口（`//go:build !bindings`）：启动内嵌 Gin 后端、构建 macOS 菜单、配置 Wails 窗口与反向代理、注入 DomReady JS |
-| `cmd/desktop/main_bindings.go` | 绑定生成入口（`//go:build bindings`）：`wails build` 生成前端绑定阶段用 `-tags bindings` 单独编译，只 `Bind` 不启动 Gin/数据库 |
-| `cmd/desktop/app.go` | `App` 结构体与全部 Wails 绑定方法 |
-| `cmd/desktop/prefs.go` | 桌面偏好设置的读写（`desktop-prefs.json`），含本机沙箱的已批准项目目录 |
-| `cmd/desktop/signing_key.go` | 首次启动生成并持久化签名密钥 |
-| `cmd/desktop/update.go` | 基于 GitHub Releases 的检查更新 / 下载 / 安装重启逻辑 |
-| `cmd/desktop/wails.json` | Wails 构建配置 |
-| `cmd/desktop/build/` | 打包资源：`appicon.png`（应用图标）、`darwin/Info.plist`（macOS bundle 模板）、`windows/installer/project.nsi`（Windows NSIS 安装器模板） |
+Logs go to `~/Library/Logs/AI KB Lite/AI KB Lite.log` (also named after the bundle) unless `LOG_PATH` is set.
 
-## 窗口配置与前端注入 {#_3-窗口配置与前端注入}
+## Main source files
 
-`wails.Run(&options.App{...})` 的关键配置（见 `cmd/desktop/main.go`）：
+This table maps each file in `cmd/desktop/` to its job, so you know where to start reading.
 
-- 标题 `WeKnora Lite`，初始尺寸 **1280 × 800**，可调整大小，启动即显示。
-- `AssetServer.Handler` 使用反向代理指向内嵌后端 —— **前端资源并非 Go embed，而是后端 `./web` 目录（打包在 `.app/Contents/Resources/web`）提供的 SPA**。
-- macOS 专属：`mac.TitleBarHiddenInset()` 隐藏式标题栏，WebView 不透明。
-- 应用菜单：`About WeKnora`（含 "Open GitHub" 按钮，指向 `https://github.com/Tencent/WeKnora`）、`Check for Updates...`、`Quit`（Cmd+Q）、标准 Edit 菜单、`View > Reload`（Cmd+R，向前端发送 `app:reload` 事件）。
+| File | Purpose |
+| --- | --- |
+| `cmd/desktop/main.go` | Main entry point (`//go:build !bindings`): starts the embedded Gin backend, builds the macOS menu, configures the Wails window and reverse proxy, injects JavaScript on DomReady |
+| `cmd/desktop/main_bindings.go` | Binding generation entry point (`//go:build bindings`): the binding generation step of `wails build` compiles it alone with `-tags bindings`; it only calls `Bind` and starts neither Gin nor the database |
+| `cmd/desktop/app.go` | The `App` struct and every Wails binding method |
+| `cmd/desktop/prefs.go` | Reads and writes the desktop preferences (`desktop-prefs.json`), including the host sandbox's approved project directories |
+| `cmd/desktop/signing_key.go` | Generates and persists the signing key (and, when needed, a JWT secret) on first launch |
+| `cmd/desktop/update.go` | Update check, download, install and restart based on GitHub Releases |
+| `cmd/desktop/wails.json` | Wails build configuration |
+| `cmd/desktop/build/` | Packaging resources: `appicon.png` (application icon), `darwin/Info.plist` (macOS bundle template), `windows/installer/project.nsi` (Windows NSIS installer template) |
 
-`OnDomReady` 时向 WebView 注入三段 JS：
+## Window configuration and injected scripts
 
-1. `wailsThemeSyncJS`：按 `localStorage` 的 `WeKnora_theme` 同步深浅色主题与窗口背景色。
-2. `dragHandlerJS`：自定义窗口拖拽处理（绕过 Wails 的 CSS 变量拖拽检测，改用 `el.closest()` DOM 遍历 + 顶部 38px 标题栏区域判定，通过 WKWebView 消息桥发送 `drag`）；同时拦截外部 `http(s)` 链接与 `window.open`，改用系统浏览器打开（`BrowserOpenURL`）。
-3. 注入 `window.__WEKNORA_API_BASE__`（真实 API 根路径 `http://127.0.0.1:<port>/api/v1`）以及可选的 `window.__WEKNORA_API_LAN_BASE__`（LAN 访问地址）。
+This section lists what the window looks like and which scripts the shell injects into the page, for when you debug desktop-only behavior in the frontend.
 
-## Wails 绑定方法（前端可调用） {#_4-wails-绑定方法-前端可调用}
+Key settings of `wails.Run(&options.App{...})` in `cmd/desktop/main.go`:
 
-`App` 结构体（`cmd/desktop/app.go`）通过 `Bind` 暴露，前端以 `window.go.main.App.<方法名>` 调用，生成的 TypeScript 绑定位于 `frontend/src/wailsjs/go/main/App.d.ts`：
+- Title `AI KB Lite`, initial size **1280 × 800**, resizable, shown at startup.
+- `AssetServer.Handler` is the reverse proxy to the embedded backend. **The frontend assets are not embedded with Go embed. They are the SPA that the backend serves from `./web` (packaged in `.app/Contents/Resources/web`).**
+- macOS only: `mac.TitleBarHiddenInset()` hides the title bar, and the WebView is opaque.
+- Application menu: `About AI KB` (Cmd+I, with an "Open GitHub" button that opens `https://github.com/jrmatherly/ai-kb`), `Check for Updates...`, `Quit` (Cmd+Q), the standard Edit menu, and `View > Reload` (Cmd+R, which sends the `app:reload` event to the frontend).
 
-| 方法 | 签名（JS 侧） | 说明 |
-|------|--------------|------|
-| `GetAPIBaseURL` | `(): Promise<string>` | 返回本地 REST API 根地址，如 `http://127.0.0.1:PORT/api/v1`（WebView 的 `window.location.origin` 不是 API 主机，需用此值） |
-| `GetAPILanBaseURL` | `(): Promise<string>` | 返回建议给局域网其他设备使用的 API 地址（`…/api/v1`）；非 bind-public 模式或 IP 探测失败时为空 |
-| `GetDesktopHTTPPortSetting` | `(): Promise<number>` | 读取已保存的本地 API 端口偏好（0 = 每次启动随机端口） |
-| `SetDesktopHTTPPortSetting` | `(port: number): Promise<void>` | 保存端口偏好；需重启应用生效 |
-| `GetDesktopHTTPBindPublicSetting` | `(): Promise<boolean>` | 读取是否监听所有网卡（`0.0.0.0`）的偏好 |
-| `SetDesktopHTTPBindPublicSetting` | `(v: boolean): Promise<void>` | 保存 LAN/公开监听偏好；需重启应用生效 |
-| `GetDesktopListenPublicActive` | `(): Promise<boolean>` | 当前会话是否**实际**在所有网卡上监听（运行时状态，而非保存的偏好） |
-| `CheckForUpdates` | `(): Promise<void>` | 手动触发更新检查（有"已是最新"等对话框反馈） |
-| `AutoCheckForUpdates` | `(): Promise<void>` | 静默检查更新并自动后台下载 |
-| `GetAutoSetupToken` | `(): Promise<string>` | 返回本次进程的免登录凭据，前端用它调用 `POST /api/v1/auth/auto-setup` |
-| `PickProjectDir` | `(): Promise<string>` | 打开系统目录选择框，把选中的目录加入本机沙箱已批准列表并返回；取消时为空 |
-| `GetProjectDirs` | `(): Promise<string[]>` | 读取已批准的项目目录 |
-| `RemoveProjectDir` | `(dir: string): Promise<void>` | 从已批准列表移除一个目录 |
-| `GetApprovalMode` / `SetApprovalMode` | `(): Promise<string>` / `(mode: string): Promise<void>` | 读写本机沙箱审批模式；当前只接受 `auto` |
+On `OnDomReady` the shell injects three scripts into the WebView:
 
-## 偏好设置存储（cmd/desktop/prefs.go） {#_5-偏好设置存储-cmd-desktop-prefs-go}
+1. `wailsThemeSyncJS`: syncs the light or dark theme and the window background color from the `WeKnora_theme` key in `localStorage`.
+2. `dragHandlerJS`: custom window dragging. It bypasses Wails' CSS-variable drag detection and uses `el.closest()` DOM traversal plus a 40px title bar region at the top, and sends `drag` through the WKWebView message bridge. It also intercepts external `http(s)` links and `window.open` and opens them in the system browser (`BrowserOpenURL`).
+3. `window.__WEKNORA_API_BASE__` (the real API root, `http://127.0.0.1:<port>/api/v1`) and, when set, `window.__WEKNORA_API_LAN_BASE__` (the LAN address).
 
-偏好保存为 JSON 文件 `desktop-prefs.json`，路径为 `os.UserConfigDir()/WeKnora Lite/desktop-prefs.json`：
+## Wails binding methods (callable from the frontend)
 
-- macOS：`~/Library/Application Support/WeKnora Lite/desktop-prefs.json`
-- Windows：`%AppData%\WeKnora Lite\desktop-prefs.json`
-- Linux：`~/.config/WeKnora Lite/desktop-prefs.json`
+This table lists the native methods the frontend can call, so you can tell which desktop features go through the bridge rather than the REST API.
 
-文件权限 `0600`，字段如下：
+The `App` struct (`cmd/desktop/app.go`) is exposed through `Bind`. The frontend calls `window.go.main.App.<method>`. The generated TypeScript bindings are in `frontend/src/wailsjs/go/main/App.d.ts`.
 
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `http_port` | int | 0 | 内嵌 API 服务监听端口；0 或非法值（超出 1–65535）表示每次启动使用随机空闲端口 |
-| `http_bind_public` | bool | false | 是否监听 `0.0.0.0`（允许局域网/公网访问内嵌 API） |
-| `project_dirs` | string[] | 空 | 通过系统目录选择框批准的本机项目目录（绝对路径）；只有列表中的目录能绑定到会话 |
-| `approval_mode` | string | `auto` | 本机沙箱审批模式；未知值按 `auto` 处理，`ask`、`full` 尚未提供，保存时被拒绝 |
+| Method | Signature (JavaScript) | Description |
+| --- | --- | --- |
+| `GetAPIBaseURL` | `(): Promise<string>` | Returns the local REST API root, such as `http://127.0.0.1:PORT/api/v1`. The WebView's `window.location.origin` is not the API host, so use this value |
+| `GetAPILanBaseURL` | `(): Promise<string>` | Returns the API address suggested for other devices on the LAN (`…/api/v1`). Empty when not in bind-public mode or when IP detection failed |
+| `GetDesktopHTTPPortSetting` | `(): Promise<number>` | Reads the saved local API port preference (0 = a random port on each launch) |
+| `SetDesktopHTTPPortSetting` | `(port: number): Promise<void>` | Saves the port preference. Takes effect after a restart |
+| `GetDesktopHTTPBindPublicSetting` | `(): Promise<boolean>` | Reads the preference to listen on all interfaces (`0.0.0.0`) |
+| `SetDesktopHTTPBindPublicSetting` | `(v: boolean): Promise<void>` | Saves the LAN/public listener preference. Takes effect after a restart |
+| `GetDesktopListenPublicActive` | `(): Promise<boolean>` | Whether this session **actually** listens on all interfaces (runtime state, not the saved preference) |
+| `CheckForUpdates` | `(): Promise<void>` | Runs an update check by hand, with dialog feedback such as "Up to Date" |
+| `AutoCheckForUpdates` | `(): Promise<void>` | Checks for updates silently and downloads in the background |
+| `GetAutoSetupToken` | `(): Promise<string>` | Returns this process's login-free credential. The frontend uses it to call `POST /api/v1/auth/auto-setup` |
+| `PickProjectDir` | `(): Promise<string>` | Opens the system folder picker, adds the chosen folder to the host sandbox's approved list and returns it. Empty when cancelled |
+| `GetProjectDirs` | `(): Promise<string[]>` | Reads the approved project directories |
+| `RemoveProjectDir` | `(dir: string): Promise<void>` | Removes one directory from the approved list |
+| `GetApprovalMode` / `SetApprovalMode` | `(): Promise<string>` / `(mode: string): Promise<void>` | Reads or writes the host sandbox approval mode. Only `auto` is accepted today |
 
-读写入口：`LoadDesktopPrefsHTTPPort()` / `LoadDesktopHTTPBindPublic()` / `SaveDesktopHTTPPortPreference()` / `SaveDesktopHTTPBindPublicPreference()`，以及本机沙箱用的 `LoadProjectDirs()` / `LoadApprovalMode()`，读取失败或解析失败时静默回退为零值。`project_dirs` 只能通过目录选择框（`PickProjectDir` 或 `POST /api/v1/system/host-project-dir`）追加，手工输入的路径不会被当作授权。
+## Preference storage (cmd/desktop/prefs.go)
 
-## 免登录启动与签名密钥
+This section describes the preferences file, for when you need to inspect or reset desktop settings by hand.
 
-桌面版启动时不需要注册或登录：
+Preferences are stored as the JSON file `desktop-prefs.json` at `os.UserConfigDir()/AI KB Lite/desktop-prefs.json`. When `XDG_CONFIG_HOME` is set it replaces `os.UserConfigDir()` on every platform.
 
-- 每次启动生成一个随机凭据，只通过 Wails 绑定 `GetAutoSetupToken` 交给内置前端。前端在请求头 `X-WeKnora-Desktop-Token` 中携带它调用 `POST /api/v1/auth/auto-setup`，首次调用创建默认用户 `admin@weknora.local` 和空间，之后直接签发登录令牌。没有该凭据的请求（包括局域网内的其他设备和普通浏览器）会被拒绝。
-- 未配置有效的 `SYSTEM_SIGNING_KEY`（或非默认值的 `SYSTEM_AES_KEY`）时，首次启动在偏好目录生成 `signing.key`（权限 `0600`）并作为 `SYSTEM_SIGNING_KEY` 使用，供文件预签名链接、网页嵌入会话等签名，重启后仍然有效。它只用于签名，不会替换加密已存凭据的 AES 密钥。
+- macOS: `~/Library/Application Support/AI KB Lite/desktop-prefs.json`
+- Windows: `%AppData%\AI KB Lite\desktop-prefs.json`
+- Linux: `~/.config/AI KB Lite/desktop-prefs.json`
 
-## 自动更新机制（cmd/desktop/update.go） {#_6-自动更新机制-cmd-desktop-update-go}
+The file has mode `0600`. Fields:
 
-`checkUpdate(ctx, currentVersion, showUpToDate, autoDownload)` 在 goroutine 中执行：
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `http_port` | int | 0 | Listen port of the embedded API server. 0 or an invalid value (outside 1-65535) means a random free port on each launch |
+| `http_bind_public` | bool | false | Whether to listen on `0.0.0.0` (allows LAN or public access to the embedded API) |
+| `project_dirs` | string[] | empty | Local project directories (absolute paths) approved through the system folder picker. Only directories in this list can be bound to a session |
+| `approval_mode` | string | `auto` | Host sandbox approval mode. Unknown values count as `auto`. `ask` and `full` are not available yet: saving them is rejected, and a hand-written `ask` or `full` makes the host sandbox refuse to run |
+| `session_root` | string | empty | Declared but not read. Temporary session workspaces always go under `~/Documents/WeKnoraLite/` |
 
-1. **版本来源**：`desktopAboutVersion()` 优先使用构建时 ldflags 注入的 `handler.Version`，否则向上查找仓库根目录的 `VERSION` 文件；无法确定版本时放弃检查。
-2. **检查**：GET `https://api.github.com/repos/Tencent/WeKnora/releases/latest`（超时 10s，带 `User-Agent: WeKnora-Lite-Desktop-App`；若设置了环境变量 `GITHUB_TOKEN` 则附带 `Authorization` 头以提升速率限制）。用 `golang.org/x/mod/semver` 比较 `tag_name` 与当前版本。
-3. **选择资产**：`findBestAsset()` 按 `runtime.GOOS/GOARCH` 匹配 release assets 文件名——OS 关键词（`mac`/`win`/`linux`）+ 架构关键词（`amd64`/`arm64`，兼容 `universal`/`aarch64`），逐级回退：OS+Arch → 仅 OS → macOS 的 `.dmg` → Windows 的 `.exe`；均无匹配时打开 release 页面。
-4. **下载**：`downloadAndInstall()` 下载到系统临时目录；`autoDownload` 模式静默下载，手动模式先弹 "Update Available" 对话框。下载完成后询问 "Restart Now / Later"。
-5. **安装与重启**（`applyUpdateAndRestart()`，平台差异）：
-   - **Windows**：写临时 `weknora_update.bat`（延时 2 秒 → 静默运行安装包 `/S` → 重启原程序 → 自删除），`cmd.exe /C start /b` 执行后退出应用。
-   - **macOS（.dmg）**：`hdiutil attach` 挂载到临时挂载点，找到其中的 `.app`，写临时 `weknora_update.sh`：`rm -rf` 旧 bundle 并 `cp -a` 新 bundle（失败时通过 `osascript … with administrator privileges` 提权重试）→ `hdiutil detach` → `open` 新应用 → 自删除；非 `.dmg` 或异常时回退为 `open` 下载文件。
-   - **Linux**：`xdg-open` 打开下载文件后退出。
+Read and write entry points: `LoadDesktopPrefsHTTPPort()` / `LoadDesktopHTTPBindPublic()` / `SaveDesktopHTTPPortPreference()` / `SaveDesktopHTTPBindPublicPreference()`, plus `LoadProjectDirs()` / `LoadApprovalMode()` for the host sandbox. A missing or unparsable file silently falls back to zero values. `project_dirs` can only grow through the folder picker (`PickProjectDir` or `POST /api/v1/system/host-project-dir`). A path typed by hand is never treated as approved.
 
-触发入口：macOS 菜单 `Check for Updates...`（手动，显示结果）、绑定方法 `CheckForUpdates()`（手动）与 `AutoCheckForUpdates()`（静默 + 自动下载，前端 `frontend/src/App.vue` 在检测到 `window.go.main.App.AutoCheckForUpdates` 存在时会调用）。
+## Login-free startup and the signing key
 
-## Wails 构建配置（cmd/desktop/wails.json） {#_7-wails-构建配置-cmd-desktop-wails-json}
+This section explains how the desktop app signs you in without a password and which keys it creates, so you know what is safe to expose on a LAN.
+
+The desktop build needs no registration or login at startup:
+
+- Each launch generates a random credential and hands it only to the built-in frontend, through the Wails binding `GetAutoSetupToken`. The frontend sends it in the `X-WeKnora-Desktop-Token` request header to `POST /api/v1/auth/auto-setup`. The first call creates the default user `admin@weknora.local` and its workspace. Later calls issue login tokens directly. Requests without the credential (including other devices on the LAN and ordinary browsers) are rejected.
+- When no valid `SYSTEM_SIGNING_KEY` (or non-default `SYSTEM_AES_KEY`) is configured, the first launch generates `signing.key` (mode `0600`) in the preferences directory and uses it as `SYSTEM_SIGNING_KEY`. It signs presigned file links, web embed sessions and the like, and stays valid across restarts. It is only a signing key and never replaces the AES key that encrypts stored credentials.
+- When `JWT_SECRET` is unset or still a placeholder, the desktop build also fills it: with the generated signing key, or, when the signing key came from the environment, with a separate `jwt.key` (mode `0600`) in the same directory.
+
+## Automatic updates (cmd/desktop/update.go)
+
+This section describes how the update check finds, downloads and installs a new version. This repository has no release workflow yet, so no release carries desktop artifacts and the check has nothing to install.
+
+`checkUpdate(ctx, currentVersion, showUpToDate, autoDownload)` runs in a goroutine:
+
+1. **Version source**: `desktopAboutVersion()` uses `handler.Version` injected through ldflags at build time, and otherwise looks for a `VERSION` file up to the repository root. When the version cannot be determined the check gives up.
+2. **Check**: GET `https://api.github.com/repos/jrmatherly/ai-kb/releases/latest` (10s timeout, a fixed desktop `User-Agent`, plus an `Authorization` header when the `GITHUB_TOKEN` environment variable is set, to raise the rate limit). `golang.org/x/mod/semver` compares `tag_name` with the current version.
+3. **Asset selection**: `findBestAsset()` matches release asset file names against `runtime.GOOS/GOARCH`: an OS keyword (`mac`/`win`/`linux`) plus an architecture keyword (`amd64`/`arm64`, also accepting `universal`/`aarch64`). It falls back step by step: OS + architecture, then OS only, then any `.dmg` on macOS, then any `.exe` on Windows. With no match, a manual check opens the release page.
+4. **Download**: `downloadAndInstall()` downloads to the system temp directory. In `autoDownload` mode the download is silent. A manual check first shows an "Update Available" dialog. After the download it asks "Restart Now" or "Later".
+5. **Install and restart** (`applyUpdateAndRestart()`, per platform):
+   - **Windows**: writes a temporary `weknora_update.bat` (wait 2 seconds, run the installer silently with `/S`, restart the program, delete itself), runs it with `cmd.exe /C start /b` and quits the app.
+   - **macOS (.dmg)**: mounts the image with `hdiutil attach` at a temporary mount point, finds the `.app` inside and writes a temporary `weknora_update.sh`. The script runs `rm -rf` on the old bundle and `cp -a` for the new one (retrying with `osascript … with administrator privileges` on failure), then `hdiutil detach`, `open` on the new app, and deletes itself. For a non-`.dmg` download or any error it falls back to `open` on the downloaded file.
+   - **Linux**: opens the downloaded file with `xdg-open` and quits.
+
+Triggers: the macOS menu item `Check for Updates...` (manual, shows the result), the binding `CheckForUpdates()` (manual) and `AutoCheckForUpdates()` (silent, with automatic download). `frontend/src/App.vue` calls `AutoCheckForUpdates` 2 seconds after startup and every 4 hours when the binding exists and the auto-update setting is on (the default). Turning that setting on in `frontend/src/views/settings/GeneralSettings.vue` also runs a check.
+
+## Wails build configuration (cmd/desktop/wails.json)
+
+This section explains the Wails configuration, for when you change the build or move the frontend.
 
 ```json
 {
-  "name": "WeKnora Lite",
-  "outputfilename": "WeKnora Lite",
+  "name": "AI KB Lite",
+  "outputfilename": "AI KB Lite",
   "frontend:dir": "../../frontend",
   "wailsjsdir": "../../frontend/src",
   "build:tags": "desktop",
-  "info": { "companyName": "Tencent", "productName": "WeKnora Lite", "productVersion": "1.0.0" },
+  "info": { "companyName": "Tencent", "productName": "AI KB Lite", "productVersion": "1.0.0" },
   "mac": { "category": "public.app-category.productivity", "titlebar": "hiddenInset" }
 }
 ```
 
-要点：
+Notes:
 
-- `build:tags` 为 `desktop`：只有带该标签编译的程序才包含 Lite 本机沙箱，`wails build -tags ...` 传入的标签会与它合并。
-- `frontend:dir` 指向仓库的 `frontend/`；`wailsjsdir` 指向 `frontend/src`，因此 Wails 自动生成的绑定输出在 `frontend/src/wailsjs/`（`go/main/App.js`、`App.d.ts` 及 `runtime/`）。
-- **前端构建**：打包脚本单独构建前端，Wails 配置中不设置 `frontend:build`。WebView 通过反向代理访问内嵌后端。
-- `cmd/desktop/build/` 包含 `appicon.png`（应用图标）、`darwin/Info.plist`（macOS bundle 的 Go template，声明 `CFBundleIdentifier: com.wails.WeKnora Lite`、最低系统版本 10.13、Retina 支持等）和 Windows 安装器模板 `windows/installer/project.nsi`（额外安装第三方许可证文件）；`wails build` 的产物输出到 `cmd/desktop/build/bin/`。
+- `build:tags` is `desktop`. Only a program built with this tag contains the Lite host sandbox. Tags passed with `wails build -tags ...` are merged with it.
+- `frontend:dir` points to the repository's `frontend/`. `wailsjsdir` points to `frontend/src`, so the bindings Wails generates land in `frontend/src/wailsjs/` (`go/main/App.js`, `App.d.ts` and `runtime/`).
+- **Frontend build**: the packaging script builds the frontend separately, and the Wails configuration sets no `frontend:build`. The WebView reaches the embedded backend through the reverse proxy.
+- `cmd/desktop/build/` contains `appicon.png` (application icon), `darwin/Info.plist` (a Go template for the macOS bundle that declares `CFBundleIdentifier` <span v-pre>`com.wails.{{.Name}}`</span>, minimum system version 10.13, Retina support and more) and the Windows installer template `windows/installer/project.nsi` (which also installs the third-party license files). `wails build` writes its output to `cmd/desktop/build/bin/`.
 
-## 前端如何感知桌面环境 {#_8-前端如何感知桌面环境}
+## How the frontend detects the desktop environment
 
-- `dragHandlerJS` 会给 `document.documentElement` 加上 `wails-desktop` class，前端 CSS 可据此做桌面端样式适配。
-- Wails 注入的 `window.go.main.App.*`（生成绑定见 `frontend/src/wailsjs/go/main/`）与 `window.runtime`（`frontend/src/wailsjs/runtime/`，如 `BrowserOpenURL`、`EventsEmit`）只在桌面环境存在，前端通过特性检测判断：例如 `frontend/src/composables/useApiBaseUrlDisplay.ts` 轮询读取 `window.__WEKNORA_API_BASE__` 或调用 `window.go.main.App.GetAPIBaseURL()` 来获取真实 API 地址（浏览器环境则回退到配置值 / `window.location.origin`）；`frontend/src/App.vue` 检测到 `window.go.main.App.AutoCheckForUpdates` 存在时触发静默更新检查。
-- 设置页 `frontend/src/views/settings/GeneralSettings.vue` 与 `frontend/src/views/integrations/ApiIntegrationSettings.vue` 亦使用这些绑定展示/修改端口与 LAN 监听等桌面专属选项。
+This section shows how frontend code tells the desktop shell apart from a browser, so desktop-only UI appears only where it works.
 
-## 构建方式 {#_9-构建方式}
+- `dragHandlerJS` adds the `wails-desktop` class to `document.documentElement`, so frontend CSS can adapt styles for the desktop.
+- `window.go.main.App.*` (generated bindings in `frontend/src/wailsjs/go/main/`) and `window.runtime` (`frontend/src/wailsjs/runtime/`, such as `BrowserOpenURL` and `EventsEmit`) exist only in the desktop environment, and the frontend uses feature detection. For example, `frontend/src/composables/useApiBaseUrlDisplay.ts` polls `window.__WEKNORA_API_BASE__` or calls `window.go.main.App.GetAPIBaseURL()` for the real API address (a browser falls back to the configured value or `window.location.origin`). `frontend/src/App.vue` starts the silent update check when `window.go.main.App.AutoCheckForUpdates` exists.
+- `frontend/src/views/integrations/ApiIntegrationSettings.vue` uses these bindings to show and change desktop-only options such as the port and the LAN listener. `frontend/src/views/settings/GeneralSettings.vue` uses `AutoCheckForUpdates` for the auto-update setting.
 
-macOS 打包脚本为 `scripts/package-mac-app.sh`（根目录 `Makefile` 中没有 desktop 相关 target）：
+## Build
+
+This section walks through building the macOS app from source, which is the only way to get it today.
+
+The macOS packaging script is `scripts/package-mac-app.sh`. The root `Makefile` wraps it as `make package-mac-app`.
 
 ```bash
-# 完整构建（前端 + Wails 打包 + 组装 .app）
+# Full build (frontend + Wails packaging + .app assembly)
 ./scripts/package-mac-app.sh
 
-# 跳过前端构建（复用已有 web/ 目录）
+# Skip the frontend build (reuse the existing web/ directory)
 SKIP_FRONTEND=1 ./scripts/package-mac-app.sh
 ```
 
-脚本流程：
+What the script does:
 
-1. **前端构建**：`cd frontend && npm ci && npm run build`，然后将 `frontend/dist` 同步为仓库根的 `web/`（Lite 后端从 `./web` 提供 SPA）。
-2. **Wails 构建**：需先安装 Wails CLI（`go install github.com/wailsapp/wails/v2/cmd/wails@latest`），设置 `EDITION=lite`、`GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn`（规避 Milvus 与 Qdrant gRPC 生成代码的 `common.proto` 描述符注册冲突）等环境变量，从 `scripts/get_version.sh` 取版本号注入 ldflags，然后执行真实构建命令：
+1. **Frontend build**: `cd frontend && npm ci --prefer-offline && npm run build`, then replaces the repository root's `web/` with `frontend/dist` (the Lite backend serves the SPA from `./web`).
+2. **Wails build**: the Wails CLI must be installed first (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`). The script sets environment variables such as `EDITION=lite`, `GOPROXY=https://goproxy.cn,direct` and `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn` (which avoids the `common.proto` descriptor registration conflict between the Milvus and Qdrant gRPC generated code), takes the version from `scripts/get_version.sh` into ldflags, then runs:
 
    ```bash
-   cd cmd/desktop && wails build -clean -tags "sqlite_fts5" -ldflags="$LDFLAGS" -o "WeKnora Lite"
+   cd cmd/desktop && wails build -clean -tags "sqlite_fts5" -ldflags="$LDFLAGS" -o "AI KB Lite"
    ```
 
-   实际生效的构建标签为 `wails.json` 中的 `desktop` 加上命令行的 `sqlite_fts5`。该命令的"生成绑定"阶段使用 `-tags bindings` 单独编译 `main_bindings.go`（不连接数据库），并刷新 `frontend/src/wailsjs/` 下的绑定文件。
-3. **组装产物**：将 `cmd/desktop/build/bin/WeKnora Lite.app` 复制到 `dist/`，并向 `.app/Contents/Resources/` 内放置第三方许可证（`scripts/copy-licenses.sh`）、`.env`（来自 `.env.lite.example`）、`config/`、`migrations/sqlite/` 与 `web/` 前端资源。
+   The effective build tags are `desktop` from `wails.json` plus `sqlite_fts5` from the command line. The command's binding generation step compiles `main_bindings.go` alone with `-tags bindings` (no database connection) and refreshes the binding files under `frontend/src/wailsjs/`.
+3. **Assembly**: copies `cmd/desktop/build/bin/AI KB Lite.app` to `dist/` and places the third-party licenses (`scripts/copy-licenses.sh`), `.env` (from `.env.lite.example`), `config/`, `migrations/sqlite/` and the `web/` frontend in `.app/Contents/Resources/`.
 
-最终产物为 `dist/WeKnora Lite.app`，双击即可运行。Windows/Linux 亦可在 `cmd/desktop` 下用 `wails build` 自行构建（更新机制已按 `.exe` / `xdg-open` 做了平台适配），但仓库当前仅提供 macOS 打包脚本与 `build/darwin` 资源。
+The result is `dist/AI KB Lite.app`; double-click it to run. Windows and Linux builds are possible with `wails build` in `cmd/desktop` (the update logic already handles `.exe` and `xdg-open`), but the repository ships only the macOS packaging script and `build/darwin` resources. The host sandbox exists only on macOS: the Windows backend is not implemented and reports itself unavailable, and Linux has none.

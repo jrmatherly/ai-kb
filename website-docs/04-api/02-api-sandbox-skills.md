@@ -166,7 +166,7 @@ When `agent_id` and `agent_source_tenant_id` (the source workspace ID of a share
 
 ## Session terminal
 
-The terminal in the conversation sidebar connects over WebSocket to this session's sandbox; the Docker, Cube and E2B backends support it, the Lite host sandbox does not (`TERMINAL_UNSUPPORTED`). The routes are registered in `internal/router/routes_chat.go` and are not yet in Swagger. The desktop endpoints are on [Chat API](02-api-chat.md#sandbox-desktop); proxy requirements are on [Sandbox deployment](../06-development/04-sandbox-deployment.md).
+The terminal in the conversation sidebar connects over WebSocket to this session's sandbox; the Docker, Cube and E2B backends support it, the Lite host sandbox does not (`TERMINAL_UNSUPPORTED`). The routes are registered in `internal/router/routes_chat.go` and are not yet in Swagger. The desktop endpoints are on [Chat API](02-api-chat.md#sandbox-desktop); proxy requirements are on [Sandbox deployment](../06-development/04-sandbox-deployment.md#interactive-terminal-and-graphical-desktop).
 
 ### POST /api/v1/sessions/:session_id/sandbox/terminal-ticket
 
