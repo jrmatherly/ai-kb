@@ -3,7 +3,7 @@
 MCP connects agents to external tools. AI KB works in both directions: it connects to external MCP servers, and it runs its own MCP server for other clients.
 
 1. **AI KB as an MCP client.** Under Toolbox → MCP services, register any external MCP server (SSE or Streamable HTTP). Its tools are loaded on demand from a directory and called by agents during a conversation. Three authentication strategies are supported (API key, Bearer, OAuth 2.0 with dynamic client registration and PKCE), plus per-tool enable and approval switches and in-conversation OAuth authorization.
-2. **AI KB as an MCP server.** Under Settings → Publish integrations → MCP Server, create one or more MCP endpoints for the current workspace. Each endpoint has its own token, knowledge base scope and tool list. Claude Desktop, Cursor, Claude Code, VS Code Copilot and other MCP clients connect over Streamable HTTP with no extra process to deploy. The Python service under `mcp-server/` is the previous approach and is deprecated.
+2. **AI KB as an MCP server.** Under Settings → Publish & Integrations → MCP Server, create one or more MCP endpoints for the current workspace. Each endpoint has its own token, knowledge base scope and tool list. Claude Desktop, Cursor, Claude Code, VS Code Copilot and other MCP clients connect over Streamable HTTP with no extra process to deploy. The Python service under `mcp-server/` is the previous approach and is deprecated.
 
 Connecting external services extends what AI KB agents can do; running the AI KB MCP server lets external clients use knowledge base retrieval, question answering and management.
 
@@ -35,13 +35,13 @@ The model reads the service's usage instructions first and loads individual tool
 
 Here you publish this workspace's knowledge bases as an MCP server that Claude Desktop, Cursor and similar clients connect to.
 
-Create an endpoint under Settings → Publish integrations → MCP Server: enter a name, pick the knowledge bases it may access (empty means all), tick the tools to expose, and optionally set the default agent that `ask` uses (empty means the built-in Quick Answer) and the per-minute call limit (default 60). After creation the token and the address `/mcp/<endpoint_id>` are shown once. The page also shows the `mcpServers` configuration for Cursor, VS Code and Claude Desktop, a one-line Claude Code command, and the `mcp-remote` bridge for clients that only support stdio.
+Create an endpoint under Settings → Publish & Integrations → MCP Server: enter a name, pick the knowledge bases it may access (empty means all), tick the tools to expose, and optionally set the default agent that `ask` uses (empty means the built-in Quick Answer) and the per-minute call limit (default 60). After creation the token and the address `/mcp/<endpoint_id>` are shown once. The page also shows the `mcpServers` configuration for Cursor, VS Code and Claude Desktop, a one-line Claude Code command, and the `mcp-remote` bridge for clients that only support stdio.
 
 With a custom reverse proxy, forward `/mcp/` to the AI KB backend with the path unchanged, in addition to `/api/`. Preserve the `Authorization` header and the MCP protocol headers, disable response buffering, and set read and write timeouts long enough for long-lived connections. The Nginx, Vite dev and Vite preview configurations shipped in the repository already include this proxy, so clients connect through the site's domain without exposing backend port 8080.
 
 <Screenshot
   src="/screenshots/mcp-server-endpoint.png"
-  caption="Publish integrations → MCP Server: address, token and client configuration after creating an endpoint"
+  caption="Publish & Integrations → MCP Server: address, token and client configuration after creating an endpoint"
   hint="The result page after creating an endpoint: the one-time token and the /mcp/<endpoint_id> address, the mcpServers configuration for Cursor and Claude Desktop and the Claude Code command; the endpoint's knowledge base scope and four tool groups are visible in the background." />
 
 A workspace can have several endpoints. For example, a support team gets an endpoint with retrieval and question answering over two knowledge bases, and a content team gets another with write tools enabled. Tokens can be rotated at any time, endpoints can be disabled at any time, and deleting an endpoint disconnects its clients immediately.

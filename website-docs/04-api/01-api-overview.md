@@ -61,7 +61,7 @@ Authorization: Embed <publish_token or session_token>
 Authorization: Bearer <endpoint_token>
 ```
 
-The token is shown once when the endpoint is created under Settings → Publish integrations → MCP Server, and can be rotated. Requests run as the machine principal of the endpoint's workspace, limited to the tools and knowledge bases selected on the endpoint. The management API is `/api/v1/mcp-endpoints` (Viewer+ reads, Admin+ changes, API keys need `manage_channels`). Usage: [MCP integration](../03-features/08-mcp.md).
+The token is shown once when the endpoint is created under Settings → Publish & Integrations → MCP Server, and can be rotated. Requests run as the machine principal of the endpoint's workspace, limited to the tools and knowledge bases selected on the endpoint. The management API is `/api/v1/mcp-endpoints` (Viewer+ reads, Admin+ changes, API keys need `manage_channels`). Usage: [MCP integration](../03-features/08-mcp.md).
 
 ### Authentication flow
 

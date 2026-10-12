@@ -549,7 +549,7 @@ Catalog entries are looked up by model type: an embedding row only matches embed
 
 The write side has a gate too: `runtime.ValidateRow` resolves the row (every model type) when a model is created or updated (REST) and when `config/builtin_models.yaml` loads (startup); an unknown protocol, a misspelled compat key or an invalid effort level is rejected at write time (YAML rows only WARN and do not block startup, so one restart cannot take production models offline).
 
-The development workflow for adding a provider and maintaining the model catalog and provider behavior: [Extension points](../06-development/03-extension-points.md).
+The development workflow for adding a provider and maintaining the model catalog and provider behavior: [Extension points](../06-development/03-extension-points.md#add-a-model-provider-internal-models-providers).
 
 ### Behavior changes when upgrading from v0.8.0
 
