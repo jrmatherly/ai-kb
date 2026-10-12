@@ -1,218 +1,218 @@
-# 快速上手
+# Quickstart
 
-通过注册账号、创建知识库、配置模型、上传文档和提问，可以完成首次知识库问答，并在回答中查看原文引用。以下步骤使用 Web 界面，文末提供对应的 API 示例。
+Register an account, create a knowledge base, configure its models, upload documents and ask a question. The answer cites the source passages. The steps below use the web UI; the matching API calls are at the end of the page.
 
-使用前需先完成[安装部署](02-installation.md)，并准备可用的对话模型和向量模型。
+Complete the [installation](02-installation.md) first and have a chat model and an embedding model available.
 
-## 开始之前 {#_1-开始之前}
+## Before you start
 
-- 启动服务：按[安装部署](./02-installation.md)启动后，前端在 `http://localhost`，后端在 `http://localhost:8080`；
-- 准备模型连接信息：本地 Ollama（容器内默认地址 `http://host.docker.internal:11434`），或者任意 OpenAI 兼容服务的 `base_url` + `api_key`。至少需要一个对话模型和一个向量（embedding）模型；
-- 检查后端健康状态：`curl http://localhost:8080/health` 返回 `{"status":"ok"}`。
+- Start the services. After the steps in [Installation](./02-installation.md), the frontend is at `http://localhost` and the backend at `http://localhost:8080`.
+- Prepare model connection details: a local Ollama (default address from inside the container `http://host.docker.internal:11434`), or the `base_url` and `api_key` of any OpenAI-compatible service. You need at least one chat model and one embedding model.
+- Check backend health: `curl http://localhost:8080/health` returns `{"status":"ok"}`.
 
-## 注册并登录 {#_2-注册并登录}
+## Register and log in
 
-首次访问进入登录页。部署允许公开注册（`self_serve`）时，页面显示注册页签；系统没有默认账号。默认配置下，注册会创建个人工作空间，并将新用户设为该空间的 Owner。
+The first visit opens the login page. When the deployment allows public registration (`self_serve`), the page shows a registration tab. There is no default account. With the default configuration, registration creates a personal workspace and makes the new user its Owner.
 
 <Screenshot
   src="/screenshots/quickstart-register.png"
-  caption="首次访问的注册页面"
-  hint="展示注册表单（用户名 / 邮箱 / 密码）与登录入口即可。" />
+  caption="The registration page on first visit"
+  hint="Show the registration form (username / email / password) and the link to the login page." />
 
-注册要求与部署差异：
+Registration rules and deployment differences:
 
-- 用户名 2–50 个字符；密码为 8–32 位，至少包含字母和数字。启用复杂密码策略后，还须同时包含大小写字母和特殊字符，界面与 API 使用同一策略；
-- 团队部署可关闭公开注册，之后通过邀请链接添加成员。可设置 `DISABLE_REGISTRATION=true`（启动时把注册模式强制为 `invite_only`），或由系统管理员在「设置 → 系统」将 `auth.registration_mode` 改成 `invite_only`（立即生效，不用重启）；
-- 如果部署把默认空间策略设成了 `tenantless`（`auth.default_tenant_mode`），注册后**不会**自动建空间，而是被引导到 `/onboarding/workspace`，需要先自建或接受邀请加入一个空间才能继续；
-- 桌面应用免注册，启动即自动创建本地账号并登录；Lite 单二进制在浏览器中访问时仍需注册和登录。
+- The username is 2 to 50 characters. The password is 8 to 32 characters and contains at least one letter and one digit. With the complex-password policy enabled it must also contain upper-case and lower-case letters and a special character. The UI and the API apply the same policy.
+- A team deployment can turn public registration off and add members through invitation links afterwards. Set `DISABLE_REGISTRATION=true` (forces the registration mode to `invite_only` at startup), or have a system administrator change `auth.registration_mode` to `invite_only` under Settings → System (takes effect immediately, no restart).
+- If the deployment sets the default workspace policy to `tenantless` (`auth.default_tenant_mode`), registration does **not** create a workspace. The user is sent to `/onboarding/workspace` and has to create a workspace or accept an invitation before continuing.
+- The desktop application needs no registration; it creates a local account and logs in at launch. The Lite single binary still requires registration and login when opened in a browser.
 
-::: tip 空间与平台权限
-空间 Owner 管理所在空间的成员、模型和知识库。全局系统设置、平台任务队列及跨空间审计需要系统管理员身份，两类权限独立授予。
+::: tip Workspace and platform permissions
+A workspace Owner manages the members, models and knowledge bases of that workspace. Global system settings, the platform task queue and cross-workspace audit need the system administrator identity. The two kinds of permission are granted separately.
 
-首次设置系统管理员时，先注册账号，再为 app 服务配置 `WEKNORA_BOOTSTRAP_SYSTEM_ADMIN_EMAIL=<该账号邮箱>` 并重启。该流程仅在部署尚无系统管理员时生效。完整步骤与限制见[平台管理与系统管理员](../03-features/20-platform-admin.md)。
+To set up the first system administrator, register an account, then set `AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL=<that account's email>` on the app service and restart. This only takes effect while the deployment has no system administrator yet. Full steps and limits: [Platform administration and system administrators](../03-features/20-platform-admin.md).
 :::
 
-## 创建知识库并配置模型 {#_3-创建知识库并配置模型}
+## Create a knowledge base and configure models
 
-在「知识库」页创建知识库后，初始化向导会引导配置该库使用的模型。每个知识库分别选择模型。
+After you create a knowledge base on the Knowledge Bases page, the initialization wizard walks you through the models that knowledge base uses. Each knowledge base chooses its own models.
 
-1. 在「知识库」页点新建，填名称，选类型：`document`（普通文档库）或 `faq`（问答对库）；
-2. 在弹出的初始化向导里选模型：
-   - **对话模型（LLM）**：生成回答；
-   - **向量模型（Embedding）**：将文档转换为向量；更换后需要重建索引；
-   - 重排 Rerank、图片理解 VLM、语音转写 ASR、知识图谱抽取和问题生成可按资料类型与使用需求配置；
-3. 用向导里的「测试」按钮确认模型连接正常，再保存。
+1. On the Knowledge Bases page click New, enter a name and pick a type: `document` (a regular document base) or `faq` (a question-and-answer base).
+2. In the initialization wizard choose the models:
+   - **Chat model (LLM)** generates answers.
+   - **Embedding model** turns documents into vectors. Changing it later requires rebuilding the index.
+   - Rerank, image understanding (VLM), speech-to-text (ASR), knowledge graph extraction and question generation are optional, depending on your material and needs.
+3. Use the Test button in the wizard to confirm each model connects, then save.
 
 <Screenshot
   src="/screenshots/quickstart-init-wizard.png"
-  caption="初始化向导：为知识库选择对话模型与向量模型"
-  hint="展示模型来源（Ollama / 远程 API）、模型名、Base URL 输入框，以及连通性测试通过的提示。" />
+  caption="Initialization wizard: choose the chat model and the embedding model for a knowledge base"
+  hint="Show the model source (Ollama / remote API), the model name and Base URL inputs, and the message that the connectivity test passed." />
 
-::: tip 从容器连接 Ollama
-后端容器内的 `localhost` 指向容器自身。连接宿主机上的 Ollama 时，使用 `http://host.docker.internal:11434`。
+::: tip Connecting to Ollama from a container
+Inside the backend container `localhost` is the container itself. To reach an Ollama on the host, use `http://host.docker.internal:11434`.
 :::
 
-## 上传文档 {#_4-上传文档}
+## Upload documents
 
-进入知识库后，拖入文件或粘贴网页 URL。在上传确认对话框中，可为本批文件设置标签和解析选项。
+Open the knowledge base, then drag files in or paste a web page URL. The upload confirmation dialog lets you set tags and parsing options for the batch.
 
-支持的格式包括 PDF、Word、Excel、PPT、Markdown、HTML、EPUB、图片和音频等，完整清单见[文档解析服务](../03-features/03-document-parsing.md)。
+Supported formats include PDF, Word, Excel, PPT, Markdown, HTML, EPUB, images and audio. The full list is in [Document parsing](../03-features/03-document-parsing.md).
 
 <Screenshot
   src="/screenshots/quickstart-upload.png"
-  caption="上传确认对话框：选择文件、打标签、调整解析选项"
-  hint="展示待上传文件列表、标签选择与解析引擎选项。" />
+  caption="Upload confirmation dialog: pick files, add tags, adjust parsing options"
+  hint="Show the list of files to upload, the tag picker and the parsing engine options." />
 
-上传后文档会异步解析，状态依次是 `pending → processing → finalizing → completed`。PDF 扫描件、大文件会慢一些，列表页会实时刷新进度。
+Documents are parsed asynchronously after upload. The status moves through `pending → processing → finalizing → completed`. Scanned PDFs and large files take longer; the list page refreshes progress live.
 
 <Screenshot
   src="/screenshots/quickstart-document-list.png"
-  caption="文档列表：三篇文档解析完成"
-  hint="展示文档名称、类型、解析状态为「已完成」、分块数等列。" />
+  caption="Document list: three documents parsed"
+  hint="Show the columns for document name, type, parse status (Completed) and chunk count." />
 
-## 提问 {#_5-提问}
+## Ask a question
 
-进入对话页并选择知识库后，即可提问。默认的「快速问答」智能体会检索相关片段并生成回答；点击引用可查看原文。
+Open the chat page, select the knowledge base and ask. The default Quick Answer agent retrieves the relevant chunks and writes an answer. Click a citation to open the source passage.
 
 <Screenshot
   src="/screenshots/quickstart-chat.png"
-  caption="知识问答：回答与可点击的引用来源"
-  hint="展示一轮问答，回答正文中的引用角标以及展开后的引用来源面板。" />
+  caption="Knowledge Q&A: an answer with clickable citations"
+  hint="Show one question and answer, the citation markers in the answer text and the expanded source panel." />
 
-回答正常显示且引用可打开，表示本次文档入库与问答流程已完成。
+When the answer renders and its citations open, the import and question-answering flow is complete.
 
-## 继续配置 {#_6-再往前一步}
+## Keep configuring
 
-- [配置智能体](../03-features/07-agent.md)：使用智能推理处理多步骤问题，按需启用联网搜索与 MCP 工具。
-- [调整分块](../03-features/04-chunking.md)与[检索参数](../03-features/05-retrieval-engines.md)：根据文档结构和检索结果调整配置。
-- [连接数据源](../03-features/10-datasource.md)：持续同步飞书、Notion、语雀或 RSS 内容。
-- [接入 IM](../03-features/12-im-integration.md)或[网页嵌入](../03-features/13-embed-channel.md)：让用户通过已有渠道提问。
+- [Configure agents](../03-features/07-agent.md): use Smart Reasoning for multi-step questions and enable web search and MCP tools as needed.
+- [Tune chunking](../03-features/04-chunking.md) and [retrieval parameters](../03-features/05-retrieval-engines.md) to match your document structure and retrieval results.
+- [Connect data sources](../03-features/10-datasource.md) to keep syncing Feishu, Notion, Yuque or RSS content.
+- [IM integration](../03-features/12-im-integration.md) or [web embedding](../03-features/13-embed-channel.md): let users ask through channels they already use.
 
-## 通过 API 完成首次问答 {#_7-用-api-走通同样的链路}
+## The first question through the API
 
-以下示例按注册、登录、建库、模型初始化、上传和问答顺序调用 API。路径统一使用 `/api/v1` 前缀，需要 Bash、curl 和 jq。登录账号须已加入工作空间；若登录响应没有 `active_tenant`，请先创建或加入空间，再重新登录。
+The example below calls the API in order: register, log in, create a knowledge base, initialize its models, upload and ask. All paths use the `/api/v1` prefix. You need Bash, curl and jq. The login account must already belong to a workspace; if the login response has no `active_tenant`, create or join a workspace first and log in again.
 
 ```bash
 BASE=http://localhost:8080/api/v1
 
-# 1) 注册（首次部署时；用户名 2–50 字符；密码 8–32 位且含字母和数字，复杂策略另有要求）
+# 1) Register (first deployment only; username 2 to 50 chars; password 8 to 32 chars with letters and digits, more under the complex policy)
 curl -s -X POST $BASE/auth/register -H "Content-Type: application/json" \
   -d '{"username":"admin","email":"admin@example.com","password":"pass123456"}'
 
-# 2) 登录，保存 JWT 与当前工作空间 ID（后续创建 API Key 时使用）
+# 2) Log in, keep the JWT and the current workspace ID (used later to create an API key)
 LOGIN_RESPONSE=$(curl -s -X POST $BASE/auth/login -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"pass123456"}')
 TOKEN=$(printf '%s\n' "$LOGIN_RESPONSE" | jq -r '.token')
 TENANT_ID=$(printf '%s\n' "$LOGIN_RESPONSE" | jq -r '.active_tenant.id')
 AUTH="Authorization: Bearer $TOKEN"
 
-# 3) 创建知识库
+# 3) Create a knowledge base
 KB_ID=$(curl -s -X POST $BASE/knowledge-bases -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"name":"我的知识库","description":"demo","type":"document"}' | jq -r '.data.id')
+  -d '{"name":"My knowledge base","description":"demo","type":"document"}' | jq -r '.data.id')
 
-# 4) 初始化知识库（以本地 Ollama 为例；远程模型改 source/baseUrl/apiKey）
+# 4) Initialize the knowledge base (local Ollama shown; for a remote model change source/baseUrl/apiKey)
 curl -s -X POST $BASE/initialization/initialize/$KB_ID -H "$AUTH" -H "Content-Type: application/json" -d '{
   "llm":       {"source":"local","modelName":"qwen3:8b"},
   "embedding": {"source":"local","modelName":"bge-m3","dimension":1024},
   "rerank":    {"enabled":false},
   "multimodal":{"enabled":false},
-  "documentSplitting":{"chunkSize":512,"chunkOverlap":50,"separators":["\n\n","\n","。"]},
+  "documentSplitting":{"chunkSize":512,"chunkOverlap":50,"separators":["\n\n","\n","."]},
   "nodeExtract":{"enabled":false},
   "questionGeneration":{"enabled":false}}'
 
-# 5) 上传文档（multipart，字段名 file）
+# 5) Upload a document (multipart, field name file)
 curl -s -X POST $BASE/knowledge-bases/$KB_ID/knowledge/file -H "$AUTH" \
   -F "file=@./demo.pdf"
-# 轮询解析状态：GET /knowledge-bases/$KB_ID/knowledge 直到 parse_status=completed
+# Poll the parse status: GET /knowledge-bases/$KB_ID/knowledge until parse_status=completed
 
-# 6) 创建会话
+# 6) Create a session
 SESSION_ID=$(curl -s -X POST $BASE/sessions -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"title":"第一次对话"}' | jq -r '.data.id')
+  -d '{"title":"First conversation"}' | jq -r '.data.id')
 
-# 7) 知识问答（SSE 流式输出）
+# 7) Knowledge Q&A (SSE stream)
 curl -N -X POST $BASE/knowledge-chat/$SESSION_ID -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"query":"这份文档讲了什么？","knowledge_base_ids":["'$KB_ID'"]}'
+  -d '{"query":"What is this document about?","knowledge_base_ids":["'$KB_ID'"]}'
 
-# 7b) Agent 对话（同为 SSE；agent_id 可取内置 builtin-smart-reasoning）
+# 7b) Agent chat (also SSE; agent_id can be the built-in builtin-smart-reasoning)
 curl -N -X POST $BASE/agent-chat/$SESSION_ID -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"query":"总结文档要点并列出依据","agent_enabled":true,"agent_id":"builtin-smart-reasoning","knowledge_base_ids":["'$KB_ID'"]}'
+  -d '{"query":"Summarize the key points of the document and cite the evidence","agent_enabled":true,"agent_id":"builtin-smart-reasoning","knowledge_base_ids":["'$KB_ID'"]}'
 
-# 8) 仅检索不生成（结构化 JSON 结果）
+# 8) Retrieval only, no generation (structured JSON result)
 curl -s -X POST $BASE/knowledge-search -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"query":"关键字","knowledge_base_ids":["'$KB_ID'"]}'
+  -d '{"query":"keyword","knowledge_base_ids":["'$KB_ID'"]}'
 ```
 
-问答请求体还支持 `knowledge_ids`（限定单文档）、`web_search_enabled`、`summary_model_id`、`mcp_service_ids`、`skill_names`、`images` / `attachment_uploads`（多模态附件）等字段，完整说明见 [API 参考：会话与聊天](../04-api/02-api-chat.md)。
+The chat request body also accepts `knowledge_ids` (restrict to specific documents), `web_search_enabled`, `summary_model_id`, `mcp_service_ids`, `skill_names`, and `images` / `attachment_uploads` (multimodal attachments). The full description is in [API reference: sessions and chat](../04-api/02-api-chat.md).
 
-### 三种认证方式
+### Three ways to authenticate
 
-| 方式 | 请求头 | 适用 |
+| Method | Header | Use |
 | --- | --- | --- |
-| JWT | `Authorization: Bearer <token>` | 浏览器 / 交互式调用，登录接口签发 |
-| API Key | `X-API-Key: <key>` | 服务端集成；在「空间设置」或 `POST /api/v1/tenants/:id/api-keys` 创建，支持细粒度能力（`retrieve`/`chat`/`ingest`/`manage_kbs` 等） |
-| 指定空间 | `X-Tenant-ID: <id>` | 多空间用户切换当前工作空间 |
+| JWT | `Authorization: Bearer <token>` | Browser / interactive calls; issued by the login endpoint |
+| API key | `X-API-Key: <key>` | Server-side integrations; created under workspace settings or with `POST /api/v1/tenants/:id/api-keys`, with fine-grained capabilities (`retrieve`, `chat`, `ingest`, `manage_kbs` and others) |
+| Workspace selection | `X-Tenant-ID: <id>` | Lets a user in several workspaces switch the current workspace |
 
-服务端集成建议用 API Key 而不是 JWT：
+Server-side integrations should use an API key rather than a JWT:
 
 ```bash
-# 以当前工作空间 Owner 身份创建 API Key（TENANT_ID 已在登录步骤提取）
+# Create an API key as the Owner of the current workspace (TENANT_ID was extracted at login)
 curl -s -X POST $BASE/tenants/$TENANT_ID/api-keys -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"name":"ci-bot","full_access":true}'
-# 之后所有请求改用：
-curl -s $BASE/knowledge-bases -H "X-API-Key: <创建时返回的 key>"
+# Then switch every request to:
+curl -s $BASE/knowledge-bases -H "X-API-Key: <the key returned at creation>"
 ```
 
-### 初始化向导对应的接口
+### Endpoints behind the initialization wizard
 
-界面上的每一步向导都有独立端点，自建管理后台时可以直接复用：
+Each wizard step has its own endpoint, so a custom admin console can reuse them directly:
 
-| 步骤 | 端点 | 说明 |
+| Step | Endpoint | Notes |
 | --- | --- | --- |
-| 读取当前配置 | `GET /api/v1/initialization/config/:kbId` | 返回 llm / embedding / rerank / multimodal / documentSplitting / nodeExtract / questionGeneration 各段及 `hasFiles`（已有文件时限制修改 embedding） |
-| 检测 Ollama | `GET /api/v1/initialization/ollama/status`、`GET /api/v1/initialization/ollama/models` | 检查 Ollama 可用性与已装模型 |
-| 下载 Ollama 模型 | `POST /api/v1/initialization/ollama/models/download` → `GET /api/v1/initialization/ollama/download/progress/:taskId` | 异步下载并轮询进度 |
-| 测试远程模型 | `POST /api/v1/initialization/remote/check`、`/initialization/embedding/test`、`/initialization/rerank/check`、`/initialization/asr/check`、`/initialization/multimodal/test` | 保存前连通性验证 |
-| 知识图谱试抽取 | `POST /api/v1/initialization/extract/text-relation`（配 `fabri-text` / `fabri-tag` 生成示例） | 预览实体/关系抽取效果 |
-| 保存配置 | `POST /api/v1/initialization/initialize/:kbId`（首次）/ `PUT /api/v1/initialization/config/:kbId`（更新） | 落库：创建/更新 Model 记录并写入 KnowledgeBase 配置 |
+| Read the current configuration | `GET /api/v1/initialization/config/:kbId` | Returns the llm / embedding / rerank / multimodal / documentSplitting / nodeExtract / questionGeneration sections and `hasFiles` (embedding changes are restricted once files exist) |
+| Detect Ollama | `GET /api/v1/initialization/ollama/status`, `GET /api/v1/initialization/ollama/models` | Check Ollama availability and installed models |
+| Download an Ollama model | `POST /api/v1/initialization/ollama/models/download` → `GET /api/v1/initialization/ollama/download/progress/:taskId` | Asynchronous download with progress polling |
+| Test remote models | `POST /api/v1/initialization/remote/check`, `/initialization/embedding/test`, `/initialization/rerank/check`, `/initialization/asr/check`, `/initialization/multimodal/test` | Connectivity checks before saving |
+| Trial knowledge graph extraction | `POST /api/v1/initialization/extract/text-relation` (with `fabri-text` / `fabri-tag` to generate samples) | Preview entity and relationship extraction |
+| Save the configuration | `POST /api/v1/initialization/initialize/:kbId` (first time) / `PUT /api/v1/initialization/config/:kbId` (update) | Persists: creates or updates Model records and writes the KnowledgeBase configuration |
 
-`source` 取 `local`（Ollama）或远程厂商标识（`openai`、`deepseek`、`aliyun`、`zhipu`、`siliconflow` 等）。`chunkSize` 合法范围 100–10000。
+`source` is `local` (Ollama) or a remote vendor id (`openai`, `deepseek`, `aliyun`, `zhipu`, `siliconflow` and others). The valid `chunkSize` range is 100 to 10000.
 
-### 整条链路发生了什么
+### What happens along the way
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as "用户 (浏览器)"
+    participant U as "User (browser)"
     participant FE as "frontend (Nginx)"
-    participant APP as "app 后端 (:8080)"
+    participant APP as "app backend (:8080)"
     participant DR as "docreader (gRPC)"
-    participant DB as "ParadeDB / 向量索引"
-    participant LLM as "LLM (Ollama / 远程 API)"
-    U->>FE: 注册 / 登录
+    participant DB as "ParadeDB / vector index"
+    participant LLM as "LLM (Ollama / remote API)"
+    U->>FE: Register / log in
     FE->>APP: POST /api/v1/auth/register → login
-    APP-->>FE: JWT + 自动创建的租户
-    U->>APP: POST /api/v1/knowledge-bases (创建知识库)
-    U->>APP: POST /api/v1/initialization/initialize/:kbId (配置模型)
-    APP->>LLM: 连通性测试 (remote/check, embedding/test)
-    U->>APP: POST /api/v1/knowledge-bases/:id/knowledge/file (上传)
-    APP->>DR: gRPC 解析文档 (OCR / 版式 / 图片)
-    DR-->>APP: 结构化文本 + 图片
-    APP->>DB: 分块 → Embedding → 向量/关键词索引 (Asynq 异步)
-    U->>APP: POST /api/v1/sessions (创建会话)
-    U->>APP: POST /api/v1/knowledge-chat/:session_id (提问)
-    APP->>DB: 混合检索 (向量+BM25) → RRF → Rerank
-    APP->>LLM: 拼装上下文生成回答
-    APP-->>U: SSE 流式回答 + 引用来源
+    APP-->>FE: JWT + the auto-created workspace
+    U->>APP: POST /api/v1/knowledge-bases (create a knowledge base)
+    U->>APP: POST /api/v1/initialization/initialize/:kbId (configure models)
+    APP->>LLM: Connectivity tests (remote/check, embedding/test)
+    U->>APP: POST /api/v1/knowledge-bases/:id/knowledge/file (upload)
+    APP->>DR: Parse the document over gRPC (OCR / layout / images)
+    DR-->>APP: Structured text + images
+    APP->>DB: Chunk → embed → vector and keyword index (Asynq, async)
+    U->>APP: POST /api/v1/sessions (create a session)
+    U->>APP: POST /api/v1/knowledge-chat/:session_id (ask)
+    APP->>DB: Hybrid retrieval (vector + BM25) → RRF → rerank
+    APP->>LLM: Assemble the context and generate the answer
+    APP-->>U: SSE streamed answer + sources
 ```
 
-## 卡住了看这里 {#_8-卡住了看这里}
+## If you get stuck
 
-| 现象 | 检查点 |
+| Symptom | What to check |
 | --- | --- |
-| 上传后一直 `processing` | `docker logs WeKnora-docreader`；大文件受 `MAX_FILE_SIZE_MB`（默认 50）与 `WEKNORA_DOCUMENT_PROCESS_TIMEOUT`（默认 2h）约束 |
-| 初始化时 Ollama 检测失败 | 容器内默认地址 `http://host.docker.internal:11434`（`OLLAMA_BASE_URL`）；Linux 需确认 `extra_hosts: host.docker.internal:host-gateway` 生效 |
-| 问答无引用 / 召回为空 | 确认知识解析 `completed`；调低 `vector_threshold`；检查 embedding 模型与建库时一致 |
-| 注册页签消失 | 查 `GET /auth/config` 的 `registration_mode`。值可能来自「设置 → 系统」里的数据库设置，不只是 `DISABLE_REGISTRATION`；邀请链接与 OIDC 首次登录是另外两条通路，不受它影响 |
-| API Key 请求 403 | Key 的 capabilities 不含所需能力，或 `knowledge_base_ids` 白名单未包含目标库 |
+| Still `processing` long after upload | `docker logs ai-kb-docreader`; large files are bounded by `MAX_FILE_SIZE_MB` (default 50) and `AIKB_DOCUMENT_PROCESS_TIMEOUT` (default 2h) |
+| Ollama detection fails during initialization | The default address inside the container is `http://host.docker.internal:11434` (`OLLAMA_BASE_URL`); on Linux confirm that `extra_hosts: host.docker.internal:host-gateway` is in effect |
+| Answers without citations / empty recall | Confirm the document parse status is `completed`; lower `vector_threshold`; check that the embedding model matches the one used when the knowledge base was built |
+| The registration tab disappeared | Check `registration_mode` in `GET /auth/config`. The value can come from the database setting under Settings → System, not only from `DISABLE_REGISTRATION`. Invitation links and first OIDC login are two separate paths that it does not affect |
+| API key requests return 403 | The key's capabilities do not include the needed one, or its `knowledge_base_ids` allow-list does not include the target knowledge base |
 
-下一步：想调细节看[配置详解](./04-configuration.md)，想了解系统怎么运转看[总体架构](../02-architecture/01-overview.md)。
+Next: [Configuration](./04-configuration.md) for the details, or [Architecture overview](../02-architecture/01-overview.md) for how the system runs.

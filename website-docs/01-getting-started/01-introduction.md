@@ -1,95 +1,95 @@
-# WeKnora 产品介绍
+# AI KB Overview
 
-WeKnora（维娜拉）是腾讯开源的知识库问答系统，支持导入 PDF、Word、网页以及飞书、Notion、Confluence、语雀、钉钉等平台的资料。用户可以围绕这些资料提问，并通过回答中的引用查看原文。
+AI KB is a knowledge base question-answering system. It imports PDFs, Word documents and web pages, and syncs content from platforms such as Feishu/Lark, Notion, Confluence, Yuque, DingTalk Docs and Seafile. Users ask questions about that material and open the cited passages from each answer.
 
-系统采用检索增强生成（RAG）：先解析文档并建立索引，再根据问题检索相关片段，由大模型生成回答。
+The system uses retrieval-augmented generation (RAG): documents are parsed and indexed, relevant chunks are retrieved for each question, and a large language model writes the answer from them.
 
-系统由 Go 后端、Vue 3 前端和 Python 文档解析服务 docreader 组成，支持 Docker Compose、Helm、Lite 单二进制和桌面应用等部署方式。
+It consists of a Go backend, a Vue 3 frontend and a Python document parsing service (docreader). It deploys with Docker Compose, Helm, as a single Lite binary, or as a desktop application.
 
 <Screenshot
   src="/screenshots/introduction-overview.png"
-  caption="WeKnora 主界面：左侧知识库与会话，右侧问答区"
-  hint="展示登录后的主界面全貌：侧边栏（知识库、智能体、设置入口）与一轮带引用的问答。" />
+  caption="Main screen: knowledge bases and conversations on the left, the chat area on the right"
+  hint="Full main screen after login: the sidebar (knowledge bases, agents, settings) and one answered question with citations." />
 
-## 适用场景 {#weknora-解决什么问题}
+## Use cases
 
-| 需求 | 功能 |
+| Need | Capability |
 | --- | --- |
-| 文档格式繁杂，PDF/扫描件/表格难以结构化 | 文档处理流程支持 PDF 版式分析、扫描件 OCR、Office 转换、网页抓取与图片描述，可选 OpenDataLoader/Docling 混合解析 |
-| 单一向量检索召回不稳 | 向量 + 关键词（BM25）混合检索，RRF 融合，Rerank 重排，可选知识图谱（GraphRAG）与 Wiki 导航 |
-| 模型绑定单一厂商 | 模型抽象层：Ollama 本地模型与数十家内置厂商（OpenAI 兼容、Anthropic Messages、Gemini 原生等协议）均可，LLM / Embedding / Rerank / VLM / ASR 分类管理，厂商与模型目录见[模型管理](../03-features/06-models.md) |
-| 数据安全与私有化 | 全栈可私有部署；敏感凭证（API Key 等）以 AES-256 落盘加密（`SYSTEM_AES_KEY`）；多租户隔离 + RBAC 角色鉴权 |
-| 多步骤任务与工具调用 | 内置 Agent（ReAct 多步推理）、MCP 工具接入、Agent Skills 沙箱执行、Web 搜索（SearXNG 等）、数据分析（对 CSV/Excel 执行 SQL） |
-| 团队协作 | 租户（工作空间）+ 成员角色 + 组织（Organization）跨租户知识库共享 + 邀请机制 |
+| Mixed document formats; PDFs, scans and tables resist structuring | The parsing pipeline covers PDF layout analysis, OCR for scans, Office conversion, web page capture and image description, with optional OpenDataLoader/Docling hybrid parsing |
+| Vector-only retrieval recalls unreliably | Hybrid vector + keyword (BM25) retrieval with RRF fusion and reranking; optional knowledge graph (GraphRAG) and Wiki navigation |
+| Lock-in to one model vendor | A model abstraction layer: local Ollama models and dozens of built-in vendors (OpenAI-compatible, Anthropic Messages, Gemini native and other protocols), managed by category: LLM, embedding, rerank, VLM and ASR. Vendors and the model catalog: [Model management](../03-features/06-models.md) |
+| Data security and private hosting | The whole stack runs on your infrastructure; sensitive credentials (API keys and the like) are stored AES-256 encrypted (`SYSTEM_AES_KEY`); multi-tenant isolation with RBAC |
+| Multi-step tasks and tool use | Built-in agents (ReAct multi-step reasoning), MCP tool integration, Agent Skills run in a sandbox, web search (SearXNG and others), data analysis (SQL over CSV/Excel) |
+| Team collaboration | Workspaces (tenants) with member roles, organizations that share knowledge bases across workspaces, and invitations |
 
-## 核心概念
+## Core concepts
 
-知识库组织资料，工作空间管理成员与资源权限，智能体决定回答所用的模型和工具。以下术语与界面选项对应，完整类型定义位于 `internal/types/`。
+Knowledge bases organize material, workspaces manage members and resource permissions, and agents decide which model and tools answer a question. The terms below match the options in the UI; the full type definitions live in `internal/types/`.
 
-### 租户与身份
+### Tenants and identity
 
-| 概念 | 说明 |
+| Concept | Description |
 | --- | --- |
-| 租户 Tenant | 工作空间，管理知识库、模型、智能体、会话和存储配额。详见[空间与权限](../03-features/01-tenant-auth.md) |
-| 用户 User | 登录账号，一个用户可以加入多个工作空间 |
-| 成员 TenantMember | 用户在某个空间中的成员关系，包含角色和状态 |
-| 角色 TenantRole | Owner、Admin、Contributor、Viewer 四级，决定用户可执行的空间操作 |
-| API Key（TenantAPIKey） | 程序访问凭证，可授予指定能力并限定知识库范围。空间与平台 Key 的权限分别管理 |
-| 组织 Organization | 连接多个工作空间，按组织成员角色共享知识库和智能体 |
+| Tenant | A workspace. Manages knowledge bases, models, agents, sessions and the storage quota. See [Workspaces and permissions](../03-features/01-tenant-auth.md) |
+| User | A login account. One user can belong to several workspaces |
+| TenantMember | A user's membership in one workspace, with a role and a status |
+| TenantRole | Four levels, Owner, Admin, Contributor and Viewer, that decide which workspace operations a user may perform |
+| API key (TenantAPIKey) | A credential for programmatic access. It can be limited to specific capabilities and knowledge bases. Workspace keys and platform keys have separate permissions |
+| Organization | Links several workspaces and shares knowledge bases and agents according to organization member roles |
 
-### 知识域
+### Knowledge domain
 
-| 概念 | 说明 |
+| Concept | Description |
 | --- | --- |
-| 知识库 KnowledgeBase | 组织相关资料，并配置模型、分块和索引策略。支持文档、FAQ 和 Wiki 类型 |
-| 知识 Knowledge | 知识库中的一份文件、网页或手写内容，入库后可查看解析状态 |
-| 分块 Chunk | 文档解析后的检索单元，可包含文本、图片识别结果、表格或其他索引内容 |
-| FAQ | 维护标准问、相似问、反例问和答案的问答条目，详见[FAQ 能力](../03-features/17-faq.md) |
-| Wiki 页面 WikiPage | 从文档生成的主题页面，带来源引用和页面链接，支持编辑与版本管理 |
-| 知识图谱 Entity / Relationship | 文档中的实体与关系，保存在 Neo4j，用于补充关联内容检索 |
-| 数据源 DataSource | 持续同步外部资料的连接。支持飞书/Lark（知识库与云盘）、Notion、Confluence、语雀、钉钉文档、腾讯 IMA、GitLab 和 RSS，详见[数据源导入](../03-features/10-datasource.md) |
-| 检索配置 RetrievalConfig | 控制候选数量、匹配阈值、融合权重和重排结果，详见[检索引擎](../03-features/05-retrieval-engines.md) |
+| KnowledgeBase | Groups related material and configures its models, chunking and indexing strategy. Document, FAQ and Wiki types are supported |
+| Knowledge | One file, web page or hand-written entry in a knowledge base. Its parsing status is visible after import |
+| Chunk | The retrieval unit produced by parsing: text, image recognition output, a table, or other indexed content |
+| FAQ | A question-and-answer entry with a standard question, similar questions, negative examples and the answer. See [FAQ](../03-features/17-faq.md) |
+| WikiPage | A topic page generated from documents, with source citations and page links; editable and versioned |
+| Knowledge graph (Entity / Relationship) | Entities and relationships extracted from documents, stored in Neo4j, used to retrieve related content |
+| DataSource | A connection that keeps syncing external material. Supports Feishu/Lark (wiki and drive), Notion, Confluence, Yuque, DingTalk Docs, Tencent IMA, GitLab, RSS and Seafile. See [Data source import](../03-features/10-datasource.md) |
+| RetrievalConfig | Controls candidate counts, match thresholds, fusion weights and rerank output. See [Retrieval engines](../03-features/05-retrieval-engines.md) |
 
-### 对话与智能体
+### Conversations and agents
 
-| 概念 | 说明 |
+| Concept | Description |
 | --- | --- |
-| 会话 Session | 保存多轮问答及所选智能体、模型、知识范围和工具配置 |
-| 消息 Message | 一次提问或回答，可关联图片、附件、引用和工具执行结果 |
-| 模型 Model | 提供对话、向量化、重排、视觉或语音能力的模型连接，详见[模型管理](../03-features/06-models.md) |
-| Agent（自定义智能体） CustomAgent | 按任务配置模型、资料范围和工具，支持快速问答与智能推理 |
-| 内置 Agent | 预配置的快速问答、智能推理、数据分析和 Wiki 智能体，详见[Agent 引擎](../03-features/07-agent.md) |
-| 技能与沙箱 | 空间技能目录保存包，按沙箱配置安装，再绑定智能体使用；支持 Docker/Cube/E2B、个人变量与生成文件，见[技能与沙箱](../03-features/22-skills-sandbox.md) |
-| 长期记忆 | 按空间和调用者保存资料/偏好/事实/事项/兴趣；默认关闭，开启与个人管理见[长期记忆](../03-features/23-memory.md) |
-| MCP 服务 MCPService | 为智能体接入外部工具，支持 SSE 和 Streamable HTTP；认证可选 API Key、Bearer 或 OAuth 2.0 |
+| Session | A multi-turn conversation together with its chosen agent, model, knowledge scope and tool configuration |
+| Message | One question or answer. It can carry images, attachments, citations and tool results |
+| Model | A connection to a model that provides chat, embedding, rerank, vision or speech capability. See [Model management](../03-features/06-models.md) |
+| CustomAgent | An agent configured per task with its model, material scope and tools. Supports Quick Answer and Smart Reasoning modes |
+| Built-in agents | Preconfigured Quick Answer, Smart Reasoning, Data Analysis and Wiki agents. See [Agent engine](../03-features/07-agent.md) |
+| Skills and sandboxes | The workspace skill catalog stores packages; a skill is installed per sandbox configuration and then bound to an agent. Docker, Cube and E2B backends, personal variables and generated files are supported. See [Skills and sandboxes](../03-features/22-skills-sandbox.md) |
+| Long-term memory | Material, preferences, facts, to-dos and interests kept per workspace and caller. Off by default; enabling it and personal management: [Long-term memory](../03-features/23-memory.md) |
+| MCPService | Connects external tools to agents over SSE or Streamable HTTP; authentication by API key, Bearer token or OAuth 2.0 |
 
-### 概念关系图
+### How the concepts relate
 
 ```mermaid
 flowchart TB
-    subgraph identity["身份与租户"]
-        U["User (用户)"]
-        T["Tenant (租户 / 工作空间)"]
-        TM["TenantMember (角色: owner/admin/contributor/viewer)"]
+    subgraph identity["Identity and tenants"]
+        U["User"]
+        T["Tenant (workspace)"]
+        TM["TenantMember (role: owner/admin/contributor/viewer)"]
         AK["TenantAPIKey (X-API-Key)"]
-        ORG["Organization (跨租户组织)"]
+        ORG["Organization (across tenants)"]
     end
-    subgraph knowledge["知识域"]
+    subgraph knowledge["Knowledge domain"]
         KB["KnowledgeBase (document/faq/wiki)"]
-        K["Knowledge (文档/网页/手写条目)"]
+        K["Knowledge (document / web page / manual entry)"]
         C["Chunk (text/faq/image/table/entity...)"]
         W["WikiPage"]
-        G["Entity / Relationship (知识图谱)"]
-        DS["DataSource (飞书/Notion/RSS...)"]
+        G["Entity / Relationship (knowledge graph)"]
+        DS["DataSource (Feishu/Notion/RSS...)"]
     end
-    subgraph chat["对话与智能体"]
-        S["Session (会话)"]
-        MSG["Message (消息)"]
+    subgraph chat["Conversations and agents"]
+        S["Session"]
+        MSG["Message"]
         AG["CustomAgent (quick-answer / smart-reasoning)"]
         M["Model (LLM/Embedding/Rerank/VLM/ASR)"]
-        MCP["MCPService (外部工具)"]
+        MCP["MCPService (external tools)"]
     end
-    U -- "成员关系" --> TM --> T
+    U -- "membership" --> TM --> T
     T --> AK
     T --> ORG
     T --> KB
@@ -98,66 +98,66 @@ flowchart TB
     KB --> K --> C
     KB --> W
     C --> G
-    DS -- "定时同步" --> KB
+    DS -- "scheduled sync" --> KB
     T --> S --> MSG
-    AG -- "检索" --> KB
-    AG -- "调用" --> M
-    AG -- "工具" --> MCP
+    AG -- "retrieves" --> KB
+    AG -- "calls" --> M
+    AG -- "tools" --> MCP
 ```
 
-## 功能清单
+## Feature list
 
-- **文档接入**：文件上传（PDF/Word/PPT/Excel/Markdown/HTML/EPUB/XMind/图片/音频等）、URL 抓取、手写 Markdown、整目录上传、飞书 / Lark / Notion / Confluence / 语雀 / 钉钉 / IMA / GitLab / RSS 定时同步。
-- **文档理解**：版式分析、扫描件 OCR、表格抽取、图片多模态描述（VLM）、音频转写（ASR）、按文件类型选择解析引擎（`ParserEngineRules`，可接 MinerU / OpenDataLoader）。
-- **索引管道**：可配置分块（含父子分块与自适应策略）、向量索引、关键词全文索引、FAQ 索引、Wiki 生成、知识图谱抽取、预生成问题（question generation）。
-- **检索**：向量 + BM25 混合检索、RRF 融合、Rerank 重排、查询改写与扩展、意图识别（greeting/chitchat/web_search 等，见 `config/prompt_templates/intent_prompts.yaml`）。
-- **问答与 Agent**：流式 SSE 问答、多轮上下文压缩、引用溯源；ReAct Agent（工具：`search_knowledge`、`read_document`、`list_documents`、`wiki_search`、`data_analysis` 等）、MCP 外部工具、Agent Skills（Docker、Cube 或 E2B 沙箱执行脚本）、Web 搜索。
-- **对话体验**：回答进行中追加要求、从任意历史提问分叉或原地回滚（带沙箱工作区检查点）、按会话调整思考强度，「产物」页跨会话汇总智能体生成的文件，详见[会话体验](../03-features/18-chat-experience.md)。
-- **多租户与安全**：RBAC 角色鉴权（默认开启，`WEKNORA_TENANT_ENABLE_RBAC`）、审计日志（默认保留 90 天）、邀请制注册（`auth.registration_mode=invite_only`，也可用旧变量 `DISABLE_REGISTRATION=true`）、OIDC 单点登录、SSRF 防护（可选仅白名单出站 `SSRF_DNS_WHITELIST_ONLY`）、敏感字段 AES-256 加密。界面提供简体中文、英文、日文、韩文和俄文。
-- **可观测性**：Langfuse 全链路追踪（LLM/Embedding/Rerank/VLM/ASR 调用与 token 统计）、健康检查、Swagger API 文档（`GIN_MODE=debug` 时）。
-- **生态**：REST API（`/api/v1`）+ API Key、内置 MCP Server（按空间创建端点，把 WeKnora 作为工具暴露给其他 Agent，见[MCP 集成](../03-features/08-mcp.md)）、CLI（`cli/`）、微信小程序（`miniprogram/`）、浏览器插件渠道、[本机浏览器](../05-clients/09-local-browser.md)（智能体通过 Chrome/Edge 扩展操作用户浏览器）。Lite 桌面版（macOS）可在本机沙箱中执行智能体命令。
+- **Document ingestion**: file upload (PDF, Word, PPT, Excel, Markdown, HTML, EPUB, XMind, images, audio and more), URL capture, hand-written Markdown, whole-folder upload, and scheduled sync from Feishu / Lark / Notion / Confluence / Yuque / DingTalk / IMA / GitLab / RSS / Seafile.
+- **Document understanding**: layout analysis, OCR for scans, table extraction, multimodal image description (VLM), audio transcription (ASR), and a parsing engine chosen per file type (`ParserEngineRules`, with MinerU / OpenDataLoader as options).
+- **Indexing pipeline**: configurable chunking (including parent-child chunks and adaptive strategies), vector index, keyword full-text index, FAQ index, Wiki generation, knowledge graph extraction, and pre-generated questions.
+- **Retrieval**: hybrid vector + BM25 retrieval, RRF fusion, reranking, query rewriting and expansion, intent recognition (greeting, chitchat, web_search and others; see `config/prompt_templates/intent_prompts.yaml`).
+- **Question answering and agents**: streaming SSE answers, multi-turn context compression, citation tracing; a ReAct agent with tools such as `search_knowledge`, `read_document`, `list_documents`, `wiki_search` and `data_analysis`; MCP external tools; Agent Skills (scripts run in a Docker, Cube or E2B sandbox); web search.
+- **Conversation experience**: append requirements while an answer is running, fork from any earlier question or rewind in place (with sandbox workspace checkpoints), choose the reasoning effort per session, and an Artifacts page that collects agent-generated files across sessions. See [Conversation experience](../03-features/18-chat-experience.md).
+- **Multi-tenancy and security**: RBAC (on by default, `AIKB_TENANT_ENABLE_RBAC`), audit log (90-day retention by default), invite-only registration (`auth.registration_mode=invite_only`, or the legacy `DISABLE_REGISTRATION=true`), OIDC single sign-on, SSRF protection (optionally allowlist-only egress with `SSRF_DNS_WHITELIST_ONLY`), AES-256 encryption of sensitive fields. The web UI ships in English.
+- **Observability**: Langfuse tracing across LLM, embedding, rerank, VLM and ASR calls with token counts; health checks; Swagger API docs (when `GIN_MODE=debug`).
+- **Ecosystem**: REST API (`/api/v1`) with API keys; a built-in MCP server (per-workspace endpoints that expose AI KB as a tool to other agents, see [MCP integration](../03-features/08-mcp.md)); a CLI (`cli/`); a WeChat mini program (`miniprogram/`); a browser extension channel; the [Local Browser](../05-clients/09-local-browser.md) (agents drive the user's Chrome or Edge through an extension). The Lite desktop edition (macOS) runs agent commands in a local OS sandbox.
 
-## 系统组件一览
+## System components
 
-| 组件 | 技术栈 | 源码位置 | 默认端口 | 职责 |
+| Component | Stack | Source | Default port | Role |
 | --- | --- | --- | --- | --- |
-| app（后端） | Go / Gin | `cmd/server`、`internal/` | 8080 | REST API、检索问答、Agent 引擎、异步任务（Asynq） |
-| frontend（前端） | Vue 3 + Nginx | `frontend/` | 80 | Web 控制台，Nginx 反代 `/api` 到 app |
-| docreader | Python / gRPC | `docreader/` | 50051（仅容器网络内） | 文件转 Markdown、网页抓取、图片提取 |
-| postgres | ParadeDB（PostgreSQL 17 + BM25/向量扩展） | 镜像 `paradedb/paradedb` | 5432 | 主数据库 + 默认混合检索引擎（`RETRIEVE_DRIVER=postgres`） |
-| redis | Redis 7 | — | 6379 | 流管理（SSE 恢复）、Asynq 任务队列 |
-| sandbox | Python 3.12 + Node 20 | `docker/Dockerfile.sandbox` | — | Agent Skills 的会话沙箱容器镜像 |
-| 可选：qdrant / milvus / weaviate / doris | — | `docker-compose.yml` profiles | 6334 / 19530 / 9035 / 9030 | 替代或叠加的向量检索引擎（`RETRIEVE_DRIVER`） |
-| 可选：opensearch | — | 仅 `docker-compose.dev.yml` | 9200 | 开发环境用；生产需自备集群 |
-| 可选：elasticsearch / tencent_vectordb | — | 不随 compose 提供 | — | 代码支持，但需自行部署后用 `RETRIEVE_DRIVER` 接入 |
-| 可选：neo4j | Neo4j | profile `neo4j` | 7474 / 7687 | 知识图谱存储（GraphRAG） |
-| 可选：minio | MinIO | profile `minio` | 9000 / 9001 | S3 兼容对象存储（`STORAGE_TYPE=minio`） |
-| 可选：searxng | SearXNG | profile `searxng` | 8888 | 自建 Web 搜索引擎 |
-| 可选：langfuse 栈 | Langfuse 3 + ClickHouse + MinIO | profile `langfuse` | 3000 | LLM 可观测性 |
-| 可选：mcp（已弃用） | Python | `mcp-server/`，profile `full` | 8082 | 旧版独立 MCP Server；新部署使用 app 内置的 MCP Server 端点 |
-| 可选：odl-hybrid | Docling | profile `odl-hybrid` | 5002 | OpenDataLoader PDF 混合解析后端 |
+| app (backend) | Go / Gin | `cmd/server`, `internal/` | 8080 | REST API, retrieval and answering, agent engine, async tasks (Asynq) |
+| frontend | Vue 3 + Nginx | `frontend/` | 80 | Web console; Nginx proxies `/api` to app |
+| docreader | Python / gRPC | `docreader/` | 50051 (container network only) | File to Markdown conversion, web page capture, image extraction |
+| postgres | ParadeDB (PostgreSQL 17 + BM25 and vector extensions) | image `paradedb/paradedb` | 5432 | Primary database and default hybrid retrieval engine (`RETRIEVE_DRIVER=postgres`) |
+| redis | Redis 7 | - | 6379 | Stream management (SSE recovery), Asynq task queue |
+| sandbox | Python 3.12 + Node 20 | `docker/Dockerfile.sandbox` | - | Session sandbox image for Agent Skills |
+| Optional: qdrant / milvus / weaviate / doris | - | `docker-compose.yml` profiles | 6334 / 19530 / 9035 / 9030 | Alternative or additional vector retrieval engines (`RETRIEVE_DRIVER`) |
+| Optional: opensearch | - | `docker-compose.dev.yml` only | 9200 | Development only; production needs your own cluster |
+| Optional: elasticsearch / tencent_vectordb | - | not in compose | - | Supported in code; deploy separately and connect with `RETRIEVE_DRIVER` |
+| Optional: neo4j | Neo4j | profile `neo4j` | 7474 / 7687 | Knowledge graph storage (GraphRAG) |
+| Optional: minio | MinIO | profile `minio` | 9000 / 9001 | S3-compatible object storage (`STORAGE_TYPE=minio`) |
+| Optional: searxng | SearXNG | profile `searxng` | 8888 | Self-hosted web search engine |
+| Optional: langfuse stack | Langfuse 3 + ClickHouse + MinIO | profile `langfuse` | 3000 | LLM observability |
+| Optional: mcp (deprecated) | Python | `mcp-server/`, profile `full` | 8082 | The legacy standalone MCP server; new deployments use the MCP server endpoints built into app |
+| Optional: odl-hybrid | Docling | profile `odl-hybrid` | 5002 | OpenDataLoader PDF hybrid parsing backend |
 
 ```mermaid
 flowchart LR
-    Browser["浏览器 / SDK / CLI"] --> FE["frontend (Nginx :80)"]
-    FE -- "/api 反向代理" --> APP["app 后端 (Go :8080)"]
-    Browser -. "直连 API + X-API-Key" .-> APP
-    APP -- "gRPC :50051" --> DR["docreader (Python 文档解析)"]
-    APP --> PG[("ParadeDB / PostgreSQL :5432 元数据 + 混合检索")]
-    APP --> RD[("Redis :6379 流管理 + Asynq 队列")]
-    APP -. "按需创建" .-> SB["sandbox (Docker / E2B / Cube 会话沙箱)"]
-    APP -. "可选" .-> VDB[("Qdrant / Milvus / ES / OpenSearch / Doris ...")]
-    APP -. "可选" .-> NEO[("Neo4j 知识图谱")]
-    APP -. "可选" .-> OSS[("MinIO / COS / S3 / OSS / OBS / TOS 对象存储")]
-    APP -. "可选" .-> SX["SearXNG Web 搜索 :8888"]
-    APP -. "可选" .-> LF["Langfuse 可观测 :3000"]
-    APP --> LLM["Ollama 本地模型 / OpenAI 兼容远程模型"]
-    MCPC["MCP 客户端 (Claude / Cursor 等)"] -- "/mcp/:endpoint_id" --> APP
-    MCPS["mcp-server :8082（已弃用）"] -. "REST" .-> APP
+    Browser["Browser / SDK / CLI"] --> FE["frontend (Nginx :80)"]
+    FE -- "/api reverse proxy" --> APP["app backend (Go :8080)"]
+    Browser -. "direct API + X-API-Key" .-> APP
+    APP -- "gRPC :50051" --> DR["docreader (Python document parsing)"]
+    APP --> PG[("ParadeDB / PostgreSQL :5432 metadata + hybrid retrieval")]
+    APP --> RD[("Redis :6379 streams + Asynq queue")]
+    APP -. "created on demand" .-> SB["sandbox (Docker / E2B / Cube session sandbox)"]
+    APP -. "optional" .-> VDB[("Qdrant / Milvus / ES / OpenSearch / Doris ...")]
+    APP -. "optional" .-> NEO[("Neo4j knowledge graph")]
+    APP -. "optional" .-> OSS[("MinIO / COS / S3 / OSS / OBS / TOS object storage")]
+    APP -. "optional" .-> SX["SearXNG web search :8888"]
+    APP -. "optional" .-> LF["Langfuse observability :3000"]
+    APP --> LLM["Ollama local models / OpenAI-compatible remote models"]
+    MCPC["MCP clients (Claude / Cursor ...)"] -- "/mcp/:endpoint_id" --> APP
+    MCPS["mcp-server :8082 (deprecated)"] -. "REST" .-> APP
 ```
 
-## 下一步
+## Next steps
 
-- [安装部署](./02-installation.md)：选择部署方式并启动服务。
-- [快速上手](./03-quickstart.md)：创建知识库、上传文档并完成首次问答。
-- [配置详解](./04-configuration.md)：查询部署参数与配置优先级。
+- [Installation](./02-installation.md): choose a deployment method and start the services.
+- [Quickstart](./03-quickstart.md): create a knowledge base, upload documents and ask the first question.
+- [Configuration](./04-configuration.md): deployment parameters and configuration precedence.

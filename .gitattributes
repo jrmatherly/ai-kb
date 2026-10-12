@@ -18,3 +18,6 @@ cli/acceptance/testdata/**/*.json text eol=lf
 
 # Unified diffs use a space to mark empty context lines.
 patches/browserskill/*.patch whitespace=-blank-at-eol
+
+# May contain CJK text: the translation glossary maps Chinese source terms to English (scripts/check-english-only.sh)
+.claude/skills/translate-docs/SKILL.md -english-only

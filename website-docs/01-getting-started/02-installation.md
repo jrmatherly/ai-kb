@@ -1,154 +1,154 @@
-# 安装部署
+# Installation
 
-WeKnora 支持 Docker Compose、Kubernetes Helm、Lite 单二进制和桌面应用。服务器部署可选择 Compose 或 Helm；本地使用可选择 Lite；参与开发时使用独立的开发编排。各方式的依赖、启动命令和数据目录如下。
+AI KB runs under Docker Compose, Kubernetes Helm, as a single Lite binary, or as a desktop application. Server deployments use Compose or Helm. Local use fits the Lite edition. Development uses a separate dev orchestration. The dependencies, start commands and data directories of each option follow.
 
-## 部署形态总览
+## Deployment options
 
-| 形态 | 入口 | 数据库 | 队列/流 | 适用场景 |
+| Option | Entry point | Database | Queue / streams | Suited for |
 | --- | --- | --- | --- | --- |
-| Docker Compose（标准） | `docker-compose.yml` | ParadeDB（PostgreSQL） | Redis + Asynq | 生产 / 团队自托管，推荐 |
-| Docker Compose（开发） | `docker-compose.dev.yml` | 同上（仅基础设施进容器） | 同上 | 本地开发：app / frontend 在宿主机运行 |
-| Helm | `helm/` | ParadeDB（chart 内置） | Redis（chart 内置） | Kubernetes >= 1.25 |
-| Lite 单二进制 | `make build-lite` / `scripts/package-lite.sh` | SQLite（FTS5 + sqlite-vec） | 内存（无 Redis） | 个人 / 离线 / 低资源环境 |
-| 桌面应用（**未正式发布**） | `cmd/desktop`（Wails v2）+ `scripts/package-mac-app.sh` | SQLite | 内存 | 桌面单机使用，带图形界面与本地数据目录 |
+| Docker Compose (standard) | `docker-compose.yml` | ParadeDB (PostgreSQL) | Redis + Asynq | Production and team self-hosting, recommended |
+| Docker Compose (development) | `docker-compose.dev.yml` | Same (only the infrastructure runs in containers) | Same | Local development: app and frontend run on the host |
+| Helm | `helm/` | ParadeDB (bundled in the chart) | Redis (bundled in the chart) | Kubernetes >= 1.25 |
+| Lite single binary | `make build-lite` / `scripts/package-lite.sh` | SQLite (FTS5 + sqlite-vec) | In memory (no Redis) | Personal, offline or low-resource environments |
+| Desktop application (**not released yet**) | `cmd/desktop` (Wails v2) + `scripts/package-mac-app.sh` | SQLite | In memory | Single-machine desktop use with a GUI and a local data directory |
 
 ```mermaid
 flowchart TB
-    subgraph prod["标准部署 (docker compose up)"]
+    subgraph prod["Standard deployment (docker compose up)"]
         FE1["frontend :80"] --> APP1["app :8080"]
         APP1 --> PG1[("postgres :5432")]
         APP1 --> RD1[("redis :6379")]
         APP1 --> DR1["docreader :50051"]
-        APP1 -. "profile 可选" .-> OPT1["qdrant / milvus / neo4j / minio / searxng / langfuse / mcp ..."]
+        APP1 -. "optional profiles" .-> OPT1["qdrant / milvus / neo4j / minio / searxng / langfuse / mcp ..."]
     end
-    subgraph dev["开发模式 (make dev-start)"]
-        LOCALAPP["宿主机 go run app :8080"] --> PG2[("postgres 容器")]
-        LOCALAPP --> RD2[("redis 容器")]
-        LOCALAPP --> DR2["docreader 容器 :50051"]
-        LOCALFE["宿主机 npm run dev 前端"] --> LOCALAPP
+    subgraph dev["Development mode (make dev-start)"]
+        LOCALAPP["host: go run app :8080"] --> PG2[("postgres container")]
+        LOCALAPP --> RD2[("redis container")]
+        LOCALAPP --> DR2["docreader container :50051"]
+        LOCALFE["host: npm run dev frontend"] --> LOCALAPP
     end
-    subgraph lite["Lite / 桌面 (单进程)"]
-        BIN["WeKnora-lite 二进制 (内嵌 web/ 前端)"]
+    subgraph lite["Lite / desktop (single process)"]
+        BIN["ai-kb-lite binary (embedded web/ frontend)"]
         BIN --> SQLITE[("SQLite: FTS5 + sqlite-vec")]
-        BIN --> MEMQ[("内存流管理")]
-        BIN -. "可选" .-> DR3["docreader 127.0.0.1:50051"]
+        BIN --> MEMQ[("in-memory stream manager")]
+        BIN -. "optional" .-> DR3["docreader 127.0.0.1:50051"]
         BIN --> OLLAMA["Ollama :11434"]
     end
 ```
 
-## 硬件与依赖要求
+## Hardware and dependency requirements
 
-- **标准 Docker 部署**：Docker 20.10+ 与 Docker Compose v2（v1 `docker-compose` 也兼容，`scripts/start_all.sh` 会自动探测）；建议 4 核 CPU / 8GB 内存起步（docreader 含 LibreOffice、Playwright，较吃内存），磁盘按知识库规模预留（Postgres 卷 + `/data/files` 文件卷）。启用 Milvus / OpenSearch / Langfuse 等可选组件需相应增加内存。
-- **模型服务**：本地推理需 [Ollama](https://ollama.com)（默认地址 `http://host.docker.internal:11434`，`OLLAMA_OPTIONAL=true` 时不可用仅告警不阻断）；或任意 OpenAI 兼容 API（DeepSeek、通义、智谱、硅基流动等）。上述 8GB 起步不含 Ollama 模型权重；Neo4j 默认关闭（需启用 `neo4j` profile）。
-- **源码编译**：Go 1.26（见 `docker/Dockerfile.app` builder 阶段 `golang:1.26-bookworm`）、CGO（依赖 `libsqlite3-dev`）、Node.js + npm（前端）、Python 3.10 + uv（docreader）。
-- **Kubernetes**：>= 1.25.0（`helm/Chart.yaml`）。
+- **Standard Docker deployment**: Docker 20.10+ and Docker Compose v2 (v1 `docker-compose` also works; `scripts/start_all.sh` detects both). Start from 4 CPU cores and 8 GB of RAM (docreader bundles LibreOffice and Playwright and uses a lot of memory). Size the disk to the knowledge bases (the Postgres volume plus the `/data/files` file volume). Optional components such as Milvus, OpenSearch or Langfuse need more memory.
+- **Model serving**: local inference needs [Ollama](https://ollama.com) (default address `http://host.docker.internal:11434`; with `OLLAMA_OPTIONAL=true` an unreachable Ollama only logs a warning and does not block startup), or any OpenAI-compatible API (DeepSeek, Qwen, Zhipu, SiliconFlow and others). The 8 GB baseline excludes Ollama model weights. Neo4j is off by default (enable the `neo4j` profile).
+- **Building from source**: Go 1.26 (the builder stage in `docker/Dockerfile.app` is `golang:1.26-bookworm`), CGO (needs `libsqlite3-dev`), Node.js + npm (frontend), Python 3.10 + uv (docreader).
+- **Kubernetes**: >= 1.25.0 (`helm/Chart.yaml`).
 
-Compose 默认 ParadeDB 镜像自 `v0.22.6-pg17` 起 x86 CPU 基线为 `x86-64-v2`（包括 SSE4.2、POPCNT），不再强制要求 AVX2；更高镜像版本的基线以 ParadeDB 官方发布说明为准。这不代表所有 ARM CPU 或其他可选服务均兼容。
+Starting with `v0.22.6-pg17`, the ParadeDB image used by Compose targets the `x86-64-v2` CPU baseline (SSE4.2, POPCNT) and no longer requires AVX2. For newer image versions, the ParadeDB release notes are authoritative. This says nothing about every ARM CPU or about the other optional services.
 
-## 一、Docker Compose 标准部署（docker-compose.yml）
+## Docker Compose standard deployment (docker-compose.yml)
 
-最快路径：
+The fastest path:
 
 ```bash
-git clone https://github.com/Tencent/WeKnora.git && cd WeKnora
-cp .env.example .env              # 编辑必填项：DB_USER/DB_PASSWORD/DB_NAME、REDIS_PASSWORD、JWT_SECRET、SYSTEM_AES_KEY
-make start-all                # 等价 ./scripts/start_all.sh（默认拉取最新镜像）
-# 或直接：
-docker compose pull           # 拉取与 WEKNORA_VERSION 匹配的镜像
+git clone https://github.com/jrmatherly/ai-kb.git && cd ai-kb
+cp .env.example .env              # edit the required values: DB_USER/DB_PASSWORD/DB_NAME, REDIS_PASSWORD, JWT_SECRET, SYSTEM_AES_KEY
+make start-all                # same as ./scripts/start_all.sh (pulls the latest images by default)
+# or directly:
+docker compose pull           # pull the images matching AIKB_VERSION
 docker compose up -d
-docker compose ps                 # 等所有服务变成 healthy/running
+docker compose ps                 # wait until every service is healthy/running
 ```
 
-`.env.example` 中的 `JWT_SECRET`、`SYSTEM_AES_KEY` 默认留空，需要在首次部署时生成一次并妥善保存：`JWT_SECRET` 可用 `openssl rand -hex 32`，`SYSTEM_AES_KEY` 必须是 32 字节，可用 `openssl rand -hex 16`。升级已有部署时请沿用原来的 `SYSTEM_AES_KEY`，否则已加密的凭据无法解密。各密钥的作用见[配置详解](./04-configuration.md)。
+`JWT_SECRET` and `SYSTEM_AES_KEY` are empty in `.env.example`. Generate them once on the first deployment and keep them safe. `JWT_SECRET` can come from `openssl rand -hex 32`. `SYSTEM_AES_KEY` must be 32 bytes, for example `openssl rand -hex 16`. When upgrading an existing deployment keep the original `SYSTEM_AES_KEY`, otherwise encrypted credentials cannot be decrypted. [Configuration](./04-configuration.md) explains what each secret does.
 
-停止用 `docker compose down`（加 `-v` 会连数据卷一起删，慎用）。仓库里的 `make start-all` 是同一条命令的封装（`scripts/start_all.sh`，额外做 Ollama 检查、`.env` 兜底、沙箱镜像预拉取），两者选一即可。
+Stop with `docker compose down` (`-v` also deletes the data volumes, use with care). `make start-all` wraps the same command (`scripts/start_all.sh`, which additionally checks Ollama, creates a fallback `.env` and pre-pulls the sandbox image). Pick one of the two.
 
-启动后在浏览器打开 `http://localhost` 就是前端（端口由 `FRONTEND_PORT` 决定，默认 80），首次访问会落到注册页。前端 Nginx 把 `/api/` 反代到后端，所以接口调用同样走 `http://localhost/api/v1`；后端 `8080` 端口也直接映射到宿主机，`curl http://localhost:8080/health` 可用于确认后端就绪。
+After startup, open `http://localhost` in a browser for the frontend (the port follows `FRONTEND_PORT`, default 80). The first visit lands on the registration page. The frontend Nginx proxies `/api/` to the backend, so API calls also go through `http://localhost/api/v1`. The backend port `8080` is mapped to the host as well, so `curl http://localhost:8080/health` confirms the backend is ready.
 
-> 注意：`docker-compose.yml` 的 app 服务使用 `env_file: [.env]`，`.env` 不存在会导致 compose 解析失败。`make docker-run` / `start_all.sh` 会自动 `cp .env.example .env` 或 `touch .env` 兜底。
+> Note: the app service in `docker-compose.yml` uses `env_file: [.env]`. A missing `.env` makes Compose fail to parse the file. `make docker-run` and `start_all.sh` run `cp .env.example .env` or `touch .env` as a fallback.
 
-### 版本升级
+### Upgrading
 
-若已有部署并下载了更新的 release：
+If you have an existing deployment and downloaded a newer release:
 
-> 如果数据库仍为 ParadeDB `v0.22.2-pg17`，先按 [ParadeDB 升级说明](06-paradedb-upgrade.md) 停止写入、备份、保留数据卷更换镜像并完成 `pg_search` 扩展升级，再恢复应用。仅替换镜像不会更新已有数据库的扩展 SQL；迁移 `000099` 会处理 WeKnora 库中符合条件的 `0.22.2–0.22.5`，其他数据库仍需单独检查。
+> If the database still runs ParadeDB `v0.22.2-pg17`, first follow [Upgrading an existing ParadeDB database](06-paradedb-upgrade.md): stop writes, back up, swap the image while keeping the data volume, and complete the `pg_search` extension upgrade before bringing the application back. Replacing the image alone does not update the extension SQL in an existing database. On the current image, migration `000115` upgrades `pg_search` from any 0.22.x to 0.25.x version to 0.25.11 in the AI KB database (`migrations/versioned/000115_pg_search_02511.up.sql`); migration `000099` targets the older 0.22.6 image and returns early when only 0.25.11 is available. Other databases on the same server still need a separate check.
 
 ```bash
-# 在 .env 中将 WEKNORA_VERSION 设为目标版本（如 0.7.0），或保持 latest
+# In .env set AIKB_VERSION to the target version (for example 0.7.0), or keep latest
 docker compose pull
 docker compose up -d
 ```
 
-> 仅执行 `docker compose up -d` 会复用本地缓存镜像，可能导致 Web UI 显示版本与下载的 release 不一致。
+> Running only `docker compose up -d` reuses the locally cached images, so the version shown in the web UI may not match the downloaded release.
 
-### 核心服务（默认启动）
+### Core services (started by default)
 
-| 服务 | 镜像 | 端口（宿主:容器） | 依赖 | 说明 |
+| Service | Image | Ports (host:container) | Depends on | Notes |
 | --- | --- | --- | --- | --- |
-| `frontend` | `wechatopenai/weknora-ui:${WEKNORA_VERSION:-latest}` | `${FRONTEND_PORT:-80}:80` | app（healthy） | Nginx 托管 SPA 并反代到 app；`APP_HOST`/`APP_BACKEND_PORT`/`APP_SCHEME` 可指向远程后端 |
-| `app` | `wechatopenai/weknora-app` | `${APP_PORT:-8080}:8080` | postgres（healthy）、redis、docreader（healthy） | Go 后端；挂载 `./config/config.yaml`、`data-files` 卷；健康检查 `GET /health` |
-| `docreader` | `wechatopenai/weknora-docreader` | 仅 `expose: 50051`（不发布到宿主机） | — | 文档解析 gRPC 服务；健康检查 `grpc_health_probe`；与 app 共享 `docreader-tmp` 卷传递图片 |
-| `postgres` | `paradedb/paradedb:v0.25.11-pg17` | 不映射宿主端口 | — | ParadeDB = PostgreSQL 17 + BM25/向量扩展，默认检索引擎 |
-| `redis` | `redis:7.0-alpine` | 不映射宿主端口 | — | `--appendonly yes --requirepass ${REDIS_PASSWORD}` |
+| `frontend` | `ghcr.io/jrmatherly/ai-kb-ui:${AIKB_VERSION:-latest}` | `${FRONTEND_PORT:-80}:80` | app (healthy) | Nginx serves the SPA and proxies to app; `APP_HOST`/`APP_BACKEND_PORT`/`APP_SCHEME` can point at a remote backend |
+| `app` | `ghcr.io/jrmatherly/ai-kb-app` | `${APP_PORT:-8080}:8080` | postgres (healthy), redis, docreader (healthy) | Go backend; mounts `./config/config.yaml` and the `data-files` volume; health check `GET /health` |
+| `docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` | `expose: 50051` only (not published to the host) | - | Document parsing gRPC service; health check `grpc_health_probe`; shares the `docreader-tmp` volume with app to hand over images |
+| `postgres` | `paradedb/paradedb:v0.25.11-pg17` | No host port | - | ParadeDB = PostgreSQL 17 + BM25 and vector extensions, the default retrieval engine |
+| `redis` | `redis:7.0-alpine` | No host port | - | `--appendonly yes --requirepass ${REDIS_PASSWORD}` |
 
-### 可选服务与 profiles
+### Optional services and profiles
 
-按需以 `docker compose --profile <name> up -d` 启用：
+Enable them on demand with `docker compose --profile <name> up -d`:
 
-| profile | 服务 | 端口 | 用途 |
+| Profile | Services | Ports | Purpose |
 | --- | --- | --- | --- |
-| `searxng`（含 `full`） | `searxng-init` + `searxng` | `127.0.0.1:8888`（`SEARXNG_BIND`/`SEARXNG_PORT`） | 自建 Web 搜索；默认仅绑定回环，公开前必须轮换 `SEARXNG_SECRET` |
-| `minio`（含 `full`） | `minio` | 9000（S3）/ 9001（控制台） | S3 兼容对象存储（`STORAGE_TYPE=minio`），默认账号 `minioadmin/minioadmin` |
-| `neo4j`（含 `full`） | `neo4j` | 7474 / 7687 | 知识图谱（`NEO4J_ENABLE=true`），默认 `neo4j/password` |
-| `qdrant`（含 `full`） | `qdrant` | 6333（REST）/ 6334（gRPC） | 向量库（`RETRIEVE_DRIVER=qdrant`） |
-| `milvus` | `milvus` | 19530 / 9091 | 向量库（standalone，内嵌 etcd） |
-| `weaviate` | `weaviate` | 9035（HTTP）/ 50052（gRPC） | 向量库 |
-| `doris` | `doris-fe` + `doris-be` | 8030（FE HTTP）/ 9030（FE MySQL）/ 8040（BE） | Apache Doris 4.1 检索引擎（需 >= 3.0，HNSW ANN） |
-| `dex`（含 `full`） | `dex` | 5556 | OIDC 测试用 IdP（配置在 `misc/dex-config.yaml`） |
-| `langfuse`（含 `full`） | `langfuse-db-init`、`langfuse-clickhouse`、`langfuse-minio`、`langfuse-worker`、`langfuse-web` | 3000（UI）/ 9100/9101（专用 MinIO） | 自建 Langfuse 可观测栈，复用 WeKnora 的 postgres（新建 `langfuse` 库）与 redis（DB 1） |
-| `odl-hybrid` | `odl-hybrid` | expose 5002 | OpenDataLoader/Docling PDF 混合解析后端（仅本地构建，配 `DOCREADER_ODL_HYBRID` 使用） |
-| `full` | `sandbox`、`mcp` 及上述带 full 标记的服务 | mcp: `${MCP_PORT:-8082}:8000` | `sandbox` 仅用于 build/pull 镜像（`command: ["true"]`，非常驻）。Docker 沙箱默认关闭，需设 `WEKNORA_SANDBOX_DOCKER_ENABLED=true` 并挂载 `docker.sock`（等同宿主机 root）；Cube/E2B 不依赖本机 daemon。`mcp` 为 MCP Server |
+| `searxng` (also in `full`) | `searxng-init` + `searxng` | `127.0.0.1:8888` (`SEARXNG_BIND`/`SEARXNG_PORT`) | Self-hosted web search; bound to loopback by default, rotate `SEARXNG_SECRET` before exposing it |
+| `minio` (also in `full`) | `minio` | 9000 (S3) / 9001 (console) | S3-compatible object storage (`STORAGE_TYPE=minio`), default account `minioadmin/minioadmin` |
+| `neo4j` (also in `full`) | `neo4j` | 7474 / 7687 | Knowledge graph (`NEO4J_ENABLE=true`), default `neo4j/password` |
+| `qdrant` (also in `full`) | `qdrant` | 6333 (REST) / 6334 (gRPC) | Vector store (`RETRIEVE_DRIVER=qdrant`) |
+| `milvus` | `milvus` | 19530 / 9091 | Vector store (standalone, embedded etcd) |
+| `weaviate` | `weaviate` | 9035 (HTTP) / 50052 (gRPC) | Vector store |
+| `doris` | `doris-fe` + `doris-be` | 8030 (FE HTTP) / 9030 (FE MySQL) / 8040 (BE) | Apache Doris 4.1 retrieval engine (needs >= 3.0, HNSW ANN) |
+| `dex` (also in `full`) | `dex` | 5556 | OIDC test IdP (configured in `misc/dex-config.yaml`) |
+| `langfuse` (also in `full`) | `langfuse-db-init`, `langfuse-clickhouse`, `langfuse-minio`, `langfuse-worker`, `langfuse-web` | 3000 (UI) / 9100 and 9101 (dedicated MinIO) | Self-hosted Langfuse observability stack; reuses the AI KB postgres (creates a `langfuse` database) and redis (DB 1) |
+| `odl-hybrid` | `odl-hybrid` | expose 5002 | OpenDataLoader/Docling PDF hybrid parsing backend (local build only, used with `DOCREADER_ODL_HYBRID`) |
+| `full` | `sandbox`, `mcp` and every service marked `full` above | mcp: `${MCP_PORT:-8082}:8000` | `sandbox` only builds or pulls the image (`command: ["true"]`, not a long-running service). The Docker sandbox is off by default; set `AIKB_SANDBOX_DOCKER_ENABLED=true` and mount `docker.sock` (equivalent to root on the host); Cube and E2B do not need a local daemon. `mcp` is the MCP server |
 
-app 容器的 `environment` 段落是全量环境变量清单（数据库、向量库、对象存储、Docreader 调优、租户策略、OIDC 等），详见 [04-configuration.md](./04-configuration.md)。
+The `environment` block of the app container is the full list of environment variables (database, vector stores, object storage, docreader tuning, workspace policy, OIDC and more). See [Configuration](./04-configuration.md).
 
-## 二、开发模式（docker-compose.dev.yml + scripts/dev.sh）
+## Development mode (docker-compose.dev.yml + scripts/dev.sh)
 
-开发编排只把**基础设施**放进容器（postgres、redis、docreader 端口全部映射到宿主机），app 与 frontend 在宿主机上以热更新方式运行：
+The development orchestration puts only the **infrastructure** in containers (postgres, redis and docreader with all ports mapped to the host). app and frontend run on the host with hot reload:
 
 ```bash
-make dev-start          # ./scripts/dev.sh start，可加 DEV_ARGS=--odl-hybrid / --minio / --qdrant / --neo4j / --dex / --full
-make dev-app            # 宿主机启动 Go 后端（自动把 DB_HOST/REDIS_ADDR 指到 localhost）
-make dev-frontend       # 宿主机启动 Vue 前端 dev server
+make dev-start          # ./scripts/dev.sh start; add DEV_ARGS=--odl-hybrid / --minio / --qdrant / --neo4j / --dex / --full
+make dev-app            # start the Go backend on the host (points DB_HOST/REDIS_ADDR at 127.0.0.1)
+make dev-frontend       # start the Vue dev server on the host
 make dev-logs / dev-status / dev-stop / dev-restart
 ```
 
-与生产编排的差异：
+Differences from the production orchestration:
 
-- postgres（`5432`）、redis（`6379`）、docreader（`50051`）都发布到宿主机端口，便于本地进程直连；
-- 额外提供 `opensearch`（9200）与 `opensearch-dashboards`（5601，profile `opensearch-ui`）单节点开发环境（security 插件关闭）；
-- `dev.sh` 会加载 `.env` 与 `.env.local`（后者覆盖前者），并支持 `DEV_REMOTE_HOST` 指向远程基础设施。
+- postgres (`5432`), redis (`6379`) and docreader (`50051`) are published on host ports so local processes connect directly;
+- an extra single-node `opensearch` (9200) and `opensearch-dashboards` (5601, profile `opensearch-ui`) development setup with the security plugin disabled;
+- `dev.sh` loads `.env` and `.env.local` (the latter overrides the former) and supports `DEV_REMOTE_HOST` to point at remote infrastructure.
 
-## 三、镜像构建（docker/ 目录）
+## Image builds (docker/ directory)
 
-| Dockerfile | 产物镜像 | 要点 |
+| Dockerfile | Image | Highlights |
 | --- | --- | --- |
-| `docker/Dockerfile.app` | `wechatopenai/weknora-app` | 三阶段：先构建 BrowserSkill 的 `bsk` 与配套 Chrome 扩展（装入 `/opt/weknora/browserskill/`，见[本机浏览器](../05-clients/09-local-browser.md)）；再用 `golang:1.26-bookworm` 编译（`make build-prod`，默认 `WITH_ANYDOC=1` 链接进程内 office 解析引擎，注入版本信息，预下载 DuckDB 扩展 `cmd/download/duckdb`）→ `debian:12.12-slim` 运行层（含 `migrate` 迁移工具、python3/node/uvx（供 stdio MCP 使用）、ffmpeg（ASR）、gosu 降权，以及第三方许可证文本）。入口 `scripts/docker-entrypoint.sh`：修复挂载目录属主；若挂载了 docker.sock，按 socket GID 把 appuser 加入对应组（compose `group_add` 在 gosu 后无效），再以 appuser 运行 `./WeKnora`。`EXPOSE 8080` |
-| `docker/Dockerfile.docreader` | `wechatopenai/weknora-docreader` | Python 3.10 + uv 依赖锁定；生成 protobuf；运行层安装 LibreOffice、OpenJDK 17、antiword、Playwright（webkit）与 `grpc_health_probe`。轻量版不含 PaddleOCR。`EXPOSE 50051`。支持 `APT_MIRROR`、`PLAYWRIGHT_DOWNLOAD_HOST` 和 `PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST` 构建参数 |
-| `docker/Dockerfile.odl-hybrid` | `weknora-odl-hybrid:local` | 安装 `opendataloader-pdf[hybrid]`（Docling），监听 5002，默认 `--no-ocr`；仅本地构建不发布 |
-| `docker/Dockerfile.sandbox` | `wechatopenai/weknora-sandbox` | Agent 会话沙箱镜像。基础环境为 Python 3.12-slim + Node 20 + uv/pnpm，默认 `root` 执行，保留 `user`(UID 1000) 供显式选择。默认构建目标 `sandbox` 供 Docker 后端使用；另有 `cube`（含 Cube envd）、`desktop` / `desktop-cube`（带图形桌面）等目标，见[沙箱部署](../06-development/04-sandbox-deployment.md) |
-| `frontend/Dockerfile` | `wechatopenai/weknora-ui` | 两阶段：digest 锁定的 `node:24-bookworm-slim`（`$BUILDPLATFORM`，避免多架构 CI 用 QEMU 跑 Vite）内 `npm ci` + `npm run build`（`VITE_IS_DOCKER` / `VITE_FRONTEND_COMMIT`），可选 `NPM_REGISTRY` / `NODE_MAX_OLD_SPACE_SIZE`；运行层为按 digest 固定的 `nginx:1.30.3-alpine`（兼容 CentOS 7 旧内核）。无需宿主机预构建 `dist/` |
+| `docker/Dockerfile.app` | `ghcr.io/jrmatherly/ai-kb-app` | Three stages: first build BrowserSkill's `bsk` and its Chrome extension (installed into `/opt/ai-kb/browserskill/`, see [Local Browser](../05-clients/09-local-browser.md)); then compile with `golang:1.26-bookworm` (`make build-prod`, `WITH_ANYDOC=1` by default links the in-process office parsing engine, injects version information, pre-downloads DuckDB extensions with `cmd/download/duckdb`); then a `debian:12.12-slim` runtime layer (with the `migrate` tool, python3/node/uvx for stdio MCP, ffmpeg for ASR, gosu for privilege dropping, and third-party license texts). Entry point `scripts/docker-entrypoint.sh`: fixes ownership of mounted directories; if `docker.sock` is mounted, adds appuser to the group matching the socket GID (compose `group_add` is lost after gosu), then runs `./ai-kb` as appuser. `EXPOSE 8080` |
+| `docker/Dockerfile.docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` | Python 3.10 + uv with locked dependencies; generates protobuf code; the runtime layer installs LibreOffice, OpenJDK 17, antiword, Playwright (webkit) and `grpc_health_probe`. The lightweight build excludes PaddleOCR. `EXPOSE 50051`. Supports the `APT_MIRROR`, `PLAYWRIGHT_DOWNLOAD_HOST` and `PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST` build arguments |
+| `docker/Dockerfile.odl-hybrid` | `ai-kb-odl-hybrid:local` | Installs `opendataloader-pdf[hybrid]` (Docling), listens on 5002, `--no-ocr` by default; local build only, never published |
+| `docker/Dockerfile.sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` | Agent session sandbox image. Base: Python 3.12-slim + Node 20 + uv/pnpm, runs as `root` by default and keeps `user` (UID 1000) for explicit selection. The default build target `sandbox` serves the Docker backend; other targets are `cube` (with Cube envd) and `desktop` / `desktop-cube` (with a graphical desktop), see [Sandbox deployment](../06-development/04-sandbox-deployment.md) |
+| `frontend/Dockerfile` | `ghcr.io/jrmatherly/ai-kb-ui` | Two stages: a digest-pinned `node:24-bookworm-slim` (`$BUILDPLATFORM`, so multi-arch CI does not run Vite under QEMU) runs `npm ci` + `npm run build` (`VITE_IS_DOCKER` / `VITE_FRONTEND_COMMIT`), with optional `NPM_REGISTRY` / `NODE_MAX_OLD_SPACE_SIZE`; the runtime layer is a digest-pinned `nginx:1.30.3-alpine` (compatible with old CentOS 7 kernels). No host-side `dist/` build needed |
 
-从源码构建全部镜像：
+Build every image from source:
 
 ```bash
-make build-images        # ./scripts/build_images.sh，参数 --app/--docreader/--frontend/--sandbox/--clean
-# 或单独：
+make build-images        # ./scripts/build_images.sh, flags --app/--docreader/--frontend/--sandbox/--clean
+# or individually:
 make docker-build-app
 make docker-build-docreader
 make docker-build-frontend
 ```
 
-docreader 在国内或企业内网构建时，可同时切换 APT 和 Playwright 制品源：
+When building docreader behind a corporate network or in a region with slow mirrors, switch the APT and Playwright artifact sources at the same time:
 
 ```bash
 APT_MIRROR=https://your-apt-mirror.example.com \
@@ -156,45 +156,45 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 ./scripts/build_images.sh --docreader
 ```
 
-`APT_MIRROR` 需传入保留 `/debian` 和 `/debian-security` 路径结构的镜像站根地址；Playwright 制品源需保留官方制品的路径结构。仅配置 WebKit 时优先使用 `PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST`，它的优先级高于通用的 `PLAYWRIGHT_DOWNLOAD_HOST`。
+`APT_MIRROR` takes the root of a mirror that keeps the `/debian` and `/debian-security` path layout. The Playwright source must keep the path layout of the official artifacts. When only WebKit is configured, `PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST` takes precedence over the general `PLAYWRIGHT_DOWNLOAD_HOST`.
 
-## 四、Makefile 部署相关目标速查
+## Makefile deployment targets
 
-| 目标 | 作用 |
+| Target | Purpose |
 | --- | --- |
-| `make start-all` / `stop-all` | 调 `scripts/start_all.sh` 启停整套服务（含 Ollama 检查、.env 兜底、沙箱镜像预拉取） |
-| `make start-ollama` / `start-docker` | 仅启动 Ollama / 仅启动 Docker 服务 |
-| `make docker-run` / `docker-stop` / `docker-restart` | 传统 `docker-compose up/down/restart`（自动兜底 `.env`） |
-| `make build-images*` / `clean-images` / `pull-images` | 源码构建 / 清理 / 拉取镜像 |
-| `make check-env` / `list-containers` / `show-platform` | 环境检查（`scripts/check-env.sh` 校验 .env 必填变量与工具链）/ 容器列表 / 构建平台（自动识别 amd64/arm64） |
-| `make migrate-up` / `migrate-down` / `migrate-version` / `migrate-create name=x` / `migrate-force version=n` / `migrate-goto version=n` | 数据库迁移（`scripts/migrate.sh`；容器内默认 `AUTO_MIGRATE=true` 启动时自动迁移） |
-| `make dev-*` | 开发模式（见上文） |
-| `make build` / `run` / `build-prod` | 本地编译运行 `cmd/server`（`build-prod` 需 CGO，注入版本号与 `Edition=standard`） |
-| `make build-lite` / `run-lite` / `package-lite` | Lite 模式构建 / 运行（读 `.env.lite`）/ 打发行包 |
-| `make package-mac-app` | 打包 macOS 桌面应用 |
-| `make docs` / `install-swagger` | 生成 Swagger 文档（`http://localhost:8080/swagger/index.html`，release 模式禁用） |
-| `make clean-db` | 删除 postgres/minio/redis 数据卷（危险操作） |
+| `make start-all` / `stop-all` | Start or stop the whole stack through `scripts/start_all.sh` (Ollama check, `.env` fallback, sandbox image pre-pull) |
+| `make start-ollama` / `start-docker` | Start only Ollama / only the Docker services |
+| `make docker-run` / `docker-stop` / `docker-restart` | Classic `docker-compose up/down/restart` (creates a fallback `.env`) |
+| `make build-images*` / `clean-images` / `pull-images` | Build from source / remove / pull images |
+| `make check-env` / `list-containers` / `show-platform` | Environment check (`scripts/check-env.sh` validates the required `.env` variables and the toolchain) / list containers / build platform (detects amd64/arm64) |
+| `make migrate-up` / `migrate-down` / `migrate-version` / `migrate-create name=x` / `migrate-force version=n` / `migrate-goto version=n` | Database migrations (`scripts/migrate.sh`; inside the container `AUTO_MIGRATE=true` migrates automatically on startup) |
+| `make dev-*` | Development mode (see above) |
+| `make build` / `run` / `build-prod` | Compile and run `cmd/server` locally (`build-prod` needs CGO, injects the version and `Edition=standard`) |
+| `make build-lite` / `run-lite` / `package-lite` | Build / run (reads `.env.lite`) / package the Lite edition |
+| `make package-mac-app` | Package the macOS desktop application |
+| `make docs` / `install-swagger` | Generate the Swagger docs (`http://localhost:8080/swagger/index.html`, disabled in release mode) |
+| `make clean-db` | Delete the postgres/minio/redis data volumes (destructive) |
 
-## 五、scripts/ 启动脚本
+## scripts/ startup scripts
 
-| 脚本 | 职责 |
+| Script | Responsibility |
 | --- | --- |
-| `scripts/start_all.sh` | 一键启动：参数 `-o`（仅 Ollama）、`-d`（仅 Docker）、`-a`（全部，默认）、`-s`（停止）、`-c`（检查环境）、`-l`（列容器）、`-p`(拉镜像)；自动探测 compose v1/v2、按 `uname -m` 设定 `PLATFORM`、后台预拉取 sandbox 镜像 |
-| `scripts/dev.sh` | 开发环境编排（见上文），子命令 `start/stop/restart/logs/status/app/frontend` |
-| `scripts/check-env.sh` | 校验 `.env` 必填变量（DB_*、STORAGE_TYPE、REDIS_ADDR、OLLAMA_BASE_URL 等）与 Go/npm/Docker/Air 工具链 |
-| `scripts/build_images.sh` | 构建镜像并注入版本（git tag / commit / build time），支持跨架构 |
-| `scripts/build_frontend_dist.sh` | 宿主机构建前端静态产物 `frontend/dist`（Lite / 桌面打包等非 Docker 场景；UI 镜像改由 Dockerfile 多阶段构建） |
-| `scripts/migrate.sh` | golang-migrate 封装 |
-| `scripts/docker-entrypoint.sh` | app 容器入口（属主修复 + docker.sock GID 补组 + gosu 降权） |
-| `scripts/package-lite.sh` / `package-mac-app.sh` | Lite tarball / macOS .app 打包 |
+| `scripts/start_all.sh` | One-command start: flags `-o` (Ollama only), `-d` (Docker only), `-a` (everything, default), `-s` (stop), `-c` (check the environment), `-r` (rebuild and restart one container), `-l` (list containers), `-p` (pull images), `--no-pull` (start without pulling); detects compose v1/v2, sets `PLATFORM` from `uname -m`, pre-pulls the sandbox image in the background |
+| `scripts/dev.sh` | Development orchestration (see above), subcommands `start/stop/restart/logs/status/app/frontend` |
+| `scripts/check-env.sh` | Validates the required `.env` variables (`DB_*`, `STORAGE_TYPE`, `REDIS_ADDR`, `OLLAMA_BASE_URL` and others) and the Go/npm/Docker/Air toolchain |
+| `scripts/build_images.sh` | Builds the images and injects version information (git tag / commit / build time), supports cross-architecture builds |
+| `scripts/build_frontend_dist.sh` | Builds the frontend static assets `frontend/dist` on the host (Lite and desktop packaging and other non-Docker cases; the UI image is built by the multi-stage Dockerfile instead) |
+| `scripts/migrate.sh` | golang-migrate wrapper |
+| `scripts/docker-entrypoint.sh` | app container entry point (ownership fix + docker.sock GID group + gosu privilege drop) |
+| `scripts/package-lite.sh` / `package-mac-app.sh` | Lite tarball / macOS .app packaging |
 
-## 六、Helm 部署（helm/）
+## Helm deployment (helm/)
 
-`helm/Chart.yaml`：apiVersion v2，chart 名 `weknora`，appVersion 跟随版本（如 v0.8.2），要求 Kubernetes >= 1.25.0。
+`helm/Chart.yaml`: apiVersion v2, chart name `ai-kb`, appVersion follows the release (for example v0.8.2), requires Kubernetes >= 1.25.0.
 
-Chart 内包含五个组件：`app`（`wechatopenai/weknora-app`）、`frontend`（`wechatopenai/weknora-ui`）、`docreader`、`postgresql`（ParadeDB 镜像，chart 默认 `paradedb/paradedb:v0.18.9-pg17`，与 Compose 的版本不同）、`redis`（`redis:7-alpine`），并可选启用 `minio` 与 `neo4j`。
+The chart contains five components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.18.9-pg17`, which differs from the Compose version) and `redis` (`redis:7-alpine`), plus optional `minio` and `neo4j`.
 
-`helm/values.yaml` 关键配置：
+Key settings in `helm/values.yaml`:
 
 ```yaml
 app:
@@ -213,87 +213,87 @@ redis:
 dataFiles:
   persistence: { enabled: true, size: 10Gi }
 global:
-  maxFileSizeMB: 50                 # 上传大小上限，同时作用于 frontend / app / docreader
-secrets:                            # 必填项，或用 existingSecret 引用已有 Secret
+  maxFileSizeMB: 50                 # upload size limit, applied to frontend, app and docreader
+secrets:                            # required, or reference an existing Secret with existingSecret
   dbPassword: ""
   redisPassword: ""
   jwtSecret: ""
-  systemAesKey: ""                  # 32 字节 AES-256 主密钥
+  systemAesKey: ""                  # 32-byte AES-256 master key
 ```
 
-`global.maxFileSizeMB` 与 Compose 的 `MAX_FILE_SIZE_MB` 含义相同，chart 会把它写入 frontend（Nginx 请求体上限）、app（上传限制）与 docreader（gRPC 消息上限）三处。可选的 MinIO 镜像为社区构建的 `pgsty/minio`。
+`global.maxFileSizeMB` means the same as `MAX_FILE_SIZE_MB` in Compose. The chart writes it into frontend (Nginx request body limit), app (upload limit) and docreader (gRPC message limit). The optional MinIO image is the community build `pgsty/minio`.
 
 ```bash
-helm install weknora ./helm -n weknora --create-namespace \
+helm install ai-kb ./helm -n ai-kb --create-namespace \
   --set secrets.dbPassword=xxx --set secrets.redisPassword=xxx \
   --set secrets.jwtSecret=xxx --set secrets.systemAesKey=$(openssl rand -hex 16)
 ```
 
-## 七、桌面端（Lite 模式 / 桌面应用）
+## Desktop (Lite mode / desktop application)
 
-桌面端面向本机与低资源环境，底层都是同一套 Lite 运行时（单进程 + SQLite + 内存队列），只是分发与启动方式不同：**单二进制**（命令行启动，也可作为后台服务）、**桌面应用**（图形界面，双击启动）。知识库与问答能力一致；免注册登录、本机沙箱与绑定本机项目目录只在桌面应用中提供。
+The desktop options target local machines and low-resource environments. Both run the same Lite runtime (one process + SQLite + in-memory queue) and differ only in distribution and startup: the **single binary** (started from the command line, also usable as a background service) and the **desktop application** (GUI, started by double-click). Knowledge base and question answering features are identical. Login without registration, the local OS sandbox and binding a local project directory exist only in the desktop application.
 
-### Lite 运行时（零外部依赖） {#_7-1-lite-运行时-零外部依赖}
+### Lite runtime (no external dependencies)
 
-Lite 模式通过编译期 `EDITION=lite` 与运行期 `.env.lite` 环境实现「一进程跑全套」：
+Lite mode combines the compile-time `EDITION=lite` with the runtime `.env.lite` environment so that one process runs everything:
 
-- **数据库**：`DB_DRIVER=sqlite` + `DB_PATH=./data/weknora.db`，编译加 `-tags "sqlite_fts5"`；
-- **检索**：`RETRIEVE_DRIVER=sqlite`，走 SQLite FTS5 全文检索 + sqlite-vec 向量检索，无需任何向量数据库；
-- **队列/流**：`STREAM_MANAGER_TYPE=memory`（`internal/stream/factory.go`），不需要 Redis，Asynq 分布式队列在 Lite 模式下为内存/no-op；
-- **前端**：`make build-lite` 会把 `frontend/dist` 复制为仓库根的 `web/`，二进制直接内嵌托管静态资源（`WEKNORA_WEB_DIR` 可指定目录，router 的 `serveFrontendStatic` 提供服务）；
-- **文档解析**：仍可选连本地 docreader（`DOCREADER_ADDR=127.0.0.1:50051`）；
-- **沙箱**：单二进制启动时不预置后端，可在设置页按空间配置 Docker、CubeSandbox 或 E2B；桌面应用的会话在未指定远程沙箱时使用本机操作系统沙箱，见[桌面客户端](../05-clients/05-desktop.md)。
+- **Database**: `DB_DRIVER=sqlite` + `DB_PATH=./data/weknora.db`, compiled with `-tags "sqlite_fts5"`;
+- **Retrieval**: `RETRIEVE_DRIVER=sqlite`, SQLite FTS5 full-text search + sqlite-vec vector search, no vector database needed;
+- **Queue / streams**: `STREAM_MANAGER_TYPE=memory` (`internal/stream/factory.go`), no Redis; background tasks run inline through a synchronous enqueuer instead of the Asynq queue (`internal/types/interfaces/task_enqueuer.go`);
+- **Frontend**: `make build-lite` copies `frontend/dist` to `web/` at the repository root and the binary serves these static files itself (`AIKB_WEB_DIR` overrides the directory; the router's `serveFrontendStatic` serves them);
+- **Document parsing**: a local docreader is still optional (`DOCREADER_ADDR=127.0.0.1:50051`);
+- **Sandbox**: the single binary starts with no backend configured; set up Docker, CubeSandbox or E2B per workspace on the settings page. Desktop application sessions use the local OS sandbox when no remote sandbox is configured, see [Desktop client](../05-clients/05-desktop.md).
 
 ```bash
-cp .env.lite.example .env.lite      # 填写 SYSTEM_AES_KEY（openssl rand -hex 16）与 JWT_SECRET
-make run-lite                       # 构建并以 .env.lite 环境启动 ./WeKnora-lite
-make package-lite                   # 打包发行 tarball（scripts/package-lite.sh）
+cp .env.lite.example .env.lite      # fill in SYSTEM_AES_KEY (openssl rand -hex 16) and JWT_SECRET
+make run-lite                       # build and start ./ai-kb-lite with the .env.lite environment
+make package-lite                   # package the release tarball (scripts/package-lite.sh)
 ```
 
-单二进制通过浏览器访问时，与标准版一样需要注册和登录。桌面应用启动时通过原生桥接取得每进程随机凭据，调用 `POST /auth/auto-setup` 自动创建本地账号并登录；该接口不接受匿名 HTTP 请求。
+The single binary, when used through a browser, requires registration and login like the standard edition. The desktop application obtains a per-process random credential through the native bridge at startup and calls `POST /auth/auto-setup` to create and log in a local account automatically. That endpoint rejects anonymous HTTP requests.
 
-### 桌面应用（cmd/desktop，Wails v2） {#_7-2-桌面应用-cmd-desktop-wails-v2}
+### Desktop application (cmd/desktop, Wails v2)
 
-桌面应用提供图形界面的本机使用方式：双击启动，进程内自带后端与 SQLite，数据落在系统的应用数据目录；另有端口设置、局域网绑定与更新检查等桌面特有能力。运行时能力与 [Lite 运行时（零外部依赖）](#_7-1-lite-运行时-零外部依赖) 相同。
+The desktop application is the GUI way to run AI KB locally: double-click to start, the backend and SQLite live inside the process, and data lands in the system's application data directory. It adds desktop-only features such as a port setting, LAN binding and update checks. Its runtime capabilities match the [Lite runtime (no external dependencies)](#lite-runtime-no-external-dependencies).
 
-::: warning 尚未正式发布
-桌面应用目前**没有随 Release 提供安装包**，需要自己按下面的步骤构建。`release-lite.yml` 里已有跨平台（macOS universal/amd64/arm64、Linux amd64、Windows amd64）的构建任务，但该工作流的 tag 触发被注释掉、只能手动触发，且当前最新 Release 未附带任何产物。
+::: warning Not released yet
+The desktop application currently **ships no installer with a release**. Build it yourself with the steps below. This repository has no release workflow yet, so there are no cross-platform build jobs for it, and no release carries desktop artifacts.
 :::
 
-- 入口 `cmd/desktop/main.go` + `cmd/desktop/wails.json`；`cmd/desktop/app.go` 向前端暴露 `GetAPIBaseURL`（返回 `http://127.0.0.1:PORT/api/v1`）、HTTP 端口与「绑定到局域网」设置、`CheckForUpdates` 自动更新检查等绑定方法。
-- `scripts/package-mac-app.sh`：先构建前端到 `web/`，再 `wails build -tags "sqlite_fts5"`，最后组装 `.app` 包 —— `Contents/MacOS/WeKnora Lite` 为主程序，`Contents/Resources` 内嵌 `.env`、config、`migrations/sqlite`、web 前端；相对路径数据自动重定向到 `~/Library/Application Support/WeKnora Lite/data/`，日志写 `~/Library/Logs/WeKnora Lite/`。
+- Entry point `cmd/desktop/main.go` + `cmd/desktop/wails.json`. `cmd/desktop/app.go` exposes bindings to the frontend: `GetAPIBaseURL` (returns `http://127.0.0.1:PORT/api/v1`), the HTTP port and "bind to LAN" settings, and `CheckForUpdates` for automatic update checks.
+- `scripts/package-mac-app.sh`: builds the frontend into `web/`, runs `wails build -tags "sqlite_fts5"`, then assembles the `.app` bundle. `Contents/MacOS/AI KB Lite` is the main program; `Contents/Resources` embeds `.env`, config, `migrations/sqlite` and the web frontend. Relative data paths are redirected to `~/Library/Application Support/AI KB Lite/data/`, and logs go to `~/Library/Logs/AI KB Lite/`.
 
 ```bash
 make package-mac-app
 ```
 
-## 八、源码编译运行
+## Building and running from source
 
 ```bash
-# 后端（标准版，需本地 postgres/redis/docreader，见开发模式）
+# Backend (standard edition, needs local postgres/redis/docreader, see development mode)
 go mod download
-make build && ./WeKnora                       # 或 make build-prod
+make build && ./ai-kb                       # or make build-prod
 
-# 前端
-cd frontend && npm ci && npm run dev          # 开发；npm run build 产出 dist/
+# Frontend
+cd frontend && npm ci && npm run dev          # development; npm run build produces dist/
 
 # docreader
-cd docreader && uv sync --locked && bash scripts/generate_proto.sh && uv run -m docreader.main  # 与镜像 CMD 一致
+cd docreader && uv sync --locked && bash scripts/generate_proto.sh && uv run -m docreader.main  # same as the image CMD
 ```
 
-配置文件查找顺序（`internal/config/config.go` 的 `LoadConfig`）：当前目录 → `./config` → `$HOME/.appname` → `/etc/appname/`，文件名 `config.yaml`。
+Configuration file lookup order (`LoadConfig` in `internal/config/config.go`): the current directory, then `./config`, then `$HOME/.appname`, then `/etc/appname/`. The file name is `config.yaml`.
 
-## 常见部署拓扑
+## Common deployment topologies
 
 ```mermaid
 flowchart TB
-    subgraph host["单机 Docker Compose（最常见）"]
+    subgraph host["Single host, Docker Compose (most common)"]
         direction LR
-        U1["用户"] --> N1["frontend :80"] --> A1["app :8080"]
+        U1["User"] --> N1["frontend :80"] --> A1["app :8080"]
         A1 --> D1["docreader"]
         A1 --> P1[("postgres")]
         A1 --> R1[("redis")]
-        A1 --> O1["宿主机 Ollama :11434 (host.docker.internal)"]
+        A1 --> O1["host Ollama :11434 (host.docker.internal)"]
     end
     subgraph k8s["Kubernetes (Helm)"]
         direction LR
@@ -301,13 +301,13 @@ flowchart TB
         A2 --> PVC1[("PVC: postgres 10Gi / redis 1Gi / data-files 10Gi")]
         A2 --> D2["docreader Deployment"]
     end
-    subgraph laptop["个人：Lite / 桌面"]
+    subgraph laptop["Personal: Lite / desktop"]
         direction LR
-        U3["用户"] --> L1["WeKnora-lite 单进程 (内嵌前端 + SQLite + 内存队列)"]
-        L1 --> O3["Ollama / 远程 OpenAI 兼容 API"]
+        U3["User"] --> L1["ai-kb-lite single process (embedded frontend + SQLite + in-memory queue)"]
+        L1 --> O3["Ollama / remote OpenAI-compatible API"]
     end
 ```
 
-## 下一步
+## Next steps
 
-部署完成后，请阅读 [03-quickstart.md](./03-quickstart.md) 完成初始化与首次问答。
+After deployment, read the [Quickstart](./03-quickstart.md) to initialize the system and ask the first question.

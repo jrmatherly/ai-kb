@@ -12,8 +12,8 @@ Guidance to Claude Code when working in this repository.
 
 The authoritative list, with each deviation's status and its effect on upstream adoption, is the "Deviations decided" table in `.claude/skills/upstream-review/SKILL.md`. In one line each:
 
-- **English only.** No CJK text anywhere. `scripts/check-english-only.sh` scans tracked files (exit 1 while any remains, `--summary` for progress); the pre-commit hook runs its `--diff` mode on added lines. New code is English from the start.
-- **One UI locale** (`en-US`), non-English READMEs removed, product name "AI KB", repo and Go module `jrmatherly/ai-kb`, dated CalVer versioning. All decided 2026-10-12, none landed; keep upstream's spelling on a surface until it is renamed. Back up every deleted upstream file to `private/removed/<path>` first.
+- **English only.** No CJK text anywhere. Docs are translated page by page with the `translate-docs` skill (`.claude/skills/translate-docs/SKILL.md`: glossary, verification contract, gates); doc-vs-code findings go to `private/findings/` (untracked). `scripts/check-english-only.sh` scans tracked files (exit 1 while any remains, `--summary` for progress); the pre-commit hook runs its `--diff` mode on added lines. New code is English from the start.
+- **One UI locale** (`en-US`), non-English READMEs removed, product name "AI KB", repo and Go module `jrmatherly/ai-kb`, env prefix `AIKB_`, images `ghcr.io/jrmatherly/ai-kb-*`, binary `ai-kb`, docs host `ai-kb-docs.matherly.net`, dated CalVer versioning. Decided 2026-10-12. The executable rename contract is `scripts/rebrand/map.tsv` (`apply.sh` rewrites, `check.sh` proves). Docs lead: `website-docs/` is being translated and rebranded with it first; code follows the same rows. Back up every deleted upstream file to `private/removed/<path>` first.
 - `.github/` is removed; the archived workflows in `private/OLD-.github/` (gitignored) define the validation commands until this copy has its own.
 
 ## Upstream

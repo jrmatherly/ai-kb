@@ -1,0 +1,25 @@
+# Rename contract (decided 2026-10-12). Docs lead, code follows: every row is applied to the docs now
+# and must be applied to the code exactly as written. Column 1 is a Perl regex, column 2 the replacement.
+# Order matters: longer and more specific patterns first.
+# --- repository, module, images, host ---
+Tencent/WeKnora(?!#\d|/(issues|pull|discussions)/)	jrmatherly/ai-kb
+wechatopenai/weknora-(app|docreader|ui|sandbox)	ghcr.io/jrmatherly/ai-kb-$1
+weknora\.weixin\.qq\.com	ai-kb-docs.matherly.net
+# --- environment prefix ---
+\bWEKNORA_	AIKB_
+# --- directories, containers, network, desktop app name (before the product-name rule) ---
+cd WeKnora\b	cd ai-kb
+\bWeKnora Lite\b	AI KB Lite
+\bWeKnora-network\b	ai-kb-network
+\bWeKnora-(app|docreader|frontend|ui|postgres|redis|sandbox|mcp|minio|neo4j|qdrant|milvus|weaviate|searxng|dex|odl-hybrid|langfuse-[a-z-]+)\b	ai-kb-$1
+# --- helm chart and release name, local image, in-image path ---
+helm install weknora\b	helm install ai-kb
+-n weknora\b	-n ai-kb
+\bweknora-odl-hybrid\b	ai-kb-odl-hybrid
+/opt/weknora/	/opt/ai-kb/
+# --- binaries and artifacts ---
+\bWeKnora-lite\b	ai-kb-lite
+\./WeKnora\b	./ai-kb
+# --- product name in prose (identifiers above are matched first) ---
+(?<!Tencent/)\bWeKnora\b(?!-Chrome-Extension)	AI KB
+chart name `weknora`	chart name `ai-kb`

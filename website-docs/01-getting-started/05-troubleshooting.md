@@ -1,6 +1,6 @@
-# 常见问题与升级排障
+# FAQ and upgrade troubleshooting
 
-先在「设置 → 系统信息」确认应用版本、数据库迁移状态和依赖连接状态，再查看对应服务日志。以下 Compose 命令在仓库根目录执行；本地开发的依赖服务使用 `docker compose -f docker-compose.dev.yml`，app 日志查看宿主机终端或其日志文件，开发 Compose 没有 `app` 服务。
+Start in Settings → System Information. It shows the application version, the database migration state and the connection status of each dependency. Then read the logs of the service involved. The Compose commands below run from the repository root. For local development the dependency services run under `docker compose -f docker-compose.dev.yml`; read the app log in the host terminal or its log file, since the development Compose file has no `app` service.
 
 ```bash
 docker compose ps
@@ -9,54 +9,54 @@ docker compose logs --tail=200 docreader
 docker compose logs --tail=200 postgres redis
 ```
 
-修改 `.env` 后用 `docker compose up -d <服务名>` 重建对应容器；`docker compose restart` 不会重新加载容器环境变量。
+After editing `.env`, recreate the affected container with `docker compose up -d <service>`. `docker compose restart` does not reload container environment variables.
 
-## 按现象定位
+## Locate by symptom
 
-| 现象 | 检查顺序与说明 |
+| Symptom | Where to look, in order |
 | --- | --- |
-| 上传失败、解析一直处理中 | 文档详情的失败原因与解析追踪 → 解析引擎连通性 → 后台任务队列；见[文档解析](../03-features/03-document-parsing.md)和[异步任务](../02-architecture/05-async-tasks.md) |
-| 图片能在本机显示，其他设备打不开 | 检查返回地址是否包含 `localhost`、容器服务名或不可访问的对象存储地址；第三方客户端收到 `resource://` 时按[文件访问](../03-features/21-file-access.md)解析，不能直接作为图片 URL |
-| 保存配置后又恢复旧值 | 检查代理/浏览器缓存是否改写响应、是否连到了其他环境或切换了空间；内置模型另查 YAML 启动同步；见[模型管理](../03-features/06-models.md) |
-| 升级后提示权限不足 | 核对当前空间角色、资源归属与 API Key 能力范围；见[认证与授权](../03-features/01-tenant-auth.md)。平台管理员与空间 Owner 不是同一个概念 |
-| Agent 提示模型未就绪 | 确认该智能体引用的模型仍存在且配置完整，执行模型连通性测试；见[模型管理](../03-features/06-models.md) |
-| 私网数据源、模型或向量库连接被拒绝 | 检查 SSRF 校验和端口策略；按[配置参考](04-configuration.md)仅放行需要的目标 |
-| 报错提示「仅允许白名单出站」 | 部署开启了 `SSRF_DNS_WHITELIST_ONLY`，不在白名单的主机在 DNS 解析前即被拒绝。把目标主机加入 `SSRF_WHITELIST` 或 `SSRF_WHITELIST_EXTRA` 后重建 app / docreader 容器，见[配置详解](04-configuration.md) |
-| 登录接口返回 HTML 404 | 检查 `SEARXNG_PORT` 是否与 `APP_PORT`（默认 8080）相同。Linux 上 SearXNG 绑定 `127.0.0.1:8080` 后，`localhost:8080` 的请求会先到 SearXNG。保持 SearXNG 使用 8888 或其他空闲端口 |
-| 拉取 MinIO 镜像提示 `pull access denied` 或 `401 UNAUTHORIZED` | MinIO 官方已关闭 Docker Hub 与 quay.io 的匿名拉取。当前 Compose 与 Helm 改用社区构建的 `pgsty/minio`；自定义编排文件需同步修改镜像地址 |
-| 升级后嵌入页面或签名链接失效（嵌入页提示 `embed session signing key is not configured`，启动日志有 `[startup-env] no usable signing key`） | 签名密钥取 `SYSTEM_SIGNING_KEY`，未设置时回退到 `SYSTEM_AES_KEY`；示例密钥和长度不足 16 的密钥不能签名。用 `openssl rand -hex 32` 生成并配置 `SYSTEM_SIGNING_KEY` 即可，**不要为此修改 `SYSTEM_AES_KEY`**，否则已保存的凭据无法解密。v0.8.2 更换了嵌入会话的签名算法，升级前签发的嵌入会话全部失效，访客需重新进入；多副本部署须使用同一个密钥 |
-| 升级后钉钉机器人不再回复 | v0.8.2 起钉钉只支持 Stream 模式，升级迁移会把 `webhook` 渠道改为 `websocket`。需在钉钉开发者后台为该应用开启 Stream 模式，见[IM 集成](../03-features/12-im-integration.md) |
-| 后台队列持续积压 | 结合最老任务等待时间、活跃 worker 和下游配额定位；提高 worker 数不会增加模型供应商配额，见[容量估算](../02-architecture/05-async-tasks.md#capacity-planning) |
-| 技能已加入目录却不可执行 | 目录收录和沙箱安装是两步；检查安装记录、智能体的沙箱选择与技能范围，见[技能目录与沙箱](../03-features/22-skills-sandbox.md) |
-| 升级后找不到 Local 沙箱 | `local` 后端已移除，重新配置 Docker、CubeSandbox 或 E2B；见[沙箱部署与排障](../06-development/04-sandbox-deployment.md) |
-| 本机浏览器已配对但没有执行网页任务 | 智能推理输入框需要开启本机浏览器；暂停的任务需显式继续，见[本机浏览器](../05-clients/09-local-browser.md) |
-| 嵌入页面加载失败或返回 403 | 白名单填写实际宿主 Origin；检查 CSP、反向代理和安全模式 exchange 的 Origin，见[嵌入渠道](../03-features/13-embed-channel.md) |
-| 飞书应用测试成功但加载不到文件夹 | 连接测试只验证应用身份，文件夹还需授权；见[飞书云盘接入](../03-features/24-feishu-drive.md) |
+| Upload fails, or parsing stays in processing | The failure reason and parsing trace in the document details → parsing engine connectivity → the background task queue; see [Document parsing](../03-features/03-document-parsing.md) and [Async tasks](../02-architecture/05-async-tasks.md) |
+| Images display on this machine but not on other devices | Check whether the returned address contains `localhost`, a container service name or an unreachable object storage address. A third-party client that receives `resource://` resolves it as described in [File access](../03-features/21-file-access.md); it is not a usable image URL |
+| A saved setting reverts to the old value | Check whether a proxy or browser cache rewrites the response, whether you are connected to a different environment, or whether you switched workspaces. For built-in models also check the YAML sync at startup; see [Model management](../03-features/06-models.md) |
+| Permission denied after an upgrade | Check the current workspace role, who owns the resource and the capability scope of the API key; see [Workspaces and permissions](../03-features/01-tenant-auth.md). A platform administrator and a workspace Owner are different concepts |
+| An agent reports that its model is not ready | Confirm that the model the agent references still exists and is fully configured, then run the model connectivity test; see [Model management](../03-features/06-models.md) |
+| Connections to a private-network data source, model or vector store are refused | Check the SSRF validation and port policy; allow only the targets you need, as described in [Configuration](04-configuration.md) |
+| The error says only allowlisted egress is permitted | The deployment has `SSRF_DNS_WHITELIST_ONLY` enabled, so a host outside the allowlist is rejected before DNS resolution. Add the target host to `SSRF_WHITELIST` or `SSRF_WHITELIST_EXTRA`, then recreate the app and docreader containers; see [Configuration](04-configuration.md) |
+| The login endpoint returns an HTML 404 | Check whether `SEARXNG_PORT` equals `APP_PORT` (default 8080). On Linux, once SearXNG binds `127.0.0.1:8080`, requests to `localhost:8080` reach SearXNG first. Keep SearXNG on 8888 or another free port |
+| Pulling the MinIO image fails with `pull access denied` or `401 UNAUTHORIZED` | MinIO has closed anonymous pulls from Docker Hub and quay.io. The current Compose and Helm files use the community build `pgsty/minio`; a custom orchestration file needs the same image change |
+| Embed pages or signed links stop working after an upgrade (the embed page reports `embed session signing key is not configured`, the startup log has `[startup-env] no usable signing key`) | The signing key is `SYSTEM_SIGNING_KEY`; when it is unset the server falls back to `SYSTEM_AES_KEY`. Example keys and keys shorter than 16 characters cannot sign. Generate one with `openssl rand -hex 32` and set `SYSTEM_SIGNING_KEY`. **Do not change `SYSTEM_AES_KEY` for this**, or stored credentials can no longer be decrypted. v0.8.2 changed how embed sessions are signed (the HMAC is now keyed by the signing key instead of the channel's publish token), so every embed session issued before the upgrade is invalid and visitors must re-enter. Multi-replica deployments must share one key |
+| The DingTalk bot stops replying after an upgrade | From v0.8.2 DingTalk supports Stream mode only; the upgrade migration changes `webhook` channels to `websocket`. Enable Stream mode for the app in the DingTalk developer console; see [IM integration](../03-features/12-im-integration.md) |
+| The background queue keeps growing | Combine the wait time of the oldest task, the active workers and the downstream quota. More workers do not add model vendor quota; see [Capacity planning](../02-architecture/05-async-tasks.md#capacity-planning) |
+| A skill is in the catalog but cannot run | Adding to the catalog and installing into a sandbox are two steps. Check the installation record, the agent's sandbox choice and the skill scope; see [Skills and sandboxes](../03-features/22-skills-sandbox.md) |
+| The Local sandbox is gone after an upgrade | The `local` backend was removed. Configure Docker, CubeSandbox or E2B instead; see [Sandbox deployment and troubleshooting](../06-development/04-sandbox-deployment.md) |
+| The Local Browser is paired but runs no web tasks | Local Browser must be enabled in the Smart Reasoning input box, and a paused task must be resumed explicitly; see [Local Browser](../05-clients/09-local-browser.md) |
+| An embed page fails to load or returns 403 | Put the real host Origin in the allowlist; check the CSP, the reverse proxy and the Origin used by the secure-mode exchange; see [Embed channel](../03-features/13-embed-channel.md) |
+| The Feishu app test passes but no folders load | The connection test only verifies the app identity; folders still need authorization; see [Feishu Drive](../03-features/24-feishu-drive.md) |
 
-## 数据库迁移失败 {#database-migrations}
+## Database migration failures {#database-migrations}
 
-应用默认在启动时执行迁移。失败后仍可能继续启动，因此“页面能打开”不代表表结构已经升级成功。系统信息中的迁移版本、dirty 标记和错误，以及 app 启动日志，是排查入口。
+The application runs migrations at startup by default. After a failure it may still start, so "the page opens" does not mean the schema upgrade succeeded. The migration version, dirty flag and error in System Information, together with the app startup log, are the entry points.
 
-**不要假定失败迁移已经完整回滚。** 实际状态取决于 SQL 的事务边界和失败位置。恢复前保留日志、备份数据库，核对失败版本对应的迁移文件与实际 schema；不要靠删除数据卷或直接修改版本号跳过错误。
+**Do not assume a failed migration was fully rolled back.** The real state depends on the transaction boundaries of the SQL and where it failed. Before recovering, keep the logs, back up the database, and compare the migration file for the failed version with the actual schema. Do not skip the error by deleting the data volume or editing the version number by hand.
 
-PostgreSQL 使用 `migrations/versioned/`，SQLite 使用 `migrations/sqlite/`。下面的 Make 命令调用 PostgreSQL 迁移脚本；Lite 的 SQLite 数据库应使用对应驱动和迁移目录处理，不能套用 PostgreSQL DSN。
+PostgreSQL uses `migrations/versioned/`, SQLite uses `migrations/sqlite/`. The Make targets below call the PostgreSQL migration script. The SQLite database of Lite must be handled with the matching driver and migration directory; a PostgreSQL DSN does not apply.
 
 ```bash
 make migrate-version
 ```
 
-也可在目标数据库中只读检查：
+A read-only check in the target database also works:
 
 ```sql
 SELECT version, dirty FROM schema_migrations;
--- 以下两条仅用于 PostgreSQL
+-- The next two statements are PostgreSQL only
 SELECT version();
 SELECT extname, extversion FROM pg_extension;
 ```
 
-### 扩展缺失或权限不足
+### Missing extensions or insufficient privileges
 
-`gin_trgm_ops` 不存在通常对应 `pg_trgm`，`vector` 类型不存在对应 pgvector，BM25 功能依赖 ParadeDB 的 `pg_search`。先确认应用实际连接的数据库，再由数据库管理员检查扩展包、数据库内扩展和对象所有权。
+A missing `gin_trgm_ops` usually means `pg_trgm`, a missing `vector` type means pgvector, and BM25 depends on ParadeDB's `pg_search`. First confirm which database the application actually connects to, then have the database administrator check the extension packages, the extensions inside the database and object ownership.
 
 ```sql
 SELECT name, default_version, installed_version
@@ -64,26 +64,26 @@ FROM pg_available_extensions
 WHERE name IN ('pg_trgm', 'vector', 'pg_search');
 ```
 
-扩展文件未安装与 SQL 权限不足是不同问题；`CREATE EXTENSION IF NOT EXISTS` 不会自动安装操作系统软件包，也不会升级已经存在的扩展。只创建当前部署确实需要的扩展，避免把外部检索引擎部署误改为 PostgreSQL 检索。
+Extension files that are not installed and insufficient SQL privileges are different problems. `CREATE EXTENSION IF NOT EXISTS` neither installs operating system packages nor upgrades an extension that already exists. Create only the extensions this deployment needs, so that a deployment with an external retrieval engine is not accidentally turned into PostgreSQL retrieval.
 
-ParadeDB 存量库的镜像与扩展版本升级见[ParadeDB 升级](06-paradedb-upgrade.md)。
+Image and extension upgrades for an existing ParadeDB database: [ParadeDB upgrade](06-paradedb-upgrade.md).
 
-### Dirty 状态
+### Dirty state
 
-`AUTO_RECOVER_DIRTY` 默认开启，启动时会尝试重设迁移版本并重跑。这是重试机制，不能修复扩展缺失、磁盘不足或手工修改导致的 schema 差异。
+`AUTO_RECOVER_DIRTY` is on by default. At startup the application tries to reset the migration version and rerun. This is a retry mechanism; it cannot fix a missing extension, a full disk or a schema drift caused by manual edits.
 
-人工恢复时，先停止应用写入，并检查失败迁移是否留下部分变更。只有确认数据库已经符合上一成功版本、且失败迁移可安全重跑后，才使用 `force`。它**只修改迁移版本标记，不执行回滚 SQL**。例如，确认上一成功版本为 98 后：
+For manual recovery, first stop application writes and check whether the failed migration left partial changes behind. Use `force` only after confirming that the database matches the last successful version and that the failed migration can safely run again. It **only changes the version marker and runs no rollback SQL**. For example, after confirming that the last successful version is 98:
 
 ```bash
 make migrate-force version=98
 make migrate-up
 ```
 
-这里的 98 是示例，必须换成实际确认的版本，不能机械地把报错数字减一。初始迁移失败还需单独检查初始化状态。恢复后重启 app，确认系统信息不再显示错误，并验证受影响的功能。
+The 98 here is an example. Replace it with the version you confirmed; do not mechanically subtract one from the number in the error. A failed initial migration also needs a separate check of the initialization state. After recovery, restart app, confirm that System Information no longer shows an error, and verify the affected features.
 
-### 并发建索引中断
+### Interrupted concurrent index build
 
-迁移 `000106` 用 `CREATE INDEX CONCURRENTLY` 为 `messages` 建索引，构建期间不阻塞写入。若构建被中断（进程重启、超时、磁盘不足），会留下一个 INVALID 的 `idx_messages_session_created_id`，`IF NOT EXISTS` 不会重建它。先确认并删除该索引，再按上文恢复迁移状态后重跑：
+Migration `000106` builds an index on `messages` with `CREATE INDEX CONCURRENTLY`, which does not block writes while it runs. If the build is interrupted (process restart, timeout, full disk) it leaves an INVALID `idx_messages_session_created_id` behind, and `IF NOT EXISTS` will not rebuild it. Confirm and drop that index first, then recover the migration state as described above and rerun:
 
 ```sql
 SELECT indexrelid::regclass, indisvalid FROM pg_index
@@ -91,12 +91,12 @@ WHERE indexrelid = 'idx_messages_session_created_id'::regclass;
 DROP INDEX CONCURRENTLY IF EXISTS idx_messages_session_created_id;
 ```
 
-### 磁盘不足与 Schema 差异
+### Full disk and schema drift
 
-索引构建需要额外临时空间。遇到 `No space left on device`，检查数据库数据卷及临时目录容量，清理空间后再按实际迁移状态恢复。
+Index builds need extra temporary space. On `No space left on device`, check the capacity of the database data volume and the temporary directory, free space, then recover according to the actual migration state.
 
-列类型、索引或约束与迁移预期不一致时，对照失败文件和上一成功版本检查；不要直接在生产库反复执行报错 SQL。需要复现写操作时，先在备份恢复出的隔离数据库中验证。
+When a column type, index or constraint does not match what the migration expects, compare against the failed file and the last successful version. Do not run the failing SQL repeatedly against the production database. When you need to reproduce a write, verify it first in an isolated database restored from a backup.
 
-## 提交问题时提供什么
+## What to include in an issue
 
-提供应用版本/提交号、失败时间、完整错误、数据库类型与版本、迁移版本/dirty 状态，以及相关的非默认配置。先脱敏日志中的 Token、密码、连接串和文档内容。数据库迁移实现与开发方式见[数据库与迁移](../06-development/02-database-schema.md)。
+Provide the application version or commit, the time of the failure, the complete error, the database type and version, the migration version and dirty state, and any relevant non-default configuration. Redact tokens, passwords, connection strings and document contents from logs first. The migration implementation and development workflow: [Database and migrations](../06-development/02-database-schema.md).

@@ -112,7 +112,7 @@ Until a row lands, keep upstream's spelling so picks stay clean. When it lands, 
 | Upstream | Ours | Notes |
 | --- | --- | --- |
 | product name "WeKnora" | "AI KB" | Display name, docs, UI copy. Keep "WeKnora" where it names upstream: provenance, `Tencent/WeKnora#NNNN` links, `CHANGELOG.md` history. |
-| repo `Tencent/WeKnora`, URLs, images, `WEKNORA_*` env prefixes, binary `WeKnora`, Homebrew formula | `jrmatherly/ai-kb`; the rest decided per surface when the rebrand is scoped | Each renamed surface shows `~` afterwards and is ADAPT: take the behavior, keep our names. |
+| repo `Tencent/WeKnora`, images `wechatopenai/weknora-*`, env prefix `WEKNORA_`, binary `WeKnora`, containers `WeKnora-*`, docs host `weknora.weixin.qq.com` | `jrmatherly/ai-kb`, `ghcr.io/jrmatherly/ai-kb-{app,docreader,ui,sandbox}`, `AIKB_`, `ai-kb`, `ai-kb-*`, `ai-kb-docs.matherly.net` (decided 2026-10-12; the executable contract is `scripts/rebrand/map.tsv`) | Each renamed surface shows `~` afterwards and is ADAPT: take the behavior, keep our names. |
 | Go module `github.com/Tencent/WeKnora` | `github.com/jrmatherly/ai-kb` | A codemod over about 2,100 Go files. Afterwards every import block differs; a pick that adds an import conflicts there. Resolve by taking upstream's hunk and rerunning the module-path rewrite on that file. |
 | locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `WEKNORA_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
 | `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | Upstream commits touching them: SKIP. |
@@ -124,10 +124,7 @@ Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --dif
 
 ## Name translations when porting
 
-Empty until the first rename lands. When you hand-port a `~` hunk, translate upstream's spelling to ours with this table, then grep the diff for the left column; any hit is a miss.
-
-| Upstream | Ours |
-| --- | --- |
+The rename contract is `scripts/rebrand/map.tsv` (left column upstream regex, right column ours), with `scripts/rebrand/unchanged.md` listing what deliberately keeps upstream's spelling. Apply it to a hand-ported hunk with `scripts/rebrand/apply.sh <file>` and prove the port with `scripts/rebrand/check.sh <file>` (exit 1 names the leftover). The docs were rebranded with it first (`website-docs/`, from 2026-10-12); the code rebrand must follow the same rows, so a row is never edited to fit a port. Add a row only when a new surface is decided.
 
 ## Decision log template
 

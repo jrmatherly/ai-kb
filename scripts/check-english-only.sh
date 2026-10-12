@@ -12,16 +12,18 @@ set -uo pipefail
 export LC_ALL=C.UTF-8   # git grep -P rejects \x{...} above 0xff under a non-UTF-8 locale
 CJK='[\x{3040}-\x{30ff}\x{3400}-\x{4dbf}\x{4e00}-\x{9fff}\x{ac00}-\x{d7af}\x{ff00}-\x{ffef}]'
 root="$(git rev-parse --show-toplevel)" || exit 2
+# A path marked `-english-only` in .gitattributes may hold CJK text (the translation glossary).
+EXEMPT=':(exclude,attr:-english-only)'
 
 # Whole repo with no pathspec, else the given pathspecs relative to the caller's directory.
 # A pathspec that matches no tracked file is an error, not a clean result.
 scan() {
   local flag="$1"; shift
   if [ $# -eq 0 ]; then
-    git -C "$root" grep -I "$flag" -P "$CJK" -- .
+    git -C "$root" grep -I "$flag" -P "$CJK" -- . "$EXEMPT"
   else
     git ls-files --error-unmatch -- "$@" >/dev/null || exit 2
-    git grep -I --full-name "$flag" -P "$CJK" -- "$@"
+    git grep -I --full-name "$flag" -P "$CJK" -- "$@" "$EXEMPT"
   fi
 }
 
@@ -36,7 +38,7 @@ esac
 case "$mode" in
   diff)
     range=(--cached); [ $# -eq 0 ] || range=("$@")
-    hits=$(git diff -U0 --no-color --src-prefix=a/ --dst-prefix=b/ "${range[@]}" | perl -CSD -ne '
+    hits=$(git -C "$root" diff -U0 --no-color --src-prefix=a/ --dst-prefix=b/ "${range[@]}" -- . "$EXEMPT" | perl -CSD -ne '
       if (m{^\+\+\+ b/(.*)}) { $f = $1; next }
       next unless /^\+/ && /'"$CJK"'/;
       s/^\+//; print "$f: $_"')
