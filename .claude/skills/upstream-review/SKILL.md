@@ -105,9 +105,9 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 
 At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock` and the `cli/` and `client/` module files are upstream's; dependency-only upstream commits are ADOPT while that holds. If this copy later takes its own upgrade policy, flip this section the way the version section will, and expect `~` on every lockfile.
 
-## Deviations decided 2026-10-12 (planned, not landed)
+## Deviations decided 2026-10-12 (docs landed, code planned)
 
-Until a row lands, keep upstream's spelling so picks stay clean. When it lands, move the row into "Name translations when porting" below with the status removed, and add any deleted path to "Deleted or moved paths".
+`website-docs/` (except `sample-data/`) is translated and rebranded; the root config, compose files and Makefile are translated only (both 2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. In code, until a row lands, keep upstream's spelling so picks stay clean. When it lands, move the row into "Name translations when porting" below with the status removed, and add any deleted path to "Deleted or moved paths".
 
 | Upstream | Ours | Notes |
 | --- | --- | --- |

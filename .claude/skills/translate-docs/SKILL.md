@@ -2,7 +2,7 @@
 name: translate-docs
 description: Translate one page of website-docs/ from Chinese to English for this copy of WeKnora, applying the AI KB rebrand and verifying every checkable claim against the code. Use for "translate website-docs", "translate this doc page", "English docs pass", or when a delegate is handed a single docs page to translate and verify. Encodes the glossary, the rebrand contract, the anchor rule, the verification contract and the findings format.
 argument-hint: "<website-docs/.../page.md>"
-allowed-tools: Bash(scripts/check-english-only.sh *) Bash(scripts/rebrand/check.sh *) Bash(scripts/rebrand/apply.sh *) Bash(node website-docs/scripts/check-links.mjs) Bash(node website-docs/scripts/check-anchors.mjs) Bash(git grep *) Bash(rg *) Read Grep Glob Edit Write
+allowed-tools: Bash(scripts/check-english-only.sh *) Bash(scripts/rebrand/check.sh *) Bash(scripts/rebrand/apply.sh *) Bash(node website-docs/scripts/check-links.mjs) Bash(node website-docs/scripts/check-anchors.mjs) Bash(git grep *) Bash(rg *) Bash(npm --prefix website-docs run *) Read Grep Glob Edit Write
 ---
 
 # Translate a docs page
@@ -18,7 +18,7 @@ One page per run. The page is rewritten in place in English, rebranded, and ever
 5. **Doc disagrees with code: fix the doc, log the finding.** Never change code. If the code looks wrong (the doc described the intended behavior), keep the doc on the intended behavior, add one sentence on the actual behavior, and log CODE-BUG.
 6. **Anchors.** Remove Chinese custom anchors (`{#...}` containing CJK). Keep ASCII custom anchors (other pages link to them). Links inside your page to headings you renamed get the new slug: lowercase, every run of whitespace or punctuation becomes one hyphen, leading and trailing hyphens trimmed, a leading digit gets `_` in front (`website-docs/scripts/check-anchors.mjs` exports the exact `slugify`; run it rather than guessing). Do not edit other pages: list inbound links from other pages that point to anchors you removed (`rg -n '<your-file>#' website-docs`) in your report.
 7. **No em dashes** anywhere (U+2014). Use a plain dash, a comma or a new sentence.
-8. **Gates on your page before you report**: `scripts/check-english-only.sh <page>` exit 0; `scripts/rebrand/check.sh <page>` exit 0; `rg -c -e '\x{2014}' <page>` prints nothing (exit 1); `node website-docs/scripts/check-links.mjs` and `node website-docs/scripts/check-anchors.mjs` report no failures caused by your page.
+8. **Gates on your page before you report**: `scripts/check-english-only.sh <page>` exit 0; `scripts/rebrand/check.sh <page>` exit 0; `rg -c -e '\x{2014}' <page>` prints nothing (exit 1); `node website-docs/scripts/check-links.mjs` and `node website-docs/scripts/check-anchors.mjs` report no failures caused by your page; `npm --prefix website-docs run check:mermaid` and `npm --prefix website-docs run build:docs` exit 0 (the build is what catches a stray `{{ }}`).
 
 ## Glossary
 
