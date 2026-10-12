@@ -1,344 +1,355 @@
-# 数据源导入（Data Source）
+# Data source import
 
-数据源将飞书、Notion、Confluence、语雀等平台的内容持续同步到知识库。连接建立后，可按计划获取新增与修改；来源删除的内容按同步配置处理。
+A data source keeps content from platforms such as Feishu/Lark, Notion, Confluence and Yuque synced into a knowledge base. Once a connection exists, new and modified content is fetched on a schedule, and content deleted at the source is handled according to the sync settings.
 
-数据源在知识库中配置。打开目标知识库的编辑设置，进入「数据源」页签，新建连接并填写凭据，然后选择同步范围与周期。首次同步获取完整内容，后续同步根据连接器能力增量更新。
+Data sources are configured per knowledge base. Open the knowledge base's edit settings, go to the "Data sources" tab, create a connection with its credentials, then choose the sync scope and schedule. The first sync fetches everything in scope; later syncs update incrementally, as far as the connector supports it.
 
 <Screenshot
   src="/screenshots/datasource-sync.png"
-  caption="数据源：连接列表与同步状态"
-  hint="展示已配置的数据源（类型、目标知识库、上次同步时间、状态）与同步日志入口。" />
+  caption="Data sources: connection list and sync status"
+  hint="Shows the configured data sources (type, target knowledge base, last sync time, status) and the entry point to the sync logs." />
 
-连接器读取外部内容，调度器触发同步，服务层完成变更比较和知识入库。
+Connectors read external content, the scheduler triggers syncs, and the service layer compares changes and imports knowledge items.
 
-## 建立连接并同步
+## Connect and sync
 
-1. 以空间管理员身份打开目标知识库的「数据源」设置。
-2. 选择连接器，填写凭据并测试连接，确认能够列出所需资源。
-3. 选择同步范围与周期，保存后发起首次同步。
-4. 查看同步状态与日志，确认新增、更新、跳过和失败内容符合预期。
+This section walks through creating a connection and running the first sync.
 
-凭据更新需要提交完整配置，系统会在线验证。暂停数据源可停止后续计划同步；恢复后重新注册调度。
+1. As a workspace administrator, open the "Data sources" settings of the target knowledge base.
+2. Choose a connector, enter its credentials and test the connection; confirm that the resources you need are listed.
+3. Choose the sync scope and schedule, save, and start the first sync.
+4. Check the sync status and logs; confirm that created, updated, skipped and failed items match expectations.
 
-`sync_schedule` 使用包含秒的六段 cron，例如 `0 0 */6 * * *` 表示每六小时触发；空字符串表示仅手动同步。创建、编辑及恢复数据源时会校验表达式，无效值返回 HTTP 400，不改变已保存配置或已有定时任务。历史数据源若保存了无效表达式，需先修改为合法表达式或清空，再恢复同步。
+Updating credentials requires submitting the complete credential set, which the system validates online. Pausing a data source stops further scheduled syncs; resuming registers the schedule again.
 
-## 选择连接器
+`sync_schedule` is a six-field cron expression that includes seconds. `0 0 */6 * * *` fires every six hours; an empty string means manual sync only. The expression is validated when a data source is created, edited or resumed. An invalid value returns HTTP 400 and leaves the saved configuration and any existing schedule unchanged. A data source that already holds an invalid expression must be changed to a valid one, or cleared, before it can be resumed.
 
-| 连接器 | 类型标识 | 同步对象 |
+## Choose a connector
+
+Pick the connector that matches where the content lives; the type identifier is what the API and the configuration use.
+
+| Connector | Type identifier | What it syncs |
 | --- | --- | --- |
-| 飞书 / Lark 知识库 | `feishu` / `lark` | Wiki 空间与节点 |
-| 飞书云盘 / Lark Drive | `feishu_drive` / `lark_drive` | 指定云盘文件夹，见[飞书云盘接入](24-feishu-drive.md) |
-| Notion | `notion` | 页面与数据库 |
-| Confluence | `confluence` | Server / Data Center 或 Cloud 空间中的页面 |
-| 语雀 | `yuque` | 知识库文档 |
-| 钉钉文档 | `dingtalk` | 知识库、文件夹与在线文档 |
-| 腾讯 IMA | `ima` | 知识库中的文件与笔记 |
-| GitLab | `gitlab` | 仓库指定分支/标签下的目录 |
-| Seafile | `seafile` | 资料库中的目录与文件 |
-| RSS / Atom | `rss` | 订阅源文章 |
+| Feishu / Lark wiki | `feishu` / `lark` | Wiki spaces and nodes |
+| Feishu Drive / Lark Drive | `feishu_drive` / `lark_drive` | Selected drive folders, see [Feishu Drive](24-feishu-drive.md) |
+| Notion | `notion` | Pages and databases |
+| Confluence | `confluence` | Pages in Server / Data Center or Cloud spaces |
+| Yuque | `yuque` | Knowledge base documents |
+| DingTalk Docs | `dingtalk` | Knowledge bases, folders and online documents |
+| Tencent IMA | `ima` | Files and notes in knowledge bases |
+| GitLab | `gitlab` | Directories under a chosen branch or tag of a repository |
+| Seafile | `seafile` | Directories and files in a library |
+| RSS / Atom | `rss` | Feed entries |
 
-各连接器支持的格式、认证与删除检测见参考部分。
+The formats, authentication and deletion detection of each connector are in the reference sections below.
 
-## 检查变更与失败
+## Check changes and failures
 
-首次同步获取选定范围的内容，后续按连接器游标和修改信息更新。删除检测受连接器与同步配置约束；RSS 的自然淘汰不作为源文档删除。同步失败时先查看日志中的凭据、资源可见性或解析错误，再测试连接并重试。
+Use this section to understand what a sync changed and why it failed.
 
-## 连接器与接口参考
+The first sync fetches the selected scope; later syncs update by connector cursor and modification data. Deletion detection depends on the connector and on the sync settings; entries that age out of an RSS feed do not count as source deletions. When a sync fails, read the log for credential, resource visibility or parsing errors first, then test the connection and retry.
 
-### 连接器实现详解
+## Connector and API reference
 
-#### 连接器能力对比
+This section is for operators and developers who need the exact behavior of each connector and of the REST API.
 
-| | Feishu / Lark | Notion | Yuque（语雀） | RSS / Atom |
+### Connector implementations
+
+#### Connector capability comparison
+
+| | Feishu / Lark | Notion | Yuque | RSS / Atom |
 | --- | --- | --- | --- | --- |
-| 源码目录 | `internal/datasource/connector/feishu/wiki/`（共享 `feishu/core/`） | `connector/notion/` | `connector/yuque/` | `connector/rss/` |
-| 类型标识 | `feishu` / `lark` | `notion` | `yuque` | `rss` |
-| 认证方式 | 企业自建应用 `app_id` + `app_secret`（tenant_access_token） | Internal Integration Token（`api_key`） | 个人/团队 Token（`api_token`，`X-Auth-Token` 头） | 无认证或自定义请求头（`auth_headers`） |
-| 凭据字段 | `app_id`、`app_secret`、`base_url`（可选覆盖） | `api_key`（`base_url` 走 Settings） | `api_token`、`base_url`（私有化部署可选） | `auth_headers`（可选，属凭据）；`feed_urls` 属 Settings |
-| 资源模型 | Wiki 空间 → 节点树（懒加载，`spaceID:nodeToken` 复合 ID） | 页面/数据库全量树（一次返回带 parent 关系） | 知识库（book/repo）扁平列表 | 每个 feed URL 一个资源（扁平） |
-| 内容格式 | 导出 API → `.docx`/`.xlsx` 文件；drive 文件原样下载 | Block → Markdown；数据库转 Markdown 表格；附件下载 | `body` Markdown 原文（`.md`） | Readability 全文抽取 → HTML→Markdown |
-| 增量机制 | 按内容 `obj_edit_time` 比对（cursor: `SpaceNodeTimes`） | 按页面/记录 `last_edited_time` 比对（cursor: `PageEditTimes`） | 按文档 `content_updated_at` 比对（cursor: `BookDocTimes`） | feed 信号指纹 + 内容 SHA-256 指纹双层比对 |
-| 删除检测 | 支持（游标中有、当前树没有 → `IsDeleted`；部分列举失败时跳过删除检测） | 支持（区分"源端已删"与"用户取消勾选"，后者不报删除） | 支持 | 不支持（feed 天然滚动淘汰旧条目） |
-| 流式可恢复同步 | 是（`StreamingConnector`，每 50 节点或 30 秒 checkpoint） | 否 | 否 | 否 |
-| 限流应对 | 429 读 `Retry-After` + 指数退避（2s/4s/8s，最多 3 次重试）；5xx 重试 | — | 每次 `GetDocDetail` 间隔 300ms（个人 token 约 100 req/5min） | — |
-| 部分失败 | 单文档失败生成带错误 metadata 的占位条目，继续同步 | 单页失败记日志跳过 | 单文档失败生成占位条目 | 单 feed 失败 → `PartialFetchError`；全部失败才算 fail |
+| Source directory | `internal/datasource/connector/feishu/wiki/` (shares `feishu/core/`) | `connector/notion/` | `connector/yuque/` | `connector/rss/` |
+| Type identifier | `feishu` / `lark` | `notion` | `yuque` | `rss` |
+| Authentication | Self-built enterprise app `app_id` + `app_secret` (tenant_access_token) | Internal Integration Token (`api_key`) | Personal or team token (`api_token`, `X-Auth-Token` header) | None, or custom request headers (`auth_headers`) |
+| Credential fields | `app_id`, `app_secret`, `base_url` (optional override) | `api_key` (`base_url` lives in Settings) | `api_token`, `base_url` (optional, self-hosted deployments) | `auth_headers` (optional, a credential); `feed_urls` lives in Settings |
+| Resource model | Wiki space, then node tree (lazy-loaded, `spaceID:nodeToken` composite ID) | Full page and database tree (one response with parent relations) | Flat list of knowledge bases (book/repo) | One resource per feed URL (flat) |
+| Content format | Export API produces `.docx` / `.xlsx`; drive files download as-is | Blocks to Markdown; databases become Markdown tables; attachments downloaded | Raw `body` Markdown (`.md`) | Readability full-text extraction, then HTML to Markdown |
+| Incremental mechanism | Compares content `obj_edit_time` (cursor: `SpaceNodeTimes`) | Compares page or record `last_edited_time` (cursor: `PageEditTimes`) | Compares document `content_updated_at` (cursor: `BookDocTimes`) | Two-level fingerprint: feed signal fingerprint, then content SHA-256 |
+| Deletion detection | Yes (in cursor but absent from the current tree gives `IsDeleted`; skipped when part of the listing failed) | Yes (distinguishes "deleted at source" from "deselected by the user"; the latter is not reported as a deletion) | Yes | No (feeds roll old entries off naturally) |
+| Streaming resumable sync | Yes (`StreamingConnector`, checkpoint every 50 nodes or 30 seconds) | No | No | No |
+| Rate limiting | 429 honors `Retry-After` plus exponential backoff (2 s / 4 s / 8 s, at most 3 retries); 5xx retried once | - | 300 ms pause between `GetDocDetail` calls (personal tokens allow about 100 requests per 5 minutes) | - |
+| Partial failure | A failed document becomes a placeholder entry with error metadata; the sync continues | A failed page is logged and skipped | A failed document becomes a placeholder entry | A failed feed yields `PartialFetchError`; only all feeds failing counts as a failure |
 
-#### Feishu / Lark（`connector/feishu/wiki/`）
+#### Feishu / Lark (`connector/feishu/wiki/`)
 
-云盘应用权限、文件夹授权、资源选择和 `FEISHU_DOCX_PARSE_MODE` 取舍见[飞书云盘接入](24-feishu-drive.md)。默认 export 与 blocks 模式的图片、附件语义不同；开启同步删除时会删除当前数据源对应的知识条目。
+Drive app permissions, folder authorization, resource selection and the `FEISHU_DOCX_PARSE_MODE` trade-off are in [Feishu Drive](24-feishu-drive.md). The default export mode and the blocks mode treat images and attachments differently; with deletion sync on, knowledge items that belong to the current data source are deleted.
 
-飞书与 Lark（国际版 open.larksuite.com）是部署在两朵隔离云上的同一产品，Wiki/docx/drive API 完全一致，因此**共用同一份连接器代码**，由 `feishu/core/region.go` 中的 `Region` 结构选择云端（`RegionFeishu` / `RegionLark`，分别对应类型 `feishu` / `lark`、API 域名 `open.feishu.cn` / `open.larksuite.com`）。`base_url` 凭据字段可显式覆盖（兼容历史上把 feishu 连接器指向 larksuite 的存量数据源）。
+Feishu and Lark (the international edition at open.larksuite.com) are the same product on two isolated clouds with identical Wiki, docx and drive APIs, so they **share one connector implementation**. The `Region` struct in `feishu/core/region.go` selects the cloud (`RegionFeishu` / `RegionLark`, mapped to the types `feishu` / `lark` and the API hosts `open.feishu.cn` / `open.larksuite.com`). The `base_url` credential field can override the host explicitly, which keeps older data sources that pointed the feishu connector at larksuite working.
 
-- **认证**（`core/client.go`）：`POST /open-apis/auth/v3/tenant_access_token/internal` 换取 tenant_access_token，带互斥锁缓存与过期刷新。
-- **资源列举**（`ListResources`）：三级懒加载——`parentID==""` 列 Wiki 空间；`parentID==spaceID` 列空间顶层节点；`parentID=="spaceID:nodeToken"` 列该节点子节点。早期版本会预先递归整棵树，大 Wiki 会超时（issue #1672），现在递归只发生在同步时。`ResolveResourceAncestors` 通过 `GetWikiNode` 的 `parent_node_token` 逐级上溯，O(depth) 回显深层勾选。
-- **内容抓取**（`fetchNodeContent`）按 `obj_type` 分派：
-  - `docx`/`doc` → 异步导出 API（`POST /drive/v1/export_tasks`）导出 `.docx`；
-  - `sheet`/`bitable` → 导出 `.xlsx`；
-  - `file` → drive 原文件下载（PDF/Word/图片等）；
-  - `mindnote`/`slides` → **跳过**（无内容读取 API），并通过 `fetchTally` 统计输出 `discovered/fetched/failed/skipped_unsupported by_type` 摘要日志，解释"发现 13 篇为何只同步了 3 篇"（issue #2136）。
-- **增量逻辑**：游标 `FeishuCursor.SpaceNodeTimes`（`resourceID → nodeToken → editTime`）。变更判定用 `obj_edit_time`（文档内容编辑时间），而**不是** `node_edit_time`（只反映改标题/挪位置）。抓取失败的节点**不推进游标**（保留旧 editTime，下次必然 prev != current 而重试），避免瞬时导出失败导致文档被永久跳过。
-- **FetchStream**：统一全量/增量路径（cursor==nil 即全量），每处理 `FeishuStreamCheckpointInterval = 50` 个节点、或距上次 checkpoint 超过 `FeishuStreamCheckpointMaxInterval = 30s` 就落盘一次游标——后者兜底"少量文档但每篇导出都极慢（被限流）"导致 2 小时超时前从未 checkpoint 的场景。
-- **错误分类**（`feishuFailure`）：把原始错误归类为稳定 i18n code（`feishu_auth_or_permission` / `feishu_rate_limited` / `feishu_timeout` / `feishu_server_unavailable` / `feishu_api_error`(+code) / `sync_failed`），前端本地化展示；原始 status/body/log_id 只留在服务端日志。
+- **Authentication** (`core/client.go`): `POST /open-apis/auth/v3/tenant_access_token/internal` exchanges the app credentials for a tenant_access_token, cached behind a mutex and refreshed on expiry.
+- **Resource listing** (`ListResources`): three lazy levels. `parentID==""` lists Wiki spaces; `parentID==spaceID` lists the space's top-level nodes; `parentID=="spaceID:nodeToken"` lists that node's children. Early versions recursed through the whole tree up front, which timed out on large wikis; recursion now happens only during sync. `ResolveResourceAncestors` walks up through `GetWikiNode`'s `parent_node_token`, O(depth), to re-display deep selections.
+- **Content fetching** (`fetchNodeContent`) dispatches on `obj_type`:
+  - `docx` / `doc`: asynchronous export API (`POST /drive/v1/export_tasks`) producing `.docx`;
+  - `sheet` / `bitable`: export to `.xlsx`;
+  - `file`: raw drive download (PDF, Word, images and so on);
+  - `mindnote` / `slides`: **skipped** (no content read API). `fetchTally` logs a `discovered/fetched/failed/skipped_unsupported by_type` summary that explains "13 found, why only 3 synced".
+- **Incremental logic**: the cursor is `FeishuCursor.SpaceNodeTimes` (`resourceID -> nodeToken -> editTime`). Change detection uses `obj_edit_time` (content edit time), **not** `node_edit_time` (which only reflects renames and moves). A node whose fetch failed **does not advance the cursor** (its old editTime is kept, so prev != current on the next run and it is retried), so a transient export failure never skips a document permanently.
+- **FetchStream**: one code path for full and incremental sync (cursor==nil means full). The cursor is persisted every `FeishuStreamCheckpointInterval = 50` processed nodes, or whenever `FeishuStreamCheckpointMaxInterval = 30s` has passed since the last checkpoint. The time bound covers "few documents, but every export is extremely slow (rate limited)", where the 2-hour timeout would otherwise arrive before the first checkpoint.
+- **Error classification** (`feishuFailure`): raw errors map to stable i18n codes (`feishu_auth_or_permission` / `feishu_rate_limited` / `feishu_timeout` / `feishu_server_unavailable` / `feishu_api_error` (+code) / `feishu_api_error_generic` / `sync_failed`) that the frontend localizes; the raw status, body and log_id stay in the server log.
 
-#### GitLab（`connector/gitlab/`）
+#### GitLab (`connector/gitlab/`)
 
-在数据源中选 GitLab，填写 credentials.base_url 与 access_token，然后选择项目、分支或标签及目录。Token 必须能读取所选项目的仓库；私有项目的可见性由 GitLab 凭据决定。
+Choose GitLab as the data source, enter `credentials.base_url` and `access_token`, then pick the projects, a branch or tag, and the directories. The token must be able to read the selected projects' repositories; the visibility of private projects follows the GitLab credential.
 
-`config.settings.projects` 为非空数组，每项包含字符串 project_id、可选 ref 和 paths。ref 留空使用默认分支；paths 留空选整个仓库，目录使用相对路径与正斜杠。先验证凭据并浏览资源，再保存定时同步。
+`config.settings.projects` is a non-empty array whose entries hold a string `project_id`, an optional `ref` and `paths`. An empty `ref` uses the default branch; empty `paths` selects the whole repository; directories are relative paths with forward slashes. Validate the credentials and browse the resources before saving a scheduled sync.
 
-流式同步支持恢复检查点；增量通过仓库提交差异更新文件，源端删除按 sync_deletions 处理。选择的仓库文件仍经过 WeKnora 文件类型、大小与解析引擎校验，并非所有代码或二进制文件都可直接入库。不同路径下内容完全相同的文件（如各子目录的 README 模板）会作为独立知识保留，重复判定只在同一数据源、同一文件路径内生效。
+Streaming sync supports resume from a checkpoint; incremental sync updates files from the repository commit diff, and source deletions follow `sync_deletions`. Selected repository files still pass AI KB's file type, size and parser checks, so not every code or binary file can be imported. Files with identical content under different paths (README templates in several subdirectories, for example) are kept as separate knowledge items; duplicate detection applies only within the same data source and the same file path.
 
 ```json
 {"credentials":{"base_url":"https://gitlab.example.com","access_token":"<token>"},"settings":{"projects":[{"project_id":"123","ref":"main","paths":["docs"]}]}}
 ```
 
-#### Seafile（`connector/seafile/`）
+#### Seafile (`connector/seafile/`)
 
-1. 获取 Seafile 账号的用户 API Token，确认该账号对目标资料库有读取权限。
-2. 添加「Seafile」数据源，填写 Seafile 地址（支持部署路径前缀）和 API Token。私网部署或独立 fileserver 地址需先加入 `SSRF_WHITELIST`。
-3. 测试连接后，在资源树中勾选同一资料库内的根目录、目录或文件；加密资料库和不支持的文件格式不会出现在选择器中。
-4. 发起首次同步；文件按 `<资料库名>/<资料库内路径>` 进入知识库，来源显示为「Seafile」。
+1. Obtain the user API token of a Seafile account and confirm that the account can read the target library.
+2. Add a "Seafile" data source with the Seafile address (a deployment path prefix is supported) and the API token. A private-network deployment, or a separate fileserver address, must be added to `SSRF_WHITELIST` first.
+3. After testing the connection, select the root, directories or files of one library in the resource tree; encrypted libraries and unsupported file formats do not appear in the picker.
+4. Start the first sync. Files enter the knowledge base as `<library name>/<path inside the library>` with "Seafile" as the source.
 
-连接器支持定时、增量、流式检查点及同步删除。同步逐层扫描目录，以「对象 ID + 修改时间 + 大小」比较文件指纹，只下载需要更新的文件；下载经过 API 获取链接、fileserver 获取内容两步，fileserver 请求不携带令牌。每 50 次游标变更保存检查点，中断后从检查点继续。
+The connector supports scheduled, incremental and streaming checkpointed sync, and deletion sync. A sync scans directories level by level, compares file fingerprints as "object ID + modification time + size", and downloads only files that need updating. A download is two steps, an API call for the link and a fileserver request for the content; the fileserver request carries no token. A checkpoint is saved every 50 cursor changes, and an interrupted sync resumes from the last checkpoint.
 
-单文件获取失败不阻断其他文件，已知路径保留待重试状态；目录扫描失败或 `Retry-After` 超过 60 秒时停止本轮并暂停删除对账。删除知识条目受「同步删除」开关控制，单文件大小沿用 `MAX_FILE_SIZE_MB`。已同步的数据源不能改绑其他资料库，需新建数据源。
+A single failed file does not block the others; its known path is kept pending retry. A failed directory scan, or a `Retry-After` above 60 seconds, ends the run and suspends deletion reconciliation. Deleting knowledge items is governed by the "sync deletions" switch, and the per-file size limit follows `MAX_FILE_SIZE_MB`. A synced data source cannot be re-pointed at another library; create a new data source instead.
 
-配置、格式限制、失败恢复与删除边界见 [Seafile 接入](25-seafile.md)。
+Configuration, format limits, failure recovery and deletion boundaries: [Seafile](25-seafile.md).
 
-#### 腾讯 IMA（`connector/ima/`）
+#### Tencent IMA (`connector/ima/`)
 
-填写 credentials.client_id 和 api_key；base_url 可选，默认 `https://ima.qq.com`。资源列表是该凭据可见的 IMA 知识库（扁平列表，不展开目录），选择结果保存为 config.resource_ids；同步时递归遍历所选知识库中的全部子文件夹。源端授权失败或资源不可见时，先检查 IMA 凭据及知识库访问权。
+Enter `credentials.client_id` and `api_key`; `base_url` is optional and defaults to `https://ima.qq.com`. The resource list is the IMA knowledge bases visible to the credential (a flat list, folders are not expanded); the selection is saved as `config.resource_ids`, and a sync walks every subfolder of the selected knowledge bases recursively. If source authorization fails or resources are not visible, check the IMA credentials and the knowledge base access rights first.
 
-可下载文件进入文档解析，网页类按 URL 获取；笔记通过 note OpenAPI 读取正文。AI 会话和视频解析没有可用正文读取入口，会被跳过。支持全量与增量同步：按知识库、父目录和标题建立稳定身份，同名文件替换后 media_id 改变会触发更新；完整列举成功后才检测删除。
+Downloadable files go through document parsing, web pages are fetched by URL, and notes are read through the note OpenAPI. AI sessions and videos have no readable body and are skipped. Full and incremental sync are supported: a stable identity is built from the knowledge base, parent folder and title, so a same-name file replaced at the source (which changes its media_id) triggers an update; deletions are detected only after a complete listing succeeds.
 
 ```json
 {"credentials":{"client_id":"<client-id>","api_key":"<api-key>"},"resource_ids":["<resource-id-from-tree>"]}
 ```
 
-飞书/Lark 同步记录的更新时间取内容编辑时间，避免仅凭 Wiki 节点操作时间遗漏正文变化。GitLab 与 IMA 都支持删除检测；RSS 的自然滚动淘汰不视为删除。
+Feishu/Lark sync records take their update time from the content edit time, so body changes are not missed when only the wiki node time was considered. GitLab and IMA both support deletion detection; entries that roll off an RSS feed are not treated as deletions.
 
-#### Notion（`connector/notion/`）
+#### Notion (`connector/notion/`)
 
-- **认证**：Internal Integration Token（凭据字段 `api_key`），API 版本 `NotionAPIVersion = "2026-03-11"`，默认 `https://api.notion.com`（`Settings.base_url` 可覆盖）。
-- **资源列举**：Search API 一次拉取全部可见页面与数据库，返回带 `ParentID` 的完整树（因此 `parentID != ""` 的懒加载请求直接返回空；`ResolveResourceAncestors` 亦无需额外处理）。`resolveParentID` 处理 2025-09-03+ API 的 `data_source` 对象：其 `parent` 指向数据库容器，真实工作区位置要看 `database_parent`。
-- **抓取**：`fetchPage` 递归处理页面——`GetBlockChildrenAll` 拉块 → `BlocksToMarkdown`（`markdown.go`）转 Markdown；`file_upload` 型文件块先 `ResolveBlock` 换临时下载 URL；**附件**（PDF 等，图片除外——图片已以 `![](url)` 内联在 Markdown 中）作为独立条目下载入库；`child_page` / `child_database` 块递归下钻。数据库两种形态：整库渲染成一张 Markdown 表格（`buildDatabaseItem`，含每条记录的块内容附录），数据库记录单独出现时按"属性列表 + 块内容"渲染（`buildRecordItem`）。属性提取 `propertyToString` 通用地跟随 `type` 链，覆盖全部 22 种属性类型；属性名按字母序排序保证增量比对的确定性。
-- **增量逻辑**：首次同步（游标为空）直接委托 `FetchAll` 并用返回条目的 `UpdatedAt` 构建游标；后续同步 `discoverAllResources` 用 Search API + BFS 圈定选中根下的全部后代，逐页比对 `last_edited_time`。数据库走 `fetchDatabaseIncremental`：任一记录变更就整表重建。
-- **删除与取消勾选的区分**：源端消失的页面报 `IsDeleted`；仍可见但因用户取消勾选祖先而不再可达的页面进入 excluded 集合，**不会**被误报为删除。`computeExcludedSet` 同时保证"用户从未见过的新页面"不被排除——选中的父节点仍会自动带上新子页面。
+- **Authentication**: Internal Integration Token (credential field `api_key`), API version `NotionAPIVersion = "2026-03-11"`, default host `https://api.notion.com` (`Settings.base_url` can override it).
+- **Resource listing**: the Search API returns all visible pages and databases at once, as a complete tree with `ParentID` (so a lazy request with `parentID != ""` returns empty, and `ResolveResourceAncestors` needs no extra work). `resolveParentID` handles the `data_source` objects of the 2025-09-03+ API: their `parent` points at the database container, and the real workspace location is in `database_parent`.
+- **Fetching**: `fetchPage` processes a page recursively. `GetBlockChildrenAll` pulls the blocks, `BlocksToMarkdown` (`markdown.go`) renders Markdown; `file_upload` file blocks go through `ResolveBlock` for a temporary download URL; **attachments** (PDFs and the like, but not images, which are already inlined as `![](url)` in the Markdown) are downloaded as separate entries; `child_page` / `child_database` blocks recurse. Databases take two shapes: a whole database renders as one Markdown table (`buildDatabaseItem`, with each record's block content appended), and a record that appears on its own renders as "property list + block content" (`buildRecordItem`). Property extraction (`propertyToString`) follows the `type` key generically, so every property type is covered; property names are sorted alphabetically to keep incremental comparison deterministic.
+- **Incremental logic**: the first sync (empty cursor) delegates to `FetchAll` and builds the cursor from the returned items' `UpdatedAt`; later syncs use `discoverAllResources` (Search API + BFS) to find every descendant of the selected roots and compare `last_edited_time` page by page. Databases go through `fetchDatabaseIncremental`: any changed record rebuilds the whole table.
+- **Deletion versus deselection**: a page that disappeared at the source is reported as `IsDeleted`; a page that is still visible but no longer reachable because the user deselected an ancestor goes into the excluded set and is **not** reported as deleted. `computeExcludedSet` also ensures that "new pages the user has never seen" are not excluded: a selected parent still picks up new child pages automatically.
 
-#### Confluence（`connector/confluence/`）
+#### Confluence (`connector/confluence/`)
 
-支持 Confluence Server / Data Center 与 Confluence Cloud，均使用 HTTP Basic 认证。
+Confluence Server / Data Center and Confluence Cloud are both supported, both with HTTP Basic authentication.
 
-| 字段 | 必填 | 说明 |
+| Field | Required | Description |
 | --- | --- | --- |
-| `edition` | 否 | `server`（默认，Server / Data Center）或 `cloud` |
-| `base_url` | 是 | Confluence 地址，缺少协议时补 `https://`；Cloud 填 `https://<站点>.atlassian.net` 时自动补 `/wiki` |
-| `username` | 是 | Server/DC 用户名；Cloud 为 Atlassian 账号邮箱 |
-| `password` | Server/DC 必填 | Server/DC 账号密码 |
-| `api_token` | Cloud 必填 | 在 Atlassian 账号的 API tokens 页面创建 |
+| `edition` | No | `server` (default, Server / Data Center) or `cloud` |
+| `base_url` | Yes | Confluence address; `https://` is added when the scheme is missing; for Cloud, `https://<site>.atlassian.net` gets `/wiki` appended automatically |
+| `username` | Yes | Server/DC username; for Cloud, the Atlassian account email |
+| `password` | Server/DC | Server/DC account password |
+| `api_token` | Cloud | Created on the Atlassian account's API tokens page |
 
-`edition`、`base_url`、`username` 不属于密钥，界面会同时写入 Settings 以便编辑时回显；`password` / `api_token` 只存加密凭据。
+`edition`, `base_url` and `username` are not secrets; the UI also writes them into Settings so they can be shown again when editing. `password` / `api_token` are stored only as encrypted credentials.
 
 <Screenshot
   src="/screenshots/datasource-confluence.png"
-  caption="Confluence 数据源：版本选择与凭据填写"
-  hint="数据源编辑弹窗选中 Confluence，展示「Confluence 版本」下拉（Server / Data Center、Cloud）、地址、用户名与 Cloud API 令牌字段，以及测试连接后的空间选择列表。" />
+  caption="Confluence data source: edition selection and credentials"
+  hint="The data source edit dialog with Confluence selected, showing the 'Confluence edition' dropdown (Server / Data Center, Cloud), the address, username and Cloud API token fields, and the space picker after a successful connection test." />
 
-- **范围**：资源列表是凭据可见的空间（扁平列表），至少选择一个空间；同步空间内全部已发布页面，不导入附件和博客文章。
-- **内容**：取页面渲染后的 HTML 转为 Markdown（每页一个 `.md` 条目），正文为空时仅保留标题。条目 metadata 带 `space_key`、`space_name`、`page_id`，有作者时带 `creator`。
-- **增量**：按页面版本号比对，版本未变的页面跳过。实现了流式同步，每页入库后保存游标；全量同步的中途游标同时保留上次的页面基线，任务重试可续传，也能继续对账删除。
-- **删除保护**：所选空间不可访问、页面列表为空而上次有内容，或本次消失的页面不少于 20 个且占上次页面数 80% 以上时，整次同步报错，不执行删除。开启同步删除后，其余情况下消失的页面按删除处理。
-- **错误**：单页失败生成带错误信息的占位条目并继续；错误码为 `confluence_auth_or_permission`、`confluence_not_found`、`confluence_rate_limited`、`confluence_server_unavailable`、`confluence_api_error`、`confluence_sync_failed`，原始响应只记服务端日志。
+- **Scope**: the resource list is the spaces visible to the credential (flat); select at least one space. All published pages in a space are synced; attachments and blog posts are not imported.
+- **Content**: the page's rendered HTML is converted to Markdown (one `.md` entry per page); a page with an empty body keeps only its title. Entry metadata carries `space_key`, `space_name` and `page_id`, plus `creator` when an author is known.
+- **Incremental**: pages are compared by version number, and unchanged versions are skipped. Sync is streaming, with the cursor saved after each page; during a full sync the mid-run cursor also keeps the previous page baseline, so a retried task resumes and can still reconcile deletions.
+- **Deletion guard**: when a selected space is inaccessible, when the page list is empty but the previous run had content, or when at least 20 pages are missing and they make up 80% or more of the previous page count, the whole sync fails and nothing is deleted. With deletion sync on, missing pages are deleted in every other case.
+- **Errors**: a failed page becomes a placeholder entry with the error and the sync continues; the codes are `confluence_auth_or_permission`, `confluence_not_found`, `confluence_rate_limited`, `confluence_server_unavailable`, `confluence_api_error` and `confluence_sync_failed`; the raw response stays in the server log.
 
 ```json
 {"credentials":{"edition":"cloud","base_url":"https://team.atlassian.net","username":"me@example.com","api_token":"<token>"},"resource_ids":["<space-id>"]}
 ```
 
-#### Yuque 语雀（`connector/yuque/`）
+#### Yuque (`connector/yuque/`)
 
-- **认证**：个人 Token（语雀设置 → Token）或团队 Token，凭据字段 `api_token`（请求头 `X-Auth-Token`）+ 可选 `base_url`（企业私有化域名，缺 scheme 自动补 `https://`）。
-- **资源列举**：`GET /api/v2/user` 判断 token 身份——`type=="Group"` 为团队 token，直接列团队 repo；否则列个人 repo + 已加入 group 的 repo（用户未加入任何 group 时语雀返回 404，按空处理）。输出扁平的 `book` 资源列表，按 ExternalID 稳定排序。
-- **抓取**（`walk`，全量/增量共用）：`ListBookDocs` 列文档 → 过滤 `type != "Doc"`（跳过 Sheet/Thread/Board/Table）与 `status != "1"`（跳过草稿）→ 每次 `GetDocDetail` 之间 sleep 300ms 规避限流 → `format` 为 `markdown`/`lake` 时取 `body` Markdown 原文入库（其他格式如 html 防御性跳过并记 `skip_reason`）。
-- **增量逻辑**：游标 `yuqueCursor.BookDocTimes`（`bookID → docID → content_updated_at`），一致则跳过。删除检测：游标里有、当前列表没有 → `IsDeleted`。
-- **目录结构（`settings` 配置项）**：默认所有文档平铺在知识库根目录。两个键控制这一点：
-  - **`folder_mode`**（默认 `none`）：`none` 输出裸的 `<标题>.md`，与历史行为逐字节一致；`toc` 按书的目录层级拼出 `<书名>/<分组>/…/<标题>.md`。前端在**新建**数据源时写入 `toc`，已有数据源保持 `none`，因此升级不会改变现有来源的行为。
-  - **`toc_only`**（默认 `false`）：只让出现在该书目录节点列表中的文档入库。**仅在 `folder_mode=toc` 时生效**——目录只在该模式下才会被拉取，平铺模式下这个键不起作用。判据是"是否出现在目录中"，不是"是否有路径"——挂在目录下但未归入任何分组的文档仍会保留。**它是准入过滤器，不是清理器**：被过滤的文档只是不入库，已经同步进知识库的副本原样保留，不会被报成删除。语雀 Web UI 不显示"通过 API 创建、从未挂到目录"的文档，若把这类文档判为已删除，其内容会在源端和知识库两侧都不可达。
-- **目录归属**：`toc` 开启后目录由连接器托管——在知识库里手动调整过的目录，会在该文档下次同步时被覆盖回语雀的结构。
-- **注意 / 限制**：
-  - **切换目录模式后跑一次全量同步**：已有数据源修改 `folder_mode` 后，增量同步只会移动内容有变化的文档；手动触发一次全量同步，已导入的文档才会整体按新模式重新归位。
-  - **仅在语雀目录中移动文档不会立即反映**：增量同步按 `content_updated_at` 判断变化，只调整目录位置、未改内容的文档，会在下次内容变更或全量同步时移到新目录。
-  - **`toc_only` 不会移除已导入的文档**：开启后被过滤掉的文档不再同步，知识库中已有的副本原样保留，之后它在语雀被删除也不会同步删除，需要时请在知识库中手动清理。
+- **Authentication**: a personal token (Yuque settings, Token) or a team token, credential field `api_token` (header `X-Auth-Token`), plus an optional `base_url` (self-hosted enterprise domain; `https://` is added when the scheme is missing).
+- **Resource listing**: `GET /api/v2/user` identifies the token. `type=="Group"` means a team token, which lists the team's repos directly; otherwise personal repos plus the repos of joined groups are listed (Yuque returns 404 when the user has joined no group, which is treated as empty). The output is a flat list of `book` resources, sorted stably by ExternalID.
+- **Fetching** (`walk`, shared by full and incremental sync): `ListBookDocs` lists documents, documents with `type != "Doc"` (Sheet, Thread, Board, Table) and `status != "1"` (drafts) are filtered out, a 300 ms sleep separates `GetDocDetail` calls to stay under the rate limit, and when `format` is `markdown` or `lake` the raw `body` Markdown is imported (other formats such as html are skipped defensively with a `skip_reason`).
+- **Incremental logic**: the cursor is `yuqueCursor.BookDocTimes` (`bookID -> docID -> content_updated_at`); an unchanged value is skipped. Deletion detection: in the cursor but absent from the current list gives `IsDeleted`.
+- **Folder structure (`settings` keys)**: by default every document is placed flat at the knowledge base root. Two keys control this:
+  - **`folder_mode`** (default `none`): `none` writes a bare `<title>.md`, byte-for-byte identical to the historical behavior; `toc` builds `<book name>/<group>/.../<title>.md` from the book's table of contents. The frontend writes `toc` when a data source is **created**; existing data sources keep `none`, so an upgrade does not change existing sources.
+  - **`toc_only`** (default `false`): import only documents that appear in the book's table of contents. **Effective only with `folder_mode=toc`**, because the table of contents is fetched only in that mode; under the flat layout the key does nothing. The criterion is "appears in the table of contents", not "has a path": a document attached to the table of contents but not placed in any group is still kept. **It is an admission filter, not a cleaner**: a filtered document is simply not imported; a copy already synced into the knowledge base stays as it is and is not reported as deleted. The Yuque web UI does not show documents created through the API and never attached to the table of contents, so treating them as deleted would make their content unreachable on both sides.
+- **Folder ownership**: with `toc` on, the connector owns the folders. A folder moved by hand in the knowledge base is moved back to Yuque's structure the next time that document syncs.
+- **Notes and limits**:
+  - **Run one full sync after switching the folder mode**: after `folder_mode` changes on an existing data source, incremental sync only moves documents whose content changed; trigger one full sync to re-place every imported document under the new mode.
+  - **Moving a document only within the Yuque table of contents is not reflected immediately**: incremental sync detects changes by `content_updated_at`, so a document that moved without a content change lands in its new folder at the next content change or the next full sync.
+  - **`toc_only` does not remove imported documents**: once filtered, a document is no longer synced, the existing copy stays in the knowledge base, and a later deletion in Yuque is not synced either; clean it up by hand in the knowledge base when needed.
 
-#### 钉钉文档（`connector/dingtalk/`）
+#### DingTalk Docs (`connector/dingtalk/`)
 
-- **认证**：企业内部应用 Client ID、Client Secret 和有目标知识库访问权限的操作人 Union ID；开通 `Wiki.Workspace.Read`、`Wiki.Node.Read`、`Storage.File.Read` 后发布应用。
-- **范围**：选择知识库、文件夹或单篇 `ALIDOC/adoc` 在线文档，通过公开 Wiki / Blocks API 转为 Markdown。当前不导入钉钉表格，也不依赖异步导出回调。
-- **上传文件（默认关闭）**：`Settings.include_uploaded_files`（默认 `false`）开启后，所选范围内钉盘中的普通上传附件（`FILE/DOCUMENT` 的 `docx` / `pptx` / `xlsx` / `pdf`）会被下载并交给 WeKnora 自带解析器入库，文件名保留原扩展名、按扩展名选择解析器；单个文件上限 64 MiB，超出上限即失败且不重试（重签名只会拿到同样的字节）。下载失败（401/403/404 等）会重新申请签名后重试，最多 3 次。
-- **开关的默认值与成本**：`include_uploaded_files` 未设置或非法值一律按 `false` 处理，因此**存量数据源升级后的下一次同步（含增量同步）行为不变**，不会突然开始下载和向量化附件。打开后，这些文件的正文会进入知识库，占用存储并产生 embedding 成本；不需要时请保持关闭。关闭时连接校验、资源列表和同步都会跳过上传附件，同步日志给出的原因是 `include_uploaded_files` 未启用，而不是类型不支持。
-- **开关的作用点**：测试连接（校验）、资源选择列表、全量同步与增量同步共用同一个判据，一处关闭即处处一致。
-- **同步**：按文档 `modifiedTimestamp`（毫秒）增量读取，缺失时回退 `modifiedTime`；合并重叠选择。全量同步也会对照上次游标对账删除，避免 `sync_mode=full` 漏删。目录遍历不完整时暂缓删除。
-- **正文**：公开 Blocks API 只返回文档根下的一级块；高亮块等容器若响应里带有 `children` 会继续渲染，否则在元数据中标记 `nested_blocks_unavailable`，避免把残缺正文当成完整成功。
-- **校验**：测试连接会列出知识库、探测根节点列表，并在根下存在在线文档时试读 Blocks；对已开启摄取的上传文件只解析存储位置并申请下载 URL，不下载正文，以便尽早发现缺少 `Wiki.Node.Read` / `Storage.File.Read`，同时让校验对多兆字节文件保持廉价。
-- **失败与恢复**：资源失效不阻断其他范围；失败范围和正文失败文档保留旧版本以便重试。任一范围无法完整扫描时暂缓删除，并保留待核对记录。失效的单独选择需要检查权限或重新选择。
-- **删除开关**：开启同步删除才移除确认在源端删除的本地知识；不可访问的资源不会直接视为已删除。
+- **Authentication**: the Client ID and Client Secret of an internal enterprise app, plus the Union ID of an operator who can access the target knowledge bases; grant `Wiki.Workspace.Read`, `Wiki.Node.Read` and `Storage.File.Read`, then publish the app.
+- **Scope**: select knowledge bases, folders or single `ALIDOC/adoc` online documents; they are converted to Markdown through the public Wiki / Blocks APIs. DingTalk sheets are not imported, and no asynchronous export callback is involved.
+- **Uploaded files (off by default)**: with `Settings.include_uploaded_files` (default `false`) on, ordinary uploaded attachments in the selected scope (`FILE/DOCUMENT` entries of type `docx` / `pptx` / `xlsx` / `pdf`) are downloaded and handed to AI KB's own parsers. The file name keeps its original extension, which selects the parser; one file may be at most 64 MiB, above which it fails without retry (re-signing would return the same bytes). A failed download (401, 403, 404 and the like) requests a new signed URL and retries, at most 3 attempts.
+- **Default and cost of the switch**: an unset or invalid `include_uploaded_files` is treated as `false`, so **the next sync of an existing data source after an upgrade, incremental syncs included, behaves as before** and does not suddenly start downloading and embedding attachments. Once on, those files' content enters the knowledge base, which uses storage and embedding cost; keep it off when not needed. When off, connection validation, the resource list and sync all skip uploaded attachments, and the sync log gives "`include_uploaded_files` not enabled" as the reason, not "unsupported type".
+- **Where the switch applies**: connection testing (validation), the resource picker, full sync and incremental sync share one check, so turning it off in one place is consistent everywhere.
+- **Sync**: incremental reads by document `modifiedTimestamp` (milliseconds), falling back to `modifiedTime` when missing; overlapping selections are merged. A full sync also reconciles deletions against the previous cursor, so `sync_mode=full` does not miss deletions. Deletions are postponed when the directory walk was incomplete.
+- **Body**: the public Blocks API returns only the first-level blocks under the document root. Containers such as callouts keep rendering when the response carries `children`; otherwise the metadata is marked `nested_blocks_unavailable`, so a truncated body is not mistaken for a complete success.
+- **Validation**: a connection test lists the knowledge bases, probes the root node list, and reads Blocks when an online document exists under the root. For uploaded files with ingestion on, it only resolves the storage location and requests a download URL, without downloading the body, so a missing `Wiki.Node.Read` / `Storage.File.Read` shows up early while validation stays cheap for multi-megabyte files.
+- **Failure and recovery**: an invalid resource does not block the other scopes; failed scopes and documents whose body failed keep their previous version for retry. When any scope cannot be walked completely, deletions are postponed and the pending records are kept. An invalid single selection needs a permission check or re-selection.
+- **Deletion switch**: local knowledge confirmed deleted at the source is removed only with deletion sync on; an inaccessible resource is not treated as deleted.
 
-#### RSS / Atom（`connector/rss/`）
+#### RSS / Atom (`connector/rss/`)
 
-- **配置**：`feed_urls`（换行/逗号分隔，多条去重）存放在 **Settings**（非机密，UI 可直接编辑）；`auth_headers`（`Name: Value` 每行一条，仅附加在 feed 请求上、绝不发给第三方文章页）存放在 **Credentials** 并加密。`HasConfiguredCredentials` 对 RSS 特判：只有 `auth_headers` 才算已配置凭据。
-- **抓取**：`gofeed` 解析 RSS/Atom/JSON feed；条目有链接时抓原文页过 readability 抽取器，成功则以全文为准，失败回退 feed 自带内容（`content:encoded`/`description`）；HTML 经 `html-to-markdown/v2` 转 Markdown。条目 ID 取 `GUID > Link > Title` 第一个非空值。
-- **增量逻辑**：双层指纹——先比 feed 侧信号指纹（`feedSignalFingerprint`，未变则连原文页都不抓）；再比抓取后内容的 SHA-256 指纹。**不支持删除同步**（feed 会自然淘汰旧条目）。
-- **部分失败**：单个 feed 抓取/解析失败时沿用旧游标（`copyFeedCursor`）并继续其余 feed，最终以 `datasource.PartialFetchError` 上报（SyncLog 记 `partial`）；全部 feed 都失败才整体报错。
+- **Configuration**: `feed_urls` (newline or comma separated, duplicates removed) lives in **Settings** (not secret, editable in the UI). `auth_headers` (one `Name: Value` per line, attached only to feed requests and never sent to third-party article pages) lives in **Credentials** and is encrypted. `HasConfiguredCredentials` special-cases RSS: only `auth_headers` counts as configured credentials.
+- **Fetching**: `gofeed` parses RSS, Atom and JSON feeds. When an entry has a link, the article page is fetched and run through the readability extractor; on success the full text wins, on failure the feed's own content (`content:encoded` / `description`) is used. HTML is converted to Markdown with `html-to-markdown/v2`. The entry ID is the first non-empty of `GUID > Link > Title`.
+- **Incremental logic**: two-level fingerprint. The feed-side signal fingerprint (`feedSignalFingerprint`) is compared first, and an unchanged entry is not even fetched; then the SHA-256 of the fetched content is compared. **Deletion sync is not supported** (feeds roll old entries off naturally).
+- **Partial failure**: when one feed fails to fetch or parse, its old cursor is kept (`copyFeedCursor`) and the other feeds continue; the result is reported as `datasource.PartialFetchError` (the SyncLog records `partial`). Only when every feed fails is the whole sync an error.
 
-### 数据源生命周期与 REST API
+### Data source lifecycle and REST API
 
-路由注册在 `internal/router/routes_infra.go` 的 `RegisterDataSourceRoutes`（列表、详情、同步日志为 Viewer+，其余操作 Admin+；API Key 需 `manage_datasources` 或 full-access）：
+Routes are registered in `RegisterDataSourceRoutes` in `internal/router/routes_infra.go` (list, detail and sync logs are Viewer+, everything else is Admin+; an API key needs `manage_datasources` or full access):
 
-| 方法与路径 | 权限 | 说明 |
+| Method and path | Permission | Description |
 | --- | --- | --- |
-| `GET /api/v1/datasource/types` | Viewer | 可用连接器元数据列表（`ListAvailableConnectors`，按 Priority 排序） |
-| `POST /api/v1/datasource/validate-credentials` | Admin | 用裸凭据测试连通性（不落库），供创建向导的"测试连接"按钮 |
-| `POST /api/v1/datasource` | Admin | 创建数据源（校验 KB 归属租户 → 校验连接器类型 → 在线 Validate → 落库 → 注册 cron） |
-| `GET /api/v1/datasource?kb_id=` | Viewer | 按知识库列出数据源（附带最近一次 SyncLog） |
-| `GET /api/v1/datasource/:id` | Viewer | 详情 |
-| `PUT /api/v1/datasource/:id` | Admin | 更新（凭据字段被忽略；配置实际变化且已有凭据时才触发在线校验；同步更新 cron） |
-| `DELETE /api/v1/datasource/:id` | Admin | 软删除 + 移除 cron + 取消 pending/running 的 SyncLog |
-| `PUT /api/v1/datasource/:id/credentials` | Admin | 原子替换凭据（见[凭据加密存储](#凭据加密存储)） |
-| `DELETE /api/v1/datasource/:id/credentials/:field` | Admin | 清空凭据（field 只接受 `credentials`） |
-| `POST /api/v1/datasource/:id/validate` | Admin | 对已存数据源做连接测试；失败置 `status=error`，成功清除 error 状态 |
-| `GET /api/v1/datasource/:id/resources?parent_id=` | Admin | 列出外部系统可选资源（parent_id 支持懒加载展开） |
-| `POST /api/v1/datasource/:id/resource-ancestors` | Admin | 解析选中资源的祖先链（编辑时回显深层勾选） |
-| `POST /api/v1/datasource/:id/sync` | Admin | 手动触发同步（创建 SyncLog + 入队 Asynq 任务） |
-| `POST /api/v1/datasource/:id/pause` / `resume` | Admin | 暂停/恢复（同时移除/重挂 cron） |
-| `GET /api/v1/datasource/:id/logs`、`GET /api/v1/datasource/logs/:log_id` | Viewer | 同步历史 |
+| `GET /api/v1/datasource/types` | Viewer | Metadata of the available connectors (`ListAvailableConnectors`, sorted by Priority) |
+| `POST /api/v1/datasource/validate-credentials` | Admin | Test connectivity with raw credentials (nothing is persisted); backs the "Test connection" button of the creation wizard |
+| `POST /api/v1/datasource` | Admin | Create a data source (check the KB belongs to the workspace, check the connector type, online Validate, persist, register the cron entry) |
+| `GET /api/v1/datasource?kb_id=` | Viewer | List the data sources of a knowledge base (with the latest SyncLog) |
+| `GET /api/v1/datasource/:id` | Viewer | Detail |
+| `PUT /api/v1/datasource/:id` | Admin | Update (credential fields are ignored; online validation runs only when the configuration actually changed and credentials exist; the cron entry is updated) |
+| `DELETE /api/v1/datasource/:id` | Admin | Soft delete, remove the cron entry, cancel pending and running SyncLogs |
+| `PUT /api/v1/datasource/:id/credentials` | Admin | Replace the credentials atomically (see [Credential encryption and storage](#credential-encryption-and-storage)) |
+| `DELETE /api/v1/datasource/:id/credentials/:field` | Admin | Clear the credentials (`field` accepts only `credentials`) |
+| `POST /api/v1/datasource/:id/validate` | Admin | Connection test for a stored data source; failure sets `status=error`, success clears the error state |
+| `GET /api/v1/datasource/:id/resources?parent_id=` | Admin | List the selectable resources of the external system (`parent_id` supports lazy expansion) |
+| `POST /api/v1/datasource/:id/resource-ancestors` | Admin | Resolve the ancestor chain of selected resources (re-displays deep selections when editing) |
+| `POST /api/v1/datasource/:id/sync` | Admin | Trigger a sync by hand (creates a SyncLog and enqueues an Asynq task) |
+| `POST /api/v1/datasource/:id/pause` / `resume` | Admin | Pause or resume (removes or re-registers the cron entry) |
+| `GET /api/v1/datasource/:id/logs`, `GET /api/v1/datasource/logs/:log_id` | Viewer | Sync history |
 
-所有 `:id` 路径都先经 `getOwnedDataSource` → `getOwnedKnowledgeBase` 做**租户隔离**校验（数据源归属的 KB 必须属于当前租户，且通过 API Key 的 KB 授权检查）。
+Every `:id` path first goes through `getOwnedDataSource` and `getOwnedKnowledgeBase` for **workspace isolation** (the data source's KB must belong to the current workspace and pass the API key's KB authorization check).
 
-生命周期状态流转：
+Lifecycle state transitions:
 
 ```mermaid
 flowchart LR
-    A["创建<br/>POST /datasource"] --> B["授权<br/>PUT /:id/credentials<br/>(AES-256-GCM 加密落库 + 在线 Validate)"]
-    B --> C["选择资源<br/>GET /:id/resources<br/>(ResourceIDs 写入 Config)"]
-    C --> D["active<br/>(cron 调度 / 手动同步)"]
-    D -- "同步失败" --> E["error"]
-    E -- "validate 通过 / 同步成功" --> D
+    A["Create<br/>POST /datasource"] --> B["Authorize<br/>PUT /:id/credentials<br/>(AES-256-GCM encrypted at rest + online Validate)"]
+    B --> C["Select resources<br/>GET /:id/resources<br/>(ResourceIDs written to Config)"]
+    C --> D["active<br/>(cron schedule / manual sync)"]
+    D -- "sync failed" --> E["error"]
+    E -- "validate passed / sync succeeded" --> D
     D -- "POST /:id/pause" --> F["paused"]
     F -- "POST /:id/resume" --> D
-    F -- "手动同步仍允许" --> D
-    D -- "DELETE /:id" --> G["软删除<br/>(移除 cron + 取消未完成 SyncLog)"]
+    F -- "manual sync still allowed" --> D
+    D -- "DELETE /:id" --> G["soft deleted<br/>(cron entry removed + unfinished SyncLogs canceled)"]
 ```
 
-## 同步与存储参考
+## Sync and storage reference
 
-### 同步调度（internal/datasource/scheduler.go）
+This section is for operators and developers who need to know how syncs are scheduled, executed and stored.
 
-`Scheduler` 基于 `robfig/cron`（`cron.WithSeconds()`，支持秒级 6 段表达式）为每个配置了 `SyncSchedule` 的 active 数据源维护一个 cron entry；服务启动时 `Start()` 从 DB 加载全部 active 数据源批量注册。
+### Sync scheduling (internal/datasource/scheduler.go)
 
-由于 robfig/cron 按**绝对墙钟时间**触发（例如 `0 0 * * * *` 总在整点触发），多实例部署时所有实例会同时触发。去重靠两层机制：
+`Scheduler` is built on `robfig/cron` with a parser that accepts a seconds field (six-field expressions). It keeps one cron entry per active data source that has a `SyncSchedule`; at service start, `Start()` loads every active data source from the database and registers them in bulk.
 
-1. **DB 层防重叠**：`syncLogRepo.HasRunningSync` —— 上一次同步还在 running 就跳过本次（防止同步耗时超过 cron 间隔时叠加执行）。
-2. **Redis 层跨实例去重**：确定性的 `asynq.TaskID = "dssync:<dsID>:<yyyyMMddHHmm>"`（按分钟截断）。同一分钟内所有实例产生相同 TaskID，Redis 保证只有一个入队成功，其余得到 `asynq.ErrTaskIDConflict`，对应 SyncLog 标记为 `canceled`（"deduplicated: another instance enqueued first"）。
+Because robfig/cron fires at **absolute wall-clock times** (`0 0 * * * *` always fires on the hour), every instance of a multi-instance deployment fires at the same moment. Two layers deduplicate:
 
-入队参数：队列 `types.QueueSync`、`MaxRetry(5)`、`Timeout(2*time.Hour)`。任务类型为 `types.TypeDataSourceSync`（`"datasource:sync"`），由 `internal/router/task.go` 中 `mux.HandleFunc(types.TypeDataSourceSync, params.DataSourceService.ProcessSync)` 消费。
+1. **Database layer, no overlap**: `syncLogRepo.HasRunningSync` skips the run when the previous sync is still running (so a sync that outlasts the cron interval does not stack).
+2. **Redis layer, cross-instance dedup**: a deterministic `asynq.TaskID = "dssync:<dsID>:<yyyyMMddHHmm>"` (truncated to the minute). Every instance produces the same TaskID within a minute, Redis lets only one enqueue succeed, and the others get `asynq.ErrTaskIDConflict`; their SyncLog is marked `canceled` ("deduplicated: another instance enqueued first").
 
-### 同步执行与知识入库（datasource_service.go）
+Enqueue options: queue `types.QueueSync`, `MaxRetry(5)`, `Timeout(2*time.Hour)`. The task type is `types.TypeDataSourceSync` (`"datasource:sync"`), consumed by `mux.HandleFunc(types.TypeDataSourceSync, params.DataSourceService.ProcessSync)` in `internal/router/task.go`.
 
-`ProcessSync` 是 Asynq 任务处理器，完整流程见下方时序图。要点：
+### Sync execution and knowledge ingest (datasource_service.go)
 
-- **防御性取消**：数据源或知识库已被删除时，把 SyncLog 置为 `canceled` 并返回 nil（不再重试）。
-- **两条抓取路径**：连接器实现了 `StreamingConnector` 走 `processSyncStreaming`（流式）；否则按 `ForceFull || SyncMode==full` 走 `FetchAll`，或带上 `ParseSyncCursor()` 的游标走 `FetchIncremental`（批量）。
-- **流式路径的游标策略**（`streamStartCursor`）：用户触发的全量同步在**首次尝试**时丢弃游标全量抓取；Asynq **重试**（attempt > 0）以及所有增量同步都从最后一个 checkpoint 续传。实现了 `FullStreamingConnector` 的连接器（目前为 Confluence）在全量同步时改走 `FetchFullStream`：重新抓取全部条目，同时保留旧游标作为删除对账基线。
-- **入库核心 `applyFetchedItem` → `ingestItem`**：
-  - `IsDeleted=true` 且 `sync_deletions=true` 时，按租户、知识库、数据源 ID 和 external_id 查找并真实删除对应知识；关闭同步删除则保留已有知识。删除能力还取决于连接器是否提供可靠的删除检测；
-  - 有 `Content` 字节 → 包装成 `multipart.FileHeader` 走 `KnowledgeService.CreateKnowledgeFromFile`（完整文档解析流水线）；只有 `URL` → 走 `CreateKnowledgeFromURL` 由 WeKnora 下载解析；
-  - **更新 = 先删后建**：按 metadata `external_id` 查到既有知识条目就先 `DeleteKnowledge` 再重建，计为 Updated；
-  - 重复文件（`DuplicateKnowledgeError`）计为 Skipped，不算失败；
-  - 每个条目自动带上 metadata：`external_id`、`source_resource_id`、`datasource_id` 以及连接器附加的 metadata。若源端提供时间，还保存 UTC RFC3339 格式的 `source_created_at` / `source_updated_at`；它们表示源文档时间，与 WeKnora 的 created_at/updated_at 分开。
-- **自动打标**：`resolveAutoTagIDs` 按数据源名称在目标 KB 中 FindOrCreate 一个标签，所有同步条目自动挂上，便于在 KB 中识别来源；打标失败不阻断同步。
-- **结果状态**：全部条目失败 → `failed`（`allFetchedItemsFailedError`）；RSS 部分 feed 失败（`PartialFetchError`）或流式路径存在失败文档 → `partial`；其余 → `success`。失败样本以 `SyncItemError` 形式最多保留 100 条。
-- 抓取失败时若连接器返回了新游标（如 RSS），仍会持久化游标，避免瞬时故障后被迫全量重抓。
+`ProcessSync` is the Asynq task handler; the full flow is in the sequence diagram below. Key points:
+
+- **Defensive cancellation**: when the data source or the knowledge base has been deleted, the SyncLog is set to `canceled` and nil is returned (no retry).
+- **Two fetch paths**: a connector that implements `StreamingConnector` goes through `processSyncStreaming` (streaming); otherwise `ForceFull || SyncMode==full` calls `FetchAll` (or `FetchAllFromCursor` when the connector implements `FullSyncWithCursor`), and an incremental run calls `FetchIncremental` with the cursor from `ParseSyncCursor()` (batch).
+- **Cursor policy on the streaming path** (`streamStartCursor`): a user-triggered full sync discards the cursor on its **first attempt** and fetches everything; an Asynq **retry** (attempt > 0) and every incremental sync resume from the last checkpoint. Connectors that implement `FullStreamingConnector` (Confluence and Seafile) switch to `FetchFullStream` on a full sync: every item is re-fetched while the old cursor is kept as the baseline for deletion reconciliation.
+- **Ingest core, `applyFetchedItem` then `ingestItem`**:
+  - `IsDeleted=true` with `sync_deletions=true` looks up the knowledge item by workspace, knowledge base, data source ID and external_id and deletes it for real; with deletion sync off, existing knowledge stays. Deletion also depends on whether the connector provides reliable deletion detection;
+  - `Content` bytes are wrapped as a `multipart.FileHeader` and go through `KnowledgeService.CreateKnowledgeFromFile` (the full document parsing pipeline); a `URL` alone goes through `CreateKnowledgeFromURL`, and AI KB downloads and parses it;
+  - **an update is delete then create**: an existing knowledge item found by the metadata `external_id` is removed with `DeleteKnowledge` and rebuilt, counted as Updated;
+  - a duplicate file (`DuplicateKnowledgeError`) counts as Skipped, not as a failure;
+  - every entry carries the metadata `external_id`, `source_resource_id` and `datasource_id`, plus whatever the connector adds. When the source provides times, `source_created_at` / `source_updated_at` are stored in UTC RFC3339; they are the source document's times, separate from AI KB's created_at / updated_at.
+- **Auto-tagging**: `resolveAutoTagIDs` finds or creates a tag named after the data source in the target KB and attaches it to every synced entry, so the source is visible in the KB; a tagging failure does not block the sync.
+- **Result status**: every entry failed gives `failed` (`allFetchedItemsFailedError`); a partial RSS feed failure (`PartialFetchError`) or failed documents on the streaming path give `partial`; everything else is `success`. Up to 100 failure samples are kept as `SyncItemError`.
+- When a fetch fails but the connector returned a new cursor (RSS, for example), the cursor is still persisted, so a transient outage does not force a full re-fetch.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as "用户 / Cron Scheduler"
+    participant U as "User / Cron Scheduler"
     participant H as "DataSourceHandler"
     participant S as "DataSourceService"
     participant Q as "Asynq (QueueSync)"
-    participant C as "Connector (如 Feishu)"
-    participant EXT as "外部系统 API"
+    participant C as "Connector (Feishu, for example)"
+    participant EXT as "External system API"
     participant K as "KnowledgeService"
     participant DB as "PostgreSQL"
 
-    U->>H: POST /datasource/:id/sync (或 cron 触发)
+    U->>H: POST /datasource/:id/sync (or cron trigger)
     H->>S: ManualSync(dsID)
-    S->>DB: 创建 SyncLog(status=running)
+    S->>DB: Create SyncLog(status=running)
     S->>Q: Enqueue(datasource:sync, MaxRetry=5, Timeout=2h)
     Q-->>S: ProcessSync(payload)
-    S->>DB: 加载 DataSource / SyncLog / 校验 KB 存在
-    S->>S: ParseConfig() 解密凭据
-    alt "StreamingConnector（Feishu/Lark、GitLab、Confluence）"
+    S->>DB: Load DataSource / SyncLog, check the KB exists
+    S->>S: ParseConfig() decrypts credentials
+    alt "StreamingConnector (Feishu/Lark, GitLab, Confluence, Seafile)"
         S->>C: FetchStream(config, cursor, handler)
-        loop "遍历 Wiki 节点"
+        loop "Walk the wiki nodes"
             C->>EXT: ListWikiNodesRecursive / ExportAndDownload
-            EXT-->>C: 文档内容 (.docx/.xlsx/原文件)
+            EXT-->>C: Document content (.docx/.xlsx/raw file)
             C->>S: handler.Emit(item)
-            S->>K: CreateKnowledgeFromFile (先删后建=更新)
-            C->>S: handler.Checkpoint(cursor) 每 50 节点或 30s
-            S->>DB: 持久化 LastSyncCursor + SyncLog 进度
+            S->>K: CreateKnowledgeFromFile (delete then create = update)
+            C->>S: handler.Checkpoint(cursor) every 50 nodes or 30s
+            S->>DB: Persist LastSyncCursor + SyncLog progress
         end
-        C-->>S: 最终 cursor
-    else "批量连接器（Notion/Yuque/钉钉/IMA/RSS）"
-        S->>C: FetchAll 或 FetchIncremental(cursor)
-        C->>EXT: 列表 + 拉取变更内容
-        EXT-->>C: 文档 / Markdown
+        C-->>S: Final cursor
+    else "Batch connectors (Notion/Yuque/DingTalk/IMA/RSS)"
+        S->>C: FetchAll or FetchIncremental(cursor)
+        C->>EXT: List + fetch changed content
+        EXT-->>C: Documents / Markdown
         C-->>S: []FetchedItem + nextCursor
-        loop "每个条目"
-            S->>K: applyFetchedItem → ingestItem
+        loop "Each item"
+            S->>K: applyFetchedItem then ingestItem
         end
     end
-    S->>DB: 更新 SyncLog(success/partial/failed) + DataSource(LastSyncAt/Cursor/Result)
-    S->>DB: 记录审计日志 (recordKBActivity)
+    S->>DB: Update SyncLog(success/partial/failed) + DataSource(LastSyncAt/Cursor/Result)
+    S->>DB: Record audit log (recordKBActivity)
 ```
 
-### 凭据加密存储
+### Credential encryption and storage
 
-凭据在写入、读取和 API 返回时分别处理：
+Credentials are handled separately on write, on read and in API responses:
 
-**1. 写入时加密 —— `DataSourceConfig.ToJSON()`**（`internal/types/datasource.go`）：
+**1. Encrypt on write, `DataSourceConfig.ToJSON()`** (`internal/types/datasource.go`):
 
 ```go
-// 当配置了 SYSTEM_AES_KEY 时，Credentials 中的每个字符串值在序列化前
-// 都会做 AES-256-GCM 加密。这是凭据进入 DB 的唯一写路径（GORM 的 JSON
-// 类型本身是字节透传），因此在这里加密即可保证 DataSource.Config 落库全程密文。
+// When SYSTEM_AES_KEY is configured, every string value in Credentials is
+// AES-256-GCM encrypted before serialization. This is the only write path
+// through which credentials reach the DB (the GORM JSON type is a byte
+// passthrough), so encrypting here keeps DataSource.Config encrypted at rest.
 if key := utils.GetAESKey(); key != nil && len(out.Credentials) > 0 {
     ...
     if enc, err := utils.EncryptAESGCM(s, key); err == nil { encCreds[k] = enc }
 }
 ```
 
-**2. 读取时解密 —— `DataSource.ParseConfig()`**：透明处理三种情况——空串原样返回；无 `enc:v1:` 前缀的历史明文原样返回（免迁移）；密文用 `SYSTEM_AES_KEY` 解密。解密失败（密钥丢失/轮转）时将对应凭据字段置空，UI 显示"凭据未配置"，用户重填即可，不会丢失数据源其他配置。
+**2. Decrypt on read, `DataSource.ParseConfig()`**: three cases are handled transparently. An empty string is returned as is; legacy plaintext without the `enc:v1:` prefix is returned as is (no migration needed); ciphertext is decrypted with `SYSTEM_AES_KEY`. When decryption fails (key missing or rotated), the credential field is blanked, the UI shows "credentials not configured", and the user re-enters them without losing the rest of the data source configuration.
 
-**3. 独立的凭据子资源 —— `internal/handler/datasource_credentials.go`**：凭据不走普通的 `PUT /datasource/:id`，而是独立的 `/credentials` 子资源，采用整体原子替换，确保连接器一次获得完整凭据：
+**3. A separate credential subresource, `internal/handler/datasource_credentials.go`**: credentials do not go through the ordinary `PUT /datasource/:id` but through a dedicated `/credentials` subresource that replaces the whole map atomically, so the connector always receives a complete credential set:
 
-- `PUT /api/v1/datasource/:id/credentials` — 整体替换凭据 map，替换后立即调用连接器 `Validate` 做在线校验（凭据无效时立即返回错误）
-- `DELETE /api/v1/datasource/:id/credentials/credentials` — 整体清空
-- 响应中**永远不回传密文/明文**，只返回 `{"credentials": {"configured": true/false}}`；列表/详情接口经 `dto.NewDataSourceResponse` 序列化时也从构造上剥离 `Credentials`
+- `PUT /api/v1/datasource/:id/credentials` replaces the credential map as a whole, then immediately calls the connector's `Validate` for an online check (invalid credentials return an error right away)
+- `DELETE /api/v1/datasource/:id/credentials/credentials` clears the whole map
+- Responses **never return ciphertext or plaintext**, only `{"credentials": {"configured": true/false}}`; the list and detail endpoints serialize through `dto.NewDataSourceResponse`, which strips `Credentials` by construction
 
-普通更新接口 `UpdateDataSource`（`datasource_service.go`）会**强制保留库中已存凭据**，即使请求体里带了 credentials 也被忽略并打警告日志。另外 `StripNonSecretCredentials` 会把误放进 credentials 的非机密字段清出去（目前只有 RSS 的 `feed_urls`，它属于 `Settings`）。
+The ordinary update endpoint `UpdateDataSource` (`datasource_service.go`) **always keeps the stored credentials**: credentials in the request body are ignored with a warning in the log. `StripNonSecretCredentials` also removes non-secret fields that were put into credentials by mistake (currently only RSS `feed_urls`, which belongs in `Settings`).
 
-### 安全限制（internal/datasource/httpclient.go 与 errors.go）
+### Security limits (internal/datasource/httpclient.go and errors.go)
 
-`httpclient.go` 提供两个所有连接器共用的 SSRF 防护入口：
+`httpclient.go` provides the two SSRF protection entry points that every connector shares:
 
 ```go
-// ValidateConnectorBaseURL 对连接器 base_url 做 SSRF 策略校验（空值放行，由调用方套默认值）
+// ValidateConnectorBaseURL applies the SSRF policy to a connector base_url (an empty value passes; the caller applies the default)
 func ValidateConnectorBaseURL(rawURL string) error {
     ...
     if err := utils.ValidateURLForSSRF(url); err != nil { ... }
 }
 
-// NewConnectorHTTPClient 返回带重定向与拨号期 SSRF 防护的 HTTP 客户端
+// NewConnectorHTTPClient returns an HTTP client with SSRF protection on redirects and at dial time
 func NewConnectorHTTPClient(timeout time.Duration) *http.Client {
     cfg := utils.DefaultSSRFSafeHTTPClientConfig()
     cfg.Timeout = timeout
@@ -346,41 +357,41 @@ func NewConnectorHTTPClient(timeout time.Duration) *http.Client {
 }
 ```
 
-底层 `internal/utils/security.go` 会拒绝私网地址、回环地址、link-local 等目标，并且在**每次重定向和实际拨号时**重新校验（而非只校验初始 URL），防止恶意 feed 或自定义 base_url 把 WeKnora 引向内网服务。各连接器的 `parseXXXConfig` 都会对 base_url 调用 `ValidateConnectorBaseURL`。
+Underneath, `internal/utils/security.go` rejects private, loopback and link-local targets and re-checks **on every redirect and at the actual dial** (not only on the initial URL), so a malicious feed or a custom base_url cannot steer AI KB toward internal services. Each connector's `parseXXXConfig` calls `ValidateConnectorBaseURL` on its base_url.
 
-`errors.go` 定义了模块级哨兵错误（`ErrConnectorNotFound`、`ErrDataSourceInvalid`、`ErrInvalidCredentials`、`ErrSyncFailed` 等）与 `PartialFetchError`（部分资源成功、部分失败；调用方应处理已得条目、持久化游标、把 `Details` 以 partial 状态呈现给用户）。
+`errors.go` defines the module-level sentinel errors (`ErrConnectorNotFound`, `ErrDataSourceInvalid`, `ErrInvalidCredentials`, `ErrSyncFailed` and others) and `PartialFetchError` (some resources succeeded and some failed; the caller should process the items it got, persist the cursor, and present `Details` to the user with the partial status).
 
-### 核心抽象：Connector 接口
+### Core abstraction: the Connector interface
 
-所有连接器必须实现 `internal/datasource/connector.go` 中的 `Connector` 接口：
+Every connector implements the `Connector` interface in `internal/datasource/connector.go`:
 
 ```go
 type Connector interface {
-    // Type 返回连接器类型标识（如 "feishu"、"notion"）
+    // Type returns the connector type identifier (for example "feishu", "notion")
     Type() string
-    // Validate 通过实际调用外部 API 验证配置与凭据有效性
+    // Validate checks the configuration and credentials by calling the external API
     Validate(ctx context.Context, config *types.DataSourceConfig) error
-    // ListResources 列出可同步的资源（文档、空间、文件夹等）。
-    // parentID 支持层级资源的懒加载：""=顶层；非空=该资源的直接子节点
+    // ListResources lists the syncable resources (documents, spaces, folders and so on).
+    // parentID supports lazy loading of hierarchical resources: "" = top level; non-empty = direct children of that resource
     ListResources(ctx context.Context, config *types.DataSourceConfig, parentID string) ([]types.Resource, error)
-    // ResolveResourceAncestors 解析已选资源的祖先链，用于懒加载选择器回显深层选中项
+    // ResolveResourceAncestors resolves the ancestor chain of selected resources so a lazy picker can re-display deep selections
     ResolveResourceAncestors(ctx context.Context, config *types.DataSourceConfig, resourceIDs []string) ([]string, error)
-    // FetchAll 全量同步指定资源
+    // FetchAll performs a full sync of the given resources
     FetchAll(ctx context.Context, config *types.DataSourceConfig, resourceIDs []string) ([]types.FetchedItem, error)
-    // FetchIncremental 基于游标增量同步，返回变更项与下一次同步的新游标
+    // FetchIncremental syncs incrementally from a cursor and returns the changed items and the next cursor
     FetchIncremental(ctx context.Context, config *types.DataSourceConfig, cursor *types.SyncCursor) ([]types.FetchedItem, *types.SyncCursor, error)
 }
 ```
 
-#### 可选扩展：StreamingConnector（流式可恢复同步）
+#### Optional extension: StreamingConnector (streaming resumable sync)
 
-`StreamingConnector` 支持逐条抓取、入库并保存游标，适用于大规模同步，减少一次性缓存全部内容的内存占用：
+`StreamingConnector` fetches, imports and checkpoints item by item. It suits large syncs and avoids holding every item's content in memory at once:
 
 ```go
 type StreamHandler interface {
-    // Emit 逐条入库一个抓取项；返回错误则中止整个流
+    // Emit imports one fetched item; an error aborts the whole stream
     Emit(ctx context.Context, item types.FetchedItem) error
-    // Checkpoint 同步持久化游标快照（必须是完整可恢复的快照，而非增量）
+    // Checkpoint persists a cursor snapshot synchronously (a complete, resumable snapshot, not a delta)
     Checkpoint(ctx context.Context, cursor *types.SyncCursor) error
 }
 
@@ -391,15 +402,15 @@ type StreamingConnector interface {
 }
 ```
 
-任务超时后可从最近的 checkpoint 继续处理。Asynq 同步任务超时为 2 小时，流式路径按条目推进，避免缓存全部文件正文。Feishu/Lark（知识库与云盘）、GitLab 和 Confluence 连接器实现了 `StreamingConnector`；Confluence 另实现 `FullStreamingConnector`，全量同步也能对账删除。钉钉目前走 batch `FetchAll`/`FetchIncremental`/`FetchAllFromCursor`，超大知识库建议使用增量模式以免一次装入全部 Markdown。
+After a task timeout, processing continues from the most recent checkpoint. The Asynq sync task timeout is 2 hours, and the streaming path advances item by item instead of buffering every file body. The Feishu/Lark (wiki and drive), GitLab, Confluence and Seafile connectors implement `StreamingConnector`; Confluence and Seafile also implement `FullStreamingConnector`, so a full sync can still reconcile deletions. DingTalk currently uses the batch `FetchAll` / `FetchIncremental` / `FetchAllFromCursor` path; very large knowledge bases should use incremental mode to avoid loading all the Markdown at once.
 
-#### ConnectorRegistry：注册与查找
+#### ConnectorRegistry: registration and lookup
 
-`ConnectorRegistry` 是简单的 `map[string]Connector` 注册表。实际注册发生在 `internal/container/container.go` 的 `initConnectorRegistry()`：
+`ConnectorRegistry` is a plain `map[string]Connector`. Registration happens in `initConnectorRegistry()` in `internal/container/container.go`:
 
 ```go
 registry.Register(wiki.NewConnector(core.RegionFeishu))             // feishu
-registry.Register(wiki.NewConnector(core.RegionLark))               // lark（国际版，同一实现不同 Region）
+registry.Register(wiki.NewConnector(core.RegionLark))               // lark (international edition, same implementation, different Region)
 registry.Register(drive.NewDriveConnector(core.RegionFeishuDrive))  // feishu_drive
 registry.Register(drive.NewDriveConnector(core.RegionLarkDrive))    // lark_drive
 registry.Register(notionConnector.NewConnector())                   // notion
@@ -412,30 +423,34 @@ registry.Register(gitlabConnector.NewConnector())                   // gitlab
 registry.Register(seafileConnector.NewConnector())                  // seafile
 ```
 
-> 注意：`connector.go` 中的 `ConnectorMetadataRegistry` 仍包含尚未实现的连接器（GitHub、Google Drive、OneDrive、Web Crawler、Slack、IMAP 等）。当前实际注册可用的类型为：`feishu`、`lark`、`feishu_drive`、`lark_drive`、`notion`、`confluence`、`yuque`、`dingtalk`、`ima`、`rss`、`gitlab`、`seafile`。未注册类型在创建数据源时会被 `connectorRegistry.Get()` 以 `ErrConnectorNotFound` 拒绝。
+> Note: `ConnectorMetadataRegistry` in `connector.go` still lists connectors that are not implemented yet (GitHub, Google Drive, OneDrive, Web Crawler, Slack, IMAP). The types actually registered and usable are `feishu`, `lark`, `feishu_drive`, `lark_drive`, `notion`, `confluence`, `yuque`, `dingtalk`, `ima`, `rss`, `gitlab` and `seafile`. Creating a data source with an unregistered type is rejected by `connectorRegistry.Get()` with `ErrConnectorNotFound`.
 
-### 数据模型（internal/types/datasource.go）
+### Data model (internal/types/datasource.go)
 
-| 结构 | 说明 |
+| Struct | Description |
 | --- | --- |
-| `DataSource` | 数据源配置实体（表 `data_sources`）。关键字段：`Type`（连接器类型）、`Config`（JSONB，含加密凭据）、`SyncSchedule`（cron 表达式）、`SyncMode`（`incremental`/`full`）、`Status`（`active`/`paused`/`error`/`deleted`）、`ConflictStrategy`、`SyncDeletions`、`LastSyncCursor`（增量游标 JSONB）、`LastSyncAt`、`LastSyncResult`、`SyncLogRetentionDays` |
-| `SyncLog` | 单次同步执行记录（表 `sync_logs`）。状态：`running`/`success`/`partial`/`failed`/`canceled`；计数：`ItemsTotal/Created/Updated/Deleted/Skipped/Failed`；`Result` 保存 `SyncResult` JSON |
-| `DataSourceConfig` | 解密后的配置结构：`Type` + `Credentials map[string]interface{}` + `ResourceIDs []string`（选中的资源）+ `Settings map[string]interface{}`（非机密配置） |
-| `Resource` | 外部系统的可选资源：`ExternalID`、`Name`、`Type`、`URL`、`ParentID`、`HasChildren`、`ModifiedAt`、`Metadata` |
-| `FetchedItem` | 单个抓取到的文档：`ExternalID`、`Title`、`Content []byte`、`ContentType`、`FileName`、`URL`、`UpdatedAt`、`Metadata`、`IsDeleted`、`SourceResourceID` |
-| `SyncCursor` | 增量游标：`LastSyncTime` + `ConnectorCursor map[string]interface{}`（连接器自定义结构） |
-| `SyncResult` | 同步结果汇总 + `Errors []SyncItemError`（失败样本，上限 100 条，见 `maxSyncResultErrors`） |
-| `SyncItemError` | 面向用户的失败样本：稳定的 i18n `Code` + 插值 `Params` + 兜底 `Message`；原始 API 状态码/响应体只留在服务端日志 |
-| `DataSourceSyncPayload` | Asynq 任务载荷：`DataSourceID`、`TenantID`、`SyncLogID`、`ForceFull`、`Trigger`（`manual`/`schedule`） |
+| `DataSource` | The data source configuration entity (table `data_sources`). Key fields: `Type` (connector type), `Config` (JSONB, with encrypted credentials), `SyncSchedule` (cron expression), `SyncMode` (`incremental` / `full`), `Status` (`active` / `paused` / `error` / `deleted`), `ConflictStrategy`, `SyncDeletions`, `LastSyncCursor` (incremental cursor, JSONB), `LastSyncAt`, `LastSyncResult`, `SyncLogRetentionDays` |
+| `SyncLog` | One sync run (table `sync_logs`). Status: `running` / `success` / `partial` / `failed` / `canceled`; counters `ItemsTotal/Created/Updated/Deleted/Skipped/Failed`; `Result` holds the `SyncResult` JSON |
+| `DataSourceConfig` | The decrypted configuration: `Type` + `Credentials map[string]interface{}` + `ResourceIDs []string` (selected resources) + `Settings map[string]interface{}` (non-secret settings) |
+| `Resource` | A selectable resource of the external system: `ExternalID`, `Name`, `Type`, `URL`, `ParentID`, `HasChildren`, `ModifiedAt`, `Metadata` |
+| `FetchedItem` | One fetched document: `ExternalID`, `Title`, `Content []byte`, `ContentType`, `FileName`, `URL`, `UpdatedAt`, `Metadata`, `IsDeleted`, `SourceResourceID` |
+| `SyncCursor` | The incremental cursor: `LastSyncTime` + `ConnectorCursor map[string]interface{}` (connector-defined structure) |
+| `SyncResult` | The sync summary + `Errors []SyncItemError` (failure samples, at most 100, see `maxSyncResultErrors`) |
+| `SyncItemError` | A user-facing failure sample: a stable i18n `Code` + interpolation `Params` + fallback `Message`; the raw API status and response body stay in the server log |
+| `DataSourceSyncPayload` | The Asynq task payload: `DataSourceID`, `TenantID`, `SyncLogID`, `ForceFull`, `Trigger` (`manual` / `schedule`) |
 
-## 参考
+## References
 
-- 连接器开发指南（随代码维护）：`internal/datasource/CONNECTOR_IMPLEMENTATION_GUIDE.md`
-- 模块说明（随代码维护）：`internal/datasource/README.md`
+These documents are maintained next to the code.
 
-## 实现参考
+- Connector development guide: `internal/datasource/CONNECTOR_IMPLEMENTATION_GUIDE.md`
+- Module description: `internal/datasource/README.md`
 
-- 连接器框架与实现：`internal/datasource/`（`connector.go`、`scheduler.go`、`httpclient.go`、`errors.go`、`connector/` 各实现）
-- HTTP 接口层：`internal/handler/datasource.go`、`internal/handler/datasource_credentials.go`
-- 业务服务层：`internal/application/service/datasource_service.go`
-- 数据模型：`internal/types/datasource.go`
+## Implementation references
+
+These are the source locations to start from when reading or changing the implementation.
+
+- Connector framework and implementations: `internal/datasource/` (`connector.go`, `scheduler.go`, `httpclient.go`, `errors.go`, the implementations under `connector/`)
+- HTTP layer: `internal/handler/datasource.go`, `internal/handler/datasource_credentials.go`
+- Service layer: `internal/application/service/datasource_service.go`
+- Data model: `internal/types/datasource.go`

@@ -1,57 +1,63 @@
-# 分块机制（Chunking）
+# Chunking
 
-分块将文档划分为检索单元。较小的分块有助于聚焦主题，较大的分块可保留更多上下文；分块大小和重叠范围需要结合文档结构与检索结果调整。
+Chunking splits a document into retrieval units. Smaller chunks stay on one topic; larger chunks keep more context. Chunk size and overlap are tuned against the document structure and the retrieval results you see.
 
-可先使用界面默认配置（分块 512 字符、重叠 80 字符、自适应策略），再根据以下现象调整：
+Start with the UI defaults (chunk size 512 characters, overlap 80 characters, adaptive strategy `auto`) and adjust when you notice one of these:
 
-| 遇到的情况 | 建议 |
+| Symptom | Suggestion |
 | --- | --- |
-| 回答缺上下文、信息不完整 | 调大 `chunk_size`，或开启父子分块（子块检索、父块回答） |
-| 检索命中的块跟问题关系不大 | 调小 `chunk_size`，让每块主题更集中 |
-| 资料是条目式的（FAQ、字典、参数表） | 重叠设为 0，避免相邻条目互相污染 |
-| 资料是长篇叙述（报告、论文） | 重叠调到 150–200，保留跨块语义联系 |
-| 预览分块结果 | 使用 `POST /api/v1/chunker/preview` 预览，不写入数据库 |
+| Answers lack context or are incomplete | Raise `chunk_size`, or enable parent-child chunking (child chunks are retrieved, parent chunks are returned) |
+| Retrieved chunks are only loosely related to the question | Lower `chunk_size` so each chunk stays on one topic |
+| The material is itemized (FAQ, glossary, parameter tables) | Set the overlap to 0 so neighbouring entries do not bleed into each other |
+| The material is long narrative (reports, papers) | Raise the overlap to 150-200 to keep semantic links across chunks |
+| You want to see the chunks before committing | Call `POST /api/v1/chunker/preview`; it writes nothing to the database |
 
-修改分块配置后，已有文档需要重新解析才能使用新配置。
+After changing the chunking configuration, existing documents must be re-parsed before the new configuration applies.
 
-## 参数速查与调优建议 {#_10-参数速查与调优建议}
+## Parameter cheat sheet and tuning
 
-| 场景 | strategy | chunk_size | chunk_overlap | 其他 |
-|------|----------|------------|---------------|------|
-| 通用文档（推荐起点） | `auto` | 512 | 80 | — |
-| 结构化技术文档 / 手册 | `auto`（会命中 heading） | 512–1024 | 80 | 面包屑自动生效 |
-| OCR PDF / 纯文本书籍 | `auto`（会命中 heuristic） | 512–1024 | 80–150 | `languages` 指定语种可减少误判 |
-| 长叙事 / 论证型文档 | `auto` | 1000–2000 | 150–200 | 可叠加父子分块 |
-| 精确检索 + 长上下文 | 任意 | — | — | `enable_parent_child=true`，parent 4096 / child 384 |
-| FAQ / 原子记录 | 不适用（FAQ KB 逐条成块） | — | 0 | `FAQIndexMode` 控制答案是否入索引 |
-| 严格 token 上限的 embedding 模型 | 任意 | — | — | 设 `token_limit`，自动换算字符预算 |
-| 复现旧版本行为 | `legacy` | 原值 | 显式设 64 | 见 [ChunkingConfig（KB 级，可被单次上传覆盖）](#_1-1-chunkingconfig-kb-级-可被单次上传覆盖) 迁移注意 |
+Use this table to pick a starting configuration for a known kind of material.
 
-## 分块机制参考
+| Scenario | strategy | chunk_size | chunk_overlap | Other |
+| --- | --- | --- | --- | --- |
+| General documents (recommended start) | `auto` | 512 | 80 | - |
+| Structured technical docs / manuals | `auto` (selects `heading`) | 512-1024 | 80 | Breadcrumbs apply automatically |
+| OCR PDFs / plain-text books | `auto` (selects `heuristic`) | 512-1024 | 80-150 | `languages` narrows the heuristic patterns and reduces false matches |
+| Long narrative / argumentative documents | `auto` | 1000-2000 | 150-200 | Can be combined with parent-child chunking |
+| Precise retrieval plus long context | any | - | - | `enable_parent_child=true`, parent 4096 / child 384 |
+| FAQ / atomic records | not applicable (FAQ knowledge bases store one chunk per entry) | - | 0 | `FAQIndexMode` decides whether answers are indexed |
+| Embedding model with a strict token limit | any | - | - | Set `token_limit`; it is converted to a character budget |
+| Reproduce the behaviour of an older version | `legacy` | previous value | set 64 explicitly | See the migration note under [ChunkingConfig](#chunkingconfig-knowledge-base-level-overridable-per-upload) |
 
-WeKnora 的分块在 **Go 侧**完成（`internal/infrastructure/chunker` 包），采用"文档画像 → 分层策略 → 结果校验 → 逐级回退"的自适应架构；Python 侧 `docreader/splitter/` 保留了同源的递归分块器供 docreader sidecar 使用（生产主路径是 Go 实现，`docreader/splitter/splitter.py` 注释明确说明二者默认值已对齐）。
+## Chunking reference
 
-### 配置模型 {#_1-配置模型}
+This section describes how the chunker works, for readers who tune it or debug its output.
 
-#### ChunkingConfig（KB 级，可被单次上传覆盖） {#_1-1-chunkingconfig-kb-级-可被单次上传覆盖}
+AI KB chunks on the **Go side** (package `internal/infrastructure/chunker`) with an adaptive design: document profile, tiered strategies, result validation, and tier-by-tier fallback. The Python side keeps the original recursive splitter in `docreader/splitter/` for the docreader sidecar. The Go implementation is the production path; the comment at the top of `docreader/splitter/splitter.py` states that the defaults of the two are aligned.
 
-`internal/types/knowledgebase.go`：
+### Configuration model
 
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `chunk_size` | int | 512（字符） | 单块目标大小。约 100–130 英文 token / 300 中文 token。FAQ 式原子内容建议 200–400，长叙事文档 1000–2000 |
-| `chunk_overlap` | int | 80（约 15%） | 相邻块重叠字符数。原子数据可设 0，长叙事可 150–200。超过 `chunk_size/2` 会被钳制到一半 |
-| `separators` | []string | `["\n\n", "\n", "。"]` | 递归分块的分隔符优先级序列 |
-| `strategy` | string | `""`（= legacy） | 分块策略：`auto` / `heading` / `heuristic` / `recursive` / `legacy`，见 [自适应策略：三个 Tier 与回退链](#_2-自适应策略-三个-tier-与回退链) |
-| `token_limit` | int | 0（不启用） | 以近似 token 数上限约束块大小；>0 时按语言换算字符预算并取更小者（0.9 安全系数） |
-| `languages` | []string | 空（自动检测） | 启发式模式的语言提示，如 `["zh"]`、`["en","de"]` |
-| `enable_parent_child` | bool | false | 启用父子（两级）分块，见 [父子分块（Parent-Child / 多粒度）](#_5-父子分块-parent-child-多粒度) |
-| `parent_chunk_size` | int | 4096 | 父块大小（仅父子模式） |
-| `child_chunk_size` | int | 384 | 子块大小（仅父子模式），子块 overlap 固定为 `child_size/5`（约 20%） |
-| `parser_engine_rules` | []ParserEngineRule | 空 | 文件类型 → 解析引擎路由，附带解析器级开关如 `xlsx_first_row_as_header`（属于解析而非分块，但同在此结构） |
-| `table_metadata_instructions` | string | 空 | CSV/Excel 表格摘要生成时的业务指引 |
+Three structures shape chunking: the knowledge base configuration, the runtime splitter configuration derived from it, and the indexing strategy that decides where chunks go.
 
-默认值的单一来源是 `chunker` 包常量（`splitter.go`）：
+#### ChunkingConfig (knowledge base level, overridable per upload)
+
+`internal/types/knowledgebase.go`:
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `chunk_size` | int | 512 (characters) | Target size of one chunk. About 100-130 English tokens or 300 Chinese tokens. FAQ-style atomic content: 200-400; long narrative: 1000-2000 |
+| `chunk_overlap` | int | 80 (about 15%) | Characters shared by adjacent chunks. Atomic data: 0; long narrative: 150-200. A value above `chunk_size/2` is clamped to half |
+| `separators` | []string | `["\n\n", "\n", "。"]` | Separator priority list for recursive chunking |
+| `strategy` | string | `""` (= legacy) | Chunking strategy: `auto` / `heading` / `heuristic` / `recursive` / `legacy`, see [Adaptive strategy](#adaptive-strategy-three-tiers-and-the-fallback-chain) |
+| `token_limit` | int | 0 (off) | Caps chunk size in approximate tokens. When > 0 the limit is converted to a character budget per language and the smaller of the two sizes wins (0.9 safety factor) |
+| `languages` | []string | empty (auto-detect) | Language hints for the heuristic tier, such as `["zh"]` or `["en","de"]` |
+| `enable_parent_child` | bool | false | Enables two-level parent-child chunking, see [Parent-child chunking](#parent-child-chunking-multi-granularity) |
+| `parent_chunk_size` | int | 4096 | Parent chunk size (parent-child mode only) |
+| `child_chunk_size` | int | 384 | Child chunk size (parent-child mode only); the child overlap is fixed at `child_size/5` (about 20%) |
+| `parser_engine_rules` | []ParserEngineRule | empty | File type to parser engine routing, with parser-level switches such as `xlsx_first_row_as_header` (parsing rather than chunking, but stored in the same structure) |
+| `table_metadata_instructions` | string | empty | Business guidance used when generating summaries of CSV/Excel tables |
+
+The single source of the defaults is the constant block in the `chunker` package (`splitter.go`):
 
 ```go
 const (
@@ -60,197 +66,199 @@ const (
 )
 ```
 
-> 迁移注意（源码注释原文）：历史上 Go DefaultConfig 用 64、knowledge.go 用 50、Python docreader 用 100 三种 overlap 默认值，现已统一为 80。存量 KB 若 DB 中存的是 `ChunkOverlap=0`，重建索引时会取 80，embedding 与旧值不再逐位一致。
+> Migration note (from the source comment): earlier versions had three overlap defaults, 64 in the Go `DefaultConfig`, 50 in `knowledge.go`, and 100 in the Python docreader. All three are now 80. An existing knowledge base whose row stores `ChunkOverlap=0` picks up 80 on the next re-index, so its embeddings no longer match the old ones bit for bit.
 
-#### SplitterConfig（运行时配置） {#_1-2-splitterconfig-运行时配置}
+#### SplitterConfig (runtime configuration)
 
-服务层通过 `buildSplitterConfigFromChunking`（`knowledge_process.go`）把 `ChunkingConfig` 映射为 `chunker.SplitterConfig{ChunkSize, ChunkOverlap, Separators, Strategy, TokenLimit, Languages}`；chunker 包内 `ensureDefaults` 再做兜底：
+The service layer maps `ChunkingConfig` to `chunker.SplitterConfig{ChunkSize, ChunkOverlap, Separators, Strategy, TokenLimit, Languages}` in `buildSplitterConfigFromChunking` (`knowledge_process.go`). Inside the chunker package, `ensureDefaults` fills the gaps:
 
-- `TokenLimit > 0` 时：`charBudget = CharsForTokenLimit(TokenLimit, lang)`，若小于 `ChunkSize` 则取代之（`tokens.go`，字符/Token 比：en 4.0、de 4.5、zh 1.7、mixed 3.0，附 0.9 安全系数——确保块不超过 embedding 模型的 token 上限）；
-- `ChunkOverlap > ChunkSize/2` 时钳制为 `ChunkSize/2`。
+- When `TokenLimit > 0`: `charBudget = CharsForTokenLimit(TokenLimit, lang)`, and the budget replaces `ChunkSize` when it is smaller (`tokens.go`; characters per token: en 4.0, de 4.5, zh 1.7, mixed 3.0, with a 0.9 safety factor so a chunk stays under the embedding model's token limit).
+- When `ChunkOverlap > ChunkSize/2`: the overlap is clamped to `ChunkSize/2`.
 
-#### IndexingStrategy 与分块的关系 {#_1-3-indexingstrategy-与分块的关系}
+#### IndexingStrategy and chunking
 
-`internal/types/indexing_strategy.go` 的四个开关决定分块产物流向哪些管线：
+The four switches in `internal/types/indexing_strategy.go` decide which pipelines consume the chunks:
 
 ```go
 type IndexingStrategy struct {
-    VectorEnabled  bool // 向量索引
-    KeywordEnabled bool // BM25 关键词索引
-    WikiEnabled    bool // Wiki 生成
-    GraphEnabled   bool // 图谱抽取
+    VectorEnabled  bool // vector index
+    KeywordEnabled bool // BM25 keyword index
+    WikiEnabled    bool // Wiki generation
+    GraphEnabled   bool // graph extraction
 }
 ```
 
-- `NeedsChunks()`（任一开启）为假时不需要分块；
-- `NeedsEmbedding()`（vector || keyword）为假时分块只写 DB、跳过 `BatchIndex`（`processChunks` 中 `skipStage(StageEmbedding)`）；
-- Wiki / Graph 都以文本 chunk 为输入在后处理阶段消费。
+- When `NeedsChunks()` (any switch on) is false, no chunks are needed.
+- When `NeedsEmbedding()` (vector || keyword) is false, chunks are written to the database only and `BatchIndex` is skipped (`processChunks` calls `skipStage(StageEmbedding)`).
+- Wiki and Graph both consume text chunks in the post-processing stage.
 
-### 自适应策略：三个 Tier 与回退链 {#_2-自适应策略-三个-tier-与回退链}
+### Adaptive strategy: three tiers and the fallback chain
 
-公开入口是 `chunker.Split(text, cfg)` / `chunker.SplitWithDiagnostics`（`strategy.go`）。`cfg.Strategy` 的取值与解析（`resolveChainWithProfile`）：
+The public entry points are `chunker.Split(text, cfg)` and `chunker.SplitWithDiagnostics` (`strategy.go`). `cfg.Strategy` resolves as follows (`resolveChainWithProfile`):
 
-| Strategy 值 | 尝试链（Tier Chain） | 说明 |
-|-------------|----------------------|------|
-| `auto` | 由画像器决定，可能为 `[heading, heuristic, legacy]` 的子序列 | 推荐值，按文档结构自动选 |
-| `heading` | `[heading, legacy]` | 强制标题分块，失败回退 legacy |
-| `heuristic` | `[heuristic, legacy]` | 强制启发式分块 |
-| `recursive` | `[legacy]` | `recursive` 是 `legacy` 的公开别名 |
-| `legacy` / `""`（空） | `[legacy]` | 历史递归分块器，向后兼容默认值 |
+| Strategy value | Tier chain | Description |
+| --- | --- | --- |
+| `auto` | Chosen by the profiler; a subsequence of `[heading, heuristic, legacy]` | Recommended. Picks the tier from the document structure. Any unknown value is treated the same way |
+| `heading` | `[heading, legacy]` | Forces heading chunking, falls back to legacy on failure |
+| `heuristic` | `[heuristic, legacy]` | Forces heuristic chunking |
+| `recursive` | `[legacy]` | `recursive` is the public alias of `legacy` |
+| `legacy` / `""` (empty) | `[legacy]` | The historical recursive splitter, the backward-compatible default |
 
-每个 Tier 的输出都要过 **Validator**（`validator.go`）才能被采纳，否则链条前进到下一 Tier；`legacy` 是保底层——即使它也未通过校验，仍返回其结果（永不返回空）：
+Every tier's output must pass the **validator** (`validator.go`) before it is accepted; otherwise the chain moves to the next tier. `legacy` is the floor: even when its output fails validation, it is returned (the result is never empty).
 
-Validator 的拒绝规则：
+Validator rejection rules:
 
-| 规则 | 拒绝原因字符串 |
-|------|----------------|
-| 无输出 | `no chunks produced` |
-| 文档超过 `2*chunkSize` 却只产出 1 块 | `single chunk for large document` |
-| 非末尾的 <50 字符小块超过总数 1/4 且 >2 个 | `too many tiny chunks` |
-| 最大块不足 `chunkSize/4`（过度碎片化） | `all chunks far below target size` |
-| 最大块超过 `2*chunkSize`（无视预算） | `chunk exceeds 2x target size` |
+| Rule | Rejection reason string |
+| --- | --- |
+| No output | `no chunks produced` |
+| The document exceeds `2*chunkSize` but only one chunk was produced | `single chunk for large document` |
+| More than a quarter of the chunks (and more than 2) are non-final chunks under 50 characters | `too many tiny chunks` |
+| The largest chunk is under `chunkSize/4` while the document is longer than `chunkSize` (over-fragmented) | `all chunks far below target size` |
+| The largest chunk exceeds `2*chunkSize` (budget ignored) | `chunk exceeds 2x target size` |
 
-#### 文档画像（profiler.go） {#_2-1-文档画像-profiler-go}
+#### Document profile (profiler.go)
 
-`ProfileDocument(text)` 单遍扫描产出 `DocProfile`：总字符/行数、行长均值方差、Markdown 各级标题计数、编号小节数、全大写短行数、连续空行块、换页符 `\f` 数、水平分隔线数、德/英/中章节标记数、页脚行数、是否含表格/代码、代码占比、语言检测（前 4096 字节采样，`DetectLanguage` 按 CJK/拉丁比例判 `zh/de/en/mixed`）。
+`ProfileDocument(text)` produces a `DocProfile` in one pass: total characters and lines, mean and standard deviation of line length, Markdown heading counts per level, numbered sections, all-caps short lines, blank-line blocks, form feeds (`\f`), horizontal rules, German/English/Chinese chapter markers, repeated footer lines, whether tables or code are present, the code ratio, and language detection (a sample of the first 4096 bytes; `DetectLanguage` returns `zh/de/en/mixed` from the CJK to Latin ratio).
 
-`SelectStrategy(profile)` 组装尝试链：
+`SelectStrategy(profile)` assembles the tier chain:
 
 ```go
-// Tier 1 候选：Markdown 标题结构
+// Tier 1 candidate: Markdown heading structure
 if p.MdHeadingTotal >= 3 && p.HeadingDensity() > 0.005 && p.DominantHeadingLevel() > 0 {
     chain = append(chain, TierHeading)
 }
-// Tier 2 候选：启发式边界
+// Tier 2 candidate: heuristic boundaries
 if p.HeuristicMarkerTotal() >= 5 || p.FormFeedCount > 0 ||
     p.GermanChapterCount+p.EnglishChapterCount+p.ChineseChapterCount > 0 {
     chain = append(chain, TierHeuristic)
 }
-chain = append(chain, TierLegacy) // 永远兜底
+chain = append(chain, TierLegacy) // always the floor
 ```
 
-`DominantHeadingLevel` 选主分割层级：优先取"出现 ≥3 次的最浅层级"（文档真正的结构骨架），否则取最深的出现过的层级。
+`DominantHeadingLevel` picks the level that drives section splitting: the shallowest level that occurs at least 3 times (the document's real skeleton), otherwise the deepest level that occurs at all.
 
-#### 分块决策流程图 {#_2-2-分块决策流程图}
+#### Decision flow
 
 ```mermaid
 flowchart TD
-    A["输入 Markdown 文本 + SplitterConfig"] --> B["ensureDefaults<br/>(512/80 兜底, TokenLimit 换算, overlap 钳制)"]
+    A["Input Markdown text + SplitterConfig"] --> B["ensureDefaults<br/>(512/80 fallback, TokenLimit conversion, overlap clamp)"]
     B --> C{"cfg.Strategy ?"}
-    C -->|"legacy / recursive / 空"| L["Tier 3: SplitText (递归分块)"]
-    C -->|"heading"| H1["Tier 1: 标题分块"]
-    C -->|"heuristic"| H2["Tier 2: 启发式分块"]
-    C -->|"auto"| P["ProfileDocument (单遍画像)"]
+    C -->|"legacy / recursive / empty"| L["Tier 3: SplitText (recursive chunking)"]
+    C -->|"heading"| H1["Tier 1: heading chunking"]
+    C -->|"heuristic"| H2["Tier 2: heuristic chunking"]
+    C -->|"auto"| P["ProfileDocument (single-pass profile)"]
     P --> S{"SelectStrategy"}
-    S -->|"标题 ≥3 且密度 >0.005"| H1
-    S -->|"启发式标记 ≥5 或有换页符/章节标记"| H2
-    S -->|"无结构信号"| L
-    H1 --> V1{"ValidateChunks 通过?"}
-    V1 -->|"否 (记录拒绝原因)"| H2X{"链上还有 heuristic?"}
-    H2X -->|"是"| H2
-    H2X -->|"否"| L
-    H2 --> V2{"ValidateChunks 通过?"}
-    V2 -->|"否"| L
-    L --> V3{"ValidateChunks 通过?"}
-    V3 -->|"否 (仍返回 legacy 结果)"| OUT
-    V1 -->|"是"| OUT["返回 []Chunk<br/>(Content + ContextHeader + Seq + Start/End)"]
-    V2 -->|"是"| OUT
-    V3 -->|"是"| OUT
+    S -->|"headings >= 3 and density > 0.005"| H1
+    S -->|"heuristic markers >= 5, or form feeds / chapter markers"| H2
+    S -->|"no structural signal"| L
+    H1 --> V1{"ValidateChunks passes?"}
+    V1 -->|"no (rejection reason recorded)"| H2X{"heuristic still on the chain?"}
+    H2X -->|"yes"| H2
+    H2X -->|"no"| L
+    H2 --> V2{"ValidateChunks passes?"}
+    V2 -->|"no"| L
+    L --> V3{"ValidateChunks passes?"}
+    V3 -->|"no (legacy result returned anyway)"| OUT
+    V1 -->|"yes"| OUT["Return []Chunk<br/>(Content + ContextHeader + Seq + Start/End)"]
+    V2 -->|"yes"| OUT
+    V3 -->|"yes"| OUT
 ```
 
-### 三种分块算法详解 {#_3-三种分块算法详解}
+### The three chunking algorithms
 
-#### Tier 1：标题感知分块（heading_splitter.go） {#_3-1-tier-1-标题感知分块-heading-splitter-go}
+Each tier targets a different kind of document structure.
 
-**适用**：有规范 Markdown 标题结构的文档（技术文档、导出的 Word/带书签 PDF 等）。
+#### Tier 1: heading-aware chunking (heading_splitter.go)
 
-算法：
+**Fits**: documents with a regular Markdown heading structure (technical docs, exported Word files, PDFs with bookmarks).
 
-1. 以 `DominantHeadingLevel` 为主层级，`findHeadingBoundaries` 找出所有 `level <= primaryLevel` 的标题行作为段边界（跳过 fenced code 内的伪标题）；边界 ≤1 时直接回退 `SplitText`。
-2. `HeadingHierarchy`（`heading_hierarchy.go`）维护一个 6 层标题栈：压入 level-N 标题会弹出所有 ≥N 的层，`BreadcrumbWithHashes()` 输出如 `"# 第一章\n## 1.2 节"` 的面包屑。
-3. 每个 section：
-   - 若 `面包屑长度 + 2 + 段长 <= ChunkSize`：整段作为一个 Chunk，面包屑放入 **`ContextHeader`（不进 Content）**；
-   - 若超长：段内交给 `SplitText` 二次切分，每个子块通过 `sectionBreadcrumbs` + `breadcrumbAtOffset` 拿到"该偏移处生效的最深标题路径"作为 ContextHeader（段内的 `###`/`####` 子标题不会被压扁成段级标题）。
-4. `coalesceTinyChunks`：相邻、小于 `ChunkSize/2`（下限 200）且共享标题前缀、位置连续（`cur.End == next.Start`）的小块合并——FAQ 式短小节文档不再因"too many tiny chunks"整体跌落到 legacy。
+Algorithm:
 
-**位置不变式**：`End - Start == utf8.RuneCountInString(Content)` 始终成立（面包屑不算入 Content），文档还原、UI 高亮依赖这一点。
+1. With `DominantHeadingLevel` as the primary level, `findHeadingBoundaries` finds every heading line with `level <= primaryLevel` as a section boundary (fake headings inside fenced code are skipped). With one boundary or fewer, it falls back to `SplitText`.
+2. `HeadingHierarchy` (`heading_hierarchy.go`) keeps a six-level heading stack: pushing a level-N heading pops every level >= N, and `BreadcrumbWithHashes()` renders a breadcrumb such as `"# Chapter 1\n## Section 1.2"`.
+3. For each section:
+   - If `breadcrumb length + 2 + section length <= ChunkSize`: the whole section becomes one chunk and the breadcrumb goes into **`ContextHeader` (not into Content)**.
+   - Otherwise the section is handed to `SplitText` for a second split, and each sub-chunk gets the deepest heading path in effect at its offset (`sectionBreadcrumbs` + `breadcrumbAtOffset`) as its ContextHeader, so `###`/`####` sub-headings inside a section are not flattened to the section heading.
+4. `coalesceTinyChunks`: adjacent chunks smaller than `ChunkSize/2` (floor 200) that share a heading prefix and are contiguous (`cur.End == next.Start`) are merged, so a document of short FAQ-style sections no longer drops to legacy because of "too many tiny chunks".
 
-#### Tier 2：启发式边界分块（heuristic_splitter.go + patterns.go） {#_3-2-tier-2-启发式边界分块-heuristic-splitter-go-patterns-go}
+**Position invariant**: `End - Start == utf8.RuneCountInString(Content)` always holds (the breadcrumb is not part of Content). Document reconstruction and UI highlighting rely on it.
 
-**适用**：没有 Markdown 标题、但有可识别结构线索的文档（OCR 出的 PDF、纯文本手册、扫描版书籍等）。
+#### Tier 2: heuristic boundary chunking (heuristic_splitter.go, patterns.go)
 
-先扫描全部候选边界（同一偏移只留最高优先级）：
+**Fits**: documents without Markdown headings but with recognizable structure (OCR output from PDFs, plain-text manuals, scanned books).
 
-| 边界类型 | 正则（patterns.go） | 优先级 |
-|----------|---------------------|--------|
-| 换页符 `\f` | `FormFeedPattern` | 100 |
-| 编号小节（`1.2.3 标题`、`IV. Results`） | `NumberedSectionPattern` | 90 |
-| 章节标记（`Chapter 3` / `Kapitel 2` / `第一章`、`第3节`） | `EnglishChapterPattern` / `GermanChapterPattern` / `ChineseChapterPattern`（按 `Languages` 提示筛选，空则全用） | 85 |
-| 全大写短行标题 | `AllCapsHeadingPattern` | 70 |
-| 视觉分隔线（`---`、`===`、`***`） | `VisualSeparatorPattern` | 60 |
-| 页脚（`Page 3 of 10` / `Seite 3 von 10` / `页码 3`） | `PageFooterPattern` | 50 |
-| 连续 ≥3 个换行 | `ExcessiveBlanksPattern` | 40 |
+All candidate boundaries are scanned first (only the highest priority survives at a given offset):
 
-然后：
+| Boundary type | Pattern (patterns.go) | Priority |
+| --- | --- | --- |
+| Form feed `\f` | `FormFeedPattern` | 100 |
+| Numbered section (`1.2.3 Title`, `IV. Results`) | `NumberedSectionPattern` | 90 |
+| Chapter marker (`Chapter 3` / `Kapitel 2`, and Chinese chapter or section lines numbered with Chinese or Arabic numerals) | `EnglishChapterPattern` / `GermanChapterPattern` / `ChineseChapterPattern` (filtered by the `Languages` hint; all three when empty) | 85 |
+| All-caps short heading line | `AllCapsHeadingPattern` | 70 |
+| Visual separator (`---`, `===`, `***`) | `VisualSeparatorPattern` | 60 |
+| Page footer (`Page 3 of 10` / `Seite 3 von 10`, and the Chinese page-number form) | `PageFooterPattern` | 50 |
+| Three or more consecutive newlines | `ExcessiveBlanksPattern` | 40 |
 
-- `dropBoundsInsideSpans`：落在受保护区间（表格/代码块/公式，见 [Tier 3：递归分块 legacy（splitter.go，Python 移植）](#_3-3-tier-3-递归分块-legacy-splitter-go-python-移植)）**内部**的边界被丢弃，边缘对齐的保留；
-- **贪心装箱**：沿边界累积块，累计超过 `ChunkSize` 且已有 ≥ `max(ChunkSize/4, 50)` 内容时落一个 Chunk；
-- 两边界之间的超大块递归交给 `SplitText`；
-- overlap 对齐：`applyOverlapAligned` 在 `[curEnd-2*overlap, curEnd)` 窗口内优先吸附到最近的语义边界，其次吸附到换行，避免下一块从词中间开始。
+Then:
 
-#### Tier 3：递归分块 legacy（splitter.go，Python 移植） {#_3-3-tier-3-递归分块-legacy-splitter-go-python-移植}
+- `dropBoundsInsideSpans`: boundaries **inside** a protected span (tables, code blocks, formulas; see [Tier 3](#tier-3-recursive-chunking-legacy-splitter-go-ported-from-python)) are dropped; boundaries aligned with a span edge are kept.
+- **Greedy bin-packing**: blocks accumulate along the boundaries; when the accumulated size exceeds `ChunkSize` and at least `max(ChunkSize/4, 50)` characters are present, a chunk is emitted.
+- An oversized block between two boundaries is handed to `SplitText` recursively.
+- Overlap alignment: `applyOverlapAligned` searches the window `[curEnd-2*overlap, curEnd)` and snaps to the nearest semantic boundary, then to a line break, so the next chunk does not start mid-word.
 
-这是从 `docreader/splitter/splitter.py` 移植的基础实现，也是所有 Tier 的兜底与"段内二次切分"引擎。三步：
+#### Tier 3: recursive chunking, legacy (splitter.go, ported from Python)
 
-**Step 1 — 受保护区间识别**（`protectedSpans`），这些内容绝不从中间切开：
+This is the base implementation ported from `docreader/splitter/splitter.py`. It is the floor of every tier and the engine for second splits inside a section. Three steps:
+
+**Step 1: protected span detection** (`protectedSpans`). These regions are never cut in the middle:
 
 ```go
 var protectedPatterns = []*regexp.Regexp{
-    regexp.MustCompile(`(?s)\$\$.*?\$\$`),                        // LaTeX 块级公式
-    regexp.MustCompile(`!\[[^\]\n]{0,200}\]\([^)\n]{1,500}\)`),   // Markdown 图片（单行、限长）
-    regexp.MustCompile(`\[[^\]\n]{1,200}\]\([^)\n]{1,500}\)`),    // Markdown 链接（单行、限长）
-    /* 表头+分隔行 */ /* 表格数据行 */                             // Markdown 表格
-    regexp.MustCompile("(?s)```(?:\\w+)?[\\r\\n].*?```"),          // fenced 代码块
-    regexp.MustCompile("`[^`\\r\\n]+`"),                            // 行内代码
+    regexp.MustCompile(`(?s)\$\$.*?\$\$`),                        // LaTeX block math
+    regexp.MustCompile(`!\[[^\]\n]{0,200}\]\([^)\n]{1,500}\)`),   // Markdown image (single line, bounded)
+    regexp.MustCompile(`\[[^\]\n]{1,200}\]\([^)\n]{1,500}\)`),    // Markdown link (single line, bounded)
+    /* header + separator row */ /* table data rows */           // Markdown tables
+    regexp.MustCompile("(?s)```(?:\\w+)?[\\r\\n].*?```"),          // fenced code block
+    regexp.MustCompile("`[^`\\r\\n]+`"),                            // inline code
 }
 ```
 
-图片和链接的匹配限定在单行内，链接文字不超过 200 字符、地址不超过 500 字符（与 CommonMark 不允许跨空行的规则一致）。这样 OCR 残留的孤立 `[` 不会与远处的 `](` 配对，把整段正文误当作一个不可切分的保护区。
+Image and link matches are limited to one line, with link text up to 200 characters and the target up to 500 (consistent with CommonMark, which forbids spans across blank lines). A stray `[` left by OCR therefore cannot pair with a distant `](` and turn a whole passage into one unsplittable protected region.
 
-超过 `maxProtectedSize = 7500` rune 的保护区（超大表格/代码块）会被强制在换行或空格处切开，避免超出 embedding API 限制。
+A protected span longer than `maxProtectedSize = 7500` runes (a huge table or code block) is force-split at a newline or space so it stays within the embedding API limits.
 
-**Step 2 — 递归分隔**（`splitBySeparators`）：按 `Separators` 优先级切（默认 `\n\n` → `\n` → `。`），仍超 `ChunkSize` 的片段递归应用下一级分隔符（与 Python `_split` 语义一致，分隔符保留在片段中）。
+**Step 2: recursive separation** (`splitBySeparators`): the text is cut by `Separators` in priority order (default `\n\n`, then `\n`, then `。`); a fragment still over `ChunkSize` is cut again with the next separator (same semantics as the Python `_split`; the separator stays attached to its fragment).
 
-**Step 3 — 合并与重叠**（`mergeUnits`）：把小单元装配为块；`curLen + uLen + headersLen > chunkSize` 时落块，`computeOverlap` 从当前块尾部取一段作为下一块开头；绝对上限 `absoluteMaxSize = 7500`。
+**Step 3: merge and overlap** (`mergeUnits`): small units are packed into chunks. When `curLen + uLen + headersLen > chunkSize` a chunk is emitted, and `computeOverlap` takes a suffix of the current chunk as the start of the next one. The absolute cap is `absoluteMaxSize = 7500`.
 
-`computeOverlap` 取的是**语义后缀**而不是定长字符切片：
+`computeOverlap` takes a **semantic suffix**, not a fixed-length slice:
 
-- `ChunkOverlap` 是硬上限而非目标值。窗口取块尾 `min(ChunkOverlap, ChunkSize - 下一单元长度)` 个字符，再额外向前多看 4 个字符（`semanticOverlapLookbehind`，最长分隔符 `\r\n\r\n` 的长度），避免分隔符恰好被窗口边界切断而看不见；候选边界的最后一个字符必须落在窗口内（相对原窗口 ≥ -1），因此保留内容不会超过上限；
-- 边界优先级：段落分隔（`\n\n`）> 换行（`\n`）> 句末（`。`、`？`、`！`，以及英文 `. ` / `? ` / `! `——英文标点要求后面跟空格，避免把 `3.14`、`v1.2` 切开）。优先级相同时取窗口内**最靠前**的那个，让有效重叠尽量大；
-- 窗口可以切进单个 `splitUnit` 内部（旧实现只能整单元保留，普通段落经常直接退化成零重叠），但不会跨越表头标记这类 `start == end` 的零宽合成单元，以维持 `Start/End` 偏移与 Content 的对应不变式；
-- 受保护区间（代码块、行内代码 `` ` ` ``、公式、表格、图片/链接）内部的分隔符不作为边界；边界之后若只剩空白也不成立；
-- 窗口内找不到合法语义边界时不保留重叠，避免从词的中间截断。
+- `ChunkOverlap` is a hard cap, not a target. The window is the last `min(ChunkOverlap, ChunkSize - length of the next unit)` characters of the chunk, plus 4 extra characters of lookbehind (`semanticOverlapLookbehind`, the length of the longest separator `\r\n\r\n`) so a separator cut by the window edge stays visible. A candidate boundary's last character must fall inside the window (at position -1 or later relative to the original window), so the retained content never exceeds the cap.
+- Boundary priority: paragraph break (`\n\n`) > line break (`\n`) > sentence end (the CJK full stop `。`, the fullwidth question and exclamation marks U+FF1F and U+FF01, and the English `. ` / `? ` / `! `, where the punctuation must be followed by a space so `3.14` and `v1.2` are not split). Among boundaries of equal priority the **earliest** in the window wins, so the useful overlap is as large as possible.
+- The window may cut inside a single `splitUnit` (the previous implementation could only retain whole units, so ordinary paragraphs often fell back to zero overlap), but it never crosses a zero-width synthetic unit with `start == end` such as a table header marker, which keeps the `Start/End` to Content invariant.
+- Separators inside protected spans (code blocks, inline code `` ` ` ``, formulas, tables, images and links) are not boundaries; a boundary followed only by whitespace does not count either.
+- If no valid semantic boundary exists in the window, no overlap is retained, rather than cutting mid-word.
 
-#### 表格处理：表头追踪（header_tracker.go） {#_3-4-表格处理-表头追踪-header-tracker-go}
+#### Table handling: header tracking (header_tracker.go)
 
-大 Markdown 表格被切成多块后，后续块会丢失列名上下文。`headerTracker`（移植自 `docreader/splitter/header_hook.py`）解决这一问题：
+When a large Markdown table is cut into several chunks, the later chunks lose their column names. `headerTracker` (ported from `docreader/splitter/header_hook.py`) solves this:
 
-- 检测"表头行 + 分隔行"（`| A | B |` + `| --- | --- |`）作为**活动表头**，在表格结束（空行 / 非 `|` 开头行）前保持活动；
-- `mergeUnits` 落新块时，若活动表头未在重叠区/下一单元中出现且列数匹配（`headerAlreadyPresent` / `headerColumnMismatch`），把表头作为 `start==end` 的零宽单元**前置到新块**——每个表格分片都自带列名；
-- 空表头（MarkItDown 常见的 `||` + `|---|---|`）用第一行数据行补全列名（`pendingExtend`）；
-- 表格边界感知：块尾 `\n\n` 后出现新表行、或新行列数与表头不一致时，结束旧表头并强制落块（`headerEndedThisUnit`），防止上一张表的表头污染下一张表。
+- A "header row + separator row" pair (`| A | B |` + `| --- | --- |`) becomes the **active header** and stays active until the table ends (a blank line, or a line that does not start with `|`).
+- When `mergeUnits` emits a new chunk and the active header is not already in the overlap or the next unit, and the column count matches (`headerAlreadyPresent` / `headerColumnMismatch`), the header is **prepended to the new chunk** as a zero-width unit with `start==end`, so every table fragment carries its column names.
+- An empty header (`||` + `|---|---|`, common in MarkItDown output) is completed from the first data row (`pendingExtend`).
+- Table boundary awareness: a new table row after a `\n\n` at the chunk end, or a row whose column count differs from the header, ends the old header and forces a chunk boundary (`headerEndedThisUnit`), so one table's header does not leak into the next table.
 
-另外，所有解析引擎（MinerU、PaddleOCR-VL、VLM OCR 等）以及手工 Markdown 中的内联 HTML 表格，都会在分块前由 `docparser/html_table_normalizer.go` 的 `NormalizeHTMLTables` 转成 GFM Markdown 表格，从而进入上述保护与表头追踪逻辑。含真实合并单元格（`rowspan`/`colspan` 大于 1）或其他无法转换的表格保留 HTML，但每个 `<tr>` 单独成行并在前后留空行，分块器可以在行边界切分，而不是在 7500 字符上限处硬切。
+Inline HTML tables, whether from a parser engine (MinerU, PaddleOCR-VL, VLM OCR and others) or hand-written Markdown, are converted to GFM Markdown tables by `NormalizeHTMLTables` in `docparser/html_table_normalizer.go` before chunking, so they enter the protection and header-tracking logic above. A table with real merged cells (`rowspan`/`colspan` greater than 1) or one that cannot be converted stays HTML, but each `<tr>` is placed on its own line with blank lines around it, so the chunker can cut at row boundaries instead of hard-cutting at the 7500-character cap.
 
-#### 图片处理 {#_3-5-图片处理}
+#### Image handling
 
-- Markdown 图片引用 `![alt](url)` 是受保护模式，永不被切断；
-- `chunker.ExtractImageRefs(text)`（`splitter.go`）用支持一层括号嵌套的正则提取块内图片引用，供 `processChunks` 建立 chunk ↔ 图片关联；
-- 每张图片在多模态阶段生成 `image_caption` / `image_ocr` 两个子 Chunk（`ParentChunkID` 指向文本块）并单独索引——图片语义可召回，命中后回到原文块。
+- A Markdown image reference `![alt](url)` is a protected pattern and is never cut.
+- `chunker.ExtractImageRefs(text)` (`splitter.go`) extracts the image references in a chunk with a regex that tolerates one level of nested parentheses; `processChunks` uses it to link chunks to images.
+- In the multimodal stage each image produces two child chunks, `image_caption` and `image_ocr` (`ParentChunkID` points at the text chunk), which are indexed on their own, so image semantics are retrievable and a hit leads back to the source text chunk.
 
-### 上下文头（ContextHeader） {#_4-上下文头-contextheader}
+### Context header (ContextHeader)
 
-`Chunk.ContextHeader` 是与 Content **分离存储**的上下文串（标题面包屑）：
+`Chunk.ContextHeader` is a context string (the heading breadcrumb) **stored separately** from Content:
 
 ```go
 // internal/types/chunk.go
@@ -265,86 +273,86 @@ func (c *Chunk) EmbeddingContent() string {
 }
 ```
 
-设计要点：
+Design points:
 
-- **只影响 embedding，不影响原文**：`processChunks` 组装索引内容为 `知识标题 + "\n" + chunk.EmbeddingContent()`，向量携带章节语境；而 Content 保持原文逐字切片，`StartAt/EndAt` 偏移不变式成立；
-- **持久化到 `chunks.context_header` 列**（migration `000078`）。早期版本是内存字段（`gorm:"-"`），索引完成即丢弃；引入分块手工编辑后，重新索引单个分块时必须复现同样的索引输入，因此改为落库。`json:"-"` 保持不变，接口响应里仍不返回；
-- 父子分块时 `mergeBreadcrumbs`（`strategy.go`）合并父/子面包屑并去掉首行重复，子块获得比父块更细的路径。
+- **It affects the embedding only, never the source text**: `processChunks` builds the index content as `knowledge title + "\n" + chunk.EmbeddingContent()`, so the vector carries the section context, while Content stays a verbatim slice of the source and the `StartAt/EndAt` offset invariant holds.
+- **Persisted in the `chunks.context_header` column** (migration `migrations/versioned/000078_chunk_editing_and_custom_metadata`). Earlier versions kept it in memory only (`gorm:"-"`) and dropped it once indexing finished. With manual chunk editing, re-indexing a single chunk must reproduce the same index input, so the field now lands in the database. `json:"-"` is unchanged, so API responses still omit it.
+- In parent-child mode, `mergeBreadcrumbs` (`strategy.go`) merges the parent and child breadcrumbs and drops a duplicated first line, so a child gets a finer path than its parent.
 
-### 父子分块（Parent-Child / 多粒度） {#_5-父子分块-parent-child-多粒度}
+### Parent-child chunking (multi-granularity)
 
-`EnableParentChild = true` 时启用两级分块（`chunker.SplitParentChild`，策略感知版；legacy 版为 `SplitTextParentChild`）：
+With `EnableParentChild = true`, chunking runs in two levels (`chunker.SplitParentChild`, the strategy-aware version; the legacy version is `SplitTextParentChild`):
 
-1. 先用 `parentCfg`（默认 4096 字符、复用配置的 overlap、继承 Strategy）切出**父块**；
-2. 每个父块再用 `childCfg`（默认 384 字符、overlap = 子块大小/5、继承 Strategy）切出**子块**；
-3. 子块 `Seq` 全文档连续，`Start/End` 平移回文档级偏移，`ParentIndex` 指向父块；若某父块只产出一个与自身完全相同的子块，则不存父块（`ParentIndex = -1`），避免冗余。
+1. `parentCfg` (4096 characters by default, the configured overlap, the inherited Strategy) cuts the **parent chunks**.
+2. Each parent is cut again with `childCfg` (384 characters by default, overlap = child size / 5, the inherited Strategy) into **child chunks**.
+3. Child `Seq` values are continuous across the document, `Start/End` are shifted back to document-level offsets, and `ParentIndex` points at the parent. When a parent yields exactly one child identical to itself, the parent is not stored (`ParentIndex = -1`) to avoid redundancy.
 
-服务侧落库规则（`knowledge_process.go` `processChunks`）：
+Persistence rules on the service side (`processChunks` in `knowledge_process.go`):
 
-- 父块 → `ChunkTypeParentText`，**只入 DB 不进向量索引**，父块间串 `PreChunkID/NextChunkID` 链表；
-- 子块 → `ChunkTypeText` + `ParentChunkID`，是唯一被嵌入/索引的粒度；
-- 检索时命中子块、返回父块内容——小窗口精确匹配 + 大窗口上下文。
+- Parent chunks become `ChunkTypeParentText`, **written to the database but not to the vector index**, and are linked as a `PreChunkID/NextChunkID` list.
+- Child chunks become `ChunkTypeText` with `ParentChunkID`; they are the only granularity that is embedded and indexed.
+- Retrieval hits a child chunk and returns the parent content: a small window for precise matching, a large window for context.
 
-`buildParentChildConfigs` 特别强调 Strategy 必须透传：否则空 Strategy 解析为 legacy tier，父子块会静默丢失标题对齐与 ContextHeader 面包屑。
+`buildParentChildConfigs` insists that Strategy be passed through: an empty Strategy resolves to the legacy tier, and parent-child chunks would silently lose their heading alignment and ContextHeader breadcrumbs.
 
 ```mermaid
 flowchart LR
-    subgraph Doc["原始 Markdown"]
-        T["全文"]
+    subgraph Doc["Source Markdown"]
+        T["Full text"]
     end
-    T -->|"parentCfg: 4096 chars"| P1["父块 P0<br/>(chunk_type=parent_text)"]
-    T --> P2["父块 P1"]
-    P1 -->|"childCfg: 384 chars, overlap 76"| C1["子块 C0<br/>(chunk_type=text, parent_chunk_id=P0)"]
-    P1 --> C2["子块 C1"]
-    P2 --> C3["子块 C2"]
-    C1 -->|"EmbeddingContent = 面包屑+内容"| V["向量/BM25 索引"]
+    T -->|"parentCfg: 4096 chars"| P1["Parent P0<br/>(chunk_type=parent_text)"]
+    T --> P2["Parent P1"]
+    P1 -->|"childCfg: 384 chars, overlap 76"| C1["Child C0<br/>(chunk_type=text, parent_chunk_id=P0)"]
+    P1 --> C2["Child C1"]
+    P2 --> C3["Child C2"]
+    C1 -->|"EmbeddingContent = breadcrumb + content"| V["Vector / BM25 index"]
     C2 --> V
     C3 --> V
-    P1 -.->|"不进索引, 检索命中子块后回捞"| R["检索结果返回父块内容"]
+    P1 -.->|"not indexed, loaded after a child hit"| R["Retrieval returns the parent content"]
     V --> R
 ```
 
-### FAQ 分块的特殊性 {#_6-faq-分块的特殊性}
+### FAQ chunking
 
-FAQ 知识库**不经过任何分块算法**：每条问答对本身就是一个 `ChunkTypeFAQ` 的 Chunk（`knowledge_faq.go`），Content 由 `buildFAQChunkContent` 按索引模式生成：
+FAQ knowledge bases **skip the chunking algorithms entirely**: each question-answer pair is one `ChunkTypeFAQ` chunk (`knowledge_faq.go`), and `buildFAQChunkContent` generates its Content according to the index mode:
 
 ```go
 builder.WriteString(fmt.Sprintf("Q: %s\n", meta.StandardQuestion))
-// Similar Questions: 逐条列出
-// 负例（NegativeQuestions）不写入 Content —— 不应被索引
+// Similar Questions: listed one per line
+// Negative examples (NegativeQuestions) are not written to Content; they must not be indexed
 if mode == types.FAQIndexModeQuestionAnswer && len(meta.Answers) > 0 {
-    // Answers: 逐条列出
+    // Answers: listed one per line
 }
 ```
 
-- 结构化数据存 `Chunk.Metadata`（`FAQChunkMetadata`），`ContentHash`（归一化 SHA256）用于导入去重与克隆差量同步；
-- 索引模式：`question_only` / `question_answer`（KB 级 `FAQIndexMode`）；问题索引模式 `combined`（标准问+相似问一个向量）/ `separate`（每个相似问独立向量，支持增量更新）；
-- 建议 FAQ 场景 `chunk_overlap = 0` 的通用原则在此天然成立——条目间无重叠。
+- The structured data lives in `Chunk.Metadata` (`FAQChunkMetadata`); `ContentHash` (a SHA256 of the normalized data) drives import deduplication and incremental sync of clones.
+- Index modes: `question_only` / `question_answer` (knowledge base level `FAQIndexMode`); question index modes `combined` (standard question and similar questions in one vector) / `separate` (one vector per similar question, which supports incremental updates).
+- The general advice of `chunk_overlap = 0` for FAQ material holds by construction: entries do not overlap.
 
-### 与入库管线的衔接 {#_7-与入库管线的衔接}
+### Pipeline integration
 
-`knowledge_process.go` 中的调用链：
+The call chain in `knowledge_process.go`:
 
 ```
 processDocument
   └─ convert()                          // docreader → Markdown
-  └─ imageResolver.ResolveAndStore()    // 图片入存储, 重写 URL
+  └─ imageResolver.ResolveAndStore()    // store images, rewrite URLs
   └─ buildSplitterConfigFromChunking()  // ChunkingConfig → SplitterConfig
-  └─ chunker.Split / SplitParentChild   // 本文所述算法
-  └─ processChunks()                    // 建 Chunk 行, EmbeddingContent → BatchIndex
+  └─ chunker.Split / SplitParentChild   // the algorithms described above
+  └─ processChunks()                    // create Chunk rows, EmbeddingContent → BatchIndex
 ```
 
-分块阶段有独立 Span（`StageChunking`，记录 `chunks_planned/chunks_written/total_text_chars`），失败错误码 `ErrCodeChunkingFailed`。
+The chunking stage has its own span (`StageChunking`, recording `chunks_planned/chunks_written/total_text_chars`); its failure error code is `ErrCodeChunkingFailed`.
 
-### 调试能力：POST /api/v1/chunker/preview（chunker_debug.go） {#_8-调试能力-post-api-v1-chunker-preview-chunker-debug-go}
+### Debugging: POST /api/v1/chunker/preview (chunker_debug.go)
 
-只读预览端点，KB 编辑器的"分块调试面板"使用它在改参数前试切样例文本——**不写 DB、不产生 embedding、不记录文本日志**。
+A read-only preview endpoint. The chunking debug panel in the knowledge base editor uses it to try sample text before changing parameters. It **writes nothing to the database, produces no embeddings and logs no text**.
 
-请求体：
+Request body:
 
 ```json
 {
-  "text": "样例文本…",
+  "text": "sample text...",
   "chunking_config": {
     "chunk_size": 512, "chunk_overlap": 80,
     "separators": ["\n\n", "\n", "。"],
@@ -355,52 +363,52 @@ processDocument
 }
 ```
 
-传 `enable_parent_child: true` 时，预览返回的是**子块**（与检索实际命中的粒度一致），诊断信息则来自父块那一趟切分。预览与入库共用 `chunker.NormalizeSplitterConfig()` 与 `chunker.DeriveParentChildConfigs()` 推导配置，避免出现「预览看着没问题、入库切出来不一样」——早期预览始终按单级分块试切，开了父子分块的知识库预览结果和真实结果对不上。
+With `enable_parent_child: true` the preview returns the **child chunks** (the granularity retrieval actually hits), while the diagnostics come from the parent pass. Preview and import derive their configuration through the same `chunker.NormalizeSplitterConfig()` and `chunker.DeriveParentChildConfigs()`, so a preview that looks right cannot differ from the import. Earlier previews always ran a single-level split, so for a knowledge base with parent-child chunking enabled the preview did not match the real result.
 
-响应（`PreviewChunkingResponse`）：
+Response (`PreviewChunkingResponse`):
 
-| 字段 | 说明 |
-|------|------|
-| `selected_tier` | 最终胜出的 Tier（`heading`/`heuristic`/`legacy`） |
-| `tier_chain` | 本次尝试链 |
-| `rejected` | 各被拒 Tier 及 Validator 给出的原因（`TierRejection{tier, reason}`） |
-| `profile` | 完整 `DocProfile`（auto 时来自策略选择过程，显式策略时按需补算） |
-| `chunks[]` | 每块的 `seq/start/end/size_chars/size_tokens_approx/context_header/content` |
-| `stats` | `count/avg_chars/min_chars/max_chars/stddev_chars`，按**全量**块集计算；截断时附 `truncated_to` |
+| Field | Description |
+| --- | --- |
+| `selected_tier` | The tier that won (`heading`/`heuristic`/`legacy`) |
+| `tier_chain` | The chain attempted for this request |
+| `rejected` | Each rejected tier and the validator's reason (`TierRejection{tier, reason}`) |
+| `profile` | The full `DocProfile` (from strategy selection under `auto`; computed on demand for an explicit strategy) |
+| `chunks[]` | Per chunk: `seq/start/end/size_chars/size_tokens_approx/context_header/content` |
+| `stats` | `count/avg_chars/min_chars/max_chars/stddev_chars`, computed over the **full** chunk set; `truncated_to` is added when the response is truncated |
 
-保护措施（常量）：输入上限 `previewMaxChars = 64k` rune（返回 413）、返回块数上限 `previewMaxChunks = 500`（统计仍按全量算）、超时 `previewTimeout = 5s`（splitter 不接受 context，超时后 handler 返回 504 但工作 goroutine 会自然跑完，64k 上限是主要防护）。诊断信息由 `chunker.SplitWithDiagnostics` 产出，其 JSON 形状是公开 API 的一部分。
+Safeguards (constants): input cap `previewMaxChars = 64k` runes (413 when exceeded), returned chunk cap `previewMaxChunks = 500` (stats still cover the full set), timeout `previewTimeout = 5s` (the splitter takes no context, so after the timeout the handler returns 504 while the worker goroutine runs to completion; the 64k cap is the main protection). The diagnostics come from `chunker.SplitWithDiagnostics`, and their JSON shape is part of the public API.
 
-路由注册（`internal/router/routes_knowledge.go`）：
+Route registration (`internal/router/routes_knowledge.go`):
 
 ```go
 g.apiKeyRoute(r, http.MethodPost, "/chunker/preview",
     apiKeyRetrieve(apiKeyIngest(apiKeyFullAccess())), g.Viewer(), handler.PreviewChunking)
 ```
 
-### Python 侧分块器（docreader/splitter/） {#_9-python-侧分块器-docreader-splitter}
+### Python-side splitter (docreader/splitter/)
 
-`docreader/splitter/splitter.py` 的 `TextSplitter` 是 Go legacy 实现的原型，仍随 docreader sidecar 保留：
+`TextSplitter` in `docreader/splitter/splitter.py` is the prototype of the Go legacy implementation and ships with the docreader sidecar:
 
-- 默认值已与 Go 对齐：`DEFAULT_CHUNK_SIZE = 512`、`DEFAULT_CHUNK_OVERLAP = 80`；构造器默认分隔符 `["\n", "。", " "]`，最后附字符级切分兜底；
-- 同一套受保护正则（公式/图片/链接/表头/表行/代码块），`_split`（递归分隔）→ `_split_protected` + `_join`（保护区间隔离）→ `_merge`（重叠合并 + `HeaderTracker` 表头前置）；
-- 产出 `(start, end, text)` 三元组并断言 `"".join(splits) == text` 可完整还原；`restore_text` 演示了去重叠还原算法；
-- `docreader/splitter/header_hook.py` 的 `HeaderTracker` 与 Go `header_tracker.go` 行为一致（表头识别、空表头补全、列数不匹配时结束）。
+- Defaults are aligned with Go: `DEFAULT_CHUNK_SIZE = 512`, `DEFAULT_CHUNK_OVERLAP = 80`; the constructor's default separators are `["\n", "。", " "]`, with character-level splitting as the last resort.
+- The same protected regexes (formula, image, link, table header, table row, code block); `_split` (recursive separation), then `_split_protected` + `_join` (protected span isolation), then `_merge` (overlap merging with `HeaderTracker` header prepending).
+- It emits `(start, end, text)` triples and asserts `"".join(splits) == text`, so the text can be rebuilt; `restore_text` demonstrates the de-overlap reconstruction.
+- `HeaderTracker` in `docreader/splitter/header_hook.py` behaves like the Go `header_tracker.go` (header detection, empty header completion, ending on a column count mismatch).
 
-## 实现参考
+## Implementation reference
 
-涉及源码：
+Source files involved:
 
-| 模块 | 文件 |
-|------|------|
-| 策略入口与回退链 | `internal/infrastructure/chunker/strategy.go` |
-| 文档画像 | `internal/infrastructure/chunker/profiler.go` |
-| Tier 1 标题分块 | `internal/infrastructure/chunker/heading_splitter.go`、`heading_hierarchy.go` |
-| Tier 2 启发式分块 | `internal/infrastructure/chunker/heuristic_splitter.go`、`patterns.go` |
-| Tier 3 递归分块（legacy） | `internal/infrastructure/chunker/splitter.go` |
-| 表头追踪 | `internal/infrastructure/chunker/header_tracker.go` |
-| 结果校验 | `internal/infrastructure/chunker/validator.go` |
-| Token 估算 | `internal/infrastructure/chunker/tokens.go` |
-| 配置结构 | `internal/types/knowledgebase.go`（`ChunkingConfig`）、`internal/types/indexing_strategy.go` |
-| 管线接入 | `internal/application/service/knowledge_process.go`（`buildSplitterConfigFromChunking` / `buildParentChildConfigs` / `processChunks`） |
-| 调试端点 | `internal/handler/chunker_debug.go`（`POST /api/v1/chunker/preview`） |
-| Python 侧 | `docreader/splitter/splitter.py`、`docreader/splitter/header_hook.py` |
+| Module | File |
+| --- | --- |
+| Strategy entry and fallback chain | `internal/infrastructure/chunker/strategy.go` |
+| Document profile | `internal/infrastructure/chunker/profiler.go` |
+| Tier 1 heading chunking | `internal/infrastructure/chunker/heading_splitter.go`, `heading_hierarchy.go` |
+| Tier 2 heuristic chunking | `internal/infrastructure/chunker/heuristic_splitter.go`, `patterns.go` |
+| Tier 3 recursive chunking (legacy) | `internal/infrastructure/chunker/splitter.go` |
+| Header tracking | `internal/infrastructure/chunker/header_tracker.go` |
+| Result validation | `internal/infrastructure/chunker/validator.go` |
+| Token estimation | `internal/infrastructure/chunker/tokens.go` |
+| Configuration structures | `internal/types/knowledgebase.go` (`ChunkingConfig`), `internal/types/indexing_strategy.go` |
+| Pipeline integration | `internal/application/service/knowledge_process.go` (`buildSplitterConfigFromChunking` / `buildParentChildConfigs` / `processChunks`) |
+| Debug endpoint | `internal/handler/chunker_debug.go` (`POST /api/v1/chunker/preview`) |
+| Python side | `docreader/splitter/splitter.py`, `docreader/splitter/header_hook.py` |
