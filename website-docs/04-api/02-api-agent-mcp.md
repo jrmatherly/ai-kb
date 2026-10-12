@@ -328,7 +328,7 @@ curl -X DELETE $BASE/api/v1/mcp-services/mcp-1/oauth/token -H "Authorization: Be
 
 ## MCP Server 端点（/api/v1/mcp-endpoints） {#mcp-server-端点}
 
-管理当前空间对外发布的 MCP 端点，外部 MCP 客户端连接 `/mcp/:endpoint_id`。读：Viewer+；写：Admin+。API key：`manage_channels`/full。Handler: `internal/handler/mcp_endpoint.go`。用途与工具说明见[MCP 集成](../03-features/08-mcp.md#供外部客户端调用)。
+Manages the MCP endpoints the current workspace publishes; external MCP clients connect to `/mcp/:endpoint_id`. Read: Viewer+; write: Admin+. API key: `manage_channels`/full. Handler: `internal/handler/mcp_endpoint.go`. Purpose and tool descriptions are in [MCP integration](../03-features/08-mcp.md#serving-external-clients).
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |

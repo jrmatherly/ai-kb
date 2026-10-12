@@ -1,116 +1,124 @@
-# MCP（Model Context Protocol）集成
+# MCP (Model Context Protocol) integration
 
-MCP 用于智能体与外部工具之间的连接。WeKnora 支持接入外部 MCP 服务，也提供独立 MCP Server 供其他客户端调用：
+MCP connects agents to external tools. AI KB works in both directions: it connects to external MCP servers, and it runs its own MCP server for other clients.
 
-1. **WeKnora 作为 MCP 客户端**：在「工具箱 → MCP服务」中接入任意外部 MCP server（SSE / Streamable HTTP），其工具通过目录按需加载，供 Agent 在对话中调用。支持 API Key / Bearer / OAuth 2.0（含动态客户端注册与 PKCE）三种认证策略、按工具粒度的启停与人工审批，以及会话内（in-conversation）OAuth 授权。
-2. **WeKnora 作为 MCP Server**：在「设置 → 发布集成 → MCP Server」中为当前空间创建一个或多个 MCP 端点，每个端点有独立的令牌、知识库范围和工具清单，Claude Desktop、Cursor、Claude Code、VS Code Copilot 等 MCP 客户端通过 Streamable HTTP 直接连接，无需额外部署进程。仓库 `mcp-server/` 目录下的 Python 服务是旧方案，已标记弃用。
+1. **AI KB as an MCP client.** Under Toolbox → MCP services, register any external MCP server (SSE or Streamable HTTP). Its tools are loaded on demand from a directory and called by agents during a conversation. Three authentication strategies are supported (API key, Bearer, OAuth 2.0 with dynamic client registration and PKCE), plus per-tool enable and approval switches and in-conversation OAuth authorization.
+2. **AI KB as an MCP server.** Under Settings → Publish integrations → MCP Server, create one or more MCP endpoints for the current workspace. Each endpoint has its own token, knowledge base scope and tool list. Claude Desktop, Cursor, Claude Code, VS Code Copilot and other MCP clients connect over Streamable HTTP with no extra process to deploy. The Python service under `mcp-server/` is the previous approach and is deprecated.
 
-接入外部服务可扩展 WeKnora 智能体的工具；运行 WeKnora MCP Server 可让外部客户端使用知识库检索、问答和管理能力。
+Connecting external services extends what AI KB agents can do; running the AI KB MCP server lets external clients use knowledge base retrieval, question answering and management.
 
-空间 Admin 在侧边栏「工具箱 → MCP服务」新建服务（旧的「设置 → MCP 服务」链接会自动跳转到这里），填好连接后同步工具并写使用说明，再在智能体中选择所需服务。需要控制写入或外发操作时，可为相应工具开启人工审批，调用前会显示确认卡片。
+A workspace Admin creates services in the sidebar under Toolbox → MCP services (the old Settings → MCP services link redirects there), fills in the connection, syncs the tools, writes usage instructions, and then selects the services in an agent. To control write or outbound operations, turn on human approval for the relevant tools; a confirmation card appears before each call.
 
 <Screenshot
   src="/screenshots/mcp-services.png"
-  caption="MCP 服务配置：连接外部工具服务与工具清单"
-  hint="展示 MCP 服务列表、某个服务的配置表单（URL、认证方式）与连通性测试后发现的工具列表。" />
+  caption="MCP services: connecting an external tool service and its tool list"
+  hint="Shows the MCP service list, one service's configuration form (URL, authentication) and the tools discovered after a connectivity test." />
 
-连接方式、认证配置和工具范围如下。
+Connection methods, authentication and tool scope are described below.
 
 ---
 
-## 接入外部工具
+## Connecting external tools
 
-MCP 管理页支持按服务名称和卡片显示的用途说明搜索。搜索忽略大小写，空格分隔的关键词需全部匹配；未填写用途说明时搜索服务描述。无匹配结果时可清空搜索。
+Here you register an external MCP server so that agents in this workspace can call its tools.
 
-新建服务分两步：
+The MCP management page searches by service name and by the usage note shown on each card. The search ignores case; every space-separated keyword must match. When no usage note is set, the service description is searched instead. Clear the search when nothing matches.
 
-1. **连接配置**：填写名称和服务 URL，选择 SSE 或 Streamable HTTP 传输，并配置认证（无 / 自定义 Header、API Key / Token、OAuth 2.0）和超时、重试。也可以用「从代码导入」粘贴标准 `mcpServers` JSON 自动填表；只含 `command` / `args` 的 stdio 配置不支持。保存后可测试连接；OAuth 服务点「去授权」时会先自动保存，再按当前用户发起授权。
-2. **工具与用途说明**：连接并拉取 Tools，系统会保存完整的工具描述和参数定义；再填写「使用说明」，说明服务用途、适用场景和关键约束。已同步工具后可点「AI 生成」，根据已启用的工具生成一段精简说明，检查后保存。工具列表中可逐个设置「启用工具」和「调用需审批」，修改即时生效，刷新目录不会覆盖这些设置。
+Creating a service takes two steps:
 
-模型先读取服务的使用说明，再按需加载具体工具，所以使用说明直接影响 Agent 能否选对服务。OAuth 服务按调用者分别授权。工具需要审批时，在对话中检查参数并确认；单独停用某个工具后，运行时不会执行该工具。WeKnora 的 MCP 客户端不支持 stdio 传输。
+1. **Connection.** Enter a name and the service URL, choose SSE or Streamable HTTP, and configure authentication (none or custom headers, API key or token, OAuth 2.0), the timeout and retries. "Import from code" pastes a standard `mcpServers` JSON block and fills the form; stdio configurations that only carry `command` and `args` are not supported. After saving you can test the connection. For an OAuth service, clicking "Authorize" saves the configuration first and then starts authorization as the current user.
+2. **Tools and usage instructions.** Connect and fetch the tools. The full tool descriptions and parameter definitions are saved. Then write the usage instructions: what the service is for, when to use it and the key constraints. Once tools are synced, "AI generate" drafts a short note from the enabled tools for you to review and save. In the tool list, each tool has "Enabled" and "Requires approval" switches. Changes apply immediately and a directory refresh does not overwrite them.
 
-## 供外部客户端调用
+The model reads the service's usage instructions first and loads individual tools on demand, so the instructions decide whether the agent picks the right service. OAuth services are authorized per caller. When a tool requires approval, you check the arguments in the conversation and confirm. A tool that has been disabled individually is not executed at runtime. The AI KB MCP client does not support stdio transport.
 
-在「设置 → 发布集成 → MCP Server」新建端点：填写名称、选择可访问的知识库（留空为全部）、勾选要暴露的工具，并按需指定 `ask` 使用的默认 Agent（留空时使用内置快速问答）和每分钟调用上限（默认 60 次）。创建后会一次性展示令牌和地址 `/mcp/<endpoint_id>`，页面同时给出 Cursor / VS Code / Claude Desktop 的 `mcpServers` 配置、Claude Code 的一行命令，以及仅支持 stdio 的客户端通过 `mcp-remote` 桥接的写法。
+## Serving external clients
 
-使用自定义反向代理时，除 `/api/` 外，还需将 `/mcp/` 原路径转发到 WeKnora 后端，保留 `Authorization` 和 MCP 协议头，并关闭响应缓冲、为长连接设置足够的读写超时。仓库自带的 Nginx、Vite 开发及预览配置已包含该代理，可直接使用网站域名连接，无需另行暴露后端 8080 端口。
+Here you publish this workspace's knowledge bases as an MCP server that Claude Desktop, Cursor and similar clients connect to.
+
+Create an endpoint under Settings → Publish integrations → MCP Server: enter a name, pick the knowledge bases it may access (empty means all), tick the tools to expose, and optionally set the default agent that `ask` uses (empty means the built-in Quick Answer) and the per-minute call limit (default 60). After creation the token and the address `/mcp/<endpoint_id>` are shown once. The page also shows the `mcpServers` configuration for Cursor, VS Code and Claude Desktop, a one-line Claude Code command, and the `mcp-remote` bridge for clients that only support stdio.
+
+With a custom reverse proxy, forward `/mcp/` to the AI KB backend with the path unchanged, in addition to `/api/`. Preserve the `Authorization` header and the MCP protocol headers, disable response buffering, and set read and write timeouts long enough for long-lived connections. The Nginx, Vite dev and Vite preview configurations shipped in the repository already include this proxy, so clients connect through the site's domain without exposing backend port 8080.
 
 <Screenshot
   src="/screenshots/mcp-server-endpoint.png"
-  caption="发布集成 → MCP Server：端点创建完成后的地址、令牌与客户端配置"
-  hint="新建端点后的结果页：一次性令牌与 /mcp/<endpoint_id> 地址、Cursor / Claude Desktop 的 mcpServers 配置与 Claude Code 命令；背景可见端点的知识库范围与四组工具勾选。" />
+  caption="Publish integrations → MCP Server: address, token and client configuration after creating an endpoint"
+  hint="The result page after creating an endpoint: the one-time token and the /mcp/<endpoint_id> address, the mcpServers configuration for Cursor and Claude Desktop and the Claude Code command; the endpoint's knowledge base scope and four tool groups are visible in the background." />
 
-一个空间可以创建多个端点。例如给客服团队一个只开检索和问答、只看两个知识库的端点，给内容团队另一个开了写入工具的端点。令牌可随时轮换，端点可随时停用，删除端点后使用它的客户端立即断开。
+A workspace can have several endpoints. For example, a support team gets an endpoint with retrieval and question answering over two knowledge bases, and a content team gets another with write tools enabled. Tokens can be rotated at any time, endpoints can be disabled at any time, and deleting an endpoint disconnects its clients immediately.
 
-端点暴露的工具按四组勾选，默认只开只读工具：
+The exposed tools are chosen in four groups. Only read-only tools are enabled by default:
 
-| 组 | 工具 | 说明 |
+| Group | Tools | Notes |
 |---|---|---|
-| 检索与阅读 | `list_knowledge_bases`、`search_knowledge`、`grep_chunks`、`list_documents`、`read_document` | 知识库参数同时接受 ID 或名称；`search_knowledge` 用 `mode`（hybrid / semantic / keyword）选择检索方式并可设 `limit`（默认 10，上限 30）；`grep_chunks` 保持大小写不敏感的正则语义：从模式里提取字面词作为关键词索引的检索词（没有关键词索引的库改用语义索引取候选），再逐条用正则校验，返回的分块都匹配该模式；不含任何字面词的模式（如 `^\d+$`）会被拒绝；`read_document` 按 `offset` / `limit` 翻页，或用 `query` 在文档内查找短语 |
-| 问答 | `ask` | 只运行端点配置的默认 Agent（客户端不能自选 Agent；未配置时使用内置快速问答），服务端自动建会话，返回带引用的完整回答和 `session_id`，续聊时传回即可；不开启联网搜索 |
-| Wiki | `wiki_search`、`wiki_read_page`、`wiki_index` | 只对开启了 Wiki 的知识库生效；`wiki_search` 的 `query` 保持原有的正则语义（大小写不敏感），不是合法正则的文本按字面匹配；`regex=false` 强制字面匹配，`regex=true` 要求合法正则 |
-| 写入 | `add_document`、`update_document`、`delete_document` | 默认关闭；支持 Markdown 文本或 URL 导入 |
+| Retrieval and reading | `list_knowledge_bases`, `search_knowledge`, `grep_chunks`, `list_documents`, `read_document` | Knowledge base parameters accept an ID or a name. `search_knowledge` picks the retrieval method with `mode` (hybrid, semantic or keyword) and accepts `limit` (default 10, max 30). `grep_chunks` keeps case-insensitive regular expression semantics: the literal terms in the pattern become the keyword index query (bases without a keyword index use the semantic index for candidates), each candidate is then checked against the regular expression, and every returned chunk matches the pattern. A pattern with no literal text (such as `^\d+$`) is rejected. `read_document` pages with `offset` and `limit`, or finds a phrase inside the document with `query` |
+| Question answering | `ask` | Runs only the endpoint's default agent (clients cannot choose one; the built-in Quick Answer is used when none is configured). The server creates the session, returns the full answer with citations and a `session_id`, which you pass back to continue the conversation. Web search is off |
+| Wiki | `wiki_search`, `wiki_read_page`, `wiki_index` | Only for knowledge bases with Wiki enabled. The `query` of `wiki_search` keeps regular expression semantics (case-insensitive); text that is not a valid regular expression is matched literally. `regex=false` forces a literal match and `regex=true` requires a valid regular expression |
+| Write | `add_document`, `update_document`, `delete_document` | Off by default. Import from Markdown text or from a URL |
 
-现有 MCP 工具的返回结果会复用 REST/IM 的资源链接转换：正文、Wiki 内容以及结构化数据中的图片引用，都会在权限校验后转换为可直接访问的 HTTP(S) 链接，不需要新增工具或修改端点工具清单。`ask` 的 `references[].images` 保留图片 URL、caption 和 OCR 文本，文本引用列表也包含图片链接，避免正文摘要截断后丢失图片信息。
+Results from these MCP tools reuse the resource link conversion of the REST and IM surfaces: image references in body text, Wiki content and structured data are converted, after a permission check, into directly accessible HTTP(S) links. No new tool and no change to the endpoint tool list is needed. `references[].images` in `ask` keeps the image URL, caption and OCR text, and the text reference list also contains the image links, so image information survives truncation of the body summary.
 
-本地或私有存储请配置外部客户端可访问的 `APP_EXTERNAL_URL`，并确保反向代理转发 `/r/`。`resource://` 图片沿用有时效的 `/r/<token>` 链接；其他存储地址使用对应存储服务生成的 HTTP(S) URL。一次工具调用中同一资源只转换一次，返回链接不写回文档或会话记录。无法生成可访问链接时保留原引用，不中断文本结果。
+For local or private storage, set `APP_EXTERNAL_URL` to an address external clients can reach and make sure the reverse proxy forwards `/r/`. `resource://` images use the time-limited `/r/<token>` links; other storage addresses use the HTTP(S) URL generated by the storage service. Within one tool call each resource is converted once, and the returned links are not written back to the document or the session. When no accessible link can be generated, the original reference is kept and the text result is not interrupted.
 
-生成链接前会重新检查端点知识库范围、共享权限、资源所属空间和有效文档绑定，沿用知识库图片预览的权限规则；未限定知识库的端点按调用者可查看的知识库判断，因此 `ask` 通过智能体检索到的共享知识库图片同样可以转换；原始上传文件不会因为出现在结果文本中就获得下载链接。已有绑定的历史存储路径可以转换。对于缺少图片绑定的历史文档，需要由有权限的管理员重新解析文档，完成后重新检索；不能仅凭可编辑的正文或 `image_info` 自动补授文件权限。
+Before generating a link, the endpoint's knowledge base scope, sharing permissions, the resource's workspace and a valid document binding are re-checked with the same rules as knowledge base image previews. An endpoint with no knowledge base restriction is judged by the knowledge bases the caller can view, so images from shared knowledge bases that `ask` retrieved through the agent are converted too. An original uploaded file does not get a download link just because it appears in result text. Historical storage paths with an existing binding are converted. Historical documents without an image binding must be re-parsed by an administrator with permission and then retrieved again; file permissions are never granted from editable body text or `image_info` alone.
 
-> **`grep_chunks` 的召回有上限。** 它基于索引取候选，每次最多 30 条，再用正则筛选，所以返回的每条都匹配模式，但不保证穷尽：库里存在的匹配也可能没进候选池。容易漏的情况有三类：`foo.*bar` 这类组合模式，候选按 foo、bar 的相关度排序，真正相邻出现的分块可能排不进前 30；`C++` 这类几乎只剩符号的模式，抽出的字面词只有 `C`，在索引里几乎没有区分度；没有关键词索引的库改用语义索引取候选，字面匹配更依赖运气。旧实现对 chunks 表做全表正则扫描，能保证"有就能找到"，但数据量大时代价过高，已经移除。需要在某篇文档里穷尽查找时，用 `read_document` 的 `query`，它会顺序扫完整篇文档。
+> **`grep_chunks` recall is bounded.** It takes candidates from the index, at most 30 per call, and then filters with the regular expression. Every returned chunk matches the pattern, but the result is not exhaustive: a matching chunk in the base may not have entered the candidate pool. Three cases miss easily. Combined patterns such as `foo.*bar`: candidates are ranked by relevance to foo and bar, and the chunk where they actually appear together may not rank in the top 30. Patterns that are almost all symbols such as `C++`: the only literal term extracted is `C`, which has almost no discriminating power in the index. Bases without a keyword index use the semantic index for candidates, so literal matching depends more on luck. The old implementation scanned the whole chunks table with a regular expression, which guaranteed a hit when one existed, but it was too expensive on large data and has been removed. To search one document exhaustively, use `query` on `read_document`, which scans the whole document in order.
 
-工具实现直接复用 Agent 的原生工具（`internal/agent/tools/`），鉴权复用 API Key 的作用域模型：端点被换算成一把仅含 retrieve / chat / ingest 等能力、限定知识库范围的作用域，所以后端各服务对它的检查与对受限 API Key 完全一致。实现细节见下方内置 MCP Server 参考。
+The tools reuse the agent's native tools (`internal/agent/tools/`), and authorization reuses the API key scope model: the endpoint is converted into a scope that only carries capabilities such as retrieve, chat and ingest and is limited to its knowledge bases, so the checks in each backend service are identical to those for a restricted API key. Implementation details are in the built-in MCP server reference below.
 
-## 接入方式对照 {#两个方向的对照速览}
+## Comparing the two directions
 
-| 维度 | WeKnora 作为 MCP 客户端 | WeKnora 作为 MCP Server |
+Use this table to decide which direction you need.
+
+| Aspect | AI KB as an MCP client | AI KB as an MCP server |
 |---|---|---|
-| 代码位置 | `internal/mcp/` + handler/service/repository + `internal/agent/tools/` | `internal/mcpserver/` + `internal/middleware/mcp_endpoint_auth.go` + `internal/handler/mcp_endpoint.go` |
-| 协议库 | `github.com/mark3labs/mcp-go`（client） | `github.com/mark3labs/mcp-go`（server，Streamable HTTP，无状态模式） |
-| 传输 | SSE、Streamable HTTP（stdio 因安全禁用） | Streamable HTTP；stdio 客户端用 `mcp-remote` 桥接 |
-| 认证 | API Key / Bearer / OAuth 2.0（DCR + PKCE，token AES 加密、按 principal 隔离） | 入站 `Authorization: Bearer mcp_…`，每个端点独立令牌（SHA-256 存储，可轮换） |
-| 安全控制 | 工具级人工审批、SSRF 校验、不可信输出前缀、DTO 级密钥隔离 | 端点级工具白名单（列表与调用双重校验）、知识库范围、每分钟限流、令牌只展示一次 |
-| 消费者 | WeKnora Agent（对话中自动调用） | Claude Desktop / Cursor / Claude Code / VS Code Copilot 等任意 MCP 客户端 |
+| Code | `internal/mcp/` + handler, service and repository layers + `internal/agent/tools/` | `internal/mcpserver/` + `internal/middleware/mcp_endpoint_auth.go` + `internal/handler/mcp_endpoint.go` |
+| Protocol library | `github.com/mark3labs/mcp-go` (client) | `github.com/mark3labs/mcp-go` (server, Streamable HTTP, stateless mode) |
+| Transport | SSE, Streamable HTTP (stdio disabled for security) | Streamable HTTP; stdio clients bridge through `mcp-remote` |
+| Authentication | API key, Bearer, OAuth 2.0 (DCR + PKCE, AES-encrypted tokens isolated per principal) | Inbound `Authorization: Bearer mcp_...`, one token per endpoint (stored as SHA-256, rotatable) |
+| Security controls | Per-tool human approval, SSRF validation, untrusted-output prefix, DTO-level secret isolation | Per-endpoint tool allowlist (checked on list and on call), knowledge base scope, per-minute rate limit, token shown once |
+| Consumer | AI KB agents (called automatically in conversation) | Any MCP client: Claude Desktop, Cursor, Claude Code, VS Code Copilot and others |
 
-## 配置与实现参考
+## Configuration and implementation reference
 
-### MCP 客户端参考 {#第一部分-weknora-作为-mcp-客户端}
+This section is for operators and developers who need the exact code paths, data model and protocol behavior behind both directions.
 
-#### 总体架构 {#_1-1-总体架构}
+### MCP client reference
 
-MCP 客户端相关代码分布：
+#### Overall architecture
 
-| 层 | 路径 | 职责 |
+The MCP client code is spread across these layers:
+
+| Layer | Path | Responsibility |
 |---|---|---|
-| 协议客户端 | `internal/mcp/client.go`、`types.go`、`errors.go` | 基于 `github.com/mark3labs/mcp-go` 封装 `MCPClient` 接口（Connect / Initialize / ListTools / CallTool / ListResources / ReadResource） |
-| 连接管理 | `internal/mcp/manager.go` | `MCPManager` 缓存并复用连接，OAuth 服务按 principal 隔离连接 |
-| OAuth | `internal/mcp/oauth_manager.go`、`oauth_lifecycle.go`、`oauth_state.go`、`oauth_tokenstore.go` | 授权码流程编排、token 生命周期与刷新、in-flight state 存储、token 持久化 |
-| 数据模型 | `internal/types/mcp.go`、`internal/types/mcp_oauth.go` | `MCPService`、`MCPAuthConfig`、`MCPToolApproval`、`MCPOAuthClient`、`MCPOAuthToken`（含 AES 加密钩子） |
-| HTTP 层 | `internal/handler/mcp_service.go`、`mcp_credentials.go`、`mcp_oauth.go`、`internal/handler/dto/mcp.go` | MCP 服务 CRUD、凭据子资源、OAuth 授权与审批解除接口；DTO 保证响应不泄露密钥 |
-| 业务层 | `internal/application/service/mcp_service.go`、`mcp_tool_approval_service.go` | 服务增删改查、连接测试、凭据变更后的连接回收、审批策略 |
-| 仓储层 | `internal/application/repository/mcp_service.go`、`mcp_oauth.go`、`mcp_tool_approval_repository.go` | GORM 持久化（`mcp_services` / `mcp_oauth_clients` / `mcp_oauth_tokens` / 工具审批表） |
-| Agent 集成 | `internal/agent/tools/mcp_tool.go`、`mcp_oauth.go`、`internal/agent/approval/gate.go` | MCP 工具包装为 Agent Tool、人工审批门（Gate）、会话内 OAuth 等待 |
+| Protocol client | `internal/mcp/client.go`, `types.go`, `errors.go` | Wraps `github.com/mark3labs/mcp-go` behind the `MCPClient` interface (Connect, Initialize, ListTools, CallTool, ListResources, ReadResource) |
+| Connection management | `internal/mcp/manager.go` | `MCPManager` caches and reuses connections; OAuth services get one connection per principal |
+| OAuth | `internal/mcp/oauth_manager.go`, `oauth_lifecycle.go`, `oauth_state.go`, `oauth_tokenstore.go` | Authorization code flow, token lifecycle and refresh, in-flight state storage, token persistence |
+| Data model | `internal/types/mcp.go`, `internal/types/mcp_oauth.go` | `MCPService`, `MCPAuthConfig`, `MCPToolApproval`, `MCPOAuthClient`, `MCPOAuthToken` (with AES encryption hooks) |
+| HTTP layer | `internal/handler/mcp_service.go`, `mcp_credentials.go`, `mcp_oauth.go`, `internal/handler/dto/mcp.go` | MCP service CRUD, the credentials sub-resource, OAuth authorization and approval resolution; DTOs guarantee responses never leak secrets |
+| Service layer | `internal/application/service/mcp_service.go`, `mcp_tool_approval_service.go` | Service CRUD, connection tests, connection recycling after credential changes, approval policy |
+| Repository layer | `internal/application/repository/mcp_service.go`, `mcp_oauth.go`, `mcp_tool_approval_repository.go` | GORM persistence (`mcp_services`, `mcp_oauth_clients`, `mcp_oauth_tokens`, the tool approval table) |
+| Agent integration | `internal/agent/tools/mcp_tool.go`, `mcp_oauth.go`, `internal/agent/approval/gate.go` | Wraps MCP tools as agent tools, the human approval gate, in-conversation OAuth waiting |
 
 ```mermaid
 flowchart TB
-    subgraph AgentLayer["Agent 引擎"]
+    subgraph AgentLayer["Agent engine"]
         AR["ToolRegistry"]
-        MT["MCPTool<br/>（internal/agent/tools/mcp_tool.go）"]
-        GATE["approval.Gate<br/>（人工审批 / OAuth 等待）"]
+        MT["MCPTool<br/>(internal/agent/tools/mcp_tool.go)"]
+        GATE["approval.Gate<br/>(human approval / OAuth wait)"]
     end
     subgraph MCPPkg["internal/mcp"]
-        MGR["MCPManager<br/>（连接缓存，OAuth 按 principal 分键）"]
-        CLI["mcpGoClient<br/>（mark3labs/mcp-go 封装）"]
-        OM["OAuthManager<br/>（发现 + 动态注册 + PKCE）"]
-        ORT["oauthRuntime<br/>（token 检查 / 带租约刷新）"]
-        TS["managedTokenStore<br/>（per-principal token 存取）"]
+        MGR["MCPManager<br/>(connection cache, OAuth keyed per principal)"]
+        CLI["mcpGoClient<br/>(mark3labs/mcp-go wrapper)"]
+        OM["OAuthManager<br/>(discovery + dynamic registration + PKCE)"]
+        ORT["oauthRuntime<br/>(token check / refresh with lease)"]
+        TS["managedTokenStore<br/>(per-principal token access)"]
     end
-    subgraph Storage["持久化"]
-        DB[("PostgreSQL<br/>mcp_services / mcp_oauth_clients / mcp_oauth_tokens<br/>（AES-256-GCM 加密密钥字段）")]
-        RDS[("Redis<br/>OAuth state（TTL 10 分钟）<br/>审批跨实例 Pub/Sub")]
+    subgraph Storage["Persistence"]
+        DB[("PostgreSQL<br/>mcp_services / mcp_oauth_clients / mcp_oauth_tokens<br/>(AES-256-GCM encrypted secret fields)")]
+        RDS[("Redis<br/>OAuth state (TTL 10 minutes)<br/>cross-instance approval Pub/Sub")]
     end
-    EXT["外部 MCP Server<br/>（SSE / Streamable HTTP）"]
-    AS["OAuth 授权服务器"]
+    EXT["External MCP server<br/>(SSE / Streamable HTTP)"]
+    AS["OAuth authorization server"]
 
     AR --> MT
     MT -->|"NeedsApproval / RequestAndWait"| GATE
@@ -122,331 +130,336 @@ flowchart TB
     TS --> DB
     OM --> DB
     OM --> RDS
-    OM -->|"authorize / token 交换"| AS
+    OM -->|"authorize / token exchange"| AS
     GATE --> RDS
     MGR --> DB
 ```
 
-#### 数据模型与传输方式 {#_1-2-数据模型与传输方式}
+#### Data model and transports
 
-`internal/types/mcp.go` 定义的核心实体 `MCPService`：
+The core entity `MCPService` is defined in `internal/types/mcp.go`:
 
 ```go
 type MCPService struct {
-    ID             string             `json:"id"                     gorm:"type:varchar(36);primaryKey"`
-    TenantID       uint64             `json:"tenant_id"              gorm:"uniqueIndex:idx_tenant_name"`
-    Name           string             `json:"name"                   gorm:"type:varchar(255);not null;uniqueIndex:idx_tenant_name"`
-    Enabled        bool               `json:"enabled"                gorm:"default:true;index"`
-    TransportType  MCPTransportType   `json:"transport_type"         gorm:"type:varchar(50);not null"`
-    URL            *string            `json:"url,omitempty"          gorm:"type:varchar(512)"`
-    Headers        MCPHeaders         `json:"headers"                gorm:"type:json"`
-    AuthConfig     *MCPAuthConfig     `json:"auth_config"            gorm:"type:json"`
-    AdvancedConfig *MCPAdvancedConfig `json:"advanced_config"        gorm:"type:json"`
-    IsBuiltin      bool               `json:"is_builtin"             gorm:"default:false"`
-    // ... StdioConfig / EnvVars / 时间戳 / 软删除
+    ID                string             `json:"id"                     gorm:"type:varchar(36);primaryKey"`
+    TenantID          uint64             `json:"tenant_id"              gorm:"uniqueIndex:idx_tenant_name"`
+    Name              string             `json:"name"                   gorm:"type:varchar(255);not null;uniqueIndex:idx_tenant_name"`
+    Description       string             `json:"description"            gorm:"type:text"`
+    UsageInstructions string             `json:"usage_instructions"     gorm:"type:text;not null;default:''"`
+    Enabled           bool               `json:"enabled"                gorm:"index"`
+    TransportType     MCPTransportType   `json:"transport_type"         gorm:"type:varchar(50);not null"`
+    URL               *string            `json:"url,omitempty"          gorm:"type:varchar(512)"`
+    Headers           MCPHeaders         `json:"headers"                gorm:"type:json"`
+    AuthConfig        *MCPAuthConfig     `json:"auth_config"            gorm:"type:json"`
+    AdvancedConfig    *MCPAdvancedConfig `json:"advanced_config"        gorm:"type:json"`
+    IsBuiltin         bool               `json:"is_builtin"             gorm:"default:false"`
+    // ... StdioConfig / EnvVars / timestamps / soft delete
 }
 ```
 
-传输方式（`MCPTransportType`）：
+Transports (`MCPTransportType`):
 
-| 传输类型 | 常量值 | 状态 | 说明 |
+| Transport | Constant | Status | Notes |
 |---|---|---|---|
-| SSE | `sse` | ✅ 支持 | Server-Sent Events；`client.NewSSEMCPClient` / OAuth 时 `client.NewOAuthSSEClient` |
-| Streamable HTTP | `http-streamable` | ✅ 支持 | MCP Streamable HTTP；`client.NewStreamableHttpClient` / OAuth 时 `client.NewOAuthStreamableHttpClient` |
-| Stdio | `stdio` | ❌ **禁用** | 出于安全原因（命令注入风险）在 `NewMCPClient`、`MCPManager.GetOrCreateClient`、`CreateMCPService`、`UpdateMCPService` 四处统一拒绝：`"stdio transport is disabled for security reasons"` |
+| SSE | `sse` | Supported | Server-Sent Events; `client.NewSSEMCPClient`, or `client.NewOAuthSSEClient` with OAuth |
+| Streamable HTTP | `http-streamable` | Supported | MCP Streamable HTTP; `client.NewStreamableHttpClient`, or `client.NewOAuthStreamableHttpClient` with OAuth |
+| Stdio | `stdio` | **Disabled** | Rejected for security (command injection risk) in `NewMCPClient`, `MCPManager.GetOrCreateClient`, `CreateMCPService` and `UpdateMCPService` with `"stdio transport is disabled for security reasons"` |
 
-> 注意：类型系统中仍保留 `MCPTransportStdio` 及 `StdioConfig`（`command` + `args`）字段，`mcp_tool.go` 中也有 stdio 的连接释放分支，但运行时创建 stdio 客户端的入口全部被拦截，实际可用的只有 SSE 与 Streamable HTTP。
+> Note: the type system still has `MCPTransportStdio` and the `StdioConfig` fields (`command` and `args`), and `mcp_tool.go` still has a stdio branch for connection release, but every runtime entry point that would create a stdio client is blocked. Only SSE and Streamable HTTP are usable.
 
-高级配置 `MCPAdvancedConfig`（默认值来自 `types.GetDefaultAdvancedConfig()`）：`timeout` 30 秒、`retry_count` 3、`retry_delay` 1 秒。`timeout` 同时作用于 HTTP client 超时和 initialize 握手超时（`manager.go` 中 initialize 超时上限 60 秒）。Agent 单次工具调用默认有 60 秒窗口；服务的 `timeout` 大于 60 秒时会相应延长该服务的 CallTool 窗口，小于 60 秒则不缩短（`internal/agent/tools/mcp_tool.go` 的 `callToolTimeout`）。
+Advanced configuration `MCPAdvancedConfig` (defaults from `types.GetDefaultAdvancedConfig()`): `timeout` 30 seconds, `retry_count` 3, `retry_delay` 1 second. `timeout` applies to both the HTTP client timeout and the initialize handshake (the initialize timeout is capped at 60 seconds in `manager.go`). A single agent tool call has a 60 second window by default. A service `timeout` above 60 seconds extends that service's CallTool window; a smaller value does not shorten it (`callToolTimeout` in `internal/agent/tools/mcp_tool.go`).
 
-#### 认证策略 {#_1-3-认证策略}
+#### Authentication strategies
 
-`MCPAuthConfig.AuthType` 定义四种策略（`internal/types/mcp.go`）：
+`MCPAuthConfig.AuthType` defines four strategies (`internal/types/mcp.go`):
 
-| `auth_type` | 行为（`internal/mcp/client.go` 的 `applyAuthHeaders`） |
+| `auth_type` | Behavior (`applyAuthHeaders` in `internal/mcp/client.go`) |
 |---|---|
-| `""`（none） | 无认证。向后兼容：若旧数据中存在 `api_key` / `token`，仍按历史行为注入对应 header |
-| `api_key` | 注入 `<APIKeyHeader>: <APIKey>`，header 名默认 `X-API-Key`，可通过非密钥字段 `api_key_header` 定制 |
-| `bearer` | 注入 `Authorization: Bearer <Token>` |
-| `oauth` | 每用户（principal）OAuth 2.0 授权码流程，token 存于 `mcp_oauth_tokens`，详见 1.6 |
+| `""` (none) | No authentication. For backward compatibility, if legacy data still contains `api_key` or `token`, the corresponding header is injected as before |
+| `api_key` | Injects `<APIKeyHeader>: <APIKey>`. The header name defaults to `X-API-Key` and can be changed through the non-secret field `api_key_header` |
+| `bearer` | Injects `Authorization: Bearer <Token>` |
+| `oauth` | Per-user (principal) OAuth 2.0 authorization code flow; tokens are stored in `mcp_oauth_tokens`. See the OAuth 2.0 authorization flow below |
 
-策略是**互斥**的——`applyAuthHeaders` 按 `AuthType` 只注入所选策略的 header（旧实现会把 api_key 与 bearer 同时发出）。`custom_headers` 属结构性配置，始终叠加且可覆盖策略 header。
+The strategies are **mutually exclusive**. `applyAuthHeaders` injects only the header of the selected strategy (the old implementation sent api_key and bearer together). `custom_headers` is structural configuration: it is always added and can override the strategy header.
 
-**密钥加密存储**：`MCPAuthConfig` 实现了 `driver.Valuer` / `sql.Scanner`——写库时若配置了 `SYSTEM_AES_KEY`，`APIKey` 与 `Token` 会先做 AES-256-GCM 加密（带 `enc:v1:` 前缀）；读库时透明解密，解密失败（密钥丢失/轮换）时按「未配置」处理并打日志，绝不把密文当明文使用。
+**Encrypted secret storage.** `MCPAuthConfig` implements `driver.Valuer` and `sql.Scanner`. On write, when `SYSTEM_AES_KEY` is configured, `APIKey` and `Token` are AES-256-GCM encrypted (with the `enc:v1:` prefix). On read they are decrypted transparently. When decryption fails (key lost or rotated) the value is treated as "not configured" and logged; ciphertext is never used as plaintext.
 
-#### 连接生命周期与 MCPManager {#_1-4-连接生命周期与-mcpmanager}
+#### Connection lifecycle and MCPManager
 
-`internal/mcp/manager.go` 的 `MCPManager` 维护 `map[cacheKey]MCPClient` 连接缓存：
+`MCPManager` in `internal/mcp/manager.go` keeps a `map[cacheKey]MCPClient` connection cache:
 
-- **缓存键**（`cacheKey` 函数）：非 OAuth 服务按 `service.ID` 共享一条连接；OAuth 服务按 `service.ID + "\x00" + principal.StorageID()` **每个身份一条连接**，保证每个用户用自己的 token 连接。
-- **GetOrCreateClient**：先查缓存（`IsConnected()` 才复用），未命中则 `NewMCPClient` → `Connect`（使用 manager 的长生命周期 context，SSE 需要持久连接）→ `Initialize`（受 timeout 限制）→ 存入缓存。OAuth 服务从 ctx 提取 `TenantID` 与 `MCPOAuthPrincipalFromContext`（embed 场景映射到 per-visitor principal）。
-- **CloseClient(serviceID)**：断开并删除该服务的全部缓存连接——包括所有 `serviceID\x00principal` 形式的 per-principal OAuth 连接。凭据变更、服务禁用/配置变更、OAuth 授权完成/撤销后都会调用它强制下次重连。
-- **后台清理**：每 5 分钟一轮 `removeDisconnectedClients()` 移除已断开的客户端。
-- **会话失效自愈**：`client.go` 的 `checkErrorAndDisconnectIfNeeded` 识别服务器返回的 `"Invalid session ID"` / `"No active connection"`（SSE 与 Streamable HTTP 都用 `Mcp-Session-Id` 会话），主动断连使下次调用重建会话；`OnConnectionLost` 回调同理。
+- **Cache key** (the `cacheKey` function): non-OAuth services share one connection per `service.ID`; OAuth services use `service.ID + "\x00" + principal.StorageID()`, **one connection per identity**, so every user connects with their own token.
+- **GetOrCreateClient**: checks the cache first (reused only when `IsConnected()`), otherwise `NewMCPClient` → `Connect` (with the manager's long-lived context, because SSE needs a persistent connection) → `Initialize` (bounded by the timeout) → store in the cache. For OAuth services the `TenantID` and `MCPOAuthPrincipalFromContext` are taken from the context (embed channels map to a per-visitor principal).
+- **CloseClient(serviceID)**: disconnects and removes every cached connection of the service, including all per-principal OAuth connections of the form `serviceID\x00principal`. It is called after credential changes, after disabling or reconfiguring the service, and after OAuth authorization completes or is revoked, to force a reconnect on the next call.
+- **Background cleanup**: `removeDisconnectedClients()` runs every 5 minutes and drops disconnected clients.
+- **Session self-healing**: `checkErrorAndDisconnectIfNeeded` in `client.go` recognizes the server errors `"Invalid session ID"` and `"No active connection"` (both SSE and Streamable HTTP use `Mcp-Session-Id` sessions) and disconnects so the next call rebuilds the session. The `OnConnectionLost` callback does the same.
 
-`Initialize` 握手中客户端标识为：
+The client identifies itself in the `Initialize` handshake as:
 
 ```go
-ClientInfo: mcp.Implementation{ Name: "WeKnora", Version: "1.0.0" }
+ClientInfo: mcp.Implementation{ Name: "AI KB", Version: "1.0.0" }
 ```
 
-#### REST API 端点 {#_1-5-rest-api-端点}
+#### REST API endpoints
 
-路由注册在 `internal/router/router.go` 的 `RegisterMCPServiceRoutes`（均挂在 `/api/v1` 下）：
+Routes are registered by `RegisterMCPServiceRoutes` (`internal/router/`), all under `/api/v1`:
 
-| 方法 | 路径 | 权限 | 说明 |
+| Method | Path | Permission | Description |
 |---|---|---|---|
-| POST | `/mcp-services` | Admin+ | 创建 MCP 服务（URL 经 SSRF 校验 `secutils.ValidateURLForSSRF`） |
-| GET | `/mcp-services` | Viewer+ | 列出当前空间的 MCP 服务（含 builtin） |
-| GET | `/mcp-services/{id}` | Viewer+ | 服务详情（经 DTO 脱敏） |
-| PUT | `/mcp-services/{id}` | Admin+ | 更新服务；主 PUT **忽略** `auth_config.api_key` / `auth_config.token`（打 deprecated 警告） |
-| DELETE | `/mcp-services/{id}` | Admin+ | 删除服务（软删除，先 `CloseClient`） |
-| POST | `/mcp-services/{id}/test` | Admin+ | 连接测试：临时客户端 Connect + Initialize，并尝试读取工具与资源列表；读取失败且服务端声明支持该能力时返回失败结果，否则记录警告并按空列表继续。返回 `MCPTestResult`（含 `oauth_required` 标记） |
-| GET | `/mcp-services/{id}/tools` | Viewer+ | 拉取 MCP 服务的工具列表 |
-| GET | `/mcp-services/{id}/resources` | Viewer+ | 拉取 MCP 服务的资源列表 |
-| PUT | `/mcp-services/{id}/credentials` | Admin+ | 写入 `api_key` / `token` 凭据（见下） |
-| DELETE | `/mcp-services/{id}/credentials/{field}` | Admin+ | 清除单个凭据字段（`api_key` 或 `token`），幂等，成功返回 204 |
-| GET | `/mcp-services/{id}/tool-approvals` | Viewer+ | 列出该服务的工具审批策略 |
-| PUT | `/mcp-services/{id}/tool-approvals/{tool_name}` | Admin+ | 更新工具启停/审批：`{"enabled":bool,"require_approval":bool}`，至少一项 |
-| POST | `/mcp-services/{id}/oauth/authorize-url` | Viewer+ | 发起当前用户的 OAuth 授权，返回 `authorization_url` 与 `authorization_attempt` |
-| GET | `/mcp-services/{id}/oauth/status` | Viewer+ | 查询授权状态；带 `authorization_attempt` 参数时只认可本次授权流程 |
-| DELETE | `/mcp-services/{id}/oauth/token` | Viewer+ | 撤销当前用户对该服务的 token，并回收连接 |
-| GET | `/mcp-oauth/callback` | **公开** | 授权服务器回调（单次使用的 `state` 参数即鉴权），注册在 `/mcp-services` 组之外避免与 `:id` 路由冲突 |
-| POST | `/agent/tool-approvals/{pending_id}` | Viewer+ | 审批/驳回一次待批的工具调用 `{"decision": "approve"\|"reject", "reason"?, "modified_args"?}` |
-| POST | `/agent/mcp-oauth-resolutions/{pending_id}` | Viewer+ | 会话内 OAuth 完成后恢复被暂停的 Agent（`{"service_id", "decision": "authorize"\|"cancel"}`） |
-| POST | `/agent/mcp-oauth-resolutions/{pending_id}/cancel` | Viewer+ | 主动跳过会话内 OAuth 提示 |
+| POST | `/mcp-services` | Admin+ | Create an MCP service (the URL passes the SSRF check `secutils.ValidateURLForSSRF`) |
+| GET | `/mcp-services` | Viewer+ | List the current workspace's MCP services (including builtin ones) |
+| GET | `/mcp-services/{id}` | Viewer+ | Service details (redacted through the DTO) |
+| PUT | `/mcp-services/{id}` | Admin+ | Update a service. The main PUT **ignores** `auth_config.api_key` and `auth_config.token` (with a deprecation warning) |
+| DELETE | `/mcp-services/{id}` | Admin+ | Delete a service (soft delete, `CloseClient` first) |
+| POST | `/mcp-services/{id}/test` | Admin+ | Connection test: a temporary client runs Connect and Initialize and tries to list tools and resources. A listing failure is a failed test when the server declares that capability; otherwise it is logged and treated as an empty list. Returns `MCPTestResult` (with the `oauth_required` flag) |
+| GET | `/mcp-services/{id}/tools` | Viewer+ | Fetch the service's tool list |
+| GET | `/mcp-services/{id}/metadata` | Viewer+ | Read the cached tool directory (see "Managing the persistent directory") |
+| POST | `/mcp-services/{id}/metadata/refresh` | Viewer+ (Admin for static authentication) | Connect upstream and replace the cached directory |
+| POST | `/mcp-services/{id}/usage-instructions/generate` | Admin+ | Generate usage instructions from the enabled tools |
+| GET | `/mcp-services/{id}/resources` | Viewer+ | Fetch the service's resource list |
+| PUT | `/mcp-services/{id}/credentials` | Admin+ | Write the `api_key` and `token` credentials (see below) |
+| DELETE | `/mcp-services/{id}/credentials/{field}` | Admin+ | Clear one credential field (`api_key` or `token`); idempotent, returns 204 on success |
+| GET | `/mcp-services/{id}/tool-approvals` | Viewer+ | List the service's tool approval policies |
+| PUT | `/mcp-services/{id}/tool-approvals/{tool_name}` | Admin+ | Update a tool's enabled and approval flags: `{"enabled":bool,"require_approval":bool}`, at least one field |
+| POST | `/mcp-services/{id}/oauth/authorize-url` | Viewer+ | Start OAuth authorization for the current user; returns `authorization_url` and `authorization_attempt` |
+| GET | `/mcp-services/{id}/oauth/status` | Viewer+ | Query the authorization status; with the `authorization_attempt` parameter only this attempt counts |
+| DELETE | `/mcp-services/{id}/oauth/token` | Viewer+ | Revoke the current user's token for the service and recycle the connection |
+| GET | `/mcp-oauth/callback` | **Public** | Authorization server callback (the single-use `state` parameter is the authentication); registered outside the `/mcp-services` group to avoid clashing with the `:id` route |
+| POST | `/agent/tool-approvals/{pending_id}` | Viewer+ | Approve or reject a pending tool call: `{"decision": "approve"\|"reject", "reason"?, "modified_args"?}` |
+| POST | `/agent/mcp-oauth-resolutions/{pending_id}` | Viewer+ | Resume a paused agent after in-conversation OAuth (`{"service_id", "decision": "authorize"\|"cancel"}`) |
+| POST | `/agent/mcp-oauth-resolutions/{pending_id}/cancel` | Viewer+ | Skip an in-conversation OAuth prompt |
 
-embed 渠道另有对应的会话级路由（`/embed/sessions/{session_id}/mcp-oauth-resolutions/...`、`/embed/sessions/{session_id}/mcp-services/{id}/oauth/...`，见 `internal/handler/embed_channel.go` 与 router.go）。
+The embed channel has matching session-scoped routes (`/embed/sessions/{session_id}/mcp-oauth-resolutions/...` and `/embed/sessions/{session_id}/mcp-services/{id}/oauth/...`; see `internal/handler/embed_channel.go` and `internal/router/routes_agent.go`).
 
-##### 凭据子资源（mcp_credentials.go）
+##### Credentials sub-resource (mcp_credentials.go)
 
-密钥（`api_key` / `token`）**不走主 PUT**，而是走独立的 `/credentials` 子资源，`internal/handler/mcp_credentials.go` 的注释给出了三点理由：
+Secrets (`api_key` and `token`) **do not go through the main PUT**. They have their own `/credentials` sub-resource. The comment in `internal/handler/mcp_credentials.go` gives three reasons:
 
-1. 主 PUT body 从不携带密钥——在契约层面消灭「掩码值回写覆盖真实密钥」这类 bug；
-2. 保存编辑弹窗（改 timeout / enabled 等）不可能误伤已配置的凭据；
-3. 「是否已配置」的元数据随主资源返回（`MCPServiceResponse.Credentials` 的 `{"api_key": {"configured": bool}, "token": {...}}`），无需额外 GET。
+1. The main PUT body never carries secrets, which removes the "masked value written back over the real secret" class of bug at the contract level.
+2. Saving the edit dialog (changing timeout, enabled and so on) cannot damage configured credentials.
+3. The "is it configured" metadata comes back with the main resource (`MCPServiceResponse.Credentials` as `{"api_key": {"configured": bool}, "token": {...}}`), so no extra GET is needed.
 
-PUT body 中字段为指针语义：**缺省 = 保留原值**，**空字符串 = no-op**（删除请用 DELETE），非空 = 替换。凭据变更成功后 `UpdateMCPCredentials` 会 `CloseClient` 回收连接，下次调用即用新凭据。响应侧由 `internal/handler/dto/mcp.go` 的 `MCPServiceResponse` 在**编译期**保证不含任何密钥字段（`MCPAuthConfigResponse` 不包含 `APIKey` / `Token` 字段）。
+Fields in the PUT body have pointer semantics: **absent = keep the current value**, **empty string = no-op** (use DELETE to remove), non-empty = replace. After a successful change, `UpdateMCPCredentials` calls `CloseClient` so the next call uses the new credentials. On the response side, `MCPServiceResponse` in `internal/handler/dto/mcp.go` guarantees **at compile time** that no secret field is present (`MCPAuthConfigResponse` has no `APIKey` or `Token` field).
 
-#### OAuth 2.0 授权全流程 {#_1-6-oauth-2-0-授权全流程}
+#### OAuth 2.0 authorization flow
 
-当 MCP server 要求 OAuth（`auth_type: "oauth"`）时，WeKnora 实现了完整的授权码流程：**RFC 9728 / RFC 8414 发现 → RFC 7591 动态客户端注册 → Authorization Code + PKCE → token 加密持久化 → 带分布式租约的自动刷新**。token 按 `(tenant_id, principal_type, principal_id, service_id)` 维度隔离——同一服务，每个用户（或 embed 访客、IM 用户等 principal，见 `internal/types/principal.go`）都持有自己的 token。
+When an MCP server requires OAuth (`auth_type: "oauth"`), AI KB runs the full authorization code flow: **RFC 9728 / RFC 8414 discovery → RFC 7591 dynamic client registration → authorization code with PKCE → encrypted token persistence → automatic refresh with a distributed lease**. Tokens are isolated by `(tenant_id, principal_type, principal_id, service_id)`: for one service, every user (or embed visitor, IM user or other principal, see `internal/types/principal.go`) holds their own token.
 
-##### 授权时序
+##### Authorization sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant B as "用户浏览器"
-    participant FE as "WeKnora 前端"
-    participant BE as "WeKnora 后端（OAuthManager）"
-    participant ST as "State 存储（Redis / 内存，TTL 10 分钟）"
-    participant AS as "OAuth 授权服务器"
-    participant DB as "PostgreSQL（mcp_oauth_clients / mcp_oauth_tokens）"
+    participant B as "User's browser"
+    participant FE as "AI KB frontend"
+    participant BE as "AI KB backend (OAuthManager)"
+    participant ST as "State store (Redis or memory, TTL 10 minutes)"
+    participant AS as "OAuth authorization server"
+    participant DB as "PostgreSQL (mcp_oauth_clients / mcp_oauth_tokens)"
 
     FE->>BE: "POST /mcp-services/{id}/oauth/authorize-url<br/>{redirect_uri, frontend_redirect}"
-    BE->>AS: "元数据发现（AuthServerMetadataURL 或按 RFC 9728/8414 自动发现）"
-    alt "该服务尚无已注册客户端"
-        BE->>AS: "RFC 7591 动态客户端注册（client_name = WeKnora）"
-        AS-->>BE: "client_id（可含 client_secret）"
-        BE->>DB: "SaveClient：按（tenant, service）持久化，secret AES 加密"
+    BE->>AS: "Metadata discovery (AuthServerMetadataURL, or automatic per RFC 9728/8414)"
+    alt "No registered client for this service yet"
+        BE->>AS: "RFC 7591 dynamic client registration (client_name = AI KB)"
+        AS-->>BE: "client_id (optionally client_secret)"
+        BE->>DB: "SaveClient: persist per (tenant, service), secret AES-encrypted"
     end
-    BE->>BE: "生成 PKCE code_verifier/challenge 与随机 state"
-    BE->>ST: "Put(state)：存 code_verifier、principal、service、frontend_redirect"
+    BE->>BE: "Generate PKCE code_verifier/challenge and a random state"
+    BE->>ST: "Put(state): store code_verifier, principal, service, frontend_redirect"
     BE-->>FE: "{authorization_url, authorization_attempt}"
-    FE->>B: "弹窗打开 authorization_url"
-    B->>AS: "用户登录并授权（携带 code_challenge）"
+    FE->>B: "Open authorization_url in a popup"
+    B->>AS: "User logs in and authorizes (with code_challenge)"
     AS->>BE: "302 GET /api/v1/mcp-oauth/callback?code=...&state=..."
-    BE->>ST: "Take(state)：单次取出并删除（防重放）"
-    BE->>AS: "token 交换：code + code_verifier（PKCE 校验）"
+    BE->>ST: "Take(state): read once and delete (replay protection)"
+    BE->>AS: "Token exchange: code + code_verifier (PKCE check)"
     AS-->>BE: "access_token / refresh_token / expires_in"
-    BE->>DB: "TokenStore.SaveToken：按（tenant, principal, service）加密持久化"
-    BE->>ST: "CompleteAttempt(state)：标记本次授权完成"
-    BE->>BE: "CloseClient(serviceID)：回收旧连接"
+    BE->>DB: "TokenStore.SaveToken: persist encrypted per (tenant, principal, service)"
+    BE->>ST: "CompleteAttempt(state): mark this attempt complete"
+    BE->>BE: "CloseClient(serviceID): recycle old connections"
     BE-->>B: "302 frontend_redirect#mcp_oauth_result=success"
-    loop "前端轮询"
+    loop "Frontend polling"
         FE->>BE: "GET /oauth/status?authorization_attempt=..."
         BE-->>FE: "{authorized: true, state: authorized}"
     end
 ```
 
-##### 流程要点（对应源码）
+##### Flow details (with source references)
 
-- **发现与动态注册**（`internal/mcp/oauth_manager.go`）：`StartAuthorization` 先构造 `transport.OAuthHandler`（`AuthServerMetadataURL` 为空时由 mcp-go 依据 MCP URL 自动发现授权服务器）；若 `mcp_oauth_clients` 表中该 `(tenant, service)` 尚无客户端，调用 `h.RegisterClient(ctx, "WeKnora")` 做一次性 RFC 7591 注册并 `SaveClient` 持久化，之后所有用户复用同一 client_id。
-- **PKCE**：`transport.GenerateCodeVerifier()` / `GenerateCodeChallenge()` / `GenerateState()`；`code_verifier` 是秘密，**只存服务端 state**（`internal/mcp/oauth_state.go` 注释明确禁止编码进 state 参数）。
-- **State 存储**（`oauth_state.go`）：有 Redis 时写 `weknora:mcp_oauth_state:<state>`（支持 `WEKNORA_REDIS_NAMESPACE` 命名空间，回调可落在任意后端副本）；Lite 模式退化为带 GC 的内存 map。TTL 固定 10 分钟；`Take` 为**取即删**的单次消费。另存一份不含秘密的 `OAuthAttempt` 记录，`CompleteAttempt` 仅在 token 成功落库后置 `Completed=true`——因此新弹窗的授权状态查询（`status?authorization_attempt=`）**绝不会被历史 token 误判为已完成**。
-- **回调**（`oauth_manager.go` 的 `CompleteAuthorization` + `internal/handler/mcp_oauth.go` 的 `Callback`）：回调路由公开无鉴权，靠单次 state 认证；由于浏览器收到重定向后 Gin 请求 ctx 即取消，token 交换用 `context.WithoutCancel + 60s` 超时（`oauthCallbackTimeout`）脱离请求生命周期。交换成功后 `CloseClient(serviceID)` 回收可能携带旧注册信息的连接，最后把结果编码在 URL fragment（`#mcp_oauth_result=success` / `#mcp_oauth_error=...`）重定向回前端。
-- **重建 handler 的 CSRF 检查**：回调请求里 handler 是重新构造的，需 `h.SetExpectedState(state)` 重新灌入期望 state，mcp-go 的 CSRF 校验才能通过。
+- **Discovery and dynamic registration** (`internal/mcp/oauth_manager.go`): `StartAuthorization` first builds a `transport.OAuthHandler` (when `AuthServerMetadataURL` is empty, mcp-go discovers the authorization server from the MCP URL). If `mcp_oauth_clients` has no client for this `(tenant, service)`, it calls `h.RegisterClient(ctx, "AI KB")` once for RFC 7591 registration and persists it with `SaveClient`; all later users reuse the same client_id.
+- **PKCE**: `transport.GenerateCodeVerifier()`, `GenerateCodeChallenge()` and `GenerateState()`. The `code_verifier` is a secret and is **stored only in server-side state** (the comment in `internal/mcp/oauth_state.go` forbids encoding it into the state parameter).
+- **State store** (`oauth_state.go`): with Redis, the key is `weknora:mcp_oauth_state:<state>` (with the `AIKB_REDIS_NAMESPACE` namespace when set), so the callback can land on any backend replica. Lite mode falls back to an in-memory map with garbage collection. The TTL is fixed at 10 minutes. `Take` is a **read-and-delete** single consumption. A separate `OAuthAttempt` record without secrets is stored, and `CompleteAttempt` sets `Completed=true` only after the token is persisted, so a status query for a new popup (`status?authorization_attempt=`) **is never satisfied by an older token**.
+- **Callback** (`CompleteAuthorization` in `oauth_manager.go` and `Callback` in `internal/handler/mcp_oauth.go`): the callback route is public and authenticated by the single-use state. Because the Gin request context is cancelled as soon as the browser receives the redirect, the token exchange runs under `context.WithoutCancel` with a 60 second timeout (`oauthCallbackTimeout`), detached from the request lifetime. After a successful exchange, `CloseClient(serviceID)` recycles connections that may carry old registration data, and the result is encoded in the URL fragment (`#mcp_oauth_result=success` or `#mcp_oauth_error=...`) of the redirect back to the frontend.
+- **CSRF check on the rebuilt handler**: the handler is reconstructed in the callback request, so `h.SetExpectedState(state)` restores the expected state before mcp-go's CSRF check can pass.
 
-##### Token 的加密存储（oauth_tokenstore.go + types/mcp_oauth.go）
+##### Encrypted token storage (oauth_tokenstore.go and types/mcp_oauth.go)
 
-`mcp_oauth_tokens` 表模型 `MCPOAuthToken`：唯一索引 `(tenant_id, principal_type, principal_id, service_id)`；`AccessToken` / `RefreshToken` 通过 GORM 钩子 `BeforeCreate` / `BeforeSave` 做 AES-256-GCM 加密（`SYSTEM_AES_KEY`），`AfterFind` 解密，且两字段 `json:"-"` 永不出现在 API 响应中。`mcp_oauth_clients` 的 `client_secret` 同样加密。
+The `mcp_oauth_tokens` table model `MCPOAuthToken` has a unique index on `(tenant_id, principal_type, principal_id, service_id)`. `AccessToken` and `RefreshToken` are AES-256-GCM encrypted (`SYSTEM_AES_KEY`) by the GORM hooks `BeforeCreate` and `BeforeSave`, decrypted by `AfterFind`, and both fields are `json:"-"`, so they never appear in API responses. The `client_secret` in `mcp_oauth_clients` is encrypted the same way.
 
-`internal/mcp/oauth_tokenstore.go` 提供两层 TokenStore：
+`internal/mcp/oauth_tokenstore.go` provides two TokenStore layers:
 
-- `dbTokenStore`：实现 mcp-go 的 `transport.TokenStore`，授权/刷新成功后由 mcp-go 回调 `SaveToken` 落库（缺省 `TokenType` 补 `Bearer`，`ExpiresIn` 换算成 `ExpiresAt`）。
-- `managedTokenStore`：运行时传输实际使用的包装——**`GetToken` 抹掉 `ExpiresAt`**，让 mcp-go 永远认为 token 未过期，从而禁用依赖库自身的自动刷新；刷新决策完全收归 WeKnora 的协调生命周期（否则会绕过跨实例租约，并把刷新失败折叠成笼统的 authorization-required）。
+- `dbTokenStore` implements mcp-go's `transport.TokenStore`. After authorization or refresh, mcp-go calls `SaveToken` to persist the token (a missing `TokenType` becomes `Bearer`, `ExpiresIn` is converted to `ExpiresAt`).
+- `managedTokenStore` is the wrapper the runtime transport actually uses. **`GetToken` clears `ExpiresAt`** so mcp-go always treats the token as valid and the library's own automatic refresh is disabled. Refresh decisions belong entirely to AI KB's coordinated lifecycle; otherwise the library would bypass the cross-instance lease and collapse refresh failures into a generic authorization-required error.
 
-##### Token 刷新与跨实例租约（oauth_lifecycle.go）
+##### Token refresh and the cross-instance lease (oauth_lifecycle.go)
 
-每次 MCP 操作（Connect / Initialize / ListTools / CallTool / …）都经 `client.go` 的泛型包装 `oauthCall` 执行：
+Every MCP operation (Connect, Initialize, ListTools, CallTool and so on) runs through the generic wrapper `oauthCall` in `client.go`:
 
 ```go
-// 操作前：ensureFresh(force=false) 预检；
-// 操作 401：强制 ensureFresh(force=true) 刷新一次并重试一次；
-// 其他错误不重试，避免网络歧义下重复触发工具副作用。
+// Before the operation: ensureFresh(force=false) pre-check.
+// On a 401: force ensureFresh(force=true) once and retry once.
+// Other errors are not retried, to avoid repeating tool side effects after ambiguous network failures.
 ```
 
-`oauthRuntime.ensureFresh` 的规则：
+The rules of `oauthRuntime.ensureFresh`:
 
-- 过期预判带 **30 秒 skew**（`oauthRefreshSkew`）：`ExpiresAt` 在 30 秒内到期即视为需刷新；但**无 refresh_token 的 token 用满真实有效期**，skew 不缩短其寿命。
-- 过期且无 refresh_token → 删除 token 行并返回 `OAuthReauthorizationRequiredError`（需要用户重新授权）。
-- 需要刷新时走 `refreshWithLease`：在 `mcp_oauth_tokens` 行上以 `refresh_lease_id` / `refresh_lease_until` 两列实现**数据库级刷新租约**（默认 45 秒，随 HTTP 超时上浮），`TryAcquireTokenRefreshLease` 用条件 UPDATE 抢占；抢不到的实例每 100ms 轮询，观察到 token 材料已被并发刷新者更新且未临期即直接复用——**多实例部署下同一 refresh_token 只会被消费一次**（refresh token 轮换安全）。
-- 刷新失败分级（`permanentRefreshFailure`）：`invalid_grant` / `invalid_token` / `bad_refresh_token` / `expired_token`（或 HTTP 400）→ 永久失败，删 token 要求重新授权；`invalid_client` / `unauthorized_client`（或 HTTP 401）→ 连同 `mcp_oauth_clients` 的动态注册记录一并删除（下次授权重新注册）；其他（网络抖动等）→ `OAuthRefreshTemporaryError`，**保留 token** 作为运维性失败上抛，不弹新的授权窗。
+- Expiry is predicted with a **30 second skew** (`oauthRefreshSkew`): a token whose `ExpiresAt` is within 30 seconds needs a refresh. A **token without a refresh_token keeps its full real lifetime**; the skew does not shorten it.
+- Expired with no refresh_token → the token row is deleted and `OAuthReauthorizationRequiredError` is returned (the user must authorize again).
+- When a refresh is needed, `refreshWithLease` takes a **database-level refresh lease** on the `mcp_oauth_tokens` row through the `refresh_lease_id` and `refresh_lease_until` columns (45 seconds by default, raised with the HTTP timeout). `TryAcquireTokenRefreshLease` claims it with a conditional UPDATE. Instances that lose the race poll every 100 ms and reuse the token as soon as they observe that a concurrent refresher updated it and it is not about to expire. **In a multi-instance deployment one refresh_token is consumed exactly once** (safe under refresh token rotation).
+- Refresh failures are classified (`permanentRefreshFailure`): `invalid_grant`, `invalid_token`, `bad_refresh_token`, `expired_token` (or HTTP 400) → permanent, the token is deleted and re-authorization is required; `invalid_client`, `unauthorized_client` (or HTTP 401) → the dynamic registration record in `mcp_oauth_clients` is deleted too (the next authorization registers again); anything else (network issues and the like) → `OAuthRefreshTemporaryError`, the token is **kept** and the failure is raised as operational, without a new authorization popup.
 
-`AuthorizationStatus` 把上述状态暴露为三态：`authorized`（当前可用）/ `refreshable`（已过期但有 refresh_token）/ `reauth_required`。
+`AuthorizationStatus` exposes this as three states: `authorized` (usable now), `refreshable` (expired but has a refresh_token) and `reauth_required`.
 
-##### 「服务器要求 OAuth」的引导
+##### Guidance when the server requires OAuth
 
-若服务**未**配置 OAuth，但目标 MCP server 在握手时返回携带 RFC 9728 protected-resource 元数据的 401，`client.go` 的 `asOAuthRequired` 会把它包装成 `OAuthRequiredError`；`TestMCPService`（`internal/application/service/mcp_service.go` 的 `mcpTestFailure`）据此在测试结果中置 `oauth_required: true`，UI 引导用户把认证方式切换为 OAuth，而不是展示一个裸 401。注意：**不带元数据的裸 401 不会误导向 OAuth**（可能只是 API key 错了）。
+If a service is **not** configured for OAuth but the target MCP server answers the handshake with a 401 carrying RFC 9728 protected-resource metadata, `asOAuthRequired` in `client.go` wraps it as `OAuthRequiredError`. `TestMCPService` (`mcpTestFailure` in `internal/application/service/mcp_service.go`) sets `oauth_required: true` in the test result, and the UI suggests switching the authentication method to OAuth instead of showing a bare 401. A **bare 401 without metadata does not redirect to OAuth** (the API key may simply be wrong).
 
-##### 会话内 OAuth（in-conversation OAuth）
+##### In-conversation OAuth
 
-Agent 对话中调用 OAuth MCP 工具、而当前用户尚未授权时，不会直接失败（`internal/agent/tools/mcp_oauth.go`）：
+When an agent calls an OAuth MCP tool and the current user has not authorized yet, the call does not fail outright (`internal/agent/tools/mcp_oauth.go`):
 
-1. `getOrCreateMCPClientWithOAuthRetry` 捕获 authorization-required 类错误（`isAuthorizationRequired`）；
-2. 通过 `approval.Gate.RequestOAuthAndWait` 向前端 EventBus 发出 `EventMCPOAuthRequired` 事件（含 `pending_id`、服务与工具名、超时秒数），**阻塞等待**；等待时长取 Agent 配置的 `mcp_auth_wait_timeout`（`internal/types/custom_agent.go`），未配置时用 Gate 默认超时；
-3. 用户在弹出的授权窗完成 1.6 的标准流程后，前端调用 `POST /agent/mcp-oauth-resolutions/{pending_id}`；handler（`mcp_oauth.go` 的 `ResolveMCPOAuth`）**先校验 `(tenant, principal, service)` 确实已持有 token** 才放行（否则 409），避免恢复后再次失败；用户也可 `cancel` 跳过；
-4. 放行后 `CloseClient` + 重连重试一次原调用；超时/取消则以拒绝决议返回。
-5. **非交互渠道**（IM 机器人等，ctx 带 `types.WithMCPOAuthNonInteractive` 标记）不会阻塞：`emitMCPOAuthRequiredNotice` 只发一条 `TimeoutSeconds: 0` 的通知事件，提示用户去 Web 控制台带外授权，Agent 跳过该工具继续。
+1. `getOrCreateMCPClientWithOAuthRetry` catches authorization-required errors (`isAuthorizationRequired`).
+2. `approval.Gate.RequestOAuthAndWait` publishes an `EventMCPOAuthRequired` event to the frontend EventBus (with `pending_id`, the service and tool names and the timeout in seconds) and **blocks**. The wait uses the agent's `mcp_auth_wait_timeout` (`internal/types/custom_agent.go`), or the Gate default when unset.
+3. The user completes the standard flow above in the popup, then the frontend calls `POST /agent/mcp-oauth-resolutions/{pending_id}`. The handler (`ResolveMCPOAuth` in `mcp_oauth.go`) **first verifies that `(tenant, principal, service)` really holds a token** before releasing (otherwise 409), so the resumed call does not fail again. The user can also `cancel` to skip.
+4. After release, `CloseClient` and one reconnect and retry of the original call. A timeout or cancel returns a rejection decision.
+5. **Non-interactive channels** (IM bots and the like, with `types.WithMCPOAuthNonInteractive` set on the context) do not block: `emitMCPOAuthRequiredNotice` sends one notification event with `TimeoutSeconds: 0`, asking the user to authorize out of band in the web console, and the agent skips the tool and continues.
 
-#### 工具发现与 Agent 集成（mcp_tool.go） {#_1-7-工具发现与-agent-集成-mcp-tool-go}
+#### Tool discovery and agent integration (mcp_tool.go)
 
-Agent 启动时由 `internal/application/service/agent_service.go` 按 Agent 配置挑选 MCP 服务：
+At agent startup, `internal/application/service/agent_service.go` selects MCP services by the agent's configuration:
 
-| `mcp_selection_mode` | 行为 |
+| `mcp_selection_mode` | Behavior |
 |---|---|
-| `all`（默认） | 注册租户下所有已启用的 MCP 服务（含 builtin） |
-| `selected` | 只注册 `mcp_services` 列表指定的服务 |
-| `none` | 不注册任何 MCP 工具 |
+| `all` (default) | Registers every enabled MCP service in the workspace (including builtin ones) |
+| `selected` | Registers only the services listed in `mcp_services` |
+| `none` | Registers no MCP tools |
 
-生产默认使用持久目录与按需加载。没有历史工具需要恢复时，起始只向模型提供 `discover_mcp_tools` 和已授权服务的来源摘要；取得可用的完整定义后才同时暴露对应函数与 `call_mcp_tool`。不会把所有上游 schema 一次性发送给模型。
+Production uses the persistent directory with on-demand loading by default. When there are no historical tools to restore, the model initially sees only `discover_mcp_tools` and a source summary of the authorized services. Only after a complete definition is obtained are the matching function and `call_mcp_tool` exposed. All upstream schemas are never sent to the model at once.
 
-1. `PrepareMCPTools` 预读持久快照，不为预加载建立上游连接；缺少或过时目录会显示相应状态。运行期的目录补齐仍受权限与 OAuth 主体约束。
-2. 模型通过 `list_tools` / `search` 定位，再 `describe` 获取完整工具定义与 `tool_ref`。列表摘要不能直接当作调用定义。
-3. 已 describe 的工具在下一次模型请求前发布为普通函数；新 engine 可从会话历史恢复已用工具，也可经 `call_mcp_tool` 代理调用。
-4. 执行时重新检查服务、主体、工具策略与参数 schema，再进入审批/OAuth/远端调用链。目录缓存不缓存权限决策。
+1. `PrepareMCPTools` reads the persisted snapshot without opening upstream connections for preloading; a missing or stale directory is reported as such. Runtime directory completion is still bound by permissions and the OAuth principal.
+2. The model locates tools with `list_tools` or `search`, then `describe` returns the full tool definition and a `tool_ref`. A list summary is not a callable definition.
+3. Described tools are published as ordinary functions before the next model request. A new engine can restore used tools from the session history or call them through the `call_mcp_tool` proxy.
+4. At execution time the service, principal, tool policy and argument schema are checked again before the approval, OAuth and remote call chain. The directory cache does not cache permission decisions.
 
-函数名使用服务 ID 和原始工具名的稳定哈希后缀避免清洗后的碰撞；引用绑定具体 schema，定义变化后需重新读取。Schema 校验不访问外部 URL 或文件，审批修改后的参数也会校验。服务说明与工具结果按外部数据处理，不具有覆盖用户请求或扩大权限的效力。
+Function names carry a stable hash suffix of the service ID and original tool name to avoid collisions after sanitizing. A reference is bound to a specific schema and must be read again after the definition changes. Schema validation never fetches external URLs or files, and arguments modified during approval are validated too. Service descriptions and tool results are treated as external data: they cannot override the user's request or widen permissions.
 
-Mention 只是优先选择，不改变 Agent 的 `all / selected / none` 范围。全量函数暴露保留为兼容路径，不是生产默认。
+A mention is only a preference; it does not change the agent's `all`, `selected` or `none` scope. Exposing every function at once remains available as a compatibility path, not the production default.
 
-##### 持久目录的管理 {#mcp-tool-directory}
+##### Managing the persistent directory {#mcp-tool-directory}
 
-设置页先保存连接，再编辑使用说明、同步工具。已有目录可离线查看；连接或认证修改后旧快照标为 `stale`，需要刷新才能用于运行时，刷新失败不会用不完整目录覆盖上一份快照。
+The settings page saves the connection first, then edits the usage instructions and syncs the tools. An existing directory can be viewed offline. After a connection or authentication change the old snapshot is marked `stale` and must be refreshed before the runtime uses it; a failed refresh never overwrites the previous snapshot with an incomplete directory.
 
-| 内容 | 保存位置与更新 |
+| Content | Where it is stored and how it is updated |
 | --- | --- |
-| 人工使用说明 | `mcp_services.usage_instructions`；刷新不覆盖。`description` 仅作旧版兼容 |
-| 上游说明、服务身份、完整 tools/schema | `mcp_metadata`；完整拉取成功后原子保存 |
-| 单工具启用与审批 | `mcp_tool_approvals`；独立于目录刷新 |
-| 目录隔离 | `(tenant_id, service_id, principal)`；静态认证同空间共享，OAuth 按有效授权主体隔离 |
+| Human-written usage instructions | `mcp_services.usage_instructions`; a refresh does not overwrite it. `description` is kept only for legacy compatibility |
+| Upstream description, server identity, full tools and schemas | `mcp_metadata`; saved atomically after a complete fetch |
+| Per-tool enabled and approval flags | `mcp_tool_approvals`; independent of directory refreshes |
+| Directory isolation | `(tenant_id, service_id, principal)`; static authentication shares one directory per workspace, OAuth isolates by the authorized principal |
 
-`GET /mcp-services/:id/metadata` 只读缓存，未同步时 `data:null`；`POST /mcp-services/:id/metadata/refresh` 显式连接上游同步。静态认证刷新需要 Admin 或对应管理能力，OAuth 用户可刷新自己的授权目录。接口前缀为 `/api/v1`，见[MCP API](../04-api/02-api-agent-mcp.md)。
+`GET /mcp-services/:id/metadata` reads the cache only and returns `data: null` before the first sync; `POST /mcp-services/:id/metadata/refresh` explicitly connects upstream and syncs. Refreshing a static-authentication directory requires Admin or the matching management capability; OAuth users can refresh their own authorized directory. The prefix is `/api/v1`; see [MCP API](../04-api/02-api-agent-mcp.md).
 
-运行时 `list_tools(refresh=true)` 会重新拉取上游并尝试保存当前主体快照，不只是重读数据库。刷新有超时和目录大小限制，失败保留错误状态；不能把缓存成功解释为当前上游一定可达。升级前没有完整目录的服务，需要首次同步。
+At runtime `list_tools(refresh=true)` fetches upstream again and tries to save the snapshot for the current principal, rather than re-reading the database. A refresh has a timeout and a directory size limit; on failure the error state is kept. A cached success does not mean the upstream is reachable now. Services that had no complete directory before an upgrade need a first sync.
 
-#### 工具人工审批（issue #1173） {#_1-8-工具人工审批-issue-1173}
+#### Human approval of tool calls
 
-**审批粒度**：`(tenant_id, service_id, tool_name)` 三元组，一条 `MCPToolApproval` 记录 `enabled` 与 `require_approval`，分别决定工具是否可用和调用是否需审批。工具清单本身来自 MCP `ListTools`，该表只存覆盖项（`internal/types/mcp.go` 注释）。仓储层（`internal/application/repository/mcp_tool_approval_repository.go`）用 `ON CONFLICT (tenant_id, service_id, tool_name)` 原子 Upsert；`IsRequired` 查不到记录即视为不需要审批。
+**Approval granularity**: the `(tenant_id, service_id, tool_name)` triple. One `MCPToolApproval` row records `enabled` and `require_approval`, which decide whether the tool is available and whether a call needs approval. The tool list itself comes from MCP `ListTools`; the table only stores overrides (see the comment in `internal/types/mcp.go`). The repository (`internal/application/repository/mcp_tool_approval_repository.go`) upserts atomically with `ON CONFLICT (tenant_id, service_id, tool_name)`; `IsRequired` treats a missing row as "no approval needed".
 
-**审批流程**（`internal/agent/approval/gate.go`）：
+**Approval flow** (`internal/agent/approval/gate.go`):
 
 ```mermaid
 flowchart LR
-    A["Agent 调用 MCP 工具"] --> B{"Gate.NeedsApproval？<br/>（查 mcp_tool_approvals）"}
-    B -->|"否"| E["直接执行 CallTool"]
-    B -->|"是"| C["RequestAndWait：<br/>发 tool_approval_required 事件，阻塞"]
-    C --> D{"用户在 UI 决定"}
-    D -->|"approve（可带 modified_args）"| E2["以（可能被修改的）参数执行"]
-    D -->|"reject"| F["返回失败：拒绝原因"]
-    C -->|"超时（默认 10 分钟）"| F2["返回失败：approval timeout"]
-    C -->|"请求取消"| F3["返回失败：request canceled"]
+    A["Agent calls an MCP tool"] --> B{"Gate.NeedsApproval?<br/>(reads mcp_tool_approvals)"}
+    B -->|"no"| E["Execute CallTool directly"]
+    B -->|"yes"| C["RequestAndWait:<br/>emit tool_approval_required, block"]
+    C --> D{"User decides in the UI"}
+    D -->|"approve (optionally with modified_args)"| E2["Execute with the (possibly modified) arguments"]
+    D -->|"reject"| F["Return failure: rejection reason"]
+    C -->|"timeout (default 10 minutes)"| F2["Return failure: approval timeout"]
+    C -->|"request cancelled"| F3["Return failure: request canceled"]
 ```
 
-关键实现点：
+Key implementation points:
 
-- **阻塞与恢复**：`RequestAndWait` 生成 `pending_id`，向 EventBus 发 `EventToolApprovalRequired`（含工具名、参数 JSON、超时秒数），在内存 waiter 上等待；用户通过 `POST /agent/tool-approvals/{pending_id}` 传 `decision: approve|reject` 解除。审批放行后 `mcp_tool.go` 会**从 ApprovalCtx 重新派生完整的工具执行超时**（审批可能耗尽原 60 秒预算）。
-- **参数修改**：approve 时可附 `modified_args`（必须是非 null JSON object，handler 侧显式拒绝 `"null"`），替换原始参数后执行。
-- **鉴权**：Resolve 校验 tenant 与 session 属主（`ErrTenantMismatch` / `ErrUserMismatch`，空 userID 按不匹配处理，fail-close）；重复决议返回 `ErrAlreadyResolved`。
-- **跨实例**：waiter 在发起等待的实例内存中；配置 Redis 时，落在其他副本的 Resolve 经 `weknora:mcp_approval:resolve` Pub/Sub 广播，属主实例投递决议并通过 per-pending 回复通道回 ack（3 秒窗口），使 HTTP 状态码跨实例仍准确；无 Redis 时退化为单实例（需 sticky session）。
-- **超时与失败策略**：等待超时默认 10 分钟，可由 `config.Agent.ToolApprovalTimeoutSeconds` 配置。审批检查默认 **fail-close**——查询 DB 出错时按「需要审批」处理，可设 `WEKNORA_AGENT_TOOL_APPROVAL_FAIL_OPEN=true` 恢复旧的 fail-open 行为。
+- **Blocking and resuming**: `RequestAndWait` generates a `pending_id`, publishes `EventToolApprovalRequired` to the EventBus (with the tool name, the arguments as JSON and the timeout in seconds) and waits on an in-memory waiter. The user releases it through `POST /agent/tool-approvals/{pending_id}` with `decision: approve|reject`. After approval, `mcp_tool.go` **derives a fresh full tool execution timeout from ApprovalCtx** (the approval may have used up the original 60 second budget).
+- **Argument modification**: `approve` may carry `modified_args` (a non-null JSON object; the handler explicitly rejects `"null"`), which replaces the original arguments before execution.
+- **Authorization**: Resolve checks the tenant and the session owner (`ErrTenantMismatch` and `ErrUserMismatch`; an empty userID counts as a mismatch, fail-close). A repeated decision returns `ErrAlreadyResolved`.
+- **Cross-instance**: the waiter lives in the memory of the instance that started the wait. With Redis configured, a Resolve that lands on another replica is broadcast over the `weknora:mcp_approval:resolve` Pub/Sub channel; the owning instance delivers the decision and acknowledges on a per-pending reply channel (3 second window), so the HTTP status code stays accurate across instances. Without Redis it degrades to single-instance operation (sticky sessions required).
+- **Timeout and failure policy**: the wait defaults to 10 minutes and is configurable with `config.Agent.ToolApprovalTimeoutSeconds`. The approval check is **fail-close** by default: a database error counts as "approval required". Set `AIKB_AGENT_TOOL_APPROVAL_FAIL_OPEN=true` to restore the old fail-open behavior.
 
-#### 单工具启停
+#### Disabling individual tools
 
-在 MCP 服务的工具列表中可单独禁用某个工具，同时保留该服务的其他工具。缺省记录视为 enabled=true；禁用会影响运行时工具注册，调用时也再次检查，避免已打开会话继续调用被禁用工具。
+In an MCP service's tool list you can disable one tool while keeping the service's other tools. A missing row counts as enabled=true. Disabling affects runtime tool registration and is checked again at call time, so an open session cannot keep calling a disabled tool.
 
-`PUT /mcp-services/:id/tool-approvals/:tool_name` 接受 enabled、require_approval 中至少一个，未传的字段保持原值。关闭人工审批不等于禁用工具；对应[API 参考](../04-api/02-api-agent-mcp.md)。
+`PUT /mcp-services/:id/tool-approvals/:tool_name` accepts at least one of `enabled` and `require_approval`; an omitted field keeps its value. Turning off human approval is not the same as disabling the tool. See the [API reference](../04-api/02-api-agent-mcp.md).
 
-#### 内置（builtin）MCP 服务 {#_1-9-内置-builtin-mcp-服务}
+#### Builtin MCP services
 
-`mcp_services.is_builtin` 标记（migration `migrations/versioned/000017_mcp_builtin.up.sql` 引入）表示跨空间共享的内置服务：
+The `mcp_services.is_builtin` flag (introduced by migration `migrations/versioned/000017_mcp_builtin.up.sql`) marks a built-in service shared across workspaces:
 
-- **可见性**：仓储层所有查询用 `tenant_id = ? OR is_builtin = true`（`internal/application/repository/mcp_service.go`），即 builtin 行对所有租户可见。
-- **不可变**：`UpdateMCPService` / `DeleteMCPService` / `UpdateMCPCredentials` / `ClearMCPCredential` 对 builtin 行一律拒绝（"builtin MCP services cannot be updated/deleted/have credentials modified"）。
-- **响应脱敏**：`dto.NewMCPServiceResponse` 对 builtin 服务额外剥离 `URL` / `Headers` / `EnvVars` / `StdioConfig` / `AuthConfig` 与 `Credentials` 元数据——这些字段可能暴露平台侧如何配置上游 provider，不能泄露给各租户。
+- **Visibility**: every repository query uses `tenant_id = ? OR is_builtin = true` (`internal/application/repository/mcp_service.go`), so builtin rows are visible to all tenants.
+- **Immutable**: `UpdateMCPService`, `DeleteMCPService`, `UpdateMCPCredentials` and `ClearMCPCredential` all reject builtin rows ("builtin MCP services cannot be updated/deleted/have credentials modified").
+- **Response redaction**: `dto.NewMCPServiceResponse` additionally strips `URL`, `Headers`, `EnvVars`, `StdioConfig`, `AuthConfig` and the `Credentials` metadata from builtin services. These fields could reveal how the platform configures the upstream provider and must not leak to tenants.
 
-代码中没有硬编码的 builtin MCP 预置清单（`config/` 下的 `builtin_agents.yaml` / `builtin_models.yaml.example` 均与 MCP 无关）；builtin 行由平台运营方直接在数据库中置备（`is_builtin = true`），应用层只负责按上述规则展示与保护。
+There is no hard-coded list of builtin MCP services in the code (`builtin_agents.yaml` and `builtin_models.yaml.example` under `config/` are unrelated to MCP). Builtin rows are provisioned directly in the database by the platform operator (`is_builtin = true`); the application only displays and protects them by the rules above.
 
 ---
 
-### 内置 MCP Server 参考 {#第二部分-weknora-作为-mcp-server}
+### Built-in MCP server reference
 
-#### 协议兼容
+#### Protocol compatibility
 
-内置 `/mcp/:endpoint_id` 同时支持 `2026-07-28` 与 `2025-11-25` 客户端，沿用同一个 URL、Bearer 令牌、工具白名单和知识库作用域。新版客户端通过 `server/discover` 发现能力，每个请求携带协议元数据与对应 HTTP 头；旧版客户端继续使用 `initialize`。浏览器预检允许 `Mcp-Method`、`Mcp-Name` 等协议请求头。新版发现及清单响应默认使用 `cacheScope=private`、`ttlMs=0`，不共享缓存受权限限制的目录。
+The built-in `/mcp/:endpoint_id` serves both `2026-07-28` and `2025-11-25` clients with the same URL, Bearer token, tool allowlist and knowledge base scope. New clients discover capabilities through `server/discover` and send protocol metadata and the matching HTTP headers on every request; older clients keep using `initialize`. Browser preflight allows the protocol request headers `Mcp-Method`, `Mcp-Name` and others. Discovery and listing responses default to `cacheScope=private` and `ttlMs=0`, so a permission-restricted directory is never shared from a cache.
 
-调用白名单以外的工具返回 JSON-RPC `-32602`，工具不会执行；这与旧 SDK 返回工具结果 `isError=true` 的错误形状不同。知识库越权仍由原有作用域检查拒绝。
+Calling a tool outside the allowlist returns JSON-RPC `-32602` and the tool does not run; this differs from older SDKs, which returned a tool result with `isError=true`. Knowledge base violations are still rejected by the existing scope checks.
 
-WeKnora 调用外部 MCP 服务时，由 `mcp-go v1.1.1` 按每个对端独立自动协商：先尝试新版发现，失败后尝试 legacy 初始化。忽略发现请求的旧服务最多增加约 5 秒探测等待；401/503 等探测失败也会尝试 legacy 初始化，两次失败则返回初始化错误。父请求取消或超时不会被标记为初始化成功。该协商不取决于调用 WeKnora 的客户端所用版本。
+When AI KB calls external MCP services, `mcp-go v1.1.1` negotiates per peer: it tries the new discovery first and falls back to legacy initialization. A legacy server that ignores the discovery request adds up to about 5 seconds of probing (each probe is capped at 2.5 seconds, or a quarter of the service timeout, and runs at most twice). Probe failures such as 401 or 503 also fall through to legacy initialization; when both fail, the initialization error is returned. A cancelled or timed-out parent request is never recorded as a successful initialization. This negotiation does not depend on the protocol version of the client calling AI KB.
 
-外部工具目录保留完整 JSON Schema；新版工具调用会按 schema 的 `x-mcp-header` 标注生成 `Mcp-Param-*` 请求头。目录刷新失败时不会用部分结果替换上一次完整目录的参数头定义，断开连接时清除这些定义。
+The external tool directory keeps the full JSON Schema. New-protocol tool calls generate `Mcp-Param-*` request headers from the schema's `x-mcp-header` annotations. A failed directory refresh never replaces the parameter header definitions of the last complete directory with partial results, and they are cleared on disconnect.
 
-#### 数据模型与管理 API
+#### Data model and management API
 
-`mcp_endpoints` 表（PostgreSQL 迁移 `000102_mcp_endpoints`，SQLite `000022_mcp_endpoints`）每行一个端点：`tenant_id`、`name`、`description`、`enabled`、`token_hash`（SHA-256）、`token_hint`（前缀展示用）、`knowledge_base_ids`（空数组表示空间内全部）、`tools`（白名单）、`default_agent_id`（空为内置快速问答）、`rate_limit_per_minute`（默认 60，上限 6000）、`last_used_at`。类型定义在 `internal/types/mcp_endpoint.go`，工具目录在 `internal/types/mcp_endpoint_tools.go`。
+The `mcp_endpoints` table (PostgreSQL migration `000102_mcp_endpoints`, SQLite `000022_mcp_endpoints`) holds one row per endpoint: `tenant_id`, `name`, `description`, `enabled`, `token_hash` (SHA-256), `token_hint` (a prefix for display), `knowledge_base_ids` (an empty array means every knowledge base in the workspace), `tools` (the allowlist), `default_agent_id` (empty means the built-in Quick Answer), `rate_limit_per_minute` (default 60, maximum 6000) and `last_used_at`. The type is defined in `internal/types/mcp_endpoint.go` and the tool catalog in `internal/types/mcp_endpoint_tools.go`.
 
-管理接口挂在 `/api/v1/mcp-endpoints`，读取需 Viewer，变更需 Admin，API Key 需要 `manage_channels` 能力（字段与示例见[MCP API](../04-api/02-api-agent-mcp.md#mcp-server-端点)）：
+The management API lives under `/api/v1/mcp-endpoints`. Reads need Viewer, changes need Admin, and API keys need the `manage_channels` capability (fields and examples in [MCP API](../04-api/02-api-agent-mcp.md)):
 
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/mcp-endpoints` | 列表 |
-| GET | `/mcp-endpoints/tools` | 工具目录（分组、默认勾选） |
-| POST | `/mcp-endpoints` | 创建，响应含一次性 `token` |
-| GET / PUT / DELETE | `/mcp-endpoints/:endpoint_id` | 详情 / 更新 / 删除 |
-| POST | `/mcp-endpoints/:endpoint_id/rotate-token` | 轮换令牌，响应含新 `token` |
+| GET | `/mcp-endpoints` | List |
+| GET | `/mcp-endpoints/tools` | Tool catalog (groups and default selection) |
+| POST | `/mcp-endpoints` | Create; the response contains the one-time `token` |
+| GET / PUT / DELETE | `/mcp-endpoints/:endpoint_id` | Details / update / delete |
+| POST | `/mcp-endpoints/:endpoint_id/rotate-token` | Rotate the token; the response contains the new `token` |
 
-端点令牌是一个新的凭证，因此受限 API Key 只能创建、修改或轮换不超出自身权限的端点：端点的知识库必须在 Key 的知识库白名单之内（Key 有白名单时，端点不能留空，留空表示空间内全部），端点工具所需的能力（retrieve / chat / ingest 等）也必须是 Key 已有的，否则返回 403。
+An endpoint token is a new credential, so a restricted API key can only create, modify or rotate endpoints that stay within its own permissions: the endpoint's knowledge bases must be inside the key's knowledge base allowlist (when the key has one, the endpoint cannot be left empty, because empty means every knowledge base in the workspace), and the capabilities the endpoint's tools need (retrieve, chat, ingest and so on) must already belong to the key. Otherwise the request returns 403.
 
-#### 请求链路
+#### Request path
 
 ```mermaid
 flowchart LR
-    C["MCP 客户端"] -->|"POST /mcp/:endpoint_id<br/>Authorization: Bearer mcp_…"| A["MCPEndpointAuth<br/>（internal/middleware）"]
-    A -->|"注入 tenant / principal /<br/>TenantAPIKeyScope / *MCPEndpoint"| S["mcp-go StreamableHTTPServer<br/>（internal/mcpserver）"]
-    S -->|"tools/list"| F["ToolFilter：按端点白名单过滤"]
-    S -->|"tools/call"| G["Guard：白名单 + 限流 + last_used"]
-    G --> T["工具处理器：复用 internal/agent/tools<br/>SearchKnowledge / ReadDocument / ListDocuments / Wiki…"]
-    G --> Q["ask：SessionService.AgentQA / KnowledgeQA<br/>同步收集 final_answer + references"]
+    C["MCP client"] -->|"POST /mcp/:endpoint_id<br/>Authorization: Bearer mcp_..."| A["MCPEndpointAuth<br/>(internal/middleware)"]
+    A -->|"injects tenant / principal /<br/>TenantAPIKeyScope / *MCPEndpoint"| S["mcp-go StreamableHTTPServer<br/>(internal/mcpserver)"]
+    S -->|"tools/list"| F["ToolFilter: filters by the endpoint allowlist"]
+    S -->|"tools/call"| G["Guard: allowlist + rate limit + last_used"]
+    G --> T["Tool handlers: reuse internal/agent/tools<br/>SearchKnowledge / ReadDocument / ListDocuments / Wiki..."]
+    G --> Q["ask: SessionService.AgentQA / KnowledgeQA<br/>collects final_answer + references synchronously"]
 ```
 
-- 公开路由 `/mcp/:endpoint_id` 注册在全局 Auth 中间件之前，与 embed 公开路由同级；`MCPEndpointAuth` 解析令牌后通过 `applyAuthSession` 写入租户、合成用户、`mcp_endpoint` principal，以及由端点换算出的 `TenantAPIKeyScope`（`types.MCPEndpointScope`），下游服务据此做知识库范围和能力检查。
-- 全局只有一个 `MCPServer` 实例注册完整工具目录；`WithToolFilter` 按请求上下文里的端点过滤 `tools/list`，`WithToolHandlerMiddleware` 在 `tools/call` 再校验一次白名单并做每端点滑动窗口限流（Redis 优先，本地回退）。
-- 传输使用 `WithStateLess(true)`，任意副本都能处理任意请求，客户端无需保持 `Mcp-Session-Id`。
-- `ask` 工具的会话归属为 `mcp_endpoint:<tenant>:<endpoint>`，续聊时校验 `session_id` 属于同一端点；单次回答上限 4 分钟。
-- 文档级工具（列表、阅读、写入）先用 `access.ResolveKB` 解析权限，再在知识库所属空间下执行，因此组织分享过来的知识库也能读写，且新建文档落在所有者空间。
+- The public route `/mcp/:endpoint_id` is registered before the global Auth middleware, at the same level as the public embed routes. `MCPEndpointAuth` parses the token and, through `applyAuthSession`, injects the tenant, a synthetic user, the `mcp_endpoint` principal and a `TenantAPIKeyScope` derived from the endpoint (`types.MCPEndpointScope`). Downstream services use it for knowledge base scope and capability checks.
+- There is one global `MCPServer` instance with the full tool catalog. `WithToolFilter` filters `tools/list` by the endpoint in the request context, and `WithToolHandlerMiddleware` checks the allowlist again on `tools/call` and applies a per-endpoint sliding-window rate limit (Redis first, local fallback).
+- The transport runs with `WithStateLess(true)`, so any replica can serve any request and clients do not need to keep an `Mcp-Session-Id`.
+- Sessions created by the `ask` tool are owned by `mcp_endpoint:<tenant>:<endpoint>`, and a follow-up checks that `session_id` belongs to the same endpoint. One answer is limited to 4 minutes.
+- Document-level tools (list, read, write) resolve permissions with `access.ResolveKB` first and then run in the knowledge base's own workspace, so knowledge bases shared by an organization can be read and written, and new documents land in the owner's workspace.
 
-#### 客户端配置示例
+#### Client configuration examples
 
 ```json
 {
@@ -459,13 +472,13 @@ flowchart LR
 }
 ```
 
-Claude Code：
+Claude Code:
 
 ```bash
 claude mcp add --transport http weknora-docs https://your-weknora.example.com/mcp/<endpoint_id> --header "Authorization: Bearer mcp_xxxxxxxx"
 ```
 
-仅支持 stdio 的客户端：
+Clients that only support stdio:
 
 ```json
 {
@@ -478,196 +491,196 @@ claude mcp add --transport http weknora-docs https://your-weknora.example.com/mc
 }
 ```
 
-### Python MCP Server 参考（旧版，已弃用） {#第二部分-weknora-作为-mcp-server-mcp-server}
+### Python MCP server reference (legacy, deprecated)
 
-::: warning 已弃用
-`mcp-server/` 下的 Python 服务是内置 MCP Server 之前的方案：每个进程绑定一把 API Key，只能访问一个空间，工具与 REST 接口一一对应。新部署请使用上面的内置 MCP Server；本节仅供仍在使用旧方案的用户参考，后续版本会移除该目录。
+::: warning Deprecated
+The Python service under `mcp-server/` predates the built-in MCP server: each process is bound to one API key, can reach one workspace, and maps tools one-to-one onto REST calls. New deployments use the built-in MCP server above. This section is only for users still running the old approach; a later version removes the directory.
 :::
 
 
-`mcp-server/` 是一个独立的 Python 包，PyPI 名 **`tencent-weknora-mcp`**（当前 1.1.1，Python ≥ 3.10，依赖 `mcp>=2,<3`、`requests>=2.31.0`、`starlette`、`uvicorn`），核心实现在 `mcp-server/weknora_mcp_server.py`：`WeKnoraClient` 用 `requests.Session` 携带 `X-API-Key` 调 WeKnora REST API，`MCPServer("weknora-server", version="1.1.1")` 注册工具并通过所选传输对外服务。
+`mcp-server/` is a standalone Python package, published on PyPI as **`tencent-weknora-mcp`** (currently 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/weknora_mcp_server.py`: `WeKnoraClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("weknora-server", version="1.1.1")` registers the tools and serves them over the selected transport.
 
-::: warning 包名与 API 变更（v1.1.x）
-- 官方包名是 `tencent-weknora-mcp`（由 Tencent/WeKnora 通过 Trusted Publishing 发布）；社区早期的 `weknora-mcp` 已不再使用。命令行入口仍是 `weknora-mcp-server` / `weknora-server`。
-- 实现已迁移到 mcp 2.x 的高层 API：工具是加了 `@mcp.tool()` 装饰器的普通函数，入参 JSON Schema 由类型标注自动推导，描述取自 docstring，返回值自动序列化。旧的 `handle_list_tools()` / `handle_call_tool()` 分发写法已移除——扩展工具时只需新增一个带装饰器的函数。
-- 阻塞式网络 I/O（`chat` / `agent_chat`）被投递到线程池执行，不阻塞 asyncio 事件循环。
+::: warning Package name and API changes (v1.1.x)
+- The official package name is `tencent-weknora-mcp`; the early community package `weknora-mcp` is no longer used. The command-line entry points are still `weknora-mcp-server` and `weknora-server`.
+- The implementation uses the high-level API of mcp 2.x: a tool is a plain function with the `@mcp.tool()` decorator, its parameter JSON Schema is derived from the type annotations, the description comes from the docstring, and the return value is serialized automatically. The old `handle_list_tools()` / `handle_call_tool()` dispatch is gone; adding a tool means adding one decorated function.
+- Blocking network I/O (`chat` and `agent_chat`) runs in a thread pool and does not block the asyncio event loop.
 :::
 
-#### 安装方式 {#_2-1-安装方式}
+#### Installation
 
-以下命令与 `mcp-server/setup.py`、`pyproject.toml`、`Dockerfile`、`INSTALL.md` 一致：
+The commands below match `mcp-server/setup.py`, `pyproject.toml`, `Dockerfile` and `INSTALL.md`:
 
-**源码运行**：
+**Run from source**:
 
 ```bash
 cd mcp-server
 pip install -r requirements.txt
-python main.py            # 或 python run.py / python run_server.py
+python main.py            # or python run.py / python run_server.py
 ```
 
-**从 PyPI 安装**（提供两个 console 入口 `weknora-mcp-server` 与 `weknora-server`）：
+**Install from PyPI** (two console entry points, `weknora-mcp-server` and `weknora-server`):
 
 ```bash
 pip install tencent-weknora-mcp
 weknora-mcp-server
 
-# 或者不预装，直接用 uvx 运行
+# Or run without installing, through uvx
 uvx --from tencent-weknora-mcp weknora-mcp-server
 ```
 
-**本地开发安装**：
+**Local development install**:
 
 ```bash
 cd mcp-server
-pip install -e .          # 开发模式；或 pip install .
+pip install -e .          # development mode; or pip install .
 weknora-mcp-server
 ```
 
-**Docker**（`mcp-server/Dockerfile`，基于 `python:3.11-slim`，默认以 Streamable HTTP 传输启动并暴露 8000 端口）：
+**Docker** (`mcp-server/Dockerfile`, based on `python:3.11-slim`, starts with the Streamable HTTP transport and exposes port 8000):
 
 ```dockerfile
 ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=8000
-ENV WEKNORA_BASE_URL=http://app:8080/api/v1
+ENV AIKB_BASE_URL=http://app:8080/api/v1
 EXPOSE 8000
 CMD ["weknora-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-运行容器时必须注入 `MCP_SERVER_AUTH_TOKEN`（HTTP 传输没有它会拒绝启动，见 2.3）。
+The container must receive `MCP_SERVER_AUTH_TOKEN`; without it the HTTP transport refuses to start (see "Transports and network authentication"). The Compose service `mcp` (profile `full`) publishes the container on host port `${MCP_PORT:-8082}`.
 
-三个入口脚本的分工：`main.py` 是功能最全的主入口（`--check-only` 环境检查、`--verbose`、`--transport/--host/--port`）；`run.py` 是转调 `main.sync_main` 的简化脚本；`run_server.py` 走 `weknora_mcp_server.run`（stdio 别名）。
+The three entry scripts: `main.py` is the full main entry (`--check-only` environment check, `--verbose`, `--transport/--host/--port`); `run.py` is a thin wrapper that calls `main.sync_main`; `run_server.py` goes through `weknora_mcp_server.run` (a stdio alias).
 
-::: tip stdio 传输下的诊断输出
-stdio 传输把 stdout 当作协议通道，任何多余的 `print` 都会污染协议流，客户端会直接判定「启动失败」。因此入口脚本的所有诊断信息一律写 stderr（#2371）。自行封装启动脚本时务必遵守同样的约定。
+::: tip Diagnostic output under the stdio transport
+The stdio transport uses stdout as the protocol channel. Any stray `print` corrupts the protocol stream and the client reports a failed start. All diagnostic output from the entry scripts therefore goes to stderr. Follow the same rule in your own wrapper scripts.
 :::
 
-#### 环境变量 {#_2-2-环境变量}
+#### Environment variables
 
-均以 `weknora_mcp_server.py` / `upload_paths.py` 实际读取为准：
+The source of truth is what `weknora_mcp_server.py` and `upload_paths.py` actually read:
 
-| 环境变量 | 默认值 | 说明 |
+| Variable | Default | Description |
 |---|---|---|
-| `WEKNORA_BASE_URL` | `http://localhost:8080/api/v1` | WeKnora API 基础 URL |
-| `WEKNORA_API_KEY` | 空 | 租户 API Key，以 `X-API-Key` header 发送 |
-| `WEKNORA_CHAT_TIMEOUT` | `300` | chat / agent_chat 的 SSE 读超时（秒），非法值回退 300 |
-| `WEKNORA_VERIFY_SSL` | `true` | 设为 `false` 关闭 SSL 证书校验（仅限自签名证书的开发环境） |
-| `MCP_TRANSPORT` | `stdio` | 传输方式：`stdio` / `sse` / `http`（CLI `--transport` 优先） |
-| `MCP_HOST` | `127.0.0.1` | 网络传输绑定地址 |
-| `MCP_PORT` | `8000` | 网络传输绑定端口 |
-| `MCP_SERVER_AUTH_TOKEN` | 空 | **SSE/HTTP 传输必填**的共享密钥；未配置时进程直接 `sys.exit(1)` |
-| `MCP_ALLOWED_UPLOAD_DIRS` | 空 | 逗号分隔的目录白名单，限制 `create_knowledge_from_file` 可读取的本地路径 |
+| `AIKB_BASE_URL` | `http://localhost:8080/api/v1` | Base URL of the AI KB API |
+| `AIKB_API_KEY` | empty | Workspace API key, sent as the `X-API-Key` header |
+| `AIKB_CHAT_TIMEOUT` | `300` | SSE read timeout in seconds for chat and agent_chat; an invalid value falls back to 300 |
+| `AIKB_VERIFY_SSL` | `true` | Set to `false` to disable SSL certificate verification (development with self-signed certificates only) |
+| `MCP_TRANSPORT` | `stdio` | Transport: `stdio`, `sse` or `http` (the `--transport` flag wins) |
+| `MCP_HOST` | `127.0.0.1` | Bind address for network transports |
+| `MCP_PORT` | `8000` | Bind port for network transports |
+| `MCP_SERVER_AUTH_TOKEN` | empty | Shared secret, **required for the SSE and HTTP transports**; without it the process exits with `sys.exit(1)` |
+| `MCP_ALLOWED_UPLOAD_DIRS` | empty | Comma-separated directory allowlist that limits the local paths `create_knowledge_from_file` may read |
 
-#### 传输方式与网络鉴权 {#_2-3-传输方式与网络鉴权}
+#### Transports and network authentication
 
-`main()` 支持三种传输（优先级：`--transport` CLI 参数 > `MCP_TRANSPORT` 环境变量 > 默认 stdio）：
+`main()` supports three transports (precedence: the `--transport` flag, then the `MCP_TRANSPORT` variable, then the stdio default):
 
-| 传输 | 端点 | 适用场景 |
+| Transport | Endpoint | Use |
 |---|---|---|
-| `stdio` | stdin/stdout 管道 | Claude Desktop、VS Code Copilot 等本地客户端（默认） |
-| `sse` | `http://host:port/sse`（消息回传 `/sse/messages/`） | 旧版远程 MCP 客户端 |
-| `http` | `http://host:port/mcp` | Streamable HTTP（MCP 2025-03-26 规范），默认以 `stateless_http` 运行 |
+| `stdio` | stdin/stdout pipe | Local clients such as Claude Desktop and VS Code Copilot (default) |
+| `sse` | `http://host:port/sse` (messages posted to `/sse/messages/`) | Older remote MCP clients |
+| `http` | `http://host:port/mcp` | Streamable HTTP (MCP 2025-03-26 specification), running as `stateless_http` by default |
 
-SSE 的消息回传路径由 `SSE_MESSAGE_PATH = "/sse/messages/"` 显式指定：迁移到 mcp 2.x 后默认路径与实际挂载点不一致，会让客户端初始化超时。
+The SSE message path is set explicitly with `SSE_MESSAGE_PATH = "/sse/messages/"`: after the move to mcp 2.x the default path no longer matched the mount point, which made client initialization time out.
 
-SSE 与 HTTP 传输由 `MCPAuthMiddleware`（ASGI 中间件）统一鉴权：客户端必须携带 `Authorization: Bearer <MCP_SERVER_AUTH_TOKEN>` 或 `X-MCP-Auth-Token` header，比较使用 `secrets.compare_digest` 防时序攻击，失败返回 401；`require_network_transport_auth` 确保网络传输在无 token 时根本起不来。
+The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI middleware): the client must send `Authorization: Bearer <MCP_SERVER_AUTH_TOKEN>` or the `X-MCP-Auth-Token` header. The comparison uses `secrets.compare_digest` against timing attacks and a mismatch returns 401. `require_network_transport_auth` makes sure a network transport cannot start without a token.
 
-#### 暴露的 MCP 工具清单 {#_2-4-暴露的-mcp-工具清单}
+#### Exposed MCP tools
 
-共 31 个工具，对应 `weknora_mcp_server.py` 中带 `@mcp.tool()` 装饰器的函数（参数列 `*` 表示 required；`WeKnoraClient.update_knowledge_base` 方法存在但**未注册**为工具）：
+31 tools in total, one per function decorated with `@mcp.tool()` in `weknora_mcp_server.py` (`*` marks a required parameter; the `WeKnoraClient.update_knowledge_base` method exists but is **not registered** as a tool):
 
-**租户管理**
+**Workspace management**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `create_tenant` | `name`\*, `description`\*, `business`\*, `retriever_engines` | 创建租户；未指定检索引擎时默认 postgres 的 keywords + vector 双引擎 |
-| `list_tenants` | 无 | 列出所有租户 |
+| `create_tenant` | `name`\*, `description`\*, `business`\*, `retriever_engines` | Create a workspace; without `retriever_engines` it defaults to the postgres keywords + vector pair |
+| `list_tenants` | none | List all workspaces |
 
-**知识库管理**
+**Knowledge base management**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `create_knowledge_base` | `name`\*, `description`\*, `embedding_model_id`, `summary_model_id` | 创建知识库；默认 chunking：`chunk_size` 1000、`chunk_overlap` 200、分隔符 `["."]`、开启 multimodal |
-| `list_knowledge_bases` | 无 | 列出当前租户自己的知识库 |
-| `list_shared_knowledge_bases` | 无 | 列出通过组织/共享空间授权给当前租户的知识库 |
-| `get_knowledge_base` | `kb_id`\* | 知识库详情 |
-| `delete_knowledge_base` | `kb_id`\* | 删除知识库 |
-| `hybrid_search` | `kb_id`\*, `query`\*, `vector_threshold`(0.5), `keyword_threshold`(0.3), `match_count`(5) | 向量 + 关键词混合检索；`kb_id` 支持 UUID **或名称**（`resolve_kb_id` 自动解析） |
+| `create_knowledge_base` | `name`\*, `description`\*, `embedding_model_id`, `summary_model_id` | Create a knowledge base; default chunking is `chunk_size` 1000, `chunk_overlap` 200, separators `["."]`, multimodal enabled |
+| `list_knowledge_bases` | none | List the current workspace's own knowledge bases |
+| `list_shared_knowledge_bases` | none | List knowledge bases shared with the current workspace through an organization or shared space |
+| `get_knowledge_base` | `kb_id`\* | Knowledge base details |
+| `delete_knowledge_base` | `kb_id`\* | Delete a knowledge base |
+| `hybrid_search` | `kb_id`\*, `query`\*, `vector_threshold` (0.5), `keyword_threshold` (0.3), `match_count` (5) | Vector + keyword hybrid retrieval; `kb_id` accepts a UUID **or a name** (resolved by `resolve_kb_id`) |
 
-**知识管理**
+**Knowledge management**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `create_knowledge_from_file` | `kb_id`\*, `file_path`\*, `enable_multimodel`(true), `file_name` | 从服务器本地文件导入知识；`file_name` 可写成 `docs/spec/design.pdf` 这类带目录的名称，放入知识库对应文件夹；路径经 `upload_paths.resolve_upload_file_path` 校验（见 2.6） |
-| `create_knowledge_from_url` | `kb_id`\*, `url`\*, `enable_multimodel`(true) | 从网页 URL 导入知识 |
-| `create_knowledge_from_text` | kb_id、title、content 必填；tag_ids、status | 从 Markdown 建手工知识；status 默认 publish，draft 只保存 |
-| `update_knowledge_from_text` | knowledge_id、content 必填；title、status | 更新手工 Markdown；title 空保留原标题，publish 重新索引，draft 保存草稿 |
-| `list_knowledge` | `kb_id`\*, `page`(1), `page_size`(20), `folder_path`, `folder_scope` | 分页列出知识条目；`folder_path` 按文件夹过滤（`""` 为根目录） |
-| `get_knowledge` | `knowledge_id`\* | 知识详情 |
-| `delete_knowledge` | `knowledge_id`\* | 删除知识 |
+| `create_knowledge_from_file` | `kb_id`\*, `file_path`\*, `enable_multimodel` (true), `file_name` | Import a local file from the server; `file_name` may include directories such as `docs/spec/design.pdf` to place it in the matching knowledge base folder; the path is validated by `upload_paths.resolve_upload_file_path` (see "Upload path safety") |
+| `create_knowledge_from_url` | `kb_id`\*, `url`\*, `enable_multimodel` (true) | Import a web page by URL |
+| `create_knowledge_from_text` | `kb_id`, `title`, `content` required; `tag_ids`, `status` | Create a manual Markdown entry; `status` defaults to publish, draft only saves |
+| `update_knowledge_from_text` | `knowledge_id`, `content` required; `title`, `status` | Update a manual Markdown entry; an empty title keeps the current one, publish re-indexes, draft saves a draft |
+| `list_knowledge` | `kb_id`\*, `page` (1), `page_size` (20), `folder_path`, `folder_scope` | List knowledge items with paging; `folder_path` filters by folder (`""` is the root) |
+| `get_knowledge` | `knowledge_id`\* | Knowledge item details |
+| `delete_knowledge` | `knowledge_id`\* | Delete a knowledge item |
 
-**模型管理**
+**Model management**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `create_model` | `name`\*, `type`\*, `description`\*, `source`("local"), `base_url`, `api_key`, `is_default`(false) | 创建模型配置；`type` 为 KnowledgeQA / Embedding / Rerank |
-| `list_models` | 无 | 列出所有模型 |
-| `get_model` | `model_id`\* | 模型详情 |
+| `create_model` | `name`\*, `type`\*, `description`\*, `source` ("local"), `base_url`, `api_key`, `is_default` (false) | Create a model configuration; `type` is KnowledgeQA, Embedding or Rerank |
+| `list_models` | none | List all models |
+| `get_model` | `model_id`\* | Model details |
 
-**会话管理**
+**Session management**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `create_session` | `kb_id`\*, `max_rounds`(5), `enable_rewrite`(true), `fallback_response`, `summary_model_id`, `title`, `description` | 创建绑定知识库的聊天会话（内置 `embedding_top_k` 10、`keyword_threshold` 0.5、`vector_threshold` 0.7 等策略） |
-| `get_session` | `session_id`\* | 会话详情 |
-| `list_sessions` | `page`(1), `page_size`(20) | 列出会话 |
-| `delete_session` | `session_id`\* | 删除会话 |
+| `create_session` | `kb_id`\*, `max_rounds` (5), `enable_rewrite` (true), `fallback_response`, `summary_model_id`, `title`, `description` | Create a chat session bound to a knowledge base (built-in strategy: `embedding_top_k` 10, `keyword_threshold` 0.5, `vector_threshold` 0.7 and others) |
+| `get_session` | `session_id`\* | Session details |
+| `list_sessions` | `page` (1), `page_size` (20) | List sessions |
+| `delete_session` | `session_id`\* | Delete a session |
 
-**对话**
+**Conversation**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `chat` | `session_id`\*, `query`\*, `knowledge_base_ids`, `web_search_enabled`(false) | RAG 流水线（`/knowledge-chat/{session_id}`）：检索相关分块后由 LLM 总结；消费 SSE 流并拼装为 `{answer, references}`；强烈建议传 `knowledge_base_ids`（名称或 UUID） |
-| `agent_chat` | `session_id`\*, `query`\*, `agent_id`\*, `knowledge_base_ids`, `web_search_enabled`(false) | Agent 流水线（`/agent-chat/{session_id}`）：Agent 自主调用工具；带预检——当 Agent 的 `kb_selection_mode` 为 `none` 或 `selected` 且无内置知识库、又未传 `knowledge_base_ids` 时，直接报出可用知识库清单而非后端的晦涩错误 |
-| `list_agents` | `page`(1), `page_size`(50) | 列出当前租户可用的自定义 Agent |
-| `get_agent` | `agent_id`\* | 按 UUID 或名称查看 Agent 完整配置（用于检查 `kb_selection_mode`） |
+| `chat` | `session_id`\*, `query`\*, `knowledge_base_ids`, `web_search_enabled` (false) | The RAG pipeline (`/knowledge-chat/{session_id}`): retrieves relevant chunks and lets the LLM summarize; consumes the SSE stream and assembles `{answer, references}`; passing `knowledge_base_ids` (names or UUIDs) is strongly recommended |
+| `agent_chat` | `session_id`\*, `query`\*, `agent_id`\*, `knowledge_base_ids`, `web_search_enabled` (false) | The agent pipeline (`/agent-chat/{session_id}`): the agent calls tools on its own. A pre-check reports the available knowledge bases instead of an obscure backend error when the agent's `kb_selection_mode` is `none` or `selected` without built-in knowledge bases and no `knowledge_base_ids` are passed |
+| `list_agents` | `page` (1), `page_size` (50) | List the custom agents available to the current workspace |
+| `get_agent` | `agent_id`\* | Full agent configuration by UUID or name (to check `kb_selection_mode`) |
 
-**分块管理**
+**Chunk management**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `list_chunks` | `knowledge_id`\*, `page`(1), `page_size`(20) | 列出知识条目的文本分块 |
-| `delete_chunk` | `knowledge_id`\*, `chunk_id`\* | 删除分块 |
+| `list_chunks` | `knowledge_id`\*, `page` (1), `page_size` (20) | List a knowledge item's text chunks |
+| `delete_chunk` | `knowledge_id`\*, `chunk_id`\* | Delete a chunk |
 
-**Wiki（只读）**
+**Wiki (read-only)**
 
-| 工具名 | 参数 | 说明 |
+| Tool | Parameters | Description |
 |---|---|---|
-| `wiki_search` | `kb_id`\*, `query`\*, `limit`(10) | 全文搜索 Wiki 页面（标题、slug、摘要、片段） |
-| `wiki_read_page` | `kb_id`\*, `slug`\* | 按 slug 读取整页 Markdown、元数据与出入链 |
-| `wiki_index_view` | `kb_id`\*, `limit`(50) | 按类型（entity / concept / summary 等）分组的结构化 Wiki 索引 |
+| `wiki_search` | `kb_id`\*, `query`\*, `limit` (10) | Full-text search over Wiki pages (title, slug, summary, snippet) |
+| `wiki_read_page` | `kb_id`\*, `slug`\* | Read a whole page by slug: Markdown, metadata and inbound and outbound links |
+| `wiki_index_view` | `kb_id`\*, `limit` (50) | A structured Wiki index grouped by type (entity, concept, summary and others) |
 
-便利特性：`resolve_kb_id` / `resolve_agent_id` 会把人类可读的名称（大小写不敏感）解析为 UUID，因此 `hybrid_search` / `chat` / `agent_chat` / `create_session` / `get_agent` 都同时接受名称与 UUID。名称解析会同时查自有知识库与共享知识库，共享库也能直接按名字引用；`resolve_agent_id` 允许非 UUID 形式的 Agent 标识。所有工具结果统一以格式化 JSON 的 `TextContent` 返回；异常被捕获并返回 `Error executing <name>: ...` 文本。
+Conveniences: `resolve_kb_id` and `resolve_agent_id` resolve human-readable names (case-insensitive) to UUIDs, so `hybrid_search`, `chat`, `agent_chat`, `create_session` and `get_agent` accept either a name or a UUID. Name resolution searches both own and shared knowledge bases, so shared bases can be referenced by name too; `resolve_agent_id` accepts non-UUID agent identifiers. Every tool result is returned as formatted JSON in a `TextContent`; exceptions are caught and returned as the text `Error executing <name>: ...`.
 
-#### 在 Claude Desktop 等客户端中配置 {#_2-5-在-claude-desktop-等客户端中配置}
+#### Configuring Claude Desktop and other clients
 
-stdio 传输（Claude Desktop 的 `claude_desktop_config.json`）：
+The stdio transport (`claude_desktop_config.json` in Claude Desktop):
 
 ```json
 {
   "mcpServers": {
     "weknora": {
       "command": "python",
-      "args": ["/path/to/WeKnora/mcp-server/main.py"],
+      "args": ["/path/to/ai-kb/mcp-server/main.py"],
       "env": {
-        "WEKNORA_BASE_URL": "http://localhost:8080/api/v1",
-        "WEKNORA_API_KEY": "your-weknora-api-key"
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1",
+        "AIKB_API_KEY": "your-api-key"
       }
     }
   }
 }
 ```
 
-已从 PyPI 安装时，`command` 可直接写 `weknora-mcp-server`，或者用 `uvx` 免安装运行：
+When installed from PyPI, `command` can be `weknora-mcp-server` directly, or use `uvx` without installing:
 
 ```json
 {
@@ -676,24 +689,24 @@ stdio 传输（Claude Desktop 的 `claude_desktop_config.json`）：
       "command": "uvx",
       "args": ["--from", "tencent-weknora-mcp", "weknora-mcp-server"],
       "env": {
-        "WEKNORA_BASE_URL": "http://localhost:8080/api/v1",
-        "WEKNORA_API_KEY": "your-weknora-api-key"
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1",
+        "AIKB_API_KEY": "your-api-key"
       }
     }
   }
 }
 ```
 
-远程部署（Docker / `--transport http`）时，客户端连接 `http://<host>:8000/mcp` 并携带 `Authorization: Bearer <MCP_SERVER_AUTH_TOKEN>`。
+For a remote deployment (Docker or `--transport http`), clients connect to `http://<host>:8000/mcp` with `Authorization: Bearer <MCP_SERVER_AUTH_TOKEN>`.
 
-顺带一提：WeKnora 主程序（第一部分）也可以作为 MCP 客户端接入这个 mcp-server——在「工具箱 → MCP服务」中新建 Streamable HTTP 服务指向 `/mcp` 端点，认证方式选「API Key / Token」，请求头名称填 `Authorization`，密钥值填 `Bearer <MCP_SERVER_AUTH_TOKEN>` 即可，从而让 WeKnora Agent 操作另一套 WeKnora 实例。
+The main AI KB application (the MCP client reference above) can also connect to this mcp-server: under Toolbox → MCP services, create a Streamable HTTP service pointing at the `/mcp` endpoint, choose the "API Key / Token" authentication, set the header name to `Authorization` and the secret to `Bearer <MCP_SERVER_AUTH_TOKEN>`. An AI KB agent can then operate another AI KB instance.
 
-#### 文件上传路径安全（upload_paths.py） {#_2-6-文件上传路径安全-upload-paths-py}
+#### Upload path safety (upload_paths.py)
 
-`create_knowledge_from_file` 读取的是 **MCP server 进程所在机器**的本地文件，`mcp-server/upload_paths.py` 对路径做了防护：
+`create_knowledge_from_file` reads local files **on the machine running the MCP server process**. `mcp-server/upload_paths.py` protects the path:
 
-- 拒绝空路径与含 `\x00` 的路径；`os.path.realpath` 规范化后必须是存在的普通文件；
-- 白名单目录：`MCP_ALLOWED_UPLOAD_DIRS`（逗号分隔）显式配置时以其为准；未配置时，**网络传输（sse/http）默认只允许当前工作目录**（防远程调用者任意读盘），stdio 传输默认不限制（本地客户端本就拥有该机器权限）；
-- `_path_within_root` 用 `os.path.commonpath` 做包含判断，防 `..` 与符号链接逃逸。
+- Empty paths and paths containing `\x00` are rejected; after `os.path.realpath` normalization the path must be an existing regular file.
+- Allowlisted directories: when `MCP_ALLOWED_UPLOAD_DIRS` (comma-separated) is set, it is authoritative. When unset, **network transports (sse and http) allow only the current working directory** by default (so a remote caller cannot read the disk at will), while the stdio transport is unrestricted (a local client already has that machine's permissions).
+- `_path_within_root` uses `os.path.commonpath` for the containment check, which blocks `..` and symlink escapes.
 
 ---

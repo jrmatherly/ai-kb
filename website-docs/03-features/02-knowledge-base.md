@@ -1,525 +1,527 @@
-# 知识库与知识管理
+# Knowledge bases and knowledge management
 
-知识库用于组织相关资料，并统一配置分块、向量模型、检索索引、Wiki 和知识图谱。文件、网页、手写 Markdown 和 FAQ 等内容作为知识条目管理，入库后按配置解析和建立索引。
+A knowledge base groups related material and carries one configuration for chunking, the embedding model, the retrieval indexes, Wiki and the knowledge graph. Files, web pages, hand-written Markdown and FAQ entries are managed as knowledge items; after import they are parsed and indexed according to that configuration.
 
-不同知识库可以使用独立的处理配置。提问时可限定检索范围，成员访问与组织共享也按知识库授权。
+Each knowledge base can use its own processing configuration. A question can be limited to a set of knowledge bases, and member access and organization sharing are granted per knowledge base.
 
 <Screenshot
   src="/screenshots/kb-document-list.png"
-  caption="知识库文档列表：解析状态、标签与批量操作"
-  hint="展示文档列表页，包含解析状态列、标签列、顶部筛选栏与排序按钮，以及勾选后出现的批量操作栏（含标签、移动、批量下载）。" />
+  caption="Knowledge base document list: parse status, tags and batch actions"
+  hint="The document list page with the parse status column, the tag column, the filter bar and sort button at the top, and the batch action bar (tags, move, batch download) that appears once documents are selected." />
 
-## 管理操作入口 {#_0-日常会用到的操作}
+## Where to find each operation
 
-| 操作 | 界面入口 |
+This table maps the day-to-day tasks to the place in the UI that does them.
+
+| Task | Where |
 | --- | --- |
-| 建库、改分块大小与索引开关 | 知识库编辑弹窗的「分块」「索引策略」页签 |
-| 上传文件、导入网页或编写 Markdown | 文档列表页的上传区，或「新建」下拉；上传进度在右下角的上传任务面板查看 |
-| 调整文档列表顺序 | 文档列表工具栏的「排序」：更新时间、上传/创建时间（默认最新上传在前）或文件名称 |
-| 查看解析进度或排查卡住的文档 | 文档卡片上的状态，或打开文档的解析时间线（见 [查看解析进度](#查看解析进度)） |
-| 用文件夹整理文档 | 文档列表左侧的文件夹树；上传整个目录会保留目录结构（见 [文件夹树](#_3-4-文件夹树)） |
-| 给文档打标签（一篇可多个） | 单篇在详情里改；多篇勾选后用批量操作栏的「标签」（见 [标签（KnowledgeTag）](#_3-5-标签-knowledgetag)） |
-| 检查解析结果、改错字 | 打开文档 → 分块列表 → 直接编辑分块（见 [分块编辑与版本历史](#_3-6-分块编辑与版本历史)） |
-| 补充部门、密级等自定义字段 | 文档详情里的自定义元数据（见 [模型要点](#_3-1-模型要点)） |
-| 查看操作记录 | 知识库设置 → 活动（见 [知识库活动流（KB Activity）](#_6-知识库活动流-kb-activity)） |
-| 复制知识库或跨库移动文档 | 知识库列表的复制，或文档批量操作里的移动（见 [知识库复制与知识移动](#_4-知识库复制与知识移动)） |
-| 批量下载原始文件 | 勾选文档后，批量操作栏的「批量下载」（见 [批量下载](#批量下载原始文件)） |
+| Create a knowledge base, change the chunk size or toggle indexes | The "Chunking" and "Indexing strategy" tabs of the knowledge base edit dialog |
+| Upload files, import a web page or write Markdown | The upload area of the document list, or the "New" dropdown; progress is in the upload task panel at the bottom right |
+| Change the order of the document list | "Sort" in the document list toolbar: updated time, upload/created time (newest upload first by default) or file name |
+| Check parse progress or find a stuck document | The status on the document card, or the document's parse timeline (see [Checking parse progress](#checking-parse-progress)) |
+| Organize documents into folders | The folder tree on the left of the document list; uploading a whole directory keeps its structure (see [Folder tree](#folder-tree)) |
+| Tag documents (several tags per document) | One document in its detail view; several documents through "Tags" in the batch action bar (see [Tags (KnowledgeTag)](#tags-knowledgetag)) |
+| Check parse output, fix typos | Open the document, go to the chunk list and edit the chunk in place (see [Chunk editing and version history](#chunk-editing-and-version-history)) |
+| Add custom fields such as department or classification | Custom metadata in the document detail view (see [Model essentials](#model-essentials)) |
+| Review what changed | Knowledge base settings → Activity (see [Knowledge base activity stream (KB Activity)](#knowledge-base-activity-stream-kb-activity)) |
+| Copy a knowledge base or move documents to another one | Copy in the knowledge base list, or Move in the document batch actions (see [Knowledge base copy and knowledge move](#knowledge-base-copy-and-knowledge-move)) |
+| Download original files in bulk | Select documents, then "Download selected" in the batch action bar (see [Batch download of original files](#batch-download-of-original-files)) |
 
 <Screenshot
   src="/screenshots/kb-settings.png"
-  caption="知识库设置：分块参数与索引策略开关"
-  hint="展示分块大小/重叠/父子分块设置，以及向量、关键词、Wiki、图谱四个索引开关。" />
+  caption="Knowledge base settings: chunking parameters and indexing strategy switches"
+  hint="The chunk size, overlap and parent-child settings, and the four index switches: vector, keyword, Wiki and graph." />
 
-## 创建知识库并导入资料
+## Create a knowledge base and import material
 
-创建知识库时选择内容类型、模型与索引方式，再上传文件、导入网页或编写 Markdown。普通资料使用文档库，标准问答使用 [FAQ 库](17-faq.md)。向量存储创建后不可更改，应在建库前确定。
+To start a knowledge base you choose its content type, models and indexes, then upload files, import web pages or write Markdown. Ordinary material goes in a document knowledge base; standard question-and-answer pairs go in an [FAQ knowledge base](17-faq.md). The vector store cannot be changed after creation, so settle it before you create the knowledge base.
 
-上传确认页可设置标签和本批文件的解析选项，包括是否生成文档摘要（默认开启；关闭后解析、索引及其他处理照常执行）。单次处理选项优先于知识库配置，知识库配置再优先于空间默认值。已有文档需要重新解析才能使用修改后的分块参数。
+The upload confirmation page sets tags and the parse options for that batch, including whether to generate a document summary (on by default; when off, parsing, indexing and the other steps still run). A per-upload option overrides the knowledge base configuration, which in turn overrides the workspace default. Existing documents need a reparse before changed chunking parameters apply to them.
 
-批量上传时，页面右下角的上传任务面板汇总所有文件：最多同时传输 3 个，显示已传字节、剩余时间以及可检索、处理中、失败和已存在的数量。单个文件可以取消或重试，全部上传完成后可以离开页面，解析会在后台继续。大文件的上传超时按文件大小自动延长。
+During a batch upload the upload task panel at the bottom right summarizes every file: at most 3 transfer at once, with bytes sent, remaining time, and counts of searchable, processing, failed and already-existing files. A single file can be cancelled or retried. Once every upload has finished you can leave the page; parsing continues in the background. The upload timeout for large files grows with the file size.
 
 <Screenshot
   src="/screenshots/kb-upload-tasks.png"
-  caption="上传任务面板：批量上传的整体进度与逐个文件状态"
-  hint="展示右下角浮动面板：顶部进度环与「正在上传 x/y」标题、剩余时间、可检索/处理中/失败/已存在的分段进度条，以及文件列表中的取消、重试按钮。" />
+  caption="Upload task panel: overall batch progress and per-file status"
+  hint="The floating panel at the bottom right: the progress ring and the 'Uploading x/y' title, remaining time, the segmented bar for searchable/processing/failed/existing, and the cancel and retry buttons in the file list." />
 
-### 查看解析进度
+### Checking parse progress
 
-文档列表和卡片显示每篇文档的解析状态。超过 20 分钟没有进展时，状态会变为「排队中」或「疑似卡住」：前者表示仍有任务在队列中等待，通常无需处理；后者表示已无任务推进该文档，可以打开解析时间线查看停在哪个阶段，或停止解析后重试。长时间无进展的文档会被系统自动标记为失败，错误码为 `TASK_STALLED`。
+The document list and cards show each document's parse status. After 20 minutes without progress the status becomes "Queued" or "May be stuck". Queued means a task is still waiting in the queue and usually needs no action. May be stuck means no task is advancing the document any more: open the parse timeline to see which stage it stopped at, or stop parsing and retry. Documents that make no progress for a long time are marked failed by the system with error code `TASK_STALLED`.
 
-解析时间线按阶段展示耗时与结果。失败时，顶部错误卡片说明出错的阶段和原因，并提供重试入口。
+The parse timeline shows the duration and result of each stage. On failure, the error card at the top names the failed stage and the reason and offers a retry.
 
 <Screenshot
   src="/screenshots/kb-parse-timeline.png"
-  caption="解析时间线：各阶段耗时、失败原因与卡住提示"
-  hint="展示文档解析时间线抽屉：阶段瀑布图（文档解析/分块/向量化/多模态/后处理）、失败时的错误卡片（阶段名、错误码、后端原因与重试按钮），以及「已 N 分钟没有进展」的提示条和停止解析按钮。" />
+  caption="Parse timeline: stage durations, failure reason and stuck hint"
+  hint="The document parse timeline drawer: the stage waterfall (document parsing/chunking/embedding/multimodal/post-processing), the error card on failure (stage name, error code, backend reason and retry button), the 'No progress for N minutes' banner and the stop parsing button." />
 
-## 整理文件夹与标签
+## Organize folders and tags
 
-文件夹用于按目录归档，一篇文档只属于一个文件夹。上传整个目录可保留层级结构；在文件夹树中重命名或移动时，子目录路径会一并更新，目标目录已存在时合并内容。文档在同一知识库内移动文件夹只调整归类，不重新解析。
+Folders and tags are the two ways to arrange the documents in a knowledge base. A folder files documents by directory, and a document belongs to exactly one folder. Uploading a whole directory keeps its hierarchy. Renaming or moving a folder in the tree updates the paths of its subfolders, and when the target already exists the two are merged. Moving a document between folders of the same knowledge base only changes its filing; it is not reparsed.
 
-标签用于交叉分类，一篇文档可关联多个标签。上传时可以预设标签，也可勾选文档后批量修改；批量对话框预选所选文档共有的标签。按多个标签筛选时，匹配任一标签的文档即可返回。
+Tags classify across folders, and a document can carry several. Tags can be preset at upload time or changed in bulk after selecting documents; the batch dialog preselects the tags the selected documents share. Filtering by several tags returns documents that match any of them.
 
-开启自动标签后，系统在解析完成时从已有候选标签中选择匹配项。默认每篇最多关联 3 个，已有标签时跳过。配置只影响后续解析，不自动补齐历史文档，模型失败也不会阻塞文档完成。
+With auto-tagging on, the system picks matching tags from the existing candidates when parsing completes. By default it attaches at most 3 per document and skips documents that already have tags. The setting only affects later parses, does not backfill existing documents, and a model failure does not block document completion.
 
 <Screenshot
   src="/screenshots/kb-batch-tag.png"
-  caption="批量打标签：已选文档的共有标签会被预选中"
-  hint="展示勾选多篇文档后打开的标签对话框，含已选标签区、搜索框与可选标签列表。" />
+  caption="Batch tagging: tags shared by the selected documents are preselected"
+  hint="The tag dialog opened after selecting several documents, with the selected tag area, the search box and the list of available tags." />
 
-## 编辑分块与补充元数据
+## Edit chunks and add metadata
 
-在文档详情中编辑文本分块，可修正解析错误并重建索引。每次编辑或回滚都会生成新版本；若其他用户已更新同一分块，界面会提示刷新后重试。索引更新失败时会保留编辑内容并显示失败状态，再次提交可重试。
+When parsing got something wrong, edit the text chunk in the document detail view and the index is rebuilt. Every edit or rollback creates a new version; if another user has updated the same chunk, the UI asks you to refresh and retry. When the index update fails the edited content is kept and shown with a failed status; submitting again retries.
 
-自定义元数据用于补充部门、密级或版本号等信息，最多 20 项。修改元数据会触发摘要刷新；详细的字段长度和支持类型见参考部分。
+Custom metadata adds information such as department, classification or version number, up to 20 fields. Changing metadata triggers a summary refresh; the field length limits and supported types are in the reference section.
 
 <Screenshot
   src="/screenshots/kb-chunk-edit.png"
-  caption="分块编辑：修改正文、查看版本历史与回滚"
-  hint="展示某个分块的编辑态、版本历史列表（含编辑者与时间）以及回滚入口。" />
+  caption="Chunk editing: change the text, view version history and roll back"
+  hint="A chunk in edit mode, the version history list (editor and time) and the rollback entry." />
 
-## 复制与移动内容
+## Copy and move content
 
-复制知识库可复用已有配置与内容。跨库移动时，可选择复用向量或重新解析：复用要求两库绑定同一向量存储，重新解析允许使用目标库的存储和处理配置。移动为异步任务，可查询进度。
+To reuse an existing configuration and its content, copy the knowledge base. When moving documents to another knowledge base you choose between reusing the vectors and reparsing: reuse requires both knowledge bases to be bound to the same vector store, reparse allows the target's own store and processing configuration. A move is an asynchronous task whose progress can be queried.
 
-### 批量下载原始文件
+### Batch download of original files
 
-勾选文档后点击「批量下载」，所选文件的原始文件会打包为 ZIP，并保留知识库中的文件夹结构，解压后可按文件夹重新上传。每批最多 200 个文档、原始文件合计不超过 512 MiB；网页导入等没有原始文件的条目会被跳过。「全选已加载」只包含当前已加载的文档。批量下载与单个文件下载的权限相同，需要 Contributor 及以上且对知识库有编辑权限。
+Select documents and click "Download selected": the original files are packed into a ZIP that keeps the folder structure of the knowledge base, so after unpacking they can be uploaded again folder by folder. Each batch holds at most 200 documents and 512 MiB of original files; entries without an original file, such as web page imports, are skipped. "Select all" covers only the documents already loaded. Batch download has the same permission as a single file download: Contributor or above with edit access to the knowledge base.
 
-## 查看活动与用量
+## Review activity and usage
 
-知识库设置的「活动」记录配置、文档、分块、共享和 Wiki 变更。该入口面向符合资源管理权限的登录用户，API Key 不可访问。通过 API Key 发起的操作会在操作人下方额外显示 Key 名称。
+The Activity tab in the knowledge base settings records configuration, document, chunk, sharing and Wiki changes. It is for logged-in users with resource management permission; API keys cannot open it. Operations made through an API key show the key name under the operator.
 
-通过组织共享以只读（Viewer）权限访问的知识库，界面不显示上传、编辑、删除和设置入口。
+A knowledge base shared through an organization with read-only (Viewer) permission shows no upload, edit, delete or settings entries.
 
-存储配额按工作空间计算，涵盖文件、文本、向量和索引。创建知识库与上传前会检查配额，删除内容后回收对应用量。
+The storage quota is counted per workspace and covers files, text, vectors and indexes. Creating a knowledge base and uploading check the quota first; deleting content releases its usage.
 
 <Screenshot
   src="/screenshots/kb-activity.png"
-  caption="知识库活动流：按时间倒序的操作记录"
-  hint="展示活动列表（操作人、动作、目标文档、时间）与展开后的详情抽屉。" />
+  caption="Knowledge base activity stream: operations in reverse chronological order"
+  hint="The activity list (operator, action, target document, time) and the detail drawer opened for one entry." />
 
-## 配置与接口参考
+## Configuration and API reference
 
-### 知识库模型与配置项 {#_1-知识库模型与配置项}
+### Knowledge base model and configuration
 
-#### KB 类型 {#_1-1-kb-类型}
+#### KB types
 
-`internal/types/knowledgebase.go`：
+`internal/types/knowledgebase.go`:
 
 ```go
 const (
-    KnowledgeBaseTypeDocument = "document" // 文档类
-    KnowledgeBaseTypeFAQ      = "faq"      // FAQ 类
-    KnowledgeBaseTypeWiki     = "wiki"     // Wiki 类
+    KnowledgeBaseTypeDocument = "document" // document knowledge base
+    KnowledgeBaseTypeFAQ      = "faq"      // FAQ knowledge base
+    KnowledgeBaseTypeWiki     = "wiki"     // Wiki knowledge base
 )
 ```
 
-更新 KB 时会清除与其类型不匹配的配置（如非 FAQ 库的 `FAQConfig`）。`VectorStoreID` 使用 GORM `<-:create` 标签，**创建后不可修改**（防止索引与存储错位）。
+Updating a KB clears configuration that does not match its type (for example `FAQConfig` on a non-FAQ KB). `VectorStoreID` carries the GORM `<-:create` tag and **cannot be changed after creation** (it keeps the index and the store aligned).
 
-#### 配置结构总览 {#_1-2-配置结构总览}
+#### Configuration structure overview
 
 ```mermaid
 graph TB
     KB["KnowledgeBase (id, name, type, tenant_id, creator_id)"]
-    KB --> CC["ChunkingConfig (分块)"]
-    KB --> IS["IndexingStrategy (索引管线开关)"]
+    KB --> CC["ChunkingConfig (chunking)"]
+    KB --> IS["IndexingStrategy (index pipeline switches)"]
     KB --> EMB["EmbeddingModelID / SummaryModelID"]
-    KB --> VLM["VLMConfig (视觉模型)"]
-    KB --> ASR["ASRConfig (语音识别)"]
-    KB --> IMG["ImageProcessingConfig (图片理解)"]
-    IMG --> ICP["ImageAttrsEnabled + ImageActions (属性观察 + 条件 OCR)"]
-    KB --> EXT["ExtractConfig (知识图谱)"]
-    KB --> FAQ["FAQConfig (仅 faq 类型)"]
-    KB --> QG["QuestionGenerationConfig (问题生成)"]
-    KB --> WIKI["WikiConfig (wiki_enabled 打开时)"]
-    KB --> ST["StorageProviderConfig / StorageBackendID / StorageConfig(遗留)"]
-    KB --> VS["VectorStoreID (创建后不可改)"]
-    CC --> PCR["ParserEngineRules (按文件类型选解析引擎)"]
-    CC --> PC["父子分块 (parent_chunk_size / child_chunk_size)"]
+    KB --> VLM["VLMConfig (vision model)"]
+    KB --> ASR["ASRConfig (speech recognition)"]
+    KB --> IMG["ImageProcessingConfig (image understanding)"]
+    IMG --> ICP["ImageAttrsEnabled + ImageActions (attribute observation + conditional OCR)"]
+    KB --> EXT["ExtractConfig (knowledge graph)"]
+    KB --> FAQ["FAQConfig (faq type only)"]
+    KB --> QG["QuestionGenerationConfig (question generation)"]
+    KB --> WIKI["WikiConfig (when wiki_enabled is on)"]
+    KB --> ST["StorageProviderConfig / StorageBackendID / StorageConfig (legacy)"]
+    KB --> VS["VectorStoreID (fixed after creation)"]
+    CC --> PCR["ParserEngineRules (parser engine per file type)"]
+    CC --> PC["Parent-child chunks (parent_chunk_size / child_chunk_size)"]
     EXT --> GN["GraphNode / GraphRelation"]
-    IS --> V["vector (默认 true)"]
-    IS --> KW["keyword / BM25 (默认 true)"]
-    IS --> WK["wiki (默认 false)"]
-    IS --> GR["graph (默认 false)"]
+    IS --> V["vector (default true)"]
+    IS --> KW["keyword / BM25 (default true)"]
+    IS --> WK["wiki (default false)"]
+    IS --> GR["graph (default false)"]
 ```
 
-#### ChunkingConfig（分块配置） {#_1-3-chunkingconfig-分块配置}
+#### ChunkingConfig (chunking)
 
-| 字段 | 类型 | 默认 | 说明 |
+| Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `chunk_size` | int | 必填 | 分块大小（字符数） |
-| `chunk_overlap` | int | - | 相邻分块重叠 |
-| `separators` | []string | - | 分隔符列表 |
-| `parser_engine_rules` | []ParserEngineRule | - | 按文件类型指定解析引擎：`{file_types, engine, xlsx_first_row_as_header?}` |
-| `enable_parent_child` | bool | false | 启用父子分块策略 |
-| `parent_chunk_size` | int | 4096 | 父分块大小（用于返回上下文） |
-| `child_chunk_size` | int | 384 | 子分块大小（用于嵌入检索） |
-| `strategy` | string | 空（= `legacy`） | 分块策略：`legacy`（历史递归切分）/ `auto`（画像器自动选层）/ `heading` / `heuristic` / `recursive`（固定某一层），详见[分块机制](04-chunking.md) |
-| `token_limit` | int | 0 | 令牌上限（0 = 不限） |
-| `languages` | []string | 自动检测 | 语言提示 |
-| `table_metadata_instructions` | string | - | 表格元数据生成指令 |
+| `chunk_size` | int | required | Chunk size in characters |
+| `chunk_overlap` | int | - | Overlap between adjacent chunks |
+| `separators` | []string | - | Separator list |
+| `parser_engine_rules` | []ParserEngineRule | - | Parser engine per file type: `{file_types, engine, xlsx_first_row_as_header?}` |
+| `enable_parent_child` | bool | false | Enable the parent-child chunking strategy |
+| `parent_chunk_size` | int | 4096 | Parent chunk size (returned as context) |
+| `child_chunk_size` | int | 384 | Child chunk size (embedded for retrieval) |
+| `strategy` | string | empty (= `legacy`) | Chunking strategy: `legacy` (the historical recursive splitter) / `auto` (a profiler picks the tier) / `heading` / `heuristic` / `recursive` (one fixed tier), see [Chunking](04-chunking.md) |
+| `token_limit` | int | 0 | Token limit (0 = none) |
+| `languages` | []string | auto-detected | Language hint |
+| `table_metadata_instructions` | string | - | Instructions for table metadata generation |
 
-#### IndexingStrategy（索引管线开关） {#_1-4-indexingstrategy-索引管线开关}
+#### IndexingStrategy (index pipeline switches)
 
-| 字段 | 默认 | 说明 |
+| Field | Default | Description |
 | --- | --- | --- |
-| `vector_enabled` | true | 语义向量检索 |
-| `keyword_enabled` | true | 关键词（BM25）检索 |
-| `wiki_enabled` | false | Wiki 页面生成 |
-| `graph_enabled` | false | 知识图谱提取 |
+| `vector_enabled` | true | Semantic vector retrieval |
+| `keyword_enabled` | true | Keyword (BM25) retrieval |
+| `wiki_enabled` | false | Wiki page generation |
+| `graph_enabled` | false | Knowledge graph extraction |
 
-#### 多模态与富化配置 {#_1-5-多模态与富化配置}
+#### Multimodal and enrichment configuration
 
-**VLMConfig（视觉语言模型）**：
+**VLMConfig (vision language model)**:
 
-| 字段 | 说明 |
+| Field | Description |
 | --- | --- |
-| `enabled` / `model_id` | 新版：启用开关 + 模型 ID |
-| `description_language` | 图片描述语言（空 = 跟随文档语言） |
-| `custom_instructions` | KB 级图片解释指导 |
-| `model_name` / `base_url` / `api_key` / `interface_type` | 旧版兼容字段（ollama / openai） |
+| `enabled` / `model_id` | Current form: enable switch plus model ID |
+| `description_language` | Language of image descriptions (empty = follow the document language) |
+| `custom_instructions` | KB-level guidance for interpreting images |
+| `model_name` / `base_url` / `api_key` / `interface_type` | Legacy compatibility fields (ollama / openai) |
 
-启用判定：`Enabled && ModelID != ""`，或旧版 `ModelName != "" && BaseURL != ""`。
+Enabled when `Enabled && ModelID != ""`, or in the legacy form when `ModelName != "" && BaseURL != ""`.
 
-**ASRConfig**：`enabled` / `model_id` / `language`（语言提示，可选）。
+**ASRConfig**: `enabled` / `model_id` / `language` (optional language hint).
 
-**ImageProcessingConfig（图片属性观察、条件 OCR 与图片向量）**：
+**ImageProcessingConfig (image attribute observation, conditional OCR and image vectors)**:
 
-| 字段 | 类型 | 默认 | 说明 |
+| Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `model_id` | string | - | 图片理解使用的 VLM 模型 ID（参与模型用量追踪） |
-| `image_attrs_enabled` | bool | false | 图片属性观察管线开关。关闭（默认）＝历史行为：每张图片各发一次描述请求、各发一次 OCR 请求，不做属性观察；开启后第一轮「属性观察＋描述」，再由代码纯函数按观察结果决定该图是否值得再跑一轮 OCR |
-| `image_actions` | object | 见下 | OCR 触发条件：`{ ocr: { on: ImageAttrCondition[], on_unobserved: bool } }`。`on` 为「属性=值」触发条件列表；`on_unobserved` 为属性未被模型观察时的保守兜底（默认 true＝仍 OCR） |
-| `image_vector_enabled` | bool | false | 图片向量开关。开启且知识库的向量模型能处理图片（模型「图片输入」能力）时，生成图片描述之后再用向量模型直接对图片编码、存一条图片向量，检索时一并召回；见下文「图片向量」 |
+| `model_id` | string | - | VLM model ID used for image understanding (counted in model usage tracking) |
+| `image_attrs_enabled` | bool | false | Switch for the attribute observation pipeline. Off (default) is the historical behavior: one description request and one OCR request per image, no attribute observation. On: a first round of "observation plus description", then a pure function in code decides from the observed attributes whether the image deserves an OCR round |
+| `image_actions` | object | see below | OCR trigger conditions: `{ ocr: { on: ImageAttrCondition[], on_unobserved: bool } }`. `on` is a list of "attribute = value" conditions; `on_unobserved` is the conservative fallback when the model did not observe an attribute (default true = still OCR) |
+| `image_vector_enabled` | bool | false | Image vector switch. When on and the knowledge base's embedding model can take images (the model's "image input" capability), the image is encoded directly by the embedding model after its description is generated and stored as one image vector, which retrieval recalls alongside text; see "Image vectors" below |
 
-开启 `image_attrs_enabled` 后，模型**不再对图片分类**，只逐项「观察」属性并产出描述。本期激活两个观察项（完整注册表见 `GET /api/v1/image-attrs/schema`，只读、需 Viewer 权限；该注册表是全局的，不随知识库变化）：
+With `image_attrs_enabled` on, the model **no longer classifies images**. It "observes" each attribute and produces a description. Two observations are active in this release (the full registry is `GET /api/v1/image-attrs/schema`, read-only, Viewer permission; the registry is global and does not vary per knowledge base):
 
-| 属性 | 取值 | 含义 |
+| Attribute | Values | Meaning |
 | --- | --- | --- |
-| `contain.text` | `none` / `sparse` / `block` | 图内成段文字的密集程度。`block`＝值得 OCR 的正文 |
-| `contain.data_visual` | `true` / `false` | 是否含图表 / 数据可视化（轴标签等也可能含文字） |
+| `contain.text` | `none` / `sparse` / `block` | How much running text the image contains. `block` = body text worth an OCR pass |
+| `contain.data_visual` | `true` / `false` | Whether the image contains a chart or data visualization (axis labels and the like may also contain text) |
 
-OCR 决策是代码纯函数 `DecideOCR`（`internal/application/service/image_attr_decision.go`），不落库：
+The OCR decision is the pure function `DecideOCR` (`internal/application/service/image_attr_decision.go`) and is not persisted:
 
-- 满足 `contain.text == block` **或** `contain.data_visual == true` → 跑 OCR；
-- 策略读取到的属性**缺键**（模型漏答该行，或答了非法取值）→ 按 `on_unobserved` 兜底（默认仍 OCR）；
-- 全部属性都被观察到、且都不命中 → 跳过 OCR。
+- `contain.text == block` **or** `contain.data_visual == true` → run OCR;
+- an attribute the policy reads is **missing** (the model skipped that line or answered an invalid value) → apply `on_unobserved` (default: still OCR);
+- every attribute observed and none matched → skip OCR.
 
-模型答非所问 / 属性缺失一律按兜底策略处理，观察失误只多花一次调用、不会丢内容。注意**属性缺键是正常结果**：观察失败时不会写入保守默认值（schema 版本 `attrs/2`），因此 `image_attrs` 可能为空对象，读取方需区分「未观察到」与「观察到了负值」。
+An off-topic answer or a missing attribute always falls back to the policy, so an observation mistake costs one extra call and never loses content. Note that **a missing attribute is a normal result**: a failed observation does not write a conservative default (schema version `attrs/2`), so `image_attrs` can be an empty object, and readers must distinguish "not observed" from "observed as negative".
 
-管线与观察结果记录在每张图的处理轨迹子 span 上，便于核对与排查：input `pipeline` = `observation_driven`（本开关开启）或 `caption_ocr`（关闭，历史行为）；output `attr_policy`（本轮 OCR 决策）、`image_attrs`（观察到的属性）、`ocr_skipped`（`attr_policy`＝被策略跳过 / `disabled`＝OCR 总开关关闭）、`observation_failed`（未形成有效观察）、`chunks_created`。
+The pipeline and the observation result are recorded on each image's processing trace sub-span for checking and troubleshooting: input `pipeline` = `observation_driven` (switch on) or `caption_ocr` (off, the historical behavior); output `attr_policy` (this round's OCR decision), `image_attrs` (the observed attributes), `ocr_skipped` (`attr_policy` = skipped by the policy / `disabled` = the OCR master switch is off), `observation_failed` (no valid observation formed), `chunks_created`.
 
-OCR 会在入库前拒绝空响应、只有分隔符的内容，以及占据输出主体的长串重复内容；正常短标签、数字和表格仍可保留。OpenAI 兼容 VLM 返回 `finish_reason=length` 时，非空的截断输出也按失败处理。普通图片提示词按可见文字转录，截图中的按钮和标签逐行输出，仅真实表格使用 Markdown 表格；扫描 PDF 使用专用文档布局提示词。
+Before storing, OCR rejects an empty response, content that is only separators, and long repeated runs that make up the bulk of the output; ordinary short labels, numbers and tables are kept. When an OpenAI-compatible VLM returns `finish_reason=length`, the truncated output is treated as a failure even when non-empty. The ordinary image prompt transcribes visible text, buttons and labels in screenshots line by line, and uses Markdown tables only for real tables; scanned PDFs use a dedicated document layout prompt.
 
-每次执行 OCR 都有独立的 `multimodal.image[i].ocr` 处理子 span；Langfuse 中对应 `image.ocr`，包含模型调用和输出校验。失败时记录 `ocr_status=failed`、`ocr_error_code`（`OCR_INVALID_OUTPUT` / `OCR_TRUNCATED` / `OCR_REQUEST_FAILED`）和错误原因，不创建或索引该次 OCR 分块。正常的图片描述仍可保留，整张图的 output 用 `outcome=partial_failure` 表明部分失败，不因无效 OCR 重试整个图片任务。明确回答没有文字时记为 `ocr_status=no_text`，与异常区分；正常提取记为 `succeeded`。已有异常分块不会被自动清除，需要重新解析相应文档。
+Every OCR run has its own `multimodal.image[i].ocr` processing sub-span; in Langfuse it is `image.ocr` and includes the model call and output validation. On failure it records `ocr_status=failed`, `ocr_error_code` (`OCR_INVALID_OUTPUT` / `OCR_TRUNCATED` / `OCR_REQUEST_FAILED`) and the reason, and the OCR chunk is neither created nor indexed. A normal image description is still kept; the image's output marks the partial failure with `outcome=partial_failure`, and the whole image task is not retried because of invalid OCR. An explicit "no text" answer is recorded as `ocr_status=no_text`, distinct from an error; a normal extraction is `succeeded`. Existing bad chunks are not cleaned up automatically; reparse the documents concerned.
 
-可通过 `WEKNORA_OCR_TEST_FIXTURE` 指定本地 JSON 文件（`{"model": <模型配置>, "image_paths": [<本地图片路径>]}`），运行 `go test ./internal/application/service -run '^TestLiveImageOCRValidation$' -v -count=1` 验证实际模型。私有端点需配置 `SSRF_WHITELIST`。该测试使用内存分块仓库，不写业务数据库；带凭证的配置和原图应放在版本控制之外。
+To verify a real model, point `AIKB_OCR_TEST_FIXTURE` at a local JSON file (`{"model": <model config>, "image_paths": [<local image paths>]}`) and run `go test ./internal/application/service -run '^TestLiveImageOCRValidation$' -v -count=1`. A private endpoint needs `SSRF_WHITELIST`. The test uses an in-memory chunk repository and does not write to the business database; keep configurations with credentials and the source images out of version control.
 
-单次上传 / 重新解析可在请求体的 `process_config`（`KnowledgeProcessOverrides`）里按文档覆盖 `image_attrs_enabled` 与 `image_actions`；未传的项沿用知识库设置。`image_actions` 按 action key 合并（`on` 整体替换）。接口字段见[知识库 API](../04-api/02-api-knowledge.md)，管线细节见[文档解析](03-document-parsing.md)。
+A single upload or reparse can override `image_attrs_enabled` and `image_actions` per document in the request body's `process_config` (`KnowledgeProcessOverrides`); items not sent inherit the knowledge base setting. `image_actions` merges per action key (`on` is replaced as a whole). The API fields are in [Knowledge base API](../04-api/02-api-knowledge.md); the pipeline details are in [Document parsing](03-document-parsing.md).
 
-**图片向量（`image_vector_enabled`）**：默认关闭，升级后已有知识库也保持关闭（库里存的配置没有这个键，读出来就是 false），需要在知识库设置「图像处理配置 → 图片向量检索」里（开启多模态后出现）或通过 API 显式开启。只有**开关打开且向量模型能处理图片**时才生效，两者缺一则入库不生成图片向量、检索也不召回图片向量。之所以不随模型能力自动开启：能处理图片的向量模型常常只是被用来编码文本，自动开启会给这些知识库凭空增加每张图片一次的向量调用，并改变检索行为——开启后文档向量检索的候选池放大 1.5 倍，图片命中按 `min(VectorThreshold, 0.1)` 的单独阈值过滤。
+**Image vectors (`image_vector_enabled`)**: off by default, and existing knowledge bases stay off after an upgrade (the stored configuration has no such key, so it reads as false). Turn it on in the knowledge base settings under "Image processing → Image vector retrieval" (shown once multimodal is on) or explicitly through the API. It takes effect only when **the switch is on and the embedding model can take images**; with either missing, import generates no image vectors and retrieval recalls none. It does not follow the model capability automatically because an image-capable embedding model is often used only to encode text; turning it on by itself would add one embedding call per image to those knowledge bases and change retrieval behavior. With it on, the candidate pool of document vector retrieval grows by 1.5x and image hits are filtered by a separate threshold of `min(VectorThreshold, 0.2)`.
 
-- 图片向量在多模态任务里生成，所以还需要开启多模态（VLM）：图片向量的 `Content` 复用图片描述（没有描述时用 OCR 文本）；扫描件 PDF 页不生成；
-- 开关只影响此后入库或重新解析的文档；已有文档要补图片向量需重新解析；
-- 开关关闭时，已有的图片向量（关闭前生成的，或文档从开启了图片向量的知识库**移动**过来时随文档带来的）连同其分块会保留，但检索时一律丢弃，不再召回；删除或重新解析文档、删除知识库时随文档一起清除；重新开启开关后，这些保留的图片向量恢复召回。**复制**文档到未开启的知识库则不会复制图片向量；
-- 多知识库联合检索时按知识库各自的开关判断，未开启的知识库不召回图片向量；
-- 检索引擎无法按来源类型过滤，不召回的图片行（未开启知识库的图片向量命中，以及关键词检索命中的任何图片行）只能在结果返回后丢弃。为免它们占满候选池、把文本挤出去，文档向量池或关键词池打满且含这类图片行时，会把 TopK 翻倍重新检索，直到凑够不需丢弃的候选（文本命中，以及开启了图片向量的知识库的图片命中）、索引耗尽或到达 500 条候选上限（以默认的 50 条池计，每个池最多多 4 次查询）。因此含图片行的 store 组可能多出几次检索查询；排在文本前面的图片行超过约 500 条时，文本命中仍可能被漏掉。补检失败或只部分返回时保留上一轮的完整结果。
+- Image vectors are generated in the multimodal task, so multimodal (VLM) must be on too. The image vector's `Content` reuses the image description (the OCR text when there is no description); scanned PDF pages get none;
+- The switch affects only documents imported or reparsed afterwards; reparse existing documents to add image vectors;
+- With the switch off, existing image vectors (generated before it was turned off, or brought along when a document was **moved** from a knowledge base with image vectors on) are kept with their chunks but dropped at retrieval time. They are removed with the document on delete or reparse and when the knowledge base is deleted. Turning the switch back on restores recall of the kept vectors. **Copying** a document into a knowledge base with the switch off does not copy its image vectors;
+- In multi-knowledge-base retrieval each knowledge base is judged by its own switch; a knowledge base with it off recalls no image vectors;
+- The retrieval engine cannot filter by source type, so image rows that must not be recalled (image vector hits from knowledge bases with the switch off, and any image row hit by keyword retrieval) can only be dropped after the results return. To keep them from filling the candidate pool and crowding out text, when the document vector pool or the keyword pool is full and contains such rows, TopK is doubled and the query rerun until enough candidates that need no dropping are collected (text hits, and image hits from knowledge bases with the switch on), the index is exhausted, or the 500-candidate cap is reached (with the default pool of 50, at most 4 extra queries per pool). A store group with image rows may therefore run a few extra retrieval queries, and when more than about 500 image rows rank above the text, text hits can still be missed. If a re-query fails or returns partially, the previous full result is kept.
 
-**QuestionGenerationConfig（问题生成）**：`enabled`；`question_count` 每分块生成问题数（默认 3，上限 10）；`custom_instructions` 目标受众 / 风格说明。
+**QuestionGenerationConfig (question generation)**: `enabled`; `question_count`, the number of questions generated per chunk (default 3, capped at 10); `custom_instructions`, target audience and style notes.
 
-**ExtractConfig（知识图谱）**：`enabled`、`text`、`tags`、`nodes []*GraphNode{name, chunks, attributes}`、`relations []*GraphRelation{node1, node2, type}`、`custom_instructions`（领域提取指导）。
+**ExtractConfig (knowledge graph)**: `enabled`, `text`, `tags`, `nodes []*GraphNode{name, chunks, attributes}`, `relations []*GraphRelation{node1, node2, type}`, `custom_instructions` (domain extraction guidance).
 
-**FAQConfig（仅 FAQ 库）**：`index_mode`（`question_only` / `question_answer`，默认后者）、`question_index_mode`（`combined` / `separate`，默认 combined），详见 FAQ 篇。
+**FAQConfig (FAQ knowledge bases only)**: `index_mode` (`question_only` / `question_answer`, default the latter), `question_index_mode` (`combined` / `separate`, default combined); see the FAQ page.
 
-**WikiConfig（打开 `indexing_strategy.wiki_enabled` 的知识库）**——注意它不是 `type = "wiki"` 专属：普通文档库打开 Wiki 索引后，`UpdateKnowledgeBase` 会自动给它建一份空的 `WikiConfig` 承载这些可调项：
+**WikiConfig (knowledge bases with `indexing_strategy.wiki_enabled` on)**. It is not exclusive to `type = "wiki"`: when an ordinary document knowledge base turns on the Wiki index, `UpdateKnowledgeBase` creates an empty `WikiConfig` for it to hold these settings:
 
-| 字段 | 默认 | 说明 |
+| Field | Default | Description |
 | --- | --- | --- |
-| `synthesis_model_id` | - | Wiki 生成 LLM |
-| `max_pages_per_ingest` | 0（不限） | 单次摄入最多创建/更新页面数 |
-| `extraction_granularity` | `standard` | `focused`（仅主要主题）/ `standard` / `exhaustive`（全部实体概念） |
-| `content_instructions` / `extraction_instructions` | - | 生成与提取风格指导 |
-| `ingest_batch_size` / `ingest_map_parallel` / `ingest_reduce_parallel` / `ingest_max_inflight` | 5 / 10 / 10 / 4 | 摄入并发参数 |
+| `synthesis_model_id` | - | LLM for Wiki generation |
+| `max_pages_per_ingest` | 0 (unlimited) | Maximum pages created or updated per ingest |
+| `extraction_granularity` | `standard` | `focused` (main topics only) / `standard` / `exhaustive` (every entity and concept) |
+| `content_instructions` / `extraction_instructions` | - | Style guidance for generation and extraction |
+| `ingest_batch_size` / `ingest_map_parallel` / `ingest_reduce_parallel` / `ingest_max_inflight` | 5 / 10 / 10 / 4 | Ingest concurrency parameters |
 
-所有 `custom_instructions` 类字段在更新时经 `validateKnowledgeBasePromptInstructions` 校验长度与合法性（`internal/handler/knowledgebase.go`）。
+Every `custom_instructions`-style field is checked for length and validity on update by `validateKnowledgeBasePromptInstructions` (`internal/handler/knowledgebase.go`).
 
-#### 存储配置 {#_1-6-存储配置}
+#### Storage configuration
 
-- **StorageProviderConfig**（新）：`provider ∈ {local, minio, cos, tos, s3, oss, ks3, obs}`；
-- **StorageBackendID**：绑定具体存储后端实例；
-- **StorageConfig**（遗留 `cos_config` 列）：`secret_id / secret_key / region / bucket_name / app_id / path_prefix / provider / endpoint / use_ssl / force_path_style`。
+- **StorageProviderConfig** (current): `provider ∈ {local, minio, cos, tos, s3, oss, ks3, obs}`;
+- **StorageBackendID**: binds a specific storage backend instance;
+- **StorageConfig** (legacy `cos_config` column): `secret_id / secret_key / region / bucket_name / app_id / path_prefix / provider / endpoint / use_ssl / force_path_style`.
 
-#### KB 计算字段 {#_1-7-kb-计算字段}
+#### KB computed fields
 
-列表 / 详情响应附带：`knowledge_count`（不含删除中的文档，与文档列表一致）、`chunk_count`、`is_processing`（FAQ 库）、`processing_count`（文档库处理中知识数）、`share_count`（共享到的组织数）、`creator_name`、`is_pinned` / `pinned_at`（当前用户置顶状态）。
+List and detail responses carry: `knowledge_count` (excludes documents being deleted, consistent with the document list), `chunk_count`, `is_processing` (FAQ knowledge bases), `processing_count` (documents being processed in a document knowledge base), `share_count` (organizations shared to), `creator_name`, `is_pinned` / `pinned_at` (the current user's pin state).
 
-另有一个存储字段 `is_temporary`：标记**临时（ephemeral）知识库**，正常的知识库列表里不展示。它由系统内部使用，典型场景是联网搜索把抓回来的网页缓存成可检索内容。手工建库不会产生临时库。
+There is also a stored field `is_temporary`. It marks an **ephemeral knowledge base** that the normal knowledge base list does not show. It is used internally, typically when web search caches fetched pages as retrievable content. Knowledge bases created by hand are never temporary.
 
-#### 自动标签
+#### Auto-tagging
 
-在文档知识库的标签相关设置中开启自动标签，先准备好候选标签，再选择聊天模型。解析完成后，系统异步从已有标签里挑选匹配项，不创建新标签。`auto_tag_config` 仅适用于 document 类型：
+Turn on auto-tagging in the tag settings of a document knowledge base: prepare the candidate tags first, then pick a chat model. After parsing completes, the system asynchronously picks matching tags from the existing ones and never creates new tags. `auto_tag_config` applies to the document type only:
 
-| 字段 | 默认 | 说明 |
+| Field | Default | Description |
 | --- | --- | --- |
-| enabled | false | 开启自动标签 |
-| model_id | 空 | 为空使用知识库 summary_model_id |
-| max_tags | 3 | 每篇最多自动关联的数量，上限 10 |
-| skip_if_tagged | true | 已有标签时跳过，包括人工或数据源添加的标签；false 则增量追加 |
+| enabled | false | Turn auto-tagging on |
+| model_id | empty | Empty uses the knowledge base `summary_model_id` |
+| max_tags | 3 | Maximum tags attached automatically per document, capped at 10 |
+| skip_if_tagged | true | Skip documents that already have tags, including tags added by hand or by a data source; false appends |
 
-配置仅对之后新解析或重新解析的文档生效，不自动回填历史文档。模型失败不阻塞文档完成，异步任务按队列策略重试。候选标签取知识库排序前 500 个；自动关联不删除人工标签。数据源按来源名称添加标签是另一条机制。
+The setting applies only to documents parsed or reparsed afterwards and does not backfill existing documents. A model failure does not block document completion; the asynchronous task retries under the queue policy. Candidates are the first 500 tags in the knowledge base's sort order; automatic tagging never removes tags added by hand. Data sources adding a tag named after the source is a separate mechanism.
 
-#### AI 生成知识库描述
+#### AI-generated knowledge base description
 
-知识库有两段描述：`description` 是用户手写的"这个库是干什么用的"，`generated_profile` 是系统从文档画像推导出的"这个库里实际有什么"。两者互不覆盖，智能体在运行时上下文里同时读取，用来判断一个问题该在哪个绑定知识库里检索。
+A knowledge base has two descriptions: `description` is the hand-written "what this knowledge base is for", and `generated_profile` is the system's "what is actually in it", derived from the document profiles. Neither overwrites the other. Agents read both in their runtime context to decide which bound knowledge base a question should search.
 
-生成分三层，只有最后一层调用模型：
+Generation has three layers, and only the last calls a model:
 
-1. **文档画像**：文档摘要任务在生成短摘要的同时输出结构化画像（`knowledges.profile`）：一句话 gist、3 到 5 个主题词、文档类型、一个典型问题。它随文档一起存在、随文档删除而消失。
-2. **知识库聚合**：纯数据库统计——文档数、文件类型、标签计数、主题词计数（大小写与标点归一）、文档类型计数、按主题轮询抽样的典型问题、均匀抽样的标题，并对输入算一个哈希。删除、移动、重新解析都不需要特殊处理，重算即精确。
-3. **描述文案**：把聚合（一两千 token，与文档数无关）交给模型，得到 gist、合并后的主题列表和 3 到 5 个典型问题。聚合哈希没变就跳过模型调用。
+1. **Document profile**: the document summary task emits a structured profile (`knowledges.profile`) alongside the short summary: a one-line gist, 3 to 5 topic terms, the document type and one typical question. It lives with the document and disappears when the document is deleted.
+2. **Knowledge base aggregation**: pure database statistics: document count, file types, tag counts, topic term counts (normalized for case and punctuation), document type counts, typical questions sampled round-robin by topic, evenly sampled titles, and a hash of the input. Deletes, moves and reparses need no special handling; recomputing is exact.
+3. **Description text**: the aggregation (one or two thousand tokens, independent of document count) goes to the model, which returns the gist, the merged topic list and 3 to 5 typical questions. When the aggregation hash is unchanged the model call is skipped.
 
-`profile_config` 仅适用于 document 类型：
+`profile_config` applies to the document type only:
 
-| 字段 | 默认 | 说明 |
+| Field | Default | Description |
 | --- | --- | --- |
-| enabled | false | 文档新增/删除/摘要更新后自动刷新（30 秒防抖，同一窗口只跑一次） |
-| model_id | 空 | 为空使用知识库 summary_model_id |
-| custom_instructions | 空 | 追加到系统提示词的补充要求，如面向读者、需保留的术语 |
+| enabled | false | Refresh automatically after a document is added, deleted or its summary updated (30-second debounce, one run per window) |
+| model_id | empty | Empty uses the knowledge base `summary_model_id` |
+| custom_instructions | empty | Extra requirements appended to the system prompt, such as the intended readers or terms to keep |
 
-无论是否开启自动刷新，知识库设置页都可以点击"生成 AI 描述"立即生成一次，并可一键把 gist 采纳为手写描述。`generated_profile.status` 为 `ready`/`empty`（无已解析文档，不调模型）/`failed`（保留上一次文案并记录错误）。关闭了文档摘要的上传只贡献标题、类型和标签，不贡献主题词。
+Whether or not automatic refresh is on, the knowledge base settings page can run "Generate AI description" once on demand and adopt the gist as the hand-written description with one click. `generated_profile.status` is `ready`, `empty` (no parsed documents, no model call) or `failed` (the previous text is kept and the error recorded). Uploads with the document summary turned off contribute only title, type and tags, not topic terms.
 
-### 知识（Knowledge）管理 {#_3-知识-knowledge-管理}
+### Knowledge management
 
-#### 模型要点 {#_3-1-模型要点}
+#### Model essentials
 
-`internal/types/knowledge.go`。关键字段：`type`（`manual` 手动 Markdown / `faq` / 文件类型）、`source` / `channel`（摄入渠道）、`parse_status`、`summary_status`、`enable_status`、`file_name/type/size/hash/path`、`storage_size`、`metadata`（JSON，手动知识存 `ManualKnowledgeMetadata{content, format, status(draft/publish), version}`）、`custom_metadata`（JSON，用户自填元数据）、`last_faq_import_result`。
+`internal/types/knowledge.go`. Key fields: `type` (`manual` hand-written Markdown / `faq` / a file type), `source` / `channel` (ingest channel), `parse_status`, `summary_status`, `enable_status`, `file_name/type/size/hash/path`, `storage_size`, `metadata` (JSON; manual knowledge stores `ManualKnowledgeMetadata{content, format, status(draft/publish), version}`), `custom_metadata` (JSON, user-maintained metadata), `last_faq_import_result`.
 
-`custom_metadata` 保存用户维护的部门、密级、版本号等描述性字段；`metadata` 保存处理流程的内部状态与 ID。自定义元数据最多 20 项，键为 1–64 字符，值支持字符串、数字、布尔值或 null，长度不超过 1000 字符。修改后会自动刷新摘要。
+`custom_metadata` holds descriptive fields the user maintains, such as department, classification or version number; `metadata` holds the processing pipeline's internal state and IDs. Custom metadata allows at most 20 fields; a key is 1 to 64 characters and a value is a string, number, boolean or null of at most 1000 characters. Changing it refreshes the summary automatically.
 
-实现中，`Knowledge.CustomMetadataText()` 按键排序生成 `键: 值` 文本，供摘要生成和文档级模型上下文使用。字段由迁移 `000078` 引入。
+In the implementation, `Knowledge.CustomMetadataText()` renders `key: value` text sorted by key for summary generation and document-level model context. The field was introduced by migration `000078`.
 
-摄入渠道常量：`web`、`api`、`browser_extension`、`wechat`、`wecom`、`feishu`、`feishu_drive`、`lark_drive`、`dingtalk`、`slack`、`im`、`notion`、`confluence`、`yuque`、`rss`、`ima`。
+Ingest channel constants: `web`, `api`, `browser_extension`, `wechat`, `wecom`, `feishu`, `feishu_drive`, `lark_drive`, `dingtalk`, `slack`, `im`, `notion`, `confluence`, `yuque`, `rss`, `ima`, `seafile`.
 
-解析状态机：
+Parse state machine:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: 创建知识入队
-    pending --> processing: Worker 领取 (DocReader 解析 / 分块 / 嵌入)
-    processing --> finalizing: 主解析完成, 富化子任务进行中 (pending_subtasks_count > 0)
-    processing --> completed: 无富化子任务
-    processing --> failed: 解析失败或巡检判定卡住
-    processing --> cancelled: 用户取消
-    finalizing --> completed: 最后一个子任务结束 (计数原子递减到 0)
-    finalizing --> failed: 巡检判定卡住
-    completed --> deleting: 删除中 (阻止异步任务冲突)
-    failed --> deleting: 删除
-    deleting --> failed: 删除任务丢失, 巡检恢复
-    completed --> pending: reparse 重新解析
-    failed --> pending: reparse 重新解析
+    [*] --> pending: knowledge created and enqueued
+    pending --> processing: worker picks it up (DocReader parsing / chunking / embedding)
+    processing --> finalizing: main parse done, enrichment subtasks running (pending_subtasks_count > 0)
+    processing --> completed: no enrichment subtasks
+    processing --> failed: parse failed or housekeeping judged it stalled
+    processing --> cancelled: cancelled by the user
+    finalizing --> completed: last subtask finished (counter atomically reaches 0)
+    finalizing --> failed: housekeeping judged it stalled
+    completed --> deleting: deletion in progress (blocks async task conflicts)
+    failed --> deleting: deletion
+    deleting --> failed: delete task lost, housekeeping recovers
+    completed --> pending: reparse
+    failed --> pending: reparse
 ```
 
 A failed enrichment subtask (summary, question generation, graph, Wiki) does not move the document to `failed`; the document reaches `completed` once every subtask has finished. Documents stuck in `pending`, `processing`, `finalizing` or `deleting` are reclaimed by the background housekeeping sweep, see [the async task system](../02-architecture/05-async-tasks.md#last-resort-the-housekeeping-sweep).
 
-摘要独立状态：`summary_status ∈ {none, pending, processing, completed, failed}`。
+The summary has its own status: `summary_status ∈ {none, pending, processing, completed, failed}`.
 
-#### 知识路由 {#_3-2-知识路由}
+#### Knowledge routes
 
-| 方法 | 路径 | 说明 | 门禁 |
+| Method | Path | Description | Gate |
 | --- | --- | --- | --- |
-| POST | `/knowledge-bases/:id/knowledge/file` | 上传文件 | OwnedKBOrAdmin + KBAccessWrite |
-| POST | `/knowledge-bases/:id/knowledge/url` | URL 导入 | 同上 |
-| POST | `/knowledge-bases/:id/knowledge/manual` | 手动 Markdown 知识 | 同上 |
-| GET | `/knowledge-bases/:id/knowledge` | 列表（分页 + 过滤 + 排序） | Viewer+ + KBAccessRead |
-| POST | `/knowledge-bases/:id/knowledge/batch-download` | 批量下载原始文件（ZIP） | Contributor+ + KBAccessWrite |
-| GET / PUT | `/knowledge-bases/:id/knowledge/folders` | 文件夹树 / 重命名或移动文件夹 | Viewer+ + KBAccessRead / OwnedKBOrAdmin + KBAccessWrite |
-| DELETE | `/knowledge-bases/:id/knowledge` | 清空 KB 内容 | Admin + KBAccessWrite |
-| GET | `/knowledge/:id`、`/knowledge/batch` | 详情 / 批量获取 | Viewer+ |
-| GET | `/knowledge/:id/stages`、`/knowledge/:id/spans` | 处理阶段 / 跨度 | Viewer+ |
-| PUT / DELETE | `/knowledge/:id`、`/knowledge/manual/:id` | 更新（含 `custom_metadata`）/ 删除 | OwnedKnowledgeKBOrAdmin + KBAccessWrite |
-| POST | `/knowledge/:id/reparse`、`/knowledge/:id/cancel-parse` | 重解析 / 取消解析 | 同上 |
-| POST | `/knowledge/:id/regenerate-summary` | 重新生成文档摘要 | 同上 |
-| GET | `/knowledge/:id/download` | 下载原始文件 | Contributor+ + KBAccessWrite |
-| GET | `/knowledge/:id/preview` | 预览文件 | Viewer+ + KBAccessRead |
-| PUT | `/knowledge/tags` | 批量更新标签 | Contributor+ / `ingest` |
-| POST | `/knowledge/batch-reparse`、`/knowledge/batch-delete` | 批量重解析 / 删除 | Contributor+ / `ingest` |
-| POST | `/knowledge/folder` | 把文档归入文件夹 | Contributor+ / `ingest` |
-| POST | `/knowledge/move` | 移动知识 | Contributor+ / `ingest` |
-| GET | `/knowledge/move/progress/:task_id` | 移动进度 | Viewer+ |
+| POST | `/knowledge-bases/:id/knowledge/file` | Upload a file | OwnedKBOrAdmin + KBAccessWrite |
+| POST | `/knowledge-bases/:id/knowledge/url` | Import a URL | same |
+| POST | `/knowledge-bases/:id/knowledge/manual` | Hand-written Markdown knowledge | same |
+| GET | `/knowledge-bases/:id/knowledge` | List (pagination + filters + sort) | Viewer+ + KBAccessRead |
+| POST | `/knowledge-bases/:id/knowledge/batch-download` | Batch download of original files (ZIP) | Contributor+ + KBAccessWrite |
+| GET / PUT | `/knowledge-bases/:id/knowledge/folders` | Folder tree / rename or move a folder | Viewer+ + KBAccessRead / OwnedKBOrAdmin + KBAccessWrite |
+| DELETE | `/knowledge-bases/:id/knowledge` | Clear the KB's content | Admin + KBAccessWrite |
+| GET | `/knowledge/:id`, `/knowledge/batch` | Detail / batch get | Viewer+ |
+| GET | `/knowledge/:id/stages`, `/knowledge/:id/spans` | Processing stages / spans | Viewer+ |
+| PUT / DELETE | `/knowledge/:id`, `/knowledge/manual/:id` | Update (including `custom_metadata`) / delete | OwnedKnowledgeKBOrAdmin + KBAccessWrite |
+| POST | `/knowledge/:id/reparse`, `/knowledge/:id/cancel-parse` | Reparse / cancel parsing | same |
+| POST | `/knowledge/:id/regenerate-summary` | Regenerate the document summary | same |
+| GET | `/knowledge/:id/download` | Download the original file | Contributor+ + KBAccessWrite |
+| GET | `/knowledge/:id/preview` | Preview the file | Viewer+ + KBAccessRead |
+| PUT | `/knowledge/tags` | Batch update tags | Contributor+ / `ingest` |
+| POST | `/knowledge/batch-reparse`, `/knowledge/batch-delete` | Batch reparse / delete | Contributor+ / `ingest` |
+| POST | `/knowledge/folder` | File documents into a folder | Contributor+ / `ingest` |
+| POST | `/knowledge/move` | Move knowledge | Contributor+ / `ingest` |
+| GET | `/knowledge/move/progress/:task_id` | Move progress | Viewer+ |
 
-#### 列表过滤参数 {#_3-3-列表过滤参数}
+#### List filter parameters
 
-`internal/types/knowledge.go` 的 `KnowledgeListFilter` + `internal/handler/knowledge.go`：
+`KnowledgeListFilter` in `internal/types/knowledge.go` plus `internal/handler/knowledge.go`:
 
-| 参数 | 说明 |
+| Parameter | Description |
 | --- | --- |
-| `page` / `page_size` | 分页（默认 1 / 20） |
-| `sort_by` / `sort_order` | 排序：`updated_at` / `created_at` / `file_name`，`asc` / `desc`；默认 `created_at desc` |
-| `keyword` | 按文件名 / 标题搜索 |
-| `file_type` | 文件类型过滤（`pdf` / `manual` / `url` …） |
-| `parse_status` | 解析状态过滤 |
-| `source` | 摄入渠道过滤（`api` / `web` / `feishu` …） |
-| `tag_ids` | 标签过滤，逗号分隔多个（**OR 语义**） |
-| `start_time` / `end_time` | 更新时间范围（RFC3339） |
-| `folder_path` | 按文件夹筛选。**是否传这个参数决定列表模式**：不传是全库扁平视图，传空字符串是知识库根目录（不含子目录） |
-| `folder_recursive` | 配合 `folder_path` 使用，为 `true` 时连子目录里的文档一起返回 |
+| `page` / `page_size` | Pagination (default 1 / 20) |
+| `sort_by` / `sort_order` | Sort: `updated_at` / `created_at` / `file_name`, `asc` / `desc`; default `created_at desc` |
+| `keyword` | Search by file name / title |
+| `file_type` | Filter by file type (`pdf` / `manual` / `url` ...) |
+| `parse_status` | Filter by parse status |
+| `source` | Filter by ingest channel (`api` / `web` / `feishu` ...) |
+| `tag_ids` | Filter by tags, comma-separated (**OR semantics**) |
+| `start_time` / `end_time` | Updated time range (RFC3339) |
+| `folder_path` | Filter by folder. **Whether the parameter is present decides the list mode**: absent is the flat view of the whole KB, an empty string is the KB root (without subfolders) |
+| `folder_recursive` | With `folder_path`; `true` also returns documents in subfolders |
 
-#### 文件夹树 {#_3-4-文件夹树}
+#### Folder tree
 
-文件夹用于按项目、来源或目录层级组织文档，支持上传时保留目录结构，以及入库后的重命名和移动。
+Folders organize documents by project, source or directory hierarchy. The structure is kept at upload time and can be renamed and moved afterwards.
 
-文件夹操作：
+Folder operations:
 
-- **上传整个目录**：目录结构会被原样保留，不需要事后手工建文件夹；
-- **新建 / 重命名 / 移动文件夹**：文档列表左侧的文件夹树上操作。重命名会连子目录一起改路径；目标路径已存在时两个文件夹合并；不允许把文件夹移到自己的子目录下；
-- **重新归类文档**：勾选文档后移动到指定文件夹（也可以移回根目录）。这只改归类，不重新解析、不影响索引；
-- **按目录浏览**：列表接口的 `folder_path` 决定视图模式——不传是全库平铺，传空字符串是根目录（不含子目录），配 `folder_recursive=true` 则连子目录一起列。
+- **Upload a whole directory**: the directory structure is kept as is, with no need to create folders afterwards;
+- **Create / rename / move a folder**: done in the folder tree on the left of the document list. Renaming changes the paths of the subfolders too; when the target path exists the two folders are merged; a folder cannot be moved into its own subtree;
+- **Refile documents**: select documents and move them to a folder (or back to the root). This only changes the filing, with no reparse and no effect on the index;
+- **Browse by directory**: the list API's `folder_path` decides the view mode: absent is the flat view of the whole KB, an empty string is the root (without subfolders), and `folder_recursive=true` includes subfolders.
 
-文件夹与标签解决的是不同问题，可以叠加使用：**文件夹是唯一归属**（一篇文档只在一个目录下，适合按项目/来源归档），**标签是多对多**（一篇文档可带多个标签，适合按主题、密级、状态交叉筛选）。检索时两者都能作为范围限定条件。
+Folders and tags solve different problems and combine: **a folder is a single home** (a document sits in one directory, good for filing by project or source), **tags are many-to-many** (a document carries several, good for cross-cutting filters by topic, classification or state). Both can scope retrieval.
 
-目录路径保存在 `knowledges.folder_path`，`file_name` 仅保存文件名。迁移 `000079` 已从历史文件名中回填目录路径。
+The directory path is stored in `knowledges.folder_path`; `file_name` holds only the file name. Migration `000079` backfilled directory paths from historical file names.
 
-文件夹接口为 `GET/PUT /knowledge-bases/:id/knowledge/folders` 与 `POST /knowledge/folder`，详见[知识库 API](../04-api/02-api-knowledge.md)。
+The folder endpoints are `GET/PUT /knowledge-bases/:id/knowledge/folders` and `POST /knowledge/folder`; see [Knowledge base API](../04-api/02-api-knowledge.md).
 
-#### 标签（KnowledgeTag） {#_3-5-标签-knowledgetag}
+#### Tags (KnowledgeTag)
 
-`internal/types/tag.go` + `internal/handler/tag.go`：
+`internal/types/tag.go` plus `internal/handler/tag.go`:
 
 ```go
 type KnowledgeTag struct {
     ID              string // UUID
-    SeqID           int64  // 自增整数 ID（API 使用）
+    SeqID           int64  // auto-increment integer ID (used by the API)
     TenantID        uint64
     KnowledgeBaseID string
-    Name            string // KB 内唯一
+    Name            string // unique within the KB
     Color           string
     SortOrder       int
 }
-type KnowledgeTagRelation struct { KnowledgeID, TagID string } // 多对多
+type KnowledgeTagRelation struct { KnowledgeID, TagID string } // many-to-many
 ```
 
-**一篇文档可以带多个标签。** 早期是单标签（`knowledges.tag_id` 一列），migration `000063` 换成了关联表 `knowledge_tag_relations`：建表时把原有的单标签数据迁进去，然后**删掉了 `knowledges.tag_id` 列**。所以现在：
+**A document can carry several tags.** Early versions had a single tag (the `knowledges.tag_id` column); migration `000063` replaced it with the relation table `knowledge_tag_relations`: it migrated the existing single tags into the new table and then **dropped the `knowledges.tag_id` column**. So today:
 
-- 读：`Knowledge.Tags` 是查询时按 `knowledge_id` 批量 JOIN 出来的（`gorm:"-"`，不落在 knowledges 表上）；
-- 写：整体替换语义——`PUT /knowledge/tags` 传 `{knowledge_id: [tag_ids]}`，实现先删该文档的全部关联再写入新集合；
-- 过滤：`tag_ids` 是 **OR 语义**（命中任一标签即返回），SQL 走 `knowledges.id IN (SELECT knowledge_id FROM knowledge_tag_relations WHERE tag_id IN (...))`；
-- FAQ 条目是另一套：它本身是 chunk，标签存在 `chunks.tag_id` 上（**单标签**），与文档的多标签关联表不是同一条路径。
+- Read: `Knowledge.Tags` is batch-joined by `knowledge_id` at query time (`gorm:"-"`, not stored on the knowledges table);
+- Write: whole-set replacement. `PUT /knowledge/tags` takes `{knowledge_id: [tag_ids]}`; the implementation deletes all of the document's relations and writes the new set;
+- Filter: `tag_ids` has **OR semantics** (any matching tag returns the document); the SQL is `knowledges.id IN (SELECT knowledge_id FROM knowledge_tag_relations WHERE tag_id IN (...))`;
+- FAQ entries are a separate path: an entry is a chunk and its tag lives in `chunks.tag_id` (**single tag**), not in the document relation table.
 
-标签本身的管理路由：`GET /knowledge-bases/:id/tags`（Viewer+）、`POST`（OwnedKBOrAdmin）、`PUT/DELETE /knowledge-bases/:id/tags/:tag_id`（OwnedKBOrAdmin）；`tag_id` 路径参数同时接受 UUID 与整数 `seq_id`。
+Tag management routes: `GET /knowledge-bases/:id/tags` (Viewer+), `POST` (OwnedKBOrAdmin), `PUT/DELETE /knowledge-bases/:id/tags/:tag_id` (OwnedKBOrAdmin); the `tag_id` path parameter accepts either the UUID or the integer `seq_id`.
 
-前端两个入口：
+Two entry points in the frontend (`frontend/src/views/knowledge/components/`):
 
-- **批量打标签**：文档列表勾选若干文档后，批量操作栏的「标签」按钮打开 `BatchTagDialog.vue`。对话框会把所选文档**共有**的标签预选中，支持搜索、直接跳转标签管理，提交后刷新列表；
-- **上传时设置标签**：上传确认对话框（`UploadConfirmDialog.vue`）可在文件入库前直接指定标签与解析选项，省去先传后改。
+- **Batch tagging**: select documents in the list, then the "Tags" button in the batch action bar opens `BatchTagDialog.vue`. The dialog preselects the tags **shared** by the selected documents, supports search and a direct jump to tag management, and refreshes the list after submit;
+- **Tags at upload**: the upload confirmation dialog (`UploadConfirmDialog.vue`) sets tags and parse options before the files are imported, so there is no need to upload first and tag afterwards.
 
-#### 分块编辑与版本历史 {#_3-6-分块编辑与版本历史}
+#### Chunk editing and version history
 
-在文档详情中可以编辑分块正文，修正 OCR、表格或公式的解析错误。保存后会重建索引，并保留历史版本供查看和回滚。
+In the document detail view you can edit a chunk's text to fix OCR, table or formula parsing errors. Saving rebuilds the index and keeps the previous versions for viewing and rollback.
 
-实现上（`internal/application/service/chunk.go`，migration `000078`）：
+Implementation (`internal/application/service/chunk.go`, migration `000078`):
 
-数据模型：
+Data model:
 
-| 字段 / 表 | 作用 |
+| Field / table | Role |
 | --- | --- |
-| `chunks.source_content` | 解析器原始输出，**不可变**。新建分块时不写入，首次手工编辑时从 `content` 惰性回填 |
-| `chunks.content` | 当前生效内容（检索、引用展示都用它） |
-| `chunks.content_revision` | 每次编辑或回滚 +1，用作乐观锁 |
-| `chunks.index_status` | `ready` / `processing` / `failed`，标识当前内容是否已反映到检索存储 |
-| `chunks.last_editor_id` | 产生当前版本的操作者 |
-| `chunk_revisions` 表 | 被覆盖的历史版本快照（内容、启停、编辑者、来源、时间） |
+| `chunks.source_content` | The parser's original output, **immutable**. Not written when the chunk is created; lazily backfilled from `content` on the first manual edit |
+| `chunks.content` | The current content (retrieval and citation display use it) |
+| `chunks.content_revision` | +1 on every edit or rollback; used as the optimistic lock |
+| `chunks.index_status` | `ready` / `processing` / `failed`: whether the current content is reflected in the retrieval store |
+| `chunks.last_editor_id` | The operator who produced the current version |
+| `chunk_revisions` table | Snapshots of overwritten versions (content, enabled state, editor, source, time) |
 
-行为要点：
+Behavior:
 
-- **只有 `text` 类型分块可编辑**；内容去空白后不能为空，上限 200000 字节；
-- **乐观并发**：请求可带 `expected_revision`，与当前版本不符返回 409，前端提示刷新后重试；
-- **不能新增图片**：编辑内容中出现源内容里没有的图片 URL 会被拒绝；删除某张图片的 Markdown 引用时，对应的 OCR / caption 子分块被**停用**而非硬删除，这样回滚历史版本可以把它们重新启用；
-- **父子分块一致性**：编辑子块后按偏移量把改动叠加回父块（父块的 `source_content` 保持不可变，替换按倒序应用，长度变化不会打乱坐标系）；
-- **索引失败处理**：重建索引失败时行照常保存，但 `index_status = failed`，界面据此提示；再次提交相同内容会触发重试；
-- **保留生成问题**：内容编辑后原有的检索问题保留，只是被标记为「与当前正文版本不匹配」，可以单条改写（`PUT /chunks/by-id/:id/questions`）或整体重新生成（`POST /chunks/by-id/:id/questions/regenerate`）；
-- **摘要联动**：内容或启停状态变化会入队一次文档摘要刷新，`summary_status` 转为 `pending`；也可以用 `POST /knowledge/:id/regenerate-summary` 手动触发。
+- **Only `text` chunks are editable**; the content must not be empty after trimming, and the limit is 200000 bytes;
+- **Optimistic concurrency**: the request may carry `expected_revision`; a mismatch with the current version returns 409 and the frontend asks the user to refresh and retry;
+- **No new images**: an image URL in the edited content that is absent from the source content is rejected; removing an image's Markdown reference **disables** its OCR / caption sub-chunks rather than hard-deleting them, so rolling back to an earlier version re-enables them;
+- **Parent-child consistency**: after a child chunk is edited the change is applied back to the parent by offset (the parent's `source_content` stays immutable, replacements are applied in reverse order, and length changes do not shift the coordinates);
+- **Index failure handling**: when the index rebuild fails the row is still saved but `index_status = failed`, which the UI shows; submitting the same content again retries;
+- **Generated questions kept**: after a content edit the existing retrieval questions are kept but marked "does not match the current text version"; rewrite one (`PUT /chunks/by-id/:id/questions`) or regenerate all (`POST /chunks/by-id/:id/questions/regenerate`);
+- **Summary coupling**: a change of content or enabled state enqueues one document summary refresh and `summary_status` becomes `pending`; `POST /knowledge/:id/regenerate-summary` triggers it by hand.
 
-回滚（`POST /chunks/:knowledge_id/:id/revert`）本身也是一次新编辑：目标历史版本的内容被写为当前内容，版本号继续递增，原内容进入历史列表，因此「回滚的回滚」同样可行。
+A rollback (`POST /chunks/:knowledge_id/:id/revert`) is itself a new edit: the target version's content is written as the current content, the revision number keeps increasing, and the previous content joins the history, so a "rollback of a rollback" works too.
 
-接口清单见 [API 参考：分块与标签](../04-api/02-api-chunks.md)。
+The endpoints are listed in [API reference: chunks and tags](../04-api/02-api-chunks.md).
 
-#### 手工编辑摘要与分块浏览
+#### Editing the summary by hand and browsing chunks
 
-在文档内容预览中可编辑摘要并保存，用于修正自动摘要。`PUT /knowledge/:id` 的 description 省略时保持原摘要，显式空字符串清空；更新摘要不会等同于修改原始文档内容。需要重新生成时使用「重新生成摘要」，内容/元数据变化也可能触发摘要刷新。
+The summary can be edited and saved in the document content preview to correct an automatic summary. In `PUT /knowledge/:id`, omitting `description` keeps the summary and an explicit empty string clears it; updating the summary is not the same as changing the original document content. Use "Regenerate summary" to generate it again; content or metadata changes may also trigger a summary refresh.
 
-文档分块按页加载，切换文档和检索跳转会更新分页状态。完整字段见[知识 API](../04-api/02-api-knowledge.md)与[分块 API](../04-api/02-api-chunks.md)。
+Document chunks load page by page; switching documents and jumping from a search result update the pagination state. The full fields are in [Knowledge API](../04-api/02-api-knowledge.md) and [Chunk API](../04-api/02-api-chunks.md).
 
-#### 下载与预览安全 {#_3-7-下载与预览安全}
+#### Download and preview security
 
-`GET /knowledge/:id/preview` 的安全机制由 `internal/handler/knowledge_preview_security_test.go` 固化验证：
+The safeguards of `GET /knowledge/:id/preview` are pinned by `internal/handler/knowledge_preview_security_test.go`:
 
-| 控制 | 实现 | 目的 |
+| Control | Implementation | Purpose |
 | --- | --- | --- |
-| 按扩展名设置 `Content-Type` | PDF、图片、文本等按类型内联预览；HTML、SVG、XML、JS、CSS 等可被浏览器执行的类型强制为 `application/octet-stream` | 阻止浏览器把上传内容当页面执行（防存储型 XSS） |
-| `X-Content-Type-Options: nosniff` | 响应头 | 禁止 MIME 嗅探绕过 |
-| `Content-Disposition` | 可执行类型为 `attachment`，其余为 `inline` | 危险类型只能下载，不能内联渲染 |
-| 路径校验 | `ValidateKBScopedStoragePath()` | 文件路径必须落在该 KB 的授权存储范围内（防路径穿越 / 越权读取） |
-| 大小限制 | GetFile 响应体限制 | 防止超大文件拖垮预览 |
+| `Content-Type` by extension | PDF, images, text and the like preview inline by type; HTML, SVG, XML, JS, CSS and other browser-executable types are forced to `application/octet-stream` | Keeps the browser from executing uploaded content as a page (stored XSS) |
+| `X-Content-Type-Options: nosniff` | Response header | Prevents MIME sniffing bypasses |
+| `Content-Disposition` | `attachment` for executable types, `inline` otherwise | Dangerous types can only be downloaded, never rendered inline |
+| Path validation | `ValidateKBScopedStoragePath()` | The file path must fall inside the KB's authorized storage scope (prevents path traversal and reads across KBs) |
+| Size limit | Limit on the GetFile response body | Keeps a huge file from overwhelming the preview |
 
-测试用例明确验证：HTML 文件即使内容是 `<script>alert(1)</script>`，也只会作为二进制附件传输。下载端点（`/knowledge/:id/download` 与批量下载 `/knowledge-bases/:id/knowledge/batch-download`）要求更高的 Contributor+ 且走 KBAccessWrite 门禁。
+The test cases assert that an HTML file whose content is `<script>alert(1)</script>` is transferred only as a binary attachment. The download endpoints (`/knowledge/:id/download` and the batch download `/knowledge-bases/:id/knowledge/batch-download`) require the higher Contributor+ role and go through the KBAccessWrite gate.
 
-预览返回的是原始文件本身，通过只读共享（组织共享的 viewer、经共享智能体可见）访问时同样可以预览。「只有 Editor 及以上才能下载」是产品上的便利性限制，不是访问控制边界：能读到一个 KB 的人，就能拿到其中的原文件。
+Preview returns the original file itself, and read-only access (an organization-shared viewer, or visibility through a shared agent) can preview too. "Only Editor and above can download" is a product convenience, not an access control boundary: anyone who can read a KB can obtain its original files.
 
-### 知识库复制与知识移动 {#_4-知识库复制与知识移动}
+### Knowledge base copy and knowledge move
 
-#### 复制（Copy / Duplicate）与 Preflight {#_4-1-复制-copy-duplicate-与-preflight}
+#### Copy / Duplicate and preflight
 
-`internal/application/service/knowledge_clone_move.go`，preflight 规则由 `internal/handler/knowledgebase_copy_preflight_test.go` 固化：
+`internal/application/service/knowledge_clone_move.go`; the preflight rules are pinned by `internal/handler/knowledgebase_copy_preflight_test.go`:
 
-- `POST /knowledge-bases/copy`：整库复制（配置 + 内容），body 传 `source_id`；异步任务，进度查 `GET /knowledge-bases/copy/progress/:task_id`（活动流记 `kb.clone_started` / `kb.clone_completed` / `kb.clone_failed`）。
-- `POST /knowledge-bases/:id/duplicate`：**仅复制配置**（不复制内容 / 索引 / 共享记录），活动流记 `kb.duplicated`。
+- `POST /knowledge-bases/copy`: copies the whole knowledge base (configuration plus content), with `source_id` in the body; an asynchronous task whose progress is read from `GET /knowledge-bases/copy/progress/:task_id` (the activity stream records `kb.clone_started` / `kb.clone_completed` / `kb.clone_failed`).
+- `POST /knowledge-bases/:id/duplicate`: **copies the configuration only** (no content, indexes or sharing records); the activity stream records `kb.duplicated`.
 
-Preflight（复制前校验，直接同步拒绝）：
+Preflight (checked before the copy, rejected synchronously):
 
-1. 源 / 目标 KB 的租户隔离（跨租户拒绝）；
-2. 源 KB 存在性；
-3. **VectorStore 兼容性**：`reuse_vectors` 模式不支持跨向量库的 KB（向量不可直接搬移）；
-4. **StorageBackend 兼容性**：跨存储后端复制不支持；
-5. API Key 调用时源 / 目标 KB 均须在 allow-list 内。
+1. Tenant isolation of source and target KB (cross-tenant is rejected);
+2. The source KB exists;
+3. **VectorStore compatibility**: `reuse_vectors` mode does not support KBs on different vector stores (vectors cannot be moved directly);
+4. **StorageBackend compatibility**: copying across storage backends is not supported;
+5. When called with an API key, both source and target KB must be in the allow-list.
 
-#### 知识移动门禁（move gate） {#_4-2-知识移动门禁-move-gate}
+#### Knowledge move gate
 
-`POST /knowledge/move` 支持两种模式，约束在 **handler 与 service 双层**校验（`internal/handler/knowledge_move_gate_test.go` 与 `internal/application/service/knowledge_move_gate_test.go` 双重佐证）：
+`POST /knowledge/move` supports two modes, with the constraints checked in **both the handler and the service** (`internal/handler/knowledge_move_gate_test.go` and `internal/application/service/knowledge_move_gate_test.go` pin both layers):
 
-- **`reuse_vectors` 模式**：直接复用既有向量，**要求源 KB 与目标 KB 绑定同一 VectorStore**；
-- **`reparse` 模式**：目标库重新解析生成向量，允许跨向量库移动。
+- **`reuse_vectors` mode**: reuses the existing vectors and **requires the source and target KB to be bound to the same VectorStore**;
+- **`reparse` mode**: the target KB reparses and regenerates vectors, so moving across vector stores is allowed.
 
-同库判定 `SharesStoreWith()` 的规范化语义（空字符串归一化为 nil，nil 表示环境默认 store）：
+The normalized semantics of the same-store check `SharesStoreWith()` (an empty string normalizes to nil, and nil means the environment default store):
 
 ```text
-nil & nil               → true   (同为 env-store)
-"" & nil                → true   (空串规范化为 nil)
+nil & nil               → true   (both on the env store)
+"" & nil                → true   (empty string normalizes to nil)
 "store-a" & "store-a"   → true
 "store-a" & "store-b"   → false
-"store-a" & nil         → false  (显式绑定 vs env-store 不视为同库)
+"store-a" & nil         → false  (an explicit binding and the env store are not the same store)
 ```
 
-`GET /knowledge-bases/:id/move-targets` 返回符合门禁的候选目标库；移动为异步任务，进度查 `GET /knowledge/move/progress/:task_id`。
+`GET /knowledge-bases/:id/move-targets` returns the candidate target KBs that pass the gate; the move is an asynchronous task whose progress is read from `GET /knowledge/move/progress/:task_id`.
 
-### 存储配额与用量 {#_7-存储配额与用量}
+### Storage quota and usage
 
-配额挂在租户上（`internal/types/tenant.go`）：
+The quota hangs on the tenant (`internal/types/tenant.go`):
 
-| 字段 | 默认 | 说明 |
+| Field | Default | Description |
 | --- | --- | --- |
-| `storage_quota` | 10737418240（10GB） | 租户总配额 |
-| `storage_used` | 0 | 已用量（涵盖原始文件、文本、向量与索引占用） |
+| `storage_quota` | 10737418240 (10GB) | Total tenant quota |
+| `storage_used` | 0 | Used amount (original files, text, vectors and indexes) |
 
-创建 KB 与上传知识前都会执行配额检查（`internal/handler/knowledgebase.go` 创建校验链），超限拒绝写入；每条知识记录自身 `file_size` 与 `storage_size`，删除时回收用量。
+The quota is checked before a KB is created and before knowledge is uploaded (the creation validation chain in `internal/handler/knowledgebase.go`), and writes over the limit are rejected. Each knowledge record carries its own `file_size` and `storage_size`, released on delete.
 
-### KB 路由与权限 {#_2-kb-路由与权限}
+### KB routes and permissions
 
-（门禁语义见《租户、用户与认证授权》篇；`KBAccessRead/Write` 会解析组织共享路径。）
+(The gate semantics are on the workspaces, users and authentication page; `KBAccessRead/Write` resolve organization sharing paths.)
 
-| 方法 | 路径 | Handler | 门禁 |
+| Method | Path | Handler | Gate |
 | --- | --- | --- | --- |
-| POST | `/knowledge-bases` | CreateKnowledgeBase | Contributor+ / API Key `manage_kbs` |
+| POST | `/knowledge-bases` | CreateKnowledgeBase | Contributor+ / API key `manage_kbs` |
 | GET | `/knowledge-bases` | ListKnowledgeBases | Viewer+ / `retrieve` |
 | GET | `/knowledge-bases/:id` | GetKnowledgeBase | Viewer+ + KBAccessRead |
 | PUT | `/knowledge-bases/:id` | UpdateKnowledgeBase | OwnedKBOrAdmin + KBAccessWrite |
@@ -529,69 +531,69 @@ nil & nil               → true   (同为 env-store)
 | POST | `/knowledge-bases/copy` | CopyKnowledgeBase | Contributor+ / `manage_kbs` |
 | POST | `/knowledge-bases/:id/duplicate` | DuplicateKnowledgeBase | Contributor+ / `manage_kbs` + KBAccessRead |
 | POST | `/knowledge-bases/:id/profile/generate` | GenerateKnowledgeBaseProfile | OwnedKBOrAdmin + KBAccessWrite / `manage_kbs` |
-| GET | `/knowledge-bases/copy/progress/:task_id` | GetKBCloneProgress | Viewer+ / `retrieve` 或 `manage_kbs` |
+| GET | `/knowledge-bases/copy/progress/:task_id` | GetKBCloneProgress | Viewer+ / `retrieve` or `manage_kbs` |
 | GET | `/knowledge-bases/:id/move-targets` | ListMoveTargets | Viewer+ + KBAccessRead |
-| GET | `/knowledge-bases/:id/activity` | ListKnowledgeBaseActivity | OwnedKBOrAdmin + KBAccessRead（仅 JWT） |
+| GET | `/knowledge-bases/:id/activity` | ListKnowledgeBaseActivity | OwnedKBOrAdmin + KBAccessRead (JWT only) |
 
-**创建流程**（`internal/handler/knowledgebase.go`）：Contributor 校验 → 租户存储配额检查 → `EmbeddingModelID` 校验 → `VectorStoreID` 绑定校验 → 创建 → 返回 KB + `vector_store_display`。
+**Creation flow** (`internal/handler/knowledgebase.go`): Contributor check → tenant storage quota check → `EmbeddingModelID` check → `VectorStoreID` binding check → create → return the KB plus `vector_store_display`.
 
-**删除级联**：删除 KB 下全部 Knowledge → Chunk → 向量索引 → 关键词索引 → Wiki 页面 → 标签 → 存储文件 → 软删除 KB 本身。共享侧的 editor 无法删除源 KB（删除要求 owner 租户 + Admin 侧权限）。
+**Delete cascade**: every Knowledge in the KB → Chunk → vector index → keyword index → Wiki pages → tags → stored files → soft delete of the KB itself. An editor on the shared side cannot delete the source KB (deletion requires the owner tenant plus Admin-side permission).
 
-### 混合检索（Hybrid Search） {#_8-混合检索-hybrid-search}
+### Hybrid search
 
-`POST /knowledge-bases/:id/hybrid-search`（`internal/handler/knowledgebase.go` + `internal/application/service/knowledgebase_search*.go`）按 KB 的 `IndexingStrategy` 组合召回：向量（vector_enabled）+ 关键词 BM25（keyword_enabled），经 rank fusion 融合与重排（rerank），可叠加知识图谱增强（graph_enabled）；多 KB 场景由 `knowledgebase_search_fanout.go` 并发扇出、`knowledgebase_search_fusion.go` 融合；共享 KB 检索路径见 `knowledgebase_search_shared.go`。FAQ 库检索有专门的命中策略（负例过滤 / 迭代召回），见 FAQ 篇。
+`POST /knowledge-bases/:id/hybrid-search` (`internal/handler/knowledgebase.go` plus `internal/application/service/knowledgebase_search*.go`) combines recall according to the KB's `IndexingStrategy`: vector (vector_enabled) plus keyword BM25 (keyword_enabled), merged by rank fusion and reranked, optionally augmented by the knowledge graph (graph_enabled). Across several KBs, `knowledgebase_search_fanout.go` fans out concurrently and `knowledgebase_search_fusion.go` merges; the shared-KB retrieval path is `knowledgebase_search_shared.go`. FAQ knowledge bases have their own hit strategy (negative example filtering / iterative recall); see the FAQ page.
 
-### 知识处理管线 {#_5-知识处理管线}
+### Knowledge processing pipeline
 
-`internal/application/service/knowledge_create.go` / `knowledge_process.go` / `knowledge_process_config.go`：
+`internal/application/service/knowledge_create.go` / `knowledge_process.go` / `knowledge_process_config.go`:
 
 ```text
-上传 (file/url/manual)
-  → 创建 Knowledge (parse_status=pending) → Asynq 入队
-  → Worker: DocReader 解析 → 分块 (ChunkingConfig)
-      → 向量嵌入        (indexing_strategy.vector_enabled)
-      → 关键词索引       (keyword_enabled)
-      → 图谱提取        (graph_enabled + ExtractConfig)
-      → Wiki 生成       (wiki_enabled + WikiConfig)
-      → 问题生成        (QuestionGenerationConfig.enabled)
-      → 文档摘要        (process_config.summary_enabled，默认开启)
+Upload (file/url/manual)
+  → create Knowledge (parse_status=pending) → enqueue in Asynq
+  → Worker: DocReader parsing → chunking (ChunkingConfig)
+      → vector embedding      (indexing_strategy.vector_enabled)
+      → keyword index         (keyword_enabled)
+      → graph extraction      (graph_enabled + ExtractConfig)
+      → Wiki generation       (wiki_enabled + WikiConfig)
+      → question generation   (QuestionGenerationConfig.enabled)
+      → document summary      (process_config.summary_enabled, on by default)
   → parse_status=finalizing, pending_subtasks_count=N
-  → 每个富化子任务完成后原子递减；归零 → parse_status=completed
+  → each enrichment subtask decrements atomically; at zero → parse_status=completed
 ```
 
-**配置合并优先级**（`EffectiveProcessConfig`）：`Knowledge.ProcessOverrides`（单次上传覆盖，存于知识 metadata 的 `KnowledgeProcessOverrides`，可覆盖 parser 规则 / 分块 / VLM / ASR / 问题生成 / 图谱开关 / 摘要开关等）> KB 配置 > 租户默认。
+**Configuration merge precedence** (`ResolveProcessConfig` returns an `EffectiveProcessConfig`): `Knowledge.ProcessOverrides` (the per-upload override, stored as `KnowledgeProcessOverrides` in the knowledge metadata; it can override parser rules / chunking / VLM / ASR / question generation / the graph switch / the summary switch and more) > KB configuration > tenant default.
 
-Chunk 类型（`internal/types/chunk.go`）：`text`、`parent_text`、`image_ocr`、`image_caption`、`summary`、`entity`、`relationship`、`faq`、`web_search`、`table_summary`、`table_column`、`wiki_page`；chunk 支持 `is_enabled` 开关与 `flags` 位标志（bit0 = 可推荐）。
+Chunk types (`internal/types/chunk.go`): `text`, `parent_text`, `image_ocr`, `image_caption`, `image_vector`, `summary`, `entity`, `relationship`, `faq`, `web_search`, `table_summary`, `table_column`, `wiki_page`; a chunk has an `is_enabled` switch and `flags` bit flags (bit0 = recommendable).
 
-### 知识库活动流（KB Activity） {#_6-知识库活动流-kb-activity}
+### Knowledge base activity stream (KB Activity)
 
-知识库设置的「活动」页签记录配置修改、文档上传与删除、分块编辑、共享变更和 Wiki 更新，包含操作人、时间与结果。
+The Activity tab in the knowledge base settings records configuration changes, document uploads and deletions, chunk edits, sharing changes and Wiki updates, with operator, time and result.
 
-`internal/application/service/kb_activity.go` 复用审计日志体系（`AuditLog`，scope 为 knowledge_base），通过 `recordKBActivity(ctx, audit, tenantID, kbID, action, targetType, targetID, outcome, details)` 记录：
+`internal/application/service/kb_activity.go` reuses the audit log system (`AuditLog` with scope knowledge_base) and records through `recordKBActivity(ctx, audit, tenantID, kbID, action, targetType, targetID, outcome, details)`:
 
-- **活动动作**（`internal/types/audit_log.go`）：`kb.created` / `kb.updated` / `kb.deleted` / `kb.duplicated` / `kb.clone_started` / `kb.clone_completed` / `kb.clone_failed`、`kb.share_added` / `kb.share_permission_changed` / `kb.share_removed`，以及知识 / chunk 级的增删改动作；
-- **触发源**：context 中的 `kbActivityTaskMetadata{TaskID, Trigger}`（`user` 用户操作 / `system` 后台任务）自动并入 details；根据 outcome 自动补 `processing_status`（accepted→pending、success→completed、partial→partial、failed/denied→failed、canceled→canceled）；
-- **API Key 身份**：`X-API-Key` 调用写入 `details.api_key_id` / `details.api_key_name`（名称快照）。活动页在原发起人后额外显示 Key 名称；JWT 网页操作不加这两项。异步任务只把 Key 展示身份放进 `TaskInitiator`，不把 Key 权限 scope 恢复进 worker；
-- **批量操作样本标题**：`kbActivityAppendSampleTitles` 为批量操作附带最多 5 个去重标题（第一个作为 `title`，其余进 `titles` 数组），保证活动流可读且有界；
-- **抑制机制**：`withKBActivitySuppressed(ctx)` 可让内部级联操作不产生重复活动记录。
+- **Activity actions** (`internal/types/audit_log.go`): `kb.created` / `kb.updated` / `kb.deleted` / `kb.duplicated` / `kb.clone_started` / `kb.clone_completed` / `kb.clone_failed`, `kb.share_added` / `kb.share_permission_changed` / `kb.share_removed`, plus the knowledge-level and chunk-level create, update and delete actions;
+- **Trigger source**: `kbActivityTaskMetadata{TaskID, Trigger}` in the context (`user` for a user action, `system` for a background task) is merged into the details automatically; `processing_status` is derived from the outcome (accepted→pending, success→completed, partial→partial, failed/denied→failed, canceled→canceled);
+- **API key identity**: an `X-API-Key` call writes `details.api_key_id` / `details.api_key_name` (a name snapshot). The activity page shows the key name after the original actor; JWT web actions do not add these two. Asynchronous tasks carry only the key's display identity in `TaskInitiator` and do not restore the key's permission scope in the worker;
+- **Sample titles for batch operations**: `kbActivityAppendSampleTitles` attaches at most 5 deduplicated titles to a batch operation (the first as `title`, the rest in the `titles` array), keeping the stream readable and bounded;
+- **Suppression**: `withKBActivitySuppressed(ctx)` lets internal cascades skip duplicate activity records.
 
-查询端点：`GET /knowledge-bases/:id/activity`（OwnedKBOrAdmin，仅 JWT 用户，API Key 不可访问）。
+Query endpoint: `GET /knowledge-bases/:id/activity` (OwnedKBOrAdmin, JWT users only, not available to API keys).
 
-## 实现参考
+## Implementation reference
 
-以下路径均相对仓库根目录：
+Paths are relative to the repository root:
 
-| 层 | 文件 |
+| Layer | Files |
 | --- | --- |
-| KB 模型与配置结构 | `internal/types/knowledgebase.go`、`indexing_strategy.go` |
-| 知识 / Chunk / 标签模型 | `internal/types/knowledge.go`、`chunk.go`、`tag.go` |
-| 处理配置覆盖 | `internal/types/knowledge_process.go` |
-| KB Handler | `internal/handler/knowledgebase.go` |
-| 知识 Handler | `internal/handler/knowledge.go` |
-| 标签 Handler | `internal/handler/tag.go` |
-| KB 服务 | `internal/application/service/knowledgebase.go` |
-| 知识创建 / 处理管线 | `internal/application/service/knowledge_create.go`、`knowledge_process.go`、`knowledge_process_config.go` |
-| 复制与移动 | `internal/application/service/knowledge_clone_move.go` |
-| 活动流 | `internal/application/service/kb_activity.go` |
-| 路由与门禁 | `internal/router/routes_knowledge.go`、`internal/router/rbac.go` |
-| 关键测试佐证 | `internal/handler/knowledge_preview_security_test.go`、`knowledge_move_gate_test.go`、`knowledgebase_copy_preflight_test.go` |
+| KB model and configuration structures | `internal/types/knowledgebase.go`, `indexing_strategy.go` |
+| Knowledge / Chunk / tag models | `internal/types/knowledge.go`, `chunk.go`, `tag.go` |
+| Processing configuration overrides | `internal/types/knowledge_process.go` |
+| KB handler | `internal/handler/knowledgebase.go` |
+| Knowledge handler | `internal/handler/knowledge.go` |
+| Tag handler | `internal/handler/tag.go` |
+| KB service | `internal/application/service/knowledgebase.go` |
+| Knowledge creation / processing pipeline | `internal/application/service/knowledge_create.go`, `knowledge_process.go`, `knowledge_process_config.go` |
+| Copy and move | `internal/application/service/knowledge_clone_move.go` |
+| Activity stream | `internal/application/service/kb_activity.go` |
+| Routes and gates | `internal/router/routes_knowledge.go`, `internal/router/rbac.go` |
+| Key test evidence | `internal/handler/knowledge_preview_security_test.go`, `knowledge_move_gate_test.go`, `knowledgebase_copy_preflight_test.go` |

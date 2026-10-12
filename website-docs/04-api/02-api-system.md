@@ -307,4 +307,4 @@ curl $BASE/api/v1/system/admin/audit-log -H "Authorization: Bearer $TOKEN"
 }
 ```
 
-响应为未包装的目录状态对象。每个厂商条目额外带 `model_thinking_levels`（按对话模型 id 列出开启思考后可选的等级，已合并厂商映射与协议能力）和 `vendor_thinking_levels`（未单独配置等级的模型所用的厂商默认等级）。非法文档返回 400；版本过期或请求实例的部署基线不一致返回 409。发布先持久化再切换本实例，其他实例约 5 秒内同步。回滚使用历史 `overlay` 配合当前 `version` / `baseline` 再次发布。完整规则和限制见[模型管理](../03-features/06-models.md#系统管理员维护模型目录)。
+The response is the unwrapped catalog status object. Each vendor entry also carries `model_thinking_levels` (the levels selectable per chat model id once thinking is on, merged from the vendor mapping and the protocol capabilities) and `vendor_thinking_levels` (the vendor default levels for models with no level of their own). An invalid document returns 400; a stale version or a deployment baseline that differs from the requesting instance returns 409. Publishing persists first and then switches this instance; other instances sync within about 5 seconds. To roll back, publish a historical `overlay` again with the current `version` / `baseline`. Full rules and limits are in [Model management](../03-features/06-models.md#system-administrators-maintain-the-model-catalog).

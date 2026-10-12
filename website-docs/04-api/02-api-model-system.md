@@ -53,7 +53,7 @@ curl "$BASE/api/v1/models/catalog/resolve?provider=deepseek&model=deepseek-v4-pr
 | `type` | string | 是（`binding:"required"`） | 模型类型：`KnowledgeQA` / `Embedding` / `Rerank` / `VLLM` / `ASR`（按原样保存，不接受 `chat` 等前端写法） |
 | `source` | string | 是（`binding:"required"`） | 来源（`local` / `remote`） |
 | `description` | string | 否 | 描述 |
-| `parameters` | object | 是（`binding:"required"`） | 连接参数（`base_url`、`provider`、`extra_config`、`spec`、`context_window` 等，字段见[模型管理](../03-features/06-models.md#模型配置字段)）。创建时可直接带 `api_key` / `app_secret`，之后经 credentials 子资源修改 |
+| `parameters` | object | Yes (`binding:"required"`) | Connection parameters (`base_url`, `provider`, `extra_config`, `spec`, `context_window` and others; fields in [Model management](../03-features/06-models.md#model-configuration-fields)). `api_key` / `app_secret` can be sent on create and are changed afterwards through the credentials sub-resource |
 
 `parameters` 会按模型目录校验（未知协议、错误的 compat 键、非法思考等级返回 400），`base_url` 经过 SSRF 校验。
 

@@ -283,7 +283,7 @@ if slices.Contains(retrieveDriver, "postgres") {
 
 ## 新增模型厂商（internal/models/providers） {#_4-新增模型-provider-internal-models-provider}
 
-模型接入分为协议、厂商、目录、运行时四层（概览见[模型管理](../03-features/06-models.md#分层结构)）。大多数新厂商只需新增一份厂商定义并补充模型目录，复用已有协议即可。
+Model integration has four layers: protocol, vendor, catalog and runtime (overview in [Model management](../03-features/06-models.md#layered-structure)). Most new vendors only need a vendor definition plus catalog entries and reuse an existing protocol.
 
 ### 接口定义
 
@@ -372,7 +372,7 @@ make model-catalog-diff VENDOR=deepseek # 只看一家
 
 **厂商改了接口行为**（换了输出上限字段、新增 effort 取值、思考开关格式变化）：改 `providers/<id>.go` 的 `Compat`，或 `overrides.json` 中对应模型的 `compat`，重新生成目录，并同步更新注释里的文档链接。`internal/models/api/openaicompletions/golden_test.go` 等快照测试会钉死出站 JSON，改动需先改测试预期。
 
-**紧急修正**：不必等发版，可先用[部署叠加 `config/models.json`](../03-features/06-models.md#部署叠加-config-models-json)在部署侧修改，验证后再补回代码。
+**Emergency fix**: no need to wait for a release. Change it on the deployment side first with the [deployment overlay `config/models.json`](../03-features/06-models.md#deployment-overlay-config-models-json), verify, then port the change back into the code.
 
 ---
 
