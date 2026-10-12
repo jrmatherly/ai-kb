@@ -267,7 +267,7 @@ score = rrf / ((vectorWeight + keywordWeight) / (rrfK + 1))   // 归一化到 [0
 
 三条路径的输出都在 [0,1]，所以不同检索调用（按文档/标签的 target、不同 embedding 模型分组、FAQ 与文档调用）的结果可以放在一起排序。
 
-融合之后的复合打分（rerank 模型分 0.6 + 检索基础分 0.3 + 来源权重 0.1、MMR、FAQ/Wiki 加权）发生在 chat pipeline 的 `CHUNK_RERANK` 阶段，见[检索问答流程的重排阶段](../02-architecture/04-rag-pipeline.md#_3-4-chunk-rerank-—-重排、复合打分、mmr、wiki-加权)。
+The composite score after fusion (0.6 rerank model score + 0.3 retrieval base score + 0.1 source weight, then MMR and the FAQ/Wiki boost) is computed in the `CHUNK_RERANK` stage of the chat pipeline, see [the rerank stage of the retrieval flow](../02-architecture/04-rag-pipeline.md#chunk-rerank-rerank-composite-score-mmr-and-wiki-boost).
 
 ### 检索执行数据流 {#_7-检索执行数据流}
 

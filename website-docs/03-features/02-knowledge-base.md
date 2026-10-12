@@ -320,7 +320,7 @@ stateDiagram-v2
     failed --> pending: reparse 重新解析
 ```
 
-单个富化子任务（摘要、问题生成、图谱、Wiki）失败不会让文档变为 `failed`，文档在子任务全部结束后进入 `completed`。卡在 `pending`、`processing`、`finalizing` 或 `deleting` 的文档由后台巡检回收，见[异步任务系统](../02-architecture/05-async-tasks.md#_7-3-兜底-housekeeping-清扫)。
+A failed enrichment subtask (summary, question generation, graph, Wiki) does not move the document to `failed`; the document reaches `completed` once every subtask has finished. Documents stuck in `pending`, `processing`, `finalizing` or `deleting` are reclaimed by the background housekeeping sweep, see [the async task system](../02-architecture/05-async-tasks.md#last-resort-the-housekeeping-sweep).
 
 摘要独立状态：`summary_status ∈ {none, pending, processing, completed, failed}`。
 
