@@ -7,6 +7,7 @@
 use strict; use warnings; use utf8;
 use Encode qw(decode encode FB_CROAK);
 use File::Basename qw(dirname);
+use Cwd ();
 binmode STDOUT, ':encoding(UTF-8)'; binmode STDERR, ':encoding(UTF-8)';
 
 my $mode = shift // '';
@@ -26,9 +27,20 @@ sub rewrite {
   return $s;
 }
 
+# Docs-lead phase: --apply may only touch website-docs/ inside this repo (files outside the repo, such as
+# scratch copies, are fine). Set REBRAND_ALLOW_CODE=1 when the code rebrand starts, then delete this guard.
+my $root = `git rev-parse --show-toplevel 2>/dev/null`; chomp $root;
+sub guarded {
+  my ($f) = @_;
+  return 0 if $mode ne '--apply' || $ENV{REBRAND_ALLOW_CODE} || $root eq '';
+  my $abs = Cwd::abs_path($f) // return 0;
+  return index($abs, "$root/") == 0 && index($abs, "$root/website-docs/") != 0;
+}
+
 my $changed = 0;
 for my $f (@ARGV) {
   -f $f or do { print STDERR "$f: not a file\n"; exit 2 };
+  guarded($f) and do { print STDERR "$f: --apply is limited to website-docs/ during the docs-lead phase (set REBRAND_ALLOW_CODE=1 for the code rebrand)\n"; exit 2 };
   open my $in, '<:raw', $f or do { print STDERR "$f: $!\n"; exit 2 };
   local $/; my $bytes = <$in>; close $in;
   if (index($bytes, "\0") >= 0) { print STDERR "$f: binary, skipped\n"; next }
