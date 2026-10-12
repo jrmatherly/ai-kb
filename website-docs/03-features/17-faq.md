@@ -1,124 +1,128 @@
-# FAQ 能力
+# FAQ
 
-FAQ 知识库用于维护退货政策、报销流程和常见故障处理等标准问答。每个条目包含标准问、相似问、反例问和答案，检索时匹配问题，并按命中策略返回答案。
+An FAQ knowledge base holds standard question-and-answer pairs such as a return policy, an expense claim procedure or the fix for a common fault. Each entry has a standard question, similar questions, negative questions and the answer. Retrieval matches the question and returns the answer according to the hit policy.
 
-创建 FAQ 类型知识库后，可用 Excel 或 CSV 批量导入问答，再补充相似问与反例问。FAQ 库可与文档库一起供智能体检索；启用 FAQ 优先并满足直接回答阈值时，可直接返回标准答案。
+After creating a knowledge base of type FAQ you can import question-and-answer pairs in bulk from Excel, CSV or JSON, then add similar and negative questions. An FAQ base can be searched by an agent alongside document bases; with FAQ priority on and the direct-answer threshold met, the standard answer is returned as is.
 
 <Screenshot
   src="/screenshots/faq-management.png"
-  caption="FAQ 管理：条目列表、筛选与批量导入"
-  hint="展示 FAQ 条目列表（标准问、相似问数量、标签、状态）与导入入口/导入结果提示。" />
+  caption="FAQ management: entry list, filters and batch import"
+  hint="The FAQ entry list (standard question, number of similar questions, tag, status) with the import button and the import result banner." />
 
-条目管理、导入及检索配置如下，去重与同步机制放在参考部分。
+Entry management, import and the retrieval configuration follow. Deduplication and the sync mechanism are in the reference sections.
 
-## 创建和维护问答
+## Create and maintain entries
 
-创建 FAQ 知识库后，为每个条目填写标准问和答案。相似问用于覆盖不同表达，反例问用于排除容易误匹配的问题。一个条目可有多个答案，并选择全部返回或随机返回一个。
+To build the FAQ base you create an entry per question, then widen or narrow what it matches. Each entry has a standard question and an answer. Similar questions cover other phrasings; negative questions exclude questions that are easy to mismatch. An entry can have several answers, returned either all at once or one at random.
 
-可按分类管理条目，单独停用暂不使用的问答，或禁止条目出现在推荐中。FAQ 分类为单标签，与文档知识库的多标签机制分别管理。
+Entries can be grouped by category, disabled individually while they are not in use, or kept out of recommendations. An FAQ category is a single tag per entry, managed separately from the multi-tag mechanism of document knowledge bases.
 
-## 导入与导出
+## Import and export
 
-使用模板准备标准问、相似问、反例问和答案，多值字段用 `##` 分隔。导入时选择追加或替换：追加会按内容哈希匹配并合并重复项；替换会删除旧条目，仅保留本批导入内容。需要先检查数据时，可通过 API 的 `dry_run` 仅运行验证。
+To load many entries at once, prepare them with the template and import the file. The template has columns for the standard question, similar questions, negative questions and answers; multi-value fields are separated with `##`. On import you choose append or replace: append matches existing entries by content hash and merges duplicates; replace deletes the old entries and keeps only this batch. To check a file first, call the API with `dry_run` to run validation only.
 
-导入结果区分成功、失败、部分失败和跳过，并提供失败原因。CSV 和 JSON 导出可用于备份、编辑和重新导入。
+The import result distinguishes success, failure, partial failure and skipped, with the reason for each failure. CSV and JSON export serve backup, editing and reimport.
 
-## 检查命中结果
+## Check hit results
 
-FAQ 检索同时考虑向量、关键词和标签优先级，完全匹配反例问的条目会被排除。结果附带匹配问题、得分和命中类型，可用于调整相似问、反例问与阈值。
+To tune an FAQ base you test questions against it and read why each entry was hit. FAQ retrieval combines vectors, keywords and tag priority, and an entry whose negative question matches the query exactly is excluded. Each result carries the matched question, the score and the hit type, which is what you adjust similar questions, negative questions and thresholds against.
 
-## 导入与检索参考
+## Import and retrieval reference
 
-### 批量导入 {#_4-批量导入}
+This section has the exact payloads, flow and limits behind the import and the hit policy above.
 
-`internal/application/service/knowledge_faq_import.go`。入口 `POST /knowledge-bases/:id/faq/entries`：
+### Batch import
+
+`internal/application/service/knowledge_faq_import.go`. Entry point `POST /knowledge-bases/:id/faq/entries`:
 
 ```go
 type FAQBatchUpsertPayload struct {
-    Entries     []FAQEntryPayload `json:"entries" binding:"required"` // 也可经 EntriesURL 从对象存储拉取
+    Entries     []FAQEntryPayload `json:"entries" binding:"required"` // can also be pulled from object storage through EntriesURL
     Mode        string            `json:"mode" binding:"oneof=append replace"`
     KnowledgeID string            `json:"knowledge_id"`
-    TaskID      string            `json:"task_id"` // 可选，不传自动生成；自定义值仅允许 [A-Za-z0-9_-]，≤128 字符
-    DryRun      bool              `json:"dry_run"` // 仅验证不落库
+    TaskID      string            `json:"task_id"` // optional, generated when omitted; a custom value allows only [A-Za-z0-9_-], at most 128 characters
+    DryRun      bool              `json:"dry_run"` // validate only, write nothing
 }
 ```
 
-导入字段（CSV 模板列，与导出格式对称，多值用 `##` 分隔）：标准问（必填）、相似问题、反例问题、答案（必填）、是否全部回复、是否停用、是否禁止被推荐、分类（默认"未分类"）。
+Import fields (the CSV template columns, symmetric with the export format, multi-value fields separated with `##`): category (default "Uncategorized"), standard question (required), similar questions, negative questions, answers (required), reply with all answers, disabled, not recommended.
 
 ```mermaid
 flowchart TB
-    A["POST /faq/entries (mode=append|replace, dry_run?)"] --> B["校验 KB 类型 = faq, 创建 Asynq 任务, 返回 task_id"]
-    B --> C["ProcessFAQImport (幂等: 已完成则跳过)"]
-    C --> D["第一步: executeFAQDryRunValidation (格式校验 + 批内去重 + DB 查重 + 内容安全)"]
+    A["POST /faq/entries (mode=append|replace, dry_run?)"] --> B["check KB type = faq, create Asynq task, return task_id"]
+    B --> C["ProcessFAQImport (idempotent: skipped when already completed)"]
+    C --> D["step 1: executeFAQDryRunValidation (format check + in-batch dedup + DB duplicate check)"]
     D --> E{"dry_run?"}
-    E -- "是" --> F["直接返回验证结果"]
-    E -- "否" --> G{"mode"}
-    G -- "append" --> H["calculateAppendOperations: 按 ContentHash 匹配已有条目 -> 命中则合并 (保留标准问, 追加去重相似问, 覆盖答案), 未命中则新增"]
-    G -- "replace" --> I["calculateReplaceOperations: 删除全部旧条目, 仅保留新导入"]
-    H --> J["按批 (100 条) build -> create -> index chunks"]
+    E -- "yes" --> F["return the validation result"]
+    E -- "no" --> G{"mode"}
+    G -- "append" --> H["calculateAppendOperations: match existing entries by ContentHash -> merge on hit (keep the standard question, append deduplicated similar questions, overwrite answers), create on miss"]
+    G -- "replace" --> I["calculateReplaceOperations: keep entries with an unchanged hash, tag and status, delete every other old entry, create the rest"]
+    H --> J["per batch (50 entries) build -> create -> index chunks"]
     I --> J
-    J --> K["finalizeFAQValidation: 统计 + 失败条目 CSV (量大时生成下载 URL)"]
-    K --> L["GET /faq/import/progress/:task_id 轮询 FAQImportProgress"]
+    J --> K["finalizeFAQValidation: counts + failed-entry CSV (a download URL when there are failures)"]
+    K --> L["GET /faq/import/progress/:task_id polls FAQImportProgress"]
 ```
 
-进度对象 `FAQImportProgress` 的统计字段：`success_count` / `failed_count` / `partial_failed_count`（相似问或反例被剔除但条目仍导入）/ `skipped_count`（重复跳过）/ `merged_count` / `added_count`、`failed_entries[]`（含失败原因与原始内容）与 `failed_entries_url`、`import_mode`、`processing_time`；任务状态 `pending → processing → completed / failed`。
+The counters on the progress object `FAQImportProgress`: `success_count` / `failed_count` / `partial_failed_count` (a similar or negative question was dropped but the entry was imported) / `skipped_count` (duplicates skipped) / `merged_count` / `added_count`, `failed_entries[]` (failure reason and original content) and `failed_entries_url`, `import_mode`, `processing_time`; task status `pending → processing → completed / failed`.
 
-导出支持两种格式：CSV（列：分类、问题、相似问题、反例问题、机器人回答、是否全部回复、是否停用、是否禁止被推荐；含 BOM 保证 Excel UTF-8 兼容）与 JSON（`FAQExportEntry`，与导入 payload 兼容，支持"导出 → 编辑 → 重新导入"闭环）。
+Export comes in two formats: CSV (columns: category, question, similar questions, negative questions, answer, reply with all answers, disabled, not recommended; a BOM is prepended so Excel reads it as UTF-8) and JSON (`FAQExportEntry`, compatible with the import payload, so export → edit → reimport is a closed loop).
 
-### 检索命中策略 {#_6-检索命中策略}
+### Hit policy
 
-`internal/handler/faq.go` 的 `SearchFAQ` + `internal/application/service/knowledgebase_search_faq.go`：
+`SearchFAQ` in `internal/handler/faq.go` plus `internal/application/service/knowledgebase_search_faq.go`:
 
 ```go
 type FAQSearchRequest struct {
     QueryText            string  `binding:"required"`
-    VectorThreshold      float64 // 向量相似度阈值（默认 0.7）
-    MatchCount           int     // 返回数量（默认 10，上限 50）
-    FirstPriorityTagIDs  []int64 // 一级优先标签（结果排前）
-    SecondPriorityTagIDs []int64 // 二级优先标签
-    OnlyRecommended      bool    // 仅返回可推荐条目
+    VectorThreshold      float64 // vector similarity threshold (default 0.7)
+    MatchCount           int     // number of results (default 10, capped at 50)
+    FirstPriorityTagIDs  []int64 // first-priority tags (ranked first)
+    SecondPriorityTagIDs []int64 // second-priority tags
+    OnlyRecommended      bool    // return only recommendable entries
 }
 ```
 
-命中流程：
+The hit flow:
 
-1. **混合召回**：查询文本归一化后做向量检索 + BM25 关键词检索，融合去重；
-2. **两级标签优先**：`FirstPriorityTagIDs` 命中的条目排最前，其次 `SecondPriorityTagIDs`；
-3. **负例过滤**（`filterByNegativeQuestions`）：查询文本与某条目的任一反例问完全匹配（小写比较）→ 该条目从结果中剔除。典型场景：用户问"不支持 X 吗"，避免返回"支持 X"的条目；
-4. **迭代召回**（`applyFAQPostProcessing`）：当过滤后的唯一条目数不足 `match_count` 且某个向量结果列表打满时触发 `iterativeRetrieveWithDeduplication`——最多迭代 5 次、每次 TopK 翻倍（从首轮深度的 2 倍起，封顶 500，触顶即停），每轮与首轮同样融合打分，带负例过滤缓存，所有列表都未打满时提前终止；
-5. 结果附带 `score`、`match_type`、`matched_question`（实际命中的是标准问还是哪个相似问），答案按 `answer_strategy`（all / random）返回。
+1. **Hybrid recall**: the query text is normalized, then vector retrieval and BM25 keyword retrieval run and the results are fused and deduplicated.
+2. **Two-level tag priority**: entries matching `FirstPriorityTagIDs` rank first, then `SecondPriorityTagIDs`.
+3. **Negative question filter** (`filterByNegativeQuestions`): when the query text equals any negative question of an entry (compared lowercased), that entry is dropped. Typical case: the user asks "Is X unsupported?", and the entry that answers "X is supported" must not come back.
+4. **Iterative retrieval** (`applyFAQPostProcessing`): when the number of unique entries after filtering is below `match_count` and some vector result list came back full, `iterativeRetrieveWithDeduplication` runs: at most 5 rounds, TopK starting at `max(3 × match_count, 2 × first-round depth)` and doubling each round, capped at 500 (it stops once the cap is reached), each round fused and scored like the first, with a negative-filter cache, and it ends early when no list is full at the current depth.
+5. Results carry `score`, `match_type` and `matched_question` (whether the standard question or which similar question was hit); answers are returned according to `answer_strategy` (all / random).
 
-检索范围内没有 FAQ 库时直接跳过该后处理，普通混合检索不受影响。只要范围内有 FAQ 库（即使主 KB 是文档库，或 FAQ 库来自组织共享），负例过滤都会生效；迭代召回只在主 KB 为 FAQ 库时触发。agent 检索链在 FAQ 库上同样经过这条后处理路径。
+When the retrieval scope has no FAQ base the post-processing is skipped and ordinary hybrid retrieval is unaffected. As long as the scope contains an FAQ base (even when the primary knowledge base is a document base, or the FAQ base is shared by an organization), the negative question filter applies; iterative retrieval only runs when the primary knowledge base is an FAQ base. The agent retrieval chain goes through the same post-processing on FAQ bases.
 
-## 条目与接口参考
+## Entries and API reference
 
-### 数据模型 {#_1-数据模型}
+This section is the data model, the endpoints and the deduplication rules for anyone integrating with the FAQ API.
 
-#### 存储形态：FAQ 条目 = 一个 Chunk {#_1-1-存储形态-faq-条目-一个-chunk}
+### Data model
 
-每个 FAQ 条目对应一条 `Chunk` 记录（`chunk_type = "faq"`），归属知识库中类型为 `faq` 的 `Knowledge`（首次创建条目时自动创建该 Knowledge）。条目的结构化内容存在 `Chunk.Metadata`（JSON）：
+#### Storage: one FAQ entry is one chunk
+
+Each FAQ entry is one `Chunk` row (`chunk_type = "faq"`) under the `Knowledge` of type `faq` in the knowledge base (created automatically with the first entry). The structured content of the entry is in `Chunk.Metadata` (JSON):
 
 ```go
 // internal/types/faq.go
 type FAQChunkMetadata struct {
     StandardQuestion  string         `json:"standard_question"`
     SimilarQuestions  []string       `json:"similar_questions,omitempty"`
-    NegativeQuestions []string       `json:"negative_questions,omitempty"` // 反例问：命中即过滤
+    NegativeQuestions []string       `json:"negative_questions,omitempty"` // negative questions: an exact hit filters the entry out
     Answers           []string       `json:"answers,omitempty"`
     AnswerStrategy    AnswerStrategy `json:"answer_strategy,omitempty"`    // all | random
-    Version           int            `json:"version,omitempty"`            // 每次更新自增
+    Version           int            `json:"version,omitempty"`            // incremented on every update
     Source            string         `json:"source,omitempty"`
 }
 
 const (
-    AnswerStrategyAll    AnswerStrategy = "all"    // 返回全部答案
-    AnswerStrategyRandom AnswerStrategy = "random" // 随机返回一个
+    AnswerStrategyAll    AnswerStrategy = "all"    // return every answer
+    AnswerStrategyRandom AnswerStrategy = "random" // return one at random
 )
 ```
 
-Chunk 上复用的通用字段：`SeqID`（自增整数，对外 API 的条目 ID）、`TagID`（分类标签，默认标签名常量 `UntaggedTagName = "未分类"`）、`IsEnabled`（停用开关）、`Flags`（bit0 `ChunkFlagRecommended` 是否可被推荐）、`ContentHash`（去重哈希，见 [归一化与内容哈希（去重核心）](#_3-归一化与内容哈希-去重核心)）。
+Generic chunk fields reused by FAQ: `SeqID` (auto-increment integer, the entry ID in the public API), `TagID` (the category tag; the default tag name is the constant `UntaggedTagName`, "Uncategorized"), `IsEnabled` (the disable switch), `Flags` (bit 0 `ChunkFlagRecommended`, whether the entry may be recommended), `ContentHash` (the deduplication hash, see [Normalization and content hash (the deduplication core)](#normalization-and-content-hash-the-deduplication-core)).
 
-#### API 投影：FAQEntry {#_1-2-api-投影-faqentry}
+#### API projection: FAQEntry
 
 ```go
 type FAQEntry struct {
@@ -136,114 +140,117 @@ type FAQEntry struct {
     Answers           []string       `json:"answers"`
     AnswerStrategy    AnswerStrategy `json:"answer_strategy"`
     IndexMode         FAQIndexMode   `json:"index_mode"`
-    Score             float64        `json:"score,omitempty"`            // 检索得分
+    UpdatedAt         time.Time      `json:"updated_at"`
+    CreatedAt         time.Time      `json:"created_at"`
+    Score             float64        `json:"score,omitempty"`            // retrieval score
     MatchType         MatchType      `json:"match_type,omitempty"`
-    MatchedQuestion   string         `json:"matched_question,omitempty"` // 实际命中的问题文本
+    ChunkType         ChunkType      `json:"chunk_type"`
+    MatchedQuestion   string         `json:"matched_question,omitempty"` // the question text that was actually hit
 }
 ```
 
-#### KB 级 FAQ 配置（FAQConfig） {#_1-3-kb-级-faq-配置-faqconfig}
+#### Knowledge base FAQ configuration (FAQConfig)
 
-| 配置 | 取值 | 默认 | 说明 |
+| Setting | Values | Default | Meaning |
 | --- | --- | --- | --- |
-| `index_mode` | `question_only` / `question_answer` | `question_answer` | 索引内容是否包含答案 |
-| `question_index_mode` | `combined` / `separate` | `combined` | 标准问 + 相似问合成一个索引项，或每个问题独立索引项 |
+| `index_mode` | `question_only` / `question_answer` | `question_answer` | Whether the indexed content includes the answers |
+| `question_index_mode` | `combined` / `separate` | `combined` | Standard question plus similar questions as one index item, or one index item per question |
 
-`separate` 模式下每个相似问单独生成索引项，`SourceID = fmt.Sprintf("%s-%s", chunk.ID, hashQuestion(similarQ))`，支持相似问级别的精细增删。
+In `separate` mode every similar question gets its own index item, so similar questions can be added and removed at that granularity. Incremental updates address these items by question hash, `SourceID = fmt.Sprintf("%s-%s", chunk.ID, hashQuestion(similarQ))`; a full index (creation and batch import) numbers them by position instead (`chunk.ID-<n>`), so an incremental edit after an import does not find the positional items and can leave a stale one behind.
 
-### API 端点 {#_2-api-端点}
+### API endpoints
 
-`internal/handler/faq.go`（路由注册于 `internal/router/routes_knowledge.go`，KB 门禁与知识库一致：读走 KBAccessRead，写走 KBAccessWrite；API Key 需 `ingest` / `retrieve` 能力）：
+`internal/handler/faq.go` (routes registered in `internal/router/routes_knowledge.go`; the knowledge base gates match the knowledge routes: reads go through KBAccessRead, writes through KBAccessWrite; an API key needs the `ingest` capability for writes and `retrieve` for reads, and the progress route accepts either):
 
-| 方法 | 路径 | 功能 |
+| Method | Path | Function |
 | --- | --- | --- |
-| GET | `/knowledge-bases/:id/faq/entries` | 条目列表（分页 / 标签 / 关键词 / 启用状态） |
-| GET | `/knowledge-bases/:id/faq/entries/:entry_id` | 单条详情 |
-| POST | `/knowledge-bases/:id/faq/entry` | 同步创建单条 |
-| PUT | `/knowledge-bases/:id/faq/entries/:entry_id` | 更新单条（增量索引） |
-| POST | `/knowledge-bases/:id/faq/entries` | 批量导入 / 更新（异步，append/replace） |
-| POST | `/knowledge-bases/:id/faq/entries/:entry_id/similar-questions` | 追加相似问 |
-| PUT | `/knowledge-bases/:id/faq/entries/fields` | 批量更新字段（启用 / 推荐 / 策略） |
-| PUT | `/knowledge-bases/:id/faq/entries/tags` | 批量更新标签 |
-| DELETE | `/knowledge-bases/:id/faq/entries` | 批量删除 |
-| POST | `/knowledge-bases/:id/faq/search` | FAQ 检索（混合搜索） |
-| GET | `/knowledge-bases/:id/faq/entries/export` | 导出（CSV / JSON） |
-| GET | `/faq/import/progress/:task_id` | 导入任务进度 |
-| PUT | `/knowledge-bases/:id/faq/import/last-result/display` | 导入结果面板显示状态（open/close） |
+| GET | `/knowledge-bases/:id/faq/entries` | List entries (pagination / tag / keyword / enabled state) |
+| GET | `/knowledge-bases/:id/faq/entries/:entry_id` | One entry |
+| POST | `/knowledge-bases/:id/faq/entry` | Create one entry synchronously |
+| PUT | `/knowledge-bases/:id/faq/entries/:entry_id` | Update one entry (incremental index) |
+| POST | `/knowledge-bases/:id/faq/entries` | Batch import / update (asynchronous, append/replace) |
+| POST | `/knowledge-bases/:id/faq/entries/:entry_id/similar-questions` | Append similar questions |
+| PUT | `/knowledge-bases/:id/faq/entries/fields` | Batch update fields (enabled / recommended / strategy) |
+| PUT | `/knowledge-bases/:id/faq/entries/tags` | Batch update tags |
+| DELETE | `/knowledge-bases/:id/faq/entries` | Batch delete |
+| POST | `/knowledge-bases/:id/faq/search` | FAQ retrieval (hybrid search) |
+| GET | `/knowledge-bases/:id/faq/entries/export` | Export (CSV / JSON) |
+| GET | `/faq/import/progress/:task_id` | Import task progress |
+| PUT | `/knowledge-bases/:id/faq/import/last-result/display` | Display state of the import result panel (open/close) |
 
-列表查询参数：`page` / `page_size`、`tag_id`（标签 seq_id，兼容旧版单标签）或 `tag_ids`（标签 UUID，逗号分隔，OR 语义）、`keyword` + `search_field`（`standard_question` / `similar_questions` / `answers`，缺省搜全部）、`sort_order`（`asc`，默认按更新时间倒序）、`is_enabled`（`true` / `false` 按启用状态筛选，不传返回全部）。
+List query parameters: `page` / `page_size`, `tag_id` (tag seq_id, the legacy single tag) or `tag_ids` (tag UUIDs, comma separated, OR semantics), `keyword` plus `search_field` (`standard_question` / `similar_questions` / `answers`; all fields when omitted), `sort_order` (`asc`; the default is newest updated first), `is_enabled` (`true` / `false` filters by enabled state; omitted returns all).
 
-**写入校验**（`sanitizeFAQEntryPayload` + `checkFAQQuestionDuplicate`）：标准问必填；答案至少一个；`answer_strategy` 只能是 `all` / `random`（默认 `all`）；相似问 / 反例 / 答案去空白去重；并做四级重复检查——相似问 vs 标准问、相似问互查、反例 vs 标准问及相似问、DB 内跨条目冲突（返回详细冲突信息）。
+**Write validation** (`sanitizeFAQEntryPayload` plus `checkFAQQuestionDuplicate`): the standard question is required; at least one answer; `answer_strategy` is `all` or `random` (default `all`); similar questions, negative questions and answers are trimmed and deduplicated; and four duplicate checks run: similar question against the standard question, similar questions against each other, negative questions against the standard and similar questions, and conflicts with other entries in the database (reported with the conflicting question).
 
-### 归一化与内容哈希（去重核心） {#_3-归一化与内容哈希-去重核心}
+### Normalization and content hash (the deduplication core)
 
-FAQ 采用"**存储原始文本、按归一化文本判等**"的分层设计：
+FAQ stores the **original text and compares by normalized text**, in two layers:
 
 ```go
-// 写入：DB 保留原始数据，ContentHash 基于归一化副本
+// Write: the DB keeps the original data, ContentHash is computed from a normalized copy
 func (c *Chunk) SetFAQMetadata(meta *FAQChunkMetadata) error {
-    meta.Sanitize()                          // 仅基础清理
+    meta.Sanitize()                          // basic cleanup only
     c.Metadata, _ = json.Marshal(meta)
-    normalized := meta.Normalize()           // 归一化副本
+    normalized := meta.Normalize()           // normalized copy
     c.ContentHash = CalculateFAQContentHash(normalized)
     return nil
 }
 ```
 
-`NormalizeQuestion` 的处理链（顺序敏感）：去首尾空白 → 移除 URL → 转小写 → 去首尾标点（`？。，；、：！?.,;!:'"` 等）→ **繁体转简体** → **全角转半角** → 智能空格（中文之间去空格，英文 / 数字间保留）。
+The `NormalizeQuestion` chain (order matters): trim whitespace → remove URLs → lowercase → strip leading and trailing punctuation (ASCII and full-width question marks, periods, commas, semicolons, colons, exclamation marks and quotes) → **Traditional to Simplified Chinese** → **full-width to half-width** → smart spacing (spaces between CJK characters removed, spaces between Latin letters and digits kept).
 
-`CalculateFAQContentHash` = SHA256(归一化标准问 + 排序后相似问 + 排序后反例 + 排序后答案)。`internal/types/faq_test.go` 固化了哈希的关键不变式：大小写 / 标点不敏感、繁简不敏感、全半角不敏感、数组顺序不敏感、写入与读取路径一致。该哈希用于导入去重与克隆同步的条目配对。
+`CalculateFAQContentHash` = SHA256(normalized standard question + sorted similar questions + sorted negative questions + sorted answers). `internal/types/faq_test.go` pins the invariants of the hash: insensitive to case and punctuation, to Traditional versus Simplified, to full-width versus half-width and to array order, and identical on the write and read paths. The hash drives import deduplication and the entry pairing of clone sync.
 
-### 与普通知识（Document）的区别 {#_5-与普通知识-document-的区别}
+### Differences from document knowledge
 
-| 维度 | FAQ | Document |
+| Dimension | FAQ | Document |
 | --- | --- | --- |
-| KB 类型 | `faq` | `document` |
-| Knowledge.Type | `faq`（每库通常一条聚合 Knowledge） | 文件 / `manual` / URL |
-| Chunk 来源 | 用户直接录入结构化条目 | 解析器自动分块 |
-| Chunk.ChunkType | `faq` | `text` / `image_ocr` / `summary` 等 |
-| Metadata | `FAQChunkMetadata`（问 / 答 / 反例 / 策略） | 文档元数据（AI 生成问题等） |
-| Chunk.Content | 由 `buildFAQChunkContent` 合成：`"Q: 标准问\nSimilar Questions:\n- ..."`；`question_answer` 模式追加 `Answers`；**反例问永不写入 Content（不参与索引）** | 原文片段 |
-| ContentHash | 归一化去重哈希（核心机制） | 一般不使用 |
-| 索引粒度 | 按 `question_index_mode` 一条或多条索引项 | 一 chunk 一索引项（父子分块另计） |
-| 处理管线 | 同步创建 / 异步批量导入，即时索引生效 | 异步 DocReader 解析管线 |
-| 检索后处理 | 负例过滤 + 迭代召回（见 [检索命中策略](#_6-检索命中策略)） | 常规融合重排 |
-| 状态开关 | `is_enabled` + `is_recommended`（Flags）+ `answer_strategy` | `enable_status` |
+| KB type | `faq` | `document` |
+| Knowledge.Type | `faq` (usually one aggregate Knowledge per base) | file / `manual` / URL |
+| Chunk origin | Structured entries entered by the user | Chunks produced by the parser |
+| Chunk.ChunkType | `faq` | `text` / `image_ocr` / `summary` and others |
+| Metadata | `FAQChunkMetadata` (questions / answers / negatives / strategy) | Document metadata (AI-generated questions and so on) |
+| Chunk.Content | Built by `buildFAQChunkContent`: `"Q: <standard question>\nSimilar Questions:\n- ..."`; `question_answer` mode appends `Answers`; **negative questions are never written to Content (they are not indexed)** | The original passage |
+| ContentHash | Normalized deduplication hash (the core mechanism) | Generally unused |
+| Index granularity | One or several index items per `question_index_mode` | One index item per chunk (parent-child chunking aside) |
+| Processing pipeline | Synchronous create / asynchronous batch import, indexed immediately | Asynchronous DocReader parsing pipeline |
+| Retrieval post-processing | Negative filter + iterative retrieval (see [Hit policy](#hit-policy)) | Regular fusion and rerank |
+| State switches | `is_enabled` + `is_recommended` (Flags) + `answer_strategy` | `enable_status` |
 
-条目更新走**增量索引**（`incrementalIndexFAQEntry`）：只对变化部分重新 embedding——标准问变化重索引；相似问逐个 diff 增删；答案变化仅在 `question_answer` 模式触发重索引；借助 `SourceID` 精确删除失效索引项。
+Entry updates use **incremental indexing** (`incrementalIndexFAQEntry`): only the changed parts are re-embedded. A changed standard question is reindexed; similar questions are diffed one by one and added or removed; a changed answer triggers reindexing only in `question_answer` mode; `SourceID` is used to delete the stale index items precisely.
 
-### 克隆 / 共享同步机制 {#_7-克隆-共享同步机制}
+### Clone and share sync
 
-`internal/application/service/faq_clone_sync.go`。触发场景：**知识库克隆（copy）** 与 **共享知识库内容同步**——克隆产生的目标库 FAQ chunk 是新记录，运营状态（启停 / 推荐 / 标签 / 答案策略）需要与源库对齐：
+`internal/application/service/faq_clone_sync.go`. Triggered by **knowledge base copy**: the FAQ chunks in the copied base are new rows, and their operational state (enabled / recommended / tag / answer strategy) has to be aligned with the source base:
 
-- **配对**：按 `ContentHash` 匹配源 / 目标条目，得到 `FAQChunkSyncPair{SrcChunkID, DstChunkID}`（归一化哈希保证繁简 / 全半角 / 顺序差异不破坏配对，`internal/types/faq_sync_test.go` 佐证）；
-- **同步内容**：`IsEnabled` 启停状态、`Flags` 的 `ChunkFlagRecommended` 推荐位、`TagID` 标签归属、`AnswerStrategy` 答案策略；
-- **索引侧生效**：DB 更新后批量刷新向量存储中对应索引项的 `enabled` / `tag` / `recommended` 标志，检索过滤立即生效（差异计算见 `internal/application/repository/chunk_faq_diff_test.go`）。
+- **Pairing**: source and target entries are matched by `ContentHash`, giving `FAQChunkSyncPair{SrcChunkID, DstChunkID}` (the normalized hash keeps Traditional/Simplified, width and order differences from breaking a pair; `internal/types/faq_sync_test.go` covers it).
+- **Synced content**: the `IsEnabled` switch, the `ChunkFlagRecommended` bit of `Flags`, the `TagID` category and the `AnswerStrategy`.
+- **Index side**: after the DB update, the `enabled` and `tag` flags of the matching index items in the vector store are refreshed in bulk so retrieval filtering applies immediately (the difference computation is covered by `internal/application/repository/chunk_faq_diff_test.go`). The `recommended` flag is updated in the database only; the vector-store update for it is skipped with a warning.
 
 ```mermaid
 sequenceDiagram
-    participant Src as "源 KB (FAQ)"
-    participant Clone as "KB 克隆任务"
-    participant Dst as "目标 KB (FAQ)"
-    participant VS as "向量存储"
-    Clone->>Src: 读取全部 FAQ chunk (含 ContentHash)
-    Clone->>Dst: 复制 chunk (新 ID, 保留 metadata 与 hash)
-    Clone->>Clone: 按 ContentHash 配对 (FAQChunkSyncPair)
-    Clone->>Dst: 同步 IsEnabled / Recommended / TagID / AnswerStrategy
-    Clone->>VS: 批量更新索引项标志 (enabled, tag, recommended)
-    Note over Dst,VS: 目标库检索行为与源库运营状态一致
+    participant Src as "Source KB (FAQ)"
+    participant Clone as "KB copy task"
+    participant Dst as "Target KB (FAQ)"
+    participant VS as "Vector store"
+    Clone->>Src: read every FAQ chunk (with ContentHash)
+    Clone->>Dst: copy chunks (new IDs, metadata and hash kept)
+    Clone->>Clone: pair by ContentHash (FAQChunkSyncPair)
+    Clone->>Dst: sync IsEnabled / Recommended / TagID / AnswerStrategy
+    Clone->>VS: bulk update index item flags (enabled, tag)
+    Note over Dst,VS: the target base retrieves like the source base's operational state
 ```
 
-## 实现参考
+## Implementation reference
 
-以下路径均相对仓库根目录：
+This table is where to look when you need the code behind a section above. Paths are relative to the repository root:
 
-| 层 | 文件 |
+| Layer | File |
 | --- | --- |
-| FAQ 类型与归一化 / 哈希 | `internal/types/faq.go`（及 `faq_test.go`、`faq_sync_test.go`） |
-| FAQ Handler | `internal/handler/faq.go` |
-| 条目 CRUD / 导出服务 | `internal/application/service/knowledge_faq.go` |
-| 异步导入服务 | `internal/application/service/knowledge_faq_import.go` |
-| 克隆 / 同步 | `internal/application/service/faq_clone_sync.go` |
-| FAQ 检索后处理 | `internal/application/service/knowledgebase_search_faq.go` |
-| KB 级 FAQ 配置 | `internal/types/knowledgebase.go`（`FAQConfig`） |
+| FAQ types, normalization and hash | `internal/types/faq.go` (plus `faq_test.go` and `faq_sync_test.go`) |
+| FAQ handler | `internal/handler/faq.go` |
+| Entry CRUD and export service | `internal/application/service/knowledge_faq.go` |
+| Asynchronous import service | `internal/application/service/knowledge_faq_import.go` |
+| Clone and sync | `internal/application/service/faq_clone_sync.go` |
+| FAQ retrieval post-processing | `internal/application/service/knowledgebase_search_faq.go` |
+| Knowledge base FAQ configuration | `internal/types/knowledgebase.go` (`FAQConfig`) |
