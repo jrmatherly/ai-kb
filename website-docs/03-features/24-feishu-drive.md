@@ -1,38 +1,44 @@
-# 飞书云盘接入
+# Feishu Drive
 
-`feishu_drive` / `lark_drive` 将指定文件夹内的文档和文件同步到知识库。Wiki 空间使用 `feishu` / `lark` 连接器；通用同步流程见[数据源同步](10-datasource.md)。
+The `feishu_drive` and `lark_drive` connectors sync the documents and files in a chosen Drive folder into a knowledge base. Wiki spaces use the `feishu` / `lark` connectors instead. The sync flow shared by every connector (schedule, scope, logs, deletion sync) is in [Data source import](10-datasource.md); this page covers what is specific to Drive.
 
-## 应用身份与文件夹权限
+## App identity and folder permissions
 
-使用对应区域的企业自建应用 App ID 与 App Secret；飞书与 Lark 的凭据不能混用。应按实际使用的接口开通读取权限：目录列举与文件下载、云文档导出，以及 blocks 模式下的 docx 内容读取。权限名称、可替代权限和申请要求以飞书开放平台的[文件夹列表接口](https://open.feishu.cn/document/server-docs/docs/drive-v1/folder/list)与[导出接口](https://open.feishu.cn/document/server-docs/docs/drive-v1/export_task/create)等接口说明为准。
+Before creating the data source, give a self-built app the right to read the folder.
 
-配置权限后发布应用版本，并把目标文件夹授权给应用可访问的范围。若通过应用所在群分享，核对应用、文件夹管理者和群的授权关系。API 权限与文件访问权是两层检查：能取得 tenant access token，不代表能读取任意文件夹。
+Use the App ID and App Secret of a self-built enterprise app in the matching region; Feishu and Lark credentials cannot be mixed. Grant read scopes for the APIs the connector actually calls: folder listing and file download, cloud document export, and docx content reading in `blocks` mode. The UI's prerequisite steps name `drive:drive:readonly`, `drive:export:readonly` and `docx:document:readonly`. Scope names, substitute scopes and approval requirements follow the Feishu Open Platform descriptions of the [folder list API](https://open.feishu.cn/document/server-docs/docs/drive-v1/folder/list), the [export API](https://open.feishu.cn/document/server-docs/docs/drive-v1/export_task/create) and the other endpoints used.
 
-WeKnora 内的连接测试验证应用凭据；随后加载资源树才会验证文件夹访问。若连接成功但目录报 403，应先检查分享范围和权限发布状态。
+After configuring scopes, publish an app version and share the target folder with a scope the app can access. If you share through the group the app belongs to, check the relationship between the app, the folder owner and the group. API scopes and file access are two separate checks: obtaining a tenant access token does not mean the app can read any folder.
 
-## 在知识库中配置
+The connection test in AI KB verifies the app credentials only; folder access is verified when the resource tree loads. If the connection succeeds but loading the folder returns 403, check the sharing scope and whether the app version with the new scopes was published.
 
-1. 知识库设置 → 数据源 → 新建，选择「飞书云盘」或「Lark Drive」。
-2. 填写 App ID 与 App Secret，执行连接测试。
-3. 输入具体文件夹的 `folder_token` 或完整 `/drive/folder/<token>` 链接，加载资源树并选择同步范围。不能留空使用云空间根目录。
-4. 选择全量/增量、同步计划、冲突策略与同步删除；保存后先手动同步少量文件，检查日志和解析结果。
+## Configure in a knowledge base
 
-增量同步会对照旧游标与当前文件树：仅在选定资源完整列举成功时，将消失的文件标记为删除；子目录列举失败时暂缓检测。开启同步删除才会据此删除**当前数据源对应的知识条目**，关闭则保留。首次同步或未携带旧游标的全量同步不能据此检测历史删除，删除失败也不能保证靠一次全量同步补齐，应检查同步日志与剩余条目。
+Follow these steps to create the data source and run the first sync.
 
-文档自身更新还会清理 blocks 模式中已消失的附件子项，这是内容更新的一部分，不受上述源文档同步删除开关控制。
+1. Knowledge base settings → Data sources → New, then choose "Feishu Drive" or "Lark Drive".
+2. Enter the App ID and App Secret and run the connection test.
+3. Enter the `folder_token` of a specific folder, or its full `/drive/folder/<token>` link, load the resource tree and select the sync scope. The field cannot be left empty to mean the root of the Drive space.
+4. Choose full or incremental sync, the schedule, the conflict policy and deletion sync. After saving, sync a few files by hand first and check the logs and parsing results.
 
-## 文件与解析模式
+An incremental sync compares the stored cursor with the current file tree. A file that disappeared is reported as deleted only when every selected resource was listed completely; when a sub-folder listing fails, deletion detection is skipped for that resource. With deletion sync on, such a report deletes **the knowledge items that belong to this data source**; with it off, the items stay. A first sync, or a user-triggered full sync, carries no previous cursor, so neither can detect past deletions. A failed deletion is not retried either: the sync log counts it, but a later full sync drops the cursor and an incremental sync no longer holds the vanished file, so remove the leftover item by hand after reading the log.
 
-普通文件下载后按文件类型进入解析流程；表格/多维表格导出为 xlsx，文件夹递归遍历，快捷方式解析到目标文件。不支持的云文档类型会跳过，应查看同步日志中的跳过原因。
+When a document itself is updated, attachment sub-items from `blocks` mode that no longer appear in the document are removed as part of the content update. That cleanup is independent of the deletion sync switch, which governs source documents.
 
-新版 docx 有两条路径，由 **app 服务**的 `FEISHU_DOCX_PARSE_MODE` 控制，同时影响 Wiki 与云盘连接器：
+## Files and parse modes
 
-| 模式 | 路径 | 适用与限制 |
+This section explains which Drive file types are imported and how a docx document is read.
+
+Ordinary files are downloaded and parsed by file type. Spreadsheets and Bitables are exported as xlsx, folders are walked recursively, and shortcuts resolve to their target file. Unsupported cloud document types (mind notes, slides, boards) are skipped; the sync log records the skip reason and a per-type tally.
+
+New-style docx documents have two paths, selected by `FEISHU_DOCX_PARSE_MODE` on the **app service**. The variable affects the Wiki and the Drive connectors alike:
+
+| Mode | Path | Use and limits |
 | --- | --- | --- |
-| 留空或 `export`（默认） | 异步导出 docx，再进入文档解析 | 图片随父文档解析；导出和解析耗时较长，内嵌 file block 附件不随导出保留 |
-| `blocks` | blocks API 转 Markdown；API 失败或正文为空时回退导出 | 保留可解析附件为独立条目；开启多模态同步时图片作为独立条目，不能假定检索会自动关联回正文 |
+| Empty or `export` (default) | Asynchronous docx export, then document parsing | Images are parsed with the parent document; export and parsing take longer; embedded file-block attachments are not kept by the export |
+| `blocks` | Blocks API converted to Markdown; falls back to export when the API fails or the body renders empty | Parseable attachments become separate items; with multimodal sync on, images become separate items too, and retrieval does not automatically relate them back to the body |
 
-需要 blocks 模式时在 `.env` 设置并重建 app：
+To use `blocks` mode, set it in `.env` and recreate the app service:
 
 ```dotenv
 FEISHU_DOCX_PARSE_MODE=blocks
@@ -42,17 +48,19 @@ FEISHU_DOCX_PARSE_MODE=blocks
 docker compose up -d app
 ```
 
-修改模式影响之后的抓取，不会把已入库内容自动转换成另一种格式。图片内容能否被检索还取决于对象存储、OCR/多模态处理和索引状态，见[文档解析](03-document-parsing.md)。
+Changing the mode affects later fetches only; content already imported is not converted to the other format. Whether image content is retrievable also depends on object storage, OCR or multimodal processing and the index state, see [Document parsing](03-document-parsing.md).
 
-## 常见问题
+## Troubleshooting
 
-| 现象 | 处理 |
+Use this table when a Drive sync fails or imports less than expected.
+
+| Symptom | What to do |
 | --- | --- |
-| Token 无效或凭据测试失败 | 核对飞书/Lark 区域、App ID/Secret 和私有代理地址 |
-| 加载文件夹失败 | 使用具体文件夹链接；检查 API 权限及文件夹分享授权 |
-| 云文档失败而普通文件正常 | 检查导出权限；blocks 模式另需 docx 读取权限 |
-| 同步数少于目录文件数 | 检查不支持类型、子目录授权、失败/跳过统计 |
-| 图片无法随正文召回 | 确认解析模式和多模态状态；blocks 独立图片与 export 内联图片语义不同 |
-| 文档变更后短暂不可检索 | 更新可能删除旧知识并重新入库，等待新版本解析和索引完成 |
+| Invalid token or the credential test fails | Check the Feishu/Lark region, the App ID and App Secret, and any private proxy address |
+| Loading the folder fails | Use the link of a specific folder; check the API scopes and the folder sharing |
+| Cloud documents fail while ordinary files work | Check the export scope; `blocks` mode also needs the docx read scope |
+| Fewer items synced than files in the folder | Check for unsupported types, sub-folder authorization, and the failed and skipped counts |
+| Images are not recalled with the body text | Confirm the parse mode and the multimodal state; `blocks` mode's separate images and `export` mode's inline images have different semantics |
+| A changed document is briefly not retrievable | An update may delete the old knowledge item and import it again; wait for the new version to finish parsing and indexing |
 
-实现参考：`internal/datasource/connector/feishu/drive/`、`core/shared.go` 和 `internal/application/service/datasource_service.go`。
+Implementation reference: `internal/datasource/connector/feishu/drive/`, `internal/datasource/connector/feishu/core/shared.go` and `internal/application/service/datasource_service.go`.

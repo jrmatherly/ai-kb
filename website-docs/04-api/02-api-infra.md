@@ -102,7 +102,7 @@ curl -X POST $BASE/api/v1/vector-stores/vs-1/test -H "Authorization: Bearer $TOK
 | --- | --- | --- | --- |
 | `name` | string | 是（`binding:"required"`） | 名称 |
 | `provider` | string | 是（`binding:"required"`） | 提供方：`local`/`minio`/`cos`/`tos`/`s3`/`oss`/`ks3`/`obs`，受 `STORAGE_ALLOW_LIST` 限制 |
-| `config` | object | 否 | 提供方配置，字段见[存储后端](../03-features/19-storage-backends.md#连接参数)（响应中凭证掩码） |
+| `config` | object | No | Provider configuration; fields in [Storage backends](../03-features/19-storage-backends.md#connection-parameters) (credentials are masked in responses) |
 | `status` | string | 否 | `active`（默认）/`disabled` |
 
 ### GET /api/v1/storage-backends/types

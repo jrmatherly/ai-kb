@@ -1,86 +1,90 @@
-# 存储后端（Storage Backends）
+# Storage backends
 
-存储后端保存原始文件、解析图片和导出产物。一个空间可以注册多个实例，指定默认实例，并为知识库单独选择存储位置。
+A storage backend holds the original files, the images extracted during parsing and exported Artifacts. A workspace can register several instances, mark one as the default, and give each knowledge base its own storage location.
 
-多实例存储适用于以下场景：
+Multiple instances are useful when you want to:
 
-- 将不同团队或项目的资料保存到独立存储桶，分别管理用量与权限；
-- 按数据存放要求选择存储桶所在地域；
-- 迁移到云对象存储时，让新知识库使用新后端，已有知识库继续访问原文件。
+- keep the material of different teams or projects in separate buckets, each with its own quota and permissions;
+- choose the bucket region that a data residency requirement demands;
+- move to cloud object storage gradually: new knowledge bases use the new backend while existing ones keep reading their original files.
 
 <Screenshot
   src="/screenshots/settings-storage-backends.png"
-  caption="存储后端设置：多实例列表、默认实例与连通性测试"
-  hint="展示已注册的存储后端卡片（provider、状态、默认标记）与新建/编辑表单，含「测试连接」结果。" />
+  caption="Storage backend settings: the instance list, the default instance and the connection test"
+  hint="The registered storage backend cards (provider, status, default badge) and the create/edit form with the result of 'Test connection'." />
 
-## 注册和选择存储后端 {#怎么配}
+## Registering and choosing a storage backend
 
-空间 Admin 可在「设置 → 存储」注册和管理实例：
+This section is for a workspace Admin who wants to add a storage instance and decide which knowledge bases use it. Instances are managed under Settings → Storage Engine:
 
-1. 新建后端，选 provider（`local` / `minio` / `cos` / `tos` / `s3` / `oss` / `ks3` / `obs`，与[文档入库流程](../02-architecture/03-document-pipeline.md)里的存储 provider 一致），填连接参数（见下表）。可选列表受环境变量 `STORAGE_ALLOW_LIST` 限制，留空表示全部可选；
-2. **测试连接**：测试会实际读写存储，验证端点、存储桶和凭据；
-3. 将实例设为空间默认。新建知识库未指定实例时使用该默认值；
-4. 需要单独指定时，在知识库编辑弹窗的「存储」页签选择实例。
+1. Create a backend: pick the provider (`local`, `minio`, `cos`, `tos`, `s3`, `oss`, `ks3` or `obs`, the same providers as in the [document pipeline](../02-architecture/03-document-pipeline.md)) and fill in the connection parameters (table below). The environment variable `STORAGE_ALLOW_LIST` restricts the providers on offer; leave it empty to allow all of them.
+2. **Test connection**: the test really reads and writes the storage to verify the endpoint, the bucket and the credentials. Saving runs the same test, so a backend that cannot be reached is not saved.
+3. Make the instance the workspace default. A new knowledge base that names no instance uses it.
+4. To pick an instance for one knowledge base, open the "Storage Engine" tab of the knowledge base edit dialog.
 
-知识库为空时可修改存储后端；已有文件时，界面会禁用选择并提示迁移。文件路径依赖入库时的后端，直接更换会影响原文件访问。需要更换时，应新建知识库并迁移内容。
+The storage backend of a knowledge base can be changed while it is empty. Once it holds files, the UI disables the selector and points to storage migration: file paths depend on the backend they were imported with, so switching in place would break access to the existing files. Create a new knowledge base and migrate the content instead.
 
-## 连接参数 {#连接参数}
+The same rule applies to a saved instance. Editing it may change its name, status and credentials, but the endpoint, region, bucket and path prefix are immutable; move the data with storage migration instead. A backend cannot be disabled or deleted while it is the workspace default or still bound to a knowledge base or an active resource, and a backend created from environment variables (`source: env`) is read-only.
 
-各 provider 共用一组配置字段，`access_key_id` / `secret_access_key` 加密保存，接口响应中掩码显示。
+## Connection parameters
 
-| 名称 | 类型 | 默认值 | 说明 |
+All providers share one set of configuration fields. `access_key_id` and `secret_access_key` are stored encrypted and come back masked in API responses.
+
+| Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `endpoint` | string | 空 | 服务地址。`minio`（`mode=remote`）、`tos`、`s3`、`oss`、`ks3`、`obs` 必填；`cos` 不需要。保存时做 SSRF 校验，内网地址需加入 `SSRF_WHITELIST` |
-| `region` | string | 空 | 地域。`cos`、`tos`、`s3`、`oss`、`ks3`、`obs` 必填 |
-| `access_key_id` / `secret_access_key` | string | 空 | 访问密钥；COS 对应 SecretId / SecretKey。`local` 与 `mode=docker` 的 MinIO 不需要 |
-| `bucket_name` | string | 空 | 存储桶，除 `local` 外必填 |
-| `path_prefix` | string | 空 | 对象键前缀，必须是相对路径，不能以 `/` 开头或包含 `..` |
-| `mode` | string | `remote` | 仅 MinIO：`docker` 使用部署自带的 MinIO（地址与密钥读取 `MINIO_ENDPOINT` 等环境变量），`remote` 连接外部 MinIO |
-| `use_ssl` | bool | false | MinIO、S3、OBS 是否使用 HTTPS |
-| `force_path_style` | bool | false | 仅 S3：使用 path-style 寻址，多数 S3 兼容服务需要开启 |
-| `app_id` | string | 空 | 仅 COS：腾讯云 AppID |
-| `temp_bucket_name` / `temp_region` | string | 空 | 仅 COS、TOS、OSS：临时文件使用的存储桶与地域；OSS 另需 `use_temp_bucket=true` 启用 |
+| `endpoint` | string | empty | Service address. Required for `minio` (`mode=remote`), `tos`, `s3`, `oss`, `ks3` and `obs`; `cos` does not use it. Saving runs an SSRF check, so a private address must be listed in `SSRF_WHITELIST` |
+| `region` | string | empty | Region. Required for `cos`, `tos`, `s3`, `oss`, `ks3` and `obs` |
+| `access_key_id` / `secret_access_key` | string | empty | Access credentials; for COS these are the SecretId / SecretKey. Not needed for `local` or for MinIO with `mode=docker` |
+| `bucket_name` | string | empty | Bucket. Required for every provider except `local` |
+| `path_prefix` | string | empty | Object key prefix. Must be a relative path: no leading `/` and no `..` |
+| `mode` | string | `remote` | MinIO only. `docker` uses the MinIO shipped with the deployment (address and credentials come from `MINIO_ENDPOINT` and the related environment variables); `remote` connects to an external MinIO |
+| `use_ssl` | bool | false | Whether MinIO, S3 and OBS use HTTPS |
+| `force_path_style` | bool | false | S3 only. Use path-style addressing; most S3-compatible services need it |
+| `app_id` | string | empty | COS only. The Tencent Cloud AppID |
+| `temp_bucket_name` / `temp_region` | string | empty | COS, TOS and OSS only. The bucket and region for temporary files; OSS also needs `use_temp_bucket=true` to enable them |
 
-- **OBS**：endpoint 为域名时使用虚拟主机寻址（`<bucket>.<endpoint>`），华为云自 2023-12-30 起拒绝域名 endpoint 的 path-style 请求；endpoint 为 IP 时仍用 path-style。未配置代理域名时，文件 URL 形如 `<scheme>://<bucket>.<endpoint-host>/<key>`。
-- **传输超时**：S3、COS、KS3、OBS、OSS 的单次上传/下载不再受 30 秒整体超时限制，改为单次传输最长 30 分钟；建连、TLS 握手和等待响应头仍有各自的超时，对端失联时会较快失败。
-- **KS3 重定向**：跟随重定向时逐跳做 SSRF 校验，不再把请求签名转发到重定向目标主机。
+- **OBS**: a domain endpoint uses virtual-hosted addressing (`<bucket>.<endpoint>`), because Huawei Cloud has rejected path-style requests on domain endpoints since 2023-12-30; an IP endpoint keeps path-style. Without a proxy domain, file URLs take the form `<scheme>://<bucket>.<endpoint-host>/<key>`.
+- **Transfer timeouts**: for S3, COS, KS3, OBS and OSS a single upload or download may take up to 30 minutes. Connection setup, the TLS handshake and the wait for response headers have their own shorter timeouts, so an unreachable peer fails quickly.
+- **KS3 redirects**: every hop of a redirect is SSRF-checked, and the request signature is not forwarded to the redirect target host.
 
-## 与向量存储的区别
+## Storage backend versus vector store
 
-文件存储和向量存储分别管理原文件与检索索引：
+File storage and vector storage are configured separately: one keeps the original files, the other the retrieval indexes.
 
-| | 存储后端（Storage Backend） | 向量存储（Vector Store） |
+| | Storage backend | Vector store |
 | --- | --- | --- |
-| 存什么 | 原始文件、图片、导出产物 | 向量与检索索引 |
-| 配在哪 | 「设置 → 存储」 | 「设置 → 向量库」 |
-| 知识库字段 | `storage_backend_id` | `vector_store_id` |
-| 相关章节 | 本篇 | [检索引擎与向量存储](05-retrieval-engines.md) |
+| What it holds | Original files, images, exported Artifacts | Vectors and retrieval indexes |
+| Where it is configured | Settings → Storage Engine | Settings → Vector Store |
+| Knowledge base field | `storage_backend_id` | `vector_store_id` |
+| Related page | This page | [Retrieval engines and vector stores](05-retrieval-engines.md) |
 
-## 接口参考 {#接口}
+Reading and serving the stored files (presigned URLs, `resource://` handles) is covered in [File access](21-file-access.md).
 
-| 方法 | 路径 | 权限 |
+## API reference
+
+| Method | Path | Permission |
 | --- | --- | --- |
-| GET | `/storage-backends/types` | Viewer+，返回 `STORAGE_ALLOW_LIST` 允许的 provider 名称列表 |
-| GET | `/storage-backends`、`/storage-backends/:id` | Viewer+ |
+| GET | `/storage-backends/types` | Viewer+, returns the provider names allowed by `STORAGE_ALLOW_LIST` |
+| GET | `/storage-backends`, `/storage-backends/:id` | Viewer+ |
 | POST | `/storage-backends` | Admin+ |
 | PUT / DELETE | `/storage-backends/:id` | Admin+ |
-| POST | `/storage-backends/test` | Admin+，用未保存的参数试连 |
-| POST | `/storage-backends/:id/test` | Admin+，测已保存的实例 |
-| PUT | `/storage-backends/:id/default` | Admin+，设为空间默认 |
+| POST | `/storage-backends/test` | Admin+, tests unsaved parameters |
+| POST | `/storage-backends/:id/test` | Admin+, tests a saved instance |
+| PUT | `/storage-backends/:id/default` | Admin+, makes the instance the workspace default |
 
-API Key 需要 `manage_storage_backends` 能力或 full-access。
+An API key needs the `manage_storage_backends` capability or full access.
 
-## 数据模型与兼容规则 {#数据模型与几个约束}
+## Data model and compatibility rules
 
-`storage_backends` 表（`tenant_id` 隔离，软删除）关键字段：
+The `storage_backends` table is isolated by `tenant_id` and uses soft deletes. Key columns:
 
-| 字段 | 说明 |
+| Column | Description |
 | --- | --- |
-| `name` | 空间内唯一（软删除下的部分唯一索引） |
-| `provider` | 存储类型 |
-| `config` | JSONB，含加密后的密钥 |
-| `source` | `user`（界面或 API 注册）/ `env`（由环境变量配置生成） |
-| `status` | `active` / `disabled` |
-| `legacy_alias` | 见下 |
+| `name` | Unique within the workspace (a partial unique index that ignores soft-deleted rows) |
+| `provider` | Storage type |
+| `config` | JSONB, with the credentials encrypted |
+| `source` | `user` (registered through the UI or API) or `env` (generated from environment variable configuration) |
+| `status` | `active` or `disabled` |
+| `legacy_alias` | See below |
 
-`legacy_alias` 用于兼容环境变量配置的历史存储。升级时创建别名记录，使已有文件路径继续可解析，无需搬迁数据。同一空间、同一 provider 只允许一条别名记录，手动注册的实例独立保存。
+`legacy_alias` keeps storage that was configured through environment variables working. An upgrade creates an alias record so that existing file paths still resolve without moving any data. One workspace may hold only one alias record per provider; manually registered instances are stored independently of it, and an alias record cannot be deleted while old file paths may still reference it.

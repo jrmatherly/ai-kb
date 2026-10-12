@@ -1,97 +1,109 @@
-# Seafile 接入
+# Seafile integration
 
-`seafile` 将一个 Seafile 资料库中勾选的目录和文件同步到知识库，支持定时、增量、断点续传和源端删除对账。兼容基线为 Seafile 社区版 Server 10.0.1（api2 接口）。通用同步流程见[数据源同步](10-datasource.md)。
+The `seafile` connector syncs the directories and files you select in one Seafile library into a knowledge base. It supports scheduled, incremental and resumable syncs and reconciles deletions at the source. The compatibility baseline is Seafile Server community edition 10.0.1 (the api2 interface). The sync flow shared by all connectors is described in [Data source import](10-datasource.md).
 
-## 账号与 API Token
+## Account and API token
 
-使用一个能登录 Seafile、对目标资料库至少有只读权限的账号；同步范围以该账号的权限为准。凭据是该账号的用户 API Token，连接器只保存和使用 Token，不处理账号密码、SSO 登录或资料库专用令牌。
+Decide which Seafile account the connector will act as. Use an account that can sign in to Seafile and has at least read access to the target library; the sync scope is bounded by that account's permissions. The credential is the account's user API token. The connector stores and sends only the token; it does not handle the account password, SSO login or library-specific tokens.
 
-Seafile 10.0.1 个人设置页的「Web API Auth Token」默认不显示，需要管理员在 `seahub_settings.py` 中设置 `ENABLE_GET_AUTH_TOKEN_BY_SESSION = True` 并重启 Seahub。也可以用账号密码调用 `POST /api2/auth-token/` 获取；启用双因素认证时，按响应中的 `X-Seafile-OTP` 要求补交验证码。
+In Seafile 10.0.1 the "Web API Auth Token" is hidden on the personal settings page by default. An administrator enables it with `ENABLE_GET_AUTH_TOKEN_BY_SESSION = True` in `seahub_settings.py` and restarts Seahub. The token can also be obtained with the account password through `POST /api2/auth-token/`; when two-factor authentication is on, supply the code as the `X-Seafile-OTP` response asks.
 
-WeKnora 内的连接测试调用 `/api2/auth/ping/` 验证 Token；资料库和目录是否可见要到加载资源树时才会验证。
+The connection test in AI KB calls `/api2/auth/ping/` to validate the token. Saving a data source with a selection also confirms that the selected library exists and is not encrypted. Directory access is checked when the resource tree loads and again during each sync.
 
-## 在知识库中配置
+## Configure it in a knowledge base
 
-1. 知识库设置 → 数据源 → 新建，选择「Seafile」。
-2. 填写 Seafile 地址和 API Token，执行连接测试。地址可以带部署路径前缀，如 `https://example.com/seafile`。
-3. 在资源树中勾选资料库根目录、任意目录或单个文件。顶层只列出该账号可访问的未加密资料库，目录逐级展开；一个数据源只能选同一个资料库，勾选第二个资料库会被拒绝。
-4. 选择全量/增量、同步计划、冲突策略与同步删除；保存后先手动同步少量文件，检查日志和解析结果。
+Follow these steps to connect a library and run the first sync.
 
-勾选目录表示递归同步，之后新增的文件和子目录自动纳入；勾选单个文件只同步该文件；子项被父目录覆盖时只保留父目录。选择器只列出 WeKnora 支持导入的扩展名，`.zip` 等不支持的文件不出现，也不会同步。
+1. Open the knowledge base settings, go to Data sources, create a new source and choose "Seafile".
+2. Enter the Seafile URL and the API token, then run the connection test. The URL may include a deployment path prefix, such as `https://example.com/seafile`.
+3. In the resource tree, select the library root, any directories or single files. The top level lists only the unencrypted libraries the account can reach; directories expand level by level. One data source covers one library; selecting a second library is rejected.
+4. Choose full or incremental mode, the sync schedule, the conflict strategy and "Sync deletions". After saving, sync a small set of files by hand first and check the sync log and the parsing results.
 
-## 网络与 SSRF
+Selecting a directory syncs it recursively, so files and subdirectories added later are picked up automatically. Selecting a single file syncs that file only. When a selected item sits under a selected parent directory, only the parent is kept. The picker lists only the extensions AI KB can import; unsupported files such as `.zip` do not appear and are never synced.
 
-| 请求 | 目标 | 携带 Token |
+## Network and SSRF
+
+Know which hosts the connector reaches so you can allow them before the first sync.
+
+| Request | Target | Carries the token |
 | --- | --- | --- |
-| API（`/api2/…`） | 配置的 Seafile 地址 | 是，`Authorization: Token` |
-| 文件下载 | Seafile 返回的 fileserver 链接，通常是同域名下的 `/seafhttp/…`，也可能是独立域名 | 否 |
+| API (`/api2/…`) | The configured Seafile URL | Yes, `Authorization: Token` |
+| File download | The fileserver link Seafile returns, usually `/seafhttp/…` on the same host, sometimes a separate host | No |
 
-两类地址都经过 SSRF 校验。Seafile 部署在私网或使用独立 fileserver 域名时，把对应主机加入 `.env` 的 `SSRF_WHITELIST`，否则保存凭据时报「base_url SSRF validation failed」，或同步日志出现 `seafile_ssrf_blocked`。
+Both addresses pass SSRF validation. When Seafile runs on a private network or uses a separate fileserver host, add that host to `SSRF_WHITELIST` in `.env`. Otherwise saving the credentials fails with "base_url SSRF validation failed", or the sync log shows `seafile_ssrf_blocked`.
 
-## 目录、格式与大小
+## Folders, formats and size
 
-同步进来的文件按 `<资料库名>/<资料库内路径>` 落到知识库目录，来源标签显示为「Seafile」。资料库名在首次同步时写入游标并固定，之后在 Seafile 改名不会改变知识库目录，也不会触发重新下载。目录名和文件名逐段清理非法字符。
+This section explains where synced files land and which files are accepted.
 
-格式范围与知识库上传一致（PDF、Office、Markdown、HTML、常见图片、音频等），以 `internal/utils/import_filetypes.go` 为准。图片需要知识库配置 VLM，音频需要配置 ASR；未配置时条目在同步日志中记为入库失败，不影响其他文件。
+Synced files land in the knowledge base folder `<library name>/<path inside the library>`, and the source label reads "Seafile". The library name is written into the cursor on the first sync and frozen: renaming the library in Seafile later does not change the knowledge base folder and does not trigger a re-download. Every folder and file name segment is sanitized separately.
 
-单文件上限沿用 `MAX_FILE_SIZE_MB`（默认 50 MiB）：目录列表中超限的文件直接记为 `seafile_file_too_large` 且不下载，下载中实际字节数超限同样拒绝，不会截断入库。调大该值时须同步调整 DocReader 的 `DOCREADER_GRPC_MAX_FILE_SIZE_MB` 并重启 app、docreader、frontend，否则文件能下载但解析阶段被 gRPC 拒绝。
+The accepted formats are the same as for knowledge base uploads (PDF, Office, Markdown, HTML, common images, audio and others); `internal/utils/import_filetypes.go` is the authoritative list. Images need a VLM configured on the knowledge base and audio needs ASR. Without them, the item is recorded as an ingest failure in the sync log and the other files are unaffected.
 
-## 同步行为
+The per-file limit follows `MAX_FILE_SIZE_MB` (default 50 MiB). A file that exceeds it in the directory listing is recorded as `seafile_file_too_large` and never downloaded; a download whose actual bytes exceed the limit is rejected the same way, never truncated. When you raise the value, raise the DocReader limit `DOCREADER_GRPC_MAX_FILE_SIZE_MB` with it and restart app, docreader and frontend; otherwise the file downloads but gRPC rejects it at the parsing stage. Under Docker Compose `DOCREADER_GRPC_MAX_FILE_SIZE_MB` defaults to `MAX_FILE_SIZE_MB`, so one setting covers both.
 
-每个文件以「对象 ID + 修改时间 + 大小」组成指纹保存在游标中，三者都相同则跳过下载；指纹变化时重新下载并覆盖旧条目（先删后建，解析期间该文档短暂不可用）。无变化的一轮只做目录扫描，请求数等于目录数。
+## Sync behavior
 
-| 源端操作 | 行为 |
+This section describes what a sync does with each change at the source.
+
+Each file is stored in the cursor as a fingerprint of "object ID + modification time + size". When all three match, the download is skipped. When the fingerprint changes, the file is downloaded again and replaces the old item (delete first, then create, so the document is briefly unavailable while it is parsed). A run with no changes only scans directories, one request per directory.
+
+| Change at the source | Behavior |
 | --- | --- |
-| 新增文件或子目录 | 下次同步纳入 |
-| 修改内容 | 重新下载并更新 |
-| 删除文件 | 开启「同步删除」时删除对应知识条目，否则仅从游标移除 |
-| 重命名、移动或移出范围 | 新路径按新文件导入，旧路径按删除处理；不保留知识条目 ID |
-| 勾选的目录或文件被删除、改名 | 本轮报错停止，不产生任何删除；需重新选择范围 |
-| 资料库改名 | 无变化，目录名沿用首次同步时的名字 |
+| New file or subdirectory | Included in the next sync |
+| Modified content | Downloaded again and updated |
+| Deleted file | Deletes the knowledge item when "Sync deletions" is on; otherwise only removed from the cursor |
+| Renamed, moved or moved out of scope | The new path is imported as a new file and the old path is treated as deleted; the knowledge item ID is not preserved |
+| A selected directory or file is deleted or renamed | The run stops with an error and produces no deletions; select the scope again |
+| Library renamed | No change; the folder keeps the name from the first sync |
 
-失败处理：
+Failure handling:
 
-| 情况 | 行为 |
+| Situation | Behavior |
 | --- | --- |
-| 单文件 403 / 404 / 5xx、网络错误、超限、空文件、下载中变化 | 记为失败条目，其余文件继续；该路径留在游标中，下次同步重试 |
-| 目录列表 403 / 404 / 5xx 或响应畸形 | 保存已完成的进度后停止，本轮不产生任何删除 |
-| 429 / 502 / 503 / 504 或临时网络错误 | 同一请求最多 3 次尝试，退避 1s、2s；`Retry-After` 不超过 60s 时取其值，超过则停止本轮 |
-| Token 失效（401 / 403） | 凭据错误，数据源进入错误状态 |
+| A single file returns 403 / 404 / 5xx, a network error, exceeds the limit, is empty or changes during download | Recorded as a failed item; the other files continue. The path stays in the cursor and is retried in the next sync |
+| A directory listing returns 403 / 404 / 5xx or a malformed response | Saves the progress so far and stops; the run produces no deletions |
+| 429 / 502 / 503 / 504 or a transient network error | Up to 3 attempts per request with 1s and 2s backoff. A `Retry-After` of up to 60s is honored (the longer of the backoff and the header); a longer one stops the run |
+| Token invalid (401 / 403) | Credential error; the data source enters the error state |
 
-每 50 次游标变更、发出删除前和结束时保存检查点；任务超时或中断后，下次从最后一个检查点继续，已保存的文件不重复下载。首次同步数万文件的大资料库可能跨多次任务执行才完成。强制全量同步会重新下载全部文件，同时保留旧游标作为删除对账基线。
+A checkpoint is saved every 50 cursor changes, before deletions are emitted and at the end of the run. After a task timeout or interruption, the next run continues from the last checkpoint and files already saved are not downloaded again. The first sync of a large library with tens of thousands of files may take several task runs to complete. A forced full sync downloads every file again while keeping the old cursor as the deletion baseline.
 
-「连接器获取重试」与「入库解析恢复」是两回事：前者指下载失败的文件在下次同步重新下载；后者指文件已提交入库但解析、索引失败，由知识库侧的重试机制处理，同步日志中显示为入库失败。
+"Connector fetch retry" and "ingest recovery" are two different things. The first means a file whose download failed is downloaded again in the next sync. The second means a file was handed to the knowledge base but parsing or indexing failed; the knowledge base's own retry handles that, and the sync log shows it as an ingest failure.
 
-同步日志错误码：
+Sync log error codes:
 
-| 错误码 | 含义 |
+| Code | Meaning |
 | --- | --- |
-| `seafile_permission_denied` | Token 所属账号无权访问该文件或目录 |
-| `seafile_not_found` | 文件在扫描后消失；下次同步重试，已从资料库消失则按「同步删除」开关对账 |
-| `seafile_file_too_large` | 超过 `MAX_FILE_SIZE_MB` |
-| `seafile_empty_file` | 文件为空，跳过 |
-| `seafile_source_changed` | 下载过程中文件被修改，下次同步重试 |
-| `seafile_invalid_response` | Seafile 返回无法解析的响应，多为版本或反向代理问题 |
-| `seafile_ssrf_blocked` | 下载地址被 SSRF 策略拦截 |
-| `seafile_fetch_failed` | 其他获取失败，下次同步重试 |
+| `seafile_permission_denied` | The token's account cannot access the file or directory |
+| `seafile_not_found` | The file disappeared after the scan; retried in the next sync, and if it is gone from the library it is reconciled according to the "Sync deletions" switch |
+| `seafile_file_too_large` | Exceeds `MAX_FILE_SIZE_MB` |
+| `seafile_empty_file` | The file is empty and was skipped |
+| `seafile_source_changed` | The file changed while it was being downloaded; retried in the next sync |
+| `seafile_invalid_response` | Seafile returned a response that could not be parsed, usually a version or reverse proxy problem |
+| `seafile_ssrf_blocked` | The download URL was blocked by the SSRF policy |
+| `seafile_fetch_failed` | Any other fetch failure; retried in the next sync |
 
-## 注意事项
+## Notes
 
-- 已同步的数据源不能改绑其他资料库：改选后下一次同步会以「该数据源已同步资料库 <旧名>」失败且游标不变，需新建数据源。保存前先取消已选项即可换库。
-- 删除对账不保证补删：目录扫描失败的那一轮不产生删除；「同步删除」关闭期间发生的删除，重新开启后不会追溯。
-- 删除或重建数据源不会清理已导入的知识条目，遗留内容需在知识库中单独清理。
-- 加密资料库不出现在选择器中，也不支持同步；SeaDoc 在线文档、自定义属性和双向同步不在支持范围内。
+Keep these limits in mind when you change a data source or clean up after one.
 
-## 常见问题
+- A synced data source cannot be re-pointed at another library. After changing the selection, the next sync fails with "this data source already synced Seafile library …" (naming the original library) and the cursor stays unchanged; create a new data source instead. To switch libraries before the first sync, clear the selection before saving.
+- Deletion reconciliation does not guarantee catch-up deletions. A run whose directory scan failed produces no deletions, and deletions that happened while "Sync deletions" was off are not applied retroactively when it is turned back on.
+- Deleting or recreating a data source does not remove the knowledge items it imported; clean up leftover content in the knowledge base yourself.
+- Encrypted libraries do not appear in the picker and cannot be synced. SeaDoc online documents, custom properties and two-way sync are out of scope.
 
-| 现象 | 处理 |
+## FAQ
+
+Match the symptom you see to its cause.
+
+| Symptom | Fix |
 | --- | --- |
-| 保存凭据时报 SSRF 校验失败 | Seafile 地址是私网或被拦截端口，加入 `SSRF_WHITELIST` |
-| 「Seafile library … not found」 | Token 所属账号看不到该资料库，或资料库已删除 |
-| 「encrypted Seafile libraries are not supported」 | 选中的资料库是加密库 |
-| 同步日志大量 `seafile_ssrf_blocked` | fileserver 域名与 API 域名不同且未加白 |
-| 同步日志 `seafile_file_too_large` | 调大 `MAX_FILE_SIZE_MB` 与 `DOCREADER_GRPC_MAX_FILE_SIZE_MB` 后重启 |
-| 文件已下载但知识条目解析失败 | 属入库解析问题，检查 VLM / ASR 配置和 DocReader 日志 |
-| 「this data source already synced Seafile library …」 | 改绑了资料库，恢复原资料库或新建数据源 |
+| Saving credentials fails SSRF validation | The Seafile URL is on a private network or a blocked port; add it to `SSRF_WHITELIST` |
+| "Seafile library … not found" | The token's account cannot see the library, or the library was deleted |
+| "encrypted Seafile libraries are not supported" | The selected library is encrypted |
+| Many `seafile_ssrf_blocked` entries in the sync log | The fileserver host differs from the API host and is not allowlisted |
+| `seafile_file_too_large` in the sync log | Raise `MAX_FILE_SIZE_MB` and `DOCREADER_GRPC_MAX_FILE_SIZE_MB`, then restart |
+| The file downloaded but the knowledge item failed to parse | An ingest problem; check the VLM / ASR configuration and the DocReader logs |
+| "this data source already synced Seafile library …" | The library was changed; restore the original library or create a new data source |
 
-实现参考：`internal/datasource/connector/seafile/` 和 `internal/application/service/datasource_service.go`。
+Implementation references: `internal/datasource/connector/seafile/` and `internal/application/service/datasource_service.go`.
