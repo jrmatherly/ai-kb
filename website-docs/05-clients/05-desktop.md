@@ -123,7 +123,7 @@ The file has mode `0600`. Fields:
 | `http_bind_public` | bool | false | Whether to listen on `0.0.0.0` (allows LAN or public access to the embedded API) |
 | `project_dirs` | string[] | empty | Local project directories (absolute paths) approved through the system folder picker. Only directories in this list can be bound to a session |
 | `approval_mode` | string | `auto` | Host sandbox approval mode. Unknown values count as `auto`. `ask` and `full` are not available yet: saving them is rejected, and a hand-written `ask` or `full` makes the host sandbox refuse to run |
-| `session_root` | string | empty | Declared but not read. Temporary session workspaces always go under `~/Documents/WeKnoraLite/` |
+| `session_root` | string | empty | Declared but not read. Temporary session workspaces always go under `~/Documents/AIKBLite/` |
 
 Read and write entry points: `LoadDesktopPrefsHTTPPort()` / `LoadDesktopHTTPBindPublic()` / `SaveDesktopHTTPPortPreference()` / `SaveDesktopHTTPBindPublicPreference()`, plus `LoadProjectDirs()` / `LoadApprovalMode()` for the host sandbox. A missing or unparsable file silently falls back to zero values. `project_dirs` can only grow through the folder picker (`PickProjectDir` or `POST /api/v1/system/host-project-dir`). A path typed by hand is never treated as approved.
 

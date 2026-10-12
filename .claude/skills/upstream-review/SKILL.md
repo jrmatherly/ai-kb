@@ -99,7 +99,7 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 ## Version and changelog
 
 - `CHANGELOG.md` stays as upstream left it, as history. New entries are ours; do not port upstream's entries. Record adopted SHAs in the decision log.
-- Versioning switches to dated CalVer (decided 2026-10-12). Exact format still open: `YYYY-MM-DD` as stated, or `YYYY.M.D[.MICRO]` as `~/dev/ai-workspace` uses, which is also valid semver for `frontend/package.json` and the Helm chart. Until the switch lands, `VERSION`, `frontend/package.json` `version` and `website-docs/VERSION` follow upstream and a release bump is ADOPT. After it, never take upstream's version: keep ours on conflict.
+- Versioning switches to dated CalVer (decided 2026-10-12). Format `YYYY.M.D[.MICRO]` (decided 2026-10-12, as `~/dev/ai-workspace` uses), so `frontend/package.json` and the Helm chart take the same string as valid semver. Until the switch lands, `VERSION`, `frontend/package.json` `version` and `website-docs/VERSION` follow upstream and a release bump is ADOPT. After it, never take upstream's version: keep ours on conflict.
 
 ## Dependencies
 
@@ -116,7 +116,8 @@ At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock
 | Go module `github.com/Tencent/WeKnora` | `github.com/jrmatherly/ai-kb` | A codemod over about 2,100 Go files. Afterwards every import block differs; a pick that adds an import conflicts there. Resolve by taking upstream's hunk and rerunning the module-path rewrite on that file. |
 | locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `WEKNORA_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
 | `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | Upstream commits touching them: SKIP. |
-| `VERSION` semver `0.8.x` | dated CalVer | See "Version and changelog". |
+| `VERSION` semver `0.8.x` | dated CalVer `YYYY.M.D[.MICRO]` | See "Version and changelog". |
+| CLI command `weknora` (`cli/`), its config dir `~/.config/weknora`, project file `.weknora/` | `aikb` (decided 2026-10-12) | No map row yet: lowercase `weknora` also names databases, MCP tool names (`weknora_search`), Helm templates and `dsh-weknora`. Scope the rows in the code rebrand; `cli/scripts/check-skill-wire-vocab.sh` guards the wire names. |
 
 Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
 

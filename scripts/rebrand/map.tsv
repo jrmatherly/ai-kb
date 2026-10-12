@@ -10,6 +10,8 @@ weknora\.weixin\.qq\.com	ai-kb-docs.matherly.net
 # --- directories, containers, network, desktop app name (before the product-name rule) ---
 cd WeKnora\b	cd ai-kb
 \bWeKnora Lite\b	AI KB Lite
+\bWeKnoraLite\b	AIKBLite
+DB_NAME:-WeKnora\b	DB_NAME:-ai_kb
 \bWeKnora-network\b	ai-kb-network
 \bWeKnora-(app|docreader|frontend|ui|postgres|redis|sandbox|mcp|minio|neo4j|qdrant|milvus|weaviate|searxng|dex|odl-hybrid|langfuse-[a-z-]+)\b	ai-kb-$1
 # --- helm chart and release name, local image, in-image path ---
