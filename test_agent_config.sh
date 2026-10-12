@@ -1,44 +1,44 @@
 #!/bin/bash
 
-# Agent 配置功能测试脚本
+# Test script for the agent configuration feature
 
 set -e
 
 echo "========================================="
-echo "Agent 配置功能测试"
+echo "Agent configuration feature test"
 echo "========================================="
 echo ""
 
-# 颜色定义
+# Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# 配置
+# Settings
 API_BASE_URL="http://localhost:8080"
-KB_ID="kb-00000001"  # 修改为你的知识库ID
+KB_ID="kb-00000001"  # Change to your knowledge base ID
 TENANT_ID="1"
 
-echo "配置信息："
-echo "  API地址: ${API_BASE_URL}"
-echo "  知识库ID: ${KB_ID}"
-echo "  空间ID: ${TENANT_ID}"
+echo "Settings:"
+echo "  API URL: ${API_BASE_URL}"
+echo "  Knowledge base ID: ${KB_ID}"
+echo "  Workspace ID: ${TENANT_ID}"
 echo ""
 
-# 测试 1：获取当前配置
-echo -e "${YELLOW}测试 1: 获取当前配置${NC}"
+# Test 1: get the current configuration
+echo -e "${YELLOW}Test 1: get the current configuration${NC}"
 echo "GET ${API_BASE_URL}/api/v1/initialization/config/${KB_ID}"
 RESPONSE=$(curl -s -X GET "${API_BASE_URL}/api/v1/initialization/config/${KB_ID}")
-echo "响应:"
+echo "Response:"
 echo "$RESPONSE" | jq '.data.agent' || echo "$RESPONSE"
 echo ""
 
-# 测试 2：保存 Agent 配置
-echo -e "${YELLOW}测试 2: 保存 Agent 配置${NC}"
+# Test 2: save the agent configuration
+echo -e "${YELLOW}Test 2: save the agent configuration${NC}"
 echo "POST ${API_BASE_URL}/api/v1/initialization/initialize/${KB_ID}"
 
-# 准备测试数据（需要包含完整的配置）
+# Prepare test data (must contain the full configuration)
 TEST_DATA='{
   "llm": {
     "source": "local",
@@ -62,7 +62,7 @@ TEST_DATA='{
   "documentSplitting": {
     "chunkSize": 512,
     "chunkOverlap": 100,
-    "separators": ["\n\n", "\n", "。", "！", "？", ";", "；"]
+    "separators": ["\n\n", "\n", "\u3002", "\uff01", "\uff1f", ";", "\uff1b"]
   },
   "nodeExtract": {
     "enabled": false
@@ -80,52 +80,52 @@ RESPONSE=$(curl -s -X POST "${API_BASE_URL}/api/v1/initialization/initialize/${K
   -d "$TEST_DATA")
 
 if echo "$RESPONSE" | grep -q '"success":true'; then
-  echo -e "${GREEN}✓ Agent 配置保存成功${NC}"
+  echo -e "${GREEN}✓ Agent configuration saved${NC}"
   echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
 else
-  echo -e "${RED}✗ Agent 配置保存失败${NC}"
+  echo -e "${RED}✗ Failed to save the agent configuration${NC}"
   echo "$RESPONSE"
 fi
 echo ""
 
-# 等待一下，确保数据已保存
+# Wait briefly so the data is saved
 sleep 1
 
-# 测试 3：验证配置已保存
-echo -e "${YELLOW}测试 3: 验证配置已保存${NC}"
+# Test 3: verify the configuration was saved
+echo -e "${YELLOW}Test 3: verify the configuration was saved${NC}"
 echo "GET ${API_BASE_URL}/api/v1/initialization/config/${KB_ID}"
 RESPONSE=$(curl -s -X GET "${API_BASE_URL}/api/v1/initialization/config/${KB_ID}")
 AGENT_CONFIG=$(echo "$RESPONSE" | jq '.data.agent')
 
-echo "Agent 配置:"
+echo "Agent configuration:"
 echo "$AGENT_CONFIG" | jq '.'
 
-# 检查配置是否正确
+# Check that the configuration is correct
 ENABLED=$(echo "$AGENT_CONFIG" | jq -r '.enabled')
 MAX_ITER=$(echo "$AGENT_CONFIG" | jq -r '.maxIterations')
 TEMP=$(echo "$AGENT_CONFIG" | jq -r '.temperature')
 
 if [ "$ENABLED" == "true" ] && [ "$MAX_ITER" == "8" ] && [ "$TEMP" == "0.8" ]; then
-  echo -e "${GREEN}✓ 配置验证成功 - 所有值正确${NC}"
+  echo -e "${GREEN}✓ Configuration verified - all values correct${NC}"
 else
-  echo -e "${RED}✗ 配置验证失败${NC}"
-  echo "  enabled: $ENABLED (期望: true)"
-  echo "  maxIterations: $MAX_ITER (期望: 8)"
-  echo "  temperature: $TEMP (期望: 0.8)"
+  echo -e "${RED}✗ Configuration verification failed${NC}"
+  echo "  enabled: $ENABLED (expected: true)"
+  echo "  maxIterations: $MAX_ITER (expected: 8)"
+  echo "  temperature: $TEMP (expected: 0.8)"
 fi
 echo ""
 
-# 测试 4：使用 Tenant API 获取配置
-echo -e "${YELLOW}测试 4: 使用 Tenant API 获取配置${NC}"
+# Test 4: get the configuration through the Tenant API
+echo -e "${YELLOW}Test 4: get the configuration through the Tenant API${NC}"
 echo "GET ${API_BASE_URL}/api/v1/tenants/${TENANT_ID}/agent-config"
 RESPONSE=$(curl -s -X GET "${API_BASE_URL}/api/v1/tenants/${TENANT_ID}/agent-config")
-echo "响应:"
+echo "Response:"
 echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
 echo ""
 
-# 测试 5：数据库验证（如果可以访问）
-echo -e "${YELLOW}测试 5: 数据库验证${NC}"
-echo "提示: 请手动运行以下 SQL 查询验证数据："
+# Test 5: database check (if the database is reachable)
+echo -e "${YELLOW}Test 5: database check${NC}"
+echo "Tip: run the following SQL query by hand to verify the data:"
 echo ""
 echo "MySQL:"
 echo "  mysql -u root -p weknora -e \"SELECT id, agent_config FROM tenants WHERE id = ${TENANT_ID};\""
@@ -135,13 +135,13 @@ echo "  psql -U postgres -d weknora -c \"SELECT id, agent_config FROM tenants WH
 echo ""
 
 echo "========================================="
-echo "测试完成！"
+echo "Tests finished."
 echo "========================================="
 echo ""
-echo "如果所有测试都通过，Agent 配置功能已正常工作。"
-echo "如果有测试失败，请检查："
-echo "  1. 后端服务是否正在运行"
-echo "  2. 数据库迁移是否已执行"
-echo "  3. 知识库ID是否正确"
+echo "If every test passed, the agent configuration feature works."
+echo "If a test failed, check:"
+echo "  1. The backend service is running"
+echo "  2. The database migrations have run"
+echo "  3. The knowledge base ID is correct"
 echo ""
 

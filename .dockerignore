@@ -4,7 +4,7 @@
 .gitignore
 .gitattributes
 
-# 编辑器 / IDE 本地配置
+# Editor / IDE local settings
 .cursor/
 .claude/
 .codebuddy/
@@ -14,29 +14,29 @@
 *.swo
 .DS_Store
 
-# Python 虚拟环境 / 缓存
+# Python virtual environments / caches
 **/.venv/
 .venv_proto/
 **/.python-version
 **/__pycache__/
 **/*.pyc
 
-# Node / 前端
-# 注意:build-ui 用的 context 是 ./frontend,根 .dockerignore 对它无效,
-# 其它镜像(app/docreader/sandbox)的 Dockerfile 都不引用 frontend/,
-# 所以这里可以直接排除整个 frontend/ 目录。
+# Node / frontend
+# Note: build-ui uses ./frontend as its context, so the root .dockerignore does not apply to it.
+# The Dockerfiles of the other images (app/docreader/sandbox) do not reference frontend/,
+# so the whole frontend/ directory can be excluded here.
 **/node_modules/
 frontend/
 WeKnora-Chrome-Extension/
 
-# 日志 / 临时文件
+# Logs / temporary files
 logs/
 tmp/
 temp/
 *.log
 *.pid
 
-# 本地构建产物 / 二进制
+# Local build output / binaries
 WeKnora
 WeKnora-lite
 /server
@@ -45,7 +45,7 @@ WeKnora-lite
 /artifacts/browserskill/
 cmd/desktop/build/bin/
 
-# 本地数据 / 模型文件
+# Local data / model files
 /models/
 data/files/
 data/*.db
@@ -53,7 +53,7 @@ data/*.db-wal
 data/*.db-shm
 test/data/mswag.txt
 
-# 敏感文件
+# Sensitive files
 .env
 .env.lite
 *.pem
@@ -62,16 +62,16 @@ test/data/mswag.txt
 *_key
 *_secret
 
-# 大的归档/压缩包
+# Large archives / compressed files
 packages/protoc-*.zip
 !packages/protoc-*-linux-x86_64.zip
 !packages/protoc-*-linux-aarch_64.zip
 !packages/protoc-*-linux-arm.zip
 
-# 本地测试脚本
+# Local test scripts
 configure-ollama.sh
 fix-docker.sh
 /scripts/scale_dev_jobs.sh
 
-# 注意:不要排除 docs/ —— 里面的 docs.go / swagger.json 是 Go 代码依赖的 swagger 包
-# 注意:不要用 *.md 通配排除 —— skills/preloaded/**/SKILL.md 会被打进镜像给 agent 用
+# Note: do not exclude docs/. Its docs.go / swagger.json form the swagger package the Go code depends on
+# Note: do not exclude with a *.md wildcard. skills/preloaded/**/SKILL.md is packed into the image for the agent

@@ -1,29 +1,29 @@
-# 忽略所有隐藏文件和目录
+# Ignore all hidden files and directories
 .*
-# 但不忽略特定隐藏文件和目录
+# But keep specific hidden files and directories
 !.env.example
 !.gitignore
 !.gitkeep
 !.github/
 
-# 敏感文件
+# Sensitive files
 *.pem
 *_key
 *_secret
 *.key
 *.crt
 
-# IDE和编辑器文件
+# IDE and editor files
 *.swp
 *.swo
 
-# 构建和依赖文件
+# Build and dependency files
 node_modules/
 /dist/
 /build/
 *.log
 
-# 临时文件
+# Temporary files
 tmp/
 temp/
 logs/
@@ -51,7 +51,7 @@ WeKnora-Chrome-Extension
 packages/protoc-3.19.4-linux-x86_64.zip
 
 
-# 本地测试脚本
+# Local test scripts
 configure-ollama.sh
 fix-docker.sh
 

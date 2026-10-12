@@ -1,7 +1,7 @@
 version: "2"
 linters:
   enable:
-    - lll           # 控制行宽
+    - lll           # line length
     - govet
     - revive
   settings:

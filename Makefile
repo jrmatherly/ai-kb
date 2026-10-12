@@ -2,75 +2,75 @@
 
 # Show help
 help:
-	@echo "WeKnora Makefile 帮助"
+	@echo "AI KB Makefile help"
 	@echo ""
-	@echo "基础命令:"
-	@echo "  build             构建应用"
-	@echo "  run               运行应用"
-	@echo "  test              运行测试"
-	@echo "  anydoc-lib        构建 anydoc 静态库（需要 Rust 工具链）"
-	@echo "  build-anydoc      构建带 anydoc 解析引擎的应用"
-	@echo "  clean             清理构建文件"
+	@echo "Basic commands:"
+	@echo "  build             Build the application"
+	@echo "  run               Run the application"
+	@echo "  test              Run tests"
+	@echo "  anydoc-lib        Build the anydoc static library (needs the Rust toolchain)"
+	@echo "  build-anydoc      Build the application with the anydoc parsing engine"
+	@echo "  clean             Remove build files"
 	@echo ""
-	@echo "Docker 命令:"
-	@echo "  docker-build-app       构建应用 Docker 镜像 (wechatopenai/weknora-app)"
-	@echo "  docker-build-docreader 构建文档读取器镜像 (wechatopenai/weknora-docreader)"
-	@echo "  docker-build-frontend  构建前端镜像 (wechatopenai/weknora-ui)"
-	@echo "  docker-build-all       构建所有 Docker 镜像"
-	@echo "  docker-run            运行 Docker 容器"
-	@echo "  docker-stop           停止 Docker 容器"
-	@echo "  docker-restart        重启 Docker 容器"
+	@echo "Docker commands:"
+	@echo "  docker-build-app       Build the application Docker image (wechatopenai/weknora-app)"
+	@echo "  docker-build-docreader Build the document reader image (wechatopenai/weknora-docreader)"
+	@echo "  docker-build-frontend  Build the frontend image (wechatopenai/weknora-ui)"
+	@echo "  docker-build-all       Build all Docker images"
+	@echo "  docker-run            Run the Docker containers"
+	@echo "  docker-stop           Stop the Docker containers"
+	@echo "  docker-restart        Restart the Docker containers"
 	@echo ""
-	@echo "服务管理:"
-	@echo "  start-all         启动所有服务"
-	@echo "  stop-all          停止所有服务"
-	@echo "  start-ollama      仅启动 Ollama 服务"
+	@echo "Service management:"
+	@echo "  start-all         Start all services"
+	@echo "  stop-all          Stop all services"
+	@echo "  start-ollama      Start only the Ollama service"
 	@echo ""
-	@echo "镜像构建:"
-	@echo "  build-images      从源码构建所有镜像"
-	@echo "  build-images-app  从源码构建应用镜像"
-	@echo "  build-images-docreader 从源码构建文档读取器镜像"
-	@echo "  build-images-frontend  从源码构建前端镜像"
-	@echo "  clean-images      清理本地镜像"
+	@echo "Image builds:"
+	@echo "  build-images      Build all images from source"
+	@echo "  build-images-app  Build the application image from source"
+	@echo "  build-images-docreader Build the document reader image from source"
+	@echo "  build-images-frontend  Build the frontend image from source"
+	@echo "  clean-images      Remove local images"
 	@echo ""
-	@echo "数据库:"
-	@echo "  migrate-up        执行数据库迁移"
-	@echo "  migrate-down      回滚数据库迁移"
+	@echo "Database:"
+	@echo "  migrate-up        Run database migrations"
+	@echo "  migrate-down      Roll back database migrations"
 	@echo ""
-	@echo "开发工具:"
-	@echo "  fmt               格式化代码"
-	@echo "  lint              代码检查"
-	@echo "  deps              安装依赖"
-	@echo "  docs              生成 Swagger API 文档"
-	@echo "  install-swagger   安装 swag 工具"
+	@echo "Developer tools:"
+	@echo "  fmt               Format code"
+	@echo "  lint              Lint code"
+	@echo "  deps              Install dependencies"
+	@echo "  docs              Generate the Swagger API docs"
+	@echo "  install-swagger   Install the swag tool"
 	@echo ""
-	@echo "模型厂商目录:"
-	@echo "  model-catalog-check   校验厂商目录（不变量 + 新旧行为对照 + 厂商测试）"
-	@echo "  model-catalog-diff    对比 models.dev，输出模型元数据差异报告（需人工审阅）"
-	@echo "                        可选: make model-catalog-diff VENDOR=deepseek"
+	@echo "Model vendor catalog:"
+	@echo "  model-catalog-check   Check the vendor catalog (invariants + old/new behavior comparison + vendor tests)"
+	@echo "  model-catalog-diff    Compare with models.dev and report model metadata differences (needs human review)"
+	@echo "                        Optional: make model-catalog-diff VENDOR=deepseek"
 	@echo ""
-	@echo "环境检查:"
-	@echo "  check-env         检查环境配置"
-	@echo "  list-containers   列出运行中的容器"
-	@echo "  pull-images       拉取最新镜像"
-	@echo "  show-platform     显示当前构建平台"
+	@echo "Environment checks:"
+	@echo "  check-env         Check the environment configuration"
+	@echo "  list-containers   List running containers"
+	@echo "  pull-images       Pull the latest images"
+	@echo "  show-platform     Show the current build platform"
 	@echo ""
-	@echo "开发模式（推荐）:"
-	@echo "  dev-start         启动开发环境基础设施（仅启动依赖服务）"
-	@echo "                    可选: make dev-start DEV_ARGS=--odl-hybrid"
-	@echo "  dev-stop          停止开发环境"
-	@echo "  dev-restart       重启开发环境"
-	@echo "  dev-logs          查看开发环境日志"
-	@echo "  dev-status        查看开发环境状态"
-	@echo "  dev-app           启动后端应用（本地运行，需先运行 dev-start）"
-	@echo "                    已 make anydoc-lib 时自动链接 anydoc 引擎"
-	@echo "  dev-frontend      启动前端（本地运行，需先运行 dev-start）"
+	@echo "Development mode (recommended):"
+	@echo "  dev-start         Start the development infrastructure (dependency services only)"
+	@echo "                    Optional: make dev-start DEV_ARGS=--odl-hybrid"
+	@echo "  dev-stop          Stop the development environment"
+	@echo "  dev-restart       Restart the development environment"
+	@echo "  dev-logs          Show development environment logs"
+	@echo "  dev-status        Show development environment status"
+	@echo "  dev-app           Start the backend locally (run dev-start first)"
+	@echo "                    Links the anydoc engine automatically after make anydoc-lib"
+	@echo "  dev-frontend      Start the frontend locally (run dev-start first)"
 	@echo ""
-	@echo "Lite 模式（零外部依赖）:"
-	@echo "  build-lite        构建 Lite 版本（先构建前端到 web/，再构建 Go；SKIP_FRONTEND=1 跳过前端）"
-	@echo "  run-lite          构建并启动 Lite 版本"
-	@echo "  package-lite      构建并打包 Lite 发行包（tarball）"
-	@echo "  package-mac-app   构建并打包 macOS 桌面应用 (.app)"
+	@echo "Lite mode (no external dependencies):"
+	@echo "  build-lite        Build the Lite version (frontend into web/ first, then Go; SKIP_FRONTEND=1 skips the frontend)"
+	@echo "  run-lite          Build and start the Lite version"
+	@echo "  package-lite      Build and package the Lite release (tarball)"
+	@echo "  package-mac-app   Build and package the macOS desktop app (.app)"
 
 # Go related variables
 BINARY_NAME=WeKnora
@@ -122,7 +122,7 @@ model-catalog-check:
 	go test ./internal/models/...
 
 # Vendor catalog: report where our model metadata differs from models.dev.
-# Development aid only — nothing is fetched at runtime and nothing is written
+# Development aid only: nothing is fetched at runtime and nothing is written
 # automatically; review each line against the vendor's own documentation.
 .PHONY: model-catalog-diff
 model-catalog-diff:
@@ -135,7 +135,7 @@ clean:
 
 # Build Docker image
 docker-build-app:
-	@echo "获取版本信息..."
+	@echo "Getting version info..."
 	@eval $$(./scripts/get_version.sh env); \
 	./scripts/get_version.sh info; \
 	docker build --platform $(PLATFORM) \
@@ -160,8 +160,8 @@ docker-build-frontend:
 # Build all Docker images
 docker-build-all: docker-build-app docker-build-docreader docker-build-frontend
 
-# Run Docker container (传统方式)
-# Touch .env if missing — docker-compose.yml's `env_file: [.env]` is required
+# Run Docker container (legacy method)
+# Touch .env if missing: docker-compose.yml's `env_file: [.env]` is required
 # for ${ENV} interpolation in builtin_models.yaml and would otherwise refuse
 # to parse on fresh clones. `start-all` handles this via check_env_file; this
 # direct path needs its own guard.
@@ -169,27 +169,27 @@ docker-run:
 	@[ -f .env ] || ([ -f .env.example ] && cp .env.example .env || touch .env)
 	docker-compose up
 
-# 使用新脚本启动所有服务
+# Start all services with the new script
 start-all:
 	./scripts/start_all.sh
 
-# 使用新脚本仅启动Ollama服务
+# Start only the Ollama service with the new script
 start-ollama:
 	./scripts/start_all.sh --ollama
 
-# 使用新脚本仅启动Docker容器
+# Start only the Docker containers with the new script
 start-docker:
 	./scripts/start_all.sh --docker
 
-# 使用新脚本停止所有服务
+# Stop all services with the new script
 stop-all:
 	./scripts/start_all.sh --stop
 
-# Stop Docker container (传统方式)
+# Stop Docker container (legacy method)
 docker-stop:
 	docker-compose down
 
-# 从源码构建镜像相关命令
+# Build images from source
 build-images:
 	./scripts/build_images.sh
 
@@ -255,11 +255,11 @@ migrate-goto:
 # values, so definitions lose their package-qualified names and
 # docs/swagger_contract_test.go fails.
 docs:
-	@echo "生成 Swagger API 文档..."
+	@echo "Generating Swagger API docs..."
 	swag init -g $(MAIN_PATH)/main.go -o ./docs --parseDependency --parseInternal \
 		--exclude ./internal/localsandbox
-	@echo "文档已生成到 ./docs 目录"
-	@echo "启动服务后访问 http://localhost:8080/swagger/index.html 查看文档"
+	@echo "Docs generated in ./docs"
+	@echo "After starting the service, open http://localhost:8080/swagger/index.html to view the docs"
 
 # Install swagger tool
 install-swagger:
@@ -293,7 +293,7 @@ build-prod:
 	go build -tags "$(GO_BUILD_TAGS)" -ldflags="-w -s $$LDFLAGS" -o $(BINARY_NAME) $(MAIN_PATH)
 
 # Build Lite version (single binary, SQLite + in-memory queue)
-# 会先构建前端到 web/，再构建 Go 二进制；SKIP_FRONTEND=1 可跳过前端
+# Builds the frontend into web/ first, then the Go binary; SKIP_FRONTEND=1 skips the frontend
 build-lite:
 	@if [ -f frontend/package.json ] && [ "$${SKIP_FRONTEND:-}" != "1" ]; then \
 		echo ">> Building frontend for Lite..."; \
@@ -354,8 +354,8 @@ pull-images:
 
 # Show current platform
 show-platform:
-	@echo "当前系统架构: $(shell uname -m)"
-	@echo "Docker构建平台: $(PLATFORM)"
+	@echo "Current system architecture: $(shell uname -m)"
+	@echo "Docker build platform: $(PLATFORM)"
 
 # Development mode commands
 dev-start:
