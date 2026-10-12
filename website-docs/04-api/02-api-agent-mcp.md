@@ -409,7 +409,7 @@ curl -X POST $BASE/api/v1/agent/mcp-oauth-resolutions/p-1/cancel -H "Authorizati
 
 ## Skills, sandbox and personal variables
 
-`GET /api/v1/skills?sandbox_config_id=...` returns the name and description of each usable skill under that configuration plus `skills_available`; with `agent_id` + `agent_source_tenant_id` it answers for the shared agent's source workspace and that agent's sandbox configuration, see the [sandbox and skills API](02-api-sandbox-skills.md). Catalog registration, installation, templates, progress, files and personal variables are covered in full by the [sandbox and skills API](02-api-sandbox-skills.md).
+`GET /api/v1/skills?sandbox_config_id=...` returns the name and description of each usable skill under that configuration plus `skills_available`; with `agent_id` + `agent_source_tenant_id` it answers for the shared agent's source workspace and that agent's sandbox configuration, see the [sandbox and skills API](02-api-sandbox-skills.md#skills-inside-a-sandbox). Catalog registration, installation, templates, progress, files and personal variables are covered in full by the [sandbox and skills API](02-api-sandbox-skills.md#personal-environment-variables).
 
 The agent config gains `sandbox_config_id`; together with `skills_selection_mode` and `selected_skills` it decides which skills are available. Shell and file tools are registered according to the backend's capabilities; the legacy `read_skill` / `execute_skill_script` tools are no longer registered.
 

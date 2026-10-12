@@ -1,26 +1,32 @@
-# API 参考：FAQ 与 Wiki
+# API reference: FAQ and Wiki
 
-管理知识库中的 FAQ 条目与 Wiki 页面，支持导入、检索、编辑和版本恢复。
+Manage FAQ entries and Wiki pages inside a knowledge base: import, search, edit and restore versions.
 
-两组均为 KB 内容子资源：读为 Viewer+ 且 KB read（API key `retrieve`/full）；写为“KB 创建者 OR Admin+”且 KB write（API key `ingest`/full），并受 KB 白名单约束。跨库 Wiki 搜索 `POST /wiki-search` 无路径 KB，Viewer+ 且 API key `retrieve`/full，handler 内校验每个目标库的 allow-list 与共享库 Viewer 权限。
+Both groups are knowledge base content sub-resources. Reads require Viewer+ and read access to the knowledge base (API key `retrieve` or full access). Writes require "KB creator OR Admin+" and write access (API key `ingest` or full access), and every key stays bound to its knowledge base allow-list. The cross-knowledge-base Wiki search `POST /wiki-search` has no knowledge base in its path: it requires Viewer+ and API key `retrieve` or full access, and the handler checks the allow-list and shared-knowledge-base Viewer access for every target knowledge base.
 
-## FAQ（/api/v1/knowledge-bases/:id/faq）
+The feature pages [FAQ](../03-features/17-faq.md) and [Wiki](../03-features/14-wiki.md) describe the data model, the import pipeline and version history.
+
+## FAQ (/api/v1/knowledge-bases/:id/faq)
+
+Routes: `RegisterFAQRoutes` in `internal/router/routes_knowledge.go`. Handler: `internal/handler/faq.go`.
 
 ### GET /api/v1/knowledge-bases/:id/faq/entries
 
-用途：FAQ 条目列表。
+Purpose: list FAQ entries.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `page` / `page_size` | int | 否 | 分页 |
-| `tag_id` | int | 否 | 旧版单标签 seq_id |
-| `tag_ids` | string | 否 | 逗号分隔标签 UUID |
-| `keyword` | string | 否 | 关键字 |
-| `search_field` | string | 否 | `standard_question`/`similar_questions`/`answers`（默认全字段） |
-| `sort_order` | string | 否 | `asc`（默认按更新时间倒序） |
-| `is_enabled` | bool | 否 | 按启用状态筛选：`true` 仅启用、`false` 仅停用，不传返回全部；其他取值返回 400 |
+| `page` / `page_size` | int | no | Pagination |
+| `tag_id` | int | no | Legacy single tag seq_id |
+| `tag_ids` | string | no | Comma-separated tag UUIDs (OR semantics) |
+| `keyword` | string | no | Keyword |
+| `search_field` | string | no | `standard_question` / `similar_questions` / `answers` (all fields by default) |
+| `sort_order` | string | no | `asc` (default: newest updated first) |
+| `is_enabled` | bool | no | Filter by enabled state: `true` enabled only, `false` disabled only, omitted returns all; any other value returns 400 |
 
-响应：200 `{"success":true,"data":{分页 FAQEntry 列表}}`
+Response: 200 `{"success":true,"data":{paginated FAQEntry list}}`
+
+A `FAQEntry` carries `id` (seq_id), `chunk_id`, `knowledge_id`, `knowledge_base_id`, `tag_id`, `tag_name`, `is_enabled`, `is_recommended`, `standard_question`, `similar_questions`, `negative_questions`, `answers`, `answer_strategy`, `index_mode`, `chunk_type`, `created_at` and `updated_at`. Search results add `score`, `match_type` and `matched_question`.
 
 ```bash
 curl "$BASE/api/v1/knowledge-bases/kb-1/faq/entries?page=1&is_enabled=false" -H "Authorization: Bearer $TOKEN"
@@ -28,9 +34,9 @@ curl "$BASE/api/v1/knowledge-bases/kb-1/faq/entries?page=1&is_enabled=false" -H 
 
 ### GET /api/v1/knowledge-bases/:id/faq/entries/export
 
-用途：导出 FAQ。查询参数：`format`（`csv` 默认 / `json`）。
+Purpose: export the FAQ. Query parameter: `format` (`csv`, the default, or `json`). The JSON export is an array compatible with `FAQEntryPayload`, so an export can be edited and re-imported.
 
-响应：200 文件下载（`text/csv` 或 `application/json`）。
+Response: 200 file download (`text/csv` with a UTF-8 BOM, or `application/json`).
 
 ```bash
 curl -OJ "$BASE/api/v1/knowledge-bases/kb-1/faq/entries/export?format=csv" -H "Authorization: Bearer $TOKEN"
@@ -38,9 +44,9 @@ curl -OJ "$BASE/api/v1/knowledge-bases/kb-1/faq/entries/export?format=csv" -H "A
 
 ### GET /api/v1/knowledge-bases/:id/faq/entries/:entry_id
 
-用途：FAQ 条目详情（`entry_id` 为整数 seq_id）。
+Purpose: one FAQ entry (`entry_id` is the integer seq_id).
 
-响应：200 `{"success":true,"data":{FAQEntry}}`
+Response: 200 `{"success":true,"data":{FAQEntry}}`
 
 ```bash
 curl $BASE/api/v1/knowledge-bases/kb-1/faq/entries/12 -H "Authorization: Bearer $TOKEN"
@@ -48,80 +54,84 @@ curl $BASE/api/v1/knowledge-bases/kb-1/faq/entries/12 -H "Authorization: Bearer 
 
 ### POST /api/v1/knowledge-bases/:id/faq/entries
 
-用途：批量 upsert / 导入（异步任务）。Handler 方法 `UpsertEntries`。
+Purpose: batch upsert / import (asynchronous task). Handler method `UpsertEntries`.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `entries` | []FAQEntryPayload | 是（`binding:"required"`） | 批量条目 |
-| `mode` | string | 是（`binding:"oneof=append replace"`） | 追加或替换 |
-| `knowledge_id` | string | 否 | FAQ 知识实体 ID |
-| `task_id` | string | 否 | 自定义任务 ID，仅允许字母、数字、`_`、`-`，最长 128 字符，否则返回 400 |
-| `dry_run` | bool | 否 | 仅校验不落库 |
+| `entries` | []FAQEntryPayload | yes (`binding:"required"`) | Entries to import |
+| `mode` | string | yes (`binding:"oneof=append replace"`) | Append or replace |
+| `knowledge_id` | string | no | FAQ knowledge entity ID |
+| `task_id` | string | no | Custom task ID: letters, digits, `_` and `-` only, at most 128 characters, otherwise 400 |
+| `dry_run` | bool | no | Validate only, write nothing |
 
-响应：200 `{"success":true,"data":{"task_id"}}`
+The task processes entries in batches of 50. In `replace` mode, existing entries whose content hash matches an incoming entry are kept as they are; the rest are deleted and re-created, and tags left unused are removed afterwards. A `dry_run` runs the same validation asynchronously, returns a `task_id`, and records no knowledge base activity. Only one import may run per knowledge base at a time; a second request returns 400 with the running task ID.
+
+Response: 200 `{"success":true,"data":{"task_id"}}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/faq/entries -H "X-API-Key: $API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{"mode":"append","entries":[{"standard_question":"如何退款?","answers":["联系客服"]}]}'
+  -d '{"mode":"append","entries":[{"standard_question":"How do I get a refund?","answers":["Contact support"]}]}'
 ```
 
 ### POST /api/v1/knowledge-bases/:id/faq/entry
 
-用途：创建单条 FAQ。请求体（`types.FAQEntryPayload`）：
+Purpose: create one FAQ entry. Request body (`types.FAQEntryPayload`):
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `standard_question` | string | 是（`binding:"required"`） | 标准问 |
-| `similar_questions` | []string | 否 | 相似问 |
-| `negative_questions` | []string | 否 | 负样例问 |
-| `answers` | []string | 否 | 答案列表 |
-| `answer_strategy` | string | 否 | `all` / `random` |
-| `tag_id` | int64 | 否 | 标签 seq_id |
-| `tag_name` | string | 否 | 标签名 |
-| `is_enabled` / `is_recommended` | *bool | 否 | 启用/推荐 |
+| `standard_question` | string | yes (`binding:"required"`) | Standard question |
+| `similar_questions` | []string | no | Similar questions |
+| `negative_questions` | []string | no | Negative example questions |
+| `answers` | []string | no | Answer list |
+| `answer_strategy` | string | no | `all` / `random` |
+| `tag_id` | int64 | no | Tag seq_id |
+| `tag_name` | string | no | Tag name |
+| `is_enabled` / `is_recommended` | *bool | no | Enabled / recommended |
 
-响应：200 `{"success":true,"data":{FAQEntry}}`
+Response: 200 `{"success":true,"data":{FAQEntry}}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/faq/entry -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"standard_question":"如何退款?","answers":["7 天内可退"]}'
+  -H 'Content-Type: application/json' -d '{"standard_question":"How do I get a refund?","answers":["Refunds are accepted within 7 days"]}'
 ```
 
 ### PUT /api/v1/knowledge-bases/:id/faq/entries/:entry_id
 
-用途：更新单条 FAQ（请求体同创建）。
+Purpose: update one FAQ entry (same body as create).
 
-响应：200 `{"success":true,"data":{FAQEntry}}`
+In `separate` index mode the per-question index records are keyed by a `SourceID`. A full re-index keys them by position (`<chunk_id>-<position>`), while an incremental update through this route keys them by question hash (`<chunk_id>-<md5 prefix>`), so a position-keyed record is not matched by a later hash-keyed update.
+
+Response: 200 `{"success":true,"data":{FAQEntry}}`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/entries/12 -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"standard_question":"如何退款?","answers":["30 天内可退"]}'
+  -H 'Content-Type: application/json' -d '{"standard_question":"How do I get a refund?","answers":["Refunds are accepted within 30 days"]}'
 ```
 
 ### POST /api/v1/knowledge-bases/:id/faq/entries/:entry_id/similar-questions
 
-用途：追加相似问。请求体：`{"similar_questions":["..."]}`（`binding:"required,min=1"`）。
+Purpose: append similar questions. Request body: `{"similar_questions":["..."]}` (`binding:"required,min=1"`).
 
-响应：200 `{"success":true,"data":{FAQEntry}}`
+Response: 200 `{"success":true,"data":{FAQEntry}}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/faq/entries/12/similar-questions \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"similar_questions":["退款怎么操作"]}'
+  -d '{"similar_questions":["How does a refund work?"]}'
 ```
 
 ### PUT /api/v1/knowledge-bases/:id/faq/entries/fields
 
-用途：批量更新条目字段（`is_enabled`/`is_recommended`/`tag_id`）。
+Purpose: batch update entry fields (`is_enabled` / `is_recommended` / `tag_id`).
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `by_id` | map[int64]object | 否 | 按条目 seq_id 更新 |
-| `by_tag` | map[int64]object | 否 | 按标签批量更新 |
-| `exclude_ids` | []int64 | 否 | `by_tag` 时排除的条目 |
+| `by_id` | map[int64]object | no | Update by entry seq_id |
+| `by_tag` | map[int64]object | no | Update every entry under a tag seq_id |
+| `exclude_ids` | []int64 | no | Entries excluded from a `by_tag` update |
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/entries/fields -H "Authorization: Bearer $TOKEN" \
@@ -130,9 +140,9 @@ curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/entries/fields -H "Authorizati
 
 ### PUT /api/v1/knowledge-bases/:id/faq/entries/tags
 
-用途：批量改条目标签。请求体：`{"updates":{"<entry_id>":<tag_id|null>}}`（`binding:"required,min=1"`；null 移除标签）。
+Purpose: batch change entry tags. Request body: `{"updates":{"<entry_id>":<tag_id|null>}}` (`binding:"required,min=1"`; `null` removes the tag).
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/entries/tags -H "Authorization: Bearer $TOKEN" \
@@ -141,9 +151,9 @@ curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/entries/tags -H "Authorization
 
 ### DELETE /api/v1/knowledge-bases/:id/faq/entries
 
-用途：批量删除条目。请求体：`{"ids":[int64]}`（`binding:"required,min=1"`）。
+Purpose: batch delete entries. Request body: `{"ids":[int64]}` (`binding:"required,min=1"`).
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X DELETE $BASE/api/v1/knowledge-bases/kb-1/faq/entries -H "Authorization: Bearer $TOKEN" \
@@ -152,28 +162,28 @@ curl -X DELETE $BASE/api/v1/knowledge-bases/kb-1/faq/entries -H "Authorization: 
 
 ### POST /api/v1/knowledge-bases/:id/faq/search
 
-用途：FAQ 检索（只读语义，scoped key 用 `retrieve` 亦可调用）。
+Purpose: FAQ retrieval (read semantics; a scoped key with `retrieve` may call it).
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `query_text` | string | 是（`binding:"required"`） | 查询 |
-| `vector_threshold` | float64 | 否 | 向量阈值，默认 0.7 |
-| `match_count` | int | 否 | 默认 10，上限 50 |
-| `first_priority_tag_ids` / `second_priority_tag_ids` | []int64 | 否 | 标签优先级过滤 |
-| `only_recommended` | bool | 否 | 仅推荐条目 |
+| `query_text` | string | yes (`binding:"required"`) | Query |
+| `vector_threshold` | float64 | no | Vector threshold, default 0.7 |
+| `match_count` | int | no | Default 10, capped at 200 |
+| `first_priority_tag_ids` / `second_priority_tag_ids` | []int64 | no | Two-level tag priority filter |
+| `only_recommended` | bool | no | Recommended entries only |
 
-响应：200 `{"success":true,"data":[FAQEntry(含 match_type/score)]}`
+Response: 200 `{"success":true,"data":[FAQEntry with match_type/score]}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/faq/search -H "X-API-Key: $API_KEY" \
-  -H 'Content-Type: application/json' -d '{"query_text":"退款"}'
+  -H 'Content-Type: application/json' -d '{"query_text":"refund"}'
 ```
 
 ### PUT /api/v1/knowledge-bases/:id/faq/import/last-result/display
 
-用途：设置最近一次导入结果面板的显示状态。请求体：`{"display_status":"open|close"}`（`binding:"required,oneof=open close"`）。
+Purpose: set the display state of the last import result panel. Request body: `{"display_status":"open|close"}` (`binding:"required,oneof=open close"`).
 
-响应：200 `{"success":true}`
+Response: 200 `{"success":true}`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/import/last-result/display \
@@ -182,34 +192,36 @@ curl -X PUT $BASE/api/v1/knowledge-bases/kb-1/faq/import/last-result/display \
 
 ### GET /api/v1/faq/import/progress/:task_id
 
-用途：查询 FAQ 导入/dry-run 进度（任务按空间隔离）。权限：Viewer+；API key `retrieve`/`ingest`/full。
+Purpose: progress of an FAQ import or dry run (tasks are isolated per workspace). Permission: Viewer+; API key `retrieve`, `ingest` or full access.
 
-响应：200 `{"success":true,"data":{status,progress,failed_entries,...}}`
+Response: 200 `{"success":true,"data":{FAQImportProgress}}` with `status`, `progress` (0-100), `total`, `processed`, `success_count`, `failed_count`, `partial_failed_count`, `skipped_count`, `failed_entries` (or `failed_entries_url` when there are many) and `success_entries`.
 
 ```bash
 curl $BASE/api/v1/faq/import/progress/task-1 -H "X-API-Key: $API_KEY"
 ```
 
-## Wiki（/api/v1/knowledgebase/:kb_id/wiki）
+## Wiki (/api/v1/knowledgebase/:kb_id/wiki)
 
-注意此组前缀为 `/knowledgebase/:kb_id/wiki`（单数，无连字符）。Handler: `internal/handler/wiki_page.go`。本组响应多为**原始对象**（不带 `success` 包装）。
+This group's prefix is `/knowledgebase/:kb_id/wiki` (singular, no hyphen). Routes: `RegisterWikiPageRoutes` in `internal/router/routes_knowledge.go`. Handler: `internal/handler/wiki_page.go`. Most responses in this group are **raw objects** (no `success` envelope); errors are `{"error":"..."}`.
+
+Manual page changes made through this API are projected into the knowledge base activity stream with the actions `manual_create`, `manual_edit`, `revert` and `manual_delete`.
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/pages
 
-用途：Wiki 页面列表。
+Purpose: list Wiki pages.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `page_type` | string | 否 | 逗号分隔类型 |
-| `status` | string | 否 | 页面状态 |
-| `query` | string | 否 | 全文搜索 |
-| `category_path` | string | 否 | `/` 分隔路径过滤 |
-| `folder_id` | string | 否 | 精确目录过滤（空串=根） |
-| `category_depth` | int | 否 | 目录深度 |
-| `page` / `page_size` | int | 否 | 分页（默认 1/20） |
-| `sort_by` / `sort_order` | string | 否 | 排序字段：`title`、`created_at`、`updated_at`、`page_type`、`wiki_path`、`sort_order`、`depth`，其他值按 `updated_at`；默认 `updated_at` desc |
+| `page_type` | string | no | Comma-separated types |
+| `status` | string | no | Page status |
+| `query` | string | no | Full-text search |
+| `category_path` | string | no | `/`-separated path filter |
+| `folder_id` | string | no | Exact folder filter (empty string = root) |
+| `category_depth` | int | no | Folder depth |
+| `page` / `page_size` | int | no | Pagination (default 1 / 20) |
+| `sort_by` / `sort_order` | string | no | Sort field: `title`, `created_at`, `updated_at`, `page_type`, `wiki_path`, `sort_order`, `depth`; any other value sorts by `updated_at`; default `updated_at` desc |
 
-响应：200 `WikiPageListResponse`
+Response: 200 `WikiPageListResponse` (`pages`, `total`, `page`, `page_size`, `total_pages`)
 
 ```bash
 curl "$BASE/api/v1/knowledgebase/kb-1/wiki/pages?page=1" -H "Authorization: Bearer $TOKEN"
@@ -217,20 +229,20 @@ curl "$BASE/api/v1/knowledgebase/kb-1/wiki/pages?page=1" -H "Authorization: Bear
 
 ### POST /api/v1/knowledgebase/:kb_id/wiki/pages
 
-用途：创建页面。请求体（`types.WikiPage`）：`slug`、`title`、`content`、`folder_id`、`page_type` 等（均可选，slug 缺省自动生成）。
+Purpose: create a page. Request body (`types.WikiPage`): `slug` (required; the slug is unique per knowledge base, index `idx_wiki_pages_kb_slug`), `title`, `content`, `folder_id`, `page_type`, `status` and the other page fields. An unknown `page_type` or `status` returns 400. A missing slug is rejected by the service and currently surfaces as 500 with `wiki page slug is required`.
 
-响应：201 `WikiPage`
+Response: 201 `WikiPage`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/pages -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"title":"架构概览","content":"# 概览"}'
+  -H 'Content-Type: application/json' -d '{"slug":"overview","title":"Architecture overview","content":"# Overview"}'
 ```
 
 ### PUT /api/v1/knowledgebase/:kb_id/wiki/move-page
 
-用途：移动页面到目录。请求体：`{"slug":"<页面slug>","folder_id":"<目录ID|空=根>"}`（slug 必填）。
+Purpose: move a page into a folder. Request body: `{"slug":"<page slug>","folder_id":"<folder ID, empty = root>"}` (`slug` is required and travels in the body because hierarchical slugs would collide with the catch-all path parameter).
 
-响应：200 `WikiPage`
+Response: 200 `WikiPage`. Unknown page or folder: 404; conflict: 409.
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledgebase/kb-1/wiki/move-page -H "Authorization: Bearer $TOKEN" \
@@ -239,9 +251,9 @@ curl -X PUT $BASE/api/v1/knowledgebase/kb-1/wiki/move-page -H "Authorization: Be
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/pages/*slug
 
-用途：获取页面（`*slug` 为通配路径）。
+Purpose: fetch a page (`*slug` is a catch-all path).
 
-响应：200 `WikiPageDetail`。保留 `WikiPage` 的所有字段，并增加 `in_link_titles`，将 `in_links` 中存在的页面 slug 映射为展示标题，例如 `{"concept/example":"示例标题"}`。没有可解析的反向链接时返回空对象；不存在的目标不出现在映射中。标题查询失败时返回 500，避免返回不完整的成功响应。
+Response: 200 `WikiPageDetail`. It keeps every `WikiPage` field and adds `in_link_titles`, a map from the slugs in `in_links` that exist to their display titles, for example `{"concept/example":"Example title"}`. With no resolvable backlinks the map is empty; targets that do not exist are left out. If the title lookup fails the route returns 500 rather than an incomplete success response.
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/pages/overview -H "Authorization: Bearer $TOKEN"
@@ -249,48 +261,48 @@ curl $BASE/api/v1/knowledgebase/kb-1/wiki/pages/overview -H "Authorization: Bear
 
 ### PUT /api/v1/knowledgebase/:kb_id/wiki/pages/*slug
 
-用途：更新页面（请求体同创建）。旧版本会先整份快照进 `wiki_page_revisions`，`version` 递增，`last_edit_source` 记为 `user`（Agent 工具写入时为 `agent`）。
+Purpose: update a page (same body as create; absent fields keep their stored value). The previous version is first snapshotted in full into `wiki_page_revisions`, `version` increments, and `last_edit_source` is recorded as `user` (`agent` when an agent tool writes). A concurrent edit returns 409.
 
-响应：200 `WikiPage`
+Response: 200 `WikiPage`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledgebase/kb-1/wiki/pages/overview -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"content":"# 更新后的概览"}'
+  -H 'Content-Type: application/json' -d '{"content":"# Updated overview"}'
 ```
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/revisions/*slug
 
-用途：页面版本历史（migration `000075`）。权限：Viewer+ + KBAccessRead。
+Purpose: page version history (migration `000075`). Permission: Viewer+ and KBAccessRead.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `version` | int | 否 | 传入时返回**该版本全文**（用于 diff），无效或 < 1 返回 400，找不到返回 404（升级前写入的版本或已被保留策略清理的快照都没有全文，属正常情况） |
-| `limit` | int | 否 | 默认 50，上限 200；仅列表模式生效 |
-| `offset` | int | 否 | 分页偏移 |
+| `version` | int | no | When given, returns the **full text of that version** (for diffing); invalid or < 1 returns 400, not found returns 404 (versions written before the upgrade and snapshots pruned by the retention policy have no full text, which is expected) |
+| `limit` | int | no | Default 50, capped at 200; list mode only |
+| `offset` | int | no | Pagination offset |
 
-不带 `version` 时返回历史列表（版本号倒序、**不含正文**）加上页面当前版本号；每条含 `edit_source`（`pipeline` / `agent` / `user` / `revert`）、`editor_id`、`edited_at`。
+Without `version` the response is the history list (newest version first, **without bodies**) plus `total` and the page's `current_version`; each item carries `edit_source` (`pipeline` / `agent` / `user` / `revert`), `editor_id` and `edited_at`.
 
-历史保留是两级上限：软上限 50 版只裁剪 `pipeline` 与空来源的快照，硬上限 200 版对所有来源生效，因此人工编辑不会被管道刷掉。
+Retention has two caps: the soft cap of 50 versions prunes only `pipeline` and empty-source snapshots, the hard cap of 200 versions applies to every source, so manual edits are not flushed out by the pipeline.
 
 ```bash
-# 历史列表
+# History list
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/revisions/entity/acme-corp -H "Authorization: Bearer $TOKEN"
-# 取第 3 版全文
+# Full text of version 3
 curl "$BASE/api/v1/knowledgebase/kb-1/wiki/revisions/entity/acme-corp?version=3" -H "Authorization: Bearer $TOKEN"
 ```
 
 ### POST /api/v1/knowledgebase/:kb_id/wiki/revert
 
-用途：把页面回滚到某个历史版本。权限：KB owner 或 Admin+ + KBAccessWrite。
+Purpose: roll a page back to a historical version. Permission: KB owner or Admin+ and KBAccessWrite.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `slug` | string | 是 | 目标页面 |
-| `version` | int | 是 | 目标版本号（≥ 1） |
+| `slug` | string | yes | Target page |
+| `version` | int | yes | Target version number (>= 1) |
 
-回滚**不会把版本号退回去**：目标版本的内容会作为一个新版本写入，`last_edit_source` 记为 `revert`，所以回滚也能被回滚。回滚到当前版本返回 400（一般是前端历史列表过期）。
+A rollback **does not move the version number backwards**: the target version's content is written as a new version with `last_edit_source` set to `revert`, so a rollback can itself be rolled back. Reverting to the current version returns 400 (usually a stale history list in the frontend). Unknown page or revision: 404; concurrent edit: 409.
 
-响应：200 `WikiPage`
+Response: 200 `WikiPage`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/revert -H "Authorization: Bearer $TOKEN" \
@@ -299,9 +311,9 @@ curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/revert -H "Authorization: Bear
 
 ### DELETE /api/v1/knowledgebase/:kb_id/wiki/pages/*slug
 
-用途：删除页面。
+Purpose: delete a page.
 
-响应：204 No Content
+Response: 204 No Content
 
 ```bash
 curl -X DELETE $BASE/api/v1/knowledgebase/kb-1/wiki/pages/overview -H "Authorization: Bearer $TOKEN"
@@ -309,9 +321,9 @@ curl -X DELETE $BASE/api/v1/knowledgebase/kb-1/wiki/pages/overview -H "Authoriza
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/folders
 
-用途：目录列表。查询参数：`parent_id`（空=根）、`page_types`（逗号分隔）。
+Purpose: list folders. Query parameters: `parent_id` (empty = root), `page_types` (comma-separated).
 
-响应：200 `WikiFolderListResponse`
+Response: 200 `WikiFolderListResponse` (`parent_id`, `folders`)
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/folders -H "Authorization: Bearer $TOKEN"
@@ -319,36 +331,36 @@ curl $BASE/api/v1/knowledgebase/kb-1/wiki/folders -H "Authorization: Bearer $TOK
 
 ### POST /api/v1/knowledgebase/:kb_id/wiki/folders
 
-用途：创建目录。
+Purpose: create a folder.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | 是 | 目录名 |
-| `parent_id` | string | 否 | 父目录 |
+| `name` | string | yes | Folder name |
+| `parent_id` | string | no | Parent folder |
 
-响应：201 `WikiFolder`
+Response: 201 `WikiFolder`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/folders -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"设计文档"}'
+  -H 'Content-Type: application/json' -d '{"name":"Design documents"}'
 ```
 
 ### PUT /api/v1/knowledgebase/:kb_id/wiki/folders/:folder_id
 
-用途：重命名/移动目录。请求体：`name`、`parent_id`、`move_parent`（bool），均可选。
+Purpose: rename or move a folder. Request body: `name`, `parent_id`, `move_parent` (bool), all optional. `parent_id` is applied only when `move_parent` is true, so a plain rename cannot accidentally move the folder.
 
-响应：200 `WikiFolder`
+Response: 200 `WikiFolder`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledgebase/kb-1/wiki/folders/f-1 -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -d '{"name":"架构设计"}'
+  -H 'Content-Type: application/json' -d '{"name":"Architecture design"}'
 ```
 
 ### DELETE /api/v1/knowledgebase/:kb_id/wiki/folders/:folder_id
 
-用途：删除目录。
+Purpose: delete a folder.
 
-响应：204 No Content
+Response: 204 No Content
 
 ```bash
 curl -X DELETE $BASE/api/v1/knowledgebase/kb-1/wiki/folders/f-1 -H "Authorization: Bearer $TOKEN"
@@ -356,41 +368,41 @@ curl -X DELETE $BASE/api/v1/knowledgebase/kb-1/wiki/folders/f-1 -H "Authorizatio
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/index
 
-用途：Wiki 索引页（按类型分组窗口）。查询参数：`types`（逗号分隔）、`limit`（1-200，默认 50）、`cursor`（游标）。
+Purpose: the Wiki index page (a window per page type). Query parameters: `types` (comma-separated), `limit` (1-200, default 50, per group), `cursor` (opaque offset cursor, applied to every group).
 
-响应：200 `WikiIndexResponse`
+Response: 200 `WikiIndexResponse` (`intro`, `version`, `groups`)
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/index -H "Authorization: Bearer $TOKEN"
 ```
 
-::: warning 已移除
-`GET /api/v1/knowledgebase/:kb_id/wiki/log`（Wiki 变更日志）已随 migration `000077_remove_wiki_log` 一并下线，`wiki_log_entries` 表被删除。Wiki 变更现在统一投影到知识库活动流，改用 `GET /api/v1/knowledge-bases/:id/activity`。
+::: warning Removed
+`GET /api/v1/knowledgebase/:kb_id/wiki/log` (the Wiki change log) was retired together with migration `000077_remove_wiki_log`, which dropped the `wiki_log_entries` table. Wiki changes are now projected into the knowledge base activity stream; use `GET /api/v1/knowledge-bases/:id/activity` instead.
 :::
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/graph
 
-用途：页面关系图。
+Purpose: the page relationship graph.
 
-| 查询参数 | 类型 | 必填 | 说明 |
+| Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
-| `mode` | string | 否 | `overview`（默认）/ `ego` |
-| `center` | string | 否 | ego 模式中心 slug（ego 时必填） |
-| `depth` | int | 否 | 1-3，默认 1 |
-| `types` | string | 否 | page_type 过滤 |
-| `limit` | int | 否 | 默认 500，上限 2000 |
+| `mode` | string | no | `overview` (default, the top-N most connected pages) / `ego` (the neighborhood of a center page) |
+| `center` | string | no | Center slug for ego mode (required when `mode=ego`, otherwise 400) |
+| `depth` | int | no | 1-3, default 1 (ego mode) |
+| `types` | string | no | `page_type` filter |
+| `limit` | int | no | Default 500, capped at 2000 |
 
-响应：200 `WikiGraphData`
+Response: 200 `WikiGraphData` (`nodes`, `edges`, `meta` with `mode`, `total`, `returned`, `truncated`, `center`)
 
 ```bash
-curl "$BASE/api/v1/knowledgebase/kb-1/wiki/graph?mode=overview" -H "Authorization: Bearer $TOKEN"
+curl "$BASE/api/v1/knowledgebase/kb-1/wiki/graph?mode=ego&center=entity/acme-corp" -H "Authorization: Bearer $TOKEN"
 ```
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/stats
 
-用途：Wiki 统计。
+Purpose: Wiki statistics.
 
-响应：200 `WikiStats`
+Response: 200 `WikiStats` (`total_pages`, `pages_by_type`, `total_links`, `orphan_count`, `recent_updates`, `pending_tasks`, `pending_issues`, `is_active`)
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/stats -H "Authorization: Bearer $TOKEN"
@@ -398,58 +410,60 @@ curl $BASE/api/v1/knowledgebase/kb-1/wiki/stats -H "Authorization: Bearer $TOKEN
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/search
 
-用途：页面搜索。查询参数：`q`（必填）、`limit`（默认 10）。
+Purpose: page search. Query parameters: `q` (required), `limit` (default 10, capped at 50).
 
-匹配语义随存储方言变化：
+Matching depends on the storage dialect:
 
-- Postgres：`q` 按 POSIX 正则（`~*`，大小写不敏感）匹配。
-- SQLite / Lite：按 `LIKE` 字面子串匹配；`%` / `_` 会转义，不当通配符。
+- Postgres: `q` is a POSIX regular expression (`~*`, case-insensitive).
+- SQLite / Lite: a literal `LIKE` substring match; `%` and `_` are escaped and do not act as wildcards.
 
-响应：200 `{"pages":[WikiPage]}`
+Hits are ranked by where the query matched: title, then slug, then summary, then body, with `updated_at` as the tiebreaker.
+
+Response: 200 `{"pages":[WikiPage]}`
 
 ```bash
-curl "$BASE/api/v1/knowledgebase/kb-1/wiki/search?q=部署" -H "Authorization: Bearer $TOKEN"
+curl "$BASE/api/v1/knowledgebase/kb-1/wiki/search?q=deployment" -H "Authorization: Bearer $TOKEN"
 ```
 
 ### POST /api/v1/wiki-search
 
-用途：跨知识库 Wiki 页面搜索（无会话、非混合检索）。Handler: `internal/handler/wiki_page.go` 的 `SearchPagesAcross`。算法与单库 `GET .../wiki/search` 相同（标题 > slug > summary > 正文），对多个库做一次查询后按 `match_rank` 全局截断。API key：`retrieve`/full。
+Purpose: Wiki page search across knowledge bases (no session, not hybrid retrieval). Handler: `SearchPagesAcross` in `internal/handler/wiki_page.go`. Same algorithm as the single-knowledge-base `GET .../wiki/search` (title > slug > summary > body), run as one query over several knowledge bases and cut to a global top-N by `match_rank`. API key: `retrieve` or full access.
 
-| 字段 | 类型 | 必填 | 说明 |
+| Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `query` | string | 是（`binding:"required"`） | 与单库 `q` 相同：Postgres 为 POSIX 正则（大小写不敏感）；SQLite / Lite 为字面 `LIKE` 子串 |
-| `knowledge_base_ids` | []string | 条件必填 | 多库；与 `knowledge_base_id` 至少提供一个，最多 32 个 |
-| `knowledge_base_id` | string | 否 | 单库兼容字段，合并进 ids |
-| `limit` | int | 否 | 全局 top-N，默认 10，最大 50 |
+| `query` | string | yes (`binding:"required"`) | Same as the single-knowledge-base `q`: a case-insensitive POSIX regex on Postgres, a literal `LIKE` substring on SQLite / Lite |
+| `knowledge_base_ids` | []string | conditional | Several knowledge bases; at least one of this and `knowledge_base_id` is required, at most 32 in total |
+| `knowledge_base_id` | string | no | Single-knowledge-base compatibility field, merged into the IDs |
+| `limit` | int | no | Global top-N, default 10, maximum 50 |
 
-任一目标库未开启 wiki → 400。库不存在或无读权限 → 404。API Key 白名单越权 → 403。非法正则（Postgres）→ 400。
+A target knowledge base without the Wiki enabled returns 400. A knowledge base that does not exist or is not readable returns 404. A knowledge base outside the API key allow-list returns 403. An invalid regex (Postgres) returns 400.
 
-响应：200 `{"success":true,"data":[WikiSearchHit]}`。命中只含导航字段 + `match_snippet`，不含正文；全文用 `GET /knowledgebase/:kb_id/wiki/pages/{slug}`。
+Response: 200 `{"success":true,"data":[WikiSearchHit]}`. A hit carries navigation fields plus `match_snippet`, not the body; fetch the full text with `GET /knowledgebase/:kb_id/wiki/pages/{slug}`.
 
-| 响应字段 | 类型 | 说明 |
+| Response field | Type | Description |
 | --- | --- | --- |
-| `id` | string | 页面 ID |
-| `knowledge_base_id` | string | 来源库，跨库时用来拼读页 URL |
-| `slug` | string | 页面 slug |
-| `title` | string | 标题 |
-| `page_type` | string | 页面类型 |
-| `aliases` | []string | 别名 |
-| `summary` | string | 摘要 |
-| `match_snippet` | string | 正文中首次命中附近约 60+命中+60 字；无正文命中时省略。snippet 仍用 Go 正则编译 `query`；SQLite 下 `query` 含正则元字符时库内可命中、snippet 可能为空 |
+| `id` | string | Page ID |
+| `knowledge_base_id` | string | Source knowledge base, used to build the page URL across knowledge bases |
+| `slug` | string | Page slug |
+| `title` | string | Title |
+| `page_type` | string | Page type |
+| `aliases` | []string | Aliases |
+| `summary` | string | Summary |
+| `match_snippet` | string | About 60 characters before and after the first body hit; omitted when the body has no hit. The snippet always compiles `query` as a Go regex, so on SQLite a `query` with regex metacharacters can match in the database and still produce an empty snippet |
 
-`content`、树/链接/元数据、时间戳不在搜索结果里。单库 `GET .../wiki/search` 仍返回完整 `WikiPage`。
+`content`, the tree, link and metadata fields and the timestamps are not part of search results. The single-knowledge-base `GET .../wiki/search` still returns full `WikiPage` objects.
 
 ```bash
 curl -X POST $BASE/api/v1/wiki-search -H "X-API-Key: $API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{"query":"部署|发布","knowledge_base_ids":["kb-1","kb-2"],"limit":10}'
+  -d '{"query":"deploy|release","knowledge_base_ids":["kb-1","kb-2"],"limit":10}'
 ```
 
 ### POST /api/v1/knowledgebase/:kb_id/wiki/rebuild-links
 
-用途：重建页面互链。写权限。无请求体。
+Purpose: rebuild the links between pages. Write permission. No request body.
 
-响应：200 `{"message":"Links rebuilt successfully"}`
+Response: 200 `{"message":"Links rebuilt successfully"}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/rebuild-links -H "Authorization: Bearer $TOKEN"
@@ -457,9 +471,9 @@ curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/rebuild-links -H "Authorizatio
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/lint
 
-用途：Wiki 一致性检查报告。
+Purpose: the Wiki consistency check report.
 
-响应：200 `WikiLintReport`
+Response: 200 `WikiLintReport`
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/lint -H "Authorization: Bearer $TOKEN"
@@ -467,9 +481,9 @@ curl $BASE/api/v1/knowledgebase/kb-1/wiki/lint -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/knowledgebase/:kb_id/wiki/auto-fix
 
-用途：自动修复 lint 问题。写权限。无请求体。
+Purpose: fix lint issues automatically. Write permission. No request body.
 
-响应：200 `{"fixed":N,"message":"Auto-fixed N issues"}`
+Response: 200 `{"fixed":N,"message":"Auto-fixed N issues"}`
 
 ```bash
 curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/auto-fix -H "Authorization: Bearer $TOKEN"
@@ -477,9 +491,9 @@ curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/auto-fix -H "Authorization: Be
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/issues
 
-用途：问题列表。查询参数：`slug`（按页面过滤）、`status`（`pending/ignored/resolved`）。
+Purpose: list issues. Query parameters: `slug` (filter by page), `status` (`pending` / `ignored` / `resolved`).
 
-响应：200 `[WikiPageIssue]`
+Response: 200 `[WikiPageIssue]`
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/issues -H "Authorization: Bearer $TOKEN"
@@ -487,15 +501,15 @@ curl $BASE/api/v1/knowledgebase/kb-1/wiki/issues -H "Authorization: Bearer $TOKE
 
 ### PUT /api/v1/knowledgebase/:kb_id/wiki/issues/:issue_id/status
 
-用途：更新问题状态。写权限。请求体：`{"status":"pending|ignored|resolved"}`（`binding:"required"`）。`issue_id` 必须属于路径中的知识库，否则 404。
+Purpose: update an issue's status. Write permission. Request body: `{"status":"pending|ignored|resolved"}` (`binding:"required"`; any other value returns 400). The `issue_id` must belong to the knowledge base in the path, otherwise 404.
 
-响应：200 `{"message":"Issue status updated successfully"}`
+Response: 200 `{"message":"Issue status updated successfully"}`
 
 ```bash
 curl -X PUT $BASE/api/v1/knowledgebase/kb-1/wiki/issues/i-1/status -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"status":"resolved"}'
 ```
 
-## 实现参考
+## Implementation reference
 
-路由注册：`internal/router/routes_knowledge.go` 的 `RegisterFAQRoutes` 与 `RegisterWikiPageRoutes`。Handler：`internal/handler/faq.go`、`internal/handler/wiki_page.go`。
+Route registration: `RegisterFAQRoutes` and `RegisterWikiPageRoutes` in `internal/router/routes_knowledge.go`. Handlers: `internal/handler/faq.go`, `internal/handler/wiki_page.go`. FAQ import: `internal/application/service/knowledge_faq_import.go`; Wiki revisions and search: `internal/application/service/wiki_page.go`, `internal/application/repository/wiki_page.go`.

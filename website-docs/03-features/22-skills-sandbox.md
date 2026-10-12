@@ -116,7 +116,7 @@ Personal variables live under Settings → Sandbox secrets; workspace-level skil
 
 Skill variables resolve as **personal skill value > personal sandbox value > workspace skill value**; a lower layer is used only for names that are unset above it. The workspace sandbox environment is part of the runtime and should not hold secrets that scripts must not read. Deleting a personal override falls back to the lower layer; disabling a skill does not delete personal credentials.
 
-Personal skill variables accept only names the skill declared, which may include `AIKB_*` credentials the skill needs. Personal sandbox variables refuse the names reserved by the sandbox: `PATH`, `HOME`, `USER`, `SHELL`, `LD_PRELOAD`, `LD_LIBRARY_PATH`, `PYTHONPATH`, `PYTHONHOME`, `NODE_OPTIONS`, and any `AIKB_SKILL_*` name. Variables the system detects in executed commands only fill in unset personal values; they never overwrite an existing personal or workspace setting. Fields and examples are in the [personal variable API](../04-api/02-api-sandbox-skills.md).
+Personal skill variables accept only names the skill declared, which may include `AIKB_*` credentials the skill needs. Personal sandbox variables refuse the names reserved by the sandbox: `PATH`, `HOME`, `USER`, `SHELL`, `LD_PRELOAD`, `LD_LIBRARY_PATH`, `PYTHONPATH`, `PYTHONHOME`, `NODE_OPTIONS`, and any `AIKB_SKILL_*` name. Variables the system detects in executed commands only fill in unset personal values; they never overwrite an existing personal or workspace setting. Fields and examples are in the [personal variable API](../04-api/02-api-sandbox-skills.md#personal-environment-variables).
 
 ## Generate and download files
 
