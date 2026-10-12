@@ -21,5 +21,5 @@ helm install weknora\b	helm install ai-kb
 \bWeKnora-lite\b	ai-kb-lite
 \./WeKnora\b	./ai-kb
 # --- product name in prose (identifiers above are matched first) ---
-(?<!Tencent/)\bWeKnora\b(?!-Chrome-Extension)	AI KB
+(?<!Tencent/)(?<!X-)\bWeKnora\b(?!-Chrome-Extension)	AI KB
 chart name `weknora`	chart name `ai-kb`
