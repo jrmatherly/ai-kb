@@ -1,6 +1,6 @@
 const { getSettings, saveSettings } = require("../../utils/config");
 const { createKnowledgeFromURL, listKnowledgeBases } = require("../../utils/request");
-const { applyNavTitle, applyTabBar, getMessages, t } = require("../../utils/i18n");
+const { getMessages, t } = require("../../utils/i18n");
 
 function normalizeKnowledgeBases(response) {
   if (!response) {
@@ -18,10 +18,10 @@ function normalizeKnowledgeBases(response) {
   return [];
 }
 
-function buildViewModel() {
-  const messages = getMessages();
-  return {
-    texts: messages,
+const messages = getMessages();
+
+Page({
+  data: {
     knowledgeTitle: messages.knowledgeTitle,
     knowledgeSubtitle: messages.knowledgeSubtitle,
     needsSettingsText: messages.needsSettings,
@@ -31,24 +31,8 @@ function buildViewModel() {
     refreshText: messages.refreshKnowledgeBases,
     urlLabel: messages.urlLabel,
     urlPlaceholder: messages.urlPlaceholder,
-    importUrlText: messages.importUrl
-  };
-}
-
-Page({
-  data: {
-    texts: {},
-    knowledgeTitle: "AI KB 知识库",
-    knowledgeSubtitle: "在微信中选择知识库，导入网页或提问。",
-    needsSettingsText: "请先配置 AI KB API 地址和 API Key，再加载知识库。",
-    openSettingsText: "打开设置",
-    knowledgeBaseLabel: "知识库",
-    tapToSelectText: "点击选择",
-    refreshText: "刷新知识库列表",
-    urlLabel: "网页链接",
-    urlPlaceholder: "https://github.com/jrmatherly/ai-kb",
-    importUrlText: "导入链接",
-    displayKnowledgeBaseName: "点击选择",
+    importUrlText: messages.importUrl,
+    displayKnowledgeBaseName: messages.tapToSelect,
     importing: false,
     knowledgeBases: [],
     knowledgeBaseNames: [],
@@ -61,36 +45,8 @@ Page({
     url: ""
   },
 
-  applyI18n() {
-    const vm = buildViewModel();
-    const displayKnowledgeBaseName =
-      this.data.selectedKnowledgeBaseName || vm.tapToSelectText;
-    this.setData({
-      texts: vm.texts,
-      knowledgeTitle: vm.knowledgeTitle,
-      knowledgeSubtitle: vm.knowledgeSubtitle,
-      needsSettingsText: vm.needsSettingsText,
-      openSettingsText: vm.openSettingsText,
-      knowledgeBaseLabel: vm.knowledgeBaseLabel,
-      tapToSelectText: vm.tapToSelectText,
-      refreshText: vm.refreshText,
-      urlLabel: vm.urlLabel,
-      urlPlaceholder: vm.urlPlaceholder,
-      importUrlText: vm.importUrlText,
-      displayKnowledgeBaseName: displayKnowledgeBaseName
-    });
-  },
-
-  onLoad() {
-    this.applyI18n();
-  },
-
   onShow() {
     try {
-      applyTabBar();
-      applyNavTitle("navKnowledge");
-      this.applyI18n();
-
       const settings = getSettings();
       const needsSettings = !settings.baseUrl || !settings.apiKey;
       const patch = { needsSettings };

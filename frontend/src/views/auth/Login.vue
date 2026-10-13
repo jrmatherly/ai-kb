@@ -119,27 +119,6 @@
         </svg>
         <span class="link-text">GitHub</span>
       </a>
-
-      <div class="language-switch">
-        <button @click="toggleLanguageMenu" class="header-link" :title="currentLangOption?.label">
-          <span class="lang-flag-icon">{{ currentLangOption?.flag }}</span>
-          <span class="link-text">{{ currentLangOption?.shortLabel }}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-
-        <!-- Language Dropdown -->
-        <div v-if="showLanguageMenu" class="language-dropdown">
-          <div v-for="lang in languageOptions" :key="lang.value" @click="selectLanguage(lang.value)"
-            class="language-option" :class="{ active: currentLanguage === lang.value }">
-            <span class="lang-flag">{{ lang.flag }}</span>
-            <span class="lang-label">{{ lang.label }}</span>
-            <span v-if="currentLanguage === lang.value" class="check-icon">✓</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Left Showcase Section -->
@@ -177,7 +156,7 @@
       <div class="form-panel">
         <!-- Login Card -->
         <div class="form-card" v-if="!isRegisterMode">
-          <!-- 登录已有账号时保留邀请上下文。 -->
+          <!-- Signing in with an existing account keeps the invitation context. -->
           <div v-if="inviteLookup" class="invite-banner">
             <t-icon name="link" class="invite-banner__icon" />
             <div class="invite-banner__text">
@@ -337,7 +316,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, reactive, nextTick, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MessagePlugin } from 'tdesign-vue-next'
 import { useRoleLabel } from '@/composables/useRoleLabel'
@@ -373,7 +352,7 @@ import screenshot4 from '@/assets/img/screenshot-4.svg'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const { t, tm, locale } = useI18n()
+const { t, tm } = useI18n()
 const { formatRole, roleIcon } = useRoleLabel()
 
 // Swiper modules
@@ -411,7 +390,6 @@ const registerFormRef = ref()
 const loading = ref(false)
 const oidcLoading = ref(false)
 const isRegisterMode = ref(false)
-const showLanguageMenu = ref(false)
 const oidcEnabled = ref(false)
 const oidcProviderName = ref('')
 // Wait for configuration before showing a registration entry.
@@ -429,24 +407,12 @@ const inviteLookup = ref<InviteLookup | null>(null)
 const inviteLookupError = ref('')
 const inviteLookupLoading = ref(false)
 
-// Language options
-const languageOptions = [
-  { value: 'zh-CN', label: '简体中文', shortLabel: '中文', flag: '🇨🇳' },
-  { value: 'zh-TW', label: '繁體中文', shortLabel: '繁中', flag: '繁' },
-  { value: 'en-US', label: 'English', shortLabel: 'EN', flag: '🇺🇸' },
-  { value: 'ru-RU', label: 'Русский', shortLabel: 'RU', flag: '🇷🇺' },
-  { value: 'ko-KR', label: '한국어', shortLabel: '한국어', flag: '🇰🇷' },
-  { value: 'ja-JP', label: '日本語', shortLabel: '日本語', flag: '🇯🇵' }
-]
-
-const currentLanguage = computed(() => locale.value)
 const oidcLoginText = computed(() => {
   if (oidcProviderName.value) {
     return t('auth.oidcLoginWithProvider', { provider: oidcProviderName.value })
   }
   return t('auth.oidcLogin')
 })
-const currentLangOption = computed(() => languageOptions.find(l => l.value === currentLanguage.value))
 
 // Login form data
 const formData = reactive<{ [key: string]: any }>({
@@ -510,36 +476,6 @@ const toggleMode = () => {
     (registerData as any)[key] = ''
   })
 }
-
-// Toggle language menu
-const toggleLanguageMenu = () => {
-  showLanguageMenu.value = !showLanguageMenu.value
-}
-
-// Select language
-const selectLanguage = (lang: string) => {
-  locale.value = lang
-  localStorage.setItem('locale', lang)
-  showLanguageMenu.value = false
-  MessagePlugin.success(t('language.languageSaved'))
-}
-
-// Close language menu when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  if (!target.closest('.language-switch')) {
-    showLanguageMenu.value = false
-  }
-}
-
-// Add click outside listener
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 
 const persistLoginResponse = async (response: any, skipRedirect = false) => {
   // Backend renamed `tenant` to `active_tenant` and added `memberships`
@@ -632,20 +568,20 @@ const handleOIDCLogin = async () => {
       return
     }
 
-    // 跳转 IdP 会丢失 URL 中的 token，暂存到 sessionStorage，回调后由 App.vue 兑换。
+    // The redirect to the IdP drops the token from the URL; stash it in sessionStorage so App.vue redeems it after the callback.
     if (inviteToken.value) {
       sessionStorage.setItem('aikb_pending_invite_token', inviteToken.value)
     }
     window.location.href = authorizationURL
   } catch (error: any) {
-    console.error('OIDC 登录跳转失败:', error)
+    console.error('OIDC login redirect failed:', error)
     MessagePlugin.error(error.message || t('auth.oidcLoginFailed'))
   } finally {
     oidcLoading.value = false
   }
 }
 
-// 用 token 加入空间并进入应用。会话此时已有效，故即便 token 失效也照常进入（避免困在登录页）。
+// Join the workspace with the token and enter the app. The session is already valid, so enter even if the token is invalid (avoids getting stuck on the login page).
 const acceptAndEnter = async (token: string) => {
   loading.value = true
   try {
@@ -679,7 +615,7 @@ const handleLogin = async () => {
 
     if (response.success) {
       if (inviteToken.value) {
-        // 从邀请链接登录：持久化会话后兑换 token 并进入对应空间。
+        // Signed in from an invitation link: persist the session, then redeem the token and enter its workspace.
         await persistLoginResponse(response, true)
         await acceptAndEnter(inviteToken.value)
         return
@@ -690,7 +626,7 @@ const handleLogin = async () => {
       MessagePlugin.error(response.message || t('auth.loginError'))
     }
   } catch (error: any) {
-    console.error('登录错误:', error)
+    console.error('Login error:', error)
     MessagePlugin.error(error.message || t('auth.loginErrorRetry'))
   } finally {
     loading.value = false
@@ -749,7 +685,7 @@ const handleRegister = async () => {
       MessagePlugin.error(response.message || t('auth.registerFailed'))
     }
   } catch (error: any) {
-    console.error('注册错误:', error)
+    console.error('Registration error:', error)
     MessagePlugin.error(error.message || t('auth.registerError'))
   } finally {
     loading.value = false
@@ -770,7 +706,7 @@ onMounted(async () => {
   if (tokenFromQuery) {
     inviteToken.value = tokenFromQuery
     inviteLookupLoading.value = true
-    // 1. 先校验 token：无效/过期则停在登录页报错，不进注册模式。
+    // 1. Validate the token first: if invalid or expired, stay on the login page with an error instead of entering register mode.
     try {
       const resp = await getInvitationByToken(tokenFromQuery)
       if (resp.success && resp.data) {
@@ -790,7 +726,7 @@ onMounted(async () => {
       inviteLookupLoading.value = false
     }
 
-    // 2. 已登录则直接兑换 token 进入空间（三种模式通用）。
+    // 2. Already signed in: redeem the token and enter the workspace (same for all three modes).
     if (authStore.isLoggedIn && (await authStore.refreshFromAuthMe())) {
       await acceptAndEnter(tokenFromQuery)
       return
@@ -1242,81 +1178,6 @@ onMounted(async () => {
   }
 }
 
-.language-switch {
-  position: relative;
-
-  button {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: var(--td-text-color-anti);
-
-    .lang-flag-icon {
-      font-size: var(--app-text-xl);
-      line-height: 1;
-      flex-shrink: 0;
-    }
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    svg:last-child {
-      margin-left: 2px;
-      flex-shrink: 0;
-    }
-  }
-}
-
-.language-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 160px;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid var(--td-component-stroke);
-  border-radius: var(--app-radius-md);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.language-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-size: var(--app-text-md);
-  font-family: var(--app-font-family);
-  color: var(--td-text-color-primary);
-
-  .lang-flag {
-    font-size: var(--app-text-xl);
-    flex-shrink: 0;
-  }
-
-  .lang-label {
-    flex: 1;
-  }
-
-  .check-icon {
-    color: var(--td-success-color);
-    font-weight: 700;
-    font-size: var(--app-text-base);
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    background: var(--td-bg-color-secondarycontainer);
-  }
-
-  &.active {
-    background: var(--td-success-color-light);
-    color: var(--td-brand-color-active);
-  }
-}
-
 .form-card {
   background: rgba(255, 255, 255, 0.97);
   border-radius: 16px;
@@ -1409,8 +1270,8 @@ onMounted(async () => {
   font-family: var(--app-font-family);
 }
 
-/* 注册入口：从底部小字链接升级为带分隔线的醒目次级按钮，
-   让首次访客一眼就能找到「创建账户」。 */
+/* Registration entry: a prominent secondary button with a divider instead of small footer text,
+   so first-time visitors find "Create account" at a glance. */
 .register-cta {
   margin-top: 8px;
 
@@ -1834,21 +1695,6 @@ html[theme-mode="dark"] {
     &:hover {
       background: rgba(255, 255, 255, 0.2);
     }
-  }
-
-  .language-switch button {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.15);
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-  }
-
-  .language-dropdown {
-    background: rgba(36, 36, 36, 0.97) !important;
-    border-color: var(--td-component-stroke) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
   }
 
   .tag {

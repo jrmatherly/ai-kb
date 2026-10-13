@@ -6,30 +6,6 @@
     </div>
 
     <div class="settings-group">
-      <!-- 语言选择 -->
-      <div class="setting-row">
-        <div class="setting-info">
-          <label>{{ $t('language.language') }}</label>
-          <p class="desc">{{ $t('language.languageDescription') }}</p>
-        </div>
-        <div class="setting-control">
-          <t-select
-            v-model="localLanguage"
-            :placeholder="$t('language.selectLanguage')"
-            @change="handleLanguageChange"
-            style="width: 280px;"
-          >
-            <t-option value="zh-CN" :label="$t('language.zhCN')">{{ $t('language.zhCN') }}</t-option>
-            <t-option value="zh-TW" :label="$t('language.zhTW')">{{ $t('language.zhTW') }}</t-option>
-            <t-option value="en-US" :label="$t('language.enUS')">{{ $t('language.enUS') }}</t-option>
-            <t-option value="ru-RU" :label="$t('language.ruRU')">{{ $t('language.ruRU') }}</t-option>
-            <t-option value="ko-KR" :label="$t('language.koKR')">{{ $t('language.koKR') }}</t-option>
-            <t-option value="ja-JP" :label="$t('language.jaJP')">{{ $t('language.jaJP') }}</t-option>
-          </t-select>
-        </div>
-      </div>
-
-      <!-- 主题设置 -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('theme.theme') }}</label>
@@ -49,7 +25,6 @@
         </div>
       </div>
 
-      <!-- 界面字体 -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('font.uiFont') }}</label>
@@ -77,7 +52,6 @@
         </div>
       </div>
 
-      <!-- 代码字体 -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('font.monoFont') }}</label>
@@ -105,7 +79,6 @@
         </div>
       </div>
 
-      <!-- 字体大小 -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('font.fontSize') }}</label>
@@ -123,7 +96,6 @@
         </div>
       </div>
 
-      <!-- 自动下载更新开关 (Lite edition only) -->
       <div class="setting-row" v-if="authStore.isLiteMode">
         <div class="setting-info">
           <label>{{ $t('settings.autoCheckUpdate') }}</label>
@@ -140,8 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
@@ -157,7 +128,7 @@ import {
   type FontSizeKey,
 } from '@/composables/useFont'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const settingsStore = useSettingsStore()
 const authStore = useAuthStore()
 const { currentTheme, setTheme } = useTheme()
@@ -170,8 +141,6 @@ const {
   setFontSize,
 } = useFont()
 
-// 本地状态
-const localLanguage = ref('zh-CN')
 const localTheme = ref<ThemeMode>(currentTheme.value)
 const localSansFont = ref<FontKey>(currentSans.value)
 const localMonoFont = ref<MonoFontKey>(currentMono.value)
@@ -205,7 +174,6 @@ const monoFontOptions = computed<{ value: MonoFontKey; label: string; preview: s
 const currentSansStack = computed(() => SANS_STACKS[localSansFont.value] ?? SANS_STACKS.system)
 const currentMonoStack = computed(() => MONO_STACKS[localMonoFont.value] ?? MONO_STACKS.system)
 
-// 自动检查更新状态
 const isAutoCheckUpdateEnabled = computed({
   get: () => settingsStore.isAutoCheckUpdateEnabled,
   set: (val) => {
@@ -220,26 +188,6 @@ const isAutoCheckUpdateEnabled = computed({
   }
 })
 
-// 初始化加载
-onMounted(() => {
-  // 从 localStorage 加载语言设置
-  const savedLocale = localStorage.getItem('locale')
-  if (savedLocale) {
-    localLanguage.value = savedLocale
-    locale.value = savedLocale
-  } else {
-    localLanguage.value = locale.value
-  }
-})
-
-// 处理语言变化
-const handleLanguageChange = () => {
-  locale.value = localLanguage.value
-  localStorage.setItem('locale', localLanguage.value)
-  MessagePlugin.success(t('language.languageSaved'))
-    }
-
-// 处理主题变化
 const handleThemeChange = (val: ThemeMode) => {
   if (!setTheme(val)) {
     // Setter rejected the value (validation guard); roll the form back to
@@ -249,7 +197,6 @@ const handleThemeChange = (val: ThemeMode) => {
   }
 }
 
-// 处理字体变化
 const handleSansFontChange = (val: FontKey) => {
   if (!setSansFont(val)) {
     localSansFont.value = currentSans.value

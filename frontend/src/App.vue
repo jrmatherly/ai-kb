@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { MessagePlugin, NotifyPlugin } from 'tdesign-vue-next'
@@ -14,30 +14,14 @@ import { useRoleLabel } from '@/composables/useRoleLabel'
 import { notifyLoginSuccess } from '@/utils/loginNotify'
 import { renderWorkspaceNotifyContent } from '@/utils/workspaceNotifyContent'
 
-// TDesign locale configs
 import enUSConfig from 'tdesign-vue-next/esm/locale/en_US'
-import zhCNConfig from 'tdesign-vue-next/esm/locale/zh_CN'
-import koKRConfig from 'tdesign-vue-next/esm/locale/ko_KR'
-import jaJPConfig from 'tdesign-vue-next/esm/locale/ja_JP'
-import ruRUConfig from 'tdesign-vue-next/esm/locale/ru_RU'
-import zhTWConfig from 'tdesign-vue-next/esm/locale/zh_TW'
 
-const { locale, t, tm } = useI18n()
+const { t, tm } = useI18n()
 const { formatRole, roleIcon } = useRoleLabel()
 const router = useRouter()
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 
-const tdLocaleMap: Record<string, object> = {
-  'en-US': enUSConfig,
-  'zh-CN': zhCNConfig,
-  'zh-TW': zhTWConfig,
-  'ko-KR': koKRConfig,
-  'ja-JP': jaJPConfig,
-  'ru-RU': ruRUConfig,
-}
-
-const tdGlobalConfig = computed(() => tdLocaleMap[locale.value] || enUSConfig)
 
 const decodeOIDCResult = (encoded: string) => {
   const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/')
@@ -110,7 +94,7 @@ const persistOIDCLoginResponse = async (response: any) => {
 
   await syncOIDCUserContext()
 
-  // OIDC 跳转前暂存的邀请 token：拿到会话后兑换并进入对应空间。
+  // Invite token stashed before the OIDC redirect: redeem it once there is a session and enter that workspace.
   const pendingInviteToken = sessionStorage.getItem('aikb_pending_invite_token')
   if (pendingInviteToken) {
     sessionStorage.removeItem('aikb_pending_invite_token')
@@ -118,7 +102,7 @@ const persistOIDCLoginResponse = async (response: any) => {
     await nextTick()
     if (result.ok) MessagePlugin.success(t('inviteRegister.joined'))
     else MessagePlugin.warning(t('inviteRegister.invalidBody'))
-    // 会话已有效，无论 token 是否兑换成功都进入应用。
+    // The session is valid, so enter the app whether or not the token was redeemed.
     router.replace('/platform/knowledge-bases')
     return
   }
@@ -212,8 +196,8 @@ watch(
   { immediate: true },
 )
 
-// 切换空间后会 hard reload；切换前 stash 的 toast 这里 consume 并弹出，
-// 这样 toast 显示在新页面上，duration 才真正生效。
+// A workspace switch hard-reloads; the toast stashed before the switch is shown here,
+// on the new page, so its duration actually applies.
 const showPendingTenantSwitchToast = () => {
   const pending = consumePendingTenantSwitchToast()
   if (!pending) return
@@ -276,7 +260,7 @@ onUnmounted(() => {
 
 </script>
 <template>
-  <t-config-provider :globalConfig="tdGlobalConfig">
+  <t-config-provider :globalConfig="enUSConfig">
     <div id="app">
       <RouterView />
       <ManualKnowledgeEditor />
@@ -287,7 +271,7 @@ onUnmounted(() => {
 </template>
 <style>
 html {
-  /* 提示 UA 使用对应配色绘制滚动条等，减少主题切换时的额外重绘 */
+  /* Lets the UA draw scrollbars etc. in the matching scheme, cutting extra repaints on theme switch */
   color-scheme: light dark;
 }
 
@@ -307,7 +291,7 @@ html,
 }
 
 #app {
-  /* 独立合成层，减轻 WebKit 全量重绘时整窗与内容的撕裂感（桌面 WebView 尤其明显） */
+  /* Own compositing layer: reduces tearing between window and content on full WebKit repaints (worst in the desktop WebView) */
   isolation: isolate;
   transform: translateZ(0);
   backface-visibility: hidden;

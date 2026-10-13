@@ -20,7 +20,7 @@
       </t-alert>
     </div>
 
-    <!-- Content：信息列表 + 危险操作分区，避免与 setting-row 底边线混用虚线 -->
+    <!-- Content: info list + danger zone, kept apart so the setting-row bottom border does not mix with a dashed line -->
     <div v-else class="tenant-info-body">
       <div class="settings-group">
         <!-- Tenant ID -->
@@ -41,8 +41,8 @@
             <p class="desc">{{ $t('tenant.details.nameDescription') }}</p>
           </div>
           <div class="setting-control">
-            <!-- 只读态：显示名称 + 编辑按钮（owner 才看得见编辑入口）。
-               原地编辑取代弹窗：少一层视觉打断，与其它行的展示节奏一致。 -->
+            <!-- Read-only: name + edit button (only the owner sees it).
+               In-place editing instead of a dialog, consistent with the other rows. -->
             <template v-if="!editing">
               <span class="info-value">{{ tenantInfo?.name || '-' }}</span>
               <t-button v-if="canEditTenant" theme="default" variant="text" shape="square" size="small"
@@ -53,7 +53,7 @@
                 </template>
               </t-button>
             </template>
-            <!-- 编辑态：输入框 + 保存/取消。回车保存，Esc 取消。 -->
+            <!-- Editing: input + save/cancel. Enter saves, Esc cancels. -->
             <div v-else class="inline-edit">
               <t-input v-model="editName" :placeholder="$t('tenant.details.editNamePlaceholder')" :maxlength="64"
                 :disabled="saving" autofocus class="inline-edit-input" @enter="saveTenantName"
@@ -75,8 +75,8 @@
             <p class="desc">{{ $t('tenant.details.descriptionDescription') }}</p>
           </div>
           <div class="setting-control">
-            <!-- 只读态：显示描述（空时给占位）+ 编辑按钮（owner 才看得见编辑入口）。
-               与名称同款"原地编辑"模式，少一层弹窗打断。 -->
+            <!-- Read-only: description (placeholder when empty) + edit button (only the owner sees it).
+               Same in-place editing as the name. -->
             <template v-if="!editingDescription">
               <span class="info-value description-value" :class="{ 'is-empty': !tenantInfo?.description }">
                 {{ tenantInfo?.description || $t('tenant.details.descriptionEmptyPlaceholder') }}
@@ -89,8 +89,8 @@
                 </template>
               </t-button>
             </template>
-            <!-- 编辑态：textarea + 保存/取消。Esc 取消、Ctrl/⌘+Enter 保存；
-               textarea 上 Enter 默认换行更顺手，不接管 Enter 提交。 -->
+            <!-- Editing: textarea + save/cancel. Esc cancels, Ctrl/Cmd+Enter saves;
+               plain Enter inserts a newline, so it does not submit. -->
             <div v-else class="inline-edit inline-edit-description">
               <t-textarea v-model="editDescription"
                 :placeholder="$t('tenant.details.editDescriptionPlaceholder')" :maxlength="512"
@@ -176,7 +176,7 @@
           <div class="setting-control">
             <div class="usage-control">
               <span class="usage-text">{{ getUsagePercentage() }}%</span>
-              <!-- t-progress: theme = 形态（line/plump/circle）；颜色用 status -->
+              <!-- t-progress: theme is the shape (line/plump/circle); color comes from status -->
               <t-progress :percentage="getUsagePercentage()" :show-info="false" size="small"
                 :status="getUsagePercentage() > 80 ? 'warning' : 'success'" style="flex: 1;" />
             </div>
@@ -268,11 +268,11 @@ const tenantInfo = ref<TenantInfo | null>(null)
 const loading = ref(true)
 const error = ref('')
 
-// 仅 owner 可改空间名（与后端 router.go 中 g.Owner() 守卫一致；
-// 服务端始终是权限的最终裁判，这里只决定 UI 是否露出入口）。
+// Only the owner can rename the workspace (matches the g.Owner() guard in router.go;
+// the server enforces it, this only decides whether the UI shows the control).
 const canEditTenant = computed(() => authStore.hasRole('owner'))
 
-/** 与原 TenantMembers.vue 一致：最后一位 Owner 不展示退出，避免与服务端 last-owner 对齐失败。 */
+/** As in TenantMembers.vue: hide Leave for the last Owner, which the server rejects as last-owner. */
 const activeTenantNumericId = computed(() => Number(authStore.currentTenantId ?? 0))
 
 const leaveMembersSnap = ref<TenantMember[]>([])
@@ -288,7 +288,7 @@ const canLeaveSpace = computed(() => {
   return leaveMembersSnap.value.filter((m) => m.role === 'owner').length > 1
 })
 
-/** 在主内容已成功加载、`listMembers` 放行规则就绪且允许退出时出现。 */
+/** Shown once the main content has loaded, the `listMembers` rule is resolved and leaving is allowed. */
 const showLeaveDangerZone = computed(() => {
   if (loading.value || error.value || !tenantInfo.value) return false
   if (!leaveGateReady.value || leaveGateLoading.value) return false
@@ -435,8 +435,8 @@ watch(
   },
 )
 
-// 原地编辑空间名称：editing 控制行内只读 / 编辑两种形态切换。
-// 不沿用 dialog 是因为这里只有一个字段，弹窗反而打断了配置浏览节奏。
+// In-place workspace name editing: editing toggles the row between read-only and edit.
+// No dialog: for a single field it only interrupts browsing the settings.
 const editing = ref(false)
 const editName = ref('')
 const saving = ref(false)
@@ -444,9 +444,8 @@ const deleteConfirmName = ref('')
 const deleteTenantVisible = ref(false)
 const deletingTenant = ref(false)
 const editNameTrimmed = computed(() => editName.value.trim())
-// 保存按钮可点条件：非空、改了内容、不在保存中。
-// 后端 name 字段没有 uniqueIndex 也没有重名校验，所以这里不做"是否已存在"的判断；
-// 后端 service 也只在 create 时拒空，update 时不校验，保持前端兜底非空即可。
+// No duplicate-name check: the backend name field has no uniqueIndex or uniqueness validation,
+// and the service rejects empty names only on create, so the frontend guards against empty.
 const canSubmit = computed(
   () => !saving.value && !!editNameTrimmed.value && editNameTrimmed.value !== tenantInfo.value?.name,
 )
@@ -462,15 +461,15 @@ const cancelEditName = () => {
   editName.value = ''
 }
 
-// t-input 自身不冒泡 esc，这里手动处理（与 enter 的体验对称）。
+// t-input does not bubble Esc, so handle it here (symmetric with Enter).
 const onEditKeydown = (_value: any, ctx: { e: KeyboardEvent }) => {
   if (ctx?.e?.key === 'Escape') {
     cancelEditName()
   }
 }
 
-// 原地编辑空间描述：与名称对称的 editing / editValue / saving 三态。
-// 描述允许为空（业务上是可选字段），所以可提交条件不要求非空，只要内容变了即可。
+// In-place description editing: same editing / editValue / saving state as the name.
+// The description is optional, so submitting only requires a change, not a non-empty value.
 const editingDescription = ref(false)
 const editDescription = ref('')
 const savingDescription = ref(false)
@@ -490,7 +489,7 @@ const cancelEditDescription = () => {
   editDescription.value = ''
 }
 
-// textarea 上 Enter 默认走换行，提交走 Ctrl/⌘+Enter；Esc 取消。
+// In the textarea Enter inserts a newline, Ctrl/Cmd+Enter submits, Esc cancels.
 const onEditDescriptionKeydown = (_value: any, ctx: { e: KeyboardEvent }) => {
   const e = ctx?.e
   if (!e) return
@@ -516,8 +515,8 @@ const saveTenantDescription = async () => {
     savingDescription.value = true
     const resp = await updateTenantApi(Number(tenantInfo.value.id), { description: newDesc })
     if (resp.success) {
-      // 本地立即回显，避免等 /auth/me 往返。描述不像名称那样会出现在空间切换器等
-      // 顶部组件里，所以无需同步 authStore.tenant / memberships。
+      // Update locally right away instead of waiting for /auth/me. Unlike the name, the description
+      // is not shown in the workspace switcher, so authStore.tenant / memberships need no sync.
       if (tenantInfo.value) {
         tenantInfo.value = { ...tenantInfo.value, description: newDesc }
       }
@@ -549,15 +548,15 @@ const saveTenantName = async () => {
     saving.value = true
     const resp = await updateTenantApi(Number(tenantInfo.value.id), { name: newName })
     if (resp.success) {
-      // 本地立即回显，避免等 /auth/me 往返；同步刷新登录态里的 tenant
-      // 缓存（若当前激活空间就是 home tenant，顶部空间切换器等地方也跟着更新）。
+      // Update locally right away instead of waiting for /auth/me; also refresh the cached tenant
+      // in the auth state (when the active workspace is the home tenant, the switcher updates too).
       if (tenantInfo.value) {
         tenantInfo.value = { ...tenantInfo.value, name: newName }
       }
       if (authStore.tenant && String(authStore.tenant.id) === String(tenantInfo.value?.id)) {
         authStore.setTenant({ ...authStore.tenant, name: newName })
       }
-      // memberships 里的 tenant_name 是空间切换器读的字段，一并同步避免显示旧名字。
+      // The workspace switcher reads tenant_name from memberships; sync it so the old name does not linger.
       if (authStore.memberships?.length) {
         const next = authStore.memberships.map((m) =>
           String(m.tenant_id) === String(tenantInfo.value?.id)
@@ -597,8 +596,8 @@ const loadInfo = async () => {
   } finally {
     loading.value = false
   }
-  // 须在 loading=false 之后再评估：否则退出入口会被 showLeaveDangerZone 里的 loading 条件挡住，
-  // 且部分环境下角色 hydrated 稍晚于 /auth/me 返回。
+  // Evaluate after loading=false: otherwise the loading condition in showLeaveDangerZone hides Leave,
+  // and in some environments the role hydrates slightly after /auth/me returns.
   if (tenantInfo.value && !error.value) {
     await evaluateLeaveGate()
   }
@@ -635,7 +634,7 @@ const formatDate = (dateStr: string | undefined) => {
 
   try {
     const date = new Date(dateStr)
-    const formatter = new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    const formatter = new Intl.DateTimeFormat(locale.value || 'en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -715,9 +714,9 @@ onMounted(() => {
 }
 
 .setting-info {
-  /* 不再 flex:1：标签列固定到 max-content 的合理范围内（CJK label 一般 4~6 字，
-     再加 desc 文案撑宽），不参与剩余空间分配，避免被长内容挤到单字纵向换行。
-     min-width 兜底，desc 字数稍多时也不会被压缩到一字一行。 */
+  /* Not flex:1: the label column stays within a sensible max-content range (labels plus
+     their desc text) and takes no free space, so long content cannot squeeze it to one character per line.
+     min-width is the floor for a slightly longer desc. */
   flex: 0 0 auto;
   width: max-content;
   min-width: 140px;
@@ -749,8 +748,8 @@ onMounted(() => {
     font-size: var(--app-text-base);
     color: var(--td-text-color-primary);
     text-align: right;
-    /* anywhere 比 break-word 激进：连无空格的长串（"WorkspaceDefault..." 这种）
-       也能强制断行，避免单条内容把整行撑出。 */
+    /* anywhere is more aggressive than break-word: even long strings without spaces ("WorkspaceDefault...")
+       break, so one value cannot overflow the row. */
     overflow-wrap: anywhere;
     min-width: 0;
   }
@@ -758,8 +757,8 @@ onMounted(() => {
   .edit-btn {
     flex-shrink: 0;
   }
-  /* 反过来：内容列吃掉剩余空间，并允许收缩 + 内部换行，长字符串不会再撑爆行。
-     去掉原先的 min-width:280px 硬约束（短内容也不需要那么宽的展示槽）。 */
+  /* Conversely, the content column takes the free space and may shrink and wrap, so long strings do not overflow.
+     No min-width:280px: short content does not need that wide a slot. */
 }
 
 .inline-edit {
@@ -771,14 +770,14 @@ onMounted(() => {
 }
 
 .inline-edit-input {
-  /* 行内编辑场景下输入框不能撑满整行，否则右侧两个按钮会贴边；
-     给一个合理上限即可，超出走 t-input 自己的省略。 */
+  /* When editing inline the input must not fill the row, or the two buttons hit the edge;
+     cap it and let t-input's own ellipsis handle the rest. */
   max-width: 220px;
   flex: 1;
 }
 
-/* 描述行的原地编辑：textarea 自身可换行展开，按钮换到下方右对齐，
-   避免名称行那样横向把按钮挤窄。 */
+/* In-place description editing: the textarea wraps and grows, the buttons go below, right-aligned,
+   so they are not squeezed horizontally as on the name row. */
 .inline-edit-description {
   flex-direction: column;
   align-items: stretch;
@@ -797,7 +796,7 @@ onMounted(() => {
   gap: 8px;
 }
 
-/* 只读态的描述：多行可换行；空描述用占位色提示用户可点编辑写入。 */
+/* Read-only description: wraps across lines; an empty one uses the placeholder color to invite editing. */
 .description-value {
   white-space: pre-wrap;
   word-break: break-word;

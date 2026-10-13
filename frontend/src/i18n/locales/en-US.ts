@@ -3177,9 +3177,6 @@ export default {
     tabServerGo: 'Go',
     enabled: 'Enable channel',
     deleteConfirm: 'Delete this embed channel? Deployed snippets will stop working.',
-    defaultLocale: 'Default language',
-    defaultLocaleDesc: 'Visitor UI language when chat opens; empty follows the browser or host Widget setLocale().',
-    defaultLocaleBrowser: 'Browser / host default'
   },
   knowledgeEditor: {
     activity: {
@@ -3839,10 +3836,10 @@ export default {
       separators: {
         doubleNewline: 'Double newline ()',
         singleNewline: 'Single newline ()',
-        periodCn: 'Chinese period (。)',
-        exclamationCn: 'Exclamation mark (！)',
-        questionCn: 'Question mark (？)',
-        semicolonCn: 'Chinese semicolon (；)',
+        periodCn: 'Chinese period (\u3002)',
+        exclamationCn: 'Full-width exclamation mark (\uFF01)',
+        questionCn: 'Full-width question mark (\uFF1F)',
+        semicolonCn: 'Chinese semicolon (\uFF1B)',
         semicolonEn: 'Semicolon (;)',
         space: 'Space ( )'
       },
@@ -5150,16 +5147,10 @@ export default {
     builtinTag: 'Built-in'
   },
   language: {
-    zhCN: '简体中文',
-    zhTW: 'Traditional Chinese',
+    zhCN: 'Chinese',
     enUS: 'English',
-    ruRU: 'Русский',
-    koKR: '한국어',
-    jaJP: '日本語',
-    selectLanguage: 'Select Language',
-    language: 'Language',
-    languageDescription: 'Select interface display language',
-    languageSaved: 'Language settings saved'
+    ruRU: 'Russian',
+    koKR: 'Korean'
   },
   general: {
     title: 'General Settings',
@@ -6698,9 +6689,6 @@ export default {
       sessionModeUser: 'Per User (default)',
       sessionModeThread: 'Per Thread',
       sessionModeHint: 'User mode: each person has their own conversation. Use /clear to start fresh. Thread mode: each message thread is a separate conversation. Multiple people can collaborate in the same thread.',
-      replyLanguage: 'Reply Language',
-      replyLanguageDefault: 'Use system default',
-      replyLanguageHint: 'Fix the agent reply language for this channel. Leave unset to use the deployment default.',
       wechatScanBind: 'Scan to bind WeChat',
       wechatScanning: 'Scan the QR code with WeChat',
       wechatBindSuccess: 'WeChat bound successfully',

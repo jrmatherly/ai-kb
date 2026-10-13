@@ -18,19 +18,19 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "知识库",
+        "text": "Knowledge",
         "iconPath": "assets/tab/knowledge.png",
         "selectedIconPath": "assets/tab/knowledge-active.png"
       },
       {
         "pagePath": "pages/chat/chat",
-        "text": "问答",
+        "text": "Chat",
         "iconPath": "assets/tab/chat.png",
         "selectedIconPath": "assets/tab/chat-active.png"
       },
       {
         "pagePath": "pages/settings/settings",
-        "text": "设置",
+        "text": "Settings",
         "iconPath": "assets/tab/settings.png",
         "selectedIconPath": "assets/tab/settings-active.png"
       }

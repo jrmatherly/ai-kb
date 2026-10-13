@@ -1,52 +1,24 @@
 const { getSettings } = require("../../utils/config");
 const { createSession, knowledgeChat } = require("../../utils/request");
 const { collectAnswerFromSSE } = require("../../utils/sse");
-const { applyNavTitle, applyTabBar, getMessages, t } = require("../../utils/i18n");
+const { getMessages, t } = require("../../utils/i18n");
 
-function buildViewModel() {
-  const messages = getMessages();
-  return {
+const messages = getMessages();
+
+Page({
+  data: {
     chatTitle: messages.chatTitle,
     chatSubtitle: messages.chatSubtitle,
     questionLabel: messages.question,
     questionPlaceholder: messages.questionPlaceholder,
     askText: messages.askAIKB,
-    answerLabel: messages.answer
-  };
-}
-
-Page({
-  data: {
-    chatTitle: "知识问答",
-    chatSubtitle: "向当前选中的 AI KB 知识库提问。",
-    questionLabel: "问题",
-    questionPlaceholder: "输入你的问题…",
-    askText: "向 AI KB 提问",
-    answerLabel: "回答",
+    answerLabel: messages.answer,
     answer: "",
     displayAnswer: "",
     loading: false,
     query: "",
     rawResponse: "",
     sessionId: ""
-  },
-
-  applyI18n() {
-    this.setData(buildViewModel());
-  },
-
-  onLoad() {
-    this.applyI18n();
-  },
-
-  onShow() {
-    try {
-      applyTabBar();
-      applyNavTitle("navChat");
-      this.applyI18n();
-    } catch (error) {
-      // keep fallback Chinese copy
-    }
   },
 
   onQueryInput(event) {

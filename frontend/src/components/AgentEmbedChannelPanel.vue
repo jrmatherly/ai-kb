@@ -227,12 +227,6 @@
           </div>
 
           <div class="form-item">
-            <label class="form-label">{{ $t('embedPublish.defaultLocale') }}</label>
-            <t-select v-model="form.default_locale" :disabled="!isAdmin" :options="defaultLocaleOptions" />
-            <p class="form-desc">{{ $t('embedPublish.defaultLocaleDesc') }}</p>
-          </div>
-
-          <div class="form-item">
             <label class="form-label">{{ $t('embedPublish.primaryColor') }}</label>
             <t-color-picker v-model="form.primary_color" :disabled="!isAdmin" format="HEX"
               :color-modes="['monochrome']" />
@@ -533,16 +527,6 @@ const positionOptions = computed(() => ([
 const headerTitleModeOptions = computed(() => ([
   { label: t('embedPublish.headerTitleModeChannel'), value: 'channel' },
   { label: t('embedPublish.headerTitleModeSession'), value: 'session' },
-]))
-
-const defaultLocaleOptions = computed(() => ([
-  { label: t('embedPublish.defaultLocaleBrowser'), value: '' },
-  { label: '简体中文', value: 'zh-CN' },
-  { label: '繁體中文', value: 'zh-TW' },
-  { label: 'English', value: 'en-US' },
-  { label: '한국어', value: 'ko-KR' },
-  { label: '日本語', value: 'ja-JP' },
-  { label: 'Русский', value: 'ru-RU' },
 ]))
 
 const channelMenuOptions = (ch: EmbedChannel) => {

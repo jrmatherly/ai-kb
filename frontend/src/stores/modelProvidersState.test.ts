@@ -46,10 +46,10 @@ test('providerLabel uses labels[locale], then the same language, then label', ()
   const lkeap = provider({
     value: 'lkeap',
     label: 'Tencent Cloud LKEAP',
-    labels: { 'zh-CN': '腾讯云 LKEAP' },
+    labels: { 'zh-CN': 'Tencent Cloud LKEAP (zh)' },
   })
-  assert.equal(providerLabel(lkeap, 'zh-CN'), '腾讯云 LKEAP')
-  assert.equal(providerLabel(lkeap, 'zh-TW'), '腾讯云 LKEAP', 'language match without exact region')
+  assert.equal(providerLabel(lkeap, 'zh-CN'), 'Tencent Cloud LKEAP (zh)')
+  assert.equal(providerLabel(lkeap, 'zh-TW'), 'Tencent Cloud LKEAP (zh)', 'language match without exact region')
   assert.equal(providerLabel(lkeap, 'en-US'), 'Tencent Cloud LKEAP')
   assert.equal(providerLabel(lkeap, 'ja-JP'), 'Tencent Cloud LKEAP')
   assert.equal(providerLabel(lkeap), 'Tencent Cloud LKEAP')
@@ -67,8 +67,8 @@ test('pickLocalized ignores empty localized strings', () => {
 })
 
 test('providerDescription mirrors the label lookup', () => {
-  const p = provider({ value: 'x', description: 'gpt-4o, o3', descriptions: { 'zh-CN': 'gpt-4o、o3 等' } })
-  assert.equal(providerDescription(p, 'zh-CN'), 'gpt-4o、o3 等')
+  const p = provider({ value: 'x', description: 'gpt-4o, o3', descriptions: { 'zh-CN': 'gpt-4o, o3 and more (zh)' } })
+  assert.equal(providerDescription(p, 'zh-CN'), 'gpt-4o, o3 and more (zh)')
   assert.equal(providerDescription(p, 'ru-RU'), 'gpt-4o, o3')
 })
 
@@ -100,8 +100,8 @@ test('normalizeModelType maps backend names onto editor names', () => {
 })
 
 test('extraFieldLabel localizes with the same fallback chain', () => {
-  const field = { key: 'region', label: 'Region', labels: { 'zh-CN': '地域' }, type: 'string' }
-  assert.equal(extraFieldLabel(field, 'zh-CN'), '地域')
+  const field = { key: 'region', label: 'Region', labels: { 'zh-CN': 'Region (zh)' }, type: 'string' }
+  assert.equal(extraFieldLabel(field, 'zh-CN'), 'Region (zh)')
   assert.equal(extraFieldLabel(field, 'en-US'), 'Region')
   assert.equal(extraFieldLabel({ key: 'k', label: '', type: 'string' }), 'k')
 })
@@ -195,7 +195,7 @@ test('credentialLabelForModelType follows the vendor declaration, not a hardcode
   const labels = [
     {
       label: 'SecretId',
-      labels: { 'zh-CN': 'SecretId（TC3 签名）' },
+      labels: { 'zh-CN': 'SecretId (TC3 signature, zh)' },
       placeholder: 'AKID...',
       hint: 'not an sk- key',
       model_types: ['Rerank'],
@@ -221,7 +221,7 @@ test('credentialLabelForModelType follows the vendor declaration, not a hardcode
   assert.equal(credentialLabelForModelType(everywhere, 'chat')?.label, 'Access Key')
 
   // Localization goes through the same picker as every other vendor string.
-  assert.equal(pickLocalized(rerank?.labels, 'zh-CN', rerank!.label), 'SecretId（TC3 签名）')
+  assert.equal(pickLocalized(rerank?.labels, 'zh-CN', rerank!.label), 'SecretId (TC3 signature, zh)')
   assert.equal(pickLocalized(rerank?.labels, 'en-US', rerank!.label), 'SecretId')
 })
 
@@ -231,10 +231,10 @@ test('credentialLabelForModelType follows the vendor declaration, not a hardcode
 test('extraFieldOptionLabel resolves the locale, falling back to label then value', () => {
   const option = {
     label: '0..1 relevance (BGE class)',
-    labels: { 'zh-CN': '0~1 相关度（BGE 一类）' },
+    labels: { 'zh-CN': '0~1 relevance (BGE class, zh)' },
     value: 'probability',
   }
-  assert.equal(extraFieldOptionLabel(option, 'zh-CN'), '0~1 相关度（BGE 一类）')
+  assert.equal(extraFieldOptionLabel(option, 'zh-CN'), '0~1 relevance (BGE class, zh)')
   assert.equal(extraFieldOptionLabel(option, 'en'), '0..1 relevance (BGE class)')
   assert.equal(
     extraFieldOptionLabel({ label: 'ap-guangzhou', value: 'ap-guangzhou' }, 'zh-CN'),
@@ -249,9 +249,9 @@ test('extraFieldPlaceholder resolves the locale and tolerates no placeholder', (
     label: 'Rerank score scale',
     type: 'select',
     placeholder: 'match the reranker actually deployed behind this endpoint',
-    placeholders: { 'zh-CN': '按这个端点后面实际部署的重排模型选择' },
+    placeholders: { 'zh-CN': 'pick the reranker deployed behind this endpoint (zh)' },
   }
-  assert.equal(extraFieldPlaceholder(field, 'zh-CN'), '按这个端点后面实际部署的重排模型选择')
+  assert.equal(extraFieldPlaceholder(field, 'zh-CN'), 'pick the reranker deployed behind this endpoint (zh)')
   assert.equal(
     extraFieldPlaceholder(field, 'en'),
     'match the reranker actually deployed behind this endpoint',

@@ -5,8 +5,7 @@ App({
       wx.setStorageSync("aikb_settings", {
         baseUrl: "http://localhost:8080",
         apiKey: "",
-        selectedKnowledgeBaseId: "",
-        locale: "zh"
+        selectedKnowledgeBaseId: ""
       });
     }
   }

@@ -1,11 +1,10 @@
 import { get, post, put, del } from "../../utils/request";
 
-// 智能体配置
-// 智能推理下的智能体类型预设 ID
-// 'rag-qa'       : 经典文档/FAQ 分块 RAG
-// 'wiki-qa'      : Wiki 图谱导航问答
-// 'hybrid-rag-wiki': Wiki + 分块混合检索
-// 'custom'       : 完全自定义（不应用预设）
+// Agent type preset IDs under Smart Reasoning:
+// 'rag-qa'       : classic document/FAQ chunk RAG
+// 'wiki-qa'      : Wiki graph navigation Q&A
+// 'hybrid-rag-wiki': Wiki + chunk hybrid retrieval
+// 'custom'       : fully custom (no preset applied)
 export type AgentType = 'rag-qa' | 'wiki-qa' | 'hybrid-rag-wiki' | 'data-analysis' | 'custom';
 
 export interface QuestionSuggestionConfig {
@@ -31,119 +30,118 @@ export interface QuestionSuggestionConfig {
 }
 
 export interface CustomAgentConfig {
-  // ===== 基础设置 =====
-  agent_mode?: 'quick-answer' | 'smart-reasoning';  // 运行模式：quick-answer=RAG模式, smart-reasoning=ReAct Agent模式
-  // 智能推理模式下的类型预设，用于一键应用"系统提示词 + 工具 + KB 兼容性"组合
-  // 仅在 agent_mode === 'smart-reasoning' 时生效；quick-answer 模式忽略
+  // ===== Basic settings =====
+  agent_mode?: 'quick-answer' | 'smart-reasoning';  // quick-answer = RAG mode, smart-reasoning = ReAct agent mode
+  // Type preset under Smart Reasoning: applies a "system prompt + tools + KB compatibility" bundle in one step.
+  // Only applies when agent_mode === 'smart-reasoning'; quick-answer ignores it.
   agent_type?: AgentType;
-  system_prompt?: string;           // 统一系统提示词（使用 {{web_search_status}} 占位符动态控制行为）
-  system_prompt_id?: string;        // 引用的 prompt template ID（预设会填入此字段）
+  system_prompt?: string;           // single system prompt; the {{web_search_status}} placeholder switches behavior
+  system_prompt_id?: string;        // referenced prompt template ID (set by presets)
   context_template_id?: string;     // Inherit the referenced context template when text is empty
-  context_template?: string;        // 上下文模板（普通模式）
+  context_template?: string;        // context template (Quick Answer)
 
-  // ===== 模型设置 =====
+  // ===== Model settings =====
   model_id?: string;
-  rerank_model_id?: string;         // ReRank 模型 ID
+  rerank_model_id?: string;
   temperature?: number;
-  max_completion_tokens?: number;   // 0 = 跟随系统默认（快速问答 2048；智能推理 4096，绑沙箱可写文件时 24576）。大于 0 为自定义上限
-  thinking?: boolean;                      // 是否启用思考模式（支持扩展思考的模型）
-  // 思考强度：off | auto | minimal | low | medium | high | xhigh | max。
-  // 为空时退回 thinking 布尔值（true == auto，false == off）。
+  max_completion_tokens?: number;   // 0 = system default (Quick Answer 2048; Smart Reasoning 4096, or 24576 with a sandbox that can write files). Above 0 is a custom limit.
+  thinking?: boolean;                      // thinking mode, for models that support extended thinking
+  // Thinking effort: off | auto | minimal | low | medium | high | xhigh | max.
+  // Empty falls back to the thinking boolean (true == auto, false == off).
   reasoning_effort?: string;
-  citation_enabled?: boolean;        // 是否在最终回答中输出知识库/网页来源引用（默认开启）
+  citation_enabled?: boolean;        // cite knowledge base and web sources in the final answer (default on)
 
-  // ===== Agent模式设置 =====
-  max_iterations?: number;          // 最大迭代次数；-1 表示不限制
-  llm_call_timeout?: number;        // LLM调用超时时间（秒）
-  allowed_tools?: string[];         // 允许的工具
-  reflection_enabled?: boolean;     // 是否启用反思
-  // MCP服务选择模式：all=全部启用的MCP服务, selected=指定服务, none=不使用MCP
+  // ===== Agent mode settings =====
+  max_iterations?: number;          // -1 = unlimited
+  llm_call_timeout?: number;        // seconds
+  allowed_tools?: string[];
+  reflection_enabled?: boolean;
+  // MCP service selection: all = every enabled MCP service, selected = listed services, none = no MCP
   mcp_selection_mode?: 'all' | 'selected' | 'none';
-  mcp_services?: string[];          // 选择的MCP服务ID列表
-  // 对话中触发 OAuth 授权时的等待超时（秒）：到点后自动跳过授权提示。
-  // <=0 时使用服务端默认超时。仅对使用 OAuth 的 MCP 服务生效。
+  mcp_services?: string[];          // selected MCP service IDs
+  // Seconds to wait for an OAuth authorization triggered mid-conversation; the prompt is skipped when it expires.
+  // <=0 uses the server default. Applies only to MCP services that use OAuth.
   mcp_auth_wait_timeout?: number;
 
-  // ===== Skills设置（仅Agent模式）=====
-  // Skills选择模式：all=全部预装, selected=指定, none=不使用
+  // ===== Skills settings (agent mode only) =====
+  // Skills selection: all = every preinstalled skill, selected = listed, none = no skills
   skills_selection_mode?: 'all' | 'selected' | 'none';
-  selected_skills?: string[];       // 选择的Skill名称列表
+  selected_skills?: string[];       // selected skill names
 
-  // ===== 沙箱设置 =====
-  // 该智能体的技能脚本运行在哪个沙箱配置上；为空表示不启用沙箱执行。
-  // 指向逻辑配置而非某个具体版本，凭据轮换时无需重新指派每个智能体。
+  // ===== Sandbox settings =====
+  // Sandbox config this agent's skill scripts run on; empty disables sandbox execution.
+  // Points at the logical config, not a version, so rotating credentials needs no reassignment per agent.
   sandbox_config_id?: string;
 
-  // ===== 知识库设置 =====
-  // 知识库选择模式：all=全部知识库, selected=指定知识库, none=不使用知识库
+  // ===== Knowledge base settings =====
+  // Knowledge base selection: all = every knowledge base, selected = listed ones, none = no knowledge base
   kb_selection_mode?: 'all' | 'selected' | 'none';
   knowledge_bases?: string[];
-  // 是否仅在显式 @ 提及时检索知识库（默认: false）
-  // true: 只有用户通过 @ 明确提及知识库/文档时才检索
-  // false: 根据 kb_selection_mode 自动检索知识库
+  // Retrieve from knowledge bases only on an explicit @ mention (default: false)
+  // true: retrieve only when the user @ mentions a knowledge base or document
+  // false: retrieve automatically per kb_selection_mode
   retrieve_kb_only_when_mentioned?: boolean;
 
-  // ===== 图片上传/多模态设置 =====
-  image_upload_enabled?: boolean;    // 是否启用图片上传（默认: false）
-  vlm_model_id?: string;            // VLM模型ID（图片分析用）
-  image_storage_provider?: string;   // 图片存储提供商
-  audio_upload_enabled?: boolean;    // 是否启用音频上传/ASR转录（默认: false）
-  asr_model_id?: string;            // ASR模型ID（音频转录用）
-  // 附件图片理解 / 扫描件 OCR 开关（默认: false，开启会增加解析耗时）
+  // ===== Image upload / multimodal settings =====
+  image_upload_enabled?: boolean;    // default: false
+  vlm_model_id?: string;            // VLM model ID for image analysis
+  image_storage_provider?: string;
+  audio_upload_enabled?: boolean;    // audio upload / ASR transcription (default: false)
+  asr_model_id?: string;            // ASR model ID for audio transcription
+  // Attachment image understanding / scanned-document OCR (default: false; enabling it slows parsing)
   attachment_image_understanding?: boolean;
-  // 扫描件 OCR 最大页数（0 = 使用全局默认 AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES）
+  // Max pages for scanned-document OCR (0 = global default AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES)
   attachment_ocr_max_pages?: number;
-  // 单轮问答等待附件解析完成的最长时间（秒，0 = 使用全局默认 AIKB_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC）
+  // Max seconds one turn waits for attachment parsing (0 = global default AIKB_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC)
   attachment_parse_wait_timeout_sec?: number;
 
-  // ===== 聊天附件解析引擎策略 =====
-  // 按文件类型选择解析引擎；优先级：请求 parser_engine > 智能体规则 > 租户规则 > auto
+  // ===== Chat attachment parser engine rules =====
+  // Parser engine per file type; precedence: request parser_engine > agent rules > workspace rules > auto
   chat_parser_engine_rules?: { file_types: string[]; engine: string }[];
 
-  // ===== 文件类型限制 =====
-  // 支持的文件类型（如 ["csv", "xlsx", "xls"]）
-  // 为空表示支持所有文件类型
+  // ===== File type restriction =====
+  // Supported file types (e.g. ["csv", "xlsx", "xls"])
+  // Empty means all file types
   supported_file_types?: string[];
 
-  // ===== 网络搜索设置 =====
+  // ===== Web search settings =====
   web_search_enabled?: boolean;
   web_search_provider_id?: string;
   web_search_max_results?: number;
 
-  // ===== 多轮对话设置 =====
-  multi_turn_enabled?: boolean;     // 是否启用多轮对话
-  history_turns?: number;           // 保留历史轮数
+  // ===== Multi-turn settings =====
+  multi_turn_enabled?: boolean;
+  history_turns?: number;           // history turns kept
 
-  // ===== 长期记忆 =====
-  // 该智能体是否可以读取用户的长期记忆。
-  // 缺省（旧数据）等同于 true：这是一个只能"关"的开关，空间设置关闭时
-  // 这里打开也不会生效。
+  // ===== Long-term memory =====
+  // Whether this agent may read the user's long-term memory.
+  // Unset (old data) means true: this switch can only turn it off; when the workspace setting is off,
+  // turning it on here has no effect.
   memory_enabled?: boolean;
 
-  // ===== 检索策略设置 =====
-  embedding_top_k?: number;         // 向量召回TopK
-  keyword_threshold?: number;       // 关键词召回阈值
-  vector_threshold?: number;        // 向量召回阈值
-  rerank_top_k?: number;            // 重排TopK
-  rerank_threshold?: number;        // 重排阈值
+  // ===== Retrieval settings =====
+  embedding_top_k?: number;         // embedding recall top K
+  keyword_threshold?: number;       // keyword recall threshold
+  vector_threshold?: number;        // vector recall threshold
+  rerank_top_k?: number;            // rerank top K
+  rerank_threshold?: number;        // rerank threshold
 
-  // ===== 高级设置（主要用于普通模式）=====
-  enable_query_expansion?: boolean; // 是否启用查询扩展
-  enable_rewrite?: boolean;         // 是否启用问题改写
-  rewrite_prompt_system?: string;   // 改写系统提示词
-  rewrite_prompt_user?: string;     // 改写用户提示词模板
-  fallback_strategy?: 'fixed' | 'model'; // 兜底策略
-  fallback_response?: string;       // 固定兜底回复
-  fallback_prompt?: string;         // 兜底提示词（模型生成时）
-  // 意图提示词：非检索意图（问候、闲聊等）时覆盖主系统提示词
+  // ===== Advanced settings (mostly Quick Answer) =====
+  enable_query_expansion?: boolean; // query expansion
+  enable_rewrite?: boolean;         // question rewrite
+  rewrite_prompt_system?: string;   // rewrite system prompt
+  rewrite_prompt_user?: string;     // rewrite user prompt template
+  fallback_strategy?: 'fixed' | 'model'; // fallback strategy
+  fallback_response?: string;       // fixed fallback response
+  fallback_prompt?: string;         // fallback prompt (when the model generates it)
+  // Intent prompts: override the main system prompt for non-retrieval intents (greetings, chitchat, etc.)
   intent_prompts?: Record<string, string>;
 
-  // ===== 已废弃字段（保留兼容）=====
+  // ===== Deprecated fields (kept for compatibility) =====
   welcome_message?: string;
   question_suggestions?: QuestionSuggestionConfig;
 }
 
-// 智能体
 export interface CustomAgent {
   id: string;
   name: string;
@@ -152,14 +150,13 @@ export interface CustomAgent {
   is_builtin: boolean;
   tenant_id?: number;
   created_by?: string;
-  // creator_name 由后端 list 接口批量回填，仅用于列表卡片来源徽章。
+  // creator_name is backfilled by the backend list endpoint; used only for the source badge on list cards.
   creator_name?: string;
   config: CustomAgentConfig;
   created_at?: string;
   updated_at?: string;
 }
 
-// 创建智能体请求
 export interface CreateAgentRequest {
   name: string;
   description?: string;
@@ -167,7 +164,6 @@ export interface CreateAgentRequest {
   config?: CustomAgentConfig;
 }
 
-// 更新智能体请求
 export interface UpdateAgentRequest {
   name: string;
   description?: string;
@@ -175,11 +171,10 @@ export interface UpdateAgentRequest {
   config?: CustomAgentConfig;
 }
 
-// 内置智能体 ID（常用的保留常量，便于代码引用）
+// Built-in agent IDs
 export const BUILTIN_QUICK_ANSWER_ID = 'builtin-quick-answer';
 export const BUILTIN_SMART_REASONING_ID = 'builtin-smart-reasoning';
 
-// AgentMode 常量
 export const AGENT_MODE_QUICK_ANSWER = 'quick-answer';
 export const AGENT_MODE_SMART_REASONING = 'smart-reasoning';
 
@@ -188,8 +183,8 @@ export const BUILTIN_AGENT_NORMAL_ID = BUILTIN_QUICK_ANSWER_ID;
 // Deprecated: Use BUILTIN_SMART_REASONING_ID instead
 export const BUILTIN_AGENT_AGENT_ID = BUILTIN_SMART_REASONING_ID;
 
-// 获取智能体列表（包括内置智能体）
-// disabled_own_agent_ids: 当前空间在对话下拉中停用的「我的」智能体 ID，仅影响本空间
+// Lists agents, built-in ones included.
+// disabled_own_agent_ids: "my" agents the current workspace hides from the conversation dropdown; affects only this workspace
 export function listAgents(params?: {
   /**
    * Optional creator filter; mirrors listKnowledgeBases. Built-in agents
@@ -203,44 +198,37 @@ export function listAgents(params?: {
   return get<{ data: CustomAgent[]; disabled_own_agent_ids?: string[] }>(`/api/v1/agents${qs}`);
 }
 
-// 获取智能体详情
 export function getAgentById(id: string) {
   return get<{ data: CustomAgent }>(`/api/v1/agents/${id}`);
 }
 
-// 创建智能体
 export function createAgent(data: CreateAgentRequest) {
   return post<{ data: CustomAgent }>('/api/v1/agents', data);
 }
 
-// 更新智能体
 export function updateAgent(id: string, data: UpdateAgentRequest) {
   return put<{ data: CustomAgent }>(`/api/v1/agents/${id}`, data);
 }
 
-// 删除智能体
 export function deleteAgent(id: string) {
   return del<{ success: boolean }>(`/api/v1/agents/${id}`);
 }
 
-// 复制智能体
 export function copyAgent(id: string) {
   return post<{ data: CustomAgent }>(`/api/v1/agents/${id}/copy`);
 }
 
-// 判断是否为内置智能体（通过 agent.is_builtin 字段或 ID 前缀判断）
+// Built-in agent IDs start with 'builtin-'.
 export function isBuiltinAgent(agentId: string): boolean {
   return agentId.startsWith('builtin-');
 }
 
-// 占位符定义
 export interface PlaceholderDefinition {
   name: string;
   label: string;
   description: string;
 }
 
-// 占位符响应
 export interface PlaceholdersResponse {
   all: PlaceholderDefinition[];
   system_prompt: PlaceholderDefinition[];
@@ -251,21 +239,20 @@ export interface PlaceholdersResponse {
   fallback_prompt: PlaceholderDefinition[];
 }
 
-// 获取占位符定义
 export function getPlaceholders() {
   return get<{ data: PlaceholdersResponse }>('/api/v1/agents/placeholders');
 }
 
-// ===== 智能体类型预设 =====
+// ===== Agent type presets =====
 
-// 后端 kb_filter 结构（见 internal/types/agent_type_preset.go）
+// Backend kb_filter shape (see internal/types/agent_type_preset.go)
 export interface AgentTypeKBFilter {
-  any_of?: string[];   // KB 至少拥有其一
-  all_of?: string[];   // KB 必须全部拥有
-  none_of?: string[];  // KB 必须全部不拥有
+  any_of?: string[];   // KB has at least one
+  all_of?: string[];   // KB has all
+  none_of?: string[];  // KB has none
 }
 
-// KB 能力标签（后端 types.KBCapabilities 的 JSON）
+// KB capability flags (JSON of backend types.KBCapabilities)
 export interface KBCapabilities {
   vector: boolean;
   keyword: boolean;
@@ -274,7 +261,7 @@ export interface KBCapabilities {
   faq: boolean;
 }
 
-// 预设的"自动填充"配置载荷：仅包含被预设覆盖的字段；其他字段不动
+// Preset auto-fill payload: only the fields the preset overrides; other fields are untouched
 export interface AgentTypePresetConfig {
   system_prompt_id?: string;
   temperature?: number;
@@ -295,16 +282,16 @@ export interface AgentTypePresetI18n {
 export interface AgentTypePreset {
   id: AgentType;
   i18n: Record<string, AgentTypePresetI18n>;
-  config?: AgentTypePresetConfig;     // 为空表示"自定义"类型（无预设）
-  kb_filter?: AgentTypeKBFilter;      // 为空表示所有 KB 可选
+  config?: AgentTypePresetConfig;     // empty means the "custom" type (no preset)
+  kb_filter?: AgentTypeKBFilter;      // empty means every KB is selectable
 }
 
-// 拉取类型预设列表（编辑器用）
+// Type preset list for the editor
 export function getAgentTypePresets() {
   return get<{ data: AgentTypePreset[] }>('/api/v1/agents/type-presets');
 }
 
-// ===== IM渠道 =====
+// ===== IM channels =====
 
 export interface IMChannel {
   id: string;
@@ -316,7 +303,7 @@ export interface IMChannel {
   enabled: boolean;
   mode: 'webhook' | 'websocket' | 'longpoll';
   output_mode: 'stream' | 'full';
-  locale?: '' | 'zh-CN' | 'zh-TW' | 'en-US' | 'ko-KR' | 'ja-JP' | 'ru-RU';
+  locale?: '' | 'en-US';
   session_mode?: 'user' | 'thread';
   knowledge_base_id?: string;
   credentials: Record<string, any>;
@@ -367,9 +354,8 @@ export function toggleIMChannel(id: string) {
   return post<{ data: IMChannel }>(`/api/v1/im-channels/${id}/toggle`);
 }
 
-// ===== 推荐问题 =====
+// ===== Suggested questions =====
 
-// 推荐问题
 export interface SuggestedQuestion {
   question: string;
   source: 'faq' | 'document' | 'agent_config' | 'wiki';
@@ -377,8 +363,7 @@ export interface SuggestedQuestion {
   knowledge_id?: string;
 }
 
-// 获取智能体推荐问题
-// 根据智能体关联的知识库范围返回推荐问题，用于前端对话面板快捷提问
+// Suggested questions for an agent, scoped to its knowledge bases; quick prompts in the chat panel
 export function getSuggestedQuestions(
   agentId: string,
   params?: {

@@ -15,7 +15,6 @@ export { forceReloginRedirect, refreshAccessTokenShared };
 
 const t = (key: string) => i18n.global.t(key)
 
-// API基础URL
 const BASE_URL = getApiBaseUrl();
 
 /**
@@ -53,19 +52,18 @@ function withHttpStatus<T>(data: T, status: number): T {
   return data;
 }
 
-// 创建Axios实例
 const instance = axios.create({
-  baseURL: BASE_URL, // 使用配置的API基础URL
-  timeout: 30000, // 请求超时时间
+  baseURL: BASE_URL,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
     "X-Request-ID": `${generateRandomString(12)}`,
   },
 });
 
-// 获取当前用户语言（用于 Accept-Language header）
+// Current UI language, sent as the Accept-Language header.
 export function getCurrentLanguage(): string {
-  return i18n.global.locale?.value || localStorage.getItem('locale') || 'zh-CN'
+  return i18n.global.locale?.value || localStorage.getItem('locale') || 'en-US'
 }
 
 
@@ -75,7 +73,7 @@ instance.interceptors.request.use(
     const isEmbedAuth = typeof existingAuth === 'string' && existingAuth.startsWith('Embed ');
     const isEmbedPath = typeof config.url === 'string' && config.url.includes('/api/v1/embed/');
 
-    // 嵌入渠道使用 Embed token；勿用本地 JWT 覆盖（否则调试页会 401）
+    // Embed channels authenticate with an Embed token; overwriting it with the local JWT makes the debug page return 401.
     if (!isEmbedAuth) {
       const token = localStorage.getItem('aikb_token');
       if (token) {
@@ -83,18 +81,16 @@ instance.interceptors.request.use(
       }
     }
     
-    // 添加用户语言偏好
     config.headers["Accept-Language"] = getCurrentLanguage();
     
-    // 添加跨空间访问请求头：只要 setSelectedTenant 写过激活空间，
-    // 每个请求都要附 X-Tenant-ID。早期版本会 short-circuit
-    // "selectedTenantId === defaultTenantId 时不附"以减少 header 体积，
-    // 但这条优化会被任何把 aikb_tenant 写成激活空间的代码（OIDC
-    // 回调、UserMenu loadUserInfo、router hydrate）触发，导致后续请求
-    // 静默丢失 header，前端"切换了"但实际仍跑在 home 空间里——把"切
-    // 换之后只有第一批请求带 X-Tenant-ID"调成永久状态。
-    // 后端 IsTenantAccessible 已经允许 header 指向 home 空间（自家），
-    // 所以无脑附不会引入新风险。
+    // Send X-Tenant-ID on every request once setSelectedTenant has stored an
+    // active workspace. Skipping it when selectedTenantId === defaultTenantId
+    // broke switching: any code that writes aikb_tenant as the active workspace
+    // (OIDC callback, UserMenu loadUserInfo, router hydrate) makes the two
+    // equal, later requests silently drop the header, and the UI looks switched
+    // while requests still run in the home workspace. The backend's
+    // IsTenantAccessible already accepts a header pointing at the home
+    // workspace, so always sending it adds no risk.
     if (!isEmbedAuth && !isEmbedPath) {
       const selectedTenantId = localStorage.getItem('aikb_selected_tenant_id');
       if (selectedTenantId) {
@@ -124,7 +120,6 @@ function isPublicAuthRequest(url?: string): boolean {
 
 instance.interceptors.response.use(
   (response) => {
-    // 根据业务状态码处理逻辑
     const { status, data } = response;
     if (status >= 200 && status < 300) {
       return withHttpStatus(data, status);
@@ -144,8 +139,8 @@ instance.interceptors.response.use(
       });
     }
 
-    // 文件下载失败时服务端仍返回 JSON；先还原错误信息，避免被 Blob 隐藏。
-    // 不依赖 Content-Type：网关可能把错误改成 text/plain 或空类型。
+    // A failed file download still returns JSON; decode it so the Blob does not hide the error.
+    // Content-Type is not trusted: a gateway may rewrite errors as text/plain or no type.
     if (typeof Blob !== 'undefined' && error.response.data instanceof Blob) {
       try {
         const text = (await error.response.data.text()).trim();
@@ -153,11 +148,11 @@ instance.interceptors.response.use(
           error.response.data = JSON.parse(text);
         }
       } catch {
-        // 非法 JSON 继续使用原有错误处理。
+        // Invalid JSON falls through to the normal error handling.
       }
     }
     
-    // 公开接口（auto-setup / login / register / oidc）的 401 不走 refresh 逻辑，直接返回错误
+    // A 401 from a public endpoint (auto-setup, login, register, oidc) is returned as is, without refresh.
     if ((error.response.status === 401 || error.response.status === 403) && isPublicAuthRequest(originalRequest?.url)) {
       const { status, data } = error.response;
       const msg = typeof data === 'object'
@@ -166,7 +161,7 @@ instance.interceptors.response.use(
       return Promise.reject(withHttpStatus({ status, message: msg || t('error.invalidCredentials') }, status));
     }
 
-    // Embed 调试页/挂件：无 JWT 时直接拒绝，勿走 refresh → /login
+    // Embed debug page and widget have no JWT: reject instead of refresh and redirect to /login.
     if (error.response.status === 401 && isEmbedPage()) {
       const { status, data } = error.response;
       const msg = typeof data === 'object'
@@ -175,7 +170,6 @@ instance.interceptors.response.use(
       return Promise.reject(withHttpStatus({ status, message: msg || t('error.invalidCredentials') }, status));
     }
 
-    // 如果是401错误且不是刷新token的请求，尝试刷新token
     if (error.response.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/refresh')) {
       originalRequest._retry = true;
       try {
@@ -193,7 +187,7 @@ instance.interceptors.response.use(
       }
     }
     
-    // 处理 Nginx 413 Request Entity Too Large
+    // Nginx 413 Request Entity Too Large
     const ERR_ENTITY_TOO_LARGE = 413;
     if (error.response.status === ERR_ENTITY_TOO_LARGE) {
       const skillUpload = isSkillBundleUploadUrl(error.config?.url)
@@ -207,9 +201,8 @@ instance.interceptors.response.use(
     }
 
     const { status, data } = error.response;
-    // 将HTTP状态码一并抛出，方便上层判断401等场景
-    // 后端返回格式: { success: false, error: { code, message, details } }
-    // 提取 error.message 作为顶层 message，方便前端使用 error?.message 获取
+    // Backend shape: { success: false, error: { code, message, details } }.
+    // error.message is lifted to the top-level message, and the HTTP status is attached for callers.
     let errorMessage: string | undefined;
     if (typeof data === 'object') {
       if (typeof data?.error === 'string') {

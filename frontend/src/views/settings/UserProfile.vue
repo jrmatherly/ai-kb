@@ -22,7 +22,7 @@
 
     <!-- Content -->
     <div v-else class="settings-group">
-      <!-- 用户 ID -->
+      <!-- User ID -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('tenant.api.userIdLabel') }}</label>
@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <!-- 用户名 -->
+      <!-- Username -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('tenant.api.usernameLabel') }}</label>
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <!-- 邮箱 -->
+      <!-- Email -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('tenant.api.emailLabel') }}</label>
@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <!-- 注册时间 -->
+      <!-- Registered at -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('tenant.api.createdAtLabel') }}</label>
@@ -66,7 +66,7 @@
         </div>
       </div>
 
-      <!-- 修改密码：与其它 setting-row 同款只读行 + 编辑入口，表单进原地 popup -->
+      <!-- Change password: read-only row with an edit button like the other setting-rows; the form opens in an in-place popup -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('userProfile.changePassword.label') }}</label>
@@ -268,7 +268,7 @@ const formatDate = (dateStr: string | undefined) => {
   if (!dateStr) return t('tenant.unknown')
   try {
     const d = new Date(dateStr)
-    const fmt = new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    const fmt = new Intl.DateTimeFormat(locale.value || 'en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -434,7 +434,7 @@ onMounted(loadInfo)
 </style>
 
 <style lang="less">
-/* t-popup 挂到 body，需全局样式；z-index 需高于设置全屏遮罩（2000）。 */
+/* t-popup mounts on body, so this must be global; z-index must exceed the settings overlay (2000). */
 .user-profile-password-popup-overlay {
   z-index: 3050 !important;
 

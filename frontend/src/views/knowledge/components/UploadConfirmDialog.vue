@@ -463,9 +463,9 @@
                         >
                           <div class="setting-info">
                             <label>{{ t('knowledgeEditor.advanced.multimodal.imageAttrsSchemaLabel') }}</label>
-                            <!-- 实现说明（不放 UI）：面板完全由后端属性注册表驱动 —— 属性名、说明、
-                                 每个取值的含义都随 schema 端点下发，前端只按属性名覆盖翻译。所以新增
-                                 属性仍是「后端加一行 / 前端自动跟随」，属性集合随版本演进无需改这里。 -->
+                            <!-- Implementation note (not UI): the panel is driven entirely by the backend attribute registry. Names, descriptions
+                                 and value meanings come from the schema endpoint; the frontend only overrides translations by name, so adding an
+                                 attribute is one backend line and the frontend follows without changes here. -->
                             <p class="desc">{{ t('knowledgeEditor.advanced.multimodal.imageAttrsSchemaDescription') }}</p>
                           </div>
                           <div class="image-attr-panel">
@@ -499,11 +499,11 @@
                           </div>
                         </div>
 
-                        <!-- 观察失败兜底：真正与上方属性面板行同级。此前它嵌在
-                             setting-row-vertical 里，而垂直行的后代选择器把所有
-                             .setting-info / .setting-control 都撑成 100% 宽，水平
-                             排布必然溢出，开关被顶到容器右缘之外。挪出来后与其它
-                             开关行共用同一套排版，右缘与「图片属性观察」对齐 -->
+                        <!-- Unobserved fallback: a sibling of the attribute panel row above. Nested inside
+                             setting-row-vertical, the vertical row descendant selector stretched every
+                             .setting-info / .setting-control to 100% width, so the horizontal
+                             layout overflowed and pushed the switch past the right edge. Out here it shares
+                             the other switch rows' layout and its right edge aligns with "Image attribute observation" -->
                         <template v-if="uiState.multimodalConfig.enabled && uiState.imageAttrsEnabled">
                           <div class="setting-row">
                             <div class="setting-info">
@@ -980,10 +980,10 @@ const chunkingStrategyOptions = computed(() => [
 const separatorOptions = computed(() => [
   { label: t('knowledgeEditor.chunking.separators.doubleNewline'), value: '\n\n' },
   { label: t('knowledgeEditor.chunking.separators.singleNewline'), value: '\n' },
-  { label: t('knowledgeEditor.chunking.separators.periodCn'), value: '。' },
-  { label: t('knowledgeEditor.chunking.separators.exclamationCn'), value: '！' },
-  { label: t('knowledgeEditor.chunking.separators.questionCn'), value: '？' },
-  { label: t('knowledgeEditor.chunking.separators.semicolonCn'), value: '；' },
+  { label: t('knowledgeEditor.chunking.separators.periodCn'), value: '\u3002' },
+  { label: t('knowledgeEditor.chunking.separators.exclamationCn'), value: '\uff01' },
+  { label: t('knowledgeEditor.chunking.separators.questionCn'), value: '\uff1f' },
+  { label: t('knowledgeEditor.chunking.separators.semicolonCn'), value: '\uff1b' },
   { label: t('knowledgeEditor.chunking.separators.semicolonEn'), value: ';' },
   { label: t('knowledgeEditor.chunking.separators.space'), value: ' ' },
 ])
@@ -1220,7 +1220,8 @@ function createDefaultUIState(): UploadUIState {
     chunkingConfig: {
       chunkSize: 512,
       chunkOverlap: 80,
-      separators: ['\n\n', '\n', '。', '！', '？', ';', '；'],
+      // CJK full stop, exclamation, question mark and semicolon (\u3002 \uff01 \uff1f \uff1b) split Chinese text.
+      separators: ['\n\n', '\n', '\u3002', '\uff01', '\uff1f', ';', '\uff1b'],
       parserEngineRules: undefined,
       enableParentChild: true,
       parentChunkSize: 4096,
@@ -1260,7 +1261,8 @@ function initFromKbInfo(kb: any) {
     chunkingConfig: {
       chunkSize: kb.chunking_config?.chunk_size || 512,
       chunkOverlap: kb.chunking_config?.chunk_overlap || 80,
-      separators: kb.chunking_config?.separators || ['\n\n', '\n', '。', '！', '？', ';', '；'],
+      // CJK full stop, exclamation, question mark and semicolon (\u3002 \uff01 \uff1f \uff1b) split Chinese text.
+      separators: kb.chunking_config?.separators || ['\n\n', '\n', '\u3002', '\uff01', '\uff1f', ';', '\uff1b'],
       parserEngineRules: kb.chunking_config?.parser_engine_rules || undefined,
       enableParentChild: kb.chunking_config?.enable_parent_child ?? false,
       parentChunkSize: kb.chunking_config?.parent_chunk_size || 4096,
@@ -1276,7 +1278,7 @@ function initFromKbInfo(kb: any) {
       descriptionLanguage: kb.vlm_config?.description_language || '',
       customInstructions: kb.vlm_config?.custom_instructions || '',
     },
-    // 默认跟随知识库的图片属性观察设置；用户可对本次任务单独覆盖。
+    // Defaults to the knowledge base's image attribute observation setting; the user can override it for this upload.
     imageAttrsEnabled: !!kb.image_processing_config?.image_attrs_enabled,
     imageVectorEnabled: !!kb.image_processing_config?.image_vector_enabled,
     imageActions: mergeImageActions(kb.image_processing_config?.image_actions),
@@ -1304,7 +1306,7 @@ function initFromKbInfo(kb: any) {
     graphEnabled: kb.indexing_strategy?.graph_enabled ?? false,
     pdfForceScanned: false,
   }
-  // 拉取后端属性注册表，驱动属性面板的动态渲染（已有 kbId）。
+  // Fetch the backend attribute registry that renders the attribute panel (kbId is known here).
   if (kb.id) loadImageAttrSchema(kb.id)
 }
 
@@ -1629,9 +1631,9 @@ const handleConfirm = () => {
 </script>
 
 <style lang="less" scoped>
-// 图片属性面板（可观察属性 / OCR 触发条件 / 观察失败兜底）
-// 文案全部来自后端属性注册表（人话名 + 每个取值的含义），前端只做翻译覆盖，
-// 因此新增属性无需改这里。与知识库编辑器同款：铺在所在设置区里、不套独立底色块。
+// Image attribute panel (observable attributes / OCR triggers / unobserved fallback).
+// All text comes from the backend attribute registry (display name + meaning of each value); the frontend only overrides translations,
+// so new attributes need no change here. Like the knowledge base editor, it sits in its settings section without its own background.
 .image-attr-panel {
   margin-top: 4px;
 }
@@ -1657,7 +1659,7 @@ const handleConfirm = () => {
   font-weight: 600;
   color: var(--td-text-color-primary);
 }
-// 原始属性名缩小并加括号，便于与处理轨迹里的字段对上，又不干扰阅读
+// The raw attribute name is smaller and in parentheses, to match the processing trace without distracting
 .image-attr-name {
   font-family: ui-monospace, Menlo, Consolas, monospace;
   font-size: var(--app-text-xs);
@@ -1677,7 +1679,7 @@ const handleConfirm = () => {
   line-height: 20px;
   color: var(--td-text-color-secondary);
 }
-// 每个取值一行：值（等宽，左列对齐）+ 冒号 + 人话解释
+// One line per value: value (monospace, left column) + colon + explanation
 .image-attr-value-list {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -1686,7 +1688,7 @@ const handleConfirm = () => {
   margin-top: 6px;
   font-size: var(--app-text-sm);
 }
-// display: contents 让值与解释分别落进上面两列，取值因此左对齐成列
+// display: contents puts value and explanation in the two columns above, so values align in a column
 .image-attr-value {
   display: contents;
 
@@ -1694,7 +1696,7 @@ const handleConfirm = () => {
     font-family: ui-monospace, Menlo, Consolas, monospace;
     color: var(--td-text-color-primary);
 
-    // 冒号紧跟取值，不留空隙：none: 没有文字
+    // The colon follows the value with no gap, as in "none: no text"
     &::after {
       content: ':';
     }
@@ -1706,7 +1708,7 @@ const handleConfirm = () => {
 .image-attr-section {
   margin-top: 14px;
 }
-// 一条 OCR 条件两行：人话在上，原始 property = value 在下
+// An OCR condition takes two lines: plain words on top, the raw property = value below
 .image-attr-condition-list {
   margin-top: 6px;
   font-size: var(--app-text-sm);

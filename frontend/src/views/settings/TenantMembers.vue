@@ -481,7 +481,7 @@
               </t-table>
             </div>
 
-            <!-- 触底 sentinel：IntersectionObserver root 指向 audit-scroll-area -->
+            <!-- Bottom sentinel: the IntersectionObserver root is audit-scroll-area -->
             <div ref="auditLoadSentinelEl" class="audit-load-sentinel" aria-hidden="true" />
 
             <div v-if="auditLoading && auditEntries.length > 0" class="audit-loading-more">
@@ -533,7 +533,7 @@ import {
 const { t, tm, locale } = useI18n()
 const authStore = useAuthStore()
 
-/** 悬停层限制在视口内，内容由内部滚动 */
+/** Keep the hover layer inside the viewport; its content scrolls internally */
 const permissionsPopupInnerStyle = {
   boxSizing: 'border-box' as const,
   padding: '0',
@@ -548,7 +548,7 @@ const members = ref<TenantMember[]>([])
 const loading = ref(false)
 const error = ref('')
 const adding = ref(false)
-/** 邀请流程：锚在列表头「+」按钮旁的弹出层（非居中模态）。 */
+/** Invite flow: a popover anchored next to the list header "+" button (not a centered modal). */
 const invitePopupVisible = ref(false)
 // share-link generator state (separate popup next to the email
 // invite). shareLinkResult is non-null after a successful create —
@@ -563,7 +563,7 @@ const addDialogStep = ref<'form' | 'confirm'>('form')
 const addFormRef = ref<any>(null)
 const searchQuery = ref('')
 const activeListTab = ref('members')
-/** 已应用到服务端筛选的检索词（相对输入框防抖） */
+/** Search term applied to the server-side filter (debounced from the input) */
 const memberSearchQ = ref('')
 let memberSearchDebounceTimer: number | undefined
 
@@ -575,7 +575,7 @@ const invitationsTotal = ref(0)
 const invitationsPage = ref(1)
 const invitationsPageSize = ref(20)
 
-/** 历次分页载荷里见过的成员展示字段，补齐审计表里不在当前页的 user id */
+/** Member display fields seen in earlier page payloads, to label audit rows whose user id is not on the current page */
 const memberDisplayByUserId = reactive<Record<string, { username?: string; email?: string }>>({})
 
 // Pending invitations live alongside members but in a distinct section
@@ -615,7 +615,7 @@ const auditHasMore = ref(true)
 const auditLoadedOnce = ref(false)
 const AUDIT_PAGE_SIZE = 50
 
-/** 抽屉内滚动根与触底 sentinel，用于游标分页自动加载下一页（见 attachAuditInfiniteScroll） */
+/** Drawer scroll root and bottom sentinel that auto-load the next cursor page (see attachAuditInfiniteScroll) */
 const auditScrollRoot = ref<HTMLElement | null>(null)
 const auditLoadSentinelEl = ref<HTMLElement | null>(null)
 let auditScrollObserver: IntersectionObserver | null = null
@@ -667,7 +667,7 @@ const roleOptions = computed(() => [
   { label: t('tenantMember.role.viewer'), value: 'viewer' },
 ])
 
-/** 下拉层须高于邀请浮层（3050）与组织设置全屏遮罩，否则会被压住 */
+/** The dropdown must sit above the invite popover (3050) and the organization settings overlay, or it is covered */
 const roleSelectPopupProps = {
   zIndex: 6200,
   overlayClassName: 'tenant-members-role-select-popup',
@@ -765,7 +765,7 @@ function roleTagTheme(role: TenantRole): 'primary' | 'warning' | 'success' | 'de
   }
 }
 
-/** 成员表/下拉与权限矩阵共用图标（crown 不在 tdesign-icons-vue-next 中）。 */
+/** Icons shared by the member table, dropdown and permission matrix (crown is not in tdesign-icons-vue-next). */
 function roleIcon(role: TenantRole | string): string {
   if (role === 'owner' || role === 'admin' || role === 'contributor' || role === 'viewer') {
     return roleMatrixIcon(role as TenantRole)
@@ -777,7 +777,7 @@ function formatDate(s: string | undefined): string {
   if (!s) return '-'
   try {
     const d = new Date(s)
-    return new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    return new Intl.DateTimeFormat(locale.value || 'en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -996,7 +996,7 @@ const auditColumns = computed(() => [
 function formatAuditDatePart(s: string | undefined): string {
   if (!s) return '-'
   try {
-    return new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    return new Intl.DateTimeFormat(locale.value || 'en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -1009,7 +1009,7 @@ function formatAuditDatePart(s: string | undefined): string {
 function formatAuditTimePart(s: string | undefined): string {
   if (!s) return ''
   try {
-    return new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    return new Intl.DateTimeFormat(locale.value || 'en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -1048,14 +1048,14 @@ function auditOutcomeTheme(o: AuditOutcome): 'success' | 'danger' | 'default' {
   return 'default'
 }
 
-// i18n 键名含点号（rbac.member_added）。用 t(path) 会按路径拆开解析，
-// 无法命中 tenantMember.audit.action['rbac.*'] — 必须用 tm + 字面量键。
+// i18n keys contain dots (rbac.member_added). t(path) splits them as a path
+// and misses tenantMember.audit.action['rbac.*'], so use tm with the literal key.
 function formatAuditAction(action: AuditAction): string {
   return auditActionLabel({ tm }, AUDIT_ACTION_I18N_ROOTS.tenantMember, action)
 }
 
-// Resolve a user id to a display label: prefer current页的 members，
-// 再退到历次分页积累的 memberDisplayByUserId，最后是原始 id。
+// Resolve a user id to a display label: prefer members on the current page,
+// then memberDisplayByUserId from earlier pages, then the raw id.
 function actorDisplayName(userId: string): string {
   const cur = members.value.find((x) => x.user_id === userId)
   if (cur?.username?.trim()) return cur.username.trim()
@@ -1409,9 +1409,9 @@ async function onRoleChange(row: TenantMember, newRole: string) {
   }
 }
 
-// 原地 popconfirm 替代 DialogPlugin 模态确认：与"共享资源删除"等其它列表内
-// 的删除入口风格统一，避免一个简单的二次确认打断成员管理表格的浏览节奏。
-// 错误分支保持与旧实现一致（409 last-owner / 404 not-found / 兜底）。
+// In-place popconfirm instead of a DialogPlugin modal, matching other in-list delete
+// actions (shared resources) so a simple confirmation does not interrupt the member table.
+// Error branches match the old implementation (409 last-owner / 404 not-found / fallback).
 async function removeRow(row: TenantMember) {
   try {
     const resp = await removeMember(activeTenantId.value, row.user_id)
@@ -1539,8 +1539,8 @@ watch(
   padding: 16px 0 32px;
 }
 
-/* 带子分页的卡片：仅在表格主体上横向滚动，页脚不参与滚动，避免分页条被卷入或对齐错位。
-   双类选择器用于盖过根上 .data-table-shell 的 overflow-x: auto */
+/* Paginated cards: only the table body scrolls horizontally; the footer stays put so the pager does not scroll or misalign.
+   The double-class selector overrides overflow-x: auto on the root .data-table-shell */
 .data-table-shell.data-table-shell--with-footer {
   display: flex;
   flex-direction: column;
@@ -1570,7 +1570,7 @@ watch(
   }
 }
 
-/* 待接受区块整体为浅底色，分页条与表格区同色阶、仅靠顶部分割线与表格区分 */
+/* The pending section has a light background; the pager shares the table tone and is set apart only by a top divider */
 .pending-invitations-table.data-table-shell.data-table-shell--with-footer>.data-table-shell__pager {
   background-color: transparent;
 }
@@ -1696,7 +1696,7 @@ watch(
   :deep(.t-table tbody tr:last-child td) { border-bottom: 0; }
   :deep(.t-table__content > table) { min-width: 640px; }
 
-  // 角色标签与下拉控件保持同宽，文字与图标沿同一列对齐。
+  // Role tag and dropdown share a width so text and icons align in one column.
   &:deep(.role-cell) {
     display: flex;
     align-items: center;
@@ -1842,7 +1842,7 @@ watch(
     }
   }
 
-  /* Hover 弹出层：压扁占位 + 2×2 角色块 + 内部滚动 */
+  /* Hover popover: compact placeholder + 2x2 role blocks + internal scroll */
   &.permissions-compact--popover {
     padding: 10px 12px;
     margin: 0;
@@ -2274,7 +2274,7 @@ watch(
 </style>
 
 <style lang="less">
-/* 权限说明弹出层（t-popup 挂到 body，须全局样式） */
+/* Permission help popover (t-popup mounts on body, so styles must be global) */
 .permissions-popup-overlay {
   z-index: 3050 !important;
 
@@ -2391,7 +2391,7 @@ watch(
   }
 }
 
-/* t-popup 挂到 body，需全局样式；z-index 需高于设置全屏遮罩（2000）。 */
+/* t-popup mounts on body, so this must be global; z-index must exceed the settings overlay (2000). */
 .member-invite-popup-overlay {
   z-index: 3050 !important;
 
@@ -2406,7 +2406,7 @@ watch(
     0 8px 32px rgba(0, 0, 0, 0.28) !important;
 }
 
-/* 角色下拉挂到 body 时可能被邀请 Popup / 设置遮罩盖住，类名挂在 t-popup 根节点 */
+/* Mounted on body, the role dropdown can be covered by the invite popup or settings overlay; the class sits on the t-popup root */
 .tenant-members-role-select-popup {
   z-index: 6200 !important;
 
@@ -2421,7 +2421,7 @@ watch(
   }
 }
 
-/* 成员页审计抽屉 teleport 到 body，须全局样式才能把 body 高度链拉满以便内层滚动 */
+/* The audit drawer teleports to body; global styles are needed to stretch the height chain so the inner area scrolls */
 .t-drawer.tenant-members-audit-drawer.t-drawer--right .t-drawer__content-wrapper--right {
   box-sizing: border-box;
   display: flex;

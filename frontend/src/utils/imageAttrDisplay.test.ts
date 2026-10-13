@@ -5,10 +5,6 @@ import { createI18n } from 'vue-i18n'
 
 import type { ImageAttrSchema, ImageAttrSpec } from '@/api/knowledge-base'
 import enUS from '../i18n/locales/en-US.ts'
-import jaJP from '../i18n/locales/ja-JP.ts'
-import koKR from '../i18n/locales/ko-KR.ts'
-import ruRU from '../i18n/locales/ru-RU.ts'
-import zhCN from '../i18n/locales/zh-CN.ts'
 import { imageAttrConditionDisplay, imageAttrDisplay, imageAttrKeyBase } from './imageAttrDisplay.ts'
 
 const SPEC: ImageAttrSpec = {
@@ -69,20 +65,20 @@ test('falls back to the registry wording when nothing is translated', () => {
 
 test('prefers the translation overlay, keyed by attribute name', () => {
   // Keys escape the dots in the attribute name (see imageAttrKeyBase).
-  const zh: Record<string, string> = {
-    'imageAttr.contain_text.label': '图中文字量',
-    'imageAttr.contain_text.values.block.label': '成段正文',
-    'imageAttr.contain_text.values.block.description': '成段正文 —— 截图、表格或文档页面',
+  const overlay: Record<string, string> = {
+    'imageAttr.contain_text.label': 'Amount of text (overlay)',
+    'imageAttr.contain_text.values.block.label': 'Body text (overlay)',
+    'imageAttr.contain_text.values.block.description': 'Body text: screenshots, tables or document pages (overlay)',
   }
-  const display = imageAttrDisplay(SPEC, (key) => zh[key] ?? key, (key) => key in zh)
+  const display = imageAttrDisplay(SPEC, (key) => overlay[key] ?? key, (key) => key in overlay)
 
-  assert.equal(display.label, '图中文字量')
+  assert.equal(display.label, 'Amount of text (overlay)')
   // Untranslated pieces keep the registry wording instead of exposing the key.
   assert.equal(display.description, 'How much body text the picture carries.')
   assert.equal(display.values[0].label, 'no text at all')
-  assert.equal(display.values[2].label, '成段正文')
+  assert.equal(display.values[2].label, 'Body text (overlay)')
   // The same split applies to a value's longer text.
-  assert.equal(display.values[2].description, '成段正文 —— 截图、表格或文档页面')
+  assert.equal(display.values[2].description, 'Body text: screenshots, tables or document pages (overlay)')
   assert.equal(display.values[0].description, 'the image carries no text at all')
 })
 
@@ -118,18 +114,18 @@ test('a presence attribute without an explicit value list offers true/false', ()
 })
 
 test('renders a policy condition in words next to its raw pair', () => {
-  const zh: Record<string, string> = {
-    'imageAttr.contain_text.label': '图中文字量',
-    'imageAttr.contain_text.values.block.label': '成段正文',
+  const overlay: Record<string, string> = {
+    'imageAttr.contain_text.label': 'Amount of text (overlay)',
+    'imageAttr.contain_text.values.block.label': 'Body text (overlay)',
   }
   const condition = imageAttrConditionDisplay(
     { prop: 'contain.text', is: 'block' },
     SCHEMA,
-    (key) => zh[key] ?? key,
-    (key) => key in zh,
+    (key) => overlay[key] ?? key,
+    (key) => key in overlay,
   )
 
-  assert.equal(condition.label, '图中文字量 = 成段正文')
+  assert.equal(condition.label, 'Amount of text (overlay) = Body text (overlay)')
   assert.equal(condition.raw, 'contain.text = block')
 })
 
@@ -156,7 +152,7 @@ test('an unknown attribute or value degrades to its raw form', () => {
 // The real bundles, resolved by the real vue-i18n.
 //
 // The faked translators above answer a flat key lookup, so they would happily
-// "translate" a key the real bundle can never resolve — which is exactly how a
+// "translate" a key the real bundle can never resolve, which is exactly how a
 // literal `'contain.text'` message key slipped through once (vue-i18n walks a
 // key segment by segment on the dots, so it looked for `imageAttr` → `contain`).
 // These tests therefore use createI18n, the same resolver the app runs.
@@ -165,11 +161,7 @@ test('an unknown attribute or value degrades to its raw form', () => {
 // Each bundle is wired with a literal locale key, the same shape the app's own
 // createI18n call uses, so the messages argument keeps a checkable type.
 const MESSAGES_BY_LOCALE = {
-  'zh-CN': { 'zh-CN': zhCN },
   'en-US': { 'en-US': enUS },
-  'ja-JP': { 'ja-JP': jaJP },
-  'ko-KR': { 'ko-KR': koKR },
-  'ru-RU': { 'ru-RU': ruRU },
 }
 
 type TestLocale = keyof typeof MESSAGES_BY_LOCALE
@@ -231,26 +223,28 @@ test('every shipped locale translates every OCR condition key', () => {
   }
 })
 
-test('the panel actually renders the translated text, not the registry fallback', () => {
-  const { t, te } = translator('zh-CN')
+test('the panel actually renders the bundle text, not the registry fallback', () => {
+  const { t, te } = translator('en-US')
 
   for (const spec of SCHEMA.attributes) {
     const display = imageAttrDisplay(spec, t, te)
+    const base = imageAttrKeyBase(spec.name)
 
-    assert.match(display.label, /[\u4e00-\u9fa5]/, `${spec.name}: label is not Chinese`)
-    assert.match(display.description, /[\u4e00-\u9fa5]/, `${spec.name}: description is not Chinese`)
+    assert.equal(display.label, t(`${base}.label`), `${spec.name}: label`)
+    assert.equal(display.description, t(`${base}.description`), `${spec.name}: description`)
     for (const value of display.values) {
-      assert.match(
-        value.label,
-        /[\u4e00-\u9fa5]/,
-        `${spec.name}.${value.value}: value is not Chinese`,
-      )
+      assert.equal(value.label, t(`${base}.values.${value.value}.label`), `${spec.name}.${value.value}: value`)
     }
   }
 
   for (const cond of SCHEMA.default_actions.ocr.on) {
     const display = imageAttrConditionDisplay(cond, SCHEMA, t, te)
-    assert.match(display.label, /[\u4e00-\u9fa5]/, `${cond.prop}=${cond.is}: condition is not Chinese`)
+    const base = imageAttrKeyBase(cond.prop)
+    assert.equal(
+      display.label,
+      `${t(`${base}.label`)} = ${t(`${base}.values.${cond.is}.label`)}`,
+      `${cond.prop}=${cond.is}: condition`,
+    )
     // The raw pair stays alongside, so the panel still lines up with the trace.
     assert.equal(display.raw, `${cond.prop} = ${cond.is}`)
   }

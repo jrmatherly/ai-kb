@@ -5,12 +5,11 @@ import { test } from 'node:test'
 
 import { LOCALE_BUNDLES, collectLocaleKeys, type LocaleName } from './localeKeyAudit.ts'
 
-// The repository-wide audit compares locales against each other: it catches a
-// key present in en-US but missing in ko-KR. It cannot catch a key that is
-// referenced in code and missing from *every* locale, because it starts from
-// the keys that already exist.
+// The repository-wide audit starts from the keys the locale bundle already
+// defines, so it cannot catch a key that is referenced in code and missing
+// from the bundle.
 //
-// That gap is not hypothetical — the memory settings shipped a reference to
+// That gap is not hypothetical: the memory settings shipped a reference to
 // `memoryWorkspaceSettings.instructionsLabel` while it existed in no locale,
 // and every check stayed green while the UI would have rendered the raw key.
 //

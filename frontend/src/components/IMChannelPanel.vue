@@ -205,12 +205,6 @@
             </div>
             <p class="form-desc">{{ $t('agentEditor.im.sessionModeHint') }}</p>
           </div>
-
-          <div class="form-item">
-            <label class="form-label">{{ $t('agentEditor.im.replyLanguage') }}</label>
-            <t-select v-model="formData.locale" :options="localeOptions" />
-            <p class="form-desc">{{ $t('agentEditor.im.replyLanguageHint') }}</p>
-          </div>
         </section>
 
         <section v-if="editingChannel && formData.mode === 'webhook'"
@@ -679,16 +673,6 @@ const platformOptions = computed(() => ([
   { value: 'wechat' as IMPlatform, label: t('agentEditor.im.wechat'), logo: wechatLogo },
   { value: 'qqbot' as IMPlatform, label: t('agentEditor.im.qqbot'), logo: qqbotLogo },
   { value: 'yunzhijia' as IMPlatform, label: t('agentEditor.im.yunzhijia'), logo: yunzhijiaLogo },
-]));
-
-const localeOptions = computed(() => ([
-  { value: '' as IMLocale, label: t('agentEditor.im.replyLanguageDefault') },
-  { value: 'zh-CN' as IMLocale, label: '简体中文' },
-  { value: 'zh-TW' as IMLocale, label: '繁體中文' },
-  { value: 'en-US' as IMLocale, label: 'English' },
-  { value: 'ja-JP' as IMLocale, label: '日本語' },
-  { value: 'ko-KR' as IMLocale, label: '한국어' },
-  { value: 'ru-RU' as IMLocale, label: 'Русский' },
 ]));
 
 // Feishu and Lark are the same product on separate clouds, so each has its own

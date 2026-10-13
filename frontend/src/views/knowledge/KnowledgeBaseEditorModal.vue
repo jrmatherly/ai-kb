@@ -4,7 +4,7 @@
     v-model="currentSection" :nav-groups="navGroups" :loading="loading" :z-index="1000"
     nav-guide="kb-editor-sidebar" nav-item-guide-prefix="kb-editor-nav" @close="modalShell.requestClose">
     <div class="content-wrapper">
-      <!-- 基本信息 -->
+      <!-- Basic info -->
       <div v-show="currentSection === 'basic'" class="section">
         <div v-if="formData" class="section-content">
           <div class="section-header">
@@ -39,7 +39,7 @@
               <p class="form-tip">{{ $t('knowledgeEditor.basic.typeDescription') }}</p>
             </div>
 
-            <!-- 索引策略 (紧跟类型选择) -->
+            <!-- Indexing strategy (right after the type selector) -->
             <div v-if="!isFAQ" class="form-item">
               <label class="form-label required">{{ $t('knowledgeEditor.indexing.title') }}</label>
               <p class="form-tip">{{ $t('knowledgeEditor.indexing.description') }}</p>
@@ -81,7 +81,7 @@
               </p>
             </div>
 
-            <!-- Wiki 提取粒度 (仅当 Wiki 启用时显示) -->
+            <!-- Wiki extraction granularity (only when Wiki is enabled) -->
             <div v-if="!isFAQ && formData.indexingStrategy.wikiEnabled" class="form-item">
               <label class="form-label">{{ $t('knowledgeEditor.wiki.extractionGranularityLabel') }}</label>
               <p class="form-tip">{{ $t('knowledgeEditor.wiki.extractionGranularityTip') }}</p>
@@ -143,7 +143,7 @@
               />
             </div>
 
-            <!-- AI 生成的知识库描述（仅编辑模式、文档型知识库） -->
+            <!-- AI-generated knowledge base description (edit mode, document knowledge bases only) -->
             <div v-if="editorMode === 'edit' && !isFAQ" class="form-item">
               <label class="form-label">{{ $t('knowledgeEditor.basic.profile.title') }}</label>
               <div class="kb-profile-card" :class="{ 'is-empty': !generatedProfileHasText }">
@@ -221,12 +221,12 @@
               <p class="form-tip">{{ $t('knowledgeEditor.basic.profile.hint') }}</p>
             </div>
 
-            <!-- Wiki 合成模型移至模型配置页 -->
+            <!-- The Wiki synthesis model lives on the model settings page -->
           </div>
         </div>
       </div>
 
-      <!-- 模型配置 -->
+      <!-- Models -->
       <div v-show="currentSection === 'models'" class="section">
         <KBModelConfig
           ref="modelConfigRef"
@@ -240,7 +240,7 @@
         />
       </div>
 
-      <!-- VectorStore 绑定 -->
+      <!-- VectorStore binding -->
       <div v-show="currentSection === 'vectorStore'" class="section">
         <KBVectorStoreSettings
           v-if="formData"
@@ -254,7 +254,7 @@
         />
       </div>
 
-      <!-- FAQ 配置 -->
+      <!-- FAQ -->
       <div v-if="isFAQ && formData" v-show="currentSection === 'faq'" class="section">
         <div class="section-content">
           <div class="section-header">
@@ -289,7 +289,7 @@
         </div>
       </div>
 
-      <!-- 解析引擎 -->
+      <!-- Parser engine -->
       <div v-if="!isFAQ && formData && currentSection === 'parser'" class="section">
         <KBParserSettings
           :parser-engine-rules="formData.chunkingConfig.parserEngineRules"
@@ -297,7 +297,7 @@
         />
       </div>
 
-      <!-- 存储引擎 -->
+      <!-- Storage engine -->
       <div v-if="!isFAQ && formData && currentSection === 'storage'" class="section">
         <KBStorageSettings
           :storage-backend-id="formData.storageBackendId"
@@ -308,7 +308,7 @@
         />
       </div>
 
-      <!-- 分块设置 -->
+      <!-- Chunking -->
       <div v-if="!isFAQ" v-show="currentSection === 'chunking'" class="section">
         <KBChunkingSettings
           v-if="formData"
@@ -317,7 +317,7 @@
         />
       </div>
 
-      <!-- 多模态配置 -->
+      <!-- Multimodal -->
       <div v-if="!isFAQ" v-show="currentSection === 'multimodal'" class="section">
         <div v-if="formData" class="kb-multimodal-settings">
           <div class="section-header">
@@ -326,7 +326,7 @@
           </div>
 
           <div class="settings-group">
-            <!-- 多模态开关 -->
+            <!-- Multimodal switch -->
             <div class="setting-row" data-guide="kb-create-multimodal-toggle">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.advanced.multimodal.label') }}</label>
@@ -341,7 +341,7 @@
               </div>
             </div>
 
-            <!-- VLLM 模型选择（多模态启用时） -->
+            <!-- VLM model selection (when multimodal is enabled) -->
             <div v-if="formData.multimodalConfig.enabled" class="setting-row"
               data-guide="kb-create-multimodal-vllm">
               <div class="setting-info">
@@ -388,7 +388,7 @@
               </div>
             </div>
 
-            <!-- 图片向量：默认关闭，显式开启才为图片单独编码、检索时召回 -->
+            <!-- Image embeddings: off by default; only when enabled are images embedded separately and recalled at retrieval -->
             <div v-if="formData.multimodalConfig.enabled" class="setting-row">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.advanced.multimodal.imageVectorLabel') }}</label>
@@ -414,9 +414,9 @@
               class="setting-row setting-row-vertical">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.advanced.multimodal.imageAttrsSchemaLabel') }}</label>
-                <!-- 实现说明（不放 UI）：面板完全由后端属性注册表驱动 —— 属性名、说明、每个取值的
-                     含义都随 schema 端点下发，前端只按属性名覆盖翻译。所以新增属性仍是
-                     「后端加一行 / 前端自动跟随」，属性集合随版本演进不需要改这里。 -->
+                <!-- Implementation note (not UI): the panel is driven entirely by the backend attribute registry. Names, descriptions
+                     and value meanings come from the schema endpoint; the frontend only overrides translations by name, so adding an
+                     attribute is one backend line and the frontend follows without changes here. -->
                 <p class="desc">{{ $t('knowledgeEditor.advanced.multimodal.imageAttrsSchemaDescription') }}</p>
               </div>
               <div class="image-attr-panel">
@@ -449,9 +449,9 @@
                 </div>
               </div>
 
-              <!-- 观察失败兜底：与上方整块开关同级（不再嵌在属性面板里）。
-                   开关仍包在 setting-control 里，与其它开关行共用同一套
-                   右对齐 / 垂直居中 / 预留右列的排版，避免顶到行首 -->
+              <!-- Unobserved fallback: a sibling of the switch block above, not nested in the attribute panel.
+                   The switch stays in setting-control to share the other switch rows'
+                   right-aligned, vertically centered, reserved-right-column layout instead of jumping to the row start -->
               <div class="setting-row">
                 <div class="setting-info">
                   <label>{{ $t('knowledgeEditor.advanced.multimodal.imageAttrsOcrOnUnobserved') }}</label>
@@ -466,7 +466,7 @@
         </div>
       </div>
 
-      <!-- 音频处理（ASR）设置 -->
+      <!-- Audio processing (ASR) -->
       <div v-if="!isFAQ" v-show="currentSection === 'asr'" class="section">
         <div v-if="formData" class="kb-multimodal-settings">
           <div class="section-header">
@@ -475,7 +475,7 @@
           </div>
 
           <div class="settings-group">
-            <!-- ASR 开关 -->
+            <!-- ASR switch -->
             <div class="setting-row">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.asr.label') }}</label>
@@ -489,7 +489,7 @@
               </div>
             </div>
 
-            <!-- ASR 模型选择 -->
+            <!-- ASR model selection -->
             <div v-if="formData.asrConfig.enabled" class="setting-row">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.asr.modelLabel') }} <span class="required">*</span></label>
@@ -510,7 +510,7 @@
         </div>
       </div>
 
-      <!-- 知识图谱 -->
+      <!-- Knowledge graph -->
       <div v-if="!isFAQ && currentSection === 'graph'" class="section">
         <GraphSettings
           v-if="formData"
@@ -521,7 +521,7 @@
         />
       </div>
 
-      <!-- 高级设置 -->
+      <!-- Advanced -->
       <div v-if="!isFAQ" v-show="currentSection === 'advanced'" class="section">
         <KBAdvancedSettings
           ref="advancedSettingsRef"
@@ -539,17 +539,17 @@
         />
       </div>
 
-      <!-- 数据源管理（仅编辑模式） -->
+      <!-- Data sources (edit mode only) -->
       <div v-if="editorMode === 'edit' && activeKbId && currentSection === 'datasource'" class="section">
         <DataSourceSettings :kb-id="activeKbId" @count="dsCount = $event" />
       </div>
 
-      <!-- 共享设置（仅编辑模式） -->
+      <!-- Sharing (edit mode only) -->
       <div v-if="editorMode === 'edit' && activeKbId && currentSection === 'share'" class="section">
         <KBShareSettings :kb-id="activeKbId" :can-share="canShareKB" />
       </div>
 
-      <!-- 活动记录（仅编辑模式，KB 所属租户内 Owner/Admin） -->
+      <!-- Activity (edit mode only, Owner/Admin of the KB's workspace) -->
       <div v-if="editorMode === 'edit' && activeKbId && canViewActivity && currentSection === 'activity'" class="section">
         <KnowledgeBaseActivitySettings :kb-id="activeKbId" :active="currentSection === 'activity'" />
       </div>
@@ -680,7 +680,7 @@ const emit = defineEmits<{
   (e: 'success', kbId: string): void
 }>()
 
-/** 首次保存创建成功后留在弹窗内，继续配置共享等设置 */
+/** After the first save creates the KB, stay in the modal to configure sharing and the rest */
 const savedKbId = ref<string | null>(null)
 const editorMode = computed(() => (savedKbId.value ? 'edit' : props.mode))
 const activeKbId = computed(() => savedKbId.value ?? props.kbId)
@@ -766,11 +766,11 @@ const canViewActivity = computed(() => {
   if (Number(kbTenantId.value || 0) !== Number(authStore.currentTenantId || 0)) return false
   return isKbOwner.value || authStore.hasRole('admin')
 })
-// 用户是否在分块设置中手动改过任何值。一旦为 true，就不再根据索引策略自动调整默认分块参数。
+// Whether the user changed any chunking value. Once true, the indexing strategy no longer adjusts chunking defaults.
 const chunkingDirty = ref(false)
 
-// 仅 Wiki 索引模式下的分块预设：更大 chunk、无 overlap、关闭父子分块。
-// 该预设只在「创建模式」下、且用户尚未手动调整分块参数时生效，避免覆盖既有 KB 的配置。
+// Chunking preset for Wiki-only indexing: larger chunks, no overlap, no parent-child chunking.
+// It applies only in create mode before the user touches chunking, so an existing KB keeps its settings.
 const WIKI_ONLY_CHUNKING_PRESET = {
   chunkSize: 2048,
   chunkOverlap: 0,
@@ -787,8 +787,8 @@ const DEFAULT_CHUNKING_PRESET = {
   enableParentChild: true,
 } as const
 
-// 这些分区的操作在点击时即时生效（共享 / 数据源 / 活动记录），不经过底部「保存」，
-// 因此底部只显示「关闭」并提示，避免用户以为需要再点保存或以为「取消」能撤销。
+// These sections (sharing / data sources / activity) apply on click, not through the footer Save,
+// so the footer shows only Close with a hint, lest users think they must save or that Cancel undoes them.
 const INSTANT_SECTIONS = new Set(['datasource', 'share', 'activity'])
 const isInstantSection = computed(() => INSTANT_SECTIONS.has(currentSection.value))
 
@@ -826,7 +826,7 @@ const navItems = computed(() => {
   return items
 })
 
-// 左侧导航分组（与 AgentEditorModal 对齐）
+// Left nav groups (matches AgentEditorModal)
 const navGroups = computed(() => {
   const itemMap = new Map(navItems.value.map((item) => [item.key, item]))
   const pickItems = (keys: string[]) =>
@@ -860,14 +860,12 @@ const navGroups = computed(() => {
   ].filter((group) => group.items.length > 0)
 })
 
-// 模型配置引用
 const modelConfigRef = ref<InstanceType<typeof KBModelConfig>>()
 const advancedSettingsRef = ref<InstanceType<typeof KBAdvancedSettings>>()
 
-// 表单数据
 const formData = ref<any>(null)
-// 图片向量只在向量模型能处理图片时生效；模型列表里查不到（未加载、跨租户共享）时
-// 不报警，后端会按实际模型判断。
+// Image embeddings only work when the embedding model handles images; when the model is missing from the list
+// (not loaded, shared across workspaces) do not warn, the backend checks the actual model.
 const embeddingTakesImages = computed(() => {
   const id = formData.value?.modelConfig.embeddingModelId
   const model = id ? allModels.value.find((m) => m.id === id) : undefined
@@ -910,7 +908,6 @@ watch(
   }
 )
 
-// 初始化表单数据
 const initFormData = (type: 'document' | 'faq' = 'document') => {
   return {
     type,
@@ -930,7 +927,8 @@ const initFormData = (type: 'document' | 'faq' = 'document') => {
       // 80 ≈ 15% of chunkSize — community-recommended sweet spot.
       // Aligned with chunker.DefaultChunkOverlap on the backend.
       chunkOverlap: 80,
-      separators: ['\n\n', '\n', '。', '！', '？', ';', '；'],
+      // CJK full stop, exclamation, question mark and semicolon (\u3002 \uff01 \uff1f \uff1b) split Chinese text.
+      separators: ['\n\n', '\n', '\u3002', '\uff01', '\uff1f', ';', '\uff1b'],
       parserEngineRules: undefined as any,
       enableParentChild: true,
       parentChunkSize: 4096,
@@ -949,12 +947,12 @@ const initFormData = (type: 'document' | 'faq' = 'document') => {
       descriptionLanguage: '',
       customInstructions: ''
     },
-    // 图片属性观察管线：开关 + on_unobserved 兜底切换由 UI 编辑；其余配置
-    // （model_id 等）按加载时的快照原样回传，避免把 API 侧写入的设置洗掉。
-    // 新建模式也必须用完整默认动作初始化——imageActions.ocr.on_unobserved
-    // 直接被开关绑定，缺省会让打开开关的瞬间渲染崩溃。
+    // Image attribute observation pipeline: the UI edits the switch and the on_unobserved fallback; the rest
+    // (model_id etc.) is sent back from the load-time snapshot so settings written via the API survive.
+    // Create mode must also start from the full default actions: imageActions.ocr.on_unobserved
+    // is bound to the switch directly, and a missing value crashes rendering when the switch is turned on.
     imageAttrsEnabled: false,
-    // 图片向量默认关闭：能处理图片的向量模型也常只用来编码文本。
+    // Image embeddings default to off: image-capable embedding models are often used for text only.
     imageVectorEnabled: false,
     imageActions: mergeImageActions(),
     imageProcessingConfigSnapshot: null as Record<string, unknown> | null,
@@ -1020,7 +1018,6 @@ const initFormData = (type: 'document' | 'faq' = 'document') => {
   }
 }
 
-// 加载所有模型
 const loadAllModels = async (force = false) => {
   try {
     await chatResources.ensureModels(force)
@@ -1040,7 +1037,7 @@ const isCurrentKBLoad = (generation: number, kbId: string) => (
   && activeKbId.value === kbId
 )
 
-// 加载知识库数据（编辑模式）
+// Load the knowledge base (edit mode)
 const loadKBData = async (
   kbIdOverride?: string,
   generation = kbEditorLoadGeneration,
@@ -1067,7 +1064,6 @@ const loadKBData = async (
     kbCreatorId.value = (kb as any).creator_id || ''
     kbTenantId.value = Number((kb as any).tenant_id || 0)
 
-    // 设置表单数据
     const kbType = (kb.type as 'document' | 'faq') || 'document'
     formData.value = {
       type: kbType,
@@ -1087,7 +1083,8 @@ const loadKBData = async (
         // Fallback only used when the loaded KB has no chunk_overlap stored.
         // Aligned with chunker.DefaultChunkOverlap on the backend.
         chunkOverlap: kb.chunking_config?.chunk_overlap || 80,
-        separators: kb.chunking_config?.separators || ['\n\n', '\n', '。', '！', '？', ';', '；'],
+        // CJK full stop, exclamation, question mark and semicolon (\u3002 \uff01 \uff1f \uff1b) split Chinese text.
+        separators: kb.chunking_config?.separators || ['\n\n', '\n', '\u3002', '\uff01', '\uff1f', ';', '\uff1b'],
         parserEngineRules: kb.chunking_config?.parser_engine_rules || undefined,
         enableParentChild: kb.chunking_config?.enable_parent_child || false,
         parentChunkSize: kb.chunking_config?.parent_chunk_size || 4096,
@@ -1182,7 +1179,7 @@ const loadKBData = async (
         status: kb.vector_store_status,
       },
     }
-    // 拉取后端属性注册表，驱动属性面板的动态渲染（编辑模式有 kbId）。
+    // Fetch the backend attribute registry that renders the attribute panel (edit mode has a kbId).
     loadImageAttrSchema(kbId)
     initialStorageProvider.value = formData.value.storageProvider
     initialIndexingStrategy.value = { ...formData.value.indexingStrategy }
@@ -1199,15 +1196,14 @@ const loadKBData = async (
   }
 }
 
-// 处理配置更新
 const handleModelConfigUpdate = (config: any) => {
   if (formData.value) {
     formData.value.modelConfig = { ...config }
   }
 }
 
-// 粒度选择器：从 formData.wikiConfig 读出并规范化，未知值回退到 'standard'，
-// 与后端 WikiExtractionGranularity.Normalize() 的契约保持一致。
+// Granularity selector: read and normalize formData.wikiConfig, falling back to 'standard' for unknown values,
+// matching the backend WikiExtractionGranularity.Normalize() contract.
 const resolvedGranularity = computed<'focused' | 'standard' | 'exhaustive'>(() => {
   const g = formData.value?.wikiConfig?.extractionGranularity
   if (g === 'focused' || g === 'standard' || g === 'exhaustive') {
@@ -1258,20 +1254,20 @@ const toggleWikiIndexing = () => {
 const handleChunkingConfigUpdate = (config: any) => {
   if (formData.value) {
     formData.value.chunkingConfig = { ...config }
-    // 用户已经手动触达分块设置，后续索引策略切换不再覆盖这些值
+    // The user touched chunking, so later indexing strategy changes no longer override it
     chunkingDirty.value = true
   }
 }
 
-// 判断当前是否为「仅 Wiki 索引」：只开了 Wiki，关了向量/关键词检索
+// Wiki-only indexing: Wiki on, vector and keyword retrieval off
 const isWikiOnlyStrategy = computed(() => {
   const s = formData.value?.indexingStrategy
   if (!s) return false
   return !!s.wikiEnabled && !s.vectorEnabled && !s.keywordEnabled
 })
 
-// 仅在创建模式、用户未改过分块设置时，随索引策略自动应用/撤销 Wiki-only 预设。
-// 编辑模式严格保持后端已有配置不变，避免误改。
+// Apply or revert the Wiki-only preset with the indexing strategy, only in create mode before the user touches chunking.
+// Edit mode never changes the existing backend config.
 watch(isWikiOnlyStrategy, (wikiOnly) => {
   if (editorMode.value !== 'create') return
   if (!formData.value) return
@@ -1399,18 +1395,16 @@ const handleNodeExtractUpdate = (config: any) => {
   }
 }
 
-// 验证表单
 const validateForm = (): boolean => {
   if (!formData.value) return false
 
-  // 验证基本信息
   if (!formData.value.name || !formData.value.name.trim()) {
     MessagePlugin.warning(t('knowledgeEditor.messages.nameRequired'))
     currentSection.value = 'basic'
     return false
   }
 
-  // 验证索引策略 — 文档类型至少需要开启一种
+  // Document knowledge bases need at least one indexing strategy
   if (formData.value.type !== 'faq') {
     const s = formData.value.indexingStrategy
     if (s && !s.vectorEnabled && !s.keywordEnabled && !s.wikiEnabled && !s.graphEnabled) {
@@ -1420,7 +1414,7 @@ const validateForm = (): boolean => {
     }
   }
 
-  // 验证模型配置 - embedding 模型仅在检索索引启用时必须
+  // The embedding model is required only when retrieval indexing is enabled
   const needsEmbedding = formData.value.indexingStrategy?.vectorEnabled || formData.value.indexingStrategy?.keywordEnabled
   if (needsEmbedding && !formData.value.modelConfig.embeddingModelId) {
     MessagePlugin.warning(t('knowledgeEditor.indexing.embeddingRequired'))
@@ -1434,7 +1428,6 @@ const validateForm = (): boolean => {
     return false
   }
 
-  // 验证多模态配置（如果启用）
   if (formData.value.multimodalConfig.enabled && !formData.value.multimodalConfig.vllmModelId) {
     MessagePlugin.warning(t('knowledgeEditor.messages.multimodalInvalid'))
     currentSection.value = 'multimodal'
@@ -1450,7 +1443,6 @@ const validateForm = (): boolean => {
   return true
 }
 
-// 构建提交数据
 const buildSubmitData = () => {
   if (!formData.value) return null
 
@@ -1489,7 +1481,6 @@ const buildSubmitData = () => {
     data.vector_store_id = formData.value.vectorStoreId
   }
 
-  // 添加多模态配置
   data.vlm_config = {
     enabled: formData.value.multimodalConfig.enabled,
     model_id: formData.value.multimodalConfig.enabled
@@ -1499,9 +1490,9 @@ const buildSubmitData = () => {
     custom_instructions: formData.value.multimodalConfig.customInstructions || ''
   }
 
-  // 图片属性观察配置：后端是整体替换语义（payload 不带该字段 = 保持不变）。
-  // UI 只编辑观察开关与 on_unobserved；快照里用 API 自定义过的 on 原样保留，
-  // 没有自定义时才取注册表默认值。合并规则见 buildImageProcessingConfig。
+  // Image attribute observation: the backend replaces it as a whole (field absent = unchanged).
+  // The UI edits only the switch and on_unobserved; an `on` customized via the API is kept from the snapshot,
+  // otherwise the registry default applies. Merge rules: buildImageProcessingConfig.
   {
     const built = buildImageProcessingConfig(formData.value.imageProcessingConfigSnapshot, {
       imageAttrsEnabled: formData.value.imageAttrsEnabled,
@@ -1514,7 +1505,6 @@ const buildSubmitData = () => {
     }
   }
 
-  // 添加ASR语音识别配置
   data.asr_config = {
     enabled: formData.value.asrConfig?.enabled || false,
     model_id: formData.value.asrConfig?.enabled
@@ -1536,10 +1526,9 @@ const buildSubmitData = () => {
     provider: storageProvider
   }
 
-  // 添加知识图谱配置 — now synced via indexingStrategy.graphEnabled
+  // Knowledge graph config is synced via indexingStrategy.graphEnabled
   // extract_config is sent below along with indexing_strategy
 
-  // 添加问题生成配置
   if (formData.value.questionGenerationConfig?.enabled) {
     data.question_generation_config = {
       enabled: true,
@@ -1612,13 +1601,12 @@ const buildSubmitData = () => {
   return data
 }
 
-// 提交表单
 const handleSubmit = async () => {
   if (!validateForm()) {
     return
   }
 
-  // 编辑模式下，若已有文件且存储引擎发生了变化，弹窗确认
+  // In edit mode, confirm when files exist and the storage engine changed
   if (
     editorMode.value === 'edit' &&
     hasFiles.value &&
@@ -1654,7 +1642,7 @@ const doSubmit = async () => {
     }
 
     if (editorMode.value === 'create') {
-      // 创建模式：一次性创建知识库及所有配置
+      // Create mode: create the knowledge base with all settings in one call
       const result: any = await createKnowledgeBase(data)
       if (!result.success || !result.data?.id) {
         throw new Error(result.message || t('knowledgeEditor.messages.createFailed'))
@@ -1667,13 +1655,13 @@ const doSubmit = async () => {
       markContextualGuideDone('kbCreate')
       emit('success', createdKbId)
     } else {
-      // 编辑模式：分别更新基本信息和配置
+      // Edit mode: update basic info and config separately
       const kbId = activeKbId.value
       if (!kbId) {
         throw new Error(t('knowledgeEditor.messages.missingId'))
       }
 
-      // 1. 更新基本信息（名称、描述）和 FAQ/Wiki 配置
+      // 1. Basic info (name, description) and FAQ/Wiki config
       const updateConfig: any = {}
       if (formData.value.type === 'faq' && formData.value.faqConfig) {
         updateConfig.faq_config = {
@@ -1700,9 +1688,9 @@ const doSubmit = async () => {
           graph_enabled: formData.value.indexingStrategy?.graphEnabled ?? false,
         }
       }
-      // 图片分类配置：buildSubmitData 只在与快照有差异时才产出该字段，带上即
-      // 整体替换（后端语义：字段缺失 = 保持不变）。编辑模式此前漏带，导致 KB
-      // 编辑器里对图片分类的修改被静默丢弃（新建时能存、之后再改无效）。
+      // Image classification config: buildSubmitData emits it only when it differs from the snapshot, and sending it
+      // replaces it whole (backend: field absent = unchanged). Edit mode used to omit it, so image
+      // classification edits in the KB editor were silently dropped after creation.
       if (data.image_processing_config) {
         updateConfig.image_processing_config = data.image_processing_config
       }
@@ -1712,7 +1700,7 @@ const doSubmit = async () => {
         config: updateConfig
       })
 
-      // 2. 更新完整配置（模型、分块、多模态、存储引擎、知识图谱等）
+      // 2. Full config (models, chunking, multimodal, storage engine, knowledge graph, ...)
       const config: KBModelConfigRequest = {
         llmModelId: data.summary_model_id,
         embeddingModelId: data.embedding_model_id,
@@ -1818,7 +1806,6 @@ const doSubmit = async () => {
   }
 }
 
-// 重置所有状态
 const resetState = () => {
   savedKbId.value = null
   currentSection.value = 'basic'
@@ -1834,7 +1821,6 @@ const resetState = () => {
   kbTenantId.value = 0
 }
 
-// 关闭弹窗
 const handleClose = () => {
   emit('update:visible', false)
   setTimeout(() => {
@@ -1849,31 +1835,27 @@ const modalShell = useModalShell({
   snapshot: () => formData.value,
 })
 
-// 监听弹窗打开/关闭
 watch(() => props.visible, async (newVal) => {
   const generation = ++kbEditorLoadGeneration
   if (newVal) {
-    // 打开弹窗时，先重置状态
     resetState()
     modalShell.markClean()
     loading.value = true
     const targetKbId = props.kbId
     
-    // 检查是否有初始 section，如果有则跳转
     if (uiStore.kbEditorInitialSection) {
       currentSection.value = uiStore.kbEditorInitialSection
     }
     
-    // 加载模型列表与空间默认存储引擎（创建 KB 时即使用，不依赖是否打开「存储引擎」Tab）
+    // Load models and the workspace default storage engine (create mode uses it even if the Storage engine tab is never opened)
     await Promise.all([loadAllModels(), loadTenantDefaultStorageProvider()])
 
     if (generation !== kbEditorLoadGeneration || !props.visible) return
     
-    // 根据模式加载数据
     if (props.mode === 'edit' && targetKbId) {
       await loadKBData(targetKbId, generation)
     } else {
-      // 创建模式：初始化空表单，并预填空间默认存储引擎
+      // Create mode: empty form prefilled with the workspace default storage engine
       formData.value = initFormData(props.initialType || 'document')
       formData.value.storageProvider = tenantDefaultStorageProvider.value
       hasFiles.value = false
@@ -1882,16 +1864,16 @@ watch(() => props.visible, async (newVal) => {
       modalShell.markClean()
     }
   } else {
-    // 关闭弹窗时，延迟重置状态（等待动画结束）
+    // On close, reset after the animation ends
     setTimeout(() => {
       if (props.visible) return
       resetState()
-      currentSection.value = 'basic' // 重置为默认 section
+      currentSection.value = 'basic'
     }, 300)
   }
 })
 
-// 监听全局设置弹窗关闭后刷新模型列表
+// Refresh the model list after the global settings modal closes
 watch(
   () => uiStore.showSettingsModal,
   async (visible, previous) => {
@@ -1909,9 +1891,9 @@ watch(() => chatResources.allModels, (list) => {
 </script>
 
 <style scoped lang="less">
-// 图片属性面板（可观察属性 / OCR 触发条件 / 观察失败兜底）
-// 文案全部来自后端属性注册表（人话名 + 每个取值的含义），前端只做翻译覆盖，
-// 因此新增属性无需改这里。铺在所在设置区里、不套独立底色块（与整体风格一致）。
+// Image attribute panel (observable attributes / OCR triggers / unobserved fallback).
+// All text comes from the backend attribute registry (display name + meaning of each value); the frontend only overrides translations,
+// so new attributes need no change here. It sits in its settings section without its own background.
 .image-attr-panel {
   margin-top: 4px;
 }
@@ -1937,7 +1919,7 @@ watch(() => chatResources.allModels, (list) => {
   font-weight: 600;
   color: var(--td-text-color-primary);
 }
-// 原始属性名缩小并加括号，便于与处理轨迹里的字段对上，又不干扰阅读
+// The raw attribute name is smaller and in parentheses, to match the processing trace without distracting
 .image-attr-name {
   font-family: ui-monospace, Menlo, Consolas, monospace;
   font-size: var(--app-text-xs);
@@ -1957,7 +1939,7 @@ watch(() => chatResources.allModels, (list) => {
   line-height: 20px;
   color: var(--td-text-color-secondary);
 }
-// 每个取值一行：值（等宽，左列对齐）+ 冒号 + 人话解释
+// One line per value: value (monospace, left column) + colon + explanation
 .image-attr-value-list {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -1966,7 +1948,7 @@ watch(() => chatResources.allModels, (list) => {
   margin-top: 6px;
   font-size: var(--app-text-sm);
 }
-// display: contents 让值与解释分别落进上面两列，取值因此左对齐成列
+// display: contents puts value and explanation in the two columns above, so values align in a column
 .image-attr-value {
   display: contents;
 
@@ -1974,7 +1956,7 @@ watch(() => chatResources.allModels, (list) => {
     font-family: ui-monospace, Menlo, Consolas, monospace;
     color: var(--td-text-color-primary);
 
-    // 冒号紧跟取值，不留空隙：none: 没有文字
+    // The colon follows the value with no gap, as in "none: no text"
     &::after {
       content: ':';
     }
@@ -1986,7 +1968,7 @@ watch(() => chatResources.allModels, (list) => {
 .image-attr-section {
   margin-top: 14px;
 }
-// 一条 OCR 条件两行：人话在上，原始 property = value 在下
+// An OCR condition takes two lines: plain words on top, the raw property = value below
 .image-attr-condition-list {
   margin-top: 6px;
   font-size: var(--app-text-sm);
@@ -2006,8 +1988,7 @@ watch(() => chatResources.allModels, (list) => {
   color: var(--td-text-color-placeholder);
 }
 
-// 复用创建知识库的样式
-/* 左侧导航：与 AgentEditorModal 对齐 */
+/* Left nav: matches AgentEditorModal */
 .content-wrapper {
   flex: 1;
   overflow-y: auto;
@@ -2196,7 +2177,7 @@ watch(() => chatResources.allModels, (list) => {
   }
 }
 
-// 禁用内部 checkbox 自身的点击事件，统一由卡片处理
+// Disable the inner checkbox's own clicks; the card handles them
 .indexing-check-box {
   pointer-events: none;
 }
@@ -2239,8 +2220,7 @@ watch(() => chatResources.allModels, (list) => {
   line-height: 20px;
 }
 
-// 过渡动画
-// 多模态配置内联样式（与子组件 KBStorageSettings/KBAdvancedSettings 一致）
+// Inline multimodal styles (consistent with KBStorageSettings/KBAdvancedSettings)
 .kb-multimodal-settings {
   width: 100%;
 
@@ -2279,7 +2259,7 @@ watch(() => chatResources.allModels, (list) => {
     }
   }
 
-  // 纵向行（类别 OCR 策略表用）：说明文字占满整行，表格换到下一行
+  // Vertical row (category OCR policy table): the description spans the row, the table wraps below
   .setting-row-vertical {
     flex-direction: column;
     align-items: stretch;

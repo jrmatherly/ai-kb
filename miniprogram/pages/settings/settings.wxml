@@ -13,13 +13,6 @@
       <input value="{{apiKey}}" password placeholder="{{apiKeyPlaceholder}}" bindinput="onApiKeyInput" />
     </view>
 
-    <view class="field">
-      <text class="label">{{languageLabel}}</text>
-      <picker range="{{languageLabels}}" value="{{languageIndex}}" bindchange="onLanguageChange">
-        <view class="picker-value">{{displayLanguageLabel}}</view>
-      </picker>
-    </view>
-
     <button bindtap="save">{{saveSettingsText}}</button>
   </view>
 </view>

@@ -6,11 +6,9 @@ import { REGISTERED_AUDIT_ACTION_ENTRIES, KB_ACTIVITY_DETAIL_VALUES, KB_ACTIVITY
 import {
   CRITICAL_LOCALE_KEYS,
   LOCALE_BUNDLES,
-  alignLocaleBundleToReferenceKeys,
   collectI18nUsageFromSources,
   collectLocaleKeys,
   collectReferencedLocaleKeys,
-  diffLocaleKeys,
   findAllLocaleMessageCompileErrors,
   findUsedKeysMissingInLocales,
   getLocaleValueAtPath,
@@ -29,20 +27,6 @@ before(() => {
     Object.entries(LOCALE_BUNDLES).map(([name, bundle]) => [name, collectLocaleKeys(bundle)]),
   ) as Record<LocaleName, Set<string>>
   referencedKeys = collectReferencedLocaleKeys(LOCALE_BUNDLES[REFERENCE_LOCALE], usage)
-})
-
-test('locale bundles expose the same translation keys', () => {
-  const referenceKeys = localeKeysByName[REFERENCE_LOCALE]
-  const mismatches: string[] = []
-
-  for (const [localeName, keys] of Object.entries(localeKeysByName) as Array<[LocaleName, Set<string>]>) {
-    if (localeName === REFERENCE_LOCALE) continue
-    const { missing, extra } = diffLocaleKeys(referenceKeys, keys)
-    for (const key of missing) mismatches.push(`${localeName}: missing ${key}`)
-    for (const key of extra) mismatches.push(`${localeName}: extra ${key}`)
-  }
-
-  assert.deepEqual(mismatches, [], mismatches.slice(0, 20).join('\n'))
 })
 
 test('critical runtime i18n trees are present', () => {
@@ -144,35 +128,6 @@ test('registered audit action labels exist as flat keys in every locale', () => 
   assert.deepEqual(failures, [], failures.slice(0, 20).join('\n'))
 })
 
-test('locale alignment preserves flat audit action keys (regenerate safety)', () => {
-  const referenceKeys = collectLocaleKeys(LOCALE_BUNDLES[REFERENCE_LOCALE])
-  const aligned = alignLocaleBundleToReferenceKeys(referenceKeys, LOCALE_BUNDLES['zh-CN'], LOCALE_BUNDLES['en-US'])
-  const failures: string[] = []
-
-  for (const { root, actions } of REGISTERED_AUDIT_ACTION_ENTRIES) {
-    const bag = getLocaleValueAtPath(aligned, root)
-    if (bag == null || typeof bag !== 'object') {
-      failures.push(`zh-CN aligned: missing bag ${root}`)
-      continue
-    }
-    for (const action of actions) {
-      if (typeof (bag as Record<string, unknown>)[action] !== 'string') {
-        failures.push(`zh-CN aligned: missing flat ${root}.${action}`)
-      }
-      const nestedArea = action.split('.')[0]
-      if (
-        nestedArea &&
-        (bag as Record<string, unknown>)[nestedArea] != null &&
-        typeof (bag as Record<string, unknown>)[nestedArea] === 'object'
-      ) {
-        failures.push(`zh-CN aligned: nested corruption under ${root}.${nestedArea}`)
-      }
-    }
-  }
-
-  assert.deepEqual(failures, [], failures.join('\n'))
-})
-
 test('KB activity outcomes and detail values exist in every locale', () => {
   const failures: string[] = []
 
@@ -202,14 +157,7 @@ test('audit action locale defaults cover the registry', () => {
 
 test('prune rebuild restores registered audit keys from baked-in English defaults', () => {
   const usage = collectI18nUsageFromSources()
-  const emptyBundles = {
-    'en-US': {},
-    'zh-CN': {},
-    'zh-TW': {},
-    'ko-KR': {},
-    'ja-JP': {},
-    'ru-RU': {},
-  } as Record<LocaleName, Record<string, unknown>>
+  const emptyBundles = { 'en-US': {} } as Record<LocaleName, Record<string, unknown>>
   const rebuilt = rebuildPrunedLocales(emptyBundles, usage)
   const en = rebuilt['en-US'] as Record<string, unknown>
   const failures: string[] = []

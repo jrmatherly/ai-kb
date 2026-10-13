@@ -192,7 +192,7 @@
             Reset-to-default lives on the row below the input, right-
             aligned under it. Hidden entirely for virtual (ENV / default)
             rows so the layout collapses to a single row in the common
-            case — the "已覆盖" badge is already the cue that an
+            case. The "Overridden" badge is already the cue that an
             override exists, so the button only appears where it can do
             something.
           -->
@@ -503,12 +503,12 @@ function enumOptions(item: SystemSettingItem): { label: string; value: string }[
 // hasOverride reports whether the row carries a real DB override (vs a
 // virtual row backed by ENV/default). Distinguishing these is what
 // `last_modified_by` was made for: empty string means the value came
-// from registry/ENV. Drives the "已覆盖" badge.
+// from registry/ENV. Drives the "Overridden" badge.
 function hasOverride(item: SystemSettingItem): boolean {
   return Boolean(item.last_modified_by && item.last_modified_by.trim() !== '')
 }
 
-// modifiedMeta returns a humane "上次修改" line for rows that have been
+// modifiedMeta returns a humane "Last modified" line for rows that have been
 // persisted (last_modified_by non-empty AND updated_at not the Go zero
 // value). Returns '' for virtual rows so the meta line collapses
 // entirely instead of rendering "1/1/1 08:05:43" garbage.
@@ -580,7 +580,7 @@ function isDirty(item: SystemSettingItem): boolean {
 function formatDate(isoString: string): string {
   try {
     const d = new Date(isoString)
-    return d.toLocaleString('zh-CN', { hour12: false })
+    return d.toLocaleString('en-US', { hour12: false })
   } catch {
     return isoString
   }

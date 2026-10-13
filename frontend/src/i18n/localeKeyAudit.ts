@@ -17,19 +17,9 @@ import { AUDIT_ACTION_LOCALE_DEFAULTS, getAuditActionLocaleDefault } from './aud
 import { writeLocaleModule } from './localeSerialize.ts'
 
 import enUS from './locales/en-US.ts'
-import jaJP from './locales/ja-JP.ts'
-import koKR from './locales/ko-KR.ts'
-import ruRU from './locales/ru-RU.ts'
-import zhCN from './locales/zh-CN.ts'
-import zhTW from './locales/zh-TW.ts'
 
 export const LOCALE_BUNDLES = {
   'en-US': enUS,
-  'zh-CN': zhCN,
-  'zh-TW': zhTW,
-  'ko-KR': koKR,
-  'ja-JP': jaJP,
-  'ru-RU': ruRU,
 } as const
 
 export type LocaleName = keyof typeof LOCALE_BUNDLES
@@ -528,7 +518,7 @@ export function findAllLocaleMessageCompileErrors(
 
 type LocaleTree = Record<string, unknown>
 
-const LOCALE_ORDER: LocaleName[] = ['en-US', 'zh-CN', 'zh-TW', 'ko-KR', 'ru-RU', 'ja-JP']
+const LOCALE_ORDER: LocaleName[] = ['en-US']
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'locales')
 
 function getLocaleValueAtPathParts(current: unknown, parts: string[]): unknown {
@@ -649,19 +639,6 @@ export function collectRequiredLocaleKeys(usage: I18nUsage, referenceBundle: unk
   return required
 }
 
-export function alignLocaleBundleToReferenceKeys(
-  referenceKeys: Set<string>,
-  localeFull: LocaleTree,
-  fallbackFull: LocaleTree,
-): LocaleTree {
-  const aligned: LocaleTree = {}
-  for (const key of referenceKeys) {
-    const value = getLocaleValueAtPath(localeFull, key) ?? getLocaleValueAtPath(fallbackFull, key)
-    if (typeof value === 'string') setLocaleValueAtPath(aligned, key, value)
-  }
-  return aligned
-}
-
 export function rebuildPrunedLocales(
   fullBundles: Record<LocaleName, LocaleTree>,
   usage = collectI18nUsageFromSources(),
@@ -674,19 +651,7 @@ export function rebuildPrunedLocales(
       ? (enPruned as LocaleTree)
       : {}
   mergeLocaleKeysFromSource(enTree, fullBundles['en-US'], requiredKeys)
-  const referenceKeys = collectLocaleKeys(enTree)
-
-  const rebuilt = { 'en-US': enTree } as Record<LocaleName, LocaleTree>
-  for (const localeName of LOCALE_ORDER) {
-    if (localeName === 'en-US') continue
-    rebuilt[localeName] = alignLocaleBundleToReferenceKeys(
-      referenceKeys,
-      fullBundles[localeName],
-      fullBundles['en-US'],
-    )
-  }
-
-  return rebuilt
+  return { 'en-US': enTree }
 }
 
 export function writePrunedLocaleFiles(

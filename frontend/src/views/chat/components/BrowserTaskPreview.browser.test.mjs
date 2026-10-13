@@ -38,10 +38,10 @@ test('human handoff expands, stays reachable on narrow screens, focuses the brow
           import {createRouter, createMemoryHistory} from 'vue-router';
           import 'tdesign-vue-next/es/style/index.css';
           import Preview from '/src/views/chat/components/BrowserTaskPreview.vue';
-          import zh from '/src/i18n/locales/zh-CN.ts';
+          import enUS from '/src/i18n/locales/en-US.ts';
           window.fixtureActions=[];
           window.fixtureStatus={enabled:true,selected:true,connected:true,task_id:'fixture',needs_help:false};
-          createApp(Preview,{sessionId:'fixture'}).use(createPinia()).use(createRouter({history:createMemoryHistory(),routes:[{path:'/:p(.*)*',component:{render:()=>null}}]})).use(TDesign).use(createI18n({legacy:false,locale:'zh-CN',messages:{'zh-CN':zh}})).mount('#app');`
+          createApp(Preview,{sessionId:'fixture'}).use(createPinia()).use(createRouter({history:createMemoryHistory(),routes:[{path:'/:p(.*)*',component:{render:()=>null}}]})).use(TDesign).use(createI18n({legacy:false,locale:'en-US',messages:{'en-US':enUS}})).mount('#app');`
       },
     }], resolve: {alias: {'@': root+'/src'}}, server: {host:'127.0.0.1',port:0},
   })
@@ -75,7 +75,7 @@ test('human handoff expands, stays reachable on narrow screens, focuses the brow
     }
     await page.evaluate(() => {
       window.fixtureStatus.needs_help=true
-      window.fixtureStatus.help_prompt='请在浏览器中扫码登录，完成后确认。'.repeat(18)
+      window.fixtureStatus.help_prompt='Scan the QR code in the browser to sign in, then confirm. '.repeat(18)
     })
     await page.waitForSelector('.needs-help .preview-handoff')
     assert.equal(Math.round((await card.boundingBox()).width),420)
@@ -91,7 +91,7 @@ test('human handoff expands, stays reachable on narrow screens, focuses the brow
     assert.ok(buttonBounds.y >= 0 && buttonBounds.y+buttonBounds.height <= 480)
     if (process.env.BROWSERSKILL_TEST_PREVIEW_FILE) await page.screenshot({path:process.env.BROWSERSKILL_TEST_PREVIEW_FILE})
     await page.evaluate(() => { window.fixtureStatus.action='tab_borrow'; window.fixtureStatus.help_prompt='' })
-    await page.waitForFunction(() => document.querySelector('.preview-handoff')?.textContent.includes('不代替借用授权'))
+    await page.waitForFunction(() => document.querySelector('.preview-handoff')?.textContent.includes('it does not approve borrowing'))
     assert.equal(await page.locator('.preview-handoff button').count(),0)
     assert.equal(await page.locator('.preview-image').count(),0,'do not focus the unrelated task blank tab during borrow confirmation')
     await page.evaluate(() => { window.fixtureStatus.needs_help=false; window.fixtureStatus.help_prompt='' })

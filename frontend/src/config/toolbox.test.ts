@@ -5,7 +5,7 @@ import { computed, ref } from 'vue'
 import { runInNewContext } from 'node:vm'
 import ts from 'typescript'
 import { TOOLBOX_ITEMS, canAccessToolboxSection, isToolboxSection, toolboxLocation } from './toolbox'
-import zhCN from '../i18n/locales/zh-CN'
+import enUS from '../i18n/locales/en-US'
 
 const roles = ['viewer', 'contributor', 'admin', 'owner']
 const access = (role: string | null, unsupported: string[] = [], superuser = false) => ({
@@ -17,7 +17,7 @@ const access = (role: string | null, unsupported: string[] = [], superuser = fal
 
 test('toolbox contains only the agreed tools; infrastructure and secrets stay in settings', () => {
   assert.deepEqual(TOOLBOX_ITEMS.map((item) => item.key), ['skills', 'mcp', 'browserconnection'])
-  const lookup = (key: string) => key.split('.').reduce<any>((node, part) => node?.[part], zhCN)
+  const lookup = (key: string) => key.split('.').reduce<any>((node, part) => node?.[part], enUS)
   for (const item of TOOLBOX_ITEMS) {
     for (const key of [item.title, item.description, 'help' in item ? item.help : undefined,
       'action' in item ? item.action : undefined]) {

@@ -15,41 +15,35 @@ import {
 } from '@/utils/authRefresh';
 
 interface StreamOptions {
-  // 请求方法 (默认POST)
+  // Defaults to POST.
   method?: 'GET' | 'POST'
-  // 请求头
   headers?: Record<string, string>
-  // 请求体自动序列化
+  // Serialized automatically.
   body?: Record<string, any>
-  // 流式渲染间隔 (ms)
+  // Render interval in ms.
   chunkInterval?: number
 }
 
 export function useStream() {
-  // 响应式状态
-  const output = ref('')              // 显示内容
-  const isStreaming = ref(false)      // 流状态
-  const isLoading = ref(false)        // 初始加载
-  const error = ref<string | null>(null)// 错误信息
+  const output = ref('')
+  const isStreaming = ref(false)
+  const isLoading = ref(false)        // initial connection
+  const error = ref<string | null>(null)
   const lastStreamRequest = ref<StreamRequestMeta | null>(null)
   let controller = new AbortController()
   let streamGeneration = 0
 
-  // 流式渲染缓冲
   let buffer: string[] = []
   let renderTimer: number | null = null
 
-  // 启动流式请求
   const startStream = async (params: { session_id: any; query: any; knowledge_base_ids?: string[]; knowledge_ids?: string[]; tag_ids?: string[]; agent_enabled?: boolean; agent_id?: string; agent_source_tenant_id?: string | number; web_search_enabled?: boolean; local_browser_enabled?: boolean; summary_model_id?: string; reasoning_effort?: string; mcp_service_ids?: string[]; skill_names?: string[]; mentioned_items?: Array<{id: string; name: string; type: string; kb_type?: string; kb_id?: string; kb_name?: string; service_id?: string; skill_name?: string}>; images?: Array<{data: string}>; attachment_uploads?: Array<{data: string; file_name: string; file_size: number}>; attachment_ids?: string[]; suggestion_attribution?: { suggestion_set_id: string; question_id: string }; question_origin?: { knowledge_base_id: string; knowledge_id?: string }; method: string; url: string; embed_token?: string; embed_session_sig?: string; embed_visitor_id?: string }) => {
     const myGeneration = ++streamGeneration
     const streamAbort = controller
-    // 重置状态
     output.value = '';
     error.value = null;
     isStreaming.value = true;
     isLoading.value = true;
 
-    // 获取API配置
     const apiUrl = getApiBaseUrl();
     
     const embedToken = params.embed_token;
@@ -60,13 +54,13 @@ export function useStream() {
       return;
     }
 
-    // 跨空间访问请求头：只要 setSelectedTenant 写过激活空间，就附
-    // X-Tenant-ID。早期版本会 short-circuit "selectedTenantId ===
-    // defaultTenantId 时不附" 来减少 header 体积，但任何把 aikb_tenant
-    // 写成激活空间的代码（OIDC 同步 / UserMenu loadUserInfo / router
-    // hydrate）都会让两者相等，使得后续流式请求悄悄丢 header、落到
-    // home 空间上，导致 SSE 接口返回 404。直接附即可——后端
-    // IsTenantAccessible 也允许 header 指向自家空间。
+    // Always send X-Tenant-ID once setSelectedTenant has stored an active
+    // workspace. Skipping it when selectedTenantId === defaultTenantId broke
+    // streams: any code that writes aikb_tenant as the active workspace (OIDC
+    // sync, UserMenu loadUserInfo, router hydrate) makes the two equal, the
+    // header silently drops, the request lands on the home workspace and the
+    // SSE endpoint returns 404. The backend's IsTenantAccessible accepts a
+    // header pointing at the user's own workspace.
     const selectedTenantId = localStorage.getItem('aikb_selected_tenant_id');
     const tenantIdHeader: string | null = selectedTenantId || null;
 
@@ -172,7 +166,7 @@ export function useStream() {
         headers: {
           "Content-Type": "application/json",
           "Authorization": embedToken ? `Embed ${embedToken}` : `Bearer ${authToken}`,
-          "Accept-Language": i18n.global.locale?.value || localStorage.getItem('locale') || 'zh-CN',
+          "Accept-Language": i18n.global.locale?.value || localStorage.getItem('locale') || 'en-US',
           "X-Request-ID": requestID,
           ...(!embedToken && tenantIdHeader ? { "X-Tenant-ID": tenantIdHeader } : {}),
           ...(params.embed_session_sig ? { "X-Embed-Session": params.embed_session_sig } : {}),
@@ -203,8 +197,7 @@ export function useStream() {
             firstAnswerLogged = true;
             console.log(`[TTFB] response:first_answer request_id=${requestID} elapsed_ms=${(performance.now() - sentAt).toFixed(1)}`);
           }
-          buffer.push(parsed); // 数据存入缓冲
-          // 执行自定义处理
+          buffer.push(parsed);
           if (chunkHandler) {
             chunkHandler(parsed);
           }
@@ -247,32 +240,29 @@ export function useStream() {
   }
 
   let chunkHandler: ((data: any) => void) | null = null
-  // 注册块处理器
   const onChunk = (handler: (data: any) => void) => {
     chunkHandler = handler
   }
 
 
-  // 停止流
   const stopStream = () => {
     streamGeneration++
     controller.abort();
-    controller = new AbortController(); // 重置控制器（如需重新发起）
+    controller = new AbortController(); // fresh controller so a later startStream can run
     isStreaming.value = false;
     isLoading.value = false;
   }
 
-  // 组件卸载时自动清理
   onUnmounted(stopStream)
 
   return {
-    output,          // 显示内容
-    isStreaming,     // 是否在流式传输中
-    isLoading,       // 初始连接状态
+    output,
+    isStreaming,
+    isLoading,
     error,
     lastStreamRequest,
     onChunk,
-    startStream,     // 启动流
-    stopStream       // 手动停止
+    startStream,
+    stopStream
   }
 }

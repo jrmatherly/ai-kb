@@ -308,7 +308,7 @@ const outcomeOptions = computed(() =>
   })),
 )
 
-// Column-header filter lists. Both host a leading "全部" entry (value '')
+// Column-header filter lists. Both host a leading "All" entry (value '')
 // so picking it clears the server-side filter for that dimension.
 const outcomeFilterList = computed(() => [
   { label: t('knowledgeEditor.activity.allOutcomes'), value: '' },
@@ -349,12 +349,12 @@ const hasActiveFilters = computed(() => Boolean(action.value || outcome.value))
 const filterSummaryText = computed(() => {
   const parts: string[] = []
   if (action.value) {
-    parts.push(`${t('knowledgeEditor.activity.columns.action')}：${actionLabel(action.value)}`)
+    parts.push(`${t('knowledgeEditor.activity.columns.action')}: ${actionLabel(action.value)}`)
   }
   if (outcome.value) {
-    parts.push(`${t('knowledgeEditor.activity.columns.outcome')}：${outcomeLabel(outcome.value)}`)
+    parts.push(`${t('knowledgeEditor.activity.columns.outcome')}: ${outcomeLabel(outcome.value)}`)
   }
-  return parts.join('；')
+  return parts.join('; ')
 })
 
 function selectActionFilter(value: string) {
@@ -543,7 +543,7 @@ function activityAPIKeyId(entry: KnowledgeBaseActivity): string {
 function formatDatePart(value: string): string {
   if (!value) return '—'
   try {
-    return new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    return new Intl.DateTimeFormat(locale.value || 'en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -556,7 +556,7 @@ function formatDatePart(value: string): string {
 function formatTimePart(value: string): string {
   if (!value) return ''
   try {
-    return new Intl.DateTimeFormat(locale.value || 'zh-CN', {
+    return new Intl.DateTimeFormat(locale.value || 'en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',

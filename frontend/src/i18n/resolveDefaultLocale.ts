@@ -1,13 +1,13 @@
-export const SUPPORTED_LOCALES = ['zh-CN', 'zh-TW', 'en-US', 'ru-RU', 'ko-KR', 'ja-JP'] as const
+export const SUPPORTED_LOCALES = ['en-US'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 
-export const BUILT_IN_DEFAULT: SupportedLocale = 'zh-CN'
+export const BUILT_IN_DEFAULT: SupportedLocale = 'en-US'
 
 function isSupportedLocale(value: string): value is SupportedLocale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value)
 }
 
-/** Resolve deployment default locale before any user preference is applied. */
+/** Resolve the UI locale. Anything but a supported tag falls back to the built-in default. */
 export function resolveDefaultLocale(
   runtimeLocale?: string | null,
   buildTimeLocale?: string | null,
