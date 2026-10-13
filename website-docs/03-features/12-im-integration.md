@@ -2,7 +2,7 @@
 
 IM integration connects an agent to chat platforms such as WeCom, Feishu, DingTalk, Slack and Telegram. Users ask the bot a question in the platform, and AI KB answers with the retrieval and model configuration of the bound agent.
 
-Create a channel under Settings → IM integration: pick the platform, enter the application credentials, bind an agent and enable it. Webhook mode needs the callback URL registered in the platform console; long-connection mode needs no public callback URL to receive messages. Each channel can set its own reply language, which fixes the language the agent answers in on that channel; when left empty the deployment default applies.
+Create a channel under Settings → IM integration: pick the platform, enter the application credentials, bind an agent and enable it. Webhook mode needs the callback URL registered in the platform console; long-connection mode needs no public callback URL to receive messages. Each channel can carry its own reply language, which fixes the language the agent answers in on that channel. It is set through the API (`locale`), since the admin UI has no language picker; when left empty the deployment default applies.
 
 <Screenshot
   src="/screenshots/im-channels.png"
@@ -105,7 +105,7 @@ An `IMChannel` (table `im_channels`) binds one platform bot to one agent:
 | `AgentID` | The bound custom agent; answers use that agent's configuration (model, knowledge bases, skills, MCP, web search) |
 | `Platform` / `Mode` | Platform and connection mode. Defaults: mattermost and yunzhijia → `webhook`, wechat → `longpoll` (with `output_mode=full` forced), everything else → `websocket` |
 | `OutputMode` | `stream` (default, streaming) or `full` (one reply once the complete answer is ready; on platforms with a replaceable message the bot shows a placeholder first and replaces it once, with no intermediate updates) |
-| `Locale` | Reply language: `zh-CN` / `en-US` / `ja-JP` / `ko-KR` / `ru-RU`; any other value returns 400. Empty (the default) uses `AIKB_LANGUAGE`, and `en-US` when that is unset. The `Accept-Language` header of an IM callback comes from the platform, not the person asking, so it does not influence the reply language |
+| `Locale` | Reply language: `en-US` / `zh-CN` / `zh-TW` / `ja-JP` / `ko-KR` / `ru-RU` (`internal/types/locale.go`); any other value returns 400. Empty (the default) uses `AIKB_LANGUAGE`, and `en-US` when that is unset. The admin UI has no picker for it and sends the stored value back unchanged on edit, so set or clear it through the API. The `Accept-Language` header of an IM callback comes from the platform, not the person asking, so it does not influence the reply language |
 | `KnowledgeBaseID` | Optional "file knowledge base". Files and images are always downloaded for QA; when set, they are also imported in the background (see above) |
 | `SessionMode` | `user` (default, sessions keyed by platform + user + chat) or `thread` (keyed by platform + thread + chat, every top-level message starts a new session) |
 | `BotIdentity` | A unique bot identifier derived from platform, mode and credentials (`computeBotIdentity`, for example `feishu:<app_id>`, `telegram:<botID>`, `wecom:ws:<bot_id>`). A database unique index stops the same bot being configured on two channels (`checkDuplicateBot` returns a `duplicate_bot:` error → HTTP 409) |

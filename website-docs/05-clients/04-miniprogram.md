@@ -7,18 +7,17 @@ The WeChat Mini Program is a mobile entry point to an existing AI KB server for 
 
 ## Backend address and authentication
 
-Before the mini program can call the server, you give it the server address and an API key. **No backend address is hardcoded.** All connection details are entered on the Settings page and stored with `wx.setStorageSync` under the local storage key `aikb_settings`. The stored object has four fields:
+Before the mini program can call the server, you give it the server address and an API key. **No backend address is hardcoded.** All connection details are entered on the Settings page and stored with `wx.setStorageSync` under the local storage key `aikb_settings`. The stored object has three fields:
 
 ```js
 {
   baseUrl: "http://localhost:8080",   // default written by app.js onLaunch
   apiKey: "",
-  selectedKnowledgeBaseId: "",
-  locale: "en"                        // UI language
+  selectedKnowledgeBaseId: ""
 }
 ```
 
-- **Defaults**: when `miniprogram/app.js` finds no settings in `onLaunch`, it writes the default `baseUrl: "http://localhost:8080"`, an empty `apiKey` and the locale. The default only helps local development; set the real address on the Settings page before use.
+- **Defaults**: when `miniprogram/app.js` finds no settings in `onLaunch`, it writes the default `baseUrl: "http://localhost:8080"`, an empty `apiKey` and an empty `selectedKnowledgeBaseId`. The default only helps local development; set the real address on the Settings page before use.
 - **Reading, writing and normalization**: `miniprogram/utils/config.js` provides `getSettings()` and `saveSettings()`. `normalizeBaseUrl()` trims surrounding whitespace and trailing `/` characters.
 - **Authentication uses an API key**: every request from `miniprogram/utils/request.js` carries these headers:
   - `X-API-Key: <the API key you entered>`. Get it in AI KB under Settings → Publish & Integrations → API Integration; it looks like `sk-...`.
@@ -38,9 +37,9 @@ Backend routes it calls (all defined in `miniprogram/utils/request.js`):
 
 The API key needs access to these routes. A full-access key works. A scoped key needs the `retrieve` capability to list knowledge bases, `ingest` to import URLs and `chat` for sessions and questions (`internal/router/routes_knowledge.go`, `internal/router/routes_chat.go`).
 
-## UI language and local settings
+## UI strings and chat rendering
 
-This section covers how UI strings are applied and what the client keeps on the device. The UI ships in English. The `locale` value is saved in the local settings and survives restarts. Page text, the navigation bar title (`wx.setNavigationBarTitle`) and the bottom tab labels (`wx.setTabBarItem`) are set from it; the bottom tabs also carry icons (`assets/tab/*.png`). Strings live in `utils/i18n.js`, and new pages should reuse that module.
+This section covers where UI text comes from and how answers are shown. The UI ships in English only, with no language setting. Page text comes from the `MESSAGES` table in `utils/i18n.js` (`getMessages()`, and `t()` for `{name}` substitution); new pages should reuse that module. The navigation bar titles are static `navigationBarTitleText` values in `app.json` and each page's `.json`, and the bottom tab labels and icons (`assets/tab/*.png`) are static in the `tabBar` of `app.json`.
 
 The chat page parses the whole SSE text after the request completes and concatenates the `answer` fragments. It does not render chunk by chunk. A production release needs the API domain added to the request domain allowlist.
 
@@ -99,8 +98,8 @@ Global window style: navigation bar title `AI KB`, background `#0d3b2a` (dark gr
 
 | File | Responsibility |
 | --- | --- |
-| `miniprogram/utils/config.js` | Settings persistence. Defines the storage key `STORAGE_KEY = "aikb_settings"` and provides `getSettings()`, `saveSettings()` (a merging update), `normalizeBaseUrl()` (trims and removes trailing slashes) and `normalizeLocale()` |
-| `miniprogram/utils/i18n.js` | The UI string table with `t()`, `getLocale()` / `setLocale()`, `applyTabBar()` (updates the bottom tab labels and icons) and `applyNavTitle()` (updates the navigation bar title) |
+| `miniprogram/utils/config.js` | Settings persistence. Defines the storage key `STORAGE_KEY = "aikb_settings"` and provides `getSettings()`, `saveSettings()` (a merging update) and `normalizeBaseUrl()` (trims and removes trailing slashes) |
+| `miniprogram/utils/i18n.js` | The English UI string table. Exports `MESSAGES`, `getMessages()` (returns the table) and `t(key, vars)` (looks up a key, substitutes `{name}` placeholders and falls back to the key itself) |
 | `miniprogram/utils/request.js` | A Promise wrapper around `wx.request`: joins `baseUrl + path`, injects the `X-API-Key` and `X-Request-ID` headers, treats any 2xx as success and extracts error messages (`error.message` first, then `message`, falling back to `HTTP <status>`). It exports the 4 API functions in the table above |
 | `miniprogram/utils/sse.js` | Server-Sent Events text parser. `parseSSE(raw)` splits events on blank lines and parses the `event:` and `data:` lines. `collectAnswerFromSSE(raw)` parses each event's `data` as JSON and concatenates the `content` of events where `response_type === "answer"` into the final answer. The mini program **does not stream**: it waits for `wx.request` to return the full SSE text, then parses and shows it at once |
 
@@ -108,7 +107,7 @@ Global window style: navigation bar title `AI KB`, background `#0d3b2a` (dark gr
 
 ```mermaid
 flowchart LR
-    S["Settings page<br/>(baseUrl + API key + locale)"] -->|"wx.setStorageSync(aikb_settings)"| C["utils/config.js"]
+    S["Settings page<br/>(baseUrl + API key)"] -->|"wx.setStorageSync(aikb_settings)"| C["utils/config.js"]
     K["Knowledge page<br/>(pages/index)"] -->|"listKnowledgeBases / createKnowledgeFromURL"| R["utils/request.js<br/>(X-API-Key header)"]
     Q["Chat page<br/>(pages/chat)"] -->|"createSession / knowledgeChat"| R
     R -->|"wx.request"| B["AI KB backend<br/>/api/v1/*"]

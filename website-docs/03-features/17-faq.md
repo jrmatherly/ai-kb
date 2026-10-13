@@ -45,7 +45,7 @@ type FAQBatchUpsertPayload struct {
 }
 ```
 
-Import fields (the CSV template columns, symmetric with the export format, multi-value fields separated with `##`): category (default "Uncategorized"), standard question (required), similar questions, negative questions, answers (required), reply with all answers, disabled, not recommended.
+The API payload `FAQEntryPayload` carries `standard_question` (required), `similar_questions`, `negative_questions`, `answers` (at least one), `answer_strategy`, `tag_id` or `tag_name` (an entry with neither goes to the default tag "Untagged"), `is_enabled` and `is_recommended`. The UI import (`frontend/src/views/knowledge/components/FAQEntryManager.vue`) reads CSV, Excel and JSON files. CSV and Excel headers are matched with the parenthesized notes stripped: `tag_name`, `standard_question` (or `question`), `similar_questions`, `negative_questions`, `answers` and `is_disabled`, plus the legacy Chinese export headers; multi-value cells are split on `##`. The UI import does not read `answer_all` or `not_recommended` (nor `answer_strategy` and `is_recommended` in JSON), so every imported entry gets the default answer strategy and stays recommendable. That is a known bug.
 
 ```mermaid
 flowchart TB
@@ -65,7 +65,7 @@ flowchart TB
 
 The counters on the progress object `FAQImportProgress`: `success_count` / `failed_count` / `partial_failed_count` (a similar or negative question was dropped but the entry was imported) / `skipped_count` (duplicates skipped) / `merged_count` / `added_count`, `failed_entries[]` (failure reason and original content) and `failed_entries_url`, `import_mode`, `processing_time`; task status `pending → processing → completed / failed`.
 
-Export comes in two formats: CSV (columns: category, question, similar questions, negative questions, answer, reply with all answers, disabled, not recommended; a BOM is prepended so Excel reads it as UTF-8) and JSON (`FAQExportEntry`, compatible with the import payload, so export → edit → reimport is a closed loop).
+Export comes in two formats: CSV (header row `tag_name(required)`, `standard_question(required)`, `similar_questions(optional - separate multiple with ##)`, `negative_questions(optional - separate multiple with ##)`, `answers(required - separate multiple with ##)`, `answer_all(optional - default FALSE)`, `is_disabled(optional - default FALSE)`, `not_recommended(optional - default FALSE means recommendable)`, booleans as `TRUE` / `FALSE`, the same header as the UI template; a BOM is prepended so Excel reads it as UTF-8) and JSON (`FAQExportEntry`, compatible with the import payload, so export → edit → reimport is a closed loop).
 
 ### Hit policy
 
@@ -120,7 +120,7 @@ const (
 )
 ```
 
-Generic chunk fields reused by FAQ: `SeqID` (auto-increment integer, the entry ID in the public API), `TagID` (the category tag; the default tag name is the constant `UntaggedTagName`, "Uncategorized"), `IsEnabled` (the disable switch), `Flags` (bit 0 `ChunkFlagRecommended`, whether the entry may be recommended), `ContentHash` (the deduplication hash, see [Normalization and content hash (the deduplication core)](#normalization-and-content-hash-the-deduplication-core)).
+Generic chunk fields reused by FAQ: `SeqID` (auto-increment integer, the entry ID in the public API), `TagID` (the category tag; the default tag name is the constant `UntaggedTagName`, "Untagged"), `IsEnabled` (the disable switch), `Flags` (bit 0 `ChunkFlagRecommended`, whether the entry may be recommended), `ContentHash` (the deduplication hash, see [Normalization and content hash (the deduplication core)](#normalization-and-content-hash-the-deduplication-core)).
 
 #### API projection: FAQEntry
 

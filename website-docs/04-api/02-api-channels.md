@@ -30,7 +30,7 @@ Purpose: create an IM channel for an agent. Permission: Admin+.
 | `name` | string | no | Display name |
 | `mode` | string | no | `websocket` (default; `mattermost` and `yunzhijia` default to `webhook`) / `webhook` / `longpoll` (`wechat` is forced to `longpoll`) |
 | `output_mode` | string | no | `stream` (default) / `full` (`wechat` is forced to `full`) |
-| `locale` | string | no | Reply language: `en-US`; empty (default) uses the deployment default language (`AIKB_LANGUAGE`, `en-US` when unset); any other value 400 |
+| `locale` | string | no | Reply language: `en-US`, `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR` or `ru-RU`; any other value 400. Empty (default) uses `AIKB_LANGUAGE`, `en-US` when unset. The admin UI has no picker for it |
 | `session_mode` | string | no | `user` (default) / `thread` |
 | `knowledge_base_id` | string | no | Knowledge base that also receives attachments; must belong to this workspace, otherwise 400 |
 | `credentials` | object | no | Platform credentials |
@@ -135,7 +135,7 @@ Purpose: create a web embed channel for an agent. Permission: Admin+.
 | `header_title_mode` | string | no | `channel` (default) / `session` |
 | `show_suggested_questions` | bool | no | Default true |
 | `allow_web_search` / `allow_file_upload` | bool | no | Default false |
-| `default_locale` | string | no | `en-US` or empty (follow the browser) |
+| `default_locale` | string | no | `en-US`, `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` or empty (the default); any other value is stored as empty without an error. The widget renders in `en-US` whatever the value, and replies follow `AIKB_LANGUAGE`, then the request's `Accept-Language`, then `en-US`. The admin UI has no picker for it |
 
 `webhook_url`, `webhook_secret` and `agent_id` are accepted only by the update endpoint below; the agent comes from the path on create.
 

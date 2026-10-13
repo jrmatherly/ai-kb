@@ -98,7 +98,7 @@ At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock
 
 ## Deviations decided 2026-10-12 (planned, not landed)
 
-The rename landed 2026-10-12 and moved to "Name translations when porting" below. `website-docs/` (except `sample-data/`) is translated; the root config, compose files and Makefile are translated (2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. When a row below lands, move it into the next section with the status removed, and add any deleted path to "Deleted or moved paths".
+The rename landed 2026-10-12 and moved to "Name translations when porting" below. `website-docs/` is translated, `sample-data/` included; the root config, compose files and Makefile are translated (2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. When a row below lands, move it into the next section with the status removed, and add any deleted path to "Deleted or moved paths".
 
 | Upstream | Ours | Notes |
 | --- | --- | --- |
