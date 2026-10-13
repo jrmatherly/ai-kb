@@ -33,8 +33,8 @@ func TestTenantAPIKeyServiceCreateAPIKeyUsesSKPrefix(t *testing.T) {
 	if !strings.HasPrefix(result.Token, "sk-") {
 		t.Fatalf("created token = %q, want sk- prefix", result.Token)
 	}
-	if result.APIKey.APIKey != result.Token {
-		t.Fatalf("created api_key = %q, want token %q", result.APIKey.APIKey, result.Token)
+	if want := result.Token[:7] + "..." + result.Token[len(result.Token)-4:]; result.APIKey.KeyHint != want {
+		t.Fatalf("created key_hint = %q, want %q", result.APIKey.KeyHint, want)
 	}
 }
 
@@ -189,38 +189,6 @@ func (r *fakeTenantAPIKeyRepo) RevokePlatformAPIKey(_ context.Context, id uint64
 	return apprepo.ErrTenantAPIKeyNotFound
 }
 
-func (r *fakeTenantAPIKeyRepo) UpdateAPIKeyHash(_ context.Context, id uint64, hash string) error {
-	for oldHash, key := range r.byHash {
-		if key.ID == id && key.RevokedAt == nil {
-			delete(r.byHash, oldHash)
-			key.KeyHash = hash
-			r.byHash[hash] = key
-			return nil
-		}
-	}
-	return apprepo.ErrTenantAPIKeyNotFound
-}
-
-func (r *fakeTenantAPIKeyRepo) HasKeysWithPlaceholderHash(_ context.Context) (bool, error) {
-	for _, key := range r.byHash {
-		if key.RevokedAt == nil && strings.HasPrefix(key.KeyHash, "migrated-tenant-") {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func (r *fakeTenantAPIKeyRepo) ListKeysWithPlaceholderHash(_ context.Context) ([]*types.TenantAPIKey, error) {
-	out := []*types.TenantAPIKey{}
-	for _, key := range r.byHash {
-		if key.RevokedAt == nil && strings.HasPrefix(key.KeyHash, "migrated-tenant-") {
-			cp := *key
-			out = append(out, &cp)
-		}
-	}
-	return out, nil
-}
-
 func (r *fakeTenantAPIKeyRepo) UpdateAPIKeyLastUsed(_ context.Context, id uint64, at time.Time) error {
 	r.lastUsedUpdateCount++
 	for _, key := range r.byHash {
@@ -229,38 +197,6 @@ func (r *fakeTenantAPIKeyRepo) UpdateAPIKeyLastUsed(_ context.Context, id uint64
 		}
 	}
 	return nil
-}
-
-func TestTenantAPIKeyServiceBackfillMissingKeyHashes(t *testing.T) {
-	ctx := context.Background()
-	repo := newFakeTenantAPIKeyRepo()
-	svc := NewTenantAPIKeyService(repo)
-
-	token := "sk-legacy-token-value"
-	legacy := &types.TenantAPIKey{
-		TenantID:   uint64Pointer(7),
-		Name:       "legacy",
-		KeyHash:    "migrated-tenant-7",
-		APIKey:     token,
-		FullAccess: true,
-	}
-	if err := repo.CreateAPIKey(ctx, legacy); err != nil {
-		t.Fatalf("CreateAPIKey returned error: %v", err)
-	}
-
-	n, err := svc.BackfillMissingKeyHashes(ctx)
-	if err != nil {
-		t.Fatalf("BackfillMissingKeyHashes returned error: %v", err)
-	}
-	if n != 1 {
-		t.Fatalf("backfilled = %d, want 1", n)
-	}
-	if _, err := svc.AuthenticateAPIKey(ctx, token); err != nil {
-		t.Fatalf("AuthenticateAPIKey after backfill returned error: %v", err)
-	}
-	if n, err := svc.BackfillMissingKeyHashes(ctx); err != nil || n != 0 {
-		t.Fatalf("second BackfillMissingKeyHashes = (%d, %v), want (0, nil)", n, err)
-	}
 }
 
 func uint64Pointer(value uint64) *uint64 { return &value }

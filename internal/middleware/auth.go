@@ -376,8 +376,7 @@ func authenticateAPIKeyRequest(
 	apiKey string,
 ) bool {
 	ctx := c.Request.Context()
-	// AuthenticateAPIKey resolves the key by SHA-256 hash (see startup
-	// BackfillMissingKeyHashes for migration 000065 placeholder rows).
+	// AuthenticateAPIKey resolves the key by its SHA-256 hash.
 	key, err := apiKeyService.AuthenticateAPIKey(ctx, apiKey)
 	if err != nil || key == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid API key"})

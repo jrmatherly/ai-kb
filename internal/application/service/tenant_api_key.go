@@ -67,7 +67,7 @@ func (s *tenantAPIKeyService) CreateAPIKey(
 		ScopeType:        scopeType,
 		Name:             name,
 		KeyHash:          hashTenantAPIKey(token),
-		APIKey:           token,
+		KeyHint:          types.TenantAPIKeyHint(token),
 		FullAccess:       req.FullAccess,
 		KnowledgeBaseIDs: normalizeAPIKeyIDs(req.KnowledgeBaseIDs),
 		Capabilities:     capabilities,
@@ -175,35 +175,6 @@ func (s *tenantAPIKeyService) RevokeAPIKey(ctx context.Context, tenantID uint64,
 
 func (s *tenantAPIKeyService) RevokePlatformAPIKey(ctx context.Context, id uint64) error {
 	return s.repo.RevokePlatformAPIKey(ctx, id)
-}
-
-func (s *tenantAPIKeyService) BackfillMissingKeyHashes(ctx context.Context) (int, error) {
-	has, err := s.repo.HasKeysWithPlaceholderHash(ctx)
-	if err != nil {
-		return 0, err
-	}
-	if !has {
-		return 0, nil
-	}
-	keys, err := s.repo.ListKeysWithPlaceholderHash(ctx)
-	if err != nil {
-		return 0, err
-	}
-	backfilled := 0
-	for _, key := range keys {
-		if key == nil || strings.TrimSpace(key.APIKey) == "" {
-			continue
-		}
-		hash := hashTenantAPIKey(key.APIKey)
-		if key.KeyHash == hash {
-			continue
-		}
-		if err := s.repo.UpdateAPIKeyHash(ctx, key.ID, hash); err != nil {
-			return backfilled, err
-		}
-		backfilled++
-	}
-	return backfilled, nil
 }
 
 func generateTenantAPIKeyToken() (string, error) {

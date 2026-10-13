@@ -2,26 +2,24 @@ package types
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/jrmatherly/ai-kb/internal/errors"
-	"github.com/jrmatherly/ai-kb/internal/utils"
-	"gorm.io/gorm"
 )
 
 // TenantAPIKey is a revocable machine credential. Tenant-scoped and platform
 // keys intentionally share one table; platform keys have tenant_id=NULL and
-// choose a target workspace per request. KeyHash is used for authentication
-// lookup; APIKey is stored encrypted when SYSTEM_AES_KEY is set.
+// choose a target workspace per request. The token itself is never stored:
+// KeyHash (SHA-256) is the authentication lookup and KeyHint the masked
+// display value.
 type TenantAPIKey struct {
 	ID               uint64          `json:"id" gorm:"primaryKey;autoIncrement"`
 	TenantID         *uint64         `json:"tenant_id,omitempty" gorm:"index"`
 	ScopeType        APIKeyScopeType `json:"scope_type" gorm:"type:varchar(16);not null;default:tenant;index"`
 	Name             string          `json:"name" gorm:"type:varchar(128);not null"`
 	KeyHash          string          `json:"-" gorm:"type:varchar(64);not null;uniqueIndex"`
-	APIKey           string          `json:"api_key" gorm:"column:api_key;type:text;not null;default:''"`
+	KeyHint          string          `json:"-" gorm:"type:varchar(16);not null;default:''"`
 	FullAccess       bool            `json:"full_access" gorm:"not null;default:false"`
 	KnowledgeBaseIDs StringArray     `json:"knowledge_base_ids" gorm:"type:jsonb;not null;default:'[]'"`
 	// Capabilities are bounded grants for non-full-access keys. Each
@@ -66,6 +64,16 @@ func (k *TenantAPIKey) TenantIDValue() uint64 {
 
 func (TenantAPIKey) TableName() string {
 	return "tenant_api_keys"
+}
+
+// TenantAPIKeyHint is the display form of a token: its first 7 and last 4
+// characters, enough to tell keys apart without revealing them.
+func TenantAPIKeyHint(token string) string {
+	token = strings.TrimSpace(token)
+	if len(token) <= 12 {
+		return "***"
+	}
+	return token[:7] + "..." + token[len(token)-4:]
 }
 
 // APIKeyCapability is a bounded grant on a tenant API key. See
@@ -240,29 +248,6 @@ func NormalizeAPIKeyCapabilities(in StringArray) StringArray {
 		out = append(out, s)
 	}
 	return out
-}
-
-func (k *TenantAPIKey) BeforeSave(tx *gorm.DB) error {
-	if key := utils.GetAESKey(); key != nil && k.APIKey != "" {
-		encrypted, err := utils.EncryptAESGCM(k.APIKey, key)
-		if err != nil {
-			// Never fall through to storing the plaintext key: abort the
-			// write so the caller sees the failure instead of silently
-			// persisting an unencrypted secret.
-			return fmt.Errorf("encrypt tenant_api_keys.api_key (id=%d): %w", k.ID, err)
-		}
-		tx.Statement.SetColumn("api_key", encrypted)
-	}
-	return nil
-}
-
-func (k *TenantAPIKey) AfterFind(tx *gorm.DB) error {
-	decrypted, err := utils.DecryptStoredSecret(k.APIKey)
-	if err != nil {
-		return fmt.Errorf("decrypt tenant_api_keys.api_key (id=%d): %w", k.ID, err)
-	}
-	k.APIKey = decrypted
-	return nil
 }
 
 // TenantAPIKeyScope is the request-context projection used by middleware.

@@ -789,7 +789,7 @@ func tenantAPIKeyForResponse(key *types.TenantAPIKey) tenantAPIKeyResponse {
 		ID:               key.ID,
 		ScopeType:        types.NormalizeAPIKeyScopeType(key.ScopeType),
 		Name:             key.Name,
-		APIKey:           maskManagedAPIKey(key.APIKey),
+		APIKey:           key.KeyHint,
 		FullAccess:       key.FullAccess,
 		KnowledgeBaseIDs: key.KnowledgeBaseIDs,
 		Capabilities:     types.NormalizeAPIKeyCapabilities(key.Capabilities),
@@ -797,14 +797,6 @@ func tenantAPIKeyForResponse(key *types.TenantAPIKey) tenantAPIKeyResponse {
 		ExpiresAt:        key.ExpiresAt,
 		CreatedAt:        key.CreatedAt,
 	}
-}
-
-func maskManagedAPIKey(token string) string {
-	token = strings.TrimSpace(token)
-	if len(token) <= 12 {
-		return "***"
-	}
-	return token[:7] + "..." + token[len(token)-4:]
 }
 
 func validateTenantAPIKeyRequest(

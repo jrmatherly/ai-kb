@@ -27,7 +27,7 @@ func (stubTenantAPIKeyService) storedKey() *types.TenantAPIKey {
 	tenantID := uint64(7)
 	return &types.TenantAPIKey{
 		ID: 3, TenantID: &tenantID, ScopeType: types.APIKeyScopeTenant,
-		Name: "ci", APIKey: disclosureTestToken, FullAccess: true,
+		Name: "ci", KeyHint: types.TenantAPIKeyHint(disclosureTestToken), FullAccess: true,
 	}
 }
 

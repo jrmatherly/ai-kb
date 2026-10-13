@@ -98,15 +98,7 @@ type TenantAPIKeyRepository interface {
 	UpdateAPIKey(ctx context.Context, tenantID uint64, id uint64, key *types.TenantAPIKey) (*types.TenantAPIKey, error)
 	RevokeAPIKey(ctx context.Context, tenantID uint64, id uint64) error
 	RevokePlatformAPIKey(ctx context.Context, id uint64) error
-	UpdateAPIKeyHash(ctx context.Context, id uint64, hash string) error
 	UpdateAPIKeyLastUsed(ctx context.Context, id uint64, at time.Time) error
-	// ListKeysWithPlaceholderHash returns keys whose key_hash is still the
-	// migration placeholder (never authenticated since the 000065 upgrade),
-	// so the real SHA-256 hash can be computed and backfilled.
-	ListKeysWithPlaceholderHash(ctx context.Context) ([]*types.TenantAPIKey, error)
-	// HasKeysWithPlaceholderHash is a cheap existence probe used at startup
-	// to skip loading/decrypting api_key rows once backfill is complete.
-	HasKeysWithPlaceholderHash(ctx context.Context) (bool, error)
 }
 
 type TenantAPIKeyService interface {
@@ -117,8 +109,4 @@ type TenantAPIKeyService interface {
 	UpdateAPIKey(ctx context.Context, req TenantAPIKeyUpdateRequest) (*types.TenantAPIKey, error)
 	RevokeAPIKey(ctx context.Context, tenantID uint64, id uint64) error
 	RevokePlatformAPIKey(ctx context.Context, id uint64) error
-	// BackfillMissingKeyHashes computes and persists the SHA-256 key_hash
-	// for legacy keys still carrying the migration placeholder.
-	// Returns the number of keys backfilled.
-	BackfillMissingKeyHashes(ctx context.Context) (int, error)
 }

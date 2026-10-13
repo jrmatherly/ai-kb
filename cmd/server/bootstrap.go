@@ -39,19 +39,6 @@ const bootstrapEnvVar = "AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL"
 func runStartupBootstrap(c *dig.Container) {
 	ctx := context.Background()
 
-	// Legacy hash repair for migration 000065 placeholder rows. Invoked each
-	// startup but short-circuits with a cheap EXISTS once every row is
-	// backfilled (no api_key decryption on the steady-state path).
-	if err := c.Invoke(func(apiKeySvc interfaces.TenantAPIKeyService) {
-		if n, err := apiKeySvc.BackfillMissingKeyHashes(ctx); err != nil {
-			logger.Warnf(ctx, "[bootstrap] tenant api key hash backfill failed: %v", err)
-		} else if n > 0 {
-			logger.Infof(ctx, "[bootstrap] backfilled %d legacy tenant api key hash(es)", n)
-		}
-	}); err != nil {
-		logger.Warnf(ctx, "[bootstrap] failed to resolve TenantAPIKeyService: %v", err)
-	}
-
 	email := strings.TrimSpace(os.Getenv(bootstrapEnvVar))
 	if email == "" {
 		return

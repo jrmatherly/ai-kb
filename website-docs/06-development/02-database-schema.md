@@ -128,12 +128,12 @@ The tables below show the **effective structure after all up migrations** (later
 
 | Table | Purpose | Key columns |
 | --- | --- | --- |
-| `tenants` | Tenant (workspace), the root of multi-tenancy | `id` (SERIAL, starting at 10000), `name`, `retriever_engines` (JSONB), `status`, `storage_quota`/`storage_used`, `agent_config`/`context_config`/`conversation_config`/`web_search_config`/`credentials`/`api_principal_config`/`memory_config` (JSONB), `default_storage_backend_id`. The old `api_key` column moved to `tenant_api_keys` and was dropped in 000065 |
+| `tenants` | Tenant (workspace), the root of multi-tenancy | `id` (SERIAL, starting at 10000), `name`, `retriever_engines` (JSONB), `status`, `storage_quota`/`storage_used`, `agent_config`/`context_config`/`conversation_config`/`web_search_config`/`credentials`/`api_principal_config`/`memory_config` (JSONB), `default_storage_backend_id`. The old `api_key` column was dropped in 000065; keys live in `tenant_api_keys` |
 | `users` | Login users | `id` (UUID), `username` (unique), `email` (unique), `password_hash`, `tenant_id` (FK→tenants, ON DELETE SET NULL), `is_active`, `can_access_all_tenants` (cross-workspace access), `is_system_admin` (system administrator, 000053), `preferences` (JSON) |
 | `auth_tokens` | Login tokens | `id`, `user_id` (FK→users, CASCADE), `token`, `token_type` (access/refresh), `expires_at` (TIMESTAMPTZ since 000072), `is_revoked` |
 | `tenant_members` | Workspace-level RBAC membership | `user_id`+`tenant_id` (unique among non-deleted rows), `role` (owner/admin/contributor/viewer), `status`, `invited_by`, `joined_at` |
 | `tenant_invitations` | In-app invitations and invitation links | `tenant_id`, `invitee_user_id`, `role`, `status` (pending/accepted/rejected), `expires_at`; unique constraint on pending; `token` (invitation link, unique)/`accepted_count` (000054) |
-| `tenant_api_keys` | Workspace and platform API keys | `tenant_id` (NULL for platform scope), `scope_type` (tenant/platform, CHECK constraint), `key_hash` (unique), `full_access`, `knowledge_base_ids`, `capabilities`, `expires_at`/`revoked_at` |
+| `tenant_api_keys` | Workspace and platform API keys | `tenant_id` (NULL for platform scope), `scope_type` (tenant/platform, CHECK constraint), `key_hash` (unique SHA-256 of the token), `key_hint` (masked display value; the token itself is not stored), `full_access`, `knowledge_base_ids`, `capabilities`, `expires_at`/`revoked_at` |
 | `user_kb_pins` | Per-user knowledge base pins | PK (`tenant_id`,`user_id`,`kb_id`) + `pinned_at` |
 | `user_resource_favorites` | User favorites | PK (`user_id`,`tenant_id`,`resource_type`,`resource_id`) |
 | `system_settings` | System-level settings (000053) | `key`, `value`/`value_type`, `category`, `is_secret`, `requires_restart`, `last_modified_by` |
