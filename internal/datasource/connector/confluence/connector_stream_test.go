@@ -603,25 +603,35 @@ func TestFetchStreamReportsCompleteListing(t *testing.T) {
 		name      string
 		full      bool
 		cutShort  bool
+		cloud     bool
 		wantClaim bool
 	}{
 		{name: "fresh full sync", full: true, wantClaim: true},
 		{name: "full sync with server listing cut short", full: true, cutShort: true},
 		{name: "incremental sync", full: false},
+		{name: "fresh Cloud full sync, whose listing has no completeness signal", full: true, cloud: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			api := &streamAPI{pages: pages, endlessNext: tc.cutShort}
+			api := &streamAPI{pages: pages, endlessNext: tc.cutShort, cloud: tc.cloud}
 			conn := newStreamConnector(api)
 			fetch := conn.FetchStream
 			if tc.full {
 				fetch = conn.FetchFullStream
 			}
-			next, err := fetch(context.Background(), streamConfig(), old, &captureHandler{})
+			cfg := streamConfig()
+			if tc.cloud {
+				cfg = cloudStreamConfig()
+			}
+			handler := &captureHandler{}
+			next, err := fetch(context.Background(), cfg, old, handler)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if next.CompleteListing != tc.wantClaim {
 				t.Fatalf("CompleteListing = %v, want %v", next.CompleteListing, tc.wantClaim)
+			}
+			if tc.full && len(handler.items) != 1 {
+				t.Fatalf("emitted %d item(s), want the one listed page", len(handler.items))
 			}
 		})
 	}

@@ -45,6 +45,11 @@ const maxJSONResponseBytes = 16 << 20
 // request returns the same oversized body, so callers must not retry it.
 var errResponseTooLarge = errors.New("response exceeds maximum size")
 
+// errTruncatedPage marks a list response that reports has_more with no page
+// token to continue from. Stopping there would pass a truncated listing off as
+// complete, and a full sync would then delete the unlisted rest.
+var errTruncatedPage = errors.New("listing reports more pages but returned no page token")
+
 // readCapped reads a response body, refusing anything larger than limit instead
 // of buffering it. Oversized payloads are reported as an error: a truncated
 // body would be indexed as if it were the whole document. A non-positive limit
@@ -380,8 +385,11 @@ func (c *Client) ListWikiSpaces(ctx context.Context) ([]WikiSpace, error) {
 
 		allSpaces = append(allSpaces, resp.Data.Items...)
 
-		if !resp.Data.HasMore || resp.Data.PageToken == "" {
+		if !resp.Data.HasMore {
 			break
+		}
+		if resp.Data.PageToken == "" {
+			return nil, fmt.Errorf("list wiki spaces: %w", errTruncatedPage)
 		}
 		if _, exists := seenPageTokens[resp.Data.PageToken]; exists {
 			return nil, fmt.Errorf("feishu wiki space pagination repeated page token %q", resp.Data.PageToken)
@@ -428,8 +436,11 @@ func (c *Client) ListWikiNodes(ctx context.Context, spaceID string, parentNodeTo
 			allNodes = append(allNodes, node)
 		}
 
-		if !resp.Data.HasMore || resp.Data.PageToken == "" {
+		if !resp.Data.HasMore {
 			break
+		}
+		if resp.Data.PageToken == "" {
+			return nil, fmt.Errorf("list wiki nodes: %w", errTruncatedPage)
 		}
 		if _, exists := seenPageTokens[resp.Data.PageToken]; exists {
 			return nil, fmt.Errorf("feishu wiki node pagination repeated page token %q", resp.Data.PageToken)
@@ -924,8 +935,11 @@ func (c *Client) ListDriveFilesAllPages(ctx context.Context, folderToken string)
 			return nil, err
 		}
 		all = append(all, files...)
-		if !hasMore || next == "" {
+		if !hasMore {
 			break
+		}
+		if next == "" {
+			return nil, fmt.Errorf("list drive files: %w", errTruncatedPage)
 		}
 		if _, exists := seenPageTokens[next]; exists {
 			return nil, fmt.Errorf("feishu drive file pagination repeated page token %q", next)

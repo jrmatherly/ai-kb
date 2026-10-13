@@ -6989,7 +6989,7 @@ export default {
       seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.',
       deletion_guard_tripped: 'Deletions held back: {count} item(s), {percent}% of the {owned} this data source owns ({deselected} from resources removed from the selection). If this is expected, use "Sync and apply deletions".',
       reconcile_listing_empty: 'Deletions held back: the source listed nothing while this data source owns {owned} item(s), which usually means lost access. If the source really is empty, use "Sync and apply deletions".',
-      reconcile_listing_incomplete: 'Deletions were not reconciled: the connector did not list every selected resource completely. The next complete full sync reconciles them.'
+      reconcile_listing_incomplete: 'Deletions were not reconciled: the connector could not confirm a complete listing (a resumed or partial run, or Confluence Cloud). Deletions the connector itself detects still apply.'
     }
   },
   integrations: {

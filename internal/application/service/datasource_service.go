@@ -989,7 +989,7 @@ func (s *DataSourceService) reconcileDeletions(
 	if next == nil || !next.CompleteListing {
 		result.Reconcile = &types.SyncReconcile{Held: &types.SyncItemError{
 			Code:    syncCodeReconcileListingIncomplete,
-			Message: "Deletions were not reconciled: the connector did not list every selected resource completely",
+			Message: "Deletions were not reconciled: the connector could not confirm a complete listing",
 		}}
 		return
 	}
@@ -1061,7 +1061,7 @@ func (s *DataSourceService) reconcileDeletions(
 
 // reconcileHeld returns the sync-log message of a reconcile that held back
 // deletions an operator may need to apply, or "" when there is none. An
-// incomplete listing is not one: the next complete full sync reconciles.
+// incomplete listing is not one: no override can make it safe to reconcile.
 func reconcileHeld(r *types.SyncReconcile) string {
 	if r == nil || r.Held == nil || r.Held.Code == syncCodeReconcileListingIncomplete {
 		return ""

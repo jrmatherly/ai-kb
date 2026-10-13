@@ -551,7 +551,10 @@ func (c *Connector) fetchStream(
 	next.FullSync = false
 	next.FullSyncBaseline = nil
 	result := next.syncCursor()
-	result.CompleteListing = emitsAll && len(incompleteRoots) == 0
+	// Cloud listings follow _links.next with nothing to detect a listing cut
+	// short (Server/DC counts empty pages), so Cloud never claims completeness
+	// and never triggers the service's full-sync deletion reconcile.
+	result.CompleteListing = emitsAll && len(incompleteRoots) == 0 && !client.cfg.cloud()
 	return result, nil
 }
 
