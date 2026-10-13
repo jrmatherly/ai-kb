@@ -76,20 +76,23 @@ func runSandboxedArgv(
 		Cwd:  p.Cwd,
 	})
 	require.NoError(t, err)
+	return drainThenWait(ctx, t, proc)
+}
 
-	outCh := make(chan []byte, 1)
+// drainThenWait reads both streams to EOF before Wait, as Service.Run does:
+// exec.Cmd.Wait closes the pipes on exit, so a read still pending then loses the output.
+func drainThenWait(ctx context.Context, t *testing.T, proc core.Process) (core.ExitStatus, string) {
+	t.Helper()
 	errCh := make(chan []byte, 1)
-	go func() {
-		b, _ := io.ReadAll(proc.Stdout())
-		outCh <- b
-	}()
 	go func() {
 		b, _ := io.ReadAll(proc.Stderr())
 		errCh <- b
 	}()
+	out, _ := io.ReadAll(proc.Stdout())
+	out = append(out, <-errCh...)
 	status, err := proc.Wait(ctx)
 	require.NoError(t, err)
-	return status, string(<-outCh) + string(<-errCh)
+	return status, string(out)
 }
 
 func TestSeatbeltAllowsWriteInsideWorkspace(t *testing.T) {
@@ -227,19 +230,8 @@ func TestSeatbeltDoesNotKillAfterSuccessfulWait(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	outCh := make(chan []byte, 1)
-	errCh := make(chan []byte, 1)
-	go func() {
-		b, _ := io.ReadAll(proc.Stdout())
-		outCh <- b
-	}()
-	go func() {
-		b, _ := io.ReadAll(proc.Stderr())
-		errCh <- b
-	}()
-	status, err := proc.Wait(ctx)
-	require.NoError(t, err)
-	require.Equal(t, 0, status.Code, string(<-outCh)+string(<-errCh))
+	status, out := drainThenWait(ctx, t, proc)
+	require.Equal(t, 0, status.Code, out)
 	require.False(t, status.Killed)
 
 	cancel()

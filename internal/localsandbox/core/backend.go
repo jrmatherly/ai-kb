@@ -44,6 +44,7 @@ type Process interface {
 	Stdout() io.Reader
 	Stderr() io.Reader
 	// Wait blocks until exit. Cancelling ctx terminates the whole process tree.
+	// Read Stdout and Stderr to EOF first: Wait may close them once the process exits.
 	Wait(ctx context.Context) (ExitStatus, error)
 	// Kill terminates the whole process tree, not just the root process.
 	Kill() error
