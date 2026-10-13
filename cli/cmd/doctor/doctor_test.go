@@ -44,6 +44,7 @@ func (f *fakeServices) GetSystemInfo(ctx context.Context) (*sdk.SystemInfo, erro
 	f.systemInfoHits.Add(1)
 	return f.systemInfo, f.systemErr
 }
+
 func (f *fakeServices) GetCurrentUser(ctx context.Context) (*sdk.CurrentUserResponse, error) {
 	return f.userResp, f.userErr
 }
@@ -238,7 +239,7 @@ func TestDoctor_NoCache_BypassesCache(t *testing.T) {
 }
 
 // TestDoctor_VersionSkewWarns covers the soft-skew path: server is older
-// than CLI by ≥ 1 minor (same major, in compat range) → server_version=warn,
+// than the CLI → server_version=warn,
 // summary.failed=0 (exit 0), summary.all_passed=false (so agents reading
 // just the boolean still notice). The compat decision lives in
 // cli/internal/compat; this test pins the doctor-side mapping
@@ -251,10 +252,10 @@ func TestDoctor_VersionSkewWarns(t *testing.T) {
 	withCredStoreFactory(t, func() (secrets.Store, error) { return secrets.NewMemStore(), nil })
 
 	svc := &fakeServices{
-		systemInfo: &sdk.SystemInfo{Version: "1.0.0"}, // server 1.0
+		systemInfo: &sdk.SystemInfo{Version: "2026.10.13"},
 		userResp:   goodUserResp(),
 	}
-	r := runChecks(context.Background(), &Options{}, svc, "1.5.0") // CLI 1.5
+	r := runChecks(context.Background(), &Options{}, svc, "2026.10.13.1")
 
 	v := r.Checks[2]
 	if v.Name != "server_version" {
@@ -295,24 +296,31 @@ func TestDoctor_VersionSkewWarns(t *testing.T) {
 	}
 }
 
-// TestDoctor_HardErrorStillFails guards that a different-major skew remains
-// fail (not warn). Without this, a later refactor could silently downgrade
-// HardError to warn and we'd lose exit-1 on incompatible servers.
-func TestDoctor_HardErrorStillFails(t *testing.T) {
+// TestDoctor_VersionSkewAcrossYearsNeverFails pins that CalVer skew of any
+// size is at most a warning: a year boundary is not an incompatibility.
+func TestDoctor_VersionSkewAcrossYearsNeverFails(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	_, _ = iostreams.SetForTest(t)
 	withCredStoreFactory(t, func() (secrets.Store, error) { return secrets.NewMemStore(), nil })
 
-	svc := &fakeServices{
-		systemInfo: &sdk.SystemInfo{Version: "2.0.0"},
-		userResp:   goodUserResp(),
-	}
-	r := runChecks(context.Background(), &Options{}, svc, "1.0.0")
-	if r.Checks[2].Status != StatusFail {
-		t.Errorf("server_version status = %q, want fail (different major)", r.Checks[2].Status)
-	}
-	if r.Summary.Failed != 1 {
-		t.Errorf("expected Failed=1, got %+v", r.Summary)
+	for _, tc := range []struct {
+		server, cli string
+		want        Status
+	}{
+		{"2026.12.31", "2027.1.1", StatusWarn},
+		{"2027.1.1", "2026.12.31", StatusOK},
+	} {
+		svc := &fakeServices{
+			systemInfo: &sdk.SystemInfo{Version: tc.server},
+			userResp:   goodUserResp(),
+		}
+		r := runChecks(context.Background(), &Options{NoCache: true}, svc, tc.cli)
+		if r.Checks[2].Status != tc.want {
+			t.Errorf("server %s, cli %s: status = %q, want %q", tc.server, tc.cli, r.Checks[2].Status, tc.want)
+		}
+		if r.Summary.Failed != 0 {
+			t.Errorf("server %s, cli %s: Failed = %d, want 0", tc.server, tc.cli, r.Summary.Failed)
+		}
 	}
 }
 

@@ -1,7 +1,6 @@
 package compat_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/cli/internal/compat"
@@ -9,38 +8,47 @@ import (
 
 func TestCompat(t *testing.T) {
 	tests := []struct {
-		name        string
-		serverVer   string
-		cliVer      string
-		wantLevel   compat.Level
-		wantHintHas string
+		name      string
+		serverVer string
+		cliVer    string
+		wantLevel compat.Level
+		wantHint  string
 	}{
-		{"equal", "1.2.3", "1.2.3", compat.OK, ""},
-		{"client minor lower", "1.5.0", "1.2.0", compat.OK, ""},
-		{"client minor higher", "1.2.0", "1.5.0", compat.SoftWarn, "server is older"},
-		{"different major", "1.9.9", "2.0.0", compat.HardError, "incompatible"},
-		{"client unset", "1.2.3", "(unknown)", compat.OK, ""}, // dev build; no warning
-		{"server unset", "", "1.2.3", compat.OK, ""},
-		{"malformed server", "garbage", "1.2.3", compat.OK, ""}, // fail-open
-
-		// "v" prefix tolerance (git describe + Tencent tag convention)
-		{"v-prefix both", "v1.2.0", "v1.5.0", compat.SoftWarn, "server is older"},
-		{"v-prefix server only", "v1.9.9", "2.0.0", compat.HardError, "incompatible"},
-		{"v-prefix cli only", "1.9.9", "v2.0.0", compat.HardError, "incompatible"},
-
-		// Hint must be empty when level == OK (no false positives)
-		{"OK hint empty", "1.2.3", "1.2.3", compat.OK, ""},
+		{"equal", "2026.10.13", "2026.10.13", compat.OK, ""},
+		{"missing micro is zero", "2026.10.13.0", "2026.10.13", compat.OK, ""},
+		{"client older day", "2026.10.13", "2026.10.12", compat.OK, ""},
+		{"client older year", "2027.1.1", "2026.12.31", compat.OK, ""},
+		{
+			"client newer micro", "2026.10.13", "2026.10.13.1", compat.SoftWarn,
+			"server is older (server 2026.10.13, client 2026.10.13.1); some new features may be unavailable",
+		},
+		{
+			"client newer month", "2026.10.31", "2026.11.1", compat.SoftWarn,
+			"server is older (server 2026.10.31, client 2026.11.1); some new features may be unavailable",
+		},
+		{
+			"client newer year never hard-errors", "2026.12.31", "2027.1.1", compat.SoftWarn,
+			"server is older (server 2026.12.31, client 2027.1.1); some new features may be unavailable",
+		},
+		{
+			"numeric not lexical", "2026.9.30", "2026.10.1", compat.SoftWarn,
+			"server is older (server 2026.9.30, client 2026.10.1); some new features may be unavailable",
+		},
+		{
+			"v-prefix and describe suffix", "v2026.10.12", "v2026.10.13-3-gabc1234", compat.SoftWarn,
+			"server is older (server v2026.10.12, client v2026.10.13-3-gabc1234); some new features may be unavailable",
+		},
+		{"client unset", "2026.10.13", "(unknown)", compat.OK, ""}, // dev build; no warning
+		{"server unset", "", "2026.10.13", compat.OK, ""},
+		{"malformed server", "garbage", "2026.10.13", compat.OK, ""}, // fail-open
+		{"two parts", "2026.10", "2026.11.1", compat.OK, ""},
+		{"five parts", "2026.10.13.1.2", "2027.1.1", compat.OK, ""},
 	}
 	for _, tt := range tests {
 		gotLevel, gotHint := compat.Compat(tt.serverVer, tt.cliVer)
-		if gotLevel != tt.wantLevel {
-			t.Errorf("%s: Level = %v, want %v", tt.name, gotLevel, tt.wantLevel)
-		}
-		if tt.wantHintHas != "" && !strings.Contains(gotHint, tt.wantHintHas) {
-			t.Errorf("%s: hint = %q, should contain %q", tt.name, gotHint, tt.wantHintHas)
-		}
-		if tt.wantLevel == compat.OK && gotHint != "" {
-			t.Errorf("%s: OK level should have empty hint, got %q", tt.name, gotHint)
+		if gotLevel != tt.wantLevel || gotHint != tt.wantHint {
+			t.Errorf("%s: Compat(%q, %q) = (%v, %q), want (%v, %q)",
+				tt.name, tt.serverVer, tt.cliVer, gotLevel, gotHint, tt.wantLevel, tt.wantHint)
 		}
 	}
 }

@@ -473,7 +473,7 @@ aikb skills install --dir ~/.claude/skills --force
 
 ### doctor - self-check (`cli/cmd/doctor/doctor.go`)
 
-A single command: `doctor`. It runs 4 checks: base URL reachability, authentication, server version compatibility and credential storage. Each check reports `ok / warn / fail / skip`. Any `fail` gives exit code 1 (the JSON data is still printed). Warnings alone give exit code 0 with `summary.all_passed=false`.
+A single command: `doctor`. It runs 4 checks: base URL reachability, authentication, server version compatibility and credential storage. Each check reports `ok / warn / fail / skip`. The version check compares the full CalVer versions (`YYYY.M.D[.MICRO]`, a missing MICRO counts as 0): a CLI newer than the server warns, and version skew alone never fails. An unparseable or missing version (a dev build) passes. Any `fail` gives exit code 1 (the JSON data is still printed). Warnings alone give exit code 0 with `summary.all_passed=false`.
 
 Flags: `--no-cache` (bypasses the `$XDG_CACHE_HOME/aikb/server-info.yaml` cache and probes again), `--offline` (skips the network checks and only verifies the local keychain or file storage).
 

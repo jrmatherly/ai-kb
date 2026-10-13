@@ -219,8 +219,9 @@ func runChecks(ctx context.Context, opts *Options, svc Services, cliVer string) 
 // Mapping:
 //
 //	compat.OK        → StatusOK
-//	compat.SoftWarn  → StatusWarn  (server older but in-range; soft skew)
-//	compat.HardError → StatusFail  (incompatible major; upgrade required)
+//	compat.SoftWarn  → StatusWarn  (server older than the CLI)
+//
+// Version skew never fails the check.
 func fillVersionCheck(c *Check, info *compat.Info, cliVer string, fromCache bool) {
 	level, hint := compat.Compat(info.ServerVersion, cliVer)
 	suffix := ""
@@ -228,10 +229,6 @@ func fillVersionCheck(c *Check, info *compat.Info, cliVer string, fromCache bool
 		suffix = " (cached, pass --no-cache to refresh)"
 	}
 	switch level {
-	case compat.HardError:
-		c.Status = StatusFail
-		c.Hint = hint
-		c.Details = "server " + info.ServerVersion + suffix
 	case compat.SoftWarn:
 		c.Status = StatusWarn
 		// Lowercase, no trailing punctuation: matches existing details style

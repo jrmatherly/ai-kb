@@ -1,8 +1,7 @@
 // Package compat probes server `/system/info` and decides client-server
 // version skew level. Used by `aikb doctor`'s server_version check.
 //
-// 24h TTL state file cache, three-tier compat semantics
-// (major-mismatch=hard / minor-mismatch=soft / equal=ok).
+// 24h TTL state file cache; a CLI newer than the server warns, nothing fails.
 package compat
 
 import (
