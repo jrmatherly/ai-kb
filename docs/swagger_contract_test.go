@@ -97,7 +97,7 @@ func TestWikiPageBacklinkTitlesContract(t *testing.T) {
 			if err := tt.parse(tt.loadSpec(t), &spec); err != nil {
 				t.Fatal(err)
 			}
-			const detail = "github_com_Tencent_WeKnora_internal_types.WikiPageDetail"
+			const detail = "github_com_jrmatherly_ai-kb_internal_types.WikiPageDetail"
 			get := spec.Paths["/knowledgebase/{kb_id}/wiki/pages/{slug}"]["get"]
 			if get.Responses["200"].Schema.Ref != "#/definitions/"+detail {
 				t.Fatal("page detail response must expose backlink titles")
@@ -108,7 +108,7 @@ func TestWikiPageBacklinkTitlesContract(t *testing.T) {
 			if titles["type"] != "object" || !ok || values["type"] != "string" {
 				t.Fatal("in_link_titles must be a string-valued map")
 			}
-			for field := range spec.Definitions["github_com_Tencent_WeKnora_internal_types.WikiPage"].Properties {
+			for field := range spec.Definitions["github_com_jrmatherly_ai-kb_internal_types.WikiPage"].Properties {
 				if _, ok := properties[field]; !ok {
 					t.Errorf("page detail dropped existing field %s", field)
 				}
@@ -177,7 +177,7 @@ func assertModelDeleteUsageContract(t *testing.T, data []byte, parse func([]byte
 		t.Fatal("model DELETE Swagger contract does not document the model-in-use 400 response")
 	}
 
-	const errorCodeDefinition = "github_com_Tencent_WeKnora_internal_errors.ErrorCode"
+	const errorCodeDefinition = "github_com_jrmatherly_ai-kb_internal_errors.ErrorCode"
 	errorCodes, ok := spec.Definitions[errorCodeDefinition]
 	if !ok {
 		t.Fatalf("generated Swagger document does not expose %s", errorCodeDefinition)

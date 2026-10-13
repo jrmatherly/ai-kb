@@ -11,8 +11,8 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "WeKnora Github",
-            "url": "https://github.com/Tencent/WeKnora"
+            "name": "AI KB Github",
+            "url": "https://github.com/jrmatherly/ai-kb"
         },
         "version": "{{.Version}}"
     },
@@ -29,7 +29,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "基于Agent的智能问答，支持多轮对话和SSE流式响应",
+                "description": "Agent-based question answering with multi-turn conversation and SSE streaming",
                 "consumes": [
                     "application/json"
                 ],
@@ -37,19 +37,19 @@ const docTemplate = `{
                     "text/event-stream"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "Agent问答",
+                "summary": "Agent QA",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "问答请求",
+                        "description": "QA request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -64,23 +64,23 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public: direct links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "问答结果（SSE流）",
+                        "description": "QA result (SSE stream)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -93,7 +93,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "用户在对话中完成 OAuth 授权后调用，校验令牌存在后恢复被暂停的 Agent 工具调用",
+                "description": "Called after the user completes OAuth in a conversation. Checks that the token exists, then resumes the\nagent's paused tool call",
                 "consumes": [
                     "application/json"
                 ],
@@ -101,13 +101,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "完成对话内 MCP OAuth 授权",
+                "summary": "Complete in-chat MCP OAuth authorization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "待授权 ID",
+                        "description": "Pending authorization ID",
                         "name": "pending_id",
                         "in": "path",
                         "required": true
@@ -134,13 +134,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
-                        "description": "用户尚未完成授权",
+                        "description": "The user has not completed authorization",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -153,18 +153,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "用户主动跳过 OAuth 授权，解除 Agent 阻塞",
+                "description": "The user skips OAuth authorization, unblocking the agent",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "跳过对话内 MCP OAuth 授权",
+                "summary": "Skip in-chat MCP OAuth authorization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "待授权 ID",
+                        "description": "Pending authorization ID",
                         "name": "pending_id",
                         "in": "path",
                         "required": true
@@ -181,7 +181,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -197,7 +197,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "用户审批通过或驳回一次工具调用（用于 Agent 阻塞等待审批的场景）",
+                "description": "The user approves or rejects one tool call (used while the agent blocks waiting for approval)",
                 "consumes": [
                     "application/json"
                 ],
@@ -205,13 +205,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "处理 MCP 工具调用待审批请求",
+                "summary": "Resolve a pending MCP tool call approval",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "待审批记录 ID",
+                        "description": "Pending approval ID",
                         "name": "pending_id",
                         "in": "path",
                         "required": true
@@ -229,22 +229,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "审批结果",
+                        "description": "Approval result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "待审批记录不存在",
+                        "description": "Pending approval not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -260,7 +260,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取当前空间的所有智能体（包括内置智能体）",
+                "description": "List all agents in the current workspace, built-in agents included",
                 "consumes": [
                     "application/json"
                 ],
@@ -268,21 +268,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "获取智能体列表",
+                "summary": "List agents",
                 "responses": {
                     "200": {
-                        "description": "智能体列表",
+                        "description": "Agent list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -296,7 +296,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "创建新的自定义智能体",
+                "description": "Create a new custom agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -304,12 +304,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "创建智能体",
+                "summary": "Create agent",
                 "parameters": [
                     {
-                        "description": "智能体信息",
+                        "description": "Agent details",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -320,16 +320,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的智能体",
+                        "description": "Created agent",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -345,7 +345,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取所有可用的提示词占位符定义，按字段类型分组",
+                "description": "Get all available prompt placeholder definitions, grouped by field type",
                 "consumes": [
                     "application/json"
                 ],
@@ -353,12 +353,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "获取占位符定义",
+                "summary": "Get placeholder definitions",
                 "responses": {
                     "200": {
-                        "description": "占位符定义",
+                        "description": "Placeholder definitions",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -377,7 +377,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回所有 smart-reasoning 下可用的智能体类型预设（RAG/Wiki/Hybrid/Custom），用于编辑器自动填充系统提示词、工具和 KB 兼容性",
+                "description": "Return every agent type preset available under smart-reasoning (RAG/Wiki/Hybrid/Custom), used by the\neditor to prefill the system prompt, tools and KB compatibility",
                 "consumes": [
                     "application/json"
                 ],
@@ -385,12 +385,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "获取智能体类型预设列表",
+                "summary": "List agent type presets",
                 "responses": {
                     "200": {
-                        "description": "预设列表",
+                        "description": "Preset list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -409,7 +409,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取智能体详情",
+                "description": "Get an agent by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -417,13 +417,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "获取智能体详情",
+                "summary": "Get agent details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "智能体ID",
+                        "description": "Agent ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -431,22 +431,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "智能体详情",
+                        "description": "Agent details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "智能体不存在",
+                        "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -460,7 +460,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新智能体的名称、描述和配置",
+                "description": "Update an agent's name, description and config",
                 "consumes": [
                     "application/json"
                 ],
@@ -468,19 +468,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "更新智能体",
+                "summary": "Update agent",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "智能体ID",
+                        "description": "Agent ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新请求",
+                        "description": "Update request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -491,22 +491,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的智能体",
+                        "description": "Updated agent",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "无法修改内置智能体",
+                        "description": "Built-in agents cannot be modified",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -520,7 +520,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定的智能体",
+                "description": "Delete the specified agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -528,13 +528,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "删除智能体",
+                "summary": "Delete agent",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "智能体ID",
+                        "description": "Agent ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -542,28 +542,28 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "无法删除内置智能体",
+                        "description": "Built-in agents cannot be deleted",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "智能体不存在",
+                        "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -579,7 +579,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "复制指定的智能体",
+                "description": "Copy the specified agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -587,13 +587,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "复制智能体",
+                "summary": "Copy agent",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "智能体ID",
+                        "description": "Agent ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -601,22 +601,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "复制成功",
+                        "description": "Copied",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "智能体不存在",
+                        "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -632,25 +632,25 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "从智能体的共享列表中移除指定共享关系",
+                "description": "Removes the given share from an agent's share list",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织"
+                    "Organization"
                 ],
-                "summary": "取消智能体共享",
+                "summary": "Remove agent share",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "智能体 ID",
+                        "description": "Agent ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "共享记录 ID",
+                        "description": "Share record ID",
                         "name": "share_id",
                         "in": "path",
                         "required": true
@@ -665,9 +665,9 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "无权限",
+                        "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -683,7 +683,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "基于智能体关联的知识库，返回推荐问题供用户快捷提问",
+                "description": "Return suggested questions from the agent's linked knowledge bases, for one-click asking",
                 "consumes": [
                     "application/json"
                 ],
@@ -691,60 +691,60 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "智能体"
+                    "Agents"
                 ],
-                "summary": "获取推荐问题",
+                "summary": "Get suggested questions",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "智能体ID",
+                        "description": "Agent ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "知识库ID列表（逗号分隔），覆盖智能体默认配置",
+                        "description": "Knowledge base IDs, comma-separated; overrides the agent",
                         "name": "knowledge_base_ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "知识ID列表（逗号分隔），限定到具体文档",
+                        "description": "Knowledge IDs, comma-separated; limits to documents",
                         "name": "knowledge_ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "带知识库归属的标签范围（JSON）",
+                        "description": "Tag scopes with their knowledge base (JSON)",
                         "name": "tag_scopes",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "返回数量上限（未传时使用智能体配置的开场问题数量，最大30）",
+                        "description": "Max results (default: agent opening questions, max 30)",
                         "name": "limit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "推荐问题列表",
+                        "description": "Suggested questions",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "智能体不存在",
+                        "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -752,7 +752,7 @@ const docTemplate = `{
         },
         "/api/v1/knowledge/{id}/spans": {
             "get": {
-                "description": "返回该知识在解析流水线的 trace tree（root → stage → subspan）：每段状态、耗时、input/output、错误码、langfuse_trace_id。支持 ?attempt=N 查看历史尝试；不传则返回最新尝试。前端用于渲染时间线 + 多模态/embedding 子节点 + 一键跳转 Langfuse。",
+                "description": "Returns the trace tree of this knowledge in the parse pipeline (root -\u003e stage -\u003e subspan): status,\nduration, input/output, error code and langfuse_trace_id of each span. Use ?attempt=N to view a past\nattempt; omit it for the latest. The frontend renders it as a timeline with multimodal/embedding child\nnodes and a link to Langfuse.",
                 "consumes": [
                     "application/json"
                 ],
@@ -760,20 +760,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "获取知识文档解析的 Span 树（含历史尝试）",
+                "summary": "Get the parse span tree of a knowledge document (including past attempts)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "指定尝试号；省略=最新",
+                        "description": "Attempt number; omit for the latest",
                         "name": "attempt",
                         "in": "query"
                     }
@@ -789,9 +789,123 @@ const docTemplate = `{
                 }
             }
         },
+        "/artifacts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lists skill-generated files across the sessions visible to the current user, returning only the latest\nversion of each file (no storage URL)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "List my artifacts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by file name",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated extensions, such as .pdf,.pptx",
+                        "name": "file_types",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (max 100)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Deletes one file from the artifact library. A library row is the latest version of a file; by default\nevery earlier version of that file in the session is deleted too",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "Delete a file from the artifact library",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "message_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Position of the artifact in the message",
+                        "name": "index",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Delete every version, default true",
+                        "name": "all_versions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/auto-setup": {
             "post": {
-                "description": "Lite 版专用：首次启动时自动创建默认用户和空间并返回令牌，首次及后续启动均须通过桌面原生凭据认证，免除手动注册/登录流程",
+                "description": "Lite only: on first launch, creates the default user and workspace and returns tokens. Every launch\nauthenticates with the desktop's native credential, replacing manual registration and login",
                 "consumes": [
                     "application/json"
                 ],
@@ -799,20 +913,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "自动初始化（Lite 桌面版）",
+                "summary": "Auto setup (Lite desktop edition)",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.LoginResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.LoginResponse"
                         }
                     },
                     "403": {
-                        "description": "非 Lite 版本",
+                        "description": "Not the Lite edition",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -825,7 +939,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "修改当前用户的登录密码。新密码须满足 8–32 位且同时包含字母与数字；开启复杂密码后还需包含大小写与特殊字符。成功后所有会话被撤销，需重新登录。",
+                "description": "Changes the current user's password. The new password must be 8-32 characters with both letters and\ndigits; with complex passwords enabled it also needs upper and lower case and a special character. On\nsuccess every session is revoked and the user must log in again.",
                 "consumes": [
                     "application/json"
                 ],
@@ -833,12 +947,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "修改密码",
+                "summary": "Change password",
                 "parameters": [
                     {
-                        "description": "密码修改请求",
+                        "description": "Password change request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -857,16 +971,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "修改成功",
+                        "description": "Changed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -874,7 +988,7 @@ const docTemplate = `{
         },
         "/auth/config": {
             "get": {
-                "description": "返回当前部署的注册模式与密码复杂度开关，供前端决定是否展示注册入口以及密码校验规则",
+                "description": "Returns this deployment's registration mode and password complexity switch, so the frontend can decide\nwhether to show registration and which password rules to check",
                 "consumes": [
                     "application/json"
                 ],
@@ -882,12 +996,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "获取认证配置",
+                "summary": "Get the auth config",
                 "responses": {
                     "200": {
-                        "description": "认证配置",
+                        "description": "Auth config",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -898,7 +1012,7 @@ const docTemplate = `{
         },
         "/auth/invitations/lookup": {
             "post": {
-                "description": "根据邀请链接中的 token 返回邀请上下文（空间名 / 角色 / 过期时间），\n供注册页展示。无认证；token 无效或被撤销返回 410。\n使用 POST + body 而非 GET + path，避免 token 落入访问日志 / 浏览器历史 / tracing。",
+                "description": "Returns the invitation context (workspace name / role / expiry) for the token in an invitation link,\nfor display on the registration page. No authentication; an invalid or revoked token returns 410.\nUses POST + body instead of GET + path so the token stays out of access logs, browser history and\ntracing.",
                 "consumes": [
                     "application/json"
                 ],
@@ -906,12 +1020,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "解析共享邀请链接 token",
+                "summary": "Resolve a shared invitation link token",
                 "parameters": [
                     {
-                        "description": "邀请 token",
+                        "description": "Invitation token",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -928,9 +1042,9 @@ const docTemplate = `{
                         }
                     },
                     "410": {
-                        "description": "链接无效或已撤销",
+                        "description": "Link is invalid or revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -938,7 +1052,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "用户登录并获取访问令牌",
+                "description": "Logs a user in and returns an access token",
                 "consumes": [
                     "application/json"
                 ],
@@ -946,17 +1060,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "用户登录",
+                "summary": "Log in",
                 "parameters": [
                     {
-                        "description": "登录请求参数",
+                        "description": "Login request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.LoginRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.LoginRequest"
                         }
                     }
                 ],
@@ -964,13 +1078,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.LoginResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.LoginResponse"
                         }
                     },
                     "401": {
-                        "description": "认证失败",
+                        "description": "Authentication failed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -983,7 +1097,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "撤销当前访问令牌并登出",
+                "description": "Revokes the current access token and logs out",
                 "consumes": [
                     "application/json"
                 ],
@@ -991,21 +1105,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "用户登出",
+                "summary": "Log out",
                 "responses": {
                     "200": {
-                        "description": "登出成功",
+                        "description": "Logged out",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1018,7 +1132,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取当前登录用户的详细信息",
+                "description": "Returns the details of the logged-in user",
                 "consumes": [
                     "application/json"
                 ],
@@ -1026,21 +1140,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "获取当前用户信息",
+                "summary": "Get the current user",
                 "responses": {
                     "200": {
-                        "description": "用户信息",
+                        "description": "User info",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1053,7 +1167,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "按 PATCH 语义合并用户偏好（仅覆盖请求体里出现的字段，其余字段保持不变），\n数据存放在 users.preferences (JSON)，跨设备/浏览器自动同步。",
+                "description": "Merges user preferences with PATCH semantics (only fields present in the body are overwritten);\nstored in users.preferences (JSON), so they sync across devices and browsers.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1061,9 +1175,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "更新当前用户的个性化设置",
+                "summary": "Update the current user's preferences",
                 "parameters": [
                     {
                         "description": "Preferences patch",
@@ -1077,22 +1191,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的偏好",
+                        "description": "Updated preferences",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
-                        "description": "未授权",
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1100,7 +1214,7 @@ const docTemplate = `{
         },
         "/auth/oidc/callback": {
             "get": {
-                "description": "接收OIDC provider回调并由后端完成code交换，随后重定向回前端登录页",
+                "description": "Receives the OIDC provider callback, exchanges the code on the backend, then redirects to the frontend\nlogin page",
                 "consumes": [
                     "application/json"
                 ],
@@ -1108,25 +1222,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "OIDC登录重定向回调",
+                "summary": "OIDC login redirect callback",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "OIDC授权码",
+                        "description": "OIDC authorization code",
                         "name": "code",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "OIDC状态",
+                        "description": "OIDC state",
                         "name": "state",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "OIDC错误码",
+                        "description": "OIDC error code",
                         "name": "error",
                         "in": "query"
                     }
@@ -1140,7 +1254,7 @@ const docTemplate = `{
         },
         "/auth/oidc/config": {
             "get": {
-                "description": "返回OIDC是否启用以及provider展示名称，供前端决定是否展示OIDC登录入口",
+                "description": "Returns whether OIDC is enabled and the provider display name, so the frontend can decide whether to\nshow the OIDC login entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -1148,14 +1262,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "获取OIDC登录配置",
+                "summary": "Get the OIDC login config",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OIDCConfigResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OIDCConfigResponse"
                         }
                     }
                 }
@@ -1163,11 +1277,11 @@ const docTemplate = `{
         },
         "/auth/oidc/start": {
             "get": {
-                "description": "与 /auth/oidc/url 不同，此端点直接 302 重定向到 OIDC Provider 的授权页，\n无需前端 JS 介入。适用于外部平台（如企业门户）直接给出一个链接即可\n触发 OIDC 授权码流程，借助 IdP 的 SSO session 实现免再次输密码。",
+                "description": "Unlike /auth/oidc/url, this endpoint redirects (302) straight to the OIDC provider's\nauthorization page, with no frontend JS. An external platform (such as a company portal)\ncan link to it directly to start the OIDC authorization code flow; the IdP's SSO session\nspares the user another password prompt.",
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "发起 OIDC 登录（直接 302）",
+                "summary": "Start OIDC login (direct 302)",
                 "responses": {
                     "302": {
                         "description": "Found"
@@ -1177,7 +1291,7 @@ const docTemplate = `{
         },
         "/auth/oidc/url": {
             "get": {
-                "description": "根据后端OIDC配置生成第三方登录跳转地址",
+                "description": "Builds the third-party login redirect URL from the backend OIDC config",
                 "consumes": [
                     "application/json"
                 ],
@@ -1185,13 +1299,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "获取OIDC授权地址",
+                "summary": "Get the OIDC authorization URL",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "OIDC回调地址",
+                        "description": "OIDC callback URL",
                         "name": "redirect_uri",
                         "in": "query",
                         "required": true
@@ -1201,19 +1315,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OIDCAuthURLResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OIDCAuthURLResponse"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "OIDC未启用",
+                        "description": "OIDC is not enabled",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1221,7 +1335,7 @@ const docTemplate = `{
         },
         "/auth/refresh": {
             "post": {
-                "description": "使用刷新令牌获取新的访问令牌",
+                "description": "Exchanges a refresh token for a new access token",
                 "consumes": [
                     "application/json"
                 ],
@@ -1229,12 +1343,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "刷新令牌",
+                "summary": "Refresh token",
                 "parameters": [
                     {
-                        "description": "刷新令牌",
+                        "description": "Refresh token",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1250,16 +1364,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "新令牌",
+                        "description": "New tokens",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "令牌无效",
+                        "description": "Invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1267,7 +1381,7 @@ const docTemplate = `{
         },
         "/auth/register": {
             "post": {
-                "description": "注册新用户账号",
+                "description": "Registers a new user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -1275,17 +1389,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "用户注册",
+                "summary": "Register",
                 "parameters": [
                     {
-                        "description": "注册请求参数",
+                        "description": "Registration request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RegisterRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RegisterRequest"
                         }
                     }
                 ],
@@ -1293,19 +1407,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RegisterResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RegisterResponse"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "注册功能已禁用",
+                        "description": "Registration is disabled",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1313,7 +1427,7 @@ const docTemplate = `{
         },
         "/auth/register-by-invite": {
             "post": {
-                "description": "通过 Owner 生成的共享邀请链接 token 完成注册，绕过 invite_only 模式拦截。\n注册者自填邮箱（与 token 不绑定）；注册成功后自动加入对应空间。",
+                "description": "Completes registration with a shared invitation link token. Allowed only in self_serve /\ninvite_register mode.\nThe registrant enters their own email (not bound to the token) and joins the workspace on success.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1321,12 +1435,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "使用共享链接注册",
+                "summary": "Register with a shared link",
                 "parameters": [
                     {
-                        "description": "邀请注册请求",
+                        "description": "Invitation registration request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1339,25 +1453,31 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.LoginResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.LoginResponse"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Registration is disabled",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
-                        "description": "邮箱已注册",
+                        "description": "Email already registered",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "410": {
-                        "description": "链接无效或已撤销",
+                        "description": "Link is invalid or revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1370,7 +1490,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "为当前用户在目标空间重新签发访问令牌；要求该用户在目标空间存在 active 成员关系（跨租户超级用户除外）。\n成功换签会把目标空间写入「最近活跃租户」偏好，下次登录与 refresh 都落在该空间（refresh JWT 不含 tenant_id）。\n该偏好是账号级的：一次换签会改变该用户所有设备的下次登录/refresh 落点。偏好写入失败则整次换签失败，不会发出新 token。",
+                "description": "Reissues the access token for the current user in the target workspace; the user needs an active\nmembership there (cross-tenant superusers excepted).\nA successful switch writes the target workspace to the last-active-tenant preference, so the next login\nand refresh land there (the refresh JWT carries no tenant_id).\nThe preference is per account: one switch changes where the next login or refresh lands on every\ndevice. If writing the preference fails, the switch fails and no new token is issued.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1378,12 +1498,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "切换激活空间",
+                "summary": "Switch the active workspace",
                 "parameters": [
                     {
-                        "description": "切换请求",
+                        "description": "Switch request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1404,19 +1524,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.LoginResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.LoginResponse"
                         }
                     },
                     "400": {
-                        "description": "参数错误",
+                        "description": "Invalid parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "无该空间成员关系或偏好写入失败",
+                        "description": "No membership in the workspace, or the preference write failed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1429,7 +1549,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "验证访问令牌是否有效",
+                "description": "Checks whether the access token is valid",
                 "consumes": [
                     "application/json"
                 ],
@@ -1437,21 +1557,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "认证"
+                    "Auth"
                 ],
-                "summary": "验证令牌",
+                "summary": "Validate token",
                 "responses": {
                     "200": {
-                        "description": "令牌有效",
+                        "description": "Token is valid",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "令牌无效",
+                        "description": "Invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1467,7 +1587,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "对提交的文本运行自适应分块器并返回分块预览，不写入数据库不生成 embedding。文本最大 64k 字符",
+                "description": "Run the adaptive chunker on the submitted text and return a chunk preview, without writing to the\ndatabase or generating embeddings. Text is limited to 64k characters",
                 "consumes": [
                     "application/json"
                 ],
@@ -1475,9 +1595,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块"
+                    "Chunks"
                 ],
-                "summary": "预览分块结果",
+                "summary": "Preview chunking",
                 "parameters": [
                     {
                         "description": "{text, chunking_config}",
@@ -1491,27 +1611,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "分块结果",
+                        "description": "Chunking result",
                         "schema": {
                             "$ref": "#/definitions/internal_handler.PreviewChunkingResponse"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "413": {
-                        "description": "文本超过预览限制",
+                        "description": "Text exceeds the preview limit",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "504": {
-                        "description": "分块超时",
+                        "description": "Chunking timed out",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -1530,7 +1650,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "仅通过分块ID获取分块详情（不需要knowledge_id）；支持共享知识库下的分块访问",
+                "description": "Get chunk details by chunk ID alone (no knowledge_id needed); works for chunks in shared knowledge\nbases",
                 "consumes": [
                     "application/json"
                 ],
@@ -1538,13 +1658,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块管理"
+                    "Chunks"
                 ],
-                "summary": "通过ID获取分块",
+                "summary": "Get chunk by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "分块ID",
+                        "description": "Chunk ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1552,22 +1672,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "分块详情",
+                        "description": "Chunk details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "分块不存在",
+                        "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1583,7 +1703,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除分块中生成的问题",
+                "description": "Delete a generated question from a chunk",
                 "consumes": [
                     "application/json"
                 ],
@@ -1591,19 +1711,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块管理"
+                    "Chunks"
                 ],
-                "summary": "删除生成的问题",
+                "summary": "Delete generated question",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "分块ID",
+                        "description": "Chunk ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "问题ID",
+                        "description": "Question ID",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1619,22 +1739,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "分块不存在",
+                        "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1650,7 +1770,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取指定知识下的所有分块列表，支持分页",
+                "description": "List all chunks of a knowledge item, paginated",
                 "consumes": [
                     "application/json"
                 ],
@@ -1658,13 +1778,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块管理"
+                    "Chunks"
                 ],
-                "summary": "获取知识分块列表",
+                "summary": "List knowledge chunks",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "knowledge_id",
                         "in": "path",
                         "required": true
@@ -1672,30 +1792,30 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "分块列表",
+                        "description": "Chunk list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1709,7 +1829,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定知识下的所有分块",
+                "description": "Delete all chunks of the given knowledge item",
                 "consumes": [
                     "application/json"
                 ],
@@ -1717,13 +1837,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块管理"
+                    "Chunks"
                 ],
-                "summary": "删除知识下所有分块",
+                "summary": "Delete all chunks of a knowledge item",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "knowledge_id",
                         "in": "path",
                         "required": true
@@ -1731,16 +1851,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1756,7 +1876,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新指定分块的内容和属性",
+                "description": "Update a chunk's content and attributes",
                 "consumes": [
                     "application/json"
                 ],
@@ -1764,26 +1884,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块管理"
+                    "Chunks"
                 ],
-                "summary": "更新分块",
+                "summary": "Update chunk",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "knowledge_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "分块ID",
+                        "description": "Chunk ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新请求",
+                        "description": "Update request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1794,22 +1914,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的分块",
+                        "description": "Updated chunk",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "分块不存在",
+                        "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1823,7 +1943,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定的分块",
+                "description": "Delete the given chunk",
                 "consumes": [
                     "application/json"
                 ],
@@ -1831,20 +1951,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "分块管理"
+                    "Chunks"
                 ],
-                "summary": "删除分块",
+                "summary": "Delete chunk",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "knowledge_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "分块ID",
+                        "description": "Chunk ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1852,22 +1972,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "分块不存在",
+                        "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -1898,7 +2018,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DataSource"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource"
                             }
                         }
                     },
@@ -1932,7 +2052,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DataSource"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource"
                         }
                     }
                 ],
@@ -1940,7 +2060,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DataSource"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource"
                         }
                     },
                     "400": {
@@ -1978,7 +2098,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SyncLog"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SyncLog"
                         }
                     },
                     "404": {
@@ -2009,7 +2129,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_datasource.ConnectorMetadata"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_datasource.ConnectorMetadata"
                             }
                         }
                     }
@@ -2085,7 +2205,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DataSource"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource"
                         }
                     },
                     "404": {
@@ -2125,7 +2245,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DataSource"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource"
                         }
                     }
                 ],
@@ -2133,7 +2253,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DataSource"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource"
                         }
                     },
                     "400": {
@@ -2215,7 +2335,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SyncLog"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SyncLog"
                             }
                         }
                     },
@@ -2356,7 +2476,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Resource"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Resource"
                             }
                         }
                     },
@@ -2430,7 +2550,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SyncLog"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SyncLog"
                         }
                     },
                     "400": {
@@ -2493,7 +2613,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据任务ID获取评估结果",
+                "description": "Get an evaluation result by task ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -2501,13 +2621,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "评估"
+                    "Evaluation"
                 ],
-                "summary": "获取评估结果",
+                "summary": "Get evaluation result",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "评估任务ID",
+                        "description": "Evaluation task ID",
                         "name": "task_id",
                         "in": "query",
                         "required": true
@@ -2515,16 +2635,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "评估结果",
+                        "description": "Evaluation result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -2538,7 +2658,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "对知识库进行评估测试",
+                "description": "Run an evaluation against a knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -2546,12 +2666,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "评估"
+                    "Evaluation"
                 ],
-                "summary": "执行评估",
+                "summary": "Run evaluation",
                 "parameters": [
                     {
-                        "description": "评估请求参数",
+                        "description": "Evaluation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2562,16 +2682,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "评估任务",
+                        "description": "Evaluation task",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -2587,7 +2707,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取FAQ导入任务的进度",
+                "description": "Returns the progress of an FAQ import task",
                 "consumes": [
                     "application/json"
                 ],
@@ -2595,13 +2715,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "获取FAQ导入进度",
+                "summary": "Get FAQ import progress",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "任务ID",
+                        "description": "Task ID",
                         "name": "task_id",
                         "in": "path",
                         "required": true
@@ -2609,16 +2729,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "导入进度",
+                        "description": "Import progress",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "任务不存在",
+                        "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -2634,7 +2754,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新指定 IM 渠道的名称、模式、知识库、凭证或启用状态",
+                "description": "Update an IM channel's name, mode, reply language, knowledge bases, credentials or enabled state",
                 "consumes": [
                     "application/json"
                 ],
@@ -2642,19 +2762,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IM 渠道"
+                    "IM Channels"
                 ],
-                "summary": "更新 IM 渠道",
+                "summary": "Update IM channel",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "渠道 ID",
+                        "description": "Channel ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新字段（name/mode/output_mode/knowledge_base_id/credentials/enabled）",
+                        "description": "Fields to update (locale included)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2666,21 +2786,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的渠道",
+                        "description": "Updated channel",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "渠道不存在",
+                        "description": "Channel not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2697,18 +2817,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定 IM 渠道",
+                "description": "Delete the specified IM channel",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "IM 渠道"
+                    "IM Channels"
                 ],
-                "summary": "删除 IM 渠道",
+                "summary": "Delete IM channel",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "渠道 ID",
+                        "description": "Channel ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -2723,14 +2843,14 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "渠道不存在",
+                        "description": "Channel not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2749,18 +2869,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "切换指定 IM 渠道的启用状态",
+                "description": "Toggle the enabled state of the specified IM channel",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "IM 渠道"
+                    "IM Channels"
                 ],
-                "summary": "启用/停用 IM 渠道",
+                "summary": "Enable or disable IM channel",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "渠道 ID",
+                        "description": "Channel ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -2768,21 +2888,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的渠道",
+                        "description": "Updated channel",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "渠道不存在",
+                        "description": "Channel not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2793,7 +2913,7 @@ const docTemplate = `{
         },
         "/im/callback/{channel_id}": {
             "get": {
-                "description": "接收各 IM 平台的事件回调；走平台自身签名校验，不使用 API Key",
+                "description": "Receive event callbacks from IM platforms. Verified with each platform's own signature, not an API key",
                 "consumes": [
                     "application/json"
                 ],
@@ -2801,13 +2921,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IM 回调"
+                    "IM Callback"
                 ],
-                "summary": "IM 平台回调",
+                "summary": "IM platform callback",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "渠道 ID",
+                        "description": "Channel ID",
                         "name": "channel_id",
                         "in": "path",
                         "required": true
@@ -2815,21 +2935,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "处理结果",
+                        "description": "Processing result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "签名校验失败",
+                        "description": "Signature verification failed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2838,7 +2958,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "接收各 IM 平台的事件回调；走平台自身签名校验，不使用 API Key",
+                "description": "Receive event callbacks from IM platforms. Verified with each platform's own signature, not an API key",
                 "consumes": [
                     "application/json"
                 ],
@@ -2846,13 +2966,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IM 回调"
+                    "IM Callback"
                 ],
-                "summary": "IM 平台回调",
+                "summary": "IM platform callback",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "渠道 ID",
+                        "description": "Channel ID",
                         "name": "channel_id",
                         "in": "path",
                         "required": true
@@ -2860,21 +2980,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "处理结果",
+                        "description": "Processing result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "签名校验失败",
+                        "description": "Signature verification failed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2893,7 +3013,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "检查ASR（语音识别）模型连接是否正常，通过发送一段静默音频测试 /v1/audio/transcriptions 端点",
+                "description": "Check that an ASR (speech-to-text) model is reachable by sending a short silent clip to the\n/v1/audio/transcriptions endpoint",
                 "consumes": [
                     "application/json"
                 ],
@@ -2901,12 +3021,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "检查ASR模型",
+                "summary": "Check ASR model",
                 "parameters": [
                     {
-                        "description": "ASR检查请求",
+                        "description": "ASR check request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2917,16 +3037,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "检查结果",
+                        "description": "Check result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -2942,7 +3062,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据知识库ID获取当前配置信息",
+                "description": "Get the current configuration of a knowledge base by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -2950,13 +3070,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "获取知识库配置",
+                "summary": "Get knowledge base configuration",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "kbId",
                         "in": "path",
                         "required": true
@@ -2964,16 +3084,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "配置信息",
+                        "description": "Configuration",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "知识库不存在",
+                        "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -2987,7 +3107,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据知识库ID更新模型和分块配置",
+                "description": "Update the models and chunking configuration of a knowledge base by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -2995,19 +3115,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "更新知识库配置",
+                "summary": "Update knowledge base configuration",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "kbId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "配置请求",
+                        "description": "Configuration request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3018,22 +3138,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "知识库不存在",
+                        "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3049,7 +3169,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "测试Embedding接口是否可用并返回向量维度",
+                "description": "Test that the embedding endpoint works and return the vector dimension",
                 "consumes": [
                     "application/json"
                 ],
@@ -3057,12 +3177,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "测试Embedding模型",
+                "summary": "Test embedding model",
                 "parameters": [
                     {
-                        "description": "Embedding测试请求",
+                        "description": "Embedding test request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3073,16 +3193,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "测试结果",
+                        "description": "Test result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3090,7 +3210,7 @@ const docTemplate = `{
         },
         "/initialization/extract/fabri-tag": {
             "post": {
-                "description": "随机生成一组标签",
+                "description": "Generate a random set of tags",
                 "consumes": [
                     "application/json"
                 ],
@@ -3098,12 +3218,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "生成随机标签",
+                "summary": "Generate random tags",
                 "responses": {
                     "200": {
-                        "description": "生成的标签",
+                        "description": "Generated tags",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -3122,7 +3242,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据标签生成示例文本",
+                "description": "Generate sample text from tags",
                 "consumes": [
                     "application/json"
                 ],
@@ -3130,12 +3250,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "生成示例文本",
+                "summary": "Generate sample text",
                 "parameters": [
                     {
-                        "description": "生成请求",
+                        "description": "Generation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3146,16 +3266,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "生成的文本",
+                        "description": "Generated text",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3171,7 +3291,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "从文本中提取实体和关系",
+                "description": "Extract entities and relations from text",
                 "consumes": [
                     "application/json"
                 ],
@@ -3179,12 +3299,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "提取文本关系",
+                "summary": "Extract text relations",
                 "parameters": [
                     {
-                        "description": "提取请求",
+                        "description": "Extraction request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3195,16 +3315,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "提取结果",
+                        "description": "Extraction result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3220,7 +3340,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据知识库ID执行完整配置更新",
+                "description": "Apply a full configuration update to a knowledge base by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -3228,19 +3348,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "初始化知识库配置",
+                "summary": "Initialize knowledge base configuration",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "kbId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "初始化请求",
+                        "description": "Initialization request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3251,16 +3371,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "初始化成功",
+                        "description": "Initialized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3276,7 +3396,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "上传图片测试多模态处理功能",
+                "description": "Upload an image to test multimodal processing",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -3284,20 +3404,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "测试多模态功能",
+                "summary": "Test multimodal processing",
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "测试图片",
+                        "description": "Test image",
                         "name": "image",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "VLM模型名称",
+                        "description": "VLM model name",
                         "name": "vlm_model",
                         "in": "formData",
                         "required": true
@@ -3317,13 +3437,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "VLM接口类型",
+                        "description": "VLM interface type",
                         "name": "vlm_interface_type",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "存储类型(cos/minio)",
+                        "description": "Storage type (cos/minio)",
                         "name": "storage_type",
                         "in": "formData",
                         "required": true
@@ -3331,16 +3451,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "测试结果",
+                        "description": "Test result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3356,7 +3476,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取Ollama模型下载任务的进度",
+                "description": "Get the progress of an Ollama model download task",
                 "consumes": [
                     "application/json"
                 ],
@@ -3364,13 +3484,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "获取下载进度",
+                "summary": "Get download progress",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "任务ID",
+                        "description": "Task ID",
                         "name": "taskId",
                         "in": "path",
                         "required": true
@@ -3378,16 +3498,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "下载进度",
+                        "description": "Download progress",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "任务不存在",
+                        "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3403,7 +3523,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "列出所有Ollama模型下载任务",
+                "description": "List all Ollama model download tasks",
                 "consumes": [
                     "application/json"
                 ],
@@ -3411,12 +3531,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "列出下载任务",
+                "summary": "List download tasks",
                 "responses": {
                     "200": {
-                        "description": "任务列表",
+                        "description": "Task list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -3435,7 +3555,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "列出已安装的Ollama模型",
+                "description": "List the installed Ollama models",
                 "consumes": [
                     "application/json"
                 ],
@@ -3443,21 +3563,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "列出Ollama模型",
+                "summary": "List Ollama models",
                 "responses": {
                     "200": {
-                        "description": "模型列表",
+                        "description": "Model list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3473,7 +3593,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "检查指定的Ollama模型是否已安装",
+                "description": "Check whether the given Ollama models are installed",
                 "consumes": [
                     "application/json"
                 ],
@@ -3481,12 +3601,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "检查Ollama模型状态",
+                "summary": "Check Ollama model status",
                 "parameters": [
                     {
-                        "description": "模型名称列表",
+                        "description": "Model names",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3505,16 +3625,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "模型状态",
+                        "description": "Model status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3530,7 +3650,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "异步下载指定的Ollama模型",
+                "description": "Download the given Ollama model asynchronously",
                 "consumes": [
                     "application/json"
                 ],
@@ -3538,12 +3658,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "下载Ollama模型",
+                "summary": "Download Ollama model",
                 "parameters": [
                     {
-                        "description": "模型名称",
+                        "description": "Model name",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3559,16 +3679,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "下载任务信息",
+                        "description": "Download task",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3576,7 +3696,7 @@ const docTemplate = `{
         },
         "/initialization/ollama/status": {
             "get": {
-                "description": "检查Ollama服务是否可用",
+                "description": "Check whether the Ollama service is available",
                 "consumes": [
                     "application/json"
                 ],
@@ -3584,12 +3704,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "检查Ollama服务状态",
+                "summary": "Check Ollama service status",
                 "responses": {
                     "200": {
-                        "description": "Ollama状态",
+                        "description": "Ollama status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -3608,7 +3728,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "检查远程API模型连接是否正常",
+                "description": "Check that a remote API model is reachable",
                 "consumes": [
                     "application/json"
                 ],
@@ -3616,12 +3736,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "检查远程模型",
+                "summary": "Check remote model",
                 "parameters": [
                     {
-                        "description": "模型检查请求",
+                        "description": "Model check request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3632,16 +3752,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "检查结果",
+                        "description": "Check result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3657,7 +3777,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "检查Rerank模型连接和功能是否正常",
+                "description": "Check that a rerank model is reachable and works",
                 "consumes": [
                     "application/json"
                 ],
@@ -3665,12 +3785,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "初始化"
+                    "Initialization"
                 ],
-                "summary": "检查Rerank模型",
+                "summary": "Check rerank model",
                 "parameters": [
                     {
-                        "description": "Rerank检查请求",
+                        "description": "Rerank check request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3681,16 +3801,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "检查结果",
+                        "description": "Check result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3706,7 +3826,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取当前空间的所有知识库；或当传入 agent_id（共享智能体）时，校验权限后返回该智能体配置的知识库范围（用于 @ 提及）",
+                "description": "List all knowledge bases in the current workspace; with agent_id (a shared agent), check permission and\nreturn the knowledge bases configured for that agent (used for @ mentions)",
                 "consumes": [
                     "application/json"
                 ],
@@ -3714,29 +3834,29 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "获取知识库列表",
+                "summary": "List knowledge bases",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "共享智能体 ID（传入时返回该智能体可用的知识库）",
+                        "description": "Shared agent ID (returns the knowledge bases available to that agent)",
                         "name": "agent_id",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "知识库列表",
+                        "description": "Knowledge base list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3750,7 +3870,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "创建新的知识库",
+                "description": "Create a new knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -3758,32 +3878,32 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "创建知识库",
+                "summary": "Create a knowledge base",
                 "parameters": [
                     {
-                        "description": "知识库信息",
+                        "description": "Knowledge base info",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KnowledgeBase"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBase"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的知识库",
+                        "description": "Created knowledge base",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3799,7 +3919,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "将一个知识库的内容复制到另一个知识库（异步任务）",
+                "description": "Copy the contents of one knowledge base into another (async task)",
                 "consumes": [
                     "application/json"
                 ],
@@ -3807,12 +3927,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "复制知识库",
+                "summary": "Copy a knowledge base",
                 "parameters": [
                     {
-                        "description": "复制请求",
+                        "description": "Copy request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3823,16 +3943,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "任务ID",
+                        "description": "Task ID",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3848,7 +3968,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取知识库复制任务的进度",
+                "description": "Get the progress of a knowledge base copy task",
                 "consumes": [
                     "application/json"
                 ],
@@ -3856,13 +3976,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "获取知识库复制进度",
+                "summary": "Get knowledge base copy progress",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "任务ID",
+                        "description": "Task ID",
                         "name": "task_id",
                         "in": "path",
                         "required": true
@@ -3870,16 +3990,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "进度信息",
+                        "description": "Progress",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "任务不存在",
+                        "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3895,7 +4015,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取知识库详情。当使用共享智能体时，可传 agent_id 以校验该智能体是否有权访问该知识库。",
+                "description": "Get a knowledge base by ID. When using a shared agent, pass agent_id to check that the agent may access\nthis knowledge base.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3903,42 +4023,42 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "获取知识库详情",
+                "summary": "Get knowledge base details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "共享智能体 ID（用于校验智能体是否有权访问该知识库）",
+                        "description": "Shared agent ID (checks that the agent may access this knowledge base)",
                         "name": "agent_id",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "知识库详情",
+                        "description": "Knowledge base details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "知识库不存在",
+                        "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -3952,7 +4072,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新知识库的名称、描述和配置",
+                "description": "Update the name, description and config of a knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -3960,19 +4080,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "更新知识库",
+                "summary": "Update a knowledge base",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新请求",
+                        "description": "Update request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3983,16 +4103,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的知识库",
+                        "description": "Updated knowledge base",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4006,7 +4126,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定的知识库及其所有内容",
+                "description": "Delete a knowledge base and all its contents",
                 "consumes": [
                     "application/json"
                 ],
@@ -4014,13 +4134,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "删除知识库",
+                "summary": "Delete a knowledge base",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -4028,16 +4148,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4050,49 +4170,49 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回知识库的重要变更与后台任务入口。仅知识库创建者或所属空间管理员可读，共享空间不可读。",
+                "description": "Returns significant changes and background task entries for a knowledge base. Readable only by the\nknowledge base creator or an admin of its workspace, not through a shared space.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "获取知识库活动记录",
+                "summary": "Get knowledge base activity",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "游标：返回 id 小于此值的记录",
+                        "description": "Cursor: return records with id below this value",
                         "name": "after_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "页大小，1-100，默认 50",
+                        "description": "Page size, 1-100, default 50",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 action 精确过滤",
+                        "description": "Exact match on action",
                         "name": "action",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 outcome 精确过滤",
+                        "description": "Exact match on outcome",
                         "name": "outcome",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 actor_user_id 精确过滤",
+                        "description": "Exact match on actor_user_id",
                         "name": "actor",
                         "in": "query"
                     }
@@ -4107,7 +4227,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4120,7 +4240,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "创建一个只包含设置的新知识库副本，不复制知识、FAQ 内容、分块、索引、Wiki 页面、分享或置顶状态",
+                "description": "Create a new knowledge base with the same settings only; knowledge, FAQ content, chunks, indexes, Wiki\npages, shares and pinned state are not copied",
                 "consumes": [
                     "application/json"
                 ],
@@ -4128,13 +4248,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "创建知识库副本",
+                "summary": "Duplicate a knowledge base",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "源知识库 ID",
+                        "description": "Source knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -4142,16 +4262,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建后的知识库副本",
+                        "description": "Created knowledge base copy",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4167,7 +4287,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取知识库下的FAQ条目列表，支持分页和筛选",
+                "description": "Lists the FAQ entries of a knowledge base, with pagination and filters",
                 "consumes": [
                     "application/json"
                 ],
@@ -4175,78 +4295,78 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "获取FAQ条目列表",
+                "summary": "List FAQ entries",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "页码",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "标签ID筛选(seq_id)，兼容旧版单标签",
+                        "description": "Filter by tag ID (seq_id); legacy single-tag filter",
                         "name": "tag_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "标签UUID筛选，逗号分隔（OR语义）",
+                        "description": "Filter by tag UUIDs, comma-separated (OR)",
                         "name": "tag_ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "关键词搜索",
+                        "description": "Keyword search",
                         "name": "keyword",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "搜索字段: standard_question(标准问题), similar_questions(相似问法), answers(答案), 默认搜索全部",
+                        "description": "standard_question, similar_questions or answers (default all)",
                         "name": "search_field",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "排序方式: asc(按更新时间正序), 默认按更新时间倒序",
+                        "description": "asc: oldest update first (default newest)",
                         "name": "sort_order",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "启用状态筛选；不传时返回全部",
+                        "description": "Filter by enabled state; all entries when omitted",
                         "name": "is_enabled",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "FAQ列表",
+                        "description": "FAQ list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4260,7 +4380,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "异步批量更新或插入FAQ条目。支持 dry_run 模式（设置 dry_run=true），异步验证不实际导入。\ndry_run 模式是异步操作，返回 task_id，通过 /faq/import/progress/{task_id} 查询进度和结果。\n验证内容包括：1) 条目基本格式 2) 重复问题（批次内和知识库已有） 3) 内容安全检查。",
+                "description": "Asynchronously updates or inserts FAQ entries in batch. With dry_run=true it validates asynchronously\nwithout importing.\ndry_run is asynchronous: it returns a task_id; poll /faq/import/progress/{task_id} for progress and\nresults.\nValidation covers: 1) entry format 2) duplicate questions (within the batch and against the knowledge\nbase) 3) content safety checks.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4268,39 +4388,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "批量更新/插入FAQ条目",
+                "summary": "Batch upsert FAQ entries",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "批量操作请求",
+                        "description": "Batch request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQBatchUpsertPayload"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQBatchUpsertPayload"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "任务ID",
+                        "description": "Task ID",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4314,7 +4434,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量删除指定的FAQ条目",
+                "description": "Deletes the specified FAQ entries",
                 "consumes": [
                     "application/json"
                 ],
@@ -4322,19 +4442,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "批量删除FAQ条目",
+                "summary": "Batch delete FAQ entries",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "要删除的FAQ ID列表(seq_id)",
+                        "description": "FAQ IDs to delete (seq_id)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -4353,16 +4473,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4378,7 +4498,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "将所有FAQ条目导出为 CSV（默认）或 JSON。?format=json 返回与 FAQEntryPayload 结构兼容的数组。",
+                "description": "Exports all FAQ entries as CSV (default) or JSON. ?format=json returns an array compatible with\nFAQEntryPayload.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4387,35 +4507,35 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "导出FAQ条目",
+                "summary": "Export FAQ entries",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "导出格式：csv（默认）或 json",
+                        "description": "Export format: csv (default) or json",
                         "name": "format",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "导出文件",
+                        "description": "Exported file",
                         "schema": {
                             "type": "file"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4431,7 +4551,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量更新FAQ条目的多个字段（is_enabled, is_recommended, tag_id）",
+                "description": "Updates several fields of FAQ entries in batch (is_enabled, is_recommended, tag_id)",
                 "consumes": [
                     "application/json"
                 ],
@@ -4439,39 +4559,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "批量更新FAQ字段",
+                "summary": "Batch update FAQ fields",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "字段更新请求",
+                        "description": "Field update request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQEntryFieldsBatchUpdate"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQEntryFieldsBatchUpdate"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4487,7 +4607,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量更新FAQ条目的标签",
+                "description": "Updates the tags of FAQ entries in batch",
                 "consumes": [
                     "application/json"
                 ],
@@ -4495,19 +4615,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "批量更新FAQ标签",
+                "summary": "Batch update FAQ tags",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "标签更新请求",
+                        "description": "Tag update request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -4518,16 +4638,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4543,7 +4663,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取单个FAQ条目的详情",
+                "description": "Returns the details of one FAQ entry by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -4551,20 +4671,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "获取FAQ条目详情",
+                "summary": "Get an FAQ entry",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "FAQ条目ID(seq_id)",
+                        "description": "FAQ entry ID (seq_id)",
                         "name": "entry_id",
                         "in": "path",
                         "required": true
@@ -4572,22 +4692,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "FAQ条目详情",
+                        "description": "FAQ entry details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "条目不存在",
+                        "description": "Entry not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4601,7 +4721,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新指定的FAQ条目",
+                "description": "Updates the specified FAQ entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -4609,46 +4729,46 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "更新FAQ条目",
+                "summary": "Update an FAQ entry",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "FAQ条目ID(seq_id)",
+                        "description": "FAQ entry ID (seq_id)",
                         "name": "entry_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "FAQ条目",
+                        "description": "FAQ entry",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQEntryPayload"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQEntryPayload"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4664,7 +4784,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "向指定的FAQ条目添加相似问题",
+                "description": "Adds similar questions to the specified FAQ entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -4672,26 +4792,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "添加相似问",
+                "summary": "Add similar questions",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "FAQ条目ID(seq_id)",
+                        "description": "FAQ entry ID (seq_id)",
                         "name": "entry_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "相似问列表",
+                        "description": "Similar questions",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -4702,22 +4822,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的FAQ条目",
+                        "description": "Updated FAQ entry",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "条目不存在",
+                        "description": "Entry not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4733,7 +4853,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "同步创建单个FAQ条目",
+                "description": "Creates a single FAQ entry synchronously",
                 "consumes": [
                     "application/json"
                 ],
@@ -4741,39 +4861,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "创建单个FAQ条目",
+                "summary": "Create an FAQ entry",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "FAQ条目",
+                        "description": "FAQ entry",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQEntryPayload"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQEntryPayload"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "创建的FAQ条目",
+                        "description": "Created FAQ entry",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4789,7 +4909,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新FAQ知识库导入结果统计卡片的显示或隐藏状态",
+                "description": "Shows or hides the import result summary card of an FAQ knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -4797,19 +4917,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "更新FAQ最后一次导入结果显示状态",
+                "summary": "Update visibility of the last FAQ import result",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "状态更新请求",
+                        "description": "Status update request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -4820,22 +4940,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "知识库不存在或无导入记录",
+                        "description": "KB or import record not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4851,7 +4971,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "使用混合搜索在FAQ中搜索，支持两级优先级标签召回：first_priority_tag_ids优先级最高，second_priority_tag_ids次之",
+                "description": "Searches FAQ entries with hybrid retrieval and two-level tag priority: first_priority_tag_ids ranks\nhighest, then second_priority_tag_ids",
                 "consumes": [
                     "application/json"
                 ],
@@ -4859,39 +4979,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "FAQ管理"
+                    "FAQ"
                 ],
-                "summary": "搜索FAQ",
+                "summary": "Search FAQ",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "搜索请求",
+                        "description": "Search request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQSearchRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQSearchRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "搜索结果",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4907,7 +5027,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "在知识库中执行向量和关键词混合搜索。推荐使用 POST；GET 携带 JSON 请求体仍受支持（兼容旧客户端）。",
+                "description": "Low-level recall: hybrid vector and keyword retrieval, without rerank by default (enable it with the\nrerank field). For general search use /knowledge-search. Prefer POST; GET with a JSON body exists only\nfor old clients.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4915,24 +5035,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "混合搜索",
+                "summary": "Hybrid search",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "搜索参数",
+                        "description": "Search parameters",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SearchParams"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SearchParams"
                         }
                     },
                     {
@@ -4942,23 +5062,23 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public returns direct file links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "搜索结果",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -4972,7 +5092,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "在知识库中执行向量和关键词混合搜索。推荐使用 POST；GET 携带 JSON 请求体仍受支持（兼容旧客户端）。",
+                "description": "Low-level recall: hybrid vector and keyword retrieval, without rerank by default (enable it with the\nrerank field). For general search use /knowledge-search. Prefer POST; GET with a JSON body exists only\nfor old clients.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4980,24 +5100,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "混合搜索",
+                "summary": "Hybrid search",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "搜索参数",
+                        "description": "Search parameters",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SearchParams"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SearchParams"
                         }
                     },
                     {
@@ -5007,23 +5127,183 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public returns direct file links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "搜索结果",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/knowledge-bases/{id}/images": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Browse all image assets in a knowledge base, with keyword search (caption/OCR text), filtering by image\nattributes (attr_filters / attr_rules), sorting and pagination.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge"
+                ],
+                "summary": "List knowledge base image assets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Knowledge base ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number, default 1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size, default 20, max 1000",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Keyword, case-insensitive substring match on the search_in fields",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Attribute IDs to search (comma-separated); each must have in_searchfield=true",
+                        "name": "search_in",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort attribute ID; must have in_sortfield=true, default created_at",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort direction: asc / desc, default desc",
+                        "name": "sort_order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only include enabled images",
+                        "name": "is_enabled",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Only images from these source document IDs (comma-separated, max 50)",
+                        "name": "knowledge_ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Attribute filter JSON: values ORed, attributes ANDed",
+                        "name": "attr_filters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Per-value attribute rules JSON (off hides, on forces display; on wins)",
+                        "name": "attr_rules",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated image assets",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Same as GET /images, with the filters passed in a JSON body so knowledge_ids is not bound by URL length\n(limit 1000); used when all source documents are selected.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "knowledge"
+                ],
+                "summary": "List knowledge base image assets (body variant)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Knowledge base ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Filters (same meaning as the GET /images parameters of the same name)",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.imageListRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated image assets",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5039,7 +5319,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取知识库下的知识列表，支持分页和筛选",
+                "description": "List the knowledge in a knowledge base, with pagination and filters",
                 "consumes": [
                     "application/json"
                 ],
@@ -5047,96 +5327,108 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "获取知识列表",
+                "summary": "List knowledge",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "页码",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "标签ID筛选，逗号分隔（OR语义）",
+                        "description": "Filter by tag IDs, comma-separated (OR)",
                         "name": "tag_ids",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "关键词搜索",
+                        "description": "Keyword search",
                         "name": "keyword",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "文件类型筛选",
+                        "description": "Filter by file type",
                         "name": "file_type",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "解析状态筛选 (pending/processing/completed/failed)",
+                        "description": "Filter by parse status (pending/processing/completed/failed)",
                         "name": "parse_status",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "来源/渠道筛选 (web/api/feishu/notion/yuque/wechat/...，或 manual/url 按 type 过滤)",
+                        "description": "Source filter: web/api/feishu/notion/yuque/wechat/..., or manual/url",
                         "name": "source",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "更新时间起点，RFC3339 格式",
+                        "description": "Updated-at range start, RFC3339",
                         "name": "start_time",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "更新时间终点，RFC3339 格式",
+                        "description": "Updated-at range end, RFC3339",
                         "name": "end_time",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "文件夹路径筛选，空字符串表示知识库根目录；不传该参数则不按文件夹过滤",
+                        "description": "Folder path filter; empty is the root, omitted means no filter",
                         "name": "folder_path",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "为 true 时同时返回子文件夹内的文档",
+                        "description": "When true, also return documents in subfolders",
                         "name": "folder_recursive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field: updated_at/created_at/file_name, default created_at",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort direction: asc/desc, default desc",
+                        "name": "sort_order",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "知识列表",
+                        "description": "Knowledge list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5150,7 +5442,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除知识库下的所有知识条目（异步任务）。知识库本身保留，仅清空其中的内容",
+                "description": "Delete all knowledge entries in a knowledge base (async task). The knowledge base itself is kept; only\nits contents are cleared",
                 "consumes": [
                     "application/json"
                 ],
@@ -5158,13 +5450,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "清空知识库内容",
+                "summary": "Clear knowledge base contents",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -5172,22 +5464,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "清空任务已提交",
+                        "description": "Clear task submitted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5203,7 +5495,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "将同一知识库的最多 200 个文档打包为 ZIP，原始内容合计不超过 512 MiB。无原文件的条目会被跳过；无权访问、跨库或读取失败时不返回残缺压缩包。",
+                "description": "Pack up to 200 documents of one knowledge base into a ZIP, with at most 512 MiB of original content in\ntotal. Entries without an original file are skipped; on missing access, a cross-knowledge-base ID or a\nread failure, no partial archive is returned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5211,19 +5503,19 @@ const docTemplate = `{
                     "application/zip"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "批量下载知识文件",
+                "summary": "Batch download knowledge files",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "文档ID列表",
+                        "description": "Document IDs",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -5234,7 +5526,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ZIP 压缩包",
+                        "description": "ZIP archive",
                         "schema": {
                             "type": "file"
                         }
@@ -5242,37 +5534,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "429": {
                         "description": "Too Many Requests",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5288,7 +5580,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "上传文件并创建知识条目",
+                "description": "Upload a file and create a knowledge entry",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -5296,71 +5588,71 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "从文件创建知识",
+                "summary": "Create knowledge from a file",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "file",
-                        "description": "上传的文件",
+                        "description": "File to upload",
                         "name": "file",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "自定义文件名",
+                        "description": "Custom file name",
                         "name": "fileName",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "元数据JSON",
+                        "description": "Metadata JSON",
                         "name": "metadata",
                         "in": "formData"
                     },
                     {
                         "type": "boolean",
-                        "description": "启用多模态处理",
+                        "description": "Enable multimodal processing",
                         "name": "enable_multimodel",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "分类ID列表，逗号分隔",
+                        "description": "Comma-separated tag IDs",
                         "name": "tag_ids",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "处理配置JSON（KnowledgeProcessOverrides）",
+                        "description": "Processing config JSON (KnowledgeProcessOverrides)",
                         "name": "process_config",
                         "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "创建的知识",
+                        "description": "Created knowledge",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
-                        "description": "文件重复",
+                        "description": "Duplicate file",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -5379,7 +5671,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回知识库内由文件夹上传形成的目录树，包含每个文件夹的直接文档数与含子目录的总数",
+                "description": "Returns the folder tree formed by folder uploads, with each folder's direct document count and its\ntotal including subfolders",
                 "consumes": [
                     "application/json"
                 ],
@@ -5387,13 +5679,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "获取知识库文件夹目录树",
+                "summary": "Get the knowledge base folder tree",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -5401,16 +5693,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "目录树",
+                        "description": "Folder tree",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5424,7 +5716,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "把一个文件夹及其所有子目录改到新路径。目标路径已存在时两个文件夹合并；不能移动到自身子目录下",
+                "description": "Move a folder and all its subfolders to a new path. If the target path exists, the two folders are\nmerged; a folder cannot move into its own subfolder",
                 "consumes": [
                     "application/json"
                 ],
@@ -5432,19 +5724,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "重命名或移动文件夹",
+                "summary": "Rename or move a folder",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "重命名请求",
+                        "description": "Rename request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -5455,22 +5747,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "重命名成功",
+                        "description": "Renamed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5486,7 +5778,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "手工录入Markdown格式的知识内容",
+                "description": "Enter knowledge content by hand in Markdown",
                 "consumes": [
                     "application/json"
                 ],
@@ -5494,39 +5786,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "手工创建知识",
+                "summary": "Create manual knowledge",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "手工知识内容",
+                        "description": "Manual knowledge content",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ManualKnowledgePayload"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ManualKnowledgePayload"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "创建的知识",
+                        "description": "Created knowledge",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5542,7 +5834,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "从指定URL抓取内容并创建知识条目。当提供 file_name/file_type 或 URL 路径含已知文件扩展名时，自动切换为文件下载模式",
+                "description": "Fetch content from a URL and create a knowledge entry. When file_name/file_type is given or the URL\npath has a known file extension, it switches to file download mode",
                 "consumes": [
                     "application/json"
                 ],
@@ -5550,19 +5842,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "从URL创建知识",
+                "summary": "Create knowledge from a URL",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "URL请求",
+                        "description": "URL request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -5596,20 +5888,20 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的知识",
+                        "description": "Created knowledge",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
-                        "description": "URL重复",
+                        "description": "Duplicate URL",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -5628,18 +5920,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回与源知识库 Type 一致、EmbeddingModelID 一致、非临时且不是自身的目标知识库列表",
+                "description": "Returns the knowledge bases with the same Type and EmbeddingModelID as the source, that are not\ntemporary and not the source itself",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "获取可移动目标知识库列表",
+                "summary": "List move target knowledge bases",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "源知识库 ID",
+                        "description": "Source knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -5647,22 +5939,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "可移动目标列表",
+                        "description": "Move targets",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "知识库不存在",
+                        "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5678,7 +5970,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "切换知识库的置顶状态",
+                "description": "Toggle the pinned state of a knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -5686,13 +5978,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库"
+                    "Knowledge Bases"
                 ],
-                "summary": "置顶/取消置顶知识库",
+                "summary": "Pin or unpin a knowledge base",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -5700,16 +5992,60 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的知识库",
+                        "description": "Updated knowledge base",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "知识库不存在",
+                        "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/knowledge-bases/{id}/profile/generate": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Regenerate the AI description of a knowledge base now, from aggregated document profiles (a\nhand-written description is not overwritten)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Knowledge Bases"
+                ],
+                "summary": "Generate a knowledge base description",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Knowledge base ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Generated knowledge base profile",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Knowledge base type not supported or no model configured",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5722,18 +6058,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取知识库的所有共享记录",
+                "description": "Lists all share records of a knowledge base",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "知识库共享"
+                    "Knowledge Base Sharing"
                 ],
-                "summary": "获取知识库的共享列表",
+                "summary": "List knowledge base shares",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -5743,7 +6079,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ListSharesResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ListSharesResponse"
                         }
                     }
                 }
@@ -5754,7 +6090,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "将知识库共享到指定组织",
+                "description": "Shares a knowledge base with the given organization",
                 "consumes": [
                     "application/json"
                 ],
@@ -5762,24 +6098,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库共享"
+                    "Knowledge Base Sharing"
                 ],
-                "summary": "共享知识库到组织",
+                "summary": "Share knowledge base with organization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "共享信息",
+                        "description": "Share details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ShareKnowledgeBaseRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ShareKnowledgeBaseRequest"
                         }
                     }
                 ],
@@ -5794,7 +6130,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5807,7 +6143,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "更新知识库共享的权限级别",
+                "description": "Updates the permission level of a knowledge base share",
                 "consumes": [
                     "application/json"
                 ],
@@ -5815,31 +6151,31 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识库共享"
+                    "Knowledge Base Sharing"
                 ],
-                "summary": "更新共享权限",
+                "summary": "Update share permission",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "共享记录ID",
+                        "description": "Share record ID",
                         "name": "share_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "权限信息",
+                        "description": "Permission",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UpdateSharePermissionRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UpdateSharePermissionRequest"
                         }
                     }
                 ],
@@ -5854,7 +6190,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5865,22 +6201,22 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "取消知识库的共享",
+                "description": "Removes a knowledge base share",
                 "tags": [
-                    "知识库共享"
+                    "Knowledge Base Sharing"
                 ],
-                "summary": "取消共享",
+                "summary": "Remove share",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "共享记录ID",
+                        "description": "Share record ID",
                         "name": "share_id",
                         "in": "path",
                         "required": true
@@ -5897,7 +6233,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5913,7 +6249,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取知识库下的所有标签及统计信息",
+                "description": "List all tags in a knowledge base with their statistics",
                 "consumes": [
                     "application/json"
                 ],
@@ -5921,48 +6257,48 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "标签管理"
+                    "Tags"
                 ],
-                "summary": "获取标签列表",
+                "summary": "List tags",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "页码",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "关键词搜索",
+                        "description": "Keyword search",
                         "name": "keyword",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "标签列表",
+                        "description": "Tag list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -5976,7 +6312,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "在知识库下创建新标签",
+                "description": "Create a new tag in a knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -5984,19 +6320,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "标签管理"
+                    "Tags"
                 ],
-                "summary": "创建标签",
+                "summary": "Create a tag",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "标签信息",
+                        "description": "Tag info",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6018,16 +6354,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "创建的标签",
+                        "description": "Created tag",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6043,7 +6379,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新标签信息",
+                "description": "Update tag info",
                 "consumes": [
                     "application/json"
                 ],
@@ -6051,26 +6387,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "标签管理"
+                    "Tags"
                 ],
-                "summary": "更新标签",
+                "summary": "Update a tag",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "标签ID (UUID或seq_id)",
+                        "description": "Tag ID (UUID or seq_id)",
                         "name": "tag_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "标签更新信息",
+                        "description": "Tag update",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6081,16 +6417,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的标签",
+                        "description": "Updated tag",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6104,7 +6440,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除标签，可使用force=true强制删除被引用的标签，content_only=true仅删除标签下的内容而保留标签本身",
+                "description": "Delete a tag. force=true deletes a tag that is still referenced; content_only=true deletes only the\ncontent under the tag and keeps the tag",
                 "consumes": [
                     "application/json"
                 ],
@@ -6112,38 +6448,38 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "标签管理"
+                    "Tags"
                 ],
-                "summary": "删除标签",
+                "summary": "Delete a tag",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识库ID",
+                        "description": "Knowledge base ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "标签ID (UUID或seq_id)",
+                        "description": "Tag ID (UUID or seq_id)",
                         "name": "tag_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "boolean",
-                        "description": "强制删除",
+                        "description": "Force delete",
                         "name": "force",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "仅删除内容，保留标签",
+                        "description": "Delete only the content, keep the tag",
                         "name": "content_only",
                         "in": "query"
                     },
                     {
-                        "description": "删除选项",
+                        "description": "Delete options",
                         "name": "body",
                         "in": "body",
                         "schema": {
@@ -6153,16 +6489,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6178,7 +6514,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "基于知识库的问答（使用LLM总结），支持SSE流式响应",
+                "description": "Question answering over knowledge bases (LLM summarization), with SSE streaming",
                 "consumes": [
                     "application/json"
                 ],
@@ -6186,19 +6522,19 @@ const docTemplate = `{
                     "text/event-stream"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "知识问答",
+                "summary": "Knowledge QA",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "问答请求",
+                        "description": "QA request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6213,23 +6549,23 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public: direct links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "问答结果（SSE流）",
+                        "description": "QA result (SSE stream)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6245,7 +6581,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "在知识库中搜索（不使用LLM总结）",
+                "description": "Searches knowledge bases without LLM summarization. Uses the same retrieval pipeline as in-product QA\n(recall, rerank, merge) and is the preferred entry point for external retrieval; recall parameters and\nrerank can be overridden",
                 "consumes": [
                     "application/json"
                 ],
@@ -6253,12 +6589,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "知识搜索",
+                "summary": "Knowledge search",
                 "parameters": [
                     {
-                        "description": "搜索请求",
+                        "description": "Search request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6273,23 +6609,23 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public: direct links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "搜索结果",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6305,7 +6641,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID列表批量获取知识条目。可选 kb_id：指定时按该知识库校验权限并用于共享知识库的空间解析；可选 agent_id：使用共享智能体时传此参数，后端按智能体所属空间查询（用于刷新后恢复共享知识库下的文件）",
+                "description": "Get knowledge entries by ID list. Optional kb_id: checks permission against that knowledge base and\nresolves the workspace of a shared knowledge base. Optional agent_id: pass it when using a shared\nagent; the backend queries in the agent's workspace (used to restore files of a shared knowledge base\nafter a refresh)",
                 "consumes": [
                     "application/json"
                 ],
@@ -6313,9 +6649,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "批量获取知识",
+                "summary": "Batch get knowledge",
                 "parameters": [
                     {
                         "type": "array",
@@ -6323,36 +6659,36 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "description": "知识ID列表",
+                        "description": "Knowledge IDs",
                         "name": "ids",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "可选，知识库ID（用于共享知识库时指定范围）",
+                        "description": "Optional knowledge base ID (scopes the lookup for a shared knowledge base)",
                         "name": "kb_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "可选，共享智能体ID（用于按智能体空间批量拉取文件详情）",
+                        "description": "Optional shared agent ID (fetches file details in the agent's workspace)",
                         "name": "agent_id",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "知识列表",
+                        "description": "Knowledge list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6368,7 +6704,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "按 ID 列表批量删除单个知识库下的多个知识条目",
+                "description": "Delete several knowledge entries in one knowledge base by ID list",
                 "consumes": [
                     "application/json"
                 ],
@@ -6376,12 +6712,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "批量删除知识",
+                "summary": "Batch delete knowledge",
                 "parameters": [
                     {
-                        "description": "批量删除请求",
+                        "description": "Batch delete request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6392,22 +6728,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6423,7 +6759,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "按 ID 列表批量重新解析单个知识库下的多个知识条目",
+                "description": "Reparse several knowledge entries in one knowledge base by ID list",
                 "consumes": [
                     "application/json"
                 ],
@@ -6431,12 +6767,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "批量重新解析知识",
+                "summary": "Batch reparse knowledge",
                 "parameters": [
                     {
-                        "description": "批量重解析请求",
+                        "description": "Batch reparse request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6447,22 +6783,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "任务已提交",
+                        "description": "Task submitted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6478,7 +6814,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量修改知识条目所属文件夹。文件夹由路径推导而来，因此目标路径不存在时会自动创建；空路径表示知识库顶层。仅调整归类，不会重新解析文档",
+                "description": "Change the folder of several knowledge entries. Folders are derived from paths, so a missing target\npath is created; an empty path is the knowledge base top level. Only the placement changes; documents\nare not reparsed",
                 "consumes": [
                     "application/json"
                 ],
@@ -6486,12 +6822,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "移动知识到文件夹",
+                "summary": "Move knowledge to a folder",
                 "parameters": [
                     {
-                        "description": "移动请求",
+                        "description": "Move request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6502,22 +6838,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "移动成功",
+                        "description": "Moved",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6533,7 +6869,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新知识分块的图像信息",
+                "description": "Update the image info of a knowledge chunk",
                 "consumes": [
                     "application/json"
                 ],
@@ -6541,26 +6877,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "更新图像信息",
+                "summary": "Update image info",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "分块ID",
+                        "description": "Chunk ID",
                         "name": "chunk_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "图像信息",
+                        "description": "Image info",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6576,16 +6912,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6601,7 +6937,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新手工录入的Markdown知识内容",
+                "description": "Update hand-entered Markdown knowledge content",
                 "consumes": [
                     "application/json"
                 ],
@@ -6609,39 +6945,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "更新手工知识",
+                "summary": "Update manual knowledge",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "手工知识内容",
+                        "description": "Manual knowledge content",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ManualKnowledgePayload"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ManualKnowledgePayload"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的知识",
+                        "description": "Updated knowledge",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6657,7 +6993,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "将一条或多条知识从源知识库移动到目标知识库（异步），返回任务 ID 用于查询进度",
+                "description": "Move one or more knowledge entries from the source to the target knowledge base (async); returns a task\nID for querying progress",
                 "consumes": [
                     "application/json"
                 ],
@@ -6665,9 +7001,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识"
+                    "Knowledge"
                 ],
-                "summary": "移动知识到其他知识库",
+                "summary": "Move knowledge to another knowledge base",
                 "parameters": [
                     {
                         "description": "{source_kb_id, target_kb_id, knowledge_ids}",
@@ -6681,15 +7017,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "任务信息",
+                        "description": "Task info",
                         "schema": {
                             "$ref": "#/definitions/internal_handler.MoveKnowledgeResponse"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6705,18 +7041,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "按任务 ID 查询移动进度",
+                "description": "Query move progress by task ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "知识"
+                    "Knowledge"
                 ],
-                "summary": "获取知识移动进度",
+                "summary": "Get knowledge move progress",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "移动任务 ID",
+                        "description": "Move task ID",
                         "name": "task_id",
                         "in": "path",
                         "required": true
@@ -6724,15 +7060,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "进度信息",
+                        "description": "Progress",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KnowledgeMoveProgress"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeMoveProgress"
                         }
                     },
                     "404": {
-                        "description": "任务不存在",
+                        "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6811,7 +7147,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6827,7 +7163,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "批量更新知识条目的标签。可选 kb_id：指定时按该知识库校验编辑权限并用于共享知识库的空间解析",
+                "description": "Update the tags of several knowledge entries. Optional kb_id: checks edit permission against that\nknowledge base and resolves the workspace of a shared knowledge base",
                 "consumes": [
                     "application/json"
                 ],
@@ -6835,12 +7171,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "批量更新知识标签",
+                "summary": "Batch update knowledge tags",
                 "parameters": [
                     {
-                        "description": "标签更新请求（updates 必填，kb_id 可选）",
+                        "description": "Tag update request (updates required, kb_id optional)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6851,16 +7187,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6876,7 +7212,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取知识条目详情",
+                "description": "Get a knowledge entry by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -6884,13 +7220,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "获取知识详情",
+                "summary": "Get knowledge details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -6898,22 +7234,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "知识详情",
+                        "description": "Knowledge details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "知识不存在",
+                        "description": "Knowledge not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6927,7 +7263,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "部分更新知识条目（标题/描述/自定义元数据）；未传字段保持不变，显式传空 description 可清空摘要",
+                "description": "Partially update a knowledge entry (title/description/custom metadata). Omitted fields are unchanged;\nan explicit empty description clears the summary",
                 "consumes": [
                     "application/json"
                 ],
@@ -6935,19 +7271,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "更新知识",
+                "summary": "Update knowledge",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新字段（均可选）",
+                        "description": "Fields to update (all optional)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6958,16 +7294,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -6981,7 +7317,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID异步删除知识条目。请求会被入队到与批量删除相同的异步管道（asynq）；\n接口返回 200 仅表示任务已提交（响应 data.task_id 为任务 ID），实际删除由后台 worker 完成。",
+                "description": "Delete a knowledge entry by ID, asynchronously. The request is queued on the same async pipeline\n(asynq) as batch delete;\na 200 only means the task was submitted (data.task_id is the task ID); a background worker does the\ndeletion.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6989,13 +7325,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "删除知识",
+                "summary": "Delete knowledge",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -7003,16 +7339,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "任务已提交，返回 task_id",
+                        "description": "Task submitted, returns task_id",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7028,7 +7364,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "取消进行中的知识解析任务。当前已写入的 chunk / 索引保留，可通过 reparse 接口重新触发解析。已完成 / 已失败 / 删除中的知识不支持取消。",
+                "description": "Cancel an in-progress knowledge parse task. Chunks and indexes already written are kept; the reparse\nendpoint can start parsing again. Knowledge that is completed, failed or being deleted cannot be\ncancelled.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7036,13 +7372,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "取消知识解析",
+                "summary": "Cancel knowledge parsing",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -7050,28 +7386,28 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "取消已提交",
+                        "description": "Cancellation submitted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "状态不支持取消",
+                        "description": "Status does not allow cancellation",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "知识不存在",
+                        "description": "Knowledge not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7087,7 +7423,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "下载知识条目关联的原始文件",
+                "description": "Download the original file of a knowledge entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -7095,13 +7431,13 @@ const docTemplate = `{
                     "application/octet-stream"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "下载知识文件",
+                "summary": "Download a knowledge file",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -7109,15 +7445,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "文件内容",
+                        "description": "File content",
                         "schema": {
                             "type": "file"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7133,7 +7469,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回知识条目关联的原始文件，Content-Type 根据文件类型设置，用于浏览器内嵌预览",
+                "description": "Returns the original file of a knowledge entry with a Content-Type set from the file type, for inline\npreview in the browser",
                 "consumes": [
                     "application/json"
                 ],
@@ -7144,13 +7480,13 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "预览知识文件",
+                "summary": "Preview a knowledge file",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -7158,15 +7494,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "文件内容",
+                        "description": "File content",
                         "schema": {
                             "type": "file"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7182,7 +7518,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除知识中现有的文档内容并重新解析，使用异步任务方式处理",
+                "description": "Delete the existing document content of a knowledge entry and parse it again, as an async task",
                 "consumes": [
                     "application/json"
                 ],
@@ -7190,19 +7526,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "知识管理"
+                    "Knowledge"
                 ],
-                "summary": "重新解析知识",
+                "summary": "Reparse knowledge",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "知识ID",
+                        "description": "Knowledge ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "可选的处理配置覆盖：{\\",
+                        "description": "Optional processing config override: {\\",
                         "name": "body",
                         "in": "body",
                         "schema": {
@@ -7212,22 +7548,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "重新解析任务已提交",
+                        "description": "Reparse task submitted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7302,13 +7638,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiFolderListResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolderListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7344,7 +7680,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiFolderCreateRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolderCreateRequest"
                         }
                     }
                 ],
@@ -7352,19 +7688,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiFolder"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolder"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7409,7 +7745,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiFolderUpdateRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolderUpdateRequest"
                         }
                     }
                 ],
@@ -7417,25 +7753,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiFolder"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolder"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7474,13 +7810,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7544,7 +7880,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiGraphData"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiGraphData"
                         }
                     }
                 }
@@ -7596,7 +7932,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiIndexResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiIndexResponse"
                         }
                     }
                 }
@@ -7644,7 +7980,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageIssue"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageIssue"
                             }
                         }
                     }
@@ -7707,7 +8043,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7741,7 +8077,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_application_service.WikiLintReport"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_application_service.WikiLintReport"
                         }
                     }
                 }
@@ -7779,7 +8115,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageMoveRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageMoveRequest"
                         }
                     }
                 ],
@@ -7787,13 +8123,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7869,13 +8205,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageListResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7911,7 +8247,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                         }
                     }
                 ],
@@ -7919,13 +8255,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -7966,13 +8302,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageDetail"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageDetail"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8015,7 +8351,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageUpdateRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageUpdateRequest"
                         }
                     }
                 ],
@@ -8023,25 +8359,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8080,7 +8416,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8152,7 +8488,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageRevertRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageRevertRequest"
                         }
                     }
                 ],
@@ -8160,25 +8496,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8237,13 +8573,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageRevisionListResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageRevisionListResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8292,7 +8628,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                             }
                         }
                     }
@@ -8327,7 +8663,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiStats"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiStats"
                         }
                     }
                 }
@@ -8347,12 +8683,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "获取 MCP 端点列表",
+                "summary": "List MCP endpoints",
                 "responses": {
                     "200": {
-                        "description": "端点列表",
+                        "description": "Endpoint list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8369,7 +8705,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "为当前工作空间发布一个 MCP 端点，响应中的 token 只返回一次",
+                "description": "Publish an MCP endpoint for the current workspace. The token in the response is returned only once",
                 "consumes": [
                     "application/json"
                 ],
@@ -8377,12 +8713,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "创建 MCP 端点",
+                "summary": "Create MCP endpoint",
                 "parameters": [
                     {
-                        "description": "端点配置：name、description、enabled、knowledge_base_ids、tools 等",
+                        "description": "Endpoint config (name, description, knowledge_base_ids, tools...)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -8393,14 +8729,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的端点，含一次性 token",
+                        "description": "Created endpoint, with its one-time token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8419,17 +8755,17 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回工作空间 MCP 端点可勾选的工具清单、分组和默认勾选项",
+                "description": "Return the tools a workspace MCP endpoint can expose, their groups and the default selection",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "获取 MCP 端点工具目录",
+                "summary": "Get MCP endpoint tool catalog",
                 "responses": {
                     "200": {
-                        "description": "工具目录",
+                        "description": "Tool catalog",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8452,13 +8788,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "获取 MCP 端点详情",
+                "summary": "Get MCP endpoint details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "端点 ID",
+                        "description": "Endpoint ID",
                         "name": "endpoint_id",
                         "in": "path",
                         "required": true
@@ -8466,14 +8802,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "端点详情",
+                        "description": "Endpoint details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "端点不存在",
+                        "description": "Endpoint not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8497,19 +8833,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "更新 MCP 端点",
+                "summary": "Update MCP endpoint",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "端点 ID",
+                        "description": "Endpoint ID",
                         "name": "endpoint_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "要更新的字段，未提供的字段保持不变",
+                        "description": "Fields to update; omitted fields are unchanged",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -8520,21 +8856,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的端点",
+                        "description": "Updated endpoint",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "端点不存在",
+                        "description": "Endpoint not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8555,13 +8891,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "删除 MCP 端点",
+                "summary": "Delete MCP endpoint",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "端点 ID",
+                        "description": "Endpoint ID",
                         "name": "endpoint_id",
                         "in": "path",
                         "required": true
@@ -8569,14 +8905,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "端点不存在",
+                        "description": "Endpoint not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8595,18 +8931,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "生成新令牌并立即作废旧令牌，响应中的 token 只返回一次",
+                "description": "Issue a new token and revoke the old one immediately. The token in the response is returned only once",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "MCP端点"
+                    "MCP Endpoint"
                 ],
-                "summary": "轮换 MCP 端点令牌",
+                "summary": "Rotate MCP endpoint token",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "端点 ID",
+                        "description": "Endpoint ID",
                         "name": "endpoint_id",
                         "in": "path",
                         "required": true
@@ -8614,14 +8950,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "含新 token 的端点",
+                        "description": "Endpoint with the new token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "端点不存在",
+                        "description": "Endpoint not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -8640,7 +8976,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取当前空间的所有MCP服务（含已保存工具目录数量）",
+                "description": "List all MCP services in the current workspace, with saved tool catalog counts",
                 "consumes": [
                     "application/json"
                 ],
@@ -8648,21 +8984,41 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "获取MCP服务列表",
+                "summary": "List MCP services",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent ID; needs agent_source_tenant_id",
+                        "name": "agent_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Shared agent source workspace",
+                        "name": "agent_source_tenant_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "MCP服务列表",
+                        "description": "MCP service list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed to use this shared agent",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8676,7 +9032,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "创建新的MCP服务配置",
+                "description": "Create a new MCP service config",
                 "consumes": [
                     "application/json"
                 ],
@@ -8684,32 +9040,32 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "创建MCP服务",
+                "summary": "Create MCP service",
                 "parameters": [
                     {
-                        "description": "MCP服务配置",
+                        "description": "MCP service config",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPService"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPService"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "创建的MCP服务",
+                        "description": "Created MCP service",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8717,27 +9073,27 @@ const docTemplate = `{
         },
         "/mcp-services/oauth/callback": {
             "get": {
-                "description": "接收授权服务器回调并完成 code 交换，随后重定向回前端",
+                "description": "Receive the authorization server callback, exchange the code, then redirect back to the frontend",
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "MCP OAuth 回调",
+                "summary": "MCP OAuth callback",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "授权码",
+                        "description": "Authorization code",
                         "name": "code",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "状态参数",
+                        "description": "State parameter",
                         "name": "state",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "授权错误码",
+                        "description": "Authorization error code",
                         "name": "error",
                         "in": "query"
                     }
@@ -8759,7 +9115,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取MCP服务详情",
+                "description": "Get an MCP service by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -8767,13 +9123,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "获取MCP服务详情",
+                "summary": "Get MCP service details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -8781,16 +9137,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "MCP服务详情",
+                        "description": "MCP service details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "服务不存在",
+                        "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8804,7 +9160,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新MCP服务配置",
+                "description": "Update an MCP service config",
                 "consumes": [
                     "application/json"
                 ],
@@ -8812,19 +9168,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "更新MCP服务",
+                "summary": "Update MCP service",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新字段",
+                        "description": "Fields to update",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -8835,16 +9191,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的MCP服务",
+                        "description": "Updated MCP service",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8858,7 +9214,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定的MCP服务",
+                "description": "Delete the specified MCP service",
                 "consumes": [
                     "application/json"
                 ],
@@ -8866,13 +9222,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "删除MCP服务",
+                "summary": "Delete MCP service",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -8880,16 +9236,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8905,7 +9261,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "为指定字段写入新凭据；省略的字段保留原值；空字符串视为 no-op（如需删除请用 DELETE）",
+                "description": "Write new credentials for the given fields. Omitted fields keep their values; an empty string is a\nno-op (use DELETE to remove)",
                 "consumes": [
                     "application/json"
                 ],
@@ -8913,13 +9269,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "设置 MCP 服务凭据",
+                "summary": "Set MCP service credentials",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP 服务 ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -8937,22 +9293,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "写入后的凭据状态",
+                        "description": "Credential status after the write",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "服务不存在",
+                        "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -8968,25 +9324,25 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定字段的存储凭据；删除已为空的字段是幂等的",
+                "description": "Delete the stored credential for the given field. Deleting an empty field is idempotent",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "移除 MCP 服务的单个凭据字段",
+                "summary": "Remove one MCP service credential field",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP 服务 ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "字段名（api_key | token）",
+                        "description": "Field name (api_key | token)",
                         "name": "field",
                         "in": "path",
                         "required": true
@@ -8997,15 +9353,15 @@ const docTemplate = `{
                         "description": "No Content"
                     },
                     "400": {
-                        "description": "字段名非法",
+                        "description": "Invalid field name",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "服务不存在",
+                        "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9021,7 +9377,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "只读数据库，不连接上游。未同步时 data 为 null；连接配置变更后 stale 为 true。OAuth 目录按当前授权主体隔离。",
+                "description": "Reads the database only and never contacts upstream. data is null before the first sync; stale is true\nafter the connection config changes. OAuth catalogs are isolated per authorized principal.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9029,13 +9385,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "读取已保存的 MCP 工具目录",
+                "summary": "Read the saved MCP tool catalog",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9043,28 +9399,28 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "目录快照",
+                        "description": "Catalog snapshot",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
-                        "description": "OAuth 目录缺少授权主体",
+                        "description": "OAuth catalog has no authorized principal",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "服务不存在",
+                        "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9080,7 +9436,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "显式连接上游并原子替换完整目录。OAuth 服务写入当前用户的快照，Viewer 及以上可调用；静态认证写入租户共享快照，需要 Admin。",
+                "description": "Connects upstream explicitly and atomically replaces the whole catalog. An OAuth service writes the\ncurrent user's snapshot and needs Viewer or above; static auth writes the workspace-shared snapshot and\nneeds Admin.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9088,13 +9444,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "同步 MCP 工具目录",
+                "summary": "Sync the MCP tool catalog",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9102,46 +9458,46 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "同步后的目录快照",
+                        "description": "Catalog snapshot after sync",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "目录不完整或校验失败",
+                        "description": "Catalog incomplete or failed validation",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
-                        "description": "OAuth 目录缺少授权主体",
+                        "description": "OAuth catalog has no authorized principal",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "静态认证目录需要管理员刷新",
+                        "description": "A static-auth catalog must be refreshed by an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "服务不存在",
+                        "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
-                        "description": "刷新期间连接配置已变更",
+                        "description": "Connection config changed during the refresh",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "503": {
-                        "description": "元数据存储不可用",
+                        "description": "Metadata store unavailable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9154,7 +9510,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "对使用 OAuth 的 MCP 服务执行发现与动态客户端注册，返回浏览器应跳转的授权地址（当前用户维度）",
+                "description": "Run discovery and dynamic client registration for an OAuth MCP service and return the authorization URL\nthe browser should open (per current user)",
                 "consumes": [
                     "application/json"
                 ],
@@ -9162,13 +9518,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "发起 MCP OAuth 授权",
+                "summary": "Start MCP OAuth authorization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP 服务 ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9195,7 +9551,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9208,25 +9564,25 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回当前用户的 OAuth Token 生命周期状态；传 authorization_attempt 时只检查本次授权流程",
+                "description": "Return the lifecycle status of the current user's OAuth token. With authorization_attempt, only that\nauthorization flow is checked",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "查询 MCP OAuth 授权状态",
+                "summary": "Get MCP OAuth authorization status",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP 服务 ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "本次授权尝试 ID；传入后不会接受历史 Token",
+                        "description": "Authorization attempt ID; rejects earlier tokens",
                         "name": "authorization_attempt",
                         "in": "query"
                     }
@@ -9249,18 +9605,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "删除当前用户对指定 MCP 服务的 OAuth 令牌",
+                "description": "Delete the current user's OAuth token for the specified MCP service",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "撤销 MCP OAuth 授权",
+                "summary": "Revoke MCP OAuth authorization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP 服务 ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9283,7 +9639,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取MCP服务提供的资源列表",
+                "description": "List the resources the MCP service provides",
                 "consumes": [
                     "application/json"
                 ],
@@ -9291,13 +9647,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "获取MCP服务资源列表",
+                "summary": "List MCP service resources",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9305,16 +9661,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "资源列表",
+                        "description": "Resource list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9330,7 +9686,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "测试MCP服务是否可以正常连接",
+                "description": "Test whether the MCP service can be reached",
                 "consumes": [
                     "application/json"
                 ],
@@ -9338,13 +9694,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "测试MCP服务连接",
+                "summary": "Test MCP service connection",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9352,16 +9708,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "测试结果",
+                        "description": "Test result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9377,7 +9733,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "为指定 MCP 服务下的某个工具更新启用状态和/或人工审批要求。至少提供 require_approval 或 enabled 之一；省略的字段保持原值。",
+                "description": "Update the enabled state and/or human approval requirement of one tool under the specified MCP service.\nProvide at least one of require_approval or enabled; omitted fields keep their values.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9385,20 +9741,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "设置 MCP 工具策略",
+                "summary": "Set MCP tool policy",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP 服务 ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "工具名",
+                        "description": "Tool name",
                         "name": "tool_name",
                         "in": "path",
                         "required": true
@@ -9416,22 +9772,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新结果",
+                        "description": "Update result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "MCP 服务或工具不存在",
+                        "description": "MCP service or tool not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9447,7 +9803,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取MCP服务提供的工具列表",
+                "description": "List the tools the MCP service provides",
                 "consumes": [
                     "application/json"
                 ],
@@ -9455,13 +9811,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "MCP服务"
+                    "MCP Services"
                 ],
-                "summary": "获取MCP服务工具列表",
+                "summary": "List MCP service tools",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "MCP服务ID",
+                        "description": "MCP service ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9469,16 +9825,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "工具列表",
+                        "description": "Tool list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9557,7 +9913,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9601,7 +9957,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not set",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9647,7 +10003,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9691,7 +10047,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not set",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9704,18 +10060,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回当前登录用户的待接受邀请（默认仅 pending），用于头像入口和 /invitations 收件箱页。",
+                "description": "Returns the signed-in user's invitations (pending only by default), for the avatar entry and the\n/invitations inbox page.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "我的邀请"
+                    "My Invitations"
                 ],
-                "summary": "列出我的待接受邀请",
+                "summary": "List my pending invitations",
                 "parameters": [
                     {
                         "type": "boolean",
-                        "description": "是否包含已处理 / 已过期等终止态行（默认 false）",
+                        "description": "Include handled/expired terminal rows (default false)",
                         "name": "include_terminal",
                         "in": "query"
                     }
@@ -9738,7 +10094,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "已登录用户用共享邀请链接 token 加入空间，不创建新账号；对已是成员的用户幂等。",
+                "description": "A signed-in user joins a workspace with a shared invitation link token, without creating an account;\nidempotent for existing members.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9746,12 +10102,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "我的邀请"
+                    "My Invitations"
                 ],
-                "summary": "通过共享链接加入空间",
+                "summary": "Join workspace with a shared link",
                 "parameters": [
                     {
-                        "description": "邀请 token",
+                        "description": "Invitation token",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -9769,9 +10125,9 @@ const docTemplate = `{
                         }
                     },
                     "410": {
-                        "description": "链接无效或已撤销",
+                        "description": "Link is invalid or revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -9784,14 +10140,14 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "轻量级 endpoint，返回当前登录用户的 pending 邀请数，用于头像旁的角标轮询。",
+                "description": "Lightweight endpoint returning the signed-in user's pending invitation count, polled for the badge next\nto the avatar.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "我的邀请"
+                    "My Invitations"
                 ],
-                "summary": "获取我的待处理邀请数",
+                "summary": "Get my pending invitation count",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -9810,18 +10166,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "当前登录用户接受一条 pending 邀请；服务端会同时写入 tenant_members 行。",
+                "description": "The signed-in user accepts a pending invitation; the server writes the tenant_members row in the same\nstep.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "我的邀请"
+                    "My Invitations"
                 ],
-                "summary": "接受邀请",
+                "summary": "Accept invitation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "邀请 ID",
+                        "description": "Invitation ID",
                         "name": "inv_id",
                         "in": "path",
                         "required": true
@@ -9845,18 +10201,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "当前登录用户拒绝一条 pending 邀请；不创建 tenant_members 行。",
+                "description": "The signed-in user declines a pending invitation; no tenant_members row is created.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "我的邀请"
+                    "My Invitations"
                 ],
-                "summary": "拒绝邀请",
+                "summary": "Decline invitation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "邀请 ID",
+                        "description": "Invitation ID",
                         "name": "inv_id",
                         "in": "path",
                         "required": true
@@ -9880,17 +10236,17 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "合并意思接近的条目、归档到期事项，不等待每日后台整理",
+                "description": "Merges near-duplicate entries and archives expired items without waiting for the daily background run",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "立刻整理我的记忆",
+                "summary": "Consolidate my memories now",
                 "responses": {
                     "200": {
-                        "description": "整理结果",
+                        "description": "Consolidation result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -9906,32 +10262,32 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回当前用户回答里反复引用的文档，次数未达习惯门槛的不展示",
+                "description": "Returns documents repeatedly cited in the current user's answers; documents below the habit threshold\nare omitted",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "列出常用资料",
+                "summary": "List frequently used documents",
                 "parameters": [
                     {
                         "type": "integer",
                         "default": 50,
-                        "description": "每页条数",
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "偏移量",
+                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "文档列表",
+                        "description": "Documents",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -9947,18 +10303,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "删除一条文档亲和度计数，之后检索不再因为这份文档而加权",
+                "description": "Deletes a document affinity count, so retrieval no longer boosts that document",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "停止用某份文档做个性化检索",
+                "summary": "Stop personalizing retrieval with a document",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "亲和度 ID",
+                        "description": "Affinity ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -9966,7 +10322,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -9982,17 +10338,17 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "以 JSON 导出当前用户的全部记忆",
+                "description": "Exports all of the current user's memories as JSON",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "导出我的记忆",
+                "summary": "Export my memories",
                 "responses": {
                     "200": {
-                        "description": "记忆导出",
+                        "description": "Memory export",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10008,14 +10364,14 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "分页返回当前用户的记忆条目，可按状态过滤",
+                "description": "Returns the current user's memories, paginated, optionally filtered by status",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "列出我的记忆",
+                "summary": "List my memories",
                 "parameters": [
                     {
                         "enum": [
@@ -10025,27 +10381,27 @@ const docTemplate = `{
                             "pending"
                         ],
                         "type": "string",
-                        "description": "状态过滤",
+                        "description": "Status filter",
                         "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 50,
-                        "description": "每页条数",
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "偏移量",
+                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "记忆列表",
+                        "description": "Memories",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10059,7 +10415,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "手动添加一条长期记忆",
+                "description": "Adds a long-term memory manually",
                 "consumes": [
                     "application/json"
                 ],
@@ -10067,12 +10423,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "新增一条记忆",
+                "summary": "Create a memory",
                 "parameters": [
                     {
-                        "description": "记忆内容",
+                        "description": "Memory content",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10083,7 +10439,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "新增的记忆",
+                        "description": "Created memory",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10097,17 +10453,17 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "永久删除当前用户的全部记忆",
+                "description": "Permanently deletes all of the current user's memories",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "清空我的记忆",
+                "summary": "Clear my memories",
                 "responses": {
                     "200": {
-                        "description": "清空成功",
+                        "description": "Cleared",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10123,7 +10479,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "修改记忆内容与重要度，修改后该条记忆不会被后台抽取覆盖",
+                "description": "Updates a memory's content and importance; an edited memory is never overwritten by background\nextraction",
                 "consumes": [
                     "application/json"
                 ],
@@ -10131,19 +10487,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "修改一条记忆",
+                "summary": "Update a memory",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "记忆ID",
+                        "description": "Memory ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "记忆内容",
+                        "description": "Memory content",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10154,7 +10510,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的记忆",
+                        "description": "Updated memory",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10168,18 +10524,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "永久删除一条记忆",
+                "description": "Permanently deletes a memory",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "删除一条记忆",
+                "summary": "Delete a memory",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "记忆ID",
+                        "description": "Memory ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10187,7 +10543,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10203,18 +10559,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "接受系统推断的记忆，使其开始生效",
+                "description": "Accepts a memory the system inferred, so it takes effect",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "确认一条推断出的记忆",
+                "summary": "Confirm an inferred memory",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "记忆 ID",
+                        "description": "Memory ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10222,7 +10578,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "确认成功",
+                        "description": "Confirmed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10238,18 +10594,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "拒绝系统推断的记忆，并记住这次拒绝",
+                "description": "Rejects a memory the system inferred and records the rejection",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "否决一条推断出的记忆",
+                "summary": "Reject an inferred memory",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "记忆 ID",
+                        "description": "Memory ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10257,7 +10613,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "否决成功",
+                        "description": "Rejected",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10273,17 +10629,17 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回合并后的记忆开关状态（空间级 + 个人级）与记忆条数",
+                "description": "Returns the effective memory switch (workspace and personal) and the memory count",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "获取我的记忆设置",
+                "summary": "Get my memory settings",
                 "responses": {
                     "200": {
-                        "description": "记忆设置",
+                        "description": "Memory settings",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10297,7 +10653,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "开启或关闭当前用户自己的长期记忆",
+                "description": "Turns long-term memory on or off for the current user",
                 "consumes": [
                     "application/json"
                 ],
@@ -10305,12 +10661,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "更新我的记忆设置",
+                "summary": "Update my memory settings",
                 "parameters": [
                     {
-                        "description": "设置",
+                        "description": "Settings",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10321,7 +10677,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的设置",
+                        "description": "Updated settings",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10337,32 +10693,32 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回已计数、尚未提升为长期关注的主题，以及距离阈值还差几次",
+                "description": "Returns counted topics not yet promoted to a long-term interest, with how many more mentions each needs",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "列出正在观察的主题",
+                "summary": "List observed topics",
                 "parameters": [
                     {
                         "type": "integer",
                         "default": 50,
-                        "description": "每页条数",
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "偏移量",
+                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "主题列表",
+                        "description": "Topics",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10378,18 +10734,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "删除尚未提升的主题计数，并记住这次拒绝，之后不会再自动记为长期关注",
+                "description": "Deletes the count of an unpromoted topic and records the rejection, so it is never promoted\nautomatically",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "停止跟踪一个主题",
+                "summary": "Stop tracking a topic",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "主题 ID",
+                        "description": "Topic ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10397,7 +10753,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10413,18 +10769,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "不等待剩余次数，把正在观察的主题提升为一条长期关注记忆",
+                "description": "Promotes an observed topic to a long-term interest memory without waiting for the remaining mentions",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "长期记忆"
+                    "Long-term Memory"
                 ],
-                "summary": "立即记为长期关注",
+                "summary": "Promote to long-term interest now",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "主题 ID",
+                        "description": "Topic ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10432,7 +10788,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "新增的记忆",
+                        "description": "Created memory",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10451,7 +10807,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取聊天历史知识库的统计信息（已索引消息数、知识库大小等）",
+                "description": "Gets statistics for the chat history knowledge base (indexed message count, knowledge base size and so\non)",
                 "consumes": [
                     "application/json"
                 ],
@@ -10459,12 +10815,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "消息"
+                    "Messages"
                 ],
-                "summary": "获取聊天历史知识库统计",
+                "summary": "Get chat history knowledge base stats",
                 "responses": {
                     "200": {
-                        "description": "统计信息",
+                        "description": "Statistics",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10483,7 +10839,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "通过关键词和/或向量相似度搜索历史对话记录，支持关键词、向量、混合三种模式",
+                "description": "Searches past conversations by keyword and/or vector similarity, in keyword, vector or hybrid mode",
                 "consumes": [
                     "application/json"
                 ],
@@ -10491,12 +10847,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "消息"
+                    "Messages"
                 ],
-                "summary": "搜索历史对话",
+                "summary": "Search chat history",
                 "parameters": [
                     {
-                        "description": "搜索请求",
+                        "description": "Search request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10507,16 +10863,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "搜索结果",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10532,7 +10888,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "加载会话的消息历史，支持分页和时间筛选",
+                "description": "Loads a session's message history, with pagination and time filtering",
                 "consumes": [
                     "application/json"
                 ],
@@ -10540,13 +10896,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "消息"
+                    "Messages"
                 ],
-                "summary": "加载消息历史",
+                "summary": "Load message history",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
@@ -10554,13 +10910,13 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 20,
-                        "description": "返回数量",
+                        "description": "Number to return",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "在此时间之前的消息（RFC3339Nano格式）",
+                        "description": "Messages before this time (RFC3339Nano)",
                         "name": "before_time",
                         "in": "query"
                     },
@@ -10571,23 +10927,23 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public: direct links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "消息列表",
+                        "description": "Message list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10603,7 +10959,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "从会话中删除指定消息",
+                "description": "Deletes the given message from a session",
                 "consumes": [
                     "application/json"
                 ],
@@ -10611,20 +10967,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "消息"
+                    "Messages"
                 ],
-                "summary": "删除消息",
+                "summary": "Delete a message",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "消息ID",
+                        "description": "Message ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10632,16 +10988,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10657,7 +11013,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取当前空间的所有模型",
+                "description": "List all models in the current workspace",
                 "consumes": [
                     "application/json"
                 ],
@@ -10665,21 +11021,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "模型管理"
+                    "Models"
                 ],
-                "summary": "获取模型列表",
+                "summary": "List models",
                 "responses": {
                     "200": {
-                        "description": "模型列表",
+                        "description": "Model list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10693,7 +11049,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "创建新的模型配置",
+                "description": "Create a new model config",
                 "consumes": [
                     "application/json"
                 ],
@@ -10701,12 +11057,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "模型管理"
+                    "Models"
                 ],
-                "summary": "创建模型",
+                "summary": "Create model",
                 "parameters": [
                     {
-                        "description": "模型信息",
+                        "description": "Model details",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10717,16 +11073,75 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的模型",
+                        "description": "Created model",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/models/catalog/resolve": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Return the catalog resolution (protocol, thinking levels, context, etc.) for a provider, model name,\nBase URL and extra_config, shown live in the model editor",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Models"
+                ],
+                "summary": "Resolve a model's effective connection config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider ID",
+                        "name": "provider",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Model name",
+                        "name": "model",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Base URL",
+                        "name": "base_url",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Model type",
+                        "name": "model_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resolution result",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -10742,7 +11157,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据模型类型获取支持的厂商列表及配置信息",
+                "description": "Get the supported provider definitions for a model type (icon, default URL, extra fields, built-in\nmodel catalog and thinking support)",
                 "consumes": [
                     "application/json"
                 ],
@@ -10750,20 +11165,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "模型管理"
+                    "Models"
                 ],
-                "summary": "获取模型厂商列表",
+                "summary": "List model providers",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "模型类型 (chat, embedding, rerank, vllm)",
+                        "description": "Model type (chat, embedding, rerank, vllm, asr)",
                         "name": "model_type",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "厂商列表",
+                        "description": "Provider list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10782,24 +11197,24 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "检查当前空间的 WeKnoraCloud 凭证是否完好；needs_reinit=true 表示需要重新保存",
+                "description": "Checks whether the current workspace's WeKnoraCloud credentials are intact; needs_reinit=true means\nthey must be saved again",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "WeKnoraCloud"
                 ],
-                "summary": "检查 WeKnoraCloud 凭证状态",
+                "summary": "Check WeKnoraCloud credential status",
                 "responses": {
                     "200": {
-                        "description": "凭证状态",
+                        "description": "Credential status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10818,7 +11233,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取模型详情",
+                "description": "Get a model by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -10826,13 +11241,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "模型管理"
+                    "Models"
                 ],
-                "summary": "获取模型详情",
+                "summary": "Get model details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "模型ID",
+                        "description": "Model ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10840,16 +11255,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "模型详情",
+                        "description": "Model details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "模型不存在",
+                        "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10863,7 +11278,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新模型配置信息",
+                "description": "Update a model config",
                 "consumes": [
                     "application/json"
                 ],
@@ -10871,19 +11286,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "模型管理"
+                    "Models"
                 ],
-                "summary": "更新模型",
+                "summary": "Update model",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "模型ID",
+                        "description": "Model ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新信息",
+                        "description": "Update details",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10894,16 +11309,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的模型",
+                        "description": "Updated model",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "模型不存在",
+                        "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10917,7 +11332,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定的模型",
+                "description": "Delete the specified model",
                 "consumes": [
                     "application/json"
                 ],
@@ -10925,13 +11340,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "模型管理"
+                    "Models"
                 ],
-                "summary": "删除模型",
+                "summary": "Delete model",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "模型ID",
+                        "description": "Model ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -10939,22 +11354,84 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "模型仍被知识库、智能体或长期记忆引用",
+                        "description": "Model still used by a knowledge base, agent or memory",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "模型不存在",
+                        "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/models/{id}/copy": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Copy a model config. name matches the source model; credentials are copied from the stored record and\nnever accepted from the client.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Models"
+                ],
+                "summary": "Copy model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Display name of the copy",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.CopyModelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Copied model",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Model not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -10967,19 +11444,19 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取当前空间所属的所有组织，并附带各空间内知识库/智能体数量",
+                "description": "Lists every organization the current workspace belongs to, with knowledge base and agent counts per\norganization",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取我的组织列表",
+                "summary": "List my organizations",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ListOrganizationsResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ListOrganizationsResponse"
                         }
                     }
                 }
@@ -10990,7 +11467,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "创建新的组织，创建者自动成为管理员",
+                "description": "Creates a new organization; the creator becomes its admin",
                 "consumes": [
                     "application/json"
                 ],
@@ -10998,17 +11475,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "创建组织",
+                "summary": "Create organization",
                 "parameters": [
                     {
-                        "description": "组织信息",
+                        "description": "Organization details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CreateOrganizationRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CreateOrganizationRequest"
                         }
                     }
                 ],
@@ -11023,7 +11500,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11036,7 +11513,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "使用邀请码加入组织",
+                "description": "Joins an organization with an invite code",
                 "consumes": [
                     "application/json"
                 ],
@@ -11044,17 +11521,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "通过邀请码加入组织",
+                "summary": "Join organization by invite code",
                 "parameters": [
                     {
-                        "description": "邀请码",
+                        "description": "Invite code",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.JoinOrganizationRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.JoinOrganizationRequest"
                         }
                     }
                 ],
@@ -11069,7 +11546,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11082,7 +11559,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "加入已开放可被搜索的空间，无需邀请码",
+                "description": "Joins an organization open to search, without an invite code",
                 "consumes": [
                     "application/json"
                 ],
@@ -11090,17 +11567,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "通过空间 ID 加入（可搜索空间）",
+                "summary": "Join by organization ID (searchable organizations)",
                 "parameters": [
                     {
-                        "description": "空间 ID",
+                        "description": "Organization ID",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.JoinByOrganizationIDRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.JoinByOrganizationIDRequest"
                         }
                     }
                 ],
@@ -11115,7 +11592,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11128,7 +11605,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "对需要审核的组织提交加入申请",
+                "description": "Submits a join request to an organization that requires approval",
                 "consumes": [
                     "application/json"
                 ],
@@ -11136,17 +11613,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "提交加入申请",
+                "summary": "Submit join request",
                 "parameters": [
                     {
-                        "description": "申请信息",
+                        "description": "Request details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SubmitJoinRequestRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SubmitJoinRequestRequest"
                         }
                     }
                 ],
@@ -11161,7 +11638,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11174,18 +11651,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "通过邀请码获取组织基本信息（不加入）",
+                "description": "Gets basic organization details from an invite code without joining",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "通过邀请码预览组织",
+                "summary": "Preview organization by invite code",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "邀请码",
+                        "description": "Invite code",
                         "name": "code",
                         "in": "path",
                         "required": true
@@ -11202,7 +11679,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11215,25 +11692,25 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "搜索已开放可被搜索的空间，用于发现并加入",
+                "description": "Searches organizations open to search, to discover and join them",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "搜索可加入的空间",
+                "summary": "Search joinable organizations",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "搜索关键词（空间名称或描述）",
+                        "description": "Search keyword (organization name or description)",
                         "name": "q",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 20,
-                        "description": "返回数量限制",
+                        "description": "Maximum number of results",
                         "name": "limit",
                         "in": "query"
                     }
@@ -11256,18 +11733,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "根据ID获取组织详情",
+                "description": "Gets an organization by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取组织详情",
+                "summary": "Get organization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11284,7 +11761,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11295,7 +11772,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "更新组织信息（需要管理员权限）",
+                "description": "Updates organization details (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -11303,24 +11780,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "更新组织",
+                "summary": "Update organization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "更新信息",
+                        "description": "Fields to update",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UpdateOrganizationRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UpdateOrganizationRequest"
                         }
                     }
                 ],
@@ -11335,7 +11812,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11346,15 +11823,15 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "删除组织（仅组织创建者可操作）",
+                "description": "Deletes an organization (creator only)",
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "删除组织",
+                "summary": "Delete organization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11371,7 +11848,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11387,18 +11864,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回所有被共享到指定组织的智能体（含我的有效权限）",
+                "description": "Returns every agent shared with the given organization, with my effective permission",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织"
+                    "Organization"
                 ],
-                "summary": "获取共享到本组织的智能体",
+                "summary": "List agents shared with this organization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织 ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11406,16 +11883,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "智能体共享列表 + total",
+                        "description": "Agent shares + total",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "403": {
-                        "description": "非组织成员",
+                        "description": "Not an organization member",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11428,7 +11905,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "管理员直接添加用户为组织成员",
+                "description": "An admin adds a user directly as an organization member",
                 "consumes": [
                     "application/json"
                 ],
@@ -11436,24 +11913,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "邀请成员",
+                "summary": "Invite member",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "邀请信息",
+                        "description": "Invitation details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.InviteMemberRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.InviteMemberRequest"
                         }
                     }
                 ],
@@ -11468,13 +11945,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11487,18 +11964,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "生成新的组织邀请码（需要管理员权限）",
+                "description": "Generates a new organization invite code (admin only)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "生成邀请码",
+                "summary": "Generate invite code",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11515,7 +11992,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11528,18 +12005,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取组织的待审核加入申请（仅管理员）",
+                "description": "Lists an organization's join requests awaiting review (admin only)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取待审核加入申请列表",
+                "summary": "List pending join requests",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11556,7 +12033,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11569,7 +12046,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "通过或拒绝加入申请（仅管理员）",
+                "description": "Approves or rejects a join request (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -11577,31 +12054,31 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "审核加入申请",
+                "summary": "Review join request",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "申请ID",
+                        "description": "Request ID",
                         "name": "request_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "审核结果",
+                        "description": "Review result",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ReviewJoinRequestRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ReviewJoinRequestRequest"
                         }
                     }
                 ],
@@ -11616,7 +12093,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11629,15 +12106,15 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "退出指定组织",
+                "description": "Leaves the given organization",
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "退出组织",
+                "summary": "Leave organization",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11654,7 +12131,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11667,18 +12144,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取组织的所有成员（按空间）",
+                "description": "Lists all members (workspaces) of an organization",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取组织成员列表",
+                "summary": "List organization members",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11688,7 +12165,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ListMembersResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ListMembersResponse"
                         }
                     }
                 }
@@ -11701,7 +12178,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "更新组织成员（空间）的角色（需要管理员权限）",
+                "description": "Updates the role of an organization member (workspace) (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -11709,31 +12186,31 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "更新成员角色",
+                "summary": "Update member role",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "成员空间ID",
+                        "description": "Member workspace ID",
                         "name": "tenant_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "角色信息",
+                        "description": "Role",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UpdateMemberRoleRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UpdateMemberRoleRequest"
                         }
                     }
                 ],
@@ -11748,7 +12225,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11759,22 +12236,22 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "从组织中移除成员空间（需要管理员权限）",
+                "description": "Removes a member workspace from the organization (admin only)",
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "移除成员",
+                "summary": "Remove member",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "成员空间ID",
+                        "description": "Member workspace ID",
                         "name": "tenant_id",
                         "in": "path",
                         "required": true
@@ -11791,7 +12268,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11804,7 +12281,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "现有成员申请更高权限",
+                "description": "An existing member requests a higher role",
                 "consumes": [
                     "application/json"
                 ],
@@ -11812,24 +12289,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "申请权限升级",
+                "summary": "Request role upgrade",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "申请信息",
+                        "description": "Request details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RequestRoleUpgradeRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RequestRoleUpgradeRequest"
                         }
                     }
                 ],
@@ -11844,7 +12321,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -11861,13 +12338,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
                 "summary": "Resolve a workspace ID for invitation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11904,18 +12381,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取指定空间下所有共享智能体，包含他人共享的与我共享的，用于列表页空间视角",
+                "description": "Lists every shared agent in the organization, shared by others or by me, for the organization view of\nthe list page",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取空间内全部智能体（含我共享的）",
+                "summary": "List all agents in an organization (including mine)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11939,18 +12416,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取指定空间下所有共享知识库，包含直接共享的与通过共享智能体可见的，用于列表页空间视角",
+                "description": "Lists every shared knowledge base in the organization, both directly shared and visible through shared\nagents, for the organization view of the list page",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取空间内全部知识库（含我共享的、含智能体携带的）",
+                "summary": "List all knowledge bases in an organization (including mine and agent-carried)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11974,18 +12451,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取共享到指定组织的所有知识库",
+                "description": "Lists all knowledge bases shared with the given organization",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织管理"
+                    "Organizations"
                 ],
-                "summary": "获取组织的共享知识库列表",
+                "summary": "List organization's shared knowledge bases",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "组织ID",
+                        "description": "Organization ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -11995,7 +12472,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ListSharesResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ListSharesResponse"
                         }
                     }
                 }
@@ -12078,7 +12555,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12136,7 +12613,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12190,7 +12667,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12203,7 +12680,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
@@ -12369,7 +12846,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12429,7 +12906,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Missing, oversized or invalid bundle or source",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12442,7 +12919,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12500,7 +12977,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12556,7 +13033,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12617,7 +13094,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12630,7 +13107,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12688,7 +13165,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill or files not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12746,7 +13223,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid path",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12759,7 +13236,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill or file not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12816,7 +13293,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12867,7 +13344,7 @@ const docTemplate = `{
                     "400": {
                         "description": "The stored archive is gone",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12880,7 +13357,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -12931,7 +13408,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Skill is not installing",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -12944,7 +13421,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13007,7 +13484,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill or transcript not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13023,7 +13500,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取当前空间的会话列表，支持分页、关键字搜索、按来源/Agent 筛选",
+                "description": "Lists the current workspace's sessions, with pagination, keyword search and filtering by source/agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -13031,53 +13508,53 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "获取会话列表",
+                "summary": "List sessions",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "页码",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "标题模糊搜索",
+                        "description": "Fuzzy title search",
                         "name": "keyword",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "来源过滤：web / embed / api / feishu / wechat / slack / ...（api、embed、IM 渠道需 Admin+）",
+                        "description": "web/embed/api/feishu/wechat/slack/...; api/embed/IM need Admin+",
                         "name": "source",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 Agent 过滤（仅对 IM 会话生效）",
+                        "description": "Filter by agent (IM sessions only)",
                         "name": "agent_id",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "会话列表",
+                        "description": "Session list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13091,7 +13568,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "创建新的对话会话",
+                "description": "Creates a new conversation session",
                 "consumes": [
                     "application/json"
                 ],
@@ -13099,12 +13576,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "创建会话",
+                "summary": "Create a session",
                 "parameters": [
                     {
-                        "description": "会话创建请求",
+                        "description": "Session creation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -13115,16 +13592,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的会话",
+                        "description": "Created session",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13140,7 +13617,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID列表批量删除对话会话，或设置 delete_all=true 删除当前空间的所有会话",
+                "description": "Deletes sessions by a list of IDs, or with delete_all=true deletes every session in the current\nworkspace",
                 "consumes": [
                     "application/json"
                 ],
@@ -13148,12 +13625,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "批量删除会话",
+                "summary": "Batch delete sessions",
                 "parameters": [
                     {
-                        "description": "批量删除请求",
+                        "description": "Batch delete request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -13164,16 +13641,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除结果",
+                        "description": "Delete result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13189,7 +13666,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "继续获取正在进行的流式响应",
+                "description": "Resumes receiving a streaming response in progress",
                 "consumes": [
                     "application/json"
                 ],
@@ -13197,20 +13674,20 @@ const docTemplate = `{
                     "text/event-stream"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "继续流式响应",
+                "summary": "Resume a streaming response",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "消息ID",
+                        "description": "Message ID",
                         "name": "message_id",
                         "in": "query",
                         "required": true
@@ -13222,23 +13699,23 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "default": "handle",
-                        "description": "文件引用形式，public 返回可加载直链",
+                        "description": "public: direct links",
                         "name": "resource_urls",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "流式响应",
+                        "description": "Streaming response",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话或消息不存在",
+                        "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13254,7 +13731,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取会话详情",
+                "description": "Gets session details by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -13262,13 +13739,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "获取会话详情",
+                "summary": "Get session details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -13276,16 +13753,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "会话详情",
+                        "description": "Session details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13299,7 +13776,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新会话属性",
+                "description": "Updates session properties",
                 "consumes": [
                     "application/json"
                 ],
@@ -13307,39 +13784,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "更新会话",
+                "summary": "Update a session",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "会话信息",
+                        "description": "Session info",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Session"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Session"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的会话",
+                        "description": "Updated session",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13353,7 +13830,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定的会话",
+                "description": "Deletes the given session",
                 "consumes": [
                     "application/json"
                 ],
@@ -13361,13 +13838,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "删除会话",
+                "summary": "Delete a session",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -13375,16 +13852,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13400,7 +13877,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除会话中的所有消息，同时清除 LLM 上下文和聊天历史知识库条目。会话本身保留。",
+                "description": "Deletes every message in the session and clears the LLM context and chat-history knowledge base\nentries. The session itself is kept.",
                 "consumes": [
                     "application/json"
                 ],
@@ -13408,13 +13885,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "清空会话消息",
+                "summary": "Clear session messages",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -13422,22 +13899,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "清空成功",
+                        "description": "Cleared",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13453,18 +13930,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "取消指定会话的置顶",
+                "description": "Unpins the given session",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "取消置顶会话",
+                "summary": "Unpin a session",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -13472,16 +13949,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "取消置顶成功",
+                        "description": "Unpinned",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13497,18 +13974,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "刷新页面后用来恢复输入框上方的队列。没有正在运行的 turn 时返回空列表。",
+                "description": "Restores the queue above the input box after a page refresh. Returns an empty list when no turn is\nrunning.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "列出当前运行中尚未消费的排队消息",
+                "summary": "List the queued messages the current run has not consumed",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -13525,13 +14002,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "503": {
-                        "description": "活 turn 查询失败，可重试",
+                        "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13547,25 +14024,25 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "从当前运行的排队列表里去掉一条，不再注入也不再作为 follow-up 发出。",
+                "description": "Removes one entry from the current run's queue, so it is neither injected nor sent as a follow-up.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "删除一条排队中的消息",
+                "summary": "Delete a queued message",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "排队消息 ID",
+                        "description": "Queued message ID",
                         "name": "steer_id",
                         "in": "path",
                         "required": true
@@ -13582,13 +14059,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "503": {
-                        "description": "活 turn 查询失败，可重试",
+                        "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13601,18 +14078,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回本会话中所有 assistant 消息产生的技能产物元数据（不含 URL）",
+                "description": "Returns the skill artifact metadata produced by every assistant message in this session (no URLs)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "列出会话生成的产物文件",
+                "summary": "List the artifact files a session generated",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
@@ -13629,7 +14106,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13645,7 +14122,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "从指定的用户或助手消息处分叉出一个新会话。用户消息：复制其之前的历史并预填该问题；助手消息：复制含该回答在内的历史，从该轮沙箱状态继续。",
+                "description": "Forks a new session from the given user or assistant message. From a user message: copies the earlier\nhistory and prefills that question. From an assistant message: copies the history including that answer\nand continues from that turn's sandbox state.",
                 "consumes": [
                     "application/json"
                 ],
@@ -13653,19 +14130,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "分叉会话",
+                "summary": "Fork a session",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "源会话 ID",
+                        "description": "Source session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "分叉请求",
+                        "description": "Fork request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -13676,28 +14153,28 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "新会话",
+                        "description": "New session",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误 / 分叉点角色不支持",
+                        "description": "Invalid parameters / unsupported fork point role",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "会话或消息不存在",
+                        "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "409": {
-                        "description": "源会话正在生成中",
+                        "description": "Source session is generating",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13706,6 +14183,67 @@ const docTemplate = `{
         "/sessions/{session_id}/messages/{message_id}/artifacts": {
             "get": {
                 "responses": {}
+            }
+        },
+        "/sessions/{session_id}/messages/{message_id}/artifacts/{index}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Deletes one file generated by an assistant message; with all_versions=true, every earlier version of\nthat file in this session is deleted too",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "Delete a session artifact file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "message_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Position of the artifact in the message",
+                        "name": "index",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Delete every version of the file",
+                        "name": "all_versions",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
             }
         },
         "/sessions/{session_id}/messages/{message_id}/artifacts/{index}/download": {
@@ -13727,20 +14265,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "获取回答后推荐问题",
+                "summary": "Get suggested follow-up questions for an answer",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "助手消息 ID",
+                        "description": "Assistant message ID",
                         "name": "message_id",
                         "in": "path",
                         "required": true
@@ -13765,7 +14303,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "对已完成的助手消息异步生成或重新生成推荐问题；相同配置快照会复用持久化结果",
+                "description": "Generates or regenerates suggested questions for a completed assistant message asynchronously; the same\nconfig snapshot reuses the persisted result",
                 "consumes": [
                     "application/json"
                 ],
@@ -13773,26 +14311,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "确保生成回答后推荐问题",
+                "summary": "Ensure suggested follow-up questions for an answer",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "助手消息 ID",
+                        "description": "Assistant message ID",
                         "name": "message_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "生成选项",
+                        "description": "Generation options",
                         "name": "request",
                         "in": "body",
                         "schema": {
@@ -13828,18 +14366,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "将指定会话置顶（用户维度）",
+                "description": "Pins the given session (per user)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "置顶会话",
+                "summary": "Pin a session",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
@@ -13847,16 +14385,90 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "置顶成功",
+                        "description": "Pinned",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions/{session_id}/rewind": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Rewinds the session to the given user or assistant message: deletes the later messages and, when\nreachable, runs git reset on the workspace.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "Rewind a session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Rewind request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler_session.RewindSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rewind result",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters / unsupported rewind point role",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Session or message not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    },
+                    "409": {
+                        "description": "Session generating / no checkpoint / sandbox replaced",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Workspace rewind failed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13872,7 +14484,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "向运行中的 agent turn 追加用户消息（after 排队 / inject 注入）。无活 turn 时返回 new_run。",
+                "description": "Appends a user message to a running agent turn (after: queued / inject: injected). Returns new_run when\nno turn is live.",
                 "consumes": [
                     "application/json"
                 ],
@@ -13880,19 +14492,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "向运行中的对话追加消息",
+                "summary": "Append a message to a running conversation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "追加消息",
+                        "description": "Message to append",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -13910,21 +14522,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "会话不存在",
+                        "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "503": {
-                        "description": "活 turn 查询失败，可重试",
+                        "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -13940,25 +14552,25 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "把一条 delivery=after 的排队消息改为 inject，运行中的 agent 会在下一轮边界读到它。",
+                "description": "Changes a queued delivery=after message to inject; the running agent reads it at the next turn\nboundary.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "将排队消息改为立即注入",
+                "summary": "Inject a queued message now",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "排队消息 ID",
+                        "description": "Queued message ID",
                         "name": "steer_id",
                         "in": "path",
                         "required": true
@@ -13975,19 +14587,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "503": {
-                        "description": "活 turn 查询失败，可重试",
+                        "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14003,7 +14615,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "停止当前正在进行的生成任务",
+                "description": "Stops the generation task in progress",
                 "consumes": [
                     "application/json"
                 ],
@@ -14011,19 +14623,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "问答"
+                    "QA"
                 ],
-                "summary": "停止生成",
+                "summary": "Stop generation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "停止请求",
+                        "description": "Stop request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -14034,16 +14646,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "停止成功",
+                        "description": "Stopped",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "会话或消息不存在",
+                        "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14059,24 +14671,24 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "记录曝光、点击或关闭事件",
+                "description": "Records an impression, click or dismiss event",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "上报推荐问题事件",
+                "summary": "Report a suggested question event",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话 ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "事件",
+                        "description": "Event",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -14102,7 +14714,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据消息内容自动生成会话标题",
+                "description": "Generates a session title from the message content",
                 "consumes": [
                     "application/json"
                 ],
@@ -14110,19 +14722,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "会话"
+                    "Sessions"
                 ],
-                "summary": "生成会话标题",
+                "summary": "Generate a session title",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "会话ID",
+                        "description": "Session ID",
                         "name": "session_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "生成请求",
+                        "description": "Generate request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -14133,16 +14745,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "生成的标题",
+                        "description": "Generated title",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14158,26 +14770,26 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回所有共享给当前用户所在组织的智能体",
+                "description": "Returns every agent shared with the organizations the current user belongs to",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "组织"
+                    "Organization"
                 ],
-                "summary": "获取我可访问的共享智能体",
+                "summary": "List shared agents I can access",
                 "responses": {
                     "200": {
-                        "description": "智能体列表 + total",
+                        "description": "Agents + total",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14190,14 +14802,14 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取通过组织共享给当前用户的所有知识库",
+                "description": "Lists all knowledge bases shared with the current user through organizations",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "知识库共享"
+                    "Knowledge Base Sharing"
                 ],
-                "summary": "获取共享给我的知识库列表",
+                "summary": "List knowledge bases shared with me",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -14219,7 +14831,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回指定沙箱配置镜像内、智能体实际能调用的已安装技能（ready 且启用）。不传 sandbox_config_id 时列表为空。",
+                "description": "Return the installed skills (ready and enabled) in the given sandbox config's image that an agent can\nactually call. Without sandbox_config_id the list is empty.",
                 "consumes": [
                     "application/json"
                 ],
@@ -14229,21 +14841,39 @@ const docTemplate = `{
                 "tags": [
                     "Skills"
                 ],
-                "summary": "获取当前沙箱配置上可执行的 Skills",
+                "summary": "List the skills runnable on a sandbox config",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Sandbox config ID",
+                        "description": "Sandbox config ID; ignored for a shared agent",
                         "name": "sandbox_config_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Agent ID; needs agent_source_tenant_id",
+                        "name": "agent_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Shared agent source workspace",
+                        "name": "agent_source_tenant_id",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Skills列表",
+                        "description": "Skill list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed to use this shared agent",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14504,7 +15134,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request, validation, or connectivity test failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -14517,7 +15147,7 @@ const docTemplate = `{
                     "409": {
                         "description": "A storage backend with this name already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14566,7 +15196,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -14653,7 +15283,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14707,7 +15337,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Immutable field change, read-only backend, validation, or connectivity failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -14720,7 +15350,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14762,7 +15392,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Backend is default, bound, read-only, or legacy alias",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -14775,7 +15405,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14819,7 +15449,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Backend is not active",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -14832,7 +15462,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14883,7 +15513,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -14998,42 +15628,42 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回 system-scope（tenant_id=0）的审计事件，覆盖 system.setting_changed / system.admin_promoted / system.admin_revoked 等 SystemAdmin 操作。按 id 倒序的游标分页。",
+                "description": "Returns system-scope (tenant_id=0) audit events, covering SystemAdmin actions such as\nsystem.setting_changed / system.admin_promoted / system.admin_revoked. Cursor-paginated, newest id\nfirst.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "审计日志"
+                    "Audit Log"
                 ],
-                "summary": "获取平台审计日志",
+                "summary": "Get platform audit log",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "游标：返回 id 小于此值的记录（默认从最新开始）",
+                        "description": "Cursor: records with id below this value (default: newest first)",
                         "name": "after_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "页大小，1-100，默认 50",
+                        "description": "Page size, 1-100, default 50",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 action 精确过滤（如 system.setting_changed）",
+                        "description": "Exact match on action (e.g. system.setting_changed)",
                         "name": "action",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 outcome 精确过滤（success / denied）",
+                        "description": "Exact match on outcome (success / denied)",
                         "name": "outcome",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 actor_user_id 精确过滤",
+                        "description": "Exact match on actor_user_id",
                         "name": "actor",
                         "in": "query"
                     }
@@ -15048,7 +15678,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -15125,7 +15755,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User promoted successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UserInfo"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserInfo"
                         }
                     },
                     "400": {
@@ -15154,7 +15784,7 @@ const docTemplate = `{
         },
         "/system/admin/revoke": {
             "post": {
-                "description": "Remove system administrator privileges from a user (SystemAdmin only).\nTwo safety guards: the caller cannot revoke their own privileges,\nand revoking the last remaining system admin is rejected — both\nprevent a SystemAdmin from accidentally locking the platform out\nof system-level administration. Idempotent on already-non-admin users.",
+                "description": "Remove system administrator privileges from a user (SystemAdmin only).\nTwo safety guards: the caller cannot revoke their own privileges,\nand revoking the last remaining system admin is rejected - both\nprevent a SystemAdmin from accidentally locking the platform out\nof system-level administration. Idempotent on already-non-admin users.",
                 "consumes": [
                     "application/json"
                 ],
@@ -15180,7 +15810,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Privileges revoked successfully",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UserInfo"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserInfo"
                         }
                     },
                     "400": {
@@ -15209,14 +15839,14 @@ const docTemplate = `{
         },
         "/system/admin/runtime/queues": {
             "get": {
-                "description": "返回各 asynq 队列的实时深度（pending/active/scheduled/retry 等）与 worker 并发配置，仅系统管理员可见",
+                "description": "Returns the live depth of each asynq queue (pending, active, scheduled, retry, ...) and the worker\nconcurrency; system administrators only",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "System Admin"
                 ],
-                "summary": "获取解析任务队列运行时状态",
+                "summary": "Get parsing task queue status",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -15385,7 +16015,7 @@ const docTemplate = `{
                     "200": {
                         "description": "the setting row",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SystemSetting"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SystemSetting"
                         }
                     },
                     "400": {
@@ -15438,7 +16068,7 @@ const docTemplate = `{
                     "200": {
                         "description": "the updated row",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SystemSetting"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SystemSetting"
                         }
                     },
                     "400": {
@@ -15458,7 +16088,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Removes the DB override for :key so the 3-tier resolver\nfalls back to the environment variable (when configured)\nor the in-code default. Idempotent — resetting a key\nthat was never persisted returns 200.",
+                "description": "Removes the DB override for :key so the 3-tier resolver\nfalls back to the environment variable (when configured)\nor the in-code default. Idempotent - resetting a key\nthat was never persisted returns 200.",
                 "tags": [
                     "System Admin"
                 ],
@@ -15499,7 +16129,7 @@ const docTemplate = `{
         },
         "/system/admin/tenants/apply-default-storage-quota": {
             "post": {
-                "description": "Reads the current value of ` + "`" + `tenant.default_storage_quota_gb` + "`" + `\n(3-tier resolver: DB \u003e ENV \u003e default) and writes that many\nGiB into storage_quota for every row in tenants. Bypasses\nthe per-workspace PUT whitelist, which forbids storage_quota\nedits by Owners. SystemAdmin only.\nIdempotent — running twice with the same setting is a no-op.",
+                "description": "Reads the current value of ` + "`" + `tenant.default_storage_quota_gb` + "`" + `\n(3-tier resolver: DB \u003e ENV \u003e default) and writes that many\nGiB into storage_quota for every row in tenants. Bypasses\nthe per-workspace PUT whitelist, which forbids storage_quota\nedits by Owners. SystemAdmin only.\nIdempotent - running twice with the same setting is a no-op.",
                 "produces": [
                     "application/json"
                 ],
@@ -15517,6 +16147,49 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "DB write failed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/admin/users": {
+            "get": {
+                "description": "Retrieve a paginated list of every user across tenants (SystemAdmin only).\nSupports ` + "`" + `offset` + "`" + ` (default 0) and ` + "`" + `limit` + "`" + ` (default 50, max 200).\nPassword/hashes are never serialised - only the redacted UserInfo shape.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Admin"
+                ],
+                "summary": "List all platform users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Page offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 50,
+                        "description": "Page size (max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Users retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.ListAllUsersResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: not a system admin",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -15545,7 +16218,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AdminCreateUserRequest"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AdminCreateUserRequest"
                         }
                     }
                 ],
@@ -15649,19 +16322,68 @@ const docTemplate = `{
                 }
             }
         },
-        "/system/capabilities": {
-            "get": {
-                "description": "返回当前部署版本及实际注册的后端路由所对应的功能能力；仅 supported=false 表示入口应隐藏",
+        "/system/admin/users/status": {
+            "post": {
+                "description": "Disable revokes the target's active sessions immediately.\nSelf-disable and disabling the last active system administrator are rejected.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System Admin"
                 ],
-                "summary": "获取部署能力清单",
+                "summary": "Enable or disable a user account",
+                "parameters": [
+                    {
+                        "description": "Account status request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.SetUserStatusRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "标准 code/msg/data 包装，data 为 DeploymentCapabilitiesData",
+                        "description": "Status updated",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Self-disable / last-admin guard",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/capabilities": {
+            "get": {
+                "description": "Returns the deployed version and the capabilities backed by the registered backend routes; only\nsupported=false means the entry point should be hidden",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System"
+                ],
+                "summary": "Get deployment capabilities",
+                "responses": {
+                    "200": {
+                        "description": "code/msg/data envelope; data is DeploymentCapabilitiesData",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -15679,12 +16401,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "重连文档解析服务",
+                "summary": "Reconnect the document parsing service",
                 "parameters": [
                     {
-                        "description": "DocReader 地址",
+                        "description": "DocReader address",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -15702,7 +16424,7 @@ const docTemplate = `{
         },
         "/system/info": {
             "get": {
-                "description": "获取系统版本、构建信息和引擎配置",
+                "description": "Returns the system version, build info and engine configuration",
                 "consumes": [
                     "application/json"
                 ],
@@ -15710,12 +16432,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "获取系统信息",
+                "summary": "Get system info",
                 "responses": {
                     "200": {
-                        "description": "系统信息",
+                        "description": "System info",
                         "schema": {
                             "$ref": "#/definitions/internal_handler.GetSystemInfoResponse"
                         }
@@ -15729,12 +16451,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "列出可用的文档解析引擎",
+                "summary": "List available document parser engines",
                 "responses": {
                     "200": {
-                        "description": "解析引擎列表",
+                        "description": "Parser engines",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -15752,12 +16474,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "使用当前参数检测解析引擎可用性",
+                "summary": "Check parser engine availability with the given settings",
                 "parameters": [
                     {
-                        "description": "解析引擎配置（与保存接口同结构）",
+                        "description": "Parser engine config (same shape as the save endpoint)",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -15775,7 +16497,7 @@ const docTemplate = `{
         },
         "/system/sandbox-check": {
             "post": {
-                "description": "使用当前填写的参数测试沙箱后端，不保存配置；deep=true 会执行临时脚本，远端后端还会创建并销毁一个沙箱",
+                "description": "Test the sandbox backend with the submitted parameters without saving them. deep=true runs a temporary\nscript; a remote backend also creates and destroys a sandbox",
                 "consumes": [
                     "application/json"
                 ],
@@ -15783,12 +16505,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "测试沙箱连通性",
+                "summary": "Test sandbox connectivity",
                 "parameters": [
                     {
-                        "description": "沙箱配置",
+                        "description": "Sandbox config",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -15809,7 +16531,7 @@ const docTemplate = `{
         },
         "/system/storage-engine-check": {
             "post": {
-                "description": "使用当前填写的参数测试 MinIO/COS 连通性，不保存配置",
+                "description": "Tests MinIO/COS connectivity with the given settings without saving them",
                 "consumes": [
                     "application/json"
                 ],
@@ -15817,12 +16539,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "测试存储引擎连通性",
+                "summary": "Test storage engine connectivity",
                 "parameters": [
                     {
-                        "description": "存储引擎配置",
+                        "description": "Storage engine config",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -15843,14 +16565,14 @@ const docTemplate = `{
         },
         "/system/storage-engine-status": {
             "get": {
-                "description": "返回 Local、MinIO、COS 各存储引擎的可用状态及说明，供全局设置与知识库选择使用",
+                "description": "Returns the availability and description of each storage engine (Local, MinIO, COS, ...) for global\nsettings and knowledge base selection",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "System"
                 ],
-                "summary": "获取存储引擎状态",
+                "summary": "Get storage engine status",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -15868,7 +16590,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取当前用户可访问的空间列表",
+                "description": "Lists the workspaces the current user can access",
                 "consumes": [
                     "application/json"
                 ],
@@ -15876,21 +16598,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取空间列表",
+                "summary": "List workspaces",
                 "responses": {
                     "200": {
-                        "description": "空间列表",
+                        "description": "Workspaces",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -15901,7 +16623,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "创建新的空间。任意已登录用户均可调用以建立自己的新工作区，\n调用方会被自动设为该空间的 Owner。跨空间超管仍可像以前一样\n通过本接口创建任意空间。\n当 tenant.auto_create_api_key（或 WEKNORA_TENANT_AUTO_CREATE_API_KEY）\n开启时，会自动创建一个 full_access API Key，并在响应体的 data.api_key 字段返回其明文 token。",
+                "description": "Creates a new workspace. Any signed-in user can call it to set up their own workspace,\nand the caller becomes the workspace Owner. Cross-workspace super admins can still\ncreate any workspace through this endpoint.\nWhen tenant.auto_create_api_key (or AIKB_TENANT_AUTO_CREATE_API_KEY)\nis on, a full_access API key is created and its plaintext token returned in data.api_key.",
                 "consumes": [
                     "application/json"
                 ],
@@ -15909,12 +16631,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "创建空间",
+                "summary": "Create workspace",
                 "parameters": [
                     {
-                        "description": "空间信息",
+                        "description": "Workspace details",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -15925,16 +16647,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "创建的空间（可选含 api_key）",
+                        "description": "Created workspace (optionally with api_key)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -15947,7 +16669,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "获取系统中所有空间（需要跨空间访问权限）",
+                "description": "Lists every workspace in the system (requires cross-workspace access)",
                 "consumes": [
                     "application/json"
                 ],
@@ -15955,21 +16677,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取所有空间列表",
+                "summary": "List all workspaces",
                 "responses": {
                     "200": {
-                        "description": "所有空间列表",
+                        "description": "All workspaces",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -15985,7 +16707,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取系统配置的提示词模板列表",
+                "description": "Gets the system-configured prompt templates",
                 "consumes": [
                     "application/json"
                 ],
@@ -15993,21 +16715,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取提示词模板",
+                "summary": "Get prompt templates",
                 "responses": {
                     "200": {
-                        "description": "提示词模板配置",
+                        "description": "Prompt template config",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16023,7 +16745,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取空间的网络搜索配置",
+                "description": "Gets the workspace's web search config",
                 "consumes": [
                     "application/json"
                 ],
@@ -16031,21 +16753,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取空间网络搜索配置",
+                "summary": "Get workspace web search config",
                 "responses": {
                     "200": {
-                        "description": "网络搜索配置",
+                        "description": "Web search config",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16061,7 +16783,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取空间级别的KV配置（支持web-search-config、prompt-templates、parser-engine-config、storage-engine-config、chat-history-config、retrieval-config）",
+                "description": "Gets a workspace-level KV config (supports web-search-config, prompt-templates, parser-engine-config,\nstorage-engine-config, chat-history-config, retrieval-config)",
                 "consumes": [
                     "application/json"
                 ],
@@ -16069,13 +16791,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取空间KV配置",
+                "summary": "Get workspace KV config",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "配置键名",
+                        "description": "Config key",
                         "name": "key",
                         "in": "path",
                         "required": true
@@ -16083,16 +16805,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "配置值",
+                        "description": "Config value",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "不支持的键",
+                        "description": "Unsupported key",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16106,7 +16828,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新空间级别的KV配置（支持web-search-config、parser-engine-config、storage-engine-config、chat-history-config、retrieval-config）",
+                "description": "Updates a workspace-level KV config (supports web-search-config, parser-engine-config,\nstorage-engine-config, chat-history-config, retrieval-config)",
                 "consumes": [
                     "application/json"
                 ],
@@ -16114,19 +16836,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "更新空间KV配置",
+                "summary": "Update workspace KV config",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "配置键名",
+                        "description": "Config key",
                         "name": "key",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "配置值",
+                        "description": "Config value",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16137,16 +16859,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "Updated",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "不支持的键",
+                        "description": "Unsupported key",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16162,7 +16884,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "分页搜索空间（需要跨空间访问权限）",
+                "description": "Searches workspaces with pagination (requires cross-workspace access)",
                 "consumes": [
                     "application/json"
                 ],
@@ -16170,49 +16892,49 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "搜索空间",
+                "summary": "Search workspaces",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "搜索关键词",
+                        "description": "Search keyword",
                         "name": "keyword",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "空间ID筛选",
+                        "description": "Filter by workspace ID",
                         "name": "tenant_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 20,
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "搜索结果",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16228,7 +16950,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据ID获取空间详情",
+                "description": "Gets a workspace by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -16236,13 +16958,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取空间详情",
+                "summary": "Get workspace",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -16250,22 +16972,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "空间详情",
+                        "description": "Workspace details",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "404": {
-                        "description": "空间不存在",
+                        "description": "Workspace not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16276,7 +16998,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "更新空间信息",
+                "description": "Updates workspace details",
                 "consumes": [
                     "application/json"
                 ],
@@ -16284,39 +17006,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "更新空间",
+                "summary": "Update workspace",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "空间信息",
+                        "description": "Workspace details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Tenant"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Tenant"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的空间",
+                        "description": "Updated workspace",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16327,7 +17049,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "删除指定的空间",
+                "description": "Deletes the given workspace",
                 "consumes": [
                     "application/json"
                 ],
@@ -16335,13 +17057,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "删除空间",
+                "summary": "Delete workspace",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -16349,16 +17071,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "删除成功",
+                        "description": "Deleted",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16371,7 +17093,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "返回 X-API-Key 请求如何映射为终端 Principal 的配置（Owner）",
+                "description": "Returns how X-API-Key requests map to an end-user Principal (Owner)",
                 "consumes": [
                     "application/json"
                 ],
@@ -16379,13 +17101,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "获取空间 API Key 用户身份配置",
+                "summary": "Get workspace API key identity config",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -16393,22 +17115,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "API principal 配置",
+                        "description": "API principal config",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16419,7 +17141,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "配置 X-API-Key 请求如何映射为终端 Principal（Owner）",
+                "description": "Configures how X-API-Key requests map to an end-user Principal (Owner)",
                 "consumes": [
                     "application/json"
                 ],
@@ -16427,19 +17149,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "更新空间 API Key 用户身份配置",
+                "summary": "Update workspace API key identity config",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "API principal 配置",
+                        "description": "API principal config",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16450,22 +17172,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的配置",
+                        "description": "Updated config",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16478,7 +17200,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "使用空间已保存的 HMAC 密钥签发短期外部用户 JWT（Owner）",
+                "description": "Signs a short-lived external user JWT with the workspace's saved HMAC secret (Owner)",
                 "consumes": [
                     "application/json"
                 ],
@@ -16486,19 +17208,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间管理"
+                    "Workspaces"
                 ],
-                "summary": "生成 API Playground 测试 JWT",
+                "summary": "Generate API Playground test JWT",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "测试 Token 参数",
+                        "description": "Test token parameters",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16509,22 +17231,22 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "短期 JWT",
+                        "description": "Short-lived JWT",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "403": {
-                        "description": "权限不足",
+                        "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16540,49 +17262,49 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回该空间最近的审计事件，按 id 倒序。游标分页：将上次响应的 next_cursor 作为下一次请求的 after_id。",
+                "description": "Returns the workspace's most recent audit events, newest id first. Cursor pagination: pass the previous\nresponse's next_cursor as after_id on the next request.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "审计日志"
+                    "Audit Log"
                 ],
-                "summary": "获取空间审计日志",
+                "summary": "Get workspace audit log",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "游标：返回 id 小于此值的记录（默认从最新开始）",
+                        "description": "Cursor: records with id below this value (default: newest first)",
                         "name": "after_id",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "页大小，1-100，默认 50",
+                        "description": "Page size, 1-100, default 50",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 action 精确过滤（如 rbac.member_added / rbac.access_denied）",
+                        "description": "Exact match on action (e.g. rbac.member_added / rbac.access_denied)",
                         "name": "action",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 outcome 精确过滤（success / denied）",
+                        "description": "Exact match on outcome (success / denied)",
                         "name": "outcome",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "按 actor_user_id 精确过滤",
+                        "description": "Exact match on actor_user_id",
                         "name": "actor",
                         "in": "query"
                     }
@@ -16597,7 +17319,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -16610,39 +17332,39 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "按空间列出待接受 / 历史邀请。query include_terminal=true 时附带 accepted/declined/revoked/expired。",
+                "description": "Lists pending / past invitations for a workspace. With include_terminal=true,\naccepted/declined/revoked/expired rows are included.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "空间邀请"
+                    "Workspace Invitations"
                 ],
-                "summary": "列出空间邀请",
+                "summary": "List workspace invitations",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "boolean",
-                        "description": "是否包含终止态行（默认 false）",
+                        "description": "Include terminal-state rows (default false)",
                         "name": "include_terminal",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码（从 1 起）",
+                        "description": "Page number (from 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 20,
-                        "description": "每页数量",
+                        "description": "Page size",
                         "name": "page_size",
                         "in": "query"
                     }
@@ -16663,7 +17385,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Owner 通过邮箱邀请已注册用户加入空间。开启 tenant.auto_accept_invitation 后被邀请人立即自动加入（响应为成员结构），否则需在 /me/invitations 接受后成为成员。",
+                "description": "The Owner invites a registered user to the workspace by email. With tenant.auto_accept_invitation on,\nthe invitee joins immediately (the response is the member); otherwise they become a member after\naccepting in /me/invitations.",
                 "consumes": [
                     "application/json"
                 ],
@@ -16671,19 +17393,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间邀请"
+                    "Workspace Invitations"
                 ],
-                "summary": "发出空间邀请",
+                "summary": "Send workspace invitation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "邀请请求",
+                        "description": "Invitation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16710,25 +17432,25 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Owner 取消一条还在 pending 的邀请；已 accepted/declined/revoked/expired 的行不可再撤销。",
+                "description": "The Owner cancels a pending invitation; accepted/declined/revoked/expired rows cannot be revoked.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "空间邀请"
+                    "Workspace Invitations"
                 ],
-                "summary": "撤销待接受邀请",
+                "summary": "Revoke pending invitation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "邀请 ID",
+                        "description": "Invitation ID",
                         "name": "inv_id",
                         "in": "path",
                         "required": true
@@ -16752,7 +17474,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "生成一条多次使用的共享邀请链接：谁拿到链接谁就能注册并加入当前空间。\n链接持续有效，直到过期或被撤销。",
+                "description": "Creates a multi-use shared invitation link: anyone with the link can register and join the current\nworkspace.\nThe link stays valid until it expires or is revoked.",
                 "consumes": [
                     "application/json"
                 ],
@@ -16760,19 +17482,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间邀请"
+                    "Workspace Invitations"
                 ],
-                "summary": "生成共享邀请链接",
+                "summary": "Create shared invitation link",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "共享链接配置",
+                        "description": "Shared link settings",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16799,18 +17521,18 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "调用方主动退出当前空间。等价于以自己的 user_id 调 RemoveMember，",
+                "description": "The caller leaves the current workspace. Equivalent to RemoveMember with the caller's own user_id,",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "空间成员"
+                    "Workspace Members"
                 ],
-                "summary": "退出当前空间",
+                "summary": "Leave current workspace",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -16834,39 +17556,39 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "分页返回当前空间内 active 成员（含每位成员的角色、邮箱、头像）；支持 q 按邮箱/用户名筛选",
+                "description": "Paginated active members of the current workspace (with each member's role, email and avatar); q\nfilters by email/username",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "空间成员"
+                    "Workspace Members"
                 ],
-                "summary": "列出空间成员",
+                "summary": "List workspace members",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "按邮箱/用户名模糊筛选",
+                        "description": "Fuzzy filter by email/username",
                         "name": "q",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "页码（从 1 起）",
+                        "description": "Page number (from 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 20,
-                        "description": "每页数量（最大 100）",
+                        "description": "Page size (max 100)",
                         "name": "page_size",
                         "in": "query"
                     }
@@ -16894,19 +17616,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间成员"
+                    "Workspace Members"
                 ],
-                "summary": "直接添加空间成员（直加路径）",
+                "summary": "Add workspace member directly (direct-add path)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "邀请请求",
+                        "description": "Invitation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16933,7 +17655,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Owner 修改某位成员在当前空间内的角色；不能将最后一位 Owner 降级",
+                "description": "The Owner changes a member's role in the current workspace; the last Owner cannot be demoted",
                 "consumes": [
                     "application/json"
                 ],
@@ -16941,26 +17663,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "空间成员"
+                    "Workspace Members"
                 ],
-                "summary": "修改空间成员角色",
+                "summary": "Change workspace member role",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "用户 ID",
+                        "description": "User ID",
                         "name": "user_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "目标角色",
+                        "description": "Target role",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -16985,25 +17707,25 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Owner 将某位成员从当前空间中移除（软删除 tenant_members 行）；不能移除最后一位 Owner",
+                "description": "The Owner removes a member from the current workspace (soft-deletes the tenant_members row); the last\nOwner cannot be removed",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "空间成员"
+                    "Workspace Members"
                 ],
-                "summary": "移除空间成员",
+                "summary": "Remove workspace member",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "空间 ID",
+                        "description": "Workspace ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "用户 ID",
+                        "description": "User ID",
                         "name": "user_id",
                         "in": "path",
                         "required": true
@@ -17183,7 +17905,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -17196,7 +17918,7 @@ const docTemplate = `{
                     "409": {
                         "description": "Duplicate endpoint and index",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     }
                 }
@@ -17245,7 +17967,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
                         }
                     },
                     "401": {
@@ -17519,7 +18241,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "使用前端表单中尚未保存的凭证测试连通性，用于\"测试连接\"按钮",
+                "description": "Test connectivity with unsaved credentials from the frontend form, for the \"Test connection\" button",
                 "consumes": [
                     "application/json"
                 ],
@@ -17527,9 +18249,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "使用原始凭证测试 Provider（不落库）",
+                "summary": "Test a provider with raw credentials (not saved)",
                 "parameters": [
                     {
                         "description": "{provider, parameters}",
@@ -17543,14 +18265,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "测试结果",
+                        "description": "Test result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17569,17 +18291,17 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回 UI 表单需要的 provider 类型及参数定义",
+                "description": "Return the provider types and parameter definitions the UI form needs",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "获取网络搜索 Provider 类型元数据",
+                "summary": "Get web search provider type metadata",
                 "responses": {
                     "200": {
-                        "description": "provider 类型列表",
+                        "description": "Provider type list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17598,14 +18320,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "根据 ID 获取指定 provider 配置",
+                "description": "Get a provider config by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "获取网络搜索 Provider 详情",
+                "summary": "Get web search provider details",
                 "parameters": [
                     {
                         "type": "string",
@@ -17617,13 +18339,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Provider 详情",
+                        "description": "Provider details",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchProviderEntity"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderEntity"
                         }
                     },
                     "404": {
-                        "description": "Provider 不存在",
+                        "description": "Provider not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17640,7 +18362,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新指定 provider 的名称/描述/参数/是否默认",
+                "description": "Update a provider's name, description, parameters or default flag",
                 "consumes": [
                     "application/json"
                 ],
@@ -17648,9 +18370,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "更新网络搜索 Provider",
+                "summary": "Update web search provider",
                 "parameters": [
                     {
                         "type": "string",
@@ -17660,7 +18382,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "更新字段",
+                        "description": "Fields to update",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -17671,20 +18393,20 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新后的 Provider",
+                        "description": "Updated provider",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchProviderEntity"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderEntity"
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "Provider 不存在",
+                        "description": "Provider not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17701,14 +18423,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除指定 provider 配置",
+                "description": "Delete the specified provider config",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "删除网络搜索 Provider",
+                "summary": "Delete web search provider",
                 "parameters": [
                     {
                         "type": "string",
@@ -17727,7 +18449,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Provider 不存在",
+                        "description": "Provider not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17746,14 +18468,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "使用数据库中已保存的凭证测试连通性",
+                "description": "Test connectivity with the credentials saved in the database",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "测试已保存的 Provider",
+                "summary": "Test a saved provider",
                 "parameters": [
                     {
                         "type": "string",
@@ -17765,14 +18487,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "测试结果",
+                        "description": "Test result",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "404": {
-                        "description": "Provider 不存在",
+                        "description": "Provider not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17791,17 +18513,17 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "返回所有已注册的网络搜索 provider（含元数据）",
+                "description": "Return every registered web search provider, with metadata",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "网络搜索"
+                    "Web Search"
                 ],
-                "summary": "获取可用网络搜索 Provider 列表",
+                "summary": "List available web search providers",
                 "responses": {
                     "200": {
-                        "description": "provider 列表",
+                        "description": "Provider list",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17820,24 +18542,24 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "申请一个用于扫码登录绑定的微信二维码（无请求体）",
+                "description": "Requests a WeChat QR code for scan-to-bind login (no request body)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "IM 渠道"
+                    "IM Channels"
                 ],
-                "summary": "获取微信扫码登录二维码",
+                "summary": "Get a WeChat login QR code",
                 "responses": {
                     "200": {
-                        "description": "二维码信息（qrcode_url + qrcode 标识）",
+                        "description": "QR code info (qrcode_url and qrcode identifier)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "二维码生成失败",
+                        "description": "QR code generation failed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17856,7 +18578,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "查询指定二维码是否已被扫描/确认/过期；confirmed 时返回凭证",
+                "description": "Reports whether the QR code was scanned, confirmed or expired; returns credentials when confirmed",
                 "consumes": [
                     "application/json"
                 ],
@@ -17864,9 +18586,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "IM 渠道"
+                    "IM Channels"
                 ],
-                "summary": "轮询微信二维码状态",
+                "summary": "Poll WeChat QR code status",
                 "parameters": [
                     {
                         "description": "{qrcode: string}",
@@ -17881,21 +18603,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "扫码状态",
+                        "description": "Scan status",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17914,7 +18636,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "保存 APPID/APPSECRET 到当前空间配置（不自动创建模型）",
+                "description": "Saves APPID/APPSECRET to the current workspace config (no models are created)",
                 "consumes": [
                     "application/json"
                 ],
@@ -17924,7 +18646,7 @@ const docTemplate = `{
                 "tags": [
                     "WeKnoraCloud"
                 ],
-                "summary": "保存 WeKnoraCloud 凭证",
+                "summary": "Save WeKnoraCloud credentials",
                 "parameters": [
                     {
                         "description": "{app_id, app_secret}",
@@ -17946,7 +18668,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "Invalid request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -17954,10 +18676,59 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/wiki-search": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Cross-KB wiki search using the same POSIX regex ranking as single-KB wiki search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wiki"
+                ],
+                "summary": "Cross-KB wiki search",
+                "parameters": [
+                    {
+                        "description": "Wiki search request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.SearchWikiRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "github_com_Tencent_WeKnora_internal_application_service.WikiLintIssue": {
+        "github_com_jrmatherly_ai-kb_internal_application_service.WikiLintIssue": {
             "type": "object",
             "properties": {
                 "auto_fixable": {
@@ -17970,18 +18741,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "severity": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_application_service.WikiLintIssueSeverity"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_application_service.WikiLintIssueSeverity"
                 },
                 "target_slug": {
                     "description": "TargetSlug identifies the other page involved in the issue (e.g. the\nbroken link target, or the entity slug for a missing cross-ref). It is\nthe structured field used by AutoFix instead of parsing Description.",
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_application_service.WikiLintIssueType"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_application_service.WikiLintIssueType"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_application_service.WikiLintIssueSeverity": {
+        "github_com_jrmatherly_ai-kb_internal_application_service.WikiLintIssueSeverity": {
             "type": "string",
             "enum": [
                 "info",
@@ -17994,7 +18765,7 @@ const docTemplate = `{
                 "SeverityError"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_application_service.WikiLintIssueType": {
+        "github_com_jrmatherly_ai-kb_internal_application_service.WikiLintIssueType": {
             "type": "string",
             "enum": [
                 "orphan_page",
@@ -18013,7 +18784,7 @@ const docTemplate = `{
                 "LintIssueDuplicateSlug"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_application_service.WikiLintReport": {
+        "github_com_jrmatherly_ai-kb_internal_application_service.WikiLintReport": {
             "type": "object",
             "properties": {
                 "health_score": {
@@ -18023,21 +18794,21 @@ const docTemplate = `{
                 "issues": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_application_service.WikiLintIssue"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_application_service.WikiLintIssue"
                     }
                 },
                 "knowledge_base_id": {
                     "type": "string"
                 },
                 "stats": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiStats"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiStats"
                 },
                 "summary": {
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_datasource.ConnectorMetadata": {
+        "github_com_jrmatherly_ai-kb_internal_datasource.ConnectorMetadata": {
             "type": "object",
             "properties": {
                 "auth_type": {
@@ -18069,11 +18840,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_errors.AppError": {
+        "github_com_jrmatherly_ai-kb_internal_errors.AppError": {
             "type": "object",
             "properties": {
                 "code": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_errors.ErrorCode"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorCode"
                 },
                 "details": {},
                 "message": {
@@ -18081,7 +18852,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_errors.ErrorCode": {
+        "github_com_jrmatherly_ai-kb_internal_errors.ErrorCode": {
             "type": "integer",
             "enum": [
                 1000,
@@ -18136,7 +18907,7 @@ const docTemplate = `{
                 "ErrModelInUse"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_infrastructure_chunker.DocProfile": {
+        "github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.DocProfile": {
             "type": "object",
             "properties": {
                 "all_caps_short_line_count": {
@@ -18208,7 +18979,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_infrastructure_chunker.StrategyTier": {
+        "github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.StrategyTier": {
             "type": "string",
             "enum": [
                 "heading",
@@ -18221,18 +18992,18 @@ const docTemplate = `{
                 "TierLegacy"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_infrastructure_chunker.TierRejection": {
+        "github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.TierRejection": {
             "type": "object",
             "properties": {
                 "reason": {
                     "type": "string"
                 },
                 "tier": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_infrastructure_chunker.StrategyTier"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.StrategyTier"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_models_limiter.RuntimeStat": {
+        "github_com_jrmatherly_ai-kb_internal_models_limiter.RuntimeStat": {
             "type": "object",
             "properties": {
                 "active": {
@@ -18252,7 +19023,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.APIPrincipalMode": {
+        "github_com_jrmatherly_ai-kb_internal_types.APIPrincipalMode": {
             "type": "string",
             "enum": [
                 "tenant",
@@ -18265,7 +19036,7 @@ const docTemplate = `{
                 "APIPrincipalModeSignedToken"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.ASRConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ASRConfig": {
             "type": "object",
             "properties": {
                 "enabled": {
@@ -18280,7 +19051,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.AdminCreateUserRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.AdminCreateUserRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -18300,7 +19071,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.AgentStep": {
+        "github_com_jrmatherly_ai-kb_internal_types.AgentStep": {
             "type": "object",
             "properties": {
                 "intermediate_answer": {
@@ -18315,6 +19086,13 @@ const docTemplate = `{
                     "description": "ReasoningContent stores the OpenAI-protocol reasoning_content emitted by the\nmodel in this round. Persisted on AgentStep so cross-turn replay can put it\nback on the assistant message — required by MiMo / DeepSeek V3.2+ thinking\nmode, ignored by providers that don't recognize the field.",
                     "type": "string"
                 },
+                "reasoning_metadata": {
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ProviderMetadata"
+                },
+                "reasoning_signature": {
+                    "description": "ReasoningSignature / ReasoningMetadata are the provider artifacts that\nmust accompany ReasoningContent on replay (Anthropic signatures,\nOpenAI Responses encrypted reasoning items).",
+                    "type": "string"
+                },
                 "thought": {
                     "description": "LLM's reasoning/thinking (Think phase)",
                     "type": "string"
@@ -18327,8 +19105,12 @@ const docTemplate = `{
                     "description": "Tools called in this step (Act phase)",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ToolCall"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ToolCall"
                     }
+                },
+                "truncated": {
+                    "description": "Truncated marks the round the completion-token cap cut off. It rides in\nthe agent_steps JSON so a reloaded, shared or re-opened conversation can\nstill show that the answer stops mid-sentence by design, rather than\nlooking finished. Live streaming carries the same fact on the answer\nevent; this is what survives the round trip.",
+                    "type": "boolean"
                 },
                 "user_messages_before": {
                     "description": "UserMessagesBefore records consumed steer rows in delivery order, before\nthis model response. Unlike timestamps, this remains unambiguous on replay.",
@@ -18339,7 +19121,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.AnswerStrategy": {
+        "github_com_jrmatherly_ai-kb_internal_types.AnswerStrategy": {
             "type": "string",
             "enum": [
                 "all",
@@ -18350,7 +19132,7 @@ const docTemplate = `{
                 "AnswerStrategyRandom"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.AuditAction": {
+        "github_com_jrmatherly_ai-kb_internal_types.AuditAction": {
             "type": "string",
             "enum": [
                 "rbac.member_added",
@@ -18481,11 +19263,11 @@ const docTemplate = `{
                 "AuditActionFAQImportFailed"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.AuditLog": {
+        "github_com_jrmatherly_ai-kb_internal_types.AuditLog": {
             "type": "object",
             "properties": {
                 "action": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AuditAction"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AuditAction"
                 },
                 "actor_role": {
                     "type": "string"
@@ -18506,7 +19288,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "outcome": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AuditOutcome"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AuditOutcome"
                 },
                 "request_method": {
                     "type": "string"
@@ -18534,7 +19316,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.AuditOutcome": {
+        "github_com_jrmatherly_ai-kb_internal_types.AuditOutcome": {
             "type": "string",
             "enum": [
                 "success",
@@ -18553,7 +19335,7 @@ const docTemplate = `{
                 "AuditOutcomeCanceled"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.AutoTagConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.AutoTagConfig": {
             "type": "object",
             "properties": {
                 "enabled": {
@@ -18571,7 +19353,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.COSEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.COSEngineConfig": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -18600,7 +19382,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ChatHistoryConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ChatHistoryConfig": {
             "type": "object",
             "properties": {
                 "embedding_model_id": {
@@ -18617,7 +19399,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ChunkingConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ChunkingConfig": {
             "type": "object",
             "properties": {
                 "child_chunk_size": {
@@ -18651,7 +19433,7 @@ const docTemplate = `{
                     "description": "ParserEngineRules configures which parser engine to use for each file type.\nWhen empty, DefaultParserEngine is used (builtin/simple routing, except\ntypes that only a specific engine can parse: ppt/pptx fall back to\nmarkitdown). A linked anydoc binding is preferred for every type it\nconverts.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ParserEngineRule"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ParserEngineRule"
                     }
                 },
                 "separators": {
@@ -18675,7 +19457,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ConnectionConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ConnectionConfig": {
             "type": "object",
             "properties": {
                 "addr": {
@@ -18732,7 +19514,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ContextCompressionStrategy": {
+        "github_com_jrmatherly_ai-kb_internal_types.ContextCompressionStrategy": {
             "type": "string",
             "enum": [
                 "sliding_window",
@@ -18743,14 +19525,14 @@ const docTemplate = `{
                 "ContextCompressionSmart"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.ContextConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ContextConfig": {
             "type": "object",
             "properties": {
                 "compression_strategy": {
                     "description": "Compression strategy: \"sliding_window\" or \"smart\"",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ContextCompressionStrategy"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ContextCompressionStrategy"
                         }
                     ]
                 },
@@ -18768,7 +19550,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.CreateOrganizationRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.CreateOrganizationRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -18798,15 +19580,15 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.CredentialsConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.CredentialsConfig": {
             "type": "object",
             "properties": {
                 "weknoracloud": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WeKnoraCloudCredentials"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WeKnoraCloudCredentials"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.CubeEgressRule": {
+        "github_com_jrmatherly_ai-kb_internal_types.CubeEgressRule": {
             "type": "object",
             "properties": {
                 "audit": {
@@ -18824,7 +19606,7 @@ const docTemplate = `{
                     "description": "Inject adds credential headers on allowed HTTPS requests.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CubeHeaderInject"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CubeHeaderInject"
                     }
                 },
                 "methods": {
@@ -18847,7 +19629,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.CubeHeaderInject": {
+        "github_com_jrmatherly_ai-kb_internal_types.CubeHeaderInject": {
             "type": "object",
             "properties": {
                 "format": {
@@ -18861,11 +19643,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.CubeSandboxConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.CubeSandboxConfig": {
             "type": "object",
             "properties": {
                 "api_key": {
-                    "description": "加密",
+                    "description": "encrypted",
                     "type": "string"
                 },
                 "api_url": {
@@ -18896,7 +19678,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.CustomAgentConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.CustomAgentConfig": {
             "type": "object",
             "properties": {
                 "agent_mode": {
@@ -18923,11 +19705,11 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "attachment_ocr_max_pages": {
-                    "description": "AttachmentOCRMaxPages caps how many pages of a scanned / image-only\ndocument this agent sends to the VLM for OCR. 0 falls back to the global\ndefault (WEKNORA_CHAT_ATTACHMENT_OCR_MAX_PAGES). More pages means higher\ncoverage but slower parsing and more VLM cost.",
+                    "description": "AttachmentOCRMaxPages caps how many pages of a scanned / image-only\ndocument this agent sends to the VLM for OCR. 0 falls back to the global\ndefault (AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES). More pages means higher\ncoverage but slower parsing and more VLM cost.",
                     "type": "integer"
                 },
                 "attachment_parse_wait_timeout_sec": {
-                    "description": "AttachmentParseWaitTimeoutSec bounds, in seconds, how long a chat turn\nwaits for this agent's still-parsing attachments before proceeding with\nonly the finished ones. 0 falls back to the global default\n(WEKNORA_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC).",
+                    "description": "AttachmentParseWaitTimeoutSec bounds, in seconds, how long a chat turn\nwaits for this agent's still-parsing attachments before proceeding with\nonly the finished ones. 0 falls back to the global default\n(AIKB_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC).",
                     "type": "integer"
                 },
                 "audio_upload_enabled": {
@@ -18938,7 +19720,7 @@ const docTemplate = `{
                     "description": "===== Chat Attachment Parsing Settings =====\nChatParserEngineRules selects parser engines for session-scoped chat\nattachments by file type. Takes precedence over the tenant-level\nParserEngineConfig.ChatParserEngineRules; an explicit per-request\nparser_engine still overrides both.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ParserEngineRule"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ParserEngineRule"
                     }
                 },
                 "citation_enabled": {
@@ -19074,9 +19856,13 @@ const docTemplate = `{
                     "description": "===== Conversation Question Suggestions =====\nQuestionSuggestions owns both the static/knowledge-backed prompts shown\nbefore the first user turn and the contextual follow-up questions shown\nafter a completed assistant answer.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.QuestionSuggestionConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.QuestionSuggestionConfig"
                         }
                     ]
+                },
+                "reasoning_effort": {
+                    "description": "ReasoningEffort selects the thinking intensity (off | auto | minimal |\nlow | medium | high | xhigh | max). Empty keeps the boolean Thinking\nsemantics: true means \"auto\". See internal/models/api.ReasoningEffort.",
+                    "type": "string"
                 },
                 "rerank_model_id": {
                     "description": "ReRank model ID for retrieval",
@@ -19174,7 +19960,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.DataSource": {
+        "github_com_jrmatherly_ai-kb_internal_types.DataSource": {
             "type": "object",
             "properties": {
                 "config": {
@@ -19234,7 +20020,7 @@ const docTemplate = `{
                     "description": "Latest sync log (not stored in DB, populated on query)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SyncLog"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SyncLog"
                         }
                     ]
                 },
@@ -19280,7 +20066,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.DockerSandboxConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.DockerSandboxConfig": {
             "type": "object",
             "properties": {
                 "cpu_limit": {
@@ -19319,12 +20105,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tls_cert_path": {
-                    "description": "TLSCertPath is a directory on the WeKnora host containing ca.pem,\ncert.pem and key.pem. Required when Host is a TCP endpoint.",
+                    "description": "TLSCertPath is a directory on the AI KB host containing ca.pem,\ncert.pem and key.pem. Required when Host is a TCP endpoint.",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.E2BHostRule": {
+        "github_com_jrmatherly_ai-kb_internal_types.E2BHostRule": {
             "type": "object",
             "properties": {
                 "headers": {
@@ -19339,11 +20125,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.E2BSandboxConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.E2BSandboxConfig": {
             "type": "object",
             "properties": {
                 "api_key": {
-                    "description": "加密",
+                    "description": "encrypted",
                     "type": "string"
                 },
                 "api_url": {
@@ -19357,7 +20143,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "proxy_url": {
-                    "description": "ProxyURL is the data-plane gateway that fronts envd. E2B Cloud resolves\n\"\u003cport\u003e-\u003csandboxID\u003e.\u003csandbox_domain\u003e\" through public DNS and TLS, so it\nneeds no value here. Self-hosted E2B-compatible control planes usually\nserve every sandbox from one gateway address and expect the sandbox\nauthority in the Host header; setting this makes WeKnora dial the\ngateway directly instead of requiring wildcard DNS and a certificate\nfor the sandbox domain. An \"http://\" gateway also downgrades the\ndata-plane scheme, which the E2B SDK otherwise pins to https.",
+                    "description": "ProxyURL is the data-plane gateway that fronts envd. E2B Cloud resolves\n\"\u003cport\u003e-\u003csandboxID\u003e.\u003csandbox_domain\u003e\" through public DNS and TLS, so it\nneeds no value here. Self-hosted E2B-compatible control planes usually\nserve every sandbox from one gateway address and expect the sandbox\nauthority in the Host header; setting this makes AI KB dial the\ngateway directly instead of requiring wildcard DNS and a certificate\nfor the sandbox domain. An \"http://\" gateway also downgrades the\ndata-plane scheme, which the E2B SDK otherwise pins to https.",
                     "type": "string"
                 },
                 "sandbox_domain": {
@@ -19368,7 +20154,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.EmbeddingParameters": {
+        "github_com_jrmatherly_ai-kb_internal_types.EmbeddingParameters": {
             "type": "object",
             "properties": {
                 "dimension": {
@@ -19382,7 +20168,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ExtractConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ExtractConfig": {
             "type": "object",
             "properties": {
                 "custom_instructions": {
@@ -19395,13 +20181,13 @@ const docTemplate = `{
                 "nodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.GraphNode"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.GraphNode"
                     }
                 },
                 "relations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.GraphRelation"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.GraphRelation"
                     }
                 },
                 "tags": {
@@ -19415,20 +20201,20 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQBatchUpsertPayload": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQBatchUpsertPayload": {
             "type": "object",
             "required": [
                 "entries"
             ],
             "properties": {
                 "dry_run": {
-                    "description": "仅验证，不实际导入",
+                    "description": "validate only, import nothing",
                     "type": "boolean"
                 },
                 "entries": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQEntryPayload"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQEntryPayload"
                     }
                 },
                 "knowledge_id": {
@@ -19442,41 +20228,41 @@ const docTemplate = `{
                     ]
                 },
                 "task_id": {
-                    "description": "可选，如果不传则自动生成UUID",
+                    "description": "optional; a UUID is generated when empty",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQConfig": {
             "type": "object",
             "properties": {
                 "index_mode": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQIndexMode"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQIndexMode"
                 },
                 "question_index_mode": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQQuestionIndexMode"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQQuestionIndexMode"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQEntryFieldsBatchUpdate": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQEntryFieldsBatchUpdate": {
             "type": "object",
             "properties": {
                 "by_id": {
-                    "description": "ByID 按条目ID更新，key为条目ID (seq_id)",
+                    "description": "ByID updates by entry, keyed by entry ID (seq_id)",
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQEntryFieldsUpdate"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQEntryFieldsUpdate"
                     }
                 },
                 "by_tag": {
-                    "description": "ByTag 按Tag批量更新，key为TagID (seq_id)",
+                    "description": "ByTag updates by tag, keyed by TagID (seq_id)",
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQEntryFieldsUpdate"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQEntryFieldsUpdate"
                     }
                 },
                 "exclude_ids": {
-                    "description": "ExcludeIDs 在ByTag操作中需要排除的ID列表 (seq_id)",
+                    "description": "ExcludeIDs are entry IDs (seq_id) the ByTag update skips",
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -19484,7 +20270,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQEntryFieldsUpdate": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQEntryFieldsUpdate": {
             "type": "object",
             "properties": {
                 "is_enabled": {
@@ -19498,14 +20284,14 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQEntryPayload": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQEntryPayload": {
             "type": "object",
             "required": [
                 "standard_question"
             ],
             "properties": {
                 "answer_strategy": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AnswerStrategy"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AnswerStrategy"
                 },
                 "answers": {
                     "type": "array",
@@ -19514,7 +20300,7 @@ const docTemplate = `{
                     }
                 },
                 "id": {
-                    "description": "ID 可选，用于数据迁移时指定 seq_id（必须小于自增起始值 100000000）",
+                    "description": "ID is optional; data migrations use it to set seq_id (must be below the\nauto-increment start, 100000000).",
                     "type": "integer"
                 },
                 "is_enabled": {
@@ -19546,7 +20332,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQIndexMode": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQIndexMode": {
             "type": "string",
             "enum": [
                 "question_only",
@@ -19557,7 +20343,7 @@ const docTemplate = `{
                 "FAQIndexModeQuestionAnswer"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQQuestionIndexMode": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQQuestionIndexMode": {
             "type": "string",
             "enum": [
                 "combined",
@@ -19568,14 +20354,14 @@ const docTemplate = `{
                 "FAQQuestionIndexModeSeparate"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.FAQSearchRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.FAQSearchRequest": {
             "type": "object",
             "required": [
                 "query_text"
             ],
             "properties": {
                 "first_priority_tag_ids": {
-                    "description": "第一优先级标签ID列表，限定命中范围，优先级最高",
+                    "description": "first-priority tag IDs; limit the hit range, highest priority",
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -19585,14 +20371,14 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "only_recommended": {
-                    "description": "是否仅返回推荐的条目",
+                    "description": "return recommended entries only",
                     "type": "boolean"
                 },
                 "query_text": {
                     "type": "string"
                 },
                 "second_priority_tag_ids": {
-                    "description": "第二优先级标签ID列表，限定命中范围，优先级低于第一优先级",
+                    "description": "second-priority tag IDs; limit the hit range, below first priority",
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -19603,7 +20389,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.FollowUpSuggestionConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.FollowUpSuggestionConfig": {
             "type": "object",
             "properties": {
                 "additional_instruction": {
@@ -19644,7 +20430,23 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.GraphNode": {
+        "github_com_jrmatherly_ai-kb_internal_types.GalleryUserPrefs": {
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "description": "Mode is \"all\" (every search-eligible field active) or \"custom\"\n(per-field Status governs). Empty = \"all\".",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Status maps a namespaced attribute id (\"builtin:caption\") to\n\"on\"/\"off\". Only consulted in custom mode; an unrecorded field is\noff. Source-declared on/off does not exist — activation is always\nthe user's own record.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.GraphNode": {
             "type": "object",
             "properties": {
                 "attributes": {
@@ -19664,7 +20466,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.GraphRelation": {
+        "github_com_jrmatherly_ai-kb_internal_types.GraphRelation": {
             "type": "object",
             "properties": {
                 "node1": {
@@ -19678,16 +20480,67 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ImageProcessingConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ImageActionsConfig": {
             "type": "object",
             "properties": {
+                "ocr": {
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageOCRAction"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.ImageAttrCondition": {
+            "type": "object",
+            "properties": {
+                "is": {
+                    "type": "string"
+                },
+                "prop": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.ImageOCRAction": {
+            "type": "object",
+            "properties": {
+                "on": {
+                    "description": "On is the list of attribute conditions that enable OCR. Matching any one\nturns OCR on.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageAttrCondition"
+                    }
+                },
+                "on_unobserved": {
+                    "description": "OnUnobserved is the OCR decision used when the observation does not\nanswer for one of the attributes the policy reads — the attribute is\nabsent because the model skipped the line, or because the value it wrote\nwas not one of the allowed ones. The default is true: an incomplete\nobservation keeps extracting, so a missed block of text costs one extra\ncall instead of being lost. Turn it off only with a model reliable enough\nto answer every attribute line.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.ImageProcessingConfig": {
+            "type": "object",
+            "properties": {
+                "image_actions": {
+                    "description": "ImageActions overrides the built-in attribute→work table (see\nDefaultImageActions). A nil value keeps the conservative default: run OCR\nfor block text, data visuals, and unobserved images.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageActionsConfig"
+                        }
+                    ]
+                },
+                "image_attrs_enabled": {
+                    "description": "ImageAttrsEnabled turns the attribute-observed image pipeline on for this\nknowledge base. It is off by default on purpose, so upgrading an\nexisting deployment never changes what happens to documents already\nbeing ingested: with it off every image is described and OCR'd exactly\nas before. When on, the describe round also observes image attributes and\nthe attribute policy decides whether OCR runs for it. A single upload can\noverride it per document through\nKnowledgeProcessOverrides.ImageAttrsEnabled.",
+                    "type": "boolean"
+                },
+                "image_vector_enabled": {
+                    "description": "ImageVectorEnabled lets a knowledge base whose embedding model takes\nimages index each image by its own vector and recall it with one. It\nis off by default on purpose: a model that takes images is also used\nfor plain text, and turning this on costs an embedding call per image\nand widens vector recall. Existing knowledge bases stay off after an\nupgrade because the stored JSON has no such key.",
+                    "type": "boolean"
+                },
                 "model_id": {
                     "description": "Model ID",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.IndexConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.IndexConfig": {
             "type": "object",
             "properties": {
                 "buckets_num": {
@@ -19756,7 +20609,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.IndexingStrategy": {
+        "github_com_jrmatherly_ai-kb_internal_types.IndexingStrategy": {
             "type": "object",
             "properties": {
                 "graph_enabled": {
@@ -19777,21 +20630,21 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.InviteMemberRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.InviteMemberRequest": {
             "type": "object",
             "required": [
                 "role"
             ],
             "properties": {
                 "representative_user_id": {
-                    "description": "RepresentativeUserID identifies the user attached to the OTM row for\ndisplay/audit. Optional: when unset, the handler picks a stable default\n(the user from the legacy UserID field, or the workspace's owner).",
+                    "description": "RepresentativeUserID is accepted for compatibility and ignored: a\ndirect add attaches no user of the enrolled workspace, since the\ninviter must not choose whose details the roster shows.",
                     "type": "string"
                 },
                 "role": {
                     "description": "Role to assign: admin/editor/viewer",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                         }
                     ]
                 },
@@ -19800,12 +20653,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "user_id": {
-                    "description": "UserID is retained for backward compatibility. When set without\nTenantID, the handler resolves the user's TenantID and uses this\nuser as the representative.",
+                    "description": "UserID is retained for backward compatibility. When set without\nTenantID, the handler resolves the user's TenantID.",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.JoinByOrganizationIDRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.JoinByOrganizationIDRequest": {
             "type": "object",
             "required": [
                 "organization_id"
@@ -19823,13 +20676,13 @@ const docTemplate = `{
                     "description": "Optional: requested role (admin/editor/viewer); default viewer",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.JoinOrganizationRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.JoinOrganizationRequest": {
             "type": "object",
             "required": [
                 "invite_code"
@@ -19842,7 +20695,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.KBCloneTaskStatus": {
+        "github_com_jrmatherly_ai-kb_internal_types.KBCloneTaskStatus": {
             "type": "string",
             "enum": [
                 "pending",
@@ -19857,7 +20710,7 @@ const docTemplate = `{
                 "KBCloneStatusFailed"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.KS3EngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.KS3EngineConfig": {
             "type": "object",
             "properties": {
                 "access_key": {
@@ -19880,14 +20733,14 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.KnowledgeBase": {
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeBase": {
             "type": "object",
             "properties": {
                 "asr_config": {
                     "description": "ASR config (Automatic Speech Recognition)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ASRConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ASRConfig"
                         }
                     ]
                 },
@@ -19895,7 +20748,7 @@ const docTemplate = `{
                     "description": "AutoTagConfig controls asynchronous association of existing tags after parsing.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AutoTagConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AutoTagConfig"
                         }
                     ]
                 },
@@ -19907,7 +20760,7 @@ const docTemplate = `{
                     "description": "Chunking configuration",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ChunkingConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ChunkingConfig"
                         }
                     ]
                 },
@@ -19920,7 +20773,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "creator_name": {
-                    "description": "CreatorName 是 CreatorID 对应用户的展示名（username / email 等），\n仅在列表场景由 handler 批量回填，不落库；为空表示创建者无法解析（用户已删除、\nCreatorID 为空的老数据等）。前端用它在卡片来源徽章上做 mine vs workspace 的二分。",
+                    "description": "CreatorName is the display name (username, email and so on) of the CreatorID user.\nThe handler batch-fills it for list responses only; it is not persisted. Empty means\nthe creator cannot be resolved (deleted user, old rows with no CreatorID). The\nfrontend uses it to split the card source badge into mine vs workspace.",
                     "type": "string"
                 },
                 "deleted_at": {
@@ -19943,7 +20796,7 @@ const docTemplate = `{
                     "description": "Extract config",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ExtractConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ExtractConfig"
                         }
                     ]
                 },
@@ -19951,7 +20804,15 @@ const docTemplate = `{
                     "description": "FAQConfig stores FAQ specific configuration such as indexing strategy",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQConfig"
+                        }
+                    ]
+                },
+                "generated_profile": {
+                    "description": "GeneratedProfile is the machine-generated description: a gist, merged\ntopics, typical questions and the aggregate snapshot they came from. It\nnever overwrites the user-authored Description; both are shown to agents.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfile"
                         }
                     ]
                 },
@@ -19963,7 +20824,7 @@ const docTemplate = `{
                     "description": "Image processing configuration",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ImageProcessingConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageProcessingConfig"
                         }
                     ]
                 },
@@ -19971,7 +20832,7 @@ const docTemplate = `{
                     "description": "IndexingStrategy controls which indexing pipelines are active for this knowledge base.\nPipelines: vector search, keyword search, wiki generation, knowledge graph extraction.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.IndexingStrategy"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.IndexingStrategy"
                         }
                     ]
                 },
@@ -20003,11 +20864,19 @@ const docTemplate = `{
                     "description": "ProcessingCount indicates the number of knowledge items being processed (for document type knowledge bases)",
                     "type": "integer"
                 },
+                "profile_config": {
+                    "description": "ProfileConfig controls automatic generation of the knowledge-base\ndescription from per-document profiles (document knowledge bases only).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfileConfig"
+                        }
+                    ]
+                },
                 "question_generation_config": {
                     "description": "QuestionGenerationConfig stores question generation configuration for document knowledge bases",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.QuestionGenerationConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.QuestionGenerationConfig"
                         }
                     ]
                 },
@@ -20023,7 +20892,7 @@ const docTemplate = `{
                     "description": "Deprecated: legacy COS config column. Kept for backward compatibility with old data.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.StorageConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.StorageConfig"
                         }
                     ]
                 },
@@ -20031,7 +20900,7 @@ const docTemplate = `{
                     "description": "Storage provider config (new): only stores provider selection; credentials from workspace StorageEngineConfig",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.StorageProviderConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.StorageProviderConfig"
                         }
                     ]
                 },
@@ -20059,7 +20928,7 @@ const docTemplate = `{
                     "description": "VLM config",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.VLMConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.VLMConfig"
                         }
                     ]
                 },
@@ -20067,20 +20936,20 @@ const docTemplate = `{
                     "description": "WikiConfig stores wiki-specific configuration (only for wiki type knowledge bases)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiConfig"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.KnowledgeBaseConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseConfig": {
             "type": "object",
             "properties": {
                 "auto_tag_config": {
                     "description": "AutoTagConfig controls optional automatic association of existing KB tags.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AutoTagConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AutoTagConfig"
                         }
                     ]
                 },
@@ -20088,7 +20957,7 @@ const docTemplate = `{
                     "description": "Chunking configuration",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ChunkingConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ChunkingConfig"
                         }
                     ]
                 },
@@ -20096,15 +20965,15 @@ const docTemplate = `{
                     "description": "FAQ configuration (only for FAQ type knowledge bases)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FAQConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FAQConfig"
                         }
                     ]
                 },
                 "image_processing_config": {
-                    "description": "Image processing configuration",
+                    "description": "Image processing configuration.\n\nnil means \"no change\" when updating, the same contract IndexingStrategy\nuses. A request that does not mention this field must leave the image\nsettings alone: the attribute-observation switch and the attribute policy\nare things a knowledge base accumulates, and a client that predates them\nwould otherwise reset the lot on any save. Sending an object — empty\nincluded — replaces the whole configuration.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ImageProcessingConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageProcessingConfig"
                         }
                     ]
                 },
@@ -20112,7 +20981,15 @@ const docTemplate = `{
                     "description": "IndexingStrategy controls which indexing pipelines are active.\nnil means \"no change\" when updating (preserves existing strategy).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.IndexingStrategy"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.IndexingStrategy"
+                        }
+                    ]
+                },
+                "profile_config": {
+                    "description": "ProfileConfig controls optional automatic knowledge-base description\ngeneration. nil means \"no change\" when updating.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfileConfig"
                         }
                     ]
                 },
@@ -20120,13 +20997,135 @@ const docTemplate = `{
                     "description": "Wiki configuration (only for wiki-enabled knowledge bases)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiConfig"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.KnowledgeBaseShareResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfile": {
+            "type": "object",
+            "properties": {
+                "aggregate_hash": {
+                    "description": "AggregateHash identifies the aggregate the gist was generated from. A\nmismatch with the live aggregate means the text is stale.",
+                    "type": "string"
+                },
+                "error": {
+                    "description": "Error holds the last generation error when Status is failed.",
+                    "type": "string"
+                },
+                "generated_at": {
+                    "description": "GeneratedAt records when the text was produced.",
+                    "type": "string"
+                },
+                "gist": {
+                    "description": "Gist is a short statement of what the knowledge base covers.",
+                    "type": "string"
+                },
+                "model_id": {
+                    "description": "ModelID records which chat model produced the text.",
+                    "type": "string"
+                },
+                "stats": {
+                    "description": "Stats is the aggregate snapshot the text was generated from.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfileStats"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "Status is one of the KnowledgeBaseProfileStatus* values.",
+                    "type": "string"
+                },
+                "topics": {
+                    "description": "Topics is the merged topic list (at most KnowledgeBaseProfileMaxTopics).",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "typical_questions": {
+                    "description": "TypicalQuestions lists questions this knowledge base can answer.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfileConfig": {
+            "type": "object",
+            "properties": {
+                "custom_instructions": {
+                    "description": "CustomInstructions is appended to the stable system prompt, e.g. the\naudience the description should address or terms to keep.",
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "model_id": {
+                    "description": "ModelID overrides the chat model; empty falls back to the KB summary model.",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseProfileStats": {
+            "type": "object",
+            "properties": {
+                "doc_types": {
+                    "description": "DocTypes counts documents per model-assigned document type.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.NamedCount"
+                    }
+                },
+                "document_count": {
+                    "description": "DocumentCount is the number of eligible documents at generation time.",
+                    "type": "integer"
+                },
+                "earliest_at": {
+                    "description": "EarliestAt and LatestAt bound document creation times.",
+                    "type": "string"
+                },
+                "file_types": {
+                    "description": "FileTypes counts documents per file extension.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.NamedCount"
+                    }
+                },
+                "folders": {
+                    "description": "Folders lists the top-level folder names present.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "latest_at": {
+                    "type": "string"
+                },
+                "profiled_count": {
+                    "description": "ProfiledCount is how many of them carried a document profile.",
+                    "type": "integer"
+                },
+                "raw_topics": {
+                    "description": "RawTopics counts documents per normalized topic keyword before merging.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.NamedCount"
+                    }
+                },
+                "tags": {
+                    "description": "Tags counts documents per knowledge-base tag.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.NamedCount"
+                    }
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseShareResponse": {
             "type": "object",
             "properties": {
                 "chunk_count": {
@@ -20182,27 +21181,27 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.KnowledgeMoveProgress": {
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeMoveProgress": {
             "type": "object",
             "properties": {
                 "created_at": {
-                    "description": "任务创建时间",
+                    "description": "task creation time",
                     "type": "integer"
                 },
                 "error": {
-                    "description": "错误信息",
+                    "description": "error message",
                     "type": "string"
                 },
                 "failed": {
-                    "description": "失败数",
+                    "description": "failed",
                     "type": "integer"
                 },
                 "message": {
-                    "description": "状态消息",
+                    "description": "status message",
                     "type": "string"
                 },
                 "processed": {
-                    "description": "已处理数",
+                    "description": "processed",
                     "type": "integer"
                 },
                 "progress": {
@@ -20213,7 +21212,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KBCloneTaskStatus"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KBCloneTaskStatus"
                 },
                 "target_kb_id": {
                     "type": "string"
@@ -20222,31 +21221,47 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total": {
-                    "description": "总知识数",
+                    "description": "total knowledge items",
                     "type": "integer"
                 },
                 "updated_at": {
-                    "description": "最后更新时间",
+                    "description": "last update time",
                     "type": "integer"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.KnowledgeProcessOverrides": {
+        "github_com_jrmatherly_ai-kb_internal_types.KnowledgeProcessOverrides": {
             "type": "object",
             "properties": {
                 "asr_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ASRConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ASRConfig"
                 },
                 "chunking_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ChunkingConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ChunkingConfig"
                 },
                 "enable_multimodel": {
                     "type": "boolean"
                 },
                 "extract_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ExtractConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ExtractConfig"
                 },
                 "graph_enabled": {
+                    "type": "boolean"
+                },
+                "image_actions": {
+                    "description": "ImageActions overrides rows of the attribute-\u003ework table for this document\n(merged per action key on top of the knowledge base's table).\nnil keeps the knowledge base's setting.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageActionsConfig"
+                        }
+                    ]
+                },
+                "image_attrs_enabled": {
+                    "description": "ImageAttrsEnabled overrides the knowledge base's attribute-observed image\npipeline switch for this one document. nil keeps the knowledge base's\nsetting.",
+                    "type": "boolean"
+                },
+                "image_vector_enabled": {
+                    "description": "ImageVectorEnabled overrides image vector indexing for this document.\nIt does not change the KB-wide retrieval setting or embedding model.",
                     "type": "boolean"
                 },
                 "parser_engine_overrides": {
@@ -20259,28 +21274,28 @@ const docTemplate = `{
                 "parser_engine_rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ParserEngineRule"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ParserEngineRule"
                     }
                 },
                 "question_generation_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.QuestionGenerationConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.QuestionGenerationConfig"
                 },
                 "summary_enabled": {
                     "description": "SummaryEnabled defaults to true when omitted for backward compatibility.",
                     "type": "boolean"
                 },
                 "vlm_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.VLMConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.VLMConfig"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ListMembersResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.ListMembersResponse": {
             "type": "object",
             "properties": {
                 "members": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrganizationMemberResponse"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrganizationMemberResponse"
                     }
                 },
                 "total": {
@@ -20288,20 +21303,20 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ListOrganizationsResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.ListOrganizationsResponse": {
             "type": "object",
             "properties": {
                 "organizations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrganizationResponse"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrganizationResponse"
                     }
                 },
                 "resource_counts": {
-                    "description": "各空间内知识库/智能体数量，供列表侧栏展示",
+                    "description": "knowledge base and agent counts per workspace, for the list sidebar",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ResourceCountsByOrgResponse"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ResourceCountsByOrgResponse"
                         }
                     ]
                 },
@@ -20310,13 +21325,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ListSharesResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.ListSharesResponse": {
             "type": "object",
             "properties": {
                 "shares": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KnowledgeBaseShareResponse"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseShareResponse"
                     }
                 },
                 "total": {
@@ -20324,7 +21339,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.LocalEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.LocalEngineConfig": {
             "type": "object",
             "properties": {
                 "path_prefix": {
@@ -20332,7 +21347,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.LoginRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -20348,14 +21363,14 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.LoginResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.LoginResponse": {
             "type": "object",
             "properties": {
                 "active_tenant": {
                     "description": "ActiveTenant is the workspace whose ID is encoded in the issued JWT;\nfuture requests are scoped to it until the client calls /auth/switch-tenant.\nDefaults to the user's home workspace on a fresh login.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Tenant"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Tenant"
                         }
                     ]
                 },
@@ -20363,7 +21378,7 @@ const docTemplate = `{
                     "description": "Memberships lists every workspace the user can authenticate into,\nalong with their role in each. Always populated (length 1 for users\nwho only belong to their home workspace) so frontends can render a\nworkspace switcher without a follow-up request. Serialised without\nomitempty so the field is always present as a JSON array (possibly\nempty) — the \"always populated\" contract relies on the server side\nguaranteeing a non-nil slice.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Membership"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Membership"
                     }
                 },
                 "message": {
@@ -20379,11 +21394,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.User"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.User"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPAdvancedConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPAdvancedConfig": {
             "type": "object",
             "properties": {
                 "retry_count": {
@@ -20400,7 +21415,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPAuthConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPAuthConfig": {
             "type": "object",
             "properties": {
                 "api_key": {
@@ -20418,7 +21433,7 @@ const docTemplate = `{
                     "description": "AuthType selects the authentication strategy. Empty (\"\") is treated as\nnone for backward compatibility with rows that pre-date this field.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPAuthType"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPAuthType"
                         }
                     ]
                 },
@@ -20440,7 +21455,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPAuthType": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPAuthType": {
             "type": "string",
             "enum": [
                 "",
@@ -20455,26 +21470,26 @@ const docTemplate = `{
                 "MCPAuthOAuth"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPEnvVars": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPEnvVars": {
             "type": "object",
             "additionalProperties": {
                 "type": "string"
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPHeaders": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPHeaders": {
             "type": "object",
             "additionalProperties": {
                 "type": "string"
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPService": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPService": {
             "type": "object",
             "properties": {
                 "advanced_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPAdvancedConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPAdvancedConfig"
                 },
                 "auth_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPAuthConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPAuthConfig"
                 },
                 "created_at": {
                     "type": "string"
@@ -20492,12 +21507,12 @@ const docTemplate = `{
                     "description": "Environment variables for stdio",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPEnvVars"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPEnvVars"
                         }
                     ]
                 },
                 "headers": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPHeaders"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPHeaders"
                 },
                 "id": {
                     "type": "string"
@@ -20513,7 +21528,7 @@ const docTemplate = `{
                     "description": "Required for stdio transport",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPStdioConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPStdioConfig"
                         }
                     ]
                 },
@@ -20521,7 +21536,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "transport_type": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MCPTransportType"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MCPTransportType"
                 },
                 "updated_at": {
                     "type": "string"
@@ -20536,7 +21551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPStdioConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPStdioConfig": {
             "type": "object",
             "properties": {
                 "args": {
@@ -20552,7 +21567,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MCPTransportType": {
+        "github_com_jrmatherly_ai-kb_internal_types.MCPTransportType": {
             "type": "string",
             "enum": [
                 "sse",
@@ -20575,7 +21590,7 @@ const docTemplate = `{
                 "MCPTransportStdio"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.ManualKnowledgePayload": {
+        "github_com_jrmatherly_ai-kb_internal_types.ManualKnowledgePayload": {
             "type": "object",
             "properties": {
                 "channel": {
@@ -20585,7 +21600,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "process_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KnowledgeProcessOverrides"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeProcessOverrides"
                 },
                 "status": {
                     "type": "string"
@@ -20601,7 +21616,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MatchType": {
+        "github_com_jrmatherly_ai-kb_internal_types.MatchType": {
             "type": "integer",
             "enum": [
                 0,
@@ -20616,23 +21631,23 @@ const docTemplate = `{
                 9
             ],
             "x-enum-comments": {
-                "MatchTypeDataAnalysis": "数据分析匹配类型",
+                "MatchTypeDataAnalysis": "data analysis match",
                 "MatchTypeDirectLoad": "Deprecated: reserved to preserve serialized enum values",
-                "MatchTypeParentChunk": "父Chunk匹配类型",
-                "MatchTypeRelationChunk": "关系Chunk匹配类型",
-                "MatchTypeWebSearch": "网络搜索匹配类型"
+                "MatchTypeParentChunk": "parent chunk match",
+                "MatchTypeRelationChunk": "relation chunk match",
+                "MatchTypeWebSearch": "web search match"
             },
             "x-enum-descriptions": [
                 "",
                 "",
                 "",
                 "",
-                "父Chunk匹配类型",
-                "关系Chunk匹配类型",
+                "parent chunk match",
+                "relation chunk match",
                 "",
-                "网络搜索匹配类型",
+                "web search match",
                 "Deprecated: reserved to preserve serialized enum values",
-                "数据分析匹配类型"
+                "data analysis match"
             ],
             "x-enum-varnames": [
                 "MatchTypeEmbedding",
@@ -20647,11 +21662,25 @@ const docTemplate = `{
                 "MatchTypeDataAnalysis"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.Membership": {
+        "github_com_jrmatherly_ai-kb_internal_types.MatchedImage": {
+            "type": "object",
+            "properties": {
+                "chunk_id": {
+                    "type": "string"
+                },
+                "knowledge_base_id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.Membership": {
             "type": "object",
             "properties": {
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantRole"
                 },
                 "tenant_id": {
                     "type": "integer"
@@ -20661,7 +21690,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MemoryConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.MemoryConfig": {
             "type": "object",
             "properties": {
                 "embedding_model_id": {
@@ -20701,7 +21730,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "vector_recall": {
-                    "description": "VectorRecall adds semantic similarity to memory recall. Nil means on\nwhen an embedding model is reachable.\n\nLexical matching alone cannot find a memory the user has re-worded, which\nis most of them: \"回答直接给结论\" and \"别铺垫那么多\" share no tokens. The\ncost is one embedding call per turn, bounded and degraded to lexical on\nfailure, so the feature never becomes a reason a chat is slow.",
+                    "description": "VectorRecall adds semantic similarity to memory recall. Nil means on\nwhen an embedding model is reachable.\n\nLexical matching alone cannot find a memory the user has re-worded, which\nis most of them: \"lead with the conclusion\" and \"skip the long preamble\" share no tokens. The\ncost is one embedding call per turn, bounded and degraded to lexical on\nfailure, so the feature never becomes a reason a chat is slow.",
                     "type": "boolean"
                 },
                 "write_mode": {
@@ -20710,7 +21739,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MentionedItem": {
+        "github_com_jrmatherly_ai-kb_internal_types.MentionedItem": {
             "type": "object",
             "properties": {
                 "id": {
@@ -20745,7 +21774,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.Message": {
+        "github_com_jrmatherly_ai-kb_internal_types.Message": {
             "type": "object",
             "properties": {
                 "agent_duration_ms": {
@@ -20760,21 +21789,21 @@ const docTemplate = `{
                     "description": "Agent execution steps (only for assistant messages generated by agent)\nThis contains the detailed reasoning process and tool calls made by the agent\nStored for user history display, but NOT included in LLM context to avoid redundancy",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AgentStep"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AgentStep"
                     }
                 },
                 "artifacts": {
-                    "description": "Skill-generated files produced during this assistant turn (assistant messages only).\nPopulated by ArtifactCollector after the sandbox finishes, referenced by the\nartifact download endpoint. Empty for user messages and turns without skills.",
+                    "description": "Skill-generated files produced during this assistant turn (assistant messages only).\nPopulated by ArtifactCollector after the sandbox finishes, referenced by the\nartifact download endpoint. Empty for user messages and turns without skills.\n\nStored in the message_artifacts table, not on the message row: the message\nrepository loads it with every message it returns and writes it whenever it\nis non-nil on create or update. A nil slice leaves the stored rows alone.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MessageArtifact"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MessageArtifact"
                     }
                 },
                 "attachments": {
                     "description": "Attached files (documents, audio, etc., for user messages)",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MessageAttachment"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MessageAttachment"
                     }
                 },
                 "channel": {
@@ -20805,7 +21834,7 @@ const docTemplate = `{
                     "description": "Attached images with OCR/Caption text (for user messages)",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MessageImage"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MessageImage"
                     }
                 },
                 "is_completed": {
@@ -20824,14 +21853,14 @@ const docTemplate = `{
                     "description": "References to knowledge chunks used in the response",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SearchResult"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SearchResult"
                     }
                 },
                 "mentioned_items": {
                     "description": "Mentioned knowledge bases and files (for user messages)\nStores the @mentioned items when user sends a message",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MentionedItem"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MentionedItem"
                     }
                 },
                 "model_id": {
@@ -20850,7 +21879,7 @@ const docTemplate = `{
                     "description": "SandboxCheckpoint is the git commit this assistant turn produced in the\nsession sandbox's /workspace. Nil for user messages, for turns that ran\nwithout a sandbox, and for turns whose commit failed (best-effort — a\nfailed checkpoint must never block the reply). A message without a\ncheckpoint cannot serve as a fork point with sandbox state.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SandboxCheckpoint"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SandboxCheckpoint"
                         }
                     ]
                 },
@@ -20866,7 +21895,7 @@ const docTemplate = `{
                     "description": "LLM token usage aggregated across every round of the turn that produced this\nassistant message. Persisted so history reads can attribute cost after the\nlive stream is gone; NULL (nil) for user messages and pre-feature rows.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TokenUsage"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TokenUsage"
                         }
                     ]
                 },
@@ -20874,12 +21903,12 @@ const docTemplate = `{
                     "description": "UsedMemories records which long-term memories were injected into this\nanswer, so the chat UI can show them and let the user delete one on the\nspot. Persisted rather than only streamed so reopening a conversation\nstill explains what the answer saw.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UsedMemory"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UsedMemory"
                     }
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MessageArtifact": {
+        "github_com_jrmatherly_ai-kb_internal_types.MessageArtifact": {
             "type": "object",
             "properties": {
                 "content_hash": {
@@ -20887,7 +21916,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "created_at": {
-                    "description": "When WeKnora persisted the blob",
+                    "description": "When AI KB persisted the blob",
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "description": "DeletedAt marks a file the user deleted. The entry stays in the list\nrather than being removed because its position IS the download address\n(msg.Artifacts[index]); dropping it would shift every later file's index\nand hand an old link the wrong blob. Keeping it also keeps the entry in\nArtifactCollector's de-duplication set, so the next collect does not\nre-attach the very file that was deleted — its sandbox mtime has not\nmoved. Clients filter these out; the bytes are already reclaimed.",
                     "type": "string"
                 },
                 "file_name": {
@@ -20916,7 +21949,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MessageAttachment": {
+        "github_com_jrmatherly_ai-kb_internal_types.MessageAttachment": {
             "type": "object",
             "properties": {
                 "content": {
@@ -20965,7 +21998,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MessageImage": {
+        "github_com_jrmatherly_ai-kb_internal_types.MessageImage": {
             "type": "object",
             "properties": {
                 "caption": {
@@ -20976,7 +22009,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.MinIOEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.MinIOEngineConfig": {
             "type": "object",
             "properties": {
                 "access_key_id": {
@@ -21003,18 +22036,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ModelParameters": {
+        "github_com_jrmatherly_ai-kb_internal_types.ModelParameters": {
             "type": "object",
             "properties": {
                 "api_key": {
                     "type": "string"
                 },
                 "app_id": {
-                    "description": "WeKnoraCloud 厂商专用凭证",
+                    "description": "WeKnoraCloud provider credentials",
                     "type": "string"
                 },
                 "app_secret": {
-                    "description": "AES-256 加密存储，实际承载上游 API Key",
+                    "description": "stored AES-256 encrypted; holds the upstream API key",
                     "type": "string"
                 },
                 "base_url": {
@@ -21025,14 +22058,14 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "custom_headers": {
-                    "description": "CustomHeaders 允许在调用远程模型 API 时附加自定义 HTTP 请求头，\n用途类似 Python OpenAI SDK 的 extra_headers 参数，\n常见场景包括透传企业网关鉴权信息、追踪 ID、路由标识等。\n保留字段（Authorization、api-key、Content-Type、Accept 等）会在运行期被忽略以避免破坏签名/鉴权流程。",
+                    "description": "CustomHeaders adds custom HTTP headers to remote model API calls, like the\nextra_headers parameter of the Python OpenAI SDK. Typical uses are passing through\nenterprise gateway auth, trace IDs and routing tags. Reserved headers (Authorization,\napi-key, Content-Type, Accept and others) are ignored at runtime so they cannot break\nsigning or auth.",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
                 "embedding_parameters": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.EmbeddingParameters"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.EmbeddingParameters"
                 },
                 "extra_config": {
                     "description": "Provider-specific configuration",
@@ -21059,13 +22092,21 @@ const docTemplate = `{
                     "description": "Provider identifier: openai, aliyun, zhipu, generic",
                     "type": "string"
                 },
+                "spec": {
+                    "description": "Spec overrides the catalog entry for this row: protocol, capability\nflags and the flat protocol compat object. Everything omitted is\ninherited from the vendor catalog (see internal/models/catalog).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelSpecOverride"
+                        }
+                    ]
+                },
                 "supports_vision": {
                     "description": "Whether the model accepts image/multimodal input",
                     "type": "boolean"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ModelSource": {
+        "github_com_jrmatherly_ai-kb_internal_types.ModelSource": {
             "type": "string",
             "enum": [
                 "local",
@@ -21152,7 +22193,41 @@ const docTemplate = `{
                 "ModelSourceAzureOpenAI"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.ModelType": {
+        "github_com_jrmatherly_ai-kb_internal_types.ModelSpecOverride": {
+            "type": "object",
+            "properties": {
+                "api": {
+                    "type": "string"
+                },
+                "compat": {
+                    "description": "Compat is a plain object so it round-trips through both JSON (API,\ndatabase column) and YAML (builtin_models.yaml).",
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "context_window": {
+                    "type": "integer"
+                },
+                "input": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "max_output_tokens": {
+                    "type": "integer"
+                },
+                "reasoning": {
+                    "type": "boolean"
+                },
+                "thinking_levels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.ModelType": {
             "type": "string",
             "enum": [
                 "Embedding",
@@ -21183,7 +22258,18 @@ const docTemplate = `{
                 "ModelTypeASR"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.OBSEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.NamedCount": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.OBSEngineConfig": {
             "type": "object",
             "properties": {
                 "access_key": {
@@ -21209,7 +22295,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.OIDCAuthURLResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.OIDCAuthURLResponse": {
             "type": "object",
             "properties": {
                 "authorization_url": {
@@ -21226,7 +22312,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.OIDCConfigResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.OIDCConfigResponse": {
             "type": "object",
             "properties": {
                 "enabled": {
@@ -21240,7 +22326,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.OSSEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.OSSEngineConfig": {
             "type": "object",
             "properties": {
                 "access_key": {
@@ -21272,7 +22358,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.OrgMemberRole": {
+        "github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole": {
             "type": "string",
             "enum": [
                 "admin",
@@ -21285,7 +22371,7 @@ const docTemplate = `{
                 "OrgRoleViewer"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.OrganizationMemberResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.OrganizationMemberResponse": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -21320,11 +22406,11 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.OrganizationResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.OrganizationResponse": {
             "type": "object",
             "properties": {
                 "agent_share_count": {
-                    "description": "共享到该组织的智能体数量",
+                    "description": "agents shared to this organization",
                     "type": "integer"
                 },
                 "avatar": {
@@ -21337,7 +22423,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "has_pending_upgrade": {
-                    "description": "当前用户是否有待处理的权限升级申请",
+                    "description": "whether the current user has a pending permission upgrade request",
                     "type": "boolean"
                 },
                 "id": {
@@ -21376,7 +22462,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "pending_join_request_count": {
-                    "description": "待审批加入申请数（仅管理员可见）",
+                    "description": "pending join requests (visible to admins only)",
                     "type": "integer"
                 },
                 "require_approval": {
@@ -21386,7 +22472,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "share_count": {
-                    "description": "共享到该组织的知识库数量",
+                    "description": "knowledge bases shared to this organization",
                     "type": "integer"
                 },
                 "updated_at": {
@@ -21394,18 +22480,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ParserEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ParserEngineConfig": {
             "type": "object",
             "properties": {
                 "chat_parser_engine_rules": {
                     "description": "ChatParserEngineRules selects parser engines for session-scoped chat\ndocuments. Knowledge bases keep their own rules in ChunkingConfig.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ParserEngineRule"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ParserEngineRule"
                     }
                 },
                 "mineru_api_key": {
-                    "description": "MinerU 云 API Key",
+                    "description": "MinerU cloud API key",
                     "type": "string"
                 },
                 "mineru_cloud_enable_formula": {
@@ -21421,7 +22507,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "mineru_cloud_model": {
-                    "description": "MinerU 云 API 解析参数",
+                    "description": "MinerU cloud API parsing parameters",
                     "type": "string"
                 },
                 "mineru_enable_formula": {
@@ -21435,21 +22521,29 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "mineru_endpoint": {
-                    "description": "MinerU 自建服务端点",
+                    "description": "self-hosted MinerU endpoint",
                     "type": "string"
                 },
                 "mineru_language": {
                     "type": "string"
                 },
                 "mineru_model": {
-                    "description": "MinerU 自建解析参数",
+                    "description": "The backend, vLLM, formula/table and language parameters below apply only to 3.x and earlier.",
                     "type": "string"
                 },
                 "mineru_parse_method": {
                     "type": "string"
                 },
+                "mineru_server_api_key": {
+                    "description": "Self-hosted MinerU parsing parameters. The protocol is detected from the server:\n4.0+ uses the V1 API, older versions use /file_parse.",
+                    "type": "string"
+                },
+                "mineru_tier": {
+                    "description": "4.0+: flash/basic/standard/advanced; empty uses the server default",
+                    "type": "string"
+                },
                 "mineru_vlm_server_url": {
-                    "description": "vLLM 服务器地址 (vlm-http-client / hybrid-http-client)",
+                    "description": "vLLM server URL (vlm-http-client / hybrid-http-client)",
                     "type": "string"
                 },
                 "odl_hybrid": {
@@ -21496,7 +22590,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ParserEngineRule": {
+        "github_com_jrmatherly_ai-kb_internal_types.ParserEngineRule": {
             "type": "object",
             "properties": {
                 "engine": {
@@ -21514,7 +22608,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.PromptCacheStatus": {
+        "github_com_jrmatherly_ai-kb_internal_types.PromptCacheStatus": {
             "type": "string",
             "enum": [
                 "unsupported",
@@ -21529,7 +22623,16 @@ const docTemplate = `{
                 "PromptCacheStatusHit"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.QuestionGenerationConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.ProviderMetadata": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.QuestionGenerationConfig": {
             "type": "object",
             "properties": {
                 "custom_instructions": {
@@ -21545,7 +22648,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.QuestionOrigin": {
+        "github_com_jrmatherly_ai-kb_internal_types.QuestionOrigin": {
             "type": "object",
             "properties": {
                 "knowledge_base_id": {
@@ -21556,18 +22659,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.QuestionSuggestionConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.QuestionSuggestionConfig": {
             "type": "object",
             "properties": {
                 "follow_ups": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.FollowUpSuggestionConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.FollowUpSuggestionConfig"
                 },
                 "starters": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.StarterSuggestionConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.StarterSuggestionConfig"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.QueueStat": {
+        "github_com_jrmatherly_ai-kb_internal_types.QueueStat": {
             "type": "object",
             "properties": {
                 "active": {
@@ -21624,7 +22727,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RegisterRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -21646,7 +22749,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RegisterResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.RegisterResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -21656,14 +22759,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "tenant": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Tenant"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Tenant"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.User"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.User"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RequestRoleUpgradeRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.RequestRoleUpgradeRequest": {
             "type": "object",
             "required": [
                 "requested_role"
@@ -21678,13 +22781,34 @@ const docTemplate = `{
                     "description": "The role user wants to upgrade to",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.Resource": {
+        "github_com_jrmatherly_ai-kb_internal_types.RerankOptions": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Enabled turns the rerank stage off when explicitly false. Nil means on.",
+                    "type": "boolean"
+                },
+                "model_id": {
+                    "description": "ModelID selects the rerank model. Empty falls back to the tenant\nRetrievalConfig, then to the first rerank model of the tenant.",
+                    "type": "string"
+                },
+                "threshold": {
+                    "description": "Threshold is the minimum rerank model score. Nil uses the tenant\nRetrievalConfig. A pointer because 0 and negative scores are valid.",
+                    "type": "number"
+                },
+                "top_k": {
+                    "description": "TopK caps the reranked results. Zero uses the endpoint's result count.",
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.Resource": {
             "type": "object",
             "properties": {
                 "description": {
@@ -21726,7 +22850,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ResourceCountsByOrgResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.ResourceCountsByOrgResponse": {
             "type": "object",
             "properties": {
                 "agents": {
@@ -21753,7 +22877,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RetrievalConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.RetrievalConfig": {
             "type": "object",
             "properties": {
                 "embedding_top_k": {
@@ -21794,14 +22918,14 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RetrieverEngineParams": {
+        "github_com_jrmatherly_ai-kb_internal_types.RetrieverEngineParams": {
             "type": "object",
             "properties": {
                 "retriever_engine_type": {
                     "description": "Retriever engine type",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrieverEngineType"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverEngineType"
                         }
                     ]
                 },
@@ -21809,13 +22933,13 @@ const docTemplate = `{
                     "description": "Retriever type",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrieverType"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverType"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RetrieverEngineType": {
+        "github_com_jrmatherly_ai-kb_internal_types.RetrieverEngineType": {
             "type": "string",
             "enum": [
                 "postgres",
@@ -21844,18 +22968,18 @@ const docTemplate = `{
                 "OpenSearchRetrieverEngineType"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.RetrieverEngines": {
+        "github_com_jrmatherly_ai-kb_internal_types.RetrieverEngines": {
             "type": "object",
             "properties": {
                 "engines": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrieverEngineParams"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverEngineParams"
                     }
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RetrieverType": {
+        "github_com_jrmatherly_ai-kb_internal_types.RetrieverType": {
             "type": "string",
             "enum": [
                 "keywords",
@@ -21878,7 +23002,7 @@ const docTemplate = `{
                 "WebSearchRetrieverType"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.ReviewJoinRequestRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.ReviewJoinRequestRequest": {
             "type": "object",
             "properties": {
                 "approved": {
@@ -21892,13 +23016,13 @@ const docTemplate = `{
                     "description": "Optional: role to assign when approving; overrides applicant's requested role",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RuntimeTaskAction": {
+        "github_com_jrmatherly_ai-kb_internal_types.RuntimeTaskAction": {
             "type": "string",
             "enum": [
                 "cancel",
@@ -21911,13 +23035,13 @@ const docTemplate = `{
                 "RuntimeTaskActionDelete"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.RuntimeTaskInfo": {
+        "github_com_jrmatherly_ai-kb_internal_types.RuntimeTaskInfo": {
             "type": "object",
             "properties": {
                 "allowed_actions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RuntimeTaskAction"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RuntimeTaskAction"
                     }
                 },
                 "completed_at": {
@@ -21975,7 +23099,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "state": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RuntimeTaskState"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RuntimeTaskState"
                 },
                 "sync_log_id": {
                     "type": "string"
@@ -22000,7 +23124,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.RuntimeTaskState": {
+        "github_com_jrmatherly_ai-kb_internal_types.RuntimeTaskState": {
             "type": "string",
             "enum": [
                 "pending",
@@ -22019,7 +23143,7 @@ const docTemplate = `{
                 "RuntimeTaskCompleted"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.S3EngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.S3EngineConfig": {
             "type": "object",
             "properties": {
                 "access_key": {
@@ -22048,7 +23172,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SandboxCheckpoint": {
+        "github_com_jrmatherly_ai-kb_internal_types.SandboxCheckpoint": {
             "type": "object",
             "properties": {
                 "commit_sha": {
@@ -22062,7 +23186,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SandboxNetworkPolicy": {
+        "github_com_jrmatherly_ai-kb_internal_types.SandboxNetworkPolicy": {
             "type": "object",
             "properties": {
                 "allow_out": {
@@ -22080,7 +23204,7 @@ const docTemplate = `{
                     "description": "CubeRules are validated whenever present and consumed only by the Cube\nprovider adapter.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CubeEgressRule"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CubeEgressRule"
                     }
                 },
                 "deny_egress_by_default": {
@@ -22098,12 +23222,12 @@ const docTemplate = `{
                     "description": "E2BHostRules are validated whenever present and consumed only by the E2B\nprovider adapter.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.E2BHostRule"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.E2BHostRule"
                     }
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SearchParams": {
+        "github_com_jrmatherly_ai-kb_internal_types.SearchParams": {
             "type": "object",
             "properties": {
                 "disable_keywords_match": {
@@ -22144,6 +23268,14 @@ const docTemplate = `{
                     "description": "QueryText is required unless query_embedding is provided, keyword matching is disabled,\nand vector matching remains enabled.",
                     "type": "string"
                 },
+                "rerank": {
+                    "description": "Rerank, when present and enabled, reranks the fused candidates before\ntruncating to MatchCount. Only the hybrid-search API reads it; internal\ncallers rerank on their own.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RerankOptions"
+                        }
+                    ]
+                },
                 "scope_tag_ids": {
                     "type": "array",
                     "items": {
@@ -22166,7 +23298,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SearchResult": {
+        "github_com_jrmatherly_ai-kb_internal_types.SearchResult": {
             "type": "object",
             "properties": {
                 "chunk_index": {
@@ -22181,7 +23313,7 @@ const docTemplate = `{
                     }
                 },
                 "chunk_type": {
-                    "description": "Chunk 类型",
+                    "description": "Chunk type",
                     "type": "string"
                 },
                 "content": {
@@ -22197,7 +23329,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "image_info": {
-                    "description": "图片信息 (JSON 格式)",
+                    "description": "Image info (JSON)",
                     "type": "string"
                 },
                 "knowledge_base_id": {
@@ -22236,13 +23368,20 @@ const docTemplate = `{
                     "description": "Match type",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MatchType"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MatchType"
                         }
                     ]
                 },
                 "matched_content": {
                     "description": "MatchedContent is the actual content that was matched in vector search\nFor FAQ: this is the matched question text (standard or similar question)",
                     "type": "string"
+                },
+                "matched_images": {
+                    "description": "MatchedImages survives merging, deduplication and stored reference replay.\nIt contains storage references, never image bytes.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MatchedImage"
+                    }
                 },
                 "metadata": {
                     "description": "Metadata",
@@ -22252,7 +23391,7 @@ const docTemplate = `{
                     }
                 },
                 "parent_chunk_id": {
-                    "description": "父 Chunk ID",
+                    "description": "Parent chunk ID",
                     "type": "string"
                 },
                 "score": {
@@ -22262,6 +23401,13 @@ const docTemplate = `{
                 "seq": {
                     "description": "Seq",
                     "type": "integer"
+                },
+                "source_locators": {
+                    "description": "SourceLocators point back into the original file for citation\nnavigation. Merged results carry the union of their chunks' locators.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SourceLocator"
+                    }
                 },
                 "start_at": {
                     "description": "Start at",
@@ -22276,7 +23422,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.Session": {
+        "github_com_jrmatherly_ai-kb_internal_types.Session": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -22291,6 +23437,10 @@ const docTemplate = `{
                 },
                 "forked_from_message_id": {
                     "description": "ForkedFromMessageID is the user or assistant message, IN THE PARENT\nSESSION, that the fork branched at. For a user point, messages strictly\nbefore it were copied here. For an assistant point, that answer is\nincluded so the branch continues after it.",
+                    "type": "string"
+                },
+                "host_workspace_dir": {
+                    "description": "HostWorkspaceDir is the user-selected project directory this session\noperates in, for the AI KB Lite host sandbox only. Empty means the session\ngets an auto-allocated workspace instead.\n\nWritten once at creation and never updated: re-pointing a live session\nat a different directory would leave its transcript describing files\nthat are no longer there. Standard edition never writes it.",
                     "type": "string"
                 },
                 "id": {
@@ -22309,7 +23459,7 @@ const docTemplate = `{
                     "description": "LastRequestState records the input-bar state used the last time this\nsession sent a question (agent, model, KB scope, web search, MCPs).\nPersisted on every successful POST to /knowledge-chat or /agent-chat so\nthat reopening the session can restore the original request context to\nthe chat UI. Stored in the legacy sessions.agent_config JSONB column to\navoid a new migration; the shape used today is ` + "`" + `SessionLastRequestState` + "`" + `.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SessionLastRequestState"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SessionLastRequestState"
                         }
                     ]
                 },
@@ -22337,12 +23487,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "description": "UserID is the owner scope for this session. WeKnora user UUIDs, API\nexternal-user principals, and embed visitor principals all use this column.",
+                    "description": "UserID is the owner scope for this session. AI KB user UUIDs, API\nexternal-user principals, and embed visitor principals all use this column.",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SessionLastRequestState": {
+        "github_com_jrmatherly_ai-kb_internal_types.SessionLastRequestState": {
             "type": "object",
             "properties": {
                 "agent_enabled": {
@@ -22375,10 +23525,13 @@ const docTemplate = `{
                 "mentioned_items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MentionedItem"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MentionedItem"
                     }
                 },
                 "model_id": {
+                    "type": "string"
+                },
+                "reasoning_effort": {
                     "type": "string"
                 },
                 "skill_names": {
@@ -22398,7 +23551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ShareKnowledgeBaseRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.ShareKnowledgeBaseRequest": {
             "type": "object",
             "required": [
                 "organization_id",
@@ -22409,11 +23562,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "permission": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SkillImageConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.SkillImageConfig": {
             "type": "object",
             "properties": {
                 "base_template_id": {
@@ -22438,7 +23591,86 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.StarterSuggestionConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.SourceLocator": {
+            "type": "object",
+            "properties": {
+                "bbox": {
+                    "description": "BBox is [x0, y0, x1, y1] as fractions of the page width and height,\norigin at the top-left corner of the rendered page.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "block": {
+                    "description": "Block is the 1-based index among a Word file's body paragraphs and tables.",
+                    "type": "integer"
+                },
+                "end": {
+                    "type": "integer"
+                },
+                "end_ms": {
+                    "type": "integer"
+                },
+                "mapping": {
+                    "description": "Mapping records verified text-to-source alignment. Empty means legacy.",
+                    "type": "string"
+                },
+                "page": {
+                    "description": "Page is the 1-based PDF page.",
+                    "type": "integer"
+                },
+                "partial": {
+                    "description": "Partial means some of the chunk has no source mapping.",
+                    "type": "boolean"
+                },
+                "quote": {
+                    "description": "Quote is the complete cited overlap as parsed. Viewers match it\ninside the rendered original and against the\nanswer sentence that cites the chunk.",
+                    "type": "string"
+                },
+                "row_end": {
+                    "type": "integer"
+                },
+                "row_start": {
+                    "type": "integer"
+                },
+                "section": {
+                    "description": "Section is the 1-based EPUB spine index.",
+                    "type": "integer"
+                },
+                "sheet": {
+                    "description": "Sheet is the spreadsheet sheet name; RowStart/RowEnd are its 1-based\nrow numbers as shown by spreadsheet applications.",
+                    "type": "string"
+                },
+                "slide": {
+                    "description": "Slide is the 1-based slide number in presentation order.",
+                    "type": "integer"
+                },
+                "source_hash": {
+                    "description": "SourceHash binds the locator to the knowledge record’s source revision hash.",
+                    "type": "string"
+                },
+                "source_id": {
+                    "description": "SourceID identifies a block within the parser result, not a rendered item.",
+                    "type": "string"
+                },
+                "start": {
+                    "description": "Start/End are rune offsets into the original text file.",
+                    "type": "integer"
+                },
+                "start_ms": {
+                    "description": "StartMs/EndMs bound an audio segment.",
+                    "type": "integer"
+                },
+                "title": {
+                    "description": "Title names the section or slide when the source has one.",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_jrmatherly_ai-kb_internal_types.StarterSuggestionConfig": {
             "type": "object",
             "properties": {
                 "count": {
@@ -22458,7 +23690,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.StorageBackendConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.StorageBackendConfig": {
             "type": "object",
             "properties": {
                 "access_key_id": {
@@ -22502,7 +23734,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.StorageConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.StorageConfig": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -22547,40 +23779,40 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.StorageEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.StorageEngineConfig": {
             "type": "object",
             "properties": {
                 "cos": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.COSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.COSEngineConfig"
                 },
                 "default_provider": {
                     "description": "\"local\", \"minio\", \"cos\", \"tos\", \"s3\", \"oss\", \"ks3\", \"obs\"",
                     "type": "string"
                 },
                 "ks3": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KS3EngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KS3EngineConfig"
                 },
                 "local": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.LocalEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.LocalEngineConfig"
                 },
                 "minio": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MinIOEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MinIOEngineConfig"
                 },
                 "obs": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OBSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OBSEngineConfig"
                 },
                 "oss": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OSSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OSSEngineConfig"
                 },
                 "s3": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.S3EngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.S3EngineConfig"
                 },
                 "tos": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TOSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TOSEngineConfig"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.StorageProviderConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.StorageProviderConfig": {
             "type": "object",
             "properties": {
                 "provider": {
@@ -22589,7 +23821,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SubmitJoinRequestRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.SubmitJoinRequestRequest": {
             "type": "object",
             "required": [
                 "invite_code"
@@ -22608,13 +23840,13 @@ const docTemplate = `{
                     "description": "Optional: role the applicant requests (admin/editor/viewer); default viewer",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SuggestionAttribution": {
+        "github_com_jrmatherly_ai-kb_internal_types.SuggestionAttribution": {
             "type": "object",
             "properties": {
                 "question_id": {
@@ -22625,7 +23857,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SyncLog": {
+        "github_com_jrmatherly_ai-kb_internal_types.SyncLog": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -22697,7 +23929,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.SystemSetting": {
+        "github_com_jrmatherly_ai-kb_internal_types.SystemSetting": {
             "type": "object",
             "properties": {
                 "category": {
@@ -22753,7 +23985,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.TOSEngineConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.TOSEngineConfig": {
             "type": "object",
             "properties": {
                 "access_key": {
@@ -22782,7 +24014,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.Tenant": {
+        "github_com_jrmatherly_ai-kb_internal_types.Tenant": {
             "type": "object",
             "properties": {
                 "business": {
@@ -22793,7 +24025,7 @@ const docTemplate = `{
                     "description": "Chat history config: knowledge base configuration for indexing and searching chat messages via vector search",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ChatHistoryConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ChatHistoryConfig"
                         }
                     ]
                 },
@@ -22801,7 +24033,7 @@ const docTemplate = `{
                     "description": "Global Context configuration for this workspace (default for all sessions)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ContextConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ContextConfig"
                         }
                     ]
                 },
@@ -22813,7 +24045,7 @@ const docTemplate = `{
                     "description": "Credentials config: third-party provider credentials (e.g. WeKnoraCloud AppID/AppSecret)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CredentialsConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CredentialsConfig"
                         }
                     ]
                 },
@@ -22841,7 +24073,7 @@ const docTemplate = `{
                     "description": "Memory config: workspace switch for cross-session long-term memory",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MemoryConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MemoryConfig"
                         }
                     ]
                 },
@@ -22853,7 +24085,7 @@ const docTemplate = `{
                     "description": "Parser engine config overrides (MinerU endpoint, API key, etc.). Used when parsing documents; overrides env.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ParserEngineConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ParserEngineConfig"
                         }
                     ]
                 },
@@ -22861,7 +24093,7 @@ const docTemplate = `{
                     "description": "Retrieval config: global search/retrieval parameters shared by knowledge search and message search",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrievalConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrievalConfig"
                         }
                     ]
                 },
@@ -22869,7 +24101,7 @@ const docTemplate = `{
                     "description": "Retriever engines",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrieverEngines"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverEngines"
                         }
                     ]
                 },
@@ -22881,7 +24113,7 @@ const docTemplate = `{
                     "description": "Storage engine config: parameters for Local, MinIO, COS. Used for document/file storage and docreader.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.StorageEngineConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.StorageEngineConfig"
                         }
                     ]
                 },
@@ -22901,13 +24133,13 @@ const docTemplate = `{
                     "description": "Global WebSearch configuration for this workspace",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchConfig"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.TenantRole": {
+        "github_com_jrmatherly_ai-kb_internal_types.TenantRole": {
             "type": "string",
             "enum": [
                 "owner",
@@ -22922,7 +24154,7 @@ const docTemplate = `{
                 "TenantRoleViewer"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.TenantSandboxConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.TenantSandboxConfig": {
             "type": "object",
             "properties": {
                 "allow_private_endpoints": {
@@ -22930,7 +24162,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "cube": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CubeSandboxConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CubeSandboxConfig"
                 },
                 "default_timeout_sec": {
                     "description": "DefaultTimeoutSec is the per-execution timeout in seconds. 0 uses the\nprogram's built-in default.",
@@ -22941,10 +24173,10 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "docker": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.DockerSandboxConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.DockerSandboxConfig"
                 },
                 "e2b": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.E2BSandboxConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.E2BSandboxConfig"
                 },
                 "env_vars": {
                     "description": "EnvVars are additional environment variables injected into every\nsandbox created for this tenant. 🔒 Values are encrypted at rest.\nThese become visible to all scripts running in the tenant's\nsandboxes — do not place secrets here that scripts must not access.",
@@ -22957,7 +24189,7 @@ const docTemplate = `{
                     "description": "Network is the outbound/inbound network policy applied to every sandbox\ncreated from this config — chat sessions, skill installs and deep\nconnectivity probes alike. nil and the zero value mean the same thing:\noutbound egress allowed, inbound public access closed.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SandboxNetworkPolicy"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SandboxNetworkPolicy"
                         }
                     ]
                 },
@@ -22969,7 +24201,7 @@ const docTemplate = `{
                     "description": "SkillImage points at the snapshot that carries this config's installed\nskills. Empty means \"use the base template\". Written only by the skill\ninstall/remove path: MergeSandboxConfigForUpdate ignores client values\nso a settings-form save cannot wipe or plant the pointer.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SkillImageConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SkillImageConfig"
                         }
                     ]
                 },
@@ -22978,20 +24210,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "terminal_idle_disconnect_sec": {
-                    "description": "TerminalIdleDisconnectSec is how long an interactive terminal or\ndesktop may go without user activity before WeKnora closes the\nconnection so the sandbox can pause on its provider TTL. Terminal\ncounts keystrokes and PTY output; desktop counts mouse and keyboard.\n0 uses the built-in default (15 minutes). Not an identity field.",
+                    "description": "TerminalIdleDisconnectSec is how long an interactive terminal or\ndesktop may go without user activity before AI KB closes the\nconnection so the sandbox can pause on its provider TTL. Terminal\ncounts keystrokes and PTY output; desktop counts mouse and keyboard.\n0 uses the built-in default (15 minutes). Not an identity field.",
                     "type": "integer"
                 },
                 "volume_mount": {
                     "description": "VolumeMount configures an optional shared volume mounted into every\nsandbox created for this tenant. Currently used for tenant-installed\nskills, but the configuration itself is skill-agnostic and can serve\nany volume-mount use case (shared datasets, pre-installed toolchains,\netc.).",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.VolumeMountConfig"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.VolumeMountConfig"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.TokenUsage": {
+        "github_com_jrmatherly_ai-kb_internal_types.TokenUsage": {
             "type": "object",
             "properties": {
                 "cache_miss_tokens": {
@@ -23004,7 +24236,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "cache_status": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.PromptCacheStatus"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.PromptCacheStatus"
                 },
                 "cache_write_tokens": {
                     "type": "integer"
@@ -23028,7 +24260,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ToolCall": {
+        "github_com_jrmatherly_ai-kb_internal_types.ToolCall": {
             "type": "object",
             "properties": {
                 "args": {
@@ -23052,7 +24284,7 @@ const docTemplate = `{
                     "description": "Provider-specific tool-call state for replay",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ToolCallMetadata"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ToolCallMetadata"
                         }
                     ]
                 },
@@ -23064,7 +24296,7 @@ const docTemplate = `{
                     "description": "Execution result (contains Output)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ToolResult"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ToolResult"
                         }
                     ]
                 },
@@ -23072,13 +24304,13 @@ const docTemplate = `{
                     "description": "Target identifies the actual proxy target; Name/Args retain the model call for replay.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ToolCallTarget"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ToolCallTarget"
                         }
                     ]
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ToolCallMetadata": {
+        "github_com_jrmatherly_ai-kb_internal_types.ToolCallMetadata": {
             "type": "object",
             "additionalProperties": {
                 "type": "array",
@@ -23087,7 +24319,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ToolCallTarget": {
+        "github_com_jrmatherly_ai-kb_internal_types.ToolCallTarget": {
             "type": "object",
             "properties": {
                 "args": {
@@ -23105,7 +24337,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.ToolResult": {
+        "github_com_jrmatherly_ai-kb_internal_types.ToolResult": {
             "type": "object",
             "properties": {
                 "data": {
@@ -23134,18 +24366,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.UpdateMemberRoleRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.UpdateMemberRoleRequest": {
             "type": "object",
             "required": [
                 "role"
             ],
             "properties": {
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.UpdateOrganizationRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.UpdateOrganizationRequest": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -23179,18 +24411,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.UpdateSharePermissionRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.UpdateSharePermissionRequest": {
             "type": "object",
             "required": [
                 "permission"
             ],
             "properties": {
                 "permission": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OrgMemberRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OrgMemberRole"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.UsedMemory": {
+        "github_com_jrmatherly_ai-kb_internal_types.UsedMemory": {
             "type": "object",
             "properties": {
                 "content": {
@@ -23204,7 +24436,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.User": {
+        "github_com_jrmatherly_ai-kb_internal_types.User": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -23247,7 +24479,7 @@ const docTemplate = `{
                     "description": "Per-user UI/feature preferences.\nStored as JSON (jsonb on Postgres, TEXT on SQLite) via the\ndriver.Valuer / sql.Scanner methods on UserPreferences.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UserPreferences"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserPreferences"
                         }
                     ]
                 },
@@ -23255,7 +24487,7 @@ const docTemplate = `{
                     "description": "Association relationship, not stored in the database",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Tenant"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Tenant"
                         }
                     ]
                 },
@@ -23273,7 +24505,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.UserInfo": {
+        "github_com_jrmatherly_ai-kb_internal_types.UserInfo": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -23298,7 +24530,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "preferences": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UserPreferences"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserPreferences"
                 },
                 "tenant_id": {
                     "type": "integer"
@@ -23311,12 +24543,20 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.UserPreferences": {
+        "github_com_jrmatherly_ai-kb_internal_types.UserPreferences": {
             "type": "object",
             "properties": {
                 "browser_search_instructions": {
                     "description": "BrowserSearchInstructions customizes browser search for this user. Nil/empty uses the platform default.",
                     "type": "string"
+                },
+                "gallery": {
+                    "description": "Gallery holds the user's image-gallery UI state: the search\nactivation mode and the per-attribute search-field toggles. Written\nby the gallery's mode / checkbox interactions via the preferences\nPUT; read back by GET /knowledge-bases/:id/gallery-config so the\ngallery renders the same activation state on every device. Nil = the\nuser never touched the gallery controls (mode defaults to \"all\").",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.GalleryUserPrefs"
+                        }
+                    ]
                 },
                 "last_active_tenant_id": {
                     "description": "LastActiveTenantID remembers the last workspace the user actively\nswitched into, so a fresh login (new device, cleared browser, new\nrefresh token) lands them back in that workspace instead of always\nbouncing to their home workspace. Written by the SPA's preferences\nPUT and by service-level SwitchTenant (including when switching\nhome, which stores the home ID). Login / RefreshToken validate that\nthe workspace still exists and the user still has an active membership\n(or CanAccessAllTenants) before honouring this preference; an\ninvalid pointer is best-effort cleared and the user falls back to\nhome. Refresh JWT claims have no tenant_id, so RefreshToken\nre-resolves from this field.\n\nnil  = no preference (use user.TenantID, i.e. home)\n*0   = \"clear preference\" sentinel for the partial-update endpoint\n       (UpdateUserPreferences turns this into nil). Otherwise treat\n       a stored *0 the same as nil.\n*N   = preferred workspace id.",
@@ -23328,7 +24568,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.VLMConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.VLMConfig": {
             "type": "object",
             "properties": {
                 "api_key": {
@@ -23358,12 +24598,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "model_name": {
-                    "description": "兼容老版本\nModel Name",
+                    "description": "legacy fields\nModel Name",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.VolumeMountConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.VolumeMountConfig": {
             "type": "object",
             "properties": {
                 "enabled": {
@@ -23371,7 +24611,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "mount_path": {
-                    "description": "MountPath is the sandbox-internal path where the volume is mounted.\nDefault: /weknora/tenant/skills (customizable per use case).",
+                    "description": "MountPath is the sandbox-internal path where the volume is mounted.\nDefault: /aikb/tenant/skills (customizable per use case).",
                     "type": "string"
                 },
                 "provider": {
@@ -23383,7 +24623,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "volume_name": {
-                    "description": "VolumeName is the human-readable volume name, e.g.\n\"weknora-tenant-\u003cid\u003e-skills\".",
+                    "description": "VolumeName is the human-readable volume name, e.g.\n\"ai-kb-tenant-\u003cid\u003e-skills\".",
                     "type": "string"
                 },
                 "volume_owner_fingerprint": {
@@ -23392,7 +24632,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WeKnoraCloudCredentials": {
+        "github_com_jrmatherly_ai-kb_internal_types.WeKnoraCloudCredentials": {
             "type": "object",
             "properties": {
                 "app_id": {
@@ -23403,7 +24643,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WebSearchConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.WebSearchConfig": {
             "type": "object",
             "properties": {
                 "api_key": {
@@ -23411,34 +24651,34 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "blacklist": {
-                    "description": "黑名单规则列表",
+                    "description": "blacklist rules",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "compression_method": {
-                    "description": "压缩方法：none, summary, extract, rag",
+                    "description": "compression method: none, summary, extract, rag",
                     "type": "string"
                 },
                 "document_fragments": {
-                    "description": "文档片段数量（用于RAG压缩）",
+                    "description": "number of document fragments (RAG compression)",
                     "type": "integer"
                 },
                 "embedding_dimension": {
-                    "description": "嵌入维度（用于RAG压缩）",
+                    "description": "embedding dimension (RAG compression)",
                     "type": "integer"
                 },
                 "embedding_model_id": {
-                    "description": "RAG压缩相关配置",
+                    "description": "RAG compression settings",
                     "type": "string"
                 },
                 "include_date": {
-                    "description": "是否包含日期",
+                    "description": "include dates",
                     "type": "boolean"
                 },
                 "max_results": {
-                    "description": "最大搜索结果数",
+                    "description": "maximum number of results",
                     "type": "integer"
                 },
                 "provider": {
@@ -23450,12 +24690,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rerank_model_id": {
-                    "description": "重排模型ID（用于RAG压缩）",
+                    "description": "rerank model ID (RAG compression)",
                     "type": "string"
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WebSearchProviderEntity": {
+        "github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderEntity": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -23485,7 +24725,7 @@ const docTemplate = `{
                     "description": "Provider-specific parameters (API key, engine ID, etc.) stored as encrypted JSON",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchProviderParameters"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderParameters"
                         }
                     ]
                 },
@@ -23493,7 +24733,7 @@ const docTemplate = `{
                     "description": "Provider type: bing, google, duckduckgo, tavily",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchProviderType"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderType"
                         }
                     ]
                 },
@@ -23506,7 +24746,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WebSearchProviderParameters": {
+        "github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderParameters": {
             "type": "object",
             "properties": {
                 "api_key": {
@@ -23534,7 +24774,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WebSearchProviderType": {
+        "github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderType": {
             "type": "string",
             "enum": [
                 "brave",
@@ -23569,7 +24809,7 @@ const docTemplate = `{
                 "WebSearchProviderTypeSerply"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiConfig": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiConfig": {
             "type": "object",
             "properties": {
                 "content_instructions": {
@@ -23580,7 +24820,7 @@ const docTemplate = `{
                     "description": "ExtractionGranularity controls how many candidate slugs Pass 0 extracts\nper document. Empty / unknown value is treated as WikiExtractionStandard.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiExtractionGranularity"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiExtractionGranularity"
                         }
                     ]
                 },
@@ -23614,7 +24854,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiExtractionGranularity": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiExtractionGranularity": {
             "type": "string",
             "enum": [
                 "focused",
@@ -23627,7 +24867,7 @@ const docTemplate = `{
                 "WikiExtractionExhaustive"
             ]
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiFolder": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiFolder": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -23665,7 +24905,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiFolderCreateRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiFolderCreateRequest": {
             "type": "object",
             "properties": {
                 "name": {
@@ -23676,13 +24916,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiFolderListResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiFolderListResponse": {
             "type": "object",
             "properties": {
                 "folders": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiFolderNode"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolderNode"
                     }
                 },
                 "parent_id": {
@@ -23690,7 +24930,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiFolderNode": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiFolderNode": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -23734,7 +24974,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiFolderUpdateRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiFolderUpdateRequest": {
             "type": "object",
             "properties": {
                 "move_parent": {
@@ -23748,27 +24988,27 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiGraphData": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiGraphData": {
             "type": "object",
             "properties": {
                 "edges": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiGraphEdge"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiGraphEdge"
                     }
                 },
                 "meta": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiGraphMeta"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiGraphMeta"
                 },
                 "nodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiGraphNode"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiGraphNode"
                     }
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiGraphEdge": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiGraphEdge": {
             "type": "object",
             "properties": {
                 "source": {
@@ -23781,7 +25021,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiGraphMeta": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiGraphMeta": {
             "type": "object",
             "properties": {
                 "center": {
@@ -23813,7 +25053,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiGraphNode": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiGraphNode": {
             "type": "object",
             "properties": {
                 "familiar": {
@@ -23835,7 +25075,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiIndexEntry": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiIndexEntry": {
             "type": "object",
             "properties": {
                 "category_path": {
@@ -23867,13 +25107,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiIndexGroup": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiIndexGroup": {
             "type": "object",
             "properties": {
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiIndexEntry"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiIndexEntry"
                     }
                 },
                 "next_cursor": {
@@ -23887,13 +25127,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiIndexResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiIndexResponse": {
             "type": "object",
             "properties": {
                 "groups": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiIndexGroup"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiIndexGroup"
                     }
                 },
                 "intro": {
@@ -23904,7 +25144,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPage": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPage": {
             "type": "object",
             "properties": {
                 "aliases": {
@@ -23915,7 +25155,7 @@ const docTemplate = `{
                     }
                 },
                 "category_path": {
-                    "description": "CategoryPath is the directory breadcrumb that groups this page in the\nwiki browser, e.g. [\"AI\", \"LLM 应用\", \"RAG\"]. Derived cache of the\nfolder chain identified by FolderID.",
+                    "description": "CategoryPath is the directory breadcrumb that groups this page in the\nwiki browser, e.g. [\"AI\", \"LLM applications\", \"RAG\"]. Derived cache of the\nfolder chain identified by FolderID.",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -24042,7 +25282,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageDetail": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageDetail": {
             "type": "object",
             "properties": {
                 "aliases": {
@@ -24053,7 +25293,7 @@ const docTemplate = `{
                     }
                 },
                 "category_path": {
-                    "description": "CategoryPath is the directory breadcrumb that groups this page in the\nwiki browser, e.g. [\"AI\", \"LLM 应用\", \"RAG\"]. Derived cache of the\nfolder chain identified by FolderID.",
+                    "description": "CategoryPath is the directory breadcrumb that groups this page in the\nwiki browser, e.g. [\"AI\", \"LLM applications\", \"RAG\"]. Derived cache of the\nfolder chain identified by FolderID.",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -24186,7 +25426,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageIssue": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageIssue": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -24230,7 +25470,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageListResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageListResponse": {
             "type": "object",
             "properties": {
                 "page": {
@@ -24242,7 +25482,7 @@ const docTemplate = `{
                 "pages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                     }
                 },
                 "total": {
@@ -24253,7 +25493,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageMoveRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageMoveRequest": {
             "type": "object",
             "required": [
                 "slug"
@@ -24267,7 +25507,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageRevertRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageRevertRequest": {
             "type": "object",
             "required": [
                 "slug",
@@ -24282,7 +25522,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageRevision": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageRevision": {
             "type": "object",
             "properties": {
                 "aliases": {
@@ -24340,7 +25580,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageRevisionListResponse": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageRevisionListResponse": {
             "type": "object",
             "properties": {
                 "current_version": {
@@ -24349,7 +25589,7 @@ const docTemplate = `{
                 "revisions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPageRevision"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageRevision"
                     }
                 },
                 "total": {
@@ -24357,7 +25597,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiPageUpdateRequest": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiPageUpdateRequest": {
             "type": "object",
             "properties": {
                 "aliases": {
@@ -24387,7 +25627,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Tencent_WeKnora_internal_types.WikiStats": {
+        "github_com_jrmatherly_ai-kb_internal_types.WikiStats": {
             "type": "object",
             "properties": {
                 "is_active": {
@@ -24417,7 +25657,7 @@ const docTemplate = `{
                     "description": "last N updated pages",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WikiPage"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage"
                     }
                 },
                 "total_links": {
@@ -24502,6 +25742,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_handler.CopyModelRequest": {
+            "type": "object",
+            "required": [
+                "display_name"
+            ],
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_handler.CreateAgentRequest": {
             "type": "object",
             "required": [
@@ -24512,7 +25763,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CustomAgentConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CustomAgentConfig"
                 },
                 "description": {
                     "type": "string"
@@ -24541,13 +25792,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parameters": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ModelParameters"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelParameters"
                 },
                 "source": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ModelSource"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelSource"
                 },
                 "type": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ModelType"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelType"
                 }
             }
         },
@@ -24560,13 +25811,13 @@ const docTemplate = `{
             ],
             "properties": {
                 "connection_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ConnectionConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ConnectionConfig"
                 },
                 "engine_type": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrieverEngineType"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverEngineType"
                 },
                 "index_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.IndexConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.IndexConfig"
                 },
                 "name": {
                     "type": "string"
@@ -24581,7 +25832,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UserInfo"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserInfo"
                 }
             }
         },
@@ -24757,7 +26008,6 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "dimension": {
-                            "description": "添加embedding维度字段",
                             "type": "integer"
                         },
                         "modelName": {
@@ -24940,10 +26190,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "asr_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ASRConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ASRConfig"
                 },
                 "documentSplitting": {
-                    "description": "文档分块配置",
+                    "description": "Document chunking",
                     "type": "object",
                     "properties": {
                         "childChunkSize": {
@@ -24970,7 +26220,7 @@ const docTemplate = `{
                         "parserEngineRules": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ParserEngineRule"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ParserEngineRule"
                             }
                         },
                         "separators": {
@@ -24999,7 +26249,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "multimodal": {
-                    "description": "多模态配置（仅模型相关；存储引擎在 storageProvider 中配置）",
+                    "description": "Multimodal: models only; the storage engine is set in storageProvider",
                     "type": "object",
                     "properties": {
                         "enabled": {
@@ -25008,7 +26258,7 @@ const docTemplate = `{
                     }
                 },
                 "nodeExtract": {
-                    "description": "知识图谱配置",
+                    "description": "Knowledge graph",
                     "type": "object",
                     "properties": {
                         "customInstructions": {
@@ -25020,13 +26270,13 @@ const docTemplate = `{
                         "nodes": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.GraphNode"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.GraphNode"
                             }
                         },
                         "relations": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.GraphRelation"
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.GraphRelation"
                             }
                         },
                         "tags": {
@@ -25041,7 +26291,7 @@ const docTemplate = `{
                     }
                 },
                 "questionGeneration": {
-                    "description": "问题生成配置",
+                    "description": "Question generation",
                     "type": "object",
                     "properties": {
                         "customInstructions": {
@@ -25059,11 +26309,31 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "storageProvider": {
-                    "description": "存储引擎选择（\"local\" | \"minio\" | \"cos\"），影响文档上传与文档内图片存储，参数从全局设置读取",
+                    "description": "Storage engine (\"local\" | \"minio\" | \"cos\") for uploaded documents and their images; its parameters come from\nglobal settings",
                     "type": "string"
                 },
                 "vlm_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.VLMConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.VLMConfig"
+                }
+            }
+        },
+        "internal_handler.ListAllUsersResponse": {
+            "type": "object",
+            "properties": {
+                "has_more": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserInfo"
+                    }
                 }
             }
         },
@@ -25073,7 +26343,7 @@ const docTemplate = `{
                 "admins": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.UserInfo"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.UserInfo"
                     }
                 },
                 "total": {
@@ -25091,7 +26361,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "appSecret": {
-                    "description": "AppSecret 用于 LKEAP / Volcengine Rerank 等需要第二段密钥的场景（对应模型 Parameters.AppSecret）。",
+                    "description": "AppSecret is the second secret some providers need (LKEAP, Volcengine rerank); maps to Parameters.AppSecret.",
                     "type": "string"
                 },
                 "baseUrl": {
@@ -25116,7 +26386,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "modelId": {
-                    "description": "ModelID, when set, instructs the handler to substitute any missing\nsecrets (APIKey, AppSecret via ExtraConfig) from the stored model\nrecord before assembling the test client. This lets the \"Test\nconnection\" button work on existing models without making the\nfrontend reload — and ship — the plaintext API key. Other fields\n(BaseURL, ModelName, etc.) on this request still override the\nstored values, so a user can validate a new endpoint against the\nexisting credentials in one click.",
+                    "description": "ModelID, when set, instructs the handler to substitute any missing\nsecrets (APIKey, AppSecret via ExtraConfig) from the stored model\nrecord before assembling the test client. This lets the \"Test\nconnection\" button work on existing models without making the\nfrontend reload - and ship - the plaintext API key. Other fields\n(BaseURL, ModelName, etc.) on this request still override the\nstored values, so a user can validate a new endpoint against the\nexisting credentials in one click.",
                     "type": "string"
                 },
                 "modelName": {
@@ -25126,8 +26396,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "source": {
-                    "description": "为空时按需默认为 \"remote\"",
+                    "description": "empty defaults to \"remote\" where needed",
                     "type": "string"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelSpecOverride"
                 },
                 "supportsDimensionOverride": {
                     "type": "boolean"
@@ -25292,16 +26565,16 @@ const docTemplate = `{
                     }
                 },
                 "profile": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_infrastructure_chunker.DocProfile"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.DocProfile"
                 },
                 "rejected": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_infrastructure_chunker.TierRejection"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.TierRejection"
                     }
                 },
                 "selected_tier": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_infrastructure_chunker.StrategyTier"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.StrategyTier"
                 },
                 "stats": {
                     "$ref": "#/definitions/internal_handler.PreviewChunkingStats"
@@ -25309,7 +26582,7 @@ const docTemplate = `{
                 "tier_chain": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_infrastructure_chunker.StrategyTier"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.StrategyTier"
                     }
                 }
             }
@@ -25359,7 +26632,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "appSecret": {
-                    "description": "AppSecret 用于 LKEAP / Volcengine Rerank 等需要第二段密钥的场景（对应模型 Parameters.AppSecret）。",
+                    "description": "AppSecret is the second secret some providers need (LKEAP, Volcengine rerank); maps to Parameters.AppSecret.",
                     "type": "string"
                 },
                 "baseUrl": {
@@ -25384,7 +26657,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "modelId": {
-                    "description": "ModelID, when set, instructs the handler to substitute any missing\nsecrets (APIKey, AppSecret via ExtraConfig) from the stored model\nrecord before assembling the test client. This lets the \"Test\nconnection\" button work on existing models without making the\nfrontend reload — and ship — the plaintext API key. Other fields\n(BaseURL, ModelName, etc.) on this request still override the\nstored values, so a user can validate a new endpoint against the\nexisting credentials in one click.",
+                    "description": "ModelID, when set, instructs the handler to substitute any missing\nsecrets (APIKey, AppSecret via ExtraConfig) from the stored model\nrecord before assembling the test client. This lets the \"Test\nconnection\" button work on existing models without making the\nfrontend reload - and ship - the plaintext API key. Other fields\n(BaseURL, ModelName, etc.) on this request still override the\nstored values, so a user can validate a new endpoint against the\nexisting credentials in one click.",
                     "type": "string"
                 },
                 "modelName": {
@@ -25394,8 +26667,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "source": {
-                    "description": "为空时按需默认为 \"remote\"",
+                    "description": "empty defaults to \"remote\" where needed",
                     "type": "string"
+                },
+                "spec": {
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelSpecOverride"
                 },
                 "supportsDimensionOverride": {
                     "type": "boolean"
@@ -25455,7 +26731,7 @@ const docTemplate = `{
                 "models": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_models_limiter.RuntimeStat"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_models_limiter.RuntimeStat"
                     }
                 },
                 "parse_concurrency": {
@@ -25471,7 +26747,7 @@ const docTemplate = `{
                 "queues": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.QueueStat"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.QueueStat"
                     }
                 },
                 "timestamp": {
@@ -25504,7 +26780,7 @@ const docTemplate = `{
                 "tasks": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RuntimeTaskInfo"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RuntimeTaskInfo"
                     }
                 }
             }
@@ -25567,7 +26843,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantSandboxConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantSandboxConfig"
                 },
                 "config_id": {
                     "description": "ConfigID lets an edit form test stored credentials while overriding only\nthe fields the admin changed in the drawer.",
@@ -25629,33 +26905,71 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_handler.SearchWikiRequest": {
+            "type": "object",
+            "required": [
+                "query"
+            ],
+            "properties": {
+                "knowledge_base_id": {
+                    "type": "string"
+                },
+                "knowledge_base_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "query": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.SetUserStatusRequest": {
+            "type": "object",
+            "required": [
+                "is_active",
+                "user_id"
+            ],
+            "properties": {
+                "is_active": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_handler.StorageCheckRequest": {
             "type": "object",
             "properties": {
                 "cos": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.COSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.COSEngineConfig"
                 },
                 "ks3": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KS3EngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KS3EngineConfig"
                 },
                 "minio": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.MinIOEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.MinIOEngineConfig"
                 },
                 "obs": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OBSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OBSEngineConfig"
                 },
                 "oss": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.OSSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.OSSEngineConfig"
                 },
                 "provider": {
                     "description": "\"minio\", \"cos\", \"tos\", \"s3\", \"oss\", \"ks3\", \"obs\"",
                     "type": "string"
                 },
                 "s3": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.S3EngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.S3EngineConfig"
                 },
                 "tos": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TOSEngineConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TOSEngineConfig"
                 }
             }
         },
@@ -25718,7 +27032,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "parameters": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchProviderParameters"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderParameters"
                 },
                 "provider": {
                     "type": "string"
@@ -25733,10 +27047,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "connection_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ConnectionConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ConnectionConfig"
                 },
                 "engine_type": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.RetrieverEngineType"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RetrieverEngineType"
                 }
             }
         },
@@ -25770,7 +27084,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.CustomAgentConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.CustomAgentConfig"
                 },
                 "description": {
                     "type": "string"
@@ -25801,13 +27115,21 @@ const docTemplate = `{
             ],
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KnowledgeBaseConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeBaseConfig"
                 },
                 "description": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
+                },
+                "vlm_config": {
+                    "description": "VLMConfig updates the knowledge base's multimodal (vision) config.\nOptional: nil means \"no change\", mirroring how CreateKnowledgeBase\naccepts a top-level vlm_config.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.VLMConfig"
+                        }
+                    ]
                 }
             }
         },
@@ -25841,13 +27163,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parameters": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ModelParameters"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelParameters"
                 },
                 "source": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ModelSource"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelSource"
                 },
                 "type": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.ModelType"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ModelType"
                 }
             }
         },
@@ -25864,7 +27186,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parameters": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.WebSearchProviderParameters"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.WebSearchProviderParameters"
                 }
             }
         },
@@ -25909,7 +27231,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantRole"
                 }
             }
         },
@@ -25938,7 +27260,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "mode": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.APIPrincipalMode"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.APIPrincipalMode"
                 },
                 "require_direct_header": {
                     "type": "boolean"
@@ -25965,7 +27287,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.AuditLog"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.AuditLog"
                     }
                 },
                 "next_cursor": {
@@ -25993,7 +27315,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "process_config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.KnowledgeProcessOverrides"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.KnowledgeProcessOverrides"
                 }
             }
         },
@@ -26011,7 +27333,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantRole"
                 }
             }
         },
@@ -26025,7 +27347,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantRole"
                 }
             }
         },
@@ -26043,6 +27365,64 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 128,
                     "minLength": 1
+                }
+            }
+        },
+        "internal_handler.imageListRequestBody": {
+            "type": "object",
+            "properties": {
+                "attr_filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "attr_rules": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "is_enabled": {
+                    "type": "boolean"
+                },
+                "keyword": {
+                    "type": "string"
+                },
+                "knowledge_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "page": {
+                    "description": "Page",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "page_size": {
+                    "description": "Page size",
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                },
+                "search_in": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sort_by": {
+                    "type": "string"
+                },
+                "sort_order": {
+                    "type": "string"
                 }
             }
         },
@@ -26064,7 +27444,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantRole"
                 },
                 "tenant_id": {
                     "type": "integer"
@@ -26151,7 +27531,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantSandboxConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantSandboxConfig"
                 },
                 "description": {
                     "type": "string"
@@ -26194,7 +27574,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.StorageBackendConfig"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.StorageBackendConfig"
                 },
                 "name": {
                     "type": "string"
@@ -26229,7 +27609,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "role": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.TenantRole"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.TenantRole"
                 }
             }
         },
@@ -26347,9 +27727,13 @@ const docTemplate = `{
                     "description": "QuestionOrigin is the knowledge source of a picked suggested question.",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.QuestionOrigin"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.QuestionOrigin"
                         }
                     ]
+                },
+                "reasoning_effort": {
+                    "description": "ReasoningEffort overrides thinking for this request; empty inherits the agent configuration.",
+                    "type": "string"
                 },
                 "skill_names": {
                     "description": "Per-request Skills selected via @mention",
@@ -26359,7 +27743,7 @@ const docTemplate = `{
                     }
                 },
                 "suggestion_attribution": {
-                    "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.SuggestionAttribution"
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SuggestionAttribution"
                 },
                 "summary_model_id": {
                     "description": "Optional summary model ID for this request (overrides session default)",
@@ -26383,6 +27767,10 @@ const docTemplate = `{
             "properties": {
                 "description": {
                     "description": "Description for the session (optional)",
+                    "type": "string"
+                },
+                "project_dir": {
+                    "description": "ProjectDir is an optional Lite host-sandbox binding. When set it must\nbe an absolute path already present in the user-approved ProjectDirs\nlist. Empty means the session gets an auto-allocated workspace.",
                     "type": "string"
                 },
                 "title": {
@@ -26417,7 +27805,7 @@ const docTemplate = `{
                     "description": "Messages to use as context for title generation",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_Tencent_WeKnora_internal_types.Message"
+                        "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Message"
                     }
                 }
             }
@@ -26474,12 +27862,36 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_handler_session.RewindSessionRequest": {
+            "type": "object",
+            "required": [
+                "message_id"
+            ],
+            "properties": {
+                "message_id": {
+                    "description": "MessageID is the message to rewind to. A user message deletes itself and\neverything after (the client prefills that question). An assistant\nmessage keeps itself and deletes everything after.",
+                    "type": "string"
+                }
+            }
+        },
         "internal_handler_session.SearchKnowledgeRequest": {
             "type": "object",
             "required": [
                 "query"
             ],
             "properties": {
+                "disable_keywords_match": {
+                    "description": "Vector recall only",
+                    "type": "boolean"
+                },
+                "disable_vector_match": {
+                    "description": "Keyword recall only",
+                    "type": "boolean"
+                },
+                "keyword_threshold": {
+                    "description": "Minimum keyword score",
+                    "type": "number"
+                },
                 "knowledge_base_id": {
                     "description": "Single knowledge base ID (for backward compatibility)",
                     "type": "string"
@@ -26498,6 +27910,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "match_count": {
+                    "description": "Number of results to return",
+                    "type": "integer"
+                },
                 "mentioned_items": {
                     "description": "Optional scoped tag mentions",
                     "type": "array",
@@ -26509,12 +27925,24 @@ const docTemplate = `{
                     "description": "Query text to search for",
                     "type": "string"
                 },
+                "rerank": {
+                    "description": "Rerank override",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.RerankOptions"
+                        }
+                    ]
+                },
                 "tag_ids": {
                     "description": "Tag IDs for filtering within a single KB",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "vector_threshold": {
+                    "description": "Optional overrides of the tenant retrieval config. Omitted fields keep it.",
+                    "type": "number"
                 }
             }
         },
@@ -26577,13 +28005,13 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "ApiKeyAuth": {
-            "description": "API Key 认证：空间 Key 固定访问所属空间；平台 Key 调用空间接口时需同时传 X-Tenant-ID",
+            "description": "API key auth. Workspace keys reach their own workspace; platform keys must also send X-Tenant-ID",
             "type": "apiKey",
             "name": "X-API-Key",
             "in": "header"
         },
         "Bearer": {
-            "description": "用户登录认证：输入 Bearer {token} 格式的 JWT 令牌",
+            "description": "User login authentication: enter a JWT in the form Bearer {token}",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -26597,8 +28025,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "WeKnora API",
-	Description:      "WeKnora 知识库管理系统 API 文档",
+	Title:            "AI KB API",
+	Description:      "AI KB knowledge base management API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

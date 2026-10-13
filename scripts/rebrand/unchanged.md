@@ -18,8 +18,5 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
 Outside `scope.txt`, so the check does not cover them:
 
 - History: `CHANGELOG.md`, `cli/CHANGELOG.md`, `mcp-server/CHANGELOG.md`, `website-docs/07-releases/`.
-- Generated: `docs/` swagger (`docs.go`, `swagger.json`, `swagger.yaml`) and its contract test, which still use
-  `github_com_Tencent_WeKnora_*` definition names. Regenerating needs the Chinese swag annotations translated
-  first (the `translate-code` skill), then `make docs`; update `docs/swagger_contract_test.go` in the same change.
-  Proto stubs and lockfiles are regenerated, never rewritten.
+- Generated: proto stubs, lockfiles and the `docs/` swagger are regenerated, never rewritten (swagger: pinned swag v1.16.6, `make docs`).
 - `third_party/` (vendored firecrawl anydoc; only its benchmark logs mention upstream), `docs/images/` (art).
