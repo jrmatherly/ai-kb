@@ -29,7 +29,10 @@ source "$ROOT/scripts/git-hooks/common.sh"
 cd "$ROOT"
 
 # The harness release packages/dsh-ai-kb is verified against; bump it with the note in its README.
+# Its own dependency ranges are resolved as of its release day: later cordis releases (4.0.4,
+# cordis-plugin-hmr 1.0.19) break rc.8's boot with "requires the Cordis HMR service".
 DSH_PINNED_SPEC="@deepseek-ai/dsh@0.1.0-rc.8"
+DSH_PINNED_BEFORE="2026-08-20"
 
 base=HEAD list=0 forced=()
 while [ $# -gt 0 ]; do
@@ -267,8 +270,9 @@ area_dsh-plugin() {
     console.log("tarball contents verified: " + files.length + " files");'
   # `dsh plugin add` installs through pnpm. The first run installs the harness (minutes); later runs reuse it.
   if need pnpm; then
-    (cd "$dir" && DSH_PACKAGE_SPEC="$DSH_PINNED_SPEC" \
-      DSH_INSTALL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/ai-kb/dsh-e2e-${DSH_PINNED_SPEC##*@}" node test/e2e/run-in-dsh.mjs)
+    (cd "$dir" && DSH_PACKAGE_SPEC="$DSH_PINNED_SPEC" npm_config_before="${DSH_PINNED_BEFORE}T00:00:00Z" \
+      DSH_INSTALL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/ai-kb/dsh-e2e-${DSH_PINNED_SPEC##*@}-before-$DSH_PINNED_BEFORE" \
+      node test/e2e/run-in-dsh.mjs)
   fi
 }
 
