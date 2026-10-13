@@ -24,4 +24,4 @@ This schema script alone is not enough. It matches only the initial schema and h
 3. MySQL equivalents or fallbacks for Postgres-specific features (`JSONB`, array types, `ON CONFLICT`, ParadeDB BM25 indexes and so on).
 4. A decision on vector retrieval. MySQL has no vector index of its own, so it depends on an external vector store (`RETRIEVE_DRIVER`).
 
-See Tencent/WeKnora#1418 ([issue](https://github.com/Tencent/WeKnora/issues/1418)) for the discussion. Until the work above is done, do not claim `DB_DRIVER=mysql` support in docs or config comments.
+See Tencent/WeKnora#1418 for the discussion. Until the work above is done, do not claim `DB_DRIVER=mysql` support in docs or config comments.

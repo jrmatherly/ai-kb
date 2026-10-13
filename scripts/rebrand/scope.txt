@@ -2,11 +2,6 @@
 # upstream-review state and files that are deleted or translated later (scripts/rebrand/unchanged.md says why).
 .
 :!CHANGELOG.md
-:!README_CN.md
-:!README_JA.md
-:!README_KO.md
-:!*/README_CN.md
-:!*/README_zh.md
 :!docs/docs.go
 :!docs/swagger.json
 :!docs/swagger.yaml
@@ -28,7 +23,6 @@
 :!cli/CHANGELOG.md
 :!mcp-server/CHANGELOG.md
 :!website-docs/07-releases
-:!website-docs/sample-data
 :!scripts/rebrand/map.tsv
 :!scripts/rebrand/unchanged.md
 :!scripts/rebrand/scope.txt

@@ -22,5 +22,4 @@ Outside `scope.txt`, so the check does not cover them:
   `github_com_Tencent_WeKnora_*` definition names. Regenerating needs the Chinese swag annotations translated
   first (the `translate-code` skill), then `make docs`; update `docs/swagger_contract_test.go` in the same change.
   Proto stubs and lockfiles are regenerated, never rewritten.
-- Translated or deleted later: `website-docs/sample-data/` (with `examples/mcp-demo/`), the non-English READMEs.
 - `third_party/` (vendored firecrawl anydoc; only its benchmark logs mention upstream), `docs/images/` (art).
