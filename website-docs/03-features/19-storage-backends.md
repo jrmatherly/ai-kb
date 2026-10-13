@@ -43,7 +43,7 @@ All providers share one set of configuration fields. `access_key_id` and `secret
 | `app_id` | string | empty | COS only. The Tencent Cloud AppID |
 | `temp_bucket_name` / `temp_region` | string | empty | COS, TOS and OSS only. The bucket and region for temporary files; OSS also needs `use_temp_bucket=true` to enable them |
 
-- **OBS**: a domain endpoint uses virtual-hosted addressing (`<bucket>.<endpoint>`), because Huawei Cloud has rejected path-style requests on domain endpoints since 2023-12-30; an IP endpoint keeps path-style. Without a proxy domain, file URLs take the form `<scheme>://<bucket>.<endpoint-host>/<key>`.
+- **OBS**: a domain endpoint uses virtual-hosted addressing (`<bucket>.<endpoint>`), because Huawei Cloud has rejected path-style requests on domain endpoints since 2023-12-30 ([Huawei Cloud notice](https://www.huaweicloud.com/intl/en-us/notice/20231106133906404.html)); an IP endpoint keeps path-style. Without a proxy domain, file URLs take the form `<scheme>://<bucket>.<endpoint-host>/<key>`.
 - **Transfer timeouts**: for S3, COS, KS3, OBS and OSS a single upload or download may take up to 30 minutes. Connection setup, the TLS handshake and the wait for response headers have their own shorter timeouts, so an unreachable peer fails quickly.
 - **KS3 redirects**: every hop of a redirect is SSRF-checked, and the request signature is not forwarded to the redirect target host.
 
