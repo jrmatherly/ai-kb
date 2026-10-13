@@ -133,7 +133,7 @@ class MarkdownTableUtil:
         Line-based and regex-free: only well-formed rows (leading *and*
         trailing ``|``, with at least one cell) are treated as tables, so a
         malformed row can never trigger the catastrophic backtracking
-        described in https://github.com/Tencent/ai-kb/issues/2768.
+        described in https://github.com/Tencent/WeKnora/issues/2768.
         CRLF/CR input is normalized to LF before scanning.
 
         Args:

@@ -318,7 +318,7 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
     <div class="glow" id="glow"></div>
     <img class="logo" id="bigLogo" src="assets/logo-dark.png">
     <div class="tag" id="tagline">Find answers. Put knowledge to work.</div>
-    <div class="meta eyebrow" id="logoMeta" style="color:var(--gold-l)">OPEN-SOURCE KNOWLEDGE FRAMEWORK · FROM TENCENT</div>
+    <div class="meta eyebrow" id="logoMeta" style="color:var(--gold-l)">SELF-HOSTED · OPEN-SOURCE KNOWLEDGE PLATFORM</div>
   </section>
 
   <!-- 3. pillars -->
@@ -383,7 +383,7 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
     </div>
     <div class="end" id="outB">
       <img src="assets/logo-dark.png">
-      <div class="links"><span>github.com/jrmatherly/ai-kb</span><span class="sep">|</span><span>weknora.weixin.qq.com</span></div>
+      <div class="links"><span>github.com/jrmatherly/ai-kb</span><span class="sep">|</span><span>ai-kb-docs.matherly.net</span></div>
       <div class="fine">STAR IT · TRY IT · BUILD WITH IT</div>
     </div>
   </section>
@@ -564,7 +564,7 @@ $('brVp').innerHTML=`
  <div class="ctabs"><span class="dots"><i></i><i></i><i></i></span><div class="ctab" id="ctab"><span id="ctabT">Releases · jrmatherly/ai-kb</span></div></div>
  <div class="ctool"><span style="color:#888">←&nbsp;&nbsp;→&nbsp;&nbsp;↻</span><div class="omni">${I('lock')}<span id="omni">github.com/jrmatherly/ai-kb/releases</span></div></div>
  <div class="infobar" id="infobar">“BrowserSkill” started debugging this browser <span>Cancel</span></div>
- <div class="cpage" id="pgRepo"><div class="repo"><div class="rh">Tencent / <b>AI KB</b></div>
+ <div class="cpage" id="pgRepo"><div class="repo"><div class="rh">jrmatherly / <b>ai-kb</b></div>
    <div class="rt"><span>Code</span><span>Issues</span><span>Pull requests</span><span class="on">Releases</span><span>Discussions</span></div>
    <div class="rel"><div class="v">v0.8.2 <em>Latest</em></div><p>Released by the AI KB maintainers</p>
    <ul><li>Unified rerank across search APIs, with diagnostics</li><li>MinerU 4.0 V1 API for self-hosted MinerU</li><li>Local browser pairing for AI KB Lite</li><li>RSS: reject oversized responses</li></ul></div></div></div>
@@ -641,7 +641,7 @@ $('wkWin').appendChild(docsEl);
 
 /* ================= Ecosystem ================= */
 const SRC=[['feishu.ico','Feishu / Lark'],['confluence.svg','Confluence'],['notion.ico','Notion'],['gitlab.png','GitLab'],['yuque.ico','Yuque'],['dingtalk.svg','DingTalk docs'],['ima.png','Tencent IMA'],['rss.svg','RSS']];
-const OUT=[['wecom.svg','WeCom'],['feishu.svg','Feishu'],['slack.svg','Slack'],['telegram.svg','Telegram'],['wechat-dialog.png','WeChat Dialog Platform'],['#widget','Website widget'],['mcp.svg','MCP for Cursor, Claude'],['#api','REST API & CLI']];
+const OUT=[['wecom.svg','WeCom'],['feishu.svg','Feishu'],['slack.svg','Slack'],['telegram.svg','Telegram'],['dingtalk.svg','DingTalk'],['#widget','Website widget'],['mcp.svg','MCP for Cursor, Claude'],['#api','REST API & CLI']];
 const MODELS=['openai.svg','deepseek-color.svg','qwen-color.svg','hunyuan-color.svg','gemini-color.svg','anthropic.svg','zhipu.svg','moonshot.svg','minimax.svg','volcengine.svg','ollama.svg','litellm.ico'];
 const eItem=([ic,l],p,i)=>`<div class="ei" id="${p}${i}">${ic[0]==='#'?`<span class="gi">${I(ic.slice(1))}</span>`:`<img src="${A(ic)}">`}${l}</div>`;
 $('ecoL').innerHTML+=SRC.map((x,i)=>eItem(x,'el',i)).join('');

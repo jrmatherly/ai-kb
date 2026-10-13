@@ -361,7 +361,7 @@ func main() {
 		choice, err := wailsruntime.MessageDialog(app.ctx, wailsruntime.MessageDialogOptions{
 			Type:          wailsruntime.InfoDialog,
 			Title:         "AI KB Lite",
-			Message:       fmt.Sprintf("AI KB Lite — Desktop Edition\n\nA RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\nVersion %s\n© 2026 Tencent\n\nGitHub:\n%s", desktopAboutVersion(), aikbGitHubRepoURL),
+			Message:       fmt.Sprintf("AI KB Lite, Desktop Edition\n\nA RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\nVersion %s\n© 2026 Jason Matherly. Portions © 2026 Tencent.\n\nGitHub:\n%s", desktopAboutVersion(), aikbGitHubRepoURL),
 			Buttons:       []string{"Open GitHub", "OK"},
 			DefaultButton: "OK",
 		})

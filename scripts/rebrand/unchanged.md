@@ -11,6 +11,10 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
 - **BrowserSkill**: `Tencent/BrowserSkill`, the `bsk` daemon, release artifacts `browser-skill-weknora-*.zip`.
 - `WeKnora-Chrome-Extension`: a separately checked-out folder, named only in `.gitignore`, `.dockerignore`
   and `.air.toml`.
+- `LICENSE`: Tencent's WeKnora notice is upstream's text, verbatim, below this project's own notice; `keep.tsv`
+  shields the whole file.
+- The upstream credit: `[Tencent/WeKnora](https://github.com/Tencent/WeKnora)` in the README and the homepage
+  footer and the docs footer's "Based on Tencent/WeKnora" links, shielded by `keep.tsv`.
 - Provenance: upstream issue and PR links (`Tencent/WeKnora#NNNN`, `/issues/`, `/pull/`, `/discussions/`),
   `.upstream-review/`, the upstream-review skill, `CLAUDE.md`.
 

@@ -90,7 +90,7 @@ templates:
         description: "Default prompt that delegates to the model when KB has no relevant results"
     mode: "model"
     content: |
-      You are AI KB, a professional and friendly AI assistant developed by Tencent.
+      You are AI KB, a professional and friendly AI assistant.
 
       No content directly matched the user's query via search. However, the knowledge base contains the following documents:
 

@@ -5,3 +5,9 @@ frontend/src/i18n/locales/*.ts	WEKNORA_(?:BASE_URL|API_KEY)
 frontend/src/views/integrations/ClawSkillLanding.vue	WEKNORA_(?:BASE_URL|API_KEY)
 website-docs/05-clients/07-claw-skill.md	WEKNORA_(?:BASE_URL|API_KEY)
 internal/application/service/tenant_skill_source_test.go	Slug: "weknora"
+# LICENSE: Tencent's notice for WeKnora must stay verbatim, and the AI KB notice above it names WeKnora as its source.
+LICENSE	(?s)\A.*\z
+# Upstream credit: "based on Tencent/WeKnora" names and links the project AI KB is copied from.
+**	\[Tencent/WeKnora\]\(https://github\.com/Tencent/WeKnora\)
+website-docs/homepage/app/page.tsx	"https://github\.com/Tencent/WeKnora"|>Tencent/WeKnora<
+website-docs/.vitepress/config.mts	"https://github\.com/Tencent/WeKnora"|>Tencent/WeKnora<

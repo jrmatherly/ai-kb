@@ -143,9 +143,9 @@ COPY = {
     "en": dict(
         eyebrow="OPEN SOURCE · AI KB",
         h1=["Find the answers,", "and put knowledge to work."], h1_size=68,
-        desc=["Tencent's open-source knowledge management framework.", "Bring team documents together for Q&A, tasks and wikis."],
+        desc=["A self-hosted, open-source knowledge base and agent platform.", "Bring team documents together for Q&A, tasks and wikis."],
         highlights=["RAG Q&A", "Agent reasoning", "Auto Wiki", "Local browser", "Skills & sandbox", "MCP Server", "Long-term memory", "Sources & IM"],
-        trust=[("github", "Tencent Open Source · MIT License"), ("server", "Self-hosted deployment"), ("model", "Your choice of models and storage")],
+        trust=[("github", "MIT License · based on Tencent/WeKnora"), ("server", "Self-hosted deployment"), ("model", "Your choice of models and storage")],
         cards=[
             ("search", "01 / RAG", "Answers you can check", "Semantic and keyword search find the relevant material. Every answer cites its sources, and you can open the original to verify.", ["Hybrid search", "Multimodal parsing", "Citations"]),
             ("agent", "02 / AGENT", "Tasks done with knowledge and tools", "The agent searches knowledge bases and the web, calls MCP tools and skills, handles files and scripts in a sandbox, operates the browser on your computer, and remembers preferences you have confirmed.", ["Multi-step", "Skills & sandbox", "Local browser", "MCP tools", "Memory"]),

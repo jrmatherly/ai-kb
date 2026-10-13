@@ -2,7 +2,7 @@
   <a href="https://ai-kb-docs.matherly.net">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="./docs/images/readme/hero-en-dark.svg">
-      <img src="./docs/images/readme/hero-en-light.svg" alt="AI KB: find the answers, and put knowledge to work. Tencent's open-source knowledge management framework for Q&A, tasks and wikis." width="100%">
+      <img src="./docs/images/readme/hero-en-light.svg" alt="AI KB: find the answers, and put knowledge to work. A self-hosted, open-source knowledge base and agent platform for Q&A, tasks and wikis." width="100%">
     </picture>
   </a>
 </p>
@@ -14,7 +14,6 @@
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="https://github.com/jrmatherly/ai-kb/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/jrmatherly/ai-kb?style=flat-square&labelColor=101f38&color=b8863b"></a>
   <br/>
-  <a href="https://chatbot.weixin.qq.com"><img alt="WeChat Dialog Open Platform" src="https://img.shields.io/badge/WeChat_Dialog-Open_Platform-07c160?style=flat-square&labelColor=101f38&logo=wechat&logoColor=white"></a>
   <a href="https://chromewebstore.google.com/detail/jpemjbopikggjlmikmclgbmkhhopjdgd"><img alt="Chrome Extension" src="https://img.shields.io/badge/Chrome-extension-4285f4?style=flat-square&labelColor=101f38&logo=googlechrome&logoColor=white"></a>
   <a href="https://clawhub.ai/lyingbug/weknora"><img alt="ClawHub Skill" src="https://img.shields.io/badge/ClawHub-skill-ff6b35?style=flat-square&labelColor=101f38"></a>
   <a href="https://www.npmjs.com/package/@jrmatherly/dsh-ai-kb"><img alt="npm @jrmatherly/dsh-ai-kb" src="https://img.shields.io/npm/v/@jrmatherly/dsh-ai-kb?style=flat-square&label=dsh-ai-kb&labelColor=101f38&color=cb3837&logo=npm&logoColor=white"></a>
@@ -36,7 +35,7 @@
 
 ## Overview
 
-[AI KB](https://ai-kb-docs.matherly.net) is an open-source, LLM-powered knowledge framework for enterprise document understanding, semantic retrieval and reasoning. It brings a team's documents together so they can be searched, reasoned over and kept up to date.
+[AI KB](https://ai-kb-docs.matherly.net) is an open-source, LLM-powered knowledge framework for enterprise document understanding, semantic retrieval and reasoning. It brings a team's documents together so they can be searched, reasoned over and kept up to date. AI KB is an independent copy of [Tencent/WeKnora](https://github.com/Tencent/WeKnora), maintained by [jrmatherly](https://github.com/jrmatherly).
 
 https://github.com/user-attachments/assets/5722b10d-d04d-49ed-a6cc-635a8c77d91f
 
@@ -62,31 +61,7 @@ Beyond the three modes:
 
 ## Quick Start
 
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <img src="./website-docs/homepage/public/docs/_home/brands/wechat-dialog.png" width="28" height="28" alt=""><br/>
-      <sub>ONLINE</sub><br/>
-      <b>WeChat Dialog Open Platform</b><br/>
-      Manage knowledge bases online and connect Q&A to Official Accounts, Mini Programs and other WeChat scenarios.<br/><br/>
-      <a href="https://chatbot.weixin.qq.com/login">Open the platform →</a>
-    </td>
-    <td width="33%" valign="top">
-      <img src="./website-docs/homepage/public/docs/_home/brands/tencent-cloud.ico" width="28" height="28" alt=""><br/>
-      <sub>CLOUD</sub><br/>
-      <b>Tencent Cloud Lighthouse</b><br/>
-      Deploy AI KB from an application template and run it on your own cloud server.<br/><br/>
-      <a href="https://mc.tencent.com/s69nKCVz">Deploy on Tencent Cloud →</a>
-    </td>
-    <td width="33%" valign="top">
-      <img src="./docs/images/readme/icons/server.svg" width="28" height="28" alt=""><br/>
-      <sub>SELF-HOSTED</sub><br/>
-      <b>Your own environment</b><br/>
-      Deploy with Docker or Kubernetes and configure models, storage and networking yourself.<br/><br/>
-      <a href="#run-with-docker-compose">Run with Docker Compose ↓</a>
-    </td>
-  </tr>
-</table>
+Deploy AI KB in your own environment with Docker or Kubernetes, and configure models, storage and networking yourself.
 
 ### Run with Docker Compose
 
@@ -328,11 +303,10 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 | <img src="./website-docs/homepage/public/docs/_home/brands/browserskill.png" width="22" height="22" alt=""> | [**Local Browser (BrowserSkill)**](https://ai-kb-docs.matherly.net/docs/05-clients/09-local-browser) | Lets agents operate the user's own Chrome / Edge |
 | <img src="./website-docs/homepage/public/docs/_home/brands/chrome.svg" width="22" height="22" alt=""> | [**Chrome Extension**](https://chromewebstore.google.com/detail/jpemjbopikggjlmikmclgbmkhhopjdgd) | Select text, images, or entire pages in the browser and save them as knowledge entries with one click, without copy-paste or file upload |
 | <img src="./docs/images/readme/icons/phone.svg" width="22" height="22" alt=""> | [**WeChat Mini Program**](./miniprogram/README.md) | Lightweight mobile client: configure API access, select knowledge bases, import URLs, and ask knowledge chat from WeChat |
-| <img src="./docs/images/readme/icons/skills.svg" width="22" height="22" alt=""> | [**ClawHub Skill**](https://clawhub.ai/lyingbug/weknora) | A AI KB skill on ClawHub for document import, hybrid search and knowledge management via the REST API |
+| <img src="./docs/images/readme/icons/skills.svg" width="22" height="22" alt=""> | [**ClawHub Skill**](https://clawhub.ai/lyingbug/weknora) | A third-party skill on ClawHub for document import, hybrid search and knowledge management via the REST API |
 | <img src="./website-docs/homepage/public/docs/_home/brands/deepseek-color.svg" width="22" height="22" alt=""> | [**DeepSeek Harness plugin**](https://www.npmjs.com/package/@jrmatherly/dsh-ai-kb) | Gives `dsh` coding agents four read-only tools: search, read document, ask and list knowledge bases |
 | <img src="./docs/images/readme/icons/code.svg" width="22" height="22" alt=""> | [**Website Embed Widget**](https://ai-kb-docs.matherly.net/docs/03-features/13-embed-channel) | Publishes agents on external sites |
 | <img src="./docs/images/readme/icons/braces.svg" width="22" height="22" alt=""> | [**Go SDK**](https://ai-kb-docs.matherly.net/docs/05-clients/03-go-sdk) | CRUD for knowledge bases, documents and sessions, plus SSE streaming Q&A |
-| <img src="./website-docs/homepage/public/docs/_home/brands/wechat-dialog.png" width="22" height="22" alt=""> | [**WeChat Dialog Open Platform**](https://chatbot.weixin.qq.com) | Hosted Q&A built on AI KB: upload knowledge and publish a Q&A service in WeChat without writing code |
 
 ### Command-Line Interface
 
@@ -424,4 +398,4 @@ Thanks to everyone who has contributed:
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE). You are free to use, modify, and distribute the code with proper attribution.
+AI KB is maintained by [jrmatherly](https://github.com/jrmatherly) and based on [Tencent/WeKnora](https://github.com/Tencent/WeKnora), which Tencent publishes under the MIT License. AI KB is not a Tencent product. It is licensed under the [MIT License](./LICENSE), which keeps Tencent's copyright notice for the upstream code.

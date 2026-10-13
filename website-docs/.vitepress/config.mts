@@ -155,7 +155,7 @@ export default withMermaid(
 
       footer: {
         message: `AI KB ${repoVersionLabel} · MIT License`,
-        copyright: '© Tencent',
+        copyright: '© 2026 Jason Matherly · Based on <a href="https://github.com/Tencent/WeKnora">Tencent/WeKnora</a>',
       },
     },
 

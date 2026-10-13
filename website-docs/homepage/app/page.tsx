@@ -10,6 +10,7 @@ import s from "./home.module.css";
 
 const repo = "https://github.com/jrmatherly/ai-kb";
 const docs = "/docs/";
+const upstream = "https://github.com/Tencent/WeKnora";
 const guide = (path: string) => `${docs}${path}.html`;
 const modes = [
   { number: "01", icon: "search", label: "RAG", title: "Answers you can check", description: "Semantic and keyword retrieval find the relevant material. Every answer cites its sources, and you can open the original passage to check it.", tags: ["Hybrid retrieval", "Multimodal parsing", "Source citations"], link: "03-features/05-retrieval-engines" },
@@ -126,6 +127,6 @@ export default function Home() {
         </div>
       </section>
     </main>
-    <footer className={`${s.shell} ${s.footer}`}><a className={s.brand} href="/" aria-label="AI KB home"><BrandLogo /></a><p>Open source · MIT License</p><nav aria-label="Footer navigation"><a href={docs}>Docs</a><a href={repo} target="_blank" rel="noreferrer">GitHub <Icon name="external" /></a><a href={`${repo}/blob/main/CHANGELOG.md`} target="_blank" rel="noreferrer">Changelog</a></nav></footer>
+    <footer className={`${s.shell} ${s.footer}`}><a className={s.brand} href="/" aria-label="AI KB home"><BrandLogo /></a><p>Open source · MIT License · Based on <a href={upstream} target="_blank" rel="noreferrer">Tencent/WeKnora</a></p><nav aria-label="Footer navigation"><a href={docs}>Docs</a><a href={repo} target="_blank" rel="noreferrer">GitHub <Icon name="external" /></a><a href={`${repo}/blob/main/CHANGELOG.md`} target="_blank" rel="noreferrer">Changelog</a></nav></footer>
   </div>;
 }
