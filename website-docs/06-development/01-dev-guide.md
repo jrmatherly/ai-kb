@@ -26,7 +26,7 @@ go install -tags postgres "github.com/golang-migrate/migrate/v4/cmd/migrate@$(go
 # so nothing needs installing. make install-swagger puts that same version on PATH.
 
 # Python dependency management
-pip install uv          # docreader installs its dependencies with uv sync
+pip install uv==0.13.0  # docreader installs its dependencies with uv sync; docreader/pyproject.toml [tool.uv] required-version pins it
 
 # Hot reload for make dev-app (optional; without it dev-app falls back to go run)
 go install github.com/air-verse/air@latest   # or: brew install go-air (the Homebrew formula named air is an unrelated R formatter)
