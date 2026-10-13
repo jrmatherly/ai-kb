@@ -63,12 +63,12 @@ For a large window (more than about 20 commits), dispatch one reviewer subagent 
 
 ### Validation per area
 
-`scripts/validate.sh --base <sha-before-batch>` runs, for each area the batch touched, the archived upstream CI's commands (`private/OLD-.github/workflows/`): Go root module, `cli/`, `client/`, `frontend/`, `docreader/`, model catalog, git hooks, license bundle, `website-docs/`, then the English-only gate on the range. `--list` names the areas without running them. A workflow change upstream that adds a command goes into the script.
+`scripts/validate.sh --base <sha-before-batch>` runs, for each area the batch touched, the same commands as our CI in `.github/workflows/` (ported from upstream's): Go root module, `cli/`, `client/`, `frontend/`, `docreader/`, model catalog, git hooks, license bundle, `website-docs/` and the rest, then the English-only and em dash gates. `--list` names the areas without running them. A workflow change upstream that adds a command goes into the script and into our workflow.
 
 ## Rules for this repo
 
 - Keep `-x` on every cherry-pick so the log line "cherry picked from commit" carries provenance. Upstream `#NNNN` issue and PR numbers autolink to the wrong repo on GitHub; rewrite them to `Tencent/WeKnora#NNNN` in the picked commit message (`git commit --amend`) and in the decision log.
-- Upstream commits that touch `.github/` are SKIP. Ours is removed; the archived copies in `private/OLD-.github/` are the reference when a workflow change reveals a new validation command. Record such a command change in the log so `scripts/validate.sh` gets updated.
+- Upstream commits that touch `.github/` are never cherry-picked: ours is a rebranded, SHA-pinned port (GHCR, tag-only publishing) that diverges on every line. Read them for new or changed validation commands and port those by hand into `.github/workflows/` and `scripts/validate.sh`, keeping our conventions (`scripts/check-workflows.sh`). Record the decision in the log.
 - **English only.** This copy carries no Chinese (or other CJK) text: comments, log and error messages, prompts, docs, UI copy, fixtures. At the seed about 1,100 files contain CJK text (`scripts/check-english-only.sh --summary`); in Go about 9,200 lines, of which 3,690 are full-line comments (1,700 of them swag annotations) and the rest mostly string literals (counted 2026-10-12). Consequences for review:
   - Translated files show `~` for every upstream commit that touches them. That is expected. Cherry-pick anyway: hunks that do not overlap a translated line merge cleanly, and a conflict is confined to the lines both sides changed. Resolve by taking upstream's logic and our language.
   - A pick never lands CJK text. After a batch, `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD` is the gate (whole-file mode would also report the seed's untranslated text in those files). Translate every hit before the batch lands.
@@ -84,7 +84,7 @@ For a large window (more than about 20 commits), dispatch one reviewer subagent 
 
 An `x` marker means we removed the path, not always that the change is irrelevant.
 
-- `.github/**`: SKIP (see above). Archived in `private/OLD-.github/`.
+- `.github/**`: replaced by our own CI, not removed; port command changes by hand (see above). Upstream's originals are archived in `private/OLD-.github/`.
 - 36 paths renamed by `map.tsv` on 2026-10-12 (`cli/skills/weknora-*`, `packages/dsh-weknora`, `Formula/weknora-lite.rb`, `frontend/public/weknora-widget.js`, systemd units, `mcp-server/weknora_mcp_server.py`, `frontend/src/assets/img/weknora.png`): an upstream change to the old path is ported to the path the map gives it.
 - Add a line here for every later removal, with where the content went or why it is gone.
 
@@ -109,7 +109,7 @@ The rename landed 2026-10-12 and moved to "Name translations when porting" below
 
 Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
 
-Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --diff` on added lines today (install with `scripts/install-git-hooks.sh`; `git cherry-pick` does not run pre-commit, hence step 6). The tree-wide scan becomes a CI gate once the seed is translated.
+Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --diff` on added lines today (install with `scripts/install-git-hooks.sh`; `git cherry-pick` does not run pre-commit, hence step 6). The tree-wide scan is a CI gate (`guards.yml`, `scripts/check-english-only.sh` with no base).
 
 ## Name translations when porting
 
