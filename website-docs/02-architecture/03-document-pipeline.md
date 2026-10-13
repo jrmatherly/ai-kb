@@ -79,13 +79,13 @@ Management endpoints: `POST /knowledge/:id/reparse` (reparse), `POST /knowledge/
 
 ```text
 pdf txt docx doc epub html htm mhtml md markdown xmind
-png jpg jpeg gif csv xlsx xls pptx ppt json
+png jpg jpeg gif csv xlsx xls xlsb pptx ppt json
 mp3 wav m4a flac ogg
 ```
 
 URL import used to keep a shorter list of its own, so a direct `xlsx` upload worked while an `xlsx` URL import was rejected. Both paths now go through `isSupportedImportExtension()` / `validateImportFileType()` in `internal/application/service/knowledge_util.go`, and video files are rejected with the error "Uploading video files is not supported".
 
-Spreadsheet extensions (`csv` / `xlsx` / `xls`, `dataTableFileExtensions`) get one extra table summary task after the document processing task (`enqueueDataTableSummaryIfNeeded`).
+Spreadsheet extensions (`csv` / `xlsx` / `xls`, `dataTableFileExtensions`) get one extra table summary task after the document processing task (`enqueueDataTableSummaryIfNeeded`). A binary `xlsb` workbook is parsed as a document only: DuckDB, which loads the data tables, reads neither it (`read_xlsx`) nor its sheet list (`st_read_meta`).
 
 The extra pre-checks for image and audio files (is the object storage configuration complete, is a VLM / ASR model configured) and the `process_config` validation are collected in `resolveFileImportProcessConfig()`, shared by upload and URL import.
 
@@ -271,13 +271,13 @@ After a worker picks up `TypeDocumentProcess` it moves through five canonical st
 4. `resolveDocReader` returns an `interfaces.DocReader`:
    - **builtin**: calls the Python **docreader** service over gRPC (`docparser/grpc_parser.go`) or HTTP (`http_parser.go`).
    - **simple**: Go-native parsing of md/txt/csv/json/images/audio (`builtin_converter.go`: CSV becomes a Markdown table, JSON becomes recursively split code blocks, images and audio become placeholder references).
-   - **anydoc**: in-process Go parsing of docx/doc/pptx/ppt/xlsx/xls/odf/rtf/epub/csv/pdf (`anydoc_reader.go`), backed by the anydoc Rust library linked through cgo. Images embedded in Office documents are inserted back into the Markdown at their original position according to the document model. Scanned PDFs without a text layer fall back to builtin whole-page rendering when DocReader is available. When anydoc is linked, complex formats without a configured rule default to anydoc, but PDF still defaults to builtin. It is only available in binaries built with the `anydoc` build tag; other builds list the engine as unavailable.
+   - **anydoc**: in-process Go parsing of docx/doc/pptx/ppt/xlsx/xls/xlsb/odf/rtf/epub/csv/pdf (`anydoc_reader.go`), backed by the anydoc Rust library linked through cgo. Images embedded in Office documents are inserted back into the Markdown at their original position according to the document model. Scanned PDFs without a text layer fall back to builtin whole-page rendering when DocReader is available. When anydoc is linked, complex formats without a configured rule default to anydoc, but PDF still defaults to builtin. It is only available in binaries built with the `anydoc` build tag; other builds list the engine as unavailable.
    - **weknoracloud / mineru / mineru_cloud / paddleocr_vl / paddleocr_vl_cloud**: HTTP converters (registered in `engines.go`; availability is decided by configuration such as `mineru_endpoint`, `mineru_api_key`, `paddleocr_vl_endpoint`). A self-hosted `mineru` detects the MinerU 4.0 V1 API versus the legacy `/file_parse` endpoint automatically, see [Document parsing](../03-features/03-document-parsing.md#mineru-self-hosted).
 
 The engine catalog lives in `internal/infrastructure/docparser/engines.go`. Each engine declares its metadata (name, description, file types, availability probe) together with a `NewReader` factory. `docparser.NewReader` dispatches by name; a name that is not registered (such as `markitdown`, which exists only in docreader) falls through to the docreader client.
 5. File mode: the bytes are read back with `FileService.GetFile(payload.FilePath)` and placed in `ReadRequest.FileContent`.
 
-**On the docreader side** (`docreader/`, Python gRPC): the proto is `docreader/proto/docreader.proto` with the methods `Read` / `ReadStream` (streaming: a first frame with metadata, then one frame per image, so large scanned PDFs do not hit the gRPC message limit) / `ListEngines`. The built-in parsers cover docx/doc/pdf/md/xlsx/xls/pptx/ppt/epub/html/htm/mhtml/xmind/images/web pages (`WebParser` handles URLs). Two more engines are registered: `markitdown` (Microsoft MarkItDown) and `opendataloader` (PDF layout analysis, needs Java 11+). The Go app keeps its own engine list (registered from `engines.go`), and `ListAllEngines()` in `engine_registry.go` merges in the result of the `ListEngines` RPC: for an engine both sides know, docreader's file types and description win, and engines only docreader reports are appended, so a new docreader engine shows up without a Go change. The result is always a `ReadResult{MarkdownContent, ImageRefs, Metadata, IsAudio, AudioData}`: **the parse product is Markdown text plus image bytes**, and the Go side persists the images.
+**On the docreader side** (`docreader/`, Python gRPC): the proto is `docreader/proto/docreader.proto` with the methods `Read` / `ReadStream` (streaming: a first frame with metadata, then one frame per image, so large scanned PDFs do not hit the gRPC message limit) / `ListEngines`. The built-in parsers cover docx/doc/pdf/md/xlsx/xls/xlsb/pptx/ppt/epub/html/htm/mhtml/xmind/images/web pages (`WebParser` handles URLs). Two more engines are registered: `markitdown` (Microsoft MarkItDown) and `opendataloader` (PDF layout analysis, needs Java 11+). The Go app keeps its own engine list (registered from `engines.go`), and `ListAllEngines()` in `engine_registry.go` merges in the result of the `ListEngines` RPC: for an engine both sides know, docreader's file types and description win, and engines only docreader reports are appended, so a new docreader engine shows up without a Go change. The result is always a `ReadResult{MarkdownContent, ImageRefs, Metadata, IsAudio, AudioData}`: **the parse product is Markdown text plus image bytes**, and the Go side persists the images.
 
 ### ASR transcription (audio files)
 

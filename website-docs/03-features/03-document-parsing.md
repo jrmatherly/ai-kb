@@ -6,7 +6,7 @@ Supported formats:
 
 | Category | Formats |
 | --- | --- |
-| Documents | PDF, Word (doc/docx), PowerPoint (ppt/pptx), Excel (xls/xlsx), EPUB, XMind |
+| Documents | PDF, Word (doc/docx), PowerPoint (ppt/pptx), Excel (xls/xlsx/xlsb), EPUB, XMind |
 | Text | txt, Markdown, CSV, JSON |
 | Web | online URL capture, local HTML / MHTML archives |
 | Images | jpg, jpeg, png, gif (a vision model must be configured for the content to be understood; docreader itself also parses bmp, tiff and webp over gRPC, but the upload paths accept only the four listed) |
@@ -16,7 +16,7 @@ When a parse result is poor, these adjustments help:
 
 - **PDF layout is wrong or tables are misaligned**: pick another engine for `pdf` in the knowledge base parsing settings (MarkItDown / OpenDataLoader / MinerU).
 - **A scan produced no text**: confirm a vision model is configured; force scanned mode if needed.
-- **The first Excel row holds column names but is treated as data**: turn on "first row as header" for `xlsx`/`xls`.
+- **The first Excel row holds column names but is treated as data**: turn on "first row as header" for `xlsx`/`xls`/`xlsb`.
 - **A chunk needs a correction**: edit the text in the chunk list, see [Knowledge bases and knowledge management](02-knowledge-base.md#edit-chunks-and-add-metadata).
 
 ## Parsing mechanics and configuration reference
@@ -87,7 +87,7 @@ sequenceDiagram
     G->>G: "IsSimpleFormat? (md/txt/csv/json/images/audio)"
     alt "Simple format"
         G->>G: "SimpleFormatReader converts straight to Markdown"
-    else "Complex format (pdf/docx/doc/xlsx/xls/pptx/ppt/epub/html/mhtml/URL)"
+    else "Complex format (pdf/docx/doc/xlsx/xls/xlsb/pptx/ppt/epub/html/mhtml/URL)"
         G->>D: "ReadStream(ReadRequest{file_content, config.parser_engine, request_id})"
         Note over D: "AuthInterceptor checks the Bearer token"
         D->>D: "Parser.parse_file, registry picks the parser, then parse_into_text"
@@ -115,7 +115,7 @@ sequenceDiagram
 
 | Engine | File types | Notes |
 | --- | --- | --- |
-| `builtin` | `docx` (Docx2Parser), `doc` (DocParser), `pdf` (PDFParser), `md`/`markdown` (MarkdownParser), `xlsx`/`xls` (ExcelParser), `pptx`/`ppt` (MarkitdownParser), `epub` (EPUBParser), `html`/`htm` (HTMLParser), `mhtml` (MHTMLParser), `xmind` (XMindParser), `jpg`/`jpeg`/`png`/`gif`/`bmp`/`tiff`/`webp` (ImageParser) | Built-in engine; PPT/PPTX reuse the MarkItDown parser |
+| `builtin` | `docx` (Docx2Parser), `doc` (DocParser), `pdf` (PDFParser), `md`/`markdown` (MarkdownParser), `xlsx`/`xls`/`xlsb` (ExcelParser), `pptx`/`ppt` (MarkitdownParser), `epub` (EPUBParser), `html`/`htm` (HTMLParser), `mhtml` (MHTMLParser), `xmind` (XMindParser), `jpg`/`jpeg`/`png`/`gif`/`bmp`/`tiff`/`webp` (ImageParser) | Built-in engine; PPT/PPTX reuse the MarkItDown parser |
 | `markitdown` | `md`, `markdown`, `pdf`, `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `xls`, `csv` (all MarkitdownParser) | Microsoft MarkItDown library |
 | `opendataloader` | `pdf` (OpenDataLoaderParser) | OpenDataLoader PDF layout analysis, needs Java 11+; `check_available` probes java, the Python package and the hybrid service health |
 
@@ -191,13 +191,13 @@ Inherits `Docx2Parser` and tries, in order:
   - On total failure it falls back to `_parse_using_simple_method` (plain python-docx paragraphs plus table rows, no images).
   - The page cap is `DOCREADER_DOCX_MAX_PAGES` (default 0 = unlimited).
 
-#### excel_parser.py and three helper modules (.xlsx / .xls)
+#### excel_parser.py and three helper modules (.xlsx / .xls / .xlsb)
 
 **`ExcelParser`** is built on pandas: it reads each sheet as a DataFrame, drops fully empty rows, and **turns each row into `column: value,column: value` key-value text**, one `Chunk` per row (with start/end positions). It strips embedded image function strings such as WPS `=DISPIMG("ID",mode)` and Office 365 `=_xlfn.IMAGE(...)` (`_IMAGE_FUNC_RE`). It does not extract images.
 
 **Header mode**: XLSX and legacy XLS now behave the same. By default row 1 is treated as data and columns are named with the letters `A`/`B`/`C`, so a data row is never mistaken for a header and lost. For a flat table whose first row really holds column names, turn on `xlsx_first_row_as_header` in the parsing engine rules: the first row becomes the column labels and the key-value text turns into the semantic form `Name: Alice,Department: R&D`. Empty cells and image-function values fall back to the column letter, and duplicate labels get `_2`, `_3` suffixes to stay unique.
 
-The switch is configured through the knowledge base's `parser_engine_rules[].xlsx_first_row_as_header` (and can be overridden per upload in the upload confirmation dialog). On the backend, `applyParserRuleOverrides()` applies it only to `xlsx`/`xls` rules whose engine is `builtin` (or empty), and passes it to docreader as a `parser_engine_overrides` entry. The field type is `*bool`: `null` keeps the parser default and an explicit `false` turns it off.
+The switch is configured through the knowledge base's `parser_engine_rules[].xlsx_first_row_as_header` (and can be overridden per upload in the upload confirmation dialog). On the backend, `applyParserRuleOverrides()` applies it only to `xlsx`/`xls`/`xlsb` rules whose engine is `builtin` (or empty), and passes it to docreader as a `parser_engine_overrides` entry. The field type is `*bool`: `null` keeps the parser default and an explicit `false` turns it off.
 
 Three helper modules deal with messy real-world files:
 
@@ -285,7 +285,7 @@ flowchart TD
     P -. "exception / forced scanned" .-> P3["PDFScannedParser: full-page rendering fallback"]
     H -- "docx" --> X["Docx2Parser = FirstParser(MarkitdownParser, DocxParser)"]
     H -- "doc" --> Y["DocParser: LibreOffice to docx, antiword fallback"]
-    H -- "xlsx / xls" --> Z["ExcelParser (repair + merged-cell fill + per-row key-value)"]
+    H -- "xlsx / xls / xlsb" --> Z["ExcelParser (repair + merged-cell fill + per-row key-value)"]
     H -- "md / markdown" --> M["MarkdownParser (table normalization + base64 image extraction)"]
     H -- "epub" --> EP["EPUBParser (ebooklib, ZIP fallback)"]
     H -- "html / htm" --> HT["HTMLParser (BeautifulSoup + markdownify)"]
@@ -444,7 +444,7 @@ Python dependencies (`pyproject.toml`, locked by `uv.lock`): `grpcio`, `pypdfium
 
 `anydoc` is an optional Go-side parsing engine: it links [anydoc](https://github.com/firecrawl/anydoc), a document conversion library written in Rust, into the AI KB main process through cgo and converts Office documents to Markdown directly. Unlike the docreader described in the rest of this page, it **does not go through the Python service, cross a process boundary or call an external binary**, which suits lightweight deployments that do not want to run docreader, or latency-sensitive parsing.
 
-Supported file types: `doc`, `docx`, `docm`, `odt`, `rtf`, `ppt`, `pptx`, `pptm`, `odp`, `xls`, `xlsx`, `xlsm`, `ods`, `epub`, `csv`, `pdf`.
+Supported file types: `doc`, `docx`, `docm`, `odt`, `rtf`, `ppt`, `pptx`, `pptm`, `odp`, `xls`, `xlsx`, `xlsb`, `xlsm`, `ods`, `epub`, `csv`, `pdf`.
 
 #### Enabling it
 
@@ -516,7 +516,7 @@ Details of the V1 flow:
 ### Appendix: key facts at a glance
 
 - **External interface**: gRPC only, port `50051` (`DOCREADER_GRPC_PORT`/`PORT`); RPCs `Read` / `ReadStream` / `ListEngines` plus the standard Health service.
-- **File formats docreader handles directly**: `pdf`, `docx`, `doc`, `xlsx`, `xls`, `pptx`, `ppt`, `xmind` (the markitdown engine adds `csv`), `md`/`markdown`, `epub`, `html`/`htm`, `mhtml`, images `jpg/jpeg/png/gif/bmp/tiff/webp`, and URL capture; `txt`/`csv`/`json`, images and audio are handled natively on the Go side by `SimpleFormatReader` in the main path and never reach this service.
+- **File formats docreader handles directly**: `pdf`, `docx`, `doc`, `xlsx`, `xls`, `xlsb`, `pptx`, `ppt`, `xmind` (the markitdown engine adds `csv`), `md`/`markdown`, `epub`, `html`/`htm`, `mhtml`, images `jpg/jpeg/png/gif/bmp/tiff/webp`, and URL capture; `txt`/`csv`/`json`, images and audio are handled natively on the Go side by `SimpleFormatReader` in the main path and never reach this service.
 - **OCR / VLM**: zero OCR and zero VLM inside docreader; scanned pages and figures return as images, and OCR (PaddleOCR-VL) and captions happen in the Go App.
 - **Image return**: inline bytes (`ImageRef.image_data`); persistence to local/minio/cos/tos is Go's job.
 - **Chunking**: the production path is the Go-side chunker; the Python `TextSplitter` (512/80) is kept for the sidecar and aligned with Go.
