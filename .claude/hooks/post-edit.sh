@@ -15,10 +15,15 @@ else
   added="$(perl -ne 'print "$.: $_"' -- "$f")"
 fi
 [ -n "$added" ] || exit 0
-# .gitattributes `-english-only` paths (the translation glossary) may hold CJK.
-cjk=""
-[ "$(git check-attr english-only -- "$f" | awk '{print $NF}')" = unset ] ||
+# New CJK only: for a tracked file the English-only gate ignores Chinese a line already carried
+# (a rename inside a Chinese line); an untracked file is all new. The gate honours -english-only paths.
+if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then
+  cjk="$(scripts/check-english-only.sh --diff HEAD -- "$f" 2>/dev/null | head -5)"
+elif [ "$(git check-attr english-only -- "$f" | awk '{print $NF}')" = unset ]; then
+  cjk=""
+else
   cjk="$(printf '%s\n' "$added" | perl -CSD -ne 'print if /[\x{3040}-\x{30ff}\x{3400}-\x{4dbf}\x{4e00}-\x{9fff}\x{ac00}-\x{d7af}\x{ff00}-\x{ffef}]/' | head -5)"
+fi
 dash="$(printf '%s\n' "$added" | grep $'\xe2\x80\x94' | head -5)"
 [ -z "$cjk$dash" ] && exit 0
 [ -n "$cjk" ] && printf '%s: added CJK text (this copy is English only):\n%s\n' "$f" "$cjk" >&2

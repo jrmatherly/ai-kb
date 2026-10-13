@@ -6,7 +6,7 @@
 #   check-english-only.sh [pathspec...]     tracked files containing CJK text (default: whole repo)
 #   check-english-only.sh -n [pathspec...]  matching lines with line numbers
 #   check-english-only.sh --summary         file counts per top-level directory
-#   check-english-only.sh --diff [<range>]  lines a diff adds: the staged diff by default (the pre-commit
+#   check-english-only.sh --diff [<range>] [-- <path>...]  new CJK in lines a diff adds: the staged diff by default (the pre-commit
 #                                           gate), or a range such as <sha>..HEAD after a cherry-pick batch
 set -uo pipefail
 export LC_ALL=C.UTF-8   # git grep -P rejects \x{...} above 0xff under a non-UTF-8 locale
@@ -37,11 +37,21 @@ esac
 
 case "$mode" in
   diff)
-    range=(--cached); [ $# -eq 0 ] || range=("$@")
-    hits=$(git -C "$root" diff -U0 --no-color --src-prefix=a/ --dst-prefix=b/ "${range[@]}" -- . "$EXEMPT" | perl -CSD -ne '
+    range=(--cached) paths=(.)
+    if [ $# -gt 0 ] && [ "$1" != -- ]; then range=("$1"); shift; fi
+    if [ "${1:-}" = -- ]; then shift; [ $# -eq 0 ] || paths=("$@"); fi
+    # A CJK run on an added line is new only if no removed line of the same file carries it, so a
+    # mechanical rewrite of a line that already held Chinese (a rename, a moved line) is not a hit.
+    hits=$(git -C "$root" diff -U0 --no-color --src-prefix=a/ --dst-prefix=b/ "${range[@]}" -- "${paths[@]}" "$EXEMPT" | perl -CSD -ne '
+      sub flush { for my $l (@added) { my $new = 0;
+          for my $r ($l =~ /('"$CJK"'+)/g) { if ($removed{$r}) { $removed{$r}-- } else { $new = 1 } }
+          print "$f: $l" if $new } @added = (); %removed = () }
+      if (m{^diff --git }) { flush(); next }
       if (m{^\+\+\+ b/(.*)}) { $f = $1; next }
-      next unless /^\+/ && /'"$CJK"'/;
-      s/^\+//; print "$f: $_"')
+      next if /^(---|\+\+\+) /;
+      if (/^-/) { $removed{$_}++ for /('"$CJK"'+)/g; next }
+      if (/^\+/ && /'"$CJK"'/) { s/^\+//; push @added, $_ }
+      END { flush() }')
     [ -z "$hits" ] && exit 0
     printf '%s\n' "$hits"
     echo "CJK text in added lines; this repo is English only (scripts/check-english-only.sh)." >&2
