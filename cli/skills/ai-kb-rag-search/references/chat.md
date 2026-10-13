@@ -7,7 +7,7 @@ RAG, `session ask` invokes a custom agent.
 
 ## Commands & flags
 
-```
+```text
 aikb chat "<query>" --kb <name-or-id> [--session <id>]
 aikb session ask "<query>" --agent <agent-id> [--session <id>]
 ```

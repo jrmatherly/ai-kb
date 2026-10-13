@@ -9,7 +9,7 @@ The AI KB HTTP API is mounted under `/api/v1` and accepts JWT, API key and embed
 - Swagger UI: `/swagger/index.html` on the backend, registered only outside `release` mode (`GIN_MODE != release`). Docker Compose defaults to `release`. Enabling it, the backend port and troubleshooting a blank page: [Development guide](../06-development/01-dev-guide.md#gin-mode-and-swagger).
 - Paths outside the normal authentication flow: `GET|HEAD /r/:token` (short-lived resource grant URL), `GET /files` (authenticated file proxy), `GET|HEAD /api/v1/files/presigned` (HMAC-signed URL, no authentication), `GET /api/v1/files/presigned-preview` (Admin diagnostics).
 
-```
+```bash
 BASE=http://localhost:8080
 ```
 
@@ -19,7 +19,7 @@ The `Auth` middleware in `internal/middleware/auth.go` handles every credential 
 
 ### JWT Bearer (web users)
 
-```
+```http
 Authorization: Bearer <access_token>
 ```
 
@@ -29,7 +29,7 @@ Authorization: Bearer <access_token>
 
 ### API key (machine principals)
 
-```
+```http
 X-API-Key: <api_key>
 ```
 
@@ -46,7 +46,7 @@ X-API-Key: <api_key>
 
 The public routes under `/api/v1/embed/:channel_id/*` use the separate `EmbedAuth` middleware (`internal/middleware/embed_auth.go`):
 
-```
+```http
 Authorization: Embed <publish_token or session_token>
 ```
 
@@ -57,7 +57,7 @@ Authorization: Embed <publish_token or session_token>
 
 `/mcp/:endpoint_id` (no `/api/v1` prefix) is the MCP Streamable HTTP endpoint a workspace exposes. `internal/middleware/mcp_endpoint_auth.go` validates it:
 
-```
+```http
 Authorization: Bearer <endpoint_token>
 ```
 
@@ -165,7 +165,7 @@ Out-of-range or malformed values return a validation error (code 1010). List res
 
 The chat endpoints (`POST /api/v1/knowledge-chat/:session_id`, `POST /api/v1/agent-chat/:session_id`, `GET /api/v1/sessions/continue-stream/:session_id`, and their embed counterparts) return Server-Sent Events:
 
-```
+```http
 Content-Type: text/event-stream
 Cache-Control: no-cache
 Connection: keep-alive

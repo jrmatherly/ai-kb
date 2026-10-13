@@ -121,7 +121,7 @@ If you hit authentication problems:
 ## Development
 
 ### Project layout
-```
+```text
 ai-kb/mcp-server/
 ├── __init__.py              # package init
 ├── main.py                  # main entry point

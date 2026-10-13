@@ -4,7 +4,7 @@ This directory holds examples for the Agent Skills feature.
 
 ## Layout
 
-```
+```text
 skills/
 ├── README.md              # this file
 └── pdf-processing/        # example PDF processing skill
@@ -27,29 +27,29 @@ go run ./cmd/skills-demo/main.go
 
 1. Create a folder in this directory:
 
-```bash
-mkdir my-new-skill
-```
+   ```bash
+   mkdir my-new-skill
+   ```
 
 2. Create `SKILL.md`:
 
-```markdown
----
-name: my-new-skill
-description: Description of what this skill does and when to use it.
----
+   ```markdown
+   ---
+   name: my-new-skill
+   description: Description of what this skill does and when to use it.
+   ---
 
-# My New Skill
+   # My New Skill
 
-Instructions for the agent...
-```
+   Instructions for the agent...
+   ```
 
 3. Add scripts (optional):
 
-```bash
-mkdir my-new-skill/scripts
-# add your scripts
-```
+   ```bash
+   mkdir my-new-skill/scripts
+   # add your scripts
+   ```
 
 ## Full documentation
 
@@ -81,7 +81,7 @@ description: Extract text and tables from PDF files, fill forms, merge documents
 
 The agent calls the skill on its own, based on the user's request:
 
-```
+```text
 User: "What fields does this PDF form have?"
 
 Agent:

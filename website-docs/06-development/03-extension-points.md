@@ -93,15 +93,15 @@ class ParserEngineRegistry:
 1. Create `my_parser.py` in `docreader/parser/`, subclass `BaseParser` and implement `parse_into_text(content: bytes) -> Document`.
 2. **Registration point: `docreader/parser/registry.py`**. Add to `_build_default_registry()`:
 
-```python
-reg.register(
-    "my_engine",
-    {"myext": MyParser},
-    description="My parsing engine",
-    check_available=lambda overrides: (True, ""),   # optional: dependency availability probe
-    unavailable_hint="Hint shown when a dependency is missing",  # optional
-)
-```
+   ```python
+   reg.register(
+       "my_engine",
+       {"myext": MyParser},
+       description="My parsing engine",
+       check_available=lambda overrides: (True, ""),   # optional: dependency availability probe
+       unavailable_hint="Hint shown when a dependency is missing",  # optional
+   )
+   ```
 
 3. To swap the implementation for an existing extension, you can instead add one line `"ext": MyParser` to the `builtin` map.
 4. Add a unittest under `docreader/tests/` (see `test_parser_routing.py`) and run `uv run --project docreader python -m unittest discover -s docreader/tests -p "test_*.py"`.
@@ -420,14 +420,14 @@ In `internal/infrastructure/web_search/`: `duckduckgo.go`, `google.go`, `bing.go
 2. Create `mysearch.go` in `internal/infrastructure/web_search/`, implement `WebSearchProvider` and expose the factory `func NewMySearchProvider(params types.WebSearchProviderParameters) (interfaces.WebSearchProvider, error)`.
 3. **Registration point: `registerWebSearchProviders()` in `internal/container/container.go`**:
 
-```go
-func registerWebSearchProviders(registry *infra_web_search.Registry) {
-    registry.Register("duckduckgo", infra_web_search.NewDuckDuckGoProvider)
-    registry.Register("google", infra_web_search.NewGoogleProvider)
-    // ... add yours here:
-    registry.Register("mysearch", infra_web_search.NewMySearchProvider)
-}
-```
+   ```go
+   func registerWebSearchProviders(registry *infra_web_search.Registry) {
+       registry.Register("duckduckgo", infra_web_search.NewDuckDuckGoProvider)
+       registry.Register("google", infra_web_search.NewGoogleProvider)
+       // ... add yours here:
+       registry.Register("mysearch", infra_web_search.NewMySearchProvider)
+   }
+   ```
 
 4. If the frontend provider dropdown and parameter form should show the new engine, update the matching settings page component in `frontend/`. Workspace configuration is persisted in the `web_search_providers` table.
 
@@ -508,11 +508,11 @@ The registry is in the same file: `ConnectorRegistry` (`NewConnectorRegistry()` 
 1. Create a package `internal/datasource/connector/mysource/` that implements `Connector` (for large data sets also implement `StreamingConnector`) and provides `NewConnector()`.
 2. **Registration point 1: `initConnectorRegistry()` in `internal/container/container.go`**:
 
-```go
-if err := registry.Register(mysourceConnector.NewConnector()); err != nil {
-    errs = errors.Join(errs, fmt.Errorf("register mysource connector: %w", err))
-}
-```
+   ```go
+   if err := registry.Register(mysourceConnector.NewConnector()); err != nil {
+       errs = errors.Join(errs, fmt.Errorf("register mysource connector: %w", err))
+   }
+   ```
 
 3. **Registration point 2: `ConnectorMetadataRegistry` in `internal/datasource/connector.go`**. Add a type constant (`ConnectorTypeXxx` in `internal/types`) and a metadata entry (Name/Description/AuthType/Capabilities).
 4. Update the configuration structure: if `types.DataSourceConfig` needs new credential fields, follow the encrypted-storage convention. The frontend data source page renders from the metadata.
@@ -595,15 +595,15 @@ One subpackage per platform under `internal/im/`: `wecom/`, `feishu/` (Lark reus
 2. Create `internal/im/myplatform/` and implement `Adapter` (plus `StreamSender` / `FileDownloader` as needed) and `NewFactory() im.AdapterFactory`.
 3. **Registration point: `registerIMService()` in `internal/container/container.go`**:
 
-```go
-func registerIMService(imService *imPkg.Service, cleaner interfaces.ResourceCleaner) {
-    imService.RegisterAdapterFactory("wecom", wecom.NewFactory())
-    // ... add yours here:
-    imService.RegisterAdapterFactory("myplatform", myplatform.NewFactory())
-    if err := imService.LoadAndStartChannels(); err != nil { ... }
-    ...
-}
-```
+   ```go
+   func registerIMService(imService *imPkg.Service, cleaner interfaces.ResourceCleaner) {
+       imService.RegisterAdapterFactory("wecom", wecom.NewFactory())
+       // ... add yours here:
+       imService.RegisterAdapterFactory("myplatform", myplatform.NewFactory())
+       if err := imService.LoadAndStartChannels(); err != nil { ... }
+       ...
+   }
+   ```
 
 4. Channel configuration is persisted in the `im_channels` table and session mappings in `im_channel_sessions`. The frontend channel management page needs a configuration form for the new platform.
 
@@ -724,17 +724,17 @@ All in `internal/application/service/file/`:
 1. Create `mystore.go` in `internal/application/service/file/` and implement every `FileService` method (`CheckConnectivity` backs the frontend "Test connection" button, that is `StorageBackendService.Test`).
 2. **Registration point: `NewFileServiceFromStorageConfig()` in `internal/application/service/file/factory.go`**. Add a case to the provider switch:
 
-```go
-switch p {
-case "local":  // NewLocalFileService(...)
-case "minio":  // NewMinioFileService(...)
-// ... add yours here:
-case "mystore":
-    return NewMyStoreFileService(cfg), p, nil
-default:
-    return nil, p, fmt.Errorf("unsupported provider %q", p)
-}
-```
+   ```go
+   switch p {
+   case "local":  // NewLocalFileService(...)
+   case "minio":  // NewMinioFileService(...)
+   // ... add yours here:
+   case "mystore":
+       return NewMyStoreFileService(cfg), p, nil
+   default:
+       return nil, p, fmt.Errorf("unsupported provider %q", p)
+   }
+   ```
 
 3. If the backend should also be selectable as the process-wide default through the `STORAGE_TYPE` environment variable, add a case to `initRawFileService()` in `internal/container/container.go`, which reads its settings from environment variables.
 4. If the new provider needs new configuration fields (endpoint, bucket, region and so on), extend `StorageEngineConfig` (`internal/types/tenant.go`) and `StorageBackendConfig` (`internal/types/storagebackend.go`, stored in the JSON column `storage_backends.config`).

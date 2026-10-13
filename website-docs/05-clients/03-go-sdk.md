@@ -6,7 +6,7 @@ The Go SDK wraps create, read, update and delete calls for the main resources (k
 
 Install the module with `go get` and import the `client` package. The module path is defined in `client/go.mod`:
 
-```
+```text
 module github.com/jrmatherly/ai-kb/client
 
 go 1.24.2

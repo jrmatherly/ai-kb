@@ -241,14 +241,14 @@ or `defaults.format` is `text`; `--format text --jq` is an error.
 On failure, stdout stays empty and the typed error goes to stderr in
 this format:
 
-```
+```text
 <code.namespace>: <message>[: <wrapped cause>]
 hint: <actionable next-step>
 ```
 
 Example:
 
-```
+```text
 auth.unauthenticated: fetch current user: HTTP error 401: ...
 hint: run `aikb auth login`
 ```

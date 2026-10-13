@@ -167,7 +167,7 @@ An agent run pauses mid-stream on a tool-approval event when the server requires
 
 ## 8. Resource model & command map
 
-```
+```text
 kb        knowledge bases   list/view/create/update/delete/pin/unpin/status/check
 doc       documents in a KB list/view/create/upload/fetch/download/reparse/update/delete/wait
 chunk     retrieval units   list/view/delete   (RAG debug; not search)

@@ -621,7 +621,7 @@ Purpose: update the tags of several knowledge items. Permission: Contributor+; A
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `updates` | map[string][]string | yes (`binding:"required,min=1"`) | knowledge_id to tag_ids |
+| `updates` | `map[string][]string` | yes (`binding:"required,min=1"`) | knowledge_id to tag_ids |
 | `kb_id` | string | no | Restrict to one knowledge base |
 
 Response: 200 `{"success":true}`

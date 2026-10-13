@@ -81,7 +81,7 @@ details.
 no envelope wrapping. The CLI injects exactly one event (`init`) at the head;
 all subsequent events pass through verbatim from the SDK:
 
-```
+```jsonl
 {"type":"init","session_id":"...","kb_id":"...","profile":"...","agent_id":"..."}
 {"type":"thinking","content":"..."}
 {"type":"answer","content":"Hello"}
@@ -364,7 +364,7 @@ User-facing exit-code mapping lives in [README.md "Exit codes"](README.md#exit-c
 
 When `aikb` exits non-zero, stderr carries a structured triplet:
 
-```
+```text
 <code>: <message>
 hint: <actionable next step>
 ```

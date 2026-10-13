@@ -59,7 +59,7 @@ English terms follow the product UI (`frontend/src/i18n/locales/en-US.ts`). Code
 
 Append to the fragment file you were given (never the shared log), one row per claim you checked that was not simply VERIFIED, plus one VERIFIED row summarizing the page with the evidence paths:
 
-```
+```markdown
 | # | Doc | Claim (as shipped) | Evidence (path:line) | Verdict | Doc now says | Follow-up |
 ```
 

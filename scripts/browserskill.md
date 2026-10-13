@@ -1,8 +1,8 @@
 # BrowserSkill upstream integration
 
 The extension and daemon are based on the official `ext-v0.3.1` tag, commit
-`da6bf4eed2dd7256567e152df8c903c87f6598c3` (including the upstream PRs #291,
-#296, #297 and #318 that AI KB previously pinned from `main`). Both report
+`da6bf4eed2dd7256567e152df8c903c87f6598c3` (including the
+upstream PRs #291, #296, #297 and #318 that AI KB previously pinned from `main`). Both report
 version `0.3.1`; the exact source baseline is recorded in
 `scripts/browserskill-release.json`. The daemon is built with
 `cargo build --locked --release -p bsk` from the same commit because upstream

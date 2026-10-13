@@ -234,7 +234,7 @@ A protected span longer than `maxProtectedSize = 7500` runes (a huge table or co
 `computeOverlap` takes a **semantic suffix**, not a fixed-length slice:
 
 - `ChunkOverlap` is a hard cap, not a target. The window is the last `min(ChunkOverlap, ChunkSize - length of the next unit)` characters of the chunk, plus 4 extra characters of lookbehind (`semanticOverlapLookbehind`, the length of the longest separator `\r\n\r\n`) so a separator cut by the window edge stays visible. A candidate boundary's last character must fall inside the window (at position -1 or later relative to the original window), so the retained content never exceeds the cap.
-- Boundary priority: paragraph break (`\n\n`) > line break (`\n`) > sentence end (the CJK full stop `。`, the fullwidth question and exclamation marks U+FF1F and U+FF01, and the English `. ` / `? ` / `! `, where the punctuation must be followed by a space so `3.14` and `v1.2` are not split). Among boundaries of equal priority the **earliest** in the window wins, so the useful overlap is as large as possible.
+- Boundary priority: paragraph break (`\n\n`) > line break (`\n`) > sentence end (the CJK full stop `。`, the fullwidth question and exclamation marks U+FF1F and U+FF01, and the English `.`, `?` and `!`, each of which counts only when a space follows it, so `3.14` and `v1.2` are not split). Among boundaries of equal priority the **earliest** in the window wins, so the useful overlap is as large as possible.
 - The window may cut inside a single `splitUnit` (the previous implementation could only retain whole units, so ordinary paragraphs often fell back to zero overlap), but it never crosses a zero-width synthetic unit with `start == end` such as a table header marker, which keeps the `Start/End` to Content invariant.
 - Separators inside protected spans (code blocks, inline code `` ` ` ``, formulas, tables, images and links) are not boundaries; a boundary followed only by whitespace does not count either.
 - If no valid semantic boundary exists in the window, no overlap is retained, rather than cutting mid-word.
@@ -333,7 +333,7 @@ if mode == types.FAQIndexModeQuestionAnswer && len(meta.Answers) > 0 {
 
 The call chain in `knowledge_process.go`:
 
-```
+```text
 processDocument
   └─ convert()                          // docreader → Markdown
   └─ imageResolver.ResolveAndStore()    // store images, rewrite URLs

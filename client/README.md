@@ -264,8 +264,6 @@ See `client/cmd/agent_test/README.md` for details.
 - Stream cancellation
 - Multiple sessions
 
-```
-
 ### Example: manage models
 
 ```go

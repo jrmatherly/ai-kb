@@ -63,7 +63,7 @@ Each backend implements `interfaces.RetrieveEngineRepository` (`EngineType()` / 
 - **CompositeRetrieveEngine** (`retriever/composite.go`): the composite pattern. `Retrieve` routes each `RetrieveParams.RetrieverType` (`vector` / `keywords`) to the first engine that supports that type and runs them concurrently; write operations such as `Index` / `Delete` / `CopyIndices` are broadcast to every member engine;
 - **RetrieveEngineRegistry** (`retriever/registry.go`): a registry with two indexes. `byEngineType` holds the env stores driven by the `RETRIEVE_DRIVER` environment variable (one per type); `byStoreID` holds instance-level registrations driven by the `VectorStore` database table (several instances of one engine type, for example two ES clusters).
 
-##### On-demand rebuild (rehydrate)
+#### On-demand rebuild (rehydrate)
 
 When a vector store happens to be unavailable at startup (backend not up yet, network blip), it never enters `byStoreID`; from then on every retrieval against a knowledge base bound to that store, and even deleting the knowledge base, would keep failing. The registry therefore supports **on-demand rebuild**:
 

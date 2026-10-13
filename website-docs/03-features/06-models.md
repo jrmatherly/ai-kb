@@ -181,7 +181,7 @@ This override ranks above the provider defaults and the model catalog; the legac
 | `prompt_cache_accounting` | bool | true | The provider reports cache-hit usage |
 | `api_version_prefix` | string | `/v1beta` | Version path appended when `base_url` is only a host |
 
-**Embedding models**
+##### Embedding models
 
 | Field | Type | Protocol default | Description |
 | --- | --- | --- | --- |
@@ -205,7 +205,7 @@ This override ranks above the provider defaults and the model catalog; the legac
 | `max_image_bytes` | int | 0 (unlimited) | Byte cap per image; larger images are rejected without a request |
 | `image_mime_types` | array | empty (unlimited) | Image formats the provider accepts, such as `["image/png", "image/jpeg"]` |
 
-**Rerank models**
+##### Rerank models
 
 | Field | Type | Protocol default | Description |
 | --- | --- | --- | --- |
@@ -229,7 +229,7 @@ This override ranks above the provider defaults and the model catalog; the legac
 
 Only rerank models whose catalog `input` includes `image` (`jina-reranker-m0` and `nvidia/llama-nemotron-rerank-vl-1b-v2`) receive image documents.
 
-**Speech recognition models**
+##### Speech recognition models
 
 | Field | Type | Protocol default | Description |
 | --- | --- | --- | --- |

@@ -8,7 +8,7 @@ The data source sync framework enables AI KB to automatically import and synchro
 
 ### Core Components
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                     External Data Sources                  │
 │     (Feishu, Notion, Confluence, GitHub, Google Drive...) │
@@ -46,7 +46,7 @@ The data source sync framework enables AI KB to automatically import and synchro
 
 ### Task Flow
 
-```
+```text
 Manual Trigger or Scheduled Job (cron)
         ↓
   Scheduler enqueues asynq Task
@@ -64,7 +64,7 @@ Manual Trigger or Scheduled Job (cron)
 
 ## File Structure
 
-```
+```text
 internal/datasource/
 ├── connector.go          # Connector interface & registry
 ├── errors.go            # Error definitions
@@ -97,7 +97,7 @@ Represents a configured external data source:
 - **ID**: Unique identifier
 - **Type**: Connector type (feishu, notion, confluence, etc)
 - **Config**: Encrypted credentials and configuration (JSON)
-- **SyncSchedule**: Cron expression (e.g., "0 */6 * * *")
+- **SyncSchedule**: Cron expression (e.g., `0 */6 * * *`)
 - **SyncMode**: "incremental" or "full"
 - **Status**: active | paused | error
 - **ConflictStrategy**: overwrite | skip
@@ -130,7 +130,7 @@ type Connector interface {
 ## API Endpoints
 
 ### Data Source Management
-```
+```text
 POST   /api/v1/datasource              # Create
 GET    /api/v1/datasource              # List (by kb_id)
 GET    /api/v1/datasource/:id          # Get
@@ -139,7 +139,7 @@ DELETE /api/v1/datasource/:id          # Delete
 ```
 
 ### Operations
-```
+```text
 POST   /api/v1/datasource/:id/validate      # Test connection
 GET    /api/v1/datasource/:id/resources     # List available resources
 POST   /api/v1/datasource/:id/sync          # Trigger manual sync
@@ -148,13 +148,13 @@ POST   /api/v1/datasource/:id/resume        # Resume
 ```
 
 ### Logs
-```
+```text
 GET    /api/v1/datasource/:id/logs          # List sync logs
 GET    /api/v1/datasource/logs/:log_id      # Get specific log
 ```
 
 ### Metadata
-```
+```text
 GET    /api/v1/datasource/types             # Available connectors
 ```
 

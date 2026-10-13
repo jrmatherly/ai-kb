@@ -77,7 +77,7 @@ Management endpoints: `POST /knowledge/:id/reparse` (reparse), `POST /knowledge/
 
 `supportedImportFileExtensions` in `internal/utils/import_filetypes.go` is **the single source of truth for every import path**. Direct uploads, file URL downloads and the worker's re-check after a download all consult the same set:
 
-```
+```text
 pdf txt docx doc epub html htm mhtml md markdown xmind
 png jpg jpeg gif csv xlsx xls pptx ppt json
 mp3 wav m4a flac ogg

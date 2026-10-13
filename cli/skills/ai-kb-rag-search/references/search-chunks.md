@@ -5,7 +5,7 @@ for you to reason over; it does NOT synthesize an answer (use `chat` for that).
 
 ## Command & flags
 
-```
+```text
 aikb search chunks "<query>" --kb <name-or-id> [flags]
 ```
 

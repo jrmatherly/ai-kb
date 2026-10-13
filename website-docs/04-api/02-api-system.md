@@ -30,7 +30,7 @@ Purpose: system version and engine information. Permission: Viewer+.
 
 Response: 200 `{"code":0,"msg":"success","data":{version,edition,commit_id,build_time,go_version,keyword_index_engine,vector_store_engine,graph_database_engine,minio_enabled,db_version,db_migration_error,started_at,uptime_seconds}}`
 
-`db_version` is the migration version; it gets a ` (dirty)` suffix when the last migration left the schema dirty and ` (failed)` when the last startup migration failed, in which case `db_migration_error` carries the message. It is `unknown` when the failure happened before the version could be read.
+`db_version` is the migration version; it gets the suffix `(dirty)`, after a space, when the last migration left the schema dirty and `(failed)` when the last startup migration failed, in which case `db_migration_error` carries the message. It is `unknown` when the failure happened before the version could be read.
 
 ```bash
 curl $BASE/api/v1/system/info -H "Authorization: Bearer $TOKEN"

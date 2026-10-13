@@ -483,7 +483,7 @@ The Feishu connector would be a good first implementation since:
 4. Has webhook support for real-time sync
 
 Structure:
-```
+```text
 internal/datasource/connector/feishu/
 ├── client.go       (Feishu API client)
 ├── connector.go    (Implements Connector)

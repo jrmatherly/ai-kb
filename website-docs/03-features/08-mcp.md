@@ -588,14 +588,14 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 
 31 tools in total, one per function decorated with `@mcp.tool()` in `aikb_mcp_server.py` (`*` marks a required parameter; the `AIKBClient.update_knowledge_base` method exists but is **not registered** as a tool):
 
-**Workspace management**
+##### Workspace management
 
 | Tool | Parameters | Description |
 |---|---|---|
 | `create_tenant` | `name`\*, `description`\*, `business`\*, `retriever_engines` | Create a workspace; without `retriever_engines` it defaults to the postgres keywords + vector pair |
 | `list_tenants` | none | List all workspaces |
 
-**Knowledge base management**
+##### Knowledge base management
 
 | Tool | Parameters | Description |
 |---|---|---|
@@ -606,7 +606,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 | `delete_knowledge_base` | `kb_id`\* | Delete a knowledge base |
 | `hybrid_search` | `kb_id`\*, `query`\*, `vector_threshold` (0.5), `keyword_threshold` (0.3), `match_count` (5) | Vector + keyword hybrid retrieval; `kb_id` accepts a UUID **or a name** (resolved by `resolve_kb_id`) |
 
-**Knowledge management**
+##### Knowledge management
 
 | Tool | Parameters | Description |
 |---|---|---|
@@ -618,7 +618,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 | `get_knowledge` | `knowledge_id`\* | Knowledge item details |
 | `delete_knowledge` | `knowledge_id`\* | Delete a knowledge item |
 
-**Model management**
+##### Model management
 
 | Tool | Parameters | Description |
 |---|---|---|
@@ -626,7 +626,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 | `list_models` | none | List all models |
 | `get_model` | `model_id`\* | Model details |
 
-**Session management**
+##### Session management
 
 | Tool | Parameters | Description |
 |---|---|---|
@@ -635,7 +635,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 | `list_sessions` | `page` (1), `page_size` (20) | List sessions |
 | `delete_session` | `session_id`\* | Delete a session |
 
-**Conversation**
+##### Conversation
 
 | Tool | Parameters | Description |
 |---|---|---|
@@ -644,14 +644,14 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 | `list_agents` | `page` (1), `page_size` (50) | List the custom agents available to the current workspace |
 | `get_agent` | `agent_id`\* | Full agent configuration by UUID or name (to check `kb_selection_mode`) |
 
-**Chunk management**
+##### Chunk management
 
 | Tool | Parameters | Description |
 |---|---|---|
 | `list_chunks` | `knowledge_id`\*, `page` (1), `page_size` (20) | List a knowledge item's text chunks |
 | `delete_chunk` | `knowledge_id`\*, `chunk_id`\* | Delete a chunk |
 
-**Wiki (read-only)**
+##### Wiki (read-only)
 
 | Tool | Parameters | Description |
 |---|---|---|

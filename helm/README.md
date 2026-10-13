@@ -34,7 +34,7 @@ helm install ai-kb ./helm \
 
 ## Architecture
 
-```
+```text
                     ┌─────────────┐
                     │   Ingress   │
                     └──────┬──────┘
@@ -395,15 +395,15 @@ kubectl logs -n ai-kb -l app.kubernetes.io/component=frontend -f
 
 ### Common Issues
 
-**Pod stuck in Pending**
+#### Pod stuck in Pending
 - Check if PVCs are bound: `kubectl get pvc -n ai-kb`
 - Verify storage class exists: `kubectl get sc`
 
-**Connection refused errors**
+#### Connection refused errors
 - Wait for all pods to be Ready
 - Check service endpoints: `kubectl get endpoints -n ai-kb`
 
-**Database connection errors**
+#### Database connection errors
 - Verify secrets are correct
 - Check PostgreSQL logs: `kubectl logs -n ai-kb -l app.kubernetes.io/component=database`
 

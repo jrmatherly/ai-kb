@@ -6,7 +6,7 @@
 
 ## 📁 Project layout
 
-```
+```text
 ai-kb/mcp-server/
 ├── 📦 Core files
 │   ├── __init__.py              # package init
@@ -167,7 +167,7 @@ python test_module.py
 ```
 
 ### Test results
-```
+```text
 AI KB MCP Server module tests
 ==================================================
 ✓ Module import test passed

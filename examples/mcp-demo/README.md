@@ -48,13 +48,13 @@ It should list 6 tools and resolve 6 `lookup_policy` topics.
 1. Open **Settings → MCP Services → New**.
 2. Fill in:
 
-| Field | Value |
-| --- | --- |
-| Name | `Local MCP Demo` |
-| Transport | **HTTP Streamable** |
-| URL | `http://127.0.0.1:8010/mcp` |
-| Auth | **Bearer** |
-| Token | `ai-kb-demo-token` (same as `MCP_SERVER_AUTH_TOKEN`) |
+   | Field | Value |
+   | --- | --- |
+   | Name | `Local MCP Demo` |
+   | Transport | **HTTP Streamable** |
+   | URL | `http://127.0.0.1:8010/mcp` |
+   | Auth | **Bearer** |
+   | Token | `ai-kb-demo-token` (same as `MCP_SERVER_AUTH_TOKEN`) |
 
 3. Save, then click **Test Connection**. It should find 6 tools.
 4. In the **agent** settings, select this MCP service (or all tools).

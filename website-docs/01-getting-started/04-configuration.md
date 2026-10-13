@@ -208,7 +208,7 @@ For AWS S3, `S3_ACCESS_KEY` / `S3_SECRET_KEY` can **both be left empty**. The AW
 
 | Name | Default | Description |
 | --- | --- | --- |
-| `OLLAMA_BASE_URL` | http://host.docker.internal:11434 | The single local Ollama address. Embedding and chat models with `source=local` share it; when unset the process uses `http://localhost:11434` |
+| `OLLAMA_BASE_URL` | `http://host.docker.internal:11434` | The single local Ollama address. Embedding and chat models with `source=local` share it; when unset the process uses `http://localhost:11434` |
 | `OLLAMA_OPTIONAL` | true | When Ollama is unavailable, only warn instead of blocking startup |
 | `BATCH_EMBED_SIZE` | empty | Batch embedding size |
 | `VLM_HTTP_TIMEOUT_SECONDS` | 180 | Timeout of one VLM request |
@@ -278,7 +278,7 @@ These variables are only used when building the frontend image with `docker comp
 | `GRPC_TLS_ENABLED/CERT/KEY/CA/SERVER_NAME`, `GRPC_MTLS_REQUIRE_CLIENT_CERT`, `GRPC_AUTH_TOKEN` | false / empty | TLS/mTLS and token authentication on the app to docreader link |
 | `DOCREADER_PDF_RENDER_DPI` / `DOCREADER_PDF_JPEG_QUALITY` / `DOCREADER_PDF_RENDER_MAX_EDGE` | 200 / 85 / 2000 | PDF rendering |
 | `DOCREADER_PDF_FORCE_SCANNED` / `DOCREADER_PDF_SCAN_IMAGE_RATIO` / `DOCREADER_PDF_SCAN_MIN_CHARS` | false / code defaults | Scanned document detection |
-| `DOCREADER_ODL_HYBRID` / `DOCREADER_ODL_HYBRID_URL` / `DOCREADER_ODL_HYBRID_MODE` / `DOCREADER_ODL_HYBRID_FALLBACK` | off / http://odl-hybrid:5002 / auto / false | OpenDataLoader hybrid parsing |
+| `DOCREADER_ODL_HYBRID` / `DOCREADER_ODL_HYBRID_URL` / `DOCREADER_ODL_HYBRID_MODE` / `DOCREADER_ODL_HYBRID_FALLBACK` | off / `http://odl-hybrid:5002` / auto / false | OpenDataLoader hybrid parsing |
 | The remaining `DOCREADER_PDF_*` (word gaps, margin columns, hidden text, embedded images, chart regions and so on, 20+ items) | see the comments in the docreader block of `docker-compose.yml` | PDF layout and extraction fine-tuning |
 | `DOCREADER_EXTERNAL_HTTP_PROXY` / `_HTTPS_PROXY` | empty | Outbound fetch proxy for docreader |
 

@@ -48,7 +48,7 @@ The QA handler, the agent engine, the IM service, skill installation and the MCP
 
 ## Files
 
-```
+```text
 internal/event/
 ├── event.go           # event types and the bus
 ├── event_data.go      # event payload structs
