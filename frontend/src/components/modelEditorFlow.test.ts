@@ -605,6 +605,20 @@ test('picking a catalog model fills blank capability fields only', async () => {
   } finally { f.close() }
 })
 
+test('a provider without a catalog keeps the plain input while the name is typed', async () => {
+  const providers = [...catalogProviders, { value: 'generic', label: 'Custom', description: '', order: 2, icon: '', modelTypes: ['chat'], models: [] }]
+  const f = await fixture({ type: 'chat', providers })
+  try {
+    f.vm.formData.provider = 'generic'
+    f.vm.formData.modelName = 'l'
+    await nextTick()
+    assert.equal(f.vm.hasCatalog, false, 'the first keystroke must not swap the input for the catalog select')
+    f.vm.formData.provider = 'lkeap'
+    await nextTick()
+    assert.equal(f.vm.hasCatalog, true)
+  } finally { f.close() }
+})
+
 const embeddingProviders = [{
   value: 'volcengine', label: 'Volcengine', description: '', order: 1, icon: '',
   defaultUrls: { embedding: 'https://ark.cn-beijing.volces.com/api/v3' },

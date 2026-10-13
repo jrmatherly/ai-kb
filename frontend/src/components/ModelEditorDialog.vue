@@ -263,7 +263,7 @@
               (OpenAI-compatible API) is exactly that case, so no model name could be entered there.
             -->
             <t-input
-              v-if="catalogModelOptions.length === 0"
+              v-if="!hasCatalog"
               v-model="formData.modelName"
               :placeholder="getModelNamePlaceholder()"
               :disabled="formData.provider === 'weknoracloud' && wkcCredentialState !== 'configured'"
@@ -297,7 +297,7 @@
                 </div>
               </t-option>
             </t-select>
-            <p v-if="catalogModelOptions.length > 0" class="form-desc">{{ $t('model.editor.catalog.hint') }}</p>
+            <p v-if="hasCatalog" class="form-desc">{{ $t('model.editor.catalog.hint') }}</p>
           </div>
 
           <div class="form-item">
@@ -929,6 +929,10 @@ const catalogModelOptions = computed<CatalogModelOption[]>(() => {
   }
   return options
 })
+
+// Decided by the vendor catalog alone: catalogModelOptions also holds the typed name, so keying the
+// input-versus-select switch on it swapped the field out after the first keystroke.
+const hasCatalog = computed(() => catalogEntries.value.length > 0)
 
 const findCatalogEntry = (name: string) => catalogEntries.value.find(m => m.id === name)
 
