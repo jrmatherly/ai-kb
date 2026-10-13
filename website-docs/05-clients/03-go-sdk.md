@@ -264,14 +264,14 @@ Two request fields changed in v0.8.2:
 | `CreateOrganization` / `ListMyOrganizations` / `GetOrganization` / `UpdateOrganization` / `DeleteOrganization` | Organization CRUD |
 | `SearchOrganizations` / `PreviewOrganizationByInviteCode` | Search organizations; preview an organization by invite code |
 | `JoinOrganizationByInviteCode` / `SubmitJoinRequest` / `JoinByOrganizationID` / `LeaveOrganization` / `RequestRoleUpgrade` | Join, leave, request a role upgrade |
-| `GenerateInviteCode` / `SearchUsersForInvite` / `InviteMember` | Invite members (see the note on `SearchUsersForInvite` below) |
+| `GenerateInviteCode` / `SearchTenantsForInvite` / `InviteMember` | Invite members (see the note on `SearchTenantsForInvite` below) |
 | `ListOrgMembers` / `UpdateMemberRole` / `RemoveMember` | Member management |
 | `ListJoinRequests` / `ReviewJoinRequest` | Join request review |
 | `ShareKnowledgeBase` / `ListKBShares` / `UpdateSharePermission` / `RemoveKBShare` | Knowledge base sharing |
 | `ShareAgent` / `ListAgentShares` / `RemoveAgentShare` | Agent sharing |
 | `ListOrgShares` / `ListOrgAgentShares` / `ListSharedKnowledgeBases` / `ListSharedAgents` | Shared resource queries |
 
-Since v0.8.2 the server resolves invitation candidates only by **full workspace ID** (`GET /api/v1/organizations/{id}/search-tenants?q=<workspace ID>`) and no longer searches by workspace name, user name or email. `SearchUsersForInvite` calls the deprecated `search-users` alias and sends the value as the `keyword` parameter, while the server reads `q`, so the method currently returns no candidates. To find a candidate, call `search-tenants` directly with `Raw`.
+Since v0.8.2 the server resolves invitation candidates only by **full workspace ID** and no longer searches by workspace name, user name or email. `SearchTenantsForInvite(ctx, orgID, workspaceID)` calls `GET /api/v1/organizations/{id}/search-tenants?q=<workspace ID>` and returns a `[]TenantInviteCandidate` (`tenant_id`, `tenant_name`). The list is empty when the ID is unknown or the workspace is already a member.
 
 ### FAQ: `client/faq.go`
 

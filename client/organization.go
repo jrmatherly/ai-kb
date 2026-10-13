@@ -360,19 +360,33 @@ func (c *Client) GenerateInviteCode(ctx context.Context, orgID string) (string, 
 	return result.Data.InviteCode, nil
 }
 
-// SearchUsersForInvite searches users to invite into an organization (admin only)
-func (c *Client) SearchUsersForInvite(ctx context.Context, orgID, keyword string) ([]UserInfo, error) {
+// TenantInviteCandidate is a workspace that can be invited into an organization.
+type TenantInviteCandidate struct {
+	TenantID               uint64 `json:"tenant_id"`
+	TenantName             string `json:"tenant_name"`
+	RepresentativeUserID   string `json:"representative_user_id"`
+	RepresentativeUsername string `json:"representative_username"`
+	RepresentativeEmail    string `json:"representative_email"`
+	RepresentativeAvatar   string `json:"representative_avatar,omitempty"`
+}
+
+// SearchTenantsForInvite resolves one exact workspace ID to an invite candidate
+// (admin only). It returns no candidates for an unknown ID or a workspace that
+// is already a member; names and emails are not searched.
+func (c *Client) SearchTenantsForInvite(
+	ctx context.Context, orgID, workspaceID string,
+) ([]TenantInviteCandidate, error) {
 	q := url.Values{}
-	if keyword != "" {
-		q.Set("keyword", keyword)
+	if workspaceID != "" {
+		q.Set("q", workspaceID)
 	}
-	resp, err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/search-users", orgID), nil, q)
+	resp, err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/api/v1/organizations/%s/search-tenants", orgID), nil, q)
 	if err != nil {
 		return nil, err
 	}
 	var result struct {
-		Success bool       `json:"success"`
-		Data    []UserInfo `json:"data"`
+		Success bool                    `json:"success"`
+		Data    []TenantInviteCandidate `json:"data"`
 	}
 	if err := parseResponse(resp, &result); err != nil {
 		return nil, err
