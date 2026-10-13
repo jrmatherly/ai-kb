@@ -6,7 +6,6 @@
 VERSION="unknown"
 EDITION="${EDITION:-standard}"
 COMMIT_ID="unknown"
-BUILD_TIME="unknown"
 GO_VERSION="unknown"
 
 # Version
@@ -23,14 +22,7 @@ elif command -v git >/dev/null 2>&1; then
     COMMIT_ID=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 fi
 
-# Build time
-if [ -n "$GITHUB_ACTIONS" ]; then
-    # GitHub Actions, standard time format
-    BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-else
-    # Local
-    BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-fi
+BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
 # Go version
 if command -v go >/dev/null 2>&1; then
@@ -59,13 +51,6 @@ case "${1:-env}" in
 }
 EOF
         ;;
-    "docker-args")
-        # Docker build arg format
-        echo "--build-arg VERSION_ARG=$VERSION"
-        echo "--build-arg COMMIT_ID_ARG=$COMMIT_ID"
-        echo "--build-arg BUILD_TIME_ARG=$BUILD_TIME"
-        echo "--build-arg GO_VERSION_ARG=$GO_VERSION"
-        ;;
     "ldflags")
         # Go ldflags format
         echo "-X 'github.com/jrmatherly/ai-kb/internal/handler.Version=$VERSION' -X 'github.com/jrmatherly/ai-kb/internal/handler.Edition=$EDITION' -X 'github.com/jrmatherly/ai-kb/internal/handler.CommitID=$COMMIT_ID' -X 'github.com/jrmatherly/ai-kb/internal/handler.BuildTime=$BUILD_TIME' -X 'github.com/jrmatherly/ai-kb/internal/handler.GoVersion=$GO_VERSION'"
@@ -79,10 +64,9 @@ EOF
         echo "Go version: $GO_VERSION"
         ;;
     *)
-        echo "Usage: $0 [env|json|docker-args|ldflags|info]"
+        echo "Usage: $0 [env|json|ldflags|info]"
         echo "  env        - environment variable format (default)"
         echo "  json       - JSON format"
-        echo "  docker-args - Docker build arg format"
         echo "  ldflags    - Go ldflags format"
         echo "  info       - human-readable format"
         exit 1

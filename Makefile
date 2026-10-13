@@ -263,7 +263,7 @@ docs:
 
 # Install swagger tool
 install-swagger:
-	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/swaggo/swag/cmd/swag@v1.16.6
 
 # Format code
 fmt:
@@ -282,14 +282,14 @@ deps:
 # GO_BUILD_TAGS adds optional build tags, e.g. GO_BUILD_TAGS=anydoc to link the
 # in-process office document parser (run `make anydoc-lib` first).
 build-prod:
-	VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "$${VERSION:-unknown}"); \
+	VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "$${VERSION:-$$(cat VERSION 2>/dev/null || echo unknown)}"); \
 	COMMIT_ID=$${COMMIT_ID:-unknown}; \
-	CGO_ENABLED=1 \
-	CGO_CFLAGS="-Wno-deprecated-declarations" \
-	CGO_LDFLAGS="$$(if [ "$$(uname)" = 'Darwin' ]; then echo '-Wl,-no_warn_duplicate_libraries'; fi)" \
 	BUILD_TIME=$${BUILD_TIME:-unknown}; \
 	GO_VERSION=$${GO_VERSION:-unknown}; \
 	LDFLAGS="-X 'github.com/jrmatherly/ai-kb/internal/handler.Version=$$VERSION' -X 'github.com/jrmatherly/ai-kb/internal/handler.Edition=standard' -X 'github.com/jrmatherly/ai-kb/internal/handler.CommitID=$$COMMIT_ID' -X 'github.com/jrmatherly/ai-kb/internal/handler.BuildTime=$$BUILD_TIME' -X 'github.com/jrmatherly/ai-kb/internal/handler.GoVersion=$$GO_VERSION' -X 'google.golang.org/protobuf/reflect/protoregistry.conflictPolicy=warn'"; \
+	CGO_ENABLED=1 \
+	CGO_CFLAGS="-Wno-deprecated-declarations" \
+	CGO_LDFLAGS="$$(if [ "$$(uname)" = 'Darwin' ]; then echo '-Wl,-no_warn_duplicate_libraries'; fi)" \
 	go build -tags "$(GO_BUILD_TAGS)" -ldflags="-w -s $$LDFLAGS" -o $(BINARY_NAME) $(MAIN_PATH)
 
 # Build Lite version (single binary, SQLite + in-memory queue)

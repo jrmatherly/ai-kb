@@ -8,7 +8,7 @@ const lines = createInterface({ input: process.stdin });
 const first = await new Promise(resolve => lines.once('line', resolve));
 const { pairing, extension, chromium: executablePath, playwright, fixture } = JSON.parse(first);
 const { chromium } = await import(pathToFileURL(playwright).href);
-const profile = await mkdtemp('/tmp/wkb-chrome-');
+const profile = await mkdtemp('/tmp/ai-kb-chrome-');
 let browser;
 let closing = false;
 async function close() {
