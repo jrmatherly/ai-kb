@@ -444,7 +444,7 @@ func newDeadLetterKnowledgeFailer(ks interfaces.KnowledgeService, tracker servic
 			return
 		}
 		// Close the matching root span so the timeline stops showing
-		// "进行中" after dead-letter exhaustion. Best-effort: nil
+		// "in progress" after dead-letter exhaustion. Best-effort: nil
 		// tracker / missing attempt / missing root all no-op cleanly.
 		if tracker != nil && probe.Attempt > 0 {
 			tracker.FinalizeAttempt(ctx, probe.KnowledgeID, probe.Attempt,

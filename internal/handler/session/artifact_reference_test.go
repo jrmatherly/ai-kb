@@ -40,10 +40,10 @@ func artifactsWithoutCatalog(names ...string) types.MessageArtifacts {
 
 func TestRewriteArtifactReferences(t *testing.T) {
 	artifacts := artifactsFixture(
-		"市场画像评分_e7edba.html",
+		"\u5e02\u573a\u753b\u50cf\u8bc4\u5206_e7edba.html", // CJK name: "market profile score"
 		"concept_ranking.csv",
 		"trend.png",
-		"腾讯控股(00700) 成交量_838ccc.html",
+		"\u817e\u8baf\u63a7\u80a1(00700) \u6210\u4ea4\u91cf_838ccc.html", // CJK name: "Tencent Holdings(00700) volume"
 	)
 
 	cases := []struct {
@@ -53,93 +53,93 @@ func TestRewriteArtifactReferences(t *testing.T) {
 	}{
 		{
 			name:    "file name with spaces and parentheses",
-			content: "![成交量](sandbox:腾讯控股(00700) 成交量_838ccc.html)",
-			want:    "![成交量](" + refFor(3) + ")",
+			content: "![Volume](sandbox:\u817e\u8baf\u63a7\u80a1(00700) \u6210\u4ea4\u91cf_838ccc.html)",
+			want:    "![Volume](" + refFor(3) + ")",
 		},
 		{
 			name:    "file name with spaces and parentheses, no prefix",
-			content: "![成交量](腾讯控股(00700) 成交量_838ccc.html)",
-			want:    "![成交量](" + refFor(3) + ")",
+			content: "![Volume](\u817e\u8baf\u63a7\u80a1(00700) \u6210\u4ea4\u91cf_838ccc.html)",
+			want:    "![Volume](" + refFor(3) + ")",
 		},
 		{
 			name:    "bare file name in image",
-			content: "![市场画像评分](市场画像评分_e7edba.html)",
-			want:    "![市场画像评分](" + refFor(0) + ")",
+			content: "![Market profile score](\u5e02\u573a\u753b\u50cf\u8bc4\u5206_e7edba.html)",
+			want:    "![Market profile score](" + refFor(0) + ")",
 		},
 		{
 			name:    "sandbox prefix",
-			content: "![评分](sandbox:市场画像评分_e7edba.html)",
-			want:    "![评分](" + refFor(0) + ")",
+			content: "![Score](sandbox:\u5e02\u573a\u753b\u50cf\u8bc4\u5206_e7edba.html)",
+			want:    "![Score](" + refFor(0) + ")",
 		},
 		{
 			name:    "sandbox scheme with slashes",
-			content: "![评分](sandbox://trend.png)",
-			want:    "![评分](" + refFor(2) + ")",
+			content: "![Score](sandbox://trend.png)",
+			want:    "![Score](" + refFor(2) + ")",
 		},
 		{
 			name:    "directory prefix is dropped",
-			content: "[榜单](/workspace/output/concept_ranking.csv)",
-			want:    "[榜单](" + refFor(1) + ")",
+			content: "[Ranking](/workspace/output/concept_ranking.csv)",
+			want:    "[Ranking](" + refFor(1) + ")",
 		},
 		{
 			name:    "percent-encoded name",
-			content: "![评分](%E5%B8%82%E5%9C%BA%E7%94%BB%E5%83%8F%E8%AF%84%E5%88%86_e7edba.html)",
-			want:    "![评分](" + refFor(0) + ")",
+			content: "![Score](%E5%B8%82%E5%9C%BA%E7%94%BB%E5%83%8F%E8%AF%84%E5%88%86_e7edba.html)",
+			want:    "![Score](" + refFor(0) + ")",
 		},
 		{
 			name:    "title is preserved",
-			content: `![评分](trend.png "走势")`,
-			want:    `![评分](` + refFor(2) + ` "走势")`,
+			content: `![Score](trend.png "Trend")`,
+			want:    `![Score](` + refFor(2) + ` "Trend")`,
 		},
 		{
 			name:    "ordinary link with a colliding name is not rewritten",
-			content: "见 [说明](trend.png)",
-			want:    "见 [说明](trend.png)",
+			content: "See [notes](trend.png)",
+			want:    "See [notes](trend.png)",
 		},
 		{
 			name:    "sandbox-prefixed link is rewritten even when not an image",
-			content: "数据见 [表格](sandbox:concept_ranking.csv)",
-			want:    "数据见 [表格](" + refFor(1) + ")",
+			content: "Data in [table](sandbox:concept_ranking.csv)",
+			want:    "Data in [table](" + refFor(1) + ")",
 		},
 		{
 			name:    "already-rewritten reference is left alone",
-			content: "![评分](" + refFor(0) + ")",
-			want:    "![评分](" + refFor(0) + ")",
+			content: "![Score](" + refFor(0) + ")",
+			want:    "![Score](" + refFor(0) + ")",
 		},
 		{
 			name:    "prose parentheses are not link destinations",
-			content: "腾讯控股(00700) 的成交量见下图。",
-			want:    "腾讯控股(00700) 的成交量见下图。",
+			content: "Tencent Holdings(00700) volume is shown below.",
+			want:    "Tencent Holdings(00700) volume is shown below.",
 		},
 		{
 			name:    "unknown file name untouched",
-			content: "![别的](missing.html)",
-			want:    "![别的](missing.html)",
+			content: "![Other](missing.html)",
+			want:    "![Other](missing.html)",
 		},
 		{
 			name:    "http url untouched",
-			content: "![远程](https://example.com/trend.png)",
-			want:    "![远程](https://example.com/trend.png)",
+			content: "![Remote](https://example.com/trend.png)",
+			want:    "![Remote](https://example.com/trend.png)",
 		},
 		{
 			name:    "knowledge base image untouched",
-			content: "![资源](resource://abcdefghijklmnopqrstuv)",
-			want:    "![资源](resource://abcdefghijklmnopqrstuv)",
+			content: "![Resource](resource://abcdefghijklmnopqrstuv)",
+			want:    "![Resource](resource://abcdefghijklmnopqrstuv)",
 		},
 		{
 			name:    "fenced code untouched",
-			content: "```\n![评分](trend.png)\n```",
-			want:    "```\n![评分](trend.png)\n```",
+			content: "```\n![Score](trend.png)\n```",
+			want:    "```\n![Score](trend.png)\n```",
 		},
 		{
 			name:    "inline code untouched",
-			content: "写成 `![评分](trend.png)` 即可",
-			want:    "写成 `![评分](trend.png)` 即可",
+			content: "Write `![Score](trend.png)` and you are done",
+			want:    "Write `![Score](trend.png)` and you are done",
 		},
 		{
 			name:    "plain prose untouched",
-			content: "生成了 trend.png 和 concept_ranking.csv 两个文件。",
-			want:    "生成了 trend.png 和 concept_ranking.csv 两个文件。",
+			content: "Generated two files, trend.png and concept_ranking.csv.",
+			want:    "Generated two files, trend.png and concept_ranking.csv.",
 		},
 	}
 
@@ -154,10 +154,10 @@ func TestRewriteArtifactReferences(t *testing.T) {
 
 func TestRewriteArtifactReferencesMixedContent(t *testing.T) {
 	artifacts := artifactsFixture("chart.html", "data.csv")
-	content := "## 图表\n\n![图表](chart.html)\n\n数据见 [表格](sandbox:data.csv)，" +
-		"外链 [文档](https://example.com/chart.html) 不受影响。"
-	want := "## 图表\n\n![图表](" + refFor(0) + ")\n\n数据见 [表格](" + refFor(1) + ")，" +
-		"外链 [文档](https://example.com/chart.html) 不受影响。"
+	content := "## Chart\n\n![Chart](chart.html)\n\nData in [table](sandbox:data.csv), " +
+		"external [doc](https://example.com/chart.html) is untouched."
+	want := "## Chart\n\n![Chart](" + refFor(0) + ")\n\nData in [table](" + refFor(1) + "), " +
+		"external [doc](https://example.com/chart.html) is untouched."
 
 	if got := rewriteArtifactReferences(content, artifacts); got != want {
 		t.Fatalf("rewriteArtifactReferences() = %q, want %q", got, want)
@@ -170,8 +170,8 @@ func TestRewriteArtifactReferencesMixedContent(t *testing.T) {
 func TestRewriteArtifactReferencesKeepsExistingResourceImages(t *testing.T) {
 	artifacts := artifactsFixture("chart.html")
 	kbImage := types.BuildResourcePath(strings.Repeat("Z", types.ResourceHandleLength))
-	content := "![检索图](" + kbImage + ")\n\n![图表](chart.html)"
-	want := "![检索图](" + kbImage + ")\n\n![图表](" + refFor(0) + ")"
+	content := "![Retrieved image](" + kbImage + ")\n\n![Chart](chart.html)"
+	want := "![Retrieved image](" + kbImage + ")\n\n![Chart](" + refFor(0) + ")"
 
 	if got := rewriteArtifactReferences(content, artifacts); got != want {
 		t.Fatalf("rewriteArtifactReferences() = %q, want %q", got, want)
@@ -182,8 +182,8 @@ func TestRewriteArtifactReferencesKeepsExistingResourceImages(t *testing.T) {
 // normalized to the chat-only sandbox form rather than leaking a storage path.
 func TestRewriteArtifactReferencesWithoutCatalog(t *testing.T) {
 	artifacts := artifactsWithoutCatalog("chart.html")
-	got := rewriteArtifactReferences("![图表](chart.html)", artifacts)
-	if want := "![图表](sandbox:chart.html)"; got != want {
+	got := rewriteArtifactReferences("![Chart](chart.html)", artifacts)
+	if want := "![Chart](sandbox:chart.html)"; got != want {
 		t.Fatalf("rewriteArtifactReferences() = %q, want %q", got, want)
 	}
 	if strings.Contains(got, "local://") {
@@ -192,7 +192,7 @@ func TestRewriteArtifactReferencesWithoutCatalog(t *testing.T) {
 }
 
 func TestRewriteArtifactReferencesNoArtifacts(t *testing.T) {
-	content := "![图表](chart.html)"
+	content := "![Chart](chart.html)"
 	if got := rewriteArtifactReferences(content, nil); got != content {
 		t.Fatalf("rewriteArtifactReferences() = %q, want unchanged", got)
 	}
@@ -218,42 +218,42 @@ func TestReferencedArtifactsMatchesNamesAndHandles(t *testing.T) {
 	}{
 		{
 			name:    "sandbox-prefixed name",
-			content: "已生成 ![报告](sandbox:report.pptx)",
+			content: "Generated ![Report](sandbox:report.pptx)",
 			want:    types.MessageArtifacts{artifacts[0]},
 		},
 		{
 			name:    "bare name in an image",
-			content: "![图表](chart.html)",
+			content: "![Chart](chart.html)",
 			want:    types.MessageArtifacts{artifacts[1]},
 		},
 		{
 			name:    "output path in an ordinary link",
-			content: "[数据](./output/data.csv)",
+			content: "[Data](./output/data.csv)",
 			want:    types.MessageArtifacts{artifacts[2]},
 		},
 		{
 			name:    "canonical handle",
-			content: "![报告](" + refFor(0) + ")",
+			content: "![Report](" + refFor(0) + ")",
 			want:    types.MessageArtifacts{artifacts[0]},
 		},
 		{
 			name:    "prose mention is not a reference",
-			content: "生成了 report.pptx 和 chart.html 两个文件。",
+			content: "Generated two files, report.pptx and chart.html.",
 			want:    nil,
 		},
 		{
 			name:    "bare name in an ordinary link is not a reference",
-			content: "见 [说明](report.pptx)",
+			content: "See [notes](report.pptx)",
 			want:    nil,
 		},
 		{
 			name:    "unknown name",
-			content: "![别的](missing.pptx)",
+			content: "![Other](missing.pptx)",
 			want:    nil,
 		},
 		{
 			name:    "code sample is not a reference",
-			content: "```\n![报告](sandbox:report.pptx)\n```",
+			content: "```\n![Report](sandbox:report.pptx)\n```",
 			want:    nil,
 		},
 		{
@@ -261,12 +261,12 @@ func TestReferencedArtifactsMatchesNamesAndHandles(t *testing.T) {
 			// walking parts with i+=2 would skip the segment after the first
 			// fence and miss a real citation that rewrite still rewrites.
 			name:    "reference after a code fence",
-			content: "![报告](sandbox:report.pptx)\n\n```\n![忽略](sandbox:chart.html)\n```\n\n![图表](sandbox:chart.html)",
+			content: "![Rep](sandbox:report.pptx)\n\n```\n![No](sandbox:chart.html)\n```\n\n![Fig](sandbox:chart.html)",
 			want:    types.MessageArtifacts{artifacts[0], artifacts[1]},
 		},
 		{
 			name:    "multiple references keep candidate order",
-			content: "![数据](data.csv)\n\n![报告](sandbox:report.pptx)",
+			content: "![Data](data.csv)\n\n![Report](sandbox:report.pptx)",
 			want:    types.MessageArtifacts{artifacts[0], artifacts[2]},
 		},
 	}

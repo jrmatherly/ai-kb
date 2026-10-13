@@ -40,9 +40,9 @@ func TestQuickAnswerTimelineRecorderPersistsSearchWithoutResults(t *testing.T) {
 	registerQuickAnswerTimelineRecorder(bus, msg)
 
 	emitTimelineStage(t, bus, "call-1", "knowledge_search",
-		map[string]any{"query": "你好", "search_source": "knowledge"},
+		map[string]any{"query": "hello", "search_source": "knowledge"},
 		event.AgentToolResultData{
-			Output:   "未检索到相关内容",
+			Output:   "No relevant content found",
 			Success:  true,
 			Duration: 12,
 			Data:     map[string]interface{}{"count": 0, "doc_count": 0, "web_count": 0},
@@ -53,10 +53,10 @@ func TestQuickAnswerTimelineRecorderPersistsSearchWithoutResults(t *testing.T) {
 	call := msg.AgentSteps[0].ToolCalls[0]
 	assert.Equal(t, "knowledge_search", call.Name)
 	assert.Equal(t, types.PipelineToolCallIDPrefix+"call-1", call.ID)
-	assert.Equal(t, "你好", call.Args["query"])
+	assert.Equal(t, "hello", call.Args["query"])
 	require.NotNil(t, call.Result)
 	assert.True(t, call.Result.Success)
-	assert.Equal(t, "未检索到相关内容", call.Result.Output)
+	assert.Equal(t, "No relevant content found", call.Result.Output)
 	assert.Equal(t, 0, call.Result.Data["count"])
 	assert.Equal(t, int64(12), call.Duration)
 }
@@ -67,11 +67,11 @@ func TestQuickAnswerTimelineRecorderKeepsStageOrderAndIgnoresOtherTools(t *testi
 	registerQuickAnswerTimelineRecorder(bus, msg)
 
 	emitTimelineStage(t, bus, "call-1", "query_understand", nil,
-		event.AgentToolResultData{Output: "已完成问题理解", Success: true})
+		event.AgentToolResultData{Output: "Question understood", Success: true})
 	emitTimelineStage(t, bus, "call-2", "web_search", nil,
 		event.AgentToolResultData{Output: "ignored", Success: true})
 	emitTimelineStage(t, bus, "call-3", "knowledge_search", nil,
-		event.AgentToolResultData{Output: "检索到 3 条相关内容", Success: true})
+		event.AgentToolResultData{Output: "Found 3 relevant results", Success: true})
 
 	require.Len(t, msg.AgentSteps, 1)
 	names := make([]string, 0, len(msg.AgentSteps[0].ToolCalls))
@@ -102,23 +102,23 @@ func TestQuickAnswerReasoningAndTimelineShareOneStep(t *testing.T) {
 	msg := &types.Message{}
 	registerQuickAnswerTimelineRecorder(bus, msg)
 
-	appendQuickAnswerReasoning(msg, "思考中")
+	appendQuickAnswerReasoning(msg, "thinking")
 	emitTimelineStage(t, bus, "call-1", "knowledge_search", nil,
-		event.AgentToolResultData{Output: "未检索到相关内容", Success: true})
-	appendQuickAnswerReasoning(msg, "继续")
+		event.AgentToolResultData{Output: "No relevant content found", Success: true})
+	appendQuickAnswerReasoning(msg, " more")
 
 	require.Len(t, msg.AgentSteps, 1)
-	assert.Equal(t, "思考中继续", msg.AgentSteps[0].ReasoningContent)
+	assert.Equal(t, "thinking more", msg.AgentSteps[0].ReasoningContent)
 	require.Len(t, msg.AgentSteps[0].ToolCalls, 1)
 }
 
 func TestQuickAnswerTruncationPersistsOnSharedStep(t *testing.T) {
 	msg := &types.Message{}
-	appendQuickAnswerReasoning(msg, "思考中")
+	appendQuickAnswerReasoning(msg, "thinking")
 	markQuickAnswerTruncated(msg)
 
 	require.Len(t, msg.AgentSteps, 1)
-	assert.Equal(t, "思考中", msg.AgentSteps[0].ReasoningContent)
+	assert.Equal(t, "thinking", msg.AgentSteps[0].ReasoningContent)
 	assert.True(t, msg.AgentSteps[0].Truncated)
 }
 

@@ -30,11 +30,11 @@ func paramSessionID(c *gin.Context) string {
 }
 
 // ListSessionArtifacts godoc
-// @Summary      列出会话生成的产物文件
-// @Description  返回本会话中所有 assistant 消息产生的技能产物元数据（不含 URL）
-// @Tags         会话
+// @Summary      List the artifact files a session generated
+// @Description  Returns the skill artifact metadata produced by every assistant message in this session (no URLs)
+// @Tags         Sessions
 // @Produce      json
-// @Param        session_id  path  string  true  "会话ID"
+// @Param        session_id  path  string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      404  {object}  errors.AppError
 // @Security     Bearer

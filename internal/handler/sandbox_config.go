@@ -145,7 +145,7 @@ func respondSandboxesStillLive(c *gin.Context, inv service.SandboxInventory) {
 		"success": false,
 		"error": gin.H{
 			"code":    "sandboxes_still_live",
-			"message": "该配置仍有运行中或已暂停的沙箱，请先结束或删除相关会话，或新建一份配置",
+			"message": "This config still has running or paused sandboxes; end their sessions or create a new config",
 			"data":    inv,
 		},
 	})
@@ -156,7 +156,7 @@ func respondSandboxInventoryUnverifiable(c *gin.Context) {
 		"success": false,
 		"error": gin.H{
 			"code":    "sandbox_inventory_unverifiable",
-			"message": "无法连接该后端核实是否仍有沙箱",
+			"message": "Cannot connect to the backend to verify whether sandboxes remain",
 		},
 	})
 }
@@ -166,7 +166,7 @@ func respondSkillSnapshotReleaseFailed(c *gin.Context, remaining []string) {
 		"success": false,
 		"error": gin.H{
 			"code":    "skill_snapshot_release_failed",
-			"message": "无法销毁该配置下的技能快照，已中止删除以免快照继续计费",
+			"message": "Cannot destroy this config's skill snapshots; deletion aborted so they do not keep billing",
 			"data":    gin.H{"snapshot_ids": remaining},
 		},
 	})
@@ -177,7 +177,7 @@ func respondSkillSnapshotBlocksTemplate(c *gin.Context) {
 		"success": false,
 		"error": gin.H{
 			"code":    "skill_snapshot_blocks_template",
-			"message": "该配置已安装 Skill，不能更换连接、DNS 或重建运行模板。请新建一份沙箱后再装 Skill。",
+			"message": "Skills installed: connection, DNS and runtime template cannot be changed; use a new config",
 		},
 	})
 }
@@ -187,7 +187,7 @@ func respondSandboxConfigCordoned(c *gin.Context) {
 		"success": false,
 		"error": gin.H{
 			"code":    "sandbox_config_cordoned",
-			"message": "该配置正在被其他人修改，请稍后重试",
+			"message": "Someone else is modifying this config; retry later",
 		},
 	})
 }

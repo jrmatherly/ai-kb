@@ -54,7 +54,7 @@ func TestComputeChunkSizeStats_VaryingSizes(t *testing.T) {
 }
 
 func TestComputeChunkSizeStats_NoVarianceUnderflow(t *testing.T) {
-	// All identical — variance must clamp to 0 not flip negative on
+	// All identical: variance must clamp to 0 not flip negative on
 	// float-precision rounding.
 	stats := computeChunkSizeStats([]int{1234, 1234, 1234, 1234})
 	if stats.StddevChars != 0 {
@@ -305,8 +305,9 @@ func TestPreviewChunking_LineEndingsMatchUpload(t *testing.T) {
 	payload := PreviewChunkingPayload{
 		ChunkSize:    500,
 		ChunkOverlap: 20,
-		Separators:   []string{"\n\n", "\n", "。", "！", "？", ";", "；"},
-		Strategy:     chunker.StrategyHeading,
+		// CJK full stop, exclamation mark, question mark and semicolon.
+		Separators: []string{"\n\n", "\n", "\u3002", "\uff01", "\uff1f", ";", "\uff1b"},
+		Strategy:   chunker.StrategyHeading,
 	}
 	actual := chunker.Split(chunker.NormalizeLineEndings(uploaded), chunker.NormalizeSplitterConfig(chunker.SplitterConfig{
 		ChunkSize:    payload.ChunkSize,

@@ -473,17 +473,18 @@ func mentionedItemsToRaw(items types.MentionedItems) []interface{} {
 }
 
 // SteerMessage godoc
-// @Summary      向运行中的对话追加消息
-// @Description  向运行中的 agent turn 追加用户消息（after 排队 / inject 注入）。无活 turn 时返回 new_run。
-// @Tags         问答
+// @Summary      Append a message to a running conversation
+// @Description  Appends a user message to a running agent turn (after: queued / inject: injected). Returns new_run when
+// @Description  no turn is live.
+// @Tags         QA
 // @Accept       json
 // @Produce      json
-// @Param        session_id  path  string  true  "会话 ID"
-// @Param        request     body  SteerMessageRequest  true  "追加消息"
+// @Param        session_id  path  string  true  "Session ID"
+// @Param        request     body  SteerMessageRequest  true  "Message to append"
 // @Success      200  {object}  map[string]interface{}  "queued | new_run"
-// @Failure      400  {object}  errors.AppError         "请求参数错误"
-// @Failure      404  {object}  errors.AppError         "会话不存在"
-// @Failure      503  {object}  errors.AppError         "活 turn 查询失败，可重试"
+// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      404  {object}  errors.AppError         "Session not found"
+// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/steer [post]
@@ -629,16 +630,17 @@ func (h *Handler) SteerMessage(c *gin.Context) {
 }
 
 // PromoteSteerMessage godoc
-// @Summary      将排队消息改为立即注入
-// @Description  把一条 delivery=after 的排队消息改为 inject，运行中的 agent 会在下一轮边界读到它。
-// @Tags         问答
+// @Summary      Inject a queued message now
+// @Description  Changes a queued delivery=after message to inject; the running agent reads it at the next turn
+// @Description  boundary.
+// @Tags         QA
 // @Produce      json
-// @Param        session_id  path  string  true  "会话 ID"
-// @Param        steer_id    path  string  true  "排队消息 ID"
+// @Param        session_id  path  string  true  "Session ID"
+// @Param        steer_id    path  string  true  "Queued message ID"
 // @Success      200  {object}  map[string]interface{}  "queued | new_run"
 // @Failure      400  {object}  errors.AppError
 // @Failure      404  {object}  errors.AppError
-// @Failure      503  {object}  errors.AppError         "活 turn 查询失败，可重试"
+// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/steer/{steer_id}/inject [post]
@@ -710,14 +712,15 @@ func (h *Handler) PromoteSteerMessage(c *gin.Context) {
 }
 
 // ListSteerMessages godoc
-// @Summary      列出当前运行中尚未消费的排队消息
-// @Description  刷新页面后用来恢复输入框上方的队列。没有正在运行的 turn 时返回空列表。
-// @Tags         问答
+// @Summary      List the queued messages the current run has not consumed
+// @Description  Restores the queue above the input box after a page refresh. Returns an empty list when no turn is
+// @Description  running.
+// @Tags         QA
 // @Produce      json
-// @Param        id  path  string  true  "会话 ID"
+// @Param        id  path  string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      404  {object}  errors.AppError
-// @Failure      503  {object}  errors.AppError         "活 turn 查询失败，可重试"
+// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id}/steer [get]
@@ -762,15 +765,15 @@ func (h *Handler) ListSteerMessages(c *gin.Context) {
 }
 
 // DeleteSteerMessage godoc
-// @Summary      删除一条排队中的消息
-// @Description  从当前运行的排队列表里去掉一条，不再注入也不再作为 follow-up 发出。
-// @Tags         问答
+// @Summary      Delete a queued message
+// @Description  Removes one entry from the current run's queue, so it is neither injected nor sent as a follow-up.
+// @Tags         QA
 // @Produce      json
-// @Param        id        path  string  true  "会话 ID"
-// @Param        steer_id  path  string  true  "排队消息 ID"
+// @Param        id        path  string  true  "Session ID"
+// @Param        steer_id  path  string  true  "Queued message ID"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      404  {object}  errors.AppError
-// @Failure      503  {object}  errors.AppError         "活 turn 查询失败，可重试"
+// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id}/steer/{steer_id} [delete]

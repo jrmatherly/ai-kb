@@ -33,18 +33,19 @@ type RewindSessionRequest struct {
 }
 
 // RewindSession godoc
-// @Summary      回滚会话
-// @Description  回滚当前会话到指定用户或助手消息：删除其后消息，可到达时 git reset 工作区。
-// @Tags         会话
+// @Summary      Rewind a session
+// @Description  Rewinds the session to the given user or assistant message: deletes the later messages and, when
+// @Description  reachable, runs git reset on the workspace.
+// @Tags         Sessions
 // @Accept       json
 // @Produce      json
-// @Param        session_id  path      string                true  "会话 ID"
-// @Param        request     body      RewindSessionRequest  true  "回滚请求"
-// @Success      200         {object}  map[string]interface{}  "回滚结果"
-// @Failure      400         {object}  errors.AppError         "请求参数错误 / 回滚点角色不支持"
-// @Failure      404         {object}  errors.AppError         "会话或消息不存在"
-// @Failure      409         {object}  errors.AppError         "会话正在生成中 / 无检查点 / 沙箱已更换"
-// @Failure      500         {object}  errors.AppError         "工作区回滚失败"
+// @Param        session_id  path      string                true  "Session ID"
+// @Param        request     body      RewindSessionRequest  true  "Rewind request"
+// @Success      200         {object}  map[string]interface{}  "Rewind result"
+// @Failure      400         {object}  errors.AppError         "Invalid parameters / unsupported rewind point role"
+// @Failure      404         {object}  errors.AppError         "Session or message not found"
+// @Failure      409         {object}  errors.AppError         "Session generating / no checkpoint / sandbox replaced"
+// @Failure      500         {object}  errors.AppError         "Workspace rewind failed"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/rewind [post]

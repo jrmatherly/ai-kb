@@ -36,8 +36,8 @@ func TestValidateTenantAPIKeyRequestAcceptsScopedKeyWithCapability(t *testing.T)
 	}
 }
 
-// TestValidateTenantAPIKeyKnowledgeBaseOwnership 验证知识库白名单的租户边界。
-// 输入同租户、其他租户和不存在的知识库 ID；仅同租户 ID 应通过。
+// TestValidateTenantAPIKeyKnowledgeBaseOwnership checks the workspace boundary of the knowledge base allowlist:
+// of same-workspace, other-workspace and missing knowledge base IDs, only same-workspace IDs pass.
 func TestValidateTenantAPIKeyKnowledgeBaseOwnership(t *testing.T) {
 	lookup := func(_ context.Context, id string) (*types.KnowledgeBase, error) {
 		switch id {

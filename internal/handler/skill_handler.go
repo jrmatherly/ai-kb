@@ -62,16 +62,17 @@ type SkillInfoResponse struct {
 }
 
 // ListSkills godoc
-// @Summary      获取当前沙箱配置上可执行的 Skills
-// @Description  返回指定沙箱配置镜像内、智能体实际能调用的已安装技能（ready 且启用）。不传 sandbox_config_id 时列表为空。
+// @Summary      List the skills runnable on a sandbox config
+// @Description  Return the installed skills (ready and enabled) in the given sandbox config's image that an agent can
+// @Description  actually call. Without sandbox_config_id the list is empty.
 // @Tags         Skills
 // @Accept       json
 // @Produce      json
 // @Param        sandbox_config_id      query  string  false  "Sandbox config ID; ignored for a shared agent"
 // @Param        agent_id               query  string  false  "Agent ID; needs agent_source_tenant_id"
 // @Param        agent_source_tenant_id query  int     false  "Shared agent source workspace"
-// @Success      200  {object}  map[string]interface{}  "Skills列表"
-// @Failure      403  {object}  errors.AppError         "无权使用该共享智能体"
+// @Success      200  {object}  map[string]interface{}  "Skill list"
+// @Failure      403  {object}  errors.AppError         "Not allowed to use this shared agent"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /skills [get]

@@ -50,16 +50,17 @@ type mcpCredentialsPutRequest struct {
 // new credential.
 //
 // Put godoc
-// @Summary      设置 MCP 服务凭据
-// @Description  为指定字段写入新凭据；省略的字段保留原值；空字符串视为 no-op（如需删除请用 DELETE）
-// @Tags         MCP服务
+// @Summary      Set MCP service credentials
+// @Description  Write new credentials for the given fields. Omitted fields keep their values; an empty string is a
+// @Description  no-op (use DELETE to remove)
+// @Tags         MCP Services
 // @Accept       json
 // @Produce      json
-// @Param        id       path      string                  true  "MCP 服务 ID"
+// @Param        id       path      string                  true  "MCP service ID"
 // @Param        request  body      map[string]interface{}  true  "{api_key?: string, token?: string}"
-// @Success      200      {object}  map[string]interface{}  "写入后的凭据状态"
-// @Failure      400      {object}  errors.AppError         "请求参数错误"
-// @Failure      404      {object}  errors.AppError         "服务不存在"
+// @Success      200      {object}  map[string]interface{}  "Credential status after the write"
+// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      404      {object}  errors.AppError         "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/credentials [put]
@@ -117,15 +118,15 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 // "token". Returns 204 on success (even if the field was already empty).
 //
 // DeleteField godoc
-// @Summary      移除 MCP 服务的单个凭据字段
-// @Description  删除指定字段的存储凭据；删除已为空的字段是幂等的
-// @Tags         MCP服务
+// @Summary      Remove one MCP service credential field
+// @Description  Delete the stored credential for the given field. Deleting an empty field is idempotent
+// @Tags         MCP Services
 // @Produce      json
-// @Param        id     path      string  true  "MCP 服务 ID"
-// @Param        field  path      string  true  "字段名（api_key | token）"
+// @Param        id     path      string  true  "MCP service ID"
+// @Param        field  path      string  true  "Field name (api_key | token)"
 // @Success      204
-// @Failure      400  {object}  errors.AppError  "字段名非法"
-// @Failure      404  {object}  errors.AppError  "服务不存在"
+// @Failure      400  {object}  errors.AppError  "Invalid field name"
+// @Failure      404  {object}  errors.AppError  "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/credentials/{field} [delete]

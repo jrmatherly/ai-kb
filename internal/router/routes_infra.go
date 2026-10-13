@@ -17,27 +17,27 @@ func RegisterModelRoutes(
 	credHandler *handler.ModelCredentialsHandler,
 	g *rbacGuards,
 ) {
-	// 模型路由组。空间级基础设施：仅完全访问（Owner）API key 可访问。
+	// Model route group. Workspace-level infrastructure: only full-access (Owner) API keys may use it.
 	models := g.apiKeyGroup(r.Group("/models"), apiKeyManageModels(apiKeyFullAccess()))
 	{
-		// 获取模型厂商列表 — Viewer+
+		// List model providers: Viewer+
 		models.GET("/providers", g.Viewer(), handler.ListModelProviders)
-		// 解析模型的有效接入配置（协议 / 思考等级 / 上下文）— Viewer+
+		// Resolve a model's effective access config (protocol / thinking level / context): Viewer+
 		models.GET("/catalog/resolve", g.Viewer(), handler.ResolveModelCatalog)
 		models.POST("/catalog/resolve", g.Viewer(), handler.ResolveModelCatalog)
-		// 创建模型 — Admin+
+		// Create a model: Admin+
 		models.POST("", g.Admin(), handler.CreateModel)
-		// 获取模型列表 — Viewer+
+		// List models: Viewer+
 		models.GET("", g.Viewer(), handler.ListModels)
-		// 调试已保存模型会发起真实上游调用并产生费用 — Admin+
+		// Testing a saved model makes a real upstream call and incurs cost: Admin+
 		models.POST("/:id/debug", g.Admin(), handler.DebugModel)
-		// 复制模型配置（含已存凭证）— Admin+
+		// Copy a model config (including stored credentials): Admin+
 		models.POST("/:id/copy", g.Admin(), handler.CopyModel)
-		// 获取单个模型 — Viewer+
+		// Get one model: Viewer+
 		models.GET("/:id", g.Viewer(), handler.GetModel)
-		// 更新模型 — Admin+；内置模型仍由服务层额外限定为 SystemAdmin。
+		// Update a model: Admin+; the service layer further restricts built-in models to SystemAdmin.
 		models.PUT("/:id", g.AdminOrSystemAdmin(), handler.UpdateModel)
-		// 删除模型 — Admin+
+		// Delete a model: Admin+
 		models.DELETE("/:id", g.Admin(), handler.DeleteModel)
 		// Per-field credential subresource (see internal/handler/model_credentials.go) — Admin+
 		models.PUT("/:id/credentials", g.AdminOrSystemAdmin(), credHandler.Put)
@@ -96,21 +96,22 @@ func RegisterEvaluationRoutes(r *gin.RouterGroup, handler *handler.EvaluationHan
 }
 
 func RegisterInitializationRoutes(r *gin.RouterGroup, handler *handler.InitializationHandler, g *rbacGuards) {
-	// 初始化接口
-	// GetCurrentConfigByKB 是只读，Viewer+ 即可（KB 受限 key 可读其范围内的 KB）。
+	// Initialization endpoints
+	// GetCurrentConfigByKB is read-only, so Viewer+ is enough (a KB-restricted key can read the KBs in its scope).
 	g.apiKeyRoute(r, http.MethodGet, "/initialization/config/:kbId",
 		apiKeyRetrieve(apiKeyFullAccess()), g.Viewer(), g.KBAccessRead("kbId"), handler.GetCurrentConfigByKB)
-	// InitializeByKB / UpdateKBConfig 都是改 KB 的核心模型/storage 配置 —
-	// 跟 PUT /knowledge-bases/:id 同等敏感，挂同款 OwnedKB 矩阵 + KBAccessWrite
-	//（API-key 主体短路 Owned* 守卫，KB allow-list 只能靠 KBAccess 兜底）。
+	// InitializeByKB / UpdateKBConfig both change a KB's core model/storage config,
+	// as sensitive as PUT /knowledge-bases/:id, so they use the same OwnedKB matrix + KBAccessWrite
+	// (API-key principals short-circuit the Owned* guards, so only KBAccess can enforce the KB allow-list).
 	g.apiKeyRoute(r, http.MethodPost, "/initialization/initialize/:kbId",
 		apiKeyManageKnowledgeBases(apiKeyFullAccess()), g.OwnedKBOrAdminFromKbIDParam(), g.KBAccessWrite("kbId"), handler.InitializeByKB)
 	g.apiKeyRoute(r, http.MethodPut, "/initialization/config/:kbId",
 		apiKeyManageKnowledgeBases(apiKeyFullAccess()), g.OwnedKBOrAdminFromKbIDParam(), g.KBAccessWrite("kbId"), handler.UpdateKBConfig)
 
-	// Ollama / 远程 API / 抽取等系统级检测/下载操作。这些不绑某个 KB，
-	// 会改空间级模型配置或拉远端模型；JWT 侧只读探测 Viewer+、变更 Admin+。
-	// 对 API key 均为空间级：full-access key 可用，scoped key 需要 manage_models。
+	// System-level checks and downloads for Ollama / remote APIs / extraction. They are not bound to a KB,
+	// and they change workspace-level model config or pull remote models; on the JWT side read-only probes need
+	// Viewer+, changes Admin+.
+	// For API keys all of them are workspace-level: full-access keys may use them, scoped keys need manage_models.
 	g.apiKeyRoute(r, http.MethodGet, "/initialization/ollama/status", apiKeyManageModels(apiKeyFullAccess()), g.Viewer(), handler.CheckOllamaStatus)
 	g.apiKeyRoute(r, http.MethodGet, "/initialization/ollama/models", apiKeyManageModels(apiKeyFullAccess()), g.Viewer(), handler.ListOllamaModels)
 	g.apiKeyRoute(r, http.MethodPost, "/initialization/ollama/models/check", apiKeyManageModels(apiKeyFullAccess()), g.Admin(), handler.CheckOllamaModels)
@@ -118,7 +119,7 @@ func RegisterInitializationRoutes(r *gin.RouterGroup, handler *handler.Initializ
 	g.apiKeyRoute(r, http.MethodGet, "/initialization/ollama/download/progress/:taskId", apiKeyManageModels(apiKeyFullAccess()), g.Viewer(), handler.GetDownloadProgress)
 	g.apiKeyRoute(r, http.MethodGet, "/initialization/ollama/download/tasks", apiKeyManageModels(apiKeyFullAccess()), g.Viewer(), handler.ListDownloadTasks)
 
-	// 远程API相关接口
+	// Remote API endpoints
 	g.apiKeyRoute(r, http.MethodPost, "/initialization/remote/check", apiKeyManageModels(apiKeyFullAccess()), g.Admin(), handler.CheckRemoteModel)
 	g.apiKeyRoute(r, http.MethodPost, "/initialization/embedding/test", apiKeyManageModels(apiKeyFullAccess()), g.Admin(), handler.TestEmbeddingModel)
 	g.apiKeyRoute(r, http.MethodPost, "/initialization/rerank/check", apiKeyManageModels(apiKeyFullAccess()), g.Admin(), handler.CheckRerankModel)
@@ -288,7 +289,7 @@ func RegisterStorageBackendRoutes(r *gin.RouterGroup, h *handler.StorageBackendH
 	}
 }
 
-// RegisterDataSourceRoutes 注册数据源相关的路由
+// RegisterDataSourceRoutes registers the data source routes
 //
 // Data sources hold external service credentials (Feishu/Notion/Yuque)
 // and trigger sync jobs that mutate KB content tenant-wide. Reads are
@@ -338,7 +339,7 @@ func RegisterDataSourceRoutes(
 	}
 }
 
-// RegisterWeKnoraCloudRoutes 注册 WeKnoraCloud 初始化路由
+// RegisterWeKnoraCloudRoutes registers the WeKnoraCloud initialization routes
 // RegisterWeKnoraCloudRoutes registers the WeKnoraCloud credential
 // management endpoints. SaveCredentials persists external SaaS keys
 // for the tenant (Admin+), Status is a low-risk readiness probe (Viewer+).

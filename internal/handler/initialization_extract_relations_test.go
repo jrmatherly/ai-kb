@@ -13,7 +13,7 @@ import (
 type proseReplyChat struct{}
 
 func (proseReplyChat) Chat(context.Context, []chat.Message, *chat.ChatOptions) (*types.ChatResponse, error) {
-	return &types.ChatResponse{Content: "抱歉，这段文本没有可抽取的实体和关系。", FinishReason: "stop"}, nil
+	return &types.ChatResponse{Content: "Sorry, this text has no entities or relations.", FinishReason: "stop"}, nil
 }
 
 func (proseReplyChat) ChatStream(
@@ -33,7 +33,7 @@ func TestExtractRelationsFromTextReportsModelRefusal(t *testing.T) {
 			ExtractGraph: &types.PromptTemplateStructured{Description: "extract"},
 		},
 	}}
-	res, err := h.extractRelationsFromText(context.Background(), "目录", nil, proseReplyChat{})
+	res, err := h.extractRelationsFromText(context.Background(), "Contents", nil, proseReplyChat{})
 	if err == nil {
 		t.Fatalf("expected an error for a prose refusal, got %+v", res)
 	}

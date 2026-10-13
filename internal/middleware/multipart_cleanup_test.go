@@ -13,9 +13,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TestMultipartFormCleanupRemovesDiskTemporaryFiles 验证超过内存阈值的上传在响应后不遗留 multipart 临时文件。
-// 入参：2 MiB multipart 文件与 1 字节的 Gin 内存阈值，确保标准库将上传内容写入临时目录。
-// 出参：处理时发现 multipart 临时文件；响应完成后专用临时目录为空。
+// TestMultipartFormCleanupRemovesDiskTemporaryFiles verifies an upload above the memory threshold leaves no multipart
+// temp files after the response.
+// Input: a 2 MiB multipart file and a 1-byte Gin memory threshold, so the standard library writes the upload to the
+// temp directory.
+// Output: multipart temp files exist during handling; the dedicated temp directory is empty after the response.
 func TestMultipartFormCleanupRemovesDiskTemporaryFiles(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	tempDir := t.TempDir()

@@ -43,11 +43,11 @@ func stringValue(p *string) string {
 
 // ListToolCatalog returns the tools an endpoint can expose, grouped.
 //
-// @Summary      获取 MCP 端点工具目录
-// @Description  返回工作空间 MCP 端点可勾选的工具清单、分组和默认勾选项
-// @Tags         MCP端点
+// @Summary      Get MCP endpoint tool catalog
+// @Description  Return the tools a workspace MCP endpoint can expose, their groups and the default selection
+// @Tags         MCP Endpoint
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "工具目录"
+// @Success      200  {object}  map[string]interface{}  "Tool catalog"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/tools [get]
@@ -65,14 +65,14 @@ func (h *MCPEndpointHandler) ListToolCatalog(c *gin.Context) {
 
 // CreateMCPEndpoint creates an endpoint and returns it with the one-time token.
 //
-// @Summary      创建 MCP 端点
-// @Description  为当前工作空间发布一个 MCP 端点，响应中的 token 只返回一次
-// @Tags         MCP端点
+// @Summary      Create MCP endpoint
+// @Description  Publish an MCP endpoint for the current workspace. The token in the response is returned only once
+// @Tags         MCP Endpoint
 // @Accept       json
 // @Produce      json
-// @Param        request  body      object  true  "端点配置：name、description、enabled、knowledge_base_ids、tools 等"
-// @Success      201      {object}  map[string]interface{}  "创建的端点，含一次性 token"
-// @Failure      400      {object}  map[string]interface{}  "请求参数错误"
+// @Param        request  body      object  true  "Endpoint config (name, description, knowledge_base_ids, tools...)"
+// @Success      201      {object}  map[string]interface{}  "Created endpoint, with its one-time token"
+// @Failure      400      {object}  map[string]interface{}  "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints [post]
@@ -117,10 +117,10 @@ func (h *MCPEndpointHandler) CreateMCPEndpoint(c *gin.Context) {
 
 // ListMCPEndpoints lists the workspace endpoints without tokens.
 //
-// @Summary      获取 MCP 端点列表
-// @Tags         MCP端点
+// @Summary      List MCP endpoints
+// @Tags         MCP Endpoint
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "端点列表"
+// @Success      200  {object}  map[string]interface{}  "Endpoint list"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints [get]
@@ -140,12 +140,12 @@ func (h *MCPEndpointHandler) ListMCPEndpoints(c *gin.Context) {
 
 // GetMCPEndpoint returns one endpoint.
 //
-// @Summary      获取 MCP 端点详情
-// @Tags         MCP端点
+// @Summary      Get MCP endpoint details
+// @Tags         MCP Endpoint
 // @Produce      json
-// @Param        endpoint_id  path      string  true  "端点 ID"
-// @Success      200          {object}  map[string]interface{}  "端点详情"
-// @Failure      404          {object}  map[string]interface{}  "端点不存在"
+// @Param        endpoint_id  path      string  true  "Endpoint ID"
+// @Success      200          {object}  map[string]interface{}  "Endpoint details"
+// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id} [get]
@@ -162,15 +162,15 @@ func (h *MCPEndpointHandler) GetMCPEndpoint(c *gin.Context) {
 
 // UpdateMCPEndpoint applies a partial update; omitted fields are kept.
 //
-// @Summary      更新 MCP 端点
-// @Tags         MCP端点
+// @Summary      Update MCP endpoint
+// @Tags         MCP Endpoint
 // @Accept       json
 // @Produce      json
-// @Param        endpoint_id  path      string  true  "端点 ID"
-// @Param        request      body      object  true  "要更新的字段，未提供的字段保持不变"
-// @Success      200          {object}  map[string]interface{}  "更新后的端点"
-// @Failure      400          {object}  map[string]interface{}  "请求参数错误"
-// @Failure      404          {object}  map[string]interface{}  "端点不存在"
+// @Param        endpoint_id  path      string  true  "Endpoint ID"
+// @Param        request      body      object  true  "Fields to update; omitted fields are unchanged"
+// @Success      200          {object}  map[string]interface{}  "Updated endpoint"
+// @Failure      400          {object}  map[string]interface{}  "Invalid request parameters"
+// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id} [put]
@@ -200,12 +200,12 @@ func (h *MCPEndpointHandler) UpdateMCPEndpoint(c *gin.Context) {
 
 // DeleteMCPEndpoint soft-deletes an endpoint; connected clients lose access.
 //
-// @Summary      删除 MCP 端点
-// @Tags         MCP端点
+// @Summary      Delete MCP endpoint
+// @Tags         MCP Endpoint
 // @Produce      json
-// @Param        endpoint_id  path      string  true  "端点 ID"
-// @Success      200          {object}  map[string]interface{}  "删除成功"
-// @Failure      404          {object}  map[string]interface{}  "端点不存在"
+// @Param        endpoint_id  path      string  true  "Endpoint ID"
+// @Success      200          {object}  map[string]interface{}  "Deleted"
+// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id} [delete]
@@ -221,13 +221,13 @@ func (h *MCPEndpointHandler) DeleteMCPEndpoint(c *gin.Context) {
 
 // RotateMCPEndpointToken issues a fresh token and returns it once.
 //
-// @Summary      轮换 MCP 端点令牌
-// @Description  生成新令牌并立即作废旧令牌，响应中的 token 只返回一次
-// @Tags         MCP端点
+// @Summary      Rotate MCP endpoint token
+// @Description  Issue a new token and revoke the old one immediately. The token in the response is returned only once
+// @Tags         MCP Endpoint
 // @Produce      json
-// @Param        endpoint_id  path      string  true  "端点 ID"
-// @Success      200          {object}  map[string]interface{}  "含新 token 的端点"
-// @Failure      404          {object}  map[string]interface{}  "端点不存在"
+// @Param        endpoint_id  path      string  true  "Endpoint ID"
+// @Success      200          {object}  map[string]interface{}  "Endpoint with the new token"
+// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id}/rotate-token [post]

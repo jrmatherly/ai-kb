@@ -17,37 +17,37 @@ func TestListKnowledgeSortQuery(t *testing.T) {
 		wantOrder types.KnowledgeListSortOrder
 	}{
 		{
-			name:      "未传参数时默认最新创建",
+			name:      "defaults to newest created without params",
 			wantCode:  http.StatusOK,
 			wantBy:    types.KnowledgeListSortByCreatedAt,
 			wantOrder: types.KnowledgeListSortDescending,
 		},
 		{
-			name:      "接受创建时间升序",
+			name:      "accepts created_at ascending",
 			query:     "?sort_by=created_at&sort_order=asc",
 			wantCode:  http.StatusOK,
 			wantBy:    types.KnowledgeListSortByCreatedAt,
 			wantOrder: types.KnowledgeListSortAscending,
 		},
 		{
-			name:      "接受文件名称降序",
+			name:      "accepts file_name descending",
 			query:     "?sort_by=file_name&sort_order=desc",
 			wantCode:  http.StatusOK,
 			wantBy:    types.KnowledgeListSortByFileName,
 			wantOrder: types.KnowledgeListSortDescending,
 		},
 		{
-			name:     "拒绝未知排序字段",
+			name:     "rejects unknown sort field",
 			query:    "?sort_by=deleted_at&sort_order=desc",
 			wantCode: http.StatusBadRequest,
 		},
 		{
-			name:     "拒绝未知排序方向",
+			name:     "rejects unknown sort direction",
 			query:    "?sort_by=updated_at&sort_order=random",
 			wantCode: http.StatusBadRequest,
 		},
 		{
-			name:     "拒绝排序字段中的 SQL 片段",
+			name:     "rejects SQL fragment in sort field",
 			query:    "?sort_by=updated_at%3BDELETE%20FROM%20knowledges",
 			wantCode: http.StatusBadRequest,
 		},

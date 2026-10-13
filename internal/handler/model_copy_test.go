@@ -32,7 +32,7 @@ func TestCopyModelResponseOmitsCredentials(t *testing.T) {
 		model: &types.Model{
 			ID:          "copy-1",
 			Name:        "gpt-4o",
-			DisplayName: "生产 GPT 副本",
+			DisplayName: "Production GPT copy",
 			Type:        types.ModelTypeKnowledgeQA,
 			Source:      types.ModelSourceRemote,
 			Status:      types.ModelStatusActive,
@@ -50,7 +50,7 @@ func TestCopyModelResponseOmitsCredentials(t *testing.T) {
 		h.CopyModel(c)
 	})
 
-	payload := bytes.NewBufferString(`{"display_name":"生产 GPT 副本"}`)
+	payload := bytes.NewBufferString(`{"display_name":"Production GPT copy"}`)
 	req := httptest.NewRequest(http.MethodPost, "/models/src/copy", payload)
 	req.Header.Set("Content-Type", "application/json")
 	req = req.WithContext(context.WithValue(req.Context(), types.TenantIDContextKey, uint64(7)))
@@ -62,8 +62,8 @@ func TestCopyModelResponseOmitsCredentials(t *testing.T) {
 	require.NotContains(t, body, "sk-live")
 	require.NotContains(t, body, "app-secret")
 	require.Contains(t, body, `"name":"gpt-4o"`)
-	require.Contains(t, body, `"display_name":"生产 GPT 副本"`)
+	require.Contains(t, body, `"display_name":"Production GPT copy"`)
 	require.Contains(t, body, `"api_key":{"configured":true}`)
 	require.Equal(t, "src", stub.sourceID)
-	require.Equal(t, "生产 GPT 副本", stub.displayName)
+	require.Equal(t, "Production GPT copy", stub.displayName)
 }

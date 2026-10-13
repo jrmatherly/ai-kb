@@ -10,7 +10,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-// RegisterTenantRoutes 注册空间相关的路由
+// RegisterTenantRoutes registers the workspace routes
 //
 // Tenant-internal RBAC for /tenants/:id:
 //   - GET   /:id          Viewer+ (read tenant settings)
@@ -57,17 +57,17 @@ func RegisterTenantRoutes(
 		apiKeyPlatform(types.APIKeyCapabilitySystemTenantsRead, types.APIKeyCapabilitySystemTenantsManage),
 		g.CrossTenant(), handler.SearchTenants)
 
-	// 空间路由组
+	// Workspace route group
 	tenantRoutes := r.Group("/tenants")
 	{
-		// 创建空间对所有已登录用户开放：用户可以为自己再开一个工作区，
-		// handler 内部会调 EnsureOwner 把调用者写成新空间的 Owner。
-		// 跨空间超管走同一个端点，但能携带 storage_quota / status 等
-		// 全字段（见 handler.CreateTenant 内部分支）。
-		// 安全说明：这里不挂 g.CrossTenant()，因为 self-service 创建
-		// 不需要跨空间特权；handler 也不读写 X-Tenant-ID 指向的现有
-		// 空间，所以越过 PathTenantMatch 守卫不会扩大攻击面。
-		// 创建空间不对 API key 开放（注册在原始 group，默认拒绝）。
+		// Creating a workspace is open to every logged-in user: users can open another workspace for themselves,
+		// and the handler calls EnsureOwner to make the caller the new workspace's Owner.
+		// Cross-workspace super admins use the same endpoint but may send every field, such as storage_quota / status
+		// (see the branch inside handler.CreateTenant).
+		// Security note: g.CrossTenant() is not applied here, because self-service creation
+		// needs no cross-workspace privilege, and the handler never reads or writes the existing workspace
+		// X-Tenant-ID points at, so bypassing the PathTenantMatch guard does not widen the attack surface.
+		// Workspace creation is not open to API keys (registered on the raw group, denied by default).
 		g.apiKeyRoute(tenantRoutes, http.MethodPost, "",
 			apiKeyPlatform(types.APIKeyCapabilitySystemTenantsManage), handler.CreateTenant)
 		g.apiKeyRoute(tenantRoutes, http.MethodGet, "", apiKeyManageTenantSettings(apiKeyFullAccess()), handler.ListTenants)
@@ -171,7 +171,8 @@ func RegisterMyInvitationRoutes(r *gin.RouterGroup, invitationHandler *handler.T
 		me.GET("/invitations/pending-count", invitationHandler.CountMyPendingInvitations)
 		me.POST("/invitations/:inv_id/accept", invitationHandler.AcceptMyInvitation)
 		me.POST("/invitations/:inv_id/decline", invitationHandler.DeclineMyInvitation)
-		// 已登录用户用共享链接 token 加入空间（对应 register-by-invite，但不建新账号）。
+		// A logged-in user joins a workspace with a share link token (the counterpart of register-by-invite, without
+		// creating an account).
 		me.POST("/invitations/accept-by-token", invitationHandler.AcceptMyInvitationByToken)
 	}
 }
@@ -220,7 +221,8 @@ func RegisterAuthRoutes(r *gin.RouterGroup, handler *handler.AuthHandler, g *rba
 	r.GET("/auth/oidc/config", handler.GetOIDCConfig)
 	r.GET("/auth/oidc/url", handler.GetOIDCAuthorizationURL)
 	r.GET("/auth/oidc/callback", handler.OIDCRedirectCallback)
-	// /auth/oidc/start：直连 302 跳转到 OIDC 提供方，供前端无法走 JS 拉取 URL 的场景直接发起登录
+	// /auth/oidc/start: a direct 302 redirect to the OIDC provider, for frontends that cannot fetch the URL with JS and
+	// start the login directly
 	r.GET("/auth/oidc/start", handler.OIDCStart)
 	r.POST("/auth/refresh", handler.RefreshToken)
 	r.GET("/auth/validate", handler.ValidateToken)

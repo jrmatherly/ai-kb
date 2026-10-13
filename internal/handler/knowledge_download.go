@@ -28,7 +28,7 @@ const (
 
 var batchDownloadSlots = make(chan struct{}, maxConcurrentBatchDownloads)
 
-// BatchDownloadKnowledgeRequest 指定同一知识库中需要下载的文档。
+// BatchDownloadKnowledgeRequest lists the documents to download from one knowledge base.
 type BatchDownloadKnowledgeRequest struct {
 	IDs []string `json:"ids" binding:"required,min=1,max=200,dive,required,max=128"`
 }
@@ -39,14 +39,16 @@ type knowledgeDownloadEntry struct {
 }
 
 // BatchDownloadKnowledge godoc
-// @Summary 批量下载知识文件
-// @Description 将同一知识库的最多 200 个文档打包为 ZIP，原始内容合计不超过 512 MiB。无原文件的条目会被跳过；无权访问、跨库或读取失败时不返回残缺压缩包。
-// @Tags 知识管理
+// @Summary Batch download knowledge files
+// @Description Pack up to 200 documents of one knowledge base into a ZIP, with at most 512 MiB of original content in
+// @Description total. Entries without an original file are skipped; on missing access, a cross-knowledge-base ID or a
+// @Description read failure, no partial archive is returned.
+// @Tags Knowledge
 // @Accept json
 // @Produce application/zip
-// @Param id path string true "知识库ID"
-// @Param request body BatchDownloadKnowledgeRequest true "文档ID列表"
-// @Success 200 {file} file "ZIP 压缩包"
+// @Param id path string true "Knowledge base ID"
+// @Param request body BatchDownloadKnowledgeRequest true "Document IDs"
+// @Success 200 {file} file "ZIP archive"
 // @Failure 400 {object} errors.AppError
 // @Failure 401 {object} errors.AppError
 // @Failure 403 {object} errors.AppError
@@ -60,7 +62,7 @@ func (h *KnowledgeHandler) BatchDownloadKnowledge(c *gin.Context) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 64*1024)
 	var req BatchDownloadKnowledgeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(errors.NewBadRequestError("请选择 1～200 个文档进行批量下载"))
+		_ = c.Error(errors.NewBadRequestError("Select 1 to 200 documents to download"))
 		return
 	}
 
@@ -76,13 +78,13 @@ func (h *KnowledgeHandler) BatchDownloadKnowledge(c *gin.Context) {
 	ctx := types.WithExecutionTenant(c.Request.Context(), tenantID)
 	ids := uniqueKnowledgeDownloadIDs(req.IDs)
 	if len(ids) == 0 {
-		_ = c.Error(errors.NewBadRequestError("文档 ID 不能为空"))
+		_ = c.Error(errors.NewBadRequestError("Document ID cannot be empty"))
 		return
 	}
 
 	items, err := h.kgService.GetKnowledgeBatch(ctx, tenantID, ids)
 	if err != nil {
-		_ = c.Error(errors.NewInternalServerError("无法获取待下载文档，请稍后重试"))
+		_ = c.Error(errors.NewInternalServerError("Could not load the documents to download, please try again later"))
 		return
 	}
 	byID := make(map[string]*types.Knowledge, len(items))
@@ -92,11 +94,11 @@ func (h *KnowledgeHandler) BatchDownloadKnowledge(c *gin.Context) {
 		}
 	}
 	entries := make([]knowledgeDownloadEntry, 0, len(ids))
-	// 在读取任何文件之前检查整批文档，防止混入其他知识库或租户的 ID。
+	// Check the whole batch before reading any file so no ID from another knowledge base or tenant slips in.
 	for _, id := range ids {
 		item := byID[id]
 		if item == nil {
-			_ = c.Error(errors.NewNotFoundError("部分文档不存在或不属于当前知识库，请刷新列表后重试"))
+			_ = c.Error(errors.NewNotFoundError("Some documents are missing or outside this knowledge base"))
 			return
 		}
 		if !item.IsManual() && item.FilePath == "" {
@@ -105,20 +107,20 @@ func (h *KnowledgeHandler) BatchDownloadKnowledge(c *gin.Context) {
 		entries = append(entries, knowledgeDownloadEntry{ID: id, FolderPath: item.FolderPath})
 	}
 	if len(entries) == 0 {
-		_ = c.Error(errors.NewBadRequestError("所选文档没有可下载的原始文件，请取消选择后重试"))
+		_ = c.Error(errors.NewBadRequestError("The selected documents have no original file to download"))
 		return
 	}
 
 	if !tryAcquireBatchDownloadSlot() {
-		_ = c.Error(errors.NewTooManyRequestsError("当前批量下载过多，请稍后重试"))
+		_ = c.Error(errors.NewTooManyRequestsError("Too many batch downloads in progress, please try again later"))
 		return
 	}
 	defer releaseBatchDownloadSlot()
 
-	// 先在临时文件中完整生成压缩包，避免读取失败时向用户返回残缺 ZIP。
+	// Build the whole archive in a temp file first so a read failure never sends a partial ZIP.
 	archive, err := os.CreateTemp("", "ai-kb-download-*.zip")
 	if err != nil {
-		_ = c.Error(errors.NewInternalServerError("无法创建下载压缩包，请稍后重试"))
+		_ = c.Error(errors.NewInternalServerError("Could not create the download archive, please try again later"))
 		return
 	}
 	archivePath := archive.Name()
@@ -137,7 +139,7 @@ func (h *KnowledgeHandler) BatchDownloadKnowledge(c *gin.Context) {
 		return
 	}
 	if _, err := archive.Seek(0, io.SeekStart); err != nil {
-		_ = c.Error(errors.NewInternalServerError("无法读取下载压缩包，请稍后重试"))
+		_ = c.Error(errors.NewInternalServerError("Could not read the download archive, please try again later"))
 		return
 	}
 	filename := "knowledge-files-" + time.Now().Format("20060102-150405") + ".zip"
@@ -186,7 +188,7 @@ func mapKnowledgeDownloadError(err error) error {
 		return err
 	}
 	if isKnowledgeDownloadCanceled(err) {
-		return errors.NewBadRequestError("下载已取消")
+		return errors.NewBadRequestError("Download cancelled")
 	}
 	return err
 }
@@ -212,16 +214,16 @@ func writeKnowledgeDownloadArchive(
 			if isKnowledgeDownloadCanceled(err) {
 				return err
 			}
-			return errors.NewInternalServerError("部分文件无法读取，未生成压缩包，请检查文档后重试").WithDetails(
+			return errors.NewInternalServerError("Some files could not be read, no archive created").WithDetails(
 				gin.H{"knowledge_id": entry.ID},
 			)
 		}
 		name := uniqueKnowledgeDownloadZipPath(entry.FolderPath, filename, usedNames)
-		// 原样存储可避免 PDF、Office 等已压缩文件再次压缩的 CPU 开销。
+		// Store, not deflate: PDF, Office and similar files are already compressed.
 		zipEntry, err := writer.CreateHeader(&zip.FileHeader{Name: name, Method: zip.Store})
 		if err != nil {
 			_ = file.Close()
-			return errors.NewInternalServerError("无法写入下载压缩包，请稍后重试")
+			return errors.NewInternalServerError("Could not write the download archive, please try again later")
 		}
 		n, copyErr := io.Copy(zipEntry, io.LimitReader(
 			&knowledgeDownloadReader{ctx: ctx, reader: file}, limit-total+1,
@@ -229,24 +231,24 @@ func writeKnowledgeDownloadArchive(
 		closeErr := file.Close()
 		total += n
 		if total > limit {
-			return errors.NewBadRequestError("所选文件合计超过 512 MiB，请分批下载")
+			return errors.NewBadRequestError("The selected files exceed 512 MiB, download in smaller batches")
 		}
 		if isKnowledgeDownloadCanceled(copyErr) {
 			return copyErr
 		}
 		if copyErr != nil || closeErr != nil {
-			return errors.NewInternalServerError("部分文件读取失败，未生成压缩包，请稍后重试").WithDetails(
+			return errors.NewInternalServerError("Some files failed to read, no archive created").WithDetails(
 				gin.H{"knowledge_id": entry.ID},
 			)
 		}
 	}
 	if err := writer.Close(); err != nil {
-		return errors.NewInternalServerError("无法完成下载压缩包，请稍后重试")
+		return errors.NewInternalServerError("Could not finish the download archive, please try again later")
 	}
 	return nil
 }
 
-// 每次读取前检查取消信号，用户离开页面后停止继续打包。
+// knowledgeDownloadReader checks for cancellation before each read, so packing stops once the user leaves the page.
 type knowledgeDownloadReader struct {
 	ctx    context.Context
 	reader io.Reader

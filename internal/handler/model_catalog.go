@@ -70,7 +70,7 @@ type ModelCatalogEntryDTO struct {
 	Source string `json:"source,omitempty"`
 }
 
-// modelTypeToFrontend 将后端 ModelType 转换为前端兼容的字符串
+// modelTypeToFrontend maps a backend ModelType to the string the frontend expects
 // KnowledgeQA -> chat, Embedding -> embedding, Rerank -> rerank, VLLM -> vllm
 func modelTypeToFrontend(mt types.ModelType) string {
 	switch mt {
@@ -184,13 +184,14 @@ func providerDTO(v *modelruntime.Provider, modelType types.ModelType, includeMod
 }
 
 // ListModelProviders godoc
-// @Summary      获取模型厂商列表
-// @Description  根据模型类型获取支持的厂商定义（含图标、默认地址、额外字段、内置模型目录与思考能力）
-// @Tags         模型管理
+// @Summary      List model providers
+// @Description  Get the supported provider definitions for a model type (icon, default URL, extra fields, built-in
+// @Description  model catalog and thinking support)
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        model_type  query     string  false  "模型类型 (chat, embedding, rerank, vllm, asr)"
-// @Success      200         {object}  map[string]interface{}  "厂商列表"
+// @Param        model_type  query     string  false  "Model type (chat, embedding, rerank, vllm, asr)"
+// @Success      200         {object}  map[string]interface{}  "Provider list"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/providers [get]
@@ -234,16 +235,17 @@ func (h *ModelHandler) ListModelProviders(c *gin.Context) {
 }
 
 // ResolveModelCatalog godoc
-// @Summary      解析模型的有效接入配置
-// @Description  根据厂商、模型名、Base URL 与 extra_config 返回目录解析结果（协议、思考等级、上下文等），供模型编辑器实时展示
-// @Tags         模型管理
+// @Summary      Resolve a model's effective connection config
+// @Description  Return the catalog resolution (protocol, thinking levels, context, etc.) for a provider, model name,
+// @Description  Base URL and extra_config, shown live in the model editor
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        provider    query     string  true   "厂商标识"
-// @Param        model       query     string  false  "模型名"
+// @Param        provider    query     string  true   "Provider ID"
+// @Param        model       query     string  false  "Model name"
 // @Param        base_url    query     string  false  "Base URL"
-// @Param        model_type  query     string  false  "模型类型"
-// @Success      200         {object}  map[string]interface{}  "解析结果"
+// @Param        model_type  query     string  false  "Model type"
+// @Success      200         {object}  map[string]interface{}  "Resolution result"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/catalog/resolve [get]

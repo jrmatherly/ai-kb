@@ -19,42 +19,42 @@ func RegisterChunkerDebugRoutes(r *gin.RouterGroup, g *rbacGuards) {
 	g.apiKeyRoute(r, http.MethodPost, "/chunker/preview", apiKeyRetrieve(apiKeyIngest(apiKeyFullAccess())), g.Viewer(), handler.PreviewChunking)
 }
 
-// RegisterChunkRoutes 注册分块相关的路由
+// RegisterChunkRoutes registers the chunk routes
 //
 // Mutating routes addressed via :knowledge_id inherit per-KB ownership
 // from the owning knowledge entry's KB (PR 5, #1303); the chain hop is
 // shared with RegisterKnowledgeRoutes via OwnedChunkKBOrAdmin so the
 // same "creator-of-the-KB OR Admin+" rule applies to chunk edits.
 func RegisterChunkRoutes(r *gin.RouterGroup, handler *handler.ChunkHandler, g *rbacGuards) {
-	// 分块路由组。Scoped API key 需要 ingest 能力写内容，retrieve 能力读内容；
-	// 两者仍受 KB 白名单约束。
+	// Chunk route group. Scoped API keys need the ingest capability to write content and retrieve to read it;
+	// both are still bound by the KB allow-list.
 	chunks := g.apiKeyGroup(r.Group("/chunks"), apiKeyIngest(apiKeyFullAccess()))
 	chunkRead := chunks.With(apiKeyRetrieve(apiKeyFullAccess()))
 	{
-		// 获取分块列表 — Viewer+ 且对父 KB 有 read 权限（own / shared / via shared agent）
+		// List chunks: Viewer+ with read access to the parent KB (own / shared / via shared agent)
 		chunkRead.GET("/:knowledge_id", g.Viewer(), g.KBAccessReadFromKnowledgeIDParam("knowledge_id"), handler.ListKnowledgeChunks)
-		// 通过chunk_id获取单个chunk（不需要knowledge_id） — Viewer+ 且对父 KB 有 read 权限
+		// Get one chunk by chunk_id (no knowledge_id needed): Viewer+ with read access to the parent KB
 		chunkRead.GET("/by-id/:id", g.Viewer(), g.KBAccessReadFromChunkIDParam("id"), handler.GetChunkByIDOnly)
 		chunkRead.GET("/:knowledge_id/:id/revisions", g.Viewer(), g.KBAccessReadFromKnowledgeIDParam("knowledge_id"), handler.ListChunkRevisions)
-		// 删除分块 — KB owner OR Admin+，且对父 KB 有 write 权限
+		// Delete a chunk: KB owner OR Admin+, with write access to the parent KB
 		chunks.DELETE("/:knowledge_id/:id", g.OwnedChunkKBOrAdmin(), g.KBAccessWriteFromKnowledgeIDParam("knowledge_id"), handler.DeleteChunk)
-		// 删除知识下的所有分块 — KB owner OR Admin+，且对父 KB 有 write 权限
+		// Delete every chunk of a knowledge item: KB owner OR Admin+, with write access to the parent KB
 		chunks.DELETE("/:knowledge_id", g.OwnedChunkKBOrAdmin(), g.KBAccessWriteFromKnowledgeIDParam("knowledge_id"), handler.DeleteChunksByKnowledgeID)
-		// 更新分块信息 — KB owner OR Admin+，且对父 KB 有 write 权限
+		// Update a chunk: KB owner OR Admin+, with write access to the parent KB
 		chunks.PUT("/:knowledge_id/:id", g.OwnedChunkKBOrAdmin(), g.KBAccessWriteFromKnowledgeIDParam("knowledge_id"), handler.UpdateChunk)
 		chunks.POST("/:knowledge_id/:id/revert", g.OwnedChunkKBOrAdmin(), g.KBAccessWriteFromKnowledgeIDParam("knowledge_id"), handler.RevertChunk)
-		// 删除单个生成的问题（通过分块 id） — 与其它 chunk mutation 一致：
-		// KB owner OR Admin+。早期这里因为链路 (chunk_id -> knowledge_id ->
-		// kb -> creator_id) 还没接通，被临时降级成 Contributor，导致一个
-		// 「能编辑所有 chunk 的同样规则在这条路由上反而更宽松」的不一致。
-		// 现在通过 KBCreatorLookupFromChunkIDParam 把那一跳补上，统一矩阵。
+		// Delete one generated question (by chunk id): consistent with the other chunk mutations,
+		// KB owner OR Admin+. Earlier the lookup chain (chunk_id -> knowledge_id ->
+		// kb -> creator_id) was not wired yet, so this was temporarily lowered to Contributor, which made
+		// this route looser than the rule that governs editing every other chunk.
+		// KBCreatorLookupFromChunkIDParam now fills in that hop, so the matrix is uniform.
 		chunks.DELETE("/by-id/:id/questions", g.OwnedChunkKBOrAdminFromChunkID(), g.KBAccessWriteFromChunkIDParam("id"), handler.DeleteGeneratedQuestion)
 		chunks.PUT("/by-id/:id/questions", g.OwnedChunkKBOrAdminFromChunkID(), g.KBAccessWriteFromChunkIDParam("id"), handler.UpsertGeneratedQuestion)
 		chunks.POST("/by-id/:id/questions/regenerate", g.OwnedChunkKBOrAdminFromChunkID(), g.KBAccessWriteFromChunkIDParam("id"), handler.RegenerateGeneratedQuestions)
 	}
 }
 
-// RegisterKnowledgeRoutes 注册知识相关的路由
+// RegisterKnowledgeRoutes registers the knowledge routes
 //
 // Per-KB ownership applies on the per-:id mutating routes (PR 5,
 // #1303): the URL :id is a knowledge id, OwnedKnowledgeKBOrAdmin
@@ -65,8 +65,9 @@ func RegisterChunkRoutes(r *gin.RouterGroup, handler *handler.ChunkHandler, g *r
 // Body-scoped batch operations have a Contributor route gate and resolve
 // their KB ownership plus Editor operation grant inside the handler.
 func RegisterKnowledgeRoutes(r *gin.RouterGroup, handler *handler.KnowledgeHandler, g *rbacGuards) {
-	// 知识库下的知识路由组（URL :id is the KB id）。Scoped API key 需要
-	// ingest 能力才能写内容，且仍受 KB 范围限制；清空 KB 只允许 full-access key。
+	// Knowledge routes under a knowledge base (URL :id is the KB id). Scoped API keys need
+	// the ingest capability to write content and are still limited to their KB scope; clearing a KB is full-access
+	// only.
 	kb := g.apiKeyGroup(r.Group("/knowledge-bases/:id/knowledge"), apiKeyIngest(apiKeyFullAccess()))
 	kbRead := kb.With(apiKeyRetrieve(apiKeyFullAccess()))
 	{
@@ -74,7 +75,7 @@ func RegisterKnowledgeRoutes(r *gin.RouterGroup, handler *handler.KnowledgeHandl
 		kb.POST("/url", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.CreateKnowledgeFromURL)
 		kb.POST("/manual", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.CreateManualKnowledge)
 		kbRead.GET("", g.Viewer(), g.KBAccessRead("id"), handler.ListKnowledge)
-		// 原始文件下载沿用单文件下载的 Contributor + Editor 权限边界。
+		// Raw file download keeps the Contributor + Editor permission boundary of single-file download.
 		kbRead.POST("/batch-download", g.Contributor(), g.KBAccessWrite("id"), handler.BatchDownloadKnowledge)
 		kbRead.GET("/folders", g.Viewer(), g.KBAccessRead("id"), handler.ListKnowledgeFolders)
 		kb.PUT("/folders", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.RenameKnowledgeFolder)
@@ -101,7 +102,7 @@ func RegisterKnowledgeRoutes(r *gin.RouterGroup, handler *handler.KnowledgeHandl
 		kbImagesRead.GET("/gallery-config", g.Viewer(), g.KBAccessRead("id"), handler.GetGalleryConfig)
 	}
 
-	// 知识路由组（URL :id is a knowledge id; the guard walks it to the parent KB）
+	// Knowledge route group (URL :id is a knowledge id; the guard walks it to the parent KB)
 	kgrp := r.Group("/knowledge")
 	k := g.apiKeyGroup(kgrp, apiKeyIngest(apiKeyFullAccess()))
 	kRead := k.With(apiKeyRetrieve(apiKeyFullAccess()))
@@ -153,7 +154,7 @@ func RegisterKnowledgeRoutes(r *gin.RouterGroup, handler *handler.KnowledgeHandl
 	}
 }
 
-// RegisterFAQRoutes 注册 FAQ 相关路由
+// RegisterFAQRoutes registers the FAQ routes
 //
 // FAQ entries are KB content: reads are Viewer+, all mutations
 // (create / update / upsert / delete / batch field+tag updates,
@@ -162,10 +163,10 @@ func RegisterFAQRoutes(r *gin.RouterGroup, handler *handler.FAQHandler, g *rbacG
 	if handler == nil {
 		return
 	}
-	// FAQ entries 是 KB 的子资源（FAQ-type KB 的内容主体）。修改 FAQ
-	// 等价于修改 KB 内容，必须遵循 KB 的"creator OR Admin+"矩阵 ——
-	// 跟 chunks / wiki pages 保持一致。Viewer+ 可以读，Contributor 不能
-	// 改不属于自己的 KB 的 FAQ。
+	// FAQ entries are a KB sub-resource (the content of an FAQ-type KB). Editing an FAQ
+	// is editing KB content, so it must follow the KB "creator OR Admin+" matrix,
+	// consistent with chunks / wiki pages. Viewer+ can read; a Contributor cannot
+	// edit the FAQs of a KB they do not own.
 	faq := g.apiKeyGroup(r.Group("/knowledge-bases/:id/faq"), apiKeyIngest(apiKeyFullAccess()))
 	faqRead := faq.With(apiKeyRetrieve(apiKeyFullAccess()))
 	{
@@ -199,45 +200,48 @@ func RegisterFAQRoutes(r *gin.RouterGroup, handler *handler.FAQHandler, g *rbacG
 		apiKeyRetrieve(apiKeyIngest(apiKeyFullAccess())), g.Viewer(), handler.GetImportProgress)
 }
 
-// RegisterKnowledgeBaseRoutes 注册知识库相关的路由
+// RegisterKnowledgeBaseRoutes registers the knowledge base routes
 func RegisterKnowledgeBaseRoutes(r *gin.RouterGroup, handler *handler.KnowledgeBaseHandler, g *rbacGuards) {
-	// 知识库路由组。API-key 可达性按能力分两档，全部通过 apiKeyGroup 声明，
-	// 不要再用裸 kbgrp.Handle 注册（那会绕过网关、对所有 key 静默默认拒绝）：
+	// Knowledge base route group. API-key reachability has two capability tiers, all declared through apiKeyGroup.
+	// Do not register with a bare kbgrp.Handle (that bypasses the gate and silently default-denies every key):
 	//
-	//   1. 读取（list/detail/search/progress/move-targets）—— retrieve OR full-access（kb）
-	//   2. KB 生命周期管理（create/copy/duplicate/update/delete）
-	//      —— manage_kbs OR full-access（kbManagement）
+	//   1. Read (list/detail/search/progress/move-targets): retrieve OR full-access (kb)
+	//   2. KB lifecycle management (create/copy/duplicate/update/delete)
+	//      : manage_kbs OR full-access (kbManagement)
 	//
-	// 第 2 档整条 KB 生命周期共用同一策略：manage_kbs 是「管理知识库」capability，
-	// 建/拷/改/删都是它的分内事。KB 的 allow-list 仍在下游生效——copy/duplicate/
-	// update/delete 的目标 KB 会被 allow-list 兜住；create 无源可约束，限定 allow-list
-	// 的 key 建出的新 KB 落在其 allow-list 之外（同租户、无越权，只是建完自己管不到），
-	// 空 allow-list 的 key 则是全租户 KB 管理、新建天然在范围内。KB 内容写入（文档/
-	// 分块/FAQ/Tag/Wiki）由对应子路由的 ingest 能力控制，不在本组。
+	// Tier 2 shares one policy across the KB lifecycle: manage_kbs is the "manage knowledge bases" capability,
+	// and create/copy/update/delete are all within it. The KB allow-list still applies downstream: the target KB of
+	// copy/duplicate/update/delete is caught by the allow-list. Create has no source to constrain, so a key with
+	// an allow-list creates a KB outside that allow-list (same tenant, no privilege escalation, it just cannot manage
+	// it afterwards),
+	// while a key with an empty allow-list manages every KB in the tenant, so new KBs are in scope. KB content writes
+	// (documents/
+	// chunks/FAQ/Tag/Wiki) are governed by the ingest capability on the matching sub-routes, not by this group.
 	kbgrp := r.Group("/knowledge-bases")
 	kb := g.apiKeyGroup(kbgrp, apiKeyRetrieve(apiKeyFullAccess()))
 	kbManagement := kb.With(apiKeyManageKnowledgeBases(apiKeyFullAccess()))
 	{
-		// 创建知识库 — JWT Contributor+；API key 需 manage_kbs 或 full-access。
+		// Create a knowledge base: JWT Contributor+; API keys need manage_kbs or full-access.
 		kbManagement.POST("", g.Contributor(), handler.CreateKnowledgeBase)
-		// 获取知识库列表 — Viewer+ for JWT callers; retrieve-capable API keys pass via the gate.
+		// List knowledge bases: Viewer+ for JWT callers; retrieve-capable API keys pass via the gate.
 		kb.GET("", g.Viewer(), handler.ListKnowledgeBases)
-		// 获取知识库详情 — Viewer+ 且对 KB 有 read 权限
+		// Get knowledge base details: Viewer+ with read access to the KB
 		kb.GET("/:id", g.Viewer(), g.KBAccessRead("id"), handler.GetKnowledgeBase)
-		// 更新/删除知识库 — 两层正交鉴权，缺一不可：
-		//   OwnedKBOrAdmin  管「租户内」归属：非创建者的 Contributor 改不了
-		//                   同事的 KB（跨租户 KB 在此走 lookup=NotFound → 交给
-		//                   下游处理，不在此拦）。
-		//   KBAccessWrite   管「跨租户」访问级：自有 KB 或被组织共享(editor)。
-		// handler 内再按 permission/所有者租户做最终判定 —— 尤其 DeleteKnowledgeBase
-		// 以调用者「自身」租户(c.Keys，未被 KBAccess 改写)校验 kb.TenantID，
-		// 把删除锁死为「所有者租户 + Admin」，共享 editor 无法删除源 KB。
+		// Update/delete a knowledge base: two orthogonal authorization layers, both required:
+		//   OwnedKBOrAdmin  governs ownership within the tenant: a Contributor who is not the creator cannot edit
+		//                   a colleague's KB (a cross-tenant KB gets lookup=NotFound here and is left to
+		//                   downstream handling, not blocked here).
+		//   KBAccessWrite   governs the cross-tenant access level: own KB or shared through an organization (editor).
+		// The handler then makes the final decision by permission/owner tenant. In particular DeleteKnowledgeBase
+		// checks kb.TenantID against the caller's own tenant (c.Keys, not rewritten by KBAccess),
+		// which restricts deletion to "owner tenant + Admin": a shared editor cannot delete the source KB.
 		kbManagement.PUT("/:id", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.UpdateKnowledgeBase)
-		// 立即重新生成知识库 AI 描述 — 与更新知识库同档鉴权；同步执行一次小模型调用。
+		// Regenerate the knowledge base AI description now: same authorization tier as update; runs one small-model
+		// call synchronously.
 		kbManagement.POST("/:id/profile/generate", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"),
 			handler.GenerateKnowledgeBaseProfile)
 		kbManagement.DELETE("/:id", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.DeleteKnowledgeBase)
-		// 置顶/取消置顶知识库 — 创建者本人 OR Admin+ 且对 KB 有 write 权限
+		// Pin/unpin a knowledge base: the creator OR Admin+, with write access to the KB
 		// Pin state is now per-(user, kb) (migration 000050). Anyone with
 		// at least Viewer-level read access to the KB — including users
 		// who reached it via a shared agent — may pin it for themselves;
@@ -245,25 +249,29 @@ func RegisterKnowledgeBaseRoutes(r *gin.RouterGroup, handler *handler.KnowledgeB
 		// removed accordingly. The route still requires KB read access
 		// so callers can't poke at KBs they can't see.
 		kb.PUT("/:id/pin", g.Viewer(), g.KBAccessRead("id"), handler.TogglePinKnowledgeBase)
-		// 混合搜索 — Viewer+ 且对 KB 有 read 权限 (read-only)
+		// Hybrid search: Viewer+ with read access to the KB (read-only)
 		// POST is preferred; GET with JSON body is kept for backward compatibility (#1727).
 		kb.POST("/:id/hybrid-search", g.Viewer(), g.KBAccessRead("id"), handler.HybridSearch)
 		kb.GET("/:id/hybrid-search", g.Viewer(), g.KBAccessRead("id"), handler.HybridSearch)
-		// 拷贝知识库 — 产出新 KB，与 create 同档：JWT Contributor+，API key 需 manage_kbs 或 full-access。
-		// 源 KB 通过 body 里的 source_id 传入（非 :id 路径参数），无法套用基于路径参数
-		// 的 KBAccessRead，故源/目标 KB 的租户归属与 allow-list 校验在 handler 内完成
-		// （requireTenantAPIKeyKnowledgeBases 会把 source_id/target_id 兜进 allow-list）。
-		// 副本归调用者所有，不需要原 KB 的所有权。
+		// Copy a knowledge base: produces a new KB, same tier as create: JWT Contributor+, API keys need manage_kbs or
+		// full-access.
+		// The source KB comes from source_id in the body (not the :id path parameter), so the path-parameter-based
+		// KBAccessRead cannot apply; the handler checks the tenant ownership and allow-list of the source and target
+		// KBs
+		// (requireTenantAPIKeyKnowledgeBases puts source_id/target_id through the allow-list).
+		// The copy belongs to the caller; ownership of the original KB is not required.
 		kbManagement.POST("/copy", g.Contributor(), handler.CopyKnowledgeBase)
-		// 创建知识库副本 — 产出新 KB，与 create 同档：JWT Contributor+，API key 需 manage_kbs 或 full-access；
-		// 且对源 KB 有 read 权限（KBAccessRead 会对限定 key 兜住源 KB）。只创建新的 KB 设置记录，不复制内容/索引/分享。
+		// Duplicate a knowledge base: produces a new KB, same tier as create: JWT Contributor+, API keys need
+		// manage_kbs or full-access,
+		// plus read access to the source KB (KBAccessRead checks the source KB for restricted keys). Creates only the
+		// new KB settings record; content, indexes and shares are not copied.
 		kbManagement.POST("/:id/duplicate", g.Contributor(), g.KBAccessRead("id"), handler.DuplicateKnowledgeBase)
-		// 获取知识库复制进度 — Viewer+；只读。manage_kbs（发起 copy 的 key）或
-		// retrieve 均可轮询；任务按租户隔离（requireTaskProgressTenant），key 只能
-		// 查本租户任务。
+		// Get knowledge base copy progress: Viewer+, read-only. Either manage_kbs (the key that started the copy) or
+		// retrieve may poll; tasks are isolated per tenant (requireTaskProgressTenant), so a key can only
+		// see its own tenant's tasks.
 		kb.With(apiKeyRetrieve(apiKeyManageKnowledgeBases(apiKeyFullAccess()))).
 			GET("/copy/progress/:task_id", g.Viewer(), handler.GetKBCloneProgress)
-		// 获取可移动目标知识库列表 — Viewer+ 且对 KB 有 read 权限
+		// List the knowledge bases a move can target: Viewer+ with read access to the KB
 		kb.GET("/:id/move-targets", g.Viewer(), g.KBAccessRead("id"), handler.ListMoveTargets)
 	}
 }
@@ -293,7 +301,7 @@ func RegisterKnowledgeBaseActivityRoutes(r *gin.RouterGroup, auditHandler *handl
 		g.OwnedKBOrAdmin(), g.KBAccessRead("id"), auditHandler.ListKnowledgeBaseActivity)
 }
 
-// RegisterKnowledgeTagRoutes 注册知识库标签相关路由。
+// RegisterKnowledgeTagRoutes registers the knowledge base tag routes.
 //
 // Tags are KB metadata: Viewer reads, Contributor writes. Per-KB
 // ownership granularity for tags is out of scope for PR 2; this is
@@ -302,9 +310,11 @@ func RegisterKnowledgeTagRoutes(r *gin.RouterGroup, tagHandler *handler.TagHandl
 	if tagHandler == nil {
 		return
 	}
-	// Tags 是 KB 的子资源 — 创建/编辑/删除标签会改变 KB 内容的检索分类
-	// 行为，应该与 KB 主体的"creator OR Admin+"矩阵一致，避免一个无
-	// 关 Contributor 在他人 KB 里乱建/删标签影响 KB owner 的内容组织。
+	// Tags are a KB sub-resource: creating, editing or deleting a tag changes how KB content is classified for
+	// retrieval,
+	// so they follow the KB's "creator OR Admin+" matrix. That keeps an unrelated
+	// Contributor from creating or deleting tags in someone else's KB and disrupting how the KB owner organizes
+	// content.
 	kbTags := g.apiKeyGroup(r.Group("/knowledge-bases/:id/tags"), apiKeyIngest(apiKeyFullAccess()))
 	kbTagsRead := kbTags.With(apiKeyRetrieve(apiKeyFullAccess()))
 	{

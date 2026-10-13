@@ -8,13 +8,13 @@ import {
 
 const t = (key, params) => {
   if (key === 'agentStream.attachmentParsing.parsedSummary') {
-    return `已解析 ${params?.count} 个附件`
+    return `Parsed ${params?.count} attachment(s)`
   }
   if (key === 'agentStream.attachmentParsing.parsedWithSkipped') {
-    return `已解析 ${params?.parsed} 个附件，${params?.skipped} 个未完成已跳过`
+    return `Parsed ${params?.parsed} attachment(s), ${params?.skipped} skipped (still processing)`
   }
   if (key === 'agentStream.attachmentParsing.noneReady') {
-    return '没有可用的已解析附件'
+    return 'No parsed attachments available'
   }
   return key
 }
@@ -28,10 +28,10 @@ test('resolveAttachmentParsingCounts prefers structured tool_data', () => {
   )
 })
 
-test('resolveAttachmentParsingCounts falls back to legacy output text', () => {
+test('resolveAttachmentParsingCounts falls back to the output text', () => {
   assert.deepEqual(
     resolveAttachmentParsingCounts({
-      output: '已解析 3 个附件，1 个未完成已跳过',
+      output: 'Parsed 3 attachment(s), 1 skipped (still processing)',
     }),
     { parsed: 3, skipped: 1 },
   )
@@ -42,7 +42,7 @@ test('getAttachmentParsingSummaryHtml renders parsed count', () => {
     success: true,
     tool_data: { parsed_count: 1, skipped_count: 0 },
   })
-  assert.equal(html, '已解析 <strong>1</strong> 个附件')
+  assert.equal(html, 'Parsed <strong>1</strong> attachment(s)')
 })
 
 test('getAttachmentParsingSummaryHtml renders skipped count', () => {
@@ -50,5 +50,5 @@ test('getAttachmentParsingSummaryHtml renders skipped count', () => {
     success: true,
     tool_data: { parsed_count: 2, skipped_count: 1 },
   })
-  assert.equal(html, '已解析 <strong>2</strong> 个附件，<strong>1</strong> 个未完成已跳过')
+  assert.equal(html, 'Parsed <strong>2</strong> attachment(s), <strong>1</strong> skipped (still processing)')
 })

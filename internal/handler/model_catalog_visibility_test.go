@@ -164,7 +164,7 @@ func resolveAsRole(t *testing.T, query string, role types.TenantRole) map[string
 	return body.Data
 }
 
-// The editor's "接入诊断" panel must resolve the same request the row will
+// The editor's "connection diagnostics" panel must resolve the same request the row will
 // actually make. Azure is the sharp case: api_version alone decides between
 // the v1 data plane and the dated deployments path, so a preview that drops
 // it describes the wrong endpoint.

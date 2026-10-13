@@ -35,17 +35,19 @@ type ForkSessionRequest struct {
 }
 
 // ForkSession godoc
-// @Summary      分叉会话
-// @Description  从指定的用户或助手消息处分叉出一个新会话。用户消息：复制其之前的历史并预填该问题；助手消息：复制含该回答在内的历史，从该轮沙箱状态继续。
-// @Tags         会话
+// @Summary      Fork a session
+// @Description  Forks a new session from the given user or assistant message. From a user message: copies the earlier
+// @Description  history and prefills that question. From an assistant message: copies the history including that answer
+// @Description  and continues from that turn's sandbox state.
+// @Tags         Sessions
 // @Accept       json
 // @Produce      json
-// @Param        session_id  path      string              true  "源会话 ID"
-// @Param        request     body      ForkSessionRequest  true  "分叉请求"
-// @Success      200         {object}  map[string]interface{}  "新会话"
-// @Failure      400         {object}  errors.AppError         "请求参数错误 / 分叉点角色不支持"
-// @Failure      404         {object}  errors.AppError         "会话或消息不存在"
-// @Failure      409         {object}  errors.AppError         "源会话正在生成中"
+// @Param        session_id  path      string              true  "Source session ID"
+// @Param        request     body      ForkSessionRequest  true  "Fork request"
+// @Success      200         {object}  map[string]interface{}  "New session"
+// @Failure      400         {object}  errors.AppError         "Invalid parameters / unsupported fork point role"
+// @Failure      404         {object}  errors.AppError         "Session or message not found"
+// @Failure      409         {object}  errors.AppError         "Source session is generating"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/fork [post]

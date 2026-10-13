@@ -57,14 +57,14 @@ type CreateModelRequest struct {
 }
 
 // CreateModel godoc
-// @Summary      创建模型
-// @Description  创建新的模型配置
-// @Tags         模型管理
+// @Summary      Create model
+// @Description  Create a new model config
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        request  body      CreateModelRequest  true  "模型信息"
-// @Success      201      {object}  map[string]interface{}  "创建的模型"
-// @Failure      400      {object}  errors.AppError         "请求参数错误"
+// @Param        request  body      CreateModelRequest  true  "Model details"
+// @Success      201      {object}  map[string]interface{}  "Created model"
+// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models [post]
@@ -139,16 +139,17 @@ type CopyModelRequest struct {
 }
 
 // CopyModel godoc
-// @Summary      复制模型
-// @Description  复制模型配置。name 与源模型一致，凭证从已存记录复制，不接受客户端重传。
-// @Tags         模型管理
+// @Summary      Copy model
+// @Description  Copy a model config. name matches the source model; credentials are copied from the stored record and
+// @Description  never accepted from the client.
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        id       path      string           true  "源模型ID"
-// @Param        request  body      CopyModelRequest true  "副本展示名"
-// @Success      201      {object}  map[string]interface{}  "复制的模型"
-// @Failure      400      {object}  errors.AppError         "请求参数错误"
-// @Failure      404      {object}  errors.AppError         "模型不存在"
+// @Param        id       path      string           true  "Source model ID"
+// @Param        request  body      CopyModelRequest true  "Display name of the copy"
+// @Success      201      {object}  map[string]interface{}  "Copied model"
+// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      404      {object}  errors.AppError         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id}/copy [post]
@@ -202,14 +203,14 @@ func (h *ModelHandler) CopyModel(c *gin.Context) {
 }
 
 // GetModel godoc
-// @Summary      获取模型详情
-// @Description  根据ID获取模型详情
-// @Tags         模型管理
+// @Summary      Get model details
+// @Description  Get a model by ID
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        id   path      string  true  "模型ID"
-// @Success      200  {object}  map[string]interface{}  "模型详情"
-// @Failure      404  {object}  errors.AppError         "模型不存在"
+// @Param        id   path      string  true  "Model ID"
+// @Success      200  {object}  map[string]interface{}  "Model details"
+// @Failure      404  {object}  errors.AppError         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id} [get]
@@ -247,13 +248,13 @@ func (h *ModelHandler) GetModel(c *gin.Context) {
 }
 
 // ListModels godoc
-// @Summary      获取模型列表
-// @Description  获取当前空间的所有模型
-// @Tags         模型管理
+// @Summary      List models
+// @Description  List all models in the current workspace
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "模型列表"
-// @Failure      400  {object}  errors.AppError         "请求参数错误"
+// @Success      200  {object}  map[string]interface{}  "Model list"
+// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models [get]
@@ -734,15 +735,15 @@ type UpdateModelRequest struct {
 }
 
 // UpdateModel godoc
-// @Summary      更新模型
-// @Description  更新模型配置信息
-// @Tags         模型管理
+// @Summary      Update model
+// @Description  Update a model config
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        id       path      string              true  "模型ID"
-// @Param        request  body      UpdateModelRequest  true  "更新信息"
-// @Success      200      {object}  map[string]interface{}  "更新后的模型"
-// @Failure      404      {object}  errors.AppError         "模型不存在"
+// @Param        id       path      string              true  "Model ID"
+// @Param        request  body      UpdateModelRequest  true  "Update details"
+// @Success      200      {object}  map[string]interface{}  "Updated model"
+// @Failure      404      {object}  errors.AppError         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id} [put]
@@ -868,15 +869,15 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 }
 
 // DeleteModel godoc
-// @Summary      删除模型
-// @Description  删除指定的模型
-// @Tags         模型管理
+// @Summary      Delete model
+// @Description  Delete the specified model
+// @Tags         Models
 // @Accept       json
 // @Produce      json
-// @Param        id   path      string  true  "模型ID"
-// @Success      200  {object}  map[string]interface{}  "删除成功"
-// @Failure      400  {object}  errors.AppError         "模型仍被知识库、智能体或长期记忆引用"
-// @Failure      404  {object}  errors.AppError         "模型不存在"
+// @Param        id   path      string  true  "Model ID"
+// @Success      200  {object}  map[string]interface{}  "Deleted"
+// @Failure      400  {object}  errors.AppError         "Model still used by a knowledge base, agent or memory"
+// @Failure      404  {object}  errors.AppError         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id} [delete]

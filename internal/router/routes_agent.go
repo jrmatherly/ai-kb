@@ -174,16 +174,17 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 	}
 
 	// Knowledge base sharing routes (add to existing kb routes).
-	// 分享 KB 到组织 = 让组织里所有人能读这个 KB；这跟"修改 KB 元信息"
-	// 同等敏感，所以挂同款 OwnedKBOrAdmin 矩阵。Viewer 在自己空间里
-	// 也不能私自把 KB 暴露出去。
-	// 分享管理不通过 capability 授予（manage_spaces 也不含）；仅 full-access
-	// key（空间级全权）可管理分享，scoped key 保持 default-deny。
+	// Sharing a KB with an organization = letting everyone in the organization read it; that is as sensitive as
+	// "editing KB metadata", so it uses the same OwnedKBOrAdmin matrix. A Viewer cannot expose
+	// a KB on their own, even in their own workspace.
+	// Share management is not granted through a capability (manage_spaces does not include it either); only a
+	// full-access
+	// key (full workspace rights) can manage shares, and scoped keys stay default-deny.
 	kbShares := g.apiKeyGroup(r.Group("/knowledge-bases/:id/shares"), apiKeyFullAccess())
 	{
 		// Share knowledge base
 		kbShares.POST("", g.OwnedKBOrAdmin(), orgHandler.ShareKnowledgeBase)
-		// List shares — Viewer+ 即可，纯读取
+		// List shares: Viewer+ is enough, read-only
 		kbShares.GET("", g.Viewer(), orgHandler.ListKBShares)
 		// Update share permission
 		kbShares.PUT("/:share_id", g.OwnedKBOrAdmin(), orgHandler.UpdateSharePermission)
@@ -191,15 +192,15 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 		kbShares.DELETE("/:share_id", g.OwnedKBOrAdmin(), orgHandler.RemoveShare)
 	}
 
-	// Agent sharing routes — same rationale as KB shares: 分享/取消分享
-	// 跟修改 agent 同等敏感，挂 OwnedAgentOrAdmin。
+	// Agent sharing routes: same rationale as KB shares. Sharing and unsharing
+	// are as sensitive as editing the agent, so they use OwnedAgentOrAdmin.
 	//
-	// GET 走 OwnedAgentOrAdmin 作为 JWT 侧的 owner 校验；service 层
-	// ListSharesByAgent 现在也强制 tenant 归属（与 ListSharesByKnowledgeBase
-	// 对齐），这样 full-access API key（会短路路由 guard）也无法跨空间
-	// 枚举他人 agent 的分享。
-	// 同 KB 分享：分享管理不通过 capability 授予；仅 full-access key
-	// （空间级全权）可管理 agent 分享，scoped key 保持 default-deny。
+	// GET uses OwnedAgentOrAdmin as the JWT-side owner check; the service layer's
+	// ListSharesByAgent now also enforces tenant ownership (matching ListSharesByKnowledgeBase),
+	// so a full-access API key (which short-circuits the route guard) cannot enumerate
+	// another workspace's agent shares either.
+	// As with KB shares, share management is not granted through a capability; only a full-access key
+	// (full workspace rights) can manage agent shares, and scoped keys stay default-deny.
 	agentShares := g.apiKeyGroup(r.Group("/agents/:id/shares"), apiKeyFullAccess())
 	{
 		agentShares.POST("", g.OwnedAgentOrAdmin(), orgHandler.ShareAgent)
@@ -211,9 +212,9 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 	g.apiKeyRoute(r, http.MethodGet, "/shared-knowledge-bases", apiKeyManageSpaces(apiKeyFullAccess()), g.Viewer(), orgHandler.ListSharedKnowledgeBases)
 	// Shared agents route — Viewer+
 	g.apiKeyRoute(r, http.MethodGet, "/shared-agents", apiKeyManageSpaces(apiKeyFullAccess()), g.Viewer(), orgHandler.ListSharedAgents)
-	// "Disable by me" 是空间级偏好（写到 tenant_disabled_shared_agents），
-	// 影响整个空间在会话下拉里看到的 agent 列表。任何 Viewer 改这个表就
-	// 等于替整个空间做决定 — 必须 Admin+ 才允许调整。
+	// "Disable by me" is a workspace-level preference (written to tenant_disabled_shared_agents)
+	// that affects the agent list the whole workspace sees in the session dropdown. A Viewer changing this table
+	// would decide for the whole workspace, so adjusting it requires Admin+.
 	g.apiKeyRoute(r, http.MethodPost, "/shared-agents/disabled", apiKeyManageSpaces(apiKeyFullAccess()), g.Admin(), orgHandler.SetSharedAgentDisabledByMe)
 }
 

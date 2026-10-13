@@ -177,7 +177,7 @@ func TestMiddleware_LongMultiByteErrorStaysValidUTF8(t *testing.T) {
 	repo := &fakeRepo{}
 	// Each CJK rune is 3 bytes; the leading "E" shifts the 8178-byte cut
 	// (8192 minus the suffix) into the middle of one.
-	long := "E" + strings.Repeat("解析失败", 1000)
+	long := "E" + strings.Repeat("\u89e3\u6790\u5931\u8d25", 1000) // 3-byte CJK runes ("parse failed")
 	_ = runMiddleware(repo, "any", []byte("{}"), errors.New(long))
 	row := repo.captureRow(0)
 	if got := len(row.LastError); got > 8192 {

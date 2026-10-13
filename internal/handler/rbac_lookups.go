@@ -166,8 +166,8 @@ func (h *ChunkHandler) KBCreatorLookupFromChunkIDParam(c *gin.Context) (string, 
 	if chunk == nil {
 		return "", middleware.ErrResourceNotFound
 	}
-	// 显式重校验空间：GetChunkByIDOnly 无空间过滤，必须在此挡住跨空间 chunk
-	// id 撞库通过 ownership 匹配获取本不该有的访问。
+	// Re-check the workspace explicitly: GetChunkByIDOnly does not filter by workspace, so a
+	// guessed cross-workspace chunk id must not gain access through the ownership match.
 	if chunk.TenantID != tenantID {
 		return "", middleware.ErrResourceNotFound
 	}

@@ -60,7 +60,7 @@ func TestCheckChatModelConnectionReportsAuthFailure(t *testing.T) {
 	available, message := h.checkChatModelConnection(context.Background(), remoteChatModel(srv.URL), "", "")
 
 	require.False(t, available)
-	require.Contains(t, message, "认证失败")
+	require.Contains(t, message, "Authentication failed")
 }
 
 // Gemini's native API reports an invalid key as 400 INVALID_ARGUMENT /
@@ -88,5 +88,5 @@ func TestCheckChatModelConnectionReportsGeminiInvalidKey(t *testing.T) {
 
 	require.Contains(t, gotPath, ":generateContent", "probe should use the native Gemini API")
 	require.False(t, available, "message: %s", message)
-	require.Contains(t, message, "认证失败")
+	require.Contains(t, message, "Authentication failed")
 }

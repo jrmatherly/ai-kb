@@ -17,26 +17,26 @@ import (
 )
 
 const (
-	maxBodySize = 1024 * 10 // 最大记录10KB的body内容
-	// bodyTruncatedMarker 是日志里跟在被截断的 body 后面的标记。
-	bodyTruncatedMarker = "... [内容过长，已截断]"
+	maxBodySize = 1024 * 10 // log at most 10KB of body content
+	// bodyTruncatedMarker follows a truncated body in the log.
+	bodyTruncatedMarker = "... [content too long, truncated]"
 )
 
-// replayedBody 把日志窥探消费掉的字节还给 handler，让它读到的 body 与没有这层
-// 中间件时完全一致；Close 仍然关闭原始 body，连接得以释放。
+// replayedBody gives the handler back the bytes the log peek consumed, so the body it reads is identical
+// to having no such middleware; Close still closes the original body so the connection is released.
 type replayedBody struct {
 	io.Reader
 	io.Closer
 }
 
-// loggerResponseBodyWriter 自定义ResponseWriter用于捕获响应内容（用于logger中间件）
+// loggerResponseBodyWriter is a ResponseWriter that captures the response body for the logger middleware
 type loggerResponseBodyWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
 }
 
-// Write 重写Write方法，同时写入buffer和原始writer
-// 限制buffer大小，避免SSE等流式响应导致内存无限增长
+// Write writes to both the buffer and the original writer.
+// The buffer is capped so streaming responses such as SSE cannot grow memory without bound.
 func (r loggerResponseBodyWriter) Write(b []byte) (int, error) {
 	if r.body.Len() < maxBodySize {
 		remaining := maxBodySize - r.body.Len()
@@ -49,8 +49,9 @@ func (r loggerResponseBodyWriter) Write(b []byte) (int, error) {
 	return r.ResponseWriter.Write(b)
 }
 
-// sensitiveFieldRegex 匹配 JSON 中的敏感字段（不区分大小写，兼容 snake_case / camelCase / PascalCase）。
-// $1 捕获原始字段名（包括两侧引号），保持日志中的字段名不变，仅将值替换为 "***"。
+// sensitiveFieldRegex matches sensitive JSON fields (case-insensitive, covering snake_case / camelCase / PascalCase).
+// $1 captures the original field name (with its quotes), so the log keeps the field name and only the value becomes
+// "***".
 var sensitiveFieldRegex = regexp.MustCompile(
 	`(?i)("(?:new[_-]?password|old[_-]?password|password|passwd|ticket|token|access[_-]?token|` +
 		`refresh[_-]?token|next[_-]?token|device[_-]?token|pending[_-]?token|pairing[_-]?link|` +
@@ -59,7 +60,7 @@ var sensitiveFieldRegex = regexp.MustCompile(
 		`authorization[_-]?url|authorization[_-]?attempt)")\s*:\s*"[^"]*"`,
 )
 
-// sanitizeBody 清理敏感信息
+// sanitizeBody redacts sensitive information
 func sanitizeBody(body string) string {
 	return sensitiveFieldRegex.ReplaceAllString(body, `$1:"***"`)
 }
@@ -96,29 +97,31 @@ func sanitizeQuery(raw string) string {
 	return values.Encode()
 }
 
-// readRequestBody 读取请求体（限制大小用于日志，但把剩余字节原样交还后续handler）
+// readRequestBody reads the request body (size-capped for the log, while handing the remaining bytes to later handlers
+// unchanged)
 func readRequestBody(c *gin.Context) string {
 	if c.Request.Body == nil {
 		return ""
 	}
 
-	// 检查Content-Type，只记录JSON类型
+	// Check Content-Type; only JSON is logged
 	contentType := c.GetHeader("Content-Type")
 	if !strings.Contains(contentType, "application/json") &&
 		!strings.Contains(contentType, "application/x-www-form-urlencoded") &&
 		!strings.Contains(contentType, "text/") {
-		return "[非文本类型，已跳过]"
+		return "[non-text content, skipped]"
 	}
 
-	// 重置request body：把已窥探的前缀接回未读取的剩余部分，handler 仍能读到完整
-	// 数据，但中间件自身只驻留日志需要的那点字节。
+	// Reset the request body: join the peeked prefix back onto the unread remainder, so the handler still reads
+	// the full data while the middleware itself keeps only the bytes the log needs.
 	//
-	// 这里原本是无上限的 io.ReadAll(c.Request.Body)。Logger 注册在 Auth 之前
-	// （router.go NewRouter），因此对所有请求执行，而任何路由的
-	// http.MaxBytesReader（limitJSONBody / limitUploadBody / browserskill 的 4 KiB
-	// 授权接口）都是在 handler 里才装上的：body 早已被整体读进内存，那些 cap 只剩
-	// 报错的意义，没有限住内存的作用。没有 cap 的路由（对话、检索、IM webhook、
-	// MCP 端点）则连上限都不存在。
+	// This used to be an unbounded io.ReadAll(c.Request.Body). Logger is registered before Auth
+	// (router.go NewRouter), so it runs for every request, while every route's
+	// http.MaxBytesReader (limitJSONBody / limitUploadBody / the browserskill 4 KiB
+	// authorization endpoint) is installed only in the handler: the body had already been read into memory whole, so
+	// those caps
+	// only produced errors and did not bound memory. Routes without a cap (chat, retrieval, IM webhook,
+	// MCP endpoint) had no limit at all.
 	bodyBytes, err := io.ReadAll(io.LimitReader(c.Request.Body, maxBodySize+1))
 	originalBody := c.Request.Body
 	c.Request.Body = &replayedBody{
@@ -126,10 +129,10 @@ func readRequestBody(c *gin.Context) string {
 		Closer: originalBody,
 	}
 	if err != nil {
-		return "[读取请求体失败]"
+		return "[failed to read request body]"
 	}
 
-	// 用于日志的body（限制大小）
+	// Body for the log (size-capped)
 	truncated := len(bodyBytes) > maxBodySize
 	if truncated {
 		bodyBytes = bodyBytes[:maxBodySize]
@@ -192,13 +195,13 @@ func Logger() gin.HandlerFunc {
 		// Keep access metadata, but never read or buffer these request/response bodies.
 		browserTraffic := strings.HasPrefix(path, "/api/v1/local-browser/") ||
 			path == "/api/v1/me/browser" || strings.HasSuffix(path, "/local-browser")
-		// 读取请求体（在Next之前读取，因为Next会消费body）
+		// Read the request body (before Next, because Next consumes the body)
 		var requestBody string
 		if !browserTraffic && (c.Request.Method == "POST" || c.Request.Method == "PUT" || c.Request.Method == "PATCH") {
 			requestBody = readRequestBody(c)
 		}
 
-		// 创建响应体捕获器
+		// Create the response body capturer
 		responseBody := &bytes.Buffer{}
 		responseWriter := &loggerResponseBodyWriter{
 			ResponseWriter: c.Writer,
@@ -233,27 +236,27 @@ func Logger() gin.HandlerFunc {
 			path = path + "?" + sanitizeQuery(raw)
 		}
 
-		// 读取响应体
+		// Read the response body
 		responseBodyStr := ""
 		if responseBody.Len() > 0 {
 			contentType := c.Writer.Header().Get("Content-Type")
 			if strings.Contains(contentType, "text/event-stream") {
-				responseBodyStr = "[SSE流式响应，已跳过]"
+				responseBodyStr = "[SSE streaming response, skipped]"
 			} else if strings.Contains(contentType, "application/json") ||
 				strings.Contains(contentType, "text/") {
 				bodyBytes := responseBody.Bytes()
 				if len(bodyBytes) >= maxBodySize {
-					responseBodyStr = string(bodyBytes[:maxBodySize]) + "... [内容过长，已截断]"
+					responseBodyStr = string(bodyBytes[:maxBodySize]) + "... [content too long, truncated]"
 				} else {
 					responseBodyStr = string(bodyBytes)
 				}
 				responseBodyStr = sanitizeBody(responseBodyStr)
 			} else {
-				responseBodyStr = "[非文本类型，已跳过]"
+				responseBodyStr = "[non-text content, skipped]"
 			}
 		}
 
-		// 构建日志消息
+		// Build the log message
 		logMsg := logger.GetLogger(c)
 		logMsg = logMsg.WithFields(map[string]interface{}{
 			"request_id":  safeRequestID,
@@ -265,12 +268,12 @@ func Logger() gin.HandlerFunc {
 			"client_ip":   secutils.SanitizeForLog(clientIP),
 		})
 
-		// 添加请求体（如果有）
+		// Add the request body (if any)
 		if requestBody != "" {
 			logMsg = logMsg.WithField("request_body", secutils.SanitizeForLog(requestBody))
 		}
 
-		// 添加响应体（如果有）
+		// Add the response body (if any)
 		if responseBodyStr != "" {
 			logMsg = logMsg.WithField("response_body", secutils.SanitizeForLog(responseBodyStr))
 		}

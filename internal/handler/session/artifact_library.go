@@ -11,14 +11,15 @@ import (
 )
 
 // ListArtifactLibrary godoc
-// @Summary      列出我的产物
-// @Description  跨会话列出当前用户可见会话中技能生成的文件，每个文件只返回最新版本（不含存储 URL）
-// @Tags         会话
+// @Summary      List my artifacts
+// @Description  Lists skill-generated files across the sessions visible to the current user, returning only the latest
+// @Description  version of each file (no storage URL)
+// @Tags         Sessions
 // @Produce      json
-// @Param        keyword     query  string  false  "按文件名过滤"
-// @Param        file_types  query  string  false  "逗号分隔的扩展名，如 .pdf,.pptx"
-// @Param        page        query  int     false  "页码"
-// @Param        page_size   query  int     false  "每页数量（最大 100）"
+// @Param        keyword     query  string  false  "Filter by file name"
+// @Param        file_types  query  string  false  "Comma-separated extensions, such as .pdf,.pptx"
+// @Param        page        query  int     false  "Page number"
+// @Param        page_size   query  int     false  "Page size (max 100)"
 // @Success      200  {object}  map[string]interface{}
 // @Security     Bearer
 // @Security     ApiKeyAuth

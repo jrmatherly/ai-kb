@@ -78,7 +78,7 @@ func TestDeleteMessageArtifactReclaimsTheBlob(t *testing.T) {
 	}
 	files := &deletingFileService{}
 	svc := &stubMessageServiceForDelete{result: &types.ArtifactDeleteResult{
-		FileName: "报告.pptx",
+		FileName: "\u62a5\u544a.pptx",
 		Deleted:  1,
 		Reclaim:  []types.ArtifactBlobRef{{URL: "resource://abc", MessageIDs: []string{"msg-1"}}},
 	}}

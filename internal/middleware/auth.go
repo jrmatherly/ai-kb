@@ -32,7 +32,7 @@ var (
 	errInvalidExternalUserToken = errors.New("invalid external user token")
 )
 
-// 无需认证的API列表
+// APIs that need no authentication
 var noAuthAPI = map[string][]string{
 	"/health":                 {"GET"},
 	"/api/v1/auth/register":   {"POST"},
@@ -62,10 +62,10 @@ var noAuthAPI = map[string][]string{
 	"/api/v1/files/presigned": {"GET", "HEAD"},
 }
 
-// 检查请求是否在无需认证的API列表中
+// isNoAuthAPI reports whether the request is on the no-auth API list.
 func isNoAuthAPI(path string, method string) bool {
 	for api, methods := range noAuthAPI {
-		// 如果以*结尾，按照前缀匹配，否则按照全路径匹配
+		// A pattern ending in * matches by prefix; anything else must match the full path.
 		if strings.HasSuffix(api, "*") {
 			if strings.HasPrefix(path, strings.TrimSuffix(api, "*")) && slices.Contains(methods, method) {
 				return true
@@ -112,17 +112,17 @@ func attachTenantlessUserContext(c *gin.Context, user *types.User) {
 	})
 }
 
-// Auth 认证中间件。按顺序尝试三条通道：
+// Auth is the authentication middleware. It tries three channels in order:
 //
-//  1. 白名单（isNoAuthAPI）/ OPTIONS 预检 —— 直接放行；
-//  2. Bearer JWT —— 成功则走 authenticateJWTUser 完成空间/角色解析；
-//     校验失败不立即拒绝，继续尝试 X-API-Key（保持既有兼容行为：
-//     携带过期 JWT 但同时带有效 API key 的客户端仍可通过）；
-//  3. X-API-Key —— authenticateAPIKeyRequest。
+//  1. Allowlist (isNoAuthAPI) / OPTIONS preflight: let through;
+//  2. Bearer JWT: on success, authenticateJWTUser resolves the workspace and role;
+//     a failed check does not reject right away but falls through to X-API-Key (kept for
+//     compatibility: a client sending an expired JWT along with a valid API key still passes);
+//  3. X-API-Key: authenticateAPIKeyRequest.
 //
-// 三条通道都未命中时返回 401；若调用方提交过 Bearer token，错误消息
-// 明确指出 token 无效而不是笼统的 "missing authentication"，方便客户端
-// 区分「没登录」和「登录态过期」。
+// When no channel matches it returns 401. If the caller sent a Bearer token, the error message
+// says the token is invalid instead of a generic "missing authentication", so clients can
+// tell "not logged in" apart from "session expired".
 func Auth(
 	tenantService interfaces.TenantService,
 	userService interfaces.UserService,
@@ -137,13 +137,13 @@ func Auth(
 			return
 		}
 
-		// 检查请求是否在无需认证的API列表中
+		// Check whether the request is on the no-auth API list
 		if isNoAuthAPI(c.Request.URL.Path, c.Request.Method) {
 			c.Next()
 			return
 		}
 
-		// 尝试JWT Token认证
+		// Try JWT authentication
 		bearerPresented := false
 		if token, ok := bearerToken(c); ok {
 			bearerPresented = true
@@ -157,7 +157,7 @@ func Auth(
 			logger.Warnf(c.Request.Context(), "[auth] bearer token rejected: %v", err)
 		}
 
-		// 尝试X-API-Key认证（兼容模式）
+		// Try X-API-Key authentication (compatibility mode)
 		if apiKey := c.GetHeader("X-API-Key"); apiKey != "" {
 			if apiKeyService == nil {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: API key service is not configured"})
@@ -170,7 +170,7 @@ func Auth(
 			return
 		}
 
-		// 没有任何通道认证成功
+		// No channel authenticated the request
 		if bearerPresented {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid or expired token"})
 		} else {
@@ -210,8 +210,8 @@ func authenticateJWTUser(
 	}
 
 	if targetTenantID == 0 {
-		// 无可用空间：身份级路由（/auth/me 等）放行为 tenantless 会话，
-		// 其余路由返回 TENANT_REQUIRED 让前端引导用户创建/加入空间。
+		// No usable workspace: identity-level routes (/auth/me and similar) pass as a tenantless session;
+		// all other routes return TENANT_REQUIRED so the frontend can guide the user to create or join a workspace.
 		if isTenantOptionalAPI(c.Request.URL.Path, c.Request.Method) {
 			attachTenantlessUserContext(c, user)
 			return true
@@ -224,8 +224,8 @@ func authenticateJWTUser(
 		return false
 	}
 
-	// 获取空间信息（X-Tenant-ID 切换路径已在 resolveTargetTenant 内取到，
-	// 避免二次查库）。
+	// Get the workspace (the X-Tenant-ID switch path already fetched it in resolveTargetTenant,
+	// which avoids a second query).
 	if tenant == nil {
 		var err error
 		tenant, err = tenantService.GetTenantByID(ctx, targetTenantID)
@@ -239,11 +239,11 @@ func authenticateJWTUser(
 		}
 	}
 
-	// 解析当前空间内的角色 (issue #1303)
+	// Resolve the role within the current workspace (issue Tencent/WeKnora#1303)
 	role, ok := resolveTenantRole(ctx, memberService, user, targetTenantID, crossTenantSwitch, cfg)
 	if !ok {
-		// 强制 RBAC 时，缺少 active membership 即拒绝；fail-open 路径已在
-		// resolveTenantRole 内部处理。
+		// With RBAC enforced, a missing active membership is rejected; the fail-open path is handled
+		// inside resolveTenantRole.
 		logger.Warnf(ctx, "User %s has no active membership in tenant %d", user.ID, targetTenantID)
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "Forbidden: not a member of the target workspace",
@@ -291,17 +291,17 @@ func resolveTargetTenant(
 ) (targetTenantID uint64, tenant *types.Tenant, crossTenantSwitch bool, ok bool) {
 	ctx := c.Request.Context()
 
-	// 默认 target = JWT 里的 tenant_id（来自登录或 /auth/switch-tenant），
-	// 兼容 ValidateToken 的 fallback：claim 缺失时 jwtTenantID == user.TenantID。
+	// Default target = the tenant_id in the JWT (from login or /auth/switch-tenant).
+	// Matches the ValidateToken fallback: when the claim is missing, jwtTenantID == user.TenantID.
 	targetTenantID = jwtTenantID
 	if targetTenantID == 0 {
 		targetTenantID = user.TenantID
 	}
 
 	if tenantHeader := c.GetHeader("X-Tenant-ID"); tenantHeader != "" {
-		// 解析目标空间ID。畸形 / 零值必须显式拒绝：静默忽略会让坏掉的
-		// 前端/SDK 悄悄写错空间，反而看不到问题。与 RequirePathTenantMatch
-		// 中对 :id 的校验保持一致（非空、可解析、>0）。
+		// Parse the target workspace ID. Malformed or zero values must be rejected explicitly: silently
+		// ignoring them would let a broken frontend or SDK write to the wrong workspace unnoticed. Kept
+		// consistent with the :id check in RequirePathTenantMatch (non-empty, parseable, >0).
 		parsedTenantID, err := strconv.ParseUint(tenantHeader, 10, 64)
 		if err != nil || parsedTenantID == 0 {
 			logger.Warnf(ctx, "Invalid X-Tenant-ID header from user=%s: %q (err=%v)", user.ID, tenantHeader, err)
@@ -309,8 +309,8 @@ func resolveTargetTenant(
 			c.Abort()
 			return 0, nil, false, false
 		}
-		// 检查用户是否有权限访问目标空间：自家空间、跨空间超管、或
-		// 有 active membership 行——三选一，由 IsTenantAccessible 统一判定。
+		// Check that the user may access the target workspace: their own workspace, a cross-workspace
+		// super admin, or an active membership row. IsTenantAccessible decides all three.
 		if !IsTenantAccessible(ctx, user, parsedTenantID, memberService, cfg) {
 			logger.Warnf(ctx, "User %s attempted to access tenant %d without permission", user.ID, parsedTenantID)
 			c.JSON(http.StatusForbidden, gin.H{
@@ -319,7 +319,7 @@ func resolveTargetTenant(
 			c.Abort()
 			return 0, nil, false, false
 		}
-		// 验证目标空间是否存在
+		// Verify that the target workspace exists
 		targetTenant, err := tenantService.GetTenantByID(ctx, parsedTenantID)
 		if err != nil || targetTenant == nil {
 			logger.Warnf(ctx, "Error getting target tenant by ID: %v, tenantID: %d", err, parsedTenantID)
@@ -441,8 +441,8 @@ func authenticateAPIKeyRequest(
 
 func isPlatformTenantOptionalAPI(path, method string) bool {
 	path = strings.TrimSuffix(strings.TrimSpace(path), "/")
-	// 精确匹配 admin 控制面前缀（"/api/v1/system/admin" 本身或其子路径）。
-	// 裸 HasPrefix 会误放行诸如 "/api/v1/system/admin-foo" 的同前缀路径。
+	// Exact match on the admin control-plane prefix ("/api/v1/system/admin" itself or a subpath).
+	// A bare HasPrefix would wrongly let through same-prefix paths such as "/api/v1/system/admin-foo".
 	if path == "/api/v1/system/admin" || strings.HasPrefix(path, "/api/v1/system/admin/") {
 		return true
 	}
@@ -757,7 +757,7 @@ func resolveTenantRole(
 	crossTenantSwitch bool,
 	cfg *config.Config,
 ) (types.TenantRole, bool) {
-	// 1. 正常成员关系
+	// 1. Regular membership
 	member, err := memberService.GetMembership(ctx, user.ID, targetTenantID)
 	if err == nil && member != nil && member.Status == types.TenantMemberStatusActive {
 		logger.Infof(ctx,
@@ -782,9 +782,11 @@ func resolveTenantRole(
 			user.ID, targetTenantID, statusInfo)
 	}
 
-	// 2. 跨空间超管直通：CanAccessAllTenants 用户切到别的空间时不强制要求 membership。
-	//    注意：这里只授予临时 Admin 角色，不写入 tenant_members，避免"看一眼别人空间"
-	//    意外升级为持久化所有权。
+	// 2. Cross-workspace super admin passthrough: a CanAccessAllTenants user switching to another workspace needs no
+	//    membership.
+	//    This grants only a temporary Admin role and never writes tenant_members, so "taking a look at someone else's
+	//    workspace"
+	//    cannot accidentally become persistent ownership.
 	if crossTenantSwitch && user.CanAccessAllTenants {
 		logger.Infof(ctx,
 			"[auth] resolveTenantRole step2 (cross-tenant superuser) -> Admin: user=%s tenant=%d",
@@ -792,9 +794,11 @@ func resolveTenantRole(
 		return types.TenantRoleAdmin, true
 	}
 
-	// 3. 孤儿空间自愈：仅当用户登录的是自己的 home tenant、且该空间尚无任何活跃成员时
-	//    允许自动晋升为 Owner。跨空间 switch / JWT 指向他人空间的场景一律不进入此分支，
-	//    防止越权获得他人空间的 Owner 权限。
+	// 3. Orphan workspace self-heal: only when the user logs in to their own home tenant and that workspace has no
+	//    active
+	//    members may they be auto-promoted to Owner. Cross-workspace switches and JWTs pointing at another user's
+	//    workspace
+	//    never take this branch, which prevents gaining Owner on someone else's workspace.
 	isHomeTenant := !crossTenantSwitch && targetTenantID == user.TenantID
 	if isHomeTenant {
 		hasAny, anyErr := memberService.HasAnyMembers(ctx, targetTenantID)
@@ -814,7 +818,7 @@ func resolveTenantRole(
 		}
 	}
 
-	// 4. 兜底：根据 EnableRBAC 决定 fail-closed 还是 fail-open
+	// 4. Fallback: EnableRBAC decides between fail-closed and fail-open
 	if cfg != nil && cfg.Tenant.IsRBACEnforced() {
 		logger.Warnf(ctx,
 			"[auth] resolveTenantRole step4 fail-closed (EnableRBAC=true): user=%s tenant=%d",
@@ -824,6 +828,6 @@ func resolveTenantRole(
 	logger.Warnf(ctx,
 		"[auth] resolveTenantRole step4 fail-open (EnableRBAC=false) -> Admin: user=%s tenant=%d",
 		user.ID, targetTenantID)
-	// fail-open 期间保持现有行为（每个登录用户在自己空间里都是"管理员"）。
+	// During fail-open keep the existing behavior (every logged-in user is an "admin" in their own workspace).
 	return types.TenantRoleAdmin, true
 }

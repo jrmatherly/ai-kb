@@ -43,8 +43,8 @@ type AuthHandler struct {
 	configInfo       *config.Config
 	systemSettingSvc interfaces.SystemSettingService
 	// invitationSvc is required for the share-link registration path
-	// (POST /auth/register-by-invite). When nil — e.g. legacy test
-	// fixtures — the share-link endpoints respond 503 rather than
+	// (POST /auth/register-by-invite). When nil - e.g. legacy test
+	// fixtures - the share-link endpoints respond 503 rather than
 	// blocking the rest of the auth surface.
 	invitationSvc interfaces.TenantInvitationService
 }
@@ -89,7 +89,7 @@ func NewAuthHandler(configInfo *config.Config,
 // Priority: DB system_settings > cfg (which already absorbed the legacy
 // DISABLE_REGISTRATION env coerce at startup) > "self_serve" hard default.
 //
-// Centralised here so /auth/register and /auth/config stay in lock-step —
+// Centralised here so /auth/register and /auth/config stay in lock-step -
 // otherwise a SystemAdmin's UI edit could affect one path and not the other.
 func (h *AuthHandler) resolveRegistrationMode(ctx context.Context) string {
 	// cfg-derived default: empty is impossible after applyAuthAndTenantDefaults,
@@ -105,7 +105,7 @@ func (h *AuthHandler) resolveRegistrationMode(ctx context.Context) string {
 		return def
 	}
 	// envName = "" because DISABLE_REGISTRATION is a boolean and
-	// auth.registration_mode is a string — the legacy env was already
+	// auth.registration_mode is a string - the legacy env was already
 	// coerced into `def` above. Mixing the two semantics at the resolver
 	// layer would mean a UI delete (DB row absent) silently flipped to
 	// the legacy boolean read again, which is surprising.
@@ -166,15 +166,15 @@ func (h *SystemHandler) complexPasswordEnabled(ctx context.Context) bool {
 }
 
 // Register godoc
-// @Summary      用户注册
-// @Description  注册新用户账号
-// @Tags         认证
+// @Summary      Register
+// @Description  Registers a new user account
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      types.RegisterRequest  true  "注册请求参数"
+// @Param        request  body      types.RegisterRequest  true  "Registration request"
 // @Success      201      {object}  types.RegisterResponse
-// @Failure      400      {object}  errors.AppError  "请求参数错误"
-// @Failure      403      {object}  errors.AppError  "注册功能已禁用"
+// @Failure      400      {object}  errors.AppError  "Invalid request parameters"
+// @Failure      403      {object}  errors.AppError  "Registration is disabled"
 // @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -247,14 +247,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 }
 
 // Login godoc
-// @Summary      用户登录
-// @Description  用户登录并获取访问令牌
-// @Tags         认证
+// @Summary      Log in
+// @Description  Logs a user in and returns an access token
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      types.LoginRequest  true  "登录请求参数"
+// @Param        request  body      types.LoginRequest  true  "Login request"
 // @Success      200      {object}  types.LoginResponse
-// @Failure      401      {object}  errors.AppError  "认证失败"
+// @Failure      401      {object}  errors.AppError  "Authentication failed"
 // @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -301,15 +301,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 // GetOIDCAuthorizationURL godoc
-// @Summary      获取OIDC授权地址
-// @Description  根据后端OIDC配置生成第三方登录跳转地址
-// @Tags         认证
+// @Summary      Get the OIDC authorization URL
+// @Description  Builds the third-party login redirect URL from the backend OIDC config
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        redirect_uri  query     string  true  "OIDC回调地址"
+// @Param        redirect_uri  query     string  true  "OIDC callback URL"
 // @Success      200           {object}  types.OIDCAuthURLResponse
-// @Failure      400           {object}  errors.AppError  "请求参数错误"
-// @Failure      403           {object}  errors.AppError  "OIDC未启用"
+// @Failure      400           {object}  errors.AppError  "Invalid request parameters"
+// @Failure      403           {object}  errors.AppError  "OIDC is not enabled"
 // @Router       /auth/oidc/url [get]
 func (h *AuthHandler) GetOIDCAuthorizationURL(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -359,11 +359,12 @@ func oidcCallbackURL(c *gin.Context) string {
 }
 
 // OIDCStart godoc
-// @Summary      发起 OIDC 登录（直接 302）
-// @Description  与 /auth/oidc/url 不同，此端点直接 302 重定向到 OIDC Provider 的授权页，
-// @Description  无需前端 JS 介入。适用于外部平台（如企业门户）直接给出一个链接即可
-// @Description  触发 OIDC 授权码流程，借助 IdP 的 SSO session 实现免再次输密码。
-// @Tags         认证
+// @Summary      Start OIDC login (direct 302)
+// @Description  Unlike /auth/oidc/url, this endpoint redirects (302) straight to the OIDC provider's
+// @Description  authorization page, with no frontend JS. An external platform (such as a company portal)
+// @Description  can link to it directly to start the OIDC authorization code flow; the IdP's SSO session
+// @Description  spares the user another password prompt.
+// @Tags         Auth
 // @Success      302
 // @Router       /auth/oidc/start [get]
 func (h *AuthHandler) OIDCStart(c *gin.Context) {
@@ -380,9 +381,10 @@ func (h *AuthHandler) OIDCStart(c *gin.Context) {
 }
 
 // GetOIDCConfig godoc
-// @Summary      获取OIDC登录配置
-// @Description  返回OIDC是否启用以及provider展示名称，供前端决定是否展示OIDC登录入口
-// @Tags         认证
+// @Summary      Get the OIDC login config
+// @Description  Returns whether OIDC is enabled and the provider display name, so the frontend can decide whether to
+// @Description  show the OIDC login entry
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  types.OIDCConfigResponse
@@ -404,14 +406,15 @@ func (h *AuthHandler) GetOIDCConfig(c *gin.Context) {
 }
 
 // OIDCRedirectCallback godoc
-// @Summary      OIDC登录重定向回调
-// @Description  接收OIDC provider回调并由后端完成code交换，随后重定向回前端登录页
-// @Tags         认证
+// @Summary      OIDC login redirect callback
+// @Description  Receives the OIDC provider callback, exchanges the code on the backend, then redirects to the frontend
+// @Description  login page
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        code   query string false "OIDC授权码"
-// @Param        state  query string false "OIDC状态"
-// @Param        error  query string false "OIDC错误码"
+// @Param        code   query string false "OIDC authorization code"
+// @Param        state  query string false "OIDC state"
+// @Param        error  query string false "OIDC error code"
 // @Success      302
 // @Router       /auth/oidc/callback [get]
 func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
@@ -509,13 +512,13 @@ func urlQueryEscape(value string) string {
 }
 
 // Logout godoc
-// @Summary      用户登出
-// @Description  撤销当前访问令牌并登出
-// @Tags         认证
+// @Summary      Log out
+// @Description  Revokes the current access token and logs out
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "登出成功"
-// @Failure      400  {object}  errors.AppError         "请求参数错误"
+// @Success      200  {object}  map[string]interface{}  "Logged out"
+// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
 // @Security     Bearer
 // @Router       /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -561,14 +564,14 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 }
 
 // RefreshToken godoc
-// @Summary      刷新令牌
-// @Description  使用刷新令牌获取新的访问令牌
-// @Tags         认证
+// @Summary      Refresh token
+// @Description  Exchanges a refresh token for a new access token
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      object{refreshToken=string}  true  "刷新令牌"
-// @Success      200      {object}  map[string]interface{}       "新令牌"
-// @Failure      401      {object}  errors.AppError              "令牌无效"
+// @Param        request  body      object{refreshToken=string}  true  "Refresh token"
+// @Success      200      {object}  map[string]interface{}       "New tokens"
+// @Failure      401      {object}  errors.AppError              "Invalid token"
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -605,13 +608,13 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 }
 
 // GetCurrentUser godoc
-// @Summary      获取当前用户信息
-// @Description  获取当前登录用户的详细信息
-// @Tags         认证
+// @Summary      Get the current user
+// @Description  Returns the details of the logged-in user
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "用户信息"
-// @Failure      401  {object}  errors.AppError         "未授权"
+// @Success      200  {object}  map[string]interface{}  "User info"
+// @Failure      401  {object}  errors.AppError         "Unauthorized"
 // @Security     Bearer
 // @Router       /auth/me [get]
 func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
@@ -649,8 +652,8 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 	}
 	userInfo := user.ToUserInfo()
 	userInfo.CanAccessAllTenants = user.CanAccessAllTenants && h.configInfo.Tenant.EnableCrossTenantAccess
-	// 同步返回当前用户的 memberships，让前端在页面刷新（仅命中 /auth/me）
-	// 后也能恢复 currentTenantRole，避免角色信息只在 login 那一刻可用。
+	// Return the memberships too, so a page reload (which only hits /auth/me) can restore
+	// currentTenantRole; otherwise the role is only known right after login.
 	memberships := h.userService.BuildLoginMemberships(ctx, user, tenant)
 	canCreateTenant := user.CanAccessAllTenants ||
 		resolveTenantSelfServiceCreationEnabled(ctx, h.configInfo, h.systemSettingSvc)
@@ -689,16 +692,16 @@ type updateMyPreferencesRequest struct {
 }
 
 // UpdateMyPreferences godoc
-// @Summary      更新当前用户的个性化设置
-// @Description  按 PATCH 语义合并用户偏好（仅覆盖请求体里出现的字段，其余字段保持不变），
-// @Description  数据存放在 users.preferences (JSON)，跨设备/浏览器自动同步。
-// @Tags         认证
+// @Summary      Update the current user's preferences
+// @Description  Merges user preferences with PATCH semantics (only fields present in the body are overwritten);
+// @Description  stored in users.preferences (JSON), so they sync across devices and browsers.
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
 // @Param        request  body      updateMyPreferencesRequest  true  "Preferences patch"
-// @Success      200      {object}  map[string]interface{}      "更新后的偏好"
-// @Failure      400      {object}  errors.AppError             "请求参数错误"
-// @Failure      401      {object}  errors.AppError             "未授权"
+// @Success      200      {object}  map[string]interface{}      "Updated preferences"
+// @Failure      400      {object}  errors.AppError             "Invalid request parameters"
+// @Failure      401      {object}  errors.AppError             "Unauthorized"
 // @Security     Bearer
 // @Router       /auth/me/preferences [put]
 func (h *AuthHandler) UpdateMyPreferences(c *gin.Context) {
@@ -737,14 +740,16 @@ func (h *AuthHandler) UpdateMyPreferences(c *gin.Context) {
 }
 
 // ChangePassword godoc
-// @Summary      修改密码
-// @Description  修改当前用户的登录密码。新密码须满足 8–32 位且同时包含字母与数字；开启复杂密码后还需包含大小写与特殊字符。成功后所有会话被撤销，需重新登录。
-// @Tags         认证
+// @Summary      Change password
+// @Description  Changes the current user's password. The new password must be 8-32 characters with both letters and
+// @Description  digits; with complex passwords enabled it also needs upper and lower case and a special character. On
+// @Description  success every session is revoked and the user must log in again.
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      object{old_password=string,new_password=string}  true  "密码修改请求"
-// @Success      200      {object}  map[string]interface{}                           "修改成功"
-// @Failure      400      {object}  errors.AppError                                  "请求参数错误"
+// @Param        request  body      object{old_password=string,new_password=string}  true  "Password change request"
+// @Success      200      {object}  map[string]interface{}                           "Changed"
+// @Failure      400      {object}  errors.AppError                                  "Invalid request parameters"
 // @Security     Bearer
 // @Router       /auth/change-password [post]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
@@ -810,12 +815,13 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 }
 
 // GetAuthConfig godoc
-// @Summary      获取认证配置
-// @Description  返回当前部署的注册模式与密码复杂度开关，供前端决定是否展示注册入口以及密码校验规则
-// @Tags         认证
+// @Summary      Get the auth config
+// @Description  Returns this deployment's registration mode and password complexity switch, so the frontend can decide
+// @Description  whether to show registration and which password rules to check
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "认证配置"
+// @Success      200  {object}  map[string]interface{}  "Auth config"
 // @Router       /auth/config [get]
 //
 // GetAuthConfig is intentionally a no-auth endpoint: the frontend reads
@@ -840,17 +846,20 @@ func (h *AuthHandler) GetAuthConfig(c *gin.Context) {
 }
 
 // SwitchTenant godoc
-// @Summary      切换激活空间
-// @Description  为当前用户在目标空间重新签发访问令牌；要求该用户在目标空间存在 active 成员关系（跨租户超级用户除外）。
-// @Description  成功换签会把目标空间写入「最近活跃租户」偏好，下次登录与 refresh 都落在该空间（refresh JWT 不含 tenant_id）。
-// @Description  该偏好是账号级的：一次换签会改变该用户所有设备的下次登录/refresh 落点。偏好写入失败则整次换签失败，不会发出新 token。
-// @Tags         认证
+// @Summary      Switch the active workspace
+// @Description  Reissues the access token for the current user in the target workspace; the user needs an active
+// @Description  membership there (cross-tenant superusers excepted).
+// @Description  A successful switch writes the target workspace to the last-active-tenant preference, so the next login
+// @Description  and refresh land there (the refresh JWT carries no tenant_id).
+// @Description  The preference is per account: one switch changes where the next login or refresh lands on every
+// @Description  device. If writing the preference fails, the switch fails and no new token is issued.
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      object{tenant_id=integer,refresh_token=string}  true  "切换请求"
+// @Param        request  body      object{tenant_id=integer,refresh_token=string}  true  "Switch request"
 // @Success      200      {object}  types.LoginResponse
-// @Failure      400      {object}  errors.AppError  "参数错误"
-// @Failure      403      {object}  errors.AppError  "无该空间成员关系或偏好写入失败"
+// @Failure      400      {object}  errors.AppError  "Invalid parameters"
+// @Failure      403      {object}  errors.AppError  "No membership in the workspace, or the preference write failed"
 // @Security     Bearer
 // @Router       /auth/switch-tenant [post]
 //
@@ -888,13 +897,15 @@ func (h *AuthHandler) SwitchTenant(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.NewAuthLoginResponse(resp))
 }
 
-// @Summary      自动初始化（Lite 桌面版）
-// @Description  Lite 版专用：首次启动时自动创建默认用户和空间并返回令牌，首次及后续启动均须通过桌面原生凭据认证，免除手动注册/登录流程
-// @Tags         认证
+// AutoSetup godoc
+// @Summary      Auto setup (Lite desktop edition)
+// @Description  Lite only: on first launch, creates the default user and workspace and returns tokens. Every launch
+// @Description  authenticates with the desktop's native credential, replacing manual registration and login
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  types.LoginResponse
-// @Failure      403  {object}  errors.AppError  "非 Lite 版本"
+// @Failure      403  {object}  errors.AppError  "Not the Lite edition"
 // @Router       /auth/auto-setup [post]
 func (h *AuthHandler) AutoSetup(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -982,13 +993,13 @@ func tenantNameOrEmpty(t *types.Tenant) string {
 }
 
 // ValidateToken godoc
-// @Summary      验证令牌
-// @Description  验证访问令牌是否有效
-// @Tags         认证
+// @Summary      Validate token
+// @Description  Checks whether the access token is valid
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "令牌有效"
-// @Failure      401  {object}  errors.AppError         "令牌无效"
+// @Success      200  {object}  map[string]interface{}  "Token is valid"
+// @Failure      401  {object}  errors.AppError         "Invalid token"
 // @Security     Bearer
 // @Router       /auth/validate [get]
 func (h *AuthHandler) ValidateToken(c *gin.Context) {

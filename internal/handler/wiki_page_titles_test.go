@@ -88,17 +88,17 @@ func TestGetPageResolvesBacklinkTitles(t *testing.T) {
 	fake := &fakeWikiPageTitlesService{
 		page: &types.WikiPage{
 			ID: "page-id", KnowledgeBaseID: "kb-1", Slug: "concept/current",
-			Title: "当前页面", Content: "正文", Version: 7,
+			Title: "Current page", Content: "Body", Version: 7,
 			InLinks: types.StringArray{
 				"concept/a", "concept/a", "entity/b", "missing", "nil-page", "constructor", "__proto__",
 			},
 		},
 		pages: map[string]*types.WikiPageLite{
-			"concept/a":   {Slug: "concept/a", Title: "概念 A"},
-			"entity/b":    {Slug: "entity/b", Title: "实体 B"},
+			"concept/a":   {Slug: "concept/a", Title: "Concept A"},
+			"entity/b":    {Slug: "entity/b", Title: "Entity B"},
 			"nil-page":    nil,
-			"constructor": {Slug: "constructor", Title: "构造函数"},
-			"__proto__":   {Slug: "__proto__", Title: "原型"},
+			"constructor": {Slug: "constructor", Title: "Constructor"},
+			"__proto__":   {Slug: "__proto__", Title: "Prototype"},
 		},
 	}
 	rec := requestWikiPageTitles(fake, fakeWikiPageTitlesKBService{}, "concept/current")
@@ -116,10 +116,10 @@ func TestGetPageResolvesBacklinkTitles(t *testing.T) {
 	require.NoError(t, err)
 	assert.JSONEq(t, string(expectedPage), string(actualPage))
 	assert.Equal(t, map[string]string{
-		"concept/a":   "概念 A",
-		"entity/b":    "实体 B",
-		"constructor": "构造函数",
-		"__proto__":   "原型",
+		"concept/a":   "Concept A",
+		"entity/b":    "Entity B",
+		"constructor": "Constructor",
+		"__proto__":   "Prototype",
 	}, body.InLinkTitles)
 }
 
@@ -143,7 +143,7 @@ func TestGetPageResolvesAllLargeAndLongBacklinkSets(t *testing.T) {
 			for i := 0; i < count; i++ {
 				slug := fmt.Sprintf("concept/%d-%s", i, strings.Repeat("a", 200))
 				fake.page.InLinks = append(fake.page.InLinks, slug)
-				fake.pages[slug] = &types.WikiPageLite{Slug: slug, Title: fmt.Sprintf("标题 %d", i)}
+				fake.pages[slug] = &types.WikiPageLite{Slug: slug, Title: fmt.Sprintf("Title %d", i)}
 			}
 			rec := requestWikiPageTitles(fake, fakeWikiPageTitlesKBService{}, "current")
 			require.Equal(t, http.StatusOK, rec.Code)
@@ -236,7 +236,7 @@ func TestGetPageBacklinkTitlesThroughRepository(t *testing.T) {
 		slug := fmt.Sprintf("concept/%d-%s", i, strings.Repeat("a", 200))
 		current.InLinks = append(current.InLinks, slug)
 		pages = append(pages, types.WikiPage{
-			ID: fmt.Sprint(i), KnowledgeBaseID: "kb-1", Slug: slug, Title: fmt.Sprintf("标题 %d", i),
+			ID: fmt.Sprint(i), KnowledgeBaseID: "kb-1", Slug: slug, Title: fmt.Sprintf("Title %d", i),
 		})
 	}
 	current.InLinks = append(current.InLinks, "other-kb-only", "deleted", "missing")

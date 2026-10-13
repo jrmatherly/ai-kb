@@ -86,12 +86,13 @@ func (r *SandboxCheckResponse) skip(name, reason string) {
 }
 
 // CheckSandboxConfig tests a sandbox configuration without persisting it.
-// @Summary      测试沙箱连通性
-// @Description  使用当前填写的参数测试沙箱后端，不保存配置；deep=true 会执行临时脚本，远端后端还会创建并销毁一个沙箱
-// @Tags         系统
+// @Summary      Test sandbox connectivity
+// @Description  Test the sandbox backend with the submitted parameters without saving them. deep=true runs a temporary
+// @Description  script; a remote backend also creates and destroys a sandbox
+// @Tags         System
 // @Accept       json
 // @Produce      json
-// @Param        body  body  SandboxCheckRequest  true  "沙箱配置"
+// @Param        body  body  SandboxCheckRequest  true  "Sandbox config"
 // @Success      200   {object}  SandboxCheckResponse
 // @Router       /system/sandbox-check [post]
 func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
@@ -99,12 +100,12 @@ func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 
 	var req SandboxCheckRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "请求体格式错误"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Malformed request body"})
 		return
 	}
 	tenant, _ := types.TenantInfoFromContext(c.Request.Context())
 	if tenant == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "空间为空"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Workspace is empty"})
 		return
 	}
 
@@ -112,7 +113,7 @@ func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 	incoming := req.Config
 	if req.ConfigID != "" {
 		if h.sandboxConfigSvc == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "沙箱配置服务不可用"})
+			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Sandbox config service unavailable"})
 			return
 		}
 		entity, err := h.sandboxConfigSvc.Get(ctx, tenant.ID, req.ConfigID)
@@ -121,7 +122,7 @@ func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 			return
 		}
 		if entity == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "沙箱配置不存在"})
+			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Sandbox config not found"})
 			return
 		}
 		stored = entity.Config
@@ -219,13 +220,13 @@ func sandboxConnectionCheckConfig(cfg *types.TenantSandboxConfig) *types.TenantS
 }
 
 // describeProbeMismatch reports why the probe script did not print its marker.
-// "命令输出与预期不符" on its own hides the exit code and the stderr line that
+// "output did not match" on its own hides the exit code and the stderr line that
 // normally name the actual problem — a missing interpreter, an image entrypoint
 // that swallowed the command, or a bind mount that never reached the Docker VM.
 func describeProbeMismatch(exitCode int, killed bool, stdout, stderr, execErr string) string {
-	parts := []string{fmt.Sprintf("退出码 %d", exitCode)}
+	parts := []string{fmt.Sprintf("exit code %d", exitCode)}
 	if killed {
-		parts = append(parts, "执行超时被终止")
+		parts = append(parts, "killed after timeout")
 	}
 	switch {
 	case firstProbeLine(stderr) != "":
@@ -233,12 +234,12 @@ func describeProbeMismatch(exitCode int, killed bool, stdout, stderr, execErr st
 	case firstProbeLine(stdout) != "":
 		parts = append(parts, "stdout: "+firstProbeLine(stdout))
 	default:
-		parts = append(parts, "没有任何输出")
+		parts = append(parts, "no output")
 	}
 	if trimmed := strings.TrimSpace(execErr); trimmed != "" {
 		parts = append(parts, trimmed)
 	}
-	return strings.Join(parts, "；")
+	return strings.Join(parts, "; ")
 }
 
 // firstProbeLine picks the first non-empty line and caps it, so one runaway log
@@ -321,7 +322,7 @@ func (h *SystemHandler) runDeepSandboxCheck(
 		result.skip("egress_available", skipReasonSandboxExecFailed)
 		return
 	case execResult == nil:
-		result.add("sandbox_exec", false, "沙箱没有返回执行结果", latency)
+		result.add("sandbox_exec", false, "Sandbox returned no execution result", latency)
 		result.skip("egress_available", skipReasonSandboxExecFailed)
 		return
 	case !strings.Contains(execResult.Stdout, marker):
@@ -386,16 +387,16 @@ func (h *SystemHandler) probeSandboxEgress(
 	case err != nil:
 		reportEgressProbe(result, policy, false, sandboxCheckReason(err), latency)
 	case execResult == nil:
-		reportEgressProbe(result, policy, false, "出网探测无返回", latency)
+		reportEgressProbe(result, policy, false, "Egress probe returned nothing", latency)
 	case execResult.Killed:
-		reportEgressProbe(result, policy, false, "出网探测超时", latency)
+		reportEgressProbe(result, policy, false, "Egress probe timed out", latency)
 	case execResult.ExitCode != 0:
 		msg := strings.TrimSpace(execResult.Stderr)
 		if msg == "" {
 			msg = strings.TrimSpace(execResult.Stdout)
 		}
 		if msg == "" {
-			msg = "国内与国际探测目标均不可达"
+			msg = "Both the domestic and international probe targets are unreachable"
 		}
 		reportEgressProbe(result, policy, false, msg, latency)
 	default:
@@ -478,25 +479,25 @@ func explainSandboxCreateFailure(
 		}
 		if tpl.Status == sandbox.TemplateStatusUntagged {
 			return fmt.Sprintf(
-				"模板 %s 的构建已完成，但没有一个构建带上 %q 标签，创建沙箱时无法解析；"+
-					"请重新构建该模板（删除后由 AI KB 重新创建即可）",
+				"Template %s has finished builds, but none has the %q tag, so a sandbox cannot resolve it. "+
+					"Rebuild the template (delete it and AI KB recreates it)",
 				templateID, sandbox.DefaultE2BTemplateTag,
 			)
 		}
 		if tpl.Status == "ready" || tpl.Status == "" {
 			return fmt.Sprintf(
-				"模板 %s 在列表中已就绪，但集群拒绝创建沙箱（HTTP 404）；"+
-					"通常是构建快照尚未生效，请稍后重试或重新构建模板",
+				"Template %s is ready in the list, but the cluster refused to create a sandbox (HTTP 404). "+
+					"Usually the build snapshot has not taken effect yet; retry later or rebuild the template",
 				templateID,
 			)
 		}
 		return fmt.Sprintf(
-			"模板 %s 存在，但构建状态为 %s，还不能启动沙箱；请等待构建完成或查看构建日志",
+			"Template %s is in build status %s and cannot start a sandbox yet; wait for the build or check logs",
 			templateID, tpl.Status,
 		)
 	}
 	return fmt.Sprintf(
-		"当前 API Key 看不到模板 %s：模板可能已删除，或该 Key 属于其他团队/集群",
+		"The API key cannot see template %s: it may be deleted, or the key belongs to another team or cluster",
 		templateID,
 	)
 }
@@ -511,14 +512,14 @@ func dockerUnavailableCheckReason(err *sandbox.RemoteError) string {
 	if host == "" {
 		detail := firstProbeLine(err.Message)
 		if detail == "" {
-			return "无法连接 Docker 守护进程"
+			return "Cannot connect to the Docker daemon"
 		}
-		return "无法连接 Docker 守护进程：" + detail
+		return "Cannot connect to the Docker daemon: " + detail
 	}
-	return "无法连接 Docker 守护进程 " + host +
-		"。留空地址时跟随本机 docker CLI（DOCKER_HOST 或当前 docker context）。" +
-		"Colima 一般是 unix://$HOME/.colima/default/docker.sock；" +
-		"AI KB 跑在容器里时需要把该 socket 挂进 app。"
+	return "Cannot connect to the Docker daemon at " + host +
+		". An empty address follows the local docker CLI (DOCKER_HOST or the current docker context). " +
+		"For Colima it is usually unix://$HOME/.colima/default/docker.sock. " +
+		"When AI KB runs in a container, mount that socket into the app container."
 }
 
 func dockerHostFromUnavailableMessage(message string) string {
@@ -545,22 +546,22 @@ func sandboxCheckReason(err error) string {
 	}
 	switch remoteErr.Kind {
 	case sandbox.RemoteErrorKindAuthentication:
-		return "认证失败：API Key 无效或无权限"
+		return "Authentication failed: the API key is invalid or lacks permission"
 	case sandbox.RemoteErrorKindNotFound:
-		return "资源不存在：请检查模板 ID"
+		return "Resource not found: check the template ID"
 	case sandbox.RemoteErrorKindTimeout:
-		return "请求超时：端点不可达或响应过慢"
+		return "Request timed out: the endpoint is unreachable or too slow"
 	case sandbox.RemoteErrorKindUnavailable:
 		if remoteErr.Provider == sandbox.SandboxTypeDocker {
 			return dockerUnavailableCheckReason(remoteErr)
 		}
-		return "服务不可用：端点拒绝连接"
+		return "Service unavailable: the endpoint refused the connection"
 	case sandbox.RemoteErrorKindCapacity:
-		return "配额不足或触发限流"
+		return "Quota exceeded or rate limited"
 	case sandbox.RemoteErrorKindUnsupported:
-		return "该后端不支持此操作"
+		return "This backend does not support the operation"
 	case sandbox.RemoteErrorKindInvalidRequest:
-		return "参数无效：" + remoteErr.Message
+		return "Invalid parameters: " + remoteErr.Message
 	default:
 		return remoteErr.Message
 	}

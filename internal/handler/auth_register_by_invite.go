@@ -50,16 +50,17 @@ type invitationLookupRequest struct {
 }
 
 // LookupInvitationByToken godoc
-// @Summary      解析共享邀请链接 token
-// @Description  根据邀请链接中的 token 返回邀请上下文（空间名 / 角色 / 过期时间），
-// @Description  供注册页展示。无认证；token 无效或被撤销返回 410。
-// @Description  使用 POST + body 而非 GET + path，避免 token 落入访问日志 / 浏览器历史 / tracing。
-// @Tags         认证
+// @Summary      Resolve a shared invitation link token
+// @Description  Returns the invitation context (workspace name / role / expiry) for the token in an invitation link,
+// @Description  for display on the registration page. No authentication; an invalid or revoked token returns 410.
+// @Description  Uses POST + body instead of GET + path so the token stays out of access logs, browser history and
+// @Description  tracing.
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      invitationLookupRequest  true  "邀请 token"
+// @Param        request  body      invitationLookupRequest  true  "Invitation token"
 // @Success      200      {object}  invitationLookupResponse
-// @Failure      410      {object}  apperrors.AppError  "链接无效或已撤销"
+// @Failure      410      {object}  apperrors.AppError  "Link is invalid or revoked"
 // @Router       /auth/invitations/lookup [post]
 func (h *AuthHandler) LookupInvitationByToken(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -107,18 +108,19 @@ func (h *AuthHandler) LookupInvitationByToken(c *gin.Context) {
 }
 
 // RegisterByInvite godoc
-// @Summary      使用共享链接注册
-// @Description  通过共享邀请链接 token 完成注册，仅 self_serve / invite_register 模式允许。
-// @Description  注册者自填邮箱（与 token 不绑定）；注册成功后自动加入对应空间。
-// @Tags         认证
+// @Summary      Register with a shared link
+// @Description  Completes registration with a shared invitation link token. Allowed only in self_serve /
+// @Description  invite_register mode.
+// @Description  The registrant enters their own email (not bound to the token) and joins the workspace on success.
+// @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      registerByInviteRequest  true  "邀请注册请求"
+// @Param        request  body      registerByInviteRequest  true  "Invitation registration request"
 // @Success      201      {object}  types.LoginResponse
-// @Failure      400      {object}  apperrors.AppError  "请求参数错误"
-// @Failure      403      {object}  apperrors.AppError  "注册功能已禁用"
-// @Failure      409      {object}  apperrors.AppError  "邮箱已注册"
-// @Failure      410      {object}  apperrors.AppError  "链接无效或已撤销"
+// @Failure      400      {object}  apperrors.AppError  "Invalid request parameters"
+// @Failure      403      {object}  apperrors.AppError  "Registration is disabled"
+// @Failure      409      {object}  apperrors.AppError  "Email already registered"
+// @Failure      410      {object}  apperrors.AppError  "Link is invalid or revoked"
 // @Router       /auth/register-by-invite [post]
 //
 // RegisterByInvite requires both an enabled registration mode and a valid token.
