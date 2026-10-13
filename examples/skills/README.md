@@ -73,7 +73,7 @@ description: Extract text and tables from PDF files, fill forms, merge documents
 ### Included scripts
 
 | Script | Purpose |
-|------|------|
+| ------ | ------ |
 | `analyze_form.py` | Analyze PDF form fields |
 | `extract_text.py` | Extract text from a PDF |
 

@@ -225,7 +225,7 @@ err = agentSession.Ask(context.Background(), "What is deep learning?",
 ### Agent event types
 
 | Event type | Meaning | When it fires |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | `AgentResponseTypeThinking` | Agent thinking | While the agent analyzes the question and plans |
 | `AgentResponseTypeToolCall` | Tool call | When the agent decides to use a tool |
 | `AgentResponseTypeToolResult` | Tool result | After the tool finishes |
@@ -246,6 +246,7 @@ go build -o agent_test
 ```
 
 The tool supports:
+
 - Creating and managing sessions
 - Interactive agent Q&A
 - Showing every agent event live
@@ -256,6 +257,7 @@ See `client/cmd/agent_test/README.md` for details.
 ### Advanced agent Q&A
 
 `agent_example.go` has more advanced examples:
+
 - Basic agent Q&A
 - Tool call tracking
 - Capturing knowledge references

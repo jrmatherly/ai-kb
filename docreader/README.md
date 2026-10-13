@@ -24,6 +24,7 @@ docreader:
 - **Default**: `minio:9000`
 - **Purpose**: DocReader connects to MinIO object storage at this address to read and store files during document processing
 - **Example**:
+
   ```yaml
   - MINIO_ENDPOINT=minio:9000  # address inside the Docker network
   ```
@@ -37,11 +38,14 @@ docreader:
   - To access it from other devices or containers, replace `localhost` with the real IP address
   - Set `MINIO_PORT` in `.env` to change the port
 - **Example**:
+
   ```bash
   # .env file
   MINIO_PORT=9000
   ```
+
   Or edit docker-compose.yml directly:
+
   ```yaml
   - MINIO_PUBLIC_ENDPOINT=http://192.168.1.100:9000  # use the real IP
   ```
@@ -52,6 +56,7 @@ docreader:
 - **Default**: empty (MinerU not used)
 - **Purpose**: MinerU is an advanced document parsing service that recognizes and processes more complex document structures. With this variable set, DocReader can call MinerU to parse documents
 - **Example**:
+
   ```bash
   # .env file
   MINERU_ENDPOINT=http://mineru-service:8080
@@ -63,6 +68,7 @@ docreader:
 - **Default**: `50` MB
 - **Purpose**: limits the file size the gRPC service accepts, so oversized files cannot crash the service or degrade performance
 - **Example**:
+
   ```bash
   # .env file
   MAX_FILE_SIZE_MB=100  # allow files up to 100MB

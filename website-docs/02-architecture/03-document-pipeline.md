@@ -169,7 +169,7 @@ type FileService interface {
 The factory `NewFileServiceFromStorageConfig()` (`internal/application/service/file/factory.go`) picks the backend from `types.StorageEngineConfig.DefaultProvider`. The backends in the code:
 
 | Provider | Path prefix | Implementation | Notes | Key configuration |
-|----------|-------------|----------------|-------|-------------------|
+| ---------- | ------------- | ---------------- | ------- | ------------------- |
 | `local` | `local://` | `file/local.go` | Local disk on one host | `LocalEngineConfig.PathPrefix`; the base directory comes from `LOCAL_STORAGE_BASE_DIR`, signed external links from `APP_EXTERNAL_URL` |
 | `minio` | `minio://` | `file/minio.go` | MinIO / S3-compatible | `MinIOEngineConfig` (`mode: docker` reads the `MINIO_ENDPOINT` / `MINIO_ACCESS_KEY_ID` / `MINIO_SECRET_ACCESS_KEY` / `MINIO_BUCKET_NAME` environment variables; `mode: remote` reads the config fields) |
 | `cos` | `cos://` | `file/cos.go` | Tencent Cloud COS | `SecretID/SecretKey/Region/BucketName/AppID`; a separate temporary bucket `TempBucketName/TempRegion` is supported |
@@ -214,7 +214,7 @@ If enqueueing fails, `ParseStatus` is set to `failed` (the file is already store
 Queues defined in `internal/types/task.go`:
 
 | Queue constant | Name | Purpose |
-|----------------|------|---------|
+| ---------------- | ------ | --------- |
 | `QueueDefault` | `default` | Core document processing (parse/chunk/embed/index) |
 | `QueueChatAttachment` | `chat_attachment` | Parsing temporary documents attached to a conversation |
 | `QueuePostProcess` | `postprocess` | Post-processing orchestration |
@@ -364,7 +364,7 @@ promoted, err := s.knowledgeRepo.SetFinalizing(ctx, payload.KnowledgeID, expecte
 The four enrichment subtasks:
 
 | Task | Queue | Granularity | Notes |
-|------|-------|-------------|-------|
+| ------ | ------- | ------------- | ------- |
 | `TypeSummaryGeneration` | `summary` | 1 per knowledge item | Generates the document summary; `summary_status` is its own state machine; `process_config.summary_enabled=false` on upload skips it |
 | `TypeQuestionGeneration` | `question` | 1 per batch of 20 chunks | Generates retrieval questions for chunks |
 | `TypeChunkExtract` | `graph` | 1 per chunk | Entity and relationship extraction into the graph engine |
@@ -406,7 +406,7 @@ Beyond the initial ingestion, editing chunk content, enabling or disabling chunk
 The full set of values defined in `internal/types/knowledge.go`:
 
 | Value | Meaning |
-|-------|---------|
+| ------- | --------- |
 | `pending` | Created, waiting for a worker |
 | `processing` | Parsing, chunking, embedding or multimodal work in progress |
 | `finalizing` | The main flow is done, enrichment subtasks are pending (`pending_subtasks_count > 0`) |
@@ -552,7 +552,7 @@ The full journey of a PDF with multimodal processing, question generation and th
 Where each step lives in the source:
 
 | Step | Source |
-|------|--------|
+| ------ | -------- |
 | HTTP entry | `internal/handler/knowledge.go`, `internal/router/routes_knowledge.go` |
 | Creation and enqueue | `internal/application/service/knowledge_create.go`, `knowledge_task_options.go` |
 | File storage | `internal/application/service/file/` (`factory.go` and the backend implementations) |

@@ -16,7 +16,7 @@ one wastes turns or returns the wrong shape. Use the decision table.
 ## Pick the command by your goal
 
 | Your goal | Command | LLM synthesis? | Returns |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Natural-language **answer** grounded in a KB | `chat "<q>" --kb <kb>` | yes | bounded answer events; `--reference` adds citations; `--verbose` adds execution detail |
 | Answer via a **custom agent** (its own KB scope, tools, web search) | `session ask --agent <id> "<q>"` | yes (+ tools) | bounded answer events; `--reference` adds citations; `--verbose` adds execution detail |
 | **Raw context chunks** to reason over yourself (no answer) | `search chunks "<q>" --kb <kb>` | no | ranked chunk list |

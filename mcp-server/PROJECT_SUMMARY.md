@@ -44,6 +44,7 @@ ai-kb/mcp-server/
 ## 🚀 Ways to launch (7)
 
 ### 1. Main entry point (recommended) ⭐
+
 ```bash
 python main.py                    # basic start
 python main.py --check-only       # check the environment only
@@ -52,26 +53,31 @@ python main.py --help            # show help
 ```
 
 ### 2. Original launch script
+
 ```bash
 python run_server.py
 ```
 
 ### 3. Quick launch script
+
 ```bash
 python run.py
 ```
 
 ### 4. Run the server directly
+
 ```bash
 python aikb_mcp_server.py
 ```
 
 ### 5. Run as a module
+
 ```bash
 python -m aikb_mcp_server
 ```
 
 ### 6. Command-line tools after installation
+
 ```bash
 pip install -e .                  # development install
 ai-kb-mcp-server               # main command
@@ -79,6 +85,7 @@ ai-kb-server                   # alias
 ```
 
 ### 7. Production install
+
 ```bash
 pip install .                    # production install
 ai-kb-mcp-server              # global command
@@ -87,6 +94,7 @@ ai-kb-mcp-server              # global command
 ## 🔧 Environment configuration
 
 ### Required environment variables
+
 ```bash
 # Linux/macOS
 export AIKB_BASE_URL="http://localhost:8080/api/v1"
@@ -104,6 +112,7 @@ set AIKB_API_KEY=your_api_key_here
 ## 🛠️ Features
 
 ### MCP tools (21)
+
 - **Workspace management**: `create_tenant`, `list_tenants`
 - **Knowledge base management**: `create_knowledge_base`, `list_knowledge_bases`, `get_knowledge_base`, `delete_knowledge_base`, `hybrid_search`
 - **Knowledge management**: `create_knowledge_from_url`, `list_knowledge`, `get_knowledge`, `delete_knowledge`
@@ -113,6 +122,7 @@ set AIKB_API_KEY=your_api_key_here
 - **Chunk management**: `list_chunks`, `delete_chunk`
 
 ### Technical features
+
 - ✅ Async I/O
 - ✅ Full error handling
 - ✅ Detailed logging
@@ -125,6 +135,7 @@ set AIKB_API_KEY=your_api_key_here
 ## 📦 Installation
 
 ### Quick start
+
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
@@ -138,18 +149,21 @@ python main.py
 ```
 
 ### Development install
+
 ```bash
 pip install -e .
 ai-kb-mcp-server
 ```
 
 ### Production install
+
 ```bash
 pip install .
 ai-kb-mcp-server
 ```
 
 ### Build distribution packages
+
 ```bash
 # Traditional
 python setup.py sdist bdist_wheel
@@ -162,11 +176,13 @@ python -m build
 ## 🧪 Testing
 
 ### Run the full test suite
+
 ```bash
 python test_module.py
 ```
 
 ### Test results
+
 ```text
 AI KB MCP Server module tests
 ==================================================
@@ -184,16 +200,19 @@ Results: 6/6 passed
 ## 🔍 Compatibility
 
 ### Python versions
+
 - ✅ Python 3.10+
 - ✅ Python 3.11
 - ✅ Python 3.12
 
 ### Operating systems
+
 - ✅ Windows 10/11
 - ✅ macOS 10.15+
 - ✅ Linux (Ubuntu, CentOS, etc.)
 
 ### Dependencies
+
 - `mcp >= 1.0.0` - Model Context Protocol core library
 - `requests >= 2.31.0` - HTTP request library
 
@@ -208,17 +227,20 @@ Results: 6/6 passed
 ## 🎯 Use cases
 
 ### 1. Development
+
 ```bash
 python main.py --verbose
 ```
 
 ### 2. Production
+
 ```bash
 pip install .
 ai-kb-mcp-server
 ```
 
 ### 3. Docker deployment
+
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
@@ -228,6 +250,7 @@ CMD ["ai-kb-mcp-server"]
 ```
 
 ### 4. System service
+
 ```ini
 [Unit]
 Description=AI KB MCP Server
@@ -240,12 +263,14 @@ Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
 ## 🔧 Troubleshooting
 
 ### Common problems
+
 1. **Import errors**: run `pip install -r requirements.txt`
 2. **Connection errors**: check the `AIKB_BASE_URL` setting
 3. **Authentication errors**: check the `AIKB_API_KEY` setting
 4. **Environment check**: run `python main.py --check-only`
 
 ### Debug mode
+
 ```bash
 python main.py --verbose          # verbose logging
 python test_module.py            # run the tests
@@ -272,7 +297,7 @@ python test_module.py            # run the tests
 ---
 
 **Project status**: ✅ Complete and ready to use
-**Project repository**: https://github.com/jrmatherly/ai-kb/tree/main/mcp-server
+**Project repository**: <https://github.com/jrmatherly/ai-kb/tree/main/mcp-server>
 **Package name**: `ai-kb-mcp` (not published on PyPI)
 **Last updated**: October 2025
 **Version**: 1.0.0

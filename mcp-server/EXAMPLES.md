@@ -36,6 +36,7 @@ Examples for each MCP tool:
 ### Workspace management
 
 #### Create a workspace
+
 ```json
 {
   "tool": "create_tenant",
@@ -54,6 +55,7 @@ Examples for each MCP tool:
 ```
 
 #### List all workspaces
+
 ```json
 {
   "tool": "list_tenants",
@@ -64,6 +66,7 @@ Examples for each MCP tool:
 ### Knowledge base management
 
 #### Create a knowledge base
+
 ```json
 {
   "tool": "create_knowledge_base",
@@ -77,6 +80,7 @@ Examples for each MCP tool:
 ```
 
 #### List knowledge bases
+
 ```json
 {
   "tool": "list_knowledge_bases",
@@ -85,6 +89,7 @@ Examples for each MCP tool:
 ```
 
 #### Get knowledge base details
+
 ```json
 {
   "tool": "get_knowledge_base",
@@ -95,6 +100,7 @@ Examples for each MCP tool:
 ```
 
 #### Hybrid search
+
 ```json
 {
   "tool": "hybrid_search",
@@ -111,6 +117,7 @@ Examples for each MCP tool:
 ### Knowledge management
 
 #### Create knowledge from a URL
+
 ```json
 {
   "tool": "create_knowledge_from_url",
@@ -123,6 +130,7 @@ Examples for each MCP tool:
 ```
 
 #### Create knowledge from text
+
 ```json
 {
   "tool": "create_knowledge_from_text",
@@ -136,6 +144,7 @@ Examples for each MCP tool:
 ```
 
 #### Update manual knowledge
+
 ```json
 {
   "tool": "update_knowledge_from_text",
@@ -151,6 +160,7 @@ Examples for each MCP tool:
 Omitting `title` or passing an empty string keeps the original title. Set `status` to `draft` to save the content without re-indexing.
 
 #### List knowledge
+
 ```json
 {
   "tool": "list_knowledge",
@@ -163,6 +173,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ```
 
 #### Get knowledge details
+
 ```json
 {
   "tool": "get_knowledge",
@@ -175,6 +186,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ### Model management
 
 #### Create a model
+
 ```json
 {
   "tool": "create_model",
@@ -191,6 +203,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ```
 
 #### List models
+
 ```json
 {
   "tool": "list_models",
@@ -201,6 +214,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ### Session management
 
 #### Create a chat session
+
 ```json
 {
   "tool": "create_session",
@@ -215,6 +229,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ```
 
 #### Get session details
+
 ```json
 {
   "tool": "get_session",
@@ -225,6 +240,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ```
 
 #### List sessions
+
 ```json
 {
   "tool": "list_sessions",
@@ -238,6 +254,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ### Chat
 
 #### Send a chat message
+
 ```json
 {
   "tool": "chat",
@@ -251,6 +268,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ### Chunk management
 
 #### List knowledge chunks
+
 ```json
 {
   "tool": "list_chunks",
@@ -263,6 +281,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
 ```
 
 #### Delete a knowledge chunk
+
 ```json
 {
   "tool": "delete_chunk",
@@ -285,6 +304,7 @@ python main.py --verbose
 ```
 
 #### Step 1: create a workspace
+
 ```json
 {
   "tool": "create_tenant",
@@ -297,6 +317,7 @@ python main.py --verbose
 ```
 
 #### Step 2: create a knowledge base
+
 ```json
 {
   "tool": "create_knowledge_base",
@@ -308,6 +329,7 @@ python main.py --verbose
 ```
 
 #### Step 3: add knowledge
+
 ```json
 {
   "tool": "create_knowledge_from_url",
@@ -320,6 +342,7 @@ python main.py --verbose
 ```
 
 #### Step 4: create a chat session
+
 ```json
 {
   "tool": "create_session",
@@ -332,6 +355,7 @@ python main.py --verbose
 ```
 
 #### Step 5: start chatting
+
 ```json
 {
   "tool": "chat",
@@ -347,6 +371,7 @@ python main.py --verbose
 ### Common errors and fixes
 
 #### 1. Connection error
+
 ```json
 {
   "error": "Connection refused",
@@ -355,6 +380,7 @@ python main.py --verbose
 ```
 
 #### 2. Authentication error
+
 ```json
 {
   "error": "Unauthorized",
@@ -363,6 +389,7 @@ python main.py --verbose
 ```
 
 #### 3. Resource not found
+
 ```json
 {
   "error": "Knowledge base not found",
@@ -373,6 +400,7 @@ python main.py --verbose
 ## Advanced configuration
 
 ### Custom retrieval settings
+
 ```json
 {
   "tool": "hybrid_search",
@@ -387,6 +415,7 @@ python main.py --verbose
 ```
 
 ### Custom session strategy
+
 ```json
 {
   "tool": "create_session",
@@ -409,7 +438,9 @@ python main.py --verbose
 ## Integration
 
 ### Claude Desktop
+
 Add this to the Claude Desktop configuration file:
+
 ```json
 {
   "mcpServers": {
@@ -425,14 +456,16 @@ Add this to the Claude Desktop configuration file:
 }
 ```
 
-Project repository: https://github.com/jrmatherly/ai-kb/tree/main/mcp-server
+Project repository: <https://github.com/jrmatherly/ai-kb/tree/main/mcp-server>
 
 ### Other MCP clients
+
 See each client's documentation to configure the server launch command and environment variables.
 
 ## Troubleshooting
 
 If you run into problems:
+
 1. Run `python main.py --check-only` to check the environment
 2. Run `python main.py --verbose` to see detailed logs
 3. Check that the AI KB service is running

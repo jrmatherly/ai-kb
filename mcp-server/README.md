@@ -11,11 +11,13 @@ A Model Context Protocol (MCP) server that gives access to the AI KB knowledge m
 > We recommend following the [MCP configuration guide](./MCP_CONFIG.md) instead of the steps below.
 
 ### 1. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 2. Set environment variables
+
 ```bash
 # Linux/macOS
 export AIKB_BASE_URL="http://localhost:8080/api/v1"
@@ -33,11 +35,13 @@ set AIKB_API_KEY=your_api_key_here
 ### 3. Run the server
 
 **Recommended: the main entry point:**
+
 ```bash
 python main.py
 ```
 
 **Other ways to run it:**
+
 ```bash
 # Original launch script
 python run_server.py
@@ -53,6 +57,7 @@ python -m aikb_mcp_server
 ```
 
 ### 4. Command-line options
+
 ```bash
 python main.py --help                 # show help
 python main.py --check-only           # check the environment configuration only
@@ -75,11 +80,13 @@ uvx --from ./mcp-server ai-kb-mcp-server
 > The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
 
 ### Development install
+
 ```bash
 pip install -e .
 ```
 
 After installation you can use the command-line tools:
+
 ```bash
 ai-kb-mcp-server
 # or
@@ -87,11 +94,13 @@ ai-kb-server
 ```
 
 ### Production install
+
 ```bash
 pip install .
 ```
 
 ### Build distribution packages
+
 ```bash
 # With setuptools
 python setup.py sdist bdist_wheel
@@ -104,6 +113,7 @@ python -m build
 ## Test the module
 
 Run the test script to check that the module works:
+
 ```bash
 python test_module.py
 ```
@@ -113,10 +123,12 @@ python test_module.py
 The MCP server provides these tools:
 
 ### Workspace management
+
 - `create_tenant` - create a workspace
 - `list_tenants` - list all workspaces
 
 ### Knowledge base management
+
 - `create_knowledge_base` - create a knowledge base
 - `list_knowledge_bases` - list knowledge bases
 - `get_knowledge_base` - get knowledge base details
@@ -124,6 +136,7 @@ The MCP server provides these tools:
 - `hybrid_search` - hybrid search
 
 ### Knowledge management
+
 - `create_knowledge_from_file` - create knowledge from a local file
 - `create_knowledge_from_url` - create knowledge from a URL
 - `create_knowledge_from_text` - create knowledge from text
@@ -133,17 +146,20 @@ The MCP server provides these tools:
 - `delete_knowledge` - delete knowledge
 
 ### Model management
+
 - `create_model` - create a model
 - `list_models` - list models
 - `get_model` - get model details
 
 ### Session management
+
 - `create_session` - create a chat session
 - `get_session` - get session details
 - `list_sessions` - list sessions
 - `delete_session` - delete a session
 
 ### Chat
+
 - `chat` - send a chat message
 - `agent_chat` - call an agent for multi-step retrieval and tool calls
 
@@ -152,12 +168,14 @@ An event still open when the connection ends (no blank line seen yet) is dropped
 exceeding the cap returns an error and closes the response connection.
 
 ### Chunk management
+
 - `list_chunks` - list knowledge chunks
 - `delete_chunk` - delete a knowledge chunk
 
 ## Troubleshooting
 
 If you hit import errors, make sure that:
+
 1. All required dependencies are installed
 2. Your Python version is compatible (3.10+ recommended)
 3. No file name conflicts (do not name a file `mcp.py`)

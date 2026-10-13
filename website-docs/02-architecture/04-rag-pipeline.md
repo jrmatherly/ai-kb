@@ -98,7 +98,7 @@ must(container.Invoke(chatpipeline.NewPluginMemoryAffinity))       // CHUNK_RERA
 The full event-to-plugin map, including chain order on shared events:
 
 | EventType | Plugins (chain order) | Source file |
-|-----------|-----------------------|-------------|
+| ----------- | ----------------------- | ------------- |
 | `load_history` | PluginLoadHistory | `load_history.go` |
 | `memory_recall` | PluginMemoryRecall | `memory_recall.go` |
 | `query_understand` | PluginQueryUnderstand → PluginExtractEntity | `query_understand.go`, `extract_entity.go` |
@@ -362,7 +362,7 @@ flowchart TD
 `internal/stream/factory.go` picks the implementation from the `STREAM_MANAGER_TYPE` environment variable:
 
 | Implementation | Storage | Notes |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `memory` (default) | In-process `map[sessionID]map[messageID]*events` with an RWMutex | Single-node deployments; `GetEvents` returns a copy of the events to avoid races |
 | `redis` | Redis list, key = `{REDIS_PREFIX or stream:events}:{sessionID}:{messageID}` | `AppendEvent` = RPUSH plus TTL refresh (the factory passes 1 hour); `GetEvents` = LRANGE offset..-1; shared across replicas, and the stop event crosses nodes through it too |
 
@@ -395,7 +395,7 @@ type StreamResponse struct {
 The full `response_type` list (`internal/types/chat.go`; `stop` is built in the handler layer, and `steer` exists only in a server-side queue sub-list and never appears on the SSE stream):
 
 | response_type | Meaning |
-|---------------|------|
+| --------------- | ------ |
 | `agent_query` | The query was accepted; carries `session_id` / `assistant_message_id` (the client takes the message_id it needs for resuming from here) |
 | `thinking` | Reasoning increment (reasoning_content) |
 | `answer` | Answer text increment; carries `data.truncated: true` when the model's single-output limit cut it off |
@@ -509,7 +509,7 @@ The pipeline-side FAQ policy (the agent settings `FAQPriorityEnabled` / `FAQScor
 `internal/searchutil/` is the pure-function library shared by retrieval and merge:
 
 | File | Key functions | Purpose |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `textutil.go` | `BuildContentSignature` / `NormalizeContent` / `IsContentContained` / `ContentOverlapRatio` | Content signatures for dedup, normalization, containment and overlap ratio (merge dedup) |
 | `textutil.go` | `TokenizeSimple` / `Jaccard` | Simple tokenization (Chinese per character, English per word) and Jaccard similarity (MMR, history citation filter) |
 | `chunkmerge.go` | `AppendWithOverlap` / `MergeTextChunks` | Joining overlapping chunks by text match |
@@ -522,7 +522,7 @@ The pipeline-side FAQ policy (the agent settings `FAQPriorityEnabled` / `FAQScor
 Templates are loaded by `loadPromptTemplates` in `internal/config/config.go` from `config/prompt_templates/` into `PromptTemplatesConfig`. Each yaml is a list of templates with `id`/`i18n`/`default`; settings such as `system_prompt_id` / `context_template_id` resolve the default template text by id.
 
 | Template file | Config field | Used by |
-|----------|----------|----------|
+| ---------- | ---------- | ---------- |
 | `rewrite.yaml` | `Conversation.RewritePromptSystem/User` | Rewrite and intent classification in `query_understand.go` (placeholders `{conversation}`/`{query}`/`{language}`) |
 | `intent_prompts.yaml` | `Conversation.IntentSystemPrompts` | System prompt override for non-retrieval intents (template id = intent value) |
 | `system_prompt.yaml` | `Conversation.Summary.Prompt` | The RAG answer system prompt (`common.go prepareMessagesWithHistory`) |
@@ -542,7 +542,7 @@ Placeholders are rendered uniformly by `types.RenderPromptPlaceholders` (`{query
 Where each part lives in the source:
 
 | Part | Source location |
-|------|----------|
+| ------ | ---------- |
 | HTTP entry points and SSE setup | `internal/handler/session/qa.go`, `helpers.go`, `stream.go` |
 | EventBus to stream event bridge | `internal/handler/session/agent_stream_handler.go` |
 | Pipeline orchestration | `internal/application/service/session_knowledge_qa.go` |

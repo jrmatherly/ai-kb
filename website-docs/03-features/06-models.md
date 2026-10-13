@@ -333,7 +333,7 @@ const (
 ```
 
 | Type | Frontend ID | Client package | Interface | Purpose |
-|------|---------|---------|------|------|
+| ------ | --------- | --------- | ------ | ------ |
 | `KnowledgeQA` | `chat` | `internal/models/chat` | `Chat` / `ChatStream` (Tools, Thinking and multimodal messages) | Knowledge Q&A, agent reasoning, summaries / question generation / graph extraction and every other LLM call |
 | `Embedding` | `embedding` | `internal/models/embedding` | `Embed` / `BatchEmbed` (with `GetDimensions`) | Text vectorization for the vector index and queries |
 | `Rerank` | `rerank` | `internal/models/rerank` | `Rerank(query, documents)` returns `RankResult` | Fine ranking of retrieval results |
@@ -349,7 +349,7 @@ The model source (`ModelSource`) has two core values, `local` (started through l
 The `Parameters` of the model entity `types.Model` (`ModelParameters` in `internal/types/model.go`):
 
 | Name | Type | Default | Description |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `base_url` | string | empty (provider default endpoint) | Model API endpoint, checked for SSRF on create and update (`ValidateURLForSSRF`) |
 | `api_key` | string | empty | API key, **stored AES-256-GCM encrypted** (`ModelParameters.Value/Scan`). It can be submitted with the create request; afterwards it changes only through the `PUT /models/:id/credentials` sub-resource |
 | `interface_type` | string | empty (VLM: `ollama` for local, `openai` for remote) | Interface protocol type |
@@ -386,7 +386,7 @@ A provider declares extra fields in its definition, the editor renders them dyna
 #### Management API (`internal/router/routes_infra.go`)
 
 | Method & path | Description |
-|-------------|------|
+| ------------- | ------ |
 | `GET /models/providers` | Provider definitions for a `model_type` (icon, default endpoint, extra fields, model catalog) |
 | `GET` / `POST /models/catalog/resolve` | Resolves how one row is called (protocol, effort levels, context), the editor's "How this model is called" |
 | `POST /models` / `GET /models` / `GET /models/:id` / `PUT /models/:id` / `DELETE /models/:id` | Model CRUD |
@@ -448,7 +448,7 @@ Local embedding and chat share one `OLLAMA_BASE_URL`; the embedding model name a
 The local model lifecycle is managed by `OllamaService` in `internal/models/utils/ollama/ollama.go` (`IsModelAvailable` / `PullModel` / `EnsureModelAvailable` / `ListModelsDetailed` / `DeleteModel` and more), with HTTP entry points in `internal/handler/initialization.go`:
 
 | Path | Description |
-|------|------|
+| ------ | ------ |
 | `GET /initialization/ollama/status` | Ollama service availability |
 | `GET /initialization/ollama/models` | Lists local models |
 | `POST /initialization/ollama/models/check` | Batch check of whether models are downloaded |
@@ -521,7 +521,7 @@ Trace how a configured model becomes a client and a request.
 Model integration is split into protocol, provider, catalog and runtime layers:
 
 | Layer | Location | Responsibility |
-|----|------|------|
+| ---- | ------ | ------ |
 | Protocol layer | `internal/models/api/<protocol>` | One package per wire protocol. Chat: `openaicompletions`, `openairesponses`, `anthropicmessages`, `googlegenai`; rerank: `cohererank`, `dashscoperank`, `nimrerank`, `tencentlkeap`, `volcengineknowledge`; embedding: `openaiembeddings`, `dashscopeembeddings`, `arkembeddings`, `googleembeddings`; speech: `openaitranscriptions`, `openaichataudio`. Each owns its request and response structures and parsing, independent of provider definitions and the model catalog |
 | Provider layer | `internal/models/providers/<id>.go` | One definition per provider, declaring supported model types, default endpoints per type, auth scheme, extra fields, protocol compat defaults and special endpoint hooks; icons live in `providers/assets/` and every provider is listed explicitly in `Builtins()` in `builtin.go` |
 | Catalog layer | `internal/models/catalog` | Loads the generated model catalog `catalog/data/models.generated.json` and looks entries up by type and model name; contains no provider behavior |

@@ -49,7 +49,7 @@ A workspace can have several endpoints. For example, a support team gets an endp
 The exposed tools are chosen in four groups. Only read-only tools are enabled by default:
 
 | Group | Tools | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Retrieval and reading | `list_knowledge_bases`, `search_knowledge`, `grep_chunks`, `list_documents`, `read_document` | Knowledge base parameters accept an ID or a name. `search_knowledge` picks the retrieval method with `mode` (hybrid, semantic or keyword) and accepts `limit` (default 10, max 30). `grep_chunks` keeps case-insensitive regular expression semantics: the literal terms in the pattern become the keyword index query (bases without a keyword index use the semantic index for candidates), each candidate is then checked against the regular expression, and every returned chunk matches the pattern. A pattern with no literal text (such as `^\d+$`) is rejected. `read_document` pages with `offset` and `limit`, or finds a phrase inside the document with `query` |
 | Question answering | `ask` | Runs only the endpoint's default agent (clients cannot choose one; the built-in Quick Answer is used when none is configured). The server creates the session, returns the full answer with citations and a `session_id`, which you pass back to continue the conversation. Web search is off |
 | Wiki | `wiki_search`, `wiki_read_page`, `wiki_index` | Only for knowledge bases with Wiki enabled. The `query` of `wiki_search` keeps regular expression semantics (case-insensitive); text that is not a valid regular expression is matched literally. `regex=false` forces a literal match and `regex=true` requires a valid regular expression |
@@ -70,7 +70,7 @@ The tools reuse the agent's native tools (`internal/agent/tools/`), and authoriz
 Use this table to decide which direction you need.
 
 | Aspect | AI KB as an MCP client | AI KB as an MCP server |
-|---|---|---|
+| --- | --- | --- |
 | Code | `internal/mcp/` + handler, service and repository layers + `internal/agent/tools/` | `internal/mcpserver/` + `internal/middleware/mcp_endpoint_auth.go` + `internal/handler/mcp_endpoint.go` |
 | Protocol library | `github.com/mark3labs/mcp-go` (client) | `github.com/mark3labs/mcp-go` (server, Streamable HTTP, stateless mode) |
 | Transport | SSE, Streamable HTTP (stdio disabled for security) | Streamable HTTP; stdio clients bridge through `mcp-remote` |
@@ -89,7 +89,7 @@ This section is for operators and developers who need the exact code paths, data
 The MCP client code is spread across these layers:
 
 | Layer | Path | Responsibility |
-|---|---|---|
+| --- | --- | --- |
 | Protocol client | `internal/mcp/client.go`, `types.go`, `errors.go` | Wraps `github.com/mark3labs/mcp-go` behind the `MCPClient` interface (Connect, Initialize, ListTools, CallTool, ListResources, ReadResource) |
 | Connection management | `internal/mcp/manager.go` | `MCPManager` caches and reuses connections; OAuth services get one connection per principal |
 | OAuth | `internal/mcp/oauth_manager.go`, `oauth_lifecycle.go`, `oauth_state.go`, `oauth_tokenstore.go` | Authorization code flow, token lifecycle and refresh, in-flight state storage, token persistence |
@@ -160,7 +160,7 @@ type MCPService struct {
 Transports (`MCPTransportType`):
 
 | Transport | Constant | Status | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | SSE | `sse` | Supported | Server-Sent Events; `client.NewSSEMCPClient`, or `client.NewOAuthSSEClient` with OAuth |
 | Streamable HTTP | `http-streamable` | Supported | MCP Streamable HTTP; `client.NewStreamableHttpClient`, or `client.NewOAuthStreamableHttpClient` with OAuth |
 | Stdio | `stdio` | **Disabled** | Rejected for security (command injection risk) in `NewMCPClient`, `MCPManager.GetOrCreateClient`, `CreateMCPService` and `UpdateMCPService` with `"stdio transport is disabled for security reasons"` |
@@ -174,7 +174,7 @@ Advanced configuration `MCPAdvancedConfig` (defaults from `types.GetDefaultAdvan
 `MCPAuthConfig.AuthType` defines four strategies (`internal/types/mcp.go`):
 
 | `auth_type` | Behavior (`applyAuthHeaders` in `internal/mcp/client.go`) |
-|---|---|
+| --- | --- |
 | `""` (none) | No authentication. For backward compatibility, if legacy data still contains `api_key` or `token`, the corresponding header is injected as before |
 | `api_key` | Injects `<APIKeyHeader>: <APIKey>`. The header name defaults to `X-API-Key` and can be changed through the non-secret field `api_key_header` |
 | `bearer` | Injects `Authorization: Bearer <Token>` |
@@ -205,7 +205,7 @@ ClientInfo: mcp.Implementation{ Name: "AI KB", Version: "1.0.0" }
 Routes are registered by `RegisterMCPServiceRoutes` (`internal/router/`), all under `/api/v1`:
 
 | Method | Path | Permission | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | POST | `/mcp-services` | Admin+ | Create an MCP service (the URL passes the SSRF check `secutils.ValidateURLForSSRF`) |
 | GET | `/mcp-services` | Viewer+ | List the current workspace's MCP services (including builtin ones) |
 | GET | `/mcp-services/{id}` | Viewer+ | Service details (redacted through the DTO) |
@@ -338,7 +338,7 @@ When an agent calls an OAuth MCP tool and the current user has not authorized ye
 At agent startup, `internal/application/service/agent_service.go` selects MCP services by the agent's configuration:
 
 | `mcp_selection_mode` | Behavior |
-|---|---|
+| --- | --- |
 | `all` (default) | Registers every enabled MCP service in the workspace (including builtin ones) |
 | `selected` | Registers only the services listed in `mcp_services` |
 | `none` | Registers no MCP tools |
@@ -432,7 +432,7 @@ The `mcp_endpoints` table (PostgreSQL migration `000102_mcp_endpoints`, SQLite `
 The management API lives under `/api/v1/mcp-endpoints`. Reads need Viewer, changes need Admin, and API keys need the `manage_channels` capability (fields and examples in [MCP API](../04-api/02-api-agent-mcp.md#mcp-server-endpoints-api-v1-mcp-endpoints)):
 
 | Method | Path | Description |
-|---|---|---|
+| --- | --- | --- |
 | GET | `/mcp-endpoints` | List |
 | GET | `/mcp-endpoints/tools` | Tool catalog (groups and default selection) |
 | POST | `/mcp-endpoints` | Create; the response contains the one-time `token` |
@@ -497,10 +497,10 @@ Clients that only support stdio:
 The Python service under `mcp-server/` predates the built-in MCP server: each process is bound to one API key, can reach one workspace, and maps tools one-to-one onto REST calls. New deployments use the built-in MCP server above. This section is only for users still running the old approach; a later version removes the directory.
 :::
 
-
 `mcp-server/` is a standalone Python package named **`ai-kb-mcp`** (version 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/aikb_mcp_server.py`: `AIKBClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("ai-kb-server", version="1.1.1")` registers the tools and serves them over the selected transport.
 
 ::: warning Package name and API changes (v1.1.x)
+
 - The package name is `ai-kb-mcp` (`mcp-server/pyproject.toml`). It is not published on PyPI yet, so install it from the repository as shown below. The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
 - The implementation uses the high-level API of mcp 2.x: a tool is a plain function with the `@mcp.tool()` decorator, its parameter JSON Schema is derived from the type annotations, the description comes from the docstring, and the return value is serialized automatically. The old `handle_list_tools()` / `handle_call_tool()` dispatch is gone; adding a tool means adding one decorated function.
 - Blocking network I/O (`chat` and `agent_chat`) runs in a thread pool and does not block the asyncio event loop.
@@ -559,7 +559,7 @@ The stdio transport uses stdout as the protocol channel. Any stray `print` corru
 The source of truth is what `aikb_mcp_server.py` and `upload_paths.py` actually read:
 
 | Variable | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `AIKB_BASE_URL` | `http://localhost:8080/api/v1` | Base URL of the AI KB API |
 | `AIKB_API_KEY` | empty | Workspace API key, sent as the `X-API-Key` header |
 | `AIKB_CHAT_TIMEOUT` | `300` | SSE read timeout in seconds for chat and agent_chat; an invalid value falls back to 300 |
@@ -575,7 +575,7 @@ The source of truth is what `aikb_mcp_server.py` and `upload_paths.py` actually 
 `main()` supports three transports (precedence: the `--transport` flag, then the `MCP_TRANSPORT` variable, then the stdio default):
 
 | Transport | Endpoint | Use |
-|---|---|---|
+| --- | --- | --- |
 | `stdio` | stdin/stdout pipe | Local clients such as Claude Desktop and VS Code Copilot (default) |
 | `sse` | `http://host:port/sse` (messages posted to `/sse/messages/`) | Older remote MCP clients |
 | `http` | `http://host:port/mcp` | Streamable HTTP (MCP 2025-03-26 specification), running as `stateless_http` by default |
@@ -591,14 +591,14 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 ##### Workspace management
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `create_tenant` | `name`\*, `description`\*, `business`\*, `retriever_engines` | Create a workspace; without `retriever_engines` it defaults to the postgres keywords + vector pair |
 | `list_tenants` | none | List all workspaces |
 
 ##### Knowledge base management
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `create_knowledge_base` | `name`\*, `description`\*, `embedding_model_id`, `summary_model_id` | Create a knowledge base; default chunking is `chunk_size` 1000, `chunk_overlap` 200, separators `["."]`, multimodal enabled |
 | `list_knowledge_bases` | none | List the current workspace's own knowledge bases |
 | `list_shared_knowledge_bases` | none | List knowledge bases shared with the current workspace through an organization or shared space |
@@ -609,7 +609,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 ##### Knowledge management
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `create_knowledge_from_file` | `kb_id`\*, `file_path`\*, `enable_multimodel` (true), `file_name` | Import a local file from the server; `file_name` may include directories such as `docs/spec/design.pdf` to place it in the matching knowledge base folder; the path is validated by `upload_paths.resolve_upload_file_path` (see "Upload path safety") |
 | `create_knowledge_from_url` | `kb_id`\*, `url`\*, `enable_multimodel` (true) | Import a web page by URL |
 | `create_knowledge_from_text` | `kb_id`, `title`, `content` required; `tag_ids`, `status` | Create a manual Markdown entry; `status` defaults to publish, draft only saves |
@@ -621,7 +621,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 ##### Model management
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `create_model` | `name`\*, `type`\*, `description`\*, `source` ("local"), `base_url`, `api_key`, `is_default` (false) | Create a model configuration; `type` is KnowledgeQA, Embedding or Rerank |
 | `list_models` | none | List all models |
 | `get_model` | `model_id`\* | Model details |
@@ -629,7 +629,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 ##### Session management
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `create_session` | `kb_id`\*, `max_rounds` (5), `enable_rewrite` (true), `fallback_response`, `summary_model_id`, `title`, `description` | Create a chat session bound to a knowledge base (built-in strategy: `embedding_top_k` 10, `keyword_threshold` 0.5, `vector_threshold` 0.7 and others) |
 | `get_session` | `session_id`\* | Session details |
 | `list_sessions` | `page` (1), `page_size` (20) | List sessions |
@@ -638,7 +638,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 ##### Conversation
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `chat` | `session_id`\*, `query`\*, `knowledge_base_ids`, `web_search_enabled` (false) | The RAG pipeline (`/knowledge-chat/{session_id}`): retrieves relevant chunks and lets the LLM summarize; consumes the SSE stream and assembles `{answer, references}`; passing `knowledge_base_ids` (names or UUIDs) is strongly recommended |
 | `agent_chat` | `session_id`\*, `query`\*, `agent_id`\*, `knowledge_base_ids`, `web_search_enabled` (false) | The agent pipeline (`/agent-chat/{session_id}`): the agent calls tools on its own. A pre-check reports the available knowledge bases instead of an obscure backend error when the agent's `kb_selection_mode` is `none` or `selected` without built-in knowledge bases and no `knowledge_base_ids` are passed |
 | `list_agents` | `page` (1), `page_size` (50) | List the custom agents available to the current workspace |
@@ -647,14 +647,14 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 ##### Chunk management
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `list_chunks` | `knowledge_id`\*, `page` (1), `page_size` (20) | List a knowledge item's text chunks |
 | `delete_chunk` | `knowledge_id`\*, `chunk_id`\* | Delete a chunk |
 
 ##### Wiki (read-only)
 
 | Tool | Parameters | Description |
-|---|---|---|
+| --- | --- | --- |
 | `wiki_search` | `kb_id`\*, `query`\*, `limit` (10) | Full-text search over Wiki pages (title, slug, summary, snippet) |
 | `wiki_read_page` | `kb_id`\*, `slug`\* | Read a whole page by slug: Markdown, metadata and inbound and outbound links |
 | `wiki_index_view` | `kb_id`\*, `limit` (50) | A structured Wiki index grouped by type (entity, concept, summary and others) |

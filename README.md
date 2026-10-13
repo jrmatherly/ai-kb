@@ -76,13 +76,13 @@ docker compose pull     # Pull the latest images
 docker compose up -d    # Start core services
 ```
 
-Then open **http://localhost** and follow the onboarding guide. A walkthrough with sample data is in the [Quickstart](https://ai-kb-docs.matherly.net/docs/01-getting-started/03-quickstart).
+Then open **<http://localhost>** and follow the onboarding guide. A walkthrough with sample data is in the [Quickstart](https://ai-kb-docs.matherly.net/docs/01-getting-started/03-quickstart).
 
 > [!TIP]
 > To use a local Ollama model, run `ollama serve > /dev/null 2>&1 &` first. For the Ollama embedding model name, `OLLAMA_BASE_URL`, and RAM notes, see [Configuration](https://ai-kb-docs.matherly.net/docs/01-getting-started/04-configuration).
 
 | Service | URL |
-|---------|-----|
+| --------- | ----- |
 | Web UI | `http://localhost` |
 | Backend API | `http://localhost:8080` |
 | Langfuse Tracing | `http://localhost:3000` |
@@ -92,8 +92,8 @@ Then open **http://localhost** and follow the onboarding guide. A walkthrough wi
 Add `--profile` flags to enable additional components; multiple profiles can be combined.
 
 | Profile | Adds |
-|---------|------|
-| _(default)_ | Core services |
+| --------- | ------ |
+| *(default)* | Core services |
 | `full` | All features |
 | `neo4j` | Knowledge Graph (Neo4j) |
 | `minio` | Object Storage (MinIO) |
@@ -121,7 +121,7 @@ docker compose up -d    # Recreate containers with new images
 ### Other ways to deploy
 
 | Option | When to use it |
-|--------|----------------|
+| -------- | ---------------- |
 | **Docker Compose** | The standard deployment above: all features, multiple services |
 | **Kubernetes (Helm)** | Production clusters; the chart is in [`helm/`](./helm) |
 | **Lite single binary** | Local or low-resource use with no external dependencies (SQLite + in-memory queue); see [Lite vs. standard](./docs/LITE.md) |
@@ -131,6 +131,7 @@ All options, hardware requirements and deployment topologies: [Installation guid
 
 > [!WARNING]
 > AI KB ships with login authentication, but for production deployments we strongly recommend that you:
+>
 > - deploy it in an internal / private network rather than on the public internet;
 > - avoid exposing the service directly to public networks, to prevent information leakage;
 > - configure proper firewall rules and access controls for the deployment environment;
@@ -272,7 +273,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 ## Features
 
 | Area | Highlights |
-|------|------------|
+| ------ | ------------ |
 | [Q&A and agent](https://ai-kb-docs.matherly.net/docs/03-features/07-agent) | Quick Q&A answers from knowledge bases with citations; smart reasoning runs a ReAct agent over knowledge bases, web search, MCP tools, skills and the local browser. Steer, fork or rewind a running conversation, and keep [long-term memory](https://ai-kb-docs.matherly.net/docs/03-features/23-memory) across sessions |
 | [Wiki](https://ai-kb-docs.matherly.net/docs/03-features/14-wiki) | Agent-generated, interlinked wiki pages with a knowledge graph; in-browser editing, revision diff and rollback |
 | [Skills and sandbox](https://ai-kb-docs.matherly.net/docs/03-features/22-skills-sandbox) | Skill catalog installed from ClawHub / SkillHub / Git / ZIP; session-persistent Docker / E2B / Cube sandboxes with network policy; terminal and graphical desktop beside the chat |
@@ -284,7 +285,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 ### Supported backends
 
 | Component | Options |
-|-----------|---------|
+| ----------- | --------- |
 | [LLMs](https://ai-kb-docs.matherly.net/docs/03-features/06-models) | 29 built-in vendors, including OpenAI / Azure OpenAI / Anthropic / DeepSeek / Qwen / Zhipu / Hunyuan / Doubao / Gemini / MiniMax / NVIDIA / SiliconFlow / OpenRouter / LiteLLM / Ollama |
 | Embeddings | Ollama / BGE / GTE / Zhipu / OpenAI-compatible APIs |
 | Vector databases | PostgreSQL (pgvector) / Elasticsearch / OpenSearch / Milvus / Weaviate / Qdrant / Apache Doris / Tencent VectorDB |
@@ -298,7 +299,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 ## Clients and Integrations
 
 | | Client | What it does |
-|:-:|--------|--------------|
+| :-: | -------- | -------------- |
 | <img src="./docs/images/readme/icons/terminal.svg" width="22" height="22" alt=""> | [**CLI `aikb`**](./cli/README.md) | Agent-first command line for the full API, with a curated MCP tool surface and bundled Agent Skills |
 | <img src="./docs/images/readme/icons/plug.svg" width="22" height="22" alt=""> | [**Built-in MCP Server**](https://ai-kb-docs.matherly.net/docs/03-features/08-mcp) | Publishes knowledge bases to Cursor, Claude and other MCP clients over Streamable HTTP; the Python [`mcp-server/`](./mcp-server/MCP_CONFIG.md) is deprecated |
 | <img src="./website-docs/homepage/public/docs/_home/brands/browserskill.png" width="22" height="22" alt=""> | [**Local Browser (BrowserSkill)**](https://ai-kb-docs.matherly.net/docs/05-clients/09-local-browser) | Lets agents operate the user's own Chrome / Edge |
@@ -329,7 +330,7 @@ For headless / CI use, set `AIKB_API_KEY` + `AIKB_HOST` and skip `auth login`; n
 The full product documentation lives at **[ai-kb-docs.matherly.net/docs](https://ai-kb-docs.matherly.net/docs/)** (in Chinese), organized as Getting Started → Architecture → Features → API → Clients → Development and covering ~360 API endpoints and ~150 environment variables.
 
 | Start here | |
-|------------|---|
+| ------------ | --- |
 | [Introduction](https://ai-kb-docs.matherly.net/docs/01-getting-started/01-introduction) | Capabilities overview |
 | [Installation](https://ai-kb-docs.matherly.net/docs/01-getting-started/02-installation) | Docker Compose, Helm, Lite and desktop |
 | [Configuration](https://ai-kb-docs.matherly.net/docs/01-getting-started/04-configuration) | Environment variables and models |

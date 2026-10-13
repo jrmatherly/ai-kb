@@ -10,7 +10,7 @@ aikb search chunks "<query>" --kb <name-or-id> [flags]
 ```
 
 | Flag | Default | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | `--kb` | (required) | KB name or UUID |
 | `--limit`, `-L` | 8 | max chunks returned (1..1000); 8 is tuned for an LLM context window |
 | `--vector-threshold` | 0 (off) | min vector similarity, per-channel pre-fusion |

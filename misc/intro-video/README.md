@@ -30,7 +30,7 @@ ffmpeg -i ai-kb-intro.mp4 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -mo
 ## Structure
 
 | Scene | Time (s) | Content |
-|---|---|---|
+| --- | --- | --- |
 | `open` | 0–6.6 | Scattered sources and files: "Your team's knowledge lives in a hundred places." |
 | `logo` | 6.2–12.2 | Logo and tagline |
 | `pillars` | 11.8–17 | RAG / Agent / Wiki cards |

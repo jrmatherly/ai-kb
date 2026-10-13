@@ -93,7 +93,9 @@ migrations/versioned/
 ## Data Models
 
 ### DataSource
+
 Represents a configured external data source:
+
 - **ID**: Unique identifier
 - **Type**: Connector type (feishu, notion, confluence, etc)
 - **Config**: Encrypted credentials and configuration (JSON)
@@ -107,7 +109,9 @@ Represents a configured external data source:
 - **LastSyncResult**: Summary of last sync
 
 ### SyncLog
+
 Tracks execution of each sync operation:
+
 - **Status**: running | success | partial | failed | canceled
 - **StartedAt/FinishedAt**: Execution timestamps
 - **Items***: Counters (total, created, updated, deleted, skipped, failed)
@@ -115,6 +119,7 @@ Tracks execution of each sync operation:
 - **Result**: Detailed sync result (JSON)
 
 ### Connector Interface
+
 All external data sources implement this interface:
 
 ```go
@@ -130,6 +135,7 @@ type Connector interface {
 ## API Endpoints
 
 ### Data Source Management
+
 ```text
 POST   /api/v1/datasource              # Create
 GET    /api/v1/datasource              # List (by kb_id)
@@ -139,6 +145,7 @@ DELETE /api/v1/datasource/:id          # Delete
 ```
 
 ### Operations
+
 ```text
 POST   /api/v1/datasource/:id/validate      # Test connection
 GET    /api/v1/datasource/:id/resources     # List available resources
@@ -148,12 +155,14 @@ POST   /api/v1/datasource/:id/resume        # Resume
 ```
 
 ### Logs
+
 ```text
 GET    /api/v1/datasource/:id/logs          # List sync logs
 GET    /api/v1/datasource/logs/:log_id      # Get specific log
 ```
 
 ### Metadata
+
 ```text
 GET    /api/v1/datasource/types             # Available connectors
 ```
@@ -163,6 +172,7 @@ GET    /api/v1/datasource/types             # Available connectors
 ### Adding a New Connector
 
 1. **Create the connector package** in `internal/datasource/connector/<type>/`
+
    ```go
    // connector/<type>/client.go - API client
    // connector/<type>/connector.go - Implements Connector interface
@@ -170,6 +180,7 @@ GET    /api/v1/datasource/types             # Available connectors
    ```
 
 2. **Implement the Connector interface**
+
    ```go
    type YourConnector struct {
        // fields
@@ -197,6 +208,7 @@ GET    /api/v1/datasource/types             # Available connectors
    ```
 
 3. **Register the connector** in the container (in container.go)
+
    ```go
    container.Provide(func() datasource.Connector {
        return yourconnector.NewConnector()
@@ -204,6 +216,7 @@ GET    /api/v1/datasource/types             # Available connectors
    ```
 
 4. **Add metadata** in `connector.go`
+
    ```go
    types.ConnectorTypeYourType: {
        Type: types.ConnectorTypeYourType,
@@ -216,11 +229,13 @@ GET    /api/v1/datasource/types             # Available connectors
 ## Database Schema
 
 ### data_sources table
+
 - Stores data source configurations
 - Indexes: tenant_id, knowledge_base_id, type, status
 - Encrypted config field (AES-256-GCM)
 
 ### sync_logs table
+
 - Stores sync operation history
 - Indexes: data_source_id, tenant_id, status, started_at
 - Foreign key to data_sources with cascade delete
@@ -303,6 +318,7 @@ their combined traffic accordingly.
 ## Testing
 
 The framework is designed to be testable:
+
 - Mock connectors can be created for testing
 - No external dependencies required for core logic
 - Database operations isolated and mockable
@@ -310,6 +326,7 @@ The framework is designed to be testable:
 ## Error Handling
 
 All operations return detailed error information:
+
 - Connection failures are captured and status updated
 - Partial failures are logged (some items succeed, some fail)
 - Error messages stored in DataSource for user troubleshooting

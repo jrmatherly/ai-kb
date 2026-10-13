@@ -75,7 +75,7 @@ sudo mv aikb /usr/local/bin/   # or any directory on $PATH
 `cli/Makefile` has build targets that inject version metadata (`internal/build.Version/Commit/Date` through `-ldflags`):
 
 | target | Effect |
-|---|---|
+| --- | --- |
 | `make build` | Compiles to `./bin/aikb` with the `git describe` version, the short commit hash and the build time |
 | `make test` | `go test ./...` |
 | `make test-coverage` | Runs the tests and prints a coverage report |
@@ -135,7 +135,7 @@ The profile resolution chain is in `cli/internal/cmdutil/factory.go` (`Factory.A
 `buildClientFromEnv` in `factory.go` can bypass config.yaml and the keychain completely:
 
 | Environment variable | Effect |
-|---|---|
+| --- | --- |
 | `AIKB_TOKEN` | Bearer JWT (takes precedence over `AIKB_API_KEY`) |
 | `AIKB_API_KEY` | API key |
 | `AIKB_HOST` | Server address, used only when `AIKB_TOKEN` or `AIKB_API_KEY` is set. When unset, the host of the `current_profile` in config.yaml is used |
@@ -165,7 +165,7 @@ To script the CLI or drive it from an agent, you rely on its output contract: a 
 ### Global flags (`addGlobalFlags` in `cli/cmd/root.go`)
 
 | Flag | Short | Description |
-|---|---|---|
+| --- | --- | --- |
 | `--format` | | Output format: `text` \| `json` \| `ndjson`. **The default is `json`** whether or not stdout is a TTY (an agent-first design; people pass `--format text` explicitly). `AIKB_FORMAT` and `defaults.format` in config.yaml set a default. Precedence: `--format` > `AIKB_FORMAT` > `defaults.format` > the json default |
 | `--jq` | `-q` | Filters JSON output with a jq expression. With `--format` unset it selects JSON output, even when `AIKB_FORMAT` or `defaults.format` is `text`; combining it with an explicit `--format text` is an error (exit 2) |
 | `--profile` | | Overrides the active profile for this invocation (nothing written to disk) |
@@ -202,7 +202,7 @@ Error types are hierarchical strings (`cli/internal/cmdutil/errors.go`): `auth.*
 ### Exit code matrix (`cli/cmd/exitcodes.go`; run `aikb exit-codes` for a machine-readable version)
 
 | Exit code | Meaning | Error types | Suggested agent action |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 0 | Success | - | Continue |
 | 1 | Typed local error / operation failed / unclassified | `local.*`, `operation.failed`, `operation.cancelled`, `server.session_create_failed`, `internal.error` | Read stderr, then decide to retry or give up |
 | 2 | Flag or argument parse error (unknown flag, argument count, missing required flag) | `input.invalid_argument` (same type as exit code 5; the exit code tells them apart) | Check `aikb <cmd> --help` |
@@ -232,7 +232,7 @@ Use this section as the reference for each command: its arguments, its flags and
 ### profile - manage connection targets (`cli/cmd/profile/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Lists the configured profiles |
 | add | `add <name>` | Registers a new profile (host only, no credentials) |
 | use | `use <name>` | Switches the default profile persistently |
@@ -248,7 +248,7 @@ aikb profile list --format json
 ### auth - manage credentials (`cli/cmd/auth/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | login | `login` | Authenticates the **active profile**: interactive email and password, or `--with-token` to read an API key from stdin (checked against `/auth/me` before it is stored) |
 | logout | `logout` | Clears the stored credentials of a profile; `--all` clears every profile |
 | list | `list` | Lists authentication profiles |
@@ -267,7 +267,7 @@ aikb auth status --format json
 ### config - inspect the resolved configuration (`cli/cmd/config/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | view | `view` | Read-only view of the resolved configuration and **the source of each value** (active_profile / profile_source / auth_source / host / kb_id / kb_source / log_level / log_level_source / format_default / config_file / cache_dir / secrets / project_link). Makes no network request |
 
 ```bash
@@ -279,7 +279,7 @@ aikb config view --format json --jq '.data.kb_source'
 `link` and `unlink` both hang directly off the root command (see `root.go`).
 
 | Command | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | link | `link [kb]` | Writes `.aikb/project.yaml` in the current directory to bind a knowledge base (positional argument or `--kb`, which are equivalent; with neither on a TTY it prompts for a choice; an existing link is overwritten). Supports `--dry-run` |
 | unlink | `unlink` | Removes the knowledge base binding of the current directory |
 
@@ -291,7 +291,7 @@ aikb link --kb a32a63ff-fb36-4874-bcaa-30f48570a694
 ### kb - manage knowledge bases (`cli/cmd/kb/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Lists visible knowledge bases; `--pinned` shows only pinned ones, `--limit/-L` (default 30) |
 | view | `view <kb-id>` | Shows one by ID |
 | create | `create <name>` | Creates one; `--description`, `--embedding-model`, `--chat-model` (ready to use on creation), `--storage-provider` |
@@ -311,7 +311,7 @@ aikb kb config set <kb-id> --chat-model <id> --embedding-model <id> -y
 ### doc - manage documents (`cli/cmd/doc/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | upload | `upload <file>` | Uploads a local file; `--name`, `--recursive` + `--glob` (a whole directory, such as `'*.pdf'`), `--metadata key=value` (repeatable), `--enable-multimodel`, `--channel` |
 | fetch | `fetch <url>` | Fetches a remote document; `--name`, `--title`, `--file-type` (type hint when the URL has no extension), `--enable-multimodel`, `--tag-id`, `--channel` |
 | create | `create` | Creates an entry from inline Markdown text: `--text` (required), `--title`, `--tag-id`, `--channel` |
@@ -331,7 +331,7 @@ aikb doc wait <doc-id> --timeout 5m && aikb search chunks "RRF" --kb docs
 ### chunk - debug chunks (`cli/cmd/chunk/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Enumerates a document's chunks (for administration and debugging, not retrieval): `--doc` (required), `--limit/-L` (default 50), `--page-size`, `--all-pages` |
 | view | `view <chunk-id>` | Shows the content of one chunk |
 | delete | `delete <chunk-id> [<chunk-id>...] --doc <doc-id>` | Deletes chunks (`--doc` required; exit-10 protection) |
@@ -339,7 +339,7 @@ aikb doc wait <doc-id> --timeout 5m && aikb search chunks "RRF" --kb docs
 ### search - retrieval (`cli/cmd/search/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | chunks | `chunks "<query>"` | **Hybrid retrieval** (vector + keyword): `--kb`, `--limit/-L` (default 8, tuned for a RAG context window), `--vector-threshold`, `--keyword-threshold`, `--no-vector`, `--no-keyword` |
 | docs | `docs "<query>"` | Finds documents by keyword (filtered on the server): `--kb`, `--limit/-L`, `--page-size`, `--all-pages` |
 | kb | `kb "<query>"` | Finds knowledge bases by name or description (substring match on the client): `--limit/-L` |
@@ -367,7 +367,7 @@ aikb chat "Continue" --session sess_abc --format ndjson
 ### session - manage sessions (`cli/cmd/session/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Lists sessions: `--limit/-L`, `--page-size`, `--all-pages`, `--since` (such as 7d / 24h / 30m) |
 | view | `view <session-id>` | Shows a session; `--full` also loads the chat history, `--limit/-L` |
 | ask | `ask "<text>"` | Asks a **server-side custom agent**: `-a/--agent` (required), `--session`, `--reference`, `--verbose` |
@@ -384,7 +384,7 @@ aikb session tool-approval resolve <pending-id> --reject --reason "Write operati
 ### message - messages in a session (`cli/cmd/message/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list --session <session-id>` | Lists messages (newest first, time-cursor pagination): `--session` (required), `--limit/-L`, `--before` (RFC3339) |
 | search | `search "<query>"` | Searches chat history (question and answer pairs) across sessions: `--limit/-L` (default 20), `--mode keyword\|vector\|hybrid`, `--session` (repeatable, limits the scope) |
 | delete | `delete <message-id> --session <session-id>` | Deletes one message (`--session` required; high-risk write with exit-10 protection) |
@@ -392,7 +392,7 @@ aikb session tool-approval resolve <pending-id> --reject --reason "Write operati
 ### agent - custom agent CRUD (`cli/cmd/agent/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Lists agents: `--limit/-L` |
 | view | `view <agent-id>` | Shows the configuration |
 | create | `create <name>` | Creates an agent: `--model` (required unless `--generate-skeleton`), `--description`, `--system-prompt` / `--system-prompt-file` (mutually exclusive, `-` reads stdin), `--agent-mode`, `--attach-kb` (repeatable), `--kb-selection-mode`, `--rerank-model`, `--temperature`, `--from` (copy an existing agent), `--config-file` (a full AgentConfig in YAML or JSON), `--generate-skeleton` (print a blank configuration skeleton) |
@@ -409,7 +409,7 @@ aikb agent update agt_123 --add-kb <kb-id2> --temperature 0.3
 ### model - manage models (`cli/cmd/model/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Lists models: `--type` (Embedding / Rerank / KnowledgeQA / VLLM / ASR), `--source` (local / remote / openai / aliyun …), `--limit/-L` |
 | view | `view <model-id>` | Shows a model |
 | create | `create <name>` | Registers a model: `--type` (required; `chat` means KnowledgeQA), `--source` (required; local=Ollama, remote=provider API), `--provider` (required when source=remote), `--base-url`, `--api-key-stdin` (reads the key from stdin, keeping it out of argv and shell history), `--dimension` (Embedding only), `--default`, `--param key=value` (repeatable, value parsed as JSON), `--display-name`, `--description` |
@@ -426,7 +426,7 @@ echo "$OPENAI_KEY" | aikb model create gpt-4o --type chat --source remote --prov
 A single command: `api <path>`. It sends the active profile's authentication header and a request-id header automatically. The workspace comes from the credential; the CLI does not send the profile's `tenant_id` as a header.
 
 | Flag | Short | Description |
-|---|---|---|
+| --- | --- | --- |
 | `--method` | `-X` | HTTP method (default GET; promoted to POST automatically when a body is supplied) |
 | `--data` | `-d` | Inline JSON body (mutually exclusive with `--input` / `-F`) |
 | `--input` | | Reads the body from a file (`-` for stdin) |
@@ -444,7 +444,7 @@ aikb api /api/v1/knowledge-bases/<id> -X DELETE -y
 ### mcp - Model Context Protocol server (`cli/cmd/mcp/`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | serve | `serve` | Runs a JSON-RPC 2.0 MCP server on stdin/stdout (stdio is the only transport for now); logs go to stderr. It builds the SDK client eagerly at startup and fails immediately with `auth.unauthenticated` when no profile is configured |
 
 It offers 10 tools (implemented in `cli/internal/mcp/tools.go`). `kb_list` / `kb_view` / `doc_list` / `doc_view` / `doc_download` / `search_chunks` / `chunk_list` / `agent_list` are read-only; `chat` and `session_ask` create session and message records. There are no tools to create or delete resources or to upload files.
@@ -462,7 +462,7 @@ MCP client registration example (goes in the client's `mcpServers` configuration
 ### skills - bundled Agent Skills (`cli/cmd/skills/skills.go`)
 
 | Subcommand | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | list | `list` | Lists the Agent Skills embedded in the binary (`cli/skills/embed.go`) with name / description / files |
 | install | `install` | Writes the embedded skills to an agent's skills directory: `--dir` (default `~/.claude/skills`, a leading `~` is expanded), `--force` (overwrite existing files; otherwise they are skipped); supports `--dry-run` |
 
@@ -484,7 +484,7 @@ aikb doctor --format json --jq '.data.summary.all_passed'
 ### Root-level helper commands (`cli/cmd/root.go`, `schema.go`, `exitcodes.go`)
 
 | Command | Use | Description |
-|---|---|---|
+| --- | --- | --- |
 | version | `version` | Build metadata (version / commit / date) |
 | schema | `schema [command...]` | Machine-readable command contract (see "Machine introspection" above) |
 | exit-codes | `exit-codes` | The exit code matrix (JSON or a table) |

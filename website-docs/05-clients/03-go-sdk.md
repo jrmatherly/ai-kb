@@ -46,7 +46,7 @@ Create an instance with `NewClient(baseURL string, options ...ClientOption) *Cli
 ### ClientOption reference
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `WithAPIKey(key string)` | Sets a long-lived API key, sent as the `X-API-Key` header |
 | `WithBearerToken(token string)` | Sets a short-lived JWT, sent as `Authorization: Bearer <token>` (usually after a successful `Login`) |
 | `WithToken(token string)` | **Deprecated**. The v0.x compatibility alias for `WithAPIKey`; it will be removed in the next major version |
@@ -102,7 +102,7 @@ This section lists every public `Client` method by resource, so you can find the
 ### Auth: `client/auth.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `Login` | Email and password login; returns the JWT access and refresh tokens |
 | `GetCurrentUser` | Returns the signed-in principal and workspace information (`GET /api/v1/auth/me`) |
 | `RefreshToken` | Exchanges a refresh token for a new access token |
@@ -113,7 +113,7 @@ This section lists every public `Client` method by resource, so you can find the
 ### Knowledge bases: `client/knowledgebase.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateKnowledgeBase` | Creates a knowledge base |
 | `GetKnowledgeBase` | Returns knowledge base details |
 | `ListKnowledgeBases` | Lists knowledge bases |
@@ -130,7 +130,7 @@ This section lists every public `Client` method by resource, so you can find the
 ### Knowledge: `client/knowledge.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateKnowledgeFromFile` | Uploads a local file as a knowledge item (multipart; supports metadata, the multimodal switch, a custom file name, the channel and parse config overrides) |
 | `CreateKnowledgeFromURL` | Creates a knowledge item from a URL |
 | `GetKnowledge` | Returns knowledge item details |
@@ -160,7 +160,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 ### Chunks: `client/chunk.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `ListKnowledgeChunks` | Lists the chunks of a knowledge item with pagination |
 | `UpdateChunk` | Updates a chunk's content or enabled state |
 | `DeleteChunk` | Deletes a chunk |
@@ -173,7 +173,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 ### Sessions: `client/session.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateSession` | Creates a session |
 | `GetSession` | Returns a session |
 | `GetSessionsByTenant` | Lists the workspace's sessions with pagination |
@@ -189,7 +189,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 ### Messages: `client/message.go`, `client/message_suggestion.go`
 
 | Method | Description | Source file |
-|---|---|---|
+| --- | --- | --- |
 | `LoadMessages` | Loads messages by time | `client/message.go` |
 | `GetRecentMessages` | Returns the latest N messages | `client/message.go` |
 | `GetMessagesBefore` | Returns messages before a point in time | `client/message.go` |
@@ -203,7 +203,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 ### Agent chat (streaming): `client/agent.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `AgentQAStream` | Agent-mode streaming Q&A (Deprecated, simplified entry point) |
 | `AgentQAStreamWithRequest` | Agent-mode streaming Q&A with the full `AgentQARequest` payload |
 | `NewAgentSession` | Creates an `AgentSession` wrapper (with `Ask`, `AskWithRequest` and `GetSessionID`) |
@@ -211,7 +211,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 ### Agent management: `client/agent_manage.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateAgent` | Creates a custom agent |
 | `ListAgents` | Lists agents |
 | `GetAgent` | Returns an agent |
@@ -229,7 +229,7 @@ Two request fields changed in v0.8.2:
 ### Models: `client/model.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateModel` | Creates a model |
 | `GetModel` | Returns a model |
 | `ListModels` | Lists models |
@@ -240,7 +240,7 @@ Two request fields changed in v0.8.2:
 ### Workspaces (Tenant): `client/tenant.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateTenant` | Creates a workspace |
 | `GetTenant` | Returns a workspace |
 | `UpdateTenant` | Updates a workspace |
@@ -260,7 +260,7 @@ Two request fields changed in v0.8.2:
 ### Organizations and sharing: `client/organization.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateOrganization` / `ListMyOrganizations` / `GetOrganization` / `UpdateOrganization` / `DeleteOrganization` | Organization CRUD |
 | `SearchOrganizations` / `PreviewOrganizationByInviteCode` | Search organizations; preview an organization by invite code |
 | `JoinOrganizationByInviteCode` / `SubmitJoinRequest` / `JoinByOrganizationID` / `LeaveOrganization` / `RequestRoleUpgrade` | Join, leave, request a role upgrade |
@@ -276,7 +276,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### FAQ: `client/faq.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `ListFAQEntries` | Lists FAQ entries with pagination |
 | `UpsertFAQEntries` | Adds or updates FAQ entries in bulk |
 | `CreateFAQEntry` | Creates one FAQ entry |
@@ -294,7 +294,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### Tags: `client/tag.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `ListTags` | Lists tags |
 | `CreateTag` | Creates a tag |
 | `UpdateTag` / `UpdateTagBySeqID` | Updates a tag (by ID / by seq ID) |
@@ -303,7 +303,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### MCP services: `client/mcp_service.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `CreateMCPService` / `ListMCPServices` / `GetMCPService` / `UpdateMCPService` / `DeleteMCPService` | MCP service CRUD |
 | `TestMCPService` | Connectivity test |
 | `GetMCPServiceTools` / `GetMCPServiceResources` | Lists MCP tools and resources |
@@ -316,7 +316,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### MCP endpoints (AI KB as an MCP server): `client/mcp_endpoint.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `ListMCPEndpoints` / `GetMCPEndpoint` / `CreateMCPEndpoint` / `UpdateMCPEndpoint` / `DeleteMCPEndpoint` | CRUD for the MCP endpoints the workspace publishes. `Token` appears only in the create and rotate responses |
 | `RotateMCPEndpointToken` | Rotates the endpoint token; the old token stops working immediately |
 | `GetMCPEndpointToolCatalog` | The tools an endpoint can expose, with groups and default selection |
@@ -324,7 +324,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### Initialization and model checks: `client/initialization.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `GetInitializationConfig` / `InitializeByKB` / `UpdateKBConfig` / `SetKBModelConfig` | Knowledge base initialization and model configuration |
 | `CheckOllamaStatus` / `ListOllamaModels` / `CheckOllamaModels` | Ollama status and model detection |
 | `DownloadOllamaModel` / `GetOllamaDownloadProgress` / `ListOllamaDownloadTasks` | Ollama model download tasks |
@@ -334,7 +334,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### System: `client/system.go`
 
 | Method | Description |
-|---|---|
+| --- | --- |
 | `GetSystemInfo` | Returns system information (version and more) |
 | `GetDeploymentCapabilities` | Returns the deployment capability snapshot (`GET /api/v1/system/capabilities`: the edition, and `supported` / `reason` for each capability) |
 | `ListParserEngines` / `CheckParserEngines` | Lists and checks document parser engines |
@@ -344,7 +344,7 @@ Since v0.8.2 the server resolves invitation candidates only by **full workspace 
 ### Other
 
 | Method | Description | Source file |
-|---|---|---|
+| --- | --- | --- |
 | `StartEvaluation` / `GetEvaluationResult` | Starts an evaluation task / returns its result | `client/evaluation.go` |
 | `ListSkills(ctx, sandboxConfigID)` | Lists the skills a sandbox configuration can invoke; returns the skill list and an availability flag | `client/skill.go` |
 | `GetWebSearchProviders` | Lists the available web search providers | `client/web_search.go` |

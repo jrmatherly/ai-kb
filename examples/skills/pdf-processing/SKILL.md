@@ -29,7 +29,8 @@ with pdfplumber.open("document.pdf") as pdf:
 
 **Form filling**: See [FORMS.md](FORMS.md) for complete guide
 
-**Utility scripts**: 
+**Utility scripts**:
+
 - Run `scripts/analyze_form.py` to extract form fields
 - Run `scripts/extract_text.py` to extract text from a PDF
 

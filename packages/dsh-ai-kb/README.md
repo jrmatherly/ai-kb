@@ -71,7 +71,7 @@ Mounting two deployments is two rows with two prefixes:
 ## Tools
 
 | Tool | AI KB endpoint | What the model gets |
-|---|---|---|
+| --- | --- | --- |
 | `aikb_list_knowledge_bases` | `GET /knowledge-bases` | Knowledge base names and ids, to report what exists or to narrow a later search |
 | `aikb_search` | `POST /knowledge-search` + `GET /knowledge/search` | Ranked passages verbatim, each with a `knowledge_id`, score and chunk index, plus any document the query names |
 | `aikb_read_document` | `GET /chunks/:knowledge_id` + `GET /knowledge/:id` | One document's passages reassembled in order, led by its title and summary, with paging |
@@ -123,7 +123,7 @@ The shipped configuration layer also reads `AIKB_RESOURCE_URLS` (`public` or `ha
 ## Configuration reference
 
 | Field | Default | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `baseUrl` | `http://localhost:8080/api/v1` | `/api/v1` is appended when missing |
 | `apiKey` | unset | `X-API-Key`; unset means an unauthenticated deployment |
 | `tenantId` | unset | `X-Tenant-ID`, required for platform-scoped keys |

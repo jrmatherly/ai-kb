@@ -36,6 +36,7 @@ To help us understand and resolve the issue quickly, please include:
 ### Response timeline
 
 We aim to:
+
 - Acknowledge receipt of your report within **48 hours**
 - Provide a status update as the investigation progresses
 

@@ -8,6 +8,7 @@ Helm chart for deploying [AI KB](https://github.com/jrmatherly/ai-kb) - an AI-po
 ## Overview
 
 AI KB is an intelligent knowledge base platform that combines:
+
 - Document parsing and understanding
 - Vector search with BM25 hybrid retrieval
 - LLM integration for conversational AI
@@ -196,7 +197,7 @@ deployment are accessible to every replica.
 Optional Service name overrides preserve the following defaults:
 
 | Parameter | Default when omitted or empty |
-|-----------|-------------------------------|
+| ----------- | ------------------------------- |
 | `app.service.name` | `app` |
 | `frontend.service.name` | `frontend` |
 | `postgresql.service.name` | `postgres` |
@@ -231,7 +232,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### Global Parameters
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `global.storageClass` | Storage class for PVCs | `""` |
 | `global.imagePullSecrets` | Image pull secrets | `[]` |
 | `global.maxFileSizeMB` | Maximum upload size in MB (frontend, app, docreader) | `50` |
@@ -241,7 +242,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### ServiceAccount
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `serviceAccount.create` | Create ServiceAccount | `true` |
 | `serviceAccount.name` | ServiceAccount name | `""` |
 | `serviceAccount.annotations` | ServiceAccount annotations | `{}` |
@@ -249,7 +250,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### App (Backend)
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `app.enabled` | Enable backend | `true` |
 | `app.replicaCount` | Number of replicas | `1` |
 | `app.strategy.type` | App update strategy: `RollingUpdate` or `Recreate` | `RollingUpdate` |
@@ -264,7 +265,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### Frontend
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `frontend.enabled` | Enable frontend | `true` |
 | `frontend.replicaCount` | Number of replicas | `1` |
 | `frontend.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-ui` |
@@ -273,7 +274,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### DocReader
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `docreader.enabled` | Enable DocReader | `true` |
 | `docreader.replicaCount` | Number of replicas | `1` |
 | `docreader.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-docreader` |
@@ -282,7 +283,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### PostgreSQL (ParadeDB)
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `postgresql.enabled` | Enable PostgreSQL | `true` |
 | `postgresql.image.repository` | Image repository | `paradedb/paradedb` |
 | `postgresql.image.tag` | Image tag | `v0.18.9-pg17` |
@@ -292,7 +293,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### Redis
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `redis.enabled` | Enable Redis | `true` |
 | `redis.image.repository` | Image repository | `redis` |
 | `redis.image.tag` | Image tag | `7-alpine` |
@@ -302,7 +303,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### Ingress
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `ingress.enabled` | Enable ingress | `false` |
 | `ingress.className` | Ingress class | `nginx` |
 | `ingress.host` | Hostname | `ai-kb.example.com` |
@@ -312,7 +313,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 ### Secrets
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `secrets.dbUser` | Database username | `postgres` |
 | `secrets.dbPassword` | Database password | `""` (required) |
 | `secrets.dbName` | Database name | `aikb` |
@@ -325,7 +326,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 These map to docker-compose profiles:
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+| ----------- | ------------- | --------- |
 | `minio.enabled` | Enable MinIO storage | `false` |
 | `neo4j.enabled` | Enable Neo4j (GraphRAG) | `false` |
 | `qdrant.enabled` | Enable Qdrant vector DB | `false` |
@@ -337,17 +338,20 @@ These map to docker-compose profiles:
 **Never commit secrets to Git!** Use one of these approaches:
 
 1. **Helm --set flags** (for testing)
+
    ```bash
    helm install ai-kb ./helm --set secrets.dbPassword=xxx
    ```
 
 2. **External Secrets Operator** (recommended for production)
+
    ```yaml
    secrets:
      existingSecret: ai-kb-external-secret
    ```
 
 3. **Sealed Secrets** (for GitOps)
+
    ```bash
    kubeseal < secret.yaml > sealed-secret.yaml
    ```
@@ -355,6 +359,7 @@ These map to docker-compose profiles:
 ### Pod Security
 
 The chart follows CNCF security best practices:
+
 - Runs as non-root user
 - Read-only root filesystem where possible
 - Drops all capabilities
@@ -380,11 +385,13 @@ kubectl delete pvc -n ai-kb -l app.kubernetes.io/instance=ai-kb
 ## Troubleshooting
 
 ### Check Pod Status
+
 ```bash
 kubectl get pods -n ai-kb
 ```
 
 ### View Logs
+
 ```bash
 # Backend logs
 kubectl logs -n ai-kb -l app.kubernetes.io/component=app -f
@@ -396,14 +403,17 @@ kubectl logs -n ai-kb -l app.kubernetes.io/component=frontend -f
 ### Common Issues
 
 #### Pod stuck in Pending
+
 - Check if PVCs are bound: `kubectl get pvc -n ai-kb`
 - Verify storage class exists: `kubectl get sc`
 
 #### Connection refused errors
+
 - Wait for all pods to be Ready
 - Check service endpoints: `kubectl get endpoints -n ai-kb`
 
 #### Database connection errors
+
 - Verify secrets are correct
 - Check PostgreSQL logs: `kubectl logs -n ai-kb -l app.kubernetes.io/component=database`
 
@@ -414,6 +424,7 @@ See [CONTRIBUTING.md](https://github.com/jrmatherly/ai-kb/blob/main/CONTRIBUTING
 ## References
 
 This Helm chart follows best practices from:
+
 - [Helm Best Practices](https://helm.sh/docs/chart_best_practices/)
 - [ArgoCD Helm Chart](https://github.com/argoproj/argo-helm)
 - [Prometheus Helm Charts](https://github.com/prometheus-community/helm-charts)

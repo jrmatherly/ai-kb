@@ -5,6 +5,7 @@ This guide walks you through implementing a new connector (e.g., Feishu, Notion,
 ## Overview
 
 A connector is an adapter that translates between AI KB's data model and an external platform's API. It handles:
+
 - Connection validation (credentials, connectivity)
 - Resource listing (documents, spaces, folders the user can choose from)
 - Full sync (fetch all items from selected resources)
@@ -17,6 +18,7 @@ mkdir -p internal/datasource/connector/yourtype/
 ```
 
 Create three files:
+
 - `client.go` - API client wrapper
 - `connector.go` - Implements Connector interface
 - `types.go` - Platform-specific data structures
@@ -409,7 +411,9 @@ func TestYourConnectorFetchAll(t *testing.T) {
 ## Common Patterns
 
 ### OAuth Flow
+
 If using OAuth, store tokens in config:
+
 ```go
 type Config struct {
     AccessToken  string
@@ -427,7 +431,9 @@ func (c *Client) ensureValidToken(ctx context.Context) error {
 ```
 
 ### Pagination
+
 For platforms with pagination:
+
 ```go
 func (c *Client) GetDocumentsPage(ctx context.Context, pageToken string) (*Page, error) {
     // Returns {Items, NextPageToken}
@@ -435,7 +441,9 @@ func (c *Client) GetDocumentsPage(ctx context.Context, pageToken string) (*Page,
 ```
 
 ### Incremental Sync
+
 For timestamp-based incremental sync:
+
 ```go
 func (c *Client) GetModifiedSince(ctx context.Context, since time.Time) ([]Item, error) {
     // Uses API parameter like &modified_after=2026-03-26T10:00:00Z
@@ -443,7 +451,9 @@ func (c *Client) GetModifiedSince(ctx context.Context, since time.Time) ([]Item,
 ```
 
 ### Deletion Tracking
+
 For platforms that report deletions:
+
 ```go
 type Item struct {
     IsDeleted bool // Set when item is deleted
@@ -455,6 +465,7 @@ type Item struct {
 1. Set up test credentials
 2. Create small test resource (e.g., single document)
 3. Test each method:
+
    ```go
    connector := NewConnector()
    config := &types.DataSourceConfig{...}
@@ -477,12 +488,14 @@ type Item struct {
 ## Example: Feishu Connector Reference
 
 The Feishu connector would be a good first implementation since:
+
 1. Feishu API is well-documented
 2. AI KB already has `internal/im/feishu/` for reference
 3. Popular in China (key market)
 4. Has webhook support for real-time sync
 
 Structure:
+
 ```text
 internal/datasource/connector/feishu/
 ├── client.go       (Feishu API client)
@@ -491,6 +504,7 @@ internal/datasource/connector/feishu/
 ```
 
 Key files to reference:
+
 - `internal/im/feishu/adapter.go` - Feishu API patterns
 - `internal/im/feishu/longconn.go` - Connection handling
 

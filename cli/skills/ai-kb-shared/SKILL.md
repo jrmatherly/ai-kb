@@ -66,7 +66,7 @@ false - so an unconfigured KB is never silently "healthy".
 Default output is `--format json`: a single envelope.
 
 | Field | Meaning |
-|---|---|
+| --- | --- |
 | `ok` | `true`/`false` - branch on this first (see batch/wait caveat below) |
 | `data` | success payload (object or array; absent on mutation-only success) |
 | `meta` | `count` / `has_more` / `dry_run` / `plan` … |
@@ -99,7 +99,7 @@ Default output is `--format json`: a single envelope.
 ## 4. Exit codes (branch on these)
 
 | Code | Meaning (typed code class) | Agent action |
-|---|---|---|
+| --- | --- | --- |
 | 0 | success (incl. `--dry-run`) | proceed |
 | 1 | `local.*` / unclassified (incl. `local.kb_not_found`) | read `error`, decide retry/abort |
 | 2 | flag / argument validation (bad/unknown/missing-required flag) | re-check `aikb <cmd> --help` |
@@ -153,9 +153,11 @@ aikb doc upload ./manual.pdf --kb "$KB"
 ## 7a. Reliability patterns for long-running agent runs
 
 ### Inspecting prior messages
+
 Use `aikb message list --session <sess-id>` to review the message history of a session (e.g., after a stream drops) before deciding whether to re-ask or continue. Use `aikb message search "<query>"` to locate a prior Q&A exchange across all sessions - prefer this over re-running an expensive query when the answer may already exist.
 
 ### Tool-approval unlock
+
 An agent run pauses mid-stream on a tool-approval event when the server requires human sign-off before executing a tool call. The pattern:
 
 1. The stream emits a tool-approval event; capture the `pending_id`.
@@ -203,7 +205,7 @@ that to learn a command without scraping the human help table.
 ## Common mistakes
 
 | Mistake | Fix |
-|---|---|
+| --- | --- |
 | `aikb auth login` before any profile exists | `profile add <n> --host <url> --use` first (§1) |
 | Passing `--host` or `--name` to `auth login` | `auth login` takes neither - host comes from the profile; use `profile add <n> --host <url> --use`, then `auth login` |
 | Auto-adding `-y` to clear an exit-10 | Never; get user approval first (§5) |

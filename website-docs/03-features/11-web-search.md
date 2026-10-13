@@ -26,7 +26,7 @@ registry.Register("serply", infra_web_search.NewSerplyProvider)
 ```
 
 | Engine | Source file | API key | Endpoint | Notes |
-|------|---------|-----------------|------|------|
+| ------ | --------- | ----------------- | ------ | ------ |
 | DuckDuckGo | `duckduckgo.go` | No | HTML endpoint first, API fallback | Free; `proxy_url` supported |
 | Google | `google.go` | Yes (plus `engine_id`) | Google Custom Search API (official `customsearch/v1` SDK) | |
 | Bing | `bing.go` | Yes | `https://api.bing.microsoft.com/v7.0/search` (hard-coded) | |
@@ -62,7 +62,7 @@ Every endpoint except SearXNG is hard-coded and cannot be changed by a workspace
 This section describes what a saved search configuration contains and how it is managed over the API. Each workspace can create several search engine configurations (for example "Production Bing" and "Test Google"). They are stored as `WebSearchProviderEntity` rows in the `web_search_providers` table (`internal/types/web_search_provider.go`) and agents reference them by ID. The parameter structure is `WebSearchProviderParameters`:
 
 | Name | Type | Default | Description |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `api_key` | string | empty | The search service key, AES-GCM encrypted at rest; changed only through the `/credentials` subresource and never returned in responses |
 | `engine_id` | string | empty | Google Custom Search only |
 | `base_url` | string | empty | SearXNG only: the address of the self-hosted instance; checked with `utils.ValidateURLForSSRF`, private addresses must be added to `SSRF_WHITELIST` |

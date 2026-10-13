@@ -103,12 +103,14 @@ producer in v0.8 will not change the envelope shape.
 ### CLI vs server SDK contract boundary
 
 CLI 1.0 contract covers:
+
 - ✅ Envelope wire shape (success + error)
 - ✅ CLI-injected events (`init` only)
 - ✅ NDJSON line shape (bare `{type:...,...}`)
 - ✅ Passthrough discipline (CLI doesn't rename SDK events)
 
 CLI 1.0 contract does NOT cover:
+
 - ❌ Specific SDK event names (`answer` / `tool_call` / `complete` / ...)
 - ❌ SDK event field shapes (server's own version contract)
 
@@ -124,7 +126,7 @@ Make errors structured, actionable, and specific.
 ### Environment variables
 
 | Variable | Purpose |
-|---|---|
+| --- | --- |
 | `AIKB_PROFILE` | Active profile name. Equivalent to the global `--profile <name>` flag; overridden by `--profile`. Useful in CI scripts that cannot pass global flags. |
 | `AIKB_FORMAT` | Default `--format` value (`text \| json \| ndjson`). Overridden by explicit `--format`; overrides config.yaml `defaults.format`. Invalid values ignored silently. `--jq` still selects JSON over a `text` default. |
 | `AIKB_KB_ID` | Default KB ID for commands that accept `--kb`. Overridden by `--kb`. |
@@ -146,35 +148,35 @@ is or isn't aligned with.
 ### 1. Channel split: success → stdout, error → stderr
 
 | | |
-|---|---|
+| --- | --- |
 | **AI KB** | success envelope → stdout; error envelope → stderr |
 | **Rationale** | `aikb ... --format json \| jq '.data[]'` must not mix error objects into the data stream. Channel split lets pipeline consumers suppress errors with `2>/dev/null` and still get clean JSON on stdout. |
 
 ### 2. `aikb api DELETE` triggers exit-10 confirmation
 
 | | |
-|---|---|
+| --- | --- |
 | **AI KB** | DELETE triggers exit-10 (`input.confirmation_required`); user bypasses with `-y/--yes` |
 | **Rationale** | DELETE is irreversible. Most raw-API CLI commands rely on restricted credentials for safety, but self-hosted deployments may not have restricted-credential infrastructure available. Defensive default because agents are common consumers. |
 
 ### 3. `retry_argv` distinct from `hint`
 
 | | |
-|---|---|
+| --- | --- |
 | **AI KB** | two separate fields: `retry_argv` (suggested next argv as a string array, directly executable for non-destructive errors; informational only on exit-10) + `hint` (prose) |
 | **Rationale** | Agents don't regex-extract argv from prose - known fragility. Trade-off: one extra envelope field. On exit-10, the user must approve the destructive write; agents surface `retry_argv` for human review, not auto-execution. |
 
 ### 4. NDJSON event stream has no envelope wrapping
 
 | | |
-|---|---|
+| --- | --- |
 | **AI KB** | streaming commands (`chat`, `session ask`) emit bare `{type:...}` per line; no envelope |
 | **Rationale** | This matches established practice across NDJSON-emitting CLIs and webhook protocols. A streaming envelope requires unwrap before dispatch - net burden with no benefit. |
 
 ### 5. No `schema_version` field in payload
 
 | | |
-|---|---|
+| --- | --- |
 | **Mainstream** | some APIs (Anthropic / OpenAI) embed a `version` field in payload |
 | **AI KB** | version identity via CLI binary semver + CHANGELOG `### BREAKING` + skill `tested_against` + CI parity tests |
 | **Rationale** | Mainstream CLIs don't embed version in payload. Agents have complete version awareness via `aikb --version` and skill version binding. |
@@ -377,7 +379,7 @@ Agents parse the first colon to extract the typed code. The exit code class (see
      The CI scan in errors_doc_test.go enforces parity. -->
 
 | Code | Exit | Retryable | Default hint |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `auth.unauthenticated` | 3 | no (run `auth login`) | run `aikb auth login` |
 | `auth.token_expired` | 3 | yes (after refresh) | your session expired; run `aikb auth login` to re-authenticate |
 | `auth.bad_credential` | 3 | no (re-login) | run `aikb auth login` |
@@ -472,7 +474,7 @@ The server **replays all stored events from the start** of the assistant message
 ### Server-side buffer TTL
 
 | Mode | TTL |
-|---|---|
+| --- | --- |
 | `STREAM_MANAGER_TYPE=redis` | **1 hour** (server-side; not configurable from the CLI) |
 | `STREAM_MANAGER_TYPE=memory` (default) | **Process lifetime** (server restart = data loss; no explicit cleanup logic) |
 
@@ -503,7 +505,7 @@ The dry-run path is **offline** - no SDK calls, no Factory.Client() init, no Res
 ### Interactions
 
 | Combination | Behavior |
-|---|---|
+| --- | --- |
 | `--dry-run` (destructive cmd, no `-y`) | NO exit-10; emits plan + exit 0 (preview implies no execution, so the confirmation gate is irrelevant) |
 | `--dry-run` + `-y` | Equivalent to single `--dry-run`; `-y` is no-op (dry-run early-exits before ConfirmDestructive) |
 | `--dry-run` + `api -X GET` (or default GET) | FlagError exit 2: "--dry-run requires explicit -X POST/PUT/PATCH/DELETE; default GET is read-only with no side effect to preview" |

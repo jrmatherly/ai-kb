@@ -123,20 +123,26 @@ For AI agents (any MCP-capable host) integrating AI KB:
 1. Install: build from source (see [Install](#install))
 2. Authenticate. In a sandbox / CI, the **stateless** path needs no `auth login`
    and writes nothing to disk - just set two env vars:
+
    ```bash
    export AIKB_API_KEY="sk-…"   # or AIKB_TOKEN for a bearer JWT
    export AIKB_HOST="https://kb.example.com"
    aikb kb list                 # already authenticated
    ```
+
    Or, for a persisted local profile:
+
    ```bash
    aikb profile add prod --host <server-url> --use
    aikb auth login
    ```
+
 3. Register MCP in the host's MCP config:
+
    ```json
    {"mcpServers": {"aikb": {"command": "aikb", "args": ["mcp", "serve"]}}}
    ```
+
 4. Read the [wire contract](AGENTS.md#wire-contract-for-ai-agents) before
    parsing `--format json` output.
 5. Read the [exit-10 anti-patterns](AGENTS.md#exit-10-anti-patterns) before
@@ -261,16 +267,16 @@ taxonomy.
 ### Exit codes
 
 | Code | Meaning | Agent action |
-|---|---|---|
-| `0`   | success                                                | continue |
-| `1`   | typed `local.*` / `operation.failed` / unclassified    | read stderr, decide retry/abort |
-| `2`   | flag / argument validation error                       | re-check `aikb <cmd> --help` |
-| `3`   | `auth.*` (token missing / expired / forbidden)         | re-auth, then retry |
-| `4`   | `resource.not_found`                                   | verify the resource id |
-| `5`   | `input.*` (other than `confirmation_required`)         | adjust args, retry |
-| `6`   | `server.rate_limited`                                  | back off, retry |
-| `7`   | `server.*` / `network.*`                               | transient - retry with backoff |
-| `10`  | **`input.confirmation_required`** (high-risk write)    | ask the human, retry with `-y` only after explicit approval |
+| --- | --- | --- |
+| `0` | success | continue |
+| `1` | typed `local.*` / `operation.failed` / unclassified | read stderr, decide retry/abort |
+| `2` | flag / argument validation error | re-check `aikb <cmd> --help` |
+| `3` | `auth.*` (token missing / expired / forbidden) | re-auth, then retry |
+| `4` | `resource.not_found` | verify the resource id |
+| `5` | `input.*` (other than `confirmation_required`) | adjust args, retry |
+| `6` | `server.rate_limited` | back off, retry |
+| `7` | `server.*` / `network.*` | transient - retry with backoff |
+| `10` | **`input.confirmation_required`** (high-risk write) | ask the human, retry with `-y` only after explicit approval |
 | `124` | `operation.timeout` (e.g. `doc wait --timeout` reached) | raise `--timeout` or check the underlying job |
 | `130` | cancelled by signal - typed `operation.cancelled` errors exit 1; `main.go` promotes the process exit to 130 when the root context was signal-cancelled (SIGINT / SIGTERM) | stop, do not retry |
 
@@ -417,11 +423,11 @@ For per-resource verification, the `status` / `check` verb pair gives
 a fast vs deep choice:
 
 | Verb | Cost | Use |
-|---|---|---|
-| `aikb kb status <kb-id>`     | 1 HTTP    | live counts / processing flag |
-| `aikb kb check <kb-id>`      | 1+N HTTP  | adds `failed_count` via doc-list page-walk |
-| `aikb agent status <agent-id>` | 1 HTTP  | reachable / model_id |
-| `aikb agent check <agent-id>`  | 1+N HTTP | also probes every KB in the agent's scope |
+| --- | --- | --- |
+| `aikb kb status <kb-id>` | 1 HTTP | live counts / processing flag |
+| `aikb kb check <kb-id>` | 1+N HTTP | adds `failed_count` via doc-list page-walk |
+| `aikb agent status <agent-id>` | 1 HTTP | reachable / model_id |
+| `aikb agent check <agent-id>` | 1+N HTTP | also probes every KB in the agent's scope |
 
 `aikb doc wait <doc-id> [<doc-id>...]` blocks until each document
 reaches a terminal `parse_status` (completed or failed). Exit codes:

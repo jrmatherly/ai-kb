@@ -28,6 +28,7 @@ exact command and failure here.
 -->
 
 ## Checklist
+
 - [ ] `git diff --check origin/main...HEAD` passes
 - [ ] Changed source files are formatted
 - [ ] Targeted tests for the changed packages/components pass
