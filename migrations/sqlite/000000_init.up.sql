@@ -936,7 +936,7 @@ CREATE TABLE IF NOT EXISTS tenant_api_keys (
         CHECK (scope_type IN ('tenant', 'platform')),
     name TEXT NOT NULL,
     key_hash TEXT NOT NULL UNIQUE,
-    key_hint VARCHAR(16) NOT NULL DEFAULT '',
+    api_key TEXT NOT NULL DEFAULT '',
     full_access BOOLEAN NOT NULL DEFAULT 0,
     knowledge_base_ids TEXT NOT NULL DEFAULT '[]',
     capabilities TEXT NOT NULL DEFAULT '[]',

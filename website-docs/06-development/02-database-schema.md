@@ -92,6 +92,7 @@ migrations/
 | 000114 | chunks.source_locators (JSONB), the chunk's positions in the original file |
 | 000115 | Upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4 when the server ships those versions; skipped with `app.skip_embedding=true` |
 | 000116 | The `system_secrets` table (`name`, `value`), server-generated secrets such as the per-install JWT secret; no API reads it |
+| 000117 | tenant_api_keys.key_hint (VARCHAR(16)). A startup backfill then writes the real hash for keys 000065 copied with a `migrated-tenant-*` placeholder, fills the hint and empties `api_key`, so no token stays stored |
 
 SQLite version numbers evolve independently and do not map one-to-one to the PostgreSQL numbers:
 
@@ -117,6 +118,7 @@ SQLite version numbers evolve independently and do not map one-to-one to the Pos
 | 000032–000033 | The `chunk_images` table with its triggers, chunks.source_locators (matching 000113–000114) |
 | 000034 | mcp_services.usage_instructions and the `mcp_metadata` table (matching 000092) |
 | 000035 | The `system_secrets` table (matching 000116) |
+| 000036 | tenant_api_keys.key_hint (matching 000117) |
 
 000099, 000112 and 000115 (pg_search and pgvector upgrades, embeddings indexes) have no SQLite counterpart. 000078 has no separate SQLite version: its columns and the `chunk_revisions` table are part of the SQLite baseline `000000_init`.
 
@@ -135,7 +137,7 @@ The tables below show the **effective structure after all up migrations** (later
 | `auth_tokens` | Login tokens | `id`, `user_id` (FK→users, CASCADE), `token`, `token_type` (access/refresh), `expires_at` (TIMESTAMPTZ since 000072), `is_revoked` |
 | `tenant_members` | Workspace-level RBAC membership | `user_id`+`tenant_id` (unique among non-deleted rows), `role` (owner/admin/contributor/viewer), `status`, `invited_by`, `joined_at` |
 | `tenant_invitations` | In-app invitations and invitation links | `tenant_id`, `invitee_user_id`, `role`, `status` (pending/accepted/rejected), `expires_at`; unique constraint on pending; `token` (invitation link, unique)/`accepted_count` (000054) |
-| `tenant_api_keys` | Workspace and platform API keys | `tenant_id` (NULL for platform scope), `scope_type` (tenant/platform, CHECK constraint), `key_hash` (unique SHA-256 of the token), `key_hint` (masked display value; the token itself is not stored), `full_access`, `knowledge_base_ids`, `capabilities`, `expires_at`/`revoked_at` |
+| `tenant_api_keys` | Workspace and platform API keys | `tenant_id` (NULL for platform scope), `scope_type` (tenant/platform, CHECK constraint), `key_hash` (unique SHA-256 of the token), `key_hint` (masked display value, 000117; the token itself is not stored, and the legacy `api_key` column is emptied by the startup backfill), `full_access`, `knowledge_base_ids`, `capabilities`, `expires_at`/`revoked_at` |
 | `user_kb_pins` | Per-user knowledge base pins | PK (`tenant_id`,`user_id`,`kb_id`) + `pinned_at` |
 | `user_resource_favorites` | User favorites | PK (`user_id`,`tenant_id`,`resource_type`,`resource_id`) |
 | `system_settings` | System-level settings (000053) | `key`, `value`/`value_type`, `category`, `is_secret`, `requires_restart`, `last_modified_by` |

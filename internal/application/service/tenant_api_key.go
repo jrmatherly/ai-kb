@@ -3,9 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"strings"
 	"sync"
@@ -66,7 +64,7 @@ func (s *tenantAPIKeyService) CreateAPIKey(
 		TenantID:         tenantID,
 		ScopeType:        scopeType,
 		Name:             name,
-		KeyHash:          hashTenantAPIKey(token),
+		KeyHash:          types.HashTenantAPIKey(token),
 		KeyHint:          types.TenantAPIKeyHint(token),
 		FullAccess:       req.FullAccess,
 		KnowledgeBaseIDs: normalizeAPIKeyIDs(req.KnowledgeBaseIDs),
@@ -88,7 +86,7 @@ func (s *tenantAPIKeyService) AuthenticateAPIKey(ctx context.Context, token stri
 	if token == "" {
 		return nil, apprepo.ErrTenantAPIKeyNotFound
 	}
-	key, err := s.repo.GetAPIKeyByHash(ctx, hashTenantAPIKey(token))
+	key, err := s.repo.GetAPIKeyByHash(ctx, types.HashTenantAPIKey(token))
 	if err != nil {
 		return nil, err
 	}
@@ -190,11 +188,6 @@ func generateTenantAPIKeyToken() (string, error) {
 		return "", err
 	}
 	return "sk-" + base64.RawURLEncoding.EncodeToString(b[:]), nil
-}
-
-func hashTenantAPIKey(token string) string {
-	sum := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(sum[:])
 }
 
 func normalizeAPIKeyIDs(in []string) types.StringArray {

@@ -936,6 +936,9 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 	if err := database.ResolveDefaultJWTSecret(db); err != nil {
 		return nil, err
 	}
+	if err := database.BackfillTenantAPIKeyHints(context.Background(), db); err != nil {
+		logger.Warnf(context.Background(), "Tenant API key backfill failed: %v", err)
+	}
 
 	// Get underlying SQL DB object
 	sqlDB, err := db.DB()

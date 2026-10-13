@@ -2,6 +2,8 @@ package types
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"strings"
 	"time"
 
@@ -64,6 +66,12 @@ func (k *TenantAPIKey) TenantIDValue() uint64 {
 
 func (TenantAPIKey) TableName() string {
 	return "tenant_api_keys"
+}
+
+// HashTenantAPIKey is the SHA-256 lookup hash stored in key_hash.
+func HashTenantAPIKey(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
 }
 
 // TenantAPIKeyHint is the display form of a token: its first 7 and last 4
