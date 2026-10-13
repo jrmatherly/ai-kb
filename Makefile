@@ -143,11 +143,21 @@ model-catalog-diff:
 	@python3 scripts/model_catalog_diff.py $(if $(VENDOR),--vendor $(VENDOR),)
 
 # Every version string lives in scripts/version.py's table. Bumps commit but never tag or push.
+# Builds export VERSION, and Make imports environment variables, so an exported one would silently pin a
+# bump. The bumps take VERSION only from the make command line; other targets keep working with it exported.
 .PHONY: bump-version bump-lib check-version
+define require_cli_version
+	@case "$(origin VERSION)" in environment*) \
+		echo "VERSION=$(VERSION) comes from the environment; pass it after make (make $@ VERSION=...) or unset VERSION" >&2; \
+		exit 1;; esac
+endef
+
 bump-version:
+	$(require_cli_version)
 	python3 scripts/version.py bump $(VERSION)
 
 bump-lib:
+	$(require_cli_version)
 	python3 scripts/version.py bump-lib $(LIB) $(or $(VERSION),$(PART))
 
 check-version:

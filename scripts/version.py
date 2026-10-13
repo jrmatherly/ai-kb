@@ -12,6 +12,7 @@ Bumps never tag or push: they print the commands.
 """
 
 import datetime
+import os
 import re
 import subprocess
 import sys
@@ -122,15 +123,27 @@ def rows(group):
     return [tp for tp in TOUCHPOINTS if tp.group == group]
 
 
+def shape_error(group, version):
+    """Why `version` is not a valid version for `group`, or None."""
+    if group != "product":
+        return None if SEMVER.fullmatch(version) else f"{version!r} is not x.y.z"
+    if not CALVER.fullmatch(version):
+        return f"{version!r} is not YYYY.M.D[.MICRO] (unpadded, MICRO >= 1)"
+    try:
+        datetime.date(*map(int, version.split(".")[:3]))
+    except ValueError as e:
+        return f"{version!r} is not a real date ({e})"
+    return None
+
+
 def check():
     """Every mismatch as 'path: "found", want "expected"'; empty when consistent."""
     errors = []
     for group in TAG_PREFIX:
         tps = rows(group)
         want = read(tps[0])
-        shape = CALVER if group == "product" else SEMVER
-        if not shape.fullmatch(want):
-            errors.append(f"{tps[0].path}: {want!r} is not {'CalVer' if group == 'product' else 'semver'}")
+        if err := shape_error(group, want):
+            errors.append(f"{tps[0].path}: {err}")
         for tp in tps[1:]:
             try:
                 got = read(tp)
@@ -150,12 +163,40 @@ def git(*args):
     return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout
 
 
-def next_calver(current, today):
+def remote_tags():
+    """Tag names on origin, or an empty set with a warning when origin cannot be asked."""
+    try:
+        out = subprocess.run(
+            ["git", "ls-remote", "--tags", "origin"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=15,
+            env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+        ).stdout
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        print(
+            f"version.py: warning: could not list origin's tags ({e}); checking local tags only",
+            file=sys.stderr,
+        )
+        return set()
+    return {line.split("\t")[1].removeprefix("refs/tags/").removesuffix("^{}") for line in out.splitlines()}
+
+
+def tag_taken(tag, remote):
+    return bool(git("tag", "-l", tag).strip()) or tag in remote
+
+
+def next_calver(current, today, remote):
     day = f"{today.year}.{today.month}.{today.day}"
     if key(day)[:3] < key(current)[:3]:
-        raise Fail(f"today ({day}) is before the current version {current}; pass VERSION=")
+        raise Fail(
+            f"today ({day}) is before the current version {current}; "
+            "pass one after make: make bump-version VERSION=YYYY.M.D"
+        )
     candidate, micro = day, 0
-    while key(candidate) <= key(current) or git("tag", "-l", f"v{candidate}").strip():
+    while key(candidate) <= key(current) or tag_taken(f"v{candidate}", remote):
         micro += 1
         candidate = f"{day}.{micro}"
     return candidate
@@ -172,7 +213,7 @@ def next_semver(current, arg):
     return arg
 
 
-def bump(group, target):
+def bump(group, target, remote):
     errors = check()
     if errors:
         raise Fail("fix the drift first (make check-version):\n  " + "\n  ".join(errors))
@@ -180,29 +221,36 @@ def bump(group, target):
         raise Fail("the working tree has uncommitted changes; commit them first")
     tps = rows(group)
     current = read(tps[0])
-    shape = CALVER if group == "product" else SEMVER
-    if not shape.fullmatch(target):
-        raise Fail(
-            f"{target!r} is not {'YYYY.M.D[.MICRO] (unpadded, MICRO >= 1)' if group == 'product' else 'x.y.z'}"
-        )
-    if group == "product":
-        datetime.date(*map(int, target.split(".")[:3]))
+    if err := shape_error(group, target):
+        raise Fail(err)
     if key(target) <= key(current):
         raise Fail(f"{target} is not greater than the current {group} version {current}")
-    for tp in tps:
-        write(tp, form(tp, target))
-    for project in UV_PROJECTS.get(group, []):
-        subprocess.run(["uv", "lock", "--check", "--offline", "--project", project], cwd=ROOT, check=True)
-    errors = check()
-    if errors:
-        raise Fail("check failed after the bump:\n  " + "\n  ".join(errors))
+    prefix = TAG_PREFIX[group]
+    if prefix and tag_taken(prefix + target, remote):
+        raise Fail(f"tag {prefix}{target} already exists (locally or on origin); pick another version")
     name = f"v{target}" if group == "product" else f"{group} v{target}"
     paths = sorted({tp.path for tp in tps})
-    subprocess.run(
-        ["git", "commit", "-S", "-q", "-m", f"chore(release): {name}", "--", *paths], cwd=ROOT, check=True
-    )
+    original = {p: (ROOT / p).read_bytes() for p in paths}
+    try:
+        for tp in tps:
+            write(tp, form(tp, target))
+        for project in UV_PROJECTS.get(group, []):
+            subprocess.run(["uv", "lock", "--check", "--offline", "--project", project], cwd=ROOT, check=True)
+        errors = check()
+        if errors:
+            raise Fail("check failed after the bump:\n  " + "\n  ".join(errors))
+        subprocess.run(
+            ["git", "commit", "-S", "-q", "-m", f"chore(release): {name}", "--", *paths], cwd=ROOT, check=True
+        )
+    except BaseException:
+        for p, data in original.items():
+            (ROOT / p).write_bytes(data)
+        git("reset", "-q", "--", *paths)
+        print(
+            f"version.py: bump failed; restored {len(paths)} file(s) to their original bytes", file=sys.stderr
+        )
+        raise
     print(f"committed chore(release): {name} ({len(paths)} files)")
-    prefix = TAG_PREFIX[group]
     if prefix is None:
         print(f"no tag: no workflow publishes the {group} (helm.yml only lints and renders it)")
         return
@@ -223,14 +271,14 @@ def main(argv):
                 print(f"versions consistent: product {read(TOUCHPOINTS[0])}")
             return 1 if errors else 0
         if cmd == "bump" and len(args) <= 1:
-            current = read(rows("product")[0])
-            bump("product", args[0] if args else next_calver(current, datetime.date.today()))
+            current, remote = read(rows("product")[0]), remote_tags()
+            bump("product", args[0] if args else next_calver(current, datetime.date.today(), remote), remote)
             return 0
         if cmd == "bump-lib" and len(args) == 2:
             libs = [g for g in TAG_PREFIX if g != "product"]
             if args[0] not in libs:
                 raise Fail(f"unknown library {args[0]!r}; one of {', '.join(libs)}")
-            bump(args[0], next_semver(read(rows(args[0])[0]), args[1]))
+            bump(args[0], next_semver(read(rows(args[0])[0]), args[1]), remote_tags())
             return 0
     except (Fail, ValueError, OSError) as e:
         print(f"version.py: {e}", file=sys.stderr)

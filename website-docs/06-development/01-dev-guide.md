@@ -205,10 +205,10 @@ The product version is dated CalVer, `YYYY.M.D[.MICRO]` unpadded, tagged `vYYYY.
 | Target | Action |
 | --- | --- |
 | `check-version` | `scripts/version.py check`: fails, naming file, line and value, when a product version string differs from `VERSION` or a library's strings disagree with each other |
-| `bump-version` | Sets the product version everywhere and makes one signed `chore(release): v<ver>` commit. The default is today's date, then `.1`, `.2` while that version is current or already tagged; `VERSION=YYYY.M.D[.MICRO]` picks one, which must be greater than the current version |
+| `bump-version` | Sets the product version everywhere and makes one signed `chore(release): v<ver>` commit. The default is today's date, then `.1`, `.2` while that version is current or its tag exists locally or on `origin`; `VERSION=YYYY.M.D[.MICRO]` picks one, which must be greater than the current version and untagged. Pass `VERSION` after `make`: an exported `VERSION` makes the bump fail rather than pin it |
 | `bump-lib LIB=dsh-ai-kb\|mcp-server\|helm-chart PART=patch\|minor\|major` | The same for one library (`VERSION=x.y.z` instead of `PART`), committed as `chore(release): <lib> v<ver>` |
 
-Bumps rewrite only the version token in each file (lockfile dependencies stay untouched) and refuse a dirty working tree. They never tag or push: they print the next commands. The `v<ver>` tag triggers `docker-image.yml`; `release-lite.yml` is started by hand with the tag. `dsh-ai-kb-v<ver>` publishes the dsh plugin and `mcp-server-v<ver>` the MCP server. Nothing publishes the Helm chart, so its bump prints no tag.
+Bumps rewrite only the version token in each file (lockfile dependencies stay untouched) and refuse a dirty working tree. When a step after the edits fails (the lockfile check, the version check, or the commit, such as a failing hook or a missing signing key), every file gets its original bytes back. They never tag or push: they print the next commands. The `v<ver>` tag triggers `docker-image.yml`; `release-lite.yml` is started by hand with the tag. `dsh-ai-kb-v<ver>` publishes the dsh plugin and `mcp-server-v<ver>` the MCP server. Nothing publishes the Helm chart, so its bump prints no tag.
 
 ## Tests
 
@@ -301,7 +301,7 @@ When you add or upgrade a third-party dependency or change a data file shipped w
 
 ### Validation and contribution workflow
 
-CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, model-catalog, git-hooks and licenses; miniprogram, markdown and shell run only locally), plus `guards.yml` (English-only, em dash, rebrand, `scripts/version.py check` and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
+CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, model-catalog, git-hooks and licenses; miniprogram, markdown and shell run only locally), plus `guards.yml` (English-only, em dash, rebrand, `scripts/version.py check` with `scripts/test_version.py`, and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
 
 ```bash
 scripts/validate.sh                 # working tree and untracked files against HEAD
@@ -329,7 +329,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | website-docs | `website-docs/**` | link and anchor checks, Mermaid check, `build:docs` |
 | markdown | any `*.md`, `.markdownlint-cli2.jsonc` | markdownlint-cli2 over the whole tree, with the root `.markdownlint-cli2.jsonc` |
 
-Every run ends with the English-only gate on the lines added since the base and the em dash gate (`scripts/check-emdash.sh`) on every tracked file outside `scripts/emdash-allowlist.txt` (changelogs, release notes, `third_party/` and the generated Swagger files), then the version area: `scripts/version.py check` always, and `scripts/test_version.py` when `scripts/version.py` or its test changed. Every touched area runs even after one fails, and the summary lists each area as passed, failed or skipped, with every check that did not run and why (a missing tool such as `cargo` or `helm`, or a stopped Docker daemon). Image pushes, release builds and package publishing are not run locally.
+Every run ends with the English-only gate on the lines added since the base and the em dash gate (`scripts/check-emdash.sh`) on every tracked file outside `scripts/emdash-allowlist.txt` (changelogs, release notes, `third_party/` and the generated Swagger files), then the version area: `scripts/version.py check` always, and `scripts/test_version.py` when `scripts/version.py`, its test or the `Makefile` changed (skipped and listed when `uv`, `ssh-keygen` or `make` is missing). Every touched area runs even after one fails, and the summary lists each area as passed, failed or skipped, with every check that did not run and why (a missing tool such as `cargo` or `helm`, or a stopped Docker daemon). Image pushes, release builds and package publishing are not run locally.
 
 Generated outputs are committed and regenerated, never edited by hand: the Swagger files `docs/docs.go`, `docs/swagger.json` and `docs/swagger.yaml` come from `make docs` (`docs/swagger_contract_test.go` checks them), and the model catalog output under `internal/models/catalog/` comes from `make model-catalog-generate`.
 

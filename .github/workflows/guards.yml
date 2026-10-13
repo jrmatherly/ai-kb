@@ -91,3 +91,13 @@ jobs:
 
       - name: 🔎 Check every version string against VERSION and its library
         run: python3 scripts/version.py check
+
+      # The tests check uv lockfiles (honoring docreader's uv pin) and sign commits with a throwaway ssh-keygen key.
+      - name: 🐍 Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version-file: docreader/pyproject.toml
+          enable-cache: false
+
+      - name: 🧪 Test the version tooling
+        run: python3 scripts/test_version.py

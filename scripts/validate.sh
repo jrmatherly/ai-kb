@@ -318,10 +318,13 @@ area_emdash() {
 }
 
 # Every version string against VERSION and each library against itself: milliseconds, and a bump or a hand
-# edit anywhere can break it. The tests clone HEAD, so they run only when the tool changes.
+# edit anywhere can break it. The tests clone HEAD and drive the make targets, so they run only when the
+# tool or the Makefile changes; guards.yml runs them in CI.
 area_version() {
   python3 scripts/version.py check
-  if has scripts/version.py scripts/test_version.py; then python3 scripts/test_version.py; fi
+  if has scripts/version.py scripts/test_version.py Makefile && need uv ssh-keygen make; then
+    python3 scripts/test_version.py
+  fi
 }
 
 for area in "${areas[@]}"; do
