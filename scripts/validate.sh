@@ -5,6 +5,7 @@
 #   scripts/validate.sh                 working tree + untracked files vs HEAD
 #   scripts/validate.sh --base <rev>    everything since <rev>: commits, working tree, untracked
 #   scripts/validate.sh --list          print the areas and stop
+#   scripts/validate.sh --area <name>   run only that area (repeatable), whatever changed; for CI jobs
 #
 # Every touched area runs even when an earlier one fails, so one run reports every failure. Inside an
 # area each check is its own command and the first failure ends that area (set -e). The summary lists
@@ -30,11 +31,12 @@ cd "$ROOT"
 # The harness release packages/dsh-ai-kb is verified against; bump it with the note in its README.
 DSH_PINNED_SPEC="@deepseek-ai/dsh@0.1.0-rc.8"
 
-base=HEAD list=0
+base=HEAD list=0 forced=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --base) base="${2:?--base needs a revision}"; shift 2 ;;
     --list) list=1; shift ;;
+    --area) forced+=("${2:?--area needs an area name}"); shift 2 ;;
     *) log_fail "unknown option $1"; exit 2 ;;
   esac
 done
@@ -44,7 +46,7 @@ git rev-parse -q --verify "$base^{commit}" >/dev/null || { log_fail "not a commi
 changed=()
 while IFS= read -r f; do [ -n "$f" ] && changed+=("$f"); done < <(
   { git diff --name-only "$base"; git ls-files -o --exclude-standard; } | sort -u)
-[ ${#changed[@]} -gt 0 ] || { log_ok "no changes since $base"; exit 0; }
+[ ${#changed[@]} -gt 0 ] || [ ${#forced[@]} -gt 0 ] || { log_ok "no changes since $base"; exit 0; }
 
 # Each argument is a glob (`*` also matches `/`); true when any changed path matches one.
 # shellcheck disable=SC2053
@@ -73,6 +75,7 @@ if has 'packages/dsh-ai-kb/*'; then areas+=(dsh-plugin); fi
 if has 'miniprogram/*' 'tests/miniprogram/*'; then areas+=(miniprogram); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
 areas+=(english-only)
+if [ ${#forced[@]} -gt 0 ]; then areas=("${forced[@]}"); fi
 
 log_step "${#changed[@]} changed path(s) since $base; areas: ${areas[*]}"
 [ "$list" = 1 ] && exit 0
@@ -288,6 +291,9 @@ area_english-only() {
   scripts/check-english-only.sh --diff "$base"
 }
 
+for area in "${areas[@]}"; do
+  declare -F "area_$area" >/dev/null || { log_fail "unknown area $area"; exit 2; }
+done
 results=() failed=0
 for area in "${areas[@]}"; do
   log_step "[$area]"
@@ -296,7 +302,7 @@ for area in "${areas[@]}"; do
   set +e
   (
     set -eE
-    trap 'rc=$?; [ "$rc" = "$SKIPPED" ] || log_fail "$area: \`$BASH_COMMAND\` exited $rc"' ERR
+    trap 'rc=$?; [ "$rc" = "$SKIPPED" ] || log_fail "$area: \`${BASH_COMMAND%%$'"'\n'"'*}\` exited $rc"' ERR
     "area_$area"
   )
   rc=$?

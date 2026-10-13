@@ -293,6 +293,7 @@ This repository has no `.github/` directory, so no CI workflows run on push or p
 scripts/validate.sh                 # working tree and untracked files against HEAD
 scripts/validate.sh --base <rev>    # everything since <rev>
 scripts/validate.sh --list          # print the areas that would run
+scripts/validate.sh --area helm     # run only the named area (repeatable), whatever changed
 ```
 
 | Area | Runs when these change | Checks |

@@ -1,7 +1,7 @@
 ---
 name: validate
 description: Run the right checks for what changed in this repo (Go vet/test/lint/build, cli, client, frontend and its UI image, docreader, model catalog, git hooks, license bundle, anydoc, helm, mcp-server, dsh plugin, miniprogram, website-docs) via scripts/validate.sh. Use before every commit, after a cherry-pick batch, after a translation or rebrand batch, and whenever asked "does it pass", "run the tests", "validate", "check my changes" or "is CI green" (this copy has no CI; this script is it).
-argument-hint: "[--base <rev>] [--list]"
+argument-hint: "[--base <rev>] [--list] [--area <name>]"
 allowed-tools: Bash(scripts/validate.sh *)
 ---
 
@@ -13,6 +13,7 @@ allowed-tools: Bash(scripts/validate.sh *)
 scripts/validate.sh                 # working tree + untracked vs HEAD (before a commit)
 scripts/validate.sh --base <rev>    # a range: a batch of commits, ends with the English-only gate on <rev>..HEAD
 scripts/validate.sh --list          # which areas would run
+scripts/validate.sh --area helm     # only that area (repeatable), whatever changed: what a CI job calls
 HOOK_SKIP_TEST=1 scripts/validate.sh   # skip the Go tests for a quick loop; everything else still runs
 ```
 
