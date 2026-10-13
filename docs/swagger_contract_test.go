@@ -3,6 +3,7 @@ package docs_test
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 
 	docs "github.com/jrmatherly/ai-kb/docs"
@@ -115,6 +116,41 @@ func TestWikiPageBacklinkTitlesContract(t *testing.T) {
 			}
 			if _, ok := spec.Paths["/knowledgebase/{kb_id}/wiki/page-titles"]; ok {
 				t.Fatal("obsolete standalone title endpoint remains documented")
+			}
+		})
+	}
+}
+
+// Every per-KB wiki route answers an unknown knowledge base with 404, a KB
+// without wiki with 400 and a lookup failure with 500
+// (internal/router/router_wiki_kb_errors_test.go).
+func TestWikiRoutesDocumentKnowledgeBaseFailures(t *testing.T) {
+	for _, tt := range swaggerDocuments() {
+		t.Run(tt.name, func(t *testing.T) {
+			var spec struct {
+				Paths map[string]map[string]struct {
+					Responses map[string]any `json:"responses" yaml:"responses"`
+				} `json:"paths" yaml:"paths"`
+			}
+			if err := tt.parse(tt.loadSpec(t), &spec); err != nil {
+				t.Fatal(err)
+			}
+			operations := 0
+			for path, methods := range spec.Paths {
+				if !strings.HasPrefix(path, "/knowledgebase/{kb_id}/wiki/") {
+					continue
+				}
+				for method, op := range methods {
+					operations++
+					for _, code := range []string{"400", "404", "500"} {
+						if _, ok := op.Responses[code]; !ok {
+							t.Errorf("%s %s does not document %s", method, path, code)
+						}
+					}
+				}
+			}
+			if operations < 20 {
+				t.Fatalf("found %d wiki operations, want at least 20", operations)
 			}
 		})
 	}

@@ -12292,6 +12292,18 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Auto-fix wiki issues
@@ -12321,6 +12333,14 @@ paths:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiFolderListResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12355,8 +12375,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
         "409":
           description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12387,6 +12415,14 @@ paths:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12435,6 +12471,10 @@ paths:
           description: Conflict
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Rename or move a wiki folder
@@ -12480,6 +12520,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiGraphData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Get wiki link graph
@@ -12518,6 +12570,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiIndexResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Get wiki index view
@@ -12549,6 +12613,18 @@ paths:
             items:
               $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageIssue'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: List wiki page issues
@@ -12589,6 +12665,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Update wiki page issue status
@@ -12610,6 +12694,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_application_service.WikiLintReport'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Run wiki lint
@@ -12640,8 +12736,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12697,6 +12801,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: List wiki pages
@@ -12729,6 +12841,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Create a wiki page
@@ -12751,8 +12871,16 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12781,8 +12909,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageDetail'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12835,6 +12971,10 @@ paths:
           description: Conflict
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Update a wiki page
@@ -12856,6 +12996,18 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Rebuild wiki links
@@ -12901,6 +13053,10 @@ paths:
           description: Conflict
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Revert a wiki page to an earlier revision
@@ -12942,8 +13098,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPageRevisionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
@@ -12978,6 +13142,18 @@ paths:
             items:
               $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiPage'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Search wiki pages
@@ -12999,6 +13175,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.WikiStats'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
       - Bearer: []
       summary: Get wiki statistics
@@ -19621,6 +19809,14 @@ paths:
             type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
       security:
