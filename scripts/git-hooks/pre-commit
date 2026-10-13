@@ -3,7 +3,9 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# The work tree the hook runs for (git starts hooks there), not the hook file's own checkout:
+# core.hooksPath may name another worktree's scripts.
+ROOT="$(git rev-parse --show-toplevel)"
 # shellcheck source=common.sh
 source "$ROOT/scripts/git-hooks/common.sh"
 
