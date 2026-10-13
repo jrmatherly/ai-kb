@@ -235,15 +235,22 @@ type fakeConfigRepo struct {
 	policy *types.TenantSandboxConfigEntity
 	others []*types.TenantSandboxConfigEntity
 
-	events  []string
-	updated *types.TenantSandboxConfigEntity
-	deleted bool
+	eventsMu sync.Mutex // concurrent QueryTemplates calls each read the config
+	events   []string
+	updated  *types.TenantSandboxConfigEntity
+	deleted  bool
 
 	onSetCordon func()
 	onUpdate    func()
 	updateErr   error
 
 	clearCordonCtxErr error
+}
+
+func (f *fakeConfigRepo) record(event string) {
+	f.eventsMu.Lock()
+	defer f.eventsMu.Unlock()
+	f.events = append(f.events, event)
 }
 
 func (f *fakeConfigRepo) Create(_ context.Context, e *types.TenantSandboxConfigEntity) error {
@@ -258,7 +265,7 @@ func (f *fakeConfigRepo) Create(_ context.Context, e *types.TenantSandboxConfigE
 func (f *fakeConfigRepo) GetByID(
 	_ context.Context, _ uint64, _ string,
 ) (*types.TenantSandboxConfigEntity, error) {
-	f.events = append(f.events, "get")
+	f.record("get")
 	return f.entity, nil
 }
 
@@ -283,7 +290,7 @@ func (f *fakeConfigRepo) ListAll(context.Context) ([]*types.TenantSandboxConfigE
 func (f *fakeConfigRepo) Update(
 	_ context.Context, e *types.TenantSandboxConfigEntity,
 ) error {
-	f.events = append(f.events, "write")
+	f.record("write")
 	f.updated = e
 	if f.onUpdate != nil {
 		f.onUpdate()
@@ -295,7 +302,7 @@ func (f *fakeConfigRepo) Update(
 }
 
 func (f *fakeConfigRepo) SoftDelete(_ context.Context, _ uint64, id string) error {
-	f.events = append(f.events, "delete")
+	f.record("delete")
 	if f.policy != nil && f.policy.ID == id {
 		f.policy = nil
 	}
@@ -304,7 +311,7 @@ func (f *fakeConfigRepo) SoftDelete(_ context.Context, _ uint64, id string) erro
 }
 
 func (f *fakeConfigRepo) SetCordon(_ context.Context, _ uint64, _ string, _ time.Time) error {
-	f.events = append(f.events, "cordon")
+	f.record("cordon")
 	if f.onSetCordon != nil {
 		f.onSetCordon()
 	}
@@ -312,7 +319,7 @@ func (f *fakeConfigRepo) SetCordon(_ context.Context, _ uint64, _ string, _ time
 }
 
 func (f *fakeConfigRepo) ClearCordon(ctx context.Context, _ uint64, _ string) error {
-	f.events = append(f.events, "uncordon")
+	f.record("uncordon")
 	f.clearCordonCtxErr = ctx.Err()
 	return nil
 }
