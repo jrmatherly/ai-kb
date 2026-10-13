@@ -299,7 +299,7 @@ func (h *ChunkHandler) RevertChunk(c *gin.Context) {
 		if stderrors.As(err, &appErr) {
 			_ = c.Error(appErr)
 		} else {
-			_ = c.Error(errors.NewBadRequestError(err.Error()))
+			_ = c.Error(errors.NewInternalServerError(err.Error()))
 		}
 		return
 	}

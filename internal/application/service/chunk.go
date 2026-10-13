@@ -16,10 +16,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/application/service/retriever"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/searchutil"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	"gorm.io/gorm"
 )
 
 var ErrChunkRevisionConflict = repository.ErrChunkRevisionConflict
@@ -499,7 +501,7 @@ func (s *chunkService) UpdateDocumentChunk(
 		return nil, err
 	}
 	if chunk.ChunkType != types.ChunkTypeText {
-		return nil, fmt.Errorf("only text chunks can be edited")
+		return nil, apperrors.NewBadRequestError("only text chunks can be edited")
 	}
 	if err := s.validateDocumentChunkRelations(ctx, chunk); err != nil {
 		return nil, err
@@ -512,10 +514,11 @@ func (s *chunkService) UpdateDocumentChunk(
 	if content != nil {
 		newContent = strings.TrimSpace(*content)
 		if newContent == "" {
-			return nil, fmt.Errorf("chunk content cannot be empty")
+			return nil, apperrors.NewBadRequestError("chunk content cannot be empty")
 		}
 		if len(newContent) > maxEditableChunkLength {
-			return nil, fmt.Errorf("chunk content exceeds %d bytes", maxEditableChunkLength)
+			return nil, apperrors.NewBadRequestError(
+				fmt.Sprintf("chunk content exceeds %d bytes", maxEditableChunkLength))
 		}
 	}
 	newEnabled := chunk.IsEnabled
@@ -625,7 +628,7 @@ func validateEditedChunkImages(sourceContent, editedContent string) error {
 	allowed := searchutil.ImageURLsInContent(sourceContent)
 	for url := range searchutil.ImageURLsInContent(editedContent) {
 		if !allowed[url] {
-			return fmt.Errorf("adding images to an existing chunk is not supported: %s", url)
+			return apperrors.NewBadRequestError("adding images to an existing chunk is not supported: " + url)
 		}
 	}
 	return nil
@@ -684,6 +687,9 @@ func (s *chunkService) RevertDocumentChunk(
 	ctx context.Context, chunkID string, revision int, expectedRevision *int,
 ) (*types.Chunk, error) {
 	item, err := s.chunkRepository.GetChunkRevision(ctx, types.MustTenantIDFromContext(ctx), chunkID, revision)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, apperrors.NewBadRequestError(fmt.Sprintf("chunk revision %d not found", revision))
+	}
 	if err != nil {
 		return nil, err
 	}

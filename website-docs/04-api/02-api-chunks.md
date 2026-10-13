@@ -48,7 +48,7 @@ Purpose: edit a chunk's content or its enabled state (a versioned optimistic upd
 
 Constraints and side effects:
 
-- Only `text` chunks can be edited. The intended answer for any other type is 400; the current handler maps the service error to 500 (`only text chunks can be edited`). The same applies to an empty or oversized `content` and to a new image URL (below).
+- Only `text` chunks can be edited; any other type returns 400 (`only text chunks can be edited`). An empty `content`, a `content` over 200000 bytes and a new image URL (below) also return 400.
 - When `expected_revision` differs from the current `content_revision` the response is **409** (`Chunk was modified by another user; refresh and retry`).
 - An edit may not introduce an image URL that the source content does not contain. Deleting a Markdown image disables the matching OCR, caption and image-vector child chunks (they are disabled, not deleted, so a revert can re-enable them).
 - A successful edit increments `content_revision`, stores the previous version in the `chunk_revisions` table and moves `index_status` through `processing` to `ready`. When rebuilding the retrieval index fails the row is still saved with `index_status = failed`; submitting the same content again retries the index.
