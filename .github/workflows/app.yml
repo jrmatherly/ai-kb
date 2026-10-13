@@ -95,6 +95,9 @@ jobs:
       - name: 📦 Download modules
         run: go mod download
 
+      - name: 🔎 Check go.mod and go.sum are tidy
+        run: go mod tidy -diff
+
       - name: 🔎 Verify third-party notices and source bundle
         run: |
           bash ./scripts/check-license-bundle.sh

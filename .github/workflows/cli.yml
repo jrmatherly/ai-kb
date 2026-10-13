@@ -48,6 +48,9 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache-dependency-path: cli/go.sum
+      - name: 🔎 Check go.mod and go.sum are tidy
+        if: runner.os == 'Linux'
+        run: go mod tidy -diff
       - name: 🏗️ go build
         run: go build ./...
       - name: 🧪 go test

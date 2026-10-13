@@ -37,12 +37,6 @@ permissions:
   contents: read
 
 env:
-  # The harness release this plugin is verified against. Bump it together with
-  # the compatibility note in packages/dsh-ai-kb/README.md.
-  DSH_PINNED_SPEC: "@deepseek-ai/dsh@0.1.0-rc.8"
-  # rc.8 leaves its dependency ranges open; later cordis releases (4.0.4, cordis-plugin-hmr
-  # 1.0.19) break its boot, so resolve them as of its release day. Matches scripts/validate.sh.
-  DSH_PINNED_BEFORE: "2026-08-20"
   # The contract's Go half lives in this repository's module. app.yml runs it
   # only for a Go diff, so a change to the fixture or to the plugin alone would
   # otherwise skip the side that checks AI KB still serves those calls.
@@ -141,12 +135,13 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
 
       # The e2e script installs @deepseek-ai/dsh on first run (~15 min uncached).
-      # Reuse the install across workflow runs; bump DSH_PINNED_SPEC to refresh.
+      # Reuse the install across workflow runs. The harness pin (release and resolve date)
+      # lives in run-in-dsh.mjs, so the key follows that file.
       - name: 💾 Cache pinned dsh install
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning] test-only harness install, never packed or published
         with:
           path: .cache/dsh-e2e-install
-          key: dsh-e2e-${{ env.DSH_PINNED_SPEC }}-before-${{ env.DSH_PINNED_BEFORE }}
+          key: dsh-e2e-${{ hashFiles('packages/dsh-ai-kb/test/e2e/run-in-dsh.mjs') }}
 
       - name: 📦 Install dependencies
         run: npm ci
@@ -156,8 +151,6 @@ jobs:
 
       - name: 🧪 Run the plugin inside a real dsh profile
         env:
-          DSH_PACKAGE_SPEC: ${{ env.DSH_PINNED_SPEC }}
-          npm_config_before: ${{ env.DSH_PINNED_BEFORE }}T00:00:00Z
           DSH_INSTALL_DIR: ${{ github.workspace }}/.cache/dsh-e2e-install
           DSH_E2E_LOG: ${{ runner.temp }}/dsh-ai-kb-e2e.log
         run: node test/e2e/run-in-dsh.mjs

@@ -39,6 +39,9 @@ jobs:
           go-version-file: client/go.mod
           cache-dependency-path: client/go.sum
 
+      - name: 🔎 Check go.mod and go.sum are tidy
+        run: go -C client mod tidy -diff
+
       - name: 🧹 go vet
         run: go -C client vet ./...
 
