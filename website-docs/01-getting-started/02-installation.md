@@ -166,7 +166,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 | `make start-ollama` / `start-docker` | Start only Ollama / only the Docker services |
 | `make docker-run` / `docker-stop` / `docker-restart` | `docker compose up` / `down` / `stop -t 60` + `up` (creates a fallback `.env`) |
 | `make build-images*` / `clean-images` / `pull-images` | Build from source / remove / pull images |
-| `make check-env` / `list-containers` / `show-platform` | Environment check (`scripts/start_all.sh --check`) / list containers / build platform (detects amd64/arm64) |
+| `make check-env` / `list-containers` / `show-platform` | Deployment check (`scripts/start_all.sh --check`: Docker and Compose, `.env` (created from `.env.example` when missing) with `DB_DRIVER` and `STORAGE_TYPE` set, Ollama, the sandbox image, disk, memory and CPU) / list containers / build platform (detects amd64/arm64) |
 | `make migrate-up` / `migrate-down` / `migrate-version` / `migrate-create name=x` / `migrate-force version=n` / `migrate-goto version=n` | Database migrations (`scripts/migrate.sh`; inside the container `AUTO_MIGRATE=true` migrates automatically on startup) |
 | `make dev-*` | Development mode (see above) |
 | `make build` / `run` / `build-prod` | Compile and run `cmd/server` locally (`build-prod` needs CGO, injects the version and `Edition=standard`) |
@@ -181,7 +181,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 | --- | --- |
 | `scripts/start_all.sh` | One-command start: flags `-o` (Ollama only), `-d` (Docker only), `-a` (everything, default), `-s` (stop), `-c` (check the environment), `-r` (rebuild and restart one container), `-l` (list containers), `-p` (pull images), `--no-pull` (start without pulling); detects compose v1/v2, sets `PLATFORM` from `uname -m`, pre-pulls the sandbox image in the background |
 | `scripts/dev.sh` | Development orchestration (see above), subcommands `start/stop/restart/logs/status/app/frontend` |
-| `scripts/check-env.sh` | Validates the required `.env` variables (`DB_*` for the postgres or sqlite driver, `STORAGE_TYPE`, `REDIS_ADDR`, `OLLAMA_BASE_URL` and others; secrets are reported as set, not printed) and the Go/npm/Docker/Air toolchain |
+| `scripts/check-env.sh` | Development-environment check, run directly (`make check-env` runs the deployment check above instead). Validates the required `.env` variables (`DB_*` for the postgres or sqlite driver, `STORAGE_TYPE`, `REDIS_ADDR`, `OLLAMA_BASE_URL` and others; secrets are reported as set, not printed) and the Go/npm/Docker/Air toolchain |
 | `scripts/build_images.sh` | Builds the images and injects version information (git tag / commit / build time), supports cross-architecture builds |
 | `scripts/build_frontend_dist.sh` | Builds the frontend static assets `frontend/dist` on the host (Lite and desktop packaging and other non-Docker cases; the UI image is built by the multi-stage Dockerfile instead) |
 | `scripts/migrate.sh` | golang-migrate wrapper |

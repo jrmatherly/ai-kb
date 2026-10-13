@@ -131,6 +131,11 @@ check_env_file() {
     # Check the base variables
     if [ -z "$DB_DRIVER" ]; then missing_vars+=("DB_DRIVER"); fi
     if [ -z "$STORAGE_TYPE" ]; then missing_vars+=("STORAGE_TYPE"); fi
+    if [ ${#missing_vars[@]} -gt 0 ]; then
+        log_warning "Not set in .env: ${missing_vars[*]} (see .env.example)"
+    else
+        log_success "DB_DRIVER=$DB_DRIVER, STORAGE_TYPE=$STORAGE_TYPE"
+    fi
 
     return 0
 }
