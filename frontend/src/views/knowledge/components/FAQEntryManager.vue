@@ -783,7 +783,12 @@ import {
   updateFAQImportResultDisplayStatus,
 } from '@/api/knowledge-base'
 import * as XLSX from 'xlsx'
-import Papa from 'papaparse'
+import {
+  type FAQEntryPayload,
+  parseFAQImportCSV,
+  parseFAQImportJSON,
+  parseFAQImportWorkbook,
+} from '@/utils/faqImport'
 import FAQTagTooltip from '@/components/FAQTagTooltip.vue'
 import KBInfoPopover from '@/components/KBInfoPopover.vue'
 import KBSwitcherDropdown from '@/components/KBSwitcherDropdown.vue'
@@ -812,17 +817,6 @@ interface FAQEntry {
   similarCollapsed?: boolean
   negativeCollapsed?: boolean
   answersCollapsed?: boolean
-}
-
-interface FAQEntryPayload {
-  standard_question: string
-  similar_questions: string[]
-  negative_questions: string[]
-  answers: string[]
-  tag_id?: number
-  tag_name?: string
-  is_enabled?: boolean
-  is_recommended?: boolean
 }
 
 const props = defineProps<{
@@ -1715,144 +1709,16 @@ const handleFileDrop = async (event: DragEvent) => {
 }
 
 const parseJSONFile = async (file: File): Promise<FAQEntryPayload[]> => {
-  const text = await file.text()
-  const data = JSON.parse(text)
-  if (!Array.isArray(data)) {
+  const parsed = parseFAQImportJSON(await file.text())
+  if (!parsed) {
     throw new Error(t('knowledgeEditor.faqImport.invalidJSON'))
   }
-  return data.map(normalizePayload)
+  return parsed
 }
 
-const parseCSVFile = async (file: File): Promise<FAQEntryPayload[]> => {
-  const text = await file.text()
+const parseCSVFile = async (file: File) => parseFAQImportCSV(await file.text())
 
-  // Parse the CSV with papaparse, which handles quotes, escapes, delimiters and so on
-  return new Promise((resolve, reject) => {
-    Papa.parse(text, {
-      header: true,
-      skipEmptyLines: true,
-      delimiter: '', // auto-detect the delimiter (comma or tab)
-      quoteChar: '"',
-      escapeChar: '"',
-      transformHeader: (header: string) => {
-        // Strip the parentheses and notes from the field name, keeping only the core field name
-        const cleaned = header.trim()
-          .replace(/\([^)]*\)/g, '') // strip parentheses and their content
-          .trim()
-        // Chinese field names (legacy headers) are not lowercased; English field names are
-        return /[\u4e00-\u9fa5]/.test(cleaned) ? cleaned : cleaned.toLowerCase()
-      },
-      complete: (results) => {
-        try {
-          const payloads: FAQEntryPayload[] = []
-          results.data.forEach((row: any) => {
-            const record: Record<string, string> = {}
-            // Turn the row data into a record object
-            Object.keys(row).forEach((key) => {
-              record[key] = String(row[key] || '').trim()
-            })
-
-            const isDisabled = parseBooleanField(record['\u662f\u5426\u505c\u7528'] || record['is_disabled'], false) // Chinese keys below are the legacy export headers
-            payloads.push(
-              normalizePayload({
-                standard_question: record['\u95ee\u9898'] || record['standard_question'] || record['question'] || '',
-                answers: splitByDelimiter(record['\u673a\u5668\u4eba\u56de\u7b54'] || record['answers']),
-                similar_questions: splitByDelimiter(record['\u76f8\u4f3c\u95ee\u9898'] || record['similar_questions']),
-                negative_questions: splitByDelimiter(record['\u53cd\u4f8b\u95ee\u9898'] || record['negative_questions']),
-                tag_id: record['tag_id'] ? Number(record['tag_id']) : undefined,
-                tag_name: record['\u6807\u7b7e'] || record['\u5206\u7c7b'] || record['tag_name'] || '',
-                is_enabled: isDisabled !== undefined ? !isDisabled : undefined, // is_disabled: FALSE means enabled, TRUE means disabled, so invert it
-              }),
-            )
-          })
-          resolve(payloads)
-        } catch (error) {
-          reject(error)
-        }
-      },
-      error: (error: Error) => {
-        reject(new Error(`CSV parse failed: ${error.message}`))
-      },
-    })
-  })
-}
-
-const parseExcelFile = async (file: File): Promise<FAQEntryPayload[]> => {
-  const data = await file.arrayBuffer()
-  const workbook = XLSX.read(data, { type: 'array' })
-  const sheetName = workbook.SheetNames[0]
-  const worksheet = workbook.Sheets[sheetName]
-  // raw: false makes quotes and escapes parse correctly
-  const json = XLSX.utils.sheet_to_json<Record<string, string>>(worksheet, {
-    defval: '',
-    raw: false // makes string values parse correctly
-  })
-  return json.map((row) => {
-    // Get the original header (with the parenthesized notes stripped)
-    const normalizedRow: Record<string, string> = {}
-    Object.keys(row).forEach((key) => {
-      const normalizedKey = key.trim()
-        .replace(/\([^)]*\)/g, '') // strip parentheses and their content
-        .trim()
-      // Chinese field names (legacy headers) are not lowercased; English field names are
-      const finalKey = /[\u4e00-\u9fa5]/.test(normalizedKey) ? normalizedKey : normalizedKey.toLowerCase()
-      // Make sure the value is a string
-      normalizedRow[finalKey] = String(row[key] || '').trim()
-    })
-
-    const isDisabled = parseBooleanField(normalizedRow['\u662f\u5426\u505c\u7528'] || normalizedRow['is_disabled'], false) // Chinese keys below are the legacy export headers
-    return normalizePayload({
-      standard_question: normalizedRow['\u95ee\u9898'] || normalizedRow['standard_question'] || normalizedRow['question'] || '',
-      answers: splitByDelimiter(normalizedRow['\u673a\u5668\u4eba\u56de\u7b54'] || normalizedRow['answers']),
-      similar_questions: splitByDelimiter(normalizedRow['\u76f8\u4f3c\u95ee\u9898'] || normalizedRow['similar_questions']),
-      negative_questions: splitByDelimiter(normalizedRow['\u53cd\u4f8b\u95ee\u9898'] || normalizedRow['negative_questions']),
-      tag_id: normalizedRow['tag_id'] ? Number(normalizedRow['tag_id']) : undefined,
-      tag_name: normalizedRow['\u6807\u7b7e'] || normalizedRow['\u5206\u7c7b'] || normalizedRow['tag_name'] || '',
-      is_enabled: isDisabled !== undefined ? !isDisabled : undefined, // is_disabled: FALSE means enabled, TRUE means disabled, so invert it
-    })
-  })
-}
-
-const splitByDelimiter = (value?: string) => {
-  if (!value) return []
-  // Use only ## as the delimiter, to avoid wrongly splitting content that contains commas, semicolons and so on
-  const trimmedValue = value.trim()
-  if (!trimmedValue) return []
-
-  // If it contains the ## delimiter, split on ##
-  if (trimmedValue.includes('##')) {
-    return trimmedValue
-      .split('##')
-      .map(item => item.trim())
-      .filter(Boolean)
-  }
-
-  // Without the ## delimiter, the whole value is one answer
-  return [trimmedValue]
-}
-
-// Parse a boolean field (supports TRUE/FALSE, true/false, the legacy Chinese yes/no, 1/0 and so on)
-const parseBooleanField = (value?: string, defaultValue: boolean = true): boolean | undefined => {
-  if (!value) return undefined
-  const normalized = value.trim().toUpperCase()
-  if (normalized === 'TRUE' || normalized === '1' || normalized === '\u662f' || normalized === 'YES') { // Chinese "yes"
-    return true
-  }
-  if (normalized === 'FALSE' || normalized === '0' || normalized === '\u5426' || normalized === 'NO') { // Chinese "no"
-    return false
-  }
-  return defaultValue
-}
-
-const normalizePayload = (payload: Partial<FAQEntryPayload>): FAQEntryPayload => ({
-  standard_question: payload.standard_question || '',
-  answers: payload.answers?.filter(Boolean) || [],
-  similar_questions: payload.similar_questions?.filter(Boolean) || [],
-  negative_questions: payload.negative_questions?.filter(Boolean) || [],
-  tag_id: payload.tag_id || undefined,
-  tag_name: payload.tag_name || '',
-  is_enabled: payload.is_enabled !== undefined ? payload.is_enabled : undefined,
-})
+const parseExcelFile = async (file: File) => parseFAQImportWorkbook(await file.arrayBuffer())
 
 const stopPolling = () => {
   if (importState.pollingInterval) {
