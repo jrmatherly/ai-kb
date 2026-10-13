@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/require"
@@ -58,6 +59,7 @@ func newRebuildLinksHandler(t *testing.T) (*gin.Engine, *gorm.DB, interfaces.Wik
 
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(middleware.ErrorHandler())
 	engine.POST("/knowledgebase/:kb_id/wiki/rebuild-links", func(c *gin.Context) {
 		c.Set(types.TenantIDContextKey.String(), uint64(1))
 		handler.RebuildLinks(c)

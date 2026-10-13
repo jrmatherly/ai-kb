@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/assert"
@@ -80,6 +81,7 @@ func (f fakeWikiPageTitlesKBService) GetKnowledgeBaseByID(
 func wikiPageTitlesEngine(h *WikiPageHandler) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.GET("/knowledgebase/:kb_id/wiki/pages/*slug", h.GetPage)
 	return r
 }
@@ -186,7 +188,9 @@ func TestGetPageTitleLookupFailureDoesNotReturnPartialSuccess(t *testing.T) {
 			}
 			rec := requestWikiPageTitles(fake, fakeWikiPageTitlesKBService{}, "current")
 			assert.Equal(t, http.StatusInternalServerError, rec.Code)
-			assert.JSONEq(t, `{"error":"title query failed"}`, rec.Body.String())
+			assert.JSONEq(t,
+				`{"success":false,"error":{"code":1007,"message":"title query failed","details":null}}`,
+				rec.Body.String())
 		})
 	}
 }

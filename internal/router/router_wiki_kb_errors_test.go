@@ -76,11 +76,15 @@ func TestWikiRoutesReportKBLookupFailureStatus(t *testing.T) {
 				engine.ServeHTTP(rec, req)
 
 				var body struct {
-					Error string `json:"error"`
+					Success bool `json:"success"`
+					Error   struct {
+						Message string `json:"message"`
+					} `json:"error"`
 				}
 				require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body), rec.Body.String())
 				require.Equal(t, tc.wantCode, rec.Code, rec.Body.String())
-				require.Equal(t, tc.wantError, body.Error)
+				require.False(t, body.Success, rec.Body.String())
+				require.Equal(t, tc.wantError, body.Error.Message)
 			})
 		}
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -43,6 +44,7 @@ func newWikiErrorsEngine(t *testing.T) *gin.Engine {
 
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(middleware.ErrorHandler())
 	engine.Use(func(c *gin.Context) { c.Set(types.TenantIDContextKey.String(), uint64(1)) })
 	engine.POST("/knowledgebase/:kb_id/wiki/pages", h.CreatePage)
 	engine.PUT("/knowledgebase/:kb_id/wiki/move-page", h.MovePage)
@@ -100,11 +102,15 @@ func TestWikiHandlersMapCallerMistakesTo4xx(t *testing.T) {
 			engine.ServeHTTP(rec, req)
 
 			var body struct {
-				Error string `json:"error"`
+				Success bool `json:"success"`
+				Error   struct {
+					Message string `json:"message"`
+				} `json:"error"`
 			}
 			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body), rec.Body.String())
 			require.Equal(t, tc.wantCode, rec.Code, rec.Body.String())
-			require.Equal(t, tc.wantError, body.Error)
+			require.False(t, body.Success, rec.Body.String())
+			require.Equal(t, tc.wantError, body.Error.Message)
 		})
 	}
 }

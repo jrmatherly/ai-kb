@@ -202,7 +202,7 @@ curl $BASE/api/v1/faq/import/progress/task-1 -H "X-API-Key: $API_KEY"
 
 ## Wiki (/api/v1/knowledgebase/:kb_id/wiki)
 
-This group's prefix is `/knowledgebase/:kb_id/wiki` (singular, no hyphen). Routes: `RegisterWikiPageRoutes` in `internal/router/routes_knowledge.go`. Handler: `internal/handler/wiki_page.go`. Most responses in this group are **raw objects** (no `success` envelope); errors are `{"error":"..."}`. On every route in the group, a knowledge base that does not exist returns 404 and one without the Wiki enabled returns 400.
+This group's prefix is `/knowledgebase/:kb_id/wiki` (singular, no hyphen). Routes: `RegisterWikiPageRoutes` in `internal/router/routes_knowledge.go`. Handler: `internal/handler/wiki_page.go`. Most successful responses in this group are **raw objects** (no `success` envelope); errors use the standard error envelope (`{"success":false,"error":{"code":...,"message":"..."}}`, see [Response format and error codes](./01-api-overview.md#response-format-and-error-codes)). On every route in the group, a knowledge base that does not exist returns 404 and one without the Wiki enabled returns 400.
 
 Manual page changes made through this API are projected into the knowledge base activity stream with the actions `manual_create`, `manual_edit`, `revert` and `manual_delete`.
 
