@@ -1,4 +1,11 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["fastapi", "pydantic>=2", "torch", "transformers", "uvicorn"]
+# ///
+"""Minimal self-hosted rerank service for testing rerank clients. Run: uv run rerank_server_demo.py"""
 import gc
+import os
+import sys
 import torch
 import uvicorn
 from fastapi import FastAPI
@@ -41,18 +48,17 @@ class TestFinalResponse(BaseModel):
 print("Loading the model, please wait...")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+# A local directory or a Hugging Face model id
+model_path = os.environ.get("RERANK_MODEL", "BAAI/bge-reranker-base")
 try:
-    # Make sure this path is correct
-    model_path = '/data1/home/lwx/work/Download/rerank_model_weight'
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(model_path)
     model.to(device)
     model.eval()
     print("Model loaded.")
 except Exception as e:
-    print(f"Failed to load the model: {e}")
-    # In a test environment, consider exiting when the model fails to load, so a broken service does not keep running
-    exit()
+    print(f"Failed to load the model {model_path}: {e}")
+    sys.exit(1)
 
 # --- 3. Create the FastAPI app ---
 app = FastAPI(
@@ -118,4 +124,4 @@ def read_root():
 
 # --- 5. Start the service ---
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=os.environ.get("RERANK_HOST", "0.0.0.0"), port=int(os.environ.get("RERANK_PORT", "8000")))

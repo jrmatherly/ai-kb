@@ -631,6 +631,6 @@ return wrapChatConcurrency(c, config.MaxConcurrency, err)
 
 ### What rerank_server_demo.py is for
 
-`rerank_server_demo.py` in the repository root is a **minimal reference implementation of a self-hosted rerank service**: FastAPI plus HuggingFace `AutoModelForSequenceClassification`, exposing `POST /rerank` with a `{query, documents}` body and returning `{"results": [{index, document: {text}, score}]}`.
+`rerank_server_demo.py` in the repository root is a **minimal reference implementation of a self-hosted rerank service**: FastAPI plus HuggingFace `AutoModelForSequenceClassification`, exposing `POST /rerank` with a `{query, documents}` body and returning `{"results": [{index, document: {text}, score}]}`. `RERANK_MODEL` names the model, a local directory or a Hugging Face id (default `BAAI/bge-reranker-base`), and `RERANK_HOST` / `RERANK_PORT` set the listen address (default `0.0.0.0:8000`). Its dependencies are declared inline (PEP 723), so `uv run rerank_server_demo.py` installs them and starts the service.
 
 The demo returns a `score` field, which is useful for checking client compatibility. The `cohererank` protocol (`internal/models/api/cohererank`) reads `relevance_score` first and falls back to `score`; `document` accepts both a string and a `{text}` object. A private rerank service that follows this protocol connects through the `generic` provider.
