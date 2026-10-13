@@ -6,7 +6,7 @@ The `seafile` connector syncs the directories and files you select in one Seafil
 
 Decide which Seafile account the connector will act as. Use an account that can sign in to Seafile and has at least read access to the target library; the sync scope is bounded by that account's permissions. The credential is the account's user API token. The connector stores and sends only the token; it does not handle the account password, SSO login or library-specific tokens.
 
-In Seafile 10.0.1 the "Web API Auth Token" is hidden on the personal settings page by default. An administrator enables it with `ENABLE_GET_AUTH_TOKEN_BY_SESSION = True` in `seahub_settings.py` and restarts Seahub. The token can also be obtained with the account password through `POST /api2/auth-token/`; when two-factor authentication is on, supply the code as the `X-Seafile-OTP` response asks.
+In Seafile 10.0.1 the "Web API Auth Token" is hidden on the personal settings page by default. An administrator enables it with `ENABLE_GET_AUTH_TOKEN_BY_SESSION = True` in `seahub_settings.py` and restarts Seahub. The token can also be obtained with the account password through `POST /api2/auth-token/`; when two-factor authentication is on, that request first fails with HTTP 400 and the response header `X-Seafile-OTP: required`; send it again with the one-time code in an `X-Seafile-OTP` request header.
 
 The connection test in AI KB calls `/api2/auth/ping/` to validate the token. Saving a data source with a selection also confirms that the selected library exists and is not encrypted. Directory access is checked when the resource tree loads and again during each sync.
 
