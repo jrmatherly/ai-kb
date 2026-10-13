@@ -43,6 +43,7 @@ if has 'frontend/*'; then areas+=(frontend); fi
 if has 'docreader/*'; then areas+=(docreader); fi
 if has 'internal/models/catalog/data/*' || has 'scripts/model-catalog/*'; then areas+=(model-catalog); fi
 if has 'scripts/git-hooks/*'; then areas+=(git-hooks); fi
+if has 'scripts/start_all.sh' || has 'scripts/test-start-all.sh'; then areas+=(start-all); fi
 if has 'licenses/*' || has 'scripts/*license*'; then areas+=(licenses); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
 
@@ -83,6 +84,9 @@ for area in ${areas[@]+"${areas[@]}"}; do
     git-hooks)
       bash scripts/test-git-hooks.sh
       log_ok "git hooks" ;;
+    start-all)
+      bash scripts/test-start-all.sh
+      log_ok "start_all.sh" ;;
     licenses)
       bash scripts/check-license-bundle.sh
       bash scripts/test-license-bundle.sh

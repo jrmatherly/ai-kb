@@ -151,16 +151,28 @@ install_ollama() {
     local rc
     if [ "$OS" = "Darwin" ]; then
         # macOS install
-        log_info "macOS detected, installing Ollama with brew..."
         if ! command -v brew &> /dev/null; then
-            # Install from the package
-            log_info "Homebrew is not installed, downloading directly..."
-            curl -fsSL https://ollama.com/download/Ollama-darwin.zip -o ollama.zip &&
-                unzip ollama.zip &&
-                mv ollama /usr/local/bin &&
-                rm ollama.zip
-            rc=$?
+            # The release zip holds only Ollama.app; its CLI must stay inside the
+            # bundle next to the libraries it loads, so link it onto the PATH.
+            log_info "Homebrew is not installed, installing Ollama.app from the release zip..."
+            local app="/Applications/Ollama.app"
+            rc=0
+            if [ ! -d "$app" ]; then
+                local tmp
+                tmp=$(mktemp -d)
+                curl -fsSL https://ollama.com/download/Ollama-darwin.zip -o "$tmp/ollama.zip" &&
+                    unzip -q "$tmp/ollama.zip" -d "$tmp" &&
+                    mv "$tmp/Ollama.app" /Applications/
+                rc=$?
+                rm -rf "$tmp"
+            fi
+            if [ "$rc" -eq 0 ]; then
+                mkdir -p /usr/local/bin &&
+                    ln -sf "$app/Contents/Resources/ollama" /usr/local/bin/ollama
+                rc=$?
+            fi
         else
+            log_info "macOS detected, installing Ollama with brew..."
             brew install ollama
             rc=$?
         fi
