@@ -99,7 +99,7 @@ func setupPresignedTestServer(t *testing.T) (engine *gin.Engine, baseDir string,
 		},
 	}
 
-	engine = gin.New()
+	engine = newFilesTestEngine()
 	handler := presignedFileHandler(stubTS, baseDir)
 	engine.GET("/api/v1/files/presigned", handler)
 	engine.HEAD("/api/v1/files/presigned", handler)

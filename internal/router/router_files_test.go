@@ -150,7 +150,7 @@ func TestServeFilesFallsBackToGlobalFileService(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("STORAGE_TYPE", "local")
 
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	var requestedPath string
 	serveFiles(engine, &stubFileService{
 		getFile: func(ctx context.Context, filePath string) (io.ReadCloser, error) {
@@ -183,7 +183,7 @@ func TestServeFilesResolvesShortResourceReference(t *testing.T) {
 	const ref = "resource://AbCdEfGhIjKlMnOpQrStUv"
 	const physical = "local://42/exports/a.png"
 
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	var requestedPath string
 	serveFilesWithResources(engine, &stubFileService{getFile: func(_ context.Context, path string) (io.ReadCloser, error) {
 		requestedPath = path
@@ -206,7 +206,7 @@ func TestServeFilesResolvesShortResourceReference(t *testing.T) {
 func TestServeFilesRejectsCrossTenantResourceReference(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	const ref = "resource://AbCdEfGhIjKlMnOpQrStUv"
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	serveFilesWithResources(engine, &stubFileService{getFile: func(context.Context, string) (io.ReadCloser, error) {
 		t.Fatal("GetFile should not be called")
 		return nil, nil
@@ -225,7 +225,7 @@ func TestServeFilesRejectsCrossTenantResourceReference(t *testing.T) {
 func TestResourceGrantServesShortPublicURL(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	physical := "local://42/exports/a.png"
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	serveResourceGrants(
 		engine,
 		&stubResourceCatalog{resource: &types.StoredResource{
@@ -265,7 +265,7 @@ func TestServeFilesDoesNotFallbackWhenProviderDoesNotMatchGlobalStorage(t *testi
 	gin.SetMode(gin.TestMode)
 	t.Setenv("STORAGE_TYPE", "minio")
 
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	serveFiles(engine, &stubFileService{
 		getFile: func(ctx context.Context, filePath string) (io.ReadCloser, error) {
 			t.Fatalf("GetFile should not be called for mismatched provider, got %q", filePath)
@@ -288,7 +288,7 @@ func TestServeFilesRejectsCrossTenantPath(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("STORAGE_TYPE", "local")
 
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	serveFiles(engine, &stubFileService{
 		getFile: func(ctx context.Context, filePath string) (io.ReadCloser, error) {
 			t.Fatalf("GetFile should not be called for cross-tenant path, got %q", filePath)
@@ -311,7 +311,7 @@ func TestServeFilesRejectsPathWithoutTenantSegment(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("STORAGE_TYPE", "local")
 
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	serveFiles(engine, &stubFileService{
 		getFile: func(ctx context.Context, filePath string) (io.ReadCloser, error) {
 			t.Fatalf("GetFile should not be called without tenant segment, got %q", filePath)
@@ -376,8 +376,7 @@ func TestServeFilesAPIKeyScopeMatrix(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			engine := gin.New()
-			engine.Use(middleware.ErrorHandler())
+			engine := newFilesTestEngine()
 			serveFiles(engine, &stubFileService{
 				getFile: func(_ context.Context, _ string) (io.ReadCloser, error) {
 					return io.NopCloser(strings.NewReader("body")), nil
@@ -407,7 +406,7 @@ func newKBScopedFilesTestEngine(
 	tenantSvc interfaces.TenantService,
 	global interfaces.FileService,
 ) *gin.Engine {
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	engine.GET("/knowledge-bases/:id/files",
 		func(c *gin.Context) {
 			ctx := context.WithValue(c.Request.Context(), types.TenantIDContextKey, effectiveTenantID)
@@ -575,7 +574,7 @@ func newMessageScopedFilesTestEngine(
 	resourceCatalog interfaces.ResourceCatalog,
 	kbShareAuth messageKBShareAuthorizer,
 ) *gin.Engine {
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	engine.GET("/sessions/:id/messages/:message_id/files",
 		func(c *gin.Context) {
 			ctx := context.WithValue(c.Request.Context(), types.TenantIDContextKey, callerTenantID)
@@ -1351,7 +1350,7 @@ func TestServeFilesForcesActiveContentDownload(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv("STORAGE_TYPE", "local")
 
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	serveFiles(engine, &stubFileService{
 		getFile: func(_ context.Context, _ string) (io.ReadCloser, error) {
 			return io.NopCloser(strings.NewReader(`<svg onload="alert(1)"></svg>`)), nil
@@ -1386,4 +1385,11 @@ func (s *stubResourceCatalog) GetMessageFileBindings(
 	string,
 ) (*types.MessageFileBindings, error) {
 	return s.fileBindings, nil
+}
+
+// newFilesTestEngine mounts the error middleware the real router installs globally, so rejections render.
+func newFilesTestEngine() *gin.Engine {
+	engine := gin.New()
+	engine.Use(middleware.ErrorHandler())
+	return engine
 }

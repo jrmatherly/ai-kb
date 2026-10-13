@@ -16,7 +16,7 @@ func servePresignedPreviewForTest(t *testing.T, catalog interfaces.ResourceCatal
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	t.Setenv("LOCAL_STORAGE_BASE_DIR", t.TempDir())
-	engine := gin.New()
+	engine := newFilesTestEngine()
 	servePresignedPreview(engine, nil, nil, catalog)
 
 	req := httptest.NewRequest(http.MethodGet,
