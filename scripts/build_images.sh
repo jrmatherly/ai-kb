@@ -17,7 +17,6 @@ export DOCKER_BUILDKIT=1
 
 # Version information
 VERSION="1.0.0"
-SCRIPT_NAME=$(basename "$0")
 
 # Show help
 show_help() {
@@ -32,7 +31,7 @@ show_help() {
     echo "  -s, --sandbox  build only the sandbox image"
     echo "  -c, --clean    remove all local images"
     echo "  -v, --version  show version information"
-    exit 0
+    exit "${1:-0}"
 }
 
 # Show version information
@@ -131,106 +130,92 @@ get_version_info() {
 build_app_image() {
     log_info "Building the app image (ai-kb-app)..."
     
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
     
     # Version information
     get_version_info
     
-    docker build \
-        --platform $PLATFORM \
-        --build-arg GOPRIVATE_ARG=${GOPRIVATE:-""} \
+    if ! docker build \
+        --platform "$PLATFORM" \
+        --build-arg GOPRIVATE_ARG="${GOPRIVATE:-}" \
         --build-arg GOPROXY_ARG="${GOPROXY:-}" \
-        --build-arg GOSUMDB_ARG=${GOSUMDB:-"off"} \
+        --build-arg GOSUMDB_ARG="${GOSUMDB:-off}" \
         --build-arg APK_MIRROR_ARG="${APK_MIRROR_ARG:-}" \
         --build-arg VERSION_ARG="$VERSION" \
         --build-arg COMMIT_ID_ARG="$COMMIT_ID" \
         --build-arg BUILD_TIME_ARG="$BUILD_TIME" \
         --build-arg GO_VERSION_ARG="$GO_VERSION" \
-        --build-arg WITH_ANYDOC=${WITH_ANYDOC:-1} \
+        --build-arg WITH_ANYDOC="${WITH_ANYDOC:-1}" \
         -f docker/Dockerfile.app \
         -t ghcr.io/jrmatherly/ai-kb-app:latest \
-        .
-    
-    if [ $? -eq 0 ]; then
-        log_success "App image built"
-        return 0
-    else
+        .; then
         log_error "App image build failed"
         return 1
     fi
+    log_success "App image built"
 }
 
 # Build the docreader image
 build_docreader_image() {
     log_info "Building the docreader image (ai-kb-docreader)..."
     
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
     
-    docker build \
-        --platform $PLATFORM \
-        --build-arg PLATFORM=$PLATFORM \
-        --build-arg TARGETARCH=$TARGETARCH \
+    if ! docker build \
+        --platform "$PLATFORM" \
+        --build-arg PLATFORM="$PLATFORM" \
+        --build-arg TARGETARCH="$TARGETARCH" \
         --build-arg APT_MIRROR="${APT_MIRROR:-}" \
         --build-arg PLAYWRIGHT_DOWNLOAD_HOST="${PLAYWRIGHT_DOWNLOAD_HOST:-}" \
         --build-arg PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST="${PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST:-}" \
         -f docker/Dockerfile.docreader \
         -t ghcr.io/jrmatherly/ai-kb-docreader:latest \
-        .
-    
-    if [ $? -eq 0 ]; then
-        log_success "Docreader image built"
-        return 0
-    else
+        .; then
         log_error "Docreader image build failed"
         return 1
     fi
+    log_success "Docreader image built"
 }
 
 # Build the frontend image (multi-stage: npm runs in the builder, so the host needs no prebuilt dist)
 build_frontend_image() {
     log_info "Building the frontend image (ai-kb-ui)..."
     
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
     
     # Version information (to inject the commit hash into the frontend)
     get_version_info
 
-    docker build \
-        --platform $PLATFORM \
+    if ! docker build \
+        --platform "$PLATFORM" \
         --build-arg VITE_FRONTEND_COMMIT="$COMMIT_ID" \
         ${NPM_REGISTRY:+--build-arg NPM_REGISTRY="$NPM_REGISTRY"} \
         ${NODE_MAX_OLD_SPACE_SIZE:+--build-arg NODE_MAX_OLD_SPACE_SIZE="$NODE_MAX_OLD_SPACE_SIZE"} \
         -f frontend/Dockerfile \
         -t ghcr.io/jrmatherly/ai-kb-ui:latest \
-        frontend/
-    
-    if [ $? -eq 0 ]; then
-        log_success "Frontend image built"
-        return 0
-    else
+        frontend/; then
         log_error "Frontend image build failed"
         return 1
     fi
+    log_success "Frontend image built"
 }
 
 # Build the sandbox image
 build_sandbox_image() {
     log_info "Building the sandbox image (ai-kb-sandbox)..."
 
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
 
     # Also tag main: the default image tracks main (see DefaultDockerImage in sandbox.go),
     # and the Docker backend pulls only when the image is missing locally, so a build without this tag is wasted.
-    docker build \
-        --platform $PLATFORM \
-        --build-arg TARGETPLATFORM=$PLATFORM \
+    if ! docker build \
+        --platform "$PLATFORM" \
+        --build-arg TARGETPLATFORM="$PLATFORM" \
         -f docker/Dockerfile.sandbox \
         --target sandbox \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:latest \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:main \
-        .
-
-    if [ $? -ne 0 ]; then
+        .; then
         log_error "Sandbox image build failed"
         return 1
     fi
@@ -239,16 +224,14 @@ build_sandbox_image() {
     # so Cube uses a variant image with envd injected. See website-docs/06-development/04-sandbox-deployment.md.
     log_info "Building the sandbox image Cube variant (ai-kb-sandbox:main-cube)..."
 
-    docker build \
-        --platform $PLATFORM \
-        --build-arg TARGETPLATFORM=$PLATFORM \
+    if ! docker build \
+        --platform "$PLATFORM" \
+        --build-arg TARGETPLATFORM="$PLATFORM" \
         -f docker/Dockerfile.sandbox \
         --target cube \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:latest-cube \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:main-cube \
-        .
-
-    if [ $? -ne 0 ]; then
+        .; then
         log_error "Sandbox image Cube variant build failed"
         return 1
     fi
@@ -257,38 +240,32 @@ build_sandbox_image() {
     # builds; the Docker backend does not consume this image yet.
     log_info "Building the sandbox image desktop variant (ai-kb-sandbox:main-desktop)..."
 
-    docker build \
-        --platform $PLATFORM \
-        --build-arg TARGETPLATFORM=$PLATFORM \
+    if ! docker build \
+        --platform "$PLATFORM" \
+        --build-arg TARGETPLATFORM="$PLATFORM" \
         -f docker/Dockerfile.sandbox \
         --target desktop \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:latest-desktop \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop \
-        .
-
-    if [ $? -ne 0 ]; then
+        .; then
         log_error "Sandbox image desktop variant build failed"
         return 1
     fi
 
     log_info "Building the sandbox image desktop Cube variant (ai-kb-sandbox:main-desktop-cube)..."
 
-    docker build \
-        --platform $PLATFORM \
-        --build-arg TARGETPLATFORM=$PLATFORM \
+    if ! docker build \
+        --platform "$PLATFORM" \
+        --build-arg TARGETPLATFORM="$PLATFORM" \
         -f docker/Dockerfile.sandbox \
         --target desktop-cube \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:latest-desktop-cube \
         -t ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop-cube \
-        .
-
-    if [ $? -eq 0 ]; then
-        log_success "Sandbox images built"
-        return 0
-    else
+        .; then
         log_error "Sandbox image desktop Cube variant build failed"
         return 1
     fi
+    log_success "Sandbox images built"
 }
 
 # Build all images
@@ -356,18 +333,14 @@ build_all_images() {
 clean_images() {
     log_info "Removing local AI KB images..."
     
-    # Stop the related containers
-    log_info "Stopping the related containers..."
-    docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-app:latest" 2>/dev/null) 2>/dev/null || true
-    docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-docreader:latest" 2>/dev/null) 2>/dev/null || true
-    docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-ui:latest" 2>/dev/null) 2>/dev/null || true
-    
-    # Remove the related containers
-    log_info "Removing the related containers..."
-    docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-app:latest" 2>/dev/null) 2>/dev/null || true
-    docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-docreader:latest" 2>/dev/null) 2>/dev/null || true
-    docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-ui:latest" 2>/dev/null) 2>/dev/null || true
-    
+    log_info "Stopping and removing the related containers..."
+    for image in ai-kb-app ai-kb-docreader ai-kb-ui; do
+        docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/$image:latest" 2>/dev/null | while read -r id; do
+            docker stop "$id" >/dev/null 2>&1 || true
+            docker rm "$id" >/dev/null 2>&1 || true
+        done
+    done
+
     # Remove the images
     log_info "Removing local images..."
     docker rmi ghcr.io/jrmatherly/ai-kb-app:latest 2>/dev/null || true
@@ -420,15 +393,14 @@ while [ "$1" != "" ]; do
         -v | --version )    show_version
                             ;;
         * )                 log_error "Unknown option: $1"
-                            show_help
+                            show_help 1
                             ;;
     esac
     shift
 done
 
 # Check Docker
-check_docker
-if [ $? -ne 0 ]; then
+if ! check_docker; then
     exit 1
 fi
 
