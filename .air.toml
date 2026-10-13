@@ -1,3 +1,8 @@
+#:schema https://json.schemastore.org/any.json
+#:tombi schema.strict = false
+
+# Working directory
+# . or absolute path, please note that the directories following must be under root.
 root = "."
 testdata_dir = "testdata"
 tmp_dir = "tmp"
