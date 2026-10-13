@@ -32,6 +32,9 @@ helm install weknora\b	helm install ai-kb
 # --- product name in prose (identifiers above are matched first) ---
 # --- embed widget JS global and webhook User-Agent (before the product-name rule) ---
 \bwindow\.WeKnora\b	window.AIKB
+\bglobal\.WeKnora\b	global.AIKB
+\bWeKnora/(?=\d)	AIKB/
+\bWeKnora/(?=[a-z])	ai-kb/
 \bWeKnora\.(init|open|on|setContext|openWithQuery|setLocale)\b	AIKB.$1
 \bWeKnora-(Embed-Webhook|Lite-Desktop-App|SkillInstaller|IMA-Connector|RSS|Seafile-Connector|Yuque-Connector)\b	AIKB-$1
 \bweknora-memories\.json\b	ai-kb-memories.json
