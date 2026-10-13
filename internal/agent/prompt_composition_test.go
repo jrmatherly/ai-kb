@@ -125,6 +125,21 @@ func TestFinalSynthesisKeepsConversationRolesImagesAndSteering(t *testing.T) {
 	require.Equal(t, original, messages, "synthesis must not mutate the live transcript")
 }
 
+func TestFinalSynthesisTurnsThinkingOff(t *testing.T) {
+	model := &mockChat{responses: []mockResponse{{chunks: []types.StreamResponse{
+		{ResponseType: types.ResponseTypeAnswer, Content: "done", Done: true},
+	}}}}
+	engine := newTestEngine(t, model)
+	thinking := true
+	engine.config.Thinking = &thinking
+	engine.config.ReasoningEffort = "high"
+	require.NoError(t, engine.streamFinalAnswerToEventBus(
+		t.Context(), "task", &types.AgentState{}, "sess", []chat.Message{{Role: "user", Content: "task"}},
+	))
+	require.Len(t, model.opts, 1)
+	require.Equal(t, chat.ReasoningEffort("off"), model.opts[0].ReasoningEffort)
+}
+
 func TestSkillInstallationPromptDoesNotReceiveSessionArtifactWorkflow(t *testing.T) {
 	model := &mockChat{}
 	engine := newTestEngine(t, model)

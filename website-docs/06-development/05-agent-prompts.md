@@ -40,7 +40,7 @@ When the user adds a message during an answer and chooses to send it right away,
 
 Normal tool results keep the `tool` role and the call ID. During message repair, a result that cannot be paired is kept as an escaped `untrusted_tool_result` data block and is never promoted to a system instruction. The agent, ordinary Q&A and model fallback share the source data boundary rules, but the three do not use exactly the same prompt assembly.
 
-When the iteration limit is reached or a run ends in an error, `internal/agent/finalize.go` reuses the current message list, keeping history, images and tool call pairing, then appends a closing request. The last call offers no tools and sets `tool_choice=none`. It does not request thinking, and any thinking output is dropped from the answer stream.
+When the iteration limit is reached or a run ends in an error, `internal/agent/finalize.go` reuses the current message list, keeping history, images and tool call pairing, then appends a closing request. The last call offers no tools and sets `tool_choice=none`. It turns thinking off (`ReasoningEffort` off) even when the agent thinks during its rounds; a model whose reasoning cannot be switched off still thinks, and that thinking output is dropped from the answer stream.
 
 ## Editing and saving
 

@@ -8,6 +8,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/common"
 	"github.com/jrmatherly/ai-kb/internal/event"
 	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
 	"github.com/jrmatherly/ai-kb/internal/models/chat"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -57,7 +58,10 @@ func (e *AgentEngine) streamFinalAnswerToEventBus(
 			MaxCompletionTokens: budget,
 			PromptCacheKey:      sessionID,
 			ToolChoice:          "none",
-		}, // Thinking disabled for final answer synthesis
+			// Off even when the agent thinks in its rounds; always-on reasoning
+			// models ignore it, so the filter below still drops their thinking.
+			ReasoningEffort: api.ReasoningOff,
+		},
 		func(chunk *types.StreamResponse, fullContent string) {
 			// Defensive filter: only emit answer content, skip thinking chunks
 			if chunk.ResponseType == types.ResponseTypeThinking {
