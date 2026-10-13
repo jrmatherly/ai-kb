@@ -497,8 +497,8 @@ sequenceDiagram
 | `tenant.enable_rbac` | `true` / `false` | `true` | RBAC enforced / log-only mode (`AIKB_TENANT_ENABLE_RBAC` overrides) |
 | `tenant.enable_cross_tenant_access` | `true` / `false` | `false` | Deployment-wide switch for cross-tenant superusers (`AIKB_TENANT_ENABLE_CROSS_TENANT_ACCESS` overrides) |
 | `tenant.auto_accept_invitation` | `true` / `false` | `false` | Email invitations add registered users directly (`system_settings` > `AIKB_TENANT_AUTO_ACCEPT_INVITATION`) |
-| `JWT_SECRET` (env) | any string | a random 32-byte key | The JWT HMAC key; also signs the OIDC state |
-| `SYSTEM_AES_KEY` (env) | AES key | unset | Encrypts the API key plaintext column at rest |
+| `JWT_SECRET` (env) | any string | `aikb-default-jwt-secret-change-me` in `.env.example`; startup fails when empty | The JWT HMAC key; also signs the OIDC state. The shipped default never signs: a per-install secret from the `system_secrets` table is used instead |
+| `SYSTEM_AES_KEY` (env) | 32-byte AES key | `aikb-default-aes-key-change-me!!` in `.env.example`; startup fails when empty or another length | Encrypts the API key column at rest; the shipped default is public, replace it before storing real credentials |
 | `oidc.*` | see [OIDC configuration](#oidc-configuration) | off | OIDC single sign-on |
 | `frontend_base_url` / `FRONTEND_BASE_URL` | URL | relative path | The base of the invitation link registration page |
 | `AIKB_INVITATION_TTL` (env) | Go duration | `168h` (7 days) | Lifetime of workspace invitations and invitation links |
@@ -512,8 +512,9 @@ Implemented in `internal/application/service/user.go` with `github.com/golang-jw
 
 ```go
 func getJwtSecret() string {
-    // 1) the JWT_SECRET env (the placeholders "ai-kb-jwt-secret" and "CHANGE-ME-jwt-secret" count as unset)
-    // 2) otherwise a 32-byte secure random key (Base64) generated at startup; old tokens stop working after a restart
+    // The JWT_SECRET env. Startup refuses an empty value, and database.ResolveDefaultJWTSecret has already
+    // replaced the shipped default and the old placeholders ("ai-kb-jwt-secret", "CHANGE-ME-jwt-secret") with a
+    // per-install secret stored in the system_secrets table, so tokens stay valid across restarts.
 }
 ```
 
@@ -675,7 +676,7 @@ type TenantAPIKey struct {
 }
 ```
 
-- **Encryption at rest**: with `SYSTEM_AES_KEY` configured, the `BeforeSave` hook stores the `api_key` column AES-GCM encrypted and `AfterFind` decrypts it; a failed encryption aborts the write rather than storing plaintext. Lookup always goes through the irreversible `KeyHash`.
+- **Encryption at rest**: `SYSTEM_AES_KEY` is required at startup, so the `BeforeSave` hook always stores the `api_key` column AES-GCM encrypted and `AfterFind` decrypts it; a failed encryption aborts the write rather than storing plaintext. Lookup always goes through the irreversible `KeyHash`.
 - **Responses**: only the create response carries the full key. List and update responses mask `api_key` to its first 7 and last 4 characters (`sk-Ab12...wxyz`), so a lost key is replaced, not recovered.
 - **Validation flow**: the request carries `X-API-Key` → the hash is computed → the row is loaded by `KeyHash` → `RevokedAt` / `ExpiresAt` are checked → `TenantAPIKeyScope{KeyID, ScopeType, FullAccess, KnowledgeBaseIDs, Capabilities}` is injected into the context and later read with `types.TenantAPIKeyScopeFromContext`; `last_used_at` is refreshed asynchronously.
 

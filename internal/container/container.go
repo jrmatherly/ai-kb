@@ -933,6 +933,10 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 		logger.Infof(context.Background(), "Auto-migration is disabled (AUTO_MIGRATE=false)")
 	}
 
+	if err := database.ResolveDefaultJWTSecret(db); err != nil {
+		return nil, err
+	}
+
 	// Get underlying SQL DB object
 	sqlDB, err := db.DB()
 	if err != nil {

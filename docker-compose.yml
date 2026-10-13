@@ -306,8 +306,9 @@ services:
       - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
       # AES-256 master key that encrypts sensitive database fields such as API keys at rest (must be 32 bytes).
       # Encrypted fields: tenants.api_key, model API keys, vector store credentials, web search provider keys,
-      # WeKnoraCloud.AppSecret and more. If the key is missing or the wrong length, encrypted fields cannot be decrypted (the UI shows them empty
-      # and they must be entered again). Production must set it explicitly and keep it safe. If it is lost, no encrypted data can be recovered.
+      # WeKnoraCloud.AppSecret and more. The app refuses to start when it is missing or not exactly 32 bytes; a different key cannot
+      # decrypt fields saved under the old one (the UI shows them empty and they must be entered again). Replace the shipped default from
+      # .env.example and keep the key safe. If it is lost, no encrypted data can be recovered.
       # (TENANT_AES_KEY / CRYPTO_MASTER_KEY / CRYPTO_SALT are deprecated: since v0.4.0 encryption uses
       #   SYSTEM_AES_KEY only, and the Go app no longer reads those three variables.)
       - SYSTEM_AES_KEY=${SYSTEM_AES_KEY:-}

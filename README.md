@@ -71,13 +71,15 @@ Requires [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker
 ```bash
 git clone https://github.com/jrmatherly/ai-kb.git
 cd ai-kb
-cp .env.example .env    # Edit .env as needed, see comments in the file
+cp .env.example .env    # Replace JWT_SECRET and SYSTEM_AES_KEY (see the note below)
 docker compose build    # Build the app, docreader and frontend images locally
 docker compose up -d    # Start core services
 ```
 
 > [!NOTE]
 > No release images are published under `ghcr.io/jrmatherly/ai-kb-*` yet, so `docker compose pull` fails with `denied`. Build the images from the checkout as above; the first build takes a while.
+>
+> `.env.example` ships default `JWT_SECRET` and `SYSTEM_AES_KEY` values so the first start works, and the server logs a warning for each until you replace them. Replace both before you store real credentials: `openssl rand -hex 32` for `JWT_SECRET`, `openssl rand -hex 16` for `SYSTEM_AES_KEY` (exactly 32 characters). The server refuses to start if either is empty.
 
 Then open **<http://localhost>** and follow the onboarding guide. A walkthrough with sample data is in the [Quickstart](https://ai-kb-docs.matherly.net/docs/01-getting-started/03-quickstart).
 

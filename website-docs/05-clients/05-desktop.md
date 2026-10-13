@@ -135,7 +135,8 @@ The desktop build needs no registration or login at startup:
 
 - Each launch generates a random credential and hands it only to the built-in frontend, through the Wails binding `GetAutoSetupToken`. The frontend sends it in the `X-AIKB-Desktop-Token` request header to `POST /api/v1/auth/auto-setup`. The first call creates the default user `admin@ai-kb.local` and its workspace. Later calls issue login tokens directly. Requests without the credential (including other devices on the LAN and ordinary browsers) are rejected.
 - When no valid `SYSTEM_SIGNING_KEY` (or non-default `SYSTEM_AES_KEY`) is configured, the first launch generates `signing.key` (mode `0600`) in the preferences directory and uses it as `SYSTEM_SIGNING_KEY`. It signs presigned file links, web embed sessions and the like, and stays valid across restarts. It is only a signing key and never replaces the AES key that encrypts stored credentials.
-- When `JWT_SECRET` is unset or still a placeholder, the desktop build also fills it: with the generated signing key, or, when the signing key came from the environment, with a separate `jwt.key` (mode `0600`) in the same directory.
+- When `JWT_SECRET` is unset, a placeholder or the shipped default, the desktop build also fills it: with the generated signing key, or, when the signing key came from the environment, with a separate `jwt.key` (mode `0600`) in the same directory.
+- When `SYSTEM_AES_KEY` is unset or still the shipped default (`aikb-default-aes-key-change-me!!`, which the bundled `.env` carries), the desktop build generates `aes.key` (mode `0600`, 32 characters) in the same directory and uses it, so stored credentials are encrypted with a key of its own from the first launch. Credentials stored in plaintext by an earlier version stay readable.
 
 ## Automatic updates (cmd/desktop/update.go)
 

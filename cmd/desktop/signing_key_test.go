@@ -70,3 +70,23 @@ func TestDesktopSigningKeyKeepsAnExplicitKey(t *testing.T) {
 	require.Equal(t, explicit, string(utils.SystemHMACKey()))
 	require.NotEqual(t, explicit, os.Getenv("JWT_SECRET"))
 }
+
+func TestDesktopAESKeyPersistsAndNeverReplacesAConfiguredKey(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("SYSTEM_AES_KEY", "")
+	require.NoError(t, ensureDesktopAESKey(dir))
+	first := os.Getenv("SYSTEM_AES_KEY")
+	require.Len(t, first, 32)
+
+	t.Setenv("SYSTEM_AES_KEY", utils.DefaultAESKey)
+	require.NoError(t, ensureDesktopAESKey(dir))
+	require.Equal(t, first, os.Getenv("SYSTEM_AES_KEY"), "the shipped default is replaced by the persisted key")
+
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-system-aes-key-32bytes!!")
+	require.NoError(t, ensureDesktopAESKey(dir))
+	require.Equal(t, first, os.Getenv("SYSTEM_AES_KEY"), "an older 30-byte example key is replaced too")
+
+	t.Setenv("SYSTEM_AES_KEY", "0123456789abcdef0123456789abcdef")
+	require.NoError(t, ensureDesktopAESKey(dir))
+	require.Equal(t, "0123456789abcdef0123456789abcdef", os.Getenv("SYSTEM_AES_KEY"))
+}

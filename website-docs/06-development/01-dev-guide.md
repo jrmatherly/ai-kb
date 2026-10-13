@@ -41,8 +41,8 @@ Development mode runs the infrastructure in Docker and runs `app` and `frontend`
 ```bash
 # 1. Prepare environment variables: dev.sh loads .env (required), then overrides it with .env.local (optional)
 cp .env.example .env
-# Fill in JWT_SECRET (openssl rand -hex 32) and SYSTEM_AES_KEY (openssl rand -hex 16). With JWT_SECRET empty
-# every backend restart, including each Air rebuild, signs you out; without SYSTEM_AES_KEY model API keys are stored unencrypted.
+# .env.example ships default JWT_SECRET and SYSTEM_AES_KEY values, so the backend starts (with a warning for each).
+# Replace them (openssl rand -hex 32, openssl rand -hex 16) before storing real credentials; an empty value stops startup.
 
 # 2. Start the infrastructure (ParadeDB/Postgres + Redis + docreader, plus Langfuse by default)
 make dev-start                      # same as ./scripts/dev.sh start

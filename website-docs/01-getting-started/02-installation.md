@@ -52,14 +52,14 @@ The fastest path:
 ```bash
 git clone https://github.com/jrmatherly/ai-kb.git && cd ai-kb
 cp .env.example .env              # edit the required values: DB_USER/DB_PASSWORD/DB_NAME, REDIS_PASSWORD, JWT_SECRET, SYSTEM_AES_KEY
-make start-all                # same as ./scripts/start_all.sh (pulls the latest images by default)
-# or directly:
-docker compose pull           # pull the images matching AIKB_VERSION
+docker compose build              # build the app, docreader and frontend images from the checkout
 docker compose up -d
 docker compose ps                 # wait until every service is healthy/running
 ```
 
-`JWT_SECRET` and `SYSTEM_AES_KEY` are empty in `.env.example`. Generate them once on the first deployment and keep them safe. `JWT_SECRET` can come from `openssl rand -hex 32`. `SYSTEM_AES_KEY` must be 32 bytes, for example `openssl rand -hex 16`. When upgrading an existing deployment keep the original `SYSTEM_AES_KEY`, otherwise encrypted credentials cannot be decrypted. [Configuration](./04-configuration.md) explains what each secret does.
+No release images are published under `ghcr.io/jrmatherly/ai-kb-*` yet, so `docker compose pull` and a plain `make start-all` (which pulls by default) fail with `denied`. After `docker compose build`, `./scripts/start_all.sh --no-pull` starts the locally built images.
+
+`.env.example` ships default values for `JWT_SECRET` and `SYSTEM_AES_KEY` so a first start works. The server warns about each default until it is replaced, and refuses to start when `JWT_SECRET` is empty or `SYSTEM_AES_KEY` is not exactly 32 bytes. Replace both before storing real credentials and keep them safe: `JWT_SECRET` from `openssl rand -hex 32`, `SYSTEM_AES_KEY` from `openssl rand -hex 16` (32 bytes). Credentials saved under the default AES key become unreadable once the key changes and must be entered again. When upgrading an existing deployment keep the original `SYSTEM_AES_KEY`, otherwise encrypted credentials cannot be decrypted. [Configuration](./04-configuration.md) explains what each secret does.
 
 Stop with `docker compose down` (`-v` also deletes the data volumes, use with care). `make start-all` wraps the same command (`scripts/start_all.sh`, which additionally checks Ollama, creates a fallback `.env` and pre-pulls the sandbox image). Pick one of the two.
 
@@ -245,7 +245,7 @@ Lite mode combines the compile-time `EDITION=lite` with the runtime `.env.lite` 
 - **Sandbox**: the single binary starts with no backend configured; set up Docker, CubeSandbox or E2B per workspace on the settings page. Desktop application sessions use the local OS sandbox when no remote sandbox is configured, see [Desktop client](../05-clients/05-desktop.md).
 
 ```bash
-cp .env.lite.example .env.lite      # fill in SYSTEM_AES_KEY (openssl rand -hex 16) and JWT_SECRET
+cp .env.lite.example .env.lite      # replace the default SYSTEM_AES_KEY (openssl rand -hex 16) and JWT_SECRET
 make run-lite                       # build and start ./ai-kb-lite with the .env.lite environment
 make package-lite                   # package the release tarball (scripts/package-lite.sh)
 ```

@@ -97,7 +97,7 @@ You are checking which setting controls each part of the link chain.
 | `APP_EXTERNAL_URL` | The externally reachable address for IM image links; required before `resource://` can be rewritten to `<APP_EXTERNAL_URL>/r/<token>` |
 | `RESOURCE_URL_MODE` | The default file reference form in API responses (`handle` or `public`) |
 | `MINIO_ENDPOINT` and the other storage endpoints | Set to a public address, the storage presigned URL can serve as the external link without `APP_EXTERNAL_URL` |
-| `SYSTEM_SIGNING_KEY` (falls back to `SYSTEM_AES_KEY` when unset) | The signing key. `/api/v1/files/presigned` links depend on it; it also lets a `/r/<token>` grant be reused while valid, which keeps direct links stable and reduces write load on read endpoints. When it is unset, shorter than 16 characters or an example value, presigned links cannot be issued; changing it invalidates links already issued |
+| `SYSTEM_SIGNING_KEY` (falls back to `SYSTEM_AES_KEY` when unset) | The signing key. `/api/v1/files/presigned` links depend on it; it also lets a `/r/<token>` grant be reused while valid, which keeps direct links stable and reduces write load on read endpoints. When it is unset, shorter than 16 characters or an example value (the shipped default `SYSTEM_AES_KEY` included), presigned links cannot be issued; changing it invalidates links already issued |
 
 ## Related pages
 

@@ -31,7 +31,7 @@ func SystemHMACKey() []byte {
 	if key == "" {
 		key = os.Getenv("SYSTEM_AES_KEY")
 	}
-	if len(key) < 16 || key == "ai-kb-system-aes-key-32bytes!!" || key == "your-32-byte-long-encryption-key!" {
+	if len(key) < 16 || IsDefaultAESKey(key) {
 		return nil
 	}
 	return []byte(key)

@@ -15,7 +15,7 @@ import (
 // create to stay in sync with the versioned (PostgreSQL) migrations:
 // 000041 task queue, 000053 system settings, 000055 processing spans,
 // 000063 knowledge multi-tags, 000093 browser authorization, 000103 message
-// artifacts.
+// artifacts, 000116 system secrets.
 var versionedSQLiteTables = []string{
 	"memory_extraction_sessions",
 	"task_pending_ops",
@@ -36,6 +36,7 @@ var versionedSQLiteTables = []string{
 	"tenant_skill_snapshots",
 	"tenant_skill_catalog",
 	"tenant_user_env_vars",
+	"system_secrets",
 }
 
 // versionedSQLiteColumns maps each existing table to the columns that the
@@ -71,7 +72,7 @@ var versionedSQLiteColumns = map[string][]string{
 	}, // 000028
 }
 
-const expectedSQLiteMigrationVersion = 34
+const expectedSQLiteMigrationVersion = 35
 
 func TestSQLiteMigrationsCreateVersionedSchema(t *testing.T) {
 	repoRoot := sqliteRepoRoot(t)

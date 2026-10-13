@@ -91,6 +91,7 @@ migrations/
 | 000113 | The `chunk_images` table, the image gallery's projection of `chunks.image_info` (one row per image), kept in sync by triggers on `chunks` and backfilled; trigram indexes on caption and OCR text when `pg_trgm` is available |
 | 000114 | chunks.source_locators (JSONB), the chunk's positions in the original file |
 | 000115 | Upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4 when the server ships those versions; skipped with `app.skip_embedding=true` |
+| 000116 | The `system_secrets` table (`name`, `value`), server-generated secrets such as the per-install JWT secret; no API reads it |
 
 SQLite version numbers evolve independently and do not map one-to-one to the PostgreSQL numbers:
 
@@ -115,6 +116,7 @@ SQLite version numbers evolve independently and do not map one-to-one to the Pos
 | 000031 | The `model_catalog_configs` table (matching 000111) |
 | 000032–000033 | The `chunk_images` table with its triggers, chunks.source_locators (matching 000113–000114) |
 | 000034 | mcp_services.usage_instructions and the `mcp_metadata` table (matching 000092) |
+| 000035 | The `system_secrets` table (matching 000116) |
 
 000099, 000112 and 000115 (pg_search and pgvector upgrades, embeddings indexes) have no SQLite counterpart. 000078 has no separate SQLite version: its columns and the `chunk_revisions` table are part of the SQLite baseline `000000_init`.
 
@@ -137,6 +139,7 @@ The tables below show the **effective structure after all up migrations** (later
 | `user_kb_pins` | Per-user knowledge base pins | PK (`tenant_id`,`user_id`,`kb_id`) + `pinned_at` |
 | `user_resource_favorites` | User favorites | PK (`user_id`,`tenant_id`,`resource_type`,`resource_id`) |
 | `system_settings` | System-level settings (000053) | `key`, `value`/`value_type`, `category`, `is_secret`, `requires_restart`, `last_modified_by` |
+| `system_secrets` | Server-generated secrets no API reads, such as the per-install JWT secret (000116) | `name`, `value` |
 | `audit_logs` | Audit log (000044) | `tenant_id`, `actor_user_id`/`actor_role`, `action`, `target_type`/`target_id`/`target_user_id`, `request_path`/`request_method`, `outcome` (success/denied), `scope_type`/`scope_id`, `details` (JSONB) |
 
 ### Models and knowledge bases

@@ -240,6 +240,9 @@ func main() {
 		panic(fmt.Sprintf("initialize desktop signing key: %v", err))
 	}
 	runtime.LogStartupEnv(context.Background())
+	if err := runtime.ValidateSecrets(context.Background()); err != nil {
+		panic(fmt.Sprintf("refusing to start: %v", err))
+	}
 
 	// Build dependency injection container
 	c := container.BuildContainer(runtime.GetContainer())

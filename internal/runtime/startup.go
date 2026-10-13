@@ -118,9 +118,8 @@ var startupEnvVars = []envVarSpec{
 //	[startup-env] DB_DRIVER=postgres
 //
 // Special call-outs are printed afterwards for misconfigurations that
-// would silently degrade behaviour (e.g. SYSTEM_AES_KEY set but wrong
-// length is treated as unset by crypto.GetAESKey - easy to miss without
-// a loud warning).
+// would silently degrade behaviour. Missing or malformed secrets are
+// ValidateSecrets' job, not this banner's.
 func LogStartupEnv(ctx context.Context) {
 	// Sort by name for deterministic output.
 	specs := make([]envVarSpec, len(startupEnvVars))
@@ -133,15 +132,6 @@ func LogStartupEnv(ctx context.Context) {
 		logger.Infof(ctx, "[startup-env]   %s=%s", s.name, formatEnvValue(s, val))
 	}
 
-	// Targeted warnings for footguns. SYSTEM_AES_KEY set to wrong length
-	// is the most common one - utils.GetAESKey() silently falls back to
-	// nil (== "no encryption") when len != 32.
-	if k := os.Getenv("SYSTEM_AES_KEY"); k != "" && len(k) != 32 {
-		logger.Warnf(ctx,
-			"[startup-env] SYSTEM_AES_KEY is set but %d bytes long; AES-256 requires exactly 32 bytes - encryption "+
-				"is DISABLED",
-			len(k))
-	}
 	// Upgrades from example configs keep the published example AES key,
 	// which SystemHMACKey rejects - embed sessions and presigned links then
 	// fail at request time with no hint at boot.

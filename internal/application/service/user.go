@@ -77,11 +77,13 @@ const (
 	DetailSamePassword       = "same_password"
 )
 
-// getJwtSecret retrieves the JWT secret from the environment, falling back to a securely generated random secret.
+// getJwtSecret returns JWT_SECRET. Startup refuses an empty one and swaps the shipped default for a per-install
+// secret; the random fallback covers paths that run without that startup (tests), and a public default that is
+// somehow still set is never used to sign.
 func getJwtSecret() string {
 	jwtSecretOnce.Do(func() {
 		envSecret := strings.TrimSpace(os.Getenv("JWT_SECRET"))
-		if envSecret != "" && envSecret != "ai-kb-jwt-secret" && envSecret != "CHANGE-ME-jwt-secret" {
+		if envSecret != "" && !secutils.IsDefaultJWTSecret(envSecret) {
 			jwtSecret = envSecret
 			return
 		}
