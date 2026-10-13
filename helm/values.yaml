@@ -432,7 +432,7 @@ secrets:
   # a new random value will be generated and any data encrypted with the old
   # key becomes UNRECOVERABLE (the UI will display ciphertext like "enc:v1:..."
   # instead of plaintext).
-  # NOTE: TENANT_AES_KEY is deprecated since v0.4.0 — encryption now uses
+  # NOTE: TENANT_AES_KEY is deprecated since v0.4.0 - encryption now uses
   # SYSTEM_AES_KEY exclusively. The Go app no longer reads TENANT_AES_KEY and
   # it has been removed from the Secret.
   systemAesKey: ""

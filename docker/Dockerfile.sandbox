@@ -19,7 +19,7 @@
 # Pin every FROM to TARGETPLATFORM. BuildKit already honours --platform; the
 # pin is for the legacy builder (DOCKER_BUILDKIT=0), which ignores --platform
 # whenever the host's arm64 python/node is already cached. The cube target
-# can then COPY envd of one architecture onto a runtime of the other — Cube
+# can then COPY envd of one architecture onto a runtime of the other - Cube
 # probes the mixed image as READY and Exec fails with "exec format error".
 #
 # Do not give this ARG a default. A declared default beats the value BuildKit
@@ -90,8 +90,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Sandbox scripts run as root by default: each chat session owns its own
 # sandbox, so the in-container account is not a tenant boundary, and agents are
 # expected to install packages and write wherever they need. A non-root
-# "user" account (UID 1000) is still created and named for interop — E2B
-# templates expose it and some tooling still addresses it by name — and it
+# "user" account (UID 1000) is still created and named for interop - E2B
+# templates expose it and some tooling still addresses it by name - and it
 # gives something for `sudo` and E2B/Cube requests that target a named account
 # to land on. The Docker backend can also address it numerically as 1000:1000.
 RUN groupadd -g 1000 user && \
@@ -117,7 +117,7 @@ USER root
 
 # Stage 3: Cube template image
 #
-# envd is what Cube talks to for everything — the readiness probe that decides
+# envd is what Cube talks to for everything - the readiness probe that decides
 # whether a template build succeeds, plus every later exec and file call. It
 # runs as root and selects the account named in each request. AI KB names
 # root by default, matching the runtime stage.
@@ -150,7 +150,7 @@ ENTRYPOINT ["/usr/local/bin/cube-entrypoint.sh"]
 # Stage 4: desktop environment on top of runtime.
 #
 # Debian package names (runtime is python:3.12-slim, not Ubuntu). Do not run
-# `yes | unminimize` — Debian has no such command. Do not clone noVNC; the
+# `yes | unminimize` - Debian has no such command. Do not clone noVNC; the
 # AI KB frontend uses @novnc/novnc and the sandbox only needs websockify.
 # procps supplies pgrep for the start script; util-linux supplies flock.
 FROM runtime AS desktop-runtime

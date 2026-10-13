@@ -5,7 +5,7 @@
 # bundles a recommended system prompt template, tool allowlist, and KB
 # compatibility rules so the user doesn't have to configure everything.
 #
-# A user can always override any auto-filled value — the preset only seeds
+# A user can always override any auto-filled value - the preset only seeds
 # the form.
 #
 # `kb_filter` decides which KBs the agent editor allows the user to select
@@ -29,7 +29,7 @@
 
 agent_type_presets:
   # --------------------------------------------------------------------------
-  # RAG Q&A — classic evidence-based retrieval over chunk indexes.
+  # RAG Q&A - classic evidence-based retrieval over chunk indexes.
   # Best for document / FAQ KBs without wiki.
   # --------------------------------------------------------------------------
   - id: "rag-qa"
@@ -56,7 +56,7 @@ agent_type_presets:
     # (read_document / list_documents are auxiliary and do not widen it)
 
   # --------------------------------------------------------------------------
-  # Wiki Q&A — graph-navigated wiki answering.
+  # Wiki Q&A - graph-navigated wiki answering.
   # Only meaningful on KBs where Wiki is enabled.
   # --------------------------------------------------------------------------
   - id: "wiki-qa"
@@ -81,7 +81,7 @@ agent_type_presets:
     # kb_filter derived from allowed_tools: any_of = [wiki]
 
   # --------------------------------------------------------------------------
-  # Hybrid RAG + Wiki — single agent that orchestrates both indexes.
+  # Hybrid RAG + Wiki - single agent that orchestrates both indexes.
   # Requires KBs that expose BOTH wiki AND (vector or keyword).
   # --------------------------------------------------------------------------
   - id: "hybrid-rag-wiki"
@@ -119,8 +119,8 @@ agent_type_presets:
     # anything useful.
 
   # --------------------------------------------------------------------------
-  # Data Analysis — SQL / statistics over tabular files (CSV / Excel) in the KB.
-  # Retrieval capabilities (vector/wiki/…) are largely irrelevant here — the
+  # Data Analysis - SQL / statistics over tabular files (CSV / Excel) in the KB.
+  # Retrieval capabilities (vector/wiki/…) are largely irrelevant here - the
   # agent drives `data_schema` + `data_analysis` tools against uploaded files,
   # so we gate on supported_file_types rather than KB capabilities.
   # --------------------------------------------------------------------------
@@ -139,7 +139,7 @@ agent_type_presets:
       allowed_tools:
         - "data_schema"
         - "data_analysis"
-      # retain_retrieval_history is irrelevant here — data-analysis has no
+      # retain_retrieval_history is irrelevant here - data-analysis has no
       # retrieval tools in allowed_tools. Leave defaults.
       web_search_enabled: false
       supported_file_types:
@@ -157,7 +157,7 @@ agent_type_presets:
       none_of: ["faq"]
 
   # --------------------------------------------------------------------------
-  # Custom — no preset; user configures everything by hand.
+  # Custom - no preset; user configures everything by hand.
   # --------------------------------------------------------------------------
   - id: "custom"
     i18n:

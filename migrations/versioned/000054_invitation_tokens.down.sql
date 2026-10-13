@@ -10,7 +10,7 @@ DROP INDEX IF EXISTS idx_tenant_invitations_unique_pending;
 -- coexist on a tenant, the CREATE will abort with duplicate-key. Drop
 -- the share-link rows before rebuilding so the rollback is idempotent
 -- regardless of how many share links the tenant has issued. This is
--- intentionally destructive — share-link rows have no per-user state
+-- intentionally destructive - share-link rows have no per-user state
 -- worth preserving (no specific invitee, no pending acceptance), and
 -- the only alternative would be leaving orphaned rows the legacy
 -- schema can't represent.

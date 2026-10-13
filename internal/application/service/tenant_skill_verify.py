@@ -10,7 +10,7 @@ import will resolve.
 
 Import resolution used to live in this file, and it is gone on purpose. Whether
 `import helper` works depends on what the script does to sys.path before it
-runs — an idiom no static evaluator can enumerate: a guarded insert, a path
+runs - an idiom no static evaluator can enumerate: a guarded insert, a path
 constant imported from a sibling module, a value read from the environment, a
 mutation inside a helper function. Every approximation of that rejected skills
 that run perfectly, and a rejected install throws away the dependency work that

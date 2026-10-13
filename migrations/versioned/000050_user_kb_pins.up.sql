@@ -36,7 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_user_kb_pins_user_tenant_pinned_at
 -- Backfill: every KB that is currently pinned at the tenant level gets
 -- carried over as a personal pin for its creator. KBs whose creator_id
 -- is empty / NULL (legacy rows that predate the RBAC migration) are
--- intentionally skipped — we have no user to attribute the pin to, and
+-- intentionally skipped - we have no user to attribute the pin to, and
 -- silently dropping these is preferable to attributing them to a tenant
 -- owner who may not actually want the KB pinned in their view.
 INSERT INTO user_kb_pins (tenant_id, user_id, kb_id, pinned_at)

@@ -3,12 +3,12 @@
 -- ============================================================================
 -- Every INSERT/UPDATE on chunks maintains all of its indexes. Three of them
 -- never help a query:
---   * idx_chunks_chunk_type   — chunk_type has a handful of distinct values
+--   * idx_chunks_chunk_type   - chunk_type has a handful of distinct values
 --                               and is always combined with knowledge_id /
 --                               knowledge_base_id, which already have indexes.
---   * idx_chunks_content_hash — no query filters on content_hash; FAQ diffing
+--   * idx_chunks_content_hash - no query filters on content_hash; FAQ diffing
 --                               reads the column but scans by knowledge_base_id.
---   * idx_chunks_tenant_kg    — (tenant_id, knowledge_id) is covered by
+--   * idx_chunks_tenant_kg    - (tenant_id, knowledge_id) is covered by
 --                               idx_chunks_knowledge_enabled, which leads with
 --                               the high-cardinality knowledge_id.
 -- ============================================================================

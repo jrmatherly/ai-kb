@@ -4,7 +4,7 @@
 --
 -- Background: knowledge.parse_status is a 4-state field (pending /
 -- processing / completed / failed). When users hit "stuck in processing",
--- they have no way to tell which stage is actually running — DocReader,
+-- they have no way to tell which stage is actually running - DocReader,
 -- chunking, embedding, multimodal OCR/VLM, or the final post-process
 -- handoff. Operators face the same problem.
 --
@@ -15,7 +15,7 @@
 --   2. Failures carry a stable error_code (DOCREADER_TIMEOUT,
 --      EMBEDDING_RATE_LIMIT, ...) the UI can map to localized
 --      remediation text.
---   3. Reparse history is preserved across attempts — operators can
+--   3. Reparse history is preserved across attempts - operators can
 --      navigate ?attempt=N to post-mortem "why did it fail twice?".
 --   4. Cascade-cancel rules use the parent_span_id tree to flip
 --      dependent subspans/stages to "cancelled" when an upstream

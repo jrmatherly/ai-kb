@@ -4,7 +4,7 @@
     "of what a user said, plus what a correct run should and should not produce.",
     "",
     "expect_topics / expect_kinds are matched loosely (substring, case-insensitive)",
-    "because the wording of a note is not what we are grading — whether the right",
+    "because the wording of a note is not what we are grading - whether the right",
     "thing was noticed is. reject_substrings are the recurring failure modes:",
     "storing a one-off question, storing the assistant's job, storing a secret.",
     "",

@@ -16,7 +16,7 @@ BEGIN
             '[Migration 000043 down] BLOCKED: refuse to drop tenant_members / creator_id / runnable_by_viewer. '
             'Set aikb.allow_destructive_migration = ''true'' in this session to override.';
     END IF;
-    RAISE WARNING '[Migration 000043 down] Reverting tenant RBAC — role data will be lost';
+    RAISE WARNING '[Migration 000043 down] Reverting tenant RBAC - role data will be lost';
 END $$;
 
 ALTER TABLE custom_agents DROP COLUMN IF EXISTS runnable_by_viewer;

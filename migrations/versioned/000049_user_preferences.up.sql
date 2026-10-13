@@ -3,7 +3,7 @@
 -- (memory feature, future preferences) can be persisted server-side and
 -- sync across devices/browsers. Previously the only carrier for such
 -- toggles was the browser's localStorage, which intentionally does NOT
--- cross devices — switching machines silently reset every preference.
+-- cross devices - switching machines silently reset every preference.
 --
 -- A single jsonb column keeps the schema flat: new keys can be added by
 -- writing through the existing PUT /auth/me/preferences endpoint, no DDL

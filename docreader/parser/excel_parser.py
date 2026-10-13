@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # parsed text content.  WPS uses =DISPIMG("ID",mode) to embed images in cells;
 # when opened by other tools the formula may appear as plain text prefixed with
 # "_xlfn." or "=".  Office 365 uses =_xlfn.IMAGE(url, ...) similarly.
-# The _xlfn. prefix is optional — WPS may omit it (e.g. =DISPIMG("ID",1)).
+# The _xlfn. prefix is optional - WPS may omit it (e.g. =DISPIMG("ID",1)).
 _IMAGE_FUNC_RE = re.compile(
     r"^=?(_xlfn\.)?(DISPIMG|IMAGE)\(", re.IGNORECASE
 )

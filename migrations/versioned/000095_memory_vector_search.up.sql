@@ -14,7 +14,7 @@
 -- restricted to one subject would get its k nearest neighbours from the whole
 -- table and then throw nearly all of them away. One subject holds at most a
 -- couple of thousand rows, and the scope index below makes exact ordering over
--- that a few milliseconds — correct and fast beats approximate and wrong here.
+-- that a few milliseconds - correct and fast beats approximate and wrong here.
 DO $$
 BEGIN
     IF NOT EXISTS (

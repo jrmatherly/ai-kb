@@ -70,8 +70,8 @@ def strip_unreadable_ranges_xlsx(content: bytes) -> bytes | None:
 
     Returns the rewritten bytes, or None when every such range is readable, in
     which case the file is left exactly as it was. Neither element changes what
-    a cell contains — a validation constrains input, a scenario holds what-if
-    values that are not the displayed ones — so removing one costs text
+    a cell contains - a validation constrains input, a scenario holds what-if
+    values that are not the displayed ones - so removing one costs text
     extraction nothing, while keeping it costs the whole document.
     """
     if not zipfile.is_zipfile(io.BytesIO(content)):
@@ -213,7 +213,7 @@ _FILLS_BLOCK_RE = re.compile(rb"<fills\b[^>]*>.*?</fills>", re.S)
 # Case-insensitive so wrong-case <Fill>…</Fill> entries are caught too.
 _FILL_ELEMENT_RE = re.compile(rb"<fill\s*/>|<fill\s*>.*?</fill\s*>", re.S | re.I)
 # A fill openpyxl can deserialize starts (case-sensitively) with a
-# patternFill or gradientFill child — everything else, including the
+# patternFill or gradientFill child - everything else, including the
 # self-closing <fill/>, is rejected by its sequence descriptor.
 _WELL_FORMED_FILL_RE = re.compile(rb"<fill\s*>\s*<(?:patternFill|gradientFill)[\s/>]")
 
@@ -227,8 +227,8 @@ def sanitize_xlsx_styles(content: bytes) -> bytes | None:
     ``TypeError: expected <class 'openpyxl.styles.fills.Fill'>`` on them and
     treats the workbook as non-conformant, so both parse engines die on a
     file Excel itself opens fine (#3637). Replacing each malformed fill in
-    place with a no-op patternFill keeps the fill list length — and therefore
-    every cellXf fillId reference — stable. Returns None when nothing needs
+    place with a no-op patternFill keeps the fill list length - and therefore
+    every cellXf fillId reference - stable. Returns None when nothing needs
     fixing, so callers pay one styles.xml scan on the happy path.
 
     Never raises: on any internal failure the original bytes flow on

@@ -4,7 +4,7 @@
 # \W is the last directory only (e.g. /opt/ai-kb/skills → skills),
 # so deep cwd does not blow the prompt width.
 #
-# Bold green (01;32) is user@host; bold blue (01;34) is the path — the
+# Bold green (01;32) is user@host; bold blue (01;34) is the path - the
 # usual Debian colors, so ls --color can keep directories blue and
 # executables green. Root uses the same green as a normal user.
 #

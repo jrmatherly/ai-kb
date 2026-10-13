@@ -19,7 +19,7 @@
 --                              | CancelKnowledgeParse can interrupt it.
 --
 -- Existing rows: column defaults to 0, so all historical 'completed'
--- rows look like "no pending subtasks" — which is correct (they're
+-- rows look like "no pending subtasks" - which is correct (they're
 -- past the enrichment phase by definition).
 --
 -- Wiki ingest is NOT counted here: it is debounced and KB-scoped, with

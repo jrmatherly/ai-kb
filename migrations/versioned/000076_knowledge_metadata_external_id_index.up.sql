@@ -9,11 +9,11 @@ DO $$ BEGIN RAISE NOTICE '[Migration 000076] Adding knowledge metadata external_
 -- but the metadata->>'external_id' LIKE-prefix is only a post-filter (Bitmap
 -- Heap Scan recheck). This composite expression index lets the prefix match be
 -- served by the index too. Two deliberate choices:
---   * text_pattern_ops — a plain btree opclass is NOT used for LIKE 'x%' in a
+--   * text_pattern_ops - a plain btree opclass is NOT used for LIKE 'x%' in a
 --     non-C collation; text_pattern_ops compares raw bytes, so it drives the
 --     prefix match regardless of the database collation (this DB even carries a
 --     collation-version mismatch, which text_pattern_ops sidesteps entirely).
---   * partial on deleted_at IS NULL — matches the query's own predicate and
+--   * partial on deleted_at IS NULL - matches the query's own predicate and
 --     keeps the index limited to live rows.
 -- Non-destructive: index-only, no schema or data change. IF NOT EXISTS makes it
 -- idempotent and safe to re-run.

@@ -1,13 +1,13 @@
 -- Migration: 000108_session_sandbox_config_tenant
 -- sessions.sandbox_config_id alone is not an address for a sandbox backend.
 -- tenant_sandbox_configs is keyed by (tenant_id, id), so the same config id
--- resolves in exactly one workspace — and a shared agent runs on ITS OWNER's
+-- resolves in exactly one workspace - and a shared agent runs on ITS OWNER's
 -- config while the session belongs to the borrower.
 --
 -- Everything inside a chat turn happened to work because the turn already runs
 -- under the agent owner (see WithExecutionTenant in the QA handler). Everything
--- outside it — session teardown, the terminal and desktop panels, fork
--- snapshots — reads the ambient request tenant, which is the borrower, and
+-- outside it - session teardown, the terminal and desktop panels, fork
+-- snapshots - reads the ambient request tenant, which is the borrower, and
 -- finds nothing. Teardown then logs a warning and returns, leaving a paused
 -- MicroVM nobody holds the id of (Cube/E2B create with onTimeout=pause).
 --

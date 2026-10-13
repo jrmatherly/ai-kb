@@ -50,12 +50,12 @@ if port_open 6080 && port_open 5900; then exit 0; fi
 # 2. Serialise the whole start section. Concurrent triggers are normal
 #    (dual tabs, timeout retries, multi-replica). Every step below is
 #    check-then-act: without the lock two instances both see "secret missing"
-#    and each write their own, so websockify uses A while the backend reads B
-#    — intermittent 401. A Redis connection lock cannot serialise this Exec.
+#    and each write their own, so websockify uses A while the backend reads B -
+#    intermittent 401. A Redis connection lock cannot serialise this Exec.
 #
 #    Every daemon started below MUST close fd 9 (`9>&-`). A child that
 #    inherits it keeps holding the lock after this script exits, and the next
-#    run that misses the fast path blocks on flock forever — the Exec times
+#    run that misses the fast path blocks on flock forever - the Exec times
 #    out at 60s (exit=-1) and 6080 never comes back.
 exec 9>/run/desktop/.lock
 flock 9
@@ -117,7 +117,7 @@ proc_alive xfce4-session || {
   spawn xfce4-session xfce4-session
 }
 
-# 6. Disable screensaver / DPMS — clock jumps after resume lock or blank the screen.
+# 6. Disable screensaver / DPMS - clock jumps after resume lock or blank the screen.
 xset s off -dpms 2>/dev/null || true
 xfconf-query -c xfce4-session -p /startup/screensaver/enabled -n -t bool -s false 2>/dev/null || true
 

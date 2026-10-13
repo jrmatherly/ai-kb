@@ -37,8 +37,8 @@ logger = logging.getLogger(__name__)
 # thread-safe: two gRPC worker threads parsing PDFs at the same time corrupt
 # its shared state and can deadlock the whole process indefinitely (observed
 # as requests stuck in "Parsing document with PDFParser" forever, taking down
-# all subsequent uploads too). Every pdfium touch — text extraction, page
-# rendering, image extraction — must be serialized behind this single global
+# all subsequent uploads too). Every pdfium touch - text extraction, page
+# rendering, image extraction - must be serialized behind this single global
 # lock. Concurrent PDF uploads are then processed one at a time instead of
 # hanging. Non-PDF parsers (docx, xlsx, ...) are unaffected and still run
 # concurrently across the gRPC thread pool.
@@ -109,7 +109,7 @@ WORD_GAP_WIDTH_RATIO = _env_float("DOCREADER_PDF_WORD_GAP_WIDTH_RATIO", 0.4)
 # Promote visually larger lines to markdown headings (font-size proxy = rect
 # height relative to the page's median line height).
 DETECT_HEADINGS = _env_bool("DOCREADER_PDF_DETECT_HEADINGS", True)
-# Drop invisible (render-mode 3), off-page and degenerate text — a cheap guard
+# Drop invisible (render-mode 3), off-page and degenerate text - a cheap guard
 # against hidden-text prompt injection and OCR artefacts.
 FILTER_HIDDEN_TEXT = _env_bool("DOCREADER_PDF_FILTER_HIDDEN_TEXT", True)
 # Narrow side strips (arXiv watermarks, page labels) narrower than this share of
@@ -311,7 +311,7 @@ def _is_figure_interior_line(text: str) -> bool:
         return False
     if _is_chart_debris_line(t):
         return True
-    # Prose sentence above a figure (wrapped paragraph tail) — keep in text.
+    # Prose sentence above a figure (wrapped paragraph tail) - keep in text.
     # "\u3002" and "\uff01" are the Chinese full stop and fullwidth exclamation mark
     if t.endswith((".", "\u3002", "!", "?", "\uff01")) and len(t) >= 15:
         return False
@@ -682,7 +682,7 @@ def _page_chars(textpage, page, raw, loose: bool = False) -> tuple:
 def _find_split(items: list, axis: str, min_gap: float):
     """Return a coordinate at the widest clean gap on ``axis`` ('x'), or None.
 
-    A "clean" gap means no item interval bridges it — i.e. a full-height column
+    A "clean" gap means no item interval bridges it - i.e. a full-height column
     gutter. Used to detect multi-column layouts.
     """
     lo, hi = ("x0", "x1") if axis == "x" else ("y0", "y1")
@@ -759,7 +759,7 @@ def _filter_reading_columns(chars: list, scale: float, width: float) -> list:
     kept = [c for c in cols if not _is_artifact_column(c, width)]
     if kept:
         return kept
-    # All columns looked like noise — keep the widest glyph set (main body).
+    # All columns looked like noise - keep the widest glyph set (main body).
     if len(cols) > 1:
         return [max(cols, key=_column_x_span)]
     return cols
@@ -909,7 +909,8 @@ def _layout_line_stats(text: str) -> tuple:
     punct_only = sum(
         1
         for ln in lines
-        if len(ln) <= 4 and re.fullmatch(r"[\s.,;:!?…·\-–—]+", ln)
+        # \u2014 is the em dash.
+        if len(ln) <= 4 and re.fullmatch(r"[\s.,;:!?…·\-–\u2014]+", ln)
     )
     return len(lines), single, punct_only
 
@@ -1120,7 +1121,7 @@ def _render_page_to_jpeg(page, scale: float, quality: int, max_edge: int = 0) ->
 # pdfium is NOT thread-safe (concurrent get_page on one document crashes), so
 # we parallelise across *processes*: each worker opens its own PdfDocument from
 # a temp file and renders an assigned slice of pages. This turns the serial
-# per-page render (the dominant cost for big scanned PDFs — hours on
+# per-page render (the dominant cost for big scanned PDFs - hours on
 # CPU-constrained containers) into a near-linear speedup.
 
 # Per-worker document handle, populated by the pool initializer.
@@ -1470,7 +1471,7 @@ class PDFScannedParser(BaseParser):
         )
 
         try:
-            # pdfium lock first, then the render worker limit — same order as
+            # pdfium lock first, then the render worker limit - same order as
             # PDFParser._route so the two never deadlock against each other.
             with _PDFIUM_LOCK, parser_worker_limit(
                 "pdf_render", CONFIG.pdf_render_max_workers

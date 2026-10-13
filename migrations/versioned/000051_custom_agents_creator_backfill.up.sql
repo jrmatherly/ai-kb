@@ -5,7 +5,7 @@
 --   * `custom_agents.created_by` was introduced together with the table in
 --     000006 but the seed INSERT statements for the two built-in agents
 --     (builtin-quick-answer / builtin-smart-reasoning) intentionally omit
---     this column — built-ins are tenant-shared system rows, so they
+--     this column - built-ins are tenant-shared system rows, so they
 --     legitimately carry NULL / empty creator_id. `AgentCreatorLookup`
 --     short-circuits on IsBuiltin=true and treats this as expected.
 --   * The RBAC migration 000043 backfilled `knowledge_bases.creator_id`
@@ -14,7 +14,7 @@
 --     `custom_agents`. As a result any non-builtin agent created before
 --     the per-row creator tracking landed (or written by tooling that
 --     skipped UserIDFromContext) has empty `created_by` and falls into
---     the "tenant-owned, Admin+ only" bucket — the historical creator
+--     the "tenant-owned, Admin+ only" bucket - the historical creator
 --     can no longer self-edit, and the `?creator=mine|others` list
 --     filter silently drops the row.
 --

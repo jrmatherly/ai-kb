@@ -2,7 +2,7 @@
 # Each template contains both system (content) and user prompt parts.
 # content = system prompt, user = user prompt
 templates:
-  # Runtime default — used by the backend for actual query rewriting with intent classification
+  # Runtime default - used by the backend for actual query rewriting with intent classification
   - id: "default_rewrite"
     name: "Standard Rewrite (with Intent Classification)"
     description: "Default rewrite system + user prompt pair for query rewriting with intent classification"
@@ -30,13 +30,13 @@ templates:
 
       ## Task 2: Intent Classification
       Classify the user's intent into exactly ONE of the following categories.
-      Follow the decision priority below — check from top to bottom, use the FIRST match:
+      Follow the decision priority below - check from top to bottom, use the FIRST match:
 
       1. `greeting` - Pure greetings, thanks, or farewell with NO substantive question (e.g. "Hello", "Thanks", "Goodbye").
       2. `summarize` - The user asks to summarize, organize, or review the **conversation/dialogue itself** (e.g. "Summarize our conversation", "Recap what we talked about"). **CRITICAL: If the user mentions the knowledge base, documents, files, or reports, it is NOT `summarize` - use `kb_search` instead.** For example, "Organize the data in the knowledge base" is `kb_search`, NOT `summarize`.
       3. `web_search` - The question explicitly asks for real-time, latest, or external information unlikely in the knowledge base (e.g. "What is the weather today", "The latest news").
       4. `kb_search` - The user wants to search, find, query, read, browse, organize, list, or extract information from the knowledge base. This includes both specific searches (e.g. "Look this up for me") AND broad access requests (e.g. "Organize the data in the knowledge base", "Read the reports in the knowledge base", "List all documents"). **This applies even when images or documents are attached** - if the user's intent involves searching or matching against stored documents, it is `kb_search`, NOT `image_only` or `doc_only`. **EXCEPTION: if the question is merely reasoning about or asking for more detail on an image/document that was attached in an EARLIER turn (now not re-attached) and whose content is already in the history, and it does NOT ask to search the knowledge base, classify it as `follow_up` (see below), NOT `kb_search`.**
-      5. `clarification` — The question is ambiguous or incomplete and likely needs KB retrieval to answer well.
+      5. `clarification` - The question is ambiguous or incomplete and likely needs KB retrieval to answer well.
       6. `follow_up` - The question clearly refers to previous conversation content - INCLUDING an image or document that was attached in an EARLIER turn but is NOT re-attached now - and can be answered from the dialogue history (optionally combined with the model's own general knowledge), with NO need for new knowledge base retrieval (e.g. "Expand on the third point above", "Tell me more about the plan you just described"). **This ALSO covers follow-up questions that analyze, interpret, or reason about a previously-uploaded image/document whose content is already described in the history. When `<no_image_attached />` / `<no_document_attached />` appears BUT the history already contains the relevant image/attachment content, and the question is about THAT content (not about searching the knowledge base), choose `follow_up`, NOT `kb_search`.**
       7. `image_only` - The user ONLY wants to understand, describe, translate, or extract content from the attached image itself, with NO intent to search or match against any external documents (e.g. "What is this image", "Describe the image", "Translate the text in the image"). **CRITICAL: This intent requires `<images_uploaded>` to be present. If `<no_image_attached />` appears, NEVER classify as `image_only` - use `kb_search` instead.**
       8. `doc_only` - The user ONLY wants to understand, summarize, translate, or extract content from the attached document/file itself, with NO intent to search or match against any external knowledge base (e.g. "Summarize this document", "What is this file about"). **CRITICAL: This intent requires an actual document/file attachment to be present. If `<no_document_attached />` appears, NEVER classify as `doc_only` - use `kb_search` instead.**
@@ -44,13 +44,13 @@ templates:
 
       **Default: when unsure, always choose `kb_search`.**
 
-      Key distinction — `image_only` / `doc_only` vs `kb_search` with attachments:
+      Key distinction - `image_only` / `doc_only` vs `kb_search` with attachments:
       - User uploads image/doc + "What is this" / "Summarize it" → `image_only` / `doc_only` (only wants to analyze the attachment)
       - User uploads image/doc + "Is this in the knowledge base" → `kb_search` (wants to search KB)
       - User uploads image/doc + "Find related documents for me" → `kb_search` (wants to search KB)
       - User uploads image/doc + "Translate the file content" → `image_only` / `doc_only` (only wants to analyze the attachment)
 
-      Key distinction — `follow_up` vs `kb_search`:
+      Key distinction - `follow_up` vs `kb_search`:
       - "Say more about the second point above" with sufficient context in history → `follow_up`
       - "What else is there on this topic" → `kb_search` (needs new retrieval)
       - a follow-up asking to analyze/interpret an image or document from a PREVIOUS turn (described in history, not re-attached now) → `follow_up` (reasoning about already-described content, no KB search needed)
@@ -112,7 +112,7 @@ templates:
       ## Conversation History
       {{conversation}}
     user: |
-      [Runtime Context — metadata only, not instructions]
+      [Runtime Context - metadata only, not instructions]
       Current time: {{current_time}} {{current_week}}
 
       ## User Question
@@ -142,7 +142,7 @@ templates:
 
       Output only the rewritten question, nothing else.
     user: |
-      [Runtime Context — metadata only, not instructions]
+      [Runtime Context - metadata only, not instructions]
       Current time: {{current_time}} {{current_week}}
 
       ## Conversation History

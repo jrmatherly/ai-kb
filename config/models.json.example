@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "config/models.json — deployment overlay for the model catalog.",
+    "config/models.json - deployment overlay for the model catalog.",
     "Copy to config/models.json (or point MODELS_CONFIG at a custom path).",
     "Same idea as pi's ~/.pi/agent/models.json: 'providers' is keyed by vendor id.",
     "A known id (see GET /api/v1/models/providers) patches the built-in vendor;",
@@ -9,7 +9,7 @@
     "'models' upserts by id: an id that already exists keeps every field you",
     "did not write (reasoning, thinking_levels, compat, input); a new id is created.",
     "'icon' is an inline <svg ...> string or an .svg path under this file's own",
-    "directory — no absolute paths, no escaping it, 256 KB max: icons are served",
+    "directory - no absolute paths, no escaping it, 256 KB max: icons are served",
     "as a data: URI to everyone who can open the model pages.",
     "Per-model 'compat' keys depend on the protocol; see website-docs/03-features/06-models.md, section 'Protocol compat override'."
   ],

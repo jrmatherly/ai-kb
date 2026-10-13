@@ -1,7 +1,7 @@
 -- Migration: 000045_org_tenant_members
 --
 -- Plan 3 of issue #1303: lift "organization membership" from per-user to
--- per-tenant. Today `organization_members` is keyed on (org_id, user_id) —
+-- per-tenant. Today `organization_members` is keyed on (org_id, user_id) -
 -- if Alice (tenant T) joins Org X, her tenant-mate Bob has no visibility
 -- into anything shared into Org X. That breaks the company-level
 -- collaboration mental model ("our company is in this org") and creates

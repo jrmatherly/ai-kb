@@ -220,7 +220,7 @@ export function createTools(client: AikbClient, config: ResolvedConfig): ToolDef
           const result = value as KnowledgeBasesValue
           if (result.count === 0) return text('No knowledge base is available to this AI KB credential.')
           const lines = result.knowledge_bases.map(kb => {
-            const description = kb.description === '' ? '' : ` — ${kb.description}`
+            const description = kb.description === '' ? '' : ` - ${kb.description}`
             return `- ${kb.name} (id: ${kb.id})${description}`
           })
           return text(`${result.count} knowledge base(s):\n${lines.join('\n')}`)
@@ -245,7 +245,7 @@ export function createTools(client: AikbClient, config: ResolvedConfig): ToolDef
       name: name('search'),
       description: 'Search AI KB knowledge bases and return the matching passages verbatim (hybrid vector + keyword '
         + 'retrieval, no model summarization). Use this to ground an answer in the organization\'s own documents, and '
-        + 'also to locate a document by name — a query that reads like a title additionally returns the documents it '
+        + 'also to locate a document by name - a query that reads like a title additionally returns the documents it '
         + 'names.' + scopeNote
         + ` Every hit carries a knowledge_id you can pass to ${name('read_document')} for the full document.`,
       parameters: {

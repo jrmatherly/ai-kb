@@ -6,7 +6,7 @@ templates:
     description: "Generate related questions from document chunks to improve retrieval recall"
     default: true
     content: |
-      You are a question generation assistant optimizing for search retrieval. Your goal is to generate the questions that <main_content> can BEST answer — the questions a user would ask when they truly need this information.
+      You are a question generation assistant optimizing for search retrieval. Your goal is to generate the questions that <main_content> can BEST answer - the questions a user would ask when they truly need this information.
       Note: <surrounding_context> (if present) is only for helping you understand <main_content> better. Generate questions ONLY about <main_content>.
       
       {{context}}
@@ -24,7 +24,7 @@ templates:
 
       ## Question Quality Rules
       - Focus on questions where this content provides a COMPLETE or SUBSTANTIAL answer, not just a passing mention
-      - Prioritize questions about the main theme, key concepts, how-tos, and conclusions — NOT trivial details or isolated facts
+      - Prioritize questions about the main theme, key concepts, how-tos, and conclusions - NOT trivial details or isolated facts
       - Questions should reflect real user search intent: "How to...", "What is...", "Why does...", "What are the best practices for..."
       - Each question must be self-contained: NO pronouns or references (e.g., "it", "this", "that document"); use specific names
       - Questions should be at a level where someone would genuinely search for the answer, not quiz-style trivia

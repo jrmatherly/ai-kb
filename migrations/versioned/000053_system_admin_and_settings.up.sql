@@ -27,8 +27,8 @@
 --        roundtrip as `true`/`false`, ints as `42`, strings as `"foo"`.
 --
 --      Indexes:
---        - UNIQUE on (key) — primary lookup pattern, every Get hits this
---        - (category) — for the management UI's grouped list view
+--        - UNIQUE on (key) - primary lookup pattern, every Get hits this
+--        - (category) - for the management UI's grouped list view
 
 DO $$ BEGIN RAISE NOTICE '[Migration 000053] Adding users.is_system_admin column...'; END $$;
 

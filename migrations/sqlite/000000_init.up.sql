@@ -341,7 +341,7 @@ CREATE INDEX IF NOT EXISTS idx_auth_tokens_expires_at ON auth_tokens(expires_at)
 -- tenant_members carries the per-(user, tenant) TenantRole used by the
 -- tenant-level RBAC introduced in #1303. SQLite does not support partial
 -- indexes the same way Postgres does, so we use a plain unique index on
--- (user_id, tenant_id) — soft-deleted rows are filtered by the GORM scope.
+-- (user_id, tenant_id) - soft-deleted rows are filtered by the GORM scope.
 CREATE TABLE IF NOT EXISTS tenant_members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id VARCHAR(36) NOT NULL,
@@ -393,7 +393,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at
 CREATE INDEX IF NOT EXISTS idx_audit_logs_tenant_scope_desc
     ON audit_logs(tenant_id, scope_type, scope_id, id DESC);
 
--- user_resource_favorites — sqlite mirror of migration 000047. Same
+-- user_resource_favorites - sqlite mirror of migration 000047. Same
 -- composite PK (user_id, tenant_id, resource_type, resource_id) so the
 -- GORM model and FirstOrCreate idempotency carry over.
 CREATE TABLE IF NOT EXISTS user_resource_favorites (
@@ -409,7 +409,7 @@ CREATE INDEX IF NOT EXISTS idx_user_resource_favorites_user_tenant_type_created_
 CREATE INDEX IF NOT EXISTS idx_user_resource_favorites_tenant_id
     ON user_resource_favorites(tenant_id);
 
--- user_kb_pins — sqlite mirror of migration 000050. Per-(user, tenant)
+-- user_kb_pins - sqlite mirror of migration 000050. Per-(user, tenant)
 -- pinned knowledge bases; replaces the tenant-wide knowledge_bases.is_pinned
 -- column for ordering purposes. The legacy column on knowledge_bases is
 -- still defined above for back-compat with existing rows but is no longer
@@ -424,7 +424,7 @@ CREATE TABLE IF NOT EXISTS user_kb_pins (
 CREATE INDEX IF NOT EXISTS idx_user_kb_pins_user_tenant_pinned_at
     ON user_kb_pins(tenant_id, user_id, pinned_at DESC);
 
--- tenant_invitations — sqlite mirror of migration 000048. SQLite supports
+-- tenant_invitations - sqlite mirror of migration 000048. SQLite supports
 -- partial unique indexes too, so the same "one pending per (tenant,
 -- invitee)" guard can be applied verbatim.
 CREATE TABLE IF NOT EXISTS tenant_invitations (

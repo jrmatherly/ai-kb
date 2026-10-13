@@ -45,7 +45,7 @@ class BaseParser(ABC):
     def parse(self, content: bytes) -> Document:
         """Parse document and return markdown + image references.
 
-        No chunking, no OCR, no VLM caption — those are done in Go.
+        No chunking, no OCR, no VLM caption - those are done in Go.
         """
         logger.info(
             "Parsing document with %s, bytes: %d",

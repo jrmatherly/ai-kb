@@ -1,5 +1,5 @@
 {
-  "description": "Whether two topic labels name the same subject. Merging is the decision that cannot be reviewed by reading the prompt: too strict and one subject spreads across rows that never reach the promotion threshold, too loose and every specific question in a domain collapses into one useless bucket. These are the pairs that mark the boundary. Every example here is invented — none of it comes from a real workspace, and none of it should.",
+  "description": "Whether two topic labels name the same subject. Merging is the decision that cannot be reviewed by reading the prompt: too strict and one subject spreads across rows that never reach the promotion threshold, too loose and every specific question in a domain collapses into one useless bucket. These are the pairs that mark the boundary. Every example here is invented - none of it comes from a real workspace, and none of it should.",
   "cases": [
     {
       "name": "rephrasing",

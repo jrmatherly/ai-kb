@@ -6,7 +6,7 @@
 --
 -- Schema changes:
 --   * invitee_user_id is given a default empty string. Share-link rows
---     start with no specific invitee — whoever holds the link
+--     start with no specific invitee - whoever holds the link
 --     registers themselves with their own email. Per-user invitations
 --     still write the resolved user id at create-time.
 --   * token holds the plaintext registration token for share-link
@@ -17,7 +17,7 @@
 --     so the Owner doesn't have to "copy now or revoke and re-issue".
 --   * accepted_count counts how many users have completed registration
 --     through the row. Per-user invitations cap at 1 and flip to
---     accepted in the same step; share-link rows accumulate — surfaced
+--     accepted in the same step; share-link rows accumulate - surfaced
 --     in the management UI as "N joined" so Owners can tell whether
 --     a link is fresh or has already been used widely.
 --

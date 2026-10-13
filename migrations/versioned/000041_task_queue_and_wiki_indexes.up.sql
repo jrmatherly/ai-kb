@@ -4,17 +4,17 @@
 --              ingest pipeline (4w-document-scale).
 --
 -- Schemas introduced:
---   1. task_pending_ops    — durable replacement for the Redis-list-backed
+--   1. task_pending_ops    - durable replacement for the Redis-list-backed
 --                            wiki:pending:<kbID> queue. Designed generically
 --                            (task_type + scope + scope_id) so future
 --                            "debounced batch" task types can reuse it
 --                            without another migration.
---   2. task_dead_letters   — generic archived-task record. Written by both
+--   2. task_dead_letters   - generic archived-task record. Written by both
 --                            (a) the asynq middleware when a task exhausts
 --                            its retry budget, and (b) the wiki ingest
 --                            service when a per-document op exceeds its
 --                            in-batch retry quota.
---   3. wiki_pages indexes  — GIN on source_refs (containment + text), and
+--   3. wiki_pages indexes  - GIN on source_refs (containment + text), and
 --                            trigram on lower(title) for the new pg_trgm
 --                            dedup pre-filter.
 
@@ -23,7 +23,7 @@ DO $$ BEGIN RAISE NOTICE '[Migration 000041] Applying task queue + wiki indexes 
 -- Ensure pg_trgm is loaded before creating the trigram GIN index below.
 -- Migration 000002 also creates this extension, but only inside the
 -- conditional embeddings block (app.skip_embedding gate). Environments that
--- skip 000002's body — or had pg_trgm install silently fail there — would
+-- skip 000002's body - or had pg_trgm install silently fail there - would
 -- otherwise blow up on the gin_trgm_ops index further down. Re-issuing
 -- CREATE EXTENSION IF NOT EXISTS here is a no-op when it's already present
 -- and surfaces a clear error early when the extension genuinely isn't
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS task_pending_ops (
 );
 
 COMMENT ON TABLE task_pending_ops IS 'Generic durable pending-op queue keyed by (task_type, scope, scope_id). Replaces ad-hoc Redis-list queues that were vulnerable to TTL eviction.';
-COMMENT ON COLUMN task_pending_ops.task_type IS 'Free-form task identifier, e.g. "wiki:ingest" — should match an asynq task type when applicable.';
+COMMENT ON COLUMN task_pending_ops.task_type IS 'Free-form task identifier, e.g. "wiki:ingest" - should match an asynq task type when applicable.';
 COMMENT ON COLUMN task_pending_ops.scope IS 'Logical scope, e.g. "knowledge_base" / "knowledge" / "tenant". Read together with scope_id.';
 COMMENT ON COLUMN task_pending_ops.dedup_key IS 'Optional service-defined key used by the consumer to de-duplicate equivalent ops within a single batch peek. Empty means no de-dup.';
 COMMENT ON COLUMN task_pending_ops.fail_count IS 'In-batch retry counter: the consumer increments it via IncrFailCount and dead-letters once it exceeds a service-defined cap.';
@@ -84,14 +84,14 @@ CREATE INDEX IF NOT EXISTS idx_task_pending_ops_tenant
 -- distinct paths:
 --   (a) The asynq dead-letter middleware (internal/middleware/asynq_dead_letter.go)
 --       inserts a row whenever a task's retry count equals MaxRetry on the
---       way out — covers every asynq task type uniformly.
+--       way out - covers every asynq task type uniformly.
 --   (b) The wiki ingest service inserts a row directly when a per-document
---       op exceeds wikiMaxFailRetries inside a batch — these never escalate
+--       op exceeds wikiMaxFailRetries inside a batch - these never escalate
 --       to an asynq retry because they're handled inline.
 --
 -- Operations queries it by scope (e.g. all dead letters for a KB) or by
 -- task_type (e.g. all summary:generation failures in the last 24h). No
--- TTL — rows are kept for postmortem until manually pruned. failed_at DESC
+-- TTL - rows are kept for postmortem until manually pruned. failed_at DESC
 -- so newest-first scans are cheap.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS task_dead_letters (
@@ -124,15 +124,15 @@ CREATE INDEX IF NOT EXISTS idx_task_dead_letters_task_type
 -- ---------------------------------------------------------------------------
 -- 3) wiki_pages: source_refs / title trigram indexes
 --
--- (a) source_refs containment GIN — covers `source_refs @> ?::jsonb`. Used
+-- (a) source_refs containment GIN - covers `source_refs @> ?::jsonb`. Used
 --     by ListBySourceRef when looking up pages that cite a given knowledge
 --     id (delete flow, retract reconciliation, getExistingPageSlugsForKnowledge).
 --
--- (b) source_refs text-fulltext GIN — fallback for the legacy "kid|title"
+-- (b) source_refs text-fulltext GIN - fallback for the legacy "kid|title"
 --     ref form, which the runtime LIKE pattern needs. Same shape as the
 --     existing fulltext index in 000037 (line 54-55).
 --
--- (c) title trigram GIN — backs the new pg_trgm-based dedup pre-filter
+-- (c) title trigram GIN - backs the new pg_trgm-based dedup pre-filter
 --     (selectDedupCandidatePages). pg_trgm extension is already loaded by
 --     migration 000002.
 -- ---------------------------------------------------------------------------

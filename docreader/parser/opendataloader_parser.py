@@ -5,7 +5,7 @@ Each ``convert()`` spawns a JVM; concurrency is limited via
 ``DOCREADER_ODL_MAX_WORKERS``.
 
 Hybrid mode (``docling-fast``, etc.) needs a running
-``opendataloader-pdf-hybrid`` server — configure ``DOCREADER_ODL_HYBRID_URL``.
+``opendataloader-pdf-hybrid`` server - configure ``DOCREADER_ODL_HYBRID_URL``.
 """
 
 from __future__ import annotations

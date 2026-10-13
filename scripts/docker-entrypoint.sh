@@ -5,7 +5,7 @@ set -e
 # When users bind-mount host directories (e.g. ./data/files),
 # the mount inherits the host UID/GID which may differ from the
 # container's appuser. This entrypoint runs as root, fixes ownership,
-# then drops privileges to appuser via gosu — the same pattern used
+# then drops privileges to appuser via gosu - the same pattern used
 # by official postgres/redis images.
 
 # Directories that may be bind-mounted and need appuser access

@@ -1,4 +1,4 @@
-# config/builtin_models.yaml — declarative built-in models.
+# config/builtin_models.yaml - declarative built-in models.
 #
 # Copy to config/builtin_models.yaml (or point BUILTIN_MODELS_CONFIG at a custom
 # path) to enable. Each entry below is inserted into the `models` table with
@@ -21,13 +21,13 @@
 # so anything you put in .env is auto-passed to the container. There is no
 # need to list each var separately under `environment:`.
 #
-# Re-applied on every application startup — editing the file and restarting is
+# Re-applied on every application startup - editing the file and restarting is
 # enough for changes to take effect. Entries removed from the file are NOT
 # auto-deleted from the database; clean them up manually if you need to.
 
 builtin_models: []
 
-# ----- Example: env-driven entries — uncomment and adapt --------------------
+# ----- Example: env-driven entries - uncomment and adapt --------------------
 #
 # builtin_models:
 #   - id: builtin-llm-default
@@ -67,7 +67,7 @@ builtin_models: []
 # process; a second Ollama is not required. ${EMBEDDING_MODEL_NAME} is read
 # only because this file references it (see .env.example section D2).
 # dimension is a literal and must match the pulled model (the CLI example
-# nomic-embed-text uses 768). Uncomment this list on its own — do not also
+# nomic-embed-text uses 768). Uncomment this list on its own - do not also
 # uncomment the remote embedding entry above, or you will register two defaults.
 #
 # builtin_models:

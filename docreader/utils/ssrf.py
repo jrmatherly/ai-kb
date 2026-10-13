@@ -131,7 +131,7 @@ def _whitelist_only_enabled() -> bool:
     policy: a host outside it is refused before any DNS query (#3378).
 
     Parsed like the Go side: 1/t/true enable it, 0/f/false disable it, and a
-    non-empty value that is neither enables it — silently leaving an egress
+    non-empty value that is neither enables it - silently leaving an egress
     lockdown off because someone wrote "yes" is the one failure mode this
     control must not have.
     """

@@ -6,7 +6,7 @@
 -- A member value with an empty skill_id belongs to the whole sandbox config and
 -- is injected into every execution on it; one with a skill_id is that skill's
 -- declared credential, injected only when a tool names the skill. The storage is
--- shared because it is the same kind of thing — only the load timing differs.
+-- shared because it is the same kind of thing - only the load timing differs.
 DO $$ BEGIN RAISE NOTICE '[Migration 000089] Adding tenant_skills.envs'; END $$;
 
 ALTER TABLE tenant_skills ADD COLUMN IF NOT EXISTS envs JSONB;

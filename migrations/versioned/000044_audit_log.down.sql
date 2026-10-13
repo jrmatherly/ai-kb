@@ -14,7 +14,7 @@ BEGIN
             '[Migration 000044 down] BLOCKED: refuse to drop audit_logs. '
             'Set aikb.allow_destructive_migration = ''true'' in this session to override.';
     END IF;
-    RAISE WARNING '[Migration 000044 down] Dropping audit_logs — durable history will be lost';
+    RAISE WARNING '[Migration 000044 down] Dropping audit_logs - durable history will be lost';
 END $$;
 
 DROP INDEX IF EXISTS idx_audit_logs_created_at;

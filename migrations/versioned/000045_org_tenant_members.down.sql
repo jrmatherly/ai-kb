@@ -2,7 +2,7 @@
 --
 -- Restore organization_members from the parked _pre_plan3 table and drop
 -- the new tenant-scoped table. Because we only RENAMEd the original on
--- the way up, no data is lost on rollback — the legacy rows are still
+-- the way up, no data is lost on rollback - the legacy rows are still
 -- intact under the renamed table.
 --
 -- If the parked table no longer exists (e.g. a later destructive

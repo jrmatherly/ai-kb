@@ -14,9 +14,9 @@
 --   1. derive from the owner user's current tenant (works for the
 --      vast majority of orgs);
 --   2. for orgs whose owner user is gone, fall back to the earliest
---      Admin tenant in OTM — deterministic across re-runs;
+--      Admin tenant in OTM - deterministic across re-runs;
 --   3. anything still NULL means the org is genuinely orphaned (no
---      owner user, no admin tenant) — abort the migration with a loud
+--      owner user, no admin tenant) - abort the migration with a loud
 --      RAISE EXCEPTION so the operator deals with it manually.
 --      We refuse to silently ship an unconstrained NOT NULL since it
 --      would mean some org rows are unreachable.
@@ -33,7 +33,7 @@ UPDATE organizations o
  WHERE o.owner_id        = u.id
    AND o.owner_tenant_id IS NULL;
 
--- Pass 2: orphan owner — pick the earliest Admin tenant in OTM.
+-- Pass 2: orphan owner - pick the earliest Admin tenant in OTM.
 UPDATE organizations o
    SET owner_tenant_id = sub.tenant_id
   FROM (
@@ -48,7 +48,7 @@ UPDATE organizations o
    AND o.owner_tenant_id   IS NULL;
 
 -- Surface anything still unresolved. We deliberately fail the migration
--- here instead of guessing — making the column NOT NULL with a bogus
+-- here instead of guessing - making the column NOT NULL with a bogus
 -- backfill would corrupt permission checks for those orgs forever.
 DO $$
 DECLARE

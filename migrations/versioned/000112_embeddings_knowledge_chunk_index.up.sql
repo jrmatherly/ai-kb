@@ -5,7 +5,7 @@
 -- tags (BatchUpdateChunkEnabledStatus / BatchUpdateChunkTagID) all filter
 -- embeddings by knowledge_id or chunk_id, and so does vector retrieval scoped
 -- to documents. Neither column was indexed, so each of these scanned the
--- whole table — every workspace's rows, each carrying its vector.
+-- whole table - every workspace's rows, each carrying its vector.
 --
 -- Guarded on the table's existence like 000007 / 000059: deployments whose
 -- RETRIEVE_DRIVER excludes postgres never create it. CONCURRENTLY is not used
