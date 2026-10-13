@@ -11,7 +11,6 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
 - **BrowserSkill**: `Tencent/BrowserSkill`, the `bsk` daemon, release artifacts `browser-skill-weknora-*.zip`.
 - `WeKnora-Chrome-Extension`: a separately checked-out folder, named only in `.gitignore`, `.dockerignore`
   and `.air.toml`.
-- `support@weknora.com` in `mcp-server/pyproject.toml` and `setup.py`: AI KB has no support address yet.
 - Provenance: upstream issue and PR links (`Tencent/WeKnora#NNNN`, `/issues/`, `/pull/`, `/discussions/`),
   `.upstream-review/`, the upstream-review skill, `CLAUDE.md`.
 

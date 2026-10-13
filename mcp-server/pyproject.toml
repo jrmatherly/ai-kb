@@ -9,10 +9,10 @@ description = "AI KB MCP Server - Model Context Protocol server for AI KB API"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "AI KB Team", email = "support@weknora.com"}
+    {name = "AI KB Team", email = "support@matherly.net"}
 ]
 maintainers = [
-    {name = "AI KB Team", email = "support@weknora.com"}
+    {name = "AI KB Team", email = "support@matherly.net"}
 ]
 keywords = ["mcp", "model-context-protocol", "aikb", "knowledge-management", "api-server"]
 classifiers = [

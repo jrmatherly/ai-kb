@@ -33,7 +33,7 @@ setup(
     name="ai-kb-mcp",
     version="1.1.1",
     author="AI KB Team",
-    author_email="support@weknora.com",
+    author_email="support@matherly.net",
     description="AI KB MCP Server - Model Context Protocol server for AI KB API",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
