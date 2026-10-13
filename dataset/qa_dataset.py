@@ -6,7 +6,7 @@ pip install pandas pyarrow
 pip install openai
 ```
 
-# 采样数据
+# Sample the data
 python dataset/qa_dataset.py sample \
   --queries ~/dataset/mmarco-queries.parquet \
   --corpus ~/dataset/mmarco-corpus.parquet \
@@ -14,14 +14,14 @@ python dataset/qa_dataset.py sample \
   --nq 100 \
   --output_dir ./dataset/samples
 
-# 生成答案(基于采样结果)
-# 可选：追加 --model <model-name> 指定 OpenAI 兼容服务中的模型
-# 切换模型时使用新的 --output_dir；断点续跑仍会复用已有答案
+# Generate answers from the samples
+# Optional: add --model <model-name> to pick a model on the OpenAI-compatible service
+# Use a new --output_dir when you switch models; a resumed run reuses existing answers
 python dataset/qa_dataset.py generate \
   --input_dir ./dataset/samples \
   --output_dir ./dataset/samples
 
-# 展示结果
+# Show the results
 python dataset/qa_dataset.py show \
   --input_dir ./dataset/samples \
   -n 1

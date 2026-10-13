@@ -60,31 +60,31 @@ test('list_knowledge_bases renders ids the model can pass back', async () => {
 
 test('search returns ranked passages carrying their knowledge_id', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  const { value, text } = await call(byName.get('aikb_search'), { query: '默认的检索阈值是多少' })
+  const { value, text } = await call(byName.get('aikb_search'), { query: 'What is the default retrieval threshold' })
   assert.ok(value.count > 0)
   assert.equal(value.results[0].rank, 1)
   assert.ok(value.results[0].knowledge_id.startsWith('doc-'))
-  assert.match(text, /passage\(s\) for "默认的检索阈值是多少"/)
+  assert.match(text, /passage\(s\) for "What is the default retrieval threshold"/)
   assert.match(text, /knowledge_id: doc-retrieval-pipeline/)
 })
 
 test('search respects max_results and the configured ceiling', async () => {
   const { byName } = await toolset({ maxResults: 2, knowledgeBaseIds: ['kb-product'] })
-  const wide = await call(byName.get('aikb_search'), { query: '检索 部署 向量 阈值' })
+  const wide = await call(byName.get('aikb_search'), { query: 'retrieval deployment vector threshold' })
   assert.ok(wide.value.count <= 2)
-  const narrow = await call(byName.get('aikb_search'), { query: '检索 部署 向量 阈值', max_results: 1 })
+  const narrow = await call(byName.get('aikb_search'), { query: 'retrieval deployment vector threshold', max_results: 1 })
   assert.equal(narrow.value.count, 1)
 })
 
 test('search falls back to the configured knowledge base scope', async () => {
   const { byName, mock } = await toolset({ knowledgeBaseIds: ['kb-ops'] })
-  await call(byName.get('aikb_search'), { query: '部署 方式' })
+  await call(byName.get('aikb_search'), { query: 'deployment options' })
   assert.deepEqual(mock.requests.at(-1).body.knowledge_base_ids, ['kb-ops'])
 })
 
 test('an empty result set tells the model what to try next', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  const { value, text } = await call(byName.get('aikb_search'), { query: '量子纠缠咖啡机保修期' })
+  const { value, text } = await call(byName.get('aikb_search'), { query: 'quantum entanglement coffee maker warranty' })
   assert.equal(value.count, 0)
   assert.match(text, /Nothing in AI KB matched/)
 })
@@ -99,7 +99,7 @@ test('search rejects a missing query before touching the network', async () => {
 // an unconfigured deployment searches everything the credential can see.
 test('search spans every visible knowledge base when none is configured', async () => {
   const { byName, mock } = await toolset()
-  const { value } = await call(byName.get('aikb_search'), { query: '默认的检索阈值是多少' })
+  const { value } = await call(byName.get('aikb_search'), { query: 'What is the default retrieval threshold' })
   assert.deepEqual(value.knowledge_base_ids, ['kb-product', 'kb-ops'])
   const retrieval = mock.requests.find(request => request.path === '/api/v1/knowledge-search')
   assert.deepEqual(retrieval.body.knowledge_base_ids, ['kb-product', 'kb-ops'])
@@ -110,7 +110,7 @@ test('search spans every visible knowledge base when none is configured', async 
 // every search would cost more context than the passages themselves.
 test('a wide scope is named by count rather than spelled out', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-a', 'kb-b', 'kb-c', 'kb-d'] })
-  const { value, text } = await call(byName.get('aikb_search'), { query: '默认的检索阈值是多少' })
+  const { value, text } = await call(byName.get('aikb_search'), { query: 'What is the default retrieval threshold' })
   assert.match(text, /searched: 4 knowledge bases/)
   assert.doesNotMatch(text, /kb-a/)
   assert.deepEqual(value.knowledge_base_ids, ['kb-a', 'kb-b', 'kb-c', 'kb-d'], 'the ids stay in the canonical value')
@@ -118,8 +118,8 @@ test('a wide scope is named by count rather than spelled out', async () => {
 
 test('the resolved full scope is fetched once and reused', async () => {
   const { byName, mock } = await toolset()
-  await call(byName.get('aikb_search'), { query: '混合检索 向量' })
-  await call(byName.get('aikb_search'), { query: '部署 方式' })
+  await call(byName.get('aikb_search'), { query: 'hybrid retrieval vector' })
+  await call(byName.get('aikb_search'), { query: 'deployment options' })
   const listings = mock.requests.filter(request => request.path === '/api/v1/knowledge-bases')
   assert.equal(listings.length, 1, 'resolving the scope must not re-list on every search')
 })
@@ -127,7 +127,7 @@ test('the resolved full scope is fetched once and reused', async () => {
 test('knowledge_ids alone is a scope AI KB accepts', async () => {
   const { byName, mock } = await toolset()
   await call(byName.get('aikb_search'), {
-    query: '默认的检索阈值是多少',
+    query: 'What is the default retrieval threshold',
     knowledge_ids: ['doc-retrieval-pipeline'],
   })
   const retrieval = mock.requests.find(request => request.path === '/api/v1/knowledge-search')
@@ -137,7 +137,7 @@ test('knowledge_ids alone is a scope AI KB accepts', async () => {
 
 test('a configured default scope is used verbatim', async () => {
   const { byName, mock } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  await call(byName.get('aikb_search'), { query: '默认的检索阈值是多少' })
+  await call(byName.get('aikb_search'), { query: 'What is the default retrieval threshold' })
   assert.equal(mock.requests.some(request => request.path === '/api/v1/knowledge-bases'), false)
   assert.match(byName.get('aikb_search').description, /Searches knowledge base\(s\) kb-product/)
 })
@@ -146,29 +146,29 @@ test('a configured default scope is used verbatim', async () => {
 // which is exactly what passage retrieval on its own cannot find.
 test('a query naming a document finds it even with no passage match', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-ops'] })
-  const { value, text } = await call(byName.get('aikb_search'), { query: '灰度发布检查单' })
+  const { value, text } = await call(byName.get('aikb_search'), { query: 'Release checklist' })
   assert.equal(value.count, 0)
   assert.deepEqual(value.documents.map(document => document.knowledge_id), ['doc-release-checklist'])
-  assert.match(text, /No passage matched "灰度发布检查单", but its name matches document/)
+  assert.match(text, /No passage matched "Release checklist", but its name matches document/)
   assert.match(text, /knowledge_id: doc-release-checklist · in Ops runbooks/)
 })
 
 test('by-name matches stay inside the scope the call asked for', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  const { value } = await call(byName.get('aikb_search'), { query: '灰度发布检查单' })
+  const { value } = await call(byName.get('aikb_search'), { query: 'Release checklist' })
   assert.deepEqual(value.documents, [], 'a document in kb-ops must not surface in a kb-product search')
 })
 
 test('a passage hit is not repeated in the by-name section', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product', 'kb-ops'] })
-  const { value } = await call(byName.get('aikb_search'), { query: 'AI KB 检索流程' })
+  const { value } = await call(byName.get('aikb_search'), { query: 'AI KB retrieval pipeline' })
   const passages = new Set(value.results.map(hit => hit.knowledge_id))
   assert.equal(value.documents.some(document => passages.has(document.knowledge_id)), false)
 })
 
 test('long passages are clipped and marked truncated', async () => {
   const { byName } = await toolset({ maxChunkChars: 20, knowledgeBaseIds: ['kb-product'] })
-  const { value, text } = await call(byName.get('aikb_search'), { query: '混合检索 向量 关键词' })
+  const { value, text } = await call(byName.get('aikb_search'), { query: 'hybrid retrieval vector keyword' })
   assert.ok(value.results[0].truncated)
   assert.ok(value.results[0].content.length <= 21)
   assert.match(text, /passage truncated/)
@@ -202,9 +202,9 @@ test('read_document leads with the document title and summary', async () => {
     page: 1,
     page_size: 2,
   })
-  assert.equal(value.title, 'AI KB 检索流程.md')
-  assert.match(value.summary, /混合检索/)
-  assert.match(text, /Document AI KB 检索流程\.md \(doc-retrieval-pipeline\)/)
+  assert.equal(value.title, 'AI KB retrieval pipeline.md')
+  assert.match(value.summary, /hybrid retrieval/)
+  assert.match(text, /Document AI KB retrieval pipeline\.md \(doc-retrieval-pipeline\)/)
   assert.match(text, /Summary: /)
 })
 
@@ -224,9 +224,9 @@ test('read_document leads with the title and summary, and only on page 1', async
     page: 1,
     page_size: 2,
   })
-  assert.equal(first.value.title, 'AI KB 检索流程.md')
-  assert.match(first.text, /^Document AI KB 检索流程\.md \(doc-retrieval-pipeline\)/)
-  assert.match(first.text, /Summary: 讲解 AI KB 混合检索/)
+  assert.equal(first.value.title, 'AI KB retrieval pipeline.md')
+  assert.match(first.text, /^Document AI KB retrieval pipeline\.md \(doc-retrieval-pipeline\)/)
+  assert.match(first.text, /Summary: How AI KB hybrid retrieval/)
 
   const before = mock.requests.length
   const second = await call(byName.get('aikb_read_document'), {
@@ -253,7 +253,7 @@ test('read_document surfaces a backend 404 as a failed call', async () => {
 
 test('ask returns the composed answer, citations and a resumable session', async () => {
   const { byName, mock } = await toolset()
-  const { value, text } = await call(byName.get('aikb_ask'), { query: '默认的检索阈值是多少' })
+  const { value, text } = await call(byName.get('aikb_ask'), { query: 'What is the default retrieval threshold' })
   assert.equal(value.pipeline, 'rag')
   assert.equal(value.session_id, 'session-mock-1')
   assert.ok(value.references.length > 0)
@@ -264,7 +264,7 @@ test('ask returns the composed answer, citations and a resumable session', async
 
 test('ask reuses a given session instead of creating one', async () => {
   const { byName, mock } = await toolset()
-  await call(byName.get('aikb_ask'), { query: '部署方式', session_id: 'session-existing' })
+  await call(byName.get('aikb_ask'), { query: 'deployment options', session_id: 'session-existing' })
   assert.equal(mock.requests.some(request => request.path === '/api/v1/sessions'), false)
   assert.equal(mock.requests.at(-1).path, '/api/v1/knowledge-chat/session-existing')
 })
@@ -275,24 +275,24 @@ test('ask reuses a given session instead of creating one', async () => {
 // answering from nothing while search works.
 test('ask resolves its own scope when none is configured', async () => {
   const { byName, mock } = await toolset()
-  const { value, text } = await call(byName.get('aikb_ask'), { query: '默认的检索阈值是多少' })
+  const { value, text } = await call(byName.get('aikb_ask'), { query: 'What is the default retrieval threshold' })
   const chat = mock.requests.find(request => request.path.startsWith('/api/v1/knowledge-chat/'))
   assert.deepEqual(chat.body.knowledge_base_ids, ['kb-product', 'kb-ops'])
   assert.ok(value.references.length > 0, 'an unconfigured ask must still retrieve')
-  assert.doesNotMatch(text, /没有检索到/)
+  assert.doesNotMatch(text, /Nothing related to/)
 })
 
 test('ask reuses the scope search already resolved', async () => {
   const { byName, mock } = await toolset()
-  await call(byName.get('aikb_search'), { query: '混合检索 向量' })
-  await call(byName.get('aikb_ask'), { query: '默认的检索阈值是多少' })
+  await call(byName.get('aikb_search'), { query: 'hybrid retrieval vector' })
+  await call(byName.get('aikb_ask'), { query: 'What is the default retrieval threshold' })
   const listings = mock.requests.filter(request => request.path === '/api/v1/knowledge-bases')
   assert.equal(listings.length, 1, 'search and ask must share the resolved scope')
 })
 
 test('a configured scope reaches ask without a listing call', async () => {
   const { byName, mock } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  await call(byName.get('aikb_ask'), { query: '默认的检索阈值是多少' })
+  await call(byName.get('aikb_ask'), { query: 'What is the default retrieval threshold' })
   assert.equal(mock.requests.some(request => request.path === '/api/v1/knowledge-bases'), false)
   const chat = mock.requests.find(request => request.path.startsWith('/api/v1/knowledge-chat/'))
   assert.deepEqual(chat.body.knowledge_base_ids, ['kb-product'])
@@ -302,7 +302,7 @@ test('a configured scope reaches ask without a listing call', async () => {
 // ids sent from here would override that as an explicit @mention.
 test('an agent-pipeline ask leaves the scope to the server', async () => {
   const { byName, mock } = await toolset({ agentId: 'agent-42' })
-  await call(byName.get('aikb_ask'), { query: '部署方式有哪些' })
+  await call(byName.get('aikb_ask'), { query: 'What deployment options are there' })
   assert.equal(mock.requests.some(request => request.path === '/api/v1/knowledge-bases'), false)
   const chat = mock.requests.find(request => request.path.startsWith('/api/v1/agent-chat/'))
   assert.equal(chat.body.knowledge_base_ids, undefined)
@@ -310,7 +310,7 @@ test('an agent-pipeline ask leaves the scope to the server', async () => {
 
 test('a configured agent id switches ask to the agent pipeline', async () => {
   const { byName } = await toolset({ agentId: 'agent-42' })
-  const { value, text } = await call(byName.get('aikb_ask'), { query: '部署方式有哪些' })
+  const { value, text } = await call(byName.get('aikb_ask'), { query: 'What deployment options are there' })
   assert.equal(value.pipeline, 'agent')
   assert.deepEqual(value.tool_calls, ['knowledge_search'])
   assert.match(text, /AI KB tools used: knowledge_search/)
@@ -339,23 +339,23 @@ test('apply fails the plugin load on an invalid row', () => {
 
 test('search rewrites cited figures to public URLs in passage content', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  const { value, text } = await call(byName.get('aikb_search'), { query: '系统架构图' })
+  const { value, text } = await call(byName.get('aikb_search'), { query: 'system architecture diagram' })
   const hit = value.results.find(result => result.knowledge_id === 'doc-architecture')
   assert.ok(hit, 'the architecture document must be in the ranked hits')
-  assert.ok(hit.content.includes(`![系统架构](${ARCH_PUBLIC})`))
-  assert.ok(text.includes(`![系统架构](${ARCH_PUBLIC})`))
+  assert.ok(hit.content.includes(`![System architecture](${ARCH_PUBLIC})`))
+  assert.ok(text.includes(`![System architecture](${ARCH_PUBLIC})`))
 })
 
 test('ask copies public figure URLs from the retrieved passages', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'] })
-  const { value, text } = await call(byName.get('aikb_ask'), { query: '系统架构图长什么样' })
-  assert.ok(value.answer.includes(`![系统架构](${ARCH_PUBLIC})`))
-  assert.ok(text.includes(`![系统架构](${ARCH_PUBLIC})`))
+  const { value, text } = await call(byName.get('aikb_ask'), { query: 'What does the system architecture diagram look like' })
+  assert.ok(value.answer.includes(`![System architecture](${ARCH_PUBLIC})`))
+  assert.ok(text.includes(`![System architecture](${ARCH_PUBLIC})`))
 })
 
 test('handle mode keeps internal resource handles instead of public URLs', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'], resourceUrls: 'handle' })
-  const { value } = await call(byName.get('aikb_search'), { query: '系统架构图' })
+  const { value } = await call(byName.get('aikb_search'), { query: 'system architecture diagram' })
   const hit = value.results.find(result => result.knowledge_id === 'doc-architecture')
-  assert.ok(hit.content.includes(`![系统架构](${ARCH_HANDLE})`))
+  assert.ok(hit.content.includes(`![System architecture](${ARCH_HANDLE})`))
 })

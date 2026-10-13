@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
-# prepare.sh - 在干净的 Linux 实例上部署 AI KB 运行时, 用于制作云镜像模板。
-# 不需要 clone 整个 AI KB 仓库, 只下载 4 个运行时文件 (~100KB)。
-# 兼容: Ubuntu / Debian / CentOS / Rocky / TencentOS 等带 systemd + Docker 的发行版。
-# 使用方式:  sudo bash prepare.sh
-# 可调环境变量:
-#   AIKB_REF              要拉取的 git ref (tag / branch / commit), 默认 main
-#   AIKB_DIR              部署目录, 默认 /opt/ai-kb
-#   AIKB_REPO             仓库地址, 默认 https://github.com/jrmatherly/ai-kb
-#   AIKB_GH_PROXY         GitHub 加速前缀, 默认空。中国大陆机器可设
-#                            https://gh-proxy.com/ 或 https://ghfast.top/
-#                            (实际下载地址变成 ${AIKB_GH_PROXY}${AIKB_REPO}/archive/...)
-#   DOCKER_INSTALL_MIRROR    Docker 安装包镜像源, 默认空 (走 get.docker.com)。
-#                            中国大陆机器境外 CDN 不通时设为, 例如:
+# prepare.sh - deploy the AI KB runtime on a clean Linux instance to build a cloud image template.
+# Does not clone the whole AI KB repo. It downloads only 4 runtime files (~100KB).
+# Supports systemd + Docker distributions such as Ubuntu / Debian / CentOS / Rocky / TencentOS.
+# Usage:  sudo bash prepare.sh
+# Environment variables:
+#   AIKB_REF              git ref to fetch (tag / branch / commit), default main
+#   AIKB_DIR              deployment directory, default /opt/ai-kb
+#   AIKB_REPO             repository URL, default https://github.com/jrmatherly/ai-kb
+#   AIKB_GH_PROXY         GitHub proxy prefix, default empty. Machines in mainland China can set
+#                            https://gh-proxy.com/ or https://ghfast.top/
+#                            (the download URL becomes ${AIKB_GH_PROXY}${AIKB_REPO}/archive/...)
+#   DOCKER_INSTALL_MIRROR    Docker package mirror, default empty (uses get.docker.com).
+#                            Set it when overseas CDNs are unreachable from mainland China, for example:
 #                              https://mirrors.tencent.com/docker-ce/linux/ubuntu
 #                              https://mirrors.aliyun.com/docker-ce/linux/ubuntu
-#                            会改用 apt + docker-ce 官方仓库镜像安装,
-#                            含 docker-ce / containerd.io / docker-compose-plugin,
-#                            完全不访问 get.docker.com。仅支持 apt 系发行版。
-#   DOCKER_REGISTRY_MIRROR   Docker Hub 加速器, 默认空。腾讯云内网可设
+#                            Installs through apt from a mirror of the official docker-ce repository,
+#                            including docker-ce / containerd.io / docker-compose-plugin,
+#                            and never contacts get.docker.com. apt-based distributions only.
+#   DOCKER_REGISTRY_MIRROR   Docker Hub mirror, default empty. On the Tencent Cloud internal network, set
 #                            https://mirror.ccs.tencentyun.com
-#                            (会写入 /etc/docker/daemon.json 并重启 docker)
-#   PRUNE_OLD_IMAGES         升级场景下是否清理 dangling / 旧版本 tag 镜像,
-#                            默认 false。设为 true 时在拉新镜像之后执行
-#                            `docker image prune -af`, 把没有容器引用的镜像
-#                            (含旧 AIKB_VERSION 的 wechatopenai/ai-kb-*)
-#                            一次性删掉, 减少要打进云镜像的体积。
+#                            (written to /etc/docker/daemon.json, then docker restarts)
+#   PRUNE_OLD_IMAGES         Whether an upgrade removes dangling / old-tag images,
+#                            default false. When true, after pulling the new images it runs
+#                            `docker image prune -af`, which deletes every image no container references
+#                            (including wechatopenai/ai-kb-* at the old AIKB_VERSION)
+#                            in one go, to shrink the cloud image.
 set -euo pipefail
 
 AIKB_REF="${AIKB_REF:-main}"
@@ -37,16 +37,16 @@ PRUNE_OLD_IMAGES="${PRUNE_OLD_IMAGES:-false}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ "${EUID}" -ne 0 ]]; then
-  echo "[prepare] 请使用 sudo 或 root 运行" >&2
+  echo "[prepare] Run with sudo or as root" >&2
   exit 1
 fi
 
-# 通过镜像源 apt 安装 docker-ce 全家桶 (含 compose-plugin)。
-# 用于中国大陆云主机直连 get.docker.com 被 RST 的场景。
+# Install the docker-ce suite (with compose-plugin) through apt from a mirror.
+# For mainland China cloud hosts where direct connections to get.docker.com are reset.
 install_docker_via_apt_mirror() {
   local mirror="$1"
   if ! command -v apt-get >/dev/null 2>&1; then
-    echo "[prepare] DOCKER_INSTALL_MIRROR 目前仅支持 apt 系发行版 (Ubuntu/Debian)" >&2
+    echo "[prepare] DOCKER_INSTALL_MIRROR supports only apt-based distributions (Ubuntu/Debian)" >&2
     return 1
   fi
   apt-get update -y
@@ -64,10 +64,10 @@ install_docker_via_apt_mirror() {
                      docker-buildx-plugin docker-compose-plugin curl tar
 }
 
-echo "[prepare] 1/6 安装 Docker 与依赖"
+echo "[prepare] 1/6 Install Docker and dependencies"
 if ! command -v docker >/dev/null 2>&1; then
   if [[ -n "${DOCKER_INSTALL_MIRROR}" ]]; then
-    echo "[prepare]   通过 ${DOCKER_INSTALL_MIRROR} 走 apt 安装 docker-ce (跳过 get.docker.com)"
+    echo "[prepare]   Installing docker-ce through apt from ${DOCKER_INSTALL_MIRROR} (skipping get.docker.com)"
     install_docker_via_apt_mirror "${DOCKER_INSTALL_MIRROR}"
   else
     curl -fsSL https://get.docker.com | bash
@@ -84,12 +84,12 @@ if ! docker compose version >/dev/null 2>&1; then
   fi
 fi
 
-# 可选: 配置 Docker Hub 加速器, 解决直连 registry-1.docker.io 超时的场景
-# (典型: 中国大陆云主机 / 内网受限环境)。仅在用户显式传入时才动 daemon.json。
+# Optional: configure a Docker Hub mirror when direct connections to registry-1.docker.io time out
+# (typically mainland China cloud hosts or restricted internal networks). daemon.json is touched only when the user passes it.
 if [[ -n "${DOCKER_REGISTRY_MIRROR}" ]]; then
-  echo "[prepare] 1.5/6 配置 Docker Hub 加速器: ${DOCKER_REGISTRY_MIRROR}"
+  echo "[prepare] 1.5/6 Configure the Docker Hub mirror: ${DOCKER_REGISTRY_MIRROR}"
   mkdir -p /etc/docker
-  # 已存在的 daemon.json 走 python 合并, 避免覆盖用户其它配置
+  # Merge an existing daemon.json with python so other user settings are kept
   if [[ -s /etc/docker/daemon.json ]] && command -v python3 >/dev/null 2>&1; then
     python3 - "$DOCKER_REGISTRY_MIRROR" <<'PY'
 import json, sys, pathlib
@@ -113,15 +113,15 @@ PY
 EOF
   fi
   systemctl restart docker
-  # 给 docker daemon 一点重启时间, 避免下面 docker compose pull 立刻拿到 EOF
+  # Give the docker daemon time to restart so the docker compose pull below does not hit EOF
   for _ in 1 2 3 4 5; do
     docker info >/dev/null 2>&1 && break
     sleep 1
   done
 fi
 
-echo "[prepare] 2/6 拉取 AI KB 运行时文件 (ref=${AIKB_REF})"
-# 只下载实际需要的 4 个文件, 不 clone 整个仓库 (~MB 级 -> ~KB 级)
+echo "[prepare] 2/6 Fetch the AI KB runtime files (ref=${AIKB_REF})"
+# Download only the 4 files needed, no full clone (~MB -> ~KB)
 mkdir -p "${AIKB_DIR}/config"
 
 tmp=$(mktemp -d)
@@ -130,7 +130,7 @@ trap 'rm -rf "${tmp}"' EXIT
 tarball_url="${AIKB_GH_PROXY}${AIKB_REPO}/archive/${AIKB_REF}.tar.gz"
 echo "[prepare]   tarball: ${tarball_url}"
 curl -fsSL "${tarball_url}" -o "${tmp}/repo.tar.gz"
-# 仅解压需要的路径, 显著加速且省空间
+# Extract only the needed paths, which is much faster and smaller
 tar -xzf "${tmp}/repo.tar.gz" -C "${tmp}" \
   --wildcards \
   '*/docker-compose.yml' \
@@ -138,7 +138,7 @@ tar -xzf "${tmp}/repo.tar.gz" -C "${tmp}" \
   '*/config/config.yaml'
 src=$(find "${tmp}" -maxdepth 1 -mindepth 1 -type d -name 'AI KB-*' | head -1)
 if [[ -z "${src}" ]]; then
-  echo "[prepare] 解压失败, 未找到 AI KB-* 目录" >&2
+  echo "[prepare] Extraction failed, no AI KB-* directory found" >&2
   exit 1
 fi
 
@@ -146,24 +146,24 @@ cp    "${src}/docker-compose.yml" "${AIKB_DIR}/"
 cp    "${src}/.env.example"       "${AIKB_DIR}/"
 cp    "${src}/config/config.yaml" "${AIKB_DIR}/config/"
 
-# 记录元信息, 供 firstboot / 升级时参考
+# Record metadata for firstboot and upgrades
 cat >"${AIKB_DIR}/.cloud-image-meta" <<EOF
 AIKB_REF=${AIKB_REF}
 AIKB_REPO=${AIKB_REPO}
 PREPARED_AT=$(date -Iseconds)
 EOF
 
-echo "[prepare] 3/6 准备 .env (默认值, firstboot 会替换为随机密钥)"
+echo "[prepare] 3/6 Prepare .env (defaults, firstboot replaces them with random keys)"
 cd "${AIKB_DIR}"
 [[ -f .env ]] || cp .env.example .env
 sed -i 's/^GIN_MODE=.*/GIN_MODE=release/' .env || true
 
-# 把 AIKB_VERSION 与 AIKB_REF 对齐, 让 docker compose 拉取与 ref 一致的
-# 镜像 tag。无条件覆盖, 避免 .env 残留上一次 prepare 留下的旧版本号。
-# Docker Hub 上 wechatopenai/ai-kb-* 的 tag 命名约定：
-#   - 浮动 tag：main（持续指向最新构建）
-#   - 固定 release tag：v 前缀 + semver（如 v0.7.2、v0.5.2）
-# 因此这里不剥 v、也不映射到 latest。
+# Align AIKB_VERSION with AIKB_REF so docker compose pulls the image tag that matches
+# the ref. Always overwrite, so .env never keeps an old version from a previous prepare.
+# Tag naming for wechatopenai/ai-kb-* on Docker Hub:
+#   - floating tag: main (always points at the latest build)
+#   - fixed release tag: v prefix + semver (such as v0.7.2, v0.5.2)
+# So the v is not stripped here and nothing maps to latest.
 AIKB_VERSION_VAL="${AIKB_REF}"
 if grep -qE '^AIKB_VERSION=' .env; then
   sed -i "s|^AIKB_VERSION=.*|AIKB_VERSION=${AIKB_VERSION_VAL}|" .env
@@ -172,41 +172,41 @@ else
 fi
 echo "[prepare]   -> AIKB_VERSION=${AIKB_VERSION_VAL}"
 
-echo "[prepare] 4/6 拉取并启动默认 5 个常驻容器 (frontend/app/docreader/postgres/redis)"
+echo "[prepare] 4/6 Pull and start the 5 default long-running containers (frontend/app/docreader/postgres/redis)"
 docker compose pull
 docker compose up -d
 
-# 提前 pull sandbox 镜像 (Agent Skills 运行时由 app 按需 docker run, 非常驻)
-# 不预拉的话, 用户首次跑 Skill 会卡在下载
-echo "[prepare] 4.5/6 预拉 sandbox 镜像 (Agent Skills 用, 非常驻)"
+# Pull the sandbox image ahead of time (the app docker-runs the Agent Skills runtime on demand, not long-running)
+# Without the pre-pull, a user's first Skill run stalls on the download
+echo "[prepare] 4.5/6 Pre-pull the sandbox image (for Agent Skills, not long-running)"
 docker compose --profile full pull sandbox || true
 
-# 其他向量库 / 可观测组件 (qdrant, milvus, weaviate, doris, neo4j, langfuse-*, minio, dex)
-# 不预拉, 体积可省 5-15GB. 用户如需启用:
+# Other vector stores and observability components (qdrant, milvus, weaviate, doris, neo4j, langfuse-*, minio, dex)
+# are not pre-pulled, which saves 5-15GB. To enable one:
 #   cd /opt/ai-kb && docker compose --profile <name> up -d
 
-# 升级场景: 清理旧版本 tag 的 wechatopenai/ai-kb-* 镜像。
-# 默认关闭, 保留回滚路径; 制作镜像前显式打开以减小体积。
+# Upgrade: remove wechatopenai/ai-kb-* images with old tags.
+# Off by default to keep a rollback path. Turn it on explicitly before building the image to shrink it.
 #
-# 注意: 不用 `docker image prune -af`!
-# sandbox 镜像在 compose 里只 pull 不 up (Agent Skills 由 app 按需 docker run),
-# 没有任何容器引用它, 一旦 `prune -a` 会把当前版本的 sandbox 一起删掉,
-# 反而违背 prepare.sh 4.5 步预拉 sandbox 的目的。
-# 这里精确按 tag 比对, 只删 wechatopenai/ai-kb-* 仓库下、tag 不等于当前
-# AIKB_VERSION 的镜像, 基础设施镜像 (paradedb / redis) 不动。
+# Note: do not use `docker image prune -af`!
+# compose only pulls the sandbox image and never brings it up (the app docker-runs Agent Skills on demand),
+# so no container references it, and `prune -a` would delete the current sandbox too,
+# which defeats the sandbox pre-pull in step 4.5 of prepare.sh.
+# This compares tags exactly and removes only wechatopenai/ai-kb-* images whose tag differs from the current
+# AIKB_VERSION. Infrastructure images (paradedb / redis) are untouched.
 if [[ "${PRUNE_OLD_IMAGES,,}" == "true" || "${PRUNE_OLD_IMAGES}" == "1" ]]; then
-  echo "[prepare] 4.6/6 清理 wechatopenai/ai-kb-* 仓库下旧版本镜像 (PRUNE_OLD_IMAGES=true, keep=${AIKB_VERSION_VAL})"
+  echo "[prepare] 4.6/6 Remove old wechatopenai/ai-kb-* images (PRUNE_OLD_IMAGES=true, keep=${AIKB_VERSION_VAL})"
   docker image ls --format '{{.Repository}}:{{.Tag}}' \
     | grep -E '^wechatopenai/ai-kb-' \
     | grep -vE ":${AIKB_VERSION_VAL}\$" \
     | xargs -r docker rmi -f 2>/dev/null || true
 fi
 
-echo "[prepare] 5/6 安装 systemd 单元"
-# 探测 docker 二进制路径, 不同发行版可能在 /usr/bin 或 /usr/local/bin
+echo "[prepare] 5/6 Install systemd units"
+# Find the docker binary; distributions put it in /usr/bin or /usr/local/bin
 DOCKER_BIN="$(command -v docker)"
 if [[ -z "${DOCKER_BIN}" ]]; then
-  echo "[prepare] 未找到 docker 二进制" >&2
+  echo "[prepare] docker binary not found" >&2
   exit 1
 fi
 echo "[prepare]   docker binary: ${DOCKER_BIN}"
@@ -215,20 +215,20 @@ install -m 0644 "${SCRIPT_DIR}/systemd/aikb.service"           /etc/systemd/syst
 install -m 0644 "${SCRIPT_DIR}/systemd/ai-kb-firstboot.service" /etc/systemd/system/ai-kb-firstboot.service
 install -m 0755 "${SCRIPT_DIR}/firstboot.sh"                      /usr/local/sbin/ai-kb-firstboot.sh
 
-# 把 systemd 单元里的 docker 路径模板替换为实际路径
+# Replace the docker path placeholder in the systemd units with the real path
 sed -i "s|@DOCKER_BIN@|${DOCKER_BIN}|g" /etc/systemd/system/aikb.service
 
 systemctl daemon-reload
 systemctl enable aikb.service
 systemctl enable ai-kb-firstboot.service
 
-echo "[prepare] 6/6 完成"
+echo "[prepare] 6/6 Done"
 echo
-echo "  AI KB 运行时已部署到 ${AIKB_DIR}"
+echo "  AI KB runtime deployed to ${AIKB_DIR}"
 echo "    docker-compose.yml / config/config.yaml / .env"
-echo "  版本: ${AIKB_REF}  (见 ${AIKB_DIR}/.cloud-image-meta)"
+echo "  Version: ${AIKB_REF}  (see ${AIKB_DIR}/.cloud-image-meta)"
 echo
-echo "  打开浏览器访问  http://<本机公网IP>  验证功能"
+echo "  Open http://<public IP of this host> in a browser to check it works"
 echo
-echo "  验证通过后执行清理并制作镜像:"
+echo "  Once it checks out, clean up and build the image:"
 echo "      sudo bash ${SCRIPT_DIR}/cleanup.sh"

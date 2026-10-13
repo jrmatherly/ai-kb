@@ -1,23 +1,21 @@
 # AI KB MCP Server
 
-> **⚠️ 已弃用（Deprecated）**
->
-> AI KB 现已内置 MCP Server：在「设置 → 发布与集成 → MCP Server」中为空间创建端点即可，支持多个端点、按端点选择知识库范围和工具，客户端通过 Streamable HTTP 直接连接 `/mcp/<endpoint_id>`，无需再部署本目录的 Python 进程。本目录仅为兼容旧部署保留，后续版本将移除。
+> **⚠️ Deprecated**
 >
 > AI KB now ships a built-in MCP server: create endpoints under "Settings → Publish & Integrations → MCP Server", each with its own token, knowledge-base scope and tool list, and connect clients to `/mcp/<endpoint_id>` over Streamable HTTP. This Python package is kept only for existing deployments and will be removed in a future release.
 
-这是一个 Model Context Protocol (MCP) 服务器，提供对 AI KB 知识管理 API 的访问。
+A Model Context Protocol (MCP) server that gives access to the AI KB knowledge management API.
 
-## 快速开始
+## Quick start
 
-> 推荐直接参考 [MCP配置说明](./MCP_CONFIG.md)，无需进行以下操作。
+> We recommend following the [MCP configuration guide](./MCP_CONFIG.md) instead of the steps below.
 
-### 1. 安装依赖
+### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 配置环境变量
+### 2. Set environment variables
 ```bash
 # Linux/macOS
 export AIKB_BASE_URL="http://localhost:8080/api/v1"
@@ -32,139 +30,139 @@ set AIKB_BASE_URL=http://localhost:8080/api/v1
 set AIKB_API_KEY=your_api_key_here
 ```
 
-### 3. 运行服务器
+### 3. Run the server
 
-**推荐方式 - 使用主入口点：**
+**Recommended: the main entry point:**
 ```bash
 python main.py
 ```
 
-**其他运行方式：**
+**Other ways to run it:**
 ```bash
-# 使用原始启动脚本
+# Original launch script
 python run_server.py
 
-# 使用便捷脚本
+# Quick launch script
 python run.py
 
-# 直接运行服务器模块
+# Run the server module directly
 python aikb_mcp_server.py
 
-# 作为 Python 模块运行
+# Run as a Python module
 python -m aikb_mcp_server
 ```
 
-### 4. 命令行选项
+### 4. Command-line options
 ```bash
-python main.py --help                 # 显示帮助信息
-python main.py --check-only           # 仅检查环境配置
-python main.py --verbose              # 启用详细日志
-python main.py --version              # 显示版本信息
+python main.py --help                 # show help
+python main.py --check-only           # check the environment configuration only
+python main.py --verbose              # enable verbose logging
+python main.py --version              # show the version
 ```
 
-## 安装为 Python 包
+## Install as a Python package
 
-### 从 PyPI 安装
+### From PyPI
 
 ```bash
 pip install ai-kb-mcp
-# 或使用 uvx 直接运行（无需预安装）
+# Or run it directly with uvx (no install needed)
 uvx --from ai-kb-mcp ai-kb-mcp-server
 ```
 
-> 官方 PyPI 包名为 **`ai-kb-mcp`**（jrmatherly/ai-kb 维护，Trusted Publishing 发布）。
-> 旧社区包 `ai-kb-mcp` 请不要再使用。
-> 安装后命令行入口仍为 `ai-kb-mcp-server` / `ai-kb-server`。
+> The official PyPI package is **`ai-kb-mcp`** (maintained by jrmatherly/ai-kb, published with Trusted Publishing).
+> Do not use the old community package `ai-kb-mcp`.
+> After installation the command-line entry points are still `ai-kb-mcp-server` / `ai-kb-server`.
 
-### 开发模式安装
+### Development install
 ```bash
 pip install -e .
 ```
 
-安装后可以使用命令行工具：
+After installation you can use the command-line tools:
 ```bash
 ai-kb-mcp-server
-# 或
+# or
 ai-kb-server
 ```
 
-### 生产模式安装
+### Production install
 ```bash
 pip install .
 ```
 
-### 构建分发包
+### Build distribution packages
 ```bash
-# 使用 setuptools
+# With setuptools
 python setup.py sdist bdist_wheel
 
-# 使用现代构建工具
+# With modern build tooling
 pip install build
 python -m build
 ```
 
-## 测试模组
+## Test the module
 
-运行测试脚本验证模组是否正常工作：
+Run the test script to check that the module works:
 ```bash
 python test_module.py
 ```
 
-## 功能特性
+## Features
 
-该 MCP 服务器提供以下工具：
+The MCP server provides these tools:
 
-### 空间管理
-- `create_tenant` - 创建新空间
-- `list_tenants` - 列出所有空间
+### Workspace management
+- `create_tenant` - create a workspace
+- `list_tenants` - list all workspaces
 
-### 知识库管理
-- `create_knowledge_base` - 创建知识库
-- `list_knowledge_bases` - 列出知识库
-- `get_knowledge_base` - 获取知识库详情
-- `delete_knowledge_base` - 删除知识库
-- `hybrid_search` - 混合搜索
+### Knowledge base management
+- `create_knowledge_base` - create a knowledge base
+- `list_knowledge_bases` - list knowledge bases
+- `get_knowledge_base` - get knowledge base details
+- `delete_knowledge_base` - delete a knowledge base
+- `hybrid_search` - hybrid search
 
-### 知识管理
-- `create_knowledge_from_file` - 从本地文件创建知识
-- `create_knowledge_from_url` - 从 URL 创建知识
-- `create_knowledge_from_text` - 从文本创建知识
-- `update_knowledge_from_text` - 更新手工 Markdown 知识，可重新索引或保存为草稿
-- `list_knowledge` - 列出知识
-- `get_knowledge` - 获取知识详情
-- `delete_knowledge` - 删除知识
+### Knowledge management
+- `create_knowledge_from_file` - create knowledge from a local file
+- `create_knowledge_from_url` - create knowledge from a URL
+- `create_knowledge_from_text` - create knowledge from text
+- `update_knowledge_from_text` - update manual Markdown knowledge, re-index it or save it as a draft
+- `list_knowledge` - list knowledge
+- `get_knowledge` - get knowledge details
+- `delete_knowledge` - delete knowledge
 
-### 模型管理
-- `create_model` - 创建模型
-- `list_models` - 列出模型
-- `get_model` - 获取模型详情
+### Model management
+- `create_model` - create a model
+- `list_models` - list models
+- `get_model` - get model details
 
-### 会话管理
-- `create_session` - 创建聊天会话
-- `get_session` - 获取会话详情
-- `list_sessions` - 列出会话
-- `delete_session` - 删除会话
+### Session management
+- `create_session` - create a chat session
+- `get_session` - get session details
+- `list_sessions` - list sessions
+- `delete_session` - delete a session
 
-### 聊天功能
-- `chat` - 发送聊天消息
-- `agent_chat` - 调用智能体完成多步检索与工具调用
+### Chat
+- `chat` - send a chat message
+- `agent_chat` - call an agent for multi-step retrieval and tool calls
 
-两种聊天工具均按 SSE 空行边界组装事件，支持一个事件包含多行 `data:`。
-连接结束时尚未遇到空行的事件会被丢弃；单个事件的数据缓冲上限为 8 MiB，
-超过上限会返回错误并关闭响应连接。
+Both chat tools assemble events on SSE blank-line boundaries, so one event can span several `data:` lines.
+An event still open when the connection ends (no blank line seen yet) is dropped. Each event's data buffer is capped at 8 MiB;
+exceeding the cap returns an error and closes the response connection.
 
-### 块管理
-- `list_chunks` - 列出知识块
-- `delete_chunk` - 删除知识块
+### Chunk management
+- `list_chunks` - list knowledge chunks
+- `delete_chunk` - delete a knowledge chunk
 
-## 故障排除
+## Troubleshooting
 
-如果遇到导入错误，请确保：
-1. 已安装所有必需的依赖包
-2. Python 版本兼容（推荐 3.10+）
-3. 没有文件名冲突（避免使用 `mcp.py` 作为文件名）
+If you hit import errors, make sure that:
+1. All required dependencies are installed
+2. Your Python version is compatible (3.10+ recommended)
+3. No file name conflicts (do not name a file `mcp.py`)
 
-## 调用效果
+## Example output
 
 <img width="950" height="2063" alt="118d078426f42f3d4983c13386085d7f" src="https://github.com/user-attachments/assets/09111ec8-0489-415c-969d-aa3835778e14" />
 

@@ -20,7 +20,7 @@
       "path": "/api/v1/knowledge-search",
       "query": { "resource_urls": "public" },
       "body": {
-        "query": "默认的检索阈值是多少",
+        "query": "What is the default retrieval threshold",
         "knowledge_base_ids": ["kb-product"]
       },
       "goRequestType": "session.SearchKnowledgeRequest"
@@ -29,7 +29,7 @@
       "tool": "aikb_search",
       "method": "GET",
       "path": "/api/v1/knowledge/search",
-      "query": { "keyword": "默认的检索阈值是多少", "limit": "8", "resource_urls": "public" },
+      "query": { "keyword": "What is the default retrieval threshold", "limit": "8", "resource_urls": "public" },
       "body": null,
       "goRequestType": null
     },
@@ -55,7 +55,7 @@
       "path": "/api/v1/sessions",
       "query": { "resource_urls": "public" },
       "body": {
-        "title": "dsh: 默认的检索阈值是多少"
+        "title": "dsh: What is the default retrieval threshold"
       },
       "goRequestType": "session.CreateSessionRequest"
     },
@@ -65,7 +65,7 @@
       "path": "/api/v1/knowledge-chat/session-mock-1",
       "query": { "resource_urls": "public" },
       "body": {
-        "query": "默认的检索阈值是多少",
+        "query": "What is the default retrieval threshold",
         "channel": "api",
         "knowledge_base_ids": ["kb-product"]
       },
@@ -77,7 +77,7 @@
       "path": "/api/v1/agent-chat/s1",
       "query": { "resource_urls": "public" },
       "body": {
-        "query": "部署方式",
+        "query": "deployment options",
         "channel": "api",
         "agent_id": "agent-42",
         "agent_enabled": true,

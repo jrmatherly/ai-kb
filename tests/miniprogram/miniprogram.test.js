@@ -47,9 +47,10 @@ test("i18n defaults to Chinese and supports English", () => {
   assert.equal(normalizeLocale("zh"), "zh");
   assert.equal(normalizeLocale("en"), "en");
   assert.equal(normalizeLocale("fr"), "zh");
-  assert.equal(t("tabKnowledge", {}, "zh"), "知识库");
+  // The zh strings match miniprogram/utils/i18n.js.
+  assert.equal(t("tabKnowledge", {}, "zh"), "\u77e5\u8bc6\u5e93");
   assert.equal(t("tabKnowledge", {}, "en"), "Knowledge");
-  assert.equal(t("loadedKnowledgeBases", { count: 2 }, "zh"), "已加载 2 个知识库。");
+  assert.equal(t("loadedKnowledgeBases", { count: 2 }, "zh"), "\u5df2\u52a0\u8f7d 2 \u4e2a\u77e5\u8bc6\u5e93\u3002");
   assert.equal(t("loadedKnowledgeBases", { count: 2 }, "en"), "Loaded 2 knowledge bases.");
 });
 
@@ -187,7 +188,8 @@ test("knowledge page skips API loading until settings are configured", async () 
     await pageDefinitions[0].onShow.call(page);
 
     assert.equal(page.data.needsSettings, true);
-    assert.equal(page.data.knowledgeTitle, "AI KB 知识库");
+    // Matches the zh knowledgeTitle in miniprogram/pages/index/index.js.
+    assert.equal(page.data.knowledgeTitle, "AI KB \u77e5\u8bc6\u5e93");
     assert.deepEqual(calls, []);
   } finally {
     global.Page = originalPage;

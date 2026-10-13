@@ -1,47 +1,47 @@
-# AI KB MCP Server 使用示例
+# AI KB MCP Server usage examples
 
-本文档提供了 AI KB MCP Server 的详细使用示例。
+Detailed usage examples for the AI KB MCP Server.
 
-## 基本使用
+## Basic usage
 
-### 1. 启动服务器
+### 1. Start the server
 
 ```bash
-# 推荐方式 - 使用主入口点
+# Recommended: the main entry point
 python main.py
 
-# 检查环境配置
+# Check the environment configuration
 python main.py --check-only
 
-# 启用详细日志
+# Enable verbose logging
 python main.py --verbose
 ```
 
-### 2. 环境配置示例
+### 2. Environment configuration
 
 ```bash
-# 设置环境变量
+# Set environment variables
 export AIKB_BASE_URL="http://localhost:8080/api/v1"
 export AIKB_API_KEY="your_api_key_here"
 
-# 或者在 .env 文件中设置
+# Or set them in a .env file
 echo "AIKB_BASE_URL=http://localhost:8080/api/v1" > .env
 echo "AIKB_API_KEY=your_api_key_here" >> .env
 ```
 
-## MCP 工具使用示例
+## MCP tool examples
 
-以下是各种 MCP 工具的使用示例：
+Examples for each MCP tool:
 
-### 空间管理
+### Workspace management
 
-#### 创建空间
+#### Create a workspace
 ```json
 {
   "tool": "create_tenant",
   "arguments": {
-    "name": "我的公司",
-    "description": "公司知识管理系统",
+    "name": "My Company",
+    "description": "Company knowledge management system",
     "business": "technology",
     "retriever_engines": {
       "engines": [
@@ -53,7 +53,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 列出所有空间
+#### List all workspaces
 ```json
 {
   "tool": "list_tenants",
@@ -61,22 +61,22 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-### 知识库管理
+### Knowledge base management
 
-#### 创建知识库
+#### Create a knowledge base
 ```json
 {
   "tool": "create_knowledge_base",
   "arguments": {
-    "name": "产品文档库",
-    "description": "产品相关文档和资料",
+    "name": "Product Docs",
+    "description": "Product documents and materials",
     "embedding_model_id": "text-embedding-ada-002",
     "summary_model_id": "gpt-3.5-turbo"
   }
 }
 ```
 
-#### 列出知识库
+#### List knowledge bases
 ```json
 {
   "tool": "list_knowledge_bases",
@@ -84,7 +84,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 获取知识库详情
+#### Get knowledge base details
 ```json
 {
   "tool": "get_knowledge_base",
@@ -94,13 +94,13 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 混合搜索
+#### Hybrid search
 ```json
 {
   "tool": "hybrid_search",
   "arguments": {
     "kb_id": "kb_123456",
-    "query": "如何使用API",
+    "query": "How do I use the API",
     "vector_threshold": 0.7,
     "keyword_threshold": 0.5,
     "match_count": 10
@@ -108,9 +108,9 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-### 知识管理
+### Knowledge management
 
-#### 从URL创建知识
+#### Create knowledge from a URL
 ```json
 {
   "tool": "create_knowledge_from_url",
@@ -122,35 +122,35 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 从文本创建知识
+#### Create knowledge from text
 ```json
 {
   "tool": "create_knowledge_from_text",
   "arguments": {
     "kb_id": "my-knowledge-base",
-    "title": "注意力机制摘要",
-    "content": "# 注意力机制\n\n注意力机制允许模型在处理序列时动态分配权重...",
+    "title": "Attention mechanism summary",
+    "content": "# Attention mechanism\n\nThe attention mechanism lets a model assign weights dynamically while processing a sequence...",
     "status": "publish"
   }
 }
 ```
 
-#### 更新手工知识
+#### Update manual knowledge
 ```json
 {
   "tool": "update_knowledge_from_text",
   "arguments": {
     "knowledge_id": "know_789012",
-    "title": "注意力机制摘要（修订版）",
-    "content": "# 注意力机制\n\n这里是修订后的 Markdown 内容...",
+    "title": "Attention mechanism summary (revised)",
+    "content": "# Attention mechanism\n\nThe revised Markdown content goes here...",
     "status": "publish"
   }
 }
 ```
 
-省略 `title` 或传空字符串会保留原标题；将 `status` 设为 `draft` 可只保存内容而不重新索引。
+Omitting `title` or passing an empty string keeps the original title. Set `status` to `draft` to save the content without re-indexing.
 
-#### 列出知识
+#### List knowledge
 ```json
 {
   "tool": "list_knowledge",
@@ -162,7 +162,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 获取知识详情
+#### Get knowledge details
 ```json
 {
   "tool": "get_knowledge",
@@ -172,9 +172,9 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-### 模型管理
+### Model management
 
-#### 创建模型
+#### Create a model
 ```json
 {
   "tool": "create_model",
@@ -182,7 +182,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
     "name": "GPT-4 Chat Model",
     "type": "KnowledgeQA",
     "source": "openai",
-    "description": "OpenAI GPT-4 模型用于知识问答",
+    "description": "OpenAI GPT-4 model for knowledge Q&A",
     "base_url": "https://api.openai.com/v1",
     "api_key": "sk-...",
     "is_default": true
@@ -190,7 +190,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 列出模型
+#### List models
 ```json
 {
   "tool": "list_models",
@@ -198,9 +198,9 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-### 会话管理
+### Session management
 
-#### 创建聊天会话
+#### Create a chat session
 ```json
 {
   "tool": "create_session",
@@ -208,13 +208,13 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
     "kb_id": "kb_123456",
     "max_rounds": 10,
     "enable_rewrite": true,
-    "fallback_response": "抱歉，我无法回答这个问题。",
+    "fallback_response": "Sorry, I can't answer that question.",
     "summary_model_id": "gpt-3.5-turbo"
   }
 }
 ```
 
-#### 获取会话详情
+#### Get session details
 ```json
 {
   "tool": "get_session",
@@ -224,7 +224,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 列出会话
+#### List sessions
 ```json
 {
   "tool": "list_sessions",
@@ -235,22 +235,22 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-### 聊天功能
+### Chat
 
-#### 发送聊天消息
+#### Send a chat message
 ```json
 {
   "tool": "chat",
   "arguments": {
     "session_id": "sess_345678",
-    "query": "请介绍一下产品的主要功能"
+    "query": "Describe the product's main features"
   }
 }
 ```
 
-### 块管理
+### Chunk management
 
-#### 列出知识块
+#### List knowledge chunks
 ```json
 {
   "tool": "list_chunks",
@@ -262,7 +262,7 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-#### 删除知识块
+#### Delete a knowledge chunk
 ```json
 {
   "tool": "delete_chunk",
@@ -273,112 +273,112 @@ echo "AIKB_API_KEY=your_api_key_here" >> .env
 }
 ```
 
-## 完整工作流程示例
+## End-to-end workflow
 
-### 场景：创建一个完整的知识问答系统
+### Scenario: build a complete knowledge Q&A system
 
 ```bash
-# 1. 启动服务器
+# 1. Start the server
 python main.py --verbose
 
-# 2. 在 MCP 客户端中执行以下步骤：
+# 2. Run these steps in the MCP client:
 ```
 
-#### 步骤 1: 创建空间
+#### Step 1: create a workspace
 ```json
 {
   "tool": "create_tenant",
   "arguments": {
-    "name": "技术文档中心",
-    "description": "公司技术文档知识管理",
+    "name": "Engineering Docs Center",
+    "description": "Company engineering documentation",
     "business": "technology"
   }
 }
 ```
 
-#### 步骤 2: 创建知识库
+#### Step 2: create a knowledge base
 ```json
 {
   "tool": "create_knowledge_base",
   "arguments": {
-    "name": "API文档库",
-    "description": "所有API相关文档"
+    "name": "API Docs",
+    "description": "All API documentation"
   }
 }
 ```
 
-#### 步骤 3: 添加知识内容
+#### Step 3: add knowledge
 ```json
 {
   "tool": "create_knowledge_from_url",
   "arguments": {
-    "kb_id": "返回的知识库ID",
+    "kb_id": "the returned knowledge base ID",
     "url": "https://docs.company.com/api",
     "enable_multimodel": true
   }
 }
 ```
 
-#### 步骤 4: 创建聊天会话
+#### Step 4: create a chat session
 ```json
 {
   "tool": "create_session",
   "arguments": {
-    "kb_id": "知识库ID",
+    "kb_id": "knowledge base ID",
     "max_rounds": 5,
     "enable_rewrite": true
   }
 }
 ```
 
-#### 步骤 5: 开始对话
+#### Step 5: start chatting
 ```json
 {
   "tool": "chat",
   "arguments": {
-    "session_id": "会话ID",
-    "query": "如何使用用户认证API？"
+    "session_id": "session ID",
+    "query": "How do I use the user authentication API?"
   }
 }
 ```
 
-## 错误处理示例
+## Error handling
 
-### 常见错误和解决方案
+### Common errors and fixes
 
-#### 1. 连接错误
+#### 1. Connection error
 ```json
 {
   "error": "Connection refused",
-  "solution": "检查 AIKB_BASE_URL 是否正确，确认服务正在运行"
+  "solution": "Check that AIKB_BASE_URL is correct and the service is running"
 }
 ```
 
-#### 2. 认证错误
+#### 2. Authentication error
 ```json
 {
   "error": "Unauthorized",
-  "solution": "检查 AIKB_API_KEY 是否设置正确"
+  "solution": "Check that AIKB_API_KEY is set correctly"
 }
 ```
 
-#### 3. 资源不存在
+#### 3. Resource not found
 ```json
 {
   "error": "Knowledge base not found",
-  "solution": "确认知识库ID是否正确，或先创建知识库"
+  "solution": "Check the knowledge base ID, or create the knowledge base first"
 }
 ```
 
-## 高级配置示例
+## Advanced configuration
 
-### 自定义检索配置
+### Custom retrieval settings
 ```json
 {
   "tool": "hybrid_search",
   "arguments": {
     "kb_id": "kb_123456",
-    "query": "搜索查询",
+    "query": "search query",
     "vector_threshold": 0.8,
     "keyword_threshold": 0.6,
     "match_count": 15
@@ -386,7 +386,7 @@ python main.py --verbose
 }
 ```
 
-### 自定义会话策略
+### Custom session strategy
 ```json
 {
   "tool": "create_session",
@@ -394,22 +394,22 @@ python main.py --verbose
     "kb_id": "kb_123456",
     "max_rounds": 20,
     "enable_rewrite": true,
-    "fallback_response": "根据现有知识，我无法准确回答您的问题。请尝试重新表述或联系技术支持。"
+    "fallback_response": "Based on the available knowledge, I can't answer your question accurately. Try rephrasing it or contact technical support."
   }
 }
 ```
 
-## 性能优化建议
+## Performance tips
 
-1. **批量操作**: 尽量批量处理知识创建和更新
-2. **缓存策略**: 合理设置搜索阈值以平衡准确性和性能
-3. **会话管理**: 及时清理不需要的会话以节省资源
-4. **监控日志**: 使用 `--verbose` 选项监控性能指标
+1. **Batch operations**: create and update knowledge in batches where possible
+2. **Search thresholds**: set search thresholds to balance accuracy and performance
+3. **Session management**: clean up sessions you no longer need to save resources
+4. **Log monitoring**: use the `--verbose` option to watch performance metrics
 
-## 集成示例
+## Integration
 
-### 与 Claude Desktop 集成
-在 Claude Desktop 的配置文件中添加：
+### Claude Desktop
+Add this to the Claude Desktop configuration file:
 ```json
 {
   "mcpServers": {
@@ -425,15 +425,15 @@ python main.py --verbose
 }
 ```
 
-项目仓库: https://github.com/jrmatherly/ai-kb/tree/main/mcp-server
+Project repository: https://github.com/jrmatherly/ai-kb/tree/main/mcp-server
 
-### 与其他 MCP 客户端集成
-参考各客户端的文档，配置服务器启动命令和环境变量。
+### Other MCP clients
+See each client's documentation to configure the server launch command and environment variables.
 
-## 故障排除
+## Troubleshooting
 
-如果遇到问题：
-1. 运行 `python main.py --check-only` 检查环境
-2. 使用 `python main.py --verbose` 查看详细日志
-3. 检查 AI KB 服务是否正常运行
-4. 验证网络连接和防火墙设置
+If you run into problems:
+1. Run `python main.py --check-only` to check the environment
+2. Run `python main.py --verbose` to see detailed logs
+3. Check that the AI KB service is running
+4. Check the network connection and firewall settings

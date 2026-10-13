@@ -1,19 +1,19 @@
-# AI KB 本地 MCP Demo
+# AI KB Local MCP Demo
 
-最小外部 MCP 服务，用来测试 AI KB **作为 MCP 客户端**接入第三方工具。
+A minimal external MCP server for testing AI KB **as an MCP client** of third-party tools.
 
-提供 6 个演示工具：
+It exposes 6 demo tools:
 
-| 工具 | 作用 |
+| Tool | Purpose |
 | --- | --- |
-| `echo` | 连通性自检 |
-| `add` | 两数相加 |
-| `server_time` | 返回服务器 UTC 时间 |
-| `lookup_policy` | 查询演示政策（保修、报销、POC 等，与 `website-docs/sample-data/` 一致） |
-| `list_team_contacts` | 列出演示项目团队成员 |
-| `send_demo_alert` | 模拟外发通知（适合测工具人工审批） |
+| `echo` | Connectivity self-check |
+| `add` | Adds two numbers |
+| `server_time` | Returns the server's UTC time |
+| `lookup_policy` | Looks up demo policies (warranty, reimbursement, POC and so on, matching `website-docs/sample-data/`) |
+| `list_team_contacts` | Lists the demo project team members |
+| `send_demo_alert` | Simulates an outgoing notification (good for testing tool approval) |
 
-## 1. 启动
+## 1. Start
 
 ```bash
 cd examples/mcp-demo
@@ -21,9 +21,9 @@ chmod +x start.sh
 ./start.sh
 ```
 
-`start.sh` 会自动创建 `.venv` 并安装依赖。默认监听 `http://127.0.0.1:8010/mcp`，鉴权令牌 `ai-kb-demo-token`。
+`start.sh` creates `.venv` and installs the dependencies. It listens on `http://127.0.0.1:8010/mcp` by default, with auth token `ai-kb-demo-token`.
 
-自定义：
+To customize:
 
 ```bash
 export MCP_SERVER_AUTH_TOKEN=my-secret
@@ -31,9 +31,9 @@ export MCP_PORT=9000
 ./start.sh
 ```
 
-## 2. 自检
+## 2. Self-check
 
-另开终端：
+In another terminal:
 
 ```bash
 cd examples/mcp-demo
@@ -41,45 +41,45 @@ source .venv/bin/activate
 python test_tools.py
 ```
 
-应列出 6 个工具。
+It should list 6 tools.
 
-## 3. 接入 AI KB
+## 3. Connect AI KB
 
-1. 打开 **设置 → MCP 服务 → 新建**
-2. 填写：
+1. Open **Settings → MCP Services → New**.
+2. Fill in:
 
-| 字段 | 值 |
+| Field | Value |
 | --- | --- |
-| 名称 | `本地 MCP Demo` |
-| 传输 | **HTTP Streamable** |
+| Name | `Local MCP Demo` |
+| Transport | **HTTP Streamable** |
 | URL | `http://127.0.0.1:8010/mcp` |
-| 认证 | **Bearer** |
-| 令牌 | `ai-kb-demo-token`（与 `MCP_SERVER_AUTH_TOKEN` 一致） |
+| Auth | **Bearer** |
+| Token | `ai-kb-demo-token` (same as `MCP_SERVER_AUTH_TOKEN`) |
 
-3. 保存后点 **测试连接**，应发现 6 个工具。
-4. 在 **智能体** 配置里勾选该 MCP 服务（或选全部工具）。
-5. （可选）对 `send_demo_alert` 开启**人工审批**，对话时 Agent 调用前会弹出确认。
+3. Save, then click **Test Connection**. It should find 6 tools.
+4. In the **agent** settings, select this MCP service (or all tools).
+5. (Optional) Turn on **Require human approval** for `send_demo_alert`. The agent then asks for confirmation before it calls the tool.
 
-## 4. 建议试的问题
+## 4. Questions to try
 
-在 Agent 对话里问：
+Ask in an agent conversation:
 
-- 「调用 MCP 工具查一下智能家居中控保修多久」→ 应触发 `lookup_policy`
-- 「研发部 POC 负责人是谁」→ `lookup_policy` 或 `list_team_contacts`
-- 「现在 MCP Demo 服务器几点」→ `server_time`
+- "Use the MCP tool to check how long the smart home hub warranty is" → should trigger `lookup_policy`
+- "Who owns the R&D POC?" → `lookup_policy` or `list_team_contacts`
+- "What time is it on the MCP demo server?" → `server_time`
 
-若同时导入了 `website-docs/sample-data/` 里的文档，可以对比 **知识库检索答案** 与 **MCP 工具返回** 是否一致。
+If you also imported the documents in `website-docs/sample-data/`, you can check that the **knowledge base retrieval answer** and the **MCP tool result** agree.
 
-## 5. 注意事项
+## 5. Notes
 
-- AI KB UI **不支持 stdio** 传输；必须用 **HTTP Streamable** 或 **SSE**。
-- Demo 只绑定 `127.0.0.1`，不要暴露到公网。
-- `send_demo_alert` 不会真正发送消息，仅返回模拟结果。
+- The AI KB UI **does not support the stdio** transport. Use **HTTP Streamable** or **SSE**.
+- The demo binds only to `127.0.0.1`. Do not expose it to the internet.
+- `send_demo_alert` sends nothing. It only returns a simulated result.
 
-## 6. SSE 模式（可选）
+## 6. SSE mode (optional)
 
 ```bash
 MCP_TRANSPORT=sse MCP_PORT=8011 ./start.sh
 ```
 
-AI KB 里传输选 **SSE**，URL 填 `http://127.0.0.1:8011/sse`。
+In AI KB choose the **SSE** transport and set the URL to `http://127.0.0.1:8011/sse`.

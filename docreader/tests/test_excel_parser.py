@@ -632,14 +632,14 @@ class ExcelSourceBlocksTest(unittest.TestCase):
 
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "明细"
-        ws["B3"] = "螺栓"
-        ws["A5"] = "合计"
+        ws.title = "Details"
+        ws["B3"] = "Bolt"
+        ws["A5"] = "Total"
         buf = io.BytesIO()
         wb.save(buf)
 
         doc = ExcelParser(file_name="a.xlsx", file_type="xlsx").parse_into_text(buf.getvalue())
         rows = [(b["locator"]["sheet"], b["locator"]["row_start"]) for b in doc.source_blocks]
-        self.assertEqual(rows, [("明细", 3), ("明细", 5)])
+        self.assertEqual(rows, [("Details", 3), ("Details", 5)])
         first = doc.source_blocks[0]
-        self.assertEqual(doc.content[first["start"]:first["end"]], "B: 螺栓\n")
+        self.assertEqual(doc.content[first["start"]:first["end"]], "B: Bolt\n")

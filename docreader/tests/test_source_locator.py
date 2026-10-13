@@ -15,12 +15,13 @@ def _ln(text, x0, y0, x1, y1):
 
 class LocateLinesTest(unittest.TestCase):
     def test_finds_lines_in_order_and_pulls_in_leading_markup(self):
-        text = "## 标题\n【版权声明】\n正文 第一行\n正文 第一行"
-        hits = locate_lines(text, ["标题", "版权声明】", "正文第一行", "正文 第一行", "无此行"])
+        # "title", "copyright notice" in fullwidth brackets, then "body line one" twice
+        text = "## \u6807\u9898\n\u3010\u7248\u6743\u58f0\u660e\u3011\n\u6b63\u6587 \u7b2c\u4e00\u884c\n\u6b63\u6587 \u7b2c\u4e00\u884c"
+        hits = locate_lines(text, ["\u6807\u9898", "\u7248\u6743\u58f0\u660e\u3011", "\u6b63\u6587\u7b2c\u4e00\u884c", "\u6b63\u6587 \u7b2c\u4e00\u884c", "\u65e0\u6b64\u884c"])
         self.assertEqual(hits[0], 0)
-        self.assertEqual(text[hits[1]:hits[1] + 2], "【版")
-        self.assertEqual(hits[2], text.index("正文"))
-        self.assertEqual(hits[3], text.rindex("正文"))
+        self.assertEqual(text[hits[1]:hits[1] + 2], "\u3010\u7248")
+        self.assertEqual(hits[2], text.index("\u6b63\u6587"))
+        self.assertEqual(hits[3], text.rindex("\u6b63\u6587"))
         self.assertIsNone(hits[4])
 
 
@@ -37,24 +38,26 @@ class PageGeometryTest(unittest.TestCase):
 
 class PageBlocksTest(unittest.TestCase):
     def test_groups_lines_into_boxed_paragraphs(self):
+        # A clause from a Chinese construction spec (8.14.11) with two numbered items;
+        # item 1 wraps onto a second line.
         page = (
-            "8.14.11 索夹与吊索施工应符合下列规定：\n"
-            "1 在满足施工需要的前提下，应减小猫道面层开孔面积，并应在开孔位置四周绑\n"
-            "扎防滑木条，设立警示标志。\n"
-            "2 索夹在主缆上定位后，应紧固螺栓。"
+            "8.14.11 \u7d22\u5939\u4e0e\u540a\u7d22\u65bd\u5de5\u5e94\u7b26\u5408\u4e0b\u5217\u89c4\u5b9a\uff1a\n"
+            "1 \u5728\u6ee1\u8db3\u65bd\u5de5\u9700\u8981\u7684\u524d\u63d0\u4e0b\uff0c\u5e94\u51cf\u5c0f\u732b\u9053\u9762\u5c42\u5f00\u5b54\u9762\u79ef\uff0c\u5e76\u5e94\u5728\u5f00\u5b54\u4f4d\u7f6e\u56db\u5468\u7ed1\n"
+            "\u624e\u9632\u6ed1\u6728\u6761\uff0c\u8bbe\u7acb\u8b66\u793a\u6807\u5fd7\u3002\n"
+            "2 \u7d22\u5939\u5728\u4e3b\u7f06\u4e0a\u5b9a\u4f4d\u540e\uff0c\u5e94\u7d27\u56fa\u87ba\u6813\u3002"
         )
         lines = [
-            _ln("8.14.11 索夹与吊索施工应符合下列规定：", 50, 700, 300, 712),
-            _ln("1 在满足施工需要的前提下，应减小猫道面层开孔面积，并应在开孔位置四周绑", 60, 684, 540, 696),
-            _ln("扎防滑木条，设立警示标志。", 50, 668, 200, 680),
-            _ln("2 索夹在主缆上定位后，应紧固螺栓。", 60, 652, 400, 664),
+            _ln("8.14.11 \u7d22\u5939\u4e0e\u540a\u7d22\u65bd\u5de5\u5e94\u7b26\u5408\u4e0b\u5217\u89c4\u5b9a\uff1a", 50, 700, 300, 712),
+            _ln("1 \u5728\u6ee1\u8db3\u65bd\u5de5\u9700\u8981\u7684\u524d\u63d0\u4e0b\uff0c\u5e94\u51cf\u5c0f\u732b\u9053\u9762\u5c42\u5f00\u5b54\u9762\u79ef\uff0c\u5e76\u5e94\u5728\u5f00\u5b54\u4f4d\u7f6e\u56db\u5468\u7ed1", 60, 684, 540, 696),
+            _ln("\u624e\u9632\u6ed1\u6728\u6761\uff0c\u8bbe\u7acb\u8b66\u793a\u6807\u5fd7\u3002", 50, 668, 200, 680),
+            _ln("2 \u7d22\u5939\u5728\u4e3b\u7f06\u4e0a\u5b9a\u4f4d\u540e\uff0c\u5e94\u7d27\u56fa\u87ba\u6813\u3002", 60, 652, 400, 664),
         ]
         blocks = page_blocks(page, 10, 57, lines, PageGeometry((0, 0, 600, 800)))
         self.assertEqual(len(blocks), 3)
         self.assertEqual(blocks[0]["start"], 10)
         item1 = blocks[1]
         self.assertEqual(page[item1["start"] - 10:item1["end"] - 10].split("\n")[0][:1], "1")
-        self.assertIn("设立警示标志。", page[item1["start"] - 10:item1["end"] - 10])
+        self.assertIn("\u8bbe\u7acb\u8b66\u793a\u6807\u5fd7\u3002", page[item1["start"] - 10:item1["end"] - 10])
         self.assertEqual(item1["locator"]["page"], 57)
         x0, y0, x1, y1 = item1["locator"]["bbox"]
         self.assertAlmostEqual(y0, 1 - 696 / 800, places=3)
@@ -62,7 +65,7 @@ class PageBlocksTest(unittest.TestCase):
         self.assertEqual(blocks[-1]["end"], 10 + len(page))
 
     def test_page_without_lines_gets_page_block(self):
-        blocks = page_blocks("文字", 5, 2, [], None)
+        blocks = page_blocks("\u6587\u5b57", 5, 2, [], None)
         self.assertEqual(blocks, [{"start": 5, "end": 7, "locator": {"type": "pdf", "page": 2, "mapping": "exact"}}])
 
 

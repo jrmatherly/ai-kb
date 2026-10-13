@@ -44,7 +44,7 @@ def test_resolve_kb_id_accepts_shared_kb_name(monkeypatch):
                     {
                         "knowledge_base": {
                             "id": "kb-shared-1",
-                            "name": "技术文档库",
+                            "name": "\u6280\u672f\u6587\u6863\u5e93",
                         },
                         "share_id": "kbs-1",
                     }
@@ -54,7 +54,7 @@ def test_resolve_kb_id_accepts_shared_kb_name(monkeypatch):
 
     monkeypatch.setattr(client, "_request", fake_request)
 
-    assert client.resolve_kb_id("技术文档库") == "kb-shared-1"
+    assert client.resolve_kb_id("\u6280\u672f\u6587\u6863\u5e93") == "kb-shared-1"
 
 
 def test_resolve_kb_id_prefers_owned_over_shared_name(monkeypatch):

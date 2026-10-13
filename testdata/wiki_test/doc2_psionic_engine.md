@@ -1,12 +1,12 @@
-# 幽能引擎技术白皮书
+# Psionic Engine Technical White Paper
 
-## 引言
-幽能引擎 (Psionic Engine) 代表着我们对宇宙认知的范式转移。它的核心原理并非燃烧燃料或喷射粒子，而是建立在备受争议的**虚空共振理论 (Void Resonance Theory)** 之上。
+## Introduction
+The Psionic Engine represents a paradigm shift in our understanding of the universe. Its core principle is not burning fuel or ejecting particles. It rests on the controversial **Void Resonance Theory**.
 
-## 虚空共振理论
-该理论假设宇宙的真空中充满了低能级的波谱，通过特定频率的干涉，可以在空间中制造“引力滑流”。
+## Void Resonance Theory
+The theory assumes that the vacuum of the universe is filled with a low-energy spectrum, and that interference at specific frequencies can create a "gravity slipstream" in space.
 
-## 催化剂：星晶 (StarQuartz)
-要在宏观尺度上触发并维持“虚空共振理论”所描述的引力滑流，必须使用一种极端稀有的矿物作为反应堆核心的催化剂。这种矿物被称为**星晶 (StarQuartz)**。
+## Catalyst: StarQuartz
+Triggering and sustaining the gravity slipstream described by the "Void Resonance Theory" at macroscopic scale requires an extremely rare mineral as the catalyst in the reactor core. This mineral is called **StarQuartz**.
 
-星晶具有在室温下超导并在特定频段下自发振荡的特性。目前，地球上唯一能稳定合成并从陨石中提纯出工业级星晶的实体，是拥有庞大资本和尖端技术的**天穹财团 (SkyVault Consortium)**。
+StarQuartz is superconducting at room temperature and oscillates spontaneously in specific frequency bands. Today the only entity on Earth that can reliably synthesize industrial-grade StarQuartz and refine it from meteorites is the **SkyVault Consortium**, with its vast capital and cutting-edge technology.

@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-AI KB 本地 MCP Demo Server
+AI KB local MCP demo server
 
-最小可运行的外部 MCP 服务，用于在 AI KB「设置 → MCP 服务」里测试客户端接入。
-默认以 Streamable HTTP 监听 http://127.0.0.1:8010/mcp
+A minimal external MCP server for testing the client connection in AI KB under
+Settings → MCP Services. By default it serves Streamable HTTP at http://127.0.0.1:8010/mcp
 
-启动：
+Start:
   export MCP_SERVER_AUTH_TOKEN=ai-kb-demo-token
   python server.py
 
-AI KB 配置：
-  传输：HTTP Streamable
-  URL：http://127.0.0.1:8010/mcp
-  认证：Bearer，令牌与 MCP_SERVER_AUTH_TOKEN 一致
+AI KB settings:
+  Transport: HTTP Streamable
+  URL: http://127.0.0.1:8010/mcp
+  Auth: Bearer, token equal to MCP_SERVER_AUTH_TOKEN
 """
 
 from __future__ import annotations
@@ -33,24 +33,24 @@ logger = logging.getLogger("mcp-demo")
 
 mcp = MCPServer("ai-kb-mcp-demo", version="0.1.0")
 
-# 与 website-docs/sample-data/ 配套的演示语料，方便 Agent 调用后对照知识库答案。
+# Demo corpus that matches website-docs/sample-data/, so agent tool answers can be compared with knowledge base answers.
 DEMO_POLICIES: dict[str, str] = {
-    "warranty": "智能家居中控 Pro 整机保修 24 个月，电池类配件 12 个月；人为拆解、进水不在保修范围。",
-    "offline_voice": "若语音走云端识别，断外网后仅支持 App 与本地触摸屏；配置本地语音包后可继续使用基础指令。",
-    "device_limit": "个人版账号最多绑定 3 台中控；企业版按合同授权，默认 50 台。",
-    "travel_hotel_tier1": "一线城市（北上广深）出差住宿报销上限 600 元/晚（含税）。",
-    "travel_meal": "出差期间餐饮费不单独报销；一线城市差旅补贴 150 元/天。",
-    "poc_owner": "售后知识库 POC 技术负责人是研发部张明，产品对接人是李薇，测试负责人是赵磊。",
-    "poc_deadline": "售后知识库 POC 目标 2024-03-01 前完成内网演示。",
-    "matter_cert": "固件 3.5 计划在 2024 年 3 月底前发布灰度，完成 Matter 1.2 认证。",
+    "warranty": "Smart Home Hub Pro has a 24-month warranty on the unit and 12 months on battery accessories. Damage from disassembly or water is not covered.",
+    "offline_voice": "If voice uses cloud recognition, only the app and the local touchscreen work without internet. With a local voice pack configured, basic commands keep working.",
+    "device_limit": "A Personal edition account can bind up to 3 hubs. The Enterprise edition is licensed per contract, 50 by default.",
+    "travel_hotel_tier1": "Business trip accommodation in tier-1 cities (Beijing, Shanghai, Guangzhou, Shenzhen) is reimbursed up to 600 CNY per night (tax included).",
+    "travel_meal": "Meals on business trips are not reimbursed separately. The travel allowance in tier-1 cities is 150 CNY per day.",
+    "poc_owner": "The support knowledge base POC technical lead is Zhang Ming (R&D), the product contact is Li Wei, and the QA lead is Zhao Lei.",
+    "poc_deadline": "The support knowledge base POC targets an intranet demo by 2024-03-01.",
+    "matter_cert": "Firmware 3.5 is planned for a staged rollout by the end of March 2024, with Matter 1.2 certification completed.",
 }
 
 DEMO_CONTACTS: list[dict[str, str]] = [
-    {"name": "陈浩", "role": "产品总监", "department": "产品部"},
-    {"name": "张明", "role": "知识库与 AI 模块负责人", "department": "研发部"},
-    {"name": "李薇", "role": "产品运营", "department": "产品部"},
-    {"name": "王雪", "role": "交互设计负责人", "department": "设计部"},
-    {"name": "赵磊", "role": "测试经理", "department": "测试部"},
+    {"name": "Chen Hao", "role": "Product Director", "department": "Product"},
+    {"name": "Zhang Ming", "role": "Lead, Knowledge Base and AI Module", "department": "R&D"},
+    {"name": "Li Wei", "role": "Product Operations", "department": "Product"},
+    {"name": "Wang Xue", "role": "Lead, Interaction Design", "department": "Design"},
+    {"name": "Zhao Lei", "role": "QA Manager", "department": "QA"},
 ]
 
 
@@ -71,7 +71,7 @@ def require_network_transport_auth(transport: str) -> str:
 
 
 class MCPAuthMiddleware:
-    """SSE / HTTP 传输的 Bearer 鉴权中间件。"""
+    """Bearer auth middleware for the SSE and HTTP transports."""
 
     def __init__(self, app, token: str):
         self.app = app
@@ -110,19 +110,19 @@ class MCPAuthMiddleware:
 
 @mcp.tool()
 def echo(message: str) -> dict[str, Any]:
-    """回显一条消息，用于验证 MCP 连通性。"""
+    """Echo a message back to check MCP connectivity."""
     return {"echo": message}
 
 
 @mcp.tool()
 def add(a: float, b: float) -> dict[str, Any]:
-    """计算两个数字之和。"""
+    """Return the sum of two numbers."""
     return {"a": a, "b": b, "sum": a + b}
 
 
 @mcp.tool()
 def server_time() -> dict[str, str]:
-    """返回 MCP Demo 服务器当前 UTC 时间。"""
+    """Return the MCP demo server's current UTC time."""
     now = datetime.now(timezone.utc)
     return {
         "iso": now.isoformat(),
@@ -132,24 +132,24 @@ def server_time() -> dict[str, str]:
 
 @mcp.tool()
 def lookup_policy(topic: str) -> dict[str, Any]:
-    """查询演示政策/项目信息。topic 可用 warranty/offline_voice/device_limit/travel_hotel_tier1/travel_meal/poc_owner/poc_deadline/matter_cert，或中文关键词如「保修」「报销」「POC」。"""
+    """Look up demo policy or project information. topic is one of warranty/offline_voice/device_limit/travel_hotel_tier1/travel_meal/poc_owner/poc_deadline/matter_cert, or a keyword such as "warranty", "reimbursement" or "POC"."""
     key = topic.strip().lower().replace(" ", "_")
     aliases = {
-        "保修": "warranty",
-        "质保": "warranty",
-        "离线": "offline_voice",
-        "语音": "offline_voice",
-        "设备数": "device_limit",
-        "住宿": "travel_hotel_tier1",
-        "报销": "travel_hotel_tier1",
-        "餐饮": "travel_meal",
-        "补贴": "travel_meal",
-        "负责人": "poc_owner",
-        "张明": "poc_owner",
+        "warranty": "warranty",
+        "guarantee": "warranty",
+        "offline": "offline_voice",
+        "voice": "offline_voice",
+        "device": "device_limit",
+        "hotel": "travel_hotel_tier1",
+        "reimburse": "travel_hotel_tier1",
+        "meal": "travel_meal",
+        "allowance": "travel_meal",
+        "owner": "poc_owner",
+        "Zhang Ming": "poc_owner",
         "poc": "poc_owner",
-        "验收": "poc_deadline",
+        "acceptance": "poc_deadline",
         "matter": "matter_cert",
-        "认证": "matter_cert",
+        "certification": "matter_cert",
     }
     for alias, mapped in aliases.items():
         if alias in topic:
@@ -171,13 +171,13 @@ def lookup_policy(topic: str) -> dict[str, Any]:
     return {
         "topic": topic,
         "available_topics": sorted(DEMO_POLICIES.keys()),
-        "hint": "传入 topic 为上述键名，或中文关键词如「保修」「报销」「POC」。",
+        "hint": "Pass one of the keys above as topic, or a keyword such as \"warranty\", \"reimbursement\" or \"POC\".",
     }
 
 
 @mcp.tool()
 def list_team_contacts(department: str = "") -> dict[str, Any]:
-    """列出演示项目团队成员；可按部门名过滤（产品部 / 研发部 / 设计部 / 测试部）。"""
+    """List the demo project team members, optionally filtered by department (Product / R&D / Design / QA)."""
     rows = DEMO_CONTACTS
     if department.strip():
         needle = department.strip()
@@ -187,9 +187,9 @@ def list_team_contacts(department: str = "") -> dict[str, Any]:
 
 @mcp.tool()
 def send_demo_alert(channel: str, message: str) -> dict[str, Any]:
-    """模拟向外部渠道发送通知（演示用，不会真正外发）。
+    """Simulate sending a notification to an external channel. Nothing is actually sent.
 
-    适合在 AI KB 里测试 MCP 工具人工审批：建议把此工具标记为需要审批。
+    Useful for testing MCP tool approval in AI KB: mark this tool as requiring approval.
     """
     return {
         "ok": True,

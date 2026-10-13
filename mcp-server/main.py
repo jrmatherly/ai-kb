@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-AI KB MCP Server 主入口点
+AI KB MCP Server main entry point.
 
-这个文件提供了一个统一的入口点来启动 AI KB MCP 服务器。
-可以通过多种方式运行：
+One entry point for starting the AI KB MCP server.
+Ways to run it:
 1. python main.py
 2. python -m aikb_mcp_server
-3. ai-kb-mcp-server (安装后)
+3. ai-kb-mcp-server (after installation)
 
-注意：在 stdio 传输下，stdout 是 JSON-RPC 通道，所有诊断/提示信息必须写入
-stderr，否则会破坏 MCP 协议流导致客户端判定"启动失败"。本文件所有 print
-均通过 stderr 输出。
+Under the stdio transport, stdout is the JSON-RPC channel. All diagnostics and
+notices must go to stderr, or they corrupt the MCP stream and the client reports
+"failed to start". Every print in this file writes to stderr.
 """
 
 import argparse
@@ -21,68 +21,67 @@ from pathlib import Path
 
 
 def setup_environment():
-    """设置环境和路径"""
-    # 确保当前目录在 Python 路径中
+    """Set up the environment and import path."""
     current_dir = Path(__file__).parent.absolute()
     if str(current_dir) not in sys.path:
         sys.path.insert(0, str(current_dir))
 
 
 def check_dependencies():
-    """检查依赖是否已安装"""
+    """Check that dependencies are installed."""
     try:
         import mcp
         import requests
 
         return True
     except ImportError as e:
-        print(f"缺少依赖: {e}", file=sys.stderr)
-        print("请运行: pip install -r requirements.txt", file=sys.stderr)
+        print(f"Missing dependency: {e}", file=sys.stderr)
+        print("Run: pip install -r requirements.txt", file=sys.stderr)
         return False
 
 
 def check_environment_variables():
-    """检查环境变量配置"""
+    """Check the environment variables."""
     base_url = os.getenv("AIKB_BASE_URL")
     api_key = os.getenv("AIKB_API_KEY")
 
-    print("=== AI KB MCP Server 环境检查 ===", file=sys.stderr)
-    print(f"Base URL: {base_url or 'http://localhost:8080/api/v1 (默认)'}", file=sys.stderr)
-    print(f"API Key: {'已设置' if api_key else '未设置 (警告)'}", file=sys.stderr)
+    print("=== AI KB MCP Server environment check ===", file=sys.stderr)
+    print(f"Base URL: {base_url or 'http://localhost:8080/api/v1 (default)'}", file=sys.stderr)
+    print(f"API Key: {'set' if api_key else 'not set (warning)'}", file=sys.stderr)
 
     if not base_url:
-        print("提示: 可以设置 AIKB_BASE_URL 环境变量", file=sys.stderr)
+        print("Tip: you can set the AIKB_BASE_URL environment variable", file=sys.stderr)
 
     if not api_key:
-        print("警告: 建议设置 AIKB_API_KEY 环境变量", file=sys.stderr)
+        print("Warning: setting the AIKB_API_KEY environment variable is recommended", file=sys.stderr)
 
     print("=" * 40, file=sys.stderr)
     return True
 
 
 def parse_arguments():
-    """解析命令行参数"""
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description="AI KB MCP Server - Model Context Protocol server for AI KB API",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例:
-  python main.py                    # 使用默认配置启动
-  python main.py --check-only       # 仅检查环境，不启动服务器
-  python main.py --verbose          # 启用详细日志
+Examples:
+  python main.py                    # start with the default configuration
+  python main.py --check-only       # check the environment only, do not start the server
+  python main.py --verbose          # enable verbose logging
   
-环境变量:
-  AIKB_BASE_URL       AI KB API 基础 URL (默认: http://localhost:8080/api/v1)
-  AIKB_API_KEY        AI KB API 密钥
-  MCP_SERVER_AUTH_TOKEN  SSE/HTTP 传输必填，客户端通过 Authorization: Bearer 传递
+Environment variables:
+  AIKB_BASE_URL       AI KB API base URL (default: http://localhost:8080/api/v1)
+  AIKB_API_KEY        AI KB API key
+  MCP_SERVER_AUTH_TOKEN  Required for the SSE/HTTP transports; clients send it as Authorization: Bearer
         """,
     )
 
     parser.add_argument(
-        "--check-only", action="store_true", help="仅检查环境配置，不启动服务器"
+        "--check-only", action="store_true", help="Check the environment configuration only, do not start the server"
     )
 
-    parser.add_argument("--verbose", "-v", action="store_true", help="启用详细日志输出")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
 
     parser.add_argument(
         "--version", action="version", version="AI KB MCP Server 1.1.1"
@@ -110,33 +109,28 @@ def parse_arguments():
 
 
 async def main():
-    """主函数"""
+    """Entry point."""
     args = parse_arguments()
 
-    # 设置环境
     setup_environment()
 
-    # 检查依赖
     if not check_dependencies():
         sys.exit(1)
 
-    # 检查环境变量
     check_environment_variables()
 
-    # 如果只是检查环境，则退出
     if args.check_only:
-        print("环境检查完成。", file=sys.stderr)
+        print("Environment check complete.", file=sys.stderr)
         return
 
-    # 设置日志级别
     if args.verbose:
         import logging
 
         logging.basicConfig(level=logging.DEBUG)
-        print("已启用详细日志模式", file=sys.stderr)
+        print("Verbose logging enabled", file=sys.stderr)
 
     try:
-        print(f"正在启动 AI KB MCP Server (transport={args.transport})...", file=sys.stderr)
+        print(f"Starting AI KB MCP Server (transport={args.transport})...", file=sys.stderr)
 
         from aikb_mcp_server import run_stdio, run_sse, run_http
 
@@ -155,13 +149,13 @@ async def main():
             await run_http(args.host, args.port)
 
     except ImportError as e:
-        print(f"导入错误: {e}", file=sys.stderr)
-        print("请确保所有文件都在正确的位置", file=sys.stderr)
+        print(f"Import error: {e}", file=sys.stderr)
+        print("Make sure all files are in the right place", file=sys.stderr)
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\n服务器已停止", file=sys.stderr)
+        print("\nServer stopped", file=sys.stderr)
     except Exception as e:
-        print(f"服务器运行错误: {e}", file=sys.stderr)
+        print(f"Server error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
 
@@ -170,7 +164,7 @@ async def main():
 
 
 def sync_main():
-    """同步版本的主函数，用于 entry_points"""
+    """Synchronous entry point for entry_points."""
     asyncio.run(main())
 
 

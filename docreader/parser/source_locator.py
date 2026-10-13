@@ -27,14 +27,18 @@ _SHORT_KEY_WEIGHT = 16
 
 _LIST_START_RE = re.compile(
     r"^\s*(?:"
-    r"\d{1,3}(?:\.\d{1,3}){0,4}[\.、．)）]?\s"  # 1  1.  8.14.11  2)
-    r"|[（(]\d{1,3}[)）]"  # (1) （1）
-    r"|[一二三四五六七八九十百]+[、．.]"  # 一、
+    # \u3001 ideographic comma, \uff0e fullwidth full stop, \uff08 \uff09 fullwidth parentheses
+    r"\d{1,3}(?:\.\d{1,3}){0,4}[\.\u3001\uff0e)\uff09]?\s"  # 1  1.  8.14.11  2)
+    r"|[\uff08(]\d{1,3}[)\uff09]"  # (1), also with fullwidth parentheses
+    # Chinese numerals one to ten and hundred, then an ideographic comma or full stop
+    r"|[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e]+[\u3001\uff0e.]"
     r"|[•·●○■□◆◇▪\-–*]\s"  # bullets
-    r"|第[一二三四五六七八九十百零\d]+[章节条款部分篇]"  # 第三章
+    # Chinese ordinal heading: "No. N" then chapter, section, article, clause or part
+    r"|\u7b2c[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u96f6\d]+[\u7ae0\u8282\u6761\u6b3e\u90e8\u5206\u7bc7]"
     r")"
 )
-_SENTENCE_END = tuple("。．.!?！？：:；;」』”)）")
+# ASCII and fullwidth (Chinese) sentence-ending punctuation and closing quotes and brackets
+_SENTENCE_END = tuple("\u3002\uff0e.!?\uff01\uff1f\uff1a:\uff1b;\u300d\u300f\u201d)\uff09")
 
 
 def _fold(ch: str) -> str:

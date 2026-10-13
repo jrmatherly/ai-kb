@@ -28,7 +28,7 @@ class ChatSSETest(unittest.TestCase):
     def test_multiline_answers_and_references_in_both_chat_paths(self):
         lines = [
             b'data: {"response_type":"answer",',
-            'data: "content":"你好"}'.encode(),
+            'data: "content":"\u4f60\u597d"}'.encode(),
             b"",
             b'data: {"response_type":"references",',
             b'data: "knowledge_references":[{"id":"chunk-1"}]}',
@@ -39,7 +39,7 @@ class ChatSSETest(unittest.TestCase):
         for agent in (False, True):
             with self.subTest(agent=agent):
                 result = self.consume(lines, agent=agent)
-                self.assertEqual(result["answer"], "你好")
+                self.assertEqual(result["answer"], "\u4f60\u597d")
                 self.assertEqual(result["references"], [{"id": "chunk-1"}])
                 self.assertEqual(result["session_id"], "session-1")
 
@@ -109,12 +109,12 @@ class ChatSSETest(unittest.TestCase):
     def test_crlf_multiline_frame_with_fragmented_utf8(self):
         wire = (
             'data: {"response_type":"answer",\r\n'
-            'data: "content":"你好"}\r\n\r\n'
+            'data: "content":"\u4f60\u597d"}\r\n\r\n'
             'data: {"response_type":"complete"}\r\n\r\n'
         ).encode()
         # Exercise requests' real line iterator, with a UTF-8 code point split
         # across transport chunks rather than pre-decoded lines.
-        split = wire.index("你".encode()) + 1
+        split = wire.index("\u4f60".encode()) + 1
         response = requests.Response()
         response.status_code = 200
         response._content_consumed = True
@@ -122,7 +122,7 @@ class ChatSSETest(unittest.TestCase):
             response, "iter_content", return_value=iter([wire[:split], wire[split:]])
         ), mock.patch.object(self.client.session, "post", return_value=response):
             result = self.client.chat("session-1", "question")
-        self.assertEqual(result["answer"], "你好")
+        self.assertEqual(result["answer"], "\u4f60\u597d")
 
     def test_rejects_oversized_event_and_closes_response(self):
         with mock.patch.object(srv, "MAX_SSE_EVENT_BYTES", 64, create=True):

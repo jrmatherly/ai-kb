@@ -1,9 +1,9 @@
-"""本地解析调试脚本：直接调用 Parser 解析本地文件，不经过 gRPC 服务。
+"""Local parsing debug script. Calls Parser on a local file directly, without the gRPC service.
 
-用法（在仓库根目录 AI KB 下执行）：
-    PYTHONPATH=. docreader/.venv/bin/python docreader/scripts/parse_local.py <文件路径> [--engine markitdown] [--out out.md]
+Usage (run from the repository root):
+    PYTHONPATH=. docreader/.venv/bin/python docreader/scripts/parse_local.py <file path> [--engine markitdown] [--out out.md]
 
-示例：
+Examples:
     PYTHONPATH=. docreader/.venv/bin/python docreader/scripts/parse_local.py docreader/testdata/test.md
     PYTHONPATH=. docreader/.venv/bin/python docreader/scripts/parse_local.py ~/Desktop/demo.pdf --out /tmp/demo.md
 """
@@ -18,32 +18,32 @@ from docreader.parser import Parser
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="解析本地文件并输出 markdown")
-    parser.add_argument("path", help="待解析的本地文件路径")
+    parser = argparse.ArgumentParser(description="Parse a local file and print markdown")
+    parser.add_argument("path", help="Path of the local file to parse")
     parser.add_argument(
         "--engine",
         default="",
-        help="解析引擎名称（builtin / markitdown），留空使用内置引擎",
+        help="Parser engine name (builtin / markitdown); empty uses the built-in engine",
     )
     parser.add_argument(
         "--type",
         default="",
-        help="文件类型（如 pdf/docx/md），留空则按扩展名推断",
+        help="File type (such as pdf/docx/md); empty infers it from the extension",
     )
     parser.add_argument(
         "--out",
         default="",
-        help="将完整 markdown 写入该文件，并把图片导出到同目录的 images/ 下",
+        help="Write the full markdown to this file and export images to images/ in the same directory",
     )
     parser.add_argument(
         "--scanned",
         action="store_true",
-        help="跳过 markitdown 文本抽取，直接把 PDF 每页渲染成图片（扫描件用，避免 pdfminer 卡死）",
+        help="Skip markitdown text extraction and render each PDF page as an image (for scans, avoids pdfminer hanging)",
     )
     parser.add_argument(
         "--log-level",
         default="INFO",
-        help="日志级别（DEBUG/INFO/WARNING/ERROR）",
+        help="Log level (DEBUG/INFO/WARNING/ERROR)",
     )
     args = parser.parse_args()
 
@@ -54,7 +54,7 @@ def main() -> int:
     )
 
     if not os.path.isfile(args.path):
-        print(f"文件不存在: {args.path}", file=sys.stderr)
+        print(f"File not found: {args.path}", file=sys.stderr)
         return 1
 
     file_name = os.path.basename(args.path)
@@ -108,7 +108,7 @@ def main() -> int:
                 os.makedirs(os.path.dirname(dest), exist_ok=True)
                 with open(dest, "wb") as imgf:
                     imgf.write(raw)
-        print(f"已写入: {args.out}（图片导出到 {out_dir}/images/）", file=sys.stderr)
+        print(f"Wrote: {args.out} (images exported to {out_dir}/images/)", file=sys.stderr)
     else:
         print(doc.content)
 

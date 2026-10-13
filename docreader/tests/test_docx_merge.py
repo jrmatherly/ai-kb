@@ -13,7 +13,8 @@ from docreader.parser.docx_merge import fill_vertical_merged_cells_docx
 from docreader.parser.markitdown_parser import StdMarkitdownParser
 
 FIXTURE = Path(__file__).with_name("fixtures") / "issue_2634_vertical_merge.docx"
-METHOD_PREFIX = "检测方法：提取外周血基因组 DNA"
+# "Test method: extract peripheral blood genomic DNA", as written in the fixture
+METHOD_PREFIX = "\u68c0\u6d4b\u65b9\u6cd5\uff1a\u63d0\u53d6\u5916\u5468\u8840\u57fa\u56e0\u7ec4 DNA"
 PROJECT_CODES = ("Q0101", "Q0102", "Q0103", "Q0104")
 WORD_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
@@ -63,7 +64,8 @@ class DocxVerticalMergeFillTest(unittest.TestCase):
         self.assertEqual(len(control_row.cells), 3)
         self.assertEqual(
             [cell.text for cell in control_row.cells],
-            ["相同值", "相同值", "独立值"],
+            # "same value", "same value", "independent value"
+            ["\u76f8\u540c\u503c", "\u76f8\u540c\u503c", "\u72ec\u7acb\u503c"],
         )
 
     def test_non_docx_bytes_pass_through_unchanged(self):
@@ -168,7 +170,7 @@ class Issue2634ParserRegressionTest(unittest.TestCase):
         for line in data_lines.values():
             self.assertIn(METHOD_PREFIX, line)
         self.assertEqual(document.content.count(METHOD_PREFIX), len(PROJECT_CODES))
-        self.assertIn("| 相同值 | 相同值 | 独立值 |", document.content)
+        self.assertIn("| \u76f8\u540c\u503c | \u76f8\u540c\u503c | \u72ec\u7acb\u503c |", document.content)
 
     def test_full_docx_entry_keeps_context_on_all_four_rows(self):
         document = Docx2Parser(

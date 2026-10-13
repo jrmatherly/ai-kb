@@ -1,18 +1,18 @@
 #!/bin/bash
-# 开发环境启动脚本 - 只启动基础设施，app 和 frontend 需要手动在本地运行
+# Dev environment script - starts only the infrastructure; run app and frontend locally by hand
 
-# 设置颜色
+# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
-NC='\033[0m' # 无颜色
+NC='\033[0m' # no color
 
-# 获取项目根目录
+# Project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-# 日志函数
+# Logging helpers
 log_info() {
     printf "%b\n" "${BLUE}[INFO]${NC} $1"
 }
@@ -29,7 +29,7 @@ log_warning() {
     printf "%b\n" "${YELLOW}[WARNING]${NC} $1"
 }
 
-# 选择可用的 Docker Compose 命令
+# Pick an available Docker Compose command
 DOCKER_COMPOSE_BIN=""
 DOCKER_COMPOSE_SUBCMD=""
 
@@ -49,47 +49,47 @@ detect_compose_cmd() {
     return 1
 }
 
-# 显示帮助信息
+# Show help
 show_help() {
-    printf "%b\n" "${GREEN}AI KB 开发环境脚本${NC}"
-    echo "用法: $0 [命令] [选项]"
+    printf "%b\n" "${GREEN}AI KB dev environment script${NC}"
+    echo "Usage: $0 [command] [options]"
     echo ""
-    echo "命令:"
-    echo "  start      启动基础设施服务（postgres, redis, docreader, langfuse）"
-    echo "  stop       停止所有服务"
-    echo "  restart    重启所有服务"
-    echo "  logs       查看服务日志"
-    echo "  status     查看服务状态"
-    echo "  app        启动后端应用（本地运行）"
-    echo "  frontend   启动前端开发服务器（本地运行）"
-    echo "  help       显示此帮助信息"
+    echo "Commands:"
+    echo "  start      start the infrastructure services (postgres, redis, docreader, langfuse)"
+    echo "  stop       stop all services"
+    echo "  restart    restart all services"
+    echo "  logs       show service logs"
+    echo "  status     show service status"
+    echo "  app        start the backend (runs locally)"
+    echo "  frontend   start the frontend dev server (runs locally)"
+    echo "  help       show this help"
     echo ""
-    echo "可选 Profile（用于 start 命令）:"
-    echo "  --minio       启动 MinIO 对象存储"
-    echo "  --qdrant      启动 Qdrant 向量数据库"
-    echo "  --neo4j       启动 Neo4j 图数据库"
-    echo "  --dex         启动 Dex（OIDC 身份认证）"
-    echo "  --langfuse    启动 Langfuse（默认已开启）"
-    echo "  --no-langfuse 不启动 Langfuse"
-    echo "  --odl-hybrid  启动 OpenDataLoader hybrid（Docling，镜像较大，按需启用）"
-    echo "  --full        启动所有可选服务（不含 odl-hybrid，需另加 --odl-hybrid）"
+    echo "Optional profiles (for the start command):"
+    echo "  --minio       start MinIO object storage"
+    echo "  --qdrant      start the Qdrant vector database"
+    echo "  --neo4j       start the Neo4j graph database"
+    echo "  --dex         start Dex (OIDC authentication)"
+    echo "  --langfuse    start Langfuse (on by default)"
+    echo "  --no-langfuse do not start Langfuse"
+    echo "  --odl-hybrid  start OpenDataLoader hybrid (Docling, large image, enable when needed)"
+    echo "  --full        start all optional services (excludes odl-hybrid, add --odl-hybrid for it)"
     echo ""
-    echo "示例："
-    echo "  $0 start                    # 启动基础服务"
-    echo "  $0 start --qdrant           # 启动基础服务 + Qdrant"
-    echo "  $0 start --dex             # 启动基础服务 + Dex"
-    echo "  $0 start --odl-hybrid       # 启动基础服务 + OpenDataLoader hybrid"
-    echo "  $0 start --full             # 启动所有服务"
-    echo "  make dev-start DEV_ARGS=--odl-hybrid   # 同上（Makefile 传参）"
-    echo "  $0 app                      # 在另一个终端启动后端"
-    echo "  $0 frontend                 # 在另一个终端启动前端"
+    echo "Examples:"
+    echo "  $0 start                    # start the base services"
+    echo "  $0 start --qdrant           # base services + Qdrant"
+    echo "  $0 start --dex             # base services + Dex"
+    echo "  $0 start --odl-hybrid       # base services + OpenDataLoader hybrid"
+    echo "  $0 start --full             # start all services"
+    echo "  make dev-start DEV_ARGS=--odl-hybrid   # same as above (argument passed through the Makefile)"
+    echo "  $0 app                      # start the backend in another terminal"
+    echo "  $0 frontend                 # start the frontend in another terminal"
 }
 
-# 加载 .env 与可选的 .env.local（后者覆盖前者）
-# 读取时去掉行尾 \r，兼容 Windows 风格(CRLF)换行符，
-# 否则 bash source 会把残留的 \r 当成命令导致 "...: $'\r': command not found"。
-# 注意：不能用 source <(sed ...)——macOS 自带 Bash 3.2 对 process substitution
-# 的 source 不会把变量导入当前 shell；必须落到可 seek 的临时文件再 source。
+# Load .env and the optional .env.local (the latter overrides the former)
+# Strip trailing \r while reading, to accept Windows-style (CRLF) line endings.
+# Otherwise bash source treats the leftover \r as a command: "...: $'\r': command not found".
+# Note: source <(sed ...) does not work. With the Bash 3.2 that ships with macOS, sourcing a process substitution
+# does not import variables into the current shell, so write to a seekable temp file and source that.
 _source_env_file() {
     local src="$1"
     local tmp
@@ -110,33 +110,33 @@ load_env_files() {
     fi
 
     if [ -f ".env.local" ]; then
-        log_info "加载 .env.local 覆盖配置..."
+        log_info "Loading .env.local overrides..."
         _source_env_file .env.local || return 1
     fi
     return 0
 }
 
-# 检查 Docker
+# Check Docker
 check_docker() {
     if ! command -v docker &> /dev/null; then
-        log_error "未安装Docker，请先安装Docker"
+        log_error "Docker is not installed. Install Docker first"
         return 1
     fi
     
     if ! detect_compose_cmd; then
-        log_error "未检测到 Docker Compose"
+        log_error "Docker Compose not found"
         return 1
     fi
     
     if ! docker info &> /dev/null; then
-        log_error "Docker服务未运行"
+        log_error "The Docker service is not running"
         return 1
     fi
     
     return 0
 }
 
-# 检查 .env 是否启用了 hybrid 模式（用于 --odl-hybrid 启动后重建 docreader）
+# Check whether .env enables hybrid mode (to rebuild docreader after starting --odl-hybrid)
 _should_enable_odl_hybrid_from_env() {
     local hybrid="${DOCREADER_ODL_HYBRID:-off}"
     hybrid=$(printf '%s' "$hybrid" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
@@ -151,7 +151,7 @@ _enable_odl_hybrid_profile() {
     ENABLED_SERVICES="$ENABLED_SERVICES odl-hybrid"
 }
 
-# 等待 odl-hybrid HTTP 健康检查通过（compose 启动后服务可能仍在拉依赖）
+# Wait for the odl-hybrid HTTP health check (after compose starts, the service may still be pulling dependencies)
 _wait_odl_hybrid_ready() {
     local port="${ODL_HYBRID_PORT:-5002}"
     local max_wait="${ODL_HYBRID_STARTUP_WAIT_SEC:-180}"
@@ -159,26 +159,26 @@ _wait_odl_hybrid_ready() {
     local interval=5
 
     if ! command -v curl &> /dev/null; then
-        log_warning "未安装 curl，跳过 odl-hybrid 就绪等待；请手动检查 http://localhost:${port}/health"
+        log_warning "curl is not installed, skipping the odl-hybrid readiness wait. Check http://localhost:${port}/health by hand"
         return 0
     fi
 
-    log_info "等待 odl-hybrid 就绪（最多 ${max_wait}s，首次需构建镜像: docker compose ... build odl-hybrid）..."
+    log_info "Waiting for odl-hybrid to be ready (up to ${max_wait}s; the first run builds the image: docker compose ... build odl-hybrid)..."
     while [ "$waited" -lt "$max_wait" ]; do
         if curl -sf "http://127.0.0.1:${port}/health" >/dev/null 2>&1; then
-            log_success "odl-hybrid 已就绪 (http://localhost:${port}/health)"
+            log_success "odl-hybrid is ready (http://localhost:${port}/health)"
             return 0
         fi
         sleep "$interval"
         waited=$((waited + interval))
     done
-    log_warning "odl-hybrid 在 ${max_wait}s 内未就绪，请查看: docker logs ai-kb-odl-hybrid"
+    log_warning "odl-hybrid was not ready within ${max_wait}s. Check: docker logs ai-kb-odl-hybrid"
     return 1
 }
 
-# 启动基础设施服务
+# Start the infrastructure services
 start_services() {
-    log_info "启动开发环境基础设施服务..."
+    log_info "Starting the dev infrastructure services..."
     
     check_docker
     if [ $? -ne 0 ]; then
@@ -187,29 +187,29 @@ start_services() {
 
     cd "$PROJECT_ROOT"
     
-    # 检查 .env 文件
+    # Check the .env file
     if [ ! -f ".env" ]; then
-        log_error ".env 文件不存在，请先创建"
+        log_error ".env file not found. Create it first"
         return 1
     fi
 
     load_env_files
     if [ $? -ne 0 ]; then
-        log_error ".env 文件不存在，请先创建"
+        log_error ".env file not found. Create it first"
         return 1
     fi
 
     if [ -n "${DEV_REMOTE_HOST:-}" ]; then
-        log_warning "已配置 DEV_REMOTE_HOST=${DEV_REMOTE_HOST}，跳过本地 Docker 基础设施启动"
-        log_info "远程服务: PostgreSQL/Redis/DocReader/Langfuse → ${DEV_REMOTE_HOST}"
-        log_info "接下来: make dev-app（本地后端）或 make dev-frontend（前端）"
+        log_warning "DEV_REMOTE_HOST=${DEV_REMOTE_HOST} is set, skipping the local Docker infrastructure"
+        log_info "Remote services: PostgreSQL/Redis/DocReader/Langfuse → ${DEV_REMOTE_HOST}"
+        log_info "Next: make dev-app (local backend) or make dev-frontend (frontend)"
         return 0
     fi
     
-    # 解析 profile 参数
-    shift  # 移除 "start" 命令本身
-    # 默认启动基础设施（postgres / redis / docreader）+ langfuse，
-    # 其余可选服务通过 --minio / --qdrant / --neo4j / --dex / --full 按需开启。
+    # Parse the profile arguments
+    shift  # drop the "start" command itself
+    # Starts the infrastructure (postgres / redis / docreader) + langfuse by default;
+    # other optional services are enabled with --minio / --qdrant / --neo4j / --dex / --full.
     PROFILES="--profile langfuse"
     ENABLED_SERVICES="langfuse"
     while [ $# -gt 0 ]; do
@@ -249,35 +249,35 @@ start_services() {
                 break
                 ;;
             *)
-                log_warning "未知参数: $1"
+                log_warning "Unknown argument: $1"
                 ;;
         esac
         shift
     done
 
-    # 启动服务（odl-hybrid 单独 --build，避免每次重建 docreader）
+    # Start the services (odl-hybrid gets its own --build so docreader is not rebuilt every time)
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml $PROFILES up -d
     local compose_rc=$?
     if [ "$compose_rc" -eq 0 ] && [[ "$ENABLED_SERVICES" == *"odl-hybrid"* ]]; then
-        log_info "构建/更新 odl-hybrid 镜像..."
+        log_info "Building/updating the odl-hybrid image..."
         "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml $PROFILES up -d --build odl-hybrid
         _wait_odl_hybrid_ready || true
-        # docreader 需读取 DOCREADER_ODL_HYBRID；若刚改 .env，强制重建以注入环境变量
+        # docreader reads DOCREADER_ODL_HYBRID; if .env just changed, force a rebuild to inject it
         if _should_enable_odl_hybrid_from_env; then
-            log_info "重建 docreader 以应用 DOCREADER_ODL_HYBRID=${DOCREADER_ODL_HYBRID} ..."
+            log_info "Rebuilding docreader to apply DOCREADER_ODL_HYBRID=${DOCREADER_ODL_HYBRID} ..."
             "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml up -d --force-recreate docreader
         fi
     fi
 
     if [ "$compose_rc" -eq 0 ]; then
-        log_success "基础设施服务已启动"
+        log_success "Infrastructure services started"
         echo ""
-        log_info "服务访问地址:"
+        log_info "Service URLs:"
         echo "  - PostgreSQL:    localhost:5432"
         echo "  - Redis:         localhost:6379"
         echo "  - DocReader:     localhost:50051"
         
-        # 根据启用的 profile 显示额外服务
+        # Show the extra services for the enabled profiles
         if [[ "$ENABLED_SERVICES" == *"minio"* ]]; then
             echo "  - MinIO:         localhost:9000 (Console: localhost:9001)"
         fi
@@ -295,23 +295,23 @@ start_services() {
         fi
         if [[ "$ENABLED_SERVICES" == *"odl-hybrid"* ]]; then
             echo "  - ODL Hybrid:    http://localhost:${ODL_HYBRID_PORT:-5002} (health: /health)"
-            echo "                   docreader 需 DOCREADER_ODL_HYBRID=docling-fast"
+            echo "                   docreader needs DOCREADER_ODL_HYBRID=docling-fast"
         fi
         
         echo ""
-        log_info "接下来的步骤:"
-        printf "%b\n" "${YELLOW}1. 在新终端运行后端:${NC} make dev-app"
-        printf "%b\n" "${YELLOW}2. 在新终端运行前端:${NC} make dev-frontend"
+        log_info "Next steps:"
+        printf "%b\n" "${YELLOW}1. Run the backend in a new terminal:${NC} make dev-app"
+        printf "%b\n" "${YELLOW}2. Run the frontend in a new terminal:${NC} make dev-frontend"
         return 0
     else
-        log_error "服务启动失败"
+        log_error "Services failed to start"
         return 1
     fi
 }
 
-# 停止服务
+# Stop the services
 stop_services() {
-    log_info "停止开发环境服务..."
+    log_info "Stopping the dev environment services..."
     
     check_docker
     if [ $? -ne 0 ]; then
@@ -322,22 +322,22 @@ stop_services() {
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml down
     
     if [ $? -eq 0 ]; then
-        log_success "所有服务已停止"
+        log_success "All services stopped"
         return 0
     else
-        log_error "服务停止失败"
+        log_error "Services failed to stop"
         return 1
     fi
 }
 
-# 重启服务
+# Restart the services
 restart_services() {
     stop_services
     sleep 2
     start_services
 }
 
-# 查看日志
+# Show logs
 show_logs() {
     check_docker
     if [ $? -ne 0 ]; then
@@ -348,7 +348,7 @@ show_logs() {
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml logs -f
 }
 
-# 查看状态
+# Show status
 show_status() {
     check_docker
     if [ $? -ne 0 ]; then
@@ -359,7 +359,7 @@ show_status() {
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml ps
 }
 
-# 远程开发模式下检查基础设施端口是否可达
+# In remote dev mode, check that the infrastructure ports are reachable
 check_remote_dev_connectivity() {
     local host="${DEV_REMOTE_HOST:-}"
     if [ -z "$host" ]; then
@@ -374,7 +374,7 @@ check_remote_dev_connectivity() {
     fi
     local docreader_port="${DOCREADER_PORT:-50051}"
 
-    log_info "检查远程基础设施连通性 (${host})..."
+    log_info "Checking connectivity to the remote infrastructure (${host})..."
     local failed=0
     for spec in "PostgreSQL:${host}:${db_port}" "Redis:${host}:${redis_port}" "DocReader:${host}:${docreader_port}"; do
         local name="${spec%%:*}"
@@ -383,24 +383,24 @@ check_remote_dev_connectivity() {
         local p="${rest##*:}"
         if command -v nc &> /dev/null; then
             if nc -z -w 3 "$h" "$p" 2>/dev/null; then
-                log_success "${name} ${h}:${p} 可达"
+                log_success "${name} ${h}:${p} reachable"
             else
-                log_error "${name} ${h}:${p} 不可达 (no route / connection refused)"
+                log_error "${name} ${h}:${p} unreachable (no route / connection refused)"
                 failed=1
             fi
         else
-            log_warning "未安装 nc，跳过 ${name} 连通性检查"
+            log_warning "nc is not installed, skipping the ${name} connectivity check"
         fi
     done
 
     if [ "$failed" -ne 0 ]; then
         echo ""
-        log_error "无法连接远程开发环境 ${host}"
-        log_info "排查建议:"
-        echo "  1. 确认远程机器 Docker 容器在运行 (postgres/redis/docreader)"
-        echo "  2. 确认本机与 ${host} 在同一局域网 (本机: $(ipconfig getifaddr en0 2>/dev/null || echo '未知'))"
-        echo "  3. 在远程检查端口映射: docker ps --format 'table {{.Names}}\t{{.Ports}}'"
-        echo "  4. 检查远程防火墙是否放行 5432/6379/50051"
+        log_error "Cannot reach the remote dev environment ${host}"
+        log_info "Troubleshooting:"
+        echo "  1. Make sure the Docker containers are running on the remote machine (postgres/redis/docreader)"
+        echo "  2. Make sure this machine and ${host} are on the same LAN (this machine: $(ipconfig getifaddr en0 2>/dev/null || echo 'unknown'))"
+        echo "  3. Check the port mappings on the remote: docker ps --format 'table {{.Names}}\t{{.Ports}}'"
+        echo "  4. Check that the remote firewall allows 5432/6379/50051"
         return 1
     fi
     return 0
@@ -440,34 +440,34 @@ enable_anydoc_build_tag() {
     archive="$(anydoc_host_archive)"
     if [ -n "$archive" ] && [ -f "$archive" ]; then
         export GO_BUILD_TAGS=anydoc
-        log_info "检测到 anydoc 静态库，已启用 -tags anydoc"
+        log_info "anydoc static library found, enabling -tags anydoc"
     else
-        log_info "未检测到 anydoc 静态库，解析引擎不可用。需要时先运行: make anydoc-lib"
+        log_info "anydoc static library not found, so that parsing engine is unavailable. When needed, run: make anydoc-lib"
     fi
 }
 
-# 启动后端应用（本地）
+# Start the backend (local)
 start_app() {
-    log_info "启动后端应用（本地开发模式）..."
+    log_info "Starting the backend (local dev mode)..."
     
     cd "$PROJECT_ROOT"
     
-    # 检查 Go 是否安装
+    # Check that Go is installed
     if ! command -v go &> /dev/null; then
-        log_error "Go 未安装"
+        log_error "Go is not installed"
         return 1
     fi
     
-    log_info "加载环境配置..."
+    log_info "Loading the environment configuration..."
     if ! load_env_files; then
-        log_error ".env 文件不存在，请先创建配置文件"
+        log_error ".env file not found. Create the config file first"
         return 1
     fi
     
-    # 本地 docker-compose.dev 模式：把容器服务名映射到宿主机回环地址
-    # 远程开发模式（DEV_REMOTE_HOST 或 .env.local 已设地址）则保留 .env/.env.local 中的值
+    # Local docker-compose.dev mode: map container service names to the host loopback address
+    # Remote dev mode (DEV_REMOTE_HOST, or addresses set in .env.local) keeps the values from .env/.env.local
     if [ -n "${DEV_REMOTE_HOST:-}" ]; then
-        log_info "远程开发模式: 基础设施 → ${DEV_REMOTE_HOST}"
+        log_info "Remote dev mode: infrastructure → ${DEV_REMOTE_HOST}"
         export DB_HOST="${DB_HOST:-$DEV_REMOTE_HOST}"
         export REDIS_ADDR="${REDIS_ADDR:-$DEV_REMOTE_HOST:6379}"
         export DOCREADER_ADDR="${DOCREADER_ADDR:-$DEV_REMOTE_HOST:50051}"
@@ -503,14 +503,14 @@ start_app() {
     fi
     mkdir -p "$LOCAL_STORAGE_BASE_DIR"
     
-    # 确保必要的环境变量已设置
+    # Make sure the required environment variables are set
     if [ -z "$DB_DRIVER" ]; then
-        log_error "DB_DRIVER 环境变量未设置，请检查 .env 文件"
+        log_error "DB_DRIVER is not set. Check the .env file"
         return 1
     fi
     
-    log_info "环境变量已设置，启动应用..."
-    log_info "数据库地址: $DB_HOST:${DB_PORT:-5432}"
+    log_info "Environment variables set, starting the app..."
+    log_info "Database address: $DB_HOST:${DB_PORT:-5432}"
     
     export CGO_CFLAGS="-Wno-deprecated-declarations -Wno-gnu-folding-constant"
     if [[ "$(uname)" == "Darwin" ]]; then
@@ -519,23 +519,23 @@ start_app() {
 
     enable_anydoc_build_tag
 
-    # 检查是否安装了 Air（热重载工具）
+    # Check whether Air (hot reload tool) is installed
     if command -v air &> /dev/null; then
-        log_success "检测到 Air，使用热重载模式启动..."
-        log_info "修改 Go 代码后将自动重新编译和重启"
+        log_success "Air found, starting with hot reload..."
+        log_info "Go code changes are recompiled and restarted automatically"
         air
     else
-        log_info "未检测到 Air，使用普通模式启动"
-        log_warning "提示: 安装 Air 可以实现代码修改后自动重启"
-        log_info "安装命令: go install github.com/air-verse/air@latest"
+        log_info "Air not found, starting in normal mode"
+        log_warning "Tip: install Air to restart automatically on code changes"
+        log_info "Install with: go install github.com/air-verse/air@latest"
         LDFLAGS="$(./scripts/get_version.sh ldflags) -X 'google.golang.org/protobuf/reflect/protoregistry.conflictPolicy=warn'"
         go run -tags "${GO_BUILD_TAGS:-}" -ldflags="$LDFLAGS" ./cmd/server
     fi
 }
 
-# 启动前端（本地）
+# Start the frontend (local)
 start_frontend() {
-    log_info "启动前端开发服务器..."
+    log_info "Starting the frontend dev server..."
 
     cd "$PROJECT_ROOT"
     if [ -f ".env" ] || [ -f ".env.local" ]; then
@@ -544,27 +544,27 @@ start_frontend() {
     
     cd "$PROJECT_ROOT/frontend"
     
-    # 检查 npm 是否安装
+    # Check that npm is installed
     if ! command -v npm &> /dev/null; then
-        log_error "npm 未安装"
+        log_error "npm is not installed"
         return 1
     fi
     
-    # 检查依赖是否已安装
+    # Check whether the dependencies are installed
     if [ ! -d "node_modules" ]; then
-        log_warning "node_modules 不存在，正在安装依赖..."
+        log_warning "node_modules not found, installing dependencies..."
         npm install
     fi
     
-    log_info "启动 Vite 开发服务器..."
-    log_info "前端将运行在 http://localhost:5173"
-    log_info "前端 API 代理目标: ${VITE_DEV_PROXY_TARGET:-${FRONTEND_BACKEND_URL:-http://localhost:8080}}"
+    log_info "Starting the Vite dev server..."
+    log_info "The frontend runs at http://localhost:5173"
+    log_info "Frontend API proxy target: ${VITE_DEV_PROXY_TARGET:-${FRONTEND_BACKEND_URL:-http://localhost:8080}}"
     
-    # 运行开发服务器
+    # Run the dev server
     npm run dev
 }
 
-# 解析命令
+# Parse the command
 CMD="${1:-help}"
 case "$CMD" in
     start)
@@ -592,7 +592,7 @@ case "$CMD" in
         show_help
         ;;
     *)
-        log_error "未知命令: $CMD"
+        log_error "Unknown command: $CMD"
         show_help
         exit 1
         ;;

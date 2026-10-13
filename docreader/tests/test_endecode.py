@@ -25,11 +25,12 @@ class TestEncodeImage(unittest.TestCase):
         than binascii.Error, so catching only binascii.Error lets it escape a
         call that asked not to raise.
         """
-        self.assertEqual(encode_image(VALID_B64 + ' "图片"', errors="ignore"), b"")
+        # "\u56fe\u7247" is Chinese for "image"
+        self.assertEqual(encode_image(VALID_B64 + ' "\u56fe\u7247"', errors="ignore"), b"")
 
     def test_strict_still_raises_on_non_ascii(self):
         with self.assertRaises(ValueError):
-            encode_image(VALID_B64 + ' "图片"')
+            encode_image(VALID_B64 + ' "\u56fe\u7247"')
 
     def test_strict_still_raises_on_bad_padding(self):
         with self.assertRaises(binascii.Error):
@@ -48,10 +49,10 @@ class TestMarkdownBase64Reachability(unittest.TestCase):
     B64_PATTERN = re.compile(r"!\[(.*?)\]\(data:image/([^;]+);base64,([^\)]+)\)")
 
     def test_markdown_title_lands_in_the_payload_group(self):
-        markdown = '![x](data:image/png;base64,%s "图片")' % VALID_B64
+        markdown = '![x](data:image/png;base64,%s "\u56fe\u7247")' % VALID_B64
         match = self.B64_PATTERN.search(markdown)
         self.assertIsNotNone(match)
-        self.assertIn("图片", match.group(3))
+        self.assertIn("\u56fe\u7247", match.group(3))
         # What the parser then hands to encode_image(errors="ignore").
         self.assertEqual(encode_image(match.group(3), errors="ignore"), b"")
 

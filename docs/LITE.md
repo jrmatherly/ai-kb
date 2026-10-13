@@ -1,16 +1,14 @@
-# AI KB Lite 与标准版区别
+# AI KB Lite compared with the standard edition
 
-Lite 面向希望快速在本地使用、部署尽量简单的场景；标准版面向多空间协作与完整企业能力。主要差异如下。
+Lite is for running locally fast with the simplest possible deployment. The standard edition is for collaboration across workspaces and the full enterprise feature set. The main differences:
 
+| Aspect | Lite | Standard edition |
+| --- | --- | --- |
+| **Shared spaces** | No shared spaces (no member invitations, no sharing knowledge bases or agents across members) | Shared spaces, with collaboration features such as retrieval isolated per workspace |
+| **Workspaces and accounts** | One workspace; works out of the box, **no sign-up needed** | Multiple workspaces; usually needs sign-up, login and organization management |
+| **Document parsing** | Only the built-in **Simple** parsing engine; other parsers can be connected, for example through **Cloud** | Several configurable parsing engines (high-accuracy ones included), integrated with the full document processing pipeline |
+| **Deployment** | **One application, no dependencies** (no separate database, message queue or other external services) | Usually a multi-service deployment such as Docker Compose, with more dependencies and components |
+| **Data location** | Data is stored and processed **entirely on the local machine** | Data can also stay local when you self-host; it depends on how you deploy |
+| **Network exposure** | **Local access only by default**; configurable, **you choose whether to open it to the internet** | You bind addresses and gateways according to your deployment and security policy |
 
-| 维度        | Lite                                            | 标准版                               |
-| --------- | ----------------------------------------------- | --------------------------------- |
-| **共享空间**  | 不提供共享空间（成员邀请、跨成员共享知识库与智能体等）                     | 提供共享空间及空间隔离检索等协作能力                |
-| **空间与账号** | 单空间；开箱即用，**无需注册**                               | 多空间；通常需要注册、登录与组织管理                |
-| **文档解析**  | 内置仅 **Simple** 类型解析引擎；可通过 **Cloud** 等方式接入其他解析能力 | 可配置多种解析引擎（含高精度等），与完整文档处理链路集成      |
-| **部署形态**  | **单应用、零依赖**（不依赖独立的数据库、消息队列等外部服务栈）               | 典型为 Docker Compose 等多服务部署，依赖与组件更多 |
-| **数据归属**  | 数据**完全在本地**存储与处理                                | 私有化部署时数据也可在本地；具体取决于你的部署方式         |
-| **网络暴露**  | **默认仅本机访问**；可按需配置，**选择是否放行到公网**                 | 按部署与安全策略自行绑定地址与网关                 |
-
-
-若你不需要多团队协作、复杂解析流水线与多服务架构，Lite 更适合个人或小团队在本机零依赖试用；需要共享空间、多空间与完整解析引擎矩阵时，请使用标准版。
+If you do not need multi-team collaboration, a complex parsing pipeline or a multi-service architecture, Lite suits an individual or a small team trying it out locally with no dependencies. When you need shared spaces, multiple workspaces and the full set of parsing engines, use the standard edition.

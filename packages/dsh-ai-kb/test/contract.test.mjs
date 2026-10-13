@@ -28,17 +28,17 @@ async function replayCalls() {
   const ragConfig = resolveConfig({ baseUrl: mock.url, knowledgeBaseIds: ['kb-product'] })
   const ragTools = new Map(createTools(new AikbClient(ragConfig), ragConfig).map(tool => [tool.name, tool]))
   await ragTools.get('aikb_list_knowledge_bases').execute({}, exec)
-  await ragTools.get('aikb_search').execute({ query: '默认的检索阈值是多少' }, exec)
+  await ragTools.get('aikb_search').execute({ query: 'What is the default retrieval threshold' }, exec)
   await ragTools.get('aikb_read_document').execute(
     { knowledge_id: 'doc-retrieval-pipeline', page: 1, page_size: 5 },
     exec,
   )
-  await ragTools.get('aikb_ask').execute({ query: '默认的检索阈值是多少' }, exec)
+  await ragTools.get('aikb_ask').execute({ query: 'What is the default retrieval threshold' }, exec)
 
   const agentConfig = resolveConfig({ baseUrl: mock.url, agentId: 'agent-42' })
   const agentAsk = createTools(new AikbClient(agentConfig), agentConfig)
     .find(tool => tool.name === 'aikb_ask')
-  await agentAsk.execute({ query: '部署方式', session_id: 's1', web_search: true }, exec)
+  await agentAsk.execute({ query: 'deployment options', session_id: 's1', web_search: true }, exec)
 
   return mock.requests.map(request => ({
     method: request.method,
@@ -86,7 +86,7 @@ test('every stream event the plugin handles is declared in the fixture', async (
   const config = resolveConfig({ baseUrl: mock.url, agentId: 'agent-42' })
   const client = new AikbClient(config)
   const answer = await client.ask(
-    { sessionId: 's1', query: '默认的检索阈值是多少', knowledgeBaseIds: [], agentId: 'agent-42', webSearch: false },
+    { sessionId: 's1', query: 'What is the default retrieval threshold', knowledgeBaseIds: [], agentId: 'agent-42', webSearch: false },
     exec.signal,
   )
   // The mock streams tool_call, references, answer and complete; error is
@@ -107,15 +107,15 @@ test('the plugin only reads response fields the fixture declares', async () => {
   // A backend that serves nothing but the declared fields must still produce a
   // complete tool result, which is what "these are the fields we depend on" means.
   const declared = new Set(fixture.responseFieldsRead['types.SearchResult'])
-  const results = await client.search({ query: '混合检索', knowledgeBaseIds: ['kb-product'], knowledgeIds: [] }, exec.signal)
+  const results = await client.search({ query: 'hybrid retrieval', knowledgeBaseIds: ['kb-product'], knowledgeIds: [] }, exec.signal)
   const trimmed = results.map(result => Object.fromEntries(
     Object.entries(result).filter(([key]) => declared.has(key)),
   ))
   const tools = createTools(new AikbClient(config), config)
   const search = tools.find(tool => tool.name === 'aikb_search')
   // Feed the trimmed shape back through the projection the tool uses.
-  const projected = search.output.render({ query: '混合检索' }, {
-    query: '混合检索',
+  const projected = search.output.render({ query: 'hybrid retrieval' }, {
+    query: 'hybrid retrieval',
     knowledge_base_ids: [],
     documents: [],
     count: trimmed.length,

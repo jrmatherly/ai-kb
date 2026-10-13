@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the create_knowledge_from_text MCP tool and client method.
 
-unittest discover 会收集本文件中的 TestCase；也可直接运行:
+unittest discover collects the TestCases in this file; it can also run directly:
 python test_create_knowledge_from_text.py
 """
 

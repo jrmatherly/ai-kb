@@ -1,23 +1,23 @@
 ---
-name: 命理大师
+name: Fortune Master
   version: 1.2.6
   description: |
-    全体系命理大师 — 八字四柱、紫微斗数、奇门遁甲、六爻、梅花易数、塔罗、星盘、
-    数字命理、九宫飞星风水、掌纹面相、起名命名、穿衣搭配、合婚择吉一站式解读。仅作文化参考，不替代医疗、法律、心理、财务、婚姻、命名等
-    专业建议；遇重大决策请咨询专业人士。
-    【数据与隐私提示】本 skill 会在本地文件系统保存用户主动提交的出生年月日时、地点、
-    姓名、可选的家庭成员信息、交互主题记录（用于追踪偏好，默认关闭），以及推送任务日志。
-    所有数据均不上传，仅在本地 data/ 目录留存；用户可随时通过 profile.js 查看、编辑或删除。
-    每日推送为 opt-in，默认关闭。
+    All-in-one fortune master - BaZi Four Pillars, Zi Wei Dou Shu, Qi Men Dun Jia, Liu Yao, Mei Hua Yi Shu, tarot, astrology charts,
+    numerology, Nine Star feng shui, palm and face reading, naming, outfit matching, and auspicious-date matchmaking readings. For cultural reference only. It does not replace medical, legal, psychological, financial, marriage, naming or other
+    professional advice; consult a professional before major decisions.
+    [Data and privacy notice] This skill stores on the local file system the birth date and time, place,
+    name, optional family member details, interaction topic history (used to track preferences, off by default) the user submits, and push task logs.
+    No data is uploaded; it stays only in the local data/ directory. Users can view, edit or delete it at any time with profile.js.
+    Daily push is opt-in and off by default.
 metadata:
-  displayName: "命理大师"
+  displayName: "Fortune Master"
   author:
-    - "腾讯高级研发-enoyao"
-    - "腾讯高级产品运营-rekyhe"
+    - "Tencent Senior R&D - enoyao"
+    - "Tencent Senior Product Operations - rekyhe"
   version: 1.2.0
-  keywords: 八字, 紫微斗数, 奇门遁甲, 六爻, 梅花易数, 塔罗, 星盘, 九宫飞星, 掌纹, 手相, 面相, 起名, 命名, 取名, 穿衣, 搭配, 颜色, 五行色, 开运色, 今日运势, 每日运程, 合婚, 择吉, 生命灵数, 风水, 算命, BaZi, ZiWei, QiMen, Tarot, feng shui, I Ching, numerology, daily horoscope, palmistry, physiognomy, naming, dressing
-  # 触发关键词收紧：1.1.8 移除「算命 / 占卜 / 命理 / 数字命理 / fortune telling / astrology」等过宽泛词，
-  # 避免在用户未明确要求占卜的对话中误激活本 skill；仅在明确出现具体体系名称或具体主题时才被触发。
+  keywords: BaZi chart, Zi Wei Dou Shu, Qi Men Dun Jia, Liu Yao, Mei Hua Yi Shu, tarot cards, astrology chart, Nine Star, palm lines, palm reading, face reading, naming, name choosing, name picking, outfit, matching, colors, five-element colors, lucky colors, today's fortune, daily fortune, matchmaking, auspicious dates, life path number, geomancy, fortune reading, BaZi, ZiWei, QiMen, Tarot, feng shui, I Ching, numerology, daily horoscope, palmistry, physiognomy, naming, dressing
+  # Trigger keywords tightened: 1.1.8 removed overly broad words such as "suan ming / divination / destiny / numerology / fortune telling / astrology",
+  # so this skill does not activate in conversations where the user did not ask for divination; it triggers only on a named system or a specific topic.
   openclaw:
     emoji: "☯️"
     skillKey: "university-applications"
@@ -27,7 +27,7 @@ metadata:
     install:
       - kind: node
         package: iztro
-    env: []  # 本 skill 不再读取任何环境变量；曾经的 OPENCLAW_KNOWLEDGE_DIR 已被移除以避免 file-system enumeration。
+    env: []  # This skill no longer reads any environment variables; the former OPENCLAW_KNOWLEDGE_DIR was removed to avoid file-system enumeration.
     security:
       network:
         default: none

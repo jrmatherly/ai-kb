@@ -1,10 +1,10 @@
 # DocReader Service
 
-DocReader 是 AI KB 项目中负责文档解析和处理的 gRPC 服务。它支持多种文档格式的读取、OCR 识别、多模态处理等功能。
+DocReader is the AI KB gRPC service that parses and processes documents. It reads many document formats and supports OCR and multimodal processing.
 
-## Docker Compose 环境变量配置
+## Docker Compose environment variables
 
-在 `docker-compose.yml` 文件中，docreader 服务配置了以下环境变量：
+In `docker-compose.yml`, the docreader service sets these environment variables:
 
 ```yaml
 docreader:
@@ -16,127 +16,127 @@ docreader:
     - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-}
 ```
 
-### 环境变量说明
+### Environment variable reference
 
 #### 1. MINIO_ENDPOINT
 
-- **说明**: MinIO 服务的内部访问地址（容器间通信）
-- **默认值**: `minio:9000`
-- **用途**: DocReader 服务使用此地址连接到 MinIO 对象存储服务，用于读取和存储文档处理过程中的文件
-- **配置示例**:
+- **Description**: internal address of the MinIO service (container to container)
+- **Default**: `minio:9000`
+- **Purpose**: DocReader connects to MinIO object storage at this address to read and store files during document processing
+- **Example**:
   ```yaml
-  - MINIO_ENDPOINT=minio:9000  # Docker 网络内部地址
+  - MINIO_ENDPOINT=minio:9000  # address inside the Docker network
   ```
 
 #### 2. MINIO_PUBLIC_ENDPOINT
 
-- **说明**: MinIO 服务的公开访问地址（外部访问）
-- **默认值**: `http://localhost:9000`
-- **用途**: 用于生成可从外部访问的文件 URL，例如在文档解析后返回图片链接时使用
-- **重要提示**: 
-  - 如果需要从其他设备或容器访问，需要将 `localhost` 替换为实际的 IP 地址
-  - 可以在 `.env` 文件中配置 `MINIO_PORT` 来自定义端口
-- **配置示例**:
+- **Description**: public address of the MinIO service (external access)
+- **Default**: `http://localhost:9000`
+- **Purpose**: builds externally reachable file URLs, for example image links returned after parsing a document
+- **Important**:
+  - To access it from other devices or containers, replace `localhost` with the real IP address
+  - Set `MINIO_PORT` in `.env` to change the port
+- **Example**:
   ```bash
-  # .env 文件
+  # .env file
   MINIO_PORT=9000
   ```
-  或直接在 docker-compose.yml 中修改：
+  Or edit docker-compose.yml directly:
   ```yaml
-  - MINIO_PUBLIC_ENDPOINT=http://192.168.1.100:9000  # 使用实际 IP
+  - MINIO_PUBLIC_ENDPOINT=http://192.168.1.100:9000  # use the real IP
   ```
 
 #### 3. MINERU_ENDPOINT
 
-- **说明**: MinerU 服务的访问地址（可选）
-- **默认值**: 空（不使用 MinerU）
-- **用途**: MinerU 是一个高级文档解析服务，支持更复杂的文档结构识别和处理。配置此变量后，DocReader 可以调用 MinerU 进行文档解析
-- **配置示例**:
+- **Description**: address of the MinerU service (optional)
+- **Default**: empty (MinerU not used)
+- **Purpose**: MinerU is an advanced document parsing service that recognizes and processes more complex document structures. With this variable set, DocReader can call MinerU to parse documents
+- **Example**:
   ```bash
-  # .env 文件
+  # .env file
   MINERU_ENDPOINT=http://mineru-service:8080
   ```
 
 #### 4. MAX_FILE_SIZE_MB
 
-- **说明**: 允许上传的最大文件大小（单位：MB）
-- **默认值**: `50` MB
-- **用途**: 限制 gRPC 服务接收的文件大小，防止过大的文件导致服务崩溃或性能问题
-- **配置示例**:
+- **Description**: maximum upload file size (in MB)
+- **Default**: `50` MB
+- **Purpose**: limits the file size the gRPC service accepts, so oversized files cannot crash the service or degrade performance
+- **Example**:
   ```bash
-  # .env 文件
-  MAX_FILE_SIZE_MB=100  # 允许最大 100MB 的文件
+  # .env file
+  MAX_FILE_SIZE_MB=100  # allow files up to 100MB
   ```
 
-## 其他可配置的环境变量
+## Other environment variables
 
-除了 docker-compose.yml 中已配置的变量外，DocReader 还支持以下环境变量（可根据需要添加）：
+Besides the variables set in docker-compose.yml, DocReader supports these (add them as needed):
 
-### gRPC 配置
+### gRPC
 
-- `DOCREADER_GRPC_MAX_WORKERS`: gRPC 服务的最大工作线程数（默认：4）
-- `DOCREADER_GRPC_PORT`: gRPC 服务监听端口（默认：50051）
+- `DOCREADER_GRPC_MAX_WORKERS`: maximum gRPC worker threads (default: 4)
+- `DOCREADER_GRPC_PORT`: gRPC listen port (default: 50051)
 
-### 解析器资源控制
+### Parser resource limits
 
-- `DOCREADER_MARKITDOWN_MAX_WORKERS`: MarkItDown 解析的最大并发数（默认：1，设为 0 可关闭限流）
-- `DOCREADER_PDF_RENDER_MAX_WORKERS`: 扫描 PDF 渲染为图片的最大并发数（默认：1，设为 0 可关闭限流）
-- `DOCREADER_PDF_RENDER_DPI`: 扫描 PDF 渲染 DPI（默认：200）
-- `DOCREADER_PDF_JPEG_QUALITY`: 扫描 PDF 输出 JPEG 质量（默认：85，范围会自动限制在 1-95）
+- `DOCREADER_MARKITDOWN_MAX_WORKERS`: maximum concurrent MarkItDown parses (default: 1, 0 disables the limit)
+- `DOCREADER_PDF_RENDER_MAX_WORKERS`: maximum concurrent renders of scanned PDFs to images (default: 1, 0 disables the limit)
+- `DOCREADER_PDF_RENDER_DPI`: render DPI for scanned PDFs (default: 200)
+- `DOCREADER_PDF_JPEG_QUALITY`: JPEG quality for scanned PDF output (default: 85, clamped to 1-95)
 
 ### OCR / VLM
 
-DocReader 自身不再内置 OCR 与 VLM 后端。扫描 PDF 会被渲染为 JPEG 图片后交由 Go App 侧调用 OCR/VLM 服务处理，相关配置请参考主项目文档。
+DocReader no longer has built-in OCR or VLM backends. Scanned PDFs are rendered to JPEG images, and the Go app calls the OCR/VLM services on them. See the main project docs for that configuration.
 
-### 存储配置
+### Storage
 
-DocReader 支持多种存储后端：
+DocReader supports several storage backends:
 
-#### MinIO/S3 存储（推荐）
+#### MinIO/S3 (recommended)
 
-- `STORAGE_TYPE`: 设置为 `minio`
-- `MINIO_ACCESS_KEY_ID`: MinIO 访问密钥 ID（默认：minioadmin）
-- `MINIO_SECRET_ACCESS_KEY`: MinIO 访问密钥（默认：minioadmin）
-- `MINIO_BUCKET_NAME`: MinIO 存储桶名称（默认：AI KB）
-- `MINIO_PATH_PREFIX`: 文件路径前缀
-- `MINIO_USE_SSL`: 是否使用 SSL（默认：false）
+- `STORAGE_TYPE`: set to `minio`
+- `MINIO_ACCESS_KEY_ID`: MinIO access key ID (default: minioadmin)
+- `MINIO_SECRET_ACCESS_KEY`: MinIO secret access key (default: minioadmin)
+- `MINIO_BUCKET_NAME`: MinIO bucket name (default: AI KB)
+- `MINIO_PATH_PREFIX`: file path prefix
+- `MINIO_USE_SSL`: use SSL (default: false)
 
-#### 腾讯云 COS 存储
+#### Tencent Cloud COS
 
-- `STORAGE_TYPE`: 设置为 `cos`
-- `COS_SECRET_ID`: COS 访问密钥 ID
-- `COS_SECRET_KEY`: COS 访问密钥
-- `COS_REGION`: COS 区域
-- `COS_BUCKET_NAME`: COS 存储桶名称
-- `COS_APP_ID`: COS 应用 ID
-- `COS_PATH_PREFIX`: 文件路径前缀
-- `COS_ENABLE_OLD_DOMAIN`: 是否使用旧域名（默认：true）
+- `STORAGE_TYPE`: set to `cos`
+- `COS_SECRET_ID`: COS secret ID
+- `COS_SECRET_KEY`: COS secret key
+- `COS_REGION`: COS region
+- `COS_BUCKET_NAME`: COS bucket name
+- `COS_APP_ID`: COS app ID
+- `COS_PATH_PREFIX`: file path prefix
+- `COS_ENABLE_OLD_DOMAIN`: use the old domain (default: true)
 
-#### 阿里云 OSS 存储
+#### Alibaba Cloud OSS
 
-- `STORAGE_TYPE`: 设置为 `oss`
-- `OSS_ACCESS_KEY_ID`: OSS 访问密钥 ID
-- `OSS_ACCESS_KEY_SECRET`: OSS 访问密钥
-- `OSS_ENDPOINT`: OSS 端点（如 `oss-cn-hangzhou.aliyuncs.com`）
-- `OSS_BUCKET_NAME`: OSS 存储桶名称
-- `OSS_REGION`: OSS 区域（如 `cn-hangzhou`）
-- `OSS_PATH_PREFIX`: 文件路径前缀
+- `STORAGE_TYPE`: set to `oss`
+- `OSS_ACCESS_KEY_ID`: OSS access key ID
+- `OSS_ACCESS_KEY_SECRET`: OSS access key secret
+- `OSS_ENDPOINT`: OSS endpoint (such as `oss-cn-hangzhou.aliyuncs.com`)
+- `OSS_BUCKET_NAME`: OSS bucket name
+- `OSS_REGION`: OSS region (such as `cn-hangzhou`)
+- `OSS_PATH_PREFIX`: file path prefix
 
-### 代理配置
+### Proxy
 
-如果需要通过代理访问外部服务：
+To reach external services through a proxy:
 
-- `EXTERNAL_HTTP_PROXY`: HTTP 代理地址
-- `EXTERNAL_HTTPS_PROXY`: HTTPS 代理地址
+- `EXTERNAL_HTTP_PROXY`: HTTP proxy address
+- `EXTERNAL_HTTPS_PROXY`: HTTPS proxy address
 
-### 图像处理配置
+### Image processing
 
-扫描 PDF 会被渲染为 JPEG 图片后交给 Go App 侧 OCR 处理。如果在导入多个大 PDF 时出现资源占用过高，
-可以优先调低 `DOCREADER_PDF_RENDER_MAX_WORKERS` 或 `DOCREADER_MARKITDOWN_MAX_WORKERS`。
+Scanned PDFs are rendered to JPEG images and handed to the Go app for OCR. If importing several large PDFs uses too many resources,
+lower `DOCREADER_PDF_RENDER_MAX_WORKERS` or `DOCREADER_MARKITDOWN_MAX_WORKERS` first.
 
-## 配置示例
+## Configuration examples
 
-### 基础配置（使用 MinIO）
+### Basic (MinIO)
 
 ```yaml
 docreader:
@@ -146,7 +146,7 @@ docreader:
     - MAX_FILE_SIZE_MB=50
 ```
 
-### 高级配置（启用 MinerU）
+### Advanced (MinerU enabled)
 
 ```yaml
 docreader:
@@ -157,7 +157,7 @@ docreader:
     - MAX_FILE_SIZE_MB=100
 ```
 
-### 使用腾讯云 COS
+### Using Tencent Cloud COS
 
 ```yaml
 docreader:
@@ -171,7 +171,7 @@ docreader:
     - MAX_FILE_SIZE_MB=50
 ```
 
-### 使用阿里云 OSS
+### Using Alibaba Cloud OSS
 
 ```yaml
 docreader:
@@ -185,25 +185,26 @@ docreader:
     - MAX_FILE_SIZE_MB=50
 ```
 
-## 常见问题
+## FAQ
 
-### 1. DocReader 服务无法启动？
+### 1. The DocReader service does not start?
 
-检查容器日志中是否存在依赖缺失或权限相关错误，必要时确认 `MINIO_ENDPOINT` / 存储相关环境变量是否正确配置。
+Check the container logs for missing dependencies or permission errors. If needed, confirm that `MINIO_ENDPOINT` and the storage environment variables are set correctly.
 
-### 2. 图片无法显示？
+### 2. Images do not display?
 
-检查 `MINIO_PUBLIC_ENDPOINT` 配置：
-- 确保使用的是可从浏览器访问的地址
-- 如果从其他设备访问，不要使用 `localhost`，应使用实际 IP 地址
+Check `MINIO_PUBLIC_ENDPOINT`:
 
-### 3. 文件上传失败？
+- Make sure the address is reachable from the browser
+- When accessing from another device, use the real IP address, not `localhost`
 
-检查 `MAX_FILE_SIZE_MB` 配置，确保限制足够大。同时需要确保前端和后端服务的文件大小限制保持一致。
+### 3. File upload fails?
 
-## 服务健康检查
+Check that `MAX_FILE_SIZE_MB` is large enough. The frontend and backend file size limits must also match.
 
-DocReader 服务配置了健康检查：
+## Service health check
+
+The DocReader service has a health check:
 
 ```yaml
 healthcheck:
@@ -214,16 +215,16 @@ healthcheck:
   start_period: 60s
 ```
 
-可以通过以下命令检查服务状态：
+Check the service status with:
 
 ```bash
 docker ps | grep docreader
 docker logs ai-kb-docreader
 ```
 
-## 更多信息
+## More information
 
-- 服务端口：50051（gRPC）
-- 容器名称：ai-kb-docreader
-- 网络：ai-kb-network
-- 重启策略：unless-stopped
+- Service port: 50051 (gRPC)
+- Container name: ai-kb-docreader
+- Network: ai-kb-network
+- Restart policy: unless-stopped

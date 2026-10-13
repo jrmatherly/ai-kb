@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-AI KB MCP Server 启动脚本
+AI KB MCP Server launch script
 
-注意：在 stdio 传输下，stdout 是 JSON-RPC 通道，所有诊断/提示信息必须写入
-stderr，否则会破坏 MCP 协议流导致客户端判定"启动失败"。本脚本所有 print
-均通过 stderr 输出。
+Under the stdio transport, stdout is the JSON-RPC channel. All diagnostics and
+notices must go to stderr, or they corrupt the MCP stream and the client reports
+"failed to start". Every print in this script writes to stderr.
 """
 
 import asyncio
@@ -13,26 +13,26 @@ import sys
 
 
 def check_environment():
-    """检查环境配置"""
+    """Check the environment configuration."""
     base_url = os.getenv("AIKB_BASE_URL")
     api_key = os.getenv("AIKB_API_KEY")
 
     if not base_url:
         print(
-            "警告: AIKB_BASE_URL 环境变量未设置，使用默认值: http://localhost:8080/api/v1",
+            "Warning: AIKB_BASE_URL is not set, using the default: http://localhost:8080/api/v1",
             file=sys.stderr,
         )
 
     if not api_key:
-        print("警告: AIKB_API_KEY 环境变量未设置", file=sys.stderr)
+        print("Warning: AIKB_API_KEY is not set", file=sys.stderr)
 
     print(f"AI KB Base URL: {base_url or 'http://localhost:8080/api/v1'}", file=sys.stderr)
-    print(f"API Key: {'已设置' if api_key else '未设置'}", file=sys.stderr)
+    print(f"API Key: {'set' if api_key else 'not set'}", file=sys.stderr)
 
 
 def main():
-    """主函数"""
-    print("启动 AI KB MCP Server...", file=sys.stderr)
+    """Entry point."""
+    print("Starting AI KB MCP Server...", file=sys.stderr)
     check_environment()
 
     try:
@@ -40,13 +40,13 @@ def main():
 
         asyncio.run(run())
     except ImportError as e:
-        print(f"导入错误: {e}", file=sys.stderr)
-        print("请确保已安装所有依赖: pip install -r requirements.txt", file=sys.stderr)
+        print(f"Import error: {e}", file=sys.stderr)
+        print("Make sure all dependencies are installed: pip install -r requirements.txt", file=sys.stderr)
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\n服务器已停止", file=sys.stderr)
+        print("\nServer stopped", file=sys.stderr)
     except Exception as e:
-        print(f"服务器运行错误: {e}", file=sys.stderr)
+        print(f"Server error: {e}", file=sys.stderr)
         sys.exit(1)
 
 

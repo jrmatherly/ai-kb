@@ -1,47 +1,47 @@
 #!/bin/bash
-# 该脚本用于从源码构建AI KB的所有Docker镜像
+# Builds every AI KB Docker image from source
 
-# 设置颜色
+# Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
-NC='\033[0m' # 无颜色
+NC='\033[0m' # no color
 
-# 获取项目根目录（脚本所在目录的上一级）
+# Project root (the parent of the script directory)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-# 启用 BuildKit
+# Enable BuildKit
 export DOCKER_BUILDKIT=1
 
-# 版本信息
+# Version information
 VERSION="1.0.0"
 SCRIPT_NAME=$(basename "$0")
 
-# 显示帮助信息
+# Show help
 show_help() {
-    echo -e "${GREEN}AI KB 镜像构建脚本 v${VERSION}${NC}"
-    echo -e "${GREEN}用法:${NC} $0 [选项]"
-    echo "选项:"
-    echo "  -h, --help     显示帮助信息"
-    echo "  -a, --all      构建所有镜像（默认）"
-    echo "  -p, --app      仅构建应用镜像"
-    echo "  -d, --docreader 仅构建文档读取器镜像"
-    echo "  -f, --frontend 仅构建前端镜像"
-    echo "  -s, --sandbox  仅构建沙箱镜像"
-    echo "  -c, --clean    清理所有本地镜像"
-    echo "  -v, --version  显示版本信息"
+    echo -e "${GREEN}AI KB image build script v${VERSION}${NC}"
+    echo -e "${GREEN}Usage:${NC} $0 [options]"
+    echo "Options:"
+    echo "  -h, --help     show help"
+    echo "  -a, --all      build all images (default)"
+    echo "  -p, --app      build only the app image"
+    echo "  -d, --docreader build only the docreader image"
+    echo "  -f, --frontend build only the frontend image"
+    echo "  -s, --sandbox  build only the sandbox image"
+    echo "  -c, --clean    remove all local images"
+    echo "  -v, --version  show version information"
     exit 0
 }
 
-# 显示版本信息
+# Show version information
 show_version() {
-    echo -e "${GREEN}AI KB 镜像构建脚本 v${VERSION}${NC}"
+    echo -e "${GREEN}AI KB image build script v${VERSION}${NC}"
     exit 0
 }
 
-# 日志函数
+# Logging helpers
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -58,28 +58,28 @@ log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-# 检查Docker是否已安装
+# Check that Docker is installed
 check_docker() {
-    log_info "检查Docker环境..."
+    log_info "Checking Docker..."
     
     if ! command -v docker &> /dev/null; then
-        log_error "未安装Docker，请先安装Docker"
+        log_error "Docker is not installed. Install Docker first"
         return 1
     fi
     
-    # 检查Docker服务运行状态
+    # Check that the Docker service is running
     if ! docker info &> /dev/null; then
-        log_error "Docker服务未运行，请启动Docker服务"
+        log_error "The Docker service is not running. Start it first"
         return 1
     fi
     
-    log_success "Docker环境检查通过"
+    log_success "Docker check passed"
     return 0
 }
 
-# 检测平台
+# Detect the platform
 check_platform() {
-    log_info "检测系统平台信息..."
+    log_info "Detecting the platform..."
     if [ "$(uname -m)" = "x86_64" ]; then
         export PLATFORM="linux/amd64"
         export TARGETARCH="amd64"
@@ -87,53 +87,53 @@ check_platform() {
         export PLATFORM="linux/arm64"
         export TARGETARCH="arm64"
     else
-        log_warning "未识别的平台类型：$(uname -m)，将使用默认平台 linux/amd64"
+        log_warning "Unrecognized platform: $(uname -m). Using the default platform linux/amd64"
         export PLATFORM="linux/amd64"
         export TARGETARCH="amd64"
     fi
-    log_info "当前平台：$PLATFORM"
-    log_info "当前架构：$TARGETARCH"
+    log_info "Platform: $PLATFORM"
+    log_info "Architecture: $TARGETARCH"
 }
 
-# 获取版本信息
+# Version information
 get_version_info() {
-    # 从VERSION文件获取版本号
+    # Read the version from the VERSION file
     if [ -f "VERSION" ]; then
         VERSION=$(cat VERSION | tr -d '\n\r')
     else
         VERSION="unknown"
     fi
     
-    # 获取commit ID
+    # Commit ID
     if command -v git >/dev/null 2>&1; then
         COMMIT_ID=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
     else
         COMMIT_ID="unknown"
     fi
     
-    # 获取构建时间
+    # Build time
     BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
     
-    # 获取Go版本
+    # Go version
     if command -v go >/dev/null 2>&1; then
         GO_VERSION=$(go version 2>/dev/null || echo "unknown")
     else
         GO_VERSION="unknown"
     fi
     
-    log_info "版本信息: $VERSION"
+    log_info "Version: $VERSION"
     log_info "Commit ID: $COMMIT_ID"
-    log_info "构建时间: $BUILD_TIME"
-    log_info "Go版本: $GO_VERSION"
+    log_info "Build time: $BUILD_TIME"
+    log_info "Go version: $GO_VERSION"
 }
 
-# 构建应用镜像
+# Build the app image
 build_app_image() {
-    log_info "构建应用镜像 (ai-kb-app)..."
+    log_info "Building the app image (ai-kb-app)..."
     
     cd "$PROJECT_ROOT"
     
-    # 获取版本信息
+    # Version information
     get_version_info
     
     docker build \
@@ -152,17 +152,17 @@ build_app_image() {
         .
     
     if [ $? -eq 0 ]; then
-        log_success "应用镜像构建成功"
+        log_success "App image built"
         return 0
     else
-        log_error "应用镜像构建失败"
+        log_error "App image build failed"
         return 1
     fi
 }
 
-# 构建文档读取器镜像
+# Build the docreader image
 build_docreader_image() {
-    log_info "构建文档读取器镜像 (ai-kb-docreader)..."
+    log_info "Building the docreader image (ai-kb-docreader)..."
     
     cd "$PROJECT_ROOT"
     
@@ -178,21 +178,21 @@ build_docreader_image() {
         .
     
     if [ $? -eq 0 ]; then
-        log_success "文档读取器镜像构建成功"
+        log_success "Docreader image built"
         return 0
     else
-        log_error "文档读取器镜像构建失败"
+        log_error "Docreader image build failed"
         return 1
     fi
 }
 
-# 构建前端镜像（多阶段：npm 在 builder 内执行，无需宿主机预构建 dist）
+# Build the frontend image (multi-stage: npm runs in the builder, so the host needs no prebuilt dist)
 build_frontend_image() {
-    log_info "构建前端镜像 (ai-kb-ui)..."
+    log_info "Building the frontend image (ai-kb-ui)..."
     
     cd "$PROJECT_ROOT"
     
-    # 获取版本信息（用于注入前端 commit hash）
+    # Version information (to inject the commit hash into the frontend)
     get_version_info
 
     docker build \
@@ -205,22 +205,22 @@ build_frontend_image() {
         frontend/
     
     if [ $? -eq 0 ]; then
-        log_success "前端镜像构建成功"
+        log_success "Frontend image built"
         return 0
     else
-        log_error "前端镜像构建失败"
+        log_error "Frontend image build failed"
         return 1
     fi
 }
 
-# 构建沙箱镜像
+# Build the sandbox image
 build_sandbox_image() {
-    log_info "构建沙箱镜像 (ai-kb-sandbox)..."
+    log_info "Building the sandbox image (ai-kb-sandbox)..."
 
     cd "$PROJECT_ROOT"
 
-    # 同时打上 main：默认镜像跟的是 main（见 sandbox.go 的 DefaultDockerImage），
-    # 而 Docker 后端只在本地缺失时才去拉，本地不打这个标签就等于白构建。
+    # Also tag main: the default image tracks main (see DefaultDockerImage in sandbox.go),
+    # and the Docker backend pulls only when the image is missing locally, so a build without this tag is wasted.
     docker build \
         --platform $PLATFORM \
         --build-arg TARGETPLATFORM=$PLATFORM \
@@ -231,13 +231,13 @@ build_sandbox_image() {
         .
 
     if [ $? -ne 0 ]; then
-        log_error "沙箱镜像构建失败"
+        log_error "Sandbox image build failed"
         return 1
     fi
 
-    # Cube 从镜像直接构建模板，并以 :49983/health 探活，缺 envd 必然失败，
-    # 因此 Cube 用的是注入了 envd 的变体镜像。详见 website-docs/06-development/04-sandbox-deployment.md。
-    log_info "构建沙箱镜像 Cube 变体 (ai-kb-sandbox:main-cube)..."
+    # Cube builds its template straight from the image and probes :49983/health, which always fails without envd,
+    # so Cube uses a variant image with envd injected. See website-docs/06-development/04-sandbox-deployment.md.
+    log_info "Building the sandbox image Cube variant (ai-kb-sandbox:main-cube)..."
 
     docker build \
         --platform $PLATFORM \
@@ -249,13 +249,13 @@ build_sandbox_image() {
         .
 
     if [ $? -ne 0 ]; then
-        log_error "沙箱镜像 Cube 变体构建失败"
+        log_error "Sandbox image Cube variant build failed"
         return 1
     fi
 
     # Desktop variant: XFCE + x11vnc + websockify. Tagged for E2B template
     # builds; the Docker backend does not consume this image yet.
-    log_info "构建沙箱镜像桌面变体 (ai-kb-sandbox:main-desktop)..."
+    log_info "Building the sandbox image desktop variant (ai-kb-sandbox:main-desktop)..."
 
     docker build \
         --platform $PLATFORM \
@@ -267,11 +267,11 @@ build_sandbox_image() {
         .
 
     if [ $? -ne 0 ]; then
-        log_error "沙箱镜像桌面变体构建失败"
+        log_error "Sandbox image desktop variant build failed"
         return 1
     fi
 
-    log_info "构建沙箱镜像桌面 Cube 变体 (ai-kb-sandbox:main-desktop-cube)..."
+    log_info "Building the sandbox image desktop Cube variant (ai-kb-sandbox:main-desktop-cube)..."
 
     docker build \
         --platform $PLATFORM \
@@ -283,93 +283,93 @@ build_sandbox_image() {
         .
 
     if [ $? -eq 0 ]; then
-        log_success "沙箱镜像构建成功"
+        log_success "Sandbox images built"
         return 0
     else
-        log_error "沙箱镜像桌面 Cube 变体构建失败"
+        log_error "Sandbox image desktop Cube variant build failed"
         return 1
     fi
 }
 
-# 构建所有镜像
+# Build all images
 build_all_images() {
-    log_info "开始构建所有镜像..."
+    log_info "Building all images..."
 
     local app_result=0
     local docreader_result=0
     local frontend_result=0
     local sandbox_result=0
 
-    # 构建应用镜像
+    # App image
     build_app_image
     app_result=$?
 
-    # 构建文档读取器镜像
+    # Docreader image
     build_docreader_image
     docreader_result=$?
 
-    # 构建前端镜像
+    # Frontend image
     build_frontend_image
     frontend_result=$?
 
-    # 构建沙箱镜像
+    # Sandbox image
     build_sandbox_image
     sandbox_result=$?
 
-    # 显示构建结果
+    # Build results
     echo ""
-    log_info "=== 构建结果 ==="
+    log_info "=== Build results ==="
     if [ $app_result -eq 0 ]; then
-        log_success "✓ 应用镜像构建成功"
+        log_success "✓ App image built"
     else
-        log_error "✗ 应用镜像构建失败"
+        log_error "✗ App image build failed"
     fi
 
     if [ $docreader_result -eq 0 ]; then
-        log_success "✓ 文档读取器镜像构建成功"
+        log_success "✓ Docreader image built"
     else
-        log_error "✗ 文档读取器镜像构建失败"
+        log_error "✗ Docreader image build failed"
     fi
 
     if [ $frontend_result -eq 0 ]; then
-        log_success "✓ 前端镜像构建成功"
+        log_success "✓ Frontend image built"
     else
-        log_error "✗ 前端镜像构建失败"
+        log_error "✗ Frontend image build failed"
     fi
 
     if [ $sandbox_result -eq 0 ]; then
-        log_success "✓ 沙箱镜像构建成功"
+        log_success "✓ Sandbox image built"
     else
-        log_error "✗ 沙箱镜像构建失败"
+        log_error "✗ Sandbox image build failed"
     fi
 
     if [ $app_result -eq 0 ] && [ $docreader_result -eq 0 ] && [ $frontend_result -eq 0 ] && [ $sandbox_result -eq 0 ]; then
-        log_success "所有镜像构建完成！"
+        log_success "All images built"
         return 0
     else
-        log_error "部分镜像构建失败"
+        log_error "Some images failed to build"
         return 1
     fi
 }
 
-# 清理本地镜像
+# Remove local images
 clean_images() {
-    log_info "清理本地AI KB镜像..."
+    log_info "Removing local AI KB images..."
     
-    # 停止相关容器
-    log_info "停止相关容器..."
+    # Stop the related containers
+    log_info "Stopping the related containers..."
     docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-app:latest" 2>/dev/null) 2>/dev/null || true
     docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-docreader:latest" 2>/dev/null) 2>/dev/null || true
     docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-ui:latest" 2>/dev/null) 2>/dev/null || true
     
-    # 删除相关容器
-    log_info "删除相关容器..."
+    # Remove the related containers
+    log_info "Removing the related containers..."
     docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-app:latest" 2>/dev/null) 2>/dev/null || true
     docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-docreader:latest" 2>/dev/null) 2>/dev/null || true
     docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-ui:latest" 2>/dev/null) 2>/dev/null || true
     
-    # 删除镜像
-    log_info "删除本地镜像..."
+    # Remove the images
+    log_info "Removing local images..."
     docker rmi ghcr.io/jrmatherly/ai-kb-app:latest 2>/dev/null || true
     docker rmi ghcr.io/jrmatherly/ai-kb-docreader:latest 2>/dev/null || true
     docker rmi ghcr.io/jrmatherly/ai-kb-ui:latest 2>/dev/null || true
@@ -384,11 +384,11 @@ clean_images() {
     
     docker image prune -f
     
-    log_success "镜像清理完成"
+    log_success "Images removed"
     return 0
 }
 
-# 解析命令行参数
+# Parse command-line arguments
 BUILD_ALL=false
 BUILD_APP=false
 BUILD_DOCREADER=false
@@ -396,7 +396,7 @@ BUILD_FRONTEND=false
 BUILD_SANDBOX=false
 CLEAN_IMAGES=false
 
-# 没有参数时默认构建所有镜像
+# Build all images when no arguments are given
 if [ $# -eq 0 ]; then
     BUILD_ALL=true
 fi
@@ -419,29 +419,29 @@ while [ "$1" != "" ]; do
                             ;;
         -v | --version )    show_version
                             ;;
-        * )                 log_error "未知选项: $1"
+        * )                 log_error "Unknown option: $1"
                             show_help
                             ;;
     esac
     shift
 done
 
-# 检查Docker环境
+# Check Docker
 check_docker
 if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 检测平台
+# Detect the platform
 check_platform
 
-# 执行清理操作
+# Run the cleanup
 if [ "$CLEAN_IMAGES" = true ]; then
     clean_images
     exit $?
 fi
 
-# 执行构建操作
+# Run the build
 if [ "$BUILD_ALL" = true ]; then
     build_all_images
     exit $?

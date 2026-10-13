@@ -40,7 +40,7 @@ const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const installDir = process.env.DSH_INSTALL_DIR ?? join(tmpdir(), 'dsh-e2e-install')
 const dshSpec = process.env.DSH_PACKAGE_SPEC ?? '@deepseek-ai/dsh@latest'
 const API_KEY = 'e2e-api-key'
-const QUESTION = 'AI KB 的默认检索阈值是多少？请查知识库后回答。'
+const QUESTION = 'What is the default retrieval threshold in AI KB? Search the knowledge base before answering.'
 const transcript = []
 
 function log(line) {
@@ -174,7 +174,7 @@ async function scenario(options) {
     )
 
     const toolResults = model.requests.flatMap(request => request.toolResults).join('\n')
-    assert.match(toolResults, /vector_threshold 是 0\.5/, 'the model must see the retrieved passage verbatim')
+    assert.match(toolResults, /vector_threshold is 0\.5/, 'the model must see the retrieved passage verbatim')
     assert.match(toolResults, /knowledge_id: doc-retrieval-pipeline/, 'search hits must carry a usable knowledge_id')
     assert.match(boot.stdout, /0\.5/, 'the printed answer must carry the retrieved threshold')
 

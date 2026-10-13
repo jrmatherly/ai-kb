@@ -28,13 +28,13 @@ FROM golang:1.26-bookworm AS builder
 
 WORKDIR /app
 
-# 通过构建参数接收敏感信息
+# Receive secrets through build args
 ARG GOPRIVATE_ARG
 ARG GOPROXY_ARG
 ARG GOSUMDB_ARG=off
 ARG APK_MIRROR_ARG
 
-# 设置Go环境变量
+# Go environment variables
 ENV GOPRIVATE=${GOPRIVATE_ARG}
 ENV GOPROXY=${GOPROXY_ARG}
 ENV GOSUMDB=${GOSUMDB_ARG}

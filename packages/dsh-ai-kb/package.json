@@ -40,8 +40,7 @@
   "files": [
     "dist",
     "cordis.patch.yml",
-    "README.md",
-    "README_CN.md"
+    "README.md"
   ],
   "engines": {
     "node": ">=20.11"

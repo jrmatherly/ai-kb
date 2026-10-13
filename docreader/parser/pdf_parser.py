@@ -312,7 +312,8 @@ def _is_figure_interior_line(text: str) -> bool:
     if _is_chart_debris_line(t):
         return True
     # Prose sentence above a figure (wrapped paragraph tail) — keep in text.
-    if t.endswith((".", "。", "!", "?", "！")) and len(t) >= 15:
+    # "\u3002" and "\uff01" are the Chinese full stop and fullwidth exclamation mark
+    if t.endswith((".", "\u3002", "!", "?", "\uff01")) and len(t) >= 15:
         return False
     if len(t.split()) >= 7:
         return False
@@ -866,7 +867,8 @@ def _segments_to_markdown(lines: list) -> str:
             or len(txt) < MIN_HEADING_LINE_CHARS
         ):
             return 0
-        if txt[-1:] in ".。!！?？,，;；:：":
+        # ASCII and fullwidth (Chinese) sentence and clause punctuation
+        if txt[-1:] in ".\u3002!\uff01?\uff1f,\uff0c;\uff1b:\uff1a":
             return 0
         r = ln["h"] / body
         if r >= 2.0:

@@ -2,12 +2,12 @@
 set -euo pipefail
 
 #
-# 本地构建 + 打包 AI KB Lite 发行包
+# Build and package the AI KB Lite distribution locally
 #
-# 用法:
-#   ./scripts/package-lite.sh              # 自动检测版本
-#   ./scripts/package-lite.sh v0.2.0       # 指定版本号
-#   SKIP_FRONTEND=1 ./scripts/package-lite.sh  # 跳过前端构建（使用已有 web/）
+# Usage:
+#   ./scripts/package-lite.sh              # detect the version automatically
+#   ./scripts/package-lite.sh v0.2.0       # set the version
+#   SKIP_FRONTEND=1 ./scripts/package-lite.sh  # skip the frontend build (use the existing web/)
 #
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -47,7 +47,7 @@ if [ "${SKIP_FRONTEND:-}" != "1" ]; then
 fi
 
 if [ ! -f web/index.html ]; then
-    echo "WARNING: web/index.html not found — package will not include frontend"
+    echo "WARNING: web/index.html not found, package will not include frontend"
 fi
 
 # ── Step 2: Build Go binary ──

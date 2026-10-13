@@ -3,11 +3,11 @@ Description=AI KB (docker compose)
 Requires=docker.service ai-kb-firstboot.service
 After=docker.service network-online.target ai-kb-firstboot.service
 Wants=network-online.target
-# 关键: Requires=ai-kb-firstboot.service 让首启 init 失败时本服务也不启动,
-# 避免 firstboot 没成功生成随机密钥就用 .env.example 默认明文密码把 postgres
-# 数据卷初始化掉。ai-kb-firstboot.service 在已初始化的实例上由
-# ConditionPathExists=!/opt/ai-kb/.firstboot.done 跳过, 跳过 = 成功,
-# 不会阻塞本服务后续重启。
+# Key point: Requires=ai-kb-firstboot.service keeps this service from starting when first-boot init fails,
+# so the postgres data volume is never initialized with the plaintext default passwords from .env.example
+# before firstboot has generated random keys. On an already initialized instance, ai-kb-firstboot.service is
+# skipped by ConditionPathExists=!/opt/ai-kb/.firstboot.done, and a skip counts as success,
+# so it does not block later restarts of this service.
 
 [Service]
 Type=oneshot

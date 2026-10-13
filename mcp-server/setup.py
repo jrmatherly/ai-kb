@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-AI KB MCP Server 安装脚本
+AI KB MCP Server install script
 """
 
 from setuptools import setup
 
 
-# 读取 README 文件
 def read_readme():
     try:
         with open("README.md", "r", encoding="utf-8") as f:
@@ -15,7 +14,6 @@ def read_readme():
         return "AI KB MCP Server - Model Context Protocol server for AI KB API"
 
 
-# 读取依赖
 def read_requirements():
     try:
         with open("requirements.txt", "r", encoding="utf-8") as f:

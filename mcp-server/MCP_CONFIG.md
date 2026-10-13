@@ -1,27 +1,27 @@
-# 使用 uv 运行 AI KB MCP 服务器
+# Run the AI KB MCP server with uv
 
-> 更推荐使用`uv`来运行基于python的MCP服务。
+> We recommend `uv` for running Python-based MCP servers.
 >
-> 也可通过 PyPI 安装：`pip install ai-kb-mcp`，或使用 `uvx --from ai-kb-mcp ai-kb-mcp-server`（官方包名 `ai-kb-mcp`，由 [jrmatherly/ai-kb](https://github.com/jrmatherly/ai-kb) 维护）。
+> You can also install from PyPI with `pip install ai-kb-mcp`, or run `uvx --from ai-kb-mcp ai-kb-mcp-server` (official package `ai-kb-mcp`, maintained by [jrmatherly/ai-kb](https://github.com/jrmatherly/ai-kb)).
 
-## 1. 安装 uv
+## 1. Install uv
 
 ```bash
 # macOS/Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 或使用 Homebrew (macOS)
+# Or with Homebrew (macOS)
 brew install uv
 
 # Windows
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-## 2. MCP 客户端配置
+## 2. MCP client configuration
 
-### Claude Desktop 配置
+### Claude Desktop
 
-在 Claude Desktop 设置中添加:
+Add this to the Claude Desktop settings:
 
 ```json
 {
@@ -43,33 +43,9 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 }
 ```
 
-### Cursor 配置
+### Cursor
 
-在 Cursor 中，编辑 MCP 配置文件 (通常在 `~/.cursor/mcp-config.json`):
-
-```json
-{
-  "mcpServers": {
-    "aikb": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/path/ai-kb/mcp-server",
-        "run",
-        "run_server.py"
-      ],
-      "env": {
-        "AIKB_API_KEY": "your_api_key_here",
-        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
-      }
-    }
-  }
-}
-```
-
-### KiloCode 配置
-
-对于 KiloCode 或其他支持 MCP 的编辑器，配置如下:
+In Cursor, edit the MCP configuration file (usually `~/.cursor/mcp-config.json`):
 
 ```json
 {
@@ -91,9 +67,33 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 }
 ```
 
-### 其他 MCP 客户端
+### KiloCode
 
-对于一般 MCP 客户端配置:
+For KiloCode or other editors that support MCP:
+
+```json
+{
+  "mcpServers": {
+    "aikb": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/ai-kb/mcp-server",
+        "run",
+        "run_server.py"
+      ],
+      "env": {
+        "AIKB_API_KEY": "your_api_key_here",
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
+      }
+    }
+  }
+}
+```
+
+### Other MCP clients
+
+For a generic MCP client:
 
 ```json
 {

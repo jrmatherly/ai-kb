@@ -21,10 +21,6 @@
 </p>
 
 <p align="center">
-  <b>English</b> · <a href="./README_CN.md">简体中文</a> · <a href="./README_JA.md">日本語</a> · <a href="./README_KO.md">한국어</a>
-</p>
-
-<p align="center">
   <a href="#overview">Overview</a> ·
   <a href="#quick-start">Quick Start</a> ·
   <a href="#whats-new">What's New</a> ·

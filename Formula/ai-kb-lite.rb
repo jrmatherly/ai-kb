@@ -1,5 +1,5 @@
 class AiKbLite < Formula
-  desc "Knowledge base management system — single-binary Lite edition"
+  desc "Knowledge base management system, single-binary Lite edition"
   homepage "https://github.com/jrmatherly/ai-kb"
   version "0.3.6-test"
   license "Apache-2.0"
@@ -55,8 +55,8 @@ class AiKbLite < Formula
         sed -i '' "s|LOCAL_STORAGE_BASE_DIR=.*|LOCAL_STORAGE_BASE_DIR=$DATA_DIR/files|" "$CONFIG_DIR/.env.lite"
         rm -f "$CONFIG_DIR/.env.lite-e"
         echo ""
-        echo "已创建配置文件: $CONFIG_DIR/.env.lite"
-        echo "请根据需要编辑（如修改 LLM 地址、安全密钥等）。"
+        echo "Created config file: $CONFIG_DIR/.env.lite"
+        echo "Edit it as needed (for example the LLM endpoint or the secret keys)."
         echo ""
       fi
 
@@ -88,25 +88,25 @@ class AiKbLite < Formula
 
   def caveats
     <<~EOS
-      前台运行:
+      Run in the foreground:
         ai-kb-lite
 
-      后台服务（推荐）:
-        brew services start ai-kb-lite   # 启动并开机自启
-        brew services stop ai-kb-lite    # 停止
-        brew services restart ai-kb-lite # 重启
-        brew services info ai-kb-lite    # 查看状态
+      Background service (recommended):
+        brew services start ai-kb-lite   # start now and at login
+        brew services stop ai-kb-lite    # stop
+        brew services restart ai-kb-lite # restart
+        brew services info ai-kb-lite    # show status
 
-      日志:
+      Logs:
         #{var}/log/ai-kb-lite.log
 
-      首次运行会自动创建配置文件:
+      The first run creates the config file:
         ~/.config/aikb/.env.lite
 
-      数据存储在:
+      Data is stored in:
         ~/.local/share/aikb/
 
-      如需修改配置（LLM 服务地址、安全密钥等）:
+      To change the config (LLM endpoint, secret keys and so on):
         $EDITOR ~/.config/aikb/.env.lite
         brew services restart ai-kb-lite
     EOS

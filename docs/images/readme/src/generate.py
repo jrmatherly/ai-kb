@@ -1,6 +1,6 @@
 """Generate the README artwork in the product website's visual language.
 
-Outputs hero-*.svg, capabilities-*.svg, architecture-*.svg (per language and theme) and
+Outputs hero-*.svg, capabilities-*.svg, architecture-*.svg (per theme) and
 icons/*.svg into the directory above this script. Colors and fonts follow
 website-docs/shared/brand.css; line icons come from website-docs/homepage/app/ui.tsx.
 The wordmark PNGs are docs/images/logo.png cropped, with the white ground turned
@@ -91,11 +91,11 @@ def wrap(s, size, width):
     """Greedy wrap: Han and kana break anywhere, latin and Hangul break at spaces."""
     tokens, buf, group = [], "", ""
     for ch in s:
-        if group or ch in "（(":  # keep a bracketed aside like （任意） on one line
+        if group or ch in "\uff08(":  # keep a bracketed aside, ASCII or fullwidth parentheses, on one line
             if not group and buf:
                 tokens.append(buf); buf = ""
             group += ch
-            if ch in "）)":
+            if ch in "\uff09)":
                 tokens.append(group); group = ""
             continue
         if breaks_anywhere(ch):
@@ -110,9 +110,9 @@ def wrap(s, size, width):
         tokens.append(buf + group)
     lines, cur = [], ""
     for t in tokens:
-        if cur and text_width((cur + t).rstrip(), size) > width and t not in "，。、；：）」":
+        if cur and text_width((cur + t).rstrip(), size) > width and t not in "\uff0c\u3002\u3001\uff1b\uff1a\uff09\u300d":  # CJK closing punctuation never starts a line
             carry = ""
-            while cur and cur[-1] in "（(「":
+            while cur and cur[-1] in "\uff08(\u300c":
                 carry, cur = cur[-1] + carry, cur[:-1]
             lines.append(cur.rstrip()); cur = carry + t.lstrip()
         else:
@@ -140,18 +140,6 @@ def wordmark(theme):
 
 
 COPY = {
-    "cn": dict(
-        eyebrow="TENCENT OPEN SOURCE · WEKNORA",
-        h1=["帮你找到答案，", "并将知识付诸实践。"], h1_size=88,
-        desc=["腾讯开源的企业级知识管理框架。", "汇集团队资料，用于知识问答、任务执行和 Wiki 整理。"],
-        highlights=["RAG 问答", "Agent 推理", "自动 Wiki", "本机浏览器", "技能与沙箱", "MCP Server", "长期记忆", "数据源与 IM"],
-        trust=[("github", "腾讯开源 · MIT License"), ("server", "支持私有化部署"), ("model", "自由选择模型与存储")],
-        cards=[
-            ("search", "01 / RAG", "回答有据可查", "结合语义与关键词检索查找相关资料，回答附带来源引用，可打开原文核对。", ["混合检索", "多模态解析", "原文引用"]),
-            ("agent", "02 / AGENT", "用知识和工具完成任务", "智能体根据任务检索知识库、搜索网页、调用 MCP 工具与技能，在沙箱中处理文件、运行脚本，还能操作你电脑上的浏览器，并跨会话记住你确认过的偏好。", ["多步推理", "技能与沙箱", "本机浏览器", "MCP 工具", "长期记忆"]),
-            ("wiki", "03 / WIKI", "把文档整理成 Wiki", "从原始文档生成相互链接的 Wiki 页面与知识图谱，支持浏览、编辑和版本回滚。", ["自动组织", "知识图谱", "版本回滚"]),
-        ],
-    ),
     "en": dict(
         eyebrow="TENCENT OPEN SOURCE · WEKNORA",
         h1=["Find the answers,", "and put knowledge to work."], h1_size=68,
@@ -162,30 +150,6 @@ COPY = {
             ("search", "01 / RAG", "Answers you can check", "Semantic and keyword search find the relevant material. Every answer cites its sources, and you can open the original to verify.", ["Hybrid search", "Multimodal parsing", "Citations"]),
             ("agent", "02 / AGENT", "Tasks done with knowledge and tools", "The agent searches knowledge bases and the web, calls MCP tools and skills, handles files and scripts in a sandbox, operates the browser on your computer, and remembers preferences you have confirmed.", ["Multi-step", "Skills & sandbox", "Local browser", "MCP tools", "Memory"]),
             ("wiki", "03 / WIKI", "Documents organized into a wiki", "Builds interlinked wiki pages and a knowledge graph from raw documents, with browsing, editing and version rollback.", ["Auto-organized", "Knowledge graph", "Rollback"]),
-        ],
-    ),
-    "ja": dict(
-        eyebrow="TENCENT OPEN SOURCE · WEKNORA",
-        h1=["答えを見つけ、", "知識を実践に活かす。"], h1_size=88,
-        desc=["Tencent が公開するオープンソースのエンタープライズ向けナレッジ管理フレームワーク。", "チームの資料を集約し、Q&A・タスク実行・Wiki 整理に活用します。"],
-        highlights=["RAG Q&A", "Agent 推論", "自動 Wiki", "ローカルブラウザ", "サンドボックス", "MCP Server", "長期メモリ", "データ連携 · IM"],
-        trust=[("github", "Tencent オープンソース · MIT License"), ("server", "プライベートデプロイ対応"), ("model", "モデルとストレージを自由に選択")],
-        cards=[
-            ("search", "01 / RAG", "根拠のある回答", "セマンティック検索とキーワード検索を組み合わせて関連資料を探し、回答には出典が付きます。原文を開いて確認できます。", ["ハイブリッド検索", "マルチモーダル解析", "原文引用"]),
-            ("agent", "02 / AGENT", "知識とツールでタスクを完了", "エージェントがナレッジベースや Web を検索し、MCP ツールやスキルを呼び出し、サンドボックスでファイル処理やスクリプト実行を行い、お使いのパソコンのブラウザも操作します。確認済みの好みはセッションをまたいで記憶します。", ["マルチステップ推論", "サンドボックス", "ローカルブラウザ", "MCP ツール", "長期メモリ"]),
-            ("wiki", "03 / WIKI", "ドキュメントを Wiki に整理", "原文書から相互リンクされた Wiki ページとナレッジグラフを生成し、閲覧・編集・バージョンのロールバックに対応します。", ["自動整理", "ナレッジグラフ", "ロールバック"]),
-        ],
-    ),
-    "ko": dict(
-        eyebrow="TENCENT OPEN SOURCE · WEKNORA",
-        h1=["답을 찾고,", "지식을 실천으로."], h1_size=88,
-        desc=["Tencent가 오픈소스로 공개한 엔터프라이즈 지식 관리 프레임워크입니다.", "팀 자료를 모아 Q&A, 작업 실행, Wiki 정리에 활용합니다."],
-        highlights=["RAG Q&A", "Agent 추론", "자동 Wiki", "로컬 브라우저", "스킬과 샌드박스", "MCP Server", "장기 메모리", "데이터 소스와 IM"],
-        trust=[("github", "Tencent 오픈소스 · MIT License"), ("server", "프라이빗 배포 지원"), ("model", "모델과 스토리지 자유 선택")],
-        cards=[
-            ("search", "01 / RAG", "근거 있는 답변", "시맨틱 검색과 키워드 검색으로 관련 자료를 찾고, 답변에 출처를 표시합니다. 원문을 열어 확인할 수 있습니다.", ["하이브리드 검색", "멀티모달 파싱", "원문 인용"]),
-            ("agent", "02 / AGENT", "지식과 도구로 작업 완료", "에이전트가 작업에 맞춰 지식베이스와 웹을 검색하고 MCP 도구와 스킬을 호출하며, 샌드박스에서 파일을 처리하고 스크립트를 실행하고, 사용자 컴퓨터의 브라우저도 조작합니다. 확인한 선호는 세션을 넘어 기억합니다.", ["다단계 추론", "스킬과 샌드박스", "로컬 브라우저", "MCP 도구", "장기 메모리"]),
-            ("wiki", "03 / WIKI", "문서를 Wiki로 정리", "원본 문서에서 상호 연결된 Wiki 페이지와 지식 그래프를 생성하고, 탐색·편집·버전 롤백을 지원합니다.", ["자동 정리", "지식 그래프", "버전 롤백"]),
         ],
     ),
 }
@@ -302,27 +266,6 @@ ICONS.update({
 })
 
 ARCH = {
-    "cn": dict(
-        heads=["客户端与渠道", "WeKnora 主服务", "运行时服务", "存储"],
-        access=[("monitor", "Web UI", "Vue 3 · HTTP / SSE"), ("terminal", "API · CLI · SDK", "API Key 按能力授权"),
-                ("channels", "IM 频道", "企业微信 · 飞书 · Slack 等"), ("code", "网站嵌入", "Widget · 域名白名单"),
-                ("plug", "MCP 客户端", "Streamable HTTP"), ("browser", "本机浏览器", "BrowserSkill · WebSocket")],
-        modes=[("search", "RAG 问答", ["查询理解", "混合检索", "重排序", "流式生成 · 引用"]),
-               ("agent", "Agent 推理", ["ReAct 多步推理", "工具 · 技能 · MCP", "沙箱执行", "长期记忆"]),
-               ("wiki", "自动 Wiki", ["页面生成与维护", "知识图谱", "人工编辑", "版本回滚"])],
-        shared="三种能力共享同一知识库",
-        pipeline_head="知识处理流水线",
-        pipeline=["导入", "解析", "分块", "向量化", "索引", "富化"],
-        pipeline_note="摘要、问题、图谱与标签由异步任务队列分阶段处理",
-        platform=[("shield", "空间与权限", "RBAC · 审计日志"), ("model", "模型目录", "27 家厂商"),
-                  ("server", "任务队列", "Worker 池治理"), ("trace", "可观测性", "Langfuse 追踪")],
-        services=[("file", "文档解析", "docreader · gRPC"), ("sandbox", "会话沙箱", "Docker · E2B · Cube"),
-                  ("model", "模型服务", "27 家厂商 · Ollama"), ("search", "联网搜索", "Bing · 博查 · SearXNG 等"),
-                  ("plug", "外部 MCP 服务", "工具 · OAuth2"), ("sources", "数据源", "飞书 · Confluence 等")],
-        stores=[("PostgreSQL", "业务数据 · BM25 · pgvector"), ("Redis", "任务队列 · 流 · 限流"),
-                ("向量库", "ES · Qdrant · Milvus 等（可选）"), ("对象存储", "本地 · MinIO · COS · S3 等"),
-                ("Neo4j", "知识图谱（可选）"), ("Langfuse", "链路追踪（可选）")],
-    ),
     "en": dict(
         heads=["Clients and channels", "WeKnora app", "Runtime services", "Storage"],
         access=[("monitor", "Web UI", "Vue 3 · HTTP / SSE"), ("terminal", "API · CLI · SDK", "Scoped API keys"),
@@ -343,48 +286,6 @@ ARCH = {
         stores=[("PostgreSQL", "Data · BM25 · pgvector"), ("Redis", "Queue · streams · limits"),
                 ("Vector store", "ES · Qdrant · Milvus … (optional)"), ("Object storage", "Local · MinIO · COS · S3 …"),
                 ("Neo4j", "Knowledge graph (optional)"), ("Langfuse", "Tracing (optional)")],
-    ),
-    "ja": dict(
-        heads=["クライアントとチャネル", "WeKnora アプリ", "ランタイムサービス", "ストレージ"],
-        access=[("monitor", "Web UI", "Vue 3 · HTTP / SSE"), ("terminal", "API · CLI · SDK", "スコープ付き API キー"),
-                ("channels", "IM チャネル", "Feishu · Slack など"), ("code", "ウェブ埋め込み", "Widget · ドメイン許可"),
-                ("plug", "MCP クライアント", "Streamable HTTP"), ("browser", "ローカルブラウザ", "BrowserSkill · WebSocket")],
-        modes=[("search", "RAG Q&A", ["クエリ理解", "ハイブリッド検索", "リランク", "引用付き回答"]),
-               ("agent", "Agent 推論", ["ReAct 推論", "ツール · スキル", "サンドボックス実行", "長期メモリ"]),
-               ("wiki", "自動 Wiki", ["ページ生成", "ナレッジグラフ", "手動編集", "ロールバック"])],
-        shared="3 つの機能は同じナレッジベースを共有",
-        pipeline_head="ナレッジ処理パイプライン",
-        pipeline=["取り込み", "解析", "チャンク", "埋め込み", "索引", "拡充"],
-        pipeline_note="要約・質問・グラフ・タグは非同期タスクキューで段階的に処理",
-        platform=[("shield", "ワークスペース", "RBAC · 監査ログ"), ("model", "モデルカタログ", "27 ベンダー"),
-                  ("server", "タスクキュー", "Worker プール"), ("trace", "可観測性", "Langfuse トレース")],
-        services=[("file", "文書解析", "docreader · gRPC"), ("sandbox", "サンドボックス", "Docker · E2B · Cube"),
-                  ("model", "モデル", "27 ベンダー · Ollama"), ("search", "Web 検索", "Bing · SearXNG など"),
-                  ("plug", "外部 MCP", "ツール · OAuth2"), ("sources", "データソース", "Feishu · Confluence など")],
-        stores=[("PostgreSQL", "業務データ · BM25 · pgvector"), ("Redis", "タスクキュー · ストリーム"),
-                ("ベクトル DB", "ES · Qdrant · Milvus など（任意）"), ("オブジェクト ストレージ", "ローカル · MinIO · COS · S3 など"),
-                ("Neo4j", "ナレッジグラフ（任意）"), ("Langfuse", "トレーシング（任意）")],
-    ),
-    "ko": dict(
-        heads=["클라이언트와 채널", "WeKnora 앱", "런타임 서비스", "스토리지"],
-        access=[("monitor", "Web UI", "Vue 3 · HTTP / SSE"), ("terminal", "API · CLI · SDK", "범위 지정 API 키"),
-                ("channels", "IM 채널", "Feishu · Slack 등"), ("code", "웹사이트 임베드", "Widget · 도메인 허용"),
-                ("plug", "MCP 클라이언트", "Streamable HTTP"), ("browser", "로컬 브라우저", "BrowserSkill · WebSocket")],
-        modes=[("search", "RAG Q&A", ["질의 이해", "하이브리드 검색", "재순위", "인용 포함 답변"]),
-               ("agent", "Agent 추론", ["ReAct 추론", "도구 · 스킬 · MCP", "샌드박스 실행", "장기 메모리"]),
-               ("wiki", "자동 Wiki", ["페이지 생성", "지식 그래프", "수동 편집", "버전 롤백"])],
-        shared="세 기능은 같은 지식베이스를 공유",
-        pipeline_head="지식 처리 파이프라인",
-        pipeline=["가져오기", "파싱", "청킹", "임베딩", "인덱싱", "보강"],
-        pipeline_note="요약·질문·그래프·태그는 비동기 작업 큐에서 단계별로 처리",
-        platform=[("shield", "워크스페이스", "RBAC · 감사 로그"), ("model", "모델 카탈로그", "27개 벤더"),
-                  ("server", "작업 큐", "Worker 풀"), ("trace", "관측 가능성", "Langfuse 추적")],
-        services=[("file", "문서 파싱", "docreader · gRPC"), ("sandbox", "샌드박스", "Docker · E2B · Cube"),
-                  ("model", "모델", "27개 벤더 · Ollama"), ("search", "웹 검색", "Bing · SearXNG 등"),
-                  ("plug", "외부 MCP", "도구 · OAuth2"), ("sources", "데이터 소스", "Feishu · Confluence 등")],
-        stores=[("PostgreSQL", "업무 데이터 · BM25 · pgvector"), ("Redis", "작업 큐 · 스트림"),
-                ("벡터 DB", "ES · Qdrant · Milvus 등(선택)"), ("오브젝트 스토리지", "로컬 · MinIO · COS · S3 등"),
-                ("Neo4j", "지식 그래프(선택)"), ("Langfuse", "추적(선택)")],
     ),
 }
 EYEBROWS = ["01 / ACCESS", "02 / WEKNORA APP", "03 / SERVICES", "04 / STORAGE"]

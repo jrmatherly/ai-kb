@@ -62,11 +62,11 @@ def _mhtml_with_table_image_and_caption() -> bytes:
     main.set_content(
         "<html><body>"
         "<table>"
-        "<tr><th>体验方向</th><th>代表内容</th></tr>"
-        "<tr><td>赛季制建立</td><td>BP、Rank</td></tr>"
+        "<tr><th>\u4f53\u9a8c\u65b9\u5411</th><th>\u4ee3\u8868\u5185\u5bb9</th></tr>"
+        "<tr><td>\u8d5b\u5b63\u5236\u5efa\u7acb</td><td>BP\u3001Rank</td></tr>"
         "</table>"
-        '<img src="cid:test-image" alt="图片" title="图片">'
-        "<p>高机动性身法与独特枪械反馈</p>"
+        '<img src="cid:test-image" alt="\u56fe\u7247" title="\u56fe\u7247">'
+        "<p>\u9ad8\u673a\u52a8\u6027\u8eab\u6cd5\u4e0e\u72ec\u7279\u67aa\u68b0\u53cd\u9988</p>"
         "</body></html>",
         subtype="html",
     )
@@ -88,19 +88,19 @@ def _mhtml_with_table_image_and_caption() -> bytes:
 
 def _mhtml_with_8bit_utf8_headers() -> bytes:
     """Browser-style MHTML: raw UTF-8 bytes in MIME headers, not RFC 2047."""
-    html_loc = "https://example.com/测试页面.html".encode("utf-8")
-    ad_loc = "https://googleads.example/广告.html".encode("utf-8")
-    image_loc = "https://example.com/图片.png".encode("utf-8")
-    content_id = "<图片@local>".encode("utf-8")
-    attachment_id = "图片".encode("utf-8")
+    html_loc = "https://example.com/\u6d4b\u8bd5\u9875\u9762.html".encode("utf-8")
+    ad_loc = "https://googleads.example/\u5e7f\u544a.html".encode("utf-8")
+    image_loc = "https://example.com/\u56fe\u7247.png".encode("utf-8")
+    content_id = "<\u56fe\u7247@local>".encode("utf-8")
+    attachment_id = "\u56fe\u7247".encode("utf-8")
     main_html = (
-        "<html><body><h1>中文主文</h1>"
-        '<img alt="绝对" src="https://example.com/图片.png">'
-        '<img alt="相对" src="图片.png">'
-        '<img alt="cid" src="cid:图片@local">'
+        "<html><body><h1>\u4e2d\u6587\u4e3b\u6587</h1>"
+        '<img alt="\u7edd\u5bf9" src="https://example.com/\u56fe\u7247.png">'
+        '<img alt="\u76f8\u5bf9" src="\u56fe\u7247.png">'
+        '<img alt="cid" src="cid:\u56fe\u7247@local">'
         "</body></html>"
     ).encode("utf-8")
-    ad_html = "<html><body><h1>广告正文</h1></body></html>".encode("utf-8")
+    ad_html = "<html><body><h1>\u5e7f\u544a\u6b63\u6587</h1></body></html>".encode("utf-8")
     png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
     return b"".join(
         [
@@ -185,13 +185,13 @@ class MHTMLParserTest(unittest.TestCase):
 
         self.assertEqual(len(document.images), 1)
         image_ref = next(iter(document.images))
-        self.assertIn(f'![图片]({image_ref} "图片")', document.content)
+        self.assertIn(f'![\u56fe\u7247]({image_ref} "\u56fe\u7247")', document.content)
         self.assertIn(
-            f"| 赛季制建立 | BP、Rank |\n\n![图片]({image_ref} \"图片\")",
+            f"| \u8d5b\u5b63\u5236\u5efa\u7acb | BP\u3001Rank |\n\n![\u56fe\u7247]({image_ref} \"\u56fe\u7247\")",
             document.content,
         )
         self.assertIn(
-            f'![图片]({image_ref} "图片")\n\n高机动性身法与独特枪械反馈',
+            f'![\u56fe\u7247]({image_ref} "\u56fe\u7247")\n\n\u9ad8\u673a\u52a8\u6027\u8eab\u6cd5\u4e0e\u72ec\u7279\u67aa\u68b0\u53cd\u9988',
             document.content,
         )
 
@@ -307,11 +307,11 @@ class MHTMLParserTest(unittest.TestCase):
             base64.b64decode(image_contract["image_data_base64"]),
         )
         self.assertIn(
-            '| 赛季制建立 | BP、Rank |\n\n![图片](images/第 1 页 (测试).gif "阶段 1) 图片")',
+            '| \u8d5b\u5b63\u5236\u5efa\u7acb | BP\u3001Rank |\n\n![\u56fe\u7247](images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif "\u9636\u6bb5 1) \u56fe\u7247")',
             document.content,
         )
         self.assertIn(
-            '![图片](images/第 1 页 (测试).gif "阶段 1) 图片")\n\n高机动性身法与独特枪械反馈',
+            '![\u56fe\u7247](images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif "\u9636\u6bb5 1) \u56fe\u7247")\n\n\u9ad8\u673a\u52a8\u6027\u8eab\u6cd5\u4e0e\u72ec\u7279\u67aa\u68b0\u53cd\u9988',
             document.content,
         )
         self.assertNotIn("\n\n\n", document.content.split("```", 1)[0])
@@ -323,27 +323,27 @@ class MHTMLParserTest(unittest.TestCase):
         raw = (
             b"Content-Type: text/plain\r\n"
             b"Content-Location: https://example.com/"
-            + "图片.png".encode("utf-8")
+            + "\u56fe\u7247.png".encode("utf-8")
             + b"\r\n\r\nbody\r\n"
         )
         value = email.message_from_bytes(raw).get("Content-Location")
         self.assertIsInstance(value, Header)
-        self.assertEqual(_header_str(value), "https://example.com/图片.png")
+        self.assertEqual(_header_str(value), "https://example.com/\u56fe\u7247.png")
         self.assertEqual(_header_str(None), "")
         self.assertEqual(_header_str("ascii-location"), "ascii-location")
-        self.assertEqual(_header_str("已是unicode"), "已是unicode")
+        self.assertEqual(_header_str("\u5df2\u662funicode"), "\u5df2\u662funicode")
 
     def test_parse_8bit_utf8_headers_rewrites_images_without_crashing(self):
         document = MHTMLParser(
             file_name="article.mhtml", file_type="mhtml"
         ).parse_into_text(_mhtml_with_8bit_utf8_headers())
 
-        self.assertIn("中文主文", document.content)
-        self.assertNotIn("广告正文", document.content)
-        self.assertIn("images/图片.png", document.images)
-        self.assertIn("images/图片.png", document.content)
-        self.assertEqual(document.content.count("images/图片.png"), 3)
-        self.assertNotIn("cid:图片@local", document.content)
+        self.assertIn("\u4e2d\u6587\u4e3b\u6587", document.content)
+        self.assertNotIn("\u5e7f\u544a\u6b63\u6587", document.content)
+        self.assertIn("images/\u56fe\u7247.png", document.images)
+        self.assertIn("images/\u56fe\u7247.png", document.content)
+        self.assertEqual(document.content.count("images/\u56fe\u7247.png"), 3)
+        self.assertNotIn("cid:\u56fe\u7247@local", document.content)
         self.assertNotIn("\ufffd", document.content)
         self.assertTrue(all("\ufffd" not in key for key in document.images))
 

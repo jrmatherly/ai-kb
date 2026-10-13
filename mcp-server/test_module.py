@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-AI KB MCP Server 模组测试脚本
+AI KB MCP Server module tests.
 
-测试模组的各种启动方式和功能。unittest discover 会收集本文件中的 TestCase；
-也可直接运行: python test_module.py
+Tests the module's launch paths and features. unittest discover collects the
+TestCases in this file; it can also run directly: python test_module.py
 """
 
 import os

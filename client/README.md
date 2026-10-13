@@ -1,27 +1,28 @@
-# AI KB HTTP 客户端
+# AI KB HTTP client
 
-这个包提供了与AI KB服务进行交互的客户端库，支持所有基于HTTP的接口调用，使其他模块更方便地集成AI KB服务，无需直接编写HTTP请求代码。
+This package is a client library for the AI KB service. It covers every HTTP endpoint, so other modules can integrate with AI KB without writing HTTP requests by hand.
 
-## 主要功能
+## Features
 
-该客户端包含以下主要功能模块：
+The client has these feature areas:
 
-1. **会话管理**：创建、获取、更新和删除会话
-2. **知识库管理**：创建、获取、更新和删除知识库
-3. **知识管理**：添加、获取和删除知识内容
-4. **空间管理**：空间的CRUD操作
-5. **知识问答**：支持普通问答和流式问答
-6. **Agent问答**：支持基于Agent的智能问答，包含思考过程、工具调用和反思
-7. **分块管理**：查询、更新和删除知识分块
-8. **消息管理**：获取和删除会话消息
-9. **模型管理**：创建、获取、更新和删除模型
-10. **沙箱技能**：向沙箱配置安装技能（zip 上传，或从 ClawHub / SkillHub / GitHub 等来源），并配置技能所需的环境变量
-11. **长期记忆**：当前用户的跨会话记忆（设置开关、条目增删改、确认/否决、主题、文档亲和度、导出、立刻整理）
-12. **认证**：登录、刷新令牌、切换激活空间（`SwitchTenant` 会写入最近活跃租户偏好）
+1. **Sessions**: create, get, update and delete sessions
+2. **Knowledge bases**: create, get, update and delete knowledge bases
+3. **Knowledge items**: add, get and delete knowledge content
+4. **Workspaces**: workspace CRUD
+5. **Knowledge Q&A**: regular and streaming Q&A
+6. **Agent Q&A**: agent-based Q&A with thinking, tool calls and reflection
+7. **Chunks**: query, update and delete knowledge chunks
+8. **Messages**: get and delete session messages
+9. **Models**: create, get, update and delete models
+10. **Evaluation**: start evaluation tasks and get evaluation results
+11. **Sandbox skills**: install skills into a sandbox configuration (zip upload, or from sources such as ClawHub / SkillHub / GitHub) and configure the environment variables the skills need
+12. **Long-term memory**: the current user's cross-session memory (on/off setting, add/edit/delete entries, confirm/reject, topics, document affinity, export, consolidate now)
+13. **Authentication**: log in, refresh tokens, switch the active workspace (`SwitchTenant` records the last active tenant preference)
 
-## 使用方法
+## Usage
 
-### 创建客户端实例
+### Create a client
 
 ```go
 import (
@@ -30,17 +31,17 @@ import (
     "time"
 )
 
-// 创建客户端实例
+// Create a client
 apiClient := client.NewClient(
-    "http://api.example.com", 
+    "http://api.example.com",
     client.WithToken("your-auth-token"),
     client.WithTimeout(30*time.Second),
 )
 ```
 
-### 空间配置
+### Workspace
 
-客户端支持通过 `WithTenantID` 设置默认空间，请求时会自动携带 `X-Tenant-ID` 请求头：
+`WithTenantID` sets a default workspace; every request then carries the `X-Tenant-ID` header:
 
 ```go
 tenantID := uint64(10000)
@@ -51,20 +52,20 @@ apiClient := client.NewClient(
 )
 ```
 
-如果某个请求需要临时切换空间，可以在 `context` 中设置 `TenantID`，值可以是 `uint64`、`*uint64` 或字符串形式的数字，客户端会优先使用该值：
+To switch workspace for a single request, set `TenantID` in the `context`. The value can be a `uint64`, a `*uint64` or a number as a string, and the client uses it in preference to the default:
 
 ```go
 ctx := context.WithValue(context.Background(), "TenantID", uint64(10000))
-// 调用任意客户端方法时传入 ctx，即可切换到空间 10000
+// Pass ctx to any client method to use workspace 10000
 ```
 
-### 示例：创建知识库并上传文件
+### Example: create a knowledge base and upload a file
 
 ```go
-// 创建知识库
+// Create a knowledge base
 kb := &client.KnowledgeBase{
-    Name:        "测试知识库",
-    Description: "这是一个测试知识库",
+    Name:        "Test knowledge base",
+    Description: "A knowledge base for testing",
     ChunkingConfig: client.ChunkingConfig{
         ChunkSize:    500,
         ChunkOverlap: 50,
@@ -79,37 +80,37 @@ kb := &client.KnowledgeBase{
 
 kb, err := apiClient.CreateKnowledgeBase(context.Background(), kb)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 上传知识文件并添加元数据
+// Upload a knowledge file with metadata
 metadata := map[string]string{
     "source": "local",
     "type":   "document",
 }
 knowledge, err := apiClient.CreateKnowledgeFromFile(context.Background(), kb.ID, "path/to/file.pdf", metadata)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 将同一知识库中的原始文件打包下载为 ZIP（最多 200 个 ID，合计 512 MiB）
+// Download original files from the same knowledge base as one ZIP (at most 200 IDs, 512 MiB in total)
 err = apiClient.DownloadKnowledgeFiles(context.Background(), kb.ID, []string{knowledge.ID}, "knowledge-files.zip")
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 ```
 
-### 示例：创建会话并进行问答
+### Example: create a session and ask questions
 
 ```go
-// 创建会话
+// Create a session
 sessionRequest := &client.CreateSessionRequest{
     KnowledgeBaseID: knowledgeBaseID,
     SessionStrategy: &client.SessionStrategy{
         MaxRounds:        10,
         EnableRewrite:    true,
         FallbackStrategy: "fixed_answer",
-        FallbackResponse: "抱歉，我无法回答这个问题",
+        FallbackResponse: "Sorry, I cannot answer this question",
         EmbeddingTopK:    5,
         KeywordThreshold: 0.5,
         VectorThreshold:  0.7,
@@ -122,97 +123,97 @@ sessionRequest := &client.CreateSessionRequest{
 
 session, err := apiClient.CreateSession(context.Background(), sessionRequest)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 普通问答
+// Regular Q&A
 answer, err := apiClient.KnowledgeQA(context.Background(), session.ID, &client.KnowledgeQARequest{
-    Query: "什么是人工智能?",
+    Query: "What is artificial intelligence?",
 })
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 流式问答
+// Streaming Q&A
 err = apiClient.KnowledgeQAStream(context.Background(), session.ID, &client.KnowledgeQARequest{
-    Query:            "什么是机器学习?",
-    KnowledgeBaseIDs: []string{knowledgeBaseID}, // 可选：指定知识库
-    WebSearchEnabled: false,                      // 可选：是否启用网络搜索
+    Query:            "What is machine learning?",
+    KnowledgeBaseIDs: []string{knowledgeBaseID}, // optional: restrict to these knowledge bases
+    WebSearchEnabled: false,                      // optional: enable web search
 }, func(response *client.StreamResponse) error {
-    // 处理每个响应片段
+    // handle each response chunk
     fmt.Print(response.Content)
     return nil
 })
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 ```
 
-### 示例：Agent智能问答
+### Example: agent Q&A
 
-Agent问答提供更强大的智能对话能力，支持工具调用、思考过程展示和自我反思。
+Agent Q&A is a more capable conversation mode, with tool calls, visible thinking and self-reflection.
 
 ```go
-// 创建Agent会话
+// Create an agent session
 agentSession := apiClient.NewAgentSession(session.ID)
 
-// 进行Agent问答，带完整事件处理
-err := agentSession.Ask(context.Background(), "搜索机器学习相关知识并总结要点", 
+// Ask the agent, handling every event type
+err := agentSession.Ask(context.Background(), "Search for knowledge about machine learning and summarize the key points",
     func(resp *client.AgentStreamResponse) error {
         switch resp.ResponseType {
         case client.AgentResponseTypeThinking:
-            // Agent正在思考
+            // the agent is thinking
             if resp.Done {
-                fmt.Printf("💭 思考: %s\n", resp.Content)
+                fmt.Printf("💭 Thinking: %s\n", resp.Content)
             }
-        
+
         case client.AgentResponseTypeToolCall:
-            // Agent调用工具
+            // the agent calls a tool
             if resp.Data != nil {
                 toolName := resp.Data["tool_name"]
-                fmt.Printf("🔧 调用工具: %v\n", toolName)
+                fmt.Printf("🔧 Tool call: %v\n", toolName)
             }
-        
+
         case client.AgentResponseTypeToolResult:
-            // 工具执行结果
-            fmt.Printf("✓ 工具结果: %s\n", resp.Content)
-        
+            // tool result
+            fmt.Printf("✓ Tool result: %s\n", resp.Content)
+
         case client.AgentResponseTypeReferences:
-            // 知识引用
+            // knowledge references
             if resp.KnowledgeReferences != nil {
-                fmt.Printf("📚 找到 %d 条相关知识\n", len(resp.KnowledgeReferences))
+                fmt.Printf("📚 Found %d relevant knowledge items\n", len(resp.KnowledgeReferences))
                 for _, ref := range resp.KnowledgeReferences {
                     fmt.Printf("  - [%.3f] %s\n", ref.Score, ref.KnowledgeTitle)
                 }
             }
-        
+
         case client.AgentResponseTypeAnswer:
-            // 最终答案（流式输出）
+            // final answer (streamed)
             fmt.Print(resp.Content)
             if resp.Done {
-                fmt.Println() // 结束后换行
+                fmt.Println() // newline at the end
             }
-        
+
         case client.AgentResponseTypeReflection:
-            // Agent的自我反思
+            // the agent's self-reflection
             if resp.Done {
-                fmt.Printf("🤔 反思: %s\n", resp.Content)
+                fmt.Printf("🤔 Reflection: %s\n", resp.Content)
             }
-        
+
         case client.AgentResponseTypeError:
-            // 错误信息
-            fmt.Printf("❌ 错误: %s\n", resp.Content)
+            // error
+            fmt.Printf("❌ Error: %s\n", resp.Content)
         }
         return nil
     })
 
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 简化版：只关心最终答案
+// Simple version: only the final answer
 var finalAnswer string
-err = agentSession.Ask(context.Background(), "什么是深度学习?", 
+err = agentSession.Ask(context.Background(), "What is deep learning?",
     func(resp *client.AgentStreamResponse) error {
         if resp.ResponseType == client.AgentResponseTypeAnswer {
             finalAnswer += resp.Content
@@ -221,22 +222,22 @@ err = agentSession.Ask(context.Background(), "什么是深度学习?",
     })
 ```
 
-### Agent事件类型说明
+### Agent event types
 
-| 事件类型 | 说明 | 何时触发 |
+| Event type | Meaning | When it fires |
 |---------|------|---------|
-| `AgentResponseTypeThinking` | Agent思考过程 | Agent分析问题和制定计划时 |
-| `AgentResponseTypeToolCall` | 工具调用 | Agent决定使用某个工具时 |
-| `AgentResponseTypeToolResult` | 工具执行结果 | 工具执行完成后 |
-| `AgentResponseTypeReferences` | 知识引用 | 检索到相关知识时 |
-| `AgentResponseTypeAnswer` | 最终答案 | Agent生成回答时（流式） |
-| `AgentResponseTypeArtifactsPending` | 生成文件上传中 | 回答结束后、文件写入对象存储完成前 |
-| `AgentResponseTypeReflection` | 自我反思 | Agent评估自己的回答时 |
-| `AgentResponseTypeError` | 错误 | 发生错误时 |
+| `AgentResponseTypeThinking` | Agent thinking | While the agent analyzes the question and plans |
+| `AgentResponseTypeToolCall` | Tool call | When the agent decides to use a tool |
+| `AgentResponseTypeToolResult` | Tool result | After the tool finishes |
+| `AgentResponseTypeReferences` | Knowledge references | When relevant knowledge is retrieved |
+| `AgentResponseTypeAnswer` | Final answer | While the agent writes the answer (streamed) |
+| `AgentResponseTypeArtifactsPending` | Generated files uploading | After the answer ends, before the files are written to object storage |
+| `AgentResponseTypeReflection` | Self-reflection | When the agent evaluates its own answer |
+| `AgentResponseTypeError` | Error | When an error occurs |
 
-### Agent问答测试工具
+### Agent Q&A test tool
 
-我们提供了一个交互式命令行工具用于测试Agent功能：
+An interactive command-line tool for testing the agent:
 
 ```bash
 cd client/cmd/agent_test
@@ -244,36 +245,36 @@ go build -o agent_test
 ./agent_test -url http://localhost:8080 -kb <knowledge_base_id>
 ```
 
-该工具支持：
-- 创建和管理会话
-- 交互式Agent问答
-- 实时显示所有Agent事件
-- 性能统计和调试信息
+The tool supports:
+- Creating and managing sessions
+- Interactive agent Q&A
+- Showing every agent event live
+- Performance stats and debug output
 
-详细使用说明请参考 `client/cmd/agent_test/README.md`。
+See `client/cmd/agent_test/README.md` for details.
 
-### Agent问答的高级用法
+### Advanced agent Q&A
 
-更多高级用法示例，请参考 `agent_example.go` 文件，包括：
-- 基础Agent问答
-- 工具调用跟踪
-- 知识引用捕获
-- 完整事件跟踪
-- 自定义错误处理
-- 流取消控制
-- 多会话管理
+`agent_example.go` has more advanced examples:
+- Basic agent Q&A
+- Tool call tracking
+- Capturing knowledge references
+- Full event tracing
+- Custom error handling
+- Stream cancellation
+- Multiple sessions
 
 ```
 
-### 示例：管理模型
+### Example: manage models
 
 ```go
-// 创建模型
+// Create a model
 modelRequest := &client.CreateModelRequest{
-    Name:        "测试模型",
+    Name:        "Test model",
     Type:        client.ModelTypeChat,
     Source:      client.ModelSourceInternal,
-    Description: "这是一个测试模型",
+    Description: "A model for testing",
     Parameters: client.ModelParameters{
         "temperature": 0.7,
         "top_p":       0.9,
@@ -282,63 +283,63 @@ modelRequest := &client.CreateModelRequest{
 }
 model, err := apiClient.CreateModel(context.Background(), modelRequest)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 列出所有模型
+// List all models
 models, err := apiClient.ListModels(context.Background())
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 ```
 
-### 示例：管理知识分块
+### Example: manage knowledge chunks
 
 ```go
-// 列出知识分块
+// List knowledge chunks
 chunks, total, err := apiClient.ListKnowledgeChunks(context.Background(), knowledgeID, 1, 10)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 更新分块
+// Update a chunk
 updateRequest := &client.UpdateChunkRequest{
-    Content:   "更新后的分块内容",
+    Content:   "Updated chunk content",
     IsEnabled: true,
 }
 updatedChunk, err := apiClient.UpdateChunk(context.Background(), knowledgeID, chunkID, updateRequest)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 ```
 
-### 示例：重新解析知识
+### Example: reparse a knowledge item
 
 ```go
-// 重新解析知识（删除现有内容并重新解析）
-// 适用场景：
-// 1. 原始解析失败，需要重试
-// 2. 更新了解析配置（如分块策略、多模态设置等），需要重新解析
-// 3. 知识内容已更新，需要刷新解析结果
+// Reparse a knowledge item (deletes the existing content and parses again)
+// Use it when:
+// 1. The original parse failed and needs a retry
+// 2. The parsing configuration changed (chunking strategy, multimodal settings, ...)
+// 3. The knowledge content changed and the parse result needs a refresh
 
 knowledge, err := apiClient.ReparseKnowledge(context.Background(), knowledgeID)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 知识将进入 "pending" 状态，异步重新解析
+// The knowledge item goes to "pending" and is reparsed asynchronously
 fmt.Printf("Knowledge ID: %s\n", knowledge.ID)
 fmt.Printf("Parse Status: %s\n", knowledge.ParseStatus)      // "pending"
 fmt.Printf("Enable Status: %s\n", knowledge.EnableStatus)    // "disabled"
 
-// 可以轮询检查解析状态
+// Poll the parse status
 for {
     time.Sleep(5 * time.Second)
     knowledge, err := apiClient.GetKnowledge(context.Background(), knowledgeID)
     if err != nil {
-        // 处理错误
+        // handle the error
     }
-    
+
     if knowledge.ParseStatus == "completed" {
         fmt.Println("Knowledge re-parsing completed!")
         break
@@ -349,29 +350,29 @@ for {
 }
 ```
 
-### 示例：取消解析
+### Example: cancel parsing
 
 ```go
-// 取消正在进行的解析任务（资源紧张 / 上传错误文件时使用）
-// - 已经 completed / failed 的知识不能取消
-// - 已写入的分块/索引会保留，可后续调用 ReparseKnowledge 重新解析
+// Cancel a running parse task (when resources are tight or the wrong file was uploaded)
+// - knowledge items already completed / failed cannot be cancelled
+// - chunks and indexes already written are kept; call ReparseKnowledge later to parse again
 
 knowledge, err := apiClient.CancelKnowledgeParse(context.Background(), knowledgeID)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 fmt.Printf("Parse Status: %s\n", knowledge.ParseStatus) // "cancelled"
 ```
 
-### 示例：查看文档解析追踪（Span 树）
+### Example: view the document parsing trace (span tree)
 
 ```go
-// 获取文档解析流水线的 Span 树（root → stage → subspan）
-// - attempt 传 0 表示获取最新一次解析尝试
-// - 始终返回 5 个标准阶段：docreader / chunking / embedding / multimodal / postprocess
+// Get the span tree of the document parsing pipeline (root → stage → subspan)
+// - attempt 0 means the latest parse attempt
+// - always returns the 5 standard stages: docreader / chunking / embedding / multimodal / postprocess
 trace, err := apiClient.GetKnowledgeProcessingSpans(context.Background(), knowledgeID, 0)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 fmt.Printf("ParseStatus=%s CurrentStage=%s\n", trace.ParseStatus, trace.CurrentStage)
 for _, stage := range trace.Trace.Children {
@@ -379,105 +380,105 @@ for _, stage := range trace.Trace.Children {
 }
 ```
 
-### 示例：获取会话消息
+### Example: get session messages
 
 ```go
-// 获取最近消息
+// Get recent messages
 messages, err := apiClient.GetRecentMessages(context.Background(), sessionID, 10)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 获取指定时间之前的消息
+// Get messages before a given time
 beforeTime := time.Now().Add(-24 * time.Hour)
 olderMessages, err := apiClient.GetMessagesBefore(context.Background(), sessionID, beforeTime, 10)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 ```
 
-### 示例：从托管平台安装沙箱技能
+### Example: install a sandbox skill from a hosted registry
 
-`source` 必须写明确：ClawHub 用 `@owner/slug`，ClawHub 上的 skills.sh 条目用完整 `https://clawhub.ai/skills-sh/owner/repo/slug` 或 `skills-sh:owner/repo/slug`，GitHub / SkillHub 粘贴完整 URL。不要传裸的 `owner/slug`。
+`source` must be explicit: `@owner/slug` for ClawHub, the full `https://clawhub.ai/skills-sh/owner/repo/slug` or `skills-sh:owner/repo/slug` for skills.sh entries on ClawHub, and the full URL for GitHub / SkillHub. Do not pass a bare `owner/slug`.
 
 ```go
 skillID, err := apiClient.InstallSandboxSkillFromSource(
     context.Background(), sandboxConfigID, "@owner/slug")
 if err != nil {
-    // 处理错误
+    // handle the error
 }
-_ = skillID // 用 skillID 订阅 /sandbox-configs/{id}/skills/{skillID}/install-events
+_ = skillID // subscribe to /sandbox-configs/{id}/skills/{skillID}/install-events with skillID
 ```
 
-### 示例：停止卡住的安装
+### Example: stop a stuck installation
 
-服务重启后安装行可能一直停在 `installing`，界面无法重试或卸载。停止会立刻改写该行（进程内若还有 goroutine 也会取消），之后可以再调重试或卸载。
+After a service restart an installation row can stay in `installing`, and the UI can neither retry nor uninstall it. Stopping rewrites the row at once (and cancels the goroutine if one is still running in the process); after that you can retry or uninstall.
 
 ```go
 skill, err := apiClient.StopSandboxSkill(context.Background(), sandboxConfigID, skillID)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 _ = skill
 ```
 
-### 示例：重试失败的安装
+### Example: retry a failed installation
 
-安装失败的原因常与安装包无关（沙箱不可达、依赖源超时）。服务端保留着原始安装包，重试无需再传一次。
+Installations often fail for reasons unrelated to the package (sandbox unreachable, dependency source timeout). The server keeps the original package, so a retry does not upload it again.
 
 ```go
 skillID, err := apiClient.ReinstallSandboxSkill(context.Background(), sandboxConfigID, skillID)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 ```
 
-### 示例：查看已安装技能的文件
+### Example: view an installed skill's files
 
 ```go
 files, err := apiClient.ListSandboxSkillFiles(context.Background(), sandboxConfigID, skillID)
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 content, err := apiClient.GetSandboxSkillFile(context.Background(), sandboxConfigID, skillID, "SKILL.md")
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 _ = files
 _ = content
 ```
 
-### 示例：配置技能的环境变量
+### Example: configure a skill's environment variables
 
-技能安装时会声明它需要哪些环境变量。值分两层：空间级由管理员设置、对所有人生效；个人级只对**当前调用身份**生效，并覆盖空间级。任何接口都不会回读已保存的值，只报告是否已设置。
+A skill declares the environment variables it needs when it is installed. Values have two levels: workspace values are set by an administrator and apply to everyone; personal values apply only to the **calling identity** and override the workspace value. No endpoint reads back a saved value; they only report whether it is set.
 
-用 API Key 调用与网页登录是两种不同身份：在网页里填的个人级值不会作用于 API Key 发起的执行。集成场景请优先用空间级值。
+An API key and a web login are two different identities: a personal value entered in the web UI does not apply to runs started with an API key. For integrations, prefer workspace values.
 
 ```go
-// 空间级：对该空间所有人生效，需要 Admin 及以上权限
+// Workspace level: applies to everyone in the workspace, needs Admin or higher
 skill, err := apiClient.SetSandboxSkillEnvValues(
     context.Background(), sandboxConfigID, skillID,
     map[string]string{"TAVILY_API_KEY": "tvly-xxxxx"})
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 个人级：只对当前调用身份生效
+// Personal level: applies only to the calling identity
 err = apiClient.SetMySkillEnvVar(
     context.Background(), skillID, "TAVILY_API_KEY", "tvly-yyyyy")
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 
-// 查看哪些变量还没填。清空一个值用 Delete，而不是写入空字符串
+// See which variables are still unset. Clear a value with Delete, not by writing an empty string
 groups, err := apiClient.ListMyEnvVars(context.Background())
 if err != nil {
-    // 处理错误
+    // handle the error
 }
 _ = skill
 _ = groups
 ```
 
-## 完整示例
+## Full example
 
-请参考 `example.go` 文件中的 `ExampleUsage` 函数，其中展示了客户端的完整使用流程。
+See the `ExampleUsage` function in `example.go` for the full client flow.

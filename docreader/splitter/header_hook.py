@@ -5,19 +5,19 @@ from pydantic import BaseModel, Field
 
 
 class HeaderTrackerHook(BaseModel):
-    """表头追踪Hook的配置类，支持多种场景的表头识别"""
+    """Configuration for the table header tracking hook."""
 
     start_pattern: Pattern[str] = Field(
-        description="表头开始匹配（正则表达式或字符串）"
+        description="Header start match (regex or string)"
     )
-    end_pattern: Pattern[str] = Field(description="表头结束匹配（正则表达式或字符串）")
+    end_pattern: Pattern[str] = Field(description="Header end match (regex or string)")
     extract_header_fn: Callable[[Match[str]], str] = Field(
         default=lambda m: m.group(0),
-        description="从开始匹配结果中提取表头内容的函数（默认取匹配到的整个内容）",
+        description="Function that extracts the header from the start match (default: the whole match)",
     )
-    priority: int = Field(default=0, description="优先级（多个配置时，高优先级先匹配）")
+    priority: int = Field(default=0, description="Priority (with several configs, higher priority matches first)")
     case_sensitive: bool = Field(
-        default=True, description="是否大小写敏感（仅当传入字符串pattern时生效）"
+        default=True, description="Case sensitive (applies only to string patterns)"
     )
 
     def __init__(
@@ -38,23 +38,23 @@ class HeaderTrackerHook(BaseModel):
         )
 
 
-# 初始化表头Hook配置（提供默认配置：支持Markdown表格、代码块）
+# Default header hook configs: Markdown tables (code blocks disabled)
 DEFAULT_CONFIGS = [
-    # 代码块配置（```开头，```结尾）
+    # Code block (opens and closes with ```)
     # HeaderTrackerHook(
-    #     # 代码块开始（支持语言指定）
+    #     # Code block start (with optional language)
     #     start_pattern=r"^\s*```(\w+).*(?!```$)",
-    #     # 代码块结束
+    #     # Code block end
     #     end_pattern=r"^\s*```.*$",
     #     extract_header_fn=lambda m: f"```{m.group(1)}" if m.group(1) else "```",
-    #     priority=20,  # 代码块优先级高于表格
+    #     priority=20,  # code blocks take priority over tables
     #     case_sensitive=True,
     # ),
-    # Markdown表格配置（表头带下划线）
+    # Markdown table (header row plus separator row)
     HeaderTrackerHook(
-        # 表头行 + 分隔行
+        # Header row + separator row
         start_pattern=r"^\s*(?:\|[^|\n]*)+[\r\n]+\s*(?:\|\s*:?-{3,}:?\s*)+\|?[\r\n]+$",
-        # 空行或非表格内容
+        # Blank line or non-table content
         end_pattern=r"^\s*$|^\s*[^|\s].*$",
         priority=15,
         case_sensitive=False,
@@ -124,9 +124,8 @@ def header_column_mismatch(headers: str, next_unit: str) -> bool:
     return header_cols > 0 and row_cols > 0 and header_cols != row_cols
 
 
-# 定义Hook状态数据结构
 class HeaderTracker(BaseModel):
-    """表头追踪 Hook 的状态类"""
+    """State of the table header tracking hook."""
 
     header_hook_configs: List[HeaderTrackerHook] = Field(default=DEFAULT_CONFIGS)
     active_headers: Dict[int, str] = Field(default_factory=dict)
@@ -141,7 +140,7 @@ class HeaderTracker(BaseModel):
         self.pending_extend.pop(_MARKDOWN_TABLE_PRIORITY, None)
 
     def update(self, split: str) -> Dict[int, str]:
-        """检测当前split中的表头开始/结束，更新Hook状态"""
+        """Detect header starts and ends in this split and update the hook state."""
         new_headers: Dict[int, str] = {}
         self.header_ended_this_unit = False
 
@@ -154,7 +153,7 @@ class HeaderTracker(BaseModel):
                 else:
                     self._clear_table_header()
 
-        # 1. 检查是否有表头结束标记
+        # 1. Check for header end markers
         for config in self.header_hook_configs:
             if config.priority in self.active_headers and config.end_pattern.search(
                 split
@@ -163,7 +162,8 @@ class HeaderTracker(BaseModel):
                 del self.active_headers[config.priority]
                 self.pending_extend.pop(config.priority, None)
 
-        # 1b. \n\n 分块会吞掉表间空行：段尾 \n\n 或列数变化时结束表头追踪
+        # 1b. \n\n splitting swallows the blank line between tables, so end header
+        # tracking at a trailing \n\n or a column count change
         if (
             _MARKDOWN_TABLE_PRIORITY in self.active_headers
             and not self.pending_extend.get(_MARKDOWN_TABLE_PRIORITY)
@@ -178,14 +178,14 @@ class HeaderTracker(BaseModel):
                     self._clear_table_header()
                     self.header_ended_this_unit = True
 
-        # 2. 空表头行：用首个数据行补全列名（与 Go header_tracker 一致）
+        # 2. Empty header row: fill column names from the first data row (matches Go header_tracker)
         for priority in list(self.pending_extend.keys()):
             if priority in self.active_headers and _TABLE_ROW_PATTERN.search(split):
                 sep = _extract_separator_line(self.active_headers[priority])
                 self.active_headers[priority] = split + sep
             self.pending_extend.pop(priority, None)
 
-        # 3. 检查是否有新的表头开始标记（只处理未活跃且未结束的）
+        # 3. Check for new header starts (only configs neither active nor ended)
         for config in self.header_hook_configs:
             if (
                 config.priority not in self.active_headers
@@ -199,15 +199,14 @@ class HeaderTracker(BaseModel):
                     if _is_empty_table_header_row(header):
                         self.pending_extend[config.priority] = True
 
-        # 4. 检查是否所有活跃表头都已结束（清空结束标记）
+        # 4. When no header is active, clear the ended markers
         if not self.active_headers:
             self.ended_headers.clear()
 
         return new_headers
 
     def get_headers(self) -> str:
-        """获取当前所有活跃表头的拼接文本（按优先级排序）"""
-        # 按优先级降序排列表头
+        """Join all active headers, highest priority first."""
         sorted_headers = sorted(self.active_headers.items(), key=lambda x: -x[0])
         return (
             "\n".join([header for _, header in sorted_headers])

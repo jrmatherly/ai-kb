@@ -5,18 +5,9 @@ templates:
     name: "Pure Agent"
     description: "System prompt for Pure Agent mode (no Knowledge Bases)"
     i18n:
-      zh-CN:
-        name: "纯智能体"
-        description: "纯智能体模式的系统提示词（不使用知识库）"
       en-US:
         name: "Pure Agent"
         description: "System prompt for Pure Agent mode (no Knowledge Bases)"
-      ko-KR:
-        name: "순수 에이전트"
-        description: "순수 에이전트 모드용 시스템 프롬프트 (지식 베이스 미사용)"
-      ja-JP:
-        name: "ピュアエージェント"
-        description: "ピュアエージェントモード用のシステムプロンプト（ナレッジベース不使用）"
     mode: "pure"
     content: |
       You are AI KB, an assistant developed by Tencent. Help the user understand information and complete requested work using the capabilities available in this turn.
@@ -27,18 +18,9 @@ templates:
     name: "Progressive RAG Agent"
     description: "System prompt for Progressive Agentic RAG mode with Knowledge Bases"
     i18n:
-      zh-CN:
-        name: "渐进式 RAG 智能体"
-        description: "带知识库的渐进式检索增强生成智能体系统提示词"
       en-US:
         name: "Progressive RAG Agent"
         description: "System prompt for Progressive Agentic RAG mode with Knowledge Bases"
-      ko-KR:
-        name: "프로그레시브 RAG 에이전트"
-        description: "지식 베이스를 사용하는 프로그레시브 에이전틱 RAG 모드용 시스템 프롬프트"
-      ja-JP:
-        name: "プログレッシブRAGエージェント"
-        description: "ナレッジベースを使用するプログレッシブエージェンティックRAGモード用のシステムプロンプト"
     default: true
     mode: "rag"
     content: |
@@ -54,18 +36,9 @@ templates:
     name: "Data Analyst"
     description: "System prompt for Data Analyst agent with DuckDB SQL analysis"
     i18n:
-      zh-CN:
-        name: "数据分析师"
-        description: "基于 DuckDB SQL 的数据分析智能体系统提示词"
       en-US:
         name: "Data Analyst"
         description: "System prompt for Data Analyst agent with DuckDB SQL analysis"
-      ko-KR:
-        name: "데이터 분석가"
-        description: "DuckDB SQL 분석을 사용하는 데이터 분석 에이전트용 시스템 프롬프트"
-      ja-JP:
-        name: "データアナリスト"
-        description: "DuckDB SQLを用いた分析を行うデータ分析エージェント用のシステムプロンプト"
     mode: "data_analyst"
     content: |
       You are AI KB Data Analyst, specializing in analysis of the user's CSV and Excel data with DuckDB.
@@ -81,18 +54,9 @@ templates:
     name: "Wiki Researcher"
     description: "System prompt for Wiki Researcher agent with knowledge graph traversal"
     i18n:
-      zh-CN:
-        name: "维基研究员"
-        description: "专用于 Wiki 知识库图谱导航与深度阅读的智能体系统提示词"
       en-US:
         name: "Wiki Researcher"
         description: "System prompt for Wiki Researcher agent with knowledge graph traversal"
-      ko-KR:
-        name: "위키 연구원"
-        description: "지식 그래프 탐색 기능이 있는 위키 연구원 에이전트용 시스템 프롬프트"
-      ja-JP:
-        name: "Wikiリサーチャー"
-        description: "ナレッジグラフ探索を行うWikiリサーチャーエージェント用のシステムプロンプト"
     mode: "wiki_researcher"
     content: |
       You are AI KB Wiki Researcher. The Wiki contains generated, linked summaries, entities, and concepts derived from source documents.
@@ -108,15 +72,9 @@ templates:
     name: "Wiki Fixer System Prompt"
     description: "System prompt for repairing and optimizing Wiki pages based on linter issues"
     i18n:
-      zh-CN:
-        name: "Wiki 修复系统提示词"
-        description: "用于根据巡检问题修复和优化 Wiki 页面的系统提示词"
       en-US:
         name: "Wiki Fixer System Prompt"
         description: "System prompt for repairing and optimizing Wiki pages based on linter issues"
-      ja-JP:
-        name: "Wiki修復システムプロンプト"
-        description: "リンターの指摘に基づいてWikiページを修復・最適化するためのシステムプロンプト"
     mode: "smart-reasoning"
     content: |
       You are AI KB Wiki Fixer. Investigate reported Wiki problems and carry out the repairs requested by the user.
@@ -135,18 +93,9 @@ templates:
     name: "Hybrid RAG + Wiki Agent"
     description: "System prompt for agents working on KBs where BOTH Wiki and chunk (vector/keyword) indexes are enabled."
     i18n:
-      zh-CN:
-        name: "Wiki + RAG 混合智能体"
-        description: "同时启用 Wiki 与向量/关键词索引的知识库场景下使用的系统提示词"
       en-US:
         name: "Hybrid RAG + Wiki Agent"
         description: "System prompt for KBs with BOTH Wiki and chunk-level retrieval enabled"
-      ko-KR:
-        name: "하이브리드 RAG + 위키 에이전트"
-        description: "Wiki와 벡터/키워드 인덱스가 동시에 활성화된 지식 베이스에서 사용하는 시스템 프롬프트"
-      ja-JP:
-        name: "ハイブリッドRAG + Wikiエージェント"
-        description: "Wikiとチャンク単位の検索を同時に有効化したナレッジベース用のシステムプロンプト"
     mode: "smart-reasoning"
     content: |
       You are AI KB, an assistant that uses Wiki pages and original document chunks to answer questions and complete knowledge-based work.
@@ -164,15 +113,9 @@ templates:
     name: "Skill Installer System Prompt"
     description: "System prompt for installing an uploaded skill and its dependencies into the sandbox image"
     i18n:
-      zh-CN:
-        name: "技能安装系统提示词"
-        description: "用于把上传的技能及其依赖装进沙箱镜像的系统提示词"
       en-US:
         name: "Skill Installer System Prompt"
         description: "System prompt for installing an uploaded skill and its dependencies into the sandbox image"
-      ja-JP:
-        name: "スキルインストール用システムプロンプト"
-        description: "アップロードされたスキルとその依存関係をサンドボックスイメージにインストールするためのシステムプロンプト"
     mode: "smart-reasoning"
     content: |
       <role>

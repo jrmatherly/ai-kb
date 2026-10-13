@@ -35,7 +35,7 @@ test('a rejected credential surfaces the status and the server reason', async ()
 test('search posts the documented body and returns ranked hits', async () => {
   const { mock, client } = await harness()
   const results = await client.search(
-    { query: '混合检索 的 阈值 是多少', knowledgeBaseIds: ['kb-product'], knowledgeIds: [] },
+    { query: 'what is the hybrid retrieval threshold', knowledgeBaseIds: ['kb-product'], knowledgeIds: [] },
     never,
   )
   assert.ok(results.length > 0)
@@ -82,13 +82,13 @@ test('chunk pages carry their pagination envelope', async () => {
 
 test('ask creates a session, streams the answer, and collects citations', async () => {
   const { mock, client } = await harness()
-  const sessionId = await client.createSession('dsh: 阈值', never)
+  const sessionId = await client.createSession('dsh: threshold', never)
   const answer = await client.ask(
-    { sessionId, query: '默认的检索阈值是多少', knowledgeBaseIds: ['kb-product'], agentId: undefined, webSearch: false },
+    { sessionId, query: 'What is the default retrieval threshold', knowledgeBaseIds: ['kb-product'], agentId: undefined, webSearch: false },
     never,
   )
   assert.equal(answer.sessionId, 'session-mock-1')
-  assert.match(answer.answer, /vector_threshold|向量/)
+  assert.match(answer.answer, /vector_threshold|vector/)
   assert.ok(answer.references.length > 0)
   assert.deepEqual(answer.toolCalls, [])
   assert.equal(mock.requests.at(-1).path, `/api/v1/knowledge-chat/${sessionId}`)
@@ -98,7 +98,7 @@ test('ask creates a session, streams the answer, and collects citations', async 
 test('an agent id routes to agent-chat and reports the server-side tools', async () => {
   const { mock, client } = await harness()
   const answer = await client.ask(
-    { sessionId: 's1', query: '部署方式有哪些', knowledgeBaseIds: [], agentId: 'agent-9', webSearch: true },
+    { sessionId: 's1', query: 'What deployment options are there', knowledgeBaseIds: [], agentId: 'agent-9', webSearch: true },
     never,
   )
   assert.equal(mock.requests.at(-1).path, '/api/v1/agent-chat/s1')
@@ -122,7 +122,7 @@ test('a stream that ends before completing becomes a failed call', async () => {
   const { client } = await harness({}, { streamTruncated: true })
   await assert.rejects(
     client.ask(
-      { sessionId: 's1', query: '默认的检索阈值是多少', knowledgeBaseIds: ['kb-product'], agentId: undefined, webSearch: false },
+      { sessionId: 's1', query: 'What is the default retrieval threshold', knowledgeBaseIds: ['kb-product'], agentId: undefined, webSearch: false },
       never,
     ),
     /ended before AI KB completed the answer/,

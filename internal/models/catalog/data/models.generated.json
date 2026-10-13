@@ -5918,7 +5918,7 @@
           "output": 4.4,
           "cache_read": 0.26
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -5937,7 +5937,7 @@
           "output": 3.2,
           "cache_read": 0.2
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -5958,7 +5958,7 @@
           "output": 22,
           "cache_read": 1.2
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -5977,7 +5977,7 @@
           "output": 2.2,
           "cache_read": 0.11
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -5995,7 +5995,7 @@
           "input": 0,
           "output": 0
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -6015,7 +6015,7 @@
           "input": 0.3,
           "output": 0.9
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -6034,7 +6034,7 @@
           "output": 2.2,
           "cache_read": 0.11
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -6053,7 +6053,7 @@
           "output": 1.1,
           "cache_read": 0.03
         },
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/对话补全",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8",
         "compat": {
           "supports_reasoning_effort": false
         }
@@ -6063,7 +6063,7 @@
         "name": "Embedding-3",
         "type": "Embedding",
         "dimension": 2048,
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/文本嵌入",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E5%B5%8C%E5%85%A5",
         "compat": {
           "max_batch_size": 64
         }
@@ -6073,7 +6073,7 @@
         "name": "Embedding-2",
         "type": "Embedding",
         "dimension": 1024,
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/文本嵌入",
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E5%B5%8C%E5%85%A5",
         "compat": {
           "dimensions_field": ""
         }
@@ -6082,13 +6082,13 @@
         "id": "rerank",
         "name": "Rerank",
         "type": "Rerank",
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/文本重排序"
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E9%87%8D%E6%8E%92%E5%BA%8F"
       },
       {
         "id": "glm-asr-2512",
         "name": "GLM-ASR-2512 (at most 30 s per file)",
         "type": "ASR",
-        "source": "https://docs.bigmodel.cn/api-reference/模型-api/语音转文本"
+        "source": "https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E8%AF%AD%E9%9F%B3%E8%BD%AC%E6%96%87%E6%9C%AC"
       }
     ],
     "cohere": [

@@ -206,7 +206,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - **DOC**: `website-docs/` official documentation site added (six sections, ~50 pages, ~360 documented endpoints), with quickstart sample data and a local MCP demo under `examples/mcp-demo/`.
-- **DOC**: `docs/api/README.md` and `docs/api/chat.md` document `resource_urls` and `RESOURCE_URL_MODE`; Feishu Drive data source guide added under `docs/wiki/集成扩展/`.
+- **DOC**: `docs/api/README.md` and `docs/api/chat.md` document `resource_urls` and `RESOURCE_URL_MODE`; Feishu Drive data source guide added under the `docs/wiki/` integrations section.
 - **DOC**: `docs/QA.md` extended for the documentation site, folder tree, chunk editing, wiki revisions, and public resource URLs.
 - **DOC**: Architecture diagram updated for the folder tree, chunk editing, wiki revision history, and public file URLs.
 
@@ -214,7 +214,7 @@ All notable changes to this project will be documented in this file.
 
 ### New Features
 
-- **NEW**: **Yunzhijia (云之家) IM Integration** — a new instant-messaging platform integration for Yunzhijia, including WebSocket message handling, request signing, image-message ingestion with SSRF-checked downloads, and markdown-formatted replies by default. Add the channel under **Settings → IM Integration** and fill in the credentials.
+- **NEW**: **Yunzhijia IM Integration** - a new instant-messaging platform integration for Yunzhijia, including WebSocket message handling, request signing, image-message ingestion with SSRF-checked downloads, and markdown-formatted replies by default. Add the channel under **Settings → IM Integration** and fill in the credentials.
 - **NEW**: **Volcengine Rerank Provider** — Volcengine is now a first-class rerank provider, with request batching that transparently splits payloads exceeding the API's per-request document limit. vLLM rerankers no longer send `truncate_prompt_tokens` by default for broader compatibility.
 - **NEW**: **Zhipu AI Web Search Provider** — Zhipu AI added as a configurable web search provider alongside the existing options.
 - **NEW**: **Platform-Scoped API Keys** — control-plane automation now has dedicated platform API keys with capability-based access to tenant management, system settings, runtime queues, and audit logs, plus an admin UI for key lifecycle and system-wide audit-log viewing (migration `000071_platform_api_keys`).
@@ -514,7 +514,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- **DOC**: New `docs/日志配置.md` (logging configuration guide).
+- **DOC**: New logging configuration guide under `docs/`.
 - **DOC**: OpenSearch integration-test guide (`docs/dev/opensearch-integration-test.md`).
 - **DOC**: CLI — `AGENTS.md`, `README.md`, and `CHANGELOG.md` brought in sync with the v0.7 / v0.8 surface.
 - **DOC**: Clarified cached-token semantics for explicit-cache providers in chat docs.
@@ -623,7 +623,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- **DOC**: New `docs/RBAC说明.md` (Chinese RBAC guide) and `docs/wiki/安全认证/RBAC说明.md`, linked with shared space docs.
+- **DOC**: New Chinese RBAC guide under `docs/` and in the `docs/wiki/` security section, linked with shared space docs.
 - **DOC**: `docs/RBAC` documents Contributor vs `OwnedXxxOrAdmin` selection rule.
 - **DOC**: Issue templates require concrete app/UI versions (not "latest").
 - **DOC**: CLI — `cli/README.md`, `cli/AGENTS.md` + `cli/CHANGELOG.md` brought in sync with v0.3 / v0.4 surface; stale e2e refs cleared; CI parity test added.
@@ -1072,7 +1072,7 @@ All notable changes to this project will be documented in this file.
 - System information display with database version
 - Path and filename validation security utilities
 - Vector embeddings indexing enhanced with TagID and IsRecommended fields
-- Korean (한국어) README translation
+- Korean README translation
 
 ### 🐛 Bug Fixes
 - Handle thinking content in Ollama chat responses
@@ -1258,7 +1258,7 @@ All notable changes to this project will be documented in this file.
   - Knowledge base selection mode without mandatory rerank model check
 
 - **NEW**: Korean Language Support
-  - Added Korean (한국어) internationalization support
+  - Added Korean internationalization support
 
 ### ⚡ Improvements
 - **IMPROVED**: Knowledge Base Operations

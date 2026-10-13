@@ -1,7 +1,5 @@
 # @jrmatherly/dsh-ai-kb
 
-English | [简体中文](./README_CN.md)
-
 [npm](https://www.npmjs.com/package/@jrmatherly/dsh-ai-kb)
 
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`) plugin that gives the harness agent

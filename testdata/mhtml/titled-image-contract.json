@@ -1,9 +1,9 @@
 {
-  "markdown_content": "| 体验方向 | 代表内容 |\n| --- | --- |\n| 赛季制建立 | BP、Rank |\n\n![图片](images/第 1 页 (测试).gif \"阶段 1) 图片\")\n\n高机动性身法与独特枪械反馈\n\nalpha  \nbeta\n\n* parent\n  + child\n\n> quoted\n\n```\nline1\n\n\nline2\n```",
+  "markdown_content": "| \u4f53\u9a8c\u65b9\u5411 | \u4ee3\u8868\u5185\u5bb9 |\n| --- | --- |\n| \u8d5b\u5b63\u5236\u5efa\u7acb | BP\u3001Rank |\n\n![\u56fe\u7247](images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif \"\u9636\u6bb5 1) \u56fe\u7247\")\n\n\u9ad8\u673a\u52a8\u6027\u8eab\u6cd5\u4e0e\u72ec\u7279\u67aa\u68b0\u53cd\u9988\n\nalpha  \nbeta\n\n* parent\n  + child\n\n> quoted\n\n```\nline1\n\n\nline2\n```",
   "images": [
     {
-      "filename": "第 1 页 (测试).gif",
-      "original_ref": "images/第 1 页 (测试).gif",
+      "filename": "\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif",
+      "original_ref": "images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif",
       "mime_type": "image/gif",
       "image_data_base64": "R0lGODdhQABAAIEAAFCM3AAAAAAAAAAAACwAAAAAQABAAEAIaQABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzIsaPHjyBDihxJsqTJkyhTqlzJsqXLlzBjypxJs6bNmzhz6tzJs6fPn0CDCh1KtKjRo0iTKl3KtKnTp1CjSp1KtarVq1izagUQEAA7"
     }

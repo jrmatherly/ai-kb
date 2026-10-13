@@ -126,7 +126,7 @@ def encode_bytes(content: str) -> bytes:
         bytes: UTF-8 encoded bytes representation of the string
 
     Example:
-        >>> text = "Hello, 世界"
+        >>> text = "Hello, world"
         >>> encoded = encode_bytes(text)
         >>> type(encoded)
         <class 'bytes'>
@@ -177,7 +177,7 @@ def decode_bytes(
         >>> # Decode with default encodings
         >>> text = decode_bytes(b"\\xe4\\xb8\\xad\\xe6\\x96\\x87")  # UTF-8 Chinese
         >>> print(text)
-        中文
+        \u4e2d\u6587
         >>> # Decode with custom encodings
         >>> text = decode_bytes(content, encodings=["utf-8", "gbk"])
     """

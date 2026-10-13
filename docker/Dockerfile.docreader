@@ -1,5 +1,5 @@
 # =========================
-# 构建阶段（轻量化：仅文档解析 + 图片提取，无 OCR/VLM）
+# Build stage (lightweight: document parsing and image extraction only, no OCR/VLM)
 # =========================
 FROM python:3.10.18-bookworm AS builder
 
@@ -11,7 +11,7 @@ RUN if [ -n "$APT_MIRROR" ]; then \
 
 WORKDIR /app
 
-# 安装构建依赖
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     python3-dev \
@@ -26,11 +26,11 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# 检查是否存在本地protoc安装包，如果存在则离线安装，否则在线安装
+# Install protoc offline if a local package exists, otherwise online
 ARG TARGETARCH
 COPY packages/ /app/packages/
 RUN ls -lah /app/packages/
-# 兼容 BuildKit 和传统构建：如果 TARGETARCH 为空，使用 uname 检测
+# Works with BuildKit and the legacy builder: if TARGETARCH is empty, detect it with uname
 RUN if [ -z "$TARGETARCH" ]; then \
         case $(uname -m) in \
             "x86_64") TARGETARCH="amd64" ;; \
@@ -38,9 +38,9 @@ RUN if [ -z "$TARGETARCH" ]; then \
             "armv7l") TARGETARCH="arm" ;; \
             *) echo "Unsupported architecture: $(uname -m)" && exit 1 ;; \
         esac; \
-        echo "[自动检测] 架构: $TARGETARCH"; \
+        echo "[auto-detect] arch: $TARGETARCH"; \
     else \
-        echo "[BuildKit] 架构: $TARGETARCH"; \
+        echo "[BuildKit] arch: $TARGETARCH"; \
     fi && \
     case $TARGETARCH in \
         "amd64") PROTOC_ARCH="x86_64" ;; \
@@ -50,34 +50,34 @@ RUN if [ -z "$TARGETARCH" ]; then \
     esac && \
     PROTOC_PACKAGE="protoc-3.19.4-linux-${PROTOC_ARCH}.zip" && \
     if [ -f "/app/packages/${PROTOC_PACKAGE}" ]; then \
-        echo "发现本地protoc安装包，将进行离线安装"; \
+        echo "Found a local protoc package, installing offline"; \
         cp /app/packages/${PROTOC_PACKAGE} /app/ && \
         unzip -o /app/${PROTOC_PACKAGE} -d /usr/local && \
         chmod +x /usr/local/bin/protoc && \
         rm -f /app/${PROTOC_PACKAGE}; \
     else \
-        echo "未发现本地protoc安装包，将进行在线安装"; \
+        echo "No local protoc package found, installing online"; \
         curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/${PROTOC_PACKAGE} && \
         unzip -o ${PROTOC_PACKAGE} -d /usr/local && \
         chmod +x /usr/local/bin/protoc && \
         rm -f ${PROTOC_PACKAGE}; \
     fi
 
-# 复制依赖文件
+# Copy dependency files
 COPY docreader/pyproject.toml docreader/uv.lock ./
 RUN pip install uv --break-system-packages && \
     python -m uv sync --locked --no-dev
 
-# 复制源代码和生成脚本
+# Copy source code and generation scripts
 COPY docreader docreader
 
-# 生成 protobuf 代码（使用 venv 中的 grpc_tools）
+# Generate protobuf code (with grpc_tools from the venv)
 ENV PATH="/app/.venv/bin:${PATH}"
 RUN chmod +x docreader/scripts/generate_proto.sh && \
     bash docreader/scripts/generate_proto.sh
 
 # =========================
-# 运行阶段（轻量化）
+# Runtime stage (lightweight)
 # =========================
 FROM python:3.10.18-bookworm AS runner
 
@@ -89,7 +89,7 @@ RUN if [ -n "$APT_MIRROR" ]; then \
 
 WORKDIR /app
 
-# 安装运行时依赖（已移除 OCR/PaddleOCR 相关依赖）
+# Install runtime dependencies (OCR/PaddleOCR dependencies removed)
 RUN apt-get update && apt-get install -y \
     libjpeg62-turbo \
     wget \
@@ -111,9 +111,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 grpc_health_probe
+# Install grpc_health_probe
 ARG TARGETARCH
-# 兼容 BuildKit 和传统构建：如果 TARGETARCH 为空，使用 uname 检测
+# Works with BuildKit and the legacy builder: if TARGETARCH is empty, detect it with uname
 RUN if [ -z "$TARGETARCH" ]; then \
         case $(uname -m) in \
             "x86_64") TARGETARCH="amd64" ;; \
@@ -121,9 +121,9 @@ RUN if [ -z "$TARGETARCH" ]; then \
             "armv7l") TARGETARCH="arm" ;; \
             *) echo "Unsupported architecture: $(uname -m)" && exit 1 ;; \
         esac; \
-        echo "[自动检测] 架构: $TARGETARCH"; \
+        echo "[auto-detect] arch: $TARGETARCH"; \
     else \
-        echo "[BuildKit] 架构: $TARGETARCH"; \
+        echo "[BuildKit] arch: $TARGETARCH"; \
     fi && \
     GRPC_HEALTH_PROBE_VERSION=v0.4.24 && \
     case $TARGETARCH in \
@@ -135,14 +135,14 @@ RUN if [ -z "$TARGETARCH" ]; then \
     wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-${ARCH} && \
     chmod +x /bin/grpc_health_probe
 
-# 从构建阶段复制已安装的依赖和生成的代码
+# Copy the installed dependencies and generated code from the build stage
 ENV VIRTUAL_ENV=/app/.venv
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# 安装 Playwright 浏览器（网页解析）。可在构建时切换为内部制品库或镜像源。
+# Install the Playwright browser (for web page parsing). The build can switch to an internal artifact repository or a mirror.
 ARG PLAYWRIGHT_DOWNLOAD_HOST=""
 ARG PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=""
 RUN if [ -n "$PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST" ]; then \
@@ -157,10 +157,10 @@ RUN python -m playwright install-deps webkit
 COPY docreader/pyproject.toml docreader/uv.lock ./
 COPY --from=builder /app/docreader docreader
 
-# 创建共享临时图片目录
+# Shared temp directory for images
 RUN mkdir -p /tmp/docreader
 
-# 暴露 gRPC 端口
+# Expose the gRPC port
 EXPOSE 50051
 
 # Probe ARM crypto instructions before importing native dependencies. The

@@ -1,4 +1,4 @@
-# config.yaml，reference https://github.com/dexidp/dex/blob/master/examples/config-dev.yaml
+# config.yaml, reference https://github.com/dexidp/dex/blob/master/examples/config-dev.yaml
 issuer: http://127.0.0.1:5556/dex
 storage:
   type: memory

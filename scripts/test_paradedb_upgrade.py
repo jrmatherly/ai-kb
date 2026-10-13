@@ -35,7 +35,8 @@ def quote(s):
 
 def seed():
     rng = random.Random(221226)
-    topics = ['数据库 向量 检索 PostgreSQL database search', '知识库 文档 问答 人工智能 retrieval', '北京 上海 深圳 中国 城市', 'Docker 安装 部署 CPU AVX2', '备份 恢复 升级 数据完整性', '权限 租户 共享 用户 authentication']
+    # Mixed Chinese and English text exercises CJK BM25 tokenization across the upgrade.
+    topics = ['\u6570\u636e\u5e93 \u5411\u91cf \u68c0\u7d22 PostgreSQL database search', '\u77e5\u8bc6\u5e93 \u6587\u6863 \u95ee\u7b54 \u4eba\u5de5\u667a\u80fd retrieval', '\u5317\u4eac \u4e0a\u6d77 \u6df1\u5733 \u4e2d\u56fd \u57ce\u5e02', 'Docker \u5b89\u88c5 \u90e8\u7f72 CPU AVX2', '\u5907\u4efd \u6062\u590d \u5347\u7ea7 \u6570\u636e\u5b8c\u6574\u6027', '\u6743\u9650 \u79df\u6237 \u5171\u4eab \u7528\u6237 authentication']
     stmts = ['BEGIN;', 'TRUNCATE embeddings, tenants, sessions, messages, models, knowledge_bases, knowledges, chunks RESTART IDENTITY CASCADE;']
     queries = {}
     for dim in (798, 1024, 3584):
@@ -48,13 +49,13 @@ def seed():
             enabled = 'NULL' if n % 13 == 0 else ('false' if n % 11 == 0 else 'true')
             stmts.append(f"INSERT INTO embeddings(source_id, source_type, chunk_id, knowledge_id, knowledge_base_id, tag_id, content, dimension, embedding, is_enabled) VALUES ('src-{dim}-{n}',{n % 3},'chunk-{dim}-{n}','doc-{n % 9}','kb-{n % 3}',{quote('tag-'+str(n % 4)) if n % 7 else 'NULL'},{quote(content)},{dim},{quote(vector)},{enabled});")
     stmts += [
-        "INSERT INTO tenants(id,name,description,business) VALUES (10101,'升级验证','中文与 emoji 🧪','test');",
-        "INSERT INTO sessions(id,tenant_id,title) VALUES ('upgrade-session',10101,'升级前会话');",
-        "INSERT INTO messages(id,request_id,session_id,role,content,knowledge_references) VALUES ('upgrade-message','upgrade-request','upgrade-session','assistant','原始回答：数据库检索 🧪','[{\"id\":\"source\",\"score\":0.875}]');",
+        "INSERT INTO tenants(id,name,description,business) VALUES (10101,'\u5347\u7ea7\u9a8c\u8bc1','\u4e2d\u6587\u4e0e emoji 🧪','test');",
+        "INSERT INTO sessions(id,tenant_id,title) VALUES ('upgrade-session',10101,'\u5347\u7ea7\u524d\u4f1a\u8bdd');",
+        "INSERT INTO messages(id,request_id,session_id,role,content,knowledge_references) VALUES ('upgrade-message','upgrade-request','upgrade-session','assistant','\u539f\u59cb\u56de\u7b54\uff1a\u6570\u636e\u5e93\u68c0\u7d22 🧪','[{\"id\":\"source\",\"score\":0.875}]');",
         "INSERT INTO models(id,tenant_id,name,type,source,parameters) VALUES ('upgrade-model',10101,'fixture','Embedding','remote','{\"dimension\":1024}');",
-        "INSERT INTO knowledge_bases(id,tenant_id,name,embedding_model_id,summary_model_id) VALUES ('kb-0',10101,'验证知识库','upgrade-model','');",
-        "INSERT INTO knowledges(id,tenant_id,knowledge_base_id,type,title,source,metadata) VALUES ('doc-0',10101,'kb-0','file','中文文档','upload','{\"nested\":{\"value\":42}}');",
-        "INSERT INTO chunks(id,tenant_id,knowledge_base_id,knowledge_id,content,chunk_index,start_at,end_at) VALUES ('upgrade-chunk',10101,'kb-0','doc-0','原始分块',0,0,4);",
+        "INSERT INTO knowledge_bases(id,tenant_id,name,embedding_model_id,summary_model_id) VALUES ('kb-0',10101,'\u9a8c\u8bc1\u77e5\u8bc6\u5e93','upgrade-model','');",
+        "INSERT INTO knowledges(id,tenant_id,knowledge_base_id,type,title,source,metadata) VALUES ('doc-0',10101,'kb-0','file','\u4e2d\u6587\u6587\u6863','upload','{\"nested\":{\"value\":42}}');",
+        "INSERT INTO chunks(id,tenant_id,knowledge_base_id,knowledge_id,content,chunk_index,start_at,end_at) VALUES ('upgrade-chunk',10101,'kb-0','doc-0','\u539f\u59cb\u5206\u5757',0,0,4);",
         'COMMIT; VACUUM ANALYZE embeddings;',
     ]
     (OUT/'seed.sql').write_text('\n'.join(stmts))
@@ -74,7 +75,7 @@ def snapshot(stage):
     indexes = sql("SELECT c.relname,i.indisvalid,i.indisready,c.relfilenode,pg_get_indexdef(i.indexrelid) FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid JOIN pg_class t ON t.oid=i.indrelid JOIN pg_namespace n ON n.oid=t.relnamespace WHERE n.nspname='public' ORDER BY c.relname")
     results = {}
     plans = {}
-    keyword_queries = ['数据库', '知识库 文档', 'Docker AVX2', 'PostgreSQL database', '北京 上海', '权限 用户', '不存在的关键词xyz', '']
+    keyword_queries = ['\u6570\u636e\u5e93', '\u77e5\u8bc6\u5e93 \u6587\u6863', 'Docker AVX2', 'PostgreSQL database', '\u5317\u4eac \u4e0a\u6d77', '\u6743\u9650 \u7528\u6237', '\u4e0d\u5b58\u5728\u7684\u5173\u952e\u8bcdxyz', '']
     filters = ['', " AND knowledge_base_id IN ('kb-0','kb-1')", " AND knowledge_base_id='kb-0' AND knowledge_id IN ('doc-0','doc-3')", " AND tag_id IN ('tag-1','tag-2')"]
     # Same |||, scoring and enabled predicate as KeywordsRetrieve. id only resolves equal-score ties.
     for q in keyword_queries:
@@ -217,8 +218,8 @@ def main():
         assert sql("SELECT count(*) FROM pg_extension WHERE extname IN ('pg_search','vector')", 'upgrade_fresh') == '0'
         migrate('upgrade_fresh', paths, 'fresh-migrations')
         assert sql(search_version, 'upgrade_fresh') == target
-        sql("INSERT INTO embeddings(source_id,source_type,content,dimension) VALUES ('fresh',0,'新安装检索',1024)", 'upgrade_fresh')
-        assert sql("SELECT count(*) FROM embeddings WHERE content ||| '检索'", 'upgrade_fresh') == '1'
+        sql("INSERT INTO embeddings(source_id,source_type,content,dimension) VALUES ('fresh',0,'\u65b0\u5b89\u88c5\u68c0\u7d22',1024)", 'upgrade_fresh')
+        assert sql("SELECT count(*) FROM embeddings WHERE content ||| '\u68c0\u7d22'", 'upgrade_fresh') == '1'
         print('PASS: fresh install and Chinese BM25 query', flush=True)
         (OUT/'PASS').write_text('Upgrade, restart, data integrity, retrieval, writes and fresh install passed.\n')
     finally:

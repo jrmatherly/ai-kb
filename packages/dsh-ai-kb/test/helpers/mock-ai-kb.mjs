@@ -10,44 +10,44 @@ import { createServer } from 'node:http'
 const DOCUMENTS = [
   {
     knowledge_id: 'doc-retrieval-pipeline',
-    knowledge_title: 'AI KB 检索流程.md',
+    knowledge_title: 'AI KB retrieval pipeline.md',
     knowledge_base_id: 'kb-product',
     // AI KB stores the generated summary in `description`, not `summary`.
-    description: '讲解 AI KB 混合检索的召回、阈值与父子分块回溯。',
+    description: 'How AI KB hybrid retrieval recalls passages, its thresholds, and parent-child chunk expansion.',
     chunks: [
-      'AI KB 的混合检索先做向量召回，再做关键词召回，最后交给 rerank 模型统一排序。',
-      '默认的 vector_threshold 是 0.5，keyword_threshold 是 0.3，可以在知识库配置里按库调整。',
-      '父子分块开启后，命中子块会回溯父块，把更完整的上下文交给生成模型。',
+      'AI KB hybrid retrieval runs vector recall, then keyword recall, and hands both to the rerank model for one ranking.',
+      'The default vector_threshold is 0.5 and keyword_threshold is 0.3; each knowledge base can override them in its settings.',
+      'With parent-child chunking on, a matched child chunk expands to its parent, giving the generation model fuller context.',
     ],
   },
   {
     knowledge_id: 'doc-architecture',
-    knowledge_title: '系统架构图.md',
+    knowledge_title: 'System architecture diagram.md',
     knowledge_base_id: 'kb-product',
-    description: '检索与生成两层的系统架构示意图。',
+    description: 'A system architecture diagram of the retrieval and generation layers.',
     chunks: [
-      '系统由检索与生成两层组成，整体结构见架构图。\n\n![系统架构](resource://AbCdEfGhIjKlMnOpQrStUv)',
+      'The system has a retrieval layer and a generation layer; the architecture diagram shows the overall structure.\n\n![System architecture](resource://AbCdEfGhIjKlMnOpQrStUv)',
     ],
   },
   {
     knowledge_id: 'doc-deployment',
-    knowledge_title: 'AI KB 部署手册.md',
+    knowledge_title: 'AI KB deployment guide.md',
     knowledge_base_id: 'kb-ops',
-    description: '单机与 Kubernetes 部署方式，以及可选的向量库后端。',
+    description: 'Single-node and Kubernetes deployment, and the vector store backends to choose from.',
     chunks: [
-      'AI KB 支持 docker compose 单机部署，也提供 Helm chart 用于 Kubernetes。',
-      '向量库可以选择 pgvector、Milvus、Qdrant、Weaviate、OpenSearch 等后端。',
+      'AI KB supports single-node deployment with docker compose and ships a Helm chart for Kubernetes.',
+      'The vector store can be pgvector, Milvus, Qdrant, Weaviate, OpenSearch or another backend.',
     ],
   },
   {
     // Title and body share no wording on purpose: retrieving this document by
     // name is the only way to reach it, which is what the by-name search is for.
     knowledge_id: 'doc-release-checklist',
-    knowledge_title: '灰度发布检查单.md',
+    knowledge_title: 'Release checklist.md',
     knowledge_base_id: 'kb-ops',
-    description: '上线前的确认项与回滚准备。',
+    description: 'What to confirm before going live, and rollback preparation.',
     chunks: [
-      '上线前需确认监控告警、回滚预案与数据库变更脚本均已就绪，并由值班同学复核。',
+      'Before going live, confirm that monitoring alerts, the rollback plan and database migration scripts are ready, and have the on-call engineer review them.',
     ],
   },
 ]
@@ -56,15 +56,15 @@ const DOCUMENTS = [
 // query — the case passage retrieval alone cannot serve.
 DOCUMENTS.push({
   knowledge_id: 'doc-release-checklist',
-  knowledge_title: '灰度发布检查单.md',
+  knowledge_title: 'Release checklist.md',
   knowledge_base_id: 'kb-ops',
-  description: '上线前的确认项与回滚方案。',
-  chunks: ['本文列出上线前需要确认的配置项与回滚方案。'],
+  description: 'What to confirm before going live, and the rollback plan.',
+  chunks: ['This page lists the settings to confirm and the rollback plan before going live.'],
 })
 
 const KNOWLEDGE_BASES = [
-  { id: 'kb-product', name: 'Product docs', description: 'AI KB 产品与检索文档' },
-  { id: 'kb-ops', name: 'Ops runbooks', description: '部署与运维手册' },
+  { id: 'kb-product', name: 'Product docs', description: 'AI KB product and retrieval docs' },
+  { id: 'kb-ops', name: 'Ops runbooks', description: 'Deployment and operations runbooks' },
 ]
 
 const ARCH_HANDLE = 'resource://AbCdEfGhIjKlMnOpQrStUv'
@@ -77,19 +77,17 @@ function rewriteResources(value, publicMode) {
 }
 
 /**
- * Score a passage by character-bigram overlap. The real backend scores with
- * embeddings plus keyword match; bigrams are enough to make the fixture rank
- * plausibly for both Chinese and English queries.
+ * Score a passage by the share of query words (three letters or more) it
+ * contains. The real backend scores with embeddings plus keyword match; word
+ * overlap is enough to make the fixture rank plausibly. Character bigrams
+ * would match nearly every English passage and leave no query unmatched.
  */
 function scoreOf(query, content) {
-  const normalized = query.replace(/[\s,，。？?、！!：:；;“”"']+/g, '')
-  const shingles = new Set()
-  for (let index = 0; index + 2 <= normalized.length; index += 1) {
-    shingles.add(normalized.slice(index, index + 2))
-  }
-  if (shingles.size === 0) return 0
-  const hits = [...shingles].filter(shingle => content.includes(shingle)).length
-  return Math.min(0.99, 0.4 + (hits / shingles.size) * 0.5)
+  const words = new Set(query.toLowerCase().split(/[^\p{L}\p{N}_]+/u).filter(word => word.length >= 3))
+  if (words.size === 0) return 0
+  const text = content.toLowerCase()
+  const hits = [...words].filter(word => text.includes(word)).length
+  return Math.min(0.99, 0.4 + (hits / words.size) * 0.5)
 }
 
 function searchResults(query, knowledgeBaseIds, knowledgeIds) {
@@ -130,9 +128,9 @@ function documentRecord(document) {
 
 /** Assemble the answer the fake RAG/agent pipeline streams back. */
 function answerFor(query, results) {
-  if (results.length === 0) return `没有检索到与「${query}」相关的内容。`
+  if (results.length === 0) return `Nothing related to "${query}" was retrieved.`
   const cited = results.slice(0, 2).map(result => result.content).join(' ')
-  return `根据知识库内容：${cited}（问题：${query}）`
+  return `From the knowledge base: ${cited} (question: ${query})`
 }
 
 /**

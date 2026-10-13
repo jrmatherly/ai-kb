@@ -1,41 +1,41 @@
 #!/usr/bin/env python3
 """
-手动 MCP 导入检查脚本（非 unittest 测试）。
+Manual MCP import check script (not a unittest test).
 
-用法: python check_imports.py
+Usage: python check_imports.py
 """
 
 try:
     import mcp.server.stdio  # noqa: F401
 
-    print("✓ mcp.server.stdio 导入成功")
+    print("✓ mcp.server.stdio imported")
 except ImportError as e:
-    print(f"✗ mcp.server.stdio 导入失败: {e}")
+    print(f"✗ mcp.server.stdio import failed: {e}")
 
 try:
     # mcp 2.x high-level server API (MCPServer, formerly FastMCP).
     from mcp.server import MCPServer
 
-    print("✓ MCPServer 从 mcp.server 导入成功")
+    print("✓ MCPServer imported from mcp.server")
 except ImportError as e:
-    print(f"✗ MCPServer 导入失败: {e}")
+    print(f"✗ MCPServer import failed: {e}")
 
 try:
     from mcp.server.mcpserver.exceptions import ToolError  # noqa: F401
 
-    print("✓ ToolError 从 mcp.server.mcpserver.exceptions 导入成功")
+    print("✓ ToolError imported from mcp.server.mcpserver.exceptions")
 except ImportError as e:
-    print(f"✗ ToolError 导入失败: {e}")
+    print(f"✗ ToolError import failed: {e}")
 
 try:
     import mcp_types  # noqa: F401  # standalone protocol types in mcp 2.x
 
-    print("✓ mcp_types 导入成功")
+    print("✓ mcp_types imported")
 except ImportError as e:
-    print(f"✗ mcp_types 导入失败: {e}")
+    print(f"✗ mcp_types import failed: {e}")
 
-# 检查 MCP 包结构
+# Check the MCP package layout
 import mcp
 
-print(f"\nMCP 包版本: {getattr(mcp, '__version__', '未知')}")
-print(f"MCP 包路径: {mcp.__file__}")
+print(f"\nMCP package version: {getattr(mcp, '__version__', 'unknown')}")
+print(f"MCP package path: {mcp.__file__}")

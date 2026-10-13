@@ -1,13 +1,13 @@
-# AI KB MCP Server 安装和使用指南
+# AI KB MCP Server installation and usage guide
 
-## 快速开始
+## Quick start
 
-### 1. 安装依赖
+### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 设置环境变量
+### 2. Set environment variables
 ```bash
 # Linux/macOS
 export AIKB_BASE_URL="http://localhost:8080/api/v1"
@@ -22,141 +22,141 @@ set AIKB_BASE_URL=http://localhost:8080/api/v1
 set AIKB_API_KEY=your_api_key_here
 ```
 
-### 3. 运行服务器
+### 3. Run the server
 
-有多种方式运行服务器：
+There are several ways to run the server:
 
-#### 方式 1: 使用主入口点 (推荐)
+#### Option 1: the main entry point (recommended)
 ```bash
 python main.py
 ```
 
-#### 方式 2: 使用原始启动脚本
+#### Option 2: the original launch script
 ```bash
 python run_server.py
 ```
 
-#### 方式 3: 直接运行服务器模块
+#### Option 3: run the server module directly
 ```bash
 python aikb_mcp_server.py
 ```
 
-#### 方式 4: 作为 Python 模块运行
+#### Option 4: run as a Python module
 ```bash
 python -m aikb_mcp_server
 ```
 
-## 作为 Python 包安装
+## Install as a Python package
 
-### 开发模式安装
+### Development install
 ```bash
 pip install -e .
 ```
 
-安装后可以使用命令行工具：
+After installation you can use the command-line tools:
 ```bash
 ai-kb-mcp-server
-# 或
+# or
 ai-kb-server
 ```
 
-### 生产模式安装
+### Production install
 ```bash
 pip install .
 ```
 
-### 构建分发包
+### Build distribution packages
 ```bash
-# 构建源码分发包和轮子
+# Build the source distribution and wheel
 python setup.py sdist bdist_wheel
 
-# 或使用 build 工具
+# Or use the build tool
 pip install build
 python -m build
 ```
 
-## 命令行选项
+## Command-line options
 
-主入口点 `main.py` 支持以下选项：
+The main entry point `main.py` supports these options:
 
 ```bash
-python main.py --help                 # 显示帮助信息
-python main.py --check-only           # 仅检查环境配置
-python main.py --verbose              # 启用详细日志
-python main.py --version              # 显示版本信息
+python main.py --help                 # show help
+python main.py --check-only           # check the environment configuration only
+python main.py --verbose              # enable verbose logging
+python main.py --version              # show the version
 ```
 
-## 环境检查
+## Environment check
 
-运行以下命令检查环境配置：
+Run this command to check the environment configuration:
 ```bash
 python main.py --check-only
 ```
 
-这将显示：
-- AI KB API 基础 URL 配置
-- API 密钥设置状态
-- 依赖包安装状态
+It shows:
+- The AI KB API base URL
+- Whether the API key is set
+- Whether the dependencies are installed
 
-## 故障排除
+## Troubleshooting
 
-### 1. 导入错误
-如果遇到 `ImportError`，请确保：
-- 已安装所有依赖：`pip install -r requirements.txt`
-- Python 版本兼容（推荐 3.10+）
-- 没有文件名冲突
+### 1. Import errors
+If you hit an `ImportError`, make sure that:
+- All dependencies are installed: `pip install -r requirements.txt`
+- Your Python version is compatible (3.10+ recommended)
+- There are no file name conflicts
 
-### 2. 连接错误
-如果无法连接到 AI KB API：
-- 检查 `AIKB_BASE_URL` 是否正确
-- 确认 AI KB 服务正在运行
-- 验证网络连接
+### 2. Connection errors
+If you cannot connect to the AI KB API:
+- Check that `AIKB_BASE_URL` is correct
+- Confirm the AI KB service is running
+- Check the network connection
 
-### 3. 认证错误
-如果遇到认证问题：
-- 检查 `AIKB_API_KEY` 是否设置
-- 确认 API 密钥有效
-- 验证权限设置
+### 3. Authentication errors
+If you hit authentication problems:
+- Check that `AIKB_API_KEY` is set
+- Confirm the API key is valid
+- Check the permission settings
 
-## 开发模式
+## Development
 
-### 项目结构
+### Project layout
 ```
 ai-kb/mcp-server/
-├── __init__.py              # 包初始化文件
-├── main.py                  # 主入口点
-├── run_server.py           # 原始启动脚本
-├── aikb_mcp_server.py   # MCP 服务器实现
-├── requirements.txt        # 依赖列表
-├── setup.py               # 安装脚本
-├── pyproject.toml         # 项目元数据（PyPI: ai-kb-mcp）
-├── MANIFEST.in            # 包含文件清单
-├── LICENSE                # 许可证
-├── README.md              # 项目说明
-└── INSTALL.md             # 安装指南
+├── __init__.py              # package init
+├── main.py                  # main entry point
+├── run_server.py           # original launch script
+├── aikb_mcp_server.py   # MCP server implementation
+├── requirements.txt        # dependency list
+├── setup.py               # install script
+├── pyproject.toml         # project metadata (PyPI: ai-kb-mcp)
+├── MANIFEST.in            # package file manifest
+├── LICENSE                # license
+├── README.md              # project overview
+└── INSTALL.md             # installation guide
 ```
 
-### 添加新功能
-1. 在 `AIKBClient` 类中添加新的 API 方法
-2. 用 `@mcp.tool()` 装饰器注册一个新工具函数：参数用类型标注（schema 自动生成），描述写在 docstring 里，函数体调用上面新增的客户端方法
-3. 更新文档和测试
+### Adding a feature
+1. Add the new API method to the `AIKBClient` class
+2. Register a new tool function with the `@mcp.tool()` decorator: annotate the parameters with types (the schema is generated from them), put the description in the docstring, and call the new client method from the function body
+3. Update the docs and tests
 
-### 测试
+### Testing
 ```bash
-# 运行基本测试
+# Run the basic check
 python check_imports.py
 
-# 测试环境配置
+# Test the environment configuration
 python main.py --check-only
 
-# 测试服务器启动
+# Test server startup
 python main.py --verbose
 ```
 
-## 部署
+## Deployment
 
-### Docker 部署
-创建 `Dockerfile`：
+### Docker
+Create a `Dockerfile`:
 ```dockerfile
 FROM python:3.11-slim
 
@@ -173,8 +173,8 @@ EXPOSE 8000
 CMD ["ai-kb-mcp-server"]
 ```
 
-### 系统服务
-创建 systemd 服务文件 `/etc/systemd/system/ai-kb-mcp.service`：
+### System service
+Create the systemd unit file `/etc/systemd/system/ai-kb-mcp.service`:
 ```ini
 [Unit]
 Description=AI KB MCP Server
@@ -193,16 +193,16 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-启用服务：
+Enable the service:
 ```bash
 sudo systemctl enable ai-kb-mcp
 sudo systemctl start ai-kb-mcp
 ```
 
-## 支持
+## Support
 
-如果遇到问题，请：
-1. 查看日志输出
-2. 检查环境配置
-3. 参考故障排除部分
-4. 提交 Issue 到项目仓库: https://github.com/jrmatherly/ai-kb/issues
+If you run into problems:
+1. Check the log output
+2. Check the environment configuration
+3. See the Troubleshooting section
+4. File an issue in the project repository: https://github.com/jrmatherly/ai-kb/issues

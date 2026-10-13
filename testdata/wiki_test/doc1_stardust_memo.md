@@ -1,11 +1,11 @@
-# 星尘计划启动备忘录
-**机密级别**：极密
-**发布机构**：天穹财团 (SkyVault Consortium) 董事会
-**项目代号**：星尘计划 (Project Stardust)
-**首席科学家**：艾琳·科尔博士 (Dr. Elara Cole)
+# Project Stardust Launch Memo
+**Classification**: Top Secret
+**Issued by**: Board of the SkyVault Consortium
+**Project code name**: Project Stardust
+**Chief scientist**: Dr. Elara Cole
 
-**项目概述**：
-星尘计划旨在开发一种革命性的推进系统——“幽能引擎 (Psionic Engine)”。该引擎将利用非牛顿物理学框架，突破目前星际航行的光速壁垒。
+**Project overview**:
+Project Stardust aims to develop a revolutionary propulsion system, the "Psionic Engine". The engine will use a non-Newtonian physics framework to break the light-speed barrier of current interstellar travel.
 
-**资源分配**：
-天穹财团将调拨“深渊之门”实验室的全部资源供艾琳·科尔博士使用。项目资金不设上限，以确保幽能引擎能够在 2150 年前进入原型机测试阶段。
+**Resource allocation**:
+The SkyVault Consortium will assign all resources of the "Abyss Gate" laboratory to Dr. Elara Cole. Project funding has no cap, so that the Psionic Engine can enter prototype testing before 2150.

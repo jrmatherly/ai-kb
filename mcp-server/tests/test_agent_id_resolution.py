@@ -7,7 +7,7 @@ def test_resolve_agent_id_accepts_non_uuid_agent_id(monkeypatch):
         "data": [
             {
                 "id": "builtin-wiki-researcher",
-                "name": "维基问答",
+                "name": "Wiki Q&A",
             }
         ]
     }

@@ -1,152 +1,152 @@
-# 更新日志
+# Changelog
 
-所有重要的项目更改都将记录在此文件中。
+All notable changes to this project are recorded in this file.
 
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-并且本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### 新增
-- 新增 `create_knowledge_from_text` 工具：通过手动 Markdown 文本创建知识条目，调用既有 `/knowledge-bases/{id}/knowledge/manual` 接口，补齐 #323 中"文本"部分。默认 `status="publish"`，创建后即进入解析/索引流程、可被检索；可传 `status="draft"` 仅保存不索引。
-- 新增 `update_knowledge_from_text` 工具：通过既有 `PUT /knowledge/manual/{id}` 接口更新手工 Markdown 知识；默认重新索引，也可保存为草稿，补齐 #2378。
-- README 工具清单补列既有的 `create_knowledge_from_file`。
+### Added
+- `create_knowledge_from_text` tool: creates a knowledge entry from manual Markdown text through the existing `/knowledge-bases/{id}/knowledge/manual` endpoint, completing the "text" part of Tencent/WeKnora#323. Defaults to `status="publish"`, so the entry enters parsing and indexing on creation and becomes searchable. Pass `status="draft"` to save it without indexing.
+- `update_knowledge_from_text` tool: updates manual Markdown knowledge through the existing `PUT /knowledge/manual/{id}` endpoint. Re-indexes by default and can save as a draft instead, completing Tencent/WeKnora#2378.
+- The README tool list now includes the existing `create_knowledge_from_file`.
 
 ## [1.1.1] - 2026-07-30
 
-### 变更
-- 官方 PyPI 包名改为 **`tencent-weknora-mcp`**（由 Tencent/WeKnora 仓库 CI 通过 Trusted Publishing 发布）。
-  原社区包 `weknora-mcp` 非官方维护，请迁移安装命令。
-- 项目 URL 指向 [Tencent/WeKnora](https://github.com/Tencent/WeKnora) 官方仓库（`mcp-server/` 目录）。
+### Changed
+- The official PyPI package name is now **`tencent-weknora-mcp`** (published by the Tencent/WeKnora repository CI through Trusted Publishing).
+  The former community package `weknora-mcp` is not officially maintained. Update your install commands.
+- Project URLs point to the official [Tencent/WeKnora](https://github.com/Tencent/WeKnora) repository (the `mcp-server/` directory).
 
-### 修复
-- HTTP 传输恢复 `stateless_http=True`，与迁移前 `StreamableHTTPSessionManager(stateless=True)` 行为一致。
-- SSE 传输恢复消息端点 `/sse/messages/`，与迁移前路由一致。
-- `WeKnoraClient` 使用线程本地 `requests.Session`，避免 MCP 2.x 在线程池中并发调用时出现 Session 竞态。
-- 文件上传（`create_knowledge_from_file`）尊重 `WEKNORA_VERIFY_SSL` 设置。
+### Fixed
+- The HTTP transport restores `stateless_http=True`, matching the pre-migration `StreamableHTTPSessionManager(stateless=True)` behavior.
+- The SSE transport restores the message endpoint `/sse/messages/`, matching the pre-migration route.
+- `WeKnoraClient` uses a thread-local `requests.Session`, avoiding Session races when MCP 2.x calls tools concurrently from a thread pool.
+- File upload (`create_knowledge_from_file`) honors the `WEKNORA_VERIFY_SSL` setting.
 
-### 注意
-- 工具执行失败时，MCPServer 2.x 返回 `CallToolResult(isError=True)`（`ToolError`），
-  不再像旧版低层 API 那样以成功响应的文本块返回 `"Error executing …"` 前缀。
-  仅解析 `content[0].text` 的客户端通常无感；依赖 `isError` 标志的集成方行为会更符合 MCP 规范。
+### Notes
+- When a tool fails, MCPServer 2.x returns `CallToolResult(isError=True)` (`ToolError`),
+  instead of the old low-level API's successful response with an `"Error executing …"` prefix in a text block.
+  Clients that only parse `content[0].text` usually see no difference. Integrations that rely on the `isError` flag now behave closer to the MCP spec.
 
 ## [1.1.0] - 2026-07-30
 
-### 修复
-- 修复 MCP Python SDK 2.x 下服务器启动崩溃（`AttributeError: 'Server' object has no attribute 'list_tools'`）。
-  SDK 2.0 移除了低层 `Server` 的装饰器 API（`@app.list_tools()` / `@app.call_tool()` / `app.get_capabilities()`），
-  而通过 `uvx` 拉起已发布包时会解析到最新 2.x，导致连接被关闭。
+### Fixed
+- Fixed the server crashing on startup under MCP Python SDK 2.x (`AttributeError: 'Server' object has no attribute 'list_tools'`).
+  SDK 2.0 removed the low-level `Server` decorator API (`@app.list_tools()` / `@app.call_tool()` / `app.get_capabilities()`),
+  and launching the published package through `uvx` resolves to the latest 2.x, so the connection was closed.
 
-### 变更
-- 将 MCP 服务器实现从低层 `Server` 迁移到高层 `MCPServer` API（mcp 2.x，原 FastMCP 改名）。
-  - 28 个工具重写为 `@mcp.tool()` 函数签名式：输入参数走类型标注（schema 由框架自动生成），
-    描述走 docstring，返回纯 Python 值由框架序列化。
-  - 传输层改用 `run_stdio_async()` / `sse_app()` / `streamable_http_app()`，鉴权仍由 `MCPAuthMiddleware` 包裹。
-  - `WeKnoraClient` 业务逻辑（REST/SSE 调用、resolve_*、wiki）保持不变。
-- 依赖上限调整为 `mcp>=2,<3`（发布包与开发环境一致，避免再次因无上限被解析到未来破坏性版本）。
+### Changed
+- Migrated the MCP server implementation from the low-level `Server` to the high-level `MCPServer` API (mcp 2.x, FastMCP renamed).
+  - The 28 tools are rewritten as `@mcp.tool()` function signatures: input parameters use type annotations (the framework generates the schema),
+    descriptions live in docstrings, and the framework serializes the plain Python return values.
+  - The transport layer now uses `run_stdio_async()` / `sse_app()` / `streamable_http_app()`. Authentication is still wrapped by `MCPAuthMiddleware`.
+  - `WeKnoraClient` business logic (REST/SSE calls, resolve_*, wiki) is unchanged.
+- The dependency bound is now `mcp>=2,<3` (the published package matches the development environment, so an unbounded range can no longer resolve to a future breaking release).
 
-### 注意
-- 本版本要求运行环境 `mcp>=2`。若临时需要旧版 SDK，可在启动命令加 `--with "mcp<2"`，但建议升级到本版本。
+### Notes
+- This release requires `mcp>=2` at runtime. If you temporarily need the old SDK, add `--with "mcp<2"` to the launch command, but upgrading to this release is recommended.
 
 ## [1.0.1] - 2026-07-28
 
-### 修复
-- 将入口脚本（`run_server.py`、`main.py`、`run.py`）的诊断输出改到 stderr，避免破坏 MCP stdio 协议流导致客户端启动失败
-- 修复 wheel 漏打包 `upload_paths.py` 导致的 `ModuleNotFoundError`
-- 将 `__init__.py` 改为绝对导入，修复 unittest/pytest 收集测试时的包导入错误
+### Fixed
+- Entry scripts (`run_server.py`, `main.py`, `run.py`) now write diagnostics to stderr, so they no longer corrupt the MCP stdio stream and make the client fail to start
+- Fixed the `ModuleNotFoundError` caused by the wheel missing `upload_paths.py`
+- `__init__.py` now uses absolute imports, fixing package import errors when unittest/pytest collect tests
 
-### 变更
-- PyPI 分发包名统一为 `weknora-mcp`（命令行入口 `weknora-mcp-server` / `weknora-server` 不变）
-- 新增 CI workflow（`.github/workflows/mcp-server.yml`），发布 tag 格式为 `mcp-server-v*`
+### Changed
+- The PyPI distribution name is now `weknora-mcp` (the command-line entry points `weknora-mcp-server` / `weknora-server` are unchanged)
+- Added a CI workflow (`.github/workflows/mcp-server.yml`). Release tags use the format `mcp-server-v*`
 
 ## [1.0.0] - 2024-01-XX
 
-### 新增
-- 初始版本发布
-- WeKnora MCP Server 核心功能
-- 完整的 WeKnora API 集成
-- 空间管理工具
-- 知识库管理工具
-- 知识管理工具
-- 模型管理工具
-- 会话管理工具
-- 聊天功能工具
-- 块管理工具
-- 多种启动方式支持
-- 命令行参数支持
-- 环境变量配置
-- 完整的包安装支持
-- 开发和生产模式
-- 详细的文档和安装指南
+### Added
+- Initial release
+- WeKnora MCP Server core features
+- Full WeKnora API integration
+- Workspace management tools
+- Knowledge base management tools
+- Knowledge management tools
+- Model management tools
+- Session management tools
+- Chat tools
+- Chunk management tools
+- Several launch methods
+- Command-line arguments
+- Environment variable configuration
+- Full package install support
+- Development and production modes
+- Detailed docs and installation guide
 
-### 工具列表
-- `create_tenant` - 创建新空间
-- `list_tenants` - 列出所有空间
-- `create_knowledge_base` - 创建知识库
-- `list_knowledge_bases` - 列出知识库
-- `get_knowledge_base` - 获取知识库详情
-- `delete_knowledge_base` - 删除知识库
-- `hybrid_search` - 混合搜索
-- `create_knowledge_from_url` - 从 URL 创建知识
-- `list_knowledge` - 列出知识
-- `get_knowledge` - 获取知识详情
-- `delete_knowledge` - 删除知识
-- `create_model` - 创建模型
-- `list_models` - 列出模型
-- `get_model` - 获取模型详情
-- `create_session` - 创建聊天会话
-- `get_session` - 获取会话详情
-- `list_sessions` - 列出会话
-- `delete_session` - 删除会话
-- `chat` - 发送聊天消息
-- `list_chunks` - 列出知识块
-- `delete_chunk` - 删除知识块
+### Tool list
+- `create_tenant` - create a workspace
+- `list_tenants` - list all workspaces
+- `create_knowledge_base` - create a knowledge base
+- `list_knowledge_bases` - list knowledge bases
+- `get_knowledge_base` - get knowledge base details
+- `delete_knowledge_base` - delete a knowledge base
+- `hybrid_search` - hybrid search
+- `create_knowledge_from_url` - create knowledge from a URL
+- `list_knowledge` - list knowledge
+- `get_knowledge` - get knowledge details
+- `delete_knowledge` - delete knowledge
+- `create_model` - create a model
+- `list_models` - list models
+- `get_model` - get model details
+- `create_session` - create a chat session
+- `get_session` - get session details
+- `list_sessions` - list sessions
+- `delete_session` - delete a session
+- `chat` - send a chat message
+- `list_chunks` - list knowledge chunks
+- `delete_chunk` - delete a knowledge chunk
 
-### 文件结构
+### File layout
 ```
 WeKnora/mcp-server/
-├── __init__.py              # 包初始化文件
-├── main.py                  # 主入口点 (推荐)
-├── run.py                   # 便捷启动脚本
-├── run_server.py           # 原始启动脚本
-├── weknora_mcp_server.py   # MCP 服务器实现
-├── test_module.py          # 模组测试脚本
-├── requirements.txt        # 依赖列表
-├── setup.py               # 安装脚本 (传统)
-├── pyproject.toml         # 现代项目配置
-├── MANIFEST.in            # 包含文件清单
-├── LICENSE                # MIT 许可证
-├── README.md              # 项目说明
-├── INSTALL.md             # 详细安装指南
-└── CHANGELOG.md           # 更新日志
+├── __init__.py              # package init
+├── main.py                  # main entry point (recommended)
+├── run.py                   # quick launch script
+├── run_server.py           # original launch script
+├── weknora_mcp_server.py   # MCP server implementation
+├── test_module.py          # module test script
+├── requirements.txt        # dependency list
+├── setup.py               # install script (traditional)
+├── pyproject.toml         # modern project configuration
+├── MANIFEST.in            # package file manifest
+├── LICENSE                # MIT license
+├── README.md              # project overview
+├── INSTALL.md             # detailed installation guide
+└── CHANGELOG.md           # changelog
 ```
 
-### 启动方式
-1. `python main.py` - 主入口点 (推荐)
-2. `python run_server.py` - 原始启动脚本
-3. `python run.py` - 便捷启动脚本
-4. `python weknora_mcp_server.py` - 直接运行
-5. `python -m weknora_mcp_server` - 模块运行
-6. `weknora-mcp-server` - 安装后命令行工具
-7. `weknora-server` - 安装后命令行工具 (别名)
+### Launch methods
+1. `python main.py` - main entry point (recommended)
+2. `python run_server.py` - original launch script
+3. `python run.py` - quick launch script
+4. `python weknora_mcp_server.py` - run directly
+5. `python -m weknora_mcp_server` - run as a module
+6. `weknora-mcp-server` - command-line tool after installation
+7. `weknora-server` - command-line tool after installation (alias)
 
-### 技术特性
-- 基于 Model Context Protocol (MCP) 1.0.0+
-- 异步 I/O 支持
-- 完整的错误处理
-- 详细的日志记录
-- 环境变量配置
-- 命令行参数支持
-- 多种安装方式
-- 开发和生产模式
-- 完整的测试覆盖
+### Technical features
+- Built on Model Context Protocol (MCP) 1.0.0+
+- Async I/O
+- Full error handling
+- Detailed logging
+- Environment variable configuration
+- Command-line arguments
+- Several install methods
+- Development and production modes
+- Full test coverage
 
-### 依赖
+### Dependencies
 - Python 3.10+
 - mcp >= 1.0.0
 - requests >= 2.31.0
 
-### 兼容性
-- 支持 Windows、macOS、Linux
-- 支持 Python 3.10-3.12
-- 兼容现代 Python 包管理工具
+### Compatibility
+- Windows, macOS, Linux
+- Python 3.10-3.12
+- Works with modern Python package managers

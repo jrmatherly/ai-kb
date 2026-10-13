@@ -2,14 +2,14 @@
 set -euo pipefail
 
 #
-# 本地测试 Homebrew Formula
+# Test the Homebrew Formula locally
 #
-# 流程：打包 → 创建本地 tap → 写入 Formula → brew install → 验证
+# Flow: package -> create a local tap -> write the Formula -> brew install -> verify
 #
-# 用法:
-#   ./scripts/test-homebrew.sh                    # 完整测试（含前端构建）
-#   SKIP_FRONTEND=1 ./scripts/test-homebrew.sh    # 跳过前端构建
-#   SKIP_BUILD=1 ./scripts/test-homebrew.sh       # 跳过构建（使用已有 tarball）
+# Usage:
+#   ./scripts/test-homebrew.sh                    # full test (includes the frontend build)
+#   SKIP_FRONTEND=1 ./scripts/test-homebrew.sh    # skip the frontend build
+#   SKIP_BUILD=1 ./scripts/test-homebrew.sh       # skip the build (use an existing tarball)
 #
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -99,7 +99,7 @@ class AikbLiteTest < Formula
         sed -i'' -e "s|DB_PATH=.*|DB_PATH=\\\$DATA_DIR/aikb.db|" "\\\$CONFIG_DIR/.env.lite"
         sed -i'' -e "s|LOCAL_STORAGE_BASE_DIR=.*|LOCAL_STORAGE_BASE_DIR=\\\$DATA_DIR/files|" "\\\$CONFIG_DIR/.env.lite"
         echo ""
-        echo "已创建配置文件: \\\$CONFIG_DIR/.env.lite"
+        echo "Created config file: \\\$CONFIG_DIR/.env.lite"
         echo ""
       fi
 
@@ -160,18 +160,18 @@ echo "    Data:   ~/.local/share/ai-kb-test/"
 echo ""
 echo "=== Done ==="
 echo ""
-echo "前台运行:"
+echo "Run in the foreground:"
 echo "  ai-kb-lite-test"
 echo ""
-echo "后台服务:"
+echo "Background service:"
 echo "  brew services start ${TAP_NAME}/${FORMULA_NAME}"
 echo "  brew services info ${TAP_NAME}/${FORMULA_NAME}"
 echo "  brew services stop ${TAP_NAME}/${FORMULA_NAME}"
 echo ""
-echo "日志:"
+echo "Logs:"
 echo "  $(brew --prefix)/var/log/ai-kb-lite-test.log"
 echo ""
-echo "卸载测试:"
+echo "Uninstall the test:"
 echo "  brew services stop ${FORMULA_NAME} 2>/dev/null"
 echo "  brew uninstall ${FORMULA_NAME}"
 echo "  brew untap ${TAP_NAME}"

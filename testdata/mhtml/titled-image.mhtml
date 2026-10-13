@@ -10,13 +10,13 @@ Content-Location: https://example.com/titled-image
 <html>
   <body>
     <table>
-      <tr><th>体验方向</th><th>代表内容</th></tr>
-      <tr><td>赛季制建立</td><td>BP、Rank</td></tr>
+      <tr><th>&#x4f53;&#x9a8c;&#x65b9;&#x5411;</th><th>&#x4ee3;&#x8868;&#x5185;&#x5bb9;</th></tr>
+      <tr><td>&#x8d5b;&#x5b63;&#x5236;&#x5efa;&#x7acb;</td><td>BP&#x3001;Rank</td></tr>
     </table>
 
-    <p><img src="images/%E7%AC%AC%201%20%E9%A1%B5%20%28%E6%B5%8B%E8%AF%95%29.gif" alt="图片" title="阶段 1) 图片"></p>
+    <p><img src="images/%E7%AC%AC%201%20%E9%A1%B5%20%28%E6%B5%8B%E8%AF%95%29.gif" alt="&#x56fe;&#x7247;" title="&#x9636;&#x6bb5; 1) &#x56fe;&#x7247;"></p>
 
-    <p>高机动性身法与独特枪械反馈</p>
+    <p>&#x9ad8;&#x673a;&#x52a8;&#x6027;&#x8eab;&#x6cd5;&#x4e0e;&#x72ec;&#x7279;&#x67aa;&#x68b0;&#x53cd;&#x9988;</p>
 
     <p>alpha<br>beta</p>
 

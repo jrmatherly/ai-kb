@@ -13,10 +13,10 @@ class HTMLParserTest(unittest.TestCase):
 
         document = HTMLParser(file_name="test.html", file_type="html").parse(content)
 
-        self.assertIn("# 测试 HTML 文档", document.content)
-        self.assertIn("[测试链接](https://example.com)", document.content)
-        self.assertIn("| 表头1 | 表头2 |", document.content)
-        self.assertIn("内容4", document.content)
+        self.assertIn("# Test HTML Document", document.content)
+        self.assertIn("[test link](https://example.com)", document.content)
+        self.assertIn("| Header 1 | Header 2 |", document.content)
+        self.assertIn("Cell 4", document.content)
 
     def test_parse_empty_html_returns_empty_document(self):
         document = HTMLParser(file_name="empty.htm", file_type="htm").parse(b"")
