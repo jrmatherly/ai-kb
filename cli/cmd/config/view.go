@@ -18,7 +18,7 @@ import (
 )
 
 // viewFields enumerates the fields surfaced for `--format json` discovery on
-// `config view`. Flat shape — each entry is a top-level key of envelope.data.
+// `config view`. The shape is flat: each entry is a top-level key of envelope.data.
 var viewFields = []string{
 	"active_profile", "profile_source", "auth_source", "host",
 	"kb_id", "kb_source",
@@ -130,8 +130,8 @@ func resolveView(cmd *cobra.Command, f *cmdutil.Factory) viewData {
 	}
 
 	// Auth source: stateless env credentials (AIKB_TOKEN/AIKB_API_KEY)
-	// override the profile + keyring for the actual client, so report that —
-	// otherwise host/profile above would silently describe a profile the env
+	// override the profile + keyring for the actual client, so report that.
+	// Otherwise host/profile above would silently describe a profile the env
 	// credential bypassed. AIKB_HOST (when set) is the host that env cred
 	// authenticates against.
 	if active, kind := cmdutil.EnvCredential(); active {
@@ -145,7 +145,7 @@ func resolveView(cmd *cobra.Command, f *cmdutil.Factory) viewData {
 		d.AuthSource = "(none)"
 	}
 
-	// KB id + source (never network — ResolveKBLocal).
+	// KB id + source, resolved locally by ResolveKBLocal with no network call.
 	d.KBID, d.KBSource = resolveKB(cmd, f)
 
 	// Log level + source.

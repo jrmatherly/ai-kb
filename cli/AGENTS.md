@@ -2,7 +2,7 @@
 
 This is the AI KB CLI (`aikb`), a command-line client for the AI KB RAG server. The module path is `github.com/jrmatherly/ai-kb/cli`.
 
-The wire contract for AI agents *consuming* `aikb` output (JSON shape, exit codes, error format) is documented below and in [README.md](README.md). Read this file if you're integrating with the CLI binary — build / test / architecture details follow the wire contract sections.
+The wire contract for AI agents *consuming* `aikb` output (JSON shape, exit codes, error format) is documented below and in [README.md](README.md). Read this file if you're integrating with the CLI binary. Build, test and architecture details follow the wire contract sections.
 
 ## Wire contract for AI agents
 
@@ -13,10 +13,10 @@ JSON field you write becomes part of an agent's decision-making input.**
 ### Stdout (success path)
 
 All `--format json` (default) commands emit a symmetric envelope. Optional
-fields are `omitempty` — they only appear when populated:
+fields are `omitempty`, so they only appear when populated:
 
 ```json
-// list (kb list, doc list, ...) — data is an array, meta carries count
+// list (kb list, doc list, ...): data is an array, meta carries count
 {
   "ok": true,
   "data": [ {"id": "kb_abc", "name": "prod"} ],
@@ -24,7 +24,7 @@ fields are `omitempty` — they only appear when populated:
   "profile": "prod"
 }
 
-// single resource (kb view, doc view, ...) — data is an object
+// single resource (kb view, doc view, ...): data is an object
 {
   "ok": true,
   "data": {"id": "kb_abc", "name": "prod", "description": "..."},
@@ -38,8 +38,8 @@ fields are `omitempty` — they only appear when populated:
 `data` is omitted on mutation-only success (no payload). `meta` carries list
 counters (`count`, `has_more`) and batch successes/failures, and is omitted
 when empty. `meta.next_cursor`, `meta.total_count`, and `meta.request_id` are
-reserved — not currently populated; planned for v0.8 when the SDK exposes
-pagination cursors and response headers. `_notice` is reserved — open-map
+reserved and not currently populated. They are planned for v0.8 when the SDK exposes
+pagination cursors and response headers. `_notice` is reserved - open-map
 infrastructure is in place for deprecation / version_skew / security notices;
 the field is omitted until a producer is wired in v0.8. `profile` echoes the
 resolved profile name and is omitted when no profile is configured.
@@ -68,7 +68,7 @@ Errors emit an error envelope on stderr (`--format json`) or prose
 `type` is the typed code (see [Error code reference](#error-code-reference)
 below). `hint` is prose; `retry_argv` is the suggested next argv as a JSON
 string array. For non-destructive errors agents may execute it; on exit-10
-(`input.confirmation_required`) it is informational only — the human must
+(`input.confirmation_required`) it is informational only - the human must
 approve the destructive write explicitly. See "Exit-10 anti-patterns" for
 details.
 `retry_after_seconds` mirrors HTTP `Retry-After`. `risk` tags high-risk writes.
@@ -77,7 +77,7 @@ details.
 
 ### NDJSON event stream (chat / session ask)
 
-`--format json` and `--format ndjson` both produce one JSON event per line —
+`--format json` and `--format ndjson` both produce one JSON event per line -
 no envelope wrapping. The CLI injects exactly one event (`init`) at the head;
 all subsequent events pass through verbatim from the SDK:
 
@@ -96,7 +96,7 @@ For prose rendering, pass `--format text`.
 `_notice` is an open map. New keys are **additive non-breaking**; agents MUST
 ignore unknown keys. v0.7 reserves three keys: `deprecation` / `version_skew` /
 `security`. New keys follow snake_case convention. The `_notice` field is
-currently always empty — producer wiring is planned for v0.8 when the SDK
+currently always empty - producer wiring is planned for v0.8 when the SDK
 exposes version metadata. The wire infrastructure is in place so adding a
 producer in v0.8 will not change the envelope shape.
 
@@ -131,7 +131,7 @@ Make errors structured, actionable, and specific.
 | `AIKB_LOG_LEVEL` | SDK debug log level (`error \| warn \| info \| debug`). Overridden by `--log-level`. |
 | `AIKB_AGENT_HELP` | Set to `1` to emit structured JSON agent-help (machine-readable) instead of human help text when `--help` is invoked. |
 
-> **Note for agents — machine-readable version and help:** The `--version` flag
+> **Note for agents - machine-readable version and help:** The `--version` flag
 > and `--help` flag on the root command bypass `--format json` and always emit
 > prose (cobra built-in paths). For machine-readable output use the `version`
 > subcommand (`aikb version --format json`) or `AIKB_AGENT_HELP=1
@@ -162,14 +162,14 @@ is or isn't aligned with.
 | | |
 |---|---|
 | **AI KB** | two separate fields: `retry_argv` (suggested next argv as a string array, directly executable for non-destructive errors; informational only on exit-10) + `hint` (prose) |
-| **Rationale** | Agents don't regex-extract argv from prose — known fragility. Trade-off: one extra envelope field. On exit-10, the user must approve the destructive write; agents surface `retry_argv` for human review, not auto-execution. |
+| **Rationale** | Agents don't regex-extract argv from prose - known fragility. Trade-off: one extra envelope field. On exit-10, the user must approve the destructive write; agents surface `retry_argv` for human review, not auto-execution. |
 
 ### 4. NDJSON event stream has no envelope wrapping
 
 | | |
 |---|---|
 | **AI KB** | streaming commands (`chat`, `session ask`) emit bare `{type:...}` per line; no envelope |
-| **Rationale** | This matches established practice across NDJSON-emitting CLIs and webhook protocols. A streaming envelope requires unwrap before dispatch — net burden with no benefit. |
+| **Rationale** | This matches established practice across NDJSON-emitting CLIs and webhook protocols. A streaming envelope requires unwrap before dispatch - net burden with no benefit. |
 
 ### 5. No `schema_version` field in payload
 
@@ -209,15 +209,15 @@ Entry point: `cmd/main.go` → `cmd.Execute()` → `cmd.NewRootCmd(cmdutil.New()
 
 Key packages:
 
-- `cmd/<name>/` — cobra command implementations, one subdir per top-level command
-- `internal/cmdutil/` — `Factory`, `FormatOptions`, typed `Error`, exit-code mapping, destructive-write confirm, KB id-or-name resolve
-- `internal/format/` — bare JSON emitter (`WriteJSON` / `WriteJSONFiltered`)
-- `internal/iostreams/` — global IO singleton + TTY detection + `SetForTest` swap
-- `internal/secrets/` — `Store` interface; `KeyringStore` primary, `FileStore` 0600 fallback, `MemStore` for tests
-- `internal/prompt/` — `TTYPrompter` (password no-echo) + `AgentPrompter` (non-TTY no-prompt sentinel)
-- `internal/sse/` — `Accumulator` for chat / session ask SSE streams
-- `internal/mcp/` — curated 10-tool stdio MCP server (wired by `cmd/mcp/serve.go`); see [MCP tool surface](#mcp-tool-surface) for the curation rationale and inventory
-- `client/` (parent module) — generated SDK
+- `cmd/<name>/` - cobra command implementations, one subdir per top-level command
+- `internal/cmdutil/` - `Factory`, `FormatOptions`, typed `Error`, exit-code mapping, destructive-write confirm, KB id-or-name resolve
+- `internal/format/` - bare JSON emitter (`WriteJSON` / `WriteJSONFiltered`)
+- `internal/iostreams/` - global IO singleton + TTY detection + `SetForTest` swap
+- `internal/secrets/` - `Store` interface; `KeyringStore` primary, `FileStore` 0600 fallback, `MemStore` for tests
+- `internal/prompt/` - `TTYPrompter` (password no-echo) + `AgentPrompter` (non-TTY no-prompt sentinel)
+- `internal/sse/` - `Accumulator` for chat / session ask SSE streams
+- `internal/mcp/` - curated 10-tool stdio MCP server (wired by `cmd/mcp/serve.go`); see [MCP tool surface](#mcp-tool-surface) for the curation rationale and inventory
+- `client/` (parent module) - generated SDK
 
 ## Command Structure
 
@@ -236,14 +236,14 @@ Every command follows this structure (see `cmd/kb/list.go`):
 
 1. `Options` struct with flag-bound fields
 2. `Service` interface declaring only the SDK methods this command calls. `*sdk.Client` satisfies it implicitly via duck typing.
-3. `NewCmd<Verb>(f *cmdutil.Factory) *cobra.Command` constructor — flag registration + `cmdutil.AddFormatFlag`
-4. Separate `run<Verb>(ctx, opts, fopts, svc, args...)` with the business logic — the test injection point
+3. `NewCmd<Verb>(f *cmdutil.Factory) *cobra.Command` constructor - flag registration + `cmdutil.AddFormatFlag`
+4. Separate `run<Verb>(ctx, opts, fopts, svc, args...)` with the business logic - the test injection point
 
 Key rules:
 
 - Each command owns its own `Service` interface; do NOT share interfaces across `cmd/*` packages. Per-file dependency graph is the goal.
 - Lazy-init `f.Client()` / `f.Secrets()` / `f.Prompter()` inside `RunE`, not the constructor (else `--help` forces auth).
-- Required flags: `_ = cmd.MarkFlagRequired("name")` — cobra returns the error only on registration-time typo.
+- Required flags: `_ = cmd.MarkFlagRequired("name")` - cobra returns the error only on registration-time typo.
 - New subtrees register in `cmd/root.go NewRootCmd`. Verb subtrees register their leaves in the subtree's own `NewCmd`.
 
 ### Command Examples and Help Text
@@ -270,7 +270,7 @@ if fopts.WantsJSON() {
 }
 ```
 
-`Emit` is the single source for the bare-JSON contract — it honors `--format json|ndjson` and `--jq <expr>` filtering. Never call `format.WriteJSON*` directly from a command. See `cmd/kb/list.go`.
+`Emit` is the single source for the bare-JSON contract - it honors `--format json|ndjson` and `--jq <expr>` filtering. Never call `format.WriteJSON*` directly from a command. See `cmd/kb/list.go`.
 
 ### Destructive Writes
 
@@ -305,7 +305,7 @@ ios, _ := iostreams.SetForTestWithTTY(t) // simulate terminal
 
 ### Confirm Prompts
 
-Use `testutil.ConfirmPrompter{Answer: bool, Err: error}` from `internal/testutil/`. Single source for the prompt double — do NOT re-define `confirmPrompter` per package.
+Use `testutil.ConfirmPrompter{Answer: bool, Err: error}` from `internal/testutil/`. Single source for the prompt double - do NOT re-define `confirmPrompter` per package.
 
 ### Assertions
 
@@ -336,22 +336,22 @@ for _, tt := range tests {
 
 ## Code Style
 
-- Add godoc to every exported function, type, and constant. Explain *why*, not *what* — the name already says *what*.
+- Add godoc to every exported function, type, and constant. Explain *why*, not *what* - the name already says *what*.
 - Don't comment to restate the code. Delete comments that narrate the next line.
-- Don't reference task numbers, commit SHAs, or version tags in inline comments — they belong in CHANGELOG or git log.
-- Never paste em-dashes (—) into Go source; use ASCII `-` or rewrite. (Markdown docs may use em-dashes.)
-- Don't add a helper for a single caller — inline.
+- Don't reference task numbers, commit SHAs, or version tags in inline comments - they belong in CHANGELOG or git log.
+- No em dashes (U+2014) in Go source or docs. Use ASCII `-` or rewrite the sentence.
+- Don't add a helper for a single caller - inline.
 
 ## Error Handling
 
 Typed error helpers in `internal/cmdutil/errors.go`:
 
-- `cmdutil.NewError(code, msg)` — fresh typed error
-- `cmdutil.WrapHTTP(err, format, args...)` — wrap an SDK error + classify from HTTP status (404 → `resource.not_found`, 401 → `auth.unauthenticated`, …). Use at every SDK call site.
-- `cmdutil.Wrapf(code, err, format, args...)` — explicit wrap with a chosen code
-- `cmdutil.NewFlagError(err)` — flag / argument problem → exit 2
-- `cmdutil.SilentError` — exit 1 without printing (when output already emitted)
-- `cmd.MarkFlagsMutuallyExclusive("a", "b")` — cobra-level mutex
+- `cmdutil.NewError(code, msg)` - fresh typed error
+- `cmdutil.WrapHTTP(err, format, args...)` - wrap an SDK error + classify from HTTP status (404 → `resource.not_found`, 401 → `auth.unauthenticated`, …). Use at every SDK call site.
+- `cmdutil.Wrapf(code, err, format, args...)` - explicit wrap with a chosen code
+- `cmdutil.NewFlagError(err)` - flag / argument problem → exit 2
+- `cmdutil.SilentError` - exit 1 without printing (when output already emitted)
+- `cmd.MarkFlagsMutuallyExclusive("a", "b")` - cobra-level mutex
 
 Errors print to STDERR via `cmdutil.PrintError(w, err)` as `code: msg\nhint: ...`. STDOUT stays bare JSON or empty on failure, so `--json | jq` pipelines never have to filter error shapes.
 
@@ -360,7 +360,7 @@ User-facing exit-code mapping lives in [README.md "Exit codes"](README.md#exit-c
 ## Error code reference
 
 > **Audience:** AI agents and scripted callers parsing `aikb` stderr.
-> Code authors writing new error sites — see [`## Error Handling`](#error-handling) above.
+> Code authors writing new error sites - see [`## Error Handling`](#error-handling) above.
 
 When `aikb` exits non-zero, stderr carries a structured triplet:
 
@@ -431,7 +431,7 @@ For common retry patterns, AI agents can hardcode:
 Exit code 10 (`input.confirmation_required`) marks a destructive write where the
 CLI refused to proceed without explicit user approval. The retry envelope includes
 `retry_argv` showing the exact argv that would proceed. AI agents must NEVER
-auto-retry this exit code — every exit 10 is a user-in-the-loop decision.
+auto-retry this exit code - every exit 10 is a user-in-the-loop decision.
 
 **Don't do these:**
 
@@ -466,7 +466,7 @@ The server **replays all stored events from the start** of the assistant message
 ### Agent contract
 
 1. **Dedupe by message_id** (or maintain a per-message event hash set). Naively processing all received events causes duplicate side effects (re-running tool calls, re-rendering answers).
-2. **Capture message_id from the init event** of the original `chat` or `session ask` invocation — the CLI injects `{"event":"init", "session_id":"...", "message_id":"..."}` as the first NDJSON line.
+2. **Capture message_id from the init event** of the original `chat` or `session ask` invocation - the CLI injects `{"event":"init", "session_id":"...", "message_id":"..."}` as the first NDJSON line.
 3. **Handle `local.sse_stream_aborted` typed error**: server-side buffer expired (TTL exceeded) or process restarted (memory mode). The message is no longer recoverable; restart the original query.
 
 ### Server-side buffer TTL
@@ -498,7 +498,7 @@ Success envelope (exit 0) with `data` field omitted (omitempty) and `meta.dry_ru
 
 ### Side effects suppressed
 
-The dry-run path is **offline** — no SDK calls, no Factory.Client() init, no ResolveKB network query, no writes (keyring / `.aikb/project.yaml` / files). Works without active profile or network access.
+The dry-run path is **offline** - no SDK calls, no Factory.Client() init, no ResolveKB network query, no writes (keyring / `.aikb/project.yaml` / files). Works without active profile or network access.
 
 ### Interactions
 
@@ -524,11 +524,11 @@ echo '{"query":"...","kb":"..."}' | aikb api -X POST /api/v1/sessions/<id>/agent
 
 Agents see the same `risk.action` string (in the form `noun.verb`) on three independent surfaces:
 
-1. **Error envelope** — `envelope.error.risk.action` on an exit-10 confirmation-required error, so the agent can decide whether to escalate to the user. 11 unique values: `kb.delete`, `kb.edit`, `agent.delete`, `agent.edit`, `doc.delete`, `doc.delete_all`, `session.delete`, `chunk.delete`, `profile.remove`, `auth.logout`, `api.delete`.
+1. **Error envelope** - `envelope.error.risk.action` on an exit-10 confirmation-required error, so the agent can decide whether to escalate to the user. 11 unique values: `kb.delete`, `kb.edit`, `agent.delete`, `agent.edit`, `doc.delete`, `doc.delete_all`, `session.delete`, `chunk.delete`, `profile.remove`, `auth.logout`, `api.delete`.
 
-2. **Help text** — a `Risk: <action> (destructive)` line prepended to the top of `--help` output on the 9 destructive cobra commands. `aikb api` is intentionally excluded: it is a generic HTTP passthrough whose risk depends on the method, so a static Risk: line would mislead for non-DELETE methods.
+2. **Help text** - a `Risk: <action> (destructive)` line prepended to the top of `--help` output on the 9 destructive cobra commands. `aikb api` is intentionally excluded: it is a generic HTTP passthrough whose risk depends on the method, so a static Risk: line would mislead for non-DELETE methods.
 
-3. **MCP tool annotations** — `Tool.Annotations.destructiveHint` / `readOnlyHint` / `idempotentHint` / `openWorldHint` on every tool returned by `aikb mcp serve`.
+3. **MCP tool annotations** - `Tool.Annotations.destructiveHint` / `readOnlyHint` / `idempotentHint` / `openWorldHint` on every tool returned by `aikb mcp serve`.
 
 The three surfaces do not auto-sync: each is wired separately so agents that only consume one surface still get the signal, but contributors adding a new destructive command must touch all three.
 
@@ -551,20 +551,20 @@ The curated 10 tools (`cli/internal/mcp/tools.go`):
 | `agent_list` | list custom agents |
 | `session_ask` | run a query through a custom agent |
 
-Adding a tool is a deliberate API expansion — the AI-agent-callable surface is the reason this CLI ships an MCP server, not its CLI command list, so the registration list in `registerTools` is maintained by hand.
+Adding a tool is a deliberate API expansion - the AI-agent-callable surface is the reason this CLI ships an MCP server, not its CLI command list, so the registration list in `registerTools` is maintained by hand.
 
 ## Command surface design SOP
 
 Before specifying any CLI command, do this in order:
 
-1. `grep -A 50 "type Foo struct" client/foo.go` — dump SDK request/response schemas.
+1. `grep -A 50 "type Foo struct" client/foo.go` - dump SDK request/response schemas.
 2. List every field with type and source line.
 3. For each field, decide: hot-path flag / config-file only / hidden / never-expose.
 4. Cross-check pagination signatures: an SDK `(ctx, id, page, pageSize)` shape demands `--limit` + `--all-pages` + `--page-size` on the CLI side.
 5. ONLY THEN consult mainstream CLI conventions to choose flag names, positionals, mutex, and confirm semantics.
-6. Decide which fields are "top use case" (flag) / "advanced" (`--config-file` or escape hatch via `aikb api`). Don't try to flag-cover every SDK field — mature CLIs that curate ship a tighter surface; CLIs that 1:1 mirror their API pay the UX cost.
+6. Decide which fields are "top use case" (flag) / "advanced" (`--config-file` or escape hatch via `aikb api`). Don't try to flag-cover every SDK field - mature CLIs that curate ship a tighter surface; CLIs that 1:1 mirror their API pay the UX cost.
 
-Rationale: earlier drafts produced three categories of schema errors — fields that didn't exist on the underlying SDK, wrong field counts in user-facing docs, and missing pagination flags — that all stemmed from "design from convention, not from SDK." The fix is canonical: the SDK schema is the ground truth; convention decides names and shapes around that ground truth.
+Rationale: earlier drafts produced three categories of schema errors - fields that didn't exist on the underlying SDK, wrong field counts in user-facing docs, and missing pagination flags - that all stemmed from "design from convention, not from SDK." The fix is canonical: the SDK schema is the ground truth; convention decides names and shapes around that ground truth.
 
 ## CRUD command flag conventions
 
@@ -597,8 +597,8 @@ When a resource has both a cheap "is it alive?" probe and a deeper
 "verify its dependencies / aggregate state" probe, expose them as two
 verbs so the verb itself communicates cost:
 
-- `status <id>` — single HTTP, returns reachable + cheap fields.
-- `check  <id>` — 1 + N HTTP, adds derived state that needs follow-up
+- `status <id>` - single HTTP, returns reachable + cheap fields.
+- `check  <id>` - 1 + N HTTP, adds derived state that needs follow-up
   calls (e.g., aggregating `failed_count` via doc-list page-walk,
   probing every KB in an agent's scope).
 
@@ -616,7 +616,7 @@ cost is predictable.
 - Exponential backoff with jitter (initial `--interval`, cap 15s).
 - Concurrency capped (5 in flight); large fan-out via `xargs -P`.
 - Exit-code priority: failed (1) > timeout (124) > completed (0). The
-  failed bucket is `operation.failed`, not `server.error` — a target's
+  failed bucket is `operation.failed`, not `server.error` - a target's
   own terminal failure is not a transient transport issue.
 - Validate `--format` / `--jq` before polling so an invalid flag does
   not cost the caller a multi-minute poll.

@@ -15,7 +15,7 @@ import (
 
 // kbCreateFields enumerates the fields surfaced for `--format json` discovery
 // on `kb create`. The result is the full KnowledgeBase struct; these mirror
-// its top-level json tags. Nested config objects are intentionally omitted —
+// its top-level json tags. Nested config objects are intentionally omitted -
 // users wanting them can drop the projection or use --jq.
 var kbCreateFields = []string{
 	"id", "name", "type", "description",
@@ -63,7 +63,7 @@ func NewCmdCreate(f *cmdutil.Factory) *cobra.Command {
 			// Validate --storage-provider enum before the dry-run gate so
 			// --dry-run rejects identically to the live path. ValidateEnum
 			// returns input.invalid_argument (exit 5) and normalizes to the
-			// canonical lowercase form — consistent with every other enum flag
+			// canonical lowercase form - consistent with every other enum flag
 			// (model --type, agent --agent-mode, message search --mode).
 			// runCreate re-validates for direct-call callers.
 			canonSP, err := cmdutil.ValidateEnum("storage-provider", opts.StorageProvider, storageProviderValues)
@@ -151,7 +151,7 @@ func runCreate(ctx context.Context, opts *CreateOptions, fopts *cmdutil.FormatOp
 	}
 
 	// A KB with no embedding model can hold documents but never index/retrieve
-	// them — surface the next step at the point of creation instead of leaving
+	// them - surface the next step at the point of creation instead of leaving
 	// the agent to discover a silent-draft KB via a later empty search.
 	var meta *output.Meta
 	if created.EmbeddingModelID == "" {

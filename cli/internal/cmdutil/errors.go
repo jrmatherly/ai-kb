@@ -72,7 +72,7 @@ const (
 	CodeOperationFailed ErrorCode = "operation.failed"
 	// CodeOperationCancelled marks a long-running command interrupted by a
 	// caught signal (SIGINT / SIGTERM after main.go's signal.NotifyContext
-	// fires). Distinct from CodeUserAborted (declined confirm prompt) — the
+	// fires). Distinct from CodeUserAborted (declined confirm prompt) - the
 	// hints differ. main.go overrides the exit code to 130 for cancelled
 	// contexts so the user-visible exit follows Unix signal convention.
 	CodeOperationCancelled ErrorCode = "operation.cancelled"
@@ -217,7 +217,7 @@ func ErrorToDetail(err error) *output.ErrDetail {
 		if len(retry) == 0 {
 			retry = defaultRetryArgv(typed.Code)
 		}
-		// Build message without the code prefix — the envelope's separate
+		// Build message without the code prefix - the envelope's separate
 		// "type" field already carries the code, so repeating it in "message"
 		// causes agents that render "{type}: {message}" to produce a doubled
 		// prefix (e.g. "resource.not_found: resource.not_found: ...").
@@ -240,7 +240,7 @@ func ErrorToDetail(err error) *output.ErrDetail {
 		}
 		return detail
 	}
-	// Cobra parse / arg-count errors flow through cmdutil.NewFlagError —
+	// Cobra parse / arg-count errors flow through cmdutil.NewFlagError -
 	// surface them as input.invalid_argument so the wire envelope carries a
 	// useful typed code instead of the unclassified "internal.error" bucket.
 	// ExitCode separately maps FlagError → 2.
@@ -353,7 +353,7 @@ func matchPrefix(err error, prefix string) bool {
 
 // serverNotFoundRE matches the AI KB server's structured error-envelope body
 // for the typed "not found" code (1003 = ErrNotFound). Server's 1007 is the
-// generic ErrInternalServer bucket — including it would mis-classify every
+// generic ErrInternalServer bucket - including it would mis-classify every
 // validation / DB failure (e.g. SQLSTATE 22001 "value too long") as
 // resource.not_found, sending agents down the wrong recovery path.
 // Matching the structured "code":1003 anchor avoids the free-substring false

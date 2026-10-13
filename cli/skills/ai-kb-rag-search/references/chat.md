@@ -1,4 +1,4 @@
-# `chat` and `session ask` — RAG answers and raw streams
+# `chat` and `session ask` - RAG answers and raw streams
 
 Both return one buffered JSON envelope with answer events by default.
 `--reference` adds lookup-index references; `--verbose` adds execution events.
@@ -40,14 +40,14 @@ events through verbatim:
 - `knowledge_references` carry the grounding chunks (source attribution).
 - **Keep `init.session_id`** to continue the chat (`--session`). The
   `assistant_message_id` needed for `session stop` / `session resume`
-  rides on the SDK's `agent_query` frame, not on `init` — scan for it.
+  rides on the SDK's `agent_query` frame, not on `init` - scan for it.
 - On failure mid-stream you get `response_type:"error"`; a transport/HTTP error
   surfaces as the normal error envelope on stderr with a typed code.
 
 ## Recovery
 
 - **Stop server-side generation:** `aikb session stop <session-id> --message
-  <message-id>`. Ctrl-C only closes your local connection — the server keeps
+  <message-id>`. Ctrl-C only closes your local connection - the server keeps
   generating (and billing) until told to stop.
 - **Re-attach after a dropped connection:** `aikb session resume
   <session-id> --message <message-id>`. The server replays the event log from

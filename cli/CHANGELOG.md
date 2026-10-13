@@ -1,4 +1,4 @@
-# Changelog — `weknora` CLI
+# Changelog - `weknora` CLI
 
 All notable changes to the `weknora` CLI (the binary under `cli/` in this
 repository) will be documented in this file.
@@ -23,7 +23,7 @@ CLI history before v0.3 is recorded in the project root
 - `session continue-stream` renamed to `session resume`.
 - `kb init` renamed to `kb config set`.
 - Error envelope: `retry_command` (a shell string) replaced by `retry_argv`
-  (a directly-executable argv array — no shell-splitting or quoting).
+  (a directly-executable argv array - no shell-splitting or quoting).
 
 ### Added
 - `chat` / `session ask --reference` includes indexed citations, while
@@ -67,7 +67,7 @@ CLI history before v0.3 is recorded in the project root
 
 ## [0.9.0] - 2026-06-10
 
-### v0.9 — auth/profile model harmonization + flag cleanup
+### v0.9 - auth/profile model harmonization + flag cleanup
 
 #### Added
 - `weknora session stop <session-id>` command to abort an in-flight agent run.
@@ -77,12 +77,12 @@ CLI history before v0.3 is recorded in the project root
 - `SetAgentHelp` coverage extended across create / list / search commands.
 
 #### Changed
-- `auth login` now authenticates the **active profile** (resolved from config / global `--profile`) instead of creating a profile. Re-login MERGES credential refs into the existing record — host and an existing user are preserved, never clobbered.
+- `auth login` now authenticates the **active profile** (resolved from config / global `--profile`) instead of creating a profile. Re-login MERGES credential refs into the existing record - host and an existing user are preserved, never clobbered.
 
 #### Breaking
 - **`--kb` now accepts a knowledge-base name *or* id** on `doc delete --all` and `search chunks` / `search docs`; it stays required (no silent project-link fallback on these commands).
 - **`agent create --kb` renamed to `--attach-kb`** to disambiguate from the global `--kb` scope flag.
-- **MCP tool `agent_invoke` renamed to `session_ask`** (clean rename — external MCP clients must update cached tool schemas).
+- **MCP tool `agent_invoke` renamed to `session_ask`** (clean rename - external MCP clients must update cached tool schemas).
 - **`auth login` drops `--host` and `--name`.** It authenticates the active profile; create it first with `weknora profile add <name> --host <h> --use`. Target a non-active profile with the global `weknora --profile <name> auth login`.
 - **`auth logout` and `auth refresh` drop `--name`.** They act on the active profile; target another with the global `--profile <name>`.
 
@@ -91,7 +91,7 @@ CLI history before v0.3 is recorded in the project root
 
 ---
 
-### v0.8 — Agent safety nets + MCP annotations
+### v0.8 - Agent safety nets + MCP annotations
 
 #### Added
 - `--dry-run` flag on every mutation cobra command (`kb create/edit/delete`, `agent create/edit/delete`, `doc create/upload/fetch/delete`, `chunk delete`, `session delete`, `auth refresh/logout`, `link/unlink`, `profile add/remove`) and on `weknora api` (POST/PUT/PATCH/DELETE only; GET returns FlagError exit 2).
@@ -111,11 +111,11 @@ CLI history before v0.3 is recorded in the project root
 - Bumped `github.com/modelcontextprotocol/go-sdk` v1.6.0 → v1.6.1 (patch; opt-in `MCPGODEBUG` env var).
 
 #### Breaking
-*(none — v0.8 is fully additive on top of v0.7 envelope shape, NDJSON vocab, and typed code contracts; existing consumers continue to work and the new fields are optional via `omitempty`)*
+*(none - v0.8 is fully additive on top of v0.7 envelope shape, NDJSON vocab, and typed code contracts; existing consumers continue to work and the new fields are optional via `omitempty`)*
 
 ---
 
-### v0.7 — Agent-first wire contract + command-surface cleanup
+### v0.7 - Agent-first wire contract + command-surface cleanup
 
 #### BREAKING (v0.6 → v0.7)
 - **All JSON output now wrapped in symmetric envelope.**
@@ -125,7 +125,7 @@ CLI history before v0.3 is recorded in the project root
     retry_command?, retry_after_seconds?, risk?, detail?}, _notice?}`.
   - `meta.count` / `meta.has_more` surface list totals and server-side
     pagination state. `meta.next_cursor` / `meta.total_count` /
-    `meta.request_id` are reserved — populated when the SDK exposes them
+    `meta.request_id` are reserved - populated when the SDK exposes them
     (planned for v0.8).
   - Migration: replace `jq '.[]'` with `jq '.data[]'`; `.id` → `.data.id`;
     list-count consumers read `.meta.count`.
@@ -159,15 +159,15 @@ CLI history before v0.3 is recorded in the project root
     Go `context.Context`. Mainstream multi-credential CLIs (AWS, Stripe,
     OpenAI, Anthropic) settle on `profile` as the term of art.
 - **`weknora agent invoke` removed; use `weknora session ask --agent <id>`.**
-  - Server route is `POST /sessions/{session_id}/agent-qa` — session-anchored.
+  - Server route is `POST /sessions/{session_id}/agent-qa` - session-anchored.
   - `weknora agent` keeps CRUD only (list / view / create / edit / delete /
     status / check).
   - Migration: `weknora agent invoke ag_x "Q"` →
     `weknora session ask --agent ag_x "Q"` (auto-creates session if none given).
 - **`weknora doc upload` split into three commands.**
-  - `weknora doc upload <file>` — local file only.
-  - `weknora doc fetch <url>` — server-side remote fetch (was `upload --from-url`).
-  - `weknora doc create --text "..."` — direct text knowledge.
+  - `weknora doc upload <file>` - local file only.
+  - `weknora doc fetch <url>` - server-side remote fetch (was `upload --from-url`).
+  - `weknora doc create --text "..."` - direct text knowledge.
   - URL-only flags (`--title`, `--file-type`, `--tag-id`) moved to `doc fetch`.
   - Rationale: `upload --from-url` mixed semantics ("send out" vs "pull in");
     the three-verb split matches the server's three endpoints and gives each
@@ -183,17 +183,17 @@ CLI history before v0.3 is recorded in the project root
     so the escape hatch can hit endpoints the CLI doesn't natively model.
   - Migration: `weknora api -d '{"foo":1}' /endpoint` →
     `echo '{"foo":1}' | weknora api --input - /endpoint`.
-- **Batch operations envelope shape — per-item `ok` pattern.**
+- **Batch operations envelope shape - per-item `ok` pattern.**
   - `weknora doc delete id1,id2,id3` and similar multi-id mutations now emit:
     `{ok, data:[{id, ok, result?|error?}, ...], meta:{count, successes, failures}}`.
   - Top-level `ok` = AND-aggregate of per-item `ok` (false on partial failure).
-  - All-fail stays in batch shape (not error envelope) — agents can iterate
+  - All-fail stays in batch shape (not error envelope) - agents can iterate
     detail per id.
   - jq pattern: `jq '.data[] | select(.ok == false) | .id'`.
 - **MCP server tool errors now return `StructuredContent`.**
   - `CallToolResult{IsError: true, Content:[text-fallback],
     StructuredContent:{type, message, hint?, retry_command?, risk?, detail?}}`.
-  - Shape mirrors stderr `envelope.error` sub-object — one parser handles both.
+  - Shape mirrors stderr `envelope.error` sub-object - one parser handles both.
 - **Unknown subcommand emits typed envelope.**
   - `input.unknown_subcommand` with `detail.{unknown, command_path, available[]}`
     + `retry_command: "<parent> --help"`. Replaces v0.6's free-form
@@ -211,33 +211,33 @@ CLI history before v0.3 is recorded in the project root
 - **`WEKNORA_FORMAT` env var** sets the default `--format`. Values:
   `text | json | ndjson`. Overridden by explicit `--format`. Invalid values
   ignored.
-- **`error.retry_command`** — directly-executable retry argv, distinct from
+- **`error.retry_command`** - directly-executable retry argv, distinct from
   prose `hint`. Agents read `retry_command` without regex-parsing `hint`.
-- **`error.retry_after_seconds`** — `server.rate_limited` / `server.timeout`
+- **`error.retry_after_seconds`** - `server.rate_limited` / `server.timeout`
   surface server `Retry-After` header verbatim. CLI-direct (`weknora api`)
   parses HTTP `Retry-After` headers; SDK-mediated paths will gain coverage
   as the SDK exposes typed transport errors.
-- **`error.risk.{level, action}`** — destructive writes carry
+- **`error.risk.{level, action}`** - destructive writes carry
   `{level:"destructive", action:"<noun.verb>"}` (e.g. `doc.delete_all`,
   `kb.delete`). Reserved levels `"read"` / `"write"` not yet emitted.
-- **`_notice` envelope channel reserved** — open-map infrastructure in place
+- **`_notice` envelope channel reserved** - open-map infrastructure in place
   for deprecation / version_skew / security notices. Producer wiring planned
   for v0.8 when the SDK exposes version metadata. Additive non-breaking;
   unknown keys must be ignored.
 - **`meta.count` / `meta.has_more`** on list commands. `meta.next_cursor` /
-  `meta.total_count` / `meta.request_id` reserved — populated when the SDK
+  `meta.total_count` / `meta.request_id` reserved - populated when the SDK
   exposes them (planned for v0.8).
-- **`weknora doc fetch <url>`** — new command (see split above).
-- **`weknora doc create --text "..."`** — new command (see split above).
-- **`weknora session ask --agent <id> "..."`** — new command (replaces
+- **`weknora doc fetch <url>`** - new command (see split above).
+- **`weknora doc create --text "..."`** - new command (see split above).
+- **`weknora session ask --agent <id> "..."`** - new command (replaces
   `agent invoke`).
-- **`weknora doc delete --all --kb=<id>`** — new mode of `doc delete`
+- **`weknora doc delete --all --kb=<id>`** - new mode of `doc delete`
   (replaces `kb empty`).
-- **NDJSON `init` event** at stream head for `chat` / `session ask` —
+- **NDJSON `init` event** at stream head for `chat` / `session ask` -
   carries `session_id` + optional `kb_id` / `agent_id` / `model` / `profile`.
   `request_id` field is reserved (not currently populated; planned for v0.8
   when the SDK exposes response headers).
-- **`AgentHelp.Warnings`** — destructive commands (`kb delete`, `doc delete`,
+- **`AgentHelp.Warnings`** - destructive commands (`kb delete`, `doc delete`,
   `agent delete`, `session delete`, `chunk delete`, `profile remove`,
   `kb edit`, `agent edit`, `auth logout`) render an "AI agents:" warnings
   block in `--help` to set explicit expectations around `-y/--yes`.
@@ -251,11 +251,11 @@ CLI history before v0.3 is recorded in the project root
   in favour of plain verb descriptions.
 
 #### Deprecated (will remove in v0.8+)
-- *(none — pre-release breaking release; no deprecation alias period.)*
+- *(none - pre-release breaking release; no deprecation alias period.)*
 
 ---
 
-### v0.6 — agent runtime hardening: --format, doc wait, --log-level, status, multi-id delete, paginate
+### v0.6 - agent runtime hardening: --format, doc wait, --log-level, status, multi-id delete, paginate
 
 #### BREAKING (v0.5 → v0.6)
 - **`--json` flag removed** → use **`--format json`** (with optional
@@ -278,8 +278,8 @@ CLI history before v0.3 is recorded in the project root
   flag to a persistent global and made the default always `json`).
 - **`--jq '<expr>'`** flag pairs with `--format json|ndjson` to filter or
   project the JSON output via a jq expression.
-- **`weknora doc wait <id> [<id>...]`** — block until every document reaches a
-  terminal `parse_status`. Always wait-all — use shell composition
+- **`weknora doc wait <id> [<id>...]`** - block until every document reaches a
+  terminal `parse_status`. Always wait-all - use shell composition
   (`wait id1 && wait id2`) for fail-fast.
   - `--timeout DURATION` (default 10m; exit 124 on hit)
   - `--interval DURATION` (default 2s; exponential backoff to 15s + jitter)
@@ -287,44 +287,44 @@ CLI history before v0.3 is recorded in the project root
 - **`--log-level error|warn|info|debug`** persistent flag + `WEKNORA_LOG_LEVEL`
   env. Wires into the SDK's debug logger via the additive
   `client.SetDebugLevel(level string)` function.
-- **`kb create --storage-provider <local|minio|cos|tos|s3|oss|ks3>`** —
+- **`kb create --storage-provider <local|minio|cos|tos|s3|oss|ks3>`** -
   sets the new KB's `storage_provider_config.provider` at creation time
   (server only accepts it on create, not update). Required on self-hosted
   deployments where the server-side default doesn't pre-populate a
-  provider — without it, subsequent `doc upload` returns `kb not found`.
-- **`weknora kb status <id>`** — fast health snapshot (1 HTTP). Returns
+  provider - without it, subsequent `doc upload` returns `kb not found`.
+- **`weknora kb status <id>`** - fast health snapshot (1 HTTP). Returns
   reachable / counts / is_processing.
-- **`weknora kb check <id>`** — deep verification: status fields + `failed_count`
+- **`weknora kb check <id>`** - deep verification: status fields + `failed_count`
   aggregated via doc list page-walk (1 + N HTTP). The verb split between
   `status` (read state cheaply) and `check` (actively verify) communicates
   cost to the caller.
-- **`weknora agent status <id>`** — fast health snapshot (1 HTTP):
+- **`weknora agent status <id>`** - fast health snapshot (1 HTTP):
   reachable / model_id.
-- **`weknora agent check <id>`** — deep verification: status fields +
+- **`weknora agent check <id>`** - deep verification: status fields +
   `kb_scope_all_reachable` from probing each KB in scope (1 + N HTTP). Same
   status/check verb split as kb status/check.
-- **`weknora doc delete <doc-id> [<doc-id>...]`** — positional multi-id.
+- **`weknora doc delete <doc-id> [<doc-id>...]`** - positional multi-id.
   Default keep-going on failure. Single `-y/--yes` confirms the entire
   batch; non-TTY without `-y` still exits 10.
-- **`weknora session delete <session-id> [<session-id>...]`** — positional
+- **`weknora session delete <session-id> [<session-id>...]`** - positional
   multi-id with the same keep-going semantics as `doc delete`.
-- **`weknora chunk delete <chunk-id> [<chunk-id>...] --doc <doc-id>`** — positional
+- **`weknora chunk delete <chunk-id> [<chunk-id>...] --doc <doc-id>`** - positional
   multi-id, all chunks share the same `--doc` parent (server route requires it).
-- **`weknora api <path> --paginate`** — follows weknora's offset-based
+- **`weknora api <path> --paginate`** - follows weknora's offset-based
   pagination (`?page=N&page_size=M`) and merges all pages into a single
   `{data, total}` JSON response.
 - **MCP `chat` and `agent_invoke` tools** output schemas extended with
   `thinking` / `tool_calls` / `assistant_message_id`. Tool descriptions
   callout "server-side accumulated, NOT streaming" (MCP tools/call has
   no standard partial-response).
-- **`SetAgentHelp` pattern** — `cmdutil.SetAgentHelp(cmd, AgentHelp{...})`
+- **`SetAgentHelp` pattern** - `cmdutil.SetAgentHelp(cmd, AgentHelp{...})`
   exposes a stable JSON used_for / required_flags / examples / output
   shape, activated by `WEKNORA_AGENT_HELP=1` at `--help` time. Applied
   to `chat` and `kb list` as proof-of-pattern; extending to another
   command requires touching only that command's `NewCmd`.
 - **`cli/AGENTS.md`** gains an "Error code reference" section (35 typed
   codes + exit codes + retryable / hint), with `<!-- ERROR_REFERENCE_START -->`
-  markers and CI parity test (`errors_doc_test.go`) — every new typed
+  markers and CI parity test (`errors_doc_test.go`) - every new typed
   code in `AllCodes()` must be documented or CI fails.
 - New `operation.*` typed error namespace for CLI-level wait/poll outcomes:
   - `operation.timeout` → exit 124 (distinct from `server.timeout` → exit 7;
@@ -334,14 +334,14 @@ CLI history before v0.3 is recorded in the project root
     reach a terminal failure (`doc wait` finds `parse_status=failed`) or
     when multi-id `delete` rolls up partial failures. Distinct from
     `server.error` because the failure is the target's own terminal state,
-    not a transient transport issue — `server.error`'s "retry with backoff"
+    not a transient transport issue - `server.error`'s "retry with backoff"
     hint would be misleading.
   - `operation.cancelled` → exit 1, raised to **130** by `main.go` when the
     root context was signal-cancelled. Surfaced by chat / agent invoke /
     doc wait on Ctrl-C or SIGTERM. Carries a hint pointing at the signal,
     not at `-y/--yes` (which would have been the misleading
     `local.user_aborted` hint).
-- **Signal-aware root context** — `main.go` wires `signal.NotifyContext` for
+- **Signal-aware root context** - `main.go` wires `signal.NotifyContext` for
   SIGINT and SIGTERM so long-running commands observe `ctx.Done()` and run
   their cancellation cleanup (re-emit auto-created session id, return
   `operation.cancelled`); the process exits 130 whenever the context was
@@ -375,30 +375,30 @@ CLI history before v0.3 is recorded in the project root
   silently (env is best-effort).
 - **Multi-id delete stdout contract**: pre-flight failures (e.g. missing
   `-y` confirmation) no longer emit the empty `{ok, failed}` envelope to
-  stdout — stdout stays empty per the wire contract in README.md, the
+  stdout - stdout stays empty per the wire contract in README.md, the
   typed error goes to stderr only.
 - **Positional id help strings now namespaced** for clarity in both human
   help and agent `--help` parsing: `<id>` → `<kb-id>` / `<doc-id>` /
   `<session-id>` on kb / doc / session subtrees. `agent` and `chunk`
-  subtrees were already namespaced. Pure help-text change — argument
+  subtrees were already namespaced. Pure help-text change - argument
   parsing is unchanged.
-- `chat "<text>"` Use string now shows quotes — matches `agent invoke` and
+- `chat "<text>"` Use string now shows quotes - matches `agent invoke` and
   `search chunks` quoting hint for queries that contain spaces.
 
 #### SDK additions (strictly additive)
-- `client.SetDebugLevel(level string)` — programmatic control over the SDK's
+- `client.SetDebugLevel(level string)` - programmatic control over the SDK's
   internal slog debug logger.
 
-### v0.5 — agent CRUD, chunk subtree, MCP chunk_list, audit-driven cleanup
+### v0.5 - agent CRUD, chunk subtree, MCP chunk_list, audit-driven cleanup
 
 #### Added
 - `weknora agent create <name> --model <id>` / `agent edit <id>` /
-  `agent delete <id>` — hybrid surface (hot-path flags for the common
+  `agent delete <id>` - hybrid surface (hot-path flags for the common
   fields + `--config-file` YAML/JSON for the long tail +
   `--generate-skeleton` template emit). `--from <agent-id>` copies
   from an existing agent.
 - `weknora chunk list --doc <doc-id>` / `chunk view <chunk-id>` /
-  `chunk delete <chunk-id> --doc <doc-id>` — new subtree for RAG retrieval
+  `chunk delete <chunk-id> --doc <doc-id>` - new subtree for RAG retrieval
   debug. Paginated with v0.4 `--limit` / `--page-size` / `--all-pages` canon.
 - `weknora mcp serve` adds `chunk_list` as the 10th curated tool.
 - `weknora agent view <id>` human output now renders all 34 AgentConfig
@@ -406,7 +406,7 @@ CLI history before v0.3 is recorded in the project root
 - `--all-pages` / `--page-size` on `search docs` and `search sessions`
   (catching up with `session list` / `doc list` canon from v0.3+v0.4).
 - `weknora doc list` gains `--keyword` / `--file-type` / `--source` /
-  `--tag-id` / `--start-time` / `--end-time` (RFC3339) — matches the
+  `--tag-id` / `--start-time` / `--end-time` (RFC3339) - matches the
   SDK's `KnowledgeListFilter` surface. Time flags reject malformed
   input with `input.invalid_argument`.
 - MCP `doc_list` tool gains the same 6 filter fields (`keyword`,
@@ -477,7 +477,7 @@ CLI history before v0.3 is recorded in the project root
   as the canonical escape hatch for deep KB config, per-request `chat`
   / `agent invoke` overrides, and operations without a CLI verb.
 
-### v0.4 — output contract hardening and mainstream alignment
+### v0.4 - output contract hardening and mainstream alignment
 
 #### Breaking changes
 - Dropped the JSON envelope. `stdout` now emits bare typed data
@@ -494,15 +494,15 @@ CLI history before v0.3 is recorded in the project root
   tool descriptions.
 
 #### Added
-- `weknora mcp serve` — curated read-only stdio MCP server exposing 9
+- `weknora mcp serve` - curated read-only stdio MCP server exposing 9
   tools (`kb_list`, `kb_view`, `doc_list`, `doc_view`, `doc_download`,
   `search_chunks`, `chat`, `agent_list`, `agent_invoke`). Destructive
   verbs are intentionally excluded.
-- `weknora agent list` / `agent view` / `agent invoke` — manage and
+- `weknora agent list` / `agent view` / `agent invoke` - manage and
   call WeKnora's server-side Custom Agent resources.
-- `weknora auth token` — print the active credential to `stdout` for
+- `weknora auth token` - print the active credential to `stdout` for
   scripting (raw secret by default; `--json` emits `{token, mode, context}`).
-- `weknora doc upload --from-url` — ingest a remote URL.
+- `weknora doc upload --from-url` - ingest a remote URL.
 - `--json=fields,...` field projection and `--jq <expr>` filtering on
   every command that emits JSON.
 - `--limit` and `--all-pages` on list / search commands for bounded
@@ -518,58 +518,58 @@ CLI history before v0.3 is recorded in the project root
   `$XDG_CONFIG_HOME/weknora/secrets/`.
 - AGENTS.md rewritten as a developer guide (~170 lines, 6 H2 sections).
 
-### v0.3 — extended management surface and a `session` subtree
+### v0.3 - extended management surface and a `session` subtree
 
 #### Added
-- `context add` / `context list` / `context remove` — first-class CRUD over
+- `context add` / `context list` / `context remove` - first-class CRUD over
   connection targets (previously implicit via `auth login --name`).
   Removing the *current* context requires explicit `-y` (exit-10 protocol)
   because subsequent commands have no default target.
-- `auth refresh` — exchanges the stored refresh token for a new access +
+- `auth refresh` - exchanges the stored refresh token for a new access +
   refresh pair (OAuth refresh-token grant). Transparent 401 → refresh →
   retry is also wired into the SDK transport with singleflight de-dup, so
   most callers never need to invoke this explicitly.
-- `kb edit` — partial-update edit with only-sent-fields semantics
+- `kb edit` - partial-update edit with only-sent-fields semantics
   (`*string` options so unset fields stay unset in the PUT body).
-- `kb pin` / `kb unpin` — idempotent pin/unpin toggle; no-op when already
+- `kb pin` / `kb unpin` - idempotent pin/unpin toggle; no-op when already
   in the target state (emits `_meta.warnings`, no server call).
-- `kb empty` — bulk-delete documents while preserving the KB record and
+- `kb empty` - bulk-delete documents while preserving the KB record and
   its config. High-risk-write; exit-10 confirmation in non-TTY / `--json`
   paths.
-- `doc view <id>` — show one document's metadata (title, file name,
+- `doc view <id>` - show one document's metadata (title, file name,
   type, size, parse status, embedding model, processed-at, error
   message). Counterpart to `kb view` and `session view`.
-- `doc download` — stream a knowledge file to disk (`-O FILE` /
+- `doc download` - stream a knowledge file to disk (`-O FILE` /
   `-O -` for stdout) with `--clobber` controlling overwrite. Rejects
   server-supplied path-like filenames; partial writes on error are
   cleaned up.
-- `doc upload --recursive --glob '*.md'` — walk a directory and upload
+- `doc upload --recursive --glob '*.md'` - walk a directory and upload
   every match. Per-file `OK` / `FAIL` progress lines on the human path;
   aggregated `uploaded[]` / `failed[]` envelope on `--json`. Exit code
   typed to the first failure's class on partial failure.
-- `search chunks` / `search kb` / `search docs` / `search sessions` —
+- `search chunks` / `search kb` / `search docs` / `search sessions` -
   verb-noun subtree (gh `search code/repos/issues/…` shape). `search
   chunks` is hybrid (vector + keyword) retrieval; the other three are
   client-side substring filters useful for discovering identifiers.
   All four take `--limit N` / `-L N` (1..1000) to cap returned rows.
-- `session list` / `session view` / `session delete` — chat session
+- `session list` / `session view` / `session delete` - chat session
   management.
-- `api --input FILE` / `api --input -` — body source for raw HTTP
+- `api --input FILE` / `api --input -` - body source for raw HTTP
   passthrough (file or stdin); mutually exclusive with `--data`.
-- `unlink` — remove the cwd's `.weknora/project.yaml` so subsequent
+- `unlink` - remove the cwd's `.weknora/project.yaml` so subsequent
   commands stop auto-resolving `--kb` from it. Walks up from cwd so a
   user in a subdirectory can unlink without cd-ing to the project root.
 - Completion smoke test guards against cobra bumps silently breaking
   bash / zsh / fish / powershell completion.
 
 #### SDK additions (Go client at `client/`, strictly additive)
-- `OpenKnowledgeFile(ctx, id) (filename, body io.ReadCloser, err)` — new
+- `OpenKnowledgeFile(ctx, id) (filename, body io.ReadCloser, err)` - new
   primitive returning the body as a stream plus the server-suggested
   Content-Disposition filename. `DownloadKnowledgeFile` is now a thin
   wrapper (signature unchanged, gained partial-file-on-error cleanup).
-- `WithTransport(http.RoundTripper) ClientOption` — lets the CLI install
+- `WithTransport(http.RoundTripper) ClientOption` - lets the CLI install
   the 401-retry transport.
-- `PathAuthLogin` / `PathAuthRefresh` constants — so HTTP middleware
+- `PathAuthLogin` / `PathAuthRefresh` constants - so HTTP middleware
   doesn't re-hardcode the literals.
 - `IsPinned bool` field on `KnowledgeBase` (server already returned it;
   SDK just hadn't modeled it).

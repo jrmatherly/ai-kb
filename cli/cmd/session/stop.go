@@ -1,5 +1,5 @@
-// stop.go implements `aikb session stop` — cancel server-side generation
-// for a specific assistant message under a known session.
+// stop.go implements `aikb session stop`, which cancels server-side
+// generation for a specific assistant message under a known session.
 //
 // Unlike Ctrl-C (which only drops the local connection while the server keeps
 // generating and billing tokens), this tells the server to stop.
@@ -7,6 +7,7 @@
 // This is the symmetric counterpart to `session resume`: both key on
 // (session_id, message_id). The message_id comes from the init event of the
 // original chat / session ask / resume stream.
+
 package sessioncmd
 
 import (

@@ -115,7 +115,7 @@ Server-side ingestion knobs:
 			// Pure-local validation runs before the dry-run gate so --dry-run
 			// rejects identically to the live path. Filesystem stat
 			// (validateUploadPath) and recursive directory enumeration are
-			// intentionally skipped under --dry-run — those are side-effect-ish
+			// intentionally skipped under --dry-run - those are side-effect-ish
 			// reads the preview is allowed to defer.
 			if c.Flags().Changed("enable-multimodel") {
 				raw, _ := c.Flags().GetString("enable-multimodel")
@@ -247,7 +247,7 @@ func validateUploadFlags(opts *UploadOptions, args []string) error {
 	hasPath := len(args) == 1
 	if !hasPath {
 		// Wrap as FlagError so the exit code (2) matches what cobra's own
-		// MinimumNArgs(1) would emit — consistent with every other command
+		// MinimumNArgs(1) would emit - consistent with every other command
 		// that requires a positional argument.
 		return cmdutil.NewFlagError(errors.New(
 			"a file path is required (or use `aikb doc fetch` for URLs, `aikb doc create` for inline text)"))

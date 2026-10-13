@@ -47,7 +47,7 @@ func ResolveModelRef(ctx context.Context, lister ModelLister, ref, wantType stri
 			WithHint("discover models with `aikb model list`")
 	default:
 		return "", NewError(CodeInputInvalidArgument,
-			fmt.Sprintf("%q matches %d models — pass the model id instead", ref, len(matches))).
+			fmt.Sprintf("%q matches %d models - pass the model id instead", ref, len(matches))).
 			WithHint("`aikb model list` shows the ids")
 	}
 }

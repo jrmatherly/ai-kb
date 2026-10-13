@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# check-secret-tokens.sh — fail if a real-looking credential was committed to
+# check-secret-tokens.sh - fail if a real-looking credential was committed to
 # the CLI's human-facing docs. An agent-first CLI's docs are where a live
 # API key or JWT most easily gets pasted by accident (copying a working
 # session into a how-to). Same intent as a gitleaks/doc-token pre-commit scan.

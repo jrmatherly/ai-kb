@@ -1,21 +1,21 @@
 ---
 name: ai-kb-shared
-description: Use when driving a AI KB RAG server through the `aikb` CLI as an agent — authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
+description: Use when driving a AI KB RAG server through the `aikb` CLI as an agent - authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
 metadata:
   tested_against: v0.10
 ---
 
-# AI KB CLI — shared base
+# AI KB CLI - shared base
 
 `aikb` is the agent-first CLI for a AI KB RAG server. Every command prints
 a JSON envelope and uses a typed exit code, so you branch on machine-readable
 output, not prose. Read this skill before any task-specific `ai-kb-*` skill.
 
-## 1. Authenticate (do this first — order matters)
+## 1. Authenticate (do this first - order matters)
 
 **Agents usually skip profiles entirely:** set `AIKB_API_KEY` (or
 `AIKB_TOKEN`) + `AIKB_HOST` and every command authenticates statelessly and
-zero-disk — no `profile add` / `auth login` needed. `auth token` echoes that env
+zero-disk - no `profile add` / `auth login` needed. `auth token` echoes that env
 credential; `auth status` / `doctor` confirm it. The steps below set up a
 **persistent named profile** instead (interactive / multi-environment use).
 
@@ -25,9 +25,9 @@ Authentication is a **two-step sequence**. `aikb auth login` operates on the
 ```bash
 # 1. register a connection target and make it active
 aikb profile add prod --host https://kb.example.com --use
-# 2a. API key (agent default — pipe the key on stdin, non-interactive):
+# 2a. API key (agent default - pipe the key on stdin, non-interactive):
 echo "$AIKB_API_KEY" | aikb auth login --with-token
-# 2b. OR email+password (interactive prompt only — no flags; not for agents)
+# 2b. OR email+password (interactive prompt only - no flags; not for agents)
 aikb auth login
 
 aikb auth status          # verify: who am I, which tenant
@@ -53,21 +53,21 @@ the link; **`search *` and destructive `--all` operations always require an
 explicit `--kb`** (so an agent never silently hits the wrong corpus).
 
 **A KB must have an embedding model bound to be searchable.** A freshly created
-KB is `retrieval_ready:false` — uploaded docs stay unindexed and `search`/`chat`
+KB is `retrieval_ready:false` - uploaded docs stay unindexed and `search`/`chat`
 return nothing until you bind models. Create it ready in one step
 (`kb create --embedding-model <m> --chat-model <m>`, discover ids with
 `aikb model list`) or bind after the fact
 (`kb config set <kb> --embedding-model <m> --chat-model <m>`). `kb status` /
 `kb check` report `retrieval_ready`, and `kb create` hints the fix when it is
-false — so an unconfigured KB is never silently "healthy".
+false - so an unconfigured KB is never silently "healthy".
 
-## 3. Output contract — every command
+## 3. Output contract - every command
 
 Default output is `--format json`: a single envelope.
 
 | Field | Meaning |
 |---|---|
-| `ok` | `true`/`false` — branch on this first (see batch/wait caveat below) |
+| `ok` | `true`/`false` - branch on this first (see batch/wait caveat below) |
 | `data` | success payload (object or array; absent on mutation-only success) |
 | `meta` | `count` / `has_more` / `dry_run` / `plan` … |
 | `error` | on failure: `{type, message, hint?, retry_argv?, retryable?, risk?}` |
@@ -107,19 +107,19 @@ Default output is `--format json`: a single envelope.
 | 4 | `resource.not_found` (a server resource id) | verify the id |
 | 5 | `input.*` (other than confirmation_required) | adjust args, retry |
 | 6 | `server.rate_limited` | back off, retry |
-| 7 | `server.*` / `network.*` | transient — retry with backoff |
-| **10** | **`input.confirmation_required` (destructive)** | **see §5 — never auto-bypass** |
+| 7 | `server.*` / `network.*` | transient - retry with backoff |
+| **10** | **`input.confirmation_required` (destructive)** | **see §5 - never auto-bypass** |
 | 124 | `operation.timeout` | raise `--timeout` or check the job |
 | 130 | `operation.cancelled` (SIGINT/SIGTERM) | stop, don't retry |
 
 Note: a server resource id that doesn't exist → exit 4 (`resource.not_found`);
 a `--kb` *name* that doesn't resolve client-side → exit 1 (`local.kb_not_found`).
-`input.invalid_argument` spans two exit codes — a malformed *invocation*
+`input.invalid_argument` spans two exit codes - a malformed *invocation*
 (unknown/missing flag, wrong arg count) exits **2** (fix the command, re-check
 `--help`), while a value rejected *after* parsing (e.g. a bad `--jq` expression)
 exits **5** (adjust the value, retry). Branch on the exit code to tell them apart.
 
-## 5. Destructive writes (exit 10) — hard rule
+## 5. Destructive writes (exit 10) - hard rule
 
 Destructive commands (`kb/doc/chunk/session/agent delete`, `kb/agent update`,
 `auth logout`, `doc delete --all`, …) without `-y` exit **10** with
@@ -134,12 +134,12 @@ Destructive commands (`kb/doc/chunk/session/agent delete`, `kb/agent update`,
 **Surface this to the user and get explicit approval. Re-run with `-y` ONLY
 after they approve. Never add `-y` on your own initiative.**
 
-## 6. Preview before acting — `--dry-run`
+## 6. Preview before acting - `--dry-run`
 
 Any mutation accepts `--dry-run`: it resolves the request, prints
 `meta.plan = {action, args}`, makes **zero** server/side-effect changes, exits 0.
 Use it to confirm a command is well-formed (and what it would do) before running
-it for real — especially before destructive or bulk operations.
+it for real - especially before destructive or bulk operations.
 
 ## 7. Chaining (mutation → id)
 
@@ -153,7 +153,7 @@ aikb doc upload ./manual.pdf --kb "$KB"
 ## 7a. Reliability patterns for long-running agent runs
 
 ### Inspecting prior messages
-Use `aikb message list --session <sess-id>` to review the message history of a session (e.g., after a stream drops) before deciding whether to re-ask or continue. Use `aikb message search "<query>"` to locate a prior Q&A exchange across all sessions — prefer this over re-running an expensive query when the answer may already exist.
+Use `aikb message list --session <sess-id>` to review the message history of a session (e.g., after a stream drops) before deciding whether to re-ask or continue. Use `aikb message search "<query>"` to locate a prior Q&A exchange across all sessions - prefer this over re-running an expensive query when the answer may already exist.
 
 ### Tool-approval unlock
 An agent run pauses mid-stream on a tool-approval event when the server requires human sign-off before executing a tool call. The pattern:
@@ -163,7 +163,7 @@ An agent run pauses mid-stream on a tool-approval event when the server requires
 3. After explicit user go-ahead: `aikb session tool-approval resolve <pending-id> -y` to approve, or add `--reject --reason "..."` to reject.
 4. Resume the answer: `aikb session resume <sess-id> --message <msg-id>`.
 
-`--modified-args '{"key":"val"}'` replaces the tool arguments on approve (non-empty JSON object required). This is an exit-10 interaction — see §5.
+`--modified-args '{"key":"val"}'` replaces the tool arguments on approve (non-empty JSON object required). This is an exit-10 interaction - see §5.
 
 ## 8. Resource model & command map
 
@@ -181,7 +181,7 @@ api       raw HTTP passthrough to any server endpoint (escape hatch)
 link/unlink  bind cwd to a KB        mcp serve  expose aikb as MCP tools
 ```
 
-**chat vs session ask vs search** — the most common confusion: see the
+**chat vs session ask vs search** - the most common confusion: see the
 `ai-kb-rag-search` skill for the decision table. Briefly: `chat` = one-shot
 KB Q&A with an LLM; `session ask --agent <id>` = invoke a *custom agent*;
 `search chunks` = raw hybrid retrieval (no LLM).
@@ -197,7 +197,7 @@ take raw ids (no name resolution); resolve names via `kb_list` first.
 ## 10. Agent self-help
 
 Run `aikb <command> --help`. With `AIKB_AGENT_HELP=1` set, `--help` emits a
-JSON blob (`used_for` / `required_flags` / `examples`) instead of prose — parse
+JSON blob (`used_for` / `required_flags` / `examples`) instead of prose - parse
 that to learn a command without scraping the human help table.
 
 ## Common mistakes
@@ -205,7 +205,7 @@ that to learn a command without scraping the human help table.
 | Mistake | Fix |
 |---|---|
 | `aikb auth login` before any profile exists | `profile add <n> --host <url> --use` first (§1) |
-| Passing `--host` or `--name` to `auth login` | `auth login` takes neither — host comes from the profile; use `profile add <n> --host <url> --use`, then `auth login` |
+| Passing `--host` or `--name` to `auth login` | `auth login` takes neither - host comes from the profile; use `profile add <n> --host <url> --use`, then `auth login` |
 | Auto-adding `-y` to clear an exit-10 | Never; get user approval first (§5) |
 | Need the raw `chat` event stream | pass `--format ndjson`; use `--format text` for a live projected transcript |
 | `search chunks "q"` → exit 1 `local.kb_id_required` | Pass `--kb <name-or-id>`, set `AIKB_KB_ID`, or `aikb link` the dir |

@@ -1,4 +1,4 @@
-# `search chunks` — hybrid retrieval (no LLM)
+# `search chunks` - hybrid retrieval (no LLM)
 
 Raw vector + keyword retrieval against one knowledge base. Returns ranked chunks
 for you to reason over; it does NOT synthesize an answer (use `chat` for that).

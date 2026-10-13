@@ -1,4 +1,4 @@
-// Package messagecmd implements `aikb message` — inspect and manage the
+// Package messagecmd implements `aikb message` - inspect and manage the
 // messages inside chat sessions (the multi-turn substrate behind session ask).
 package messagecmd
 

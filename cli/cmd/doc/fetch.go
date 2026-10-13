@@ -1,4 +1,4 @@
-// Package doc — fetch.go implements `aikb doc fetch <url>`.
+// Package doc - fetch.go implements `aikb doc fetch <url>`.
 package doc
 
 import (

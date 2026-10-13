@@ -1,6 +1,6 @@
-// resume.go implements `aikb session resume` —
-// re-attach to an SSE event buffer for an in-progress or already-completed
-// assistant message under a known session_id.
+// resume.go implements `aikb session resume`, which re-attaches to an SSE
+// event buffer for an in-progress or already-completed assistant message
+// under a known session_id.
 //
 // Server semantics:
 //   - Replay-from-0 + tail: every connection replays the entire stored event
@@ -19,6 +19,7 @@
 // stream head, then SDK StreamResponse events verbatim. The init line lets
 // agents thread the resume to the original message in their dedupe table
 // without parsing the first SDK event.
+
 package sessioncmd
 
 import (
@@ -112,8 +113,14 @@ silently treated as NDJSON.`,
 	_ = cmd.MarkFlagRequired("message")
 	cmdutil.AddFormatFlag(cmd, resumeFields...)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
-		UsedFor:       "Resume an SSE event stream for an in-progress or completed assistant message. Produces an NDJSON event stream: init line (session_id, message_id) then raw SDK StreamResponse events.",
-		RequiredFlags: []string{"<session-id> (positional)", "--message (persisted assistant message id — get it from `aikb message list --session <id>`; a live stream's assistant_message_id is not resumable once the message persists)"},
+		UsedFor: "Resume an SSE event stream for an in-progress or completed assistant message. " +
+			"Produces an NDJSON event stream: init line (session_id, message_id) then raw SDK " +
+			"StreamResponse events.",
+		RequiredFlags: []string{"<session-id> (positional)", "--message (persisted assistant message " +
+			"id - get it from " +
+			"`aikb message list --session <id>`; a live stream's assistant_message_id is not resumable " +
+			"once the message " +
+			"persists)"},
 		Examples: []string{
 			"aikb session resume sess_xyz --message msg_abc --format json",
 			"# Get the message id from: aikb message list --session <session-id> (the persisted assistant message)",
@@ -122,7 +129,8 @@ silently treated as NDJSON.`,
 		Warnings: []string{
 			"Server replays from event 0 (NOT cursor-from-disconnect). Agents that already consumed events on the original stream MUST dedupe by message_id + event hash to avoid double-processing.",
 			"Buffer TTL: redis mode 1h hardcoded; memory mode = process lifetime. After expiry the CLI returns local.sse_stream_aborted.",
-			"Output is always NDJSON (an event stream, not an envelope): --jq does not apply and --format text/json/ndjson behave identically here — parse the event lines yourself.",
+			"Output is always NDJSON (an event stream, not an envelope): --jq does not apply and --format " +
+				"text/json/ndjson behave identically here - parse the event lines yourself.",
 		},
 	})
 	return cmd

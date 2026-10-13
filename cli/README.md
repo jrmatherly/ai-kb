@@ -1,4 +1,4 @@
-# aikb — AI KB CLI
+# aikb - AI KB CLI
 
 A command-line interface for the AI KB RAG knowledge-base server. Lets you
 authenticate, manage knowledge bases and documents, run hybrid search, and
@@ -77,7 +77,7 @@ echo "sk-..." | aikb auth login --with-token
 # 3. List knowledge bases
 aikb kb list
 
-# 4. Bind this directory to a knowledge base — subsequent commands auto-resolve --kb
+# 4. Bind this directory to a knowledge base - subsequent commands auto-resolve --kb
 aikb link --kb my-knowledge-base
 
 # 5. Upload a document, then block until parsing finishes
@@ -122,7 +122,7 @@ For AI agents (any MCP-capable host) integrating AI KB:
 
 1. Install: build from source (see [Install](#install))
 2. Authenticate. In a sandbox / CI, the **stateless** path needs no `auth login`
-   and writes nothing to disk — just set two env vars:
+   and writes nothing to disk - just set two env vars:
    ```bash
    export AIKB_API_KEY="sk-…"   # or AIKB_TOKEN for a bearer JWT
    export AIKB_HOST="https://kb.example.com"
@@ -145,10 +145,10 @@ For AI agents (any MCP-capable host) integrating AI KB:
 **Bundled Agent Skills.** This CLI ships [Agent Skills](https://agentskills.io/specification)
 under [`skills/`](skills/) that teach an agent to drive AI KB without trial and error:
 
-- [`ai-kb-shared`](skills/ai-kb-shared/SKILL.md) — **read first**: auth/profile
+- [`ai-kb-shared`](skills/ai-kb-shared/SKILL.md) - **read first**: auth/profile
   sequence, `--kb` resolution, the JSON-envelope + exit-code contract, the exit-10
   protocol, `--dry-run`, and CLI-vs-MCP selection.
-- [`ai-kb-rag-search`](skills/ai-kb-rag-search/SKILL.md) — when to use `chat`
+- [`ai-kb-rag-search`](skills/ai-kb-rag-search/SKILL.md) - when to use `chat`
   vs `session ask` vs `search chunks`, plus retrieval gotchas.
 
 Install them with the CLI (the skills are embedded in the binary, no checkout
@@ -212,12 +212,12 @@ confirmation and dry-run protocols) lives in **[AGENTS.md](AGENTS.md)**.
 - **stdout** is the data channel: bare JSON with `--format json`, or
   human-formatted output. Never carries error text.
 - **stderr** is logs, progress, warnings, and errors. A non-empty
-  stderr does **not** mean failure — read the exit code.
+  stderr does **not** mean failure - read the exit code.
 
 ### JSON output
 
 Every command supports `--format json`, wrapping the resource in the
-symmetric envelope `{ok, data, meta?}` — `data` is an array for `list` /
+symmetric envelope `{ok, data, meta?}` - `data` is an array for `list` /
 `search`, a single object for `view` and write outcomes. `--jq` runs
 against the whole envelope, so reach into list items with `.data[]`:
 
@@ -231,7 +231,7 @@ aikb kb list --format json --jq '.meta.count'           # number returned
 
 `--format ndjson` is also accepted for streaming list commands; each
 element is emitted as its own JSON line. `--format json` is the default
-regardless of TTY — running `aikb kb list | jq` works without an
+regardless of TTY - running `aikb kb list | jq` works without an
 explicit flag. Use `--format text` for human-readable output.
 `--jq` without `--format` always selects JSON, even when `AIKB_FORMAT`
 or `defaults.format` is `text`; `--format text --jq` is an error.
@@ -254,7 +254,7 @@ hint: run `aikb auth login`
 ```
 
 Under `--format json` the same failure is the typed error envelope on stderr
-(`{ok:false, error:{type, exit_code, hint?, retry_argv?, …}}`) — see
+(`{ok:false, error:{type, exit_code, hint?, retry_argv?, …}}`) - see
 [AGENTS.md §1.4](AGENTS.md) for the field-by-field contract and the full code
 taxonomy.
 
@@ -269,10 +269,10 @@ taxonomy.
 | `4`   | `resource.not_found`                                   | verify the resource id |
 | `5`   | `input.*` (other than `confirmation_required`)         | adjust args, retry |
 | `6`   | `server.rate_limited`                                  | back off, retry |
-| `7`   | `server.*` / `network.*`                               | transient — retry with backoff |
+| `7`   | `server.*` / `network.*`                               | transient - retry with backoff |
 | `10`  | **`input.confirmation_required`** (high-risk write)    | ask the human, retry with `-y` only after explicit approval |
 | `124` | `operation.timeout` (e.g. `doc wait --timeout` reached) | raise `--timeout` or check the underlying job |
-| `130` | cancelled by signal — typed `operation.cancelled` errors exit 1; `main.go` promotes the process exit to 130 when the root context was signal-cancelled (SIGINT / SIGTERM) | stop, do not retry |
+| `130` | cancelled by signal - typed `operation.cancelled` errors exit 1; `main.go` promotes the process exit to 130 when the root context was signal-cancelled (SIGINT / SIGTERM) | stop, do not retry |
 
 Run `aikb exit-codes` for the machine-readable matrix (JSON); `aikb help exit-codes` for the human-readable table.
 
@@ -281,7 +281,7 @@ explicit confirmation". Pass `-y/--yes` on `kb delete` /
 `doc delete` (including `--all --kb=<id>`) / `session delete` /
 `profile remove` (on the current profile) / `agent delete` /
 `chunk delete` when running headless.
-**Never auto-add `-y` without the user's explicit go-ahead** — exit 10
+**Never auto-add `-y` without the user's explicit go-ahead** - exit 10
 is the guard against unintended writes.
 
 ### Other AI-agent ergonomics
@@ -296,8 +296,8 @@ is the guard against unintended writes.
   stdio MCP for any MCP-compatible client.
 - `aikb schema` enumerates every command with its `used_for`, and
   `aikb schema <cmd path>` (e.g. `aikb schema doc update`) prints that
-  command's full contract — `used_for`, `required_flags`, `examples`,
-  `output`, `warnings`, `risk`, and local `flags` — as the standard envelope,
+  command's full contract - `used_for`, `required_flags`, `examples`,
+  `output`, `warnings`, `risk`, and local `flags` - as the standard envelope,
   so an agent can discover the surface without scraping `--help` prose.
 
 ---
@@ -309,18 +309,18 @@ configuration goes through the raw HTTP passthrough. CLI flag coverage
 targets common workflows, not 1:1 API parity. Examples of deep
 operations that intentionally go through `aikb api`:
 
-- **Tuning a KB's nested config** — chunking strategy, summary model,
+- **Tuning a KB's nested config** - chunking strategy, summary model,
   multimodal extraction defaults, FAQ thresholds, VLM model. Use
   `aikb api PUT /api/v1/knowledge-bases/<id> --input -` with a JSON
   body matching the server's `UpdateKnowledgeBaseRequest`. (Note: the
   storage provider is set once at create time via
   `kb create --storage-provider <name>` and is not updatable.)
-- **Per-request `chat` parameters** — multi-KB scope, summary model
+- **Per-request `chat` parameters** - multi-KB scope, summary model
   override, image attachments, web search toggle. Use `aikb api POST
   /api/v1/knowledge-chat/<session-id> --input -`.
-- **Per-request `session ask --agent` overrides** — same shape via
+- **Per-request `session ask --agent` overrides** - same shape via
   `aikb api POST /api/v1/agent-chat/<session-id> --input -`.
-- **Operations without a CLI verb** — register / change-password /
+- **Operations without a CLI verb** - register / change-password /
   OIDC flows, organization / sharing endpoints, tenant management.
 
 `aikb api --help` documents the raw passthrough. Run
@@ -394,11 +394,11 @@ An agent run may pause the stream on a tool-approval event until a human approve
 # 2. Surface the pending tool call to the user; get explicit go-ahead.
 aikb session tool-approval resolve pend_xxx -y                      # approve
 # aikb session tool-approval resolve pend_xxx --reject --reason "..." -y  # reject
-# 3. Resume the stream — server replays + tails from where the run was blocked.
+# 3. Resume the stream - server replays + tails from where the run was blocked.
 aikb session resume sess_abc --message msg_xyz
 ```
 
-Pass `--modified-args '{"key":"value"}'` to replace tool arguments on approve (must be a non-empty JSON object). Never auto-pass `-y` — the approval is the exit-10 human-in-the-loop gate.
+Pass `--modified-args '{"key":"value"}'` to replace tool arguments on approve (must be a non-empty JSON object). Never auto-pass `-y` - the approval is the exit-10 human-in-the-loop gate.
 
 Server-side buffer TTL: 1 hour for redis mode; process lifetime for memory mode (default). After TTL, expect `local.sse_stream_aborted` typed error.
 
@@ -465,4 +465,4 @@ macOS / Windows × Go 1.26, path-filtered to changes under `cli/`.
 
 ## License
 
-MIT — see the repository [LICENSE](../LICENSE).
+MIT - see the repository [LICENSE](../LICENSE).
