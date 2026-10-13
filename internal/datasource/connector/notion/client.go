@@ -306,8 +306,10 @@ func (c *notionClient) GetBlockChildrenFlat(ctx context.Context, blockID string)
 	return allBlocks, nil
 }
 
-const maxBlockDepth = 5       // Limit recursion depth — deeper content has diminishing value for knowledge bases
-const maxBlocksPerPage = 1000 // Limit total blocks fetched per page to prevent runaway API calls
+const (
+	maxBlockDepth    = 5    // Limit recursion depth — deeper content has diminishing value for knowledge bases
+	maxBlocksPerPage = 1000 // Limit total blocks fetched per page to prevent runaway API calls
+)
 
 // blocksTruncated reports whether the maxBlocksPerPage cap stopped pagination
 // while the API still offered another page — i.e. whether content was actually

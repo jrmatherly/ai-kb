@@ -62,7 +62,7 @@ func buildHTTPTransport(insecureSkipVerify bool) *http.Transport {
 		DialContext: secutils.SSRFSafeDialContext,
 		TLSClientConfig: &tls.Config{
 			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: insecureSkipVerify, //nolint:gosec — operator opt-in flag
+			InsecureSkipVerify: insecureSkipVerify, //nolint:gosec // operator opt-in flag
 			CipherSuites: []uint16{
 				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,

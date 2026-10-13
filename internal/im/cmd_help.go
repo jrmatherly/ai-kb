@@ -43,7 +43,7 @@ func (c *HelpCommand) Execute(_ context.Context, _ *CommandContext, args []strin
 	var sb strings.Builder
 	sb.WriteString("**Available commands**\n\n")
 	for _, cmd := range cmds {
-		sb.WriteString(fmt.Sprintf("· `/%s` — %s\n", cmd.Name(), cmd.Description()))
+		fmt.Fprintf(&sb, "· `/%s` — %s\n", cmd.Name(), cmd.Description())
 	}
 	sb.WriteString("\nSend `/help <command>` for detailed usage")
 	return &CommandResult{Content: sb.String()}, nil
