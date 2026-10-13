@@ -72,9 +72,12 @@ Requires [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker
 git clone https://github.com/jrmatherly/ai-kb.git
 cd ai-kb
 cp .env.example .env    # Edit .env as needed, see comments in the file
-docker compose pull     # Pull the latest images
+docker compose build    # Build the app, docreader and frontend images locally
 docker compose up -d    # Start core services
 ```
+
+> [!NOTE]
+> No release images are published under `ghcr.io/jrmatherly/ai-kb-*` yet, so `docker compose pull` fails with `denied`. Build the images from the checkout as above; the first build takes a while.
 
 Then open **<http://localhost>** and follow the onboarding guide. A walkthrough with sample data is in the [Quickstart](https://ai-kb-docs.matherly.net/docs/01-getting-started/03-quickstart).
 
@@ -100,23 +103,22 @@ Add `--profile` flags to enable additional components; multiple profiles can be 
 | `langfuse` | Tracing (Langfuse) |
 
 ```bash
-docker compose --profile neo4j --profile minio pull
 docker compose --profile neo4j --profile minio up -d
 docker compose down     # Stop services
 ```
 
 ### Upgrading
 
-If you already have AI KB running and downloaded a newer release:
+If you already have AI KB running and want a newer version:
 
 ```bash
-# Set AIKB_VERSION in .env to the target release (e.g. 0.8.2), or keep latest
-docker compose pull     # Pull images matching AIKB_VERSION
-docker compose up -d    # Recreate containers with new images
+git pull                # Update the checkout
+docker compose build    # Rebuild the images from it
+docker compose up -d    # Recreate containers with the new images
 ```
 
 > [!NOTE]
-> `docker compose up -d` alone reuses locally cached images and may leave the UI version out of sync with the release you downloaded. Read the [upgrade notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#upgrade-notes) before moving from v0.8.0.
+> `docker compose up -d` alone reuses the images already built and may leave the UI version out of sync with the checkout. Read the [upgrade notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#upgrade-notes) before moving from v0.8.0.
 
 ### Other ways to deploy
 
@@ -294,7 +296,7 @@ A modular pipeline from document parsing, vectorization and retrieval to LLM inf
 | [Data sources](https://ai-kb-docs.matherly.net/docs/03-features/10-datasource) | Feishu wiki / Feishu Drive / Lark / Confluence / GitLab / Tencent IMA / Notion / Yuque / DingTalk Docs / Seafile / RSS |
 | [IM channels](https://ai-kb-docs.matherly.net/docs/03-features/12-im-integration) | WeCom / Feishu / Lark / QQBot / Slack / Telegram / DingTalk / Mattermost / WeChat / Yunzhijia |
 | [Web search](https://ai-kb-docs.matherly.net/docs/03-features/11-web-search) | DuckDuckGo / Bing / Google / Tavily / Baidu / Ollama / SearXNG / Keenable / Zhipu AI / Exa / Metaso / Bocha / Serply |
-| Deployment | Docker Compose / Kubernetes (Helm) / Lite single binary / desktop app; offline and private-cloud installs; UI in Chinese, English, Japanese, Korean and Russian |
+| Deployment | Docker Compose / Kubernetes (Helm) / Lite single binary / desktop app; offline and private-cloud installs; English UI |
 
 ## Clients and Integrations
 
@@ -327,7 +329,7 @@ For headless / CI use, set `AIKB_API_KEY` + `AIKB_HOST` and skip `auth login`; n
 
 ## Documentation
 
-The full product documentation lives at **[ai-kb-docs.matherly.net/docs](https://ai-kb-docs.matherly.net/docs/)** (in Chinese), organized as Getting Started → Architecture → Features → API → Clients → Development and covering ~360 API endpoints and ~150 environment variables.
+The full product documentation lives at **[ai-kb-docs.matherly.net/docs](https://ai-kb-docs.matherly.net/docs/)**, organized as Getting Started → Architecture → Features → API → Clients → Development and covering ~360 API endpoints and ~150 environment variables.
 
 | Start here | |
 | ------------ | --- |
@@ -369,26 +371,15 @@ Welcome to submit [Issues](https://github.com/jrmatherly/ai-kb/issues) or Pull R
 
 <br/>
 
-For a focused PR, validate the changed scope first:
+`scripts/validate.sh` runs the checks for every area your change touches (Go, CLI, client, frontend, docreader, Helm, docs site, Markdown, shell scripts and more) and ends with the English-only and em dash gates:
 
 ```bash
-git fetch origin main
-git diff --check origin/main...HEAD
-golangci-lint run --new-from-rev=origin/main ./...
-go test ./path/to/changed/package -count=1
+scripts/validate.sh                 # working tree and untracked files against HEAD
+scripts/validate.sh --base origin/main
+scripts/validate.sh --list          # show which areas would run
 ```
 
-Run `gofmt` on changed Go files before committing. For frontend changes, run the relevant tests from `frontend/` and use `npm run type-check` when the change affects TypeScript or Vue components.
-
-The full maintainer gate remains:
-
-```bash
-make fmt
-make lint
-make test
-```
-
-`make fmt` formats the entire Go repository, so run it only with a clean worktree and review the resulting diff. Some full-suite tests require local infrastructure or service configuration. If a full check fails for an unrelated baseline or environment reason, include the exact command and failure in the PR while still providing passing targeted tests for your change.
+`scripts/install-git-hooks.sh` installs the pre-commit and pre-push hooks that run the same checks. The [Development guide](https://ai-kb-docs.matherly.net/docs/06-development/01-dev-guide#validation-and-contribution-workflow) lists each area's commands and the tools they need.
 
 </details>
 
