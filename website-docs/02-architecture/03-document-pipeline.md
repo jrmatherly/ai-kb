@@ -83,7 +83,7 @@ png jpg jpeg gif csv xlsx xls pptx ppt json
 mp3 wav m4a flac ogg
 ```
 
-URL import used to keep a shorter list of its own, so a direct `xlsx` upload worked while an `xlsx` URL import was rejected. Both paths now go through `isSupportedImportExtension()` / `validateImportFileType()` in `internal/application/service/knowledge_util.go`, and video files are rejected with an explicit "video uploads are not supported" error.
+URL import used to keep a shorter list of its own, so a direct `xlsx` upload worked while an `xlsx` URL import was rejected. Both paths now go through `isSupportedImportExtension()` / `validateImportFileType()` in `internal/application/service/knowledge_util.go`, and video files are rejected with the error "Uploading video files is not supported".
 
 Spreadsheet extensions (`csv` / `xlsx` / `xls`, `dataTableFileExtensions`) get one extra table summary task after the document processing task (`enqueueDataTableSummaryIfNeeded`).
 
@@ -277,7 +277,7 @@ After a worker picks up `TypeDocumentProcess` it moves through five canonical st
 The engine catalog lives in `internal/infrastructure/docparser/engines.go`. Each engine declares its metadata (name, description, file types, availability probe) together with a `NewReader` factory. `docparser.NewReader` dispatches by name; a name that is not registered (such as `markitdown`, which exists only in docreader) falls through to the docreader client.
 5. File mode: the bytes are read back with `FileService.GetFile(payload.FilePath)` and placed in `ReadRequest.FileContent`.
 
-**On the docreader side** (`docreader/`, Python gRPC): the proto is `docreader/proto/docreader.proto` with the methods `Read` / `ReadStream` (streaming: a first frame with metadata, then one frame per image, so large scanned PDFs do not hit the gRPC message limit) / `ListEngines`. The built-in parsers cover docx/doc/pdf/md/xlsx/xls/pptx/ppt/epub/html/htm/mhtml/xmind/images/web pages (`WebParser` handles URLs). Two more engines are registered: `markitdown` (Microsoft MarkItDown) and `opendataloader` (PDF layout analysis, needs Java 11+). The engine list is maintained on the Go side in `engine_registry.go`. The result is always a `ReadResult{MarkdownContent, ImageRefs, Metadata, IsAudio, AudioData}`: **the parse product is Markdown text plus image bytes**, and the Go side persists the images.
+**On the docreader side** (`docreader/`, Python gRPC): the proto is `docreader/proto/docreader.proto` with the methods `Read` / `ReadStream` (streaming: a first frame with metadata, then one frame per image, so large scanned PDFs do not hit the gRPC message limit) / `ListEngines`. The built-in parsers cover docx/doc/pdf/md/xlsx/xls/pptx/ppt/epub/html/htm/mhtml/xmind/images/web pages (`WebParser` handles URLs). Two more engines are registered: `markitdown` (Microsoft MarkItDown) and `opendataloader` (PDF layout analysis, needs Java 11+). The Go app keeps its own engine list (registered from `engines.go`), and `ListAllEngines()` in `engine_registry.go` merges in the result of the `ListEngines` RPC: for an engine both sides know, docreader's file types and description win, and engines only docreader reports are appended, so a new docreader engine shows up without a Go change. The result is always a `ReadResult{MarkdownContent, ImageRefs, Metadata, IsAudio, AudioData}`: **the parse product is Markdown text plus image bytes**, and the Go side persists the images.
 
 ### ASR transcription (audio files)
 
