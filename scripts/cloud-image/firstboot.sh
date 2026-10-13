@@ -30,7 +30,7 @@ if [[ -f "${MARKER}" ]]; then
 fi
 
 # cleanup.sh no longer keeps .env, so copy the template from .env.example and substitute.
-# This guarantees no .env with plaintext default passwords exists before firstboot, so aikb.service
+# This guarantees no .env with plaintext default passwords exists before firstboot, so ai-kb.service
 # cannot initialize the postgres data volume with the wrong password first.
 if [[ ! -f "${ENV_FILE}" ]]; then
   if [[ -f "${ENV_TEMPLATE}" ]]; then

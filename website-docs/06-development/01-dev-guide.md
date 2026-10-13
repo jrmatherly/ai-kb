@@ -377,7 +377,7 @@ The chunker provides `SplitWithDiagnostics()` (`internal/infrastructure/chunker/
 
 `scripts/cloud-image/` prepares a distribution image on a dedicated, disposable Linux build machine. A normal deployment follows [Installation](../01-getting-started/02-installation.md) and does not need these scripts.
 
-- `prepare.sh` downloads the runtime files for `AIKB_REF`, pulls the images and installs the systemd services. The same ref sets the image version, so confirm that a matching image tag exists. The shipped systemd units hard-code the deployment directory (`WorkingDirectory=` in `scripts/cloud-image/systemd/aikb.service`, the default of `AIKB_DIR`); changing only the script's directory variable does not move the installation.
+- `prepare.sh` downloads the runtime files for `AIKB_REF`, pulls the images and installs the systemd services. The same ref sets the image version, so confirm that a matching image tag exists. The shipped systemd units (`scripts/cloud-image/systemd/ai-kb.service` and `ai-kb-firstboot.service`) name `/opt/ai-kb`, the default of `AIKB_DIR`; `prepare.sh` rewrites that path to `AIKB_DIR` when it installs them. Run `cleanup.sh` with the same `AIKB_DIR`.
 - `cleanup.sh` wipes the build machine's data, keys, SSH authorizations, logs and Docker cache, then powers it off. Its effect is not limited to the AI KB directory; use it only on a dedicated build machine you have checked.
 - `firstboot.sh` generates keys on a new instance, writes `.env` and starts Compose. Afterwards it disables the first-boot service; it does not delete the script.
 

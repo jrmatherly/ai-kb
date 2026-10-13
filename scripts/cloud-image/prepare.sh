@@ -23,7 +23,7 @@
 #   PRUNE_OLD_IMAGES         Whether an upgrade removes dangling / old-tag images,
 #                            default false. When true, after pulling the new images it runs
 #                            `docker image prune -af`, which deletes every image no container references
-#                            (including wechatopenai/ai-kb-* at the old AIKB_VERSION)
+#                            (including ghcr.io/jrmatherly/ai-kb-* at the old AIKB_VERSION)
 #                            in one go, to shrink the cloud image.
 set -euo pipefail
 
@@ -136,9 +136,10 @@ tar -xzf "${tmp}/repo.tar.gz" -C "${tmp}" \
   '*/docker-compose.yml' \
   '*/.env.example' \
   '*/config/config.yaml'
-src=$(find "${tmp}" -maxdepth 1 -mindepth 1 -type d -name 'AI KB-*' | head -1)
+# GitHub names the archive's only top-level directory <repo>-<ref without a leading v>
+src=$(find "${tmp}" -maxdepth 1 -mindepth 1 -type d | head -1)
 if [[ -z "${src}" ]]; then
-  echo "[prepare] Extraction failed, no AI KB-* directory found" >&2
+  echo "[prepare] Extraction failed, the archive has no top-level directory" >&2
   exit 1
 fi
 
@@ -160,10 +161,9 @@ sed -i 's/^GIN_MODE=.*/GIN_MODE=release/' .env || true
 
 # Align AIKB_VERSION with AIKB_REF so docker compose pulls the image tag that matches
 # the ref. Always overwrite, so .env never keeps an old version from a previous prepare.
-# Tag naming for wechatopenai/ai-kb-* on Docker Hub:
-#   - floating tag: main (always points at the latest build)
-#   - fixed release tag: v prefix + semver (such as v0.7.2, v0.5.2)
-# So the v is not stripped here and nothing maps to latest.
+# Image tags on ghcr.io/jrmatherly/ai-kb-* are the git ref unchanged: the branch name
+# (main) or the release tag. So the ref is not rewritten here and nothing maps to latest.
+# This copy has no image publishing workflow yet, so the tag must already exist.
 AIKB_VERSION_VAL="${AIKB_REF}"
 if grep -qE '^AIKB_VERSION=' .env; then
   sed -i "s|^AIKB_VERSION=.*|AIKB_VERSION=${AIKB_VERSION_VAL}|" .env
@@ -185,19 +185,19 @@ docker compose --profile full pull sandbox || true
 # are not pre-pulled, which saves 5-15GB. To enable one:
 #   cd /opt/ai-kb && docker compose --profile <name> up -d
 
-# Upgrade: remove wechatopenai/ai-kb-* images with old tags.
+# Upgrade: remove ghcr.io/jrmatherly/ai-kb-* images with old tags.
 # Off by default to keep a rollback path. Turn it on explicitly before building the image to shrink it.
 #
 # Note: do not use `docker image prune -af`!
 # compose only pulls the sandbox image and never brings it up (the app docker-runs Agent Skills on demand),
 # so no container references it, and `prune -a` would delete the current sandbox too,
 # which defeats the sandbox pre-pull in step 4.5 of prepare.sh.
-# This compares tags exactly and removes only wechatopenai/ai-kb-* images whose tag differs from the current
+# This compares tags exactly and removes only ghcr.io/jrmatherly/ai-kb-* images whose tag differs from the current
 # AIKB_VERSION. Infrastructure images (paradedb / redis) are untouched.
 if [[ "${PRUNE_OLD_IMAGES,,}" == "true" || "${PRUNE_OLD_IMAGES}" == "1" ]]; then
-  echo "[prepare] 4.6/6 Remove old wechatopenai/ai-kb-* images (PRUNE_OLD_IMAGES=true, keep=${AIKB_VERSION_VAL})"
+  echo "[prepare] 4.6/6 Remove old ghcr.io/jrmatherly/ai-kb-* images (PRUNE_OLD_IMAGES=true, keep=${AIKB_VERSION_VAL})"
   docker image ls --format '{{.Repository}}:{{.Tag}}' \
-    | grep -E '^wechatopenai/ai-kb-' \
+    | grep -E '^ghcr\.io/jrmatherly/ai-kb-' \
     | grep -vE ":${AIKB_VERSION_VAL}\$" \
     | xargs -r docker rmi -f 2>/dev/null || true
 fi
@@ -211,15 +211,16 @@ if [[ -z "${DOCKER_BIN}" ]]; then
 fi
 echo "[prepare]   docker binary: ${DOCKER_BIN}"
 
-install -m 0644 "${SCRIPT_DIR}/systemd/aikb.service"           /etc/systemd/system/aikb.service
+install -m 0644 "${SCRIPT_DIR}/systemd/ai-kb.service"           /etc/systemd/system/ai-kb.service
 install -m 0644 "${SCRIPT_DIR}/systemd/ai-kb-firstboot.service" /etc/systemd/system/ai-kb-firstboot.service
-install -m 0755 "${SCRIPT_DIR}/firstboot.sh"                      /usr/local/sbin/ai-kb-firstboot.sh
+install -m 0755 "${SCRIPT_DIR}/firstboot.sh"                    /usr/local/sbin/ai-kb-firstboot.sh
 
-# Replace the docker path placeholder in the systemd units with the real path
-sed -i "s|@DOCKER_BIN@|${DOCKER_BIN}|g" /etc/systemd/system/aikb.service
+# Fill in the real docker path and deployment directory; the shipped units say /opt/ai-kb
+sed -i -e "s|@DOCKER_BIN@|${DOCKER_BIN}|g" -e "s|/opt/ai-kb|${AIKB_DIR}|g" \
+  /etc/systemd/system/ai-kb.service /etc/systemd/system/ai-kb-firstboot.service
 
 systemctl daemon-reload
-systemctl enable aikb.service
+systemctl enable ai-kb.service
 systemctl enable ai-kb-firstboot.service
 
 echo "[prepare] 6/6 Done"

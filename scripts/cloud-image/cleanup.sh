@@ -21,7 +21,7 @@ echo "[cleanup] 1/8 Stop the AI KB containers"
 COMPOSE_PROJECT=""
 if [[ -d "${AIKB_DIR}" ]]; then
   cd "${AIKB_DIR}"
-  # Prefer compose ls for the real project name (defaults to the lowercase directory name, e.g. aikb)
+  # Prefer compose ls for the real project name (defaults to the lowercase directory name, e.g. ai-kb)
   COMPOSE_PROJECT="$(docker compose ls --format json 2>/dev/null \
     | grep -oE '"Name":"[^"]+"' | head -1 | cut -d'"' -f4 || true)"
   docker compose down -v --remove-orphans || true
@@ -45,9 +45,9 @@ if [[ -n "${COMPOSE_PROJECT}" ]]; then
     | xargs -r docker volume rm -f || true
 fi
 # Note: this clears only volumes, stopped containers and build cache. Never clear images.
-# An earlier `docker system prune -af --volumes` also removed the wechatopenai/ai-kb-* images
+# An earlier `docker system prune -af --volumes` also removed the ghcr.io/jrmatherly/ai-kb-* images
 # prepare.sh pre-pulls, so new instances built from the image had to pull several GB from
-# Docker Hub again at firstboot, which defeats the point of preinstalling.
+# the registry again at firstboot, which defeats the point of preinstalling.
 docker container prune -f      || true
 docker builder    prune -af    || true
 # Remove only unmounted dangling volumes (compose down -v has already removed the data volumes)
