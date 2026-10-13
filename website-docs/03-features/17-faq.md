@@ -156,7 +156,7 @@ type FAQEntry struct {
 | `index_mode` | `question_only` / `question_answer` | `question_answer` | Whether the indexed content includes the answers |
 | `question_index_mode` | `combined` / `separate` | `combined` | Standard question plus similar questions as one index item, or one index item per question |
 
-In `separate` mode every similar question gets its own index item, so similar questions can be added and removed at that granularity. Incremental updates address these items by question hash, `SourceID = fmt.Sprintf("%s-%s", chunk.ID, hashQuestion(similarQ))`; a full index (creation and batch import) numbers them by position instead (`chunk.ID-<n>`), so an incremental edit after an import does not find the positional items and can leave a stale one behind.
+In `separate` mode every similar question gets its own index item, so similar questions can be added and removed at that granularity. Every path addresses these items by a hash of the normalized question, `SourceID = chunk.ID + "-" + md5(NormalizeQuestion(similarQ))[:8]` (`faqSimilarQuestionSourceID`), so an edit after an import or creation removes exactly the items of the questions it dropped.
 
 ### API endpoints
 

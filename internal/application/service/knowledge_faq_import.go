@@ -1977,7 +1977,7 @@ func (s *knowledgeService) incrementalIndexFAQEntry(
 	var deletedQuestions []string
 	for oldQ := range oldQuestionsSet {
 		if _, exists := newQuestionsSet[oldQ]; !exists {
-			sourceID := fmt.Sprintf("%s-%s", chunk.ID, hashQuestion(oldQ))
+			sourceID := faqSimilarQuestionSourceID(chunk.ID, oldQ)
 			sourceIDsToDelete = append(sourceIDsToDelete, sourceID)
 			deletedQuestions = append(deletedQuestions, oldQ)
 		}
@@ -1991,7 +1991,7 @@ func (s *knowledgeService) incrementalIndexFAQEntry(
 		// 1. the question is new (did not exist before)
 		// 2. the answers changed (needs re-embedding)
 		if !existedBefore || answersChanged {
-			sourceID := fmt.Sprintf("%s-%s", chunk.ID, hashQuestion(newQ))
+			sourceID := faqSimilarQuestionSourceID(chunk.ID, newQ)
 			indexInfoToUpdate = append(indexInfoToUpdate, &types.IndexInfo{
 				Content:         buildContent(newQ, normalizedNewMeta.Answers),
 				SourceID:        sourceID,

@@ -1782,10 +1782,12 @@ func (s *knowledgeService) buildFAQTagResolver(
 	}
 }
 
-// hashQuestion hashes the question text to produce a stable sourceID.
-func hashQuestion(question string) string {
-	h := md5.Sum([]byte(question))
-	return hex.EncodeToString(h[:4])
+// faqSimilarQuestionSourceID is the index source ID of one similar question in
+// separate index mode. Full and incremental indexing must agree on it, or an
+// edit cannot delete what an import indexed.
+func faqSimilarQuestionSourceID(chunkID, normalizedQuestion string) string {
+	h := md5.Sum([]byte(normalizedQuestion))
+	return chunkID + "-" + hex.EncodeToString(h[:4])
 }
 
 // resolveTagID resolves tag ID (UUID) from payload, prioritizing tag_id (seq_id) over tag_name
@@ -1935,7 +1937,11 @@ func (s *knowledgeService) buildFAQIndexInfoList(
 		IsRecommended:   chunk.Flags.HasFlag(types.ChunkFlagRecommended),
 	})
 
-	for i, similarQ := range meta.SimilarQuestions {
+	for _, similarQ := range meta.SimilarQuestions {
+		normalizedQ := types.NormalizeQuestion(similarQ)
+		if normalizedQ == "" {
+			continue
+		}
 		similarContent := similarQ
 		if indexMode == types.FAQIndexModeQuestionAnswer && len(meta.Answers) > 0 {
 			var builder strings.Builder
@@ -1946,10 +1952,9 @@ func (s *knowledgeService) buildFAQIndexInfoList(
 			}
 			similarContent = builder.String()
 		}
-		sourceID := fmt.Sprintf("%s-%d", chunk.ID, i)
 		indexInfoList = append(indexInfoList, &types.IndexInfo{
 			Content:         similarContent,
-			SourceID:        sourceID,
+			SourceID:        faqSimilarQuestionSourceID(chunk.ID, normalizedQ),
 			SourceType:      types.ChunkSourceType,
 			ChunkID:         chunk.ID,
 			KnowledgeID:     chunk.KnowledgeID,
