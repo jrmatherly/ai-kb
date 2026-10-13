@@ -2554,7 +2554,7 @@ func (s *knowledgeService) RegenerateChunkQuestions(
 		return nil, err
 	}
 	if chunk.ChunkType != types.ChunkTypeText {
-		return nil, fmt.Errorf("questions can only be generated for text chunks")
+		return nil, werrors.NewBadRequestError("questions can only be generated for text chunks")
 	}
 	generationRevision := chunk.ContentRevision
 	knowledge, kb, err := loadKnowledgeWrite(ctx, s.repo, s.kbService, chunk.KnowledgeID)
@@ -2565,7 +2565,7 @@ func (s *knowledgeService) RegenerateChunkQuestions(
 		return nil, werrors.NewForbiddenError("chunk does not belong to its knowledge document")
 	}
 	if kb.SummaryModelID == "" {
-		return nil, fmt.Errorf("summary model is required for question generation")
+		return nil, werrors.NewBadRequestError("summary model is required for question generation")
 	}
 	chatModel, err := s.modelService.GetChatModel(ctx, kb.SummaryModelID)
 	if err != nil {

@@ -828,7 +828,7 @@ func (s *chunkService) UpsertGeneratedQuestion(
 ) (*types.GeneratedQuestion, error) {
 	question = strings.TrimSpace(question)
 	if question == "" {
-		return nil, fmt.Errorf("question cannot be empty")
+		return nil, apperrors.NewBadRequestError("question cannot be empty")
 	}
 	chunk, err := s.writableChunk(ctx, chunkID)
 	if err != nil {
@@ -858,7 +858,7 @@ func (s *chunkService) UpsertGeneratedQuestion(
 			}
 		}
 		if !found {
-			return nil, fmt.Errorf("question not found")
+			return nil, apperrors.NewNotFoundError("question not found")
 		}
 	}
 	if err := chunk.SetDocumentMetadata(meta); err != nil {
@@ -875,7 +875,7 @@ func (s *chunkService) UpsertGeneratedQuestion(
 			return &meta.GeneratedQuestions[i], nil
 		}
 	}
-	return nil, fmt.Errorf("question not found")
+	return nil, apperrors.NewNotFoundError("question not found")
 }
 
 // DeleteGeneratedQuestion deletes a single generated question from a chunk by question ID
@@ -905,7 +905,7 @@ func (s *chunkService) DeleteGeneratedQuestion(ctx context.Context, chunkID stri
 	}
 
 	if meta == nil || len(meta.GeneratedQuestions) == 0 {
-		return fmt.Errorf("no generated questions found for chunk %s", chunkID)
+		return apperrors.NewNotFoundError(fmt.Sprintf("no generated questions found for chunk %s", chunkID))
 	}
 
 	// 3. Find the question by ID
@@ -918,7 +918,7 @@ func (s *chunkService) DeleteGeneratedQuestion(ctx context.Context, chunkID stri
 	}
 
 	if questionIndex == -1 {
-		return fmt.Errorf("question with ID %s not found in chunk %s", questionID, chunkID)
+		return apperrors.NewNotFoundError(fmt.Sprintf("question with ID %s not found in chunk %s", questionID, chunkID))
 	}
 
 	// 4. Get knowledge base to get embedding model

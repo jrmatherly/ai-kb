@@ -6,7 +6,7 @@ Shared conventions (base URL, authentication, error codes, pagination) are in th
 
 ## Chunks (/api/v1/chunks)
 
-Handler: `internal/handler/chunk.go`. Read: Viewer+ and parent KB read (API key `retrieve` or full access). Write: KB creator OR Admin+ and parent KB write (API key `ingest` or full access). Routes addressed by `:knowledge_id/:id` also check that the chunk belongs to that knowledge item: an unknown chunk returns 404, a chunk owned by another knowledge item returns 403.
+Handler: `internal/handler/chunk.go`. Read: Viewer+ and parent KB read (API key `retrieve` or full access). Write: KB creator OR Admin+ and parent KB write (API key `ingest` or full access). Routes addressed by `:knowledge_id/:id` also check that the chunk belongs to that knowledge item: an unknown chunk returns 404, a chunk owned by another knowledge item returns 403. A write the knowledge base does not allow returns 403 and an unexpected server failure returns 500 on every route below.
 
 ### GET /api/v1/chunks/:knowledge_id
 
@@ -102,7 +102,7 @@ curl -X DELETE $BASE/api/v1/chunks/k-1/c-1 -H "Authorization: Bearer $TOKEN"
 
 ### DELETE /api/v1/chunks/:knowledge_id
 
-Purpose: delete every chunk of a knowledge item.
+Purpose: delete every chunk of a knowledge item. An unknown knowledge item returns 404.
 
 Response: 200 `{"success":true,"message":"All chunks under knowledge deleted"}`
 
@@ -112,7 +112,7 @@ curl -X DELETE $BASE/api/v1/chunks/k-1 -H "Authorization: Bearer $TOKEN"
 
 ### DELETE /api/v1/chunks/by-id/:id/questions
 
-Purpose: delete one generated question of the chunk. Request body: `{"question_id":"..."}` (`binding:"required"`).
+Purpose: delete one generated question of the chunk. Request body: `{"question_id":"..."}` (`binding:"required"`). A `question_id` the chunk does not have returns 404.
 
 Response: 200 `{"success":true,"message":"Generated question deleted"}`
 
@@ -123,7 +123,7 @@ curl -X DELETE $BASE/api/v1/chunks/by-id/c-1/questions -H "Authorization: Bearer
 
 ### PUT /api/v1/chunks/by-id/:id/questions
 
-Purpose: add or edit one generated question of the chunk. Request body: `{"question":"...","question_id":"..."}`; `question` is required, an empty `question_id` adds a new question, an unknown `question_id` returns 400. The saved question records the chunk's current `content_revision`.
+Purpose: add or edit one generated question of the chunk. Request body: `{"question":"...","question_id":"..."}`; `question` is required, an empty `question_id` adds a new question, an unknown `question_id` returns 404. The saved question records the chunk's current `content_revision`.
 
 Response: 200 `{"success":true,"data":{GeneratedQuestion}}`
 
@@ -134,7 +134,7 @@ curl -X PUT $BASE/api/v1/chunks/by-id/c-1/questions -H "Authorization: Bearer $T
 
 ### POST /api/v1/chunks/by-id/:id/questions/regenerate
 
-Purpose: regenerate the retrieval questions from the chunk's current content. A content edit does not delete the existing questions; they are marked stale (their revision no longer matches the current body) and this endpoint refreshes them. Only `text` chunks qualify, and the knowledge base needs a summary model; otherwise 400.
+Purpose: regenerate the retrieval questions from the chunk's current content. A content edit does not delete the existing questions; they are marked stale (their revision no longer matches the current body) and this endpoint refreshes them. Only `text` chunks qualify, and the knowledge base needs a summary model; otherwise 400. An edit to the chunk while the questions are being generated returns 409.
 
 Response: 200 `{"success":true,"data":[{GeneratedQuestion}]}`
 

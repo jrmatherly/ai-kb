@@ -194,6 +194,19 @@ func (h *ChunkHandler) fetchChunkAndVerifyOwnership(c *gin.Context) (*types.Chun
 	return chunk, knowledgeID, nil
 }
 
+// chunkServiceError keeps the status a chunk service error carries; anything
+// that is not an AppError is a server failure.
+func chunkServiceError(err error) *errors.AppError {
+	if stderrors.Is(err, service.ErrChunkRevisionConflict) {
+		return errors.NewConflictError("Chunk was modified by another user; refresh and retry")
+	}
+	var appErr *errors.AppError
+	if stderrors.As(err, &appErr) {
+		return appErr
+	}
+	return errors.NewInternalServerError(err.Error())
+}
+
 // UpdateChunk godoc
 // @Summary      Update chunk
 // @Description  Update a chunk's content and attributes
@@ -228,16 +241,7 @@ func (h *ChunkHandler) UpdateChunk(c *gin.Context) {
 	chunk, err = h.service.UpdateDocumentChunk(ctx, chunk.ID, req.Content, req.IsEnabled, req.ExpectedRevision)
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		if stderrors.Is(err, service.ErrChunkRevisionConflict) {
-			c.Error(errors.NewConflictError("Chunk was modified by another user; refresh and retry"))
-			return
-		}
-		var appErr *errors.AppError
-		if stderrors.As(err, &appErr) {
-			_ = c.Error(appErr)
-		} else {
-			_ = c.Error(errors.NewInternalServerError(err.Error()))
-		}
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 
@@ -290,17 +294,8 @@ func (h *ChunkHandler) RevertChunk(c *gin.Context) {
 		return
 	}
 	updated, err := h.service.RevertDocumentChunk(c.Request.Context(), chunk.ID, *req.Revision, req.ExpectedRevision)
-	if stderrors.Is(err, service.ErrChunkRevisionConflict) {
-		c.Error(errors.NewConflictError("Chunk was modified by another user; refresh and retry"))
-		return
-	}
 	if err != nil {
-		var appErr *errors.AppError
-		if stderrors.As(err, &appErr) {
-			_ = c.Error(appErr)
-		} else {
-			_ = c.Error(errors.NewInternalServerError(err.Error()))
-		}
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 	knowledge, getErr := h.kgService.GetKnowledgeByID(c.Request.Context(), knowledgeID)
@@ -333,7 +328,7 @@ func (h *ChunkHandler) UpsertGeneratedQuestion(c *gin.Context) {
 	}
 	item, err := h.service.UpsertGeneratedQuestion(c.Request.Context(), chunkID, req.QuestionID, req.Question)
 	if err != nil {
-		c.Error(errors.NewBadRequestError(err.Error()))
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": item})
@@ -347,7 +342,7 @@ func (h *ChunkHandler) RegenerateGeneratedQuestions(c *gin.Context) {
 	}
 	items, err := h.kgService.RegenerateChunkQuestions(c.Request.Context(), chunkID)
 	if err != nil {
-		c.Error(errors.NewBadRequestError(err.Error()))
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": items})
@@ -379,7 +374,7 @@ func (h *ChunkHandler) DeleteChunk(c *gin.Context) {
 
 	if err := h.service.DeleteChunk(ctx, chunk.ID); err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 
@@ -414,7 +409,7 @@ func (h *ChunkHandler) DeleteChunksByKnowledgeID(c *gin.Context) {
 
 	if err := h.service.DeleteChunksByKnowledgeID(ctx, knowledgeID); err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 
@@ -460,7 +455,7 @@ func (h *ChunkHandler) DeleteGeneratedQuestion(c *gin.Context) {
 
 	if err := h.service.DeleteGeneratedQuestion(ctx, chunkID, req.QuestionID); err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		c.Error(errors.NewBadRequestError(err.Error()))
+		_ = c.Error(chunkServiceError(err))
 		return
 	}
 
