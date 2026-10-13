@@ -1,0 +1,81 @@
+name: 🖥️ Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "scripts/build_frontend_dist.sh"
+      - "scripts/test_embed_nginx.py"
+      - ".github/workflows/frontend.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "scripts/build_frontend_dist.sh"
+      - "scripts/test_embed_nginx.py"
+      - ".github/workflows/frontend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  verify:
+    name: 🧪 Test, type-check, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🟢 Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: 🧪 Run tests
+        run: npm test
+
+      - name: 🔎 Type-check
+        run: npm run type-check
+
+      - name: 🏗️ Build
+        run: npm run build
+
+  docker-image:
+    name: 🐳 Docker multi-stage image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🐳 Build UI image
+        run: |
+          docker build \
+            -f frontend/Dockerfile \
+            --build-arg VITE_FRONTEND_COMMIT="${GITHUB_SHA::7}" \
+            -t ai-kb-ui:ci \
+            frontend/
+
+      - name: 🧪 Test embed and MCP proxy routes
+        run: python3 scripts/test_embed_nginx.py ai-kb-ui:ci

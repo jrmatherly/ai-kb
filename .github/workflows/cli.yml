@@ -1,0 +1,65 @@
+name: ⌨️ CLI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli.yml"
+  pull_request:
+    paths:
+      - "cli/**"
+      - ".github/workflows/cli.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: cli
+    # Windows default is PowerShell, which tokenizes `go test -coverprofile=coverage.out ./...`
+    # in a way that detaches `.out` as a separate positional package arg.
+    # Force bash everywhere so the run lines parse identically across platforms
+    # (Git Bash is preinstalled on windows-latest runners).
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 🧪 test (${{ matrix.os }} / go ${{ matrix.go }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: ["1.26"]
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: 🐹 Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: cli/go.sum
+      - name: 🏗️ go build
+        run: go build ./...
+      - name: 🧪 go test
+        run: go test -race -coverprofile=coverage.out ./...
+      - name: 🧹 go vet
+        run: go vet ./...
+      - name: 🔎 Check agent-facing doc wire vocabulary
+        if: runner.os == 'Linux'
+        run: scripts/check-skill-wire-vocab.sh
+      - name: 🔎 Check for committed credentials in docs
+        if: runner.os == 'Linux'
+        run: scripts/check-secret-tokens.sh
+      - name: 📝 Coverage report
+        if: matrix.os == 'ubuntu-latest'
+        run: go tool cover -func=coverage.out

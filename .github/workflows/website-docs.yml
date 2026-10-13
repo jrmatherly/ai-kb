@@ -1,0 +1,53 @@
+name: 📚 Website Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website-docs/**"
+      - ".github/workflows/website-docs.yml"
+  pull_request:
+    paths:
+      - "website-docs/**"
+      - ".github/workflows/website-docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: 🔎 Check and build docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🟢 Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: website-docs/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm --prefix website-docs ci --no-audit --no-fund
+
+      - name: 🔎 Check links
+        run: node website-docs/scripts/check-links.mjs
+
+      - name: 🔎 Check anchors
+        run: node website-docs/scripts/check-anchors.mjs
+
+      - name: 🔎 Check mermaid diagrams
+        run: npm --prefix website-docs run --silent check:mermaid
+
+      - name: 🏗️ Build docs
+        run: npm --prefix website-docs run --silent build:docs

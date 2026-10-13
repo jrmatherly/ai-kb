@@ -1,0 +1,110 @@
+name: 📄 DocReader
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docreader/**"
+      - "go.mod"
+      - "go.sum"
+      - "testdata/**"
+      - "docker/Dockerfile.docreader"
+      - "docker/Dockerfile.odl-hybrid"
+      - ".github/workflows/docreader.yml"
+  pull_request:
+    paths:
+      - "docreader/**"
+      - "go.mod"
+      - "go.sum"
+      - "testdata/**"
+      - "docker/Dockerfile.docreader"
+      - "docker/Dockerfile.odl-hybrid"
+      - ".github/workflows/docreader.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.10.18"
+  GO_VERSION: "1.26"
+  GOPROXY: https://proxy.golang.org,direct
+
+jobs:
+  verify:
+    name: 🧪 Python tests and Go client tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🐍 Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: docreader/uv.lock
+
+      - name: 📦 Install Python dependencies
+        run: uv sync --project docreader --locked --no-dev --python "$PYTHON_VERSION"
+
+      - name: 🔎 Compile Python sources
+        run: uv run --project docreader --python "$PYTHON_VERSION" python -m compileall -q docreader
+
+      # Both the Python proxy integration tests and Go TestReadURL launch
+      # WebKit, so install the browser and system libraries before either suite.
+      - name: 💾 Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-webkit-${{ hashFiles('docreader/uv.lock') }}
+
+      - name: 📦 Install Playwright WebKit
+        run: uv run --project docreader --python "$PYTHON_VERSION" python -m playwright install --with-deps webkit
+
+      - name: 🧪 Run Python tests
+        run: uv run --project docreader --python "$PYTHON_VERSION" python -m unittest discover -s docreader/tests -p "test_*.py" -v
+
+      - name: 🐹 Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: 📦 Download Go modules
+        run: go mod download
+
+      - name: 🚀 Start DocReader gRPC server
+        run: |
+          uv run --project docreader --python "$PYTHON_VERSION" python -m docreader.main &
+          echo $! > /tmp/docreader.pid
+          for _ in $(seq 1 30); do
+            if nc -z 127.0.0.1 50051 2>/dev/null; then
+              echo "DocReader gRPC server is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "DocReader gRPC server failed to start"
+          exit 1
+
+      - name: 🧪 Run Go client tests
+        run: go test ./docreader/client ./docreader/proto
+
+      - name: 🛑 Stop DocReader gRPC server
+        if: always()
+        run: |
+          if [ -f /tmp/docreader.pid ]; then
+            kill "$(cat /tmp/docreader.pid)" 2>/dev/null || true
+          fi
