@@ -287,7 +287,7 @@ When you add or upgrade a third-party dependency or change a data file shipped w
 
 ### Validation and contribution workflow
 
-This repository has no `.github/` directory, so no CI workflows run on push or pull request. `scripts/validate.sh` takes their place. It maps each changed path to an area, using the `paths:` filters of the archived upstream workflows, and runs that area's checks from those workflows:
+CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, model-catalog, git-hooks and licenses; miniprogram and markdown run only locally), plus `guards.yml` (English-only, em dash, rebrand and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
 
 ```bash
 scripts/validate.sh                 # working tree and untracked files against HEAD
