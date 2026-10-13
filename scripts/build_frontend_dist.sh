@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build frontend static assets for Lite / desktop packaging (host-side).
-# Docker UI images use the multi-stage frontend/Dockerfile instead — no host npm.
+# Docker UI images use the multi-stage frontend/Dockerfile instead, with no host npm.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

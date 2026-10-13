@@ -8,11 +8,11 @@
  *
  * Three scenarios run, because all three are documented paths:
  *   A. the bundle's shipped `cordis.patch.yml`, configured only by environment
- *      variables — what a user gets straight after `dsh plugin add`.
+ *      variables, which is what a user gets straight after `dsh plugin add`.
  *   B. a profile patch that overrides the row, including a renamed tool prefix,
  *      which also proves configuration reaches the plugin.
  *   C. a row with no knowledge base scope, where the plugin resolves the full
- *      visible set itself — AI KB refuses an unscoped search.
+ *      visible set itself because AI KB refuses an unscoped search.
  *
  * Usage:
  *   node test/e2e/run-in-dsh.mjs                 # installs dsh into a cache dir
@@ -152,7 +152,7 @@ async function scenario(options) {
     assert.ok(paths.includes('/api/v1/knowledge-search'), 'search must reach the retrieval endpoint')
     if (autoScope) {
       // AI KB rejects an unscoped retrieval, so with nothing configured the
-      // plugin has to resolve the full visible set itself — the model asked a
+      // plugin has to resolve the full visible set itself: the model asked a
       // plain question and never named a knowledge base.
       assert.ok(
         paths.indexOf('/api/v1/knowledge-bases') >= 0

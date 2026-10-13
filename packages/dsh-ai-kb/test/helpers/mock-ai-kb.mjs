@@ -53,7 +53,7 @@ const DOCUMENTS = [
 ]
 
 // Titled so a by-name query matches it while its text shares nothing with that
-// query — the case passage retrieval alone cannot serve.
+// query, the case passage retrieval alone cannot serve.
 DOCUMENTS.push({
   knowledge_id: 'doc-release-checklist',
   knowledge_title: 'Release checklist.md',
