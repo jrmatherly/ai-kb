@@ -36,10 +36,12 @@ func max(a, b int) int {
 	return b
 }
 
-var sentenceSeparator = regexp.MustCompile("[\u3002.]")
+// A period ends a sentence only before whitespace or the end of the text, so
+// decimals and version numbers stay whole.
+var sentenceSeparator = regexp.MustCompile(`\x{3002}|\.(?:\s|$)`)
 
-// splitSentences splits on the ideographic full stop or the ASCII period and
-// drops empty sentences.
+// splitSentences splits on the ideographic full stop or a sentence-ending
+// period and drops empty sentences.
 func splitSentences(text string) []string {
 	var sentences []string
 	for _, s := range sentenceSeparator.Split(text, -1) {

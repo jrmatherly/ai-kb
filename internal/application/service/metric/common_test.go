@@ -13,6 +13,12 @@ func TestSplitSentencesKeepsEverySentence(t *testing.T) {
 	require.Empty(t, splitSentences(" . . "))
 }
 
+func TestSplitSentencesKeepsDecimalNumbers(t *testing.T) {
+	require.Equal(t, []string{"revenue grew 3.5 percent", "costs fell"},
+		splitSentences("revenue grew 3.5 percent. costs fell."))
+	require.Equal(t, []string{"see v1.2", "done"}, splitSentences("see v1.2.\ndone"))
+}
+
 // The second sentences differ, so a perfect score means the splitter dropped them.
 func TestTextMetricsScoreEverySentence(t *testing.T) {
 	input := &types.MetricInput{

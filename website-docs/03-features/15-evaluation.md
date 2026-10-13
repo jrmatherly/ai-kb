@@ -102,7 +102,7 @@ While the task runs, poll this endpoint for the `finished / total` progress; `me
 
 ## Metric list
 
-To interpret the numbers you need to know what each metric measures and how the text is tokenized. The registry is in `internal/application/service/metric_hook.go`: 12 metrics in two groups. Text is first tokenized by `metric/common.go`: sentences are split on `。` or `.`, Chinese runs are segmented with Jieba, and Latin runs are split on whitespace.
+To interpret the numbers you need to know what each metric measures and how the text is tokenized. The registry is in `internal/application/service/metric_hook.go`: 12 metrics in two groups. Text is first tokenized by `metric/common.go`: sentences are split on `。` or on a `.` followed by whitespace or the end of the text (so `3.5` stays one token), Chinese runs are segmented with Jieba, and Latin runs are split on whitespace.
 
 ### Retrieval metrics
 
