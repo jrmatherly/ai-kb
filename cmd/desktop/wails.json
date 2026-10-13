@@ -1,5 +1,5 @@
 {
-  "$schema": "https://wails.io/schemas/config.v2.json",
+  "$schema": "https://raw.githubusercontent.com/wailsapp/wails/v2.12.0/website/static/schemas/config.v2.json",
   "name": "AI KB Lite",
   "outputfilename": "AI KB Lite",
   "frontend:dir": "../../frontend",
