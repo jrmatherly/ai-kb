@@ -113,7 +113,7 @@ defaults:
   no_version_check: true       # declared in the schema; no command reads it
 ```
 
-`defaults.format` is meant to set the default output format. Today only `aikb config view` reports it (as `format_default`); commands ignore it and resolve the format from `--format`, then `AIKB_FORMAT`, then `json`.
+`defaults.format` sets the default output format for every command. The format resolves from `--format`, then `AIKB_FORMAT`, then `defaults.format`, then `json`; `aikb config view` reports the result as `format_default`. `aikb auth token` keeps its own raw-token default and reads only `--format` and `AIKB_FORMAT`.
 
 ### Credential storage (secrets)
 
@@ -166,7 +166,7 @@ To script the CLI or drive it from an agent, you rely on its output contract: a 
 
 | Flag | Short | Description |
 |---|---|---|
-| `--format` | | Output format: `text` \| `json` \| `ndjson`. **The default is `json`** whether or not stdout is a TTY (an agent-first design; people pass `--format text` explicitly). `AIKB_FORMAT` sets a default. Precedence: `--format` > `AIKB_FORMAT` > the json default |
+| `--format` | | Output format: `text` \| `json` \| `ndjson`. **The default is `json`** whether or not stdout is a TTY (an agent-first design; people pass `--format text` explicitly). `AIKB_FORMAT` and `defaults.format` in config.yaml set a default. Precedence: `--format` > `AIKB_FORMAT` > `defaults.format` > the json default |
 | `--jq` | `-q` | Filters JSON output with a jq expression (requires `--format json\|ndjson`; combining it with an explicit `--format text` is an error) |
 | `--profile` | | Overrides the active profile for this invocation (nothing written to disk) |
 | `--log-level` | | SDK debug log level: error \| warn \| info \| debug |

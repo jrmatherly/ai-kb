@@ -229,6 +229,7 @@ func TestCreate_Temperature_Bounds(t *testing.T) {
 // while a valid value passes the gate. The closed set is sourced from the SDK
 // enumerators, so this also guards against CLI/SDK drift.
 func TestCreate_AgentModeValidation(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // no config.yaml defaults.format
 	cases := []struct {
 		name    string
 		args    []string

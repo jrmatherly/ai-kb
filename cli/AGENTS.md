@@ -126,7 +126,7 @@ Make errors structured, actionable, and specific.
 | Variable | Purpose |
 |---|---|
 | `AIKB_PROFILE` | Active profile name. Equivalent to the global `--profile <name>` flag; overridden by `--profile`. Useful in CI scripts that cannot pass global flags. |
-| `AIKB_FORMAT` | Default `--format` value (`text \| json \| ndjson`). Overridden by explicit `--format`. Invalid values ignored silently. |
+| `AIKB_FORMAT` | Default `--format` value (`text \| json \| ndjson`). Overridden by explicit `--format`; overrides config.yaml `defaults.format`. Invalid values ignored silently. |
 | `AIKB_KB_ID` | Default KB ID for commands that accept `--kb`. Overridden by `--kb`. |
 | `AIKB_LOG_LEVEL` | SDK debug log level (`error \| warn \| info \| debug`). Overridden by `--log-level`. |
 | `AIKB_AGENT_HELP` | Set to `1` to emit structured JSON agent-help (machine-readable) instead of human help text when `--help` is invoked. |

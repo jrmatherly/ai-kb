@@ -100,6 +100,7 @@ func TestFormatOptions_TextModeReturnsError(t *testing.T) {
 // TTY switch to text): the default output never depends on whether stdout is a
 // TTY, so agents get predictable JSON. Humans opt into text with --format text.
 func TestResolveDefault_AlwaysJSON(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // no config.yaml defaults.format
 	for _, isTTY := range []bool{true, false} {
 		o := &FormatOptions{}
 		o.ResolveDefault(isTTY)
@@ -113,6 +114,7 @@ func TestResolveDefault_AlwaysJSON(t *testing.T) {
 }
 
 func TestResolveDefault(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // no config.yaml defaults.format
 	cases := []struct {
 		name     string
 		mode     FormatMode // pre-set Mode
@@ -267,6 +269,7 @@ func TestResolveDefault_FlagBeatsEnv(t *testing.T) {
 
 // TestResolveDefault_NoEnvNoFlag_UsesDefault pins the fallback.
 func TestResolveDefault_NoEnvNoFlag_UsesDefault(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // no config.yaml defaults.format
 	t.Setenv("AIKB_FORMAT", "")
 	o := &FormatOptions{}
 	o.ResolveDefault(false)

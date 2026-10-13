@@ -52,20 +52,18 @@ func resolveFormatEarly(args []string) {
 		}
 	}
 	if mode == "" {
-		if v := os.Getenv("AIKB_FORMAT"); v != "" {
-			mode = strings.ToLower(v)
-		}
+		// Cobra parse errors fire before PersistentPreRunE runs ResolveDefault,
+		// so apply the same default here or the error path would emit prose
+		// while the success path emits the envelope.
+		mode = string(cmdutil.ConfiguredDefaultMode())
 	}
 	switch mode {
 	case "ndjson", "text":
 		cmdutil.SetFormatMode(mode)
 	default:
-		// "json", "" (no flag/env), or an invalid value all route the cobra-side
-		// error through the JSON envelope. Cobra parse errors fire before
-		// PersistentPreRunE runs ResolveDefault, so we apply the same default
-		// here (DefaultFormatMode) — otherwise the error path would emit prose
-		// while the success path emits the envelope.
-		cmdutil.SetFormatMode(string(cmdutil.DefaultFormatMode))
+		// An invalid --format value routes the cobra-side error through the
+		// JSON envelope.
+		cmdutil.SetFormatMode(string(cmdutil.FormatJSON))
 	}
 }
 
@@ -172,7 +170,6 @@ a curated read-only MCP tool surface for AI agents.`,
 			// Safe on commands that don't register --format: CheckFormatFlag returns
 			// {Mode:""}, ResolveDefault falls back to TTY detection.
 			if fopts, err := cmdutil.CheckFormatFlag(c); err == nil && fopts != nil {
-				fopts.FromEnv()
 				fopts.ResolveDefault(iostreams.IO.IsStdoutTTY())
 				cmdutil.SetFormatMode(string(fopts.Mode))
 			}

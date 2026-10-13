@@ -22,6 +22,7 @@ import (
 )
 
 func TestAPI_PaginateFormats(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // no config.yaml defaults.format
 	one := []string{`{"data":[{"id":"1"}],"total":1,"page":1,"page_size":1}`}
 	pages := []string{
 		`{"data":[{"id":"1"}],"total":3,"page":1,"page_size":1}`,

@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/jrmatherly/ai-kb/cli/internal/config"
 	"github.com/jrmatherly/ai-kb/cli/internal/format"
 	"github.com/jrmatherly/ai-kb/cli/internal/output"
 )
@@ -23,10 +24,8 @@ const (
 	FormatNDJSON FormatMode = "ndjson"
 )
 
-// DefaultFormatMode is the mode used when neither --format nor AIKB_FORMAT
-// is set. Single source of truth shared by FormatOptions.ResolveDefault and
-// cmd.resolveFormatEarly (the early cobra-parse-error path) so the two cannot
-// drift on what "no flag" defaults to.
+// DefaultFormatMode is the mode used when none of --format, AIKB_FORMAT and
+// config.yaml defaults.format is set.
 const DefaultFormatMode = FormatJSON
 
 // FormatOptions captures the resolved --format + --jq state for a command.
@@ -41,7 +40,7 @@ type FormatOptions struct {
 // AddFormatFlag attaches the --jq projection field hints (in cmd.Long) for
 // commands that honor --format. The flags themselves are registered as
 // persistent globals at the root, so this helper no longer re-registers
-// them — it only appends documentation. Callers that don't need field
+// them; it only appends documentation. Callers that don't need field
 // hints can skip this call entirely.
 func AddFormatFlag(cmd *cobra.Command, fieldHints ...string) {
 	if len(fieldHints) > 0 {
@@ -50,7 +49,7 @@ func AddFormatFlag(cmd *cobra.Command, fieldHints ...string) {
 		// Fields live under .data in the {ok,data,meta} envelope, so --jq must
 		// be rooted there: `--jq '.data.<field>'` (object) or
 		// `--jq '.data[].<field>'` (list). A bare `--jq '.<field>'` matches the
-		// envelope top level and silently returns null — spell out the path so
+		// envelope top level and silently returns null, so spell out the path so
 		// agents don't ship broken projections.
 		hdr := "\n\nJSON fields available under .data (project with --jq '.data.<field>', or '.data[].<field>' for lists):\n  " +
 			strings.Join(sorted, "\n  ")
@@ -149,7 +148,7 @@ func mapJQError(err error) error {
 }
 
 // ResolveDefault fills in Mode when the caller has not explicitly set it:
-//   - Mode defaults to FormatJSON, regardless of TTY
+//   - Mode comes from ConfiguredDefaultMode (FormatJSON unless configured), regardless of TTY
 //   - TTY only affects the indent decision (auto-indent in TTY; compact in pipe)
 //   - For human-readable rendering, pass --format text explicitly
 //
@@ -159,33 +158,43 @@ func mapJQError(err error) error {
 // human-readable output with `--format text`.
 func (o *FormatOptions) ResolveDefault(tty bool) {
 	o.TTY = tty
-	// Apply AIKB_FORMAT before the hard default so the documented
-	// precedence holds: explicit --format (already set on o.Mode by
-	// CheckFormatFlag) > AIKB_FORMAT > DefaultFormatMode. FromEnv is a
-	// no-op when --format was passed. Folded in here because nearly every
-	// command calls ResolveDefault but only a couple called FromEnv, so the
-	// env var was silently ignored on success output across the CLI.
-	o.FromEnv()
+	// --format was already set on o.Mode by CheckFormatFlag.
 	if o.Mode == "" {
-		o.Mode = DefaultFormatMode
+		o.Mode = ConfiguredDefaultMode()
 	}
 }
 
-// FromEnv reads AIKB_FORMAT and applies it when Mode hasn't been set
-// by --format. ResolveDefault now calls this, so commands get the env var
-// applied automatically; explicit callers (e.g. the root PersistentPreRunE,
-// which resolves the error-envelope mode before any command RunE) remain
-// valid and idempotent.
-//
-// Invalid env values are silently ignored (the user's --format on a
-// later invocation will still take precedence).
+// ConfiguredDefaultMode is the mode used when --format is unset:
+// AIKB_FORMAT, else config.yaml defaults.format, else DefaultFormatMode.
+// Invalid values at either level are skipped.
+func ConfiguredDefaultMode() FormatMode {
+	if m, ok := parseFormatMode(os.Getenv("AIKB_FORMAT")); ok {
+		return m
+	}
+	if cfg, err := config.Load(); err == nil {
+		if m, ok := parseFormatMode(cfg.Defaults.Format); ok {
+			return m
+		}
+	}
+	return DefaultFormatMode
+}
+
+func parseFormatMode(v string) (FormatMode, bool) {
+	switch m := FormatMode(strings.ToLower(v)); m {
+	case FormatText, FormatJSON, FormatNDJSON:
+		return m, true
+	}
+	return "", false
+}
+
+// FromEnv applies AIKB_FORMAT when Mode hasn't been set by --format, without
+// the config.yaml default. For commands such as `auth token` whose own
+// default replaces the CLI-wide one. Invalid values are ignored.
 func (o *FormatOptions) FromEnv() {
 	if o.Mode != "" {
 		return
 	}
-	v := os.Getenv("AIKB_FORMAT")
-	switch v {
-	case "text", "json", "ndjson":
-		o.Mode = FormatMode(v)
+	if m, ok := parseFormatMode(os.Getenv("AIKB_FORMAT")); ok {
+		o.Mode = m
 	}
 }

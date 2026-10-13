@@ -168,6 +168,7 @@ func TestRoot_ProfileFlagPropagation(t *testing.T) {
 // stderr, not bare prose. Regression for the success-path-defaults-to-json /
 // error-path-defaults-to-prose asymmetry.
 func TestResolveFormatEarly_DefaultsToEnvelope(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // no config.yaml defaults.format
 	cases := []struct {
 		name string
 		args []string
