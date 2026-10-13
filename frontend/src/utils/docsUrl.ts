@@ -9,7 +9,7 @@ export const DOC_PAGES = {
   home: '',
   tenantAuth: '03-features/01-tenant-auth',
   models: '03-features/06-models',
-  modelsCompat: '03-features/06-models#协议兼容覆盖-compat-json',
+  modelsCompat: '03-features/06-models#protocol-compat-override-compat-json',
   knowledgeGraph: '03-features/09-knowledge-graph',
   imIntegration: '03-features/12-im-integration',
   apiOverview: '04-api/01-api-overview',
