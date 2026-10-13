@@ -27,6 +27,7 @@ dependencies = [
     "requests>=2.33.0",
     "textract==1.5.0",
     "trafilatura>=2.0.0",
+    "python-calamine>=0.8.3",
 ]
 
 # The code imports itself as the `docreader` package, so the import root is the repository root.

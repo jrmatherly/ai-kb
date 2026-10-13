@@ -37,13 +37,16 @@ def detect_excel_format(content: bytes) -> str | None:
     return None
 
 
-ExcelEngine = Literal["openpyxl", "xlrd", "odf"]
+ExcelEngine = Literal["openpyxl", "xlrd", "odf", "calamine"]
 
 
 def engine_for_format(ext: str | None) -> ExcelEngine:
     if ext == "xls":
         return "xlrd"
-    if ext in ("xlsx", "xlsb"):
+    # openpyxl reads only the XML workbook; .xlsb is binary records.
+    if ext == "xlsb":
+        return "calamine"
+    if ext == "xlsx":
         return "openpyxl"
     if ext == "ods":
         return "odf"

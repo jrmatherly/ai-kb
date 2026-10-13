@@ -99,6 +99,19 @@ class ExcelFormatDetectionTest(unittest.TestCase):
         self.assertEqual(detect_excel_format(content), "xlsx")
         self.assertEqual(engine_for_format("xlsx"), "openpyxl")
 
+    def test_parse_xlsb_workbook(self):
+        # Written by Excel; vendored from pandas (pandas/tests/io/data/excel/test1.xlsb, BSD-3).
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "pandas-test1.xlsb")
+        with open(path, "rb") as handle:
+            content = handle.read()
+        self.assertEqual(detect_excel_format(content), "xlsb")
+        document = ExcelParser().parse_into_text(content)
+        self.assertIn(
+            "A: 2000-01-03 00:00:00,B: 0.980268513777,C: 3.68573087906,"
+            "D: -0.364216805298,E: -1.15973806169\n",
+            document.content,
+        )
+
     def test_detect_xls_magic(self):
         content = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 512
         self.assertEqual(detect_excel_format(content), "xls")
