@@ -168,7 +168,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 | `DeleteGeneratedQuestion` | Deletes a question generated for a chunk |
 | `DeleteChunksByKnowledgeID` | Deletes every chunk of a knowledge item |
 
-`DeleteGeneratedQuestion` does not work at present. The server route is `DELETE /api/v1/chunks/by-id/{id}/questions`, but the SDK sends `DELETE /api/v1/chunks/{id}/delete-question`. That path lands on the chunk delete route (`DELETE /api/v1/chunks/:knowledge_id/:id`) with the chunk ID in the knowledge ID slot, so the call fails and no question is deleted. Until the SDK is fixed, call the server route with `Raw`.
+`DeleteGeneratedQuestion` calls `DELETE /api/v1/chunks/by-id/{id}/questions` with `{"question_id":"..."}`.
 
 ### Sessions: `client/session.go`
 

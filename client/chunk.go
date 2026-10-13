@@ -177,7 +177,7 @@ func (c *Client) GetChunkByIDOnly(ctx context.Context, chunkID string) (*Chunk, 
 
 // DeleteGeneratedQuestion deletes a generated question from a chunk
 func (c *Client) DeleteGeneratedQuestion(ctx context.Context, chunkID string, questionID string) error {
-	path := fmt.Sprintf("/api/v1/chunks/%s/delete-question", chunkID)
+	path := fmt.Sprintf("/api/v1/chunks/by-id/%s/questions", chunkID)
 	req := map[string]string{"question_id": questionID}
 	resp, err := c.doRequest(ctx, http.MethodDelete, path, req, nil)
 	if err != nil {
