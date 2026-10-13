@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { before, test } from 'node:test'
+import { fileURLToPath } from 'node:url'
 
+import { EMBED_MESSAGES } from './embed.ts'
 import { REGISTERED_AUDIT_ACTION_ENTRIES, KB_ACTIVITY_DETAIL_VALUES, KB_ACTIVITY_I18N_ROOTS, KB_ACTIVITY_OUTCOMES } from './auditActionRegistry.ts'
 import {
   CRITICAL_LOCALE_KEYS,
@@ -228,4 +232,43 @@ test('DingTalk configuration and sync failures are localized', () => {
       assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
     }
   }
+})
+
+const SRC_ROOT = fileURLToPath(new URL('..', import.meta.url))
+
+function listSourceFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) return entry.name === 'locales' ? [] : listSourceFiles(path)
+    return /\.(vue|ts|tsx|js)$/.test(entry.name) && !entry.name.endsWith('.test.ts') ? [path] : []
+  })
+}
+
+// The embed widget (embed-main.ts) mounts its own i18n instance with the bundle in embed.ts.
+const EMBED_ONLY_FILE = /^(embed-main\.ts|views\/embed\/|components\/Embed|composables\/useEmbed)/
+
+const T_CALL = String.raw`(?<![\w$.])(?:\$t|t|i18n\.t|i18n\.global\.t)\(\s*`
+const KEY = String.raw`(['"])([A-Za-z][\w-]*(?:\.[\w-]+)+)`
+// Static string literals as the first argument, alone or as both arms of a ternary; template-built keys are out of scope.
+const LITERAL_T_CALLS = [
+  new RegExp(`${T_CALL}${KEY}\\1\\s*[,)]`, 'g'),
+  new RegExp(`${T_CALL}[^'"(),?]*\\?\\s*${KEY}\\1\\s*:\\s*(['"])([A-Za-z][\\w-]*(?:\\.[\\w-]+)+)\\3\\s*[,)]`, 'g'),
+]
+
+test('every literal key passed to t() exists in en-US', () => {
+  const missing = new Set<string>()
+  for (const file of listSourceFiles(SRC_ROOT)) {
+    const path = relative(SRC_ROOT, file)
+    const bundle = EMBED_ONLY_FILE.test(path) ? EMBED_MESSAGES['en-US'] : LOCALE_BUNDLES['en-US']
+    const source = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+    for (const pattern of LITERAL_T_CALLS) {
+      for (const match of source.matchAll(pattern)) {
+        for (const key of [match[2], match[4]].filter(Boolean)) {
+          if (typeof getLocaleValueAtPath(bundle, key) !== 'string') missing.add(`${key} (${path})`)
+        }
+      }
+    }
+  }
+  const sorted = [...missing].sort()
+  assert.deepEqual(sorted, [], sorted.join('\n'))
 })

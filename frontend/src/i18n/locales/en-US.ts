@@ -769,7 +769,9 @@ export default {
     tagNameRequired: 'Please provide a tag name',
     tagCreateSuccess: 'Tag created',
     tagEditSuccess: 'Tag updated',
+    tagDeleteDesc: 'Delete tag "{name}"? All FAQ entries under this tag will also be deleted.',
     tagDeleteDescDoc: 'Delete tag "{name}"? All documents under this tag will also be deleted.',
+    selectKnowledgeBase: 'Select a knowledge base first',
     tagDeleteSuccess: 'Tag deleted',
     tagEditAction: 'Rename',
     tagDeleteAction: 'Delete',
@@ -2080,6 +2082,7 @@ export default {
       chartRecognition: 'Chart Recognition',
       language: 'Language',
       testConnection: 'Test Connection',
+      checking: 'Checking...',
       docs: 'Docs',
       loadFailed: 'Failed to load parser engine list',
       ensureDocreaderConnected: 'Please ensure the DocReader service is configured via environment variables and connected',
@@ -2807,7 +2810,8 @@ export default {
     noCompatibleKbForAgent: 'This agent\'s tools don\'t match any knowledge base\'s capabilities in scope, so nothing can be referenced.'
   },
   file: {
-    upload: 'Upload File'
+    upload: 'Upload File',
+    downloadFailed: 'Download failed. Please try again later.'
   },
   manualEditor: {
     placeholders: {
@@ -4001,6 +4005,8 @@ export default {
     memoryForget: 'Delete this memory',
     memoryForgotten: 'Memory deleted',
     memoryForgetFailed: 'Failed to delete',
+    emptyContentWarning: 'This answer has no content yet',
+    editorOpened: 'Opened the answer in the editor. Review it and save it to a knowledge base.',
     memoryHint: 'These are the long-term memories this answer saw. Deleting one stops it from being used again.',
     suggestedQuestions: 'You can ask me',
     followUpQuestions: 'Keep asking',
@@ -4963,7 +4969,11 @@ export default {
       updateApiPrincipalConfigFailed: 'Failed to update API principal config',
       createApiPrincipalTestTokenFailed: 'Failed to create API test token',
       updateFailed: 'Failed to update workspace information',
-      deleteFailed: 'Failed to delete workspace'
+      deleteFailed: 'Failed to delete workspace',
+      createFailed: 'Failed to create workspace',
+      listApiKeysFailed: 'Failed to list API keys',
+      createApiKeyFailed: 'Failed to create API key',
+      deleteApiKeyFailed: 'Failed to delete API key'
     },
     initialization: {
       checkFailed: 'Check failed',
@@ -6866,6 +6876,7 @@ export default {
     paused: 'Paused',
     resumed: 'Resumed',
     pauseFailed: 'Failed to pause',
+    resumeFailed: 'Failed to resume',
     logs: 'Logs',
     syncModeLabel: 'Sync mode',
     syncMode: {
