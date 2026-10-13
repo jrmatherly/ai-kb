@@ -47,7 +47,13 @@ The formats, authentication and deletion detection of each connector are in the 
 
 Use this section to understand what a sync changed and why it failed.
 
-The first sync fetches the selected scope; later syncs update by connector cursor and modification data. Deletion detection depends on the connector and on the sync settings; entries that age out of an RSS feed do not count as source deletions. With deletion sync on, a full sync of Feishu/Lark (wiki and Drive), Confluence, Seafile or DingTalk also reconciles: when the connector listed every selected resource completely, knowledge items of the data source missing from that listing are deleted, which retries deletions that failed in earlier syncs. When a sync fails, read the log for credential, resource visibility or parsing errors first, then test the connection and retry.
+The first sync fetches the selected scope; later syncs update by connector cursor and modification data. Deletion detection depends on the connector and on the sync settings; entries that age out of an RSS feed do not count as source deletions. When a sync fails, read the log for credential, resource visibility or parsing errors first, then test the connection and retry.
+
+With deletion sync on, a sync of a data source whose sync mode is Full also reconciles, for Feishu/Lark (wiki and Drive), Confluence Server / Data Center, Seafile and DingTalk. There is no separate "force full sync" action; the sync mode decides. When the connector listed every selected resource completely, knowledge items of the data source missing from that listing are deleted. That retries deletions that failed in earlier syncs and removes the items of resources taken out of the selection. Confluence Cloud never reconciles, because its listing API gives no way to tell a cut-short listing from a complete one.
+
+A mass-deletion guard checks every reconcile before it deletes anything. When the reconcile would delete 500 or more items, or 10 or more items that are also at least 10% of the items the data source owns, it deletes nothing and the run ends as Partial with the code `deletion_guard_tripped`. A listing that returned nothing while the data source owns items is held back the same way (`reconcile_listing_empty`). The sync log then shows how many items would go, how many of them come from resources removed from the selection, and up to 100 of their titles. If the deletion is expected, choose "Sync and apply deletions" in the data source's menu: it runs one sync without both checks, and every later sync applies them again. A run whose listing could not be confirmed complete records `reconcile_listing_incomplete` and stays a success. When a reconcile does delete, the log counts the items from resources removed from the selection and the items no longer listed by the source. Seafile reports all of them as no longer listed, because its items record the library rather than the selected folder.
+
+Editing a data source with deletion sync on shows a notice when the edit drops a selected resource or turns off DingTalk's uploaded files: the knowledge items it takes out of scope will be deleted, at the latest by the next full-mode sync.
 
 ## Connector and API reference
 
@@ -155,7 +161,7 @@ Confluence Server / Data Center and Confluence Cloud are both supported, both wi
 - **Scope**: the resource list is the spaces visible to the credential (flat); select at least one space. All published pages in a space are synced; attachments and blog posts are not imported.
 - **Content**: the page's rendered HTML is converted to Markdown (one `.md` entry per page); a page with an empty body keeps only its title. Entry metadata carries `space_key`, `space_name` and `page_id`, plus `creator` when an author is known.
 - **Incremental**: pages are compared by version number, and unchanged versions are skipped. Sync is streaming, with the cursor saved after each page; during a full sync the mid-run cursor also keeps the previous page baseline, so a retried task resumes and can still reconcile deletions.
-- **Deletion guard**: when a selected space is inaccessible, when the page list is empty but the previous run had content, or when at least 20 pages are missing and they make up 80% or more of the previous page count, the whole sync fails and nothing is deleted. With deletion sync on, missing pages are deleted in every other case.
+- **Deletion guard**: when a selected space is inaccessible, when the page list is empty but the previous run had content, or when at least 20 pages are missing and they make up 80% or more of the previous page count, the whole sync fails and nothing is deleted. With deletion sync on, missing pages are deleted in every other case. On Confluence Cloud this connector check is the only one: Cloud does not take part in the full-sync reconcile described in [Check changes and failures](#check-changes-and-failures).
 - **Errors**: a failed page becomes a placeholder entry with the error and the sync continues; the codes are `confluence_auth_or_permission`, `confluence_not_found`, `confluence_rate_limited`, `confluence_server_unavailable`, `confluence_api_error` and `confluence_sync_failed`; the raw response stays in the server log.
 
 ```json
@@ -215,7 +221,7 @@ Routes are registered in `RegisterDataSourceRoutes` in `internal/router/routes_i
 | `POST /api/v1/datasource/:id/validate` | Admin | Connection test for a stored data source; failure sets `status=error`, success clears the error state |
 | `GET /api/v1/datasource/:id/resources?parent_id=` | Admin | List the selectable resources of the external system (`parent_id` supports lazy expansion) |
 | `POST /api/v1/datasource/:id/resource-ancestors` | Admin | Resolve the ancestor chain of selected resources (re-displays deep selections when editing) |
-| `POST /api/v1/datasource/:id/sync` | Admin | Trigger a sync by hand (creates a SyncLog and enqueues an Asynq task) |
+| `POST /api/v1/datasource/:id/sync` | Admin | Trigger a sync by hand (creates a SyncLog and enqueues an Asynq task); the optional body `{"allow_mass_deletion": true}` lifts the mass-deletion guard for that run only |
 | `POST /api/v1/datasource/:id/pause` / `resume` | Admin | Pause or resume (removes or re-registers the cron entry) |
 | `GET /api/v1/datasource/:id/logs`, `GET /api/v1/datasource/logs/:log_id` | Viewer | Sync history |
 
