@@ -108,6 +108,12 @@
     background-color: transparent !important;
 }
 
+/* Logos ship one image per theme (.logo--light / .logo--dark) */
+:root:not([theme-mode="dark"]) .logo--dark,
+:root[theme-mode="dark"] .logo--light {
+    display: none;
+}
+
 /* Invert black image icons in dark mode (icons such as more.png loaded through <img>) */
 :root[theme-mode="dark"] .more-icon {
     filter: invert(1);

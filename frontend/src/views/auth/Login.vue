@@ -97,7 +97,8 @@
 
     <!-- Logo - Top Left -->
     <a href="https://github.com/jrmatherly/ai-kb" target="_blank" class="header-logo" :title="$t('common.github')">
-      <img src="@/assets/img/aikb.png" alt="AI KB" class="logo-image" />
+      <img src="@/assets/img/aikb.png" alt="AI KB" class="logo-image logo--light" />
+      <img src="@/assets/img/aikb-dark.png" alt="AI KB" class="logo-image logo--dark" />
     </a>
 
     <!-- Header Links - Top Right -->
@@ -1682,10 +1683,6 @@ html[theme-mode="dark"] {
 
   .connection-line {
     stroke: rgba(255, 255, 255, 0.25);
-  }
-
-  .header-logo .logo-image {
-    filter: invert(1) hue-rotate(180deg) brightness(1.1);
   }
 
   .header-link {

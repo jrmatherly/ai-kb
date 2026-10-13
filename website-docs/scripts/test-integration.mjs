@@ -175,11 +175,13 @@ try {
       assert.equal(dimensions.width, width);
       assert.equal(dimensions.scrollWidth, width);
       await checkVisibleControl(page, '.wk-brand');
-      await page.waitForFunction(() => {
-        const image = document.querySelector('.wk-brand img');
-        return image?.complete && image.naturalWidth === 945 && image.naturalHeight === 650;
-      });
-      assert.equal(await page.locator('.wk-brand img').getAttribute('src'), '/docs/_home/brand/ai-kb-original.png');
+      const theme = await page.evaluate(() => document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      await page.waitForFunction((theme) => {
+        const image = document.querySelector(`.wk-brand .wk-logo-${theme}`);
+        return image?.complete && image.naturalWidth === 945 && image.naturalHeight === 238 && image.offsetWidth > 0;
+      }, theme);
+      assert.equal(await page.locator(`.wk-brand .wk-logo-${theme}`).getAttribute('src'), `/docs/_home/brand/ai-kb-lockup-${theme}.png`);
+      assert.equal(await page.locator(`.wk-brand .wk-logo-${theme === 'dark' ? 'light' : 'dark'}`).isVisible(), false);
       await checkVisibleControl(page, '.wk-theme-toggle');
     }
   }

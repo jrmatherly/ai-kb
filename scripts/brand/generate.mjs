@@ -85,14 +85,16 @@ const OUTPUTS = [
   { path: 'website-docs/public/favicon.ico', ico: [16, 32] },
   // Apple's icon grid: an 824 tile on a 1024 canvas.
   { path: 'cmd/desktop/build/appicon.png', svg: () => icon({ size: 1024, inset: 2.34375 }) },
-  // The README logo keeps upstream's white 945 x 650 canvas; the site crops its 945 x 238 band at y=208.
+  // The README logo keeps upstream's white 945 x 650 canvas.
   { path: 'docs/images/logo.png', svg: () => bandOnCanvas(), opaque: true },
-  { path: 'website-docs/homepage/public/docs/_home/brand/ai-kb-original.png', svg: () => bandOnCanvas(), opaque: true },
+  { path: 'website-docs/homepage/public/docs/_home/brand/ai-kb-lockup-light.png', svg: () => lockup({ theme: 'light', w: 945, h: 238 }) },
+  { path: 'website-docs/homepage/public/docs/_home/brand/ai-kb-lockup-dark.png', svg: () => lockup({ theme: 'dark', w: 945, h: 238 }) },
   { path: 'docs/images/readme/src/wordmark-light.png', svg: () => lockup({ theme: 'light', w: 904, h: 208 }) },
   { path: 'docs/images/readme/src/wordmark-dark.png', svg: () => lockup({ theme: 'dark', w: 904, h: 208 }) },
   { path: 'misc/intro-video/assets/logo-light.png', svg: () => lockup({ theme: 'light', w: 945, h: 238 }) },
   { path: 'misc/intro-video/assets/logo-dark.png', svg: () => lockup({ theme: 'dark', w: 945, h: 238 }) },
   { path: 'frontend/src/assets/img/aikb.png', svg: () => lockup({ theme: 'light', w: 400, h: 126 }) },
+  { path: 'frontend/src/assets/img/aikb-dark.png', svg: () => lockup({ theme: 'dark', w: 400, h: 126 }) },
 ];
 
 function bandOnCanvas() {

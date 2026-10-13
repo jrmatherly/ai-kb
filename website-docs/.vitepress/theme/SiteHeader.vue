@@ -29,7 +29,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeMenu))
 <template>
   <header class="wk-header wk-docs-header">
     <div class="wk-header-inner">
-      <a class="wk-brand" href="/" target="_self" aria-label="AI KB home"><span class="wk-logo"><img :src="`${homeAssets}/brand/ai-kb-original.png`" alt="AI KB" width="945" height="650"></span></a>
+      <a class="wk-brand" href="/" target="_self" aria-label="AI KB home"><span class="wk-logo"><img class="wk-logo-light" :src="`${homeAssets}/brand/ai-kb-lockup-light.png`" alt="AI KB" width="945" height="238"><img class="wk-logo-dark" :src="`${homeAssets}/brand/ai-kb-lockup-dark.png`" alt="AI KB" width="945" height="238"></span></a>
       <nav id="main-navigation" class="wk-navigation" :class="{ 'is-open': open }" aria-label="Documentation navigation">
         <a v-for="item in docsNavigation" :key="item.href" :href="item.href" :aria-current="route.path.startsWith(item.section) ? 'page' : undefined" @click="open = false">{{ item.label }}</a>
         <div class="wk-header-search"><Search /></div>
