@@ -58,6 +58,11 @@ help:
 	@echo "  model-catalog-diff    Compare with models.dev and report model metadata differences (needs human review)"
 	@echo "                        Optional: make model-catalog-diff VENDOR=deepseek"
 	@echo ""
+	@echo "Versions and releases:"
+	@echo "  bump-version      Bump the product CalVer and commit (default today, then .1 ...; VERSION=YYYY.M.D[.MICRO])"
+	@echo "  bump-lib          Bump a library semver and commit (LIB=dsh-ai-kb|mcp-server|helm-chart PART=patch|minor|major or VERSION=x.y.z)"
+	@echo "  check-version     Fail when a version string disagrees with VERSION or its library"
+	@echo ""
 	@echo "Environment checks:"
 	@echo "  check-env         Check the environment configuration"
 	@echo "  list-containers   List running containers"
@@ -136,6 +141,17 @@ model-catalog-check:
 .PHONY: model-catalog-diff
 model-catalog-diff:
 	@python3 scripts/model_catalog_diff.py $(if $(VENDOR),--vendor $(VENDOR),)
+
+# Every version string lives in scripts/version.py's table. Bumps commit but never tag or push.
+.PHONY: bump-version bump-lib check-version
+bump-version:
+	python3 scripts/version.py bump $(VERSION)
+
+bump-lib:
+	python3 scripts/version.py bump-lib $(LIB) $(or $(VERSION),$(PART))
+
+check-version:
+	python3 scripts/version.py check
 
 # Clean build artifacts
 clean:

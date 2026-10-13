@@ -74,7 +74,7 @@ if has 'packages/dsh-ai-kb/*'; then areas+=(dsh-plugin); fi
 if has 'miniprogram/*' 'tests/miniprogram/*'; then areas+=(miniprogram); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
 if has '*.md' .markdownlint-cli2.jsonc; then areas+=(markdown); fi
-areas+=(english-only emdash)
+areas+=(english-only emdash version)
 if [ ${#forced[@]} -gt 0 ]; then areas=("${forced[@]}"); fi
 
 log_step "${#changed[@]} changed path(s) since $base; areas: ${areas[*]}"
@@ -315,6 +315,13 @@ area_english-only() {
 # The whole tree minus scripts/emdash-allowlist.txt: none remain, so any hit is new.
 area_emdash() {
   scripts/check-emdash.sh
+}
+
+# Every version string against VERSION and each library against itself: milliseconds, and a bump or a hand
+# edit anywhere can break it. The tests clone HEAD, so they run only when the tool changes.
+area_version() {
+  python3 scripts/version.py check
+  if has scripts/version.py scripts/test_version.py; then python3 scripts/test_version.py; fi
 }
 
 for area in "${areas[@]}"; do
