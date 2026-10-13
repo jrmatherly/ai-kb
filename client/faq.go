@@ -402,18 +402,19 @@ type FAQSuccessEntry struct {
 // FAQImportProgress represents the progress of an async FAQ import task.
 // When Status is "completed", the result fields (SkippedCount, ImportMode, ImportedAt, DisplayStatus, ProcessingTime) are populated.
 type FAQImportProgress struct {
-	TaskID           string            `json:"task_id"`
-	KBID             string            `json:"kb_id"`
-	KnowledgeID      string            `json:"knowledge_id"`
-	Status           string            `json:"status"`
-	Progress         int               `json:"progress"`
-	Total            int               `json:"total"`
-	Processed        int               `json:"processed"`
-	SuccessCount     int               `json:"success_count"`
-	FailedCount      int               `json:"failed_count"`
-	SkippedCount     int               `json:"skipped_count,omitempty"`
-	FailedEntries    []FAQFailedEntry  `json:"failed_entries,omitempty"`
-	SuccessEntries   []FAQSuccessEntry `json:"success_entries,omitempty"`    // Successfully imported entries (when count is small)
+	TaskID        string           `json:"task_id"`
+	KBID          string           `json:"kb_id"`
+	KnowledgeID   string           `json:"knowledge_id"`
+	Status        string           `json:"status"`
+	Progress      int              `json:"progress"`
+	Total         int              `json:"total"`
+	Processed     int              `json:"processed"`
+	SuccessCount  int              `json:"success_count"`
+	FailedCount   int              `json:"failed_count"`
+	SkippedCount  int              `json:"skipped_count,omitempty"`
+	FailedEntries []FAQFailedEntry `json:"failed_entries,omitempty"`
+	// Successfully imported entries (when count is small)
+	SuccessEntries   []FAQSuccessEntry `json:"success_entries,omitempty"`
 	FailedEntriesURL string            `json:"failed_entries_url,omitempty"` // CSV download URL when too many failures
 	Message          string            `json:"message"`
 	Error            string            `json:"error,omitempty"`
