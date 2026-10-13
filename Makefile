@@ -117,9 +117,9 @@ build-anydoc: anydoc-lib
 run: build
 	./$(BINARY_NAME)
 
-# Run tests
+# Vet and test the package set CI tests (everything but /docreader/), from the hooks' shared helper.
 test:
-	go test -v ./...
+	bash -c 'source scripts/git-hooks/common.sh && run_app_vet_test'
 
 # Generate reviewed metadata + protocol overrides, then verify every model.
 .PHONY: model-catalog-generate model-catalog-check
