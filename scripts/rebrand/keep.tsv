@@ -4,3 +4,4 @@
 frontend/src/i18n/locales/*.ts	WEKNORA_(?:BASE_URL|API_KEY)
 frontend/src/views/integrations/ClawSkillLanding.vue	WEKNORA_(?:BASE_URL|API_KEY)
 website-docs/05-clients/07-claw-skill.md	WEKNORA_(?:BASE_URL|API_KEY)
+internal/application/service/tenant_skill_source_test.go	Slug: "weknora"

@@ -32,3 +32,4 @@
 :!scripts/rebrand/map.tsv
 :!scripts/rebrand/unchanged.md
 :!scripts/rebrand/scope.txt
+:!scripts/rebrand/keep.tsv
