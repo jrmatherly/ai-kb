@@ -1,9 +1,7 @@
 # @jrmatherly/dsh-ai-kb
 
-[npm](https://www.npmjs.com/package/@jrmatherly/dsh-ai-kb)
-
 A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`) plugin that gives the harness agent
-first-class access to a [AI KB](https://github.com/jrmatherly/ai-kb) knowledge base: hybrid retrieval, full document
+first-class access to an [AI KB](https://github.com/jrmatherly/ai-kb) knowledge base: hybrid retrieval, full document
 reading, and AI KB's own composed answers with citations.
 
 dsh ships no retrieval, embedding or knowledge-base capability of its own: its search tools (`grep`, `glob`) read the
@@ -11,19 +9,21 @@ workspace, and `web_search` reads the internet. This plugin fills that gap with 
 
 ## Install
 
-```sh
-# from npm (recommended: installs prebuilt code, no build permission needed)
-dsh plugin --profile web add @jrmatherly/dsh-ai-kb
+The package is not published on npm yet, so install it from a checkout of this repository. `npm ci` builds the
+entry point `dist/index.js` through the `prepare` script; then add the package from the repository root:
 
-# or from a checkout of this repository
+```sh
+(cd packages/dsh-ai-kb && npm ci)
 dsh plugin --profile web add ./packages/dsh-ai-kb
 ```
+
+Once it is published, `dsh plugin --profile web add @jrmatherly/dsh-ai-kb` will install the prebuilt code instead.
 
 Then point it at your deployment. The shipped configuration layer reads environment variables, so the quickest start is:
 
 ```sh
 export AIKB_BASE_URL=https://ai-kb.example.com   # or http://localhost:8080
-export AIKB_API_KEY=sk-...                          # a AI KB API key with `retrieve` (+ `chat` for ask)
+export AIKB_API_KEY=sk-...                          # an AI KB API key with `retrieve` (+ `chat` for ask)
 export AIKB_KNOWLEDGE_BASE_IDS=kb-123,kb-456        # optional default scope
 export AIKB_RESOURCE_URLS=public                    # default; `handle` keeps internal file refs
 dsh web
@@ -39,7 +39,7 @@ For anything beyond that, override the row from your profile's `cordis.patch.yml
     apiKey: !!js process.env.AIKB_API_KEY
     knowledgeBaseIds:
       - kb-product-docs
-    agentId: ''            # a AI KB custom agent id makes `aikb_ask` use the ReAct pipeline
+    agentId: ''            # an AI KB custom agent id makes `aikb_ask` use the ReAct pipeline
     maxResults: 8
     maxChunkChars: 1200
     requestTimeoutMs: 30000
@@ -103,7 +103,7 @@ fan out across ten sub-questions without ten model round trips.
 
 ## Permissions and data flow
 
-The plugin only reads. It never writes to AI KB: no ingestion, no chunk edits, no deletion. A AI KB API key scoped
+The plugin only reads. It never writes to AI KB: no ingestion, no chunk edits, no deletion. An AI KB API key scoped
 to `retrieve` is enough for three of the four tools; `aikb_ask` additionally needs `chat`, because it creates a
 session and streams an answer.
 
