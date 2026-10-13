@@ -313,7 +313,7 @@ func isValidFileType(fileName string) bool {
 		// documents
 		"docx", "doc", "pdf", "ppt", "pptx", "epub", "mhtml",
 		// spreadsheets
-		"xlsx", "xls",
+		"xlsx", "xls", "xlsb",
 		// text / markup
 		"md", "markdown", "txt", "csv", "json", "xml", "yaml", "yml", "log", "html",
 		// images

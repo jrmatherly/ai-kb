@@ -84,7 +84,7 @@ var markdownImagePattern = regexp.MustCompile(`!\[[^\]]*\]\([^)]*\)`)
 var temporaryDocumentExtensions = map[string]struct{}{
 	".docx": {}, ".doc": {}, ".pdf": {}, ".ppt": {}, ".pptx": {}, ".epub": {}, ".mhtml": {},
 	".xmind": {},
-	".xlsx":  {}, ".xls": {},
+	".xlsx":  {}, ".xls": {}, ".xlsb": {},
 	".md": {}, ".markdown": {}, ".txt": {}, ".csv": {}, ".json": {}, ".xml": {}, ".yaml": {}, ".yml": {}, ".log": {}, ".html": {},
 	".jpg": {}, ".jpeg": {}, ".png": {}, ".gif": {}, ".bmp": {}, ".tiff": {}, ".webp": {},
 	".mp3": {}, ".wav": {}, ".m4a": {}, ".flac": {}, ".ogg": {}, ".aac": {},

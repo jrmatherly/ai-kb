@@ -18,7 +18,7 @@ func applyParserRuleOverrides(
 	fileType string,
 ) {
 	fileType = normalizeParserFileType(fileType)
-	if fileType != "xlsx" && fileType != "xls" {
+	if fileType != "xlsx" && fileType != "xls" && fileType != "xlsb" {
 		return
 	}
 	rule := config.ResolveParserEngineRule(fileType)

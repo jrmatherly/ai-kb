@@ -145,7 +145,7 @@ func FeishuErrorItemMeta(err error, extra map[string]string) map[string]string {
 // parseableAttachmentExts are attachment extensions worth ingesting as their
 // own knowledge entries; other files (icons, tiny decor) are skipped.
 var parseableAttachmentExts = map[string]bool{
-	".pdf": true, ".doc": true, ".docx": true, ".xls": true, ".xlsx": true,
+	".pdf": true, ".doc": true, ".docx": true, ".xls": true, ".xlsx": true, ".xlsb": true,
 	".ppt": true, ".pptx": true, ".txt": true, ".md": true, ".csv": true,
 }
 

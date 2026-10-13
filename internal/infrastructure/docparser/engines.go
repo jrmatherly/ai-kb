@@ -75,7 +75,7 @@ func (e *builtinEngine) Description() string { return "DocReader built-in parser
 
 func (e *builtinEngine) FileTypes(_ bool) []string {
 	return []string{
-		"docx", "doc", "pdf", "md", "markdown", "xlsx", "xls",
+		"docx", "doc", "pdf", "md", "markdown", "xlsx", "xls", "xlsb",
 		"pptx", "ppt", "epub",
 		"html", "htm", "mhtml", "xmind",
 		"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp",

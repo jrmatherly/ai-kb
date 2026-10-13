@@ -67,7 +67,7 @@ func TestImportExtensionSetIsSharedAcrossPaths(t *testing.T) {
 	want := []string{
 		"csv", "doc", "docx", "epub", "flac", "gif", "htm", "html", "jpeg", "jpg",
 		"json", "m4a", "markdown", "md", "mhtml", "mp3", "ogg", "pdf", "png", "ppt",
-		"pptx", "txt", "wav", "xls", "xlsx", "xmind",
+		"pptx", "txt", "wav", "xls", "xlsb", "xlsx", "xmind",
 	}
 	exts := secutils.SupportedImportExtensions()
 	if !slices.Equal(exts, want) {
@@ -89,7 +89,7 @@ func TestIsDataTableFileType(t *testing.T) {
 			t.Errorf("isDataTableFileType(%q) = false, want true", ext)
 		}
 	}
-	for _, ext := range []string{"pdf", "png", "", unknownFileType} {
+	for _, ext := range []string{"pdf", "png", "xlsb", "", unknownFileType} {
 		if isDataTableFileType(ext) {
 			t.Errorf("isDataTableFileType(%q) = true, want false", ext)
 		}

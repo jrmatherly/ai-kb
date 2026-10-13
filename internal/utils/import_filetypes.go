@@ -15,7 +15,7 @@ var supportedImportFileExtensions = map[string]struct{}{
 	"html": {}, "htm": {}, "mhtml": {}, "md": {}, "markdown": {},
 	"xmind": {},
 	"png":   {}, "jpg": {}, "jpeg": {}, "gif": {},
-	"csv": {}, "xlsx": {}, "xls": {}, "pptx": {}, "ppt": {}, "json": {},
+	"csv": {}, "xlsx": {}, "xls": {}, "xlsb": {}, "pptx": {}, "ppt": {}, "json": {},
 	"mp3": {}, "wav": {}, "m4a": {}, "flac": {}, "ogg": {},
 }
 

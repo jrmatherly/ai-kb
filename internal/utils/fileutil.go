@@ -37,6 +37,8 @@ func GetContentTypeByExt(ext string) string {
 		return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 	case ".xls":
 		return "application/vnd.ms-excel"
+	case ".xlsb":
+		return "application/vnd.ms-excel.sheet.binary.macroEnabled.12"
 	case ".xlsx":
 		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 	case ".png":

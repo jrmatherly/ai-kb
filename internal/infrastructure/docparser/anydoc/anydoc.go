@@ -95,6 +95,7 @@ var supportedExtensions = map[string]string{
 	"odp":  "odp",
 	"xls":  "xlsx",
 	"xlsx": "xlsx",
+	"xlsb": "xlsx",
 	"xlsm": "xlsx",
 	"ods":  "ods",
 	"epub": "epub",

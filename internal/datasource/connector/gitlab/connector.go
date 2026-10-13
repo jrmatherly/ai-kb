@@ -391,7 +391,7 @@ var gitLabSupportedFileExtensions = map[string]struct{}{
 	".pdf": {}, ".txt": {}, ".docx": {}, ".doc": {}, ".epub": {},
 	".html": {}, ".htm": {}, ".mhtml": {}, ".md": {}, ".markdown": {}, ".mdx": {},
 	".png": {}, ".jpg": {}, ".jpeg": {}, ".gif": {},
-	".csv": {}, ".xlsx": {}, ".xls": {}, ".pptx": {}, ".ppt": {}, ".json": {},
+	".csv": {}, ".xlsx": {}, ".xls": {}, ".xlsb": {}, ".pptx": {}, ".ppt": {}, ".json": {},
 	".mp3": {}, ".wav": {}, ".m4a": {}, ".flac": {}, ".ogg": {},
 }
 

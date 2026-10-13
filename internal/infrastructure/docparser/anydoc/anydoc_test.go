@@ -18,6 +18,7 @@ func TestFormatForFileResolvesTypeAndName(t *testing.T) {
 		{name: "dotted file type", fileType: ".DOCX", wantFormat: "docx", wantOK: true},
 		{name: "macro format maps to base format", fileType: "pptm", wantFormat: "pptx", wantOK: true},
 		{name: "legacy excel maps to xlsx parser", fileType: "xls", wantFormat: "xlsx", wantOK: true},
+		{name: "binary excel maps to xlsx parser", fileType: ".XLSB", wantFormat: "xlsx", wantOK: true},
 		{name: "falls back to file name", fileName: "report.odt", wantFormat: "odt", wantOK: true},
 		{name: "unsupported type", fileType: "png", wantOK: false},
 		{name: "nothing to go on", wantOK: false},

@@ -3409,7 +3409,7 @@ var supportedKBFileExts = map[string]bool{
 	"pdf": true, "txt": true, "docx": true, "doc": true,
 	"md": true, "markdown": true,
 	"png": true, "jpg": true, "jpeg": true, "gif": true,
-	"csv": true, "xlsx": true, "xls": true,
+	"csv": true, "xlsx": true, "xls": true, "xlsb": true,
 	"pptx": true, "ppt": true,
 }
 

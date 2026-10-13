@@ -222,6 +222,24 @@ func TestApplyParserRuleOverrides_XLSFileType(t *testing.T) {
 	require.Equal(t, "true", overrides[xlsxFirstRowAsHeaderOverride])
 }
 
+func TestApplyParserRuleOverrides_XLSBFileType(t *testing.T) {
+	t.Parallel()
+
+	enabled := true
+	config := types.ChunkingConfig{
+		ParserEngineRules: []types.ParserEngineRule{{
+			FileTypes:            []string{"xlsx", "xls", "xlsb"},
+			Engine:               "builtin",
+			XLSXFirstRowAsHeader: &enabled,
+		}},
+	}
+	overrides := map[string]string{}
+
+	applyParserRuleOverrides(overrides, config, ".XLSB")
+
+	require.Equal(t, "true", overrides[xlsxFirstRowAsHeaderOverride])
+}
+
 func TestApplyParserRuleOverrides_NormalizesFileTypeCase(t *testing.T) {
 	t.Parallel()
 
