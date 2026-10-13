@@ -20,10 +20,14 @@ import (
 // - Getting session messages
 // - Cleaning up resources
 func ExampleUsage() {
+	exampleUsage("http://localhost:8080")
+}
+
+func exampleUsage(baseURL string) {
 	// Create a client instance
 	tenantID := uint64(10000) // default tenant for all requests from this client
 	apiClient := NewClient(
-		"http://localhost:8080",
+		baseURL,
 		WithToken("your-auth-token"),
 		WithTimeout(30*time.Second),
 		WithTenantID(tenantID), // default tenant for all requests from this client
@@ -146,7 +150,7 @@ func ExampleUsage() {
 				answer.WriteString(response.Content)
 			}
 
-			if response.Done && len(response.KnowledgeReferences) > 0 {
+			if response.ResponseType == ResponseTypeReferences {
 				references = response.KnowledgeReferences
 			}
 			return nil
