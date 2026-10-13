@@ -3,8 +3,11 @@
 # Order matters: longer and more specific patterns first.
 # --- repository, module, images, host ---
 Tencent/WeKnora(?!#\d|/(issues|pull|discussions)/)	jrmatherly/ai-kb
-wechatopenai/weknora-(app|docreader|ui|sandbox)	ghcr.io/jrmatherly/ai-kb-$1
-weknora\.weixin\.qq\.com	ai-kb-docs.matherly.net
+([\w.-]+:\d+/)wechatopenai/weknora-(app|docreader|ui|sandbox)	$1jrmatherly/ai-kb-$2
+(?:docker(?:\.m\.daocloud)?\.io/)?wechatopenai/weknora-(app|docreader|ui|sandbox)	ghcr.io/jrmatherly/ai-kb-$1
+# The host is also the WeKnoraCloud model API (bare host and /api paths), which stays; only website links move.
+weknora\.weixin\.qq\.com(?=/docs)	ai-kb-docs.matherly.net
+(href="https?://|\]\(https?://|\+https?://|badge/website-)weknora\.weixin\.qq\.com	$1ai-kb-docs.matherly.net
 # --- environment prefix ---
 \bWEKNORA_	AIKB_
 # --- directories, containers, network, desktop app name (before the product-name rule) ---
@@ -40,5 +43,6 @@ helm install weknora\b	helm install ai-kb
 \bweknora-memories\.json\b	ai-kb-memories.json
 \bweknora_home_page\b	ai-kb-home-page
 \bweknora-docs-site\b	ai-kb-docs-site
+\bTencent WeKnora\b	AI KB
 (?<!Tencent/)(?<!X-)\bWeKnora\b(?!-Chrome-Extension)	AI KB
 chart name `weknora`	chart name `ai-kb`
