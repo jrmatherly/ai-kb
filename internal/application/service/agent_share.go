@@ -239,7 +239,7 @@ func (s *agentShareService) ShareAgent(ctx context.Context, agentID string, orgI
 		return nil, ErrOrgRoleCannotShareAgent
 	}
 
-	// 智能体共享仅支持只读
+	// Agent sharing is read-only.
 	permission = types.OrgRoleViewer
 
 	share := &types.AgentShare{
@@ -557,7 +557,7 @@ func (s *agentShareService) GetSharedAgentForTenant(
 
 // TenantCanAccessKBViaSomeSharedAgent returns true if the caller's tenant has
 // at least one shared agent that can access the given KB (used when opening KB
-// detail from "通过智能体可见" list without agent_id).
+// detail from the "Visible via agents" list without agent_id).
 func (s *agentShareService) TenantCanAccessKBViaSomeSharedAgent(ctx context.Context, tenantID uint64, callerTenantRole types.TenantRole, kb *types.KnowledgeBase) (bool, error) {
 	if kb == nil || kb.ID == "" {
 		return false, nil

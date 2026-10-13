@@ -69,8 +69,8 @@ func TestSanitizeManualDownloadFilename(t *testing.T) {
 		},
 		{
 			name:  "Chinese title preserved",
-			title: "知识库文章",
-			want:  "知识库文章.md",
+			title: "\u77e5\u8bc6\u5e93\u6587\u7ae0",
+			want:  "\u77e5\u8bc6\u5e93\u6587\u7ae0.md",
 		},
 		{
 			name:  "tab character stripped",

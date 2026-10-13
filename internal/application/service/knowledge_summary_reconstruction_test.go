@@ -178,11 +178,11 @@ func TestGetSummaryKeepsTruncatedPlainTextReply(t *testing.T) {
 		},
 		{
 			name:    "bracketed prose at the budget",
-			content: "[文档摘要] 本文件说明请假制度与年度额度",
+			content: "[Document summary] This document describes the leave policy and annual allowance",
 		},
 		{
 			name:    "numbered prose at the budget",
-			content: "[1] 本文件说明请假制度与年度额度",
+			content: "[1] This document describes the leave policy and annual allowance",
 		},
 	}
 

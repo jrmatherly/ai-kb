@@ -15,20 +15,20 @@ import (
 // the absolute size limit.
 func TestHTMLEmbeddedTableWiring_ProducesChunkableOutput(t *testing.T) {
 	input := strings.Join([]string{
-		"# 检测报告",
+		"# Inspection Report",
 		"",
-		"以下是正文段落，用于确认归一化不会破坏普通 markdown。",
+		"This is a body paragraph that confirms normalization does not break plain markdown.",
 		"",
 		// colspan=1: redundant spans must still be convertible to GFM.
-		`<table><tr><td colspan="1" style="text-align:left">项目</td>` +
-			`<td colspan="1">结果</td></tr>` +
-			`<tr><td>拉伸强度</td><td>合格</td></tr></table>`,
+		`<table><tr><td colspan="1" style="text-align:left">Item</td>` +
+			`<td colspan="1">Result</td></tr>` +
+			`<tr><td>Tensile strength</td><td>Pass</td></tr></table>`,
 		"",
 		// colspan=6: a real merge -> cannot be GFM, but must stay splittable.
-		`<table><tr><td colspan="6" style="text-align:center">汇总</td></tr>` +
-			`<tr><td colspan="6">备注</td></tr></table>`,
+		`<table><tr><td colspan="6" style="text-align:center">Summary</td></tr>` +
+			`<tr><td colspan="6">Notes</td></tr></table>`,
 		"",
-		"收尾段落。",
+		"Closing paragraph.",
 	}, "\n")
 
 	got := docparser.NormalizeHTMLTables(input)
@@ -36,7 +36,7 @@ func TestHTMLEmbeddedTableWiring_ProducesChunkableOutput(t *testing.T) {
 	if strings.Contains(got, `colspan="1"`) {
 		t.Fatalf("redundant colspan=1 table was not normalized:\n%s", got)
 	}
-	if !strings.Contains(got, "|") || !strings.Contains(got, "拉伸强度") {
+	if !strings.Contains(got, "|") || !strings.Contains(got, "Tensile strength") {
 		t.Fatalf("expected colspan=1 table to become GFM, got:\n%s", got)
 	}
 	if !strings.Contains(got, "<table") {

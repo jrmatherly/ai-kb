@@ -369,7 +369,7 @@ func TestParseDocumentSummaryOutput(t *testing.T) {
 	// The reported failure shape: a 209-rune reply cut off at MaxTokens in the
 	// middle of a string. It used to be stored raw as knowledge.Description,
 	// marked completed (so Asynq never retried) and embedded as the summary chunk.
-	truncatedJSON := `{"summary": "` + strings.Repeat("截", 130) + `", "gist": "` + strings.Repeat("断", 54)
+	truncatedJSON := `{"summary": "` + strings.Repeat("\u622a", 130) + `", "gist": "` + strings.Repeat("\u65ad", 54)
 
 	tests := []struct {
 		name    string
@@ -426,13 +426,13 @@ func TestParseDocumentSummaryOutput(t *testing.T) {
 		{
 			// Prose that opens with a bracketed citation is not broken JSON.
 			name:    "bracketed prose keeps the legacy fallback",
-			content: "[文档摘要] 本文件说明请假制度与年度额度。",
-			want:    "[文档摘要] 本文件说明请假制度与年度额度。",
+			content: "[Document summary] This document describes the leave policy and annual allowance.",
+			want:    "[Document summary] This document describes the leave policy and annual allowance.",
 		},
 		{
 			name:    "numbered prose keeps the legacy fallback",
-			content: "[1] 本文件说明请假制度与年度额度。",
-			want:    "[1] 本文件说明请假制度与年度额度。",
+			content: "[1] This document describes the leave policy and annual allowance.",
+			want:    "[1] This document describes the leave policy and annual allowance.",
 		},
 		{
 			// A real JSON array is structured output that does not satisfy the

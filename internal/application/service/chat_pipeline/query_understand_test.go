@@ -155,12 +155,12 @@ func TestParseOutput_ValidJSONStillAppliesRewrite(t *testing.T) {
 func TestParseOutputSalvagesTruncatedReply(t *testing.T) {
 	p := &PluginQueryUnderstand{}
 	cm := &types.ChatManage{PipelineRequest: types.PipelineRequest{Query: ""}}
-	p.parseOutput(cm, `{"rewrite_query":"如何处理 ERR_4012 错误","intent":"kb_search",`+
-		`"image_description":"截图显示了错误信息 \"ERR_4012\" 以及重试按`)
-	if cm.RewriteQuery != "如何处理 ERR_4012 错误" || cm.Intent != types.IntentKBSearch {
+	p.parseOutput(cm, `{"rewrite_query":"How do I fix error ERR_4012","intent":"kb_search",`+
+		`"image_description":"The screenshot shows the error message \"ERR_4012\" and a retry butt`)
+	if cm.RewriteQuery != "How do I fix error ERR_4012" || cm.Intent != types.IntentKBSearch {
 		t.Fatalf("rewrite=%q intent=%q", cm.RewriteQuery, cm.Intent)
 	}
-	if cm.ImageDescription != `截图显示了错误信息 "ERR_4012" 以及重试按` {
+	if cm.ImageDescription != `The screenshot shows the error message "ERR_4012" and a retry butt` {
 		t.Fatalf("image description = %q", cm.ImageDescription)
 	}
 }

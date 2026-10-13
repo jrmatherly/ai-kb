@@ -117,7 +117,7 @@ func TestSharedAgentInfoLocalizesBuiltinName(t *testing.T) {
 		types.BuiltinQuickAnswerID: {
 			ID: types.BuiltinQuickAnswerID,
 			I18n: map[string]types.BuiltinAgentI18n{
-				"default": {Name: "快速问答", Description: "中文 RAG"},
+				"default": {Name: "Quick Q&A", Description: "English RAG"},
 				"en-US":   {Name: "Quick Answer", Description: "English RAG"},
 			},
 		},

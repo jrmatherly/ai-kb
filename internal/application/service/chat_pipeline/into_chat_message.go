@@ -81,7 +81,7 @@ func (p *PluginIntoChatMessage) OnEvent(ctx context.Context,
 		})
 	}
 
-	// 验证用户查询的安全性
+	// Validate the user query before it reaches the prompt.
 	safeQuery, isValid := utils.ValidateInput(chatManage.Query)
 	if !isValid {
 		pipelineWarn(ctx, "IntoChatMessage", "invalid_query", map[string]interface{}{
@@ -104,7 +104,7 @@ func (p *PluginIntoChatMessage) OnEvent(ctx context.Context,
 			}
 		}
 		if chatManage.ImageDescription != "" && !chatManage.ChatModelSupportsVision {
-			userContent += "\n\n[用户上传图片内容]\n" + chatManage.ImageDescription
+			userContent += "\n\n[User-uploaded image content]\n" + chatManage.ImageDescription
 		}
 		if chatManage.QuotedContext != "" {
 			userContent += "\n\n" + chatManage.QuotedContext
@@ -194,7 +194,7 @@ func (p *PluginIntoChatMessage) OnEvent(ctx context.Context,
 	// Append image description as text fallback only when the chat model cannot
 	// process images directly. Vision-capable models see images via MultiContent.
 	if chatManage.ImageDescription != "" && !chatManage.ChatModelSupportsVision {
-		userContent += "\n\n[用户上传图片内容]\n" + chatManage.ImageDescription
+		userContent += "\n\n[User-uploaded image content]\n" + chatManage.ImageDescription
 	}
 	p.attachContextImages(ctx, chatManage, contextOrder)
 	if chatManage.QuotedContext != "" {
@@ -343,19 +343,16 @@ func buildDocumentHeader(results []*types.SearchResult) string {
 	return b.String()
 }
 
-// getEnrichedPassageForChat 合并Content和ImageInfo的文本内容，为聊天消息准备
+// getEnrichedPassageForChat merges a result's Content and ImageInfo text into one passage for the chat message.
 func getEnrichedPassageForChat(ctx context.Context, result *types.SearchResult) string {
-	// 如果没有图片信息，直接返回内容
 	if result.Content == "" && result.ImageInfo == "" {
 		return ""
 	}
 
-	// 如果只有内容，没有图片信息
 	if result.ImageInfo == "" {
 		return result.Content
 	}
 
-	// 处理图片信息并与内容合并
 	return enrichContentWithImageInfo(ctx, result.Content, result.ImageInfo)
 }
 

@@ -468,9 +468,9 @@ func NewDataTableSummaryService(
 }
 
 // Handle implements the TaskHandler interface for table extraction
-// 整体流程：初始化 -> 准备资源 -> 加载数据 -> 生成摘要 -> 创建索引
+// Flow: initialize -> prepare resources -> load data -> generate summary -> build index
 func (s *DataTableSummaryService) Handle(ctx context.Context, t *asynq.Task) error {
-	// 1. 解析任务并初始化上下文
+	// 1. Parse the task and initialize the context
 	var payload DataTableSummaryPayload
 	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
 		logger.Errorf(ctx, "failed to unmarshal table extract task payload: %v", err)
@@ -494,7 +494,7 @@ func (s *DataTableSummaryService) Handle(ctx context.Context, t *asynq.Task) err
 		return err
 	}
 
-	// 2. 准备所有必需的资源（知识、模型、引擎等）
+	// 2. Prepare every required resource (knowledge item, models, engines)
 	resources, err := s.prepareResources(ctx, payload, knowledge)
 	if err != nil {
 		return err
@@ -506,13 +506,13 @@ func (s *DataTableSummaryService) Handle(ctx context.Context, t *asynq.Task) err
 	}
 	ctx = context.WithValue(ctx, types.TenantInfoContextKey, resources.tenant)
 
-	// 3. 加载表格数据并生成摘要
+	// 3. Load the table data and generate the summary
 	chunks, err := s.processTableData(ctx, resources)
 	if err != nil {
 		return err
 	}
 
-	// 4. 索引到向量数据库
+	// 4. Index into the vector database
 	if err := s.indexToVectorDB(ctx, chunks, resources.retrieveEngine, resources.embeddingModel); err != nil {
 		s.cleanupOnFailure(ctx, resources, chunks, err)
 		return err
@@ -522,7 +522,7 @@ func (s *DataTableSummaryService) Handle(ctx context.Context, t *asynq.Task) err
 	return nil
 }
 
-// extractionResources 封装提取过程所需的所有资源
+// extractionResources holds every resource the extraction needs
 type extractionResources struct {
 	knowledge      *types.Knowledge
 	knowledgeBase  *types.KnowledgeBase
@@ -532,14 +532,14 @@ type extractionResources struct {
 	retrieveEngine *retriever.CompositeRetrieveEngine
 }
 
-// prepareResources 准备提取所需的所有资源
-// 思路：集中加载所有依赖，统一错误处理，避免分散的资源获取逻辑
+// prepareResources loads every dependency of the extraction in one place so
+// error handling stays uniform
 func (s *DataTableSummaryService) prepareResources(
 	ctx context.Context,
 	payload DataTableSummaryPayload,
 	knowledge *types.Knowledge,
 ) (*extractionResources, error) {
-	// 验证知识文件
+	// Validate the knowledge file
 	if knowledge == nil || knowledge.ID != payload.KnowledgeID || knowledge.TenantID != payload.TenantID {
 		return nil, fmt.Errorf("invalid table summary knowledge scope")
 	}
@@ -548,28 +548,28 @@ func (s *DataTableSummaryService) prepareResources(
 		return nil, err
 	}
 
-	// 验证文件类型
+	// Validate the file type
 	fileType := strings.ToLower(knowledge.FileType)
 	if fileType != "csv" && fileType != "xlsx" && fileType != "xls" {
 		logger.Warnf(ctx, "knowledge %s is not a CSV or Excel file, skipping table summary", payload.KnowledgeID)
 		return nil, fmt.Errorf("unsupported file type: %s", fileType)
 	}
 
-	// 获取空间信息
+	// Load the workspace
 	tenantInfo, err := s.tenantService.GetTenantByID(ctx, payload.TenantID)
 	if err != nil {
 		logger.Errorf(ctx, "failed to get tenant: %v", err)
 		return nil, err
 	}
 
-	// 获取聊天模型（用于生成摘要）
+	// Load the chat model (generates the summary)
 	chatModel, err := s.modelService.GetChatModel(ctx, payload.SummaryModel)
 	if err != nil {
 		logger.Errorf(ctx, "failed to get chat model: %v", err)
 		return nil, err
 	}
 
-	// 获取嵌入模型（用于向量化）
+	// Load the embedding model (vectorization)
 	embeddingModel, err := s.modelService.GetEmbeddingModel(ctx, payload.EmbeddingModel)
 	if err != nil {
 		logger.Errorf(ctx, "failed to get embedding model: %v", err)
@@ -640,16 +640,15 @@ func (s *DataTableSummaryService) resolveFileServiceForKnowledge(ctx context.Con
 	return resolvedSvc
 }
 
-// processTableData 处理表格数据：加载 -> 分析 -> 生成摘要 -> 创建chunks
-// 思路：将数据处理的核心流程集中在一起，保持逻辑连贯性
+// processTableData processes table data: load -> analyze -> generate summary -> build chunks
 func (s *DataTableSummaryService) processTableData(ctx context.Context, resources *extractionResources) ([]*types.Chunk, error) {
-	// 创建DuckDB会话并加载数据
+	// Create a DuckDB session and load the data
 	sessionID := fmt.Sprintf("table_summary_%s", resources.knowledge.ID)
 	fileSvc := s.resolveFileServiceForKnowledge(ctx, resources)
 	duckdbTool := tools.NewDataAnalysisTool(s.knowledgeBaseService, s.knowledgeService, s.tenantService, fileSvc, s.sqlDB, sessionID, s.storageResolver)
 	defer duckdbTool.Cleanup(ctx)
 
-	// 使用knowledge.ID作为表名，根据文件类型自动加载数据
+	// Use knowledge.ID as the table name; the loader is chosen by file type
 	tableSchema, err := duckdbTool.LoadFromKnowledge(ctx, resources.knowledge)
 	if err != nil {
 		logger.Errorf(ctx, "failed to load data into DuckDB: %v", err)
@@ -658,7 +657,7 @@ func (s *DataTableSummaryService) processTableData(ctx context.Context, resource
 
 	logger.Infof(ctx, "Loaded table %s with %d columns and %d rows", tableSchema.TableName, len(tableSchema.Columns), tableSchema.RowCount)
 
-	// 获取样本数据用于生成摘要
+	// Fetch sample rows for the summary
 	input := tools.DataAnalysisInput{
 		KnowledgeID: resources.knowledge.ID,
 		SQL:         fmt.Sprintf("SELECT * FROM \"%s\" LIMIT 10", tools.DataAnalysisTableName),
@@ -674,11 +673,11 @@ func (s *DataTableSummaryService) processTableData(ctx context.Context, resource
 		return nil, err
 	}
 
-	// 构建共用的schema和样本数据描述
+	// Build the shared schema and sample-data description
 	schemaDesc := tableSchema.Description()
 	sampleDesc := s.buildSampleDataDescription(ctx, sampleResult, 10)
 
-	// 使用AI生成表格摘要和列描述
+	// Generate the table summary and column descriptions with the LLM
 	customInstructions := ""
 	if resources.knowledgeBase != nil {
 		var processOverrides *types.KnowledgeProcessOverrides
@@ -705,17 +704,16 @@ func (s *DataTableSummaryService) processTableData(ctx context.Context, resource
 	}
 	logger.Debugf(ctx, "column describe of knowledge %s: %s", resources.knowledge.ID, columnDescription)
 
-	// 构建chunks：一个表格摘要chunk + 多个列描述chunks
+	// Build chunks: one table-summary chunk plus the column-description chunk
 	chunks := s.buildChunks(resources, tableDescription, columnDescription)
 	return chunks, nil
 }
 
-// buildChunks 构建chunk对象
-// tableDescription和columnDescriptions分别生成一个chunk
+// buildChunks builds one chunk from tableDescription and one from columnDescriptions
 func (s *DataTableSummaryService) buildChunks(resources *extractionResources, tableDescription string, columnDescription string) []*types.Chunk {
 	chunks := make([]*types.Chunk, 0, 2)
 
-	// 表格摘要chunk
+	// Table-summary chunk
 	summaryChunk := &types.Chunk{
 		ID:              uuid.New().String(),
 		TenantID:        resources.knowledge.TenantID,
@@ -729,7 +727,7 @@ func (s *DataTableSummaryService) buildChunks(resources *extractionResources, ta
 	}
 	chunks = append(chunks, summaryChunk)
 
-	// 列描述chunk（所有列的描述合并为一个chunk）
+	// Column-description chunk (all column descriptions merged into one chunk)
 	columnChunk := &types.Chunk{
 		ID:              uuid.New().String(),
 		TenantID:        resources.knowledge.TenantID,
@@ -750,15 +748,15 @@ func (s *DataTableSummaryService) buildChunks(resources *extractionResources, ta
 	return chunks
 }
 
-// indexToVectorDB 将chunks索引到向量数据库
-// 思路：批量构建索引信息，统一索引，更新状态
+// indexToVectorDB indexes the chunks into the vector database in one batch and
+// updates their status
 func (s *DataTableSummaryService) indexToVectorDB(
 	ctx context.Context,
 	chunks []*types.Chunk,
 	engine *retriever.CompositeRetrieveEngine,
 	embedder embedding.Embedder,
 ) error {
-	// 构建索引信息列表
+	// Build the index info list
 	indexInfoList := make([]*types.IndexInfo, 0, len(chunks))
 	for _, chunk := range chunks {
 		indexInfoList = append(indexInfoList, &types.IndexInfo{
@@ -772,20 +770,20 @@ func (s *DataTableSummaryService) indexToVectorDB(
 		})
 	}
 
-	// 保存到数据库
+	// Save to the database
 	if err := s.chunkService.CreateChunks(ctx, chunks); err != nil {
 		logger.Errorf(ctx, "failed to create chunks: %v", err)
 		return err
 	}
 	logger.Infof(ctx, "Created %d chunks for data table", len(chunks))
 
-	// 批量索引
+	// Batch index
 	if err := engine.BatchIndex(ctx, embedder, indexInfoList); err != nil {
 		logger.Errorf(ctx, "failed to index chunks: %v", err)
 		return err
 	}
 
-	// 更新chunk状态为已索引
+	// Mark the chunks as indexed
 	for _, chunk := range chunks {
 		chunk.Status = int(types.ChunkStatusIndexed)
 	}
@@ -797,12 +795,12 @@ func (s *DataTableSummaryService) indexToVectorDB(
 	return nil
 }
 
-// cleanupOnFailure 索引失败时的清理工作
-// 思路：删除已创建的chunk和对应的向量索引，避免脏数据残留
+// cleanupOnFailure runs when indexing fails: it deletes the chunks already
+// created and their vector index entries so no partial data is left behind
 func (s *DataTableSummaryService) cleanupOnFailure(ctx context.Context, resources *extractionResources, chunks []*types.Chunk, indexErr error) {
 	logger.Warnf(ctx, "Starting cleanup due to failure: %v", indexErr)
 
-	// 1. 更新知识状态为失败
+	// 1. Mark the knowledge item as failed
 	before, after := *resources.knowledge, *resources.knowledge
 	after.ParseStatus = types.ParseStatusFailed
 	after.ErrorMessage = indexErr.Error()
@@ -811,13 +809,13 @@ func (s *DataTableSummaryService) cleanupOnFailure(ctx context.Context, resource
 		return
 	}
 
-	// 提取chunk IDs
+	// Collect the chunk IDs
 	chunkIDs := make([]string, 0, len(chunks))
 	for _, chunk := range chunks {
 		chunkIDs = append(chunkIDs, chunk.ID)
 	}
 
-	// 删除已创建的chunks
+	// Delete the chunks already created
 	if len(chunkIDs) > 0 {
 		if err := s.chunkService.GetRepository().DeleteChunks(ctx, resources.knowledge.TenantID, chunkIDs); err != nil {
 			logger.Errorf(ctx, "Failed to delete chunks: %v", err)
@@ -826,7 +824,7 @@ func (s *DataTableSummaryService) cleanupOnFailure(ctx context.Context, resource
 		}
 	}
 
-	// 删除对应的向量索引
+	// Delete their vector index entries
 	if len(chunkIDs) > 0 {
 		if err := resources.retrieveEngine.DeleteBySourceIDList(
 			ctx, chunkIDs, resources.embeddingModel.GetDimensions(), types.KnowledgeBaseTypeDocument,

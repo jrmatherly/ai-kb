@@ -13,28 +13,31 @@ import (
 )
 
 func TestExtractKeywordsSegmentsChineseQuery(t *testing.T) {
-	keywords := extractKeywords("如何配置向量数据库")
+	// "how to configure a vector database"; expects the tokens "configure", "vector", "database".
+	keywords := extractKeywords("\u5982\u4f55\u914d\u7f6e\u5411\u91cf\u6570\u636e\u5e93")
 
-	assert.NotContains(t, keywords, "如何配置向量数据库")
-	assert.Contains(t, keywords, "配置")
-	assert.Contains(t, keywords, "向量")
-	assert.Contains(t, keywords, "数据库")
+	assert.NotContains(t, keywords, "\u5982\u4f55\u914d\u7f6e\u5411\u91cf\u6570\u636e\u5e93")
+	assert.Contains(t, keywords, "\u914d\u7f6e")
+	assert.Contains(t, keywords, "\u5411\u91cf")
+	assert.Contains(t, keywords, "\u6570\u636e\u5e93")
 }
 
 func TestTokenizePreservesMixedLanguageBoundaries(t *testing.T) {
-	tokens := tokenize("RAG如何配置PostgreSQL")
+	// "RAG how to configure PostgreSQL" with no spaces.
+	tokens := tokenize("RAG\u5982\u4f55\u914d\u7f6ePostgreSQL")
 
 	assert.Contains(t, tokens, "RAG")
-	assert.Contains(t, tokens, "配置")
+	assert.Contains(t, tokens, "\u914d\u7f6e")
 	assert.Contains(t, tokens, "PostgreSQL")
-	assert.NotContains(t, tokens, "RAG如何配置")
+	assert.NotContains(t, tokens, "RAG\u5982\u4f55\u914d\u7f6e")
 }
 
 func TestExtractKeywordsDropsSingleRuneChineseTokens(t *testing.T) {
-	keywords := extractKeywords("他来到了网易杭研大厦")
+	// "He came to the NetEase Hangzhou research building"; expects "NetEase" and "building".
+	keywords := extractKeywords("\u4ed6\u6765\u5230\u4e86\u7f51\u6613\u676d\u7814\u5927\u53a6")
 
-	assert.Contains(t, keywords, "网易")
-	assert.Contains(t, keywords, "大厦")
+	assert.Contains(t, keywords, "\u7f51\u6613")
+	assert.Contains(t, keywords, "\u5927\u53a6")
 	for _, keyword := range keywords {
 		assert.Greater(t, utf8.RuneCountInString(keyword), 1, "unexpected single-rune keyword %q", keyword)
 	}
@@ -42,13 +45,15 @@ func TestExtractKeywordsDropsSingleRuneChineseTokens(t *testing.T) {
 
 func TestExpandQueriesBuildsChineseKeywordVariant(t *testing.T) {
 	expansions := (&PluginSearch{}).expandQueries(context.Background(), &types.ChatManage{
-		PipelineState: types.PipelineState{RewriteQuery: "如何配置向量数据库"},
+		PipelineState: types.PipelineState{RewriteQuery: "\u5982\u4f55\u914d\u7f6e\u5411\u91cf\u6570\u636e\u5e93"},
 	})
 
 	var foundKeywordVariant bool
 	for _, expansion := range expansions {
 		fields := strings.Fields(expansion)
-		if containsToken(fields, "配置") && containsToken(fields, "向量") && containsToken(fields, "数据库") {
+		if containsToken(fields, "\u914d\u7f6e") &&
+			containsToken(fields, "\u5411\u91cf") &&
+			containsToken(fields, "\u6570\u636e\u5e93") {
 			foundKeywordVariant = true
 			break
 		}
@@ -91,7 +96,8 @@ func TestRunQueryExpansionSearchesKeywordsOnly(t *testing.T) {
 			EmbeddingTopK: 10,
 			SearchTargets: types.SearchTargets{{KnowledgeBaseID: "kb-1", Type: types.SearchTargetTypeKnowledgeBase}},
 		},
-		PipelineState: types.PipelineState{RewriteQuery: "如何配置向量数据库的索引参数"},
+		PipelineState: types.PipelineState{RewriteQuery: "\u5982\u4f55\u914d\u7f6e\u5411\u91cf\u6570\u636e\u5e93" +
+			"\u7684\u7d22\u5f15\u53c2\u6570"},
 	}
 
 	plugin.runQueryExpansion(context.Background(), cm)

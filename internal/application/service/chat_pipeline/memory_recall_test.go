@@ -42,18 +42,18 @@ func newMemoryRecallPlugin(memoryService interfaces.MemoryService) *PluginMemory
 func TestMemoryReachesTheMessagesSentToTheModel(t *testing.T) {
 	memoryService := &stubMemoryService{
 		recall: interfaces.MemoryRecall{
-			Prompt: types.WrapMemoryForPrompt("Preferences:\n- 回答请直接给结论", ""),
+			Prompt: types.WrapMemoryForPrompt("Preferences:\n- Lead every answer with the conclusion", ""),
 			Items: []*types.MemoryItem{
-				{ID: "m1", Kind: types.MemoryKindPreference, Content: "回答请直接给结论"},
+				{ID: "m1", Kind: types.MemoryKindPreference, Content: "Lead every answer with the conclusion"},
 			},
 		},
 	}
 	plugin := newMemoryRecallPlugin(memoryService)
 
 	chatManage := &types.ChatManage{}
-	chatManage.Query = "帮我看看这个报错"
-	chatManage.UserContent = "帮我看看这个报错"
-	chatManage.SummaryConfig.Prompt = "你是一个助手。"
+	chatManage.Query = "Can you look at this error for me"
+	chatManage.UserContent = "Can you look at this error for me"
+	chatManage.SummaryConfig.Prompt = "You are an assistant."
 
 	nextCalled := false
 	err := plugin.OnEvent(t.Context(), types.MEMORY_RECALL, chatManage, func() *PluginError {
@@ -62,15 +62,15 @@ func TestMemoryReachesTheMessagesSentToTheModel(t *testing.T) {
 	})
 	require.Nil(t, err)
 	require.True(t, nextCalled, "the recall stage must never stop the pipeline")
-	require.Equal(t, "帮我看看这个报错", memoryService.lastQuery)
+	require.Equal(t, "Can you look at this error for me", memoryService.lastQuery)
 
 	messages := prepareMessagesWithHistory(chatManage)
 	require.NotEmpty(t, messages)
 	require.Equal(t, "system", messages[0].Role)
-	require.Contains(t, messages[0].Content, "回答请直接给结论",
+	require.Contains(t, messages[0].Content, "Lead every answer with the conclusion",
 		"the recalled memory must be present in the system message")
 	require.Contains(t, messages[0].Content, "<user_memory>")
-	require.True(t, strings.HasPrefix(messages[0].Content, "你是一个助手。"),
+	require.True(t, strings.HasPrefix(messages[0].Content, "You are an assistant."),
 		"memory must be appended after the configured prompt, not replace it")
 }
 
@@ -78,8 +78,8 @@ func TestMemoryIsAbsentWhenNothingRecalled(t *testing.T) {
 	plugin := newMemoryRecallPlugin(&stubMemoryService{})
 
 	chatManage := &types.ChatManage{}
-	chatManage.Query = "随便问点什么"
-	chatManage.SummaryConfig.Prompt = "你是一个助手。"
+	chatManage.Query = "Just asking something"
+	chatManage.SummaryConfig.Prompt = "You are an assistant."
 
 	require.Nil(t, plugin.OnEvent(t.Context(), types.MEMORY_RECALL, chatManage, func() *PluginError { return nil }))
 	require.Empty(t, chatManage.MemoryPrompt)
@@ -92,9 +92,9 @@ func TestMemoryIsAbsentWhenNothingRecalled(t *testing.T) {
 func TestMemoryRecallEmitsWhatTheAnswerSaw(t *testing.T) {
 	memoryService := &stubMemoryService{
 		recall: interfaces.MemoryRecall{
-			Prompt: types.WrapMemoryForPrompt("About the user:\n- 在做医疗影像", ""),
+			Prompt: types.WrapMemoryForPrompt("About the user:\n- Works on medical imaging", ""),
 			Items: []*types.MemoryItem{
-				{ID: "m1", Kind: types.MemoryKindProfile, Content: "在做医疗影像"},
+				{ID: "m1", Kind: types.MemoryKindProfile, Content: "Works on medical imaging"},
 			},
 		},
 	}
@@ -111,7 +111,7 @@ func TestMemoryRecallEmitsWhatTheAnswerSaw(t *testing.T) {
 	})
 
 	chatManage := &types.ChatManage{}
-	chatManage.Query = "继续上次的事"
+	chatManage.Query = "Pick up where we left off"
 	chatManage.EventBus = bus.AsEventBusInterface()
 
 	require.Nil(t, plugin.OnEvent(t.Context(), types.MEMORY_RECALL, chatManage, func() *PluginError { return nil }))
@@ -120,14 +120,14 @@ func TestMemoryRecallEmitsWhatTheAnswerSaw(t *testing.T) {
 	// streamed list has to be the same one that was injected.
 	require.Len(t, received, 1)
 	require.Equal(t, "m1", received[0].ID)
-	require.Equal(t, "在做医疗影像", received[0].Content)
+	require.Equal(t, "Works on medical imaging", received[0].Content)
 	require.Equal(t, received, chatManage.UsedMemories)
 }
 
 func TestMemoryRecallToleratesNoService(t *testing.T) {
 	plugin := newMemoryRecallPlugin(nil)
 	chatManage := &types.ChatManage{}
-	chatManage.SummaryConfig.Prompt = "你是一个助手。"
+	chatManage.SummaryConfig.Prompt = "You are an assistant."
 	require.Nil(t, plugin.OnEvent(t.Context(), types.MEMORY_RECALL, chatManage, func() *PluginError { return nil }))
 	require.Empty(t, chatManage.MemoryPrompt)
 }

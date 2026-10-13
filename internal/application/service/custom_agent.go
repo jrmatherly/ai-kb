@@ -498,7 +498,7 @@ func (s *customAgentService) CopyAgent(ctx context.Context, id string) (*types.C
 	// Create a new agent with copied data
 	newAgent := &types.CustomAgent{
 		ID:          uuid.New().String(),
-		Name:        sourceAgent.Name + " (副本)",
+		Name:        sourceAgent.Name + " (Copy)",
 		Description: sourceAgent.Description,
 		Avatar:      sourceAgent.Avatar,
 		IsBuiltin:   false, // Copied agents are never built-in
@@ -1095,7 +1095,7 @@ func (s *customAgentService) truncateQuestions(questions []types.SuggestedQuesti
 //     idempotency…).
 //   - entity / summary: "Tell me about <title>" is neutral and works for
 //     people, places, organizations, products and document summaries where
-//     "what is <name>?" would read awkwardly ("什么是张三？").
+//     "what is <name>?" would read awkwardly ("What is John Smith?").
 //   - everything else (synthesis, comparison, …): the raw title is already a
 //     good topical query on its own.
 func wikiSuggestionFromPage(page *types.WikiPage, locale string) string {
@@ -1111,12 +1111,12 @@ func wikiSuggestionFromPage(page *types.WikiPage, locale string) string {
 		if isEnglishLocale(locale) {
 			return "What is " + title + "?"
 		}
-		return "什么是" + title + "？"
+		return "What is " + title + "?"
 	case types.WikiPageTypeEntity, types.WikiPageTypeSummary:
 		if isEnglishLocale(locale) {
 			return "Tell me about " + title
 		}
-		return "介绍一下" + title
+		return "Tell me about " + title
 	default:
 		return title
 	}

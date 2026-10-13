@@ -148,7 +148,7 @@ func EndQueryUnderstandProgress(
 	success := stageErr == nil
 	output := ""
 	if success {
-		output = "已完成问题理解"
+		output = "Query understood"
 	}
 
 	var errMsg string
@@ -214,11 +214,11 @@ func EndRetrievalProgress(
 	if success {
 		switch {
 		case count > 0:
-			output = fmt.Sprintf("检索到 %d 条相关内容", count)
+			output = fmt.Sprintf("Found %d relevant result(s)", count)
 		case candidateCount > 0:
-			output = fmt.Sprintf("命中 %d 条候选，相关性不足，未用于回答", candidateCount)
+			output = fmt.Sprintf("Matched %d candidate(s), none relevant enough to use", candidateCount)
 		default:
-			output = "未检索到相关内容"
+			output = "No relevant content found"
 		}
 	}
 

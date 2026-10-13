@@ -9,7 +9,7 @@
 //
 // Contract:
 //   - Never delete files from the sandbox — skills can share files across
-//     turns; deletion would break that ("不清空输出目录").
+//     turns; deletion would break that ("do not clear the output directory").
 //   - Never lazy-create a sandbox: the collector reads from an already-live
 //     sandbox and returns an empty slice when none exists.
 //   - Best-effort: individual errors are logged and skipped, never returned,

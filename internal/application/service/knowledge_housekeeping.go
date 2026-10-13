@@ -846,7 +846,7 @@ func (h *HousekeepingService) rearmWikiTriggers(
 //
 // Sweep A only selects pending/processing/finalizing, so a row marked terminal
 // by a path that forgets to close its attempt is never revisited: its spans stay
-// "running" and the timeline shows a permanent "进行中". Closing them here makes
+// "running" and the timeline shows a permanent "In progress". Closing them here makes
 // that whole class of leak self-healing, instead of depending on every failure
 // path remembering to finalize, and it also retires rows stranded by older
 // releases. The row's own error_message is carried over so

@@ -25,7 +25,7 @@ func TestBuildUserHistoryMessage_IgnoresLegacyRenderedContent(t *testing.T) {
 	}
 	got := buildUserHistoryMessage(msg)
 	assert.Equal(t, "user", got.Role)
-	assert.Equal(t, "what about the chart?\n\n[用户上传图片内容]\na bar chart", got.Content)
+	assert.Equal(t, "what about the chart?\n\n[User-uploaded image content]\na bar chart", got.Content)
 	assert.NotContains(t, got.Content, "[augmented]")
 }
 
@@ -40,7 +40,7 @@ func TestBuildUserHistoryMessage_FallsBackToContentWithCaptions(t *testing.T) {
 	}
 	got := buildUserHistoryMessage(msg)
 	assert.Equal(t, "user", got.Role)
-	assert.Equal(t, "look at this\n\n[用户上传图片内容]\na bar chart\na pie chart", got.Content)
+	assert.Equal(t, "look at this\n\n[User-uploaded image content]\na bar chart\na pie chart", got.Content)
 }
 
 // TestBuildUserHistoryMessage_AppendsAttachmentsWhenNoRenderedContent covers
@@ -122,7 +122,7 @@ func TestBuildAssistantHistoryMessages_StripsThinkBlocks(t *testing.T) {
 
 func TestAssistantHistoryScopesArtifactVersionsToHistoricalTurn(t *testing.T) {
 	for _, labels := range [][2]string{
-		{"本轮生成的文件", "该历史消息生成的文件"},
+		{"\u672c\u8f6e\u751f\u6210\u7684\u6587\u4ef6", "\u8be5\u5386\u53f2\u6d88\u606f\u751f\u6210\u7684\u6587\u4ef6"},
 		{"File generated this turn", "File generated in that historical turn"},
 	} {
 		body := "Done.\n\n" + labels[0] + ": ![deck](resource://AbCdEfGhIjKlMnOpQrStUv)"
@@ -207,7 +207,7 @@ func TestBuildAssistantHistoryMessages_ToolCallsExpandIntoOpenAIShape(t *testing
 func TestBuildAssistantHistoryMessages_SkipsPipelineTimelineToolCalls(t *testing.T) {
 	msg := &types.Message{
 		Role:    "assistant",
-		Content: "你好！很高兴见到你。",
+		Content: "Hello! Nice to meet you.",
 		AgentSteps: types.AgentSteps{
 			{
 				Iteration: 0,
@@ -215,8 +215,8 @@ func TestBuildAssistantHistoryMessages_SkipsPipelineTimelineToolCalls(t *testing
 					{
 						ID:     types.PipelineToolCallIDPrefix + "abc",
 						Name:   agenttools.ToolSearchKnowledge,
-						Args:   map[string]interface{}{"query": "你好"},
-						Result: &types.ToolResult{Success: true, Output: "未检索到相关内容"},
+						Args:   map[string]interface{}{"query": "hello"},
+						Result: &types.ToolResult{Success: true, Output: "No relevant content found"},
 					},
 				},
 			},
@@ -227,7 +227,7 @@ func TestBuildAssistantHistoryMessages_SkipsPipelineTimelineToolCalls(t *testing
 		return
 	}
 	assert.Equal(t, "assistant", got[0].Role)
-	assert.Equal(t, "你好！很高兴见到你。", got[0].Content)
+	assert.Equal(t, "Hello! Nice to meet you.", got[0].Content)
 	assert.Empty(t, got[0].ToolCalls)
 }
 
@@ -269,7 +269,7 @@ func TestBuildAssistantHistoryMessages_ToolFailureSurfacesAsError(t *testing.T) 
 }
 
 func TestBuildAssistantHistoryMessages_SkillScriptFailureKeepsStdout(t *testing.T) {
-	stdout := `{"chart":{"success":false,"error":{"error":"X轴字段不存在：工作项目"}}}`
+	stdout := `{"chart":{"success":false,"error":{"error":"X-axis field does not exist: work item"}}}`
 	msg := &types.Message{
 		Role:    "assistant",
 		Content: "I will retry with a different axis.",
@@ -300,7 +300,7 @@ func TestBuildAssistantHistoryMessages_SkillScriptFailureKeepsStdout(t *testing.
 	got := buildAssistantHistoryMessages(msg)
 	require.Len(t, got, 3)
 	assert.Equal(t, "tool", got[1].Role)
-	assert.Contains(t, got[1].Content, "X轴字段不存在：工作项目")
+	assert.Contains(t, got[1].Content, "X-axis field does not exist: work item")
 	assert.Contains(t, got[1].Content, "Error: Script exited with code 1")
 }
 

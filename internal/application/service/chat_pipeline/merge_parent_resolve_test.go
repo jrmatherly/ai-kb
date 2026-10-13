@@ -165,7 +165,7 @@ func TestParentChildImageHit_WindowSliceAndFilter(t *testing.T) {
 // alone, while the whole recognized page text lives in the image_ocr child.
 // The parent expansion must not discard that recognized text (#3052).
 func TestResolveImageOCRHit_KeepsRecognizedTextWhenParentIsPlaceholderOnly(t *testing.T) {
-	ocrText := "客户编码 A01，客户名称 示例公司，联系人 张三，电话 13800000000。"
+	ocrText := "Customer code A01, customer name Example Corp, contact Zhang San, phone 13800000000."
 	imageInfo, err := json.Marshal([]types.ImageInfo{{URL: "images/scan_page_1.jpg", OCRText: ocrText}})
 	if err != nil {
 		t.Fatal(err)
@@ -193,7 +193,7 @@ func TestResolveImageOCRHit_KeepsRecognizedTextWhenParentIsPlaceholderOnly(t *te
 	if len(got) != 1 {
 		t.Fatalf("result count = %d, want 1", len(got))
 	}
-	if !strings.Contains(got[0].Content, "示例公司") || !strings.Contains(got[0].Content, "13800000000") {
+	if !strings.Contains(got[0].Content, "Example Corp") || !strings.Contains(got[0].Content, "13800000000") {
 		t.Fatalf("recognized OCR text was dropped by parent expansion: %q", got[0].Content)
 	}
 }
@@ -240,8 +240,8 @@ func TestResolveImageOCRHit_DoesNotDuplicateRecognizedText(t *testing.T) {
 }
 
 func TestResolveImageOCRHit_ChatEnrichmentDoesNotDuplicateOCR(t *testing.T) {
-	ocrText := "客户编码 A01，客户名称 示例公司，联系人 张三，电话 13800000000。"
-	caption := "扫描件第一页客户信息表"
+	ocrText := "Customer code A01, customer name Example Corp, contact Zhang San, phone 13800000000."
+	caption := "Customer information table on page 1 of the scan"
 	imageInfo, err := json.Marshal([]types.ImageInfo{{
 		URL: "images/scan_page_1.jpg", OCRText: ocrText, Caption: caption,
 	}})
@@ -287,7 +287,7 @@ func TestResolveImageOCRHit_ChatEnrichmentDoesNotDuplicateOCR(t *testing.T) {
 }
 
 func TestResolveImageCaptionHit_KeepsCaptionWhenParentIsPlaceholderOnly(t *testing.T) {
-	caption := "扫描合同首页，含甲乙双方签章位置"
+	caption := "First page of the scanned contract, with signature positions for both parties"
 	imageInfo, err := json.Marshal([]types.ImageInfo{{URL: "images/scan_page_1.jpg", Caption: caption}})
 	if err != nil {
 		t.Fatal(err)
@@ -315,7 +315,7 @@ func TestResolveImageCaptionHit_KeepsCaptionWhenParentIsPlaceholderOnly(t *testi
 	if len(got) != 1 {
 		t.Fatalf("result count = %d, want 1", len(got))
 	}
-	if !strings.Contains(got[0].Content, "甲乙双方") {
+	if !strings.Contains(got[0].Content, "both parties") {
 		t.Fatalf("caption was dropped by parent expansion: %q", got[0].Content)
 	}
 	passage := getEnrichedPassageForChat(ctx, got[0])
@@ -325,7 +325,7 @@ func TestResolveImageCaptionHit_KeepsCaptionWhenParentIsPlaceholderOnly(t *testi
 }
 
 func TestResolveImageOCRHit_KeepsTextWhenPlaceholderIsPruned(t *testing.T) {
-	ocrText := "仅存在于 OCR 子块中的扫描页正文，用于核对账号 6222。"
+	ocrText := "Scanned page text that exists only in the OCR child chunk, used to verify account 6222."
 	imageInfo, err := json.Marshal([]types.ImageInfo{{URL: "resource://unmatched-scan", OCRText: ocrText}})
 	if err != nil {
 		t.Fatal(err)
@@ -365,7 +365,7 @@ func TestResolveImageOCRHit_KeepsTextWhenPlaceholderIsPruned(t *testing.T) {
 // An image found by its own vector reads like a caption hit: the caption is
 // its body, and the text around the image comes from the parent chunks.
 func TestResolveImageVectorHit_ExpandsLikeACaptionHit(t *testing.T) {
-	caption := "柱状图：2025 年各季度销售额，第三季度最高"
+	caption := "Bar chart: 2025 sales by quarter, Q3 highest"
 	imageInfo, err := json.Marshal([]types.ImageInfo{{URL: "images/sales.png", Caption: caption}})
 	if err != nil {
 		t.Fatal(err)
@@ -374,11 +374,11 @@ func TestResolveImageVectorHit_ExpandsLikeACaptionHit(t *testing.T) {
 		chunks: map[string]*types.Chunk{
 			"text": {
 				ID: "text", ParentChunkID: "parent", ChunkType: types.ChunkTypeText, ChunkIndex: 2,
-				Content: "季度回顾如下：\n![sales.png](images/sales.png)",
+				Content: "Quarterly review:\n![sales.png](images/sales.png)",
 			},
 			"parent": {
 				ID: "parent", ChunkType: types.ChunkTypeParentText,
-				Content: "第二章 经营情况\n季度回顾如下：\n![sales.png](images/sales.png)",
+				Content: "Chapter 2 Business Overview\nQuarterly review:\n![sales.png](images/sales.png)",
 			},
 		},
 	}
@@ -393,7 +393,7 @@ func TestResolveImageVectorHit_ExpandsLikeACaptionHit(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("result count = %d, want 1", len(got))
 	}
-	if !strings.Contains(got[0].Content, "经营情况") || !strings.Contains(got[0].Content, "第三季度最高") {
+	if !strings.Contains(got[0].Content, "Business Overview") || !strings.Contains(got[0].Content, "Q3 highest") {
 		t.Fatalf("image hit lost its surrounding text or caption: %q", got[0].Content)
 	}
 	passage := getEnrichedPassageForChat(ctx, got[0])

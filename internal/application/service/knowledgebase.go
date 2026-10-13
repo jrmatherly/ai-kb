@@ -1422,9 +1422,9 @@ func duplicateKBCopySuffix(locale string) string {
 	locale = strings.ToLower(locale)
 	switch {
 	case strings.HasPrefix(locale, "zh"):
-		return " 副本"
+		return " Copy"
 	case strings.HasPrefix(locale, "ko"):
-		return " 사본"
+		return " Copy"
 	case strings.HasPrefix(locale, "ru"):
 		return " копия"
 	default:
@@ -1436,9 +1436,9 @@ func duplicateKBDefaultName(locale string) string {
 	locale = strings.ToLower(locale)
 	switch {
 	case strings.HasPrefix(locale, "zh"):
-		return "知识库"
+		return "Knowledge Base"
 	case strings.HasPrefix(locale, "ko"):
-		return "지식베이스"
+		return "Knowledge Base"
 	case strings.HasPrefix(locale, "ru"):
 		return "База знаний"
 	default:

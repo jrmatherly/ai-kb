@@ -118,7 +118,7 @@ func TestPublicConfigDisplayTitleFallsBackToAgentName(t *testing.T) {
 	svc := &embedChannelService{
 		agentService: &stubAgentForEmbed{
 			agent: &types.CustomAgent{
-				Name: "客服助手",
+				Name: "Support Assistant",
 				Config: types.CustomAgentConfig{
 					KBSelectionMode: "all",
 				},
@@ -129,10 +129,10 @@ func TestPublicConfigDisplayTitleFallsBackToAgentName(t *testing.T) {
 		ID:      "ch-2",
 		AgentID: "agent-2",
 	})
-	if cfg.DisplayTitle != "客服助手" {
+	if cfg.DisplayTitle != "Support Assistant" {
 		t.Fatalf("display_title = %q, want agent name", cfg.DisplayTitle)
 	}
-	if cfg.AgentName != "客服助手" {
+	if cfg.AgentName != "Support Assistant" {
 		t.Fatalf("agent_name = %q", cfg.AgentName)
 	}
 }

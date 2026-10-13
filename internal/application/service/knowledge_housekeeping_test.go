@@ -700,7 +700,7 @@ func TestHousekeeping_ClosesOrphanedSpansOnTerminalRow(t *testing.T) {
 
 	insertKnowledge(t, db, "kid-failed-open-span", types.ParseStatusFailed, old)
 	require.NoError(t, db.Exec(
-		`UPDATE knowledges SET error_message = '存储空间不足' WHERE id = ?`,
+		`UPDATE knowledges SET error_message = 'Insufficient storage space' WHERE id = ?`,
 		"kid-failed-open-span",
 	).Error)
 	require.NoError(t, db.Exec(
@@ -720,7 +720,7 @@ func TestHousekeeping_ClosesOrphanedSpansOnTerminalRow(t *testing.T) {
 	assert.Equal(t, types.SpanStatusCancelled, status)
 	assert.Equal(t, werrors.ErrCodeTaskStalled, code)
 	// The row's own error is carried over so the timeline names the real cause.
-	assert.Equal(t, "存储空间不足", msg)
+	assert.Equal(t, "Insufficient storage space", msg)
 }
 
 // Sweep D must not touch a row that is still legitimately in flight: that is

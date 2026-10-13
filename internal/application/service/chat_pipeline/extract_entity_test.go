@@ -122,10 +122,12 @@ func TestFormater_ParseGraph_FenceVariants(t *testing.T) {
 			wantDeclined: true,
 		},
 		{
-			// Issue #3600: Chinese refusal ("抱歉…") — its UTF-8 bytes show up
+			// Issue #3600: a Chinese "sorry, this is a table-of-contents page" refusal. Its UTF-8 bytes show up
 			// in json errors as `invalid character 'æ'`.
-			name:         "Chinese prose refusal is declined",
-			input:        "抱歉，该文本为目录页，没有可抽取的实体和关系。",
+			name: "Chinese prose refusal is declined",
+			input: "\u62b1\u6b49\uff0c" +
+				"\u8be5\u6587\u672c\u4e3a\u76ee\u5f55\u9875\uff0c" +
+				"\u6ca1\u6709\u53ef\u62bd\u53d6\u7684\u5b9e\u4f53\u548c\u5173\u7cfb\u3002",
 			wantErr:      true,
 			wantDeclined: true,
 		},

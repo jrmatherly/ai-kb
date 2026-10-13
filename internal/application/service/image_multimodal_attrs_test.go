@@ -369,7 +369,7 @@ func TestProcessImageMarksObservationFailed(t *testing.T) {
 			return "some text", nil
 		}
 		// Prose only — no contain.text: / contain.data_visual: lines.
-		return "这是一张示意图，展示了系统整体的数据流向与模块划分。", nil
+		return "This is a diagram showing the overall data flow and module layout of the system.", nil
 	}
 
 	payload := &types.ImageMultimodalPayload{

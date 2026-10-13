@@ -254,7 +254,7 @@ func (s *chunkService) ListImagesByKnowledgeBaseID(
 	}
 
 	// Resolve the human-readable name of each source knowledge item in one
-	// batch so the viewer can show "来源" without a per-image round trip.
+	// batch so the viewer can show "Source" without a per-image round trip.
 	sourceNames := resolveImageAssetSourceNames(ctx, s, tenantID, assets)
 	for i := range assets {
 		assets[i].SourceName = sourceNames[assets[i].KnowledgeID]

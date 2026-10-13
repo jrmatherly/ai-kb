@@ -201,18 +201,18 @@ func TestValidateStructuredSummaryDocument(t *testing.T) {
 		{
 			name: "bracketed prose at the budget is not an error",
 			response: &types.ChatResponse{
-				Content:      "[文档摘要] 本文件说明请假制度与年度额度",
+				Content:      "[Document summary] This document describes the leave policy and annual allowance",
 				FinishReason: "length",
 			},
-			want: "[文档摘要] 本文件说明请假制度与年度额度",
+			want: "[Document summary] This document describes the leave policy and annual allowance",
 		},
 		{
 			name: "numbered prose at the budget is not an error",
 			response: &types.ChatResponse{
-				Content:      "[1] 本文件说明请假制度与年度额度",
+				Content:      "[1] This document describes the leave policy and annual allowance",
 				FinishReason: "length",
 			},
-			want: "[1] 本文件说明请假制度与年度额度",
+			want: "[1] This document describes the leave policy and annual allowance",
 		},
 		{
 			name: "truncated JSON object is rejected",
@@ -322,7 +322,7 @@ func TestFirstTextChunkSummaryFallback(t *testing.T) {
 
 	t.Run("caps unicode content by runes", func(t *testing.T) {
 		got := firstTextChunkSummaryFallback([]*types.Chunk{{
-			Content: strings.Repeat("摘", summaryFallbackMaxRunes+25),
+			Content: strings.Repeat("\u6458", summaryFallbackMaxRunes+25),
 		}})
 		if len([]rune(got)) != summaryFallbackMaxRunes {
 			t.Fatalf("fallback rune count = %d, want %d", len([]rune(got)), summaryFallbackMaxRunes)

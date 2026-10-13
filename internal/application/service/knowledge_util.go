@@ -60,13 +60,13 @@ func isDataTableFileType(ext string) bool {
 func validateImportFileType(fileType string) error {
 	fileType = normalizeFileExtension(fileType)
 	if fileType == "" || fileType == unknownFileType {
-		return werrors.NewBadRequestError("无法确定文件类型")
+		return werrors.NewBadRequestError("Unable to determine the file type")
 	}
 	if IsVideoType(fileType) {
-		return werrors.NewBadRequestError("暂不支持上传视频文件")
+		return werrors.NewBadRequestError("Uploading video files is not supported")
 	}
 	if !isSupportedImportExtension(fileType) {
-		return werrors.NewBadRequestError(fmt.Sprintf("不支持的文件类型: %s", fileType))
+		return werrors.NewBadRequestError(fmt.Sprintf("Unsupported file type: %s", fileType))
 	}
 	return nil
 }
@@ -81,7 +81,7 @@ func getFileType(filename string) string {
 }
 
 // isValidURL verifies if a URL is valid
-// isValidURL 检查URL是否有效
+// isValidURL reports whether the URL is valid
 func isValidURL(url string) bool {
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		return true
@@ -119,9 +119,9 @@ func ValidateJSONUploadContent(fileName string, file *multipart.FileHeader) erro
 	case err == nil:
 		return nil
 	case errors.Is(err, docparser.ErrEmptyJSONContent):
-		return werrors.NewBadRequestError("JSON 文件内容为空")
+		return werrors.NewBadRequestError("JSON file is empty")
 	case errors.Is(err, docparser.ErrInvalidJSONContent):
-		return werrors.NewBadRequestError("JSON 文件内容无效，请检查格式")
+		return werrors.NewBadRequestError("JSON file content is invalid. Check the format.")
 	default:
 		return werrors.NewBadRequestError(err.Error())
 	}
@@ -159,7 +159,7 @@ func (s *knowledgeService) getVLMConfig(ctx context.Context, kb *types.Knowledge
 	if kb == nil {
 		return nil, nil
 	}
-	// 兼容老版本：直接使用 ModelName 和 BaseURL
+	// Legacy configs: use ModelName and BaseURL directly
 	if kb.VLMConfig.ModelName != "" && kb.VLMConfig.BaseURL != "" {
 		return &types.DocParserVLMConfig{
 			ModelName:     kb.VLMConfig.ModelName,
@@ -169,7 +169,7 @@ func (s *knowledgeService) getVLMConfig(ctx context.Context, kb *types.Knowledge
 		}, nil
 	}
 
-	// 新版本：未启用或无模型ID时返回nil
+	// Current configs: return nil when disabled or without a model ID
 	if !kb.VLMConfig.Enabled || kb.VLMConfig.ModelID == "" {
 		return nil, nil
 	}

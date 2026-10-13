@@ -203,7 +203,7 @@ func TestFitSpanName(t *testing.T) {
 	}
 
 	// CJK slugs must truncate on rune boundaries, not byte boundaries.
-	cjkLong := "postprocess.wiki.page[" + strings.Repeat("中", 260) + "]"
+	cjkLong := "postprocess.wiki.page[" + strings.Repeat("\u4e2d", 260) + "]"
 	cjkGot := fitSpanName(cjkLong)
 	if utf8.RuneCountInString(cjkGot) > maxSpanNameLen {
 		t.Fatalf("CJK fitted name runes=%d, want <= %d", utf8.RuneCountInString(cjkGot), maxSpanNameLen)

@@ -13,7 +13,7 @@ import (
 )
 
 func TestAttachStructureBlocksForPassThroughText(t *testing.T) {
-	content := "# 标题\n\n正文一段\n\n正文二段"
+	content := "# \u6807\u9898\n\n\u6b63\u6587\u4e00\u6bb5\n\n\u6b63\u6587\u4e8c\u6bb5"
 	result := &types.ReadResult{MarkdownContent: content}
 	attachStructureBlocks(context.Background(), "md", []byte(content), result)
 	require.Len(t, result.SourceBlocks, 3)
@@ -31,7 +31,7 @@ func TestAttachStructureBlocksForPassThroughText(t *testing.T) {
 
 	// Viewers decode without the BOM, so text offsets start after it while
 	// the blocks still cover the markdown that holds it.
-	withBOM := "\ufeff正文一段\n\n正文二段"
+	withBOM := "\ufeff\u6b63\u6587\u4e00\u6bb5\n\n\u6b63\u6587\u4e8c\u6bb5"
 	bom := &types.ReadResult{MarkdownContent: withBOM}
 	attachStructureBlocks(context.Background(), "txt", []byte(withBOM), bom)
 	require.Len(t, bom.SourceBlocks, 2)
@@ -43,13 +43,13 @@ func TestAttachStructureBlocksForPassThroughText(t *testing.T) {
 
 func TestTranscriptWithSegments(t *testing.T) {
 	text, blocks := transcriptWithSegments(&asr.TranscriptionResult{
-		Text: "你好世界。再见。",
+		Text: "\u4f60\u597d\u4e16\u754c\u3002\u518d\u89c1\u3002",
 		Segments: []asr.Segment{
-			{Start: 0, End: 1.5, Text: " 你好世界。"},
-			{Start: 1.5, End: 2.25, Text: "再见。"},
+			{Start: 0, End: 1.5, Text: " \u4f60\u597d\u4e16\u754c\u3002"},
+			{Start: 1.5, End: 2.25, Text: "\u518d\u89c1\u3002"},
 		},
 	})
-	assert.Equal(t, "你好世界。\n再见。", text)
+	assert.Equal(t, "\u4f60\u597d\u4e16\u754c\u3002\n\u518d\u89c1\u3002", text)
 	require.Len(t, blocks, 2)
 	assert.Equal(t, 6, blocks[1].Start)
 	assert.Equal(t, int64(1500), blocks[1].Locator.StartMs)
@@ -61,8 +61,8 @@ func TestTranscriptWithSegments(t *testing.T) {
 }
 
 func TestBuildSourceIndexFollowsRewritesAndPlacesImages(t *testing.T) {
-	parsed := "第一页文字\r\n\r\n![p2](images/p2.jpg)"
-	final := "第一页文字\n\n![p2](local://tenant/p2.jpg)"
+	parsed := "\u7b2c\u4e00\u9875\u6587\u5b57\r\n\r\n![p2](images/p2.jpg)"
+	final := "\u7b2c\u4e00\u9875\u6587\u5b57\n\n![p2](local://tenant/p2.jpg)"
 	blocks := []types.SourceBlock{
 		{Start: 0, End: 5, Locator: types.SourceLocator{Type: types.SourceLocatorPDF, Page: 1}},
 		{Start: 9, End: len([]rune(parsed)), Locator: types.SourceLocator{Type: types.SourceLocatorPDF, Page: 2}},
@@ -72,7 +72,7 @@ func TestBuildSourceIndexFollowsRewritesAndPlacesImages(t *testing.T) {
 	require.NotNil(t, idx)
 	locs := idx.Locators(0, 5)
 	require.Len(t, locs, 1)
-	assert.Equal(t, "第一页文字", locs[0].Quote)
+	assert.Equal(t, "\u7b2c\u4e00\u9875\u6587\u5b57", locs[0].Quote)
 	require.Len(t, images[0].SourceLocators, 1)
 	assert.Equal(t, 2, images[0].SourceLocators[0].Page)
 

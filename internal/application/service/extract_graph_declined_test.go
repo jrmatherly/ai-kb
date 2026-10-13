@@ -47,7 +47,7 @@ func (r graphKBRepo) GetKnowledgeBaseByID(context.Context, string) (*types.Knowl
 // Issue #3600: a prose refusal finishes the per-chunk task (no asynq retry),
 // while the same prose cut off by the output budget stays a retriable error.
 func TestChunkExtractHandle_ModelDeclinedIsSkipNotRetry(t *testing.T) {
-	const prose = "抱歉，该文本为目录页，没有可抽取的实体和关系。"
+	const prose = "Sorry, this text is a table of contents page with no entities or relationships to extract."
 	payload, err := json.Marshal(types.ExtractChunkPayload{TenantID: 1, ChunkID: "c1", ModelID: "m1"})
 	if err != nil {
 		t.Fatal(err)
@@ -76,7 +76,7 @@ func TestChunkExtractHandle_ModelDeclinedIsSkipNotRetry(t *testing.T) {
 					ExtractConfig: &types.ExtractConfig{Enabled: true},
 				}},
 				chunkRepo: graphChunkRepo{chunk: &types.Chunk{
-					ID: "c1", KnowledgeBaseID: "kb1", Content: "目录 …… 1",
+					ID: "c1", KnowledgeBaseID: "kb1", Content: "Contents …… 1",
 				}},
 			}
 			err := svc.Handle(context.Background(), asynq.NewTask(types.TypeChunkExtract, payload))

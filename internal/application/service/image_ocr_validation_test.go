@@ -40,9 +40,13 @@ func TestImageOCRRejectsInvalidContentBeforePersistence(t *testing.T) {
 		err                     error
 	}{
 		{name: "recorded empty cells", raw: strings.Repeat("|  ", 2500), status: "failed", code: "OCR_INVALID_OUTPUT"},
-		{name: "repeated words", raw: strings.Repeat("传球按钮 ", 200), status: "failed", code: "OCR_INVALID_OUTPUT"},
 		{
-			name: "split delimiter loops", raw: strings.Repeat("|  ", 1250) + "传球\n" + strings.Repeat("|  ", 1250),
+			name: "repeated words", raw: strings.Repeat("\u4f20\u7403\u6309\u94ae ", 200),
+			status: "failed", code: "OCR_INVALID_OUTPUT",
+		},
+		{
+			name: "split delimiter loops", raw: strings.Repeat("|  ", 1250) +
+				"\u4f20\u7403\n" + strings.Repeat("|  ", 1250),
 			status: "failed", code: "OCR_INVALID_OUTPUT",
 		},
 		{name: "empty model output", status: "failed", code: "OCR_INVALID_OUTPUT"},
@@ -102,7 +106,7 @@ func TestImageOCRRejectsInvalidContentBeforePersistence(t *testing.T) {
 				for _, chunk := range repo.created {
 					require.Equal(t, types.ChunkTypeImageCaption, chunk.ChunkType)
 					require.NotContains(t, chunk.ImageInfo, "|  |")
-					require.NotContains(t, chunk.ImageInfo, "传球按钮")
+					require.NotContains(t, chunk.ImageInfo, "\u4f20\u7403\u6309\u94ae")
 				}
 			})
 		}

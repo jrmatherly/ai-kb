@@ -28,7 +28,7 @@ func (s *knowledgeService) loadFAQWriteChunks(
 	wanted := make(map[int64]bool, len(ids))
 	for _, id := range ids {
 		if id <= 0 {
-			return nil, apperrors.NewBadRequestError("FAQ 条目 ID 必须为正整数")
+			return nil, apperrors.NewBadRequestError("FAQ entry ID must be a positive integer")
 		}
 		wanted[id] = true
 	}
@@ -45,13 +45,13 @@ func (s *knowledgeService) loadFAQWriteChunks(
 			continue
 		}
 		if chunk.TenantID != kb.TenantID || chunk.KnowledgeBaseID != kb.ID || chunk.ChunkType != types.ChunkTypeFAQ {
-			return nil, apperrors.NewForbiddenError("FAQ 条目不属于当前知识库")
+			return nil, apperrors.NewForbiddenError("FAQ entry does not belong to the current knowledge base")
 		}
 		snapshot := *chunk
 		result[chunk.SeqID] = &snapshot
 	}
 	if len(result) != len(wanted) {
-		return nil, apperrors.NewNotFoundError("FAQ 条目不存在")
+		return nil, apperrors.NewNotFoundError("FAQ entry not found")
 	}
 	return result, nil
 }
@@ -87,7 +87,7 @@ func (s *knowledgeService) planFAQFields(
 	tagIDs := make(map[int64]bool)
 	for id := range req.ByTag {
 		if id <= 0 {
-			return nil, apperrors.NewBadRequestError("标签 ID 必须为正整数")
+			return nil, apperrors.NewBadRequestError("Tag ID must be a positive integer")
 		}
 		tagIDs[id] = true
 	}
@@ -114,7 +114,7 @@ func (s *knowledgeService) planFAQFields(
 		}
 		for _, id := range sortedFAQIDs(tagIDs) {
 			if plan.tags[id] == nil {
-				return nil, apperrors.NewNotFoundError(fmt.Sprintf("标签 %d 不存在", id))
+				return nil, apperrors.NewNotFoundError(fmt.Sprintf("Tag %d not found", id))
 			}
 		}
 	}
@@ -123,10 +123,10 @@ func (s *knowledgeService) planFAQFields(
 
 func validateFAQTagScope(tag *types.KnowledgeTag, tenantID uint64, kbID string) error {
 	if tag == nil {
-		return apperrors.NewNotFoundError("标签不存在")
+		return apperrors.NewNotFoundError("Tag not found")
 	}
 	if tag.TenantID != tenantID || tag.KnowledgeBaseID != kbID {
-		return apperrors.NewForbiddenError("标签不属于当前知识库")
+		return apperrors.NewForbiddenError("Tag does not belong to the current knowledge base")
 	}
 	return nil
 }

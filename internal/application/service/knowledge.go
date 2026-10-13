@@ -46,7 +46,7 @@ var (
 )
 
 // knowledgeService implements the knowledge service interface
-// service 实现知识服务接口
+// service implements the knowledge service interface
 type knowledgeService struct {
 	config          *config.Config
 	retrieveEngine  interfaces.RetrieveEngineRegistry
@@ -89,7 +89,7 @@ type knowledgeService struct {
 const (
 	manualContentMaxLength = 200000
 	manualFileExtension    = ".md"
-	faqImportBatchSize     = 50 // 每批处理的FAQ条目数
+	faqImportBatchSize     = 50 // FAQ entries processed per batch
 )
 
 // NewKnowledgeService creates a new knowledge service instance
@@ -537,11 +537,13 @@ func (s *knowledgeService) updateKnowledgeUnlessSourceReplaced(ctx context.Conte
 // checkStorageEngineConfigured verifies that the knowledge base has a storage engine configured
 // (either at the KB level or via the tenant default).
 //
-// 内部版兜底语义：当 KB 与空间都未配置 storage provider 时，如果服务实例持有
-// 全局 FileService（由容器按 STORAGE_TYPE 注入，默认 local），允许直接落到该
-// 全局 fileSvc 上，不再硬性阻断。这与 resolveFileService / resolveFileServiceForPath
-// 在 provider 为空时回退到 s.fileSvc 的行为保持一致，避免上层闸门和下游解析口径不一。
-// 仅当 KB/空间/全局三处都拿不到任何可用 FileService 时才报错。
+// Fallback: when neither the KB nor the workspace configures a storage provider
+// and the service holds a global FileService (injected by the container from
+// STORAGE_TYPE, default local), uploads fall through to that global fileSvc
+// instead of being blocked. This matches resolveFileService /
+// resolveFileServiceForPath, which also fall back to s.fileSvc for an empty
+// provider, so this gate and the downstream resolution agree. It errors only
+// when the KB, the workspace and the global level all lack a usable FileService.
 func (s *knowledgeService) checkStorageEngineConfigured(ctx context.Context, kb *types.KnowledgeBase) error {
 	provider := kb.GetStorageProvider()
 	if provider == "" {
@@ -559,7 +561,8 @@ func (s *knowledgeService) checkStorageEngineConfigured(ctx context.Context, kb 
 			kbIDOrEmpty(kb))
 		return nil
 	}
-	return werrors.NewBadRequestError("请先为知识库选择存储引擎，再上传内容。请前往知识库设置页面进行配置。")
+	return werrors.NewBadRequestError(
+		"Select a storage engine in the knowledge base settings before uploading content.")
 }
 
 func kbIDOrEmpty(kb *types.KnowledgeBase) string {
@@ -732,21 +735,21 @@ func (s *knowledgeService) RenameKnowledgeFolder(ctx context.Context,
 ) (int64, error) {
 	source := types.NormalizeKnowledgeFolderPath(from)
 	if source == "" {
-		return 0, werrors.NewBadRequestError("源文件夹路径不能为空")
+		return 0, werrors.NewBadRequestError("Source folder path cannot be empty")
 	}
 	target, err := normalizeTargetFolderPath(ctx, to)
 	if err != nil {
 		return 0, err
 	}
 	if target == "" {
-		return 0, werrors.NewBadRequestError("目标文件夹路径不能为空")
+		return 0, werrors.NewBadRequestError("Target folder path cannot be empty")
 	}
 	if target == source {
 		return 0, nil
 	}
 	// Moving a folder inside itself would make its own subtree unreachable.
 	if strings.HasPrefix(target, source+"/") {
-		return 0, werrors.NewBadRequestError("不能将文件夹移动到它自己的子目录下")
+		return 0, werrors.NewBadRequestError("Cannot move a folder into its own subfolder")
 	}
 
 	kb, err := s.kbService.GetKnowledgeBaseByID(ctx, kbID)
@@ -782,7 +785,7 @@ func normalizeTargetFolderPath(ctx context.Context, folderPath string) (string, 
 	safe, valid := secutils.ValidateInput(trimmed)
 	if !valid {
 		logger.Errorf(ctx, "Invalid folder path: %s", secutils.SanitizeForLog(trimmed))
-		return "", werrors.NewValidationError("文件夹路径包含非法字符")
+		return "", werrors.NewValidationError("Folder path contains invalid characters")
 	}
 	return types.NormalizeKnowledgeFolderPath(safe), nil
 }
@@ -994,10 +997,10 @@ func (s *knowledgeService) validateKnowledgeTagIDs(
 	for _, tagID := range unique {
 		tag, ok := tagMap[tagID]
 		if !ok {
-			return werrors.NewBadRequestError(fmt.Sprintf("标签 %s 不存在", tagID))
+			return werrors.NewBadRequestError(fmt.Sprintf("Tag %s does not exist", tagID))
 		}
 		if tag.KnowledgeBaseID != kbID {
-			return werrors.NewBadRequestError("标签不属于当前知识库")
+			return werrors.NewBadRequestError("Tag does not belong to the current knowledge base")
 		}
 	}
 	return nil
@@ -1132,10 +1135,11 @@ func (s *knowledgeService) UpdateKnowledgeTagBatch(
 			}
 			tag, ok := tagMap[tagID]
 			if !ok {
-				return werrors.NewBadRequestError(fmt.Sprintf("标签 %s 不存在", tagID))
+				return werrors.NewBadRequestError(fmt.Sprintf("Tag %s does not exist", tagID))
 			}
 			if tag.TenantID != tenantID || tag.KnowledgeBaseID != knowledge.KnowledgeBaseID {
-				return werrors.NewBadRequestError(fmt.Sprintf("标签 %s 不属于知识库 %s", tagID, knowledge.KnowledgeBaseID))
+				return werrors.NewBadRequestError(fmt.Sprintf(
+					"Tag %s does not belong to knowledge base %s", tagID, knowledge.KnowledgeBaseID))
 			}
 		}
 	}

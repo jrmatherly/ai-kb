@@ -443,7 +443,7 @@ func (f *Formater) parseOutput(ctx context.Context, text string) ([]map[string]i
 	}
 	if err != nil {
 		// Distinguish "the model answered in prose" (e.g. it declined to
-		// extract a table-of-contents chunk with a Chinese "抱歉…" refusal)
+		// extract a table-of-contents chunk with a Chinese "sorry..." refusal)
 		// from "the model produced JSON that is malformed/truncated". A
 		// refusal contains no JSON structure at all; retrying the exact
 		// same input can never succeed, so callers treat it as a terminal
@@ -535,7 +535,7 @@ func (f *Formater) rebuildGraph(ctx context.Context, graph *types.GraphData) {
 	for _, node := range graph.Node {
 		if prenode, ok := nodeMap[node.Name]; ok {
 			logger.Infof(ctx, "Duplicate node ID: %s, merge attribute", node.Name)
-			// 修复panic：检查Attributes是否为nil
+			// Normalize nil Attributes to an empty slice before merging (an earlier panic fix).
 			if node.Attributes == nil {
 				node.Attributes = make([]string, 0)
 			}

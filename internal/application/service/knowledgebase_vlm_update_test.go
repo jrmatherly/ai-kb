@@ -172,7 +172,7 @@ func TestUpdateKnowledgeBaseRejectsOverlongVLMInstructions(t *testing.T) {
 
 	_, err := svc.UpdateKnowledgeBase(ctx, "kb-1", "n", "d", nil, &types.VLMConfig{
 		Enabled: true, ModelID: "vlm-1",
-		CustomInstructions: strings.Repeat("字", types.MaxCustomPromptInstructionsLength+1),
+		CustomInstructions: strings.Repeat("\u5b57", types.MaxCustomPromptInstructionsLength+1),
 	})
 	appErr, ok := apperrors.IsAppError(err)
 	require.True(t, ok, "error = %v, want an AppError", err)
@@ -181,7 +181,7 @@ func TestUpdateKnowledgeBaseRejectsOverlongVLMInstructions(t *testing.T) {
 
 	kb, err := svc.UpdateKnowledgeBase(ctx, "kb-1", "n", "d", nil, &types.VLMConfig{
 		Enabled: true, ModelID: "vlm-1",
-		CustomInstructions: strings.Repeat("字", types.MaxCustomPromptInstructionsLength),
+		CustomInstructions: strings.Repeat("\u5b57", types.MaxCustomPromptInstructionsLength),
 	})
 	require.NoError(t, err)
 	assert.Len(t, []rune(kb.VLMConfig.CustomInstructions), types.MaxCustomPromptInstructionsLength)

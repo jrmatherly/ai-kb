@@ -168,7 +168,7 @@ func (p *PluginSearch) expandQueries(ctx context.Context, chatManage *types.Chat
 		}
 	}
 
-	// 4. Remove question words (什么/如何/怎么/为什么/哪个 etc.)
+	// 4. Remove leading Chinese question words (what, how, why, which, etc.)
 	cleaned := removeQuestionWords(query)
 	if cleaned != query {
 		addIfNew(cleaned)
@@ -185,9 +185,10 @@ func (p *PluginSearch) expandQueries(ctx context.Context, chatManage *types.Chat
 	return expansions
 }
 
-// Common Chinese and English stopwords
+// Common Chinese and English stopwords. The Chinese ones are the particles and conjunctions
+// de (possessive), shi (is), zai (at), le (perfective), he/yu (and), huo (or).
 var stopwords = map[string]struct{}{
-	"的": {}, "是": {}, "在": {}, "了": {}, "和": {}, "与": {}, "或": {},
+	"\u7684": {}, "\u662f": {}, "\u5728": {}, "\u4e86": {}, "\u548c": {}, "\u4e0e": {}, "\u6216": {},
 	"a": {}, "an": {}, "the": {}, "is": {}, "are": {}, "was": {}, "were": {},
 	"be": {}, "been": {}, "being": {}, "have": {}, "has": {}, "had": {},
 	"do": {}, "does": {}, "did": {}, "will": {}, "would": {}, "could": {},
@@ -198,8 +199,11 @@ var stopwords = map[string]struct{}{
 	"who": {}, "whom": {}, "whose": {},
 }
 
-// Question words in Chinese
-var questionWords = regexp.MustCompile(`^(什么是|什么|如何|怎么|怎样|为什么|为何|哪个|哪些|谁|何时|何地|请问|请告诉我|帮我|我想知道|我想了解)`)
+// Leading Chinese question phrases: what is, what, how (x4), why (x2), which (x2), who, when, where,
+// may I ask, please tell me, help me, I want to know, I want to understand.
+var questionWords = regexp.MustCompile("^(\u4ec0\u4e48\u662f|\u4ec0\u4e48|\u5982\u4f55|\u600e\u4e48|\u600e\u6837|" +
+	"\u4e3a\u4ec0\u4e48|\u4e3a\u4f55|\u54ea\u4e2a|\u54ea\u4e9b|\u8c01|\u4f55\u65f6|\u4f55\u5730|" +
+	"\u8bf7\u95ee|\u8bf7\u544a\u8bc9\u6211|\u5e2e\u6211|\u6211\u60f3\u77e5\u9053|\u6211\u60f3\u4e86\u89e3)")
 
 func extractKeywords(text string) []string {
 	words := tokenize(text)
@@ -227,8 +231,8 @@ func extractPhrases(text string) []string {
 }
 
 func splitByDelimiters(text string) []string {
-	// Split by common delimiters
-	re := regexp.MustCompile(`[,，;；、。！？!?\s]+`)
+	// Split by ASCII and full-width delimiters: comma, semicolon, enumeration comma, full stop, ! and ?.
+	re := regexp.MustCompile("[,\uff0c;\uff1b\u3001\u3002\uff01\uff1f!?\\s]+")
 	parts := re.Split(text, -1)
 	var result []string
 	for _, p := range parts {

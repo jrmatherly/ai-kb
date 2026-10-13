@@ -85,5 +85,6 @@ func (s *knowledgeService) acquireFAQCreateGuard(
 }
 
 func faqCreateConflictError() error {
-	return werrors.NewConflictError("相同标准问的 FAQ 条目正在创建中，请勿重复提交")
+	return werrors.NewConflictError(
+		"An FAQ entry with this standard question is already being created. Do not resubmit")
 }

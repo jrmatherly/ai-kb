@@ -68,13 +68,13 @@ func TestIntoChatMessageShowsAVisionModelTheImagesItsContextsRestOn(t *testing.T
 	require.Len(t, cm.ContextImages, 1)
 	assert.True(t, strings.HasPrefix(cm.ContextImages[0], "data:image/png;base64,"))
 	assert.Equal(t, []string{"v1"}, cm.ContextImageChunkIDs)
-	assert.NotContains(t, cm.UserContent, "对应 context")
+	assert.NotContains(t, cm.UserContent, "corresponds to context")
 
 	cm.Images = []string{"data:image/png;base64,user"}
 	msgs, registry := prepareMessagesWithModelContext(context.Background(), cm)
 	last := msgs[len(msgs)-1]
 	assert.Contains(t, last.Content, "Image 2: chunk "+registry.ChunkHandle("v1")+".")
-	assert.NotContains(t, last.Content, "对应 context")
+	assert.NotContains(t, last.Content, "corresponds to context")
 	assert.Equal(t, append([]string{"data:image/png;base64,user"}, cm.ContextImages...), last.Images,
 		"the user's own image first, then the retrieved one")
 }
@@ -90,7 +90,7 @@ func TestIntoChatMessageAttachesNoImagesForATextModel(t *testing.T) {
 	assert.Empty(t, kb.reads)
 	assert.Empty(t, cm.ContextImages)
 	assert.Empty(t, cm.ContextImageChunkIDs)
-	assert.NotContains(t, cm.UserContent, "检索到的图片")
+	assert.NotContains(t, cm.UserContent, "retrieved images")
 	assert.Empty(t, prepareMessagesWithHistory(cm)[0].Images)
 }
 
@@ -206,7 +206,7 @@ func TestFAQImageNoteUsesFinalHandlesAfterCitationExpansion(t *testing.T) {
 	last := messages[len(messages)-1]
 	require.Len(t, last.Images, 1)
 	require.Contains(t, last.Content, "Image 1: chunk "+registry.ChunkHandle("v1")+".")
-	require.NotContains(t, last.Content, "对应 context")
+	require.NotContains(t, last.Content, "corresponds to context")
 	clone := cm.Clone()
 	clone.ContextImageChunkIDs[0] = "changed"
 	require.Equal(t, "v1", cm.ContextImageChunkIDs[0])
