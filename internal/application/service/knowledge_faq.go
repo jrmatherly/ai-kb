@@ -1950,11 +1950,16 @@ func (s *knowledgeService) buildFAQIndexInfoList(
 		IsRecommended:   chunk.Flags.HasFlag(types.ChunkFlagRecommended),
 	})
 
+	// One item per normalized question, keeping the first original text, as
+	// faqSimilarQuestionsByKey does on the edit path: the key is the source ID.
+	seen := make(map[string]struct{}, len(meta.SimilarQuestions))
 	for _, similarQ := range meta.SimilarQuestions {
+		similarQ = strings.TrimSpace(similarQ)
 		normalizedQ := types.NormalizeQuestion(similarQ)
-		if normalizedQ == "" {
+		if _, dup := seen[normalizedQ]; normalizedQ == "" || dup {
 			continue
 		}
+		seen[normalizedQ] = struct{}{}
 		similarContent := similarQ
 		if indexMode == types.FAQIndexModeQuestionAnswer && len(meta.Answers) > 0 {
 			var builder strings.Builder

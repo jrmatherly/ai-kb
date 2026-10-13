@@ -150,3 +150,32 @@ func TestUpdateFAQEntrySeparateModeIndexesOriginalText(t *testing.T) {
 		require.Equal(t, info.Content, store.items[info.SourceID].Content, info.SourceID)
 	}
 }
+
+// Two similar questions that normalize alike share a source ID. The composite
+// engine drops the second before indexing, but the storage estimate and quota
+// check run on the built list, so the builder emits each key once, keeping the
+// first original text as the edit path does.
+func TestBuildFAQIndexInfoListSeparateModeKeepsOneItemPerNormalizedQuestion(t *testing.T) {
+	svc := &knowledgeService{}
+	kb := &types.KnowledgeBase{FAQConfig: &types.FAQConfig{
+		IndexMode:         types.FAQIndexModeQuestionOnly,
+		QuestionIndexMode: types.FAQQuestionIndexModeSeparate,
+	}}
+	chunk := &types.Chunk{ID: "one"}
+	require.NoError(t, chunk.SetFAQMetadata(&types.FAQChunkMetadata{
+		StandardQuestion: "Reset password",
+		SimilarQuestions: []string{"Forgot password", " forgot password? ", "Lost password"},
+		Answers:          []string{"Use the reset link."},
+	}))
+
+	infos, err := svc.buildFAQIndexInfoList(context.Background(), kb, chunk)
+	require.NoError(t, err)
+	contents := make([]string, 0, len(infos))
+	sourceIDs := map[string]bool{}
+	for _, info := range infos {
+		contents = append(contents, info.Content)
+		sourceIDs[info.SourceID] = true
+	}
+	require.Equal(t, []string{"Reset password", "Forgot password", "Lost password"}, contents)
+	require.Len(t, sourceIDs, 3)
+}
