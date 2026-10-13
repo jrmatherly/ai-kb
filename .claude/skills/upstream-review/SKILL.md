@@ -2,7 +2,7 @@
 name: upstream-review
 description: Review what changed in upstream Tencent/WeKnora (main) since our last review and decide what to adopt into this copied repo. Use for "sync from upstream", "what changed upstream", "review upstream commits", "did WeKnora update", "bring upstream commit X in", "check upstream for new features", or any periodic upstream check. Encodes the copy-not-fork reality, the watermark driver, the per-file divergence markers, the English-only rule and the adoption rules for this repo.
 argument-hint: "[--stat | --urls | --show <sha> | --diverged | --advance <sha>]"
-allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh *) Bash(scripts/check-english-only.sh *) Bash(git show *) Bash(git log *) Bash(git diff *) Bash(git rev-parse *) Read Grep Glob
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh *) Bash(scripts/check-english-only.sh *) Bash(scripts/validate.sh *) Bash(git show *) Bash(git log *) Bash(git diff *) Bash(git rev-parse *) Read Grep Glob
 ---
 
 # Upstream review
@@ -55,30 +55,20 @@ Merge commits are listed but not expanded: their parents are in the range. A con
 3. Classify our state from the markers and the diff: ALREADY-HAVE, ABSENT, DIVERGED, PARTIAL.
 4. Verdict: `ADOPT` (cherry-pick, all files `=`, `<` with its predecessors, or `+`), `ADAPT` (hand-port, some `~`), `SKIP`, `MONITOR`.
 5. Write every verdict with file-level evidence to the dated decision log (template below).
-6. Adopt in a batch on a branch: cherry-pick oldest first, validate per area touched (table below), then the English-only gate on the batch's files (rule below).
+6. Adopt in a batch on a branch: cherry-pick oldest first, run `scripts/validate.sh --base <sha-before-batch>` (below), which ends with the English-only gate on the range.
 7. Then `--advance <tip-sha>` with the tip SHA from the listing you reviewed (a fresh fetch may have moved on) and commit `.upstream-review/` with the adopted commits. The user pushes; never push.
 
 For a large window (more than about 20 commits), dispatch one reviewer subagent per area with the SHAs, the marker output, and steps 2 to 5. Synthesize into one log.
 
 ### Validation per area
 
-The commands are the archived upstream CI's (`private/OLD-.github/workflows/`), which this copy has no workflows for yet.
-
-| Area touched | Validate with |
-| --- | --- |
-| Go (root module) | `go vet $(go list ./... \| grep -v /docreader/) && go test $(go list ./... \| grep -v /docreader/) && go test -tags desktop ./internal/container && golangci-lint run` |
-| `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `python3 scripts/model-catalog/generate.py --check && go test ./internal/models/...` |
-| `cli/**` (own module) | `go -C cli vet ./... && go -C cli test -race ./... && cli/scripts/check-skill-wire-vocab.sh && cli/scripts/check-secret-tokens.sh` |
-| `client/**` (own module) | `go -C client vet ./... && go -C client test ./...` |
-| `frontend/**` | `npm --prefix frontend test && npm --prefix frontend run type-check` |
-| `docreader/**` | `uv run --project docreader python -m unittest discover -s docreader/tests -p "test_*.py"` and `go test ./docreader/client ./docreader/proto` |
-| `scripts/git-hooks/**`, license scripts | `bash scripts/test-git-hooks.sh`, `bash scripts/check-license-bundle.sh && bash scripts/test-license-bundle.sh` |
+`scripts/validate.sh --base <sha-before-batch>` runs, for each area the batch touched, the archived upstream CI's commands (`private/OLD-.github/workflows/`): Go root module, `cli/`, `client/`, `frontend/`, `docreader/`, model catalog, git hooks, license bundle, `website-docs/`, then the English-only gate on the range. `--list` names the areas without running them. A workflow change upstream that adds a command goes into the script.
 
 ## Rules for this repo
 
 - Keep `-x` on every cherry-pick so the log line "cherry picked from commit" carries provenance. Upstream `#NNNN` issue and PR numbers autolink to the wrong repo on GitHub; rewrite them to `Tencent/WeKnora#NNNN` in the picked commit message (`git commit --amend`) and in the decision log.
-- Upstream commits that touch `.github/` are SKIP. Ours is removed; the archived copies in `private/OLD-.github/` are the reference when a workflow change reveals a new validation command. Record such a command change in the log so the table above gets updated.
-- **English only.** This copy carries no Chinese (or other CJK) text: comments, log and error messages, prompts, docs, UI copy, fixtures. At the seed about 1,100 files contain CJK text (`scripts/check-english-only.sh --summary`); in Go it is almost entirely string literals (about 7,500 lines) rather than comments (34 lines). Consequences for review:
+- Upstream commits that touch `.github/` are SKIP. Ours is removed; the archived copies in `private/OLD-.github/` are the reference when a workflow change reveals a new validation command. Record such a command change in the log so `scripts/validate.sh` gets updated.
+- **English only.** This copy carries no Chinese (or other CJK) text: comments, log and error messages, prompts, docs, UI copy, fixtures. At the seed about 1,100 files contain CJK text (`scripts/check-english-only.sh --summary`); in Go about 9,200 lines, of which 3,690 are full-line comments (1,700 of them swag annotations) and the rest mostly string literals (counted 2026-10-12). Consequences for review:
   - Translated files show `~` for every upstream commit that touches them. That is expected. Cherry-pick anyway: hunks that do not overlap a translated line merge cleanly, and a conflict is confined to the lines both sides changed. Resolve by taking upstream's logic and our language.
   - A pick never lands CJK text. After a batch, `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD` is the gate (whole-file mode would also report the seed's untranslated text in those files). Translate every hit before the batch lands.
   - Upstream commits whose only content is Chinese prose (docs under `website-docs/`, `README_CN.md`, comment edits) are SKIP unless they document behavior we adopted; then write the English equivalent.

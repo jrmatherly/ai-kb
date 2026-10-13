@@ -26,7 +26,7 @@ Upstream changes are reviewed and adopted only through the `upstream-review` ski
 make dev-start && make dev-app && make dev-frontend   # infra, backend (Air hot reload), frontend (Vite)
 ```
 
-Validation commands per area (Go root module with the docreader filter, cli, client, frontend, docreader, model catalog, hooks) are the table "Validation per area" in the upstream-review skill; run the rows for what you touched. Generated and committed outputs (swagger `docs/`, model catalog, docreader proto stubs) are regenerated, never merged by hand; the same skill lists the generators.
+Validation commands per area (Go root module with the docreader filter, cli, client, frontend, docreader, model catalog, hooks) are `scripts/validate.sh` (`--base <rev>` for a range, `--list` to see the areas; it always ends with the English-only gate on lines added since the base); the `validate` skill says when to run it. Generated and committed outputs (swagger `docs/`, model catalog, docreader proto stubs) are regenerated, never merged by hand: the upstream-review skill lists the generators and a PreToolUse hook blocks hand edits to them.
 
 Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, English-only gate on added lines, gofmt, golangci-lint on changed packages) and `pre-push` (CI-aligned checks).
 
