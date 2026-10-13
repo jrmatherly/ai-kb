@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/modelcontext"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/api/openaicompletions"
-	"github.com/Tencent/WeKnora/internal/models/chat"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/modelcontext"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api/openaicompletions"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/require"
 )
 

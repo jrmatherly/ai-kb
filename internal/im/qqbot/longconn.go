@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/im"
-	"github.com/Tencent/WeKnora/internal/logger"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
 	ws "github.com/gorilla/websocket"
+	"github.com/jrmatherly/ai-kb/internal/im"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 type MessageHandler func(ctx context.Context, msg *im.IncomingMessage) error

@@ -10,14 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/common"
-	"github.com/Tencent/WeKnora/internal/config"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/chat"
-	"github.com/Tencent/WeKnora/internal/models/utils"
-	"github.com/Tencent/WeKnora/internal/searchutil"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/common"
+	"github.com/jrmatherly/ai-kb/internal/config"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/models/utils"
+	"github.com/jrmatherly/ai-kb/internal/searchutil"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"golang.org/x/sync/errgroup"
 )
 

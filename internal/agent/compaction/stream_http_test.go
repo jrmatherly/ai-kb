@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/api/openaicompletions"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api/openaicompletions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

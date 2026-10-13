@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/datasource/connector/feishu/core"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ──────────────────────────────────────────────────────────────────────

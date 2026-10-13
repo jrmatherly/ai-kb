@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	agenttools "github.com/Tencent/WeKnora/internal/agent/tools"
-	"github.com/Tencent/WeKnora/internal/types"
+	agenttools "github.com/jrmatherly/ai-kb/internal/agent/tools"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // A tool that hands adapter work to a goroutine of its own must contain the

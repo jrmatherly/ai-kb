@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	sdk "github.com/Tencent/WeKnora/client"
+	sdk "github.com/jrmatherly/ai-kb/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

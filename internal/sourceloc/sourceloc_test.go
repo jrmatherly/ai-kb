@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/xuri/excelize/v2"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func runeIndex(s, sub string) int {

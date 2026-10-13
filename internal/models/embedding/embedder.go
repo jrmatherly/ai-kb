@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/imageprep"
-	"github.com/Tencent/WeKnora/internal/models/utils/ollama"
-	"github.com/Tencent/WeKnora/internal/tracing/langfuse"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/imageprep"
+	"github.com/jrmatherly/ai-kb/internal/models/utils/ollama"
+	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // Embedder defines the interface for text vectorization

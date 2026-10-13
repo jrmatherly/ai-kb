@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/time/rate"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // paginationHopCap mirrors maxPaginationHops in client.go. It is spelled as a

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // ensureDesktopSigningKey persists the desktop signing key and, when no

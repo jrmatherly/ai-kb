@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/application/access"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/application/access"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/require"
 )
 

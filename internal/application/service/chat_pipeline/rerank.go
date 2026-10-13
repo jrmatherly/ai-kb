@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Tencent/WeKnora/internal/reranking"
-	"github.com/Tencent/WeKnora/internal/tracing/langfuse"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/reranking"
+	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 // PluginRerank implements reranking functionality for chat pipeline

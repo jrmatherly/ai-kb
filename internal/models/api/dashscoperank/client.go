@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
 )
 
 // Config is everything the client needs, already resolved by the api.

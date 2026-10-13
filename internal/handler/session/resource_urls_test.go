@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Tencent/WeKnora/internal/event"
-	"github.com/Tencent/WeKnora/internal/storageurl"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/event"
+	"github.com/jrmatherly/ai-kb/internal/storageurl"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 const testResourceHandle = "resource://xifDo7NTSL300Lp1goVutw"

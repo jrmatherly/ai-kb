@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/Tencent/WeKnora/internal/application/access"
-	"github.com/Tencent/WeKnora/internal/application/service/retriever"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/application/access"
+	"github.com/jrmatherly/ai-kb/internal/application/service/retriever"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // Transfer state lives with the document, so queue retries do not depend on

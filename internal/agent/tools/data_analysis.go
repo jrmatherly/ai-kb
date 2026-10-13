@@ -11,12 +11,12 @@ import (
 	"regexp"
 	"strings"
 
-	filesvc "github.com/Tencent/WeKnora/internal/application/service/file"
+	filesvc "github.com/jrmatherly/ai-kb/internal/application/service/file"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	pg_query "github.com/pganalyze/pg_query_go/v6"
 )
 

@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // The concurrency governor is process-wide, shared by every model-client layer

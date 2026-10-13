@@ -10,15 +10,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/api/anthropicmessages"
-	"github.com/Tencent/WeKnora/internal/models/api/googlegenai"
-	"github.com/Tencent/WeKnora/internal/models/api/openaicompletions"
-	"github.com/Tencent/WeKnora/internal/models/api/openairesponses"
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
-	"github.com/Tencent/WeKnora/internal/models/utils/ollama"
-	"github.com/Tencent/WeKnora/internal/types"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api/anthropicmessages"
+	"github.com/jrmatherly/ai-kb/internal/models/api/googlegenai"
+	"github.com/jrmatherly/ai-kb/internal/models/api/openaicompletions"
+	"github.com/jrmatherly/ai-kb/internal/models/api/openairesponses"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/models/utils/ollama"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // Message and the other aliases below re-export the request model defined

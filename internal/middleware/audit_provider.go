@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 // auditServiceContextKey is the gin context key used by

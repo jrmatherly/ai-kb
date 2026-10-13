@@ -4,14 +4,14 @@ import (
 	stderrors "errors"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/agent/tools"
-	"github.com/Tencent/WeKnora/internal/application/access"
-	"github.com/Tencent/WeKnora/internal/application/service"
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/middleware"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/agent/tools"
+	"github.com/jrmatherly/ai-kb/internal/application/access"
+	"github.com/jrmatherly/ai-kb/internal/application/service"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // resolveSharedAgentForRequest is the identity/share boundary for KB listing,

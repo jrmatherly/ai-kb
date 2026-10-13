@@ -3,7 +3,7 @@
 // stack in internal/sandbox: the two share no domain model.
 package localsandbox
 
-import "github.com/Tencent/WeKnora/internal/localsandbox/core"
+import "github.com/jrmatherly/ai-kb/internal/localsandbox/core"
 
 // The facade re-exports the core contract as aliases (not new types), so a
 // core.Policy and a localsandbox.Policy are the same type to the compiler and

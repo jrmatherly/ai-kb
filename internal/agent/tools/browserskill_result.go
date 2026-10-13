@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/browserskill"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/browserskill"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func browserToolFailure(method string, err error) *types.ToolResult {

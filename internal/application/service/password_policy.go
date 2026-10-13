@@ -6,8 +6,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/config"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/config"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 const (

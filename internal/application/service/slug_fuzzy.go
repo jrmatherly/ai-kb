@@ -3,7 +3,7 @@ package service
 import (
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/searchutil"
+	"github.com/jrmatherly/ai-kb/internal/searchutil"
 )
 
 // Fuzzy slug resolution: rescue LLM-generated `[[slug|display]]` links

@@ -2,7 +2,7 @@
 
 package container
 
-import "github.com/Tencent/WeKnora/internal/application/service"
+import "github.com/jrmatherly/ai-kb/internal/application/service"
 
 // Dummy dig types so BuildContainer can Provide the same constructor names
 // without importing localsandbox. The desktop-tagged files replace these.

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/types"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // ValidateServiceOutboundURLs validates every URL that the MCP transport or

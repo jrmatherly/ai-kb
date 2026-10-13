@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	agenttools "github.com/Tencent/WeKnora/internal/agent/tools"
-	"github.com/Tencent/WeKnora/internal/models/chat"
+	agenttools "github.com/jrmatherly/ai-kb/internal/agent/tools"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
 )
 
 const (

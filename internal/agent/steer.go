@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/event"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/chat"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/event"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // sanitizeSteerContent normalizes newlines and trims, same treatment the chat

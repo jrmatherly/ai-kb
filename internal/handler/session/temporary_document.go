@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/filetransport"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/filetransport"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // UploadTemporaryDocument accepts one multipart file and immediately returns

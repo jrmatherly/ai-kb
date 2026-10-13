@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	"github.com/Tencent/WeKnora/cli/internal/config"
-	"github.com/Tencent/WeKnora/cli/internal/iostreams"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/config"
+	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
 )
 
 func TestUse_OK(t *testing.T) {

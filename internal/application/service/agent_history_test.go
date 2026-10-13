@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	agenttools "github.com/Tencent/WeKnora/internal/agent/tools"
-	"github.com/Tencent/WeKnora/internal/models/chat"
-	"github.com/Tencent/WeKnora/internal/types"
+	agenttools "github.com/jrmatherly/ai-kb/internal/agent/tools"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

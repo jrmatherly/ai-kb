@@ -3,7 +3,7 @@ package format
 import (
 	"testing"
 
-	sdk "github.com/Tencent/WeKnora/client"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 func TestIndexReferences_ProjectsLookupFieldsWithoutMutation(t *testing.T) {

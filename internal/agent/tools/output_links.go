@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/sandbox"
+	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
 // Metadata snapshots detect outputs without parsing arbitrary commands or stdout.

@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/stream"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/stream"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 )

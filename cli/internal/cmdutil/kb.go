@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	sdk "github.com/Tencent/WeKnora/client"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // uuidPattern matches the canonical 8-4-4-4-12 UUID form. WeKnora's KB ids

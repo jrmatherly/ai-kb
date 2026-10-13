@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/sandbox"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/sandbox"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // sessionSandboxPinReader is the pin lookup used to choose the manager that

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/cli/internal/projectlink"
+	"github.com/jrmatherly/ai-kb/cli/internal/projectlink"
 )
 
 func TestDiscover_FoundInCwd(t *testing.T) {

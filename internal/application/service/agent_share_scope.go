@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ErrAgentKBScopeNotShareable is returned when an agent share would expose

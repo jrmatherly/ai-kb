@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/providers"
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/providers"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

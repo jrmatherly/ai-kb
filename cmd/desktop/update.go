@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/handler"
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.org/x/mod/semver"
 )
@@ -50,7 +50,7 @@ func checkUpdate(ctx context.Context, currentVersion string, showUpToDate bool, 
 		}
 
 		client := &http.Client{Timeout: 10 * time.Second}
-		req, err := http.NewRequest("GET", "https://api.github.com/repos/Tencent/WeKnora/releases/latest", nil)
+		req, err := http.NewRequest("GET", "https://api.github.com/repos/jrmatherly/ai-kb/releases/latest", nil)
 		if err != nil {
 			logger.Warnf(context.Background(), "Check update failed: %v", err)
 			return

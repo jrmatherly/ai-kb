@@ -11,9 +11,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
-	"github.com/Tencent/WeKnora/internal/types"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

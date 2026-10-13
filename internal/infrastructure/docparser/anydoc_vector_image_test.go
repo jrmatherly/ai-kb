@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/infrastructure/docparser/anydoc"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser/anydoc"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // TestEmbeddedVectorImageLinksResolve guards the string contract between

@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
 func TestRoot_Help(t *testing.T) {

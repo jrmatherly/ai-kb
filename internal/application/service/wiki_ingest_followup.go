@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/tracing/langfuse"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/redis/go-redis/v9"
 )
 

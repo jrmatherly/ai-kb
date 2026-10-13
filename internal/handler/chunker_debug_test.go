@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/infrastructure/chunker"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
 )
 
 func init() {

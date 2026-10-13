@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // defaultRecycleInterval is how often a supervised long connection is proactively

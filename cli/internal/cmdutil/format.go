@@ -10,8 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/format"
-	"github.com/Tencent/WeKnora/cli/internal/output"
+	"github.com/jrmatherly/ai-kb/cli/internal/format"
+	"github.com/jrmatherly/ai-kb/cli/internal/output"
 )
 
 // FormatMode is the resolved --format value (typed enum).

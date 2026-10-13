@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/utils"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"gorm.io/gorm"
 )
 

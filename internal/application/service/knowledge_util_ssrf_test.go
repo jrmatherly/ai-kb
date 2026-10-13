@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func TestDownloadFileFromURLBlocksRedirectToLoopback(t *testing.T) {

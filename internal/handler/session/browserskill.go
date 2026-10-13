@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/browserskill"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/browserskill"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // pairingOrigin chooses the WebSocket host the extension will dial.

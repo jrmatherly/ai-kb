@@ -8,16 +8,16 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/agent/approval"
-	"github.com/Tencent/WeKnora/internal/application/access"
-	"github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/handler/dto"
-	"github.com/Tencent/WeKnora/internal/logger"
-	mcpsecurity "github.com/Tencent/WeKnora/internal/mcp"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/agent/approval"
+	"github.com/jrmatherly/ai-kb/internal/application/access"
+	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/handler/dto"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	mcpsecurity "github.com/jrmatherly/ai-kb/internal/mcp"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // MCPServiceHandler handles MCP service related HTTP requests

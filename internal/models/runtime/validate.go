@@ -3,8 +3,8 @@ package runtime
 import (
 	"fmt"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ValidateRow checks that a stored model row resolves against the catalog.

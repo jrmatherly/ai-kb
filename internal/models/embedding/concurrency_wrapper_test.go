@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/models/limiter"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models/limiter"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/panjf2000/ants/v2"
 )
 

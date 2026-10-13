@@ -7,8 +7,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/event"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/event"
 )
 
 // Shell tools publish this bounded, human-facing preview. It is not

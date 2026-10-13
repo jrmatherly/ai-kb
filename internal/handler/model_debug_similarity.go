@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/models/embedding"
-	"github.com/Tencent/WeKnora/internal/models/imageprep"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/models/embedding"
+	"github.com/jrmatherly/ai-kb/internal/models/imageprep"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // embeddingSimilarity is one scored candidate of an embedding similarity test.

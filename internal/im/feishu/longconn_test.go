@@ -3,7 +3,7 @@ package feishu
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/im"
+	"github.com/jrmatherly/ai-kb/internal/im"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 

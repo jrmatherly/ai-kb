@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/dig"
 
-	"github.com/Tencent/WeKnora/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +35,7 @@ func moduleRoot(t *testing.T) string {
 // The host OS sandbox is a desktop-only compile. cmd/server (standard and
 // make build-lite) must not even link the package.
 func TestCmdServerDoesNotDependOnLocalSandbox(t *testing.T) {
-	cmd := exec.Command("go", "list", "-deps", "github.com/Tencent/WeKnora/cmd/server")
+	cmd := exec.Command("go", "list", "-deps", "github.com/jrmatherly/ai-kb/cmd/server")
 	cmd.Dir = moduleRoot(t)
 	out, err := cmd.CombinedOutput()
 	require.NoError(t, err, string(out))
@@ -59,7 +59,7 @@ func TestStubHostWiringRegistersWithoutLocalSandbox(t *testing.T) {
 func TestContainerPackageImportListOmitsLocalSandbox(t *testing.T) {
 	cmd := exec.Command(
 		"go", "list", "-f", "{{join .Imports \"\\n\"}}",
-		"github.com/Tencent/WeKnora/internal/container",
+		"github.com/jrmatherly/ai-kb/internal/container",
 	)
 	cmd.Dir = moduleRoot(t)
 	out, err := cmd.CombinedOutput()

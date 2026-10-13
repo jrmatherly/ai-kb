@@ -1,6 +1,6 @@
 package feishu
 
-import "github.com/Tencent/WeKnora/internal/im"
+import "github.com/jrmatherly/ai-kb/internal/im"
 
 // Open Platform API origins. Feishu and Lark are the same product deployed on
 // two isolated clouds; the API surface is identical, only the host differs.

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/Tencent/WeKnora/internal/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/sirupsen/logrus"
 )
 

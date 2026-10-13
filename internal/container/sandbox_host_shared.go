@@ -1,6 +1,6 @@
 package container
 
-import "github.com/Tencent/WeKnora/internal/handler/session"
+import "github.com/jrmatherly/ai-kb/internal/handler/session"
 
 // HostApprovalModeLoader reads the desktop approval-mode preference.
 // Nil (server binaries, tests that do not decorate) means ModeAuto.

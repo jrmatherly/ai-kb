@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/Tencent/WeKnora/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/handler"
 )
 
 // RegisterMemoryRoutes registers the personal long-term memory endpoints.

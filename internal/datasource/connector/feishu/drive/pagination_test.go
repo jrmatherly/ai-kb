@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/datasource/connector/feishu/core"
+	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
 )
 
 // TestClientDriveListFilesPagination is the Drive (云盘) counterpart of the wiki

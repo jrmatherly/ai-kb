@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models/rerank"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models/rerank"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // stubReranker returns canned scores (or an error) without any network call.

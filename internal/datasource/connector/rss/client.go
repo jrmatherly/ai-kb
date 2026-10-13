@@ -10,7 +10,7 @@ import (
 	"time"
 
 	readability "codeberg.org/readeck/go-readability/v2"
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 const (

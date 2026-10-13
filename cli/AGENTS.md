@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is the WeKnora CLI (`weknora`), a command-line client for the WeKnora RAG server. The module path is `github.com/Tencent/WeKnora/cli`.
+This is the WeKnora CLI (`weknora`), a command-line client for the WeKnora RAG server. The module path is `github.com/jrmatherly/ai-kb/cli`.
 
 The wire contract for AI agents *consuming* `weknora` output (JSON shape, exit codes, error format) is documented below and in [README.md](README.md). Read this file if you're integrating with the CLI binary — build / test / architecture details follow the wire contract sections.
 

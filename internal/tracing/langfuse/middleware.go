@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"go.opentelemetry.io/otel/propagation"
 )
 

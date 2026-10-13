@@ -10,15 +10,15 @@ import (
 	"strings"
 	"time"
 
-	werrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/infrastructure/chunker"
-	"github.com/Tencent/WeKnora/internal/infrastructure/docparser"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/tracing/langfuse"
-	"github.com/Tencent/WeKnora/internal/types"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
+	werrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // CreateKnowledgeFromFile creates a knowledge entry from an uploaded file

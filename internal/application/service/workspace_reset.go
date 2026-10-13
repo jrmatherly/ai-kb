@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/sandbox"
+	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
 // workspaceResetTimeout bounds the git rollback. clean -fdx may delete a large

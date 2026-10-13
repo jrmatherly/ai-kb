@@ -5,15 +5,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/im"
-	"github.com/Tencent/WeKnora/internal/im/dingtalk"
-	"github.com/Tencent/WeKnora/internal/im/feishu"
-	"github.com/Tencent/WeKnora/internal/im/mattermost"
-	"github.com/Tencent/WeKnora/internal/im/qqbot"
-	"github.com/Tencent/WeKnora/internal/im/slack"
-	"github.com/Tencent/WeKnora/internal/im/telegram"
-	"github.com/Tencent/WeKnora/internal/im/yunzhijia"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/im"
+	"github.com/jrmatherly/ai-kb/internal/im/dingtalk"
+	"github.com/jrmatherly/ai-kb/internal/im/feishu"
+	"github.com/jrmatherly/ai-kb/internal/im/mattermost"
+	"github.com/jrmatherly/ai-kb/internal/im/qqbot"
+	"github.com/jrmatherly/ai-kb/internal/im/slack"
+	"github.com/jrmatherly/ai-kb/internal/im/telegram"
+	"github.com/jrmatherly/ai-kb/internal/im/yunzhijia"
 	"github.com/stretchr/testify/require"
 )
 

@@ -383,7 +383,7 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
     </div>
     <div class="end" id="outB">
       <img src="assets/logo-dark.png">
-      <div class="links"><span>github.com/Tencent/WeKnora</span><span class="sep">|</span><span>weknora.weixin.qq.com</span></div>
+      <div class="links"><span>github.com/jrmatherly/ai-kb</span><span class="sep">|</span><span>weknora.weixin.qq.com</span></div>
       <div class="fine">STAR IT · TRY IT · BUILD WITH IT</div>
     </div>
   </section>
@@ -561,8 +561,8 @@ $('skWin').innerHTML=wbar('localhost/platform/toolbox')+`<div class="app">${side
 /* ================= Browser scene ================= */
 $('brVp').innerHTML=`
 <div class="chrome" id="chrome">
- <div class="ctabs"><span class="dots"><i></i><i></i><i></i></span><div class="ctab" id="ctab"><span id="ctabT">Releases · Tencent/WeKnora</span></div></div>
- <div class="ctool"><span style="color:#888">←&nbsp;&nbsp;→&nbsp;&nbsp;↻</span><div class="omni">${I('lock')}<span id="omni">github.com/Tencent/WeKnora/releases</span></div></div>
+ <div class="ctabs"><span class="dots"><i></i><i></i><i></i></span><div class="ctab" id="ctab"><span id="ctabT">Releases · jrmatherly/ai-kb</span></div></div>
+ <div class="ctool"><span style="color:#888">←&nbsp;&nbsp;→&nbsp;&nbsp;↻</span><div class="omni">${I('lock')}<span id="omni">github.com/jrmatherly/ai-kb/releases</span></div></div>
  <div class="infobar" id="infobar">“BrowserSkill” started debugging this browser <span>Cancel</span></div>
  <div class="cpage" id="pgRepo"><div class="repo"><div class="rh">Tencent / <b>WeKnora</b></div>
    <div class="rt"><span>Code</span><span>Issues</span><span>Pull requests</span><span class="on">Releases</span><span>Discussions</span></div>
@@ -591,7 +591,7 @@ $('brVp').innerHTML=`
   <div class="pb"><span class="live">Live</span><span class="btn">❚❚ Pause</span><span class="btn">■ End</span></div></div>
 </div>`;
 const BR_STEPS=[
- {i:'web',t:'Local browser · Open page',s:'github.com/Tencent/WeKnora/releases',at:1.0},
+ {i:'web',t:'Local browser · Open page',s:'github.com/jrmatherly/ai-kb/releases',at:1.0},
  {i:'fileq',t:'Local browser · Read page',at:2.0},
  {i:'bulb',t:'Latest release is v0.8.2. Opening the order form next.',at:3.0},
  {i:'web',t:'Local browser · Open page',s:'httpbin.org/forms/post',at:4.1},
@@ -784,8 +784,8 @@ function render(t){
     const onForm=L>=4.1;
     $('pgRepo').style.display=onForm?'none':'block';$('pgForm').style.display=onForm?'block':'none';
     $('pgRepo').style.opacity=P(L,1.1,.4);$('pgForm').style.opacity=P(L,4.1,.4);
-    setHTML($('omni'),onForm?'httpbin.org/forms/post':'github.com/Tencent/WeKnora/releases');
-    setHTML($('ctabT'),onForm?'httpbin.org/forms/post':'Releases · Tencent/WeKnora');
+    setHTML($('omni'),onForm?'httpbin.org/forms/post':'github.com/jrmatherly/ai-kb/releases');
+    setHTML($('ctabT'),onForm?'httpbin.org/forms/post':'Releases · jrmatherly/ai-kb');
     setHTML($('prevHost'),onForm?'httpbin.org':'github.com');
     // form fill schedule
     const F=[['f0','WeKnora Demo',5.0],['f1','13800000000',5.8],['f2','demo@weknora.local',6.5],['r1',null,7.4],['c0',null,7.9],['c1',null,8.3],['f3','18:30',8.8],['f4','Include WeKnora v0.8.2',9.4]];
@@ -846,7 +846,7 @@ function render(t){
     const A=$('outA');const ao=1-lin(lt,6.4,7.0);A.style.opacity=ao;
     const hd=A.querySelector('.hd').children;show(hd[0],P(lt,.3,.6),10);show(hd[1],P(lt,.45,.7),16);show(hd[2],P(lt,.7,.7),12);
     const tw=A.querySelector('.termw');const tp=P(lt,.9,.8);tw.style.opacity=tp;tw.style.transform=`translateY(${(1-tp)*40}px)`;
-    const L1='git clone https://github.com/Tencent/WeKnora.git',L2='cd WeKnora && cp .env.example .env',L3='docker compose up -d';
+    const L1='git clone https://github.com/jrmatherly/ai-kb.git',L2='cd WeKnora && cp .env.example .env',L3='docker compose up -d';
     const a1=1.5,a2=a1+L1.length/40+.3,a3=a2+L2.length/40+.3,a4=a3+L3.length/40+.4;
     let o=`<span class="p">$</span> ${typed(L1,lt,a1,40)}`;
     if(lt>a2-.1)o+=`\n<span class="p">$</span> ${typed(L2,lt,a2,40)}`;

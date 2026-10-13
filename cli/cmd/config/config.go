@@ -11,7 +11,7 @@ package configcmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
 // NewCmd builds the `weknora config` parent command.

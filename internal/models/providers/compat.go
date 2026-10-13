@@ -1,6 +1,6 @@
 package providers
 
-import "github.com/Tencent/WeKnora/internal/models/api"
+import "github.com/jrmatherly/ai-kb/internal/models/api"
 
 // VendorCompat carries a vendor's defaults for every protocol it may speak.
 type VendorCompat struct {

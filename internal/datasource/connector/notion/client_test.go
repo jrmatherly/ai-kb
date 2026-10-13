@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func mustTestClient(t *testing.T, token, baseURL string) *notionClient {

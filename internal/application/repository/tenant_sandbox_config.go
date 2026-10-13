@@ -10,7 +10,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"gorm.io/gorm"
 )
 

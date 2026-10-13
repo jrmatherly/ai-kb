@@ -3,7 +3,7 @@ package chat
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
 )
 
 // The agent composes multimodal turns as MultiContent parts — the shape every

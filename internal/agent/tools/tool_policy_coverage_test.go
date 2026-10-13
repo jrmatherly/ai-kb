@@ -3,7 +3,7 @@ package tools
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/modelcontext"
+	"github.com/jrmatherly/ai-kb/internal/modelcontext"
 )
 
 // Every built-in tool must declare a model-handle policy. Without an entry,

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // dummyPayload is a minimal payload that embeds TracingContext, mirroring

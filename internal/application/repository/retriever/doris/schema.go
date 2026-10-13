@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // 默认的桶数 / 副本数。Doris 在 PROPERTIES 不指定时会用集群默认值，

@@ -4,8 +4,8 @@ package models
 import (
 	"encoding/json"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ModelCost is priced per million tokens, in USD unless Currency says otherwise.

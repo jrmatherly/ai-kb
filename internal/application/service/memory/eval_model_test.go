@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/models/chat"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // newEvalChatModel builds a bare OpenAI-compatible client from the

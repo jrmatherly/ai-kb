@@ -10,11 +10,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	"github.com/Tencent/WeKnora/cli/internal/iostreams"
-	"github.com/Tencent/WeKnora/cli/internal/output"
-	"github.com/Tencent/WeKnora/cli/internal/text"
-	sdk "github.com/Tencent/WeKnora/client"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
+	"github.com/jrmatherly/ai-kb/cli/internal/output"
+	"github.com/jrmatherly/ai-kb/cli/internal/text"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // sessionsPageSize is the default --page-size on `search sessions`: how many
@@ -96,7 +96,7 @@ to stop after one page.`,
 		UsedFor:       "Find chat sessions by title or description (client-side case-insensitive substring match). Results come with meta.count; use --limit to cap and --all-pages=false to stop after one page.",
 		RequiredFlags: []string{"<query> (positional)"},
 		Examples:      []string{`weknora search sessions "onboarding" --format json`},
-		Output:   "envelope.data is an array of Session objects with id, title, updated_at; meta.count is the returned count; meta.has_more=true if more matched than --limit",
+		Output:        "envelope.data is an array of Session objects with id, title, updated_at; meta.count is the returned count; meta.has_more=true if more matched than --limit",
 	})
 	return cmd
 }

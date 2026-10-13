@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	filesvc "github.com/Tencent/WeKnora/internal/application/service/file"
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	filesvc "github.com/jrmatherly/ai-kb/internal/application/service/file"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

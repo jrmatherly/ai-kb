@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/config"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jrmatherly/ai-kb/internal/config"
 )
 
 // signedIDToken builds an RS256-signed id_token with the given claims and kid.

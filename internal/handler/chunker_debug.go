@@ -12,10 +12,10 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/infrastructure/chunker"
-	"github.com/Tencent/WeKnora/internal/infrastructure/docparser"
-	"github.com/Tencent/WeKnora/internal/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // previewMaxChars caps the input text size so a single preview request

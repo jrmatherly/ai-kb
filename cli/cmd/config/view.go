@@ -8,13 +8,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	"github.com/Tencent/WeKnora/cli/internal/config"
-	"github.com/Tencent/WeKnora/cli/internal/format"
-	"github.com/Tencent/WeKnora/cli/internal/iostreams"
-	"github.com/Tencent/WeKnora/cli/internal/projectlink"
-	"github.com/Tencent/WeKnora/cli/internal/secrets"
-	"github.com/Tencent/WeKnora/cli/internal/xdg"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/config"
+	"github.com/jrmatherly/ai-kb/cli/internal/format"
+	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
+	"github.com/jrmatherly/ai-kb/cli/internal/projectlink"
+	"github.com/jrmatherly/ai-kb/cli/internal/secrets"
+	"github.com/jrmatherly/ai-kb/cli/internal/xdg"
 )
 
 // viewFields enumerates the fields surfaced for `--format json` discovery on

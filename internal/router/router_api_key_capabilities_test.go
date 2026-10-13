@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/handler"
-	sessionhandler "github.com/Tencent/WeKnora/internal/handler/session"
-	"github.com/Tencent/WeKnora/internal/middleware"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/handler"
+	sessionhandler "github.com/jrmatherly/ai-kb/internal/handler/session"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func TestConversationRoutesDeclareChatCapability(t *testing.T) {

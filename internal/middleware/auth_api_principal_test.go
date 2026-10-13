@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func signedExternalUserToken(t *testing.T, secret string, claims jwt.MapClaims) string {

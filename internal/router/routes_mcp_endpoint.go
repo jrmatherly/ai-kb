@@ -3,11 +3,11 @@ package router
 import (
 	"net/http"
 
-	"github.com/Tencent/WeKnora/internal/handler"
-	"github.com/Tencent/WeKnora/internal/mcpserver"
-	"github.com/Tencent/WeKnora/internal/middleware"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/mcpserver"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 // RegisterMCPEndpointRoutes registers the management API for workspace MCP

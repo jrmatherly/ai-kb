@@ -3,8 +3,8 @@ package interfaces
 import (
 	"context"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // KnowledgeBaseProfileService derives a knowledge-base description from the

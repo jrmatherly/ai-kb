@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/ipclass"
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/ipclass"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func deriveWebSocketURL(sendMsgURL, allowedHostSuffix string) (string, error) {

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/searchutil"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/searchutil"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func TestResolveParentChunksUsesCurrentContentAndImageURLs(t *testing.T) {

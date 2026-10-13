@@ -10,12 +10,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Tencent/WeKnora/cli/cmd"
-	"github.com/Tencent/WeKnora/cli/cmd/doctor"
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	"github.com/Tencent/WeKnora/cli/internal/iostreams"
-	"github.com/Tencent/WeKnora/cli/internal/secrets"
-	sdk "github.com/Tencent/WeKnora/client"
+	"github.com/jrmatherly/ai-kb/cli/cmd"
+	"github.com/jrmatherly/ai-kb/cli/cmd/doctor"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
+	"github.com/jrmatherly/ai-kb/cli/internal/secrets"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // TestMain pins the doctor credential-storage outcome for the whole suite.

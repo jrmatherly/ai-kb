@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/sandbox"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
 // DeploymentCapabilityKeys is the canonical capability key list shared with

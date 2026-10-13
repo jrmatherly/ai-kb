@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/storageallowlist"
-	"github.com/Tencent/WeKnora/internal/utils"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/storageallowlist"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"gorm.io/gorm"
 )
 

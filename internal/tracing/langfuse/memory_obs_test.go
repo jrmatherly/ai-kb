@@ -3,7 +3,7 @@ package langfuse
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func TestSummarizeMemoryRecallOutput_includesMetaAndItems(t *testing.T) {

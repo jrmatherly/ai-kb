@@ -22,10 +22,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/im"
-	"github.com/Tencent/WeKnora/internal/logger"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/im"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 const (

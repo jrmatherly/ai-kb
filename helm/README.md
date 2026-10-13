@@ -3,7 +3,7 @@
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/weknora)](https://artifacthub.io/packages/helm/weknora/weknora)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Helm chart for deploying [WeKnora](https://github.com/Tencent/WeKnora) - an AI-powered Knowledge RAG Platform.
+Helm chart for deploying [WeKnora](https://github.com/jrmatherly/ai-kb) - an AI-powered Knowledge RAG Platform.
 
 ## Overview
 
@@ -409,7 +409,7 @@ kubectl logs -n weknora -l app.kubernetes.io/component=frontend -f
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/Tencent/WeKnora/blob/main/CONTRIBUTING.md) in the main repository.
+See [CONTRIBUTING.md](https://github.com/jrmatherly/ai-kb/blob/main/CONTRIBUTING.md) in the main repository.
 
 ## References
 
@@ -421,4 +421,4 @@ This Helm chart follows best practices from:
 
 ## License
 
-This chart is licensed under the MIT License - see the [LICENSE](https://github.com/Tencent/WeKnora/blob/main/LICENSE) file for details.
+This chart is licensed under the MIT License - see the [LICENSE](https://github.com/jrmatherly/ai-kb/blob/main/LICENSE) file for details.

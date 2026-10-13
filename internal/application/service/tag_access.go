@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/types"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func (s *knowledgeTagService) requireTagWrite(

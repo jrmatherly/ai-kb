@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/cli/internal/compat"
+	"github.com/jrmatherly/ai-kb/cli/internal/compat"
 )
 
 func TestCache_RoundTrip(t *testing.T) {

@@ -30,8 +30,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/ipclass"
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/ipclass"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // ErrUnsafeOutboundURL is returned for any endpoint that uses an unsupported

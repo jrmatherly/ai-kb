@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
 	"github.com/volcengine/vikingdb-go-sdk/knowledge"
 	knowledgemodel "github.com/volcengine/vikingdb-go-sdk/knowledge/model"
 )

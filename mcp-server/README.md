@@ -72,7 +72,7 @@ pip install tencent-weknora-mcp
 uvx --from tencent-weknora-mcp weknora-mcp-server
 ```
 
-> 官方 PyPI 包名为 **`tencent-weknora-mcp`**（Tencent/WeKnora 维护，Trusted Publishing 发布）。
+> 官方 PyPI 包名为 **`tencent-weknora-mcp`**（jrmatherly/ai-kb 维护，Trusted Publishing 发布）。
 > 旧社区包 `weknora-mcp` 请不要再使用。
 > 安装后命令行入口仍为 `weknora-mcp-server` / `weknora-server`。
 

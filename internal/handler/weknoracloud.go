@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 // WeKnoraCloudHandler 处理 WeKnoraCloud 凭证管理

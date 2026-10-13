@@ -9,8 +9,8 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // fakeRepo records calls to Insert in memory so tests can assert how

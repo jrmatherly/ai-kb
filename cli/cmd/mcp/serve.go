@@ -3,8 +3,8 @@ package mcpcmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	mcpserver "github.com/Tencent/WeKnora/cli/internal/mcp"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	mcpserver "github.com/jrmatherly/ai-kb/cli/internal/mcp"
 )
 
 // NewCmdServe builds `weknora mcp serve`. Currently stdio-only; HTTP

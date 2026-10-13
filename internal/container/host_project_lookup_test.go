@@ -10,8 +10,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/Tencent/WeKnora/internal/localsandbox"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/localsandbox"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func hostProjectLookupTestDB(t *testing.T) *gorm.DB {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 var parserOutboundURLKeys = []string{

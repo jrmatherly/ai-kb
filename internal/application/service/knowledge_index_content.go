@@ -3,7 +3,7 @@ package service
 import (
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // buildKnowledgeIndexContent adds only the document title to searchable text.

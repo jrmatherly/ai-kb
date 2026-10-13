@@ -3,7 +3,7 @@ package wecom
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/im"
+	"github.com/jrmatherly/ai-kb/internal/im"
 )
 
 // mixedMsg builds a botMessage with msgtype "mixed" from text/image parts.

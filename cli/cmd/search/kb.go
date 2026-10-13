@@ -9,11 +9,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	"github.com/Tencent/WeKnora/cli/internal/iostreams"
-	"github.com/Tencent/WeKnora/cli/internal/output"
-	"github.com/Tencent/WeKnora/cli/internal/text"
-	sdk "github.com/Tencent/WeKnora/client"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
+	"github.com/jrmatherly/ai-kb/cli/internal/output"
+	"github.com/jrmatherly/ai-kb/cli/internal/text"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // kbSearchFields enumerates the fields surfaced for `--format json` discovery on
@@ -83,7 +83,7 @@ content, use ` + "`weknora search chunks`" + `.`,
 		UsedFor:       "Find knowledge bases by name or description (client-side case-insensitive substring match). Results come with meta.count; use --limit to cap. For searching content inside a KB, use 'search chunks' instead.",
 		RequiredFlags: []string{"<query> (positional)"},
 		Examples:      []string{`weknora search kb "engineering" --format json`},
-		Output:   "envelope.data is an array of KnowledgeBase objects with id, name, knowledge_count; meta.count is the returned count; meta.has_more=true if more matched than --limit",
+		Output:        "envelope.data is an array of KnowledgeBase objects with id, name, knowledge_count; meta.count is the returned count; meta.has_more=true if more matched than --limit",
 	})
 	return cmd
 }

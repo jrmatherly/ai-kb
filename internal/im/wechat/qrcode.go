@@ -21,7 +21,7 @@ import (
 	"net/url"
 	"time"
 
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // QRCodeResult holds the result of requesting a login QR code.

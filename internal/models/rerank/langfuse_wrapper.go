@@ -3,7 +3,7 @@ package rerank
 import (
 	"context"
 
-	"github.com/Tencent/WeKnora/internal/tracing/langfuse"
+	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
 )
 
 const (

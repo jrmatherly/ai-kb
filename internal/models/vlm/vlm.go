@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/providers"
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
-	"github.com/Tencent/WeKnora/internal/models/utils/ollama"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/providers"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/models/utils/ollama"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ErrTruncatedCompletion means the model exhausted its output budget.

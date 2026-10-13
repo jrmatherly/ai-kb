@@ -11,9 +11,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	webfetch "github.com/Tencent/WeKnora/internal/infrastructure/web_fetch"
-	"github.com/Tencent/WeKnora/internal/modelcontext"
-	"github.com/Tencent/WeKnora/internal/types"
+	webfetch "github.com/jrmatherly/ai-kb/internal/infrastructure/web_fetch"
+	"github.com/jrmatherly/ai-kb/internal/modelcontext"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

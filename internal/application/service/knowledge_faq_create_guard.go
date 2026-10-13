@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	werrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/logger"
+	werrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // faqCreateGuardTTL bounds how long one CreateFAQEntry may hold the

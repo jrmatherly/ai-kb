@@ -17,11 +17,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/datasource"
-	seafileConnector "github.com/Tencent/WeKnora/internal/datasource/connector/seafile"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/datasource"
+	seafileConnector "github.com/jrmatherly/ai-kb/internal/datasource/connector/seafile"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

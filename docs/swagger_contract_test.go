@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	docs "github.com/Tencent/WeKnora/docs"
+	docs "github.com/jrmatherly/ai-kb/docs"
 	"gopkg.in/yaml.v3"
 )
 

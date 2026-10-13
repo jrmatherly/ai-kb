@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/im"
 	ws "github.com/gorilla/websocket"
+	"github.com/jrmatherly/ai-kb/internal/im"
 )
 
 const testBusinessMessage = `{

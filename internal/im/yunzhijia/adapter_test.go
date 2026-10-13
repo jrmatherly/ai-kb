@@ -16,7 +16,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Tencent/WeKnora/internal/im"
+	"github.com/jrmatherly/ai-kb/internal/im"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)

@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/types"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // stubSandboxConfigLookup answers the existence check without a database.

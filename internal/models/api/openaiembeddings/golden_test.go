@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
 )
 
 // maxSessionTitleRunes bounds the auto-generated session title. sessions.title

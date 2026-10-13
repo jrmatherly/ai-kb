@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
 // TestCompletion_AllShells smoke-tests cobra's auto-registered completion

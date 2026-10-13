@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	typesLocal "github.com/Tencent/WeKnora/internal/types"
+	typesLocal "github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // Regression test for #3156: the script_score source must floor the cosine

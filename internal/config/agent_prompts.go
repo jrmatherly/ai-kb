@@ -1,7 +1,7 @@
 // Package config loads WeKnora runtime configuration.
 package config
 
-import "github.com/Tencent/WeKnora/internal/types"
+import "github.com/jrmatherly/ai-kb/internal/types"
 
 // ResolveCustomAgentPrompts resolves inherited references at request time. Explicit
 // text always wins, including legacy saved prompts; never rewrite user content.

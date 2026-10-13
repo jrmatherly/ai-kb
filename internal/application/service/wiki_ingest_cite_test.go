@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // TestMergeCitationsIntoItems_PopulatesSourceChunksOnCandidates verifies that

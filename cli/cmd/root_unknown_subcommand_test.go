@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
 // TestAgentInvoke_NowReturnsUnknownSubcommand verifies the deleted v0.6

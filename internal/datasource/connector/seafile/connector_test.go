@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/datasource"
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 )
 
 func TestConnectorResources(t *testing.T) {

@@ -3,9 +3,9 @@ package service
 import (
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/config"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/config"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func documentProcessTaskOptions(cfg *config.Config, extra ...asynq.Option) []asynq.Option {

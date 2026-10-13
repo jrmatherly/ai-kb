@@ -3,8 +3,8 @@ package repository
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"

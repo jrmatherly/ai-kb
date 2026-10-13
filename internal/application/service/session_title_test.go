@@ -53,9 +53,9 @@ func TestSanitizeGeneratedTitle(t *testing.T) {
 			name: "markdown table falls back to the user query",
 			raw: "| 项目 | 内容 |\n|------|------|\n| WeKnora 最新 Release | v0.3.1 |\n" +
 				"| 发布日期 | 2026-09-01 |",
-			query: "打开 https://github.com/Tencent/WeKnora ，找到最新 Release 的版本号和发布日期；" +
+			query: "打开 https://github.com/jrmatherly/ai-kb ，找到最新 Release 的版本号和发布日期；" +
 				"然后打开 https://httpbin.org/forms/post ，用以下信息填写订单表单",
-			want:          "打开 https://github.com/Tencent/…",
+			want:          "打开 https://github.com/jrmather…",
 			wantFromQuery: true,
 		},
 		{
@@ -116,7 +116,7 @@ func TestSanitizeGeneratedTitle(t *testing.T) {
 		},
 		{
 			name: "markdown link keeps its text",
-			raw:  "[WeKnora](https://github.com/Tencent/WeKnora) 最新版本",
+			raw:  "[WeKnora](https://github.com/jrmatherly/ai-kb) 最新版本",
 			want: "WeKnora 最新版本",
 		},
 		{

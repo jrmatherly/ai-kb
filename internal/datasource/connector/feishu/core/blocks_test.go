@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 func TestListDocumentBlocks_Paginates(t *testing.T) {

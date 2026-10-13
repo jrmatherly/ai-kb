@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	openSearchRepo "github.com/Tencent/WeKnora/internal/application/repository/retriever/opensearch"
-	"github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
 	"github.com/go-sql-driver/mysql"   // MySQL driver for database/sql, used by Doris connection test
 	_ "github.com/jackc/pgx/v5/stdlib" // pgx driver for database/sql
+	openSearchRepo "github.com/jrmatherly/ai-kb/internal/application/repository/retriever/opensearch"
+	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/qdrant/go-client/qdrant"
 	"github.com/tencent/vectordatabase-sdk-go/tcvectordb"

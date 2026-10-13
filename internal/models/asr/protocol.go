@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/api/openaichataudio"
-	"github.com/Tencent/WeKnora/internal/models/api/openaitranscriptions"
-	"github.com/Tencent/WeKnora/internal/models/providers"
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api/openaichataudio"
+	"github.com/jrmatherly/ai-kb/internal/models/api/openaitranscriptions"
+	"github.com/jrmatherly/ai-kb/internal/models/providers"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // retryPolicy is the transport-error retry budget, which is none. The

@@ -15,7 +15,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
 	_ "golang.org/x/image/bmp" // decode BMP sources
 	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp" // decode WebP sources

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

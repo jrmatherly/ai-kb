@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 )
 
 // auth_public_ratelimit.go — sliding-window IP rate limiter for the

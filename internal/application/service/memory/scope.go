@@ -7,8 +7,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 // ErrNoMemoryScope means the request carries no principal we can attribute

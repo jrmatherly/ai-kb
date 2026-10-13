@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	apperrors "github.com/Tencent/WeKnora/internal/errors"
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/stretchr/testify/require"
 )
 

@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // authSession is the resolved identity an auth middleware attaches to the

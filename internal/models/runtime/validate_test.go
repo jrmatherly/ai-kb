@@ -3,8 +3,8 @@ package runtime_test
 import (
 	"testing"
 
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
-	"github.com/Tencent/WeKnora/internal/types"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func TestValidateRow(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"math"
 
-	"github.com/Tencent/WeKnora/internal/searchutil"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/searchutil"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // DefaultMMRLambda weighs relevance against redundancy in SelectMMR.

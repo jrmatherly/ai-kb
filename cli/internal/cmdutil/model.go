@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/Tencent/WeKnora/client"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // ModelLister is the narrow SDK surface ResolveModelRef needs. *sdk.Client

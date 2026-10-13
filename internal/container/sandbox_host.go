@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/application/service"
-	"github.com/Tencent/WeKnora/internal/localsandbox"
-	"github.com/Tencent/WeKnora/internal/localsandbox/adapter"
-	"github.com/Tencent/WeKnora/internal/localsandbox/skilltree"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/sandbox"
+	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/localsandbox"
+	"github.com/jrmatherly/ai-kb/internal/localsandbox/adapter"
+	"github.com/jrmatherly/ai-kb/internal/localsandbox/skilltree"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
 // Host adapters must not version the user's workspace. This compile-time check

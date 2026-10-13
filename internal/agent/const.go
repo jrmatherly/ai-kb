@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/agent/compaction"
-	"github.com/Tencent/WeKnora/internal/browserskill"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/agent/compaction"
+	"github.com/jrmatherly/ai-kb/internal/browserskill"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 const (

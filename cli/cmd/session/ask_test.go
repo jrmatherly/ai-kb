@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
-	"github.com/Tencent/WeKnora/cli/internal/iostreams"
-	"github.com/Tencent/WeKnora/cli/internal/sse"
-	sdk "github.com/Tencent/WeKnora/client"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
+	"github.com/jrmatherly/ai-kb/cli/internal/sse"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // scriptedAskSvc serves a canned stream of agent events to runAsk.
@@ -47,6 +47,7 @@ func (s *scriptedAskSvc) AgentQAStreamWithRequest(_ context.Context, sessionID s
 func answerEvent(content string) *sdk.AgentStreamResponse {
 	return &sdk.AgentStreamResponse{ResponseType: sdk.AgentResponseTypeAnswer, Content: content}
 }
+
 // doneEvent is the stream's terminal frame. The real server ends an agent
 // stream with a `complete` event (it also sets Done=true on intermediate
 // frames), so the terminal is modeled as complete, not a bare answer+done.

@@ -42,10 +42,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/models/api"
-	modelutils "github.com/Tencent/WeKnora/internal/models/utils"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	modelutils "github.com/jrmatherly/ai-kb/internal/models/utils"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 //go:embed assets/weknoracloud.svg

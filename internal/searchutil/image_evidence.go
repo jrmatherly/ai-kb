@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/imageprep"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/imageprep"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // MaxContextImages caps the retrieved images shown to a vision chat model in

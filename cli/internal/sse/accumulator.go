@@ -11,7 +11,7 @@ package sse
 import (
 	"strings"
 
-	sdk "github.com/Tencent/WeKnora/client"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // Accumulator buffers a KnowledgeQAStream callback sequence.

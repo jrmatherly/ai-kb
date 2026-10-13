@@ -48,7 +48,7 @@ def load_api(path):
         return json.loads(Path(path).read_text())
     request = urllib.request.Request(
         MODELS_DEV_URL,
-        headers={"User-Agent": "WeKnora-model-catalog-diff/1.0 (+https://github.com/Tencent/WeKnora)"},
+        headers={"User-Agent": "WeKnora-model-catalog-diff/1.0 (+https://github.com/jrmatherly/ai-kb)"},
     )
     try:
         with urllib.request.urlopen(request, timeout=60) as resp:

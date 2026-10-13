@@ -51,11 +51,11 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Tencent/WeKnora"
+Homepage = "https://github.com/jrmatherly/ai-kb"
 Documentation = "https://docs.weknora.com"
-Repository = "https://github.com/Tencent/WeKnora/tree/main/mcp-server"
-"Bug Reports" = "https://github.com/Tencent/WeKnora/issues"
-Changelog = "https://github.com/Tencent/WeKnora/blob/main/mcp-server/CHANGELOG.md"
+Repository = "https://github.com/jrmatherly/ai-kb/tree/main/mcp-server"
+"Bug Reports" = "https://github.com/jrmatherly/ai-kb/issues"
+Changelog = "https://github.com/jrmatherly/ai-kb/blob/main/mcp-server/CHANGELOG.md"
 
 [project.scripts]
 weknora-mcp-server = "main:sync_main"

@@ -6,7 +6,7 @@
 # 可调环境变量:
 #   WEKNORA_REF              要拉取的 git ref (tag / branch / commit), 默认 main
 #   WEKNORA_DIR              部署目录, 默认 /opt/WeKnora
-#   WEKNORA_REPO             仓库地址, 默认 https://github.com/Tencent/WeKnora
+#   WEKNORA_REPO             仓库地址, 默认 https://github.com/jrmatherly/ai-kb
 #   WEKNORA_GH_PROXY         GitHub 加速前缀, 默认空。中国大陆机器可设
 #                            https://gh-proxy.com/ 或 https://ghfast.top/
 #                            (实际下载地址变成 ${WEKNORA_GH_PROXY}${WEKNORA_REPO}/archive/...)
@@ -29,7 +29,7 @@ set -euo pipefail
 
 WEKNORA_REF="${WEKNORA_REF:-main}"
 WEKNORA_DIR="${WEKNORA_DIR:-/opt/WeKnora}"
-WEKNORA_REPO="${WEKNORA_REPO:-https://github.com/Tencent/WeKnora}"
+WEKNORA_REPO="${WEKNORA_REPO:-https://github.com/jrmatherly/ai-kb}"
 WEKNORA_GH_PROXY="${WEKNORA_GH_PROXY:-}"
 DOCKER_INSTALL_MIRROR="${DOCKER_INSTALL_MIRROR:-}"
 DOCKER_REGISTRY_MIRROR="${DOCKER_REGISTRY_MIRROR:-}"

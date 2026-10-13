@@ -3,7 +3,7 @@ package tools
 import (
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func extractExportedEnv(command string) map[string]string {

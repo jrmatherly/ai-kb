@@ -3,7 +3,7 @@ package agent
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 func TestTurnUsageNilWhenNothingReported(t *testing.T) {

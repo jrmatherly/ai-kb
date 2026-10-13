@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/Tencent/WeKnora/internal/logger"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // RecoverMiddleware turns a handler panic into an ordinary task error.

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/Tencent/WeKnora/internal/types"
+import "github.com/jrmatherly/ai-kb/internal/types"
 
 // OpenAIUsage is the superset of the usage shapes OpenAI-compatible
 // endpoints return. Vendors disagree on where cache counters live:

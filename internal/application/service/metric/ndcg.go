@@ -3,7 +3,7 @@ package metric
 import (
 	"math"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // NDCGMetric calculates Normalized Discounted Cumulative Gain

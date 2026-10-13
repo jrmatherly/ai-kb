@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
-	"github.com/Tencent/WeKnora/internal/utils"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
 

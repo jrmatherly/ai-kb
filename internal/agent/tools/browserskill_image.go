@@ -8,7 +8,7 @@ import (
 	_ "image/jpeg" // Register JPEG decoding for screenshot validation.
 	_ "image/png"  // Register PNG decoding for screenshot validation.
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // Keep binary data out of model text. Data serves the result card, Images feeds

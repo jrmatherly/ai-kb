@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/stretchr/testify/require"
 )
 

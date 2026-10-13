@@ -2,14 +2,14 @@
 // delete / ask / resume / stop) for chat history and agent invocation.
 //
 // Package name `sessioncmd` (not `session`) so callers can `import sdk
-// "github.com/Tencent/WeKnora/client"` and use `sdk.Session` without
+// "github.com/jrmatherly/ai-kb/client"` and use `sdk.Session` without
 // shadowing - same hygiene as `profilecmd`.
 package sessioncmd
 
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/Tencent/WeKnora/cli/internal/cmdutil"
+	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
 // NewCmd builds the `weknora session` parent command.

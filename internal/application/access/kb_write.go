@@ -3,7 +3,7 @@ package access
 import (
 	"context"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // RequireKBWrite consumes an explicit operation grant. Tenant ownership and

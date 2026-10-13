@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Tencent/WeKnora/internal/sandbox"
+	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
 
 // PrepareShellEnvironment attaches an allowed, installed skill's runtime to

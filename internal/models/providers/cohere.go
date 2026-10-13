@@ -3,8 +3,8 @@
 package providers
 
 import (
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // CohereID identifies Cohere in stored model configurations.

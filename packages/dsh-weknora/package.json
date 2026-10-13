@@ -18,14 +18,14 @@
   ],
   "license": "MIT",
   "author": "WeKnora",
-  "homepage": "https://github.com/Tencent/WeKnora/tree/main/packages/dsh-weknora",
+  "homepage": "https://github.com/jrmatherly/ai-kb/tree/main/packages/dsh-weknora",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tencent/WeKnora.git",
+    "url": "git+https://github.com/jrmatherly/ai-kb.git",
     "directory": "packages/dsh-weknora"
   },
   "bugs": {
-    "url": "https://github.com/Tencent/WeKnora/issues"
+    "url": "https://github.com/jrmatherly/ai-kb/issues"
   },
   "type": "module",
   "main": "./dist/index.js",

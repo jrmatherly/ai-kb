@@ -7,7 +7,7 @@ import (
 	"unicode"
 
 	htmltomd "github.com/JohannesKaufmann/html-to-markdown/v2"
-	"github.com/Tencent/WeKnora/internal/infrastructure/docparser"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 )
 
 var (

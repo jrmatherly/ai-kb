@@ -7,20 +7,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/api/cohererank"
-	"github.com/Tencent/WeKnora/internal/models/api/dashscoperank"
-	"github.com/Tencent/WeKnora/internal/models/api/nimrerank"
-	"github.com/Tencent/WeKnora/internal/models/api/pineconerank"
-	"github.com/Tencent/WeKnora/internal/models/api/teirank"
-	modelruntime "github.com/Tencent/WeKnora/internal/models/runtime"
+	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/api/cohererank"
+	"github.com/jrmatherly/ai-kb/internal/models/api/dashscoperank"
+	"github.com/jrmatherly/ai-kb/internal/models/api/nimrerank"
+	"github.com/jrmatherly/ai-kb/internal/models/api/pineconerank"
+	"github.com/jrmatherly/ai-kb/internal/models/api/teirank"
+	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
 
 	// modelruntime.Resolve answers from the vendor catalog, which is empty until
 	// the vendor packages have run their init. Without this import every row
 	// resolves to the generic vendor: LKEAP and Volcengine would lose their
 	// signed clients and Aliyun its native protocol.
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // Reranker defines the interface for document reranking

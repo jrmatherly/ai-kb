@@ -9,12 +9,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/models"
-	"github.com/Tencent/WeKnora/internal/models/api"
-	"github.com/Tencent/WeKnora/internal/models/catalog"
-	"github.com/Tencent/WeKnora/internal/models/internal/configcopy"
-	"github.com/Tencent/WeKnora/internal/models/providers"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/models"
+	"github.com/jrmatherly/ai-kb/internal/models/api"
+	"github.com/jrmatherly/ai-kb/internal/models/catalog"
+	"github.com/jrmatherly/ai-kb/internal/models/internal/configcopy"
+	"github.com/jrmatherly/ai-kb/internal/models/providers"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // OverlayFile is the schema of config/models.json. It mirrors pi's

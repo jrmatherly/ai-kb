@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // DecideOCR is a pure function: no ctx, no repo, no model. Input the observed

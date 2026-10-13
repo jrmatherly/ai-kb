@@ -1,6 +1,6 @@
 package api
 
-import "github.com/Tencent/WeKnora/internal/types"
+import "github.com/jrmatherly/ai-kb/internal/types"
 
 // ThinkingEmitter owns the "reasoning then answer" hand-off that every
 // streaming Chat implementation shares: thinking chunks are forwarded as they

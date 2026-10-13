@@ -1,7 +1,7 @@
 package testutil
 
 import (
-	"github.com/Tencent/WeKnora/cli/internal/prompt"
+	"github.com/jrmatherly/ai-kb/cli/internal/prompt"
 )
 
 // ConfirmPrompter is a test double for prompt.Prompter that scripts a single

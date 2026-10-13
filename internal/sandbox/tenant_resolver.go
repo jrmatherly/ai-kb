@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ErrSandboxConfigNotFound means the referenced config is gone (deleted, or

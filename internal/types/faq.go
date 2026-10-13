@@ -10,7 +10,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/Tencent/WeKnora/internal/textconv"
+	"github.com/jrmatherly/ai-kb/internal/textconv"
 )
 
 // FAQChunkMetadata 定义 FAQ 条目在 Chunk.Metadata 中的结构

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"gorm.io/gorm"
 )
 

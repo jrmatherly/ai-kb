@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models/chat"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
 	"github.com/stretchr/testify/assert"
 )
 

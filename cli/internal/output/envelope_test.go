@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/cli/internal/output"
+	"github.com/jrmatherly/ai-kb/cli/internal/output"
 )
 
 func TestWriteEnvelope_SuccessWithData(t *testing.T) {

@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Tencent/WeKnora/internal/im/wechat"
-	"github.com/Tencent/WeKnora/internal/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/im/wechat"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // qrCodeService is a singleton for WeChat QR code operations.

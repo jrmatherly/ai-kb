@@ -1,4 +1,4 @@
-module github.com/Tencent/WeKnora
+module github.com/jrmatherly/ai-kb
 
 go 1.26.0
 

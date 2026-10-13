@@ -1,6 +1,6 @@
 package models
 
-import "github.com/Tencent/WeKnora/internal/models/api"
+import "github.com/jrmatherly/ai-kb/internal/models/api"
 
 // Capabilities is the UI-facing summary of a resolved model.
 type Capabilities struct {

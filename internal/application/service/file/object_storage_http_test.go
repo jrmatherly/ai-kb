@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tencentyun/cos-go-sdk-v5"
 
-	"github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 // The object storage clients must not carry Go's whole-request timeout: it

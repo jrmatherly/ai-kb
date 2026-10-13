@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/utils"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func TestNewS3Client_Credentials(t *testing.T) {

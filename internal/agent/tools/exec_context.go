@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/event"
+	"github.com/jrmatherly/ai-kb/internal/event"
 )
 
 type execCtxKey struct{}

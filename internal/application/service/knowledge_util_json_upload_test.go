@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	werrors "github.com/Tencent/WeKnora/internal/errors"
+	werrors "github.com/jrmatherly/ai-kb/internal/errors"
 )
 
 func TestValidateJSONUploadContent(t *testing.T) {

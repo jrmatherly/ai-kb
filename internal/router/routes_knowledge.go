@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Tencent/WeKnora/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/handler"
 )
 
 // RegisterChunkerDebugRoutes wires the read-only chunker preview endpoint

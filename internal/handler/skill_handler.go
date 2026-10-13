@@ -4,13 +4,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Tencent/WeKnora/internal/application/access"
-	"github.com/Tencent/WeKnora/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/application/access"
+	"github.com/jrmatherly/ai-kb/internal/application/service"
 	// Referenced only by the @Failure annotations (errors.AppError); swag
 	// resolves annotation types through the file's imports.
-	_ "github.com/Tencent/WeKnora/internal/errors"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/gin-gonic/gin"
+	_ "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // usableSkillLister returns the installed skills a chat turn can actually

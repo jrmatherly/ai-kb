@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Tencent/WeKnora/cli/internal/output"
-	sdk "github.com/Tencent/WeKnora/client"
+	"github.com/jrmatherly/ai-kb/cli/internal/output"
+	sdk "github.com/jrmatherly/ai-kb/client"
 )
 
 // ErrorCode is a namespaced stable identifier emitted on stderr in the

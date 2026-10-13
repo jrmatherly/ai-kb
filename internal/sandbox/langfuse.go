@@ -4,8 +4,8 @@ import (
 	"context"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/tracing/langfuse"
 	"github.com/gorilla/websocket"
+	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
 )
 
 const sandboxSpanPreviewRunes = 256

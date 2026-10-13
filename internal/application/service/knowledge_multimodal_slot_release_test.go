@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/infrastructure/docparser"
-	"github.com/Tencent/WeKnora/internal/types"
 	"github.com/alicebob/miniredis/v2"
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 )

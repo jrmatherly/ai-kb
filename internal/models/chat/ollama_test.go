@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/models/utils/ollama"
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	"github.com/jrmatherly/ai-kb/internal/models/utils/ollama"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func TestResolveImageForOllamaRejectsInternalURL(t *testing.T) {

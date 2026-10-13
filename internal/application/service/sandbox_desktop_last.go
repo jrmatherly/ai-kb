@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/redis/go-redis/v9"
 )
 

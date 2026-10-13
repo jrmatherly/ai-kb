@@ -46,7 +46,7 @@ Page({
     tapToSelectText: "点击选择",
     refreshText: "刷新知识库列表",
     urlLabel: "网页链接",
-    urlPlaceholder: "https://github.com/Tencent/WeKnora",
+    urlPlaceholder: "https://github.com/jrmatherly/ai-kb",
     importUrlText: "导入链接",
     displayKnowledgeBaseName: "点击选择",
     importing: false,

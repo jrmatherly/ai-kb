@@ -3,7 +3,7 @@ package weaviate
 import (
 	"testing"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // Weaviate certainty is (1 + cos) / 2; vector hits leave the driver as

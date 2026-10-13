@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/common/redislock"
 	"github.com/alicebob/miniredis/v2"
+	"github.com/jrmatherly/ai-kb/internal/common/redislock"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 )

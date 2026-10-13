@@ -7,10 +7,10 @@ type: application
 version: 0.1.0
 appVersion: "v0.8.2"
 kubeVersion: ">=1.25.0-0"
-home: https://github.com/Tencent/WeKnora
-icon: https://raw.githubusercontent.com/Tencent/WeKnora/main/docs/images/logo.png
+home: https://github.com/jrmatherly/ai-kb
+icon: https://raw.githubusercontent.com/jrmatherly/ai-kb/main/docs/images/logo.png
 sources:
-  - https://github.com/Tencent/WeKnora
+  - https://github.com/jrmatherly/ai-kb
 keywords:
   - ai
   - rag
@@ -21,6 +21,6 @@ keywords:
   - chatbot
 maintainers:
   - name: WeKnora Community
-    url: https://github.com/Tencent/WeKnora
+    url: https://github.com/jrmatherly/ai-kb
 annotations:
   artifacthub.io/license: MIT

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	secutils "github.com/Tencent/WeKnora/internal/utils"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 func TestMain(m *testing.M) {

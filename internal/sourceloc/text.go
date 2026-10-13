@@ -1,6 +1,6 @@
 package sourceloc
 
-import "github.com/Tencent/WeKnora/internal/types"
+import "github.com/jrmatherly/ai-kb/internal/types"
 
 // TextBlocks splits a plain-text original (Markdown, TXT) that the parser
 // passed through unchanged into paragraph blocks whose text locators point at

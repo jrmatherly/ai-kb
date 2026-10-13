@@ -3,7 +3,7 @@ package dingtalk
 import (
 	"strings"
 
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // settingBool interprets a data source settings value as a boolean, returning

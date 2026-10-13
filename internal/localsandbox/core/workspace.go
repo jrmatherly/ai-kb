@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Tencent/WeKnora/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 // WorkspaceKind distinguishes a user-picked project from an auto-allocated session dir.

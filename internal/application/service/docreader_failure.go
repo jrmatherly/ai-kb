@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	werrors "github.com/Tencent/WeKnora/internal/errors"
+	werrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

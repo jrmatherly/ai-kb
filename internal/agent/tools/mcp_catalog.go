@@ -12,8 +12,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/Tencent/WeKnora/internal/agent/approval"
-	"github.com/Tencent/WeKnora/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/agent/approval"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 const mcpDiscoveryDescription = "" +
