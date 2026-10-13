@@ -56,7 +56,7 @@ func TestEveryCatalogEmbeddingTransport(t *testing.T) {
 							context.Background(),
 						),
 					} {
-						vectors, err := client.BatchEmbed(ctx, []string{"a", "中文"})
+						vectors, err := client.BatchEmbed(ctx, []string{"a", "\u4e2d\u6587"})
 						require.NoError(t, err)
 						require.Equal(t, [][]float32{{1}, {2}}, vectors)
 					}

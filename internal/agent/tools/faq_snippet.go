@@ -320,7 +320,11 @@ func isSnippetSeparator(r rune) bool {
 	switch r {
 	case ' ', '\t', '\n', '\r', ',', '.', ';', ':', '?', '!',
 		'(', ')', '[', ']', '{', '}', '"', '\'',
-		'，', '。', '；', '：', '？', '！', '、', '（', '）', '【', '】', '“', '”', '‘', '’':
+		// Chinese full-width punctuation: comma, full stop, semicolon, colon,
+		// question and exclamation marks, enumeration comma, parentheses and
+		// lenticular brackets.
+		'\uff0c', '\u3002', '\uff1b', '\uff1a', '\uff1f', '\uff01', '\u3001',
+		'\uff08', '\uff09', '\u3010', '\u3011', '“', '”', '‘', '’':
 		return true
 	}
 	return false
@@ -333,5 +337,8 @@ var snippetStopwords = map[string]struct{}{
 	"is": {}, "are": {}, "was": {}, "be": {}, "do": {}, "does": {}, "did": {}, "an": {}, "at": {},
 	"by": {}, "it": {}, "its": {}, "as": {}, "from": {}, "that": {}, "this": {}, "what": {}, "how": {},
 	"why": {}, "when": {}, "which": {}, "who": {}, "can": {}, "if": {},
-	"什么": {}, "怎么": {}, "如何": {}, "哪些": {}, "是否": {}, "可以": {}, "一个": {}, "我们": {}, "你们": {},
+	// Chinese question and function words: what, how, how, which, whether,
+	// can, a/one, we, you (plural).
+	"\u4ec0\u4e48": {}, "\u600e\u4e48": {}, "\u5982\u4f55": {}, "\u54ea\u4e9b": {}, "\u662f\u5426": {},
+	"\u53ef\u4ee5": {}, "\u4e00\u4e2a": {}, "\u6211\u4eec": {}, "\u4f60\u4eec": {},
 }

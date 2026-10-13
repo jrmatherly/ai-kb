@@ -18,8 +18,8 @@ func TestShellQuoteEscapesEmbeddedSingleQuote(t *testing.T) {
 }
 
 func TestShellQuoteKeepsNonASCIILiteral(t *testing.T) {
-	quoted := ShellQuote("/opt/skills/sk-1/脚本.py")
+	quoted := ShellQuote("/opt/skills/sk-1/\u811a\u672c.py")
 
-	require.Equal(t, `'/opt/skills/sk-1/脚本.py'`, quoted,
+	require.Equal(t, "'/opt/skills/sk-1/\u811a\u672c.py'", quoted,
 		"a CJK path must reach the shell as itself, not as a \\u escape")
 }

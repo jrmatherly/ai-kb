@@ -43,12 +43,12 @@ func newClient(url string, dims int) *Client {
 
 func TestRequestBodyMatchesTheDocumentedSchema(t *testing.T) {
 	body := newClient("https://ark.cn-beijing.volces.com"+endpoint, 2048).
-		BuildRequestBody([]string{"视频和图片里有什么"}, api.EmbedDocument)
+		BuildRequestBody([]string{"\u89c6\u9891\u548c\u56fe\u7247\u91cc\u6709\u4ec0\u4e48"}, api.EmbedDocument)
 	assert.Equal(t, map[string]any{
 		"model":           "doubao-embedding-vision-251215",
 		"encoding_format": "float",
 		"dimensions":      2048,
-		"input":           []any{map[string]any{"type": "text", "text": "视频和图片里有什么"}},
+		"input":           []any{map[string]any{"type": "text", "text": "\u89c6\u9891\u548c\u56fe\u7247\u91cc\u6709\u4ec0\u4e48"}},
 	}, body)
 }
 

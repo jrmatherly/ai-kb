@@ -196,8 +196,9 @@ func writeSampleDoc(t *testing.T) string {
 This sample document is used by the AI KB CLI acceptance test suite to
 validate the end-to-end retrieval-augmented generation pipeline.
 
-向量检索的核心思想是把文本通过 embedding 模型映射到高维向量空间,然后通过余弦相似度
-等度量找出语义最接近的内容片段。AI KB 支持 vector + keyword 的混合检索模式。
+Vector retrieval maps text into a high-dimensional vector space with an embedding
+model, then uses a measure such as cosine similarity to find the closest passages.
+AI KB supports a hybrid retrieval mode that combines vector and keyword search.
 
 The hybrid search mode combines vector similarity (semantic) with keyword
 matching (lexical) to balance recall and precision.

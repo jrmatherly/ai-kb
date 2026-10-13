@@ -60,7 +60,7 @@ func frontmatterRepairCandidates(frontmatter string) []string {
 // repairAccidentalNestedFrontmatter outdents keys that were nested under a
 // plain scalar, e.g.
 //
-//	name: 命理大师
+//	name: fortune-master
 //	  version: 1.2.6
 //	  description: |
 //

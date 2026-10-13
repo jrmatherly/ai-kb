@@ -7,10 +7,10 @@ import (
 )
 
 func TestAppendWithOverlap_ContiguousNoTrim(t *testing.T) {
-	// 首尾相接（无重叠），且 next 含 HTML 实体使其字符数 > EndAt-StartAt。
-	// 旧的按位置公式会多切掉开头，这里应当整段保留。
-	acc := "## 第二节\n\n"
-	next := "| 列A | 列B |\n| 值1 | 含实体&#34;引号&#34;的内容 |\n"
+	// The segments touch (no overlap), and next holds HTML entities so its length > EndAt-StartAt.
+	// The old position formula cut too much from the start; here the whole segment must stay.
+	acc := "## \u7b2c\u4e8c\u8282\n\n"
+	next := "| \u5217A | \u5217B |\n| \u503c1 | \u542b\u5b9e\u4f53&#34;\u5f15\u53f7&#34;\u7684\u5185\u5bb9 |\n"
 	got := AppendWithOverlap(acc, next, 0)
 	want := acc + next
 	if got != want {
@@ -19,17 +19,17 @@ func TestAppendWithOverlap_ContiguousNoTrim(t *testing.T) {
 }
 
 func TestAppendWithOverlap_PrependedTableHeaderSkipped(t *testing.T) {
-	// 模拟 chunker 给拆分表格补写表头：next 开头多了一份表头（零宽，位置不可见），
-	// 真正的重叠行在表头之后。按位置裁剪会错位，按文本匹配应正确去重。
-	header := "| 列1 | 列2 | 列3 |\n|:---|:---|:---|\n"
-	overlapRows := "| 第5行 | 内容5A | 内容5B |\n| 第6行 | 内容6A | 内容6B |\n"
-	accTail := "| 第4行 | 内容4A | 内容4B |\n" + overlapRows
-	acc := header + "| 第1行 | x | — |\n" + accTail
+	// Simulate the chunker repeating the header on a split table: next starts with an extra header (zero-width, invisible to positions)
+	// and the real overlapping rows follow it. Position trimming misaligns; text matching must dedupe correctly.
+	header := "| \u52171 | \u52172 | \u52173 |\n|:---|:---|:---|\n"
+	overlapRows := "| \u7b2c5\u884c | \u5185\u5bb95A | \u5185\u5bb95B |\n| \u7b2c6\u884c | \u5185\u5bb96A | \u5185\u5bb96B |\n"
+	accTail := "| \u7b2c4\u884c | \u5185\u5bb94A | \u5185\u5bb94B |\n" + overlapRows
+	acc := header + "| \u7b2c1\u884c | x | \u2014 |\n" + accTail
 
-	newRows := "| 第7行 | 内容7A | 内容7B |\n| 第8行 | 内容8A | 内容8B |\n"
+	newRows := "| \u7b2c7\u884c | \u5185\u5bb97A | \u5185\u5bb97B |\n| \u7b2c8\u884c | \u5185\u5bb98A | \u5185\u5bb98B |\n"
 	next := header + overlapRows + newRows
 
-	// 位置重叠量大约是两行的长度（这里给个近似值即可，仅用于窗口估算）。
+	// The position overlap is roughly two rows long (an approximation is enough, it only sizes the window).
 	got := AppendWithOverlap(acc, next, len([]rune(overlapRows)))
 	want := acc + newRows
 	if got != want {
@@ -39,7 +39,7 @@ func TestAppendWithOverlap_PrependedTableHeaderSkipped(t *testing.T) {
 
 func TestAppendWithOverlap_PlainOverlap(t *testing.T) {
 	acc := "abcdefghijklmnopqrstuvwxyz0123"
-	// next 与 acc 末尾 "klmnopqrstuvwxyz0123" 重叠，再接新内容
+	// next overlaps the "klmnopqrstuvwxyz0123" at the end of acc, then continues with new content
 	next := "klmnopqrstuvwxyz0123ABCDEFG"
 	got := AppendWithOverlap(acc, next, 20)
 	want := "abcdefghijklmnopqrstuvwxyz0123ABCDEFG"
@@ -71,11 +71,11 @@ func TestAppendWithExactOverlap_TrimsKnownOverlap(t *testing.T) {
 }
 
 func TestAppendWithExactOverlap_ZeroOverlapConcatenatesRepeatedText(t *testing.T) {
-	// 首尾相接的两段都由同一周期性文本组成（表格行 / 日志行）。重叠量为 0 时
-	// 必须原样拼接，不能去搜索后缀匹配，否则会吃掉 next 开头的重复行。
+	// Both touching segments consist of the same periodic text (table rows / log lines). With 0 overlap
+	// they must be joined as is, without a suffix search, or the repeated rows at the start of next get eaten.
 	row := "| cell | cell |\n"
-	acc := "前言\n" + row + row
-	next := row + row + row + "结尾\n"
+	acc := "\u524d\u8a00\n" + row + row
+	next := row + row + row + "\u7ed3\u5c3e\n"
 	got, ok := AppendWithExactOverlap(acc, next, 0)
 	if !ok {
 		t.Fatal("zero overlap should be accepted")
@@ -86,8 +86,8 @@ func TestAppendWithExactOverlap_ZeroOverlapConcatenatesRepeatedText(t *testing.T
 }
 
 func TestAppendWithExactOverlap_RejectsMismatchedOverlap(t *testing.T) {
-	// 长度不变式成立但文本已经不同（HTML 实体、补写表头等），必须拒绝，
-	// 由调用方回退到按文本匹配。
+	// The length invariant holds but the text differs (HTML entities, a repeated header, ...): it must be rejected
+	// so the caller falls back to text matching.
 	if _, ok := AppendWithExactOverlap("abcdefghijkl", "XYZdefghijkl", 6); ok {
 		t.Fatal("mismatched overlap should be rejected")
 	}
@@ -136,7 +136,7 @@ func TestMergeTextChunks_OrdersFiltersAndStitches(t *testing.T) {
 			StartAt: 0, EndAt: 20, ChunkIndex: 0,
 		},
 		{
-			// 补写表头 + 与上一段 r2 重叠 + 新行 r3
+			// repeated header + overlap with the previous segment's r2 + new row r3
 			Content: header + "| r2 | y |\n| r3 | z |\n", ChunkType: types.ChunkTypeText,
 			StartAt: 10, EndAt: 40, ChunkIndex: 1,
 		},

@@ -47,7 +47,7 @@ func TestNormalizeAndValidateWikiSlug(t *testing.T) {
 		{name: "already valid", in: "entity/acme-corp", want: "entity/acme-corp"},
 		{name: "lowercased and spaces", in: "Entity/Acme Corp", want: "entity/acme-corp"},
 		{name: "trimmed", in: "  concept/rag  ", want: "concept/rag"},
-		{name: "cjk kept", in: "entity/上海中心大厦", want: "entity/上海中心大厦"},
+		{name: "cjk kept", in: "entity/\u4e0a\u6d77\u4e2d\u5fc3\u5927\u53a6", want: "entity/\u4e0a\u6d77\u4e2d\u5fc3\u5927\u53a6"},
 		{name: "uuid summary", in: "summary/07a20bb1-a662-47cf-9929-06fb5d5b5b5e", want: "summary/07a20bb1-a662-47cf-9929-06fb5d5b5b5e"},
 		{name: "empty", in: "   ", wantErr: true},
 		{name: "leading slash", in: "/entity/x", wantErr: true},

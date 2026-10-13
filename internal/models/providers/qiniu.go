@@ -71,7 +71,7 @@ func newQiniuProvider() *Definition {
 	return &Definition{
 		ID:           QiniuID,
 		Name:         "Qiniu Cloud",
-		Names:        map[string]string{"zh-CN": "七牛云 Qiniu"},
+		Names:        map[string]string{"zh-CN": "\u4e03\u725b\u4e91 Qiniu"},
 		Description:  "deepseek/deepseek-v3.2-251201, z-ai/glm-4.7, qwen3.5-397b-a17b, etc.",
 		Website:      "https://portal.qiniu.com/ai-inference",
 		Icon:         qiniuIcon,

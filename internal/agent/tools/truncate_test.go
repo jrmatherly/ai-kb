@@ -72,35 +72,35 @@ func TestTruncateToolOutput(t *testing.T) {
 		// Each Chinese character is 3 bytes in UTF-8 but 1 rune.
 		// 10000 Chinese chars = 30000 bytes. With maxChars=5000 runes,
 		// the result should have ~5000 runes, not be cut at 5000 bytes.
-		head := strings.Repeat("你", 5000)
-		tail := strings.Repeat("好", 5000)
+		head := strings.Repeat("\u4f60", 5000)
+		tail := strings.Repeat("\u597d", 5000)
 		input := head + tail
 		result := TruncateToolOutput(input, 5000)
 
 		resultRunes := utf8.RuneCountInString(result)
 		assert.LessOrEqual(t, resultRunes, 5000+truncationMarkerReserve,
 			"should truncate by rune count, not byte count")
-		assert.True(t, strings.HasPrefix(result, "你你你"),
+		assert.True(t, strings.HasPrefix(result, "\u4f60\u4f60\u4f60"),
 			"should preserve Chinese head content")
-		assert.True(t, strings.HasSuffix(result, "好好好"),
+		assert.True(t, strings.HasSuffix(result, "\u597d\u597d\u597d"),
 			"should preserve Chinese tail content")
 		assert.Contains(t, result, "10000 → 5000 chars")
 	})
 
 	t.Run("mixed CJK and ASCII", func(t *testing.T) {
 		// Mix of 1-byte and 3-byte chars
-		input := strings.Repeat("a", 3000) + strings.Repeat("中", 3000) +
-			strings.Repeat("b", 3000) + strings.Repeat("文", 3000)
+		input := strings.Repeat("a", 3000) + strings.Repeat("\u4e2d", 3000) +
+			strings.Repeat("b", 3000) + strings.Repeat("\u6587", 3000)
 		result := TruncateToolOutput(input, 5000)
 
 		resultRunes := utf8.RuneCountInString(result)
 		assert.LessOrEqual(t, resultRunes, 5000+truncationMarkerReserve)
 		assert.True(t, strings.HasPrefix(result, "aaa"))
-		assert.True(t, strings.HasSuffix(result, "文文文"))
+		assert.True(t, strings.HasSuffix(result, "\u6587\u6587\u6587"))
 	})
 
 	t.Run("CJK within limit unchanged", func(t *testing.T) {
-		input := strings.Repeat("测", 100)
+		input := strings.Repeat("\u6d4b", 100)
 		result := TruncateToolOutput(input, 200)
 		assert.Equal(t, input, result)
 	})

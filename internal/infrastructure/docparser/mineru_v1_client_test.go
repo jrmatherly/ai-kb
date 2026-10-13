@@ -405,11 +405,11 @@ func TestPingMinerUV1(t *testing.T) {
 
 	ok, msg = PingMinerU(server.URL, "wrong")
 	assert.False(t, ok)
-	assert.Contains(t, msg, "API Key 无效")
+	assert.Contains(t, msg, "API key is invalid")
 
 	ok, msg = PingMinerU(server.URL, "")
 	assert.False(t, ok)
-	assert.Contains(t, msg, "配置 API Key")
+	assert.Contains(t, msg, "configure an API key")
 
 	open := &fakeMinerUV1{t: t}
 	openServer := httptest.NewServer(open.handler())
@@ -420,9 +420,9 @@ func TestPingMinerUV1(t *testing.T) {
 
 func TestExtractMarkdownZipResolvesEncodedAndNestedPaths(t *testing.T) {
 	data := buildMinerUZip(t, map[string]string{
-		"report/report.md":        "![](images/%E7%AC%AC%201%20%E9%A1%B5.png)\n![](./images/b.jpg)",
-		"report/images/第 1 页.png": "p1",
-		"report/images/b.jpg":     "p2",
+		"report/report.md":                  "![](images/%E7%AC%AC%201%20%E9%A1%B5.png)\n![](./images/b.jpg)",
+		"report/images/\u7b2c 1 \u9875.png": "p1",
+		"report/images/b.jpg":               "p2",
 	})
 	md, refs, err := extractMarkdownZip(data, "test")
 	require.NoError(t, err)

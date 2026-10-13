@@ -20,43 +20,43 @@ func TestScanMarkdownImageTargets(t *testing.T) {
 		},
 		{
 			name:    "double quoted title",
-			input:   `![a](images/a.png "图")`,
-			targets: []string{`images/a.png "图"`},
+			input:   "![a](images/a.png \"\u56fe\")",
+			targets: []string{"images/a.png \"\u56fe\""},
 		},
 		{
 			name:    "single quoted title",
-			input:   `![a](images/a.png '图')`,
-			targets: []string{`images/a.png '图'`},
+			input:   "![a](images/a.png '\u56fe')",
+			targets: []string{"images/a.png '\u56fe'"},
 		},
 		{
 			name:    "parenthesized title",
-			input:   `![a](images/a.png (图))`,
-			targets: []string{`images/a.png (图)`},
+			input:   "![a](images/a.png (\u56fe))",
+			targets: []string{"images/a.png (\u56fe)"},
 		},
 		{
 			name:    "title containing right paren",
-			input:   `![a](images/a.png "阶段 1) 结果")`,
-			targets: []string{`images/a.png "阶段 1) 结果"`},
+			input:   "![a](images/a.png \"\u9636\u6bb5 1) \u7ed3\u679c\")",
+			targets: []string{"images/a.png \"\u9636\u6bb5 1) \u7ed3\u679c\""},
 		},
 		{
 			name:    "title containing both parens",
-			input:   `![a](images/a.png '阶段 (1) 结果')`,
-			targets: []string{`images/a.png '阶段 (1) 结果'`},
+			input:   "![a](images/a.png '\u9636\u6bb5 (1) \u7ed3\u679c')",
+			targets: []string{"images/a.png '\u9636\u6bb5 (1) \u7ed3\u679c'"},
 		},
 		{
 			name:    "escaped quote in title",
-			input:   `![a](images/a.png "阶段 \"1\"")`,
-			targets: []string{`images/a.png "阶段 \"1\""`},
+			input:   "![a](images/a.png \"\u9636\u6bb5 \\\"1\\\"\")",
+			targets: []string{"images/a.png \"\u9636\u6bb5 \\\"1\\\"\""},
 		},
 		{
 			name:    "multiline title",
-			input:   "![a](images/a.png\n  \"多行 title\")",
-			targets: []string{"images/a.png\n  \"多行 title\""},
+			input:   "![a](images/a.png\n  \"\u591a\u884c title\")",
+			targets: []string{"images/a.png\n  \"\u591a\u884c title\""},
 		},
 		{
 			name:    "spaced path",
-			input:   `![a](images/第 1 页.png)`,
-			targets: []string{`images/第 1 页.png`},
+			input:   "![a](images/\u7b2c 1 \u9875.png)",
+			targets: []string{"images/\u7b2c 1 \u9875.png"},
 		},
 		{
 			name:    "path containing balanced parens",
@@ -98,10 +98,10 @@ func TestScanMarkdownImageTargets(t *testing.T) {
 
 func TestSplitMarkdownImageTarget(t *testing.T) {
 	refMap := map[string]types.ImageRef{
-		"images/a.png":          {OriginalRef: "images/a.png"},
-		"images/第 1 页.png":      {OriginalRef: "images/第 1 页.png"},
-		"images/a_(1).png":      {OriginalRef: "images/a_(1).png"},
-		"images/第 1 页 (测试).gif": {OriginalRef: "images/第 1 页 (测试).gif"},
+		"images/a.png":                              {OriginalRef: "images/a.png"},
+		"images/\u7b2c 1 \u9875.png":                {OriginalRef: "images/\u7b2c 1 \u9875.png"},
+		"images/a_(1).png":                          {OriginalRef: "images/a_(1).png"},
+		"images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif": {OriginalRef: "images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif"},
 	}
 
 	tests := []struct {
@@ -120,36 +120,36 @@ func TestSplitMarkdownImageTarget(t *testing.T) {
 		},
 		{
 			name:     "double quoted title",
-			raw:      `images/a.png "图"`,
+			raw:      "images/a.png \"\u56fe\"",
 			wantPath: `images/a.png`,
-			wantText: `local://stored "图"`,
+			wantText: "local://stored \"\u56fe\"",
 			wantOK:   true,
 		},
 		{
 			name:     "single quoted title",
-			raw:      `images/a.png '图'`,
+			raw:      "images/a.png '\u56fe'",
 			wantPath: `images/a.png`,
-			wantText: `local://stored '图'`,
+			wantText: "local://stored '\u56fe'",
 			wantOK:   true,
 		},
 		{
 			name:     "parenthesized title",
-			raw:      `images/a.png (阶段 (1) 结果)`,
+			raw:      "images/a.png (\u9636\u6bb5 (1) \u7ed3\u679c)",
 			wantPath: `images/a.png`,
-			wantText: `local://stored (阶段 (1) 结果)`,
+			wantText: "local://stored (\u9636\u6bb5 (1) \u7ed3\u679c)",
 			wantOK:   true,
 		},
 		{
 			name:     "multiline title",
-			raw:      "images/a.png\n  \"多行 title\"",
+			raw:      "images/a.png\n  \"\u591a\u884c title\"",
 			wantPath: `images/a.png`,
-			wantText: "local://stored\n  \"多行 title\"",
+			wantText: "local://stored\n  \"\u591a\u884c title\"",
 			wantOK:   true,
 		},
 		{
 			name:     "path with spaces wins without title",
-			raw:      `images/第 1 页.png`,
-			wantPath: `images/第 1 页.png`,
+			raw:      "images/\u7b2c 1 \u9875.png",
+			wantPath: "images/\u7b2c 1 \u9875.png",
 			wantText: `local://stored`,
 			wantOK:   true,
 		},
@@ -162,9 +162,9 @@ func TestSplitMarkdownImageTarget(t *testing.T) {
 		},
 		{
 			name:     "angle destination replaces only inner path",
-			raw:      `<images/第 1 页 (测试).gif> "阶段 1) 图片"`,
-			wantPath: `images/第 1 页 (测试).gif`,
-			wantText: `<local://stored> "阶段 1) 图片"`,
+			raw:      "<images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif> \"\u9636\u6bb5 1) \u56fe\u7247\"",
+			wantPath: "images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).gif",
+			wantText: "<local://stored> \"\u9636\u6bb5 1) \u56fe\u7247\"",
 			wantOK:   true,
 		},
 		{
@@ -215,7 +215,7 @@ func TestStripMarkdownImages(t *testing.T) {
 		},
 		{
 			name:  "title containing right paren",
-			input: `![a](images/a.png "阶段 1) 结果")`,
+			input: "![a](images/a.png \"\u9636\u6bb5 1) \u7ed3\u679c\")",
 			want:  "",
 		},
 		{

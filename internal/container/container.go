@@ -24,7 +24,7 @@ import (
 	_ "github.com/duckdb/duckdb-go/v2"
 	esv7 "github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v8"
-	_ "github.com/go-sql-driver/mysql" // 给 Doris (database/sql) 注册 MySQL 协议驱动
+	_ "github.com/go-sql-driver/mysql" // registers the MySQL protocol driver for Doris (database/sql)
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/neo4j/neo4j-go-driver/v6/neo4j"
 	"github.com/panjf2000/ants/v2"
@@ -780,7 +780,7 @@ func initRedisClient() (*redis.Client, error) {
 
 	_, err = client.Ping(context.Background()).Result()
 	if err != nil {
-		return nil, fmt.Errorf("连接Redis失败: %w", err)
+		return nil, fmt.Errorf("failed to connect to Redis: %w", err)
 	}
 
 	return client, nil
@@ -1187,8 +1187,8 @@ func initRawFileService(_ *config.Config) (interfaces.FileService, error) {
 			os.Getenv("TOS_SECRET_KEY"),
 			os.Getenv("TOS_BUCKET_NAME"),
 			os.Getenv("TOS_PATH_PREFIX"),
-			os.Getenv("TOS_TEMP_BUCKET_NAME"), // 可选：临时桶名称（桶需配置生命周期规则自动过期）
-			os.Getenv("TOS_TEMP_REGION"),      // 可选：临时桶 region，默认与主桶相同
+			os.Getenv("TOS_TEMP_BUCKET_NAME"), // optional: temporary bucket (needs a lifecycle expiry rule)
+			os.Getenv("TOS_TEMP_REGION"),      // optional: temporary bucket region, defaults to the main bucket's
 		)
 	case "s3":
 		accessKey, secretKey := os.Getenv("S3_ACCESS_KEY"), os.Getenv("S3_SECRET_KEY")
@@ -1512,7 +1512,7 @@ func initRetrieveEngineRegistry(
 	if slices.Contains(retrieveDriver, "doris") {
 		dorisAddr := os.Getenv("DORIS_ADDR")
 		if dorisAddr == "" {
-			// docker-compose 默认服务名 + Doris FE MySQL 端口
+			// docker-compose default service name + Doris FE MySQL port
 			dorisAddr = "doris-fe:9030"
 		}
 		dorisDatabase := os.Getenv("DORIS_DATABASE")
@@ -1853,9 +1853,9 @@ func initConnectorRegistry() (*datasource.ConnectorRegistry, error) {
 	if err := registry.Register(wiki.NewConnector(core.RegionLark)); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register lark connector: %w", err))
 	}
-	// Feishu/Lark Drive (云盘) mode: different connector type so the registry
+	// Feishu/Lark Drive mode: different connector type so the registry
 	// dispatches to the Drive connector. Shares core.Client/Region/export logic
-	// with the wiki connector. See 飞书云盘数据源设计.md / ADR-0001.
+	// with the wiki connector. See the Feishu Drive data source design doc / ADR-0001.
 	if err := registry.Register(drive.NewDriveConnector(core.RegionFeishuDrive)); err != nil {
 		errs = errors.Join(errs, fmt.Errorf("register feishu_drive connector: %w", err))
 	}

@@ -39,7 +39,7 @@ func graphToolOverEveryCap() *QueryKnowledgeGraphTool {
 	}}
 	return NewQueryKnowledgeGraphTool(&stubKnowledgeBaseService{
 		kb: &types.KnowledgeBase{ID: "kb-1", ExtractConfig: &types.ExtractConfig{
-			Enabled: true, Nodes: []*types.GraphNode{{Name: "技术"}},
+			Enabled: true, Nodes: []*types.GraphNode{{Name: "\u6280\u672f"}},
 		}},
 	}).WithGraph(graphRepo, &stubGraphChunkRepo{chunks: chunks})
 }
@@ -82,7 +82,7 @@ func TestQueryKnowledgeGraph_MarksCappedQueryTerms(t *testing.T) {
 	graphRepo := &stubGraphRepo{graph: &types.GraphData{}}
 	tool := NewQueryKnowledgeGraphTool(&stubKnowledgeBaseService{
 		kb: &types.KnowledgeBase{ID: "kb-1", ExtractConfig: &types.ExtractConfig{
-			Enabled: true, Nodes: []*types.GraphNode{{Name: "技术"}},
+			Enabled: true, Nodes: []*types.GraphNode{{Name: "\u6280\u672f"}},
 		}},
 	}).WithGraph(graphRepo, &stubGraphChunkRepo{chunks: map[string]*types.Chunk{}})
 
@@ -112,7 +112,7 @@ func TestQueryKnowledgeGraph_NoTruncationMarkerWhenNothingDropped(t *testing.T) 
 	}}
 	tool := NewQueryKnowledgeGraphTool(&stubKnowledgeBaseService{
 		kb: &types.KnowledgeBase{ID: "kb-1", ExtractConfig: &types.ExtractConfig{
-			Enabled: true, Nodes: []*types.GraphNode{{Name: "技术"}},
+			Enabled: true, Nodes: []*types.GraphNode{{Name: "\u6280\u672f"}},
 		}},
 	}).WithGraph(graphRepo, chunkRepo)
 

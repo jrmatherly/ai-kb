@@ -77,7 +77,7 @@ func TestFindIncompleteMarkdownImage(t *testing.T) {
 	}{
 		{"complete image", "![img](local://1/a.png)", -1},
 		{"complete then text", "![img](local://1/a.png) trailing", -1},
-		{"truncated provider URL in image", `![知识助理"知识库"管理视图界面](minio://wizard-test/10000/exports/c91cf852`, 0},
+		{"truncated provider URL in image", "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852", 0},
 		{"open paren only", "text ![alt](", 5},
 		{"bare provider suffix without markdown", "text minio://wizard-test/10000/exp", -1},
 		{"two images complete", "![a](local://1/a.png) ![b](local://1/b.png)", -1},
@@ -183,9 +183,9 @@ func TestStreamRewriter_HoldbackIsBounded(t *testing.T) {
 	ctx := context.Background()
 
 	var emitted strings.Builder
-	emitted.WriteString(sr.Push(ctx, "answer-1", "开头 resource://", false, nil))
+	emitted.WriteString(sr.Push(ctx, "answer-1", "\u5f00\u5934 resource://", false, nil))
 	for i := 0; i < 20; i++ {
-		emitted.WriteString(sr.Push(ctx, "answer-1", strings.Repeat("中", 1024), false, nil))
+		emitted.WriteString(sr.Push(ctx, "answer-1", strings.Repeat("\u4e2d", 1024), false, nil))
 	}
 	assert.Greater(t, emitted.Len(), 0, "bounded holdback must release the excess")
 	assert.LessOrEqual(t, len(sr.held["answer-1"].content), maxHeldBytes)

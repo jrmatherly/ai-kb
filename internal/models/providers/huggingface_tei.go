@@ -23,7 +23,7 @@ func newHuggingFaceTEIProvider() *Definition {
 		Name:         "Hugging Face TEI",
 		Names:        map[string]string{"zh-CN": "Hugging Face TEI"},
 		Description:  "Self-hosted reranker served by Text Embeddings Inference",
-		Descriptions: map[string]string{"zh-CN": "通过 Text Embeddings Inference 自部署的重排模型"},
+		Descriptions: map[string]string{"zh-CN": "\u901a\u8fc7 Text Embeddings Inference \u81ea\u90e8\u7f72\u7684\u91cd\u6392\u6a21\u578b"},
 		Website:      "https://huggingface.co/docs/text-embeddings-inference",
 		Icon:         genericIcon,
 		API:          api.APIOpenAICompletions,

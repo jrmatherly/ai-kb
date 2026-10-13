@@ -66,7 +66,7 @@ func TestCreateAndBindKeepsConfigTemplateWithoutOverride(t *testing.T) {
 	require.False(t, client.lastCreateRequest.FromSnapshot)
 }
 
-// 最重要的一条：override 绝不能污染跨 session 复用的 l.createRequest。
+// The most important one: an override must never pollute l.createRequest, which is reused across sessions.
 func TestTemplateOverrideDoesNotMutateSharedCreateRequest(t *testing.T) {
 	lc, _, _ := newLifecycleForTest(t)
 	baseTemplate := lc.createRequest.TemplateID
@@ -76,7 +76,7 @@ func TestTemplateOverrideDoesNotMutateSharedCreateRequest(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, baseTemplate, lc.createRequest.TemplateID,
-		"共享的 createRequest 被改了，同 config 下其他会话会从别人的快照启动")
+		"the shared createRequest was modified; other sessions with the same config would boot from someone else's snapshot")
 }
 
 func TestAfterCreateRunsWithTheNewHandle(t *testing.T) {
@@ -91,8 +91,8 @@ func TestAfterCreateRunsWithTheNewHandle(t *testing.T) {
 	require.Equal(t, handle.ID(), b.afterHandleID)
 }
 
-// 全有或全无：引导失败必须销毁沙箱并删掉 binding，否则用户会在一个
-// 「文件系统停在分叉时刻而不是分叉点」的沙箱里干活。
+// All or nothing: a failed bootstrap must destroy the sandbox and delete the binding, or the user
+// works in a sandbox whose filesystem stopped mid-fork instead of at the fork point.
 func TestAfterCreateFailureDestroysSandboxAndBinding(t *testing.T) {
 	lc, client, store := newLifecycleForTest(t)
 	lc.bootstrapper = &recordingBootstrapper{override: "snap-1", afterErr: errors.New("git reset failed")}
@@ -104,7 +104,7 @@ func TestAfterCreateFailureDestroysSandboxAndBinding(t *testing.T) {
 
 	binding, getErr := store.Get(context.Background(), testSessionKey)
 	require.NoError(t, getErr)
-	require.Nil(t, binding, "引导失败后不得留下 binding")
+	require.Nil(t, binding, "no binding may remain after a failed bootstrap")
 }
 
 func TestTemplateOverrideErrorAbortsCreate(t *testing.T) {
@@ -114,7 +114,7 @@ func TestTemplateOverrideErrorAbortsCreate(t *testing.T) {
 	_, err := lc.Resolve(context.Background(), testSessionKey)
 
 	require.Error(t, err)
-	require.Empty(t, client.lastCreatedID, "读不到 override 就不该建沙箱")
+	require.Empty(t, client.lastCreatedID, "no sandbox should be created when the override cannot be read")
 }
 
 type recordingCreateFailureHandler struct {

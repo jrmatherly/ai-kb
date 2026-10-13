@@ -518,7 +518,7 @@ func TestInstallShellExecStillPipsIntoTheSkillTree(t *testing.T) {
 	tool := NewInstallShellExecTool(inner, installShellSkillDir)
 
 	result, err := tool.Execute(shellExecTestContext(), json.RawMessage(
-		`{"command":"pip install python-docx","work_dir":"/opt/ai-kb/tenant/skills/律师助手"}`,
+		"{\"command\":\"pip install python-docx\",\"work_dir\":\"/opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b\"}",
 	))
 	require.NoError(t, err)
 	require.True(t, result.Success, result.Error)
@@ -528,11 +528,11 @@ func TestInstallShellExecStillPipsIntoTheSkillTree(t *testing.T) {
 func TestShellExecHintsWhenVenvHasNoPip(t *testing.T) {
 	tool := NewShellExecTool(&fakeShellExecutor{result: &sandbox.ExecuteResult{
 		ExitCode: 1,
-		Stderr:   "/opt/ai-kb/tenant/skills/律师助手/.venv/bin/python: No module named pip\n",
+		Stderr:   "/opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/.venv/bin/python: No module named pip\n",
 	}}, nil)
 
 	result, err := tool.Execute(shellExecTestContext(), json.RawMessage(
-		`{"command":"/opt/ai-kb/tenant/skills/律师助手/.venv/bin/python /opt/ai-kb/tenant/skills/律师助手/scripts/install_deps.py --word --yes"}`,
+		"{\"command\":\"/opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/.venv/bin/python /opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/scripts/install_deps.py --word --yes\"}",
 	))
 	require.NoError(t, err)
 	require.True(t, result.Success)

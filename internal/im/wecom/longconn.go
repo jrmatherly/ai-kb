@@ -678,7 +678,7 @@ func (c *LongConnClient) convertMixedMessage(msg *botMessage, chatID string, cha
 	// Text plus image(s): image as attachment, text as caption. Downstream,
 	// prepareIMAttachments downloads the image and fileMessageQAContent keeps
 	// msg.Content as the query, so dropping the image here would silently
-	// blind the model for the most common mixed-message shape ("这是什么？" + screenshot).
+	// blind the model for the most common mixed-message shape ("what is this?" + screenshot).
 	if firstImageURL != "" {
 		incoming := &im.IncomingMessage{
 			Platform:    im.PlatformWeCom,

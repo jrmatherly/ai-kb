@@ -291,7 +291,8 @@ func downloadAndInstall(ctx context.Context, url string, filename string, curren
 	}()
 }
 
-// desktopAboutVersion 优先使用构建脚本注入的 handler.Version，否则尝试读取仓库根目录 VERSION（本地 wails dev 等未带 ldflags 时）。
+// desktopAboutVersion prefers the handler.Version injected by the build script, and otherwise reads
+// VERSION at the repo root (local wails dev and other builds without ldflags).
 func desktopAboutVersion() string {
 	if v := strings.TrimSpace(handler.Version); v != "" && v != "unknown" {
 		return v

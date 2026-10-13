@@ -75,8 +75,8 @@ func newMinimaxProvider() *Definition {
 		Description: "MiniMax-M3, MiniMax-M2.7, MiniMax-M2.7-highspeed, etc. Global endpoint " +
 			MinimaxGlobalBaseURL + "; Anthropic-compatible facade " + MinimaxAnthropicBaseURL,
 		Descriptions: map[string]string{
-			"zh-CN": "MiniMax-M3, MiniMax-M2.7, MiniMax-M2.7-highspeed 等。国际版 " +
-				MinimaxGlobalBaseURL + "；Anthropic 兼容接口 " + MinimaxAnthropicBaseURL,
+			"zh-CN": "MiniMax-M3, MiniMax-M2.7, MiniMax-M2.7-highspeed \u7b49\u3002\u56fd\u9645\u7248 " +
+				MinimaxGlobalBaseURL + "\uff1bAnthropic \u517c\u5bb9\u63a5\u53e3 " + MinimaxAnthropicBaseURL,
 		},
 		Website:      "https://platform.minimax.cn",
 		Icon:         minimaxIcon,
@@ -99,11 +99,11 @@ func newMinimaxProvider() *Definition {
 				// (and the same page on platform.minimax.cn): multipart model
 				// (asr-1.0) + file on /v1/speech_to_text rather than the OpenAI
 				// path, answering {text, duration, trace_id} for the default
-				// json. At most 50 MB and 500 seconds; "超出会返回 400 而不会被截断".
+				// json. At most 50 MB and 500 seconds; "anything larger returns 400 and is not truncated".
 				Path:         api.Ptr("/speech_to_text"),
 				MaxFileBytes: api.Ptr(50 << 20),
 				// "wav / aiff / flac / alac(m4a) / mp3 / aac / opus / ogg";
-				// "不支持无容器的裸 PCM 数据". The language hint is a request
+				// "raw PCM data without a container is not supported". The language hint is a request
 				// header, a BCP-47 tag, not a form field.
 				Formats:       []string{"wav", "aiff", "flac", "m4a", "mp3", "aac", "opus", "ogg"},
 				LanguageParam: api.Ptr(api.LanguageHeader),

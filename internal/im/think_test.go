@@ -20,8 +20,8 @@ func TestStripThinkBlocks(t *testing.T) {
 		},
 		{
 			name:  "multiline think with tools",
-			input: "<think>\n让我先搜索知识库\n正在调用 搜索关键词...\n搜索关键词：「文明」\n</think>\n\n文明6是一款策略游戏。",
-			want:  "文明6是一款策略游戏。",
+			input: "<think>\nLet me search the knowledge base first\nCalling Text Pattern Search...\nKeyword search: \"civilization\"\n</think>\n\nCivilization VI is a strategy game.",
+			want:  "Civilization VI is a strategy game.",
 		},
 		{
 			name:  "multiple blocks",
@@ -47,16 +47,16 @@ func TestStripThinkBlocks(t *testing.T) {
 }
 
 func TestFormatIMDisplayContent_intermediate_showsThinkingStyled(t *testing.T) {
-	raw := "<think>\n分析用户问题\n正在调用 知识库检索...\n</think>\n\n"
+	raw := "<think>\nAnalyzing the user's question\nCalling Knowledge Search...\n</think>\n\n"
 	got := FormatIMDisplayContent(raw, StreamDisplayIntermediate)
 
-	if !strings.Contains(got, "思考过程") {
+	if !strings.Contains(got, "Thought process") {
 		t.Fatalf("intermediate display should include thinking header, got: %q", got)
 	}
-	if !strings.Contains(got, "分析用户问题") {
+	if !strings.Contains(got, "Analyzing the user's question") {
 		t.Fatalf("intermediate display should include thinking body, got: %q", got)
 	}
-	if !strings.Contains(got, "知识库检索") {
+	if !strings.Contains(got, "Knowledge Search") {
 		t.Fatalf("intermediate display should include tool progress, got: %q", got)
 	}
 	if strings.Contains(got, "<think>") {
@@ -65,10 +65,10 @@ func TestFormatIMDisplayContent_intermediate_showsThinkingStyled(t *testing.T) {
 }
 
 func TestFormatIMDisplayContent_intermediate_inProgressThink(t *testing.T) {
-	raw := "<think>\n正在推理\n正在调用 搜索关键词...\n"
+	raw := "<think>\nReasoning\nCalling Text Pattern Search...\n"
 	got := FormatIMDisplayContent(raw, StreamDisplayIntermediate)
 
-	if !strings.Contains(got, "思考") {
+	if !strings.Contains(got, "Thought process") {
 		t.Fatalf("open think block should show thinking header, got: %q", got)
 	}
 	if strings.Contains(got, "<think>") {
@@ -77,26 +77,26 @@ func TestFormatIMDisplayContent_intermediate_inProgressThink(t *testing.T) {
 }
 
 func TestFormatIMDisplayContent_intermediate_showsAnswerPreview(t *testing.T) {
-	raw := "<think>\n检索中\n</think>\n\n文明6是回合制策略游戏。"
+	raw := "<think>\nSearching\n</think>\n\nCivilization VI is a turn-based strategy game."
 	got := FormatIMDisplayContent(raw, StreamDisplayIntermediate)
 
-	if !strings.Contains(got, "文明6是回合制策略游戏") {
+	if !strings.Contains(got, "Civilization VI is a turn-based strategy game") {
 		t.Fatalf("intermediate display should preview answer after think block, got: %q", got)
 	}
 }
 
 func TestFormatIMDisplayContent_final_stripsThinkingAndTools(t *testing.T) {
-	raw := "<think>\n让我先搜索知识库\n正在调用 搜索关键词...\n搜索关键词：「文明」\n</think>\n\n文明6是一款策略游戏。"
+	raw := "<think>\nLet me search the knowledge base first\nCalling Text Pattern Search...\nKeyword search: \"civilization\"\n</think>\n\nCivilization VI is a strategy game."
 	got := FormatIMDisplayContent(raw, StreamDisplayFinal)
 
-	want := "文明6是一款策略游戏。"
+	want := "Civilization VI is a strategy game."
 	if got != want {
 		t.Fatalf("final display = %q, want %q", got, want)
 	}
 }
 
 func TestFormatIMDisplayContent_final_plainAnswerUnchanged(t *testing.T) {
-	raw := "这是最终答案。"
+	raw := "This is the final answer."
 	got := FormatIMDisplayContent(raw, StreamDisplayFinal)
 	if got != raw {
 		t.Fatalf("final display = %q, want %q", got, raw)
@@ -104,13 +104,13 @@ func TestFormatIMDisplayContent_final_plainAnswerUnchanged(t *testing.T) {
 }
 
 func TestFormatIMDisplayContent_final_ragPipelineHidden(t *testing.T) {
-	raw := "<think>\n正在理解问题...\n已完成问题理解\n正在检索知识库...\n检索知识库：「query」 · 找到 3 个结果\n</think>\n\n根据知识库，答案是 A。"
+	raw := "<think>\nUnderstanding query...\nQuery understood\nSearching knowledge base...\nSearched knowledge base: \"query\" · Found 3 result(s)\n</think>\n\nAccording to the knowledge base, the answer is A."
 	got := FormatIMDisplayContent(raw, StreamDisplayFinal)
 
-	if strings.Contains(got, "问题理解") || strings.Contains(got, "知识库检索") {
+	if strings.Contains(got, "Query understood") || strings.Contains(got, "Searched knowledge base") {
 		t.Fatalf("final display must not contain RAG pipeline steps, got: %q", got)
 	}
-	if got != "根据知识库，答案是 A。" {
+	if got != "According to the knowledge base, the answer is A." {
 		t.Fatalf("final display = %q", got)
 	}
 }
@@ -118,13 +118,13 @@ func TestFormatIMDisplayContent_final_ragPipelineHidden(t *testing.T) {
 func TestFormatIMAgentIntermediate_answerFirstBeforeTools(t *testing.T) {
 	parts := IMStreamParts{
 		Mode:       IMStreamModeAgent,
-		LiveAnswer: "好的，让我先搜索知识库。",
+		LiveAnswer: "OK, let me search the knowledge base first.",
 	}
 	got := FormatIMIntermediateFromParts(parts, true)
-	if got != "好的，让我先搜索知识库。" {
+	if got != "OK, let me search the knowledge base first." {
 		t.Fatalf("should stream as plain answer, got: %q", got)
 	}
-	if strings.Contains(got, "思考过程") {
+	if strings.Contains(got, "Thought process") {
 		t.Fatal("think header must not appear while answer is live")
 	}
 }
@@ -132,23 +132,23 @@ func TestFormatIMAgentIntermediate_answerFirstBeforeTools(t *testing.T) {
 func TestFormatIMAgentIntermediate_retractIntoThinkOnTools(t *testing.T) {
 	parts := IMStreamParts{
 		Mode:       IMStreamModeAgent,
-		AgentInner: "好的，让我先搜索知识库。\n",
+		AgentInner: "OK, let me search the knowledge base first.\n",
 		AgentToolSteps: []IMToolStep{
 			{ToolName: "grep_chunks", Pending: true},
-			{ToolName: "knowledge_search", Success: true, Arguments: map[string]any{"query": "文明6"}},
+			{ToolName: "knowledge_search", Success: true, Arguments: map[string]any{"query": "Civilization VI"}},
 		},
 	}
 	got := FormatIMIntermediateFromParts(parts, true)
-	if !strings.Contains(got, "思考过程") {
+	if !strings.Contains(got, "Thought process") {
 		t.Fatalf("after tool retract should show think block, got: %q", got)
 	}
-	if !strings.Contains(got, "好的，让我先搜索知识库") {
+	if !strings.Contains(got, "OK, let me search the knowledge base first") {
 		t.Fatalf("retracted preamble should be inside think, got: %q", got)
 	}
-	if !strings.Contains(got, "搜索关键词") {
+	if !strings.Contains(got, "Text Pattern Search") {
 		t.Fatalf("tool lines should be inside think, got: %q", got)
 	}
-	if !strings.Contains(got, "文明6") {
+	if !strings.Contains(got, "Civilization VI") {
 		t.Fatalf("tool query should be inside think, got: %q", got)
 	}
 }
@@ -156,20 +156,20 @@ func TestFormatIMAgentIntermediate_retractIntoThinkOnTools(t *testing.T) {
 func TestFormatIMAgentIntermediate_newAnswerAfterTools(t *testing.T) {
 	parts := IMStreamParts{
 		Mode:       IMStreamModeAgent,
-		AgentInner: "好的，让我搜索\n",
+		AgentInner: "OK, let me search\n",
 		AgentToolSteps: []IMToolStep{
-			{ToolName: "knowledge_search", Success: true, Arguments: map[string]any{"query": "文明6"}},
+			{ToolName: "knowledge_search", Success: true, Arguments: map[string]any{"query": "Civilization VI"}},
 		},
-		LiveAnswer: "根据检索结果，文明6是…",
+		LiveAnswer: "According to the search results, Civilization VI is…",
 	}
 	got := FormatIMIntermediateFromParts(parts, true)
-	if !strings.Contains(got, "根据检索结果，文明6是…") {
+	if !strings.Contains(got, "According to the search results, Civilization VI is…") {
 		t.Fatalf("should still stream live answer, got: %q", got)
 	}
-	if !strings.Contains(got, "思考过程") {
+	if !strings.Contains(got, "Thought process") {
 		t.Fatalf("think block should stay visible above answer, got: %q", got)
 	}
-	if !strings.Contains(got, "文明6") {
+	if !strings.Contains(got, "Civilization VI") {
 		t.Fatalf("tool query should remain in think block, got: %q", got)
 	}
 }
@@ -177,7 +177,7 @@ func TestFormatIMAgentIntermediate_newAnswerAfterTools(t *testing.T) {
 func TestBuildIMStreamRaw_agentInProgress_mergesToolsAndNarrativeIntoThink(t *testing.T) {
 	parts := IMStreamParts{
 		Mode:       IMStreamModeAgent,
-		AgentInner: "用户又问文明6\n",
+		AgentInner: "The user asks about Civilization VI again\n",
 		AgentToolSteps: []IMToolStep{
 			{ToolName: "grep_chunks", Pending: true},
 			{ToolName: "knowledge_search", Success: true},
@@ -185,11 +185,11 @@ func TestBuildIMStreamRaw_agentInProgress_mergesToolsAndNarrativeIntoThink(t *te
 	}
 	got := FormatIMIntermediateFromParts(parts, true)
 
-	if !strings.Contains(got, "搜索关键词") {
+	if !strings.Contains(got, "Text Pattern Search") {
 		t.Fatalf("tool progress should be inside think block, got: %q", got)
 	}
-	if !strings.Contains(got, "思考过程") {
-		t.Fatalf("agent tooling phase should show 思考过程, got: %q", got)
+	if !strings.Contains(got, "Thought process") {
+		t.Fatalf("agent tooling phase should show Thought process, got: %q", got)
 	}
 }
 
@@ -198,25 +198,25 @@ func TestFormatIMQuickQA_separatesPipelineAndThinking(t *testing.T) {
 		Mode: IMStreamModeQuickQA,
 		PipelineToolSteps: []IMToolStep{
 			{ToolName: "query_understand", Pending: true},
-			{ToolName: "knowledge_search", Success: true, Arguments: map[string]any{"query": "文明6"}},
+			{ToolName: "knowledge_search", Success: true, Arguments: map[string]any{"query": "Civilization VI"}},
 		},
-		ReasoningInner: "分析问题意图…",
+		ReasoningInner: "Analyzing the question intent…",
 	}
 	got := FormatIMIntermediateFromParts(parts, false)
 
-	if strings.Contains(got, "思考过程") {
-		t.Fatalf("quick QA should not use agent 思考过程 header, got: %q", got)
+	if strings.Contains(got, "Thought process") {
+		t.Fatalf("quick QA should not use agent Thought process header, got: %q", got)
 	}
-	if !strings.Contains(got, "> 💭 **思考**") {
-		t.Fatalf("quick QA reasoning should use separate 思考 section, got: %q", got)
+	if !strings.Contains(got, "> 💭 **Thinking**") {
+		t.Fatalf("quick QA reasoning should use separate Thinking section, got: %q", got)
 	}
-	if !strings.Contains(got, "分析问题意图") {
+	if !strings.Contains(got, "Analyzing the question intent") {
 		t.Fatalf("reasoning body missing, got: %q", got)
 	}
-	if !strings.Contains(got, "正在理解问题") {
+	if !strings.Contains(got, "Understanding query") {
 		t.Fatalf("pipeline steps missing, got: %q", got)
 	}
-	if !strings.Contains(got, "文明6") {
+	if !strings.Contains(got, "Civilization VI") {
 		t.Fatalf("pipeline query missing, got: %q", got)
 	}
 }
@@ -228,10 +228,10 @@ func TestFormatIMQuickQA_collapsesToAnswerWhenStreaming(t *testing.T) {
 			{ToolName: "query_understand", Success: true},
 			{ToolName: "knowledge_search", Success: true},
 		},
-		Answer: "文明6是回合制策略游戏。",
+		Answer: "Civilization VI is a turn-based strategy game.",
 	}
 	got := FormatIMIntermediateFromParts(parts, false)
-	if got != "文明6是回合制策略游戏。" {
+	if got != "Civilization VI is a turn-based strategy game." {
 		t.Fatalf("quick QA should collapse to answer preview, got: %q", got)
 	}
 }
@@ -239,19 +239,19 @@ func TestFormatIMQuickQA_collapsesToAnswerWhenStreaming(t *testing.T) {
 func TestFormatIMFinalFromParts_agentAnswerOnly(t *testing.T) {
 	parts := IMStreamParts{
 		Mode:       IMStreamModeAgent,
-		AgentInner: "好的，让我搜索\n",
+		AgentInner: "OK, let me search\n",
 		AgentToolSteps: []IMToolStep{
 			{ToolName: "grep_chunks", Pending: true},
 			{ToolName: "knowledge_search", Success: true},
 		},
-		LiveAnswer: "不应出现在最终消息",
-		Answer:     "文明6是一款策略游戏。",
+		LiveAnswer: "should not appear in the final message",
+		Answer:     "Civilization VI is a strategy game.",
 	}
 	got := FormatIMFinalFromParts(parts)
-	if got != "文明6是一款策略游戏。" {
+	if got != "Civilization VI is a strategy game." {
 		t.Fatalf("final should be answer-only, got: %q", got)
 	}
-	if strings.Contains(got, "思考过程") {
+	if strings.Contains(got, "Thought process") {
 		t.Fatalf("final must not include collapsed think header, got: %q", got)
 	}
 }
@@ -260,12 +260,12 @@ func TestFormatIMFinalFromParts_usesAnswerOnly(t *testing.T) {
 	parts := IMStreamParts{
 		Mode:              IMStreamModeQuickQA,
 		PipelineToolSteps: []IMToolStep{{ToolName: "query_understand", Success: true}},
-		ReasoningInner:    "推理中",
+		ReasoningInner:    "Reasoning in progress",
 		AgentToolSteps:    []IMToolStep{{ToolName: "grep_chunks", Pending: true}},
-		Answer:            "文明6是一款策略游戏。",
+		Answer:            "Civilization VI is a strategy game.",
 	}
 	got := FormatIMFinalFromParts(parts)
-	if got != "文明6是一款策略游戏。" {
+	if got != "Civilization VI is a strategy game." {
 		t.Fatalf("final display = %q", got)
 	}
 }

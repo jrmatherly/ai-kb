@@ -9,24 +9,24 @@ import (
 )
 
 func TestAlignNeverAttributesMissingBlockToPreviousPage(t *testing.T) {
-	md := "第一段正确文本。\n第二段实际内容没有匹配。\n第三段正确文本。"
+	md := "\u7b2c\u4e00\u6bb5\u6b63\u786e\u6587\u672c\u3002\n\u7b2c\u4e8c\u6bb5\u5b9e\u9645\u5185\u5bb9\u6ca1\u6709\u5339\u914d\u3002\n\u7b2c\u4e09\u6bb5\u6b63\u786e\u6587\u672c\u3002"
 	units := []Unit{
-		{Text: "第一段正确文本", Locator: types.SourceLocator{Type: "pdf", Page: 1}},
-		{Text: "第二段OCR错误内容", Locator: types.SourceLocator{Type: "pdf", Page: 2}},
-		{Text: "第三段正确文本", Locator: types.SourceLocator{Type: "pdf", Page: 3}},
+		{Text: "\u7b2c\u4e00\u6bb5\u6b63\u786e\u6587\u672c", Locator: types.SourceLocator{Type: "pdf", Page: 1}},
+		{Text: "\u7b2c\u4e8c\u6bb5OCR\u9519\u8bef\u5185\u5bb9", Locator: types.SourceLocator{Type: "pdf", Page: 2}},
+		{Text: "\u7b2c\u4e09\u6bb5\u6b63\u786e\u6587\u672c", Locator: types.SourceLocator{Type: "pdf", Page: 3}},
 	}
 	index := NewIndex(md, Align(md, units))
-	at := runeIndex(md, "第二段")
+	at := runeIndex(md, "\u7b2c\u4e8c\u6bb5")
 	require.Empty(t, index.Locators(at, at+5))
-	require.Equal(t, 3, index.Locators(runeIndex(md, "第三段"), len([]rune(md)))[0].Page)
+	require.Equal(t, 3, index.Locators(runeIndex(md, "\u7b2c\u4e09\u6bb5"), len([]rune(md)))[0].Page)
 }
 
 func TestAlignRequiresFullUnitNotCommonPrefix(t *testing.T) {
-	prefix := strings.Repeat("共同前缀", 12)
+	prefix := strings.Repeat("\u5171\u540c\u524d\u7f00", 12)
 	require.Empty(t,
-		Align(prefix+"验收不合格",
+		Align(prefix+"\u9a8c\u6536\u4e0d\u5408\u683c",
 			[]Unit{{
-				Text: prefix + "验收合格",
+				Text: prefix + "\u9a8c\u6536\u5408\u683c",
 				Locator: types.SourceLocator{
 					Type: "pdf",
 					Page: 1,
@@ -35,7 +35,7 @@ func TestAlignRequiresFullUnitNotCommonPrefix(t *testing.T) {
 }
 
 func TestAlignPreservesNumericMeaning(t *testing.T) {
-	for _, pair := range [][2]string{{"数值15毫米", "数值1.5毫米"}, {"温度5度", "温度-5度"}, {"比例5", "比例5%"}, {"值≤5", "值≥5"}} {
+	for _, pair := range [][2]string{{"\u6570\u503c15\u6beb\u7c73", "\u6570\u503c1.5\u6beb\u7c73"}, {"\u6e29\u5ea65\u5ea6", "\u6e29\u5ea6-5\u5ea6"}, {"\u6bd4\u4f8b5", "\u6bd4\u4f8b5%"}, {"\u503c≤5", "\u503c≥5"}} {
 		require.Empty(t,
 			Align(pair[0],
 				[]Unit{{
@@ -51,9 +51,9 @@ func TestAlignPreservesNumericMeaning(t *testing.T) {
 
 func TestAlignRejectsUnaccountedDuplicate(t *testing.T) {
 	require.Empty(t,
-		Align("目录：设备验收合格。\n正文：设备验收合格。",
+		Align("\u76ee\u5f55\uff1a\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u3002\n\u6b63\u6587\uff1a\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u3002",
 			[]Unit{{
-				Text: "设备验收合格",
+				Text: "\u8bbe\u5907\u9a8c\u6536\u5408\u683c",
 				Locator: types.SourceLocator{
 					Type: "pdf",
 					Page: 9,
@@ -61,40 +61,40 @@ func TestAlignRejectsUnaccountedDuplicate(t *testing.T) {
 			}}))
 	units := []Unit{
 		{
-			Text: "相同段落内容",
+			Text: "\u76f8\u540c\u6bb5\u843d\u5185\u5bb9",
 			Locator: types.SourceLocator{
 				Type: "pdf",
 				Page: 1,
 			},
 		},
 		{
-			Text: "相同段落内容",
+			Text: "\u76f8\u540c\u6bb5\u843d\u5185\u5bb9",
 			Locator: types.SourceLocator{
 				Type: "pdf",
 				Page: 2,
 			},
 		},
 	}
-	blocks := Align("相同段落内容\n相同段落内容", units)
+	blocks := Align("\u76f8\u540c\u6bb5\u843d\u5185\u5bb9\n\u76f8\u540c\u6bb5\u843d\u5185\u5bb9", units)
 	require.Len(t, blocks, 2)
 	require.Equal(t, 2, blocks[1].Locator.Page)
 }
 
 func TestRemapNeverInterpolatesChangedText(t *testing.T) {
-	old := "第一段\n已通过验收\n末段"
+	old := "\u7b2c\u4e00\u6bb5\n\u5df2\u901a\u8fc7\u9a8c\u6536\n\u672b\u6bb5"
 	blocks := []types.SourceBlock{{Start: 4, End: 9, Locator: types.SourceLocator{Type: "pdf", Page: 2}}}
-	require.Empty(t, RemapBlocks(blocks, old, "第一段\n未通过检查\n末段"))
+	require.Empty(t, RemapBlocks(blocks, old, "\u7b2c\u4e00\u6bb5\n\u672a\u901a\u8fc7\u68c0\u67e5\n\u672b\u6bb5"))
 }
 
 func TestMergeKeepsDistinctExcerptsOfSameRegion(t *testing.T) {
-	a := types.SourceLocator{Type: "pdf", Page: 2, BBox: []float64{0, 0, 1, 1}, Quote: "第一句"}
+	a := types.SourceLocator{Type: "pdf", Page: 2, BBox: []float64{0, 0, 1, 1}, Quote: "\u7b2c\u4e00\u53e5"}
 	b := a
-	b.Quote = "另一句"
+	b.Quote = "\u53e6\u4e00\u53e5"
 	require.Len(t, MergeLocators(types.SourceLocators{a}, types.SourceLocators{a, b}), 2)
 }
 
 func TestLocatorsPreserveLongEvidenceAndAllRegions(t *testing.T) {
-	text := strings.Repeat("完整原文", 100) + "末尾引用的关键结论"
+	text := strings.Repeat("\u5b8c\u6574\u539f\u6587", 100) + "\u672b\u5c3e\u5f15\u7528\u7684\u5173\u952e\u7ed3\u8bba"
 	index := NewIndex(text,
 		[]types.SourceBlock{{
 			Start: 0,
@@ -117,13 +117,13 @@ func TestLocatorsPreserveLongEvidenceAndAllRegions(t *testing.T) {
 				},
 			})
 	}
-	locs := NewIndex(strings.Repeat("文", 80), blocks).Locators(0, 80)
+	locs := NewIndex(strings.Repeat("\u6587", 80), blocks).Locators(0, 80)
 	require.Len(t, locs, 80)
 	require.Len(t, MergeLocators(locs[:40], locs[40:]), 80)
 }
 
 func TestFoldingCannotMixRevisionsOrMappingQuality(t *testing.T) {
-	first := types.SourceLocator{Type: "pdf", Page: 1, Mapping: "exact", SourceHash: "original", Quote: "第一段"}
+	first := types.SourceLocator{Type: "pdf", Page: 1, Mapping: "exact", SourceHash: "original", Quote: "\u7b2c\u4e00\u6bb5"}
 	second := first
 	second.Mapping = ""
 	require.Len(t, AppendLocator(types.SourceLocators{first}, second), 2)
@@ -133,7 +133,7 @@ func TestFoldingCannotMixRevisionsOrMappingQuality(t *testing.T) {
 }
 
 func TestAlignRejectsPartialNumericValues(t *testing.T) {
-	for _, pair := range [][2]string{{"增长为5%", "增长为5"}, {"115", "15"}, {"15.5", "15"}, {"-15", "15"}} {
+	for _, pair := range [][2]string{{"\u589e\u957f\u4e3a5%", "\u589e\u957f\u4e3a5"}, {"115", "15"}, {"15.5", "15"}, {"-15", "15"}} {
 		require.Empty(t,
 			Align(pair[0], []Unit{{Text: pair[1], Locator: types.SourceLocator{Type: "pdf", Page: 1}}}),
 			pair,
@@ -142,8 +142,8 @@ func TestAlignRejectsPartialNumericValues(t *testing.T) {
 }
 
 func TestChunkWithUnmappedEvidenceIsMarkedPartial(t *testing.T) {
-	md := "匹配的原文。\n未匹配的关键结论。"
-	index := NewIndex(md, Align(md, []Unit{{Text: "匹配的原文", Locator: types.SourceLocator{Type: "pdf", Page: 1}}}))
+	md := "\u5339\u914d\u7684\u539f\u6587\u3002\n\u672a\u5339\u914d\u7684\u5173\u952e\u7ed3\u8bba\u3002"
+	index := NewIndex(md, Align(md, []Unit{{Text: "\u5339\u914d\u7684\u539f\u6587", Locator: types.SourceLocator{Type: "pdf", Page: 1}}}))
 	locs := index.Locators(0, len([]rune(md)))
 	require.Len(t, locs, 1)
 	require.True(t, locs[0].Partial)
@@ -151,23 +151,23 @@ func TestChunkWithUnmappedEvidenceIsMarkedPartial(t *testing.T) {
 }
 
 func TestAlignmentDecodesTableEntitiesWithoutLosingOffsets(t *testing.T) {
-	md := "<table><tr><td>限值</td><td>&lt;1.5</td></tr></table>"
+	md := "<table><tr><td>\u9650\u503c</td><td>&lt;1.5</td></tr></table>"
 	loc := types.SourceLocator{Type: "pdf", Page: 2}
-	blocks := Align(md, []Unit{{Text: "限值 <1.5", Locator: loc}})
+	blocks := Align(md, []Unit{{Text: "\u9650\u503c <1.5", Locator: loc}})
 	require.Len(t, blocks, 1)
 	quotes := NewIndex(md, blocks).Locators(0, len([]rune(md)))
 	require.False(t, quotes[0].Partial)
-	require.Equal(t, "限值 <1.5", quotes[0].Quote)
-	remapped := RemapBlocks(blocks, md, "|限值|<1.5|")
+	require.Equal(t, "\u9650\u503c <1.5", quotes[0].Quote)
+	remapped := RemapBlocks(blocks, md, "|\u9650\u503c|<1.5|")
 	require.Len(t, remapped, 1)
 	require.Equal(t, 2, remapped[0].Locator.Page)
 }
 
 func TestImagePlaceholderDoesNotInvalidateVerifiedTextLocators(t *testing.T) {
-	md := "第一段完整的原文。\n\n![descript](resource://image)\n\n第二段完整的原文。"
+	md := "\u7b2c\u4e00\u6bb5\u5b8c\u6574\u7684\u539f\u6587\u3002\n\n![descript](resource://image)\n\n\u7b2c\u4e8c\u6bb5\u5b8c\u6574\u7684\u539f\u6587\u3002"
 	blocks := Align(md, []Unit{
-		{Text: "第一段完整的原文。", Locator: types.SourceLocator{Type: "docx", Block: 1}},
-		{Text: "第二段完整的原文。", Locator: types.SourceLocator{Type: "docx", Block: 3}},
+		{Text: "\u7b2c\u4e00\u6bb5\u5b8c\u6574\u7684\u539f\u6587\u3002", Locator: types.SourceLocator{Type: "docx", Block: 1}},
+		{Text: "\u7b2c\u4e8c\u6bb5\u5b8c\u6574\u7684\u539f\u6587\u3002", Locator: types.SourceLocator{Type: "docx", Block: 3}},
 	})
 	locs := NewIndex(md, blocks).Locators(0, len([]rune(md)))
 	require.Len(t, locs, 2)

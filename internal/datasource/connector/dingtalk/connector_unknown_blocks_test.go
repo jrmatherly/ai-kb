@@ -18,23 +18,23 @@ import (
 func TestCollectUnknownBlockTypesReportsDocumentIdentity(t *testing.T) {
 	document := node{
 		ID:   "node-1",
-		Name: "季度规划",
+		Name: "\u5b63\u5ea6\u89c4\u5212",
 		URL:  "https://example.com/i/nodes/node-1",
 	}
-	rendered := renderResult{Markdown: "# 季度规划\n", UnknownTypes: []string{"attachment", "code"}}
+	rendered := renderResult{Markdown: "# \u5b63\u5ea6\u89c4\u5212\n", UnknownTypes: []string{"attachment", "code"}}
 
 	unknown, ok := collectUnknownBlockTypes(document, rendered)
 	if !ok {
 		t.Fatal("collectUnknownBlockTypes() reported a complete document")
 	}
-	if unknown.NodeID != "node-1" || unknown.Title != "季度规划" ||
+	if unknown.NodeID != "node-1" || unknown.Title != "\u5b63\u5ea6\u89c4\u5212" ||
 		unknown.URL != "https://example.com/i/nodes/node-1" ||
 		!reflect.DeepEqual(unknown.BlockTypes, []string{"attachment", "code"}) {
 		t.Fatalf("unknownBlockTypes = %#v", unknown)
 	}
 
 	fields := unknown.fields()
-	if fields["node_id"] != "node-1" || fields["title"] != "季度规划" ||
+	if fields["node_id"] != "node-1" || fields["title"] != "\u5b63\u5ea6\u89c4\u5212" ||
 		fields["block_types"] != "attachment,code" || fields["count"] != 2 {
 		t.Fatalf("fields() = %#v", fields)
 	}

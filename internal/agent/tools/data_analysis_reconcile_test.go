@@ -39,10 +39,10 @@ func TestReconcileSQLPreservesNonIdentifiers(t *testing.T) {
 }
 
 func TestReconcileSQLPreservesQuotedIdentifierEscapes(t *testing.T) {
-	schema := &TableSchema{Columns: []ColumnInfo{{Name: `Order "Status"`}, {Name: "订单 状态"}}}
-	query := `SELECT "order""status""","订单状态" FROM dataset`
+	schema := &TableSchema{Columns: []ColumnInfo{{Name: `Order "Status"`}, {Name: "\u8ba2\u5355 \u72b6\u6001"}}}
+	query := "SELECT \"order\"\"status\"\"\",\"\u8ba2\u5355\u72b6\u6001\" FROM dataset"
 	got, fixes := reconcileSQLColumnsWithSchema(query, schema)
-	require.Equal(t, `SELECT "Order ""Status""","订单 状态" FROM dataset`, got)
+	require.Equal(t, "SELECT \"Order \"\"Status\"\"\",\"\u8ba2\u5355 \u72b6\u6001\" FROM dataset", got)
 	require.Len(t, fixes, 2)
 }
 

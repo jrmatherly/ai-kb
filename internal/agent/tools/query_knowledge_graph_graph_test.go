@@ -62,7 +62,7 @@ func TestQueryKnowledgeGraph_QueriesTheGraph(t *testing.T) {
 	}}
 	tool := NewQueryKnowledgeGraphTool(&stubKnowledgeBaseService{
 		kb: &types.KnowledgeBase{ID: "kb-1", ExtractConfig: &types.ExtractConfig{
-			Enabled: true, Nodes: []*types.GraphNode{{Name: "技术"}},
+			Enabled: true, Nodes: []*types.GraphNode{{Name: "\u6280\u672f"}},
 		}},
 		results: []*types.SearchResult{{ID: "c-text", KnowledgeID: "doc", Content: "text hit", Score: 0.9}},
 	}).WithGraph(graphRepo, chunkRepo)
@@ -110,7 +110,7 @@ func TestQueryKnowledgeGraph_ScopesRelationsToDocuments(t *testing.T) {
 	}}
 	tool := NewQueryKnowledgeGraphTool(&stubKnowledgeBaseService{
 		kb: &types.KnowledgeBase{ID: "kb-1", ExtractConfig: &types.ExtractConfig{
-			Enabled: true, Nodes: []*types.GraphNode{{Name: "技术"}},
+			Enabled: true, Nodes: []*types.GraphNode{{Name: "\u6280\u672f"}},
 		}},
 		err: assert.AnError,
 	}, types.SearchTargets{{

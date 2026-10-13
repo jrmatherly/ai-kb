@@ -245,7 +245,7 @@ func ParseFeishuTimestamp(ts string) time.Time {
 // that downstream validation (utf8.ValidString) rejects.
 //
 // The extension is preserved across truncation: only the base name is trimmed,
-// so a long attachment name like "很长的名字….pdf" keeps its ".pdf" suffix that
+// so a long attachment name like "a-very-long-name….pdf" keeps its ".pdf" suffix that
 // downstream file-type classification depends on.
 func SanitizeFileName(name string) string {
 	if name == "" {
@@ -309,7 +309,7 @@ type DocxFetchInput struct {
 // empty. Shared by the wiki Connector and the Drive DriveConnector.
 func FetchDocxWithBlocks(ctx context.Context, client *Client, in DocxFetchInput) ([]*types.FetchedItem, error) {
 	// FEISHU_DOCX_PARSE_MODE selects the docx parsing path. The blocks path
-	// renders image blocks as empty `![图片]()` placeholders and fans images out
+	// renders image blocks as empty `![image]()` placeholders and fans images out
 	// into separate knowledge items, which breaks image↔document association in
 	// retrieval/wiki/agent. The export path yields a .docx that docreader parses
 	// inline, so images are bound to the parent document via parent_chunk_id
@@ -446,7 +446,7 @@ func FetchDocxWithBlocks(ctx context.Context, client *Client, in DocxFetchInput)
 				in.ObjToken, b.Image.Token, derr)
 			items = append(items, &types.FetchedItem{
 				ExternalID:       childID,
-				Title:            fmt.Sprintf("%s（内嵌图片）", in.Title),
+				Title:            fmt.Sprintf("%s (embedded image)", in.Title),
 				SourceResourceID: in.ResourceID,
 				Metadata:         FeishuErrorItemMeta(derr, imgMeta()),
 			})
@@ -463,7 +463,7 @@ func FetchDocxWithBlocks(ctx context.Context, client *Client, in DocxFetchInput)
 		}
 		items = append(items, &types.FetchedItem{
 			ExternalID:       childID,
-			Title:            fmt.Sprintf("%s（内嵌图片）", in.Title),
+			Title:            fmt.Sprintf("%s (embedded image)", in.Title),
 			Content:          data,
 			ContentType:      contentType,
 			FileName:         "image-" + b.Image.Token + ext,

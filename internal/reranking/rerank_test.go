@@ -262,7 +262,7 @@ func (l *limitedReranker) MaxPassageRunes(string) int { return l.limit }
 // keeping the title and body ahead of the appended enrichments.
 func TestRerank_fitsPassagesToModelLimit(t *testing.T) {
 	t.Parallel()
-	long := strings.Repeat("长", 50)
+	long := strings.Repeat("\u957f", 50)
 	model := &limitedReranker{stubReranker: stubReranker{scores: []float64{0.9, 0.8}}, limit: 20}
 	res := Rerank(context.Background(), model, "q", rows(long, "short"), Options{Threshold: 0.3})
 	if len(model.documents) != 2 {

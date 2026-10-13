@@ -15,25 +15,10 @@ import (
 // qwenASRResponse is the non-streaming response example from Alibaba's
 // Qwen-ASR reference, copied from the page:
 // https://help.aliyun.com/zh/model-studio/qwen-asr-api-reference
-const qwenASRResponse = `{
-    "choices": [{
-        "finish_reason": "stop",
-        "index": 0,
-        "message": {
-            "annotations": [{"emotion": "neutral", "language": "zh", "type": "audio_info"}],
-            "content": "欢迎使用阿里云。",
-            "role": "assistant"
-        }
-    }],
-    "created": 1767683986,
-    "id": "chatcmpl-487abe5f-d4f2-9363-a877-xxxxxxx",
-    "model": "qwen3-asr-flash",
-    "object": "chat.completion",
-    "usage": {"completion_tokens": 12, "prompt_tokens": 42, "total_tokens": 54}
-}`
+const qwenASRResponse = "{\n    \"choices\": [{\n        \"finish_reason\": \"stop\",\n        \"index\": 0,\n        \"message\": {\n            \"annotations\": [{\"emotion\": \"neutral\", \"language\": \"zh\", \"type\": \"audio_info\"}],\n            \"content\": \"\u6b22\u8fce\u4f7f\u7528\u963f\u91cc\u4e91\u3002\",\n            \"role\": \"assistant\"\n        }\n    }],\n    \"created\": 1767683986,\n    \"id\": \"chatcmpl-487abe5f-d4f2-9363-a877-xxxxxxx\",\n    \"model\": \"qwen3-asr-flash\",\n    \"object\": \"chat.completion\",\n    \"usage\": {\"completion_tokens\": 12, \"prompt_tokens\": 42, \"total_tokens\": 54}\n}"
 
 // withSeconds is a reply carrying the usage.seconds that the reference's
-// schema documents ("音频时长（秒）") but its example omits.
+// schema documents ("audio duration (seconds)") but its example omits.
 const withSeconds = `{"choices":[{"message":{"role":"assistant","content":"x"}}],"usage":{"seconds":3}}`
 
 func newClient(url, model string) *Client {
@@ -118,7 +103,7 @@ func TestDecodesTheDocumentedResponse(t *testing.T) {
 		Transcribe(context.Background(), api.TranscriptionRequest{Audio: []byte("RIFF"), FileName: "a.wav"})
 	require.NoError(t, err)
 	assert.Equal(t, "/compatible-mode/v1/chat/completions", path)
-	assert.Equal(t, &api.Transcription{Text: "欢迎使用阿里云。"}, out)
+	assert.Equal(t, &api.Transcription{Text: "\u6b22\u8fce\u4f7f\u7528\u963f\u91cc\u4e91\u3002"}, out)
 }
 
 // A reply with no assistant content is not silence.

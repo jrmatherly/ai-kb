@@ -35,7 +35,7 @@ func settingBool(v interface{}, def bool) bool {
 // nobody asked for.
 type documentSettings struct {
 	// IncludeUploadedFiles admits uploaded Office/PDF files (FILE/DOCUMENT
-	// nodes) that are downloaded from 钉盘 and parsed by AI KB itself.
+	// nodes) that are downloaded from DingTalk Drive and parsed by AI KB itself.
 	IncludeUploadedFiles bool
 }
 

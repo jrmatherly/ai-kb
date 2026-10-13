@@ -43,16 +43,16 @@ type Config struct {
 	// override while the actual request is built without it.
 	Spec  *types.ModelSpecOverride
 	Extra map[string]any
-	// CustomHeaders 允许在调用远程 API 时附加自定义 HTTP 请求头（类似 OpenAI Python SDK 的 extra_headers）。
+	// CustomHeaders adds custom HTTP request headers to remote API calls (like extra_headers in the OpenAI Python SDK).
 	CustomHeaders map[string]string
 	AppID         string
 	AppSecret     string
 }
 
-// ConfigFromModel 根据 types.Model 构造 vlm.Config。
-// 生产路径（从 DB 拉起）和测试连接路径（临时表单）共享这份映射。
-// appID / appSecret 是已解密的 WeKnoraCloud 凭证，调用方负责传入。
-// InterfaceType 会根据 source / 模型参数自动回退到合理默认值。
+// ConfigFromModel builds a vlm.Config from a types.Model.
+// The production path (loaded from the DB) and the test-connection path (a temporary form) share this mapping.
+// appID / appSecret are the decrypted WeKnoraCloud credentials, passed in by the caller.
+// InterfaceType falls back to a sensible default based on the source / model parameters.
 func ConfigFromModel(m *types.Model, appID, appSecret string) *Config {
 	if m == nil {
 		return nil

@@ -10,14 +10,14 @@ func TestValidateParamsUnicodeLength(t *testing.T) {
 	cases := []struct {
 		name, value, constraint, wantError string
 	}{
-		{"Chinese maximum", "你好", `"maxLength":2`, ""},
+		{"Chinese maximum", "\u4f60\u597d", `"maxLength":2`, ""},
 		{"emoji maximum", "😀", `"maxLength":1`, ""},
 		{"accent maximum", "é", `"maxLength":1`, ""},
-		{"Chinese minimum", "你", `"minLength":2`, "at least 2 characters"},
+		{"Chinese minimum", "\u4f60", `"minLength":2`, "at least 2 characters"},
 		{"emoji minimum", "😀", `"minLength":2`, "at least 2 characters"},
-		{"mixed exact length", "A你😀", `"minLength":3,"maxLength":3`, ""},
+		{"mixed exact length", "A\u4f60😀", `"minLength":3,"maxLength":3`, ""},
 		{"combining code points", "e\u0301", `"minLength":2,"maxLength":2`, ""},
-		{"too many code points", "你好啊", `"maxLength":2`, "at most 2 characters"},
+		{"too many code points", "\u4f60\u597d\u554a", `"maxLength":2`, "at most 2 characters"},
 		{"empty minimum", "", `"minLength":1`, "at least 1 characters"},
 		{"ASCII exact length", "abc", `"minLength":3,"maxLength":3`, ""},
 	}

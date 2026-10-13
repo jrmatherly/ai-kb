@@ -74,7 +74,7 @@ func pngBytes(t *testing.T) []byte {
 // carries ocrRunes characters of OCR text.
 func imageHit(id, caption string, vectorScore float64, ocrRunes int) *types.SearchResult {
 	info, _ := json.Marshal([]types.ImageInfo{{
-		URL: "resource://" + id, Caption: caption, OCRText: strings.Repeat("字", ocrRunes),
+		URL: "resource://" + id, Caption: caption, OCRText: strings.Repeat("\u5b57", ocrRunes),
 	}})
 	return &types.SearchResult{
 		ID: id, Content: caption, ChunkType: string(types.ChunkTypeImageVector),

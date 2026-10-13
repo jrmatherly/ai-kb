@@ -1,4 +1,4 @@
-// Package yuque implements the Yuque (语雀) data source connector for AI KB.
+// Package yuque implements the Yuque data source connector for AI KB.
 //
 // It syncs documents from personal and group knowledge bases (books/repos) into AI KB
 // knowledge bases, preserving Markdown formatting.

@@ -8,9 +8,9 @@ import (
 )
 
 func TestExtractSnippet_AroundHit(t *testing.T) {
-	content := strings.Repeat("前", 80) + "部署手册" + strings.Repeat("后", 80)
-	got := ExtractSnippet(content, "部署")
-	assert.Contains(t, got, "部署")
+	content := strings.Repeat("\u524d", 80) + "\u90e8\u7f72\u624b\u518c" + strings.Repeat("\u540e", 80)
+	got := ExtractSnippet(content, "\u90e8\u7f72")
+	assert.Contains(t, got, "\u90e8\u7f72")
 	assert.True(t, strings.HasPrefix(got, "... "))
 	assert.True(t, strings.HasSuffix(got, " ..."))
 	assert.Less(t, len([]rune(got)), 250)

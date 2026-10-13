@@ -26,14 +26,14 @@ func TestEstimator(t *testing.T) {
 	})
 
 	t.Run("chinese text", func(t *testing.T) {
-		tokens := e.EstimateString("你好世界测试数据中文")
+		tokens := e.EstimateString("\u4f60\u597d\u4e16\u754c\u6d4b\u8bd5\u6570\u636e\u4e2d\u6587")
 		fmt.Println(tokens)
 		assert.Greater(t, tokens, 0)
 	})
 
 	t.Run("CJK produces more tokens per char than latin", func(t *testing.T) {
 		latin := strings.Repeat("a", 100)
-		cjk := strings.Repeat("中", 100)
+		cjk := strings.Repeat("\u4e2d", 100)
 		latinTokens := e.EstimateString(latin)
 		cjkTokens := e.EstimateString(cjk)
 		fmt.Println(latinTokens, cjkTokens)
@@ -147,7 +147,7 @@ func TestEstimateTools(t *testing.T) {
 func TestEstimatorScalesTextOnly(t *testing.T) {
 	e, err := NewEstimator()
 	assert.NoError(t, err)
-	text := strings.Repeat("知识库文档检索结果，", 100)
+	text := strings.Repeat("\u77e5\u8bc6\u5e93\u6587\u6863\u68c0\u7d22\u7ed3\u679c\uff0c", 100)
 	raw := e.EstimateString(text)
 
 	e.SetScale(0.6)

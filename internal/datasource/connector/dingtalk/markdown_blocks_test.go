@@ -13,11 +13,11 @@ import (
 // could not map carries only {"rawType"}. All fixtures below are synthetic.
 
 func TestRenderCodeBlockUsesSyntaxAsLanguage(t *testing.T) {
-	result := renderDocument("测试文档", []json.RawMessage{
+	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"code","code":{"syntax":"bash","text":"echo hello"}}`),
 	})
 
-	want := "# 测试文档\n\n```bash\necho hello\n```\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n```bash\necho hello\n```\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}

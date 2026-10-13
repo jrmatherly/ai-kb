@@ -12,15 +12,12 @@ func faqChunkForSnippetTest(t *testing.T) *types.Chunk {
 	t.Helper()
 	chunk := &types.Chunk{
 		ChunkType: types.ChunkTypeFAQ,
-		Content: `Q: 离职原因是否可以自定义
-Similar Questions:
-- 离职原因自定义
-- 设置离职原因`,
+		Content:   "Q: \u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49\nSimilar Questions:\n- \u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49\n- \u8bbe\u7f6e\u79bb\u804c\u539f\u56e0",
 	}
 	meta := &types.FAQChunkMetadata{
-		StandardQuestion: "离职原因是否可以自定义",
-		SimilarQuestions: []string{"离职原因自定义", "设置离职原因"},
-		Answers:          []string{"可以，在系统设置中自定义离职原因。"},
+		StandardQuestion: "\u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49",
+		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"},
+		Answers:          []string{"\u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u81ea\u5b9a\u4e49\u79bb\u804c\u539f\u56e0\u3002"},
 	}
 	if err := chunk.SetFAQMetadata(meta); err != nil {
 		t.Fatalf("SetFAQMetadata: %v", err)
@@ -30,16 +27,16 @@ Similar Questions:
 
 func TestFaqMatchSnippet_StandardQuestionAndMetadataAnswer(t *testing.T) {
 	chunk := faqChunkForSnippetTest(t)
-	re := regexp.MustCompile(`(?i)是否可以自定义`)
+	re := regexp.MustCompile("(?i)\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49")
 	snippet := faqMatchSnippet(chunk, []*regexp.Regexp{re})
 
-	if !strings.Contains(snippet, "Q: 离职原因是否可以自定义") {
+	if !strings.Contains(snippet, "Q: \u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49") {
 		t.Fatalf("want standard question in snippet, got: %s", snippet)
 	}
-	if !strings.Contains(snippet, "A: 可以，在系统设置中") {
+	if !strings.Contains(snippet, "A: \u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d") {
 		t.Fatalf("want metadata answer in snippet, got: %s", snippet)
 	}
-	for _, unwanted := range []string{"Similar Questions", "离职原因自定义", "设置离职原因"} {
+	for _, unwanted := range []string{"Similar Questions", "\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"} {
 		if strings.Contains(snippet, unwanted) {
 			t.Errorf("snippet should not include similar-question noise %q: %s", unwanted, snippet)
 		}
@@ -48,16 +45,16 @@ func TestFaqMatchSnippet_StandardQuestionAndMetadataAnswer(t *testing.T) {
 
 func TestFaqMatchSnippetFromQueries_StandardQuestionAndMetadataAnswer(t *testing.T) {
 	meta := &types.FAQChunkMetadata{
-		StandardQuestion: "离职原因是否可以自定义",
-		SimilarQuestions: []string{"离职原因自定义", "设置离职原因"},
-		Answers:          []string{"可以，在系统设置中自定义离职原因。"},
+		StandardQuestion: "\u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49",
+		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"},
+		Answers:          []string{"\u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u81ea\u5b9a\u4e49\u79bb\u804c\u539f\u56e0\u3002"},
 	}
-	snippet := faqMatchSnippetFromQueries(meta, []string{"是否可以自定义"})
+	snippet := faqMatchSnippetFromQueries(meta, []string{"\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49"})
 
-	if !strings.Contains(snippet, "Q: 离职原因是否可以自定义") {
+	if !strings.Contains(snippet, "Q: \u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49") {
 		t.Fatalf("want standard question, got: %s", snippet)
 	}
-	if !strings.Contains(snippet, "A: 可以，在系统设置中") {
+	if !strings.Contains(snippet, "A: \u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d") {
 		t.Fatalf("want metadata answer, got: %s", snippet)
 	}
 	if strings.Contains(snippet, "Similar Questions") {
@@ -67,32 +64,32 @@ func TestFaqMatchSnippetFromQueries_StandardQuestionAndMetadataAnswer(t *testing
 
 func TestFaqMatchSnippetFromQueries_SimilarQuestionHitShowsMatchedVariant(t *testing.T) {
 	meta := &types.FAQChunkMetadata{
-		StandardQuestion: "离职原因是否可以自定义",
-		SimilarQuestions: []string{"离职原因自定义", "设置离职原因"},
-		Answers:          []string{"可以自定义。"},
+		StandardQuestion: "\u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49",
+		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"},
+		Answers:          []string{"\u53ef\u4ee5\u81ea\u5b9a\u4e49\u3002"},
 	}
-	snippet := faqMatchSnippetFromQueries(meta, []string{"离职原因自定义"})
+	snippet := faqMatchSnippetFromQueries(meta, []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49"})
 
-	if !strings.Contains(snippet, "Q: 离职原因自定义") {
+	if !strings.Contains(snippet, "Q: \u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49") {
 		t.Fatalf("want matched similar question, got: %s", snippet)
 	}
 }
 
 func TestFaqMatchSnippet_SimilarQuestionHitShowsMatchedVariant(t *testing.T) {
 	chunk := faqChunkForSnippetTest(t)
-	re := regexp.MustCompile(`(?i)离职原因自定义`)
+	re := regexp.MustCompile("(?i)\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49")
 	snippet := faqMatchSnippet(chunk, []*regexp.Regexp{re})
 
-	if !strings.Contains(snippet, "Q: 离职原因自定义") {
+	if !strings.Contains(snippet, "Q: \u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49") {
 		t.Fatalf("want matched similar question, got: %s", snippet)
 	}
-	if strings.Contains(snippet, "是否可以自定义") {
+	if strings.Contains(snippet, "\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49") {
 		t.Fatalf("should not show standard question when similar question matched: %s", snippet)
 	}
 }
 
 func TestExtractChunkMatchSnippet_NonFAQUsesBodyContext(t *testing.T) {
-	content := strings.Repeat("前置。", 50) + "TARGET" + strings.Repeat("后续。", 50)
+	content := strings.Repeat("\u524d\u7f6e\u3002", 50) + "TARGET" + strings.Repeat("\u540e\u7eed\u3002", 50)
 	chunk := &types.Chunk{ChunkType: types.ChunkTypeText, Content: content}
 	re := regexp.MustCompile(`TARGET`)
 	snippet := extractChunkMatchSnippet(chunk, []*regexp.Regexp{re})
@@ -100,7 +97,7 @@ func TestExtractChunkMatchSnippet_NonFAQUsesBodyContext(t *testing.T) {
 	if !strings.Contains(snippet, "TARGET") {
 		t.Fatalf("missing match: %s", snippet)
 	}
-	if !strings.Contains(snippet, "前置") || !strings.Contains(snippet, "后续") {
+	if !strings.Contains(snippet, "\u524d\u7f6e") || !strings.Contains(snippet, "\u540e\u7eed") {
 		t.Fatalf("expected expanded body context: %s", snippet)
 	}
 }
@@ -108,9 +105,9 @@ func TestExtractChunkMatchSnippet_NonFAQUsesBodyContext(t *testing.T) {
 // A Chinese question has no spaces; it is segmented into words so the
 // snippet lands on the matching passage instead of the chunk's opening.
 func TestExtractSnippetForChineseQuery(t *testing.T) {
-	content := strings.Repeat("无关的开头内容。", 60) + "退款申请需要在收货后七天内提交。" + strings.Repeat("其他内容。", 20)
-	snippet := extractSnippetForQueries(content, []string{"退款申请的时限是多久？"})
-	if !strings.Contains(snippet, "退款申请") {
+	content := strings.Repeat("\u65e0\u5173\u7684\u5f00\u5934\u5185\u5bb9\u3002", 60) + "\u9000\u6b3e\u7533\u8bf7\u9700\u8981\u5728\u6536\u8d27\u540e\u4e03\u5929\u5185\u63d0\u4ea4\u3002" + strings.Repeat("\u5176\u4ed6\u5185\u5bb9\u3002", 20)
+	snippet := extractSnippetForQueries(content, []string{"\u9000\u6b3e\u7533\u8bf7\u7684\u65f6\u9650\u662f\u591a\u4e45\uff1f"})
+	if !strings.Contains(snippet, "\u9000\u6b3e\u7533\u8bf7") {
 		t.Fatalf("snippet did not reach the matching passage: %q", snippet)
 	}
 }

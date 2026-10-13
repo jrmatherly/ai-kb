@@ -151,7 +151,7 @@ func TestAnOversizedQueryIsAnError(t *testing.T) {
 
 func TestAQueryWithinTheLimitPasses(t *testing.T) {
 	r := newWrapped(&fakeProtocol{}, api.RerankSettings{MaxQueryChars: 10})
-	_, err := r.Rerank(context.Background(), strings.Repeat("中", 10), []string{"d"})
+	_, err := r.Rerank(context.Background(), strings.Repeat("\u4e2d", 10), []string{"d"})
 	require.NoError(t, err, "runes, not bytes")
 }
 

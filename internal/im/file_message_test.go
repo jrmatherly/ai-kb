@@ -29,18 +29,18 @@ func TestFileMessageQAContent(t *testing.T) {
 	}{
 		{
 			name: "preserves caption",
-			msg:  &IncomingMessage{Content: "请总结这个文件", FileName: "report.pdf"},
-			want: "请总结这个文件",
+			msg:  &IncomingMessage{Content: "Please summarize this file", FileName: "report.pdf"},
+			want: "Please summarize this file",
 		},
 		{
 			name: "builds query for file-only event",
 			msg:  &IncomingMessage{FileName: "report.pdf"},
-			want: "我上传了文件「report.pdf」。请确认已收到，并告知我接下来可以如何协助。",
+			want: "I uploaded the file \"report.pdf\". Please confirm you received it and tell me how you can help next.",
 		},
 		{
 			name: "uses safe name when platform omits filename",
 			msg:  &IncomingMessage{},
-			want: "我上传了文件「未命名文件」。请确认已收到，并告知我接下来可以如何协助。",
+			want: "I uploaded the file \"untitled file\". Please confirm you received it and tell me how you can help next.",
 		},
 	}
 
@@ -69,7 +69,7 @@ func TestEmptyIncomingMessageReply(t *testing.T) {
 			name:      "blank text is rejected",
 			msg:       &IncomingMessage{MessageType: MessageTypeText, Content: " \n\t "},
 			wantEmpty: true,
-			wantHint:  "未能识别这条消息中的文字内容。请改用纯文本发送；图片或文件请单独发送。",
+			wantHint:  "Could not recognize any text in this message. Please send plain text instead; send images or files separately.",
 		},
 		{
 			name:      "image without caption is accepted before QA content fill",
@@ -93,7 +93,7 @@ func TestEmptyIncomingMessageReply(t *testing.T) {
 				Extra:       map[string]string{"raw_msgtype": "audio"},
 			},
 			wantEmpty: true,
-			wantHint:  "未能识别这条语音中的文字内容。请改用纯文本发送，或再说一遍。",
+			wantHint:  "Could not recognize any text in this voice message. Please send plain text instead, or say it again.",
 		},
 		{
 			name: "video uses an unsupported-type hint",
@@ -102,7 +102,7 @@ func TestEmptyIncomingMessageReply(t *testing.T) {
 				Extra:       map[string]string{"raw_msgtype": "video"},
 			},
 			wantEmpty: true,
-			wantHint:  "暂不支持视频消息。请改用纯文本发送；图片或文件请单独发送。",
+			wantHint:  "Video messages are not supported yet. Please send plain text instead; send images or files separately.",
 		},
 	}
 
@@ -163,7 +163,7 @@ func TestApplyIMAttachmentTruncationLimitsLargeSingleLine(t *testing.T) {
 
 func TestApplyIMAttachmentTruncationPreservesUTF8(t *testing.T) {
 	attachment := &types.MessageAttachment{}
-	applyIMAttachmentTruncation(strings.Repeat("中", maxIMAttachmentContentBytes), attachment)
+	applyIMAttachmentTruncation(strings.Repeat("\u4e2d", maxIMAttachmentContentBytes), attachment)
 
 	if !attachment.IsTruncated {
 		t.Fatal("expected content to be truncated")

@@ -260,7 +260,7 @@ func TestReadBodyRejectsOversizedResponses(t *testing.T) {
 }
 
 // The whole uploaded-file chain, in the order the provider is called:
-// node UUID → numeric 钉盘 ids → pre-signed URL → raw bytes.
+// node UUID → numeric DingTalk Drive ids → pre-signed URL → raw bytes.
 func TestClientDownloadsUploadedDocumentThroughStorageAPI(t *testing.T) {
 	const payload = "PK\x03\x04word-bytes"
 	var dentryQueries, downloadQueries, objectFetches int

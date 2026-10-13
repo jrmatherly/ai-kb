@@ -8,7 +8,7 @@ import "strings"
 // continue to be serialized as structured provider fields.
 var specialTokenLiterals = strings.NewReplacer(
 	"<|", "<\u200b|",
-	"<｜", "<\u200b｜",
+	"<\uff5c", "<\u200b\uff5c", // full-width vertical bar, as in DeepSeek tokens
 	"<start_of_turn>", "<\u200bstart_of_turn>",
 	"<end_of_turn>", "<\u200bend_of_turn>",
 	"[INST]", "[\u200bINST]",

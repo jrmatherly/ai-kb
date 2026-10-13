@@ -272,17 +272,17 @@ func TestTruncatePromptTokensRejectsAnInvalidValue(t *testing.T) {
 // TestEveryRerankVendorResolvesToAKnownProtocol only checks they are sane.
 func TestRerankCeilingsAreTheDocumentedOnes(t *testing.T) {
 	for id, want := range map[string]api.RerankSettings{
-		// docs.bigmodel.cn: 最多 128 条，query 与单条文档各 4096 字符
+		// docs.bigmodel.cn: at most 128 documents; query and each document 4096 characters each
 		"zhipu": {MaxDocuments: 128, MaxQueryChars: 4096, MaxDocumentChars: 4096},
 		// cloud.tencent.com/document/product/1772: RunRerank 60 docs,
 		// Query + Docs together 2000 characters, one request at a time.
 		"lkeap": {MaxDocuments: 60, MaxRequestChars: 2000, MaxConcurrency: 1},
-		// VikingDB Knowledge Service rerank: datas "数组长度不超过 200".
+		// VikingDB Knowledge Service rerank: datas "array length at most 200".
 		"volcengine": {MaxDocuments: 200, MaxConcurrency: 4},
 		// NIM reranking: passages is capped at 512 items.
 		"nvidia": {MaxDocuments: 512},
-		// cloud.baidu.com/doc/qianfan-api: 文本数量不超过64, query 不超过
-		// 1600 个字符, 每条 document 不超过 4096 个字符.
+		// cloud.baidu.com/doc/qianfan-api: at most 64 texts, query at most
+		// 1600 characters, each document at most 4096 characters.
 		"qianfan": {MaxDocuments: 64, MaxQueryChars: 1600, MaxDocumentChars: 4096},
 		// help.aliyun.com text-rerank: 500 documents per request. Its length
 		// limits are stated in tokens, which runes cannot express.

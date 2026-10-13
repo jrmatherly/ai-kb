@@ -140,7 +140,7 @@ func newAzureOpenaiProvider() *Definition {
 			{
 				Key:      models.ExtraAPIVersion,
 				Label:    "API Version (legacy deployments path)",
-				Labels:   map[string]string{"zh-CN": "API 版本（旧版 deployments 路径）"},
+				Labels:   map[string]string{"zh-CN": "API \u7248\u672c\uff08\u65e7\u7248 deployments \u8def\u5f84\uff09"},
 				Type:     "string",
 				Required: false,
 				// Empty means the v1 GA data plane, which takes no
@@ -148,7 +148,7 @@ func newAzureOpenaiProvider() *Definition {
 				// /openai/deployments/... path.
 				Placeholder: "leave empty for /openai/v1, or e.g. 2025-04-01-preview",
 				Placeholders: map[string]string{
-					"zh-CN": "留空走 /openai/v1，或填如 2025-04-01-preview",
+					"zh-CN": "\u7559\u7a7a\u8d70 /openai/v1\uff0c\u6216\u586b\u5982 2025-04-01-preview",
 				},
 			},
 		},

@@ -24,13 +24,13 @@ func runeIndex(s, sub string) int {
 }
 
 func TestRemapperFollowsRewrites(t *testing.T) {
-	oldText := "第一段\r\n\r\n<table><tr><td>a</td></tr></table>\r\n\r\n![img](images/x.png)\r\n\r\n最后一段文字"
-	newText := "第一段\n\n| a |\n| --- |\n\n![img](https://cdn.example/x.png)\n\n最后一段文字"
+	oldText := "\u7b2c\u4e00\u6bb5\r\n\r\n<table><tr><td>a</td></tr></table>\r\n\r\n![img](images/x.png)\r\n\r\n\u6700\u540e\u4e00\u6bb5\u6587\u5b57"
+	newText := "\u7b2c\u4e00\u6bb5\n\n| a |\n| --- |\n\n![img](https://cdn.example/x.png)\n\n\u6700\u540e\u4e00\u6bb5\u6587\u5b57"
 	r := NewRemapper(oldText, newText)
 
 	assert.Equal(t, 0, r.Map(0))
-	assert.Equal(t, runeIndex(newText, "最后"), r.Map(runeIndex(oldText, "最后")))
-	assert.Equal(t, runeIndex(newText, "段文字")+1, r.Map(runeIndex(oldText, "段文字")+1))
+	assert.Equal(t, runeIndex(newText, "\u6700\u540e"), r.Map(runeIndex(oldText, "\u6700\u540e")))
+	assert.Equal(t, runeIndex(newText, "\u6bb5\u6587\u5b57")+1, r.Map(runeIndex(oldText, "\u6bb5\u6587\u5b57")+1))
 	assert.Equal(t, len([]rune(newText)), r.Map(len([]rune(oldText))))
 
 	// Offsets inside the rewritten table stay inside the rewritten table.
@@ -77,31 +77,31 @@ func TestRemapBlocksKeepsRewrittenLinesOnTheirPages(t *testing.T) {
 }
 
 func TestAlignPlacesUnitsInOrder(t *testing.T) {
-	md := "# 公路工程\n\n8.14.11 索夹与吊索施工应符合下列规定：\n\n1. 在满足施工需要的前提下，应减小猫道面层开孔面积。\n\n" +
-		"![图](data:image/png;base64,QUJDREVGR0g=)\n\n| 列 | 值 |\n| --- | --- |\n| 高度 | 12m |\n"
+	md := "# \u516c\u8def\u5de5\u7a0b\n\n8.14.11 \u7d22\u5939\u4e0e\u540a\u7d22\u65bd\u5de5\u5e94\u7b26\u5408\u4e0b\u5217\u89c4\u5b9a\uff1a\n\n1. \u5728\u6ee1\u8db3\u65bd\u5de5\u9700\u8981\u7684\u524d\u63d0\u4e0b\uff0c\u5e94\u51cf\u5c0f\u732b\u9053\u9762\u5c42\u5f00\u5b54\u9762\u79ef\u3002\n\n" +
+		"![\u56fe](data:image/png;base64,QUJDREVGR0g=)\n\n| \u5217 | \u503c |\n| --- | --- |\n| \u9ad8\u5ea6 | 12m |\n"
 	units := []Unit{
-		{Text: "公路工程", Locator: types.SourceLocator{Type: "docx", Block: 1}},
-		{Text: "8.14.11 索夹与吊索施工应符合下列规定:", Locator: types.SourceLocator{Type: "docx", Block: 2}},
-		{Text: "在满足施工需要的前提下,应减小猫道面层开孔面积。", Locator: types.SourceLocator{Type: "docx", Block: 3}},
-		{Text: "不存在的段落内容不会被放置", Locator: types.SourceLocator{Type: "docx", Block: 4}},
-		{Text: "列 值", Locator: types.SourceLocator{Type: "docx", Block: 5}},
-		{Text: "高度 12m", Locator: types.SourceLocator{Type: "docx", Block: 5}},
+		{Text: "\u516c\u8def\u5de5\u7a0b", Locator: types.SourceLocator{Type: "docx", Block: 1}},
+		{Text: "8.14.11 \u7d22\u5939\u4e0e\u540a\u7d22\u65bd\u5de5\u5e94\u7b26\u5408\u4e0b\u5217\u89c4\u5b9a:", Locator: types.SourceLocator{Type: "docx", Block: 2}},
+		{Text: "\u5728\u6ee1\u8db3\u65bd\u5de5\u9700\u8981\u7684\u524d\u63d0\u4e0b,\u5e94\u51cf\u5c0f\u732b\u9053\u9762\u5c42\u5f00\u5b54\u9762\u79ef\u3002", Locator: types.SourceLocator{Type: "docx", Block: 3}},
+		{Text: "\u4e0d\u5b58\u5728\u7684\u6bb5\u843d\u5185\u5bb9\u4e0d\u4f1a\u88ab\u653e\u7f6e", Locator: types.SourceLocator{Type: "docx", Block: 4}},
+		{Text: "\u5217 \u503c", Locator: types.SourceLocator{Type: "docx", Block: 5}},
+		{Text: "\u9ad8\u5ea6 12m", Locator: types.SourceLocator{Type: "docx", Block: 5}},
 	}
 	blocks := Align(md, units)
 	require.Len(t, blocks, 5)
 	assert.Equal(t, 1, blocks[0].Locator.Block)
 	assert.Equal(t, runeIndex(md, "8.14.11"), blocks[1].Start)
 	assert.Equal(t, blocks[1].End, blocks[2].Start)
-	assert.Equal(t, runeIndex(md, "1. 在满足"), blocks[2].Start, "list numbering stays with its paragraph")
+	assert.Equal(t, runeIndex(md, "1. \u5728\u6ee1\u8db3"), blocks[2].Start, "list numbering stays with its paragraph")
 	assert.Equal(t, 5, blocks[4].Locator.Block)
 	assert.Equal(t, len([]rune(md)), blocks[4].End)
 }
 
 func TestIndexLocatorsFoldsAndQuotes(t *testing.T) {
-	md := "第一页正文。\n\n第二页正文开始\n\n第二页正文继续\n\n第三页"
-	p1 := runeIndex(md, "第二页正文开始")
-	p2 := runeIndex(md, "第二页正文继续")
-	p3 := runeIndex(md, "第三页")
+	md := "\u7b2c\u4e00\u9875\u6b63\u6587\u3002\n\n\u7b2c\u4e8c\u9875\u6b63\u6587\u5f00\u59cb\n\n\u7b2c\u4e8c\u9875\u6b63\u6587\u7ee7\u7eed\n\n\u7b2c\u4e09\u9875"
+	p1 := runeIndex(md, "\u7b2c\u4e8c\u9875\u6b63\u6587\u5f00\u59cb")
+	p2 := runeIndex(md, "\u7b2c\u4e8c\u9875\u6b63\u6587\u7ee7\u7eed")
+	p3 := runeIndex(md, "\u7b2c\u4e09\u9875")
 	blocks := []types.SourceBlock{
 		{Start: 0, End: p1, Locator: types.SourceLocator{Type: "pdf", Page: 1}},
 		{Start: p1, End: p2, Locator: types.SourceLocator{Type: "pdf", Page: 2}},
@@ -114,7 +114,7 @@ func TestIndexLocatorsFoldsAndQuotes(t *testing.T) {
 	locs := idx.Locators(p1+2, len([]rune(md)))
 	require.Len(t, locs, 2)
 	assert.Equal(t, 2, locs[0].Page)
-	assert.Equal(t, "页正文开始 第二页正文继续", locs[0].Quote)
+	assert.Equal(t, "\u9875\u6b63\u6587\u5f00\u59cb \u7b2c\u4e8c\u9875\u6b63\u6587\u7ee7\u7eed", locs[0].Quote)
 	assert.Equal(t, 3, locs[1].Page)
 	assert.Equal(t, []float64{0.1, 0.1, 0.9, 0.2}, locs[1].BBox)
 	assert.Nil(t, idx.Locators(5, 5))
@@ -138,17 +138,17 @@ func TestMergeLocatorsDedupes(t *testing.T) {
 }
 
 func TestCleanQuote(t *testing.T) {
-	got := CleanQuote("见 ![图1](https://x/y.png) 和 [链接](https://a.b)\n<b>加粗</b>  <!-- Slide number: 3 -->")
-	assert.Equal(t, "见 和 链接 加粗", got)
+	got := CleanQuote("\u89c1 ![\u56fe1](https://x/y.png) \u548c [\u94fe\u63a5](https://a.b)\n<b>\u52a0\u7c97</b>  <!-- Slide number: 3 -->")
+	assert.Equal(t, "\u89c1 \u548c \u94fe\u63a5 \u52a0\u7c97", got)
 }
 
 func TestTextBlocks(t *testing.T) {
-	content := "# 标题\n\n第一段\n第一段续\n\n\n第二段"
+	content := "# \u6807\u9898\n\n\u7b2c\u4e00\u6bb5\n\u7b2c\u4e00\u6bb5\u7eed\n\n\n\u7b2c\u4e8c\u6bb5"
 	blocks := TextBlocks(content)
 	require.Len(t, blocks, 3)
 	assert.Equal(t, 0, blocks[0].Start)
-	assert.Equal(t, runeIndex(content, "第一段"), blocks[1].Start)
-	assert.Equal(t, runeIndex(content, "第二段"), blocks[2].Start)
+	assert.Equal(t, runeIndex(content, "\u7b2c\u4e00\u6bb5"), blocks[1].Start)
+	assert.Equal(t, runeIndex(content, "\u7b2c\u4e8c\u6bb5"), blocks[2].Start)
 	assert.Equal(t, len([]rune(content)), blocks[2].End)
 	assert.Equal(t, blocks[1].Start, blocks[1].Locator.Start)
 }
@@ -168,24 +168,14 @@ func zipOf(t *testing.T, files map[string]string) []byte {
 }
 
 func TestDocxUnits(t *testing.T) {
-	doc := `<?xml version="1.0"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>
-<w:p><w:r><w:t>标题</w:t></w:r></w:p>
-<w:sdt><w:sdtPr><w:alias w:val="x"/></w:sdtPr><w:sdtContent>
-<w:p><w:r><w:t>控件内</w:t></w:r><w:r><w:delText>删除</w:delText></w:r></w:p>
-</w:sdtContent></w:sdt>
-<w:tbl><w:tr><w:tc><w:p><w:r><w:t>A1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>B1</w:t></w:r></w:p></w:tc></w:tr>
-<w:tr><w:tc><w:p><w:r><w:t>A2</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
-<w:p/>
-<w:p><w:r><w:t xml:space="preserve">末段 </w:t></w:r><w:r><w:tab/><w:t>文字</w:t></w:r></w:p>
-<w:sectPr/></w:body></w:document>`
+	doc := "<?xml version=\"1.0\"?>\n<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body>\n<w:p><w:r><w:t>\u6807\u9898</w:t></w:r></w:p>\n<w:sdt><w:sdtPr><w:alias w:val=\"x\"/></w:sdtPr><w:sdtContent>\n<w:p><w:r><w:t>\u63a7\u4ef6\u5185</w:t></w:r><w:r><w:delText>\u5220\u9664</w:delText></w:r></w:p>\n</w:sdtContent></w:sdt>\n<w:tbl><w:tr><w:tc><w:p><w:r><w:t>A1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>B1</w:t></w:r></w:p></w:tc></w:tr>\n<w:tr><w:tc><w:p><w:r><w:t>A2</w:t></w:r></w:p></w:tc></w:tr></w:tbl>\n<w:p/>\n<w:p><w:r><w:t xml:space=\"preserve\">\u672b\u6bb5 </w:t></w:r><w:r><w:tab/><w:t>\u6587\u5b57</w:t></w:r></w:p>\n<w:sectPr/></w:body></w:document>"
 	units, err := docxUnits(zipOf(t, map[string]string{"word/document.xml": doc}))
 	require.NoError(t, err)
 	var got []string
 	for _, u := range units {
 		got = append(got, u.Text+"@"+string(rune('0'+u.Locator.Block)))
 	}
-	assert.Equal(t, []string{"标题@1", "控件内@2", "A1 B1@3", "A2@3", "末段  文字@5"}, got)
+	assert.Equal(t, []string{"\u6807\u9898@1", "\u63a7\u4ef6\u5185@2", "A1 B1@3", "A2@3", "\u672b\u6bb5  \u6587\u5b57@5"}, got)
 }
 
 func TestPptxUnits(t *testing.T) {
@@ -199,47 +189,47 @@ func TestPptxUnits(t *testing.T) {
 		"ppt/_rels/presentation.xml.rels": `<Relationships>` +
 			`<Relationship Id="rId2" Type="http://x/slide" Target="slides/slide1.xml"/>` +
 			`<Relationship Id="rId3" Type="http://x/slide" Target="slides/slide2.xml"/></Relationships>`,
-		"ppt/slides/slide1.xml": `<p:sld xmlns:a="a"><a:p><a:r><a:t>第二张</a:t></a:r></a:p></p:sld>`,
-		"ppt/slides/slide2.xml": `<p:sld xmlns:a="a"><a:p><a:r><a:t>封面</a:t></a:r>` +
-			`<a:r><a:t>标题</a:t></a:r></a:p><a:p/></p:sld>`,
+		"ppt/slides/slide1.xml": "<p:sld xmlns:a=\"a\"><a:p><a:r><a:t>\u7b2c\u4e8c\u5f20</a:t></a:r></a:p></p:sld>",
+		"ppt/slides/slide2.xml": "<p:sld xmlns:a=\"a\"><a:p><a:r><a:t>\u5c01\u9762</a:t></a:r>" +
+			"<a:r><a:t>\u6807\u9898</a:t></a:r></a:p><a:p/></p:sld>",
 		"ppt/slides/_rels/slide2.xml.rels": `<Relationships><Relationship Id="rId1" ` +
 			`Type="http://x/notesSlide" Target="../notesSlides/notesSlide1.xml"/></Relationships>`,
-		"ppt/notesSlides/notesSlide1.xml": `<p:notes xmlns:a="a"><a:p><a:r><a:t>备注</a:t></a:r></a:p></p:notes>`,
+		"ppt/notesSlides/notesSlide1.xml": "<p:notes xmlns:a=\"a\"><a:p><a:r><a:t>\u5907\u6ce8</a:t></a:r></a:p></p:notes>",
 	}
 	units, err := pptxUnits(zipOf(t, files))
 	require.NoError(t, err)
 	require.Len(t, units, 3)
-	assert.Equal(t, "封面标题", units[0].Text)
+	assert.Equal(t, "\u5c01\u9762\u6807\u9898", units[0].Text)
 	assert.Equal(t, 1, units[0].Locator.Slide)
-	assert.Equal(t, "备注", units[1].Text)
+	assert.Equal(t, "\u5907\u6ce8", units[1].Text)
 	assert.Equal(t, 1, units[1].Locator.Slide)
 	assert.Equal(t, 2, units[2].Locator.Slide)
 }
 
 func TestXlsxUnits(t *testing.T) {
 	f := excelize.NewFile()
-	require.NoError(t, f.SetCellValue("Sheet1", "A1", "名称"))
-	require.NoError(t, f.SetCellValue("Sheet1", "B1", "数量"))
-	require.NoError(t, f.SetCellValue("Sheet1", "A3", "螺栓"))
+	require.NoError(t, f.SetCellValue("Sheet1", "A1", "\u540d\u79f0"))
+	require.NoError(t, f.SetCellValue("Sheet1", "B1", "\u6570\u91cf"))
+	require.NoError(t, f.SetCellValue("Sheet1", "A3", "\u87ba\u6813"))
 	require.NoError(t, f.SetCellValue("Sheet1", "B3", 12))
-	_, err := f.NewSheet("汇总")
+	_, err := f.NewSheet("\u6c47\u603b")
 	require.NoError(t, err)
-	require.NoError(t, f.SetCellValue("汇总", "A2", "合计"))
+	require.NoError(t, f.SetCellValue("\u6c47\u603b", "A2", "\u5408\u8ba1"))
 	buf, err := f.WriteToBuffer()
 	require.NoError(t, err)
 
 	units, err := xlsxUnits(buf.Bytes())
 	require.NoError(t, err)
 	require.Len(t, units, 3)
-	assert.Equal(t, "螺栓 12", units[1].Text)
+	assert.Equal(t, "\u87ba\u6813 12", units[1].Text)
 	assert.Equal(t, 3, units[1].Locator.RowStart)
-	assert.Equal(t, "汇总", units[2].Locator.Sheet)
+	assert.Equal(t, "\u6c47\u603b", units[2].Locator.Sheet)
 	assert.Equal(t, 2, units[2].Locator.RowStart)
 
-	md := "## Sheet1\n| 名称 | 数量 |\n| --- | --- |\n| 螺栓 | 12 |\n\n## 汇总\n| 合计 |\n"
+	md := "## Sheet1\n| \u540d\u79f0 | \u6570\u91cf |\n| --- | --- |\n| \u87ba\u6813 | 12 |\n\n## \u6c47\u603b\n| \u5408\u8ba1 |\n"
 	blocks := Align(md, units)
 	require.Len(t, blocks, 3)
-	assert.Equal(t, runeIndex(md, "| 螺栓"), blocks[1].Start, "a table row starts at its line")
+	assert.Equal(t, runeIndex(md, "| \u87ba\u6813"), blocks[1].Start, "a table row starts at its line")
 }
 
 func TestEpubUnits(t *testing.T) {
@@ -249,14 +239,14 @@ func TestEpubUnits(t *testing.T) {
 		"OEBPS/content.opf": `<package><manifest><item id="c1" href="ch1.xhtml"/>` +
 			`<item id="c2" href="text/ch2.xhtml"/></manifest>` +
 			`<spine><itemref idref="c1"/><itemref idref="c2"/></spine></package>`,
-		"OEBPS/ch1.xhtml":      `<html><head><title>x</title></head><body><h1>第一章</h1><p>开篇<b>正文</b></p></body></html>`,
-		"OEBPS/text/ch2.xhtml": `<html><body><h2>第二章</h2><p>后文</p><script>var a=1</script></body></html>`,
+		"OEBPS/ch1.xhtml":      "<html><head><title>x</title></head><body><h1>\u7b2c\u4e00\u7ae0</h1><p>\u5f00\u7bc7<b>\u6b63\u6587</b></p></body></html>",
+		"OEBPS/text/ch2.xhtml": "<html><body><h2>\u7b2c\u4e8c\u7ae0</h2><p>\u540e\u6587</p><script>var a=1</script></body></html>",
 	}
 	units, err := epubUnits(zipOf(t, files))
 	require.NoError(t, err)
 	require.Len(t, units, 4)
-	assert.Equal(t, "开篇 正文", units[1].Text)
-	assert.Equal(t, "第一章", units[1].Locator.Title)
+	assert.Equal(t, "\u5f00\u7bc7 \u6b63\u6587", units[1].Text)
+	assert.Equal(t, "\u7b2c\u4e00\u7ae0", units[1].Locator.Title)
 	assert.Equal(t, 2, units[3].Locator.Section)
 }
 

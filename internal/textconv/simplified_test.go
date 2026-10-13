@@ -10,10 +10,10 @@ import (
 func TestToSimplified(t *testing.T) {
 	for _, tc := range []struct{ input, want string }{
 		{"", ""},
-		{"請聯繫客服，開發環境", "请联系客服，开发环境"},
-		{"乾隆年間乾乾淨淨的頭髮", "乾隆年间干干净净的头发"},
-		{"一目瞭然，不瞭解？", "一目了然，不了解？"},
-		{"😀臺灣ABC𠮷\x00後", "😀台湾ABC𠮷\x00后"},
+		{"\u8acb\u806f\u7e6b\u5ba2\u670d\uff0c\u958b\u767c\u74b0\u5883", "\u8bf7\u8054\u7cfb\u5ba2\u670d\uff0c\u5f00\u53d1\u73af\u5883"},
+		{"\u4e7e\u9686\u5e74\u9593\u4e7e\u4e7e\u6de8\u6de8\u7684\u982d\u9aee", "\u4e7e\u9686\u5e74\u95f4\u5e72\u5e72\u51c0\u51c0\u7684\u5934\u53d1"},
+		{"\u4e00\u76ee\u77ad\u7136\uff0c\u4e0d\u77ad\u89e3\uff1f", "\u4e00\u76ee\u4e86\u7136\uff0c\u4e0d\u4e86\u89e3\uff1f"},
+		{"😀\u81fa\u7063ABC𠮷\x00\u5f8c", "😀\u53f0\u6e7eABC𠮷\x00\u540e"},
 	} {
 		t.Run(tc.input, func(t *testing.T) {
 			t.Parallel()
@@ -39,12 +39,12 @@ func TestHistoricalConversionCorpus(t *testing.T) {
 	for _, data := range []string{phrasesText, charactersText} {
 		for _, line := range strings.Split(strings.TrimSuffix(data, "\n"), "\n") {
 			key, _, _ := strings.Cut(line, "\t")
-			for _, input := range []string{key, "前" + key + "後", key + key} {
+			for _, input := range []string{key, "\u524d" + key + "\u5f8c", key + key} {
 				check(input)
 			}
 		}
 	}
-	for _, input := range []string{"乾隆年間乾乾淨淨的頭髮", "一目瞭然，不瞭解？", "請聯繫客服，開發環境", "😀臺灣ABC𠮷\x00後", "乾坤大挪移", "著作權與軟體開發", ""} {
+	for _, input := range []string{"\u4e7e\u9686\u5e74\u9593\u4e7e\u4e7e\u6de8\u6de8\u7684\u982d\u9aee", "\u4e00\u76ee\u77ad\u7136\uff0c\u4e0d\u77ad\u89e3\uff1f", "\u8acb\u806f\u7e6b\u5ba2\u670d\uff0c\u958b\u767c\u74b0\u5883", "😀\u81fa\u7063ABC𠮷\x00\u5f8c", "\u4e7e\u5764\u5927\u632a\u79fb", "\u8457\u4f5c\u6b0a\u8207\u8edf\u9ad4\u958b\u767c", ""} {
 		check(input)
 	}
 	const want = "f3afa240ee7460932bbef67207d23302c5d9722b70c1f706ce071d2f35bfbcc0"
@@ -54,8 +54,8 @@ func TestHistoricalConversionCorpus(t *testing.T) {
 }
 
 func TestDictionaryPrecedenceAndAlternatives(t *testing.T) {
-	c := newConverter("甲乙\t首選 次選\n甲乙丙\t最長\n", "甲乙丙丁\t不應優先\n丁\t尾\n")
-	if got := c.convert("甲乙丙丁甲乙"); got != "最長尾首選" {
+	c := newConverter("\u7532\u4e59\t\u9996\u9078 \u6b21\u9078\n\u7532\u4e59\u4e19\t\u6700\u9577\n", "\u7532\u4e59\u4e19\u4e01\t\u4e0d\u61c9\u512a\u5148\n\u4e01\t\u5c3e\n")
+	if got := c.convert("\u7532\u4e59\u4e19\u4e01\u7532\u4e59"); got != "\u6700\u9577\u5c3e\u9996\u9078" {
 		t.Fatalf("phrase precedence/longest match/first alternative changed: %q", got)
 	}
 }

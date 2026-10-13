@@ -90,7 +90,7 @@ func TestWriteSandboxFileWritesTextUnderOutput(t *testing.T) {
 }
 
 func TestWriteSandboxFileFlagsNestedPythonQuotes(t *testing.T) {
-	script := "slides = [(\"这不是一个\"大干快上\"的夜晚\", False)]\n"
+	script := "slides = [(\"\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a\", False)]\n"
 	sink := &fakeSandboxFileSink{}
 	result, err := NewWriteSandboxFileTool(sink, 0).Execute(
 		sandboxFileTestContext(),
@@ -310,12 +310,12 @@ func TestWriteSandboxFileAppendChecksSyntaxOfWholeFile(t *testing.T) {
 	sink := &fakeSandboxFileSink{}
 	tool := NewWriteSandboxFileTool(sink, 0)
 
-	first, err := tool.Execute(sandboxFileTestContext(), mustWriteSandboxArgs(path, "title = \"这不是一个\""))
+	first, err := tool.Execute(sandboxFileTestContext(), mustWriteSandboxArgs(path, "title = \"\u8fd9\u4e0d\u662f\u4e00\u4e2a\""))
 	require.NoError(t, err)
 	require.True(t, first.Success, first.Error)
 
 	second, err := tool.Execute(sandboxFileTestContext(), json.RawMessage(
-		`{"path":"`+path+`","content":"大干快上\"的夜晚\"\n","mode":"append"}`,
+		`{"path":"`+path+"\",\"content\":\"\u5927\u5e72\u5feb\u4e0a\\\"\u7684\u591c\u665a\\\"\\n\",\"mode\":\"append\"}",
 	))
 	require.NoError(t, err)
 	require.False(t, second.Success, "the assembled file has the broken-quote pattern")

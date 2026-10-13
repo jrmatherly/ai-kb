@@ -75,7 +75,7 @@ func newQianfanProvider() *Definition {
 	return &Definition{
 		ID:           QianfanID,
 		Name:         "Baidu Qianfan",
-		Names:        map[string]string{"zh-CN": "百度千帆 Baidu Cloud"},
+		Names:        map[string]string{"zh-CN": "\u767e\u5ea6\u5343\u5e06 Baidu Cloud"},
 		Description:  "ernie-5.0-thinking-preview, ernie-4.5-turbo-128k, embedding-v1, bce-reranker-base, etc.",
 		Website:      "https://console.bce.baidu.com/qianfan",
 		Icon:         qianfanIcon,
@@ -99,15 +99,15 @@ func newQianfanProvider() *Definition {
 		Compat: VendorCompat{
 			Embeddings: api.EmbeddingsCompat{
 				// https://cloud.baidu.com/doc/qianfan-api/s/Fm7u3ropn: model,
-				// input, user, encoding_format ("当前只支持float"). The model list
+				// input, user, encoding_format ("only float is supported for now"). The model list
 				// (https://cloud.baidu.com/doc/qianfan/s/rmh4stp0j) caps a request
 				// at 16 texts; tao-8k takes one.
 				SendEncodingFormat: api.Ptr(true),
 				MaxBatchSize:       api.Ptr(16),
 			},
 			Rerank: api.RerankCompat{
-				// "文本数量不超过64"; query "长度不超过1600个字符"; each document
-				// "长度不超过4096个字符".
+				// "at most 64 texts"; query "at most 1600 characters long"; each document
+				// "at most 4096 characters long".
 				MaxDocuments:     api.Ptr(64),
 				MaxQueryChars:    api.Ptr(1600),
 				MaxDocumentChars: api.Ptr(4096),

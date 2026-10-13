@@ -26,7 +26,7 @@ func (stdinTestExecutor) ExecShellCommand(ctx context.Context, _, command, _ str
 }
 
 func TestShellStdinPreservesLiteralDataForTheEntireCommand(t *testing.T) {
-	stdin := "first 'quoted' line\n\"$(printf must-not-expand)\"; $HOME\\\n中文\n\n"
+	stdin := "first 'quoted' line\n\"$(printf must-not-expand)\"; $HOME\\\n\u4e2d\u6587\n\n"
 	input := ShellExecInput{Command: `IFS= read -r first; printf '<%s>\n' "$first"; cat`, Stdin: stdin}
 	args, err := json.Marshal(input)
 	require.NoError(t, err)

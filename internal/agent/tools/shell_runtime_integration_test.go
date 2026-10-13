@@ -127,7 +127,7 @@ sys.stdout.write(sys.stdin.read())
 	require.NoError(t, hostSkills.Initialize(ctx))
 	registry = NewToolRegistry()
 	registry.RegisterTool(NewShellExecTool(mgr, nil).WithSkillEnvironment(hostSkills))
-	stdin := "literal $HOME and $(printf wrong)\n中文\n\n"
+	stdin := "literal $HOME and $(printf wrong)\n\u4e2d\u6587\n\n"
 	args, err := json.Marshal(ShellExecInput{
 		SkillName: "host-probe", Command: `python3 "$AIKB_SKILL_DIR/scripts/run.py" 'argument with spaces'`, Stdin: stdin,
 	})

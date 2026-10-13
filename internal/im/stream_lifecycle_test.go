@@ -66,12 +66,12 @@ func (s *imStreamDisplayState) final() string {
 func TestIMStreamLifecycle_agentToolRetract(t *testing.T) {
 	state := newIMStreamDisplayState(true)
 
-	state.agentLiveAnswer.WriteString("好的，让我先搜索知识库。")
+	state.agentLiveAnswer.WriteString("OK, let me search the knowledge base first.")
 	liveOnly := state.intermediate()
-	if liveOnly != "好的，让我先搜索知识库。" {
+	if liveOnly != "OK, let me search the knowledge base first." {
 		t.Fatalf("live answer phase = %q", liveOnly)
 	}
-	if strings.Contains(liveOnly, "思考过程") {
+	if strings.Contains(liveOnly, "Thought process") {
 		t.Fatal("think header must not appear before tool retract")
 	}
 
@@ -81,10 +81,10 @@ func TestIMStreamLifecycle_agentToolRetract(t *testing.T) {
 		step.Pending = true
 	})
 	duringTools := state.intermediate()
-	if !strings.Contains(duringTools, "思考过程") {
+	if !strings.Contains(duringTools, "Thought process") {
 		t.Fatalf("after retract should show think block, got: %q", duringTools)
 	}
-	if !strings.Contains(duringTools, "好的，让我先搜索知识库") {
+	if !strings.Contains(duringTools, "OK, let me search the knowledge base first") {
 		t.Fatalf("retracted preamble missing, got: %q", duringTools)
 	}
 
@@ -93,16 +93,16 @@ func TestIMStreamLifecycle_agentToolRetract(t *testing.T) {
 		step.Pending = false
 		step.Success = true
 	})
-	state.agentLiveAnswer.WriteString("根据检索结果，《文明6》是回合制策略游戏。")
+	state.agentLiveAnswer.WriteString("According to the search results, Civilization VI is a turn-based strategy game.")
 	withLiveAnswer := state.intermediate()
-	if !strings.Contains(withLiveAnswer, "根据检索结果") {
+	if !strings.Contains(withLiveAnswer, "According to the search results") {
 		t.Fatalf("live answer after tools missing, got: %q", withLiveAnswer)
 	}
 
 	state.agentDone = true
-	state.answerOuter.WriteString("《文明6》是回合制策略游戏。")
+	state.answerOuter.WriteString("Civilization VI is a turn-based strategy game.")
 	final := state.final()
-	if !strings.Contains(final, "《文明6》是回合制策略游戏。") {
+	if !strings.Contains(final, "Civilization VI is a turn-based strategy game.") {
 		t.Fatalf("final answer missing, got: %q", final)
 	}
 
@@ -147,20 +147,20 @@ func TestIMStreamLifecycle_quickQAPipeline(t *testing.T) {
 	upsertIMToolStep(&state.pipelineToolSteps, state.pipelineIdx, "ks-1", func(step *IMToolStep) {
 		step.ToolName = "knowledge_search"
 		step.Pending = true
-		step.Arguments = map[string]any{"query": "文明6"}
+		step.Arguments = map[string]any{"query": "Civilization VI"}
 	})
 
 	intermediate := state.intermediate()
 	if intermediate == "" {
 		t.Fatal("pipeline progress should be visible")
 	}
-	if strings.Contains(intermediate, "思考过程") {
+	if strings.Contains(intermediate, "Thought process") {
 		t.Fatalf("quick QA must not use agent think header, got: %q", intermediate)
 	}
 
-	state.answerOuter.WriteString("答案是 B。")
+	state.answerOuter.WriteString("The answer is B.")
 	final := state.final()
-	if final != "答案是 B。" {
+	if final != "The answer is B." {
 		t.Fatalf("final = %q, want answer only", final)
 	}
 }

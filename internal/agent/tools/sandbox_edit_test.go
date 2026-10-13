@@ -241,15 +241,15 @@ func TestEditSandboxFileAppliesBatchInOneWrite(t *testing.T) {
 func TestEditSandboxFileReplacesUniqueSnippet(t *testing.T) {
 	path := "/workspace/output/generate_wifi_ppt.py"
 	original := "from pptx import Presentation\n" +
-		"out = '/home/user/Desktop/Windows_Server_2008_WiFi连接指南.pptx'\n" +
+		"out = '/home/user/Desktop/Windows_Server_2008_WiFi\u8fde\u63a5\u6307\u5357.pptx'\n" +
 		"prs.save(out)\n"
 	editor := &fakeSandboxFileEditor{files: map[string][]byte{path: []byte(original)}}
 
 	result, err := NewEditSandboxFileTool(editor).Execute(
 		sandboxFileTestContext(),
 		mustEditSandboxArgs(path,
-			"/home/user/Desktop/Windows_Server_2008_WiFi连接指南.pptx",
-			"/workspace/output/Windows_Server_2008_WiFi连接指南.pptx",
+			"/home/user/Desktop/Windows_Server_2008_WiFi\u8fde\u63a5\u6307\u5357.pptx",
+			"/workspace/output/Windows_Server_2008_WiFi\u8fde\u63a5\u6307\u5357.pptx",
 			false,
 		),
 	)
@@ -261,7 +261,7 @@ func TestEditSandboxFileReplacesUniqueSnippet(t *testing.T) {
 	assert.Equal(t, path, result.Data["path"])
 	assert.Equal(t, 1, result.Data["added_lines"])
 	assert.Equal(t, 1, result.Data["removed_lines"])
-	assert.Contains(t, string(editor.files[path]), "/workspace/output/Windows_Server_2008_WiFi连接指南.pptx")
+	assert.Contains(t, string(editor.files[path]), "/workspace/output/Windows_Server_2008_WiFi\u8fde\u63a5\u6307\u5357.pptx")
 	assert.NotContains(t, string(editor.files[path]), "/home/user/Desktop")
 	assert.NotContains(t, result.Output, original)
 	_, hasContent := result.Data["content"]
@@ -275,7 +275,7 @@ func TestEditSandboxFileFlagsNestedPythonQuotes(t *testing.T) {
 
 	result, err := NewEditSandboxFileTool(editor).Execute(
 		sandboxFileTestContext(),
-		mustEditSandboxArgs(path, "placeholder", "这不是一个\"大干快上\"的夜晚", false),
+		mustEditSandboxArgs(path, "placeholder", "\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a", false),
 	)
 
 	require.NoError(t, err)

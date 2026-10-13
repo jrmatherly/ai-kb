@@ -3,13 +3,13 @@
 //
 // Facts (https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions):
 //   - output cap is `max_tokens`; `max_completion_tokens` is not documented;
-//   - `enable_thinking` "在推理模式与非推理模式之间切换。该字段适用于大多数推理
-//     模型", sent as a top-level boolean, together with `thinking_budget`
+//   - `enable_thinking` "switches between reasoning and non-reasoning mode. This field applies to most reasoning
+//     models", sent as a top-level boolean, together with `thinking_budget`
 //     (128 <= value <= 32768). Both work in streaming and non-streaming
 //     mode and neither is mandatory, so the switch is only sent when the
 //     caller asks for one;
-//   - `reasoning_effort` accepts "high" | "max" and "该字段适用于
-//     Pro/deepseek-ai/DeepSeek-V4、deepseek-ai/DeepSeek-V4-Flash 以及
+//   - `reasoning_effort` accepts "high" | "max" and "this field applies to
+//     Pro/deepseek-ai/DeepSeek-V4, deepseek-ai/DeepSeek-V4-Flash and
 //     Pro/zai-org/GLM-5.2", so every other reasoning entry disables it;
 //   - usage reports `prompt_cache_hit_tokens` / `prompt_cache_miss_tokens`,
 //     hence prompt_cache_accounting;
@@ -49,7 +49,7 @@ func newSiliconflowProvider() *Definition {
 	return &Definition{
 		ID:           SiliconflowID,
 		Name:         "SiliconFlow",
-		Names:        map[string]string{"zh-CN": "硅基流动 SiliconFlow"},
+		Names:        map[string]string{"zh-CN": "\u7845\u57fa\u6d41\u52a8 SiliconFlow"},
 		Description:  "deepseek-ai/DeepSeek-V4-Pro, zai-org/GLM-5.2, Qwen/Qwen3.5-397B-A17B, BAAI/bge-m3, etc.",
 		Website:      "https://cloud.siliconflow.cn",
 		Icon:         siliconflowIcon,
@@ -76,14 +76,14 @@ func newSiliconflowProvider() *Definition {
 			Transcriptions: api.TranscriptionsCompat{
 				// https://api-docs.siliconflow.cn/docs/api/audio-transcriptions-post:
 				// file and model only — no response_format — and a file of
-				// "时长不超过 1 小时，文件大小不超过 50MB".
+				// "at most 1 hour long and at most 50MB in file size".
 				MaxFileBytes: api.Ptr(50 << 20),
 			},
 			Embeddings: api.EmbeddingsCompat{
 				// https://api-docs.siliconflow.cn/docs/api/embeddings-post: model,
-				// input, encoding_format, and dimensions "仅 Qwen/Qwen3 系列支持"
+				// input, encoding_format, and dimensions "only supported by the Qwen/Qwen3 series"
 				// — the bge-m3 entry turns it off. The input array schema says
-				// "当前最大数组大小为 32" (maxItems 32).
+				// "the current maximum array size is 32" (maxItems 32).
 				SendEncodingFormat: api.Ptr(true),
 				DimensionsField:    api.Ptr("dimensions"),
 				MaxBatchSize:       api.Ptr(32),

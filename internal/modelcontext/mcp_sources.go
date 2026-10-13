@@ -16,7 +16,8 @@ const maxMCPSourceCandidates = 50
 
 var (
 	mcpJSONStringRE = regexp.MustCompile(`"(?:[^"\\]|\\.)*"`)
-	mcpURLRE        = regexp.MustCompile("https?://[^\\s<>\"'`\\\\，。；！？、（）【】]+")
+	// A URL ends at whitespace, quotes or full-width CJK punctuation.
+	mcpURLRE = regexp.MustCompile("https?://[^\\s<>\"'`\\\\\uff0c\u3002\uff1b\uff01\uff1f\u3001\uff08\uff09\u3010\u3011]+")
 )
 
 func (r *Registry) mcpSourceCandidates(output string) string {

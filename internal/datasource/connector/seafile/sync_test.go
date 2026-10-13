@@ -264,15 +264,15 @@ func assertPending(t *testing.T, cur *types.SyncCursor, p string) {
 }
 
 func TestSyncRecursiveScopeAndMetadata(t *testing.T) {
-	f, c, cfg := syncFixture(t, "/docs", "/docs/产品")
-	f.addFile(testRepoID, "/docs/产品/需求: v2.docx", []byte("body"), 7)
+	f, c, cfg := syncFixture(t, "/docs", "/docs/\u4ea7\u54c1")
+	f.addFile(testRepoID, "/docs/\u4ea7\u54c1/\u9700\u6c42: v2.docx", []byte("body"), 7)
 	f.addFile(testRepoID, "/docs/map.xmind", []byte("map"), 1)
 	f.addFile(testRepoID, "/docs/skip.zip", []byte("zip"), 1)
 	f.addFile(testRepoID, "/docs/skip.mdx", []byte("mdx"), 1)
 	f.addFile(testRepoID, "/docs-sibling/secret.pdf", []byte("secret"), 1)
 	cur, h := mustRun(t, c, cfg, nil, false)
-	assertPaths(t, h.contentItems(), "/docs/产品/需求: v2.docx", "/docs/map.xmind")
-	if len(h.errorItems()) != 0 || len(filesOf(cur)) != 2 || f.count("dir:/docs/产品") != 1 ||
+	assertPaths(t, h.contentItems(), "/docs/\u4ea7\u54c1/\u9700\u6c42: v2.docx", "/docs/map.xmind")
+	if len(h.errorItems()) != 0 || len(filesOf(cur)) != 2 || f.count("dir:/docs/\u4ea7\u54c1") != 1 ||
 		f.count("dir:/docs-sibling") != 0 || f.count("file:/docs/skip.zip") != 0 ||
 		f.count("file:/docs/skip.mdx") != 0 {
 		t.Fatalf("scope traversal: counts=%v, files=%v", f.counts(), filesOf(cur))

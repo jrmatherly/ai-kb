@@ -12,7 +12,7 @@ import (
 )
 
 func TestReadFileLongPathPagesDoNotLoseContent(t *testing.T) {
-	for _, dir := range []string{"short/", strings.Repeat("nested/", 100), strings.Repeat("目录/", 220)} {
+	for _, dir := range []string{"short/", strings.Repeat("nested/", 100), strings.Repeat("\u76ee\u5f55/", 220)} {
 		t.Run(fmt.Sprintf("path-runes-%d", utf8.RuneCountInString(dir)), func(t *testing.T) {
 			filePath := "/workspace/" + dir + "file.txt"
 			var content strings.Builder

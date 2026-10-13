@@ -58,18 +58,18 @@ var (
 	BuildPromptCacheKey     = api.BuildPromptCacheKey
 )
 
-// Chat 定义了聊天接口
+// Chat is the chat interface
 type Chat interface {
-	// Chat 进行非流式聊天
+	// Chat runs a non-streaming chat
 	Chat(ctx context.Context, messages []Message, opts *ChatOptions) (*types.ChatResponse, error)
 
-	// ChatStream 进行流式聊天
+	// ChatStream runs a streaming chat
 	ChatStream(ctx context.Context, messages []Message, opts *ChatOptions) (<-chan types.StreamResponse, error)
 
-	// GetModelName 获取模型名称
+	// GetModelName returns the model name
 	GetModelName() string
 
-	// GetModelID 获取模型ID
+	// GetModelID returns the model ID
 	GetModelID() string
 }
 
@@ -85,18 +85,19 @@ type ChatConfig struct {
 	// back to the process-wide default (see limiter.GateN).
 	MaxConcurrency int
 	ExtraConfig    map[string]string
-	// CustomHeaders 允许在调用远程 API 时附加自定义 HTTP 请求头（类似 OpenAI Python SDK 的 extra_headers）。
+	// CustomHeaders adds custom HTTP request headers to remote API calls (like extra_headers in the OpenAI Python SDK).
 	CustomHeaders map[string]string
 	AppID         string
-	AppSecret     string // 加密值，由工厂函数调用方传入，在使用前已解密
+	AppSecret     string // encrypted value, passed in by the factory's caller and decrypted before use
 	// Spec carries per-row catalog overrides (protocol, compat, levels).
 	Spec *types.ModelSpecOverride
 }
 
-// ConfigFromModel 根据 types.Model 构造 ChatConfig。
-// 保证生产路径（service 层根据 DB 中的模型配置拉起实例）和测试路径
-// （handler 层根据前端表单临时拉起实例）走完全相同的字段映射。
-// appID / appSecret 是已经解密/解析好的 WeKnoraCloud 凭证，调用方负责传入。
+// ConfigFromModel builds a ChatConfig from a types.Model.
+// The production path (the service layer starting an instance from the model config in the DB)
+// and the test path (the handler layer starting a temporary instance from the frontend form)
+// use exactly the same field mapping.
+// appID / appSecret are the already decrypted and parsed WeKnoraCloud credentials, passed in by the caller.
 func ConfigFromModel(m *types.Model, appID, appSecret string) *ChatConfig {
 	if m == nil {
 		return nil
@@ -117,7 +118,7 @@ func ConfigFromModel(m *types.Model, appID, appSecret string) *ChatConfig {
 	}
 }
 
-// NewChat 创建聊天实例
+// NewChat creates a chat instance
 func NewChat(config *ChatConfig, ollamaService *ollama.OllamaService) (Chat, error) {
 	var c Chat
 	var err error

@@ -7,25 +7,25 @@
 //   - the data-plane base URL is https://ark.cn-beijing.volces.com/api/v3
 //     (chat completions at /chat/completions) with Bearer API-key auth; AK/SK
 //     signing is the alternative and is what the managed rerank service uses;
-//   - output cap stays `max_completion_tokens` ("控制模型输出的最大长度（包括
-//     模型回答和模型思维链内容长度）"), which is explicitly "不可与
-//     max_tokens 字段同时设置". Its documented range is [1, 65536];
+//   - output cap stays `max_completion_tokens` ("controls the maximum model output length (including
+//     the model answer and the chain-of-thought length)"), which explicitly "cannot be set together with
+//     the max_tokens field". Its documented range is [1, 65536];
 //     `max_tokens` defaults to 4096 and covers the answer only;
 //   - thinking is switched with `thinking: {"type": ...}` where the type is
-//     enabled | disabled | auto — Ark does accept "auto" ("模型自行判断是否
-//     需要进行深度思考"), although only doubao-seed-1-6-250615 lists it as
-//     supported today. Every model tagged 深度思考 defaults to enabled;
+//     enabled | disabled | auto - Ark does accept "auto" ("the model decides whether
+//     deep thinking is needed"), although only doubao-seed-1-6-250615 lists it as
+//     supported today. Every model tagged deep thinking defaults to enabled;
 //   - `reasoning_effort` takes none | minimal | low | medium | high | xhigh |
-//     max and "所有支持该字段的模型均接受全部 7 档取值"; each model then maps
+//     max and "every model that supports the field accepts all 7 levels"; each model then maps
 //     the rungs it does not implement onto equivalents (Seed 2.x folds
 //     xhigh/max into high, glm-5-3-flash folds them into max, and on most
 //     models `minimal` switches thinking off). The vendor map therefore
 //     passes all seven through verbatim;
 //   - doubao-seed-1-6-flash-250828 and doubao-seed-1-6-vision-250815 are
 //     absent from the reasoning_effort table, so those entries turn it off;
-//   - glm-5-3-flash-260828 "始终启用思考，不再支持禁用思考", so it carries
+//   - glm-5-3-flash-260828 "always thinks; disabling thinking is no longer supported", so it carries
 //     "off": null;
-//   - temperature is [0, 2] but is "固定为 1，手动指定的参数值将被忽略" on
+//   - temperature is [0, 2] but is "fixed at 1; a manually set value is ignored" on
 //     doubao-seed-2-0-pro-260215 and doubao-seed-2-0-lite-260215;
 //   - tool_choice takes none / auto / required / a named function, and
 //     parallel_tool_calls (default true, false only on doubao-seed-1.6 and
@@ -43,10 +43,10 @@
 //   - embeddings post to /api/v3/embeddings/multimodal with `dimensions`
 //     defaulting to 2048, and answer one fused vector for the whole input
 //     (https://docs.volcengine.com/docs/ark/multimodal-vectorization-api).
-//     It is the only embedding API the current docs list, and the 向量化 model
+//     It is the only embedding API the current docs list, and the vectorization model
 //     list names only the two doubao-embedding-vision snapshots. The text
 //     endpoint, /api/v3/embeddings in the OpenAI shape, now sits under
-//     下线文档归档 (retired documentation), so doubao-embedding-large-text was
+//     the retired documentation archive, so doubao-embedding-large-text was
 //     removed from models.json; rows that still name a doubao-embedding text
 //     model are routed to that endpoint by pattern;
 //   - rerank is the VikingDB Knowledge Base service signed with AK/SK at
@@ -111,7 +111,7 @@ func newVolcengineProvider() *Definition {
 	return &Definition{
 		ID:    VolcengineID,
 		Name:  "Volcengine Ark",
-		Names: map[string]string{"zh-CN": "火山引擎 Volcengine"},
+		Names: map[string]string{"zh-CN": "\u706b\u5c71\u5f15\u64ce Volcengine"},
 		Description: "doubao-seed-2-1-pro-260628, deepseek-v4-pro-ga-260813, " +
 			"doubao-embedding-vision-250615, doubao-seed-rerank, etc.",
 		Website:      "https://console.volcengine.com/ark",
@@ -137,11 +137,11 @@ func newVolcengineProvider() *Definition {
 		// credential is an Access Key ID rather than an Ark bearer token.
 		CredentialLabels: []CredentialLabel{{
 			Label:        "Access Key ID",
-			Labels:       map[string]string{"zh-CN": "Access Key ID（AK/SK 签名）"},
+			Labels:       map[string]string{"zh-CN": "Access Key ID\uff08AK/SK \u7b7e\u540d\uff09"},
 			Placeholder:  "Volcengine IAM access key id (AKLT...)",
-			Placeholders: map[string]string{"zh-CN": "火山引擎 IAM Access Key ID（AKLT 开头）"},
+			Placeholders: map[string]string{"zh-CN": "\u706b\u5c71\u5f15\u64ce IAM Access Key ID\uff08AKLT \u5f00\u5934\uff09"},
 			Hint:         "Rerank is signed with an IAM key pair; this is not an Ark API key.",
-			Hints:        map[string]string{"zh-CN": "Rerank 使用 IAM 密钥对签名，不是方舟的 API Key。"},
+			Hints:        map[string]string{"zh-CN": "Rerank \u4f7f\u7528 IAM \u5bc6\u94a5\u5bf9\u7b7e\u540d\uff0c\u4e0d\u662f\u65b9\u821f\u7684 API Key\u3002"},
 			ModelTypes:   rerankOnly,
 			Required:     true,
 		}},
@@ -149,12 +149,12 @@ func newVolcengineProvider() *Definition {
 			{
 				Key:         "secret_key",
 				Label:       "Secret Key",
-				Labels:      map[string]string{"zh-CN": "Secret Key（AK/SK 签名）"},
+				Labels:      map[string]string{"zh-CN": "Secret Key\uff08AK/SK \u7b7e\u540d\uff09"},
 				Type:        "password",
 				Required:    true,
 				Placeholder: "Volcengine IAM secret key (the API Key field holds the access key)",
 				Placeholders: map[string]string{
-					"zh-CN": "火山引擎 IAM Secret Access Key（API Key 那一栏填的是 Access Key ID）",
+					"zh-CN": "\u706b\u5c71\u5f15\u64ce IAM Secret Access Key\uff08API Key \u90a3\u4e00\u680f\u586b\u7684\u662f Access Key ID\uff09",
 				},
 				ModelTypes: rerankOnly,
 				Secret:     true,
@@ -162,7 +162,7 @@ func newVolcengineProvider() *Definition {
 			{
 				Key:         "region",
 				Label:       "Region",
-				Labels:      map[string]string{"zh-CN": "地域"},
+				Labels:      map[string]string{"zh-CN": "\u5730\u57df"},
 				Type:        "string",
 				Default:     "cn-beijing",
 				Placeholder: "cn-beijing",
@@ -171,12 +171,12 @@ func newVolcengineProvider() *Definition {
 			{
 				Key:         "instruction",
 				Label:       "Rerank Instruction",
-				Labels:      map[string]string{"zh-CN": "重排指令"},
+				Labels:      map[string]string{"zh-CN": "\u91cd\u6392\u6307\u4ee4"},
 				Type:        "string",
 				Default:     "Whether the document answers the query or matches the content retrieval intent",
 				Placeholder: "Instruction passed to the rerank model",
 				Placeholders: map[string]string{
-					"zh-CN": "传给重排模型的 instruction",
+					"zh-CN": "\u4f20\u7ed9\u91cd\u6392\u6a21\u578b\u7684 instruction",
 				},
 				ModelTypes: rerankOnly,
 			},
@@ -217,7 +217,7 @@ func newVolcengineProvider() *Definition {
 				MaxBatchSize:       api.Ptr(1),
 			},
 			Rerank: api.RerankCompat{
-				// datas "数组长度不超过 200"
+				// datas "array length at most 200"
 				// (https://docs.volcengine.com/docs/vector_database_vikingdb/Rerank).
 				// The pre-catalog client split at 50, a constant of its own
 				// rather than a documented ceiling.

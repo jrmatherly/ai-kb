@@ -62,7 +62,7 @@ func (c *Client) BuildRequestBody(texts []string, _ api.EmbedInputType) map[stri
 
 // BuildImageRequestBody is the golden-test entry point for images. The
 // reference takes an image as a URL or as
-// "data:image/{图片格式};base64,{图片Base64编码}" under image_url.url.
+// "data:image/{image format};base64,{image Base64 data}" under image_url.url.
 func (c *Client) BuildImageRequestBody(images []api.EmbedImage, _ api.EmbedInputType) map[string]any {
 	input := make([]any, 0, len(images))
 	for _, img := range images {

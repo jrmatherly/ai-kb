@@ -12,20 +12,20 @@ import (
 
 func TestMCPAnswerCannotBorrowDirectoryOrHistoricalKnowledgeCitations(t *testing.T) {
 	r := NewRegistry(true)
-	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-1", DocumentTitle: "什么是 AI KB？"})
-	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-2", DocumentTitle: "如何创建知识库？"})
-	history := []chat.Message{{Role: "assistant", Content: `物业工作 <kb doc="9月13日周报.docx" chunk_id="weekly-report" />`}}
+	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-1", DocumentTitle: "\u4ec0\u4e48\u662f AI KB\uff1f"})
+	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-2", DocumentTitle: "\u5982\u4f55\u521b\u5efa\u77e5\u8bc6\u5e93\uff1f"})
+	history := []chat.Message{{Role: "assistant", Content: "\u7269\u4e1a\u5de5\u4f5c <kb doc=\"9\u670813\u65e5\u5468\u62a5.docx\" chunk_id=\"weekly-report\" />"}}
 	r.EncodeMessages(history)
 	const article = "https://km.woa.com/articles/show/669504?jumpfrom=kmmcp"
-	result := &types.ToolResult{Success: true, Output: "标题: AI 玩法\nAI摘要: Computer Use 案例\n链接: " + article}
+	result := &types.ToolResult{Success: true, Output: "\u6807\u9898: AI \u73a9\u6cd5\nAI\u6458\u8981: Computer Use \u6848\u4f8b\n\u94fe\u63a5: " + article}
 	modelOutput := r.ModelToolResultForTool("call_mcp_tool", result)
 	require.True(t, strings.HasPrefix(modelOutput, result.Output), "external payload is preserved")
 	require.Contains(t, modelOutput, `<source id="w1" url="`+article+`"/>`)
 	require.Equal(t, modelOutput, r.ModelToolResultForTool("call_mcp_tool", result),
 		"rebuilding context keeps stable handles")
 	r.EncodeMessages(history) // Replaying history must not promote its citations.
-	raw := `玩法<ref id="c3"/> 动画<ref id="c1"/> 对话<ref id="c2"/> 来源<ref id="w1"/>`
-	want := `玩法 动画 对话 来源<web url="` + article + `" title="" />`
+	raw := "\u73a9\u6cd5<ref id=\"c3\"/> \u52a8\u753b<ref id=\"c1\"/> \u5bf9\u8bdd<ref id=\"c2\"/> \u6765\u6e90<ref id=\"w1\"/>"
+	want := "\u73a9\u6cd5 \u52a8\u753b \u5bf9\u8bdd \u6765\u6e90<web url=\"" + article + `" title="" />`
 	require.Equal(t, want, r.DecodeOutputText(raw))
 	decoder := r.StreamDecoder()
 	var streamed strings.Builder
@@ -44,7 +44,7 @@ func TestMCPAnswerCannotBorrowDirectoryOrHistoricalKnowledgeCitations(t *testing
 	r.ModelToolResultForTool("knowledge_search", &types.ToolResult{Success: true, Data: map[string]interface{}{
 		"display_type": "search_results",
 		"results": []map[string]interface{}{{
-			"chunk_id": "faq-1", "knowledge_title": "什么是 AI KB？", "content": "知识库管理系统",
+			"chunk_id": "faq-1", "knowledge_title": "\u4ec0\u4e48\u662f AI KB\uff1f", "content": "\u77e5\u8bc6\u5e93\u7ba1\u7406\u7cfb\u7edf",
 		}},
 	}})
 	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-1"})
@@ -86,7 +86,7 @@ func TestMCPSourceCandidatesPreserveExternalLinksAndPayload(t *testing.T) {
 		t.Run(tool, func(t *testing.T) {
 			r := NewRegistry(true)
 			body := "[MCP result]\n" + `{"url":"https:\/\/example.com\/article?a=1\u0026b=2","chunk_id":"foreign-id"}` +
-				"\n[Article](https://example.com/article?a=1&b=2)\n[Wiki](https://example.com/Function_(math))。\n" +
+				"\n[Article](https://example.com/article?a=1&b=2)\n[Wiki](https://example.com/Function_(math))\u3002\n" +
 				"[HTML](https://example.com/page?x=1&amp;y=2)\n" +
 				"https://user:pass@example.com/private javascript:alert(1) https://"
 			result := &types.ToolResult{Success: true, Output: body}

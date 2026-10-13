@@ -39,7 +39,7 @@ func TestRegistryAliasesWikiSummarySlug(t *testing.T) {
 func TestRegistryLeavesEntitySlugUntouched(t *testing.T) {
 	r := newResourceRegistry()
 	// Entity slugs are low-entropy and semantically meaningful; not aliased.
-	entity := "[[entity/ai-kb-error-log|AI KB 试错记录]]"
+	entity := "[[entity/ai-kb-error-log|AI KB \u8bd5\u9519\u8bb0\u5f55]]"
 	require.Equal(t, entity, r.EncodeText(entity))
 }
 

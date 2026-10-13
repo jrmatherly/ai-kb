@@ -345,7 +345,7 @@ func formatToolGuidanceForMode(names []string, skillInstallMode bool, layout san
 // generated in the sandbox from its final answer.
 //
 // Without this, models improvise a Markdown image with the bare file name
-// (`![评分](市场画像评分.html)`), which the browser cannot resolve — the answer
+// (`![score](market-profile-score.html)`), which the browser cannot resolve; the answer
 // renders a broken image icon. The `sandbox:` prefix makes the intent explicit
 // so the server can bind the name to the artifact index it hands the client.
 func sandboxArtifactReferenceGuidance() string {

@@ -6,17 +6,17 @@ import (
 )
 
 func TestKnowledgeFileName(t *testing.T) {
-	if got := knowledgeFileName("01-机场线", "/产品/产品A/需求: v2.docx"); got != "01-机场线/产品/产品A/需求_ v2.docx" {
+	if got := knowledgeFileName("01-\u673a\u573a\u7ebf", "/\u4ea7\u54c1/\u4ea7\u54c1A/\u9700\u6c42: v2.docx"); got != "01-\u673a\u573a\u7ebf/\u4ea7\u54c1/\u4ea7\u54c1A/\u9700\u6c42_ v2.docx" {
 		t.Fatalf("filename = %q", got)
 	}
-	p := "/" + strings.Repeat("层级/", 20) + "说明.pdf"
-	if got := knowledgeFileName("资料库", p); got != "资料库"+p {
+	p := "/" + strings.Repeat("\u5c42\u7ea7/", 20) + "\u8bf4\u660e.pdf"
+	if got := knowledgeFileName("\u8d44\u6599\u5e93", p); got != "\u8d44\u6599\u5e93"+p {
 		t.Fatalf("deep filename was truncated: %q", got)
 	}
 }
 
 func TestExternalIDAndFingerprint(t *testing.T) {
-	if got := externalID(testRepoID, "/产品/a:b.pdf"); got != "seafile:"+testRepoID+":/产品/a:b.pdf" {
+	if got := externalID(testRepoID, "/\u4ea7\u54c1/a:b.pdf"); got != "seafile:"+testRepoID+":/\u4ea7\u54c1/a:b.pdf" {
 		t.Fatalf("externalID = %q", got)
 	}
 	for _, tc := range []struct {
@@ -38,8 +38,8 @@ func TestValidEntryName(t *testing.T) {
 		name string
 		want bool
 	}{
-		{"说明.pdf", true},
-		{"需求: v2.docx", true},
+		{"\u8bf4\u660e.pdf", true},
+		{"\u9700\u6c42: v2.docx", true},
 		{"a%2Fb.pdf", true},
 		{".hidden.pdf", true},
 		{" spaced .pdf", true},

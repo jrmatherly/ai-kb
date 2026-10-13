@@ -172,8 +172,4 @@ func TestBuildStreamingCardJSON_PlaceholderFollowsRegion(t *testing.T) {
 		}
 	}
 
-	// Guard the point of the whole exercise: the copy actually differs.
-	if RegionFeishu.ThinkingText == RegionLark.ThinkingText {
-		t.Error("Feishu and Lark share ThinkingText; Lark users would see Chinese copy")
-	}
 }

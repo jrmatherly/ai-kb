@@ -127,8 +127,8 @@ func TestMCPTextPreview(t *testing.T) {
 	if got != "hello world" {
 		t.Fatalf("newlines: got %q", got)
 	}
-	got = mcpTextPreview("一二三四五", 3)
-	if got != "一二三..." {
+	got = mcpTextPreview("\u4e00\u4e8c\u4e09\u56db\u4e94", 3)
+	if got != "\u4e00\u4e8c\u4e09..." {
 		t.Fatalf("truncate: got %q", got)
 	}
 }

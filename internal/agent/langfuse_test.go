@@ -78,7 +78,7 @@ func TestTruncateForLangfuse(t *testing.T) {
 		{"under-budget", "hello", 10, "hello"},
 		{"at-budget", "hello", 5, "hello"},
 		{"over-budget-ascii", "hello world", 5, "hello…"},
-		{"over-budget-cjk", "你好世界测试", 3, "你好世…"},
+		{"over-budget-cjk", "\u4f60\u597d\u4e16\u754c\u6d4b\u8bd5", 3, "\u4f60\u597d\u4e16…"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

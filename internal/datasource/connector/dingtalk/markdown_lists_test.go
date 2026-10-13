@@ -9,13 +9,13 @@ import (
 // (one per item) at the same time. Both kinds must survive rendering: an inline
 // item used to shadow every block item that followed it.
 func TestRenderListKeepsInlineAndBlockItems(t *testing.T) {
-	result := renderDocument("测试文档", []json.RawMessage{
+	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"level":0}},"children":[` +
-			`{"elementType":"text","text":"第一项"},` +
-			`{"blockType":"paragraph","paragraph":{"text":"第二项整段内容"}}]}`),
+			"{\"elementType\":\"text\",\"text\":\"\u7b2c\u4e00\u9879\"}," +
+			"{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u7b2c\u4e8c\u9879\u6574\u6bb5\u5185\u5bb9\"}}]}"),
 	})
 
-	want := "# 测试文档\n\n- 第一项\n- 第二项整段内容\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n- \u7b2c\u4e00\u9879\n- \u7b2c\u4e8c\u9879\u6574\u6bb5\u5185\u5bb9\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -27,14 +27,14 @@ func TestRenderListKeepsInlineAndBlockItems(t *testing.T) {
 // Items delivered as block children must keep one bullet line each instead of
 // being flattened onto a single line.
 func TestRenderListEmitsOneBulletPerBlockItem(t *testing.T) {
-	result := renderDocument("测试文档", []json.RawMessage{
+	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"level":0}},"children":[` +
-			`{"blockType":"paragraph","paragraph":{"text":"甲项"}},` +
-			`{"blockType":"paragraph","paragraph":{"text":"乙项"}},` +
-			`{"blockType":"paragraph","paragraph":{"text":"丙项"}}]}`),
+			"{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u7532\u9879\"}}," +
+			"{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u4e59\u9879\"}}," +
+			"{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u4e19\u9879\"}}]}"),
 	})
 
-	want := "# 测试文档\n\n- 甲项\n- 乙项\n- 丙项\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n- \u7532\u9879\n- \u4e59\u9879\n- \u4e19\u9879\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -45,12 +45,12 @@ func TestRenderListEmitsOneBulletPerBlockItem(t *testing.T) {
 func TestRenderListKeepsItemOrder(t *testing.T) {
 	result := renderDocument("", []json.RawMessage{
 		rawJSON(`{"blockType":"orderedList","orderedList":{"list":{"level":0}},"children":[` +
-			`{"blockType":"paragraph","paragraph":{"text":"块项"}},` +
-			`{"elementType":"text","text":"内联项一"},` +
-			`{"elementType":"text","text":"内联项二"}]}`),
+			"{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u5757\u9879\"}}," +
+			"{\"elementType\":\"text\",\"text\":\"\u5185\u8054\u9879\u4e00\"}," +
+			"{\"elementType\":\"text\",\"text\":\"\u5185\u8054\u9879\u4e8c\"}]}"),
 	})
 
-	want := "1. 块项\n1. 内联项一内联项二\n"
+	want := "1. \u5757\u9879\n1. \u5185\u8054\u9879\u4e00\u5185\u8054\u9879\u4e8c\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -61,14 +61,14 @@ func TestRenderListKeepsItemOrder(t *testing.T) {
 func TestRenderListIndentsNestedLists(t *testing.T) {
 	result := renderDocument("", []json.RawMessage{
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"level":0}},"children":[` +
-			`{"elementType":"text","text":"父项"},` +
+			"{\"elementType\":\"text\",\"text\":\"\u7236\u9879\"}," +
 			`{"blockType":"unorderedList","unorderedList":{"list":{"level":1}},"children":[` +
-			`{"elementType":"text","text":"子项"}]},` +
+			"{\"elementType\":\"text\",\"text\":\"\u5b50\u9879\"}]}," +
 			`{"blockType":"unorderedList","unorderedList":{"list":{"level":0}},"children":[` +
-			`{"elementType":"text","text":"孙项同层级"}]}]}`),
+			"{\"elementType\":\"text\",\"text\":\"\u5b59\u9879\u540c\u5c42\u7ea7\"}]}]}"),
 	})
 
-	want := "- 父项\n  - 子项\n  - 孙项同层级\n"
+	want := "- \u7236\u9879\n  - \u5b50\u9879\n  - \u5b59\u9879\u540c\u5c42\u7ea7\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -79,12 +79,12 @@ func TestRenderListIndentsNestedLists(t *testing.T) {
 func TestRenderListIndentsContinuationLines(t *testing.T) {
 	// A document title keeps the leading indentation of the first list from
 	// being trimmed away, matching how these lists appear in real documents.
-	result := renderDocument("测试文档", []json.RawMessage{
+	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"level":1}},"children":[` +
-			`{"blockType":"paragraph","paragraph":{"text":"第一行\n第二行"}}]}`),
+			"{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u7b2c\u4e00\u884c\\n\u7b2c\u4e8c\u884c\"}}]}"),
 	})
 
-	want := "# 测试文档\n\n  - 第一行\n    第二行\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n  - \u7b2c\u4e00\u884c\n    \u7b2c\u4e8c\u884c\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -97,14 +97,14 @@ func TestRenderListIndentsContinuationLines(t *testing.T) {
 func TestRenderListFollowsTheFlatDocumentedShape(t *testing.T) {
 	result := renderDocument("", []json.RawMessage{
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"listId":"list-1","level":0}},` +
-			`"children":[{"text":"父项"}]}`),
+			"\"children\":[{\"text\":\"\u7236\u9879\"}]}"),
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"listId":"list-1","level":1}},` +
-			`"children":[{"text":"子项"}]}`),
+			"\"children\":[{\"text\":\"\u5b50\u9879\"}]}"),
 		rawJSON(`{"blockType":"unorderedList","unorderedList":{"list":{"listId":"list-2","level":0}},` +
-			`"children":[{"text":"另一组的项"}]}`),
+			"\"children\":[{\"text\":\"\u53e6\u4e00\u7ec4\u7684\u9879\"}]}"),
 	})
 
-	want := "- 父项\n  - 子项\n- 另一组的项\n"
+	want := "- \u7236\u9879\n  - \u5b50\u9879\n- \u53e6\u4e00\u7ec4\u7684\u9879\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}

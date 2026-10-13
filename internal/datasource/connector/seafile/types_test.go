@@ -22,7 +22,7 @@ func TestParseResourceID(t *testing.T) {
 		{"////", "/"},
 		{"//a///b/", "/a/b"},
 		{"/a:b/c:d", "/a:b/c:d"},
-		{"/产品/说明.pdf", "/产品/说明.pdf"},
+		{"/\u4ea7\u54c1/\u8bf4\u660e.pdf", "/\u4ea7\u54c1/\u8bf4\u660e.pdf"},
 		{"/%2e%2e/a%2Fb", "/%2e%2e/a%2Fb"},
 		{"/ spaced /file ", "/ spaced /file "},
 	} {
@@ -153,7 +153,7 @@ func TestErrorReason(t *testing.T) {
 }
 
 func FuzzResourceID(f *testing.F) {
-	for _, id := range []string{testRepoID + ":/", testRepoID + ":/a:b//产品/", testRepoID + ":/../a", ""} {
+	for _, id := range []string{testRepoID + ":/", testRepoID + ":/a:b//\u4ea7\u54c1/", testRepoID + ":/../a", ""} {
 		f.Add(id)
 	}
 	f.Fuzz(func(t *testing.T, id string) {

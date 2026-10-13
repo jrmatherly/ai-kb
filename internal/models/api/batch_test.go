@@ -62,7 +62,7 @@ func TestSplitBatchesRejectsAQueryThatFillsTheBudget(t *testing.T) {
 
 // Runes, not bytes: a CJK document is counted the way the vendor counts it.
 func TestSplitBatchesCountsRunesNotBytes(t *testing.T) {
-	got, err := SplitBatches([]string{strings.Repeat("中", 10)}, 0, BatchLimits{MaxItemRunes: 10})
+	got, err := SplitBatches([]string{strings.Repeat("\u4e2d", 10)}, 0, BatchLimits{MaxItemRunes: 10})
 	require.NoError(t, err)
 	assert.Len(t, got, 1)
 }

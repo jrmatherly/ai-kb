@@ -116,7 +116,7 @@ func TestPinnedGenerationSkillKeepsResearchAndKnowledgeScope(t *testing.T) {
 	engine := newTestEngine(t, &mockChat{})
 	engine.knowledgeBasesInfo = []*KnowledgeBaseInfo{{ID: "kb", Name: "Server operations", Capabilities: []string{"chunks"}}}
 	engine.SetPinnedMentions(nil, []*PinnedSkillInfo{{Name: "pptx-generator"}})
-	prompt := engine.RenderUserTurnContent("session", "如何在 Windows Server 2008 上连接 WiFi 网络？制作相关 PPT")
+	prompt := engine.RenderUserTurnContent("session", "Connect to WiFi on Windows Server 2008? Make a PPT about it")
 	require.Contains(t, prompt, "Server operations")
 	require.Contains(t, prompt, `read_file(path="skill://pptx-generator/SKILL.md")`)
 	require.Contains(t, prompt, "do not replace research into the task's factual content")

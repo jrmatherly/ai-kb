@@ -494,7 +494,7 @@ func (c *client) documentBlocks(ctx context.Context, documentID string) ([]json.
 	return nil, fmt.Errorf("DingTalk document block pagination exceeded %d pages", maxPages)
 }
 
-// dentryRef identifies one file inside 钉盘. Wiki node IDs are UUIDs, but the
+// dentryRef identifies one file inside DingTalk Drive. Wiki node IDs are UUIDs, but the
 // storage APIs accept only the numeric spaceId/dentryId pair, so every upload
 // is translated first. Response shape:
 //
@@ -505,7 +505,7 @@ type dentryRef struct {
 	DentryUUID string `json:"dentryUuid"`
 }
 
-// resolveDentry maps a wiki node UUID to its 钉盘 storage identifiers.
+// resolveDentry maps a wiki node UUID to its DingTalk Drive storage identifiers.
 func (c *client) resolveDentry(ctx context.Context, documentID string) (dentryRef, error) {
 	query := url.Values{"operatorId": {c.operator}}
 	path := "/v2.0/doc/dentries/" + url.PathEscape(documentID) +

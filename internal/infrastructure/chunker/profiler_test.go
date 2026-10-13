@@ -78,7 +78,7 @@ func TestProfileDocument_GermanChapters(t *testing.T) {
 }
 
 func TestProfileDocument_ChineseChapters(t *testing.T) {
-	doc := "第一章 引言\n\n内容\n\n第二章 方法\n\n内容"
+	doc := "\u7b2c\u4e00\u7ae0 \u5f15\u8a00\n\n\u5185\u5bb9\n\n\u7b2c\u4e8c\u7ae0 \u65b9\u6cd5\n\n\u5185\u5bb9"
 	p := ProfileDocument(doc)
 	if p.ChineseChapterCount != 2 {
 		t.Errorf("expected 2 Chinese chapters, got %d", p.ChineseChapterCount)

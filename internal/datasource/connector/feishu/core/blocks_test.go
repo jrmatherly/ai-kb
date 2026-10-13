@@ -66,7 +66,7 @@ func TestReadSheetRange_SplitsTokenAndReadsValues(t *testing.T) {
 		}
 		gotPath = r.URL.Path
 		_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
-			"valueRange": map[string]any{"values": [][]any{{"名称", "数量"}, {"苹果", 3}, {"梨", nil}}},
+			"valueRange": map[string]any{"values": [][]any{{"\u540d\u79f0", "\u6570\u91cf"}, {"\u82f9\u679c", 3}, {"\u68a8", nil}}},
 		}})
 	}))
 	defer srv.Close()
@@ -82,7 +82,7 @@ func TestReadSheetRange_SplitsTokenAndReadsValues(t *testing.T) {
 	if truncated {
 		t.Errorf("did not expect truncation for 3 rows")
 	}
-	if len(rows) != 3 || rows[0][0] != "名称" || rows[1][1] != "3" || rows[2][1] != "" {
+	if len(rows) != 3 || rows[0][0] != "\u540d\u79f0" || rows[1][1] != "3" || rows[2][1] != "" {
 		t.Errorf("rows = %+v", rows)
 	}
 }
@@ -116,16 +116,16 @@ func TestReadSheetRange_TruncatesLargeTable(t *testing.T) {
 }
 
 func TestBitableCellToString(t *testing.T) {
-	// text-segment array: [{type:text, text:"你好"}] → "你好"
-	textSeg := []any{map[string]any{"type": "text", "text": "你好"}}
-	if got := bitableCellToString(textSeg); got != "你好" {
-		t.Errorf("text segment: got %q, want %q", got, "你好")
+	// text-segment array: [{type:text, text:"<hello in Chinese>"}] → the joined text
+	textSeg := []any{map[string]any{"type": "text", "text": "\u4f60\u597d"}}
+	if got := bitableCellToString(textSeg); got != "\u4f60\u597d" {
+		t.Errorf("text segment: got %q, want %q", got, "\u4f60\u597d")
 	}
 
-	// person array: [{id:u1, name:"张三"}] → "张三"
-	person := []any{map[string]any{"id": "u1", "name": "张三"}}
-	if got := bitableCellToString(person); got != "张三" {
-		t.Errorf("person: got %q, want %q", got, "张三")
+	// person array: [{id:u1, name:"<a Chinese name>"}] → the name
+	person := []any{map[string]any{"id": "u1", "name": "\u5f20\u4e09"}}
+	if got := bitableCellToString(person); got != "\u5f20\u4e09" {
+		t.Errorf("person: got %q, want %q", got, "\u5f20\u4e09")
 	}
 
 	// plain number (float64) → "3"
@@ -211,14 +211,14 @@ func TestReadBitableRecords_DateColumnUsesFormatterAndTimezone(t *testing.T) {
 		case strings.HasSuffix(r.URL.Path, "/fields"):
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"items": []map[string]any{
-					{"field_name": "截止日期", "type": 5, "property": map[string]any{"date_formatter": "yyyy/MM/dd"}},
-					{"field_name": "提醒时间", "type": 5, "property": map[string]any{"date_formatter": "yyyy-MM-dd HH:mm"}},
+					{"field_name": "\u622a\u6b62\u65e5\u671f", "type": 5, "property": map[string]any{"date_formatter": "yyyy/MM/dd"}},
+					{"field_name": "\u63d0\u9192\u65f6\u95f4", "type": 5, "property": map[string]any{"date_formatter": "yyyy-MM-dd HH:mm"}},
 				},
 			}})
 		case strings.HasSuffix(r.URL.Path, "/records/search"):
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"has_more": false, "items": []map[string]any{
-					{"fields": map[string]any{"截止日期": float64(1711900800000), "提醒时间": float64(1719802800000)}},
+					{"fields": map[string]any{"\u622a\u6b62\u65e5\u671f": float64(1711900800000), "\u63d0\u9192\u65f6\u95f4": float64(1719802800000)}},
 				},
 			}})
 		}
@@ -248,7 +248,7 @@ func TestReadBitableRecords_SplitsTokenAndBuildsTable(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "tenant_access_token": "t", "expire": 7200})
 		case strings.HasSuffix(r.URL.Path, "/fields"):
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
-				"items": []map[string]any{{"field_name": "任务"}, {"field_name": "状态"}},
+				"items": []map[string]any{{"field_name": "\u4efb\u52a1"}, {"field_name": "\u72b6\u6001"}},
 			}})
 		case strings.HasSuffix(r.URL.Path, "/records/search"):
 			// Must use the current Search-records endpoint (POST), not the
@@ -262,7 +262,7 @@ func TestReadBitableRecords_SplitsTokenAndBuildsTable(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"has_more": false,
 				"items": []map[string]any{
-					{"fields": map[string]any{"任务": "写文档", "状态": "进行中"}},
+					{"fields": map[string]any{"\u4efb\u52a1": "\u5199\u6587\u6863", "\u72b6\u6001": "\u8fdb\u884c\u4e2d"}},
 				},
 			}})
 		}
@@ -277,7 +277,7 @@ func TestReadBitableRecords_SplitsTokenAndBuildsTable(t *testing.T) {
 	if truncated {
 		t.Errorf("did not expect truncation")
 	}
-	if len(rows) != 2 || rows[0][0] != "任务" || rows[0][1] != "状态" || rows[1][0] != "写文档" || rows[1][1] != "进行中" {
+	if len(rows) != 2 || rows[0][0] != "\u4efb\u52a1" || rows[0][1] != "\u72b6\u6001" || rows[1][0] != "\u5199\u6587\u6863" || rows[1][1] != "\u8fdb\u884c\u4e2d" {
 		t.Errorf("rows = %+v", rows)
 	}
 }
@@ -287,7 +287,7 @@ func TestReadBitableRecords_SplitsTokenAndBuildsTable(t *testing.T) {
 // allows 500). The connector must request page_size=100 and page through fields,
 // or a table with >100 columns would silently lose its header tail (or the whole
 // bitable would degrade if Feishu rejects page_size=500). Verified against the
-// official docs: bitable-v1/app-table-field/list "最大值：100".
+// official docs: bitable-v1/app-table-field/list "maximum: 100".
 func TestReadBitableRecords_PaginatesFieldsAtMax100(t *testing.T) {
 	const totalFields = 150 // spans two pages: 100 + 50
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

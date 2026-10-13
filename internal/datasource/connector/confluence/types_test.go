@@ -9,7 +9,7 @@ import (
 )
 
 func TestSafeFilenameKeepsUTF8ValidAtLimit(t *testing.T) {
-	name := strings.Repeat("知识库", 150)
+	name := strings.Repeat("\u77e5\u8bc6\u5e93", 150)
 	got := safeFilename(name)
 	if !utf8.ValidString(got) || len([]rune(got)) != 200 {
 		t.Fatalf("safeFilename() truncated UTF-8 incorrectly: %q", got)

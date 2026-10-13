@@ -15,8 +15,8 @@ func TestTruncate(t *testing.T) {
 	}{
 		{"no truncate ASCII", 20, "hello", "hello"},
 		{"truncate ASCII", 5, "hello world", "hell…"},
-		{"no truncate CJK", 8, "中文测试", "中文测试"},
-		{"truncate CJK", 5, "中文测试", "中文…"},
+		{"no truncate CJK", 8, "\u4e2d\u6587\u6d4b\u8bd5", "\u4e2d\u6587\u6d4b\u8bd5"},
+		{"truncate CJK", 5, "\u4e2d\u6587\u6d4b\u8bd5", "\u4e2d\u6587…"},
 		{"empty", 5, "", ""},
 		{"single char fits", 1, "a", "a"},
 		{"truncate to width 1", 1, "abc", "…"},

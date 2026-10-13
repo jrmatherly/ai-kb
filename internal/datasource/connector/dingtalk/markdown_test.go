@@ -84,9 +84,9 @@ func TestRenderDocumentHandlesUnknownAndUnsafeContent(t *testing.T) {
 }
 
 func TestSanitizeFilenameDoesNotSplitUTF8(t *testing.T) {
-	name := strings.Repeat("文", 100) + "/draft"
+	name := strings.Repeat("\u6587", 100) + "/draft"
 	sanitized := sanitizeFilename(name)
-	if !strings.HasSuffix(sanitized, "文") || len(sanitized) > 200 {
+	if !strings.HasSuffix(sanitized, "\u6587") || len(sanitized) > 200 {
 		t.Fatalf("sanitizeFilename() = %q (%d bytes)", sanitized, len(sanitized))
 	}
 	if sanitized = sanitizeFilename("line\nname"); sanitized != "line_name" {
@@ -134,13 +134,13 @@ func TestRenderDocumentAcceptsOfficialBlockVariants(t *testing.T) {
 // collected, so the loss stays visible instead of turning into an empty
 // fragment of Markdown.
 func TestRenderDocumentCollectsUnknownBlockTypes(t *testing.T) {
-	result := renderDocument("测试文档", []json.RawMessage{
+	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"code","code":{"syntax":"bash"}}`),
 		rawJSON(`{"blockType":"attachment","attachment":{"resourceId":"res-synthetic-1"}}`),
-		rawJSON(`{"blockType":"paragraph","paragraph":{"text":"正文仍然保留"}}`),
+		rawJSON("{\"blockType\":\"paragraph\",\"paragraph\":{\"text\":\"\u6b63\u6587\u4ecd\u7136\u4fdd\u7559\"}}"),
 	})
 
-	if !strings.Contains(result.Markdown, "正文仍然保留") {
+	if !strings.Contains(result.Markdown, "\u6b63\u6587\u4ecd\u7136\u4fdd\u7559") {
 		t.Fatalf("known content lost:\n%s", result.Markdown)
 	}
 	if strings.Contains(result.Markdown, "```") || strings.Contains(result.Markdown, "Attachment:") {
@@ -155,7 +155,7 @@ func TestRenderDocumentCollectsUnknownBlockTypes(t *testing.T) {
 // headings, styles, blockquotes, tables and inline-only lists keep their exact
 // Markdown output.
 func TestRenderDocumentKeepsOrdinaryBlocksStable(t *testing.T) {
-	result := renderDocument("标题 Doc", []json.RawMessage{
+	result := renderDocument("\u6807\u9898 Doc", []json.RawMessage{
 		rawJSON(`{"blockType":"heading","heading":{"level":2,"text":"Overview"}}`),
 		rawJSON(`{"blockType":"paragraph","children":[` +
 			`{"elementType":"text","text":"bold","bold":true},` +
@@ -167,7 +167,7 @@ func TestRenderDocumentKeepsOrdinaryBlocksStable(t *testing.T) {
 		rawJSON(`{"blockType":"paragraph","paragraph":{"text":"tail"}}`),
 	})
 
-	want := "# 标题 Doc\n\n" +
+	want := "# \u6807\u9898 Doc\n\n" +
 		"## Overview\n\n" +
 		"**bold** and plain\n\n" +
 		"> first\n> second\n\n" +
@@ -186,14 +186,14 @@ func TestRenderDocumentKeepsOrdinaryBlocksStable(t *testing.T) {
 // children rather than in a text field (slot is documented that way), and those
 // runs used to disappear: the default branch wrote an empty text and stopped.
 func TestRenderDocumentKeepsTextOfUnmodelledInlineElements(t *testing.T) {
-	result := renderDocument("测试文档", []json.RawMessage{
+	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"paragraph","children":[` +
-			`{"elementType":"text","text":"由 "},` +
-			`{"elementType":"slot","children":[{"elementType":"text","text":"张三"}]},` +
-			`{"elementType":"text","text":" 负责"}]}`),
+			"{\"elementType\":\"text\",\"text\":\"\u7531 \"}," +
+			"{\"elementType\":\"slot\",\"children\":[{\"elementType\":\"text\",\"text\":\"\u5f20\u4e09\"}]}," +
+			"{\"elementType\":\"text\",\"text\":\" \u8d1f\u8d23\"}]}"),
 	})
 
-	if !strings.Contains(result.Markdown, "由 张三 负责") {
+	if !strings.Contains(result.Markdown, "\u7531 \u5f20\u4e09 \u8d1f\u8d23") {
 		t.Fatalf("inline run lost its unmodelled element:\n%s", result.Markdown)
 	}
 	if want := []string{"inline_slot"}; !reflect.DeepEqual(result.UnknownTypes, want) {

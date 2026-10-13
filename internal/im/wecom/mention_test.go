@@ -15,11 +15,11 @@ func TestStripAtMentionBasic(t *testing.T) {
 		{"mention only no content", "@Bot", "@Bot"},
 		{"single-word bot double-space", "@Bot  /stop", "/stop"},
 		{"single-word bot single-space", "@Bot /stop", "/stop"},
-		{"single-word bot double-space chinese", "@Bot  你好世界", "你好世界"},
+		{"single-word bot double-space chinese", "@Bot  \u4f60\u597d\u4e16\u754c", "\u4f60\u597d\u4e16\u754c"},
 		{"multi-word bot double-space", "@AI KB Bot  /stop", "/stop"},
-		{"multi-word bot double-space chinese", "@AI KB Bot  什么是上下文工程", "什么是上下文工程"},
+		{"multi-word bot double-space chinese", "@AI KB Bot  \u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b", "\u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b"},
 		{"multi-word bot single-space command", "@AI KB Bot /stop", "/stop"},
-		{"multi-word bot single-space chinese", "@AI KB Bot 什么是老登", "什么是老登"},
+		{"multi-word bot single-space chinese", "@AI KB Bot \u4ec0\u4e48\u662f\u8001\u767b", "\u4ec0\u4e48\u662f\u8001\u767b"},
 		{"leading whitespace", "  @Bot  hello  ", "hello"},
 		{"double-space in user content", "@Bot  hello  world", "hello  world"},
 	}
@@ -38,9 +38,9 @@ func TestLongConnClient_StripAtMention(t *testing.T) {
 		c := &LongConnClient{}
 
 		// First message: double-space → learn "AI KB Bot"
-		got := c.stripAtMention("@AI KB Bot  什么是上下文工程")
-		if got != "什么是上下文工程" {
-			t.Errorf("first message: got %q, want %q", got, "什么是上下文工程")
+		got := c.stripAtMention("@AI KB Bot  \u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b")
+		if got != "\u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b" {
+			t.Errorf("first message: got %q, want %q", got, "\u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b")
 		}
 
 		// Verify bot name was cached
@@ -55,9 +55,9 @@ func TestLongConnClient_StripAtMention(t *testing.T) {
 		}
 
 		// Single-space with chinese content
-		got = c.stripAtMention("@AI KB Bot 什么是B+树")
-		if got != "什么是B+树" {
-			t.Errorf("chinese single-space: got %q, want %q", got, "什么是B+树")
+		got = c.stripAtMention("@AI KB Bot \u4ec0\u4e48\u662fB+\u6811")
+		if got != "\u4ec0\u4e48\u662fB+\u6811" {
+			t.Errorf("chinese single-space: got %q, want %q", got, "\u4ec0\u4e48\u662fB+\u6811")
 		}
 	})
 
@@ -140,9 +140,9 @@ func TestLongConnClient_StripAtMention(t *testing.T) {
 	t.Run("cold start single-space chinese", func(t *testing.T) {
 		c := &LongConnClient{}
 		// No cached name, single space → heuristic detects non-ASCII boundary
-		got := c.stripAtMention("@AI KB Bot 什么是老登")
-		if got != "什么是老登" {
-			t.Errorf("got %q, want %q", got, "什么是老登")
+		got := c.stripAtMention("@AI KB Bot \u4ec0\u4e48\u662f\u8001\u767b")
+		if got != "\u4ec0\u4e48\u662f\u8001\u767b" {
+			t.Errorf("got %q, want %q", got, "\u4ec0\u4e48\u662f\u8001\u767b")
 		}
 	})
 

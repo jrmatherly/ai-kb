@@ -38,9 +38,9 @@ import (
 )
 
 const (
-	imNoAnswerFallback  = "抱歉，我暂时无法回答这个问题。"
-	imErrorFallback     = "抱歉，处理您的问题时出现了异常，请稍后再试。"
-	imCancelledFallback = "抱歉，回答已被取消。"
+	imNoAnswerFallback  = "Sorry, I can't answer this question right now."
+	imErrorFallback     = "Sorry, something went wrong while processing your question. Please try again later."
+	imCancelledFallback = "Sorry, the answer was cancelled."
 
 	// dedupTTL is how long processed message IDs are retained.
 	dedupTTL = 5 * time.Minute
@@ -369,12 +369,12 @@ func makeUserKey(channelID, userID, chatID, threadID string) string {
 	return fmt.Sprintf("%s:%s:%s", channelID, userID, chatID)
 }
 
-// nonTextTypeLabel maps a message type to a Chinese label for LLM instructions.
+// nonTextTypeLabel maps a message type to the noun phrase used in LLM instructions.
 var nonTextTypeLabel = map[string]string{
-	"image": "图片",
-	"file":  "文件",
-	"video": "视频",
-	"voice": "语音",
+	"image": "an image",
+	"file":  "a file",
+	"video": "a video",
+	"voice": "a voice message",
 }
 
 // formatQuotedContext formats a QuotedMessage into a labeled string for LLM context.
@@ -389,9 +389,9 @@ func formatQuotedContext(quote *QuotedMessage) string {
 	if quote.NonTextType != "" {
 		label := nonTextTypeLabel[quote.NonTextType]
 		if label == "" {
-			label = "该类型的"
+			label = "content of this type"
 		}
-		return "用户引用了一条" + label + "消息，但你无法查看该内容。请直接告知用户你目前无法处理" + label + "消息，建议用户用文字描述问题。不要猜测该消息的内容。"
+		return "The user quoted a message containing " + label + ", but you cannot view it. Tell the user directly that you cannot process " + label + " right now, and suggest they describe the question in text. Do not guess what the message contains."
 	}
 	if quote.Content == "" {
 		return ""
@@ -403,9 +403,9 @@ func formatQuotedContext(quote *QuotedMessage) string {
 	}
 	// Prevent quoted content from escaping the XML tag boundary.
 	content = strings.ReplaceAll(content, "</quoted_message>", "")
-	label := "以下是用户引用的一条历史消息，仅作为上下文参考："
+	label := "The following is an earlier message the user quoted, for context only:"
 	if quote.IsBotMessage {
-		label = "以下是用户引用的你（机器人）之前的回复，仅作为上下文参考："
+		label = "The following is your (the bot's) earlier reply that the user quoted, for context only:"
 	}
 	return label + "\n<quoted_message>\n" + content + "\n</quoted_message>"
 }
@@ -507,13 +507,13 @@ func (s *Service) buildIMMCPAuthNotice(ctx context.Context, services []imMCPAuth
 			}
 		}
 		if authURL != "" {
-			lines = append(lines, fmt.Sprintf("• %s：%s", name, authURL))
+			lines = append(lines, fmt.Sprintf("• %s: %s", name, authURL))
 		} else {
-			lines = append(lines, fmt.Sprintf("• %s（请在 AI KB 管理后台完成 OAuth 授权）", name))
+			lines = append(lines, fmt.Sprintf("• %s (complete OAuth authorization in the AI KB admin console)", name))
 		}
 	}
 
-	return "⚠️ 以下 MCP 服务需要授权后才能使用，请点击链接完成授权，然后重新发送你的消息：\n" +
+	return "⚠️ The following MCP services need authorization before they can be used. Open each link to authorize, then send your message again:\n" +
 		strings.Join(lines, "\n")
 }
 
@@ -1726,7 +1726,7 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 		if !s.rateLimiter.Allow(ctx, rateLimitKey, s.rateLimitMax) {
 			logger.Warnf(ctx, "[IM] Rate limited: channel=%s user=%s chat=%s", channelID, msg.UserID, msg.ChatID)
 			_ = adapter.SendReply(ctx, msg, &ReplyMessage{
-				Content: "您的消息发送过于频繁，请稍后再试。",
+				Content: "You are sending messages too often. Please try again later.",
 				IsFinal: true,
 			})
 			return nil
@@ -1799,7 +1799,7 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 	// Unrecognised slash-word: show help hint instead of sending to QA.
 	if LooksLikeCommand(msg.Content) {
 		_ = adapter.SendReply(ctx, msg, &ReplyMessage{
-			Content: "未知指令，发送 `/help` 查看所有可用指令。",
+			Content: "Unknown command. Send `/help` to see all available commands.",
 			IsFinal: true,
 		})
 		return nil
@@ -1871,7 +1871,7 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 		qaCancel()
 		logger.Warnf(ctx, "[IM] Queue rejected: user=%s reason=%v", msg.UserID, enqueueErr)
 		_ = adapter.SendReply(ctx, msg, &ReplyMessage{
-			Content: "当前排队人数较多，请稍后再试。",
+			Content: "The queue is full right now. Please try again later.",
 			IsFinal: true,
 		})
 		return nil
@@ -1881,9 +1881,9 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 		logger.Infof(ctx, "[IM] Enqueued: user=%s pos=%d depth=%d", msg.UserID, pos, s.qaQueue.Metrics().Depth)
 		// In multi-instance mode the local queue position does not reflect global
 		// depth, so use a generic "queued" hint instead of an exact number.
-		queueMsg := fmt.Sprintf("收到，前面还有 %d 条消息在处理，请稍候 ⏳", pos)
+		queueMsg := fmt.Sprintf("Got it. %d message(s) ahead of yours are being processed, please wait ⏳", pos)
 		if s.redis != nil {
-			queueMsg = "收到，当前排队中，请稍候 ⏳"
+			queueMsg = "Got it. Your message is queued, please wait ⏳"
 		}
 		_ = adapter.SendReply(ctx, msg, &ReplyMessage{
 			Content: queueMsg,
@@ -1915,11 +1915,11 @@ func emptyIncomingMessageReply(msg *IncomingMessage) (string, bool) {
 	}
 	switch rawType {
 	case "audio":
-		return "未能识别这条语音中的文字内容。请改用纯文本发送，或再说一遍。", true
+		return "Could not recognize any text in this voice message. Please send plain text instead, or say it again.", true
 	case "video":
-		return "暂不支持视频消息。请改用纯文本发送；图片或文件请单独发送。", true
+		return "Video messages are not supported yet. Please send plain text instead; send images or files separately.", true
 	default:
-		return "未能识别这条消息中的文字内容。请改用纯文本发送；图片或文件请单独发送。", true
+		return "Could not recognize any text in this message. Please send plain text instead; send images or files separately.", true
 	}
 }
 
@@ -1956,7 +1956,7 @@ func (s *Service) executeQARequest(req *qaRequest) {
 	attachments, imageURLs, downloaded, err := s.prepareIMAttachments(ctx, req.msg, req.adapter)
 	if err != nil {
 		logger.Warnf(ctx, "[IM] attachment preparation failed: %v", err)
-		if sendErr := req.adapter.SendReply(ctx, req.msg, &ReplyMessage{Content: "❌ 无法读取此附件，请重试或改用文字描述。", IsFinal: true}); sendErr != nil {
+		if sendErr := req.adapter.SendReply(ctx, req.msg, &ReplyMessage{Content: "❌ Could not read this attachment. Please try again or describe it in text.", IsFinal: true}); sendErr != nil {
 			logger.Warnf(ctx, "[IM] Failed to send attachment error reply: %v", sendErr)
 		}
 		return
@@ -2113,7 +2113,7 @@ func (s *Service) handleCommand(
 	if err != nil {
 		logger.Errorf(ctx, "[IM] Command /%s error: %v", cmd.Name(), err)
 		_ = adapter.SendReply(ctx, msg, &ReplyMessage{
-			Content: "抱歉，执行指令时出现了异常，请稍后再试。",
+			Content: "Sorry, something went wrong while running the command. Please try again later.",
 			IsFinal: true,
 		})
 		return err
@@ -3417,9 +3417,9 @@ func fileMessageQAContent(msg *IncomingMessage) string {
 	}
 	fileName := strings.TrimSpace(msg.FileName)
 	if fileName == "" {
-		fileName = "未命名文件"
+		fileName = "untitled file"
 	}
-	return fmt.Sprintf("我上传了文件「%s」。请确认已收到，并告知我接下来可以如何协助。", fileName)
+	return fmt.Sprintf("I uploaded the file \"%s\". Please confirm you received it and tell me how you can help next.", fileName)
 }
 
 // processDownloadedFileToKnowledgeBase stores bytes already downloaded for QA.

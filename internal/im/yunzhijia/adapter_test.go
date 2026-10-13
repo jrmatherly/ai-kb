@@ -68,8 +68,8 @@ func TestCleanAtMentionRequiresNameBoundary(t *testing.T) {
 	if _, mentioned := cleanAtMention("@AIKBPlus hello", "AI KB"); mentioned {
 		t.Fatal("longer user name must not be treated as a robot mention")
 	}
-	if got, mentioned := cleanAtMention("@AI KB：你好", "AI KB"); !mentioned || got != "你好" {
-		t.Fatalf("cleanAtMention() = %q, %v; want 你好, true", got, mentioned)
+	if got, mentioned := cleanAtMention("@AI KB\uff1a\u4f60\u597d", "AI KB"); !mentioned || got != "\u4f60\u597d" {
+		t.Fatalf("cleanAtMention() = %q, %v; want \u4f60\u597d, true", got, mentioned)
 	}
 }
 
@@ -84,7 +84,7 @@ func TestToIncomingMessageParsesMsgParamImage(t *testing.T) {
 		OperatorName:   "User",
 		Time:           123,
 		MsgID:          "message",
-		Content:        "@Websocket 图片测试一下看看[图片]",
+		Content:        "@Websocket \u56fe\u7247\u6d4b\u8bd5\u4e00\u4e0b\u770b\u770b[\u56fe\u7247]",
 		GroupType:      2,
 		MsgParam: `{"desc":[{"data":"BOT-1","length":10,"start":0,"type":"at"},` +
 			`{"data":"file-1","h":1032,"length":4,"start":19,"type":"image","w":1920}],` +
@@ -107,7 +107,7 @@ func TestToIncomingMessageParsesMsgParamImage(t *testing.T) {
 	if got.ChatID != "group-1" {
 		t.Fatalf("ChatID = %q, want group-1", got.ChatID)
 	}
-	if got.Content != "图片测试一下看看[图片]" {
+	if got.Content != "\u56fe\u7247\u6d4b\u8bd5\u4e00\u4e0b\u770b\u770b[\u56fe\u7247]" {
 		t.Fatalf("Content = %q", got.Content)
 	}
 	if got.Extra["yunzhijia_image_width"] != "1920" || got.Extra["yunzhijia_image_height"] != "1032" {
@@ -163,7 +163,7 @@ func TestToIncomingMessageAcceptsMsgParamMention(t *testing.T) {
 		OperatorName:   "User",
 		Time:           123,
 		MsgID:          "message",
-		Content:        "图片测试一下看看[图片]",
+		Content:        "\u56fe\u7247\u6d4b\u8bd5\u4e00\u4e0b\u770b\u770b[\u56fe\u7247]",
 		MsgParam:       `{"desc":[{"data":"BOT-1","type":"at"},{"data":"file-1","type":"image"}]}`,
 	}
 

@@ -8,13 +8,13 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
-// 流管理器类型
+// Stream manager types
 const (
 	TypeMemory = "memory"
 	TypeRedis  = "redis"
 )
 
-// NewStreamManager 创建流管理器
+// NewStreamManager creates a stream manager
 func NewStreamManager() (interfaces.StreamManager, error) {
 	switch os.Getenv("STREAM_MANAGER_TYPE") {
 	case TypeRedis:

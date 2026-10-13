@@ -82,7 +82,7 @@ func TestDrainSteerMessagesInjectsIntoTail(t *testing.T) {
 
 	sink := &fakeSteerSink{
 		queued: []map[string]interface{}{
-			steerEntry("steer-1", "再补充一点：也对比一下成本"),
+			steerEntry("steer-1", "One more thing: also compare the costs"),
 		},
 	}
 	engine.SetSteerSink(sink)
@@ -98,19 +98,19 @@ func TestDrainSteerMessagesInjectsIntoTail(t *testing.T) {
 
 	require.Len(t, messages, 5)
 	assert.Equal(t, "user", messages[4].Role)
-	assert.Equal(t, types.SteerMessageContent("再补充一点：也对比一下成本"), messages[4].Content)
+	assert.Equal(t, types.SteerMessageContent("One more thing: also compare the costs"), messages[4].Content)
 	// Tool result pairing is untouched — the tool message stays where it was.
 	assert.Equal(t, "tool", messages[3].Role)
-	assert.Equal(t, []string{"user-row-for-再补充一点：也对比一下成本"}, state.PendingSteerMessages)
+	assert.Equal(t, []string{"user-row-for-One more thing: also compare the costs"}, state.PendingSteerMessages)
 
 	require.Len(t, sink.persisted, 1)
-	assert.Equal(t, "再补充一点：也对比一下成本", sink.persisted[0])
+	assert.Equal(t, "One more thing: also compare the costs", sink.persisted[0])
 
 	select {
 	case data := <-injectedCh:
 		assert.Equal(t, "steer-1", data.SteerID)
 		assert.Equal(t, "msg", data.MessageID)
-		assert.Equal(t, "user-row-for-再补充一点：也对比一下成本", data.UserMessageID)
+		assert.Equal(t, "user-row-for-One more thing: also compare the costs", data.UserMessageID)
 	default:
 		t.Fatal("expected an EventUserMessageInjected on the bus")
 	}

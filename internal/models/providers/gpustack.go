@@ -56,7 +56,7 @@ func newGpustackProvider() *Definition {
 		Name:         "GPUStack",
 		Names:        map[string]string{"zh-CN": "GPUStack"},
 		Description:  "Choose your deployed model on GPUStack",
-		Descriptions: map[string]string{"zh-CN": "选择你在 GPUStack 上部署的模型"},
+		Descriptions: map[string]string{"zh-CN": "\u9009\u62e9\u4f60\u5728 GPUStack \u4e0a\u90e8\u7f72\u7684\u6a21\u578b"},
 		Website:      "https://gpustack.ai",
 		Icon:         gpustackIcon,
 		API:          api.APIOpenAICompletions,
@@ -81,22 +81,22 @@ func newGpustackProvider() *Definition {
 		ExtraFields: []ExtraField{{
 			Key:    models.ExtraScoreScale,
 			Label:  "Rerank score scale",
-			Labels: map[string]string{"zh-CN": "Rerank 分数标度"},
+			Labels: map[string]string{"zh-CN": "Rerank \u5206\u6570\u6807\u5ea6"},
 			Type:   "select",
 			Options: []ExtraFieldOption{
 				{
 					Label:  "Unbounded score (Qwen3-Reranker class)",
-					Labels: map[string]string{"zh-CN": "无界分数（Qwen3-Reranker 一类）"},
+					Labels: map[string]string{"zh-CN": "\u65e0\u754c\u5206\u6570\uff08Qwen3-Reranker \u4e00\u7c7b\uff09"},
 					Value:  "logit",
 				},
 				{
 					Label:  "0..1 relevance (BGE class)",
-					Labels: map[string]string{"zh-CN": "0~1 相关度（BGE 一类）"},
+					Labels: map[string]string{"zh-CN": "0~1 \u76f8\u5173\u5ea6\uff08BGE \u4e00\u7c7b\uff09"},
 					Value:  "probability",
 				},
 			},
 			Placeholder:  "match the reranker actually deployed behind this endpoint",
-			Placeholders: map[string]string{"zh-CN": "按这个端点后面实际部署的重排模型选择"},
+			Placeholders: map[string]string{"zh-CN": "\u6309\u8fd9\u4e2a\u7aef\u70b9\u540e\u9762\u5b9e\u9645\u90e8\u7f72\u7684\u91cd\u6392\u6a21\u578b\u9009\u62e9"},
 			// A gateway serves whatever reranker was deployed behind it, and
 			// the two families disagree. The vendor default follows the
 			// documentation; the operator knows which model is actually there.
@@ -105,13 +105,13 @@ func newGpustackProvider() *Definition {
 		}, {
 			Key:    models.ExtraTruncatePromptTokens,
 			Label:  "Rerank prompt truncation (vLLM)",
-			Labels: map[string]string{"zh-CN": "Rerank 提示词截断长度（vLLM）"},
+			Labels: map[string]string{"zh-CN": "Rerank \u63d0\u793a\u8bcd\u622a\u65ad\u957f\u5ea6\uff08vLLM\uff09"},
 			Type:   "number",
 			// Off unless the operator asks: a runtime that does not implement
 			// the extension rejects the unknown field.
 			Required:     false,
 			Placeholder:  "empty unless the backend rejects long documents",
-			Placeholders: map[string]string{"zh-CN": "留空，除非后端因文档过长而报错"},
+			Placeholders: map[string]string{"zh-CN": "\u7559\u7a7a\uff0c\u9664\u975e\u540e\u7aef\u56e0\u6587\u6863\u8fc7\u957f\u800c\u62a5\u9519"},
 			ModelTypes:   []types.ModelType{types.ModelTypeRerank},
 		}},
 		Compat: VendorCompat{

@@ -43,7 +43,7 @@ func TestEveryCatalogRerankTransport(t *testing.T) {
 						return
 					}
 					require.NoError(t, err)
-					result, err := client.Rerank(context.Background(), "q", []string{"a", "中文"})
+					result, err := client.Rerank(context.Background(), "q", []string{"a", "\u4e2d\u6587"})
 					require.NoError(t, err)
 					require.Len(t, result, 2)
 					require.NotEmpty(t, u.requests)

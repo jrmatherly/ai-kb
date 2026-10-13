@@ -74,8 +74,8 @@ func newGeminiProvider() *Definition {
 			"Native generateContent by default; set base_url to " + GeminiOpenAICompatBaseURL +
 			" to keep the OpenAI-compatible protocol.",
 		Descriptions: map[string]string{
-			"zh-CN": "gemini-3.8-flash, gemini-3.1-pro-preview, gemini-2.5-pro, gemini-embedding-2 等。" +
-				"默认走原生 generateContent 协议；将 base_url 指向 " + GeminiOpenAICompatBaseURL + " 可继续使用 OpenAI 兼容协议。",
+			"zh-CN": "gemini-3.8-flash, gemini-3.1-pro-preview, gemini-2.5-pro, gemini-embedding-2 \u7b49\u3002" +
+				"\u9ed8\u8ba4\u8d70\u539f\u751f generateContent \u534f\u8bae\uff1b\u5c06 base_url \u6307\u5411 " + GeminiOpenAICompatBaseURL + " \u53ef\u7ee7\u7eed\u4f7f\u7528 OpenAI \u517c\u5bb9\u534f\u8bae\u3002",
 		},
 		Website:      "https://aistudio.google.com",
 		Icon:         geminiIcon,

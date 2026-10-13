@@ -11,13 +11,13 @@ import (
 
 func TestParseSkillFileRepairsKeysNestedUnderName(t *testing.T) {
 	content := `---
-name: 命理大师
+name: fortune-master
   version: 1.2.6
   description: |
-    全体系命理大师 — 八字四柱。
-    仅作文化参考。
+    All-schools fortune master - Four Pillars of Destiny.
+    For cultural reference only.
 metadata:
-  displayName: "命理大师"
+  displayName: "Fortune Master"
   version: 1.2.0
 ---
 # Body
@@ -25,8 +25,8 @@ metadata:
 	skill, err := ParseSkillFile(content)
 	require.NoError(t, err)
 	require.True(t, skill.FrontmatterRepaired)
-	require.Equal(t, "命理大师", skill.Name)
-	require.Contains(t, skill.Description, "全体系命理大师")
+	require.Equal(t, "fortune-master", skill.Name)
+	require.Contains(t, skill.Description, "All-schools fortune master")
 	require.Contains(t, skill.Instructions, "# Body")
 }
 
@@ -111,15 +111,10 @@ Body
 }
 
 func TestParseSkillFileKeepsUnicodeName(t *testing.T) {
-	content := `---
-name: 律师助手
-description: 法律文书助手
----
-Body
-`
+	content := "---\nname: \u5f8b\u5e08\u52a9\u624b\ndescription: \u6cd5\u5f8b\u6587\u4e66\u52a9\u624b\n---\nBody\n"
 	skill, err := ParseSkillFile(content)
 	require.NoError(t, err)
-	require.Equal(t, "律师助手", skill.Name)
+	require.Equal(t, "\u5f8b\u5e08\u52a9\u624b", skill.Name)
 }
 
 func TestParseSkillFileRejectsSkillHubFrontmatterWithBrokenExtraYAML(t *testing.T) {

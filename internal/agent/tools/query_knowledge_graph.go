@@ -134,8 +134,8 @@ func (tr graphTruncation) addToData(data map[string]interface{}) {
 // graphSearchTerms turns the query into entity-name terms, and reports how many
 // candidate words the cap dropped. The graph store matches node names by
 // case-sensitive substring, so the whole query only matches when it is itself
-// an entity name; its words catch the entities a question mentions ("Docker 和
-// Kubernetes 的关系" → Docker, Kubernetes). Words keep their case: lowercased
+// an entity name; its words catch the entities a question mentions ("Docker and
+// Kubernetes" → Docker, Kubernetes). Words keep their case: lowercased
 // terms never matched "Docker".
 func graphSearchTerms(query string) (terms []string, dropped int) {
 	query = strings.TrimSpace(query)

@@ -35,9 +35,9 @@ func TestSplitByHeuristics_GermanChapterMarkers(t *testing.T) {
 }
 
 func TestSplitByHeuristics_ChineseChapterMarkers(t *testing.T) {
-	body := strings.Repeat("内容内容内容。", 60)
-	doc := "第一章 引言\n" + body + "\n\n第二章 方法\n" + body
-	cfg := SplitterConfig{ChunkSize: 200, ChunkOverlap: 20, Separators: []string{"。"}, Languages: []string{LangChinese}}
+	body := strings.Repeat("\u5185\u5bb9\u5185\u5bb9\u5185\u5bb9\u3002", 60)
+	doc := "\u7b2c\u4e00\u7ae0 \u5f15\u8a00\n" + body + "\n\n\u7b2c\u4e8c\u7ae0 \u65b9\u6cd5\n" + body
+	cfg := SplitterConfig{ChunkSize: 200, ChunkOverlap: 20, Separators: []string{"\u3002"}, Languages: []string{LangChinese}}
 	chunks := splitByHeuristicsImpl(doc, cfg, nil)
 	if len(chunks) < 2 {
 		t.Fatalf("Chinese chapter markers should split: got %d", len(chunks))
@@ -70,7 +70,7 @@ func TestSplitByHeuristics_OversizeBlockRecursesIntoLegacy(t *testing.T) {
 }
 
 func TestSplitByHeuristics_BoundariesAreOrdered(t *testing.T) {
-	doc := "Kapitel 1: A\nbody\n\n---\n\n2. Section B\nbody\n\nPage 3 of 10\n\n第三章 C\nbody"
+	doc := "Kapitel 1: A\nbody\n\n---\n\n2. Section B\nbody\n\nPage 3 of 10\n\n\u7b2c\u4e09\u7ae0 C\nbody"
 	bounds := findHeuristicBoundaries(doc, nil)
 	if len(bounds) < 2 {
 		t.Fatalf("expected multiple boundaries, got %d", len(bounds))

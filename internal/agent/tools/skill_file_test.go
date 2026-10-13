@@ -158,7 +158,7 @@ func TestWriteSkillFileFlagsNestedPythonQuotesAndStillWrites(t *testing.T) {
 	result, err := NewWriteSkillFileTool(store, testSkillDir).Execute(
 		sandboxFileTestContext(),
 		mustWriteSandboxArgs("scripts/run.py",
-			"title = \"这不是一个\"大干快上\"的夜晚\"\n"))
+			"title = \"\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a\"\n"))
 
 	require.NoError(t, err)
 	require.False(t, result.Success)

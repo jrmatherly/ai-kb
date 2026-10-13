@@ -1337,7 +1337,7 @@ func TestBinaryDocumentFileNameKeepsASingleExtension(t *testing.T) {
 
 // isDocument answers whether a read path exists at all, and isIngestible
 // answers whether this data source takes the node: the blocks API for adoc
-// always, the 钉盘 download API for an uploaded file only once
+// always, the DingTalk Drive download API for an uploaded file only once
 // include_uploaded_files is on. Native DingTalk types stay out either way, so
 // nothing is ever enumerated that the sync cannot read.
 func TestNodeDocumentClassification(t *testing.T) {

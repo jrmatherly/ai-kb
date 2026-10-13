@@ -62,7 +62,7 @@ const (
 // while re-validating the target host stays within the allowed suffix.
 const maxDownloadRedirects = 1
 
-// Adapter implements im.Adapter for Yunzhijia (云之家).
+// Adapter implements im.Adapter for Yunzhijia.
 type Adapter struct {
 	sendMsgURL               string
 	secret                   string
@@ -297,11 +297,12 @@ func cleanAtMention(content, robotName string) (string, bool) {
 		return "", true
 	}
 	separator, _ := utf8.DecodeRuneInString(rest)
-	if !unicode.IsSpace(separator) && !strings.ContainsRune(":：,，", separator) {
+	// Separators after the mention: ASCII and full-width colon and comma.
+	if !unicode.IsSpace(separator) && !strings.ContainsRune(":\uff1a,\uff0c", separator) {
 		return content, false
 	}
 	return strings.TrimLeftFunc(rest, func(r rune) bool {
-		return unicode.IsSpace(r) || strings.ContainsRune(":：,，", r)
+		return unicode.IsSpace(r) || strings.ContainsRune(":\uff1a,\uff0c", r)
 	}), true
 }
 

@@ -11,7 +11,7 @@ func TestApproxTokenCount_English(t *testing.T) {
 }
 
 func TestApproxTokenCount_Chinese(t *testing.T) {
-	got := ApproxTokenCount("这是一段中文测试内容用于检验分词估算", LangChinese)
+	got := ApproxTokenCount("\u8fd9\u662f\u4e00\u6bb5\u4e2d\u6587\u6d4b\u8bd5\u5185\u5bb9\u7528\u4e8e\u68c0\u9a8c\u5206\u8bcd\u4f30\u7b97", LangChinese)
 	// 18 runes / 1.7 ≈ 10
 	if got < 9 || got > 12 {
 		t.Errorf("Chinese token estimate out of range: got %d, want 9..12", got)
@@ -51,13 +51,13 @@ func TestDetectLanguage_GermanByStopwords(t *testing.T) {
 }
 
 func TestDetectLanguage_Chinese(t *testing.T) {
-	if got := DetectLanguage("这是一段中文测试内容"); got != LangChinese {
+	if got := DetectLanguage("\u8fd9\u662f\u4e00\u6bb5\u4e2d\u6587\u6d4b\u8bd5\u5185\u5bb9"); got != LangChinese {
 		t.Errorf("expected Chinese, got %s", got)
 	}
 }
 
 func TestDetectLanguage_Mixed(t *testing.T) {
-	got := DetectLanguage("This 这是 mixed 测试 content with 多语言 inside")
+	got := DetectLanguage("This \u8fd9\u662f mixed \u6d4b\u8bd5 content with \u591a\u8bed\u8a00 inside")
 	if got != LangMixed {
 		t.Errorf("expected Mixed, got %s", got)
 	}

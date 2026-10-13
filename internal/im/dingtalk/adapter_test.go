@@ -186,20 +186,14 @@ func TestParseCallbackMessage_RichTextPreservesTextAndPictureMetadata(t *testing
 		MsgID:     "rich-1",
 		Msgtype:   "richText",
 		RobotCode: "robot-123",
-		Content: json.RawMessage(`{
-			"richText":[
-				{"text":"  这个问题示例图如下：  "},
-				{"pictureDownloadCode":"PIC-FALLBACK","downloadCode":"PIC-CODE","type":"picture"},
-				{"text":"通过以上示意图可以明白完整的交互流程"}
-			]
-		}`),
+		Content:   json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"  \u8fd9\u4e2a\u95ee\u9898\u793a\u4f8b\u56fe\u5982\u4e0b\uff1a  \"},\n\t\t\t\t{\"pictureDownloadCode\":\"PIC-FALLBACK\",\"downloadCode\":\"PIC-CODE\",\"type\":\"picture\"},\n\t\t\t\t{\"text\":\"\u901a\u8fc7\u4ee5\u4e0a\u793a\u610f\u56fe\u53ef\u4ee5\u660e\u767d\u5b8c\u6574\u7684\u4ea4\u4e92\u6d41\u7a0b\"}\n\t\t\t]\n\t\t}"),
 	}
 
 	got := parseCallbackMessage(msg)
 	if got.MessageType != im.MessageTypeImage {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeImage)
 	}
-	if got.Content != "这个问题示例图如下：\n通过以上示意图可以明白完整的交互流程" {
+	if got.Content != "\u8fd9\u4e2a\u95ee\u9898\u793a\u4f8b\u56fe\u5982\u4e0b\uff1a\n\u901a\u8fc7\u4ee5\u4e0a\u793a\u610f\u56fe\u53ef\u4ee5\u660e\u767d\u5b8c\u6574\u7684\u4ea4\u4e92\u6d41\u7a0b" {
 		t.Errorf("Content = %q", got.Content)
 	}
 	if got.FileKey != "PIC-CODE" {
@@ -244,15 +238,15 @@ func TestParseCallbackMessage_RichTextTextOnly(t *testing.T) {
 	msg := &callbackMessage{
 		MsgID:   "rich-text",
 		Msgtype: "richText",
-		Content: json.RawMessage(`{"richText":[{"text":"  只发文字  "}]}`),
+		Content: json.RawMessage("{\"richText\":[{\"text\":\"  \u53ea\u53d1\u6587\u5b57  \"}]}"),
 	}
 
 	got := parseCallbackMessage(msg)
 	if got.MessageType != im.MessageTypeText {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeText)
 	}
-	if got.Content != "只发文字" {
-		t.Errorf("Content = %q, want 只发文字", got.Content)
+	if got.Content != "\u53ea\u53d1\u6587\u5b57" {
+		t.Errorf("Content = %q, want \u53ea\u53d1\u6587\u5b57", got.Content)
 	}
 	if got.FileKey != "" {
 		t.Errorf("FileKey = %q, want empty", got.FileKey)
@@ -264,20 +258,15 @@ func TestParseCallbackMessage_RichTextOfficialPictureSample(t *testing.T) {
 		MsgID:     "official-rich",
 		Msgtype:   "richText",
 		RobotCode: "robot-123",
-		Content: json.RawMessage(`{
-			"richText":[
-				{"text":"你好"},
-				{"downloadCode":"OFFICIAL-PIC","type":"picture"}
-			]
-		}`),
+		Content:   json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"\u4f60\u597d\"},\n\t\t\t\t{\"downloadCode\":\"OFFICIAL-PIC\",\"type\":\"picture\"}\n\t\t\t]\n\t\t}"),
 	}
 
 	got := parseCallbackMessage(msg)
 	if got.MessageType != im.MessageTypeImage {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeImage)
 	}
-	if got.Content != "你好" {
-		t.Errorf("Content = %q, want 你好", got.Content)
+	if got.Content != "\u4f60\u597d" {
+		t.Errorf("Content = %q, want \u4f60\u597d", got.Content)
 	}
 	if got.FileKey != "OFFICIAL-PIC" {
 		t.Errorf("FileKey = %q, want OFFICIAL-PIC", got.FileKey)
@@ -288,14 +277,7 @@ func TestParseCallbackMessage_RichTextKeepsFirstPictureAndHints(t *testing.T) {
 	msg := &callbackMessage{
 		MsgID:   "rich-multi",
 		Msgtype: "richText",
-		Content: json.RawMessage(`{
-			"richText":[
-				{"text":"对比这几张图"},
-				{"downloadCode":"PIC-1","type":"picture"},
-				{"downloadCode":"PIC-2","type":"picture"},
-				{"downloadCode":"PIC-3","type":"picture"}
-			]
-		}`),
+		Content: json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"\u5bf9\u6bd4\u8fd9\u51e0\u5f20\u56fe\"},\n\t\t\t\t{\"downloadCode\":\"PIC-1\",\"type\":\"picture\"},\n\t\t\t\t{\"downloadCode\":\"PIC-2\",\"type\":\"picture\"},\n\t\t\t\t{\"downloadCode\":\"PIC-3\",\"type\":\"picture\"}\n\t\t\t]\n\t\t}"),
 	}
 
 	got := parseCallbackMessage(msg)
@@ -305,7 +287,7 @@ func TestParseCallbackMessage_RichTextKeepsFirstPictureAndHints(t *testing.T) {
 	if got.Extra["rich_text_picture_count"] != "3" {
 		t.Errorf("rich_text_picture_count = %q, want 3", got.Extra["rich_text_picture_count"])
 	}
-	if !strings.Contains(got.Content, "对比这几张图") || !strings.Contains(got.Content, "共 3 张图片") {
+	if !strings.Contains(got.Content, "\u5bf9\u6bd4\u8fd9\u51e0\u5f20\u56fe") || !strings.Contains(got.Content, "contains 3 images") {
 		t.Errorf("Content = %q, want text plus dropped-picture hint", got.Content)
 	}
 }
@@ -350,14 +332,14 @@ func TestParseCallbackMessage_AudioUsesRecognition(t *testing.T) {
 	msg := &callbackMessage{
 		MsgID:   "audio-1",
 		Msgtype: "audio",
-		Content: json.RawMessage(`{"duration":4000,"downloadCode":"AUD-CODE","recognition":"  钉钉，让进步发生  "}`),
+		Content: json.RawMessage("{\"duration\":4000,\"downloadCode\":\"AUD-CODE\",\"recognition\":\"  \u9489\u9489\uff0c\u8ba9\u8fdb\u6b65\u53d1\u751f  \"}"),
 	}
 
 	got := parseCallbackMessage(msg)
 	if got.MessageType != im.MessageTypeText {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeText)
 	}
-	if got.Content != "钉钉，让进步发生" {
+	if got.Content != "\u9489\u9489\uff0c\u8ba9\u8fdb\u6b65\u53d1\u751f" {
 		t.Errorf("Content = %q, want recognition text", got.Content)
 	}
 	if got.Extra["raw_msgtype"] != "audio" {
@@ -444,7 +426,7 @@ func TestStreamToIncoming_RichTextPreservesTextAndPictureMetadata(t *testing.T) 
 		Msgtype: "richText",
 		Content: map[string]interface{}{
 			"richText": []interface{}{
-				map[string]interface{}{"text": "这种场景下，AI 去纹身去不干净"},
+				map[string]interface{}{"text": "\u8fd9\u79cd\u573a\u666f\u4e0b\uff0cAI \u53bb\u7eb9\u8eab\u53bb\u4e0d\u5e72\u51c0"},
 				map[string]interface{}{"downloadCode": "STREAM-PIC", "type": "picture"},
 			},
 		},
@@ -454,7 +436,7 @@ func TestStreamToIncoming_RichTextPreservesTextAndPictureMetadata(t *testing.T) 
 	if got.MessageType != im.MessageTypeImage {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeImage)
 	}
-	if got.Content != "这种场景下，AI 去纹身去不干净" {
+	if got.Content != "\u8fd9\u79cd\u573a\u666f\u4e0b\uff0cAI \u53bb\u7eb9\u8eab\u53bb\u4e0d\u5e72\u51c0" {
 		t.Errorf("Content = %q", got.Content)
 	}
 	if got.FileKey != "STREAM-PIC" {
@@ -473,7 +455,7 @@ func TestStreamToIncoming_AudioUsesRecognition(t *testing.T) {
 		MsgId:   "stream-audio",
 		Msgtype: "audio",
 		Content: map[string]interface{}{
-			"recognition":  "语音转写结果",
+			"recognition":  "\u8bed\u97f3\u8f6c\u5199\u7ed3\u679c",
 			"downloadCode": "STREAM-AUD",
 		},
 	}
@@ -482,7 +464,7 @@ func TestStreamToIncoming_AudioUsesRecognition(t *testing.T) {
 	if got.MessageType != im.MessageTypeText {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeText)
 	}
-	if got.Content != "语音转写结果" {
+	if got.Content != "\u8bed\u97f3\u8f6c\u5199\u7ed3\u679c" {
 		t.Errorf("Content = %q, want recognition text", got.Content)
 	}
 }

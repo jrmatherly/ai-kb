@@ -84,7 +84,7 @@ var (
 type apiFactory func(*config) dingTalkAPI
 
 // Connector imports DingTalk wiki documents: native adoc documents through the
-// blocks API, and uploaded Office/PDF files through the 钉盘 download API.
+// blocks API, and uploaded Office/PDF files through the DingTalk Drive download API.
 type Connector struct {
 	newAPI apiFactory
 }
@@ -345,7 +345,7 @@ func sampleWorkspace(
 
 // verifyDocument proves one visible document is readable. Native documents are
 // probed through their own read API — the blocks API for adoc — while uploaded
-// files resolve their 钉盘 download location, which exercises the same
+// files resolve their DingTalk Drive download location, which exercises the same
 // permissions and returns the same errors a real download would, without
 // transferring the payload.
 //

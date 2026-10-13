@@ -113,7 +113,7 @@ func TestResolveMarkdownImages_InternalHandleFallsBackToPlainText(t *testing.T) 
 		{
 			name: "empty alt uses region label",
 			in:   "![](resource://Zb2IrqfTdlCFkbUqFtmS5A)",
-			want: "图片",
+			want: "Image",
 		},
 		{
 			name: "mixed internal and failed http",
@@ -142,7 +142,7 @@ func TestResolveMarkdownImages_UppercaseHTTPSchemeStillUploads(t *testing.T) {
 	// IM rewrite may emit HTTPS://; loopback still fails SSRF and must degrade
 	// to a link rather than being treated as a non-HTTP handle.
 	got := a.resolveMarkdownImages(context.Background(), "tok", "![](HTTPS://127.0.0.1/x.png)")
-	want := "[图片](HTTPS://127.0.0.1/x.png)"
+	want := "[Image](HTTPS://127.0.0.1/x.png)"
 	if got != want {
 		t.Errorf("uppercase scheme fallback = %q, want %q", got, want)
 	}
@@ -217,7 +217,7 @@ func TestEndStreamFinalizesCardSummary(t *testing.T) {
 	if err := adapter.UpdateStreamContent(ctx, nil, cardID, "progress"); err != nil {
 		t.Fatalf("UpdateStreamContent: %v", err)
 	}
-	const finalContent = "  最终\n回答  ✅  "
+	const finalContent = "  \u6700\u7ec8\n\u56de\u7b54  ✅  "
 	if err := adapter.FinalizeStream(ctx, nil, cardID, finalContent); err != nil {
 		t.Fatalf("FinalizeStream: %v", err)
 	}
@@ -266,8 +266,8 @@ func TestEndStreamFinalizesCardSummary(t *testing.T) {
 	if settings.Config == nil || settings.Config.StreamingMode == nil || *settings.Config.StreamingMode {
 		t.Fatalf("final settings did not disable streaming under config: %s", requests[2].settings)
 	}
-	if settings.Config.Summary.Content != "最终 回答 ✅" {
-		t.Errorf("summary = %q, want %q", settings.Config.Summary.Content, "最终 回答 ✅")
+	if settings.Config.Summary.Content != "\u6700\u7ec8 \u56de\u7b54 ✅" {
+		t.Errorf("summary = %q, want %q", settings.Config.Summary.Content, "\u6700\u7ec8 \u56de\u7b54 ✅")
 	}
 
 	if err := adapter.EndStream(ctx, nil, "missing-card"); err == nil {
@@ -383,13 +383,13 @@ func TestEndStreamFinalizeOnlyUsesFinalContent(t *testing.T) {
 	})
 
 	ctx := context.Background()
-	if err := adapter.FinalizeStream(ctx, nil, cardID, "最终答案"); err != nil {
+	if err := adapter.FinalizeStream(ctx, nil, cardID, "\u6700\u7ec8\u7b54\u6848"); err != nil {
 		t.Fatalf("FinalizeStream: %v", err)
 	}
 	if err := adapter.EndStream(ctx, nil, cardID); err != nil {
 		t.Fatalf("EndStream: %v", err)
 	}
-	assertStreamingClosed(t, finalSettings, "最终答案")
+	assertStreamingClosed(t, finalSettings, "\u6700\u7ec8\u7b54\u6848")
 }
 
 func TestEndStreamOmitsEmptySummary(t *testing.T) {
@@ -440,15 +440,15 @@ func TestCardSummaryPreview(t *testing.T) {
 		in   string
 		want string
 	}{
-		{name: "collapse whitespace", in: "  最终\n回答\t✅  ", want: "最终 回答 ✅"},
-		{name: "image keeps alt only", in: "![架构图](https://cdn.example/a.png?sig=secret) 说明", want: "架构图 说明"},
+		{name: "collapse whitespace", in: "  \u6700\u7ec8\n\u56de\u7b54\t✅  ", want: "\u6700\u7ec8 \u56de\u7b54 ✅"},
+		{name: "image keeps alt only", in: "![\u67b6\u6784\u56fe](https://cdn.example/a.png?sig=secret) \u8bf4\u660e", want: "\u67b6\u6784\u56fe \u8bf4\u660e"},
 		{
 			name: "resource image keeps alt only",
-			in:   "![diagram](resource://Zb2IrqfTdlCFkbUqFtmS5A) 说明",
-			want: "diagram 说明",
+			in:   "![diagram](resource://Zb2IrqfTdlCFkbUqFtmS5A) \u8bf4\u660e",
+			want: "diagram \u8bf4\u660e",
 		},
-		{name: "link keeps text only", in: "见 [文档](https://cdn.example/a.png?sig=secret) 说明", want: "见 文档 说明"},
-		{name: "unicode limit", in: strings.Repeat("界", 121), want: strings.Repeat("界", 120)},
+		{name: "link keeps text only", in: "\u89c1 [\u6587\u6863](https://cdn.example/a.png?sig=secret) \u8bf4\u660e", want: "\u89c1 \u6587\u6863 \u8bf4\u660e"},
+		{name: "unicode limit", in: strings.Repeat("\u754c", 121), want: strings.Repeat("\u754c", 120)},
 		{name: "empty", in: " \n\t ", want: ""},
 	}
 	for _, test := range tests {

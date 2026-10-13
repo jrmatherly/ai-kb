@@ -175,7 +175,8 @@ window.open=function(url){
 };
 })();`
 
-// wailsThemeSyncJS：与 index.html 首屏一致，在 DomReady 再跑一遍，覆盖 Ctrl+R 后 runtime 就绪时机
+// wailsThemeSyncJS matches the first-paint script in index.html. It runs again on DomReady to
+// cover the moment the runtime becomes ready after Ctrl+R.
 const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_theme')||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var bg=t==='dark'?'#181818':'#eee';document.documentElement.setAttribute('theme-mode',t);document.documentElement.style.background=bg;document.documentElement.style.minHeight='100%';document.documentElement.style.colorScheme=t==='dark'?'dark':'light';if(document.body){document.body.style.background=bg;document.body.style.minHeight='100%';}var w=window.runtime;if(!w)return;if(t==='dark'){if(w.WindowSetDarkTheme)w.WindowSetDarkTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(24,24,24,255);}else{if(w.WindowSetLightTheme)w.WindowSetLightTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(238,238,238,255);}}catch(e){}})()`
 
 const aikbGitHubRepoURL = "https://github.com/jrmatherly/ai-kb"
@@ -204,7 +205,7 @@ func main() {
 		}
 	}
 	if _, err := os.Stat(filepath.Join("config", "config.yaml")); os.IsNotExist(err) {
-		// wails dev 的 cwd 是 cmd/desktop。仓库配置在上两级。
+		// wails dev runs with cwd cmd/desktop; the repo config is two levels up.
 		repoRoot := filepath.Clean(filepath.Join("..", ".."))
 		if _, err := os.Stat(filepath.Join(repoRoot, "config", "config.yaml")); err == nil {
 			_ = os.Chdir(repoRoot)
@@ -413,7 +414,8 @@ func main() {
 		OnDomReady: func(ctx context.Context) {
 			wailsruntime.WindowExecJS(ctx, wailsThemeSyncJS)
 			wailsruntime.WindowExecJS(ctx, dragHandlerJS)
-			// 注入真实 API 根路径（与 window.location.origin 不同）；无 Go 绑定时仍可显示。
+			// Inject the real API base path (it differs from window.location.origin)
+			// so it still shows without Go bindings.
 			if u := strings.TrimSpace(app.backendURL); u != "" {
 				apiRoot := strings.TrimRight(u, "/") + "/api/v1"
 				inject := fmt.Sprintf(`try{window.__AIKB_API_BASE__=%s}catch(e){}`, strconv.Quote(apiRoot))

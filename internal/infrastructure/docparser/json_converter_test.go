@@ -367,12 +367,12 @@ func TestJsonToMarkdown_BOM(t *testing.T) {
 }
 
 func TestJsonToMarkdown_UnicodeContent(t *testing.T) {
-	input := `{"名称": "AI KB 知识库", "描述": "支持中文 JSON 🎉", "emoji": "🚀"}`
+	input := "{\"\u540d\u79f0\": \"AI KB \u77e5\u8bc6\u5e93\", \"\u63cf\u8ff0\": \"\u652f\u6301\u4e2d\u6587 JSON 🎉\", \"emoji\": \"🚀\"}"
 	result, err := jsonToMarkdown([]byte(input))
 	visualReport(t, "Unicode / Chinese / Emoji", input, result, err, []checkResult{
 		check("no error", err == nil),
 		check("all blocks are valid JSON", allBlocksValidJSON(result)),
-		check("contains Chinese", strings.Contains(result, "知识库")),
+		check("contains Chinese", strings.Contains(result, "\u77e5\u8bc6\u5e93")),
 		check("contains emoji", strings.Contains(result, "🚀")),
 	})
 }

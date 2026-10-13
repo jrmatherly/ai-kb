@@ -128,7 +128,7 @@ func TestList_NetworkError_TypedCode(t *testing.T) {
 // Sanity: title with multi-rune content (CJK) should not crash truncation.
 func TestList_NonASCIITitle(t *testing.T) {
 	out, _ := iostreams.SetForTest(t)
-	svc := &fakeListService{items: []sdk.Session{{ID: "s_zh", Title: strings.Repeat("中文", 50)}}, total: 1}
+	svc := &fakeListService{items: []sdk.Session{{ID: "s_zh", Title: strings.Repeat("\u4e2d\u6587", 50)}}, total: 1}
 	require.NoError(t, runList(context.Background(), &ListOptions{PageSize: 30, Limit: 30}, &cmdutil.FormatOptions{Mode: cmdutil.FormatText}, svc))
 	assert.Contains(t, out.String(), "s_zh")
 }

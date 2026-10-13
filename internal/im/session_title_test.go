@@ -32,20 +32,20 @@ func TestBuildUserSessionTitle(t *testing.T) {
 			name: "group with username",
 			msg: &IncomingMessage{
 				Platform: "feishu",
-				UserName: "李四",
+				UserName: "\u674e\u56db",
 				ChatType: ChatTypeGroup,
 				ChatID:   "oc_aaaaaaaaaaaaaaaa",
 			},
-			want: "李四 · group aaaaaaaa",
+			want: "\u674e\u56db · group aaaaaaaa",
 		},
 		{
 			name: "direct message with username",
 			msg: &IncomingMessage{
 				Platform: "feishu",
-				UserName: "李四",
+				UserName: "\u674e\u56db",
 				ChatType: ChatTypeDirect,
 			},
-			want: "李四 · dm",
+			want: "\u674e\u56db · dm",
 		},
 		{
 			name: "group without username falls back to user id",
@@ -118,9 +118,9 @@ func TestIMInitialSessionTitle(t *testing.T) {
 			name: "text message starts untitled so it gets a content-based title later",
 			msg: &IncomingMessage{
 				Platform: "feishu",
-				UserName: "李四",
+				UserName: "\u674e\u56db",
 				ChatType: ChatTypeDirect,
-				Content:  "如何配置单点登录?",
+				Content:  "\u5982\u4f55\u914d\u7f6e\u5355\u70b9\u767b\u5f55?",
 			},
 			want: "",
 		},
@@ -128,11 +128,11 @@ func TestIMInitialSessionTitle(t *testing.T) {
 			name: "whitespace-only content falls back to the identity title",
 			msg: &IncomingMessage{
 				Platform: "feishu",
-				UserName: "李四",
+				UserName: "\u674e\u56db",
 				ChatType: ChatTypeDirect,
 				Content:  "   ",
 			},
-			want: "李四 · dm",
+			want: "\u674e\u56db · dm",
 		},
 		{
 			name: "non-text message (no content) falls back to the identity title",

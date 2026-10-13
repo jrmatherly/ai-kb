@@ -17,8 +17,9 @@ import (
 const (
 	DefaultModel  = "doubao-seed-rerank"
 	DefaultRegion = "cn-beijing"
-	// DefaultInstruction is the console's default instruction, verbatim: "如需对齐控制台效果，请使用
-	// 相同指令" (https://docs.volcengine.com/docs/vector_database_vikingdb/Rerank).
+	// DefaultInstruction is the console's default instruction, verbatim; the docs say
+	// "to match the console's results, use the same instruction"
+	// (https://docs.volcengine.com/docs/vector_database_vikingdb/Rerank).
 	DefaultInstruction = "Whether the document answers the query " +
 		"or matches the content retrieval intent"
 )

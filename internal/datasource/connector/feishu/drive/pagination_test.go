@@ -14,7 +14,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
 )
 
-// TestClientDriveListFilesPagination is the Drive (云盘) counterpart of the wiki
+// TestClientDriveListFilesPagination is the Drive counterpart of the wiki
 // test added in #3645 (TestClientWikiPaginationRejectsRepeatedPageToken):
 // ListDriveFilesAllPages used to stop only on an empty next_page_token, so a
 // repeated token (or has_more=false with a stale token) made it re-request the

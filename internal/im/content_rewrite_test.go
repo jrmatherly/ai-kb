@@ -203,7 +203,7 @@ func TestHoldbackCutoff(t *testing.T) {
 		},
 		{
 			"truncated markdown image with quotes in alt",
-			"### 2\n![知识助理\"知识库\"管理视图界面](minio://wizard-test/10000/exports/c91cf852",
+			"### 2\n![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852",
 			-2, // computed via strings.Index below
 		},
 		{
@@ -231,7 +231,7 @@ func TestHoldbackCutoff(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			want := tt.want
 			if want == -2 {
-				want = strings.Index(tt.in, "![知识助理")
+				want = strings.Index(tt.in, "![\u77e5\u8bc6\u52a9\u7406")
 				require.GreaterOrEqual(t, want, 0)
 			}
 			got := holdbackCutoff(tt.in)
@@ -281,10 +281,10 @@ var orphanMarkdownImageOpenRe = regexp.MustCompile(`!\[[^\]]*\]\(\s*$`)
 
 func TestSimulateIMStreamFlush_MiddleImageNotSplit(t *testing.T) {
 	// Reproduces the user report: three images; the middle one was split at minio://.
-	part1 := "### 1️⃣ 智能交互入口\n\n" +
-		"![知识助理AI对话界面](minio://wizard-test/10000/exports/bb524693-a3f7-48bd-88ca-0c3957cb56e7.png)\n\n" +
-		"### 2️⃣ 知识管理\n- 支持创建\n\n"
-	part2 := `![知识助理"知识库"管理视图界面](minio://wizard-test/10000/exports/c91cf852`
+	part1 := "### 1️⃣ \u667a\u80fd\u4ea4\u4e92\u5165\u53e3\n\n" +
+		"![\u77e5\u8bc6\u52a9\u7406AI\u5bf9\u8bdd\u754c\u9762](minio://wizard-test/10000/exports/bb524693-a3f7-48bd-88ca-0c3957cb56e7.png)\n\n" +
+		"### 2️⃣ \u77e5\u8bc6\u7ba1\u7406\n- \u652f\u6301\u521b\u5efa\n\n"
+	part2 := "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852"
 	part3 := `-9c72-f549da25619a.png)\n\n### 3️⃣ API\n\n` +
 		"![API](minio://wizard-test/10000/exports/a0423e91-95c9-46bf-ab4c-9586b43d0a61.png)\n"
 
@@ -302,7 +302,7 @@ func TestSimulateIMStreamFlush_MiddleImageNotSplit(t *testing.T) {
 	assert.Contains(t, joined, "a0423e91-95c9-46bf-ab4c-9586b43d0a61.png)")
 
 	// Middle image must appear intact in some single sent chunk (after merge for assertion).
-	middleImg := `![知识助理"知识库"管理视图界面](minio://wizard-test/10000/exports/c91cf852-9c72-f549da25619a.png)`
+	middleImg := "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852-9c72-f549da25619a.png)"
 	assert.Contains(t, joined, middleImg)
 
 	foundMiddleIntact := false
@@ -317,7 +317,7 @@ func TestSimulateIMStreamFlush_MiddleImageNotSplit(t *testing.T) {
 
 func TestSimulateIMStreamFlush_FirstChunkHoldsMiddleImagePrefix(t *testing.T) {
 	part1 := "### 1\n![ok](minio://wizard-test/10000/exports/ok.png)\n\n### 2\n"
-	part2 := `![知识助理"知识库"管理视图界面](minio://wizard-test/10000/exports/c91cf852`
+	part2 := "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852"
 
 	s1, hb1 := simulateIMStreamFlushStep("", part1, false)
 	assert.Equal(t, part1, s1)
@@ -326,7 +326,7 @@ func TestSimulateIMStreamFlush_FirstChunkHoldsMiddleImagePrefix(t *testing.T) {
 	s2, hb2 := simulateIMStreamFlushStep(hb1, part2, false)
 	assert.Empty(t, s2, "incomplete middle image must not be sent on non-final flush")
 	require.NotEmpty(t, hb2)
-	assert.True(t, strings.HasPrefix(hb2, "![知识助理"),
+	assert.True(t, strings.HasPrefix(hb2, "![\u77e5\u8bc6\u52a9\u7406"),
 		"holdback should include full markdown image prefix, got %q", hb2)
 	assert.False(t, orphanMarkdownImageOpenRe.MatchString(s1))
 }
@@ -367,7 +367,7 @@ func TestCleanIMContent_AfterStreamReassembly(t *testing.T) {
 	}
 
 	parts := []string{
-		`![知识助理"知识库"管理视图界面](local://10000/exports/c91cf852`,
+		"![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](local://10000/exports/c91cf852",
 		`-9c72-f549da25619a.png)`,
 	}
 	sent, rem := simulateIMStreamFlush(parts)
@@ -409,7 +409,7 @@ func TestRewriteStorageURLs_MultipleImagesInOneChunk(t *testing.T) {
 	}
 
 	doc := "### 1\n\n![a](local://10000/exports/bb524693.png)\n\n### 2\n\n" +
-		`![知识助理"知识库"管理视图界面](local://10000/exports/c91cf852.png)` + "\n\n### 3\n\n" +
+		"![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](local://10000/exports/c91cf852.png)" + "\n\n### 3\n\n" +
 		"![c](local://10000/exports/a0423e91.png)\n"
 
 	out := rewriteStorageURLs(context.Background(), doc, newIMFileServiceResolver(tenant, nil))

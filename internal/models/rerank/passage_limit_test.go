@@ -18,7 +18,7 @@ func TestMaxPassageRunesFromSettings(t *testing.T) {
 	}{
 		{"no limits", api.RerankSettings{}, "query", 0},
 		{"per document", api.RerankSettings{MaxDocumentChars: 4096}, "query", 4096},
-		{"request budget minus query", api.RerankSettings{MaxRequestChars: 2000}, "查询内容", 1996},
+		{"request budget minus query", api.RerankSettings{MaxRequestChars: 2000}, "\u67e5\u8be2\u5185\u5bb9", 1996},
 		{"tighter of the two", api.RerankSettings{MaxDocumentChars: 500, MaxRequestChars: 2000}, "q", 500},
 		{"request budget tighter", api.RerankSettings{MaxDocumentChars: 4096, MaxRequestChars: 2000}, "q", 1999},
 		{"query fills the budget", api.RerankSettings{MaxRequestChars: 3}, "long query", 1},

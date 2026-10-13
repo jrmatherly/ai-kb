@@ -33,9 +33,9 @@ func TestConnectorResources(t *testing.T) {
 			t.Fatalf("library[%d] = %+v", i, r)
 		}
 	}
-	p := "/产品/100% 文档"
-	f.addDir(testRepoID, p+"/子目录")
-	f.addFile(testRepoID, p+"/说明.pdf", []byte("pdf"), 1)
+	p := "/\u4ea7\u54c1/100% \u6587\u6863"
+	f.addDir(testRepoID, p+"/\u5b50\u76ee\u5f55")
+	f.addFile(testRepoID, p+"/\u8bf4\u660e.pdf", []byte("pdf"), 1)
 	f.addFile(testRepoID, p+"/archive.zip", []byte("zip"), 1)
 	f.addFile(testRepoID, p+"/page.mdx", []byte("mdx"), 1)
 	parent := testRepoID + ":" + p
@@ -43,7 +43,7 @@ func TestConnectorResources(t *testing.T) {
 	if err != nil || len(got) != 2 {
 		t.Fatalf("children = %+v, %v", got, err)
 	}
-	wantTypes := map[string]string{"子目录": "directory", "说明.pdf": "file"}
+	wantTypes := map[string]string{"\u5b50\u76ee\u5f55": "directory", "\u8bf4\u660e.pdf": "file"}
 	for _, r := range got {
 		typ, ok := wantTypes[r.Name]
 		if !ok || r.Type != typ || r.HasChildren != (typ == "directory") ||

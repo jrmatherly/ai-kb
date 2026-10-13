@@ -109,7 +109,7 @@ func DefaultConfig() SplitterConfig {
 	return SplitterConfig{
 		ChunkSize:    DefaultChunkSize,
 		ChunkOverlap: DefaultChunkOverlap,
-		Separators:   []string{"\n\n", "\n", "。"},
+		Separators:   []string{"\n\n", "\n", "\u3002"},
 	}
 }
 
@@ -312,7 +312,7 @@ func SplitText(text string, cfg SplitterConfig) []Chunk {
 // chunkSize is forwarded to splitBySeparators so recursive splitting can keep pieces
 // under the budget when one separator alone leaves a piece oversize.
 func buildUnitsWithProtection(text string, protected []span, separators []string, chunkSize int) []splitUnit {
-	const maxProtectedSize = 7500 // Maximum size for a protected unit (留余量给标题等)
+	const maxProtectedSize = 7500 // Maximum size for a protected unit (leaves room for headings and the like)
 
 	var units []splitUnit
 	bytePos := 0
@@ -600,7 +600,7 @@ func buildChunk(units []splitUnit, seq int) Chunk {
 //
 //  1. paragraph break (\n\n / \r\n\r\n)
 //  2. line break (\n / \r\n)
-//  3. sentence end (。？！, ". ", "? ", "! ")
+//  3. sentence end (full-width period, question and exclamation marks, ". ", "? ", "! ")
 //
 // Priority wins first; for boundaries with the same priority, the earliest
 // one in the window wins so the useful overlap is as large as possible. The
@@ -801,7 +801,7 @@ func findSemanticOverlapBoundaryEndingAtOrAfter(text string, minEnd int) (int, b
 
 	for i := 0; i < len(runes); i++ {
 		switch runes[i] {
-		case '。', '？', '！':
+		case '\u3002', '\uff1f', '\uff01': // full-width period, question mark, exclamation mark
 			consider(i, i+1, 3)
 		case '.', '?', '!':
 			if i+1 < len(runes) && runes[i+1] == ' ' {

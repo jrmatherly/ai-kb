@@ -145,9 +145,9 @@ func TestListReposCredentials(t *testing.T) {
 
 func TestListDirQueryAndOptionalSize(t *testing.T) {
 	f, c, _ := testClient(t)
-	f.addDir(testRepoID, "/产品/Z目录")
-	f.addFile(testRepoID, "/产品/a.pdf", []byte("pdf"), 42)
-	entries, err := c.listDir(t.Context(), testRepoID, "/产品")
+	f.addDir(testRepoID, "/\u4ea7\u54c1/Z\u76ee\u5f55")
+	f.addFile(testRepoID, "/\u4ea7\u54c1/a.pdf", []byte("pdf"), 42)
+	entries, err := c.listDir(t.Context(), testRepoID, "/\u4ea7\u54c1")
 	if err != nil || len(entries) != 2 {
 		t.Fatalf("listDir = %+v, %v", entries, err)
 	}
@@ -155,7 +155,7 @@ func TestListDirQueryAndOptionalSize(t *testing.T) {
 		entries[1].Size == nil || *entries[1].Size != 3 || entries[1].Mtime != 42 {
 		t.Fatalf("unexpected entries: %+v", entries)
 	}
-	if got := f.requests("dir:/产品")[0].RawQuery; got != "p=%2F%E4%BA%A7%E5%93%81" {
+	if got := f.requests("dir:/\u4ea7\u54c1")[0].RawQuery; got != "p=%2F%E4%BA%A7%E5%93%81" {
 		t.Fatalf("path encoded incorrectly: %s", got)
 	}
 	f.addDir(testRepoID, "/a:%2Fb")

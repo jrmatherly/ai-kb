@@ -29,7 +29,7 @@ var FormFeedPattern = regexp.MustCompile(`\f`)
 
 // NumberedSectionPattern matches lines starting with numeric or roman numbering
 // followed by a non-empty title, e.g. "1. Intro", "2.3 Methods", "IV. Results",
-// "2.2.1 用户与权限". The trailing dot after a multi-level numeral is optional
+// "2.2.1 Users and Permissions". The trailing dot after a multi-level numeral is optional
 // because many technical documents write "1.1 Foo" without a closing dot.
 var NumberedSectionPattern = regexp.MustCompile(`(?m)^[ \t]*(?:\d+(?:\.\d+){1,3}\.?|(?:\d+|[IVX]{1,5})\.)[ \t]+\S.{0,200}$`)
 
@@ -46,8 +46,9 @@ var VisualSeparatorPattern = regexp.MustCompile(`(?m)^[ \t]*(?:-{3,}|={3,}|\*{3,
 // usually denote a hard section break.
 var ExcessiveBlanksPattern = regexp.MustCompile(`\n{3,}`)
 
-// PageFooterPattern matches typical "Seite X von Y" / "Page X of Y" lines.
-var PageFooterPattern = regexp.MustCompile(`(?mi)^[ \t]*(?:Seite|Page|页码?)\s+\d+(?:\s*(?:von|of|/)\s*\d+)?[ \t]*$`)
+// PageFooterPattern matches typical "Seite X von Y" / "Page X of Y" lines, and the
+// Chinese "page" / "page number" footer (U+9875, U+9875 U+7801).
+var PageFooterPattern = regexp.MustCompile("(?mi)^[ \\t]*(?:Seite|Page|\u9875\u7801?)\\s+\\d+(?:\\s*(?:von|of|/)\\s*\\d+)?[ \\t]*$")
 
 // GermanChapterPattern matches German chapter / section markers.
 var GermanChapterPattern = regexp.MustCompile(`(?m)^[ \t]*(?:Kapitel|Abschnitt|Teil)\s+(?:[0-9]+|[IVX]{1,5})[\.: ].{0,200}$`)
@@ -55,20 +56,22 @@ var GermanChapterPattern = regexp.MustCompile(`(?m)^[ \t]*(?:Kapitel|Abschnitt|T
 // EnglishChapterPattern matches English chapter / section markers.
 var EnglishChapterPattern = regexp.MustCompile(`(?m)^[ \t]*(?:Chapter|Section|Part)\s+(?:[0-9]+|[IVX]{1,5})[\.: ].{0,200}$`)
 
-// ChineseChapterPattern matches CJK chapter / section markers like 第一章,
-// 第3节, 第 1 章 (whitespace between 第 / numeral / unit is tolerated).
-var ChineseChapterPattern = regexp.MustCompile(`(?m)^[ \t]*第[ \t]*[一二三四五六七八九十百千零〇0-9]+[ \t]*(?:章|节|節|部分|篇)[ \t]?.{0,200}$`)
+// ChineseChapterPattern matches Chinese chapter / section markers: the ordinal
+// prefix U+7B2C, a Chinese or Arabic numeral, then a unit such as chapter (U+7AE0)
+// or section (U+8282). Whitespace between the three parts is tolerated.
+var ChineseChapterPattern = regexp.MustCompile("(?m)^[ \\t]*\u7b2c[ \\t]*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\u5343\u96f6\u30070-9]+[ \\t]*(?:\u7ae0|\u8282|\u7bc0|\u90e8\u5206|\u7bc7)[ \\t]?.{0,200}$")
 
 // SentenceSeparators returns sentence-level separators tuned for the language.
+// The escapes are the full-width period, exclamation mark, question mark and semicolon.
 // Used for fine-grained sub-splitting when a section is still too large.
 func SentenceSeparators(lang string) []string {
 	switch lang {
 	case LangChinese:
-		return []string{"。", "！", "？", "；", "\n"}
+		return []string{"\u3002", "\uff01", "\uff1f", "\uff1b", "\n"}
 	case LangGerman, LangEnglish:
 		return []string{". ", "! ", "? ", "; ", "\n"}
 	default:
-		return []string{"。", "！", "？", "；", ". ", "! ", "? ", "; ", "\n"}
+		return []string{"\u3002", "\uff01", "\uff1f", "\uff1b", ". ", "! ", "? ", "; ", "\n"}
 	}
 }
 

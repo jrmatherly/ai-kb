@@ -120,15 +120,15 @@ type RerankerConfig struct {
 	Provider    string                   // Provider identifier: openai, aliyun, zhipu, siliconflow, jina, generic
 	Spec        *types.ModelSpecOverride `json:"spec,omitempty"`
 	ExtraConfig map[string]string
-	// CustomHeaders 允许在调用远程 API 时附加自定义 HTTP 请求头（类似 OpenAI Python SDK 的 extra_headers）。
+	// CustomHeaders adds custom HTTP request headers to remote API calls (like extra_headers in the OpenAI Python SDK).
 	CustomHeaders map[string]string
 	AppID         string
-	AppSecret     string // 加密值，工厂函数调用方传入，使用前已解密
+	AppSecret     string // encrypted value, passed in by the factory's caller and decrypted before use
 }
 
-// ConfigFromModel 根据 types.Model 构造 RerankerConfig。
-// 生产路径（从 DB 拉起）和测试连接路径（临时表单）共享这份映射。
-// appID / appSecret 是已解密的 WeKnoraCloud 凭证，调用方负责传入。
+// ConfigFromModel builds a RerankerConfig from a types.Model.
+// The production path (loaded from the DB) and the test-connection path (a temporary form) share this mapping.
+// appID / appSecret are the decrypted WeKnoraCloud credentials, passed in by the caller.
 func ConfigFromModel(m *types.Model, appID, appSecret string) *RerankerConfig {
 	if m == nil {
 		return nil

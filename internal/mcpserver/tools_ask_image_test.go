@@ -18,7 +18,7 @@ func TestSummarizeReferencesPreservesImagesOutsideExcerpt(t *testing.T) {
 	refs := summarizeReferences([]*types.SearchResult{
 		nil,
 		{
-			ID: "chunk", KnowledgeID: "doc", Content: strings.Repeat("长", 400),
+			ID: "chunk", KnowledgeID: "doc", Content: strings.Repeat("\u957f", 400),
 			ImageInfo: `[{"url":"` + ref + `","caption":"diagram","original_url":"private-source"},` +
 				`{"url":"","original_url":"private-only"}]`,
 		},
@@ -26,7 +26,7 @@ func TestSummarizeReferencesPreservesImagesOutsideExcerpt(t *testing.T) {
 		{ID: "broken", ImageInfo: `malformed`},
 	})
 	require.Len(t, refs, 2)
-	require.Equal(t, strings.Repeat("长", askExcerptMaxRunes)+"…", refs[0].Excerpt)
+	require.Equal(t, strings.Repeat("\u957f", askExcerptMaxRunes)+"…", refs[0].Excerpt)
 	require.Equal(t, []askImage{{URL: ref, Caption: "diagram", OCRText: "details"}}, refs[0].Images)
 	require.Empty(t, refs[1].Images)
 

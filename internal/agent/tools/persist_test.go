@@ -250,7 +250,7 @@ func TestCompactToolOutputForHistory_recoversStreamsFromPlaceholder(t *testing.T
 }
 
 func TestCompactToolOutputForHistory_failedSkillScriptKeepsStdout(t *testing.T) {
-	stdout := `{"chart":{"success":false,"error":{"error":"X轴字段不存在：工作项目","available":["name","value"]}}}`
+	stdout := "{\"chart\":{\"success\":false,\"error\":{\"error\":\"X\u8f74\u5b57\u6bb5\u4e0d\u5b58\u5728\uff1a\u5de5\u4f5c\u9879\u76ee\",\"available\":[\"name\",\"value\"]}}}"
 	output := "=== Script Execution: smart-charts/scripts/cli.py ===\n\n**Exit Code**: 1\n\n## Standard Output\n\n```\n" + stdout + "\n```\n"
 	errMsg := "Script exited with code 1\n\n[Analyze the error above and try a different approach.]"
 	history := CompactToolOutputForHistory(LegacyToolExecuteSkillScript, &types.ToolResult{
@@ -259,12 +259,12 @@ func TestCompactToolOutputForHistory_failedSkillScriptKeepsStdout(t *testing.T) 
 		Error:   errMsg,
 		Data: map[string]interface{}{
 			"display_type": "shell_exec",
-			"command":      "smart-charts/scripts/cli.py --x-axis 工作项目",
+			"command":      "smart-charts/scripts/cli.py --x-axis \u5de5\u4f5c\u9879\u76ee",
 			"exit_code":    1,
 			"stdout":       stdout,
 		},
 	})
-	if !strings.Contains(history, "X轴字段不存在：工作项目") {
+	if !strings.Contains(history, "X\u8f74\u5b57\u6bb5\u4e0d\u5b58\u5728\uff1a\u5de5\u4f5c\u9879\u76ee") {
 		t.Fatalf("failed skill script history must keep stdout, got %q", history)
 	}
 	if !strings.Contains(history, "Error: Script exited with code 1") {
@@ -273,7 +273,7 @@ func TestCompactToolOutputForHistory_failedSkillScriptKeepsStdout(t *testing.T) 
 }
 
 func TestSanitizeAgentStepsForStorage_skillScriptKeepsStreamsOnFailure(t *testing.T) {
-	stdout := `{"chart":{"success":false,"error":{"error":"X轴字段不存在：工作项目"}}}`
+	stdout := "{\"chart\":{\"success\":false,\"error\":{\"error\":\"X\u8f74\u5b57\u6bb5\u4e0d\u5b58\u5728\uff1a\u5de5\u4f5c\u9879\u76ee\"}}}"
 	output := "=== Script Execution: smart-charts/scripts/cli.py ===\n\n" + stdout
 	steps := []types.AgentStep{{
 		ToolCalls: []types.ToolCall{{
@@ -298,7 +298,7 @@ func TestSanitizeAgentStepsForStorage_skillScriptKeepsStreamsOnFailure(t *testin
 	if strings.Contains(result.Output, "omitted from history") {
 		t.Fatalf("failed skill script must not collapse to an omit line, got %q", result.Output)
 	}
-	if got, _ := result.Data["stdout"].(string); !strings.Contains(got, "X轴字段不存在") {
+	if got, _ := result.Data["stdout"].(string); !strings.Contains(got, "X\u8f74\u5b57\u6bb5\u4e0d\u5b58\u5728") {
 		t.Fatalf("persisted stdout should remain for the UI card, got %#v", result.Data["stdout"])
 	}
 }

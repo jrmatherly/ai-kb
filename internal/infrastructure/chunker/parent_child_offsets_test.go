@@ -25,8 +25,8 @@ func TestParentChildTableSourceOffsets(t *testing.T) {
 		name, newline, row string
 	}{
 		{"ascii", "\n", "| apple | red |"},
-		{"unicode", "\n", "| 苹果🍎 | 北京 |"},
-		{"crlf", "\r\n", "| 苹果🍎 | 北京 |"},
+		{"unicode", "\n", "| \u82f9\u679c🍎 | \u5317\u4eac |"},
+		{"crlf", "\r\n", "| \u82f9\u679c🍎 | \u5317\u4eac |"},
 	} {
 		header := "| Item | City |" + fixture.newline + "| --- | --- |" + fixture.newline
 		// Repeated rows also catch attempts to recover positions with a text search.
@@ -112,7 +112,7 @@ func TestParentChildTableSourceOffsets(t *testing.T) {
 }
 
 func TestParentChildTableCitationUsesSourceRow(t *testing.T) {
-	prefix := "| Item | City |\n| --- | --- |\n" + strings.Repeat("| 苹果🍎 | 北京 |\n", 12)
+	prefix := "| Item | City |\n| --- | --- |\n" + strings.Repeat("| \u82f9\u679c🍎 | \u5317\u4eac |\n", 12)
 	lastRow := "| last | row |\n"
 	text := prefix + lastRow
 	index := sourceloc.NewIndex(text, []types.SourceBlock{

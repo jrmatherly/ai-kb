@@ -1,4 +1,4 @@
-// Package feishu implements the Feishu (飞书/Lark) data source connector for AI KB.
+// Package core implements the Feishu (Lark) data source connector for AI KB.
 //
 // It syncs documents from Feishu Wiki spaces and cloud documents into AI KB knowledge bases.
 //
@@ -16,7 +16,7 @@ import (
 )
 
 // Config holds Feishu-specific configuration for the data source connector.
-// Uses the self-built app (企业自建应用) authentication model.
+// Uses the self-built app (custom enterprise app) authentication model.
 type Config struct {
 	// App ID from Feishu developer console
 	AppID string `json:"app_id"`
@@ -259,11 +259,11 @@ type FeishuCursor struct {
 	SpaceNodeTimes map[string]map[string]string `json:"space_node_times,omitempty"`
 }
 
-// --- Drive (云盘) file listing types (feishu_drive / lark_drive connectors) ---
+// --- Drive file listing types (feishu_drive / lark_drive connectors) ---
 // Added by feat/datasource-feishu-drive. These are independent of the wiki
 // types above and do not affect the wiki connector.
 
-// DriveFile represents a file/folder in Feishu Drive (云空间). Returned by
+// DriveFile represents a file/folder in Feishu Drive (cloud space). Returned by
 // GET /open-apis/drive/v1/files?folder_token=xxx. The list API returns
 // modified_time directly (verified), so no batch_query/metas call is needed for
 // incremental detection - see ADR-0002.
@@ -274,7 +274,7 @@ type DriveFile struct {
 	ParentToken  string `json:"parent_token"`
 	URL          string `json:"url"`
 	CreatedTime  string `json:"created_time"`  // unix seconds string
-	ModifiedTime string `json:"modified_time"` // unix seconds string - 等价知识库 obj_edit_time
+	ModifiedTime string `json:"modified_time"` // unix seconds string, the equivalent of the wiki's obj_edit_time
 	OwnerID      string `json:"owner_id"`
 	// ShortcutInfo is populated only for type=="shortcut". target_type can only
 	// be doc/sheet/mindnote/bitable/file/docx (Feishu does not allow shortcuts to
@@ -345,7 +345,7 @@ func (e *PartialDriveFileListError) Error() string {
 	return strings.Join(parts, "; ")
 }
 
-// FeishuDriveCursor stores incremental sync state for Feishu Drive (云盘).
+// FeishuDriveCursor stores incremental sync state for Feishu Drive.
 // Structurally symmetric with FeishuCursor: outer key = resourceID
 // ("folderToken" or "folderToken:fileToken"), inner key = file_token,
 // value = modified_time. See ADR-0001.

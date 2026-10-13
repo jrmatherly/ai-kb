@@ -16,7 +16,7 @@ func TestCursorRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c.RepoName = "原资料库"
+	c.RepoName = "\u539f\u8d44\u6599\u5e93"
 	c.Files = map[string]string{"/ok.pdf": "o:abc|m:1|s:3", "/retry.pdf": ""}
 	c.FullSync = true
 	c.FullSyncBaseline = map[string]string{"/gone.pdf": "old", "/pending.pdf": ""}
@@ -94,10 +94,10 @@ func TestPrepareCursorFullSync(t *testing.T) {
 }
 
 func TestCursorRepositoryMismatchBeforeHTTP(t *testing.T) {
-	old := seededCursor(t, "原资料库", map[string]string{"/a.pdf": "saved"})
+	old := seededCursor(t, "\u539f\u8d44\u6599\u5e93", map[string]string{"/a.pdf": "saved"})
 	before := cursorJSON(t, old)
 	_, _, err := prepareCursor(old, otherRepoID, false)
-	if !errors.Is(err, datasource.ErrInvalidConfig) || !strings.Contains(err.Error(), "原资料库") {
+	if !errors.Is(err, datasource.ErrInvalidConfig) || !strings.Contains(err.Error(), "\u539f\u8d44\u6599\u5e93") {
 		t.Fatalf("prepare mismatch = %v", err)
 	}
 	f := newFakeSeafile(t)
@@ -105,7 +105,7 @@ func TestCursorRepositoryMismatchBeforeHTTP(t *testing.T) {
 	cfg.ResourceIDs = []string{otherRepoID + ":/"}
 	h := &recorder{}
 	_, err = run(t, NewConnector(), cfg, old, h, false)
-	if !errors.Is(err, datasource.ErrInvalidConfig) || !strings.Contains(err.Error(), "原资料库") {
+	if !errors.Is(err, datasource.ErrInvalidConfig) || !strings.Contains(err.Error(), "\u539f\u8d44\u6599\u5e93") {
 		t.Fatalf("stream mismatch = %v", err)
 	}
 	if len(f.counts()) != 0 || len(h.items) != 0 || len(h.checkpoints) != 0 || cursorJSON(t, old) != before {

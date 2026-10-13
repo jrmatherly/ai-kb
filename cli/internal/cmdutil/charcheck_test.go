@@ -14,7 +14,7 @@ func TestCheckSafeText(t *testing.T) {
 		wantErr bool
 	}{
 		{"plain ascii", "my-knowledge-base", false},
-		{"unicode letters", "测试知识库 café", false},
+		{"unicode letters", "\u6d4b\u8bd5\u77e5\u8bc6\u5e93 café", false},
 		{"emoji", "docs 🔥", false},
 		{"multiline content allowed", "line1\nline2\twith tab\r\n", false},
 		{"ansi escape rejected", "inject\x1b[31mRED", true},

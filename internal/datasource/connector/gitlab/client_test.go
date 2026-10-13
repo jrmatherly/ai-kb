@@ -402,7 +402,7 @@ func TestRawFallsBackToBase64FileDetail(t *testing.T) {
 }
 
 func TestGitlabFilePathEscape(t *testing.T) {
-	got := gitlabFilePathEscape("docs/internal/中文-file.md")
+	got := gitlabFilePathEscape("docs/internal/\u4e2d\u6587-file.md")
 	want := "docs%2Finternal%2F%E4%B8%AD%E6%96%87-file%2Emd"
 	if got != want {
 		t.Fatalf("gitlabFilePathEscape() = %q, want %q", got, want)

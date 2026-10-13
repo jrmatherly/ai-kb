@@ -262,7 +262,7 @@ func (a *Adapter) StartStream(ctx context.Context, incoming *im.IncomingMessage)
 		threadRoot = incoming.Extra[extraKeyThreadRoot]
 	}
 
-	postID, err := a.client.CreatePost(ctx, channelID, threadRoot, "正在思考...")
+	postID, err := a.client.CreatePost(ctx, channelID, threadRoot, "Thinking...")
 	if err != nil {
 		return "", err
 	}

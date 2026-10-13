@@ -61,12 +61,7 @@ func TestRealExtension(t *testing.T) {
 		}
 		if r.URL.Path == "/login" {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			_, _ = io.WriteString(w, `<!doctype html><title>Fixture login</title>
-<button>看过</button>
-<form action="/login-complete" method="post">
-<label>Account <input id="login-account" name="account"></label>
-<label>Password <input id="login-password" type="password" name="password"></label>
-<button id="login-submit" type="submit">Sign in</button></form>`)
+			_, _ = io.WriteString(w, "<!doctype html><title>Fixture login</title>\n<button>\u770b\u8fc7</button>\n<form action=\"/login-complete\" method=\"post\">\n<label>Account <input id=\"login-account\" name=\"account\"></label>\n<label>Password <input id=\"login-password\" type=\"password\" name=\"password\"></label>\n<button id=\"login-submit\" type=\"submit\">Sign in</button></form>")
 			return
 		}
 		if r.URL.Path == "/login-complete" {
@@ -103,14 +98,7 @@ func TestRealExtension(t *testing.T) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = io.WriteString(
 			w,
-			`<!doctype html><title>BrowserSkill integration</title>
-<label>Name <input id="name"></label>
-<button
- onclick="document.querySelector('#result').textContent='你好 '+document.querySelector('#name').value">Save</button>
-<p id="result"></p>
-<a id="new-tab" href="/linked" target="_blank" rel="noopener">Open linked page</a>
-<button id="popup" onclick="window.open('/popup', '_blank', 'width=480,height=320')">Open popup</button>
-<p id="scroll-target" style="margin-top:2400px">Scroll destination</p>`,
+			"<!doctype html><title>BrowserSkill integration</title>\n<label>Name <input id=\"name\"></label>\n<button\n onclick=\"document.querySelector('#result').textContent='\u4f60\u597d '+document.querySelector('#name').value\">Save</button>\n<p id=\"result\"></p>\n<a id=\"new-tab\" href=\"/linked\" target=\"_blank\" rel=\"noopener\">Open linked page</a>\n<button id=\"popup\" onclick=\"window.open('/popup', '_blank', 'width=480,height=320')\">Open popup</button>\n<p id=\"scroll-target\" style=\"margin-top:2400px\">Scroll destination</p>",
 		)
 	}))
 	defer fixture.Close()
@@ -295,7 +283,7 @@ func TestRealExtension(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if _, err = call(ctx, scope, "chat", "fill", map[string]any{"selector": "#name", "value": "世界"}); err != nil {
+	if _, err = call(ctx, scope, "chat", "fill", map[string]any{"selector": "#name", "value": "\u4e16\u754c"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = call(ctx, scope, "chat", "click", map[string]any{"selector": "button"}); err != nil {
@@ -305,7 +293,7 @@ func TestRealExtension(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(snap), "你好 世界") {
+	if !strings.Contains(string(snap), "\u4f60\u597d \u4e16\u754c") {
 		t.Fatalf("action result missing: %s", snap)
 	}
 	checkBackground()
@@ -576,7 +564,7 @@ func TestRealExtension(t *testing.T) {
 			"prompt": "Confirm this fixture step", "timeout_ms": 10000,
 			// This text exists before login. Legacy criteria must not complete
 			// the help RPC before the human confirms the actual login.
-			"completion_criteria": map[string]any{"any": []map[string]string{{"text_exists": "看过"}}},
+			"completion_criteria": map[string]any{"any": []map[string]string{{"text_exists": "\u770b\u8fc7"}}},
 		})
 		if e == nil && !strings.Contains(string(result), `"continued"`) {
 			e = fmt.Errorf("unexpected help outcome: %s", result)

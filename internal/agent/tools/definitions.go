@@ -86,29 +86,29 @@ type AvailableTool struct {
 // Keep this in sync with registered tools in this package.
 func AvailableToolDefinitions() []AvailableTool {
 	return []AvailableTool{
-		{Name: ToolThinking, Label: "思考", Description: "动态和反思性的问题解决思考工具"},
-		{Name: ToolTodoWrite, Label: "制定计划", Description: "创建结构化的研究计划"},
-		{Name: ToolSearchKnowledge, Label: "检索知识库", Description: "语义、关键词或混合检索知识库分块"},
-		{Name: ToolReadDocument, Label: "阅读文档", Description: "读取文档元数据与分块内容，支持分页和文内查找"},
-		{Name: ToolListDocuments, Label: "浏览文档列表", Description: "分页列出知识库中的文档"},
-		{Name: ToolQueryKnowledgeGraph, Label: "查询知识图谱", Description: "从知识图谱中查询关系"},
+		{Name: ToolThinking, Label: "Thinking", Description: "Dynamic and reflective problem-solving thinking tool"},
+		{Name: ToolTodoWrite, Label: "Plan", Description: "Create structured research plans"},
+		{Name: ToolSearchKnowledge, Label: "Search knowledge", Description: "Semantic, keyword or hybrid chunk search"},
+		{Name: ToolReadDocument, Label: "Read document", Description: "Read document metadata and chunks, paged"},
+		{Name: ToolListDocuments, Label: "List documents", Description: "Page through a knowledge base's documents"},
+		{Name: ToolQueryKnowledgeGraph, Label: "Query Knowledge Graph", Description: "Query knowledge graph relations"},
 		{
 			Name:        ToolSearchConversations,
-			Label:       "回顾历史对话",
-			Description: "在用户自己的历史会话中查找之前聊过的内容",
+			Label:       "Search Past Conversations",
+			Description: "Find what was discussed before in the user's own past sessions",
 		},
-		{Name: ToolDatabaseQuery, Label: "查询数据库", Description: "查询数据库中的信息"},
-		{Name: ToolDataAnalysis, Label: "数据分析", Description: "理解数据文件并进行数据分析"},
-		{Name: ToolDataSchema, Label: "查看数据元信息", Description: "获取表格文件的元信息"},
-		{Name: ToolWikiReadPage, Label: "读取Wiki页面", Description: "读取指定的Wiki页面内容"},
-		{Name: ToolWikiSearch, Label: "搜索Wiki", Description: "在Wiki中搜索页面"},
-		{Name: ToolWikiFlagIssue, Label: "标记Wiki问题", Description: "标记页面中存在的事实错误或合并冲突问题"},
-		{Name: ToolWikiWritePage, Label: "创建/覆盖Wiki", Description: "创建新页面或完全覆盖已有页面"},
-		{Name: ToolWikiReplaceText, Label: "局部替换Wiki", Description: "替换Wiki页面中的特定文本"},
-		{Name: ToolWikiRenamePage, Label: "重命名Wiki", Description: "重命名Wiki页面并自动更新关联链接"},
-		{Name: ToolWikiDeletePage, Label: "删除Wiki", Description: "删除Wiki页面并自动清理关联死链"},
-		{Name: ToolWikiReadIssue, Label: "查看Wiki问题", Description: "查看特定的Wiki页面问题详情"},
-		{Name: ToolWikiUpdateIssue, Label: "更新Wiki问题状态", Description: "更新特定的Wiki页面问题状态"},
+		{Name: ToolDatabaseQuery, Label: "Query Database", Description: "Query information from the database"},
+		{Name: ToolDataAnalysis, Label: "Data Analysis", Description: "Understand and analyze data files"},
+		{Name: ToolDataSchema, Label: "View Data Schema", Description: "Get metadata of tabular files"},
+		{Name: ToolWikiReadPage, Label: "Read Wiki Page", Description: "Read the content of a specific Wiki page"},
+		{Name: ToolWikiSearch, Label: "Search Wiki", Description: "Search pages in the Wiki"},
+		{Name: ToolWikiFlagIssue, Label: "Flag Wiki Issue", Description: "Flag factual errors or merge conflicts"},
+		{Name: ToolWikiWritePage, Label: "Create / Overwrite Wiki", Description: "Create or fully overwrite a page"},
+		{Name: ToolWikiReplaceText, Label: "Replace Text in Wiki", Description: "Replace specific text in a Wiki page"},
+		{Name: ToolWikiRenamePage, Label: "Rename Wiki Page", Description: "Rename a page and update its links"},
+		{Name: ToolWikiDeletePage, Label: "Delete Wiki Page", Description: "Delete a page and clean up dead links"},
+		{Name: ToolWikiReadIssue, Label: "View Wiki Issue", Description: "View details of a Wiki page issue"},
+		{Name: ToolWikiUpdateIssue, Label: "Update Wiki Issue", Description: "Update the status of a Wiki page issue"},
 	}
 }
 
@@ -119,7 +119,7 @@ func DefaultAllowedTools() []string {
 		ToolReadDocument,
 		ToolListDocuments,
 		// Looking up what this user asked before is only ever a read of their
-		// own history, and it is what lets "上次你给我的那个配置" resolve at all
+		// own history, and it is what lets "that config you gave me last time" resolve at all
 		// without stuffing every past conversation into the context window.
 		ToolSearchConversations,
 		// ToolSearchMemory is deliberately absent here and from

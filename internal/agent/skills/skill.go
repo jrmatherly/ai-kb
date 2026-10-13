@@ -116,7 +116,7 @@ func (s *Skill) Validate() error {
 // applyInstallName picks the directory / tool identity. Third-party SKILL.md
 // files often put a display title in name ("Word / DOCX") and a kebab-case
 // id in slug ("word-docx"). A title that is already a valid identity is
-// left alone so Chinese names such as 律师助手 stay as-is.
+// left alone so Chinese names (CJK letters are valid identity runes) stay as-is.
 func (s *Skill) applyInstallName() error {
 	if s == nil {
 		return errors.New("skill name is required")

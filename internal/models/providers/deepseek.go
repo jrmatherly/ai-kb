@@ -70,7 +70,7 @@ func newDeepseekProvider() *Definition {
 	return &Definition{
 		ID:           DeepseekID,
 		Name:         "DeepSeek",
-		Names:        map[string]string{"zh-CN": "DeepSeek 深度求索"},
+		Names:        map[string]string{"zh-CN": "DeepSeek \u6df1\u5ea6\u6c42\u7d22"},
 		Description:  "deepseek-flash, deepseek-v4-pro",
 		Website:      "https://platform.deepseek.com",
 		Icon:         deepseekIcon,

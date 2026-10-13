@@ -438,7 +438,7 @@ func validateMinerUOutboundURL(rawURL string) error {
 func PingMinerU(endpoint, apiKey string) (bool, string) {
 	endpoint = strings.TrimRight(endpoint, "/")
 	if endpoint == "" {
-		return false, "未配置 MinerU 端点"
+		return false, "MinerU endpoint is not configured"
 	}
 	if err := validateMinerUOutboundURL(endpoint); err != nil {
 		return false, err.Error()
@@ -451,7 +451,7 @@ func PingMinerU(endpoint, apiKey string) (bool, string) {
 
 	protocol, err := detectMinerUProtocol(ctx, client, endpoint)
 	if err != nil {
-		return false, fmt.Sprintf("MinerU 服务不可用: %v", err)
+		return false, fmt.Sprintf("MinerU service is unavailable: %v", err)
 	}
 	if protocol == minerUProtocolV1 {
 		return pingMinerUV1Auth(ctx, client, endpoint, apiKey)
@@ -459,11 +459,11 @@ func PingMinerU(endpoint, apiKey string) (bool, string) {
 
 	resp, err := client.Get(endpoint + "/docs")
 	if err != nil {
-		return false, fmt.Sprintf("MinerU 服务不可达: %v", err)
+		return false, fmt.Sprintf("MinerU service is unreachable: %v", err)
 	}
 	resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return false, fmt.Sprintf("MinerU 服务返回状态 %d", resp.StatusCode)
+		return false, fmt.Sprintf("MinerU service returned status %d", resp.StatusCode)
 	}
 	return true, ""
 }
@@ -473,21 +473,21 @@ func PingMinerU(endpoint, apiKey string) (bool, string) {
 func pingMinerUV1Auth(ctx context.Context, client *http.Client, endpoint, apiKey string) (bool, string) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/v1/parse/jobs?limit=1", nil)
 	if err != nil {
-		return false, fmt.Sprintf("构建请求失败: %v", err)
+		return false, fmt.Sprintf("failed to build request: %v", err)
 	}
 	if apiKey = strings.TrimSpace(apiKey); apiKey != "" {
 		req.Header.Set("Authorization", "Bearer "+apiKey)
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Sprintf("MinerU 服务不可达: %v", err)
+		return false, fmt.Sprintf("MinerU service is unreachable: %v", err)
 	}
 	_ = resp.Body.Close()
 	if resp.StatusCode == http.StatusUnauthorized {
 		if apiKey == "" {
-			return false, "MinerU 服务已启用鉴权，请配置 API Key"
+			return false, "MinerU service requires authentication; configure an API key"
 		}
-		return false, "MinerU API Key 无效"
+		return false, "MinerU API key is invalid"
 	}
 	return true, ""
 }
@@ -544,7 +544,7 @@ func mineruImageOriginalRefs(mdContent, imagePath string) []string {
 }
 
 // imgMarkdownPatternAllowSpaces matches markdown image syntax while allowing
-// spaces in the URL group, so that paths like "images/第 1 页.jpg" produced by
+// spaces in the URL group, so that paths like "images/<page 1 in Chinese>.jpg" produced by
 // MinerU on Chinese documents are still detected as image references.
 var imgMarkdownPatternAllowSpaces = regexp.MustCompile(
 	`!\[(.*?)\]\(([^()\n]*(?:\([^)]*\)[^()\n]*)*)\)`,

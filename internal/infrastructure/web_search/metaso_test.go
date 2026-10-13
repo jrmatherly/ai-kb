@@ -69,41 +69,24 @@ func TestMetasoProviderScopeArrays(t *testing.T) {
 		want    int
 	}{
 		"webpage": {
-			payload: `{"total":1,"webpages":[{"title":"W","link":"https://example.com/w",
-				"score":"high","position":1,"summary":"网页摘要","date":"2026-08-09"}]}`,
-			want: 1,
+			payload: "{\"total\":1,\"webpages\":[{\"title\":\"W\",\"link\":\"https://example.com/w\",\n\t\t\t\t\"score\":\"high\",\"position\":1,\"summary\":\"\u7f51\u9875\u6458\u8981\",\"date\":\"2026-08-09\"}]}",
+			want:    1,
 		},
 		"document": {
-			payload: `{"credits":3,"searchParameters":{"q":"1","scope":"document"},"total":15,
-				"documents":[
-				{"title":"文档标题一","link":"https://example.com/doc/1","score":"high",
-				 "snippet":"文档片段一","position":1,"authors":["作者甲"]},
-				{"title":"文档标题二","link":"https://example.com/doc/2 with space","score":"medium",
-				 "snippet":"文档片段二","position":2,"authors":["作者乙"]}
-			]}`,
-			want: 2,
+			payload: "{\"credits\":3,\"searchParameters\":{\"q\":\"1\",\"scope\":\"document\"},\"total\":15,\n\t\t\t\t\"documents\":[\n\t\t\t\t{\"title\":\"\u6587\u6863\u6807\u9898\u4e00\",\"link\":\"https://example.com/doc/1\",\"score\":\"high\",\n\t\t\t\t \"snippet\":\"\u6587\u6863\u7247\u6bb5\u4e00\",\"position\":1,\"authors\":[\"\u4f5c\u8005\u7532\"]},\n\t\t\t\t{\"title\":\"\u6587\u6863\u6807\u9898\u4e8c\",\"link\":\"https://example.com/doc/2 with space\",\"score\":\"medium\",\n\t\t\t\t \"snippet\":\"\u6587\u6863\u7247\u6bb5\u4e8c\",\"position\":2,\"authors\":[\"\u4f5c\u8005\u4e59\"]}\n\t\t\t]}",
+			want:    2,
 		},
 		"scholar": {
-			payload: `{"credits":3,"searchParameters":{"q":"1","scope":"scholar"},"total":43,
-				"scholars":[
-				{"title":"学术标题一","link":"https://example.com/paper?q=1","score":"high",
-				 "snippet":"学术片段一","position":1,"authors":["作者甲"],"date":"2012-10-15"},
-				{"title":"学术标题二","link":"https://example.com/paper?q=2","score":"medium",
-				 "snippet":"","position":2,"date":"2011-10-05"}
-			]}`,
-			want: 2,
+			payload: "{\"credits\":3,\"searchParameters\":{\"q\":\"1\",\"scope\":\"scholar\"},\"total\":43,\n\t\t\t\t\"scholars\":[\n\t\t\t\t{\"title\":\"\u5b66\u672f\u6807\u9898\u4e00\",\"link\":\"https://example.com/paper?q=1\",\"score\":\"high\",\n\t\t\t\t \"snippet\":\"\u5b66\u672f\u7247\u6bb5\u4e00\",\"position\":1,\"authors\":[\"\u4f5c\u8005\u7532\"],\"date\":\"2012-10-15\"},\n\t\t\t\t{\"title\":\"\u5b66\u672f\u6807\u9898\u4e8c\",\"link\":\"https://example.com/paper?q=2\",\"score\":\"medium\",\n\t\t\t\t \"snippet\":\"\",\"position\":2,\"date\":\"2011-10-05\"}\n\t\t\t]}",
+			want:    2,
 		},
 		"podcast": {
-			payload: `{"total":1,"podcasts":[{"title":"P","link":"https://example.com/p",
-				"score":"medium","position":1,"snippet":"播客片段","authors":["主播"],
-				"date":"2022-10-13","duration":"299"}]}`,
-			want: 1,
+			payload: "{\"total\":1,\"podcasts\":[{\"title\":\"P\",\"link\":\"https://example.com/p\",\n\t\t\t\t\"score\":\"medium\",\"position\":1,\"snippet\":\"\u64ad\u5ba2\u7247\u6bb5\",\"authors\":[\"\u4e3b\u64ad\"],\n\t\t\t\t\"date\":\"2022-10-13\",\"duration\":\"299\"}]}",
+			want:    1,
 		},
 		"video": {
-			payload: `{"total":1,"videos":[{"title":"V","link":"https://example.com/v",
-				"score":"medium","position":1,"snippet":"视频片段","authors":["UP"],
-				"date":"2024-06-17","duration":"497","coverImage":"https://example.com/v.jpg"}]}`,
-			want: 1,
+			payload: "{\"total\":1,\"videos\":[{\"title\":\"V\",\"link\":\"https://example.com/v\",\n\t\t\t\t\"score\":\"medium\",\"position\":1,\"snippet\":\"\u89c6\u9891\u7247\u6bb5\",\"authors\":[\"UP\"],\n\t\t\t\t\"date\":\"2024-06-17\",\"duration\":\"497\",\"coverImage\":\"https://example.com/v.jpg\"}]}",
+			want:    1,
 		},
 	}
 	for scope, fixture := range fixtures {
@@ -142,9 +125,7 @@ func TestMetasoProviderScopeArrays(t *testing.T) {
 func TestMetasoProviderImageScopeHasNoLink(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"credits":3,"searchParameters":{"q":"1","scope":"image"},"total":31,
-			"images":[{"title":"图片一","score":"low","position":1,
-			 "imageUrl":"https://example.com/i.jpg","imageWidth":800,"imageHeight":600}]}`))
+		_, _ = w.Write([]byte("{\"credits\":3,\"searchParameters\":{\"q\":\"1\",\"scope\":\"image\"},\"total\":31,\n\t\t\t\"images\":[{\"title\":\"\u56fe\u7247\u4e00\",\"score\":\"low\",\"position\":1,\n\t\t\t \"imageUrl\":\"https://example.com/i.jpg\",\"imageWidth\":800,\"imageHeight\":600}]}"))
 	}))
 	defer server.Close()
 
@@ -170,9 +151,7 @@ func TestMetasoProviderImageScopeHasNoLink(t *testing.T) {
 func TestMetasoProviderToleratesNonStringURLFields(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"total":1,"webpages":[{"title":"W","link":"https://example.com/w",
-			"snippet":"片段","url":{"href":"https://example.com/obj"},
-			"imageUrl":{"href":"https://example.com/img"}}]}`))
+		_, _ = w.Write([]byte("{\"total\":1,\"webpages\":[{\"title\":\"W\",\"link\":\"https://example.com/w\",\n\t\t\t\"snippet\":\"\u7247\u6bb5\",\"url\":{\"href\":\"https://example.com/obj\"},\n\t\t\t\"imageUrl\":{\"href\":\"https://example.com/img\"}}]}"))
 	}))
 	defer server.Close()
 
@@ -192,9 +171,7 @@ func TestMetasoProviderToleratesNonStringURLFields(t *testing.T) {
 func TestMetasoProviderToleratesUnmodelledFields(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"total":3,"pageSize":10,"webpages":[
-			{"title":"W","link":"https://example.com/w","snippet":"片段",
-			 "score":123,"position":"1","authors":null,"unknownNested":{"a":[1,2]}}]}`))
+		_, _ = w.Write([]byte("{\"total\":3,\"pageSize\":10,\"webpages\":[\n\t\t\t{\"title\":\"W\",\"link\":\"https://example.com/w\",\"snippet\":\"\u7247\u6bb5\",\n\t\t\t \"score\":123,\"position\":\"1\",\"authors\":null,\"unknownNested\":{\"a\":[1,2]}}]}"))
 	}))
 	defer server.Close()
 

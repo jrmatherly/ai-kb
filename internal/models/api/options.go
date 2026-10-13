@@ -35,20 +35,20 @@ const (
 	CacheRetentionLong  CacheRetention = "long"
 )
 
-// Options 聊天选项。It is protocol-neutral: every field is a capability the
+// Options holds chat options. It is protocol-neutral: every field is a capability the
 // caller asks for, and the protocol package decides how (or whether) the
 // vendor can honour it.
 type Options struct {
-	Temperature float64 `json:"temperature"` // 温度参数
-	TopP        float64 `json:"top_p"`       // Top P 参数
-	Seed        int     `json:"seed"`        // 随机种子
+	Temperature float64 `json:"temperature"` // temperature
+	TopP        float64 `json:"top_p"`       // Top P
+	Seed        int     `json:"seed"`        // random seed
 	// MaxTokens and MaxCompletionTokens are aliases for one completion budget.
 	// Callers may set either; CompletionBudget() prefers MaxCompletionTokens.
 	// The outbound JSON carries exactly one field, named per vendor.
 	MaxTokens           int     `json:"max_tokens"`
 	MaxCompletionTokens int     `json:"max_completion_tokens"`
-	FrequencyPenalty    float64 `json:"frequency_penalty"` // 频率惩罚
-	PresencePenalty     float64 `json:"presence_penalty"`  // 存在惩罚
+	FrequencyPenalty    float64 `json:"frequency_penalty"` // frequency penalty
+	PresencePenalty     float64 `json:"presence_penalty"`  // presence penalty
 	// Thinking is the legacy on/off switch. Prefer ReasoningEffort; when both
 	// are set ReasoningEffort wins. true maps to ReasoningAuto, false to
 	// ReasoningOff.
@@ -61,11 +61,11 @@ type Options struct {
 	// budget (Anthropic budget_tokens, DashScope thinking_budget, Gemini
 	// thinkingBudget). 0 leaves the vendor default.
 	ThinkingBudgetTokens int    `json:"thinking_budget_tokens,omitempty"`
-	Tools                []Tool `json:"tools,omitempty"` // 可用工具列表
+	Tools                []Tool `json:"tools,omitempty"` // available tools
 	// ToolChoice is "auto", "required", "none" or a specific tool name.
 	ToolChoice        string          `json:"tool_choice,omitempty"`
-	ParallelToolCalls *bool           `json:"parallel_tool_calls,omitempty"` // 是否允许并行工具调用（默认 nil 表示由模型决定）
-	Format            json.RawMessage `json:"format,omitempty"`              // 响应格式定义
+	ParallelToolCalls *bool           `json:"parallel_tool_calls,omitempty"` // nil: the model decides
+	Format            json.RawMessage `json:"format,omitempty"`              // response format definition
 	// PromptCacheKey is the provider routing key (OpenAI prompt_cache_key).
 	// Empty falls back to the session ID on the call context.
 	PromptCacheKey string `json:"-"`

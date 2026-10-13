@@ -96,7 +96,7 @@ func TestBuildLangfuseChatMetadataIncludesMCPCatalog(t *testing.T) {
 }
 
 func TestTruncateLangfuseText(t *testing.T) {
-	if got := truncateLangfuseText("一二三四五", 3); got != "一二三…" {
+	if got := truncateLangfuseText("\u4e00\u4e8c\u4e09\u56db\u4e94", 3); got != "\u4e00\u4e8c\u4e09…" {
 		t.Fatalf("got %q", got)
 	}
 }

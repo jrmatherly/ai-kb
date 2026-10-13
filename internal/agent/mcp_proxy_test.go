@@ -118,7 +118,7 @@ func TestAgentMCPStringArgumentsKeepValidationAndAudit(t *testing.T) {
 	t.Cleanup(utils.ResetSSRFWhitelistForTest)
 	var executions atomic.Int32
 	server := sdkserver.NewMCPServer("object-envelope", "1", sdkserver.WithToolCapabilities(false))
-	server.AddTool(sdkmcp.NewTool("币种列表"),
+	server.AddTool(sdkmcp.NewTool("\u5e01\u79cd\u5217\u8868"),
 		func(_ context.Context, request sdkmcp.CallToolRequest) (*sdkmcp.CallToolResult, error) {
 			executions.Add(1)
 			require.Empty(t, request.GetArguments())
@@ -159,7 +159,7 @@ func TestAgentMCPStringArgumentsKeepValidationAndAudit(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(modelResult), &definition))
 		return definition.ToolRef
 	}
-	emptyRef := describe("币种列表")
+	emptyRef := describe("\u5e01\u79cd\u5217\u8868")
 	requiredRef := describe("convert")
 	for _, tc := range []struct {
 		ref       string

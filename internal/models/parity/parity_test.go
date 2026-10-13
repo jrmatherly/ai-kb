@@ -238,7 +238,7 @@ func TestLegacyWireParity(t *testing.T) {
 			// default too. The audit briefly moved it to max_tokens because
 			// the compatible mode has always accepted that field; it was
 			// moved back because DashScope's parameter table marks
-			// max_tokens 即将废弃 and names max_completion_tokens its
+			// max_tokens as soon deprecated and names max_completion_tokens its
 			// successor, and following a vendor that has announced a
 			// replacement is the cheaper side of the bet.
 			name: "aliyun keeps max_completion_tokens", provider: "aliyun", model: "qwen3-max",

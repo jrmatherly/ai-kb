@@ -1,4 +1,4 @@
-// milvus-migrate 将旧版 Milvus Collection 复制为支持中英文 BM25 的新 Collection。
+// milvus-migrate copies legacy Milvus collections into new collections that support Chinese and English BM25.
 package main
 
 import (
@@ -22,18 +22,18 @@ func main() {
 	}
 	targetDefault := sourceDefault + "_multilingual"
 
-	source := flag.String("source", sourceDefault, "旧 Collection 前缀，例如 aikb_embeddings")
-	target := flag.String("target", targetDefault, "新 Collection 前缀，例如 aikb_embeddings_multilingual")
-	address := flag.String("address", envOr("MILVUS_ADDRESS", "localhost:19530"), "Milvus 地址")
-	username := flag.String("username", os.Getenv("MILVUS_USERNAME"), "Milvus 用户名")
-	password := flag.String("password", os.Getenv("MILVUS_PASSWORD"), "Milvus 密码")
-	database := flag.String("database", os.Getenv("MILVUS_DB_NAME"), "Milvus 数据库名")
+	source := flag.String("source", sourceDefault, "Legacy collection prefix, for example aikb_embeddings")
+	target := flag.String("target", targetDefault, "New collection prefix, for example aikb_embeddings_multilingual")
+	address := flag.String("address", envOr("MILVUS_ADDRESS", "localhost:19530"), "Milvus address")
+	username := flag.String("username", os.Getenv("MILVUS_USERNAME"), "Milvus username")
+	password := flag.String("password", os.Getenv("MILVUS_PASSWORD"), "Milvus password")
+	database := flag.String("database", os.Getenv("MILVUS_DB_NAME"), "Milvus database name")
 	metric := flag.String(
 		"metric-type",
 		strings.TrimSpace(os.Getenv("MILVUS_METRIC_TYPE")),
-		"稠密向量距离：IP、COSINE 或 L2；省略则沿用源 Collection",
+		"Dense vector metric: IP, COSINE or L2; omit to keep the source collection's metric",
 	)
-	batchSize := flag.Int("batch-size", 64, "每批迁移的行数；文本较长时可进一步调小")
+	batchSize := flag.Int("batch-size", 64, "Rows migrated per batch; lower it for long texts")
 	flag.Parse()
 
 	metricType, err := milvusRepo.ParseMetricType(*metric)
@@ -41,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 	if strings.TrimSpace(*source) == strings.TrimSpace(*target) {
-		log.Fatal("--source 和 --target 必须不同；迁移只会复制到新 Collection，不会覆盖旧 Collection")
+		log.Fatal("--source and --target must differ; migration copies into new collections, never over old ones")
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -56,13 +56,13 @@ func main() {
 	})
 	cancelConnect()
 	if err != nil {
-		log.Fatalf("连接 Milvus 失败：%v", err)
+		log.Fatalf("failed to connect to Milvus: %v", err)
 	}
 	defer func() {
 		closeCtx, cancelClose := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancelClose()
 		if err := milvusClient.Close(closeCtx); err != nil {
-			log.Printf("关闭 Milvus 连接失败：%v", err)
+			log.Printf("failed to close the Milvus connection: %v", err)
 		}
 	}()
 
@@ -74,7 +74,7 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf(
-			"迁移失败（已检查 %d 个 Collection，已复制 %d 个 Collection、%d 行）：%v",
+			"migration failed (checked %d collections, copied %d collections and %d rows): %v",
 			summary.ExaminedCollections,
 			summary.MigratedCollections,
 			summary.MigratedRows,
@@ -82,7 +82,7 @@ func main() {
 		)
 	}
 	fmt.Printf(
-		"迁移完成：检查 %d 个 Collection，复制 %d 个 Collection、%d 行。旧 Collection 保留未删除。\n",
+		"Migration complete: checked %d collections, copied %d collections and %d rows; old ones kept.\n",
 		summary.ExaminedCollections,
 		summary.MigratedCollections,
 		summary.MigratedRows,

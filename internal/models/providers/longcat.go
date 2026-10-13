@@ -67,7 +67,7 @@ func newLongcatProvider() *Definition {
 	return &Definition{
 		ID:           LongcatID,
 		Name:         "LongCat AI",
-		Names:        map[string]string{"zh-CN": "美团 LongCat"},
+		Names:        map[string]string{"zh-CN": "\u7f8e\u56e2 LongCat"},
 		Description:  "LongCat-2.0",
 		Website:      "https://longcat.chat/platform",
 		Icon:         longcatIcon,

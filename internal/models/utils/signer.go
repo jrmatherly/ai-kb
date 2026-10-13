@@ -16,11 +16,11 @@ const (
 	nonceLength = 16
 )
 
-// Sign 按 WeKnoraCloud 参考实现生成请求头。
-// appID: 上游 APPID
-// apiKey: 上游 API Key（当前沿用 AppSecret 字段承载）
-// requestID: 每次请求唯一的 UUID 字符串
-// bodyJSON: 请求体 JSON 字符串，空请求体传 "{}"
+// Sign builds the request headers following the WeKnoraCloud reference implementation.
+// appID: upstream APPID
+// apiKey: upstream API key (carried in the AppSecret field for now)
+// requestID: a UUID string unique to each request
+// bodyJSON: the request body as a JSON string; pass "{}" for an empty body
 func Sign(appID, apiKey, requestID, bodyJSON string) map[string]string {
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 	nonce := generateNonce(nonceLength)
@@ -76,8 +76,8 @@ func generateNonce(length int) string {
 	return string(b)
 }
 
-// rfc3986Encode 对字符串做 RFC3986 编码
-// 保留字符：A-Z a-z 0-9 - _ . ~
+// rfc3986Encode applies RFC 3986 encoding to a string
+// Unreserved characters: A-Z a-z 0-9 - _ . ~
 func rfc3986Encode(s string) string {
 	var buf bytes.Buffer
 	for _, r := range s {

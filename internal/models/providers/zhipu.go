@@ -1,6 +1,7 @@
 // Package providers registers Zhipu AI's BigModel open platform.
 //
-// Facts (https://docs.bigmodel.cn/api-reference/模型-api/对话补全):
+// Facts (chat completions reference,
+// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E5%AF%B9%E8%AF%9D%E8%A1%A5%E5%85%A8):
 //   - chat completions live at POST /paas/v4/chat/completions under
 //     https://open.bigmodel.cn/api, so the base URL is
 //     https://open.bigmodel.cn/api/paas/v4;
@@ -13,7 +14,7 @@
 //     `reasoning_content` from previous turns unless it is set to false, so
 //     replaying it is accepted but normally a no-op;
 //   - `reasoning_effort` takes none | minimal | low | medium | high | xhigh |
-//     max, defaults to max, and is only honoured by "GLM-5.2 及其以上模型" —
+//     max, defaults to max, and is only honoured by "GLM-5.2 and later models":
 //     GLM-5.1, GLM-5, GLM-4.7, GLM-4.6 and GLM-4.5 ignore it, so those
 //     entries turn it off. The vendor-level map spells every rung, including
 //     off -> "none";
@@ -23,11 +24,11 @@
 //     platform's own, so GLM-5.2 keeps sending "minimal" and "low"
 //     verbatim: rewriting minimal to "low" here would turn the weakest rung
 //     into the strongest one, because the platform then folds it to high;
-//   - GLM-5.3 and GLM-5.3-Flash/FlashX always think: `thinking.type` "限制只
-//     能开启", so both carry "off": null
+//   - GLM-5.3 and GLM-5.3-Flash/FlashX always think: `thinking.type` "can only
+//     be enabled", so both carry "off": null
 //     (https://docs.bigmodel.cn/cn/guide/models/text/glm-5.3,
 //     https://docs.bigmodel.cn/cn/guide/models/vlm/glm-5.3-flash);
-//   - `tool_choice` is documented as "默认 auto 且仅支持 auto", so none /
+//   - `tool_choice` is documented as "defaults to auto and only supports auto", so none /
 //     required / named-function are never sent;
 //   - `response_format` takes text | json_object (no json_schema);
 //     temperature is [0.0, 1.0] and top_p is [0.01, 1.0], both two decimals;
@@ -45,7 +46,7 @@
 // parallel tool calls and seed allowed) are kept because nothing states they
 // are rejected.
 //
-// unverified: glm-5v-turbo is a vision model and the "GLM-5.2 及其以上" rule
+// unverified: glm-5v-turbo is a vision model and the "GLM-5.2 and later" rule
 // does not name it, so its supports_reasoning_effort:false is kept as-is.
 //
 // unverified: context windows, max output tokens and prices of individual
@@ -79,11 +80,11 @@ func newZhipuProvider() *Definition {
 	return &Definition{
 		ID:    ZhipuID,
 		Name:  "Zhipu BigModel",
-		Names: map[string]string{"zh-CN": "智谱 BigModel"},
+		Names: map[string]string{"zh-CN": "\u667a\u8c31 BigModel"},
 		Description: "glm-5.3, glm-5.2, glm-4.7, embedding-3, rerank; " +
 			"Anthropic-compatible facade at " + ZhipuAnthropicBaseURL,
 		Descriptions: map[string]string{
-			"zh-CN": "glm-5.3, glm-5.2, glm-4.7, embedding-3, rerank；Anthropic 兼容接口 " + ZhipuAnthropicBaseURL,
+			"zh-CN": "glm-5.3, glm-5.2, glm-4.7, embedding-3, rerank\uff1bAnthropic \u517c\u5bb9\u63a5\u53e3 " + ZhipuAnthropicBaseURL,
 		},
 		Website:      "https://open.bigmodel.cn",
 		Icon:         zhipuIcon,
@@ -107,7 +108,8 @@ func newZhipuProvider() *Definition {
 		},
 		Compat: VendorCompat{
 			Transcriptions: api.TranscriptionsCompat{
-				// https://docs.bigmodel.cn/api-reference/模型-api/语音转文本:
+				// Speech to text reference:
+				// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E8%AF%AD%E9%9F%B3%E8%BD%AC%E6%96%87%E6%9C%AC
 				// POST {base}/audio/transcriptions, multipart file + model
 				// (glm-asr-2512), answering {text}. The file is ".wav / .mp3",
 				// at most 25 MB and 30 seconds — the duration cannot be checked
@@ -117,14 +119,16 @@ func newZhipuProvider() *Definition {
 				Formats: []string{"wav", "mp3"},
 			},
 			Embeddings: api.EmbeddingsCompat{
-				// https://docs.bigmodel.cn/api-reference/模型-api/文本嵌入: model,
+				// Text embeddings reference:
+				// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E5%B5%8C%E5%85%A5
+				// model,
 				// input, dimensions — no encoding_format. embedding-2 is fixed at
 				// 1024 and its entry turns dimensions off; embedding-3 takes at
 				// most 64 inputs per request.
 				DimensionsField: api.Ptr("dimensions"),
 			},
 			Rerank: api.RerankCompat{
-				// The reference gives 最大长度为 4096 字符 for the query and for each
+				// The reference gives a maximum length of 4096 characters for the query and for each
 				// document, and caps documents at 128 per request.
 				SendReturnDocs:   api.Ptr(true),
 				MaxDocuments:     api.Ptr(128),
@@ -136,7 +140,7 @@ func newZhipuProvider() *Definition {
 				ThinkingFormat:          api.Ptr(api.ThinkingFormatThinkingType),
 				SupportsReasoningEffort: api.Ptr(true),
 				PromptCacheAccounting:   api.Ptr(true),
-				// "默认 auto 且仅支持 auto": none / required / named function
+				// "defaults to auto and only supports auto": none / required / named function
 				// are rejected.
 				ToolChoiceModes: []string{"auto"},
 			},

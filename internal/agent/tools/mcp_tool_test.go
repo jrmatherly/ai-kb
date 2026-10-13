@@ -22,12 +22,12 @@ func TestSanitizeName(t *testing.T) {
 		{"spaces to underscores", "my service", "my_service"},
 		{"hyphens to underscores", "my-service", "my_service"},
 		{"strips special chars", "my@service!v2", "myservicev2"},
-		{"chinese chars stripped", "危化品查询", ""},
+		{"chinese chars stripped", "\u5371\u5316\u54c1\u67e5\u8be2", ""},
 		{"mixed alphanumeric", "svc_123-abc", "svc_123_abc"},
 		{"already clean", "my_service_v2", "my_service_v2"},
 		{"empty string", "", ""},
 		{"only special chars", "@#$%", ""},
-		{"unicode mixed", "mcp-服务-test", "mcp__test"},
+		{"unicode mixed", "mcp-\u670d\u52a1-test", "mcp__test"},
 	}
 
 	for _, tt := range tests {

@@ -82,20 +82,20 @@ type MessageKind string
 // conversation history, so the role alone cannot identify it.
 const MessageKindCompactionSummary MessageKind = "compaction_summary"
 
-// Message 表示聊天消息
+// Message is a chat message
 type Message struct {
-	Role         string               `json:"role"`                    // 角色：system, user, assistant, tool
-	Content      string               `json:"content"`                 // 消息内容
-	MultiContent []MessageContentPart `json:"multi_content,omitempty"` // 多内容消息（文本+图片）
+	Role         string               `json:"role"`                    // role: system, user, assistant, tool
+	Content      string               `json:"content"`                 // message content
+	MultiContent []MessageContentPart `json:"multi_content,omitempty"` // multi-part message (text + images)
 	Name         string               `json:"name,omitempty"`          // Function/tool name (for tool role)
 	ToolCallID   string               `json:"tool_call_id,omitempty"`  // Tool call ID (for tool role)
 	ToolCalls    []ToolCall           `json:"tool_calls,omitempty"`    // Tool calls (for assistant role)
 	// Images are image URLs for multimodal input (current user message only).
 	Images []string `json:"images,omitempty"`
-	// ReasoningContent 是 assistant 推理类模型上一轮输出的思考内容。部分供应商
-	// （MiMo、DeepSeek V3.2+、Kimi K2.5+）要求多轮对话中把 assistant 的
-	// reasoning_content 原样回传，否则会以 400 拒绝请求；其他不要求的供应商会
-	// 忽略未知字段。Anthropic 则要求把 thinking block 连同签名一起回放。
+	// ReasoningContent is the thinking a reasoning model output on its previous assistant turn. Some vendors
+	// (MiMo, DeepSeek V3.2+, Kimi K2.5+) require the assistant's reasoning_content to be sent back verbatim
+	// in multi-turn conversations and reject the request with 400 otherwise; vendors that do not require it
+	// ignore the unknown field. Anthropic instead requires replaying the thinking block with its signature.
 	ReasoningContent string `json:"reasoning_content,omitempty"`
 	// ReasoningSignature is the provider-issued signature that must accompany
 	// ReasoningContent when it is replayed (Anthropic thinking blocks, Gemini

@@ -133,5 +133,5 @@ func TestPromptSafePathRefusesMarkupAndControlCharacters(t *testing.T) {
 		require.Empty(t, PromptSafePath(unsafe), unsafe)
 	}
 	require.Equal(t, "/Users/dev/My Project", PromptSafePath(" /Users/dev/My Project "))
-	require.Equal(t, "/Users/dev/项目", PromptSafePath("/Users/dev/项目"))
+	require.Equal(t, "/Users/dev/\u9879\u76ee", PromptSafePath("/Users/dev/\u9879\u76ee"))
 }

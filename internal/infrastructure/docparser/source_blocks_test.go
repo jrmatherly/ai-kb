@@ -14,15 +14,10 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-const minerUContentListJSON = `[
- {"type":"text","text":"8.14.11 索夹与吊索施工应符合下列规定：","text_level":2,"page_idx":56,"bbox":[80,100,900,120]},
- {"type":"text","text":"1 在满足施工需要的前提下，应减小猫道面层开孔面积。","page_idx":56,"bbox":[80,130,920,170]},
- {"type":"table","table_body":"<table><tr><td>高度</td><td>12m</td></tr></table>",
-  "table_caption":["表 1"],"page_idx":57,"bbox":[50,10,950,2000]}
-]`
+const minerUContentListJSON = "[\n {\"type\":\"text\",\"text\":\"8.14.11 \u7d22\u5939\u4e0e\u540a\u7d22\u65bd\u5de5\u5e94\u7b26\u5408\u4e0b\u5217\u89c4\u5b9a\uff1a\",\"text_level\":2,\"page_idx\":56,\"bbox\":[80,100,900,120]},\n {\"type\":\"text\",\"text\":\"1 \u5728\u6ee1\u8db3\u65bd\u5de5\u9700\u8981\u7684\u524d\u63d0\u4e0b\uff0c\u5e94\u51cf\u5c0f\u732b\u9053\u9762\u5c42\u5f00\u5b54\u9762\u79ef\u3002\",\"page_idx\":56,\"bbox\":[80,130,920,170]},\n {\"type\":\"table\",\"table_body\":\"<table><tr><td>\u9ad8\u5ea6</td><td>12m</td></tr></table>\",\n  \"table_caption\":[\"\u8868 1\"],\"page_idx\":57,\"bbox\":[50,10,950,2000]}\n]"
 
 func TestMinerUSourceBlocks(t *testing.T) {
-	md := "## 8.14.11 索夹与吊索施工应符合下列规定：\n\n1 在满足施工需要的前提下，应减小猫道面层开孔面积。\n\n表 1\n\n| 高度 | 12m |\n| --- | --- |\n"
+	md := "## 8.14.11 \u7d22\u5939\u4e0e\u540a\u7d22\u65bd\u5de5\u5e94\u7b26\u5408\u4e0b\u5217\u89c4\u5b9a\uff1a\n\n1 \u5728\u6ee1\u8db3\u65bd\u5de5\u9700\u8981\u7684\u524d\u63d0\u4e0b\uff0c\u5e94\u51cf\u5c0f\u732b\u9053\u9762\u5c42\u5f00\u5b54\u9762\u79ef\u3002\n\n\u8868 1\n\n| \u9ad8\u5ea6 | 12m |\n| --- | --- |\n"
 	for name, raw := range map[string][]byte{
 		"array":  []byte(minerUContentListJSON),
 		"string": mustJSON(t, minerUContentListJSON),
@@ -57,11 +52,7 @@ func TestMinerUContentListFromZip(t *testing.T) {
 
 func TestPaddleOCRVLPageUnits(t *testing.T) {
 	var page paddleOCRVLPage
-	require.NoError(t, json.Unmarshal([]byte(`{
-		"markdown":{"text":"第一段\n\n第二段"},
-		"prunedResult":{"width":1000,"height":2000,"parsing_res_list":[
-			{"block_label":"text","block_content":"第一段","block_bbox":[100,200,900,400]}]}
-	}`), &page))
+	require.NoError(t, json.Unmarshal([]byte("{\n\t\t\"markdown\":{\"text\":\"\u7b2c\u4e00\u6bb5\\n\\n\u7b2c\u4e8c\u6bb5\"},\n\t\t\"prunedResult\":{\"width\":1000,\"height\":2000,\"parsing_res_list\":[\n\t\t\t{\"block_label\":\"text\",\"block_content\":\"\u7b2c\u4e00\u6bb5\",\"block_bbox\":[100,200,900,400]}]}\n\t}"), &page))
 	units := paddleOCRVLPageUnits(3, page)
 	require.Len(t, units, 1)
 	assert.Equal(t, []float64{0.1, 0.1, 0.9, 0.2}, units[0].Locator.BBox)
@@ -71,7 +62,7 @@ func TestPaddleOCRVLPageUnits(t *testing.T) {
 	units = paddleOCRVLPageUnits(4, page)
 	require.Len(t, units, 2)
 	assert.Nil(t, units[1].Locator.BBox)
-	assert.True(t, strings.Contains(units[1].Text, "第二段"))
+	assert.True(t, strings.Contains(units[1].Text, "\u7b2c\u4e8c\u6bb5"))
 }
 
 func TestSourceBlocksFromProto(t *testing.T) {

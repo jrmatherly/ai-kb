@@ -15,16 +15,7 @@ import (
 // documentedResponse is the response shape of DashScope's text-rerank API,
 // copied from the reference so the decoder is pinned against the vendor's own
 // document: https://help.aliyun.com/zh/model-studio/text-rerank-api
-const documentedResponse = `{
-  "output": {
-    "results": [
-      {"document": {"text": "上海气候"}, "index": 1, "relevance_score": 0.7314},
-      {"document": {"text": "北京美食"}, "index": 0, "relevance_score": 0.0002}
-    ]
-  },
-  "usage": {"total_tokens": 24},
-  "request_id": "4c5b1c4d-0e2f-9b1a-8a1e-1b2c3d4e5f60"
-}`
+const documentedResponse = "{\n  \"output\": {\n    \"results\": [\n      {\"document\": {\"text\": \"\u4e0a\u6d77\u6c14\u5019\"}, \"index\": 1, \"relevance_score\": 0.7314},\n      {\"document\": {\"text\": \"\u5317\u4eac\u7f8e\u98df\"}, \"index\": 0, \"relevance_score\": 0.0002}\n    ]\n  },\n  \"usage\": {\"total_tokens\": 24},\n  \"request_id\": \"4c5b1c4d-0e2f-9b1a-8a1e-1b2c3d4e5f60\"\n}"
 
 const endpointURL = "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank"
 
@@ -38,14 +29,14 @@ func newClient(t *testing.T, url string, settings api.RerankSettings) *Client {
 
 func TestRequestBodyMatchesTheDocumentedSchema(t *testing.T) {
 	c := newClient(t, endpointURL, api.RerankSettings{SendReturnDocs: true})
-	body, err := c.BuildRequestBody("上海天气", []string{"北京美食", "上海气候"})
+	body, err := c.BuildRequestBody("\u4e0a\u6d77\u5929\u6c14", []string{"\u5317\u4eac\u7f8e\u98df", "\u4e0a\u6d77\u6c14\u5019"})
 	require.NoError(t, err)
 
 	assert.Equal(t, map[string]any{
 		"model": "gte-rerank-v2",
 		"input": map[string]any{
-			"query":     "上海天气",
-			"documents": []any{"北京美食", "上海气候"},
+			"query":     "\u4e0a\u6d77\u5929\u6c14",
+			"documents": []any{"\u5317\u4eac\u7f8e\u98df", "\u4e0a\u6d77\u6c14\u5019"},
 		},
 		"parameters": map[string]any{
 			"return_documents": true,
@@ -72,12 +63,12 @@ func TestDecodesTheDocumentedResponse(t *testing.T) {
 	defer server.Close()
 
 	c := newClient(t, server.URL, api.RerankSettings{})
-	got, err := c.Rerank(context.Background(), "上海天气", []string{"北京美食", "上海气候"})
+	got, err := c.Rerank(context.Background(), "\u4e0a\u6d77\u5929\u6c14", []string{"\u5317\u4eac\u7f8e\u98df", "\u4e0a\u6d77\u6c14\u5019"})
 	require.NoError(t, err)
 
 	assert.Equal(t, []api.RerankResult{
-		{Index: 1, Score: 0.7314, Text: "上海气候"},
-		{Index: 0, Score: 0.0002, Text: "北京美食"},
+		{Index: 1, Score: 0.7314, Text: "\u4e0a\u6d77\u6c14\u5019"},
+		{Index: 0, Score: 0.0002, Text: "\u5317\u4eac\u7f8e\u98df"},
 	}, got)
 }
 

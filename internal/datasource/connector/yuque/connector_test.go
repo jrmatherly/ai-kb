@@ -490,7 +490,7 @@ func TestConnector_ListResources_ContinuesOnGroupFailure(t *testing.T) {
 func TestConnector_FetchAll_FileNamePolicy(t *testing.T) {
 	for _, tt := range []struct{ name, title, want string }{
 		{"punctuation and extension", " \tA/B.md ", " \tA_B.md .md"},
-		{"long title", strings.Repeat("测", 100), strings.Repeat("测", 66) + ".md"},
+		{"long title", strings.Repeat("\u6d4b", 100), strings.Repeat("\u6d4b", 66) + ".md"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			f := newFakeYuque()

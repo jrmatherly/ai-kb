@@ -3,7 +3,7 @@
 //
 // @title           AI KB API
 // @version         1.0
-// @description     AI KB 知识库管理系统 API 文档
+// @description     AI KB knowledge base management API
 // @termsOfService  http://swagger.io/terms/
 //
 // @contact.name   AI KB Github
@@ -14,12 +14,12 @@
 // @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
-// @description 用户登录认证：输入 Bearer {token} 格式的 JWT 令牌
+// @description User login authentication: enter a JWT in the form Bearer {token}
 
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name X-API-Key
-// @description API Key 认证：空间 Key 固定访问所属空间；平台 Key 调用空间接口时需同时传 X-Tenant-ID
+// @description API key auth. Workspace keys reach their own workspace; platform keys must also send X-Tenant-ID
 package main
 
 import (

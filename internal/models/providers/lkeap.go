@@ -65,10 +65,10 @@ func newLkeapProvider() *Definition {
 	return &Definition{
 		ID:          LkeapID,
 		Name:        "Tencent Cloud LKEAP",
-		Names:       map[string]string{"zh-CN": "腾讯云 LKEAP"},
+		Names:       map[string]string{"zh-CN": "\u817e\u8baf\u4e91 LKEAP"},
 		Description: "deepseek-v3.2, deepseek-v3.1-terminus, deepseek-r1-0528, lke-reranker-base",
 		Descriptions: map[string]string{
-			"zh-CN": "DeepSeek-V3.2、DeepSeek-V3.1-Terminus、DeepSeek-R1-0528、lke-reranker-base",
+			"zh-CN": "DeepSeek-V3.2\u3001DeepSeek-V3.1-Terminus\u3001DeepSeek-R1-0528\u3001lke-reranker-base",
 		},
 		Website:      "https://cloud.tencent.com/product/lkeap",
 		Icon:         lkeapIcon,
@@ -91,11 +91,11 @@ func newLkeapProvider() *Definition {
 		// sign a request.
 		CredentialLabels: []CredentialLabel{{
 			Label:        "SecretId",
-			Labels:       map[string]string{"zh-CN": "SecretId（TC3 签名）"},
+			Labels:       map[string]string{"zh-CN": "SecretId\uff08TC3 \u7b7e\u540d\uff09"},
 			Placeholder:  "Tencent Cloud SecretId (AKID...)",
-			Placeholders: map[string]string{"zh-CN": "腾讯云 SecretId（AKID 开头）"},
+			Placeholders: map[string]string{"zh-CN": "\u817e\u8baf\u4e91 SecretId\uff08AKID \u5f00\u5934\uff09"},
 			Hint:         "Rerank is signed with a CAM key pair; this is not an sk- API key.",
-			Hints:        map[string]string{"zh-CN": "Rerank 使用 CAM 密钥对签名，不是 sk- 开头的 API Key。"},
+			Hints:        map[string]string{"zh-CN": "Rerank \u4f7f\u7528 CAM \u5bc6\u94a5\u5bf9\u7b7e\u540d\uff0c\u4e0d\u662f sk- \u5f00\u5934\u7684 API Key\u3002"},
 			ModelTypes:   rerankOnly,
 			Required:     true,
 		}},
@@ -103,12 +103,12 @@ func newLkeapProvider() *Definition {
 			{
 				Key:         "secret_key",
 				Label:       "Secret Key",
-				Labels:      map[string]string{"zh-CN": "SecretKey（TC3 签名）"},
+				Labels:      map[string]string{"zh-CN": "SecretKey\uff08TC3 \u7b7e\u540d\uff09"},
 				Type:        "password",
 				Required:    true,
 				Placeholder: "Tencent Cloud SecretKey (the API Key field holds the SecretId)",
 				Placeholders: map[string]string{
-					"zh-CN": "腾讯云 SecretKey（API Key 那一栏填的是 SecretId）",
+					"zh-CN": "\u817e\u8baf\u4e91 SecretKey\uff08API Key \u90a3\u4e00\u680f\u586b\u7684\u662f SecretId\uff09",
 				},
 				ModelTypes: rerankOnly,
 				Secret:     true,
@@ -117,7 +117,7 @@ func newLkeapProvider() *Definition {
 				// RunRerank is only published in ap-beijing and ap-guangzhou.
 				Key:         "region",
 				Label:       "Region",
-				Labels:      map[string]string{"zh-CN": "地域"},
+				Labels:      map[string]string{"zh-CN": "\u5730\u57df"},
 				Type:        "select",
 				Default:     "ap-guangzhou",
 				Placeholder: "ap-guangzhou",

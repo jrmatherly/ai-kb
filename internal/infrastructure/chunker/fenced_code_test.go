@@ -100,7 +100,7 @@ func TestSplitByHeadings_FencedSubHeadingContext(t *testing.T) {
 	for _, fence := range []string{"~~~", "````"} {
 		for _, newline := range []string{"\n", "\r\n"} {
 			t.Run(fence+newline, func(t *testing.T) {
-				filler := strings.Repeat("中文 clause body sentence. ", 25)
+				filler := strings.Repeat("\u4e2d\u6587 clause body sentence. ", 25)
 				doc := "# Real\n" + filler + "\n## Section\n" + filler + "\n" +
 					fence + "markdown\n```\n### Fake\n" + filler + "\n" + fence + "\n" +
 					filler + "AFTER_CODE_MARKER\n" + filler + "\n### Real sub\n" + filler +

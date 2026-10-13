@@ -302,7 +302,7 @@ func TestFormatWithinBudgetDropsLowestRankedRows(t *testing.T) {
 		results[i] = &searchResultWithMeta{
 			SearchResult: &types.SearchResult{
 				ID: fmt.Sprintf("c%d", i), KnowledgeID: "doc", ChunkIndex: i,
-				Content: strings.Repeat("内容", 500), Score: 1 - float64(i)/10,
+				Content: strings.Repeat("\u5185\u5bb9", 500), Score: 1 - float64(i)/10,
 			},
 			KnowledgeBaseID: "kb-1",
 		}

@@ -8,8 +8,8 @@
 //     needs no ExtraFields (the TC3-signed native API is a different host);
 //   - the output cap is `max_tokens` (default 4096); the reference does not
 //     document `max_completion_tokens`;
-//   - `tool_choice` 可选值包括 none、auto、custom and "仅对 hunyuan-turbos、
-//     hunyuan-functioncall 模型生效", so `required` is never sent; "custom" is
+//   - `tool_choice` accepts none, auto, custom and "only applies to hunyuan-turbos and
+//     hunyuan-functioncall models", so `required` is never sent; "custom" is
 //     a Hunyuan-specific shape rather than OpenAI's named-function object,
 //     so the "function" mode is withheld as well;
 //   - temperature is [0.0, 2.0] and top_p [0.0, 1.0], neither restricted;
@@ -17,8 +17,8 @@
 //   - hunyuan-embedding returns a fixed 1024-dimension vector.
 //
 // Thinking (https://cloud.tencent.com/document/product/1729/105701): the
-// native API exposes `EnableThinking`, "未传值时默认开启" and the switch
-// "仅对 hunyuan-a13b 模型生效". The T1 series reasons unconditionally, so
+// native API exposes `EnableThinking`, "on by default when not passed" and the switch
+// "only applies to the hunyuan-a13b model". The T1 series reasons unconditionally, so
 // models.json marks it "off": null, and hunyuan-a13b additionally accepts a
 // `/no_think` prompt prefix
 // (https://cloud.tencent.com/document/product/1729/104753).
@@ -74,7 +74,7 @@ func newHunyuanProvider() *Definition {
 	return &Definition{
 		ID:           HunyuanID,
 		Name:         "Tencent Hunyuan",
-		Names:        map[string]string{"zh-CN": "腾讯混元 Hunyuan"},
+		Names:        map[string]string{"zh-CN": "\u817e\u8baf\u6df7\u5143 Hunyuan"},
 		Description:  "hunyuan-t1-latest, hunyuan-turbos-latest, hunyuan-a13b, hunyuan-embedding, etc.",
 		Website:      "https://cloud.tencent.com/product/hunyuan",
 		Icon:         hunyuanIcon,
@@ -92,13 +92,13 @@ func newHunyuanProvider() *Definition {
 			types.ModelTypeEmbedding,
 		},
 		Compat: VendorCompat{
-			// Embeddings keeps the bare baseline on purpose: "Embedding 接口目前仅
-			// 支持 input 和 model 参数 … dimensions 固定为 1024"
+			// Embeddings keeps the bare baseline on purpose: "the Embedding API currently only
+			// supports the input and model parameters … dimensions is fixed at 1024"
 			// (https://cloud.tencent.com/document/product/1729/111007).
 			OpenAICompletions: api.OpenAICompletionsCompat{
 				MaxTokensField: api.Ptr("max_tokens"),
 				ThinkingFormat: api.Ptr(api.ThinkingFormatEnableThinking),
-				// 可选值包括 none、auto、custom: neither "required" nor OpenAI's
+				// accepted values are none, auto, custom: neither "required" nor OpenAI's
 				// named-function object is documented.
 				ToolChoiceModes: []string{"none", "auto"},
 			},

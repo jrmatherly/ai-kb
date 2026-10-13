@@ -74,8 +74,8 @@ type OpenAICompletionsSettings struct {
 	ThinkingBudgetField string
 	// ThinkingBudgetExcludesEffort marks a vendor that rejects a request
 	// carrying both the budget and the effort (DashScope's qwen3.8-max
-	// series: "不支持 reasoning_effort 与 thinking_budget 同时设置，同时设置
-	// 会报错"). The graded level is what the caller actually picked, so the
+	// series: "reasoning_effort and thinking_budget cannot be set together; setting both
+	// returns an error"). The graded level is what the caller actually picked, so the
 	// budget is the field that yields.
 	ThinkingBudgetExcludesEffort bool
 	// ReasoningEffortField is "reasoning_effort" unless a vendor renames it.

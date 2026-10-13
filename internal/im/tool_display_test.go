@@ -9,9 +9,9 @@ func TestFormatIMToolLine_pendingWithQuery(t *testing.T) {
 	line := FormatIMToolLine(IMToolStep{
 		ToolName:  "knowledge_search",
 		Pending:   true,
-		Arguments: map[string]any{"query": "文明6"},
+		Arguments: map[string]any{"query": "Civilization VI"},
 	})
-	if line != "正在调用 知识库检索..." {
+	if line != "Calling Knowledge Search..." {
 		t.Fatalf("pending line = %q", line)
 	}
 }
@@ -21,17 +21,17 @@ func TestFormatIMToolLine_searchDoneWithQueryAndSummary(t *testing.T) {
 		ToolName: "knowledge_search",
 		Success:  true,
 		Arguments: map[string]any{
-			"query": "文明6",
+			"query": "Civilization VI",
 		},
 		Data: map[string]interface{}{
 			"results":   []interface{}{map[string]interface{}{}, map[string]interface{}{}, map[string]interface{}{}},
 			"kb_counts": map[string]interface{}{"a": 1, "b": 1},
 		},
 	})
-	if !strings.Contains(line, "检索知识库：「文明6」") {
+	if !strings.Contains(line, "Searched knowledge base: \"Civilization VI\"") {
 		t.Fatalf("title missing query: %q", line)
 	}
-	if !strings.Contains(line, "找到 3 个结果，来自 2 个文件") {
+	if !strings.Contains(line, "Found 3 result(s) from 2 file(s)") {
 		t.Fatalf("summary missing: %q", line)
 	}
 }
@@ -41,14 +41,14 @@ func TestFormatIMToolLine_grepPatterns(t *testing.T) {
 		ToolName: "grep_chunks",
 		Success:  true,
 		Arguments: map[string]any{
-			"patterns": []any{"文明", "策略"},
+			"patterns": []any{"civilization", "strategy"},
 		},
 		Data: map[string]interface{}{
 			"total_matches":  float64(5),
 			"document_count": float64(2),
 		},
 	})
-	if line != "搜索关键词：「文明、策略」 · 找到 5 个匹配片段，来自 2 个文档" {
+	if line != "Keyword search: \"civilization, strategy\" · Found 5 matching chunk(s) across 2 document(s)" {
 		t.Fatalf("grep line = %q", line)
 	}
 }
@@ -58,14 +58,14 @@ func TestFormatIMRagPipelineLine_queryUnderstand(t *testing.T) {
 		ToolName: "query_understand",
 		Pending:  true,
 	})
-	if pending != "正在理解问题..." {
+	if pending != "Understanding query..." {
 		t.Fatalf("pending = %q", pending)
 	}
 	done := FormatIMRagPipelineLine(IMToolStep{
 		ToolName: "query_understand",
 		Success:  true,
 	})
-	if done != "已完成问题理解" {
+	if done != "Query understood" {
 		t.Fatalf("done = %q", done)
 	}
 }
@@ -74,9 +74,9 @@ func TestFormatIMRagPipelineLine_searchWithQuery(t *testing.T) {
 	line := FormatIMRagPipelineLine(IMToolStep{
 		ToolName:  "knowledge_search",
 		Pending:   true,
-		Arguments: map[string]any{"query": "讯飞开放平台"},
+		Arguments: map[string]any{"query": "iFLYTEK Open Platform"},
 	})
-	if line != "正在检索知识库：「讯飞开放平台」" {
+	if line != "Searching knowledge base: \"iFLYTEK Open Platform\"" {
 		t.Fatalf("line = %q", line)
 	}
 }
@@ -85,9 +85,9 @@ func TestFormatIMRagPipelineLine_webSearchWithQuery(t *testing.T) {
 	line := FormatIMRagPipelineLine(IMToolStep{
 		ToolName:  "knowledge_search",
 		Pending:   true,
-		Arguments: map[string]any{"query": "任素汐演唱会", "search_source": "web"},
+		Arguments: map[string]any{"query": "Ren Suxi concert", "search_source": "web"},
 	})
-	if line != "正在检索网络：「任素汐演唱会」" {
+	if line != "Searching the web: \"Ren Suxi concert\"" {
 		t.Fatalf("line = %q", line)
 	}
 }
@@ -97,7 +97,7 @@ func TestIMGetQueryText_joinsUniqueQueries(t *testing.T) {
 		"query":   "foo",
 		"queries": []any{"foo", "bar"},
 	})
-	if got != "foo，bar" {
+	if got != "foo, bar" {
 		t.Fatalf("query text = %q", got)
 	}
 }
@@ -112,7 +112,7 @@ func TestFormatIMToolLine_writeSandboxPendingShowsDiffStat(t *testing.T) {
 			"removed_lines": 0,
 		},
 	})
-	if line != "写入沙箱文件：「/workspace/output/a.py」... +12" {
+	if line != "Write sandbox file: \"/workspace/output/a.py\"... +12" {
 		t.Fatalf("pending write line = %q", line)
 	}
 }

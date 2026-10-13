@@ -20,11 +20,8 @@ import (
 func TestMCPStructuredResultThroughCatalog(t *testing.T) {
 	utils.SetSSRFWhitelistFromRaw("127.0.0.1")
 	t.Cleanup(utils.ResetSSRFWhitelistForTest)
-	const payload = `{"order":{"id":"订单-42","paid":false},"total":0}`
-	const formattedPayload = `{
-  "total": 0,
-  "order": {"paid": false, "id": "订单-42"}
-}`
+	const payload = "{\"order\":{\"id\":\"\u8ba2\u5355-42\",\"paid\":false},\"total\":0}"
+	const formattedPayload = "{\n  \"total\": 0,\n  \"order\": {\"paid\": false, \"id\": \"\u8ba2\u5355-42\"}\n}"
 	var structured map[string]any
 	require.NoError(t, json.Unmarshal([]byte(payload), &structured))
 	tests := []struct {
@@ -58,7 +55,7 @@ func TestMCPStructuredResultThroughCatalog(t *testing.T) {
 			result: &sdkmcp.CallToolResult{
 				Content: []sdkmcp.Content{sdkmcp.NewTextContent(formattedPayload)}, StructuredContent: structured,
 			},
-			wantText: "订单-42",
+			wantText: "\u8ba2\u5355-42",
 		},
 		{
 			name:     "empty_object",
@@ -88,7 +85,7 @@ func TestMCPStructuredResultThroughCatalog(t *testing.T) {
 		{
 			name: "bounded_output",
 			result: &sdkmcp.CallToolResult{
-				Content: []sdkmcp.Content{}, StructuredContent: map[string]any{"body": strings.Repeat("资料", 2000)},
+				Content: []sdkmcp.Content{}, StructuredContent: map[string]any{"body": strings.Repeat("\u8d44\u6599", 2000)},
 			},
 			budget: 512,
 		},
@@ -146,14 +143,14 @@ func TestMCPStructuredResultThroughCatalog(t *testing.T) {
 				require.NotContains(t, string(metadata), "aGVsbG8=")
 			}
 			if tt.name == "serialized_fallback" || tt.name == "formatted_fallback" {
-				require.Equal(t, 1, strings.Count(visible, "订单-42"), "do not duplicate the compatibility text payload")
+				require.Equal(t, 1, strings.Count(visible, "\u8ba2\u5355-42"), "do not duplicate the compatibility text payload")
 			}
 			if tt.name == "summary_and_structured" {
 				require.Contains(t, visible, "Order found")
 			}
 			if tt.budget > 0 {
 				require.LessOrEqual(t, utf8.RuneCountInString(visible), tt.budget)
-				require.Contains(t, visible, "资料")
+				require.Contains(t, visible, "\u8d44\u6599")
 			}
 		})
 	}

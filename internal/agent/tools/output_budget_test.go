@@ -55,7 +55,7 @@ func TestExecuteToolPublishesConfiguredBudget(t *testing.T) {
 func TestExecuteToolTruncatesCJKOutputByRuneCount(t *testing.T) {
 	registry := NewToolRegistry()
 	registry.SetMaxToolOutputSize(1000)
-	registry.RegisterTool(&budgetProbeTool{output: strings.Repeat("你", 5000)})
+	registry.RegisterTool(&budgetProbeTool{output: strings.Repeat("\u4f60", 5000)})
 
 	result, err := registry.ExecuteTool(context.Background(), "budget_probe", json.RawMessage(`{}`))
 	require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestExecuteToolTruncatesCJKOutputByRuneCount(t *testing.T) {
 func TestExecuteToolLeavesOutputWithinBudgetUntouched(t *testing.T) {
 	registry := NewToolRegistry()
 	registry.SetMaxToolOutputSize(1000)
-	output := strings.Repeat("你", 900)
+	output := strings.Repeat("\u4f60", 900)
 	registry.RegisterTool(&budgetProbeTool{output: output})
 
 	result, err := registry.ExecuteTool(context.Background(), "budget_probe", json.RawMessage(`{}`))

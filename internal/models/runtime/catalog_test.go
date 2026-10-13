@@ -27,7 +27,7 @@ func registerTestVendors(t *testing.T) {
 		}},
 	})
 	modelruntime.Register(&providers.Definition{
-		ID: "acme", Name: "Acme", Names: map[string]string{"zh-CN": "极目"},
+		ID: "acme", Name: "Acme", Names: map[string]string{"zh-CN": "\u6781\u76ee"},
 		API:          api.APIOpenAICompletions,
 		RequiresAuth: true,
 		URLPatterns:  []string{"api.acme.ai", "acme"},
@@ -372,26 +372,7 @@ func TestModelsByType(t *testing.T) {
 func TestApplyOverlay(t *testing.T) {
 	registerTestVendors(t)
 	t.Setenv("ACME_KEY", "sk-from-env")
-	overlay := `{
-	  "providers": {
-	    "acme": {
-	      "base_url": "https://acme.internal/v1",
-	      "api_key": "${ACME_KEY}",
-	      "headers": {"X-Team": "$ACME_KEY"},
-	      "thinking_levels": {"xhigh": "max"},
-	      "models": [{"id": "acme-ultra", "reasoning": true, "context_window": 400000}],
-	      "model_overrides": {"acme-pro": {"context_window": 123, "compat": {"supports_temperature": true}}}
-	    },
-	    "my-vllm": {
-	      "name": "Lab vLLM",
-	      "names": {"zh-CN": "实验室 vLLM"},
-	      "base_url": "http://vllm.lab:8000/v1",
-	      "requires_auth": false,
-	      "compat": {"thinking_format": "chat-template-kwargs", "max_tokens_field": "max_tokens"},
-	      "models": [{"id": "Qwen/Qwen3-32B", "reasoning": true}]
-	    }
-	  }
-	}`
+	overlay := "{\n\t  \"providers\": {\n\t    \"acme\": {\n\t      \"base_url\": \"https://acme.internal/v1\",\n\t      \"api_key\": \"${ACME_KEY}\",\n\t      \"headers\": {\"X-Team\": \"$ACME_KEY\"},\n\t      \"thinking_levels\": {\"xhigh\": \"max\"},\n\t      \"models\": [{\"id\": \"acme-ultra\", \"reasoning\": true, \"context_window\": 400000}],\n\t      \"model_overrides\": {\"acme-pro\": {\"context_window\": 123, \"compat\": {\"supports_temperature\": true}}}\n\t    },\n\t    \"my-vllm\": {\n\t      \"name\": \"Lab vLLM\",\n\t      \"names\": {\"zh-CN\": \"\u5b9e\u9a8c\u5ba4 vLLM\"},\n\t      \"base_url\": \"http://vllm.lab:8000/v1\",\n\t      \"requires_auth\": false,\n\t      \"compat\": {\"thinking_format\": \"chat-template-kwargs\", \"max_tokens_field\": \"max_tokens\"},\n\t      \"models\": [{\"id\": \"Qwen/Qwen3-32B\", \"reasoning\": true}]\n\t    }\n\t  }\n\t}"
 	require.NoError(t, modelruntime.ApplyOverlay([]byte(overlay), t.TempDir()))
 
 	acme, ok := modelruntime.Get("acme")
@@ -415,7 +396,7 @@ func TestApplyOverlay(t *testing.T) {
 
 	lab, ok := modelruntime.Get("my-vllm")
 	require.True(t, ok)
-	assert.Equal(t, "实验室 vLLM", lab.LocalizedName("zh-CN"))
+	assert.Equal(t, "\u5b9e\u9a8c\u5ba4 vLLM", lab.LocalizedName("zh-CN"))
 	assert.Equal(t, "Lab vLLM", lab.LocalizedName("en-US"))
 	assert.False(t, lab.RequiresAuth)
 	r, err = modelruntime.Resolve(modelruntime.Ref{Provider: "my-vllm", Model: "Qwen/Qwen3-32B"})

@@ -170,7 +170,7 @@ func EnrichedPassage(ctx context.Context, result *types.SearchResult) string {
 //
 // The chunk's heading breadcrumb (ContextHeader) goes between the two for the
 // same reason: it was embedded with the chunk, so vector search can find
-// "7 天内可申请" under "## 退款政策" while a model scoring the bare body
+// "can be requested within 7 days" under "## Refund policy" while a model scoring the bare body
 // rejects it.
 func ModelPassage(ctx context.Context, result *types.SearchResult) string {
 	passage := EnrichedPassage(ctx, result)

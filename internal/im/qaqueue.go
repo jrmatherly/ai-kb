@@ -236,7 +236,7 @@ func (q *qaQueue) runWorker(id int) {
 			q.redisDecrUser(context.Background(), req.userKey)
 			logger.Warnf(req.ctx, "[IM] Queue timeout: user=%s waited=%s, discarding", req.msg.UserID, waitDuration)
 			_ = req.adapter.SendReply(req.ctx, req.msg, &ReplyMessage{
-				Content: "您的消息等待超时，请重新发送。",
+				Content: "Your message timed out while waiting in the queue. Please send it again.",
 				IsFinal: true,
 			})
 			req.cancel()

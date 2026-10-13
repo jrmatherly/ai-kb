@@ -14,7 +14,7 @@
 //     older models are taken offline as newer ones land, and only the model
 //     page (the API-Inference panel) is authoritative;
 //   - API-Inference is a free, non-commercial service with dynamic rate limits
-//     and no per-token price: calls are metered in 魔粒 credits
+//     and no per-token price: calls are metered in ModelScope credits
 //     (0.5 / 1 / 2 per call by model tier), which is why the entries below
 //     carry a zero token cost rather than a real one;
 //   - the documented scope is open LLM, multimodal (MLLM) and AIGC
@@ -54,7 +54,7 @@ func newModelscopeProvider() *Definition {
 	return &Definition{
 		ID:           ModelscopeID,
 		Name:         "ModelScope",
-		Names:        map[string]string{"zh-CN": "魔搭 ModelScope"},
+		Names:        map[string]string{"zh-CN": "\u9b54\u642d ModelScope"},
 		Description:  "Qwen/Qwen3-235B-A22B-Instruct-2507, ZhipuAI/GLM-4.6, Qwen/Qwen3-Embedding-8B, etc.",
 		Website:      "https://modelscope.cn",
 		Icon:         modelscopeIcon,
