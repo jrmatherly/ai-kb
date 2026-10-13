@@ -7,7 +7,7 @@ Dev loop
 Validate
 - Go: `go vet $(go list ./... | grep -v /docreader/) && go test $(go list ./... | grep -v /docreader/)`; `go test -tags desktop ./internal/container`; `go build ./cmd/server`; `golangci-lint run`; `make fmt` (go fmt).
 - Model catalog: `make model-catalog-check` (= `python3 scripts/model-catalog/generate.py --check` + `go test ./internal/models/...`); regenerate with `make model-catalog-generate`.
-- Frontend: `npm --prefix frontend test`, `npm --prefix frontend run type-check`, `npm --prefix frontend run build`; i18n: `npm --prefix frontend run check-i18n`, `scan-i18n-gaps`, `regenerate-i18n-locales`.
+- Frontend: `npm --prefix frontend test`, `npm --prefix frontend run type-check`, `npm --prefix frontend run build`; i18n: `npm --prefix frontend run check-i18n`.
 - docreader: `uv sync --project docreader --locked`; `uv run --project docreader python -m unittest discover -s docreader/tests -p "test_*.py" -v`; Go side `go test ./docreader/client ./docreader/proto`; server `uv run --project docreader python -m docreader.main` (gRPC :50051).
 - CLI/client modules: `go -C cli test -race ./... && go -C cli vet ./...`; `go -C client test ./...`.
 - Hooks and bundles: `bash scripts/test-git-hooks.sh`; `bash scripts/check-license-bundle.sh && bash scripts/test-license-bundle.sh`; install hooks with `scripts/install-git-hooks.sh`.

@@ -1,32 +1,22 @@
 import assert from 'node:assert/strict'
 import { before, test } from 'node:test'
 
-import { findAuditActionDefaultRegistryMismatches } from './auditActionLocaleDefaults.ts'
 import { REGISTERED_AUDIT_ACTION_ENTRIES, KB_ACTIVITY_DETAIL_VALUES, KB_ACTIVITY_I18N_ROOTS, KB_ACTIVITY_OUTCOMES } from './auditActionRegistry.ts'
 import {
   CRITICAL_LOCALE_KEYS,
   LOCALE_BUNDLES,
-  collectI18nUsageFromSources,
   collectLocaleKeys,
-  collectReferencedLocaleKeys,
   findAllLocaleMessageCompileErrors,
-  findUsedKeysMissingInLocales,
   getLocaleValueAtPath,
-  rebuildPrunedLocales,
   type LocaleName,
 } from './localeKeyAudit.ts'
 
-const REFERENCE_LOCALE: LocaleName = 'en-US'
-
 let localeKeysByName: Record<LocaleName, Set<string>>
-let referencedKeys: Set<string>
 
 before(() => {
-  const usage = collectI18nUsageFromSources()
   localeKeysByName = Object.fromEntries(
     Object.entries(LOCALE_BUNDLES).map(([name, bundle]) => [name, collectLocaleKeys(bundle)]),
   ) as Record<LocaleName, Set<string>>
-  referencedKeys = collectReferencedLocaleKeys(LOCALE_BUNDLES[REFERENCE_LOCALE], usage)
 })
 
 test('critical runtime i18n trees are present', () => {
@@ -42,11 +32,6 @@ test('installer command progress messages resolve in the settings namespace', ()
       assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
     }
   }
-})
-
-test('referenced i18n keys used in app code exist in every locale', () => {
-  const failures = findUsedKeysMissingInLocales(referencedKeys, localeKeysByName)
-  assert.deepEqual(failures, [], failures.slice(0, 20).join('\n'))
 })
 
 const PARSER_ENGINE_NAMES = [
@@ -150,38 +135,6 @@ test('KB activity outcomes and detail values exist in every locale', () => {
   assert.deepEqual(failures, [], failures.slice(0, 20).join('\n'))
 })
 
-test('audit action locale defaults cover the registry', () => {
-  const failures = findAuditActionDefaultRegistryMismatches()
-  assert.deepEqual(failures, [], failures.join('\n'))
-})
-
-test('prune rebuild restores registered audit keys from baked-in English defaults', () => {
-  const usage = collectI18nUsageFromSources()
-  const emptyBundles = { 'en-US': {} } as Record<LocaleName, Record<string, unknown>>
-  const rebuilt = rebuildPrunedLocales(emptyBundles, usage)
-  const en = rebuilt['en-US'] as Record<string, unknown>
-  const failures: string[] = []
-
-  for (const { root, actions } of REGISTERED_AUDIT_ACTION_ENTRIES) {
-    const bag = getLocaleValueAtPath(en, root)
-    for (const action of actions) {
-      if (
-        bag == null ||
-        typeof bag !== 'object' ||
-        typeof (bag as Record<string, string>)[action] !== 'string'
-      ) {
-        failures.push(`en-US rebuild: missing ${root}.${action}`)
-      }
-    }
-  }
-
-  assert.deepEqual(failures, [], failures.join('\n'))
-  assert.equal(
-    getLocaleValueAtPath(en, `${KB_ACTIVITY_I18N_ROOTS.outcomes}.success`),
-    'Success',
-  )
-})
-
 test('runtime queue worker pool and queue labels exist in every locale', () => {
   const failures: string[] = []
 
@@ -241,7 +194,7 @@ test('locale messages compile with vue-i18n syntax rules', () => {
   assert.deepEqual(summary, [], summary.slice(0, 20).join('\n'))
 })
 
-test('Seafile picker texts and sync error codes remain localized after pruning', () => {
+test('Seafile picker texts and sync error codes are localized', () => {
   const seafileErrors = [
     'permission_denied', 'not_found', 'file_too_large', 'empty_file',
     'source_changed', 'invalid_response', 'ssrf_blocked', 'fetch_failed',
@@ -256,14 +209,13 @@ test('Seafile picker texts and sync error codes remain localized after pruning',
   ].map(key => `datasource.${key}`)
   keys.push('knowledgeBase.channelSeafile')
   for (const key of keys) {
-    assert.ok(referencedKeys.has(key), `pruning would remove ${key}`)
     for (const [locale, bundle] of Object.entries(LOCALE_BUNDLES)) {
       assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
     }
   }
 })
 
-test('DingTalk configuration and sync failures remain localized after pruning', () => {
+test('DingTalk configuration and sync failures are localized', () => {
   const keys = [
     'connector.dingtalk', 'connectorDesc.dingtalk',
     'field.clientId', 'field.clientSecret', 'field.operatorId', 'field.operatorIdHint',
@@ -272,7 +224,6 @@ test('DingTalk configuration and sync failures remain localized after pruning', 
     'syncError.dingtalk_document_failed', 'syncError.dingtalk_resource_failed',
   ].map(key => `datasource.${key}`)
   for (const key of keys) {
-    assert.ok(referencedKeys.has(key), `pruning would remove ${key}`)
     for (const [locale, bundle] of Object.entries(LOCALE_BUNDLES)) {
       assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
     }

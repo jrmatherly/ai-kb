@@ -303,15 +303,7 @@ Implemented in `frontend/src/i18n/index.ts` on top of `vue-i18n` (Composition mo
 - The locale is persisted under the `locale` key in `localStorage`. The axios interceptor writes it into the `Accept-Language` request header so the backend returns content for that locale.
 - Some translations embed `<strong>` markup (rendered with v-html after DOMPurify sanitizing), so `warnHtmlMessage: false` turns off vue-i18n's HTML warning.
 - **Separate embed i18n**: the visitor-facing embed page uses its own `frontend/src/i18n/embed.ts` (loaded by `embed-main.ts`). The admin-side "Web embed" strings stay in the main locale bundle. `frontend/src/i18n/locales/embed/index.ts` re-exports the locale helpers from one path.
-- **Audit and pruning tools**: the locale bundle is large and easily collects dead keys nobody references or new keys left untranslated, so three scripts come with it (`frontend/package.json`):
-
-  | Command | Purpose |
-  | --- | --- |
-  | `npm run check-i18n` | Runs `src/i18n/localeKeyAudit.test.ts`, which checks the locale bundle's key set and that every key referenced in app code exists |
-  | `npm run scan-i18n-gaps` | Compares the keys the source actually uses with the locale bundle and reports undefined and unused keys |
-  | `npm run regenerate-i18n-locales` | Regenerates the pruned locale bundle from the scan results |
-
-  Audit log action names go through a separate registry (`i18n/auditActionRegistry.ts` + `auditActionLocaleDefaults.ts`). A new audit action needs one entry in the registry, which keeps the pruning tool from deleting its keys as unreferenced.
+- **Locale audit**: `npm run check-i18n` runs `src/i18n/localeKeyAudit.test.ts`. It checks that the bundle's messages compile under vue-i18n rules and that the keys the app builds at runtime exist: the critical keys, the audit action labels from `i18n/auditActionRegistry.ts`, the runtime queue and pool labels, the parser engine names and the data source connector texts. `npm test` runs it too. A new audit action needs one entry in the registry and its label in `en-US.ts`.
 
 ## Theme and appearance
 

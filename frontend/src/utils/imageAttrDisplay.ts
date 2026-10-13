@@ -18,8 +18,7 @@ import type {
 // Translations are an overlay keyed by the attribute name, applied on top of
 // the registry text. Anything not translated yet falls back to the registry
 // wording, so a brand-new attribute still reads as words rather than as a bare
-// key. (The i18n keys are built at runtime from the attribute name, which is
-// why the `imageAttr.` prefix is registered in localeKeyAudit's EXTRA_PREFIXES.)
+// key.
 // ---------------------------------------------------------------------------
 
 type Translate = (key: string) => string
