@@ -53,9 +53,7 @@ func newLitellmProvider() *Definition {
 	return &Definition{
 		ID:           LitellmID,
 		Name:         "LiteLLM",
-		Names:        map[string]string{"zh-CN": "LiteLLM"},
 		Description:  "Self-hosted LiteLLM proxy: one OpenAI-compatible endpoint to 100+ ",
-		Descriptions: map[string]string{"zh-CN": "\u81ea\u5efa LiteLLM \u4ee3\u7406\uff1a\u4e00\u4e2a OpenAI \u517c\u5bb9\u5165\u53e3\u5bf9\u63a5 100+ \u6a21\u578b\u670d\u52a1\u3002"},
 		Website:      "https://docs.litellm.ai",
 		Icon:         litellmIcon,
 		API:          api.APIOpenAICompletions,
@@ -77,24 +75,20 @@ func newLitellmProvider() *Definition {
 			types.ModelTypeASR,
 		},
 		ExtraFields: []ExtraField{{
-			Key:    models.ExtraScoreScale,
-			Label:  "Rerank score scale",
-			Labels: map[string]string{"zh-CN": "Rerank \u5206\u6570\u6807\u5ea6"},
-			Type:   "select",
+			Key:   models.ExtraScoreScale,
+			Label: "Rerank score scale",
+			Type:  "select",
 			Options: []ExtraFieldOption{
 				{
-					Label:  "Unbounded score (Qwen3-Reranker class)",
-					Labels: map[string]string{"zh-CN": "\u65e0\u754c\u5206\u6570\uff08Qwen3-Reranker \u4e00\u7c7b\uff09"},
-					Value:  "logit",
+					Label: "Unbounded score (Qwen3-Reranker class)",
+					Value: "logit",
 				},
 				{
-					Label:  "0..1 relevance (BGE class)",
-					Labels: map[string]string{"zh-CN": "0~1 \u76f8\u5173\u5ea6\uff08BGE \u4e00\u7c7b\uff09"},
-					Value:  "probability",
+					Label: "0..1 relevance (BGE class)",
+					Value: "probability",
 				},
 			},
-			Placeholder:  "match the reranker actually deployed behind this endpoint",
-			Placeholders: map[string]string{"zh-CN": "\u6309\u8fd9\u4e2a\u7aef\u70b9\u540e\u9762\u5b9e\u9645\u90e8\u7f72\u7684\u91cd\u6392\u6a21\u578b\u9009\u62e9"},
+			Placeholder: "match the reranker actually deployed behind this endpoint",
 			// A gateway serves whatever reranker was deployed behind it, and
 			// the two families disagree. The vendor default follows the
 			// documentation; the operator knows which model is actually there.

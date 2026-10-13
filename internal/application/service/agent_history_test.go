@@ -122,7 +122,6 @@ func TestBuildAssistantHistoryMessages_StripsThinkBlocks(t *testing.T) {
 
 func TestAssistantHistoryScopesArtifactVersionsToHistoricalTurn(t *testing.T) {
 	for _, labels := range [][2]string{
-		{"\u672c\u8f6e\u751f\u6210\u7684\u6587\u4ef6", "\u8be5\u5386\u53f2\u6d88\u606f\u751f\u6210\u7684\u6587\u4ef6"},
 		{"File generated this turn", "File generated in that historical turn"},
 	} {
 		body := "Done.\n\n" + labels[0] + ": ![deck](resource://AbCdEfGhIjKlMnOpQrStUv)"

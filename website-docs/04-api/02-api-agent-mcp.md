@@ -182,7 +182,7 @@ curl -X PUT $BASE/api/v1/mcp-services/mcp-1 -H "Authorization: Bearer $TOKEN" \
 
 Purpose: generate short usage instructions from the synced, non-stale MCP tool directory. Permission: Admin+; API key needs `manage_mcp_services` or full.
 
-Request: `{"language":"en-US"}`. Recognized values are `zh-CN`, `zh-TW`, `en-US`, `ja-JP`, `ko-KR` and `ru-RU`; the code falls back to Simplified Chinese for an omitted or unrecognized value, so pass `en-US` explicitly.
+Request: `{"language":"en-US"}`. Recognized values are `zh-CN`, `zh-TW`, `en-US`, `ja-JP`, `ko-KR` and `ru-RU`; an omitted or unrecognized value falls back to English.
 
 The workspace's default active chat model is used when there is one, otherwise the first active chat model. The input is the service name, the server-side description and the names and descriptions of the enabled tools; an OAuth directory uses the current user's authorization. The call does not connect to the MCP server, call tools or save the result.
 

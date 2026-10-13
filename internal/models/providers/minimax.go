@@ -69,15 +69,10 @@ const MinimaxAnthropicBaseURL = "https://api.minimax.cn/anthropic"
 
 func newMinimaxProvider() *Definition {
 	return &Definition{
-		ID:    MinimaxID,
-		Name:  "MiniMax",
-		Names: map[string]string{"zh-CN": "MiniMax"},
+		ID:   MinimaxID,
+		Name: "MiniMax",
 		Description: "MiniMax-M3, MiniMax-M2.7, MiniMax-M2.7-highspeed, etc. Global endpoint " +
 			MinimaxGlobalBaseURL + "; Anthropic-compatible facade " + MinimaxAnthropicBaseURL,
-		Descriptions: map[string]string{
-			"zh-CN": "MiniMax-M3, MiniMax-M2.7, MiniMax-M2.7-highspeed \u7b49\u3002\u56fd\u9645\u7248 " +
-				MinimaxGlobalBaseURL + "\uff1bAnthropic \u517c\u5bb9\u63a5\u53e3 " + MinimaxAnthropicBaseURL,
-		},
 		Website:      "https://platform.minimax.cn",
 		Icon:         minimaxIcon,
 		API:          api.APIOpenAICompletions,

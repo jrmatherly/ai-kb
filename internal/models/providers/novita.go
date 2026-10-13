@@ -49,7 +49,6 @@ func newNovitaProvider() *Definition {
 	return &Definition{
 		ID:           NovitaID,
 		Name:         "Novita AI",
-		Names:        map[string]string{"zh-CN": "Novita AI"},
 		Description:  "moonshotai/kimi-k3, zai-org/glm-5.2, deepseek/deepseek-v4-pro, qwen/qwen3-embedding-0.6b, etc.",
 		Website:      "https://novita.ai",
 		Icon:         novitaIcon,

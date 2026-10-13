@@ -138,7 +138,7 @@ func (rc *qaRequestContext) buildQARequest() *types.QARequest {
 // images do not count: parseQARequest strips client-supplied image URLs.
 // Pre-uploaded attachment IDs do not count either: those documents can still
 // fail or time out after the stream starts, leaving nothing to answer from.
-func uploadOnlyQuery(ctx context.Context, req *CreateKnowledgeQARequest) string {
+func uploadOnlyQuery(req *CreateKnowledgeQARequest) string {
 	hasUpload := false
 	for _, img := range req.Images {
 		hasUpload = hasUpload || strings.TrimSpace(img.Data) != ""
@@ -149,7 +149,7 @@ func uploadOnlyQuery(ctx context.Context, req *CreateKnowledgeQARequest) string 
 	if !hasUpload {
 		return ""
 	}
-	return types.UploadOnlyQuestion(types.LanguageFromContextOrDefault(ctx))
+	return types.UploadOnlyQuestion
 }
 
 // parseQARequest parses and validates a QA request, returns the request context
@@ -192,7 +192,7 @@ func (h *Handler) parseQARequest(c *gin.Context, logPrefix string) (*qaRequestCo
 	}
 	modelQuery := request.Query
 	if validatedQuery == "" {
-		modelQuery = uploadOnlyQuery(ctx, &request)
+		modelQuery = uploadOnlyQuery(&request)
 		if modelQuery == "" {
 			logger.Error(ctx, "Query content is empty")
 			return nil, nil, errors.NewBadRequestError("Query content cannot be empty")

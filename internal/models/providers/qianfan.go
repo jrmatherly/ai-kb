@@ -75,7 +75,6 @@ func newQianfanProvider() *Definition {
 	return &Definition{
 		ID:           QianfanID,
 		Name:         "Baidu Qianfan",
-		Names:        map[string]string{"zh-CN": "\u767e\u5ea6\u5343\u5e06 Baidu Cloud"},
 		Description:  "ernie-5.0-thinking-preview, ernie-4.5-turbo-128k, embedding-v1, bce-reranker-base, etc.",
 		Website:      "https://console.bce.baidu.com/qianfan",
 		Icon:         qianfanIcon,

@@ -107,7 +107,6 @@ func newAzureOpenaiProvider() *Definition {
 	return &Definition{
 		ID:           AzureOpenaiID,
 		Name:         "Azure OpenAI",
-		Names:        map[string]string{"zh-CN": "Azure OpenAI"},
 		Description:  "gpt-4o, gpt-5, o3, text-embedding-3-large deployments, etc.",
 		Website:      "https://ai.azure.com",
 		Icon:         azureOpenaiIcon,
@@ -140,16 +139,12 @@ func newAzureOpenaiProvider() *Definition {
 			{
 				Key:      models.ExtraAPIVersion,
 				Label:    "API Version (legacy deployments path)",
-				Labels:   map[string]string{"zh-CN": "API \u7248\u672c\uff08\u65e7\u7248 deployments \u8def\u5f84\uff09"},
 				Type:     "string",
 				Required: false,
 				// Empty means the v1 GA data plane, which takes no
 				// api-version. A value switches back to the dated
 				// /openai/deployments/... path.
 				Placeholder: "leave empty for /openai/v1, or e.g. 2025-04-01-preview",
-				Placeholders: map[string]string{
-					"zh-CN": "\u7559\u7a7a\u8d70 /openai/v1\uff0c\u6216\u586b\u5982 2025-04-01-preview",
-				},
 			},
 		},
 		Compat: VendorCompat{

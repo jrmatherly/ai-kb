@@ -57,7 +57,6 @@ func (s *messageService) clarifyReadArtifactVersions(ctx context.Context, sessio
 			message.Content,
 			message.Artifacts.Live(),
 			referenced,
-			types.LanguageFromContextOrDefault(ctx),
 		)
 		result[i] = &copy
 	}

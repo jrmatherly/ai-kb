@@ -70,7 +70,6 @@ func newOpenaiProvider() *Definition {
 	return &Definition{
 		ID:           OpenaiID,
 		Name:         "OpenAI",
-		Names:        map[string]string{"zh-CN": "OpenAI"},
 		Description:  "gpt-6-astra, gpt-5.6-sol, gpt-5.5, gpt-4.1, text-embedding-3-large, etc.",
 		Website:      "https://developers.openai.com",
 		Icon:         openaiIcon,

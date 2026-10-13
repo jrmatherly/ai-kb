@@ -845,7 +845,7 @@ func (h *AgentStreamHandler) handleComplete(ctx context.Context, evt event.Event
 			h.artifactCollector.BindArtifactsToMessage(collectCtx, h.assistantMessageID, previous)
 		}
 		h.assistantMessage.Content = types.ClarifyArtifactVersions(h.assistantMessage.Content,
-			h.assistantMessage.Artifacts, previous, types.LanguageFromContextOrDefault(h.ctx))
+			h.assistantMessage.Artifacts, previous)
 	}
 
 	// Fallback: if no answer events were streamed but we have a final answer,

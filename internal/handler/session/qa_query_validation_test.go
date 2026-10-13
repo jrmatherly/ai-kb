@@ -145,7 +145,7 @@ func TestQAQueryValidationAcceptsUploadWithoutText(t *testing.T) {
 func TestPersistTurnMessagesStoresWhatTheUserTyped(t *testing.T) {
 	msgs := &steerPersistingMessageStub{}
 	h := &Handler{messageService: msgs}
-	question := types.UploadOnlyQuestion("zh-CN")
+	question := types.UploadOnlyQuestion
 	reqCtx := &qaRequestContext{
 		sessionID:        "sess-1",
 		query:            question,
@@ -164,13 +164,8 @@ func TestPersistTurnMessagesStoresWhatTheUserTyped(t *testing.T) {
 
 func TestUploadOnlyQuery(t *testing.T) {
 	image := &CreateKnowledgeQARequest{Images: []ImageAttachment{{Data: "data:image/png;base64,aGk="}}}
-	zh := context.WithValue(context.Background(), types.LanguageContextKey, "zh-CN")
-	en := context.WithValue(context.Background(), types.LanguageContextKey, "en-US")
 
-	assert.Equal(t, // zh-CN UploadOnlyQuestion
-		"\u8bf7\u6839\u636e\u6211\u4e0a\u4f20\u7684\u5185\u5bb9\u56de\u7b54\u3002",
-		uploadOnlyQuery(zh, image))
-	assert.Equal(t, "Please answer based on what I uploaded.", uploadOnlyQuery(en, image))
-	assert.Empty(t, uploadOnlyQuery(zh, &CreateKnowledgeQARequest{}))
-	assert.Empty(t, uploadOnlyQuery(zh, &CreateKnowledgeQARequest{Images: []ImageAttachment{{URL: "http://x/a.png"}}}))
+	assert.Equal(t, "Please answer based on what I uploaded.", uploadOnlyQuery(image))
+	assert.Empty(t, uploadOnlyQuery(&CreateKnowledgeQARequest{}))
+	assert.Empty(t, uploadOnlyQuery(&CreateKnowledgeQARequest{Images: []ImageAttachment{{URL: "http://x/a.png"}}}))
 }

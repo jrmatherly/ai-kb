@@ -130,46 +130,42 @@ func TestValidateAPIBaseURL(t *testing.T) {
 	}
 }
 
-// The streaming card placeholder follows the region so Lark users are not shown
-// Chinese copy.
-func TestBuildStreamingCardJSON_PlaceholderFollowsRegion(t *testing.T) {
-	for _, region := range []Region{RegionFeishu, RegionLark} {
-		raw := buildStreamingCardJSON(region)
+// The streaming card shows a placeholder until the first answer chunk arrives.
+func TestBuildStreamingCardJSON_Placeholder(t *testing.T) {
+	raw := buildStreamingCardJSON()
 
-		var card struct {
-			Config struct {
-				StreamingMode bool `json:"streaming_mode"`
-				Summary       struct {
-					Content string `json:"content"`
-				} `json:"summary"`
-			} `json:"config"`
-			Body struct {
-				Elements []struct {
-					Content   string `json:"content"`
-					ElementID string `json:"element_id"`
-				} `json:"elements"`
-			} `json:"body"`
-		}
-		if err := json.Unmarshal([]byte(raw), &card); err != nil {
-			t.Fatalf("%s card is not valid JSON: %v", region.Label, err)
-		}
-
-		if !card.Config.StreamingMode {
-			t.Errorf("%s card has streaming_mode disabled", region.Label)
-		}
-		if card.Config.Summary.Content != region.ThinkingText {
-			t.Errorf("%s summary = %q, want %q", region.Label, card.Config.Summary.Content, region.ThinkingText)
-		}
-		if len(card.Body.Elements) != 1 {
-			t.Fatalf("%s card has %d elements, want 1", region.Label, len(card.Body.Elements))
-		}
-		el := card.Body.Elements[0]
-		if el.ElementID != streamingElementID {
-			t.Errorf("%s element_id = %q, want %q", region.Label, el.ElementID, streamingElementID)
-		}
-		if !strings.Contains(el.Content, region.ThinkingText) {
-			t.Errorf("%s element content %q does not contain %q", region.Label, el.Content, region.ThinkingText)
-		}
+	var card struct {
+		Config struct {
+			StreamingMode bool `json:"streaming_mode"`
+			Summary       struct {
+				Content string `json:"content"`
+			} `json:"summary"`
+		} `json:"config"`
+		Body struct {
+			Elements []struct {
+				Content   string `json:"content"`
+				ElementID string `json:"element_id"`
+			} `json:"elements"`
+		} `json:"body"`
+	}
+	if err := json.Unmarshal([]byte(raw), &card); err != nil {
+		t.Fatalf("card is not valid JSON: %v", err)
 	}
 
+	if !card.Config.StreamingMode {
+		t.Errorf("card has streaming_mode disabled")
+	}
+	if card.Config.Summary.Content != "Thinking..." {
+		t.Errorf("card summary = %q, want %q", card.Config.Summary.Content, "Thinking...")
+	}
+	if len(card.Body.Elements) != 1 {
+		t.Fatalf("card has %d elements, want 1", len(card.Body.Elements))
+	}
+	el := card.Body.Elements[0]
+	if el.ElementID != streamingElementID {
+		t.Errorf("card element_id = %q, want %q", el.ElementID, streamingElementID)
+	}
+	if !strings.Contains(el.Content, "Thinking...") {
+		t.Errorf("card element content %q does not contain %q", el.Content, "Thinking...")
+	}
 }

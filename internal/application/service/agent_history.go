@@ -104,7 +104,6 @@ func LoadAgentHistory(
 		used         int
 		replay       = newHistoryReplay(estimator, 0, retainRetrievalHistory)
 	)
-	replay.locale = types.LanguageFromContextOrDefault(ctx)
 	for len(rows) < agentHistoryMaxRows {
 		page, err := messageRepo.ListMessagesBySessionBeforeCursor(
 			ctx, sessionID, before, beforeID, agentHistoryPageSize,
@@ -260,7 +259,6 @@ type historyReplay struct {
 	estimator              *agenttoken.Estimator
 	budget                 int
 	retainRetrievalHistory bool
-	locale                 string
 	built                  map[string][]chat.Message
 	tokens                 map[string]int
 	// full holds stored rows by ID until their turn is replayed.
@@ -472,7 +470,7 @@ func buildTurnBodyMessages(assistant *types.Message, midRunUsers []*types.Messag
 func (r *historyReplay) openingUserMessage(m *types.Message) chat.Message {
 	if strings.TrimSpace(m.Content) == "" && (len(m.Images) > 0 || len(m.Attachments) > 0) {
 		asked := *m
-		asked.Content = types.UploadOnlyQuestion(r.locale)
+		asked.Content = types.UploadOnlyQuestion
 		return buildUserHistoryMessage(&asked)
 	}
 	return buildUserHistoryMessage(m)
@@ -570,13 +568,8 @@ func buildAgentStepMessages(step types.AgentStep) []chat.Message {
 func finalAnswerHistoryMessage(m *types.Message) *chat.Message {
 	finalContent := agentHistoryThinkTagRegex.ReplaceAllString(m.Content, "")
 	// Version clarification was written for that message's turn, not this one.
-	finalContent = strings.NewReplacer(
-		// zh-locale labels from types.ClarifyArtifactVersions: "files generated this turn" -> "files generated in that
-		// historical turn".
-		"\n\n\u672c\u8f6e\u751f\u6210\u7684\u6587\u4ef6: ![",
-		"\n\n\u8be5\u5386\u53f2\u6d88\u606f\u751f\u6210\u7684\u6587\u4ef6: ![",
-		"\n\nFile generated this turn: ![", "\n\nFile generated in that historical turn: ![",
-	).Replace(finalContent)
+	finalContent = strings.ReplaceAll(finalContent,
+		"\n\nFile generated this turn: ![", "\n\nFile generated in that historical turn: ![")
 	finalContent = strings.TrimSpace(finalContent)
 	if finalContent == "" {
 		return nil

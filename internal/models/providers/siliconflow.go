@@ -49,7 +49,6 @@ func newSiliconflowProvider() *Definition {
 	return &Definition{
 		ID:           SiliconflowID,
 		Name:         "SiliconFlow",
-		Names:        map[string]string{"zh-CN": "\u7845\u57fa\u6d41\u52a8 SiliconFlow"},
 		Description:  "deepseek-ai/DeepSeek-V4-Pro, zai-org/GLM-5.2, Qwen/Qwen3.5-397B-A17B, BAAI/bge-m3, etc.",
 		Website:      "https://cloud.siliconflow.cn",
 		Icon:         siliconflowIcon,

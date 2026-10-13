@@ -67,16 +67,11 @@ const GeminiOpenAICompatBaseURL = GeminiBaseURL + "/openai"
 
 func newGeminiProvider() *Definition {
 	return &Definition{
-		ID:    GeminiID,
-		Name:  "Google Gemini",
-		Names: map[string]string{"zh-CN": "Google Gemini"},
+		ID:   GeminiID,
+		Name: "Google Gemini",
 		Description: "gemini-3.8-flash, gemini-3.1-pro-preview, gemini-2.5-pro, gemini-embedding-2, etc. " +
 			"Native generateContent by default; set base_url to " + GeminiOpenAICompatBaseURL +
 			" to keep the OpenAI-compatible protocol.",
-		Descriptions: map[string]string{
-			"zh-CN": "gemini-3.8-flash, gemini-3.1-pro-preview, gemini-2.5-pro, gemini-embedding-2 \u7b49\u3002" +
-				"\u9ed8\u8ba4\u8d70\u539f\u751f generateContent \u534f\u8bae\uff1b\u5c06 base_url \u6307\u5411 " + GeminiOpenAICompatBaseURL + " \u53ef\u7ee7\u7eed\u4f7f\u7528 OpenAI \u517c\u5bb9\u534f\u8bae\u3002",
-		},
 		Website:      "https://aistudio.google.com",
 		Icon:         geminiIcon,
 		API:          api.APIGoogleGenerativeAI,

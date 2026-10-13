@@ -7,11 +7,8 @@ import (
 // Do not silently redirect old handles: the user may be comparing versions.
 // When an answer references a previous version of a regenerated output, attach
 // an explicit old/current pair. Preserve all original prose and destinations.
-func ClarifyArtifactVersions(content string, current, previous MessageArtifacts, language string) string {
-	oldLabel, newLabel := "Referenced previous version", "File generated this turn"
-	if strings.HasPrefix(language, "zh") {
-		oldLabel, newLabel = "Referenced previous version", "File generated this turn"
-	}
+func ClarifyArtifactVersions(content string, current, previous MessageArtifacts) string {
+	const oldLabel, newLabel = "Referenced previous version", "File generated this turn"
 	seen := make(map[string]bool)
 	for _, old := range previous {
 		for _, next := range current {

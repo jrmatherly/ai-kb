@@ -144,7 +144,7 @@ func TestLoadAgentHistoryAsksTheUploadOnlyQuestionForAnImageOnlyTurn(t *testing.
 	got, _, err := LoadAgentHistory(ctx, repo, "s1", unlimitedBudget, false)
 	require.NoError(t, err)
 
-	require.Equal(t, []string{types.UploadOnlyQuestion("en-US"), "question 2"}, questions(got))
+	require.Equal(t, []string{types.UploadOnlyQuestion, "question 2"}, questions(got))
 }
 
 // The turn count no longer bounds history: every turn that fits the budget is

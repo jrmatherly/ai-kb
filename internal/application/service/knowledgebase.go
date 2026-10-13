@@ -1418,45 +1418,16 @@ func (s *knowledgeBaseService) DuplicateKnowledgeBase(
 	return targetKB, nil
 }
 
-func duplicateKBCopySuffix(locale string) string {
-	locale = strings.ToLower(locale)
-	switch {
-	case strings.HasPrefix(locale, "zh"):
-		return " Copy"
-	case strings.HasPrefix(locale, "ko"):
-		return " Copy"
-	case strings.HasPrefix(locale, "ru"):
-		return " копия"
-	default:
-		return " Copy"
-	}
-}
-
-func duplicateKBDefaultName(locale string) string {
-	locale = strings.ToLower(locale)
-	switch {
-	case strings.HasPrefix(locale, "zh"):
-		return "Knowledge Base"
-	case strings.HasPrefix(locale, "ko"):
-		return "Knowledge Base"
-	case strings.HasPrefix(locale, "ru"):
-		return "База знаний"
-	default:
-		return "Knowledge Base"
-	}
-}
-
 func (s *knowledgeBaseService) buildDuplicateKnowledgeBaseName(
 	ctx context.Context,
 	tenantID uint64,
 	sourceName string,
 ) string {
-	locale := types.LanguageFromContextOrDefault(ctx)
-	suffix := duplicateKBCopySuffix(locale)
+	const suffix = " Copy"
 
 	baseName := strings.TrimSpace(sourceName)
 	if baseName == "" {
-		baseName = duplicateKBDefaultName(locale)
+		baseName = "Knowledge Base"
 	}
 
 	kbs, err := s.repo.ListKnowledgeBasesByTenantID(ctx, tenantID)

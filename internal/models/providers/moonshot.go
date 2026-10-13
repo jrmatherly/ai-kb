@@ -63,7 +63,6 @@ func newMoonshotProvider() *Definition {
 	return &Definition{
 		ID:           MoonshotID,
 		Name:         "Moonshot AI",
-		Names:        map[string]string{"zh-CN": "\u6708\u4e4b\u6697\u9762 Moonshot"},
 		Description:  "kimi-k3, kimi-k2.7-code, kimi-k2.7-code-highspeed, kimi-k2.6",
 		Website:      "https://platform.kimi.com",
 		Icon:         moonshotIcon,

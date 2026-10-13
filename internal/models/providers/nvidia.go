@@ -73,9 +73,8 @@ const NvidiaRerankBaseURL = "https://ai.api.nvidia.com/v1/retrieval/nvidia/reran
 
 func newNvidiaProvider() *Definition {
 	return &Definition{
-		ID:    NvidiaID,
-		Name:  "NVIDIA",
-		Names: map[string]string{"zh-CN": "NVIDIA"},
+		ID:   NvidiaID,
+		Name: "NVIDIA",
 		Description: "nvidia/nemotron-3-ultra-550b-a55b, deepseek-ai/deepseek-v4-pro-0813, " +
 			"nvidia/nemotron-3-embed-1b, nvidia/nv-rerankqa-mistral-4b-v3, etc.",
 		Website:      "https://build.nvidia.com",

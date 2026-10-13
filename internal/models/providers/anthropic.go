@@ -61,9 +61,8 @@ const AnthropicBaseURL = "https://api.anthropic.com/v1"
 
 func newAnthropicProvider() *Definition {
 	return &Definition{
-		ID:    AnthropicID,
-		Name:  "Anthropic",
-		Names: map[string]string{"zh-CN": "Anthropic"},
+		ID:   AnthropicID,
+		Name: "Anthropic",
 		Description: "Claude models via the native Anthropic Messages API: " +
 			"claude-opus-5, claude-sonnet-5, claude-haiku-4-5, etc.",
 		Website:      "https://console.anthropic.com",

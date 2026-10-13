@@ -1,21 +1,11 @@
 package types
 
-import (
-	"context"
-	"strings"
-)
+import "context"
 
 // UploadOnlyQuestion is the question asked on the user's behalf when a message
 // carries an image or file but no text. The stored user message keeps its
 // empty text; only model input uses this question.
-func UploadOnlyQuestion(locale string) string {
-	if strings.HasPrefix(locale, "zh") {
-		// "Please answer based on what I uploaded." in Chinese; asserted verbatim in
-		// internal/handler/session/qa_query_validation_test.go.
-		return "\u8bf7\u6839\u636e\u6211\u4e0a\u4f20\u7684\u5185\u5bb9\u56de\u7b54\u3002"
-	}
-	return "Please answer based on what I uploaded."
-}
+const UploadOnlyQuestion = "Please answer based on what I uploaded."
 
 // SteerMessageContent adds delivery context only to model input. The persisted
 // user message and the UI always retain the user's original text.

@@ -26,12 +26,10 @@ func TestLoadAndProcessHistoryKeepsImageOnlyTurn(t *testing.T) {
 		{RequestID: "r1", Role: "user", Images: types.MessageImages{{URL: "resource://img"}}, CreatedAt: at},
 		{RequestID: "r1", Role: "assistant", Content: "a cat", CreatedAt: at.Add(time.Second)},
 	}}
-	ctx := context.WithValue(context.Background(), types.LanguageContextKey, "zh-CN")
-
-	history, err := loadAndProcessHistory(ctx, svc, "s1", 5, 20)
+	history, err := loadAndProcessHistory(context.Background(), svc, "s1", 5, 20)
 	require.NoError(t, err)
 
 	require.Len(t, history, 1, "an image-only turn must stay in history for follow-up questions")
-	assert.Equal(t, types.UploadOnlyQuestion("zh-CN"), history[0].Query)
+	assert.Equal(t, "Please answer based on what I uploaded.", history[0].Query)
 	assert.Equal(t, "a cat", history[0].Answer)
 }

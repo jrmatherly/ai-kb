@@ -563,9 +563,6 @@ func TestSignedRerankCredentialLabels(t *testing.T) {
 			if label.Label != tc.wantLabel {
 				t.Errorf("rerank credential label = %q, want %q", label.Label, tc.wantLabel)
 			}
-			if label.LocalizedLabel("zh-CN") == label.Label {
-				t.Errorf("zh-CN label should differ from the default")
-			}
 			if label.Hint == "" {
 				t.Errorf("the hint is what stops an sk- key being pasted here")
 			}

@@ -42,7 +42,6 @@ func newJinaProvider() *Definition {
 	return &Definition{
 		ID:           JinaID,
 		Name:         "Jina AI",
-		Names:        map[string]string{"zh-CN": "Jina"},
 		Description:  "jina-embeddings-v5-text-small, jina-embeddings-v4, jina-reranker-v3.5, jina-reranker-m0, etc.",
 		Website:      "https://jina.ai",
 		Icon:         jinaIcon,

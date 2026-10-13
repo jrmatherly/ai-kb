@@ -148,13 +148,12 @@ func TestResolveMarkdownImages_UppercaseHTTPSchemeStillUploads(t *testing.T) {
 	}
 }
 
-// An image with no alt text falls back to the region's own label, so Lark users
-// do not get a Chinese link label.
+// An image with no alt text falls back to the same label on both clouds.
 func TestResolveMarkdownImages_FallbackLabelFollowsRegion(t *testing.T) {
 	for _, region := range []Region{RegionFeishu, RegionLark} {
 		a := &Adapter{region: region}
 		got := a.resolveMarkdownImages(context.Background(), "tok", "![](http://127.0.0.1/x.png)")
-		want := "[" + region.ImageFallbackLabel + "](http://127.0.0.1/x.png)"
+		want := "[Image](http://127.0.0.1/x.png)"
 		if got != want {
 			t.Errorf("%s fallback = %q, want %q", region.Label, got, want)
 		}

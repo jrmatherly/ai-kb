@@ -74,7 +74,6 @@ func newHunyuanProvider() *Definition {
 	return &Definition{
 		ID:           HunyuanID,
 		Name:         "Tencent Hunyuan",
-		Names:        map[string]string{"zh-CN": "\u817e\u8baf\u6df7\u5143 Hunyuan"},
 		Description:  "hunyuan-t1-latest, hunyuan-turbos-latest, hunyuan-a13b, hunyuan-embedding, etc.",
 		Website:      "https://cloud.tencent.com/product/hunyuan",
 		Icon:         hunyuanIcon,

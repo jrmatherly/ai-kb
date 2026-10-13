@@ -109,9 +109,8 @@ const VolcengineAnthropicBaseURL = "https://ark.cn-beijing.volces.com/api/compat
 func newVolcengineProvider() *Definition {
 	rerankOnly := []types.ModelType{types.ModelTypeRerank}
 	return &Definition{
-		ID:    VolcengineID,
-		Name:  "Volcengine Ark",
-		Names: map[string]string{"zh-CN": "\u706b\u5c71\u5f15\u64ce Volcengine"},
+		ID:   VolcengineID,
+		Name: "Volcengine Ark",
 		Description: "doubao-seed-2-1-pro-260628, deepseek-v4-pro-ga-260813, " +
 			"doubao-embedding-vision-250615, doubao-seed-rerank, etc.",
 		Website:      "https://console.volcengine.com/ark",
@@ -136,33 +135,25 @@ func newVolcengineProvider() *Definition {
 		// Rerank is signed with an IAM access-key pair, so the first
 		// credential is an Access Key ID rather than an Ark bearer token.
 		CredentialLabels: []CredentialLabel{{
-			Label:        "Access Key ID",
-			Labels:       map[string]string{"zh-CN": "Access Key ID\uff08AK/SK \u7b7e\u540d\uff09"},
-			Placeholder:  "Volcengine IAM access key id (AKLT...)",
-			Placeholders: map[string]string{"zh-CN": "\u706b\u5c71\u5f15\u64ce IAM Access Key ID\uff08AKLT \u5f00\u5934\uff09"},
-			Hint:         "Rerank is signed with an IAM key pair; this is not an Ark API key.",
-			Hints:        map[string]string{"zh-CN": "Rerank \u4f7f\u7528 IAM \u5bc6\u94a5\u5bf9\u7b7e\u540d\uff0c\u4e0d\u662f\u65b9\u821f\u7684 API Key\u3002"},
-			ModelTypes:   rerankOnly,
-			Required:     true,
+			Label:       "Access Key ID",
+			Placeholder: "Volcengine IAM access key id (AKLT...)",
+			Hint:        "Rerank is signed with an IAM key pair; this is not an Ark API key.",
+			ModelTypes:  rerankOnly,
+			Required:    true,
 		}},
 		ExtraFields: []ExtraField{
 			{
 				Key:         "secret_key",
 				Label:       "Secret Key",
-				Labels:      map[string]string{"zh-CN": "Secret Key\uff08AK/SK \u7b7e\u540d\uff09"},
 				Type:        "password",
 				Required:    true,
 				Placeholder: "Volcengine IAM secret key (the API Key field holds the access key)",
-				Placeholders: map[string]string{
-					"zh-CN": "\u706b\u5c71\u5f15\u64ce IAM Secret Access Key\uff08API Key \u90a3\u4e00\u680f\u586b\u7684\u662f Access Key ID\uff09",
-				},
-				ModelTypes: rerankOnly,
-				Secret:     true,
+				ModelTypes:  rerankOnly,
+				Secret:      true,
 			},
 			{
 				Key:         "region",
 				Label:       "Region",
-				Labels:      map[string]string{"zh-CN": "\u5730\u57df"},
 				Type:        "string",
 				Default:     "cn-beijing",
 				Placeholder: "cn-beijing",
@@ -171,14 +162,10 @@ func newVolcengineProvider() *Definition {
 			{
 				Key:         "instruction",
 				Label:       "Rerank Instruction",
-				Labels:      map[string]string{"zh-CN": "\u91cd\u6392\u6307\u4ee4"},
 				Type:        "string",
 				Default:     "Whether the document answers the query or matches the content retrieval intent",
 				Placeholder: "Instruction passed to the rerank model",
-				Placeholders: map[string]string{
-					"zh-CN": "\u4f20\u7ed9\u91cd\u6392\u6a21\u578b\u7684 instruction",
-				},
-				ModelTypes: rerankOnly,
+				ModelTypes:  rerankOnly,
 			},
 		},
 		RerankAPI:    api.RerankVolcengineKnowledge,

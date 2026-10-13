@@ -829,14 +829,12 @@ func cardSummaryPreview(content string) string {
 }
 
 // buildStreamingCardJSON builds a Card JSON 2.0 with streaming_mode enabled.
-// The placeholder text follows the region so Lark users see English rather than
-// the Chinese wording Feishu users expect.
-func buildStreamingCardJSON(region Region) string {
+func buildStreamingCardJSON() string {
 	card := map[string]interface{}{
 		"schema": "2.0",
 		"config": map[string]interface{}{
 			"streaming_mode": true,
-			"summary":        map[string]string{"content": region.ThinkingText},
+			"summary":        map[string]string{"content": thinkingText},
 		},
 		"header": map[string]interface{}{
 			"template": "blue",
@@ -846,7 +844,7 @@ func buildStreamingCardJSON(region Region) string {
 			"elements": []map[string]interface{}{
 				{
 					"tag":        "markdown",
-					"content":    "💭 " + region.ThinkingText,
+					"content":    "💭 " + thinkingText,
 					"text_size":  "normal",
 					"element_id": streamingElementID,
 				},
@@ -865,7 +863,7 @@ func (a *Adapter) StartStream(ctx context.Context, incoming *im.IncomingMessage)
 	}
 
 	// 1. Create card entity via CardKit API
-	cardJSON := buildStreamingCardJSON(a.region)
+	cardJSON := buildStreamingCardJSON()
 	cardID, err := a.cardkitCreate(ctx, accessToken, cardJSON)
 	if err != nil {
 		return "", fmt.Errorf("create card: %w", err)
@@ -1142,7 +1140,7 @@ func (a *Adapter) resolveMarkdownImages(ctx context.Context, accessToken, conten
 	}
 	fallback := func(alt, rawURL string) string {
 		if alt == "" {
-			alt = a.region.ImageFallbackLabel
+			alt = imageFallbackLabel
 		}
 		if isHTTPImageURL(rawURL) {
 			return fmt.Sprintf("[%s](%s)", alt, rawURL)

@@ -48,9 +48,7 @@ func newGenericProvider() *Definition {
 	return &Definition{
 		ID:              GenericID,
 		Name:            "Custom (OpenAI-compatible)",
-		Names:           map[string]string{"zh-CN": "\u81ea\u5b9a\u4e49 (OpenAI\u517c\u5bb9\u63a5\u53e3)"},
 		Description:     "Any OpenAI-compatible endpoint (vLLM, SGLang, Xinference, Ollama, ...)",
-		Descriptions:    map[string]string{"zh-CN": "\u4efb\u610f OpenAI \u517c\u5bb9\u63a5\u53e3\uff08vLLM\u3001SGLang\u3001Xinference\u3001Ollama \u7b49\uff09"},
 		Icon:            genericIcon,
 		API:             api.APIOpenAICompletions,
 		Order:           0,
@@ -65,40 +63,34 @@ func newGenericProvider() *Definition {
 			types.ModelTypeASR,
 		},
 		ExtraFields: []ExtraField{{
-			Key:    models.ExtraScoreScale,
-			Label:  "Rerank score scale",
-			Labels: map[string]string{"zh-CN": "Rerank \u5206\u6570\u6807\u5ea6"},
-			Type:   "select",
+			Key:   models.ExtraScoreScale,
+			Label: "Rerank score scale",
+			Type:  "select",
 			Options: []ExtraFieldOption{
 				{
-					Label:  "Unbounded score (Qwen3-Reranker class)",
-					Labels: map[string]string{"zh-CN": "\u65e0\u754c\u5206\u6570\uff08Qwen3-Reranker \u4e00\u7c7b\uff09"},
-					Value:  "logit",
+					Label: "Unbounded score (Qwen3-Reranker class)",
+					Value: "logit",
 				},
 				{
-					Label:  "0..1 relevance (BGE class)",
-					Labels: map[string]string{"zh-CN": "0~1 \u76f8\u5173\u5ea6\uff08BGE \u4e00\u7c7b\uff09"},
-					Value:  "probability",
+					Label: "0..1 relevance (BGE class)",
+					Value: "probability",
 				},
 			},
-			Placeholder:  "match the reranker actually deployed behind this endpoint",
-			Placeholders: map[string]string{"zh-CN": "\u6309\u8fd9\u4e2a\u7aef\u70b9\u540e\u9762\u5b9e\u9645\u90e8\u7f72\u7684\u91cd\u6392\u6a21\u578b\u9009\u62e9"},
+			Placeholder: "match the reranker actually deployed behind this endpoint",
 			// A gateway serves whatever reranker was deployed behind it, and
 			// the two families disagree. The vendor default follows the
 			// documentation; the operator knows which model is actually there.
 			Required:   false,
 			ModelTypes: []types.ModelType{types.ModelTypeRerank},
 		}, {
-			Key:    models.ExtraTruncatePromptTokens,
-			Label:  "Rerank prompt truncation (vLLM)",
-			Labels: map[string]string{"zh-CN": "Rerank \u63d0\u793a\u8bcd\u622a\u65ad\u957f\u5ea6\uff08vLLM\uff09"},
-			Type:   "number",
+			Key:   models.ExtraTruncatePromptTokens,
+			Label: "Rerank prompt truncation (vLLM)",
+			Type:  "number",
 			// Off unless the operator asks: a runtime that does not implement
 			// the extension rejects the unknown field.
-			Required:     false,
-			Placeholder:  "empty unless the backend rejects long documents",
-			Placeholders: map[string]string{"zh-CN": "\u7559\u7a7a\uff0c\u9664\u975e\u540e\u7aef\u56e0\u6587\u6863\u8fc7\u957f\u800c\u62a5\u9519"},
-			ModelTypes:   []types.ModelType{types.ModelTypeRerank},
+			Required:    false,
+			Placeholder: "empty unless the backend rejects long documents",
+			ModelTypes:  []types.ModelType{types.ModelTypeRerank},
 		}},
 		Compat: VendorCompat{
 			// Transcriptions keeps the baseline, json by default. The

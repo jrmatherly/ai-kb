@@ -55,7 +55,6 @@ func newMimoProvider() *Definition {
 	return &Definition{
 		ID:           MimoID,
 		Name:         "Xiaomi MiMo",
-		Names:        map[string]string{"zh-CN": "\u5c0f\u7c73 MiMo"},
 		Description:  "mimo-v2.5-pro, mimo-v2.5",
 		Website:      "https://platform.xiaomimimo.com",
 		Icon:         mimoIcon,

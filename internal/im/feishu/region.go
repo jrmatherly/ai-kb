@@ -19,30 +19,29 @@ type Region struct {
 	OpenBaseURL string
 	// Label prefixes log lines so operators can tell the clouds apart.
 	Label string
-	// ThinkingText is the placeholder shown in a streaming card before the
-	// first answer chunk arrives.
-	ThinkingText string
-	// ImageFallbackLabel labels the plain link an image degrades to when it
-	// cannot be uploaded to the platform.
-	ImageFallbackLabel string
 }
+
+const (
+	// thinkingText is the placeholder shown in a streaming card before the
+	// first answer chunk arrives.
+	thinkingText = "Thinking..."
+	// imageFallbackLabel labels the plain link an image degrades to when it
+	// cannot be uploaded to the platform.
+	imageFallbackLabel = "Image"
+)
 
 var (
 	// RegionFeishu is the Chinese mainland cloud (Feishu).
 	RegionFeishu = Region{
-		Platform:           im.PlatformFeishu,
-		OpenBaseURL:        feishuOpenBaseURL,
-		Label:              "Feishu",
-		ThinkingText:       "Thinking...",
-		ImageFallbackLabel: "Image",
+		Platform:    im.PlatformFeishu,
+		OpenBaseURL: feishuOpenBaseURL,
+		Label:       "Feishu",
 	}
 
 	// RegionLark is the international cloud (Lark).
 	RegionLark = Region{
-		Platform:           im.PlatformLark,
-		OpenBaseURL:        larkOpenBaseURL,
-		Label:              "Lark",
-		ThinkingText:       "Thinking...",
-		ImageFallbackLabel: "Image",
+		Platform:    im.PlatformLark,
+		OpenBaseURL: larkOpenBaseURL,
+		Label:       "Lark",
 	}
 )

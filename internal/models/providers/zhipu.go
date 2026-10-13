@@ -78,14 +78,10 @@ const ZhipuAnthropicBaseURL = "https://open.bigmodel.cn/api/anthropic"
 
 func newZhipuProvider() *Definition {
 	return &Definition{
-		ID:    ZhipuID,
-		Name:  "Zhipu BigModel",
-		Names: map[string]string{"zh-CN": "\u667a\u8c31 BigModel"},
+		ID:   ZhipuID,
+		Name: "Zhipu BigModel",
 		Description: "glm-5.3, glm-5.2, glm-4.7, embedding-3, rerank; " +
 			"Anthropic-compatible facade at " + ZhipuAnthropicBaseURL,
-		Descriptions: map[string]string{
-			"zh-CN": "glm-5.3, glm-5.2, glm-4.7, embedding-3, rerank\uff1bAnthropic \u517c\u5bb9\u63a5\u53e3 " + ZhipuAnthropicBaseURL,
-		},
 		Website:      "https://open.bigmodel.cn",
 		Icon:         zhipuIcon,
 		API:          api.APIOpenAICompletions,

@@ -155,7 +155,7 @@ func loadAndProcessHistory(
 			// and can be re-merged into this turn's freshly rendered context.
 			h.Query = message.Content
 			if strings.TrimSpace(h.Query) == "" && (len(message.Images) > 0 || len(message.Attachments) > 0) {
-				h.Query = types.UploadOnlyQuestion(types.LanguageFromContextOrDefault(ctx))
+				h.Query = types.UploadOnlyQuestion
 			}
 			h.CreateAt = message.CreatedAt
 			if desc := extractImageCaptions(message.Images); desc != "" {

@@ -106,7 +106,7 @@ func (h *MCPServiceHandler) GenerateMCPUsageInstructions(c *gin.Context) {
 		"ko-KR": "Korean", "ru-RU": "Russian",
 	}[req.Language]
 	if language == "" {
-		language = "Simplified Chinese"
+		language = "English"
 	}
 	thinking := false
 	result, err := model.Chat(ctx, []chat.Message{

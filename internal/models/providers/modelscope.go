@@ -54,7 +54,6 @@ func newModelscopeProvider() *Definition {
 	return &Definition{
 		ID:           ModelscopeID,
 		Name:         "ModelScope",
-		Names:        map[string]string{"zh-CN": "\u9b54\u642d ModelScope"},
 		Description:  "Qwen/Qwen3-235B-A22B-Instruct-2507, ZhipuAI/GLM-4.6, Qwen/Qwen3-Embedding-8B, etc.",
 		Website:      "https://modelscope.cn",
 		Icon:         modelscopeIcon,

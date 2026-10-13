@@ -55,7 +55,6 @@ func newRequestyProvider() *Definition {
 	return &Definition{
 		ID:           RequestyID,
 		Name:         "Requesty",
-		Names:        map[string]string{"zh-CN": "Requesty"},
 		Description:  "openai/gpt-5.5, anthropic/claude-opus-5, google/gemini-3.1-pro-preview, zai/glm-5.2, etc.",
 		Website:      "https://requesty.ai",
 		Icon:         requestyIcon,

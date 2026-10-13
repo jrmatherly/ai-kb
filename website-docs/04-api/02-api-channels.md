@@ -30,7 +30,7 @@ Purpose: create an IM channel for an agent. Permission: Admin+.
 | `name` | string | no | Display name |
 | `mode` | string | no | `websocket` (default; `mattermost` and `yunzhijia` default to `webhook`) / `webhook` / `longpoll` (`wechat` is forced to `longpoll`) |
 | `output_mode` | string | no | `stream` (default) / `full` (`wechat` is forced to `full`) |
-| `locale` | string | no | Reply language: `en-US`; empty (default) uses the deployment default language (`AIKB_LANGUAGE`, `zh-CN` when unset); any other value 400 |
+| `locale` | string | no | Reply language: `en-US`; empty (default) uses the deployment default language (`AIKB_LANGUAGE`, `en-US` when unset); any other value 400 |
 | `session_mode` | string | no | `user` (default) / `thread` |
 | `knowledge_base_id` | string | no | Knowledge base that also receives attachments; must belong to this workspace, otherwise 400 |
 | `credentials` | object | no | Platform credentials |

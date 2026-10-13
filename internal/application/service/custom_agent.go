@@ -822,9 +822,8 @@ func (s *customAgentService) getSuggestedQuestions(
 				})
 				continue
 			}
-			locale := types.LanguageFromContextOrDefault(ctx)
 			for _, page := range wikiPages {
-				q := wikiSuggestionFromPage(page, locale)
+				q := wikiSuggestionFromPage(page)
 				if q == "" || seen[q] {
 					continue
 				}
@@ -1098,7 +1097,7 @@ func (s *customAgentService) truncateQuestions(questions []types.SuggestedQuesti
 //     "what is <name>?" would read awkwardly ("What is John Smith?").
 //   - everything else (synthesis, comparison, …): the raw title is already a
 //     good topical query on its own.
-func wikiSuggestionFromPage(page *types.WikiPage, locale string) string {
+func wikiSuggestionFromPage(page *types.WikiPage) string {
 	if page == nil {
 		return ""
 	}
@@ -1108,14 +1107,8 @@ func wikiSuggestionFromPage(page *types.WikiPage, locale string) string {
 	}
 	switch page.PageType {
 	case types.WikiPageTypeConcept:
-		if isEnglishLocale(locale) {
-			return "What is " + title + "?"
-		}
 		return "What is " + title + "?"
 	case types.WikiPageTypeEntity, types.WikiPageTypeSummary:
-		if isEnglishLocale(locale) {
-			return "Tell me about " + title
-		}
 		return "Tell me about " + title
 	default:
 		return title
@@ -1207,14 +1200,4 @@ func (s *customAgentService) groupKBIDsByEffectiveTenant(
 		out[kb.TenantID] = append(out[kb.TenantID], kbID)
 	}
 	return out
-}
-
-// isEnglishLocale reports whether the locale string is an English variant.
-// Unknown / empty locales fall back to Chinese, matching the product default.
-func isEnglishLocale(locale string) bool {
-	switch locale {
-	case "en-US", "en", "en-GB":
-		return true
-	}
-	return false
 }

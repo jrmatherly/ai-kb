@@ -48,9 +48,8 @@ const OpenrouterBaseURL = "https://openrouter.ai/api/v1"
 
 func newOpenrouterProvider() *Definition {
 	return &Definition{
-		ID:    OpenrouterID,
-		Name:  "OpenRouter",
-		Names: map[string]string{"zh-CN": "OpenRouter"},
+		ID:   OpenrouterID,
+		Name: "OpenRouter",
 		Description: "openai/gpt-5.5, anthropic/claude-opus-5, google/gemini-3.8-flash, " +
 			"deepseek/deepseek-v4-pro, etc.",
 		Website:      "https://openrouter.ai",

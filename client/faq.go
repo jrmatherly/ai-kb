@@ -356,10 +356,10 @@ func (c *Client) SearchFAQEntries(ctx context.Context,
 
 // ExportFAQEntries exports all FAQ entries from a knowledge base as CSV data.
 // The CSV format matches the import example format with 8 columns:
-// category (required), question (required), similar questions (optional, ## separated),
-// negative questions (optional, ## separated), answers (required, ## separated),
-// answer all (optional, default FALSE), disabled (optional, default FALSE),
-// exclude from recommendations (optional, default FALSE, so recommendable)
+// tag_name (required), standard_question (required), similar_questions (optional, ## separated),
+// negative_questions (optional, ## separated), answers (required, ## separated),
+// answer_all (optional, default FALSE), is_disabled (optional, default FALSE),
+// not_recommended (optional, default FALSE means recommendable)
 func (c *Client) ExportFAQEntries(ctx context.Context, knowledgeBaseID string) ([]byte, error) {
 	path := fmt.Sprintf("/api/v1/knowledge-bases/%s/faq/entries/export", knowledgeBaseID)
 	resp, err := c.doRequest(ctx, http.MethodGet, path, nil, nil)
