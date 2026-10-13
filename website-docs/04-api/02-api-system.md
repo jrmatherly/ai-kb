@@ -70,7 +70,7 @@ curl -X POST $BASE/api/v1/system/docreader/reconnect -H "Authorization: Bearer $
 
 ### GET /api/v1/system/storage-engine-status
 
-Purpose: object storage engine availability. Permission: Viewer+.
+Purpose: object storage engine availability. Permission: Viewer+. An engine is `available` when the workspace's storage settings, an active storage backend, or the process-wide backend that `STORAGE_TYPE` and its environment variables select configure it.
 
 Response: 200 `{"code":0,"msg":"success","data":{"engines":[{name,allowed,available,description}],"allowed_providers":[...],"minio_env_available":bool}}`
 

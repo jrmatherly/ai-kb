@@ -694,59 +694,58 @@ func (h *SystemHandler) isMinioEnvAvailable() bool {
 		os.Getenv("MINIO_SECRET_ACCESS_KEY") != ""
 }
 
-// isCOSConfigured checks whether COS connection info is available from tenant config.
-func (h *SystemHandler) isCOSConfigured(c *gin.Context) bool {
+// tenantStorageEngineConfig returns the caller workspace's legacy storage config, or nil.
+func tenantStorageEngineConfig(c *gin.Context) *types.StorageEngineConfig {
 	if v, exists := c.Get(types.TenantInfoContextKey.String()); exists {
-		if tenant, ok := v.(*types.Tenant); ok && tenant != nil && tenant.StorageEngineConfig != nil && tenant.StorageEngineConfig.COS != nil {
-			cosConf := tenant.StorageEngineConfig.COS
-			return cosConf.SecretID != "" && cosConf.SecretKey != "" && cosConf.Region != "" && cosConf.BucketName != ""
+		if tenant, ok := v.(*types.Tenant); ok && tenant != nil {
+			return tenant.StorageEngineConfig
 		}
+	}
+	return nil
+}
+
+// envStorageEngineConfig returns the process-wide backend selected by STORAGE_TYPE, or nil.
+func envStorageEngineConfig() *types.StorageEngineConfig {
+	if env := types.StorageBackendFromEnvironment(0); env != nil {
+		return env.ToStorageEngineConfig()
+	}
+	return nil
+}
+
+// storageConfigComplete reports whether sec holds the fields the file service
+// factory requires for provider. MinIO is handled by isMinioConfigured.
+func storageConfigComplete(provider string, sec *types.StorageEngineConfig) bool {
+	set := func(values ...string) bool {
+		for _, v := range values {
+			if v == "" {
+				return false
+			}
+		}
+		return true
+	}
+	switch {
+	case sec == nil:
+		return false
+	case provider == "cos" && sec.COS != nil:
+		x := sec.COS
+		return set(x.SecretID, x.SecretKey, x.Region, x.BucketName)
+	case provider == "tos" && sec.TOS != nil:
+		x := sec.TOS
+		return set(x.Endpoint, x.Region, x.AccessKey, x.SecretKey, x.BucketName)
+	case provider == "s3" && sec.S3 != nil:
+		x := sec.S3
+		return set(x.Region, x.BucketName) && (x.AccessKey == "") == (x.SecretKey == "")
+	case provider == "oss" && sec.OSS != nil:
+		x := sec.OSS
+		return set(x.Endpoint, x.Region, x.AccessKey, x.SecretKey, x.BucketName)
+	case provider == "ks3" && sec.KS3 != nil:
+		x := sec.KS3
+		return set(x.Endpoint, x.Region, x.AccessKey, x.SecretKey, x.BucketName)
+	case provider == "obs" && sec.OBS != nil:
+		x := sec.OBS
+		return set(x.Endpoint, x.Region, x.AccessKey, x.SecretKey, x.BucketName)
 	}
 	return false
-}
-
-// isTOSConfigured checks whether TOS connection info is available from tenant config or env.
-func (h *SystemHandler) isTOSConfigured(c *gin.Context) bool {
-	if v, exists := c.Get(types.TenantInfoContextKey.String()); exists {
-		if tenant, ok := v.(*types.Tenant); ok && tenant != nil && tenant.StorageEngineConfig != nil && tenant.StorageEngineConfig.TOS != nil {
-			tosConf := tenant.StorageEngineConfig.TOS
-			return tosConf.Endpoint != "" && tosConf.Region != "" && tosConf.AccessKey != "" && tosConf.SecretKey != "" && tosConf.BucketName != ""
-		}
-	}
-	return h.isTOSEnvAvailable()
-}
-
-// isOSSConfigured checks whether OSS connection info is available from tenant config.
-func (h *SystemHandler) isOSSConfigured(c *gin.Context) bool {
-	if v, exists := c.Get(types.TenantInfoContextKey.String()); exists {
-		if tenant, ok := v.(*types.Tenant); ok && tenant != nil && tenant.StorageEngineConfig != nil && tenant.StorageEngineConfig.OSS != nil {
-			ossConf := tenant.StorageEngineConfig.OSS
-			return ossConf.Endpoint != "" && ossConf.Region != "" && ossConf.AccessKey != "" && ossConf.SecretKey != "" && ossConf.BucketName != ""
-		}
-	}
-	return false
-}
-
-// isKS3Configured checks whether KS3 connection info is available from tenant config.
-func (h *SystemHandler) isKS3Configured(c *gin.Context) bool {
-	if v, exists := c.Get(types.TenantInfoContextKey.String()); exists {
-		if tenant, ok := v.(*types.Tenant); ok && tenant != nil && tenant.StorageEngineConfig != nil && tenant.StorageEngineConfig.KS3 != nil {
-			ks3Conf := tenant.StorageEngineConfig.KS3
-			return ks3Conf.Endpoint != "" && ks3Conf.Region != "" && ks3Conf.AccessKey != "" && ks3Conf.SecretKey != "" && ks3Conf.BucketName != ""
-		}
-	}
-	return false
-}
-
-// isOBSConfigured checks whether OBS connection info is available from tenant config or env.
-func (h *SystemHandler) isOBSConfigured(c *gin.Context) bool {
-	if v, exists := c.Get(types.TenantInfoContextKey.String()); exists {
-		if tenant, ok := v.(*types.Tenant); ok && tenant != nil && tenant.StorageEngineConfig != nil && tenant.StorageEngineConfig.OBS != nil {
-			obsConf := tenant.StorageEngineConfig.OBS
-			return obsConf.Endpoint != "" && obsConf.Region != "" && obsConf.AccessKey != "" && obsConf.SecretKey != "" && obsConf.BucketName != ""
-		}
-	}
-	return h.isOBSEnvAvailable()
 }
 
 // isTOSEnvAvailable checks whether TOS env vars are set.
@@ -798,12 +797,17 @@ func (h *SystemHandler) GetStorageEngineStatus(c *gin.Context) {
 	activeBackend := h.activeBackendProviders(c)
 	minioConfigured := h.isMinioConfigured(c) || activeBackend["minio"]
 	minioEnvAvailable := h.isMinioEnvAvailable()
-	cosConfigured := h.isCOSConfigured(c) || activeBackend["cos"]
-	tosConfigured := h.isTOSConfigured(c) || activeBackend["tos"]
-	s3Configured := h.isS3Configured(c) || activeBackend["s3"]
-	ossConfigured := h.isOSSConfigured(c) || activeBackend["oss"]
-	ks3Configured := h.isKS3Configured(c) || activeBackend["ks3"]
-	obsConfigured := h.isOBSConfigured(c) || activeBackend["obs"]
+	tenantSec, envSec := tenantStorageEngineConfig(c), envStorageEngineConfig()
+	configured := func(provider string) bool {
+		return activeBackend[provider] || storageConfigComplete(provider, tenantSec) ||
+			storageConfigComplete(provider, envSec)
+	}
+	cosConfigured := configured("cos")
+	tosConfigured := configured("tos") || h.isTOSEnvAvailable()
+	s3Configured := configured("s3")
+	ossConfigured := configured("oss")
+	ks3Configured := configured("ks3")
+	obsConfigured := configured("obs") || h.isOBSEnvAvailable()
 	allowed := getAllowedStorageProviders()
 	allowedProviders := make([]string, 0, len(getSupportedStorageProviders()))
 	for _, provider := range getSupportedStorageProviders() {
@@ -962,16 +966,6 @@ func (h *SystemHandler) CheckStorageEngine(c *gin.Context) {
 	default:
 		c.JSON(200, gin.H{"code": 0, "data": StorageCheckResponse{OK: true, Message: "Local storage needs no check"}})
 	}
-}
-
-func (h *SystemHandler) isS3Configured(c *gin.Context) bool {
-	if v, exists := c.Get(types.TenantInfoContextKey.String()); exists {
-		if tenant, ok := v.(*types.Tenant); ok && tenant != nil && tenant.StorageEngineConfig != nil && tenant.StorageEngineConfig.S3 != nil {
-			s3Conf := tenant.StorageEngineConfig.S3
-			return s3Conf.Region != "" && s3Conf.BucketName != "" && (s3Conf.AccessKey == "") == (s3Conf.SecretKey == "")
-		}
-	}
-	return false
 }
 
 func (h *SystemHandler) checkMinio(c *gin.Context, ctx context.Context, cfg *types.MinIOEngineConfig) {
