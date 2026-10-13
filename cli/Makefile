@@ -7,6 +7,7 @@
 #   make lint          go vet (golangci-lint planned)
 #   make tidy          go mod tidy
 #   make clean         remove ./bin
+#   make help          this list
 
 BINARY      := aikb
 BUILD_DIR   := bin
@@ -44,4 +45,4 @@ clean:
 	rm -rf $(BUILD_DIR) coverage.out
 
 help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@sed -n 's/^#   make /  /p' $(firstword $(MAKEFILE_LIST))
