@@ -279,31 +279,44 @@ The formatting standard golangci-lint enforces is **gofumpt** (stricter than gof
 The repository ships Git hooks. `./scripts/install-git-hooks.sh` points `core.hooksPath` at `scripts/git-hooks`:
 
 - pre-commit checks whitespace, blocks CJK text in added lines (`scripts/check-english-only.sh --diff`), runs gofmt with auto-fix on staged Go files outside `cli/`, and runs golangci-lint on the changed packages when it is installed.
-- pre-push checks whitespace and gofmt, runs golangci-lint on new issues, `go vet` / `go test` / `go build ./cmd/server` for the main module, the CLI checks when `cli/` changed, and `scripts/verify_frontend_pr.sh` when `frontend/` changed.
+- pre-push checks whitespace on the pushed commits, then runs `scripts/validate.sh --base <push base>`, which checks every validation area below that the push touches. It refuses to push a commit other than `HEAD`, because the checks run on the working tree.
 
-`SKIP_HOOKS=1` skips the hooks once. `HOOK_SKIP_TEST=1` skips only the pre-push tests.
+`SKIP_HOOKS=1` skips the hooks once. `HOOK_SKIP_TEST=1` skips only the Go tests.
 
 When you add or upgrade a third-party dependency or change a data file shipped with a release, update `THIRD_PARTY_NOTICES.md` and `licenses/`, then check them with `scripts/check-license-bundle.sh`.
 
 ### Validation and contribution workflow
 
-This repository has no `.github/` directory, so no CI workflows run on push or pull request. The validation commands come from the archived CI workflows, which are kept outside the tree. Run the rows for what you touched:
+This repository has no `.github/` directory, so no CI workflows run on push or pull request. `scripts/validate.sh` takes their place. It maps each changed path to an area, using the `paths:` filters of the archived upstream workflows, and runs that area's checks from those workflows:
 
-| Area touched | Validate with |
-| --- | --- |
-| Go (root module) | `go vet $(go list ./... \| grep -v /docreader/) && go test $(go list ./... \| grep -v /docreader/) && go test -tags desktop ./internal/container && golangci-lint run` |
-| `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `python3 scripts/model-catalog/generate.py --check && go test ./internal/models/...` (same as `make model-catalog-check`) |
-| `cli/**` (own module) | `go -C cli vet ./... && go -C cli test -race ./... && cli/scripts/check-skill-wire-vocab.sh && cli/scripts/check-secret-tokens.sh` |
-| `client/**` (own module) | `go -C client vet ./... && go -C client test ./...` |
-| `frontend/**` | `npm --prefix frontend test && npm --prefix frontend run type-check` |
-| `docreader/**` | `uv run --project docreader python -m unittest discover -s docreader/tests -p "test_*.py"` and `go test ./docreader/client ./docreader/proto` |
-| `scripts/git-hooks/**`, license scripts | `bash scripts/test-git-hooks.sh`, `bash scripts/check-license-bundle.sh && bash scripts/test-license-bundle.sh` |
+```bash
+scripts/validate.sh                 # working tree and untracked files against HEAD
+scripts/validate.sh --base <rev>    # everything since <rev>
+scripts/validate.sh --list          # print the areas that would run
+```
 
-For the frontend, `scripts/verify_frontend_pr.sh` runs `npm test`, then `npm run type-check`, then `npm run build`.
+| Area | Runs when these change | Checks |
+| --- | --- | --- |
+| go | root-module `*.go`, `go.mod`, `go.sum`, `Makefile`, `config/`, `migrations/`, `skills/preloaded/`, `testdata/`, embedded data under `internal/`, `.golangci.yml` | gofmt, golangci-lint (new issues only), `go vet` and `go test` over every app package, `go test -tags desktop ./internal/container`, `go build ./cmd/server` |
+| cli | `cli/**`, `.golangci.yml` | build, vet, `go test -race`, golangci-lint, `check-skill-wire-vocab.sh`, `check-secret-tokens.sh`; the acceptance e2e suite only with `AIKB_E2E_HOST` and `AIKB_E2E_TOKEN` set |
+| client | `client/**`, `.golangci.yml` | vet, test, golangci-lint |
+| frontend | `frontend/**`, `scripts/build_frontend_dist.sh`, `scripts/test_embed_nginx.py` | `scripts/verify_frontend_pr.sh` (`npm ci` when stale, test, type-check, build), then the UI image build and `scripts/test_embed_nginx.py` when Docker is running |
+| docreader | `docreader/**`, `go.mod`, `go.sum`, `testdata/`, the docreader Dockerfiles | `uv sync --locked`, compileall, Playwright WebKit install, the unittest suite, then the Go client tests against a DocReader server the script starts on port 50051 |
+| model-catalog | `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `generate.py --check`, `go test ./internal/models/...` |
+| git-hooks | `scripts/git-hooks/**`, `scripts/test-git-hooks.sh`, `scripts/check-english-only.sh` | `scripts/test-git-hooks.sh` |
+| licenses | `licenses/**`, license scripts, `LICENSE`, `THIRD_PARTY_NOTICES.md` | `check-license-bundle.sh`, `test-license-bundle.sh` |
+| anydoc | `third_party/anydoc-go/**`, `scripts/build-anydoc-lib.sh`, `internal/infrastructure/docparser/**` | builds the Rust archive, `cargo audit`, vet, test and build with `-tags anydoc` |
+| helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |
+| mcp-server | `mcp-server/**` | unittest and pytest suites, wheel build containing `upload_paths.py` |
+| dsh-plugin | `packages/dsh-ai-kb/**` | typecheck, build, unit and contract tests (Node and Go), tarball file list, end-to-end run inside the pinned dsh release |
+| miniprogram | `miniprogram/**`, `tests/miniprogram/**` | `npm --prefix miniprogram test` |
+| website-docs | `website-docs/**` | link and anchor checks, Mermaid check, `build:docs` |
+
+Every run ends with the English-only gate on the lines added since the base. Every touched area runs even after one fails, and the summary lists each area as passed, failed or skipped, with every check that did not run and why (a missing tool such as `cargo` or `helm`, or a stopped Docker daemon). Image pushes, release builds and package publishing are not run locally.
 
 Generated outputs are committed and regenerated, never edited by hand: the Swagger files `docs/docs.go`, `docs/swagger.json` and `docs/swagger.yaml` come from `make docs` (`docs/swagger_contract_test.go` checks them), and the model catalog output under `internal/models/catalog/` comes from `make model-catalog-generate`.
 
-Contribution workflow: branch, run `fmt + lint + test` and the validation rows above locally, then commit.
+Contribution workflow: branch, run `scripts/validate.sh`, then commit.
 
 ## Debugging
 

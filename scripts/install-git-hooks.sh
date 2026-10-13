@@ -26,7 +26,7 @@ chmod +x "$HOOKS_DIR"/common.sh "$HOOKS_DIR"/pre-commit "$HOOKS_DIR"/pre-push
 git -C "$ROOT" config core.hooksPath scripts/git-hooks
 
 echo "Installed git hooks -> scripts/git-hooks"
-echo "  pre-commit: whitespace, gofmt (auto-fix), golangci-lint (if installed)"
-echo "  pre-push:   PR gofmt + full app go vet/test/build (like CI)"
+echo "  pre-commit: whitespace, English-only gate, gofmt (auto-fix), golangci-lint (if installed)"
+echo "  pre-push:   whitespace, then scripts/validate.sh for every area changed since the push base"
 echo ""
-echo "Optional: SKIP_HOOKS=1 or HOOK_SKIP_TEST=1 — see script header."
+echo "Optional: SKIP_HOOKS=1 or HOOK_SKIP_TEST=1 (see the script header)."

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for AI KB git hooks (mirrors .github/workflows and PR checklist).
+# Shared helpers for the AI KB git hooks and scripts/validate.sh.
 
 set -euo pipefail
 
@@ -28,32 +28,14 @@ WHITESPACE_PATHSPECS=(
   '*.yaml' '*.yml' '*.json'
   '*.sh' '*.sql'
   'Makefile'
-  'frontend/package.json'
-  'frontend/package-lock.json'
 )
 
-# Best-effort fetch so merge-base matches CI (origin/main).
+# Best-effort fetch so the push base matches origin/main.
 ensure_origin_main() {
   git -C "$ROOT" fetch origin main --quiet 2>/dev/null || true
 }
 
-merge_base() {
-  ensure_origin_main
-  local base
-  base="$(git -C "$ROOT" merge-base HEAD origin/main 2>/dev/null || true)"
-  if [[ -n "$base" ]]; then
-    printf '%s\n' "$base"
-    return
-  fi
-  base="$(git -C "$ROOT" merge-base HEAD main 2>/dev/null || true)"
-  if [[ -n "$base" ]]; then
-    printf '%s\n' "$base"
-    return
-  fi
-  git -C "$ROOT" rev-parse HEAD~1
-}
-
-# Prefer the open PR's base SHA (matches GitHub CI diff) when gh is available.
+# Prefer the open PR's base SHA when gh is available.
 pr_diff_base_ref() {
   ensure_origin_main
   if command -v gh >/dev/null 2>&1; then
@@ -131,18 +113,20 @@ check_gofmt_files() {
   log_ok "gofmt"
 }
 
+# $2 is the module directory (cli, client): each Go module is linted from its own root.
 run_golangci_if_available() {
-  local from_rev="$1"
+  local from_rev="$1" module="${2:-.}"
   if ! command -v golangci-lint >/dev/null 2>&1; then
     log_step "golangci-lint not installed; skip (install: https://golangci-lint.run)"
     return 0
   fi
-  log_step "golangci-lint run --new-from-rev=$from_rev ./..."
+  log_step "golangci-lint run --new-from-rev=$from_rev ./... ($module)"
   (
-    cd "$ROOT"
-    golangci-lint run --new-from-rev="$from_rev" ./...
+    cd "$ROOT/$module"
+    # Wait for another checkout's run (worktrees share the lock) instead of failing on it.
+    golangci-lint run --allow-serial-runners --new-from-rev="$from_rev" ./...
   )
-  log_ok "golangci-lint"
+  log_ok "golangci-lint ($module)"
 }
 
 run_app_vet_test() {
@@ -187,32 +171,16 @@ run_go_test_packages() {
   log_ok "go test"
 }
 
-run_cli_checks() {
-  log_step "cli: go vet && go test"
-  (
-    cd "$ROOT/cli"
-    go vet ./...
-    if [[ "${HOOK_SKIP_TEST:-}" == "1" ]]; then
-      log_step "HOOK_SKIP_TEST=1; skip cli go test"
-    else
-      go test -count=1 ./...
-    fi
-  )
-  log_ok "cli checks"
-}
-
-run_frontend_checks() {
-  log_step "frontend: verify (test, type-check, build)"
-  "$ROOT/scripts/verify_frontend_pr.sh"
-  log_ok "frontend checks"
-}
-
-paths_match_prefix() {
-  local prefix="$1"
-  shift
-  local p
-  for p in "$@"; do
-    [[ "$p" == "$prefix"* ]] && return 0
-  done
-  return 1
+# npm writes node_modules/.package-lock.json on every install, so a lockfile newer than it means stale deps.
+ensure_npm_deps() {
+  local dir="$1"
+  # A worktree may link node_modules to the main checkout; npm ci through the link would wipe that one.
+  if [[ -L "$dir/node_modules" ]]; then
+    log_step "$dir/node_modules is a symlink; not reinstalling (run npm ci where it points if it is stale)"
+    return 0
+  fi
+  if [[ ! -f "$dir/node_modules/.package-lock.json" || "$dir/package-lock.json" -nt "$dir/node_modules/.package-lock.json" ]]; then
+    log_step "npm ci ($dir)"
+    npm --prefix "$dir" ci --no-audit --no-fund
+  fi
 }
