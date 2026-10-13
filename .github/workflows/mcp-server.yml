@@ -4,9 +4,8 @@ name: 🐍 MCP Server
 # publishes it to PyPI as ai-kb-mcp from an `mcp-server-v<version>` tag only.
 # Publishing uses PyPI Trusted Publishing (OIDC), so no API token is stored.
 #
-# To release: bump the version in mcp-server/pyproject.toml and the synced
-# strings (setup.py version, __init__.py __version__, aikb_mcp_server.py
-# MCPServer version, main.py --version), merge, then push the matching tag.
+# To release: `make bump-lib LIB=mcp-server PART=patch` rewrites every synced
+# version string and commits; merge, then push the tag it prints.
 # The publish job skips a version PyPI already has, so a re-run stays green.
 
 on:

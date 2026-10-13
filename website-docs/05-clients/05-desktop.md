@@ -166,13 +166,14 @@ This section explains the Wails configuration, for when you change the build or 
   "frontend:dir": "../../frontend",
   "wailsjsdir": "../../frontend/src",
   "build:tags": "desktop",
-  "info": { "companyName": "Tencent", "productName": "AI KB Lite", "productVersion": "1.0.0" },
+  "info": { "companyName": "Jason Matherly", "productName": "AI KB Lite", "productVersion": "YYYY.M.D" },
   "mac": { "category": "public.app-category.productivity", "titlebar": "hiddenInset" }
 }
 ```
 
 Notes:
 
+- `productVersion` is the release date without MICRO (`2026.10.13` for both `v2026.10.13` and `v2026.10.13.1`); `make bump-version` sets it. Wails appends `.0` for the Windows installer and executable manifest, which allow at most four parts.
 - `build:tags` is `desktop`. Only a program built with this tag contains the Lite host sandbox. Tags passed with `wails build -tags ...` are merged with it.
 - `frontend:dir` points to the repository's `frontend/`. `wailsjsdir` points to `frontend/src`, so the bindings Wails generates land in `frontend/src/wailsjs/` (`go/main/App.js`, `App.d.ts` and `runtime/`).
 - **Frontend build**: the packaging script builds the frontend separately, and the Wails configuration sets no `frontend:build`. The WebView reaches the embedded backend through the reverse proxy.
