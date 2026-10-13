@@ -200,3 +200,36 @@ func TestEmitDryRun_PopulatesProfile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, buf.String(), `"profile":"staging"`, "expected profile field; got %q", buf.String())
 }
+
+func TestEmitDryRun_Text(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		plan DryRunPlan
+		want string
+	}{{
+		name: "mutation",
+		plan: DryRunPlan{Action: "kb.create", Args: map[string]any{"name": "foo", "description": "", "public": true}},
+		want: "Dry run: no changes made.\n" +
+			"action       kb.create\n" +
+			"description  -\n" +
+			"name         foo\n" +
+			"public       true\n",
+	}, {
+		name: "api",
+		plan: DryRunPlan{
+			Action: "api.post", Method: "POST", Path: "/api/v1/knowledge-bases",
+			Body: map[string]any{"name": "foo"},
+		},
+		want: "Dry run: no changes made.\n" +
+			"action  api.post\n" +
+			"method  POST\n" +
+			"path    /api/v1/knowledge-bases\n" +
+			"body    {\"name\":\"foo\"}\n",
+	}} {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			require.NoError(t, EmitDryRun(&buf, &FormatOptions{Mode: FormatText}, tc.plan))
+			assert.Equal(t, tc.want, buf.String())
+		})
+	}
+}

@@ -173,7 +173,7 @@ To script the CLI or drive it from an agent, you rely on its output contract: a 
 | `--yes` | `-y` | Skips the confirmation prompt on destructive operations |
 | `--version` | `-v` | Prints the version (same line as `aikb version --format text`) |
 
-Many write commands also register `--dry-run` (`cli/internal/cmdutil/dryrun.go`). It covers nearly every mutation command in kb, doc, chunk, agent, model, profile, auth, session, message, link, api and skills. It performs no write and prints `meta.dry_run=true` plus `meta.plan` (a description of the action it would take).
+Many write commands also register `--dry-run` (`cli/internal/cmdutil/dryrun.go`). It covers nearly every mutation command in kb, doc, chunk, agent, model, profile, auth, session, message, link, api and skills. It performs no write and prints `meta.dry_run=true` plus `meta.plan` (a description of the action it would take). With `--format text` it prints the same plan as key/value rows.
 
 ### JSON envelope output contract (`cli/internal/output/envelope.go`)
 

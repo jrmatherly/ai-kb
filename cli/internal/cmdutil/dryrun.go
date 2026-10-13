@@ -16,9 +16,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
+	"slices"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 
+	"github.com/jrmatherly/ai-kb/cli/internal/format"
 	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
 	"github.com/jrmatherly/ai-kb/cli/internal/output"
 )
@@ -46,7 +50,8 @@ func AddDryRunFlag(cmd *cobra.Command, dest *bool) {
 // envelope inherits the standard TTY indent, --jq filter, and profile fields
 // like every other success envelope. fopts may be nil for
 // callers that have no resolved FormatOptions (tests, error paths); a JSON-mode
-// default is used in that case.
+// default is used in that case. Text mode prints the plan as key/value rows
+// instead of the envelope.
 //
 // The envelope shape is {ok:true, meta:{dry_run:true, plan:{...}}, ...}; data
 // is intentionally omitted (omitempty on Envelope.Data) since dry-run produced
@@ -69,12 +74,48 @@ func EmitDryRun(w io.Writer, fopts *FormatOptions, plan DryRunPlan) error {
 	// NDJSON mode is meaningless for a single dry-run envelope (the contract
 	// emits exactly one object). Fall back to JSON envelope shape so meta.plan
 	// is surfaced; this matches what every other mutation emit does.
-	if fopts.Mode == FormatNDJSON {
+	switch fopts.Mode {
+	case FormatNDJSON:
 		jsonOpts := *fopts
 		jsonOpts.Mode = FormatJSON
 		return jsonOpts.Emit(w, nil, meta)
+	case FormatText:
+		return writeDryRunText(w, plan)
 	}
 	return fopts.Emit(w, nil, meta)
+}
+
+// writeDryRunText renders the plan as key/value rows, the layout `config view`
+// uses for text output.
+func writeDryRunText(w io.Writer, plan DryRunPlan) error {
+	if _, err := io.WriteString(w, "Dry run: no changes made.\n"); err != nil {
+		return err
+	}
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	row := func(k string, v any) {
+		s, ok := v.(string)
+		if !ok {
+			b, err := json.Marshal(v)
+			if err != nil {
+				s = fmt.Sprint(v)
+			} else {
+				s = string(b)
+			}
+		}
+		_, _ = fmt.Fprintf(tw, "%s\t%s\n", k, format.DashIfEmpty(s))
+	}
+	row("action", plan.Action)
+	if plan.Method != "" {
+		row("method", plan.Method)
+		row("path", plan.Path)
+	}
+	for _, k := range slices.Sorted(maps.Keys(plan.Args)) {
+		row(k, plan.Args[k])
+	}
+	if plan.Body != nil {
+		row("body", plan.Body)
+	}
+	return tw.Flush()
 }
 
 // HandleDryRun bundles the dry-run preamble for mutation command RunE:

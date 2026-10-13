@@ -97,3 +97,13 @@ func TestKBCreate_DryRun_RejectsInvalidStorageProvider(t *testing.T) {
 	// dry-run path preserves that exact mapping (same as the live path).
 	assert.Equal(t, 5, cmdutil.ExitCode(err), "invalid --storage-provider must map to exit 5")
 }
+
+func TestKBCreate_DryRun_Text(t *testing.T) {
+	out, _ := iostreams.SetForTest(t)
+	root := withRootHarness(NewCmdCreate(kbDryRunFactory(t)), "foo", "--dry-run", "--format", "text")
+	require.NoError(t, root.Execute())
+	assert.Equal(t, "Dry run: no changes made.\n"+
+		"action       kb.create\n"+
+		"description  -\n"+
+		"name         foo\n", out.String())
+}
