@@ -730,24 +730,32 @@ func (r *chunkRepository) CountChunksByKnowledgeBaseID(
 	return count, err
 }
 
-// DeleteUnindexedChunks by knowledge id and chunk index range
+// DeleteUnindexedChunks deletes the stored, unindexed chunks of a knowledge that are listed in chunkIDs or were
+// last written before staleBefore
 func (r *chunkRepository) DeleteUnindexedChunks(
 	ctx context.Context,
 	tenantID uint64,
 	knowledgeID string,
+	chunkIDs []string,
+	staleBefore time.Time,
 ) ([]*types.Chunk, error) {
+	scope := func() *gorm.DB {
+		q := r.db.WithContext(ctx).Where("tenant_id = ? AND knowledge_id = ? AND status = ?",
+			tenantID, knowledgeID, types.ChunkStatusStored)
+		if len(chunkIDs) == 0 {
+			return q.Where("updated_at < ?", staleBefore)
+		}
+		return q.Where("(id IN ? OR updated_at < ?)", chunkIDs, staleBefore)
+	}
 	var chunks []*types.Chunk
-	if err := r.db.WithContext(ctx).
-		Where("tenant_id = ? AND knowledge_id = ? AND status = ?", tenantID, knowledgeID, types.ChunkStatusStored).
-		Find(&chunks).Error; err != nil {
+	if err := scope().Find(&chunks).Error; err != nil {
 		return nil, err
 	}
-	if len(chunks) > 0 {
-		if err := r.db.WithContext(ctx).
-			Where("tenant_id = ? AND knowledge_id = ? AND status = ?", tenantID, knowledgeID, types.ChunkStatusStored).
-			Delete(&types.Chunk{}).Error; err != nil {
-			return nil, err
-		}
+	if len(chunks) == 0 {
+		return nil, nil
+	}
+	if err := scope().Delete(&types.Chunk{}).Error; err != nil {
+		return nil, err
 	}
 	return chunks, nil
 }

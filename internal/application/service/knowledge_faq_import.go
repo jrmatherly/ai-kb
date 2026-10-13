@@ -230,7 +230,7 @@ func (s *knowledgeService) UpsertFAQEntries(ctx context.Context,
 		asynq.TaskID(asynqTaskID),
 		asynq.Queue(types.QueueMaintenance),
 		asynq.MaxRetry(maxRetry),
-		asynq.Timeout(2*time.Hour),
+		asynq.Timeout(faqImportTaskTimeout),
 	)
 	info, err := s.task.Enqueue(task)
 	if err != nil {
@@ -1611,6 +1611,9 @@ func (s *knowledgeService) executeFAQImport(ctx context.Context, taskID string, 
 		buildDuration := time.Since(buildStartTime)
 		logger.Debugf(ctx, "FAQ import task %s: batch %d-%d built %d chunks in %v, chunk IDs: %v",
 			taskID, i+1, end, len(chunks), buildDuration, chunkIds)
+		if err := s.setFAQImportPendingChunks(ctx, taskID, chunkIds); err != nil {
+			return fmt.Errorf("failed to record pending chunks: %w", err)
+		}
 		// Create chunks
 		createStartTime := time.Now()
 		if err := s.chunkService.CreateChunks(ctx, chunks); err != nil {
@@ -2354,6 +2357,14 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 	// Check for an existing validation result (so a retry skips validation)
 	// This must run before the new progress is saved, or it is overwritten
 	existingProgress, _ := s.GetFAQImportProgress(ctx, payload.TaskID)
+	if existingProgress != nil && existingProgress.Status == types.FAQImportStatusCompleted {
+		logger.Infof(ctx, "FAQ import already completed, skipping: %s", payload.TaskID)
+		if clearErr := s.clearRunningFAQImportInfoIfMatches(
+			ctx, payload.KBID, payload.TaskID, payload.InstanceID, payload.EnqueuedAt); clearErr != nil {
+			logger.Warnf(ctx, "Failed to clear running FAQ import info for completed task: %v", clearErr)
+		}
+		return nil // idempotent: a completed task returns immediately
+	}
 
 	progress := &types.FAQImportProgress{
 		TaskID:         payload.TaskID,
@@ -2372,29 +2383,34 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 		UpdatedAt:      time.Now().Unix(),
 		DryRun:         payload.DryRun,
 	}
+	// A retry keeps what the next attempt needs: the resume point, the validation result and the batch left
+	// to clean up.
+	if existingProgress != nil {
+		progress.Processed = existingProgress.Processed
+		progress.PendingChunkIDs = existingProgress.PendingChunkIDs
+		if len(existingProgress.ValidEntryIndices) > 0 {
+			progress.ValidEntryIndices = existingProgress.ValidEntryIndices
+			progress.FailedCount = existingProgress.FailedCount
+			progress.FailedEntries = existingProgress.FailedEntries
+		}
+	}
 	if err := s.saveFAQImportProgress(ctx, progress); err != nil {
 		logger.Warnf(ctx, "Failed to save initial FAQ import progress: %v", err)
 	}
 
-	var validEntryIndices []int
-	if existingProgress != nil && len(existingProgress.ValidEntryIndices) > 0 {
-		// On retry, reuse the earlier validation result
-		validEntryIndices = existingProgress.ValidEntryIndices
-		progress.FailedCount = existingProgress.FailedCount
-		progress.FailedEntries = existingProgress.FailedEntries
+	if len(progress.ValidEntryIndices) > 0 {
 		logger.Infof(ctx, "Reusing previous validation result: valid=%d, failed=%d",
-			len(validEntryIndices), progress.FailedCount)
+			len(progress.ValidEntryIndices), progress.FailedCount)
 	} else {
-		// Step one: validate (both dry run and import mode need it)
-		validEntryIndices = s.executeFAQDryRunValidation(ctx, &payload, progress)
-		// Save the indexes that passed validation, so a retry can skip it
-		progress.ValidEntryIndices = validEntryIndices
+		// Step one: validate (both dry run and import mode need it); saved so a retry can skip it
+		progress.ValidEntryIndices = s.executeFAQDryRunValidation(ctx, &payload, progress)
 		if err := s.saveFAQImportProgress(ctx, progress); err != nil {
 			logger.Warnf(ctx, "Failed to save validation result: %v", err)
 		}
 		logger.Infof(ctx, "FAQ validation completed: total=%d, valid=%d, failed=%d",
-			originalTotalEntries, len(validEntryIndices), progress.FailedCount)
+			originalTotalEntries, len(progress.ValidEntryIndices), progress.FailedCount)
 	}
+	validEntryIndices := progress.ValidEntryIndices
 
 	// Dry run mode: return the result once validation finishes
 	if payload.DryRun {
@@ -2420,16 +2436,9 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 		logger.Warnf(ctx, "Failed to update FAQ import progress: %v", err)
 	}
 
-	// Check the task status for idempotency (reuses existingProgress fetched above)
+	// Resume after the entries an earlier attempt already imported
 	var processedCount int
 	if existingProgress != nil {
-		if existingProgress.Status == types.FAQImportStatusCompleted {
-			logger.Infof(ctx, "FAQ import already completed, skipping: %s", payload.TaskID)
-			if clearErr := s.clearRunningFAQImportInfoIfMatches(ctx, payload.KBID, payload.TaskID, payload.InstanceID, payload.EnqueuedAt); clearErr != nil {
-				logger.Warnf(ctx, "Failed to clear running FAQ import info for completed task: %v", clearErr)
-			}
-			return nil // idempotent: a completed task returns immediately
-		}
 		// Get the processed count (relative to validEntries)
 		processedCount = existingProgress.Processed - progress.FailedCount // valid entries already imported
 		if processedCount < 0 {
@@ -2454,6 +2463,7 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 		s.cleanupFAQEntriesFileOnFinalFailure(ctx, payload.EntriesURL, retryCount, maxRetry)
 		return fmt.Errorf("failed to delete unindexed chunks: %w", err)
 	}
+	progress.PendingChunkIDs = nil
 
 	// If some valid entries were already processed, continue from there
 	entriesToImport := validEntries
@@ -2483,6 +2493,8 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 		// On the last retry, mark the task failed. No retry follows to sweep the chunks this attempt stored
 		// before indexing failed, so remove them now or they stay as hidden, unindexed rows.
 		if isLastRetry {
+			// The attempt may have failed on its own timeout, so the cleanup must outlive ctx.
+			ctx := context.WithoutCancel(ctx)
 			if cleanErr := s.deleteUnindexedFAQChunks(ctx, &payload, kb); cleanErr != nil {
 				logger.Errorf(ctx, "Failed to delete unindexed chunks after the final attempt: %v", cleanErr)
 			}
@@ -2506,14 +2518,41 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 	return s.finalizeFAQValidation(ctx, &payload, progress, originalTotalEntries)
 }
 
+// setFAQImportPendingChunks records the chunks of the batch about to be written, so a later sweep deletes only
+// this import's leftovers and never a single-entry create that is still indexing in the same knowledge.
+func (s *knowledgeService) setFAQImportPendingChunks(ctx context.Context, taskID string, chunkIDs []string) error {
+	progress, err := s.GetFAQImportProgress(ctx, taskID)
+	if err != nil {
+		return err
+	}
+	progress.PendingChunkIDs = chunkIDs
+	return s.saveFAQImportProgress(ctx, progress)
+}
+
 // deleteUnindexedFAQChunks removes the chunks an earlier attempt stored but never indexed, and any index
 // data written for them.
 func (s *knowledgeService) deleteUnindexedFAQChunks(
 	ctx context.Context, payload *types.FAQImportPayload, kb *types.KnowledgeBase,
 ) error {
-	chunksDeleted, err := s.chunkRepo.DeleteUnindexedChunks(ctx, payload.TenantID, payload.KnowledgeID)
+	var pending []string
+	progress, err := s.GetFAQImportProgress(ctx, payload.TaskID)
+	if err == nil {
+		pending = progress.PendingChunkIDs
+	} else if appErr, ok := werrors.IsAppError(err); !ok || appErr.Code != werrors.ErrNotFound {
+		return err
+	}
+	// Any stored chunk older than an import attempt can live belongs to a writer that died without cleaning up.
+	staleBefore := time.Now().Add(-faqImportTaskTimeout)
+	chunksDeleted, err := s.chunkRepo.DeleteUnindexedChunks(
+		ctx, payload.TenantID, payload.KnowledgeID, pending, staleBefore)
 	if err != nil {
 		return err
+	}
+	if len(pending) > 0 {
+		progress.PendingChunkIDs = nil
+		if err := s.saveFAQImportProgress(ctx, progress); err != nil {
+			logger.Warnf(ctx, "Failed to clear pending FAQ import chunks: %v", err)
+		}
 	}
 	if len(chunksDeleted) == 0 {
 		return nil

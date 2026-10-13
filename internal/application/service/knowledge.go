@@ -90,6 +90,7 @@ const (
 	manualContentMaxLength = 200000
 	manualFileExtension    = ".md"
 	faqImportBatchSize     = 50 // FAQ entries processed per batch
+	faqImportTaskTimeout   = 2 * time.Hour
 )
 
 // NewKnowledgeService creates a new knowledge service instance

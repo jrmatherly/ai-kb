@@ -448,15 +448,17 @@ type FAQImportProgress struct {
 	// indices that passed validation (a retry skips validating them)
 	ValidEntryIndices []int `json:"valid_entry_indices,omitempty"`
 	// indices to merge (internal; a retry skips detecting them)
-	MergeEntryIndices []int            `json:"merge_entry_indices,omitempty"`
-	MergedCount       int              `json:"merged_count,omitempty"`  // entries merged into existing ones
-	AddedCount        int              `json:"added_count,omitempty"`   // entries added
-	MergeDetails      []FAQMergeDetail `json:"merge_details,omitempty"` // merge details
-	Message           string           `json:"message"`                 // Status message
-	Error             string           `json:"error"`                   // Error message if failed
-	CreatedAt         int64            `json:"created_at"`              // Task creation timestamp
-	UpdatedAt         int64            `json:"updated_at"`              // Last update timestamp
-	DryRun            bool             `json:"dry_run,omitempty"`       // dry run mode
+	MergeEntryIndices []int `json:"merge_entry_indices,omitempty"`
+	// chunks of the batch being written (internal; a retry or the final failure deletes those still unindexed)
+	PendingChunkIDs []string         `json:"pending_chunk_ids,omitempty"`
+	MergedCount     int              `json:"merged_count,omitempty"`  // entries merged into existing ones
+	AddedCount      int              `json:"added_count,omitempty"`   // entries added
+	MergeDetails    []FAQMergeDetail `json:"merge_details,omitempty"` // merge details
+	Message         string           `json:"message"`                 // Status message
+	Error           string           `json:"error"`                   // Error message if failed
+	CreatedAt       int64            `json:"created_at"`              // Task creation timestamp
+	UpdatedAt       int64            `json:"updated_at"`              // Last update timestamp
+	DryRun          bool             `json:"dry_run,omitempty"`       // dry run mode
 
 	// Result fields (populated when Status == "completed")
 	ImportMode     string    `json:"import_mode,omitempty"`     // append or replace

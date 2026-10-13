@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"context"
+	"time"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -125,8 +126,11 @@ type ChunkRepository interface {
 	DeleteChunksByTagID(ctx context.Context, tenantID uint64, kbID string, tagID string, excludeIDs []string) ([]string, error)
 	// CountChunksByKnowledgeBaseID counts the number of chunks in a knowledge base.
 	CountChunksByKnowledgeBaseID(ctx context.Context, tenantID uint64, kbID string) (int64, error)
-	// DeleteUnindexedChunks deletes unindexed chunks by knowledge id and chunk index range
-	DeleteUnindexedChunks(ctx context.Context, tenantID uint64, knowledgeID string) ([]*types.Chunk, error)
+	// DeleteUnindexedChunks deletes the stored, unindexed chunks of a knowledge that are listed in chunkIDs or were
+	// last written before staleBefore
+	DeleteUnindexedChunks(
+		ctx context.Context, tenantID uint64, knowledgeID string, chunkIDs []string, staleBefore time.Time,
+	) ([]*types.Chunk, error)
 	// ListAllFAQChunksByKnowledgeID lists all FAQ chunks for a knowledge ID
 	// only ID and ContentHash fields for efficiency
 	ListAllFAQChunksByKnowledgeID(ctx context.Context, tenantID uint64, knowledgeID string) ([]*types.Chunk, error)
