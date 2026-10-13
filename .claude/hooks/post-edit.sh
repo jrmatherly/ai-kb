@@ -17,9 +17,11 @@ if [[ "$f" == *.md ]] && [ -f .markdownlint-cli2.jsonc ]; then
   [ -n "$pin" ] && md="$(npx --yes "$pin" --no-globs -- "$f" 2>&1 >/dev/null)"
 fi
 # Lines added against HEAD as "<line>: <text>" (the whole file when untracked); a file keeps
-# being reported until its added CJK or em dash is gone.
+# being reported until its added CJK or em dash is gone. --diff-algorithm=minimal overrides a
+# diff.algorithm=histogram config, which can report an untouched line as re-added when lines are
+# inserted around it; a minimal diff of pure insertions adds only the inserted lines.
 if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then
-  added="$(git diff --no-color -U0 HEAD -- "$f" |
+  added="$(git diff --no-color --diff-algorithm=minimal -U0 HEAD -- "$f" |
     perl -ne 'if (/^@@ -\S+ \+(\d+)/) { $n = $1; next } next if /^\+\+\+/; if (s/^\+//) { print "$n: $_"; $n++ }')"
 else
   added="$(perl -ne 'print "$.: $_"' -- "$f")"

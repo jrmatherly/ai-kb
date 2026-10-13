@@ -117,6 +117,14 @@ for f in "$repo/a.md" "$fixture/wt/a.md"; do
   fi
   grep -q '^3: added' "$fixture/post-edit.log"
 done
+# Lines inserted around an existing em dash are not an added em dash, also under
+# diff.algorithm=histogram, which reports this edit as removing and re-adding the first line.
+printf 'x \xe2\x80\x94 y\n- item\n\nx \xe2\x80\x94 y\n' > "$repo/b.md"
+git -C "$repo" add b.md
+git -C "$repo" -c user.name=t -c user.email=t@example.com -c commit.gpgsign=false commit -qm b
+printf 'new\n- item\n\nx \xe2\x80\x94 y\n- item\n\n\nb\nb\nx \xe2\x80\x94 y\n' > "$repo/b.md"
+GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=diff.algorithm GIT_CONFIG_VALUE_0=histogram post_edit "$repo/b.md" ||
+  { echo "post-edit reported an existing em dash that inserted lines shifted" >&2; exit 1; }
 
 # markdownlint: pre-commit passes a clean staged .md and fails a bad one; post-edit reports the bad one.
 md="$fixture/md"
