@@ -21,15 +21,18 @@
     "test:docker": "node scripts/test-docker.mjs"
   },
   "devDependencies": {
-    "mermaid": "^11.16.0",
-    "playwright-core": "^1.62.0",
+    "jsdom": "^29.1.1",
+    "mermaid": "^11.17.2",
+    "playwright-core": "^1.63.0",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
-    "vue": "^3.5.13",
-    "jsdom": "^28.0.0"
+    "vue": "^3.5.43"
   },
   "version": "2026.10.13",
   "engines": {
-    "node": "^22.13.0 || >=24.0.0"
+    "node": ">=24.0.0"
+  },
+  "overrides": {
+    "vite": "^6.4.3"
   }
 }

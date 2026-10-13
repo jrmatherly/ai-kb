@@ -166,7 +166,7 @@ of today unless `npm_config_before` is set) and `DSH_INSTALL_DIR` moves the inst
 
 dsh needs a Node build with zstd support (Node ≥ 22.15 or ≥ 24) for its session persistence, and pnpm ≥ 10 on `PATH`,
 because `dsh plugin add` installs into the profile through pnpm and the profile it writes keeps its settings in
-`pnpm-workspace.yaml`. The plugin itself runs on Node ≥ 20.11 and needs neither.
+`pnpm-workspace.yaml`. The plugin itself runs on Node ≥ 24 and needs neither.
 
 `test/fixtures/api-contract.json` records every AI KB call this plugin makes. `test/contract.test.mjs` asserts the
 plugin still emits exactly those calls, and `contract/contract_test.go` asserts AI KB's real Go request and response

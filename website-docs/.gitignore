@@ -11,3 +11,4 @@ releases/
 *.tsbuildinfo
 .shots/
 .DS_Store
+homepage/next-env.d.ts

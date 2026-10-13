@@ -6,7 +6,7 @@ How skills are used is covered in [Skills and sandbox](../03-features/22-skills-
 
 A workspace's named sandbox configs can use Docker, CubeSandbox or E2B, and this page covers deploying those three backends. The Lite desktop client also has a `host` backend that relies on operating-system isolation. It is not a server-side named config; its build requirements are in [Lite host sandbox](#lite-host-sandbox) below. The old `local` backend, which ran bare host processes, has been removed. Docker talks to the Engine API directly. E2B uses the control-plane REST API and the envd data plane. Cube keeps a dedicated adapter for templates and network policy.
 
-The standard image is defined by `docker/Dockerfile.sandbox` and contains Python 3.12, Node.js 20, Bash, jq and `/workspace`. Commands and file operations run as root inside the sandbox by default. A `user` account with UID 1000 is kept for explicit per-account execution. Isolation between sessions comes from the container or remote sandbox. The working-directory convention is not a file-permission limit on root.
+The standard image is defined by `docker/Dockerfile.sandbox` and contains Python 3.12, Node.js 24, Bash, jq and `/workspace`. Commands and file operations run as root inside the sandbox by default. A `user` account with UID 1000 is kept for explicit per-account execution. Isolation between sessions comes from the container or remote sandbox. The working-directory convention is not a file-permission limit on root.
 
 | Build target | Image tag suffix | Purpose |
 | --- | --- | --- |

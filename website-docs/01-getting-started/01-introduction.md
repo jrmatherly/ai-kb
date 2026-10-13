@@ -126,7 +126,7 @@ flowchart TB
 | docreader | Python / gRPC | `docreader/` | 50051 (container network only) | File to Markdown conversion, web page capture, image extraction |
 | postgres | ParadeDB (PostgreSQL 17 + BM25 and vector extensions) | image `paradedb/paradedb` | 5432 | Primary database and default hybrid retrieval engine (`RETRIEVE_DRIVER=postgres`) |
 | redis | Redis 7 | - | 6379 | Stream management (SSE recovery), Asynq task queue |
-| sandbox | Python 3.12 + Node 20 | `docker/Dockerfile.sandbox` | - | Session sandbox image for Agent Skills |
+| sandbox | Python 3.12 + Node 24 | `docker/Dockerfile.sandbox` | - | Session sandbox image for Agent Skills |
 | Optional: qdrant / milvus / weaviate / doris | - | `docker-compose.yml` profiles | 6334 / 19530 / 9035 / 9030 | Alternative or additional vector retrieval engines (`RETRIEVE_DRIVER`) |
 | Optional: opensearch | - | `docker-compose.dev.yml` only | 9200 | Development only; production needs your own cluster |
 | Optional: elasticsearch / tencent_vectordb | - | not in compose | - | Supported in code; deploy separately and connect with `RETRIEVE_DRIVER` |
