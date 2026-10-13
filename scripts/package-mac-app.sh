@@ -45,7 +45,7 @@ echo ">> Building Wails Desktop App..."
 # Remind the user to install the wails CLI if it is missing
 if ! command -v wails >/dev/null 2>&1; then
     echo "Wails CLI not found. Please install it first:"
-    echo "go install github.com/wailsapp/wails/v2/cmd/wails@latest"
+    echo "go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0"
     exit 1
 fi
 
