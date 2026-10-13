@@ -96,7 +96,7 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 
 ## Dependencies
 
-At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock` and the `cli/` and `client/` module files are upstream's; dependency-only upstream commits are ADOPT while that holds. If this copy later takes its own upgrade policy, flip this section the way the version section did, and expect `~` on every lockfile.
+Since 2026-10-13 this copy runs its own upgrade policy (plan and holds in `private/findings/2026-10-13-dependency-upgrades.md`): `go.mod`, `go.sum`, every `package.json` and `package-lock.json`, `docreader/uv.lock`, `mcp-server/uv.lock` and the `cli/` and `client/` module files are ours, and every lockfile shows `~`. A dependency-only upstream commit is SKIP unless it fixes an advisory or a bug we have; then take the version, never the hunk: `go get`, `npm install` or `uv lock -P` the named package, and rerun the area's validate checks. Never merge an upstream lockfile hunk.
 
 ## Deviations decided 2026-10-12 (planned, not landed)
 
