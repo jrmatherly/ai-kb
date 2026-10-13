@@ -56,6 +56,15 @@ type JQError struct{ Err error }
 func (e *JQError) Error() string { return e.Err.Error() }
 func (e *JQError) Unwrap() error { return e.Err }
 
+// ParseJQ parses a --jq expression; a syntax error comes back as *JQError.
+func ParseJQ(expr string) (*gojq.Query, error) {
+	query, err := gojq.Parse(expr)
+	if err != nil {
+		return nil, &JQError{Err: fmt.Errorf("jq parse: %w", err)}
+	}
+	return query, nil
+}
+
 // writeJQ evaluates expr against raw and writes each result line by line to w.
 // String results render without quotes (so `--jq '.name'` yields shell-friendly
 // bare strings); non-string results use encoding/json.
@@ -64,9 +73,9 @@ func (e *JQError) Unwrap() error { return e.Err }
 // the caller can map them to a typed input.invalid_argument code. A failure to
 // parse `raw` itself is internal (our own envelope JSON) and stays plain.
 func writeJQ(w io.Writer, raw []byte, expr string) error {
-	query, err := gojq.Parse(expr)
+	query, err := ParseJQ(expr)
 	if err != nil {
-		return &JQError{Err: fmt.Errorf("jq parse: %w", err)}
+		return err
 	}
 	var input any
 	decoder := json.NewDecoder(bytes.NewReader(raw))

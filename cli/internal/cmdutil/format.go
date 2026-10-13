@@ -65,6 +65,7 @@ func AddFormatFlag(cmd *cobra.Command, fieldHints ...string) {
 //   - (*FormatOptions{Mode:""}, nil)        flag not set; caller should call ResolveDefault
 //   - (*FormatOptions{Mode:v,JQ:q}, nil)    valid values
 //   - (nil, *FlagError)                     invalid --format, or --jq with explicit --format text
+//   - (nil, input.invalid_argument error)   --jq does not parse (exit 5)
 //
 // --jq with --format unset is accepted: ResolveDefault and FromEnv promote a
 // text default to FormatJSON so the filter has somewhere to apply.
@@ -89,6 +90,12 @@ func CheckFormatFlag(cmd *cobra.Command) (*FormatOptions, error) {
 	// and FromEnv promote a text default to JSON.
 	if fopts.JQ != "" && fopts.Mode == FormatText {
 		return nil, NewFlagError(errors.New("--jq requires --format json|ndjson"))
+	}
+	// Parse now so a malformed --jq exits 5 before any request, not after a full --paginate fetch.
+	if fopts.JQ != "" {
+		if _, err := format.ParseJQ(fopts.JQ); err != nil {
+			return nil, mapJQError(err)
+		}
 	}
 	return fopts, nil
 }

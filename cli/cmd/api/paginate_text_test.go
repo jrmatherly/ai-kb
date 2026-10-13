@@ -83,7 +83,11 @@ func TestAPI_PaginateFormats(t *testing.T) {
 		},
 		{
 			name: "text environment malformed jq", bodies: pages, env: "text",
-			flags: []string{"--jq", "["}, wantExit: 5, errMsg: "jq parse", errCalls: 3,
+			flags: []string{"--jq", "["}, wantExit: 5, errMsg: "jq parse", errCalls: 0,
+		},
+		{
+			name: "json malformed jq fetches nothing", bodies: pages,
+			flags: []string{"--format", "json", "--jq", "["}, wantExit: 5, errMsg: "jq parse", errCalls: 0,
 		},
 		{
 			name: "text jq rejected", bodies: pages, flags: []string{"--format", "text", "--jq", ".data"},
