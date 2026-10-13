@@ -75,4 +75,25 @@ if (cd "$gate" && printf '\xe4\xb8\xad\n' > b.txt && git add b.txt && ./check.sh
 fi
 grep -q '^b.txt: ' "$gate/out.log"
 
+# post-edit hook: an em dash already in a tracked file is not reported and an added one is, also for a
+# worktree file while CLAUDE_PROJECT_DIR names the main checkout (as in a worktree session).
+repo="$fixture/repo"
+mkdir -p "$repo/scripts" && git -C "$repo" init -q
+cp "$repo_root/scripts/check-english-only.sh" "$repo/scripts/"
+printf 'old \xe2\x80\x94 line\n' > "$repo/a.md"
+git -C "$repo" add -A
+git -C "$repo" -c user.name=t -c user.email=t@example.com -c commit.gpgsign=false commit -qm seed
+git -C "$repo" worktree add -q "$fixture/wt" 2>/dev/null
+post_edit() { printf '{"tool_input":{"file_path":"%s"}}' "$1" | CLAUDE_PROJECT_DIR="$repo" "$repo_root/.claude/hooks/post-edit.sh"; }
+for f in "$repo/a.md" "$fixture/wt/a.md"; do
+  printf 'plain line\n' >> "$f"
+  post_edit "$f" || { echo "post-edit reported the existing em dash in $f" >&2; exit 1; }
+  printf 'added \xe2\x80\x94 dash\n' >> "$f"
+  if post_edit "$f" 2> "$fixture/post-edit.log"; then
+    echo "post-edit missed the em dash added to $f" >&2
+    exit 1
+  fi
+  grep -q '^3: added' "$fixture/post-edit.log"
+done
+
 echo 'Git hook coverage checks passed'
