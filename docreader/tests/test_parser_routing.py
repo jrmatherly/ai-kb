@@ -1,7 +1,9 @@
+import os
 import unittest
 
 from docreader.models.document import Document
 from docreader.parser.base_parser import BaseParser
+from docreader.parser.excel_parser import ExcelParser
 from docreader.parser.parser import Parser, detect_effective_file_type
 from docreader.parser.markitdown_parser import MarkitdownParser
 from docreader.parser.pdf_parser import PDFParser
@@ -38,6 +40,20 @@ class ParserRoutingTest(unittest.TestCase):
         parser_class = registry.get_parser_class(BUILTIN_ENGINE, "xmind")
 
         self.assertIs(parser_class, XMindParser)
+
+    def test_builtin_engine_parses_xlsb_workbook(self):
+        self.assertIs(registry.get_parser_class(BUILTIN_ENGINE, ".XLSB"), ExcelParser)
+        path = os.path.join(os.path.dirname(__file__), "fixtures", "pandas-test1.xlsb")
+        with open(path, "rb") as handle:
+            content = handle.read()
+
+        result = Parser().parse_file("pandas-test1.xlsb", "xlsb", content)
+
+        self.assertIn(
+            "A: 2000-01-03 00:00:00,B: 0.980268513777,C: 3.68573087906,"
+            "D: -0.364216805298,E: -1.15973806169\n",
+            result.content,
+        )
 
     def test_legacy_doc_payload_renamed_to_docx_uses_doc_parser(self):
         registry = _RecordingRegistry()

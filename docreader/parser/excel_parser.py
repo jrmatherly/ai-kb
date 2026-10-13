@@ -1,7 +1,7 @@
 """
 Excel Parser Module
 
-This module provides functionality to parse Excel files (.xlsx, .xls) into
+This module provides functionality to parse Excel files (.xlsx, .xls, .xlsb) into
 structured Document objects with text content and chunks. It supports multiple
 sheets and handles various Excel formats using pandas.
 """
@@ -48,7 +48,7 @@ def _is_image_function(value: object) -> bool:
 
 
 class ExcelParser(BaseParser):
-    """Parser for Excel files (.xlsx, .xls).
+    """Parser for Excel files (.xlsx, .xls, .xlsb).
     
     This parser extracts text content from Excel files by processing all sheets
     and converting each row into a structured text format. Each row becomes a
