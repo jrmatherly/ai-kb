@@ -135,7 +135,7 @@ cp "$repo_root/scripts/check-english-only.sh" "$repo_root/scripts/check-emdash.s
 cp "$repo_root/.markdownlint-cli2.jsonc" "$md/"
 printf '# Good\n\nText.\n' > "$md/good.md"
 git -C "$md" add good.md
-if ! "$md/scripts/git-hooks/pre-commit" > "$fixture/md.log" 2>&1; then
+if ! (cd "$md" && scripts/git-hooks/pre-commit) > "$fixture/md.log" 2>&1; then
   cat "$fixture/md.log" >&2
   echo "pre-commit rejected a clean Markdown file" >&2
   exit 1
@@ -143,7 +143,7 @@ fi
 grep -q 'markdownlint (1 staged' "$fixture/md.log"
 printf '# Bad\n#296 starts a line\n' > "$md/bad.md"
 git -C "$md" add bad.md
-if "$md/scripts/git-hooks/pre-commit" > "$fixture/md.log" 2>&1; then
+if (cd "$md" && scripts/git-hooks/pre-commit) > "$fixture/md.log" 2>&1; then
   echo "pre-commit accepted a Markdown file with lint errors" >&2
   exit 1
 fi
