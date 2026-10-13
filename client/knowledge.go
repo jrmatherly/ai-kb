@@ -204,11 +204,7 @@ func (c *Client) CreateKnowledgeFromFile(ctx context.Context,
 	// Parse the response
 	var response KnowledgeResponse
 	if resp.StatusCode == http.StatusConflict {
-		existing, err := decodeDuplicateKnowledge(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		return existing, ErrDuplicateFile
+		return decodeDuplicateKnowledge(resp, "duplicate_file", ErrDuplicateFile)
 	} else if err := parseResponse(resp, &response); err != nil {
 		return nil, err
 	}
@@ -216,18 +212,24 @@ func (c *Client) CreateKnowledgeFromFile(ctx context.Context,
 }
 
 // decodeDuplicateKnowledge reads the existing entry a duplicate 409 carries in error.details.data.
-func decodeDuplicateKnowledge(body io.Reader) (*Knowledge, error) {
+func decodeDuplicateKnowledge(resp *http.Response, code string, sentinel error) (*Knowledge, error) {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
 	var conflict struct {
 		Error struct {
 			Details struct {
+				Code string    `json:"code"`
 				Data Knowledge `json:"data"`
 			} `json:"details"`
 		} `json:"error"`
 	}
-	if err := json.NewDecoder(body).Decode(&conflict); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
+	// Other 409s (a missing workspace, for one) are plain API errors, not duplicates.
+	if json.Unmarshal(body, &conflict) != nil || conflict.Error.Details.Code != code {
+		return nil, newAPIError(resp.StatusCode, body)
 	}
-	return &conflict.Error.Details.Data, nil
+	return &conflict.Error.Details.Data, sentinel
 }
 
 // CreateKnowledgeFromURLRequest contains the parameters for creating a knowledge entry from a URL.
@@ -271,11 +273,7 @@ func (c *Client) CreateKnowledgeFromURL(
 
 	var response KnowledgeResponse
 	if resp.StatusCode == http.StatusConflict {
-		existing, err := decodeDuplicateKnowledge(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		return existing, ErrDuplicateURL
+		return decodeDuplicateKnowledge(resp, "duplicate_url", ErrDuplicateURL)
 	} else if err := parseResponse(resp, &response); err != nil {
 		return nil, err
 	}

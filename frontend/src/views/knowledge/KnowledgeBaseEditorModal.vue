@@ -1791,7 +1791,7 @@ const doSubmit = async () => {
     // message and jump the user back to the Vector Store section so
     // they can pick a different store or fall back to the system
     // default.
-    const code = error?.response?.data?.error?.code ?? error?.code
+    const code = error?.error?.code ?? error?.code
     if (code === 2200) {
       MessagePlugin.error(t('knowledgeEditor.errors.vectorStoreBindingInvalid'))
       currentSection.value = 'vectorStore'

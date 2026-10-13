@@ -237,7 +237,7 @@ func (c *Client) Raw(ctx context.Context, method, path string, body interface{})
 type APIError struct {
 	StatusCode int    // HTTP status (401, 404, 409, 429, 500, …)
 	Body       string // raw response body
-	Code       int    // server's structured error code ({"code":N}); 0 when absent/non-JSON
+	Code       int    // server's structured error code (error.code); 0 when absent/non-JSON
 }
 
 func (e *APIError) Error() string {

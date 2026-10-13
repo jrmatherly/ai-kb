@@ -490,7 +490,7 @@ export function testMultimodalFunction(testData: {
                 if (data.success) {
                     resolve(data.data || {});
                 } else {
-                    resolve({ success: false, message: data.message || t('error.initialization.testFailed') });
+                    resolve({ success: false, message: data.error?.message || data.message || t('error.initialization.testFailed') });
                 }
             })
             .catch((error: any) => {
