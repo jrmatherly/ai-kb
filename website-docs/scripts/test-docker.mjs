@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { setTimeout } from 'node:timers/promises';
 
-const image = process.argv[2] || 'ai-kb-site:0.8.2';
+const version = readFileSync(new URL('../VERSION', import.meta.url), 'utf8').trim();
+const image = process.argv[2] || `ai-kb-site:${version}`;
 const name = `ai-kb-site-test-${randomUUID()}`;
 function docker(...args) {
   const result = spawnSync('docker', args, { encoding: 'utf8' });
