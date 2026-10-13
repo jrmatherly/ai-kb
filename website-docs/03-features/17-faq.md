@@ -65,6 +65,8 @@ flowchart TB
 
 The counters on the progress object `FAQImportProgress`: `success_count` / `failed_count` / `partial_failed_count` (a similar or negative question was dropped but the entry was imported) / `skipped_count` (duplicates skipped) / `merged_count` / `added_count`, `failed_entries[]` (failure reason and original content) and `failed_entries_url`, `import_mode`, `processing_time`; task status `pending → processing → completed / failed`.
 
+An import task retries up to 5 times. Before each batch it records that batch's chunk IDs in the progress object; the next attempt, or the final failure, deletes those chunks if they were never indexed, plus any stored but unindexed chunk older than one attempt's 2-hour timeout. A single entry created while the import runs is left alone. A retry keeps the earlier validation result and resumes after the entries already imported.
+
 Export comes in two formats: CSV (header row `tag_name(required)`, `standard_question(required)`, `similar_questions(optional - separate multiple with ##)`, `negative_questions(optional - separate multiple with ##)`, `answers(required - separate multiple with ##)`, `answer_all(optional - default FALSE)`, `is_disabled(optional - default FALSE)`, `not_recommended(optional - default FALSE means recommendable)`, booleans as `TRUE` / `FALSE`, the same header as the UI template; a BOM is prepended so Excel reads it as UTF-8) and JSON (`FAQExportEntry`, compatible with the import payload, so export → edit → reimport is a closed loop).
 
 ### Hit policy

@@ -132,7 +132,7 @@ This section lists every public `Client` method by resource, so you can find the
 | Method | Description |
 | --- | --- |
 | `CreateKnowledgeFromFile` | Uploads a local file as a knowledge item (multipart; supports metadata, the multimodal switch, a custom file name, the channel and parse config overrides) |
-| `CreateKnowledgeFromURL` | Creates a knowledge item from a URL |
+| `CreateKnowledgeFromURL` | Creates a knowledge item from a URL. On a 409 duplicate, both create calls return the existing item with `ErrDuplicateFile` or `ErrDuplicateURL`, read from `error.details.data` |
 | `GetKnowledge` | Returns knowledge item details |
 | `GetKnowledgeBatch` | Returns several knowledge items at once |
 | `ListKnowledge` | Lists knowledge items with pagination |
@@ -446,7 +446,7 @@ if errors.As(err, &apiErr) {
 }
 ```
 
-`Code` is the structured error code from the `{"code":N}` response body. The package defines the constants `ServerErrBadRequest` (1000) through `ServerErrValidation` (1010). `Error()` keeps the old `"HTTP error <status>: <body>"` format for consumers that match on the string.
+`Code` is the structured error code from `error.code` in the `{"success":false,"error":{"code":N,"message":"..."}}` response body (a top-level `{"code":N}` is still read). It is 0 when the body is not JSON or `error` is a plain string. The package defines the constants `ServerErrBadRequest` (1000) through `ServerErrValidation` (1010). `Error()` keeps the old `"HTTP error <status>: <body>"` format for consumers that match on the string.
 
 ### Stream layer: `SSEStreamError` (`client/stream_errors.go`)
 

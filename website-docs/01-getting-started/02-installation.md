@@ -182,7 +182,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 | `scripts/start_all.sh` | One-command start: flags `-o` (Ollama only), `-d` (Docker only), `-a` (everything, default), `-s` (stop), `-c` (check the environment), `-r` (rebuild and restart one container), `-l` (list containers), `-p` (pull images), `--no-pull` (start without pulling); detects compose v1/v2, sets `PLATFORM` from `uname -m`, pre-pulls the sandbox image in the background |
 | `scripts/dev.sh` | Development orchestration (see above), subcommands `start/stop/restart/logs/status/app/frontend` |
 | `scripts/check-env.sh` | Development-environment check, run directly (`make check-env` runs the deployment check above instead). Validates the required `.env` variables (`DB_*` for the postgres or sqlite driver, `STORAGE_TYPE` and `REDIS_ADDR`; secrets are reported as set, not printed; the optional `OLLAMA_BASE_URL` is shown with its default) and the Go/npm/Docker/Air toolchain |
-| `scripts/build_images.sh` | Builds the images and injects version information (git tag / commit / build time), supports cross-architecture builds |
+| `scripts/build_images.sh` | Builds the images and injects version information (the `VERSION` file, commit, build time), supports cross-architecture builds |
 | `scripts/build_frontend_dist.sh` | Builds the frontend static assets `frontend/dist` on the host (Lite and desktop packaging and other non-Docker cases; the UI image is built by the multi-stage Dockerfile instead) |
 | `scripts/migrate.sh` | golang-migrate wrapper |
 | `scripts/docker-entrypoint.sh` | app container entry point (ownership fix + docker.sock GID group + gosu privilege drop) |
