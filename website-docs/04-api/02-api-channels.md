@@ -135,7 +135,7 @@ Purpose: create a web embed channel for an agent. Permission: Admin+.
 | `header_title_mode` | string | no | `channel` (default) / `session` |
 | `show_suggested_questions` | bool | no | Default true |
 | `allow_web_search` / `allow_file_upload` | bool | no | Default false |
-| `default_locale` | string | no | `en-US`, `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` or empty (the default); any other value is stored as empty without an error. The widget renders in `en-US` whatever the value, and replies follow `AIKB_LANGUAGE`, then the request's `Accept-Language`, then `en-US`. The admin UI has no picker for it |
+| `default_locale` | string | no | `en-US`, `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` or empty (the default); any other value returns 400, as for IM channels. The widget renders in `en-US` whatever the value, and replies follow `AIKB_LANGUAGE`, then the request's `Accept-Language`, then `en-US`. The admin UI has no picker for it |
 
 `webhook_url`, `webhook_secret` and `agent_id` are accepted only by the update endpoint below; the agent comes from the path on create.
 

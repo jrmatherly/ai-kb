@@ -80,7 +80,7 @@ func (h *IMHandler) CreateIMChannel(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": invalidIMPlatformError})
 		return
 	}
-	locale, err := normalizeIMLocale(req.Locale)
+	locale, err := normalizeLocale(req.Locale)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -247,7 +247,7 @@ func (h *IMHandler) UpdateIMChannel(c *gin.Context) {
 		channel.OutputMode = *req.OutputMode
 	}
 	if req.Locale != nil {
-		locale, err := normalizeIMLocale(*req.Locale)
+		locale, err := normalizeLocale(*req.Locale)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -294,7 +294,7 @@ func (h *IMHandler) UpdateIMChannel(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": channel})
 }
 
-func normalizeIMLocale(locale string) (string, error) {
+func normalizeLocale(locale string) (string, error) {
 	locale = strings.TrimSpace(locale)
 	if locale == "" {
 		return "", nil

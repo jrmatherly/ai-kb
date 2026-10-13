@@ -24,12 +24,12 @@ func TestNormalizeIMLocale(t *testing.T) {
 		{name: "unsupported", locale: "fr-FR", wantErr: true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := normalizeIMLocale(tt.locale)
+			got, err := normalizeLocale(tt.locale)
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("normalizeIMLocale(%q) error = %v, wantErr %v", tt.locale, err, tt.wantErr)
+				t.Fatalf("normalizeLocale(%q) error = %v, wantErr %v", tt.locale, err, tt.wantErr)
 			}
 			if got != tt.want {
-				t.Fatalf("normalizeIMLocale(%q) = %q, want %q", tt.locale, got, tt.want)
+				t.Fatalf("normalizeLocale(%q) = %q, want %q", tt.locale, got, tt.want)
 			}
 		})
 	}

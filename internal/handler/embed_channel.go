@@ -128,6 +128,11 @@ func (h *EmbedChannelHandler) CreateEmbedChannel(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	defaultLocale, err := normalizeLocale(stringOrEmpty(req.DefaultLocale))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	originsJSON, _ := json.Marshal(req.AllowedOrigins)
 	enabled := true
 	if req.Enabled != nil {
@@ -159,7 +164,7 @@ func (h *EmbedChannelHandler) CreateEmbedChannel(c *gin.Context) {
 		WidgetPosition:         req.WidgetPosition,
 		AllowWebSearch:         allowWebSearch,
 		AllowFileUpload:        allowFileUpload,
-		DefaultLocale:          types.NormalizeEmbedDefaultLocale(stringOrEmpty(req.DefaultLocale)),
+		DefaultLocale:          defaultLocale,
 	})
 	if err != nil {
 		writeEmbedMgmtError(c, err)
@@ -217,6 +222,14 @@ func (h *EmbedChannelHandler) UpdateEmbedChannel(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+	}
+	if req.DefaultLocale != nil {
+		locale, err := normalizeLocale(*req.DefaultLocale)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		req.DefaultLocale = &locale
 	}
 	if req.WebhookURL != nil {
 		if err := service.ValidateEmbedWebhookURL(*req.WebhookURL); err != nil {
