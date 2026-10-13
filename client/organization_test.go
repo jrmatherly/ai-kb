@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -37,5 +38,47 @@ func TestSearchTenantsForInvite(t *testing.T) {
 	want := []TenantInviteCandidate{{TenantID: 10002, TenantName: "Team B"}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("candidates = %+v, want %+v", got, want)
+	}
+}
+
+// inviteServer records the body of POST /api/v1/organizations/org-1/invite.
+func inviteServer(t *testing.T, body *string) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method != http.MethodPost || r.URL.Path != "/api/v1/organizations/org-1/invite" {
+			t.Errorf("request = %s %s, want POST /api/v1/organizations/org-1/invite", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		b, _ := io.ReadAll(r.Body)
+		*body = string(b)
+		_, _ = w.Write([]byte(`{"success":true}`))
+	}))
+}
+
+func TestInviteTenant(t *testing.T) {
+	var body string
+	srv := inviteServer(t, &body)
+	defer srv.Close()
+
+	candidate := TenantInviteCandidate{TenantID: 10002, TenantName: "Team B"}
+	if err := NewClient(srv.URL).InviteTenant(context.Background(), "org-1", candidate.TenantID, "viewer"); err != nil {
+		t.Fatal(err)
+	}
+	if want := `{"role":"viewer","tenant_id":10002}`; body != want {
+		t.Errorf("body = %s, want %s", body, want)
+	}
+}
+
+func TestInviteMemberByUserID(t *testing.T) {
+	var body string
+	srv := inviteServer(t, &body)
+	defer srv.Close()
+
+	if err := NewClient(srv.URL).InviteMember(context.Background(), "org-1", "u-1", "editor"); err != nil {
+		t.Fatal(err)
+	}
+	if want := `{"role":"editor","user_id":"u-1"}`; body != want {
+		t.Errorf("body = %s, want %s", body, want)
 	}
 }

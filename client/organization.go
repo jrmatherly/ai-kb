@@ -394,12 +394,19 @@ func (c *Client) SearchTenantsForInvite(
 	return result.Data, nil
 }
 
-// InviteMember directly invites a user to an organization (admin only)
+// InviteTenant directly adds a workspace to an organization (admin only), for
+// example a TenantInviteCandidate.TenantID from SearchTenantsForInvite.
+func (c *Client) InviteTenant(ctx context.Context, orgID string, tenantID uint64, role string) error {
+	return c.invite(ctx, orgID, map[string]any{"tenant_id": tenantID, "role": role})
+}
+
+// InviteMember directly adds the workspace of userID to an organization
+// (admin only). Prefer InviteTenant.
 func (c *Client) InviteMember(ctx context.Context, orgID, userID, role string) error {
-	req := map[string]string{
-		"user_id": userID,
-		"role":    role,
-	}
+	return c.invite(ctx, orgID, map[string]any{"user_id": userID, "role": role})
+}
+
+func (c *Client) invite(ctx context.Context, orgID string, req map[string]any) error {
 	resp, err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/api/v1/organizations/%s/invite", orgID), req, nil)
 	if err != nil {
 		return err
