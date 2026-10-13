@@ -1,7 +1,6 @@
 package errors
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -60,9 +59,10 @@ type AppError struct {
 	HTTPCode int       `json:"-"`
 }
 
-// Error implements the error interface
+// Error returns the message alone: callers paste it into agent tool results
+// and response bodies, where the numeric code means nothing to the reader.
 func (e *AppError) Error() string {
-	return fmt.Sprintf("error code: %d, error message: %s", e.Code, e.Message)
+	return e.Message
 }
 
 // WithDetails adds error details
