@@ -195,12 +195,12 @@ The four URL forms and how each channel obtains them are described in [External 
 
 | Name | Default | Description |
 | --- | --- | --- |
-| `STORAGE_TYPE` | local | `local` / `minio` / `cos` / `tos` / `s3` / `obs` / `oss` |
+| `STORAGE_TYPE` | local | `local` / `minio` / `cos` / `tos` / `s3` / `obs` / `oss` / `ks3` |
 | `STORAGE_ALLOW_LIST` | empty | Whitelist of storage types users may choose (comma-separated); accepted values `local`, `minio`, `cos`, `tos`, `s3`, `oss`, `ks3`, `obs` |
 | `LOCAL_STORAGE_BASE_DIR` | /data/files | Root directory of local storage |
 | `MINIO_ENDPOINT/ACCESS_KEY_ID/SECRET_ACCESS_KEY/BUCKET_NAME/USE_SSL` | minio:9000 / minioadmin / minioadmin / empty / false | MinIO |
 | `COS_SECRET_ID/SECRET_KEY/REGION/BUCKET_NAME/APP_ID/PATH_PREFIX` | empty | Tencent Cloud COS (also TEMP_BUCKET_NAME/TEMP_REGION) |
-| `S3_*` / `OBS_*` / `OSS_*` / `TOS_*` | see `.env.example` section B4 | AWS S3 / Huawei OBS / Alibaba OSS / Volcengine TOS; each has ENDPOINT/REGION/KEY/BUCKET/PATH_PREFIX and so on |
+| `S3_*` / `OBS_*` / `OSS_*` / `TOS_*` / `KS3_*` | see `.env.example` section B4 | AWS S3 / Huawei OBS / Alibaba OSS / Volcengine TOS / Kingsoft Cloud KS3; each has ENDPOINT/REGION/KEY/BUCKET/PATH_PREFIX and so on |
 
 For AWS S3, `S3_ACCESS_KEY` / `S3_SECRET_KEY` can **both be left empty**. The AWS SDK default credential chain is then used, which supports EC2/ECS/EKS IAM roles, IRSA/Web Identity, environment variables and shared configuration files, so a deployment on AWS does not need long-lived keys in its environment. Set both or neither. When `S3_ENDPOINT` is empty, the standard endpoint of the region is used.
 

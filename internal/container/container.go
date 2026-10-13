@@ -1251,6 +1251,26 @@ func initRawFileService(_ *config.Config) (interfaces.FileService, error) {
 			os.Getenv("OSS_TEMP_BUCKET_NAME"),
 			os.Getenv("OSS_TEMP_REGION"),
 		)
+	case "ks3":
+		if os.Getenv("KS3_ENDPOINT") == "" ||
+			os.Getenv("KS3_REGION") == "" ||
+			os.Getenv("KS3_ACCESS_KEY") == "" ||
+			os.Getenv("KS3_SECRET_KEY") == "" ||
+			os.Getenv("KS3_BUCKET_NAME") == "" {
+			return nil, fmt.Errorf("missing KS3 configuration")
+		}
+		pathPrefix := os.Getenv("KS3_PATH_PREFIX")
+		if pathPrefix == "" {
+			pathPrefix = "aikb/"
+		}
+		return file.NewKS3FileService(
+			os.Getenv("KS3_ENDPOINT"),
+			os.Getenv("KS3_REGION"),
+			os.Getenv("KS3_ACCESS_KEY"),
+			os.Getenv("KS3_SECRET_KEY"),
+			os.Getenv("KS3_BUCKET_NAME"),
+			pathPrefix,
+		)
 	case "local":
 		baseDir := os.Getenv("LOCAL_STORAGE_BASE_DIR")
 		if baseDir == "" {

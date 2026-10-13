@@ -51,6 +51,24 @@ func TestStorageBackendFromEnvironment(t *testing.T) {
 	assert.Equal(t, "bucket", backend.Config.BucketName)
 }
 
+func TestStorageBackendFromEnvironmentKS3(t *testing.T) {
+	t.Setenv("STORAGE_TYPE", "ks3")
+	t.Setenv("KS3_ENDPOINT", "https://ks3-cn-beijing.ksyuncs.com")
+	t.Setenv("KS3_REGION", "cn-beijing")
+	t.Setenv("KS3_ACCESS_KEY", "access")
+	t.Setenv("KS3_SECRET_KEY", "secret")
+	t.Setenv("KS3_BUCKET_NAME", "bucket")
+	t.Setenv("KS3_PATH_PREFIX", "aikb/")
+
+	backend := StorageBackendFromEnvironment(42)
+	require.NotNil(t, backend)
+	assert.Equal(t, "ks3", backend.Provider)
+	assert.Equal(t, &KS3EngineConfig{
+		Endpoint: "https://ks3-cn-beijing.ksyuncs.com", Region: "cn-beijing", AccessKey: "access",
+		SecretKey: "secret", BucketName: "bucket", PathPrefix: "aikb/",
+	}, backend.ToStorageEngineConfig().KS3)
+}
+
 func TestStorageBackendRejectsTraversingPathPrefix(t *testing.T) {
 	backend := &StorageBackend{
 		TenantID: 1, Name: "unsafe", Provider: "local",

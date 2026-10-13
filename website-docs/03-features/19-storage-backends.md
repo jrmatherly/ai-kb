@@ -88,3 +88,5 @@ The `storage_backends` table is isolated by `tenant_id` and uses soft deletes. K
 | `legacy_alias` | See below |
 
 `legacy_alias` keeps storage that was configured through environment variables working. An upgrade creates an alias record so that existing file paths still resolve without moving any data. One workspace may hold only one alias record per provider; manually registered instances are stored independently of it, and an alias record cannot be deleted while old file paths may still reference it.
+
+The process-wide `STORAGE_TYPE` accepts every provider above, `ks3` included. Its connection settings come from that provider's environment variables (`KS3_ENDPOINT`, `KS3_REGION`, `KS3_ACCESS_KEY`, `KS3_SECRET_KEY`, `KS3_BUCKET_NAME` and the optional `KS3_PATH_PREFIX` for KS3; `.env.example` section B4 lists them all), and a workspace without its own storage configuration gets a read-only `source: env` record for it.

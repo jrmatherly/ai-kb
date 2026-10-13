@@ -268,6 +268,13 @@ services:
       - OSS_PATH_PREFIX=${OSS_PATH_PREFIX:-ai-kb/}
       - OSS_TEMP_BUCKET_NAME=${OSS_TEMP_BUCKET_NAME:-}
       - OSS_TEMP_REGION=${OSS_TEMP_REGION:-}
+      # ----- Kingsoft Cloud KS3 (STORAGE_TYPE=ks3) -----
+      - KS3_ENDPOINT=${KS3_ENDPOINT:-}
+      - KS3_REGION=${KS3_REGION:-}
+      - KS3_ACCESS_KEY=${KS3_ACCESS_KEY:-}
+      - KS3_SECRET_KEY=${KS3_SECRET_KEY:-}
+      - KS3_BUCKET_NAME=${KS3_BUCKET_NAME:-}
+      - KS3_PATH_PREFIX=${KS3_PATH_PREFIX:-ai-kb/}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       # When Ollama is unavailable, warn instead of blocking (applies when true)
       - OLLAMA_OPTIONAL=${OLLAMA_OPTIONAL:-true}
