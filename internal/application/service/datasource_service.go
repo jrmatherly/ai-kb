@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"net/textproto"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -780,7 +782,7 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 		return err
 	}
 
-	s.reconcileDeletions(ctx, ds, nextCursor, seen, result)
+	s.reconcileDeletions(ctx, ds, config.ResourceIDs, nextCursor, seen, payload.AllowMassDeletion, result)
 	resultJSON, _ = result.ToJSON()
 
 	// Update cursor for next incremental sync
@@ -809,6 +811,13 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 		}
 		syncErrorMessage += fmt.Sprintf("%d document(s) failed to sync", result.Failed)
 		syncErrorMessage += deletionFailureNote(result.DeletionFailed, ds.Type)
+	}
+	if held := reconcileHeld(result.Reconcile); held != "" {
+		syncStatus = types.SyncLogStatusPartial
+		if syncErrorMessage != "" {
+			syncErrorMessage += "; "
+		}
+		syncErrorMessage += held
 	}
 	s.updateSyncRunResult(ctx, ds, syncLog, result, resultJSON, syncStatus, syncErrorMessage, wasPaused)
 
@@ -916,52 +925,140 @@ func isSeen(seen map[string]struct{}, externalID string) bool {
 	return ok
 }
 
+// Sync-log codes for a reconcile that deleted nothing on purpose; the frontend
+// localizes each as datasource.syncError.<code>.
+const (
+	syncCodeDeletionGuardTripped       = "deletion_guard_tripped"
+	syncCodeReconcileListingEmpty      = "reconcile_listing_empty"
+	syncCodeReconcileListingIncomplete = "reconcile_listing_incomplete"
+)
+
+// The mass-deletion guard holds back a reconcile that would delete at least
+// deletionGuardMaxCount items, or at least deletionGuardMinCount items that are
+// also deletionGuardPercent of what the data source owns. 10% is the Algolia
+// Crawler's default lost-records limit and 500 is Entra Connect's default
+// deletion threshold; the floor lets a small source's routine deletions through.
+const (
+	deletionGuardMinCount = 10
+	deletionGuardPercent  = 10
+	deletionGuardMaxCount = 500
+)
+
+func deletionGuardTrips(stale, owned int) bool {
+	return stale >= deletionGuardMaxCount ||
+		(stale >= deletionGuardMinCount && stale*100 >= owned*deletionGuardPercent)
+}
+
+// selectionTracksSource lists the reconciling connectors whose items store, as
+// source_resource_id, the selected resource ID they were listed under, so an
+// item whose ID is no longer selected was deselected. Seafile is absent: it
+// stores the library root while the selection may name folders inside it, so
+// its stale items all count as missing.
+var selectionTracksSource = map[string]bool{
+	types.ConnectorTypeFeishu:      true,
+	types.ConnectorTypeLark:        true,
+	types.ConnectorTypeFeishuDrive: true,
+	types.ConnectorTypeLarkDrive:   true,
+	types.ConnectorTypeConfluence:  true,
+	types.ConnectorTypeDingTalk:    true,
+}
+
 // reconcileDeletions runs after a full sync with deletion sync on. When the
 // connector reports a complete listing it deletes, through the same path as a
 // connector tombstone, every item this data source owns that the run did not
 // emit. That also retries deletions that failed in earlier syncs, whose
 // tombstones the connector has since dropped. seen is nil when the run is not a
-// full sync with deletion sync on.
+// full sync with deletion sync on. Unless allowMass is set, an empty listing or
+// a mass deletion (deletionGuardTrips) deletes nothing and is reported in
+// result.Reconcile instead.
 func (s *DataSourceService) reconcileDeletions(
-	ctx context.Context, ds *types.DataSource, next *types.SyncCursor,
-	seen map[string]struct{}, result *types.SyncResult,
+	ctx context.Context, ds *types.DataSource, selection []string, next *types.SyncCursor,
+	seen map[string]struct{}, allowMass bool, result *types.SyncResult,
 ) {
 	if seen == nil {
 		return
 	}
 	if next == nil || !next.CompleteListing {
-		logger.Infof(ctx, "skipping deletion reconcile for ds=%s: the connector did not report "+
-			"a complete listing of every selected resource", ds.ID)
+		result.Reconcile = &types.SyncReconcile{Held: &types.SyncItemError{
+			Code:    syncCodeReconcileListingIncomplete,
+			Message: "Deletions were not reconciled: the connector did not list every selected resource completely",
+		}}
 		return
 	}
-	owned, err := s.knowledgeService.GetRepository().ListDataSourceExternalIDs(
+	owned, err := s.knowledgeService.GetRepository().ListDataSourceItems(
 		ctx, ds.TenantID, ds.KnowledgeBaseID, ds.ID)
 	if err != nil {
 		logger.Errorf(ctx, "skipping deletion reconcile for ds=%s: list owned items: %v", ds.ID, err)
 		return
 	}
-	if len(seen) == 0 && len(owned) > 0 {
+	report := &types.SyncReconcile{}
+	result.Reconcile = report
+	if len(seen) == 0 && len(owned) > 0 && !allowMass {
 		// An empty listing more likely means lost access than an emptied source.
-		logger.Warnf(ctx, "skipping deletion reconcile for ds=%s: the listing returned nothing "+
-			"while the data source owns %d item(s)", ds.ID, len(owned))
+		report.Held = &types.SyncItemError{
+			Code:   syncCodeReconcileListingEmpty,
+			Params: map[string]string{"owned": strconv.Itoa(len(owned))},
+			Message: fmt.Sprintf("Deletions held back: the listing returned nothing while the data source "+
+				"owns %d item(s)", len(owned)),
+		}
 		return
 	}
-	stale := 0
-	for _, externalID := range owned {
-		if isSeen(seen, externalID) {
+	selected := make(map[string]bool, len(selection))
+	for _, id := range selection {
+		selected[id] = true
+	}
+	var stale []types.DataSourceItemRef
+	for _, item := range owned {
+		if isSeen(seen, item.ExternalID) {
 			continue
 		}
+		stale = append(stale, item)
+		if selectionTracksSource[ds.Type] && item.SourceResourceID != "" && !selected[item.SourceResourceID] {
+			report.Deselected++
+		} else {
+			report.Missing++
+		}
+	}
+	if !allowMass && deletionGuardTrips(len(stale), len(owned)) {
+		percent := len(stale) * 100 / len(owned)
+		report.Held = &types.SyncItemError{
+			Code: syncCodeDeletionGuardTripped,
+			Params: map[string]string{
+				"count": strconv.Itoa(len(stale)), "owned": strconv.Itoa(len(owned)),
+				"percent": strconv.Itoa(percent), "deselected": strconv.Itoa(report.Deselected),
+			},
+			Message: fmt.Sprintf("Deletions held back: %d item(s), %d%% of the %d this data source owns "+
+				"(%d from resources removed from the selection); run Sync and apply deletions if this is expected",
+				len(stale), percent, len(owned), report.Deselected),
+		}
+		for _, item := range stale[:min(len(stale), maxSyncResultErrors)] {
+			report.Pending = append(report.Pending, cmp.Or(item.Title, item.ExternalID))
+		}
+		logger.Warnf(ctx, "deletion guard held back reconcile for ds=%s: %d of %d owned item(s)",
+			ds.ID, len(stale), len(owned))
+		return
+	}
+	for i, item := range stale {
 		if err := ctx.Err(); err != nil {
-			logger.Warnf(ctx, "deletion reconcile for ds=%s stopped after %d deletion(s): %v", ds.ID, stale, err)
+			logger.Warnf(ctx, "deletion reconcile for ds=%s stopped after %d deletion(s): %v", ds.ID, i, err)
 			return
 		}
-		stale++
 		result.Total++
 		s.applyFetchedItem(withKBActivitySuppressed(ctx), ds,
-			&types.FetchedItem{ExternalID: externalID, IsDeleted: true}, nil, result)
+			&types.FetchedItem{ExternalID: item.ExternalID, Title: item.Title, IsDeleted: true}, nil, result)
 	}
-	logger.Infof(ctx, "deletion reconcile for ds=%s: %d owned item(s), %d missing from the listing",
-		ds.ID, len(owned), stale)
+	logger.Infof(ctx, "deletion reconcile for ds=%s: %d owned item(s), %d deselected, %d missing from the listing",
+		ds.ID, len(owned), report.Deselected, report.Missing)
+}
+
+// reconcileHeld returns the sync-log message of a reconcile that held back
+// deletions an operator may need to apply, or "" when there is none. An
+// incomplete listing is not one: the next complete full sync reconciles.
+func reconcileHeld(r *types.SyncReconcile) string {
+	if r == nil || r.Held == nil || r.Held.Code == syncCodeReconcileListingIncomplete {
+		return ""
+	}
+	return r.Held.Message
 }
 
 // applyFetchedItem writes a single fetched item into the knowledge base and
@@ -1240,7 +1337,7 @@ func (s *DataSourceService) processSyncStreaming(
 		return err
 	}
 
-	s.reconcileDeletions(ctx, ds, nextCursor, handler.seen, result)
+	s.reconcileDeletions(ctx, ds, config.ResourceIDs, nextCursor, handler.seen, payload.AllowMassDeletion, result)
 	resultJSON, _ = result.ToJSON()
 
 	// Persist the final cursor for the next incremental sync.
@@ -1263,6 +1360,13 @@ func (s *DataSourceService) processSyncStreaming(
 		status = types.SyncLogStatusPartial
 		errMsg = fmt.Sprintf("%d document(s) failed to sync", result.Failed)
 		errMsg += deletionFailureNote(result.DeletionFailed, ds.Type)
+	}
+	if held := reconcileHeld(result.Reconcile); held != "" {
+		status = types.SyncLogStatusPartial
+		if errMsg != "" {
+			errMsg += "; "
+		}
+		errMsg += held
 	}
 	s.updateSyncRunResult(ctx, ds, syncLog, result, resultJSON, status, errMsg, wasPaused)
 	logger.Infof(ctx, "streaming sync completed: ds=%s created=%d updated=%d deleted=%d skipped=%d failed=%d",

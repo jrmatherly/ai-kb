@@ -46,6 +46,16 @@ export interface SyncResultDetail {
   failed?: number
   /** Per-item failure samples (capped); localised in the sync-log drawer. */
   errors?: SyncItemError[]
+  reconcile?: SyncReconcile
+}
+
+/** A full sync's deletion reconcile. `held` says why it deleted nothing. */
+export interface SyncReconcile {
+  deselected: number
+  missing: number
+  held?: SyncItemError
+  /** Titles of the items the mass-deletion guard held back (capped). */
+  pending?: string[]
 }
 
 export interface SyncLog {

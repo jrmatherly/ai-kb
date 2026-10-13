@@ -6803,7 +6803,10 @@ export default {
       endTime: 'Finished',
       failedItems: 'Failed documents',
       failedItemsMore: '{n} more failed documents not shown',
-      docsFailedSummary: '{n} document(s) failed to sync'
+      docsFailedSummary: '{n} document(s) failed to sync',
+      reconcileCounts: 'Reconcile removed {deselected} item(s) from resources taken out of the selection and {missing} no longer listed by the source',
+      pendingDeletions: 'Held-back deletions',
+      pendingDeletionsMore: '{n} more not shown'
     },
     connector: {
       feishu: 'Feishu',
@@ -6980,7 +6983,10 @@ export default {
       seafile_source_changed: 'The Seafile file changed while it was being fetched; the next sync retries it.',
       seafile_invalid_response: 'Seafile returned a response that could not be parsed; check the server version and reverse proxy.',
       seafile_ssrf_blocked: 'The Seafile download URL was blocked by the SSRF policy; add the fileserver host to SSRF_WHITELIST.',
-      seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.'
+      seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.',
+      deletion_guard_tripped: 'Deletions held back: {count} item(s), {percent}% of the {owned} this data source owns ({deselected} from resources removed from the selection). If this is expected, use "Sync and apply deletions".',
+      reconcile_listing_empty: 'Deletions held back: the source listed nothing while this data source owns {owned} item(s), which usually means lost access. If the source really is empty, use "Sync and apply deletions".',
+      reconcile_listing_incomplete: 'Deletions were not reconciled: the connector did not list every selected resource completely. The next complete full sync reconciles them.'
     }
   },
   integrations: {

@@ -161,16 +161,16 @@ func (r *seafileKnowledgeRepo) HardDeleteKnowledge(_ context.Context, _ uint64, 
 	return nil
 }
 
-func (r *seafileKnowledgeRepo) ListDataSourceExternalIDs(
+func (r *seafileKnowledgeRepo) ListDataSourceItems(
 	_ context.Context, _ uint64, _, dsID string,
-) ([]string, error) {
-	var ids []string
+) ([]types.DataSourceItemRef, error) {
+	var items []types.DataSourceItemRef
 	for key := range r.live {
 		if ext, ok := strings.CutPrefix(key, dsID+"|"); ok {
-			ids = append(ids, ext)
+			items = append(items, types.DataSourceItemRef{ExternalID: ext})
 		}
 	}
-	return ids, nil
+	return items, nil
 }
 
 type seafileCreatedFile struct {

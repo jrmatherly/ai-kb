@@ -139,6 +139,11 @@ function failedItems(log: SyncLog): SyncItemError[] {
   return (log.result?.errors || []).slice(0, FAILED_ITEMS_CAP)
 }
 
+function reconcileCount(log: SyncLog): number {
+  const r = log.result?.reconcile
+  return r ? r.deselected + r.missing : 0
+}
+
 // Render one failure sample. The backend sends a stable i18n `code` (+ params)
 // so the reason is localised to the viewer's language; `message` is the fallback
 // for old logs / codes this client doesn't know. The document title is kept
@@ -282,8 +287,30 @@ const groupedLogs = computed(() => {
                 <div v-if="log.items_failed > 0" class="tl-error">
                   {{ t('datasource.logDetail.docsFailedSummary', { n: log.items_failed }) }}
                 </div>
-                <div v-else-if="log.error_message" class="tl-error">
+                <div v-else-if="log.error_message && !log.result?.reconcile?.held" class="tl-error">
                   {{ log.error_message }}
+                </div>
+
+                <!-- Full-sync deletion reconcile: why it held back, and what. -->
+                <div v-if="log.result?.reconcile?.held" class="tl-error">
+                  {{ formatSyncError(log.result.reconcile.held) }}
+                </div>
+                <div v-else-if="reconcileCount(log)" class="detail-row">
+                  {{ t('datasource.logDetail.reconcileCounts', {
+                    deselected: log.result?.reconcile?.deselected ?? 0,
+                    missing: log.result?.reconcile?.missing ?? 0,
+                  }) }}
+                </div>
+                <div v-if="log.result?.reconcile?.pending?.length" class="tl-failed">
+                  <div class="tl-failed-title">{{ t('datasource.logDetail.pendingDeletions') }}</div>
+                  <div v-for="(title, i) in log.result.reconcile.pending" :key="i" class="tl-failed-item" :title="title">
+                    {{ title }}
+                  </div>
+                  <div v-if="reconcileCount(log) > log.result.reconcile.pending.length" class="tl-failed-more">
+                    {{ t('datasource.logDetail.pendingDeletionsMore', {
+                      n: reconcileCount(log) - log.result.reconcile.pending.length,
+                    }) }}
+                  </div>
                 </div>
 
                 <!-- Per-item failures: which documents failed and why.

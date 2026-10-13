@@ -917,21 +917,34 @@ func (r *knowledgeRepository) FindByDataSourceExternalID(
 	return &knowledge, nil
 }
 
-// ListDataSourceExternalIDs returns the distinct external IDs of the live
-// knowledge items one data source owns in a knowledge base. Only the ID column
-// is read, so a full-sync reconcile over a large source stays small in memory.
-func (r *knowledgeRepository) ListDataSourceExternalIDs(
+// ListDataSourceItems returns the live knowledge items one data source owns in a
+// knowledge base, one per external ID. Only three columns are read, so a
+// full-sync reconcile over a large source stays small in memory.
+func (r *knowledgeRepository) ListDataSourceItems(
 	ctx context.Context,
 	tenantID uint64,
 	kbID, dataSourceID string,
-) ([]string, error) {
-	var ids []string
+) ([]types.DataSourceItemRef, error) {
+	var rows []types.DataSourceItemRef
 	err := r.db.WithContext(ctx).Model(&types.Knowledge{}).
+		Select("metadata->>'external_id' AS external_id, title, "+
+			"COALESCE(metadata->>'source_resource_id', '') AS source_resource_id").
 		Where("tenant_id = ? AND knowledge_base_id = ? AND deleted_at IS NULL", tenantID, kbID).
 		Where("metadata->>'datasource_id' = ? AND metadata->>'external_id' <> ''", dataSourceID).
-		Distinct().
-		Pluck("metadata->>'external_id'", &ids).Error
-	return ids, err
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	seen := make(map[string]struct{}, len(rows))
+	items := rows[:0]
+	for _, row := range rows {
+		if _, dup := seen[row.ExternalID]; dup {
+			continue
+		}
+		seen[row.ExternalID] = struct{}{}
+		items = append(items, row)
+	}
+	return items, nil
 }
 
 // HardDeleteKnowledge physically removes a knowledge row. Call it AFTER

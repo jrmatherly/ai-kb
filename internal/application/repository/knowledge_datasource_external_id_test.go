@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -62,7 +63,7 @@ func TestFindByDataSourceExternalID_DeletedRowsExcluded(t *testing.T) {
 	assert.Nil(t, found)
 }
 
-func TestListDataSourceExternalIDs(t *testing.T) {
+func TestListDataSourceItems(t *testing.T) {
 	db := setupKnowledgeTestDB(t)
 	repo := NewKnowledgeRepository(db).(*knowledgeRepository)
 	ctx := context.Background()
@@ -80,17 +81,20 @@ func TestListDataSourceExternalIDs(t *testing.T) {
 			VALUES (?, ?, ?, 'document', 't', 'feishu', 'completed', ?, ?)
 		`, uuid.New().String(), tenantID, kb, metadata, deleted).Error)
 	}
-	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:1"}`, "")
-	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:1"}`, "")
+	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:1","source_resource_id":"space-1"}`, "")
+	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:1","source_resource_id":"space-1"}`, "")
 	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:2"}`, "")
 	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:gone"}`, "2026-01-01 00:00:00")
 	insert(kbID, `{"datasource_id":"ds-a"}`, "")
 	insert(kbID, `{"datasource_id":"ds-b","external_id":"doc:3"}`, "")
 	insert(uuid.New().String(), `{"datasource_id":"ds-a","external_id":"doc:4"}`, "")
 
-	ids, err := repo.ListDataSourceExternalIDs(ctx, tenantID, kbID, "ds-a")
+	items, err := repo.ListDataSourceItems(ctx, tenantID, kbID, "ds-a")
 	require.NoError(t, err)
-	assert.ElementsMatch(t, []string{"doc:1", "doc:2"}, ids)
+	assert.ElementsMatch(t, []types.DataSourceItemRef{
+		{ExternalID: "doc:1", Title: "t", SourceResourceID: "space-1"},
+		{ExternalID: "doc:2", Title: "t"},
+	}, items)
 }
 
 func TestHardDeleteKnowledge(t *testing.T) {
