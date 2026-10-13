@@ -11,9 +11,16 @@ weknora\.weixin\.qq\.com	ai-kb-docs.matherly.net
 cd WeKnora\b	cd ai-kb
 \bWeKnora Lite\b	AI KB Lite
 \bWeKnoraLite\b	AIKBLite
-DB_NAME:-WeKnora\b	DB_NAME:-ai_kb
-\bWeKnora-network\b	ai-kb-network
-\bWeKnora-(app|docreader|frontend|ui|postgres|redis|sandbox|mcp|minio|neo4j|qdrant|milvus|weaviate|searxng|dex|odl-hybrid|langfuse-[a-z-]+)\b	ai-kb-$1
+DB_NAME(=|:-)WeKnora\b	DB_NAME$1ai_kb
+_INDEX=WeKnora\b	_INDEX=ai_kb
+LANGFUSE_INIT_(ORG|PROJECT)_ID=WeKnora\b	LANGFUSE_INIT_$1_ID=ai-kb
+BINARY_NAME=WeKnora\b	BINARY_NAME=ai-kb
+/app/WeKnora\b	/app/ai-kb
+\[program:WeKnora\]	[program:ai-kb]
+/var/log/WeKnora\.log	/var/log/ai-kb.log
+(?m)^WeKnora$	ai-kb
+\bWeKnora-owned\b	AI KB-owned
+(?<!X-)\bWeKnora-([a-z][a-z0-9-]*)	ai-kb-$1
 # --- helm chart and release name, local image, in-image path ---
 helm install weknora\b	helm install ai-kb
 -n weknora\b	-n ai-kb
@@ -21,14 +28,12 @@ helm install weknora\b	helm install ai-kb
 /opt/weknora/	/opt/ai-kb/
 /opt/WeKnora\b	/opt/ai-kb
 # --- binaries and artifacts ---
-\bWeKnora-lite\b	ai-kb-lite
 \./WeKnora\b	./ai-kb
 # --- product name in prose (identifiers above are matched first) ---
 # --- embed widget JS global and webhook User-Agent (before the product-name rule) ---
 \bwindow\.WeKnora\b	window.AIKB
 \bWeKnora\.(init|open|on|setContext|openWithQuery|setLocale)\b	AIKB.$1
-\bWeKnora-Embed-Webhook\b	AIKB-Embed-Webhook
-\bWeKnora-Lite-Desktop-App\b	AIKB-Lite-Desktop-App
+\bWeKnora-(Embed-Webhook|Lite-Desktop-App|SkillInstaller|IMA-Connector|RSS|Seafile-Connector|Yuque-Connector)\b	AIKB-$1
 \bweknora-memories\.json\b	ai-kb-memories.json
 \bweknora_home_page\b	ai-kb-home-page
 \bweknora-docs-site\b	ai-kb-docs-site
