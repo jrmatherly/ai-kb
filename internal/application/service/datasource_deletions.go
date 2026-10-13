@@ -53,13 +53,17 @@ type runDeletions struct {
 	// pending. nil when deletion sync is off, so tombstones reach
 	// applyFetchedItem, which ignores them.
 	pending map[string]bool
-	// seen holds the live external IDs a reconciling full sync emitted; nil
-	// when the run cannot reconcile.
+	// seen holds the live external IDs the run emitted. A pending deletion of
+	// one of them, or of a sub-item of one, is cancelled.
 	seen map[string]struct{}
+	// reconcile is set for a full sync whose connector can report a complete
+	// listing: every owned item it does not see is stale.
+	reconcile bool
+	// held mirrors types.SyncCursor.DeletionsHeld.
+	held bool
 }
 
-// newRunDeletions starts from the deletions stored left pending. reconcile is
-// set for a full sync whose connector can report a complete listing.
+// newRunDeletions starts from the deletions stored left pending.
 func newRunDeletions(ds *types.DataSource, stored *types.SyncCursor, reconcile bool) *runDeletions {
 	d := &runDeletions{}
 	if !ds.SyncDeletions {
@@ -70,10 +74,10 @@ func newRunDeletions(ds *types.DataSource, stored *types.SyncCursor, reconcile b
 		for _, id := range stored.PendingDeletions {
 			d.pending[id] = false
 		}
+		d.held = stored.DeletionsHeld
 	}
-	if reconcile {
-		d.seen = make(map[string]struct{})
-	}
+	d.seen = make(map[string]struct{})
+	d.reconcile = reconcile
 	return d
 }
 
@@ -88,9 +92,7 @@ func (d *runDeletions) take(item *types.FetchedItem) bool {
 		return true
 	}
 	delete(d.pending, item.ExternalID)
-	if d.seen != nil {
-		d.seen[item.ExternalID] = struct{}{}
-	}
+	d.seen[item.ExternalID] = struct{}{}
 	return false
 }
 
@@ -103,6 +105,7 @@ func (d *runDeletions) withPending(c *types.SyncCursor) *types.SyncCursor {
 		out = *c
 	}
 	out.PendingDeletions = slices.Sorted(maps.Keys(d.pending))
+	out.DeletionsHeld = d.held && len(d.pending) > 0
 	return &out
 }
 
@@ -138,9 +141,9 @@ func isSeen(seen map[string]struct{}, externalID string) bool {
 // settleDeletions applies, as one batch, every deletion the run collected:
 // connector tombstones, deletions earlier runs left pending, and on a
 // reconciling full sync whose listing was complete every owned item the run did
-// not emit. Unless allowMass is set, an empty reconcile listing or a batch
-// deletionGuardTrips flags deletes nothing and stays pending, reported in
-// result.Reconcile. Failed deletions stay pending too, so the next run retries
+// not emit. Unless allowMass is set, an empty reconcile listing, a batch
+// deletionGuardTrips flags, or any batch while an earlier one is held deletes
+// nothing and stays pending, reported in result.Reconcile. Failed deletions stay pending too, so the next run retries
 // them.
 func (s *DataSourceService) settleDeletions(
 	ctx context.Context, ds *types.DataSource, selection []string, next *types.SyncCursor,
@@ -149,7 +152,7 @@ func (s *DataSourceService) settleDeletions(
 	if d.pending == nil {
 		return
 	}
-	reconcile := d.seen != nil
+	reconcile := d.reconcile
 	var incomplete *types.SyncItemError
 	if reconcile && (next == nil || !next.CompleteListing) {
 		reconcile = false
@@ -182,8 +185,10 @@ func (s *DataSourceService) settleDeletions(
 	var doomed []types.DataSourceItemRef
 	held := make(map[string]bool)
 	for _, item := range owned {
-		emitted, tombstoned := d.pending[item.ExternalID]
-		if !tombstoned && (!reconcile || isSeen(d.seen, item.ExternalID)) {
+		// This run's tombstone wins; a deletion left pending or a reconcile
+		// candidate yields to a live emit of the item or of its parent.
+		emitted, wasPending := d.pending[item.ExternalID]
+		if !emitted && (isSeen(d.seen, item.ExternalID) || !wasPending && !reconcile) {
 			continue
 		}
 		doomed = append(doomed, item)
@@ -212,7 +217,7 @@ func (s *DataSourceService) settleDeletions(
 			Message: fmt.Sprintf("Deletions held back: the listing returned nothing while the data source "+
 				"owns %d item(s)", len(owned)),
 		}
-	case deletionGuardTrips(len(doomed), len(owned)):
+	case len(doomed) > 0 && (d.held || deletionGuardTrips(len(doomed), len(owned))):
 		percent := len(doomed) * 100 / len(owned)
 		report.Held = &types.SyncItemError{
 			Code: syncCodeDeletionGuardTripped,
@@ -226,6 +231,7 @@ func (s *DataSourceService) settleDeletions(
 		}
 	}
 	if report.Held != nil && report.Held != incomplete {
+		d.held = true
 		report.Overridable = true
 		for _, item := range doomed[:min(len(doomed), maxSyncResultErrors)] {
 			report.Pending = append(report.Pending, cmp.Or(item.Title, item.ExternalID))
@@ -234,6 +240,7 @@ func (s *DataSourceService) settleDeletions(
 			len(doomed), len(owned), ds.ID)
 		return
 	}
+	d.held = false
 	for _, item := range doomed {
 		if err := ctx.Err(); err != nil {
 			logger.Warnf(ctx, "deletions for ds=%s stopped, the rest stay pending: %v", ds.ID, err)

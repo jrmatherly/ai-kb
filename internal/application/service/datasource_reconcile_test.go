@@ -621,3 +621,64 @@ func TestProcessSync_ConfigWithoutCompleteListingsDoesNotReconcile(t *testing.T)
 	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
 	assert.Nil(t, reconcileReport(t, log))
 }
+
+// An empty listing holds back all four items. A later run whose batch the
+// guard alone would let through keeps holding it until an override.
+func TestProcessSync_HeldDeletionsStayHeldUntilOverride(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true})
+	_, err := h.sync(t, reconcileConnector{complete: true}, true, false)
+	require.NoError(t, err)
+	require.Len(t, h.pending(t), 4)
+
+	log, err := h.sync(t, reconcileConnector{}, false, false)
+	require.NoError(t, err)
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
+	report := reconcileReport(t, log)
+	assert.Equal(t, "deletion_guard_tripped", report.Held.Code)
+	assert.True(t, report.Overridable)
+	assert.Equal(t, []string{"doc:gone", "doc:gone#file#2", "doc:keep", "doc:keep#image#1"}, h.pending(t))
+
+	log, err = h.sync(t, reconcileConnector{}, false, true)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"k-gone", "k-gone-file", "k-keep", "k-keep-image"}, h.deleted())
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Nil(t, h.pending(t))
+}
+
+// A held sub-item whose parent the run emits again is left to the parent's
+// subtree sweep, even under the override.
+func TestProcessSync_ReemittedParentCancelsItsHeldSubItems(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true})
+	_, err := h.sync(t, reconcileConnector{complete: true}, true, false)
+	require.NoError(t, err)
+	require.Len(t, h.pending(t), 4)
+
+	log, err := h.sync(t, reconcileConnector{items: h.items}, false, true)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"k-gone", "k-gone-file"}, h.deleted())
+	assert.Equal(t, 2, log.ItemsDeleted)
+	assert.Nil(t, h.pending(t))
+}
+
+// Turning deletion sync off drops the deletions earlier runs left pending, so
+// turning it back on never applies them, not even under an override.
+func TestProcessSync_DeletionSyncOffDropsPendingDeletions(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, kept: 99, tombstones: 900})
+	_, err := h.sync(t, reconcileConnector{items: h.items}, false, false)
+	require.NoError(t, err)
+	require.Len(t, h.pending(t), 900)
+
+	h.ds.SyncDeletions = false
+	log, err := h.sync(t, reconcileConnector{items: h.items[:1]}, false, false)
+	require.NoError(t, err)
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Nil(t, h.pending(t))
+
+	h.ds.SyncDeletions = true
+	log, err = h.sync(t, reconcileConnector{items: h.items[:1]}, false, true)
+	require.NoError(t, err)
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, 0, log.ItemsDeleted)
+	assert.Nil(t, h.pending(t))
+}

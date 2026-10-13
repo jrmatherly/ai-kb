@@ -442,6 +442,10 @@ type SyncCursor struct {
 	// and settles it on the next run, since connectors drop a tombstone from
 	// their own cursor state once emitted.
 	PendingDeletions []string `json:"pending_deletions,omitempty"`
+	// DeletionsHeld is set when the mass-deletion guard held PendingDeletions
+	// back. They stay held, whatever later runs add, until an override applies
+	// them; otherwise a batch shrinking under the guard would apply unasked.
+	DeletionsHeld bool `json:"deletions_held,omitempty"`
 }
 
 // SyncResult summarizes the outcome of a sync operation
