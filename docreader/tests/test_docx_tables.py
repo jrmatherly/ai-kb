@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from docx import Document as WordDocument
+from PIL import Image
 
 
 def _load_docx_parser():
@@ -193,6 +194,29 @@ class DocxTableContentTest(unittest.TestCase):
             rows = []
 
         self.assertEqual(table_to_gfm_markdown(_Empty()), "")
+
+
+class DocxImageContentTest(unittest.TestCase):
+    """The Go ImageResolver stores only images the content links to."""
+
+    def test_image_link_stays_between_paragraphs(self):
+        png = io.BytesIO()
+        Image.new("RGB", (120, 80), (200, 30, 30)).save(png, format="PNG")
+        png.seek(0)
+
+        def build(doc):
+            doc.add_paragraph("Before the picture.")
+            doc.add_picture(png)
+            doc.add_paragraph("After the picture.")
+
+        document = _parse(_docx_bytes(build))
+        self.assertEqual(len(document.images), 1)
+        ref = next(iter(document.images))
+        self.assertRegex(ref, r"^images/[0-9a-f]{32}\.png$")
+        self.assertEqual(
+            document.content,
+            f"Before the picture.\n\n![]({ref})\n\nAfter the picture.",
+        )
 
 
 if __name__ == "__main__":

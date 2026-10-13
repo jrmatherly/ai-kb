@@ -91,6 +91,7 @@ class ImageData:
     local_path: str = ""
     object: Optional[Image.Image] = None
     url: str = ""
+    para_idx: int = -1  # body paragraph holding the image
 
 
 @dataclass
@@ -1078,6 +1079,12 @@ class Docx:
         min_allowed = min(allowed) if allowed else 0
         max_allowed = max(allowed) if allowed else -1
 
+        image_links: Dict[int, List[str]] = {}
+        for line in self.all_lines:
+            for image in line.images:
+                if image.url and image.para_idx >= 0:
+                    image_links.setdefault(image.para_idx, []).append(f"![]({image.url})")
+
         parts: List[str] = []
         para_i = 0
         tbl_i = 0
@@ -1090,6 +1097,7 @@ class Docx:
                     text = (paragraphs[para_i].text or "").strip()
                     if text:
                         parts.append(text)
+                    parts.extend(image_links.get(para_i, []))
                 para_i += 1
                 continue
             if child.tag != _W_TBL:
@@ -1271,7 +1279,7 @@ def process_page_multiprocess(
 
         if enable_multimodal:
             # First pass: save all images to temporary files
-            for i, image_object in enumerate(image_objects):
+            for i, (para_idx, image_object) in enumerate(image_objects):
                 img_path = _save_image_to_temp(
                     process_logger, image_object, page_num, i
                 )
@@ -1280,6 +1288,7 @@ def process_page_multiprocess(
                     image_data = ImageData()
                     image_data.local_path = img_path
                     image_data.object = image_object
+                    image_data.para_idx = para_idx
                     image_data_list.append(image_data)
 
             process_logger.info(
@@ -1371,7 +1380,7 @@ def _extract_page_content_in_process(
         max_image_size: Maximum image size
 
     Returns:
-        tuple: (Extracted text, List of extracted images, Content sequence)
+        tuple: (Extracted text, List of (paragraph index, image), Content sequence)
     """
     logger.info(
         f"[PID:{os.getpid()}] Page {page_num}: Processing {len(paragraphs)} paragraphs, "
@@ -1416,7 +1425,7 @@ def _extract_page_content_in_process(
                     current_text = ""
 
                 # Add image to sequence
-                content_sequence.append(("image", image_object))
+                content_sequence.append(("image", (para_idx, image_object)))
                 paragraphs_with_images += 1
 
         if processed_paragraphs % 50 == 0:
