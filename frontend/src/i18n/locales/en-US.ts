@@ -3678,7 +3678,7 @@ export default {
       appendMode: 'Append',
       replaceMode: 'Replace existing entries',
       fileLabel: 'Select File',
-      fileTip: 'Supports JSON / CSV / Excel. CSV/Excel headers: Tag (required), Question (required), Similar Questions (optional, separate with ##), Negative Questions (optional, separate with ##), Bot Answers (required, separate with ##), Reply All (optional, default FALSE), Disabled (optional, default FALSE), Exclude from Recommendations (optional, default FALSE). Legacy header "Category" and old format (standard_question, answers, similar_questions, negative_questions) are also supported.',
+      fileTip: 'Supports JSON / CSV / Excel. CSV/Excel headers are the ones the export and the example use: tag_name (required), standard_question (required), similar_questions (optional, separate with ##), negative_questions (optional, separate with ##), answers (required, separate with ##), answer_all (optional, default FALSE), is_disabled (optional, default FALSE), not_recommended (optional, default FALSE). A note in parentheses after a header is ignored.',
       clickToUpload: 'Click to upload file',
       dragDropTip: 'or drag and drop file here',
       importButton: 'Import FAQ',
@@ -5037,7 +5037,7 @@ export default {
     allSettings: 'All Settings',
     personalSettings: 'Personal Settings',
     helpAndDocs: 'Help & Documentation',
-    description: 'Configure language, appearance and other basic options',
+    description: 'Configure the theme, fonts and other basic options',
     settings: 'Settings',
     close: 'Close Settings'
   },
