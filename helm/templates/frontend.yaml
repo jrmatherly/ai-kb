@@ -8,15 +8,15 @@ AI KB Frontend Web UI Deployment and Service.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "weknora.fullname" . }}-frontend
+  name: {{ include "ai-kb.fullname" . }}-frontend
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "weknora.componentLabels" (dict "component" "frontend" "context" .) | nindent 4 }}
+    {{- include "ai-kb.componentLabels" (dict "component" "frontend" "context" .) | nindent 4 }}
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
     matchLabels:
-      {{- include "weknora.componentSelectorLabels" (dict "component" "frontend" "context" .) | nindent 6 }}
+      {{- include "ai-kb.componentSelectorLabels" (dict "component" "frontend" "context" .) | nindent 6 }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -25,17 +25,17 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "weknora.componentSelectorLabels" (dict "component" "frontend" "context" .) | nindent 8 }}
+        {{- include "ai-kb.componentSelectorLabels" (dict "component" "frontend" "context" .) | nindent 8 }}
     spec:
-      {{- include "weknora.imagePullSecrets" . | nindent 6 }}
-      serviceAccountName: {{ include "weknora.serviceAccountName" . }}
+      {{- include "ai-kb.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "ai-kb.serviceAccountName" . }}
       {{- with .Values.global.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: frontend
-          image: {{ include "weknora.frontend.image" . }}
+          image: {{ include "ai-kb.frontend.image" . }}
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           {{- with .Values.frontend.securityContext }}
           securityContext:
@@ -43,7 +43,7 @@ spec:
           {{- end }}
           env:
             - name: APP_HOST
-              value: {{ .Values.frontend.appHost | default (include "weknora.serviceName" (dict "component" "app" "context" .)) | quote }}
+              value: {{ .Values.frontend.appHost | default (include "ai-kb.serviceName" (dict "component" "app" "context" .)) | quote }}
             - name: APP_PORT
               value: {{ .Values.frontend.appPort | default .Values.app.service.port | quote }}
             - name: MAX_FILE_SIZE_MB
@@ -97,14 +97,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "weknora.serviceName" (dict "component" "frontend" "context" .) | quote }}
+  name: {{ include "ai-kb.serviceName" (dict "component" "frontend" "context" .) | quote }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "weknora.componentLabels" (dict "component" "frontend" "context" .) | nindent 4 }}
+    {{- include "ai-kb.componentLabels" (dict "component" "frontend" "context" .) | nindent 4 }}
 spec:
   type: {{ .Values.frontend.service.type }}
   selector:
-    {{- include "weknora.componentSelectorLabels" (dict "component" "frontend" "context" .) | nindent 4 }}
+    {{- include "ai-kb.componentSelectorLabels" (dict "component" "frontend" "context" .) | nindent 4 }}
   ports:
     - name: http
       port: {{ .Values.frontend.service.port }}

@@ -27,8 +27,8 @@ const isFaq = computed(() => props.type === 'faq')
   }
 
   &.is-faq {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--weknora-faq-color, #0052d9) 15%, transparent) 0%, color-mix(in srgb, var(--weknora-faq-color, #0052d9) 8%, transparent) 100%);
-    color: var(--weknora-faq-color, #0052d9);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--ai-kb-faq-color, #0052d9) 15%, transparent) 0%, color-mix(in srgb, var(--ai-kb-faq-color, #0052d9) 8%, transparent) 100%);
+    color: var(--ai-kb-faq-color, #0052d9);
   }
 }
 </style>

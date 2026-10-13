@@ -70,7 +70,7 @@ RUN npm install -g pnpm
 # curl is not optional: the sandbox connectivity check probes egress with it,
 # and skills that fetch a URL expect it to be there. The compression tools are
 # here because skill bundles and their assets arrive archived. git backs
-# per-turn workspace checkpoints (object store at /var/lib/weknora/workspace.git,
+# per-turn workspace checkpoints (object store at /var/lib/aikb/workspace.git,
 # work tree /workspace) that session fork and rewind roll back to.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
@@ -107,10 +107,10 @@ RUN mkdir -p /workspace/input /workspace/output && \
 # Classic user@host:path prompt (colored). E2B's provisioner later appends
 # `PS1='\w $ '`; the script reapplies this prompt via PROMPT_COMMAND so
 # Cube, Docker, and E2B all show the same Debian-style line.
-COPY docker/sandbox-pty-prompt.sh /etc/weknora/pty-prompt.sh
-RUN echo '. /etc/weknora/pty-prompt.sh' > /etc/profile.d/zz-weknora-prompt.sh && \
-    echo '. /etc/weknora/pty-prompt.sh' >> /root/.bashrc && \
-    echo '. /etc/weknora/pty-prompt.sh' >> /home/user/.bashrc
+COPY docker/sandbox-pty-prompt.sh /etc/aikb/pty-prompt.sh
+RUN echo '. /etc/aikb/pty-prompt.sh' > /etc/profile.d/zz-ai-kb-prompt.sh && \
+    echo '. /etc/aikb/pty-prompt.sh' >> /root/.bashrc && \
+    echo '. /etc/aikb/pty-prompt.sh' >> /home/user/.bashrc
 
 WORKDIR /workspace
 USER root

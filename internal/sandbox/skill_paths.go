@@ -28,7 +28,7 @@ func IsHostSkillTarget(configID string) bool {
 	return strings.TrimSpace(configID) == HostSkillTargetID
 }
 
-const skillShellArgv0 = "weknora-skill"
+const skillShellArgv0 = "ai-kb-skill"
 
 // ErrInvalidSkillName is returned when a skill name would escape SkillsImageRoot
 // or is not a single path segment.
@@ -90,7 +90,7 @@ func SkillRequirementsPathIn(skillDir string) string {
 	if strings.TrimSpace(skillDir) == "" {
 		return ""
 	}
-	return path.Join(skillDir, ".weknora", "requirements.json")
+	return path.Join(skillDir, ".aikb", "requirements.json")
 }
 
 // RunnableWorkspaceScript reports whether scriptPath is a session-writable
@@ -249,5 +249,5 @@ func SkillInterpreterCommand(skillDir, scriptPath string) (string, []string) {
 // SkillCommandPath is shared by normal skill execution and installation verification.
 func SkillCommandPath(dir string) string {
 	return path.Join(dir, ".venv", "bin") + ":" +
-		path.Join(dir, "node_modules", ".bin") + ":" + path.Join(dir, ".weknora", "bin")
+		path.Join(dir, "node_modules", ".bin") + ":" + path.Join(dir, ".aikb", "bin")
 }

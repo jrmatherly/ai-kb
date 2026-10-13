@@ -363,7 +363,7 @@ func (s *stubProviderClient) EnsureStandardTemplate(context.Context) (*sandbox.R
 		copy := *s.ensured
 		return &copy, nil
 	}
-	return &sandbox.RemoteTemplate{ID: "tpl-weknora", Name: "weknora", Status: "building", Standard: true}, nil
+	return &sandbox.RemoteTemplate{ID: "tpl-ai-kb", Name: "aikb", Status: "building", Standard: true}, nil
 }
 
 func (s *stubProviderClient) ReplaceStandardTemplate(ctx context.Context) (*sandbox.RemoteTemplate, error) {
@@ -390,7 +390,7 @@ func (s *stubProviderClient) EnsureDesktopTemplate(context.Context) (*sandbox.Re
 		copyTpl := *s.ensuredDesktop
 		return &copyTpl, nil
 	}
-	return &sandbox.RemoteTemplate{ID: "tpl-desktop", Name: "weknora-desktop", Status: "building", Desktop: true}, nil
+	return &sandbox.RemoteTemplate{ID: "tpl-desktop", Name: "ai-kb-desktop", Status: "building", Desktop: true}, nil
 }
 
 func (s *stubProviderClient) ReplaceDesktopTemplate(ctx context.Context) (*sandbox.RemoteTemplate, error) {
@@ -463,10 +463,10 @@ func newTestConfigService(
 	return svc
 }
 
-func TestQueryTemplatesEnsuresMissingWeKnoraTemplate(t *testing.T) {
+func TestQueryTemplatesEnsuresMissingAIKBTemplate(t *testing.T) {
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{{ID: "tpl-custom", Name: "custom", Status: "ready"}},
-		ensured:   &sandbox.RemoteTemplate{ID: "tpl-weknora", Name: "weknora", Status: "building", Standard: true},
+		ensured:   &sandbox.RemoteTemplate{ID: "tpl-ai-kb", Name: "aikb", Status: "building", Standard: true},
 	}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
 
@@ -477,7 +477,7 @@ func TestQueryTemplatesEnsuresMissingWeKnoraTemplate(t *testing.T) {
 
 	require.NoError(t, err)
 	require.True(t, result.Provisioned)
-	require.Equal(t, "tpl-weknora", result.StandardTemplateID)
+	require.Equal(t, "tpl-ai-kb", result.StandardTemplateID)
 	require.Len(t, result.Templates, 2)
 	require.True(t, result.Templates[0].Standard, "standard template should sort first")
 }
@@ -485,10 +485,10 @@ func TestQueryTemplatesEnsuresMissingWeKnoraTemplate(t *testing.T) {
 func TestQueryTemplatesEnsuresMissingDesktopTemplate(t *testing.T) {
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-weknora", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "tpl-ai-kb", Name: "aikb", Status: "ready", Standard: true},
 		},
 		ensuredDesktop: &sandbox.RemoteTemplate{
-			ID: "tpl-desktop", Name: "weknora-desktop", Status: "building", Desktop: true,
+			ID: "tpl-desktop", Name: "ai-kb-desktop", Status: "building", Desktop: true,
 		},
 	}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
@@ -500,7 +500,7 @@ func TestQueryTemplatesEnsuresMissingDesktopTemplate(t *testing.T) {
 
 	require.NoError(t, err)
 	require.True(t, result.Provisioned)
-	require.Equal(t, "tpl-weknora", result.StandardTemplateID)
+	require.Equal(t, "tpl-ai-kb", result.StandardTemplateID)
 	require.Equal(t, "tpl-desktop", result.DesktopTemplateID)
 	require.Equal(t, int32(0), client.ensureCalls.Load(), "creating desktop must not rebuild the CLI template")
 	require.Equal(t, int32(1), client.ensureDesktopCalls.Load())
@@ -516,7 +516,7 @@ func TestQueryTemplatesEnsuresMissingDesktopTemplate(t *testing.T) {
 func TestQueryTemplatesEnsureDesktopFailureKeepsCatalog(t *testing.T) {
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-weknora", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "tpl-ai-kb", Name: "aikb", Status: "ready", Standard: true},
 		},
 		ensureDesktopErr: stderrors.New("hub missing main-desktop"),
 	}
@@ -528,7 +528,7 @@ func TestQueryTemplatesEnsureDesktopFailureKeepsCatalog(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.Equal(t, "tpl-weknora", result.StandardTemplateID)
+	require.Equal(t, "tpl-ai-kb", result.StandardTemplateID)
 	require.Empty(t, result.DesktopTemplateID)
 	require.Equal(t, int32(1), client.ensureDesktopCalls.Load())
 	require.Equal(t, 1, len(result.Templates))
@@ -541,7 +541,7 @@ func TestQueryTemplatesReplaceDesktopFailureIsFatal(t *testing.T) {
 	}}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-desktop", Name: "weknora-desktop", Status: "ready", Desktop: true},
+			{ID: "tpl-desktop", Name: "ai-kb-desktop", Status: "ready", Desktop: true},
 		},
 		ensureDesktopErr: stderrors.New("rebuild refused"),
 	}
@@ -601,10 +601,10 @@ func TestQueryTemplatesProvisionsPerClusterIndependently(t *testing.T) {
 func TestQueryTemplatesReprovisionsOverFailedStandardTemplate(t *testing.T) {
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-broken", Name: "weknora", Status: "failed", Standard: true, Error: "no space left"},
+			{ID: "tpl-broken", Name: "aikb", Status: "failed", Standard: true, Error: "no space left"},
 		},
 		ensured: &sandbox.RemoteTemplate{
-			ID: "tpl-broken", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-broken", Name: "aikb", Status: "building", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
@@ -626,7 +626,7 @@ func TestQueryTemplatesReprovisionsOverFailedStandardTemplate(t *testing.T) {
 // reported as it is rather than silently hidden.
 func TestQueryTemplatesReportsFailedStandardTemplateWithoutEnsure(t *testing.T) {
 	client := &stubProviderClient{templates: []sandbox.RemoteTemplate{
-		{ID: "tpl-broken", Name: "weknora", Status: "failed", Standard: true, Error: "no space left"},
+		{ID: "tpl-broken", Name: "aikb", Status: "failed", Standard: true, Error: "no space left"},
 	}}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
 
@@ -646,10 +646,10 @@ func TestQueryTemplatesReportsFailedStandardTemplateWithoutEnsure(t *testing.T) 
 func TestQueryTemplatesSurfacesFailedEnsureWithoutProvisioning(t *testing.T) {
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-broken", Name: "weknora", Status: "failed", Standard: true, Error: "TOOMANYREQUESTS"},
+			{ID: "tpl-broken", Name: "aikb", Status: "failed", Standard: true, Error: "TOOMANYREQUESTS"},
 		},
 		ensured: &sandbox.RemoteTemplate{
-			ID: "tpl-broken", Name: "weknora", Status: "failed", Standard: true, Error: "TOOMANYREQUESTS",
+			ID: "tpl-broken", Name: "aikb", Status: "failed", Standard: true, Error: "TOOMANYREQUESTS",
 		},
 	}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
@@ -669,10 +669,10 @@ func TestQueryTemplatesSurfacesFailedEnsureWithoutProvisioning(t *testing.T) {
 func TestQueryTemplatesReplaceStandardRequiresConfigID(t *testing.T) {
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-old", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "tpl-old", Name: "aikb", Status: "ready", Standard: true},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "building", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
@@ -692,11 +692,11 @@ func TestQueryTemplatesReplaceStandardPersistsNewTemplateID(t *testing.T) {
 	}}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-old", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "tpl-old", Name: "aikb", Status: "ready", Standard: true},
 			{ID: "tpl-custom", Name: "custom", Status: "ready"},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "ready", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "ready", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, repo, client, stubAgentRepo{})
@@ -727,11 +727,11 @@ func TestQueryTemplatesReplaceStandardKeepsOldTemplateWhileReplacementBuilds(t *
 	}}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-old", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "tpl-old", Name: "aikb", Status: "ready", Standard: true},
 			{ID: "tpl-custom", Name: "custom", Status: "ready"},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "building", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, repo, client, stubAgentRepo{})
@@ -767,11 +767,11 @@ func TestQueryTemplatesReplaceStandardKeepsOldTemplateWhenPersistFails(t *testin
 	}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-old", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "tpl-old", Name: "aikb", Status: "ready", Standard: true},
 			{ID: "tpl-custom", Name: "custom", Status: "ready"},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "ready", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "ready", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, repo, client, stubAgentRepo{})
@@ -802,10 +802,10 @@ func TestQueryTemplatesReplaceStandardRefusesWhenSkillIsInstalling(t *testing.T)
 	}}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "t1", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "t1", Name: "aikb", Status: "ready", Standard: true},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "ready", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "ready", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, repo, client, stubAgentRepo{})
@@ -837,10 +837,10 @@ func TestQueryTemplatesReplaceStandardRefusesWhenSiblingHasSkillSnapshot(t *test
 	}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "t1", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "t1", Name: "aikb", Status: "ready", Standard: true},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "building", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, repo, client, stubAgentRepo{})
@@ -862,10 +862,10 @@ func TestQueryTemplatesReplaceStandardRefusesWhenSkillSnapshotExists(t *testing.
 	}}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "t1", Name: "weknora", Status: "ready", Standard: true},
+			{ID: "t1", Name: "aikb", Status: "ready", Standard: true},
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-new", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-new", Name: "aikb", Status: "building", Standard: true,
 		},
 	}
 	svc := NewTenantSandboxConfigService(repo, stubAgentRepo{}, sandbox.DefaultConfig(), nil, nil)
@@ -978,14 +978,14 @@ func TestQueryTemplatesEnsureAndReplaceDoNotShareSingleflight(t *testing.T) {
 	}}
 	client := &stubProviderClient{
 		templates: []sandbox.RemoteTemplate{
-			{ID: "tpl-broken", Name: "weknora", Status: "failed", Standard: true},
+			{ID: "tpl-broken", Name: "aikb", Status: "failed", Standard: true},
 		},
 		ensureDelay: 80 * time.Millisecond,
 		ensured: &sandbox.RemoteTemplate{
-			ID: "tpl-ensured", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-ensured", Name: "aikb", Status: "building", Standard: true,
 		},
 		replaced: &sandbox.RemoteTemplate{
-			ID: "tpl-replaced", Name: "weknora", Status: "building", Standard: true,
+			ID: "tpl-replaced", Name: "aikb", Status: "building", Standard: true,
 		},
 	}
 	svc := newTestConfigService(t, repo, client, stubAgentRepo{})
@@ -1065,8 +1065,8 @@ func TestUpdateRefusesPrivateEndpointChangeWhenSkillSnapshotExists(t *testing.T)
 
 func TestQueryTemplatesDeduplicatesSameProviderTemplateID(t *testing.T) {
 	client := &stubProviderClient{templates: []sandbox.RemoteTemplate{
-		{ID: "tpl-weknora", Name: "weknora", Status: "building", Standard: true},
-		{ID: "tpl-weknora", Name: "project-b89e/weknora", Status: "ready", Standard: true},
+		{ID: "tpl-ai-kb", Name: "aikb", Status: "building", Standard: true},
+		{ID: "tpl-ai-kb", Name: "project-b89e/aikb", Status: "ready", Standard: true},
 	}}
 	svc := newTestConfigService(t, &fakeConfigRepo{}, client, stubAgentRepo{})
 
@@ -1076,9 +1076,9 @@ func TestQueryTemplatesDeduplicatesSameProviderTemplateID(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Len(t, result.Templates, 1)
-	require.Equal(t, "project-b89e/weknora", result.Templates[0].Name)
+	require.Equal(t, "project-b89e/aikb", result.Templates[0].Name)
 	require.Equal(t, "ready", result.Templates[0].Status)
-	require.Equal(t, "tpl-weknora", result.StandardTemplateID)
+	require.Equal(t, "tpl-ai-kb", result.StandardTemplateID)
 }
 
 func TestQueryTemplatesResolvesMaskedStoredCredential(t *testing.T) {
@@ -1611,7 +1611,7 @@ func TestSanitizeSandboxConfigRefusesSecretsWithoutAESKey(t *testing.T) {
 	t.Setenv(sandbox.DockerBackendEnabledEnv, "true")
 	_, err = SanitizeSandboxConfig(&types.TenantSandboxConfig{
 		SandboxType: "docker",
-		Docker:      &types.DockerSandboxConfig{Image: "weknora:test"},
+		Docker:      &types.DockerSandboxConfig{Image: "aikb:test"},
 	}, nil)
 	require.NoError(t, err)
 }
@@ -1633,7 +1633,7 @@ func TestCreateAcceptsDockerNamedSandboxBackend(t *testing.T) {
 		Name: "docker-dev",
 		Config: &types.TenantSandboxConfig{
 			SandboxType: "docker",
-			Docker:      &types.DockerSandboxConfig{Image: "weknora:test"},
+			Docker:      &types.DockerSandboxConfig{Image: "aikb:test"},
 		},
 	})
 	require.NoError(t, err)
@@ -1674,7 +1674,7 @@ func TestCreateRejectsDockerWhenDisabled(t *testing.T) {
 		Name: "docker-dev",
 		Config: &types.TenantSandboxConfig{
 			SandboxType: "docker",
-			Docker:      &types.DockerSandboxConfig{Image: "weknora:test"},
+			Docker:      &types.DockerSandboxConfig{Image: "aikb:test"},
 		},
 	})
 	require.ErrorIs(t, err, sandbox.ErrDockerBackendDisabled)
@@ -1804,7 +1804,7 @@ func TestDeleteMarksBuildingSnapshotsWhenProviderHasNoSnapshotClient(t *testing.
 		ID: "cfg-a", TenantID: 7, Name: "docker", SandboxType: "docker",
 		Config: &types.TenantSandboxConfig{
 			SandboxType: "docker",
-			Docker:      &types.DockerSandboxConfig{Image: "weknora:test"},
+			Docker:      &types.DockerSandboxConfig{Image: "aikb:test"},
 		},
 	}}
 	skills := &deleteSkillStore{
@@ -1834,14 +1834,14 @@ func TestDeleteReleasesAnAbandonedBuildByPlannedName(t *testing.T) {
 	skills := &deleteSkillStore{
 		snapshots: []*types.TenantSkillSnapshotEntity{{
 			ID: "row-build", TenantID: 7, SandboxConfigID: "cfg-a",
-			PlannedName: "weknora-sk-cfga-g3", State: types.SkillSnapshotStateBuilding,
+			PlannedName: "ai-kb-sk-cfga-g3", State: types.SkillSnapshotStateBuilding,
 		}},
 	}
 	var events []string
 	client := &snapshotReleaseClient{
 		events: &events,
 		listed: []sandbox.RemoteSnapshotRef{
-			{ID: "snap-orphan", Names: []string{"weknora-sk-cfga-g3"}},
+			{ID: "snap-orphan", Names: []string{"ai-kb-sk-cfga-g3"}},
 		},
 	}
 	svc := newTestConfigService(t, repo, &client.stubProviderClient, stubAgentRepo{})
@@ -1868,7 +1868,7 @@ func TestDeleteAcceptsAnAbandonedBuildThatNeverCommitted(t *testing.T) {
 	skills := &deleteSkillStore{
 		snapshots: []*types.TenantSkillSnapshotEntity{{
 			ID: "row-build", TenantID: 7, SandboxConfigID: "cfg-a",
-			PlannedName: "weknora-sk-cfga-g3", State: types.SkillSnapshotStateBuilding,
+			PlannedName: "ai-kb-sk-cfga-g3", State: types.SkillSnapshotStateBuilding,
 		}},
 	}
 	var events []string

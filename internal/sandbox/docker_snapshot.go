@@ -14,20 +14,20 @@ const (
 	// snapshot is committed into. It is not a registry path: these tags are
 	// never pulled, and ListTemplates hides anything under it so an admin
 	// cannot pick a baked skill image as the config's base template.
-	dockerSkillSnapshotRepo = "weknora-skill"
+	dockerSkillSnapshotRepo = "ai-kb-skill"
 
-	dockerSkillSnapshotLabel       = "com.weknora.sandbox.skill-snapshot"
-	dockerSkillSnapshotSourceLabel = "com.weknora.sandbox.skill-snapshot-source"
+	dockerSkillSnapshotLabel       = "com.aikb.sandbox.skill-snapshot"
+	dockerSkillSnapshotSourceLabel = "com.aikb.sandbox.skill-snapshot-source"
 
 	// DockerForkSnapshotRepo is the local image namespace for session-fork
 	// snapshots. It is deliberately separate from dockerSkillSnapshotRepo: the
 	// skill reaper prunes by the skill namespace and labels, and letting fork
 	// snapshots share them would have each reaper collecting the other's
 	// images.
-	DockerForkSnapshotRepo = "weknora-fork"
+	DockerForkSnapshotRepo = "ai-kb-fork"
 
-	dockerForkSnapshotLabel       = "com.weknora.sandbox.fork-snapshot"
-	dockerForkSnapshotSourceLabel = "com.weknora.sandbox.fork-snapshot-source"
+	dockerForkSnapshotLabel       = "com.aikb.sandbox.fork-snapshot"
+	dockerForkSnapshotSourceLabel = "com.aikb.sandbox.fork-snapshot-source"
 )
 
 // CreateSnapshot commits the container's filesystem into a tagged local image.
@@ -47,7 +47,7 @@ func (c *DockerRemoteClient) CreateSnapshot(
 	return c.commitSnapshot(
 		ctx, id, name,
 		dockerSkillSnapshotRepo,
-		"weknora skill snapshot",
+		"aikb skill snapshot",
 		dockerSkillSnapshotLabel,
 		dockerSkillSnapshotSourceLabel,
 		"CreateSnapshot",
@@ -67,7 +67,7 @@ func (c *DockerRemoteClient) CreateForkSnapshot(
 	return c.commitSnapshot(
 		ctx, id, name,
 		DockerForkSnapshotRepo,
-		"weknora fork snapshot",
+		"aikb fork snapshot",
 		dockerForkSnapshotLabel,
 		dockerForkSnapshotSourceLabel,
 		"CreateForkSnapshot",

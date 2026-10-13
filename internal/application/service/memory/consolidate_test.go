@@ -148,7 +148,7 @@ func TestAReviewThatChangesNothingSaysWhy(t *testing.T) {
 	_, err := svc.repo.EnsureSubject(ctx, scope)
 	require.NoError(t, err)
 	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "小微SDK设备接入", "小微SDK设备接入", "i-a")
-	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "WeKnora混合检索", "WeKnora混合检索", "i-b")
+	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "AI KB混合检索", "AI KB混合检索", "i-b")
 
 	result, err := svc.ConsolidateNow(ctx)
 	require.NoError(t, err)

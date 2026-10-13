@@ -11,7 +11,7 @@ import (
 // MySQLSSRFNetwork is the mysql driver network name registered by
 // RegisterMySQLSSRFDialer. DSNs must set cfg.Net to this value so every
 // database/sql open uses SSRFSafeDialContext at the final TCP sink.
-const MySQLSSRFNetwork = "tcp-weknora-ssrf"
+const MySQLSSRFNetwork = "tcp-ai-kb-ssrf"
 
 var mysqlSSRFDialerOnce sync.Once
 

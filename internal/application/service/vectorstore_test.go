@@ -689,7 +689,7 @@ func TestTestConnection_DorisInvalidAddr(t *testing.T) {
 
 	_, err := svc.TestConnection(ctx, types.DorisRetrieverEngineType, types.ConnectionConfig{
 		Addr:     "127.0.0.1:1", // 一定不可连通
-		Database: "weknora",
+		Database: "aikb",
 		Username: "root",
 	})
 	require.Error(t, err)
@@ -790,13 +790,13 @@ func TestValidateConnectionConfig(t *testing.T) {
 		{
 			name:       "doris valid",
 			engineType: types.DorisRetrieverEngineType,
-			config:     types.ConnectionConfig{Addr: "doris-fe:9030", Database: "weknora"},
+			config:     types.ConnectionConfig{Addr: "doris-fe:9030", Database: "aikb"},
 			wantError:  false,
 		},
 		{
 			name:       "doris missing addr",
 			engineType: types.DorisRetrieverEngineType,
-			config:     types.ConnectionConfig{Database: "weknora"},
+			config:     types.ConnectionConfig{Database: "aikb"},
 			wantError:  true,
 		},
 		{

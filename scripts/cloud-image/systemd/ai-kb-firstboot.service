@@ -1,0 +1,17 @@
+[Unit]
+Description=AI KB first-boot initialization (runs once)
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+Before=aikb.service
+ConditionPathExists=/usr/local/sbin/ai-kb-firstboot.sh
+ConditionPathExists=!/opt/ai-kb/.firstboot.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/ai-kb-firstboot.sh
+RemainAfterExit=no
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

@@ -16,7 +16,7 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 VERSION="${1:?Usage: $0 <version>  (e.g. v0.2.0)}"
 VERSION_BARE="${VERSION#v}"
-FORMULA="${ROOT_DIR}/Formula/weknora-lite.rb"
+FORMULA="${ROOT_DIR}/Formula/ai-kb-lite.rb"
 REPO="jrmatherly/ai-kb"
 BASE_URL="https://github.com/${REPO}/releases/download/${VERSION}"
 

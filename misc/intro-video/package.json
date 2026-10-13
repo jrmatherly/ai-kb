@@ -1,5 +1,5 @@
 {
-  "name": "weknora-intro-video",
+  "name": "ai-kb-intro-video",
   "private": true,
   "type": "module",
   "description": "Source for the AI KB intro video: an HTML animation rendered frame by frame to MP4.",

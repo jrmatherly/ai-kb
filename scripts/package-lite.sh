@@ -81,8 +81,8 @@ if [ -d migrations/sqlite ]; then
     mkdir -p "${DIST_DIR}/migrations/sqlite"
     cp -r migrations/sqlite/* "${DIST_DIR}/migrations/sqlite/"
 fi
-if [ -f deploy/weknora-lite.service ]; then
-    cp deploy/weknora-lite.service "${DIST_DIR}/"
+if [ -f deploy/ai-kb-lite.service ]; then
+    cp deploy/ai-kb-lite.service "${DIST_DIR}/"
 fi
 
 # ── Step 4: Create tarball ──

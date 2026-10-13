@@ -15,7 +15,7 @@ Namespace: {{ .Release.Namespace }}
 Version: {{ .Chart.AppVersion }}
 
 --------------------------------------------------------------------------------
-  ACCESSING WEKNORA
+  ACCESSING AI KB
 --------------------------------------------------------------------------------
 
 {{- if .Values.ingress.enabled }}
@@ -28,7 +28,7 @@ AI KB is accessible via Ingress:
 To access AI KB, use port-forwarding:
 
   # Frontend (Web UI)
-  kubectl port-forward svc/{{ include "weknora.serviceName" (dict "component" "frontend" "context" .) }} -n {{ .Release.Namespace }} 8080:80
+  kubectl port-forward svc/{{ include "ai-kb.serviceName" (dict "component" "frontend" "context" .) }} -n {{ .Release.Namespace }} 8080:80
 
   # Then open: http://localhost:8080
 
@@ -40,7 +40,7 @@ To expose AI KB externally, enable Ingress:
 
   helm upgrade {{ .Release.Name }} ./helm \
     --set ingress.enabled=true \
-    --set ingress.host=weknora.example.com
+    --set ingress.host=ai-kb.example.com
 
 {{- end }}
 
@@ -50,19 +50,19 @@ To expose AI KB externally, enable Ingress:
 
 Components deployed:
 {{- if .Values.app.enabled }}
-  - Backend API ({{ include "weknora.app.image" . }})
+  - Backend API ({{ include "ai-kb.app.image" . }})
 {{- end }}
 {{- if .Values.frontend.enabled }}
-  - Frontend UI ({{ include "weknora.frontend.image" . }})
+  - Frontend UI ({{ include "ai-kb.frontend.image" . }})
 {{- end }}
 {{- if .Values.docreader.enabled }}
-  - Document Reader ({{ include "weknora.docreader.image" . }})
+  - Document Reader ({{ include "ai-kb.docreader.image" . }})
 {{- end }}
 {{- if .Values.postgresql.enabled }}
-  - PostgreSQL/ParadeDB ({{ include "weknora.postgresql.image" . }})
+  - PostgreSQL/ParadeDB ({{ include "ai-kb.postgresql.image" . }})
 {{- end }}
 {{- if .Values.redis.enabled }}
-  - Redis ({{ include "weknora.redis.image" . }})
+  - Redis ({{ include "ai-kb.redis.image" . }})
 {{- end }}
 
 {{- if or .Values.minio.enabled .Values.neo4j.enabled .Values.qdrant.enabled }}
@@ -113,7 +113,7 @@ which is deprecated and no longer read by the app):
     --set neo4j.password=<your-secure-password>
 
 Access Neo4j Browser:
-  kubectl port-forward svc/{{ include "weknora.serviceName" (dict "component" "neo4j" "context" .) }} -n {{ .Release.Namespace }} 7474:7474 7687:7687
+  kubectl port-forward svc/{{ include "ai-kb.serviceName" (dict "component" "neo4j" "context" .) }} -n {{ .Release.Namespace }} 7474:7474 7687:7687
   # Open: http://localhost:7474
 
 {{- end }}

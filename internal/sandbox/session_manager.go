@@ -70,7 +70,7 @@ const SessionWorkspaceRoot = "/workspace"
 // provisioned before this constant existed still hold theirs there. The
 // shared git preamble adopts that repository on first use so SHAs recorded
 // before the move keep resolving; see gitWorkspaceAdoptLegacyRepo.
-const SessionGitDir = "/var/lib/weknora/workspace.git"
+const SessionGitDir = "/var/lib/aikb/workspace.git"
 
 // sessionArtifactDirBootstrapTimeout bounds directory creation and access
 // checks, performed with the execution identity.
@@ -1244,7 +1244,7 @@ type forkSnapshotCreator interface {
 }
 
 // createForkOrProviderSnapshot uses a fork-specific commit when the client
-// has one (Docker's weknora-fork/ namespace). Cube and E2B have no extra
+// has one (Docker's ai-kb-fork/ namespace). Cube and E2B have no extra
 // namespace, so they keep using CreateSnapshot.
 func createForkOrProviderSnapshot(
 	ctx context.Context,

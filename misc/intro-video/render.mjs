@@ -30,7 +30,7 @@ if (mode === 'stills') {
     await page.screenshot({ path: join(here, 'stills', `t${t.toFixed(2).padStart(7, '0')}.png`) });
   }
 } else if (mode === 'video') {
-  const out = rest[0] || join(here, 'weknora-intro.mp4');
+  const out = rest[0] || join(here, 'ai-kb-intro.mp4');
   const dur = await page.evaluate(() => window.DUR);
   const ff = spawn('ffmpeg', ['-y', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-',
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out],

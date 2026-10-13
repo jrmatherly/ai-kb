@@ -66,7 +66,7 @@ func TestTestConnection_DorisBlocksUnsafeAddrAtDialSink(t *testing.T) {
 
 	_, err := svc.TestConnection(ctx, types.DorisRetrieverEngineType, types.ConnectionConfig{
 		Addr:     "169.254.169.254:9030",
-		Database: "weknora",
+		Database: "aikb",
 		Username: "root",
 	})
 	if err == nil {

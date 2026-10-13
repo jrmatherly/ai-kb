@@ -171,11 +171,11 @@ services:
       - ELASTICSEARCH_INDEX=${ELASTICSEARCH_INDEX:-}
       - QDRANT_HOST=${QDRANT_HOST:-qdrant}
       - QDRANT_PORT=${QDRANT_PORT:-6334}
-      - QDRANT_COLLECTION=${QDRANT_COLLECTION:-weknora_embeddings}
+      - QDRANT_COLLECTION=${QDRANT_COLLECTION:-aikb_embeddings}
       - QDRANT_API_KEY=${QDRANT_API_KEY:-}
       - QDRANT_USE_TLS=${QDRANT_USE_TLS:-false}
       - MILVUS_ADDRESS=${MILVUS_ADDRESS:-milvus:19530}
-      - MILVUS_COLLECTION=${MILVUS_COLLECTION:-weknora_embeddings}
+      - MILVUS_COLLECTION=${MILVUS_COLLECTION:-aikb_embeddings}
       - MILVUS_METRIC_TYPE=${MILVUS_METRIC_TYPE:-IP}
       - MILVUS_USERNAME=${MILVUS_USERNAME:-}
       - MILVUS_PASSWORD=${MILVUS_PASSWORD:-}
@@ -247,7 +247,7 @@ services:
       - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
       - S3_SECRET_KEY=${S3_SECRET_KEY:-}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME:-}
-      - S3_PATH_PREFIX=${S3_PATH_PREFIX:-weknora/}
+      - S3_PATH_PREFIX=${S3_PATH_PREFIX:-ai-kb/}
       - S3_USE_SSL=${S3_USE_SSL:-true}
       - S3_FORCE_PATH_STYLE=${S3_FORCE_PATH_STYLE:-false}
       # ----- Huawei Cloud OBS (STORAGE_TYPE=obs) -----
@@ -256,7 +256,7 @@ services:
       - OBS_ACCESS_KEY=${OBS_ACCESS_KEY:-}
       - OBS_SECRET_KEY=${OBS_SECRET_KEY:-}
       - OBS_BUCKET_NAME=${OBS_BUCKET_NAME:-}
-      - OBS_PATH_PREFIX=${OBS_PATH_PREFIX:-weknora/}
+      - OBS_PATH_PREFIX=${OBS_PATH_PREFIX:-ai-kb/}
       - OBS_USE_SSL=${OBS_USE_SSL:-true}
       - OBS_PROXY_DOMAIN=${OBS_PROXY_DOMAIN:-}
       # ----- Alibaba Cloud OSS (STORAGE_TYPE=oss) -----
@@ -265,7 +265,7 @@ services:
       - OSS_ACCESS_KEY=${OSS_ACCESS_KEY:-}
       - OSS_SECRET_KEY=${OSS_SECRET_KEY:-}
       - OSS_BUCKET_NAME=${OSS_BUCKET_NAME:-}
-      - OSS_PATH_PREFIX=${OSS_PATH_PREFIX:-weknora/}
+      - OSS_PATH_PREFIX=${OSS_PATH_PREFIX:-ai-kb/}
       - OSS_TEMP_BUCKET_NAME=${OSS_TEMP_BUCKET_NAME:-}
       - OSS_TEMP_REGION=${OSS_TEMP_REGION:-}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
@@ -275,7 +275,7 @@ services:
       - BATCH_EMBED_SIZE=${BATCH_EMBED_SIZE:-}
       # Timeout for a single VLM HTTP request (seconds, default 180)
       - VLM_HTTP_TIMEOUT_SECONDS=${VLM_HTTP_TIMEOUT_SECONDS:-}
-      # Raw dump of the LLM stream (for debugging context issues; 1 enables it, default directory ~/.weknora/investigate/llm-stream)
+      # Raw dump of the LLM stream (for debugging context issues; 1 enables it, default directory ~/.aikb/investigate/llm-stream)
       - AIKB_LLM_STREAM_RAW_DUMP=${AIKB_LLM_STREAM_RAW_DUMP:-}
       - AIKB_LLM_STREAM_RAW_DUMP_DIR=${AIKB_LLM_STREAM_RAW_DUMP_DIR:-}
       - STREAM_MANAGER_TYPE=${STREAM_MANAGER_TYPE:-}
@@ -599,12 +599,12 @@ services:
       - searxng_config:/etc/searxng
     environment:
       - SEARXNG_BASE_URL=http://localhost:${SEARXNG_PORT:-8888}/
-      - INSTANCE_NAME=weknora-searxng
+      - INSTANCE_NAME=ai-kb-searxng
       # Default value lets `docker compose --profile searxng up` work zero-config.
       # Override via .env (e.g. `openssl rand -hex 32`) before exposing the
       # instance beyond the default 127.0.0.1 bind, since secret_key signs
       # image-proxy URLs and a shared default would be guessable by anyone.
-      - SEARXNG_SECRET=${SEARXNG_SECRET:-weknora-default-searxng-secret-rotate-before-exposing-publicly}
+      - SEARXNG_SECRET=${SEARXNG_SECRET:-ai-kb-default-searxng-secret-rotate-before-exposing-publicly}
     cap_drop:
       - ALL
     cap_add:
@@ -943,10 +943,10 @@ services:
       # Regenerate SALT / ENCRYPTION_KEY for production:
       #   SALT: openssl rand -base64 32
       #   ENCRYPTION_KEY: openssl rand -hex 32
-      SALT: ${LANGFUSE_SALT:-weknora-langfuse-dev-salt-change-me}
+      SALT: ${LANGFUSE_SALT:-ai-kb-langfuse-dev-salt-change-me}
       ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
       NEXTAUTH_URL: ${LANGFUSE_NEXTAUTH_URL:-http://localhost:3000}
-      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-weknora-langfuse-dev-nextauth-secret-change-me}
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-ai-kb-langfuse-dev-nextauth-secret-change-me}
       TELEMETRY_ENABLED: ${LANGFUSE_TELEMETRY_ENABLED:-false}
       LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "false"
       CLICKHOUSE_URL: http://langfuse-clickhouse:8123

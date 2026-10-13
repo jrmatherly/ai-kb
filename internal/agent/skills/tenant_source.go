@@ -54,7 +54,7 @@ const (
 // neither - the files are already in the image.
 type TenantSkillSource struct {
 	// root is the absolute directory that holds installed skill dirs
-	// (image root on remote sandboxes, ~/.weknora/skills on Lite).
+	// (image root on remote sandboxes, ~/.aikb/skills on Lite).
 	root string
 
 	byName map[string]*types.TenantSkillEntity
@@ -90,7 +90,7 @@ func NewTenantSkillSource(
 }
 
 // NewTenantSkillSourceAt serves skills installed under root: the image root
-// on remote sandboxes, ~/.weknora/skills on Lite.
+// on remote sandboxes, ~/.aikb/skills on Lite.
 func NewTenantSkillSourceAt(
 	root string, rows []*types.TenantSkillEntity, loadBundle func(row *types.TenantSkillEntity) ([]byte, error),
 ) *TenantSkillSource {

@@ -115,8 +115,8 @@ func TestFindIncompleteXMLTag(t *testing.T) {
 
 func TestResolveIMFileServiceForPath_LocalSchemeDespiteCOSDefault(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
-	t.Setenv("APP_EXTERNAL_URL", "https://weknora.example.com")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
+	t.Setenv("APP_EXTERNAL_URL", "https://ai-kb.example.com")
 
 	tenant := &types.Tenant{
 		StorageEngineConfig: &types.StorageEngineConfig{
@@ -138,8 +138,8 @@ func TestResolveIMFileServiceForPath_LocalSchemeDespiteCOSDefault(t *testing.T) 
 
 func TestRewriteStorageURLs_LocalUsesPresignedAPI(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
-	t.Setenv("APP_EXTERNAL_URL", "https://weknora.example.com")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
+	t.Setenv("APP_EXTERNAL_URL", "https://ai-kb.example.com")
 
 	tenant := &types.Tenant{
 		StorageEngineConfig: &types.StorageEngineConfig{
@@ -170,11 +170,11 @@ func TestRewriteStorageURLs_COSPathNotSignedAsLocalKey(t *testing.T) {
 				SecretKey:  "key",
 				BucketName: "test-bucket",
 				Region:     "ap-shanghai",
-				PathPrefix: "weknora",
+				PathPrefix: "aikb",
 			},
 		},
 	}
-	path := "cos://test-bucket/ap-shanghai/weknora/10000/exports/abc.png"
+	path := "cos://test-bucket/ap-shanghai/aikb/10000/exports/abc.png"
 	svc := resolveIMFileServiceForPath(tenant, path, nil)
 	require.NotNil(t, svc)
 
@@ -351,8 +351,8 @@ func TestSimulateIMStreamFlush_BareProviderURLStillHeld(t *testing.T) {
 
 func TestCleanIMContent_AfterStreamReassembly(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
-	t.Setenv("APP_EXTERNAL_URL", "https://weknora.example.com")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
+	t.Setenv("APP_EXTERNAL_URL", "https://ai-kb.example.com")
 
 	tenant := &types.Tenant{
 		StorageEngineConfig: &types.StorageEngineConfig{
@@ -401,8 +401,8 @@ func TestSimulateIMStreamFlush_BracketInAltMiddleImage(t *testing.T) {
 
 func TestRewriteStorageURLs_MultipleImagesInOneChunk(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
-	t.Setenv("APP_EXTERNAL_URL", "https://weknora.example.com")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
+	t.Setenv("APP_EXTERNAL_URL", "https://ai-kb.example.com")
 
 	tenant := &types.Tenant{
 		StorageEngineConfig: &types.StorageEngineConfig{DefaultProvider: "cos"},

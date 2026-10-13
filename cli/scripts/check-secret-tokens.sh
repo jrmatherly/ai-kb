@@ -45,7 +45,7 @@ done
 if [ "$fail" -ne 0 ]; then
   echo
   echo "A real-looking credential is committed in docs. Replace it with a"
-  echo "placeholder (e.g. sk-EXAMPLE / <api-key> / \$(weknora auth token))."
+  echo "placeholder (e.g. sk-EXAMPLE / <api-key> / \$(aikb auth token))."
   exit 1
 fi
 echo "no committed credentials found in docs"

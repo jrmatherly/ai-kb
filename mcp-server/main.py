@@ -5,8 +5,8 @@ AI KB MCP Server 主入口点
 这个文件提供了一个统一的入口点来启动 AI KB MCP 服务器。
 可以通过多种方式运行：
 1. python main.py
-2. python -m weknora_mcp_server
-3. weknora-mcp-server (安装后)
+2. python -m aikb_mcp_server
+3. ai-kb-mcp-server (安装后)
 
 注意：在 stdio 传输下，stdout 是 JSON-RPC 通道，所有诊断/提示信息必须写入
 stderr，否则会破坏 MCP 协议流导致客户端判定"启动失败"。本文件所有 print
@@ -138,7 +138,7 @@ async def main():
     try:
         print(f"正在启动 AI KB MCP Server (transport={args.transport})...", file=sys.stderr)
 
-        from weknora_mcp_server import run_stdio, run_sse, run_http
+        from aikb_mcp_server import run_stdio, run_sse, run_http
 
         # Select transport mode based on CLI argument or MCP_TRANSPORT env var
         # - stdio: Default, used by VS Code Copilot for local integration

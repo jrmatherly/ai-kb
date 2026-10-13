@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-export MCP_SERVER_AUTH_TOKEN="${MCP_SERVER_AUTH_TOKEN:-weknora-demo-token}"
+export MCP_SERVER_AUTH_TOKEN="${MCP_SERVER_AUTH_TOKEN:-ai-kb-demo-token}"
 export MCP_HOST="${MCP_HOST:-127.0.0.1}"
 export MCP_PORT="${MCP_PORT:-8010}"
 export MCP_TRANSPORT="${MCP_TRANSPORT:-http}"

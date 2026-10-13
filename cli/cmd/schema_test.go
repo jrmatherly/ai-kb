@@ -11,7 +11,7 @@ import (
 	"github.com/jrmatherly/ai-kb/cli/internal/iostreams"
 )
 
-// TestSchema_Index: `weknora schema` lists every leaf command with its purpose.
+// TestSchema_Index: `aikb schema` lists every leaf command with its purpose.
 func TestSchema_Index(t *testing.T) {
 	out, _ := iostreams.SetForTest(t)
 	root := NewRootCmd(cmdutil.New())

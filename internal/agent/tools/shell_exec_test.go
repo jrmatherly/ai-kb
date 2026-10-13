@@ -647,7 +647,7 @@ func TestShellExecDescriptionForbidsBackgrounding(t *testing.T) {
 }
 
 func TestHostInstallShellExecToolIsScopedToVersionDir(t *testing.T) {
-	dir := "/Users/dev/.weknora/skills/.versions/pdf-2"
+	dir := "/Users/dev/.aikb/skills/.versions/pdf-2"
 	tool := NewHostInstallShellExecTool(&fakeInstallShellExecutor{}, dir)
 	require.Equal(t, []string{dir}, tool.allowedWorkDirRoots())
 	require.Equal(t, dir, tool.effectiveDefaultWorkDir())

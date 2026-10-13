@@ -74,7 +74,7 @@ test('missing, empty and failed agent loads fall back to the last chat model wit
     const f = fixture({ load, readStorage: key => { keys.push(key); return 'last-chat' } })
     await f.model.loadInstallerModel()
     assert.equal(f.model.installerModelId.value, 'last-chat')
-    assert.deepEqual(keys, ['weknora_last_chat_model_id'])
+    assert.deepEqual(keys, ['aikb_last_chat_model_id'])
     assert.equal(f.writes.length, 0)
     assert.deepEqual(f.errors, [])
   }

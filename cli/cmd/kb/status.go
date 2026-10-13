@@ -38,7 +38,7 @@ var kbStatusFields = []string{
 	"is_processing", "processing_count",
 }
 
-// NewCmdStatus builds `weknora kb status <id>`.
+// NewCmdStatus builds `aikb kb status <id>`.
 func NewCmdStatus(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status <kb-id>",
@@ -48,12 +48,12 @@ func NewCmdStatus(f *cmdutil.Factory) *cobra.Command {
 1 HTTP call:
   reachable / knowledge_count / chunk_count / is_processing / processing_count
 
-For deep verification including failed_count, use 'weknora kb check <id>'
+For deep verification including failed_count, use 'aikb kb check <id>'
 (1 + N HTTP, pages the doc list with parse_status=failed).
 
-For full metadata (config / pinned / tenant), use 'weknora kb view <id>'.`,
-		Example: `  weknora kb status kb_abc
-  weknora kb status kb_abc --format json`,
+For full metadata (config / pinned / tenant), use 'aikb kb view <id>'.`,
+		Example: `  aikb kb status kb_abc
+  aikb kb status kb_abc --format json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
 			fopts, err := cmdutil.CheckFormatFlag(c)
@@ -76,7 +76,7 @@ For full metadata (config / pinned / tenant), use 'weknora kb view <id>'.`,
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor:       "shallow health probe of a knowledge base (one HTTP call): reachability, no failed-doc aggregation",
 		RequiredFlags: []string{"<kb-id> (positional)"},
-		Examples:      []string{"weknora kb status kb_abc"},
+		Examples:      []string{"aikb kb status kb_abc"},
 		Output:        "envelope.data is {id, reachable, retrieval_ready, ...}; retrieval_ready=false means no embedding model is bound (run `kb config set`), so the KB cannot index/retrieve; use `kb check` for deep failed-doc aggregation",
 	})
 	return cmd
@@ -132,7 +132,7 @@ func retrievalHint(ready bool) string {
 	if ready {
 		return ""
 	}
-	return "  ← no embedding model bound; run `weknora kb config set <id>`"
+	return "  ← no embedding model bound; run `aikb kb config set <id>`"
 }
 
 // compile-time check: SDK client satisfies StatusService.

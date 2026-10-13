@@ -58,9 +58,9 @@ func TestInstallManagerRunsInBoundVersionDir(t *testing.T) {
 	require.Equal(t, "ok", res.Stdout)
 	require.Equal(t, dir, runner.policy.Cwd)
 	require.Empty(t, runner.req.WorkDir, "/workspace means the version dir on host")
-	require.Equal(t, filepath.Join(dir, ".weknora", "cache", "uv"), runner.req.Env["UV_CACHE_DIR"])
-	require.Equal(t, filepath.Join(dir, ".weknora", "cache", "pip"), runner.req.Env["PIP_CACHE_DIR"])
-	require.Equal(t, filepath.Join(dir, ".weknora", "cache", "npm"), runner.req.Env["npm_config_cache"])
+	require.Equal(t, filepath.Join(dir, ".aikb", "cache", "uv"), runner.req.Env["UV_CACHE_DIR"])
+	require.Equal(t, filepath.Join(dir, ".aikb", "cache", "pip"), runner.req.Env["PIP_CACHE_DIR"])
+	require.Equal(t, filepath.Join(dir, ".aikb", "cache", "npm"), runner.req.Env["npm_config_cache"])
 	require.Equal(t, dir, runner.req.Env["AIKB_SKILL_DIR"])
 	require.Equal(t, "1", runner.req.Env["X"])
 

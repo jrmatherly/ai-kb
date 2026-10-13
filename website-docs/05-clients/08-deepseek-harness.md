@@ -1,13 +1,13 @@
 # DeepSeek Harness plugin
 
-The DeepSeek Harness (dsh) plugin connects to an existing AI KB deployment over the REST API. It retrieves source passages, reads full documents and produces answers with citations. The plugin source is in `packages/dsh-weknora`.
+The DeepSeek Harness (dsh) plugin connects to an existing AI KB deployment over the REST API. It retrieves source passages, reads full documents and produces answers with citations. The plugin source is in `packages/dsh-ai-kb`.
 
 ## Install and connect
 
 This section installs the plugin into a dsh profile and points it at your deployment.
 
 ```sh
-dsh plugin --profile web add @wxg-prc-cpg/dsh-weknora
+dsh plugin --profile web add @jrmatherly/dsh-ai-kb
 
 export AIKB_BASE_URL=https://kb.example.com
 export AIKB_API_KEY='<api-key>'
@@ -16,7 +16,7 @@ export AIKB_RESOURCE_URLS=public
 dsh web
 ```
 
-You can also run `dsh plugin --profile web add ./packages/dsh-weknora` from the repository root. The plugin itself requires Node 20.11 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.1.0-rc.8 and AI KB 0.8.0. For other versions, confirm compatibility against the dsh plugin interface.
+You can also run `dsh plugin --profile web add ./packages/dsh-ai-kb` from the repository root. The plugin itself requires Node 20.11 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.1.0-rc.8 and AI KB 0.8.0. For other versions, confirm compatibility against the dsh plugin interface.
 
 The service address may include `/api/v1`. When it does not, the plugin appends it. The API key is sent in `X-API-Key` and needs the `retrieve` capability. Calling `ask` also needs `chat`. With a platform key, set `tenantId`, which requests send as `X-Tenant-ID`.
 
@@ -26,10 +26,10 @@ This section describes what each tool returns, so you know which one an agent sh
 
 | Tool | Purpose |
 | --- | --- |
-| `weknora_list_knowledge_bases` | Lists the visible knowledge bases and their IDs |
-| `weknora_search` | Hybrid retrieval of passages that also matches document titles. Returns the knowledge item ID, the chunk index and the score |
-| `weknora_read_document` | Reads a document's text in order. The first page includes the title and summary, and long documents can be paged |
-| `weknora_ask` | Creates or continues a session in AI KB and returns the answer, the citations and the server-side tool steps |
+| `aikb_list_knowledge_bases` | Lists the visible knowledge bases and their IDs |
+| `aikb_search` | Hybrid retrieval of passages that also matches document titles. Returns the knowledge item ID, the chunk index and the score |
+| `aikb_read_document` | Reads a document's text in order. The first page includes the title and summary, and long documents can be paged |
+| `aikb_ask` | Creates or continues a session in AI KB and returns the answer, the citations and the server-side tool steps |
 
 `search` returns retrieval evidence for dsh to write its own answer from. `ask` calls the model on the AI KB server and creates a session and messages, which suits questions that draw on many documents. Neither one changes knowledge base content.
 
@@ -42,7 +42,7 @@ This section sets the plugin options for one dsh profile.
 Set them in `$DSH_HOME/profiles/<name>/cordis.patch.yml`:
 
 ```yaml
-- id: weknora
+- id: aikb
   config:
     baseUrl: https://kb.example.com
     apiKey: !!js process.env.AIKB_API_KEY
@@ -53,7 +53,7 @@ Set them in `$DSH_HOME/profiles/<name>/cordis.patch.yml`:
     requestTimeoutMs: 30000
     chatTimeoutMs: 300000
     resourceUrls: public
-    toolPrefix: weknora
+    toolPrefix: aikb
     tools:
       listKnowledgeBases: true
       search: true
@@ -81,4 +81,4 @@ This section explains how image links in answers are produced and how to fix com
 
 This section lists the files to read when changing the plugin or checking its API contract.
 
-`packages/dsh-weknora/src/`, `packages/dsh-weknora/test/fixtures/api-contract.json`, `packages/dsh-weknora/contract/contract_test.go`.
+`packages/dsh-ai-kb/src/`, `packages/dsh-ai-kb/test/fixtures/api-contract.json`, `packages/dsh-ai-kb/contract/contract_test.go`.

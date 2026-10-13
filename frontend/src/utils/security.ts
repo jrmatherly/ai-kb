@@ -468,10 +468,10 @@ const protectedFileCacheState = (() => {
   });
   if (typeof window === 'undefined') return fresh();
   const scope = window as typeof window & {
-    __weknoraProtectedFileCacheV4__?: ProtectedFileCacheState;
+    __aikbProtectedFileCacheV4__?: ProtectedFileCacheState;
   };
-  scope.__weknoraProtectedFileCacheV4__ ||= fresh();
-  return scope.__weknoraProtectedFileCacheV4__;
+  scope.__aikbProtectedFileCacheV4__ ||= fresh();
+  return scope.__aikbProtectedFileCacheV4__;
 })();
 
 const protectedFileBlobCache = protectedFileCacheState.blobByRequest;
@@ -575,9 +575,9 @@ function applyHydratedProtectedImage(root: ParentNode, sourceURL: string, file: 
 
 function ensureProtectedResourceCardClicks(): void {
   if (typeof window === 'undefined') return;
-  const scope = window as typeof window & { __weknoraProtectedCardClicks__?: boolean };
-  if (scope.__weknoraProtectedCardClicks__) return;
-  scope.__weknoraProtectedCardClicks__ = true;
+  const scope = window as typeof window & { __aikbProtectedCardClicks__?: boolean };
+  if (scope.__aikbProtectedCardClicks__) return;
+  scope.__aikbProtectedCardClicks__ = true;
   window.addEventListener('click', (event) => {
     const target = event.target as Element | null;
     const link = target?.closest?.('a.protected-resource-card');

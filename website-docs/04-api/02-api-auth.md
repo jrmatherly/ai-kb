@@ -78,7 +78,7 @@ curl -X POST $BASE/api/v1/auth/login -H 'Content-Type: application/json' -d '{"e
 
 ### POST /api/v1/auth/auto-setup
 
-Purpose: native desktop Lite auto-creates the account and workspace and logs in. The request must carry the per-process random `X-WeKnora-Desktop-Token` supplied by the desktop native bridge; anonymous HTTP requests are rejected. Regular browsers use the register and login routes. Handler: `internal/handler/auth.go`
+Purpose: native desktop Lite auto-creates the account and workspace and logs in. The request must carry the per-process random `X-AIKB-Desktop-Token` supplied by the desktop native bridge; anonymous HTTP requests are rejected. Regular browsers use the register and login routes. Handler: `internal/handler/auth.go`
 
 Response: 200, same shape as Login. A non-Lite edition returns 403; a missing or wrong desktop token returns 401.
 

@@ -28,7 +28,7 @@ test('round-trips a pid keyed by session', () => {
   writeStoredPtyId('sess-a', 4321)
   assert.equal(readStoredPtyId('sess-a'), 4321)
   assert.equal(readStoredPtyId('sess-b'), null)
-  assert.equal(sandboxPtyStorageKey('sess-a'), 'weknora_sandbox_pty:sess-a')
+  assert.equal(sandboxPtyStorageKey('sess-a'), 'aikb_sandbox_pty:sess-a')
 })
 
 test('forgets the pid when cleared or invalid', () => {

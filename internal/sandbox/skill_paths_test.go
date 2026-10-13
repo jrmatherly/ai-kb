@@ -150,7 +150,7 @@ func TestSkillInterpreterCommand(t *testing.T) {
 		require.Contains(t, args[1], dir+"/.venv/bin/python",
 			"a skill with its own venv must not be run by the system interpreter")
 		require.Contains(t, args[1], "else", "there must be a fallback when the venv is absent")
-		require.Equal(t, "weknora-skill", args[2])
+		require.Equal(t, "ai-kb-skill", args[2])
 	})
 
 	t.Run("javascript uses node", func(t *testing.T) {
@@ -173,7 +173,7 @@ func TestSkillInterpreterCommand(t *testing.T) {
 		require.Equal(t, "-c", args[0])
 		require.Contains(t, args[1], "exec bash "+dir+"/scripts/run.sh")
 		require.Contains(t, args[1], "else", "there must be a fallback when bash is absent")
-		require.Equal(t, "weknora-skill", args[2])
+		require.Equal(t, "ai-kb-skill", args[2])
 	})
 
 	t.Run("a shell script receives the caller's arguments", func(t *testing.T) {
@@ -240,11 +240,11 @@ func TestIsHostSkillTarget(t *testing.T) {
 }
 
 func TestSkillDirUnderJoinsOneSegment(t *testing.T) {
-	dir, err := SkillDirUnder("/Users/dev/.weknora/skills", "pdf")
+	dir, err := SkillDirUnder("/Users/dev/.aikb/skills", "pdf")
 	require.NoError(t, err)
-	require.Equal(t, "/Users/dev/.weknora/skills/pdf", dir)
+	require.Equal(t, "/Users/dev/.aikb/skills/pdf", dir)
 
-	_, err = SkillDirUnder("/Users/dev/.weknora/skills", "../pdf")
+	_, err = SkillDirUnder("/Users/dev/.aikb/skills", "../pdf")
 	require.ErrorIs(t, err, ErrInvalidSkillName)
 	_, err = SkillDirUnder("", "pdf")
 	require.Error(t, err)
@@ -255,7 +255,7 @@ func TestSkillDirUnderJoinsOneSegment(t *testing.T) {
 }
 
 func TestValidatedSkillDirUnderRejectsOtherRoots(t *testing.T) {
-	root := "/Users/dev/.weknora/skills/.versions"
+	root := "/Users/dev/.aikb/skills/.versions"
 	got, ok := ValidatedSkillDirUnder(root, root+"/pdf-3")
 	require.True(t, ok)
 	require.Equal(t, root+"/pdf-3", got)
@@ -277,7 +277,7 @@ func TestImageSkillHelpersKeepTheImageRoot(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, SkillsImageRoot+"/pdf", got)
 
-	require.Equal(t, SkillsImageRoot+"/pdf/.weknora/requirements.json", SkillRequirementsPath("pdf"))
-	require.Equal(t, "/x/pdf-1/.weknora/requirements.json", SkillRequirementsPathIn("/x/pdf-1"))
+	require.Equal(t, SkillsImageRoot+"/pdf/.aikb/requirements.json", SkillRequirementsPath("pdf"))
+	require.Equal(t, "/x/pdf-1/.aikb/requirements.json", SkillRequirementsPathIn("/x/pdf-1"))
 	require.Equal(t, "", SkillRequirementsPathIn(" "))
 }

@@ -357,13 +357,13 @@ func zipArchive(t *testing.T, files map[string]string) []byte {
 
 func TestTenantSkillSourceAtUsesTheGivenRoot(t *testing.T) {
 	rows := []*types.TenantSkillEntity{{Name: "pdf", Status: types.SkillStatusReady, Enabled: true}}
-	src := NewTenantSkillSourceAt("/Users/dev/.weknora/skills", rows, nil)
+	src := NewTenantSkillSourceAt("/Users/dev/.aikb/skills", rows, nil)
 	meta, err := src.DiscoverSkills()
 	require.NoError(t, err)
-	require.Equal(t, "/Users/dev/.weknora/skills/pdf", meta[0].BasePath)
+	require.Equal(t, "/Users/dev/.aikb/skills/pdf", meta[0].BasePath)
 	script, err := src.RemoteScriptPath("pdf", "scripts/run.py")
 	require.NoError(t, err)
-	require.Equal(t, "/Users/dev/.weknora/skills/pdf/scripts/run.py", script)
+	require.Equal(t, "/Users/dev/.aikb/skills/pdf/scripts/run.py", script)
 
 	legacy := NewTenantSkillSource(rows, nil)
 	dir, err := legacy.GetSkillBasePath("pdf")

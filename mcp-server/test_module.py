@@ -18,7 +18,7 @@ REQUIRED_FILES = [
     "__init__.py",
     "main.py",
     "run_server.py",
-    "weknora_mcp_server.py",
+    "aikb_mcp_server.py",
     "requirements.txt",
     "setup.py",
     "pyproject.toml",
@@ -33,8 +33,8 @@ class ModuleIntegrationTest(unittest.TestCase):
     def test_imports(self):
         import mcp  # noqa: F401
         import requests  # noqa: F401
-        import weknora_mcp_server  # noqa: F401
-        from weknora_mcp_server import WeKnoraClient, run  # noqa: F401
+        import aikb_mcp_server  # noqa: F401
+        from aikb_mcp_server import AIKBClient, run  # noqa: F401
         import main  # noqa: F401
 
     def test_environment_optional_vars(self):
@@ -42,11 +42,11 @@ class ModuleIntegrationTest(unittest.TestCase):
         os.getenv("AIKB_API_KEY")
 
     def test_client_creation(self):
-        from weknora_mcp_server import WeKnoraClient
+        from aikb_mcp_server import AIKBClient
 
         base_url = os.getenv("AIKB_BASE_URL", "http://localhost:8080/api/v1")
         api_key = os.getenv("AIKB_API_KEY", "test_key")
-        client = WeKnoraClient(base_url, api_key)
+        client = AIKBClient(base_url, api_key)
         self.assertEqual(client.base_url, base_url)
         self.assertEqual(client.api_key, api_key)
 
@@ -75,17 +75,17 @@ class ModuleIntegrationTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_wiki_tools(self):
-        import weknora_mcp_server
+        import aikb_mcp_server
 
-        client = weknora_mcp_server.WeKnoraClient("http://localhost:8080/api/v1", "test")
+        client = aikb_mcp_server.AIKBClient("http://localhost:8080/api/v1", "test")
         for method in ["wiki_search", "wiki_read_page", "wiki_index_view"]:
-            self.assertTrue(hasattr(client, method), f"WeKnoraClient missing: {method}")
+            self.assertTrue(hasattr(client, method), f"AIKBClient missing: {method}")
             self.assertTrue(callable(getattr(client, method)), f"{method} not callable")
 
     def test_pyproject_metadata(self):
         text = (MCP_SERVER_DIR / "pyproject.toml").read_text(encoding="utf-8")
-        self.assertIn("tencent-weknora-mcp", text)
-        self.assertIn("weknora-mcp-server", text)
+        self.assertIn("ai-kb-mcp", text)
+        self.assertIn("ai-kb-mcp-server", text)
 
 
 if __name__ == "__main__":

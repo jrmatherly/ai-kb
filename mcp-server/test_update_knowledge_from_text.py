@@ -4,12 +4,12 @@
 import unittest
 from unittest import mock
 
-import weknora_mcp_server as srv
+import aikb_mcp_server as srv
 
 
 class UpdateKnowledgeFromTextTest(unittest.TestCase):
     def test_client_puts_manual_update_to_expected_endpoint(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request") as req:
             req.return_value = {"ok": True}
             result = client.update_knowledge_from_text(
@@ -28,7 +28,7 @@ class UpdateKnowledgeFromTextTest(unittest.TestCase):
         )
 
     def test_client_can_save_a_draft_and_keep_the_title(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request") as req:
             req.return_value = {"ok": True}
             client.update_knowledge_from_text(

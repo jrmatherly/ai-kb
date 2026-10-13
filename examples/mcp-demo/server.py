@@ -6,7 +6,7 @@ AI KB 本地 MCP Demo Server
 默认以 Streamable HTTP 监听 http://127.0.0.1:8010/mcp
 
 启动：
-  export MCP_SERVER_AUTH_TOKEN=weknora-demo-token
+  export MCP_SERVER_AUTH_TOKEN=ai-kb-demo-token
   python server.py
 
 AI KB 配置：
@@ -31,7 +31,7 @@ from mcp.server import MCPServer
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger("mcp-demo")
 
-mcp = MCPServer("weknora-mcp-demo", version="0.1.0")
+mcp = MCPServer("ai-kb-mcp-demo", version="0.1.0")
 
 # 与 website-docs/sample-data/ 配套的演示语料，方便 Agent 调用后对照知识库答案。
 DEMO_POLICIES: dict[str, str] = {
@@ -63,7 +63,7 @@ def require_network_transport_auth(transport: str) -> str:
     if transport in ("sse", "http") and not token:
         logger.error(
             "MCP_SERVER_AUTH_TOKEN is required for %s transport. "
-            "Example: export MCP_SERVER_AUTH_TOKEN=weknora-demo-token",
+            "Example: export MCP_SERVER_AUTH_TOKEN=ai-kb-demo-token",
             transport,
         )
         sys.exit(1)

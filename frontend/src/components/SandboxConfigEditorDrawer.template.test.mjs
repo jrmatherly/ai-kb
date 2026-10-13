@@ -25,7 +25,7 @@ test('desktop templates have a sibling create offer like CLI, and listing does n
   assert.ok(template.includes('canCreateStandard'), 'CLI create offer remains a fallback if ensure failed')
   assert.ok(template.includes('canCreateDesktop'), 'desktop create offer is opt-in; XFCE images are much heavier')
   assert.ok(template.includes('createDesktopTemplate'), 'admin must click create to start the desktop Hub build')
-  assert.ok(template.includes('weknoraDesktopTemplate'), 'the offer row names the desktop image')
+  assert.ok(template.includes('aikbDesktopTemplate'), 'the offer row names the desktop image')
   assert.ok(
     template.includes('item.desktop'),
     'listed cards still mark the desktop image so picking one can set desktop_enabled',

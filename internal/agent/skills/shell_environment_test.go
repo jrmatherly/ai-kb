@@ -23,7 +23,7 @@ func TestShellEnvironmentSelectsOnlyAllowedInstalledSkills(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, wrapped, sandbox.ShellQuote(command))
 	require.Contains(t, wrapped, "/pdf/.venv/bin")
-	require.Contains(t, wrapped, "/pdf/.weknora/bin")
+	require.Contains(t, wrapped, "/pdf/.aikb/bin")
 	require.Contains(t, wrapped, "--noprofile --norc")
 	require.Equal(t, "caller", actual["TOKEN"])
 	require.Equal(t, "/workspace/custom", actual["PYTHONPATH"],
@@ -49,7 +49,7 @@ func (h hostLayoutManager) SessionWorkspaceLayout(context.Context, string) (sand
 }
 
 func TestPrepareShellEnvironmentOnHostUsesLocalSkillsAndWorkspace(t *testing.T) {
-	root := "/Users/dev/.weknora/skills"
+	root := "/Users/dev/.aikb/skills"
 	rows := []*types.TenantSkillEntity{{Name: "pdf", Status: types.SkillStatusReady, Enabled: true}}
 	m := NewManager(&ManagerConfig{Enabled: true}, hostLayoutManager{root: "/Users/dev/My Project"}).
 		WithSkillsRoot(root).

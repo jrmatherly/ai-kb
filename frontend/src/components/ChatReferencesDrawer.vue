@@ -220,7 +220,7 @@ const onViewportResize = () => {
 onMounted(() => window.addEventListener('resize', onViewportResize))
 onBeforeUnmount(() => window.removeEventListener('resize', onViewportResize))
 
-const WIDTH_STORAGE_KEY = 'weknora.references-panel-widths'
+const WIDTH_STORAGE_KEY = 'aikb.references-panel-widths'
 const preferredWidths = reactive<{ source?: number; list?: number }>({})
 let resizeStartWidth = 0
 onMounted(() => {

@@ -37,7 +37,7 @@ func TestRawToolsPaginationErrorsAndCancellation(t *testing.T) {
 					calls++
 					id, err := json.Marshal(request.ID)
 					require.NoError(t, err)
-					require.Contains(t, string(id), `"weknora-tools-`)
+					require.Contains(t, string(id), `"ai-kb-tools-`)
 					require.False(t, seenIDs[string(id)])
 					seenIDs[string(id)] = true
 					require.Equal(t, "tools/list", request.Method)

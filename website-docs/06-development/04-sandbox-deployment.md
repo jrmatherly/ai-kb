@@ -40,7 +40,7 @@ The idle sweep is triggered by Create and Connect and runs in the background. It
 
 ### Skill snapshots and disk
 
-Installing a skill runs `docker commit` to produce a local image under `weknora-skill/`, and later sessions start from that install snapshot. It saves the filesystem, not memory state. Workspace-shared volumes and the Docker graphical desktop are not supported yet.
+Installing a skill runs `docker commit` to produce a local image under `ai-kb-skill/`, and later sessions start from that install snapshot. It saves the filesystem, not memory state. Workspace-shared volumes and the Docker graphical desktop are not supported yet.
 
 An incremental snapshot inherits the old image's layers, so deleting an old tag does not necessarily free disk. Uninstalling a skill adds a layer of delete markers, and the original files can remain in parent layers. The current flow does not flatten images automatically or distribute them across daemons. Monitor layer count and disk usage, and confirm session and snapshot references before cleaning up. When you need a fresh base image, create a new config and reinstall the skills.
 

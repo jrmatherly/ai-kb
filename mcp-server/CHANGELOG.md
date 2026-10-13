@@ -15,15 +15,15 @@
 ## [1.1.1] - 2026-07-30
 
 ### 变更
-- 官方 PyPI 包名改为 **`tencent-weknora-mcp`**（由 jrmatherly/ai-kb 仓库 CI 通过 Trusted Publishing 发布）。
+- 官方 PyPI 包名改为 **`tencent-weknora-mcp`**（由 Tencent/WeKnora 仓库 CI 通过 Trusted Publishing 发布）。
   原社区包 `weknora-mcp` 非官方维护，请迁移安装命令。
-- 项目 URL 指向 [jrmatherly/ai-kb](https://github.com/jrmatherly/ai-kb) 官方仓库（`mcp-server/` 目录）。
+- 项目 URL 指向 [Tencent/WeKnora](https://github.com/Tencent/WeKnora) 官方仓库（`mcp-server/` 目录）。
 
 ### 修复
 - HTTP 传输恢复 `stateless_http=True`，与迁移前 `StreamableHTTPSessionManager(stateless=True)` 行为一致。
 - SSE 传输恢复消息端点 `/sse/messages/`，与迁移前路由一致。
 - `WeKnoraClient` 使用线程本地 `requests.Session`，避免 MCP 2.x 在线程池中并发调用时出现 Session 竞态。
-- 文件上传（`create_knowledge_from_file`）尊重 `AIKB_VERIFY_SSL` 设置。
+- 文件上传（`create_knowledge_from_file`）尊重 `WEKNORA_VERIFY_SSL` 设置。
 
 ### 注意
 - 工具执行失败时，MCPServer 2.x 返回 `CallToolResult(isError=True)`（`ToolError`），
@@ -63,8 +63,8 @@
 
 ### 新增
 - 初始版本发布
-- AI KB MCP Server 核心功能
-- 完整的 AI KB API 集成
+- WeKnora MCP Server 核心功能
+- 完整的 WeKnora API 集成
 - 空间管理工具
 - 知识库管理工具
 - 知识管理工具
@@ -104,7 +104,7 @@
 
 ### 文件结构
 ```
-ai-kb/mcp-server/
+WeKnora/mcp-server/
 ├── __init__.py              # 包初始化文件
 ├── main.py                  # 主入口点 (推荐)
 ├── run.py                   # 便捷启动脚本

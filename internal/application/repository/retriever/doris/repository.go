@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultTableBaseName = "weknora_embeddings"
+	defaultTableBaseName = "aikb_embeddings"
 	envDorisTablePrefix  = "DORIS_TABLE_PREFIX"
 )
 

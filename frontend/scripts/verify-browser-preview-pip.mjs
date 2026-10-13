@@ -13,7 +13,7 @@ const playwrightPath = process.env.BROWSERSKILL_TEST_PLAYWRIGHT;
 assert.ok(executablePath && playwrightPath, 'Set BROWSERSKILL_TEST_CHROMIUM and BROWSERSKILL_TEST_PLAYWRIGHT');
 const { chromium } = await import(pathToFileURL(playwrightPath).href);
 const root = fileURLToPath(new URL('../', import.meta.url));
-const cacheDir = await mkdtemp(join(tmpdir(), 'weknora-pip-vite-'));
+const cacheDir = await mkdtemp(join(tmpdir(), 'ai-kb-pip-vite-'));
 const status = { enabled: true, selected: true, connected: true, task_id: 'fixture', paused: false, idle: false, action: 'observe', action_elapsed_ms: 1000 };
 const calls = [];
 const entry = `

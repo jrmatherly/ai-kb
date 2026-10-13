@@ -225,13 +225,13 @@ func TestValidateEnvDeclarationsNeverCarriesAValue(t *testing.T) {
 	require.Equal(t, types.SkillEnvVars{{Name: "TAVILY_API_KEY"}}, got)
 }
 
-// Official AI KB skills (and the ClawHub weknora skill) authenticate with
+// Official AI KB skills (and the ClawHub aikb skill) authenticate with
 // AIKB_API_KEY / AIKB_BASE_URL. Those names must survive validation:
 // only the sandbox-injected AIKB_SKILL_* / AIKB_SESSION_INPUT_DIR
 // names are reserved.
-func TestValidateEnvDeclarationsAllowsWeknoraCredentialNames(t *testing.T) {
+func TestValidateEnvDeclarationsAllowsAikbCredentialNames(t *testing.T) {
 	bundle := &SkillBundle{
-		Name: "weknora",
+		Name: "aikb",
 		Files: map[string][]byte{
 			"SKILL.md": []byte(
 				"export AIKB_BASE_URL AIKB_API_KEY AIKB_HOST AIKB_TOKEN AIKB_KB_ID; " +

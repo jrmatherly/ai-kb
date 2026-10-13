@@ -1,4 +1,4 @@
-// Package doc — fetch.go implements `weknora doc fetch <url>`.
+// Package doc — fetch.go implements `aikb doc fetch <url>`.
 package doc
 
 import (
@@ -45,7 +45,7 @@ type FetchService interface {
 	) (*sdk.Knowledge, error)
 }
 
-// NewCmdFetch builds `weknora doc fetch <url>`.
+// NewCmdFetch builds `aikb doc fetch <url>`.
 func NewCmdFetch(f *cmdutil.Factory) *cobra.Command {
 	opts := &FetchOptions{}
 	cmd := &cobra.Command{
@@ -53,7 +53,7 @@ func NewCmdFetch(f *cmdutil.Factory) *cobra.Command {
 		Short: "Fetch a remote document into a knowledge base",
 		Long: `Server fetches the document at the given URL and ingests it into the resolved
 knowledge base. KB resolution follows the standard 4-level chain:
---kb flag > AIKB_KB_ID env > .weknora/project.yaml > error.
+--kb flag > AIKB_KB_ID env > .aikb/project.yaml > error.
 
 When the URL has a known file extension (.pdf, .docx, .md, .txt) the server
 automatically switches from web-page-crawl mode to file-download mode. Pass
@@ -71,10 +71,10 @@ Server-side ingestion knobs:
   --enable-multimodel      Toggle multimodal extraction (image-in-PDF → text).
                            Unset ⇒ server default; pass true or false to override.
   --channel <name>         Override the ingestion-channel tag (default "api").`,
-		Example: `  weknora doc fetch https://example.com/whitepaper.pdf
-  weknora doc fetch https://example.com/no-ext --file-type pdf --title "Whitepaper"
-  weknora doc fetch https://example.com/article.html --name "Q3 Article" --tag-id tag_abc
-  weknora doc fetch https://example.com/report.pdf --kb my-kb --enable-multimodel`,
+		Example: `  aikb doc fetch https://example.com/whitepaper.pdf
+  aikb doc fetch https://example.com/no-ext --file-type pdf --title "Whitepaper"
+  aikb doc fetch https://example.com/article.html --name "Q3 Article" --tag-id tag_abc
+  aikb doc fetch https://example.com/report.pdf --kb my-kb --enable-multimodel`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
 			opts.URL = args[0]
@@ -138,7 +138,7 @@ Server-side ingestion knobs:
 		UsedFor:       "Ingest a remote URL into the resolved knowledge base. KB resolved via --kb flag, AIKB_KB_ID env, or project link. Emits the created Knowledge object with its id.",
 		RequiredFlags: []string{"<url> (positional)", "--kb (or AIKB_KB_ID / project link)"},
 		Examples: []string{
-			`weknora doc fetch https://example.com/whitepaper.pdf --kb kb_eng`,
+			`aikb doc fetch https://example.com/whitepaper.pdf --kb kb_eng`,
 		},
 		Output: "envelope.data is the created Knowledge object with id, knowledge_base_id, source, parse_status",
 	})

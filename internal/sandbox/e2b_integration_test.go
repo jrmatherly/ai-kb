@@ -84,7 +84,7 @@ func TestE2BIntegrationLifecycleParity(t *testing.T) {
 			firstHandle.Metadata(), expectedMetadata)
 	}
 
-	base := "/tmp/weknora-e2b-integration"
+	base := "/tmp/ai-kb-e2b-integration"
 	path := base + "/state.txt"
 	payload := []byte("e2b lifecycle state persists\n")
 	if err := firstClient.MakeDir(ctx, firstHandle, base); err != nil {

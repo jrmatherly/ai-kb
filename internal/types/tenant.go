@@ -808,7 +808,7 @@ type VolumeMountConfig struct {
 	Enabled bool `json:"enabled"`
 
 	// MountPath is the sandbox-internal path where the volume is mounted.
-	// Default: /weknora/tenant/skills (customizable per use case).
+	// Default: /aikb/tenant/skills (customizable per use case).
 	MountPath string `json:"mount_path,omitempty"`
 
 	// Provider identifies the volume backend. Currently "e2b" or "cube".
@@ -819,7 +819,7 @@ type VolumeMountConfig struct {
 	VolumeID string `json:"volume_id,omitempty"`
 
 	// VolumeName is the human-readable volume name, e.g.
-	// "weknora-tenant-<id>-skills".
+	// "ai-kb-tenant-<id>-skills".
 	VolumeName string `json:"volume_name,omitempty"`
 
 	// VolumeOwnerFingerprint = sha256(provider + APIKey + APIURL).

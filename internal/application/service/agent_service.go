@@ -424,7 +424,7 @@ func (s *agentService) resolveKBAndDocInfos(
 // manager advertises a SessionFileStore.
 //
 // The skill installer is the exception: write_sandbox_file only accepts
-// /workspace, the installer must write .weknora/requirements.json under
+// /workspace, the installer must write .aikb/requirements.json under
 // /opt/ai-kb/tenant/skills, and its prompt forbids touching /workspace
 // (that tree is wiped before the snapshot). Offering the file tools made
 // the first write of every install fail, then fall back to a shell heredoc.

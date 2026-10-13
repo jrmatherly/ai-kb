@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	serverName    = "weknora"
+	serverName    = "aikb"
 	serverVersion = "1.0.0"
 
 	rateLimitKeyPrefix = "mcp:endpoint:ratelimit:"

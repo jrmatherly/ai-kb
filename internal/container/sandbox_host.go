@@ -165,7 +165,7 @@ func defaultHostSessionRoot(homeDir string) string {
 }
 
 func defaultHostSkillsRoot(homeDir string) string {
-	return filepath.Join(homeDir, ".weknora", "skills")
+	return filepath.Join(homeDir, ".aikb", "skills")
 }
 
 func hostAppDataDir(home string) string {

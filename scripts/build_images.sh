@@ -1,5 +1,5 @@
 #!/bin/bash
-# 该脚本用于从源码构建WeKnora的所有Docker镜像
+# 该脚本用于从源码构建AI KB的所有Docker镜像
 
 # 设置颜色
 GREEN='\033[0;32m'
@@ -129,7 +129,7 @@ get_version_info() {
 
 # 构建应用镜像
 build_app_image() {
-    log_info "构建应用镜像 (weknora-app)..."
+    log_info "构建应用镜像 (ai-kb-app)..."
     
     cd "$PROJECT_ROOT"
     
@@ -162,7 +162,7 @@ build_app_image() {
 
 # 构建文档读取器镜像
 build_docreader_image() {
-    log_info "构建文档读取器镜像 (weknora-docreader)..."
+    log_info "构建文档读取器镜像 (ai-kb-docreader)..."
     
     cd "$PROJECT_ROOT"
     
@@ -188,7 +188,7 @@ build_docreader_image() {
 
 # 构建前端镜像（多阶段：npm 在 builder 内执行，无需宿主机预构建 dist）
 build_frontend_image() {
-    log_info "构建前端镜像 (weknora-ui)..."
+    log_info "构建前端镜像 (ai-kb-ui)..."
     
     cd "$PROJECT_ROOT"
     
@@ -215,7 +215,7 @@ build_frontend_image() {
 
 # 构建沙箱镜像
 build_sandbox_image() {
-    log_info "构建沙箱镜像 (weknora-sandbox)..."
+    log_info "构建沙箱镜像 (ai-kb-sandbox)..."
 
     cd "$PROJECT_ROOT"
 
@@ -237,7 +237,7 @@ build_sandbox_image() {
 
     # Cube 从镜像直接构建模板，并以 :49983/health 探活，缺 envd 必然失败，
     # 因此 Cube 用的是注入了 envd 的变体镜像。详见 website-docs/06-development/04-sandbox-deployment.md。
-    log_info "构建沙箱镜像 Cube 变体 (weknora-sandbox:main-cube)..."
+    log_info "构建沙箱镜像 Cube 变体 (ai-kb-sandbox:main-cube)..."
 
     docker build \
         --platform $PLATFORM \
@@ -255,7 +255,7 @@ build_sandbox_image() {
 
     # Desktop variant: XFCE + x11vnc + websockify. Tagged for E2B template
     # builds; the Docker backend does not consume this image yet.
-    log_info "构建沙箱镜像桌面变体 (weknora-sandbox:main-desktop)..."
+    log_info "构建沙箱镜像桌面变体 (ai-kb-sandbox:main-desktop)..."
 
     docker build \
         --platform $PLATFORM \
@@ -271,7 +271,7 @@ build_sandbox_image() {
         return 1
     fi
 
-    log_info "构建沙箱镜像桌面 Cube 变体 (weknora-sandbox:main-desktop-cube)..."
+    log_info "构建沙箱镜像桌面 Cube 变体 (ai-kb-sandbox:main-desktop-cube)..."
 
     docker build \
         --platform $PLATFORM \
@@ -354,7 +354,7 @@ build_all_images() {
 
 # 清理本地镜像
 clean_images() {
-    log_info "清理本地WeKnora镜像..."
+    log_info "清理本地AI KB镜像..."
     
     # 停止相关容器
     log_info "停止相关容器..."

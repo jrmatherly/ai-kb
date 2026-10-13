@@ -25,7 +25,7 @@ function fixture() {
   const exports: { useConfigSkillInstallProgress?: typeof useConfigSkillInstallProgress } = {}
   runInNewContext(compiled, {
     exports, AbortController,
-    localStorage: { getItem: (key: string) => ({ weknora_token: 'token', weknora_selected_tenant_id: 'tenant' })[key] },
+    localStorage: { getItem: (key: string) => ({ aikb_token: 'token', aikb_selected_tenant_id: 'tenant' })[key] },
     require(name: string) {
       if (name === 'vue') return vue
       if (name === './skillInstallProgress') return progress

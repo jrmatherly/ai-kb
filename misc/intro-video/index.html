@@ -458,7 +458,7 @@ function sidebar(active,hist,activeHist){
   return `<div class="side"><div class="lg"><img src="assets/logo-light.png"><span>${I('search')}${I('panel')}</span></div>
   ${navs.map(([k,l])=>`<div class="nav ${l===active?'on':''}">${I(k)}${l}</div>`).join('')}
   <div class="sec">Today</div>${hist.map((h,i)=>`<div class="hist ${i===activeHist?'on':''}">${h}</div>`).join('')}
-  <div class="me"><b>D</b><div>demo<small>demo@weknora.local</small></div></div></div>`;
+  <div class="me"><b>D</b><div>demo<small>demo@ai-kb.local</small></div></div></div>`;
 }
 function wbar(url){return `<div class="wbar"><i></i><i></i><i></i><div class="url">${I('lock')}${url}</div></div>`}
 function inbox(id,model='deepseek-v3.2'){return `<div class="inbox"><div class="ph" id="${id}">Ask a question or describe a task…</div><div class="bar"><span class="pill">Smart Reasoning ${I('chevd')}</span>${I('clip')}${I('at')}<span class="send"><span class="pill">${model} ${I('chevd')}</span><i id="${id}S">${I('send')}</i></span></div></div>`}
@@ -788,7 +788,7 @@ function render(t){
     setHTML($('ctabT'),onForm?'httpbin.org/forms/post':'Releases · jrmatherly/ai-kb');
     setHTML($('prevHost'),onForm?'httpbin.org':'github.com');
     // form fill schedule
-    const F=[['f0','AI KB Demo',5.0],['f1','13800000000',5.8],['f2','demo@weknora.local',6.5],['r1',null,7.4],['c0',null,7.9],['c1',null,8.3],['f3','18:30',8.8],['f4','Include AI KB v0.8.2',9.4]];
+    const F=[['f0','AI KB Demo',5.0],['f1','13800000000',5.8],['f2','demo@ai-kb.local',6.5],['r1',null,7.4],['c0',null,7.9],['c1',null,8.3],['f3','18:30',8.8],['f4','Include AI KB v0.8.2',9.4]];
     // positions of targets in chrome coords
     const POS={f0:[300,176],f1:[270,220],f2:[320,264],r1:[190,334],c0:[92,400],c1:[190,400],f3:[330,448],f4:[160,500]};
     F.forEach(([id,val,a],k)=>{const el=$(id);if(val!==null){const nxt=k+1<F.length?F[k+1][2]:99;el.textContent=typed(val,L,a+.2,26);el.classList.toggle('act',L>=a&&L<nxt)}else el.classList.toggle('on',L>=a+.15)});

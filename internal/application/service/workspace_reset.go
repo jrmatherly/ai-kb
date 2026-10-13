@@ -52,7 +52,7 @@ func gitWorkspaceEnsureRepo() string {
 	return `git_ws rev-parse --git-dir >/dev/null 2>&1 || {
   mkdir -p "$(dirname "$GIT_DIR")"
   git_ws init -q
-  git_ws config user.email agent@weknora.local
+  git_ws config user.email agent@ai-kb.local
   git_ws config user.name 'AI KB Agent'
 }
 `
@@ -103,7 +103,7 @@ func gitWorkspaceAdoptLegacyRepo() string {
 	return `if ! git_ws rev-parse --git-dir >/dev/null 2>&1; then
   legacy_git_dir="$WORK_TREE/.git"
   legacy_owner=$(git -c safe.directory='*' --git-dir="$legacy_git_dir" config user.email 2>/dev/null || true)
-  if [ "$legacy_owner" = agent@weknora.local ]; then
+  if [ "$legacy_owner" = agent@ai-kb.local ]; then
     mkdir -p "$(dirname "$GIT_DIR")"
     mv "$legacy_git_dir" "$GIT_DIR"
   fi

@@ -1,5 +1,5 @@
 apiVersion: v2
-name: weknora
+name: ai-kb
 description: |
   AI KB - AI-powered Knowledge RAG Platform for building intelligent knowledge bases
   with document parsing, vector search, and LLM integration.

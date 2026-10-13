@@ -480,7 +480,7 @@ func addChat(server *mcpsdk.Server, svc chatService) {
 		}
 		sessionID := in.SessionID
 		if sessionID == "" {
-			sess, err := svc.CreateSession(ctx, &sdk.CreateSessionRequest{Title: "weknora mcp chat"})
+			sess, err := svc.CreateSession(ctx, &sdk.CreateSessionRequest{Title: "aikb mcp chat"})
 			if err != nil {
 				return toolErrorResult(cmdutil.WrapHTTP(err, "create chat session")), nil, nil
 			}
@@ -598,7 +598,7 @@ func addSessionAsk(server *mcpsdk.Server, svc sessionAskService) {
 		// agnostic at creation (verified against server source).
 		sessionID := in.SessionID
 		if sessionID == "" {
-			sess, err := svc.CreateSession(ctx, &sdk.CreateSessionRequest{Title: "weknora mcp session_ask"})
+			sess, err := svc.CreateSession(ctx, &sdk.CreateSessionRequest{Title: "aikb mcp session_ask"})
 			if err != nil {
 				return toolErrorResult(cmdutil.WrapHTTP(err, "create chat session")), nil, nil
 			}

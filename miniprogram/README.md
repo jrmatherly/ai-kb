@@ -13,7 +13,7 @@ This directory contains a WeChat Mini Program plugin for AI KB. It gives mobile 
 1. Open `miniprogram/` in WeChat DevTools.
 2. Copy `project.private.config.json.example` to `project.private.config.json` and set your real Mini Program AppID. The shared `project.config.json` intentionally does not include an AppID to avoid forcing maintainers into a placeholder project.
 3. Open the **Settings** tab and fill in:
-   - API Base URL, for example `https://weknora.example.com`;
+   - API Base URL, for example `https://ai-kb.example.com`;
    - API Key from the AI KB tenant settings page;
    - Language (`中文` / `English`, default `中文`).
 4. Open the **Knowledge** tab, refresh knowledge bases, and select the target knowledge base.

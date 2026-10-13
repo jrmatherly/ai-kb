@@ -14,7 +14,7 @@ from mcp.client.streamable_http import streamable_http_client
 
 async def main() -> int:
     base = os.getenv("MCP_DEMO_URL", "http://127.0.0.1:8010/mcp")
-    token = os.getenv("MCP_SERVER_AUTH_TOKEN", "weknora-demo-token")
+    token = os.getenv("MCP_SERVER_AUTH_TOKEN", "ai-kb-demo-token")
 
     async with httpx.AsyncClient(
         headers={"Authorization": f"Bearer {token}"},

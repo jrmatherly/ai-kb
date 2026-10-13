@@ -24,7 +24,7 @@ func TestMoveIndicesLegacyUpdatesOnlyExactSourceDocument(t *testing.T) {
 	repo, mock, _, cleanup := newTestRepo(t)
 	defer cleanup()
 	primeCompatMode(repo, dorisCompatModeLegacy, nil)
-	mock.ExpectExec("UPDATE `weknora_embeddings_2` SET knowledge_base_id = \\?, tag_id = '' WHERE "+
+	mock.ExpectExec("UPDATE `aikb_embeddings_2` SET knowledge_base_id = \\?, tag_id = '' WHERE "+
 		"knowledge_base_id = \\? AND knowledge_id = \\?").
 		WithArgs("target", "source", "doc").
 		WillReturnResult(sqlmock.NewResult(0, 3))

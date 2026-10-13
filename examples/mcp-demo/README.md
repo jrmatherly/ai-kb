@@ -21,7 +21,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-`start.sh` 会自动创建 `.venv` 并安装依赖。默认监听 `http://127.0.0.1:8010/mcp`，鉴权令牌 `weknora-demo-token`。
+`start.sh` 会自动创建 `.venv` 并安装依赖。默认监听 `http://127.0.0.1:8010/mcp`，鉴权令牌 `ai-kb-demo-token`。
 
 自定义：
 
@@ -54,7 +54,7 @@ python test_tools.py
 | 传输 | **HTTP Streamable** |
 | URL | `http://127.0.0.1:8010/mcp` |
 | 认证 | **Bearer** |
-| 令牌 | `weknora-demo-token`（与 `MCP_SERVER_AUTH_TOKEN` 一致） |
+| 令牌 | `ai-kb-demo-token`（与 `MCP_SERVER_AUTH_TOKEN` 一致） |
 
 3. 保存后点 **测试连接**，应发现 6 个工具。
 4. 在 **智能体** 配置里勾选该 MCP 服务（或选全部工具）。

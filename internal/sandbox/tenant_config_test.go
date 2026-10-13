@@ -492,7 +492,7 @@ func TestResolveEffectiveConfigRejectsDockerHostNetwork(t *testing.T) {
 	_, err := ResolveEffectiveConfig(&types.TenantSandboxConfig{
 		SandboxType: "docker",
 		Docker: &types.DockerSandboxConfig{
-			Image:       "weknora:test",
+			Image:       "aikb:test",
 			NetworkMode: "host",
 		},
 	}, DefaultConfig())
@@ -508,7 +508,7 @@ func TestResolveEffectiveConfigDetectsLocalDockerHostWhenBlank(t *testing.T) {
 
 	effective, err := ResolveEffectiveConfig(&types.TenantSandboxConfig{
 		SandboxType: "docker",
-		Docker:      &types.DockerSandboxConfig{Image: "weknora:test"},
+		Docker:      &types.DockerSandboxConfig{Image: "aikb:test"},
 	}, DefaultConfig())
 
 	require.NoError(t, err)
@@ -519,7 +519,7 @@ func TestResolveEffectiveConfigMapsDockerNoneToDeniedEgress(t *testing.T) {
 	effective, err := ResolveEffectiveConfig(&types.TenantSandboxConfig{
 		SandboxType: "docker",
 		Docker: &types.DockerSandboxConfig{
-			Image:       "weknora:test",
+			Image:       "aikb:test",
 			NetworkMode: "none",
 		},
 	}, DefaultConfig())
@@ -533,7 +533,7 @@ func TestResolveEffectiveConfigKeepsDockerBridgeEgressOpen(t *testing.T) {
 	effective, err := ResolveEffectiveConfig(&types.TenantSandboxConfig{
 		SandboxType: "docker",
 		Docker: &types.DockerSandboxConfig{
-			Image:       "weknora:test",
+			Image:       "aikb:test",
 			NetworkMode: "bridge",
 		},
 	}, DefaultConfig())
@@ -546,7 +546,7 @@ func TestResolveEffectiveConfigRejectsPlaintextDockerTCP(t *testing.T) {
 		SandboxType:           "docker",
 		AllowPrivateEndpoints: true,
 		Docker: &types.DockerSandboxConfig{
-			Image: "weknora:test",
+			Image: "aikb:test",
 			Host:  "tcp://10.0.0.5:2376",
 		},
 	}, DefaultConfig())
@@ -563,7 +563,7 @@ func TestResolveEffectiveConfigRejectsResolvedPlaintextDockerTCP(t *testing.T) {
 	_, err := ResolveEffectiveConfig(&types.TenantSandboxConfig{
 		SandboxType:           "docker",
 		AllowPrivateEndpoints: true,
-		Docker:                &types.DockerSandboxConfig{Image: "weknora:test"},
+		Docker:                &types.DockerSandboxConfig{Image: "aikb:test"},
 	}, DefaultConfig())
 	require.Error(t, err)
 }
@@ -576,8 +576,8 @@ func TestResolveEffectiveConfigRejectsResolvedPrivateDockerHostWithoutOptIn(t *t
 	_, err := ResolveEffectiveConfig(&types.TenantSandboxConfig{
 		SandboxType: "docker",
 		Docker: &types.DockerSandboxConfig{
-			Image:       "weknora:test",
-			TLSCertPath: "/etc/weknora/docker-certs",
+			Image:       "aikb:test",
+			TLSCertPath: "/etc/aikb/docker-certs",
 		},
 	}, DefaultConfig())
 	require.ErrorIs(t, err, ErrUnsafeOutboundURL)
@@ -705,7 +705,7 @@ func TestResolveEffectiveConfigUsesSkillSnapshotAsDockerImage(t *testing.T) {
 	base := &types.TenantSandboxConfig{
 		SandboxType: "docker",
 		Docker: &types.DockerSandboxConfig{
-			Image: "weknora/sandbox:base",
+			Image: "ai-kb/sandbox:base",
 			Host:  "unix:///var/run/docker.sock",
 		},
 	}
@@ -714,31 +714,31 @@ func TestResolveEffectiveConfigUsesSkillSnapshotAsDockerImage(t *testing.T) {
 	t.Run("usable snapshot overrides the base image", func(t *testing.T) {
 		cfg := *base
 		cfg.Docker = &types.DockerSandboxConfig{
-			Image: "weknora/sandbox:base", Host: "unix:///var/run/docker.sock",
+			Image: "ai-kb/sandbox:base", Host: "unix:///var/run/docker.sock",
 		}
 		cfg.SkillImage = &types.SkillImageConfig{
-			SnapshotID: "weknora-skill/weknora-sk-cfg1-g1", OwnerFingerprint: fp,
+			SnapshotID: "ai-kb-skill/ai-kb-sk-cfg1-g1", OwnerFingerprint: fp,
 		}
 
 		eff, err := ResolveEffectiveConfig(&cfg, global)
 
 		require.NoError(t, err)
-		require.Equal(t, "weknora-skill/weknora-sk-cfg1-g1", eff.DockerImage)
+		require.Equal(t, "ai-kb-skill/ai-kb-sk-cfg1-g1", eff.DockerImage)
 	})
 
 	t.Run("fingerprint mismatch falls back to the base image", func(t *testing.T) {
 		cfg := *base
 		cfg.Docker = &types.DockerSandboxConfig{
-			Image: "weknora/sandbox:base", Host: "unix:///var/run/docker.sock",
+			Image: "ai-kb/sandbox:base", Host: "unix:///var/run/docker.sock",
 		}
 		cfg.SkillImage = &types.SkillImageConfig{
-			SnapshotID: "weknora-skill/weknora-sk-cfg1-g1", OwnerFingerprint: "another-daemon",
+			SnapshotID: "ai-kb-skill/ai-kb-sk-cfg1-g1", OwnerFingerprint: "another-daemon",
 		}
 
 		eff, err := ResolveEffectiveConfig(&cfg, global)
 
 		require.NoError(t, err)
-		require.Equal(t, "weknora/sandbox:base", eff.DockerImage,
+		require.Equal(t, "ai-kb/sandbox:base", eff.DockerImage,
 			"a snapshot from another daemon is invisible; the session must still boot")
 	})
 
@@ -751,12 +751,12 @@ func TestResolveEffectiveConfigUsesSkillSnapshotAsDockerImage(t *testing.T) {
 		newConfig := func() *types.TenantSandboxConfig {
 			return &types.TenantSandboxConfig{
 				SandboxType: "docker",
-				Docker:      &types.DockerSandboxConfig{Image: "weknora/sandbox:base"},
+				Docker:      &types.DockerSandboxConfig{Image: "ai-kb/sandbox:base"},
 				SkillImage: &types.SkillImageConfig{
-					SnapshotID: "weknora-skill/weknora-sk-cfg1-g1",
+					SnapshotID: "ai-kb-skill/ai-kb-sk-cfg1-g1",
 					OwnerFingerprint: SkillOwnerFingerprint(&types.TenantSandboxConfig{
 						SandboxType: "docker",
-						Docker:      &types.DockerSandboxConfig{Image: "weknora/sandbox:base"},
+						Docker:      &types.DockerSandboxConfig{Image: "ai-kb/sandbox:base"},
 					}),
 				},
 			}
@@ -772,7 +772,7 @@ func TestResolveEffectiveConfigUsesSkillSnapshotAsDockerImage(t *testing.T) {
 			eff, err := ResolveEffectiveConfig(cfg, global)
 
 			require.NoError(t, err)
-			require.Equal(t, "weknora-skill/weknora-sk-cfg1-g1", eff.DockerImage,
+			require.Equal(t, "ai-kb-skill/ai-kb-sk-cfg1-g1", eff.DockerImage,
 				"DOCKER_HOST=%s must not retire the config's skill image", host)
 			require.True(t, SkillImageActive(cfg))
 		}
@@ -783,17 +783,17 @@ func TestResolveEffectiveConfigUsesSkillSnapshotAsDockerImage(t *testing.T) {
 	t.Run("an explicit host change retires the image", func(t *testing.T) {
 		cfg := *base
 		cfg.Docker = &types.DockerSandboxConfig{
-			Image: "weknora/sandbox:base", Host: "tcp://198.51.100.10:2376",
+			Image: "ai-kb/sandbox:base", Host: "tcp://198.51.100.10:2376",
 			TLSCertPath: "/certs",
 		}
 		cfg.SkillImage = &types.SkillImageConfig{
-			SnapshotID: "weknora-skill/weknora-sk-cfg1-g1", OwnerFingerprint: fp,
+			SnapshotID: "ai-kb-skill/ai-kb-sk-cfg1-g1", OwnerFingerprint: fp,
 		}
 
 		eff, err := ResolveEffectiveConfig(&cfg, global)
 
 		require.NoError(t, err)
-		require.Equal(t, "weknora/sandbox:base", eff.DockerImage)
+		require.Equal(t, "ai-kb/sandbox:base", eff.DockerImage)
 	})
 }
 
@@ -875,11 +875,11 @@ func TestSkillImageActiveAgreesWithTheResolvedTemplate(t *testing.T) {
 			config: &types.TenantSandboxConfig{
 				SandboxType: "docker",
 				Docker: &types.DockerSandboxConfig{
-					Image: "weknora/sandbox:base",
+					Image: "ai-kb/sandbox:base",
 					Host:  "unix:///var/run/docker.sock",
 				},
 				SkillImage: &types.SkillImageConfig{
-					SnapshotID: "weknora-skill/weknora-sk-cfg1-g1",
+					SnapshotID: "ai-kb-skill/ai-kb-sk-cfg1-g1",
 					OwnerFingerprint: SkillImageFingerprint(
 						"docker", "", "unix:///var/run/docker.sock",
 					),

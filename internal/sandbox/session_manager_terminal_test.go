@@ -27,7 +27,7 @@ func newSessionManagerTerminalTestHarnessFor(
 	client.omitsInboundTokenCarrier = provider == SandboxTypeDocker
 	cfg := DefaultConfig()
 	cfg.CubeTemplate = "tpl-test"
-	cfg.DockerImage = "weknora/sandbox:test"
+	cfg.DockerImage = "ai-kb/sandbox:test"
 	mgr, err := NewSessionBoundManager(SessionBoundManagerConfig{
 		Config:          cfg,
 		Client:          client,

@@ -104,7 +104,7 @@ ARG APK_MIRROR_ARG
 
 # Pairing derives the gateway URL from the user's page origin by default.
 ENV BROWSERSKILL_BINARY=/opt/ai-kb/browserskill/bsk \
-    BROWSERSKILL_EXTENSION_PATH=/opt/ai-kb/browserskill/browser-skill-weknora-0.3.1.zip
+    BROWSERSKILL_EXTENSION_PATH=/opt/ai-kb/browserskill/browser-skill-ai-kb-0.3.1.zip
 COPY --from=browserskill /opt/ai-kb/browserskill /opt/ai-kb/browserskill
 
 # Create a non-root user first

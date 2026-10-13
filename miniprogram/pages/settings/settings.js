@@ -25,7 +25,7 @@ Page({
     settingsTitle: "连接 AI KB",
     settingsSubtitle: "填写 AI KB API 地址与租户 API Key。",
     apiBaseUrlLabel: "API 地址",
-    apiBaseUrlPlaceholder: "https://your-weknora.example.com",
+    apiBaseUrlPlaceholder: "https://your-ai-kb.example.com",
     apiKeyLabel: "API Key",
     apiKeyPlaceholder: "sk-...",
     languageLabel: "界面语言",

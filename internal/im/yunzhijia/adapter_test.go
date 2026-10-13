@@ -65,7 +65,7 @@ func TestToIncomingMessageRequiresRobotMention(t *testing.T) {
 }
 
 func TestCleanAtMentionRequiresNameBoundary(t *testing.T) {
-	if _, mentioned := cleanAtMention("@WeKnoraPlus hello", "AI KB"); mentioned {
+	if _, mentioned := cleanAtMention("@AIKBPlus hello", "AI KB"); mentioned {
 		t.Fatal("longer user name must not be treated as a robot mention")
 	}
 	if got, mentioned := cleanAtMention("@AI KB：你好", "AI KB"); !mentioned || got != "你好" {

@@ -42,7 +42,7 @@ func TestFakeSnapshotRoundTrip(t *testing.T) {
 	ctx := context.Background()
 	client := newFakeRemoteClient(SandboxTypeCube)
 
-	ref, err := client.CreateSnapshot(ctx, "sb-1", "weknora-sk-abc-g1")
+	ref, err := client.CreateSnapshot(ctx, "sb-1", "ai-kb-sk-abc-g1")
 	require.NoError(t, err)
 	require.NotEmpty(t, ref.ID)
 

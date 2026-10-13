@@ -83,7 +83,7 @@ func newTestRepo(t *testing.T, handler http.HandlerFunc) (*Repository, *httptest
 	client := newTestClient(t, ts.URL)
 	repo := &Repository{
 		client:    client,
-		baseIndex: "weknora_test",
+		baseIndex: "aikb_test",
 		cfg: internalCfg{
 			shards: 1, replicas: 0,
 			knnEngine:          "lucene",
@@ -192,8 +192,8 @@ func TestIsTransientErr(t *testing.T) {
 func TestSanitizeIndexName_AcceptsValidNames(t *testing.T) {
 	t.Parallel()
 	cases := []string{
-		"weknora",
-		"weknora_abc123def456_768",
+		"aikb",
+		"aikb_abc123def456_768",
 		"a",
 		"1abc",
 		"foo-bar_baz",
@@ -977,7 +977,7 @@ func TestEnsureReady_ConcurrentCallers_SingleCreate(t *testing.T) {
 
 	repo := &Repository{
 		client:    newTestClient(t, ts.URL),
-		baseIndex: "weknora_test",
+		baseIndex: "aikb_test",
 		cfg:       internalCfg{shards: 1, replicas: 0, knnEngine: "lucene", hnswM: 16, hnswEFConstruction: 100, efSearch: 100},
 		once:      make(map[int]*sync.Once),
 		initErr:   make(map[int]error),
@@ -1006,7 +1006,7 @@ func TestEnsureReady_PerDimensionIsolation(t *testing.T) {
 
 	repo := &Repository{
 		client:    newTestClient(t, ts.URL),
-		baseIndex: "weknora_test",
+		baseIndex: "aikb_test",
 		cfg:       internalCfg{shards: 1, replicas: 0, knnEngine: "lucene", hnswM: 16, hnswEFConstruction: 100, efSearch: 100},
 		once:      make(map[int]*sync.Once),
 		initErr:   make(map[int]error),
@@ -1058,7 +1058,7 @@ func TestEnsureReady_TransientError_NotCached(t *testing.T) {
 
 	repo := &Repository{
 		client:    newTestClient(t, ts.URL),
-		baseIndex: "weknora_test",
+		baseIndex: "aikb_test",
 		cfg:       internalCfg{shards: 1, replicas: 0, knnEngine: "lucene", hnswM: 16, hnswEFConstruction: 100, efSearch: 100},
 		once:      make(map[int]*sync.Once),
 		initErr:   make(map[int]error),
@@ -1083,17 +1083,17 @@ func TestEnsureReady_TransientError_NotCached(t *testing.T) {
 
 func TestIndexAlias(t *testing.T) {
 	t.Parallel()
-	r := &Repository{baseIndex: "weknora_abc123def456"}
-	if got := r.indexAlias(768); got != "weknora_abc123def456_768" {
-		t.Errorf("indexAlias(768): want weknora_abc123def456_768, got %s", got)
+	r := &Repository{baseIndex: "aikb_abc123def456"}
+	if got := r.indexAlias(768); got != "aikb_abc123def456_768" {
+		t.Errorf("indexAlias(768): want aikb_abc123def456_768, got %s", got)
 	}
 }
 
 func TestKeywordsIndex(t *testing.T) {
 	t.Parallel()
-	r := &Repository{baseIndex: "weknora_abc123def456"}
-	if got := r.keywordsIndex(); got != "weknora_abc123def456_keywords" {
-		t.Errorf("keywordsIndex: want weknora_abc123def456_keywords, got %s", got)
+	r := &Repository{baseIndex: "aikb_abc123def456"}
+	if got := r.keywordsIndex(); got != "aikb_abc123def456_keywords" {
+		t.Errorf("keywordsIndex: want aikb_abc123def456_keywords, got %s", got)
 	}
 }
 

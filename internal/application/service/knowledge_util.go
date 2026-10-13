@@ -519,7 +519,7 @@ func downloadFileFromURL(ctx context.Context, fileURL string, payloadFileName, p
 	}
 
 	// Stream response body into a temp file, capped at maxFileURLSize
-	tmpFile, err := os.CreateTemp("", "weknora-fileurl-*")
+	tmpFile, err := os.CreateTemp("", "ai-kb-fileurl-*")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}

@@ -14,7 +14,7 @@ async function walk(dir) {
   }
   return result;
 }
-for (const retired of ['/demo/', '/demo/1/', '/redesign/', '/redesign/1/', '/demo6/preview.html', '/brand/weknora.svg', '/icon.svg', '/docs/favicon.svg', '/docs/README.html', '/docs/homepage/README.html', '/docs/homepage/BRAND-ASSETS.html', '/docs/static-site/', '/docs/releases/']) {
+for (const retired of ['/demo/', '/demo/1/', '/redesign/', '/redesign/1/', '/demo6/preview.html', '/brand/aikb.svg', '/icon.svg', '/docs/favicon.svg', '/docs/README.html', '/docs/homepage/README.html', '/docs/homepage/BRAND-ASSETS.html', '/docs/static-site/', '/docs/releases/']) {
   assert.equal(await resolveSiteFile(root, retired), null, `Retired demo must not be published: ${retired}`);
 }
 const failures = [];
@@ -29,7 +29,7 @@ const pages = await walk(root);
 for (const file of pages) {
   const html = await readFile(file, 'utf8');
   const route = '/' + relative(root, file).replaceAll('\\', '/');
-  const base = new URL(route, 'https://weknora.test');
+  const base = new URL(route, 'https://ai-kb.test');
   for (const match of html.matchAll(/<(?:a|link|img|script|source|video)\b[^>]*>/g)) {
     const tag = match[0];
     for (const [, raw] of tag.matchAll(/(?:href|src|poster)="([^"]+)"/g)) {

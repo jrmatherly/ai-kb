@@ -16,9 +16,9 @@ func TestParseCosObjectName_RejectsLocalScheme(t *testing.T) {
 
 func TestParseCosObjectName_CosScheme(t *testing.T) {
 	svc := &cosFileService{bucketURL: "https://b.cos.ap-shanghai.myqcloud.com/"}
-	key, err := svc.parseCosObjectName("cos://bucket/ap-shanghai/weknora/10000/exports/a.png")
+	key, err := svc.parseCosObjectName("cos://bucket/ap-shanghai/aikb/10000/exports/a.png")
 	require.NoError(t, err)
-	assert.Equal(t, "weknora/10000/exports/a.png", key)
+	assert.Equal(t, "aikb/10000/exports/a.png", key)
 }
 
 func TestParseCosObjectName_RejectsMinioScheme(t *testing.T) {
@@ -33,18 +33,18 @@ func TestParseCosObjectName_RejectsMinioScheme(t *testing.T) {
 // reads tenant 7's file from the shared bucket. Both must match the service.
 func TestParseCosObjectName_RejectsForeignBucketOrRegion(t *testing.T) {
 	svc := &cosFileService{
-		bucketURL:  "https://weknora-1250000000.cos.ap-shanghai.myqcloud.com/",
-		bucketName: "weknora-1250000000",
+		bucketURL:  "https://ai-kb-1250000000.cos.ap-shanghai.myqcloud.com/",
+		bucketName: "ai-kb-1250000000",
 		region:     "ap-shanghai",
 	}
 	for _, path := range []string{
-		"cos://42/ap-shanghai/weknora/7/knowledge/secret.pdf",
-		"cos://weknora-1250000000/42/weknora/7/knowledge/secret.pdf",
+		"cos://42/ap-shanghai/aikb/7/knowledge/secret.pdf",
+		"cos://ai-kb-1250000000/42/aikb/7/knowledge/secret.pdf",
 	} {
 		_, err := svc.parseCosObjectName(path)
 		require.Error(t, err, path)
 	}
-	key, err := svc.parseCosObjectName("cos://weknora-1250000000/ap-shanghai/weknora/42/exports/a.png")
+	key, err := svc.parseCosObjectName("cos://ai-kb-1250000000/ap-shanghai/aikb/42/exports/a.png")
 	require.NoError(t, err)
-	assert.Equal(t, "weknora/42/exports/a.png", key)
+	assert.Equal(t, "aikb/42/exports/a.png", key)
 }

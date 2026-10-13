@@ -1,4 +1,4 @@
-// Package doc — create.go implements `weknora doc create --text "..."`.
+// Package doc — create.go implements `aikb doc create --text "..."`.
 // Allows creating a knowledge entry directly from inline text content without
 // uploading a file or fetching a remote URL.
 package doc
@@ -43,7 +43,7 @@ type CreateService interface {
 	) (*sdk.Knowledge, error)
 }
 
-// NewCmdCreate builds `weknora doc create --text "..."`.
+// NewCmdCreate builds `aikb doc create --text "..."`.
 func NewCmdCreate(f *cmdutil.Factory) *cobra.Command {
 	opts := &CreateOptions{}
 	cmd := &cobra.Command{
@@ -52,15 +52,15 @@ func NewCmdCreate(f *cmdutil.Factory) *cobra.Command {
 		Long: `Create a new knowledge entry by passing Markdown content directly via --text.
 Useful for short snippets, agent-generated content, or structured notes that
 don't require a file upload or remote URL. KB resolution follows the standard
-4-level chain: --kb flag > AIKB_KB_ID env > .weknora/project.yaml > error.
+4-level chain: --kb flag > AIKB_KB_ID env > .aikb/project.yaml > error.
 
   --text <content>    Document text in Markdown format (required).
   --title <title>     Display title stored with the entry (matches doc update --title).
   --tag-id <id>       Associate the new entry with a tag.
   --channel <name>    Override the ingestion-channel tag (default "api").`,
-		Example: `  weknora doc create --text "# Meeting Notes\n\nAction items: ..."
-  weknora doc create --text "$(cat notes.md)" --title "Sprint Notes" --kb my-kb
-  weknora doc create --text "API usage guide" --title "API Guide" --tag-id tag_abc`,
+		Example: `  aikb doc create --text "# Meeting Notes\n\nAction items: ..."
+  aikb doc create --text "$(cat notes.md)" --title "Sprint Notes" --kb my-kb
+  aikb doc create --text "API usage guide" --title "API Guide" --tag-id tag_abc`,
 		Args: cobra.NoArgs,
 		RunE: func(c *cobra.Command, _ []string) error {
 			fopts, err := cmdutil.CheckFormatFlag(c)
@@ -111,8 +111,8 @@ don't require a file upload or remote URL. KB resolution follows the standard
 		UsedFor:       "Create a knowledge entry from inline Markdown text. KB resolved via --kb flag, AIKB_KB_ID env, or project link. Emits the created Knowledge object with its id.",
 		RequiredFlags: []string{"--text", "--kb (or AIKB_KB_ID / project link)"},
 		Examples: []string{
-			`weknora doc create --kb kb_eng --text "# Runbook\n\nRestart steps: ..."`,
-			`weknora doc create --kb kb_eng --text "$(cat notes.md)" --title "Sprint Notes"`,
+			`aikb doc create --kb kb_eng --text "# Runbook\n\nRestart steps: ..."`,
+			`aikb doc create --kb kb_eng --text "$(cat notes.md)" --title "Sprint Notes"`,
 		},
 		Output: "envelope.data is the created Knowledge object with id, knowledge_base_id, title, parse_status",
 	})
@@ -143,7 +143,7 @@ func runCreate(ctx context.Context, opts *CreateOptions, fopts *cmdutil.FormatOp
 	// timeout or `search` into empty results.
 	var meta *output.Meta
 	if k.ParseStatus == "draft" {
-		meta = &output.Meta{Hint: "document created in parse_status=draft (not yet indexed) — run `weknora doc reparse " + k.ID + "` to parse & make it searchable"}
+		meta = &output.Meta{Hint: "document created in parse_status=draft (not yet indexed) — run `aikb doc reparse " + k.ID + "` to parse & make it searchable"}
 	}
 	if fopts.WantsJSON() {
 		return fopts.Emit(iostreams.IO.Out, k, meta)

@@ -23,7 +23,7 @@ func (t *MCPTool) ValidateArguments(args json.RawMessage) error {
 		// MCP schemas are untrusted. Resolve embedded $defs/definitions/$refs,
 		// but never fetch a remote URL or open a local file during validation.
 		compiler.UseLoader(nil)
-		const schemaURL = "urn:weknora:mcp:input"
+		const schemaURL = "urn:aikb:mcp:input"
 		if t.schemaErr = compiler.AddResource(schemaURL, doc); t.schemaErr != nil {
 			return
 		}

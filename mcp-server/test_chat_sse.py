@@ -8,12 +8,12 @@ from unittest import mock
 
 import requests
 
-import weknora_mcp_server as srv
+import aikb_mcp_server as srv
 
 
 class ChatSSETest(unittest.TestCase):
     def setUp(self):
-        self.client = srv.WeKnoraClient("http://example.test/api/v1", "test-key")
+        self.client = srv.AIKBClient("http://example.test/api/v1", "test-key")
         self.addCleanup(self.client.session.close)
 
     def consume(self, lines, *, agent=False):
@@ -194,7 +194,7 @@ class ChatSSETest(unittest.TestCase):
         for status in (400, 503):
             for agent in (False, True):
                 with self.subTest(status=status, agent=agent):
-                    client = srv.WeKnoraClient(
+                    client = srv.AIKBClient(
                         f"http://127.0.0.1:{port}/{status}", "test-key"
                     )
                     client.session.trust_env = False

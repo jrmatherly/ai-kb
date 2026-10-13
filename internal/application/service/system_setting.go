@@ -30,7 +30,7 @@ import (
 // notifications. Mirrors the convention from approval/gate.go: optional
 // suffix AIKB_REDIS_NAMESPACE so two deployments sharing one Redis
 // instance don't cross-talk.
-const pubsubChannelBase = "weknora:system_settings:changed"
+const pubsubChannelBase = "aikb:system_settings:changed"
 
 // pubsubChannel resolves the effective channel name (with optional
 // namespace suffix). Called both at publish time and inside the

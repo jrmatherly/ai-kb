@@ -1,4 +1,4 @@
-from weknora_mcp_server import WeKnoraClient, _normalize_kb_entries
+from aikb_mcp_server import AIKBClient, _normalize_kb_entries
 
 # Shapes mirror GET /knowledge-bases and GET /shared-knowledge-bases wire JSON.
 # See internal/handler/knowledgebase.go (buildKBListResponse) and
@@ -32,7 +32,7 @@ def test_normalize_kb_entries_passes_through_owned_rows():
 
 
 def test_resolve_kb_id_accepts_shared_kb_name(monkeypatch):
-    client = WeKnoraClient("http://example.test/api/v1", "")
+    client = AIKBClient("http://example.test/api/v1", "")
 
     def fake_request(method, path, **kwargs):
         if path == "/knowledge-bases":
@@ -58,7 +58,7 @@ def test_resolve_kb_id_accepts_shared_kb_name(monkeypatch):
 
 
 def test_resolve_kb_id_prefers_owned_over_shared_name(monkeypatch):
-    client = WeKnoraClient("http://example.test/api/v1", "")
+    client = AIKBClient("http://example.test/api/v1", "")
 
     def fake_request(method, path, **kwargs):
         if path == "/knowledge-bases":

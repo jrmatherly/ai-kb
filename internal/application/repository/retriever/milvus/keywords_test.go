@@ -87,7 +87,7 @@ func newKeywordsMilvusHarness(t *testing.T, collections []string,
 	t.Cleanup(func() { _ = c.Close(context.Background()) })
 
 	return &keywordsMilvusHarness{
-		repo: &milvusRepository{client: c, collectionBaseName: "weknora_embeddings"},
+		repo: &milvusRepository{client: c, collectionBaseName: "aikb_embeddings"},
 		fake: fake,
 	}
 }
@@ -165,7 +165,7 @@ func captureMilvusLogs(t *testing.T) *bytes.Buffer {
 func TestMilvusKeywordsRetrieveFailsWhenEveryMatchedCollectionFails(t *testing.T) {
 	logs := captureMilvusLogs(t)
 	harness := newKeywordsMilvusHarness(t,
-		[]string{"weknora_embeddings_1024", "weknora_embeddings_1536", "other_collection"},
+		[]string{"aikb_embeddings_1024", "aikb_embeddings_1536", "other_collection"},
 		func(string) (*milvuspb.SearchResults, error) { return failedMilvusSearch(), nil },
 	)
 
@@ -176,7 +176,7 @@ func TestMilvusKeywordsRetrieveFailsWhenEveryMatchedCollectionFails(t *testing.T
 	require.Contains(t, err.Error(), "milvus keyword search unavailable")
 	require.Nil(t, results, "no result set may accompany the error")
 	require.Equal(t,
-		[]string{"weknora_embeddings_1024", "weknora_embeddings_1536"}, harness.fake.searches,
+		[]string{"aikb_embeddings_1024", "aikb_embeddings_1536"}, harness.fake.searches,
 		"only base-name collections are searched",
 	)
 	require.NotContains(t, logs.String(), "No keyword matches found",
@@ -190,9 +190,9 @@ func TestMilvusKeywordsRetrieveFailsWhenEveryMatchedCollectionFails(t *testing.T
 func TestMilvusKeywordsRetrieveKeepsResultsWhenOnlySomeCollectionsFail(t *testing.T) {
 	logs := captureMilvusLogs(t)
 	harness := newKeywordsMilvusHarness(t,
-		[]string{"weknora_embeddings_1024", "weknora_embeddings_1536"},
+		[]string{"aikb_embeddings_1024", "aikb_embeddings_1536"},
 		func(name string) (*milvuspb.SearchResults, error) {
-			if name == "weknora_embeddings_1024" {
+			if name == "aikb_embeddings_1024" {
 				return failedMilvusSearch(), nil
 			}
 			return milvusSearchHits("chunk-1", "invoice total 42"), nil
@@ -221,7 +221,7 @@ func TestMilvusKeywordsRetrieveKeepsResultsWhenOnlySomeCollectionsFail(t *testin
 // conclusion log still fires.
 func TestMilvusKeywordsRetrieveReportsNoMatchesWhenNothingFailed(t *testing.T) {
 	logs := captureMilvusLogs(t)
-	harness := newKeywordsMilvusHarness(t, []string{"weknora_embeddings_1024"},
+	harness := newKeywordsMilvusHarness(t, []string{"aikb_embeddings_1024"},
 		func(string) (*milvuspb.SearchResults, error) { return emptyMilvusSearch(), nil },
 	)
 
@@ -240,9 +240,9 @@ func TestMilvusKeywordsRetrieveReportsNoMatchesWhenNothingFailed(t *testing.T) {
 func TestMilvusKeywordsRetrieveMarksPartialFailureWhenNothingHit(t *testing.T) {
 	logs := captureMilvusLogs(t)
 	harness := newKeywordsMilvusHarness(t,
-		[]string{"weknora_embeddings_1024", "weknora_embeddings_1536"},
+		[]string{"aikb_embeddings_1024", "aikb_embeddings_1536"},
 		func(name string) (*milvuspb.SearchResults, error) {
-			if name == "weknora_embeddings_1024" {
+			if name == "aikb_embeddings_1024" {
 				return failedMilvusSearch(), nil
 			}
 			return emptyMilvusSearch(), nil

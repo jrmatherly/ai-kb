@@ -3,12 +3,12 @@ package sandbox
 import "testing"
 
 func TestIsStandardTemplateRecognizesProviderScopedName(t *testing.T) {
-	for _, name := range []string{"weknora", "team/weknora", "project-b89e/WeKnora"} {
+	for _, name := range []string{"aikb", "team/aikb", "project-b89e/AIKB"} {
 		if !isStandardTemplate(name) {
-			t.Fatalf("expected %q to identify the WeKnora standard template", name)
+			t.Fatalf("expected %q to identify the AI KB standard template", name)
 		}
 	}
-	if isStandardTemplate("weknora-custom") {
+	if isStandardTemplate("ai-kb-custom") {
 		t.Fatal("custom template must not be treated as the standard template")
 	}
 	if isStandardTemplate(DesktopTemplateName) {
@@ -17,28 +17,28 @@ func TestIsStandardTemplateRecognizesProviderScopedName(t *testing.T) {
 }
 
 func TestIsDesktopTemplateRecognizesProviderScopedName(t *testing.T) {
-	for _, name := range []string{"weknora-desktop", "team/weknora-desktop", "project-b89e/WeKnora-Desktop"} {
+	for _, name := range []string{"ai-kb-desktop", "team/ai-kb-desktop", "project-b89e/AI-KB-Desktop"} {
 		if !isDesktopTemplate(name) {
-			t.Fatalf("expected %q to identify the WeKnora desktop template", name)
+			t.Fatalf("expected %q to identify the AI KB desktop template", name)
 		}
 	}
-	if isDesktopTemplate("weknora") {
+	if isDesktopTemplate("aikb") {
 		t.Fatal("the CLI template must not be classified as desktop")
 	}
-	if isDesktopTemplate("weknora-desktop-custom") {
+	if isDesktopTemplate("ai-kb-desktop-custom") {
 		t.Fatal("a similarly prefixed custom name must not be the desktop template")
 	}
 }
 
-func TestClassifyWeKnoraTemplatePrefersNameOverImage(t *testing.T) {
-	standard, desktop := classifyWeKnoraTemplate(DesktopTemplateName, DefaultDockerImage)
+func TestClassifyAIKBTemplatePrefersNameOverImage(t *testing.T) {
+	standard, desktop := classifyAIKBTemplate(DesktopTemplateName, DefaultDockerImage)
 	if standard || !desktop {
 		t.Fatalf(
 			"named desktop template must be desktop even if the image repo matches CLI, got standard=%v desktop=%v",
 			standard, desktop,
 		)
 	}
-	standard, desktop = classifyWeKnoraTemplate(StandardTemplateName, DefaultDesktopDockerImage)
+	standard, desktop = classifyAIKBTemplate(StandardTemplateName, DefaultDesktopDockerImage)
 	if !standard || desktop {
 		t.Fatalf(
 			"named CLI template must stay CLI even if the image tag is desktop, got standard=%v desktop=%v",
@@ -47,16 +47,16 @@ func TestClassifyWeKnoraTemplatePrefersNameOverImage(t *testing.T) {
 	}
 }
 
-func TestClassifyWeKnoraTemplateNamelessImageUsesTag(t *testing.T) {
-	standard, desktop := classifyWeKnoraTemplate("", DefaultDockerImage)
+func TestClassifyAIKBTemplateNamelessImageUsesTag(t *testing.T) {
+	standard, desktop := classifyAIKBTemplate("", DefaultDockerImage)
 	if !standard || desktop {
 		t.Fatalf("CLI image with no name must be standard, got standard=%v desktop=%v", standard, desktop)
 	}
-	standard, desktop = classifyWeKnoraTemplate("", DefaultDesktopDockerImage)
+	standard, desktop = classifyAIKBTemplate("", DefaultDesktopDockerImage)
 	if standard || !desktop {
 		t.Fatalf("desktop image with no name must be desktop, got standard=%v desktop=%v", standard, desktop)
 	}
-	standard, desktop = classifyWeKnoraTemplate("", DefaultCubeDesktopTemplateImage)
+	standard, desktop = classifyAIKBTemplate("", DefaultCubeDesktopTemplateImage)
 	if standard || !desktop {
 		t.Fatalf("Cube desktop image with no name must be desktop, got standard=%v desktop=%v", standard, desktop)
 	}

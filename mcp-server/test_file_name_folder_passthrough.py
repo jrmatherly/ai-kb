@@ -27,12 +27,12 @@ if "mcp" not in sys.modules:
     sys.modules["mcp"] = mcp_pkg
     sys.modules["mcp.server"] = mcp_server
 
-import weknora_mcp_server as srv  # noqa: E402
+import aikb_mcp_server as srv  # noqa: E402
 
 
 class CreateKnowledgeFromFileTest(unittest.TestCase):
     def test_includes_file_name_in_multipart_when_set(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         payload = b"pdf-bytes"
         with mock.patch(
             "builtins.open", mock.mock_open(read_data=payload)
@@ -53,7 +53,7 @@ class CreateKnowledgeFromFileTest(unittest.TestCase):
         self.assertEqual(data["enable_multimodel"], "true")
 
     def test_omits_file_name_when_empty(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch(
             "builtins.open", mock.mock_open(read_data=b"x")
         ), mock.patch.object(
@@ -71,7 +71,7 @@ class CreateKnowledgeFromFileTest(unittest.TestCase):
 
 class ListKnowledgeFolderTest(unittest.TestCase):
     def test_forwards_folder_path_and_scope(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request", return_value={"items": []}) as req:
             client.list_knowledge(
                 "kb-1", page=2, page_size=10, folder_path="docs", folder_scope="all"
@@ -83,7 +83,7 @@ class ListKnowledgeFolderTest(unittest.TestCase):
         self.assertEqual(params["folder_scope"], "all")
 
     def test_omits_folder_params_when_unset(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request", return_value={"items": []}) as req:
             client.list_knowledge("kb-1")
         params = req.call_args.kwargs["params"]

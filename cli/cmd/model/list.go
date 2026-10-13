@@ -51,7 +51,7 @@ type ListService interface {
 	ListModels(ctx context.Context) ([]sdk.Model, error)
 }
 
-// NewCmdList builds `weknora model list`.
+// NewCmdList builds `aikb model list`.
 func NewCmdList(f *cmdutil.Factory) *cobra.Command {
 	opts := &ListOptions{}
 	cmd := &cobra.Command{
@@ -85,9 +85,9 @@ func NewCmdList(f *cmdutil.Factory) *cobra.Command {
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor: "discover model ids for `agent create --model` and a KB's embedding/summary model",
 		Examples: []string{
-			"weknora model list",
-			"weknora model list --type KnowledgeQA --format json",
-			"weknora model list --source local",
+			"aikb model list",
+			"aikb model list --type KnowledgeQA --format json",
+			"aikb model list --source local",
 		},
 		Output: "envelope.data is an array of Model objects (id, name, display_name, type, source, is_default); narrow it with --type / --source; meta.count is the returned count, meta.total_count is the full set and meta.has_more=true means --limit truncated it",
 	})

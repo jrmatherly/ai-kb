@@ -180,7 +180,7 @@ const openItem = (item: UploadItem) => {
   // Same knowledge base page: vue-router dedupes an identical navigation, so
   // ask the page to open the document directly (as the command palette does).
   if (route.params.kbId === kbId) {
-    window.dispatchEvent(new CustomEvent('weknora:open-knowledge', {
+    window.dispatchEvent(new CustomEvent('aikb:open-knowledge', {
       detail: { kbId, knowledgeId: item.knowledgeId },
     }))
     return

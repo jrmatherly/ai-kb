@@ -1,7 +1,7 @@
 # Build from the repository root with:
 #   docker build --platform=linux/amd64 \
 #     --build-arg WEBSITE_NGINX_PORT=8080 \
-#     -t weknora-site website-docs
+#     -t ai-kb-site website-docs
 # No host Node.js installation or prebuilt static-site/ is required.
 # WEBSITE_NGINX_PORT is written into default.conf at build time. The intranet
 # platform starts `nginx; sleep infinity` and does not run docker-entrypoint.sh.

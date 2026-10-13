@@ -50,7 +50,7 @@ test('isStreamAuthError matches the class and name-only wrappers', () => {
 
 test('concurrent 401s share a single refresh call', async () => {
   const { store } = installBrowser()
-  store.weknora_refresh_token = 'rt-1'
+  store.aikb_refresh_token = 'rt-1'
   let calls = 0
   let release!: (value: { success: true; data: { token: string; refreshToken: string } }) => void
   const pending = new Promise<{ success: true; data: { token: string; refreshToken: string } }>(
@@ -70,16 +70,16 @@ test('concurrent 401s share a single refresh call', async () => {
 
   release({ success: true, data: { token: 'access-2', refreshToken: 'rt-2' } })
   assert.deepEqual(await Promise.all([first, second]), ['access-2', 'access-2'])
-  assert.equal(store.weknora_token, 'access-2')
-  assert.equal(store.weknora_refresh_token, 'rt-2')
+  assert.equal(store.aikb_token, 'access-2')
+  assert.equal(store.aikb_refresh_token, 'rt-2')
   assert.equal(calls, 1)
 })
 
 test('missing refresh token clears credentials, redirects, and throws an Error', async () => {
   const { store, location } = installBrowser()
-  store.weknora_token = 'expired'
-  store.weknora_user = '{}'
-  store.weknora_selected_tenant_id = '9'
+  store.aikb_token = 'expired'
+  store.aikb_user = '{}'
+  store.aikb_selected_tenant_id = '9'
 
   await assert.rejects(
     () => refreshAccessTokenShared({
@@ -90,16 +90,16 @@ test('missing refresh token clears credentials, redirects, and throws an Error',
     }),
     (err: unknown) => err instanceof Error && err.message === 'please-relogin',
   )
-  assert.equal(store.weknora_token, undefined)
-  assert.equal(store.weknora_selected_tenant_id, undefined)
+  assert.equal(store.aikb_token, undefined)
+  assert.equal(store.aikb_selected_tenant_id, undefined)
   assert.equal(location.href, '/login')
 })
 
 test('a failed refresh clears the newly irrelevant session and redirects', async () => {
   const { store, location } = installBrowser()
-  store.weknora_refresh_token = 'rt-dead'
-  store.weknora_token = 'expired'
-  store.weknora_selected_tenant_id = '9'
+  store.aikb_refresh_token = 'rt-dead'
+  store.aikb_token = 'expired'
+  store.aikb_selected_tenant_id = '9'
 
   await assert.rejects(
     () => refreshAccessTokenShared({
@@ -107,8 +107,8 @@ test('a failed refresh clears the newly irrelevant session and redirects', async
     }),
     /revoked/,
   )
-  assert.equal(store.weknora_refresh_token, undefined)
-  assert.equal(store.weknora_selected_tenant_id, undefined)
+  assert.equal(store.aikb_refresh_token, undefined)
+  assert.equal(store.aikb_selected_tenant_id, undefined)
   assert.equal(location.href, '/login')
 })
 
@@ -154,8 +154,8 @@ test('embed visitors are not refreshed or redirected', async () => {
 
 test('a second handshake 401 after a successful refresh does not wipe tokens', async () => {
   const { store, location } = installBrowser()
-  store.weknora_token = 'expired'
-  store.weknora_refresh_token = 'rt-1'
+  store.aikb_token = 'expired'
+  store.aikb_refresh_token = 'rt-1'
   location.href = 'http://localhost/chat'
 
   await assert.rejects(
@@ -179,8 +179,8 @@ test('a second handshake 401 after a successful refresh does not wipe tokens', a
     }),
     (err: unknown) => err instanceof Error && err.message === 'please-relogin',
   )
-  assert.equal(store.weknora_token, 'fresh')
-  assert.equal(store.weknora_refresh_token, 'rt-2')
+  assert.equal(store.aikb_token, 'fresh')
+  assert.equal(store.aikb_refresh_token, 'rt-2')
   assert.equal(location.href, 'http://localhost/chat')
 })
 
@@ -203,9 +203,9 @@ test('a superseded send skips the replay', async () => {
 
 test('forceReloginRedirect does not bounce embed visitors to /login', () => {
   const { store, location } = installBrowser('/embed/ch-1')
-  store.weknora_token = 'jwt'
+  store.aikb_token = 'jwt'
   forceReloginRedirect()
-  assert.equal(store.weknora_token, undefined)
+  assert.equal(store.aikb_token, undefined)
   assert.equal(location.href, 'http://localhost/embed/ch-1')
 })
 

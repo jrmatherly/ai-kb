@@ -38,12 +38,12 @@ python run_server.py
 
 #### 方式 3: 直接运行服务器模块
 ```bash
-python weknora_mcp_server.py
+python aikb_mcp_server.py
 ```
 
 #### 方式 4: 作为 Python 模块运行
 ```bash
-python -m weknora_mcp_server
+python -m aikb_mcp_server
 ```
 
 ## 作为 Python 包安装
@@ -55,9 +55,9 @@ pip install -e .
 
 安装后可以使用命令行工具：
 ```bash
-weknora-mcp-server
+ai-kb-mcp-server
 # 或
-weknora-server
+ai-kb-server
 ```
 
 ### 生产模式安装
@@ -126,10 +126,10 @@ ai-kb/mcp-server/
 ├── __init__.py              # 包初始化文件
 ├── main.py                  # 主入口点
 ├── run_server.py           # 原始启动脚本
-├── weknora_mcp_server.py   # MCP 服务器实现
+├── aikb_mcp_server.py   # MCP 服务器实现
 ├── requirements.txt        # 依赖列表
 ├── setup.py               # 安装脚本
-├── pyproject.toml         # 项目元数据（PyPI: tencent-weknora-mcp）
+├── pyproject.toml         # 项目元数据（PyPI: ai-kb-mcp）
 ├── MANIFEST.in            # 包含文件清单
 ├── LICENSE                # 许可证
 ├── README.md              # 项目说明
@@ -137,7 +137,7 @@ ai-kb/mcp-server/
 ```
 
 ### 添加新功能
-1. 在 `WeKnoraClient` 类中添加新的 API 方法
+1. 在 `AIKBClient` 类中添加新的 API 方法
 2. 用 `@mcp.tool()` 装饰器注册一个新工具函数：参数用类型标注（schema 自动生成），描述写在 docstring 里，函数体调用上面新增的客户端方法
 3. 更新文档和测试
 
@@ -170,11 +170,11 @@ RUN pip install -e .
 ENV AIKB_BASE_URL=http://localhost:8080/api/v1
 EXPOSE 8000
 
-CMD ["weknora-mcp-server"]
+CMD ["ai-kb-mcp-server"]
 ```
 
 ### 系统服务
-创建 systemd 服务文件 `/etc/systemd/system/weknora-mcp.service`：
+创建 systemd 服务文件 `/etc/systemd/system/ai-kb-mcp.service`：
 ```ini
 [Unit]
 Description=AI KB MCP Server
@@ -182,11 +182,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=weknora
-WorkingDirectory=/opt/weknora-mcp
+User=aikb
+WorkingDirectory=/opt/ai-kb-mcp
 Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
 Environment=AIKB_API_KEY=your_api_key
-ExecStart=/usr/local/bin/weknora-mcp-server
+ExecStart=/usr/local/bin/ai-kb-mcp-server
 Restart=always
 
 [Install]
@@ -195,8 +195,8 @@ WantedBy=multi-user.target
 
 启用服务：
 ```bash
-sudo systemctl enable weknora-mcp
-sudo systemctl start weknora-mcp
+sudo systemctl enable ai-kb-mcp
+sudo systemctl start ai-kb-mcp
 ```
 
 ## 支持

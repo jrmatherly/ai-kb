@@ -42,7 +42,7 @@ type statusResult struct {
 	TenantName          string `json:"tenant_name,omitempty"`
 }
 
-// NewCmdStatus builds the `weknora auth status` command.
+// NewCmdStatus builds the `aikb auth status` command.
 func NewCmdStatus(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -51,7 +51,7 @@ func NewCmdStatus(f *cmdutil.Factory) *cobra.Command {
 and tenant the server resolves the credential to.
 
 Exits with auth.unauthenticated when the token is invalid or missing - run
-` + "`weknora auth login`" + ` (or ` + "`auth refresh`" + ` for JWT profiles) to recover.
+` + "`aikb auth login`" + ` (or ` + "`auth refresh`" + ` for JWT profiles) to recover.
 For JWT profiles the SDK transparently refreshes on 401, so this command
 usually only surfaces a hard auth failure.`,
 		Args: cobra.NoArgs,
@@ -71,7 +71,7 @@ usually only surfaces a hard auth failure.`,
 	cmdutil.AddFormatFlag(cmd, authStatusFields...)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor:  "show the active profile, the authenticated principal, and token state",
-		Examples: []string{"weknora auth status", "weknora auth status --jq .data.tenant_id"},
+		Examples: []string{"aikb auth status", "aikb auth status --jq .data.tenant_id"},
 		Output:   "envelope.data is {profile, host, auth_source, user_id, username, email, tenant_id, tenant_name, ...}; auth_source is 'profile + keyring' or a stateless env credential; exit 3 if unauthenticated",
 	})
 	return cmd
@@ -79,7 +79,7 @@ usually only surfaces a hard auth failure.`,
 
 func runStatus(ctx context.Context, fopts *cmdutil.FormatOptions, f *cmdutil.Factory, svc StatusService) error {
 	if svc == nil {
-		return cmdutil.NewError(cmdutil.CodeAuthUnauthenticated, "no SDK client available; run `weknora auth login`")
+		return cmdutil.NewError(cmdutil.CodeAuthUnauthenticated, "no SDK client available; run `aikb auth login`")
 	}
 	resp, err := svc.GetCurrentUser(ctx)
 	if err != nil {

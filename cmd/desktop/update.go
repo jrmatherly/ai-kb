@@ -315,7 +315,7 @@ func desktopAboutVersion() string {
 // applyUpdateAndRestart applies the downloaded update and restarts the application
 func applyUpdateAndRestart(ctx context.Context, savePath string) {
 	if runtime.GOOS == "windows" {
-		scriptPath := filepath.Join(os.TempDir(), "weknora_update.bat")
+		scriptPath := filepath.Join(os.TempDir(), "aikb_update.bat")
 		execPath, err := os.Executable()
 		if err != nil {
 			logger.Warnf(context.Background(), "Failed to get executable path: %v", err)
@@ -351,7 +351,7 @@ del "%%~f0"
 					return
 				}
 
-				mountPoint := filepath.Join(os.TempDir(), "WeKnoraUpdateMount")
+				mountPoint := filepath.Join(os.TempDir(), "AIKBUpdateMount")
 				os.MkdirAll(mountPoint, 0755)
 
 				cmdMount := exec.Command("hdiutil", "attach", savePath, "-mountpoint", mountPoint, "-nobrowse", "-quiet")
@@ -386,7 +386,7 @@ del "%%~f0"
 				}
 
 				appDir := filepath.Dir(appBundlePath)
-				scriptPath := filepath.Join(os.TempDir(), "weknora_update.sh")
+				scriptPath := filepath.Join(os.TempDir(), "aikb_update.sh")
 				scriptContent := fmt.Sprintf(`#!/bin/bash
 sleep 2
 if ! (rm -rf "%s" && cp -a "%s" "%s"); then

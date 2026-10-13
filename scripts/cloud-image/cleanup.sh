@@ -21,7 +21,7 @@ echo "[cleanup] 1/8 停止 AI KB 容器"
 COMPOSE_PROJECT=""
 if [[ -d "${AIKB_DIR}" ]]; then
   cd "${AIKB_DIR}"
-  # 优先用 compose ls 拿到真实 project 名 (默认是目录名小写, 如 weknora)
+  # 优先用 compose ls 拿到真实 project 名 (默认是目录名小写, 如 aikb)
   COMPOSE_PROJECT="$(docker compose ls --format json 2>/dev/null \
     | grep -oE '"Name":"[^"]+"' | head -1 | cut -d'"' -f4 || true)"
   docker compose down -v --remove-orphans || true
@@ -36,7 +36,7 @@ if [[ -d "${AIKB_DIR}" ]]; then
   # firstboot.sh 自己会从 .env.example 拷贝并替换密钥。
   rm -f "${AIKB_DIR}/.env" "${AIKB_DIR}/.firstboot.done"
 fi
-rm -f /root/weknora-credentials.txt /var/log/weknora-firstboot.log
+rm -f /root/ai-kb-credentials.txt /var/log/ai-kb-firstboot.log
 
 echo "[cleanup] 3/8 清理残留 docker 卷与构建缓存"
 # 严格按 compose project 名前缀匹配, 避免误伤同宿主上其它 postgres/redis 卷。
@@ -46,7 +46,7 @@ if [[ -n "${COMPOSE_PROJECT}" ]]; then
 fi
 # 注意: 这里只清"卷 / 已停容器 / 构建缓存", 绝对不能清镜像。
 # 此前用过 `docker system prune -af --volumes`, 会把 prepare.sh 预拉的
-# wechatopenai/weknora-* 等镜像一并清掉, 导致基于镜像建出来的新实例
+# wechatopenai/ai-kb-* 等镜像一并清掉, 导致基于镜像建出来的新实例
 # 在 firstboot 时还要重新从 Docker Hub 拉数 GB 镜像, 完全违背预装初衷。
 docker container prune -f      || true
 docker builder    prune -af    || true

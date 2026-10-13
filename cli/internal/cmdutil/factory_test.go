@@ -55,7 +55,7 @@ func TestFactory_Lazy(t *testing.T) {
 
 // TestNew_FoundationDefaults verifies the production New() returns a usable
 // Factory and that Client surfaces auth.unauthenticated when no current
-// profile is configured (the precondition for `weknora auth login`).
+// profile is configured (the precondition for `aikb auth login`).
 func TestNew_FoundationDefaults(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir()) // empty config → no current profile
 	f := New()
@@ -80,8 +80,8 @@ func TestFactory_ProfileOverride(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", dir)
 
 	// Seed config with two profiles; CurrentProfile = "default"
-	cfgPath := dir + "/weknora/config.yaml"
-	require.NoError(t, os.MkdirAll(dir+"/weknora", 0o700))
+	cfgPath := dir + "/aikb/config.yaml"
+	require.NoError(t, os.MkdirAll(dir+"/aikb", 0o700))
 	require.NoError(t, os.WriteFile(cfgPath, []byte(`
 current_profile: default
 profiles:
@@ -178,7 +178,7 @@ func TestBuildClient_NoCurrentProfile(t *testing.T) {
 	// fails with no profile → an agent execing retry_argv would loop); it must
 	// point at profile creation instead.
 	detail := ErrorToDetail(err)
-	assert.NotEqual(t, []string{"weknora", "auth", "login"}, detail.RetryArgv,
+	assert.NotEqual(t, []string{"aikb", "auth", "login"}, detail.RetryArgv,
 		"zero-state retry_argv must not loop back to auth login")
 	assert.Contains(t, detail.RetryArgv, "profile", "zero-state retry_argv should point at profile setup")
 }
@@ -338,7 +338,7 @@ func TestResolveKB_Chain(t *testing.T) {
 		dir := t.TempDir()
 		resolveKBChdir(t, dir)
 		// Drop a project link too - must be ignored.
-		require.NoError(t, projectlink.Save(filepath.Join(dir, ".weknora", "project.yaml"), &projectlink.Project{KBID: "kb_disk_should_lose"}))
+		require.NoError(t, projectlink.Save(filepath.Join(dir, ".aikb", "project.yaml"), &projectlink.Project{KBID: "kb_disk_should_lose"}))
 
 		clientCalls := 0
 		f := &Factory{
@@ -385,7 +385,7 @@ func TestResolveKB_Chain(t *testing.T) {
 		t.Setenv("AIKB_KB_ID", "kb_env")
 		dir := t.TempDir()
 		resolveKBChdir(t, dir)
-		require.NoError(t, projectlink.Save(filepath.Join(dir, ".weknora", "project.yaml"), &projectlink.Project{KBID: "kb_disk_should_lose"}))
+		require.NoError(t, projectlink.Save(filepath.Join(dir, ".aikb", "project.yaml"), &projectlink.Project{KBID: "kb_disk_should_lose"}))
 
 		f := &Factory{}
 		got, err := f.ResolveKB(makeResolveKBCmd(t, ""))
@@ -396,7 +396,7 @@ func TestResolveKB_Chain(t *testing.T) {
 	t.Run("project_link_walk_up", func(t *testing.T) {
 		t.Setenv("AIKB_KB_ID", "")
 		root := t.TempDir()
-		require.NoError(t, projectlink.Save(filepath.Join(root, ".weknora", "project.yaml"), &projectlink.Project{KBID: "kb_proj"}))
+		require.NoError(t, projectlink.Save(filepath.Join(root, ".aikb", "project.yaml"), &projectlink.Project{KBID: "kb_proj"}))
 		// Run from a deep child to exercise walk-up.
 		deep := filepath.Join(root, "a", "b", "c")
 		require.NoError(t, os.MkdirAll(deep, 0o755))

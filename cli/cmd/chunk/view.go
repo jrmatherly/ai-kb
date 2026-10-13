@@ -53,11 +53,11 @@ invoke citation) is sufficient for view.
 Typed exit codes:
   resource.not_found    no chunk with the given id (exit 4)`
 
-const chunkViewExample = `  weknora chunk view chunk_abc
-  weknora chunk view chunk_abc --format json | jq '.content'
-  weknora chunk view chunk_abc --format json --jq '{id, chunk_index, is_enabled}'`
+const chunkViewExample = `  aikb chunk view chunk_abc
+  aikb chunk view chunk_abc --format json | jq '.content'
+  aikb chunk view chunk_abc --format json --jq '{id, chunk_index, is_enabled}'`
 
-// NewCmdView builds `weknora chunk view <chunk-id>`.
+// NewCmdView builds `aikb chunk view <chunk-id>`.
 func NewCmdView(f *cmdutil.Factory) *cobra.Command {
 	opts := &ViewOptions{}
 	cmd := &cobra.Command{
@@ -85,7 +85,7 @@ func NewCmdView(f *cmdutil.Factory) *cobra.Command {
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor:       "fetch one chunk's fields and content by id (scope-less; no --doc needed)",
 		RequiredFlags: []string{"<chunk-id> (positional)"},
-		Examples:      []string{"weknora chunk view chunk_abc"},
+		Examples:      []string{"aikb chunk view chunk_abc"},
 		Output:        "envelope.data is the chunk object (id, content, knowledge_id, ...)",
 	})
 	return cmd

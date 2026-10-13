@@ -74,7 +74,7 @@ const (
 	// Redis under contention.
 	defaultPollInterval = 200 * time.Millisecond
 	// keyPrefix namespaces the semaphore ZSETs in Redis.
-	keyPrefix = "weknora:modelsem:"
+	keyPrefix = "aikb:modelsem:"
 )
 
 // acquireScript atomically prunes expired leases, counts live holders, and

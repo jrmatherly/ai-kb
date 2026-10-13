@@ -330,14 +330,14 @@ download_spatial:
 
 clean-db:
 	@echo "Cleaning database..."
-	@if [ $$(docker volume ls -q -f name=weknora_postgres-data) ]; then \
-		docker volume rm weknora_postgres-data; \
+	@if [ $$(docker volume ls -q -f name=aikb_postgres-data) ]; then \
+		docker volume rm aikb_postgres-data; \
 	fi
-	@if [ $$(docker volume ls -q -f name=weknora_minio_data) ]; then \
-		docker volume rm weknora_minio_data; \
+	@if [ $$(docker volume ls -q -f name=aikb_minio_data) ]; then \
+		docker volume rm aikb_minio_data; \
 	fi
-	@if [ $$(docker volume ls -q -f name=weknora_redis_data) ]; then \
-		docker volume rm weknora_redis_data; \
+	@if [ $$(docker volume ls -q -f name=aikb_redis_data) ]; then \
+		docker volume rm aikb_redis_data; \
 	fi
 
 # Environment check

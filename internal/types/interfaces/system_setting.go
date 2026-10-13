@@ -85,7 +85,7 @@ type SystemSettingService interface {
 	Reset(ctx context.Context, key string) error
 
 	// SubscribeRedis is a P2 hook: when implemented, it will subscribe
-	// to a "weknora:system_settings:changed" channel and invalidate any
+	// to a "aikb:system_settings:changed" channel and invalidate any
 	// in-memory cache on receipt. P1 implementations may return a no-op
 	// because there is no cache yet. Keeping the method in the interface
 	// now means P2 can drop in a real implementation without changing

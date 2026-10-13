@@ -213,7 +213,7 @@ func TestCheckFormatFlag_TextAccepted(t *testing.T) {
 	}
 }
 
-func TestFromEnv_AppliesWEKNORA_FORMAT(t *testing.T) {
+func TestFromEnv_AppliesAIKB_FORMAT(t *testing.T) {
 	t.Setenv("AIKB_FORMAT", "ndjson")
 	o := &FormatOptions{}
 	o.FromEnv()

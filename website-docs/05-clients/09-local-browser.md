@@ -60,7 +60,7 @@ The build needs Git, Node.js, Python 3, Rust/Cargo and a C compiler, plus CMake 
 
 ```dotenv
 BROWSERSKILL_BINARY=/opt/ai-kb/browserskill/bsk
-BROWSERSKILL_EXTENSION_PATH=/opt/ai-kb/browserskill/browser-skill-weknora-0.3.1.zip
+BROWSERSKILL_EXTENSION_PATH=/opt/ai-kb/browserskill/browser-skill-ai-kb-0.3.1.zip
 BROWSERSKILL_MAX_CONNECTIONS=32
 ```
 

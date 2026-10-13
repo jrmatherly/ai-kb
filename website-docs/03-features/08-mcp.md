@@ -287,7 +287,7 @@ sequenceDiagram
 
 - **Discovery and dynamic registration** (`internal/mcp/oauth_manager.go`): `StartAuthorization` first builds a `transport.OAuthHandler` (when `AuthServerMetadataURL` is empty, mcp-go discovers the authorization server from the MCP URL). If `mcp_oauth_clients` has no client for this `(tenant, service)`, it calls `h.RegisterClient(ctx, "AI KB")` once for RFC 7591 registration and persists it with `SaveClient`; all later users reuse the same client_id.
 - **PKCE**: `transport.GenerateCodeVerifier()`, `GenerateCodeChallenge()` and `GenerateState()`. The `code_verifier` is a secret and is **stored only in server-side state** (the comment in `internal/mcp/oauth_state.go` forbids encoding it into the state parameter).
-- **State store** (`oauth_state.go`): with Redis, the key is `weknora:mcp_oauth_state:<state>` (with the `AIKB_REDIS_NAMESPACE` namespace when set), so the callback can land on any backend replica. Lite mode falls back to an in-memory map with garbage collection. The TTL is fixed at 10 minutes. `Take` is a **read-and-delete** single consumption. A separate `OAuthAttempt` record without secrets is stored, and `CompleteAttempt` sets `Completed=true` only after the token is persisted, so a status query for a new popup (`status?authorization_attempt=`) **is never satisfied by an older token**.
+- **State store** (`oauth_state.go`): with Redis, the key is `aikb:mcp_oauth_state:<state>` (with the `AIKB_REDIS_NAMESPACE` namespace when set), so the callback can land on any backend replica. Lite mode falls back to an in-memory map with garbage collection. The TTL is fixed at 10 minutes. `Take` is a **read-and-delete** single consumption. A separate `OAuthAttempt` record without secrets is stored, and `CompleteAttempt` sets `Completed=true` only after the token is persisted, so a status query for a new popup (`status?authorization_attempt=`) **is never satisfied by an older token**.
 - **Callback** (`CompleteAuthorization` in `oauth_manager.go` and `Callback` in `internal/handler/mcp_oauth.go`): the callback route is public and authenticated by the single-use state. Because the Gin request context is cancelled as soon as the browser receives the redirect, the token exchange runs under `context.WithoutCancel` with a 60 second timeout (`oauthCallbackTimeout`), detached from the request lifetime. After a successful exchange, `CloseClient(serviceID)` recycles connections that may carry old registration data, and the result is encoded in the URL fragment (`#mcp_oauth_result=success` or `#mcp_oauth_error=...`) of the redirect back to the frontend.
 - **CSRF check on the rebuilt handler**: the handler is reconstructed in the callback request, so `h.SetExpectedState(state)` restores the expected state before mcp-go's CSRF check can pass.
 
@@ -392,7 +392,7 @@ Key implementation points:
 - **Blocking and resuming**: `RequestAndWait` generates a `pending_id`, publishes `EventToolApprovalRequired` to the EventBus (with the tool name, the arguments as JSON and the timeout in seconds) and waits on an in-memory waiter. The user releases it through `POST /agent/tool-approvals/{pending_id}` with `decision: approve|reject`. After approval, `mcp_tool.go` **derives a fresh full tool execution timeout from ApprovalCtx** (the approval may have used up the original 60 second budget).
 - **Argument modification**: `approve` may carry `modified_args` (a non-null JSON object; the handler explicitly rejects `"null"`), which replaces the original arguments before execution.
 - **Authorization**: Resolve checks the tenant and the session owner (`ErrTenantMismatch` and `ErrUserMismatch`; an empty userID counts as a mismatch, fail-close). A repeated decision returns `ErrAlreadyResolved`.
-- **Cross-instance**: the waiter lives in the memory of the instance that started the wait. With Redis configured, a Resolve that lands on another replica is broadcast over the `weknora:mcp_approval:resolve` Pub/Sub channel; the owning instance delivers the decision and acknowledges on a per-pending reply channel (3 second window), so the HTTP status code stays accurate across instances. Without Redis it degrades to single-instance operation (sticky sessions required).
+- **Cross-instance**: the waiter lives in the memory of the instance that started the wait. With Redis configured, a Resolve that lands on another replica is broadcast over the `aikb:mcp_approval:resolve` Pub/Sub channel; the owning instance delivers the decision and acknowledges on a per-pending reply channel (3 second window), so the HTTP status code stays accurate across instances. Without Redis it degrades to single-instance operation (sticky sessions required).
 - **Timeout and failure policy**: the wait defaults to 10 minutes and is configurable with `config.Agent.ToolApprovalTimeoutSeconds`. The approval check is **fail-close** by default: a database error counts as "approval required". Set `AIKB_AGENT_TOOL_APPROVAL_FAIL_OPEN=true` to restore the old fail-open behavior.
 
 #### Disabling individual tools
@@ -464,8 +464,8 @@ flowchart LR
 ```json
 {
   "mcpServers": {
-    "weknora-docs": {
-      "url": "https://your-weknora.example.com/mcp/<endpoint_id>",
+    "ai-kb-docs": {
+      "url": "https://your-ai-kb.example.com/mcp/<endpoint_id>",
       "headers": { "Authorization": "Bearer mcp_xxxxxxxx" }
     }
   }
@@ -475,7 +475,7 @@ flowchart LR
 Claude Code:
 
 ```bash
-claude mcp add --transport http weknora-docs https://your-weknora.example.com/mcp/<endpoint_id> --header "Authorization: Bearer mcp_xxxxxxxx"
+claude mcp add --transport http ai-kb-docs https://your-ai-kb.example.com/mcp/<endpoint_id> --header "Authorization: Bearer mcp_xxxxxxxx"
 ```
 
 Clients that only support stdio:
@@ -483,9 +483,9 @@ Clients that only support stdio:
 ```json
 {
   "mcpServers": {
-    "weknora-docs": {
+    "ai-kb-docs": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://your-weknora.example.com/mcp/<endpoint_id>", "--header", "Authorization: Bearer mcp_xxxxxxxx"]
+      "args": ["-y", "mcp-remote", "https://your-ai-kb.example.com/mcp/<endpoint_id>", "--header", "Authorization: Bearer mcp_xxxxxxxx"]
     }
   }
 }
@@ -498,10 +498,10 @@ The Python service under `mcp-server/` predates the built-in MCP server: each pr
 :::
 
 
-`mcp-server/` is a standalone Python package, published on PyPI as **`tencent-weknora-mcp`** (currently 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/weknora_mcp_server.py`: `WeKnoraClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("weknora-server", version="1.1.1")` registers the tools and serves them over the selected transport.
+`mcp-server/` is a standalone Python package, published on PyPI as **`ai-kb-mcp`** (currently 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/aikb_mcp_server.py`: `AIKBClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("ai-kb-server", version="1.1.1")` registers the tools and serves them over the selected transport.
 
 ::: warning Package name and API changes (v1.1.x)
-- The official package name is `tencent-weknora-mcp`; the early community package `weknora-mcp` is no longer used. The command-line entry points are still `weknora-mcp-server` and `weknora-server`.
+- The official package name is `ai-kb-mcp`; the early community package `ai-kb-mcp` is no longer used. The command-line entry points are still `ai-kb-mcp-server` and `ai-kb-server`.
 - The implementation uses the high-level API of mcp 2.x: a tool is a plain function with the `@mcp.tool()` decorator, its parameter JSON Schema is derived from the type annotations, the description comes from the docstring, and the return value is serialized automatically. The old `handle_list_tools()` / `handle_call_tool()` dispatch is gone; adding a tool means adding one decorated function.
 - Blocking network I/O (`chat` and `agent_chat`) runs in a thread pool and does not block the asyncio event loop.
 :::
@@ -518,14 +518,14 @@ pip install -r requirements.txt
 python main.py            # or python run.py / python run_server.py
 ```
 
-**Install from PyPI** (two console entry points, `weknora-mcp-server` and `weknora-server`):
+**Install from PyPI** (two console entry points, `ai-kb-mcp-server` and `ai-kb-server`):
 
 ```bash
-pip install tencent-weknora-mcp
-weknora-mcp-server
+pip install ai-kb-mcp
+ai-kb-mcp-server
 
 # Or run without installing, through uvx
-uvx --from tencent-weknora-mcp weknora-mcp-server
+uvx --from ai-kb-mcp ai-kb-mcp-server
 ```
 
 **Local development install**:
@@ -533,7 +533,7 @@ uvx --from tencent-weknora-mcp weknora-mcp-server
 ```bash
 cd mcp-server
 pip install -e .          # development mode; or pip install .
-weknora-mcp-server
+ai-kb-mcp-server
 ```
 
 **Docker** (`mcp-server/Dockerfile`, based on `python:3.11-slim`, starts with the Streamable HTTP transport and exposes port 8000):
@@ -543,12 +543,12 @@ ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=8000
 ENV AIKB_BASE_URL=http://app:8080/api/v1
 EXPOSE 8000
-CMD ["weknora-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["ai-kb-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 The container must receive `MCP_SERVER_AUTH_TOKEN`; without it the HTTP transport refuses to start (see "Transports and network authentication"). The Compose service `mcp` (profile `full`) publishes the container on host port `${MCP_PORT:-8082}`.
 
-The three entry scripts: `main.py` is the full main entry (`--check-only` environment check, `--verbose`, `--transport/--host/--port`); `run.py` is a thin wrapper that calls `main.sync_main`; `run_server.py` goes through `weknora_mcp_server.run` (a stdio alias).
+The three entry scripts: `main.py` is the full main entry (`--check-only` environment check, `--verbose`, `--transport/--host/--port`); `run.py` is a thin wrapper that calls `main.sync_main`; `run_server.py` goes through `aikb_mcp_server.run` (a stdio alias).
 
 ::: tip Diagnostic output under the stdio transport
 The stdio transport uses stdout as the protocol channel. Any stray `print` corrupts the protocol stream and the client reports a failed start. All diagnostic output from the entry scripts therefore goes to stderr. Follow the same rule in your own wrapper scripts.
@@ -556,7 +556,7 @@ The stdio transport uses stdout as the protocol channel. Any stray `print` corru
 
 #### Environment variables
 
-The source of truth is what `weknora_mcp_server.py` and `upload_paths.py` actually read:
+The source of truth is what `aikb_mcp_server.py` and `upload_paths.py` actually read:
 
 | Variable | Default | Description |
 |---|---|---|
@@ -586,7 +586,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 
 #### Exposed MCP tools
 
-31 tools in total, one per function decorated with `@mcp.tool()` in `weknora_mcp_server.py` (`*` marks a required parameter; the `WeKnoraClient.update_knowledge_base` method exists but is **not registered** as a tool):
+31 tools in total, one per function decorated with `@mcp.tool()` in `aikb_mcp_server.py` (`*` marks a required parameter; the `AIKBClient.update_knowledge_base` method exists but is **not registered** as a tool):
 
 **Workspace management**
 
@@ -668,7 +668,7 @@ The stdio transport (`claude_desktop_config.json` in Claude Desktop):
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "command": "python",
       "args": ["/path/to/ai-kb/mcp-server/main.py"],
       "env": {
@@ -680,14 +680,14 @@ The stdio transport (`claude_desktop_config.json` in Claude Desktop):
 }
 ```
 
-When installed from PyPI, `command` can be `weknora-mcp-server` directly, or use `uvx` without installing:
+When installed from PyPI, `command` can be `ai-kb-mcp-server` directly, or use `uvx` without installing:
 
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "command": "uvx",
-      "args": ["--from", "tencent-weknora-mcp", "weknora-mcp-server"],
+      "args": ["--from", "ai-kb-mcp", "ai-kb-mcp-server"],
       "env": {
         "AIKB_BASE_URL": "http://localhost:8080/api/v1",
         "AIKB_API_KEY": "your-api-key"

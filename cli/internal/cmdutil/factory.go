@@ -21,11 +21,11 @@ import (
 )
 
 // Factory is the dependency container injected at command construction. Each
-// closure is lazy: --help / completion / `weknora version` must NOT trigger
+// closure is lazy: --help / completion / `aikb version` must NOT trigger
 // HTTP, keyring access, or filesystem I/O beyond the bare minimum.
 //
 // Four closures:
-//   - Config:   parses ~/.config/weknora/config.yaml (no network)
+//   - Config:   parses ~/.config/aikb/config.yaml (no network)
 //   - Client:   constructs the SDK client; only Secrets is sync.Once-cached,
 //     so callers should hold the returned *sdk.Client across
 //     multiple SDK calls within one invocation
@@ -112,7 +112,7 @@ func New() *Factory {
 // buildClient resolves the active profile, loads the credentials from secrets,
 // and constructs a *sdk.Client. Returns CodeAuthUnauthenticated when no
 // credentials are available so the user gets the right hint to run
-// `weknora auth login`.
+// `aikb auth login`.
 func buildClient(f *Factory) (*sdk.Client, error) {
 	// Env-credential injection: AIKB_TOKEN (bearer) or AIKB_API_KEY, with
 	// AIKB_HOST (or the active profile's host), builds an ephemeral client
@@ -132,8 +132,8 @@ func buildClient(f *Factory) (*sdk.Client, error) {
 		// an active profile) — an agent that execs retry_argv would loop. Point
 		// hint + retry_argv at the real first step: create a profile.
 		return nil, NewError(CodeAuthUnauthenticated, "no profile configured").
-			WithHint("add one first: `weknora profile add <name> --host <url> --use`, then `weknora auth login` (or set AIKB_API_KEY + AIKB_HOST for headless use)").
-			WithRetryArgv([]string{"weknora", "profile", "add", "--help"})
+			WithHint("add one first: `aikb profile add <name> --host <url> --use`, then `aikb auth login` (or set AIKB_API_KEY + AIKB_HOST for headless use)").
+			WithRetryArgv([]string{"aikb", "profile", "add", "--help"})
 	}
 	prof, ok := cfg.Profiles[profileName]
 	if !ok {
@@ -143,8 +143,8 @@ func buildClient(f *Factory) (*sdk.Client, error) {
 		if f.ProfileOverride != "" {
 			return nil, NewError(CodeInputInvalidArgument,
 				fmt.Sprintf("profile %q not configured", profileName)).
-				WithHint("list available profiles with `weknora profile list`").
-				WithRetryArgv([]string{"weknora", "profile", "list"})
+				WithHint("list available profiles with `aikb profile list`").
+				WithRetryArgv([]string{"aikb", "profile", "list"})
 		}
 		// ProfileOverride is empty: config.CurrentProfile points at a missing entry.
 		// That's a genuinely corrupt config file.
@@ -274,7 +274,7 @@ func AddIgnoredKBFlag(cmd *cobra.Command) {
 //  1. --kb flag (kb_<...> id passed through; anything else resolved via
 //     ListKnowledgeBases as a name → id lookup)
 //  2. AIKB_KB_ID env (always an explicit id)
-//  3. .weknora/project.yaml (walk-up from cwd)
+//  3. .aikb/project.yaml (walk-up from cwd)
 //  4. error: kb required
 func (f *Factory) ResolveKB(cmd *cobra.Command) (string, error) {
 	if v, _ := cmd.Flags().GetString("kb"); v != "" {
@@ -304,7 +304,7 @@ func (f *Factory) ResolveKBLocal(cmd *cobra.Command) (string, error) {
 
 // resolveKBFromEnvOrLink is the shared fallback tail of ResolveKB /
 // ResolveKBLocal (which differ only in how they treat the --kb flag): it reads
-// AIKB_KB_ID, then the walk-up .weknora/project.yaml link, and returns
+// AIKB_KB_ID, then the walk-up .aikb/project.yaml link, and returns
 // CodeKBIDRequired when neither is set. Never calls the SDK.
 func (f *Factory) resolveKBFromEnvOrLink() (string, error) {
 	if v := os.Getenv("AIKB_KB_ID"); v != "" {

@@ -57,7 +57,7 @@ func TestRuntimePrerequisiteReportValidation(t *testing.T) {
 		t.Run(raw, func(t *testing.T) {
 			fx := newInstallFixture(t)
 			fx.sandboxMgr.files = map[string][]byte{
-				path.Join(installSkillDir, ".weknora/install-report.json"): []byte(raw),
+				path.Join(installSkillDir, ".aikb/install-report.json"): []byte(raw),
 			}
 			err := fx.svc.verifyRuntimePrerequisites(context.Background(), fx.sandboxMgr, "session", installSkillDir)
 			var gate *skillVerificationError
@@ -70,25 +70,25 @@ func TestRuntimePrerequisiteReportValidation(t *testing.T) {
 func TestRuntimePrerequisitesResolveSkillLocalCLI(t *testing.T) {
 	fx := newInstallFixture(t)
 	dir := path.Join(t.TempDir(), "skill with ' quotes")
-	binDir := path.Join(dir, ".weknora/bin")
+	binDir := path.Join(dir, ".aikb/bin")
 	require.NoError(t, os.MkdirAll(binDir, 0o755))
 	fx.sandboxMgr.files = map[string][]byte{
-		path.Join(dir, ".weknora/install-report.json"): []byte(`{"commands":["weknora-test-cli"],"blockers":[]}`),
+		path.Join(dir, ".aikb/install-report.json"): []byte(`{"commands":["ai-kb-test-cli"],"blockers":[]}`),
 	}
 	mgr := runtimeProbeManager{fx.sandboxMgr}
 	err := fx.svc.verifyRuntimePrerequisites(context.Background(), mgr, "session", dir)
 	var gate *skillVerificationError
 	require.ErrorAs(t, err, &gate)
 	require.True(t, gate.Repairable)
-	require.Contains(t, err.Error(), "weknora-test-cli")
-	require.NoError(t, os.WriteFile(path.Join(binDir, "weknora-test-cli"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	require.Contains(t, err.Error(), "ai-kb-test-cli")
+	require.NoError(t, os.WriteFile(path.Join(binDir, "ai-kb-test-cli"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
 	require.NoError(t, fx.svc.verifyRuntimePrerequisites(context.Background(), mgr, "session", dir))
 }
 
 func TestRunInstallDoesNotSnapshotUnresolvedExternalPrerequisites(t *testing.T) {
 	fx := newInstallFixture(t)
 	fx.sandboxMgr.files = map[string][]byte{
-		path.Join(installSkillDir, ".weknora/install-report.json"): []byte(
+		path.Join(installSkillDir, ".aikb/install-report.json"): []byte(
 			`{"commands":["bsk"],"blockers":["The browser extension cannot reach the remote sandbox daemon."]}`,
 		),
 	}
@@ -111,7 +111,7 @@ func TestRuntimeReportPromptsDoNotPrescribeSkillSpecificValues(t *testing.T) {
 	}
 	for name, prompt := range prompts {
 		t.Run(name, func(t *testing.T) {
-			for _, field := range []string{".weknora/install-report.json", "commands:", "blockers:"} {
+			for _, field := range []string{".aikb/install-report.json", "commands:", "blockers:"} {
 				require.Contains(t, prompt, field)
 			}
 			for _, leakedExample := range []string{

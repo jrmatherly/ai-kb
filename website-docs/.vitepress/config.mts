@@ -101,7 +101,7 @@ export default withMermaid(
 
       nav: [],
 
-      weknoraVersion: repoVersionLabel,
+      aikbVersion: repoVersionLabel,
 
       sidebar,
 

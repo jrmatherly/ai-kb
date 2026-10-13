@@ -11,7 +11,7 @@ let transport: { requests: Array<{ url: string; options: { body: string } }> }
 const originalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
 before(async () => {
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
-    getItem: (key: string) => key === 'weknora_token' ? 'test-token' : null,
+    getItem: (key: string) => key === 'aikb_token' ? 'test-token' : null,
   } })
   const mocks: Record<string, string> = {
     '@microsoft/fetch-event-source': `export const requests = []; export async function fetchEventSource(url, options) { requests.push({url, options}); }`,

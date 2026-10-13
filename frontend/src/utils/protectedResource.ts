@@ -4,7 +4,7 @@ export interface LoadedProtectedFile {
   fileName: string;
 }
 
-export const RESOURCE_PREVIEW_EVENT = 'weknora:resource-preview';
+export const RESOURCE_PREVIEW_EVENT = 'aikb:resource-preview';
 
 export function responseFileName(disposition: string | null, source: string): string {
   const encoded = disposition?.match(/filename\*=UTF-8''([^;]+)/i)?.[1];

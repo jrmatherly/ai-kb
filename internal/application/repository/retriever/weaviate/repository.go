@@ -25,7 +25,7 @@ import (
 
 const (
 	envWeaviateCollection = "WEAVIATE_COLLECTION"
-	defaultCollectionName = "Weknora_embeddings"
+	defaultCollectionName = "Aikb_embeddings"
 	fieldContent          = "content"
 	fieldSourceID         = "source_id"
 	fieldSourceType       = "source_type"

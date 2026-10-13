@@ -38,7 +38,7 @@ func (f *fakeListSvc) ListKnowledgeWithFilter(_ context.Context, kbID string, pa
 }
 
 // chdirIsolated parks cwd in a fresh tempdir so Factory.ResolveKB doesn't pick
-// up a stray .weknora/project.yaml from the repo. Also clears AIKB_KB_ID
+// up a stray .aikb/project.yaml from the repo. Also clears AIKB_KB_ID
 // for the duration of the test.
 func chdirIsolated(t *testing.T) {
 	t.Helper()

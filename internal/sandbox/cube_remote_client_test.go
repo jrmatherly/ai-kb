@@ -67,15 +67,15 @@ func TestCubeRemoteClientCreateSnapshot(t *testing.T) {
 	handle, err := client.Create(ctx, RemoteCreateRequest{TemplateID: "template-a"})
 	require.NoError(t, err)
 
-	ref, err := client.CreateSnapshot(ctx, handle.ID(), "weknora-sk-cfg1-g1")
+	ref, err := client.CreateSnapshot(ctx, handle.ID(), "ai-kb-sk-cfg1-g1")
 
 	require.NoError(t, err)
 	require.Equal(t, "snap-1", ref.ID)
-	require.Equal(t, []string{"weknora-sk-cfg1-g1"}, ref.Names)
+	require.Equal(t, []string{"ai-kb-sk-cfg1-g1"}, ref.Names)
 	mock.mu.Lock()
 	body := mock.snapshotCreateBody
 	mock.mu.Unlock()
-	require.Equal(t, "weknora-sk-cfg1-g1", body["name"])
+	require.Equal(t, "ai-kb-sk-cfg1-g1", body["name"])
 }
 
 func TestCubeRemoteClientCreateSnapshotRejectsEmptySandboxID(t *testing.T) {
@@ -137,9 +137,9 @@ func TestCubeRemoteClientListSnapshotsPagesAllResults(t *testing.T) {
 	require.NoError(t, err)
 	second, err := client.Create(ctx, RemoteCreateRequest{TemplateID: "template-a"})
 	require.NoError(t, err)
-	firstRef, err := client.CreateSnapshot(ctx, first.ID(), "weknora-sk-cfg1-g1")
+	firstRef, err := client.CreateSnapshot(ctx, first.ID(), "ai-kb-sk-cfg1-g1")
 	require.NoError(t, err)
-	secondRef, err := client.CreateSnapshot(ctx, first.ID(), "weknora-sk-cfg2-g1")
+	secondRef, err := client.CreateSnapshot(ctx, first.ID(), "ai-kb-sk-cfg2-g1")
 	require.NoError(t, err)
 	_, err = client.CreateSnapshot(ctx, second.ID(), "other")
 	require.NoError(t, err)

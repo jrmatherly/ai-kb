@@ -134,16 +134,16 @@ var cobraFlagErrorPrefixes = []string{
 func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	v, commit, date := build.Info()
 	cmd := &cobra.Command{
-		Use:   "weknora",
+		Use:   "aikb",
 		Short: "AI KB CLI",
 		Long: `Command-line client for the AI KB RAG server. Manage knowledge bases
 and documents, run hybrid search, chat with grounded answers, or expose
 a curated read-only MCP tool surface for AI agents.`,
-		Example: `  weknora profile add prod --host=https://kb.example.com --use
-  weknora auth login
-  weknora kb list
-  weknora chat "summarise the design doc"
-  weknora doctor --format json`,
+		Example: `  aikb profile add prod --host=https://kb.example.com --use
+  aikb auth login
+  aikb kb list
+  aikb chat "summarise the design doc"
+  aikb doctor --format json`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		// Version makes cobra auto-register a `--version` global flag that
@@ -185,8 +185,8 @@ a curated read-only MCP tool surface for AI agents.`,
 			return f.ApplyLogLevel(c, iostreams.IO.Err)
 		},
 	}
-	// Match `weknora version` line format so both forms output the same.
-	cmd.SetVersionTemplate("weknora {{.Version}}\n")
+	// Match `aikb version` line format so both forms output the same.
+	cmd.SetVersionTemplate("aikb {{.Version}}\n")
 	addGlobalFlags(cmd)
 	// Wrap cobra's flag-parsing errors as FlagError so cmdutil.ExitCode maps
 	// them to exit 2. "unknown command" errors are detected by message prefix
@@ -234,7 +234,7 @@ func addGlobalFlags(cmd *cobra.Command) {
 	// --log-level applies uniformly to all SDK calls.
 	cmdutil.AddLogLevelFlag(cmd)
 	// --format and --jq are persistent globals so unknown-subcommand paths
-	// (e.g. `weknora fooo --format json`) reach the typed-envelope guard
+	// (e.g. `aikb fooo --format json`) reach the typed-envelope guard
 	// instead of being rejected as "unknown flag" exit 2 by cobra. Commands
 	// that don't produce JSON output (e.g. `completion bash`) ignore the flag
 	// rather than error — the unified agent contract is worth the trade.
@@ -267,14 +267,14 @@ func newVersionCmd(f *cmdutil.Factory) *cobra.Command {
 					"date":    date,
 				}, nil)
 			}
-			fmt.Fprintf(c.OutOrStdout(), "weknora %s (commit %s, built %s)\n", v, commit, date)
+			fmt.Fprintf(c.OutOrStdout(), "aikb %s (commit %s, built %s)\n", v, commit, date)
 			return nil
 		},
 	}
 	cmdutil.AddFormatFlag(cmd, versionFields...)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor:  "show CLI build metadata (version, commit, build date)",
-		Examples: []string{"weknora version --format json"},
+		Examples: []string{"aikb version --format json"},
 		Output:   "envelope.data is {version, commit, date}",
 	})
 	return cmd
@@ -282,7 +282,7 @@ func newVersionCmd(f *cmdutil.Factory) *cobra.Command {
 
 // installUnknownSubcommandGuard recursively attaches a RunE that emits a typed
 // envelope error when a parent command is invoked with no matching subcommand
-// (e.g. `weknora kb bogus`). Without this, cobra falls back to a free-form
+// (e.g. `aikb kb bogus`). Without this, cobra falls back to a free-form
 // "unknown command" string error via legacyArgs validation.
 //
 // cobra's legacyArgs (args.go) fires at Find() time when Args == nil:
@@ -300,7 +300,7 @@ func installUnknownSubcommandGuard(cmd *cobra.Command) {
 }
 
 func unknownSubcommandRunE(cmd *cobra.Command, args []string) error {
-	// Group command invoked with no subcommand (e.g. `weknora kb`):
+	// Group command invoked with no subcommand (e.g. `aikb kb`):
 	// show help rather than emit a confusing `unknown ""` error.
 	if len(args) == 0 {
 		return cmd.Help()

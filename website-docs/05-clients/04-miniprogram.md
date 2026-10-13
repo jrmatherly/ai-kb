@@ -7,7 +7,7 @@ The WeChat Mini Program is a mobile entry point to an existing AI KB server for 
 
 ## Backend address and authentication
 
-Before the mini program can call the server, you give it the server address and an API key. **No backend address is hardcoded.** All connection details are entered on the Settings page and stored with `wx.setStorageSync` under the local storage key `weknora_settings`. The stored object has four fields:
+Before the mini program can call the server, you give it the server address and an API key. **No backend address is hardcoded.** All connection details are entered on the Settings page and stored with `wx.setStorageSync` under the local storage key `aikb_settings`. The stored object has four fields:
 
 ```js
 {
@@ -50,7 +50,7 @@ This section takes you from the source directory to a published mini program. Th
 
 1. **Import the project**: in WeChat DevTools choose "Import Project" and point it at the repository's `miniprogram/` directory. DevTools reads `project.config.json` (project name "AI KB Mini Program").
 2. **Configure the AppID**: copy `miniprogram/project.private.config.json.example` to `project.private.config.json` and replace `appid` with your mini program's AppID. `project.private.config.json` is personal configuration, is ignored by `.gitignore` and should not be committed.
-3. **Configure the backend connection**: run the mini program, open the Settings tab, enter the API Base URL (for example `https://weknora.example.com`) and the AI KB API key (from Settings → Publish & Integrations → API Integration), then save.
+3. **Configure the backend connection**: run the mini program, open the Settings tab, enter the API Base URL (for example `https://ai-kb.example.com`) and the AI KB API key (from Settings → Publish & Integrations → API Integration), then save.
 4. **Local debugging**: `project.config.json` sets `urlCheck: true`, so DevTools blocks requests to domains that are not on the allowlist, such as `localhost`. For local testing, tick "Do not verify valid domain names" in DevTools, or expose the AI KB server on an HTTPS development domain.
 5. **Release**: before release, add the AI KB API domain (it must be HTTPS) to the request domain allowlist in the mini program admin console on the WeChat Official Accounts Platform. Then click "Upload" in DevTools to submit the code, and submit it for review and release in the admin console.
 
@@ -80,7 +80,7 @@ The client is a **native WeChat Mini Program**. It uses no cross-platform framew
 - `miniprogram/app.js`: the standard `App({...})` entry point; `onLaunch` writes default settings to local storage.
 - `miniprogram/app.json`: the standard global mini program configuration (`pages`, `window`, `tabBar`).
 - `miniprogram/app.wxss`: global styles. Each page is a set of four files: `js`, `wxml`, `wxss` and `json`.
-- `miniprogram/package.json`: package name `weknora-miniprogram` (version `0.1.0`), `description` "WeChat Mini Program plugin for AI KB", **no `dependencies`**, and a single test script (see "Tests" above).
+- `miniprogram/package.json`: package name `ai-kb-miniprogram` (version `0.1.0`), `description` "WeChat Mini Program plugin for AI KB", **no `dependencies`**, and a single test script (see "Tests" above).
 - `miniprogram/project.config.json`: `compileType: "miniprogram"`, `libVersion: "latest"` (the latest base library). Compile options enable `es6`, `enhance`, `postcss`, `minified`, `minifyWXSS` and `minifyWXML`, and `urlCheck: true` (domain allowlist check) is on. The file currently carries an `appid` field; your own AppID comes from the private config file (see "Build and release").
 
 Global window style: navigation bar title `AI KB`, background `#0d3b2a` (dark green), white text.
@@ -93,13 +93,13 @@ Global window style: navigation bar title `AI KB`, background `#0d3b2a` (dark gr
 | --- | --- | --- |
 | `pages/index/index` | Knowledge | Home page. Checks whether baseUrl and API key are configured; if not, it shows a prompt with a button to the Settings page. Calls `GET /api/v1/knowledge-bases` to load the knowledge base list. You pick a knowledge base with the `picker` or by tapping the list, and the choice is saved to local storage. After you enter a web page URL it calls `POST /api/v1/knowledge-bases/{id}/knowledge/url` to import that URL into the selected knowledge base (`enable_multimodel` is always `false`) |
 | `pages/chat/chat` | Chat | Knowledge Q&A page. The first question lazily creates a session with `POST /api/v1/sessions`, then asks through `POST /api/v1/knowledge-chat/{sessionId}` with the selected knowledge base in `knowledge_base_ids`. The client also sends `knowledge_base_id` when creating the session, but the server's session request has no such field and ignores it. The response body is SSE text; the client parses it with `utils/sse.js`, joins the fragments where `response_type === "answer"` and shows the result in one piece (if parsing yields nothing it shows the raw response) |
-| `pages/settings/settings` | Settings | Connection settings. Enter the API Base URL and API key (a password field) and save to the local storage key `weknora_settings` |
+| `pages/settings/settings` | Settings | Connection settings. Enter the API Base URL and API key (a password field) and save to the local storage key `aikb_settings` |
 
 ### utils/ modules
 
 | File | Responsibility |
 | --- | --- |
-| `miniprogram/utils/config.js` | Settings persistence. Defines the storage key `STORAGE_KEY = "weknora_settings"` and provides `getSettings()`, `saveSettings()` (a merging update), `normalizeBaseUrl()` (trims and removes trailing slashes) and `normalizeLocale()` |
+| `miniprogram/utils/config.js` | Settings persistence. Defines the storage key `STORAGE_KEY = "aikb_settings"` and provides `getSettings()`, `saveSettings()` (a merging update), `normalizeBaseUrl()` (trims and removes trailing slashes) and `normalizeLocale()` |
 | `miniprogram/utils/i18n.js` | The UI string table with `t()`, `getLocale()` / `setLocale()`, `applyTabBar()` (updates the bottom tab labels and icons) and `applyNavTitle()` (updates the navigation bar title) |
 | `miniprogram/utils/request.js` | A Promise wrapper around `wx.request`: joins `baseUrl + path`, injects the `X-API-Key` and `X-Request-ID` headers, treats any 2xx as success and extracts error messages (`error.message` first, then `message`, falling back to `HTTP <status>`). It exports the 4 API functions in the table above |
 | `miniprogram/utils/sse.js` | Server-Sent Events text parser. `parseSSE(raw)` splits events on blank lines and parses the `event:` and `data:` lines. `collectAnswerFromSSE(raw)` parses each event's `data` as JSON and concatenates the `content` of events where `response_type === "answer"` into the final answer. The mini program **does not stream**: it waits for `wx.request` to return the full SSE text, then parses and shows it at once |
@@ -108,7 +108,7 @@ Global window style: navigation bar title `AI KB`, background `#0d3b2a` (dark gr
 
 ```mermaid
 flowchart LR
-    S["Settings page<br/>(baseUrl + API key + locale)"] -->|"wx.setStorageSync(weknora_settings)"| C["utils/config.js"]
+    S["Settings page<br/>(baseUrl + API key + locale)"] -->|"wx.setStorageSync(aikb_settings)"| C["utils/config.js"]
     K["Knowledge page<br/>(pages/index)"] -->|"listKnowledgeBases / createKnowledgeFromURL"| R["utils/request.js<br/>(X-API-Key header)"]
     Q["Chat page<br/>(pages/chat)"] -->|"createSession / knowledgeChat"| R
     R -->|"wx.request"| B["AI KB backend<br/>/api/v1/*"]

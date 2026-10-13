@@ -4,7 +4,7 @@ import test from 'node:test'
 import { pairingPageOrigin, preferredDesktopAPIBase } from './browserPairingOrigin.ts'
 
 test('pairingPageOrigin keeps an http or https page', () => {
-  assert.equal(pairingPageOrigin('https://weknora.example'), 'https://weknora.example')
+  assert.equal(pairingPageOrigin('https://ai-kb.example'), 'https://ai-kb.example')
   assert.equal(pairingPageOrigin('http://127.0.0.1:8080'), 'http://127.0.0.1:8080')
 })
 

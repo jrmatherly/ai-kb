@@ -481,7 +481,7 @@ var browserInputSchema = sync.OnceValues(func() (*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
 	compiler.DefaultDraft(jsonschema.Draft2020)
 	compiler.UseLoader(nil)
-	const schemaURL = "urn:weknora:local-browser:input"
+	const schemaURL = "urn:aikb:local-browser:input"
 	if err := compiler.AddResource(schemaURL, doc); err != nil {
 		return nil, err
 	}

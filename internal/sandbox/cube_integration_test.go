@@ -263,8 +263,8 @@ func TestIntegrationCubeClient_LifecycleRoundTrip(t *testing.T) {
 	})
 
 	// Write a file inside the sandbox.
-	path := "/tmp/weknora-integration.txt"
-	payload := []byte("hello from weknora integration\n")
+	path := "/tmp/ai-kb-integration.txt"
+	payload := []byte("hello from aikb integration\n")
 	if err := client.WriteFile(ctx, handle, path, payload); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
@@ -291,7 +291,7 @@ func TestIntegrationCubeClient_LifecycleRoundTrip(t *testing.T) {
 	if result.ExitCode != 0 {
 		t.Fatalf("Exec exit code: %d stderr=%q", result.ExitCode, result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "hello from weknora integration") {
+	if !strings.Contains(result.Stdout, "hello from aikb integration") {
 		t.Fatalf("stdout missing marker: %q", result.Stdout)
 	}
 
@@ -342,7 +342,7 @@ func TestIntegrationCubeClient_FilesystemOps(t *testing.T) {
 		_ = client.Delete(cleanupCtx, handle.ID())
 	})
 
-	base := "/tmp/weknora-fs"
+	base := "/tmp/ai-kb-fs"
 	if err := client.MakeDir(ctx, handle, base); err != nil {
 		t.Fatalf("MakeDir %s: %v", base, err)
 	}
@@ -422,7 +422,7 @@ func TestIntegrationCubeClient_FilesystemOps(t *testing.T) {
 // sandboxes present per Execute.
 func TestIntegrationRemoteSandbox_EphemeralExecute(t *testing.T) {
 	mgr := newIntegrationManager(t)
-	script := writeIntegrationScript(t, "hello.py", "print('weknora-integration-hi')\n")
+	script := writeIntegrationScript(t, "hello.py", "print('ai-kb-integration-hi')\n")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
@@ -437,7 +437,7 @@ func TestIntegrationRemoteSandbox_EphemeralExecute(t *testing.T) {
 	if result.ExitCode != 0 {
 		t.Fatalf("exit code %d stderr=%q err=%q", result.ExitCode, result.Stderr, result.Error)
 	}
-	if !strings.Contains(result.Stdout, "weknora-integration-hi") {
+	if !strings.Contains(result.Stdout, "ai-kb-integration-hi") {
 		t.Fatalf("stdout missing expected marker: %q", result.Stdout)
 	}
 }
@@ -454,13 +454,13 @@ func TestIntegrationSessionBoundManager_StatePersistsAcrossExecutes(t *testing.T
 	ctx := integrationTenantContext(baseCtx)
 
 	first := writeIntegrationScript(t, "write.py", strings.Join([]string{
-		"with open('/tmp/weknora-session-marker', 'w') as f:",
+		"with open('/tmp/ai-kb-session-marker', 'w') as f:",
 		"    f.write('session-state-ok')",
 		"print('wrote marker')",
 		"",
 	}, "\n"))
 	second := writeIntegrationScript(t, "read.py", strings.Join([]string{
-		"with open('/tmp/weknora-session-marker') as f:",
+		"with open('/tmp/ai-kb-session-marker') as f:",
 		"    print('marker=' + f.read())",
 		"",
 	}, "\n"))
@@ -489,7 +489,7 @@ func TestIntegrationSessionBoundManager_StatePersistsAcrossExecutes(t *testing.T
 	// regression that collapses all sessions onto the same VM slip by.
 	miss := writeIntegrationScript(t, "miss.py", strings.Join([]string{
 		"import os",
-		"print('exists=' + str(os.path.exists('/tmp/weknora-session-marker')))",
+		"print('exists=' + str(os.path.exists('/tmp/ai-kb-session-marker')))",
 		"",
 	}, "\n"))
 	r3, err := mgr.Execute(ctx, &ExecuteConfig{

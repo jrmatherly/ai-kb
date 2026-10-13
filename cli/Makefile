@@ -1,14 +1,14 @@
 # Makefile for the AI KB CLI (cli/ Go module).
 #
 # Usage:
-#   make build         compile to ./bin/weknora with version metadata
+#   make build         compile to ./bin/aikb with version metadata
 #   make test          go test ./...
 #   make test-coverage same with coverage report
 #   make lint          go vet (golangci-lint planned)
 #   make tidy          go mod tidy
 #   make clean         remove ./bin
 
-BINARY      := weknora
+BINARY      := aikb
 BUILD_DIR   := bin
 PKG         := github.com/jrmatherly/ai-kb/cli
 

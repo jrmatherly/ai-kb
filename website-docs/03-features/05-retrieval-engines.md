@@ -42,10 +42,10 @@ This section lists the environment variables that select and connect the engines
 | `MULTI_STORE_RETRIEVE_TIMEOUT_SEC` | 30 | Per-group timeout for parallel multi-store retrieval |
 | `ELASTICSEARCH_ADDR` / `_USERNAME` / `_PASSWORD` / `_INDEX` | - / `xwrag_default` | Shared by ES v7 and v8 |
 | `OPENSEARCH_ADDR` / `_USERNAME` / `_PASSWORD` / `_INDEX` / `_INSECURE_SKIP_VERIFY` | - | OpenSearch |
-| `QDRANT_HOST` / `_PORT` / `_COLLECTION` / `_API_KEY` / `_USE_TLS` | `localhost` / 6334 / `weknora_embeddings` | Qdrant (gRPC port) |
-| `MILVUS_ADDRESS` / `_COLLECTION` / `_METRIC_TYPE` / `_USERNAME` / `_PASSWORD` / `_DB_NAME` | `localhost:19530` / `weknora_embeddings` / `IP` | Changing the metric requires rebuilding the collection |
+| `QDRANT_HOST` / `_PORT` / `_COLLECTION` / `_API_KEY` / `_USE_TLS` | `localhost` / 6334 / `aikb_embeddings` | Qdrant (gRPC port) |
+| `MILVUS_ADDRESS` / `_COLLECTION` / `_METRIC_TYPE` / `_USERNAME` / `_PASSWORD` / `_DB_NAME` | `localhost:19530` / `aikb_embeddings` / `IP` | Changing the metric requires rebuilding the collection |
 | `WEAVIATE_HOST` / `_GRPC_ADDRESS` / `_SCHEME` / `_AUTH_ENABLED` / `_API_KEY` / `_COLLECTION` | `weaviate:8080` / `weaviate:50051` / `http` | Use the service name inside containers |
-| `DORIS_ADDR` / `_HTTP_PORT` / `_DATABASE` / `_USERNAME` / `_PASSWORD` / `_TABLE_PREFIX` / `_COMPAT_MODE` | `doris-fe:9030` / 8030 / `weknora` / `root` / - / `weknora_embeddings` / `auto` | Doris 4.1+; compat modes are not interchangeable once tables exist |
+| `DORIS_ADDR` / `_HTTP_PORT` / `_DATABASE` / `_USERNAME` / `_PASSWORD` / `_TABLE_PREFIX` / `_COMPAT_MODE` | `doris-fe:9030` / 8030 / `aikb` / `root` / - / `aikb_embeddings` / `auto` | Doris 4.1+; compat modes are not interchangeable once tables exist |
 | `TENCENT_VECTORDB_ADDR` / `_USERNAME` / `_API_KEY` / `_DATABASE` / `_COLLECTION` | - | Registration is skipped when any of the three core values is missing |
 | `NEO4J_ENABLE` / `NEO4J_URI` / `_USERNAME` / `_PASSWORD` | `false` / no code default (`.env.example` sample `bolt://neo4j:7687`) | Graph retrieval (independent of the vector engine system) |
 
@@ -165,7 +165,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 `internal/application/repository/retriever/qdrant/repository.go`. gRPC client (default port 6334).
 
-- **Collection management**: **one collection per dimension**, `{QDRANT_COLLECTION|weknora_embeddings}_{dim}`, Distance=Cosine; payload fields (kb_id / knowledge_id / chunk_id / tag_id and others) get keyword indexes, and content gets a **full-text index with the multilingual tokenizer**.
+- **Collection management**: **one collection per dimension**, `{QDRANT_COLLECTION|aikb_embeddings}_{dim}`, Distance=Cosine; payload fields (kb_id / knowledge_id / chunk_id / tag_id and others) get keyword indexes, and content gets a **full-text index with the multilingual tokenizer**.
 - **Vector retrieval**: the `Query` API; the score is the normalized dot product (about cosine, [0, 1] for IR embeddings); the threshold is pushed down as score_threshold.
 - **Keyword retrieval**: `tokenizeQuery` tokenizes locally, then builds a **should (OR) filter** of `MatchText(content, token)` per token and fetches with `Scroll` across the collections of every matching dimension; there is no BM25 score (a hit is returned as is, the score comes from the RRF rank above).
 - **Filters**: `getBaseFilter` uses `MatchKeywords` for exact filtering on KB / knowledge / tag / is_enabled.
@@ -176,7 +176,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 `internal/application/repository/retriever/milvus/repository.go`.
 
-- **Collection management**: one collection per dimension (`{MILVUS_COLLECTION|weknora_embeddings}_{dim}`). The schema has the dense vector `embedding` (HNSW index, M=16, efConstruction=128, metric from `MILVUS_METRIC_TYPE`: IP by default / COSINE / L2) and the sparse vector `content_sparse`, generated from content by the **built-in BM25 function** (`entity.FunctionTypeBM25`) with `AutoIndex(BM25)`. New collections use Milvus multilingual analyzers on `content`: `english` for English, `chinese` for Chinese (built-in Jieba), `default` (ICU) for unknown languages, selected through the `language` field.
+- **Collection management**: one collection per dimension (`{MILVUS_COLLECTION|aikb_embeddings}_{dim}`). The schema has the dense vector `embedding` (HNSW index, M=16, efConstruction=128, metric from `MILVUS_METRIC_TYPE`: IP by default / COSINE / L2) and the sparse vector `content_sparse`, generated from content by the **built-in BM25 function** (`entity.FunctionTypeBM25`) with `AutoIndex(BM25)`. New collections use Milvus multilingual analyzers on `content`: `english` for English, `chinese` for Chinese (built-in Jieba), `default` (ICU) for unknown languages, selected through the `language` field.
 - **Vector retrieval**: `Search` + `WithANNSField(embedding)`. IP / COSINE return cosine similarity directly; L2 returns the squared Euclidean distance, which the driver converts to `1 - d/2`, with the threshold converted to a search radius of `2(1 - threshold)`.
 - **Keyword retrieval**: BM25 sparse vector search on `content_sparse` (native full-text search in Milvus 2.5+); the query passes `analyzer_name` chosen from the language of the question text. It returns the real BM25 score from Milvus; across several dimension collections the results are merged and sorted by score before TopK is cut.
 - **Filters**: `filter.go` builds the boolean expression (kb / knowledge / tag / is_enabled).
@@ -197,7 +197,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 `internal/application/repository/retriever/doris/` (`repository.go` plus `schema.go` and `structs.go`). The MySQL protocol connects to the FE (9030); HTTP (8030) is used for Stream Load (SSRF-safe client).
 
-- **Table creation**: one table per dimension (prefix `DORIS_TABLE_PREFIX|weknora_embeddings`); `schema.go` generates the DDL: ANN index HNSW + `inner_product` (vectors are normalized before writes and queries, which equals cosine); the content column gets an **inverted index with the chinese parser** (no application-side tokenization). After the DDL, the driver polls until the ANN index is ready.
+- **Table creation**: one table per dimension (prefix `DORIS_TABLE_PREFIX|aikb_embeddings`); `schema.go` generates the DDL: ANN index HNSW + `inner_product` (vectors are normalized before writes and queries, which equals cosine); the content column gets an **inverted index with the chinese parser** (no application-side tokenization). After the DDL, the driver polls until the ANN index is ready.
 - **Compat mode** `DORIS_COMPAT_MODE`: `auto` (probe) / `inner_product_duplicate` (DUPLICATE KEY table + `inner_product_approximate`) / `legacy` (`1 - cosine_distance_approximate`); not interchangeable once tables exist.
 - **Vector retrieval**: `inner_product_approximate(embedding, query)` (cosine after normalization) or the legacy formula, SQL LIMIT TopK.
 - **Keyword retrieval**: `content MATCH_ANY ?` through the inverted index.
@@ -208,7 +208,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 `internal/application/repository/retriever/tencentvectordb/repository.go`. RpcClient, EventualConsistency, 10s timeout.
 
-- **Collection management**: one collection per dimension (`{TENCENT_VECTORDB_COLLECTION|weknora_embeddings}_{dim}`), with three indexes: dense vector HNSW+COSINE (M=16, efConstruction=200), **sparse vector SPARSE_INVERTED+IP** (server-side BM25), and scalar FILTER indexes (id primary key plus the content / source / chunk / knowledge / kb / tag filter fields).
+- **Collection management**: one collection per dimension (`{TENCENT_VECTORDB_COLLECTION|aikb_embeddings}_{dim}`), with three indexes: dense vector HNSW+COSINE (M=16, efConstruction=200), **sparse vector SPARSE_INVERTED+IP** (server-side BM25), and scalar FILTER indexes (id primary key plus the content / source / chunk / knowledge / kb / tag filter fields).
 - **Vector retrieval**: Search with COSINE; the SDK range is [-1, 1] (in practice [0, 1] for IR embeddings).
 - **Keyword retrieval**: the local `encoder.SparseEncoder` (BM25) encodes the query as a sparse vector for a sparse search on the `sparse_vector` field across every collection of the matching dimensions.
 - Configuration: `TENCENT_VECTORDB_ADDR` / `TENCENT_VECTORDB_USERNAME` / `TENCENT_VECTORDB_API_KEY` / `TENCENT_VECTORDB_DATABASE` / `TENCENT_VECTORDB_COLLECTION`. Registration is skipped when any of the three core values is missing.

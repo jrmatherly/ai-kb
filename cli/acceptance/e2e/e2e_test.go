@@ -174,7 +174,7 @@ func envOr(key, fallback string) string {
 func buildBinary(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	out := filepath.Join(dir, "weknora")
+	out := filepath.Join(dir, "aikb")
 	// Repo layout: this test sits at cli/acceptance/e2e/, so cli/ is two levels up.
 	cmd := exec.Command("go", "build", "-o", out, ".")
 	cmd.Dir = filepath.Join("..", "..")

@@ -7,12 +7,12 @@ import (
 
 const (
 	// StandardTemplateName is the provider-side name of the CLI template.
-	StandardTemplateName = "weknora"
+	StandardTemplateName = "aikb"
 
 	// DesktopTemplateName is the provider-side name of the desktop template.
 	// It is a sibling of StandardTemplateName, not a replacement: a config
 	// uses one or the other, decided by Config.DesktopEnabled.
-	DesktopTemplateName = "weknora-desktop"
+	DesktopTemplateName = "ai-kb-desktop"
 )
 
 // DefaultE2BTemplateTag is the tag E2B resolves when a sandbox is created from a
@@ -101,11 +101,11 @@ func isTemplateName(name, want string) bool {
 	return len(parts) > 1 && strings.EqualFold(parts[len(parts)-1], want)
 }
 
-// classifyWeKnoraTemplate decides whether a catalog entry is our CLI template,
+// classifyAIKBTemplate decides whether a catalog entry is our CLI template,
 // our desktop sibling, or neither. Name wins over image: a template aliased
-// weknora-desktop is desktop even if the image repository matches the CLI
+// ai-kb-desktop is desktop even if the image repository matches the CLI
 // image, and a nameless Cube template falls back to the image tag.
-func classifyWeKnoraTemplate(name, image string) (standard, desktop bool) {
+func classifyAIKBTemplate(name, image string) (standard, desktop bool) {
 	if isDesktopTemplate(name) {
 		return false, true
 	}

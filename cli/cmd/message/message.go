@@ -1,4 +1,4 @@
-// Package messagecmd implements `weknora message` — inspect and manage the
+// Package messagecmd implements `aikb message` — inspect and manage the
 // messages inside chat sessions (the multi-turn substrate behind session ask).
 package messagecmd
 
@@ -8,7 +8,7 @@ import (
 	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
-// NewCmd builds the `weknora message` command group.
+// NewCmd builds the `aikb message` command group.
 func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "message",

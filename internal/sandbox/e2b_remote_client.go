@@ -276,9 +276,9 @@ func (c *E2BRemoteClient) ListTemplates(ctx context.Context) ([]RemoteTemplate, 
 		} else if len(item.Aliases) > 0 && strings.TrimSpace(item.Aliases[0]) != "" {
 			name = strings.TrimSpace(item.Aliases[0])
 		}
-		standard, desktop := classifyWeKnoraTemplate(name, "")
+		standard, desktop := classifyAIKBTemplate(name, "")
 		for _, candidate := range append(append([]string(nil), item.Aliases...), item.Names...) {
-			s, d := classifyWeKnoraTemplate(candidate, "")
+			s, d := classifyAIKBTemplate(candidate, "")
 			if d {
 				standard, desktop = false, true
 				break
@@ -521,11 +521,11 @@ func (c *E2BRemoteClient) DeleteSupersededStandardTemplates(ctx context.Context,
 
 // e2bPtyPromptOverrideCmd re-sources the image prompt after E2B's
 // template provisioner appends `PS1='\w $ '` to bashrc. Harmless if the
-// image already sources /etc/weknora/pty-prompt.sh (PROMPT_COMMAND wins
+// image already sources /etc/aikb/pty-prompt.sh (PROMPT_COMMAND wins
 // either way); required when rebuilding from an older image that does not.
-const e2bPtyPromptOverrideCmd = `. /etc/weknora/pty-prompt.sh 2>/dev/null; ` +
-	`for f in /root/.bashrc /home/user/.bashrc /etc/profile.d/zz-weknora-prompt.sh; do ` +
-	`grep -q /etc/weknora/pty-prompt.sh "$f" 2>/dev/null || echo '. /etc/weknora/pty-prompt.sh' >> "$f"; ` +
+const e2bPtyPromptOverrideCmd = `. /etc/aikb/pty-prompt.sh 2>/dev/null; ` +
+	`for f in /root/.bashrc /home/user/.bashrc /etc/profile.d/zz-ai-kb-prompt.sh; do ` +
+	`grep -q /etc/aikb/pty-prompt.sh "$f" 2>/dev/null || echo '. /etc/aikb/pty-prompt.sh' >> "$f"; ` +
 	`done`
 
 func (c *E2BRemoteClient) buildStandardTemplate(ctx context.Context) (*RemoteTemplate, error) {

@@ -453,7 +453,7 @@ let movePollTimer: ReturnType<typeof setInterval> | null = null;
 
 // View mode (grid / list) — persisted per browser
 type DocViewMode = 'grid' | 'list';
-const VIEW_MODE_KEY = 'weknora.kb.docs.viewMode';
+const VIEW_MODE_KEY = 'aikb.kb.docs.viewMode';
 const initViewMode = (): DocViewMode => {
   try {
     return localStorage.getItem(VIEW_MODE_KEY) === 'grid' ? 'grid' : 'list';
@@ -762,7 +762,7 @@ const activeDocumentSortLabel = computed(() => {
 
 // ── Folder tree (documents uploaded as a folder keep their relative path) ──
 // The directory sidebar is now the sole folder navigation and starts expanded.
-const FOLDER_TREE_COLLAPSED_KEY = 'weknora.kbDirectorySidebarCollapsed';
+const FOLDER_TREE_COLLAPSED_KEY = 'aikb.kbDirectorySidebarCollapsed';
 const readStoredFlag = (key: string, fallback = false) => {
   try {
     const raw = localStorage.getItem(key);
@@ -1328,15 +1328,15 @@ onMounted(() => {
 
   window.addEventListener('knowledgeFileUploaded', handleFileUploaded as EventListener);
   window.addEventListener('openURLImportDialog', handleOpenURLImportDialog as EventListener);
-  window.addEventListener('weknora:knowledge-file-drop', handleKnowledgeFileDrop as EventListener);
-  window.addEventListener('weknora:open-knowledge', handleOpenKnowledgeEvent as EventListener);
+  window.addEventListener('aikb:knowledge-file-drop', handleKnowledgeFileDrop as EventListener);
+  window.addEventListener('aikb:open-knowledge', handleOpenKnowledgeEvent as EventListener);
 });
 
 onUnmounted(() => {
   window.removeEventListener('knowledgeFileUploaded', handleFileUploaded as EventListener);
   window.removeEventListener('openURLImportDialog', handleOpenURLImportDialog as EventListener);
-  window.removeEventListener('weknora:knowledge-file-drop', handleKnowledgeFileDrop as EventListener);
-  window.removeEventListener('weknora:open-knowledge', handleOpenKnowledgeEvent as EventListener);
+  window.removeEventListener('aikb:knowledge-file-drop', handleKnowledgeFileDrop as EventListener);
+  window.removeEventListener('aikb:open-knowledge', handleOpenKnowledgeEvent as EventListener);
   stopMovePoll();
   if (timeout !== null) {
     clearTimeout(timeout);

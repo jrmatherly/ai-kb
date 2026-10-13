@@ -137,7 +137,7 @@ port_open 5900 || \
 #    path that bypasses CubeProxy. Port-guarded for the same reason as 7.
 port_open 6080 || \
   spawn websockify websockify --auth-plugin BasicHTTPAuth \
-             --auth-source "weknora:$(cat /run/desktop/secret)" \
+             --auth-source "aikb:$(cat /run/desktop/secret)" \
              --heartbeat 30 6080 127.0.0.1:5900
 
 # 9. Wait for ready (lock held so waiters queue instead of starting twice).

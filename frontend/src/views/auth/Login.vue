@@ -97,7 +97,7 @@
 
     <!-- Logo - Top Left -->
     <a href="https://github.com/jrmatherly/ai-kb" target="_blank" class="header-logo" :title="$t('common.github')">
-      <img src="@/assets/img/weknora.png" alt="AI KB" class="logo-image" />
+      <img src="@/assets/img/aikb.png" alt="AI KB" class="logo-image" />
     </a>
 
     <!-- Header Links - Top Right -->
@@ -634,7 +634,7 @@ const handleOIDCLogin = async () => {
 
     // 跳转 IdP 会丢失 URL 中的 token，暂存到 sessionStorage，回调后由 App.vue 兑换。
     if (inviteToken.value) {
-      sessionStorage.setItem('weknora_pending_invite_token', inviteToken.value)
+      sessionStorage.setItem('aikb_pending_invite_token', inviteToken.value)
     }
     window.location.href = authorizationURL
   } catch (error: any) {
@@ -808,7 +808,7 @@ onMounted(async () => {
     return
   }
 
-  localStorage.removeItem('weknora_auto_setup_failed')
+  localStorage.removeItem('aikb_auto_setup_failed')
   try {
     const response = await autoSetup()
     if (response.success) {

@@ -15,7 +15,7 @@ func TestDesktopSigningKeyKeepsExistingAESHMAC(t *testing.T) {
 	dir := t.TempDir()
 	aes := "abcdefghijklmnopqrstuvwxyz123456"
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("JWT_SECRET", "weknora-jwt-secret")
+	t.Setenv("JWT_SECRET", "ai-kb-jwt-secret")
 	t.Setenv("SYSTEM_AES_KEY", aes)
 	require.Equal(t, aes, string(utils.SystemHMACKey()))
 	require.NoError(t, ensureDesktopSigningKeyInDir(dir))
@@ -27,7 +27,7 @@ func TestDesktopSigningKeyKeepsExistingAESHMAC(t *testing.T) {
 }
 
 func TestDesktopLocalFilesDir(t *testing.T) {
-	require.Equal(t, filepath.Join("/Users/dev", ".weknora", "data", "files"), desktopLocalFilesDir("/Users/dev"))
+	require.Equal(t, filepath.Join("/Users/dev", ".aikb", "data", "files"), desktopLocalFilesDir("/Users/dev"))
 }
 
 func TestUseDesktopFilesDirReplacesDockerDefault(t *testing.T) {
@@ -37,12 +37,12 @@ func TestUseDesktopFilesDirReplacesDockerDefault(t *testing.T) {
 	require.False(t, useDesktopFilesDir("/Users/dev/custom-files"))
 }
 
-func TestConfigureDesktopFileStorageUsesHomeWeKnora(t *testing.T) {
+func TestConfigureDesktopFileStorageUsesHomeAIKB(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("LOCAL_STORAGE_BASE_DIR", "/data/files")
 	configureDesktopFileStorage("")
-	require.Equal(t, filepath.Join(home, ".weknora", "data", "files"), os.Getenv("LOCAL_STORAGE_BASE_DIR"))
+	require.Equal(t, filepath.Join(home, ".aikb", "data", "files"), os.Getenv("LOCAL_STORAGE_BASE_DIR"))
 	info, err := os.Stat(os.Getenv("LOCAL_STORAGE_BASE_DIR"))
 	require.NoError(t, err)
 	require.True(t, info.IsDir())
@@ -65,7 +65,7 @@ func TestConfigureDesktopFileStorageMigratesFromTheBundleDir(t *testing.T) {
 
 	configureDesktopFileStorage("/Applications/AI KB.app/Contents/MacOS/AI KB")
 
-	require.FileExists(t, filepath.Join(home, ".weknora", "data", "files", "1", "a.txt"))
+	require.FileExists(t, filepath.Join(home, ".aikb", "data", "files", "1", "a.txt"))
 }
 
 func TestEnsureDesktopLiteEditionOverridesDefaultStandard(t *testing.T) {

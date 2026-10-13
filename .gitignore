@@ -35,9 +35,9 @@ cmd/desktop/build/bin/
 /models/
 test/data/mswag.txt
 data/files/
-data/weknora.db
-data/weknora.db-wal
-data/weknora.db-shm
+data/aikb.db
+data/aikb.db-wal
+data/aikb.db-shm
 skills-lock.json
 
 web/
@@ -59,7 +59,7 @@ fix-docker.sh
 miniprogram/project.private.config.json
 
 # Staging dir for the Docker sandbox self-check probe (removed after each run)
-.weknora-sandbox-check-*
+.ai-kb-sandbox-check-*
 
 # Locally built BrowserSkill runtime and extension bundles
 /artifacts/browserskill/

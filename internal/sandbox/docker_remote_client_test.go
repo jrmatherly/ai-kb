@@ -522,7 +522,7 @@ func newTestDockerClient(t *testing.T, engine *fakeDockerEngine) *DockerRemoteCl
 	t.Helper()
 	settings, err := dockerSettingsFromConfig(&Config{
 		Type:        SandboxTypeDocker,
-		DockerImage: "weknora/sandbox:test",
+		DockerImage: "ai-kb/sandbox:test",
 	})
 	require.NoError(t, err)
 	// Idle sweeping is disabled: it would race the assertions with a
@@ -539,11 +539,11 @@ func testHandle(id string) RemoteSandboxHandle {
 
 func TestDockerClientCreateAppliesIsolationAndMetadata(t *testing.T) {
 	engine := newFakeDockerEngine()
-	engine.imagePresent["weknora/sandbox:test"] = true
+	engine.imagePresent["ai-kb/sandbox:test"] = true
 	docker := newTestDockerClient(t, engine)
 
 	handle, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID: "weknora/sandbox:test",
+		TemplateID: "ai-kb/sandbox:test",
 		Metadata:   map[string]string{remoteMetadataSessionID: "sess-1"},
 		EnvVars:    map[string]string{"FOO": "bar"},
 		Timeout:    RemoteTimeoutPolicy{Mode: RemoteTimeoutExplicit, Value: 15 * time.Minute},
@@ -596,22 +596,22 @@ func TestDockerClientCreatePullsMissingImage(t *testing.T) {
 	docker := newTestDockerClient(t, engine)
 
 	_, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID: "weknora/sandbox:test",
+		TemplateID: "ai-kb/sandbox:test",
 	})
 	require.NoError(t, err)
-	require.Equal(t, []string{"weknora/sandbox:test"}, engine.pulled)
+	require.Equal(t, []string{"ai-kb/sandbox:test"}, engine.pulled)
 }
 
 // A container that cannot start is a leak waiting to happen: nothing binds it,
 // so only the much later idle sweep would notice.
 func TestDockerClientCreateRemovesContainerThatCannotStart(t *testing.T) {
 	engine := newFakeDockerEngine()
-	engine.imagePresent["weknora/sandbox:test"] = true
+	engine.imagePresent["ai-kb/sandbox:test"] = true
 	engine.startErr = errors.New("no space left on device")
 	docker := newTestDockerClient(t, engine)
 
 	_, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID: "weknora/sandbox:test",
+		TemplateID: "ai-kb/sandbox:test",
 	})
 	require.Error(t, err)
 	require.Equal(t, []string{"container-1"}, engine.removed)
@@ -622,7 +622,7 @@ func TestDockerClientCreateRemovesContainerThatCannotStart(t *testing.T) {
 // what makes the first attempt succeed.
 func TestDockerClientCreateWaitsUntilTheContainerIsRunning(t *testing.T) {
 	engine := newFakeDockerEngine()
-	engine.imagePresent["weknora/sandbox:test"] = true
+	engine.imagePresent["ai-kb/sandbox:test"] = true
 	engine.startLeavesState = true
 	var inspects int
 	engine.inspectHook = func(id string) (container.InspectResponse, error) {
@@ -639,7 +639,7 @@ func TestDockerClientCreateWaitsUntilTheContainerIsRunning(t *testing.T) {
 	docker := newTestDockerClient(t, engine)
 
 	handle, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID: "weknora/sandbox:test",
+		TemplateID: "ai-kb/sandbox:test",
 	})
 	require.NoError(t, err)
 	require.Equal(t, "container-1", handle.ID())
@@ -650,7 +650,7 @@ func TestDockerClientCreateWaitsUntilTheContainerIsRunning(t *testing.T) {
 // the container has to be removed the same way a failed Start is.
 func TestDockerClientCreateRemovesContainerThatExitsImmediately(t *testing.T) {
 	engine := newFakeDockerEngine()
-	engine.imagePresent["weknora/sandbox:test"] = true
+	engine.imagePresent["ai-kb/sandbox:test"] = true
 	engine.startLeavesState = true
 	engine.inspect["container-1"] = container.InspectResponse{
 		ID:    "container-1",
@@ -659,7 +659,7 @@ func TestDockerClientCreateRemovesContainerThatExitsImmediately(t *testing.T) {
 	docker := newTestDockerClient(t, engine)
 
 	_, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID: "weknora/sandbox:test",
+		TemplateID: "ai-kb/sandbox:test",
 	})
 	require.Error(t, err)
 	require.Equal(t, []string{"container-1"}, engine.removed)
@@ -669,7 +669,7 @@ func TestDockerClientCreateRemovesContainerThatExitsImmediately(t *testing.T) {
 func TestDockerClientCreateRefusesVolumeMounts(t *testing.T) {
 	docker := newTestDockerClient(t, newFakeDockerEngine())
 	_, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID:   "weknora/sandbox:test",
+		TemplateID:   "ai-kb/sandbox:test",
 		VolumeMounts: []RemoteVolumeMount{{Name: "skills", Path: "/skills"}},
 	})
 	require.Error(t, err)
@@ -678,12 +678,12 @@ func TestDockerClientCreateRefusesVolumeMounts(t *testing.T) {
 
 func TestDockerClientCreateNoEgressUsesNoneNetwork(t *testing.T) {
 	engine := newFakeDockerEngine()
-	engine.imagePresent["weknora/sandbox:test"] = true
+	engine.imagePresent["ai-kb/sandbox:test"] = true
 	docker := newTestDockerClient(t, engine)
 
 	denied := false
 	_, err := docker.Create(context.Background(), RemoteCreateRequest{
-		TemplateID: "weknora/sandbox:test",
+		TemplateID: "ai-kb/sandbox:test",
 		Network:    RemoteNetworkPolicy{AllowInternetAccess: &denied},
 	})
 	require.NoError(t, err)
@@ -744,7 +744,7 @@ func TestDockerClientGetNormalizesState(t *testing.T) {
 			StartedAt: "2026-08-12T10:00:00.000000000Z",
 		},
 		Config: &container.Config{
-			Image:  "weknora/sandbox:test",
+			Image:  "ai-kb/sandbox:test",
 			Labels: map[string]string{remoteMetadataSessionID: "sess-1"},
 		},
 	}
@@ -754,7 +754,7 @@ func TestDockerClientGetNormalizesState(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, RemoteStateRunning, summary.State)
 	require.Equal(t, "running", summary.RawState)
-	require.Equal(t, "weknora/sandbox:test", summary.TemplateID)
+	require.Equal(t, "ai-kb/sandbox:test", summary.TemplateID)
 	require.Equal(t, 2026, summary.StartedAt.Year())
 }
 
@@ -825,7 +825,7 @@ func TestDockerClientExecWrapsCommandWithTimeoutAndActivityMarker(t *testing.T) 
 	require.Equal(t, "/bin/sh", opts.Cmd[0])
 	require.Contains(t, opts.Cmd[2], dockerActivityMarker)
 	require.Contains(t, opts.Cmd[2], "timeout -s KILL 45")
-	require.Equal(t, []string{"weknora-exec", "python3", "/workspace/script.py", "--flag"},
+	require.Equal(t, []string{"ai-kb-exec", "python3", "/workspace/script.py", "--flag"},
 		opts.Cmd[3:], "the command must reach the shell as positional args, never interpolated")
 }
 
@@ -892,7 +892,7 @@ func TestDockerClientExecShellPassesCommandAsPositionalArgument(t *testing.T) {
 	})
 	require.NoError(t, err)
 	opts := engine.execOptions[0]
-	require.Equal(t, []string{"weknora-exec", `echo "a b"; rm -rf /nope`}, opts.Cmd[3:])
+	require.Equal(t, []string{"ai-kb-exec", `echo "a b"; rm -rf /nope`}, opts.Cmd[3:])
 	require.Equal(t, DefaultSandboxExecUser, opts.User,
 		"an unnamed account must resolve to the sandbox user, never to root")
 }
@@ -985,7 +985,7 @@ func TestDockerClientWriteFileRunsAsSandboxUserOverExec(t *testing.T) {
 	require.True(t, write.AttachStdin)
 	require.Equal(t, "hello", engine.execStdin.String())
 	require.Equal(t,
-		[]string{"weknora-exec", "sh", "-c", `cat > "$1"`, "weknora-write", "/workspace/input/note.txt"},
+		[]string{"ai-kb-exec", "sh", "-c", `cat > "$1"`, "ai-kb-write", "/workspace/input/note.txt"},
 		write.Cmd[3:],
 		"the destination must reach the shell as a positional arg, never interpolated")
 }
@@ -1003,7 +1003,7 @@ func TestDockerClientReadFileRunsAsSandboxUserOverExec(t *testing.T) {
 	require.Len(t, engine.execOptions, 1)
 	require.Equal(t, DefaultSandboxExecUser, engine.execOptions[0].User)
 	require.Equal(t,
-		[]string{"weknora-exec", "cat", "--", "/workspace/output/report.txt"},
+		[]string{"ai-kb-exec", "cat", "--", "/workspace/output/report.txt"},
 		engine.execOptions[0].Cmd[3:])
 }
 
@@ -1146,7 +1146,7 @@ func TestDockerClientStatMapsEntryType(t *testing.T) {
 	require.Equal(t, RemoteEntryDir, entry.Type)
 	require.Equal(t, int64(4096), entry.Size)
 	require.Equal(t,
-		[]string{"weknora-exec", "find", "/workspace/output", "-maxdepth", "0", "-printf", `%y\t%s\t%T@\t%p\n`},
+		[]string{"ai-kb-exec", "find", "/workspace/output", "-maxdepth", "0", "-printf", `%y\t%s\t%T@\t%p\n`},
 		engine.execOptions[0].Cmd[3:])
 
 	missing := newFakeDockerEngine()
@@ -1207,7 +1207,7 @@ func TestValidateDockerRemoteTLS(t *testing.T) {
 	require.NoError(t, ValidateDockerRemoteTLS("unix:///var/run/docker.sock", ""))
 	require.Error(t, ValidateDockerRemoteTLS("tcp://10.0.0.5:2376", ""),
 		"a remote daemon without TLS is a plaintext root socket")
-	require.NoError(t, ValidateDockerRemoteTLS("tcp://10.0.0.5:2376", "/etc/weknora/docker-certs"))
+	require.NoError(t, ValidateDockerRemoteTLS("tcp://10.0.0.5:2376", "/etc/aikb/docker-certs"))
 }
 
 // File operations run as the sandbox account, so the kernel decides what is
@@ -1259,7 +1259,7 @@ func TestDockerEndpointKeySeparatesOutboundPolicy(t *testing.T) {
 func TestDockerSettingsCarryOutboundPolicy(t *testing.T) {
 	settings, err := dockerSettingsFromConfig(&Config{
 		Type:                  SandboxTypeDocker,
-		DockerImage:           "weknora/sandbox:test",
+		DockerImage:           "ai-kb/sandbox:test",
 		AllowPrivateEndpoints: true,
 	})
 	require.NoError(t, err)
@@ -1275,21 +1275,21 @@ func TestValidateDockerNetworkMode(t *testing.T) {
 	require.Error(t, ValidateDockerNetworkMode("ns:/var/run/netns/foo"))
 	// A named network is usually the deployment's own compose network, which
 	// would put the sandbox alongside Postgres and Redis.
-	require.Error(t, ValidateDockerNetworkMode("weknora_default"))
-	require.Error(t, ValidateDockerNetworkMode("weknora-sandbox"))
+	require.Error(t, ValidateDockerNetworkMode("aikb_default"))
+	require.Error(t, ValidateDockerNetworkMode("ai-kb-sandbox"))
 }
 
 func TestDockerSettingsRejectHostNetworkAndPlaintextTCP(t *testing.T) {
 	_, err := dockerSettingsFromConfig(&Config{
 		Type:              SandboxTypeDocker,
-		DockerImage:       "weknora/sandbox:test",
+		DockerImage:       "ai-kb/sandbox:test",
 		DockerNetworkMode: "host",
 	})
 	require.Error(t, err)
 
 	_, err = dockerSettingsFromConfig(&Config{
 		Type:        SandboxTypeDocker,
-		DockerImage: "weknora/sandbox:test",
+		DockerImage: "ai-kb/sandbox:test",
 		DockerHost:  "tcp://10.0.0.5:2376",
 	})
 	require.Error(t, err)
@@ -1303,12 +1303,12 @@ func TestDockerSettingsRequireImage(t *testing.T) {
 func TestDockerSessionCreateRequestDeletesIdleSandboxes(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.Type = SandboxTypeDocker
-	cfg.DockerImage = "weknora/sandbox:test"
+	cfg.DockerImage = "ai-kb/sandbox:test"
 	applyDockerRuntimeDefaults(cfg)
 
 	request, err := buildSessionCreateRequest(SandboxTypeDocker, cfg)
 	require.NoError(t, err)
-	require.Equal(t, "weknora/sandbox:test", request.TemplateID)
+	require.Equal(t, "ai-kb/sandbox:test", request.TemplateID)
 	require.Equal(t, DefaultDockerIdleTTL, request.Timeout.Value)
 	require.Equal(t, RemoteOnTimeoutKill, request.Timeout.Action,
 		"pausing a container keeps its memory on the host, so it reclaims nothing")

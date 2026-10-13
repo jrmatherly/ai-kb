@@ -459,7 +459,7 @@ scripts/build-anydoc-lib.sh && go build -tags anydoc ./cmd/server
 The Docker image defaults to `WITH_ANYDOC=1`. To skip the Rust toolchain and shorten the build:
 
 ```bash
-docker build -f docker/Dockerfile.app --build-arg WITH_ANYDOC=0 -t weknora-app .
+docker build -f docker/Dockerfile.app --build-arg WITH_ANYDOC=0 -t ai-kb-app .
 # or set WITH_ANYDOC=0 in .env and run docker compose build
 ```
 

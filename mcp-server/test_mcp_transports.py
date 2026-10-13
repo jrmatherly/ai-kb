@@ -14,7 +14,7 @@ MCP_SERVER_DIR = Path(__file__).resolve().parent
 
 class TransportRegressionTest(unittest.TestCase):
     def test_http_transport_is_stateless(self):
-        import weknora_mcp_server as srv
+        import aikb_mcp_server as srv
         from mcp.server import MCPServer
 
         probe = MCPServer("probe")
@@ -24,7 +24,7 @@ class TransportRegressionTest(unittest.TestCase):
         self.assertTrue(probe.session_manager.stateless)
 
     def test_sse_message_path_matches_legacy_mount(self):
-        import weknora_mcp_server as srv
+        import aikb_mcp_server as srv
         from mcp.server import MCPServer
         from starlette.routing import Mount, Route
 
@@ -41,10 +41,10 @@ class TransportRegressionTest(unittest.TestCase):
             {path.rstrip("/") for path in mount_paths},
         )
 
-    def test_weknora_client_session_is_thread_local(self):
-        from weknora_mcp_server import WeKnoraClient
+    def test_aikb_client_session_is_thread_local(self):
+        from aikb_mcp_server import AIKBClient
 
-        client = WeKnoraClient("http://localhost:8080/api/v1", "test-key")
+        client = AIKBClient("http://localhost:8080/api/v1", "test-key")
         barrier = threading.Barrier(2)
         sessions: dict[str, object] = {}
 
@@ -73,7 +73,7 @@ class StdioToolsListTest(unittest.TestCase):
 
             params = StdioServerParameters(
                 command=sys.executable,
-                args=[str(MCP_SERVER_DIR / "weknora_mcp_server.py")],
+                args=[str(MCP_SERVER_DIR / "aikb_mcp_server.py")],
                 env={
                     **os.environ,
                     "AIKB_API_KEY": "test-key",
@@ -102,7 +102,7 @@ class HttpStatelessSmokeTest(unittest.TestCase):
         proc = subprocess.Popen(
             [
                 sys.executable,
-                "weknora_mcp_server.py",
+                "aikb_mcp_server.py",
                 "--transport",
                 "http",
                 "--host",

@@ -152,7 +152,7 @@ func TestRunSearch_NilService(t *testing.T) {
 func TestNewCmdChunks_NoKBUsesResolver(t *testing.T) {
 	iostreams.SetForTest(t)
 	t.Setenv("AIKB_KB_ID", "") // no ambient KB from env
-	t.Chdir(t.TempDir())       // no .weknora project link discoverable
+	t.Chdir(t.TempDir())       // no .aikb project link discoverable
 	cmd := NewCmdChunks(&cmdutil.Factory{
 		// Resolution reaches local.kb_id_required before any client is built,
 		// so this must never be invoked; make it loud if it is.

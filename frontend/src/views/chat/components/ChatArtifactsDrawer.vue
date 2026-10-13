@@ -184,7 +184,7 @@ import { resolveFilePreviewExt } from '@/utils/filePreview'
 import DocumentPreview from '@/components/document-preview.vue'
 
 const LIST_WIDTH = 440
-const PREVIEW_WIDTH_KEY = 'weknora-chat-artifact-preview-width'
+const PREVIEW_WIDTH_KEY = 'ai-kb-chat-artifact-preview-width'
 const PREVIEW_DEFAULT_WIDTH = 760
 const PREVIEW_MIN_WIDTH = 520
 

@@ -4,7 +4,7 @@ import { MessagePlugin } from 'tdesign-vue-next'
 import { getAgentById, updateAgent, type CustomAgent } from '@/api/agent'
 
 const INSTALLER_AGENT_ID = 'builtin-skill-installer'
-const LAST_CHAT_MODEL_KEY = 'weknora_last_chat_model_id'
+const LAST_CHAT_MODEL_KEY = 'aikb_last_chat_model_id'
 
 function readLastChatModelID(): string {
   try {

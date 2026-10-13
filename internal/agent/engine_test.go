@@ -126,7 +126,7 @@ func TestStreamLLMSummarySlugSurvivesDocumentCompaction(t *testing.T) {
 
 	toolMsg := chat.Message{
 		Role:    "tool",
-		Content: `<link>[[` + summarySlug + `|Weknora 试错记录.md - Summary]]</link>`,
+		Content: `<link>[[` + summarySlug + `|AI KB 试错记录.md - Summary]]</link>`,
 	}
 	result, err := engine.streamLLMToEventBus(context.Background(),
 		[]chat.Message{toolMsg}, nil, nil)

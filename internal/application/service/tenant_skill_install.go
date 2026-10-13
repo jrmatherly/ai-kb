@@ -44,7 +44,7 @@ const (
 	// skillSeedArchivePath is the single remote write used to land a skill's
 	// files. Writing each file with MakeDir+WriteFile is two round trips per
 	// entry, which is why a 50-file skill crawled through "seeding 12/56".
-	skillSeedArchivePath = sandbox.SkillsImageRoot + "/.weknora-seed.tar"
+	skillSeedArchivePath = sandbox.SkillsImageRoot + "/.ai-kb-seed.tar"
 
 	// skillInstallVerifyRounds bounds the installer conversation.
 	//
@@ -1825,7 +1825,7 @@ func currentSnapshotID(cfgEntity *types.TenantSandboxConfigEntity) string {
 }
 
 func skillSnapshotNamePrefix(tenantID uint64, configID string) string {
-	return fmt.Sprintf("weknora-sk-t%d-%s", tenantID, compactConfigID(configID))
+	return fmt.Sprintf("ai-kb-sk-t%d-%s", tenantID, compactConfigID(configID))
 }
 
 // nextSnapshotGeneration is one past both the live pointer and every ledger
@@ -1872,9 +1872,9 @@ func compactConfigID(id string) string {
 	return strings.ToLower(strings.ReplaceAll(strings.TrimSpace(id), "-", ""))
 }
 
-// weknoraSkillSnapshotName pulls the weknora-sk-… token out of a provider
+// aikbSkillSnapshotName pulls the ai-kb-sk-… token out of a provider
 // listing. Cube and E2B echo it in Names; Docker embeds it in the image tag.
-func weknoraSkillSnapshotName(raw string) string {
+func aikbSkillSnapshotName(raw string) string {
 	s := strings.TrimSpace(raw)
 	s = strings.TrimPrefix(s, "docker.io/")
 	if i := strings.LastIndex(s, "/"); i >= 0 {
@@ -1883,7 +1883,7 @@ func weknoraSkillSnapshotName(raw string) string {
 	if cut := strings.IndexByte(s, ':'); cut >= 0 {
 		s = s[:cut]
 	}
-	if strings.HasPrefix(s, "weknora-sk-") {
+	if strings.HasPrefix(s, "ai-kb-sk-") {
 		return s
 	}
 	return ""
@@ -1917,17 +1917,17 @@ func snapshotBelongsToOtherConfig(snap sandbox.RemoteSnapshotRef, prefix string)
 	needle := prefix + "-g"
 	sawForeign := false
 	for _, candidate := range append([]string{snap.ID}, snap.Names...) {
-		name := weknoraSkillSnapshotName(candidate)
+		name := aikbSkillSnapshotName(candidate)
 		if name == "" {
 			continue
 		}
 		if strings.HasPrefix(name, needle) {
 			return false
 		}
-		// New-format names are weknora-sk-t<tenant>-<config>-gN. Legacy
-		// weknora-sk-<short>-gN names are left alone so a row written before
+		// New-format names are ai-kb-sk-t<tenant>-<config>-gN. Legacy
+		// ai-kb-sk-<short>-gN names are left alone so a row written before
 		// the prefix existed can still be matched.
-		rest := strings.TrimPrefix(name, "weknora-sk-")
+		rest := strings.TrimPrefix(name, "ai-kb-sk-")
 		if len(rest) > 1 && rest[0] == 't' && rest[1] >= '0' && rest[1] <= '9' {
 			sawForeign = true
 		}

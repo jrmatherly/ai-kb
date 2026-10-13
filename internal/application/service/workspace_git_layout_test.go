@@ -58,7 +58,7 @@ func TestCheckpointInitLeavesGitDirOutsideWorkTree(t *testing.T) {
 	require.Equal(t, "v1", string(body))
 }
 
-func TestCheckpointKeepsAgentGitOnceWeKnoraRepoExists(t *testing.T) {
+func TestCheckpointKeepsAgentGitOnceAIKBRepoExists(t *testing.T) {
 	requireGit(t)
 	workspace, gitDir, env := splitGitDirs(t)
 
@@ -88,7 +88,7 @@ func TestResetPrunesLaterCommitsFromExternalGitDir(t *testing.T) {
 	workspace, gitDir, env := splitGitDirs(t)
 
 	runGitSplit(t, env, workspace, gitDir, "init", "-q")
-	runGitSplit(t, env, workspace, gitDir, "config", "user.email", "agent@weknora.local")
+	runGitSplit(t, env, workspace, gitDir, "config", "user.email", "agent@ai-kb.local")
 	runGitSplit(t, env, workspace, gitDir, "config", "user.name", "AI KB Agent")
 	require.NoError(t, os.WriteFile(filepath.Join(workspace, "keep.txt"), []byte("early"), 0o644))
 	runGitSplit(t, env, workspace, gitDir, "add", "-A")
@@ -125,7 +125,7 @@ func TestEmptyResetWipesWorkTreeAndReinitializesGitDir(t *testing.T) {
 	workspace, gitDir, env := splitGitDirs(t)
 
 	runGitSplit(t, env, workspace, gitDir, "init", "-q")
-	runGitSplit(t, env, workspace, gitDir, "config", "user.email", "agent@weknora.local")
+	runGitSplit(t, env, workspace, gitDir, "config", "user.email", "agent@ai-kb.local")
 	runGitSplit(t, env, workspace, gitDir, "config", "user.name", "AI KB Agent")
 	require.NoError(t, os.WriteFile(filepath.Join(workspace, "keep.txt"), []byte("early"), 0o644))
 	runGitSplit(t, env, workspace, gitDir, "add", "-A")
@@ -233,7 +233,7 @@ func TestAdoptsLegacyWorkTreeCheckpointRepo(t *testing.T) {
 	// The pre-move layout: checkpoints committed into $WORK_TREE/.git under
 	// the checkpointer's identity.
 	runGitAt(t, env, workspace, "init", "-q")
-	runGitAt(t, env, workspace, "config", "user.email", "agent@weknora.local")
+	runGitAt(t, env, workspace, "config", "user.email", "agent@ai-kb.local")
 	runGitAt(t, env, workspace, "config", "user.name", "AI KB Agent")
 	require.NoError(t, os.WriteFile(filepath.Join(workspace, "keep.txt"), []byte("early"), 0o644))
 	runGitAt(t, env, workspace, "add", "-A")
@@ -297,7 +297,7 @@ func TestAdoptionIsOnlyAttemptedWhileTheNewGitDirIsMissing(t *testing.T) {
 	workspace, gitDir, env := splitGitDirs(t)
 
 	runGitAt(t, env, workspace, "init", "-q")
-	runGitAt(t, env, workspace, "config", "user.email", "agent@weknora.local")
+	runGitAt(t, env, workspace, "config", "user.email", "agent@ai-kb.local")
 	runGitAt(t, env, workspace, "config", "user.name", "AI KB Agent")
 	runGitAt(t, env, workspace, "commit", "-q", "--allow-empty", "-m", "turn:msg-0")
 	legacy := strings.TrimSpace(runGitAt(t, env, workspace, "rev-parse", "HEAD"))
@@ -309,7 +309,7 @@ func TestAdoptionIsOnlyAttemptedWhileTheNewGitDirIsMissing(t *testing.T) {
 
 	// The agent now starts its own repository in the work tree.
 	runGitAt(t, env, workspace, "init", "-q")
-	runGitAt(t, env, workspace, "config", "user.email", "agent@weknora.local")
+	runGitAt(t, env, workspace, "config", "user.email", "agent@ai-kb.local")
 	runGitAt(t, env, workspace, "config", "user.name", "AI KB Agent")
 	runGitAt(t, env, workspace, "commit", "-q", "--allow-empty", "-m", "agent")
 	agentHEAD := strings.TrimSpace(runGitAt(t, env, workspace, "rev-parse", "HEAD"))

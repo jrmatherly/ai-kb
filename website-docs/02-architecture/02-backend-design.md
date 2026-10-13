@@ -191,7 +191,7 @@ In the order a request passes through them:
 | Middleware | File | Responsibility and key logic |
 | --- | --- | --- |
 | `MultipartFormCleanup()` | multipart_cleanup.go | After the request ends (including failures and recovered panics), deletes the files multipart forms wrote to the system temp directory, so a container's `/tmp` does not keep growing |
-| `cors.New` (gin-contrib) | router.go | Allows `Authorization`, `X-API-Key`, `X-Tenant-ID`, `X-Embed-Session`, `X-WeKnora-Desktop-Token`, and the headers MCP Streamable HTTP needs (`MCP-Protocol-Version`, `Mcp-Session-Id` and others); MaxAge 12h |
+| `cors.New` (gin-contrib) | router.go | Allows `Authorization`, `X-API-Key`, `X-Tenant-ID`, `X-Embed-Session`, `X-AIKB-Desktop-Token`, and the headers MCP Streamable HTTP needs (`MCP-Protocol-Version`, `Mcp-Session-Id` and others); MaxAge 12h |
 | `RequestID()` | logger.go | Reuses the `X-Request-ID` request header or generates a UUID, stores it in the gin context and `Request.Context()`, and carries it through logs and traces |
 | `Language()` | language.go | Decides the document processing language: the `AIKB_LANGUAGE` environment variable, then the first `Accept-Language` tag, then the default `en-US` |
 | `Logger()` | logger.go | Full request and response logging; regex masking of password and token fields, truncation of base64 image data URLs, SSE responses marked and skipped, 10KB cap per entry |

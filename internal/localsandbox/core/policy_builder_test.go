@@ -345,7 +345,7 @@ func TestRelaxRefusesToGrantAppData(t *testing.T) {
 func skillsBuilder(t *testing.T) (*PolicyBuilder, string) {
 	t.Helper()
 	b, _ := builderFixture(t)
-	root := filepath.Join(b.homeDir, ".weknora", "skills")
+	root := filepath.Join(b.homeDir, ".aikb", "skills")
 	return b.WithSkillsRoot(root), root
 }
 
@@ -390,6 +390,6 @@ func TestBuildInstallRejectsDirOutsideSkillsRoot(t *testing.T) {
 
 func TestBuildInstallRequiresASkillsRoot(t *testing.T) {
 	b, _ := builderFixture(t)
-	_, err := b.BuildInstall(filepath.Join(b.homeDir, ".weknora", "skills", ".versions", "pdf-1"))
+	_, err := b.BuildInstall(filepath.Join(b.homeDir, ".aikb", "skills", ".versions", "pdf-1"))
 	require.ErrorIs(t, err, ErrInstallDirOutsideSkillsRoot)
 }

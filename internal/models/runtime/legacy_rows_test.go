@@ -96,7 +96,7 @@ func legacyRows() []legacyRow {
 			},
 		},
 		{
-			name: "WeKnoraCloud row with app credentials", model: "weknora-chat", typ: types.ModelTypeKnowledgeQA,
+			name: "WeKnoraCloud row with app credentials", model: "ai-kb-chat", typ: types.ModelTypeKnowledgeQA,
 			params: types.ModelParameters{
 				Provider: "weknoracloud", BaseURL: "https://weknora.weixin.qq.com",
 				AppID: "app", AppSecret: "secret",

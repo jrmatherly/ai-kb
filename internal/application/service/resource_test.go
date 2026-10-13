@@ -158,7 +158,7 @@ func TestResourceCatalogListReferencesByOwner(t *testing.T) {
 // insert a capability row; a live one must be reused instead.
 func TestResourceCatalogReusesLiveAccessGrant(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
 	catalog, db := newResourceCatalogForTest(t)
 	ctx := context.Background()
 	ref, err := catalog.Register(ctx, 9, "local://9/exports/a.png", interfaces.ResourceRegistration{})
@@ -182,7 +182,7 @@ func TestResourceCatalogReusesLiveAccessGrant(t *testing.T) {
 // Two resources must never share a grant.
 func TestResourceCatalogGrantsArePerResource(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
 	catalog, _ := newResourceCatalogForTest(t)
 	ctx := context.Background()
 	first, err := catalog.Register(ctx, 9, "local://9/exports/a.png", interfaces.ResourceRegistration{})
@@ -201,7 +201,7 @@ func TestResourceCatalogGrantsArePerResource(t *testing.T) {
 // the same value and a fresh insert would revive the access it just lost.
 func TestResourceCatalogDoesNotReviveRevokedGrant(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
 	catalog, db := newResourceCatalogForTest(t)
 	ctx := context.Background()
 	ref, err := catalog.Register(ctx, 9, "local://9/exports/a.png", interfaces.ResourceRegistration{})

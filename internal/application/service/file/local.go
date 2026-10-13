@@ -36,7 +36,7 @@ func (s *localFileService) CheckConnectivity(ctx context.Context) error {
 }
 
 // NewLocalFileService creates a new local file service instance.
-// externalURL is the externally-reachable base URL (e.g. "https://weknora.example.com");
+// externalURL is the externally-reachable base URL (e.g. "https://ai-kb.example.com");
 // when set, GetFileURL returns presigned HTTP URLs instead of local:// paths.
 func NewLocalFileService(baseDir, externalURL string) interfaces.FileService {
 	return &localFileService{

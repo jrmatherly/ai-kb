@@ -10,7 +10,7 @@ import (
 
 func newTree(t *testing.T) *Tree {
 	t.Helper()
-	tree, err := New(filepath.Join(t.TempDir(), ".weknora", "skills"))
+	tree, err := New(filepath.Join(t.TempDir(), ".aikb", "skills"))
 	require.NoError(t, err)
 	return tree
 }

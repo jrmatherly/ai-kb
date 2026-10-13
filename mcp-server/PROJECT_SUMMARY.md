@@ -10,7 +10,7 @@
 ai-kb/mcp-server/
 ├── 📦 核心文件
 │   ├── __init__.py              # 包初始化文件
-│   ├── weknora_mcp_server.py   # MCP 服务器核心实现
+│   ├── aikb_mcp_server.py   # MCP 服务器核心实现
 │   └── requirements.txt        # 项目依赖
 │
 ├── 🚀 启动脚本 (多种方式)
@@ -63,25 +63,25 @@ python run.py
 
 ### 4. 直接运行服务器
 ```bash
-python weknora_mcp_server.py
+python aikb_mcp_server.py
 ```
 
 ### 5. 作为模块运行
 ```bash
-python -m weknora_mcp_server
+python -m aikb_mcp_server
 ```
 
 ### 6. 安装后命令行工具
 ```bash
 pip install -e .                  # 开发模式安装
-weknora-mcp-server               # 主命令
-weknora-server                   # 别名命令
+ai-kb-mcp-server               # 主命令
+ai-kb-server                   # 别名命令
 ```
 
 ### 7. 生产环境安装
 ```bash
 pip install .                    # 生产安装
-weknora-mcp-server              # 全局命令
+ai-kb-mcp-server              # 全局命令
 ```
 
 ## 🔧 环境配置
@@ -140,13 +140,13 @@ python main.py
 ### 开发模式安装
 ```bash
 pip install -e .
-weknora-mcp-server
+ai-kb-mcp-server
 ```
 
 ### 生产模式安装
 ```bash
 pip install .
-weknora-mcp-server
+ai-kb-mcp-server
 ```
 
 ### 构建分发包
@@ -215,7 +215,7 @@ python main.py --verbose
 ### 2. 生产环境
 ```bash
 pip install .
-weknora-mcp-server
+ai-kb-mcp-server
 ```
 
 ### 3. Docker 部署
@@ -224,7 +224,7 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY . .
 RUN pip install .
-CMD ["weknora-mcp-server"]
+CMD ["ai-kb-mcp-server"]
 ```
 
 ### 4. 系统服务
@@ -233,7 +233,7 @@ CMD ["weknora-mcp-server"]
 Description=AI KB MCP Server
 
 [Service]
-ExecStart=/usr/local/bin/weknora-mcp-server
+ExecStart=/usr/local/bin/ai-kb-mcp-server
 Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
 ```
 
@@ -273,6 +273,6 @@ python test_module.py            # 运行测试
 
 **项目状态**: ✅ 完成并可投入使用
 **项目仓库**: https://github.com/jrmatherly/ai-kb/tree/main/mcp-server
-**PyPI 包名**: `tencent-weknora-mcp`
+**PyPI 包名**: `ai-kb-mcp`
 **最后更新**: 2025年10月
 **版本**: 1.0.0

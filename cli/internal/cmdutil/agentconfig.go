@@ -108,7 +108,7 @@ func MergeAgentConfig(base *sdk.AgentConfig, ov AgentConfigFlags) *sdk.AgentConf
 func GenerateAgentSkeleton(w io.Writer) error {
 	const skeleton = `# AI KB AgentConfig YAML skeleton
 # Edit this file and pass it to:
-#   weknora agent create "My Agent" --model <id> --config-file <this-file>
+#   aikb agent create "My Agent" --model <id> --config-file <this-file>
 # Hot-path flags on the create command override values set here.
 
 # Operating mode: "quick-answer" or "smart-reasoning"

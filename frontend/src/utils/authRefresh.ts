@@ -7,15 +7,15 @@
  */
 
 const AUTH_STORAGE_KEYS = [
-  'weknora_token',
-  'weknora_refresh_token',
-  'weknora_user',
-  'weknora_tenant',
-  'weknora_knowledge_bases',
-  'weknora_current_kb',
-  'weknora_selected_tenant_id',
-  'weknora_selected_tenant_name',
-  'weknora_memberships',
+  'aikb_token',
+  'aikb_refresh_token',
+  'aikb_user',
+  'aikb_tenant',
+  'aikb_knowledge_bases',
+  'aikb_current_kb',
+  'aikb_selected_tenant_id',
+  'aikb_selected_tenant_name',
+  'aikb_memberships',
 ] as const
 
 let isRefreshing = false
@@ -114,7 +114,7 @@ export async function refreshAccessTokenShared(
   }
 
   isRefreshing = true
-  const storedRefreshToken = localStorage.getItem('weknora_refresh_token')
+  const storedRefreshToken = localStorage.getItem('aikb_refresh_token')
 
   if (!storedRefreshToken) {
     clearAuthStorage()
@@ -133,9 +133,9 @@ export async function refreshAccessTokenShared(
     }
 
     const { token, refreshToken: newRefreshToken } = response.data
-    localStorage.setItem('weknora_token', token)
+    localStorage.setItem('aikb_token', token)
     if (newRefreshToken) {
-      localStorage.setItem('weknora_refresh_token', newRefreshToken)
+      localStorage.setItem('aikb_refresh_token', newRefreshToken)
     }
     processQueue(null, token)
     return token

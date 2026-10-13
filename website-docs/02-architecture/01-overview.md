@@ -188,9 +188,9 @@ The chat path (`POST /api/v1/knowledge-chat/:session_id` or `agent-chat`) is a s
 | `internal/` | All Go backend business code (layering is described in the backend design page): `handler`, `application/service`, `application/repository`, `container` (DI), `router`, `middleware`, `types`, `agent`, `im`, `mcp`, `stream`, `sandbox` and more |
 | `frontend/` | The Vue 3 + Vite + TDesign web frontend; the build is served by NGINX or embedded in Lite mode |
 | `docreader/` | The Python gRPC document parsing microservice: `main.py` server entry point, `parser/` parsers, `splitter/` splitters, `proto/` protocol definitions, built with its own `Dockerfile.docreader` |
-| `cli/` | The `weknora` command-line tool: operations on knowledge bases, documents, search, sessions, agents, models, MCP, skills and other resources, plus `doctor` diagnostics, see [CLI](../05-clients/02-cli.md) |
+| `cli/` | The `aikb` command-line tool: operations on knowledge bases, documents, search, sessions, agents, models, MCP, skills and other resources, plus `doctor` diagnostics, see [CLI](../05-clients/02-cli.md) |
 | `client/` | Go SDK: an HTTP client that wraps the AI KB API for integrations |
-| `mcp-server/` | The Python MCP server (`weknora_mcp_server.py`) that exposes the AI KB API as MCP tools to Claude and other MCP clients |
+| `mcp-server/` | The Python MCP server (`aikb_mcp_server.py`) that exposes the AI KB API as MCP tools to Claude and other MCP clients |
 | `miniprogram/` | The WeChat mini program client (WXML/WXSS/JS) |
 | `migrations/` | golang-migrate database migrations: `versioned/` (the Postgres mainline, `NNNNNN_*.up/down.sql`), `sqlite/` (Lite mode), `paradedb/`, `mysql/` |
 | `config/` | Runtime configuration: `config.yaml` main config, `builtin_agents.yaml` built-in agents, `agent_type_presets.yaml` agent presets, `builtin_models.yaml.example` declarative built-in models, `models.json.example` model vendor catalog overlay, `prompt_templates/` prompt templates |
@@ -202,7 +202,7 @@ The chat path (`POST /api/v1/knowledge-chat/:session_id` or `agent-chat`) is a s
 | `scripts/` | Build, start-up and migration helper scripts (`start_all.sh`; `build_frontend_dist.sh` for Lite and desktop packaging; the UI image is a multi-stage build from `frontend/Dockerfile`) |
 | `tests/`, `testdata/` | Integration tests and test data |
 | `misc/` | Miscellany (for example `dex-config.yaml`, the OIDC test configuration) |
-| `packages/` | Independently published integration packages, such as the DeepSeek Harness plugin `packages/dsh-weknora`, see [DeepSeek Harness](../05-clients/08-deepseek-harness.md) |
+| `packages/` | Independently published integration packages, such as the DeepSeek Harness plugin `packages/dsh-ai-kb`, see [DeepSeek Harness](../05-clients/08-deepseek-harness.md) |
 | `docs/` | Old, no longer maintained docs; holds the generated Swagger package, release assets and historical images |
 
 > Note: the Go module path is `github.com/jrmatherly/ai-kb`. The root directory also holds `docker-compose.yml` (production orchestration), `docker-compose.dev.yml` (development orchestration), the `Makefile`, `VERSION` and similar files.

@@ -302,7 +302,7 @@ func (h *SystemHandler) runDeepSandboxCheck(
 		handle.ID(), result.Provider, sandbox.EffectiveTemplateID(cfg),
 	)
 
-	const marker = "weknora-ok"
+	const marker = "ai-kb-ok"
 	start := time.Now()
 	execResult, err := client.Exec(probeCtx, handle, sandbox.RemoteExecRequest{
 		Command: "echo",

@@ -8,16 +8,16 @@ python test_create_knowledge_from_text.py
 import unittest
 from unittest import mock
 
-import weknora_mcp_server as srv
+import aikb_mcp_server as srv
 
 
 class CreateKnowledgeFromTextTest(unittest.TestCase):
     def test_client_method_exists_and_callable(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         self.assertTrue(callable(getattr(client, "create_knowledge_from_text", None)))
 
     def test_posts_to_manual_endpoint_with_expected_body(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request", return_value={"ok": True}) as req:
             client.create_knowledge_from_text("kb-1", "T", "C", tag_ids=["t1"])
         args, kwargs = req.call_args
@@ -31,13 +31,13 @@ class CreateKnowledgeFromTextTest(unittest.TestCase):
         self.assertEqual(body["status"], "publish")
 
     def test_status_can_be_overridden_to_draft(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request", return_value={"ok": True}) as req:
             client.create_knowledge_from_text("kb-1", "T", "C", status="draft")
         self.assertEqual(req.call_args.kwargs["json"]["status"], "draft")
 
     def test_omits_tag_ids_when_none(self):
-        client = srv.WeKnoraClient("http://localhost:8080/api/v1", "k")
+        client = srv.AIKBClient("http://localhost:8080/api/v1", "k")
         with mock.patch.object(client, "_request", return_value={"ok": True}) as req:
             client.create_knowledge_from_text("kb-1", "T", "C")
         body = req.call_args.kwargs["json"]

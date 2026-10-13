@@ -55,7 +55,7 @@ func (s *schemaTestServer) repository(t *testing.T) *weaviateRepository {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
-			_, _ = w.Write([]byte(`{"class":"Weknora_embeddings_1024"}`))
+			_, _ = w.Write([]byte(`{"class":"Aikb_embeddings_1024"}`))
 		case r.Method == http.MethodPost && r.URL.Path == "/v1/schema":
 			s.mu.Lock()
 			s.creates++
@@ -76,7 +76,7 @@ func (s *schemaTestServer) repository(t *testing.T) *weaviateRepository {
 	t.Cleanup(server.Close)
 	client, err := sdk.NewClient(sdk.Config{Scheme: "http", Host: strings.TrimPrefix(server.URL, "http://")})
 	require.NoError(t, err)
-	return &weaviateRepository{client: client, collectionBaseName: "Weknora_embeddings"}
+	return &weaviateRepository{client: client, collectionBaseName: "Aikb_embeddings"}
 }
 
 // The first batches written at a new dimension are saved by several workers at
@@ -107,13 +107,13 @@ func TestEnsureCollectionToleratesConcurrentCreation(t *testing.T) {
 		create: func(attempt int) (int, string) {
 			switch {
 			case attempt == 1:
-				return http.StatusOK, `{"class":"Weknora_embeddings_1024"}`
+				return http.StatusOK, `{"class":"Aikb_embeddings_1024"}`
 			case attempt%2 == 0:
 				return http.StatusUnprocessableEntity,
 					weaviateErrorBody("updating schema: TYPE_ADD_CLASS: class already exists")
 			default:
 				return http.StatusUnprocessableEntity,
-					weaviateErrorBody("class name Weknora_embeddings_1024 already exists")
+					weaviateErrorBody("class name Aikb_embeddings_1024 already exists")
 			}
 		},
 	}

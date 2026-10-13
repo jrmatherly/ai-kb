@@ -16,7 +16,7 @@ import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = None
-CONTAINER = 'weknora-pdb-upgrade-' + uuid.uuid4().hex[:12]
+CONTAINER = 'ai-kb-pdb-upgrade-' + uuid.uuid4().hex[:12]
 # target pg_search version -> (image, expected vector version or None if unchanged)
 TARGETS = {
     '0.22.6': ('paradedb/paradedb:v0.22.6-pg17', None),
@@ -24,7 +24,7 @@ TARGETS = {
 }
 UPGRADES = ['000099_pg_search_0226.up.sql', '000115_pg_search_02511.up.sql']
 
-def sql(query, db='weknora'):
+def sql(query, db='aikb'):
     p = subprocess.run(['docker', 'exec', '-i', CONTAINER, 'psql', '-X', '-qAt', '-U', 'postgres', '-d', db, '-v', 'ON_ERROR_STOP=1'], input=query, text=True, capture_output=True)
     if p.returncode:
         raise RuntimeError(p.stderr)
@@ -117,11 +117,11 @@ def docker(*args, **kwargs):
 
 def start(image, volume):
     docker('run', '-d', '--name', CONTAINER, '--network', 'none', '--shm-size=512m',
-           '-e', 'POSTGRES_PASSWORD=isolated-upgrade-test', '-e', 'POSTGRES_DB=weknora',
+           '-e', 'POSTGRES_PASSWORD=isolated-upgrade-test', '-e', 'POSTGRES_DB=ai_kb',
            '-v', volume+':/var/lib/postgresql/data', image)
     for _ in range(120):
         # Wait for the final server, not the bootstrap server that only uses a socket.
-        ready = subprocess.run(['docker', 'exec', CONTAINER, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'weknora'], capture_output=True)
+        ready = subprocess.run(['docker', 'exec', CONTAINER, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'aikb'], capture_output=True)
         if ready.returncode == 0:
             return
         time.sleep(1)
@@ -159,7 +159,7 @@ def main():
     parser.add_argument('--output-dir', type=pathlib.Path)
     parser.add_argument('--to', choices=sorted(TARGETS), default='0.25.11', help='target pg_search version')
     args = parser.parse_args()
-    OUT = args.output_dir or pathlib.Path(tempfile.mkdtemp(prefix='weknora-pdb-upgrade-'))
+    OUT = args.output_dir or pathlib.Path(tempfile.mkdtemp(prefix='ai-kb-pdb-upgrade-'))
     OUT.mkdir(parents=True, exist_ok=True)
     if any(OUT.iterdir()):
         raise RuntimeError('Use an empty output directory')
@@ -178,17 +178,17 @@ def main():
     docker('volume', 'create', volume)
     try:
         start(old, volume)
-        migrate('weknora', baseline, 'old-migrations')
+        migrate('aikb', baseline, 'old-migrations')
         assert sql(search_version) == '0.22.2'
         old_vector = sql(vector_version)
         # Older external servers without the target package must remain usable.
-        migrate('weknora', upgrade, 'unavailable-target')
+        migrate('aikb', upgrade, 'unavailable-target')
         assert sql(search_version) == '0.22.2'
         assert sql(vector_version) == old_vector
         seed()
         snapshot('before')
         with (OUT/'before.dump').open('wb') as backup:
-            subprocess.run(['docker', 'exec', CONTAINER, 'pg_dump', '-U', 'postgres', '-d', 'weknora', '-Fc'], check=True, stdout=backup)
+            subprocess.run(['docker', 'exec', CONTAINER, 'pg_dump', '-U', 'postgres', '-d', 'aikb', '-Fc'], check=True, stdout=backup)
         docker('stop', '-t', '60', CONTAINER)
         docker('rm', CONTAINER)
         start(new, volume)
@@ -196,7 +196,7 @@ def main():
         assert sql(search_version) == '0.22.2'
         sql("BEGIN; SET LOCAL app.skip_embedding='true';\n"+upgrade_sql+"\nCOMMIT;")
         assert sql(search_version) == '0.22.2'
-        migrate('weknora', upgrade + upgrade, 'extension-upgrade-and-idempotence')
+        migrate('aikb', upgrade + upgrade, 'extension-upgrade-and-idempotence')
         assert sql(search_version) == target
         assert sql(vector_version) == (vector_target or old_vector)
         # Calls into the shared library crash the server if the catalog lags behind it.

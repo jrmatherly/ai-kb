@@ -79,7 +79,7 @@ func setupPresignedTestServer(t *testing.T) (engine *gin.Engine, baseDir string,
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-test-aes-key-32bytes!!!")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-test-aes-key-32bytes!!!")
 
 	baseDir = t.TempDir()
 
@@ -105,7 +105,7 @@ func setupPresignedTestServer(t *testing.T) (engine *gin.Engine, baseDir string,
 	engine.HEAD("/api/v1/files/presigned", handler)
 
 	signURL = func(filePath string, tenantID uint64, ttl time.Duration) string {
-		signed, err := secutils.SignFileURL("https://weknora.example.com", filePath, tenantID, ttl)
+		signed, err := secutils.SignFileURL("https://ai-kb.example.com", filePath, tenantID, ttl)
 		if err != nil {
 			t.Fatalf("SignFileURL: %v", err)
 		}

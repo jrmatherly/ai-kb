@@ -56,7 +56,7 @@ type hostInstallRun struct {
 
 // runHostInstall is runInstall's tail for Lite. Everything up to the
 // ownership check and heartbeat is shared; from here the install writes a
-// version directory under ~/.weknora/skills and switches a symlink instead of
+// version directory under ~/.aikb/skills and switches a symlink instead of
 // building a provider snapshot.
 func (s *TenantSkillService) runHostInstall(ctx context.Context, r hostInstallRun) error {
 	if !s.host.SkillsAvailable() {
@@ -109,7 +109,7 @@ func (s *TenantSkillService) runHostInstall(ctx context.Context, r hostInstallRu
 		return err
 	}
 	declaredEnvs, envsDeclared := readHostEnvDeclaration(ctx, r.skillID, versionDir, r.bundle)
-	if cache, err := noSymlinkPath(versionDir, ".weknora", "cache"); err != nil {
+	if cache, err := noSymlinkPath(versionDir, ".aikb", "cache"); err != nil {
 		logger.Warnf(ctx, "[skill] clear install cache of %s refused: %v", versionDir, err)
 	} else if err := os.RemoveAll(cache); err != nil {
 		logger.Warnf(ctx, "[skill] clear install cache of %s failed: %v", versionDir, err)

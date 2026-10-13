@@ -143,46 +143,46 @@ func printErrorEnvelope(w io.Writer, err error) {
 
 // defaultHint returns a canonical actionable hint for known error codes
 // when the call site didn't set one. `auth.unauthenticated` always points
-// at `weknora auth login` - covers the broad surface (auth status / kb
+// at `aikb auth login` - covers the broad surface (auth status / kb
 // list / kb view / search) without per-command hint plumbing.
 //
 // Empty string for codes without a stable canonical hint.
 func defaultHint(code ErrorCode) string {
 	switch code {
 	case CodeAuthUnauthenticated, CodeAuthBadCredential:
-		return "run `weknora auth login`"
+		return "run `aikb auth login`"
 	case CodeAuthTokenExpired:
-		return "your session expired; run `weknora auth login` to re-authenticate"
+		return "your session expired; run `aikb auth login` to re-authenticate"
 	case CodeAuthForbidden:
 		return "active profile lacks permission for this resource"
 	case CodeAuthCrossTenantBlocked, CodeAuthTenantMismatch:
-		return "verify tenant profile with `weknora auth status`"
+		return "verify tenant profile with `aikb auth status`"
 	case CodeNetworkError:
-		return "check base URL reachability with `weknora doctor`"
+		return "check base URL reachability with `aikb doctor`"
 	case CodeServerIncompatibleVersion:
-		return "run `weknora doctor` to see version skew details"
+		return "run `aikb doctor` to see version skew details"
 	case CodeServerRateLimited:
 		return "rate-limited; retry after a few seconds"
 	case CodeServerTimeout:
-		return "request timed out; retry, or run `weknora doctor` to check connectivity"
+		return "request timed out; retry, or run `aikb doctor` to check connectivity"
 	case CodeResourceNotFound:
 		return "verify the resource ID and try again"
 	case CodeInputInvalidArgument, CodeInputMissingFlag:
-		return "see `weknora <command> --help` for valid usage"
+		return "see `aikb <command> --help` for valid usage"
 	case CodeInputConfirmationRequired:
 		return "high-risk write - re-run with -y/--yes after the user explicitly approves"
 	case CodeLocalKeychainDenied:
 		return "verify keyring access; falls back to file storage"
 	case CodeLocalConfigCorrupt:
-		return "remove ~/.config/weknora/config.yaml and re-run `weknora auth login`"
+		return "remove ~/.config/aikb/config.yaml and re-run `aikb auth login`"
 	case CodeLocalFileIO:
-		return "check file permissions under $XDG_CONFIG_HOME/weknora/"
+		return "check file permissions under $XDG_CONFIG_HOME/aikb/"
 	case CodeKBIDRequired:
-		return "run `weknora link` to bind this directory to a knowledge base, or pass --kb"
+		return "run `aikb link` to bind this directory to a knowledge base, or pass --kb"
 	case CodeKBNotFound:
-		return "list available with `weknora kb list`"
+		return "list available with `aikb kb list`"
 	case CodeProjectLinkCorrupt:
-		return "remove .weknora/project.yaml and run `weknora link` again"
+		return "remove .aikb/project.yaml and run `aikb link` again"
 	case CodeUserAborted:
 		return "no action taken; pass -y/--yes to skip the confirmation prompt"
 	case CodeUploadFileNotFound:
@@ -205,13 +205,13 @@ func defaultHint(code ErrorCode) string {
 func defaultRetryArgv(code ErrorCode) []string {
 	switch code {
 	case CodeAuthUnauthenticated, CodeAuthBadCredential, CodeAuthTokenExpired:
-		return []string{"weknora", "auth", "login"}
+		return []string{"aikb", "auth", "login"}
 	case CodeKBIDRequired:
-		return []string{"weknora", "link"}
+		return []string{"aikb", "link"}
 	case CodeNetworkError, CodeServerTimeout:
-		return []string{"weknora", "doctor"}
+		return []string{"aikb", "doctor"}
 	case CodeProjectLinkCorrupt:
-		return []string{"weknora", "link"} // re-bind the project to a KB
+		return []string{"aikb", "link"} // re-bind the project to a KB
 	case CodeLocalConfigCorrupt:
 		// Recovery is two steps (delete config + re-login); the prose hint
 		// already spells it out, so the retry argv stays nil.

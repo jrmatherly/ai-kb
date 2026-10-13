@@ -21,7 +21,7 @@ def docker(*args):
 
 
 def check():
-    with tempfile.TemporaryDirectory(prefix="weknora-embed-nginx-") as folder:
+    with tempfile.TemporaryDirectory(prefix="ai-kb-embed-nginx-") as folder:
         work = Path(folder)
         (work / "web").mkdir()
         (work / "web/embed.html").write_text("embed entry")

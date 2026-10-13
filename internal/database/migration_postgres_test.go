@@ -17,9 +17,9 @@ import (
 // a real PostgreSQL. Skipped unless AIKB_MIGRATION_TEST_POSTGRES_DSN points
 // at a disposable database, for example:
 //
-//	docker run -d --rm -e POSTGRES_PASSWORD=pg -e POSTGRES_DB=weknora -p 55432:5432 \
+//	docker run -d --rm -e POSTGRES_PASSWORD=pg -e POSTGRES_DB=ai_kb -p 55432:5432 \
 //	  paradedb/paradedb:v0.25.11-pg17
-//	AIKB_MIGRATION_TEST_POSTGRES_DSN=postgres://postgres:pg@localhost:55432/weknora?sslmode=disable
+//	AIKB_MIGRATION_TEST_POSTGRES_DSN=postgres://postgres:pg@localhost:55432/aikb?sslmode=disable
 //
 // It checks what SQLite cannot: that 000106 builds its index CONCURRENTLY
 // through golang-migrate (which fails inside a transaction block), in both

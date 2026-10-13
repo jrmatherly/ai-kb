@@ -82,21 +82,21 @@ const { apiBaseUrlDisplay } = useApiBaseUrlDisplay()
 const steps = computed(() => [
   {
     key: 'install',
-    command: 'git clone https://github.com/jrmatherly/ai-kb.git\ncd ai-kb/cli\ngo build -o weknora .\nexport PATH="$PWD:$PATH"',
+    command: 'git clone https://github.com/jrmatherly/ai-kb.git\ncd ai-kb/cli\ngo build -o aikb .\nexport PATH="$PWD:$PATH"',
   },
   { key: 'connect', command: buildCLIConnectCommand(apiBaseUrlDisplay.value, window.location.origin) },
-  { key: 'verify', command: 'weknora doctor\nweknora kb list' },
+  { key: 'verify', command: 'aikb doctor\naikb kb list' },
 ])
 const examples = [
   {
     key: 'commands',
-    command: 'weknora doc upload ./document.pdf --kb "KB_ID"\nweknora search chunks "query" --kb "KB_ID"\nweknora chat "question" --kb "KB_ID" --format text\nweknora agent list',
+    command: 'aikb doc upload ./document.pdf --kb "KB_ID"\naikb search chunks "query" --kb "KB_ID"\naikb chat "question" --kb "KB_ID" --format text\naikb agent list',
   },
   {
     key: 'mcp',
     command: JSON.stringify({
       mcpServers: {
-        weknora: { command: 'weknora', args: ['--profile', 'weknora', 'mcp', 'serve'] },
+        aikb: { command: 'aikb', args: ['--profile', 'aikb', 'mcp', 'serve'] },
       },
     }, null, 2),
   },

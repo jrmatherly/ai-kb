@@ -666,7 +666,7 @@ func (c *mcpGoClient) listRawTools(ctx context.Context) ([]*types.MCPTool, error
 		}
 		response, err := c.client.GetTransport().SendRequest(ctx, transport.JSONRPCRequest{
 			JSONRPC: mcp.JSONRPC_VERSION,
-			ID:      mcp.NewRequestId("weknora-tools-" + uuid.NewString()),
+			ID:      mcp.NewRequestId("ai-kb-tools-" + uuid.NewString()),
 			Method:  "tools/list",
 			Params:  params,
 			Header:  headers,

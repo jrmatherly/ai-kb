@@ -600,7 +600,7 @@ func TestDockerSkillSnapshotIntegration(t *testing.T) {
 
 	builder, err := client.Create(ctx, RemoteCreateRequest{
 		TemplateID: cfg.DockerImage,
-		Metadata:   map[string]string{"weknora.test": "skill-snapshot"},
+		Metadata:   map[string]string{"ai-kb.test": "skill-snapshot"},
 	})
 	if err != nil {
 		t.Fatalf("Create builder: %v", err)
@@ -627,7 +627,7 @@ func TestDockerSkillSnapshotIntegration(t *testing.T) {
 		t.Fatalf("seed skill tree: err=%v result=%#v", err, seed)
 	}
 
-	ref, err := client.CreateSnapshot(ctx, builder.ID(), "weknora-sk-itest-g1")
+	ref, err := client.CreateSnapshot(ctx, builder.ID(), "ai-kb-sk-itest-g1")
 	if err != nil {
 		t.Fatalf("CreateSnapshot: %v", err)
 	}
@@ -646,7 +646,7 @@ func TestDockerSkillSnapshotIntegration(t *testing.T) {
 
 	booted, err := client.Create(ctx, RemoteCreateRequest{
 		TemplateID: ref.ID,
-		Metadata:   map[string]string{"weknora.test": "skill-snapshot-boot"},
+		Metadata:   map[string]string{"ai-kb.test": "skill-snapshot-boot"},
 	})
 	if err != nil {
 		t.Fatalf("Create from snapshot: %v", err)
@@ -883,7 +883,7 @@ func TestDockerBackendTerminalCloseTerminatesShellIntegration(t *testing.T) {
 
 	// Record the shell PID and start a long foreground job with a unique
 	// marker so the probe can find the job without matching itself.
-	if err := session.Write(ctx, []byte("echo $$ > /tmp/weknora-close.pid\n")); err != nil {
+	if err := session.Write(ctx, []byte("echo $$ > /tmp/ai-kb-close.pid\n")); err != nil {
 		t.Fatalf("write pid: %v", err)
 	}
 	// A job the user detached on purpose must outlive the hangup, as it would
@@ -900,7 +900,7 @@ func TestDockerBackendTerminalCloseTerminatesShellIntegration(t *testing.T) {
 	var shellPID string
 	for deadline := time.Now().Add(15 * time.Second); time.Now().Before(deadline); {
 		shellPID = strings.TrimSpace(terminalProbeOutput(
-			t, ctx, executor, sessionID, "cat /tmp/weknora-close.pid 2>/dev/null || true"))
+			t, ctx, executor, sessionID, "cat /tmp/ai-kb-close.pid 2>/dev/null || true"))
 		if shellPID != "" && terminalProbeJobAlive(t, ctx, executor, sessionID, "sleep 3611") {
 			break
 		}
@@ -989,7 +989,7 @@ func TestDockerBackendTerminalContextCancelTerminatesShellIntegration(t *testing
 		}
 	}()
 
-	if err := session.Write(sessionCtx, []byte("echo $$ > /tmp/weknora-cancel.pid\n")); err != nil {
+	if err := session.Write(sessionCtx, []byte("echo $$ > /tmp/ai-kb-cancel.pid\n")); err != nil {
 		t.Fatalf("write pid: %v", err)
 	}
 	if err := session.Write(sessionCtx, []byte("sleep 3613\n")); err != nil {
@@ -999,7 +999,7 @@ func TestDockerBackendTerminalContextCancelTerminatesShellIntegration(t *testing
 	var shellPID string
 	for deadline := time.Now().Add(15 * time.Second); time.Now().Before(deadline); {
 		shellPID = strings.TrimSpace(terminalProbeOutput(
-			t, probeCtx, executor, sessionID, "cat /tmp/weknora-cancel.pid 2>/dev/null || true"))
+			t, probeCtx, executor, sessionID, "cat /tmp/ai-kb-cancel.pid 2>/dev/null || true"))
 		if shellPID != "" && terminalProbeJobAlive(t, probeCtx, executor, sessionID, "sleep 3613") {
 			break
 		}

@@ -311,7 +311,7 @@ export function autoSetup(): Promise<LoginResponse> {
       if (!nativeApp?.GetAutoSetupToken) return { success: false, message: 'Desktop authentication required' }
       const token = await nativeApp.GetAutoSetupToken()
       const response = await post('/api/v1/auth/auto-setup', {}, {
-        headers: { 'X-WeKnora-Desktop-Token': token },
+        headers: { 'X-AIKB-Desktop-Token': token },
       })
       return response as unknown as LoginResponse
     } catch (error: any) {

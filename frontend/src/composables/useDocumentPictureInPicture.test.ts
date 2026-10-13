@@ -14,7 +14,7 @@ function attributes() {
 function fakeDocument() {
   const nodes: any[] = []
   return {
-    baseURI: 'https://weknora.test/chat', title: '', nodes,
+    baseURI: 'https://ai-kb.test/chat', title: '', nodes,
     documentElement: attributes(), body: attributes(),
     head: { append: (node: any) => nodes.push(node) },
     styleSheets: [{ href: '/assets/app.css', disabled: false, media: { mediaText: '' } }],

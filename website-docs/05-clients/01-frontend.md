@@ -97,7 +97,7 @@ flowchart TB
 | `frontend/src/assets/theme/` | Theme CSS variables (light / dark) |
 | `frontend/src/wailsjs/` | Wails desktop bindings, generated (do not edit by hand) |
 | `frontend/src/directives/`, `frontend/src/types/`, `frontend/src/config/` | Custom directives, type definitions, configuration |
-| `frontend/public/` | Static assets: `weknora-widget.js` (embed loader for third-party sites), `config.js` (runtime configuration placeholder, overwritten when the container starts), offline TDesign icons |
+| `frontend/public/` | Static assets: `ai-kb-widget.js` (embed loader for third-party sites), `config.js` (runtime configuration placeholder, overwritten when the container starts), offline TDesign icons |
 
 ## Page routes
 
@@ -210,8 +210,8 @@ Many settings are **not in the settings center but in the knowledge base edit di
 1. **OIDC callback pass-through**: when the URL hash contains `oidc_result=` / `oidc_error=`, the guard lets the navigation through and `App.vue` consumes the result.
 2. **Old toolbox bookmarks**: `/platform/settings?section=skills|mcp|browserconnection` redirects to `/platform/toolbox/<section>`.
 3. **Lite / desktop deep-link restore**: when a hard refresh in Lite mode lands on the default home page, the guard restores the last visited `/platform` sub-path from `sessionStorage` (never to the organizations page).
-4. **Session restore**: when not logged in, the guard first uses `weknora_token` from `localStorage` to call `getCurrentUser()` and restore the session (also refreshing memberships, so role changes are not stale).
-5. **Desktop auto-login**: if restore fails, the guard tries `autoSetup()` once per page load. Since v0.8.2 it only works in the native desktop app: it gets the process's random credential through the Wails binding `GetAutoSetupToken()`, then calls `POST /api/v1/auth/auto-setup` with the `X-WeKnora-Desktop-Token` header. Lite opened in a browser has no such binding and goes straight to the normal registration / login.
+4. **Session restore**: when not logged in, the guard first uses `aikb_token` from `localStorage` to call `getCurrentUser()` and restore the session (also refreshing memberships, so role changes are not stale).
+5. **Desktop auto-login**: if restore fails, the guard tries `autoSetup()` once per page load. Since v0.8.2 it only works in the native desktop app: it gets the process's random credential through the Wails binding `GetAutoSetupToken()`, then calls `POST /api/v1/auth/auto-setup` with the `X-AIKB-Desktop-Token` header. Lite opened in a browser has no such binding and goes straight to the normal registration / login.
 6. **Workspace gate**: logged in but without a valid workspace, the user goes to `/onboarding/workspace`.
 7. **Deployment capability gate**: when the route's `meta.requiredCapability` (such as `agents`, `organizations` or `settings.sandbox`) is not supported by the current deployment, the guard shows a warning and returns to the knowledge base list. If the capability probe fails, the navigation proceeds and the backend endpoints have the final say.
 8. **SystemAdmin gate**: `requiresSystemAdmin` routes send non-system-administrators back to the knowledge base list (a UI-only check; the server enforces its own).
@@ -231,7 +231,7 @@ Stores and helper modules under `frontend/src/stores/`:
 | `stores/organization.ts` | `useOrganizationStore` | Organization collaboration: the organization list, members, shared knowledge bases and agents, join requests and review, role upgrades and the other actions |
 | `stores/organizationState.ts` | Pure function module | Pure logic such as organization list upsert / merge and how join reviews change member counts (unit tests in `organizationState.test.ts`) |
 | `stores/settings.ts` | Settings store | Session and agent configuration: the selected knowledge bases, files, tags, MCP, skills and tools, model configuration, Ollama configuration, the web search switch and so on |
-| `stores/settingsStorage.ts` | Pure function module | Reading, cloning and built-in agent mode repair for the persisted settings (`WeKnora_settings` key) (tests in `settingsStorage.test.mjs`) |
+| `stores/settingsStorage.ts` | Pure function module | Reading, cloning and built-in agent mode repair for the persisted settings (`AIKB_settings` key) (tests in `settingsStorage.test.mjs`) |
 | `stores/menu.ts` | `useMenuStore` | Left navigation menu structure (new conversation, knowledge bases, agents and other entries) with i18n titles |
 | `stores/knowledge.ts` | `knowledgeStore` | Knowledge card list and total (lightweight) |
 | `stores/ui.ts` | `useUIStore` | Global UI state: switches and parameters for the settings modal, the knowledge base edit modal, the manual document editor, sidebar collapse and so on |
@@ -250,7 +250,7 @@ Use this section to see how requests reach the backend and which module wraps ea
 ### Request foundation
 
 - **axios instance**: `frontend/src/utils/request.ts` creates one shared instance. `baseURL` comes from `getApiBaseUrl()` in `frontend/src/utils/api-base.ts`, which respects Vite's `BASE_URL` so the app works behind a sub-path reverse proxy. Ordinary requests time out after 30s. File uploads (`postUpload`) compute their timeout from the payload size (`uploadTimeoutMs` in `utils/requestTimeouts.ts`: at least 5 minutes, scaled at about 10MB per minute), so raising `MAX_FILE_SIZE_MB` does not leave large files cut off by the 30s default. A `timeout` passed explicitly by the caller wins.
-- **Request interceptor**: adds `Authorization: Bearer <weknora_token>` (an embed channel's `Embed ` token is not overwritten), `Accept-Language` (the current i18n locale), `X-Request-ID` (a random string) and `X-Tenant-ID` (for cross-workspace access; the active workspace id is always sent, so the header is not lost after switching workspaces).
+- **Request interceptor**: adds `Authorization: Bearer <aikb_token>` (an embed channel's `Embed ` token is not overwritten), `Accept-Language` (the current i18n locale), `X-Request-ID` (a random string) and `X-Tenant-ID` (for cross-workspace access; the active workspace id is always sent, so the header is not lost after switching workspaces).
 - **Response interceptor**: a 2xx response is unwrapped to `data`. A 401 triggers a single-flight refresh-token refresh and replays the queued requests. A 401 from a public endpoint (`/auth/login`, `/auth/register`, `/auth/oidc/`, `/auth/auto-setup`, `/auth/invitations/lookup`, `/api/v1/embed/`, that is `PUBLIC_AUTH_PATHS`) is thrown to the page without redirecting to login. The embed page never redirects to `/login`.
 - **HTTP status (`$httpStatus`)**: `get` / `post` / `put` / `patch` / `del` / `postUpload` return `WithStatus<T>`. A JSON object or array response carries a non-enumerable `$httpStatus` property, which separates results that share a success shape (for example, a system administrator creating a user: 201 means created, 200 means an idempotent retry). It does not appear in object spread, `JSON.stringify` or `Object.keys`. Blob, string and SSE responses do not carry it.
 - **SSE streaming**: `frontend/src/api/chat/streame.ts` wraps `@microsoft/fetch-event-source` as `useStream()`, with streamed output, loading state, error state and request debug metadata. `frontend/src/composables/useChatStreamHandler.ts` turns it into the chat message stream. When the chat stream handshake returns 401, it shares the single-flight refresh in `utils/authRefresh.ts` with axios and replays the request once with the new token, so an expired access token does not break a conversation that is being started.
@@ -259,7 +259,7 @@ Use this section to see how requests reach the backend and which module wraps ea
 
 | Module | Responsibility |
 | --- | --- |
-| `api/auth/` | Login, registration, OIDC, `autoSetup` (native desktop only, sends the `X-WeKnora-Desktop-Token` supplied by Wails), `getCurrentUser` session restore |
+| `api/auth/` | Login, registration, OIDC, `autoSetup` (native desktop only, sends the `X-AIKB-Desktop-Token` supplied by Wails), `getCurrentUser` session restore |
 | `api/tenant/` (`index` / `members` / `invitations` / `audit-log`) | Workspace (tenant) information, member management, invitations, audit log |
 | `api/organization/` | Organization CRUD, members, shared knowledge bases and agents, join requests |
 | `api/knowledge-base/` | Knowledge base CRUD and file / knowledge item management |
@@ -344,7 +344,7 @@ Key points of `frontend/vite.config.ts`:
 
 - Since v0.8.2 it is a two-stage build. A digest-pinned `node:24-bookworm-slim` runs `npm ci` + `npm run build` on `$BUILDPLATFORM`, then `dist/` is copied into the runtime stage. The host no longer needs Node / npm, and `dist/` does not have to be built beforehand (`scripts/build_frontend_dist.sh` is still used for Lite and desktop packaging).
 - The runtime base image is a digest-pinned `nginx:1.30.3-alpine`. A comment forbids switching back to a floating tag: newer Alpine 3.24+ bases fail to start on old CentOS 7 kernels, which broke v0.7.0.
-- `nginx.conf` goes in as the template `/etc/nginx/templates/default.conf.template`. The proxy settings shared by `/api/`, `/mcp/` and skill uploads are in `nginx-api-proxy.conf` (copied verbatim to `/etc/nginx/api-proxy.conf`). The http-level snippet `nginx-http.conf` (the `api_no_query` log format, which drops query strings) is copied to `/etc/nginx/conf.d/00-weknora-http.conf`. The image exposes port 80 and its entrypoint is `docker-entrypoint.sh`.
+- `nginx.conf` goes in as the template `/etc/nginx/templates/default.conf.template`. The proxy settings shared by `/api/`, `/mcp/` and skill uploads are in `nginx-api-proxy.conf` (copied verbatim to `/etc/nginx/api-proxy.conf`). The http-level snippet `nginx-http.conf` (the `api_no_query` log format, which drops query strings) is copied to `/etc/nginx/conf.d/00-ai-kb-http.conf`. The image exposes port 80 and its entrypoint is `docker-entrypoint.sh`.
 
 Image build arguments:
 
@@ -377,7 +377,7 @@ Key behavior of `frontend/nginx.conf`:
 - **WebSocket channels**: `/api/v1/sessions/<id>/sandbox/(terminal|desktop)` (the sandbox terminal and graphical desktop) and `/api/v1/local-browser/extension` (the BrowserSkill browser extension) get their own Upgrade handling, and their access logs drop the query string so handshake tickets are not recorded. The in-cluster path `/api/v1/local-browser/internal` returns 404.
 - **Skill bundle uploads**: the two collection routes `/api/v1/skills/catalog` and `/api/v1/sandbox-configs/<id>/skills` use `MAX_SKILL_BUNDLE_SIZE`. Every other upload endpoint stays under `MAX_FILE_SIZE`.
 - **Resource short links `/r/`**: `location ^~ /r/` also proxies to the backend. IM channels rewrite `resource://` images to `<APP_EXTERNAL_URL>/r/<token>`. Without this block the request falls into the SPA fallback and the image shows blank on the IM side (see [IM integration](../03-features/12-im-integration.md)).
-- **Embed page**: `/embed/*` returns `embed.html` from its own location, which does not inherit the main site's `X-Frame-Options: SAMEORIGIN`. nginx first makes the internal subrequest `/_embed-frame-policy` to the backend's `GET /api/v1/embed-frame-policy` to fetch the host origins the channel allows, and adds the returned `Content-Security-Policy` to the response. If the channel does not exist, is disabled, has no allowed host origin, or the backend is unreachable, loading is refused. A custom reverse proxy must keep this step, or the host origin allow-list has no effect. `/weknora-widget.js` is the static loader for third-party sites. The top of the file also has an optional example server block for a dedicated embed subdomain.
+- **Embed page**: `/embed/*` returns `embed.html` from its own location, which does not inherit the main site's `X-Frame-Options: SAMEORIGIN`. nginx first makes the internal subrequest `/_embed-frame-policy` to the backend's `GET /api/v1/embed-frame-policy` to fetch the host origins the channel allows, and adds the returned `Content-Security-Policy` to the response. If the channel does not exist, is disabled, has no allowed host origin, or the backend is unreachable, loading is refused. A custom reverse proxy must keep this step, or the host origin allow-list has no effect. `/ai-kb-widget.js` is the static loader for third-party sites. The top of the file also has an optional example server block for a dedicated embed subdomain.
 - gzip is on (a comment records the measured gain: on low bandwidth the first screen went from 25s to 3-5s), along with a set of security response headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and others), repeated in each location because nginx `add_header` is not inherited.
 
 ## Desktop (Wails) integration

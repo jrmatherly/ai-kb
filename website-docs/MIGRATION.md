@@ -38,7 +38,7 @@ Compared by topic. "Covered" means the working features and development entry po
 | The Langfuse integration and logging configuration pages | [Observability and audit](03-features/16-observability.md), [Configuration reference](01-getting-started/04-configuration.md) |
 | `agent-skills.md`, `agent-tools-design.md` | [Skills and sandboxes](03-features/22-skills-sandbox.md), [Agent engine](03-features/07-agent.md) and the new sandbox deployment page. Old tool names, the `local` configuration and the outdated non-root user and read-only image contracts were not migrated |
 | `chat-steering.md` | [Conversation experience](03-features/18-chat-experience.md), [API reference: sessions, messages and chat](04-api/02-api-chat.md) |
-| `client-integration-upgrade-notes.md` | [AI KB CLI (the weknora command-line tool)](05-clients/02-cli.md), [Go SDK](05-clients/03-go-sdk.md), [WeChat Mini Program client](05-clients/04-miniprogram.md), [External access to images and files](03-features/21-file-access.md) |
+| `client-integration-upgrade-notes.md` | [AI KB CLI (the aikb command-line tool)](05-clients/02-cli.md), [Go SDK](05-clients/03-go-sdk.md), [WeChat Mini Program client](05-clients/04-miniprogram.md), [External access to images and files](03-features/21-file-access.md) |
 | `api/*.md` | [API overview](04-api/01-api-overview.md) and the topic pages in the same directory. Added the missing MCP metadata and sandbox desktop endpoints; there is no second hand-written API reference |
 | Other pages in `wiki/` | Summary copies of the topics above, not migrated as a set. Their old navigation, backlinks and graph do not move to the new site |
 

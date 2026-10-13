@@ -112,7 +112,7 @@ Distributed tracing uses the OpenTelemetry Go SDK. Span attributes follow the La
 
 #### Exporter (`exporter.go`)
 
-The OTLP/HTTP exporter sends `Authorization: Basic base64(public:secret)`. It uses its own HTTP client, so it bypasses the SSRF guard and is not restricted by `SSRF_DNS_WHITELIST_ONLY`. `x-langfuse-ingestion-version: 4` is the gate header that the Langfuse v3 and LiteFuse OTel direct-write path requires (without it the server returns 400); `x-langfuse-sdk-name/version` are compatibility markers. `Manager` (`manager.go`) owns a private `TracerProvider` (resource `service.name=weknora`) and never calls `otel.SetTextMapPropagator` or other global OTel setters, so other OTel instrumentation in the process is untouched. The W3C `TraceContext` propagator is a package-private value.
+The OTLP/HTTP exporter sends `Authorization: Basic base64(public:secret)`. It uses its own HTTP client, so it bypasses the SSRF guard and is not restricted by `SSRF_DNS_WHITELIST_ONLY`. `x-langfuse-ingestion-version: 4` is the gate header that the Langfuse v3 and LiteFuse OTel direct-write path requires (without it the server returns 400); `x-langfuse-sdk-name/version` are compatibility markers. `Manager` (`manager.go`) owns a private `TracerProvider` (resource `service.name=aikb`) and never calls `otel.SetTextMapPropagator` or other global OTel setters, so other OTel instrumentation in the process is untouched. The W3C `TraceContext` propagator is a package-private value.
 
 #### Observation model and instrumentation points
 
@@ -206,7 +206,7 @@ The `audit_logs` table is **append-only** (no UpdatedAt, no soft delete). The mo
 
 - `auditLogService.Log` (`internal/application/service/audit_log.go`) is the canonical writer. It defaults `outcome=success` and fills `CreatedAt`. **A failed write is logged at ERROR and never propagated**: an audit failure must not interrupt the business operation.
 - `LogDenied` records RBAC middleware denials. It deduplicates on `(tenant_id, actor, action=rbac.access_denied, route template)` in a **1-minute sliding window** (`denyDedupWindow`, `repo.CountSinceForDedup`), so a probing client cannot flood the table (100 RPS against one endpoint produces 1 row per minute). The route template rather than the raw URL is the dedup key, so iterating UUIDs cannot escape the window. The `[rbac] role insufficient` line on stderr is not deduplicated; every denial logs it.
-- `AuditServiceProvider` in `middleware/audit_provider.go` injects the service into the gin context (key `weknora.audit_service`); the RBAC middleware reads it with `AuditServiceFromContext`, which is nil-safe (Lite mode can run without the audit service).
+- `AuditServiceProvider` in `middleware/audit_provider.go` injects the service into the gin context (key `aikb.audit_service`); the RBAC middleware reads it with `AuditServiceFromContext`, which is nil-safe (Lite mode can run without the audit service).
 
 #### Query API (`internal/handler/audit_log.go`)
 

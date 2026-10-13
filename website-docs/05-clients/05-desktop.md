@@ -42,11 +42,11 @@ flowchart LR
 Data lives in the user's directories, not inside the application bundle. When `main.go` detects that it runs from `.app/Contents/MacOS`, `configureDesktopStorage()` does the following:
 
 - The data directory is `~/Library/Application Support/AI KB Lite/`, named after the `.app` bundle.
-- The SQLite database is `.../data/weknora.db`, passed in through the `DB_PATH` environment variable. An absolute `DB_PATH` is kept as it is.
+- The SQLite database is `.../data/aikb.db`, passed in through the `DB_PATH` environment variable. An absolute `DB_PATH` is kept as it is.
 - `migrateLegacyDesktopData()` moves data that older builds kept in `.app/Contents/Resources/data` to Application Support once, if the target does not exist yet.
 - The working directory changes to `.app/Contents/Resources` when it contains `config/config.yaml`, so the packaged `config/config.yaml`, `.env`, `migrations/sqlite` and `web/` frontend are found.
 
-Uploaded files are stored separately. For every desktop process, packaged or not, `configureDesktopFileStorage()` sets `LOCAL_STORAGE_BASE_DIR` to `~/.weknora/data/files` unless it already names an absolute directory other than the Docker default `/data/files`. Files that an earlier build kept under Application Support move there once.
+Uploaded files are stored separately. For every desktop process, packaged or not, `configureDesktopFileStorage()` sets `LOCAL_STORAGE_BASE_DIR` to `~/.aikb/data/files` unless it already names an absolute directory other than the Docker default `/data/files`. Files that an earlier build kept under Application Support move there once.
 
 Logs go to `~/Library/Logs/AI KB Lite/AI KB Lite.log` (also named after the bundle) unless `LOG_PATH` is set.
 
@@ -78,9 +78,9 @@ Key settings of `wails.Run(&options.App{...})` in `cmd/desktop/main.go`:
 
 On `OnDomReady` the shell injects three scripts into the WebView:
 
-1. `wailsThemeSyncJS`: syncs the light or dark theme and the window background color from the `WeKnora_theme` key in `localStorage`.
+1. `wailsThemeSyncJS`: syncs the light or dark theme and the window background color from the `AIKB_theme` key in `localStorage`.
 2. `dragHandlerJS`: custom window dragging. It bypasses Wails' CSS-variable drag detection and uses `el.closest()` DOM traversal plus a 40px title bar region at the top, and sends `drag` through the WKWebView message bridge. It also intercepts external `http(s)` links and `window.open` and opens them in the system browser (`BrowserOpenURL`).
-3. `window.__WEKNORA_API_BASE__` (the real API root, `http://127.0.0.1:<port>/api/v1`) and, when set, `window.__WEKNORA_API_LAN_BASE__` (the LAN address).
+3. `window.__AIKB_API_BASE__` (the real API root, `http://127.0.0.1:<port>/api/v1`) and, when set, `window.__AIKB_API_LAN_BASE__` (the LAN address).
 
 ## Wails binding methods (callable from the frontend)
 
@@ -133,7 +133,7 @@ This section explains how the desktop app signs you in without a password and wh
 
 The desktop build needs no registration or login at startup:
 
-- Each launch generates a random credential and hands it only to the built-in frontend, through the Wails binding `GetAutoSetupToken`. The frontend sends it in the `X-WeKnora-Desktop-Token` request header to `POST /api/v1/auth/auto-setup`. The first call creates the default user `admin@weknora.local` and its workspace. Later calls issue login tokens directly. Requests without the credential (including other devices on the LAN and ordinary browsers) are rejected.
+- Each launch generates a random credential and hands it only to the built-in frontend, through the Wails binding `GetAutoSetupToken`. The frontend sends it in the `X-AIKB-Desktop-Token` request header to `POST /api/v1/auth/auto-setup`. The first call creates the default user `admin@ai-kb.local` and its workspace. Later calls issue login tokens directly. Requests without the credential (including other devices on the LAN and ordinary browsers) are rejected.
 - When no valid `SYSTEM_SIGNING_KEY` (or non-default `SYSTEM_AES_KEY`) is configured, the first launch generates `signing.key` (mode `0600`) in the preferences directory and uses it as `SYSTEM_SIGNING_KEY`. It signs presigned file links, web embed sessions and the like, and stays valid across restarts. It is only a signing key and never replaces the AES key that encrypts stored credentials.
 - When `JWT_SECRET` is unset or still a placeholder, the desktop build also fills it: with the generated signing key, or, when the signing key came from the environment, with a separate `jwt.key` (mode `0600`) in the same directory.
 
@@ -148,8 +148,8 @@ This section describes how the update check finds, downloads and installs a new 
 3. **Asset selection**: `findBestAsset()` matches release asset file names against `runtime.GOOS/GOARCH`: an OS keyword (`mac`/`win`/`linux`) plus an architecture keyword (`amd64`/`arm64`, also accepting `universal`/`aarch64`). It falls back step by step: OS + architecture, then OS only, then any `.dmg` on macOS, then any `.exe` on Windows. With no match, a manual check opens the release page.
 4. **Download**: `downloadAndInstall()` downloads to the system temp directory. In `autoDownload` mode the download is silent. A manual check first shows an "Update Available" dialog. After the download it asks "Restart Now" or "Later".
 5. **Install and restart** (`applyUpdateAndRestart()`, per platform):
-   - **Windows**: writes a temporary `weknora_update.bat` (wait 2 seconds, run the installer silently with `/S`, restart the program, delete itself), runs it with `cmd.exe /C start /b` and quits the app.
-   - **macOS (.dmg)**: mounts the image with `hdiutil attach` at a temporary mount point, finds the `.app` inside and writes a temporary `weknora_update.sh`. The script runs `rm -rf` on the old bundle and `cp -a` for the new one (retrying with `osascript … with administrator privileges` on failure), then `hdiutil detach`, `open` on the new app, and deletes itself. For a non-`.dmg` download or any error it falls back to `open` on the downloaded file.
+   - **Windows**: writes a temporary `aikb_update.bat` (wait 2 seconds, run the installer silently with `/S`, restart the program, delete itself), runs it with `cmd.exe /C start /b` and quits the app.
+   - **macOS (.dmg)**: mounts the image with `hdiutil attach` at a temporary mount point, finds the `.app` inside and writes a temporary `aikb_update.sh`. The script runs `rm -rf` on the old bundle and `cp -a` for the new one (retrying with `osascript … with administrator privileges` on failure), then `hdiutil detach`, `open` on the new app, and deletes itself. For a non-`.dmg` download or any error it falls back to `open` on the downloaded file.
    - **Linux**: opens the downloaded file with `xdg-open` and quits.
 
 Triggers: the macOS menu item `Check for Updates...` (manual, shows the result), the binding `CheckForUpdates()` (manual) and `AutoCheckForUpdates()` (silent, with automatic download). `frontend/src/App.vue` calls `AutoCheckForUpdates` 2 seconds after startup and every 4 hours when the binding exists and the auto-update setting is on (the default). Turning that setting on in `frontend/src/views/settings/GeneralSettings.vue` also runs a check.
@@ -182,7 +182,7 @@ Notes:
 This section shows how frontend code tells the desktop shell apart from a browser, so desktop-only UI appears only where it works.
 
 - `dragHandlerJS` adds the `wails-desktop` class to `document.documentElement`, so frontend CSS can adapt styles for the desktop.
-- `window.go.main.App.*` (generated bindings in `frontend/src/wailsjs/go/main/`) and `window.runtime` (`frontend/src/wailsjs/runtime/`, such as `BrowserOpenURL` and `EventsEmit`) exist only in the desktop environment, and the frontend uses feature detection. For example, `frontend/src/composables/useApiBaseUrlDisplay.ts` polls `window.__WEKNORA_API_BASE__` or calls `window.go.main.App.GetAPIBaseURL()` for the real API address (a browser falls back to the configured value or `window.location.origin`). `frontend/src/App.vue` starts the silent update check when `window.go.main.App.AutoCheckForUpdates` exists.
+- `window.go.main.App.*` (generated bindings in `frontend/src/wailsjs/go/main/`) and `window.runtime` (`frontend/src/wailsjs/runtime/`, such as `BrowserOpenURL` and `EventsEmit`) exist only in the desktop environment, and the frontend uses feature detection. For example, `frontend/src/composables/useApiBaseUrlDisplay.ts` polls `window.__AIKB_API_BASE__` or calls `window.go.main.App.GetAPIBaseURL()` for the real API address (a browser falls back to the configured value or `window.location.origin`). `frontend/src/App.vue` starts the silent update check when `window.go.main.App.AutoCheckForUpdates` exists.
 - `frontend/src/views/integrations/ApiIntegrationSettings.vue` uses these bindings to show and change desktop-only options such as the port and the LAN listener. `frontend/src/views/settings/GeneralSettings.vue` uses `AutoCheckForUpdates` for the auto-update setting.
 
 ## Build

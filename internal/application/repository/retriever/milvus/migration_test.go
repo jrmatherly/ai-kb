@@ -11,22 +11,22 @@ import (
 )
 
 func TestCollectionDimensionForBase(t *testing.T) {
-	dimension, ok := collectionDimensionForBase("weknora_embeddings_1536", "weknora_embeddings")
+	dimension, ok := collectionDimensionForBase("aikb_embeddings_1536", "aikb_embeddings")
 	require.True(t, ok)
 	require.Equal(t, 1536, dimension)
 
-	_, ok = collectionDimensionForBase("weknora_embeddings_multilingual_1536", "weknora_embeddings")
+	_, ok = collectionDimensionForBase("aikb_embeddings_multilingual_1536", "aikb_embeddings")
 	require.False(t, ok)
-	_, ok = collectionDimensionForBase("weknora_embeddings", "weknora_embeddings")
+	_, ok = collectionDimensionForBase("aikb_embeddings", "aikb_embeddings")
 	require.False(t, ok)
-	_, ok = collectionDimensionForBase("weknora_embeddings_1536_backup", "weknora_embeddings")
+	_, ok = collectionDimensionForBase("aikb_embeddings_1536_backup", "aikb_embeddings")
 	require.False(t, ok)
 
 	require.True(t, matchesDimensionCollection(
-		"weknora_embeddings_multilingual_1536",
-		"weknora_embeddings_multilingual",
+		"aikb_embeddings_multilingual_1536",
+		"aikb_embeddings_multilingual",
 	))
-	require.False(t, matchesDimensionCollection("weknora_embeddings_1536", "weknora_embeddings_multilingual"))
+	require.False(t, matchesDimensionCollection("aikb_embeddings_1536", "aikb_embeddings_multilingual"))
 }
 
 func TestParseMetricType(t *testing.T) {

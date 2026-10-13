@@ -1,6 +1,6 @@
 # AI KB Helm Chart
 
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/weknora)](https://artifacthub.io/packages/helm/weknora/weknora)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/aikb)](https://artifacthub.io/packages/helm/aikb/aikb)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Helm chart for deploying [AI KB](https://github.com/jrmatherly/ai-kb) - an AI-powered Knowledge RAG Platform.
@@ -25,7 +25,7 @@ AI KB is an intelligent knowledge base platform that combines:
 ```bash
 # Add required secrets
 helm install ai-kb ./helm \
-  --namespace weknora \
+  --namespace ai-kb \
   --create-namespace \
   --set secrets.dbPassword=<your-db-password> \
   --set secrets.redisPassword=<your-redis-password> \
@@ -62,7 +62,7 @@ helm install ai-kb ./helm \
 
 ```bash
 helm install ai-kb ./helm \
-  --namespace weknora \
+  --namespace ai-kb \
   --create-namespace \
   --set secrets.dbPassword=secure-password \
   --set secrets.redisPassword=secure-password \
@@ -73,12 +73,12 @@ helm install ai-kb ./helm \
 
 ```bash
 helm install ai-kb ./helm \
-  --namespace weknora \
+  --namespace ai-kb \
   --create-namespace \
   --set ingress.enabled=true \
-  --set ingress.host=weknora.example.com \
+  --set ingress.host=ai-kb.example.com \
   --set ingress.tls.enabled=true \
-  --set ingress.tls.secretName=weknora-tls \
+  --set ingress.tls.secretName=ai-kb-tls \
   --set secrets.dbPassword=secure-password \
   --set secrets.redisPassword=secure-password \
   --set secrets.jwtSecret=$(openssl rand -base64 32)
@@ -88,7 +88,7 @@ helm install ai-kb ./helm \
 
 ```bash
 helm install ai-kb ./helm \
-  --namespace weknora \
+  --namespace ai-kb \
   --create-namespace \
   --set app.extraEnv[0].name=OLLAMA_BASE_URL \
   --set app.extraEnv[0].value=http://ollama.ollama:11434 \
@@ -128,18 +128,18 @@ postgresql:
 
 ingress:
   enabled: true
-  host: weknora.company.com
+  host: aikb.company.com
   tls:
     enabled: true
-    secretName: weknora-tls
+    secretName: ai-kb-tls
 
 secrets:
-  existingSecret: weknora-secrets  # Use pre-created secret
+  existingSecret: ai-kb-secrets  # Use pre-created secret
 ```
 
 ```bash
 helm install ai-kb ./helm \
-  --namespace weknora \
+  --namespace ai-kb \
   --create-namespace \
   -f values-production.yaml
 ```
@@ -169,12 +169,12 @@ app:
 dataFiles:
   persistence:
     enabled: true
-    existingClaim: weknora-shared-files  # Pre-provisioned, verified RWX PVC
+    existingClaim: ai-kb-shared-files  # Pre-provisioned, verified RWX PVC
 ```
 
 ```bash
 helm install ai-kb ./helm \
-  --namespace weknora \
+  --namespace ai-kb \
   --create-namespace \
   -f values-production.yaml \
   -f values-shared-storage.yaml
@@ -207,12 +207,12 @@ Optional Service name overrides preserve the following defaults:
 For example, save this as `service-names.yaml`:
 
 ```yaml
-app:        {service: {name: weknora-app}}
-frontend:   {service: {name: weknora-frontend}}
-postgresql: {service: {name: weknora-postgres}}
-redis:      {service: {name: weknora-redis}}
-docreader:  {service: {name: weknora-docreader}}
-neo4j:      {service: {name: weknora-neo4j}}
+app:        {service: {name: ai-kb-app}}
+frontend:   {service: {name: ai-kb-frontend}}
+postgresql: {service: {name: ai-kb-postgres}}
+redis:      {service: {name: ai-kb-redis}}
+docreader:  {service: {name: ai-kb-docreader}}
+neo4j:      {service: {name: ai-kb-neo4j}}
 ```
 
 Pass `-f service-names.yaml` alongside your other values. Names must be valid
@@ -305,7 +305,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 |-----------|-------------|---------|
 | `ingress.enabled` | Enable ingress | `false` |
 | `ingress.className` | Ingress class | `nginx` |
-| `ingress.host` | Hostname | `weknora.example.com` |
+| `ingress.host` | Hostname | `ai-kb.example.com` |
 | `ingress.tls.enabled` | Enable TLS | `false` |
 | `ingress.tls.secretName` | TLS secret name | `""` |
 
@@ -315,7 +315,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 |-----------|-------------|---------|
 | `secrets.dbUser` | Database username | `postgres` |
 | `secrets.dbPassword` | Database password | `""` (required) |
-| `secrets.dbName` | Database name | `weknora` |
+| `secrets.dbName` | Database name | `aikb` |
 | `secrets.redisPassword` | Redis password | `""` (required) |
 | `secrets.jwtSecret` | JWT signing secret | `""` (required) |
 | `secrets.existingSecret` | Use existing secret | `""` |
@@ -344,7 +344,7 @@ These map to docker-compose profiles:
 2. **External Secrets Operator** (recommended for production)
    ```yaml
    secrets:
-     existingSecret: weknora-external-secret
+     existingSecret: ai-kb-external-secret
    ```
 
 3. **Sealed Secrets** (for GitOps)
@@ -363,18 +363,18 @@ The chart follows CNCF security best practices:
 ## Upgrading
 
 ```bash
-helm upgrade weknora ./helm \
-  --namespace weknora \
+helm upgrade aikb ./helm \
+  --namespace ai-kb \
   --reuse-values
 ```
 
 ## Uninstalling
 
 ```bash
-helm uninstall weknora --namespace weknora
+helm uninstall aikb --namespace ai-kb
 
 # Optional: Remove PVCs
-kubectl delete pvc -n ai-kb -l app.kubernetes.io/instance=weknora
+kubectl delete pvc -n ai-kb -l app.kubernetes.io/instance=ai-kb
 ```
 
 ## Troubleshooting

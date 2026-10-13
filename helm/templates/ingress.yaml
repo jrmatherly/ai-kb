@@ -9,10 +9,10 @@ Routes /api to backend, / to frontend.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "weknora.fullname" . }}
+  name: {{ include "ai-kb.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "weknora.componentLabels" (dict "component" "ingress" "context" .) | nindent 4 }}
+    {{- include "ai-kb.componentLabels" (dict "component" "ingress" "context" .) | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -38,7 +38,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "weknora.serviceName" (dict "component" "app" "context" .) | quote }}
+                name: {{ include "ai-kb.serviceName" (dict "component" "app" "context" .) | quote }}
                 port:
                   name: http
           # Frontend routes - catch-all
@@ -46,7 +46,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "weknora.serviceName" (dict "component" "frontend" "context" .) | quote }}
+                name: {{ include "ai-kb.serviceName" (dict "component" "frontend" "context" .) | quote }}
                 port:
                   name: http
 {{- end }}

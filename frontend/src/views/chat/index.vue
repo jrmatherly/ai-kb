@@ -346,7 +346,7 @@ function canRewindMessage(messageId) {
     return Boolean(messageId) && rewindableIds.value.has(String(messageId))
 }
 
-const FORK_PREFILL_KEY = 'weknora:fork-prefill'
+const FORK_PREFILL_KEY = 'aikb:fork-prefill'
 let forkInFlight = false
 const rewindInFlight = ref(false)
 const rewindLockSessionId = ref('')

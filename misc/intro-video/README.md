@@ -10,7 +10,7 @@ Requires Node 18+, ffmpeg and a Chromium build for Playwright.
 cd misc/intro-video
 npm install
 npx playwright-core install chromium   # skip if CHROME_PATH points at a Chromium build
-npm run render                          # writes weknora-intro.mp4, takes a few minutes
+npm run render                          # writes ai-kb-intro.mp4, takes a few minutes
 ```
 
 To check a few moments without rendering the whole video:
@@ -24,7 +24,7 @@ To preview in a browser, open `index.html?t=22` for one frame, or `index.html?pl
 For a README upload under GitHub's 10 MB attachment limit, re-encode:
 
 ```bash
-ffmpeg -i weknora-intro.mp4 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart weknora-intro-lite.mp4
+ffmpeg -i ai-kb-intro.mp4 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart ai-kb-intro-lite.mp4
 ```
 
 ## Structure

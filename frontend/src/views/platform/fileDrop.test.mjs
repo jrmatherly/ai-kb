@@ -101,7 +101,7 @@ test('knowledge file drops still validate initialization and reach the knowledge
   await f.handleGlobalDrop(event)
   assert.equal(f.ismask.value, false)
   assert.deepEqual(f.requests, ['kb-1'])
-  assert.equal(f.dispatched[0].type, 'weknora:knowledge-file-drop')
+  assert.equal(f.dispatched[0].type, 'aikb:knowledge-file-drop')
   assert.equal(f.dispatched[0].detail.kbId, 'kb-1')
   assert.equal(f.dispatched[0].detail.files, event.dataTransfer.files)
 })
@@ -113,7 +113,7 @@ test('chat file drops still dispatch attachments without knowledge initializatio
     await f.handleGlobalDrop(event)
     assert.deepEqual(f.requests, [])
     assert.deepEqual(f.messages, [])
-    assert.equal(f.dispatched[0].type, 'weknora:chat-file-drop')
+    assert.equal(f.dispatched[0].type, 'aikb:chat-file-drop')
     assert.equal(f.dispatched[0].detail.files, event.dataTransfer.files)
   }
 })

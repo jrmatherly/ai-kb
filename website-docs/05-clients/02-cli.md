@@ -1,16 +1,16 @@
-# AI KB CLI (the weknora command-line tool)
+# AI KB CLI (the aikb command-line tool)
 
-The AI KB CLI (command name `weknora`) manages knowledge bases and documents, runs retrieval and streams answers. People can ask for readable text output. Scripts and AI agents get JSON responses, typed errors, `--dry-run` previews and contract lookup with `weknora schema`. `weknora mcp serve` runs an MCP server.
+The AI KB CLI (command name `aikb`) manages knowledge bases and documents, runs retrieval and streams answers. People can ask for readable text output. Scripts and AI agents get JSON responses, typed errors, `--dry-run` previews and contract lookup with `aikb schema`. `aikb mcp serve` runs an MCP server.
 
 The source is in `cli/`, a separate Go module (`github.com/jrmatherly/ai-kb/cli`). Building it needs Go 1.26 or later. The command entry point is `cli/cmd/root.go`.
 
 The console page Settings → Publish & Integrations → CLI walks through setup and generates commands for the current deployment that you can copy:
 
 1. **Install**: build from source (needs Git and Go 1.26+; the example is for macOS and Linux).
-2. **Connect**: `weknora profile add weknora --host '<current server address>' --use && weknora auth login` creates and activates a profile named `weknora`, then signs in with your email and password. The server address keeps any reverse proxy path prefix and does not end in `/api/v1`. If a profile with that name already exists, pick another name.
-3. **Verify**: run `weknora doctor` and `weknora kb list` to confirm that the server and the credential work.
+2. **Connect**: `aikb profile add aikb --host '<current server address>' --use && aikb auth login` creates and activates a profile named `aikb`, then signs in with your email and password. The server address keeps any reverse proxy path prefix and does not end in `/api/v1`. If a profile with that name already exists, pick another name.
+3. **Verify**: run `aikb doctor` and `aikb kb list` to confirm that the server and the credential work.
 
-The right side of the page lists common commands (upload, search, ask, list agents) and an MCP client configuration example (`"args": ["--profile", "weknora", "mcp", "serve"]`).
+The right side of the page lists common commands (upload, search, ask, list agents) and an MCP client configuration example (`"args": ["--profile", "aikb", "mcp", "serve"]`).
 
 <Screenshot
   src="/screenshots/integration-cli.png"
@@ -24,7 +24,7 @@ This section shows how the command tree, the internal packages and the server fi
 ```mermaid
 flowchart TB
     subgraph entry["Entry (cli/main.go → cli/cmd/root.go)"]
-        R["weknora root command<br/>global flags: --format / --jq / --profile / --log-level / -y"]
+        R["aikb root command<br/>global flags: --format / --jq / --profile / --log-level / -y"]
     end
 
     subgraph groups["Command groups (cli/cmd/*)"]
@@ -40,7 +40,7 @@ flowchart TB
         F["cmdutil.Factory<br/>(lazily builds Config / Client / Secrets / Prompter)"]
         C["config<br/>config.yaml with several profiles"]
         S["secrets<br/>OS keyring / 0600 file fallback"]
-        P["projectlink<br/>.weknora/project.yaml"]
+        P["projectlink<br/>.aikb/project.yaml"]
         O["output + format<br/>JSON envelope / NDJSON / jq"]
     end
 
@@ -59,15 +59,15 @@ flowchart TB
 
 ## Installation
 
-To get a `weknora` binary on your `PATH`, build it from source. There are no prebuilt CLI binaries and no supported `go install` path; the Homebrew formula in `Formula/` installs the Lite server, not the CLI.
+To get a `aikb` binary on your `PATH`, build it from source. There are no prebuilt CLI binaries and no supported `go install` path; the Homebrew formula in `Formula/` installs the Lite server, not the CLI.
 
 ### Build from source (the supported installation method)
 
 ```bash
 git clone https://github.com/jrmatherly/ai-kb.git
 cd ai-kb/cli
-go build -o weknora .
-sudo mv weknora /usr/local/bin/   # or any directory on $PATH
+go build -o aikb .
+sudo mv aikb /usr/local/bin/   # or any directory on $PATH
 ```
 
 ### Use cli/Makefile
@@ -76,7 +76,7 @@ sudo mv weknora /usr/local/bin/   # or any directory on $PATH
 
 | target | Effect |
 |---|---|
-| `make build` | Compiles to `./bin/weknora` with the `git describe` version, the short commit hash and the build time |
+| `make build` | Compiles to `./bin/aikb` with the `git describe` version, the short commit hash and the build time |
 | `make test` | `go test ./...` |
 | `make test-coverage` | Runs the tests and prints a coverage report |
 | `make lint` | `go vet ./...` |
@@ -93,7 +93,7 @@ To point the CLI at a server and keep credentials for it, you create profiles. T
 
 ### Config file and paths
 
-`cli/internal/config/config.go` manages the user configuration at `$XDG_CONFIG_HOME/weknora/config.yaml` (`~/.config/weknora/config.yaml` when `XDG_CONFIG_HOME` is unset). Path resolution is in `cli/internal/xdg/xdg.go` and follows the XDG variables on every operating system, macOS included. Writes are atomic (temporary file plus rename) with mode 0600.
+`cli/internal/config/config.go` manages the user configuration at `$XDG_CONFIG_HOME/aikb/config.yaml` (`~/.config/aikb/config.yaml` when `XDG_CONFIG_HOME` is unset). Path resolution is in `cli/internal/xdg/xdg.go` and follows the XDG variables on every operating system, macOS included. Writes are atomic (temporary file plus rename) with mode 0600.
 
 On-disk schema (`config.Config` / `config.Profile`):
 
@@ -113,14 +113,14 @@ defaults:
   no_version_check: true       # declared in the schema; no command reads it
 ```
 
-`defaults.format` is meant to set the default output format. Today only `weknora config view` reports it (as `format_default`); commands ignore it and resolve the format from `--format`, then `AIKB_FORMAT`, then `json`.
+`defaults.format` is meant to set the default output format. Today only `aikb config view` reports it (as `format_default`); commands ignore it and resolve the format from `--format`, then `AIKB_FORMAT`, then `json`.
 
 ### Credential storage (secrets)
 
 Credentials are **not written to config.yaml**; the file holds references only. `cli/internal/secrets/` has two backends:
 
-- **KeyringStore**: the OS keychain (macOS Keychain, Linux keyring). Entries use the service `weknora:<profile>` and the account `access`, `refresh` or `api_key`.
-- **FileStore**: when no keychain is available (headless CI, WSL without DBus, containers), plaintext 0600 files at `$XDG_CONFIG_HOME/weknora/secrets/<profile>/<key>`. `auth login` prints a one-time warning to stderr when it falls back to this store.
+- **KeyringStore**: the OS keychain (macOS Keychain, Linux keyring). Entries use the service `aikb:<profile>` and the account `access`, `refresh` or `api_key`.
+- **FileStore**: when no keychain is available (headless CI, WSL without DBus, containers), plaintext 0600 files at `$XDG_CONFIG_HOME/aikb/secrets/<profile>/<key>`. `auth login` prints a one-time warning to stderr when it falls back to this store.
 
 ### Switching profiles and resolution order
 
@@ -128,7 +128,7 @@ The profile resolution chain is in `cli/internal/cmdutil/factory.go` (`Factory.A
 
 1. The global `--profile <name>` flag (applies to this invocation only, nothing written to disk).
 2. The environment variable `AIKB_PROFILE`.
-3. `current_profile` in `config.yaml` (persisted by `weknora profile use`).
+3. `current_profile` in `config.yaml` (persisted by `aikb profile use`).
 
 ### Stateless environment credentials (headless, CI and agent use)
 
@@ -151,7 +151,7 @@ Commands that need a knowledge base scope (chat, doc, chunk, search chunks/docs 
 
 1. The `--kb` flag. A UUID is passed through as is; a name is looked up through `ListKnowledgeBases` to get its id (see `cli/internal/cmdutil/kb.go`).
 2. The `AIKB_KB_ID` environment variable.
-3. The project link file `.weknora/project.yaml`, written by `weknora link`. It is searched for from the current directory upward, at most 64 levels (see `cli/internal/projectlink/projectlink.go`).
+3. The project link file `.aikb/project.yaml`, written by `aikb link`. It is searched for from the current directory upward, at most 64 levels (see `cli/internal/projectlink/projectlink.go`).
 4. If none of these match, the command fails with `local.kb_id_required`.
 
 A JWT profile (one that holds both an access token and a refresh token) gets a transport that refreshes transparently on 401 (`AuthRetryTransport`): the first 401 calls `/api/v1/auth/refresh` and replays the original request. API key profiles and environment credentials are not refreshed.
@@ -171,7 +171,7 @@ To script the CLI or drive it from an agent, you rely on its output contract: a 
 | `--profile` | | Overrides the active profile for this invocation (nothing written to disk) |
 | `--log-level` | | SDK debug log level: error \| warn \| info \| debug |
 | `--yes` | `-y` | Skips the confirmation prompt on destructive operations |
-| `--version` | `-v` | Prints the version (same line as `weknora version --format text`) |
+| `--version` | `-v` | Prints the version (same line as `aikb version --format text`) |
 
 Many write commands also register `--dry-run` (`cli/internal/cmdutil/dryrun.go`). It covers nearly every mutation command in kb, doc, chunk, agent, model, profile, auth, session, message, link, api and skills. It performs no write and prints `meta.dry_run=true` plus `meta.plan` (a description of the action it would take).
 
@@ -192,21 +192,21 @@ The error path writes to stderr, which keeps stdout clean for `| jq` pipelines:
 
 ```json
 {"ok": false, "error": {"type": "auth.unauthenticated", "message": "...", "exit_code": 3,
-  "hint": "...", "retry_argv": ["weknora","auth","login"], "retryable": false}}
+  "hint": "...", "retry_argv": ["aikb","auth","login"], "retryable": false}}
 ```
 
 Error types are hierarchical strings (`cli/internal/cmdutil/errors.go`): `auth.*`, `resource.*`, `input.*`, `server.*`, `network.error`, `operation.*`, `local.*`, `internal.error`. `retry_argv` is an argument array for the fixing command that can be executed directly.
 
 `--format ndjson` is for the streaming commands (`chat` / `session ask` / `session resume`). The first line is a CLI `init` event (with session_id, kb_id or agent_id, and profile); after that each SDK SSE event is passed through as one line (`cli/internal/sse/`).
 
-### Exit code matrix (`cli/cmd/exitcodes.go`; run `weknora exit-codes` for a machine-readable version)
+### Exit code matrix (`cli/cmd/exitcodes.go`; run `aikb exit-codes` for a machine-readable version)
 
 | Exit code | Meaning | Error types | Suggested agent action |
 |---|---|---|---|
 | 0 | Success | - | Continue |
 | 1 | Typed local error / operation failed / unclassified | `local.*`, `operation.failed`, `operation.cancelled`, `server.session_create_failed`, `internal.error` | Read stderr, then decide to retry or give up |
-| 2 | Flag or argument parse error (unknown flag, argument count, missing required flag) | `input.invalid_argument` (same type as exit code 5; the exit code tells them apart) | Check `weknora <cmd> --help` |
-| 3 | Authentication or authorization failure | `auth.*` | Run `weknora auth login` again, then retry |
+| 2 | Flag or argument parse error (unknown flag, argument count, missing required flag) | `input.invalid_argument` (same type as exit code 5; the exit code tells them apart) | Check `aikb <cmd> --help` |
+| 3 | Authentication or authorization failure | `auth.*` | Run `aikb auth login` again, then retry |
 | 4 | Resource not found | `resource.not_found` | Check the resource id |
 | 5 | Invalid input value (typed validation, not a parse error) | `input.*` (except confirmation_required) | Adjust the arguments and retry |
 | 6 | Rate limited | `server.rate_limited` | Back off, then retry |
@@ -219,8 +219,8 @@ Error types are hierarchical strings (`cli/internal/cmdutil/errors.go`): `auth.*
 
 ### Machine introspection
 
-- `weknora schema` (`cli/cmd/schema.go`) with no arguments lists every leaf command with its purpose. `weknora schema kb create` prints the full contract of one command (used_for, flags, required_flags, examples, output, and risk and warnings for risky commands).
-- `AIKB_AGENT_HELP=1 weknora <cmd> --help` prints the same AgentHelp JSON.
+- `aikb schema` (`cli/cmd/schema.go`) with no arguments lists every leaf command with its purpose. `aikb schema kb create` prints the full contract of one command (used_for, flags, required_flags, examples, output, and risk and warnings for risky commands).
+- `AIKB_AGENT_HELP=1 aikb <cmd> --help` prints the same AgentHelp JSON.
 - An unknown subcommand returns a typed `input.unknown_subcommand` envelope (exit code 5) with the available subcommands and, when one is close, `suggestions` (did-you-mean).
 
 ---
@@ -241,8 +241,8 @@ Use this section as the reference for each command: its arguments, its flags and
 Key flags of `add`: `--host` (required, server URL), `--user` (optional email, display only), `--use` (switch to the profile after adding it).
 
 ```bash
-weknora profile add prod --host=https://kb.example.com --use
-weknora profile list --format json
+aikb profile add prod --host=https://kb.example.com --use
+aikb profile list --format json
 ```
 
 ### auth - manage credentials (`cli/cmd/auth/`)
@@ -257,9 +257,9 @@ weknora profile list --format json
 | token | `token` | Prints the active profile's raw credential to stdout (for shell scripts) |
 
 ```bash
-weknora auth login                                    # interactive (TTY)
-echo "$AIKB_API_KEY" | weknora auth login --with-token   # non-interactive / agent
-weknora auth status --format json
+aikb auth login                                    # interactive (TTY)
+echo "$AIKB_API_KEY" | aikb auth login --with-token   # non-interactive / agent
+aikb auth status --format json
 ```
 
 `auth login` does not accept `--host`. Create and activate a profile with `profile add ... --use` first.
@@ -271,7 +271,7 @@ weknora auth status --format json
 | view | `view` | Read-only view of the resolved configuration and **the source of each value** (active_profile / profile_source / auth_source / host / kb_id / kb_source / log_level / log_level_source / format_default / config_file / cache_dir / secrets / project_link). Makes no network request |
 
 ```bash
-weknora config view --format json --jq '.data.kb_source'
+aikb config view --format json --jq '.data.kb_source'
 ```
 
 ### link / unlink - bind a directory to a knowledge base (`cli/cmd/link/`)
@@ -280,12 +280,12 @@ weknora config view --format json --jq '.data.kb_source'
 
 | Command | Use | Description |
 |---|---|---|
-| link | `link [kb]` | Writes `.weknora/project.yaml` in the current directory to bind a knowledge base (positional argument or `--kb`, which are equivalent; with neither on a TTY it prompts for a choice; an existing link is overwritten). Supports `--dry-run` |
+| link | `link [kb]` | Writes `.aikb/project.yaml` in the current directory to bind a knowledge base (positional argument or `--kb`, which are equivalent; with neither on a TTY it prompts for a choice; an existing link is overwritten). Supports `--dry-run` |
 | unlink | `unlink` | Removes the knowledge base binding of the current directory |
 
 ```bash
-weknora link engineering            # the name is resolved to an id
-weknora link --kb a32a63ff-fb36-4874-bcaa-30f48570a694
+aikb link engineering            # the name is resolved to an id
+aikb link --kb a32a63ff-fb36-4874-bcaa-30f48570a694
 ```
 
 ### kb - manage knowledge bases (`cli/cmd/kb/`)
@@ -304,8 +304,8 @@ weknora link --kb a32a63ff-fb36-4874-bcaa-30f48570a694
 | config set | `set <kb-id>` | Binds models: `--chat-model` and `--embedding-model` are both required (id or name); high-risk write with exit-10 protection |
 
 ```bash
-weknora kb create docs --embedding-model text-embedding-3 --chat-model gpt-4o
-weknora kb config set <kb-id> --chat-model <id> --embedding-model <id> -y
+aikb kb create docs --embedding-model text-embedding-3 --chat-model gpt-4o
+aikb kb config set <kb-id> --chat-model <id> --embedding-model <id> -y
 ```
 
 ### doc - manage documents (`cli/cmd/doc/`)
@@ -324,8 +324,8 @@ weknora kb config set <kb-id> --chat-model <id> --embedding-model <id> -y
 | wait | `wait <doc-id> [<doc-id>...]` | Polls until parsing finishes; `--timeout` (default 10m, exit code 124 on timeout), `--interval` (default 2s, exponential backoff capped at 15s) |
 
 ```bash
-weknora doc upload ./design.pdf --kb docs
-weknora doc wait <doc-id> --timeout 5m && weknora search chunks "RRF" --kb docs
+aikb doc upload ./design.pdf --kb docs
+aikb doc wait <doc-id> --timeout 5m && aikb search chunks "RRF" --kb docs
 ```
 
 ### chunk - debug chunks (`cli/cmd/chunk/`)
@@ -346,7 +346,7 @@ weknora doc wait <doc-id> --timeout 5m && weknora search chunks "RRF" --kb docs
 | sessions | `sessions "<query>"` | Finds sessions by title or description (substring match on the client): `--limit/-L`, `--page-size`, `--all-pages` |
 
 ```bash
-weknora search chunks "rate limiting design" --kb docs --limit 5 --format json --jq '.data[].content'
+aikb search chunks "rate limiting design" --kb docs --limit 5 --format json --jq '.data[].content'
 ```
 
 ### chat - streaming RAG answers (`cli/cmd/chat/chat.go`)
@@ -360,8 +360,8 @@ A single command: `chat "<text>"`. The three output modes share one SDK streamin
 Flags: `--kb`, `--session` (continue an existing session), `--reference` (include reference indexes), `--verbose` (include reasoning, tool and lifecycle events).
 
 ```bash
-weknora chat "What is RRF?" --kb a32a63ff-fb36-4874-bcaa-30f48570a694
-weknora chat "Continue" --session sess_abc --format ndjson
+aikb chat "What is RRF?" --kb a32a63ff-fb36-4874-bcaa-30f48570a694
+aikb chat "Continue" --session sess_abc --format ndjson
 ```
 
 ### session - manage sessions (`cli/cmd/session/`)
@@ -377,8 +377,8 @@ weknora chat "Continue" --session sess_abc --format ndjson
 | tool-approval resolve | `resolve <pending-id>` | Approves or rejects a tool call an agent run is waiting on: `--reject`, `--reason`, `--modified-args` (JSON, on approval only); high-risk write |
 
 ```bash
-weknora session ask "Summarize this KB" --agent agt_123 --format ndjson
-weknora session tool-approval resolve <pending-id> --reject --reason "Write operations are not allowed" -y
+aikb session ask "Summarize this KB" --agent agt_123 --format ndjson
+aikb session tool-approval resolve <pending-id> --reject --reason "Write operations are not allowed" -y
 ```
 
 ### message - messages in a session (`cli/cmd/message/`)
@@ -402,8 +402,8 @@ weknora session tool-approval resolve <pending-id> --reject --reason "Write oper
 | check | `check <agent-id>` | End-to-end check (status plus kb_scope reachability) |
 
 ```bash
-weknora agent create researcher --model gpt-4o --attach-kb <kb-id> --system-prompt-file ./prompt.md
-weknora agent update agt_123 --add-kb <kb-id2> --temperature 0.3
+aikb agent create researcher --model gpt-4o --attach-kb <kb-id> --system-prompt-file ./prompt.md
+aikb agent update agt_123 --add-kb <kb-id2> --temperature 0.3
 ```
 
 ### model - manage models (`cli/cmd/model/`)
@@ -417,8 +417,8 @@ weknora agent update agt_123 --add-kb <kb-id2> --temperature 0.3
 | delete | `delete <model-id>` | Deletes (exit-10 protection) |
 
 ```bash
-weknora model create bge-m3 --type Embedding --source local --base-url http://localhost:11434 --dimension 1024
-echo "$OPENAI_KEY" | weknora model create gpt-4o --type chat --source remote --provider openai --api-key-stdin
+aikb model create bge-m3 --type Embedding --source local --base-url http://localhost:11434 --dimension 1024
+echo "$OPENAI_KEY" | aikb model create gpt-4o --type chat --source remote --provider openai --api-key-stdin
 ```
 
 ### api - raw HTTP escape hatch (`cli/cmd/api/api.go`)
@@ -436,9 +436,9 @@ A single command: `api <path>`. It sends the active profile's authentication hea
 `-X DELETE` is behind the exit-10 destructive confirmation and `PUT/PATCH` behind the write confirmation. `POST` has no gate, like the typed create commands. `--dry-run` is supported for non-GET methods only.
 
 ```bash
-weknora api /api/v1/knowledge-bases                              # GET
-weknora api /api/v1/knowledge-bases -d '{"name":"foo"}'          # POST (automatic)
-weknora api /api/v1/knowledge-bases/<id> -X DELETE -y
+aikb api /api/v1/knowledge-bases                              # GET
+aikb api /api/v1/knowledge-bases -d '{"name":"foo"}'          # POST (automatic)
+aikb api /api/v1/knowledge-bases/<id> -X DELETE -y
 ```
 
 ### mcp - Model Context Protocol server (`cli/cmd/mcp/`)
@@ -454,7 +454,7 @@ MCP client registration example (goes in the client's `mcpServers` configuration
 ```json
 {
   "mcpServers": {
-    "weknora": { "command": "weknora", "args": ["mcp", "serve"] }
+    "aikb": { "command": "aikb", "args": ["mcp", "serve"] }
   }
 }
 ```
@@ -467,18 +467,18 @@ MCP client registration example (goes in the client's `mcpServers` configuration
 | install | `install` | Writes the embedded skills to an agent's skills directory: `--dir` (default `~/.claude/skills`, a leading `~` is expanded), `--force` (overwrite existing files; otherwise they are skipped); supports `--dry-run` |
 
 ```bash
-weknora skills install --dry-run --format json
-weknora skills install --dir ~/.claude/skills --force
+aikb skills install --dry-run --format json
+aikb skills install --dir ~/.claude/skills --force
 ```
 
 ### doctor - self-check (`cli/cmd/doctor/doctor.go`)
 
 A single command: `doctor`. It runs 4 checks: base URL reachability, authentication, server version compatibility and credential storage. Each check reports `ok / warn / fail / skip`. Any `fail` gives exit code 1 (the JSON data is still printed). Warnings alone give exit code 0 with `summary.all_passed=false`.
 
-Flags: `--no-cache` (bypasses the `$XDG_CACHE_HOME/weknora/server-info.yaml` cache and probes again), `--offline` (skips the network checks and only verifies the local keychain or file storage).
+Flags: `--no-cache` (bypasses the `$XDG_CACHE_HOME/aikb/server-info.yaml` cache and probes again), `--offline` (skips the network checks and only verifies the local keychain or file storage).
 
 ```bash
-weknora doctor --format json --jq '.data.summary.all_passed'
+aikb doctor --format json --jq '.data.summary.all_passed'
 ```
 
 ### Root-level helper commands (`cli/cmd/root.go`, `schema.go`, `exitcodes.go`)
@@ -523,20 +523,20 @@ These steps take you from an empty machine to a first answer from your own docum
 
 ```bash
 # 1. Register the server as a profile and activate it
-weknora profile add prod --host https://kb.example.com --use
+aikb profile add prod --host https://kb.example.com --use
 
 # 2. Authenticate (interactive; agents use --with-token)
-weknora auth login
+aikb auth login
 
 # 3. Self-check
-weknora doctor
+aikb doctor
 
 # 4. Create a knowledge base, bind models, upload a document, wait for indexing
-weknora kb create docs --embedding-model <emb> --chat-model <llm>
-weknora doc upload ./design.pdf --kb docs
-weknora doc wait <doc-id>
+aikb kb create docs --embedding-model <emb> --chat-model <llm>
+aikb doc upload ./design.pdf --kb docs
+aikb doc wait <doc-id>
 
 # 5. Search and ask
-weknora search chunks "rate limiting" --kb docs
-weknora chat "Summarize this design document" --kb docs
+aikb search chunks "rate limiting" --kb docs
+aikb chat "Summarize this design document" --kb docs
 ```

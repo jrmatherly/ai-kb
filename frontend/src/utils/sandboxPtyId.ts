@@ -8,7 +8,7 @@
  * tab's F5 does not.
  */
 
-const KEY_PREFIX = 'weknora_sandbox_pty:'
+const KEY_PREFIX = 'aikb_sandbox_pty:'
 
 export function sandboxPtyStorageKey(sessionId: string): string {
   return `${KEY_PREFIX}${sessionId.trim()}`

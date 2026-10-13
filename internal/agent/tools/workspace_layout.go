@@ -70,7 +70,7 @@ func (s *sessionBound) describeLayout(dep any) sandbox.WorkspaceLayout {
 	return layout
 }
 
-const layoutRootToken = "\x00WEKNORA_LAYOUT_ROOT\x00"
+const layoutRootToken = "\x00AIKB_LAYOUT_ROOT\x00"
 
 // lookupWorkspaceLayout is the Execute-time lookup.
 //

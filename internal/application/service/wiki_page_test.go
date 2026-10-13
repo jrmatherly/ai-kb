@@ -197,17 +197,17 @@ func TestRepairContentLinks(t *testing.T) {
 
 	// Real summary page (clean UUID slug) + a distractor summary + an entity.
 	realSummary := "summary/07a20bb1-a662-47cf-9929-06fb5d5b5b5e"
-	seed(realSummary, "Weknora 试错记录.md - Summary", types.WikiPageTypeSummary)
+	seed(realSummary, "AI KB 试错记录.md - Summary", types.WikiPageTypeSummary)
 	seed("summary/fcadcaab-e094-4037-b71c-9edfdcdba058", "Another Doc - Summary", types.WikiPageTypeSummary)
 	seed("entity/mongodb", "MongoDB", types.WikiPageTypeEntity)
 
 	t.Run("mangled uuid summary link repaired via bigram", func(t *testing.T) {
 		// One hex digit inserted into the last group — 404s on exact lookup.
-		content := "See [[summary/07a20bb1-a662-47cf-9929-06fb14d5b14b14e|Weknora 试错记录.md - Summary]] for context."
+		content := "See [[summary/07a20bb1-a662-47cf-9929-06fb14d5b14b14e|AI KB 试错记录.md - Summary]] for context."
 		got, changed, err := svc.RepairContentLinks(ctx, kbID, "synthesis/notes", content)
 		require.NoError(t, err)
 		require.True(t, changed, "expected the mangled summary link to be rewritten")
-		require.Contains(t, got, "[["+realSummary+"|Weknora 试错记录.md - Summary]]")
+		require.Contains(t, got, "[["+realSummary+"|AI KB 试错记录.md - Summary]]")
 		require.NotContains(t, got, "06fb14d5b14b14e")
 	})
 

@@ -173,7 +173,7 @@ func TestDoctor_CacheHit_SkipsProbe(t *testing.T) {
 // TestDoctor_NoConfig_StillRunsCredentialStorage guards the package-doc
 // promise that credential_storage runs even with zero configuration. Round-4
 // reviewer surfaced that buildServices used to abort on f.Client() failure,
-// silently violating the doc for any first-time user running `weknora doctor`
+// silently violating the doc for any first-time user running `aikb doctor`
 // to diagnose setup. The lazy-resolve fix means missing auth surfaces as
 // auth_credential=fail, not a top-level command exit.
 func TestDoctor_NoConfig_StillRunsCredentialStorage(t *testing.T) {
@@ -513,7 +513,7 @@ func TestDoctor_RunE_WarnReturnsNil(t *testing.T) {
 // AIKB_HOST when stateless env credentials are in effect (the headless
 // agent path), mirroring buildClientFromEnv. Regression: doctor previously
 // read only the active profile host, so `AIKB_API_KEY=... AIKB_HOST=...
-// weknora doctor` reported "no host configured" and exited 1 while every
+// aikb doctor` reported "no host configured" and exited 1 while every
 // other command worked.
 func TestResolveDoctorHost_EnvCredentials(t *testing.T) {
 	cfg := &config.Config{

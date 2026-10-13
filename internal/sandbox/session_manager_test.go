@@ -38,7 +38,7 @@ func TestExecutionOutputDir(t *testing.T) {
 			name: "rejects path outside workspace",
 			cfg: &ExecuteConfig{
 				Env: map[string]string{
-					skillOutputEnvVar: "/tmp/weknora-skill-output",
+					skillOutputEnvVar: "/tmp/ai-kb-skill-output",
 				},
 			},
 			want: SessionOutputRoot,
@@ -895,7 +895,7 @@ func (b *clientBoundRecordingBootstrapper) AfterCreate(
 		return errors.New("AfterCreate must use the bound remote client")
 	}
 	_, err := b.client.Exec(ctx, handle, RemoteExecRequest{
-		Command: "echo weknora-fork-after-create",
+		Command: "echo ai-kb-fork-after-create",
 		Shell:   true,
 		WorkDir: SessionWorkspaceRoot,
 		Timeout: time.Second,
@@ -942,7 +942,7 @@ func TestNewSessionBoundManagerBindsBootstrapperToClient(t *testing.T) {
 	found := false
 	client.mu.Lock()
 	for _, req := range client.execRequests {
-		if strings.Contains(req.Command, "weknora-fork-after-create") {
+		if strings.Contains(req.Command, "ai-kb-fork-after-create") {
 			found = true
 			require.True(t, req.Shell)
 			require.Equal(t, SessionWorkspaceRoot, req.WorkDir)

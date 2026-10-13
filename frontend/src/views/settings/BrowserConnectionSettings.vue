@@ -209,7 +209,7 @@ const formatDate = (value: string) => new Date(value).toLocaleString(locale.valu
 function clearPairing() { pairing.value = ''; copied.value = false; copyFallback.value = false; clearTimeout(expiry) }
 async function desktopApiBase(): Promise<string> {
   const win = window as Window & {
-    __WEKNORA_API_BASE__?: string
+    __AIKB_API_BASE__?: string
     go?: { main?: { App?: { GetAPIBaseURL?: () => Promise<string> | string } } }
   }
   let native = ''
@@ -221,7 +221,7 @@ async function desktopApiBase(): Promise<string> {
       native = ''
     }
   }
-  return preferredDesktopAPIBase(native, win.__WEKNORA_API_BASE__)
+  return preferredDesktopAPIBase(native, win.__AIKB_API_BASE__)
 }
 async function refresh() {
   try {

@@ -19,7 +19,7 @@ go run .            # daemon 在本机 unix socket 上时可能需要 sudo -E
 ```
 
 程序会自建一个带 uid 1000 `user` 账号的模板镜像（对齐 E2B 模板约定），跑完自行删除它创建的容器。
-留下的 `weknora-poc/*` 镜像用 `docker image rm` 清理。
+留下的 `ai-kb-poc/*` 镜像用 `docker image rm` 清理。
 
 ## 覆盖的内容
 

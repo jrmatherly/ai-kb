@@ -127,7 +127,7 @@ func (m *InstallManager) ExecShellCommandWithOptions(
 // installEnv points package caches inside dir: the default cache locations
 // under the home directory are not writable to the install policy.
 func installEnv(dir string, extra map[string]string) map[string]string {
-	cache := filepath.Join(dir, ".weknora", "cache")
+	cache := filepath.Join(dir, ".aikb", "cache")
 	env := make(map[string]string, len(extra)+4)
 	for k, v := range extra {
 		env[k] = v

@@ -14,7 +14,7 @@ func TestDesktopSigningKeyPersistsWithoutChangingAES(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
 	t.Setenv("JWT_SECRET", "")
-	t.Setenv("SYSTEM_AES_KEY", "weknora-system-aes-key-32bytes!!")
+	t.Setenv("SYSTEM_AES_KEY", "ai-kb-system-aes-key-32bytes!!")
 	require.NoError(t, ensureDesktopSigningKeyInDir(dir))
 	first := string(utils.SystemHMACKey())
 	firstJWT := os.Getenv("JWT_SECRET")
@@ -25,7 +25,7 @@ func TestDesktopSigningKeyPersistsWithoutChangingAES(t *testing.T) {
 	require.NoError(t, ensureDesktopSigningKeyInDir(dir))
 	require.Equal(t, first, string(utils.SystemHMACKey()))
 	require.Equal(t, firstJWT, os.Getenv("JWT_SECRET"))
-	require.Equal(t, "weknora-system-aes-key-32bytes!!", os.Getenv("SYSTEM_AES_KEY"))
+	require.Equal(t, "ai-kb-system-aes-key-32bytes!!", os.Getenv("SYSTEM_AES_KEY"))
 	info, err := os.Stat(filepath.Join(dir, "signing.key"))
 	require.NoError(t, err)
 	if runtime.GOOS != "windows" {
@@ -37,7 +37,7 @@ func TestDesktopJWTSecretIsNotTheAESKey(t *testing.T) {
 	dir := t.TempDir()
 	const aes = "0123456789abcdef0123456789abcdef"
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
-	t.Setenv("JWT_SECRET", "weknora-jwt-secret")
+	t.Setenv("JWT_SECRET", "ai-kb-jwt-secret")
 	t.Setenv("SYSTEM_AES_KEY", aes)
 
 	require.NoError(t, ensureDesktopSigningKeyInDir(dir))

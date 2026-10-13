@@ -2,7 +2,7 @@
 
 > 更推荐使用`uv`来运行基于python的MCP服务。
 >
-> 也可通过 PyPI 安装：`pip install tencent-weknora-mcp`，或使用 `uvx --from tencent-weknora-mcp weknora-mcp-server`（官方包名 `tencent-weknora-mcp`，由 [jrmatherly/ai-kb](https://github.com/jrmatherly/ai-kb) 维护）。
+> 也可通过 PyPI 安装：`pip install ai-kb-mcp`，或使用 `uvx --from ai-kb-mcp ai-kb-mcp-server`（官方包名 `ai-kb-mcp`，由 [jrmatherly/ai-kb](https://github.com/jrmatherly/ai-kb) 维护）。
 
 ## 1. 安装 uv
 
@@ -26,7 +26,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "args": [
         "--directory",
         "/path/ai-kb/mcp-server",
@@ -50,7 +50,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "command": "uv",
       "args": [
         "--directory",
@@ -74,7 +74,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "command": "uv",
       "args": [
         "--directory",
@@ -98,7 +98,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "command": "uv",
       "args": [
         "--directory",

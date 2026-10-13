@@ -64,7 +64,7 @@ func newWeKnoraCloudProvider() *Definition {
 		Name:         "AI KB Cloud",
 		Names:        map[string]string{"zh-CN": "AI KB 云服务"},
 		Description:  "AI KB managed models: chat, embedding, rerank, vlm",
-		Descriptions: map[string]string{"zh-CN": "WeKnora云服务，模型：chat, embedding, rerank, vlm"},
+		Descriptions: map[string]string{"zh-CN": "AI KB云服务，模型：chat, embedding, rerank, vlm"},
 		Website:      WeKnoraCloudBaseURL,
 		Icon:         weKnoraCloudIcon,
 		API:          api.APIOpenAICompletions,

@@ -1,6 +1,6 @@
-// Package mcp wires the curated weknora tool set to an
+// Package mcp wires the curated aikb tool set to an
 // modelcontextprotocol/go-sdk server. RunStdio is the entry point invoked
-// by `weknora mcp serve`.
+// by `aikb mcp serve`.
 //
 // Design notes:
 //
@@ -52,7 +52,7 @@ func RunStdio(ctx context.Context, svc ServiceClient) error {
 	v, _, _ := build.Info()
 	server := mcpsdk.NewServer(
 		&mcpsdk.Implementation{
-			Name:    "weknora",
+			Name:    "aikb",
 			Version: v,
 		},
 		nil,

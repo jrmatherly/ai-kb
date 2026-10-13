@@ -152,7 +152,7 @@ func (f *fakeHostSkillInstaller) ReadSessionFile(_ context.Context, sessionID, f
 	}
 	// The remote install agent fake seeds this report onto sandboxMgr.files;
 	// host verify reads through the installer instead.
-	if strings.HasSuffix(filepath.ToSlash(filePath), ".weknora/install-report.json") {
+	if strings.HasSuffix(filepath.ToSlash(filePath), ".aikb/install-report.json") {
 		return []byte(`{"commands":[],"blockers":[]}`), nil
 	}
 	return nil, os.ErrNotExist
@@ -180,7 +180,7 @@ func (f *fakeHostSkillInstaller) WriteSessionFile(_ context.Context, sessionID, 
 func hostInstallFixture(t *testing.T) (*installFixture, *fakeHostSkillTree, *fakeHostSkillInstaller) {
 	t.Helper()
 	fx := newInstallFixture(t)
-	tree := newFakeHostSkillTree(filepath.Join(t.TempDir(), ".weknora", "skills"))
+	tree := newFakeHostSkillTree(filepath.Join(t.TempDir(), ".aikb", "skills"))
 	installer := &fakeHostSkillInstaller{capableManager: capableManager{typ: sandbox.SandboxTypeHost}}
 	fx.svc.host = liteHost(tree, installer)
 	return fx, tree, installer
@@ -268,7 +268,7 @@ func TestHostInstallActivatesVersionAndMarksReady(t *testing.T) {
 	require.Empty(t, row.InstalledSnapshotID)
 	require.Len(t, tree.versions, 1)
 	require.Equal(t, tree.versions[0], tree.active[fx.bundle.Name])
-	require.NoFileExists(t, filepath.Join(tree.versions[0], ".weknora", "install-report.json"))
+	require.NoFileExists(t, filepath.Join(tree.versions[0], ".aikb", "install-report.json"))
 	require.FileExists(t, filepath.Join(tree.versions[0], "SKILL.md"))
 	require.Equal(t, []string{tree.versions[0], ""}, tree.pruned[fx.bundle.Name])
 	require.Empty(t, installer.bound, "the install session must be unbound when the run ends")
@@ -295,11 +295,11 @@ func TestHostInstallFailureKeepsPreviousVersion(t *testing.T) {
 
 func TestHostInstallPromptNamesTheVersionDir(t *testing.T) {
 	bundle := &SkillBundle{Name: "pdf", Files: map[string][]byte{"SKILL.md": []byte("# pdf")}}
-	dir := "/Users/dev/.weknora/skills/.versions/pdf-2"
+	dir := "/Users/dev/.aikb/skills/.versions/pdf-2"
 	prompt := buildHostInstallPrompt(dir, bundle, map[string]string{"python3": "/usr/bin/python3"})
 	require.Contains(t, prompt, dir)
-	require.Contains(t, prompt, dir+"/.weknora/requirements.json")
-	require.Contains(t, prompt, ".weknora/install-report.json")
+	require.Contains(t, prompt, dir+"/.aikb/requirements.json")
+	require.Contains(t, prompt, ".aikb/install-report.json")
 	require.NotContains(t, prompt, "already present")
 	require.Contains(t, prompt, "write_skill_file")
 	require.Contains(t, prompt, "sudo")
@@ -327,16 +327,16 @@ func TestHostVersionDirSymlinksAreNotFollowed(t *testing.T) {
 	versionDir, outside := t.TempDir(), t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(outside, "cache"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(outside, "requirements.json"), []byte(`{"env":[]}`), 0o600))
-	require.NoError(t, os.Symlink(outside, filepath.Join(versionDir, ".weknora")))
+	require.NoError(t, os.Symlink(outside, filepath.Join(versionDir, ".aikb")))
 
-	_, err := noSymlinkPath(versionDir, ".weknora", "cache")
+	_, err := noSymlinkPath(versionDir, ".aikb", "cache")
 	require.Error(t, err)
 	_, err = readNoSymlinkFile(versionDir, sandbox.SkillRequirementsPathIn(versionDir))
 	require.Error(t, err)
 
-	missing, err := noSymlinkPath(t.TempDir(), ".weknora", "cache")
+	missing, err := noSymlinkPath(t.TempDir(), ".aikb", "cache")
 	require.NoError(t, err)
-	require.True(t, strings.HasSuffix(missing, filepath.Join(".weknora", "cache")))
+	require.True(t, strings.HasSuffix(missing, filepath.Join(".aikb", "cache")))
 }
 
 // skillRowOrNil loads a row that may already be gone (post-remove).

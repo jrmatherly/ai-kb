@@ -15,7 +15,7 @@ import (
 // previous sandbox ID.
 const DefaultSandboxDesktopLastTTL = 7 * 24 * time.Hour
 
-const desktopLastRedisPrefix = "weknora:desktop-last-sandbox:"
+const desktopLastRedisPrefix = "aikb:desktop-last-sandbox:"
 
 // SandboxDesktopLastStore remembers which sandbox a session's desktop last
 // attached to. SANDBOX_REBUILT is load-bearing: a skill install can recreate

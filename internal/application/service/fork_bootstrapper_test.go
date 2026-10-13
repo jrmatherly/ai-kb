@@ -285,9 +285,9 @@ func isolatedGitEnv(t *testing.T) []string {
 		"GIT_CONFIG_GLOBAL="+filepath.Join(t.TempDir(), "gitconfig"),
 		"GIT_CONFIG_NOSYSTEM=1",
 		"GIT_AUTHOR_NAME=AI KB Agent",
-		"GIT_AUTHOR_EMAIL=agent@weknora.local",
+		"GIT_AUTHOR_EMAIL=agent@ai-kb.local",
 		"GIT_COMMITTER_NAME=AI KB Agent",
-		"GIT_COMMITTER_EMAIL=agent@weknora.local",
+		"GIT_COMMITTER_EMAIL=agent@ai-kb.local",
 	)
 }
 

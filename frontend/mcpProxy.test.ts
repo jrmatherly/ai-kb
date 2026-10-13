@@ -37,7 +37,7 @@ for (const mode of ['dev', 'preview'] as const) {
     })
     upstream.listen(0, '127.0.0.1')
     await once(upstream, 'listening')
-    const root = await mkdtemp(join(tmpdir(), 'weknora-mcp-proxy-'))
+    const root = await mkdtemp(join(tmpdir(), 'ai-kb-mcp-proxy-'))
     const previousTarget = process.env.VITE_DEV_PROXY_TARGET
     process.env.VITE_DEV_PROXY_TARGET = `http://127.0.0.1:${(upstream.address() as AddressInfo).port}`
     let closeGateway: (() => Promise<void>) | undefined

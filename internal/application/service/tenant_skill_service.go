@@ -195,7 +195,7 @@ func (s *TenantSkillService) withSkillLock(ctx context.Context, key string, fn f
 }
 
 func skillImageLockKey(tenantID uint64, configID string) string {
-	return fmt.Sprintf("weknora-skill-image-lock:%d:%s", tenantID, configID)
+	return fmt.Sprintf("ai-kb-skill-image-lock:%d:%s", tenantID, configID)
 }
 
 // clock is this service's time source. Tests inject one; a service built

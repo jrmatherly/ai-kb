@@ -413,7 +413,7 @@ python main.py --verbose
 ```json
 {
   "mcpServers": {
-    "weknora": {
+    "aikb": {
       "command": "python",
       "args": ["path/to/main.py"],
       "env": {

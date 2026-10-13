@@ -32,7 +32,7 @@ def read_requirements():
 
 
 setup(
-    name="tencent-weknora-mcp",
+    name="ai-kb-mcp",
     version="1.1.1",
     author="AI KB Team",
     author_email="support@weknora.com",
@@ -40,7 +40,7 @@ setup(
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/jrmatherly/ai-kb/tree/main/mcp-server",
-    py_modules=["weknora_mcp_server", "upload_paths", "main", "run_server", "run", "test_module"],
+    py_modules=["aikb_mcp_server", "upload_paths", "main", "run_server", "run", "test_module"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -58,13 +58,13 @@ setup(
     install_requires=read_requirements(),
     entry_points={
         "console_scripts": [
-            "weknora-mcp-server=main:sync_main",
-            "weknora-server=run_server:main",
+            "ai-kb-mcp-server=main:sync_main",
+            "ai-kb-server=run_server:main",
         ],
     },
     include_package_data=True,
     data_files=[
         ("", ["README.md", "requirements.txt", "LICENSE"]),
     ],
-    keywords="mcp model-context-protocol weknora knowledge-management api-server",
+    keywords="mcp model-context-protocol aikb knowledge-management api-server",
 )

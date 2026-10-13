@@ -512,7 +512,7 @@ Implemented in `internal/application/service/user.go` with `github.com/golang-jw
 
 ```go
 func getJwtSecret() string {
-    // 1) the JWT_SECRET env (the placeholders "weknora-jwt-secret" and "CHANGE-ME-jwt-secret" count as unset)
+    // 1) the JWT_SECRET env (the placeholders "ai-kb-jwt-secret" and "CHANGE-ME-jwt-secret" count as unset)
     // 2) otherwise a 32-byte secure random key (Base64) generated at startup; old tokens stop working after a restart
 }
 ```

@@ -757,7 +757,7 @@ func TestValidateConfigMaxIterationsUnlimited(t *testing.T) {
 }
 
 func TestValidInstallDirUsesTheHostVersionsRoot(t *testing.T) {
-	versions := "/Users/dev/.weknora/skills/.versions"
+	versions := "/Users/dev/.aikb/skills/.versions"
 	s := &agentService{hostSkillVersionsRoot: versions}
 
 	host := &types.AgentConfig{SandboxConfigID: sandbox.HostSkillTargetID}

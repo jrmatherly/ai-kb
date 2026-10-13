@@ -511,7 +511,7 @@ var (
 )
 
 func desktopSlotKey(sessionID string) string {
-	return "weknora:desktop-slot:" + sessionID
+	return "aikb:desktop-slot:" + sessionID
 }
 
 // desktopLimiter caps the session to one desktop within this process.

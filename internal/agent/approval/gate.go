@@ -23,7 +23,7 @@ import (
 // across backend replicas (issue #1173 cross-instance support). The actual
 // channel is suffixed with AIKB_REDIS_NAMESPACE (when set) so multiple
 // deployments sharing the same Redis don't cross-talk.
-const pubsubChannelBase = "weknora:mcp_approval:resolve"
+const pubsubChannelBase = "aikb:mcp_approval:resolve"
 
 // instanceID is a process-unique id used to ignore self-published pubsub
 // messages (avoids "pending not found" log noise on the publisher side).

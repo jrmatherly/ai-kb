@@ -40,7 +40,7 @@ X-API-Key: <api_key>
   - Scoped key: admitted per capability and bounded by the `knowledge_base_ids` allowlist. The capability constants live in `internal/types/tenant_api_key.go`: `retrieve`, `ingest`, `chat`, `read_agents`, `manage_kbs`, `manage_agents`, `message_history`, `manage_models`, `manage_mcp_services`, `manage_datasources`, `manage_channels`, `manage_vector_stores`, `manage_storage_backends`, `manage_web_search`, `run_evaluations`, `manage_members`, `manage_spaces`, `manage_tenant_settings`. Platform capabilities: `system_tenants_read/manage`, `system_settings_read/manage`, `system_runtime_read/manage`, `system_audit_read`.
 - External user principals (optional, configured per workspace at `api-principal-config`):
   - `direct_header` mode: `X-External-User-ID: <external user ID>` (at most 128 characters).
-  - `signed_token` mode: `X-External-User-Token: <HS256 JWT>` with `aud=weknora`, `exp` (lifetime at most 24h), a `tenant_id` claim equal to the target workspace, and `sub` set to the external user ID.
+  - `signed_token` mode: `X-External-User-Token: <HS256 JWT>` with `aud=aikb`, `exp` (lifetime at most 24h), a `tenant_id` claim equal to the target workspace, and `sub` set to the external user ID.
 
 ### Embed publish token (anonymous embed clients)
 

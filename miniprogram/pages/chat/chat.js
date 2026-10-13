@@ -10,7 +10,7 @@ function buildViewModel() {
     chatSubtitle: messages.chatSubtitle,
     questionLabel: messages.question,
     questionPlaceholder: messages.questionPlaceholder,
-    askText: messages.askWeKnora,
+    askText: messages.askAIKB,
     answerLabel: messages.answer
   };
 }

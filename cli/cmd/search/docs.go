@@ -59,7 +59,7 @@ type DocsSearchService interface {
 	ListKnowledgeWithFilter(ctx context.Context, kbID string, page, pageSize int, filter sdk.KnowledgeListFilter) ([]sdk.Knowledge, int64, error)
 }
 
-// NewCmdDocs builds `weknora search docs "<query>" --kb <id-or-name>`.
+// NewCmdDocs builds `aikb search docs "<query>" --kb <id-or-name>`.
 // Pages through the KB's documents and surfaces every entry whose title
 // or file_name contains the query as a server-side case-insensitive LIKE
 // match. Useful for finding a specific upload to download or delete.
@@ -78,9 +78,9 @@ The query is a case-insensitive server-side LIKE filter (the server runs
 
 By default, --all-pages=true walks every server page until --limit is
 reached or the KB is exhausted. Pass --all-pages=false to stop after one page.`,
-		Example: `  weknora search docs "Q3 forecast" --kb finance
-  weknora search docs "spec" --kb engineering --limit 5
-  weknora search docs "spec" --kb engineering --all-pages=false`,
+		Example: `  aikb search docs "Q3 forecast" --kb finance
+  aikb search docs "spec" --kb engineering --limit 5
+  aikb search docs "spec" --kb engineering --all-pages=false`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
 			opts.Query = strings.TrimSpace(args[0])
@@ -120,7 +120,7 @@ reached or the KB is exhausted. Pass --all-pages=false to stop after one page.`,
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor:       "Find documents in a knowledge base by keyword (server-side LIKE filter on title/file_name). The KB comes from --kb (id or name), else AIKB_KB_ID, else the linked directory. Results come with meta.count; use --limit to cap and --all-pages=false to stop after one page.",
 		RequiredFlags: []string{"<query> (positional)", "--kb (or AIKB_KB_ID / linked directory)"},
-		Examples:      []string{`weknora search docs "spec" --kb engineering --format json`},
+		Examples:      []string{`aikb search docs "spec" --kb engineering --format json`},
 		Output:        "envelope.data is an array of Knowledge objects with id, title, file_name, parse_status; meta.count is the returned count, meta.total_count the server's full match count, meta.has_more=true if more matched than --limit",
 	})
 	return cmd

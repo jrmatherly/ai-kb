@@ -9,7 +9,7 @@ The main application connects to its database through GORM, and the environment 
 | `DB_DRIVER` | Description |
 | --- | --- |
 | `postgres` | Standard mode. Works with plain PostgreSQL (+pgvector) and with **ParadeDB** (a PostgreSQL distribution with built-in `pg_search`/BM25; the Compose files default to `paradedb/paradedb:v0.25.11-pg17`). The GORM DSN is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` and forces `sslmode=disable` and `TimeZone=UTC` |
-| `sqlite` | Lite mode. The path comes from `DB_PATH` (default `./data/weknora.db`), the DSN appends `_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on`, and the `sqlite-vec` extension is loaded (`sqlite_vec.Auto()`) for vector retrieval |
+| `sqlite` | Lite mode. The path comes from `DB_PATH` (default `./data/aikb.db`), the DSN appends `_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on`, and the `sqlite-vec` extension is loaded (`sqlite_vec.Auto()`) for vector retrieval |
 | Any other value | Fails immediately with `unsupported database driver` |
 
 **MySQL is not a main database option.** The `go-sql-driver/mysql` dependency in `go.mod` only registers the MySQL protocol driver for the Doris retrieval engine (MySQL protocol, `database/sql`); see the import comment in `container.go`. `migrations/mysql/00-init-db.sql` is a one-off MySQL table script that covers only 10 core tables (tenants/models/knowledge_bases/knowledges/sessions/messages/message_suggestion_sets/message_suggestion_events/chunks/chunk_revisions). **No Go code or script references it.** It is not part of application startup; treat it as legacy or for external initialization.

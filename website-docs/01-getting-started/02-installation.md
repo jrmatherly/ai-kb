@@ -237,7 +237,7 @@ The desktop options target local machines and low-resource environments. Both ru
 
 Lite mode combines the compile-time `EDITION=lite` with the runtime `.env.lite` environment so that one process runs everything:
 
-- **Database**: `DB_DRIVER=sqlite` + `DB_PATH=./data/weknora.db`, compiled with `-tags "sqlite_fts5"`;
+- **Database**: `DB_DRIVER=sqlite` + `DB_PATH=./data/aikb.db`, compiled with `-tags "sqlite_fts5"`;
 - **Retrieval**: `RETRIEVE_DRIVER=sqlite`, SQLite FTS5 full-text search + sqlite-vec vector search, no vector database needed;
 - **Queue / streams**: `STREAM_MANAGER_TYPE=memory` (`internal/stream/factory.go`), no Redis; background tasks run inline through a synchronous enqueuer instead of the Asynq queue (`internal/types/interfaces/task_enqueuer.go`);
 - **Frontend**: `make build-lite` copies `frontend/dist` to `web/` at the repository root and the binary serves these static files itself (`AIKB_WEB_DIR` overrides the directory; the router's `serveFrontendStatic` serves them);

@@ -108,7 +108,7 @@ func TestAskExposesImageHandlesToTextAndStructuredClients(t *testing.T) {
 	require.Len(t, parsed.References[0].Images, 2)
 	require.Equal(t, publicURL, parsed.References[0].Images[1].URL)
 	img := parsed.References[0].Images[0]
-	require.True(t, strings.HasPrefix(img.URL, "https://weknora.example/prefix/r/"))
+	require.True(t, strings.HasPrefix(img.URL, "https://ai-kb.example/prefix/r/"))
 	require.Equal(t, "chart", img.Caption)
 	require.Equal(t, "values", img.OCRText)
 	require.Contains(t, result.Content[0].(mcp.TextContent).Text, img.URL)

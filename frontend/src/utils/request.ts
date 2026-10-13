@@ -77,7 +77,7 @@ instance.interceptors.request.use(
 
     // 嵌入渠道使用 Embed token；勿用本地 JWT 覆盖（否则调试页会 401）
     if (!isEmbedAuth) {
-      const token = localStorage.getItem('weknora_token');
+      const token = localStorage.getItem('aikb_token');
       if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
       }
@@ -89,14 +89,14 @@ instance.interceptors.request.use(
     // 添加跨空间访问请求头：只要 setSelectedTenant 写过激活空间，
     // 每个请求都要附 X-Tenant-ID。早期版本会 short-circuit
     // "selectedTenantId === defaultTenantId 时不附"以减少 header 体积，
-    // 但这条优化会被任何把 weknora_tenant 写成激活空间的代码（OIDC
+    // 但这条优化会被任何把 aikb_tenant 写成激活空间的代码（OIDC
     // 回调、UserMenu loadUserInfo、router hydrate）触发，导致后续请求
     // 静默丢失 header，前端"切换了"但实际仍跑在 home 空间里——把"切
     // 换之后只有第一批请求带 X-Tenant-ID"调成永久状态。
     // 后端 IsTenantAccessible 已经允许 header 指向 home 空间（自家），
     // 所以无脑附不会引入新风险。
     if (!isEmbedAuth && !isEmbedPath) {
-      const selectedTenantId = localStorage.getItem('weknora_selected_tenant_id');
+      const selectedTenantId = localStorage.getItem('aikb_selected_tenant_id');
       if (selectedTenantId) {
         config.headers["X-Tenant-ID"] = selectedTenantId;
       }

@@ -9,6 +9,6 @@ __version__ = "1.1.1"
 __author__ = "AI KB Team"
 __description__ = "AI KB MCP Server - Model Context Protocol server for AI KB API"
 
-from weknora_mcp_server import WeKnoraClient, run
+from aikb_mcp_server import AIKBClient, run
 
-__all__ = ["WeKnoraClient", "run"]
+__all__ = ["AIKBClient", "run"]

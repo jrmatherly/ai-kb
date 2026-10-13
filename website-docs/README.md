@@ -34,8 +34,8 @@ Upload only the archive to the server. The server needs neither Node.js nor the 
 Extract each release into a new, empty directory so that files from an older site do not mix in. `20260915-1` below is an example release number; use a new one for each release:
 
 ```bash
-sudo mkdir -p /srv/www/weknora/releases/20260915-1
-sudo tar -xzf weknora-site-v0.8.2.tar.gz -C /srv/www/weknora/releases/20260915-1
+sudo mkdir -p /srv/www/aikb/releases/20260915-1
+sudo tar -xzf ai-kb-site-v0.8.2.tar.gz -C /srv/www/aikb/releases/20260915-1
 ```
 
 After extraction the directory contains `index.html`, `404.html` and `docs/` directly, with no extra `static-site/` level.
@@ -46,12 +46,12 @@ Add a site configuration based on the [deploy/nginx.conf](deploy/nginx.conf) tem
 
 ```nginx
 server_name your-domain;
-root /srv/www/weknora/releases/20260915-1;
+root /srv/www/aikb/releases/20260915-1;
 ```
 
 If the domain already has an HTTPS configuration, keep its certificate and listen settings and merge the template's `root`, `index` and `location` rules into the existing site configuration. The domain must resolve to this server.
 
-Keep the documentation's `.html` route resolution rule. Do not fall back to the homepage `index.html` for every unknown path. The current build is deployed at the domain root; serving it from a subdirectory such as `/weknora/` is not supported.
+Keep the documentation's `.html` route resolution rule. Do not fall back to the homepage `index.html` for every unknown path. The current build is deployed at the domain root; serving it from a subdirectory such as `/aikb/` is not supported.
 
 Test the configuration, then reload:
 
@@ -80,8 +80,8 @@ The image builds from a clean checkout. The host needs no Node.js and no pre-gen
 From the repository root:
 
 ```bash
-docker build -t weknora-site:0.8.2 website-docs
-docker run -d --name weknora-site --restart unless-stopped -p 8080:80 weknora-site:0.8.2
+docker build -t ai-kb-site:0.8.2 website-docs
+docker run -d --name ai-kb-site --restart unless-stopped -p 8080:80 ai-kb-site:0.8.2
 ```
 
 Open `http://<server-address>:8080/`. For a domain with HTTPS, have the existing reverse proxy forward to that port. The image already contains the homepage, the documentation and the Nginx routing configuration.
@@ -89,14 +89,14 @@ Open `http://<server-address>:8080/`. For a domain with HTTPS, have the existing
 Nginx in the container listens on port 80 by default. The image's `/docker-entrypoint.sh` writes the port from the `WEBSITE_NGINX_PORT` environment variable into the Nginx configuration at startup, so you can change it without rebuilding. Set it when you use `--network host` or when the platform requires the container to listen on a given port:
 
 ```bash
-docker run -d --name weknora-site --restart unless-stopped -e WEBSITE_NGINX_PORT=8080 -p 8080:8080 weknora-site:0.8.2
+docker run -d --name ai-kb-site --restart unless-stopped -e WEBSITE_NGINX_PORT=8080 -p 8080:8080 ai-kb-site:0.8.2
 ```
 
 A platform that replaces the entrypoint with its own startup command skips that substitution. In that case bake the port in at build time with `--build-arg WEBSITE_NGINX_PORT=8080`.
 
 To change only the port exposed on the host, change the host side of `-p`, for example `-p 9000:80`.
 
-You can also copy just the `website-docs/` directory and run `docker build -t weknora-site:0.8.2 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
+You can also copy just the `website-docs/` directory and run `docker build -t ai-kb-site:0.8.2 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
 
 When migrating from the old documentation image, change the container port in the port mapping or the reverse proxy target from `8081` to `80` (choose any host port, for example `-p 8081:80`). The domain root `/` now serves the homepage and `/docs/` serves the documentation, so the reverse proxy must cover the whole site and keep the request path.
 
@@ -104,7 +104,7 @@ After building, you can run the following check on a machine with Node.js 24 and
 
 ```bash
 cd website-docs
-npm run test:docker -- weknora-site:0.8.2
+npm run test:docker -- ai-kb-site:0.8.2
 ```
 
 ## Local development

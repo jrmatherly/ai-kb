@@ -82,7 +82,7 @@ func (f *resourceURLFixture) catalogWrapped() interfaces.FileService {
 // references and verifies that both the document and KB are still live.
 func newResourceURLFixture(t *testing.T) *resourceURLFixture {
 	t.Helper()
-	t.Setenv("APP_EXTERNAL_URL", "https://weknora.example/prefix")
+	t.Setenv("APP_EXTERNAL_URL", "https://ai-kb.example/prefix")
 	db, err := gorm.Open(sqlite.Open(filepath.Join(t.TempDir(), "images.db")), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
@@ -150,7 +150,7 @@ func TestMCPResourceURLsRewriteTextAndTypedStructuredContent(t *testing.T) {
 	result := f.rewrite(original)
 	text := result.Content[0].(mcp.TextContent).Text
 	require.NotContains(t, text, "resource://")
-	require.Contains(t, text, "https://weknora.example/prefix/r/")
+	require.Contains(t, text, "https://ai-kb.example/prefix/r/")
 	raw, err := json.Marshal(result.StructuredContent)
 	require.NoError(t, err)
 	require.NotContains(t, string(raw), "resource://")
@@ -158,7 +158,7 @@ func TestMCPResourceURLsRewriteTextAndTypedStructuredContent(t *testing.T) {
 	url := strings.TrimSuffix(strings.TrimPrefix(text, "![figure]("), ")")
 	require.Equal(t, 3, strings.Count(string(raw), url))
 	resource, err := f.srv.resourceCatalog.ResolveAccessGrant(f.ctx, strings.TrimPrefix(
-		url, "https://weknora.example/prefix/r/",
+		url, "https://ai-kb.example/prefix/r/",
 	))
 	require.NoError(t, err)
 	require.Equal(t, uint64(2), resource.TenantID)
@@ -236,7 +236,7 @@ func TestMCPResourceURLsUnrestrictedEndpointCoversSharedKB(t *testing.T) {
 		kbs.kbs[id] = &types.KnowledgeBase{ID: id, TenantID: 1}
 	}
 	result := f.rewrite(mcp.NewToolResultText(f.ref))
-	require.True(t, strings.HasPrefix(result.Content[0].(mcp.TextContent).Text, "https://weknora.example/prefix/r/"))
+	require.True(t, strings.HasPrefix(result.Content[0].(mcp.TextContent).Text, "https://ai-kb.example/prefix/r/"))
 	require.Equal(t, 1, kbs.lookups, "only KBs that bind the reference are authorized")
 
 	f = newResourceURLFixture(t)
@@ -252,7 +252,7 @@ func TestMCPResourceURLsStructuredContentShapes(t *testing.T) {
 	raw, err := json.Marshal(result.StructuredContent)
 	require.NoError(t, err)
 	require.NotContains(t, string(raw), "resource://")
-	require.Contains(t, string(raw), "https://weknora.example/prefix/r/")
+	require.Contains(t, string(raw), "https://ai-kb.example/prefix/r/")
 
 	type plain struct{ Count uint64 }
 	result = f.rewrite(mcp.NewToolResultStructured(plain{Count: 7}, "no references"))
@@ -327,6 +327,6 @@ func TestMCPExistingToolTransportRewritesResourceURLs(t *testing.T) {
 	raw, err := json.Marshal(response)
 	require.NoError(t, err)
 	require.NotContains(t, string(raw), "resource://")
-	require.Contains(t, string(raw), "https://weknora.example/prefix/r/")
+	require.Contains(t, string(raw), "https://ai-kb.example/prefix/r/")
 	require.NotContains(t, toolNames(t, rpc(t, r, "tools/list", map[string]any{})), "get_image")
 }

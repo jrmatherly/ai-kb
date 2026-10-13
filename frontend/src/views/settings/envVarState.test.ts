@@ -269,19 +269,19 @@ test('blockingVarCount counts only required names with no value at all', () => {
 test('skillSecretCards lifts declared skills out of config groups and skips empty ones', () => {
   const cards = skillSecretCards([
     config('c2', 'Docker-Test', [], [
-      skill('weknora', 'weknora', [envVar({ name: 'AIKB_API_KEY', required: true })]),
+      skill('aikb', 'aikb', [envVar({ name: 'AIKB_API_KEY', required: true })]),
     ]),
     config('c1', 'cube-TEST'),
     config('c3', 'Other', [], [skill('empty', 'empty', [])]),
   ])
 
   assert.equal(cards.length, 1)
-  assert.equal(cards[0].skill.skill_id, 'weknora')
+  assert.equal(cards[0].skill.skill_id, 'aikb')
   assert.equal(cards[0].sandbox_config_name, 'Docker-Test')
 })
 
 test('skillSecretCards labels the host sandbox like the sandbox cards do', () => {
-  const hostSkill = skill('weknora', 'weknora', [envVar({ name: 'AIKB_API_KEY' })])
+  const hostSkill = skill('aikb', 'aikb', [envVar({ name: 'AIKB_API_KEY' })])
   const groups = [config('host', '本机', [], [hostSkill])]
 
   assert.equal(skillSecretCards(groups, 'This computer')[0].sandbox_config_name, 'This computer')

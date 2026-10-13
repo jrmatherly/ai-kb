@@ -204,7 +204,7 @@ func (c *CubeRemoteClient) ListTemplates(ctx context.Context) ([]RemoteTemplate,
 		// Cube only reports a name when the template carries an alias, so fall
 		// back to the image before falling back to the opaque ID: recognising
 		// our own template is what keeps EnsureStandardTemplate idempotent.
-		standard, desktop := classifyWeKnoraTemplate(name, item.ImageInfo)
+		standard, desktop := classifyAIKBTemplate(name, item.ImageInfo)
 		if name == "" {
 			switch {
 			case desktop:

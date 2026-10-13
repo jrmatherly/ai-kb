@@ -407,7 +407,7 @@ set -- ${s##*) }
 [ "$4" = "$q" ] && kill -9 "$q" 2>/dev/null
 done
 exit 0`
-	return []string{"/bin/sh", "-c", script, "weknora-terminate", token}
+	return []string{"/bin/sh", "-c", script, "ai-kb-terminate", token}
 }
 
 // teardown closes the stream and the marker-refresh loop exactly once. Both

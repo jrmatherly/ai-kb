@@ -1,4 +1,4 @@
-// Package api implements the `weknora api` raw HTTP passthrough command.
+// Package api implements the `aikb api` raw HTTP passthrough command.
 //
 // Shape: one positional (path) + `-X/--method` flag, default GET (auto-
 // promoted to POST when a body is supplied via -d/--input). Text mode writes
@@ -50,7 +50,7 @@ type Service interface {
 	Raw(ctx context.Context, method, path string, body any) (*http.Response, error)
 }
 
-// NewCmd returns the `weknora api` command.
+// NewCmd returns the `aikb api` command.
 func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	opts := &Options{}
 	cmd := &cobra.Command{
@@ -71,11 +71,11 @@ With --paginate, text mode writes the merged {data, total} JSON object with a
 trailing newline and no envelope.
 
 Examples:
-  weknora api /api/v1/knowledge-bases                                  # GET
-  weknora api /api/v1/knowledge-bases -d '{"name":"foo"}'              # POST (auto)
-  weknora api /api/v1/knowledge-bases -F name=foo -F enabled=true      # POST, typed body
-  echo '{"name":"foo"}' | weknora api /api/v1/knowledge-bases --input -  # POST via stdin
-  weknora api /api/v1/knowledge-bases/kb_xxx -X DELETE`,
+  aikb api /api/v1/knowledge-bases                                  # GET
+  aikb api /api/v1/knowledge-bases -d '{"name":"foo"}'              # POST (auto)
+  aikb api /api/v1/knowledge-bases -F name=foo -F enabled=true      # POST, typed body
+  echo '{"name":"foo"}' | aikb api /api/v1/knowledge-bases --input -  # POST via stdin
+  aikb api /api/v1/knowledge-bases/kb_xxx -X DELETE`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
 			opts.Yes, _ = c.Flags().GetBool("yes")
@@ -122,8 +122,8 @@ Examples:
 				}
 			}
 			method := resolveMethod(opts)
-			// Escape-hatch DELETE through `weknora api` is just as destructive
-			// as `weknora kb delete` - exit-10 destructive protocol must apply
+			// Escape-hatch DELETE through `aikb api` is just as destructive
+			// as `aikb kb delete` - exit-10 destructive protocol must apply
 			// (cli/README.md). PUT/PATCH mutate server state like a typed
 			// `kb/agent/doc update`, so they get the same exit-10 WRITE gate;
 			// without it the raw escape hatch bypassed the "an agent cannot
@@ -131,7 +131,7 @@ Examples:
 			// `create` (also ungated). GET/HEAD are reads.
 			switch method {
 			case http.MethodDelete:
-				if err := cmdutil.ConfirmDestructive(f.Prompter(), opts.Yes, fopts.WantsJSON(), "delete", "endpoint", args[0], "api.delete", []string{"weknora", "api", "-X", "DELETE", args[0], "-y"}); err != nil {
+				if err := cmdutil.ConfirmDestructive(f.Prompter(), opts.Yes, fopts.WantsJSON(), "delete", "endpoint", args[0], "api.delete", []string{"aikb", "api", "-X", "DELETE", args[0], "-y"}); err != nil {
 					return err
 				}
 			case http.MethodPut, http.MethodPatch:
@@ -155,14 +155,14 @@ Examples:
 	cmdutil.AddFormatFlag(cmd, apiFields...)
 	cmdutil.AddDryRunFlag(cmd, &opts.DryRun)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
-		UsedFor:       "raw HTTP passthrough to weknora-server API endpoints when typed subcommands are insufficient",
+		UsedFor:       "raw HTTP passthrough to ai-kb-server API endpoints when typed subcommands are insufficient",
 		RequiredFlags: []string{"path (positional)"},
 		Examples: []string{
-			"weknora api /api/v1/knowledge-bases",
-			"weknora api /api/v1/knowledge-bases -d '{\"name\":\"foo\"}'",
-			"weknora api -X POST /api/v1/knowledge-bases -F name=\"Eng Docs\" -F enabled=true",
-			"weknora api -X DELETE /api/v1/knowledge-bases/kb_x -y",
-			"echo '{\"name\":\"foo\"}' | weknora api /api/v1/knowledge-bases --input -",
+			"aikb api /api/v1/knowledge-bases",
+			"aikb api /api/v1/knowledge-bases -d '{\"name\":\"foo\"}'",
+			"aikb api -X POST /api/v1/knowledge-bases -F name=\"Eng Docs\" -F enabled=true",
+			"aikb api -X DELETE /api/v1/knowledge-bases/kb_x -y",
+			"echo '{\"name\":\"foo\"}' | aikb api /api/v1/knowledge-bases --input -",
 		},
 		Output: "text mode: the raw server response body on stdout. " +
 			"json mode (default): the parsed server response is placed directly under envelope.data - " +
@@ -311,11 +311,11 @@ func resolveMethod(opts *Options) string {
 	return "GET"
 }
 
-// apiRetryArgv reconstructs a directly-executable `weknora api` argv (with -y)
+// apiRetryArgv reconstructs a directly-executable `aikb api` argv (with -y)
 // for the write-confirmation gate, preserving the method, path and body flags
 // the caller passed so an agent can re-run the exact mutation after approval.
 func apiRetryArgv(opts *Options, method, path string) []string {
-	argv := []string{"weknora", "api", "-X", method, path}
+	argv := []string{"aikb", "api", "-X", method, path}
 	switch {
 	case opts.Data != "":
 		argv = append(argv, "-d", opts.Data)

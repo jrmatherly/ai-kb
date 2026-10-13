@@ -307,7 +307,7 @@ func (s *RedisSessionSandboxBindingStore) listTenantBindingKeys(
 	tenantID uint64,
 ) ([]SessionSandboxKey, error) {
 	prefix := fmt.Sprintf(
-		"weknora:sandbox:session:{%s:%d:", s.namespace, tenantID,
+		"aikb:sandbox:session:{%s:%d:", s.namespace, tenantID,
 	)
 	const suffix = "}:binding"
 	pattern := escapeRedisGlob(prefix) + "*" + suffix
@@ -460,11 +460,11 @@ func (s *RedisSessionSandboxBindingStore) ConsumeTurnRebuild(
 }
 
 func (s *RedisSessionSandboxBindingStore) turnKey(key SessionSandboxKey) string {
-	return "weknora:sandbox:session:{" + s.hashTag(key) + "}:turn"
+	return "aikb:sandbox:session:{" + s.hashTag(key) + "}:turn"
 }
 
 func (s *RedisSessionSandboxBindingStore) rewindKey(key SessionSandboxKey) string {
-	return "weknora:sandbox:session:{" + s.hashTag(key) + "}:rewind"
+	return "aikb:sandbox:session:{" + s.hashTag(key) + "}:rewind"
 }
 
 // TryLockRewind takes a distributed exclusive rewind lock for key.
@@ -597,13 +597,13 @@ func (s *RedisSessionSandboxBindingStore) renewRewindLock(
 }
 
 func (s *RedisSessionSandboxBindingStore) bindingKey(key SessionSandboxKey) string {
-	return "weknora:sandbox:session:{" + s.hashTag(key) + "}:binding"
+	return "aikb:sandbox:session:{" + s.hashTag(key) + "}:binding"
 }
 
 func (s *RedisSessionSandboxBindingStore) lockKey(key SessionSandboxKey) string {
 	// Keep the historical suffix used by the saved multi-node Cube
 	// implementation so rolling upgrades serialize on the same lock.
-	return "weknora:sandbox:session:{" + s.hashTag(key) + "}:create-lock"
+	return "aikb:sandbox:session:{" + s.hashTag(key) + "}:create-lock"
 }
 
 func (s *RedisSessionSandboxBindingStore) hashTag(key SessionSandboxKey) string {

@@ -33,26 +33,26 @@ grant_docker_sock_to_appuser() {
     fi
     gid="$(stat -c '%g' "$sock" 2>/dev/null || true)"
     if [ -z "$gid" ]; then
-        echo "weknora: cannot stat $sock; Docker sandbox may be unable to reach the daemon" >&2
+        echo "aikb: cannot stat $sock; Docker sandbox may be unable to reach the daemon" >&2
         return 0
     fi
     if [ "$gid" = "0" ]; then
-        echo "weknora: $sock is not writable by appuser and owned by GID 0; Docker sandbox needs a group-writable socket with a non-root GID" >&2
+        echo "aikb: $sock is not writable by appuser and owned by GID 0; Docker sandbox needs a group-writable socket with a non-root GID" >&2
         return 0
     fi
     if ! getent group "$gid" >/dev/null 2>&1; then
         if ! groupadd -g "$gid" dockersock >/dev/null 2>&1; then
-            echo "weknora: failed to create group for $sock GID $gid; Docker sandbox may be unable to reach the daemon" >&2
+            echo "aikb: failed to create group for $sock GID $gid; Docker sandbox may be unable to reach the daemon" >&2
             return 0
         fi
     fi
     grp="$(getent group "$gid" | cut -d: -f1)"
     if [ -z "$grp" ]; then
-        echo "weknora: no group name for GID $gid on $sock" >&2
+        echo "aikb: no group name for GID $gid on $sock" >&2
         return 0
     fi
     if ! usermod -aG "$grp" appuser >/dev/null 2>&1; then
-        echo "weknora: failed to add appuser to $grp for $sock; Docker sandbox may be unable to reach the daemon" >&2
+        echo "aikb: failed to add appuser to $grp for $sock; Docker sandbox may be unable to reach the daemon" >&2
         return 0
     fi
 }

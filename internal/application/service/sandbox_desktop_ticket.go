@@ -26,7 +26,7 @@ import (
 // short enough that a leaked query string is not a session.
 const DefaultSandboxDesktopTicketTTL = 2 * time.Minute
 
-const desktopTicketRedisPrefix = "weknora:desktop-ticket:"
+const desktopTicketRedisPrefix = "aikb:desktop-ticket:"
 
 // ErrDesktopTicketInvalid covers unknown, expired, and already-consumed
 // tickets. They are one error on purpose: telling them apart would let a

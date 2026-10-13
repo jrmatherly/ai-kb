@@ -21,7 +21,7 @@ let transport: { calls: Call[] }
 const originalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
 before(async () => {
   Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
-    getItem: (key: string) => key === 'weknora_token' ? 'test-token' : null,
+    getItem: (key: string) => key === 'aikb_token' ? 'test-token' : null,
   } })
   // Each request stays pending until the test closes or fails it.
   const mocks: Record<string, string> = {

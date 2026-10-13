@@ -16,9 +16,9 @@ func TestStorageBackendInnerPath(t *testing.T) {
 		in   string
 		want string
 	}{
-		{"canonical s3 path", "storage://be-1/s3://weknora/data/a.jpg", "s3://weknora/data/a.jpg"},
-		{"canonical minio path", "storage://be-1/minio://weknora/data/a.jpg", "minio://weknora/data/a.jpg"},
-		{"bare provider path unchanged", "s3://weknora/data/a.jpg", "s3://weknora/data/a.jpg"},
+		{"canonical s3 path", "storage://be-1/s3://aikb/data/a.jpg", "s3://aikb/data/a.jpg"},
+		{"canonical minio path", "storage://be-1/minio://aikb/data/a.jpg", "minio://aikb/data/a.jpg"},
+		{"bare provider path unchanged", "s3://aikb/data/a.jpg", "s3://aikb/data/a.jpg"},
 		{
 			"legacy URL unchanged",
 			"https://bucket.cos.region.myqcloud.com/a.jpg",
@@ -36,9 +36,9 @@ func TestStorageBackendInnerPath(t *testing.T) {
 }
 
 func TestParseS3FilePathAcceptsCanonicalBackendPath(t *testing.T) {
-	svc := &s3FileService{bucketName: "weknora"}
+	svc := &s3FileService{bucketName: "aikb"}
 
-	got, err := svc.parseS3FilePath("storage://be-1/s3://weknora/data/10000/exports/a.jpg")
+	got, err := svc.parseS3FilePath("storage://be-1/s3://aikb/data/10000/exports/a.jpg")
 	if err != nil {
 		t.Fatalf("canonical path rejected: %v", err)
 	}
@@ -47,7 +47,7 @@ func TestParseS3FilePathAcceptsCanonicalBackendPath(t *testing.T) {
 	}
 
 	// Bare provider paths keep working.
-	if got, err := svc.parseS3FilePath("s3://weknora/data/a.jpg"); err != nil || got != "data/a.jpg" {
+	if got, err := svc.parseS3FilePath("s3://aikb/data/a.jpg"); err != nil || got != "data/a.jpg" {
 		t.Fatalf("bare path: key=%q err=%v", got, err)
 	}
 
@@ -63,9 +63,9 @@ func TestParseS3FilePathAcceptsCanonicalBackendPath(t *testing.T) {
 }
 
 func TestParseMinioFilePathAcceptsCanonicalBackendPath(t *testing.T) {
-	svc := &minioFileService{bucketName: "weknora"}
+	svc := &minioFileService{bucketName: "aikb"}
 
-	got, err := svc.parseMinioFilePath("storage://be-1/minio://weknora/data/a.jpg")
+	got, err := svc.parseMinioFilePath("storage://be-1/minio://aikb/data/a.jpg")
 	if err != nil {
 		t.Fatalf("canonical path rejected: %v", err)
 	}
@@ -73,57 +73,57 @@ func TestParseMinioFilePathAcceptsCanonicalBackendPath(t *testing.T) {
 		t.Fatalf("object key = %q, want %q", got, "data/a.jpg")
 	}
 
-	if _, err := svc.parseMinioFilePath("minio://weknora/data/a.jpg"); err != nil {
+	if _, err := svc.parseMinioFilePath("minio://aikb/data/a.jpg"); err != nil {
 		t.Fatalf("bare path rejected: %v", err)
 	}
 }
 
 func TestParseOssFilePathAcceptsCanonicalBackendPath(t *testing.T) {
-	bucket, key, err := parseOssFilePath("storage://be-1/oss://weknora/data/a.jpg")
+	bucket, key, err := parseOssFilePath("storage://be-1/oss://aikb/data/a.jpg")
 	if err != nil {
 		t.Fatalf("canonical path rejected: %v", err)
 	}
-	if bucket != "weknora" || key != "data/a.jpg" {
-		t.Fatalf("bucket=%q key=%q, want weknora/data/a.jpg", bucket, key)
+	if bucket != "aikb" || key != "data/a.jpg" {
+		t.Fatalf("bucket=%q key=%q, want aikb/data/a.jpg", bucket, key)
 	}
 
-	if _, _, err := parseOssFilePath("oss://weknora/data/a.jpg"); err != nil {
+	if _, _, err := parseOssFilePath("oss://aikb/data/a.jpg"); err != nil {
 		t.Fatalf("bare path rejected: %v", err)
 	}
 }
 
 func TestParseKS3FilePathAcceptsCanonicalBackendPath(t *testing.T) {
-	bucket, key, err := parseKS3FilePath("storage://be-1/ks3://weknora/data/a.jpg")
+	bucket, key, err := parseKS3FilePath("storage://be-1/ks3://aikb/data/a.jpg")
 	if err != nil {
 		t.Fatalf("canonical path rejected: %v", err)
 	}
-	if bucket != "weknora" || key != "data/a.jpg" {
-		t.Fatalf("bucket=%q key=%q, want weknora/data/a.jpg", bucket, key)
+	if bucket != "aikb" || key != "data/a.jpg" {
+		t.Fatalf("bucket=%q key=%q, want aikb/data/a.jpg", bucket, key)
 	}
 
-	if _, _, err := parseKS3FilePath("ks3://weknora/data/a.jpg"); err != nil {
+	if _, _, err := parseKS3FilePath("ks3://aikb/data/a.jpg"); err != nil {
 		t.Fatalf("bare path rejected: %v", err)
 	}
 }
 
 func TestParseTOSFilePathAcceptsCanonicalBackendPath(t *testing.T) {
-	bucket, key, err := parseTOSFilePath("storage://be-1/tos://weknora/data/a.jpg")
+	bucket, key, err := parseTOSFilePath("storage://be-1/tos://aikb/data/a.jpg")
 	if err != nil {
 		t.Fatalf("canonical path rejected: %v", err)
 	}
-	if bucket != "weknora" || key != "data/a.jpg" {
-		t.Fatalf("bucket=%q key=%q, want weknora/data/a.jpg", bucket, key)
+	if bucket != "aikb" || key != "data/a.jpg" {
+		t.Fatalf("bucket=%q key=%q, want aikb/data/a.jpg", bucket, key)
 	}
 
-	if _, _, err := parseTOSFilePath("tos://weknora/data/a.jpg"); err != nil {
+	if _, _, err := parseTOSFilePath("tos://aikb/data/a.jpg"); err != nil {
 		t.Fatalf("bare path rejected: %v", err)
 	}
 }
 
 func TestParseObsFilePathAcceptsCanonicalBackendPath(t *testing.T) {
-	svc := &obsFileService{bucketName: "weknora"}
+	svc := &obsFileService{bucketName: "aikb"}
 
-	got, err := svc.parseObsFilePath("storage://be-1/obs://weknora/data/a.jpg")
+	got, err := svc.parseObsFilePath("storage://be-1/obs://aikb/data/a.jpg")
 	if err != nil {
 		t.Fatalf("canonical path rejected: %v", err)
 	}
@@ -152,7 +152,7 @@ func TestParseCosObjectNameAcceptsCanonicalBackendPath(t *testing.T) {
 
 	// Cross-provider canonical paths must still be rejected, not silently
 	// passed to the legacy-URL branch.
-	if _, err := svc.parseCosObjectName("storage://be-1/s3://weknora/data/a.jpg"); err == nil {
+	if _, err := svc.parseCosObjectName("storage://be-1/s3://aikb/data/a.jpg"); err == nil {
 		t.Fatal("expected error for foreign provider path")
 	}
 }

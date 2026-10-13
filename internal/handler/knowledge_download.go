@@ -116,7 +116,7 @@ func (h *KnowledgeHandler) BatchDownloadKnowledge(c *gin.Context) {
 	defer releaseBatchDownloadSlot()
 
 	// 先在临时文件中完整生成压缩包，避免读取失败时向用户返回残缺 ZIP。
-	archive, err := os.CreateTemp("", "weknora-download-*.zip")
+	archive, err := os.CreateTemp("", "ai-kb-download-*.zip")
 	if err != nil {
 		_ = c.Error(errors.NewInternalServerError("无法创建下载压缩包，请稍后重试"))
 		return

@@ -63,11 +63,11 @@ func TestARewordedMemoryIsStillFound(t *testing.T) {
 }
 
 // An interest is promoted from a subject label, so its topic and content hold
-// the same string. Joining them sent "WeKnora混合检索：WeKnora混合检索" to the
+// the same string. Joining them sent "AI KB混合检索：AI KB混合检索" to the
 // embedder, which is not a sentence any question resembles.
 func TestEmbeddedTextDoesNotRepeatTheSubject(t *testing.T) {
-	require.Equal(t, "WeKnora混合检索", embeddableText(&types.MemoryItem{
-		Kind: types.MemoryKindInterest, Topic: "WeKnora混合检索", Content: "WeKnora混合检索",
+	require.Equal(t, "AI KB混合检索", embeddableText(&types.MemoryItem{
+		Kind: types.MemoryKindInterest, Topic: "AI KB混合检索", Content: "AI KB混合检索",
 	}, nil))
 	require.Equal(t, "数据库：生产库用 PostgreSQL 17", embeddableText(&types.MemoryItem{
 		Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产库用 PostgreSQL 17",
@@ -79,10 +79,10 @@ func TestEmbeddedTextDoesNotRepeatTheSubject(t *testing.T) {
 // in the prompt because they never leave the vector.
 func TestInterestEmbedsTheOtherWordingsOfItsSubject(t *testing.T) {
 	text := embeddableText(&types.MemoryItem{
-		Kind: types.MemoryKindInterest, Topic: "WeKnora混合检索", Content: "WeKnora混合检索",
-	}, []string{"混合检索调优", "WeKnora混合检索", "", "召回率优化"})
+		Kind: types.MemoryKindInterest, Topic: "AI KB混合检索", Content: "AI KB混合检索",
+	}, []string{"混合检索调优", "AI KB混合检索", "", "召回率优化"})
 
-	require.Equal(t, "WeKnora混合检索；混合检索调优；召回率优化", text,
+	require.Equal(t, "AI KB混合检索；混合检索调优；召回率优化", text,
 		"aliases are appended once each, and the subject is not repeated")
 }
 

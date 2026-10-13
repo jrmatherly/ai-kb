@@ -99,7 +99,7 @@ const (
 	// carries a stable code; distinct from input.* because the user supplied
 	// valid args and simply chose not to proceed.
 	CodeUserAborted ErrorCode = "local.user_aborted"
-	// CodeUploadFileNotFound marks a `weknora doc upload` invocation pointing at
+	// CodeUploadFileNotFound marks a `aikb doc upload` invocation pointing at
 	// a path that does not exist. Distinct from CodeLocalFileIO (permission /
 	// disk-fault) so the hint can name the actual culprit.
 	CodeUploadFileNotFound ErrorCode = "local.upload_file_not_found"

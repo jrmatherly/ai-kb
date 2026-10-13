@@ -23,7 +23,7 @@ func newTerminalTestClient(
 	t.Helper()
 	settings, err := dockerSettingsFromConfig(&Config{
 		Type:        SandboxTypeDocker,
-		DockerImage: "weknora/sandbox:test",
+		DockerImage: "ai-kb/sandbox:test",
 	})
 	require.NoError(t, err)
 	settings.IdleTTL = ttl
@@ -338,7 +338,7 @@ func TestDockerTerminalKillCmdTargetsMarkerEnv(t *testing.T) {
 	cmd := dockerTerminalKillCmd("deadbeef")
 	require.Equal(t, "/bin/sh", cmd[0])
 	require.Equal(t, "-c", cmd[1])
-	require.Equal(t, "weknora-terminate", cmd[3])
+	require.Equal(t, "ai-kb-terminate", cmd[3])
 	require.Equal(t, "deadbeef", cmd[4], "the token travels as argv")
 	require.Contains(t, cmd[2], dockerTerminalIDEnv+"=$1",
 		"the script matches the marker env")

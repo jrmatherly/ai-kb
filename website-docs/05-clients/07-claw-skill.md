@@ -2,7 +2,7 @@
 
 Claw Skill gives agents in the OpenClaw ecosystem access to AI KB. Through the REST API it uploads documents, imports web pages and runs retrieval across knowledge bases.
 
-The skill is hosted on ClawHub as [`@lyingbug/weknora`](https://clawhub.ai/lyingbug/weknora) under the MIT-0 license. What it can call, and with which permissions, is decided by the AI KB API it connects to.
+The skill is hosted on ClawHub as [`@lyingbug/aikb`](https://clawhub.ai/lyingbug/aikb) under the MIT-0 license. What it can call, and with which permissions, is decided by the AI KB API it connects to.
 
 ## Features
 
@@ -35,7 +35,7 @@ Settings → Publish & Integrations → Claw Skill shows the install steps and l
 3. **Install the skill.** Run the command below where the OpenClaw CLI is installed, or follow the instructions on the ClawHub page:
 
    ```bash
-   openclaw skills install @lyingbug/weknora
+   openclaw skills install @lyingbug/aikb
    ```
 
 4. **Verify.** Ask the agent to list the knowledge bases or run one search to confirm that the credentials work and the instance is reachable.

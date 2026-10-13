@@ -48,10 +48,10 @@ python run_server.py
 python run.py
 
 # 直接运行服务器模块
-python weknora_mcp_server.py
+python aikb_mcp_server.py
 
 # 作为 Python 模块运行
-python -m weknora_mcp_server
+python -m aikb_mcp_server
 ```
 
 ### 4. 命令行选项
@@ -67,14 +67,14 @@ python main.py --version              # 显示版本信息
 ### 从 PyPI 安装
 
 ```bash
-pip install tencent-weknora-mcp
+pip install ai-kb-mcp
 # 或使用 uvx 直接运行（无需预安装）
-uvx --from tencent-weknora-mcp weknora-mcp-server
+uvx --from ai-kb-mcp ai-kb-mcp-server
 ```
 
-> 官方 PyPI 包名为 **`tencent-weknora-mcp`**（jrmatherly/ai-kb 维护，Trusted Publishing 发布）。
-> 旧社区包 `weknora-mcp` 请不要再使用。
-> 安装后命令行入口仍为 `weknora-mcp-server` / `weknora-server`。
+> 官方 PyPI 包名为 **`ai-kb-mcp`**（jrmatherly/ai-kb 维护，Trusted Publishing 发布）。
+> 旧社区包 `ai-kb-mcp` 请不要再使用。
+> 安装后命令行入口仍为 `ai-kb-mcp-server` / `ai-kb-server`。
 
 ### 开发模式安装
 ```bash
@@ -83,9 +83,9 @@ pip install -e .
 
 安装后可以使用命令行工具：
 ```bash
-weknora-mcp-server
+ai-kb-mcp-server
 # 或
-weknora-server
+ai-kb-server
 ```
 
 ### 生产模式安装

@@ -82,9 +82,9 @@ func newOAuthStateStore(rdb *redis.Client) *oauthStateStore {
 func (s *oauthStateStore) key(state string) string {
 	ns := strings.TrimSpace(os.Getenv("AIKB_REDIS_NAMESPACE"))
 	if ns != "" {
-		return "weknora:mcp_oauth_state:" + ns + ":" + state
+		return "aikb:mcp_oauth_state:" + ns + ":" + state
 	}
-	return "weknora:mcp_oauth_state:" + state
+	return "aikb:mcp_oauth_state:" + state
 }
 
 func (s *oauthStateStore) attemptKey(state string) string {

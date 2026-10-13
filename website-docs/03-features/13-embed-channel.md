@@ -15,13 +15,13 @@ Images on the visitor side go through a channel-scoped authenticated proxy, whic
 
 ## Add the widget to a page
 
-To put the chat widget on a page you load the SDK and give it a channel and a token source. The SDK is a dependency-free loader script, `frontend/public/weknora-widget.js`, served from the AI KB server root after deployment. It renders a floating button plus an iframe panel; the iframe points at the embed page SPA at `/embed/{channel_id}` (entry `frontend/src/embed-main.ts`, served from `frontend/embed.html`).
+To put the chat widget on a page you load the SDK and give it a channel and a token source. The SDK is a dependency-free loader script, `frontend/public/ai-kb-widget.js`, served from the AI KB server root after deployment. It renders a floating button plus an iframe panel; the iframe points at the embed page SPA at `/embed/{channel_id}` (entry `frontend/src/embed-main.ts`, served from `frontend/embed.html`).
 
 ### Option 1: static token mode (the token is visible to visitors)
 
 ```html
 <script
-  src="https://your-weknora.example.com/weknora-widget.js"
+  src="https://your-ai-kb.example.com/ai-kb-widget.js"
   data-channel="your-channel-uuid"
   data-token="em_your_publish_token"
   data-position="bottom-right"
@@ -38,14 +38,14 @@ The publish token stays on your own backend, and the page points `data-token-end
 
 ```html
 <script
-  src="https://your-weknora.example.com/weknora-widget.js"
+  src="https://your-ai-kb.example.com/ai-kb-widget.js"
   data-channel="your-channel-uuid"
-  data-token-endpoint="https://your-backend.example.com/weknora/embed-token"
+  data-token-endpoint="https://your-backend.example.com/aikb/embed-token"
   data-position="bottom-right"
 ></script>
 ```
 
-Your backend implements that endpoint: it holds the `em_` token, calls `POST /api/v1/embed/{channel_id}/exchange` to obtain a short-lived `ems_` token and returns `{ "token": "ems_...", "expiresIn": 1800 }` (the widget also accepts `session_token` and `expires_in`, optionally wrapped in a `data` object). The widget refreshes the token at about 80% of its TTL, never sooner than 30 seconds (`scheduleRefresh` in `weknora-widget.js`). **The publish token never reaches the browser.**
+Your backend implements that endpoint: it holds the `em_` token, calls `POST /api/v1/embed/{channel_id}/exchange` to obtain a short-lived `ems_` token and returns `{ "token": "ems_...", "expiresIn": 1800 }` (the widget also accepts `session_token` and `expires_in`, optionally wrapped in a `data` object). The widget refreshes the token at about 80% of its TTL, never sooner than 30 seconds (`scheduleRefresh` in `ai-kb-widget.js`). **The publish token never reaches the browser.**
 
 The exchange endpoint must first verify your own session or JWT and the visitor's access rights; checking that a cookie or `Authorization` header merely exists is not authentication. When your server calls the exchange, send an `Origin` header that matches the channel allowlist, for example `Origin: https://shop.example.com`. Never expose a AI KB management token to visitors.
 
@@ -54,15 +54,15 @@ Other optional attributes: `data-base-url` (derived from the script `src` by def
 ### Option 3: programmatic API
 
 ```html
-<script src="https://your-weknora.example.com/weknora-widget.js"></script>
+<script src="https://your-ai-kb.example.com/ai-kb-widget.js"></script>
 <script>
   AIKB.init({
     channel: 'your-channel-uuid',
-    tokenEndpoint: 'https://your-backend.example.com/weknora/embed-token', // or token: 'em_...'
+    tokenEndpoint: 'https://your-backend.example.com/aikb/embed-token', // or token: 'em_...'
     position: 'bottom-right',
     primaryColor: '#07C05F',
     title: 'AI Assistant',
-    baseUrl: 'https://your-weknora.example.com',
+    baseUrl: 'https://your-ai-kb.example.com',
   });
   AIKB.setContext({ userId: 'u_123', page: location.pathname }); // context is attached to every question
   AIKB.setLocale('en-US');
@@ -77,7 +77,7 @@ Other optional attributes: `data-base-url` (derived from the script `src` by def
 The loader is optional; you can embed the iframe yourself. The token then has to be supplied through the URL or `postMessage`, so the loader is the usual choice:
 
 ```html
-<iframe src="https://your-weknora.example.com/embed/your-channel-uuid"
+<iframe src="https://your-ai-kb.example.com/embed/your-channel-uuid"
         width="400" height="600" style="border:none"></iframe>
 ```
 
@@ -85,8 +85,8 @@ The loader is optional; you can embed the iframe yourself. The token then has to
 
 The host page (loader) and the embed page inside the iframe talk over `postMessage`, and both sides check origins. The loader only posts to the derived `embedOrigin` and never to `*`. The embed page pins the parent origin from the first trusted message (or the referrer) and drops conversation content when that origin is unknown; only the `bootstrap_request` and `ready` handshake messages may fall back to `*` (`frontend/src/api/embed/index.ts`):
 
-- host → iframe (`source: "weknora-host"`): `provide_token` (hands over the token), `set_context`, `set_locale`, `open_with_query`;
-- iframe → host (`source: "weknora-embed"`): `ready`, `bootstrap_request` (asks for a token), `message_sent`, `message_received`.
+- host → iframe (`source: "ai-kb-host"`): `provide_token` (hands over the token), `set_context`, `set_locale`, `open_with_query`;
+- iframe → host (`source: "ai-kb-embed"`): `ready`, `bootstrap_request` (asks for a token), `message_sent`, `message_received`.
 
 ## Authentication and anonymous sessions
 
@@ -121,7 +121,7 @@ By default the embed page and the console share one domain. When you need a sepa
 
 The console takes the embed origin from `window.__RUNTIME_CONFIG__.EMBED_BASE_URL` in `frontend/public/config.js`, or from the build-time `VITE_EMBED_BASE_URL`; when both are empty it follows the current page origin. After changing it, confirm that the generated widget and iframe snippets point at the new address.
 
-The separate Nginx server serves only `/embed/*`, `/weknora-widget.js`, `/assets/*` and the backend proxy it needs; it does not serve the console `index.html`. Keep the `auth_request` on `/embed/`, the internal `/_embed-frame-policy` location and the CSP response header from the standard `frontend/nginx.conf`: when the policy fetch fails the page must be refused, and no gateway or CDN may cache or strip that policy.
+The separate Nginx server serves only `/embed/*`, `/ai-kb-widget.js`, `/assets/*` and the backend proxy it needs; it does not serve the console `index.html`. Keep the `auth_request` on `/embed/`, the internal `/_embed-frame-policy` location and the CSP response header from the standard `frontend/nginx.conf`: when the policy fetch fails the page must be refused, and no gateway or CDN may cache or strip that policy.
 
 The allowlist still contains the real business host `https://shop.example.com`, and the secure-mode exchange declares the same `Origin`; the embed origin itself does not need to be added for ordinary same-origin chat requests. The widget adds the iframe sandbox automatically when the host and the embed page differ in origin. Verify from the real host page, checking the iframe, the API calls, the CSP and the generated snippet; a console preview alone is not enough.
 
@@ -159,7 +159,7 @@ To get notified of conversations, set a `webhook_url` on the channel; the server
 
 Security and delivery semantics:
 
-- When `webhook_secret` is set, the request carries the signature header `X-WeKnora-Signature: sha256=<hex(HMAC-SHA256(secret, raw_body))>`;
+- When `webhook_secret` is set, the request carries the signature header `X-AIKB-Signature: sha256=<hex(HMAC-SHA256(secret, raw_body))>`;
 - The URL must be `http(s)` and pass the SSRF check. Outbound requests use the SSRF-safe client (every redirect is re-checked, at most 5 hops) with a 5-second timeout and the `User-Agent` `AIKB-Embed-Webhook/1.0`;
 - Delivery is asynchronous and best-effort: a failure is logged and **not retried**;
 - The frontend can also forward events explicitly through `POST /api/v1/embed/:channel_id/sessions/:session_id/events`.
@@ -275,7 +275,7 @@ embed := r.Group("/api/v1/embed/:channel_id", middleware.EmbedAuth(embedService,
 sequenceDiagram
     autonumber
     participant Visitor as "Visitor browser"
-    participant Host as "Host page (weknora-widget.js)"
+    participant Host as "Host page (ai-kb-widget.js)"
     participant Backend as "Your backend (secure mode, optional)"
     participant Iframe as "Embed page SPA (/embed/:channel_id)"
     participant API as "AI KB API (/api/v1/embed/:channel_id)"
@@ -285,7 +285,7 @@ sequenceDiagram
     Host->>Iframe: Create the iframe (floating panel)
     Iframe-->>Host: postMessage "bootstrap_request"
     alt Secure mode (data-token-endpoint)
-        Host->>Backend: GET /weknora/embed-token
+        Host->>Backend: GET /aikb/embed-token
         Backend->>API: POST /exchange (Authorization: Embed em_...)
         API-->>Backend: "{ session_token: ems_..., expires_in: 1800 }"
         Backend-->>Host: "{ token: ems_... }"
@@ -300,7 +300,7 @@ sequenceDiagram
     Note over Iframe: session id + sig stored in localStorage
     Visitor->>Iframe: Types a question
     Iframe->>API: POST /agent-chat/:session_id (X-Embed-Session: sig)
-    API-->>Webhook: async POST message_sent (X-WeKnora-Signature)
+    API-->>Webhook: async POST message_sent (X-AIKB-Signature)
     API-->>Iframe: SSE streamed reply
     API-->>Webhook: async POST message_received
     Iframe-->>Host: postMessage "message_received"
@@ -329,6 +329,6 @@ All paths are relative to the repository root:
 | Rate limiter | `internal/ratelimit/limiter.go` |
 | Route registration | `internal/router/routes_agent.go` (`RegisterEmbedPublicRoutes` / `RegisterEmbedChannelRoutes` / embed page CSP policy) |
 | Host origin rules | `internal/embedpolicy/origin.go` |
-| Widget loader (SDK) | `frontend/public/weknora-widget.js` |
+| Widget loader (SDK) | `frontend/public/ai-kb-widget.js` |
 | Embed page SPA | `frontend/src/embed-main.ts`, `frontend/src/api/embed/index.ts` (bridge and API client), `frontend/src/composables/useEmbedBridge.ts`, `useEmbedChatSession.ts` |
 | Database migration | `migrations/versioned/000060_embed_channels.up.sql` |

@@ -100,7 +100,7 @@ const (
 	DesktopSecretPath = "/run/desktop/secret"
 
 	// DesktopBasicAuthUser is the fixed username half of that credential.
-	DesktopBasicAuthUser = "weknora"
+	DesktopBasicAuthUser = "aikb"
 
 	// The two commands the backend Execs around DesktopStartScript live in
 	// desktop_scripts.go as embedded .sh files:

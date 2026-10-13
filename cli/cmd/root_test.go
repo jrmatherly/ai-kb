@@ -21,7 +21,7 @@ func TestRoot_Help(t *testing.T) {
 	root.SetOut(&out)
 	require.NoError(t, root.Execute())
 	got := out.String()
-	assert.Contains(t, got, "weknora")
+	assert.Contains(t, got, "aikb")
 	assert.Contains(t, got, "version")
 }
 
@@ -112,7 +112,7 @@ func TestMapCobraError(t *testing.T) {
 		assert.Equal(t, assert.AnError, err)
 	})
 	t.Run("unknown command wraps as FlagError", func(t *testing.T) {
-		err := MapCobraError(errors.New(`unknown command "bogus" for "weknora"`))
+		err := MapCobraError(errors.New(`unknown command "bogus" for "aikb"`))
 		var fe *cmdutil.FlagError
 		assert.True(t, errors.As(err, &fe))
 	})

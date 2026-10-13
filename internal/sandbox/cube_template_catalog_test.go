@@ -180,13 +180,13 @@ func TestCubeRemoteClientListTemplatesHidesSnapPrefixedIDs(t *testing.T) {
 	client := newCubeTemplateClient(t, cubeCatalogHandler(
 		[]map[string]any{
 			{
-				"templateID": "tpl-weknora",
-				"name":       "weknora",
+				"templateID": "tpl-ai-kb",
+				"name":       "aikb",
 				"status":     "READY",
 			},
 			{
 				"templateID": "snap-1546901f7e5e40bdb8794c78",
-				"aliases":    []string{"weknora-sk-c838ac20-g2"},
+				"aliases":    []string{"ai-kb-sk-c838ac20-g2"},
 				"status":     "READY",
 			},
 			{
@@ -200,7 +200,7 @@ func TestCubeRemoteClientListTemplatesHidesSnapPrefixedIDs(t *testing.T) {
 	templates, err := client.ListTemplates(context.Background())
 	require.NoError(t, err)
 	require.Len(t, templates, 1)
-	require.Equal(t, "tpl-weknora", templates[0].ID)
+	require.Equal(t, "tpl-ai-kb", templates[0].ID)
 }
 
 // Snapshot IDs that do not use the snap- prefix still belong to GET
@@ -208,18 +208,18 @@ func TestCubeRemoteClientListTemplatesHidesSnapPrefixedIDs(t *testing.T) {
 func TestCubeRemoteClientListTemplatesHidesListedSnapshots(t *testing.T) {
 	client := newCubeTemplateClient(t, cubeCatalogHandler(
 		[]map[string]any{
-			{"templateID": "tpl-weknora", "name": "weknora", "status": "READY"},
-			{"templateID": "abc123unprefixed", "aliases": []string{"weknora-sk-cfg-g1"}, "status": "READY"},
+			{"templateID": "tpl-ai-kb", "name": "aikb", "status": "READY"},
+			{"templateID": "abc123unprefixed", "aliases": []string{"ai-kb-sk-cfg-g1"}, "status": "READY"},
 		},
 		[]map[string]any{
-			{"snapshotID": "abc123unprefixed", "names": []string{"weknora-sk-cfg-g1"}},
+			{"snapshotID": "abc123unprefixed", "names": []string{"ai-kb-sk-cfg-g1"}},
 		},
 	))
 
 	templates, err := client.ListTemplates(context.Background())
 	require.NoError(t, err)
 	require.Len(t, templates, 1)
-	require.Equal(t, "tpl-weknora", templates[0].ID)
+	require.Equal(t, "tpl-ai-kb", templates[0].ID)
 }
 
 func TestCubeRemoteClientListTemplatesKeepsTemplatesWhenSnapshotListFails(t *testing.T) {
@@ -227,7 +227,7 @@ func TestCubeRemoteClientListTemplatesKeepsTemplatesWhenSnapshotListFails(t *tes
 		switch r.URL.Path {
 		case "/templates":
 			writeJSON(w, http.StatusOK, []map[string]any{
-				{"templateID": "tpl-weknora", "status": "READY"},
+				{"templateID": "tpl-ai-kb", "status": "READY"},
 				{"templateID": "snap-orphan", "status": "READY"},
 			})
 		case "/snapshots":
@@ -240,7 +240,7 @@ func TestCubeRemoteClientListTemplatesKeepsTemplatesWhenSnapshotListFails(t *tes
 	templates, err := client.ListTemplates(context.Background())
 	require.NoError(t, err)
 	require.Len(t, templates, 1)
-	require.Equal(t, "tpl-weknora", templates[0].ID)
+	require.Equal(t, "tpl-ai-kb", templates[0].ID)
 }
 
 func TestCubeTemplateIsSnapshot(t *testing.T) {
@@ -248,7 +248,7 @@ func TestCubeTemplateIsSnapshot(t *testing.T) {
 	require.True(t, cubeTemplateIsSnapshot("snap-1", nil))
 	require.True(t, cubeTemplateIsSnapshot("SNAP-1", nil))
 	require.True(t, cubeTemplateIsSnapshot("listed-id", listed))
-	require.False(t, cubeTemplateIsSnapshot("tpl-weknora", listed))
+	require.False(t, cubeTemplateIsSnapshot("tpl-ai-kb", listed))
 	require.False(t, cubeTemplateIsSnapshot("", listed))
 }
 
@@ -597,7 +597,7 @@ func TestIsStandardTemplateImage(t *testing.T) {
 		"",
 		"python:3.11",
 		"ghcr.io/jrmatherly/ai-kb-docreader:latest",
-		"someone-else/weknora-sandbox:latest",
+		"someone-else/ai-kb-sandbox:latest",
 	} {
 		require.False(t, isStandardTemplateImage(image), image)
 	}

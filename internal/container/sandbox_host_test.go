@@ -72,12 +72,12 @@ func TestHostSandboxManagerNilWhenAvailableFails(t *testing.T) {
 	}))
 }
 
-func TestDefaultHostSessionRootUsesWeKnoraLite(t *testing.T) {
+func TestDefaultHostSessionRootUsesAIKBLite(t *testing.T) {
 	require.Equal(t, "/Users/dev/Documents/AIKBLite", defaultHostSessionRoot("/Users/dev"))
 }
 
-func TestDefaultHostSkillsRootIsDotWeknora(t *testing.T) {
-	require.Equal(t, "/Users/dev/.weknora/skills", defaultHostSkillsRoot("/Users/dev"))
+func TestDefaultHostSkillsRootIsDotAikb(t *testing.T) {
+	require.Equal(t, "/Users/dev/.aikb/skills", defaultHostSkillsRoot("/Users/dev"))
 }
 
 func TestHostSandboxManagerEnabledWhenBackendAvailable(t *testing.T) {

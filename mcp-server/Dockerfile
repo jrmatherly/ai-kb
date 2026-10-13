@@ -14,4 +14,4 @@ ENV AIKB_BASE_URL=http://app:8080/api/v1
 
 EXPOSE 8000
 
-CMD ["weknora-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["ai-kb-mcp-server", "--transport", "http", "--host", "0.0.0.0", "--port", "8000"]

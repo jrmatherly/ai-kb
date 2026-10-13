@@ -37,7 +37,7 @@ func newOIDCStartTestRouter(h *AuthHandler) *gin.Engine {
 // to the IdP authorization URL and bind the nonce via cookie (CSRF/replay
 // defence), exactly like /auth/oidc/url.
 func TestOIDCStart_RedirectsToAuthProvider(t *testing.T) {
-	const authURL = "http://idp.example.com/authorize?client_id=weknora"
+	const authURL = "http://idp.example.com/authorize?client_id=aikb"
 	us := &stubOIDCStartUserService{
 		getOIDCAuthorizationURL: func(context.Context, string) (*types.OIDCAuthURLResponse, error) {
 			return &types.OIDCAuthURLResponse{
@@ -52,7 +52,7 @@ func TestOIDCStart_RedirectsToAuthProvider(t *testing.T) {
 	r := newOIDCStartTestRouter(h)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/start", nil)
-	req.Host = "weknora.example.com"
+	req.Host = "ai-kb.example.com"
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -88,12 +88,12 @@ func TestOIDCStart_BuildsCallbackURLFromRequestOrigin(t *testing.T) {
 	r := newOIDCStartTestRouter(h)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/start", nil)
-	req.Host = "weknora.example.com"
+	req.Host = "ai-kb.example.com"
 	req.Header.Set("X-Forwarded-Proto", "https")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	const want = "https://weknora.example.com/api/v1/auth/oidc/callback"
+	const want = "https://ai-kb.example.com/api/v1/auth/oidc/callback"
 	if captured != want {
 		t.Errorf("callback URL passed to IdP = %q, want %q", captured, want)
 	}

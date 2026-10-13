@@ -14,15 +14,15 @@ import (
 )
 
 const (
-	remoteMetadataTenantID       = "weknora_tenant_id"
-	remoteMetadataSessionID      = "weknora_session_id"
-	remoteMetadataBindingVersion = "weknora_binding_version"
-	remoteMetadataProvider       = "weknora_provider"
+	remoteMetadataTenantID       = "aikb_tenant_id"
+	remoteMetadataSessionID      = "aikb_session_id"
+	remoteMetadataBindingVersion = "aikb_binding_version"
+	remoteMetadataProvider       = "aikb_provider"
 
 	// remoteMetadataConfigID records which sandbox config created the sandbox.
 	// Two configs in one workspace may share a provider account, so cleanup
 	// must filter by config as well as tenant/session ownership.
-	remoteMetadataConfigID = "weknora_sandbox_config_id"
+	remoteMetadataConfigID = "aikb_sandbox_config_id"
 )
 
 // ErrSandboxSessionDeleted reports that the owning AI KB session no longer

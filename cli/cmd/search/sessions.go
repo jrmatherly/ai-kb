@@ -51,7 +51,7 @@ type SessionsSearchService interface {
 	GetSessionsByTenant(ctx context.Context, page, pageSize int) ([]sdk.Session, int, error)
 }
 
-// NewCmdSessions builds `weknora search sessions "<query>"`. Finds chat
+// NewCmdSessions builds `aikb search sessions "<query>"`. Finds chat
 // sessions whose title or description contains the query.
 func NewCmdSessions(f *cmdutil.Factory) *cobra.Command {
 	opts := &SessionsSearchOptions{}
@@ -64,9 +64,9 @@ title or description contains the query (case-insensitive).
 By default, --all-pages=true walks every server page until --limit is
 reached or the tenant's sessions are exhausted. Pass --all-pages=false
 to stop after one page.`,
-		Example: `  weknora search sessions "onboarding"
-  weknora search sessions "Q3 review" --limit 3 --format json
-  weknora search sessions "Q3 review" --all-pages=false`,
+		Example: `  aikb search sessions "onboarding"
+  aikb search sessions "Q3 review" --limit 3 --format json
+  aikb search sessions "Q3 review" --all-pages=false`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(c *cobra.Command, args []string) error {
 			opts.Query = strings.TrimSpace(args[0])
@@ -95,7 +95,7 @@ to stop after one page.`,
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor:       "Find chat sessions by title or description (client-side case-insensitive substring match). Results come with meta.count; use --limit to cap and --all-pages=false to stop after one page.",
 		RequiredFlags: []string{"<query> (positional)"},
-		Examples:      []string{`weknora search sessions "onboarding" --format json`},
+		Examples:      []string{`aikb search sessions "onboarding" --format json`},
 		Output:        "envelope.data is an array of Session objects with id, title, updated_at; meta.count is the returned count; meta.has_more=true if more matched than --limit",
 	})
 	return cmd

@@ -93,7 +93,7 @@ JWTs and workspace API keys already carry the workspace identity, so ordinary us
 
 ### The Raw escape hatch
 
-`Client.Raw(ctx, method, path, body)` (Experimental) sends any HTTP request with the client's configured auth headers. It exists for one-off integrations and the `weknora api` CLI passthrough. Prefer a typed method when one exists.
+`Client.Raw(ctx, method, path, body)` (Experimental) sends any HTTP request with the client's configured auth headers. It exists for one-off integrations and the `aikb api` CLI passthrough. Prefer a typed method when one exists.
 
 ## Resources and methods
 

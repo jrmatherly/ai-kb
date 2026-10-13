@@ -4,7 +4,7 @@ Logos identify supported integrations; their names and marks belong to their res
 
 Paths below written as `public/brand/…`, `public/brands/…` and `public/product/…` live under `public/docs/_home/`, so the site serves them from `/docs/_home/` next to the rest of the documentation.
 
-- Product logo (**pending replacement**): `public/brand/weknora-original.png` is still the upstream project's README logo (`docs/images/logo.png`), copied unchanged. It shows the upstream name, not AI KB, and is replaced when an AI KB logo exists. CSS hides only the empty outer canvas and blends the white background into the page; dark mode uses an inverted presentation with hue rotation.
+- Product logo (**pending replacement**): `public/brand/ai-kb-original.png` is still the upstream project's README logo (`docs/images/logo.png`), copied unchanged. It shows the upstream name, not AI KB, and is replaced when an AI KB logo exists. CSS hides only the empty outer canvas and blends the white background into the page; dark mode uses an inverted presentation with hue rotation.
 - Browser icon (**pending replacement**): copied unchanged from the product's `frontend/public/favicon.ico` into the documentation (`/docs/favicon.ico`), which the homepage also uses. It is still the upstream icon.
 - Feishu, GitLab, Tencent IMA, Notion, Yuque, RSS, WeCom, Slack, Telegram: copied unchanged from the product frontend asset library.
 - OpenAI, DeepSeek, Qwen, Hunyuan, Gemini, Ollama, MCP: static SVGs from [Lobe Icons](https://github.com/lobehub/lobe-icons), `@lobehub/icons-static-svg@1.95.0`. Upstream MIT license included with assets.

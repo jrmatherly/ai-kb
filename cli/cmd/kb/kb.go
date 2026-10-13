@@ -1,7 +1,7 @@
-// Package kb holds the `weknora kb` command tree: list / view / create /
+// Package kb holds the `aikb kb` command tree: list / view / create /
 // update / delete / pin / unpin. Verb set follows common CRUD vocabulary
 // (list/view/create/update/delete) plus pin/unpin. Bulk content deletion
-// is exposed via `weknora doc delete --all --kb=<id>`.
+// is exposed via `aikb doc delete --all --kb=<id>`.
 package kb
 
 import (
@@ -10,7 +10,7 @@ import (
 	"github.com/jrmatherly/ai-kb/cli/internal/cmdutil"
 )
 
-// NewCmd builds the `weknora kb` parent command.
+// NewCmd builds the `aikb kb` parent command.
 func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "kb",

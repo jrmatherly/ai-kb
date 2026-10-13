@@ -46,7 +46,7 @@ type viewData struct {
 	ProjectLink    string `json:"project_link"`
 }
 
-// NewCmdView builds `weknora config view`. Read-only inspection of the
+// NewCmdView builds `aikb config view`. Read-only inspection of the
 // resolved config and resolution chain. Never builds the SDK client and
 // never issues a network request: KB resolution uses ResolveKBLocal, secrets
 // storage is detected from the store type, and everything else is read from
@@ -77,9 +77,9 @@ even when no profile or KB is configured (sources report "(none)" /
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor: "inspect the resolved CLI config and resolution chain (active profile, host, kb, log level, default format, file paths) without mutating or hitting the network",
 		Examples: []string{
-			"weknora config view",
-			"weknora config view --format json",
-			"weknora config view --jq '.data.active_profile'",
+			"aikb config view",
+			"aikb config view --format json",
+			"aikb config view --jq '.data.active_profile'",
 		},
 		Output: "envelope.data is {active_profile, profile_source, auth_source, host, kb_id, kb_source, log_level, log_level_source, format_default, config_file, cache_dir, secrets, project_link}. auth_source reports whether the active credential is the profile+keyring or a stateless AIKB_TOKEN/AIKB_API_KEY env override.",
 	})
@@ -261,7 +261,7 @@ func resolveSecrets(f *cmdutil.Factory) string {
 	return "file"
 }
 
-// resolveProjectLink reports the discovered .weknora/project.yaml path or
+// resolveProjectLink reports the discovered .aikb/project.yaml path or
 // "(none)". Walks up from cwd like ResolveKBLocal does.
 func resolveProjectLink() string {
 	cwd, err := os.Getwd()

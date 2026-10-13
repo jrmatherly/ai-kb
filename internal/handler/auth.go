@@ -30,7 +30,7 @@ var liteSetupToken string
 func SetLiteSetupToken(token string) { liteSetupToken = token }
 
 const (
-	oidcNonceCookieName   = "weknora_oidc_nonce"
+	oidcNonceCookieName   = "aikb_oidc_nonce"
 	oidcNonceCookieMaxAge = 600
 )
 
@@ -906,12 +906,12 @@ func (h *AuthHandler) AutoSetup(c *gin.Context) {
 	}
 
 	if liteSetupToken == "" ||
-		subtle.ConstantTimeCompare([]byte(c.GetHeader("X-WeKnora-Desktop-Token")), []byte(liteSetupToken)) != 1 {
+		subtle.ConstantTimeCompare([]byte(c.GetHeader("X-AIKB-Desktop-Token")), []byte(liteSetupToken)) != 1 {
 		_ = c.Error(errors.NewUnauthorizedError("desktop authentication is required"))
 		return
 	}
 
-	const defaultEmail = "admin@weknora.local"
+	const defaultEmail = "admin@ai-kb.local"
 
 	user, _ := h.userService.GetUserByEmail(ctx, defaultEmail)
 	if user == nil {

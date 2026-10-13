@@ -102,9 +102,9 @@ func TestTencentVectorDBUsesConfiguredReplicaNumber(t *testing.T) {
 func TestCollectionNameUsesDimensionSuffixByDefault(t *testing.T) {
 	repo := NewTencentVectorDBRetrieveEngineRepository(nil, "", nil).(*repository)
 
-	assert.Equal(t, "weknora_embeddings_1024", repo.collectionName(1024))
-	assert.True(t, repo.matchesCollection("weknora_embeddings_1024"))
-	assert.False(t, repo.matchesCollection("weknora_embeddings"))
+	assert.Equal(t, "aikb_embeddings_1024", repo.collectionName(1024))
+	assert.True(t, repo.matchesCollection("aikb_embeddings_1024"))
+	assert.False(t, repo.matchesCollection("aikb_embeddings"))
 }
 
 func TestCollectionNameRespectsExplicitCollectionName(t *testing.T) {

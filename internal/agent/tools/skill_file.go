@@ -49,7 +49,7 @@ var writeSkillFileTool = BaseTool{
 - This is the way to write a file into the skill tree. Do NOT use
   ` + "`shell_exec`" + ` with ` + "`cat`" + `, a heredoc, or ` + "`python -c`" + `:
   those hit a command-length cap and mangle quoting.
-- Use it for ` + "`.weknora/requirements.json`" + `, a small wrapper script, or a
+- Use it for ` + "`.aikb/requirements.json`" + `, a small wrapper script, or a
   patch to a shipped file.
 - ` + pythonQuoteGuidance + `
 

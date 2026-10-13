@@ -162,7 +162,7 @@ These targets are defined in the root `Makefile`. `make help` prints a summary o
 | `build-images` / `build-images-app` / `build-images-docreader` / `build-images-frontend` / `clean-images` | `scripts/build_images.sh` builds images from source or removes them |
 | `check-env` / `list-containers` / `pull-images` | `start_all.sh --check / --list / --pull` |
 | `show-platform` | Prints `uname -m` and the Docker build platform (amd64/arm64 detected automatically) |
-| `clean-db` | Deletes the Docker volumes `weknora_postgres-data`, `weknora_minio_data` and `weknora_redis_data` (**erases data**) |
+| `clean-db` | Deletes the Docker volumes `aikb_postgres-data`, `aikb_minio_data` and `aikb_redis_data` (**erases data**) |
 
 ### Database migrations
 
@@ -377,10 +377,10 @@ The chunker provides `SplitWithDiagnostics()` (`internal/infrastructure/chunker/
 
 `scripts/cloud-image/` prepares a distribution image on a dedicated, disposable Linux build machine. A normal deployment follows [Installation](../01-getting-started/02-installation.md) and does not need these scripts.
 
-- `prepare.sh` downloads the runtime files for `AIKB_REF`, pulls the images and installs the systemd services. The same ref sets the image version, so confirm that a matching image tag exists. The shipped systemd units hard-code the deployment directory (`WorkingDirectory=` in `scripts/cloud-image/systemd/weknora.service`, the default of `AIKB_DIR`); changing only the script's directory variable does not move the installation.
+- `prepare.sh` downloads the runtime files for `AIKB_REF`, pulls the images and installs the systemd services. The same ref sets the image version, so confirm that a matching image tag exists. The shipped systemd units hard-code the deployment directory (`WorkingDirectory=` in `scripts/cloud-image/systemd/aikb.service`, the default of `AIKB_DIR`); changing only the script's directory variable does not move the installation.
 - `cleanup.sh` wipes the build machine's data, keys, SSH authorizations, logs and Docker cache, then powers it off. Its effect is not limited to the AI KB directory; use it only on a dedicated build machine you have checked.
 - `firstboot.sh` generates keys on a new instance, writes `.env` and starts Compose. Afterwards it disables the first-boot service; it does not delete the script.
 
 Before building an image, check that the scripts match the chosen version. Before distributing it, verify startup, service health and key independence on a fresh instance. This description does not mean the current scripts have passed deployment or marketplace acceptance on any particular cloud platform.
 
-For first-boot troubleshooting, see `journalctl -u weknora-firstboot`, `/var/log/weknora-firstboot.log` and the Compose state in the deployment directory. `.firstboot.done` is written after the keys are generated and before Compose starts, so the marker does not mean the services are healthy. If startup fails, keep the generated `.env` and the marker, fix the cause and start Compose again. Deleting the marker to regenerate keys can leave the configuration inconsistent with an already initialized database.
+For first-boot troubleshooting, see `journalctl -u ai-kb-firstboot`, `/var/log/ai-kb-firstboot.log` and the Compose state in the deployment directory. `.firstboot.done` is written after the keys are generated and before Compose starts, so the marker does not mean the services are healthy. If startup fails, keep the generated `.env` and the marker, fix the cause and start Compose again. Deleting the marker to regenerate keys can leave the configuration inconsistent with an already initialized database.

@@ -442,7 +442,7 @@ func TestCopyIndicesLowersTheQueryLimitWhenTheServerRefuses(t *testing.T) {
 // more objects" turns a failed query into a successful, silently truncated copy
 // - and the response type check used to panic before it could even get there.
 func TestCopyIndicesReportsAQueryError(t *testing.T) {
-	const failure = "class Weknora_embeddings_64 does not exist"
+	const failure = "class Aikb_embeddings_64 does not exist"
 	source := copyTestSingleVectorChunks("chunk-0")
 	source.queryError = failure
 	repo := source.serve(t)

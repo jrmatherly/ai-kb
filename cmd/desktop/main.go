@@ -176,9 +176,9 @@ window.open=function(url){
 })();`
 
 // wailsThemeSyncJS：与 index.html 首屏一致，在 DomReady 再跑一遍，覆盖 Ctrl+R 后 runtime 就绪时机
-const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('WeKnora_theme')||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var bg=t==='dark'?'#181818':'#eee';document.documentElement.setAttribute('theme-mode',t);document.documentElement.style.background=bg;document.documentElement.style.minHeight='100%';document.documentElement.style.colorScheme=t==='dark'?'dark':'light';if(document.body){document.body.style.background=bg;document.body.style.minHeight='100%';}var w=window.runtime;if(!w)return;if(t==='dark'){if(w.WindowSetDarkTheme)w.WindowSetDarkTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(24,24,24,255);}else{if(w.WindowSetLightTheme)w.WindowSetLightTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(238,238,238,255);}}catch(e){}})()`
+const wailsThemeSyncJS = `(function(){try{var t=localStorage.getItem('AIKB_theme')||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';var bg=t==='dark'?'#181818':'#eee';document.documentElement.setAttribute('theme-mode',t);document.documentElement.style.background=bg;document.documentElement.style.minHeight='100%';document.documentElement.style.colorScheme=t==='dark'?'dark':'light';if(document.body){document.body.style.background=bg;document.body.style.minHeight='100%';}var w=window.runtime;if(!w)return;if(t==='dark'){if(w.WindowSetDarkTheme)w.WindowSetDarkTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(24,24,24,255);}else{if(w.WindowSetLightTheme)w.WindowSetLightTheme();if(w.WindowSetBackgroundColour)w.WindowSetBackgroundColour(238,238,238,255);}}catch(e){}})()`
 
-const weknoraGitHubRepoURL = "https://github.com/jrmatherly/ai-kb"
+const aikbGitHubRepoURL = "https://github.com/jrmatherly/ai-kb"
 
 // ensureDesktopLiteEdition marks this process as Lite. cmd/desktop is the
 // Lite app; packaged builds also inject this via ldflags. wails dev often
@@ -360,7 +360,7 @@ func main() {
 		choice, err := wailsruntime.MessageDialog(app.ctx, wailsruntime.MessageDialogOptions{
 			Type:          wailsruntime.InfoDialog,
 			Title:         "AI KB Lite",
-			Message:       fmt.Sprintf("AI KB Lite — Desktop Edition\n\nA RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\nVersion %s\n© 2026 Tencent\n\nGitHub:\n%s", desktopAboutVersion(), weknoraGitHubRepoURL),
+			Message:       fmt.Sprintf("AI KB Lite — Desktop Edition\n\nA RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\nVersion %s\n© 2026 Tencent\n\nGitHub:\n%s", desktopAboutVersion(), aikbGitHubRepoURL),
 			Buttons:       []string{"Open GitHub", "OK"},
 			DefaultButton: "OK",
 		})
@@ -369,7 +369,7 @@ func main() {
 			return
 		}
 		if choice == "Open GitHub" {
-			wailsruntime.BrowserOpenURL(app.ctx, weknoraGitHubRepoURL)
+			wailsruntime.BrowserOpenURL(app.ctx, aikbGitHubRepoURL)
 		}
 	})
 	FileMenu.AddText("Check for Updates...", nil, func(_ *menu.CallbackData) {
@@ -416,11 +416,11 @@ func main() {
 			// 注入真实 API 根路径（与 window.location.origin 不同）；无 Go 绑定时仍可显示。
 			if u := strings.TrimSpace(app.backendURL); u != "" {
 				apiRoot := strings.TrimRight(u, "/") + "/api/v1"
-				inject := fmt.Sprintf(`try{window.__WEKNORA_API_BASE__=%s}catch(e){}`, strconv.Quote(apiRoot))
+				inject := fmt.Sprintf(`try{window.__AIKB_API_BASE__=%s}catch(e){}`, strconv.Quote(apiRoot))
 				wailsruntime.WindowExecJS(ctx, inject)
 			}
 			if lan := strings.TrimSpace(app.apiLanBaseURL); lan != "" {
-				injectLan := fmt.Sprintf(`try{window.__WEKNORA_API_LAN_BASE__=%s}catch(e){}`, strconv.Quote(lan))
+				injectLan := fmt.Sprintf(`try{window.__AIKB_API_LAN_BASE__=%s}catch(e){}`, strconv.Quote(lan))
 				wailsruntime.WindowExecJS(ctx, injectLan)
 			}
 		},
@@ -455,7 +455,7 @@ func configureDesktopStorage(execPath string) {
 	targetDataDir := filepath.Join(appSupportDir, "data")
 	migrateLegacyDesktopData(legacyResourcesDir, targetDataDir)
 
-	dbPath := resolveDesktopDataPath(os.Getenv("DB_PATH"), filepath.Join("data", "weknora.db"), appSupportDir)
+	dbPath := resolveDesktopDataPath(os.Getenv("DB_PATH"), filepath.Join("data", "aikb.db"), appSupportDir)
 
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0o755); err != nil {
 		logger.Warnf(context.Background(), "Failed to create desktop DB directory %s: %v", filepath.Dir(dbPath), err)
@@ -464,7 +464,7 @@ func configureDesktopStorage(execPath string) {
 	_ = os.Setenv("DB_PATH", dbPath)
 }
 
-// configureDesktopFileStorage points Lite file uploads at ~/.weknora/data/files.
+// configureDesktopFileStorage points Lite file uploads at ~/.aikb/data/files.
 // wails dev is not always inside a packaged .app, so this runs for every
 // desktop process. An explicit absolute directory is kept; the Docker default
 // /data/files is not writable on macOS and is replaced. Uploads move over from
@@ -491,7 +491,7 @@ func configureDesktopFileStorage(execPath string) {
 }
 
 func desktopLocalFilesDir(home string) string {
-	return filepath.Join(home, ".weknora", "data", "files")
+	return filepath.Join(home, ".aikb", "data", "files")
 }
 
 func useDesktopFilesDir(raw string) bool {

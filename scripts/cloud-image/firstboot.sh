@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# firstboot.sh - 由 weknora-firstboot.service 在新实例首次开机时自动执行。
+# firstboot.sh - 由 ai-kb-firstboot.service 在新实例首次开机时自动执行。
 # 任务: 生成随机密钥写入 .env -> 启动容器 -> 输出凭证 -> 标记完成 + 自禁用。
 #
 # 幂等性策略:
@@ -14,8 +14,8 @@ set -euo pipefail
 AIKB_DIR="${AIKB_DIR:-/opt/ai-kb}"
 ENV_FILE="${AIKB_DIR}/.env"
 ENV_TEMPLATE="${AIKB_DIR}/.env.example"
-CRED_FILE="/root/weknora-credentials.txt"
-LOG_FILE="/var/log/weknora-firstboot.log"
+CRED_FILE="/root/ai-kb-credentials.txt"
+LOG_FILE="/var/log/ai-kb-firstboot.log"
 MARKER="${AIKB_DIR}/.firstboot.done"
 
 # 提前打开 LOG_FILE, 同时把 stderr 也复制一份到 systemd journal 方便调试
@@ -30,7 +30,7 @@ if [[ -f "${MARKER}" ]]; then
 fi
 
 # cleanup.sh 不再保留 .env, 这里从 .env.example 拷贝模板再做替换。
-# 这样保证 firstboot 之前不会有任何含明文默认密码的 .env 让 weknora.service
+# 这样保证 firstboot 之前不会有任何含明文默认密码的 .env 让 aikb.service
 # 抢先把 postgres 数据卷用错的密码初始化掉。
 if [[ ! -f "${ENV_FILE}" ]]; then
   if [[ -f "${ENV_TEMPLATE}" ]]; then
@@ -133,7 +133,7 @@ INFO
 echo "credentials written to ${CRED_FILE}"
 
 # 仅停掉 unit, 不删 unit 文件 (否则当前正在运行的 oneshot 可能被 systemd 标记 failed)。
-# 下次重启时, weknora-firstboot.service 通过 ConditionPathExists=!${MARKER} 自动跳过。
-systemctl disable weknora-firstboot.service || true
+# 下次重启时, ai-kb-firstboot.service 通过 ConditionPathExists=!${MARKER} 自动跳过。
+systemctl disable ai-kb-firstboot.service || true
 
 echo "==== firstboot finished at $(date -Iseconds) ===="
