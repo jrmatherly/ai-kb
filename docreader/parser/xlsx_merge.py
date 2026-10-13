@@ -30,7 +30,7 @@ def fill_merged_cells_xlsx(content: bytes) -> bytes:
             ws.unmerge_cells(str(merge_range))
             for row in range(merge_range.min_row, merge_range.max_row + 1):
                 for col in range(merge_range.min_col, merge_range.max_col + 1):
-                    ws.cell(row, col).value = master_value
+                    ws.cell(row, col, value=master_value)
             changed = True
 
     if not changed:
@@ -38,8 +38,8 @@ def fill_merged_cells_xlsx(content: bytes) -> bytes:
 
     # Charts are not part of the cell text extracted by DocReader. Remove
     # dedicated chart sheets through the public workbook API, then clear
-    # embedded worksheet charts (openpyxl has no public removal API for them)
-    # before saving this temporary workbook.
+    # embedded worksheet charts (openpyxl has no public removal API for them,
+    # and its stubs omit the private list) before saving this temporary workbook.
     active_sheet = wb.active
     for chart_sheet in list(wb.chartsheets):
         wb.remove(chart_sheet)
@@ -48,7 +48,7 @@ def fill_merged_cells_xlsx(content: bytes) -> bytes:
     elif wb.worksheets:
         wb.active = wb.worksheets[0]
     for ws in wb.worksheets:
-        ws._charts.clear()
+        ws._charts.clear()  # pyrefly: ignore[missing-attribute]
 
     out = BytesIO()
     wb.save(out)

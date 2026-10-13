@@ -51,7 +51,7 @@ def main() -> None:
     for column, value in enumerate(("\u76f8\u540c\u503c", "\u76f8\u540c\u503c", "\u72ec\u7acb\u503c")):
         control.cell(1, column).text = value
 
-    document.save(OUTPUT)
+    document.save(str(OUTPUT))
     print(f"generated={OUTPUT}")
     print(f"size={OUTPUT.stat().st_size}")
 

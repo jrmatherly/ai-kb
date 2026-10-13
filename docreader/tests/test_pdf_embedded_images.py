@@ -26,6 +26,12 @@ PAGE_W, PAGE_H = 612, 792
 IMG_W, IMG_H = 120, 90
 
 
+def _rgb(pil: Image.Image, xy: tuple[int, int]) -> tuple[int, ...]:
+    pixel = pil.getpixel(xy)
+    assert isinstance(pixel, tuple), pixel
+    return pixel
+
+
 def _pdf_from_objects(objects: list) -> bytes:
     out = bytearray(b"%PDF-1.7\n")
     offsets = []
@@ -138,10 +144,10 @@ class DecodeEmbeddedImageTest(unittest.TestCase):
             pdf.close()
         self.assertEqual(pil.mode, "RGB")
         # Transparent corners become white page background, not black.
-        self.assertGreater(pil.getpixel((2, 2))[0], 200)
-        self.assertGreater(pil.getpixel((IMG_W - 3, IMG_H - 3))[0], 200)
+        self.assertGreater(_rgb(pil, (2, 2))[0], 200)
+        self.assertGreater(_rgb(pil, (IMG_W - 3, IMG_H - 3))[0], 200)
         # Opaque circle center keeps the base-plane colour (black).
-        self.assertLess(pil.getpixel((IMG_W // 2, IMG_H // 2))[0], 40)
+        self.assertLess(_rgb(pil, (IMG_W // 2, IMG_H // 2))[0], 40)
 
     def test_colored_smask_keeps_base_color(self):
         pdf = pdfium.PdfDocument(_build_smask_pdf(base_rgb=(200, 30, 40)))
@@ -150,8 +156,8 @@ class DecodeEmbeddedImageTest(unittest.TestCase):
         finally:
             pdf.close()
         self.assertEqual(pil.mode, "RGB")
-        self.assertGreater(pil.getpixel((2, 2))[0], 200)
-        center = pil.getpixel((IMG_W // 2, IMG_H // 2))
+        self.assertGreater(_rgb(pil, (2, 2))[0], 200)
+        center = _rgb(pil, (IMG_W // 2, IMG_H // 2))
         self.assertGreater(center[0], 150)
         self.assertLess(center[1], 80)
         self.assertLess(center[2], 80)
@@ -248,7 +254,7 @@ class ExtractEmbeddedImagesTest(unittest.TestCase):
         for x in range(0, pil.width, 4):
             for y in range(0, pil.height, 4):
                 total += 1
-                if max(pil.getpixel((x, y))) >= 200:
+                if max(_rgb(pil, (x, y))) >= 200:
                     bright += 1
         # Dropping the mask would make this ~0: the whole figure is black.
         self.assertGreater(bright / total, 0.5)

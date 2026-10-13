@@ -10,7 +10,7 @@ import posixpath
 import tempfile
 from urllib.parse import unquote
 import uuid
-from typing import Dict
+from typing import Any, Dict
 
 from bs4 import BeautifulSoup
 import ebooklib
@@ -133,8 +133,8 @@ class EPUBParser(BaseParser):
             content="\n\n".join(markdown_parts), images=images, metadata=metadata
         )
 
-    def _extract_metadata(self, book) -> Dict[str, str]:
-        metadata: Dict[str, str] = {}
+    def _extract_metadata(self, book) -> Dict[str, Any]:
+        metadata: Dict[str, Any] = {}
         mapping = {
             "title": "title",
             "creator": "author",
@@ -274,7 +274,7 @@ class EPUBParser(BaseParser):
         """
         external = ("http://", "https://", "mailto:", "tel:")
         for link in soup.find_all("a"):
-            href = (link.get("href") or "").strip().lower()
+            href = str(link.get("href") or "").strip().lower()
             if not href or not href.startswith(external):
                 link.unwrap()
 
@@ -302,7 +302,7 @@ class EPUBParser(BaseParser):
         base_path: str = "",
     ) -> None:
         for img in soup.find_all("img"):
-            src = (img.get("src") or "").strip()
+            src = str(img.get("src") or "").strip()
             if not src:
                 continue
             # Only src is a URI reference. Strip its URI suffixes before decoding

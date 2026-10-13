@@ -66,8 +66,9 @@ class StdMarkitdownParser(BaseParser):
             ext = "." + ext
 
         with parser_worker_limit("markitdown", CONFIG.markitdown_max_workers):
-            result = self._convert_markitdown(content, ext, keep_data_uris=True)
-            if result is None:
+            try:
+                result = self._convert_markitdown(content, ext, keep_data_uris=True)
+            except Exception:
                 logger.warning(
                     "MarkItDown failed with embedded images for %s; retrying without data URIs",
                     ft or ext,
@@ -83,16 +84,11 @@ class StdMarkitdownParser(BaseParser):
     def _convert_markitdown(
         self, content: bytes, ext: str | None, *, keep_data_uris: bool
     ):
-        try:
-            return self.markitdown.convert(
-                io.BytesIO(content),
-                file_extension=ext,
-                keep_data_uris=keep_data_uris,
-            )
-        except Exception:
-            if keep_data_uris:
-                return None
-            raise
+        return self.markitdown.convert(
+            io.BytesIO(content),
+            file_extension=ext,
+            keep_data_uris=keep_data_uris,
+        )
 
 
 class MarkitdownParser(PipelineParser):

@@ -43,7 +43,7 @@ def _minimal_epub_bytes() -> bytes:
             content=b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR",
         )
     )
-    book.toc = (epub.Link("text/chapter_01.xhtml", "Chapter One", "chapter-one"),)
+    book.toc = [epub.Link("text/chapter_01.xhtml", "Chapter One", "chapter-one")]
     book.spine = ["nav", chapter]
     book.add_item(epub.EpubNcx())
     book.add_item(epub.EpubNav())
@@ -104,7 +104,7 @@ def _epub_with_colliding_image_names(
         book.add_item(chapter)
         chapters.append(chapter)
     # The root-level pic.png also collides with chapter-relative references.
-    book.toc = tuple(chapters)
+    book.toc = list(chapters)
     book.spine = chapters
     book.add_item(epub.EpubNcx())
     book.add_item(epub.EpubNav())

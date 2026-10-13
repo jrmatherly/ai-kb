@@ -6,6 +6,7 @@ structured Document objects with text content and chunks. It supports multiple
 sheets and handles various Excel formats using pandas.
 """
 import logging
+import numbers
 import re
 from io import BytesIO
 from typing import Any, List
@@ -135,10 +136,9 @@ class ExcelParser(BaseParser):
                 chunks.append(
                     Chunk(content=content_row, seq=len(chunks), start=start, end=end)
                 )
-                try:
-                    row_number = int(row_index) + 1
-                except (TypeError, ValueError):
-                    row_number = 0
+                row_number = (
+                    int(row_index) + 1 if isinstance(row_index, numbers.Integral) else 0
+                )
                 if row_number > 0:
                     source_blocks.append(
                         {
@@ -162,7 +162,7 @@ class ExcelParser(BaseParser):
 
 def _read_sheet_dataframe(
     excel_file: pd.ExcelFile,
-    sheet_name: str,
+    sheet_name: int | str,
     xlsx_first_row_as_header: bool = False,
 ) -> pd.DataFrame:
     """Read a worksheet into a DataFrame with stable column labels."""
@@ -180,7 +180,7 @@ def _read_sheet_dataframe(
     return df
 
 
-def _stable_header_labels(values: List[object]) -> List[str]:
+def _stable_header_labels(values: List[Any]) -> List[str]:
     """Build non-empty, unique labels from an explicitly selected header row."""
     from openpyxl.utils import get_column_letter
 

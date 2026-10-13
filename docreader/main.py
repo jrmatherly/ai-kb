@@ -147,6 +147,8 @@ def _iter_image_refs(images: dict):
         )
 
 
+# The generated base methods only raise NotImplementedError, so Pyrefly infers
+# them as returning Never and flags every real override.
 class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
     def __init__(self):
         super().__init__()
@@ -187,7 +189,7 @@ class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
         )
         return result, request.file_name
 
-    def Read(self, request: ReadRequest, context):
+    def Read(self, request: ReadRequest, context):  # pyrefly: ignore[bad-override]
         """Unified read: file mode (file_content set) or URL mode (url set)."""
         request_id = request.request_id or str(uuid.uuid4())
 
@@ -225,7 +227,7 @@ class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
                 logger.info("Traceback: %s", traceback.format_exc())
                 return ReadResponse(error=str(e))
 
-    def ReadStream(self, request: ReadRequest, context):
+    def ReadStream(self, request: ReadRequest, context):  # pyrefly: ignore[bad-override]
         """Streaming read: yields one meta frame, then one frame per image.
 
         Each frame is a small, independent gRPC message, so documents with many
@@ -275,7 +277,7 @@ class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
                 sent,
             )
 
-    def ListEngines(self, request, context):
+    def ListEngines(self, request, context):  # pyrefly: ignore[bad-override]
         overrides = dict(getattr(request, "config_overrides", None) or {})
         engines_data = registry.list_engines(overrides=overrides or None)
         engines = [
@@ -294,7 +296,7 @@ class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
 def main():
     config.print_config()
 
-    interceptors = [AuthInterceptor()]
+    interceptors: list[grpc.ServerInterceptor] = [AuthInterceptor()]
 
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=CONFIG.grpc_max_workers),

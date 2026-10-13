@@ -8,8 +8,10 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-request_id_var = ContextVar("request_id", default=None)
-_request_start_time_ctx = ContextVar("request_start_time", default=None)
+request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+_request_start_time_ctx: ContextVar[Optional[float]] = ContextVar(
+    "request_start_time", default=None
+)
 
 
 def set_request_id(request_id: str) -> None:
@@ -105,7 +107,7 @@ class RequestIdFilter(logging.Filter):
 
 
 @contextlib.contextmanager
-def request_id_context(request_id: str = None):
+def request_id_context(request_id: Optional[str] = None):
     """Context manager that sets a request ID for the current context
 
     Args:

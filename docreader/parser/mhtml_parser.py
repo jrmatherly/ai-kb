@@ -117,7 +117,7 @@ class MHTMLParser(BaseParser):
 
             if content_type == "text/html":
                 payload = part.get_payload(decode=True)
-                if not payload:
+                if not isinstance(payload, bytes) or not payload:
                     continue
                 charset = part.get_content_charset() or "utf-8"
                 try:
@@ -133,7 +133,7 @@ class MHTMLParser(BaseParser):
                 )
             elif content_type.startswith("image/") and self.extract_images:
                 image_data = part.get_payload(decode=True)
-                if image_data:
+                if isinstance(image_data, bytes) and image_data:
                     image_path = self._image_path_for_part(part, content_type, images)
                     images[image_path] = base64.b64encode(image_data).decode("utf-8")
                     self._add_image_aliases(image_aliases, part, image_path)
@@ -396,7 +396,7 @@ class MHTMLParser(BaseParser):
         """Unwrap links that don't point to an external resource."""
         external = ("http://", "https://", "mailto:", "tel:")
         for link in soup.find_all("a"):
-            href = (link.get("href") or "").strip().lower()
+            href = str(link.get("href") or "").strip().lower()
             if not href or not href.startswith(external):
                 link.unwrap()
 
@@ -407,7 +407,7 @@ class MHTMLParser(BaseParser):
         base_location: str = "",
     ) -> None:
         for img in soup.find_all("img"):
-            src = (img.get("src") or "").strip()
+            src = str(img.get("src") or "").strip()
             if not src:
                 continue
             candidates = [

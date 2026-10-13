@@ -161,7 +161,8 @@ class TestPptxMediaAssociation(unittest.TestCase):
         presentation = Presentation(io.BytesIO(deck([RED, BLUE])))
         slide = presentation.slides[0]
         picture = slide.shapes[0]
-        blip = picture._element.blipFill.blip
+        # The stubs type the blipFill child as its OneAndOnlyOne descriptor, not the element.
+        blip = picture._element.blipFill.blip  # pyrefly: ignore[missing-attribute]
         slide.part.drop_rel(blip.rEmbed)
         del blip.attrib[qn("r:embed")]
         relationship = slide.part.relate_to(

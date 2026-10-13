@@ -14,7 +14,7 @@ import re
 from collections import Counter
 import statistics
 import unicodedata
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Iterable, List, Optional, Sequence, Tuple
 
 # How far past the cursor a line is searched for, in normalized characters.
 _SEARCH_WINDOW = 6000
@@ -274,7 +274,7 @@ def page_blocks(
     previous paragraph's geometry.
     """
     end = offset + len(page_text)
-    page_only = {"type": "pdf", "page": page_number, "mapping": "exact"}
+    page_only: dict[str, Any] = {"type": "pdf", "page": page_number, "mapping": "exact"}
     if not page_text:
         return []
     placed = []
@@ -290,7 +290,7 @@ def page_blocks(
             ),
             key=lambda item: item[0],
         )
-    if not placed:
+    if not placed or geometry is None:
         return [{"start": offset, "end": end, "locator": dict(page_only)}]
 
     heights = [ln["bbox"][3] - ln["bbox"][1] for _, ln in placed if ln["bbox"][3] > ln["bbox"][1]]
@@ -317,8 +317,8 @@ def page_blocks(
         return end_at
 
     paragraphs: List[Tuple[int, List[dict]]] = []
-    for at, ln in placed:
-        ln = {**ln, "_source_end": line_end(at, ln)}
+    for at, raw in placed:
+        ln: dict = {**raw, "_source_end": line_end(at, raw)}
         if paragraphs:
             prev = paragraphs[-1][1][-1]
             col_right = max(p["bbox"][2] for p in paragraphs[-1][1])

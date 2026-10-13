@@ -6,6 +6,7 @@ Run from the repository root:
 import base64
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from docreader.parser.pdf_parser import PDFParser
@@ -13,7 +14,7 @@ from docreader.tests.test_source_locator_pdf import pdf_fixture
 
 
 def main():
-    cases = [{"name": "PDFium lower paragraph with decimal evidence", "page": 2,
+    cases: list[dict[str, Any]] = [{"name": "PDFium lower paragraph with decimal evidence", "page": 2,
               "needle": "Second page lower evidence", "pages": [
                   {"lines": [("First page has independent original evidence.", 60, 700)]},
                   {"lines": [("Second page upper paragraph is unrelated.", 60, 700),

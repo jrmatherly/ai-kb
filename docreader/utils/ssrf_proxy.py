@@ -43,7 +43,7 @@ class SSRFProxy:
         if self.upstream and self.upstream.scheme not in {"http", "https"}:
             raise ValueError("browser upstream proxy must use HTTP or HTTPS")
         self.tasks: set[asyncio.Task] = set()
-        self.server = None
+        self.server: asyncio.Server
         self.url = ""
 
     async def __aenter__(self):

@@ -18,12 +18,19 @@ from unittest.mock import patch
 
 import openpyxl
 import pandas as pd
+from openpyxl.worksheet.worksheet import Worksheet
 
 from docreader.parser import xlsx_repair
 from docreader.parser.excel_parser import _prepare_xlsx_bytes
 from docreader.parser.markitdown_parser import StdMarkitdownParser
 from docreader.parser.xlsx_merge import fill_merged_cells_xlsx
 from docreader.parser.xlsx_repair import sanitize_xlsx_styles
+
+
+def _sheet(wb: openpyxl.Workbook) -> Worksheet:
+    ws = wb.active
+    assert isinstance(ws, Worksheet)
+    return ws
 
 CRASHING_FILLS = {
     "empty-self-closing": b"<fill/>",
@@ -38,7 +45,7 @@ TOLERATED_FILL = b"<fill><Foo/></fill>"
 
 def _workbook_bytes() -> bytes:
     wb = openpyxl.Workbook()
-    ws = wb.active
+    ws = _sheet(wb)
     ws["A1"] = "hello"
     ws["B2"] = 42
     ws["C3"] = "world"
@@ -118,7 +125,7 @@ class TestSanitizeXlsxStyles(unittest.TestCase):
                 self.assertIsNotNone(sanitized)
 
                 wb = openpyxl.load_workbook(io.BytesIO(sanitized), data_only=True)
-                ws = wb.active
+                ws = _sheet(wb)
                 self.assertEqual(ws["A1"].value, "hello")
                 self.assertEqual(ws["B2"].value, 42)
 
@@ -195,7 +202,7 @@ class TestBuiltinChain(unittest.TestCase):
                 self.assertTrue(excel.sheet_names)
 
                 wb = openpyxl.load_workbook(io.BytesIO(prepared), data_only=True)
-                ws = wb.active
+                ws = _sheet(wb)
                 # the merge-cell prefill still applied on the sanitized bytes
                 self.assertEqual(ws["C3"].value, "world")
                 self.assertEqual(ws["D3"].value, "world")

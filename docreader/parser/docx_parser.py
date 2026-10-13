@@ -8,8 +8,7 @@ import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from io import BytesIO
-from multiprocessing import Manager
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 # patch from https://github.com/python-openxml/python-docx/issues/1105#issuecomment-1298075246
@@ -34,6 +33,7 @@ def load_from_xml_v2(baseURI, rels_item_xml):
 _SerializedRelationships.load_from_xml = load_from_xml_v2
 
 from docx import Document
+from docx.document import Document as DocxDocument
 from docx.image.exceptions import (
     InvalidImageStreamError,
     UnexpectedEndOfFileError,
@@ -331,13 +331,19 @@ class DocxParser(BaseParser):
 
 
 class Docx:
-    def __init__(self, max_image_size=1920, enable_multimodal=False, upload_file=None):
+    def __init__(
+        self,
+        upload_file: Callable[[str], str],
+        max_image_size=1920,
+        enable_multimodal=False,
+    ):
         logger.info("Initializing DOCX processor")
         self.max_image_size = max_image_size  # Maximum image size limit
         # Image cache to avoid processing the same image repeatedly
         self.picture_cache = {}
         self.enable_multimodal = enable_multimodal
         self.upload_file = upload_file
+        self.doc: DocxDocument
 
     def get_picture(self, document, paragraph) -> Optional[Image.Image]:
         logger.info("Extracting image from paragraph")
@@ -542,9 +548,10 @@ class Docx:
         logger.info(f"System has {cpu_count} CPU cores available")
 
         # Load document
-        self.doc = self._load_document(binary)
-        if not self.doc:
+        doc = self._load_document(binary)
+        if not doc:
             return [], ""
+        self.doc = doc
 
         # Identify page structure
         self.para_page_mapping = self._identify_page_paragraph_mapping(to_page)
@@ -575,7 +582,7 @@ class Docx:
         ordered_text = self._compose_ordered_markdown(pages_to_process)
 
         # Clean up document resources
-        self.doc = None
+        del self.doc
 
         logger.info(
             f"Document processing complete, "
@@ -607,7 +614,7 @@ class Docx:
         self.lines_lock = threading.Lock()
 
         # Initialize result containers
-        self.all_lines = []
+        self.all_lines: List[LineData] = []
 
     def _get_request_id(self):
         """Get current request ID"""
@@ -813,33 +820,24 @@ class Docx:
             args_list: List of arguments
             max_workers: Maximum number of workers
         """
-        # Use a shared manager to share data
-        with Manager() as manager:
-            # Create shared data structures
-            self.all_lines = manager.list()
+        logger.info(f"Processing {len(args_list)} pages using {max_workers} processes")
 
+        # Use ProcessPoolExecutor to truly implement multi-core parallelization
+        batch_start_time = time.time()
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            logger.info(f"Started ProcessPoolExecutor with {max_workers} workers")
+
+            # Submit all tasks
+            future_to_idx = {
+                executor.submit(process_page_multiprocess, *args): i
+                for i, args in enumerate(args_list)
+            }
             logger.info(
-                f"Processing {len(args_list)} pages using {max_workers} processes"
+                f"Submitted {len(future_to_idx)} processing tasks to process pool"
             )
 
-            # Use ProcessPoolExecutor to truly implement multi-core parallelization
-            batch_start_time = time.time()
-            with ProcessPoolExecutor(max_workers=max_workers) as executor:
-                logger.info(f"Started ProcessPoolExecutor with {max_workers} workers")
-
-                # Submit all tasks
-                future_to_idx = {
-                    executor.submit(process_page_multiprocess, *args): i
-                    for i, args in enumerate(args_list)
-                }
-                logger.info(
-                    f"Submitted {len(future_to_idx)} processing tasks to process pool"
-                )
-
-                # Collect results
-                self._collect_process_results(
-                    future_to_idx, args_list, batch_start_time
-                )
+            # Collect results
+            self._collect_process_results(future_to_idx, args_list, batch_start_time)
 
     def _collect_process_results(self, future_to_idx, args_list, batch_start_time):
         """Collect multiprocess processing results
@@ -1381,7 +1379,7 @@ def _extract_page_content_in_process(
     )
 
     # Instead of separate collections, track content in paragraph sequence
-    content_sequence = []
+    content_sequence: List[Tuple[str, Any]] = []
     current_text = ""
 
     processed_paragraphs = 0

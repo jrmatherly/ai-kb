@@ -1137,6 +1137,7 @@ def _render_pool_init(pdf_path: str) -> None:
 
 def _render_pool_task(args):
     index, scale, quality, max_edge = args
+    assert _WORKER_RENDER_DOC is not None, "_render_pool_init did not run"
     page = _WORKER_RENDER_DOC[index]
     try:
         return index, _render_page_to_jpeg(page, scale, quality, max_edge)
@@ -1460,7 +1461,7 @@ class PDFScannedParser(BaseParser):
         import pypdfium2 as pdfium
 
         images = {}
-        markdown_lines = []
+        markdown_lines: list[str] = []
         base_name = os.path.splitext(self.file_name or "document")[0]
 
         logger.info(
@@ -1695,7 +1696,7 @@ class PDFParser(BaseParser):
         # text lands so citations can point back at the page (and paragraph).
         embedded_count = 0
         vector_figure_count = 0
-        blocks = []
+        blocks: list[str] = []
         source_blocks = []
         offset = 0
 

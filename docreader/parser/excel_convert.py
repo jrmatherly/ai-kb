@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,8 @@ def detect_excel_format(content: bytes) -> str | None:
     if not content:
         return None
 
-    from pandas.io.excel._base import inspect_excel_format
+    # Private pandas helper, absent from pandas' type stubs.
+    from pandas.io.excel._base import inspect_excel_format  # pyrefly: ignore[missing-module-attribute]
 
     ext = inspect_excel_format(content_or_path=content)
     if ext in ("xlsx", "xls", "xlsb", "ods"):
@@ -36,7 +37,10 @@ def detect_excel_format(content: bytes) -> str | None:
     return None
 
 
-def engine_for_format(ext: str | None) -> str:
+ExcelEngine = Literal["openpyxl", "xlrd", "odf"]
+
+
+def engine_for_format(ext: str | None) -> ExcelEngine:
     if ext == "xls":
         return "xlrd"
     if ext in ("xlsx", "xlsb"):

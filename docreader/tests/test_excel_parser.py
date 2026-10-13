@@ -10,6 +10,7 @@ from unittest.mock import patch
 import openpyxl
 import pandas as pd
 from openpyxl.chart import BarChart, Reference
+from openpyxl.worksheet.worksheet import Worksheet
 
 from docreader.parser.excel_convert import detect_excel_format, engine_for_format
 from docreader.parser.excel_parser import ExcelParser
@@ -18,10 +19,16 @@ from docreader.parser.xlsx_merge import fill_merged_cells_xlsx
 from docreader.parser.xlsx_repair import repair_xlsx_bytes, strip_unreadable_ranges_xlsx
 
 
+def _sheet(wb: openpyxl.Workbook) -> Worksheet:
+    ws = wb.active
+    assert isinstance(ws, Worksheet)
+    return ws
+
+
 def _xlsx_with_phantom_shared_strings() -> bytes:
     """Workbook with inline strings but a dangling sharedStrings manifest entry."""
     wb = openpyxl.Workbook()
-    ws = wb.active
+    ws = _sheet(wb)
     ws["A1"] = "hello"
     ws["B1"] = 42
     bio = io.BytesIO()
@@ -57,7 +64,7 @@ def _xlsx_with_sheet_fragment(fragment: str) -> bytes:
     """A two-row workbook with ``fragment`` spliced into sheet1 before pageMargins,
     which is where OOXML puts data validations and scenarios."""
     wb = openpyxl.Workbook()
-    ws = wb.active
+    ws = _sheet(wb)
     ws["A1"], ws["B1"] = "name", "qty"
     ws["A2"], ws["B2"] = "apple", 3
     bio = io.BytesIO()
@@ -101,7 +108,7 @@ class ExcelFormatDetectionTest(unittest.TestCase):
         if not shutil.which("soffice"):
             self.skipTest("LibreOffice not available")
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = "legacy"
         xlsx_bio = io.BytesIO()
         wb.save(xlsx_bio)
@@ -178,7 +185,7 @@ class XlsxUnreadableRangesTest(unittest.TestCase):
         )
         fixed = strip_unreadable_ranges_xlsx(broken)
         self.assertIsNotNone(fixed)
-        ws = openpyxl.load_workbook(io.BytesIO(fixed)).active
+        ws = _sheet(openpyxl.load_workbook(io.BytesIO(fixed)))
         self.assertEqual(
             [str(dv.sqref) for dv in ws.data_validations.dataValidation], ["D2:D10"]
         )
@@ -250,7 +257,7 @@ class XlsxMergeFillTest(unittest.TestCase):
     @staticmethod
     def _workbook_with_merged_cells_and_chart() -> bytes:
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = "title"
         ws.merge_cells("A1:B1")
         ws.append(["category", "value"])
@@ -271,7 +278,7 @@ class XlsxMergeFillTest(unittest.TestCase):
 
     def test_fill_merged_cells_propagates_master_value(self):
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = "title"
         ws.merge_cells("A1:B1")
         ws["A2"] = "left"
@@ -283,7 +290,7 @@ class XlsxMergeFillTest(unittest.TestCase):
 
         filled = fill_merged_cells_xlsx(bio.getvalue())
         out_wb = openpyxl.load_workbook(io.BytesIO(filled), data_only=True)
-        out_ws = out_wb.active
+        out_ws = _sheet(out_wb)
         self.assertEqual(out_ws["B1"].value, "title")
         self.assertEqual(out_ws["A3"].value, "left")
         self.assertEqual(out_ws["B3"].value, "only-b")
@@ -298,11 +305,12 @@ class XlsxMergeFillTest(unittest.TestCase):
             filled = fill_merged_cells_xlsx(content)
 
         out_wb = openpyxl.load_workbook(io.BytesIO(filled), data_only=True)
-        out_ws = out_wb.active
+        out_ws = _sheet(out_wb)
         self.assertEqual(out_ws["B1"].value, "title")
         self.assertEqual(out_ws["A3"].value, "one")
         self.assertEqual(out_ws["B4"].value, 2)
-        self.assertEqual(out_ws._charts, [])
+        # openpyxl has no public chart accessor and its stubs omit _charts.
+        self.assertEqual(out_ws._charts, [])  # pyrefly: ignore[missing-attribute]
 
     def test_excel_parser_reads_merged_workbook_with_chart(self):
         document = ExcelParser().parse_into_text(
@@ -316,7 +324,7 @@ class XlsxMergeFillTest(unittest.TestCase):
     def test_chart_workbook_without_merges_passes_through_unchanged(self):
         content = self._workbook_with_merged_cells_and_chart()
         wb = openpyxl.load_workbook(io.BytesIO(content))
-        wb.active.unmerge_cells("A1:B1")
+        _sheet(wb).unmerge_cells("A1:B1")
         bio = io.BytesIO()
         wb.save(bio)
         content = bio.getvalue()
@@ -326,7 +334,7 @@ class XlsxMergeFillTest(unittest.TestCase):
     def test_fill_does_not_serialize_dedicated_chart_sheets(self):
         content = self._workbook_with_merged_cells_and_chart()
         wb = openpyxl.load_workbook(io.BytesIO(content))
-        ws = wb.active
+        ws = _sheet(wb)
         chart = BarChart()
         chart.add_data(
             Reference(ws, min_col=2, min_row=2, max_row=4),
@@ -346,14 +354,15 @@ class XlsxMergeFillTest(unittest.TestCase):
             filled = fill_merged_cells_xlsx(bio.getvalue())
 
         out_wb = openpyxl.load_workbook(io.BytesIO(filled), data_only=True)
-        self.assertEqual(out_wb.active._charts, [])
-        self.assertEqual(out_wb.active.title, "Sheet")
+        # openpyxl has no public chart accessor and its stubs omit _charts.
+        self.assertEqual(_sheet(out_wb)._charts, [])  # pyrefly: ignore[missing-attribute]
+        self.assertEqual(_sheet(out_wb).title, "Sheet")
         self.assertEqual(out_wb.chartsheets, [])
 
     def test_fill_keeps_active_worksheet_after_removing_earlier_chart_sheet(self):
         content = self._workbook_with_merged_cells_and_chart()
         wb = openpyxl.load_workbook(io.BytesIO(content))
-        data_sheet = wb.active
+        data_sheet = _sheet(wb)
         chart = BarChart()
         chart.add_data(
             Reference(data_sheet, min_col=2, min_row=2, max_row=4),
@@ -368,7 +377,7 @@ class XlsxMergeFillTest(unittest.TestCase):
         filled = fill_merged_cells_xlsx(bio.getvalue())
 
         out_wb = openpyxl.load_workbook(io.BytesIO(filled), data_only=True)
-        self.assertEqual(out_wb.active.title, "Sheet")
+        self.assertEqual(_sheet(out_wb).title, "Sheet")
         self.assertEqual(out_wb.chartsheets, [])
 
     def test_parse_en_mergecell_workbook(self):
@@ -407,7 +416,7 @@ class ExcelImageFilterTest(unittest.TestCase):
         text (not a formula) in some export scenarios.
         """
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = "Name"
         ws["B1"] = "Photo"
         ws["A2"] = "Alice"
@@ -434,7 +443,7 @@ class ExcelImageFilterTest(unittest.TestCase):
     def test_dispimg_with_equals_prefix(self):
         """=_xlfn.DISPIMG(...) as text (not formula) should also be filtered."""
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = "Name"
         ws["B1"] = "Photo"
         ws["A2"] = "Alice"
@@ -452,7 +461,7 @@ class ExcelImageFilterTest(unittest.TestCase):
     def test_image_function_variations(self):
         """Various image function patterns should all be filtered."""
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = '_xlfn.DISPIMG("ID_001",1)'
         ws["A2"] = 'DISPIMG("ID_002",1)'  # no prefix at all
         ws["A3"] = '_xlfn.IMAGE("https://example.com/img.png")'
@@ -468,7 +477,7 @@ class ExcelImageFilterTest(unittest.TestCase):
     def test_real_world_wps_dispimg(self):
         """Exact pattern from issue #1779 screenshot: =DISPIMG("ID_...",1)."""
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws["A1"] = "Product"
         ws["B1"] = "Image"
         ws["C1"] = "Price"
@@ -494,7 +503,7 @@ class ExcelParserTest(unittest.TestCase):
     @staticmethod
     def _workbook_bytes(rows):
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         for row in rows:
             ws.append(row)
         bio = io.BytesIO()
@@ -631,7 +640,7 @@ class ExcelSourceBlocksTest(unittest.TestCase):
         from docreader.parser.excel_parser import ExcelParser
 
         wb = openpyxl.Workbook()
-        ws = wb.active
+        ws = _sheet(wb)
         ws.title = "Details"
         ws["B3"] = "Bolt"
         ws["A5"] = "Total"

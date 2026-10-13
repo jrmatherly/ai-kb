@@ -19,7 +19,9 @@ class LocateLinesTest(unittest.TestCase):
         text = "## \u6807\u9898\n\u3010\u7248\u6743\u58f0\u660e\u3011\n\u6b63\u6587 \u7b2c\u4e00\u884c\n\u6b63\u6587 \u7b2c\u4e00\u884c"
         hits = locate_lines(text, ["\u6807\u9898", "\u7248\u6743\u58f0\u660e\u3011", "\u6b63\u6587\u7b2c\u4e00\u884c", "\u6b63\u6587 \u7b2c\u4e00\u884c", "\u65e0\u6b64\u884c"])
         self.assertEqual(hits[0], 0)
-        self.assertEqual(text[hits[1]:hits[1] + 2], "\u3010\u7248")
+        notice = hits[1]
+        assert notice is not None
+        self.assertEqual(text[notice:notice + 2], "\u3010\u7248")
         self.assertEqual(hits[2], text.index("\u6b63\u6587"))
         self.assertEqual(hits[3], text.rindex("\u6b63\u6587"))
         self.assertIsNone(hits[4])

@@ -28,6 +28,7 @@ def _load_docx_parser():
     spec = importlib.util.spec_from_file_location(
         "docreader.parser.docx_parser", root / "docreader" / "parser" / "docx_parser.py"
     )
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules["docreader.parser.docx_parser"] = module
     spec.loader.exec_module(module)
@@ -42,26 +43,11 @@ table_to_gfm_markdown = docx_parser.table_to_gfm_markdown
 def _parse(content):
     """Parse a DOCX through the real Docx processor.
 
-    The production path uses a ProcessPoolExecutor backed by a multiprocessing
-    Manager. Some CI sandboxes forbid POSIX semaphores, so run the same page
-    task pool on threads and swap the manager for a plain list - parse
+    The production path uses a ProcessPoolExecutor. Some CI sandboxes forbid
+    POSIX semaphores, so run the same page task pool on threads - parse
     behavior is identical, only the execution backend changes.
     """
-
-    class _FakeManager:
-        def __enter__(self):
-            self._items = []
-            return self
-
-        def __exit__(self, *exc):
-            return False
-
-        def list(self):
-            return self._items
-
-    with patch.object(docx_parser, "Manager", _FakeManager), patch.object(
-        docx_parser, "ProcessPoolExecutor", ThreadPoolExecutor
-    ):
+    with patch.object(docx_parser, "ProcessPoolExecutor", ThreadPoolExecutor):
         return DocxParser(max_pages=100).parse_into_text(content)
 
 

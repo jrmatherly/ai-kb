@@ -23,8 +23,9 @@ class _RecordingParser(BaseParser):
         return Document(content="parsed")
 
 
-class _RecordingRegistry:
+class _RecordingRegistry(ParserEngineRegistry):
     def __init__(self):
+        super().__init__()
         self.requested_file_type = ""
 
     def get_parser_class(self, engine: str, file_type: str):
