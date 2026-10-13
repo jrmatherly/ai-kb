@@ -62,7 +62,7 @@ metadata:
           - "delete: node scripts/profile.js delete <userId>"
           - "disable push: node scripts/push-toggle.js off <userId>"
       notes: |
-        All bundled scripts perform local computation only — no fetch, axios,
+        All bundled scripts perform local computation only - no fetch, axios,
         https.request, curl, wget, or any outbound network calls from the Node/Python
         side. Push delivery is handled entirely by the OpenClaw runtime via stdout/IPC
         protocol, and is OPT-IN (disabled until the user runs push-toggle.js on).
@@ -72,7 +72,7 @@ metadata:
         webhook URLs, etc.). The local-only release helper script is excluded
         from the published bundle via .clawhubignore and is not part of the
         installed skill surface.
-        EXCEPTION — OPTIONAL LLM NETWORK USE: the browser-only file liuyao/index.html
+        EXCEPTION - OPTIONAL LLM NETWORK USE: the browser-only file liuyao/index.html
         exposes an optional "LLM divination" button. If and only if the user clicks
         it and fills in their own API key + endpoint, the browser (not the skill
         process) will POST the hexagram and question to that user-configured endpoint.

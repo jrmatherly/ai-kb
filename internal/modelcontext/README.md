@@ -6,7 +6,7 @@ codec lives in this one package:
 
 | File | Role |
 | --- | --- |
-| `registry.go` | `Registry` facade — the only type request lifecycles use |
+| `registry.go` | `Registry` facade - the only type request lifecycles use |
 | `handle_table.go` | `handleTable[M]`, the generic bidirectional primitive behind every handle space |
 | `sources.go` | source handles (`cN`/`dN`/`bN`/`wN`) and the tool-argument codec |
 | `citations.go` | protocol prompts, `<ref/>` → `<kb/>`/`<web/>` expansion, citation stream expander |

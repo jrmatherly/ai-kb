@@ -6,7 +6,7 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`) pl
 first-class access to a [AI KB](https://github.com/jrmatherly/ai-kb) knowledge base: hybrid retrieval, full document
 reading, and AI KB's own composed answers with citations.
 
-dsh ships no retrieval, embedding or knowledge-base capability of its own — its search tools (`grep`, `glob`) read the
+dsh ships no retrieval, embedding or knowledge-base capability of its own: its search tools (`grep`, `glob`) read the
 workspace, and `web_search` reads the internet. This plugin fills that gap with your organization's documents.
 
 ## Install
@@ -78,8 +78,8 @@ Mounting two deployments is two rows with two prefixes:
 | `aikb_ask` | `POST /sessions` + `POST /knowledge-chat/:id` or `POST /agent-chat/:id` | AI KB's own answer, its citations, the server-side tools it used, and a resumable `session_id` |
 
 `aikb_search` is the workhorse: it returns the source text for the agent to reason over, which keeps the agent's own
-reasoning auditable. It answers two questions the model cannot always tell apart — *where is this discussed* and *where
-is the document called X* — by matching passage content and document names in the same call. A query that reads like a
+reasoning auditable. It answers two questions the model cannot always tell apart - *where is this discussed* and *where
+is the document called X* - by matching passage content and document names in the same call. A query that reads like a
 title additionally reports the documents it names, so a document whose wording differs from its own title is still
 reachable.
 
@@ -89,7 +89,7 @@ uses all of them, resolving that list once per process and sharing it between `a
 Making the model choose first would be worse: knowledge bases are frequently named too poorly to choose between.
 
 `aikb_ask` delegates the whole question to AI KB. Reserve it for broad or synthesis questions spanning many
-documents, where retrieving passages yourself would take several rounds — it runs another model server-side, so it is
+documents, where retrieving passages yourself would take several rounds. It runs another model server-side, so it is
 slow, and it returns a conclusion rather than the evidence behind it. With `agentId` set it leaves the scope alone: a
 custom agent resolves its own from its KB selection mode, and ids sent from here would override that.
 
@@ -161,7 +161,7 @@ because `dsh plugin add` installs into the profile through pnpm and the profile 
 
 `test/fixtures/api-contract.json` records every AI KB call this plugin makes. `test/contract.test.mjs` asserts the
 plugin still emits exactly those calls, and `contract/contract_test.go` asserts AI KB's real Go request and response
-types still accept and serve them — so a rename on either side fails CI instead of a user's agent.
+types still accept and serve them, so a rename on either side fails CI instead of a user's agent.
 
 ## Compatibility
 
