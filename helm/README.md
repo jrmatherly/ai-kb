@@ -93,8 +93,6 @@ helm install ai-kb ./helm \
   --create-namespace \
   --set app.extraEnv[0].name=OLLAMA_BASE_URL \
   --set app.extraEnv[0].value=http://ollama.ollama:11434 \
-  --set app.extraEnv[1].name=INIT_LLM_MODEL_NAME \
-  --set app.extraEnv[1].value=qwen2.5:7b \
   --set secrets.dbPassword=secure-password \
   --set secrets.redisPassword=secure-password \
   --set secrets.jwtSecret=$(openssl rand -base64 32)

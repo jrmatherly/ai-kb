@@ -123,22 +123,8 @@ log_info "Redis configuration:"
 check_var "REDIS_ADDR"
 
 echo ""
-log_info "Ollama configuration:"
-check_var "OLLAMA_BASE_URL"
-
-echo ""
-log_info "Model configuration:"
-if [ -n "$INIT_LLM_MODEL_NAME" ]; then
-    log_success "INIT_LLM_MODEL_NAME = $INIT_LLM_MODEL_NAME"
-else
-    log_warning "INIT_LLM_MODEL_NAME is not set (optional)"
-fi
-
-if [ -n "$INIT_EMBEDDING_MODEL_NAME" ]; then
-    log_success "INIT_EMBEDDING_MODEL_NAME = $INIT_EMBEDDING_MODEL_NAME"
-else
-    log_warning "INIT_EMBEDDING_MODEL_NAME is not set (optional)"
-fi
+log_info "Ollama configuration (optional, used only by models with source=local):"
+log_success "OLLAMA_BASE_URL = ${OLLAMA_BASE_URL:-http://localhost:11434 (default)}"
 
 # Check Go
 echo ""

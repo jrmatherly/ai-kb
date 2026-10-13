@@ -83,13 +83,12 @@ Optional components enabled:
   CONNECTING TO LLM
 --------------------------------------------------------------------------------
 
-AI KB requires an LLM backend. Configure via environment variables:
+Chat and embedding models are added in the web UI (Settings > Model Management).
+To use a local Ollama, point the app at it:
 
   helm upgrade {{ .Release.Name }} ./helm \
     --set app.extraEnv[0].name=OLLAMA_BASE_URL \
-    --set app.extraEnv[0].value=http://ollama:11434 \
-    --set app.extraEnv[1].name=INIT_LLM_MODEL_NAME \
-    --set app.extraEnv[1].value=qwen2.5:7b
+    --set app.extraEnv[0].value=http://ollama:11434
 
 Supported LLM backends:
   - Ollama (local)
