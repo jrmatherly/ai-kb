@@ -4,6 +4,7 @@
 !.env.example
 !.gitignore
 !.gitkeep
+!.shellcheckrc
 !.github/
 
 # Sensitive files

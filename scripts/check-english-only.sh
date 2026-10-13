@@ -29,7 +29,7 @@ scan() {
 
 mode=files
 case "${1:-}" in
-  --diff) mode=diff; shift ;;
+  --diff) mode="diff"; shift ;;
   --summary) mode=summary; shift ;;
   -n) mode=lines; shift ;;
   -?*) echo "check-english-only.sh: unknown option $1" >&2; exit 2 ;;

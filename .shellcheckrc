@@ -1,0 +1,4 @@
+# Follow `source` into other files, resolving `# shellcheck source=` paths from the sourcing script's directory,
+# so editors and the CLI agree whatever directory they run shellcheck from.
+external-sources=true
+source-path=SCRIPTDIR
