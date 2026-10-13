@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/require"
@@ -37,10 +38,12 @@ func TestEmbedChannelDefaultLocaleIsValidated(t *testing.T) {
 	h := &EmbedChannelHandler{embedSvc: localeEmbedSvc{}}
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(middleware.ErrorHandler())
 	engine.POST("/agents/:id/embed-channels", h.CreateEmbedChannel)
 	engine.PUT("/embed-channels/:channel_id", h.UpdateEmbedChannel)
 
-	const wantError = `{"error":"locale must be one of: 'en-US', 'ja-JP', 'ko-KR', 'ru-RU', 'zh-CN', 'zh-TW'"}`
+	const wantError = `{"success":false,"error":{"code":1000,` +
+		`"message":"locale must be one of: 'en-US', 'ja-JP', 'ko-KR', 'ru-RU', 'zh-CN', 'zh-TW'"}}`
 	cases := []struct {
 		name, method, path, body string
 		wantCode                 int

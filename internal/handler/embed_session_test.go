@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"github.com/jrmatherly/ai-kb/internal/handler/session"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -203,6 +204,7 @@ func TestEnsureEmbedSessionWrongTenant(t *testing.T) {
 	if err := h.ensureEmbedSession(c); err == nil {
 		t.Fatal("expected error for cross-tenant session")
 	}
+	middleware.ErrorHandler()(c)
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, want %d, body = %s", w.Code, http.StatusNotFound, w.Body.String())
 	}
@@ -228,6 +230,7 @@ func TestEnsureEmbedSessionWrongDescription(t *testing.T) {
 	if err := h.ensureEmbedSession(c); err == nil {
 		t.Fatal("expected error for wrong description marker")
 	}
+	middleware.ErrorHandler()(c)
 	if w.Code != http.StatusForbidden {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
 	}
@@ -248,6 +251,7 @@ func TestEnsureEmbedSessionInvalidSig(t *testing.T) {
 	if err := h.ensureEmbedSession(c); err == nil {
 		t.Fatal("expected error for invalid signature")
 	}
+	middleware.ErrorHandler()(c)
 	if w.Code != http.StatusForbidden {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
 	}
@@ -262,6 +266,7 @@ func TestEnsureEmbedSessionNotFound(t *testing.T) {
 	if err := h.ensureEmbedSession(c); err == nil {
 		t.Fatal("expected error for missing session")
 	}
+	middleware.ErrorHandler()(c)
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
 	}
@@ -329,9 +334,13 @@ func TestGetEmbedChunkForbidden(t *testing.T) {
 	c.Request = c.Request.WithContext(ctx)
 
 	h.GetEmbedChunk(c)
+	middleware.ErrorHandler()(c)
 
 	if w.Code != http.StatusForbidden {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
+	}
+	if want := `{"success":false,"error":{"code":1002,"message":"chunk not accessible"}}`; w.Body.String() != want {
+		t.Fatalf("body = %s, want %s", w.Body.String(), want)
 	}
 }
 
@@ -392,6 +401,7 @@ func TestEmbedStopSessionInvalidSig(t *testing.T) {
 	}
 	c, w := newEmbedStopSessionCtx(ch, testEmbedSessionID, "bad-sig", `{"message_id":"msg-1"}`)
 	h.EmbedStopSession(c)
+	middleware.ErrorHandler()(c)
 	if w.Code != http.StatusForbidden {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
 	}

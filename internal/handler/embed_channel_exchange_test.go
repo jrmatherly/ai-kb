@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -76,6 +77,7 @@ func TestExchangeEmbedSessionSuccess(t *testing.T) {
 	}}
 
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.POST("/exchange", func(c *gin.Context) {
 		ch := &types.EmbedChannel{ID: "channel-1", Enabled: true}
 		ctx := context.WithValue(c.Request.Context(), types.EmbedChannelContextKey, ch)
@@ -111,6 +113,7 @@ func TestExchangeEmbedSessionUnavailable(t *testing.T) {
 	h := &EmbedChannelHandler{embedSvc: &exchangeEmbedSvc{err: service.ErrEmbedSessionUnavailable}}
 
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.POST("/exchange", func(c *gin.Context) {
 		ch := &types.EmbedChannel{ID: "channel-1", Enabled: true}
 		ctx := context.WithValue(c.Request.Context(), types.EmbedChannelContextKey, ch)
@@ -133,6 +136,7 @@ func TestExchangeEmbedSessionRejectsSessionToken(t *testing.T) {
 	h := &EmbedChannelHandler{embedSvc: &exchangeEmbedSvc{sessionToken: "ems_new", expiresIn: 1800}}
 
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.POST("/exchange", func(c *gin.Context) {
 		ch := &types.EmbedChannel{ID: "channel-1", Enabled: true}
 		ctx := context.WithValue(c.Request.Context(), types.EmbedChannelContextKey, ch)
