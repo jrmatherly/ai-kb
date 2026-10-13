@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -376,17 +377,22 @@ func TestListRuntimeTasksReportsExpiredCursorForFrontendRefresh(t *testing.T) {
 		nil,
 	)
 
-	handler.ListRuntimeTasks(ctx)
+	withErrorHandler(ctx, handler.ListRuntimeTasks)
 	if recorder.Code != http.StatusConflict {
 		t.Fatalf("status = %d, body=%s", recorder.Code, recorder.Body.String())
 	}
-	var response map[string]any
-	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
-		t.Fatalf("decode response: %v", err)
+	want := `{"success":false,"error":{"code":1005,` +
+		`"message":"Task list changed; refresh from the beginning",` +
+		`"details":{"code":"runtime_task_cursor_expired"}}}`
+	if recorder.Body.String() != want {
+		t.Fatalf("body = %s, want %s", recorder.Body.String(), want)
 	}
-	if response["code"] != "runtime_task_cursor_expired" {
-		t.Fatalf("unexpected error response: %+v", response)
-	}
+}
+
+// withErrorHandler runs h as the router would, so c.Error reaches the response.
+func withErrorHandler(c *gin.Context, h gin.HandlerFunc) {
+	h(c)
+	middleware.ErrorHandler()(c)
 }
 
 func TestRuntimeTaskMutationsDelegateToInspector(t *testing.T) {
@@ -431,7 +437,7 @@ func TestPurgeArchivedRuntimeTasksDelegatesToInspector(t *testing.T) {
 	ctx.Params = gin.Params{{Key: "queue", Value: types.QueueChatAttachment}}
 	ctx.Request = httptest.NewRequest(http.MethodDelete, "/archived", nil)
 
-	handler.PurgeArchivedRuntimeTasks(ctx)
+	withErrorHandler(ctx, handler.PurgeArchivedRuntimeTasks)
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, body=%s", recorder.Code, recorder.Body.String())
 	}
@@ -455,7 +461,7 @@ func TestPurgeArchivedRuntimeTasksRejectsUnknownQueue(t *testing.T) {
 	ctx.Params = gin.Params{{Key: "queue", Value: "unknown"}}
 	ctx.Request = httptest.NewRequest(http.MethodDelete, "/archived", nil)
 
-	handler.PurgeArchivedRuntimeTasks(ctx)
+	withErrorHandler(ctx, handler.PurgeArchivedRuntimeTasks)
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
 	}
@@ -469,7 +475,7 @@ func TestListRuntimeTasksRejectsUnknownQueue(t *testing.T) {
 	ctx.Params = gin.Params{{Key: "queue", Value: "unknown"}}
 	ctx.Request = httptest.NewRequest(http.MethodGet, "/tasks?state=archived", nil)
 
-	handler.ListRuntimeTasks(ctx)
+	withErrorHandler(ctx, handler.ListRuntimeTasks)
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
 	}
@@ -483,7 +489,7 @@ func TestListRuntimeTasksRejectsUnknownState(t *testing.T) {
 	ctx.Params = gin.Params{{Key: "queue", Value: types.QueueDefault}}
 	ctx.Request = httptest.NewRequest(http.MethodGet, "/tasks?state=unknown", nil)
 
-	handler.ListRuntimeTasks(ctx)
+	withErrorHandler(ctx, handler.ListRuntimeTasks)
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
 	}

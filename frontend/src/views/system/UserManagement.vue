@@ -154,7 +154,7 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(locale.value)
 }
 function errorMessage(error: any, key: string): string {
-  return error?.response?.data?.error || error?.message || t(key)
+  return error?.message || t(key)
 }
 function announce(message: string) { emit('announced', message) }
 async function fetchPage(nextOffset: number) {

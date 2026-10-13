@@ -15,6 +15,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -39,6 +40,7 @@ func (s *setUserStatusService) SetUserActive(
 func statusRouter(h *SystemHandler, actorID string) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.Use(func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), types.UserIDContextKey, actorID)
 		c.Request = c.Request.WithContext(ctx)

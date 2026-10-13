@@ -801,7 +801,7 @@ async function fetchRuntimeTasks(reset: boolean) {
     tasksHasMore.value = response.has_more && Boolean(response.next_cursor)
   } catch (err: any) {
     if (requestID !== tasksRequestID) return
-    if (!reset && err?.code === 'runtime_task_cursor_expired') {
+    if (!reset && err?.error?.details?.code === 'runtime_task_cursor_expired') {
       tasksLoadingMore.value = false
       await fetchRuntimeTasks(true)
       return

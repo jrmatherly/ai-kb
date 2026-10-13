@@ -11,6 +11,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 )
 
 // listUsersService is a minimal fake UserService for the ListUsers handler.
@@ -32,6 +33,7 @@ func (s *listUsersService) ListAllUsers(_ context.Context, offset, limit int) ([
 func listUsersRouter(h *SystemHandler) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.GET("/system/admin/users", h.ListUsers)
 	return r
 }

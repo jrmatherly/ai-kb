@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	modelruntime "github.com/jrmatherly/ai-kb/internal/models/runtime"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -33,6 +34,7 @@ func TestSystemModelCatalogPreviewAndPublish(t *testing.T) {
 	require.NoError(t, db.Exec(string(ddl)).Error)
 	h := &SystemHandler{modelCatalogSvc: service.NewModelCatalogService(repository.NewModelCatalogRepository(db), nil)}
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.GET("/catalog", h.GetModelCatalog)
 	r.POST("/preview", h.PreviewModelCatalog)
 	r.PUT("/catalog", h.PublishModelCatalog)
@@ -60,6 +62,9 @@ func TestSystemModelCatalogPreviewAndPublish(t *testing.T) {
 	require.Equal(t, 200, w.Code)
 	w = request(http.MethodPut, "/catalog", string(payload))
 	require.Equal(t, 409, w.Code)
+	require.JSONEq(t,
+		`{"success":false,"error":{"code":1005,"message":"model catalog changed; reload and preview again"}}`,
+		w.Body.String())
 	invalid, _ := json.Marshal(service.CatalogUpdate{
 		Version: 1, Baseline: initial.Baseline,
 		Overlay: json.RawMessage(`{"providers":{"openai":{"api_key":"secret"}}}`),

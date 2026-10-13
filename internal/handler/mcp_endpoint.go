@@ -72,7 +72,7 @@ func (h *MCPEndpointHandler) ListToolCatalog(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      object  true  "Endpoint config (name, description, knowledge_base_ids, tools...)"
 // @Success      201      {object}  map[string]interface{}  "Created endpoint, with its one-time token"
-// @Failure      400      {object}  map[string]interface{}  "Invalid request parameters"
+// @Failure      400      {object}  apperrors.ErrorResponse  "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints [post]
@@ -80,7 +80,7 @@ func (h *MCPEndpointHandler) CreateMCPEndpoint(c *gin.Context) {
 	tenantID := c.GetUint64(types.TenantIDContextKey.String())
 	var req mcpEndpointRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 	enabled := true
@@ -145,7 +145,7 @@ func (h *MCPEndpointHandler) ListMCPEndpoints(c *gin.Context) {
 // @Produce      json
 // @Param        endpoint_id  path      string  true  "Endpoint ID"
 // @Success      200          {object}  map[string]interface{}  "Endpoint details"
-// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
+// @Failure      404          {object}  apperrors.ErrorResponse  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id} [get]
@@ -169,8 +169,8 @@ func (h *MCPEndpointHandler) GetMCPEndpoint(c *gin.Context) {
 // @Param        endpoint_id  path      string  true  "Endpoint ID"
 // @Param        request      body      object  true  "Fields to update; omitted fields are unchanged"
 // @Success      200          {object}  map[string]interface{}  "Updated endpoint"
-// @Failure      400          {object}  map[string]interface{}  "Invalid request parameters"
-// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
+// @Failure      400          {object}  apperrors.ErrorResponse  "Invalid request parameters"
+// @Failure      404          {object}  apperrors.ErrorResponse  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id} [put]
@@ -179,7 +179,7 @@ func (h *MCPEndpointHandler) UpdateMCPEndpoint(c *gin.Context) {
 	id := secutils.SanitizeForLog(c.Param("endpoint_id"))
 	var req mcpEndpointRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 	ep, err := h.svc.Update(c.Request.Context(), tenantID, id, interfaces.MCPEndpointUpdate{
@@ -205,7 +205,7 @@ func (h *MCPEndpointHandler) UpdateMCPEndpoint(c *gin.Context) {
 // @Produce      json
 // @Param        endpoint_id  path      string  true  "Endpoint ID"
 // @Success      200          {object}  map[string]interface{}  "Deleted"
-// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
+// @Failure      404          {object}  apperrors.ErrorResponse  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id} [delete]
@@ -227,7 +227,7 @@ func (h *MCPEndpointHandler) DeleteMCPEndpoint(c *gin.Context) {
 // @Produce      json
 // @Param        endpoint_id  path      string  true  "Endpoint ID"
 // @Success      200          {object}  map[string]interface{}  "Endpoint with the new token"
-// @Failure      404          {object}  map[string]interface{}  "Endpoint not found"
+// @Failure      404          {object}  apperrors.ErrorResponse  "Endpoint not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-endpoints/{endpoint_id}/rotate-token [post]
@@ -271,20 +271,20 @@ func mcpEndpointResponse(ep *types.MCPEndpoint, token string) gin.H {
 func writeMCPEndpointMgmtError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, service.ErrMCPEndpointNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "mcp endpoint not found"})
+		_ = c.Error(apperrors.NewNotFoundError("mcp endpoint not found"))
 	default:
 		var appErr *apperrors.AppError
 		if errors.As(err, &appErr) {
 			switch appErr.Code {
 			case apperrors.ErrNotFound:
-				c.JSON(http.StatusNotFound, gin.H{"error": appErr.Message})
+				_ = c.Error(apperrors.NewNotFoundError(appErr.Message))
 				return
 			case apperrors.ErrBadRequest, apperrors.ErrValidation:
-				c.JSON(http.StatusBadRequest, gin.H{"error": appErr.Message})
+				_ = c.Error(apperrors.NewBadRequestError(appErr.Message))
 				return
 			}
 		}
 		logger.Error(c.Request.Context(), "mcp endpoint management failed", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "operation failed"})
+		_ = c.Error(apperrors.NewInternalServerError("operation failed"))
 	}
 }

@@ -261,7 +261,7 @@ curl $BASE/api/v1/system/admin/runtime/queues -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/system/admin/runtime/queues/:queue/tasks
 
-Purpose: list the tasks of one queue. Query parameters: `state` (`pending/active/scheduled/retry/archived/completed`), `cursor`, `page_size` (default 20, capped at 100). An unknown queue or state returns 400; an invalid cursor returns 400 with code `runtime_task_cursor_invalid`, an expired one 409 with `runtime_task_cursor_expired`.
+Purpose: list the tasks of one queue. Query parameters: `state` (`pending/active/scheduled/retry/archived/completed`), `cursor`, `page_size` (default 20, capped at 100). An unknown queue or state returns 400; an invalid cursor returns 400 with `error.details.code` set to `runtime_task_cursor_invalid`, an expired one 409 with `runtime_task_cursor_expired`.
 
 Response: 200 `{"available","tasks":[RuntimeTaskInfo],"page_size","has_more","next_cursor"}`
 

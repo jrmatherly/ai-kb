@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -42,6 +43,7 @@ func (s *createUserService) AdminCreateUser(
 func createSystemUserRouter(h *SystemHandler, actorID string) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.Use(func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), types.UserIDContextKey, actorID)
 		c.Request = c.Request.WithContext(ctx)

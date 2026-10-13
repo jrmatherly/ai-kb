@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/im/wechat"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 )
@@ -20,7 +21,7 @@ var qrCodeService = wechat.NewQRCodeService()
 // @Tags         IM Channels
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "QR code info (qrcode_url and qrcode identifier)"
-// @Failure      500  {object}  map[string]interface{}  "QR code generation failed"
+// @Failure      500  {object}  apperrors.ErrorResponse  "QR code generation failed"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /wechat/qrcode [post]
@@ -30,7 +31,7 @@ func (h *IMHandler) WeChatGetQRCode(c *gin.Context) {
 	result, err := qrCodeService.GetLoginQRCode(ctx)
 	if err != nil {
 		logger.Errorf(ctx, "[WeChat] Failed to generate QR code: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate QR code: " + err.Error()})
+		_ = c.Error(apperrors.NewInternalServerError("failed to generate QR code: " + err.Error()))
 		return
 	}
 
@@ -53,8 +54,8 @@ func (h *IMHandler) WeChatGetQRCode(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      map[string]interface{}  true  "{qrcode: string}"
 // @Success      200      {object}  map[string]interface{}  "Scan status"
-// @Failure      400      {object}  map[string]interface{}  "Invalid request parameters"
-// @Failure      500      {object}  map[string]interface{}  "Internal server error"
+// @Failure      400      {object}  apperrors.ErrorResponse  "Invalid request parameters"
+// @Failure      500      {object}  apperrors.ErrorResponse  "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /wechat/qrcode/status [post]
@@ -65,14 +66,14 @@ func (h *IMHandler) WeChatPollQRCodeStatus(c *gin.Context) {
 		QRCode string `json:"qrcode" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "qrcode is required"})
+		_ = c.Error(apperrors.NewBadRequestError("qrcode is required"))
 		return
 	}
 
 	result, err := qrCodeService.PollQRCodeStatus(ctx, req.QRCode)
 	if err != nil {
 		logger.Errorf(ctx, "[WeChat] Failed to poll QR code status: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check QR code status"})
+		_ = c.Error(apperrors.NewInternalServerError("failed to check QR code status"))
 		return
 	}
 

@@ -1399,23 +1399,23 @@ type PromoteUserToSystemAdminRequest struct {
 // @Produce      json
 // @Param        request body PromoteUserToSystemAdminRequest true "User promotion request"
 // @Success      200  {object}  types.UserInfo  "User promoted successfully"
-// @Failure      400  {object}  map[string]interface{}  "Bad request"
+// @Failure      400  {object}  apperrors.ErrorResponse  "Bad request"
 // @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
-// @Failure      404  {object}  map[string]interface{}  "User not found"
+// @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/promote [post]
 func (h *SystemHandler) PromoteUserToSystemAdmin(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req PromoteUserToSystemAdminRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid request: " + err.Error()))
 		return
 	}
 
 	userID := strings.TrimSpace(req.UserID)
 	email := strings.TrimSpace(req.Email)
 	if userID == "" && email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Either user_id or email is required"})
+		_ = c.Error(apperrors.NewBadRequestError("Either user_id or email is required"))
 		return
 	}
 
@@ -1436,11 +1436,11 @@ func (h *SystemHandler) PromoteUserToSystemAdmin(c *gin.Context) {
 	}
 	if err != nil {
 		logger.Errorf(ctx, "Error fetching user (id=%q email=%q): %v", userID, email, err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		_ = c.Error(apperrors.NewNotFoundError("User not found"))
 		return
 	}
 	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		_ = c.Error(apperrors.NewNotFoundError("User not found"))
 		return
 	}
 
@@ -1459,7 +1459,7 @@ func (h *SystemHandler) PromoteUserToSystemAdmin(c *gin.Context) {
 	user.IsSystemAdmin = true
 	if err := h.userSvc.UpdateUser(ctx, user); err != nil {
 		logger.Errorf(ctx, "Error promoting user %s to system admin: %v", req.UserID, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to promote user"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to promote user"))
 		return
 	}
 
@@ -1489,16 +1489,16 @@ type RevokeSystemAdminRequest struct {
 // @Produce      json
 // @Param        request body RevokeSystemAdminRequest true "User revocation request"
 // @Success      200  {object}  types.UserInfo  "Privileges revoked successfully"
-// @Failure      400  {object}  map[string]interface{}  "Bad request / would remove last admin / self-revoke"
+// @Failure      400  {object}  apperrors.ErrorResponse  "Bad request / would remove last admin / self-revoke"
 // @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
-// @Failure      404  {object}  map[string]interface{}  "User not found"
+// @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/revoke [post]
 func (h *SystemHandler) RevokeSystemAdmin(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req RevokeSystemAdminRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid request: " + err.Error()))
 		return
 	}
 
@@ -1523,7 +1523,7 @@ func (h *SystemHandler) RevokeSystemAdmin(c *gin.Context) {
 		// noop probe.
 		if user == nil {
 			logger.Errorf(ctx, "RevokeSystemAdmin returned nil user with ErrUserNotSystemAdmin for %s", req.UserID)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke system admin privileges"})
+			_ = c.Error(apperrors.NewInternalServerError("Failed to revoke system admin privileges"))
 			return
 		}
 		logger.Infof(ctx, "Revoke noop (user %s was not a system admin)", user.ID)
@@ -1535,21 +1535,17 @@ func (h *SystemHandler) RevokeSystemAdmin(c *gin.Context) {
 		c.JSON(http.StatusOK, user.ToUserInfo())
 		return
 	case errors.Is(err, repository.ErrCannotRevokeSelf):
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot revoke your own system admin privileges",
-		})
+		_ = c.Error(apperrors.NewBadRequestError("Cannot revoke your own system admin privileges"))
 		return
 	case errors.Is(err, repository.ErrLastSystemAdmin):
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot revoke the last remaining system administrator",
-		})
+		_ = c.Error(apperrors.NewBadRequestError("Cannot revoke the last remaining system administrator"))
 		return
 	case errors.Is(err, repository.ErrUserNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		_ = c.Error(apperrors.NewNotFoundError("User not found"))
 		return
 	default:
 		logger.Errorf(ctx, "Error revoking system admin from user %s: %v", req.UserID, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke system admin privileges"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to revoke system admin privileges"))
 		return
 	}
 }
@@ -1601,7 +1597,7 @@ func (h *SystemHandler) ListSystemAdmins(c *gin.Context) {
 	users, total, err := h.userSvc.ListSystemAdmins(ctx, offset, limit)
 	if err != nil {
 		logger.Errorf(ctx, "Error listing system admins: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list system admins"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to list system admins"))
 		return
 	}
 
@@ -1662,7 +1658,7 @@ func (h *SystemHandler) ListUsers(c *gin.Context) {
 	users, hasMore, err := h.userSvc.ListAllUsers(ctx, offset, limit)
 	if err != nil {
 		logger.Errorf(ctx, "Error listing users: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list users"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to list users"))
 		return
 	}
 
@@ -1694,15 +1690,15 @@ type SetUserStatusRequest struct {
 // @Produce      json
 // @Param        request body SetUserStatusRequest true "Account status request"
 // @Success      200  {object}  map[string]interface{}  "Status updated"
-// @Failure      400  {object}  map[string]interface{}  "Self-disable / last-admin guard"
-// @Failure      404  {object}  map[string]interface{}  "User not found"
+// @Failure      400  {object}  apperrors.ErrorResponse  "Self-disable / last-admin guard"
+// @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/users/status [post]
 func (h *SystemHandler) SetUserStatus(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req SetUserStatusRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid request"))
 		return
 	}
 
@@ -1711,13 +1707,13 @@ func (h *SystemHandler) SetUserStatus(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrUserNotFound):
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			_ = c.Error(apperrors.NewNotFoundError("User not found"))
 		case errors.Is(err, service.ErrCannotDisableSelf),
 			errors.Is(err, service.ErrCannotDisableLastAdmin):
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		default:
 			logger.Errorf(ctx, "Error setting user status: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user status"})
+			_ = c.Error(apperrors.NewInternalServerError("Failed to update user status"))
 		}
 		return
 	}
@@ -1747,43 +1743,43 @@ type ResetUserPasswordRequest struct {
 // @Produce      json
 // @Param        request body ResetUserPasswordRequest true "Password reset request"
 // @Success      200  {object}  map[string]interface{}  "Password reset successfully"
-// @Failure      400  {object}  map[string]interface{}  "Invalid request, weak password, or self reset"
+// @Failure      400  {object}  apperrors.ErrorResponse  "Invalid request, weak password, or self reset"
 // @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
-// @Failure      404  {object}  map[string]interface{}  "User not found"
+// @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/users/reset-password [post]
 func (h *SystemHandler) ResetUserPassword(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req ResetUserPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid password reset request"})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid password reset request"))
 		return
 	}
 	req.Email = strings.TrimSpace(req.Email)
 
 	if err := service.ValidatePasswordPolicy(req.NewPassword, h.complexPasswordEnabled(ctx)); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
 	user, err := h.userSvc.GetUserByEmail(ctx, req.Email)
 	if err != nil || user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		_ = c.Error(apperrors.NewNotFoundError("User not found"))
 		return
 	}
 	callerID, _ := types.UserIDFromContext(ctx)
 	if callerID == user.ID {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot reset your own password here"})
+		_ = c.Error(apperrors.NewBadRequestError("Cannot reset your own password here"))
 		return
 	}
 
 	if err := h.userSvc.AdminResetPassword(ctx, user.ID, req.NewPassword); err != nil {
 		if service.IsPasswordPolicyError(err) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 			return
 		}
 		logger.Errorf(ctx, "Failed to reset password for user %s: %v", user.ID, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reset user password"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to reset user password"))
 		return
 	}
 
@@ -1821,29 +1817,29 @@ type CreateSystemUserResponse struct {
 // @Param        request body types.AdminCreateUserRequest true "User creation request"
 // @Success      201  {object}  CreateSystemUserResponse  "User created successfully"
 // @Success      200  {object}  CreateSystemUserResponse  "Identity already exists, returns the existing user"
-// @Failure      400  {object}  map[string]interface{}  "Invalid request or weak password"
+// @Failure      400  {object}  apperrors.ErrorResponse  "Invalid request or weak password"
 // @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
-// @Failure      409  {object}  map[string]interface{}  "Email and username refer to conflicting identities"
-// @Failure      500  {object}  map[string]interface{}  "Internal error"
+// @Failure      409  {object}  apperrors.ErrorResponse  "Email and username refer to conflicting identities"
+// @Failure      500  {object}  apperrors.ErrorResponse  "Internal error"
 // @Router       /system/admin/users/create [post]
 func (h *SystemHandler) CreateSystemUser(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req types.AdminCreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user creation request"})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid user creation request"))
 		return
 	}
 	req.Username = secutils.SanitizeForLog(strings.TrimSpace(req.Username))
 	req.Email = secutils.SanitizeForLog(strings.TrimSpace(req.Email))
 	// Password is intentionally NOT trimmed or sanitized.
 	if req.Username == "" || req.Email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username and email are required"})
+		_ = c.Error(apperrors.NewBadRequestError("Username and email are required"))
 		return
 	}
 	// Binding's min=2/max=50 ran on the raw JSON, re-check the trimmed value.
 	if n := utf8.RuneCountInString(req.Username); n < 2 || n > 50 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username must be 2-50 characters"})
+		_ = c.Error(apperrors.NewBadRequestError("Username must be 2-50 characters"))
 		return
 	}
 
@@ -1853,7 +1849,7 @@ func (h *SystemHandler) CreateSystemUser(c *gin.Context) {
 		case errors.Is(err, service.ErrUserEmailExists) || errors.Is(err, service.ErrUserUsernameExists):
 			if user == nil {
 				logger.Errorf(ctx, "Duplicate identity error without a resolved user: %v", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+				_ = c.Error(apperrors.NewInternalServerError("Failed to create user"))
 				return
 			}
 			logger.Infof(ctx, "Create user noop (identity already exists, ID: %s)", user.ID)
@@ -1865,12 +1861,12 @@ func (h *SystemHandler) CreateSystemUser(c *gin.Context) {
 			})
 			c.JSON(http.StatusOK, CreateSystemUserResponse{User: user.ToUserInfo()})
 		case errors.Is(err, service.ErrPasswordPolicy):
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		case errors.Is(err, service.ErrUserIdentityConflict):
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			_ = c.Error(apperrors.NewConflictError(err.Error()))
 		default:
 			logger.Errorf(ctx, "Failed to create user: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+			_ = c.Error(apperrors.NewInternalServerError("Failed to create user"))
 		}
 		return
 	}
@@ -2085,11 +2081,11 @@ func runtimeTaskPageSize(c *gin.Context) int {
 func (h *SystemHandler) listRuntimeTasks(c *gin.Context, state types.RuntimeTaskState) {
 	queue := c.Param("queue")
 	if !isKnownRuntimeQueue(queue) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unknown task queue"})
+		_ = c.Error(apperrors.NewBadRequestError("Unknown task queue"))
 		return
 	}
 	if !state.Valid() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unknown task state"})
+		_ = c.Error(apperrors.NewBadRequestError("Unknown task state"))
 		return
 	}
 	pageSize := runtimeTaskPageSize(c)
@@ -2106,21 +2102,17 @@ func (h *SystemHandler) listRuntimeTasks(c *gin.Context, state types.RuntimeTask
 	page, supported, err := inspector.ListRuntimeTasks(c.Request.Context(), queue, state, cursor, pageSize)
 	if err != nil {
 		if errors.Is(err, types.ErrInvalidRuntimeTaskCursor) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid task list cursor",
-				"code":  "runtime_task_cursor_invalid",
-			})
+			_ = c.Error(apperrors.NewBadRequestError("Invalid task list cursor").
+				WithDetails(gin.H{"code": "runtime_task_cursor_invalid"}))
 			return
 		}
 		if errors.Is(err, types.ErrExpiredRuntimeTaskCursor) {
-			c.JSON(http.StatusConflict, gin.H{
-				"error": "Task list changed; refresh from the beginning",
-				"code":  "runtime_task_cursor_expired",
-			})
+			_ = c.Error(apperrors.NewConflictError("Task list changed; refresh from the beginning").
+				WithDetails(gin.H{"code": "runtime_task_cursor_expired"}))
 			return
 		}
 		logger.Errorf(c.Request.Context(), "list runtime queue tasks queue=%s state=%s: %v", queue, state, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list queue tasks"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to list queue tasks"))
 		return
 	}
 	if page.Tasks == nil {
@@ -2187,7 +2179,7 @@ func runtimeTaskParams(c *gin.Context) (string, string, bool) {
 	queue := c.Param("queue")
 	taskID := c.Param("task_id")
 	if !isKnownRuntimeQueue(queue) || taskID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid queue or task ID"})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid queue or task ID"))
 		return "", "", false
 	}
 	return queue, taskID, true
@@ -2200,20 +2192,20 @@ func (h *SystemHandler) mutateRuntimeTask(c *gin.Context, action types.RuntimeTa
 	}
 	inspector, supported := h.taskInspector.(interfaces.RuntimeTaskInspector)
 	if !supported {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Task queue is unavailable"})
+		_ = c.Error(apperrors.NewServiceUnavailableError("Task queue is unavailable"))
 		return
 	}
 	task, available, err := inspector.GetRuntimeTask(c.Request.Context(), queue, taskID)
 	if !available {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Task queue is unavailable"})
+		_ = c.Error(apperrors.NewServiceUnavailableError("Task queue is unavailable"))
 		return
 	}
 	if err != nil || task == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Task is no longer available"})
+		_ = c.Error(apperrors.NewConflictError("Task is no longer available"))
 		return
 	}
 	if !task.Allows(action) {
-		c.JSON(http.StatusConflict, gin.H{"error": "Action is not allowed for the current task state"})
+		_ = c.Error(apperrors.NewConflictError("Action is not allowed for the current task state"))
 		return
 	}
 
@@ -2226,7 +2218,7 @@ func (h *SystemHandler) mutateRuntimeTask(c *gin.Context, action types.RuntimeTa
 	switch action {
 	case types.RuntimeTaskActionCancel:
 		if h.knowledgeSvc == nil || task.TenantID == 0 || task.KnowledgeID == "" {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Business cancellation is unavailable"})
+			_ = c.Error(apperrors.NewServiceUnavailableError("Business cancellation is unavailable"))
 			return
 		}
 		cancelCtx := context.WithValue(c.Request.Context(), types.TenantIDContextKey, task.TenantID)
@@ -2242,36 +2234,36 @@ func (h *SystemHandler) mutateRuntimeTask(c *gin.Context, action types.RuntimeTa
 				}
 			}
 			logger.Errorf(c.Request.Context(), "cancel runtime queue task queue=%s task=%s: %v", queue, taskID, err)
-			c.JSON(http.StatusConflict, gin.H{"error": "Task can no longer be cancelled"})
+			_ = c.Error(apperrors.NewConflictError("Task can no longer be cancelled"))
 			return
 		}
 		auditAction = types.AuditActionSystemQueueTaskCancelled
 	case types.RuntimeTaskActionRunNow:
 		available, err = inspector.RunRuntimeTask(c.Request.Context(), queue, taskID)
 		if !available {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Task queue is unavailable"})
+			_ = c.Error(apperrors.NewServiceUnavailableError("Task queue is unavailable"))
 			return
 		}
 		if err != nil {
 			logger.Errorf(c.Request.Context(), "run queue task now queue=%s task=%s: %v", queue, taskID, err)
-			c.JSON(http.StatusConflict, gin.H{"error": "Task is no longer available to run"})
+			_ = c.Error(apperrors.NewConflictError("Task is no longer available to run"))
 			return
 		}
 		auditAction = types.AuditActionSystemQueueTaskRunNow
 	case types.RuntimeTaskActionDelete:
 		available, err = inspector.DeleteRuntimeTask(c.Request.Context(), queue, taskID)
 		if !available {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Task queue is unavailable"})
+			_ = c.Error(apperrors.NewServiceUnavailableError("Task queue is unavailable"))
 			return
 		}
 		if err != nil {
 			logger.Errorf(c.Request.Context(), "delete queue task queue=%s task=%s: %v", queue, taskID, err)
-			c.JSON(http.StatusConflict, gin.H{"error": "Task is no longer available for deletion"})
+			_ = c.Error(apperrors.NewConflictError("Task is no longer available for deletion"))
 			return
 		}
 		auditAction = types.AuditActionSystemQueueTaskDeleted
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unknown task action"})
+		_ = c.Error(apperrors.NewBadRequestError("Unknown task action"))
 		return
 	}
 	h.emitQueueTaskAudit(c.Request.Context(), auditAction, queue, taskID, auditDetails)
@@ -2342,22 +2334,22 @@ func (h *SystemHandler) MutateRuntimeTask(c *gin.Context) {
 func (h *SystemHandler) PurgeArchivedRuntimeTasks(c *gin.Context) {
 	queue := c.Param("queue")
 	if !isKnownRuntimeQueue(queue) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid queue"})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid queue"))
 		return
 	}
 	inspector, supported := h.taskInspector.(interfaces.RuntimeTaskInspector)
 	if !supported {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Task queue is unavailable"})
+		_ = c.Error(apperrors.NewServiceUnavailableError("Task queue is unavailable"))
 		return
 	}
 	deleted, available, err := inspector.PurgeArchivedRuntimeTasks(c.Request.Context(), queue)
 	if !available {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Task queue is unavailable"})
+		_ = c.Error(apperrors.NewServiceUnavailableError("Task queue is unavailable"))
 		return
 	}
 	if err != nil {
 		logger.Errorf(c.Request.Context(), "purge archived queue tasks queue=%s: %v", queue, err)
-		c.JSON(http.StatusConflict, gin.H{"error": "Archived tasks could not be purged"})
+		_ = c.Error(apperrors.NewConflictError("Archived tasks could not be purged"))
 		return
 	}
 	h.emitQueueTaskAudit(c.Request.Context(), types.AuditActionSystemQueueArchivedPurged, queue, "",
@@ -2370,7 +2362,7 @@ func (h *SystemHandler) ListSystemSettings(c *gin.Context) {
 	rows, err := h.systemSettingSvc.List(ctx)
 	if err != nil {
 		logger.Errorf(ctx, "list system settings failed: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list system settings"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to list system settings"))
 		return
 	}
 	if rows == nil {
@@ -2438,8 +2430,8 @@ func (h *SystemHandler) enrichSettingsModifiedBy(ctx context.Context, rows []*ty
 // @Produce      json
 // @Param        key path string true "Setting key (e.g. file.max_size_mb)"
 // @Success      200 {object} types.SystemSetting "the setting row"
-// @Failure      400 {object} map[string]interface{} "Unknown key"
-// @Failure      404 {object} map[string]interface{} "Key registered but DB row absent"
+// @Failure      400 {object} apperrors.ErrorResponse "Unknown key"
+// @Failure      404 {object} apperrors.ErrorResponse "Key registered but DB row absent"
 // @Router       /system/admin/settings/{key} [get]
 func (h *SystemHandler) GetSystemSetting(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
@@ -2449,11 +2441,11 @@ func (h *SystemHandler) GetSystemSetting(c *gin.Context) {
 		// Service-layer "unknown key" surfaces as a generic error here;
 		// distinguish via the error string rather than typed errors so
 		// we don't grow a sentinel package for a single error class.
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 	if row == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "setting not yet persisted"})
+		_ = c.Error(apperrors.NewNotFoundError("setting not yet persisted"))
 		return
 	}
 	c.JSON(http.StatusOK, row)
@@ -2482,7 +2474,7 @@ type UpdateSystemSettingRequest struct {
 // @Param        key     path string                       true "Setting key"
 // @Param        request body UpdateSystemSettingRequest   true "New value"
 // @Success      200 {object} types.SystemSetting "the updated row"
-// @Failure      400 {object} map[string]interface{} "Bad request / unknown key / type mismatch"
+// @Failure      400 {object} apperrors.ErrorResponse "Bad request / unknown key / type mismatch"
 // @Failure      403 {object} map[string]interface{} "Forbidden: not a system admin"
 // @Router       /system/admin/settings/{key} [put]
 func (h *SystemHandler) UpdateSystemSetting(c *gin.Context) {
@@ -2491,11 +2483,11 @@ func (h *SystemHandler) UpdateSystemSetting(c *gin.Context) {
 
 	var req UpdateSystemSettingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request: " + err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError("Invalid request: " + err.Error()))
 		return
 	}
 	if req.Value == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "value is required"})
+		_ = c.Error(apperrors.NewBadRequestError("value is required"))
 		return
 	}
 
@@ -2504,7 +2496,7 @@ func (h *SystemHandler) UpdateSystemSetting(c *gin.Context) {
 		// Whether this is "unknown key" / "type mismatch" / "DB error"
 		// is encoded in the error message at the service layer; surface
 		// it verbatim. UI captures it as the toast text.
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 	h.enrichSettingsModifiedBy(ctx, []*types.SystemSetting{row})
@@ -2522,7 +2514,7 @@ func (h *SystemHandler) UpdateSystemSetting(c *gin.Context) {
 // @Tags         System Admin
 // @Produce      json
 // @Success      200 {object} map[string]interface{} "{ affected: int64, quota_bytes: int64 }"
-// @Failure      500 {object} map[string]interface{} "DB write failed"
+// @Failure      500 {object} apperrors.ErrorResponse "DB write failed"
 // @Router       /system/admin/tenants/apply-default-storage-quota [post]
 func (h *SystemHandler) ApplyDefaultStorageQuotaToAllTenants(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
@@ -2543,7 +2535,7 @@ func (h *SystemHandler) ApplyDefaultStorageQuotaToAllTenants(c *gin.Context) {
 	affected, err := h.tenantSvc.BulkSetStorageQuota(ctx, quotaBytes)
 	if err != nil {
 		logger.Errorf(ctx, "BulkSetStorageQuota failed: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to apply storage quota"})
+		_ = c.Error(apperrors.NewInternalServerError("Failed to apply storage quota"))
 		return
 	}
 
@@ -2585,8 +2577,8 @@ func (h *SystemHandler) ApplyDefaultStorageQuotaToAllTenants(c *gin.Context) {
 // @Tags         System Admin
 // @Param        key path string true "Setting key"
 // @Success      200 {object} map[string]interface{} "Reset acknowledged"
-// @Failure      400 {object} map[string]interface{} "Unknown key"
-// @Failure      500 {object} map[string]interface{} "DB write failed"
+// @Failure      400 {object} apperrors.ErrorResponse "Unknown key"
+// @Failure      500 {object} apperrors.ErrorResponse "DB write failed"
 // @Router       /system/admin/settings/{key} [delete]
 func (h *SystemHandler) ResetSystemSetting(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
@@ -2596,7 +2588,7 @@ func (h *SystemHandler) ResetSystemSetting(c *gin.Context) {
 		// every error as 400 so the UI captures it as a toast. A real
 		// DB failure here is rare and indistinguishable from "bad key"
 		// at this layer - operators see the message either way.
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})

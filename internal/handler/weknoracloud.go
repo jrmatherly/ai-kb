@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
@@ -33,19 +34,19 @@ type weKnoraCloudCredentialsRequest struct {
 // @Produce      json
 // @Param        request  body      map[string]interface{}  true  "{app_id, app_secret}"
 // @Success      200      {object}  map[string]interface{}  "success: true"
-// @Failure      400      {object}  map[string]interface{}  "Invalid request parameters"
+// @Failure      400      {object}  apperrors.ErrorResponse  "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /weknoracloud/credentials [post]
 func (h *WeKnoraCloudHandler) SaveCredentials(c *gin.Context) {
 	var req weKnoraCloudCredentialsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
 	if err := h.svc.SaveCredentials(c.Request.Context(), req.AppID, req.AppSecret); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -62,14 +63,14 @@ func (h *WeKnoraCloudHandler) SaveCredentials(c *gin.Context) {
 // @Tags         WeKnoraCloud
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Credential status"
-// @Failure      500  {object}  map[string]interface{}  "Internal server error"
+// @Failure      500  {object}  apperrors.ErrorResponse  "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/weknoracloud/status [get]
 func (h *WeKnoraCloudHandler) Status(c *gin.Context) {
 	result, err := h.svc.CheckStatus(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewInternalServerError(err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, result)
