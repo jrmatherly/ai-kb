@@ -270,15 +270,23 @@ func newAPIError(status int, body []byte) *APIError {
 }
 
 // extractServerCode pulls the server's structured error code from a JSON error
-// body ({"code":1003,...}). Returns 0 when the body isn't JSON or carries no code.
+// body: the {"success":false,"error":{"code":1003,...}} envelope, or a top-level
+// {"code":1003}. Returns 0 when the body isn't JSON or carries no code.
 func extractServerCode(body []byte) int {
 	var env struct {
+		Code  int             `json:"code"`
+		Error json.RawMessage `json:"error"`
+	}
+	if json.Unmarshal(body, &env) != nil {
+		return 0
+	}
+	var nested struct {
 		Code int `json:"code"`
 	}
-	if json.Unmarshal(body, &env) == nil {
-		return env.Code
+	if json.Unmarshal(env.Error, &nested) == nil && nested.Code != 0 {
+		return nested.Code
 	}
-	return 0
+	return env.Code
 }
 
 // parseResponse parses an HTTP response
