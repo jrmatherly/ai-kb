@@ -20,10 +20,10 @@ Recommended extra development tools:
 go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 # Linter (called by make lint)
-# Install from https://golangci-lint.run; the configuration is .golangci.yml in the repository root
+# Install golangci-lint v2.14.0 (the version CI pins) from https://golangci-lint.run; the configuration is .golangci.yml in the repository root
 
-# Swagger doc generation (called by make docs)
-make install-swagger    # go install github.com/swaggo/swag/cmd/swag@latest
+# Swagger doc generation: make docs runs swag through go run at the github.com/swaggo/swag version in go.mod,
+# so nothing needs installing. make install-swagger puts that same version on PATH.
 
 # Python dependency management
 pip install uv          # docreader installs its dependencies with uv sync
@@ -144,10 +144,10 @@ These targets are defined in the root `Makefile`. `make help` prints a summary o
 | `clean` | `go clean` and deletes the binary |
 | `build-prod` | Production build: CGO_ENABLED=1, `-ldflags "-w -s"` injects Version (from `$VERSION`, else the `VERSION` file)/Edition/CommitID/BuildTime/GoVersion (package variables in `internal/handler`) and sets protobuf `conflictPolicy=warn` (avoids the qdrant/milvus proto conflict). `GO_BUILD_TAGS` adds build tags, for example `anydoc` |
 | `fmt` | `go fmt ./...` |
-| `lint` | `golangci-lint run` |
+| `lint` | `golangci-lint run --new-from-merge-base=$(LINT_BASE)`: only issues in code changed since `LINT_BASE` (default `main`), as `go-lint.yml` judges a pull request |
 | `deps` | `go mod download` |
-| `docs` | `swag init -g ./cmd/server/main.go -o ./docs --parseDependency --parseInternal --exclude ./internal/localsandbox` generates the Swagger docs |
-| `install-swagger` | Installs the `swag` CLI |
+| `docs` | `go run github.com/swaggo/swag/cmd/swag@<go.mod version> init -g ./cmd/server/main.go -o ./docs --parseDependency --parseInternal --exclude ./internal/localsandbox` generates the Swagger docs |
+| `install-swagger` | Installs the `swag` CLI at the version `go.mod` pins |
 
 ### Docker images and service management
 

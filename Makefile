@@ -1,4 +1,5 @@
-.PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama start-docker build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc
+.PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama start-docker build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc \
+	migrate-version migrate-create migrate-force migrate-goto fmt lint deps build-prod package-mac-app download_spatial clean-db
 
 # Show help
 help:
@@ -6,6 +7,7 @@ help:
 	@echo ""
 	@echo "Basic commands:"
 	@echo "  build             Build the application"
+	@echo "  build-prod        Build with version info injected (CGO)"
 	@echo "  run               Run the application"
 	@echo "  test              Run tests"
 	@echo "  anydoc-lib        Build the anydoc static library (needs the Rust toolchain)"
@@ -37,15 +39,21 @@ help:
 	@echo "Database:"
 	@echo "  migrate-up        Run database migrations"
 	@echo "  migrate-down      Roll back database migrations"
+	@echo "  migrate-version   Show the current migration version"
+	@echo "  migrate-create    Create a migration pair (name=<name>)"
+	@echo "  migrate-force     Force the migration version (version=<n>)"
+	@echo "  migrate-goto      Migrate to a version (version=<n>)"
+	@echo "  clean-db          Remove the compose database and MinIO volumes"
 	@echo ""
 	@echo "Developer tools:"
 	@echo "  fmt               Format code"
-	@echo "  lint              Lint code"
+	@echo "  lint              Lint code changed since main (LINT_BASE=<rev> to change)"
 	@echo "  deps              Install dependencies"
 	@echo "  docs              Generate the Swagger API docs"
 	@echo "  install-swagger   Install the swag tool"
 	@echo ""
 	@echo "Model vendor catalog:"
+	@echo "  model-catalog-generate Regenerate the vendor catalog"
 	@echo "  model-catalog-check   Check the vendor catalog (invariants + old/new behavior comparison + vendor tests)"
 	@echo "  model-catalog-diff    Compare with models.dev and report model metadata differences (needs human review)"
 	@echo "                        Optional: make model-catalog-diff VENDOR=deepseek"
@@ -132,7 +140,7 @@ model-catalog-diff:
 # Clean build artifacts
 clean:
 	go clean
-	rm -f $(BINARY_NAME)
+	rm -f $(BINARY_NAME) $(BINARY_NAME)-lite
 
 # Build Docker image
 docker-build-app:
@@ -149,14 +157,14 @@ docker-build-app:
 
 # Build docreader Docker image
 docker-build-docreader:
-	docker build --platform $(PLATFORM) -f docker/Dockerfile.docreader -t ghcr.io/jrmatherly/ai-kb-docreader:latest .
+	docker build --platform $(PLATFORM) -f docker/Dockerfile.docreader -t ghcr.io/jrmatherly/ai-kb-docreader:$(DOCKER_TAG) .
 
 # Build frontend Docker image (multi-stage: npm runs inside the builder stage)
 docker-build-frontend:
 	@eval $$(./scripts/get_version.sh env); \
 	docker build --platform $(PLATFORM) \
 		--build-arg VITE_FRONTEND_COMMIT="$$COMMIT_ID" \
-		-f frontend/Dockerfile -t ghcr.io/jrmatherly/ai-kb-ui:latest frontend/
+		-f frontend/Dockerfile -t ghcr.io/jrmatherly/ai-kb-ui:$(DOCKER_TAG) frontend/
 
 # Build all Docker images
 docker-build-all: docker-build-app docker-build-docreader docker-build-frontend
@@ -246,6 +254,10 @@ migrate-goto:
 	fi
 	./scripts/migrate.sh goto $(version)
 
+# swag CLI version = the github.com/swaggo/swag library version in go.mod, so the
+# generated docs/ always match the runtime they compile against.
+SWAG_VERSION = $(shell go list -m -f '{{.Version}}' github.com/swaggo/swag)
+
 # Generate API documentation (Swagger)
 #
 # internal/localsandbox is excluded because cmd/server does not depend on it
@@ -257,22 +269,24 @@ migrate-goto:
 # docs/swagger_contract_test.go fails.
 docs:
 	@echo "Generating Swagger API docs..."
-	swag init -g $(MAIN_PATH)/main.go -o ./docs --parseDependency --parseInternal \
+	go run github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION) init -g $(MAIN_PATH)/main.go -o ./docs --parseDependency --parseInternal \
 		--exclude ./internal/localsandbox
 	@echo "Docs generated in ./docs"
 	@echo "After starting the service, open http://localhost:8080/swagger/index.html to view the docs"
 
 # Install swagger tool
 install-swagger:
-	go install github.com/swaggo/swag/cmd/swag@v1.16.6
+	go install github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION)
 
 # Format code
 fmt:
 	go fmt ./...
 
-# Lint code
+# Lint code changed since LINT_BASE, as go-lint.yml judges a pull request: the
+# inherited upstream code carries a backlog that a plain `golangci-lint run` reports.
+LINT_BASE ?= main
 lint:
-	golangci-lint run
+	golangci-lint run --allow-serial-runners --new-from-merge-base=$(LINT_BASE) ./...
 
 # Install dependencies
 deps:
@@ -317,7 +331,7 @@ build-lite:
 
 # Run Lite version with .env.lite defaults
 run-lite: build-lite
-	@if [ ! -f .env.lite ]; then echo "Error: .env.lite not found"; exit 1; fi
+	@if [ ! -f .env.lite ]; then echo "Error: .env.lite not found (copy .env.lite.example)"; exit 1; fi
 	@set -a && . ./.env.lite && set +a && ./$(BINARY_NAME)-lite
 
 # Package Lite version into distributable tarball
