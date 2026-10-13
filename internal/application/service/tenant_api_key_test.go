@@ -305,6 +305,43 @@ func TestTenantAPIKeyServiceAuthenticateThrottlesLastUsedUpdates(t *testing.T) {
 	}
 }
 
+func TestTenantAPIKeyServiceConcurrentFirstAuthenticationsWriteLastUsedOnce(t *testing.T) {
+	ctx := context.Background()
+	const rounds, callers = 50, 32
+	for round := 0; round < rounds; round++ {
+		repo := newFakeTenantAPIKeyRepo()
+		svc := NewTenantAPIKeyService(repo)
+		created, err := svc.CreateAPIKey(ctx, interfaces.TenantAPIKeyCreateRequest{TenantID: 42, Name: "concurrent"})
+		if err != nil {
+			t.Fatalf("CreateAPIKey returned error: %v", err)
+		}
+
+		start := make(chan struct{})
+		var wg sync.WaitGroup
+		for i := 0; i < callers; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				if _, err := svc.AuthenticateAPIKey(ctx, created.Token); err != nil {
+					t.Errorf("AuthenticateAPIKey returned error: %v", err)
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+
+		deadline := time.Now().Add(500 * time.Millisecond)
+		for repo.updateCount() == 0 && time.Now().Before(deadline) {
+			time.Sleep(time.Millisecond)
+		}
+		time.Sleep(20 * time.Millisecond) // let any duplicate detached write land
+		if n := repo.updateCount(); n != 1 {
+			t.Fatalf("round %d: last_used update count = %d, want 1", round, n)
+		}
+	}
+}
+
 func TestTenantAPIKeyServiceAuthenticateRejectsExpiredKey(t *testing.T) {
 	ctx := context.Background()
 	repo := newFakeTenantAPIKeyRepo()
