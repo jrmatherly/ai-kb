@@ -18,6 +18,8 @@ Paths below written as `public/brand/…`, `public/brands/…` and `public/produ
 
 ## Product screenshots
 
-The upstream screenshots showed the upstream logo and a Chinese UI, so they were removed on 2026-10-13 (backups in the untracked `private/removed/`). Every gallery entry in `app/page.tsx` now renders its "Screenshot pending" placeholder, which names the expected file, until an English capture from the running AI KB app is saved under `public/product/` with that name (3840 x 2112 PNG). The video in the demo section no longer has a poster for the same reason.
+The upstream screenshots showed the upstream logo and a Chinese UI, so they were removed on 2026-10-13 (backups in the untracked `private/removed/`). A gallery entry in `app/page.tsx` renders its "Screenshot pending" placeholder, which names the expected file, until an English capture from the running AI KB app is saved under `public/product/` with that name (3840 x 2112 PNG, a 1920 x 1056 viewport at 2x).
 
-Expected files: `local-browser-task.png`, `browser-connection.png`, `mcp-server-endpoint.png`, `chat-steer-queue.png`, `wiki-graph.png`, `wiki-browser.png`, `wiki-revision-history.png`, `skill-sandbox-chat.png`, `sandbox-desktop.png`, `sandbox-terminal.png`, `skill-catalog.png`, and `agent-chat.png` if the video poster comes back.
+Captured on 2026-10-13 from the development stack with the `website-docs/sample-data/` corpus: `mcp-server-endpoint.png`, `skill-catalog.png` and `agent-chat.png`, the video poster (a Quick Answer turn with its sources panel; the answer text quotes the sample product manual and FAQ).
+
+Still pending: `local-browser-task.png` and `browser-connection.png` (need a paired BrowserSkill browser), `chat-steer-queue.png` (needs a Smart Reasoning run with queued messages), `wiki-graph.png`, `wiki-browser.png` and `wiki-revision-history.png` (need a generated wiki), and `skill-sandbox-chat.png`, `sandbox-desktop.png` and `sandbox-terminal.png` (need a configured sandbox).

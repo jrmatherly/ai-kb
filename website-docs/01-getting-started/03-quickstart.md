@@ -67,8 +67,8 @@ Documents are parsed asynchronously after upload. The status moves through `pend
 
 <Screenshot
   src="/screenshots/quickstart-document-list.png"
-  caption="Document list: three documents parsed"
-  hint="Show the columns for document name, type, parse status (Completed) and chunk count." />
+  caption="Document list: the sample documents parsed"
+  hint="Show the document name with its file type, size and upload time, the tag column and the parse status (Completed)." />
 
 ## Ask a question
 
@@ -162,9 +162,9 @@ curl -s -X POST $BASE/tenants/$TENANT_ID/api-keys -H "$AUTH" -H "Content-Type: a
 curl -s $BASE/knowledge-bases -H "X-API-Key: <the key returned at creation>"
 ```
 
-### Endpoints behind the initialization wizard
+### Endpoints behind model setup
 
-Each wizard step has its own endpoint, so a custom admin console can reuse them directly:
+The Add Model dialog, the Ollama settings, the knowledge base editor and its Knowledge Graph settings call these `/initialization` endpoints, so a custom admin console can reuse them directly:
 
 | Step | Endpoint | Notes |
 | --- | --- | --- |

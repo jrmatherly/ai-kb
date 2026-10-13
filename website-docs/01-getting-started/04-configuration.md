@@ -101,7 +101,7 @@ flowchart LR
 
 ### extract (`ExtractManagerConfig`): knowledge graph extraction templates
 
-`extract.extract_graph` / `extract.extract_entity` / `extract.fabri_text` define the instructions for graph extraction (`description`), the allowed relationship tags (`tags`, `Author` and `Alias` by default) and few-shot examples (`examples`: `text` + `node` + `relation`). The "trial extraction / generate sample text" step of the initialization wizard uses these settings (the `%s` in `fabri_text.with_tag` / `with_no_tag` is replaced with the tag list).
+`extract.extract_graph` / `extract.extract_entity` / `extract.fabri_text` define the instructions for graph extraction (`description`), the allowed relationship tags (`tags`, `Author` and `Alias` by default) and few-shot examples (`examples`: `text` + `node` + `relation`). The trial extraction and sample text buttons in a knowledge base's Knowledge Graph settings use these settings (the `%s` in `fabri_text.with_tag` / `with_no_tag` is replaced with the tag list).
 
 ### tenant (`TenantConfig`)
 
