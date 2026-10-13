@@ -86,6 +86,7 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 
 - `.github/**`: replaced by our own CI, not removed; port command changes by hand (see above). Upstream's originals are archived in `private/OLD-.github/`.
 - 36 paths renamed by `map.tsv` on 2026-10-12 (`cli/skills/weknora-*`, `packages/dsh-weknora`, `Formula/weknora-lite.rb`, `frontend/public/weknora-widget.js`, systemd units, `mcp-server/weknora_mcp_server.py`, `frontend/src/assets/img/weknora.png`): an upstream change to the old path is ported to the path the map gives it.
+- `mcp-server/*.egg-info/` (2026-10-13): setuptools build metadata, regenerated from `mcp-server/README.md` and `pyproject.toml` by every build, so the tracked copy went stale and `validate.sh` dirtied the tree. Now gitignored; an upstream change there needs no port.
 - Add a line here for every later removal, with where the content went or why it is gone.
 
 ## Version and changelog
