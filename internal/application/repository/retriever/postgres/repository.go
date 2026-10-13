@@ -389,7 +389,7 @@ func (g *pgRepository) VectorRetrieve(ctx context.Context,
 	// IMPORTANT: The HNSW index in this project is built on the EXPRESSION
 	//   (embedding::halfvec(<dim>)) halfvec_cosine_ops
 	// because the `embedding` column itself is `halfvec` without a fixed dimension
-	// (so the table can store multiple embedding sizes such as 798 / 3584 / ...).
+	// (so the table can store multiple embedding sizes such as 768 / 1024 / 3584).
 	//
 	// pgvector requires the ORDER BY expression to match the indexed expression
 	// EXACTLY, otherwise the planner falls back to a sequential scan. The

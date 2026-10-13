@@ -65,14 +65,14 @@ BEGIN
         RAISE NOTICE '[Conditional Migration: embeddings] HNSW index for dimension 3584 already exists';
     END IF;
 
-    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'embeddings_embedding_idx_798' OR indexname LIKE 'embeddings_embedding%798%') THEN
-        CREATE INDEX embeddings_embedding_idx_798 ON embeddings 
-        USING hnsw ((embedding::halfvec(798)) halfvec_cosine_ops) 
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'embeddings_embedding_idx_768' OR indexname LIKE 'embeddings_embedding%768%') THEN
+        CREATE INDEX embeddings_embedding_idx_768 ON embeddings 
+        USING hnsw ((embedding::halfvec(768)) halfvec_cosine_ops) 
         WITH (m = 16, ef_construction = 64) 
-        WHERE (dimension = 798);
-        RAISE NOTICE '[Conditional Migration: embeddings] Created HNSW index for dimension 798';
+        WHERE (dimension = 768);
+        RAISE NOTICE '[Conditional Migration: embeddings] Created HNSW index for dimension 768';
     ELSE
-        RAISE NOTICE '[Conditional Migration: embeddings] HNSW index for dimension 798 already exists';
+        RAISE NOTICE '[Conditional Migration: embeddings] HNSW index for dimension 768 already exists';
     END IF;
 
     RAISE NOTICE '[Migration 000002] Adding embeddings enhancements...';

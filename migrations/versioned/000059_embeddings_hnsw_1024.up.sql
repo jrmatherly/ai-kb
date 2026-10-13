@@ -1,7 +1,7 @@
 -- Migration 000059: HNSW index for bge-m3 / 1024-dim embeddings
 --
 -- Upstream's 000002 only created HNSW partial indexes for dim=3584 (OpenAI
--- text-embedding-3-large) and dim=798. Both queries fall through to a
+-- text-embedding-3-large) and dim=768. Both queries fall through to a
 -- sequential scan on the 1024-dim halfvec column when the bound embedder
 -- is bge-m3 — which is the default for any on-device deployment using
 -- localhub-embedder.
