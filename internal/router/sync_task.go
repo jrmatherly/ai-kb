@@ -266,9 +266,12 @@ func RegisterSyncHandlers(params SyncTaskParams) {
 	logger.Infof(context.Background(), "[SyncTask] All task handlers registered (Lite mode, no Redis)")
 }
 
-// syncRetryDelay is the Lite executor's counterpart of asynqRetryDelayFunc:
-// the same fixed delay for a wiki ingest lock conflict, otherwise linear
-// backoff capped at 30s.
+// wikiIngestRetryDelay is the fixed retry delay for a Lite wiki ingest batch
+// that found another batch holding its KB's in-process lock.
+const wikiIngestRetryDelay = 15 * time.Second
+
+// syncRetryDelay is the Lite executor's backoff: a fixed delay for a wiki
+// ingest lock conflict, otherwise linear backoff capped at 30s.
 func syncRetryDelay(attempt int, err error) time.Duration {
 	if errors.Is(err, service.ErrWikiIngestConcurrent) {
 		return wikiIngestRetryDelay

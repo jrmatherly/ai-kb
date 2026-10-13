@@ -30,11 +30,11 @@ import (
 
 // ErrWikiIngestConcurrent is returned by the wiki ingest handler in Lite mode
 // when another batch is already running for the same KB (the in-process
-// liteLocks guard is held). The Lite sync executor (syncRetryDelay) and the
-// asynq RetryDelayFunc use errors.Is on this sentinel to apply a short, fixed
-// retry delay instead of their usual backoff, so the deferred batch retries
-// promptly once the active one releases. Standard (Redis) mode no longer
-// takes an exclusive per-KB lock (Phase 3) and never returns this.
+// liteLocks guard is held). The Lite sync executor (syncRetryDelay) uses
+// errors.Is on this sentinel to apply a short, fixed retry delay instead of
+// its linear backoff, so the deferred batch retries promptly once the active
+// one releases. Standard (Redis) mode takes no exclusive per-KB lock and
+// never returns this, so asynq keeps its default backoff.
 var ErrWikiIngestConcurrent = errors.New("concurrent wiki task active")
 
 const (
@@ -158,8 +158,8 @@ return proposed
 	wikiMaxFailRetries = 5
 
 	// wikiIngestMaxRetry controls asynq retry budget for wiki:ingest tasks.
-	// Keep this moderate: lock conflicts already retry every 15s via
-	// asynqRetryDelayFunc, and follow-up/retract paths fire quickly.
+	// Keep this moderate: Lite lock conflicts already retry every 15s
+	// (syncRetryDelay), and follow-up/retract paths fire quickly.
 	wikiIngestMaxRetry = 10
 
 	// wikiDeletedKeyPrefix is the Redis key prefix for "recently deleted

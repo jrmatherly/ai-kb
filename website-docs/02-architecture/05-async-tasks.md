@@ -186,19 +186,21 @@ flowchart LR
 
 ### Retry backoff
 
-asynq's default exponential backoff applies (about 10s, 40s, 90s, 2.5m, ...), with one customization for Wiki ingest lock conflicts (`asynqRetryDelayFunc`):
+In standard mode every task uses asynq's default exponential backoff (about 10s, 40s, 90s, 2.5m, ...); the servers set no `RetryDelayFunc`.
+
+The Lite executor backs off linearly, 5s per attempt up to 30s, with one exception. A Wiki ingest batch that finds another batch holding its knowledge base's in-process lock returns `ErrWikiIngestConcurrent`, and that retry waits a fixed 15s (`wikiIngestRetryDelay`):
 
 ```go
-// internal/router/task.go
-func asynqRetryDelayFunc(n int, e error, t *asynq.Task) time.Duration {
-    if errors.Is(e, service.ErrWikiIngestConcurrent) {
+// internal/router/sync_task.go
+func syncRetryDelay(attempt int, err error) time.Duration {
+    if errors.Is(err, service.ErrWikiIngestConcurrent) {
         return wikiIngestRetryDelay // fixed 15s
     }
-    return asynq.DefaultRetryDelayFunc(n, e, t)
+    return min(time.Duration(attempt)*5*time.Second, 30*time.Second)
 }
 ```
 
-The intent: an orphaned lock expires within 60s, so a fixed 15s retry almost always succeeds, while exponential backoff would leave a KB stuck for 7 to 10 minutes after a crash-restart. Only Lite mode returns `ErrWikiIngestConcurrent` (standard mode no longer takes a per-KB batch lock), so the Lite executor applies the same fixed 15s delay to it (`syncRetryDelay` in `internal/router/sync_task.go`); every other Lite retry backs off linearly, 5s per attempt up to 30s.
+Standard mode never returns `ErrWikiIngestConcurrent`: it takes no per-KB batch lock, and concurrent batches claim disjoint rows in `task_pending_ops` instead.
 
 ## Task lifecycle state machine
 
