@@ -150,8 +150,11 @@ func (c *Client) listDocumentBlocks(ctx context.Context, documentID string) ([]D
 			logger.Warnf(ctx, "[Feishu] document %s exceeded %d blocks; truncating", documentID, maxDocumentBlocks)
 			break
 		}
-		if !resp.Data.HasMore || resp.Data.PageToken == "" {
+		if !resp.Data.HasMore {
 			break
+		}
+		if resp.Data.PageToken == "" {
+			return nil, fmt.Errorf("list document blocks: %w", errTruncatedPage)
 		}
 		pageToken = resp.Data.PageToken
 	}
@@ -408,8 +411,11 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 			// task deadline. Nothing more to read.
 			break
 		}
-		if !fieldsResp.Data.HasMore || fieldsResp.Data.PageToken == "" {
+		if !fieldsResp.Data.HasMore {
 			break
+		}
+		if fieldsResp.Data.PageToken == "" {
+			return nil, false, fmt.Errorf("read bitable fields: %w", errTruncatedPage)
 		}
 		if len(cols) >= maxBitableFields {
 			logger.Warnf(ctx, "[Feishu] bitable %s exceeded %d fields; truncating", embedToken, maxBitableFields)
@@ -473,8 +479,11 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 			}
 			break
 		}
-		if !rec.Data.HasMore || rec.Data.PageToken == "" {
+		if !rec.Data.HasMore {
 			break
+		}
+		if rec.Data.PageToken == "" {
+			return nil, false, fmt.Errorf("read bitable records: %w", errTruncatedPage)
 		}
 		pageToken = rec.Data.PageToken
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -634,5 +635,49 @@ func TestReadBitableRecords_CapsFieldPages(t *testing.T) {
 	}
 	if log := buf.String(); !strings.Contains(log, "exceeded") || !strings.Contains(log, "truncating") {
 		t.Errorf("hitting the cap must log a warning, log tail: %s", log)
+	}
+}
+
+func TestBlockPagination_HasMoreWithoutTokenFails(t *testing.T) {
+	cases := []struct {
+		name, truncatedPath string
+		read                func(*Client) error
+	}{
+		{"document blocks", "/blocks", func(c *Client) error {
+			_, err := c.listDocumentBlocks(context.Background(), "doc-1")
+			return err
+		}},
+		{"bitable fields", "/fields", func(c *Client) error {
+			_, _, err := c.readBitableRecords(context.Background(), "bascabc_tblxyz")
+			return err
+		}},
+		{"bitable records", "/records/search", func(c *Client) error {
+			_, _, err := c.readBitableRecords(context.Background(), "bascabc_tblxyz")
+			return err
+		}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/open-apis/auth/v3/tenant_access_token/internal" {
+					_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "tenant_access_token": "t", "expire": 7200})
+					return
+				}
+				data := map[string]any{"has_more": false, "items": []map[string]any{{"field_name": "col"}}}
+				if strings.HasSuffix(r.URL.Path, tc.truncatedPath) {
+					data = map[string]any{
+						"has_more": true, "page_token": "",
+						"items": []map[string]any{{"block_id": "b1", "block_type": 2, "field_name": "col"}},
+					}
+				}
+				_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": data})
+			}))
+			defer srv.Close()
+
+			err := tc.read(&Client{baseURL: srv.URL, appID: "a", appSecret: "s", httpClient: srv.Client()})
+			if !errors.Is(err, errTruncatedPage) {
+				t.Fatalf("err = %v, want errTruncatedPage", err)
+			}
+		})
 	}
 }

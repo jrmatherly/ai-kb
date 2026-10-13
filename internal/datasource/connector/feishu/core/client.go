@@ -47,7 +47,8 @@ var errResponseTooLarge = errors.New("response exceeds maximum size")
 
 // errTruncatedPage marks a list response that reports has_more with no page
 // token to continue from. Stopping there would pass a truncated listing off as
-// complete, and a full sync would then delete the unlisted rest.
+// complete, so a full sync would delete the unlisted rest, or index a document
+// or table missing its later pages.
 var errTruncatedPage = errors.New("listing reports more pages but returned no page token")
 
 // readCapped reads a response body, refusing anything larger than limit instead
