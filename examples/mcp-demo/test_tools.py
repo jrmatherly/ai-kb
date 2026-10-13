@@ -12,6 +12,17 @@ from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
 
+# Mixed case, exact keys that contain another alias, and keyword fallback.
+LOOKUPS = {
+    "POC": "poc_owner",
+    "Matter certification": "matter_cert",
+    "poc_deadline": "poc_deadline",
+    "deadline": "poc_deadline",
+    "Hotel in Beijing": "travel_hotel_tier1",
+    "pricing": "pricing",
+}
+
+
 async def main() -> int:
     base = os.getenv("MCP_DEMO_URL", "http://127.0.0.1:8010/mcp")
     token = os.getenv("MCP_SERVER_AUTH_TOKEN", "ai-kb-demo-token")
@@ -28,6 +39,11 @@ async def main() -> int:
                 print(f"tools ({len(tools.tools)}):")
                 for tool in tools.tools:
                     print(f"  - {tool.name}: {tool.description}")
+                for topic, expected in LOOKUPS.items():
+                    result = await session.call_tool("lookup_policy", {"topic": topic})
+                    got = (result.structured_content or {}).get("topic")
+                    assert got == expected, f"lookup_policy({topic!r}) -> {got!r}, want {expected!r}"
+                print(f"lookup_policy: {len(LOOKUPS)} topics resolved")
     return 0
 
 
@@ -35,6 +51,9 @@ if __name__ == "__main__":
     try:
         raise SystemExit(asyncio.run(main()))
     except Exception as exc:  # noqa: BLE001
-        print(f"failed: {exc}", file=sys.stderr)
+        cause = exc
+        while getattr(cause, "exceptions", None):  # anyio wraps failures in an ExceptionGroup
+            cause = cause.exceptions[0]
+        print(f"failed: {cause}", file=sys.stderr)
         print("start the server first: ./start.sh", file=sys.stderr)
         raise SystemExit(1) from exc

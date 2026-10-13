@@ -41,7 +41,7 @@ source .venv/bin/activate
 python test_tools.py
 ```
 
-It should list 6 tools.
+It should list 6 tools and resolve 6 `lookup_policy` topics.
 
 ## 3. Connect AI KB
 

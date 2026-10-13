@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import logging
 import os
+import re
 import secrets
 import sys
 from datetime import datetime, timezone
@@ -133,7 +134,8 @@ def server_time() -> dict[str, str]:
 @mcp.tool()
 def lookup_policy(topic: str) -> dict[str, Any]:
     """Look up demo policy or project information. topic is one of warranty/offline_voice/device_limit/travel_hotel_tier1/travel_meal/poc_owner/poc_deadline/matter_cert, or a keyword such as "warranty", "reimbursement" or "POC"."""
-    key = topic.strip().lower().replace(" ", "_")
+    text = topic.strip().lower()
+    key = text.replace(" ", "_")
     aliases = {
         "warranty": "warranty",
         "guarantee": "warranty",
@@ -145,25 +147,23 @@ def lookup_policy(topic: str) -> dict[str, Any]:
         "meal": "travel_meal",
         "allowance": "travel_meal",
         "owner": "poc_owner",
-        "Zhang Ming": "poc_owner",
+        "zhang ming": "poc_owner",
         "poc": "poc_owner",
         "acceptance": "poc_deadline",
         "matter": "matter_cert",
         "certification": "matter_cert",
     }
-    for alias, mapped in aliases.items():
-        if alias in topic:
-            key = mapped
-            break
+    if key not in DEMO_POLICIES:
+        for alias, mapped in aliases.items():
+            if alias in text:
+                key = mapped
+                break
 
     if key in DEMO_POLICIES:
         return {"topic": key, "answer": DEMO_POLICIES[key], "source": "mcp-demo/static"}
 
-    matches = {
-        k: v
-        for k, v in DEMO_POLICIES.items()
-        if key in k or any(ch in k for ch in key if len(key) >= 2)
-    }
+    words = [w for w in re.split(r"[^a-z0-9]+", text) if len(w) >= 3]
+    matches = {k: v for k, v in DEMO_POLICIES.items() if any(w in k for w in words)}
     if len(matches) == 1:
         only_key = next(iter(matches))
         return {"topic": only_key, "answer": matches[only_key], "source": "mcp-demo/static"}
@@ -180,8 +180,8 @@ def list_team_contacts(department: str = "") -> dict[str, Any]:
     """List the demo project team members, optionally filtered by department (Product / R&D / Design / QA)."""
     rows = DEMO_CONTACTS
     if department.strip():
-        needle = department.strip()
-        rows = [c for c in rows if needle in c["department"]]
+        needle = department.strip().lower()
+        rows = [c for c in rows if needle in c["department"].lower()]
     return {"count": len(rows), "contacts": rows}
 
 
