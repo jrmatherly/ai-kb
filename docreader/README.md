@@ -90,37 +90,7 @@ DocReader no longer has built-in OCR or VLM backends. Scanned PDFs are rendered 
 
 ### Storage
 
-DocReader supports several storage backends:
-
-#### MinIO/S3 (recommended)
-
-- `STORAGE_TYPE`: set to `minio`
-- `MINIO_ACCESS_KEY_ID`: MinIO access key ID (default: minioadmin)
-- `MINIO_SECRET_ACCESS_KEY`: MinIO secret access key (default: minioadmin)
-- `MINIO_BUCKET_NAME`: MinIO bucket name (default: AI KB)
-- `MINIO_PATH_PREFIX`: file path prefix
-- `MINIO_USE_SSL`: use SSL (default: false)
-
-#### Tencent Cloud COS
-
-- `STORAGE_TYPE`: set to `cos`
-- `COS_SECRET_ID`: COS secret ID
-- `COS_SECRET_KEY`: COS secret key
-- `COS_REGION`: COS region
-- `COS_BUCKET_NAME`: COS bucket name
-- `COS_APP_ID`: COS app ID
-- `COS_PATH_PREFIX`: file path prefix
-- `COS_ENABLE_OLD_DOMAIN`: use the old domain (default: true)
-
-#### Alibaba Cloud OSS
-
-- `STORAGE_TYPE`: set to `oss`
-- `OSS_ACCESS_KEY_ID`: OSS access key ID
-- `OSS_ACCESS_KEY_SECRET`: OSS access key secret
-- `OSS_ENDPOINT`: OSS endpoint (such as `oss-cn-hangzhou.aliyuncs.com`)
-- `OSS_BUCKET_NAME`: OSS bucket name
-- `OSS_REGION`: OSS region (such as `cn-hangzhou`)
-- `OSS_PATH_PREFIX`: file path prefix
+DocReader does not write to object storage and reads no storage variables (`STORAGE_TYPE`, `MINIO_*`, `COS_*`, `OSS_*`). It returns extracted images as inline bytes in the gRPC response, and the Go app persists them to its configured backend. Configure storage on the Go app; with `STORAGE_TYPE=minio` it requires `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY_ID`, `MINIO_SECRET_ACCESS_KEY` and `MINIO_BUCKET_NAME` and has no built-in default for any of them. `docker-compose.yml` fills in the endpoint and the `minioadmin` keys but leaves `MINIO_BUCKET_NAME` empty, so set it yourself. See [Storage backends](../website-docs/03-features/19-storage-backends.md).
 
 ### Proxy
 
