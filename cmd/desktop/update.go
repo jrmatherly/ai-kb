@@ -153,7 +153,7 @@ func checkUpdate(ctx context.Context, currentVersion string, showUpToDate bool, 
 
 // findBestAsset picks this platform's desktop app from a release. Releases also ship the Lite
 // server (ai-kb-lite_<v>_<os>_<arch>.tar.gz) and .sha256 files; desktop assets are named
-// <prefix>-Lite-App_<v>_{macOS_<arch>|macOS_universal|linux_<arch>|windows_<arch>_setup}.<ext>.
+// ai-kb-lite-app_<v>_{macOS_<arch>|macOS_universal|linux_<arch>|windows_<arch>_setup}.<ext>.
 func findBestAsset(assets []githubAsset, goos, goarch string) (string, string) {
 	osKeyword := map[string]string{"darwin": "macos", "windows": "windows", "linux": "linux"}[goos]
 	if osKeyword == "" {
