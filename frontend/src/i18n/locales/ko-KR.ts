@@ -572,10 +572,10 @@ export default {
       copy: '복사',
       copyEnvSuccess: '환경 변수 예시가 복사되었습니다',
       copyCmdSuccess: '설치 명령이 복사되었습니다',
-      ecosystemNote: 'Skill은 ClawHub({\'@\'}lyingbug/aikb)에 호스팅됩니다. 전체 API 문서는 ClawHub 페이지를 참고하세요.',
+      ecosystemNote: 'Skill은 ClawHub({\'@\'}lyingbug/weknora)에 호스팅됩니다. 전체 API 문서는 ClawHub 페이지를 참고하세요.',
       installCta: 'ClawHub 열기',
       installCtaHint: 'AI KB Skill 설치 · 새 탭에서 열림',
-      hubMeta: 'ClawHub · {\'@\'}lyingbug/aikb · MIT-0',
+      hubMeta: 'ClawHub · {\'@\'}lyingbug/weknora · MIT-0',
       steps: {
         verify: {
           title: '연결 확인',
@@ -587,7 +587,7 @@ export default {
         },
         env: {
           title: '환경 변수 설정',
-          desc: '셸 또는 ~/.zshrc, ~/.bashrc에 AIKB_BASE_URL과 AIKB_API_KEY를 설정하세요. 아래 예시는 현재 API 주소를 사용하며, API Key는 실제 값으로 바꾸세요.'
+          desc: '셸 또는 ~/.zshrc, ~/.bashrc에 WEKNORA_BASE_URL과 WEKNORA_API_KEY를 설정하세요. 아래 예시는 현재 API 주소를 사용하며, API Key는 실제 값으로 바꾸세요.'
         },
         api: {
           title: 'API 자격 증명',

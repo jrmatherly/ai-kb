@@ -572,10 +572,10 @@ export default {
       copy: 'Копировать',
       copyEnvSuccess: 'Пример переменных скопирован',
       copyCmdSuccess: 'Команда установки скопирована',
-      ecosystemNote: 'Skill размещён на ClawHub ({\'@\'}lyingbug/aikb). Полная документация API — на странице ClawHub.',
+      ecosystemNote: 'Skill размещён на ClawHub ({\'@\'}lyingbug/weknora). Полная документация API — на странице ClawHub.',
       installCta: 'Открыть ClawHub',
       installCtaHint: 'Установка AI KB Skill · откроется в новой вкладке',
-      hubMeta: 'ClawHub · {\'@\'}lyingbug/aikb · MIT-0',
+      hubMeta: 'ClawHub · {\'@\'}lyingbug/weknora · MIT-0',
       steps: {
         verify: {
           title: 'Проверка',
@@ -587,7 +587,7 @@ export default {
         },
         env: {
           title: 'Переменные окружения',
-          desc: 'Задайте AIKB_BASE_URL и AIKB_API_KEY в shell или ~/.zshrc / ~/.bashrc. Пример ниже использует текущий API URL — замените API Key на фактическое значение.'
+          desc: 'Задайте WEKNORA_BASE_URL и WEKNORA_API_KEY в shell или ~/.zshrc / ~/.bashrc. Пример ниже использует текущий API URL — замените API Key на фактическое значение.'
         },
         api: {
           title: 'API-учётные данные',

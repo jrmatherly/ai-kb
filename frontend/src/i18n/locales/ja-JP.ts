@@ -7552,7 +7552,7 @@ export default {
         },
         env: {
           title: '環境変数を設定',
-          desc: 'シェルまたは~/.zshrc / ~/.bashrcでAIKB_BASE_URLとAIKB_API_KEYを設定します。下記の例では現在のAPIベースURLを使用しています。APIキーは実際の値に置き換えてください。'
+          desc: 'シェルまたは~/.zshrc / ~/.bashrcでWEKNORA_BASE_URLとWEKNORA_API_KEYを設定します。下記の例では現在のAPIベースURLを使用しています。APIキーは実際の値に置き換えてください。'
         },
         install: {
           title: 'スキルをインストール',
@@ -7567,10 +7567,10 @@ export default {
       copy: 'コピー',
       copyEnvSuccess: '環境変数の例をコピーしました',
       copyCmdSuccess: 'インストールコマンドをコピーしました',
-      ecosystemNote: 'スキルはClawHub（{\'@\'}lyingbug/aikb）でホストされています。完全なAPIドキュメントとバージョン履歴はClawHubページをご覧ください。',
+      ecosystemNote: 'スキルはClawHub（{\'@\'}lyingbug/weknora）でホストされています。完全なAPIドキュメントとバージョン履歴はClawHubページをご覧ください。',
       installCta: 'ClawHubを開く',
       installCtaHint: 'AI KB Skillをインストール · 新しいタブで開きます',
-      hubMeta: 'ClawHub · {\'@\'}lyingbug/aikb · MIT-0'
+      hubMeta: 'ClawHub · {\'@\'}lyingbug/weknora · MIT-0'
     }
   },
   credential: {

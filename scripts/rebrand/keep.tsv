@@ -1,0 +1,6 @@
+# Shielded from map.tsv: "<path glob>\t<regex>". Use only for names a third party defines; each row says why.
+# ClawHub skill @lyingbug/weknora: its package name, and the WEKNORA_BASE_URL / WEKNORA_API_KEY variables it reads.
+**	lyingbug/weknora
+frontend/src/i18n/locales/*.ts	WEKNORA_(?:BASE_URL|API_KEY)
+frontend/src/views/integrations/ClawSkillLanding.vue	WEKNORA_(?:BASE_URL|API_KEY)
+website-docs/05-clients/07-claw-skill.md	WEKNORA_(?:BASE_URL|API_KEY)

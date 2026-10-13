@@ -17,12 +17,25 @@ my @rules;
 while (<$m>) { chomp; next if /^#/ || /^\s*$/; my ($re, $to) = split /\t/, $_, 2; push @rules, [qr/$re/, $to]; }
 close $m;
 
+# keep.tsv: "<path glob>\t<regex>" rows. Matches in a file the glob selects are shielded from every rule
+# (names a third party defines, which the map would otherwise rewrite). Globs are relative to the repo root.
+my @keep;
+my $keepf = dirname(__FILE__) . '/keep.tsv';
+if (open my $k, '<:encoding(UTF-8)', $keepf) {
+  while (<$k>) { chomp; next if /^#/ || /^\s*$/; my ($g, $re) = split /\t/, $_, 2;
+    (my $gre = quotemeta $g) =~ s{\\\*\\\*}{.*}g; $gre =~ s{\\\*}{[^/]*}g; push @keep, [qr/^$gre$/, qr/$re/] }
+}
+my $root = `git rev-parse --show-toplevel 2>/dev/null`; chomp $root;
+
 sub rewrite {
-  my ($s) = @_;
+  my ($s, @shield) = @_;
+  my @held;
+  for my $re (@shield) { $s =~ s/$re/push @held, $&; "\x{E000}" . $#held . "\x{E001}"/ge }
   for my $r (@rules) {
     my ($re, $to) = @$r;
     $s =~ s/$re/my @g = ($1, $2, $3, $4, $5, $6, $7, $8, $9); (my $t = $to) =~ s{\$([1-9])(?!\d)}{$g[$1 - 1] \/\/ ""}ge; $t/ge;
   }
+  $s =~ s/\x{E000}(\d+)\x{E001}/$held[$1]/g;
   return $s;
 }
 
@@ -34,7 +47,8 @@ for my $f (@ARGV) {
   if (index($bytes, "\0") >= 0) { print STDERR "$f: binary, skipped\n"; next }
   my $text = eval { decode('UTF-8', $bytes, FB_CROAK) };
   if (!defined $text) { print STDERR "$f: not valid UTF-8, skipped\n"; next }
-  my $out = rewrite($text);
+  require Cwd; my $abs = Cwd::abs_path($f) // $f; (my $rel = $abs) =~ s{^\Q$root\E/}{};
+  my $out = rewrite($text, map { $_->[1] } grep { $rel =~ $_->[0] } @keep);
   next if $out eq $text;
   $changed++;
   if ($mode eq '--apply') {

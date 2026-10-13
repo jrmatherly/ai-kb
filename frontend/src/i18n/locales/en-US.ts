@@ -7552,7 +7552,7 @@ export default {
         },
         env: {
           title: 'Configure environment',
-          desc: 'Set AIKB_BASE_URL and AIKB_API_KEY in your shell or ~/.zshrc / ~/.bashrc. The example below uses your current API base URL—replace the API Key with your actual value.'
+          desc: 'Set WEKNORA_BASE_URL and WEKNORA_API_KEY in your shell or ~/.zshrc / ~/.bashrc. The example below uses your current API base URL—replace the API Key with your actual value.'
         },
         install: {
           title: 'Install the skill',
@@ -7567,10 +7567,10 @@ export default {
       copy: 'Copy',
       copyEnvSuccess: 'Environment example copied',
       copyCmdSuccess: 'Install command copied',
-      ecosystemNote: 'Skill hosted on ClawHub ({\'@\'}lyingbug/aikb). See the ClawHub page for full API docs and version history.',
+      ecosystemNote: 'Skill hosted on ClawHub ({\'@\'}lyingbug/weknora). See the ClawHub page for full API docs and version history.',
       installCta: 'Open ClawHub',
       installCtaHint: 'Install AI KB Skill · opens in a new tab',
-      hubMeta: 'ClawHub · {\'@\'}lyingbug/aikb · MIT-0'
+      hubMeta: 'ClawHub · {\'@\'}lyingbug/weknora · MIT-0'
     }
   },
   credential: {

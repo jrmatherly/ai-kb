@@ -2,7 +2,7 @@
 
 Claw Skill gives agents in the OpenClaw ecosystem access to AI KB. Through the REST API it uploads documents, imports web pages and runs retrieval across knowledge bases.
 
-The skill is hosted on ClawHub as [`@lyingbug/aikb`](https://clawhub.ai/lyingbug/aikb) under the MIT-0 license. What it can call, and with which permissions, is decided by the AI KB API it connects to.
+The skill is hosted on ClawHub as [`@lyingbug/weknora`](https://clawhub.ai/lyingbug/weknora) under the MIT-0 license. What it can call, and with which permissions, is decided by the AI KB API it connects to.
 
 ## Features
 
@@ -26,16 +26,16 @@ Settings → Publish & Integrations → Claw Skill shows the install steps and l
 2. **Set the environment variables** in your terminal or in `~/.zshrc` / `~/.bashrc`:
 
    ```bash
-   export AIKB_BASE_URL=https://your-server.example.com/api/v1
-   export AIKB_API_KEY=sk-xxxxx
+   export WEKNORA_BASE_URL=https://your-server.example.com/api/v1
+   export WEKNORA_API_KEY=sk-xxxxx
    ```
 
-   `AIKB_BASE_URL` must include `/api/v1`. The example on the setup page already has the current instance's address filled in. The skill is published outside this project and reads these variable names, so they keep the `AIKB_` prefix.
+   `WEKNORA_BASE_URL` must include `/api/v1`. The example on the setup page already has the current instance's address filled in. The skill is published outside this project and reads these variable names, so they keep the `AIKB_` prefix.
 
 3. **Install the skill.** Run the command below where the OpenClaw CLI is installed, or follow the instructions on the ClawHub page:
 
    ```bash
-   openclaw skills install @lyingbug/aikb
+   openclaw skills install @lyingbug/weknora
    ```
 
 4. **Verify.** Ask the agent to list the knowledge bases or run one search to confirm that the credentials work and the instance is reachable.
@@ -50,7 +50,7 @@ External agents can call AI KB through either one. The choice depends on how the
 | --- | --- | --- |
 | For | Agents in the OpenClaw / ClawHub ecosystem | Clients that speak MCP (Claude Desktop, Cursor, Claude Code, VS Code Copilot and others) |
 | Installation | Install the skill from ClawHub | Nothing extra to deploy. Create an endpoint under Settings → Publish & Integrations → MCP Server, and the client connects to `/mcp/<endpoint_id>` |
-| Authentication | Workspace API key (`AIKB_API_KEY`) | One token per endpoint, which can be rotated or disabled |
+| Authentication | Workspace API key (`WEKNORA_API_KEY`) | One token per endpoint, which can be rotated or disabled |
 | Transport | Calls the REST API directly | Streamable HTTP. Clients that only support stdio bridge through `mcp-remote` |
 | Capabilities | Import, retrieval and browsing (5 kinds) | Chosen per endpoint: retrieval and reading, question answering (the endpoint's default agent), Wiki, write. Can be limited to certain knowledge bases |
 | Documentation | This page | [MCP integration](../03-features/08-mcp.md) |
