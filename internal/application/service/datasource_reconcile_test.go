@@ -372,3 +372,24 @@ func TestProcessSync_IncompleteListingIsReported(t *testing.T) {
 	assert.Equal(t, "", log.ErrorMessage)
 	assert.Equal(t, "reconcile_listing_incomplete", reconcileReport(t, log).Held.Code)
 }
+
+func TestManualSync_CarriesAllowMassDeletionInTheRunPayload(t *testing.T) {
+	for _, allow := range []bool{false, true} {
+		ds := &types.DataSource{
+			ID: "ds-a", TenantID: 1, KnowledgeBaseID: "kb-1", Status: types.DataSourceStatusActive,
+		}
+		queue := &autoTagRecordingQueue{}
+		svc := &DataSourceService{
+			dsRepo:       newKBDeleteDSRepo(ds.KnowledgeBaseID, ds),
+			syncLogRepo:  &processSyncSyncLogRepo{logs: map[string]*types.SyncLog{}},
+			taskEnqueuer: queue,
+		}
+		_, err := svc.ManualSync(context.Background(), ds.ID, allow)
+		require.NoError(t, err)
+
+		var payload types.DataSourceSyncPayload
+		require.NoError(t, json.Unmarshal(queue.task.Payload(), &payload))
+		assert.Equal(t, allow, payload.AllowMassDeletion)
+		assert.False(t, payload.ForceFull)
+	}
+}

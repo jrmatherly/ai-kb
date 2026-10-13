@@ -2493,7 +2493,10 @@ const docTemplate = `{
         },
         "/datasource/{id}/sync": {
             "post": {
-                "description": "Trigger an immediate sync for a data source",
+                "description": "Trigger an immediate sync for a data source. With allow_mass_deletion, that one run's\nfull-sync reconcile applies the deletions the mass-deletion guard holds back.",
+                "consumes": [
+                    "application/json"
+                ],
                 "tags": [
                     "DataSource"
                 ],
@@ -2505,6 +2508,14 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Sync options",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.manualSyncRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -27657,6 +27668,15 @@ const docTemplate = `{
                 },
                 "tenant_name": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_handler.manualSyncRequest": {
+            "type": "object",
+            "properties": {
+                "allow_mass_deletion": {
+                    "description": "AllowMassDeletion lets this run's full-sync reconcile delete past the\nmass-deletion guard. It is never stored on the data source.",
+                    "type": "boolean"
                 }
             }
         },

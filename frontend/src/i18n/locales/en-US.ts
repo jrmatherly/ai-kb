@@ -6696,6 +6696,8 @@ export default {
     deleteSuccess: 'Data source deleted',
     deleteFailed: 'Failed to delete',
     syncNow: 'Sync Now',
+    syncApplyDeletions: 'Sync and apply deletions',
+    syncApplyDeletionsConfirm: 'Run one sync that deletes the items the last sync held back? The guard applies again on every later sync.',
     syncTriggered: 'Sync task submitted',
     syncFailed: 'Failed to trigger sync',
     pause: 'Pause',

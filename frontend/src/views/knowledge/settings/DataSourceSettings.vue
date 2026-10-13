@@ -95,9 +95,9 @@ async function removeDataSource(ds: DataSource) {
   }
 }
 
-async function handleSync(ds: DataSource) {
+async function handleSync(ds: DataSource, allowMassDeletion = false) {
   try {
-    await triggerSync(ds.id)
+    await triggerSync(ds.id, { allowMassDeletion })
     MessagePlugin.success(t('datasource.syncTriggered'))
     await loadList(true)
   } catch (e: any) {
@@ -172,6 +172,13 @@ function isSyncRunning(ds: DataSource) {
   return ds.latest_sync_log?.status === 'running'
 }
 
+// The last sync's reconcile held back deletions that a one-run override can
+// apply. An incomplete listing is excluded: the next complete full sync settles it.
+function hasHeldDeletions(ds: DataSource) {
+  const code = ds.latest_sync_log?.result?.reconcile?.held?.code
+  return code === 'deletion_guard_tripped' || code === 'reconcile_listing_empty'
+}
+
 function onEditorSaved() {
   editorVisible.value = false
   loadList()
@@ -234,6 +241,26 @@ onBeforeUnmount(stopPolling)
                       >
                         <t-icon name="refresh" :class="{ 'ds-icon-spin': isSyncRunning(ds) }" />
                         {{ isSyncRunning(ds) ? t('datasource.logStatus.running') : t('datasource.syncNow') }}
+                      </t-dropdown-item>
+                      <t-dropdown-item
+                        v-if="canManageDataSource && hasHeldDeletions(ds)"
+                        :disabled="isSyncRunning(ds)"
+                        theme="error"
+                        class="ds-dropdown-delete-item"
+                      >
+                        <t-popconfirm
+                          :content="t('datasource.syncApplyDeletionsConfirm')"
+                          :confirm-btn="{ content: t('datasource.syncApplyDeletions'), theme: 'danger' }"
+                          :cancel-btn="{ content: t('common.cancel') }"
+                          placement="left"
+                          attach="body"
+                          @confirm="handleSync(ds, true)"
+                        >
+                          <span class="ds-dropdown-delete-trigger" @click.stop>
+                            <t-icon name="refresh" />
+                            <span>{{ t('datasource.syncApplyDeletions') }}</span>
+                          </span>
+                        </t-popconfirm>
                       </t-dropdown-item>
                       <t-dropdown-item @click="openLogs(ds)">
                         <t-icon name="root-list" /> {{ t('datasource.logs') }}

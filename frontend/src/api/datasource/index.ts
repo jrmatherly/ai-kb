@@ -146,8 +146,10 @@ export function resolveResourceAncestors(id: string, resourceIds: string[]) {
   return post(`/api/v1/datasource/${id}/resource-ancestors`, { resource_ids: resourceIds }, { timeout: 120000 })
 }
 
-export function triggerSync(id: string) {
-  return post(`/api/v1/datasource/${id}/sync`, {})
+// allowMassDeletion lets this one run apply the deletions the full-sync
+// reconcile's mass-deletion guard held back; it is never saved.
+export function triggerSync(id: string, opts: { allowMassDeletion?: boolean } = {}) {
+  return post(`/api/v1/datasource/${id}/sync`, opts.allowMassDeletion ? { allow_mass_deletion: true } : {})
 }
 
 export function pauseDataSource(id: string) {

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -417,11 +419,21 @@ type resolveAncestorsRequest struct {
 	ResourceIDs []string `json:"resource_ids"`
 }
 
+// manualSyncRequest is the optional body of ManualSync.
+type manualSyncRequest struct {
+	// AllowMassDeletion lets this run's full-sync reconcile delete past the
+	// mass-deletion guard. It is never stored on the data source.
+	AllowMassDeletion bool `json:"allow_mass_deletion"`
+}
+
 // ManualSync godoc
 // @Summary Trigger immediate sync
-// @Description Trigger an immediate sync for a data source
+// @Description Trigger an immediate sync for a data source. With allow_mass_deletion, that one run's
+// @Description full-sync reconcile applies the deletions the mass-deletion guard holds back.
 // @Tags DataSource
+// @Accept json
 // @Param id path string true "Data source ID"
+// @Param request body manualSyncRequest false "Sync options"
 // @Success 200 {object} types.SyncLog
 // @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/sync [post]
@@ -435,12 +447,18 @@ func (h *DataSourceHandler) ManualSync(c *gin.Context) {
 
 	id := c.Param("id")
 
+	var req manualSyncRequest
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		_ = c.Error(apperrors.NewBadRequestError("invalid request body: " + err.Error()))
+		return
+	}
+
 	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
 		_ = c.Error(appErr)
 		return
 	}
 
-	syncLog, err := h.service.ManualSync(ctx, id)
+	syncLog, err := h.service.ManualSync(ctx, id, req.AllowMassDeletion)
 	if err != nil {
 		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return

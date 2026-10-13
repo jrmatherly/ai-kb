@@ -53,8 +53,9 @@ type DataSourceService interface {
 	// when editing a data source.
 	ResolveResourceAncestors(ctx context.Context, dsID string, resourceIDs []string) ([]string, error)
 
-	// ManualSync triggers an immediate sync for a data source
-	ManualSync(ctx context.Context, dsID string) (*types.SyncLog, error)
+	// ManualSync triggers an immediate sync for a data source; allowMassDeletion
+	// lifts the full-sync reconcile's mass-deletion guard for that run only.
+	ManualSync(ctx context.Context, dsID string, allowMassDeletion bool) (*types.SyncLog, error)
 
 	// PauseDataSource pauses a data source's scheduled syncs
 	PauseDataSource(ctx context.Context, id string) error

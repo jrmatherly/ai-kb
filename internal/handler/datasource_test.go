@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +18,14 @@ type stubDataSourceService struct {
 	interfaces.DataSourceService
 	getSyncLogs   func(ctx context.Context, dsID string, limit int, offset int) ([]*types.SyncLog, error)
 	getDataSource func(ctx context.Context, id string) (*types.DataSource, error)
+	manualSyncs   []bool
+}
+
+func (s *stubDataSourceService) ManualSync(
+	_ context.Context, dsID string, allowMassDeletion bool,
+) (*types.SyncLog, error) {
+	s.manualSyncs = append(s.manualSyncs, allowMassDeletion)
+	return &types.SyncLog{ID: "log-" + dsID, DataSourceID: dsID}, nil
 }
 
 func (s *stubDataSourceService) GetSyncLogs(ctx context.Context, dsID string, limit int, offset int) ([]*types.SyncLog, error) {
@@ -55,7 +65,44 @@ func newDataSourceTestRouter(h *DataSourceHandler) *gin.Engine {
 		c.Next()
 	})
 	r.GET("/datasource/:id/logs", h.GetSyncLogs)
+	r.POST("/datasource/:id/sync", h.ManualSync)
 	return r
+}
+
+func TestDataSource_ManualSync_PassesAllowMassDeletion(t *testing.T) {
+	cases := []struct {
+		body     string
+		wantCode int
+		want     []bool
+	}{
+		{body: "", wantCode: http.StatusOK, want: []bool{false}},
+		{body: `{}`, wantCode: http.StatusOK, want: []bool{false}},
+		{body: `{"allow_mass_deletion":true}`, wantCode: http.StatusOK, want: []bool{true}},
+		{body: `{"allow_mass_deletion":"yes"}`, wantCode: http.StatusBadRequest},
+	}
+	for _, c := range cases {
+		dsSvc := &stubDataSourceService{
+			getDataSource: func(_ context.Context, id string) (*types.DataSource, error) {
+				return &types.DataSource{ID: id, KnowledgeBaseID: "kb1"}, nil
+			},
+		}
+		kbSvc := &stubKBServiceForDS{
+			getByID: func(_ context.Context, _ string) (*types.KnowledgeBase, error) {
+				return &types.KnowledgeBase{ID: "kb1", TenantID: 1}, nil
+			},
+		}
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/datasource/ds1/sync", strings.NewReader(c.body))
+		req.Header.Set("Content-Type", "application/json")
+		newDataSourceTestRouter(NewDataSourceHandler(dsSvc, kbSvc)).ServeHTTP(w, withDSCtx(req, 1))
+
+		if w.Code != c.wantCode {
+			t.Fatalf("body %q: status %d, want %d (%s)", c.body, w.Code, c.wantCode, w.Body.String())
+		}
+		if !slices.Equal(dsSvc.manualSyncs, c.want) {
+			t.Fatalf("body %q: ManualSync calls %v, want %v", c.body, dsSvc.manualSyncs, c.want)
+		}
+	}
 }
 
 func withDSCtx(req *http.Request, tenantID uint64) *http.Request {

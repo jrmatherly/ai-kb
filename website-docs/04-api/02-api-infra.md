@@ -445,10 +445,12 @@ curl -X POST $BASE/api/v1/datasource/ds-1/resource-ancestors -H "Authorization: 
 
 ### POST /api/v1/datasource/:id/sync
 
-Purpose: trigger a sync now. Permission: Admin+. Response: 200 `SyncLog` (`id,status,started_at,items_total,items_created,items_updated,items_deleted,items_skipped,items_failed,...`)
+Purpose: trigger a sync now. Permission: Admin+. Request body (optional): `{"allow_mass_deletion": true}` lets this one run's full-sync reconcile apply the deletions the mass-deletion guard held back (see [Data sources](../03-features/10-datasource.md)); it is never stored on the data source. A body that is not valid JSON of that shape returns 400. Response: 200 `SyncLog` (`id,status,started_at,items_total,items_created,items_updated,items_deleted,items_skipped,items_failed,error_message,result,...`). `result.reconcile` reports a full sync's deletion reconcile: `deselected` and `missing` counts, `held` (`code`, `params`, `message`) when it deleted nothing on purpose, and `pending`, up to 100 titles of the held-back items.
 
 ```bash
 curl -X POST $BASE/api/v1/datasource/ds-1/sync -H "Authorization: Bearer $TOKEN"
+curl -X POST $BASE/api/v1/datasource/ds-1/sync -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"allow_mass_deletion":true}'
 ```
 
 ### POST /api/v1/datasource/:id/pause and POST /api/v1/datasource/:id/resume

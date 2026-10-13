@@ -460,8 +460,11 @@ func (s *DataSourceService) ResolveResourceAncestors(
 	return ancestors, nil
 }
 
-// ManualSync triggers an immediate sync for a data source
-func (s *DataSourceService) ManualSync(ctx context.Context, dsID string) (*types.SyncLog, error) {
+// ManualSync triggers an immediate sync for a data source. allowMassDeletion
+// lifts the full-sync reconcile's mass-deletion guard for this run only.
+func (s *DataSourceService) ManualSync(
+	ctx context.Context, dsID string, allowMassDeletion bool,
+) (*types.SyncLog, error) {
 	ds, err := s.GetDataSource(ctx, dsID)
 	if err != nil {
 		return nil, err
@@ -494,6 +497,8 @@ func (s *DataSourceService) ManualSync(ctx context.Context, dsID string) (*types
 		ForceFull:    false,
 		Initiator:    types.TaskInitiatorFromContext(ctx),
 		Trigger:      "manual",
+
+		AllowMassDeletion: allowMassDeletion,
 	}
 	langfuse.InjectTracing(ctx, payload)
 
@@ -520,12 +525,15 @@ func (s *DataSourceService) ManualSync(ctx context.Context, dsID string) (*types
 	}
 
 	logger.Infof(ctx, "sync task enqueued: ds=%s syncLog=%s", dsID, syncLog.ID)
+	details := map[string]any{
+		"name": ds.Name, "type": ds.Type, "sync_log_id": syncLog.ID,
+		"task_id": info.ID, "trigger": "manual", "processing_status": "pending",
+	}
+	if allowMassDeletion {
+		details["allow_mass_deletion"] = true
+	}
 	recordKBActivity(ctx, s.audit, ds.TenantID, ds.KnowledgeBaseID, types.AuditActionDataSourceSyncStarted,
-		"data_source", ds.ID, types.AuditOutcomeAccepted,
-		map[string]any{
-			"name": ds.Name, "type": ds.Type, "sync_log_id": syncLog.ID,
-			"task_id": info.ID, "trigger": "manual", "processing_status": "pending",
-		})
+		"data_source", ds.ID, types.AuditOutcomeAccepted, details)
 	return syncLog, nil
 }
 

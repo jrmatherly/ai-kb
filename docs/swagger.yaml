@@ -6929,6 +6929,14 @@ definitions:
       tenant_name:
         type: string
     type: object
+  internal_handler.manualSyncRequest:
+    properties:
+      allow_mass_deletion:
+        description: |-
+          AllowMassDeletion lets this run's full-sync reconcile delete past the
+          mass-deletion guard. It is never stored on the data source.
+        type: boolean
+    type: object
   internal_handler.meEnvVarRequest:
     properties:
       name:
@@ -8925,13 +8933,22 @@ paths:
       - DataSource
   /datasource/{id}/sync:
     post:
-      description: Trigger an immediate sync for a data source
+      consumes:
+      - application/json
+      description: |-
+        Trigger an immediate sync for a data source. With allow_mass_deletion, that one run's
+        full-sync reconcile applies the deletions the mass-deletion guard holds back.
       parameters:
       - description: Data source ID
         in: path
         name: id
         required: true
         type: string
+      - description: Sync options
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_handler.manualSyncRequest'
       responses:
         "200":
           description: OK
