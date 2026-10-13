@@ -59,7 +59,7 @@ make dev-stop     # stop
 make dev-restart  # stop, then start again (takes DEV_ARGS like dev-start)
 ```
 
-`dev-app` points the backend at the containers on the host loopback address: it exports `DB_HOST=127.0.0.1`, `DOCREADER_ADDR=127.0.0.1:50051`, `MINIO_ENDPOINT=127.0.0.1:9000`, `REDIS_ADDR=127.0.0.1:6379`, `MILVUS_ADDRESS=127.0.0.1:19530`, `NEO4J_URI=bolt://127.0.0.1:7687` and `QDRANT_HOST=127.0.0.1`, overriding the container service names in `.env`. It also replaces the container path `LOCAL_STORAGE_BASE_DIR=/data/files` with the repository-local `.local-data/files`, and adds the `anydoc` build tag when `make anydoc-lib` has built the static library for the host platform.
+`dev-app` points the backend at the containers on the host loopback address: it exports `DB_HOST=127.0.0.1`, `DOCREADER_ADDR=127.0.0.1:50051`, `MINIO_ENDPOINT=127.0.0.1:9000`, `REDIS_ADDR=127.0.0.1:6379`, `MILVUS_ADDRESS=127.0.0.1:19530`, `NEO4J_URI=bolt://127.0.0.1:7687` and `QDRANT_HOST=127.0.0.1`, overriding the container service names in `.env`, and maps `LANGFUSE_HOST=http://langfuse-web:3000` to `http://127.0.0.1:${LANGFUSE_WEB_PORT:-3000}`. It also replaces the container path `LOCAL_STORAGE_BASE_DIR=/data/files` with the repository-local `.local-data/files`, and adds the `anydoc` build tag when `make anydoc-lib` has built the static library for the host platform.
 
 The frontend dev server listens on `5173` (`server.port: 5173` in `frontend/vite.config.ts`) and proxies `/api`, `/files` and `/mcp/` to the backend. The proxy target is the first non-empty value of the process environment variables `VITE_DEV_PROXY_TARGET` and `FRONTEND_BACKEND_URL`; when neither is set, it is `http://localhost:8080`. `DEV_PROXY_TARGET` is an internal constant in the config file, not an environment variable.
 
@@ -371,12 +371,12 @@ Both should return `200`: the first is HTML containing `swagger-ui`, the second 
 
 ### LLM tracing (Langfuse)
 
-`dev.sh start` starts self-hosted Langfuse (`http://localhost:3000`) by default. An app run locally with `go run` needs these exports:
+`dev.sh start` starts self-hosted Langfuse (`http://localhost:3000`) by default. Tracing stays off until the app has a key pair: open `http://localhost:3000`, register, create a project API key (or prefill one with the `LANGFUSE_INIT_*` variables in `.env.example` section I2), then set these in `.env` and restart `make dev-app`, which maps the container host name to `127.0.0.1`:
 
 ```bash
-export LANGFUSE_HOST=http://localhost:3000
-export LANGFUSE_PUBLIC_KEY=pk-lf-xxx
-export LANGFUSE_SECRET_KEY=sk-lf-xxx
+LANGFUSE_HOST=http://langfuse-web:3000
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
 ```
 
 The Langfuse UI then shows a trace of the model calls for each session. Document processing spans are also stored in the `knowledge_processing_spans` table and visualized in the frontend.

@@ -483,6 +483,9 @@ start_app() {
         export MILVUS_ADDRESS=127.0.0.1:19530
         export NEO4J_URI=bolt://127.0.0.1:7687
         export QDRANT_HOST=127.0.0.1
+        if [ "${LANGFUSE_HOST:-}" = "http://langfuse-web:3000" ]; then
+            export LANGFUSE_HOST="http://127.0.0.1:${LANGFUSE_WEB_PORT:-3000}"
+        fi
     fi
     export DOCREADER_TRANSPORT="${DOCREADER_TRANSPORT:-grpc}"
 
