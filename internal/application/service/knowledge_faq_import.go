@@ -1580,8 +1580,13 @@ func (s *knowledgeService) executeFAQImport(ctx context.Context, taskID string, 
 			if entry.IsEnabled != nil {
 				isEnabled = *entry.IsEnabled
 			}
+			flags := types.ChunkFlagRecommended
+			if entry.IsRecommended != nil && !*entry.IsRecommended {
+				flags = 0
+			}
 			// ChunkIndex: startChunkIndex + (i+idx) + initialProcessed
 			chunk := &types.Chunk{
+				Flags:           flags,
 				ID:              uuid.New().String(),
 				TenantID:        tenantID,
 				KnowledgeID:     faqKnowledge.ID,

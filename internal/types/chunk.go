@@ -162,11 +162,13 @@ type Chunk struct {
 	LastEditorID string `json:"last_editor_id" gorm:"type:varchar(64);not null;default:''"`
 	// Index position of the chunk in the original document
 	ChunkIndex int `json:"chunk_index"`
-	// Whether the chunk is enabled, can be used to temporarily disable certain chunks
-	IsEnabled bool `json:"is_enabled"               gorm:"default:true"`
-	// Flags is a bit set of boolean states such as recommendable.
-	// The default is ChunkFlagRecommended (1): recommendable.
-	Flags ChunkFlags `json:"flags"                    gorm:"default:1"`
+	// Whether the chunk is enabled, can be used to temporarily disable certain chunks.
+	// No gorm default tag: GORM replaces a zero value with the tag's default on
+	// insert even when the column is selected, so false could never be stored.
+	IsEnabled bool `json:"is_enabled"`
+	// Flags is a bit set of boolean states such as recommendable. No gorm default
+	// tag, for the same reason as IsEnabled.
+	Flags ChunkFlags `json:"flags"`
 	// Status of the chunk
 	Status int `json:"status"                   gorm:"default:0"`
 	// Starting character position in the original text

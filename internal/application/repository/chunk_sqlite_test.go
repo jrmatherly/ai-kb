@@ -477,3 +477,18 @@ func TestUpdateChunkFieldsByIDs_ScopesByTenantAndSetsUpdatedAt(t *testing.T) {
 	require.NoError(t, repo.UpdateChunkFieldsByIDs(ctx, 1, nil, map[string]interface{}{"status": 0}))
 	require.NoError(t, repo.UpdateChunkFieldsByIDs(ctx, 1, []string{mine.ID}, nil))
 }
+
+func TestCreateChunks_StoresZeroFlagsAndDisabled(t *testing.T) {
+	db := setupChunkTestDB(t)
+	repo := NewChunkRepository(db)
+	chunk := makeChunk(uuid.New().String(), uuid.New().String(), types.ChunkTypeFAQ)
+	chunk.IsEnabled = false
+	chunk.Flags = 0
+
+	require.NoError(t, repo.CreateChunks(context.Background(), []*types.Chunk{chunk}))
+
+	var saved types.Chunk
+	require.NoError(t, db.First(&saved, "id = ?", chunk.ID).Error)
+	assert.False(t, saved.IsEnabled)
+	assert.Equal(t, types.ChunkFlags(0), saved.Flags)
+}
