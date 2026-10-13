@@ -134,7 +134,7 @@ class AIKBClient:
         self.base_url = base_url
         self.api_key = api_key
         # SSL verification: enabled by default. Set AIKB_VERIFY_SSL=false to disable
-        # (e.g. for self-signed certs in dev environments — NOT recommended for production).
+        # (e.g. for self-signed certs in dev environments; NOT recommended for production).
         self.verify_ssl = os.getenv("AIKB_VERIFY_SSL", "true").lower() != "false"
         if not self.verify_ssl:
             logger.warning(
@@ -503,7 +503,7 @@ class AIKBClient:
         """POST to *url* with *body*, consume the SSE stream, and return the assembled result.
 
         Centralised helper used by both chat() and agent_chat().
-        Timeout: (10s connect, AIKB_CHAT_TIMEOUT read) — configurable via env var.
+        Timeout: (10s connect, AIKB_CHAT_TIMEOUT read): configurable via env var.
         
         Server-Sent Events (SSE) stream format:
           data: {"response_type": "answer", "content": "..."}
@@ -618,7 +618,7 @@ class AIKBClient:
     ) -> Dict:
         """Send a message to the agentic pipeline (agent-chat) and return the assembled answer.
 
-        *agent_id* is required — the backend uses the CustomAgent config for
+        *agent_id* is required: the backend uses the CustomAgent config for
         tool selection (knowledge_search, web_search, SQL, etc.).
         The agent autonomously decides which knowledge bases to query;
         pass *knowledge_base_ids* to override or supplement the agent's default KBs.
@@ -964,7 +964,7 @@ async def chat(
     """RAG pipeline chat: retrieve relevant chunks from knowledge bases, then summarise with LLM.
 
     ALWAYS provide knowledge_base_ids (names like 'my-knowledge-base' or UUIDs) so
-    retrieval can run — without them the answer is based on LLM knowledge only.
+    retrieval can run: without them the answer is based on LLM knowledge only.
     Use list_knowledge_bases or list_shared_knowledge_bases to discover available knowledge bases.
     For multi-step reasoning or tool-calling use agent_chat instead.
     """
@@ -994,7 +994,7 @@ async def agent_chat(
 ) -> dict:
     """Agentic pipeline chat: the agent autonomously calls tools (knowledge_search, web_search, SQL, etc.).
 
-    REQUIRED: agent_id (name or UUID) — use list_agents to discover agents.
+    REQUIRED: agent_id (name or UUID): use list_agents to discover agents.
     IMPORTANT: many agents have KBSelectionMode=none and NO built-in knowledge bases.
     In that case you MUST pass knowledge_base_ids, otherwise the agent will fail
     with 'no search targets available'. Use get_agent to inspect an agent's
@@ -1182,7 +1182,7 @@ run = run_stdio
 
 
 def main():
-    """Main entry point — supports stdio, sse, and http transports.
+    """Main entry point: supports stdio, sse, and http transports.
 
     Transport selection (in priority order):
       1. --transport CLI flag
