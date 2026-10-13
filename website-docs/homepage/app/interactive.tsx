@@ -22,7 +22,7 @@ export function Header() {
     <div className="wk-header-inner">
       <a className="wk-brand" href="/" aria-label="AI KB home"><BrandLogo priority /></a>
       <nav id="main-navigation" className={`wk-navigation ${open ? "is-open" : ""}`} aria-label="Main navigation" onClick={() => setOpen(false)}>
-        {siteNavigation.map(item => <a key={item.href} href={item.href}>{item.label}{item.badge && <span className="wk-new-label">{item.badge}</span>}</a>)}
+        {siteNavigation.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}
         <a className="wk-mobile-github" href={repositoryUrl} target="_blank" rel="noreferrer">GitHub <HeaderIcon name="external" /></a>
       </nav>
       <ThemeToggle />

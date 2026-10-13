@@ -1,10 +1,9 @@
 // Product navigation and shared masthead icons.
 export const siteNavigation = [
-  { label: 'Capabilities', href: '/#capabilities', badge: '' },
-  { label: 'v0.8.2', href: '/#release', badge: 'NEW' },
-  { label: 'Ecosystem', href: '/#ecosystem', badge: '' },
-  { label: 'Enterprise', href: '/#enterprise', badge: '' },
-  { label: 'Docs', href: '/docs/', badge: '' },
+  { label: 'Capabilities', href: '/#capabilities' },
+  { label: 'Ecosystem', href: '/#ecosystem' },
+  { label: 'Enterprise', href: '/#enterprise' },
+  { label: 'Docs', href: '/docs/' },
 ];
 // The site sits behind an upstream router that forwards only `/` and `/docs/`.
 // Everything else the homepage loads (Next chunks, images) is served from here:

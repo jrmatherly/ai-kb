@@ -10,7 +10,6 @@
 .wk-navigation a:hover, .wk-navigation a[aria-current="page"] { color: var(--wk-gold); }
 .wk-header svg { width: 24px; height: 24px; flex-shrink: 0; }
 .wk-navigation svg { width: 14px; height: 14px; }
-.wk-new-label { font-size: 12px; font-weight: 650; color: var(--wk-accent-text); letter-spacing: .03em; border: 1px solid var(--wk-accent-border); padding: 0 4px; line-height: 1.6; }
 .wk-header-github { font-size: 14px; display: flex; align-items: center; gap: 9px; color: var(--wk-ink); padding-left: 28px; border-left: 1px solid var(--wk-rule); min-height: 30px; }
 .wk-header-github svg { width: 20px; height: 20px; }
 .wk-header .wk-menu-toggle { display: none; border: 0; background: none; width: 44px; height: 44px; color: var(--wk-ink); align-items: center; justify-content: center; }
