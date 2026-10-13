@@ -24,7 +24,7 @@ TARGETS = {
 }
 UPGRADES = ['000099_pg_search_0226.up.sql', '000115_pg_search_02511.up.sql']
 
-def sql(query, db='aikb'):
+def sql(query, db='ai_kb'):
     p = subprocess.run(['docker', 'exec', '-i', CONTAINER, 'psql', '-X', '-qAt', '-U', 'postgres', '-d', db, '-v', 'ON_ERROR_STOP=1'], input=query, text=True, capture_output=True)
     if p.returncode:
         raise RuntimeError(p.stderr)
@@ -122,7 +122,7 @@ def start(image, volume):
            '-v', volume+':/var/lib/postgresql/data', image)
     for _ in range(120):
         # Wait for the final server, not the bootstrap server that only uses a socket.
-        ready = subprocess.run(['docker', 'exec', CONTAINER, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'aikb'], capture_output=True)
+        ready = subprocess.run(['docker', 'exec', CONTAINER, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'ai_kb'], capture_output=True)
         if ready.returncode == 0:
             return
         time.sleep(1)
@@ -179,17 +179,17 @@ def main():
     docker('volume', 'create', volume)
     try:
         start(old, volume)
-        migrate('aikb', baseline, 'old-migrations')
+        migrate('ai_kb', baseline, 'old-migrations')
         assert sql(search_version) == '0.22.2'
         old_vector = sql(vector_version)
         # Older external servers without the target package must remain usable.
-        migrate('aikb', upgrade, 'unavailable-target')
+        migrate('ai_kb', upgrade, 'unavailable-target')
         assert sql(search_version) == '0.22.2'
         assert sql(vector_version) == old_vector
         seed()
         snapshot('before')
         with (OUT/'before.dump').open('wb') as backup:
-            subprocess.run(['docker', 'exec', CONTAINER, 'pg_dump', '-U', 'postgres', '-d', 'aikb', '-Fc'], check=True, stdout=backup)
+            subprocess.run(['docker', 'exec', CONTAINER, 'pg_dump', '-U', 'postgres', '-d', 'ai_kb', '-Fc'], check=True, stdout=backup)
         docker('stop', '-t', '60', CONTAINER)
         docker('rm', CONTAINER)
         start(new, volume)
@@ -197,7 +197,7 @@ def main():
         assert sql(search_version) == '0.22.2'
         sql("BEGIN; SET LOCAL app.skip_embedding='true';\n"+upgrade_sql+"\nCOMMIT;")
         assert sql(search_version) == '0.22.2'
-        migrate('aikb', upgrade + upgrade, 'extension-upgrade-and-idempotence')
+        migrate('ai_kb', upgrade + upgrade, 'extension-upgrade-and-idempotence')
         assert sql(search_version) == target
         assert sql(vector_version) == (vector_target or old_vector)
         # Calls into the shared library crash the server if the catalog lags behind it.
