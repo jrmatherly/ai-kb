@@ -80,10 +80,10 @@ func (s *wikiPageService) CreatePage(ctx context.Context, page *types.WikiPage) 
 		page.ID = uuid.New().String()
 	}
 	if page.Slug == "" {
-		return nil, errors.New("wiki page slug is required")
+		return nil, apperrors.NewBadRequestError("wiki page slug is required")
 	}
 	if page.KnowledgeBaseID == "" {
-		return nil, errors.New("knowledge_base_id is required")
+		return nil, apperrors.NewBadRequestError("knowledge_base_id is required")
 	}
 	if page.Status == "" {
 		page.Status = types.WikiPageStatusPublished
@@ -579,7 +579,7 @@ func (s *wikiPageService) GetIndexView(
 	if cursor != "" {
 		v, parseErr := strconv.Atoi(cursor)
 		if parseErr != nil || v < 0 {
-			return nil, fmt.Errorf("invalid cursor %q", cursor)
+			return nil, apperrors.NewBadRequestError(fmt.Sprintf("invalid cursor %q", cursor))
 		}
 		offset = v
 	}
@@ -795,10 +795,10 @@ func computeGraphSubset(pages []*types.WikiPage, req *types.WikiGraphRequest) (*
 	switch mode {
 	case types.WikiGraphModeEgo:
 		if req.Center == "" {
-			return nil, errors.New("ego graph requires a center slug")
+			return nil, apperrors.NewBadRequestError("ego graph requires a center slug")
 		}
 		if _, ok := pageBySlug[req.Center]; !ok {
-			return nil, fmt.Errorf("ego center slug %q not found", req.Center)
+			return nil, apperrors.NewNotFoundError(fmt.Sprintf("ego center slug %q not found", req.Center))
 		}
 		depth := req.Depth
 		if depth < 1 {
@@ -1731,7 +1731,7 @@ func (s *wikiPageService) applyFolderToPage(ctx context.Context, page *types.Wik
 	folder, err := s.repo.GetFolderByID(ctx, page.KnowledgeBaseID, page.FolderID)
 	if err != nil {
 		if errors.Is(err, repository.ErrWikiFolderNotFound) {
-			return fmt.Errorf("wiki page references unknown folder %q", page.FolderID)
+			return apperrors.NewNotFoundError(fmt.Sprintf("wiki page references unknown folder %q", page.FolderID))
 		}
 		return fmt.Errorf("resolve page folder: %w", err)
 	}
@@ -1829,11 +1829,11 @@ func recursiveFolderCounts(all []*types.WikiFolder, direct map[string]int64) map
 func validateFolderName(name string) (string, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
-		return "", errors.New("folder name is required")
+		return "", apperrors.NewBadRequestError("folder name is required")
 	}
 	// Includes the fullwidth vertical bar and fullwidth slash.
 	if strings.ContainsAny(name, "/\uff5c|\uff0f") {
-		return "", fmt.Errorf("folder name %q must not contain a path separator", name)
+		return "", apperrors.NewBadRequestError(fmt.Sprintf("folder name %q must not contain a path separator", name))
 	}
 	return name, nil
 }
@@ -1984,14 +1984,14 @@ func (s *wikiPageService) RenameOrMoveFolder(
 	depthBase := 0
 	if targetParent != types.WikiFolderRootID {
 		if targetParent == folder.ID {
-			return nil, errors.New("cannot move a folder into itself")
+			return nil, apperrors.NewBadRequestError("cannot move a folder into itself")
 		}
 		parent, err := s.repo.GetFolderByID(ctx, kbID, targetParent)
 		if err != nil {
 			return nil, err
 		}
 		if parent.Path == folder.Path || strings.HasPrefix(parent.Path, folder.Path+"/") {
-			return nil, errors.New("cannot move a folder into its own descendant")
+			return nil, apperrors.NewBadRequestError("cannot move a folder into its own descendant")
 		}
 		parentPath = parent.Path
 		depthBase = parent.Depth

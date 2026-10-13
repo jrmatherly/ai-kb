@@ -203,7 +203,7 @@ func (h *WikiPageHandler) CreateFolder(c *gin.Context) {
 	}
 	folder, err := h.wikiService.CreateFolder(c.Request.Context(), kbID, tenantID, strings.TrimSpace(req.ParentID), req.Name)
 	if err != nil {
-		writeWikiFolderError(c, err)
+		writeWikiError(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, folder)
@@ -243,7 +243,7 @@ func (h *WikiPageHandler) UpdateFolder(c *gin.Context) {
 	folder, err := h.wikiService.RenameOrMoveFolder(
 		c.Request.Context(), kbID, folderID, req.Name, strings.TrimSpace(req.ParentID), req.MoveParent)
 	if err != nil {
-		writeWikiFolderError(c, err)
+		writeWikiError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, folder)
@@ -272,7 +272,7 @@ func (h *WikiPageHandler) DeleteFolder(c *gin.Context) {
 		return
 	}
 	if err := h.wikiService.DeleteFolder(c.Request.Context(), kbID, folderID); err != nil {
-		writeWikiFolderError(c, err)
+		writeWikiError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -308,15 +308,18 @@ func (h *WikiPageHandler) MovePage(c *gin.Context) {
 	}
 	page, err := h.wikiService.MovePage(c.Request.Context(), kbID, slug, strings.TrimSpace(req.FolderID))
 	if err != nil {
-		writeWikiFolderError(c, err)
+		writeWikiError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, page)
 }
 
-// writeWikiFolderError maps folder/page service errors to HTTP status codes.
-func writeWikiFolderError(c *gin.Context, err error) {
+// writeWikiError maps wiki service errors to HTTP status codes.
+func writeWikiError(c *gin.Context, err error) {
+	var appErr *errors.AppError
 	switch {
+	case stderrors.As(err, &appErr):
+		c.JSON(appErr.HTTPCode, gin.H{"error": appErr.Message})
 	case stderrors.Is(err, repository.ErrWikiFolderNotFound), stderrors.Is(err, repository.ErrWikiPageNotFound):
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	case stderrors.Is(err, repository.ErrWikiFolderConflict), stderrors.Is(err, repository.ErrWikiFolderNotEmpty):
@@ -382,7 +385,7 @@ func (h *WikiPageHandler) CreatePage(c *gin.Context) {
 	ctx := types.WithWikiEditSource(c.Request.Context(), types.WikiEditSourceUser)
 	created, err := h.wikiService.CreatePage(ctx, &page)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeWikiError(c, err)
 		return
 	}
 
@@ -553,7 +556,7 @@ func (h *WikiPageHandler) UpdatePage(c *gin.Context) {
 		case stderrors.Is(err, repository.ErrWikiPageConflict):
 			c.JSON(http.StatusConflict, gin.H{"error": "Wiki page was modified by someone else"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			writeWikiError(c, err)
 		}
 		return
 	}
@@ -779,7 +782,7 @@ func (h *WikiPageHandler) GetIndex(c *gin.Context) {
 
 	resp, err := h.wikiService.GetIndexView(c.Request.Context(), kbID, pageTypes, limit, c.Query("cursor"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeWikiError(c, err)
 		return
 	}
 
@@ -888,7 +891,7 @@ func (h *WikiPageHandler) GetGraph(c *gin.Context) {
 
 	graph, err := h.wikiService.GetGraph(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeWikiError(c, err)
 		return
 	}
 

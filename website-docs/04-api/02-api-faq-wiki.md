@@ -229,7 +229,7 @@ curl "$BASE/api/v1/knowledgebase/kb-1/wiki/pages?page=1" -H "Authorization: Bear
 
 ### POST /api/v1/knowledgebase/:kb_id/wiki/pages
 
-Purpose: create a page. Request body (`types.WikiPage`): `slug` (required; the slug is unique per knowledge base, index `idx_wiki_pages_kb_slug`), `title`, `content`, `folder_id`, `page_type`, `status` and the other page fields. An unknown `page_type` or `status` returns 400. A missing slug is rejected by the service and currently surfaces as 500 with `wiki page slug is required`.
+Purpose: create a page. Request body (`types.WikiPage`): `slug` (required; the slug is unique per knowledge base, index `idx_wiki_pages_kb_slug`), `title`, `content`, `folder_id`, `page_type`, `status` and the other page fields. An unknown `page_type` or `status` returns 400, a missing slug returns 400 (`wiki page slug is required`), and a `folder_id` that names no folder returns 404.
 
 Response: 201 `WikiPage`
 
@@ -335,7 +335,7 @@ Purpose: create a folder.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | yes | Folder name |
+| `name` | string | yes | Folder name; a blank name or one containing a path separator (`/`) returns 400 |
 | `parent_id` | string | no | Parent folder |
 
 Response: 201 `WikiFolder`
@@ -347,7 +347,7 @@ curl -X POST $BASE/api/v1/knowledgebase/kb-1/wiki/folders -H "Authorization: Bea
 
 ### PUT /api/v1/knowledgebase/:kb_id/wiki/folders/:folder_id
 
-Purpose: rename or move a folder. Request body: `name`, `parent_id`, `move_parent` (bool), all optional. `parent_id` is applied only when `move_parent` is true, so a plain rename cannot accidentally move the folder.
+Purpose: rename or move a folder. Request body: `name`, `parent_id`, `move_parent` (bool), all optional. `parent_id` is applied only when `move_parent` is true, so a plain rename cannot accidentally move the folder. Moving a folder into itself or its own descendant returns 400.
 
 Response: 200 `WikiFolder`
 
@@ -368,7 +368,7 @@ curl -X DELETE $BASE/api/v1/knowledgebase/kb-1/wiki/folders/f-1 -H "Authorizatio
 
 ### GET /api/v1/knowledgebase/:kb_id/wiki/index
 
-Purpose: the Wiki index page (a window per page type). Query parameters: `types` (comma-separated), `limit` (1-200, default 50, per group), `cursor` (opaque offset cursor, applied to every group).
+Purpose: the Wiki index page (a window per page type). Query parameters: `types` (comma-separated), `limit` (1-200, default 50, per group), `cursor` (opaque offset cursor, applied to every group; a malformed cursor returns 400).
 
 Response: 200 `WikiIndexResponse` (`intro`, `version`, `groups`)
 
@@ -387,7 +387,7 @@ Purpose: the page relationship graph.
 | Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |
 | `mode` | string | no | `overview` (default, the top-N most connected pages) / `ego` (the neighborhood of a center page) |
-| `center` | string | no | Center slug for ego mode (required when `mode=ego`, otherwise 400) |
+| `center` | string | no | Center slug for ego mode (required when `mode=ego`, otherwise 400; a slug with no page returns 404) |
 | `depth` | int | no | 1-3, default 1 (ego mode) |
 | `types` | string | no | `page_type` filter |
 | `limit` | int | no | Default 500, capped at 2000 |
