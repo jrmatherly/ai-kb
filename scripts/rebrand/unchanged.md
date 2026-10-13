@@ -15,6 +15,8 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
   shields the whole file.
 - The upstream credit: `[Tencent/WeKnora](https://github.com/Tencent/WeKnora)` in the README and the homepage
   footer and the docs footer's "Based on Tencent/WeKnora" links, shielded by `keep.tsv`.
+- Sandbox snapshot images committed before the rename (`weknora-skill/`, `weknora-fork/`, labels
+  `com.weknora.sandbox.*`): named in the sandbox deployment page's cleanup note, shielded by `keep.tsv`.
 - Provenance: upstream issue and PR links (`Tencent/WeKnora#NNNN`, `/issues/`, `/pull/`, `/discussions/`),
   `.upstream-review/`, the upstream-review skill, `CLAUDE.md`.
 

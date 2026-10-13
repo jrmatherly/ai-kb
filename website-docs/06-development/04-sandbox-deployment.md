@@ -44,6 +44,13 @@ Installing a skill runs `docker commit` to produce a local image under `ai-kb-sk
 
 An incremental snapshot inherits the old image's layers, so deleting an old tag does not necessarily free disk. Uninstalling a skill adds a layer of delete markers, and the original files can remain in parent layers. The current flow does not flatten images automatically or distribute them across daemons. Monitor layer count and disk usage, and confirm session and snapshot references before cleaning up. When you need a fresh base image, create a new config and reinstall the skills.
 
+Skill snapshots go under `ai-kb-skill/` and session-fork snapshots under `ai-kb-fork/`. Snapshots committed under the upstream prefixes `weknora-skill/` and `weknora-fork/` carry the old `com.weknora.sandbox.*` labels, so the snapshot reaper never collects them and their disk is never reclaimed. A config whose skills were installed under the old prefix still starts from that image while it exists. Reinstall those skills in a new config, then list and remove the old images on each daemon:
+
+```bash
+docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(docker\.io/)?(weknora-skill|weknora-fork)/'
+docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(docker\.io/)?(weknora-skill|weknora-fork)/' | xargs -r docker rmi
+```
+
 ## CubeSandbox / E2B setup
 
 1. Prepare a working control plane, data-plane gateway and sandbox domain. In the workspace settings, fill in the API, Proxy, domain and credentials. Private or loopback endpoints need the private-address option turned on explicitly; cloud metadata addresses stay blocked.

@@ -11,3 +11,5 @@ LICENSE	(?s)\A.*\z
 **	\[Tencent/WeKnora\]\(https://github\.com/Tencent/WeKnora\)
 website-docs/homepage/app/page.tsx	"https://github\.com/Tencent/WeKnora"|>Tencent/WeKnora<
 website-docs/.vitepress/config.mts	"https://github\.com/Tencent/WeKnora"|>Tencent/WeKnora<
+# Upstream sandbox snapshot prefixes and labels, named so operators can find and remove images built before the rename.
+website-docs/06-development/04-sandbox-deployment.md	weknora-(?:skill|fork)|com\.weknora\.sandbox
