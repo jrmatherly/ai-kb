@@ -8,9 +8,12 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
+// loopbackWhitelist is the package baseline: engine wiring tests use loopback
+// httptest servers. A test that changes the whitelist restores it on cleanup.
+const loopbackWhitelist = "127.0.0.1,::1,localhost"
+
 func TestMain(m *testing.M) {
-	// Engine wiring tests intentionally use loopback httptest servers.
-	utils.SetSSRFWhitelistFromRaw("127.0.0.1,::1,localhost")
+	utils.SetSSRFWhitelistFromRaw(loopbackWhitelist)
 	code := m.Run()
 	utils.SetSSRFWhitelistFromRaw("")
 	os.Exit(code)

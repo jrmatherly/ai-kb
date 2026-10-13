@@ -17,7 +17,10 @@ func whitelistOnly(t *testing.T, whitelist, only string) {
 	t.Setenv("SSRF_WHITELIST_EXTRA", "")
 	t.Setenv("SSRF_DNS_WHITELIST_ONLY", only)
 	secutils.ResetSSRFWhitelistForTest()
-	t.Cleanup(secutils.ResetSSRFWhitelistForTest)
+	t.Cleanup(func() {
+		secutils.ResetSSRFWhitelistForTest()
+		secutils.SetSSRFWhitelistFromRaw(loopbackWhitelist)
+	})
 }
 
 // gRPC resolves its own target before any dialer runs, so an env-configured
