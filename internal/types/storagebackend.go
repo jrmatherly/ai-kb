@@ -211,6 +211,17 @@ func (c StorageBackendConfig) ValidateForProvider(provider string) error {
 			return errors.NewValidationError("access_key_id and secret_access_key must be set together")
 		}
 		return nil
+	case "obs":
+		// The OBS client defaults an empty region (file.obsDefaultRegion).
+		for name, value := range map[string]string{
+			"endpoint": c.Endpoint, "access_key_id": c.AccessKeyID,
+			"secret_access_key": c.SecretAccessKey, "bucket_name": c.BucketName,
+		} {
+			if err := required(name, value); err != nil {
+				return err
+			}
+		}
+		return nil
 	default:
 		for name, value := range map[string]string{"endpoint": c.Endpoint, "region": c.Region, "access_key_id": c.AccessKeyID, "secret_access_key": c.SecretAccessKey, "bucket_name": c.BucketName} {
 			if err := required(name, value); err != nil {

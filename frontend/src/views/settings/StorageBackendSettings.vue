@@ -167,8 +167,13 @@
             />
           </div>
           <div v-if="needsRegion" class="form-item">
-            <label class="form-label required">Region</label>
-            <t-input v-model="form.config.region" :disabled="!!editing" clearable />
+            <label class="form-label" :class="{ required: form.provider !== 'obs' }">Region</label>
+            <t-input
+              v-model="form.config.region"
+              :disabled="!!editing"
+              :placeholder="form.provider === 'obs' ? 'cn-north-4' : ''"
+              clearable
+            />
           </div>
           <template v-if="needsCredentials">
             <div class="form-item">

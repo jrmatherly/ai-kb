@@ -109,3 +109,15 @@ func TestStorageBackendS3Validation(t *testing.T) {
 		})
 	}
 }
+
+// OBS falls back to cn-north-4 at runtime, so saving must not demand a region.
+func TestStorageBackendOBSValidationDefaultsRegion(t *testing.T) {
+	t.Setenv(storageallowlist.AllowListEnv, "")
+	cfg := StorageBackendConfig{Endpoint: "obs.example.com", AccessKeyID: "ak", SecretAccessKey: "sk", BucketName: "b"}
+	require.NoError(t, (&StorageBackend{TenantID: 1, Name: "obs", Provider: "obs", Config: cfg}).Validate())
+
+	cfg.Endpoint = ""
+	err := (&StorageBackend{TenantID: 1, Name: "obs", Provider: "obs", Config: cfg}).Validate()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "endpoint is required")
+}

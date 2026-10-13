@@ -33,7 +33,7 @@ All providers share one set of configuration fields. `access_key_id` and `secret
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | `endpoint` | string | empty | Service address. Required for `minio` (`mode=remote`), `tos`, `oss`, `ks3` and `obs`; for `s3` leave it empty to use AWS itself; `cos` does not use it. Saving runs an SSRF check, so a private address must be listed in `SSRF_WHITELIST` |
-| `region` | string | empty | Region. Required for `cos`, `tos`, `s3`, `oss`, `ks3` and `obs` |
+| `region` | string | empty | Region. Required for `cos`, `tos`, `s3`, `oss` and `ks3`; `obs` uses `cn-north-4` when it is empty |
 | `access_key_id` / `secret_access_key` | string | empty | Access credentials; for COS these are the SecretId / SecretKey. Not needed for `local` or for MinIO with `mode=docker`. For `s3` set both or neither; with neither, the server uses the AWS default credential chain (IAM role, IRSA, environment, shared config) |
 | `bucket_name` | string | empty | Bucket. Required for every provider except `local` |
 | `path_prefix` | string | empty | Object key prefix. Must be a relative path: no leading `/` and no `..` |

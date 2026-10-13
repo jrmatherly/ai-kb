@@ -47,7 +47,14 @@ func obsUsePathStyle(endpoint string) bool {
 
 // obsS3Options builds the S3 client options shared by the file service and the
 // connectivity check.
+// obsDefaultRegion is used when an OBS config leaves the region empty.
+const obsDefaultRegion = "cn-north-4"
+
 func obsS3Options(endpoint, region, accessKey, secretAccessKey string) s3.Options {
+	region = strings.TrimSpace(region)
+	if region == "" {
+		region = obsDefaultRegion
+	}
 	return s3.Options{
 		Region:       region,
 		BaseEndpoint: aws.String(endpoint),

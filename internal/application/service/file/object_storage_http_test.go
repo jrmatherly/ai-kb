@@ -67,6 +67,13 @@ func TestOBSClientHasNoWholeRequestTimeout(t *testing.T) {
 	require.Zero(t, client.Timeout)
 }
 
+// The env path (container), the backend factory and the save-time connectivity
+// check all build their client here, so an empty region must default here.
+func TestOBSClientDefaultsRegion(t *testing.T) {
+	require.Equal(t, "cn-north-4", obsS3Options("obs.example.com", "", "ak", "sk").Region)
+	require.Equal(t, "ap-southeast-1", obsS3Options("obs.example.com", " ap-southeast-1 ", "ak", "sk").Region)
+}
+
 func TestS3ClientHasNoWholeRequestTimeout(t *testing.T) {
 	svc, err := newS3Client("", "ak", "sk", "bucket", "us-east-1", "", false)
 	require.NoError(t, err)

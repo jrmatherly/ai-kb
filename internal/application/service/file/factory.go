@@ -101,16 +101,13 @@ func NewFileServiceFromStorageConfig(
 			sec.OBS.SecretKey == "" || sec.OBS.BucketName == "" {
 			return nil, p, fmt.Errorf("incomplete obs config")
 		}
-		region := strings.TrimSpace(sec.OBS.Region)
-		if region == "" {
-			region = "cn-north-4"
-		}
 		pathPrefix := strings.TrimSpace(sec.OBS.PathPrefix)
 		if pathPrefix == "" {
 			pathPrefix = "aikb/"
 		}
-		svc, err := NewObsFileService(strings.TrimSpace(sec.OBS.Endpoint), region, strings.TrimSpace(sec.OBS.AccessKey),
-			strings.TrimSpace(sec.OBS.SecretKey), strings.TrimSpace(sec.OBS.BucketName), pathPrefix)
+		svc, err := NewObsFileService(strings.TrimSpace(sec.OBS.Endpoint), sec.OBS.Region,
+			strings.TrimSpace(sec.OBS.AccessKey), strings.TrimSpace(sec.OBS.SecretKey),
+			strings.TrimSpace(sec.OBS.BucketName), pathPrefix)
 		return svc, p, err
 
 	case "oss":
