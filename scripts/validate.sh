@@ -28,12 +28,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/scripts/git-hooks/common.sh"
 cd "$ROOT"
 
-# The harness release packages/dsh-ai-kb is verified against; bump it with the note in its README.
-# Its own dependency ranges are resolved as of its release day: later cordis releases (4.0.4,
-# cordis-plugin-hmr 1.0.19) break rc.8's boot with "requires the Cordis HMR service".
-DSH_PINNED_SPEC="@deepseek-ai/dsh@0.1.0-rc.8"
-DSH_PINNED_BEFORE="2026-08-20"
-
 base=HEAD list=0 forced=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -285,11 +279,11 @@ area_dsh-plugin() {
     if (missing.length) { console.error("missing from the tarball: " + missing.join(", ")); process.exit(1); }
     if (leaked.length) { console.error("unexpected files in the tarball: " + leaked.join(", ")); process.exit(1); }
     console.log("tarball contents verified: " + files.length + " files");'
-  # `dsh plugin add` installs through pnpm. The first run installs the harness (minutes); later runs reuse it.
+  # `dsh plugin add` installs through pnpm. The first run installs the pinned harness release into
+  # ~/.cache/ai-kb (minutes); later runs reuse it. The pin lives in run-in-dsh.mjs; unset its
+  # overrides so this always checks the pinned release.
   if need pnpm; then
-    (cd "$dir" && DSH_PACKAGE_SPEC="$DSH_PINNED_SPEC" npm_config_before="${DSH_PINNED_BEFORE}T00:00:00Z" \
-      DSH_INSTALL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/ai-kb/dsh-e2e-${DSH_PINNED_SPEC##*@}-before-$DSH_PINNED_BEFORE" \
-      node test/e2e/run-in-dsh.mjs)
+    (cd "$dir" && env -u DSH_PACKAGE_SPEC -u npm_config_before -u DSH_INSTALL_DIR node test/e2e/run-in-dsh.mjs)
   fi
 }
 

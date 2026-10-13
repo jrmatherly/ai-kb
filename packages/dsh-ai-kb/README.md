@@ -151,9 +151,14 @@ answered from what they returned:
 
 ```sh
 npm run build
-node test/e2e/run-in-dsh.mjs                        # installs dsh from npm on first run
+npm run e2e                                         # installs the pinned dsh release on first run
 DSH_BIN=/path/to/dsh node test/e2e/run-in-dsh.mjs   # or reuse an existing install
 ```
+
+The first run installs the dsh release pinned in `test/e2e/run-in-dsh.mjs` into
+`${XDG_CACHE_HOME:-~/.cache}/ai-kb/`, with its dependency tree resolved as of that release's day (`npm_config_before`),
+so every run tests the same tree. Later runs reuse the install. `DSH_PACKAGE_SPEC` tests another release (resolved as
+of today unless `npm_config_before` is set) and `DSH_INSTALL_DIR` moves the install.
 
 dsh needs a Node build with zstd support (Node ≥ 22.15 or ≥ 24) for its session persistence, and pnpm ≥ 10 on `PATH`,
 because `dsh plugin add` installs into the profile through pnpm and the profile it writes keeps its settings in
@@ -165,7 +170,7 @@ types still accept and serve them, so a rename on either side fails CI instead o
 
 ## Compatibility
 
-Verified against dsh `0.1.0-rc.8` and AI KB `0.8.0`. dsh is in developer preview and states that breaking changes
+Verified against dsh `0.1.0-rc.8` (the pin in `test/e2e/run-in-dsh.mjs`; bump both together) and AI KB `0.8.0`. dsh is in developer preview and states that breaking changes
 will happen; this package deliberately has **no runtime dependencies** and hands `ctx.tools.register()` a plain object,
 so it does not pin any harness package version. If a harness release changes the tool-definition contract, open an issue
 against this repository.

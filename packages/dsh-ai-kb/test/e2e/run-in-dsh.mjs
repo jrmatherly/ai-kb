@@ -20,25 +20,39 @@
  *   DSH_E2E_LOG=/tmp/transcript.log node test/e2e/run-in-dsh.mjs
  *
  * Environment:
- *   DSH_PACKAGE_SPEC  npm spec for the harness (default `@deepseek-ai/dsh@latest`)
- *   DSH_INSTALL_DIR   where to keep that install (default `<tmp>/dsh-e2e-install`)
- *   DSH_E2E_KEEP_HOME keep the throwaway `DSH_HOME` for inspection
+ *   DSH_PACKAGE_SPEC   npm spec for the harness (default: the pinned release below)
+ *   npm_config_before  resolve the install as of this date (default: the pinned date
+ *                      for the pinned release, none for any other spec)
+ *   DSH_INSTALL_DIR    where to keep that install (default
+ *                      `${XDG_CACHE_HOME:-~/.cache}/ai-kb/dsh-e2e-<version>[-before-<date>]`)
+ *   DSH_E2E_KEEP_HOME  keep the throwaway `DSH_HOME` for inspection
  */
 
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { startFakeModel } from './fake-model.mjs'
 import { startMockAikb } from '../helpers/mock-ai-kb.mjs'
 
+// The harness release this package is verified against; bump it with the Compatibility note in
+// the README. rc.8 leaves its dependency ranges open and later cordis releases (4.0.4,
+// cordis-plugin-hmr 1.0.19) break its boot, so its tree is resolved as of its release day.
+const PINNED_SPEC = '@deepseek-ai/dsh@0.1.0-rc.8'
+const PINNED_BEFORE = '2026-08-20T00:00:00Z'
+
 const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const installDir = process.env.DSH_INSTALL_DIR ?? join(tmpdir(), 'dsh-e2e-install')
-const dshSpec = process.env.DSH_PACKAGE_SPEC ?? '@deepseek-ai/dsh@latest'
+const dshSpec = process.env.DSH_PACKAGE_SPEC ?? PINNED_SPEC
+const before = process.env.npm_config_before ?? (dshSpec === PINNED_SPEC ? PINNED_BEFORE : undefined)
+const installDir = process.env.DSH_INSTALL_DIR ?? join(
+  process.env.XDG_CACHE_HOME ?? join(homedir(), '.cache'),
+  'ai-kb',
+  `dsh-e2e-${dshSpec.slice(dshSpec.lastIndexOf('@') + 1)}${before === undefined ? '' : `-before-${before.slice(0, 10)}`}`,
+)
 const API_KEY = 'e2e-api-key'
 const QUESTION = 'What is the default retrieval threshold in AI KB? Search the knowledge base before answering.'
 const transcript = []
@@ -77,10 +91,13 @@ async function resolveDsh() {
     log(`# reusing the dsh install at ${installDir}`)
     return binary
   }
-  log(`# installing ${dshSpec} into ${installDir} (first run only)`)
+  log(`# installing ${dshSpec}${before === undefined ? '' : ` as of ${before}`} into ${installDir} (first run only)`)
   await mkdir(installDir, { recursive: true })
   await writeFile(join(installDir, 'package.json'), JSON.stringify({ name: 'dsh-e2e-install', private: true }, null, 2))
-  const install = await run('npm', ['install', '--no-audit', '--no-fund', dshSpec], { cwd: installDir })
+  const install = await run('npm', ['install', '--no-audit', '--no-fund', dshSpec], {
+    cwd: installDir,
+    env: before === undefined ? {} : { npm_config_before: before },
+  })
   if (install.code !== 0) throw new Error(`npm install ${dshSpec} failed:\n${install.stderr}`)
   return binary
 }
