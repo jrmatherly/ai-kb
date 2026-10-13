@@ -96,6 +96,7 @@ _source_env_file() {
     tmp="$(mktemp)" || return 1
     sed -e 's/\r$//' "$src" > "$tmp"
     set -a
+    # The file is a per-checkout runtime file, so there is nothing for shellcheck to follow.
     # shellcheck source=/dev/null
     source "$tmp"
     set +a
@@ -122,17 +123,17 @@ check_docker() {
         log_error "Docker is not installed. Install Docker first"
         return 1
     fi
-    
+
     if ! detect_compose_cmd; then
         log_error "Docker Compose not found"
         return 1
     fi
-    
+
     if ! docker info &> /dev/null; then
         log_error "The Docker service is not running"
         return 1
     fi
-    
+
     return 0
 }
 
@@ -179,22 +180,20 @@ _wait_odl_hybrid_ready() {
 # Start the infrastructure services
 start_services() {
     log_info "Starting the dev infrastructure services..."
-    
-    check_docker
-    if [ $? -ne 0 ]; then
+
+    if ! check_docker; then
         return 1
     fi
 
-    cd "$PROJECT_ROOT"
-    
+    cd "$PROJECT_ROOT" || return 1
+
     # Check the .env file
     if [ ! -f ".env" ]; then
         log_error ".env file not found. Create it first"
         return 1
     fi
 
-    load_env_files
-    if [ $? -ne 0 ]; then
+    if ! load_env_files; then
         log_error ".env file not found. Create it first"
         return 1
     fi
@@ -205,7 +204,7 @@ start_services() {
         log_info "Next: make dev-app (local backend) or make dev-frontend (frontend)"
         return 0
     fi
-    
+
     # Parse the profile arguments
     shift  # drop the "start" command itself
     # Starts the infrastructure (postgres / redis / docreader) + langfuse by default;
@@ -254,11 +253,14 @@ start_services() {
         shift
     done
 
-    # Start the services (odl-hybrid gets its own --build so docreader is not rebuilt every time)
+    # Start the services (odl-hybrid gets its own --build so docreader is not rebuilt every time).
+    # PROFILES is a list of "--profile <name>" words, split on purpose.
+    # shellcheck disable=SC2086
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml $PROFILES up -d
     local compose_rc=$?
     if [ "$compose_rc" -eq 0 ] && [[ "$ENABLED_SERVICES" == *"odl-hybrid"* ]]; then
         log_info "Building/updating the odl-hybrid image..."
+        # shellcheck disable=SC2086
         "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml $PROFILES up -d --build odl-hybrid
         _wait_odl_hybrid_ready || true
         # docreader reads DOCREADER_ODL_HYBRID; if .env just changed, force a rebuild to inject it
@@ -275,7 +277,7 @@ start_services() {
         echo "  - PostgreSQL:    localhost:5432"
         echo "  - Redis:         localhost:6379"
         echo "  - DocReader:     localhost:50051"
-        
+
         # Show the extra services for the enabled profiles
         if [[ "$ENABLED_SERVICES" == *"minio"* ]]; then
             echo "  - MinIO:         localhost:9000 (Console: localhost:9001)"
@@ -296,7 +298,7 @@ start_services() {
             echo "  - ODL Hybrid:    http://localhost:${ODL_HYBRID_PORT:-5002} (health: /health)"
             echo "                   docreader needs DOCREADER_ODL_HYBRID=docling-fast"
         fi
-        
+
         echo ""
         log_info "Next steps:"
         printf "%b\n" "${YELLOW}1. Run the backend in a new terminal:${NC} make dev-app"
@@ -311,17 +313,14 @@ start_services() {
 # Stop the services
 stop_services() {
     log_info "Stopping the dev environment services..."
-    
-    check_docker
-    if [ $? -ne 0 ]; then
+
+    if ! check_docker; then
         return 1
     fi
-    
-    cd "$PROJECT_ROOT"
+
+    cd "$PROJECT_ROOT" || return 1
     # Without --profile '*', down leaves every profiled service (langfuse, minio, ...) running.
-    "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml --profile '*' down
-    
-    if [ $? -eq 0 ]; then
+    if "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml --profile '*' down; then
         log_success "All services stopped"
         return 0
     else
@@ -339,23 +338,21 @@ restart_services() {
 
 # Show logs
 show_logs() {
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         return 1
     fi
 
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml logs -f
 }
 
 # Show status
 show_status() {
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         return 1
     fi
 
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
     "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml ps
 }
 
@@ -399,7 +396,7 @@ check_remote_dev_connectivity() {
         log_info "Troubleshooting:"
         echo "  1. Make sure the Docker containers are running on the remote machine (postgres/redis/docreader)"
         echo "  2. Make sure this machine and ${host} are on the same LAN (this machine: $(ipconfig getifaddr en0 2>/dev/null || echo 'unknown'))"
-        echo "  3. Check the port mappings on the remote: docker ps --format 'table {{.Names}}\t{{.Ports}}'"
+        printf '%s\n' "  3. Check the port mappings on the remote: docker ps --format 'table {{.Names}}\t{{.Ports}}'"
         echo "  4. Check that the remote firewall allows 5432/6379/50051"
         return 1
     fi
@@ -449,21 +446,21 @@ enable_anydoc_build_tag() {
 # Start the backend (local)
 start_app() {
     log_info "Starting the backend (local dev mode)..."
-    
-    cd "$PROJECT_ROOT"
-    
+
+    cd "$PROJECT_ROOT" || return 1
+
     # Check that Go is installed
     if ! command -v go &> /dev/null; then
         log_error "Go is not installed"
         return 1
     fi
-    
+
     log_info "Loading the environment configuration..."
     if ! load_env_files; then
         log_error ".env file not found. Create the config file first"
         return 1
     fi
-    
+
     # Local docker-compose.dev mode: map container service names to the host loopback address
     # Remote dev mode (DEV_REMOTE_HOST, or addresses set in .env.local) keeps the values from .env/.env.local
     if [ -n "${DEV_REMOTE_HOST:-}" ]; then
@@ -502,16 +499,16 @@ start_app() {
         export LOCAL_STORAGE_BASE_DIR="$PROJECT_ROOT/.local-data/files"
     fi
     mkdir -p "$LOCAL_STORAGE_BASE_DIR"
-    
+
     # Make sure the required environment variables are set
     if [ -z "$DB_DRIVER" ]; then
         log_error "DB_DRIVER is not set. Check the .env file"
         return 1
     fi
-    
+
     log_info "Environment variables set, starting the app..."
     log_info "Database address: $DB_HOST:${DB_PORT:-5432}"
-    
+
     export CGO_CFLAGS="-Wno-deprecated-declarations -Wno-gnu-folding-constant"
     if [[ "$(uname)" == "Darwin" ]]; then
       export CGO_LDFLAGS="-Wl,-no_warn_duplicate_libraries"
@@ -537,29 +534,29 @@ start_app() {
 start_frontend() {
     log_info "Starting the frontend dev server..."
 
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
     if [ -f ".env" ] || [ -f ".env.local" ]; then
         load_env_files >/dev/null 2>&1 || true
     fi
-    
-    cd "$PROJECT_ROOT/frontend"
-    
+
+    cd "$PROJECT_ROOT/frontend" || return 1
+
     # Check that npm is installed
     if ! command -v npm &> /dev/null; then
         log_error "npm is not installed"
         return 1
     fi
-    
+
     # Check whether the dependencies are installed
     if [ ! -d "node_modules" ]; then
         log_warning "node_modules not found, installing dependencies..."
         npm install
     fi
-    
+
     log_info "Starting the Vite dev server..."
     log_info "The frontend runs at http://localhost:5173"
     log_info "Frontend API proxy target: ${VITE_DEV_PROXY_TARGET:-${FRONTEND_BACKEND_URL:-http://localhost:8080}}"
-    
+
     # Run the dev server
     npm run dev
 }

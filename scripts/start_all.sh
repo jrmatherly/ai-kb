@@ -14,7 +14,6 @@ PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Version information
 VERSION="1.0.1" # version bump
-SCRIPT_NAME=$(basename "$0")
 
 # Show help
 show_help() {
@@ -66,7 +65,6 @@ export_frontend_build_args() {
         export VITE_FRONTEND_COMMIT
         return 0
     fi
-    # shellcheck source=/dev/null
     eval "$("$PROJECT_ROOT/scripts/get_version.sh" env)"
     export VITE_FRONTEND_COMMIT="${COMMIT_ID:-unknown}"
     log_info "VITE_FRONTEND_COMMIT=${VITE_FRONTEND_COMMIT}"
@@ -101,6 +99,7 @@ detect_compose_cmd() {
 source_env_file() {
     local exported
     exported=$(export -p)
+    # .env is a per-checkout runtime file, so there is nothing for shellcheck to follow.
     # shellcheck source=/dev/null
     source "$PROJECT_ROOT/.env"
     # export, not the declare -x that export -p prints: declare inside a function makes a local.
@@ -124,15 +123,15 @@ check_env_file() {
     else
         log_info ".env file exists"
     fi
-    
+
     # Check that the required environment variables are set
     source_env_file
     local missing_vars=()
-    
+
     # Check the base variables
     if [ -z "$DB_DRIVER" ]; then missing_vars+=("DB_DRIVER"); fi
     if [ -z "$STORAGE_TYPE" ]; then missing_vars+=("STORAGE_TYPE"); fi
-    
+
     return 0
 }
 
@@ -140,35 +139,39 @@ check_env_file() {
 install_ollama() {
     # Check whether it is a remote service
     get_ollama_base_url
-    
+
     if [ $IS_REMOTE -eq 1 ]; then
         log_info "Remote Ollama service configured, no local Ollama install needed"
         return 0
     fi
 
     log_info "Local Ollama is not installed, installing..."
-    
+
     OS=$(uname)
+    local rc
     if [ "$OS" = "Darwin" ]; then
         # macOS install
         log_info "macOS detected, installing Ollama with brew..."
         if ! command -v brew &> /dev/null; then
             # Install from the package
             log_info "Homebrew is not installed, downloading directly..."
-            curl -fsSL https://ollama.com/download/Ollama-darwin.zip -o ollama.zip
-            unzip ollama.zip
-            mv ollama /usr/local/bin
-            rm ollama.zip
+            curl -fsSL https://ollama.com/download/Ollama-darwin.zip -o ollama.zip &&
+                unzip ollama.zip &&
+                mv ollama /usr/local/bin &&
+                rm ollama.zip
+            rc=$?
         else
             brew install ollama
+            rc=$?
         fi
     else
         # Linux install
         log_info "Linux detected, using the install script..."
         curl -fsSL https://ollama.com/install.sh | sh
+        rc=$?
     fi
-    
-    if [ $? -eq 0 ]; then
+
+    if [ "$rc" -eq 0 ]; then
         log_success "Local Ollama installed"
         return 0
     else
@@ -203,7 +206,7 @@ start_ollama() {
     # Extract the host and port
     get_ollama_base_url
     log_info "Ollama service address: $OLLAMA_URL"
-    
+
     if [ $IS_REMOTE -eq 1 ]; then
         log_info "Remote Ollama service detected. Using it directly, with no local install or start"
         # Check that the remote service is available
@@ -215,12 +218,11 @@ start_ollama() {
             return 1
         fi
     fi
-    
+
     # The rest handles a local service
     # Check whether Ollama is installed
     if ! command -v ollama &> /dev/null; then
-        install_ollama
-        if [ $? -ne 0 ]; then
+        if ! install_ollama; then
             return 1
         fi
     fi
@@ -232,7 +234,7 @@ start_ollama() {
         log_info "Starting the local Ollama service..."
         # Note: systemctl or launchctl is the official way to manage the service; a background process is only for temporary use
         systemctl restart ollama || (ollama serve > /dev/null 2>&1 < /dev/null &)
-        
+
         # Wait for the service to start
         MAX_RETRIES=30
         COUNT=0
@@ -246,7 +248,7 @@ start_ollama() {
             COUNT=$((COUNT + 1))
         done
         echo "" # newline
-        
+
         if [ $COUNT -eq $MAX_RETRIES ]; then
             log_error "Local Ollama service failed to start"
             return 1
@@ -260,21 +262,21 @@ start_ollama() {
 # Stop the Ollama service
 stop_ollama() {
     log_info "Stopping the Ollama service..."
-    
+
     # Check whether it is a remote service
     get_ollama_base_url
-    
+
     if [ $IS_REMOTE -eq 1 ]; then
         log_info "Remote Ollama service detected, nothing to stop locally"
         return 0
     fi
-    
+
     # Check whether Ollama is installed
     if ! command -v ollama &> /dev/null; then
         log_info "Local Ollama is not installed, nothing to stop"
         return 0
     fi
-    
+
     # Find and kill the Ollama process
     if pgrep -x "ollama" > /dev/null; then
         # Prefer systemctl
@@ -287,19 +289,19 @@ stop_ollama() {
     else
         log_info "Local Ollama service is not running"
     fi
-    
+
     return 0
 }
 
 # Check that Docker is installed
 check_docker() {
     log_info "Checking Docker..."
-    
+
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not installed. Install Docker first"
         return 1
     fi
-    
+
 	# Check for and pick an available Docker Compose command
 	if detect_compose_cmd; then
 		if [ "$DOCKER_COMPOSE_BIN" = "docker" ]; then
@@ -311,13 +313,13 @@ check_docker() {
 		log_error "Docker Compose not found (neither docker compose nor docker-compose). Install one of them."
 		return 1
 	fi
-    
+
     # Check that the Docker service is running
     if ! docker info &> /dev/null; then
         log_error "The Docker service is not running. Start it first"
         return 1
     fi
-    
+
     log_success "Docker check passed"
     return 0
 }
@@ -365,44 +367,40 @@ ensure_sandbox_image() {
 # Start the Docker containers
 start_docker() {
     log_info "Starting the Docker containers..."
-    
+
     # Check Docker
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         return 1
     fi
-    
+
     # Check the .env file
     check_env_file
-    
+
     # Read the .env file
     source_env_file
-    storage_type=${STORAGE_TYPE:-local}
-    
+
     check_platform
-    
+
 	# Run docker-compose from the project root
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
 
     export_frontend_build_args
-    
+
     # Start the core services
     log_info "Starting the core service containers..."
-	# Start through the detected Compose command
+	local up_args
 	if [ "$NO_PULL" = true ]; then
-		# Skip the pull and use local images
 		log_info "Skipping the image pull, using local images..."
-		PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD up --build -d
+		up_args=(up --build -d)
 	else
-		# Pull the latest images
 		log_info "Pulling the latest images..."
-		PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD up --pull always -d
+		up_args=(up --pull always -d)
 	fi
-    if [ $? -ne 0 ]; then
+    if ! PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD "${up_args[@]}"; then
         log_error "Docker containers failed to start"
         return 1
     fi
-    
+
     log_success "All Docker containers started"
 
     # Show container status
@@ -418,25 +416,23 @@ start_docker() {
 # Stop the Docker containers
 stop_docker() {
     log_info "Stopping the Docker containers..."
-    
+
     # Check Docker
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         # Try to stop anyway even if the check fails, just in case
         log_warning "Docker check failed, still trying to stop the containers..."
     fi
-    
+
     # Run docker-compose from the project root
-    cd "$PROJECT_ROOT"
-    
+    cd "$PROJECT_ROOT" || return 1
+
     # Stop all containers
 	# Without --profile '*', down leaves every profiled service running.
-	"$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD --profile '*' down --remove-orphans
-    if [ $? -ne 0 ]; then
+    if ! "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD --profile '*' down --remove-orphans; then
         log_error "Docker containers failed to stop"
         return 1
     fi
-    
+
     log_success "All Docker containers stopped"
     return 0
 }
@@ -444,49 +440,45 @@ stop_docker() {
 # List all running containers
 list_containers() {
     log_info "Listing all running containers..."
-    
+
     # Check Docker
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         return 1
     fi
-    
+
     # Run docker-compose from the project root
-    cd "$PROJECT_ROOT"
-    
+    cd "$PROJECT_ROOT" || return 1
+
     # List all containers
     printf "%b\n" "${BLUE}Running containers:${NC}"
 	"$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD ps --services | sort
-    
+
     return 0
 }
 
 # Pull the latest Docker images
 pull_images() {
     log_info "Pulling the latest Docker images..."
-    
+
     # Check Docker
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         return 1
     fi
-    
+
     # Check the .env file
     check_env_file
-    
+
     # Read the .env file
     source_env_file
-    storage_type=${STORAGE_TYPE:-local}
-    
+
     check_platform
-    
+
     # Run docker-compose from the project root
-    cd "$PROJECT_ROOT"
-    
+    cd "$PROJECT_ROOT" || return 1
+
     # Pull all images
     log_info "Pulling the latest images for all services..."
-	PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD pull
-    if [ $? -ne 0 ]; then
+    if ! PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD pull; then
         log_error "Image pull failed"
         return 1
     fi
@@ -497,40 +489,39 @@ pull_images() {
         log_warning "Sandbox image pull failed (optional, skipping)"
 
     log_success "All images pulled to the latest version"
-    
+
     # Show the pulled images
     log_info "Pulled images:"
     docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}\t{{.Size}}" | head -10
-    
+
     return 0
 }
 
 # Restart the given container
 restart_container() {
     local container_name="$1"
-    
+
     if [ -z "$container_name" ]; then
         log_error "No container name given"
         echo "Available containers:"
         list_containers
         return 1
     fi
-    
+
     log_info "Rebuilding and restarting container: $container_name"
-    
+
     # Check Docker
-    check_docker
-    if [ $? -ne 0 ]; then
+    if ! check_docker; then
         return 1
     fi
-    
+
     check_platform
-    
+
     # Run docker-compose from the project root
-    cd "$PROJECT_ROOT"
+    cd "$PROJECT_ROOT" || return 1
 
     export_frontend_build_args
-    
+
     # Check that the container exists
 	if ! "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD ps --services | grep -q "^$container_name$"; then
         log_error "Container '$container_name' does not exist or is not running"
@@ -538,22 +529,20 @@ restart_container() {
         list_containers
         return 1
     fi
-    
+
     # Build and restart the container
     log_info "Rebuilding container '$container_name'..."
-	PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD build "$container_name"
-    if [ $? -ne 0 ]; then
+    if ! PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD build "$container_name"; then
         log_error "Container '$container_name' build failed"
         return 1
     fi
-    
+
     log_info "Restarting container '$container_name'..."
-	PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD up -d --no-deps "$container_name"
-    if [ $? -ne 0 ]; then
+    if ! PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD up -d --no-deps "$container_name"; then
         log_error "Container '$container_name' restart failed"
         return 1
     fi
-    
+
     log_success "Container '$container_name' rebuilt and restarted"
     return 0
 }
@@ -561,19 +550,19 @@ restart_container() {
 # Check the system environment
 check_environment() {
     log_info "Starting the environment check..."
-    
+
     # Check the operating system
     OS=$(uname)
     log_info "Operating system: $OS"
-    
+
     # Check Docker
     check_docker
-    
+
     # Check the .env file
     check_env_file
-    
+
     get_ollama_base_url
-    
+
     if [ $IS_REMOTE -eq 1 ]; then
         log_info "Remote Ollama service configured"
         if curl -s "$OLLAMA_URL/api/tags" &> /dev/null; then
@@ -595,7 +584,7 @@ check_environment() {
             log_warning "Local Ollama is not installed"
         fi
     fi
-    
+
     # Check the sandbox image
     log_info "Checking the sandbox image..."
     local sandbox_image="ghcr.io/jrmatherly/ai-kb-sandbox:${AIKB_VERSION:-latest}"
@@ -609,7 +598,7 @@ check_environment() {
     # Check disk space
     log_info "Checking disk space..."
     df -h | grep -E "(Filesystem|/$)"
-    
+
     # Check memory
     log_info "Checking memory usage..."
     if [ "$OS" = "Darwin" ]; then
@@ -617,7 +606,7 @@ check_environment() {
     else
         free -h | grep -E "(total|Mem:)"
     fi
-    
+
     # Check the CPU
     log_info "CPU info:"
     if [ "$OS" = "Darwin" ]; then
@@ -627,7 +616,7 @@ check_environment() {
         grep "model name" /proc/cpuinfo | head -1
         echo "CPU cores: $(nproc)"
     fi
-    
+
     # Check container status
     log_info "Checking container status..."
     if docker info &> /dev/null; then
@@ -635,7 +624,7 @@ check_environment() {
     else
         log_warning "Cannot get container status. Docker may not be running"
     fi
-    
+
     log_success "Environment check complete"
     return 0
 }
@@ -722,10 +711,10 @@ if [ "$STOP_SERVICES" = true ]; then
     # Stop the services
     stop_ollama
     OLLAMA_RESULT=$?
-    
+
     stop_docker
     DOCKER_RESULT=$?
-    
+
     # Summary
     echo ""
     log_info "=== Stop results ==="
@@ -734,13 +723,13 @@ if [ "$STOP_SERVICES" = true ]; then
     else
         log_error "✗ Ollama service failed to stop"
     fi
-    
+
     if [ $DOCKER_RESULT -eq 0 ]; then
         log_success "✓ Docker containers stopped"
     else
         log_error "✗ Docker containers failed to stop"
     fi
-    
+
     log_success "Services stopped."
     [ $OLLAMA_RESULT -eq 0 ] && [ $DOCKER_RESULT -eq 0 ] || exit 1
 else
@@ -751,12 +740,12 @@ else
         start_ollama
         OLLAMA_RESULT=$?
     fi
-    
+
     if [ "$START_DOCKER" = true ]; then
         start_docker
         DOCKER_RESULT=$?
     fi
-    
+
     # Summary
     echo ""
     log_info "=== Start results ==="
@@ -767,7 +756,7 @@ else
             log_error "✗ Ollama service failed to start"
         fi
     fi
-    
+
     if [ "$START_DOCKER" = true ]; then
         if [ $DOCKER_RESULT -eq 0 ]; then
             log_success "✓ Docker containers started"
@@ -775,7 +764,7 @@ else
             log_error "✗ Docker containers failed to start"
         fi
     fi
-    
+
     if [ "$START_OLLAMA" = true ] && [ "$START_DOCKER" = true ]; then
         if [ $OLLAMA_RESULT -eq 0 ] && [ $DOCKER_RESULT -eq 0 ]; then
             log_success "All services started. Open them at:"

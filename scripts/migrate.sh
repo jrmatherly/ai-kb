@@ -21,6 +21,7 @@ if [ -f "$PROJECT_ROOT/.env" ]; then
     echo "Loading .env file from $PROJECT_ROOT/.env"
     exported=$(export -p)
     set -a
+    # The file is a per-checkout runtime file, so there is nothing for shellcheck to follow.
     # shellcheck source=/dev/null
     source "$PROJECT_ROOT/.env"
     set +a
