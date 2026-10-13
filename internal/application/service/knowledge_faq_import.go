@@ -1420,12 +1420,12 @@ func (s *knowledgeService) executeFAQImport(ctx context.Context, taskID string, 
 	payload *types.FAQBatchUpsertPayload, tenantID uint64, processedCount int,
 	progress *types.FAQImportProgress,
 ) (err error) {
-	// Keep the knowledge base and embedding model, for cleaning up indexes
 	var kb *types.KnowledgeBase
 	var embeddingModel embedding.Embedder
 	totalEntries := len(payload.Entries) + processedCount
 
-	// Recovery: on any error or panic, roll back every created chunk and its index data
+	// Turn a panic into an error so the task fails and retries; the next attempt (or the final-failure path in
+	// ProcessFAQImport) deletes the chunks this one stored but did not index.
 	defer func() {
 		// Catch panics
 		if r := recover(); r != nil {
@@ -1444,7 +1444,7 @@ func (s *knowledgeService) executeFAQImport(ctx context.Context, taskID string, 
 
 	kb.EnsureDefaults()
 
-	// Get the embedding model, for cleaning up indexes later
+	// Get the embedding model
 	embeddingModel, err = s.modelService.GetEmbeddingModel(ctx, kb.EmbeddingModelID)
 	if err != nil {
 		return fmt.Errorf("failed to get embedding model: %w", err)
@@ -1629,7 +1629,6 @@ func (s *knowledgeService) executeFAQImport(ctx context.Context, taskID string, 
 
 		// Index chunks
 		indexStartTime := time.Now()
-		// If indexing fails, the deferred recovery rolls back the created chunks and index data
 		if err := s.indexFAQChunks(ctx, kb, faqKnowledge, chunks, embeddingModel, true, false); err != nil {
 			return fmt.Errorf("failed to index chunks: %w", err)
 		}
@@ -2440,8 +2439,7 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 	}
 
 	// Idempotency: clean up chunks and index data that may be partially processed
-	chunksDeleted, err := s.chunkRepo.DeleteUnindexedChunks(ctx, payload.TenantID, payload.KnowledgeID)
-	if err != nil {
+	if err := s.deleteUnindexedFAQChunks(ctx, &payload, kb); err != nil {
 		logger.Errorf(ctx, "Failed to delete unindexed chunks: %v", err)
 		// On the last retry, mark the task failed
 		if isLastRetry {
@@ -2455,27 +2453,6 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 		}
 		s.cleanupFAQEntriesFileOnFinalFailure(ctx, payload.EntriesURL, retryCount, maxRetry)
 		return fmt.Errorf("failed to delete unindexed chunks: %w", err)
-	}
-	if len(chunksDeleted) > 0 {
-		logger.Infof(ctx, "Deleted unindexed chunks: %d", len(chunksDeleted))
-
-		// Delete the index data
-		embeddingModel, err := s.modelService.GetEmbeddingModel(ctx, kb.EmbeddingModelID)
-		if err == nil {
-			retrieveEngine, err := retriever.CreateRetrieveEngineForKB(
-				ctx, s.retrieveEngine, s.ownership, tenantInfo.ID, kb.VectorStoreID)
-			if err == nil {
-				chunkIDs := make([]string, 0, len(chunksDeleted))
-				for _, chunk := range chunksDeleted {
-					chunkIDs = append(chunkIDs, chunk.ID)
-				}
-				if err := retrieveEngine.DeleteByChunkIDList(ctx, chunkIDs, embeddingModel.GetDimensions(), types.KnowledgeTypeFAQ); err != nil {
-					logger.Warnf(ctx, "Failed to delete index data for chunks (may not exist): %v", err)
-				} else {
-					logger.Infof(ctx, "Successfully deleted index data for %d chunks", len(chunksDeleted))
-				}
-			}
-		}
 	}
 
 	// If some valid entries were already processed, continue from there
@@ -2503,8 +2480,12 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 	// Run the FAQ import (with the processed offset, for progress)
 	if err := s.executeFAQImport(ctx, payload.TaskID, payload.KBID, faqPayload, payload.TenantID, progress.FailedCount+processedCount, progress); err != nil {
 		logger.Errorf(ctx, "FAQ import task failed: %s, error: %v", payload.TaskID, err)
-		// On the last retry, mark the task failed
+		// On the last retry, mark the task failed. No retry follows to sweep the chunks this attempt stored
+		// before indexing failed, so remove them now or they stay as hidden, unindexed rows.
 		if isLastRetry {
+			if cleanErr := s.deleteUnindexedFAQChunks(ctx, &payload, kb); cleanErr != nil {
+				logger.Errorf(ctx, "Failed to delete unindexed chunks after the final attempt: %v", cleanErr)
+			}
 			if updateErr := s.updateFAQImportProgressStatus(
 				ctx, payload.TaskID, payload.InstanceID, payload.EnqueuedAt,
 				types.FAQImportStatusFailed, 0, originalTotalEntries, len(validEntries),
@@ -2523,6 +2504,46 @@ func (s *knowledgeService) ProcessFAQImport(ctx context.Context, t *asynq.Task) 
 
 	// Finalize (generate the failed entries CSV and so on)
 	return s.finalizeFAQValidation(ctx, &payload, progress, originalTotalEntries)
+}
+
+// deleteUnindexedFAQChunks removes the chunks an earlier attempt stored but never indexed, and any index
+// data written for them.
+func (s *knowledgeService) deleteUnindexedFAQChunks(
+	ctx context.Context, payload *types.FAQImportPayload, kb *types.KnowledgeBase,
+) error {
+	chunksDeleted, err := s.chunkRepo.DeleteUnindexedChunks(ctx, payload.TenantID, payload.KnowledgeID)
+	if err != nil {
+		return err
+	}
+	if len(chunksDeleted) == 0 {
+		return nil
+	}
+	logger.Infof(ctx, "Deleted unindexed chunks: %d", len(chunksDeleted))
+
+	embeddingModel, err := s.modelService.GetEmbeddingModel(ctx, kb.EmbeddingModelID)
+	if err != nil {
+		logger.Warnf(ctx, "Deleted %d unindexed chunks but kept any index data: embedding model: %v",
+			len(chunksDeleted), err)
+		return nil
+	}
+	retrieveEngine, err := retriever.CreateRetrieveEngineForKB(
+		ctx, s.retrieveEngine, s.ownership, payload.TenantID, kb.VectorStoreID)
+	if err != nil {
+		logger.Warnf(ctx, "Deleted %d unindexed chunks but kept any index data: retrieve engine: %v",
+			len(chunksDeleted), err)
+		return nil
+	}
+	chunkIDs := make([]string, 0, len(chunksDeleted))
+	for _, chunk := range chunksDeleted {
+		chunkIDs = append(chunkIDs, chunk.ID)
+	}
+	err = retrieveEngine.DeleteByChunkIDList(ctx, chunkIDs, embeddingModel.GetDimensions(), types.KnowledgeTypeFAQ)
+	if err != nil {
+		logger.Warnf(ctx, "Failed to delete index data for chunks (may not exist): %v", err)
+	} else {
+		logger.Infof(ctx, "Successfully deleted index data for %d chunks", len(chunksDeleted))
+	}
+	return nil
 }
 
 // finalizeFAQValidation finishes a FAQ validation or import task and generates the failed entries CSV, if any
