@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -38,6 +39,7 @@ func TestNormalizeIMLocale(t *testing.T) {
 func TestCreateIMChannelRejectsUnsupportedLocale(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	router.Use(middleware.ErrorHandler())
 	handler := NewIMHandler(nil)
 	router.POST("/agents/:id/im-channels", handler.CreateIMChannel)
 
@@ -55,7 +57,9 @@ func TestCreateIMChannelRejectsUnsupportedLocale(t *testing.T) {
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d; body=%s", recorder.Code, http.StatusBadRequest, recorder.Body.String())
 	}
-	if !strings.Contains(recorder.Body.String(), "locale must be one of") {
-		t.Fatalf("body = %s, want locale validation error", recorder.Body.String())
+	want := `{"success":false,"error":{"code":1000,"message":` +
+		`"locale must be one of: 'en-US', 'ja-JP', 'ko-KR', 'ru-RU', 'zh-CN', 'zh-TW'"}}`
+	if got := recorder.Body.String(); got != want {
+		t.Fatalf("body = %s, want %s", got, want)
 	}
 }
