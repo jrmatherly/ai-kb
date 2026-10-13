@@ -1,0 +1,377 @@
+name: 🐳 Docker Images
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
+    # Only files no image build reads. Not LICENSE or THIRD_PARTY_NOTICES.md
+    # (scripts/copy-licenses.sh bundles them into the app image), and no
+    # `**/*.md` wildcard: docreader/pyproject.toml names README.md as its readme.
+    paths-ignore:
+      - "website-docs/**"
+      - "docs/**/*.md"
+      - ".claude/**"
+      - ".serena/**"
+      - ".upstream-review/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - ".github/dependabot.yml"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "SECURITY.md"
+      - "CLAUDE.md"
+      - "AGENTS.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_PREFIX: ghcr.io/jrmatherly/ai-kb
+
+jobs:
+  build-ui:
+    name: 🐳 ui image
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🏷️ Prepare version info
+        id: version
+        run: |
+          eval "$(./scripts/get_version.sh env)"
+          echo "commit_id=$COMMIT_ID" >> "$GITHUB_OUTPUT"
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: 🔐 Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-ui
+
+      - name: 🐳 Build and push ui image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: frontend/Dockerfile
+          context: ./frontend
+          build-args: |
+            VITE_FRONTEND_COMMIT=${{ steps.version.outputs.commit_id }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=build-ui
+          cache-to: type=gha,scope=build-ui,mode=max
+
+  build-docreader:
+    name: 🐳 docreader image
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 🛑 Free disk space
+        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
+        with:
+          # true would free about 6 GB more but can remove tools the build needs.
+          preinstalled-runtimes: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: 🔐 Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-docreader
+
+      - name: 🐳 Build and push docreader image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: docker/Dockerfile.docreader
+          context: .
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=build-docreader
+          cache-to: type=gha,scope=build-docreader,mode=max
+
+  build-sandbox:
+    name: 🐳 sandbox images
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: 🔐 Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-sandbox
+
+      - name: 🐳 Build and push sandbox image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: docker/Dockerfile.sandbox
+          target: sandbox
+          context: .
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=build-sandbox
+          cache-to: type=gha,scope=build-sandbox,mode=max
+
+      # Cube builds templates straight from the image and gates the build on
+      # GET :49983/health, so it needs the variant with envd baked in.
+      - name: 🏷️ Docker meta (Cube variant)
+        id: meta-cube
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-sandbox
+          flavor: |
+            suffix=-cube,onlatest=true
+
+      - name: 🐳 Build and push sandbox Cube image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: docker/Dockerfile.sandbox
+          target: cube
+          context: .
+          labels: ${{ steps.meta-cube.outputs.labels }}
+          tags: ${{ steps.meta-cube.outputs.tags }}
+          cache-from: type=gha,scope=build-sandbox-cube
+          cache-to: type=gha,scope=build-sandbox-cube,mode=max
+
+      - name: 🏷️ Docker meta (desktop variant)
+        id: meta-desktop
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-sandbox
+          flavor: |
+            suffix=-desktop,onlatest=true
+
+      - name: 🐳 Build and push sandbox desktop image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: docker/Dockerfile.sandbox
+          target: desktop
+          context: .
+          labels: ${{ steps.meta-desktop.outputs.labels }}
+          tags: ${{ steps.meta-desktop.outputs.tags }}
+          cache-from: type=gha,scope=build-sandbox-desktop
+          cache-to: type=gha,scope=build-sandbox-desktop,mode=max
+
+      - name: 🏷️ Docker meta (desktop Cube variant)
+        id: meta-desktop-cube
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-sandbox
+          flavor: |
+            suffix=-desktop-cube,onlatest=true
+
+      - name: 🐳 Build and push sandbox desktop Cube image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: docker/Dockerfile.sandbox
+          target: desktop-cube
+          context: .
+          labels: ${{ steps.meta-desktop-cube.outputs.labels }}
+          tags: ${{ steps.meta-desktop-cube.outputs.tags }}
+          cache-from: type=gha,scope=build-sandbox-desktop-cube
+          cache-to: type=gha,scope=build-sandbox-desktop-cube,mode=max
+
+  build-app:
+    name: 🐳 app image (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runs: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runs: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runs }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: 🔐 Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-app
+
+      - name: 🏷️ Prepare version info
+        id: version
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          eval "$(./scripts/get_version.sh env)"
+          {
+            echo "version=$VERSION"
+            echo "commit_id=$COMMIT_ID"
+            echo "build_time=$BUILD_TIME"
+            echo "go_version=$GO_VERSION"
+          } >> "$GITHUB_OUTPUT"
+          echo "PLATFORM_PAIR=${PLATFORM//\//-}" >> "$GITHUB_ENV"
+          ./scripts/get_version.sh info
+
+      - name: 🐳 Build and push app image by digest
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          platforms: ${{ matrix.platform }}
+          file: docker/Dockerfile.app
+          context: .
+          build-args: |
+            ${{ format('VERSION_ARG={0}', steps.version.outputs.version) }}
+            ${{ format('COMMIT_ID_ARG={0}', steps.version.outputs.commit_id) }}
+            ${{ format('BUILD_TIME_ARG={0}', steps.version.outputs.build_time) }}
+            ${{ format('GO_VERSION_ARG={0}', steps.version.outputs.go_version) }}
+            WITH_ANYDOC=1
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.IMAGE_PREFIX }}-app
+          cache-from: type=gha,scope=build-app-${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,scope=build-app-${{ env.PLATFORM_PAIR }},mode=max
+          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+
+      - name: 🏷️ Export digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - name: ⬆️ Upload digest
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    name: 🚀 app multi-arch manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - build-app
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: ⬇️ Download digests
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: 🔐 Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: 🏷️ Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-app
+
+      - name: 🚀 Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          # shellcheck disable=SC2046
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf "${IMAGE_PREFIX}-app@sha256:%s " *)
+
+      - name: 🔎 Inspect image
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: docker buildx imagetools inspect "${IMAGE_PREFIX}-app:${VERSION}"

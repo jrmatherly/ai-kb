@@ -1,0 +1,281 @@
+name: 🔌 DSH Plugin
+
+# Build, test, and publish the DeepSeek Harness plugin (packages/dsh-ai-kb/) to npm.
+#
+# Jobs:
+#   test      typecheck, unit tests, both halves of the contract, and a
+#             packaging check
+#   e2e       install the package into a throwaway dsh profile and drive real
+#             tool calls through the harness agent loop against a mock backend
+#   drift     manual only: the same e2e check against dsh@latest, allowed to
+#             fail, to notice a harness breaking change early (dsh is in
+#             developer preview)
+#   publish   on a `dsh-ai-kb-v*` tag only, publish to npm with provenance
+#
+# The e2e job pins the harness version so a plugin change is the only thing that
+# can turn it red.
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "dsh-ai-kb-v*"
+    paths:
+      - "packages/dsh-ai-kb/**"
+      - ".github/workflows/dsh-plugin.yml"
+  pull_request:
+    paths:
+      - "packages/dsh-ai-kb/**"
+      - ".github/workflows/dsh-plugin.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  # The harness release this plugin is verified against. Bump it together with
+  # the compatibility note in packages/dsh-ai-kb/README.md.
+  DSH_PINNED_SPEC: "@deepseek-ai/dsh@0.1.0-rc.8"
+  # The contract's Go half lives in this repository's module. app.yml runs it
+  # only for a Go diff, so a change to the fixture or to the plugin alone would
+  # otherwise skip the side that checks AI KB still serves those calls.
+  GO_VERSION: "1.26"
+  # `dsh plugin add` shells out to pnpm to install into the profile, and the
+  # runner image ships only npm and yarn. The profile it writes carries its
+  # settings in pnpm-workspace.yaml, which pnpm 10 is the first to read.
+  PNPM_VERSION: "10"
+
+jobs:
+  test:
+    name: 🧪 Typecheck, test, pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: packages/dsh-ai-kb
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🟢 Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔎 Typecheck
+        run: npm run typecheck
+
+      - name: 🏗️ Build
+        run: npm run build
+
+      - name: 🧪 Unit and contract tests
+        run: node --test "test/*.test.mjs"
+
+      - name: 🐹 Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+
+      - name: 🧪 Contract tests against AI KB's Go types
+        working-directory: ${{ github.workspace }}
+        run: go test ./packages/dsh-ai-kb/contract/...
+
+      - name: 🔎 Pack and verify the published file list
+        run: |
+          set -e
+          npm pack --dry-run --json > pack.json
+          node -e "
+            const files = require('./pack.json')[0].files.map(f => f.path);
+            const required = ['dist/index.js', 'dist/index.d.ts', 'cordis.patch.yml', 'README.md', 'package.json'];
+            const missing = required.filter(name => !files.includes(name));
+            if (missing.length > 0) {
+              console.error('missing from the tarball: ' + missing.join(', '));
+              process.exit(1);
+            }
+            const leaked = files.filter(name => name.startsWith('test/') || name.startsWith('src/'));
+            if (leaked.length > 0) {
+              console.error('unexpected files in the tarball: ' + leaked.join(', '));
+              process.exit(1);
+            }
+            console.log('tarball contents verified: ' + files.length + ' files');
+          "
+          rm pack.json
+
+  e2e:
+    name: 🧪 End-to-end inside dsh (pinned)
+    runs-on: ubuntu-latest
+    # Cold cache: npm install @deepseek-ai/dsh takes ~15 min; keep headroom.
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: packages/dsh-ai-kb
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🟢 Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: 📦 Set up pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      # The e2e script installs @deepseek-ai/dsh on first run (~15 min uncached).
+      # Reuse the install across workflow runs; bump DSH_PINNED_SPEC to refresh.
+      - name: 💾 Cache pinned dsh install
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning] test-only harness install, never packed or published
+        with:
+          path: .cache/dsh-e2e-install
+          key: dsh-e2e-${{ env.DSH_PINNED_SPEC }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build
+        run: npm run build
+
+      - name: 🧪 Run the plugin inside a real dsh profile
+        env:
+          DSH_PACKAGE_SPEC: ${{ env.DSH_PINNED_SPEC }}
+          DSH_INSTALL_DIR: ${{ github.workspace }}/.cache/dsh-e2e-install
+          DSH_E2E_LOG: ${{ runner.temp }}/dsh-ai-kb-e2e.log
+        run: node test/e2e/run-in-dsh.mjs
+
+      - name: ⬆️ Upload the transcript
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dsh-ai-kb-e2e-transcript
+          path: ${{ runner.temp }}/dsh-ai-kb-e2e.log
+          if-no-files-found: ignore
+
+  drift:
+    name: 🧪 End-to-end inside dsh (latest, advisory)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: packages/dsh-ai-kb
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🟢 Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: 📦 Set up pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏷️ Week id for dsh@latest cache
+        id: week
+        run: echo "id=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      # dsh@latest moves; refresh the cache weekly.
+      - name: 💾 Cache latest dsh install
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning] test-only harness install, never packed or published
+        with:
+          path: .cache/dsh-e2e-install-latest
+          key: dsh-e2e-latest-${{ steps.week.outputs.id }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build
+        run: npm run build
+
+      - name: 🧪 Run against the latest harness release
+        env:
+          DSH_PACKAGE_SPEC: "@deepseek-ai/dsh@latest"
+          DSH_INSTALL_DIR: ${{ github.workspace }}/.cache/dsh-e2e-install-latest
+        run: node test/e2e/run-in-dsh.mjs
+
+  publish:
+    name: 🚀 Publish to npm
+    needs: [test, e2e]
+    if: startsWith(github.ref, 'refs/tags/dsh-ai-kb-v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: npm-publish
+      url: https://www.npmjs.com/package/@jrmatherly/dsh-ai-kb
+    defaults:
+      run:
+        working-directory: packages/dsh-ai-kb
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 🟢 Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build
+        run: npm run build
+
+      - name: 🔎 Check the tag names the packaged version
+        run: |
+          set -e
+          version="$(node -p "require('./package.json').version")"
+          expected="dsh-ai-kb-v${version}"
+          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not name the packaged version $version (expected $expected)."
+            echo "::error::Bump packages/dsh-ai-kb/package.json, or retag. Publishing here would ship a version the tag does not name."
+            exit 1
+          fi
+
+      - name: 🔎 Check whether this version is already published
+        id: check_npm
+        run: |
+          set -e
+          name="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+          echo "packaged: $name@$version"
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::$name $version is already on npm; skipping publish. Bump package.json to release."
+          else
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🚀 Publish
+        if: steps.check_npm.outputs.should_publish == 'true'
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
