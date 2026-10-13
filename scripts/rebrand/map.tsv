@@ -38,6 +38,7 @@ helm install weknora\b	helm install ai-kb
 \bglobal\.WeKnora\b	global.AIKB
 \bWeKnora/(?=\d)	AIKB/
 \bWeKnora/(?=[a-z])	ai-kb/
+\bX-WeKnora-	X-AIKB-
 \bWeKnora\.(init|open|on|setContext|openWithQuery|setLocale)\b	AIKB.$1
 \bWeKnora-(Embed-Webhook|Lite-Desktop-App|SkillInstaller|IMA-Connector|RSS|Seafile-Connector|Yuque-Connector)\b	AIKB-$1
 \bweknora-memories\.json\b	ai-kb-memories.json
@@ -46,3 +47,33 @@ helm install weknora\b	helm install ai-kb
 \bTencent WeKnora\b	AI KB
 (?<!Tencent/)(?<!X-)\bWeKnora\b(?!-Chrome-Extension)	AI KB
 chart name `weknora`	chart name `ai-kb`
+# --- lowercase identifiers (decided 2026-10-12: everything). Hyphenated slugs -> ai-kb, single tokens, snake_case,
+# camelCase and dotted keys -> aikb (a Postgres GUC cannot hold a hyphen), database names -> ai_kb.
+# WeKnoraCloud (Tencent's hosted model API) and BrowserSkill release artifacts keep upstream's name.
+\bWeknoraLite\b	AiKbLite
+\bWeknora(?=_)	Aikb
+\b(?:Weknora|WEKNORA)\b(?!_)	AI KB
+tencent-weknora-mcp	ai-kb-mcp
+@wxg-prc-cpg/dsh-weknora	@jrmatherly/dsh-ai-kb
+docs\.weknora\.com	https://ai-kb-docs.matherly.net
+(?m)^name: weknora$	name: ai-kb
+(instance=|--namespace |namespace: )weknora\b	$1ai-kb
+(POSTGRES_DB=|dbName: |-d )weknora\b	$1ai_kb
+\bweknora\.(app|chart|componentLabels|componentSelectorLabels|containerSecurityContext|docreader|frontend|fullname|imagePullSecrets|labels|name|neo|podSecurityContext|postgresql|redis|secretName|selectorLabels|serviceAccountName|serviceName|storageClass)\b	ai-kb.$1
+\bweknora(?=\.(example|local|test)\b)	ai-kb
+\bweknora/(?=sandbox\b)	ai-kb/
+\bweknora(?=-)	ai-kb
+(?<=-)(?<!browser-skill-)weknora\b	ai-kb
+\bweknora(?=[A-Z])(?!Cloud)	aikb
+(?<![A-Za-z0-9_-])weknora(?![A-Za-z0-9_-])(?!\.weixin)(?!\.com\b)	aikb
+(?<=\\n)weknora\b	aikb
+\bweknora(?=_)	aikb
+(?<=_)weknora	aikb
+(?<=_)WEKNORA_	AIKB_
+# Identifiers (Go, TS, storage keys, globals); CJK counts as \w in Perl, so prose rows use ASCII boundaries.
+(?<!Tencent_)WeKnora(?=[A-Z_])(?!Cloud)	AIKB
+(?<=[a-z])WeKnora\b	AIKB
+WEKNORA_	AIKB_
+Weknora(?=[A-Z])	Aikb
+(?<=[a-z])Weknora\b	Aikb
+(?<![A-Za-z0-9_/.-])WeKnora(?![A-Za-z0-9_-])	AI KB
