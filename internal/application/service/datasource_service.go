@@ -1284,7 +1284,7 @@ func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *ty
 //
 // Routing logic:
 //   - Has Content bytes → CreateKnowledgeFromFile (走完整的文档解析 pipeline)
-//   - Has URL only      → CreateKnowledgeFromURL  (让 WeKnora 下载并解析)
+//   - Has URL only      → CreateKnowledgeFromURL  (让 AI KB 下载并解析)
 //
 // Returns (isUpdate, error) — isUpdate is true when an existing item was replaced.
 func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource, item *types.FetchedItem, tagIDs []string) (bool, error) {
@@ -1372,7 +1372,7 @@ func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource
 		return isUpdate, nil
 	}
 
-	// Case 2: only a remote URL — let WeKnora handle downloading and parsing
+	// Case 2: only a remote URL — let AI KB handle downloading and parsing
 	if item.URL != "" {
 		created, err := s.knowledgeService.CreateKnowledgeFromURL(
 			ctx,

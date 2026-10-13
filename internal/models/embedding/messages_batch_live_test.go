@@ -19,15 +19,15 @@ import (
 // Opt-in integration check against an operator-selected Qwen3-VL endpoint.
 // The fixture contains {"texts":[...],"image_paths":[...]} and stays outside
 // the repository. This only calls the embedding model; it never writes an index.
-// WEKNORA_EMBEDDING_TEST_URL is the base URL including /v1.
+// AIKB_EMBEDDING_TEST_URL is the base URL including /v1.
 // Private/IP endpoints need the usual explicit SSRF_WHITELIST setting.
 // A server without batch-invariant computation can fail the strict numerical
 // bounds below even when it accepts the batch and returns correctly ordered vectors.
 func TestLiveQwenMessagesBatchParity(t *testing.T) {
-	base := os.Getenv("WEKNORA_EMBEDDING_TEST_URL")
-	fixture := os.Getenv("WEKNORA_EMBEDDING_TEST_FIXTURE")
+	base := os.Getenv("AIKB_EMBEDDING_TEST_URL")
+	fixture := os.Getenv("AIKB_EMBEDDING_TEST_FIXTURE")
 	if base == "" || fixture == "" {
-		t.Skip("set WEKNORA_EMBEDDING_TEST_URL and WEKNORA_EMBEDDING_TEST_FIXTURE for live parity checks")
+		t.Skip("set AIKB_EMBEDDING_TEST_URL and AIKB_EMBEDDING_TEST_FIXTURE for live parity checks")
 	}
 	var inputs struct {
 		Texts      []string `json:"texts"`
@@ -44,7 +44,7 @@ func TestLiveQwenMessagesBatchParity(t *testing.T) {
 	defer pool.Release()
 	config := Config{
 		Source: types.ModelSourceRemote, Provider: "generic", ModelName: "Qwen/Qwen3-VL-Embedding-8B",
-		BaseURL: base, APIKey: os.Getenv("WEKNORA_EMBEDDING_TEST_API_KEY"), Dimensions: 4096,
+		BaseURL: base, APIKey: os.Getenv("AIKB_EMBEDDING_TEST_API_KEY"), Dimensions: 4096,
 	}
 	batched, err := NewEmbedder(config, NewBatchEmbedder(pool), nil)
 	require.NoError(t, err)

@@ -67,7 +67,7 @@ test("getLocale reads stored language preference", () => {
   }
 });
 
-test("API helpers send WeKnora auth headers", async () => {
+test("API helpers send AI KB auth headers", async () => {
   let capturedRequest;
   global.wx = {
     getStorageSync() {
@@ -187,7 +187,7 @@ test("knowledge page skips API loading until settings are configured", async () 
     await pageDefinitions[0].onShow.call(page);
 
     assert.equal(page.data.needsSettings, true);
-    assert.equal(page.data.knowledgeTitle, "WeKnora 知识库");
+    assert.equal(page.data.knowledgeTitle, "AI KB 知识库");
     assert.deepEqual(calls, []);
   } finally {
     global.Page = originalPage;

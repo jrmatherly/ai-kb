@@ -89,7 +89,7 @@ const maxHeldBytes = 4096
 
 // StreamRewriter rewrites storage references in a stream of content deltas.
 //
-// Each logical stream is identified by a key (WeKnora uses the SSE event id, the
+// Each logical stream is identified by a key (AI KB uses the SSE event id, the
 // same key clients accumulate on). Push returns only the prefix that is safe to
 // emit now, retaining any tail that may be an incomplete reference until the
 // next Push for that key.

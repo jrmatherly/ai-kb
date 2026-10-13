@@ -1,7 +1,7 @@
 import type { ModelConfig } from '@/api/model'
 
-export const WEKNORA_CLOUD_BASE_URL = 'https://weknora.weixin.qq.com'
-export const WEKNORA_CLOUD_PROVIDER = 'weknoracloud'
+export const AIKB_CLOUD_BASE_URL = 'https://weknora.weixin.qq.com'
+export const AIKB_CLOUD_PROVIDER = 'weknoracloud'
 
 export type WkcModelKind = 'chat' | 'embedding' | 'rerank' | 'vllm'
 
@@ -22,7 +22,7 @@ export const WKC_MODEL_NAME_BY_KIND: Record<WkcModelKind, string> = {
 export const WKC_MODEL_KINDS: WkcModelKind[] = ['chat', 'embedding', 'rerank', 'vllm']
 
 export function isWeKnoraCloudModel(model: ModelConfig): boolean {
-  return model.parameters?.provider === WEKNORA_CLOUD_PROVIDER
+  return model.parameters?.provider === AIKB_CLOUD_PROVIDER
 }
 
 /** Returns kinds that already have a WeKnoraCloud model of the matching backend type. */
@@ -47,8 +47,8 @@ export function buildWkcModelConfig(
   const name = WKC_MODEL_NAME_BY_KIND[kind]
   const type = BACKEND_TYPE_BY_KIND[kind]
   const parameters: ModelConfig['parameters'] = {
-    base_url: WEKNORA_CLOUD_BASE_URL,
-    provider: WEKNORA_CLOUD_PROVIDER,
+    base_url: AIKB_CLOUD_BASE_URL,
+    provider: AIKB_CLOUD_PROVIDER,
   }
 
   if (kind === 'embedding' && dimension) {

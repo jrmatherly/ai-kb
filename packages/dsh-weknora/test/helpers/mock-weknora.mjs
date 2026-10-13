@@ -1,5 +1,5 @@
 /**
- * A stand-in WeKnora backend used by the unit tests and by the end-to-end run
+ * A stand-in AI KB backend used by the unit tests and by the end-to-end run
  * inside dsh. It speaks the same routes, envelopes and SSE event types as the
  * real server (see internal/handler/session/qa.go and internal/types/chat.go),
  * so a test failure here means the plugin, not the fixture, drifted.
@@ -10,12 +10,12 @@ import { createServer } from 'node:http'
 const DOCUMENTS = [
   {
     knowledge_id: 'doc-retrieval-pipeline',
-    knowledge_title: 'WeKnora 检索流程.md',
+    knowledge_title: 'AI KB 检索流程.md',
     knowledge_base_id: 'kb-product',
-    // WeKnora stores the generated summary in `description`, not `summary`.
-    description: '讲解 WeKnora 混合检索的召回、阈值与父子分块回溯。',
+    // AI KB stores the generated summary in `description`, not `summary`.
+    description: '讲解 AI KB 混合检索的召回、阈值与父子分块回溯。',
     chunks: [
-      'WeKnora 的混合检索先做向量召回，再做关键词召回，最后交给 rerank 模型统一排序。',
+      'AI KB 的混合检索先做向量召回，再做关键词召回，最后交给 rerank 模型统一排序。',
       '默认的 vector_threshold 是 0.5，keyword_threshold 是 0.3，可以在知识库配置里按库调整。',
       '父子分块开启后，命中子块会回溯父块，把更完整的上下文交给生成模型。',
     ],
@@ -31,11 +31,11 @@ const DOCUMENTS = [
   },
   {
     knowledge_id: 'doc-deployment',
-    knowledge_title: 'WeKnora 部署手册.md',
+    knowledge_title: 'AI KB 部署手册.md',
     knowledge_base_id: 'kb-ops',
     description: '单机与 Kubernetes 部署方式，以及可选的向量库后端。',
     chunks: [
-      'WeKnora 支持 docker compose 单机部署，也提供 Helm chart 用于 Kubernetes。',
+      'AI KB 支持 docker compose 单机部署，也提供 Helm chart 用于 Kubernetes。',
       '向量库可以选择 pgvector、Milvus、Qdrant、Weaviate、OpenSearch 等后端。',
     ],
   },
@@ -63,14 +63,14 @@ DOCUMENTS.push({
 })
 
 const KNOWLEDGE_BASES = [
-  { id: 'kb-product', name: 'Product docs', description: 'WeKnora 产品与检索文档' },
+  { id: 'kb-product', name: 'Product docs', description: 'AI KB 产品与检索文档' },
   { id: 'kb-ops', name: 'Ops runbooks', description: '部署与运维手册' },
 ]
 
 const ARCH_HANDLE = 'resource://AbCdEfGhIjKlMnOpQrStUv'
 const ARCH_PUBLIC = 'https://cdn.example.com/architecture.png'
 
-/** Mirror WeKnora's `resource_urls=public` rewrite of `resource://` handles. */
+/** Mirror AI KB's `resource_urls=public` rewrite of `resource://` handles. */
 function rewriteResources(value, publicMode) {
   if (!publicMode) return value
   return JSON.parse(JSON.stringify(value).replaceAll(ARCH_HANDLE, ARCH_PUBLIC))
@@ -141,7 +141,7 @@ function answerFor(query, results) {
  * @param options.streamError - make the chat routes stream an `error` event.
  * @param options.streamTruncated - end the chat stream mid-answer, with no `complete`.
  * @param options.forbidPublicResourceUrls - reject `resource_urls=public` with the
- *   403 WeKnora returns for a knowledge-base-restricted API key.
+ *   403 AI KB returns for a knowledge-base-restricted API key.
  * @returns the base URL, the recorded requests, and a close function.
  */
 export async function startMockWeknora(options = {}) {
@@ -309,7 +309,7 @@ export async function startMockWeknora(options = {}) {
         }
         // The RAG route retrieves only what the request scopes: a session holds
         // no knowledge base of its own (CreateSessionRequest carries none), so
-        // WeKnora has no default to fall back on and answers from nothing.
+        // AI KB has no default to fall back on and answers from nothing.
         // Retrieving here anyway would hide an unscoped ask from the tests. The
         // agent route does have a server-side default, its KBSelectionMode.
         const scoped = (body.knowledge_base_ids ?? []).length > 0 || (body.knowledge_ids ?? []).length > 0

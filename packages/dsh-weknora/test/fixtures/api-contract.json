@@ -1,8 +1,8 @@
 {
   "$comment": [
-    "The exact WeKnora API calls this plugin makes, and the response fields it reads.",
+    "The exact AI KB API calls this plugin makes, and the response fields it reads.",
     "test/contract.test.mjs asserts the plugin still emits these calls;",
-    "contract/contract_test.go asserts the WeKnora server still accepts them and still",
+    "contract/contract_test.go asserts the AI KB server still accepts them and still",
     "serves those response fields, so a rename on either side fails CI instead of a user's agent."
   ],
   "calls": [

@@ -213,8 +213,8 @@ import { testEmbeddingModel } from '@/api/initialization'
 import {
   WKC_MODEL_KINDS,
   WKC_MODEL_NAME_BY_KIND,
-  WEKNORA_CLOUD_BASE_URL,
-  WEKNORA_CLOUD_PROVIDER,
+  AIKB_CLOUD_BASE_URL,
+  AIKB_CLOUD_PROVIDER,
   buildWkcModelConfig,
   existingWkcKinds,
   type WkcModelKind,
@@ -265,8 +265,8 @@ const resolveEmbeddingDimension = async (): Promise<number> => {
   const result = await testEmbeddingModel({
     source: 'remote',
     modelName: WKC_MODEL_NAME_BY_KIND.embedding,
-    baseUrl: WEKNORA_CLOUD_BASE_URL,
-    provider: WEKNORA_CLOUD_PROVIDER,
+    baseUrl: AIKB_CLOUD_BASE_URL,
+    provider: AIKB_CLOUD_PROVIDER,
   })
   if (!result.available || !result.dimension) {
     throw new Error(result.message || t('settings.weknoraCloud.addModelsEmbeddingFailed'))

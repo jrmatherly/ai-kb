@@ -17,7 +17,7 @@ const (
 	SimpleEngineName = "simple"
 	// AnydocEngineName is the in-process anydoc office-document converter.
 	AnydocEngineName = "anydoc"
-	// WeKnoraCloudEngineName is the hosted WeKnora Cloud document reader.
+	// WeKnoraCloudEngineName is the hosted AI KB Cloud document reader.
 	WeKnoraCloudEngineName = "weknoracloud"
 	// MinerUEngineName is a self-hosted MinerU service.
 	MinerUEngineName = "mineru"
@@ -173,7 +173,7 @@ func (e *weKnoraCloudEngine) CheckAvailable(_ bool, overrides map[string]string)
 	if overrides["weknoracloud_app_id"] != "" {
 		return true, ""
 	}
-	return false, "WeKnora Cloud credentials not configured. Go to Settings → WeKnora Cloud to set up."
+	return false, "AI KB Cloud credentials not configured. Go to Settings → AI KB Cloud to set up."
 }
 
 func (e *weKnoraCloudEngine) NewReader(

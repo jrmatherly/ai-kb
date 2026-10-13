@@ -6,28 +6,28 @@ class WeknoraLite < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/WeKnora-lite_v#{version}_darwin_arm64.tar.gz"
+      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/ai-kb-lite_v#{version}_darwin_arm64.tar.gz"
       sha256 "1da2d4eef99e5cf8aa7a58501baa059e9e20482e1bd65a36a82321a89926c104"
     end
     on_intel do
-      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/WeKnora-lite_v#{version}_darwin_amd64.tar.gz"
+      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/ai-kb-lite_v#{version}_darwin_amd64.tar.gz"
       sha256 "c187e16ac7671a615f012c82ebd89786e11fcf67cccc773eff175e4bdf7c9c06"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/WeKnora-lite_v#{version}_linux_arm64.tar.gz"
+      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/ai-kb-lite_v#{version}_linux_arm64.tar.gz"
       sha256 "bc4e184da005b60d1e8c037a61c58e643ebdc9bf14470fae6cd6227f52f02f1c"
     end
     on_intel do
-      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/WeKnora-lite_v#{version}_linux_amd64.tar.gz"
+      url "https://github.com/jrmatherly/ai-kb/releases/download/v#{version}/ai-kb-lite_v#{version}_linux_amd64.tar.gz"
       sha256 "cb34c50fb5b05555fca16084ffc7710524ff78badb3b1b82474eb89d21545d6e"
     end
   end
 
   def install
-    libexec.install "WeKnora-lite"
+    libexec.install "ai-kb-lite"
     pkgshare.install "web" if File.directory?("web")
     pkgshare.install "config" if File.directory?("config")
     pkgshare.install ".env.lite.example"
@@ -36,8 +36,8 @@ class WeknoraLite < Formula
 
     (bin/"weknora-lite").write <<~SH
       #!/bin/bash
-      CONFIG_DIR="${WEKNORA_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/weknora}"
-      DATA_DIR="${WEKNORA_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/weknora}"
+      CONFIG_DIR="${AIKB_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/weknora}"
+      DATA_DIR="${AIKB_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/weknora}"
 
       mkdir -p "$DATA_DIR/files" "$CONFIG_DIR/config" 2>/dev/null
 
@@ -66,10 +66,10 @@ class WeknoraLite < Formula
 
       export DB_PATH="${DB_PATH:-$DATA_DIR/weknora.db}"
       export LOCAL_STORAGE_BASE_DIR="${LOCAL_STORAGE_BASE_DIR:-$DATA_DIR/files}"
-      export WEKNORA_WEB_DIR="${WEKNORA_WEB_DIR:-#{pkgshare}/web}"
+      export AIKB_WEB_DIR="${AIKB_WEB_DIR:-#{pkgshare}/web}"
 
       cd "$CONFIG_DIR"
-      exec "#{libexec}/WeKnora-lite" "$@"
+      exec "#{libexec}/ai-kb-lite" "$@"
     SH
   end
 

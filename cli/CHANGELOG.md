@@ -5,7 +5,7 @@ repository) will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and the CLI follows [Semantic Versioning](https://semver.org/) independently
-of the WeKnora server / frontend release cadence.
+of the AI KB server / frontend release cadence.
 
 CLI history before v0.3 is recorded in the project root
 [CHANGELOG.md](../CHANGELOG.md) under the release that introduced the CLI.
@@ -38,8 +38,8 @@ CLI history before v0.3 is recorded in the project root
   embedding model is bound); `kb create` hints the fix when it is false.
 - `model create` / `model update` / `model delete` (`update` rotates key /
   base-url in place, preserving the id).
-- Stateless env-credential auth: `WEKNORA_API_KEY` / `WEKNORA_TOKEN` +
-  `WEKNORA_HOST`, a zero-disk path for headless / agent use. `auth logout` now
+- Stateless env-credential auth: `AIKB_API_KEY` / `AIKB_TOKEN` +
+  `AIKB_HOST`, a zero-disk path for headless / agent use. `auth logout` now
   keeps the profile registered (use `profile remove` to delete it entirely).
 - `meta.total_count` on paginated list / search output (full result size before
   client-side `--limit` truncation).
@@ -104,7 +104,7 @@ CLI history before v0.3 is recorded in the project root
 - `cli/README.md` sections: Dry-run preview / Resuming streams.
 
 #### Changed
-- `SetAgentHelp` wrapper in `cli/internal/cmdutil/agenthelp.go` now prepends "Risk:" line in default (non-JSON) help branch when `cmd.Annotations["risk.action"]` is set. WEKNORA_AGENT_HELP=1 JSON path unchanged.
+- `SetAgentHelp` wrapper in `cli/internal/cmdutil/agenthelp.go` now prepends "Risk:" line in default (non-JSON) help branch when `cmd.Annotations["risk.action"]` is set. AIKB_AGENT_HELP=1 JSON path unchanged.
 - 9 destructive commands' `SetAgentHelp` Warnings standardized: line 1 is a verbatim exit-10 / `-y` reminder; line 2 carries per-command destructive context.
 - `cli/cmd/api/api.go` now has `SetAgentHelp` with runtime exit-10 note for `-X DELETE/PUT/PATCH`.
 - `cli/cmd/doc/delete.go` Warnings adds a 3rd line describing `--all` blast radius.
@@ -134,7 +134,7 @@ CLI history before v0.3 is recorded in the project root
   - v0.7: always json; TTY only affects indent (compact in pipe). Enum
     `text | json | ndjson` unchanged.
   - Migration: humans on a TTY pass `--format text` (or set
-    `WEKNORA_FORMAT=text` env) for the prior auto-text behavior.
+    `AIKB_FORMAT=text` env) for the prior auto-text behavior.
 - **`chat` / `session ask` default to NDJSON event-stream (SDK passthrough).**
   - v0.6: TTY rendered a live SSE animation; `--format json` produced a buffered
     object; NDJSON was opt-in.
@@ -205,10 +205,10 @@ CLI history before v0.3 is recorded in the project root
     `weknora session ask`. Quote the query: `weknora chat "hello world"`.
 
 #### Added
-- **`WEKNORA_PROFILE` env var** selects the active profile for a single
+- **`AIKB_PROFILE` env var** selects the active profile for a single
   invocation (equivalent to `--profile <name>` global flag). Overridden by
   explicit `--profile`. Useful for CI scripts that cannot pass global flags.
-- **`WEKNORA_FORMAT` env var** sets the default `--format`. Values:
+- **`AIKB_FORMAT` env var** sets the default `--format`. Values:
   `text | json | ndjson`. Overridden by explicit `--format`. Invalid values
   ignored.
 - **`error.retry_command`** — directly-executable retry argv, distinct from
@@ -266,7 +266,7 @@ CLI history before v0.3 is recorded in the project root
 - **`--no-stream` flag removed** on `chat` / `agent invoke` → use
   **`--format json`** to buffer the full answer before printing. The bare
   text-accumulate use case (TTY but no streaming) is dropped.
-- **`WEKNORA_SDK_DEBUG=1` env removed** → use **`WEKNORA_LOG_LEVEL=debug`**.
+- **`AIKB_SDK_DEBUG=1` env removed** → use **`AIKB_LOG_LEVEL=debug`**.
 - **`kb create --name <name>` flag removed** → use positional
   **`kb create <name>`** (consistent with `agent create <name>`).
 
@@ -284,7 +284,7 @@ CLI history before v0.3 is recorded in the project root
   - `--timeout DURATION` (default 10m; exit 124 on hit)
   - `--interval DURATION` (default 2s; exponential backoff to 15s + jitter)
   - Multi-id concurrent (max 5 parallel); exit code priority 1 > 124 > 0
-- **`--log-level error|warn|info|debug`** persistent flag + `WEKNORA_LOG_LEVEL`
+- **`--log-level error|warn|info|debug`** persistent flag + `AIKB_LOG_LEVEL`
   env. Wires into the SDK's debug logger via the additive
   `client.SetDebugLevel(level string)` function.
 - **`kb create --storage-provider <local|minio|cos|tos|s3|oss|ks3>`** —
@@ -319,7 +319,7 @@ CLI history before v0.3 is recorded in the project root
   no standard partial-response).
 - **`SetAgentHelp` pattern** — `cmdutil.SetAgentHelp(cmd, AgentHelp{...})`
   exposes a stable JSON used_for / required_flags / examples / output
-  shape, activated by `WEKNORA_AGENT_HELP=1` at `--help` time. Applied
+  shape, activated by `AIKB_AGENT_HELP=1` at `--help` time. Applied
   to `chat` and `kb list` as proof-of-pattern; extending to another
   command requires touching only that command's `NewCmd`.
 - **`cli/AGENTS.md`** gains an "Error code reference" section (35 typed
@@ -499,7 +499,7 @@ CLI history before v0.3 is recorded in the project root
   `search_chunks`, `chat`, `agent_list`, `agent_invoke`). Destructive
   verbs are intentionally excluded.
 - `weknora agent list` / `agent view` / `agent invoke` — manage and
-  call WeKnora's server-side Custom Agent resources.
+  call AI KB's server-side Custom Agent resources.
 - `weknora auth token` — print the active credential to `stdout` for
   scripting (raw secret by default; `--json` emits `{token, mode, context}`).
 - `weknora doc upload --from-url` — ingest a remote URL.

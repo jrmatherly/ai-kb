@@ -37,7 +37,7 @@ type ScoreNormalizer interface {
 // and the same scale holds on single-store searches, which skip this step.
 //
 // Cosine similarity is theoretically [-1, 1], but the L2-normalized,
-// positive-component IR embeddings WeKnora targets (sentence-transformers,
+// positive-component IR embeddings AI KB targets (sentence-transformers,
 // BGE, OpenAI text-embedding-3, Cohere, E5, ...) keep it in [0, 1] in
 // practice; clamp01 floors the rare negative value at 0.
 //

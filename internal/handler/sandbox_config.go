@@ -38,7 +38,7 @@ type sandboxTemplateQueryRequest struct {
 
 // QueryTemplates returns the templates visible through an unsaved workspace
 // connection. ensure_standard / ensure_desktop start a build only when that
-// WeKnora template is missing (from the published Hub image); replace_standard
+// AI KB template is missing (from the published Hub image); replace_standard
 // / replace_desktop rebuild it so a new spec (DNS, image) can take effect.
 // Replace requires config_id.
 func (h *SandboxConfigHandler) QueryTemplates(c *gin.Context) {

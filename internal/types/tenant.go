@@ -643,7 +643,7 @@ type TenantSandboxConfig struct {
 	DefaultTimeoutSec int `json:"default_timeout_sec,omitempty"`
 
 	// TerminalIdleDisconnectSec is how long an interactive terminal or
-	// desktop may go without user activity before WeKnora closes the
+	// desktop may go without user activity before AI KB closes the
 	// connection so the sandbox can pause on its provider TTL. Terminal
 	// counts keystrokes and PTY output; desktop counts mouse and keyboard.
 	// 0 uses the built-in default (15 minutes). Not an identity field.
@@ -735,7 +735,7 @@ type E2BSandboxConfig struct {
 	// "<port>-<sandboxID>.<sandbox_domain>" through public DNS and TLS, so it
 	// needs no value here. Self-hosted E2B-compatible control planes usually
 	// serve every sandbox from one gateway address and expect the sandbox
-	// authority in the Host header; setting this makes WeKnora dial the
+	// authority in the Host header; setting this makes AI KB dial the
 	// gateway directly instead of requiring wildcard DNS and a certificate
 	// for the sandbox domain. An "http://" gateway also downgrades the
 	// data-plane scheme, which the E2B SDK otherwise pins to https.
@@ -754,7 +754,7 @@ type E2BSandboxConfig struct {
 //
 // The daemon endpoint is deliberately the only connection field, and TLS
 // material is referenced by path rather than stored here. Client certificates
-// are deployment infrastructure mounted onto the WeKnora host; keeping them
+// are deployment infrastructure mounted onto the AI KB host; keeping them
 // out of the database keeps them out of backups, exports and API responses.
 type DockerSandboxConfig struct {
 	Image string `json:"image,omitempty"`
@@ -763,7 +763,7 @@ type DockerSandboxConfig struct {
 	// unix socket.
 	Host string `json:"host,omitempty"`
 
-	// TLSCertPath is a directory on the WeKnora host containing ca.pem,
+	// TLSCertPath is a directory on the AI KB host containing ca.pem,
 	// cert.pem and key.pem. Required when Host is a TCP endpoint.
 	TLSCertPath string `json:"tls_cert_path,omitempty"`
 

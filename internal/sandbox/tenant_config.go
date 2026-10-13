@@ -310,7 +310,7 @@ func overrideSeconds(dst *time.Duration, seconds int) {
 // that reaches this function without going through that merge cannot open
 // the sandbox URL.
 //
-// A nil stored policy is not "unset": it resolves to WeKnora's default of
+// A nil stored policy is not "unset": it resolves to AI KB's default of
 // egress allowed and inbound closed, so every downstream consumer sees one
 // fully specified policy and nobody re-derives the default.
 func resolveNetworkPolicy(stored *types.SandboxNetworkPolicy) RemoteNetworkPolicy {

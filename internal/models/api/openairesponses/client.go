@@ -31,7 +31,7 @@ func New(cfg Config) *Client {
 // GetModelName returns the wire model name.
 func (c *Client) GetModelName() string { return c.cfg.Endpoint.Model }
 
-// GetModelID returns WeKnora's model identifier.
+// GetModelID returns AI KB's model identifier.
 func (c *Client) GetModelID() string { return c.cfg.Endpoint.ModelID }
 
 // Settings exposes the resolved settings (diagnostics, tests).

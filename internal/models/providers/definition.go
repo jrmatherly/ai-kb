@@ -24,7 +24,7 @@ const (
 	AuthGoogleAPIKey AuthStyle = "x-goog-api-key"
 	// AuthNone sends nothing (local deployments).
 	AuthNone AuthStyle = "none"
-	// AuthSigned delegates to the vendor's Signer hook (WeKnora Cloud).
+	// AuthSigned delegates to the vendor's Signer hook (AI KB Cloud).
 	AuthSigned AuthStyle = "signed"
 )
 

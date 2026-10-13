@@ -5,7 +5,7 @@
 // treats the authoritative session→sandbox binding as external state that
 // lives in SessionSandboxBindingStore (Redis in production, memory in tests
 // and single-process deployments). This makes the manager provider-neutral
-// (Cube , E2B) and multi-instance safe: two WeKnora processes
+// (Cube , E2B) and multi-instance safe: two AI KB processes
 // concurrently servicing the same session never allocate duplicate sandboxes,
 // and a restart never loses the session's remote resource.
 //
@@ -47,14 +47,14 @@ const SessionInputRoot = "/workspace/input"
 // do not depend on the template user being able to mkdir under /workspace.
 const SessionOutputRoot = "/workspace/output"
 
-// skillOutputEnvVar matches the skills manager's WEKNORA_SKILL_OUTPUT_DIR.
-const skillOutputEnvVar = "WEKNORA_SKILL_OUTPUT_DIR"
+// skillOutputEnvVar matches the skills manager's AIKB_SKILL_OUTPUT_DIR.
+const skillOutputEnvVar = "AIKB_SKILL_OUTPUT_DIR"
 
-// sessionInputEnvVar matches the skills manager's WEKNORA_SESSION_INPUT_DIR.
+// sessionInputEnvVar matches the skills manager's AIKB_SESSION_INPUT_DIR.
 // Both names are injected into the sandbox environment itself, not only into
 // the skill-script Execute call, so an agent exploring with shell_exec reads
 // the same paths the skills framework uses.
-const sessionInputEnvVar = "WEKNORA_SESSION_INPUT_DIR"
+const sessionInputEnvVar = "AIKB_SESSION_INPUT_DIR"
 
 // SessionWorkspaceRoot is the writable workspace root inside remote sandboxes.
 // shell_exec work_dir must stay underneath this path.
@@ -388,7 +388,7 @@ func withWorkspaceEnvDefaults(env map[string]string) map[string]string {
 }
 
 // executionOutputDir resolves the artifact directory for this Execute call.
-// It prefers WEKNORA_SKILL_OUTPUT_DIR from cfg.Env when the path stays under
+// It prefers AIKB_SKILL_OUTPUT_DIR from cfg.Env when the path stays under
 // SessionWorkspaceRoot; otherwise it falls back to SessionOutputRoot.
 func executionOutputDir(cfg *ExecuteConfig) string {
 	if cfg != nil && cfg.Env != nil {
@@ -760,7 +760,7 @@ func (m *SessionBoundManager) ExecShellCommand(
 
 // ExecShellCommandWithOptions runs a shell command with install-only options.
 // Fallback is explicitly refused so even privileged installer calls never
-// escape onto the WeKnora host machine.
+// escape onto the AI KB host machine.
 func (m *SessionBoundManager) ExecShellCommandWithOptions(
 	ctx context.Context,
 	sessionID string,
@@ -915,7 +915,7 @@ func (m *SessionBoundManager) SessionInstallShellExecutor() SessionInstallShellE
 
 // SessionWorkspaceLayout reports the /workspace contract every remote
 // session shares. sessionID is ignored: remote layouts are not per-session.
-// A validated WEKNORA_SKILL_OUTPUT_DIR overlays OutputDir and the matching
+// A validated AIKB_SKILL_OUTPUT_DIR overlays OutputDir and the matching
 // ReadRoots entry; RemoteWorkspaceLayout itself stays the constant baseline.
 func (m *SessionBoundManager) SessionWorkspaceLayout(context.Context, string) (WorkspaceLayout, error) {
 	return withValidatedSkillOutputDir(RemoteWorkspaceLayout()), nil
@@ -1100,7 +1100,7 @@ var _ SessionDesktopProvider = (*SessionBoundManager)(nil)
 
 // Cleanup marks the manager closed. Session sandboxes are not force-deleted
 // here: their lifecycle is authoritative in the binding store and would
-// leak to any other WeKnora replica if this replica reaped them on shutdown.
+// leak to any other AI KB replica if this replica reaped them on shutdown.
 // Providers reclaim idle sandboxes via their own timeout/pause policies.
 func (m *SessionBoundManager) Cleanup(_ context.Context) error {
 	if m == nil {
@@ -1671,7 +1671,7 @@ var (
 )
 
 // PermissiveSessionExistenceChecker accepts every session. It is safe in
-// deployments where WeKnora's own DestroySession is the only session-delete
+// deployments where AI KB's own DestroySession is the only session-delete
 // path (single-process memory binding store); the Redis-authoritative
 // deployment must inject a real checker consulting the session repository.
 type PermissiveSessionExistenceChecker struct{}

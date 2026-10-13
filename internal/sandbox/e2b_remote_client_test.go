@@ -1126,7 +1126,7 @@ func TestE2BSnapshotCreateDropsEnvVarsAfterProviderRejectsThem(t *testing.T) {
 	handle, err := client.Create(context.Background(), RemoteCreateRequest{
 		TemplateID:   "snap-1",
 		FromSnapshot: true,
-		EnvVars:      map[string]string{"WEKNORA_SKILL_OUTPUT_DIR": "/workspace/output"},
+		EnvVars:      map[string]string{"AIKB_SKILL_OUTPUT_DIR": "/workspace/output"},
 		Timeout: RemoteTimeoutPolicy{
 			Mode:       RemoteTimeoutExplicit,
 			Value:      time.Minute,
@@ -1154,7 +1154,7 @@ func TestE2BAliyunSnapshotCreateOmitsEnvVarsUpFront(t *testing.T) {
 	_, err := client.Create(context.Background(), RemoteCreateRequest{
 		TemplateID:   "snap-1",
 		FromSnapshot: true,
-		EnvVars:      map[string]string{"WEKNORA_SKILL_OUTPUT_DIR": "/workspace/output", "HF_TOKEN": "secret"},
+		EnvVars:      map[string]string{"AIKB_SKILL_OUTPUT_DIR": "/workspace/output", "HF_TOKEN": "secret"},
 		Timeout: RemoteTimeoutPolicy{
 			Mode:       RemoteTimeoutExplicit,
 			Value:      time.Minute,

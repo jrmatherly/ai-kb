@@ -12,7 +12,7 @@ import (
 // clients (Claude Desktop, Cursor, VS Code Copilot, ...) can connect to over
 // Streamable HTTP. A workspace may publish any number of endpoints; each one
 // carries its own bearer token, knowledge-base scope and tool allowlist, so a
-// single WeKnora deployment can serve several narrowly scoped MCP servers
+// single AI KB deployment can serve several narrowly scoped MCP servers
 // without running a separate process per workspace.
 //
 // The endpoint is the unit of trust: everything a connected client may do is

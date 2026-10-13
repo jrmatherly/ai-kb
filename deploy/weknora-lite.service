@@ -1,5 +1,5 @@
 [Unit]
-Description=WeKnora Lite - Knowledge Base Management System
+Description=AI KB Lite - Knowledge Base Management System
 After=network.target
 
 [Service]
@@ -7,8 +7,8 @@ Type=simple
 User=weknora
 Group=weknora
 WorkingDirectory=/opt/weknora
-EnvironmentFile=/opt/weknora/.env.lite
-ExecStart=/opt/weknora/WeKnora-lite
+EnvironmentFile=/opt/ai-kb/.env.lite
+ExecStart=/opt/ai-kb/ai-kb-lite
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536
@@ -17,7 +17,7 @@ LimitNOFILE=65536
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/weknora/data
+ReadWritePaths=/opt/ai-kb/data
 
 [Install]
 WantedBy=multi-user.target

@@ -36,7 +36,7 @@ type PaddleOCRVLReader struct {
 // NewPaddleOCRVLReader creates a reader from ParserEngineOverrides.
 func NewPaddleOCRVLReader(overrides map[string]string) *PaddleOCRVLReader {
 	return &PaddleOCRVLReader{
-		timeout:  requestTimeoutFromEnv("WEKNORA_PADDLEOCR_VL_TIMEOUT", defaultPaddleOCRVLTimeout),
+		timeout:  requestTimeoutFromEnv("AIKB_PADDLEOCR_VL_TIMEOUT", defaultPaddleOCRVLTimeout),
 		endpoint: strings.TrimRight(overrides["paddleocr_vl_endpoint"], "/"),
 		useSeal:  parseBoolOr(overrides["paddleocr_vl_use_seal_recognition"], true),
 		useChart: parseBoolOr(overrides["paddleocr_vl_use_chart_recognition"], false),

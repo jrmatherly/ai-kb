@@ -1,6 +1,6 @@
 # migrations/mysql —— 未接线的 MySQL 建表脚本
 
-⚠️ **这里的 SQL 不会被任何代码或脚本执行。MySQL 目前不是 WeKnora 的主库选项。**
+⚠️ **这里的 SQL 不会被任何代码或脚本执行。MySQL 目前不是 AI KB 的主库选项。**
 
 ## 现状
 
@@ -24,4 +24,4 @@
 3. 处理 Postgres 专有用法（`JSONB`、数组类型、`ON CONFLICT`、ParadeDB 的 BM25 索引等）在 MySQL 侧的等价实现或降级方案；
 4. 明确向量检索的落地方式——MySQL 本身不提供向量索引，需要依赖外部向量库（`RETRIEVE_DRIVER`）。
 
-相关讨论见 [#1418](https://github.com/Tencent/WeKnora/issues/1418)。在上述工作完成之前，请勿在文档或配置注释中声称支持 `DB_DRIVER=mysql`。
+相关讨论见 [#1418](https://github.com/Tencent/ai-kb/issues/1418)。在上述工作完成之前，请勿在文档或配置注释中声称支持 `DB_DRIVER=mysql`。

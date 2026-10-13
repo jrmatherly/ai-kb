@@ -8,7 +8,7 @@
     "thing was noticed is. reject_substrings are the recurring failure modes:",
     "storing a one-off question, storing the assistant's job, storing a secret.",
     "",
-    "Run with: WEKNORA_MEMORY_EVAL_MODEL=<model id> go test ./internal/... -run Eval"
+    "Run with: AIKB_MEMORY_EVAL_MODEL=<model id> go test ./internal/... -run Eval"
   ],
   "cases": [
     {

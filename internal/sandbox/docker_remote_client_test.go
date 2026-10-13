@@ -1164,7 +1164,7 @@ func TestDockerClientCapabilities(t *testing.T) {
 	require.True(t, caps.SupportsListSandboxes)
 	require.True(t, caps.SupportsFilesystemEnumeration)
 	require.False(t, caps.SupportsTimeoutRefresh,
-		"the daemon has no TTL to refresh; reclamation is WeKnora's own sweep")
+		"the daemon has no TTL to refresh; reclamation is AI KB's own sweep")
 	require.True(t, caps.SupportsSnapshots,
 		"docker commit is the skill-image snapshot; without this flag install is refused")
 	require.True(t, caps.SupportsTerminals,

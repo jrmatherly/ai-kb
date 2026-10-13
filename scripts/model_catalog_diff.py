@@ -29,7 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "internal/models/catalog/data/models.generated.json"
 
-# WeKnora vendor id -> models.dev provider id.
+# AI KB vendor id -> models.dev provider id.
 PROVIDER_MAP = json.loads((ROOT / "scripts/model-catalog/sources.json").read_text())["models_dev"]["provider_map"]
 
 
@@ -48,7 +48,7 @@ def load_api(path):
         return json.loads(Path(path).read_text())
     request = urllib.request.Request(
         MODELS_DEV_URL,
-        headers={"User-Agent": "WeKnora-model-catalog-diff/1.0 (+https://github.com/jrmatherly/ai-kb)"},
+        headers={"User-Agent": "ai-kb-model-catalog-diff/1.0 (+https://github.com/jrmatherly/ai-kb)"},
     )
     try:
         with urllib.request.urlopen(request, timeout=60) as resp:
@@ -103,7 +103,7 @@ def compare(vendor, upstream, ours):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--api", help="path to a downloaded models.dev api.json")
-    parser.add_argument("--vendor", help="limit to one WeKnora vendor id")
+    parser.add_argument("--vendor", help="limit to one AI KB vendor id")
     parser.add_argument(
         "--exit-code", action="store_true",
         help="exit 1 when there are findings (for a scheduled job); default always exits 0",

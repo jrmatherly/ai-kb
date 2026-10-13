@@ -123,7 +123,7 @@ type RemoteCreateRequest struct {
 	Timeout RemoteTimeoutPolicy
 
 	// Metadata is a small key/value bag the provider stores alongside the
-	// sandbox. WeKnora uses this to recover ownership of stray sandboxes
+	// sandbox. AI KB uses this to recover ownership of stray sandboxes
 	// after a restart. Adapters that cannot persist metadata return
 	// RemoteErrorKindUnsupported when non-empty metadata is supplied.
 	Metadata map[string]string
@@ -353,7 +353,7 @@ type RemoteExecRequest struct {
 	Timeout time.Duration
 }
 
-// DefaultSandboxExecUser is the account WeKnora runs sandboxed scripts as.
+// DefaultSandboxExecUser is the account AI KB runs sandboxed scripts as.
 // It is root: every chat session gets its own sandbox, so the in-container
 // account is not a tenant boundary and root is the least surprising default
 // for an agent that installs packages and writes wherever it needs. The
@@ -386,7 +386,7 @@ type RemoteDirEntryType string
 const (
 	RemoteEntryFile RemoteDirEntryType = "file"
 	RemoteEntryDir  RemoteDirEntryType = "dir"
-	// RemoteEntryOther covers symlinks, sockets, devices, etc. WeKnora
+	// RemoteEntryOther covers symlinks, sockets, devices, etc. AI KB
 	// artifact code treats these as opaque and skips them.
 	RemoteEntryOther RemoteDirEntryType = "other"
 )
@@ -408,11 +408,11 @@ type RemoteStatEntry struct {
 // SupportsReconnect is required for persistent session lifecycle management.
 type RemoteSandboxCapabilities struct {
 	// SupportsReconnect is true when Connect can recover an operable handle
-	// from a provider-scoped sandbox ID after a WeKnora process restart.
+	// from a provider-scoped sandbox ID after a AI KB process restart.
 	SupportsReconnect bool
 
 	// SupportsMetadata is true when Create+List preserve the Metadata bag,
-	// enabling orphan-sandbox recovery after a WeKnora restart.
+	// enabling orphan-sandbox recovery after a AI KB restart.
 	SupportsMetadata bool
 
 	// SupportsListSandboxes is true when List enumerates existing sandboxes

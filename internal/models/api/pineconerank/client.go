@@ -52,7 +52,7 @@ type request struct {
 }
 
 // BuildRequestBody constructs the native Pinecone body. Asking for every
-// candidate and suppressing echoed documents preserves WeKnora's index mapping
+// candidate and suppressing echoed documents preserves AI KB's index mapping
 // while avoiding unnecessary response bytes.
 func (c *Client) BuildRequestBody(query string, documents []string) (map[string]any, error) {
 	docs := make([]document, len(documents))

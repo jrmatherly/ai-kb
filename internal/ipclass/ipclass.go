@@ -1,6 +1,6 @@
 // Package ipclass categorises IP addresses for outbound-request policy.
 //
-// The classification lives here, separate from the policy, because WeKnora
+// The classification lives here, separate from the policy, because AI KB
 // guards two kinds of outbound target whose threat models differ:
 //
 //   - internal/utils guards URLs an end user submits, so it refuses every

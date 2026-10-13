@@ -287,7 +287,7 @@ func TestCubeRemoteClientCreateForwardsNetworkPolicy(t *testing.T) {
 	require.Equal(t, false, second["action"].(map[string]any)["allow"])
 }
 
-// WeKnora's default deliberately differs from Cube's: an unspecified policy
+// AI KB's default deliberately differs from Cube's: an unspecified policy
 // closes inbound access, because "anyone who knows the sandbox ID" used to be
 // the only barrier in front of the sandbox URL. Egress stays open so skill
 // installs keep working.
@@ -322,7 +322,7 @@ func TestCubeRemoteHandleExposesTrafficAccessToken(t *testing.T) {
 }
 
 // The provider issues the traffic token once, at create time. Everything that
-// re-attaches later — auto-resume, a WeKnora restart, an artifact download —
+// re-attaches later — auto-resume, a AI KB restart, an artifact download —
 // has to put it back or every data-plane call answers 403.
 func TestCubeRemoteClientConnectRestoresTrafficAccessToken(t *testing.T) {
 	mock := newCubeMockServer(t)

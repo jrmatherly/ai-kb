@@ -1,13 +1,13 @@
-# WeKnora Helm Chart
+# AI KB Helm Chart
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/weknora)](https://artifacthub.io/packages/helm/weknora/weknora)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Helm chart for deploying [WeKnora](https://github.com/jrmatherly/ai-kb) - an AI-powered Knowledge RAG Platform.
+Helm chart for deploying [AI KB](https://github.com/jrmatherly/ai-kb) - an AI-powered Knowledge RAG Platform.
 
 ## Overview
 
-WeKnora is an intelligent knowledge base platform that combines:
+AI KB is an intelligent knowledge base platform that combines:
 - Document parsing and understanding
 - Vector search with BM25 hybrid retrieval
 - LLM integration for conversational AI
@@ -24,7 +24,7 @@ WeKnora is an intelligent knowledge base platform that combines:
 
 ```bash
 # Add required secrets
-helm install weknora ./helm \
+helm install ai-kb ./helm \
   --namespace weknora \
   --create-namespace \
   --set secrets.dbPassword=<your-db-password> \
@@ -61,7 +61,7 @@ helm install weknora ./helm \
 ### Basic Installation
 
 ```bash
-helm install weknora ./helm \
+helm install ai-kb ./helm \
   --namespace weknora \
   --create-namespace \
   --set secrets.dbPassword=secure-password \
@@ -72,7 +72,7 @@ helm install weknora ./helm \
 ### With Ingress
 
 ```bash
-helm install weknora ./helm \
+helm install ai-kb ./helm \
   --namespace weknora \
   --create-namespace \
   --set ingress.enabled=true \
@@ -87,7 +87,7 @@ helm install weknora ./helm \
 ### With External LLM (Ollama)
 
 ```bash
-helm install weknora ./helm \
+helm install ai-kb ./helm \
   --namespace weknora \
   --create-namespace \
   --set app.extraEnv[0].name=OLLAMA_BASE_URL \
@@ -138,7 +138,7 @@ secrets:
 ```
 
 ```bash
-helm install weknora ./helm \
+helm install ai-kb ./helm \
   --namespace weknora \
   --create-namespace \
   -f values-production.yaml
@@ -173,7 +173,7 @@ dataFiles:
 ```
 
 ```bash
-helm install weknora ./helm \
+helm install ai-kb ./helm \
   --namespace weknora \
   --create-namespace \
   -f values-production.yaml \
@@ -255,7 +255,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `app.strategy.type` | App update strategy: `RollingUpdate` or `Recreate` | `RollingUpdate` |
 | `app.strategy.rollingUpdate.maxSurge` | Extra Pods during rolling updates (integer or percentage); ignored with `Recreate` | `1` |
 | `app.strategy.rollingUpdate.maxUnavailable` | Unavailable Pods during rolling updates (integer or percentage); ignored with `Recreate` | `0` |
-| `app.image.repository` | Image repository | `wechatopenai/weknora-app` |
+| `app.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-app` |
 | `app.image.tag` | Image tag | `""` (uses appVersion) |
 | `app.resources` | Resource limits | See values.yaml |
 | `app.env` | Environment variables | See values.yaml |
@@ -267,7 +267,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 |-----------|-------------|---------|
 | `frontend.enabled` | Enable frontend | `true` |
 | `frontend.replicaCount` | Number of replicas | `1` |
-| `frontend.image.repository` | Image repository | `wechatopenai/weknora-ui` |
+| `frontend.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-ui` |
 | `frontend.image.tag` | Image tag | `""` (uses appVersion) |
 
 ### DocReader
@@ -276,7 +276,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 |-----------|-------------|---------|
 | `docreader.enabled` | Enable DocReader | `true` |
 | `docreader.replicaCount` | Number of replicas | `1` |
-| `docreader.image.repository` | Image repository | `wechatopenai/weknora-docreader` |
+| `docreader.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-docreader` |
 | `docreader.image.tag` | Image tag | `""` (uses appVersion) |
 
 ### PostgreSQL (ParadeDB)
@@ -338,7 +338,7 @@ These map to docker-compose profiles:
 
 1. **Helm --set flags** (for testing)
    ```bash
-   helm install weknora ./helm --set secrets.dbPassword=xxx
+   helm install ai-kb ./helm --set secrets.dbPassword=xxx
    ```
 
 2. **External Secrets Operator** (recommended for production)
@@ -374,38 +374,38 @@ helm upgrade weknora ./helm \
 helm uninstall weknora --namespace weknora
 
 # Optional: Remove PVCs
-kubectl delete pvc -n weknora -l app.kubernetes.io/instance=weknora
+kubectl delete pvc -n ai-kb -l app.kubernetes.io/instance=weknora
 ```
 
 ## Troubleshooting
 
 ### Check Pod Status
 ```bash
-kubectl get pods -n weknora
+kubectl get pods -n ai-kb
 ```
 
 ### View Logs
 ```bash
 # Backend logs
-kubectl logs -n weknora -l app.kubernetes.io/component=app -f
+kubectl logs -n ai-kb -l app.kubernetes.io/component=app -f
 
 # Frontend logs
-kubectl logs -n weknora -l app.kubernetes.io/component=frontend -f
+kubectl logs -n ai-kb -l app.kubernetes.io/component=frontend -f
 ```
 
 ### Common Issues
 
 **Pod stuck in Pending**
-- Check if PVCs are bound: `kubectl get pvc -n weknora`
+- Check if PVCs are bound: `kubectl get pvc -n ai-kb`
 - Verify storage class exists: `kubectl get sc`
 
 **Connection refused errors**
 - Wait for all pods to be Ready
-- Check service endpoints: `kubectl get endpoints -n weknora`
+- Check service endpoints: `kubectl get endpoints -n ai-kb`
 
 **Database connection errors**
 - Verify secrets are correct
-- Check PostgreSQL logs: `kubectl logs -n weknora -l app.kubernetes.io/component=database`
+- Check PostgreSQL logs: `kubectl logs -n ai-kb -l app.kubernetes.io/component=database`
 
 ## Contributing
 

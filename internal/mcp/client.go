@@ -385,7 +385,7 @@ func (c *mcpGoClient) checkErrorAndDisconnectIfNeeded(err error) {
 	}
 }
 
-// oauthCall runs one MCP operation with WeKnora-owned token lifecycle checks.
+// oauthCall runs one MCP operation with AI KB-owned token lifecycle checks.
 // A resource-server 401 forces exactly one refresh and one retry. Other errors
 // are never retried, which avoids duplicating tool side effects after ambiguous
 // network failures.
@@ -460,7 +460,7 @@ func (c *mcpGoClient) Initialize(ctx context.Context) (*InitializeResult, error)
 			ProtocolVersion: mcp.LATEST_PROTOCOL_VERSION,
 			Capabilities:    mcp.ClientCapabilities{},
 			ClientInfo: mcp.Implementation{
-				Name:    "WeKnora",
+				Name:    "AI KB",
 				Version: "1.0.0",
 			},
 		},
@@ -657,7 +657,7 @@ func (c *mcpGoClient) listRawTools(ctx context.Context) ([]*types.MCPTool, error
 			// metadata/header helpers without losing unknown JSON Schema fields.
 			params.Meta = &mcp.Meta{}
 			params.Meta.SetProtocolVersion(version)
-			params.Meta.SetClientInfo(mcp.Implementation{Name: "WeKnora", Version: "1.0.0"})
+			params.Meta.SetClientInfo(mcp.Implementation{Name: "AI KB", Version: "1.0.0"})
 			params.Meta.SetClientCapabilities(mcp.ClientCapabilities{})
 			headers = make(http.Header)
 			for name, value := range mcp.StandardHeaders(version, mcp.MethodToolsList, nil) {

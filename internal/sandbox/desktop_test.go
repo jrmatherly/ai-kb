@@ -97,7 +97,7 @@ func TestStartDesktopScriptFastPathRequiresVNCPort(t *testing.T) {
 }
 
 func TestStartDesktopScriptClosesLockFDInEveryDaemon(t *testing.T) {
-	// Reproduced against wechatopenai/weknora-sandbox:main-desktop: Xvfb,
+	// Reproduced against ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop: Xvfb,
 	// xfce4-session, dbus-launch, x11vnc and websockify all inherited fd 9
 	// and kept holding the flock after the script exited. Killing x11vnc and
 	// websockify then left Xvfb/XFCE holding it, so the next run blocked on
@@ -172,7 +172,7 @@ func TestDesktopEnsureCmdDetachesDaemonStdio(t *testing.T) {
 	require.Contains(t, code, ">>\"$log\" 2>&1")
 	require.Contains(t, code, "tail -c")
 	require.Contains(t, code, `printf 'READY %s\n' "$secret"`)
-	require.Contains(t, code, "WEKNORA_DESKTOP_UNSUPPORTED")
+	require.Contains(t, code, "AIKB_DESKTOP_UNSUPPORTED")
 	require.Contains(t, code, "exit 2")
 	require.NotContains(t, code, "pkill")
 }

@@ -47,7 +47,7 @@ func TestFinishHostSandboxKeepsChatWhenSkillTreeCannotOpen(t *testing.T) {
 	parts := buildHostSandbox(hostSandboxDeps{
 		newBackend: func() (localsandbox.Backend, error) { return stubBackend{}, nil },
 		homeDir:    "/Users/dev",
-		appDataDir: "/Users/dev/App Support/WeKnora",
+		appDataDir: "/Users/dev/App Support/AI KB",
 	})
 	require.NotNil(t, parts)
 	require.NotNil(t, parts.manager)
@@ -73,7 +73,7 @@ func TestHostSandboxManagerNilWhenAvailableFails(t *testing.T) {
 }
 
 func TestDefaultHostSessionRootUsesWeKnoraLite(t *testing.T) {
-	require.Equal(t, "/Users/dev/Documents/WeKnoraLite", defaultHostSessionRoot("/Users/dev"))
+	require.Equal(t, "/Users/dev/Documents/AIKBLite", defaultHostSessionRoot("/Users/dev"))
 }
 
 func TestDefaultHostSkillsRootIsDotWeknora(t *testing.T) {
@@ -84,7 +84,7 @@ func TestHostSandboxManagerEnabledWhenBackendAvailable(t *testing.T) {
 	mgr := buildHostSandboxManager(hostSandboxDeps{
 		newBackend: func() (localsandbox.Backend, error) { return stubBackend{}, nil },
 		homeDir:    "/Users/dev",
-		appDataDir: "/Users/dev/App Support/WeKnora",
+		appDataDir: "/Users/dev/App Support/AI KB",
 	})
 	require.NotNil(t, mgr)
 	require.Equal(t, sandbox.SandboxTypeHost, mgr.GetType())

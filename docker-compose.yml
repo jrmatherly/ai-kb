@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: wechatopenai/weknora-ui:${WEKNORA_VERSION:-latest}
+    image: ghcr.io/jrmatherly/ai-kb-ui:${AIKB_VERSION:-latest}
     # Multi-stage Dockerfile builds dist inside the image (no host npm required).
     # Optional: NPM_REGISTRY=https://registry.npmmirror.com docker compose build frontend
     # VITE_FRONTEND_COMMIT: start_all.sh / make docker-build-frontend inject git;
@@ -11,7 +11,7 @@ services:
         VITE_FRONTEND_COMMIT: ${VITE_FRONTEND_COMMIT:-unknown}
         NPM_REGISTRY: ${NPM_REGISTRY:-}
         NODE_MAX_OLD_SPACE_SIZE: ${NODE_MAX_OLD_SPACE_SIZE:-4096}
-    container_name: WeKnora-frontend
+    container_name: ai-kb-frontend
     ports:
       - "${FRONTEND_PORT:-80}:80"
     environment:
@@ -30,25 +30,25 @@ services:
       app:
         condition: service_healthy
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
 
   app:
-    image: wechatopenai/weknora-app:${WEKNORA_VERSION:-latest}
+    image: ghcr.io/jrmatherly/ai-kb-app:${AIKB_VERSION:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.app
       args:
         - APK_MIRROR_ARG=${APK_MIRROR_ARG:-}
         - WITH_ANYDOC=${WITH_ANYDOC:-1}
-    container_name: WeKnora-app
+    container_name: ai-kb-app
     ports:
       - "${APP_PORT:-8080}:8080"
     volumes:
       - data-files:/data/files
       - docreader-tmp:/tmp/docreader:ro
       - ./config/config.yaml:/app/config/config.yaml
-      # The Docker sandbox is off by default (see WEKNORA_SANDBOX_DOCKER_ENABLED). If you need the local daemon,
+      # The Docker sandbox is off by default (see AIKB_SANDBOX_DOCKER_ENABLED). If you need the local daemon,
       # set it to true and mount the real socket. That equals root on the host: single-host self-hosted setups only.
       # The entrypoint adds appuser to the group matching the socket GID (compose group_add has no effect after gosu).
       # - /var/run/docker.sock:/var/run/docker.sock
@@ -95,15 +95,15 @@ services:
       - TZ=${TZ:-Asia/Shanghai}
       # Language for document processing (question and summary generation). Precedence: this variable (deployment-wide override, applies when non-empty)
       # > Accept-Language request header > built-in default (zh-CN). Empty follows the caller's Accept-Language.
-      - WEKNORA_LANGUAGE=${WEKNORA_LANGUAGE:-}
+      - AIKB_LANGUAGE=${AIKB_LANGUAGE:-}
       # The Docker sandbox is off by default: the local docker.sock equals root on the host.
       # A system administrator can also turn it on in Settings → System Settings (takes effect at once). This variable is read when no value is stored in the database.
-      - WEKNORA_SANDBOX_DOCKER_ENABLED=${WEKNORA_SANDBOX_DOCKER_ENABLED:-false}
+      - AIKB_SANDBOX_DOCKER_ENABLED=${AIKB_SANDBOX_DOCKER_ENABLED:-false}
       # Outbound dial timeout (Go duration, default 5s): external endpoints such as models and connectors fail if they cannot connect within this time. Empty uses the default.
-      - WEKNORA_OUTBOUND_DIAL_TIMEOUT=${WEKNORA_OUTBOUND_DIAL_TIMEOUT:-}
+      - AIKB_OUTBOUND_DIAL_TIMEOUT=${AIKB_OUTBOUND_DIAL_TIMEOUT:-}
       # Proxy CIDRs that gin trusts (comma-separated). An explicit empty string disables proxy trust.
       # Default trusts loopback + private ranges (covers nginx inside the container network)
-      # - WEKNORA_TRUSTED_PROXIES=${WEKNORA_TRUSTED_PROXIES:-}
+      # - AIKB_TRUSTED_PROXIES=${AIKB_TRUSTED_PROXIES:-}
       # Run database migrations automatically at startup; false disables it. Enabled by default
       - AUTO_MIGRATE=${AUTO_MIGRATE:-true}
       # Externally reachable URL for image and file links in IM channels. To show knowledge base images in IM, do one of:
@@ -126,19 +126,19 @@ services:
       # Disable new user registration (true recommended in production)
       - DISABLE_REGISTRATION=${DISABLE_REGISTRATION:-false}
       # When on, passwords must contain upper and lower case letters, digits and special characters. Special characters: !@#$%^&*()_+-=[]{}|;:,.<>?
-      - WEKNORA_AUTH_COMPLEX_PASSWORD_ENABLED=${WEKNORA_AUTH_COMPLEX_PASSWORD_ENABLED:-false}
+      - AIKB_AUTH_COMPLEX_PASSWORD_ENABLED=${AIKB_AUTH_COMPLEX_PASSWORD_ENABLED:-false}
       # Default workspace policy after public registration: create_personal (default, creates a personal workspace) / tenantless
-      - WEKNORA_AUTH_DEFAULT_TENANT_MODE=${WEKNORA_AUTH_DEFAULT_TENANT_MODE:-create_personal}
+      - AIKB_AUTH_DEFAULT_TENANT_MODE=${AIKB_AUTH_DEFAULT_TENANT_MODE:-create_personal}
       # Whether regular users may create workspaces after login (default true; false means joining by invitation only. Super admins are not affected)
-      - WEKNORA_TENANT_SELF_SERVICE_CREATION_ENABLED=${WEKNORA_TENANT_SELF_SERVICE_CREATION_ENABLED:-true}
+      - AIKB_TENANT_SELF_SERVICE_CREATION_ENABLED=${AIKB_TENANT_SELF_SERVICE_CREATION_ENABLED:-true}
       # Enable cross-workspace access (needs the user's CanAccessAllTenants permission; default false)
-      - WEKNORA_TENANT_ENABLE_CROSS_TENANT_ACCESS=${WEKNORA_TENANT_ENABLE_CROSS_TENANT_ACCESS:-false}
+      - AIKB_TENANT_ENABLE_CROSS_TENANT_ACCESS=${AIKB_TENANT_ENABLE_CROSS_TENANT_ACCESS:-false}
       # Default storage quota for new workspaces (GB, default 10)
-      - WEKNORA_TENANT_DEFAULT_STORAGE_QUOTA_GB=${WEKNORA_TENANT_DEFAULT_STORAGE_QUOTA_GB:-10}
+      - AIKB_TENANT_DEFAULT_STORAGE_QUOTA_GB=${AIKB_TENANT_DEFAULT_STORAGE_QUOTA_GB:-10}
       # Workspace invitation link TTL (Go duration, default 168h = 7 days)
-      - WEKNORA_INVITATION_TTL=${WEKNORA_INVITATION_TTL:-168h}
+      - AIKB_INVITATION_TTL=${AIKB_INVITATION_TTL:-168h}
       # Audit log retention in days (0 disables cleanup, default 90)
-      - WEKNORA_AUDIT_RETENTION_DAYS=${WEKNORA_AUDIT_RETENTION_DAYS:-90}
+      - AIKB_AUDIT_RETENTION_DAYS=${AIKB_AUDIT_RETENTION_DAYS:-90}
       # Database settings
       - DB_DRIVER=${DB_DRIVER:-postgres}
       - DB_HOST=${DB_HOST:-postgres}
@@ -276,8 +276,8 @@ services:
       # Timeout for a single VLM HTTP request (seconds, default 180)
       - VLM_HTTP_TIMEOUT_SECONDS=${VLM_HTTP_TIMEOUT_SECONDS:-}
       # Raw dump of the LLM stream (for debugging context issues; 1 enables it, default directory ~/.weknora/investigate/llm-stream)
-      - WEKNORA_LLM_STREAM_RAW_DUMP=${WEKNORA_LLM_STREAM_RAW_DUMP:-}
-      - WEKNORA_LLM_STREAM_RAW_DUMP_DIR=${WEKNORA_LLM_STREAM_RAW_DUMP_DIR:-}
+      - AIKB_LLM_STREAM_RAW_DUMP=${AIKB_LLM_STREAM_RAW_DUMP:-}
+      - AIKB_LLM_STREAM_RAW_DUMP_DIR=${AIKB_LLM_STREAM_RAW_DUMP_DIR:-}
       - STREAM_MANAGER_TYPE=${STREAM_MANAGER_TYPE:-}
       - REDIS_ADDR=${REDIS_ADDR:-redis:6379}
       - REDIS_USERNAME=${REDIS_USERNAME:-}
@@ -288,9 +288,9 @@ services:
       - REDIS_TLS_SERVER_NAME=${REDIS_TLS_SERVER_NAME:-}
       - REDIS_TLS_INSECURE_SKIP_VERIFY=${REDIS_TLS_INSECURE_SKIP_VERIFY:-}
       # Redis channel namespace suffix (isolates deployments that share one Redis)
-      - WEKNORA_REDIS_NAMESPACE=${WEKNORA_REDIS_NAMESPACE:-}
+      - AIKB_REDIS_NAMESPACE=${AIKB_REDIS_NAMESPACE:-}
       # Asynq client Redis read/write timeout (milliseconds, default 500)
-      - WEKNORA_REDIS_OP_TIMEOUT_MS=${WEKNORA_REDIS_OP_TIMEOUT_MS:-}
+      - AIKB_REDIS_OP_TIMEOUT_MS=${AIKB_REDIS_OP_TIMEOUT_MS:-}
       # The only knowledge graph switch is NEO4J_ENABLE (see below). ENABLE_GRAPH_RAG was replaced by
       # NEO4J_ENABLE in v0.1.6. The Go app no longer reads it, so it is not passed through here.
       - NEO4J_ENABLE=${NEO4J_ENABLE:-}
@@ -329,48 +329,48 @@ services:
       # Skill zip / GitHub source download cap (in MB); the GitHub zipball is the whole repo, not the skill subtree
       - MAX_SKILL_BUNDLE_SIZE_MB=${MAX_SKILL_BUNDLE_SIZE_MB:-256}
       # Total timeout for a document processing task (Go duration, default 2h)
-      - WEKNORA_DOCUMENT_PROCESS_TIMEOUT=${WEKNORA_DOCUMENT_PROCESS_TIMEOUT:-}
+      - AIKB_DOCUMENT_PROCESS_TIMEOUT=${AIKB_DOCUMENT_PROCESS_TIMEOUT:-}
       # Timeout for a single DocReader RPC (default 30m, must be less than the previous value)
-      - WEKNORA_DOCREADER_CALL_TIMEOUT=${WEKNORA_DOCREADER_CALL_TIMEOUT:-}
+      - AIKB_DOCREADER_CALL_TIMEOUT=${AIKB_DOCREADER_CALL_TIMEOUT:-}
       # HTTP request timeout for self-hosted PaddleOCR-VL (Go duration, default 1000s)
-      - WEKNORA_PADDLEOCR_VL_TIMEOUT=${WEKNORA_PADDLEOCR_VL_TIMEOUT:-}
+      - AIKB_PADDLEOCR_VL_TIMEOUT=${AIKB_PADDLEOCR_VL_TIMEOUT:-}
       # Timeout for a single self-hosted MinerU parse (Go duration, default 1000s)
-      - WEKNORA_MINERU_TIMEOUT=${WEKNORA_MINERU_TIMEOUT:-}
+      - AIKB_MINERU_TIMEOUT=${AIKB_MINERU_TIMEOUT:-}
       # Maximum time to poll MinerU cloud for parse results (Go duration, default 600s)
-      - WEKNORA_MINERU_CLOUD_TIMEOUT=${WEKNORA_MINERU_CLOUD_TIMEOUT:-}
+      - AIKB_MINERU_CLOUD_TIMEOUT=${AIKB_MINERU_CLOUD_TIMEOUT:-}
       # Maximum time to poll PaddleOCR-VL cloud for parse results (Go duration, default 600s)
-      - WEKNORA_PADDLEOCR_VL_CLOUD_TIMEOUT=${WEKNORA_PADDLEOCR_VL_CLOUD_TIMEOUT:-}
+      - AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT=${AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT:-}
       # Maximum time to poll the WeKnoraCloud managed docreader for task results (Go duration, default 20m, should be less than the DocReader RPC timeout)
-      - WEKNORA_WEKNORACLOUD_TIMEOUT=${WEKNORA_WEKNORACLOUD_TIMEOUT:-}
+      - AIKB_WEKNORACLOUD_TIMEOUT=${AIKB_WEKNORACLOUD_TIMEOUT:-}
       # Knowledge base sweeper (reclaims stale items stuck in processing; false disables it, not recommended)
-      - WEKNORA_HOUSEKEEPING_ENABLED=${WEKNORA_HOUSEKEEPING_ENABLED:-}
-      - WEKNORA_CHAT_ATTACHMENT_TTL_HOURS=${WEKNORA_CHAT_ATTACHMENT_TTL_HOURS:-24}
-      - WEKNORA_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC=${WEKNORA_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC:-60}
-      - WEKNORA_CHAT_ATTACHMENT_OCR_CONCURRENCY=${WEKNORA_CHAT_ATTACHMENT_OCR_CONCURRENCY:-8}
-      - WEKNORA_CHAT_ATTACHMENT_OCR_MAX_PAGES=${WEKNORA_CHAT_ATTACHMENT_OCR_MAX_PAGES:-8}
+      - AIKB_HOUSEKEEPING_ENABLED=${AIKB_HOUSEKEEPING_ENABLED:-}
+      - AIKB_CHAT_ATTACHMENT_TTL_HOURS=${AIKB_CHAT_ATTACHMENT_TTL_HOURS:-24}
+      - AIKB_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC=${AIKB_CHAT_ATTACHMENT_WAIT_TIMEOUT_SEC:-60}
+      - AIKB_CHAT_ATTACHMENT_OCR_CONCURRENCY=${AIKB_CHAT_ATTACHMENT_OCR_CONCURRENCY:-8}
+      - AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES=${AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES:-8}
       # Agent LLM call timeout
-      - WEKNORA_AGENT_LLM_TIMEOUT=${WEKNORA_AGENT_LLM_TIMEOUT:-}
-      - WEKNORA_AGENT_TOOL_APPROVAL_TIMEOUT=${WEKNORA_AGENT_TOOL_APPROVAL_TIMEOUT:-}
+      - AIKB_AGENT_LLM_TIMEOUT=${AIKB_AGENT_LLM_TIMEOUT:-}
+      - AIKB_AGENT_TOOL_APPROVAL_TIMEOUT=${AIKB_AGENT_TOOL_APPROVAL_TIMEOUT:-}
       # Whether to allow the call when human approval of an MCP tool fails (true allows / default fail-close denies)
-      - WEKNORA_AGENT_TOOL_APPROVAL_FAIL_OPEN=${WEKNORA_AGENT_TOOL_APPROVAL_FAIL_OPEN:-}
+      - AIKB_AGENT_TOOL_APPROVAL_FAIL_OPEN=${AIKB_AGENT_TOOL_APPROVAL_FAIL_OPEN:-}
       # Tenant / RBAC (see website-docs/03-features/01-tenant-auth.md and the comments in .env.example)
-      # - WEKNORA_TENANT_ENABLE_RBAC: enforce workspace role authorization (true / false), default true
-      # - WEKNORA_TENANT_MAX_OWNED_PER_USER: how many workspaces one non-super-admin may create
+      # - AIKB_TENANT_ENABLE_RBAC: enforce workspace role authorization (true / false), default true
+      # - AIKB_TENANT_MAX_OWNED_PER_USER: how many workspaces one non-super-admin may create
       #   >0 enforces the limit; =0 uses the handler default; <0 disables it (not recommended for shared deployments)
-      # - WEKNORA_TENANT_AUTO_CREATE_API_KEY: on workspace creation, generate a full_access API key and return the token in the response
+      # - AIKB_TENANT_AUTO_CREATE_API_KEY: on workspace creation, generate a full_access API key and return the token in the response
       #   (rollback switch for a breaking change, restores the old default of issuing an API key; true / false, default false)
-      - WEKNORA_TENANT_ENABLE_RBAC=${WEKNORA_TENANT_ENABLE_RBAC:-}
-      - WEKNORA_TENANT_MAX_OWNED_PER_USER=${WEKNORA_TENANT_MAX_OWNED_PER_USER:-}
-      - WEKNORA_TENANT_AUTO_CREATE_API_KEY=${WEKNORA_TENANT_AUTO_CREATE_API_KEY:-}
-      - WEKNORA_ASYNQ_CORE_CONCURRENCY=${WEKNORA_ASYNQ_CORE_CONCURRENCY:-8}
-      - WEKNORA_ASYNQ_POSTPROCESS_CONCURRENCY=${WEKNORA_ASYNQ_POSTPROCESS_CONCURRENCY:-2}
-      - WEKNORA_ASYNQ_ENRICHMENT_CONCURRENCY=${WEKNORA_ASYNQ_ENRICHMENT_CONCURRENCY:-12}
-      - WEKNORA_ASYNQ_MAINTENANCE_CONCURRENCY=${WEKNORA_ASYNQ_MAINTENANCE_CONCURRENCY:-4}
-      - WEKNORA_ASYNQ_SHARED_CONCURRENCY=${WEKNORA_ASYNQ_SHARED_CONCURRENCY:-6}
-      - WEKNORA_WIKI_ASYNQ_CONCURRENCY=${WEKNORA_WIKI_ASYNQ_CONCURRENCY:-8}
-      - WEKNORA_MODEL_MAX_CONCURRENCY=${WEKNORA_MODEL_MAX_CONCURRENCY:-32}
+      - AIKB_TENANT_ENABLE_RBAC=${AIKB_TENANT_ENABLE_RBAC:-}
+      - AIKB_TENANT_MAX_OWNED_PER_USER=${AIKB_TENANT_MAX_OWNED_PER_USER:-}
+      - AIKB_TENANT_AUTO_CREATE_API_KEY=${AIKB_TENANT_AUTO_CREATE_API_KEY:-}
+      - AIKB_ASYNQ_CORE_CONCURRENCY=${AIKB_ASYNQ_CORE_CONCURRENCY:-8}
+      - AIKB_ASYNQ_POSTPROCESS_CONCURRENCY=${AIKB_ASYNQ_POSTPROCESS_CONCURRENCY:-2}
+      - AIKB_ASYNQ_ENRICHMENT_CONCURRENCY=${AIKB_ASYNQ_ENRICHMENT_CONCURRENCY:-12}
+      - AIKB_ASYNQ_MAINTENANCE_CONCURRENCY=${AIKB_ASYNQ_MAINTENANCE_CONCURRENCY:-4}
+      - AIKB_ASYNQ_SHARED_CONCURRENCY=${AIKB_ASYNQ_SHARED_CONCURRENCY:-6}
+      - AIKB_WIKI_ASYNQ_CONCURRENCY=${AIKB_WIKI_ASYNQ_CONCURRENCY:-8}
+      - AIKB_MODEL_MAX_CONCURRENCY=${AIKB_MODEL_MAX_CONCURRENCY:-32}
       - APK_MIRROR_ARG=${APK_MIRROR_ARG:-}
-      - WEKNORA_BOOTSTRAP_SYSTEM_ADMIN_EMAIL=${WEKNORA_BOOTSTRAP_SYSTEM_ADMIN_EMAIL:-}
+      - AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL=${AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL:-}
       # ========== OIDC auth (optional, enable with OIDC_AUTH_ENABLE=true, see .env.example) ==========
       - OIDC_AUTH_ENABLE=${OIDC_AUTH_ENABLE:-false}
       - OIDC_AUTH_ISSUER_URL=${OIDC_AUTH_ISSUER_URL:-}
@@ -395,16 +395,16 @@ services:
       docreader:
         condition: service_healthy
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   # Sandbox image: only for build/pull, not a long-running service. The Docker sandbox is off by default. Only with
-  # WEKNORA_SANDBOX_DOCKER_ENABLED=true and docker.sock mounted does app create containers per session.
+  # AIKB_SANDBOX_DOCKER_ENABLED=true and docker.sock mounted does app create containers per session.
   sandbox:
-    image: wechatopenai/weknora-sandbox:${WEKNORA_VERSION:-latest}
-    container_name: WeKnora-sandbox
+    image: ghcr.io/jrmatherly/ai-kb-sandbox:${AIKB_VERSION:-latest}
+    container_name: ai-kb-sandbox
     build:
       context: .
       dockerfile: docker/Dockerfile.sandbox
@@ -415,7 +415,7 @@ services:
     restart: "no"
 
   docreader:
-    image: wechatopenai/weknora-docreader:${WEKNORA_VERSION:-latest}
+    image: ghcr.io/jrmatherly/ai-kb-docreader:${AIKB_VERSION:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.docreader
@@ -423,9 +423,9 @@ services:
         - APT_MIRROR=${APT_MIRROR:-}
         - PLAYWRIGHT_DOWNLOAD_HOST=${PLAYWRIGHT_DOWNLOAD_HOST:-}
         - PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=${PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST:-}
-    container_name: WeKnora-docreader
+    container_name: ai-kb-docreader
     # docreader gRPC ships without auth/TLS and is only consumed by the app
-    # container over the WeKnora-network (DOCREADER_ADDR defaults to
+    # container over the ai-kb-network (DOCREADER_ADDR defaults to
     # docreader:50051), so we don't publish 50051 to the host. `expose` keeps
     # the port reachable inside the compose network for documentation only.
     # If you need to call docreader from outside the host (e.g. for debugging),
@@ -516,7 +516,7 @@ services:
       retries: 3
       start_period: 60s
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -527,8 +527,8 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.odl-hybrid
-    image: weknora-odl-hybrid:local
-    container_name: WeKnora-odl-hybrid
+    image: ai-kb-odl-hybrid:local
+    container_name: ai-kb-odl-hybrid
     profiles:
       - odl-hybrid
     expose:
@@ -536,13 +536,13 @@ services:
     environment:
       - ODL_HYBRID_EXTRA_ARGS=${ODL_HYBRID_EXTRA_ARGS:---no-ocr}
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
 
   # Modified PostgreSQL configuration
   postgres:
     image: paradedb/paradedb:v0.25.11-pg17
-    container_name: WeKnora-postgres
+    container_name: ai-kb-postgres
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -550,7 +550,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - WeKnora-network
+      - ai-kb-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s # Longer interval
@@ -563,11 +563,11 @@ services:
 
   redis:
     image: redis:7.0-alpine
-    container_name: WeKnora-redis
+    container_name: ai-kb-redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     restart: always
     networks:
-      - WeKnora-network
+      - ai-kb-network
 
   # One-shot init: copy the read-only template settings.yml into a named volume
   # before searxng starts. Necessary because the searxng entrypoint sed-replaces
@@ -576,21 +576,21 @@ services:
   # working tree (and prevent re-templating on subsequent restarts).
   searxng-init:
     image: busybox:1.36
-    container_name: WeKnora-searxng-init
+    container_name: ai-kb-searxng-init
     command: ["sh", "-c", "cp /template/settings.yml /etc/searxng/settings.yml && chmod 0644 /etc/searxng/settings.yml"]
     volumes:
       - ./docker/searxng/settings.yml:/template/settings.yml:ro
       - searxng_config:/etc/searxng
     restart: "no"
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - searxng
       - full
 
   searxng:
     image: searxng/searxng:latest
-    container_name: WeKnora-searxng
+    container_name: ai-kb-searxng
     # Bind to loopback by default; override SEARXNG_BIND=0.0.0.0 only after
     # rotating SEARXNG_SECRET and (optionally) re-enabling limiter in settings.yml.
     ports:
@@ -616,14 +616,14 @@ services:
       searxng-init:
         condition: service_completed_successfully
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - searxng
       - full
 
   minio:
     image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
-    container_name: WeKnora-minio
+    container_name: ai-kb-minio
     ports:
       - "${MINIO_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
@@ -639,14 +639,14 @@ services:
       timeout: 20s
       retries: 3
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - minio
       - full
 
   neo4j:
     image: neo4j:2025.10.1
-    container_name: WeKnora-neo4j
+    container_name: ai-kb-neo4j
     volumes:
       - neo4j-data:/data
     environment:
@@ -660,21 +660,21 @@ services:
       - "7687:7687"
     restart: always
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - neo4j
       - full
 
   qdrant:
     image: qdrant/qdrant:v1.16.2
-    container_name: WeKnora-qdrant
+    container_name: ai-kb-qdrant
     ports:
       - "${QDRANT_REST_PORT:-6333}:6333"
       - "${QDRANT_PORT:-6334}:6334"
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     profiles:
       - qdrant
@@ -682,7 +682,7 @@ services:
 
   milvus:
     image: milvusdb/milvus:v2.6.11
-    container_name: WeKnora-milvus
+    container_name: ai-kb-milvus
     security_opt:
       - seccomp:unconfined
     command: ["milvus", "run", "standalone"]
@@ -703,14 +703,14 @@ services:
     volumes:
       - milvus_data:/var/lib/milvus
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     profiles:
       - milvus
 
   weaviate:
     image: semitechnologies/weaviate:1.28.4
-    container_name: WeKnora-weaviate
+    container_name: ai-kb-weaviate
     environment:
       - PERSISTENCE_DATA_PATH=/var/lib/weaviate
       - CLUSTER_HOSTNAME=node1
@@ -726,7 +726,7 @@ services:
     volumes:
       - weaviate_data:/var/lib/weaviate
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     profiles:
       - weaviate
@@ -749,7 +749,7 @@ services:
   # ---------------------------------------------------------------------------
   doris-fe:
     image: apache/doris:fe-4.1.0
-    container_name: WeKnora-doris-fe
+    container_name: ai-kb-doris-fe
     hostname: doris-fe
     environment:
       - FE_SERVERS=fe1:doris-fe:9010
@@ -761,14 +761,14 @@ services:
       - doris_fe_meta:/opt/apache-doris/fe/doris-meta
       - doris_fe_log:/opt/apache-doris/fe/log
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     profiles:
       - doris
 
   doris-be:
     image: apache/doris:be-4.1.0
-    container_name: WeKnora-doris-be
+    container_name: ai-kb-doris-be
     hostname: doris-be
     environment:
       - FE_SERVERS=fe1:doris-fe:9010
@@ -781,7 +781,7 @@ services:
       - doris_be_storage:/opt/apache-doris/be/storage
       - doris_be_log:/opt/apache-doris/be/log
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     profiles:
       - doris
@@ -802,8 +802,8 @@ services:
   # Self-hosted Langfuse observability stack (opt-in via `--profile langfuse`)
   #
   # To keep resource use low, Langfuse reuses the existing AI KB postgres and redis:
-  #   - postgres: a separate "langfuse" database in WeKnora-postgres
-  #   - redis  : DB 1 of WeKnora-redis (AI KB itself uses DB 0)
+  #   - postgres: a separate "langfuse" database in ai-kb-postgres
+  #   - redis  : DB 1 of ai-kb-redis (AI KB itself uses DB 0)
   # The only new pieces are the Langfuse app itself + ClickHouse (OLAP) + a dedicated MinIO (event/media S3).
   #
   # To enable:
@@ -816,11 +816,11 @@ services:
   # The default passwords here are placeholders. For production, regenerate them with openssl rand.
   # ---------------------------------------------------------------------------
 
-  # One-off init script: creates the langfuse database in the existing WeKnora-postgres (idempotent, skipped if the database exists)
-  # Reuses the ParadeDB image of WeKnora-postgres to avoid pulling another postgres image
+  # One-off init script: creates the langfuse database in the existing ai-kb-postgres (idempotent, skipped if the database exists)
+  # Reuses the ParadeDB image of ai-kb-postgres to avoid pulling another postgres image
   langfuse-db-init:
     image: paradedb/paradedb:v0.25.11-pg17
-    container_name: WeKnora-langfuse-db-init
+    container_name: ai-kb-langfuse-db-init
     depends_on:
       postgres:
         condition: service_healthy
@@ -832,7 +832,7 @@ services:
     command:
       - |
         set -e
-        echo "[langfuse-db-init] ensuring database '${LANGFUSE_DB_NAME:-langfuse}' exists in WeKnora-postgres..."
+        echo "[langfuse-db-init] ensuring database '${LANGFUSE_DB_NAME:-langfuse}' exists in ai-kb-postgres..."
         # Refresh the collation of existing databases first (required when the image's ICU 2.36 differs from the host's 2.41), or CREATE DATABASE fails
         psql -h postgres -U ${DB_USER} -d postgres -v ON_ERROR_STOP=0 -c "ALTER DATABASE template1 REFRESH COLLATION VERSION;" >/dev/null 2>&1 || true
         psql -h postgres -U ${DB_USER} -d postgres -v ON_ERROR_STOP=0 -c "ALTER DATABASE postgres REFRESH COLLATION VERSION;" >/dev/null 2>&1 || true
@@ -845,7 +845,7 @@ services:
         fi
         echo "[langfuse-db-init] done."
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: "no"
     profiles:
       - langfuse
@@ -853,7 +853,7 @@ services:
 
   langfuse-clickhouse:
     image: clickhouse/clickhouse-server:24.8
-    container_name: WeKnora-langfuse-clickhouse
+    container_name: ai-kb-langfuse-clickhouse
     restart: unless-stopped
     user: "101:101"
     environment:
@@ -870,14 +870,14 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - langfuse
       - full
 
   langfuse-minio:
     image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
-    container_name: WeKnora-langfuse-minio
+    container_name: ai-kb-langfuse-minio
     restart: unless-stopped
     entrypoint: sh
     # Create the `langfuse` bucket before startup so Langfuse works out of the box
@@ -898,14 +898,14 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - langfuse
       - full
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
-    container_name: WeKnora-langfuse-worker
+    container_name: ai-kb-langfuse-worker
     restart: unless-stopped
     depends_on: &langfuse-depends-on
       # Reuses the existing AI KB postgres/redis; the langfuse database must be created first
@@ -970,14 +970,14 @@ services:
       LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
       LANGFUSE_S3_MEDIA_UPLOAD_PREFIX: media/
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - langfuse
       - full
 
   langfuse-web:
     image: langfuse/langfuse:3
-    container_name: WeKnora-langfuse-web
+    container_name: ai-kb-langfuse-web
     restart: unless-stopped
     depends_on: *langfuse-depends-on
     ports:
@@ -1012,7 +1012,7 @@ services:
       LANGFUSE_INIT_USER_NAME: ${LANGFUSE_INIT_USER_NAME:-}
       LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_INIT_USER_PASSWORD:-}
     networks:
-      - WeKnora-network
+      - ai-kb-network
     profiles:
       - langfuse
       - full
@@ -1020,31 +1020,31 @@ services:
   mcp:
     build:
       context: ./mcp-server
-    container_name: WeKnora-mcp
+    container_name: ai-kb-mcp
     ports:
       - "${MCP_PORT:-8082}:8000"
     environment:
-      - WEKNORA_BASE_URL=http://app:8080/api/v1
-      - WEKNORA_API_KEY=${WEKNORA_API_KEY:-}
+      - AIKB_BASE_URL=http://app:8080/api/v1
+      - AIKB_API_KEY=${AIKB_API_KEY:-}
       # Required for HTTP/SSE transport: mcp-server refuses to start without it (clients send it as Authorization: Bearer)
       - MCP_SERVER_AUTH_TOKEN=${MCP_SERVER_AUTH_TOKEN:-}
       # Read timeout for calls to the AI KB REST API (seconds, default 300)
-      - WEKNORA_CHAT_TIMEOUT=${WEKNORA_CHAT_TIMEOUT:-300}
+      - AIKB_CHAT_TIMEOUT=${AIKB_CHAT_TIMEOUT:-300}
       # Whether to verify the AI KB backend TLS certificate (default true; set false for self-signed certificates)
-      - WEKNORA_VERIFY_SSL=${WEKNORA_VERIFY_SSL:-true}
+      - AIKB_VERIFY_SSL=${AIKB_VERIFY_SSL:-true}
       # Allowlist of directories that may be uploaded (comma-separated; empty disables the file upload tool)
       - MCP_ALLOWED_UPLOAD_DIRS=${MCP_ALLOWED_UPLOAD_DIRS:-}
     depends_on:
       app:
         condition: service_healthy
     networks:
-      - WeKnora-network
+      - ai-kb-network
     restart: unless-stopped
     profiles:
       - full
 
 networks:
-  WeKnora-network:
+  ai-kb-network:
     driver: bridge
 
 volumes:

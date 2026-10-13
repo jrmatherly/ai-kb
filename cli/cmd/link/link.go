@@ -45,7 +45,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		Long: `Writes .weknora/project.yaml in the current working directory pointing
 at the supplied knowledge base. Subsequent commands run from this directory
 (or any subdirectory) automatically resolve --kb from the link unless
-overridden by the --kb flag or WEKNORA_KB_ID env var.
+overridden by the --kb flag or AIKB_KB_ID env var.
 
 Pass the knowledge base as a positional argument (weknora link <id-or-name>) or
 via --kb — the two are equivalent — for non-interactive use (scripts, CI). Run
@@ -164,13 +164,13 @@ func resolveProfile(f *cmdutil.Factory) (string, error) {
 	}
 	if cfg.CurrentProfile == "" {
 		// `link` binds a directory to a profile+KB, so it needs a configured
-		// profile — env credentials (WEKNORA_API_KEY) alone have no profile to
+		// profile — env credentials (AIKB_API_KEY) alone have no profile to
 		// record. Point at profile setup (not `auth login`, which loops with no
 		// profile) and name the headless alternative so an env-cred agent isn't
 		// stranded on a misleading hint.
 		return "", cmdutil.NewError(cmdutil.CodeAuthUnauthenticated,
 			"`link` records an active profile, but none is configured").
-			WithHint("register one with `weknora profile add <name> --host <url> --use`; for a headless (WEKNORA_API_KEY) workflow, skip `link` and pass --kb per command or set WEKNORA_KB_ID").
+			WithHint("register one with `weknora profile add <name> --host <url> --use`; for a headless (AIKB_API_KEY) workflow, skip `link` and pass --kb per command or set AIKB_KB_ID").
 			WithRetryArgv([]string{"weknora", "profile", "add", "--help"})
 	}
 	return cfg.CurrentProfile, nil

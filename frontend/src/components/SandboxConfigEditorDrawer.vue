@@ -412,7 +412,7 @@
             </template>
             <!--
               Docker has no provider-side timeout at all: an abandoned container
-              keeps its memory and CPU share on the daemon host until WeKnora
+              keeps its memory and CPU share on the daemon host until AI KB
               reclaims it, so the idle TTL and the resource caps are the only
               things bounding what one workspace can hold.
             -->
@@ -815,7 +815,7 @@ const isMaskedSecret = (value?: string) => value === secretPlaceholder
 // Mirrors DefaultDockerImage on the server, including why it tracks main
 // instead of latest: the latest tag still carries an image whose /workspace
 // the sandbox account cannot write.
-const defaultDockerImage = 'wechatopenai/weknora-sandbox:main'
+const defaultDockerImage = 'ghcr.io/jrmatherly/ai-kb-sandbox:main'
 
 const clusterGuideUrl = docsUrl('sandboxDeployment')
 const e2bApiKeysUrl = 'https://e2b.dev/dashboard?tab=keys'

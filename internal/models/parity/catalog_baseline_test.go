@@ -93,7 +93,7 @@ func TestCatalogMigrationBaseline(t *testing.T) {
 		}
 	}
 	const path = "testdata/catalog-baseline.json"
-	if os.Getenv("WEKNORA_UPDATE_MODEL_BASELINE") == "1" {
+	if os.Getenv("AIKB_UPDATE_MODEL_BASELINE") == "1" {
 		data, err := json.MarshalIndent(actual, "", "  ")
 		require.NoError(t, err)
 		require.NoError(t, os.MkdirAll("testdata", 0o755))

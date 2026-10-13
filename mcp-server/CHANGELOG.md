@@ -23,7 +23,7 @@
 - HTTP 传输恢复 `stateless_http=True`，与迁移前 `StreamableHTTPSessionManager(stateless=True)` 行为一致。
 - SSE 传输恢复消息端点 `/sse/messages/`，与迁移前路由一致。
 - `WeKnoraClient` 使用线程本地 `requests.Session`，避免 MCP 2.x 在线程池中并发调用时出现 Session 竞态。
-- 文件上传（`create_knowledge_from_file`）尊重 `WEKNORA_VERIFY_SSL` 设置。
+- 文件上传（`create_knowledge_from_file`）尊重 `AIKB_VERIFY_SSL` 设置。
 
 ### 注意
 - 工具执行失败时，MCPServer 2.x 返回 `CallToolResult(isError=True)`（`ToolError`），
@@ -63,8 +63,8 @@
 
 ### 新增
 - 初始版本发布
-- WeKnora MCP Server 核心功能
-- 完整的 WeKnora API 集成
+- AI KB MCP Server 核心功能
+- 完整的 AI KB API 集成
 - 空间管理工具
 - 知识库管理工具
 - 知识管理工具
@@ -104,7 +104,7 @@
 
 ### 文件结构
 ```
-WeKnora/mcp-server/
+ai-kb/mcp-server/
 ├── __init__.py              # 包初始化文件
 ├── main.py                  # 主入口点 (推荐)
 ├── run.py                   # 便捷启动脚本

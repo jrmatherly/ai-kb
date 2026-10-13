@@ -3,7 +3,7 @@
 package anydoc
 
 // The default build links no converter: the anydoc archive is a Rust build
-// artifact, and requiring a Rust toolchain to compile WeKnora would be a steep
+// artifact, and requiring a Rust toolchain to compile AI KB would be a steep
 // price for one optional engine. Everything still compiles and the engine
 // registry simply reports the engine as unavailable.
 

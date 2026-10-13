@@ -10,7 +10,7 @@ export interface ToolToggles {
 
 /** User-supplied configuration, as written in a Cordis patch row. */
 export interface Config {
-  /** WeKnora API root, with or without the `/api/v1` suffix. */
+  /** AI KB API root, with or without the `/api/v1` suffix. */
   baseUrl?: string
   /** Tenant or platform API key, sent as `X-API-Key`. */
   apiKey?: string
@@ -29,7 +29,7 @@ export interface Config {
   /** Timeout for a streamed answer, which includes model and tool time. */
   chatTimeoutMs?: number
   /**
-   * `public` asks WeKnora for directly loadable file URLs in answers and
+   * `public` asks AI KB for directly loadable file URLs in answers and
    * citations (the default: dsh can render `https://` Markdown images, not
    * `resource://` handles). `handle` keeps the internal references.
    */
@@ -78,7 +78,7 @@ const API_ROOT = /\/api\/v\d+$/
 const TOOL_PREFIX = /^[a-z][a-z0-9_]*$/
 
 /**
- * Normalize a WeKnora base URL to an API root. Both `https://kb.example.com`
+ * Normalize a AI KB base URL to an API root. Both `https://kb.example.com`
  * and `https://kb.example.com/api/v1` are accepted, because a deployment's
  * documented address is usually the bare origin.
  */

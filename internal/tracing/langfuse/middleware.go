@@ -26,9 +26,9 @@ func GinMiddleware() gin.HandlerFunc {
 		}
 
 		ctx := c.Request.Context()
-		// Extract a W3C traceparent from the incoming request so the WeKnora
+		// Extract a W3C traceparent from the incoming request so the AI KB
 		// trace inherits the upstream caller's trace id. This is what lets a
-		// sop3 pipeline run (identified by its W3C trace_id) and the WeKnora
+		// sop3 pipeline run (identified by its W3C trace_id) and the AI KB
 		// agent-chat call it triggers land under the same trace in LiteFuse.
 		// When no traceparent is present (human UI calls, other clients) the
 		// root span starts a fresh trace as before.

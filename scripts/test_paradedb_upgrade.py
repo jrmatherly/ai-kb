@@ -1,6 +1,6 @@
 """Verify a ParadeDB patch upgrade using disposable Docker volumes and real migrations.
 
-Requires Python 3 and Docker; no database credentials or running WeKnora needed.
+Requires Python 3 and Docker; no database credentials or running AI KB needed.
 Run: python3 scripts/test_paradedb_upgrade.py [--to 0.25.11|0.22.6]
 Artifacts (snapshots, plans, logs and a synthetic-data backup) are kept in /tmp.
 """

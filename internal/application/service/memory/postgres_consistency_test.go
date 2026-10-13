@@ -19,9 +19,9 @@ import (
 
 // Opt in with a disposable test database. Each run uses an isolated schema.
 func TestMemoryConsistencyPostgres(t *testing.T) {
-	dsn := os.Getenv("WEKNORA_MEMORY_TEST_POSTGRES_DSN")
+	dsn := os.Getenv("AIKB_MEMORY_TEST_POSTGRES_DSN")
 	if dsn == "" {
-		t.Skip("set WEKNORA_MEMORY_TEST_POSTGRES_DSN to run PostgreSQL integration tests")
+		t.Skip("set AIKB_MEMORY_TEST_POSTGRES_DSN to run PostgreSQL integration tests")
 	}
 	admin, err := gorm.Open(postgres.Open(dsn), &gorm.Config{Logger: logger.Discard})
 	require.NoError(t, err)

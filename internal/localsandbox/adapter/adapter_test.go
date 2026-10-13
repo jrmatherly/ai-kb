@@ -100,9 +100,9 @@ func TestLayoutForHintIsTheWorkspaceRoot(t *testing.T) {
 func TestLayoutForSessionWorkspaceHasNoInputOrOutput(t *testing.T) {
 	l := LayoutFor(localsandbox.Workspace{
 		Kind: localsandbox.WorkspaceSession,
-		Root: "/Users/dev/Documents/WeKnora/s1",
+		Root: "/Users/dev/Documents/ai-kb/s1",
 	})
-	require.Equal(t, []string{"/Users/dev/Documents/WeKnora/s1"}, l.WriteRoots)
+	require.Equal(t, []string{"/Users/dev/Documents/ai-kb/s1"}, l.WriteRoots)
 	require.Empty(t, l.InputDir)
 	require.Empty(t, l.OutputDir)
 }
@@ -240,10 +240,10 @@ func testService(t *testing.T, backend localsandbox.Backend) *localsandbox.Servi
 	t.Helper()
 	base := t.TempDir()
 	home := filepath.Join(base, "home")
-	appData := filepath.Join(home, "App Support", "WeKnora Lite")
+	appData := filepath.Join(home, "App Support", "AI KB Lite")
 	require.NoError(t, os.MkdirAll(home, 0o755))
 	resolver := localsandbox.NewWorkspaceResolver(localsandbox.DirLayout{
-		SessionRoot: filepath.Join(home, "Documents", "WeKnora"),
+		SessionRoot: filepath.Join(home, "Documents", "AI KB"),
 	}, stubProjects{})
 	return localsandbox.NewService(backend, resolver, localsandbox.NewPolicyBuilder(home, appData), nil)
 }

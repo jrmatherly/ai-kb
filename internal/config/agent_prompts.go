@@ -1,4 +1,4 @@
-// Package config loads WeKnora runtime configuration.
+// Package config loads AI KB runtime configuration.
 package config
 
 import "github.com/jrmatherly/ai-kb/internal/types"

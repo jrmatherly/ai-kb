@@ -21,7 +21,7 @@ FORMULA_NAME="weknora-lite-test"
 VERSION="test"
 GOOS=$(go env GOOS)
 GOARCH=$(go env GOARCH)
-ARCHIVE="WeKnora-lite_${VERSION}_${GOOS}_${GOARCH}"
+ARCHIVE="ai-kb-lite_${VERSION}_${GOOS}_${GOARCH}"
 TARBALL="${ROOT_DIR}/dist/${ARCHIVE}.tar.gz"
 
 # ── Step 1: Build package ──
@@ -62,7 +62,7 @@ echo "=== Step 3: Generate Formula ==="
 
 cat > "${TAP_DIR}/Formula/${FORMULA_NAME}.rb" << RUBY
 class WeknoraLiteTest < Formula
-  desc "WeKnora Lite (local test)"
+  desc "AI KB Lite (local test)"
   homepage "https://github.com/jrmatherly/ai-kb"
   version "${VERSION}"
   license "Apache-2.0"
@@ -71,7 +71,7 @@ class WeknoraLiteTest < Formula
   sha256 "${SHA}"
 
   def install
-    libexec.install "WeKnora-lite"
+    libexec.install "ai-kb-lite"
     pkgshare.install "web" if File.directory?("web")
     pkgshare.install "config" if File.directory?("config")
     pkgshare.install ".env.lite.example"
@@ -81,8 +81,8 @@ class WeknoraLiteTest < Formula
 
     (bin/"weknora-lite-test").write <<~SH
       #!/bin/bash
-      CONFIG_DIR="\\\${WEKNORA_CONFIG_DIR:-\\\${XDG_CONFIG_HOME:-\\\$HOME/.config}/weknora-test}"
-      DATA_DIR="\\\${WEKNORA_DATA_DIR:-\\\${XDG_DATA_HOME:-\\\$HOME/.local/share}/weknora-test}"
+      CONFIG_DIR="\\\${AIKB_CONFIG_DIR:-\\\${XDG_CONFIG_HOME:-\\\$HOME/.config}/weknora-test}"
+      DATA_DIR="\\\${AIKB_DATA_DIR:-\\\${XDG_DATA_HOME:-\\\$HOME/.local/share}/weknora-test}"
 
       mkdir -p "\\\$DATA_DIR/files" "\\\$CONFIG_DIR/config" 2>/dev/null
 
@@ -109,10 +109,10 @@ class WeknoraLiteTest < Formula
 
       export DB_PATH="\\\${DB_PATH:-\\\$DATA_DIR/weknora.db}"
       export LOCAL_STORAGE_BASE_DIR="\\\${LOCAL_STORAGE_BASE_DIR:-\\\$DATA_DIR/files}"
-      export WEKNORA_WEB_DIR="\\\${WEKNORA_WEB_DIR:-#{pkgshare}/web}"
+      export AIKB_WEB_DIR="\\\${AIKB_WEB_DIR:-#{pkgshare}/web}"
 
       cd "\\\$CONFIG_DIR"
-      exec "#{libexec}/WeKnora-lite" "\\\$@"
+      exec "#{libexec}/ai-kb-lite" "\\\$@"
     SH
   end
 

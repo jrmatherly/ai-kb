@@ -11,7 +11,7 @@
 //     arbitrary session ID.
 //   - Paths are inside the current session's sandbox. Relative paths resolve
 //     from the workspace root. Omitting `path` lists the layout default
-//     (remote: `$WEKNORA_SKILL_OUTPUT_DIR` / `/workspace/output`; host: the
+//     (remote: `$AIKB_SKILL_OUTPUT_DIR` / `/workspace/output`; host: the
 //     workspace root).
 //   - Read-only: this tool never creates, modifies or deletes anything
 //     inside the sandbox. Model-authored files go through write_sandbox_file.
@@ -273,7 +273,7 @@ func formatSandboxModTime(t time.Time) string {
 
 // resolveSessionID pulls the session ID out of the tool exec context (set
 // by the agent engine per tool call) with a fallback to the ambient
-// context helper used elsewhere in WeKnora.
+// context helper used elsewhere in AI KB.
 func resolveSessionID(ctx context.Context) string {
 	if meta, ok := ToolExecFromContext(ctx); ok && meta != nil && meta.SessionID != "" {
 		return meta.SessionID

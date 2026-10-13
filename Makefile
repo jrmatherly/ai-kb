@@ -13,9 +13,9 @@ help:
 	@echo "  clean             Remove build files"
 	@echo ""
 	@echo "Docker commands:"
-	@echo "  docker-build-app       Build the application Docker image (wechatopenai/weknora-app)"
-	@echo "  docker-build-docreader Build the document reader image (wechatopenai/weknora-docreader)"
-	@echo "  docker-build-frontend  Build the frontend image (wechatopenai/weknora-ui)"
+	@echo "  docker-build-app       Build the application Docker image (ghcr.io/jrmatherly/ai-kb-app)"
+	@echo "  docker-build-docreader Build the document reader image (ghcr.io/jrmatherly/ai-kb-docreader)"
+	@echo "  docker-build-frontend  Build the frontend image (ghcr.io/jrmatherly/ai-kb-ui)"
 	@echo "  docker-build-all       Build all Docker images"
 	@echo "  docker-run            Run the Docker containers"
 	@echo "  docker-stop           Stop the Docker containers"
@@ -73,11 +73,11 @@ help:
 	@echo "  package-mac-app   Build and package the macOS desktop app (.app)"
 
 # Go related variables
-BINARY_NAME=WeKnora
+BINARY_NAME=ai-kb
 MAIN_PATH=./cmd/server
 
 # Docker related variables
-DOCKER_IMAGE=wechatopenai/weknora-app
+DOCKER_IMAGE=ghcr.io/jrmatherly/ai-kb-app
 DOCKER_TAG=latest
 
 # Platform detection
@@ -148,14 +148,14 @@ docker-build-app:
 
 # Build docreader Docker image
 docker-build-docreader:
-	docker build --platform $(PLATFORM) -f docker/Dockerfile.docreader -t wechatopenai/weknora-docreader:latest .
+	docker build --platform $(PLATFORM) -f docker/Dockerfile.docreader -t ghcr.io/jrmatherly/ai-kb-docreader:latest .
 
 # Build frontend Docker image (multi-stage: npm runs inside the builder stage)
 docker-build-frontend:
 	@eval $$(./scripts/get_version.sh env); \
 	docker build --platform $(PLATFORM) \
 		--build-arg VITE_FRONTEND_COMMIT="$$COMMIT_ID" \
-		-f frontend/Dockerfile -t wechatopenai/weknora-ui:latest frontend/
+		-f frontend/Dockerfile -t ghcr.io/jrmatherly/ai-kb-ui:latest frontend/
 
 # Build all Docker images
 docker-build-all: docker-build-app docker-build-docreader docker-build-frontend

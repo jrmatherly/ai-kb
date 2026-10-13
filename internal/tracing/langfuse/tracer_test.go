@@ -372,8 +372,8 @@ func TestStartSpan_AutoRootExported(t *testing.T) {
 
 // TestTraceparentPropagation is the sop3 correlation core test: an incoming
 // W3C traceparent (as injected by an upstream caller like sop3) is extracted,
-// and the WeKnora root span inherits the upstream trace id — so in LiteFuse
-// the WeKnora trace and the upstream caller's trace are the same trace.
+// and the AI KB root span inherits the upstream trace id — so in LiteFuse
+// the AI KB trace and the upstream caller's trace are the same trace.
 func TestTraceparentPropagation(t *testing.T) {
 	m, exp := newTestManager(t)
 

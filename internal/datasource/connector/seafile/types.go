@@ -1,4 +1,4 @@
-// Package seafile implements the WeKnora data source connector for Seafile
+// Package seafile implements the AI KB data source connector for Seafile
 // Server (community edition 10.0.1, api2). A data source selects nodes of a
 // single library; the connector scans the selected scope one directory level
 // at a time, downloads files through the two-step link + fileserver flow and

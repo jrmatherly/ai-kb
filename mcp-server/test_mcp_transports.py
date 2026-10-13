@@ -76,7 +76,7 @@ class StdioToolsListTest(unittest.TestCase):
                 args=[str(MCP_SERVER_DIR / "weknora_mcp_server.py")],
                 env={
                     **os.environ,
-                    "WEKNORA_API_KEY": "test-key",
+                    "AIKB_API_KEY": "test-key",
                 },
             )
             async with stdio_client(params) as (read, write):
@@ -97,7 +97,7 @@ class HttpStatelessSmokeTest(unittest.TestCase):
         env = {
             **os.environ,
             "MCP_SERVER_AUTH_TOKEN": "test-token",
-            "WEKNORA_API_KEY": "test-key",
+            "AIKB_API_KEY": "test-key",
         }
         proc = subprocess.Popen(
             [

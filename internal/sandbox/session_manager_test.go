@@ -107,7 +107,7 @@ func TestWorkspaceBootstrapPreservesExistingData(t *testing.T) {
 }
 
 // The agent can delete /workspace/output between turns. Preparing only once
-// per process would leave later writes failing until WeKnora restarted.
+// per process would leave later writes failing until AI KB restarted.
 func TestSessionBoundManagerPreparesWorkspaceOnEveryCall(t *testing.T) {
 	client := newFakeRemoteClient(SandboxTypeCube)
 	cfg := DefaultConfig()
@@ -517,7 +517,7 @@ func TestBuildSessionCreateRequestMarksSkillSnapshot(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, request.FromSnapshot)
 	require.Equal(t, "secret", request.EnvVars["HF_TOKEN"])
-	require.NotEmpty(t, request.EnvVars["WEKNORA_SKILL_OUTPUT_DIR"])
+	require.NotEmpty(t, request.EnvVars["AIKB_SKILL_OUTPUT_DIR"])
 }
 
 func newSessionManagerExecTestHarness(t *testing.T) (*SessionBoundManager, *fakeRemoteClient) {

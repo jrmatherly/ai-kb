@@ -2,7 +2,7 @@
 
 当前实现与部署要求见[沙箱部署与排障](../../../website-docs/06-development/04-sandbox-deployment.md)。本 PoC 仅保留历史可行性实验，不代表当前适配器行为。
 
-这个程序直接打 Docker Engine API，逐项验证「Docker 能不能承载 WeKnora
+这个程序直接打 Docker Engine API，逐项验证「Docker 能不能承载 AI KB
 `RemoteSandboxClient` 契约 + E2B 那套 Snapshot 工作流」。它不是产品代码，也不参与主模块构建
 （自带 `go.mod`），只作为调研结论的可复现证据。
 

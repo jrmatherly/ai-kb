@@ -263,7 +263,7 @@ func cubeTemplateIsSnapshot(templateID string, snapshotIDs map[string]struct{}) 
 	return ok
 }
 
-// EnsureStandardTemplate makes the cluster hold exactly one WeKnora template.
+// EnsureStandardTemplate makes the cluster hold exactly one AI KB template.
 // A healthy or still-building one is returned as is; a failed one is rebuilt in
 // place. If CubeMaster refuses the redo, the failed card is returned as-is;
 // ReplaceStandardTemplate (the settings-page "delete and rebuild" action) is
@@ -291,7 +291,7 @@ func (c *CubeRemoteClient) EnsureStandardTemplate(ctx context.Context) (*RemoteT
 	return c.buildStandardTemplate(ctx)
 }
 
-// ReplaceStandardTemplate applies the current spec to the cluster's WeKnora
+// ReplaceStandardTemplate applies the current spec to the cluster's AI KB
 // template. Cube bakes DNS into the template, so a READY template only picks
 // up a settings change via rebuild (preferred: same ID) or a replacement.
 //
@@ -331,7 +331,7 @@ func (c *CubeRemoteClient) ReplaceStandardTemplate(ctx context.Context) (*Remote
 	return c.buildStandardTemplate(ctx)
 }
 
-// EnsureDesktopTemplate returns the cluster's WeKnora desktop template,
+// EnsureDesktopTemplate returns the cluster's AI KB desktop template,
 // rebuilding a failed one or building it when absent. A cluster may hold
 // both the CLI and desktop templates; the admin picks which ID a config boots.
 func (c *CubeRemoteClient) EnsureDesktopTemplate(ctx context.Context) (*RemoteTemplate, error) {
@@ -414,7 +414,7 @@ func (c *CubeRemoteClient) DeleteSupersededDesktopTemplates(ctx context.Context,
 	return nil
 }
 
-// DeleteSupersededStandardTemplates drops WeKnora templates other than keepID.
+// DeleteSupersededStandardTemplates drops AI KB templates other than keepID.
 func (c *CubeRemoteClient) DeleteSupersededStandardTemplates(ctx context.Context, keepID string) error {
 	keepID = strings.TrimSpace(keepID)
 	if keepID == "" {
@@ -607,7 +607,7 @@ func (c *CubeRemoteClient) desktopTemplateSpec() map[string]any {
 	return cubeDesktopTemplateSpec(dns)
 }
 
-// cubeStandardTemplateSpec is the single definition of how the WeKnora template
+// cubeStandardTemplateSpec is the single definition of how the AI KB template
 // is built. Both the first build and every rebuild send it verbatim — the
 // rebuild endpoint takes a raw payload rather than BuildTemplateOptions, and
 // two hand-kept copies of the spec would eventually disagree.
@@ -636,7 +636,7 @@ func cubeStandardTemplateSpec(dns []string) map[string]any {
 // standard template can never silently alter the desktop's exposed ports.
 //
 // 6080 is deliberately not in exposedPorts. Cube maps that list through eBPF
-// static NAT on the host NIC, which bypasses CubeProxy. WeKnora already
+// static NAT on the host NIC, which bypasses CubeProxy. AI KB already
 // reaches websockify the same way it reaches envd: CubeProxy Host
 // "{port}-{id}.{domain}" plus the inbound token. Publishing 6080 on the host
 // would let anyone who can read /run/desktop/secret (the agent Execs as
@@ -704,7 +704,7 @@ func (c *CubeRemoteClient) Create(
 		network.AllowInternetAccess = &defaultOn
 	}
 	// Deliberately the opposite of Cube's own default. Cube leaves the
-	// sandbox URL reachable by anyone who knows the ID; WeKnora closes it and
+	// sandbox URL reachable by anyone who knows the ID; AI KB closes it and
 	// relies on the per-sandbox traffic token, which the SDK attaches to
 	// data-plane requests for us. Do not change this to true.
 	if network.AllowPublicTraffic == nil {
@@ -1015,7 +1015,7 @@ func (c *CubeRemoteClient) ListDir(
 }
 
 // normaliseFileType maps envd's proto enum strings ("FILE_TYPE_FILE",
-// "FILE_TYPE_DIRECTORY", …) onto the short lowercase names WeKnora already
+// "FILE_TYPE_DIRECTORY", …) onto the short lowercase names AI KB already
 // stores.
 func normaliseFileType(t string) string {
 	switch strings.ToUpper(t) {
@@ -1286,7 +1286,7 @@ func buildShellLine(cmd string, args []string) string {
 // callers actually need to pipe data.
 func wrapWithStdin(line, stdin string) string {
 	// Use a heredoc delimiter unlikely to appear in caller data.
-	const delim = "WEKNORA_STDIN_EOF"
+	const delim = "AIKB_STDIN_EOF"
 	// Escape lines containing the delimiter defensively.
 	safe := strings.ReplaceAll(stdin, delim, "")
 	return "cat <<'" + delim + "' | " + line + "\n" + safe + "\n" + delim

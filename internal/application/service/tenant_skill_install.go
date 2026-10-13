@@ -1304,7 +1304,7 @@ func describeExecFailure(res *sandbox.ExecuteResult) string {
 // installExecutor resolves the one executor every command of an install runs
 // through. It goes through the capability accessor rather than a bare type
 // assertion so a manager that cannot run install-mode shell reports no
-// capability instead of attempting the install on the WeKnora host.
+// capability instead of attempting the install on the AI KB host.
 func installExecutor(mgr sandbox.Manager) (sandbox.SessionInstallShellExecutor, error) {
 	executor := sessionSandboxInstallShellExecutor(mgr)
 	if executor == nil {
@@ -1890,7 +1890,7 @@ func weknoraSkillSnapshotName(raw string) string {
 }
 
 // snapshotsNotFromOtherConfig drops provider listings that already name a
-// different WeKnora config. Cube, E2B and Docker all ListSnapshots across the
+// different AI KB config. Cube, E2B and Docker all ListSnapshots across the
 // whole account/daemon, so without this a reconcile of one config would treat
 // every other config's image as an extra, and an abandoned-build match could
 // bind to the wrong snapshot.
@@ -1942,7 +1942,7 @@ func buildInstallPrompt(skillDir string, bundle *SkillBundle, tools map[string]s
 		skillMD = string(bundle.Files["SKILL.md"])
 		requirementsPath = sandbox.SkillRequirementsPath(bundle.Name)
 	}
-	return fmt.Sprintf(`Install this WeKnora skill into the sandbox image.
+	return fmt.Sprintf(`Install this AI KB skill into the sandbox image.
 
 Skill directory: %s
 %s
@@ -1971,9 +1971,9 @@ Hard requirements:
   a value you invent would be stored as this workspace's real credential. If one environment
   variable is required, set required to true; if it is optional, set required to false. If the
   skill needs no environment variables, write {"env":[]}.
-  Do not declare WEKNORA_SKILL_DIR, WEKNORA_SKILL_OUTPUT_DIR, WEKNORA_SKILL_HISTORY_ROOT or
-  WEKNORA_SESSION_INPUT_DIR: the sandbox injects those. Other WEKNORA_* names the skill reads
-  (WEKNORA_API_KEY, WEKNORA_BASE_URL, WEKNORA_HOST, WEKNORA_TOKEN, WEKNORA_KB_ID) MUST be declared.
+  Do not declare AIKB_SKILL_DIR, AIKB_SKILL_OUTPUT_DIR, AIKB_SKILL_HISTORY_ROOT or
+  AIKB_SESSION_INPUT_DIR: the sandbox injects those. Other AIKB_* names the skill reads
+  (AIKB_API_KEY, AIKB_BASE_URL, AIKB_HOST, AIKB_TOKEN, AIKB_KB_ID) MUST be declared.
 
 On-demand / optional extras MUST be installed now. Every chat session starts
 from the image this install produces, and whatever a session installs dies with

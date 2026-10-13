@@ -94,8 +94,8 @@ func runStatus(ctx context.Context, fopts *cmdutil.FormatOptions, f *cmdutil.Fac
 	}
 
 	// Effective host + auth source. Stateless env credentials
-	// (WEKNORA_TOKEN/WEKNORA_API_KEY) override the profile + keyring for the
-	// client, so report the host they authenticate against (WEKNORA_HOST) and
+	// (AIKB_TOKEN/AIKB_API_KEY) override the profile + keyring for the
+	// client, so report the host they authenticate against (AIKB_HOST) and
 	// that they are in effect — not the bypassed config profile's host.
 	host := ""
 	if c, ok := cfg.Profiles[cfg.CurrentProfile]; ok {
@@ -104,7 +104,7 @@ func runStatus(ctx context.Context, fopts *cmdutil.FormatOptions, f *cmdutil.Fac
 	authSource := "profile + keyring"
 	if active, kind := cmdutil.EnvCredential(); active {
 		authSource = kind + " env (stateless)"
-		if h := strings.TrimSpace(os.Getenv("WEKNORA_HOST")); h != "" {
+		if h := strings.TrimSpace(os.Getenv("AIKB_HOST")); h != "" {
 			host = h
 		}
 	}

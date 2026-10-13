@@ -1,11 +1,11 @@
 [Unit]
-Description=WeKnora first-boot initialization (runs once)
+Description=AI KB first-boot initialization (runs once)
 After=docker.service network-online.target
 Requires=docker.service
 Wants=network-online.target
 Before=weknora.service
 ConditionPathExists=/usr/local/sbin/weknora-firstboot.sh
-ConditionPathExists=!/opt/WeKnora/.firstboot.done
+ConditionPathExists=!/opt/ai-kb/.firstboot.done
 
 [Service]
 Type=oneshot

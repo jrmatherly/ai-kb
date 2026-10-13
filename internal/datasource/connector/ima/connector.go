@@ -534,9 +534,9 @@ func fetchOneMedia(
 	ext := extensionForMediaType(info.MediaType)
 
 	// A media type with no fixed extension (web page, WeChat article, ...) is
-	// normally handed to the ingest layer as a bare URL so WeKnora fetches it
+	// normally handed to the ingest layer as a bare URL so AI KB fetches it
 	// itself. That only works for publicly reachable links: when IMA attaches
-	// auth headers the URL points at IMA-hosted storage and WeKnora's own
+	// auth headers the URL points at IMA-hosted storage and AI KB's own
 	// fetch — which cannot carry those headers — would be rejected. In that
 	// case download here, where the headers are available, and infer the
 	// extension from the response instead.

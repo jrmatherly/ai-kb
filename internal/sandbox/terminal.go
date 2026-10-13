@@ -80,7 +80,7 @@ type RemoteTerminalSession interface {
 	// Resize changes the PTY window size.
 	Resize(ctx context.Context, cols, rows uint32) error
 
-	// Close disconnects WeKnora from the PTY. A backend that can re-attach
+	// Close disconnects AI KB from the PTY. A backend that can re-attach
 	// (Cube/E2B, via envd) leaves the remote shell running so a reconnect
 	// resumes it; a backend that cannot (Docker) terminates it, because the
 	// disconnect would otherwise strand the shell and its jobs. Safe to call
@@ -202,7 +202,7 @@ func TerminalManagerFrom(client RemoteSandboxClient) (RemoteTerminalManager, boo
 }
 
 // DefaultTerminalIdleDisconnect is how long an interactive terminal may sit
-// without keystrokes or PTY output before WeKnora closes the WebSocket.
+// without keystrokes or PTY output before AI KB closes the WebSocket.
 // Closing the socket stops TTL refresh so the sandbox can pause on its own
 // provider timeout. 0 in a stored workspace config means this default.
 const DefaultTerminalIdleDisconnect = 15 * time.Minute

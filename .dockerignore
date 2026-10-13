@@ -37,8 +37,8 @@ temp/
 *.pid
 
 # Local build output / binaries
-WeKnora
-WeKnora-lite
+ai-kb
+ai-kb-lite
 /server
 /dist/
 /build/

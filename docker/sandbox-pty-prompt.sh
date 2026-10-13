@@ -1,7 +1,7 @@
-# WeKnora interactive PTY prompt: classic \u@\h:\W\$
+# AI KB interactive PTY prompt: classic \u@\h:\W\$
 # (user@host:last-path-segment, # for root / $ otherwise).
 #
-# \W is the last directory only (e.g. /opt/weknora/skills → skills),
+# \W is the last directory only (e.g. /opt/ai-kb/skills → skills),
 # so deep cwd does not blow the prompt width.
 #
 # Bold green (01;32) is user@host; bold blue (01;34) is the path — the

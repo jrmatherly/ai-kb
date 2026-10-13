@@ -54,7 +54,7 @@ type schemaIndexEntry struct {
 // newCmdSchema builds the `weknora schema` introspection command. With no args
 // it lists every leaf command and its purpose; with a command path it prints
 // that command's full contract. This makes the structured help (otherwise only
-// reachable via WEKNORA_AGENT_HELP=1 on --help) a first-class, discoverable
+// reachable via AIKB_AGENT_HELP=1 on --help) a first-class, discoverable
 // command — mirroring how mainstream agent-first CLIs expose schema introspection.
 func newCmdSchema() *cobra.Command {
 	cmd := &cobra.Command{
@@ -67,7 +67,7 @@ an index of every command and what it is used for.
   weknora schema kb create       # the contract for one command
   weknora schema doc update      # used_for, flags, examples, output, risk
 
-This is the discoverable form of WEKNORA_AGENT_HELP=1 <cmd> --help: an agent
+This is the discoverable form of AIKB_AGENT_HELP=1 <cmd> --help: an agent
 can enumerate the surface and learn how to call any command without scraping
 human help prose.`,
 		Args: cobra.ArbitraryArgs,

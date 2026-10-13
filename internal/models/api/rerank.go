@@ -8,7 +8,7 @@ import "context"
 // validation and fail at call time.
 type RerankAPI string
 
-// The rerank protocols WeKnora speaks.
+// The rerank protocols AI KB speaks.
 const (
 	// RerankCohere is the de-facto standard shape — POST {base}/rerank with
 	// {model, query, documents} and a results array of {index,

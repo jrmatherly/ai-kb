@@ -415,7 +415,7 @@ func TestLegacyStoredBaseURLSelectsSameProtocol(t *testing.T) {
 // {"api": "v1"} therefore fails PUT /models/{id} with 400 and fails every
 // chat call, even though nothing about that row changed.
 //
-// Nothing in WeKnora ever wrote this key, so only hand-built rows and
+// Nothing in AI KB ever wrote this key, so only hand-built rows and
 // hand-written builtin_models.yaml entries are affected. If that is judged too
 // sharp, the fix is to ignore an unparseable extra_config.api in Resolve and
 // keep the strict check for Spec.API, which no old row can carry.

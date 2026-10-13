@@ -2,7 +2,7 @@
 /**
  * End-to-end check inside a real DeepSeek Harness install: install this package
  * into a throwaway dsh profile with `dsh plugin add`, boot the headless profile
- * against a fake OpenAI-compatible model and a mock WeKnora backend, and assert
+ * against a fake OpenAI-compatible model and a mock AI KB backend, and assert
  * that the harness agent loop actually called the tools and answered from what
  * they returned.
  *
@@ -12,7 +12,7 @@
  *   B. a profile patch that overrides the row, including a renamed tool prefix,
  *      which also proves configuration reaches the plugin.
  *   C. a row with no knowledge base scope, where the plugin resolves the full
- *      visible set itself — WeKnora refuses an unscoped search.
+ *      visible set itself — AI KB refuses an unscoped search.
  *
  * Usage:
  *   node test/e2e/run-in-dsh.mjs                 # installs dsh into a cache dir
@@ -40,7 +40,7 @@ const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const installDir = process.env.DSH_INSTALL_DIR ?? join(tmpdir(), 'dsh-e2e-install')
 const dshSpec = process.env.DSH_PACKAGE_SPEC ?? '@deepseek-ai/dsh@latest'
 const API_KEY = 'e2e-api-key'
-const QUESTION = 'WeKnora 的默认检索阈值是多少？请查知识库后回答。'
+const QUESTION = 'AI KB 的默认检索阈值是多少？请查知识库后回答。'
 const transcript = []
 
 function log(line) {
@@ -97,13 +97,13 @@ function modelPatchRows(modelUrl) {
       config: {
         providers: {
           'weknora-e2e': {
-            displayName: 'WeKnora e2e gateway',
-            apiKeyEnv: 'WEKNORA_E2E_MODEL_KEY',
+            displayName: 'AI KB e2e gateway',
+            apiKeyEnv: 'AIKB_E2E_MODEL_KEY',
             api: 'openai-completions',
             baseURL: modelUrl,
             models: [{
               id: 'weknora-e2e-model',
-              name: 'WeKnora e2e model',
+              name: 'AI KB e2e model',
               contextWindow: 65536,
               maxTokens: 4096,
             }],
@@ -116,7 +116,7 @@ function modelPatchRows(modelUrl) {
 
 /**
  * Boot the headless profile once and assert the whole path: the harness offered
- * the tools, the tools reached WeKnora, the retrieved passages reached the
+ * the tools, the tools reached AI KB, the retrieved passages reached the
  * model, and the printed answer is grounded in them.
  */
 async function scenario(options) {
@@ -148,10 +148,10 @@ async function scenario(options) {
 
     const calls = weknora.requests.slice(requestsBefore)
     const paths = calls.map(request => request.path)
-    log(`# WeKnora received: ${paths.join(', ')}`)
+    log(`# AI KB received: ${paths.join(', ')}`)
     assert.ok(paths.includes('/api/v1/knowledge-search'), 'search must reach the retrieval endpoint')
     if (autoScope) {
-      // WeKnora rejects an unscoped retrieval, so with nothing configured the
+      // AI KB rejects an unscoped retrieval, so with nothing configured the
       // plugin has to resolve the full visible set itself — the model asked a
       // plain question and never named a knowledge base.
       assert.ok(
@@ -178,7 +178,7 @@ async function scenario(options) {
     assert.match(toolResults, /knowledge_id: doc-retrieval-pipeline/, 'search hits must carry a usable knowledge_id')
     assert.match(boot.stdout, /0\.5/, 'the printed answer must carry the retrieved threshold')
 
-    log(`# PASS (${label}): ${prefix}_search and ${prefix}_read_document ran inside dsh against WeKnora, `
+    log(`# PASS (${label}): ${prefix}_search and ${prefix}_read_document ran inside dsh against AI KB, `
       + 'and the answer came from the retrieved passages.')
   } finally {
     await model.close()
@@ -195,13 +195,13 @@ async function main() {
   const dsh = await resolveDsh()
   const env = {
     DSH_HOME: home,
-    WEKNORA_E2E_MODEL_KEY: 'not-a-real-key',
-    WEKNORA_BASE_URL: weknora.url,
-    WEKNORA_API_KEY: API_KEY,
-    WEKNORA_KNOWLEDGE_BASE_IDS: 'kb-product',
+    AIKB_E2E_MODEL_KEY: 'not-a-real-key',
+    AIKB_BASE_URL: weknora.url,
+    AIKB_API_KEY: API_KEY,
+    AIKB_KNOWLEDGE_BASE_IDS: 'kb-product',
   }
 
-  log(`# mock WeKnora   ${weknora.url}`)
+  log(`# mock AI KB   ${weknora.url}`)
   log(`# DSH_HOME       ${home}`)
   log(`# dsh launcher   ${dsh}`)
 
@@ -243,7 +243,7 @@ async function main() {
     })
 
     // C. No configured scope at all, which is what the quickstart's optional
-    //    WEKNORA_KNOWLEDGE_BASE_IDS leaves behind.
+    //    AIKB_KNOWLEDGE_BASE_IDS leaves behind.
     await scenario({
       label: 'C · no configured scope, resolved by the plugin',
       dsh,

@@ -53,7 +53,7 @@ func NewCmdFetch(f *cmdutil.Factory) *cobra.Command {
 		Short: "Fetch a remote document into a knowledge base",
 		Long: `Server fetches the document at the given URL and ingests it into the resolved
 knowledge base. KB resolution follows the standard 4-level chain:
---kb flag > WEKNORA_KB_ID env > .weknora/project.yaml > error.
+--kb flag > AIKB_KB_ID env > .weknora/project.yaml > error.
 
 When the URL has a known file extension (.pdf, .docx, .md, .txt) the server
 automatically switches from web-page-crawl mode to file-download mode. Pass
@@ -135,8 +135,8 @@ Server-side ingestion knobs:
 	cmdutil.AddFormatFlag(cmd, docFetchFields...)
 	cmdutil.AddDryRunFlag(cmd, &opts.DryRun)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
-		UsedFor:       "Ingest a remote URL into the resolved knowledge base. KB resolved via --kb flag, WEKNORA_KB_ID env, or project link. Emits the created Knowledge object with its id.",
-		RequiredFlags: []string{"<url> (positional)", "--kb (or WEKNORA_KB_ID / project link)"},
+		UsedFor:       "Ingest a remote URL into the resolved knowledge base. KB resolved via --kb flag, AIKB_KB_ID env, or project link. Emits the created Knowledge object with its id.",
+		RequiredFlags: []string{"<url> (positional)", "--kb (or AIKB_KB_ID / project link)"},
 		Examples: []string{
 			`weknora doc fetch https://example.com/whitepaper.pdf --kb kb_eng`,
 		},

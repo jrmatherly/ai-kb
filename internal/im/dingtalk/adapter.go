@@ -224,7 +224,7 @@ func parseAudioContent(msgtype string, content json.RawMessage) (string, bool) {
 	return text, true
 }
 
-// parseFileContent maps a DingTalk msgtype + content object to WeKnora's file
+// parseFileContent maps a DingTalk msgtype + content object to AI KB's file
 // message fields. Returns ok=false for non-file/picture message types so the
 // caller keeps its text handling. Picture messages have no fileName; the IM
 // service appends an extension after download.

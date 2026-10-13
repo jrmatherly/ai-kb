@@ -5,7 +5,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "WeKnora knowledge retrieval tools for DeepSeek Harness (dsh): semantic search, document reading and RAG/agent answers over your own knowledge bases.",
+  "description": "AI KB knowledge retrieval tools for DeepSeek Harness (dsh): semantic search, document reading and RAG/agent answers over your own knowledge bases.",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -17,7 +17,7 @@
     "knowledge-base"
   ],
   "license": "MIT",
-  "author": "WeKnora",
+  "author": "AI KB",
   "homepage": "https://github.com/jrmatherly/ai-kb/tree/main/packages/dsh-weknora",
   "repository": {
     "type": "git",

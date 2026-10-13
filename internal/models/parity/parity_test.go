@@ -636,7 +636,7 @@ func TestEveryChatModelRequestShape(t *testing.T) {
 func TestWeKnoraCloudTransport(t *testing.T) {
 	v, ok := modelruntime.Get("weknoracloud")
 	require.True(t, ok)
-	require.NotNil(t, v.Endpoint, "WeKnora Cloud needs a custom endpoint")
+	require.NotNil(t, v.Endpoint, "AI KB Cloud needs a custom endpoint")
 	url, _ := v.Endpoint(providers.EndpointRequest{
 		BaseURL: "https://weknora.weixin.qq.com", ModelType: types.ModelTypeKnowledgeQA,
 	})
@@ -644,7 +644,7 @@ func TestWeKnoraCloudTransport(t *testing.T) {
 
 	resolved := resolve(t, "weknoracloud", "any-model")
 	assert.False(t, resolved.OpenAICompletions.SupportsMultiContent,
-		"WeKnora Cloud needs multi-content flattened to text")
+		"AI KB Cloud needs multi-content flattened to text")
 
 	cfg := &chat.ChatConfig{Provider: "weknoracloud", ModelName: "any-model", AppID: "app", AppSecret: "secret"}
 	body := buildBody(t, cfg, &api.Options{}, false)

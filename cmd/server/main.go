@@ -1,12 +1,12 @@
-// Package main is the main package for the WeKnora server
+// Package main is the main package for the AI KB server
 // It contains the main function and the entry point for the server
 //
-// @title           WeKnora API
+// @title           AI KB API
 // @version         1.0
-// @description     WeKnora 知识库管理系统 API 文档
+// @description     AI KB 知识库管理系统 API 文档
 // @termsOfService  http://swagger.io/terms/
 //
-// @contact.name   WeKnora Github
+// @contact.name   AI KB Github
 // @contact.url    https://github.com/jrmatherly/ai-kb
 //
 // @BasePath  /api/v1

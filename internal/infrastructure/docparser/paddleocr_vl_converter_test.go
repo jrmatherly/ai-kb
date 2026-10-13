@@ -32,9 +32,9 @@ func TestPaddleOCRVLTimeoutConfig(t *testing.T) {
 		{"overflow", "999999999999999999999h", 1000 * time.Second},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("WEKNORA_PADDLEOCR_VL_TIMEOUT", tt.value)
+			t.Setenv("AIKB_PADDLEOCR_VL_TIMEOUT", tt.value)
 			if tt.name == "unset" {
-				if err := os.Unsetenv("WEKNORA_PADDLEOCR_VL_TIMEOUT"); err != nil {
+				if err := os.Unsetenv("AIKB_PADDLEOCR_VL_TIMEOUT"); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -53,9 +53,9 @@ func TestPaddleOCRVLReadTimeout(t *testing.T) {
 	for _, mode := range []string{"success", "http timeout", "parent deadline", "parent cancellation"} {
 		t.Run(mode, func(t *testing.T) {
 			t.Setenv("SSRF_WHITELIST", "127.0.0.1,localhost")
-			t.Setenv("WEKNORA_PADDLEOCR_VL_TIMEOUT", "10s")
+			t.Setenv("AIKB_PADDLEOCR_VL_TIMEOUT", "10s")
 			if mode == "http timeout" {
-				t.Setenv("WEKNORA_PADDLEOCR_VL_TIMEOUT", "100ms")
+				t.Setenv("AIKB_PADDLEOCR_VL_TIMEOUT", "100ms")
 			}
 			arrived := make(chan struct{})
 			release := make(chan struct{})

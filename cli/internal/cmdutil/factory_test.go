@@ -309,10 +309,10 @@ func fakeKBServer(t *testing.T, kbs []sdk.KnowledgeBase) *httptest.Server {
 	return srv
 }
 
-// TestFactory_ActiveProfile_EnvVarFallback verifies WEKNORA_PROFILE is honoured
+// TestFactory_ActiveProfile_EnvVarFallback verifies AIKB_PROFILE is honoured
 // when no override or config is present.
 func TestFactory_ActiveProfile_EnvVarFallback(t *testing.T) {
-	t.Setenv("WEKNORA_PROFILE", "staging")
+	t.Setenv("AIKB_PROFILE", "staging")
 	f := &Factory{} // no override, no config
 	if got := f.ActiveProfile(); got != "staging" {
 		t.Errorf("expected env fallback to staging; got %q", got)
@@ -320,9 +320,9 @@ func TestFactory_ActiveProfile_EnvVarFallback(t *testing.T) {
 }
 
 // TestFactory_ActiveProfile_OverrideWinsEnv verifies ProfileOverride takes
-// priority over the WEKNORA_PROFILE env var.
+// priority over the AIKB_PROFILE env var.
 func TestFactory_ActiveProfile_OverrideWinsEnv(t *testing.T) {
-	t.Setenv("WEKNORA_PROFILE", "staging")
+	t.Setenv("AIKB_PROFILE", "staging")
 	f := &Factory{ProfileOverride: "prod"}
 	if got := f.ActiveProfile(); got != "prod" {
 		t.Errorf("override should win over env; got %q", got)
@@ -334,7 +334,7 @@ func TestFactory_ActiveProfile_OverrideWinsEnv(t *testing.T) {
 func TestResolveKB_Chain(t *testing.T) {
 	t.Run("flag_kb_id_wins", func(t *testing.T) {
 		// UUID form on --kb → pass-through; no SDK call, no env, no disk.
-		t.Setenv("WEKNORA_KB_ID", "kb_env_should_lose")
+		t.Setenv("AIKB_KB_ID", "kb_env_should_lose")
 		dir := t.TempDir()
 		resolveKBChdir(t, dir)
 		// Drop a project link too - must be ignored.
@@ -354,7 +354,7 @@ func TestResolveKB_Chain(t *testing.T) {
 	})
 
 	t.Run("flag_kb_name_resolves", func(t *testing.T) {
-		t.Setenv("WEKNORA_KB_ID", "")
+		t.Setenv("AIKB_KB_ID", "")
 		srv := fakeKBServer(t, []sdk.KnowledgeBase{
 			{ID: "kb_a", Name: "foo"},
 			{ID: "kb_b", Name: "bar"},
@@ -368,7 +368,7 @@ func TestResolveKB_Chain(t *testing.T) {
 	})
 
 	t.Run("flag_kb_name_not_found", func(t *testing.T) {
-		t.Setenv("WEKNORA_KB_ID", "")
+		t.Setenv("AIKB_KB_ID", "")
 		srv := fakeKBServer(t, []sdk.KnowledgeBase{{ID: "kb_a", Name: "foo"}})
 		f := &Factory{
 			Client: func() (*sdk.Client, error) { return sdk.NewClient(srv.URL), nil },
@@ -382,7 +382,7 @@ func TestResolveKB_Chain(t *testing.T) {
 
 	t.Run("env_var", func(t *testing.T) {
 		// No flag, env wins over disk.
-		t.Setenv("WEKNORA_KB_ID", "kb_env")
+		t.Setenv("AIKB_KB_ID", "kb_env")
 		dir := t.TempDir()
 		resolveKBChdir(t, dir)
 		require.NoError(t, projectlink.Save(filepath.Join(dir, ".weknora", "project.yaml"), &projectlink.Project{KBID: "kb_disk_should_lose"}))
@@ -394,7 +394,7 @@ func TestResolveKB_Chain(t *testing.T) {
 	})
 
 	t.Run("project_link_walk_up", func(t *testing.T) {
-		t.Setenv("WEKNORA_KB_ID", "")
+		t.Setenv("AIKB_KB_ID", "")
 		root := t.TempDir()
 		require.NoError(t, projectlink.Save(filepath.Join(root, ".weknora", "project.yaml"), &projectlink.Project{KBID: "kb_proj"}))
 		// Run from a deep child to exercise walk-up.
@@ -410,7 +410,7 @@ func TestResolveKB_Chain(t *testing.T) {
 
 	t.Run("none", func(t *testing.T) {
 		// No flag, no env, no project link → CodeKBIDRequired.
-		t.Setenv("WEKNORA_KB_ID", "")
+		t.Setenv("AIKB_KB_ID", "")
 		dir := t.TempDir()
 		resolveKBChdir(t, dir)
 
@@ -423,24 +423,24 @@ func TestResolveKB_Chain(t *testing.T) {
 	})
 }
 
-// TestBuildClientFromEnv covers the stateless env-credential path: WEKNORA_TOKEN
-// / WEKNORA_API_KEY build an ephemeral client with no config/keyring access.
+// TestBuildClientFromEnv covers the stateless env-credential path: AIKB_TOKEN
+// / AIKB_API_KEY build an ephemeral client with no config/keyring access.
 func TestBuildClientFromEnv(t *testing.T) {
 	emptyCfg := &Factory{Config: func() (*config.Config, error) { return &config.Config{}, nil }}
 
 	t.Run("no env vars falls through to profile path", func(t *testing.T) {
-		t.Setenv("WEKNORA_TOKEN", "")
-		t.Setenv("WEKNORA_API_KEY", "")
+		t.Setenv("AIKB_TOKEN", "")
+		t.Setenv("AIKB_API_KEY", "")
 		c, handled, err := buildClientFromEnv(emptyCfg)
 		assert.False(t, handled, "no env creds must fall through")
 		assert.Nil(t, c)
 		assert.NoError(t, err)
 	})
 
-	t.Run("api key + WEKNORA_HOST builds a client", func(t *testing.T) {
-		t.Setenv("WEKNORA_TOKEN", "")
-		t.Setenv("WEKNORA_API_KEY", "sk-test")
-		t.Setenv("WEKNORA_HOST", "https://kb.example.com")
+	t.Run("api key + AIKB_HOST builds a client", func(t *testing.T) {
+		t.Setenv("AIKB_TOKEN", "")
+		t.Setenv("AIKB_API_KEY", "sk-test")
+		t.Setenv("AIKB_HOST", "https://kb.example.com")
 		c, handled, err := buildClientFromEnv(emptyCfg)
 		assert.True(t, handled)
 		require.NoError(t, err)
@@ -448,9 +448,9 @@ func TestBuildClientFromEnv(t *testing.T) {
 	})
 
 	t.Run("token set but no host is a typed input error", func(t *testing.T) {
-		t.Setenv("WEKNORA_API_KEY", "")
-		t.Setenv("WEKNORA_TOKEN", "jwt-token")
-		t.Setenv("WEKNORA_HOST", "")
+		t.Setenv("AIKB_API_KEY", "")
+		t.Setenv("AIKB_TOKEN", "jwt-token")
+		t.Setenv("AIKB_HOST", "")
 		c, handled, err := buildClientFromEnv(emptyCfg)
 		assert.True(t, handled, "env creds set → handled even on host error")
 		assert.Nil(t, c)
@@ -459,10 +459,10 @@ func TestBuildClientFromEnv(t *testing.T) {
 		assert.Equal(t, CodeInputInvalidArgument, ce.Code)
 	})
 
-	t.Run("host falls back to the active profile when WEKNORA_HOST unset", func(t *testing.T) {
-		t.Setenv("WEKNORA_API_KEY", "")
-		t.Setenv("WEKNORA_TOKEN", "jwt-token")
-		t.Setenv("WEKNORA_HOST", "")
+	t.Run("host falls back to the active profile when AIKB_HOST unset", func(t *testing.T) {
+		t.Setenv("AIKB_API_KEY", "")
+		t.Setenv("AIKB_TOKEN", "jwt-token")
+		t.Setenv("AIKB_HOST", "")
 		f := &Factory{Config: func() (*config.Config, error) {
 			return &config.Config{
 				CurrentProfile: "p",

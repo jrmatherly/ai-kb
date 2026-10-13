@@ -131,7 +131,7 @@ const installCommand = 'openclaw skills install @lyingbug/weknora'
 
 const envExample = computed(() => {
   const base = apiBaseUrlDisplay.value || 'https://your-server.com/api/v1'
-  return `export WEKNORA_BASE_URL="${base}"\nexport WEKNORA_API_KEY="sk-your-api-key"`
+  return `export AIKB_BASE_URL="${base}"\nexport AIKB_API_KEY="sk-your-api-key"`
 })
 
 const openClawHub = () => {

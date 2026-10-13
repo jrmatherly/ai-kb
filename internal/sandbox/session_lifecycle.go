@@ -25,7 +25,7 @@ const (
 	remoteMetadataConfigID = "weknora_sandbox_config_id"
 )
 
-// ErrSandboxSessionDeleted reports that the owning WeKnora session no longer
+// ErrSandboxSessionDeleted reports that the owning AI KB session no longer
 // exists. Callers must not execute work with the returned nil handle.
 var ErrSandboxSessionDeleted = errors.New("sandbox session no longer exists")
 

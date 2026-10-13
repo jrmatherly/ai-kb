@@ -405,12 +405,12 @@ func buildServices(f *cmdutil.Factory) (Services, error) {
 // mirror the client builder (buildClientFromEnv) so doctor probes the host the
 // real commands actually connect to; tier 1 is a doctor-local test/dev knob:
 //
-//  1. WEKNORA_BASE_URL — doctor-only probe override (used by tests); NOT read
+//  1. AIKB_BASE_URL — doctor-only probe override (used by tests); NOT read
 //     by the client builder, so setting it points doctor at a host no real
 //     command uses. Kept for test/dev harnesses; leave unset in normal use.
-//  2. WEKNORA_HOST — when stateless env credentials (WEKNORA_TOKEN /
-//     WEKNORA_API_KEY) are in effect, i.e. the headless agent path. Without
-//     this, `WEKNORA_API_KEY=… WEKNORA_HOST=… weknora doctor` falsely reported
+//  2. AIKB_HOST — when stateless env credentials (AIKB_TOKEN /
+//     AIKB_API_KEY) are in effect, i.e. the headless agent path. Without
+//     this, `AIKB_API_KEY=… AIKB_HOST=… weknora doctor` falsely reported
 //     "no host configured" and exited 1 while every other command worked.
 //  3. active profile host — the configured default.
 func resolveDoctorHost(cfg *config.Config) string {
@@ -418,15 +418,15 @@ func resolveDoctorHost(cfg *config.Config) string {
 	if ctx, ok := cfg.Profiles[cfg.CurrentProfile]; ok {
 		host = ctx.Host
 	}
-	// Env credentials authenticate via WEKNORA_HOST, bypassing the profile.
+	// Env credentials authenticate via AIKB_HOST, bypassing the profile.
 	// Honor it only when such creds are actually set, matching the client
-	// builder (a bare WEKNORA_HOST without creds is ignored there too).
+	// builder (a bare AIKB_HOST without creds is ignored there too).
 	if envActive, _ := cmdutil.EnvCredential(); envActive {
-		if v := strings.TrimSpace(os.Getenv("WEKNORA_HOST")); v != "" {
+		if v := strings.TrimSpace(os.Getenv("AIKB_HOST")); v != "" {
 			host = v
 		}
 	}
-	if v := os.Getenv("WEKNORA_BASE_URL"); v != "" {
+	if v := os.Getenv("AIKB_BASE_URL"); v != "" {
 		host = v
 	}
 	return host

@@ -1,4 +1,4 @@
-// Package service provides business logic implementations for WeKnora application
+// Package service provides business logic implementations for AI KB application
 // This package contains service layer implementations that coordinate between
 // repositories and handlers, applying business rules and transaction management
 package service

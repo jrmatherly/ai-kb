@@ -8,7 +8,7 @@
 #
 #   docker build --platform linux/amd64 \
 #     --build-arg VITE_FRONTEND_COMMIT=$(git rev-parse --short HEAD) \
-#     -t wechatopenai/weknora-ui:latest \
+#     -t ghcr.io/jrmatherly/ai-kb-ui:latest \
 #     frontend/
 #
 # Optional npm mirror (e.g. corporate registry):

@@ -1,16 +1,16 @@
 ---
 name: weknora-rag-search
-description: Use when retrieving from or asking questions against a WeKnora knowledge base via the `weknora` CLI — and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
+description: Use when retrieving from or asking questions against a AI KB knowledge base via the `weknora` CLI — and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
 metadata:
   tested_against: v0.10
 ---
 
-# WeKnora — retrieval & RAG queries
+# AI KB — retrieval & RAG queries
 
 **REQUIRED BACKGROUND:** read the `weknora-shared` skill first (auth, `--kb`
 resolution, the JSON envelope, exit codes, streaming/NDJSON output).
 
-WeKnora gives you several ways to "ask about a knowledge base." Picking the wrong
+AI KB gives you several ways to "ask about a knowledge base." Picking the wrong
 one wastes turns or returns the wrong shape. Use the decision table.
 
 ## Pick the command by your goal
@@ -40,7 +40,7 @@ one wastes turns or returns the wrong shape. Use the decision table.
 ## Safety / Gotchas
 
 - `chat`, `search chunks`, `search docs` need a KB: pass `--kb <id-or-name>`, or
-  set `WEKNORA_KB_ID`, or `weknora link` the directory (resolved in that order).
+  set `AIKB_KB_ID`, or `weknora link` the directory (resolved in that order).
   If none resolves it's exit 1 (`local.kb_id_required`); a bad name is exit 1
   (`local.kb_not_found`). Resolve names with `weknora kb list` / `search kb`.
   (`search kb` / `search sessions` are tenant-wide and take no `--kb`.)

@@ -65,7 +65,7 @@ type SessionSandboxBinding struct {
 	//
 	// Cube may reissue it on Connect after pause/resume; the lifecycle writes
 	// the fresh value back here. E2B issues it only at create. Either way this
-	// binding is the only place the credential survives a WeKnora restart.
+	// binding is the only place the credential survives a AI KB restart.
 	//
 	// Stored as-is. It is a bearer credential, so the Redis instance holding
 	// these bindings must be access-controlled — it already holds the

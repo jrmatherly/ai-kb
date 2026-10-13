@@ -3,7 +3,7 @@
 // named `agent/` to match the cobra subcommand; the Go package is `agentcmd`
 // to avoid colliding with cobra's *cobra.Command identifier.
 //
-// "agent" in this subtree refers to WeKnora's user-defined Custom
+// "agent" in this subtree refers to AI KB's user-defined Custom
 // Agents (server resource: GET/POST /agents/...) and handles CRUD
 // operations only. Agent invocation has moved to `weknora session ask
 // --agent <id>` (see cli/cmd/session/ask.go).

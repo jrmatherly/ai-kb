@@ -16,13 +16,13 @@ import (
 func TestBuildKnowledgeIndexContentExcludesCustomMetadata(t *testing.T) {
 	t.Parallel()
 	knowledge := &types.Knowledge{
-		Title:          "  WeKnora Handbook  ",
+		Title:          "  AI KB Handbook  ",
 		CustomMetadata: types.JSON(`{"region":"Shanghai","department":"R&D"}`),
 	}
 
 	content := buildKnowledgeIndexContent(knowledge, "Chunk body")
 
-	require.Equal(t, "WeKnora Handbook\nChunk body", content)
+	require.Equal(t, "AI KB Handbook\nChunk body", content)
 	require.NotContains(t, content, "Shanghai")
 	require.NotContains(t, content, "department")
 }

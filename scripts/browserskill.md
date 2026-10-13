@@ -2,7 +2,7 @@
 
 The extension and daemon are based on the official `ext-v0.3.1` tag, commit
 `da6bf4eed2dd7256567e152df8c903c87f6598c3` (including the upstream PRs #291,
-#296, #297 and #318 that WeKnora previously pinned from `main`). Both report
+#296, #297 and #318 that AI KB previously pinned from `main`). Both report
 version `0.3.1`; the exact source baseline is recorded in
 `scripts/browserskill-release.json`. The daemon is built with
 `cargo build --locked --release -p bsk` from the same commit because upstream
@@ -26,7 +26,7 @@ without discarding healthy frame content.
 | Former patch | Replacement |
 | --- | --- |
 | `01-browser-read-reliability.patch` | Upstream PR #318: bounded renderer reads, per-session read gates, capture fallback termination and debugger frame discovery. |
-| `02-gateway-task-controls.patch` | Upstream PR #296: the optional UI channel `ui.task_preview` / `ui.task_focus` (renamed from `gateway.*`). WeKnora calls the official methods. |
+| `02-gateway-task-controls.patch` | Upstream PR #296: the optional UI channel `ui.task_preview` / `ui.task_focus` (renamed from `gateway.*`). AI KB calls the official methods. |
 | `03-vom-render-performance.patch` | Upstream PR #271 |
 | `04-task-popup-ownership.patch` | Upstream PR #297: popups opened by native click/key input inside the Agent Window become observed, controllable tabs that session stop preserves. |
 | `05-last-tab-lifecycle.patch` | Host side. `Manager.Call` runs `tool.tab_list` with `scope: "agent"` before `tool.tab_close`; when the target is the only tab in the Agent Window it first creates an agent-owned `about:blank` tab through `tool.tab_create`. Only official RPCs are involved. |
@@ -41,7 +41,7 @@ Windows use upstream PR #227. Do not restore the old
 focus-emulation cache.
 
 Retained tasks keep the official session and debugger; turn completion only
-stops preview polling in WeKnora. Completed tasks use native session stop.
+stops preview polling in AI KB. Completed tasks use native session stop.
 
 ## UI channel
 
@@ -63,10 +63,10 @@ native automation queue and never start a session:
   returning `{ "focused": true }`.
 
 Errors use the native envelope with typed codes (`not_found`, `timeout`,
-`cancelled`, `cdp_failed`) and an optional `data.reason`. WeKnora maps every
+`cancelled`, `cdp_failed`) and an optional `data.reason`. AI KB maps every
 error except `unknown_method` to a transient preview failure. Extensions built
 before PR #296 answer `unknown_method`;
-WeKnora then disables preview polling and reports the extension as outdated.
+AI KB then disables preview polling and reports the extension as outdated.
 
 ## Behavior of the 0.3.1 extension
 
@@ -115,7 +115,7 @@ BSK_GEOMETRY_CHROME=/path/to/test-chrome BSK_BACKGROUND_CHROME=/path/to/test-chr
 cargo test --locked -p bsk daemon::ipc::tests
 ```
 
-Run WeKnora's `TestRealExtension` with the built extension, pinned daemon and an
+Run AI KB's `TestRealExtension` with the built extension, pinned daemon and an
 isolated Chromium profile. It exercises actual pairing, screenshot and input RPC,
 same-window target selection/read/close, independent popup borrow/read/return and
 access revocation, the in-window borrow rejection followed by borrow

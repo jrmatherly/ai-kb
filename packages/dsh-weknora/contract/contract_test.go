@@ -1,4 +1,4 @@
-// Package contract asserts that the WeKnora API surface the dsh-weknora plugin
+// Package contract asserts that the AI KB API surface the dsh-weknora plugin
 // speaks still exists on this server: the request bodies it sends must decode
 // into the real handler request structs with no unknown fields, and the response
 // fields it reads must still be produced by the real response types.
@@ -172,7 +172,7 @@ func TestResponseFieldsThePluginReadsStillExist(t *testing.T) {
 			ID:                "doc-1",
 			Title:             "检索流程.md",
 			FileName:          "检索流程.md",
-			Description:       "讲解 WeKnora 混合检索的召回与阈值。",
+			Description:       "讲解 AI KB 混合检索的召回与阈值。",
 			KnowledgeBaseID:   "kb-product",
 			KnowledgeBaseName: "Product docs",
 		},

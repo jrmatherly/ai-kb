@@ -196,7 +196,7 @@ func (s *e2bTerminalSession) Resize(ctx context.Context, cols, rows uint32) erro
 	return nil
 }
 
-// Close disconnects WeKnora from the PTY without killing the remote shell,
+// Close disconnects AI KB from the PTY without killing the remote shell,
 // leaving it reattachable via Pty.Connect. The pump goroutine observes the
 // disconnect and closes the output channel silently.
 func (s *e2bTerminalSession) Close() error {

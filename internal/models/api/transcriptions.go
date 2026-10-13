@@ -6,7 +6,7 @@ import "context"
 // EmbeddingAPI it is its own type, so no other modality's value validates.
 type TranscriptionAPI string
 
-// The transcription protocols WeKnora speaks.
+// The transcription protocols AI KB speaks.
 const (
 	// TranscriptionOpenAI is POST {base}/audio/transcriptions as a multipart
 	// form carrying file and model, answering {text} — or {text, segments}

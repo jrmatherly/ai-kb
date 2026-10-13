@@ -81,7 +81,7 @@ func TestShellRuntimeIntegration(t *testing.T) {
 	require.True(t, r.Success, "%+v", r)
 	require.Equal(t, 0, r.Data["exit_code"], "%+v", r)
 	require.Equal(t, "42\n", r.Data["stdout"])
-	r = call(ToolShellExec, `{"skill_name":"runtime-probe","command":"printf changed > \"$WEKNORA_SKILL_DIR/SKILL.md\""}`)
+	r = call(ToolShellExec, `{"skill_name":"runtime-probe","command":"printf changed > \"$AIKB_SKILL_DIR/SKILL.md\""}`)
 	require.Equal(t, 0, r.Data["exit_code"], "root sessions may update their own installed tree")
 	r = call(ToolWriteSandboxFile, `{"path":"npm-package/package.json","content":"{\"name\":\"runtime-node-probe\",\"version\":\"1.0.0\",\"main\":\"index.js\"}"}`)
 	require.True(t, r.Success, "%+v", r)
@@ -117,7 +117,7 @@ func TestShellRuntimeIntegration(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(hostDir, "SKILL.md"), []byte("---\nname: host-probe\ndescription: Test staging\n---\nRun scripts/run.py.\n"), 0644))
 	require.NoError(t, os.WriteFile(filepath.Join(hostDir, "asset.bin"), []byte{0, 255, 1}, 0644))
 	require.NoError(t, os.WriteFile(filepath.Join(hostDir, "scripts", "run.py"), []byte(`import os, pathlib, sys
-base = pathlib.Path(os.environ["WEKNORA_SKILL_DIR"])
+base = pathlib.Path(os.environ["AIKB_SKILL_DIR"])
 assert str(pathlib.Path.cwd()) == "/workspace"
 print((base / "asset.bin").read_bytes().hex())
 print(sys.argv[1])
@@ -129,7 +129,7 @@ sys.stdout.write(sys.stdin.read())
 	registry.RegisterTool(NewShellExecTool(mgr, nil).WithSkillEnvironment(hostSkills))
 	stdin := "literal $HOME and $(printf wrong)\n中文\n\n"
 	args, err := json.Marshal(ShellExecInput{
-		SkillName: "host-probe", Command: `python3 "$WEKNORA_SKILL_DIR/scripts/run.py" 'argument with spaces'`, Stdin: stdin,
+		SkillName: "host-probe", Command: `python3 "$AIKB_SKILL_DIR/scripts/run.py" 'argument with spaces'`, Stdin: stdin,
 	})
 	require.NoError(t, err)
 	r = call(ToolShellExec, string(args))
@@ -143,6 +143,6 @@ sys.stdout.write(sys.stdin.read())
 	require.NoError(t, err)
 	r = call(ToolShellExec, string(args))
 	require.Equal(t, 0, r.Data["exit_code"], "%+v", r)
-	r = call(ToolShellExec, `{"skill_name":"host-probe","command":"python3 -c \"import os, sys; assert sys.prefix == os.environ['WEKNORA_SKILL_DIR'] + '/.venv'; print('staged venv selected')\""}`)
+	r = call(ToolShellExec, `{"skill_name":"host-probe","command":"python3 -c \"import os, sys; assert sys.prefix == os.environ['AIKB_SKILL_DIR'] + '/.venv'; print('staged venv selected')\""}`)
 	require.Equal(t, "staged venv selected\n", r.Data["stdout"], "%+v", r)
 }

@@ -24,7 +24,7 @@ const (
 )
 
 // mediaExtensions are the file types this connector deliberately never
-// downloads: media carries no text WeKnora could index.
+// downloads: media carries no text AI KB could index.
 var mediaExtensions = map[string]struct{}{
 	"mp4": {}, "mov": {}, "avi": {}, "mkv": {}, "flv": {}, "wmv": {}, "m4v": {}, "webm": {},
 	"mp3": {}, "wav": {}, "m4a": {}, "aac": {}, "flac": {},
@@ -1141,7 +1141,7 @@ func warnUnknownBlockTypes(ctx context.Context, document node, rendered renderRe
 
 // readDocument turns one supported wiki node into a FetchedItem. Native adoc
 // documents are rendered from their blocks, and uploaded files are transferred
-// byte-for-byte so WeKnora's own parsers can read them.
+// byte-for-byte so AI KB's own parsers can read them.
 func readDocument(
 	ctx context.Context,
 	api dingTalkAPI,

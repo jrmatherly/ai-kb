@@ -1,7 +1,7 @@
 // Package storageurl converts internal storage references into HTTP(S) URLs an
 // external client can load directly.
 //
-// WeKnora persists files behind two internal reference forms: the stable
+// AI KB persists files behind two internal reference forms: the stable
 // `resource://<handle>` application identity and legacy/canonical provider
 // paths (`local://…`, `minio://…`, `storage://<backend-id>/cos://…`). Neither is
 // fetchable by a browser or a third-party app, which must otherwise call the
@@ -9,7 +9,7 @@
 //
 // This package is the single implementation of the "give me a loadable link"
 // translation. It is used by the IM channels (which have no way to attach
-// WeKnora credentials to an image fetch) and, opt-in, by the HTTP API so
+// AI KB credentials to an image fetch) and, opt-in, by the HTTP API so
 // integrators receive ready-to-render URLs.
 package storageurl
 

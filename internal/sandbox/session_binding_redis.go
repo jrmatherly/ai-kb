@@ -256,7 +256,7 @@ func (s *RedisSessionSandboxBindingStore) ReplaceTrafficTokenIfMatch(
 }
 
 // WithLifecycleLock serializes create, recover, replace, and delete transitions
-// across all WeKnora processes sharing Redis.
+// across all AI KB processes sharing Redis.
 func (s *RedisSessionSandboxBindingStore) WithLifecycleLock(
 	ctx context.Context,
 	key SessionSandboxKey,
@@ -617,11 +617,11 @@ var (
 
 func validateRedisNamespace(namespace string) error {
 	if strings.ContainsAny(namespace, "{}") {
-		return errors.New("WEKNORA_REDIS_NAMESPACE must not contain braces")
+		return errors.New("AIKB_REDIS_NAMESPACE must not contain braces")
 	}
 	for _, r := range namespace {
 		if unicode.IsControl(r) {
-			return errors.New("WEKNORA_REDIS_NAMESPACE must not contain control characters")
+			return errors.New("AIKB_REDIS_NAMESPACE must not contain control characters")
 		}
 	}
 	return nil

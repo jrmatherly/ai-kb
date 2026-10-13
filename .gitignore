@@ -29,8 +29,8 @@ temp/
 logs/
 *.pid
 
-WeKnora
-WeKnora-lite
+ai-kb
+ai-kb-lite
 cmd/desktop/build/bin/
 /models/
 test/data/mswag.txt

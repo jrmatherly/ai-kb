@@ -503,7 +503,7 @@ func TestStageSessionAttachmentsUsesLayoutInputDir(t *testing.T) {
 	store := newFakeInputStore()
 	layout := sandbox.WorkspaceLayout{
 		Root:     "/Users/dev/My Project",
-		InputDir: "/Users/dev/App Support/WeKnora/sessions/s1/input",
+		InputDir: "/Users/dev/App Support/ai-kb/sessions/s1/input",
 	}
 
 	staged, err := stageAttachmentsWithLayout(t, store, layout, oneAttachment())

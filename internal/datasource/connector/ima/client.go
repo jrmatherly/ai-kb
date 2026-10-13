@@ -1,4 +1,4 @@
-// Package ima implements the WeKnora data source connector for Tencent IMA
+// Package ima implements the AI KB data source connector for Tencent IMA
 // (ima.qq.com), syncing documents and files out of IMA knowledge bases via the
 // /openapi/wiki/v1 OpenAPI.
 package ima
@@ -22,7 +22,7 @@ import (
 const (
 	defaultTimeout  = 60 * time.Second
 	defaultPageSize = 50
-	userAgent       = "WeKnora-IMA-Connector/1.0"
+	userAgent       = "AIKB-IMA-Connector/1.0"
 
 	// IMA hard limit: get_knowledge_list max limit=50; search_knowledge_base max=20.
 	searchPageSize = 20

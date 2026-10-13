@@ -30,7 +30,7 @@ import (
 
 // ServiceClient bundles the SDK methods the tool registry needs. *sdk.Client
 // satisfies it; tests substitute a fake to exercise the tool handlers
-// in-process without standing up a real WeKnora server.
+// in-process without standing up a real AI KB server.
 //
 // Embedding the full SDK Client would couple every tool test to every SDK
 // method; declaring the narrow surface here keeps the seam tight.

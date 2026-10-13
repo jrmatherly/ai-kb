@@ -24,7 +24,7 @@ type ModelCost struct {
 type ModelSpec struct {
 	ID   string `json:"id"`
 	Name string `json:"name,omitempty"`
-	// Type is the WeKnora model type this entry describes. Chat models with
+	// Type is the AI KB model type this entry describes. Chat models with
 	// image input are still KnowledgeQA; the UI derives VLM eligibility from
 	// Input. Embedding / Rerank / ASR entries exist for the model picker.
 	Type types.ModelType `json:"type,omitempty"`

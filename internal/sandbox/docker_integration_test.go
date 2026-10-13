@@ -11,8 +11,8 @@
 //
 // Run with a reachable daemon and the standard sandbox image:
 //
-//	docker build -f docker/Dockerfile.sandbox -t wechatopenai/weknora-sandbox:dev .
-//	DOCKER_INTEGRATION_IMAGE=wechatopenai/weknora-sandbox:dev \
+//	docker build -f docker/Dockerfile.sandbox -t ghcr.io/jrmatherly/ai-kb-sandbox:dev .
+//	DOCKER_INTEGRATION_IMAGE=ghcr.io/jrmatherly/ai-kb-sandbox:dev \
 //	go test -tags=docker_integration ./internal/sandbox \
 //	  -run '^TestDocker.*Integration' -count=1 -v -timeout=15m
 package sandbox

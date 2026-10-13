@@ -1,4 +1,4 @@
-# WeKnora intro video
+# AI KB intro video
 
 The source for the product intro video (about 1:52, 1920×1080 at 30 fps, English on-screen text, no audio). The whole video is one HTML page, `index.html`, which draws any moment from its timestamp. `render.mjs` steps through the timeline with headless Chromium and pipes the frames into ffmpeg.
 

@@ -124,7 +124,7 @@ func (c *Client) DeleteMySkillEnvVar(ctx context.Context, skillID, name string) 
 // SetMySandboxEnvVar stores the caller's own value for one config-wide
 // variable. Unlike a skill variable the name is free-form, and the value is
 // injected into every skill script and shell command this caller runs on that
-// sandbox config. Names starting with WEKNORA_, and names the sandbox relies on
+// sandbox config. Names starting with AIKB_, and names the sandbox relies on
 // such as PATH, are refused.
 func (c *Client) SetMySandboxEnvVar(ctx context.Context, configID, name, value string) error {
 	if configID == "" {

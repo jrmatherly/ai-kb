@@ -253,7 +253,7 @@ func main() {
 		panic(fmt.Sprintf("wire desktop project dirs: %v", err))
 	}
 
-	// Initialize the WeKnora App struct
+	// Initialize the AI KB App struct
 	app := NewApp()
 	setupBytes := make([]byte, 32)
 	if _, err := rand.Read(setupBytes); err != nil {
@@ -352,15 +352,15 @@ func main() {
 	// Create application with options
 	// macOS app menu
 	AppMenu := menu.NewMenu()
-	FileMenu := AppMenu.AddSubmenu("WeKnora Lite")
-	FileMenu.AddText("About WeKnora", keys.CmdOrCtrl("i"), func(_ *menu.CallbackData) {
+	FileMenu := AppMenu.AddSubmenu("AI KB Lite")
+	FileMenu.AddText("About AI KB", keys.CmdOrCtrl("i"), func(_ *menu.CallbackData) {
 		if app.ctx == nil {
 			return
 		}
 		choice, err := wailsruntime.MessageDialog(app.ctx, wailsruntime.MessageDialogOptions{
 			Type:          wailsruntime.InfoDialog,
-			Title:         "WeKnora Lite",
-			Message:       fmt.Sprintf("WeKnora Lite — Desktop Edition\n\nA RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\nVersion %s\n© 2026 Tencent\n\nGitHub:\n%s", desktopAboutVersion(), weknoraGitHubRepoURL),
+			Title:         "AI KB Lite",
+			Message:       fmt.Sprintf("AI KB Lite — Desktop Edition\n\nA RAG framework for document understanding and semantic Q&A over complex, heterogeneous content.\n\nVersion %s\n© 2026 Tencent\n\nGitHub:\n%s", desktopAboutVersion(), weknoraGitHubRepoURL),
 			Buttons:       []string{"Open GitHub", "OK"},
 			DefaultButton: "OK",
 		})
@@ -400,7 +400,7 @@ func main() {
 	// Start Wails application
 	// We use a Reverse Proxy to seamlessly proxy Wails' frontend to our Go backend
 	err := wails.Run(&options.App{
-		Title:         "WeKnora Lite",
+		Title:         "AI KB Lite",
 		Width:         1280,
 		Height:        800,
 		DisableResize: false,
@@ -546,7 +546,7 @@ func defaultMacAppSupportDir(execPath string) (string, error) {
 		return "", err
 	}
 
-	appName := "WeKnora Lite"
+	appName := "AI KB Lite"
 	if idx := strings.Index(execPath, ".app/Contents/MacOS"); idx >= 0 {
 		bundleName := filepath.Base(execPath[:idx+4])
 		if trimmed := strings.TrimSuffix(bundleName, ".app"); trimmed != "" {

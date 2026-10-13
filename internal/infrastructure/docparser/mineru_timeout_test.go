@@ -30,7 +30,7 @@ func TestMinerUTimeoutConfig(t *testing.T) {
 		{"negative", "-1s", defaultMinerUTimeout},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("WEKNORA_MINERU_TIMEOUT", tt.value)
+			t.Setenv("AIKB_MINERU_TIMEOUT", tt.value)
 			assert.Equal(t, tt.want, NewMinerUReader(nil).timeout)
 		})
 	}
@@ -43,7 +43,7 @@ func TestMinerUReaderHonorsConfiguredTimeout(t *testing.T) {
 	req := &types.ReadRequest{FileContent: []byte("%PDF"), FileName: "a.pdf", FileType: "pdf"}
 
 	t.Run("v1", func(t *testing.T) {
-		t.Setenv("WEKNORA_MINERU_TIMEOUT", "200ms")
+		t.Setenv("AIKB_MINERU_TIMEOUT", "200ms")
 		statuses := make([]string, 1000)
 		for i := range statuses {
 			statuses[i] = "running"
@@ -62,7 +62,7 @@ func TestMinerUReaderHonorsConfiguredTimeout(t *testing.T) {
 	})
 
 	t.Run("legacy", func(t *testing.T) {
-		t.Setenv("WEKNORA_MINERU_TIMEOUT", "100ms")
+		t.Setenv("AIKB_MINERU_TIMEOUT", "100ms")
 		release := make(chan struct{})
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path == "/v1/health" {
@@ -88,17 +88,17 @@ func TestMinerUReaderHonorsConfiguredTimeout(t *testing.T) {
 }
 
 func TestMinerUCloudTimeoutConfig(t *testing.T) {
-	t.Setenv("WEKNORA_MINERU_CLOUD_TIMEOUT", "")
+	t.Setenv("AIKB_MINERU_CLOUD_TIMEOUT", "")
 	assert.Equal(t, defaultCloudTimeout, NewMinerUCloudReader(nil).timeout)
-	t.Setenv("WEKNORA_MINERU_CLOUD_TIMEOUT", "45m")
+	t.Setenv("AIKB_MINERU_CLOUD_TIMEOUT", "45m")
 	assert.Equal(t, 45*time.Minute, NewMinerUCloudReader(nil).timeout)
-	t.Setenv("WEKNORA_MINERU_CLOUD_TIMEOUT", "0s")
+	t.Setenv("AIKB_MINERU_CLOUD_TIMEOUT", "0s")
 	assert.Equal(t, defaultCloudTimeout, NewMinerUCloudReader(nil).timeout)
 }
 
 func TestMinerUCloudPollStopsAtConfiguredTimeout(t *testing.T) {
 	allowLoopbackSSRF(t)
-	t.Setenv("WEKNORA_MINERU_CLOUD_TIMEOUT", "200ms")
+	t.Setenv("AIKB_MINERU_CLOUD_TIMEOUT", "200ms")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"code":0,"data":{"extract_result":[{"state":"running"}]}}`)

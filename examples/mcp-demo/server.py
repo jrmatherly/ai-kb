@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-WeKnora 本地 MCP Demo Server
+AI KB 本地 MCP Demo Server
 
-最小可运行的外部 MCP 服务，用于在 WeKnora「设置 → MCP 服务」里测试客户端接入。
+最小可运行的外部 MCP 服务，用于在 AI KB「设置 → MCP 服务」里测试客户端接入。
 默认以 Streamable HTTP 监听 http://127.0.0.1:8010/mcp
 
 启动：
   export MCP_SERVER_AUTH_TOKEN=weknora-demo-token
   python server.py
 
-WeKnora 配置：
+AI KB 配置：
   传输：HTTP Streamable
   URL：http://127.0.0.1:8010/mcp
   认证：Bearer，令牌与 MCP_SERVER_AUTH_TOKEN 一致
@@ -189,7 +189,7 @@ def list_team_contacts(department: str = "") -> dict[str, Any]:
 def send_demo_alert(channel: str, message: str) -> dict[str, Any]:
     """模拟向外部渠道发送通知（演示用，不会真正外发）。
 
-    适合在 WeKnora 里测试 MCP 工具人工审批：建议把此工具标记为需要审批。
+    适合在 AI KB 里测试 MCP 工具人工审批：建议把此工具标记为需要审批。
     """
     return {
         "ok": True,
@@ -235,7 +235,7 @@ async def run_sse(host: str, port: int) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="WeKnora local MCP demo server")
+    parser = argparse.ArgumentParser(description="AI KB local MCP demo server")
     parser.add_argument(
         "--transport",
         choices=["http", "sse"],

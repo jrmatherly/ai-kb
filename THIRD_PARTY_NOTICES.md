@@ -1,7 +1,7 @@
 # Third-party notices and corresponding source
 
 This file supplements the third-party notices in `LICENSE`. The MIT license
-for WeKnora's own code does not replace the licenses of third-party components.
+for AI KB's own code does not replace the licenses of third-party components.
 Keep this file, `LICENSE`, and the `licenses/` directory with redistributed
 backend and desktop packages. `scripts/copy-licenses.sh` adds checksum-verified
 source archives at packaging time; they are not stored in this Git repository.
@@ -17,7 +17,7 @@ Windows installers place them next to the installed executable.
   [`licenses/go-sql-driver-mysql-MPL-2.0.txt`](licenses/go-sql-driver-mysql-MPL-2.0.txt).
 - Copyright: The Go-MySQL-Driver Authors; the original per-file notices and
   `AUTHORS` are preserved in the accompanying source archive.
-- Modifications by WeKnora: none. Dialer configuration is in separate WeKnora files.
+- Modifications by AI KB: none. Dialer configuration is in separate AI KB files.
 - Corresponding source, available under MPL-2.0, is included in binary releases
   as `licenses/sources/mysql-v1.10.0.zip`. Source repository users can obtain it from the
   [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.0.zip)
@@ -33,7 +33,7 @@ Windows installers place them next to the installed executable.
   [`licenses/go-m1cpu-MPL-2.0.txt`](licenses/go-m1cpu-MPL-2.0.txt).
 - Attribution: the go-m1cpu project and its contributors. The complete original
   source and notices are preserved in the accompanying archive.
-- Modifications by WeKnora: none.
+- Modifications by AI KB: none.
 - Corresponding source, available under MPL-2.0, is included in binary releases
   as `licenses/sources/go-m1cpu-v0.1.6.zip`. Source repository users can obtain it from the
   [Go module proxy](https://proxy.golang.org/github.com/shoenig/go-m1cpu/@v/v0.1.6.zip)
@@ -47,8 +47,8 @@ Windows installers place them next to the installed executable.
 - License: Apache-2.0, reproduced in
   [`licenses/OpenCC-Apache-2.0.txt`](licenses/OpenCC-Apache-2.0.txt).
 - Source: [versioned dictionary directory](https://github.com/longbridgeapp/opencc/tree/v0.3.13/dictionary)
-  and the two text files distributed with WeKnora's source.
-- Only dictionary data is retained. WeKnora uses its own standard-library lookup
+  and the two text files distributed with AI KB's source.
+- Only dictionary data is retained. AI KB uses its own standard-library lookup
   implementation; the upstream Go converter, `liuzl/da`, and GPL-licensed
   `cedar-go` code are not included.
 

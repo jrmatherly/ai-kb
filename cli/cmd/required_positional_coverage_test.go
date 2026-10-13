@@ -21,7 +21,7 @@ import (
 //
 // Sibling of TestEveryLeafCommandHasAgentHelp / the dry-run coverage guard.
 func TestLeafCommandsDeclareRequiredPositional(t *testing.T) {
-	t.Setenv("WEKNORA_AGENT_HELP", "1")
+	t.Setenv("AIKB_AGENT_HELP", "1")
 	root := NewRootCmd(cmdutil.New())
 
 	var missing []string

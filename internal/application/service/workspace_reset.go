@@ -53,7 +53,7 @@ func gitWorkspaceEnsureRepo() string {
   mkdir -p "$(dirname "$GIT_DIR")"
   git_ws init -q
   git_ws config user.email agent@weknora.local
-  git_ws config user.name 'WeKnora Agent'
+  git_ws config user.name 'AI KB Agent'
 }
 `
 }

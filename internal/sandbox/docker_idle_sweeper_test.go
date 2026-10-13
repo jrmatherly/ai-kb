@@ -95,7 +95,7 @@ func TestDockerIdleSweeperRejectsFutureActivityMarker(t *testing.T) {
 	require.Equal(t, []string{"forged"}, engine.removed)
 }
 
-// A daemon on another host may run slightly ahead of WeKnora. That must not be
+// A daemon on another host may run slightly ahead of AI KB. That must not be
 // mistaken for tampering, or every sandbox on that daemon would be judged by
 // its start time alone and reclaimed mid-session.
 func TestDockerIdleSweeperToleratesSmallClockSkew(t *testing.T) {

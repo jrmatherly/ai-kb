@@ -1,7 +1,7 @@
 /**
  * The plugin side of the API contract: the calls this package makes must stay
  * exactly the ones recorded in test/fixtures/api-contract.json, which
- * contract/contract_test.go checks against WeKnora's real Go request and
+ * contract/contract_test.go checks against AI KB's real Go request and
  * response types. Change a request body and both sides tell you.
  */
 
@@ -53,7 +53,7 @@ const observed = await replayCalls()
 /** Order-insensitive key: a tool that fires two calls at once may land either way round. */
 const callKey = call => `${call.method} ${call.path} ${JSON.stringify(call.query)} ${JSON.stringify(call.body)}`
 
-test('the plugin makes exactly the documented WeKnora calls', () => {
+test('the plugin makes exactly the documented AI KB calls', () => {
   const expected = fixture.calls.map(call => ({
     method: call.method,
     path: call.path,

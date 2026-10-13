@@ -28,7 +28,7 @@ import (
 
 // pubsubChannelBase is the Redis channel base for system_settings change
 // notifications. Mirrors the convention from approval/gate.go: optional
-// suffix WEKNORA_REDIS_NAMESPACE so two deployments sharing one Redis
+// suffix AIKB_REDIS_NAMESPACE so two deployments sharing one Redis
 // instance don't cross-talk.
 const pubsubChannelBase = "weknora:system_settings:changed"
 
@@ -36,7 +36,7 @@ const pubsubChannelBase = "weknora:system_settings:changed"
 // namespace suffix). Called both at publish time and inside the
 // subscriber loop — keep it pure.
 func pubsubChannel() string {
-	if ns := strings.TrimSpace(os.Getenv("WEKNORA_REDIS_NAMESPACE")); ns != "" {
+	if ns := strings.TrimSpace(os.Getenv("AIKB_REDIS_NAMESPACE")); ns != "" {
 		return pubsubChannelBase + ":" + ns
 	}
 	return pubsubChannelBase
@@ -146,7 +146,7 @@ var registry = map[string]settingSpec{
 	},
 	"auth.default_tenant_mode": {
 		Type:     "string",
-		EnvName:  "WEKNORA_AUTH_DEFAULT_TENANT_MODE",
+		EnvName:  "AIKB_AUTH_DEFAULT_TENANT_MODE",
 		Default:  "create_personal",
 		Enum:     []string{"create_personal", "tenantless"},
 		Category: "auth",
@@ -155,7 +155,7 @@ var registry = map[string]settingSpec{
 	},
 	"auth.complex_password_enabled": {
 		Type:     "bool",
-		EnvName:  "WEKNORA_AUTH_COMPLEX_PASSWORD_ENABLED",
+		EnvName:  "AIKB_AUTH_COMPLEX_PASSWORD_ENABLED",
 		Default:  false,
 		Category: "auth",
 		Description: "是否启用复杂密码。开启后密码必须包含大小写字母、数字和特殊字符。" +
@@ -182,13 +182,13 @@ var registry = map[string]settingSpec{
 	// tenant.max_owned_per_user caps how many tenants a single non-superuser
 	// can create (and Own) via self-service POST /tenants. Read on every
 	// request — UI edits take effect immediately, no restart required. The
-	// EnvName is the same WEKNORA_TENANT_MAX_OWNED_PER_USER that
+	// EnvName is the same AIKB_TENANT_MAX_OWNED_PER_USER that
 	// applyAuthAndTenantDefaults parses at boot, so a deployment that
 	// hasn't created a DB row keeps reading from env exactly as before.
 	// 0 = use the in-code default (10); negative = disable the cap entirely.
 	"tenant.max_owned_per_user": {
 		Type:     "int",
-		EnvName:  "WEKNORA_TENANT_MAX_OWNED_PER_USER",
+		EnvName:  "AIKB_TENANT_MAX_OWNED_PER_USER",
 		Default:  int64(10),
 		Category: "tenant",
 		Description: "每个非超管用户通过自助创建可拥有的最大空间数。每次创建空间时实时读取，" +
@@ -196,7 +196,7 @@ var registry = map[string]settingSpec{
 	},
 	"tenant.self_service_creation_enabled": {
 		Type:     "bool",
-		EnvName:  "WEKNORA_TENANT_SELF_SERVICE_CREATION_ENABLED",
+		EnvName:  "AIKB_TENANT_SELF_SERVICE_CREATION_ENABLED",
 		Default:  true,
 		Category: "tenant",
 		Description: "是否允许非超管用户主动创建空间。关闭后，普通用户只能通过邀请加入已有空间；" +
@@ -211,7 +211,7 @@ var registry = map[string]settingSpec{
 	// 0 or negative = use the in-code default (10 GB).
 	"tenant.default_storage_quota_gb": {
 		Type:     "int",
-		EnvName:  "WEKNORA_TENANT_DEFAULT_STORAGE_QUOTA_GB",
+		EnvName:  "AIKB_TENANT_DEFAULT_STORAGE_QUOTA_GB",
 		Default:  int64(10),
 		Category: "tenant",
 		Description: "新建空间时默认分配的存储配额（GB），包含向量、原文、文本、索引等。" +
@@ -224,11 +224,11 @@ var registry = map[string]settingSpec{
 	// are created explicitly via tenant_api_keys), which is a breaking change
 	// for integrations that relied on the create response carrying a key.
 	// Deployments that need the old behaviour set this to true (or the
-	// WEKNORA_TENANT_AUTO_CREATE_API_KEY env var). Default false keeps the
+	// AIKB_TENANT_AUTO_CREATE_API_KEY env var). Default false keeps the
 	// current, safer no-implicit-key behaviour. Read at create time only.
 	"tenant.auto_create_api_key": {
 		Type:     "bool",
-		EnvName:  "WEKNORA_TENANT_AUTO_CREATE_API_KEY",
+		EnvName:  "AIKB_TENANT_AUTO_CREATE_API_KEY",
 		Default:  false,
 		Category: "tenant",
 		Description: "创建空间时是否自动生成一个全量权限（full_access）的 API Key，并在创建接口的响应中返回其明文 token。" +
@@ -238,7 +238,7 @@ var registry = map[string]settingSpec{
 	// tenant.auto_accept_invitation: invite = auto-join switch (default false).
 	"tenant.auto_accept_invitation": {
 		Type:     "bool",
-		EnvName:  "WEKNORA_TENANT_AUTO_ACCEPT_INVITATION",
+		EnvName:  "AIKB_TENANT_AUTO_ACCEPT_INVITATION",
 		Default:  false,
 		Category: "tenant",
 		Description: "全局开关：开启后，空间管理员通过邮箱邀请已注册用户加入空间时，" +
@@ -247,7 +247,7 @@ var registry = map[string]settingSpec{
 	},
 	"asynq.core_concurrency": {
 		Type:            "int",
-		EnvName:         "WEKNORA_ASYNQ_CORE_CONCURRENCY",
+		EnvName:         "AIKB_ASYNQ_CORE_CONCURRENCY",
 		Default:         int64(types.DefaultCoreWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
@@ -255,7 +255,7 @@ var registry = map[string]settingSpec{
 	},
 	"asynq.postprocess_concurrency": {
 		Type:            "int",
-		EnvName:         "WEKNORA_ASYNQ_POSTPROCESS_CONCURRENCY",
+		EnvName:         "AIKB_ASYNQ_POSTPROCESS_CONCURRENCY",
 		Default:         int64(types.DefaultPostProcessWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
@@ -263,7 +263,7 @@ var registry = map[string]settingSpec{
 	},
 	"asynq.enrichment_concurrency": {
 		Type:            "int",
-		EnvName:         "WEKNORA_ASYNQ_ENRICHMENT_CONCURRENCY",
+		EnvName:         "AIKB_ASYNQ_ENRICHMENT_CONCURRENCY",
 		Default:         int64(types.DefaultEnrichmentWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
@@ -271,7 +271,7 @@ var registry = map[string]settingSpec{
 	},
 	"asynq.maintenance_concurrency": {
 		Type:            "int",
-		EnvName:         "WEKNORA_ASYNQ_MAINTENANCE_CONCURRENCY",
+		EnvName:         "AIKB_ASYNQ_MAINTENANCE_CONCURRENCY",
 		Default:         int64(types.DefaultMaintenanceWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
@@ -279,7 +279,7 @@ var registry = map[string]settingSpec{
 	},
 	"asynq.shared_concurrency": {
 		Type:            "int",
-		EnvName:         "WEKNORA_ASYNQ_SHARED_CONCURRENCY",
+		EnvName:         "AIKB_ASYNQ_SHARED_CONCURRENCY",
 		Default:         int64(types.DefaultSharedWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
@@ -288,10 +288,10 @@ var registry = map[string]settingSpec{
 	// asynq.wiki_concurrency is the size of the DEDICATED wiki worker pool,
 	// separate from the upstream pools. Read once when the wiki asynq server
 	// starts — changing it in the UI requires a process restart. Mirrors
-	// WEKNORA_WIKI_ASYNQ_CONCURRENCY (default 8).
+	// AIKB_WIKI_ASYNQ_CONCURRENCY (default 8).
 	"asynq.wiki_concurrency": {
 		Type:            "int",
-		EnvName:         "WEKNORA_WIKI_ASYNQ_CONCURRENCY",
+		EnvName:         "AIKB_WIKI_ASYNQ_CONCURRENCY",
 		Default:         int64(types.DefaultWikiWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
@@ -305,11 +305,11 @@ var registry = map[string]settingSpec{
 	// limiter governor; a runtime bridge (applyModelMaxConcurrency) pushes UI
 	// edits into limiter.SetGlobalLimit so no restart is needed. Individual
 	// models may override this via their own max_concurrency parameter.
-	// Mirrors WEKNORA_MODEL_MAX_CONCURRENCY (default 32). 0/negative disables
+	// Mirrors AIKB_MODEL_MAX_CONCURRENCY (default 32). 0/negative disables
 	// the default cap.
 	"model.max_concurrency": {
 		Type:     "int",
-		EnvName:  "WEKNORA_MODEL_MAX_CONCURRENCY",
+		EnvName:  "AIKB_MODEL_MAX_CONCURRENCY",
 		Default:  int64(32),
 		Category: "worker",
 		Description: "后台任务（文档入库/富化）对单个模型的默认并发上限，按模型 ID 全副本共享。" +
@@ -556,7 +556,7 @@ func (s *systemSettingService) applySSRFWhitelist(ctx context.Context) {
 // Called at preload (initial sync), after Update (this replica's edit), and
 // after reload (peer's edit via pubsub).
 func (s *systemSettingService) applyModelMaxConcurrency(ctx context.Context) {
-	limit := int(s.GetInt(ctx, "model.max_concurrency", "WEKNORA_MODEL_MAX_CONCURRENCY", 32))
+	limit := int(s.GetInt(ctx, "model.max_concurrency", "AIKB_MODEL_MAX_CONCURRENCY", 32))
 	limiter.SetGlobalLimit(limit)
 	logger.Infof(ctx, "[system_settings] model.max_concurrency applied (limit=%d)", limit)
 }

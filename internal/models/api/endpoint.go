@@ -47,11 +47,11 @@ type Endpoint struct {
 	BaseURL string
 	// URL, when set, is the complete request URL and overrides the protocol
 	// default of BaseURL + protocol path. Vendors with non-standard paths
-	// (Azure deployments, WeKnora Cloud) set it.
+	// (Azure deployments, AI KB Cloud) set it.
 	URL string
 	// Query is appended to the final URL (Azure api-version).
 	Query map[string]string
-	// Model is the name sent on the wire; ModelID is WeKnora's own identifier.
+	// Model is the name sent on the wire; ModelID is AI KB's own identifier.
 	Model   string
 	ModelID string
 	// Auth stamps credentials; Headers are static extra headers (vendor

@@ -2,7 +2,7 @@
 # One Exec: prove the image has a desktop, start it, print the websockify secret.
 #
 # exit 2  — start-desktop.sh missing. stderr MUST contain
-#            WEKNORA_DESKTOP_UNSUPPORTED; POSIX sh also uses 2 for
+#            AIKB_DESKTOP_UNSUPPORTED; POSIX sh also uses 2 for
 #            syntax errors, so Go ignores a bare 2.
 # exit 1  — start failed or listeners never came up
 # exit 0  — stdout is exactly one line: READY <32 alnum>
@@ -13,7 +13,7 @@
 set -u
 
 if [ ! -x /usr/local/bin/start-desktop.sh ]; then
-  echo WEKNORA_DESKTOP_UNSUPPORTED >&2
+  echo AIKB_DESKTOP_UNSUPPORTED >&2
   exit 2
 fi
 

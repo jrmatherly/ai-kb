@@ -29,7 +29,7 @@ type (
 	Prepared = core.Prepared
 	// Process is a running sandboxed command.
 	Process = core.Process
-	// PathGuard validates filesystem access performed by WeKnora itself.
+	// PathGuard validates filesystem access performed by AI KB itself.
 	PathGuard = core.PathGuard
 	// Workspace is where one session's work happens.
 	Workspace = core.Workspace

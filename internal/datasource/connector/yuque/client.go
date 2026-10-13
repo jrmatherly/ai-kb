@@ -18,7 +18,7 @@ import (
 const (
 	defaultTimeout  = 30 * time.Second
 	defaultPageSize = 100
-	userAgent       = "WeKnora-Yuque-Connector/1.0"
+	userAgent       = "AIKB-Yuque-Connector/1.0"
 
 	// maxJSONResponseBytes bounds every API response body. Listings and document
 	// payloads are small; a larger body means a broken or hostile server.

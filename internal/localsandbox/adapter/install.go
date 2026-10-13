@@ -135,7 +135,7 @@ func installEnv(dir string, extra map[string]string) map[string]string {
 	env["UV_CACHE_DIR"] = filepath.Join(cache, "uv")
 	env["PIP_CACHE_DIR"] = filepath.Join(cache, "pip")
 	env["npm_config_cache"] = filepath.Join(cache, "npm")
-	env["WEKNORA_SKILL_DIR"] = dir
+	env["AIKB_SKILL_DIR"] = dir
 	return env
 }
 

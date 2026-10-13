@@ -39,10 +39,10 @@ fetch_sha256() {
     echo "${sha}"
 }
 
-SHA_DARWIN_ARM64=$(fetch_sha256 "WeKnora-lite_${VERSION}_darwin_arm64.tar.gz")
-SHA_DARWIN_AMD64=$(fetch_sha256 "WeKnora-lite_${VERSION}_darwin_amd64.tar.gz")
-SHA_LINUX_ARM64=$(fetch_sha256  "WeKnora-lite_${VERSION}_linux_arm64.tar.gz")
-SHA_LINUX_AMD64=$(fetch_sha256  "WeKnora-lite_${VERSION}_linux_amd64.tar.gz")
+SHA_DARWIN_ARM64=$(fetch_sha256 "ai-kb-lite_${VERSION}_darwin_arm64.tar.gz")
+SHA_DARWIN_AMD64=$(fetch_sha256 "ai-kb-lite_${VERSION}_darwin_amd64.tar.gz")
+SHA_LINUX_ARM64=$(fetch_sha256  "ai-kb-lite_${VERSION}_linux_arm64.tar.gz")
+SHA_LINUX_AMD64=$(fetch_sha256  "ai-kb-lite_${VERSION}_linux_amd64.tar.gz")
 
 echo "  darwin_arm64 : ${SHA_DARWIN_ARM64}"
 echo "  darwin_amd64 : ${SHA_DARWIN_AMD64}"

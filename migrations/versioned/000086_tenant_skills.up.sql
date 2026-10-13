@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS tenant_skills (
     deleted_at            TIMESTAMPTZ
 );
 
-COMMENT ON COLUMN tenant_skills.name IS 'Also the directory name inside the image: /opt/weknora/tenant/skills/<name>';
+COMMENT ON COLUMN tenant_skills.name IS 'Also the directory name inside the image: /opt/ai-kb/tenant/skills/<name>';
 COMMENT ON COLUMN tenant_skills.enabled IS 'Visibility to the agent only; files stay in the image until the skill is removed';
 
 -- The unique index doubles as the "list skills of a config" index: its leftmost

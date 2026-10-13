@@ -42,7 +42,7 @@ func IsAPISessionOwnerID(ownerID string) bool {
 
 // Principal represents the terminal caller for per-subject isolation features.
 // It is intentionally separate from UserID: many principals, such as IM users
-// or embed visitors, are not WeKnora accounts and must not imply RBAC rights.
+// or embed visitors, are not AI KB accounts and must not imply RBAC rights.
 type Principal struct {
 	Type string
 	ID   string

@@ -208,7 +208,7 @@ func TestNvidiaRerankScoresAreComparable(t *testing.T) {
 }
 
 // TestSignedRerankVendorRequiresItsIdentityPair keeps the pre-catalog
-// contract: WeKnora Cloud rerank is signed with an AppID / AppSecret pair, and
+// contract: AI KB Cloud rerank is signed with an AppID / AppSecret pair, and
 // a row without one must fail at construction rather than send unsigned
 // requests that the far end rejects with something less readable.
 func TestSignedRerankVendorRequiresItsIdentityPair(t *testing.T) {

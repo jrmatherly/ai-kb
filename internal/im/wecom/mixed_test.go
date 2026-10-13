@@ -86,7 +86,7 @@ func TestConvertMixedMessage(t *testing.T) {
 		},
 		{
 			name:        "group chat: mention stripped from caption",
-			msg:         mixedMsg(textItem("@WeKnora Bot  这张图里是什么？"), imageItem("https://img.example/1", "key1")),
+			msg:         mixedMsg(textItem("@AI KB Bot  这张图里是什么？"), imageItem("https://img.example/1", "key1")),
 			chatType:    im.ChatTypeGroup,
 			wantType:    im.MessageTypeImage,
 			wantContent: "这张图里是什么？",

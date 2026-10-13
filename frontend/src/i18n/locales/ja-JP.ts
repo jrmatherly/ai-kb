@@ -1998,24 +1998,24 @@ export default {
     },
     capabilityUnavailable: 'この機能は現在のデプロイでは利用できません。利用可能なページに戻りました。',
     weknoraCloud: {
-      title: 'WeKnora Cloud',
-      description: 'WeKnora CloudのAPPIDとAPPSECRETを設定します。この認証情報はモデルサービスとドキュメント解析エンジンで使用されます。',
+      title: 'AI KB Cloud',
+      description: 'AI KB CloudのAPPIDとAPPSECRETを設定します。この認証情報はモデルサービスとドキュメント解析エンジンで使用されます。',
       viewDocs: 'ドキュメントを表示',
       unconfigured: '認証情報が未設定です。APPIDとAPPSECRETを入力してください。',
       configured: '認証情報は設定済みで、正常に動作しています。',
-      expired: 'WeKnora Cloudの認証情報が無効になりました',
+      expired: 'AI KB Cloudの認証情報が無効になりました',
       expiredDefault: 'サービス再起動後に暗号化キーが変更されました。保存済みの認証情報を復号できません。認証情報を再入力してください。',
       reconfigure: '再設定',
       appIdLabel: 'APPID',
-      appIdDesc: 'WeKnora CloudのアプリケーションID',
+      appIdDesc: 'AI KB CloudのアプリケーションID',
       appIdPlaceholder: 'APPIDを入力',
       appSecretLabel: 'APPSECRET',
-      appSecretDesc: 'WeKnora Cloudのアプリケーションシークレット',
+      appSecretDesc: 'AI KB Cloudのアプリケーションシークレット',
       appSecretPlaceholder: 'APPSECRETを入力',
       saveHint: '認証情報は検証・暗号化されたうえで保存されます。',
       saveBtn: '認証情報を保存',
       usageTitle: '利用ガイド',
-      usageSteps: '1. APPIDとAPPSECRETを保存\\\n2. 下の「クラウドモデル」でチャット、埋め込み、リランク、vlmを登録\\\n3. 解析エンジン: ナレッジベース設定 → 解析エンジン → WeKnora Cloud',
+      usageSteps: '1. APPIDとAPPSECRETを保存\\\n2. 下の「クラウドモデル」でチャット、埋め込み、リランク、vlmを登録\\\n3. 解析エンジン: ナレッジベース設定 → 解析エンジン → AI KB Cloud',
       fillRequired: 'APPIDとAPPSECRETを入力してください',
       saveSuccess: '認証情報を保存しました',
       saveFailed: '認証情報の保存に失敗しました',
@@ -2453,7 +2453,7 @@ export default {
       loadFailed: '環境変数を読み込めませんでした。',
       sandboxTitle: 'このコンピューターで常に渡す値',
       sandboxHint: 'このコンピューターで実行するコマンドにだけ付きます。必要になったときだけ追加してください。対話中にその場で渡すこともできます。',
-      nameInvalid: 'この名前は使えません。予約名（PATH や WEKNORA_ で始まる名前）は受け付けません。',
+      nameInvalid: 'この名前は使えません。予約名（PATH や AIKB_ で始まる名前）は受け付けません。',
       deleteConfirm: '{name} を削除しますか？これ以降、このコンピューターでの実行には含まれません。',
     },
     description: 'スキルとサンドボックスで使う個人用のキーです。WeKnoraのシステム設定やデプロイ設定ではありません。',
@@ -3088,7 +3088,7 @@ export default {
     welcomeMessageDesc: '訪問者が最初のメッセージを送る前に埋め込みチャットに表示されます。空欄にすると非表示になります',
     showSuggestedQuestions: '質問候補',
     showSuggestedQuestionsDesc: '訪問者の最初のメッセージの前に、エージェント設定と連携ナレッジベースをもとにした質問候補を表示します',
-    originsHint: 'WeKnora の URL（B）ではなく、埋め込みを許可するホストサイト（A）を入力します。1 行に 1 つの Origin（例: https://shop.example.com）。1 件以上必須。*.example.com に対応。',
+    originsHint: 'AI KB の URL（B）ではなく、埋め込みを許可するホストサイト（A）を入力します。1 行に 1 つの Origin（例: https://shop.example.com）。1 件以上必須。*.example.com に対応。',
     originsRequired: '許可オリジンを1件以上入力してください',
     originsInvalid: '無効なオリジン: {origin}',
     originsWildcardProd: '本番環境ではワイルドカードのオリジン「*」は使用できません',
@@ -6215,8 +6215,8 @@ export default {
           desc: 'PaddleOCR-VL Cloud API'
         },
         weknoracloud: {
-          name: 'WeKnora Cloud',
-          desc: 'WeKnora Cloudによるドキュメント解析'
+          name: 'AI KB Cloud',
+          desc: 'AI KB Cloudによるドキュメント解析'
         },
         markitdown: {
           name: 'MarkItDown',
@@ -7159,7 +7159,7 @@ export default {
   },
   integrations: {
     cli: {
-      title: 'WeKnora CLI',
+      title: 'AI KB CLI',
       subtitle: 'ターミナルからナレッジベースとドキュメントの管理、コンテンツの検索、質問ができます。CLIやMCPを通じてスクリプトやAIツールと連携できます。',
       docs: 'CLIドキュメント',
       docsHint: 'インストール手順と完全なコマンドリファレンス',
@@ -7519,8 +7519,8 @@ export default {
       storeMeta: 'Chromeウェブストア · v1.0.0'
     },
     claw: {
-      title: 'WeKnora Skill',
-      subtitle: 'WeKnora REST API経由でドキュメントをインポートし、ハイブリッド検索（ベクトル＋キーワード）を実行します。ファイルのアップロード、URLインポート、Markdownでの登録、ナレッジベース横断検索に対応します。',
+      title: 'AI KB Skill',
+      subtitle: 'AI KB REST API経由でドキュメントをインポートし、ハイブリッド検索（ベクトル＋キーワード）を実行します。ファイルのアップロード、URLインポート、Markdownでの登録、ナレッジベース横断検索に対応します。',
       capabilitiesTitle: 'スキルの機能',
       capabilities: {
         upload: {
@@ -7569,7 +7569,7 @@ export default {
       copyCmdSuccess: 'インストールコマンドをコピーしました',
       ecosystemNote: 'スキルはClawHub（{\'@\'}lyingbug/weknora）でホストされています。完全なAPIドキュメントとバージョン履歴はClawHubページをご覧ください。',
       installCta: 'ClawHubを開く',
-      installCtaHint: 'WeKnora Skillをインストール · 新しいタブで開きます',
+      installCtaHint: 'AI KB Skillをインストール · 新しいタブで開きます',
       hubMeta: 'ClawHub · {\'@\'}lyingbug/weknora · MIT-0'
     }
   },

@@ -1,7 +1,7 @@
-// Package providers registers the WeKnora managed model service.
+// Package providers registers the AI KB managed model service.
 //
 // unverified: this is a first-party endpoint with no published API
-// reference — https://weknora.weixin.qq.com/docs documents the WeKnora
+// reference — https://ai-kb-docs.matherly.net/docs documents the AI KB
 // product, not the model gateway's wire protocol. Every fact below is taken
 // from this repository's own clients rather than from vendor documentation,
 // and is cited accordingly:
@@ -61,9 +61,9 @@ const WeKnoraCloudBaseURL = "https://weknora.weixin.qq.com"
 func newWeKnoraCloudProvider() *Definition {
 	return &Definition{
 		ID:           WeKnoraCloudID,
-		Name:         "WeKnora Cloud",
-		Names:        map[string]string{"zh-CN": "WeKnora 云服务"},
-		Description:  "WeKnora managed models: chat, embedding, rerank, vlm",
+		Name:         "AI KB Cloud",
+		Names:        map[string]string{"zh-CN": "AI KB 云服务"},
+		Description:  "AI KB managed models: chat, embedding, rerank, vlm",
 		Descriptions: map[string]string{"zh-CN": "WeKnora云服务，模型：chat, embedding, rerank, vlm"},
 		Website:      WeKnoraCloudBaseURL,
 		Icon:         weKnoraCloudIcon,

@@ -51,7 +51,7 @@ func TestSanitizeGeneratedTitle(t *testing.T) {
 		},
 		{
 			name: "markdown table falls back to the user query",
-			raw: "| 项目 | 内容 |\n|------|------|\n| WeKnora 最新 Release | v0.3.1 |\n" +
+			raw: "| 项目 | 内容 |\n|------|------|\n| AI KB 最新 Release | v0.3.1 |\n" +
 				"| 发布日期 | 2026-09-01 |",
 			query: "打开 https://github.com/jrmatherly/ai-kb ，找到最新 Release 的版本号和发布日期；" +
 				"然后打开 https://httpbin.org/forms/post ，用以下信息填写订单表单",
@@ -60,16 +60,16 @@ func TestSanitizeGeneratedTitle(t *testing.T) {
 		},
 		{
 			name:          "table collapsed onto one line falls back to the user query",
-			raw:           "| 项目 | 内容 | |------|------| | WeKnora 最新 Release | v0.3.1 |",
-			query:         "查询 WeKnora 最新版本",
-			want:          "查询 WeKnora 最新版本",
+			raw:           "| 项目 | 内容 | |------|------| | AI KB 最新 Release | v0.3.1 |",
+			query:         "查询 AI KB 最新版本",
+			want:          "查询 AI KB 最新版本",
 			wantFromQuery: true,
 		},
 		{
 			name:          "bare separator row falls back to the user query",
 			raw:           "|---|:---:|",
-			query:         "查询 WeKnora 最新版本",
-			want:          "查询 WeKnora 最新版本",
+			query:         "查询 AI KB 最新版本",
+			want:          "查询 AI KB 最新版本",
 			wantFromQuery: true,
 		},
 		{
@@ -81,13 +81,13 @@ func TestSanitizeGeneratedTitle(t *testing.T) {
 		},
 		{
 			name: "heading marker is stripped",
-			raw:  "## WeKnora 版本查询与表单填写",
-			want: "WeKnora 版本查询与表单填写",
+			raw:  "## AI KB 版本查询与表单填写",
+			want: "AI KB 版本查询与表单填写",
 		},
 		{
 			name: "multi-line completion keeps the first line with content",
-			raw:  "\n\n**WeKnora 版本查询**\n\n这个标题概括了用户的意图。",
-			want: "WeKnora 版本查询",
+			raw:  "\n\n**AI KB 版本查询**\n\n这个标题概括了用户的意图。",
+			want: "AI KB 版本查询",
 		},
 		{
 			name: "list marker, label and backticks are stripped",
@@ -116,8 +116,8 @@ func TestSanitizeGeneratedTitle(t *testing.T) {
 		},
 		{
 			name: "markdown link keeps its text",
-			raw:  "[WeKnora](https://github.com/jrmatherly/ai-kb) 最新版本",
-			want: "WeKnora 最新版本",
+			raw:  "[AI KB](https://github.com/jrmatherly/ai-kb) 最新版本",
+			want: "AI KB 最新版本",
 		},
 		{
 			name: "full thinking block is dropped",

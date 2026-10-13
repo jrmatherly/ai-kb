@@ -2436,7 +2436,7 @@ func (h *SystemHandler) ApplyDefaultStorageQuotaToAllTenants(c *gin.Context) {
 	gb := h.systemSettingSvc.GetInt(
 		ctx,
 		"tenant.default_storage_quota_gb",
-		"WEKNORA_TENANT_DEFAULT_STORAGE_QUOTA_GB",
+		"AIKB_TENANT_DEFAULT_STORAGE_QUOTA_GB",
 		10,
 	)
 	if gb <= 0 {

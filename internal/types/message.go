@@ -225,7 +225,7 @@ func (m *MessageAttachments) Scan(value interface{}) error {
 // MessageArtifact represents a file produced by a skill script during a chat
 // turn. Unlike MessageAttachment (which stores files uploaded by the user),
 // MessageArtifact records files that the sandbox generated on the model's
-// behalf and that WeKnora has persisted to its file service so the user can
+// behalf and that AI KB has persisted to its file service so the user can
 // download them after the sandbox is reaped.
 //
 // SourcePath + ModTime is the cheap identity for an unchanged sandbox file.
@@ -239,7 +239,7 @@ type MessageArtifact struct {
 	ContentHash string    `json:"content_hash,omitempty"` // SHA-256 of the persisted bytes
 	SourcePath  string    `json:"source_path"`            // Absolute path inside the sandbox (used for diff)
 	ModTime     time.Time `json:"mod_time"`               // Sandbox-side modification time (used for diff)
-	CreatedAt   time.Time `json:"created_at"`             // When WeKnora persisted the blob
+	CreatedAt   time.Time `json:"created_at"`             // When AI KB persisted the blob
 	// DeletedAt marks a file the user deleted. The entry stays in the list
 	// rather than being removed because its position IS the download address
 	// (msg.Artifacts[index]); dropping it would shift every later file's index

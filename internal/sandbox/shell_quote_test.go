@@ -7,9 +7,9 @@ import (
 )
 
 func TestShellQuoteNeutralisesShellMetacharacters(t *testing.T) {
-	quoted := ShellQuote("/opt/weknora/tenant/skills/sk-1/scripts/x$(id).py")
+	quoted := ShellQuote("/opt/ai-kb/tenant/skills/sk-1/scripts/x$(id).py")
 
-	require.Equal(t, `'/opt/weknora/tenant/skills/sk-1/scripts/x$(id).py'`, quoted,
+	require.Equal(t, `'/opt/ai-kb/tenant/skills/sk-1/scripts/x$(id).py'`, quoted,
 		"single quotes are the only form that keeps $ and backticks inert in sh")
 }
 

@@ -77,7 +77,7 @@ func loadMessageContent(t *testing.T, router *gin.Engine, query string) string {
 }
 
 // Without the parameter, history must keep returning handles so existing clients
-// (including the WeKnora frontend, which proxies through /files) are unaffected.
+// (including the AI KB frontend, which proxies through /files) are unaffected.
 func TestLoadMessages_DefaultsToHandles(t *testing.T) {
 	router := newResourceURLTestRouter(t, []*types.Message{
 		{Content: "see ![fig](" + testResourceHandle + ")"},

@@ -710,7 +710,7 @@ func initLangfuse() (*langfuse.Manager, error) {
 }
 
 // defaultModelMaxConcurrency is the per-model cap on concurrent background
-// (ingestion/enrichment) chat calls when WEKNORA_MODEL_MAX_CONCURRENCY /
+// (ingestion/enrichment) chat calls when AIKB_MODEL_MAX_CONCURRENCY /
 // model.max_concurrency is unset. summary / question / graph enrichment all
 // share the same model, so this bounds their combined pressure on one provider
 // across every replica. Interactive chat is never gated.
@@ -725,7 +725,7 @@ func resolveModelMaxConcurrency(ss interfaces.SystemSettingService) int {
 		return defaultModelMaxConcurrency
 	}
 	return int(ss.GetInt(context.Background(), "model.max_concurrency",
-		"WEKNORA_MODEL_MAX_CONCURRENCY", int64(defaultModelMaxConcurrency)))
+		"AIKB_MODEL_MAX_CONCURRENCY", int64(defaultModelMaxConcurrency)))
 }
 
 // registerModelConcurrencyLimiter builds the Redis-backed per-model background

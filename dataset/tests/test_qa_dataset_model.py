@@ -1,4 +1,4 @@
-"""Offline regression tests for the actual WeKnora QA-generation call chain.
+"""Offline regression tests for the actual AI KB QA-generation call chain.
 
 Uses real pandas/Parquet input and output, but never a real OpenAI client.
 """

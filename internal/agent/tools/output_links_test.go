@@ -47,7 +47,7 @@ func (f *combinedOutputExecutor) ExecShellCommandWithOutputSnapshot(
 }
 
 func TestShellOutputLinksPreferCombinedExecution(t *testing.T) {
-	t.Setenv("WEKNORA_SKILL_OUTPUT_DIR", "/workspace/output")
+	t.Setenv("AIKB_SKILL_OUTPUT_DIR", "/workspace/output")
 	for _, tc := range []struct {
 		name     string
 		snapshot *sandbox.ShellOutputSnapshot
@@ -94,7 +94,7 @@ func (f *outputLinkExecutor) ListSessionFiles(_ context.Context, sessionID, dir 
 }
 
 func TestShellOutputLinksUseChangedFilesAndDoNotReplay(t *testing.T) {
-	t.Setenv("WEKNORA_SKILL_OUTPUT_DIR", "/workspace/output")
+	t.Setenv("AIKB_SKILL_OUTPUT_DIR", "/workspace/output")
 	old := sandbox.RemoteDirEntry{Path: "/workspace/output/deck.pptx", Type: sandbox.RemoteEntryFile, Size: 100, ModTime: time.Unix(1, 0)}
 	next := old
 	next.ModTime = time.Unix(2, 0)
@@ -124,7 +124,7 @@ func TestShellOutputLinksUseChangedFilesAndDoNotReplay(t *testing.T) {
 }
 
 func TestShellOutputLinksOmitUnverifiedOutputs(t *testing.T) {
-	t.Setenv("WEKNORA_SKILL_OUTPUT_DIR", "/workspace/output")
+	t.Setenv("AIKB_SKILL_OUTPUT_DIR", "/workspace/output")
 	created := sandbox.RemoteDirEntry{Path: "/workspace/output/deck.pptx", Type: sandbox.RemoteEntryFile, Size: 10, ModTime: time.Unix(2, 0)}
 	t.Run("inspection failed", func(t *testing.T) {
 		executor := &outputLinkExecutor{
@@ -162,7 +162,7 @@ func TestShellOutputLinksOmitUnverifiedOutputs(t *testing.T) {
 }
 
 func TestShellPreviewListingDoesNotBecomeDownloadLinks(t *testing.T) {
-	t.Setenv("WEKNORA_SKILL_OUTPUT_DIR", "/workspace/output")
+	t.Setenv("AIKB_SKILL_OUTPUT_DIR", "/workspace/output")
 	doc := sandbox.RemoteDirEntry{Path: "/workspace/output/report.docx", Type: sandbox.RemoteEntryFile, Size: 100}
 	executor := &outputLinkExecutor{
 		fakeShellExecutor: fakeShellExecutor{result: &sandbox.ExecuteResult{
@@ -244,7 +244,7 @@ func TestWriteSandboxFileHostLayoutDoesNotEmitOutputLinks(t *testing.T) {
 }
 
 func TestFileMutationToolsReturnDirectHTMLDeliverables(t *testing.T) {
-	t.Setenv("WEKNORA_SKILL_OUTPUT_DIR", "/workspace/output")
+	t.Setenv("AIKB_SKILL_OUTPUT_DIR", "/workspace/output")
 	sink := &fakeSandboxFileSink{}
 	for _, filePath := range []string{"/workspace/output/report.html", "/workspace/scratch.html"} {
 		result, err := NewWriteSandboxFileTool(sink, 0).Execute(sandboxFileTestContext(), mustWriteSandboxArgs(filePath, "old"))

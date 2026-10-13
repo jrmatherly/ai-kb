@@ -160,8 +160,8 @@ func TestHandleModelFallback_IncludesHistoryMessages(t *testing.T) {
 		PipelineState: types.PipelineState{
 			History: []*types.History{
 				{
-					Query:  "先介绍一下 WeKnora",
-					Answer: "WeKnora 是一个知识库问答系统。",
+					Query:  "先介绍一下 AI KB",
+					Answer: "AI KB 是一个知识库问答系统。",
 				},
 			},
 		},
@@ -179,9 +179,9 @@ func TestHandleModelFallback_IncludesHistoryMessages(t *testing.T) {
 	assert.Equal(t, "system", chatModel.lastMessages[0].Role)
 	assert.Contains(t, chatModel.lastMessages[0].Content, "Answer the latest user question")
 	assert.Equal(t, "user", chatModel.lastMessages[1].Role)
-	assert.Equal(t, "先介绍一下 WeKnora", chatModel.lastMessages[1].Content)
+	assert.Equal(t, "先介绍一下 AI KB", chatModel.lastMessages[1].Content)
 	assert.Equal(t, "assistant", chatModel.lastMessages[2].Role)
-	assert.Equal(t, "WeKnora 是一个知识库问答系统。", chatModel.lastMessages[2].Content)
+	assert.Equal(t, "AI KB 是一个知识库问答系统。", chatModel.lastMessages[2].Content)
 	assert.Equal(t, "user", chatModel.lastMessages[3].Role)
 	assert.Contains(t, chatModel.lastMessages[3].Content, "现在还能继续讲吗？")
 }

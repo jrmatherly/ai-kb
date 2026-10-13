@@ -1,8 +1,8 @@
-/** Minimal WeKnora REST client: JSON endpoints plus the SSE chat streams. */
+/** Minimal AI KB REST client: JSON endpoints plus the SSE chat streams. */
 
 import type { ResolvedConfig } from './config.ts'
 
-/** One retrieval hit, as returned by WeKnora's `SearchResult`. */
+/** One retrieval hit, as returned by AI KB's `SearchResult`. */
 export interface SearchResult {
   id?: string
   content?: string
@@ -87,7 +87,7 @@ function snippet(body: string): string {
   return collapsed.length > 300 ? `${collapsed.slice(0, 300)}…` : collapsed
 }
 
-/** Extract a human-readable reason from WeKnora's error envelope. */
+/** Extract a human-readable reason from AI KB's error envelope. */
 function reasonOf(body: string): string {
   try {
     const parsed = JSON.parse(body) as { error?: { message?: string } | string, message?: string }
@@ -230,7 +230,7 @@ export class WeknoraClient {
     return Array.isArray(envelope.data) ? envelope.data : []
   }
 
-  /** A document's metadata, including the generated summary WeKnora stores as `description`. */
+  /** A document's metadata, including the generated summary AI KB stores as `description`. */
   async getDocument(knowledgeId: string, signal: AbortSignal): Promise<DocumentRecord> {
     const envelope = await this.fetchJson<DocumentRecord>(
       `/knowledge/${encodeURIComponent(knowledgeId)}`,
@@ -336,7 +336,7 @@ function describeTransportFailure(cause: unknown, callerSignal: AbortSignal): st
   return cause instanceof Error ? cause.message : String(cause)
 }
 
-/** One decoded `data:` payload of the WeKnora stream. */
+/** One decoded `data:` payload of the AI KB stream. */
 interface StreamEvent {
   response_type?: string
   content?: string
@@ -346,7 +346,7 @@ interface StreamEvent {
 }
 
 /**
- * Consume WeKnora's `text/event-stream` and assemble the parts a tool result
+ * Consume AI KB's `text/event-stream` and assemble the parts a tool result
  * needs: the answer text, its citations, and the tool names the agent used.
  * Server-side `error` events become a thrown failure so the model is never
  * handed a silently empty answer.
@@ -421,11 +421,11 @@ async function assembleStream(
     await reader.cancel().catch(() => undefined)
   }
 
-  // WeKnora ends every answer with a `complete` event. Without it the stream was
+  // AI KB ends every answer with a `complete` event. Without it the stream was
   // cut short, and handing the model the partial text would present a truncated
   // answer as a whole one.
   if (!completed) {
-    throw new WeknoraApiError(`POST ${path} ended before WeKnora completed the answer; `
+    throw new WeknoraApiError(`POST ${path} ended before AI KB completed the answer; `
       + `${answer.join('').length} character(s) had streamed`)
   }
 

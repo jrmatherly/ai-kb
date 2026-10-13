@@ -55,7 +55,7 @@ func TestWithIMIdentity(t *testing.T) {
 }
 
 func TestWithIMIdentityUsesDeploymentDefaultWithoutChannelLocale(t *testing.T) {
-	t.Setenv("WEKNORA_LANGUAGE", "ko-KR")
+	t.Setenv("AIKB_LANGUAGE", "ko-KR")
 	ctx := context.WithValue(context.Background(), types.LanguageContextKey, "en-US")
 	ctx = withIMIdentity(ctx, &IMChannel{ID: "channel-1", TenantID: 42}, nil)
 

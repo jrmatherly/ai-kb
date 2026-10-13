@@ -1,4 +1,4 @@
-# WeKnora MCP Server 安装和使用指南
+# AI KB MCP Server 安装和使用指南
 
 ## 快速开始
 
@@ -10,16 +10,16 @@ pip install -r requirements.txt
 ### 2. 设置环境变量
 ```bash
 # Linux/macOS
-export WEKNORA_BASE_URL="http://localhost:8080/api/v1"
-export WEKNORA_API_KEY="your_api_key_here"
+export AIKB_BASE_URL="http://localhost:8080/api/v1"
+export AIKB_API_KEY="your_api_key_here"
 
 # Windows PowerShell
-$env:WEKNORA_BASE_URL="http://localhost:8080/api/v1"
-$env:WEKNORA_API_KEY="your_api_key_here"
+$env:AIKB_BASE_URL="http://localhost:8080/api/v1"
+$env:AIKB_API_KEY="your_api_key_here"
 
 # Windows CMD
-set WEKNORA_BASE_URL=http://localhost:8080/api/v1
-set WEKNORA_API_KEY=your_api_key_here
+set AIKB_BASE_URL=http://localhost:8080/api/v1
+set AIKB_API_KEY=your_api_key_here
 ```
 
 ### 3. 运行服务器
@@ -94,7 +94,7 @@ python main.py --check-only
 ```
 
 这将显示：
-- WeKnora API 基础 URL 配置
+- AI KB API 基础 URL 配置
 - API 密钥设置状态
 - 依赖包安装状态
 
@@ -107,14 +107,14 @@ python main.py --check-only
 - 没有文件名冲突
 
 ### 2. 连接错误
-如果无法连接到 WeKnora API：
-- 检查 `WEKNORA_BASE_URL` 是否正确
-- 确认 WeKnora 服务正在运行
+如果无法连接到 AI KB API：
+- 检查 `AIKB_BASE_URL` 是否正确
+- 确认 AI KB 服务正在运行
 - 验证网络连接
 
 ### 3. 认证错误
 如果遇到认证问题：
-- 检查 `WEKNORA_API_KEY` 是否设置
+- 检查 `AIKB_API_KEY` 是否设置
 - 确认 API 密钥有效
 - 验证权限设置
 
@@ -122,7 +122,7 @@ python main.py --check-only
 
 ### 项目结构
 ```
-WeKnora/mcp-server/
+ai-kb/mcp-server/
 ├── __init__.py              # 包初始化文件
 ├── main.py                  # 主入口点
 ├── run_server.py           # 原始启动脚本
@@ -167,7 +167,7 @@ RUN pip install -r requirements.txt
 COPY . .
 RUN pip install -e .
 
-ENV WEKNORA_BASE_URL=http://localhost:8080/api/v1
+ENV AIKB_BASE_URL=http://localhost:8080/api/v1
 EXPOSE 8000
 
 CMD ["weknora-mcp-server"]
@@ -177,15 +177,15 @@ CMD ["weknora-mcp-server"]
 创建 systemd 服务文件 `/etc/systemd/system/weknora-mcp.service`：
 ```ini
 [Unit]
-Description=WeKnora MCP Server
+Description=AI KB MCP Server
 After=network.target
 
 [Service]
 Type=simple
 User=weknora
 WorkingDirectory=/opt/weknora-mcp
-Environment=WEKNORA_BASE_URL=http://localhost:8080/api/v1
-Environment=WEKNORA_API_KEY=your_api_key
+Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
+Environment=AIKB_API_KEY=your_api_key
 ExecStart=/usr/local/bin/weknora-mcp-server
 Restart=always
 

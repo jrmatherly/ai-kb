@@ -171,7 +171,7 @@ func TestSeatbeltPolicyFromBuilderRunsLoginShell(t *testing.T) {
 
 	home, err := filepath.EvalSymlinks(t.TempDir())
 	require.NoError(t, err)
-	workspace := filepath.Join(home, "Documents", "WeKnora", "s1")
+	workspace := filepath.Join(home, "Documents", "AI KB", "s1")
 	require.NoError(t, os.MkdirAll(workspace, 0o755))
 	secretProfile := []byte("export AWS_SECRET_ACCESS_KEY=super-secret\n")
 	require.NoError(t, os.WriteFile(filepath.Join(home, ".profile"), secretProfile, 0o644))
@@ -361,7 +361,7 @@ func TestSeatbeltAllowsTmpAndDeniesVarFolders(t *testing.T) {
 
 	home, err := filepath.EvalSymlinks(t.TempDir())
 	require.NoError(t, err)
-	workspace := filepath.Join(home, "Documents", "WeKnora", "s1")
+	workspace := filepath.Join(home, "Documents", "AI KB", "s1")
 	require.NoError(t, os.MkdirAll(workspace, 0o755))
 
 	tmpSecret := filepath.Join("/tmp", "weknora-seatbelt-"+t.Name())

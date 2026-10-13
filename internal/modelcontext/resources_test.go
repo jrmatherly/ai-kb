@@ -39,7 +39,7 @@ func TestRegistryAliasesWikiSummarySlug(t *testing.T) {
 func TestRegistryLeavesEntitySlugUntouched(t *testing.T) {
 	r := newResourceRegistry()
 	// Entity slugs are low-entropy and semantically meaningful; not aliased.
-	entity := "[[entity/weknora-error-log|WeKnora 试错记录]]"
+	entity := "[[entity/weknora-error-log|AI KB 试错记录]]"
 	require.Equal(t, entity, r.EncodeText(entity))
 }
 

@@ -23,9 +23,9 @@ type tokenResult struct {
 // NewCmdToken builds `weknora auth token`. Prints the active profile's
 // credential to stdout for use in shell pipelines, e.g.
 //
-//	WEKNORA_TOKEN=$(weknora auth token)
-//	curl -H "Authorization: Bearer $WEKNORA_TOKEN" ...     # JWT mode
-//	curl -H "X-API-Key: $WEKNORA_TOKEN" ...                # api-key mode
+//	AIKB_TOKEN=$(weknora auth token)
+//	curl -H "Authorization: Bearer $AIKB_TOKEN" ...     # JWT mode
+//	curl -H "X-API-Key: $AIKB_TOKEN" ...                # api-key mode
 //
 // The user is responsible for constructing the appropriate header -
 // `auth list` shows which mode each profile uses.
@@ -47,7 +47,7 @@ to see which mode each profile uses, and construct the matching HTTP header:
   X-API-Key: <token>               # api-key mode
 
 ` + "`--profile <name>`" + ` (global flag) selects a non-active profile to read from.`,
-		Example: `  WEKNORA_TOKEN=$(weknora auth token)
+		Example: `  AIKB_TOKEN=$(weknora auth token)
   weknora auth token --profile staging
   weknora auth token --format json`,
 		Args: cobra.NoArgs,
@@ -56,10 +56,10 @@ to see which mode each profile uses, and construct the matching HTTP header:
 			if err != nil {
 				return err
 			}
-			// `auth token` is a scalar scripting helper (WEKNORA_TOKEN=$(...)),
+			// `auth token` is a scalar scripting helper (AIKB_TOKEN=$(...)),
 			// so it defaults to the raw token — overriding the global json
 			// default, the same way `doc download` streams raw bytes. Explicit
-			// --format json / WEKNORA_FORMAT=json still emit the
+			// --format json / AIKB_FORMAT=json still emit the
 			// {token,mode,profile} envelope.
 			fopts.FromEnv()
 			if fopts.Mode == "" {
@@ -78,7 +78,7 @@ to see which mode each profile uses, and construct the matching HTTP header:
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor: "print the active profile's raw credential to stdout for shell capture",
 		Examples: []string{
-			"WEKNORA_TOKEN=$(weknora auth token)",
+			"AIKB_TOKEN=$(weknora auth token)",
 			"weknora auth token --profile staging",
 			"weknora auth token --format json",
 		},
@@ -96,7 +96,7 @@ func runToken(f *cmdutil.Factory, fopts *cmdutil.FormatOptions) error {
 	// erroring on the absence of a stored profile.
 	if active, kind := cmdutil.EnvCredential(); active {
 		mode := ModeBearer
-		if kind == "WEKNORA_API_KEY" {
+		if kind == "AIKB_API_KEY" {
 			mode = ModeAPIKey
 		}
 		return emitToken(fopts, os.Getenv(kind), mode, "(env)")

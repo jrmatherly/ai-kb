@@ -28,7 +28,7 @@ const DesktopEnsureUnsupportedExit = 2
 // DesktopEnsureUnsupportedMarker is written to stderr immediately before
 // that exit 2. Go must see both or the failure is a broken wrapper, not
 // a BYO image without a desktop.
-const DesktopEnsureUnsupportedMarker = "WEKNORA_DESKTOP_UNSUPPORTED"
+const DesktopEnsureUnsupportedMarker = "AIKB_DESKTOP_UNSUPPORTED"
 
 var desktopReadyLine = regexp.MustCompile(`^READY ([A-Za-z0-9]{32})$`)
 

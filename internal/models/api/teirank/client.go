@@ -45,7 +45,7 @@ type rank struct {
 }
 
 // BuildRequestBody returns the native TEI request. raw_scores is explicit:
-// false makes a single-class reranker's logits comparable with WeKnora's
+// false makes a single-class reranker's logits comparable with AI KB's
 // 0..1 relevance threshold. The model name is configured when TEI starts.
 //
 // Settings.ExtraBody is merged in but cannot replace query, texts or

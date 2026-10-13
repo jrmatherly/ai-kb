@@ -236,7 +236,7 @@ func writeHostSkillFiles(dir string, bundle *SkillBundle) error {
 	return nil
 }
 
-// readHostEnvDeclaration mirrors readEnvDeclaration for a file the WeKnora
+// readHostEnvDeclaration mirrors readEnvDeclaration for a file the AI KB
 // process can read directly.
 func readHostEnvDeclaration(
 	ctx context.Context, skillID, versionDir string, bundle *SkillBundle,
@@ -320,7 +320,7 @@ func buildHostInstallPrompt(versionDir string, bundle *SkillBundle, tools map[st
 	if bundle != nil {
 		skillMD = string(bundle.Files["SKILL.md"])
 	}
-	return fmt.Sprintf(`Install this WeKnora skill on the user's computer.
+	return fmt.Sprintf(`Install this AI KB skill on the user's computer.
 
 Skill directory: %s
 %s
@@ -340,8 +340,8 @@ Hard requirements:
 - Declare the environment variables this skill needs AT RUN TIME with write_skill_file to %s,
   as JSON: {"env":[{"name":"TAVILY_API_KEY","description":"what the skill uses it for","required":true}]}.
   Names must be UPPER_SNAKE_CASE and appear literally in the skill's files. Never write a value.
-  If the skill needs none, write {"env":[]}. Do not declare WEKNORA_SKILL_DIR,
-  WEKNORA_SKILL_OUTPUT_DIR, WEKNORA_SKILL_HISTORY_ROOT or WEKNORA_SESSION_INPUT_DIR.
+  If the skill needs none, write {"env":[]}. Do not declare AIKB_SKILL_DIR,
+  AIKB_SKILL_OUTPUT_DIR, AIKB_SKILL_HISTORY_ROOT or AIKB_SESSION_INPUT_DIR.
 - Create the venv with pip present: `+"`uv venv --seed %s/.venv`"+`,
   or `+"`python3 -m venv %s/.venv`"+` when uv is missing.
 

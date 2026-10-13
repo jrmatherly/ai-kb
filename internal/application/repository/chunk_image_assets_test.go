@@ -15,13 +15,13 @@ import (
 )
 
 // imageAssetBackends runs fn against in-memory SQLite and, when
-// WEKNORA_REPOSITORY_TEST_POSTGRES_DSN points at a disposable database, against
+// AIKB_REPOSITORY_TEST_POSTGRES_DSN points at a disposable database, against
 // PostgreSQL too — the gallery query is spelled differently per dialect, so
 // both spellings need the same assertions. For example:
 //
 //	docker run -d --rm -e POSTGRES_PASSWORD=pg -e POSTGRES_DB=weknora -p 55432:5432 \
 //	  paradedb/paradedb:v0.25.11-pg17
-//	WEKNORA_REPOSITORY_TEST_POSTGRES_DSN=postgres://postgres:pg@localhost:55432/weknora?sslmode=disable
+//	AIKB_REPOSITORY_TEST_POSTGRES_DSN=postgres://postgres:pg@localhost:55432/weknora?sslmode=disable
 //
 // Both runs apply the real chunk_images migration, so the triggers and the
 // backfill under test are the ones that ship.
@@ -32,9 +32,9 @@ func imageAssetBackends(t *testing.T, fn func(t *testing.T, db *gorm.DB)) {
 		fn(t, db)
 	})
 	t.Run("postgres", func(t *testing.T) {
-		dsn := os.Getenv("WEKNORA_REPOSITORY_TEST_POSTGRES_DSN")
+		dsn := os.Getenv("AIKB_REPOSITORY_TEST_POSTGRES_DSN")
 		if dsn == "" {
-			t.Skip("set WEKNORA_REPOSITORY_TEST_POSTGRES_DSN to run the PostgreSQL gallery query")
+			t.Skip("set AIKB_REPOSITORY_TEST_POSTGRES_DSN to run the PostgreSQL gallery query")
 		}
 		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		require.NoError(t, err)

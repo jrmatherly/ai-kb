@@ -86,7 +86,7 @@ test('an empty result set tells the model what to try next', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product'] })
   const { value, text } = await call(byName.get('weknora_search'), { query: '量子纠缠咖啡机保修期' })
   assert.equal(value.count, 0)
-  assert.match(text, /Nothing in WeKnora matched/)
+  assert.match(text, /Nothing in AI KB matched/)
 })
 
 test('search rejects a missing query before touching the network', async () => {
@@ -94,7 +94,7 @@ test('search rejects a missing query before touching the network', async () => {
   await assert.rejects(byName.get('weknora_search').execute({}, exec), /"query" is required/)
 })
 
-// WeKnora answers 400 when a retrieval names no knowledge base, document or
+// AI KB answers 400 when a retrieval names no knowledge base, document or
 // tag. Rather than make the model choose a scope it has no basis to choose,
 // an unconfigured deployment searches everything the credential can see.
 test('search spans every visible knowledge base when none is configured', async () => {
@@ -124,7 +124,7 @@ test('the resolved full scope is fetched once and reused', async () => {
   assert.equal(listings.length, 1, 'resolving the scope must not re-list on every search')
 })
 
-test('knowledge_ids alone is a scope WeKnora accepts', async () => {
+test('knowledge_ids alone is a scope AI KB accepts', async () => {
   const { byName, mock } = await toolset()
   await call(byName.get('weknora_search'), {
     query: '默认的检索阈值是多少',
@@ -161,7 +161,7 @@ test('by-name matches stay inside the scope the call asked for', async () => {
 
 test('a passage hit is not repeated in the by-name section', async () => {
   const { byName } = await toolset({ knowledgeBaseIds: ['kb-product', 'kb-ops'] })
-  const { value } = await call(byName.get('weknora_search'), { query: 'WeKnora 检索流程' })
+  const { value } = await call(byName.get('weknora_search'), { query: 'AI KB 检索流程' })
   const passages = new Set(value.results.map(hit => hit.knowledge_id))
   assert.equal(value.documents.some(document => passages.has(document.knowledge_id)), false)
 })
@@ -194,7 +194,7 @@ test('read_document reassembles passages in order and reports paging', async () 
 })
 
 // A long document costs many pages to identify from its passages alone, so
-// page 1 carries the title and WeKnora's generated summary.
+// page 1 carries the title and AI KB's generated summary.
 test('read_document leads with the document title and summary', async () => {
   const { byName } = await toolset()
   const { value, text } = await call(byName.get('weknora_read_document'), {
@@ -202,9 +202,9 @@ test('read_document leads with the document title and summary', async () => {
     page: 1,
     page_size: 2,
   })
-  assert.equal(value.title, 'WeKnora 检索流程.md')
+  assert.equal(value.title, 'AI KB 检索流程.md')
   assert.match(value.summary, /混合检索/)
-  assert.match(text, /Document WeKnora 检索流程\.md \(doc-retrieval-pipeline\)/)
+  assert.match(text, /Document AI KB 检索流程\.md \(doc-retrieval-pipeline\)/)
   assert.match(text, /Summary: /)
 })
 
@@ -224,9 +224,9 @@ test('read_document leads with the title and summary, and only on page 1', async
     page: 1,
     page_size: 2,
   })
-  assert.equal(first.value.title, 'WeKnora 检索流程.md')
-  assert.match(first.text, /^Document WeKnora 检索流程\.md \(doc-retrieval-pipeline\)/)
-  assert.match(first.text, /Summary: 讲解 WeKnora 混合检索/)
+  assert.equal(first.value.title, 'AI KB 检索流程.md')
+  assert.match(first.text, /^Document AI KB 检索流程\.md \(doc-retrieval-pipeline\)/)
+  assert.match(first.text, /Summary: 讲解 AI KB 混合检索/)
 
   const before = mock.requests.length
   const second = await call(byName.get('weknora_read_document'), {
@@ -271,7 +271,7 @@ test('ask reuses a given session instead of creating one', async () => {
 
 // The RAG pipeline retrieves only what the request scopes, so an unconfigured
 // deployment must resolve the visible set for ask exactly as it does for search.
-// Otherwise the quickstart's optional WEKNORA_KNOWLEDGE_BASE_IDS leaves ask
+// Otherwise the quickstart's optional AIKB_KNOWLEDGE_BASE_IDS leaves ask
 // answering from nothing while search works.
 test('ask resolves its own scope when none is configured', async () => {
   const { byName, mock } = await toolset()
@@ -313,7 +313,7 @@ test('a configured agent id switches ask to the agent pipeline', async () => {
   const { value, text } = await call(byName.get('weknora_ask'), { query: '部署方式有哪些' })
   assert.equal(value.pipeline, 'agent')
   assert.deepEqual(value.tool_calls, ['knowledge_search'])
-  assert.match(text, /WeKnora tools used: knowledge_search/)
+  assert.match(text, /AI KB tools used: knowledge_search/)
 })
 
 test('apply registers into ctx.tools and honours the prefix and toggles', () => {

@@ -22,7 +22,7 @@ func TestSerplySearchMapsOptionsAndTrimsResults(t *testing.T) {
 			require.Equal(t, serplySearchURL, r.URL.Scheme+"://"+r.URL.Host+r.URL.Path)
 			require.Equal(t, http.MethodGet, r.Method)
 			require.Equal(t, "test-key", r.Header.Get("X-Api-Key"))
-			require.Equal(t, "WeKnora/1.0", r.Header.Get("User-Agent"))
+			require.Equal(t, "AIKB/1.0", r.Header.Get("User-Agent"))
 			require.Equal(t, "rust & go", r.URL.Query().Get("q"))
 			require.Equal(t, "2", r.URL.Query().Get("num"))
 			require.Equal(t, "de", r.URL.Query().Get("gl"))

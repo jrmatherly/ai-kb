@@ -84,7 +84,7 @@ type Session struct {
 	Description string `json:"description"`
 	// Workspace ID
 	TenantID uint64 `json:"tenant_id"   gorm:"index"`
-	// UserID is the owner scope for this session. WeKnora user UUIDs, API
+	// UserID is the owner scope for this session. AI KB user UUIDs, API
 	// external-user principals, and embed visitor principals all use this column.
 	UserID string `json:"user_id,omitempty" gorm:"type:varchar(512);index"`
 	// IsPinned indicates whether the session is pinned in the list.
@@ -121,7 +121,7 @@ type Session struct {
 	SandboxConfigTenantID uint64 `json:"-" gorm:"column:sandbox_config_tenant_id;type:bigint;default:0"`
 
 	// HostWorkspaceDir is the user-selected project directory this session
-	// operates in, for the WeKnora Lite host sandbox only. Empty means the session
+	// operates in, for the AI KB Lite host sandbox only. Empty means the session
 	// gets an auto-allocated workspace instead.
 	//
 	// Written once at creation and never updated: re-pointing a live session

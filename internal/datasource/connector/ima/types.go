@@ -267,7 +267,7 @@ type imaCursor struct {
 // Rationale:
 //
 //   - kb_id keeps identities isolated across knowledge bases (same file
-//     copied into two KBs is two distinct docs from WeKnora's perspective).
+//     copied into two KBs is two distinct docs from AI KB's perspective).
 //   - parent_folder_id + title anchor the doc to its folder location and
 //     display name — the tuple IMA's own check_repeated_names uses to gate
 //     uploads (see api.md), so IMA's own uniqueness constraint enforces

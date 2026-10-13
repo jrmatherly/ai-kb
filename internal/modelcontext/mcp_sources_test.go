@@ -12,7 +12,7 @@ import (
 
 func TestMCPAnswerCannotBorrowDirectoryOrHistoricalKnowledgeCitations(t *testing.T) {
 	r := NewRegistry(true)
-	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-1", DocumentTitle: "什么是 WeKnora？"})
+	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-1", DocumentTitle: "什么是 AI KB？"})
 	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-2", DocumentTitle: "如何创建知识库？"})
 	history := []chat.Message{{Role: "assistant", Content: `物业工作 <kb doc="9月13日周报.docx" chunk_id="weekly-report" />`}}
 	r.EncodeMessages(history)
@@ -44,7 +44,7 @@ func TestMCPAnswerCannotBorrowDirectoryOrHistoricalKnowledgeCitations(t *testing
 	r.ModelToolResultForTool("knowledge_search", &types.ToolResult{Success: true, Data: map[string]interface{}{
 		"display_type": "search_results",
 		"results": []map[string]interface{}{{
-			"chunk_id": "faq-1", "knowledge_title": "什么是 WeKnora？", "content": "知识库管理系统",
+			"chunk_id": "faq-1", "knowledge_title": "什么是 AI KB？", "content": "知识库管理系统",
 		}},
 	}})
 	r.RegisterContextChunk(ChunkReference{ChunkID: "faq-1"})

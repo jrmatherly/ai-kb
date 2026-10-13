@@ -1,7 +1,7 @@
 # Copyright 2025 Tencent
 # SPDX-License-Identifier: MIT
 #
-# WeKnora Helm Chart Values
+# AI KB Helm Chart Values
 #
 # Best Practices References:
 # - https://helm.sh/docs/chart_best_practices/values/
@@ -72,7 +72,7 @@ app:
 
   image:
     # -- Image repository
-    repository: wechatopenai/weknora-app
+    repository: ghcr.io/jrmatherly/ai-kb-app
     # -- Image tag (defaults to Chart.appVersion if empty)
     tag: ""
     # -- Image pull policy
@@ -113,7 +113,7 @@ app:
     # Docker sandbox talks to a local Engine API (often docker.sock = host root).
     # Leave false unless this is a private single-node install that also mounts
     # the daemon socket or points at a remote tcp:// daemon with TLS.
-    WEKNORA_SANDBOX_DOCKER_ENABLED: "false"
+    AIKB_SANDBOX_DOCKER_ENABLED: "false"
 
   # -- Additional environment variables
   extraEnv: []
@@ -168,7 +168,7 @@ frontend:
 
   image:
     # -- Image repository
-    repository: wechatopenai/weknora-ui
+    repository: ghcr.io/jrmatherly/ai-kb-ui
     # -- Image tag (defaults to Chart.appVersion if empty)
     tag: ""
     # -- Image pull policy
@@ -217,7 +217,7 @@ docreader:
 
   image:
     # -- Image repository
-    repository: wechatopenai/weknora-docreader
+    repository: ghcr.io/jrmatherly/ai-kb-docreader
     # -- Image tag (defaults to Chart.appVersion if empty)
     tag: ""
     # -- Image pull policy
@@ -404,7 +404,7 @@ ingress:
 # Use --set or external secret management (External Secrets Operator, Vault, etc.)
 #
 # Example installation:
-#   helm install weknora ./helm \
+#   helm install ai-kb ./helm \
 #     --set secrets.dbPassword=<secure-password> \
 #     --set secrets.redisPassword=<secure-password> \
 #     --set secrets.jwtSecret=<secure-random-string>

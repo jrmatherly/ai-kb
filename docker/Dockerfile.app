@@ -21,7 +21,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --pr
 COPY scripts/build_browserskill.sh scripts/browserskill-release.json ./scripts/
 ARG TARGETOS
 ARG TARGETARCH
-RUN bash scripts/build_browserskill.sh /opt/weknora/browserskill "${TARGETOS}/${TARGETARCH}"
+RUN bash scripts/build_browserskill.sh /opt/ai-kb/browserskill "${TARGETOS}/${TARGETARCH}"
 
 # Build stage
 FROM golang:1.26-bookworm AS builder
@@ -103,9 +103,9 @@ WORKDIR /app
 ARG APK_MIRROR_ARG
 
 # Pairing derives the gateway URL from the user's page origin by default.
-ENV BROWSERSKILL_BINARY=/opt/weknora/browserskill/bsk \
-    BROWSERSKILL_EXTENSION_PATH=/opt/weknora/browserskill/browser-skill-weknora-0.3.1.zip
-COPY --from=browserskill /opt/weknora/browserskill /opt/weknora/browserskill
+ENV BROWSERSKILL_BINARY=/opt/ai-kb/browserskill/bsk \
+    BROWSERSKILL_EXTENSION_PATH=/opt/ai-kb/browserskill/browser-skill-weknora-0.3.1.zip
+COPY --from=browserskill /opt/ai-kb/browserskill /opt/ai-kb/browserskill
 
 # Create a non-root user first
 RUN useradd -m -s /bin/bash appuser
@@ -150,7 +150,7 @@ COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/dataset/samples ./dataset/samples
 COPY --from=builder /root/.duckdb /home/appuser/.duckdb
-COPY --from=builder /app/WeKnora .
+COPY --from=builder /app/ai-kb .
 COPY --from=builder /license-bundle/ ./
 
 # Copy and make entrypoint script executable
@@ -164,4 +164,4 @@ EXPOSE 8080
 
 
 ENTRYPOINT ["./scripts/docker-entrypoint.sh"]
-CMD ["./WeKnora"]
+CMD ["./ai-kb"]

@@ -611,7 +611,7 @@ func TestBuildInstallPromptAsksForADeclarationWithoutValues(t *testing.T) {
 	require.Contains(t, prompt, `{"env":[]}`)
 	require.Contains(t, prompt, "Never write any value",
 		"a value the model invents would be stored as the workspace credential")
-	require.Contains(t, prompt, "WEKNORA_API_KEY",
+	require.Contains(t, prompt, "AIKB_API_KEY",
 		"the installer must be told credential names are declarable, or it writes {\"env\":[]}")
 	require.Contains(t, prompt, "On-demand / optional extras MUST be installed now")
 	require.Contains(t, prompt, "uv venv --seed")
@@ -1901,15 +1901,15 @@ func TestStartMaintenanceSessionMarksAndScopesTheSession(t *testing.T) {
 	require.Equal(t, "Skill install", sess.Title)
 }
 
-const installSkillDir = "/opt/weknora/tenant/skills/pdf-tools"
+const installSkillDir = "/opt/ai-kb/tenant/skills/pdf-tools"
 
 // The install commands are asserted verbatim: an install runs as root with the
 // skills root writable, so "the command contained this substring" is not a
 // strong enough statement about what actually executes.
 const (
 	installPrepareCommand = "rm -rf " + installSkillDir +
-		" && mkdir -p /opt/weknora/tenant/skills " + installSkillDir +
-		" && chmod 755 /opt/weknora/tenant/skills " + installSkillDir
+		" && mkdir -p /opt/ai-kb/tenant/skills " + installSkillDir +
+		" && chmod 755 /opt/ai-kb/tenant/skills " + installSkillDir
 )
 
 // installPythonVerifyCommand is built from the same helper the install path

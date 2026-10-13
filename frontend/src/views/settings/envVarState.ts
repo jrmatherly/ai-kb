@@ -125,7 +125,7 @@ export const RESERVED_ENV_NAMES: Set<string> = new Set([
 ])
 
 /** The sandbox hands the skill its artifact directory through this prefix. */
-const RESERVED_ENV_PREFIX = 'WEKNORA_'
+const RESERVED_ENV_PREFIX = 'AIKB_'
 
 /** Mirrors `envNamePattern` server-side: UPPER_SNAKE_CASE, at most 128 chars. */
 const ENV_NAME_PATTERN = /^[A-Z_][A-Z0-9_]{0,127}$/

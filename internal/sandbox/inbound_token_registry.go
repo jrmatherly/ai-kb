@@ -4,7 +4,7 @@
 // traffic token. Cube's SDK attaches that header
 // itself once Sandbox.TrafficAccessToken is set, but go-e2b stores the token
 // and never sends it — so for E2B the header has to be added by the one
-// component WeKnora owns on that path: the data-plane RoundTripper.
+// component AI KB owns on that path: the data-plane RoundTripper.
 //
 // This registry is the lookup that makes it possible. It is process-local and
 // lost on restart, which is fine: the first reconnect after a restart carries
@@ -67,7 +67,7 @@ func (r *InboundTokenRegistry) Delete(sandboxID string) {
 // deliberate: an E2B Cloud deployment may leave sandbox_domain empty and let
 // the SDK resolve its own default, and a domain-based check would then never
 // fire. The registry lookup is the real authority — only Cube/E2B sandboxes
-// whose token WeKnora recorded are in it.
+// whose token AI KB recorded are in it.
 func sandboxIDFromDataPlaneHost(host string) string {
 	host = strings.ToLower(strings.TrimSpace(host))
 	if host == "" {

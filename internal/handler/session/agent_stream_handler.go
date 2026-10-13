@@ -48,7 +48,7 @@ type AgentStreamHandler struct {
 
 	// artifactCollector drains skill-generated files from the session
 	// sandbox after the agent completes. Nil when the sandbox backend
-	// doesn't support artifact collection or WeKnora was built without it.
+	// doesn't support artifact collection or AI KB was built without it.
 	artifactCollector *service.ArtifactCollector
 
 	// checkpointer commits the sandbox's /workspace at the end of the turn so

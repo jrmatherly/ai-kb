@@ -1,4 +1,4 @@
-# 使用 uv 运行 WeKnora MCP 服务器
+# 使用 uv 运行 AI KB MCP 服务器
 
 > 更推荐使用`uv`来运行基于python的MCP服务。
 >
@@ -29,14 +29,14 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
     "weknora": {
       "args": [
         "--directory",
-        "/path/WeKnora/mcp-server",
+        "/path/ai-kb/mcp-server",
         "run",
         "run_server.py"
       ],
       "command": "uv",
       "env": {
-        "WEKNORA_API_KEY": "your_api_key_here",
-        "WEKNORA_BASE_URL": "http://localhost:8080/api/v1"
+        "AIKB_API_KEY": "your_api_key_here",
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
       }
     }
   }
@@ -54,13 +54,13 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
       "command": "uv",
       "args": [
         "--directory",
-        "/path/WeKnora/mcp-server",
+        "/path/ai-kb/mcp-server",
         "run",
         "run_server.py"
       ],
       "env": {
-        "WEKNORA_API_KEY": "your_api_key_here",
-        "WEKNORA_BASE_URL": "http://localhost:8080/api/v1"
+        "AIKB_API_KEY": "your_api_key_here",
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
       }
     }
   }
@@ -78,13 +78,13 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
       "command": "uv",
       "args": [
         "--directory",
-        "/path/WeKnora/mcp-server",
+        "/path/ai-kb/mcp-server",
         "run",
         "run_server.py"
       ],
       "env": {
-        "WEKNORA_API_KEY": "your_api_key_here",
-        "WEKNORA_BASE_URL": "http://localhost:8080/api/v1"
+        "AIKB_API_KEY": "your_api_key_here",
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
       }
     }
   }
@@ -102,13 +102,13 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
       "command": "uv",
       "args": [
         "--directory",
-        "/path/WeKnora/mcp-server",
+        "/path/ai-kb/mcp-server",
         "run",
         "run_server.py"
       ],
       "env": {
-        "WEKNORA_API_KEY": "your_api_key_here",
-        "WEKNORA_BASE_URL": "http://localhost:8080/api/v1"
+        "AIKB_API_KEY": "your_api_key_here",
+        "AIKB_BASE_URL": "http://localhost:8080/api/v1"
       }
     }
   }

@@ -61,7 +61,7 @@ func TestTenantSkillSourceBasePathIsTheImageDir(t *testing.T) {
 	base, err := src.GetSkillBasePath("pdf")
 
 	require.NoError(t, err)
-	require.Equal(t, "/opt/weknora/tenant/skills/pdf", base,
+	require.Equal(t, "/opt/ai-kb/tenant/skills/pdf", base,
 		"the path is the skill name: that is the directory the installer writes")
 }
 
@@ -100,8 +100,8 @@ func TestTenantSkillSourceLoadsInstructionsFromTheRow(t *testing.T) {
 	require.Equal(t, "PDF helpers", skill.Description)
 	require.Equal(t, "Run scripts/extract.py.", skill.Instructions)
 	require.True(t, skill.Loaded)
-	require.Equal(t, "/opt/weknora/tenant/skills/pdf", skill.BasePath)
-	require.Equal(t, "/opt/weknora/tenant/skills/pdf/SKILL.md", skill.FilePath)
+	require.Equal(t, "/opt/ai-kb/tenant/skills/pdf", skill.BasePath)
+	require.Equal(t, "/opt/ai-kb/tenant/skills/pdf/SKILL.md", skill.FilePath)
 }
 
 func TestTenantSkillSourceReadsLevel3FilesFromTheBundle(t *testing.T) {
@@ -126,7 +126,7 @@ func TestTenantSkillSourceReadsLevel3FilesFromTheBundle(t *testing.T) {
 	file, err := src.LoadSkillFile("pdf", "reference/FORMS.md")
 	require.NoError(t, err)
 	require.Equal(t, "form notes", file.Content)
-	require.Equal(t, "/opt/weknora/tenant/skills/pdf/reference/FORMS.md", file.Path,
+	require.Equal(t, "/opt/ai-kb/tenant/skills/pdf/reference/FORMS.md", file.Path,
 		"the path the model is shown must be the one it can execute or read in the sandbox")
 	require.False(t, file.IsScript)
 
@@ -186,7 +186,7 @@ func TestTenantSkillSourceReportsAMissingBundleWithoutBlockingExecution(t *testi
 
 	remote, err := src.RemoteScriptPath("pdf", "scripts/extract.py")
 	require.NoError(t, err)
-	require.Equal(t, "/opt/weknora/tenant/skills/pdf/scripts/extract.py", remote)
+	require.Equal(t, "/opt/ai-kb/tenant/skills/pdf/scripts/extract.py", remote)
 }
 
 func TestManagerIgnoresHostSkillsWhenTenantSourceIsAttached(t *testing.T) {
@@ -244,7 +244,7 @@ func TestSandboxSkillDirOnlyAnswersForInstalledSkills(t *testing.T) {
 	require.False(t, ok)
 }
 
-// Host skills keep uploading from the WeKnora machine and keep running in
+// Host skills keep uploading from the AI KB machine and keep running in
 // their staged directory; the tenant source must not change that path at all.
 type recordingSandboxManager struct {
 	config *sandbox.ExecuteConfig

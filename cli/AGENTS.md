@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is the WeKnora CLI (`weknora`), a command-line client for the WeKnora RAG server. The module path is `github.com/jrmatherly/ai-kb/cli`.
+This is the AI KB CLI (`weknora`), a command-line client for the AI KB RAG server. The module path is `github.com/jrmatherly/ai-kb/cli`.
 
 The wire contract for AI agents *consuming* `weknora` output (JSON shape, exit codes, error format) is documented below and in [README.md](README.md). Read this file if you're integrating with the CLI binary — build / test / architecture details follow the wire contract sections.
 
@@ -125,21 +125,21 @@ Make errors structured, actionable, and specific.
 
 | Variable | Purpose |
 |---|---|
-| `WEKNORA_PROFILE` | Active profile name. Equivalent to the global `--profile <name>` flag; overridden by `--profile`. Useful in CI scripts that cannot pass global flags. |
-| `WEKNORA_FORMAT` | Default `--format` value (`text \| json \| ndjson`). Overridden by explicit `--format`. Invalid values ignored silently. |
-| `WEKNORA_KB_ID` | Default KB ID for commands that accept `--kb`. Overridden by `--kb`. |
-| `WEKNORA_LOG_LEVEL` | SDK debug log level (`error \| warn \| info \| debug`). Overridden by `--log-level`. |
-| `WEKNORA_AGENT_HELP` | Set to `1` to emit structured JSON agent-help (machine-readable) instead of human help text when `--help` is invoked. |
+| `AIKB_PROFILE` | Active profile name. Equivalent to the global `--profile <name>` flag; overridden by `--profile`. Useful in CI scripts that cannot pass global flags. |
+| `AIKB_FORMAT` | Default `--format` value (`text \| json \| ndjson`). Overridden by explicit `--format`. Invalid values ignored silently. |
+| `AIKB_KB_ID` | Default KB ID for commands that accept `--kb`. Overridden by `--kb`. |
+| `AIKB_LOG_LEVEL` | SDK debug log level (`error \| warn \| info \| debug`). Overridden by `--log-level`. |
+| `AIKB_AGENT_HELP` | Set to `1` to emit structured JSON agent-help (machine-readable) instead of human help text when `--help` is invoked. |
 
 > **Note for agents — machine-readable version and help:** The `--version` flag
 > and `--help` flag on the root command bypass `--format json` and always emit
 > prose (cobra built-in paths). For machine-readable output use the `version`
-> subcommand (`weknora version --format json`) or `WEKNORA_AGENT_HELP=1
+> subcommand (`weknora version --format json`) or `AIKB_AGENT_HELP=1
 > weknora <cmd> --help`. Planned fix for v0.8.
 
 ## Design decisions worth flagging
 
-Five design decisions readers may want context on: where WeKnora picks an
+Five design decisions readers may want context on: where AI KB picks an
 opinionated default, what the trade-off is, and what mainstream practice it
 is or isn't aligned with.
 
@@ -147,28 +147,28 @@ is or isn't aligned with.
 
 | | |
 |---|---|
-| **WeKnora** | success envelope → stdout; error envelope → stderr |
+| **AI KB** | success envelope → stdout; error envelope → stderr |
 | **Rationale** | `weknora ... --format json \| jq '.data[]'` must not mix error objects into the data stream. Channel split lets pipeline consumers suppress errors with `2>/dev/null` and still get clean JSON on stdout. |
 
 ### 2. `weknora api DELETE` triggers exit-10 confirmation
 
 | | |
 |---|---|
-| **WeKnora** | DELETE triggers exit-10 (`input.confirmation_required`); user bypasses with `-y/--yes` |
+| **AI KB** | DELETE triggers exit-10 (`input.confirmation_required`); user bypasses with `-y/--yes` |
 | **Rationale** | DELETE is irreversible. Most raw-API CLI commands rely on restricted credentials for safety, but self-hosted deployments may not have restricted-credential infrastructure available. Defensive default because agents are common consumers. |
 
 ### 3. `retry_argv` distinct from `hint`
 
 | | |
 |---|---|
-| **WeKnora** | two separate fields: `retry_argv` (suggested next argv as a string array, directly executable for non-destructive errors; informational only on exit-10) + `hint` (prose) |
+| **AI KB** | two separate fields: `retry_argv` (suggested next argv as a string array, directly executable for non-destructive errors; informational only on exit-10) + `hint` (prose) |
 | **Rationale** | Agents don't regex-extract argv from prose — known fragility. Trade-off: one extra envelope field. On exit-10, the user must approve the destructive write; agents surface `retry_argv` for human review, not auto-execution. |
 
 ### 4. NDJSON event stream has no envelope wrapping
 
 | | |
 |---|---|
-| **WeKnora** | streaming commands (`chat`, `session ask`) emit bare `{type:...}` per line; no envelope |
+| **AI KB** | streaming commands (`chat`, `session ask`) emit bare `{type:...}` per line; no envelope |
 | **Rationale** | This matches established practice across NDJSON-emitting CLIs and webhook protocols. A streaming envelope requires unwrap before dispatch — net burden with no benefit. |
 
 ### 5. No `schema_version` field in payload
@@ -176,7 +176,7 @@ is or isn't aligned with.
 | | |
 |---|---|
 | **Mainstream** | some APIs (Anthropic / OpenAI) embed a `version` field in payload |
-| **WeKnora** | version identity via CLI binary semver + CHANGELOG `### BREAKING` + skill `tested_against` + CI parity tests |
+| **AI KB** | version identity via CLI binary semver + CHANGELOG `### BREAKING` + skill `tested_against` + CI parity tests |
 | **Rationale** | Mainstream CLIs don't embed version in payload. Agents have complete version awareness via `weknora --version` and skill version binding. |
 
 ## Pre-1.0 breaking policy
@@ -534,7 +534,7 @@ The three surfaces do not auto-sync: each is wired separately so agents that onl
 
 ## MCP Tool Surface
 
-WeKnora's MCP server exposes a curated read-only tool surface. Many MCP servers in the wild ship write / mutation operations on by default and rely on credential-scope or sandbox restrictions for safety. WeKnora opts for curation instead: the server side doesn't yet enforce per-token scope, so an agent holding a user's token has full write access. Until server-side scope ships, the CLI keeps mutation tools out of the MCP surface as a belt-and-braces second line of defense. When server scope arrives this stance can loosen.
+AI KB's MCP server exposes a curated read-only tool surface. Many MCP servers in the wild ship write / mutation operations on by default and rely on credential-scope or sandbox restrictions for safety. AI KB opts for curation instead: the server side doesn't yet enforce per-token scope, so an agent holding a user's token has full write access. Until server-side scope ships, the CLI keeps mutation tools out of the MCP surface as a belt-and-braces second line of defense. When server scope arrives this stance can loosen.
 
 The curated 10 tools (`cli/internal/mcp/tools.go`):
 
@@ -581,12 +581,12 @@ Reasons hard-required-flags is the v0.5+ default:
 
 - Admin / debug commands have no natural human-interactive prompt to lean on.
 - Agent-friendly: MCP callers do not stall waiting for stdin prompts.
-- Consistent with every existing non-auth WeKnora command.
+- Consistent with every existing non-auth AI KB command.
 
 - **Agent help blob**: Commands MAY call
   `cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{...})` to expose a stable
   JSON used_for / required_flags / examples / output / warnings shape.
-  Activated by `WEKNORA_AGENT_HELP=1` at `--help` time. Warnings are
+  Activated by `AIKB_AGENT_HELP=1` at `--help` time. Warnings are
   always rendered in human help (stderr, not env-gated). Applied to
   `chat`, `kb list`, `session ask`, and all destructive commands.
   Extending to another command requires touching only that command's `NewCmd`.

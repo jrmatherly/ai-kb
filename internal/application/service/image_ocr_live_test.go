@@ -19,9 +19,9 @@ import (
 // Keep credentials and user images outside version control; private endpoints
 // require the usual explicit SSRF_WHITELIST environment setting.
 func TestLiveImageOCRValidation(t *testing.T) {
-	path := os.Getenv("WEKNORA_OCR_TEST_FIXTURE")
+	path := os.Getenv("AIKB_OCR_TEST_FIXTURE")
 	if path == "" {
-		t.Skip("set WEKNORA_OCR_TEST_FIXTURE to run live OCR verification")
+		t.Skip("set AIKB_OCR_TEST_FIXTURE to run live OCR verification")
 	}
 	raw, err := os.ReadFile(path)
 	require.NoError(t, err)

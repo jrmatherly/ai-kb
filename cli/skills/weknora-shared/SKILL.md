@@ -1,20 +1,20 @@
 ---
 name: weknora-shared
-description: Use when driving a WeKnora RAG server through the `weknora` CLI as an agent — authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other weknora-* skill.
+description: Use when driving a AI KB RAG server through the `weknora` CLI as an agent — authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other weknora-* skill.
 metadata:
   tested_against: v0.10
 ---
 
-# WeKnora CLI — shared base
+# AI KB CLI — shared base
 
-`weknora` is the agent-first CLI for a WeKnora RAG server. Every command prints
+`weknora` is the agent-first CLI for a AI KB RAG server. Every command prints
 a JSON envelope and uses a typed exit code, so you branch on machine-readable
 output, not prose. Read this skill before any task-specific `weknora-*` skill.
 
 ## 1. Authenticate (do this first — order matters)
 
-**Agents usually skip profiles entirely:** set `WEKNORA_API_KEY` (or
-`WEKNORA_TOKEN`) + `WEKNORA_HOST` and every command authenticates statelessly and
+**Agents usually skip profiles entirely:** set `AIKB_API_KEY` (or
+`AIKB_TOKEN`) + `AIKB_HOST` and every command authenticates statelessly and
 zero-disk — no `profile add` / `auth login` needed. `auth token` echoes that env
 credential; `auth status` / `doctor` confirm it. The steps below set up a
 **persistent named profile** instead (interactive / multi-environment use).
@@ -26,7 +26,7 @@ Authentication is a **two-step sequence**. `weknora auth login` operates on the
 # 1. register a connection target and make it active
 weknora profile add prod --host https://kb.example.com --use
 # 2a. API key (agent default — pipe the key on stdin, non-interactive):
-echo "$WEKNORA_API_KEY" | weknora auth login --with-token
+echo "$AIKB_API_KEY" | weknora auth login --with-token
 # 2b. OR email+password (interactive prompt only — no flags; not for agents)
 weknora auth login
 
@@ -36,7 +36,7 @@ weknora auth status          # verify: who am I, which tenant
 - Target a *non-active* profile for one command with the global `--profile NAME`
   (e.g. `weknora --profile staging auth refresh`). There is no per-command
   `--name`/`--host` on auth commands.
-- Get the raw token for scripting with `WEKNORA_TOKEN=$(weknora auth token)`
+- Get the raw token for scripting with `AIKB_TOKEN=$(weknora auth token)`
   (raw token by default; works with an env credential too; `--format json` gives
   the `{token, mode, profile}` envelope).
 - `weknora auth logout` clears a profile's stored credentials but **keeps the
@@ -47,7 +47,7 @@ weknora auth status          # verify: who am I, which tenant
 ## 2. Selecting a knowledge base (`--kb`)
 
 `--kb` accepts a **name or a UUID** (resolved server-side). Resolution order:
-`--kb` flag → `WEKNORA_KB_ID` env → directory link (`weknora link --kb X` binds
+`--kb` flag → `AIKB_KB_ID` env → directory link (`weknora link --kb X` binds
 the cwd) → error. Read/create commands that operate "inside a project" inherit
 the link; **`search *` and destructive `--all` operations always require an
 explicit `--kb`** (so an agent never silently hits the wrong corpus).
@@ -196,7 +196,7 @@ take raw ids (no name resolution); resolve names via `kb_list` first.
 
 ## 10. Agent self-help
 
-Run `weknora <command> --help`. With `WEKNORA_AGENT_HELP=1` set, `--help` emits a
+Run `weknora <command> --help`. With `AIKB_AGENT_HELP=1` set, `--help` emits a
 JSON blob (`used_for` / `required_flags` / `examples`) instead of prose — parse
 that to learn a command without scraping the human help table.
 
@@ -208,4 +208,4 @@ that to learn a command without scraping the human help table.
 | Passing `--host` or `--name` to `auth login` | `auth login` takes neither — host comes from the profile; use `profile add <n> --host <url> --use`, then `auth login` |
 | Auto-adding `-y` to clear an exit-10 | Never; get user approval first (§5) |
 | Need the raw `chat` event stream | pass `--format ndjson`; use `--format text` for a live projected transcript |
-| `search chunks "q"` → exit 1 `local.kb_id_required` | Pass `--kb <name-or-id>`, set `WEKNORA_KB_ID`, or `weknora link` the dir |
+| `search chunks "q"` → exit 1 `local.kb_id_required` | Pass `--kb <name-or-id>`, set `AIKB_KB_ID`, or `weknora link` the dir |

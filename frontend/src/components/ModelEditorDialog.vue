@@ -649,7 +649,7 @@ import CredentialResource, {
   type CredentialResourceApi,
 } from '@/components/credentials/CredentialResource.vue'
 import { shouldShowOllamaUnavailableTip } from '@/components/modelEditorSourceState'
-import { WEKNORA_CLOUD_PROVIDER, WKC_MODEL_KINDS, WKC_MODEL_NAME_BY_KIND } from '@/utils/weknoraCloudModels'
+import { AIKB_CLOUD_PROVIDER, WKC_MODEL_KINDS, WKC_MODEL_NAME_BY_KIND } from '@/utils/weknoraCloudModels'
 import { docsUrl } from '@/utils/docsUrl'
 
 interface CustomHeaderItem {
@@ -898,7 +898,7 @@ const catalogEntries = computed<ModelCatalogEntry[]>(() => {
   // Managed aliases are already used by the cloud setup page. They have no
   // published limits, so the backend catalog is empty, but they can still be
   // offered by name without inventing context windows or embedding dimensions.
-  if (formData.value.provider === WEKNORA_CLOUD_PROVIDER && entries.length === 0) {
+  if (formData.value.provider === AIKB_CLOUD_PROVIDER && entries.length === 0) {
     const kind = WKC_MODEL_KINDS.find(kind => kind === activeModelType.value)
     if (kind) {
       const name = WKC_MODEL_NAME_BY_KIND[kind]

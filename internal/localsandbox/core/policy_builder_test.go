@@ -10,7 +10,7 @@ import (
 func builderFixture(t *testing.T) (*PolicyBuilder, Workspace) {
 	t.Helper()
 	home := filepath.Join(t.TempDir(), "home")
-	appData := filepath.Join(home, "App Support", "WeKnora Lite")
+	appData := filepath.Join(home, "App Support", "AI KB Lite")
 	ws := Workspace{
 		Kind:       WorkspaceProject,
 		Root:       filepath.Join(home, "My Project"),

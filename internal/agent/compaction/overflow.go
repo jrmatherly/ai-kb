@@ -43,7 +43,7 @@ var overflowPatterns = []*regexp.Regexp{
 // something else. Bedrock throttling reads "ThrottlingException: Too many
 // tokens, please wait before trying again", which matches an overflow pattern
 // and is not one. Matched anywhere in the message rather than anchored, since
-// WeKnora sees raw provider errors rather than a pre-normalized prefix.
+// AI KB sees raw provider errors rather than a pre-normalized prefix.
 var nonOverflowPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)throttling`),
 	regexp.MustCompile(`(?i)service unavailable`),

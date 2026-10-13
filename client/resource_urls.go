@@ -12,7 +12,7 @@ const (
 	// bytes through the authenticated /files proxy.
 	ResourceURLModeHandle ResourceURLMode = "handle"
 	// ResourceURLModePublic returns time-limited HTTP(S) URLs loadable without
-	// WeKnora credentials.
+	// AI KB credentials.
 	ResourceURLModePublic ResourceURLMode = "public"
 )
 

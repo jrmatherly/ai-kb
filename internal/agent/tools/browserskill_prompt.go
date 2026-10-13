@@ -20,7 +20,7 @@ func browserDescription(instructions []string) string {
 
 // The local_browser operating contract is maintained here, not in editable agent
 // templates or the upstream CLI skill. Uses the paired CLI/extension 0.3.1
-// source baseline, remote ownership contract and WeKnora task controls.
+// source baseline, remote ownership contract and AI KB task controls.
 const browserToolDescription = `Control the user's connected Chrome through local_browser; no shell, installation or CLI
 session commands are needed. Sessions are server-managed. Pass fields beside method, and only
 the fields of that method, for example {"method":"navigate","url":"https://example.com"}.

@@ -115,7 +115,7 @@ test('isValidEnvName accepts UPPER_SNAKE_CASE names', () => {
 test('isValidEnvName rejects what the server rejects', () => {
   assert.equal(isValidEnvName('PATH'), false)
   assert.equal(isValidEnvName('LD_PRELOAD'), false)
-  assert.equal(isValidEnvName('WEKNORA_ANYTHING'), false)
+  assert.equal(isValidEnvName('AIKB_ANYTHING'), false)
   assert.equal(isValidEnvName('my_key'), false)
   assert.equal(isValidEnvName('MY KEY'), false)
   assert.equal(isValidEnvName(''), false)
@@ -182,7 +182,7 @@ test('skillHasDeclaredEnvs is true only when the installer declared variables', 
   assert.equal(skillHasDeclaredEnvs({}), false)
   assert.equal(skillHasDeclaredEnvs({ envs: null }), false)
   assert.equal(skillHasDeclaredEnvs({ envs: [] }), false)
-  assert.equal(skillHasDeclaredEnvs({ envs: [{ name: 'WEKNORA_API_KEY' }] }), true)
+  assert.equal(skillHasDeclaredEnvs({ envs: [{ name: 'AIKB_API_KEY' }] }), true)
 })
 
 test('editedSkillEnvPayload includes only drafted names declared by the skill', () => {
@@ -269,7 +269,7 @@ test('blockingVarCount counts only required names with no value at all', () => {
 test('skillSecretCards lifts declared skills out of config groups and skips empty ones', () => {
   const cards = skillSecretCards([
     config('c2', 'Docker-Test', [], [
-      skill('weknora', 'weknora', [envVar({ name: 'WEKNORA_API_KEY', required: true })]),
+      skill('weknora', 'weknora', [envVar({ name: 'AIKB_API_KEY', required: true })]),
     ]),
     config('c1', 'cube-TEST'),
     config('c3', 'Other', [], [skill('empty', 'empty', [])]),
@@ -281,7 +281,7 @@ test('skillSecretCards lifts declared skills out of config groups and skips empt
 })
 
 test('skillSecretCards labels the host sandbox like the sandbox cards do', () => {
-  const hostSkill = skill('weknora', 'weknora', [envVar({ name: 'WEKNORA_API_KEY' })])
+  const hostSkill = skill('weknora', 'weknora', [envVar({ name: 'AIKB_API_KEY' })])
   const groups = [config('host', '本机', [], [hostSkill])]
 
   assert.equal(skillSecretCards(groups, 'This computer')[0].sandbox_config_name, 'This computer')

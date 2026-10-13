@@ -1,18 +1,18 @@
-# weknora — WeKnora CLI
+# weknora — AI KB CLI
 
-A command-line interface for the WeKnora RAG knowledge-base server. Lets you
+A command-line interface for the AI KB RAG knowledge-base server. Lets you
 authenticate, manage knowledge bases and documents, run hybrid search, and
 ask streaming RAG questions from your terminal or from an AI agent.
 
 ```bash
 $ weknora --help
-Command-line client for the WeKnora RAG server. Manage knowledge bases
+Command-line client for the AI KB RAG server. Manage knowledge bases
 and documents, run hybrid search, chat with grounded answers, or expose
 a curated read-only MCP tool surface for AI agents.
 
 Available Commands:
   agent       Manage custom agents (CRUD + status/check)
-  api         Make a raw API request to the WeKnora server
+  api         Make a raw API request to the AI KB server
   auth        Manage authentication credentials and profiles
   chat        Ask a streaming RAG question against a knowledge base
   chunk       Manage document chunks (RAG retrieval debug)
@@ -49,7 +49,7 @@ Requires Go 1.26+.
 
 ```bash
 git clone https://github.com/jrmatherly/ai-kb.git
-cd WeKnora/cli
+cd ai-kb/cli
 go build -o weknora .
 sudo mv weknora /usr/local/bin/   # or anywhere on $PATH
 ```
@@ -65,7 +65,7 @@ until then, use the from-source build above.
 ## 5-minute quickstart
 
 ```bash
-# 1. Register your WeKnora server as a profile and make it active
+# 1. Register your AI KB server as a profile and make it active
 weknora profile add prod --host https://kb.example.com --use
 
 # 2. Authenticate the active profile (interactive password prompt)
@@ -118,14 +118,14 @@ weknora agent check ag_abc     # deep: probes every KB in the agent's scope
 
 ### Agent quick start
 
-For AI agents (any MCP-capable host) integrating WeKnora:
+For AI agents (any MCP-capable host) integrating AI KB:
 
 1. Install: build from source (see [Install](#install))
 2. Authenticate. In a sandbox / CI, the **stateless** path needs no `auth login`
    and writes nothing to disk — just set two env vars:
    ```bash
-   export WEKNORA_API_KEY="sk-…"   # or WEKNORA_TOKEN for a bearer JWT
-   export WEKNORA_HOST="https://kb.example.com"
+   export AIKB_API_KEY="sk-…"   # or AIKB_TOKEN for a bearer JWT
+   export AIKB_HOST="https://kb.example.com"
    weknora kb list                 # already authenticated
    ```
    Or, for a persisted local profile:
@@ -143,7 +143,7 @@ For AI agents (any MCP-capable host) integrating WeKnora:
    any destructive call.
 
 **Bundled Agent Skills.** This CLI ships [Agent Skills](https://agentskills.io/specification)
-under [`skills/`](skills/) that teach an agent to drive WeKnora without trial and error:
+under [`skills/`](skills/) that teach an agent to drive AI KB without trial and error:
 
 - [`weknora-shared`](skills/weknora-shared/SKILL.md) — **read first**: auth/profile
   sequence, `--kb` resolution, the JSON-envelope + exit-code contract, the exit-10
@@ -302,7 +302,7 @@ is the guard against unintended writes.
 
 ## Advanced operations not exposed as flags
 
-WeKnora CLI exposes top use cases as polished commands; deep
+AI KB CLI exposes top use cases as polished commands; deep
 configuration goes through the raw HTTP passthrough. CLI flag coverage
 targets common workflows, not 1:1 API parity. Examples of deep
 operations that intentionally go through `weknora api`:
@@ -435,7 +435,7 @@ flight; pipe through `xargs -P` for more).
 # Run unit + contract tests
 go test ./...
 
-# Run the real-server e2e suite (requires WEKNORA_E2E_HOST + token env vars)
+# Run the real-server e2e suite (requires AIKB_E2E_HOST + token env vars)
 go test -tags acceptance_e2e ./acceptance/e2e/...
 
 # Static analysis

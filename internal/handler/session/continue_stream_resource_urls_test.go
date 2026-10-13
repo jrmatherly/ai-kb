@@ -141,7 +141,7 @@ func continueStream(t *testing.T, query string) (int, string) {
 }
 
 // Default behaviour: the SSE stream keeps carrying internal handles, which the
-// WeKnora frontend resolves through the authenticated /files proxy.
+// AI KB frontend resolves through the authenticated /files proxy.
 func TestContinueStream_DefaultEmitsHandles(t *testing.T) {
 	code, body := continueStream(t, "")
 	require.Equal(t, http.StatusOK, code, body)

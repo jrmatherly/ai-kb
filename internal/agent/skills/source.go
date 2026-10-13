@@ -20,7 +20,7 @@ var _ SkillSource = (*Loader)(nil)
 
 // imageSkillSource is a source whose skills already exist inside the sandbox
 // image. It is what separates the two sources at execution time: a host skill
-// lives on the WeKnora machine and has to be uploaded into the sandbox, while
+// lives on the AI KB machine and has to be uploaded into the sandbox, while
 // an installed skill is already there and is executed in place.
 type imageSkillSource interface {
 	SkillSource

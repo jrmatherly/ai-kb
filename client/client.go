@@ -1,4 +1,4 @@
-// Package client provides the implementation for interacting with the WeKnora API
+// Package client provides the implementation for interacting with the AI KB API
 // This package encapsulates CRUD operations for server resources and provides a friendly interface for callers
 package client
 
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-// Client is the client for interacting with the WeKnora service.
+// Client is the client for interacting with the AI KB service.
 //
 // Authentication uses one of two credential kinds:
 //   - API key (long-lived, set via X-API-Key)        — see WithAPIKey
@@ -214,7 +214,7 @@ func (c *Client) applyAuthHeaders(ctx context.Context, req *http.Request) {
 	}
 }
 
-// Raw performs a raw HTTP request against the WeKnora API with the client's
+// Raw performs a raw HTTP request against the AI KB API with the client's
 // auth headers, X-Request-ID, and X-Tenant-ID injection applied.
 //
 // Experimental: this method is intended for one-off integrations and the
@@ -225,7 +225,7 @@ func (c *Client) Raw(ctx context.Context, method, path string, body interface{})
 	return c.doRequest(ctx, method, path, body, nil)
 }
 
-// APIError is a typed non-2xx HTTP response from the WeKnora API. Recover it
+// APIError is a typed non-2xx HTTP response from the AI KB API. Recover it
 // with errors.As to branch on the HTTP status or the server's structured error
 // code without parsing the Error() string:
 //

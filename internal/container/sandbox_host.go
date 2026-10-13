@@ -30,7 +30,7 @@ type hostSandboxDeps struct {
 	homeDir    string
 	appDataDir string
 	// sessionRoot is where auto-allocated session workspaces go. Empty falls
-	// back to ~/Documents/WeKnoraLite.
+	// back to ~/Documents/AIKBLite.
 	sessionRoot string
 	skillsRoot  string
 	// projects maps a session to a user-approved project directory.
@@ -161,7 +161,7 @@ func finishHostSandbox(parts *hostSandboxParts, skillsRoot string) service.HostS
 }
 
 func defaultHostSessionRoot(homeDir string) string {
-	return filepath.Join(homeDir, "Documents", "WeKnoraLite")
+	return filepath.Join(homeDir, "Documents", "AIKBLite")
 }
 
 func defaultHostSkillsRoot(homeDir string) string {
@@ -170,7 +170,7 @@ func defaultHostSkillsRoot(homeDir string) string {
 
 func hostAppDataDir(home string) string {
 	if dir, err := os.UserConfigDir(); err == nil && strings.TrimSpace(dir) != "" {
-		return filepath.Join(dir, "WeKnora Lite")
+		return filepath.Join(dir, "AI KB Lite")
 	}
-	return filepath.Join(home, "Library", "Application Support", "WeKnora Lite")
+	return filepath.Join(home, "Library", "Application Support", "AI KB Lite")
 }

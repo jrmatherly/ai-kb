@@ -81,7 +81,7 @@ even when no profile or KB is configured (sources report "(none)" /
 			"weknora config view --format json",
 			"weknora config view --jq '.data.active_profile'",
 		},
-		Output: "envelope.data is {active_profile, profile_source, auth_source, host, kb_id, kb_source, log_level, log_level_source, format_default, config_file, cache_dir, secrets, project_link}. auth_source reports whether the active credential is the profile+keyring or a stateless WEKNORA_TOKEN/WEKNORA_API_KEY env override.",
+		Output: "envelope.data is {active_profile, profile_source, auth_source, host, kb_id, kb_source, log_level, log_level_source, format_default, config_file, cache_dir, secrets, project_link}. auth_source reports whether the active credential is the profile+keyring or a stateless AIKB_TOKEN/AIKB_API_KEY env override.",
 	})
 	return cmd
 }
@@ -129,14 +129,14 @@ func resolveView(cmd *cobra.Command, f *cmdutil.Factory) viewData {
 		}
 	}
 
-	// Auth source: stateless env credentials (WEKNORA_TOKEN/WEKNORA_API_KEY)
+	// Auth source: stateless env credentials (AIKB_TOKEN/AIKB_API_KEY)
 	// override the profile + keyring for the actual client, so report that —
 	// otherwise host/profile above would silently describe a profile the env
-	// credential bypassed. WEKNORA_HOST (when set) is the host that env cred
+	// credential bypassed. AIKB_HOST (when set) is the host that env cred
 	// authenticates against.
 	if active, kind := cmdutil.EnvCredential(); active {
 		d.AuthSource = kind + " env (stateless; bypasses profile + keyring)"
-		if h := strings.TrimSpace(os.Getenv("WEKNORA_HOST")); h != "" {
+		if h := strings.TrimSpace(os.Getenv("AIKB_HOST")); h != "" {
 			d.Host = h
 		}
 	} else if d.ActiveProfile != "" {
@@ -173,8 +173,8 @@ func resolveProfile(f *cmdutil.Factory) (name, source string) {
 	if f.ProfileOverride != "" {
 		return f.ProfileOverride, "--profile flag"
 	}
-	if v := os.Getenv("WEKNORA_PROFILE"); v != "" {
-		return v, "WEKNORA_PROFILE env"
+	if v := os.Getenv("AIKB_PROFILE"); v != "" {
+		return v, "AIKB_PROFILE env"
 	}
 	if f.Config != nil {
 		if cfg, err := f.Config(); err == nil && cfg != nil && cfg.CurrentProfile != "" {
@@ -196,8 +196,8 @@ func resolveKB(cmd *cobra.Command, f *cmdutil.Factory) (id, source string) {
 	if v, _ := cmd.Flags().GetString("kb"); v != "" {
 		return id, "--kb flag"
 	}
-	if v := os.Getenv("WEKNORA_KB_ID"); v != "" {
-		return id, "WEKNORA_KB_ID env"
+	if v := os.Getenv("AIKB_KB_ID"); v != "" {
+		return id, "AIKB_KB_ID env"
 	}
 	if cwd, werr := os.Getwd(); werr == nil {
 		if path, found, derr := projectlink.Discover(cwd); derr == nil && found {
@@ -216,14 +216,14 @@ func resolveLogLevel(cmd *cobra.Command) (level, source string) {
 			return level, "--log-level flag"
 		}
 	}
-	if v := os.Getenv("WEKNORA_LOG_LEVEL"); v != "" && cmdutil.IsValidLogLevel(v) {
-		return level, "WEKNORA_LOG_LEVEL env"
+	if v := os.Getenv("AIKB_LOG_LEVEL"); v != "" && cmdutil.IsValidLogLevel(v) {
+		return level, "AIKB_LOG_LEVEL env"
 	}
 	return level, "default"
 }
 
 // resolveFormatDefault reports the configured default output format: the
-// config.yaml defaults.format value, else WEKNORA_FORMAT, else the hard
+// config.yaml defaults.format value, else AIKB_FORMAT, else the hard
 // default. This is the *default* used when --format is unset — not the
 // per-invocation --format flag value.
 func resolveFormatDefault() string {
@@ -231,7 +231,7 @@ func resolveFormatDefault() string {
 	if err == nil && cfg != nil && cfg.Defaults.Format != "" {
 		return cfg.Defaults.Format
 	}
-	if v := os.Getenv("WEKNORA_FORMAT"); v == "text" || v == "json" || v == "ndjson" {
+	if v := os.Getenv("AIKB_FORMAT"); v == "text" || v == "json" || v == "ndjson" {
 		return v
 	}
 	return string(cmdutil.DefaultFormatMode)

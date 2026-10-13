@@ -8,7 +8,7 @@
 //
 // E2B Cloud's own gateway is lenient enough to hide the difference, so the gap
 // only surfaces against other implementations of the protocol — the very
-// backends WeKnora wants to support without carrying one adapter per vendor.
+// backends AI KB wants to support without carrying one adapter per vendor.
 // Rather than fork the SDK, this transport rewrites the two data-plane details
 // on the way out:
 //

@@ -14,12 +14,12 @@ import (
 )
 
 // Run against a disposable Neo4j instance with authentication disabled:
-// Set WEKNORA_NEO4J_TEST_URI=bolt://127.0.0.1:7687, then run:
+// Set AIKB_NEO4J_TEST_URI=bolt://127.0.0.1:7687, then run:
 // go test ./internal/application/repository/retriever/neo4j -run Integration
 func TestSearchNodeIntegration(t *testing.T) {
-	uri := os.Getenv("WEKNORA_NEO4J_TEST_URI")
+	uri := os.Getenv("AIKB_NEO4J_TEST_URI")
 	if uri == "" {
-		t.Skip("set WEKNORA_NEO4J_TEST_URI to run the live Neo4j regression")
+		t.Skip("set AIKB_NEO4J_TEST_URI to run the live Neo4j regression")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()

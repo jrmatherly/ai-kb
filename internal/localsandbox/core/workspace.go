@@ -56,7 +56,7 @@ var ErrProjectDirRevoked = errors.New("localsandbox: session project directory i
 // DirLayout names the roots the resolver allocates under.
 type DirLayout struct {
 	// SessionRoot is where session workspaces are created, by default
-	// ~/Documents/WeKnoraLite. It is user-visible on purpose.
+	// ~/Documents/AIKBLite. It is user-visible on purpose.
 	SessionRoot string
 }
 

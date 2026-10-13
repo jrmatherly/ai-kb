@@ -31,7 +31,7 @@ func TestPaddleOCRVLCloudTimeoutConfig(t *testing.T) {
 		{"negative", "-1s", paddleOCRVLCloudTimeout},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("WEKNORA_PADDLEOCR_VL_CLOUD_TIMEOUT", tt.value)
+			t.Setenv("AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT", tt.value)
 			assert.Equal(t, tt.want, NewPaddleOCRVLCloudReader(nil).timeout)
 		})
 	}
@@ -41,7 +41,7 @@ func TestPaddleOCRVLCloudTimeoutConfig(t *testing.T) {
 // cloud keeps reporting as running.
 func TestPaddleOCRVLCloudPollStopsAtConfiguredTimeout(t *testing.T) {
 	allowLoopbackSSRF(t)
-	t.Setenv("WEKNORA_PADDLEOCR_VL_CLOUD_TIMEOUT", "200ms")
+	t.Setenv("AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT", "200ms")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = io.WriteString(w, `{"code":0,"data":{"state":"running"}}`)
@@ -70,7 +70,7 @@ func TestPaddleOCRVLCloudPollStopsAtConfiguredTimeout(t *testing.T) {
 		assert.Contains(t, err.Error(), fmt.Sprintf("timed out after %s", 200*time.Millisecond))
 		assert.Less(t, time.Since(start), 5*time.Second)
 	case <-time.After(5 * time.Second):
-		t.Fatalf("poll loop ignored WEKNORA_PADDLEOCR_VL_CLOUD_TIMEOUT")
+		t.Fatalf("poll loop ignored AIKB_PADDLEOCR_VL_CLOUD_TIMEOUT")
 	}
 }
 
@@ -87,7 +87,7 @@ func TestWeKnoraCloudPollTimeoutConfig(t *testing.T) {
 		{"negative", "-1s", defaultWeKnoraCloudPollTimeout},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("WEKNORA_WEKNORACLOUD_TIMEOUT", tt.value)
+			t.Setenv("AIKB_WEKNORACLOUD_TIMEOUT", tt.value)
 			reader, err := NewWeKnoraCloudSignedDocumentReader("app-id", "api-key")
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, reader.pollTimeout)
@@ -128,7 +128,7 @@ func TestWeKnoraCloudPollStopsAtConfiguredTimeout(t *testing.T) {
 		}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("WEKNORA_WEKNORACLOUD_TIMEOUT", "300ms")
+			t.Setenv("AIKB_WEKNORACLOUD_TIMEOUT", "300ms")
 			reader, err := NewWeKnoraCloudSignedDocumentReader("app-id", "api-key")
 			require.NoError(t, err)
 
@@ -155,7 +155,7 @@ func TestWeKnoraCloudPollStopsAtConfiguredTimeout(t *testing.T) {
 				assert.Greater(t, transport.polls.Load(), int64(1),
 					"the job must actually be polled before the budget ends it")
 			case <-time.After(5 * time.Second):
-				t.Fatalf("poll loop ignored WEKNORA_WEKNORACLOUD_TIMEOUT after %d polls", transport.polls.Load())
+				t.Fatalf("poll loop ignored AIKB_WEKNORACLOUD_TIMEOUT after %d polls", transport.polls.Load())
 			}
 		})
 	}

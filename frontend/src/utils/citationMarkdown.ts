@@ -199,7 +199,7 @@ export function preprocessCitationTags(
     })
 }
 
-const HTML_PLACEHOLDER_RE = /@@WEKNORA_HTML_PLACEHOLDER_(\d+)@@/g
+const HTML_PLACEHOLDER_RE = /@@AIKB_HTML_PLACEHOLDER_(\d+)@@/g
 
 /** Protect citation HTML from markdown parser; restore after marked.parse. */
 export function extractCitationHtmlPlaceholders(
@@ -210,7 +210,7 @@ export function extractCitationHtmlPlaceholders(
   const storeHtml = (html: string): string => {
     const idx = htmlSnippets.length
     htmlSnippets.push(html)
-    return `@@WEKNORA_HTML_PLACEHOLDER_${idx}@@`
+    return `@@AIKB_HTML_PLACEHOLDER_${idx}@@`
   }
 
   const content = contentStr

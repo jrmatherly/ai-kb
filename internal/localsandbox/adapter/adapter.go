@@ -17,7 +17,7 @@ import (
 // interfaces the agent already consumes. It *is* the session shell, file
 // store, and layout provider — not a wrapper around a second remote path.
 //
-// File operations do NOT go through the OS sandbox: WeKnora itself is trusted
+// File operations do NOT go through the OS sandbox: AI KB itself is trusted
 // and already holds the user's privileges, so putting it inside Seatbelt would
 // only stop it reading its own database. They are bounded by PathGuard, which
 // is derived from the same Policy the backend compiles.

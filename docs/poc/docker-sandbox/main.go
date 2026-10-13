@@ -1,5 +1,5 @@
 // Historical PoC: can the Docker Engine API back the
-// semantics WeKnora's RemoteSandboxClient contract requires (session-persistent
+// semantics AI KB's RemoteSandboxClient contract requires (session-persistent
 // sandbox, exec, filesystem, metadata, lifecycle), plus the snapshot workflow
 // planned for E2B?
 //
@@ -353,7 +353,7 @@ func main() {
 
 	insp2, err := cli.ContainerInspect(ctx, id, client.ContainerInspectOptions{})
 	step("Idle TTL: daemon has none, only timestamps (GAP)", err,
-		fmt.Sprintf("startedAt=%s -> WeKnora must sweep", insp2.Container.State.StartedAt))
+		fmt.Sprintf("startedAt=%s -> AI KB must sweep", insp2.Container.State.StartedAt))
 
 	checkCLIOrphan(ctx)
 

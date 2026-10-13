@@ -22,7 +22,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/utils"
 )
 
-// defaultMinerUTimeout bounds one self-hosted parse; WEKNORA_MINERU_TIMEOUT
+// defaultMinerUTimeout bounds one self-hosted parse; AIKB_MINERU_TIMEOUT
 // overrides it for documents that take longer.
 const defaultMinerUTimeout = 1000 * time.Second // large docs can take a while
 
@@ -60,7 +60,7 @@ func NewMinerUReader(overrides map[string]string) *MinerUReader {
 
 	c := &MinerUReader{
 		endpoint:      strings.TrimRight(overrides["mineru_endpoint"], "/"),
-		timeout:       requestTimeoutFromEnv("WEKNORA_MINERU_TIMEOUT", defaultMinerUTimeout),
+		timeout:       requestTimeoutFromEnv("AIKB_MINERU_TIMEOUT", defaultMinerUTimeout),
 		apiKey:        strings.TrimSpace(overrides["mineru_server_api_key"]),
 		tier:          resolveMinerUTier(overrides["mineru_tier"]),
 		backend:       stringOr(overrides["mineru_model"], "pipeline"),

@@ -1,4 +1,4 @@
-# WeKnora MCP Server 可运行模组包 - 项目总结
+# AI KB MCP Server 可运行模组包 - 项目总结
 
 ## 🎉 项目完成状态
 
@@ -7,7 +7,7 @@
 ## 📁 项目结构
 
 ```
-WeKnora/mcp-server/
+ai-kb/mcp-server/
 ├── 📦 核心文件
 │   ├── __init__.py              # 包初始化文件
 │   ├── weknora_mcp_server.py   # MCP 服务器核心实现
@@ -89,16 +89,16 @@ weknora-mcp-server              # 全局命令
 ### 必需环境变量
 ```bash
 # Linux/macOS
-export WEKNORA_BASE_URL="http://localhost:8080/api/v1"
-export WEKNORA_API_KEY="your_api_key_here"
+export AIKB_BASE_URL="http://localhost:8080/api/v1"
+export AIKB_API_KEY="your_api_key_here"
 
 # Windows PowerShell
-$env:WEKNORA_BASE_URL="http://localhost:8080/api/v1"
-$env:WEKNORA_API_KEY="your_api_key_here"
+$env:AIKB_BASE_URL="http://localhost:8080/api/v1"
+$env:AIKB_API_KEY="your_api_key_here"
 
 # Windows CMD
-set WEKNORA_BASE_URL=http://localhost:8080/api/v1
-set WEKNORA_API_KEY=your_api_key_here
+set AIKB_BASE_URL=http://localhost:8080/api/v1
+set AIKB_API_KEY=your_api_key_here
 ```
 
 ## 🛠️ 功能特性
@@ -130,8 +130,8 @@ set WEKNORA_API_KEY=your_api_key_here
 pip install -r requirements.txt
 
 # 2. 设置环境变量
-export WEKNORA_BASE_URL="http://localhost:8080/api/v1"
-export WEKNORA_API_KEY="your_api_key"
+export AIKB_BASE_URL="http://localhost:8080/api/v1"
+export AIKB_API_KEY="your_api_key"
 
 # 3. 启动服务器
 python main.py
@@ -168,7 +168,7 @@ python test_module.py
 
 ### 测试结果
 ```
-WeKnora MCP Server 模组测试
+AI KB MCP Server 模组测试
 ==================================================
 ✓ 模块导入测试通过
 ✓ 环境配置测试通过  
@@ -230,19 +230,19 @@ CMD ["weknora-mcp-server"]
 ### 4. 系统服务
 ```ini
 [Unit]
-Description=WeKnora MCP Server
+Description=AI KB MCP Server
 
 [Service]
 ExecStart=/usr/local/bin/weknora-mcp-server
-Environment=WEKNORA_BASE_URL=http://localhost:8080/api/v1
+Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
 ```
 
 ## 🔧 故障排除
 
 ### 常见问题
 1. **导入错误**: 运行 `pip install -r requirements.txt`
-2. **连接错误**: 检查 `WEKNORA_BASE_URL` 设置
-3. **认证错误**: 验证 `WEKNORA_API_KEY` 配置
+2. **连接错误**: 检查 `AIKB_BASE_URL` 设置
+3. **认证错误**: 验证 `AIKB_API_KEY` 配置
 4. **环境检查**: 运行 `python main.py --check-only`
 
 ### 调试模式

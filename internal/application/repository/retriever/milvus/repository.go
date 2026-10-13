@@ -83,7 +83,7 @@ func (m *milvusRepository) getCollectionName(dimension int) string {
 }
 
 // collectionAnalyzerMode inspects a collection once and caches whether it
-// uses the multilingual schema. Older WeKnora collections do not have the
+// uses the multilingual schema. Older AI KB collections do not have the
 // language field, so they must continue using the legacy upsert and search
 // paths until they are migrated.
 func (m *milvusRepository) collectionAnalyzerMode(
@@ -142,7 +142,7 @@ func (m *milvusRepository) ensureCollection(ctx context.Context, dimension int) 
 		// Define schema
 		schema := &entity.Schema{
 			CollectionName: collectionName,
-			Description:    fmt.Sprintf("WeKnora embeddings collection with dimension %d", dimension),
+			Description:    fmt.Sprintf("AI KB embeddings collection with dimension %d", dimension),
 			AutoID:         false,
 			Fields: []*entity.Field{
 				entity.NewField().
@@ -230,7 +230,7 @@ func (m *milvusRepository) ensureCollection(ctx context.Context, dimension int) 
 		log.Infof("[Milvus] Successfully created collection %s", collectionName)
 		m.collectionAnalyzerModes.Store(collectionName, collectionAnalyzerMulti)
 	} else {
-		// Existing collections may have been created by an older WeKnora
+		// Existing collections may have been created by an older AI KB
 		// version. Keep them readable and writable until they are migrated.
 		if _, err := m.collectionAnalyzerMode(ctx, collectionName); err != nil {
 			return err
@@ -1407,7 +1407,7 @@ func convertResultSet(resultSet []client.ResultSet) ([]*MilvusVectorEmbeddingWit
 
 // metricToSimilarity converts a raw vector-search score into cosine
 // similarity, the scale callers rank and threshold on. IP and COSINE already
-// are for the L2-normalized embeddings WeKnora indexes. Milvus L2 returns
+// are for the L2-normalized embeddings AI KB indexes. Milvus L2 returns
 // the squared Euclidean distance (smaller is better), which for unit vectors
 // is 2 - 2cos; passing it through ranked the farthest hits first.
 func (m *milvusRepository) metricToSimilarity(score float64) float64 {

@@ -58,7 +58,7 @@ const (
 	// before /workspace and its input/output directories were handed to the
 	// sandbox account — a sandbox built from it cannot write its own artifact
 	// directory. Point this back at latest once a release ships that fix.
-	DefaultDockerImage = "wechatopenai/weknora-sandbox:main"
+	DefaultDockerImage = "ghcr.io/jrmatherly/ai-kb-sandbox:main"
 
 	// DefaultCubeTemplateImage is the same environment with Cube's envd daemon
 	// baked in (target "cube" of docker/Dockerfile.sandbox).
@@ -68,19 +68,19 @@ const (
 	// DefaultDockerImage therefore always fails the probe with "connection
 	// refused" — E2B gets away with that image because its own builder injects
 	// envd, and the Docker backend never needs one.
-	DefaultCubeTemplateImage = "wechatopenai/weknora-sandbox:main-cube"
+	DefaultCubeTemplateImage = "ghcr.io/jrmatherly/ai-kb-sandbox:main-cube"
 
 	// DefaultDesktopDockerImage is the XFCE/x11vnc/websockify variant of
 	// DefaultDockerImage (target "desktop" of docker/Dockerfile.sandbox).
 	// E2B desktop templates are built from it. The Docker backend does not
 	// consume this tag yet.
-	DefaultDesktopDockerImage = "wechatopenai/weknora-sandbox:main-desktop"
+	DefaultDesktopDockerImage = "ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop"
 
 	// DefaultCubeDesktopTemplateImage is DefaultDesktopDockerImage plus Cube
 	// envd (target "desktop-cube").
-	DefaultCubeDesktopTemplateImage = "wechatopenai/weknora-sandbox:main-desktop-cube"
+	DefaultCubeDesktopTemplateImage = "ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop-cube"
 
-	// DesktopWebsockifyPort is websockify inside the sandbox. WeKnora dials
+	// DesktopWebsockifyPort is websockify inside the sandbox. AI KB dials
 	// it through the provider gateway (Host "{port}-{id}.{domain}"), not by
 	// publishing the port on the host NIC. x11vnc stays on 127.0.0.1:5900
 	// with no RFB password; the Basic-auth check lives on websockify.
@@ -333,7 +333,7 @@ type Config struct {
 	// DefaultDockerHost.
 	DockerHost string
 
-	// DockerTLSCertPath is a directory on the WeKnora host holding
+	// DockerTLSCertPath is a directory on the AI KB host holding
 	// ca.pem / cert.pem / key.pem. Required for a TCP daemon; unix sockets
 	// do not use TLS.
 	DockerTLSCertPath string
@@ -406,7 +406,7 @@ type Config struct {
 	// CubeHTTPTimeout bounds each HTTP call to CubeAPI. Zero uses the default.
 	CubeHTTPTimeout time.Duration
 
-	// CubeDNSServers are nameserver IPs included when WeKnora builds the
+	// CubeDNSServers are nameserver IPs included when AI KB builds the
 	// standard Cube template. Empty omits the field so Cubelet uses its
 	// cluster default.
 	CubeDNSServers []string

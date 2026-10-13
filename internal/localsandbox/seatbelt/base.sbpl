@@ -1,4 +1,4 @@
-;; Base policy for WeKnora Lite's local sandbox.
+;; Base policy for AI KB Lite's local sandbox.
 ;; Deny-by-default; everything else is granted explicitly by the compiler.
 
 (version 1)

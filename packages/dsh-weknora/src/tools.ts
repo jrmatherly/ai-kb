@@ -119,7 +119,7 @@ function projectHit(result: SearchResult, rank: number, maxChunkChars: number): 
 
 /**
  * Keep the by-name matches worth showing: inside the scope the caller asked
- * for, and not already represented by a passage hit. WeKnora's by-name search
+ * for, and not already represented by a passage hit. AI KB's by-name search
  * spans the whole tenant, so the scope filter is what stops a narrowed call
  * from reporting documents outside it.
  */
@@ -159,7 +159,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
     ? ` Searches knowledge base(s) ${config.knowledgeBaseIds.join(', ')} unless you name others.`
     : ' Searches every knowledge base this credential can see unless you narrow it with knowledge_base_ids.'
 
-  // An unscoped call reaches WeKnora as a refusal on the retrieval route and as
+  // An unscoped call reaches AI KB as a refusal on the retrieval route and as
   // an answer grounded in nothing on the RAG route, so an unconfigured
   // deployment resolves the full visible set once and reuses it. Making the
   // model pick a scope first is worse: knowledge bases are often named too
@@ -188,7 +188,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
   if (config.tools.listKnowledgeBases) {
     definitions.push({
       name: name('list_knowledge_bases'),
-      description: 'List the WeKnora knowledge bases this deployment can retrieve from, with their ids. '
+      description: 'List the AI KB knowledge bases this deployment can retrieve from, with their ids. '
         + `${name('search')} already spans them all, so reach for this only to report what is available or to `
         + 'narrow a later search to one of them.',
       parameters: { type: 'object', properties: {}, additionalProperties: false },
@@ -218,7 +218,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
         },
         render: (_args, value) => {
           const result = value as KnowledgeBasesValue
-          if (result.count === 0) return text('No knowledge base is available to this WeKnora credential.')
+          if (result.count === 0) return text('No knowledge base is available to this AI KB credential.')
           const lines = result.knowledge_bases.map(kb => {
             const description = kb.description === '' ? '' : ` — ${kb.description}`
             return `- ${kb.name} (id: ${kb.id})${description}`
@@ -243,7 +243,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
   if (config.tools.search) {
     definitions.push({
       name: name('search'),
-      description: 'Search WeKnora knowledge bases and return the matching passages verbatim (hybrid vector + keyword '
+      description: 'Search AI KB knowledge bases and return the matching passages verbatim (hybrid vector + keyword '
         + 'retrieval, no model summarization). Use this to ground an answer in the organization\'s own documents, and '
         + 'also to locate a document by name — a query that reads like a title additionally returns the documents it '
         + 'names.' + scopeNote
@@ -313,7 +313,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
                 `- ${document.title} · knowledge_id: ${document.knowledge_id} · in ${document.knowledge_base}`).join('\n')
           if (result.count === 0) {
             if (named === '') {
-              return text(`Nothing in WeKnora matched "${result.query}" `
+              return text(`Nothing in AI KB matched "${result.query}" `
                 + `(searched: ${describeScope(result.knowledge_base_ids)}). `
                 + 'Try a differently worded query, or widen the knowledge base scope.')
             }
@@ -335,16 +335,16 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
           knowledgeIds,
           exec.signal,
         )
-        // Fail here rather than let WeKnora answer 400: the model can act on a
+        // Fail here rather than let AI KB answer 400: the model can act on a
         // message naming the argument to supply, not on a transport error.
         if (knowledgeBaseIds.length === 0 && knowledgeIds.length === 0) {
-          throw new Error(`${toolName}: this WeKnora credential can see no knowledge base, so there is `
+          throw new Error(`${toolName}: this AI KB credential can see no knowledge base, so there is `
             + 'nothing to search. Check the deployment\'s API key scope.')
         }
         const limit = boundedIntArg(args, 'max_results', config.maxResults, config.maxResults)
         const [hits, named] = await Promise.all([
           client.search({ query, knowledgeBaseIds, knowledgeIds }, exec.signal),
-          // By-name matching is an enrichment, and older WeKnora builds may not
+          // By-name matching is an enrichment, and older AI KB builds may not
           // route it. Losing it must not cost the model its passages.
           client.findDocuments({ keyword: query, limit }, exec.signal).catch(() => []),
         ])
@@ -363,7 +363,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
   if (config.tools.readDocument) {
     definitions.push({
       name: name('read_document'),
-      description: 'Read a WeKnora document\'s stored passages in order, reassembled into text. '
+      description: 'Read a AI KB document\'s stored passages in order, reassembled into text. '
         + `Use it after ${name('search')} when one passage is not enough context; page through long documents.`,
       parameters: {
         type: 'object',
@@ -455,7 +455,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
     const pipeline = config.agentId === undefined ? 'RAG' : 'agent'
     definitions.push({
       name: name('ask'),
-      description: `Ask WeKnora a question and get its own composed answer with citations (${pipeline} pipeline runs `
+      description: `Ask AI KB a question and get its own composed answer with citations (${pipeline} pipeline runs `
         + 'server-side: query rewriting, retrieval, reranking and summarization). Reserve it for broad or '
         + 'synthesis questions whose answer spans many documents, where retrieving passages yourself would take '
         + `several rounds. For anything you can answer from specific passages, prefer ${name('search')}: it is far `
@@ -466,8 +466,8 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
           query: { type: 'string', description: 'The question to answer.' },
           knowledge_base_ids: { ...STRING_ARRAY, description: 'Restrict retrieval to these knowledge base ids.' },
           agent_id: { type: 'string', description: 'Custom agent id; selects the server-side ReAct pipeline.' },
-          session_id: { type: 'string', description: 'Continue an earlier WeKnora session instead of starting one.' },
-          web_search: { type: 'boolean', description: 'Let WeKnora also search the web, when its deployment allows it.' },
+          session_id: { type: 'string', description: 'Continue an earlier AI KB session instead of starting one.' },
+          web_search: { type: 'boolean', description: 'Let AI KB also search the web, when its deployment allows it.' },
         },
         required: ['query'],
         additionalProperties: false,
@@ -503,15 +503,15 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
           const result = value as AskValue
           const parts: string[] = []
           parts.push(result.answer === ''
-            ? 'WeKnora returned an empty answer. Retry with a more specific question, or retrieve passages instead.'
+            ? 'AI KB returned an empty answer. Retry with a more specific question, or retrieve passages instead.'
             : result.answer)
           if (result.references.length > 0) {
             const cited = result.references.map((reference, index) =>
               `[${index + 1}] ${reference.document} · chunk ${reference.chunk_index} · knowledge_id: ${reference.knowledge_id}`)
             parts.push(`Citations:\n${cited.join('\n')}`)
           }
-          if (result.tool_calls.length > 0) parts.push(`WeKnora tools used: ${result.tool_calls.join(', ')}`)
-          parts.push(`WeKnora session: ${result.session_id} (pass session_id to ask a follow-up in context)`)
+          if (result.tool_calls.length > 0) parts.push(`AI KB tools used: ${result.tool_calls.join(', ')}`)
+          parts.push(`AI KB session: ${result.session_id} (pass session_id to ask a follow-up in context)`)
           return text(parts.join('\n\n'))
         },
       },
@@ -528,7 +528,7 @@ export function createTools(client: WeknoraClient, config: ResolvedConfig): Tool
           ? await resolveScope(requested, [], exec.signal)
           : requested.length > 0 ? requested : config.knowledgeBaseIds
         if (agentId === undefined && knowledgeBaseIds.length === 0) {
-          throw new Error(`${toolName}: this WeKnora credential can see no knowledge base, so there is `
+          throw new Error(`${toolName}: this AI KB credential can see no knowledge base, so there is `
             + 'nothing to answer from. Check the deployment\'s API key scope.')
         }
         const webSearch = argRecord(args)['web_search'] === true

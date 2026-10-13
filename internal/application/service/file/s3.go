@@ -57,7 +57,7 @@ func newS3Client(endpoint, accessKey, secretKey, bucketName, region, pathPrefix 
 
 	// With no explicit AK/SK, keep the AWS default credential chain intact. This
 	// supports IAM roles for EC2/ECS/EKS (IRSA), web identity, shared config, and
-	// environment credentials without persisting long-lived keys in WeKnora.
+	// environment credentials without persisting long-lived keys in AI KB.
 	loadOptions := []func(*config.LoadOptions) error{config.WithRegion(region)}
 	if accessKey != "" || secretKey != "" {
 		if accessKey == "" || secretKey == "" {

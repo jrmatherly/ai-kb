@@ -185,7 +185,7 @@ var ErrNamedSandboxBackendUnsupported = stderrors.New(
 
 // ErrSkillSnapshotBlocksTemplateChange is returned when this config already
 // has a skill snapshot and the caller tries to retarget its connection, DNS,
-// or spawn template, or to rebuild the cluster's WeKnora template. Sessions
+// or spawn template, or to rebuild the cluster's AI KB template. Sessions
 // boot the snapshot, so those edits would not reach them. The way out is a
 // second config.
 var ErrSkillSnapshotBlocksTemplateChange = stderrors.New(
@@ -547,7 +547,7 @@ func (s *TenantSandboxConfigService) Get(
 }
 
 // QueryTemplates reads the provider's template catalog and, when asked,
-// installs the published WeKnora CLI and desktop images if that cluster has
+// installs the published AI KB CLI and desktop images if that cluster has
 // none. Credentials come from the workspace connection, not env vars.
 func (s *TenantSandboxConfigService) QueryTemplates(
 	ctx context.Context, tenantID uint64, in SandboxTemplateQueryInput,
@@ -960,7 +960,7 @@ func setSpawnTemplateID(cfg *types.TenantSandboxConfig, id string) {
 	}
 }
 
-// pickStandardTemplate returns the WeKnora template the UI should preselect, or
+// pickStandardTemplate returns the AI KB template the UI should preselect, or
 // nil when the cluster has none that could ever spawn a sandbox. A failed build
 // is skipped so the caller can reprovision instead of offering it.
 func pickStandardTemplate(items []sandbox.RemoteTemplate) *sandbox.RemoteTemplate {

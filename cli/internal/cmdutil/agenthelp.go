@@ -16,7 +16,7 @@ import (
 )
 
 // AgentHelp is the structured help blob emitted when an agent invokes
-// `weknora <command> --help` with WEKNORA_AGENT_HELP=1. Distinct from
+// `weknora <command> --help` with AIKB_AGENT_HELP=1. Distinct from
 // cobra's human help text — agent-readable JSON keyed by stable fields
 // so an LLM doesn't need to scrape the human help table.
 //
@@ -33,14 +33,14 @@ type AgentHelp struct {
 
 // agentHelpAnnotation stores the marshaled AgentHelp on the command so the
 // `weknora schema` command can introspect any command's contract without
-// invoking its help func (and toggling WEKNORA_AGENT_HELP). Shares the
+// invoking its help func (and toggling AIKB_AGENT_HELP). Shares the
 // annotations map with SetRisk (distinct keys).
 const agentHelpAnnotation = "weknora.agent_help"
 
 // SetAgentHelp attaches agent-targeted help metadata to a command.
 //
 // Routing:
-//   - WEKNORA_AGENT_HELP=1: emit the AgentHelp JSON blob to stdout and
+//   - AIKB_AGENT_HELP=1: emit the AgentHelp JSON blob to stdout and
 //     return — agents get clean parseable JSON, no trailing prose.
 //   - Otherwise (human help path): if cmd has risk annotations from SetRisk,
 //     prepend "Risk: <action> (<level>)" line; then render the normal human
@@ -48,7 +48,7 @@ const agentHelpAnnotation = "weknora.agent_help"
 //
 // The AgentHelp is also recorded as a JSON annotation so `weknora schema` can
 // surface it as a first-class, discoverable command (not only via the
-// WEKNORA_AGENT_HELP env toggle on --help).
+// AIKB_AGENT_HELP env toggle on --help).
 func SetAgentHelp(cmd *cobra.Command, ah AgentHelp) {
 	if b, err := json.Marshal(ah); err == nil {
 		if cmd.Annotations == nil {
@@ -58,7 +58,7 @@ func SetAgentHelp(cmd *cobra.Command, ah AgentHelp) {
 	}
 	origHelp := cmd.HelpFunc()
 	cmd.SetHelpFunc(func(c *cobra.Command, args []string) {
-		if os.Getenv("WEKNORA_AGENT_HELP") == "1" {
+		if os.Getenv("AIKB_AGENT_HELP") == "1" {
 			emitAgentHelp(c.OutOrStdout(), ah)
 			return
 		}

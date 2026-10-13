@@ -24,14 +24,14 @@ func TestMetasoProviderSearch(t *testing.T) {
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			t.Fatal(err)
 		}
-		if request.Query != "WeKnora" || request.Scope != "scholar" || request.Size != 2 {
+		if request.Query != "AI KB" || request.Scope != "scholar" || request.Size != 2 {
 			t.Fatalf("unexpected request: %+v", request)
 		}
 		if !request.IncludeSummary || request.IncludeRawContent || !request.ConciseSnippet {
 			t.Fatalf("unexpected content options: %+v", request)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"credits":3,"searchParameters":{"q":"WeKnora","scope":"scholar"},
+		_, _ = w.Write([]byte(`{"credits":3,"searchParameters":{"q":"AI KB","scope":"scholar"},
 			"total":3,"scholars":[
 			{"title":"First","link":"https://example.com/1","score":"high","position":1,
 			 "summary":"Summary","snippet":"Snippet","date":"2026-08-09","authors":["Author"]},
@@ -42,7 +42,7 @@ func TestMetasoProviderSearch(t *testing.T) {
 	defer server.Close()
 
 	metaso := &MetasoProvider{client: server.Client(), baseURL: server.URL, apiKey: "mk-test", scope: "scholar"}
-	results, err := metaso.Search(context.Background(), " WeKnora ", 2, true)
+	results, err := metaso.Search(context.Background(), " AI KB ", 2, true)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -175,12 +175,12 @@ func ResolveWorkerPoolConcurrency(read func(key, env string, fallback int) int) 
 		}
 		return value
 	}
-	allocation.Core = positive("asynq.core_concurrency", "WEKNORA_ASYNQ_CORE_CONCURRENCY", allocation.Core)
-	allocation.PostProcess = positive("asynq.postprocess_concurrency", "WEKNORA_ASYNQ_POSTPROCESS_CONCURRENCY", allocation.PostProcess)
-	allocation.Enrichment = positive("asynq.enrichment_concurrency", "WEKNORA_ASYNQ_ENRICHMENT_CONCURRENCY", allocation.Enrichment)
-	allocation.Maintenance = positive("asynq.maintenance_concurrency", "WEKNORA_ASYNQ_MAINTENANCE_CONCURRENCY", allocation.Maintenance)
-	allocation.Shared = positive("asynq.shared_concurrency", "WEKNORA_ASYNQ_SHARED_CONCURRENCY", allocation.Shared)
-	allocation.Wiki = positive("asynq.wiki_concurrency", "WEKNORA_WIKI_ASYNQ_CONCURRENCY", allocation.Wiki)
+	allocation.Core = positive("asynq.core_concurrency", "AIKB_ASYNQ_CORE_CONCURRENCY", allocation.Core)
+	allocation.PostProcess = positive("asynq.postprocess_concurrency", "AIKB_ASYNQ_POSTPROCESS_CONCURRENCY", allocation.PostProcess)
+	allocation.Enrichment = positive("asynq.enrichment_concurrency", "AIKB_ASYNQ_ENRICHMENT_CONCURRENCY", allocation.Enrichment)
+	allocation.Maintenance = positive("asynq.maintenance_concurrency", "AIKB_ASYNQ_MAINTENANCE_CONCURRENCY", allocation.Maintenance)
+	allocation.Shared = positive("asynq.shared_concurrency", "AIKB_ASYNQ_SHARED_CONCURRENCY", allocation.Shared)
+	allocation.Wiki = positive("asynq.wiki_concurrency", "AIKB_WIKI_ASYNQ_CONCURRENCY", allocation.Wiki)
 	return allocation
 }
 

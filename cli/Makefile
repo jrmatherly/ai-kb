@@ -1,4 +1,4 @@
-# Makefile for the WeKnora CLI (cli/ Go module).
+# Makefile for the AI KB CLI (cli/ Go module).
 #
 # Usage:
 #   make build         compile to ./bin/weknora with version metadata

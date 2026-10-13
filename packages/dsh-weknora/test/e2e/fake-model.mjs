@@ -125,7 +125,7 @@ export async function startFakeModel(options = {}) {
       // Answer strictly from what the tools returned, so the transcript proves
       // the retrieved bytes reached the model rather than a canned string.
       const grounding = results.join('\n').replace(/\s+/g, ' ').trim().slice(0, 400)
-      streamText(response, body.model, `根据 WeKnora 知识库检索结果回答：${grounding}`)
+      streamText(response, body.model, `根据 AI KB 知识库检索结果回答：${grounding}`)
     })
   })
 

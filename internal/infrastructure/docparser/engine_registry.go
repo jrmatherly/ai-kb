@@ -34,7 +34,7 @@ type ReaderDeps struct {
 	Overrides map[string]string
 	// Remote is the docreader client. Nil when the service is not connected.
 	Remote interfaces.DocReader
-	// WeKnoraCloudCredentials resolves the tenant's WeKnora Cloud
+	// WeKnoraCloudCredentials resolves the tenant's AI KB Cloud
 	// credentials. It is a function rather than a value because resolving
 	// them can hit the database, which most engines never need. Nil, or a
 	// nil return, means the tenant has not configured them.

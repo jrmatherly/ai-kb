@@ -1,6 +1,6 @@
 /**
  * dsh-weknora: a DeepSeek Harness plugin that gives the agent retrieval,
- * document reading and composed answers from a WeKnora knowledge base.
+ * document reading and composed answers from a AI KB knowledge base.
  * @module dsh-weknora
  */
 

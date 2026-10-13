@@ -22,8 +22,8 @@ import (
 const (
 	weKnoraCloudReaderBaseURL = "https://weknora.weixin.qq.com/api/v1/doc"
 	// defaultWeKnoraCloudPollTimeout bounds how long one async task is polled;
-	// WEKNORA_WEKNORACLOUD_TIMEOUT overrides it. It must stay below
-	// WEKNORA_DOCREADER_CALL_TIMEOUT (default 30m) or the hardcoded value, not
+	// AIKB_WEKNORACLOUD_TIMEOUT overrides it. It must stay below
+	// AIKB_DOCREADER_CALL_TIMEOUT (default 30m) or the hardcoded value, not
 	// the configured one, is what fails a slow parse.
 	defaultWeKnoraCloudPollTimeout = 20 * time.Minute
 )
@@ -52,7 +52,7 @@ func NewWeKnoraCloudSignedDocumentReader(appID, apiKey string) (*WeKnoraCloudSig
 		apiKey:              apiKey,
 		initialPollInterval: 500 * time.Millisecond,
 		maxPollInterval:     10 * time.Second,
-		pollTimeout:         requestTimeoutFromEnv("WEKNORA_WEKNORACLOUD_TIMEOUT", defaultWeKnoraCloudPollTimeout),
+		pollTimeout:         requestTimeoutFromEnv("AIKB_WEKNORACLOUD_TIMEOUT", defaultWeKnoraCloudPollTimeout),
 		client:              secutils.NewSSRFSafeHTTPClient(clientCfg),
 	}, nil
 }

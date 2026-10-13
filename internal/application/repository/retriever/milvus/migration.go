@@ -56,7 +56,7 @@ type MigrationSummary struct {
 	MigratedRows        int
 }
 
-// MigrateLegacyCollections copies all legacy WeKnora Milvus collections to a
+// MigrateLegacyCollections copies all legacy AI KB Milvus collections to a
 // new multilingual collection base. Existing dense vectors are reused; only
 // Milvus's BM25 sparse vectors are regenerated from content and language.
 //

@@ -214,7 +214,7 @@ func (h *e2bRemoteHandle) Metadata() map[string]string {
 
 // TrafficAccessToken implements RemoteInboundTokenCarrier. E2B issues it only
 // in the create response; go-e2b keeps the field but never sends the header,
-// so both persisting it and attaching it are WeKnora's job.
+// so both persisting it and attaching it are AI KB's job.
 func (h *e2bRemoteHandle) TrafficAccessToken() string {
 	if h == nil || h.sandbox == nil {
 		return ""
@@ -237,7 +237,7 @@ func (c *E2BRemoteClient) Capabilities() RemoteSandboxCapabilities {
 		// E2B stores snapshots as templates, so a snapshot ID can be handed
 		// straight back as CreateOptions.TemplateID.
 		SupportsSnapshots: true,
-		// E2B has no named-volume mount API that WeKnora can use; advertising
+		// E2B has no named-volume mount API that AI KB can use; advertising
 		// it would let a workspace configure a mount that never appears.
 		SupportsVolumes: false,
 		// envd exposes an interactive PTY service that go-e2b wraps.
@@ -419,7 +419,7 @@ func isE2BTemplateBuildPending(status string) bool {
 	}
 }
 
-// EnsureStandardTemplate returns the cluster's WeKnora template, building it
+// EnsureStandardTemplate returns the cluster's AI KB template, building it
 // when absent. A failed or untagged template is not returned as is: it can
 // never spawn a sandbox, so it falls through to the build below. E2B resolves
 // the build by name, so that is a rebuild of the same template rather than a
@@ -437,7 +437,7 @@ func (c *E2BRemoteClient) EnsureStandardTemplate(ctx context.Context) (*RemoteTe
 	return c.buildStandardTemplate(ctx)
 }
 
-// ReplaceStandardTemplate starts a new WeKnora-template build from the current
+// ReplaceStandardTemplate starts a new ai-kb-template build from the current
 // spec. E2B resolves builds by name, so this is often a rebuild of the same
 // ID. The previous template stays listed until the caller has persisted a
 // spawnable replacement and called DeleteSupersededStandardTemplates: deleting
@@ -447,7 +447,7 @@ func (c *E2BRemoteClient) ReplaceStandardTemplate(ctx context.Context) (*RemoteT
 	return c.buildStandardTemplate(ctx)
 }
 
-// EnsureDesktopTemplate returns the cluster's WeKnora desktop template,
+// EnsureDesktopTemplate returns the cluster's AI KB desktop template,
 // building it when absent. It is a sibling of EnsureStandardTemplate: a
 // cluster may hold both, and the admin picks which ID a config boots.
 func (c *E2BRemoteClient) EnsureDesktopTemplate(ctx context.Context) (*RemoteTemplate, error) {
@@ -494,7 +494,7 @@ func (c *E2BRemoteClient) DeleteSupersededDesktopTemplates(ctx context.Context, 
 	return nil
 }
 
-// DeleteSupersededStandardTemplates drops WeKnora templates other than keepID.
+// DeleteSupersededStandardTemplates drops AI KB templates other than keepID.
 func (c *E2BRemoteClient) DeleteSupersededStandardTemplates(ctx context.Context, keepID string) error {
 	keepID = strings.TrimSpace(keepID)
 	if keepID == "" {

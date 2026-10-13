@@ -19,7 +19,7 @@ var _ RemoteTerminalManager = (*CubeRemoteClient)(nil)
 
 // cubeTerminalTimeout bounds the envd stream server-side (Connect-Timeout-Ms)
 // and client-side (idle abort). The SDK treats <= 0 as "use its 60s default",
-// which would silently kill idle terminals, so WeKnora always passes an
+// which would silently kill idle terminals, so AI KB always passes an
 // explicit long window. A session hitting it ends; the frontend reconnects
 // and reattaches by PID when the shell is still running.
 const cubeTerminalTimeout = 24 * time.Hour
@@ -170,7 +170,7 @@ func (s *cubeTerminalSession) Resize(ctx context.Context, cols, rows uint32) err
 	return nil
 }
 
-// Close disconnects WeKnora from the PTY without killing the remote shell,
+// Close disconnects AI KB from the PTY without killing the remote shell,
 // leaving it reattachable via Pty.Connect. Wait unblocks through the
 // disconnect without recording a stream error.
 func (s *cubeTerminalSession) Close() error {

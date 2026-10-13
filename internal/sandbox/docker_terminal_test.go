@@ -362,7 +362,7 @@ func drainTerminalOutput(session RemoteTerminalSession) {
 	}
 }
 
-// terminalMarkerToken extracts the WEKNORA_TERMINAL_ID value the adapter set on
+// terminalMarkerToken extracts the AIKB_TERMINAL_ID value the adapter set on
 // a captured ExecCreate, so a test can predict the kill argv.
 func terminalMarkerToken(t *testing.T, opts client.ExecCreateOptions) string {
 	t.Helper()

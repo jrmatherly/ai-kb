@@ -833,7 +833,7 @@ func SSRFSafeGRPCDialer(ctx context.Context, addr string) (net.Conn, error) {
 // if a dial takes longer than this, the remote service is effectively
 // unavailable and the caller (e.g. the VLM/LLM client) can surface the error
 // immediately instead of letting the UI show a misleading "thinking" state.
-// Defaults to 5s and is tuned via WEKNORA_OUTBOUND_DIAL_TIMEOUT in
+// Defaults to 5s and is tuned via AIKB_OUTBOUND_DIAL_TIMEOUT in
 // config.LoadConfig. Stored as nanoseconds so it can be swapped atomically.
 var outboundDialTimeoutNanos atomic.Int64
 

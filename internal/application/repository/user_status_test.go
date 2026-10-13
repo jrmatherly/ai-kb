@@ -27,9 +27,9 @@ func userStatusBackends(t *testing.T, fn func(*testing.T, *gorm.DB)) {
 			if backend == "sqlite" {
 				db, err = gorm.Open(sqlite.Open(filepath.Join(t.TempDir(), "users.db")+"?_busy_timeout=5000"), cfg)
 			} else {
-				dsn := os.Getenv("WEKNORA_REPOSITORY_TEST_POSTGRES_DSN")
+				dsn := os.Getenv("AIKB_REPOSITORY_TEST_POSTGRES_DSN")
 				if dsn == "" {
-					t.Skip("set WEKNORA_REPOSITORY_TEST_POSTGRES_DSN for PostgreSQL locking tests")
+					t.Skip("set AIKB_REPOSITORY_TEST_POSTGRES_DSN for PostgreSQL locking tests")
 				}
 				adminDB, openErr := gorm.Open(postgres.Open(dsn), cfg)
 				require.NoError(t, openErr)

@@ -148,7 +148,7 @@ func RegisterMCPServiceRoutes(
 	// MCP OAuth provider redirect. Registered OUTSIDE the /mcp-services group
 	// to avoid a static-vs-":id" route conflict, and left unauthenticated
 	// (allow-listed in middleware/auth.go) because the third-party browser
-	// redirect carries no WeKnora bearer — the single-use state authenticates.
+	// redirect carries no AI KB bearer — the single-use state authenticates.
 	r.GET("/mcp-oauth/callback", oauthHandler.Callback)
 
 	mcpServices := g.apiKeyGroup(r.Group("/mcp-services"), apiKeyManageMCPServices(apiKeyFullAccess()))

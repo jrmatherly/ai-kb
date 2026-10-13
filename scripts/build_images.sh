@@ -21,7 +21,7 @@ SCRIPT_NAME=$(basename "$0")
 
 # 显示帮助信息
 show_help() {
-    echo -e "${GREEN}WeKnora 镜像构建脚本 v${VERSION}${NC}"
+    echo -e "${GREEN}AI KB 镜像构建脚本 v${VERSION}${NC}"
     echo -e "${GREEN}用法:${NC} $0 [选项]"
     echo "选项:"
     echo "  -h, --help     显示帮助信息"
@@ -37,7 +37,7 @@ show_help() {
 
 # 显示版本信息
 show_version() {
-    echo -e "${GREEN}WeKnora 镜像构建脚本 v${VERSION}${NC}"
+    echo -e "${GREEN}AI KB 镜像构建脚本 v${VERSION}${NC}"
     exit 0
 }
 
@@ -148,7 +148,7 @@ build_app_image() {
         --build-arg GO_VERSION_ARG="$GO_VERSION" \
         --build-arg WITH_ANYDOC=${WITH_ANYDOC:-1} \
         -f docker/Dockerfile.app \
-        -t wechatopenai/weknora-app:latest \
+        -t ghcr.io/jrmatherly/ai-kb-app:latest \
         .
     
     if [ $? -eq 0 ]; then
@@ -174,7 +174,7 @@ build_docreader_image() {
         --build-arg PLAYWRIGHT_DOWNLOAD_HOST="${PLAYWRIGHT_DOWNLOAD_HOST:-}" \
         --build-arg PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST="${PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST:-}" \
         -f docker/Dockerfile.docreader \
-        -t wechatopenai/weknora-docreader:latest \
+        -t ghcr.io/jrmatherly/ai-kb-docreader:latest \
         .
     
     if [ $? -eq 0 ]; then
@@ -201,7 +201,7 @@ build_frontend_image() {
         ${NPM_REGISTRY:+--build-arg NPM_REGISTRY="$NPM_REGISTRY"} \
         ${NODE_MAX_OLD_SPACE_SIZE:+--build-arg NODE_MAX_OLD_SPACE_SIZE="$NODE_MAX_OLD_SPACE_SIZE"} \
         -f frontend/Dockerfile \
-        -t wechatopenai/weknora-ui:latest \
+        -t ghcr.io/jrmatherly/ai-kb-ui:latest \
         frontend/
     
     if [ $? -eq 0 ]; then
@@ -226,8 +226,8 @@ build_sandbox_image() {
         --build-arg TARGETPLATFORM=$PLATFORM \
         -f docker/Dockerfile.sandbox \
         --target sandbox \
-        -t wechatopenai/weknora-sandbox:latest \
-        -t wechatopenai/weknora-sandbox:main \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:latest \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:main \
         .
 
     if [ $? -ne 0 ]; then
@@ -244,8 +244,8 @@ build_sandbox_image() {
         --build-arg TARGETPLATFORM=$PLATFORM \
         -f docker/Dockerfile.sandbox \
         --target cube \
-        -t wechatopenai/weknora-sandbox:latest-cube \
-        -t wechatopenai/weknora-sandbox:main-cube \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:latest-cube \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:main-cube \
         .
 
     if [ $? -ne 0 ]; then
@@ -262,8 +262,8 @@ build_sandbox_image() {
         --build-arg TARGETPLATFORM=$PLATFORM \
         -f docker/Dockerfile.sandbox \
         --target desktop \
-        -t wechatopenai/weknora-sandbox:latest-desktop \
-        -t wechatopenai/weknora-sandbox:main-desktop \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:latest-desktop \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop \
         .
 
     if [ $? -ne 0 ]; then
@@ -278,8 +278,8 @@ build_sandbox_image() {
         --build-arg TARGETPLATFORM=$PLATFORM \
         -f docker/Dockerfile.sandbox \
         --target desktop-cube \
-        -t wechatopenai/weknora-sandbox:latest-desktop-cube \
-        -t wechatopenai/weknora-sandbox:main-desktop-cube \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:latest-desktop-cube \
+        -t ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop-cube \
         .
 
     if [ $? -eq 0 ]; then
@@ -358,29 +358,29 @@ clean_images() {
     
     # 停止相关容器
     log_info "停止相关容器..."
-    docker stop $(docker ps -q --filter "ancestor=wechatopenai/weknora-app:latest" 2>/dev/null) 2>/dev/null || true
-    docker stop $(docker ps -q --filter "ancestor=wechatopenai/weknora-docreader:latest" 2>/dev/null) 2>/dev/null || true
-    docker stop $(docker ps -q --filter "ancestor=wechatopenai/weknora-ui:latest" 2>/dev/null) 2>/dev/null || true
+    docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-app:latest" 2>/dev/null) 2>/dev/null || true
+    docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-docreader:latest" 2>/dev/null) 2>/dev/null || true
+    docker stop $(docker ps -q --filter "ancestor=ghcr.io/jrmatherly/ai-kb-ui:latest" 2>/dev/null) 2>/dev/null || true
     
     # 删除相关容器
     log_info "删除相关容器..."
-    docker rm $(docker ps -aq --filter "ancestor=wechatopenai/weknora-app:latest" 2>/dev/null) 2>/dev/null || true
-    docker rm $(docker ps -aq --filter "ancestor=wechatopenai/weknora-docreader:latest" 2>/dev/null) 2>/dev/null || true
-    docker rm $(docker ps -aq --filter "ancestor=wechatopenai/weknora-ui:latest" 2>/dev/null) 2>/dev/null || true
+    docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-app:latest" 2>/dev/null) 2>/dev/null || true
+    docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-docreader:latest" 2>/dev/null) 2>/dev/null || true
+    docker rm $(docker ps -aq --filter "ancestor=ghcr.io/jrmatherly/ai-kb-ui:latest" 2>/dev/null) 2>/dev/null || true
     
     # 删除镜像
     log_info "删除本地镜像..."
-    docker rmi wechatopenai/weknora-app:latest 2>/dev/null || true
-    docker rmi wechatopenai/weknora-docreader:latest 2>/dev/null || true
-    docker rmi wechatopenai/weknora-ui:latest 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:latest 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:latest-cube 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:latest-desktop 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:latest-desktop-cube 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:main 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:main-cube 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:main-desktop 2>/dev/null || true
-    docker rmi wechatopenai/weknora-sandbox:main-desktop-cube 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-app:latest 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-docreader:latest 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-ui:latest 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:latest 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:latest-cube 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:latest-desktop 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:latest-desktop-cube 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:main 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:main-cube 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop 2>/dev/null || true
+    docker rmi ghcr.io/jrmatherly/ai-kb-sandbox:main-desktop-cube 2>/dev/null || true
     
     docker image prune -f
     
