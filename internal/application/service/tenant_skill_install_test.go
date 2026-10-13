@@ -2205,6 +2205,9 @@ func (f *installFixture) seedReadySkillWithSHA(sha256, snapshotID string) {
 }
 
 type installConfigRepo struct {
+	// mu: a foreground install or catalog fan-out reads the config while an
+	// earlier background install is still reading and writing it.
+	mu        sync.Mutex
 	fx        *installFixture
 	entity    *types.TenantSandboxConfigEntity
 	saved     *types.TenantSandboxConfigEntity
@@ -2224,6 +2227,8 @@ func (r *installConfigRepo) Create(context.Context, *types.TenantSandboxConfigEn
 func (r *installConfigRepo) GetByID(
 	_ context.Context, tenantID uint64, id string,
 ) (*types.TenantSandboxConfigEntity, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if r.entity == nil || r.entity.TenantID != tenantID || r.entity.ID != id {
 		return nil, nil
 	}
@@ -2261,6 +2266,8 @@ func (r *installConfigRepo) ListByTenant(context.Context, uint64) ([]*types.Tena
 // ListAll returns the one config this fixture holds, so a housekeeping scan
 // sees the same config the install and removal tests act on.
 func (r *installConfigRepo) ListAll(context.Context) ([]*types.TenantSandboxConfigEntity, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if r.entity == nil {
 		return nil, nil
 	}
@@ -2274,6 +2281,8 @@ func (r *installConfigRepo) Update(ctx context.Context, e *types.TenantSandboxCo
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if r.updateErr != nil {
 		return r.updateErr
 	}

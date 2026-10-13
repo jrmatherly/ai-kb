@@ -155,6 +155,7 @@ func TestRemovingLastSandboxInstallKeepsTheCatalogArchive(t *testing.T) {
 	})
 	id, err := fx.svc.InstallSkill(ctx, 7, "cfg-1", archive)
 	require.NoError(t, err)
+	fx.awaitSkillSettled(t, id)
 	skill, err := fx.skillRepo.GetSkill(ctx, 7, "cfg-1", id)
 	require.NoError(t, err)
 	skill.Status = types.SkillStatusRemoving
@@ -360,6 +361,7 @@ func TestRegisterCatalogDoesNotMoveTheDefinitionWhenPinFails(t *testing.T) {
 	})
 	skillID, err := fx.svc.InstallSkill(ctx, 7, "cfg-1", first)
 	require.NoError(t, err)
+	fx.awaitSkillSettled(t, skillID)
 	installed, err := fx.skillRepo.GetSkill(ctx, 7, "cfg-1", skillID)
 	require.NoError(t, err)
 	catalogID := installed.CatalogID
@@ -434,6 +436,7 @@ func TestRemovingThePinnedInstallReclaimsTheReplacedZip(t *testing.T) {
 	})
 	skillID, err := fx.svc.InstallSkill(ctx, 7, "cfg-1", first)
 	require.NoError(t, err)
+	fx.awaitSkillSettled(t, skillID)
 	installed, err := fx.skillRepo.GetSkill(ctx, 7, "cfg-1", skillID)
 	require.NoError(t, err)
 	catalogID := installed.CatalogID
@@ -618,9 +621,12 @@ func TestStoredArchiveThatNoLongerMatchesTheCatalogIsRefused(t *testing.T) {
 
 func (f *installFixture) awaitSkillSettled(t *testing.T, skillID string) {
 	t.Helper()
+	// The run keeps going after the row leaves installing (it reclaims replaced
+	// archives), so wait for it to unbind too.
 	require.Eventually(t, func() bool {
 		row, err := f.skillRepo.GetSkill(context.Background(), 7, "cfg-1", skillID)
-		return err == nil && row != nil && row.Status != types.SkillStatusInstalling
+		return err == nil && row != nil && row.Status != types.SkillStatusInstalling &&
+			f.svc.lookupSkillRun(7, "cfg-1", skillID) == nil
 	}, 5*time.Second, 10*time.Millisecond)
 }
 
