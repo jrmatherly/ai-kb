@@ -34,7 +34,7 @@ printf "%b\n" "${GREEN}  AI KB development environment check${NC}"
 printf "%b\n" "${GREEN}========================================${NC}"
 echo ""
 
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT" || exit 1
 
 # Check the .env file
 log_info "Checking the .env file..."
@@ -54,6 +54,7 @@ log_info "Checking required environment variables..."
 
 # Load the .env file
 set -a
+# shellcheck source=/dev/null
 source .env
 set +a
 
@@ -68,18 +69,33 @@ check_var() {
         log_error "$var_name is not set"
         errors=$((errors + 1))
     else
-        log_success "$var_name = $var_value"
+        case "$var_name" in
+            *PASSWORD*|*SECRET*|*KEY*) log_success "$var_name is set" ;;
+            *) log_success "$var_name = $var_value" ;;
+        esac
     fi
 }
 
-# Database configuration
+# Database configuration (internal/container/container.go accepts postgres and sqlite)
 log_info "Database configuration:"
 check_var "DB_DRIVER"
-check_var "DB_HOST"
-check_var "DB_PORT"
-check_var "DB_USER"
-check_var "DB_PASSWORD"
-check_var "DB_NAME"
+case "$DB_DRIVER" in
+    postgres)
+        check_var "DB_HOST"
+        check_var "DB_PORT"
+        check_var "DB_USER"
+        check_var "DB_PASSWORD"
+        check_var "DB_NAME"
+        ;;
+    sqlite)
+        log_success "DB_PATH = ${DB_PATH:-./data/aikb.db (default)}"
+        ;;
+    "") ;;
+    *)
+        log_error "DB_DRIVER=$DB_DRIVER is not supported (postgres or sqlite)"
+        errors=$((errors + 1))
+        ;;
+esac
 
 echo ""
 log_info "Storage configuration:"
@@ -199,7 +215,7 @@ else
     echo ""
     log_info "Common issues:"
     echo "  - If .env is missing, copy .env.example"
-    echo "  - Make sure DB_DRIVER is set to 'postgres' or 'mysql'"
+    echo "  - Make sure DB_DRIVER is set to 'postgres' or 'sqlite'"
     echo "  - Make sure the Docker service is running"
 fi
 printf "%b\n" "${GREEN}========================================${NC}"
