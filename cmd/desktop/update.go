@@ -151,59 +151,30 @@ func checkUpdate(ctx context.Context, currentVersion string, showUpToDate bool, 
 	}()
 }
 
+// findBestAsset picks this platform's desktop app from a release. Releases also ship the Lite
+// server (ai-kb-lite_<v>_<os>_<arch>.tar.gz) and .sha256 files; desktop assets are named
+// <prefix>-Lite-App_<v>_{macOS_<arch>|macOS_universal|linux_<arch>|windows_<arch>_setup}.<ext>.
 func findBestAsset(assets []githubAsset, goos, goarch string) (string, string) {
-	osKeyword := ""
-	switch goos {
-	case "darwin":
-		osKeyword = "mac"
-	case "windows":
-		osKeyword = "win"
-	case "linux":
-		osKeyword = "linux"
+	osKeyword := map[string]string{"darwin": "macos", "windows": "windows", "linux": "linux"}[goos]
+	if osKeyword == "" {
+		return "", ""
 	}
-
-	archKeyword := ""
-	switch goarch {
-	case "amd64":
-		archKeyword = "amd64"
-	case "arm64":
-		archKeyword = "arm64"
+	archKeywords := []string{goarch}
+	if goarch == "arm64" {
+		archKeywords = append(archKeywords, "aarch64")
 	}
-
-	// 1. Try to match both OS and Arch
-	for _, asset := range assets {
-		name := strings.ToLower(asset.Name)
-		if strings.Contains(name, osKeyword) && (strings.Contains(name, archKeyword) || strings.Contains(name, "universal") || strings.Contains(name, "aarch64")) {
-			return asset.BrowserDownloadURL, asset.Name
-		}
-	}
-
-	// 2. Try to match OS only (e.g. universal binaries without arch in name)
-	for _, asset := range assets {
-		name := strings.ToLower(asset.Name)
-		if strings.Contains(name, osKeyword) {
-			return asset.BrowserDownloadURL, asset.Name
-		}
-	}
-
-	// 3. MacOS specific fallback (e.g. .dmg)
 	if goos == "darwin" {
+		archKeywords = append(archKeywords, "universal")
+	}
+	for _, arch := range archKeywords {
 		for _, asset := range assets {
-			if strings.HasSuffix(strings.ToLower(asset.Name), ".dmg") {
+			name := strings.ToLower(asset.Name)
+			if strings.Contains(name, "lite-app_") && !strings.HasSuffix(name, ".sha256") &&
+				strings.Contains(name, "_"+osKeyword+"_") && strings.Contains(name, "_"+arch) {
 				return asset.BrowserDownloadURL, asset.Name
 			}
 		}
 	}
-
-	// 4. Windows specific fallback (e.g. .exe)
-	if goos == "windows" {
-		for _, asset := range assets {
-			if strings.HasSuffix(strings.ToLower(asset.Name), ".exe") {
-				return asset.BrowserDownloadURL, asset.Name
-			}
-		}
-	}
-
 	return "", ""
 }
 
