@@ -975,7 +975,9 @@ func shellCommandNotFoundHint(exitCode int, command, stderr string) string {
 	missing := inferredMissingCommand(command, stderr)
 	switch missing {
 	case "tree", "less", "more", "nano", "vim", "vi":
-		return "Hint: `" + missing + "` is not in the default sandbox image. Use find/ls, head, sed, and `file`. Skill scripts: `read_file` for skill instructions, then the execution tool named there. Do not apt-get install inspection tools — session packages are discarded."
+		return "Hint: `" + missing + "` is not in the default sandbox image. Use find/ls, head, sed, and `file`. " +
+			"Skill scripts: `read_file` for skill instructions, then the execution tool named there. Do not " +
+			"apt-get install inspection tools — session packages are discarded."
 	default:
 		return "Hint: that command is not installed. Prefer find, ls, head, tail, cat, sed, grep, awk, file. apt-get install only for a package this task actually needs — session installs are discarded."
 	}
