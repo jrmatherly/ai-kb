@@ -280,22 +280,18 @@ func (p *seatbeltProcess) watchContext(ctx context.Context) {
 // descendants running after a timeout.
 func (p *seatbeltProcess) Kill() error {
 	p.mu.Lock()
-	// ProcessState is written before cmd.Wait returns, so this closes the
-	// window between Wait returning and reaped being set.
-	if p.reaped || p.cmd.ProcessState != nil {
+	// os.Process marks itself done when cmd.Wait reaps it, before Wait returns,
+	// which narrows the window before reaped is set. ProcessState would too, but
+	// Wait writes it without a lock.
+	if p.reaped || p.cmd.Process == nil ||
+		errors.Is(p.cmd.Process.Signal(syscall.Signal(0)), os.ErrProcessDone) {
 		p.mu.Unlock()
 		return nil
 	}
 	p.killed = true
-	pid := 0
-	if p.cmd.Process != nil {
-		pid = p.cmd.Process.Pid
-	}
+	pid := p.cmd.Process.Pid
 	p.mu.Unlock()
 
-	if pid == 0 {
-		return nil
-	}
 	if err := syscall.Kill(-pid, syscall.SIGKILL); err != nil &&
 		err != syscall.ESRCH {
 		return fmt.Errorf("localsandbox: kill process group: %w", err)
