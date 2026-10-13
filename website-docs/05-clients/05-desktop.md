@@ -202,7 +202,7 @@ SKIP_FRONTEND=1 ./scripts/package-mac-app.sh
 What the script does:
 
 1. **Frontend build**: `cd frontend && npm ci --prefer-offline && npm run build`, then replaces the repository root's `web/` with `frontend/dist` (the Lite backend serves the SPA from `./web`).
-2. **Wails build**: the Wails CLI must be installed first (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`). The script sets environment variables such as `EDITION=lite`, `GOPROXY=https://goproxy.cn,direct` and `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn` (which avoids the `common.proto` descriptor registration conflict between the Milvus and Qdrant gRPC generated code), takes the version from `scripts/get_version.sh` into ldflags, then runs:
+2. **Wails build**: the Wails CLI must be installed first (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`). The script sets environment variables such as `EDITION=lite`, `GONOSUMDB=git.sr.ht/*` and `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn` (which avoids the `common.proto` descriptor registration conflict between the Milvus and Qdrant gRPC generated code), takes the version from `scripts/get_version.sh` into ldflags, then runs:
 
    ```bash
    cd cmd/desktop && wails build -clean -tags "sqlite_fts5" -ldflags="$LDFLAGS" -o "AI KB Lite"

@@ -69,9 +69,7 @@ prepare_patched_anydoc() {
   if [ -z "$src" ]; then
     local tarball="$crate_dir/.anydoc-$anydoc_version.crate"
     echo "Fetching anydoc $anydoc_version to patch document_to_markdown into the public API"
-    if ! curl -fsSL "https://rsproxy.cn/api/v1/crates/anydoc/$anydoc_version/download" -o "$tarball"; then
-      curl -fsSL "https://static.crates.io/crates/anydoc/anydoc-$anydoc_version.crate" -o "$tarball"
-    fi
+    curl -fsSL "https://static.crates.io/crates/anydoc/anydoc-$anydoc_version.crate" -o "$tarball"
     local unpack="$crate_dir/.anydoc-unpack"
     rm -rf "$unpack"
     mkdir -p "$unpack"

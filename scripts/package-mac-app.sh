@@ -49,9 +49,7 @@ if ! command -v wails >/dev/null 2>&1; then
     exit 1
 fi
 
-# Package with Wails (the dependency proxy issue must be handled first)
 export GONOSUMDB="git.sr.ht/*"
-export GOPROXY="https://goproxy.cn,direct"
 export CGO_CFLAGS="-Wno-deprecated-declarations"
 export CGO_LDFLAGS="-Wl,-no_warn_duplicate_libraries"
 export EDITION=lite
