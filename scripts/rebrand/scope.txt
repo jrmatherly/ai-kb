@@ -1,0 +1,34 @@
+# Pathspecs scripts/rebrand/check-repo.sh covers: every tracked file except history, generated output,
+# upstream-review state and files that are deleted or translated later (scripts/rebrand/unchanged.md says why).
+.
+:!CHANGELOG.md
+:!README_CN.md
+:!README_JA.md
+:!README_KO.md
+:!*/README_CN.md
+:!*/README_zh.md
+:!docs/docs.go
+:!docs/swagger.json
+:!docs/swagger.yaml
+:!docs/images
+:!docreader/proto/*_pb2.py
+:!docreader/proto/*_pb2.pyi
+:!docreader/proto/*_pb2_grpc.py
+:!docreader/proto/*.pb.go
+:!*.lock
+:!*package-lock.json
+:!*go.sum
+:!third_party
+:!.upstream-review
+:!.claude
+:!CLAUDE.md
+:!AGENTS.md
+:!.serena
+:!docs/swagger_contract_test.go
+:!cli/CHANGELOG.md
+:!mcp-server/CHANGELOG.md
+:!website-docs/07-releases
+:!website-docs/sample-data
+:!scripts/rebrand/map.tsv
+:!scripts/rebrand/unchanged.md
+:!scripts/rebrand/scope.txt

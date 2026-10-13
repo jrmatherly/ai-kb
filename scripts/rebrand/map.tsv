@@ -1,5 +1,5 @@
-# Rename contract (decided 2026-10-12). Docs lead, code follows: every row is applied to the docs now
-# and must be applied to the code exactly as written. Column 1 is a Perl regex, column 2 the replacement.
+# Rename contract (decided 2026-10-12), applied to the docs and the code on 2026-10-12. check-repo.sh proves it over
+# scope.txt; unchanged.md lists what keeps upstream's spelling. Column 1 is a Perl regex, column 2 the replacement.
 # Order matters: longer and more specific patterns first.
 # --- repository, module, images, host ---
 Tencent/WeKnora(?!#\d|/(issues|pull|discussions)/)	jrmatherly/ai-kb

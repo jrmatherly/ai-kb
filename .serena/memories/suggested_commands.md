@@ -2,7 +2,7 @@
 
 Dev loop
 - `make dev-start` infra containers; `make dev-app` backend with Air; `make dev-frontend` Vite dev server; `make dev-stop|dev-restart|dev-logs|dev-status` (all wrap `scripts/dev.sh`).
-- `make build` -> `./WeKnora` binary; `make run`; `make build-lite` / `run-lite` (single-binary Lite edition with embedded `web/`).
+- `make build` -> `./ai-kb` binary; `make run`; `make build-lite` / `run-lite` (single-binary Lite edition with embedded `web/`).
 
 Validate
 - Go: `go vet $(go list ./... | grep -v /docreader/) && go test $(go list ./... | grep -v /docreader/)`; `go test -tags desktop ./internal/container`; `go build ./cmd/server`; `golangci-lint run`; `make fmt` (go fmt).

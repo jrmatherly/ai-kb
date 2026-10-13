@@ -2,7 +2,7 @@
 name: upstream-review
 description: Review what changed in upstream Tencent/WeKnora (main) since our last review and decide what to adopt into this copied repo. Use for "sync from upstream", "what changed upstream", "review upstream commits", "did WeKnora update", "bring upstream commit X in", "check upstream for new features", or any periodic upstream check. Encodes the copy-not-fork reality, the watermark driver, the per-file divergence markers, the English-only rule and the adoption rules for this repo.
 argument-hint: "[--stat | --urls | --show <sha> | --diverged | --advance <sha>]"
-allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh *) Bash(scripts/check-english-only.sh *) Bash(scripts/validate.sh *) Bash(git show *) Bash(git log *) Bash(git diff *) Bash(git rev-parse *) Read Grep Glob
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh *) Bash(scripts/check-english-only.sh *) Bash(scripts/validate.sh *) Bash(scripts/rebrand/apply.sh *) Bash(scripts/rebrand/check.sh *) Bash(scripts/rebrand/check-repo.sh) Bash(git show *) Bash(git log *) Bash(git diff *) Bash(git rev-parse *) Read Grep Glob
 ---
 
 # Upstream review
@@ -84,7 +84,8 @@ For a large window (more than about 20 commits), dispatch one reviewer subagent 
 An `x` marker means we removed the path, not always that the change is irrelevant.
 
 - `.github/**`: SKIP (see above). Archived in `private/OLD-.github/`.
-- Nothing else is removed at the seed. Add a line here for every later removal, with where the content went or why it is gone.
+- 36 paths renamed by `map.tsv` on 2026-10-12 (`cli/skills/weknora-*`, `packages/dsh-weknora`, `Formula/weknora-lite.rb`, `frontend/public/weknora-widget.js`, systemd units, `mcp-server/weknora_mcp_server.py`, `frontend/src/assets/img/weknora.png`): an upstream change to the old path is ported to the path the map gives it.
+- Add a line here for every later removal, with where the content went or why it is gone.
 
 ## Version and changelog
 
@@ -95,19 +96,15 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 
 At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock` and the `cli/` and `client/` module files are upstream's; dependency-only upstream commits are ADOPT while that holds. If this copy later takes its own upgrade policy, flip this section the way the version section will, and expect `~` on every lockfile.
 
-## Deviations decided 2026-10-12 (docs landed, code planned)
+## Deviations decided 2026-10-12 (planned, not landed)
 
-`website-docs/` (except `sample-data/`) is translated and rebranded; the root config, compose files and Makefile are translated only (both 2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. In code, until a row lands, keep upstream's spelling so picks stay clean. When it lands, move the row into "Name translations when porting" below with the status removed, and add any deleted path to "Deleted or moved paths".
+The rename landed 2026-10-12 and moved to "Name translations when porting" below. `website-docs/` (except `sample-data/`) is translated; the root config, compose files and Makefile are translated (2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. When a row below lands, move it into the next section with the status removed, and add any deleted path to "Deleted or moved paths".
 
 | Upstream | Ours | Notes |
 | --- | --- | --- |
-| product name "WeKnora" | "AI KB" | Display name, docs, UI copy. Keep "WeKnora" where it names upstream: provenance, `Tencent/WeKnora#NNNN` links, `CHANGELOG.md` history. |
-| repo `Tencent/WeKnora`, images `wechatopenai/weknora-*`, env prefix `WEKNORA_`, binary `WeKnora`, containers `WeKnora-*`, docs host `weknora.weixin.qq.com` | `jrmatherly/ai-kb`, `ghcr.io/jrmatherly/ai-kb-{app,docreader,ui,sandbox}`, `AIKB_`, `ai-kb`, `ai-kb-*`, `ai-kb-docs.matherly.net` (decided 2026-10-12; the executable contract is `scripts/rebrand/map.tsv`) | Each renamed surface shows `~` afterwards and is ADAPT: take the behavior, keep our names. |
-| Go module `github.com/Tencent/WeKnora` | `github.com/jrmatherly/ai-kb` | A codemod over about 2,100 Go files. Afterwards every import block differs; a pick that adds an import conflicts there. Resolve by taking upstream's hunk and rerunning the module-path rewrite on that file. |
-| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `WEKNORA_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
+| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
 | `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | Upstream commits touching them: SKIP. |
 | `VERSION` semver `0.8.x` | dated CalVer `YYYY.M.D[.MICRO]` | See "Version and changelog". |
-| CLI command `weknora` (`cli/`), its config dir `~/.config/weknora`, project file `.weknora/` | `aikb` (decided 2026-10-12) | No map row yet: lowercase `weknora` also names databases, MCP tool names (`weknora_search`), Helm templates and `dsh-weknora`. Scope the rows in the code rebrand; `cli/scripts/check-skill-wire-vocab.sh` guards the wire names. |
 
 Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
 
@@ -115,7 +112,9 @@ Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --dif
 
 ## Name translations when porting
 
-The rename contract is `scripts/rebrand/map.tsv` (left column upstream regex, right column ours), with `scripts/rebrand/unchanged.md` listing what deliberately keeps upstream's spelling. Apply it to a hand-ported hunk with `scripts/rebrand/apply.sh <file>` and prove the port with `scripts/rebrand/check.sh <file>` (exit 1 names the leftover). The docs were rebranded with it first (`website-docs/`, from 2026-10-12); the code rebrand must follow the same rows, so a row is never edited to fit a port. Add a row only when a new surface is decided.
+Every name changed on 2026-10-12: product "AI KB", repo and Go modules `github.com/jrmatherly/ai-kb` (`.../cli`, `.../client`), images `ghcr.io/jrmatherly/ai-kb-*`, env prefix `AIKB_`, binary `ai-kb`, containers `ai-kb-*`, docs host `ai-kb-docs.matherly.net`, CLI `aikb` (`~/.config/aikb`, `.aikb/project.yaml`), Lite home `~/.aikb`, Helm chart `ai-kb`, MCP tools `aikb_*`, tables `aikb_*`, database `ai_kb`, headers `X-AIKB-*`, code identifiers `AIKB*`. The contract is `scripts/rebrand/map.tsv` (column 1 an upstream Perl regex, column 2 ours); `scripts/rebrand/unchanged.md` lists what keeps upstream's spelling (WeKnoraCloud, BrowserSkill, provenance, history).
+
+So nearly every upstream commit shows `~` and is ADAPT. Cherry-pick, then run `scripts/rebrand/apply.sh` on every file the pick touched and `scripts/rebrand/check-repo.sh` (exit 1 names each leftover). An added import of `github.com/Tencent/WeKnora/...` is rewritten the same way; run `gofmt -w` after, since the new path sorts differently. A row is never edited to fit a port; add one only when a new surface is decided, and confirm with check.sh output on `website-docs/` that it changes nothing unintended.
 
 ## Decision log template
 

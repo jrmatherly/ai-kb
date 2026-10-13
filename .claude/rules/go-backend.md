@@ -11,4 +11,4 @@ paths:
 - Formatting is gofumpt plus gofmt, lines at most 120 (`.golangci.yml`); the pre-commit hook runs `golangci-lint run --new-from-rev=HEAD`.
 - Changing a handler's swagger annotations means regenerating `docs/` with `make docs`; `docs/swagger_contract_test.go` checks it.
 - New strings are English: log messages, errors, prompts and comments. The seed's Chinese strings are translated in a separate pass, not opportunistically inside an unrelated fix.
-- The Go module path is still `github.com/Tencent/WeKnora` until the code rebrand lands; new imports use it.
+- Go modules: `github.com/jrmatherly/ai-kb` (root), `.../cli` and `.../client` (their own modules; cli replaces client with `../client`).
