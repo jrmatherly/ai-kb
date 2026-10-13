@@ -3,7 +3,7 @@ const test = require("node:test");
 const { createKnowledgeFromURL, knowledgeChat, listKnowledgeBases } = require("../../miniprogram/utils/request");
 const { collectAnswerFromSSE, parseSSE } = require("../../miniprogram/utils/sse");
 const { normalizeBaseUrl } = require("../../miniprogram/utils/config");
-const { getLocale, normalizeLocale, t } = require("../../miniprogram/utils/i18n");
+const { t } = require("../../miniprogram/utils/i18n");
 
 function mockWx(overrides = {}) {
   return {
@@ -43,29 +43,9 @@ test("normalizeBaseUrl trims trailing slashes", () => {
   assert.equal(normalizeBaseUrl(" https://example.com/// "), "https://example.com");
 });
 
-test("i18n defaults to Chinese and supports English", () => {
-  assert.equal(normalizeLocale("zh"), "zh");
-  assert.equal(normalizeLocale("en"), "en");
-  assert.equal(normalizeLocale("fr"), "zh");
-  // The zh strings match miniprogram/utils/i18n.js.
-  assert.equal(t("tabKnowledge", {}, "zh"), "\u77e5\u8bc6\u5e93");
-  assert.equal(t("tabKnowledge", {}, "en"), "Knowledge");
-  assert.equal(t("loadedKnowledgeBases", { count: 2 }, "zh"), "\u5df2\u52a0\u8f7d 2 \u4e2a\u77e5\u8bc6\u5e93\u3002");
-  assert.equal(t("loadedKnowledgeBases", { count: 2 }, "en"), "Loaded 2 knowledge bases.");
-});
-
-test("getLocale reads stored language preference", () => {
-  const originalWx = global.wx;
-  try {
-    global.wx = mockWx({
-      getStorageSync() {
-        return { locale: "en" };
-      }
-    });
-    assert.equal(getLocale(), "en");
-  } finally {
-    global.wx = originalWx;
-  }
+test("i18n formats English messages", () => {
+  assert.equal(t("tabKnowledge"), "Knowledge");
+  assert.equal(t("loadedKnowledgeBases", { count: 2 }), "Loaded 2 knowledge bases.");
 });
 
 test("API helpers send AI KB auth headers", async () => {
@@ -188,8 +168,7 @@ test("knowledge page skips API loading until settings are configured", async () 
     await pageDefinitions[0].onShow.call(page);
 
     assert.equal(page.data.needsSettings, true);
-    // Matches the zh knowledgeTitle in miniprogram/pages/index/index.js.
-    assert.equal(page.data.knowledgeTitle, "AI KB \u77e5\u8bc6\u5e93");
+    assert.equal(page.data.knowledgeTitle, "AI KB Knowledge");
     assert.deepEqual(calls, []);
   } finally {
     global.Page = originalPage;
