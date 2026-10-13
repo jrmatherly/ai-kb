@@ -102,6 +102,7 @@ area_go() {
   local p go_files=()
   for p in "${changed[@]}"; do [[ "$p" == *.go && -f "$p" ]] && root_go "$p" && go_files+=("$ROOT/$p"); done
   [ ${#go_files[@]} -eq 0 ] || check_gofmt_files check "${go_files[@]}"
+  go mod tidy -diff
   if need golangci-lint; then run_golangci_if_available "$base"; fi
   run_app_vet_test
   if go_tests; then go test -count=1 -tags desktop ./internal/container; fi
@@ -110,6 +111,7 @@ area_go() {
 }
 
 area_cli() {
+  go -C cli mod tidy -diff
   go -C cli build ./...
   go -C cli vet ./...
   if go_tests; then go -C cli test -race -count=1 ./...; fi
@@ -124,6 +126,7 @@ area_cli() {
 }
 
 area_client() {
+  go -C client mod tidy -diff
   go -C client vet ./...
   if go_tests; then go -C client test -count=1 ./...; fi
   if need golangci-lint; then run_golangci_if_available "$base" client; fi

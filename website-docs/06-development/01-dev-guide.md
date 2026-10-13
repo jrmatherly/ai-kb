@@ -298,9 +298,9 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 
 | Area | Runs when these change | Checks |
 | --- | --- | --- |
-| go | root-module `*.go`, `go.mod`, `go.sum`, `Makefile`, `config/`, `migrations/`, `skills/preloaded/`, `testdata/`, embedded data under `internal/`, `.golangci.yml` | gofmt, golangci-lint (new issues only), `go vet` and `go test` over every app package, `go test -tags desktop ./internal/container`, `go build ./cmd/server` |
-| cli | `cli/**`, `.golangci.yml` | build, vet, `go test -race`, golangci-lint, `check-skill-wire-vocab.sh`, `check-secret-tokens.sh`; the acceptance e2e suite only with `AIKB_E2E_HOST` and `AIKB_E2E_TOKEN` set |
-| client | `client/**`, `.golangci.yml` | vet, test, golangci-lint |
+| go | root-module `*.go`, `go.mod`, `go.sum`, `Makefile`, `config/`, `migrations/`, `skills/preloaded/`, `testdata/`, embedded data under `internal/`, `.golangci.yml` | gofmt, `go mod tidy -diff`, golangci-lint (new issues only), `go vet` and `go test` over every app package, `go test -tags desktop ./internal/container`, `go build ./cmd/server` |
+| cli | `cli/**`, `.golangci.yml` | `go mod tidy -diff`, build, vet, `go test -race`, golangci-lint, `check-skill-wire-vocab.sh`, `check-secret-tokens.sh`; the acceptance e2e suite only with `AIKB_E2E_HOST` and `AIKB_E2E_TOKEN` set |
+| client | `client/**`, `.golangci.yml` | `go mod tidy -diff`, vet, test, golangci-lint |
 | frontend | `frontend/**`, `scripts/build_frontend_dist.sh`, `scripts/test_embed_nginx.py` | `scripts/verify_frontend_pr.sh` (`npm ci` when stale, test, type-check, build), then the UI image build and `scripts/test_embed_nginx.py` when Docker is running |
 | docreader | `docreader/**`, `go.mod`, `go.sum`, `testdata/`, the docreader Dockerfiles | `uv sync --locked`, compileall, Playwright WebKit install, the unittest suite, then the Go client tests against a DocReader server the script starts on port 50051 |
 | model-catalog | `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `generate.py --check`, `go test ./internal/models/...` |

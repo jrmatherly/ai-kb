@@ -3,9 +3,9 @@ module github.com/jrmatherly/ai-kb/cli
 go 1.26.0
 
 require (
-	github.com/jrmatherly/ai-kb/client v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh v1.0.0
 	github.com/itchyny/gojq v0.12.19
+	github.com/jrmatherly/ai-kb/client v0.0.0-00010101000000-000000000000
 	github.com/mattn/go-isatty v0.0.24
 	github.com/mattn/go-runewidth v0.0.30
 	github.com/modelcontextprotocol/go-sdk v1.8.0
