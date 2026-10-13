@@ -116,6 +116,7 @@ test('live output renders before tool completion and ignores a previous run', as
     applyPrompt() {}, processStreamChunk: frame => modelChunks.push(frame),
   })
   assert.equal(await h.follow(1), true)
+  assert.equal(handlers.headers['Accept-Language'], 'en-US')
   const frame = data => handlers.onmessage({ data: JSON.stringify({ response_type: 'install_output', data }) })
   const started = new Date('2026-09-10T12:00:00Z').toISOString()
   frame({ command: 'uv pip install -r requirements.lock', started_at: started, output: 'Downloading numpy', done: false })

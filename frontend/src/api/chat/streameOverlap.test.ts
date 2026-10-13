@@ -30,7 +30,7 @@ before(async () => {
         return new Promise((resolve, reject) => { calls.push({ url, options, resolve, reject }) })
       }`,
     '@/utils/index': `export const generateRandomString = () => 'test-request';`,
-    '@/i18n': `export default { global: { t: key => key, locale: { value: 'zh-CN' } } };`,
+    '@/i18n': `export default { global: { t: key => key, locale: { value: 'en-US' } } };`,
   }
   server = await createServer({
     configFile: false,

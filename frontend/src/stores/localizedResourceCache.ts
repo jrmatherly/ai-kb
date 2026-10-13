@@ -3,7 +3,7 @@
  * (built-in agent names/descriptions, shared-agent lists, …).
  *
  * The request must stamp the locale it was *started* with. Stamping
- * getCurrentLanguage() after await lets a zh-CN response be marked as the
+ * getCurrentLanguage() after await lets an en-GB response be marked as the
  * en-US snapshot when the user switches language while the call is in flight.
  */
 

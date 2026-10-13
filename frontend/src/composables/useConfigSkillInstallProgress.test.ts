@@ -20,7 +20,7 @@ function deferred<T = void>() {
 }
 const flush = async () => { await new Promise(resolve => setImmediate(resolve)); await vue.nextTick() }
 
-function fixture() {
+function fixture(locale = 'en-US') {
   const requests: Array<{ url: string; options: any; pending: ReturnType<typeof deferred<void>> }> = []
   const exports: { useConfigSkillInstallProgress?: typeof useConfigSkillInstallProgress } = {}
   runInNewContext(compiled, {
@@ -29,7 +29,7 @@ function fixture() {
     require(name: string) {
       if (name === 'vue') return vue
       if (name === './skillInstallProgress') return progress
-      if (name === '@/i18n') return { __esModule: true, default: { global: { locale: { value: 'en-US' } } } }
+      if (name === '@/i18n') return { __esModule: true, default: { global: { locale: { value: locale } } } }
       if (name === '@/utils') return { generateRandomString: () => 'request-id' }
       if (name === '@/utils/api-base') return { getApiBaseUrl: () => '/prefix' }
       if (name === '@/api/system') return { configSkillInstallEventsUrl: (config: string, skill: string) => `/configs/${config}/skills/${skill}/events` }
@@ -68,6 +68,12 @@ test('subscriptions deduplicate targets, isolate configurations and preserve req
   assert.equal(state.eventOf('b', 'same'), undefined)
   state.stopAll()
   assert.ok(f.requests.every(request => request.options.signal.aborted))
+})
+
+test('an unset UI locale sends the en-US Accept-Language', () => {
+  const f = fixture('')
+  f.create().follow('a', 'skill')
+  assert.equal(f.requests[0]!.options.headers['Accept-Language'], 'en-US')
 })
 
 test('an in-progress done frame does not complete the run', () => {
