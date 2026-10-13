@@ -78,7 +78,7 @@ type fakeRemoteClient struct {
 	reissuesTokenOnConnect bool
 
 	// connectTrafficToken, when set, is returned on Connect even if the
-	// request already carried a token — the provider-wins case.
+	// request already carried a token - the provider-wins case.
 	connectTrafficToken string
 
 	// omitsInboundTokenCarrier makes handles skip

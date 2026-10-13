@@ -77,7 +77,7 @@ func TestWikiWriteMissingRowIdentities(t *testing.T) {
 
 // Duplicate identities are compared as a set, not as a multiset: two stored
 // rows whose first non-empty cell is the same are ONE identity, so a rewrite
-// that keeps it once has kept it — merging them into one row is not a loss.
+// that keeps it once has kept it - merging them into one row is not a loss.
 // Only when the identity no longer appears at all is it reported, and then
 // once, not once per stored row.
 func TestWikiWriteMissingRowIdentitiesComparesIdentitiesAsASet(t *testing.T) {

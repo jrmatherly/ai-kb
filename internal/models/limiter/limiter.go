@@ -1,7 +1,7 @@
 // Package limiter provides a distributed, per-key concurrency governor for
 // outbound model-provider calls. The shared finite resource is the model
 // provider (its request/concurrency budget), so concurrency is capped at the
-// model-client layer — keyed by model ID — rather than at the asynq queue layer
+// model-client layer - keyed by model ID - rather than at the asynq queue layer
 // (queue weights are scheduling priority, not throttling).
 //
 // The Redis implementation is a self-healing distributed semaphore built on a
@@ -216,7 +216,7 @@ func (l *redisLimiter) hold(zkey, token string) func() {
 				// Refresh BOTH the member lease score AND the ZSET key's own
 				// TTL. The acquire script only PEXPIREs the key on admission,
 				// so a semaphore that stays saturated with no slot turnover
-				// would otherwise let the whole key expire after ttl*2 —
+				// would otherwise let the whole key expire after ttl*2 -
 				// dropping every live lease and admitting over the limit. The
 				// heartbeat pushes the key TTL out in lockstep with the lease.
 				bg := context.Background()

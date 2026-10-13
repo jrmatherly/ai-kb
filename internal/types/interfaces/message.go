@@ -175,7 +175,7 @@ type MessageRepository interface {
 		ctx context.Context, sessionID, messageID string, position int,
 	) (*types.MessageArtifactRecord, error)
 	// FindSessionArtifactVersions returns every live row of the session sharing
-	// sourcePath — the regenerations the artifact library folds into one entry.
+	// sourcePath - the regenerations the artifact library folds into one entry.
 	// An empty sourcePath yields nothing: such artifacts have no version group.
 	FindSessionArtifactVersions(
 		ctx context.Context, sessionID, sourcePath string,

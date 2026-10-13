@@ -585,7 +585,7 @@ func (s *RedisSessionSandboxBindingStore) renewRewindLock(
 			// A blip talking to Redis, or a lost lease, must not kill the
 			// renew loop: git reset can still be running, and the 2m TTL
 			// would otherwise expire under it. Re-acquire on both, so the
-			// original unlock token still matches a key that vanished — an
+			// original unlock token still matches a key that vanished - an
 			// errored renew is exactly the case where the key may have
 			// expired underneath us, and sitting the tick out is what lets
 			// a short outage hand the session to a second rewind.

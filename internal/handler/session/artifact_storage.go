@@ -94,7 +94,7 @@ func (h *Handler) reclaimArtifactBlobs(ctx context.Context, tenantID uint64, ref
 
 // locateArtifactBlob drops every deleted message's claim on a blob and, when
 // nothing is left holding it, reports where the bytes live. ok is false
-// whenever the blob must be kept — another owner still references it, or a
+// whenever the blob must be kept - another owner still references it, or a
 // release failed and we cannot tell.
 //
 // An unreadable binding count keeps the file, matching the knowledge-delete

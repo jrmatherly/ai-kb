@@ -85,7 +85,7 @@ func TestInitRetrieveEngineRegistry_OpenSearchEnvPath(t *testing.T) {
 	defer ts.Close()
 
 	// In-memory DB: the vector_stores table is absent, so loadDBStores logs
-	// and returns (non-fatal) — only the env-path block matters here.
+	// and returns (non-fatal) - only the env-path block matters here.
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("open in-mem db: %v", err)

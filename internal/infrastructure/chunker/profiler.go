@@ -12,7 +12,7 @@ import (
 // DocProfile holds the document-level signals used to choose a chunking tier.
 //
 // The JSON shape (snake_case via struct tags) is part of the public preview
-// endpoint API — keep field names stable. Internal callers should use the Go
+// endpoint API - keep field names stable. Internal callers should use the Go
 // field names; only the preview handler relies on the wire format.
 type DocProfile struct {
 	TotalChars int     `json:"total_chars"`
@@ -54,9 +54,9 @@ func (p *DocProfile) HeadingDensity() float64 {
 
 // DominantHeadingLevel returns the heading level (1..6) that should drive
 // section splitting. Preference order:
-//  1. The lowest level (closest to root) that has at least 3 occurrences —
+//  1. The lowest level (closest to root) that has at least 3 occurrences -
 //     a "real" structural backbone of the document.
-//  2. Otherwise the deepest level present at least once — gives finer-grained
+//  2. Otherwise the deepest level present at least once - gives finer-grained
 //     boundaries for small documents that just have an H1 + a few H2s.
 //
 // Returns 0 when no Markdown headings exist.
@@ -168,7 +168,7 @@ func ProfileDocument(text string) *DocProfile {
 
 	p.BlankParagraphBreaks = strings.Count(text, "\n\n\n")
 
-	// Sample a slice of the document for language detection — avoids paying
+	// Sample a slice of the document for language detection - avoids paying
 	// O(N) scan cost on huge inputs while still giving a stable signal.
 	sample := text
 	if len(sample) > 4096 {

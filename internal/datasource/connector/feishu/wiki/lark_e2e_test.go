@@ -50,7 +50,7 @@ func TestListResources_ResourceURLFollowsRegion(t *testing.T) {
 }
 
 // A Lark connector with no base_url override must reach open.larksuite.com,
-// never open.feishu.cn — the SDK-less client has no default of its own, so the
+// never open.feishu.cn - the SDK-less client has no default of its own, so the
 // region is the only thing standing between a Lark app and the wrong cloud.
 func TestClient_ResolvesRegionHostWithoutOverride(t *testing.T) {
 	cases := []struct {

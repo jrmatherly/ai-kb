@@ -8,7 +8,7 @@ import (
 // Fixtures in this file are **live payloads**, copied from
 // `GET /v1.0/doc/suites/documents/{id}/blocks` against a production tenant and
 // only shortened where marked. They exist because the list renderer was once
-// written against a shape the API never returns — `children` — while the real
+// written against a shape the API never returns - `children` - while the real
 // response carries one item per block with the text in the block's own field.
 // Nine production documents, every list block: no `children`, no `list.level`,
 // no `listId`. A fixture invented from the docs cannot catch that; these can.
@@ -71,7 +71,7 @@ func TestRenderListKeepsLiveMultiLineItem(t *testing.T) {
 }
 
 // The live `sdt` block is a table of contents and carries the whole thing in
-// `text`. The type is still unmodelled, so the marker must stay — but dropping
+// `text`. The type is still unmodelled, so the marker must stay - but dropping
 // the text because the presentation is unknown loses the document's contents
 // page. Verified live: 1,212 characters in one block.
 func TestRenderUnknownBlockRendersItsLiveText(t *testing.T) {

@@ -168,7 +168,7 @@ func TestEveryCatalogEntryResolves(t *testing.T) {
 				modelType = types.ModelTypeKnowledgeQA
 			}
 			r, err := modelruntime.Resolve(modelruntime.Ref{Provider: v.ID, Model: name, ModelType: modelType})
-			// An entry may declare that this build cannot serve it — a vendor
+			// An entry may declare that this build cannot serve it - a vendor
 			// whose second rerank dialect has no protocol package. Refusing is
 			// the point: the alternative is a request shaped for the wrong
 			// protocol. Such an entry must refuse, and must do it with a reason.
@@ -205,7 +205,7 @@ func TestEveryCatalogEntryResolves(t *testing.T) {
 // embedding and rerank rows. The families that caught them carry chat compat
 // (thinking_always_send on Aliyun's qwen3*, max_tokens_field and
 // supports_temperature on gpt-5*), which the embedding and rerank overlays
-// reject, so an untyped lookup made these rows impossible to build — new ids
+// reject, so an untyped lookup made these rows impossible to build - new ids
 // and dated snapshots first of all, since they are never in models.json yet.
 func TestNamesInsideChatGlobsResolveForOtherTypes(t *testing.T) {
 	names := []struct{ provider, model string }{

@@ -17,7 +17,7 @@ import (
 
 // RemoveSkill deletes a skill from the image. It is not a DB-only operation:
 // the files really do leave the image, via a new snapshot taken after the
-// directory is gone. Removal therefore shares the install's per-config lock —
+// directory is gone. Removal therefore shares the install's per-config lock -
 // both grow a new snapshot from the current one, and interleaving them would
 // discard whichever wrote the pointer first.
 func (s *TenantSkillService) RemoveSkill(
@@ -109,7 +109,7 @@ func (s *TenantSkillService) runRemove(
 	// compensating for: withConfigLock cancels ctx the moment lock renewal
 	// fails, and both the sandbox destroy (a provider call) and the terminal
 	// row write (a DB call) still have to happen then. Only cancellation is
-	// detached here — each consumer calls cleanupContext so its budget starts
+	// detached here - each consumer calls cleanupContext so its budget starts
 	// when its work does, because a removal can run for minutes.
 	cleanupBase := context.WithoutCancel(ctx)
 	handle := s.lookupSkillRun(tenantID, configID, skillID)
@@ -183,7 +183,7 @@ func (s *TenantSkillService) runRemove(
 
 	// Remaining skills still live in the current snapshot, so it must be an
 	// image the live credentials can resolve. A last-skill clear above does
-	// not boot that snapshot — it only drops the pointer — and must stay
+	// not boot that snapshot - it only drops the pointer - and must stay
 	// possible after a credential rotation so the operator can fall back to
 	// the base template.
 	if err := ensureUsableImage(cfgEntity); err != nil {

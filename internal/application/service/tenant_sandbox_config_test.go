@@ -1726,7 +1726,7 @@ func TestDeleteReleasesSkillSnapshotsBeforeSoftDelete(t *testing.T) {
 // An install row names an archive only when a re-register replaced the
 // definition's copy and this sandbox kept running the image built from the old
 // one. Deleting the config drops the only reader those bytes will ever have, so
-// they have to go with it — nothing else records that the version existed.
+// they have to go with it - nothing else records that the version existed.
 func TestDeleteReclaimsArchivePinnedOnlyByThisConfig(t *testing.T) {
 	fx := newSnapshotReleaseFixture(t, nil)
 	fx.skills.skills[0].BundleRef = "bundle://skill-a-v1.zip"

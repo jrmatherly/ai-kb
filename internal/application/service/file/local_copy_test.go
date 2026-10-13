@@ -59,7 +59,7 @@ func TestLocalCopyFile_IndependentCopy(t *testing.T) {
 	// Copy is readable and byte-identical.
 	assert.Equal(t, content, readLocal(t, svc, newPath))
 
-	// Delete the source — the copy must remain intact.
+	// Delete the source - the copy must remain intact.
 	require.NoError(t, svc.DeleteFile(context.Background(), srcPath))
 	assert.Equal(t, content, readLocal(t, svc, newPath),
 		"copy should survive deletion of source")

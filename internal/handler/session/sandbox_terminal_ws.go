@@ -41,7 +41,7 @@ const (
 	// the server pings, and any read (pong, keystroke, control frame)
 	// refreshes the read deadline. The read window is deliberately 4x the
 	// ping interval (not 2x) because a backgrounded browser tab throttles
-	// timers — its pong reply can lag well past one interval, and a tight
+	// timers - its pong reply can lag well past one interval, and a tight
 	// window would drop terminals that are perfectly healthy.
 	terminalPingInterval = 30 * time.Second
 	terminalReadTimeout  = 120 * time.Second
@@ -201,8 +201,8 @@ func (h *Handler) SandboxTerminalWS(c *gin.Context) {
 	}
 
 	// Provisioning is opt-in per connect, because it creates (or resumes and
-	// re-bills) a microVM and this is a GET. A bare handshake — panel opened,
-	// tab restored, background reconnect — stays lookup-only: a running
+	// re-bills) a microVM and this is a GET. A bare handshake - panel opened,
+	// tab restored, background reconnect - stays lookup-only: a running
 	// sandbox is attached, a paused one reports SANDBOX_PAUSED, and a
 	// missing one reports SANDBOX_NOT_BOUND. Only a confirmed click sets
 	// provision=1, which may create or resume.
@@ -275,7 +275,7 @@ func (h *Handler) openTerminal(
 //
 // The agent's workspace travels with its config id. Sandbox configs are keyed
 // by (tenant, id), so a shared agent's config simply does not exist in the
-// caller's own workspace — passing the id alone resolved to "config not found"
+// caller's own workspace - passing the id alone resolved to "config not found"
 // and the panel died with a bare INTERNAL frame.
 func (h *Handler) terminalProvisionPin(
 	ctx context.Context, c *gin.Context, allowProvision bool,

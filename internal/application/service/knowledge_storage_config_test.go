@@ -37,7 +37,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 		want     want
 	}{
 		{
-			name:     "local — only path prefix",
+			name:     "local - only path prefix",
 			kbConfig: &types.StorageProviderConfig{Provider: "local"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				Local: &types.LocalEngineConfig{PathPrefix: "/data/wk"},
@@ -45,7 +45,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 			want: want{provider: "LOCAL", pathPrefix: "/data/wk"},
 		},
 		{
-			name:     "minio remote — full credentials",
+			name:     "minio remote - full credentials",
 			kbConfig: &types.StorageProviderConfig{Provider: "minio"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				MinIO: &types.MinIOEngineConfig{
@@ -64,7 +64,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 			},
 		},
 		{
-			name:     "cos — appid carried through",
+			name:     "cos - appid carried through",
 			kbConfig: &types.StorageProviderConfig{Provider: "cos"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				COS: &types.COSEngineConfig{
@@ -80,7 +80,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 			},
 		},
 		{
-			name:     "tos — issue #1117 regression guard",
+			name:     "tos - issue #1117 regression guard",
 			kbConfig: &types.StorageProviderConfig{Provider: "tos"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				TOS: &types.TOSEngineConfig{
@@ -96,7 +96,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 			},
 		},
 		{
-			name:     "s3 — issue #1117 regression guard",
+			name:     "s3 - issue #1117 regression guard",
 			kbConfig: &types.StorageProviderConfig{Provider: "s3"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				S3: &types.S3EngineConfig{
@@ -112,7 +112,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 			},
 		},
 		{
-			name:     "oss — issue #1117 regression guard",
+			name:     "oss - issue #1117 regression guard",
 			kbConfig: &types.StorageProviderConfig{Provider: "oss"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				OSS: &types.OSSEngineConfig{
@@ -128,7 +128,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 			},
 		},
 		{
-			name:     "ks3 — added in #1109, must not regress",
+			name:     "ks3 - added in #1109, must not regress",
 			kbConfig: &types.StorageProviderConfig{Provider: "ks3"},
 			tenant: &types.Tenant{StorageEngineConfig: &types.StorageEngineConfig{
 				KS3: &types.KS3EngineConfig{
@@ -191,7 +191,7 @@ func TestBuildStorageConfig_TenantMergeAllProviders(t *testing.T) {
 
 // TestBuildStorageConfig_LegacyPathOnlyForCOSAndMinIO verifies that the legacy
 // (kb.StorageConfig "cos_config" column) path is only used for the providers
-// that historically wrote into it — cos and minio. tos/s3/oss/ks3 must always
+// that historically wrote into it - cos and minio. tos/s3/oss/ks3 must always
 // resolve through the tenant-merge path, so a populated legacy struct on those
 // providers is intentionally ignored rather than silently aliased onto the
 // wrong fields.
@@ -267,7 +267,7 @@ func TestBuildStorageConfig_LegacyPathOnlyForCOSAndMinIO(t *testing.T) {
 
 // TestBuildStorageConfig_NoTenantFallsThroughToEmpty pins the no-tenant case:
 // when neither the kb nor the context carry storage info, the result is an
-// empty config tagged with the requested provider — matches the "fall back to
+// empty config tagged with the requested provider - matches the "fall back to
 // global default" intent rather than panicking.
 func TestBuildStorageConfig_NoTenantFallsThroughToEmpty(t *testing.T) {
 	t.Parallel()

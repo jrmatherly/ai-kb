@@ -192,8 +192,9 @@ func TestAutoTagHandleKeepsMatchesWithoutConfidence(t *testing.T) {
 // The model reply is wrapped in prose containing a bracketed citation, which
 // the previous LastIndexAny-based extraction truncated into invalid JSON.
 func TestAutoTagHandleParsesJSONWrappedInProse(t *testing.T) {
+	// The model reply keeps its em dash (\u2014): it is test input.
 	fixture := newAutoTagFixture(t,
-		"Here you go: {\"matches\":[{\"index\":1,\"confidence\":0.88}]} — see section [1].")
+		"Here you go: {\"matches\":[{\"index\":1,\"confidence\":0.88}]} \u2014 see section [1].")
 	require.NoError(t, fixture.handle(t))
 	assert.Equal(t, []string{"tag-a"}, fixture.repo.added)
 }

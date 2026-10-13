@@ -16,8 +16,8 @@ import (
 // vendor's own document:
 // https://help.aliyun.com/zh/model-studio/multimodal-embedding-api-reference
 //
-// The position field is `index`. Reading `text_index` — the name used by
-// DashScope's text embedding API — put a whole batch in slot 0 (#3484).
+// The position field is `index`. Reading `text_index` - the name used by
+// DashScope's text embedding API - put a whole batch in slot 0 (#3484).
 const documentedResponse = `{
   "output": {
     "embeddings": [

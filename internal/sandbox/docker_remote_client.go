@@ -3,8 +3,8 @@
 // One sandbox is one long-lived container: PID 1 sleeps, and every script,
 // shell command and file operation runs against that container until the
 // session ends or the idle sweep reclaims it. That is what makes the docker
-// backend behave like the E2B one — same session state, same shell_exec, same
-// attachment staging — instead of the previous one-shot `docker run --rm`,
+// backend behave like the E2B one - same session state, same shell_exec, same
+// attachment staging - instead of the previous one-shot `docker run --rm`,
 // which could not keep anything between two executions.
 //
 // The mapping onto the Engine API:
@@ -58,8 +58,8 @@ import (
 // and outside /tmp so a tmpfs mount cannot hide it.
 const dockerActivityMarker = "/var/lib/ai-kb-sandbox-activity"
 
-// dockerSandboxEntrypoint keeps the container alive without running anything —
-// the container is a place to exec into, not a service — and prepares the
+// dockerSandboxEntrypoint keeps the container alive without running anything -
+// the container is a place to exec into, not a service - and prepares the
 // activity marker on the way.
 //
 // The marker has to be writable by whichever account the execs land on, which
@@ -363,7 +363,7 @@ var dockerInitProcess = true
 // Docker filters at L3/L4 only, so the domain-level allow/deny lists in
 // RemoteNetworkPolicy cannot be honoured here; the one thing that maps
 // cleanly is "no egress at all", which AllowInternetAccess=false expresses.
-// Domain rules are silently not applied — the config surface refuses them
+// Domain rules are silently not applied - the config surface refuses them
 // before they get this far (see types.ValidateSandboxNetworkPolicy, which
 // rejects any allow/deny list or L7 rule on a docker config at save time).
 func (c *DockerRemoteClient) networkMode(policy RemoteNetworkPolicy) string {
@@ -831,7 +831,7 @@ func dockerExecCommand(req RemoteExecRequest, timeout time.Duration) []string {
 // A blank user resolves to DefaultSandboxExecUser, which is root: this
 // function is the single choke point for every exec the daemon runs, so the
 // account a caller lands on when it names none is decided here rather than by
-// whatever the image happens to declare. It also makes the backends agree —
+// whatever the image happens to declare. It also makes the backends agree -
 // E2B authenticates its data plane as DefaultSandboxExecUser and Cube hands a
 // blank field to envd, which defaults the same way.
 //
@@ -944,7 +944,7 @@ func (c *DockerRemoteClient) ReadFile(
 //
 // That guarantee stops at the final component. Intermediate components are
 // resolved by the kernel during path lookup, exactly as they are for any other
-// process, so `/workspace/output/link-to-etc/passwd` stats as a regular file —
+// process, so `/workspace/output/link-to-etc/passwd` stats as a regular file -
 // verified against a real daemon. Reads through such a path are not a
 // privilege boundary being crossed, only the "stay inside the artifact
 // directory" convention: ReadFile still runs as the sandbox account, so it
@@ -999,12 +999,12 @@ func (c *DockerRemoteClient) Stat(
 // permission denials included, is an invalid request carrying the tool's own
 // complaint rather than a synthesised one.
 // dockerFileOpFailed classifies a filesystem op's non-zero exec exit. The
-// message carries the exit code — with an empty stderr it used to be the
+// message carries the exit code - with an empty stderr it used to be the
 // only missing clue (issue #3942). When the exec raced the idle sweeper's
 // delete (ensureRunning's inspect passes, the sweep removes the container,
 // the exec dies mid-flight), the failure surfaces as exit != 0 with an
 // empty stderr; the re-inspect reclassifies it as NotFound so
-// CanReplaceRemoteBinding lets the rebinding self-heal take over — making
+// CanReplaceRemoteBinding lets the rebinding self-heal take over - making
 // the sweeper's "deleting needs no coordination with the binding store"
 // premise hold for this window too (issue #3942, mechanism A).
 func (c *DockerRemoteClient) dockerFileOpFailed(
@@ -1036,7 +1036,7 @@ func (c *DockerRemoteClient) dockerFileOpFailed(
 }
 
 // containerVanished reports whether the Engine confirms the container is
-// gone (404). A transport or daemon error returns false — only a confirmed
+// gone (404). A transport or daemon error returns false - only a confirmed
 // disappearance may reclassify, keeping unknown errors on the safe side of
 // CanReplaceRemoteBinding's allow-list.
 func (c *DockerRemoteClient) containerVanished(ctx context.Context, id, op string) bool {

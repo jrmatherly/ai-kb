@@ -221,7 +221,7 @@ func sandboxConnectionCheckConfig(cfg *types.TenantSandboxConfig) *types.TenantS
 
 // describeProbeMismatch reports why the probe script did not print its marker.
 // "output did not match" on its own hides the exit code and the stderr line that
-// normally name the actual problem — a missing interpreter, an image entrypoint
+// normally name the actual problem - a missing interpreter, an image entrypoint
 // that swallowed the command, or a bind mount that never reached the Docker VM.
 func describeProbeMismatch(exitCode int, killed bool, stdout, stderr, execErr string) string {
 	parts := []string{fmt.Sprintf("exit code %d", exitCode)}
@@ -356,7 +356,7 @@ var egressProbeTargets = []struct {
 }
 
 // probeSandboxEgress verifies the sandbox can reach the public internet.
-// Any single target succeeding is enough — skill installs only need some
+// Any single target succeeding is enough - skill installs only need some
 // outbound path, not both CN and international reachability.
 func (h *SystemHandler) probeSandboxEgress(
 	ctx context.Context,
@@ -409,8 +409,8 @@ func (h *SystemHandler) probeSandboxEgress(
 }
 
 // reportEgressProbe records the outbound-connectivity probe. Under a
-// deny-by-default policy a blocked probe is the expected outcome — the probe
-// target is not on the admin's allow list — so it is reported as "restricted
+// deny-by-default policy a blocked probe is the expected outcome - the probe
+// target is not on the admin's allow list - so it is reported as "restricted
 // by policy" instead of failing the whole check. Only a config that allows
 // public egress can fail this probe.
 func reportEgressProbe(

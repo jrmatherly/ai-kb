@@ -16,7 +16,7 @@ type LoginRequest struct {
 // LoginResponse is the body returned by POST /api/v1/auth/login.
 //
 // Token is the JWT access token; RefreshToken renews it via Auth.Refresh.
-// ActiveTenant is the tenant whose ID is encoded in the JWT — every
+// ActiveTenant is the tenant whose ID is encoded in the JWT - every
 // subsequent request is scoped to it until /auth/switch-tenant is called.
 // A successful switch also records that tenant as the user's last-active
 // preference, so the next login and refresh land in the same workspace.
@@ -146,7 +146,7 @@ type SwitchTenantRequest struct {
 
 // SwitchTenant re-issues a token pair scoped to TenantID and records that
 // tenant as the user's last-active preference (next login and refresh land
-// there). A preference-write failure fails the whole call — no new tokens
+// there). A preference-write failure fails the whole call - no new tokens
 // are issued. Maps to POST /api/v1/auth/switch-tenant.
 func (c *Client) SwitchTenant(ctx context.Context, req SwitchTenantRequest) (*LoginResponse, error) {
 	resp, err := c.doRequest(ctx, http.MethodPost, PathAuthSwitchTenant, req, nil)
@@ -183,7 +183,7 @@ func (c *Client) GetCurrentUser(ctx context.Context) (*CurrentUserResponse, erro
 //
 // Callers (`aikb auth refresh`) read the refresh token from secrets,
 // invoke this method, and persist both new tokens. The SDK does not touch
-// the secrets store directly — it stays a transport-only layer.
+// the secrets store directly - it stays a transport-only layer.
 func (c *Client) RefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenResponse, error) {
 	body := struct {
 		RefreshToken string `json:"refreshToken"`

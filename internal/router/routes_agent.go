@@ -30,21 +30,21 @@ func RegisterCustomAgentRoutes(r *gin.RouterGroup, agentHandler *handler.CustomA
 	// key granted manage_agents may author agents without full Owner.
 	agentsWrite := agents.With(apiKeyManageAgents(apiKeyFullAccess()))
 	{
-		// Get placeholder definitions (must be before /:id to avoid conflict) — Viewer+
+		// Get placeholder definitions (must be before /:id to avoid conflict) - Viewer+
 		agentsRead.GET("/placeholders", g.Viewer(), agentHandler.GetPlaceholders)
-		// List smart-reasoning agent type presets (rag-qa / wiki-qa / hybrid / custom) — Viewer+
+		// List smart-reasoning agent type presets (rag-qa / wiki-qa / hybrid / custom) - Viewer+
 		agentsRead.GET("/type-presets", g.Viewer(), agentHandler.GetAgentTypePresets)
-		// Create custom agent — Contributor+
+		// Create custom agent - Contributor+
 		agentsWrite.POST("", g.Contributor(), agentHandler.CreateAgent)
-		// List all agents (including built-in) — Viewer+
+		// List all agents (including built-in) - Viewer+
 		agentsRead.GET("", g.Viewer(), agentHandler.ListAgents)
-		// Get agent by ID — Viewer+
+		// Get agent by ID - Viewer+
 		agentsRead.GET("/:id", g.Viewer(), agentHandler.GetAgent)
-		// Update agent — creator OR Admin+
+		// Update agent - creator OR Admin+
 		agentsWrite.PUT("/:id", g.OwnedAgentOrAdmin(), agentHandler.UpdateAgent)
-		// Delete agent — creator OR Admin+
+		// Delete agent - creator OR Admin+
 		agentsWrite.DELETE("/:id", g.OwnedAgentOrAdmin(), agentHandler.DeleteAgent)
-		// Copy agent — Contributor+ (copy is owned by the caller)
+		// Copy agent - Contributor+ (copy is owned by the caller)
 		agentsWrite.POST("/:id/copy", g.Contributor(), agentHandler.CopyAgent)
 	}
 	// Registered outside the group to avoid Gin route conflict with /agents/:id/shares in organization routes
@@ -55,8 +55,8 @@ func RegisterCustomAgentRoutes(r *gin.RouterGroup, agentHandler *handler.CustomA
 // RegisterUserFavoriteRoutes wires the per-user starred-resource endpoints.
 //
 // Authorization: the handler always derives (user_id, tenant_id) from the
-// auth context — there is no admin-style "see another user's favorites"
-// path — so a Viewer floor is the right gate. The endpoints intentionally
+// auth context - there is no admin-style "see another user's favorites"
+// path - so a Viewer floor is the right gate. The endpoints intentionally
 // don't follow the OwnedXOrAdmin pattern: favorites aren't owned by the
 // resource's creator, they're owned by the user *doing* the starring.
 func RegisterUserFavoriteRoutes(r *gin.RouterGroup, h *handler.UserResourceFavoriteHandler, g *rbacGuards) {
@@ -77,7 +77,7 @@ func RegisterUserFavoriteRoutes(r *gin.RouterGroup, h *handler.UserResourceFavor
 func RegisterSkillRoutes(r *gin.RouterGroup, skillHandler *handler.SkillHandler, g *rbacGuards) {
 	skills := r.Group("/skills")
 	{
-		// Usable skills for @ mention / chat — Viewer+
+		// Usable skills for @ mention / chat - Viewer+
 		skills.GET("", g.Viewer(), skillHandler.ListSkills)
 		// Catalog reads are Viewer+ so the agent editor can show uninstalled skills.
 		skills.GET("/catalog", g.Viewer(), skillHandler.ListCatalog)
@@ -100,27 +100,27 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 	{
 		// Create organization (Admin+ in caller's tenant only)
 		orgs.POST("", g.Admin(), orgHandler.CreateOrganization)
-		// List my organizations — Viewer+ floor so revoked/non-member
+		// List my organizations - Viewer+ floor so revoked/non-member
 		// accounts whose JWT still validates can't enumerate org membership.
 		orgs.GET("", g.Viewer(), orgHandler.ListMyOrganizations)
-		// Preview organization by invite code (without joining) — Viewer+
+		// Preview organization by invite code (without joining) - Viewer+
 		orgs.GET("/preview/:code", g.Viewer(), orgHandler.PreviewByInviteCode)
 		// Join organization by invite code (Admin+ in caller's tenant only)
 		orgs.POST("/join", g.Admin(), orgHandler.JoinByInviteCode)
 		// Submit join request (for organizations that require approval) (Admin+)
 		orgs.POST("/join-request", g.Admin(), orgHandler.SubmitJoinRequest)
-		// Search searchable (discoverable) organizations — Viewer+
+		// Search searchable (discoverable) organizations - Viewer+
 		orgs.GET("/search", g.Viewer(), orgHandler.SearchOrganizations)
 		// Join searchable organization by ID (no invite code) (Admin+)
 		orgs.POST("/join-by-id", g.Admin(), orgHandler.JoinByOrganizationID)
-		// Get organization by ID — Viewer+
+		// Get organization by ID - Viewer+
 		orgs.GET("/:id", g.Viewer(), orgHandler.GetOrganization)
-		// Update organization — Admin+ in caller's tenant. The service
+		// Update organization - Admin+ in caller's tenant. The service
 		// requires the caller's tenant to be an org admin (not only the
 		// owner), matching the settings UI; the route guard stops a tenant
 		// Viewer/Contributor from ever reaching the service.
 		orgs.PUT("/:id", g.Admin(), orgHandler.UpdateOrganization)
-		// Delete organization — Admin+ in caller's tenant; the service
+		// Delete organization - Admin+ in caller's tenant; the service
 		// further requires the org's owner tenant, since deletion is
 		// irreversible.
 		orgs.DELETE("/:id", g.Admin(), orgHandler.DeleteOrganization)
@@ -130,7 +130,7 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 		// An upgrade approval changes the whole tenant's org role, so it
 		// must not be initiated by a tenant Viewer/Contributor.
 		orgs.POST("/:id/request-upgrade", g.Admin(), orgHandler.RequestRoleUpgrade)
-		// Generate invite code — Admin+ in caller's tenant. Issuing an
+		// Generate invite code - Admin+ in caller's tenant. Issuing an
 		// invite code is an admin action; the service layer additionally
 		// requires the caller's tenant to be admin in the org.
 		orgs.POST("/:id/invite-code", g.Admin(), orgHandler.GenerateInviteCode)
@@ -145,9 +145,9 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 		orgs.GET("/:id/search-users", g.Admin(), orgHandler.SearchUsersForInvite)
 		// Invite member directly (admin only)
 		orgs.POST("/:id/invite", g.Admin(), orgHandler.InviteMember)
-		// List members — Viewer+
+		// List members - Viewer+
 		orgs.GET("/:id/members", g.Viewer(), orgHandler.ListMembers)
-		// Update member role (path parameter is the member tenant_id) —
+		// Update member role (path parameter is the member tenant_id) -
 		// Admin+ in caller's tenant. Changing another tenant's org role
 		// is the symmetric counterpart of removing them; both must be
 		// gated the same way.
@@ -155,21 +155,21 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 		// Remove member (path parameter is the member tenant_id).
 		// Both self-removal (caller's own tenant) and admin-removal-of-other
 		// take a whole tenant out of the org, so the route must be Admin+
-		// in the caller's tenant — symmetric with POST /:id/leave above.
+		// in the caller's tenant - symmetric with POST /:id/leave above.
 		orgs.DELETE("/:id/members/:tenant_id", g.Admin(), orgHandler.RemoveMember)
-		// List join requests (admin only) — caller's tenant must be at
+		// List join requests (admin only) - caller's tenant must be at
 		// least Admin to even see the queue (a tenant Viewer has no
 		// authority to act on it).
 		orgs.GET("/:id/join-requests", g.Admin(), orgHandler.ListJoinRequests)
 		// Review join request (admin only)
 		orgs.PUT("/:id/join-requests/:request_id/review", g.Admin(), orgHandler.ReviewJoinRequest)
-		// List knowledge bases shared to this organization — Viewer+
+		// List knowledge bases shared to this organization - Viewer+
 		orgs.GET("/:id/shares", g.Viewer(), orgHandler.ListOrgShares)
-		// List agents shared to this organization — Viewer+
+		// List agents shared to this organization - Viewer+
 		orgs.GET("/:id/agent-shares", g.Viewer(), orgHandler.ListOrgAgentShares)
-		// List all knowledge bases in this organization (including mine) for list-page space view — Viewer+
+		// List all knowledge bases in this organization (including mine) for list-page space view - Viewer+
 		orgs.GET("/:id/shared-knowledge-bases", g.Viewer(), orgHandler.ListOrganizationSharedKnowledgeBases)
-		// List all agents in this organization (including mine) for list-page space view — Viewer+
+		// List all agents in this organization (including mine) for list-page space view - Viewer+
 		orgs.GET("/:id/shared-agents", g.Viewer(), orgHandler.ListOrganizationSharedAgents)
 	}
 
@@ -208,9 +208,9 @@ func RegisterOrganizationRoutes(r *gin.RouterGroup, orgHandler *handler.Organiza
 		agentShares.DELETE("/:share_id", g.OwnedAgentOrAdmin(), orgHandler.RemoveAgentShare)
 	}
 
-	// Shared knowledge bases route — Viewer+
+	// Shared knowledge bases route - Viewer+
 	g.apiKeyRoute(r, http.MethodGet, "/shared-knowledge-bases", apiKeyManageSpaces(apiKeyFullAccess()), g.Viewer(), orgHandler.ListSharedKnowledgeBases)
-	// Shared agents route — Viewer+
+	// Shared agents route - Viewer+
 	g.apiKeyRoute(r, http.MethodGet, "/shared-agents", apiKeyManageSpaces(apiKeyFullAccess()), g.Viewer(), orgHandler.ListSharedAgents)
 	// "Disable by me" is a workspace-level preference (written to tenant_disabled_shared_agents)
 	// that affects the agent list the whole workspace sees in the session dropdown. A Viewer changing this table
@@ -316,7 +316,7 @@ func RegisterIMChannelRoutes(r *gin.RouterGroup, imHandler *handler.IMHandler, g
 		channels.POST("/:id/toggle", g.Admin(), imHandler.ToggleIMChannel)
 	}
 
-	// WeChat QR code login (requires authentication) — Admin+: a successful
+	// WeChat QR code login (requires authentication) - Admin+: a successful
 	// scan binds a personal WeChat account to the tenant.
 	wechatGroup := g.apiKeyGroup(r.Group("/wechat"), apiKeyManageChannels(apiKeyFullAccess()))
 	{

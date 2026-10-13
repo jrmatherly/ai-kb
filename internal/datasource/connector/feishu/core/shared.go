@@ -38,7 +38,7 @@ var FeishuStreamCheckpointInterval = 50
 // well as node count. Without it, a sync of fewer than
 // FeishuStreamCheckpointInterval very slow (rate-limited) exports could reach
 // the 2h task timeout having never checkpointed, and resume from scratch every
-// retry — the #2136 "never fully syncs" case. Overridable in tests.
+// retry - the #2136 "never fully syncs" case. Overridable in tests.
 var FeishuStreamCheckpointMaxInterval = 30 * time.Second
 
 // fetchTally accumulates the outcome of fetching a wiki node subtree so the
@@ -87,7 +87,7 @@ func feishuErrorCode(raw string) string {
 // feishuFailure classifies a raw connector/API error into a stable i18n code
 // (mapped to a localized string on the frontend), an optional numeric Feishu
 // error code for interpolation, and an English fallback message for clients
-// without the i18n key. The raw status/JSON body/log_id is never returned here —
+// without the i18n key. The raw status/JSON body/log_id is never returned here -
 // it stays in the server logs. Dumping it in the UI is the anti-pattern
 // Airbyte/Fivetran/Onyx warn against. Transient errors are retried next sync
 // (the cursor is retained); auth/permission errors point at the fix instead.
@@ -154,9 +154,9 @@ const MinAttachmentBytes = 2 * 1024
 
 // SupportedImageExt sniffs image bytes and returns the filename extension and
 // content type AI KB accepts for a standalone image knowledge item (png/jpg/
-// gif — the image set isValidFileType admits). ok is false for non-image or
+// gif - the image set isValidFileType admits). ok is false for non-image or
 // unsupported formats (e.g. webp/bmp), which the caller skips rather than
-// mislabel — a wrong extension would fail parsing. The detected content type is
+// mislabel - a wrong extension would fail parsing. The detected content type is
 // returned even when ok is false so the caller can log it without re-sniffing.
 func SupportedImageExt(data []byte) (ext, contentType string, ok bool) {
 	switch ct := http.DetectContentType(data); ct {
@@ -222,7 +222,7 @@ func IsSupportedDocType(objType string) bool {
 	case "docx", "doc", "sheet", "bitable", "file":
 		return true
 	default:
-		// mindnote, slides — no content retrieval API available
+		// mindnote, slides - no content retrieval API available
 		return false
 	}
 }

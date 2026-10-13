@@ -1,7 +1,7 @@
 // Package arkembeddings implements Volcengine Ark's multimodal embedding
 // shape: an input array of typed parts answering a single `data` object.
 //
-// The response is one fused vector for the whole input, not one per element —
+// The response is one fused vector for the whole input, not one per element -
 // the reference's own example returns
 //
 //	"data": { "embedding": [...], "object": "embedding" }

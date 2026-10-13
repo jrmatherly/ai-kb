@@ -29,7 +29,7 @@ type elasticsearchRepository struct {
 }
 
 // NewElasticsearchEngineRepository creates and initializes a new Elasticsearch v8 repository.
-// indexCfg is optional — pass nil to use env var / default values (env path).
+// indexCfg is optional - pass nil to use env var / default values (env path).
 func NewElasticsearchEngineRepository(client *elasticsearch.TypedClient,
 	config *config.Config,
 	indexCfg *typesLocal.IndexConfig,
@@ -456,8 +456,8 @@ func (e *elasticsearchRepository) Retrieve(ctx context.Context,
 // vectorScoreScriptSource scores every document by its cosine similarity to the
 // query vector, floored at 0. Lucene rejects negative final script_score values
 // ("script_score script returned an invalid score ... Must be a non-negative
-// score!"), so an unclamped negative cosine — which occurs whenever any stored
-// vector points away from the query — fails the entire search request with a
+// score!"), so an unclamped negative cosine - which occurs whenever any stored
+// vector points away from the query - fails the entire search request with a
 // 400 (all shards failed) instead of merely ranking that document last. The
 // floor keeps the score in the [0, 1] range the shared retriever score
 // normalizer documents for this engine; documents clamped to 0 fall below any

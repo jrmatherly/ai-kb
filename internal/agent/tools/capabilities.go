@@ -1,4 +1,4 @@
-// Package tools — capability requirements for built-in agent tools.
+// Package tools - capability requirements for built-in agent tools.
 //
 // This file is the Go mirror of `frontend/src/utils/tool-capabilities.ts`.
 // They MUST be kept in sync: whenever you add a tool to the registry with
@@ -6,7 +6,7 @@
 //
 // Why duplicate it? The frontend uses it to gray out tools and filter KBs
 // in the agent editor and `@` mention menu; the backend uses it as the
-// authoritative last line of defense in the retrieval pipeline — a client
+// authoritative last line of defense in the retrieval pipeline - a client
 // that skips the frontend filter (old tab, curl, rogue plugin) shouldn't be
 // able to hand incompatible KBs/files to a tool that would just silently
 // skip them.
@@ -36,7 +36,7 @@ const (
 //     `knowledge_ids`; the chat input uses this to decide whether to
 //     even offer the `@file` list to the user.
 //
-// A nil/zero requirement means "no KB dependency" — the tool is always
+// A nil/zero requirement means "no KB dependency" - the tool is always
 // available and doesn't care about files.
 type ToolRequirement struct {
 	AnyOf         []KBCapability
@@ -127,7 +127,7 @@ func (f KBFilter) IsEmpty() bool { return len(f.AnyOf) == 0 }
 
 // DeriveKBFilterFromTools derives a capability filter such that a KB passes
 // iff at least ONE of the allowed tools has a requirement the KB satisfies.
-// Tools without any KB requirement don't contribute — if the allowed-tools
+// Tools without any KB requirement don't contribute - if the allowed-tools
 // list contains only such tools, the returned filter is empty (accept all).
 func DeriveKBFilterFromTools(allowedTools []string) KBFilter {
 	seen := make(map[KBCapability]struct{})
@@ -187,7 +187,7 @@ func KBSatisfiesToolRequirements(caps types.KBCapabilities, allowedTools []strin
 //
 // We treat this as a property of the agent MODE rather than of any
 // specific tool, because quick-answer mode doesn't ship with an
-// `allowed_tools` list — its retrieval is implicit.
+// `allowed_tools` list - its retrieval is implicit.
 var quickAnswerKBFilter = KBFilter{AnyOf: []KBCapability{CapVector, CapKeyword}}
 
 // DeriveKBFilterForAgent derives the effective KB capability filter for a

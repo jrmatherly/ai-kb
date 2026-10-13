@@ -2,17 +2,17 @@ package types
 
 import "time"
 
-// Span kinds — kept narrow because every kind has dedicated rendering on
+// Span kinds - kept narrow because every kind has dedicated rendering on
 // the frontend timeline:
 //
-//   - SpanKindRoot     — the per-(knowledge, attempt) trace root. Always
+//   - SpanKindRoot     - the per-(knowledge, attempt) trace root. Always
 //     the parent_span_id ancestor of every other span
 //     in that attempt. UI uses it for total elapsed.
-//   - SpanKindStage    — one of the 5 canonical stages (DocReader, etc.).
+//   - SpanKindStage    - one of the 5 canonical stages (DocReader, etc.).
 //     UI renders these as the timeline segments.
-//   - SpanKindSubSpan  — anything inside a stage (e.g. multimodal.image[i]).
+//   - SpanKindSubSpan  - anything inside a stage (e.g. multimodal.image[i]).
 //     UI shows them as collapsible children.
-//   - SpanKindGeneration — a SubSpan that wraps an LLM/VLM call. Same UI
+//   - SpanKindGeneration - a SubSpan that wraps an LLM/VLM call. Same UI
 //     treatment as SubSpan but tagged so we can stitch
 //     to the matching Langfuse generation.
 const (
@@ -24,7 +24,7 @@ const (
 
 // Span statuses. We deliberately distinguish "failed" (this span itself
 // errored) from "cancelled" (an upstream span failed and we abandoned this
-// one without running it) so the UI can render the cause differently —
+// one without running it) so the UI can render the cause differently -
 // "you broke X, so we never ran Y" vs. "Y itself broke".
 const (
 	SpanStatusPending   = "pending"
@@ -35,7 +35,7 @@ const (
 	SpanStatusCancelled = "cancelled" // not run because an upstream span failed
 )
 
-// Stage names — the closed set the UI builds its 5-segment timeline from.
+// Stage names - the closed set the UI builds its 5-segment timeline from.
 // Adding a stage requires a coordinated frontend release. SubSpan names
 // are free-form (e.g. "multimodal.image[0]") and don't go through this
 // list.
@@ -59,7 +59,7 @@ var AllStages = []string{
 }
 
 // StageDependencies declares the DAG between stages. Used by the tracker
-// to cascade-cancel dependents when a stage fails — a Chunking failure
+// to cascade-cancel dependents when a stage fails - a Chunking failure
 // silently turns Embedding/Multimodal/PostProcess into "cancelled" so the
 // timeline shows a clear blast radius instead of three pending spinners.
 //
@@ -78,7 +78,7 @@ var StageDependencies = map[string][]string{
 // KnowledgeProcessingSpan is one row in knowledge_processing_spans.
 //
 // Field tags pull double duty: GORM (storage) and JSON (API). ErrorDetail
-// is excluded by default — handlers must opt in for admin views, matching
+// is excluded by default - handlers must opt in for admin views, matching
 // how the dead-letter middleware already protects raw stack traces.
 type KnowledgeProcessingSpan struct {
 	ID           int64      `gorm:"primaryKey;column:id"             json:"-"`
@@ -103,7 +103,7 @@ type KnowledgeProcessingSpan struct {
 }
 
 // TableName pins the table because GORM's default pluralization
-// ("knowledge_processing_spans") happens to match — explicit beats
+// ("knowledge_processing_spans") happens to match - explicit beats
 // implicit.
 func (KnowledgeProcessingSpan) TableName() string {
 	return "knowledge_processing_spans"

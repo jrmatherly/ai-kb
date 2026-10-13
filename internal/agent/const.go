@@ -71,7 +71,7 @@ const (
 )
 
 // truncatedAnswerFallback is delivered when every attempt at this turn was cut
-// off at the completion cap and none of them produced answer text — there is
+// off at the completion cap and none of them produced answer text - there is
 // nothing partial to hand over, so say what happened instead of finishing with
 // an empty message.
 const truncatedAnswerFallback = "Sorry, this answer kept hitting the model's per-response output limit " +

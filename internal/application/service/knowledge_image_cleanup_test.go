@@ -38,7 +38,7 @@ func TestCollectImageURLs(t *testing.T) {
 			wantURLs: []string{"s3://bucket/a.png", "s3://bucket/b.png"},
 		},
 		{
-			name: "dedup across chunks — parent and child share same URL",
+			name: "dedup across chunks - parent and child share same URL",
 			imageInfos: []string{
 				`[{"url":"s3://bucket/same.png"}]`,
 				`[{"url":"s3://bucket/same.png"}]`,
@@ -54,7 +54,7 @@ func TestCollectImageURLs(t *testing.T) {
 			wantURLs: nil,
 		},
 		{
-			name: "invalid JSON — skipped with no panic",
+			name: "invalid JSON - skipped with no panic",
 			imageInfos: []string{
 				`not valid json`,
 				`[{"url":"s3://bucket/valid.png"}]`,

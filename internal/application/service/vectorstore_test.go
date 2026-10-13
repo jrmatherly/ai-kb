@@ -416,7 +416,7 @@ func TestCreateStore_DuplicateCheck_QdrantEnvStore(t *testing.T) {
 }
 
 func TestCreateStore_DuplicateCheck_EnvStore_DifferentIndex_Allowed(t *testing.T) {
-	// Same endpoint as env store but different index — should be allowed.
+	// Same endpoint as env store but different index - should be allowed.
 	// Use an httptest server so CreateStore's connection probe sees a real
 	// (fake) ES root instead of dialing an unreachable host.
 	es := newFakeESServer(t)
@@ -444,7 +444,7 @@ func TestCreateStore_DuplicateCheck_EnvStore_DifferentIndex_Allowed(t *testing.T
 }
 
 func TestCreateStore_DifferentEndpointSameIndex_Allowed(t *testing.T) {
-	// Historical note — this test used Postgres + UseDefaultConnection so the
+	// Historical note - this test used Postgres + UseDefaultConnection so the
 	// connectivity test step would short-circuit (testPostgresConnection
 	// returns nil on use_default_connection), letting the duplicate-check
 	// logic run against a pure in-memory mock. Once Postgres/SQLite were

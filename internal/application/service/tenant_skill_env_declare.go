@@ -36,7 +36,7 @@ const (
 // names long enough to be a paragraph.
 var envNamePattern = regexp.MustCompile(`^[A-Z_][A-Z0-9_]{0,127}$`)
 
-// reservedEnvNames is the third layer. It is NOT a security boundary — a skill
+// reservedEnvNames is the third layer. It is NOT a security boundary - a skill
 // can already run arbitrary code in its sandbox, and values are injected only
 // into the one execution that asked for them. It is a guard against a
 // self-inflicted, undiagnosable failure: a user who fills in PATH displaces
@@ -65,13 +65,13 @@ func init() {
 
 // reservedEnvPrefix covers future AIKB_SKILL_* names the sandbox may start
 // injecting before the exact list above is updated. Credential names a skill
-// reads — AIKB_API_KEY, AIKB_BASE_URL, AIKB_HOST — are outside it.
+// reads - AIKB_API_KEY, AIKB_BASE_URL, AIKB_HOST - are outside it.
 const reservedEnvPrefix = "AIKB_SKILL_"
 
 // declaredSkillEnv is one entry as the installer agent wrote it.
 //
 // Value exists only so that an agent which ignored the prompt and wrote a
-// value produces a parseable file whose value is then discarded — rather than
+// value produces a parseable file whose value is then discarded - rather than
 // a file that fails to decode and takes every legitimate entry with it. No
 // declaration ever carries a value out of validateEnvDeclarations.
 type declaredSkillEnv struct {
@@ -113,9 +113,9 @@ func parseEnvDeclaration(raw []byte) ([]declaredSkillEnv, error) {
 	return declared, nil
 }
 
-// validateEnvDeclarations applies the three layers in order — format, then
+// validateEnvDeclarations applies the three layers in order - format, then
 // the name must appear literally somewhere in the uploaded bundle, then the
-// reserved list — and returns what survived.
+// reserved list - and returns what survived.
 //
 // A rejected entry is dropped alone. One hallucinated name is not a reason to
 // discard the real ones beside it, and the whole point of the bundle match is
@@ -197,8 +197,8 @@ func bundleMentionsEnvName(bundle *SkillBundle, name string) bool {
 
 // mergeEnvDeclaration folds a fresh declaration onto the stored one.
 //
-// The declaration itself — which variables exist, what they are for, whether
-// they are required — is replaced wholesale, because it is a statement about
+// The declaration itself - which variables exist, what they are for, whether
+// they are required - is replaced wholesale, because it is a statement about
 // the version being installed: keeping a variable the new bundle no longer
 // reads would ask users forever for something nothing consumes. The admin's
 // value is carried across by name, because that is a credential a person

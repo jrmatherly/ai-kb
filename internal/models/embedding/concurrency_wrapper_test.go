@@ -183,7 +183,7 @@ func TestConcurrencyEmbedderInteractiveNotGated(t *testing.T) {
 }
 
 // TestConcurrencyEmbedderPoolFanOutGated verifies that BatchEmbedWithPool's
-// per-sub-batch provider round-trips are individually gated — the reason the
+// per-sub-batch provider round-trips are individually gated - the reason the
 // wrapper sits innermost.
 func TestConcurrencyEmbedderPoolFanOutGated(t *testing.T) {
 	t.Setenv("BATCH_EMBED_SIZE", "1") // one provider round-trip per text

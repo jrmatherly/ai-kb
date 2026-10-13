@@ -210,7 +210,7 @@ func TestStreamLLMToEventBus_ErrorAfterContent_IsNotASuccessfulTurn(t *testing.T
 	require.Error(t, err, "a broken stream must not be reported as a completed turn")
 	require.Contains(t, err.Error(), "context deadline exceeded")
 	// The partial call rides along for diagnostics, and the finish reason must
-	// never fall back to "stop" — that fallback is what ended the conversation.
+	// never fall back to "stop" - that fallback is what ended the conversation.
 	require.Len(t, result.ToolCalls, 1)
 	require.Equal(t, types.FinishReasonIncomplete, result.FinishReason)
 	require.True(t, isTransientError(err), "a broken stream must be retryable")
@@ -348,7 +348,7 @@ func TestWithinIterationBudgetUnlimited(t *testing.T) {
 }
 
 // History may not fill the window: the reply has to land somewhere. A reserve
-// expressed as a fraction of the window gets this wrong in both directions —
+// expressed as a fraction of the window gets this wrong in both directions -
 // too little room on a small window, needlessly early compaction on a big one.
 func TestContextCompactionThresholdReservesRoomForTheReply(t *testing.T) {
 	engine := newTestEngine(t, &mockChat{},
@@ -372,7 +372,7 @@ func TestContextCompactionThresholdReservesRoomForTheReply(t *testing.T) {
 // The usage baseline already includes the assistant reply as its `output`
 // half. Starting the delta at that reply counts every completion twice, and
 // since the engine re-anchors on fresh usage each round the error rides along
-// permanently — inflating the estimate enough to trigger compaction on a
+// permanently - inflating the estimate enough to trigger compaction on a
 // context that is nowhere near the threshold.
 func TestEstimateCurrentTokensDoesNotDoubleCountTheReply(t *testing.T) {
 	engine := newTestEngine(t, &mockChat{}, withMaxContextTokens(128000))
@@ -409,7 +409,7 @@ func TestEstimateCurrentTokensDoesNotDoubleCountTheReply(t *testing.T) {
 
 // The compaction trigger counts conversation only. Tool schemas ride with
 // every request and show up in the provider's usage, but they are not added
-// to a no-usage estimate — doing so made a 12k chat with 232 MCP tools look
+// to a no-usage estimate - doing so made a 12k chat with 232 MCP tools look
 // like 117k and compact every round, including the first.
 func TestEstimateCurrentTokensDoesNotCountToolSchemasWithoutUsage(t *testing.T) {
 	engine := newTestEngine(t, &mockChat{}, withMaxContextTokens(128000))
@@ -476,7 +476,7 @@ func TestContextCompactionDoesNotRunEveryRound(t *testing.T) {
 	engine := newTestEngine(t, llm,
 		withMaxContextTokens(40000), withMaxCompletionTokens(4000))
 
-	// One user message, then many assistant/tool rounds — a ReAct turn with
+	// One user message, then many assistant/tool rounds - a ReAct turn with
 	// no turn boundary anywhere in it.
 	messages := []chat.Message{
 		{Role: "system", Content: "you are an agent"},
@@ -947,7 +947,7 @@ func TestStreamThinkingToEventBus_SetsCompletionTokenBudget(t *testing.T) {
 // the answer area" UX bug. A natural-stop response that carries reasoning in
 // the dedicated reasoning channel (ResponseTypeThinking) plus plain answer
 // content (ResponseTypeAnswer) must route the reasoning to thought events and
-// the answer live to final-answer events — never the reverse.
+// the answer live to final-answer events - never the reverse.
 func TestStreamThinkingToEventBus_RoutesReasoningAndAnswerSeparately(t *testing.T) {
 	mock := &mockChat{
 		responses: []mockResponse{

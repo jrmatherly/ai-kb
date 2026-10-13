@@ -103,7 +103,7 @@ func IsEmbedSessionToken(token string) bool {
 // HMAC keyed by a server-only deployment secret. The handle is handed
 // to the widget at session-creation time and must be presented on every history
 // load / chat call. Because the session id travels in the request path (and can
-// land in access logs), this signature — sent in a header, never logged — is the
+// land in access logs), this signature - sent in a header, never logged - is the
 // real authorization secret: a leaked session id is useless without it. Rotating
 // the channel token invalidates outstanding handles, which is acceptable.
 func SignEmbedSessionHandle(ch *types.EmbedChannel, sessionID string) string {

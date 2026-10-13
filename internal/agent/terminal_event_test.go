@@ -47,7 +47,7 @@ func (r *terminalAnswerRecorder) snapshot() (int, string) {
 
 // TestAnalyzeResponse_EmptyNaturalStop_EmitsNoTerminalAnswer pins the #2906
 // fix at the verdict layer: an empty natural stop is retryable, so it must
-// not emit any EventAgentFinalAnswer — downstream consumers treat Done=true
+// not emit any EventAgentFinalAnswer - downstream consumers treat Done=true
 // as "answer finished" and would terminate while the retry is still running.
 func TestAnalyzeResponse_EmptyNaturalStop_EmitsNoTerminalAnswer(t *testing.T) {
 	engine := newTestEngine(t, &mockChat{})
@@ -71,7 +71,7 @@ func TestAnalyzeResponse_EmptyNaturalStop_EmitsNoTerminalAnswer(t *testing.T) {
 // TestExecuteLoop_EmptyThenAnswer_EmitsSingleTerminalAnswer is the
 // deterministic reproduction from #2906: the first LLM response is an empty
 // natural stop, the retry produces the real answer. The turn must end with
-// exactly one terminal answer event carrying the real answer — not one
+// exactly one terminal answer event carrying the real answer - not one
 // premature empty marker plus a second one after the retry.
 func TestExecuteLoop_EmptyThenAnswer_EmitsSingleTerminalAnswer(t *testing.T) {
 	mock := &mockChat{

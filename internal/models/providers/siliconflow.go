@@ -74,14 +74,14 @@ func newSiliconflowProvider() *Definition {
 		Compat: VendorCompat{
 			Transcriptions: api.TranscriptionsCompat{
 				// https://api-docs.siliconflow.cn/docs/api/audio-transcriptions-post:
-				// file and model only — no response_format — and a file of
+				// file and model only - no response_format - and a file of
 				// "at most 1 hour long and at most 50MB in file size".
 				MaxFileBytes: api.Ptr(50 << 20),
 			},
 			Embeddings: api.EmbeddingsCompat{
 				// https://api-docs.siliconflow.cn/docs/api/embeddings-post: model,
-				// input, encoding_format, and dimensions "only supported by the Qwen/Qwen3 series"
-				// — the bge-m3 entry turns it off. The input array schema says
+				// input, encoding_format, and dimensions "only supported by the Qwen/Qwen3 series" -
+				// the bge-m3 entry turns it off. The input array schema says
 				// "the current maximum array size is 32" (maxItems 32).
 				SendEncodingFormat: api.Ptr(true),
 				DimensionsField:    api.Ptr("dimensions"),

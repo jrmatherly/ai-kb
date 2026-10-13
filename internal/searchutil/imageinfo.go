@@ -26,7 +26,7 @@ var MarkdownImageRegex = regexp.MustCompile(`!\[([^\]]*)\]\(([^)]+)\)`)
 // assuming a position.
 //
 // src must be preceded by whitespace so that data-src and other hyphenated
-// attribute names are not mistaken for it — matching those would capture a
+// attribute names are not mistaken for it - matching those would capture a
 // lazy-loading placeholder and leave the real src unvisited. An unquoted src
 // and a srcset-only tag are deliberately out of scope; both are rare in
 // authored documents and matching them reliably needs an HTML parser.
@@ -682,7 +682,7 @@ func EnrichContentCaptionOnly(content string, imageInfoJSON string) string {
 
 // EnrichContentCaptionAndOCR is like EnrichContentCaptionOnly but ALSO
 // embeds OCR text alongside captions. URL and <image_original> wrapper
-// blocks are deliberately omitted (unlike EnrichContentWithImageInfo) —
+// blocks are deliberately omitted (unlike EnrichContentWithImageInfo) -
 // the summary LLM only needs the human-readable text, not opaque export
 // hashes. Used as a fallback for image-dominated documents where caption
 // alone carries too little signal.

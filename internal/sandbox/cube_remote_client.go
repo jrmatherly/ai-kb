@@ -2,7 +2,7 @@
 //
 // CubeRemoteClient implements RemoteSandboxClient on top of the Cube SDK and
 // envd transport. Callers speak RemoteSandboxClient; Cube-specific types,
-// HTTP status codes, and workarounds never leak past this file — every return
+// HTTP status codes, and workarounds never leak past this file - every return
 // value is either a neutral DTO or a RemoteError with a stable Kind.
 package sandbox
 
@@ -608,7 +608,7 @@ func (c *CubeRemoteClient) desktopTemplateSpec() map[string]any {
 }
 
 // cubeStandardTemplateSpec is the single definition of how the AI KB template
-// is built. Both the first build and every rebuild send it verbatim — the
+// is built. Both the first build and every rebuild send it verbatim - the
 // rebuild endpoint takes a raw payload rather than BuildTemplateOptions, and
 // two hand-kept copies of the spec would eventually disagree.
 func cubeStandardTemplateSpec(dns []string) map[string]any {

@@ -40,13 +40,13 @@ type TaskInspector interface {
 	// Best-effort and short-circuiting: it returns true as soon as the
 	// first match is seen. On backend error it returns (false, err);
 	// callers decide the fail-safe direction. Lite mode (no Redis)
-	// always returns false — inline executors never queue, so the
+	// always returns false - inline executors never queue, so the
 	// span/updated_at checks remain authoritative there.
 	HasQueuedTasksForKnowledge(ctx context.Context, knowledgeID string) (bool, error)
 
 	// QueuedKnowledgeIDs returns every knowledge ID that a pending /
 	// scheduled / retry / active task of those same types references, in
-	// one pass over the queues — for answering many documents at once
+	// one pass over the queues - for answering many documents at once
 	// where HasQueuedTasksForKnowledge would rescan per document. Unlike
 	// that probe it returns list errors instead of reading them as "no
 	// match". Lite mode returns an empty set.
@@ -61,7 +61,7 @@ type TaskInspector interface {
 	// from one that is merely backlogged behind a busy maintenance queue.
 	//
 	// Same fail-safe contract: (false, err) on backend error, callers defer;
-	// Lite mode always returns false — inline deletes never queue.
+	// Lite mode always returns false - inline deletes never queue.
 	HasQueuedDeleteTasksForKnowledge(ctx context.Context, knowledgeID string) (bool, error)
 
 	// QueueStats returns a read-only depth snapshot for every queue this

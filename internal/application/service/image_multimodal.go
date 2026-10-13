@@ -64,7 +64,7 @@ func buildVLMCaptionPrompt(ctx context.Context, cfg types.VLMConfig) string {
 
 // buildVLMOCRPrompt returns the system-owned OCR prompt for the given image
 // source type. cfg is part of the signature and deliberately unused: knowledge
-// base custom instructions must never reach the OCR prompt — free-form
+// base custom instructions must never reach the OCR prompt - free-form
 // business rules compete with the "No text content" output contract and turn
 // decorative images into poisoned, vectorized image_ocr chunks. Custom OCR
 // guidance, if ever needed, deserves a dedicated OCR instruction field rather
@@ -103,7 +103,7 @@ type ImageMultimodalService struct {
 	resourceCatalog interfaces.ResourceCatalog
 
 	// spanTracker records this image's subspan under the parent attempt's
-	// multimodal stage. nil-safe — falls back to no-op via tracker().
+	// multimodal stage. nil-safe - falls back to no-op via tracker().
 	spanTracker SpanTracker
 }
 
@@ -141,7 +141,7 @@ func NewImageMultimodalService(
 	}
 }
 
-// tracker returns a usable SpanTracker — falls back to a no-op when the
+// tracker returns a usable SpanTracker - falls back to a no-op when the
 // service was constructed without one.
 func (s *ImageMultimodalService) tracker() SpanTracker {
 	if s.spanTracker == nil {
@@ -176,7 +176,7 @@ func (s *ImageMultimodalService) Handle(ctx context.Context, task *asynq.Task) (
 	}
 
 	// Drop orphaned or user-aborted work before touching VLM. Missing
-	// knowledge/KB rows are permanent failures — retrying only burns queue
+	// knowledge/KB rows are permanent failures - retrying only burns queue
 	// capacity (asynq default MaxRetry=25 on legacy tasks).
 	drop, dropErr := s.shouldDropOrphanedMultimodal(ctx, &payload)
 	if dropErr != nil {
@@ -207,7 +207,7 @@ func (s *ImageMultimodalService) Handle(ctx context.Context, task *asynq.Task) (
 	// finalize-once semantics: on success we always decrement the parent's
 	// pending counter. On failure we only decrement when this is the last
 	// asynq retry, so a permanently-failing image cannot leave the parent
-	// knowledge stuck in "processing" forever — which was the #1 cause of
+	// knowledge stuck in "processing" forever - which was the #1 cause of
 	// "stuck parsing" reports. Intermediate retries skip finalize so we don't
 	// double-count and prematurely trigger post-process.
 	var handleErr error
@@ -246,7 +246,7 @@ func (s *ImageMultimodalService) Handle(ctx context.Context, task *asynq.Task) (
 // plans rounds from the payload switches; the dispatcher runs each round
 // (observation and caption share one VLM call); the result processor reads the
 // observation and, when the OCR policy wants it, appends an OCR round. The
-// observation must be known before any OCR call is spent — that ordering is
+// observation must be known before any OCR call is spent - that ordering is
 // what makes "observe first, then act" possible: an image whose text is
 // reliably absent does not pay for OCR.
 //
@@ -294,7 +294,7 @@ func (s *ImageMultimodalService) processImage(
 
 	var handleErr error
 	defer func() {
-		// Finalize the image subspan with the actual outcome — not the
+		// Finalize the image subspan with the actual outcome - not the
 		// finalize-counter outcome. The counter logic counts a "tried" image
 		// regardless of inner success; the span surface tells the UI whether
 		// THIS specific image worked.
@@ -311,7 +311,7 @@ func (s *ImageMultimodalService) processImage(
 		}
 	}()
 
-	// Read image bytes. A provider:// URL must be resolved via FileService —
+	// Read image bytes. A provider:// URL must be resolved via FileService -
 	// it must NEVER be handed to the HTTP downloader (which would fail with
 	// "unsupported URL scheme"). On unrecoverable read failure the image is
 	// skipped (the deferred finalize still counts it).
@@ -483,7 +483,7 @@ func buildImageAttrsPrompt(ctx context.Context, cfg types.VLMConfig) string {
 
 // applyImageObservation copies a parsed verdict onto the image record so it is
 // persisted with the chunk, and mirrors it into the trace map. The attributes
-// are always kept — they are what the OCR policy reads next — while the
+// are always kept - they are what the OCR policy reads next - while the
 // description is stored only when this run wants a caption: the observe round is
 // not optional even with captions off, because the attributes are the whole
 // point of it.
@@ -510,7 +510,7 @@ func applyImageObservation(
 }
 
 // runImageOCR runs the second pipeline round: text extraction at full
-// resolution. Both pipelines share it — the observation-driven one reaches it
+// resolution. Both pipelines share it - the observation-driven one reaches it
 // only when the attribute policy allows it, caption+OCR mode runs it for every
 // image.
 func (s *ImageMultimodalService) runImageOCR(
@@ -629,7 +629,7 @@ func (s *ImageMultimodalService) shouldDropOrphanedMultimodal(
 //
 // Returns false when the values are unavailable (e.g. when the handler is
 // invoked outside an asynq worker, as in unit tests). Treating that case as
-// "not final" keeps test ergonomics — tests should drive finalize explicitly.
+// "not final" keeps test ergonomics - tests should drive finalize explicitly.
 func isFinalAsynqAttempt(ctx context.Context) bool {
 	retried, ok := asynq.GetRetryCount(ctx)
 	if ok {
@@ -921,7 +921,7 @@ func (s *ImageMultimodalService) imageReader() knowledgeImageReader {
 
 // readImageBytes loads the image bytes for one image of a multimodal payload.
 //   - For provider:// URLs (local://, minio://, s3://, cos://, ...) it reads via
-//     the resolved FileService and NEVER falls back to HTTP — handing a
+//     the resolved FileService and NEVER falls back to HTTP - handing a
 //     provider:// URL to the HTTP downloader is what caused issue #1282.
 //   - For legacy in-flight payloads with ImageLocalPath set, it tries the local
 //     file before falling back to the URL.
@@ -972,7 +972,7 @@ func downloadImageFromURL(imageURL string) ([]byte, error) {
 // multimodalPendingKey is the Redis key holding how many image tasks a
 // knowledge is still waiting on. The fan-out (enqueueImageMultimodalTasks)
 // seeds it and the fan-in (checkAndFinalizeAllImages) drains it, so the two
-// must agree on the name — hence one helper rather than two format strings.
+// must agree on the name - hence one helper rather than two format strings.
 func multimodalPendingKey(knowledgeID string) string {
 	return fmt.Sprintf("multimodal:pending:%s", knowledgeID)
 }
@@ -997,7 +997,7 @@ func (s *ImageMultimodalService) checkAndFinalizeAllImages(
 			// enqueue post-process anyway. KnowledgePostProcess is idempotent
 			// (it transitions parse_status processing → completed under a row
 			// guard), so a duplicate triggered by a sibling image is harmless.
-			// The alternative — silently returning — is what produced the
+			// The alternative - silently returning - is what produced the
 			// "permanently stuck" reports we are fixing here.
 			logger.Warnf(ctx,
 				"[ImageMultimodal] Decrement failed for %s (%v); fallback-enqueueing post-process",

@@ -455,7 +455,7 @@ func (c *Client) consume(s *streamState, ev streamEvent) api.Delta {
 		if t := s.tools[ev.Index]; t != nil {
 			t.closed = true
 			if t.json.Len() == 0 {
-				// No input_json_delta carried any payload — an argument-less
+				// No input_json_delta carried any payload - an argument-less
 				// tool, or a vendor that puts the whole input on
 				// content_block_start. The assembler only emits its early
 				// ResponseTypeToolCall marker once a chunk updates the

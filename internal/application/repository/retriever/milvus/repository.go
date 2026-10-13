@@ -42,7 +42,7 @@ var allFields = []string{
 }
 
 // NewMilvusRetrieveEngineRepository creates and initializes a new Milvus repository.
-// indexCfg is optional — pass nil to use env var / default values (env path).
+// indexCfg is optional - pass nil to use env var / default values (env path).
 func NewMilvusRetrieveEngineRepository(client *client.Client, indexCfg *types.IndexConfig) interfaces.RetrieveEngineRepository {
 	log := logger.GetLogger(context.Background())
 	log.Info("[Milvus] Initializing Milvus retriever engine repository")

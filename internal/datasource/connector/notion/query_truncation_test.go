@@ -14,7 +14,7 @@ import (
 // together with request_status.type="incomplete". A capped query is no longer the
 // end of the read: the client continues in created_time windows (see
 // query_windows_test.go). These tests pin down what a window that cannot advance
-// does instead — stop, stay visible, and never drive deletions.
+// does instead - stop, stay visible, and never drive deletions.
 // See https://developers.notion.com/guides/data-apis/query-large-data-sources
 
 const truncationReason = "query_result_limit_reached"

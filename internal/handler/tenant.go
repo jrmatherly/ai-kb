@@ -93,8 +93,8 @@ type createTenantRequest struct {
 // updateTenantRequest is the JSON body for PUT /tenants/:id. Only the
 // fields an Owner is permitted to mutate via the public API are bound;
 // everything else (storage_quota, status, business, api_key, agent /
-// retrieval / storage configs, ...) is intentionally NOT writable here
-// — those go through dedicated endpoints (PUT /tenants/kv/:key, ...)
+// retrieval / storage configs, ...) is intentionally NOT writable here -
+// those go through dedicated endpoints (PUT /tenants/kv/:key, ...)
 // that have their own validation.
 //
 // Pointers so we can distinguish "not sent" from "explicit empty
@@ -118,7 +118,7 @@ type apiPrincipalConfigResponse struct {
 	SignedTokenHeaderName string                 `json:"signed_token_header_name"`
 	RequireDirectHeader   bool                   `json:"require_direct_header"`
 	// HasHMACSecret reports whether a signing secret is configured. The
-	// plaintext secret is NEVER returned — clients only learn presence.
+	// plaintext secret is NEVER returned - clients only learn presence.
 	HasHMACSecret bool `json:"has_hmac_secret"`
 }
 
@@ -193,7 +193,7 @@ const defaultMaxOwnedTenantsPerUser = 10
 // 3-tier resolver: system_settings DB row > AIKB_TENANT_MAX_OWNED_PER_USER
 // env > config.Tenant.MaxOwnedPerUser (yaml) > defaultMaxOwnedTenantsPerUser.
 // We pre-compute the cfg-derived fallback so the SystemSettingService
-// receives a single int64 default — its 3-tier resolver layers DB and
+// receives a single int64 default - its 3-tier resolver layers DB and
 // env on top of that.
 func (h *TenantHandler) resolveMaxOwnedTenantsPerUser(ctx context.Context) int {
 	fallback := int64(defaultMaxOwnedTenantsPerUser)
@@ -322,7 +322,7 @@ func (h *TenantHandler) CreateTenant(c *gin.Context) {
 	// Apply the system-setting-driven default storage quota when the
 	// caller didn't specify one (always true for self-serve; sometimes
 	// true for the superuser branch when the JSON omits storage_quota).
-	// We resolve at create time on purpose — the on-disk row should
+	// We resolve at create time on purpose - the on-disk row should
 	// carry an explicit value, so changing the setting later doesn't
 	// silently shrink/grow established tenants. Negative values are
 	// treated as "use default" so a misconfigured setting can't yield
@@ -368,7 +368,7 @@ func (h *TenantHandler) CreateTenant(c *gin.Context) {
 	if h.memberService != nil && !platformCaller {
 		if _, err := h.memberService.EnsureOwner(ctx, caller.ID, createdTenant.ID); err != nil {
 			logger.Errorf(ctx,
-				"Failed to bootstrap owner membership for user %s tenant %d: %v — rolling back tenant",
+				"Failed to bootstrap owner membership for user %s tenant %d: %v - rolling back tenant",
 				caller.ID, createdTenant.ID, err)
 			if delErr := h.service.DeleteTenant(ctx, createdTenant.ID); delErr != nil {
 				logger.Errorf(ctx,
@@ -386,7 +386,7 @@ func (h *TenantHandler) CreateTenant(c *gin.Context) {
 		// is committed; if we landed over the cap, roll back this
 		// tenant + its membership so the bound holds in steady state.
 		// We only do this for non-superusers (the only path that has
-		// a cap) — superusers are exempt above.
+		// a cap) - superusers are exempt above.
 		if !caller.CanAccessAllTenants {
 			memberships, listErr := h.memberService.ListByUser(ctx, caller.ID)
 			if listErr != nil {
@@ -459,7 +459,7 @@ func (h *TenantHandler) CreateTenant(c *gin.Context) {
 	// Optional legacy compatibility: mint a full-access API key on tenant
 	// creation and return its plaintext token, gated by the
 	// tenant.auto_create_api_key setting (env AIKB_TENANT_AUTO_CREATE_API_KEY).
-	// Default off — modern deployments create keys explicitly via
+	// Default off - modern deployments create keys explicitly via
 	// tenant_api_keys. Failing to create the convenience key must NOT fail
 	// the whole tenant creation (the tenant is fully usable without a key);
 	// we log a warning and return the tenant as usual.
@@ -474,7 +474,7 @@ func (h *TenantHandler) CreateTenant(c *gin.Context) {
 		})
 		if keyErr != nil {
 			logger.Errorf(ctx,
-				"Auto-create default API key failed for tenant %d: %v — returning tenant without key",
+				"Auto-create default API key failed for tenant %d: %v - returning tenant without key",
 				createdTenant.ID, keyErr)
 		} else if merged, mErr := tenantWithAPIKey(createdTenant, result.Token); mErr != nil {
 			// Round-trip failure is unexpected; degrade gracefully by
@@ -594,7 +594,7 @@ func (h *TenantHandler) UpdateTenant(c *gin.Context) {
 	// public PUT. Storage quota, status, business, configs, api_key and
 	// every other privileged column live behind dedicated endpoints
 	// (PUT /tenants/kv/:key, ...). Without this, an
-	// Owner — including any user who just self-served a tenant — could
+	// Owner - including any user who just self-served a tenant - could
 	// flip status / bump storage_quota by simply crafting an extended
 	// JSON body. Pointers distinguish "field omitted" from "explicit
 	// empty string" so we can leave untouched columns alone.
@@ -1690,7 +1690,7 @@ func (h *TenantHandler) updateTenantChatHistoryConfigInternal(c *gin.Context) {
 		if existing.EmbeddingModelID == req.EmbeddingModelID {
 			cfg.KnowledgeBaseID = existing.KnowledgeBaseID
 		} else {
-			// Embedding model changed — the old KB is incompatible.
+			// Embedding model changed - the old KB is incompatible.
 			// We'll create a new one below. The old KB remains but is orphaned (can be cleaned up later).
 			logger.Infof(ctx, "Embedding model changed from %s to %s, will create new chat history KB", existing.EmbeddingModelID, req.EmbeddingModelID)
 		}

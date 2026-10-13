@@ -103,7 +103,7 @@ const (
 	// source, update, delete) the key's allowed KB scope still bounds which
 	// KBs it may touch; create has no source to bound against, so a
 	// scope-restricted key may add a new KB to its tenant (same-tenant, no
-	// cross-tenant reach — the new KB simply falls outside the key's
+	// cross-tenant reach - the new KB simply falls outside the key's
 	// allow-list and stays unmanageable by it). It is separate from ingest:
 	// uploading or editing KB contents does not imply permission to manage
 	// the KB itself.

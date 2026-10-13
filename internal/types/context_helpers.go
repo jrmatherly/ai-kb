@@ -74,9 +74,9 @@ func WikiEditSourceFromContext(ctx context.Context) string {
 //
 // UpdatePage refuses such a write by default, because a model asked to re-emit
 // a whole page silently returns it with rows missing and the page then shrinks
-// with no trace. Callers that are removing content on purpose — a retraction
+// with no trace. Callers that are removing content on purpose - a retraction
 // after a source document was deleted, an exact-text replacement that deletes
-// rows — say so here, and only for the write that does it.
+// rows - say so here, and only for the write that does it.
 func WithWikiShrinkAllowed(ctx context.Context) context.Context {
 	return context.WithValue(ctx, WikiShrinkAllowedContextKey, true)
 }
@@ -163,7 +163,7 @@ func TaskInitiatorFromContext(ctx context.Context) TaskInitiator {
 
 // Apply restores a captured task initiator onto a worker context. Empty or
 // legacy payloads are a no-op and therefore retain the system-task fallback.
-// API key identity is restored for audit display only — not as TenantAPIKeyScope.
+// API key identity is restored for audit display only - not as TenantAPIKeyScope.
 func (i TaskInitiator) Apply(ctx context.Context) context.Context {
 	if i.UserID != "" {
 		ctx = context.WithValue(ctx, UserIDContextKey, i.UserID)
@@ -181,7 +181,7 @@ func (i TaskInitiator) Apply(ctx context.Context) context.Context {
 // user that the X-API-Key auth path attaches to each tenant
 // (User.ID = "system-<tenantID>"). These users have no real human
 // behind them and no tenant_members row, so RBAC ownership matching
-// against them is never meaningful — service-layer code that records
+// against them is never meaningful - service-layer code that records
 // "the creator" should skip storing this ID and treat the resource as
 // tenant-owned instead.
 //

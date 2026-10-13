@@ -100,7 +100,7 @@ func (r *FileServiceResolver) ResolveFileService(filePath string) interfaces.Fil
 // BuildFileServiceForProvider selects the FileService for a storage provider.
 // The reference's own scheme wins over the tenant DefaultProvider. It falls back
 // to the process-wide default FileService (STORAGE_TYPE / env) when tenant
-// config is missing — mirrors ImageMultimodalService.resolveFileServiceForPayload
+// config is missing - mirrors ImageMultimodalService.resolveFileServiceForPayload
 // (issue #1282).
 func BuildFileServiceForProvider(
 	tenant *types.Tenant,

@@ -84,7 +84,7 @@ func TestBuildSpanTree_NoRows_SynthesizesPlaceholderRoot(t *testing.T) {
 // for historical knowledge parsed before span tracking was wired: rows
 // is empty but parse_status is "completed", so the synthesized timeline
 // must reflect the actual terminal state instead of looking forever
-// "pending". Same contract for failed parses — synthesizes "failed".
+// "pending". Same contract for failed parses - synthesizes "failed".
 func TestBuildSpanTree_LegacyCompletedRendersAsDone(t *testing.T) {
 	a := assert.New(t)
 

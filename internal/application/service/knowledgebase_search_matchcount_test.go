@@ -50,7 +50,7 @@ func TestNormalizedMatchCount(t *testing.T) {
 func TestIterativeRetrieve_CapsSeedTopK(t *testing.T) {
 	t.Parallel()
 	// canned is nil, so the first iteration retrieves nothing and the loop
-	// breaks — leaving group.TopK at exactly the seed value under test.
+	// breaks - leaving group.TopK at exactly the seed value under test.
 	empty := &fakeRetrieveEngineService{
 		engineType: types.PostgresRetrieverEngineType,
 		support:    []types.RetrieverType{types.VectorRetrieverType},

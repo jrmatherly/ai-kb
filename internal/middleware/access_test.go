@@ -16,13 +16,13 @@ import (
 
 // access_test.go covers the four exported helpers in access.go:
 // IsCrossTenantSuperuser, IsTenantAccessible, RequireCrossTenantAccess,
-// RequirePathTenantMatch. The shapes are similar — feature-flag +
-// per-user attribute combinations — so the tests are organised around
+// RequirePathTenantMatch. The shapes are similar - feature-flag +
+// per-user attribute combinations - so the tests are organised around
 // the truth-table for each helper rather than per-handler scenarios.
 
 // cfgCrossTenant returns a config with the cluster-wide
 // EnableCrossTenantAccess flag set as requested. EnableRBAC is left at
-// its zero value because none of these helpers consult it directly —
+// its zero value because none of these helpers consult it directly -
 // the role middleware does.
 func cfgCrossTenant(enabled bool) *config.Config {
 	return &config.Config{Tenant: &config.TenantConfig{EnableCrossTenantAccess: enabled}}
@@ -39,7 +39,7 @@ func TestIsCrossTenantSuperuser_NilCfgRejects(t *testing.T) {
 }
 
 func TestIsCrossTenantSuperuser_FlagOffRejectsEvenWithAttribute(t *testing.T) {
-	// The user attribute alone is not enough — by design. This is the
+	// The user attribute alone is not enough - by design. This is the
 	// "stale claim revocation" guarantee: flipping the cluster flag off
 	// disables every CanAccessAllTenants user without a re-issue.
 	ctx := context.WithValue(context.Background(), types.UserContextKey,
@@ -102,12 +102,12 @@ func TestIsTenantAccessible_ZeroTargetRejects(t *testing.T) {
 func TestIsTenantAccessible_SuperuserPathRequiresFlag(t *testing.T) {
 	user := &types.User{ID: "u1", TenantID: 1, CanAccessAllTenants: true}
 	// With flag OFF, the superuser attribute alone must NOT grant
-	// cross-tenant access — same revocation rule as
+	// cross-tenant access - same revocation rule as
 	// IsCrossTenantSuperuser.
 	if IsTenantAccessible(context.Background(), user, 99, nil, cfgCrossTenant(false)) {
 		t.Fatalf("superuser without cluster flag must reject cross-tenant target")
 	}
-	// With the flag ON, no membership lookup is needed — the user can
+	// With the flag ON, no membership lookup is needed - the user can
 	// reach any tenant.
 	if !IsTenantAccessible(context.Background(), user, 99, nil, cfgCrossTenant(true)) {
 		t.Fatalf("superuser with cluster flag must allow without membership lookup")
@@ -134,7 +134,7 @@ func TestIsTenantAccessible_NoMembershipRejects(t *testing.T) {
 func TestIsTenantAccessible_LookupErrorRejects(t *testing.T) {
 	// A DB hiccup must NOT silently grant access; the safest behaviour
 	// is "treat as no membership". The X-Tenant-ID gate in auth.go
-	// relies on this — failing closed prevents tenant-bleed during
+	// relies on this - failing closed prevents tenant-bleed during
 	// transient outages.
 	user := &types.User{ID: "u1", TenantID: 1}
 	ms := newFakeMemberService()
@@ -275,7 +275,7 @@ func TestRequirePathTenantMatch_SuperuserNeedsClusterFlag(t *testing.T) {
 
 func TestRequirePathTenantMatch_MissingCtxTenantRejects(t *testing.T) {
 	// If the auth middleware never set TenantIDContextKey we fail
-	// closed — silently treating "no ctx" as a match would be a footgun
+	// closed - silently treating "no ctx" as a match would be a footgun
 	// the next time someone refactors the auth chain.
 	w := runPathTenantHandler(cfgCrossTenant(true), 0, nil, "/tenants/7")
 	if w.Code != http.StatusUnauthorized {
@@ -301,7 +301,7 @@ func TestRequirePathTenantMatch_ZeroIDRejects(t *testing.T) {
 // by RequireCrossTenantAccess and RequirePathTenantMatch when they
 // reject. Both used to live in handlers that called
 // c.Error(apperrors.NewForbiddenError(...)) and rendered through
-// ErrorHandler — clients (frontend axios interceptor, Go SDK) key off
+// ErrorHandler - clients (frontend axios interceptor, Go SDK) key off
 // `success` and `error.code`. If a future change drops c.Error in
 // favour of a raw c.JSON, this test catches the regression.
 func TestAccessMiddleware_ResponseEnvelope(t *testing.T) {
@@ -316,7 +316,7 @@ func TestAccessMiddleware_ResponseEnvelope(t *testing.T) {
 	})
 	t.Run("RequirePathTenantMatch_NonNumeric", func(t *testing.T) {
 		w := runPathTenantHandler(cfgCrossTenant(true), 7, nil, "/tenants/abc")
-		// NewValidationError uses ErrValidation, not ErrBadRequest — both
+		// NewValidationError uses ErrValidation, not ErrBadRequest - both
 		// surface as HTTP 400 but the code in the body is ErrValidation.
 		assertEnvelope(t, w, http.StatusBadRequest, apperrors.ErrValidation)
 	})

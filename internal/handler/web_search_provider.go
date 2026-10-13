@@ -213,7 +213,7 @@ func (h *WebSearchProviderHandler) UpdateProvider(c *gin.Context) {
 		return
 	}
 
-	// Credentials (api_key) NEVER flow through this endpoint — they live
+	// Credentials (api_key) NEVER flow through this endpoint - they live
 	// behind the /credentials subresource. Force-preserve the stored key
 	// regardless of what the body says; log a warning if a stale caller
 	// passes one so we can spot them.

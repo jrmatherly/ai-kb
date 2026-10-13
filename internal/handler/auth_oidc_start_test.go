@@ -103,7 +103,7 @@ func TestOIDCStart_BuildsCallbackURLFromRequestOrigin(t *testing.T) {
 }
 
 // TestOIDCStart_ServiceErrorReturnsNonRedirect: if the IdP URL cannot be
-// built, never 302 — surface the error the same way /auth/oidc/url does.
+// built, never 302 - surface the error the same way /auth/oidc/url does.
 func TestOIDCStart_ServiceErrorReturnsNonRedirect(t *testing.T) {
 	us := &stubOIDCStartUserService{
 		getOIDCAuthorizationURL: func(context.Context, string) (*types.OIDCAuthURLResponse, error) {

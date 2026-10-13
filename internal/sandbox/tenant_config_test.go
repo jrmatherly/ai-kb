@@ -555,7 +555,7 @@ func TestResolveEffectiveConfigRejectsPlaintextDockerTCP(t *testing.T) {
 
 // The same bar has to apply to a host nobody typed. A blank field is filled in
 // from DOCKER_HOST, and on a deployment pointed at a plaintext daemon that
-// resolved value is what gets dialled — so validating only the stored string
+// resolved value is what gets dialled - so validating only the stored string
 // would accept a config that cannot work and say so only at the first sandbox.
 func TestResolveEffectiveConfigRejectsResolvedPlaintextDockerTCP(t *testing.T) {
 	t.Setenv("DOCKER_HOST", "tcp://10.0.0.5:2375")

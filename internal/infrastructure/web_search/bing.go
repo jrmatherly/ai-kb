@@ -17,7 +17,7 @@ import (
 
 const (
 	// defaultBingSearchURL is the hardcoded Bing search API URL.
-	// Not configurable by tenants — prevents SSRF.
+	// Not configurable by tenants - prevents SSRF.
 	defaultBingSearchURL = "https://api.bing.microsoft.com/v7.0/search"
 )
 
@@ -60,7 +60,7 @@ func NewBingProvider(params types.WebSearchProviderParameters) (interfaces.WebSe
 	}
 	return &BingProvider{
 		client:  client,
-		baseURL: defaultBingSearchURL, // Hardcoded — not tenant-configurable
+		baseURL: defaultBingSearchURL, // Hardcoded - not tenant-configurable
 		apiKey:  params.APIKey,
 	}, nil
 }

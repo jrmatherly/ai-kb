@@ -37,7 +37,7 @@ import (
 //     zero overhead besides the function call.
 //
 //   - Tasks that fail (handler returns non-nil) trigger an inspection of
-//     asynq's retry counters. We only record on the FINAL retry —
+//     asynq's retry counters. We only record on the FINAL retry -
 //     i.e. when GetRetryCount(ctx) >= GetMaxRetry(ctx). Earlier failures
 //     are still reported up to asynq for backoff/retry but do not
 //     create dead-letter rows; otherwise we'd write one row per
@@ -50,7 +50,7 @@ import (
 // other middlewares that may transform errors. See router/task.go.
 // OnDeadLetter is an optional callback invoked AFTER the dead-letter row has
 // been recorded. It exists so callers can flip user-visible state alongside
-// the bookkeeping row — e.g. mark a Knowledge as failed when its document
+// the bookkeeping row - e.g. mark a Knowledge as failed when its document
 // processing task is permanently archived. Without this hook the only signal
 // to the UI is the timestamp on the knowledge row going stale, which is what
 // produced "stuck in processing forever" reports.
@@ -137,7 +137,7 @@ func isFinalAttempt(ctx context.Context) bool {
 // task_id}. We probe for those fields with a tolerant struct so a new
 // payload shape doesn't need to know about this middleware.
 //
-// Returns nil only if the task itself is nil — every other failure mode
+// Returns nil only if the task itself is nil - every other failure mode
 // (unparseable payload, unknown task type) still produces a row, with
 // scope="unknown" so operators can find it.
 func buildDeadLetter(t *asynq.Task, taskErr error, attempts int) *types.TaskDeadLetter {
@@ -175,11 +175,11 @@ func buildDeadLetter(t *asynq.Task, taskErr error, attempts int) *types.TaskDead
 // the probe to field names that have a consistent meaning across every
 // existing payload type:
 //
-//   - tenant_id          — uniformly the tenant uint64
-//   - knowledge_base_id  — wiki / chunk / image / post-process / ...
-//   - kb_id              — FAQImportPayload's alias for the same thing
-//   - knowledge_id       — per-document scope
-//   - source_kb_id       — KnowledgeMovePayload (semantic: source KB)
+//   - tenant_id          - uniformly the tenant uint64
+//   - knowledge_base_id  - wiki / chunk / image / post-process / ...
+//   - kb_id              - FAQImportPayload's alias for the same thing
+//   - knowledge_id       - per-document scope
+//   - source_kb_id       - KnowledgeMovePayload (semantic: source KB)
 //
 // Other plausible-looking keys (`source_id`, `target_id`) are NOT
 // probed: different payloads use them with different meanings (KB
@@ -203,7 +203,7 @@ type payloadProbe struct {
 // scope="knowledge_base"; chunk extract is scope="knowledge"; and so on.
 //
 // Falls back to scope="unknown" with empty scope_id if the payload
-// carries no recognizable identifier — better than silently dropping
+// carries no recognizable identifier - better than silently dropping
 // the row.
 func inferScope(p payloadProbe) (string, string) {
 	switch {

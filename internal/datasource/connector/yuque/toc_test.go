@@ -86,7 +86,7 @@ func TestBuildTOCPaths_DocNestedUnderDoc(t *testing.T) {
 }
 
 // A document that appears in the TOC without any enclosing group is still "in
-// the TOC" — the distinction that keeps toc_only from dropping it.
+// the TOC" - the distinction that keeps toc_only from dropping it.
 func TestBuildTOCPaths_InTOCWithoutGroup(t *testing.T) {
 	segs, inTOC := buildTOCPaths([]v2TOCNode{
 		tocDoc("d1", "", 101, "Loose doc"),
@@ -323,7 +323,7 @@ func TestParseFolderSettings_TolerantOfBadInput(t *testing.T) {
 			folderSettings{FolderMode: folderModeTOC},
 		},
 		{
-			// Unknown keys are ignored rather than failing the sync — settings
+			// Unknown keys are ignored rather than failing the sync - settings
 			// arrive from JSON, and a typo must not take a data source down.
 			"unknown key is ignored",
 			map[string]interface{}{"folder_mode": "toc", "no_such_setting": false},
@@ -460,7 +460,7 @@ func TestConnector_FetchAll_TOCOnly(t *testing.T) {
 		t.Error("doc 101 (grouped) should be kept")
 	}
 	if _, ok := got["102"]; !ok {
-		t.Error("doc 102 (in TOC but group-less) must be kept — not filtered by an empty path")
+		t.Error("doc 102 (in TOC but group-less) must be kept - not filtered by an empty path")
 	}
 	if _, ok := got["103"]; ok {
 		t.Error("doc 103 (absent from TOC) should be filtered out")
@@ -473,7 +473,7 @@ func TestConnector_FetchAll_TOCOnly(t *testing.T) {
 // attached to the TOC, so removing them here would leave their content
 // reachable from neither side.
 func TestConnector_FetchIncremental_TOCOnlyDoesNotDelete(t *testing.T) {
-	// First sync: folder paths on, no admission filter — all three land.
+	// First sync: folder paths on, no admission filter - all three land.
 	f1 := newFakeYuque()
 	fakeBookDocs(f1)
 	fakeBookTOC(f1, 200)
@@ -507,8 +507,8 @@ func TestConnector_FetchIncremental_TOCOnlyDoesNotDelete(t *testing.T) {
 }
 
 // Admitting a previously filtered document must ingest it. A filtered document
-// is deliberately kept out of the cursor, so attaching it to the TOC later — or
-// switching toc_only off — has to read as new rather than as unchanged.
+// is deliberately kept out of the cursor, so attaching it to the TOC later - or
+// switching toc_only off - has to read as new rather than as unchanged.
 func TestConnector_FetchIncremental_AdmitsPreviouslyFilteredDoc(t *testing.T) {
 	// First sync with toc_only on: doc 103 is absent from the TOC and filtered.
 	f1 := newFakeYuque()
@@ -562,7 +562,7 @@ func TestConnector_FetchIncremental_AdmitsPreviouslyFilteredDoc(t *testing.T) {
 	}
 }
 
-// A document that really is gone from the source must still be reported — the
+// A document that really is gone from the source must still be reported - the
 // admission filter must not have disabled deletion detection.
 func TestConnector_FetchIncremental_StillDetectsRealDeletion(t *testing.T) {
 	f1 := newFakeYuque()
@@ -603,7 +603,7 @@ func TestConnector_FetchIncremental_StillDetectsRealDeletion(t *testing.T) {
 	}
 }
 
-// If the TOC endpoint is unavailable, toc_only must not filter anything —
+// If the TOC endpoint is unavailable, toc_only must not filter anything -
 // otherwise an outage would silently drop the whole book.
 func TestConnector_FetchAll_TOCUnavailableDegrades(t *testing.T) {
 	f := newFakeYuque()

@@ -16,7 +16,7 @@ import (
 )
 
 // stubAuditService implements just AuditLogService.List for the
-// handler tests. Embeds the interface so any other call panics —
+// handler tests. Embeds the interface so any other call panics -
 // surfaces a contract drift loudly instead of silently working.
 type stubAuditService struct {
 	interfaces.AuditLogService
@@ -142,7 +142,7 @@ func TestAuditLogHandler_EmptyResultProducesZeroCursor(t *testing.T) {
 func TestAuditLogHandler_InvalidTenantIDReturns400(t *testing.T) {
 	// parseTenantIDFromPath rejects non-numeric tenant ids with 400 so
 	// the handler never even calls the service. The harness still has
-	// to not crash on an empty service if it's reached — guard with a
+	// to not crash on an empty service if it's reached - guard with a
 	// service that fails the test loudly.
 	svc := &stubAuditService{
 		list: func(_ context.Context, _ uint64, _ *interfaces.AuditLogQuery) ([]*types.AuditLog, error) {
@@ -332,7 +332,7 @@ func TestSystemAuditLogHandler_PassesQueryFiltersThrough(t *testing.T) {
 }
 
 func TestSystemAuditLogHandler_EmptyResultProducesZeroCursor(t *testing.T) {
-	// next_cursor=0 is the documented "no more rows" signal — the
+	// next_cursor=0 is the documented "no more rows" signal - the
 	// platform drawer's infinite-scroll watcher stops paginating on
 	// it. A regression returning the previous cursor on an empty page
 	// would loop forever and pin the CPU.
@@ -363,7 +363,7 @@ func TestSystemAuditLogHandler_GarbageCursorAndLimitTolerated(t *testing.T) {
 	// Tolerant parsing matches ListTenantAuditLog so a misconfigured
 	// client doesn't hard-fail the first request. Garbage `after_id`
 	// or non-positive `limit` are treated as "use defaults" (0 / 0)
-	// rather than a 400 — the frontend would otherwise show a blank
+	// rather than a 400 - the frontend would otherwise show a blank
 	// drawer the moment a stale param ends up in the URL.
 	var seenAfter uint64
 	var seenLimit int

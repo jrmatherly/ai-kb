@@ -176,7 +176,7 @@ func (r *tenantSkillRepository) ListSkillsByTenant(
 // has no opinion about, and every such write is a read-modify-write of a row
 // the install heartbeat reloads every 30 seconds. Including it would let a
 // heartbeat that read the row a moment before a declaration was recorded put
-// the stale list — or a NULL — back. UpdateSkillEnvs and UpdateSkillAdminState
+// the stale list - or a NULL - back. UpdateSkillEnvs and UpdateSkillAdminState
 // are the only writers of that column.
 func (r *tenantSkillRepository) UpdateSkill(ctx context.Context, e *types.TenantSkillEntity) error {
 	return r.db.WithContext(ctx).
@@ -315,7 +315,7 @@ func (r *tenantSkillRepository) ListSnapshotsByConfig(
 // DeleteSnapshotRowsByConfig removes all ledger rows for a sandbox config.
 // This is only legitimate when the entire sandbox config is being deleted and
 // its provider-side snapshots have already been destroyed. During an ordinary
-// image switch, old snapshots are never deleted—the ledger records their IDs
+// image switch, old snapshots are never deleted - the ledger records their IDs
 // and deleting rows would leave those IDs dangling. Here the config itself no
 // longer exists, so keeping rows would point at a deleted config instead.
 func (r *tenantSkillRepository) DeleteSnapshotRowsByConfig(

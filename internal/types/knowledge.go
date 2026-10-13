@@ -51,7 +51,7 @@ const (
 	// enrichment subtasks (summary, question generation, graph extract)
 	// are still in flight. The user-facing intuition behind this state is
 	// "the document is queryable for vector search but is still spending
-	// resources" — cancel-parse can interrupt enrichment from here.
+	// resources" - cancel-parse can interrupt enrichment from here.
 	// pending_subtasks_count holds the outstanding subtask count; the
 	// last subtask to finish atomically promotes the row to completed.
 	ParseStatusFinalizing = "finalizing"

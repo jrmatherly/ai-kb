@@ -199,7 +199,7 @@ func TestHoldbackCutoff(t *testing.T) {
 		{
 			"truncated URL inside markdown image",
 			"text ![img](local://1/abc/im",
-			5, // hold back from ![ — not from local://
+			5, // hold back from ![ - not from local://
 		},
 		{
 			"truncated markdown image with quotes in alt",
@@ -277,7 +277,7 @@ func simulateIMStreamFlush(parts []string) (sent []string, remainder string) {
 }
 
 // orphanMarkdownImageOpenRe detects a flush chunk that ends with an opened Markdown
-// image (](...) without the URL — the bug we fixed.
+// image (](...) without the URL - the bug we fixed.
 var orphanMarkdownImageOpenRe = regexp.MustCompile(`!\[[^\]]*\]\(\s*$`)
 
 func TestSimulateIMStreamFlush_MiddleImageNotSplit(t *testing.T) {

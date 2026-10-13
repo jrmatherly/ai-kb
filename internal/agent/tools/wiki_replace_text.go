@@ -75,7 +75,7 @@ func (t *wikiReplaceTextTool) Execute(ctx context.Context, args json.RawMessage)
 	// revision history distinguishes agent edits from pipeline/user ones.
 	ctx = types.WithWikiEditSource(ctx, types.WikiEditSourceAgent)
 	// This tool edits by naming the exact text it removes, so a write that
-	// shortens the page is a deliberate removal — including deleting table
+	// shortens the page is a deliberate removal - including deleting table
 	// rows, which is a normal request. The whole-page writer is deliberately
 	// NOT marked: there a shorter body is how truncation shows up.
 	ctx = types.WithWikiShrinkAllowed(ctx)

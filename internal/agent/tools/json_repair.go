@@ -23,7 +23,7 @@ func RepairJSON(s string) string {
 }
 
 // RepairJSONDetail is RepairJSON that also reports whether the payload had to
-// be closed off to parse — an unterminated string or an unbalanced bracket.
+// be closed off to parse - an unterminated string or an unbalanced bracket.
 // That only happens when the provider stopped emitting mid-argument, so the
 // values now parse but are partial: `content` holds half a file, `query` holds
 // half a sentence. Callers must refuse such a call rather than run it.
@@ -63,7 +63,7 @@ func RepairJSONDetail(s string) (string, bool) {
 // sequences. JSON only allows the escape letters \" \\ \/ \b \f \n \r \t \u;
 // any other backslash inside a string (e.g. \+ \d \w \. \| \( \)) is a parse
 // error. LLMs frequently emit these when they meant to pass a regex pattern
-// without double-escaping — rewriting "\+" to "\\+" recovers the LLM's intent
+// without double-escaping - rewriting "\+" to "\\+" recovers the LLM's intent
 // (the unmarshalled Go string becomes "\+", which is what the regex engine
 // expects) and is idempotent on already-valid JSON.
 func fixInvalidEscapes(s string) string {
@@ -92,7 +92,7 @@ func fixInvalidEscapes(s string) string {
 		// Found a backslash inside a string. Peek at the next rune to decide
 		// whether this is a valid JSON escape.
 		if i+1 >= len(runes) {
-			// Dangling backslash at EOF — escape it so we don't leave the
+			// Dangling backslash at EOF - escape it so we don't leave the
 			// string in a "pending escape" state for downstream parsers.
 			out.WriteString(`\\`)
 			continue
@@ -100,12 +100,12 @@ func fixInvalidEscapes(s string) string {
 		next := runes[i+1]
 		switch next {
 		case '"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u':
-			// Valid JSON escape — pass through unchanged.
+			// Valid JSON escape - pass through unchanged.
 			out.WriteRune(r)
 			out.WriteRune(next)
 			i++
 		default:
-			// Invalid escape — most likely a regex metachar that the LLM
+			// Invalid escape - most likely a regex metachar that the LLM
 			// forgot to double-escape. Emit a literal backslash + the next
 			// rune, so the final Go string preserves the \X sequence.
 			out.WriteString(`\\`)
@@ -118,8 +118,8 @@ func fixInvalidEscapes(s string) string {
 
 // trimAfterTopLevelValue cuts everything that follows the first balanced
 // top-level object/array. Streaming providers occasionally emit a stray
-// argument fragment after the arguments are already complete — a lone `""`
-// or a repeat of the whole payload — and the concatenated result (`{}""`)
+// argument fragment after the arguments are already complete - a lone `""`
+// or a repeat of the whole payload - and the concatenated result (`{}""`)
 // fails to parse even though the leading value is perfectly good.
 // Input that never closes its top-level value is returned unchanged so that
 // balanceBrackets can still recover a truncated payload.

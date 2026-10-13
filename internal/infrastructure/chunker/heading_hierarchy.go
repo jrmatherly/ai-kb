@@ -3,7 +3,7 @@
 // breadcrumb like "# Top > ## Section > ### Subsection" to each chunk.
 //
 // Conceptually similar to header_tracker.go (which tracks table headers via
-// start/end hooks) but a Markdown heading does not have an explicit end —
+// start/end hooks) but a Markdown heading does not have an explicit end -
 // it is ended by the next heading of equal or shallower depth. The hook
 // abstraction in header_tracker.go does not fit that pattern, so we model
 // it as an explicit level-stack.
@@ -29,7 +29,7 @@ func NewHeadingHierarchy() *HeadingHierarchy {
 // Observe parses line and updates the hierarchy if line is a Markdown
 // heading. Returns the (level, headingText) when a heading was recognized,
 // or (0, "") otherwise. Lines that look like headings inside fenced code
-// blocks are NOT detected here — callers must avoid feeding code-block
+// blocks are NOT detected here - callers must avoid feeding code-block
 // content to Observe (the heading splitter does so).
 func (h *HeadingHierarchy) Observe(line string) (int, string) {
 	m := MarkdownHeadingPattern.FindStringSubmatch(line)
@@ -41,7 +41,7 @@ func (h *HeadingHierarchy) Observe(line string) (int, string) {
 		return 0, ""
 	}
 	heading := strings.TrimSpace(m[2])
-	// Replace this level and clear deeper ones — siblings/descendants of
+	// Replace this level and clear deeper ones - siblings/descendants of
 	// the previous heading at this level are no longer in scope.
 	h.stack[level-1] = heading
 	for i := level; i < 6; i++ {

@@ -29,7 +29,7 @@ import (
 // reference inside `![alt](…)` or `src="…"` is matched without them.
 var Pattern = types.StorageReferencePattern
 
-// IsHTTPURL reports whether s is an http(s) URL — the only form an external
+// IsHTTPURL reports whether s is an http(s) URL - the only form an external
 // client can fetch; any provider scheme (oss://, local://, …) is not. Scheme
 // match is case-insensitive per RFC 3986 §3.1: a backend may emit an
 // operator-configured host (e.g. OBS_PROXY_DOMAIN) with an uppercase scheme.
@@ -54,7 +54,7 @@ type Resolver interface {
 //
 // Safe for concurrent use: mu covers both the memo and the resolver, which is
 // itself single-threaded. Resolution therefore serialises across goroutines,
-// which is what we want — two chunks naming the same image must not each pay for
+// which is what we want - two chunks naming the same image must not each pay for
 // a signature.
 //
 // Logging policy:
@@ -98,7 +98,7 @@ func (w *Rewriter) String(ctx context.Context, content string) string {
 }
 
 // Ref rewrites a value that is a bare storage reference rather than prose
-// containing one — for example `MessageImage.URL`.
+// containing one - for example `MessageImage.URL`.
 func (w *Rewriter) Ref(ctx context.Context, ref string) string {
 	if !w.Enabled() || ref == "" {
 		return ref
@@ -135,7 +135,7 @@ func (w *Rewriter) resolve(ctx context.Context, ref string) string {
 		logger.Warnf(ctx, "[%s] storage URL rewrite failed: src=%s err=%v", w.logPrefix, ref, err)
 		return ref
 	}
-	// A non-http(s) result cannot be fetched by the client — this covers both an
+	// A non-http(s) result cannot be fetched by the client - this covers both an
 	// unchanged no-op and a resource:// alias left as an internal storage://
 	// path (APP_EXTERNAL_URL unset / nginx not proxying /r/).
 	if !IsHTTPURL(httpURL) {

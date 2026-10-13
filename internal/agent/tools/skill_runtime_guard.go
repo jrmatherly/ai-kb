@@ -14,7 +14,7 @@ import (
 //
 // The recovery is to install into the skill's own environment, in place. That
 // works because the sandbox belongs to this session alone and runs as root, so
-// the write lands in the session's own container and dies with it — it never
+// the write lands in the session's own container and dies with it - it never
 // reaches the image other sessions start from. The overlay this guidance used
 // to recommend (`pip install --target /workspace/.skill-packages/<skill>`)
 // bought nothing over that and split a skill's packages across two locations.

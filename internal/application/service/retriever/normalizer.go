@@ -46,7 +46,7 @@ type ScoreNormalizer interface {
 // from its own single-store results.
 //
 // Dead enum references (kept as RetrieverEngineType constants but
-// without a driver implementation — see internal/types/vectorstore.go
+// without a driver implementation - see internal/types/vectorstore.go
 // near the GetVectorStoreTypes definition, where they are flagged
 // "legacy/experimental, no standalone deployable instance"):
 //   - InfinityRetrieverEngineType

@@ -289,8 +289,8 @@ func TestTenantSkillSourceCacheKeepsOneOversizeArchive(t *testing.T) {
 
 // The agent reads the same archive the install accepted, so the two have to
 // count it the same way. Counting raw zip entries against the skill-file cap
-// rejects bundles the install took — directory entries alone can carry a real
-// skill past 20k — and read_skill then fails on an install that works.
+// rejects bundles the install took - directory entries alone can carry a real
+// skill past 20k - and read_skill then fails on an install that works.
 const bundleIndexSkillMD = "---\nname: pdf\ndescription: d\n---\nbody\n"
 
 func TestSkillBundleFileIndexCountsFilesTheWayTheInstallDid(t *testing.T) {

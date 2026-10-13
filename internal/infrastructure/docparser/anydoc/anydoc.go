@@ -7,8 +7,8 @@
 // build compiles the stub in backend_stub.go, where Available reports false and
 // the engine registry hides the engine with a reason the UI can show.
 //
-// The exported surface is deliberately narrow — bytes in, Markdown and embedded
-// images out — so the backend can be replaced (a WASI runtime, a future
+// The exported surface is deliberately narrow - bytes in, Markdown and embedded
+// images out - so the backend can be replaced (a WASI runtime, a future
 // upstream Go module) without touching the parser code that calls it.
 package anydoc
 

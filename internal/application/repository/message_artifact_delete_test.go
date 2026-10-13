@@ -47,7 +47,7 @@ func TestSoftDeleteKeepsPositionsStable(t *testing.T) {
 
 // The collector de-duplicates sandbox files against the session's rows. The
 // tombstone has to stay in that set, or the next collect re-attaches the file
-// the user just deleted — its sandbox mtime has not moved.
+// the user just deleted - its sandbox mtime has not moved.
 func TestSoftDeletedArtifactsStayInSessionDedupSet(t *testing.T) {
 	db := newArtifactTestDB(t)
 	repo := NewMessageRepository(db)
@@ -139,7 +139,7 @@ func TestFindSessionArtifactSkipsTombstones(t *testing.T) {
 	require.Empty(t, marked, "a second delete claims nothing, so its caller reclaims no blobs")
 }
 
-// Versions are the rows of one session sharing a sandbox path — what the
+// Versions are the rows of one session sharing a sandbox path - what the
 // artifact library folds into a single entry with a version count.
 func TestFindSessionArtifactVersions(t *testing.T) {
 	db := newArtifactTestDB(t)
@@ -209,7 +209,7 @@ func TestListArtifactLibraryHidesDeletedArtifacts(t *testing.T) {
 	require.EqualValues(t, 1, total)
 	require.Equal(t, 2, items[0].VersionCount)
 
-	// Deleting only the newest version surfaces the one before it — which is
+	// Deleting only the newest version surfaces the one before it - which is
 	// why the delete path tombstones every version of a library row at once.
 	_, err = repo.SoftDeleteSessionArtifacts(ctx, mine,
 		[]types.ArtifactRef{{MessageID: latest.ID, Position: 0}}, base)

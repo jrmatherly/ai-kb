@@ -95,8 +95,8 @@ var _ dockerEngineAPI = (*client.Client)(nil)
 const DefaultDockerHost = "unix:///var/run/docker.sock"
 
 // DefaultDockerHTTPTimeout bounds a single short Engine API call (ping, create,
-// inspect, list, exec create/inspect). Streaming and long storage calls —
-// image pull, image remove with prune, commit, exec hijack, archive copy —
+// inspect, list, exec create/inspect). Streaming and long storage calls -
+// image pull, image remove with prune, commit, exec hijack, archive copy -
 // use the caller's context instead, because a 30s deadline would kill them
 // mid-body.
 const DefaultDockerHTTPTimeout = 30 * time.Second
@@ -207,7 +207,7 @@ func newDockerEngineClient(endpoint dockerEndpoint) (*client.Client, error) {
 		// Certificates stay on the application host rather than in the
 		// workspace config: they are deployment infrastructure, and keeping
 		// them out of the database keeps them out of backups and API
-		// responses. The daemon certificate is always verified — a remote
+		// responses. The daemon certificate is always verified - a remote
 		// daemon accepts container creation, so an unauthenticated peer on
 		// that socket is a root shell on the sandbox host.
 		certPath := endpoint.TLSCertPath

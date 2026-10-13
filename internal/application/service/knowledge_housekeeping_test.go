@@ -21,7 +21,7 @@ import (
 // suite needs. We avoid AutoMigrate because Knowledge carries multiple
 // JSONB-tagged fields whose SQLite mapping is fragile.
 //
-// Table name is `knowledges` (plural) — that's what migration 000000
+// Table name is `knowledges` (plural) - that's what migration 000000
 // creates and what GORM's default pluralization expects when the
 // service code uses Model(&types.Knowledge{}).
 const knowledgeTestDDL = `
@@ -267,7 +267,7 @@ func TestHousekeeping_NoFalseKill_ActiveSpan(t *testing.T) {
 	svc := newHousekeepingSvcForTest(db)
 	stale := time.Now().Add(-3 * time.Hour)
 	insertKnowledge(t, db, "kid-active", types.ParseStatusProcessing, stale)
-	// Span heartbeat well within the 70min cutoff — it represents
+	// Span heartbeat well within the 70min cutoff - it represents
 	// "we're STILL working, the worker just hasn't transitioned the
 	// parse_status column yet".
 	insertSpan(t, db, "kid-active", 1, "docreader-1", types.SpanStatusRunning, time.Now().Add(-2*time.Minute))
@@ -290,7 +290,7 @@ func TestHousekeeping_NoFalseKill_StaleSpanRecovers(t *testing.T) {
 	svc := newHousekeepingSvcForTest(db)
 	stale := time.Now().Add(-3 * time.Hour)
 	insertKnowledge(t, db, "kid-stuck", types.ParseStatusProcessing, stale)
-	// Span row stale by the same amount — no recent activity anywhere.
+	// Span row stale by the same amount - no recent activity anywhere.
 	insertSpan(t, db, "kid-stuck", 1, "docreader-1", types.SpanStatusRunning, stale)
 
 	svc.runSweep(context.Background())
@@ -332,8 +332,8 @@ func TestHousekeeping_NoFalseKill_TasksStillQueued(t *testing.T) {
 // invisible to the asynq probe: the durable op lives in task_pending_ops
 // keyed by knowledge ID, while asynq holds only a per-KB trigger, and
 // TypeWikiIngest is not in taskTypesForKnowledgeCancel either. The
-// inspector below reports "nothing queued" — exactly what production does
-// — so without the durable gate the sweep force-fails a healthy row.
+// inspector below reports "nothing queued" - exactly what production does -
+// so without the durable gate the sweep force-fails a healthy row.
 func TestHousekeeping_NoFalseKill_DurableWikiIngestPending(t *testing.T) {
 	db := setupHousekeepingDB(t)
 	svc := newHousekeepingSvcWithInspector(db, fakeTaskInspector{})
@@ -397,7 +397,7 @@ func TestHousekeeping_QueueProbeError_FailsSafe(t *testing.T) {
 }
 
 // TestHousekeeping_PreservesRecentlyTouched: any knowledge whose
-// updated_at is within the cutoff is left alone — that's the cheap
+// updated_at is within the cutoff is left alone - that's the cheap
 // fast path that doesn't even consult the spans table.
 func TestHousekeeping_PreservesRecentlyTouched(t *testing.T) {
 	db := setupHousekeepingDB(t)
@@ -414,7 +414,7 @@ func TestHousekeeping_PreservesRecentlyTouched(t *testing.T) {
 		"knowledge updated within the cutoff must be left alone")
 }
 
-// --- Sweep C: stranded "deleting" rows (issues #3338/#3345) --—
+// --- Sweep C: stranded "deleting" rows (issues #3338/#3345) ---
 
 func readKnowledgeStatus(t *testing.T, db *gorm.DB, id string) (string, string) {
 	t.Helper()
@@ -443,7 +443,7 @@ func TestHousekeeping_RecoversStrandedDeletingRow(t *testing.T) {
 func TestHousekeeping_KeepsBackloggedDeletingRow(t *testing.T) {
 	db := setupHousekeepingDB(t)
 	// A live (queued/active/retry) knowledge:list_delete still covers the
-	// row — backpressure, not stranded; must stay untouched.
+	// row - backpressure, not stranded; must stay untouched.
 	svc := newHousekeepingSvcWithInspector(db, fakeTaskInspector{
 		deleteQueued: map[string]bool{"kid-backlogged-delete": true},
 	})
@@ -488,7 +488,7 @@ func TestHousekeeping_DeletingProbeErrorDefers(t *testing.T) {
 func TestHousekeeping_NilInspectorDefersDeletingSweep(t *testing.T) {
 	db := setupHousekeepingDB(t)
 	// Without any inspector wired there is no way to tell backlog from
-	// orphan, so the whole Sweep C defers — never guesses.
+	// orphan, so the whole Sweep C defers - never guesses.
 	svc := newHousekeepingSvcWithInspector(db, nil)
 	insertKnowledge(t, db, "kid-nil-inspector", types.ParseStatusDeleting,
 		time.Now().Add(-3*time.Hour))

@@ -36,7 +36,7 @@ func NewTenantInvitationRepository(db *gorm.DB) interfaces.TenantInvitationRepos
 // The pre-check is best-effort: two concurrent inserts can still race
 // past it, in which case the underlying database error surfaces. The
 // service layer treats any insert error containing the index name
-// (idx_tenant_invitations_unique_pending) as the conflict sentinel —
+// (idx_tenant_invitations_unique_pending) as the conflict sentinel -
 // see invitationService.Create.
 //
 // Share-link rows (invitee_user_id == "") skip the pre-check: the
@@ -59,7 +59,7 @@ func (r *tenantInvitationRepository) Create(
 				First(&probe).Error
 			switch {
 			case errors.Is(err, gorm.ErrRecordNotFound):
-				// fallthrough — clean to insert.
+				// fallthrough - clean to insert.
 			case err != nil:
 				return err
 			default:
@@ -144,7 +144,7 @@ func (r *tenantInvitationRepository) listQuery(includeTerminal bool) *gorm.DB {
 }
 
 // tenantInvitationTenantScope applies tenant_id, optional pending-only
-// filter, and id DESC ordering — shared by ListByTenant and paging helpers.
+// filter, and id DESC ordering - shared by ListByTenant and paging helpers.
 func (r *tenantInvitationRepository) tenantInvitationTenantScope(
 	ctx context.Context,
 	tenantID uint64,
@@ -238,7 +238,7 @@ func (r *tenantInvitationRepository) CountPendingByInvitee(
 
 // MarkStatusIfPending atomically transitions a row from pending to
 // the supplied terminal status. The WHERE filter on status='pending'
-// is what makes this safe under concurrent accept/revoke clicks —
+// is what makes this safe under concurrent accept/revoke clicks -
 // only the first writer succeeds; the second sees RowsAffected=0 and
 // receives gorm.ErrRecordNotFound (which the service maps to a
 // "already finalised" sentinel).
@@ -267,7 +267,7 @@ func (r *tenantInvitationRepository) MarkStatusIfPending(
 
 // SweepExpired transitions all overdue pending rows to expired in a
 // single batch. We intentionally don't emit per-row audit events from
-// here — the original rbac.invitation_sent already lives in the audit
+// here - the original rbac.invitation_sent already lives in the audit
 // log, and a sweep can touch many rows on a sleepy weekend (an audit
 // fanout would dwarf the original event volume).
 func (r *tenantInvitationRepository) SweepExpired(
@@ -292,7 +292,7 @@ func (r *tenantInvitationRepository) SweepExpired(
 // Implemented as a single UPDATE expression so concurrent accepts
 // don't race on a read-modify-write loop. We deliberately don't gate
 // on status='pending' here: AcceptByToken is the only caller, and
-// share-link rows stay pending across accepts — so the gate would
+// share-link rows stay pending across accepts - so the gate would
 // reject zero rows in steady state but introduce a subtle ordering
 // dependency on MarkStatusIfPending for per-user accepts.
 func (r *tenantInvitationRepository) IncrementAcceptedCount(

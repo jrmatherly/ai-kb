@@ -31,7 +31,7 @@ const (
 	// minCosine is the floor below which a vector match is not a match.
 	//
 	// Without it every memory that has a vector enters the ranking, including
-	// the ones scoring zero, and fusion then pulls them into the prompt — the
+	// the ones scoring zero, and fusion then pulls them into the prompt - the
 	// feature would go from "cannot find a re-worded memory" straight to
 	// "recalls everything". Graphiti holds its equivalent at 0.6; this sits
 	// slightly lower because the lexical ranking is fused in alongside and can
@@ -55,7 +55,7 @@ const (
 //
 // Memory is one vector space per workspace. Knowledge bases each bind their
 // own embedding model, so there is no "the workspace embedding model" to fall
-// back to — picking the first listed one would silently mix incomparable
+// back to - picking the first listed one would silently mix incomparable
 // spaces as models are added or deleted. Blank means semantic recall is off.
 func (s *Service) embedder(_ context.Context, cfg *types.MemoryConfig) (string, bool) {
 	if cfg == nil || !cfg.VectorRecallEnabled() || s.modelService == nil {
@@ -123,7 +123,7 @@ func (s *Service) storeItemEmbedding(
 // embeddableText is what gets embedded for a memory.
 //
 // Topic and content together, because the topic carries the subject the
-// statement is about and the statement alone is often too terse to place —
+// statement is about and the statement alone is often too terse to place -
 // "PostgreSQL 17" means little without "production database".
 //
 // An interest is promoted from a subject label, so its topic and content are
@@ -163,7 +163,7 @@ func embeddableText(item *types.MemoryItem, aliases []string) string {
 //
 // Only interests: every other kind already carries a sentence of its own, and
 // its topic is a heading rather than a subject the topic tracker follows. Best
-// effort — a lookup failure costs a slightly narrower vector, nothing else.
+// effort - a lookup failure costs a slightly narrower vector, nothing else.
 func (s *Service) embedAliases(
 	ctx context.Context, scope interfaces.MemoryScope, item *types.MemoryItem,
 ) []string {
@@ -189,7 +189,7 @@ func (s *Service) embedAliases(
 //
 // The search runs over every vector the subject has. It used to run over the
 // vectors of an already-chosen candidate list, which meant semantic recall
-// could only re-order what a plain `ORDER BY importance` had picked — a memory
+// could only re-order what a plain `ORDER BY importance` had picked - a memory
 // that answered the question exactly but sat outside that window was
 // unreachable, and no amount of widening the window fixes the ordering being
 // blind to the question in the first place.

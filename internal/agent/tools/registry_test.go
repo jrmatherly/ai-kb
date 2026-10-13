@@ -41,7 +41,7 @@ func registerMany(t *testing.T, r *ToolRegistry, names []string) {
 // TestGetFunctionDefinitions_DeterministicOrder pins the core invariant: the
 // output is sorted by tool name and identical across repeated calls. Go's map
 // iteration is intentionally randomized, so without an explicit sort the slice
-// can reshuffle on every call — which silently breaks byte-level prompt prefix
+// can reshuffle on every call - which silently breaks byte-level prompt prefix
 // caching at providers like Qwen.
 func TestGetFunctionDefinitions_DeterministicOrder(t *testing.T) {
 	// Insertion order is deliberately non-alphabetical to make any accidental

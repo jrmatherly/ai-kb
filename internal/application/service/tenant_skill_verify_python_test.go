@@ -14,7 +14,7 @@ import (
 
 // The Go tests above pin which commands an install issues. These run the
 // embedded checker itself, because its judgement is what decides whether a
-// working skill installs — and a check that is too strict fails good skills
+// working skill installs - and a check that is too strict fails good skills
 // just as surely as one that is too loose passes broken ones. Every case here
 // is a shape a real skill ships.
 func TestSkillPythonVerifier(t *testing.T) {
@@ -231,7 +231,7 @@ func TestSkillPythonVerifierReportsAnUnreadableScript(t *testing.T) {
 // The contract this checker now keeps: an import shape is never a verdict.
 //
 // Whether `import helper` resolves depends on what the file does to sys.path
-// before the import runs, and no static evaluator can enumerate those idioms —
+// before the import runs, and no static evaluator can enumerate those idioms -
 // a guarded insert, a path constant imported from a sibling module, a value
 // read from the environment, a mutation inside a helper function. Every
 // approximation refused skills that run perfectly. Proving an import resolves

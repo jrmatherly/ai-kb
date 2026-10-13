@@ -225,7 +225,7 @@ func TestMergeFallbackKeepsRerankTopK(t *testing.T) {
 	}
 }
 
-// Rerank drops candidates before FILTER_TOP_K ever runs — threshold
+// Rerank drops candidates before FILTER_TOP_K ever runs - threshold
 // rejection, the candidate cap and the MMR top-k all hide passages. The cut
 // has to be recorded here, or a turn with a rerank model reaches the prompt
 // with no record that its context is a subset, and a count question reads the

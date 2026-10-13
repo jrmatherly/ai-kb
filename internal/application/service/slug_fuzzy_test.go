@@ -115,7 +115,7 @@ func TestResolveDeadSlug_BigramFallback(t *testing.T) {
 }
 
 func TestResolveDeadSlug_RejectsUnrelated(t *testing.T) {
-	// Completely unrelated candidates must not match — better to
+	// Completely unrelated candidates must not match - better to
 	// strip the link than to silently link to the wrong page.
 	live := map[string]struct{}{
 		"entity/foo": {},

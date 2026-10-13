@@ -38,7 +38,7 @@ func TestApplyFetchedItem_CapsErrorSampleButKeepsAccurateFailedCount(t *testing.
 
 // The user-facing sample must be a structured SyncItemError carrying the
 // connector's stable i18n code + params (so the frontend localises it), the
-// title as a separate field, and no raw API body/log_id — that stays in logs.
+// title as a separate field, and no raw API body/log_id - that stays in logs.
 func TestApplyFetchedItem_ProducesLocalisableStructuredError(t *testing.T) {
 	s := &DataSourceService{}
 	ds := &types.DataSource{}

@@ -25,7 +25,7 @@ const EngineBuildTimeout = 10 * time.Second
 
 // rebuildCooldown throttles rebuild attempts for a store whose engine just
 // failed to build. Without it a backend that stays down costs a full build
-// timeout on every request, because collapsing only helps concurrent callers —
+// timeout on every request, because collapsing only helps concurrent callers -
 // sequential ones each open a new attempt.
 const rebuildCooldown = 30 * time.Second
 
@@ -332,7 +332,7 @@ func (r *RetrieveEngineRegistry) GetOrLoadByStoreID(
 // Idempotent: returns silently if the storeID is not found.
 //
 // NOTE: gRPC-based clients (Qdrant, Milvus) hold connections that are not closed here.
-// Known Phase 1 limitation — store deletion is rare, connections cleaned up on process exit.
+// Known Phase 1 limitation - store deletion is rare, connections cleaned up on process exit.
 // Phase 2 should add Close() to RetrieveEngineService interface and call it here.
 func (r *RetrieveEngineRegistry) UnregisterByStoreID(storeID string) {
 	r.mu.Lock()

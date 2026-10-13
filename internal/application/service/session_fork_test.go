@@ -488,7 +488,7 @@ func newForkFixture(t *testing.T, port SessionForkSandboxPort, messages []*types
 
 // hostForkSandboxPort is a fork sandbox that does not version the workspace.
 // Host backends share the user's real directory across sessions, so fork must
-// copy messages only — never snapshot or roll the tree back.
+// copy messages only - never snapshot or roll the tree back.
 type hostForkSandboxPort struct {
 	fakeForkSandboxPort
 }

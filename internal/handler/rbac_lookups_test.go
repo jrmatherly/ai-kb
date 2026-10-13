@@ -173,7 +173,7 @@ func TestAgentCreatorLookup_CrossTenantIsHiddenAsNotFound(t *testing.T) {
 // PR 5 (#1303) per-KB ownership lookups. The chain helper lives in the
 // service layer; the lookups here are pure adapters that translate the
 // repository sentinels into middleware.ErrResourceNotFound. Tests focus
-// on those translations — the service-side chain has its own tests in
+// on those translations - the service-side chain has its own tests in
 // internal/application/service.
 
 // stubKgService stands in for interfaces.KnowledgeService for the
@@ -190,13 +190,13 @@ func (s *stubKgService) GetOwningKBCreatorID(ctx context.Context, knowledgeID st
 }
 
 // newKnowledgeLookupCtx builds a gin.Context shaped like the
-// /knowledge/:id route — :id holds a knowledge id.
+// /knowledge/:id route - :id holds a knowledge id.
 func newKnowledgeLookupCtx(t *testing.T, tenantID uint64, knowledgeID string) *gin.Context {
 	return newKBLookupCtx(t, tenantID, knowledgeID)
 }
 
 // newChunkLookupCtx builds a gin.Context shaped like the
-// /chunks/:knowledge_id/:id route — only :knowledge_id is set since
+// /chunks/:knowledge_id/:id route - only :knowledge_id is set since
 // that's all the lookup reads.
 func newChunkLookupCtx(t *testing.T, tenantID uint64, knowledgeID string) *gin.Context {
 	t.Helper()
@@ -224,7 +224,7 @@ func newWikiLookupCtx(t *testing.T, tenantID uint64, kbID string) *gin.Context {
 
 func TestKBCreatorLookupFromKnowledgeID_NotFoundMapsToSentinel(t *testing.T) {
 	// Either sentinel from the repo (knowledge missing OR its KB missing)
-	// must surface as ErrResourceNotFound — same behaviour as the
+	// must surface as ErrResourceNotFound - same behaviour as the
 	// KB-level lookup so middleware translates uniformly.
 	for _, tc := range []struct {
 		name string
@@ -436,7 +436,7 @@ func TestKBCreatorLookupFromChunkIDParam_ChunkNotFoundMapsToSentinel(t *testing.
 }
 
 func TestKBCreatorLookupFromChunkIDParam_CrossTenantIsHiddenAsNotFound(t *testing.T) {
-	// GetChunkByIDOnly is unscoped — a chunk from another tenant whose
+	// GetChunkByIDOnly is unscoped - a chunk from another tenant whose
 	// owning-KB-creator happens to match the caller's user id must NOT
 	// slip past the ownership shortcut. The lookup re-checks TenantID
 	// before walking up to the KB.
@@ -461,7 +461,7 @@ func TestKBCreatorLookupFromChunkIDParam_CrossTenantIsHiddenAsNotFound(t *testin
 
 func TestKBCreatorLookupFromChunkIDParam_KBNotFoundFromChainMapsToSentinel(t *testing.T) {
 	// The chunk exists and is in-tenant, but the chain (knowledge_id ->
-	// kb) errors with KnowledgeBaseNotFound — that must become the
+	// kb) errors with KnowledgeBaseNotFound - that must become the
 	// middleware sentinel, same as every other lookup.
 	h := &ChunkHandler{
 		service: &stubChunkService{

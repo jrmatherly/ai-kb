@@ -76,7 +76,7 @@ func invitationTTL() time.Duration {
 		return d
 	}
 	// Allow "604800" seconds for callers that don't like Go duration
-	// syntax — same shape as the rest of our int env knobs.
+	// syntax - same shape as the rest of our int env knobs.
 	if secs, err := strconv.ParseInt(raw, 10, 64); err == nil && secs > 0 {
 		return time.Duration(secs) * time.Second
 	}
@@ -128,7 +128,7 @@ func detailsFor(invID uint64, role types.TenantRole) types.JSON {
 }
 
 // sweep transitions overdue pending rows to expired before any List/
-// Accept/Decline/Count read. Failures are logged and swallowed — a
+// Accept/Decline/Count read. Failures are logged and swallowed - a
 // transient sweep error must not block a user from reading their
 // inbox; the next call will sweep again.
 func (s *tenantInvitationService) sweep(ctx context.Context) {
@@ -244,7 +244,7 @@ func (s *tenantInvitationService) Accept(
 	// Create the actual tenant_members row. Cross-service hop: the
 	// member service handles its own audit (rbac.member_added) and
 	// also enforces the (user, tenant) uniqueness invariant via the
-	// repo. If it fails here the invitation is already accepted —
+	// repo. If it fails here the invitation is already accepted -
 	// see comment above for why we don't rollback the invitation.
 	member, err := s.memberSvc.AddMember(ctx, inv.InviteeUserID, inv.TenantID, inv.Role, inv.InvitedBy)
 	if err != nil {
@@ -539,7 +539,7 @@ func (s *tenantInvitationService) CreateShareLink(
 		Action:      types.AuditActionInvitationSent,
 		TargetType:  "tenant_invitation",
 		TargetID:    strconv.FormatUint(inv.ID, 10),
-		// TargetUserID intentionally empty — share-link has no invitee yet.
+		// TargetUserID intentionally empty - share-link has no invitee yet.
 		Outcome: types.AuditOutcomeSuccess,
 		Details: detailsFor(inv.ID, role),
 	})
@@ -574,7 +574,7 @@ func (s *tenantInvitationService) LookupByToken(
 }
 
 // AcceptByToken adds newUserID to the share-link's tenant + role.
-// Unlike Accept, the invitation row itself is NOT mutated — share-link
+// Unlike Accept, the invitation row itself is NOT mutated - share-link
 // rows stay pending across uses. Idempotent: an existing membership
 // is returned untouched (callers shouldn't see role downgrade just
 // because they clicked the same link twice from different devices).
@@ -606,7 +606,7 @@ func (s *tenantInvitationService) AcceptByToken(
 	}
 	// Bump usage counter so the management UI can show "N joined".
 	// Best-effort: a failure here doesn't undo the membership the user
-	// just earned — log and move on. The counter is for display only;
+	// just earned - log and move on. The counter is for display only;
 	// audit log + tenant_members rows are the authoritative trail.
 	if incErr := s.repo.IncrementAcceptedCount(ctx, inv.ID); incErr != nil {
 		logger.Warnf(ctx,

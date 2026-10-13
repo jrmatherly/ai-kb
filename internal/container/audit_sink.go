@@ -35,7 +35,7 @@ func (a auditSinkAdapter) EmitReindexExecuted(ctx context.Context, srcAlias, dst
 }
 
 // emit writes one audit entry. It skips (with a warning) when the context
-// carries no tenant — driver events can fire from background task contexts
+// carries no tenant - driver events can fire from background task contexts
 // (e.g. lazy index creation under an async copy task), and writing tenant_id=0
 // would collide with the system-scope sentinel and corrupt the audit trail.
 func (a auditSinkAdapter) emit(ctx context.Context, action types.AuditAction, target string, detail map[string]any) {
@@ -47,7 +47,7 @@ func (a auditSinkAdapter) emit(ctx context.Context, action types.AuditAction, ta
 		logger.GetLogger(ctx).Warnf("[audit] %s: no tenant in context, skipping audit (target=%s)", action, target)
 		return
 	}
-	// Details is a typed JSON blob — only bounded, non-secret fields. Never
+	// Details is a typed JSON blob - only bounded, non-secret fields. Never
 	// include cluster reason strings or connection secrets.
 	b, err := json.Marshal(detail)
 	if err != nil {

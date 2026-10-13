@@ -44,7 +44,7 @@ func (e *MissingSkillEnvError) Error() string {
 	return fmt.Sprintf(
 		"skill %q needs the environment variable(s) %s, which nobody has set yet. "+
 			"Ask the user for them, then run the skill through shell_exec with "+
-			"skill_name=%q and the values in env — they are stored for that user "+
+			"skill_name=%q and the values in env - they are stored for that user "+
 			"afterwards. They can also be set under Settings → Sandbox secrets.",
 		e.SkillName, strings.Join(e.Names, ", "), e.SkillName,
 	)
@@ -76,8 +76,8 @@ func ApplyResolvedEnv(env, resolved map[string]string) {
 // the skill's own virtualenv interpreter, which the shell wrapper puts first
 // on PATH and which already carries its site-packages. A PYTHONPATH entry
 // would have to name that site-packages directory by interpreter version to
-// be importable at all, and pointing it at the venv root — as an overlay-era
-// path did — resolves nothing.
+// be importable at all, and pointing it at the venv root - as an overlay-era
+// path did - resolves nothing.
 func applySkillNodePath(env map[string]string, skillDir string) {
 	if env == nil || skillDir == "" {
 		return

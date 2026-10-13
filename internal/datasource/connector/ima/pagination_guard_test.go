@@ -14,7 +14,7 @@ import (
 )
 
 // paginationHopCap mirrors maxPaginationHops in connector.go. It is spelled as
-// a literal so this file also compiles — and then fails on behaviour — against
+// a literal so this file also compiles - and then fails on behaviour - against
 // a tree that has no guard at all.
 const paginationHopCap = 10000
 

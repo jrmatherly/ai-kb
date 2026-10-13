@@ -16,13 +16,13 @@ import (
 
 // PR 6 (#1303): the rbac middleware's two reject paths now call
 // AuditServiceFromContext(c).LogDenied so denials are durably
-// recorded. These tests pin that wiring — without them, a future
+// recorded. These tests pin that wiring - without them, a future
 // refactor that drops the AuditServiceProvider middleware (or breaks
 // the context-stash key) would silently lose the durable audit
 // without any coverage signal.
 
 // stubDenyAudit captures LogDenied calls. Embeds the interface so any
-// other method panics on use — keeps tests honest about which API
+// other method panics on use - keeps tests honest about which API
 // they're exercising.
 type stubDenyAudit struct {
 	interfaces.AuditLogService
@@ -97,7 +97,7 @@ func TestRequireRole_RejectFiresAuditHook(t *testing.T) {
 
 func TestRequireRole_DormantModeDoesNotFireAuditHook(t *testing.T) {
 	// EnableRBAC=false: middleware logs but does NOT 403, so the
-	// durable audit must NOT fire either — the dormant rollout window
+	// durable audit must NOT fire either - the dormant rollout window
 	// would otherwise generate audit noise for non-rejections.
 	audit := &stubDenyAudit{}
 	w := auditableHarness(t, types.TenantRoleViewer, "u1", 7, audit,
@@ -112,7 +112,7 @@ func TestRequireRole_DormantModeDoesNotFireAuditHook(t *testing.T) {
 
 func TestRequireOwnershipOrRole_RejectFiresAuditHook(t *testing.T) {
 	// Mirror of TestRequireRole_RejectFiresAuditHook but for the
-	// ownership variant — the audit hook lives at a different reject
+	// ownership variant - the audit hook lives at a different reject
 	// site and must NOT skip the durable write.
 	audit := &stubDenyAudit{}
 	lookup := func(_ *gin.Context) (string, error) {

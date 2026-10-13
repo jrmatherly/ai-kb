@@ -110,7 +110,7 @@ func openCubePty(
 
 // cubeTerminalSession bridges one Cube PtyHandle to the neutral
 // RemoteTerminalSession contract. The SDK's Output channel is closed when
-// the stream ends, and Wait also surfaces exit code / error state — pump
+// the stream ends, and Wait also surfaces exit code / error state - pump
 // uses Wait so the terminal end is reported exactly once.
 type cubeTerminalSession struct {
 	sb     *cubesandbox.Sandbox

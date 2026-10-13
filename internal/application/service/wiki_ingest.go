@@ -52,7 +52,7 @@ const (
 	// wikiClaimStaleAfter is how long a claimed-but-undrained ingest row
 	// waits before another worker may re-claim it. It MUST exceed the asynq
 	// task Timeout for wiki:ingest (60m) so a still-running batch's rows are
-	// never stolen mid-flight — only genuinely crashed/abandoned claims are
+	// never stolen mid-flight - only genuinely crashed/abandoned claims are
 	// recovered. This preserves the pre-claim crash behaviour where a dead
 	// batch's undeleted rows were simply re-peeked by the next trigger.
 	wikiClaimStaleAfter = 90 * time.Minute
@@ -138,8 +138,8 @@ return proposed
 	// wikiRateLimitBackoff is the (much longer) follow-up delay used when a
 	// batch's failures were caused by upstream rate limiting (HTTP 429 /
 	// quota). Retrying a rate-limited document at the normal 5s cadence just
-	// throws more requests at an already-saturated rpm budget — every retry
-	// re-issues extract + classify + summary calls for the doc — which keeps
+	// throws more requests at an already-saturated rpm budget - every retry
+	// re-issues extract + classify + summary calls for the doc - which keeps
 	// the limiter tripped and drags the whole KB's ingest out. Backing off
 	// gives the per-minute window time to reset before we try again.
 	wikiRateLimitBackoff = 60 * time.Second
@@ -184,7 +184,7 @@ return proposed
 	// routed through generateWithTemplate. Combined wiki extraction emits a
 	// single large JSON document (entities + concepts + details). When
 	// MaxTokens is left at 0, OpenAI-compatible clients omit max_tokens and
-	// providers such as DeepSeek apply a default of 8192 — long extracts are
+	// providers such as DeepSeek apply a default of 8192 - long extracts are
 	// truncated mid-JSON with finish_reason=length, and parse fails with
 	// "unexpected end of JSON input" (EXTRACT_FAILED). Raising the budget to
 	// 32768 matches verified complete outputs for large Chinese policy docs;
@@ -199,7 +199,7 @@ return proposed
 	// forward progress; 3 rounds cover a 32768-token budget being clamped to
 	// roughly a quarter by a provider or by a nearly-full context window.
 	//
-	// This is deliberately NOT the general strategy for every wiki call — see
+	// This is deliberately NOT the general strategy for every wiki call - see
 	// the agent loop's reasoning in internal/agent/observe.go: a continuation
 	// nudge only helps when the caller can tell the model "you were cut off,
 	// keep going", which for a JSON extraction is already covered by the
@@ -211,7 +211,7 @@ return proposed
 	wikiPageModifyContinuationDone = "(complete)"
 
 	// wikiLLMBackoffBase is the base delay for the exponential backoff
-	// between retry attempts. The nth retry waits base << (n-1) — so with
+	// between retry attempts. The nth retry waits base << (n-1) - so with
 	// a 2s base we wait 2s, 4s, 8s between attempts.
 	wikiLLMBackoffBase = 2 * time.Second
 
@@ -229,7 +229,7 @@ return proposed
 	// The KB-global convergence steps (index-intro rebuild, dead-link
 	// cleanup, cross-link injection) used to run at the tail of EVERY
 	// 5-doc ingest batch. On a bulk import that meant O(docs/batchSize)
-	// index rebuilds — each an LLM call plus an index-page write. They are
+	// index rebuilds - each an LLM call plus an index-page write. They are
 	// now deferred to a debounced per-KB wiki:finalize task: each ingest
 	// batch records what changed into a separate lane of task_pending_ops
 	// (task_type=wiki:finalize) and schedules a coalesced trigger, so a
@@ -478,12 +478,12 @@ func (s *wikiIngestService) tracker() SpanTracker {
 // beginWikiSubspan opens a postprocess.wiki subspan for this document
 // under the knowledge's most recent attempt. Returns nil when there is
 // no parse attempt to attach to (e.g. a wiki ingest fired from a manual
-// reparse path that never went through the tracker) — callers must
+// reparse path that never went through the tracker) - callers must
 // pair every begin with a tolerant end / fail / skip below.
 //
 // Lookups are by `LatestAttempt(knowledgeID)` because the asynq task
 // payload (WikiIngestPayload) is KB-scoped and carries no per-doc
-// attempt — see the type's comment for the batch architecture.
+// attempt - see the type's comment for the batch architecture.
 func (s *wikiIngestService) beginWikiSubspan(ctx context.Context, knowledgeID string, input types.JSONMap) *Span {
 	if knowledgeID == "" {
 		return nil
@@ -513,7 +513,7 @@ func (s *wikiIngestService) beginWikiSubspan(ctx context.Context, knowledgeID st
 // 30s window all coalesce: the first one to acquire the per-KB active
 // lock drains the batch; subsequent ones see an empty queue and exit.
 //
-// Lite mode (no Redis) still works as long as Postgres is reachable —
+// Lite mode (no Redis) still works as long as Postgres is reachable -
 // the queue lives in PG, only the active-batch lock is Redis-only and
 // has a process-local fallback (liteLocks) inside the worker.
 func enqueueWikiPendingOp(
@@ -544,7 +544,7 @@ func EnqueueWikiIngest(
 	// Persist the pending op. A re-ingest of the same knowledge id while
 	// a previous op is still queued simply appends another row; the
 	// peekPendingList consumer collapses by dedup_key (== knowledge_id),
-	// keeping the LATEST op for each knowledge — matching the legacy
+	// keeping the LATEST op for each knowledge - matching the legacy
 	// "RPush + reverse-dedupe" semantics.
 	if err != nil {
 		logger.Warnf(ctx, "wiki ingest: failed to marshal pending op for %s: %v", knowledgeID, err)
@@ -653,11 +653,11 @@ func enqueueWikiIngestTrigger(
 }
 
 // EnqueueWikiRetract queues a wiki retraction op (a delete cleanup).
-// Identical persistence model as EnqueueWikiIngest — the op rides in
+// Identical persistence model as EnqueueWikiIngest - the op rides in
 // task_pending_ops and an asynq trigger fires shortly after to
 // process the batch. Retracts use a slightly shorter ProcessIn delay
 // because there is no "user upload arriving in waves" pattern to
-// debounce against — a deletion fires once and we want the cleanup
+// debounce against - a deletion fires once and we want the cleanup
 // to land promptly.
 func EnqueueWikiRetract(ctx context.Context, task interfaces.TaskEnqueuer,
 	pendingRepo interfaces.TaskPendingOpsRepository, payload WikiRetractPayload,
@@ -919,7 +919,7 @@ func (s *wikiIngestService) scheduleFinalize(ctx context.Context, payload WikiIn
 	)
 	if _, err := s.task.Enqueue(t); err != nil {
 		if errors.Is(err, asynq.ErrTaskIDConflict) || errors.Is(err, asynq.ErrDuplicateTask) {
-			return // a finalize is already scheduled/running for this KB — coalesced
+			return // a finalize is already scheduled/running for this KB - coalesced
 		}
 		logger.Warnf(ctx, "wiki finalize: schedule trigger failed: %v", err)
 	}
@@ -951,7 +951,7 @@ func (s *wikiIngestService) scheduleFinalizeRetry(ctx context.Context, payload W
 //
 // peekedIDs returns the DB ids of every row included in the peek
 // (NOT just the ones that survived dedup) so trimPendingList can
-// delete them all in one statement at the end of the batch — this
+// delete them all in one statement at the end of the batch - this
 // matches the legacy "LTrim peekedCount entries" semantics, where
 // duplicates collapsed by the consumer were also drained from the
 // list once their canonical sibling had been processed.
@@ -976,8 +976,8 @@ func (s *wikiIngestService) peekPendingList(ctx context.Context, kbID string, li
 
 // claimPendingList is the standard-mode (Redis) counterpart of
 // peekPendingList: it atomically CLAIMS up to `limit` ops (marks
-// claimed_at) so concurrent batches for the same KB — allowed since Phase 3
-// removed the exclusive per-KB lock — pull DISJOINT documents instead of
+// claimed_at) so concurrent batches for the same KB - allowed since Phase 3
+// removed the exclusive per-KB lock - pull DISJOINT documents instead of
 // double-processing. Stale claims (older than wikiClaimStaleAfter, i.e. from
 // a crashed worker) are recovered. Dedup / peekedIDs semantics match
 // peekPendingList; the returned peekedIDs are the claimed rows that the
@@ -1010,7 +1010,7 @@ func (s *wikiIngestService) claimPendingList(ctx context.Context, kbID string, l
 // Redis mode only: in Lite mode a single process runs one batch per KB at a
 // time (liteLocks), so same-slug contention cannot occur and fn runs
 // directly. Returns (false, nil) if the lock could not be acquired within
-// wikiSlugLockWait — the caller then treats the slug like a best-effort
+// wikiSlugLockWait - the caller then treats the slug like a best-effort
 // reduce miss (matching pre-existing reduce-failure handling). On a Redis
 // error we fail OPEN (run fn unlocked): a rare lost-update on a shared page
 // is tolerated by the finalize/dead-link passes, whereas silently dropping
@@ -1064,7 +1064,7 @@ return 1
 `
 
 // reserveInflightSlot claims one of KB's concurrent-batch slots (Phase 4,
-// standard/Redis mode). Returns (release, true) when granted — release() MUST
+// standard/Redis mode). Returns (release, true) when granted - release() MUST
 // run when the batch finishes; (nil, false) when the KB is already at
 // maxInflight, so the caller should reschedule and bail. A background renew
 // keeps the slot alive for the batch's duration and removes it when the task
@@ -1167,7 +1167,7 @@ func (s *wikiIngestService) scheduleCappedRetry(ctx context.Context, payload Wik
 	)
 	if _, err := s.task.Enqueue(t); err != nil {
 		if errors.Is(err, asynq.ErrTaskIDConflict) || errors.Is(err, asynq.ErrDuplicateTask) {
-			return // a capped retry is already pending for this KB — coalesced
+			return // a capped retry is already pending for this KB - coalesced
 		}
 		logger.Warnf(ctx, "wiki ingest: capped-retry enqueue failed: %v", err)
 	}
@@ -1178,7 +1178,7 @@ func (s *wikiIngestService) scheduleCappedRetry(ctx context.Context, payload Wik
 // row is held by a FRESH claim). Normally a running batch drains those rows and
 // chains its own fast follow-up on completion; this net exists only for the
 // case where the claim holder CRASHED, leaving claimed_at stamped so no worker
-// can re-claim until wikiClaimStaleAfter elapses — and where nothing else would
+// can re-claim until wikiClaimStaleAfter elapses - and where nothing else would
 // ever re-trigger the KB afterwards.
 //
 // The delay is set past the stale threshold so that when the net fires the
@@ -1209,7 +1209,7 @@ func (s *wikiIngestService) scheduleStaleClaimRecheck(ctx context.Context, paylo
 	)
 	if _, err := s.task.Enqueue(t); err != nil {
 		if errors.Is(err, asynq.ErrTaskIDConflict) || errors.Is(err, asynq.ErrDuplicateTask) {
-			return true // a recheck is already armed for this KB — coalesced
+			return true // a recheck is already armed for this KB - coalesced
 		}
 		logger.Warnf(ctx, "wiki ingest: stale-claim recheck enqueue failed: %v", err)
 		return false
@@ -1253,14 +1253,14 @@ func (s *wikiIngestService) decodePendingRows(ctx context.Context, rows []*types
 	// Deduplicate by KnowledgeID, keeping only the *last* operation for
 	// each document. Optimizes out redundant sequences (e.g., upload
 	// then immediate delete: [ingest, retract] → [retract]). The
-	// non-canonical rows still get drained at trim time — their dbIDs
+	// non-canonical rows still get drained at trim time - their dbIDs
 	// are in peekedIDs.
 	seen := make(map[string]bool)
 	reversedUnique := make([]WikiPendingOp, 0, len(all))
 	for i := len(all) - 1; i >= 0; i-- {
 		op := all[i]
 		if op.KnowledgeID == "" {
-			// No dedup key — keep verbatim (rare; edge case for
+			// No dedup key - keep verbatim (rare; edge case for
 			// future ops without a knowledge anchor).
 			reversedUnique = append(reversedUnique, op)
 			continue
@@ -1297,7 +1297,7 @@ func (s *wikiIngestService) trimPendingList(ctx context.Context, ids []int64) er
 // counter once its wiki op reaches a terminal state (mapped successfully
 // or dead-lettered). The matching +1 is seeded by
 // KnowledgePostProcess.SetFinalizing when willSpawnWiki is true. Callers
-// must only invoke this for ingest ops — retract ops are for deleted
+// must only invoke this for ingest ops - retract ops are for deleted
 // knowledge that has no counter to drain.
 //
 // Safe to call on a row that is already completed or whose counter is
@@ -1340,7 +1340,7 @@ func (s *wikiIngestService) requeueFailedOps(ctx context.Context, payload WikiIn
 	var settleErrs []error
 	for _, op := range ops {
 		if op.dbID == 0 {
-			// Op was never persisted (synthetic / test) — nothing to
+			// Op was never persisted (synthetic / test) - nothing to
 			// retry against.
 			continue
 		}
@@ -1367,7 +1367,7 @@ func (s *wikiIngestService) requeueFailedOps(ctx context.Context, payload WikiIn
 			continue
 		}
 
-		// Exhausted in-batch retries — archive and remove. This is the
+		// Exhausted in-batch retries - archive and remove. This is the
 		// terminal failure point for the op, so release its slot in the
 		// knowledge's finalizing counter (ingest ops only; retracts are
 		// for deleted knowledge that has no counter to drain). The
@@ -1423,7 +1423,7 @@ type docIngestResult struct {
 	// WikiSpan is the postprocess.wiki subspan opened at the start of
 	// mapOneDocument. ProcessWikiIngest holds it open across the reduce
 	// + cleanup phases and closes it once this doc's pages have all
-	// been materialised — see the EndSpan call near the end of
+	// been materialised - see the EndSpan call near the end of
 	// ProcessWikiIngest. nil when no parent attempt was found, in which
 	// case the tracker helpers are all no-ops anyway.
 	WikiSpan *Span
@@ -1435,7 +1435,7 @@ type docIngestResult struct {
 // pre-built SlugTitleMap / SummaryContentByKnowledgeID lookup tables.
 // At 4w-document scale that meant the very first thing every batch
 // did was load 100K+ wiki_pages rows (content TEXT included) into Go
-// memory — and then walk them several more times for cleanDeadLinks /
+// memory - and then walk them several more times for cleanDeadLinks /
 // injectCrossLinks / getExistingPageSlugsForKnowledge.
 //
 // We now lazy-load via fetchers backed by lightweight projections
@@ -1463,7 +1463,7 @@ type WikiBatchContext struct {
 	// ExtractionGranularity drives Pass 0 (candidate slug extraction)
 	// aggressiveness. Resolved once per batch from the KnowledgeBase's
 	// WikiConfig so every doc in the batch sees the same scope rules.
-	// Already Normalize()'d — consumers can assume it is one of the
+	// Already Normalize()'d - consumers can assume it is one of the
 	// three valid values.
 	ExtractionGranularity types.WikiExtractionGranularity
 
@@ -1513,7 +1513,7 @@ type SlugUpdate struct {
 	SummaryLine       string // For summary
 	RetractDocContent string // For retract / retractStale
 	// SourceChunks lists the chunk IDs (within KnowledgeID) that substantively
-	// support this update. Mirrors Item.SourceChunks for convenience — the
+	// support this update. Mirrors Item.SourceChunks for convenience - the
 	// Reduce phase reads from here to avoid an extra field hop.
 	SourceChunks []string
 	// DocSummary is the document-level summary body produced by
@@ -1566,7 +1566,7 @@ func previewStringSlice(items []string, limit int) string {
 // `limit` extracted entities or concepts so the trace viewer's
 // postprocess.wiki.extract span shows actual names/slugs/descriptions
 // instead of bare counts. Each item is trimmed to a small fixed
-// budget — these end up serialised into the spans table's JSONB
+// budget - these end up serialised into the spans table's JSONB
 // output column, so the cumulative size matters more than per-item
 // fidelity.
 func previewExtractedItems(items []extractedItem, limit int) []map[string]string {
@@ -1590,7 +1590,7 @@ func previewExtractedItems(items []extractedItem, limit int) []map[string]string
 
 // topCitedSlugs returns the top `limit` slugs by chunk-citation count.
 // Used by postprocess.wiki.classify so the trace surfaces which
-// candidate slugs the citation pass attached the most chunks to —
+// candidate slugs the citation pass attached the most chunks to -
 // useful when triaging "this LLM run extracted weird things" without
 // having to open and diff full chunk lists.
 func topCitedSlugs(citations map[string][]string, limit int) []map[string]any {
@@ -1663,14 +1663,14 @@ var wikiLinkRE = regexp.MustCompile(`\[\[([^\[\]\|\s]+)(?:\|([^\]]+))?\]\]`)
 // for every extracted slug it knows about, but slug extraction happens
 // during map (parallel with summary generation) and the actual page
 // creation happens later in reduce. When reduce's WikiPageModifyUserPrompt
-// fails on an entity/concept slug the page never gets written — and
+// fails on an entity/concept slug the page never gets written - and
 // the already-persisted summary is left holding a `[[entity/foo|name]]`
 // link that 404s.
 //
 // We pass the batch's affected-slug set + the SlugTitleMany fetcher
 // to the resolver so that LLM-mangled slugs (e.g. extra pinyin hyphens
 // in "shang-hai-tower" vs "shanghai-tower") are healed in place rather
-// than stripped to plain text — preserving cross-link information
+// than stripped to plain text - preserving cross-link information
 // whenever the display text or surface form unambiguously identifies a
 // live page.
 //
@@ -1741,7 +1741,7 @@ func (s *wikiIngestService) sanitizeDeadSummaryLinks(
 // The fetcher already filters out archived / system pages, so missing
 // entries naturally translate to "not live" without an extra check.
 //
-// titleToSlug is keyed by the page's exact title only — we don't have
+// titleToSlug is keyed by the page's exact title only - we don't have
 // aliases in the lite projection. That's an acceptable trade-off: the
 // reported breakage pattern is "slug munged, display = title", not
 // "slug munged, display = alias", so display-by-title carries the
@@ -1775,7 +1775,7 @@ func (s *wikiIngestService) resolveLiveSlugs(
 // the dead slug can be repaired:
 //
 //   - If the resolver maps the dead slug to a live one (typically via
-//     display-text reverse lookup or hyphen-normalized equality —
+//     display-text reverse lookup or hyphen-normalized equality -
 //     see resolveDeadSlug), the link is REWRITTEN with the corrected
 //     slug. Display text is preserved.
 //   - If no live candidate is close enough, the link is STRIPPED to
@@ -1822,7 +1822,7 @@ func stripDeadWikiLinks(
 			return "[[" + resolved + "]]"
 		}
 
-		// (2) Strip — best-effort plain text. Prefer the LLM-supplied
+		// (2) Strip - best-effort plain text. Prefer the LLM-supplied
 		// display text; otherwise humanize the slug's last path segment
 		// so the prose stays readable.
 		changed = true
@@ -1839,7 +1839,7 @@ func stripDeadWikiLinks(
 
 // cleanDeadLinks rewrites `[[slug]]` references in the batch's affected
 // pages whose targets no longer exist (or were archived). Pure text
-// cleanup — no LLM call.
+// cleanup - no LLM call.
 //
 // Scope is intentionally limited to the slugs touched by this batch:
 // at 4w-document scale the legacy "scan every page in the KB" path was
@@ -1905,7 +1905,7 @@ func (s *wikiIngestService) cleanDeadLinks(ctx context.Context, kbID string, aff
 		}
 
 		// (3) Build the title->slug reverse-lookup map for fuzzy
-		// resolve. We pull titles for the live slugs only — those
+		// resolve. We pull titles for the live slugs only - those
 		// are the candidates a dead reference could be remapped to.
 		titles := batchCtx.SlugTitleMany(ctx, []string(page.OutLinks))
 		titleToSlug := make(map[string]string, len(titles))
@@ -1941,7 +1941,7 @@ func (s *wikiIngestService) cleanDeadLinks(ctx context.Context, kbID string, aff
 //
 // Scope is intentionally limited to two slug sets:
 //
-//  1. The affected pages themselves — we only rewrite their content.
+//  1. The affected pages themselves - we only rewrite their content.
 //  2. The candidate refs come from (a) the affected pages' existing
 //     out-links (already known to be relevant via prior linkification
 //     or manual edits) plus (b) the batch's freshly-written sibling
@@ -2062,7 +2062,7 @@ const wikiTaxonomyRelevantTopK = 3
 // fed forward as "existing folders" so later chunks converge onto the same tree.
 const wikiTaxonomyPlanChunkSize = 60
 
-const wikiTaxonomyEmptyTreeHint = "(none yet — this knowledge base has no folders, design a fresh directory)"
+const wikiTaxonomyEmptyTreeHint = "(none yet - this knowledge base has no folders, design a fresh directory)"
 
 type wikiTaxonomyNode struct {
 	children map[string]*wikiTaxonomyNode
@@ -2139,7 +2139,7 @@ func formatExistingTaxonomyForPrompt(paths [][]string) string {
 //
 // Backed by idx_wiki_pages_source_refs (GIN jsonb_path_ops, migration
 // 000041) and the legacy text-index fallback for "kid|title" entries.
-// We project to slugs only — no need to load full row content for a
+// We project to slugs only - no need to load full row content for a
 // per-doc snapshot.
 //
 // Index/log slugs (wiki-intrinsic system pages) never carry real
@@ -2239,12 +2239,12 @@ const indexIntroSummaryCap = 200
 //   - First-time generation (no existing intro, or only the legacy
 //     placeholder): the LLM gets a CAPPED window of the most recent
 //     summary pages (most-recently-updated wins). Compare with the
-//     legacy path which loaded ALL summaries — at 4w-document scale
+//     legacy path which loaded ALL summaries - at 4w-document scale
 //     that produced multi-MB prompts that simply broke the context
 //     window and silently fell back to a hardcoded intro.
 //   - Incremental update: the LLM gets only the existing intro plus
 //     the change description for THIS batch. Document summaries are
-//     intentionally NOT included — at scale the change-description
+//     intentionally NOT included - at scale the change-description
 //     alone is enough signal for "what landed?", and excluding the
 //     full summary set keeps the prompt size bounded regardless of
 //     KB size.
@@ -2320,7 +2320,7 @@ func (s *wikiIngestService) rebuildIndexPage(ctx context.Context, chatModel chat
 	case changeDesc != "":
 		// Incremental update: only the existing intro + this batch's
 		// change description go into the prompt. We deliberately stop
-		// passing the full DocumentSummaries set here — at 4w docs it
+		// passing the full DocumentSummaries set here - at 4w docs it
 		// would re-flood the context every batch, and the
 		// change-description block already encodes the "what just
 		// changed" signal the prompt is asking for.
@@ -2442,7 +2442,7 @@ func xmlEscape(s string) string {
 
 // deduplicateExtractedBatch deduplicates both entities and concepts against
 // existing wiki pages in a single LLM call. Pre-filters candidates via the
-// pg_trgm trigram index on lower(title) — every new item issues a
+// pg_trgm trigram index on lower(title) - every new item issues a
 // FindSimilarPages probe and the union of top-K hits across all items is
 // the candidate set. This replaces the legacy "ListAllPages + Go-side
 // surface-form Jaccard" path that scaled O(P × N) on large KBs.
@@ -2472,7 +2472,7 @@ func (s *wikiIngestService) deduplicateExtractedBatch(
 	// itemCandidates additionally records, per new item, the slugs that
 	// surfaced for THAT item specifically. The prompt only ever sees the
 	// flattened union, so validMerge below uses this per-item scoping to
-	// reject a merge whose target was pulled in for a *different* item —
+	// reject a merge whose target was pulled in for a *different* item -
 	// the class of hallucination the union otherwise enables (e.g. weak
 	// models emitting entity/tencent-open → entity/hiring-agent, which
 	// share no trigram signal and were never candidates for each other).
@@ -2539,7 +2539,7 @@ func (s *wikiIngestService) deduplicateExtractedBatch(
 	}
 
 	if len(candidatePages) == 0 {
-		// No similar existing pages — identity reservations still make
+		// No similar existing pages - identity reservations still make
 		// concurrent batches converge before they materialize new pages.
 		logger.Infof(ctx, "wiki ingest: no similar existing pages found for %d new items", len(entities)+len(concepts))
 		return stabilize()
@@ -2549,7 +2549,7 @@ func (s *wikiIngestService) deduplicateExtractedBatch(
 
 	// Group each new item with ONLY the existing pages that surfaced for
 	// its own similarity probe. Presenting the model two flat lists (all
-	// new items × all candidates) invites cross-item mispairings — it has
+	// new items × all candidates) invites cross-item mispairings - it has
 	// no way to tell which candidate is relevant to which item, so a weak
 	// model pairs unrelated slugs that merely coexist in the prompt. A
 	// per-item shortlist turns dedup into a local yes/no decision against
@@ -2657,7 +2657,7 @@ func (s *wikiIngestService) deduplicateExtractedBatch(
 //     HTTP 408/429/5xx, context deadline exceeded (when the parent ctx is
 //     still alive), or generic "timeout"/"connection reset" wording.
 //     4xx (except 408/429) is a caller-side fault and fails fast.
-//   - Backoff is exponential base 2s: 2s, 4s, 8s — roughly wikiLLMBackoffBase
+//   - Backoff is exponential base 2s: 2s, 4s, 8s - roughly wikiLLMBackoffBase
 //   - 2^(attempt-1). Honors ctx cancellation so the task can abort.
 //
 // This exists because wiki ingest makes several independent LLM calls per
@@ -2666,8 +2666,8 @@ func (s *wikiIngestService) deduplicateExtractedBatch(
 // summary page permanently. Retries plus failedOps requeuing (see
 // mapOneDocument) turn those events into at-most-a-few-minute hiccups.
 //
-// Callers that need the provider stop reason — or that write a page body and
-// therefore care whether the answer was cut off — use
+// Callers that need the provider stop reason - or that write a page body and
+// therefore care whether the answer was cut off - use
 // generateWithTemplateResult instead.
 func (s *wikiIngestService) generateWithTemplate(ctx context.Context, chatModel chat.Chat, promptTpl string, data map[string]string) (string, error) {
 	result, err := s.generateWithTemplateResult(ctx, chatModel, promptTpl, data)
@@ -2688,7 +2688,7 @@ type wikiTemplateResult struct {
 // errWikiPageRewriteTruncated is returned when the editor model stopped at the
 // completion budget and every continuation round did too. The caller treats it
 // like any other reduce failure: it logs, keeps the existing page, and flags the
-// addition as failed — a truncated page is never written.
+// addition as failed - a truncated page is never written.
 var errWikiPageRewriteTruncated = errors.New("wiki page rewrite truncated at the completion budget")
 
 // isLengthStopFinishReason reports whether a provider finish reason means the
@@ -2709,8 +2709,8 @@ func isLengthStopFinishReason(reason string) bool {
 //
 // Why continuation lives here: reduce hands the editor the WHOLE page and takes
 // back a full rewrite (see reduceSlugUpdates), so the model's output is not a
-// summary of the page, it IS the page. Long enumerations — a certificate ledger
-// with a hundred-plus holder rows — are emitted row by row and the provider
+// summary of the page, it IS the page. Long enumerations - a certificate ledger
+// with a hundred-plus holder rows - are emitted row by row and the provider
 // stops the model mid-table. Before this, the fragment was persisted verbatim:
 // a 146-row source table became a 119-row page, the page history showed an
 // ordinary edit, and nothing in the logs said "truncated".
@@ -2965,8 +2965,8 @@ func (s *wikiIngestService) awaitWikiPromptWarmup(ctx context.Context, key strin
 // permanent" choice keeps retries cheap and avoids masking real bugs.
 //
 // We treat the following as transient:
-//   - HTTP 408 (client request timeout — upstream usually didn't process),
-//     429 (rate-limited — retry after backoff may succeed), 5xx (any
+//   - HTTP 408 (client request timeout - upstream usually didn't process),
+//     429 (rate-limited - retry after backoff may succeed), 5xx (any
 //     server-side fault, including the 504 "Remote error, timeout with
 //     60" we see from the gateway in front of several LLM providers).
 //   - Wrapped context.DeadlineExceeded when the parent ctx is still alive
@@ -3003,7 +3003,7 @@ func isTransientLLMError(ctx context.Context, err error) bool {
 	if err == nil {
 		return false
 	}
-	// Never retry after the parent ctx itself expired — the task is
+	// Never retry after the parent ctx itself expired - the task is
 	// being cancelled and the next attempt would just fail again.
 	if ctx.Err() != nil {
 		return false
@@ -3011,7 +3011,7 @@ func isTransientLLMError(ctx context.Context, err error) bool {
 
 	msg := err.Error()
 	// Providers that bubble HTTP status up formatted as
-	// "API request failed with status NNN: ..." — match that first.
+	// "API request failed with status NNN: ..." - match that first.
 	for _, s := range []string{
 		"status 408", "status 429",
 		"status 500", "status 501", "status 502", "status 503", "status 504",
@@ -3063,7 +3063,7 @@ func isTransientLLMError(ctx context.Context, err error) bool {
 // (written by cleanupWikiOnKnowledgeDelete) as a fast path, then falls back
 // to the DB. A nil result from GetKnowledgeByIDOnly also counts as gone: the
 // repo layer uses GORM First() which filters soft-deleted rows, so a
-// soft-deleted knowledge surfaces as "not found" here — exactly what we want.
+// soft-deleted knowledge surfaces as "not found" here - exactly what we want.
 // Other lookup errors leave liveness unknown and must reach the caller so it
 // can retry instead of discarding the document's pending work.
 func (s *wikiIngestService) isKnowledgeGone(ctx context.Context, kbID, knowledgeID string) (bool, error) {
@@ -3143,7 +3143,7 @@ func (s *wikiIngestService) filterLiveUpdates(
 
 // reconstructContent rebuilds document text from chunks.
 //
-// This only concatenates text-type chunks — image OCR / caption information is
+// This only concatenates text-type chunks - image OCR / caption information is
 // stored on image_ocr / image_caption child chunks (see image_multimodal.go),
 // not on the parent text chunk's ImageInfo field. Callers that need the full
 // enriched content (with OCR / captions inlined) should call
@@ -3258,7 +3258,7 @@ func appendUnique(arr types.StringArray, s string) types.StringArray {
 var minTextContentRunes = 10
 
 var (
-	// Markdown image references like ![alt](path) — pure visual placeholders
+	// Markdown image references like ![alt](path) - pure visual placeholders
 	// with no extractable text, so the whole reference is removed.
 	mdImageRefRE = regexp.MustCompile(`!\[[^\]]*\]\([^)]*\)`)
 
@@ -3441,7 +3441,7 @@ func replaceImagePlaceholderTokens(s string, urlMap map[string]string) string {
 // This shape matters: when VLM OCR succeeds on a scanned PDF page, the
 // extracted text reaches downstream code wrapped in <image_ocr> tags inside
 // an <image> block. A naive "strip the whole <image>...</image> block"
-// approach would discard the OCR text — the exact opposite of what we want.
+// approach would discard the OCR text - the exact opposite of what we want.
 func stripImageMarkup(s string) string {
 	s = imageOriginalBlockRE.ReplaceAllString(s, "")
 	s = mdImageRefRE.ReplaceAllString(s, "")

@@ -373,7 +373,7 @@ func (s *TenantSkillService) upsertCatalogFromBundle(
 			return nil, err
 		}
 		// The row that lost the race is never written, and the object above is
-		// keyed by its ID, so nothing will ever name it again — the retry below
+		// keyed by its ID, so nothing will ever name it again - the retry below
 		// stores its own copy under the winner's key.
 		if ref := strings.TrimSpace(row.BundleRef); ref != "" {
 			s.deleteBundleBestEffort(ctx, tenantID, ref)

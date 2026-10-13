@@ -747,7 +747,7 @@ func (h *Handler) setupSSEStream(reqCtx *qaRequestContext, generateTitle bool, m
 	// recall is marked inside the QA services, while extraction, the explicit
 	// "remember this" route and document affinity are all kicked off from
 	// completeAssistantMessage on a context descended from this one. Marking
-	// the root of the async work is what keeps them from disagreeing — an
+	// the root of the async work is what keeps them from disagreeing - an
 	// agent that cannot read the memory must not keep writing to it.
 	if reqCtx.customAgent != nil {
 		baseCtx = types.ApplyAgentMemoryPreference(baseCtx, reqCtx.customAgent.Config.MemoryEnabled)
@@ -766,9 +766,9 @@ func (h *Handler) setupSSEStream(reqCtx *qaRequestContext, generateTitle bool, m
 	// Mid-run steering: only ReAct agent turns (qaModeAgent) have an engine
 	// loop to drain at and a teardown that ClearLiveRun / kick / discard.
 	// A custom agent configured as quick-answer still has customAgent != nil
-	// but executeQA runs KnowledgeQA — publishing a sink there parks /steer
+	// but executeQA runs KnowledgeQA - publishing a sink there parks /steer
 	// messages until the Redis TTL expires. The sink is also mirrored onto
-	// reqCtx so the async goroutine's buildQARequest() picks it up — the
+	// reqCtx so the async goroutine's buildQARequest() picks it up - the
 	// streamCtx copy alone is never read by the QA call path.
 	//
 	// SetLiveRun happens before SSE headers: a 409/503 after text/event-stream
@@ -1046,7 +1046,7 @@ func (h *Handler) AgentQA(c *gin.Context) {
 	// just sees a broken stream. Reject early with a clear 400 so the
 	// frontend can recover (e.g. fall back to quick-answer). Most likely
 	// cause is a stale localStorage settings blob where selectedAgentId
-	// got blanked but isAgentEnabled stayed true — usually after a
+	// got blanked but isAgentEnabled stayed true - usually after a
 	// cross-tenant switch where the previously selected agent is no
 	// longer visible.
 	if agentModeEnabled && reqCtx.customAgent == nil {
@@ -1419,10 +1419,10 @@ func (h *Handler) executeQA(reqCtx *qaRequestContext, mode qaMode, generateTitle
 
 				// Claim any follow-up before completing this row. liveAgentRun
 				// treats a completed assistant as idle and would ClearLiveRun
-				// the old marker — exactly the new_run window. The follow-up
+				// the old marker - exactly the new_run window. The follow-up
 				// SetLiveRun's first; this run's CAS ClearLiveRun then no-ops.
 				if streamCtx.asyncCtx.Err() != nil {
-					// The turn was cancelled — a user stop. Stopping means
+					// The turn was cancelled - a user stop. Stopping means
 					// stopping: queued follow-ups are dropped rather than
 					// fired off as a brand-new run the user did not ask for.
 					injected := map[string]struct{}{}
@@ -1707,8 +1707,8 @@ func (h *Handler) resolveTemporaryAttachments(streamCtx *sseStreamContext, reqCt
 // persistResolvedAttachmentContent writes the parsed content of pre-uploaded
 // attachments back onto the stored user message so multi-turn history can
 // replay it. Entries are matched by their temporary-document ID; only those
-// present on the message are enriched. Failures are logged but never bubble up
-// — losing the write only degrades follow-up context, it must not fail the turn.
+// present on the message are enriched. Failures are logged but never bubble up -
+// losing the write only degrades follow-up context, it must not fail the turn.
 func (h *Handler) persistResolvedAttachmentContent(
 	ctx context.Context, reqCtx *qaRequestContext, resolved types.MessageAttachments,
 ) {
@@ -1823,7 +1823,7 @@ func (h *Handler) partitionReadyAttachments(ctx context.Context, tenantID uint64
 
 // persistLastRequestState records the input-bar state the user just sent so
 // that reopening this session restores agent/model/KB/web-search/MCP picks.
-// Pure UI memo — failures are logged but never bubble up; the caller runs
+// Pure UI memo - failures are logged but never bubble up; the caller runs
 // this in a goroutine and is safe to discard the returned context.
 func (h *Handler) persistLastRequestState(parentCtx context.Context, reqCtx *qaRequestContext, mode qaMode) {
 	// Detach from the HTTP request lifetime: this write must survive both

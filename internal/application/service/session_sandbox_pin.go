@@ -89,7 +89,7 @@ func (p *SessionSandboxPinner) Read(ctx context.Context, sessionID string) (Sand
 // live sandbox" gets the same "no" either way, but a caller that just created
 // a sandbox must not mistake a vanished session for a clean pin.
 //
-// Soft-deleted sessions count as absent — GORM scopes them out — which is what
+// Soft-deleted sessions count as absent - GORM scopes them out - which is what
 // we want, since deleting a session also destroys its sandbox.
 func (p *SessionSandboxPinner) read(ctx context.Context, sessionID string) (SandboxPin, bool, error) {
 	var row struct {
@@ -126,8 +126,8 @@ func (p *SessionSandboxPinner) read(ctx context.Context, sessionID string) (Sand
 // on a second backend.
 //
 // A missing or soft-deleted session is an error rather than an empty result.
-// Pin is called just after a sandbox was created, so answering the zero pin —
-// which means "no live sandbox" everywhere else — would hide a real sandbox
+// Pin is called just after a sandbox was created, so answering the zero pin -
+// which means "no live sandbox" everywhere else - would hide a real sandbox
 // whose backend nobody recorded, leaving the orphan reaper as the only way
 // back.
 func (p *SessionSandboxPinner) Pin(
@@ -255,7 +255,7 @@ func resolveSandboxForExecution(
 			// config row: once for the workspace kill switch, once for an empty
 			// or deployment-default config id. A named backend is the proof,
 			// and it is the same condition that is allowed to CREATE a pin
-			// below — what may write a pin may update whose it is.
+			// below - what may write a pin may update whose it is.
 			//
 			// A config that exists but resolves to type "disabled" is skipped
 			// too. Ownership is genuine there, but such a config never creates

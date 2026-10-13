@@ -89,8 +89,8 @@ func splitResidentInterests(items []*types.MemoryItem) (others, interests []*typ
 // selectResidentInterests chooses which interests go into the resident block.
 //
 // It returns two lists because injecting and reporting are different questions.
-// Everything in `selected` is injected, up to the cap. Only `relevant` — the
-// ones the current question actually matches — is reported to the chat UI: an
+// Everything in `selected` is injected, up to the cap. Only `relevant` - the
+// ones the current question actually matches - is reported to the chat UI: an
 // interest that is present merely because there was room is standing
 // background, and listing it as "recalled for this answer" would fill the
 // timeline with memories that had nothing to do with what was asked.
@@ -173,7 +173,7 @@ func vectorFanout(maxItems int) int {
 // The pool has to grow, or the whole point of searching the store is lost:
 // the rankings that fusion combines must address the same slice, so a match
 // that only the vector side found needs a place in it. Returns the ranking,
-// the pool it addresses, and how many items the search added — the last one
+// the pool it addresses, and how many items the search added - the last one
 // only so the trace can show it.
 func mergeVectorHits(
 	candidates []*types.MemoryItem,

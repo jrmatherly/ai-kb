@@ -521,7 +521,7 @@ func CloneContext(ctx context.Context) context.Context {
 	// Preserve the active OpenTelemetry span across the rebuild. The Langfuse
 	// *Trace handle above carries the trace id, but span PARENTING flows through
 	// the OTel span context (trace.SpanFromContext), which CloneContext would
-	// otherwise drop — orphaning child spans opened after a CloneContext (e.g.
+	// otherwise drop - orphaning child spans opened after a CloneContext (e.g.
 	// the agent engine's agent.execute becoming a separate trace from the HTTP
 	// root). Re-inject the recording span so children stitch to the same trace.
 	if sp := trace.SpanFromContext(ctx); sp.IsRecording() {

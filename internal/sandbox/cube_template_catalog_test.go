@@ -576,7 +576,7 @@ func TestCubeRemoteClientDeleteSupersededStandardTemplatesSkipsKeepID(t *testing
 }
 
 // The plain and Cube images share a repository, so a template built from either
-// one is still recognised as ours — which is what lets an existing template
+// one is still recognised as ours - which is what lets an existing template
 // built from the envd-less image be rebuilt in place rather than duplicated.
 func TestCubeTemplateImageIsRecognisedAsStandard(t *testing.T) {
 	require.True(t, isStandardTemplateImage(DefaultCubeTemplateImage))

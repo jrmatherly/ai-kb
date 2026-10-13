@@ -1,4 +1,4 @@
-// Package types — shared secret redaction helpers.
+// Package types - shared secret redaction helpers.
 //
 // VectorStore connection configs and tenant KV configs (web search, parser
 // engine, storage engine) use the redacted-placeholder round-trip pattern:

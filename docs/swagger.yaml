@@ -270,7 +270,7 @@ definitions:
         description: |-
           ReasoningContent stores the OpenAI-protocol reasoning_content emitted by the
           model in this round. Persisted on AgentStep so cross-turn replay can put it
-          back on the assistant message — required by MiMo / DeepSeek V3.2+ thinking
+          back on the assistant message - required by MiMo / DeepSeek V3.2+ thinking
           mode, ignored by providers that don't recognize the field.
         type: string
       reasoning_metadata:
@@ -645,7 +645,7 @@ definitions:
           the system CA pool. Cross-driver applicable but currently only
           the OpenSearch driver (Phase 3) reads this field. Note: this
           differs from the Qdrant-specific UseTLS below, which *enables*
-          TLS on gRPC connections — InsecureSkipVerify only controls
+          TLS on gRPC connections - InsecureSkipVerify only controls
           *verification* of an already-TLS connection.
         type: boolean
       password:
@@ -1210,7 +1210,7 @@ definitions:
       network_mode:
         description: |-
           NetworkMode is the Docker network sandboxes join: "bridge" (default) or
-          "none" for no egress. Nothing else is accepted — host and container:
+          "none" for no egress. Nothing else is accepted - host and container:
           modes share another namespace outright, and a named network is usually
           the deployment's own compose network, which would put the sandbox next
           to Postgres and Redis.
@@ -1476,7 +1476,7 @@ definitions:
         description: |-
           Status maps a namespaced attribute id ("builtin:caption") to
           "on"/"off". Only consulted in custom mode; an unrecorded field is
-          off. Source-declared on/off does not exist — activation is always
+          off. Source-declared on/off does not exist - activation is always
           the user's own record.
         type: object
     type: object
@@ -1526,7 +1526,7 @@ definitions:
       on_unobserved:
         description: |-
           OnUnobserved is the OCR decision used when the observation does not
-          answer for one of the attributes the policy reads — the attribute is
+          answer for one of the attributes the policy reads - the attribute is
           absent because the model skipped the line, or because the value it wrote
           was not one of the allowed ones. The default is true: an incomplete
           observation keeps extracting, so a missed block of text costs one extra
@@ -1795,7 +1795,7 @@ definitions:
           which made pinning a workspace-wide ordering decision gated behind
           the kb-edit RBAC guard. The columns are still present in legacy
           schemas for rollback safety but are no longer read or written by
-          the application — both fields are tagged `gorm:"-"` so GORM
+          the application - both fields are tagged `gorm:"-"` so GORM
           ignores them on every CRUD call and the list handler stamps them
           after enriching with the caller's pin set.
         type: boolean
@@ -1908,8 +1908,8 @@ definitions:
           uses. A request that does not mention this field must leave the image
           settings alone: the attribute-observation switch and the attribute policy
           are things a knowledge base accumulates, and a client that predates them
-          would otherwise reset the lot on any save. Sending an object — empty
-          included — replaces the whole configuration.
+          would otherwise reset the lot on any save. Sending an object - empty
+          included - replaces the whole configuration.
       indexing_strategy:
         allOf:
         - $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.IndexingStrategy'
@@ -2205,7 +2205,7 @@ definitions:
           who only belong to their home workspace) so frontends can render a
           workspace switcher without a follow-up request. Serialised without
           omitempty so the field is always present as a JSON array (possibly
-          empty) — the "always populated" contract relies on the server side
+          empty) - the "always populated" contract relies on the server side
           guaranteeing a non-nil slice.
         items:
           $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.Membership'
@@ -2492,8 +2492,8 @@ definitions:
         type: integer
       retrieval_conditioning:
         description: |-
-          RetrievalConditioning lets memory shape retrieval — query rewriting and
-          per-document ranking — rather than only being appended to the answer
+          RetrievalConditioning lets memory shape retrieval - query rewriting and
+          per-document ranking - rather than only being appended to the answer
           prompt. This is where memory earns its keep in a knowledge-base product.
         type: boolean
       vector_recall:
@@ -2634,7 +2634,7 @@ definitions:
         description: |-
           SandboxCheckpoint is the git commit this assistant turn produced in the
           session sandbox's /workspace. Nil for user messages, for turns that ran
-          without a sandbox, and for turns whose commit failed (best-effort — a
+          without a sandbox, and for turns whose commit failed (best-effort - a
           failed checkpoint must never block the reply). A message without a
           checkpoint cannot serve as a fork point with sandbox state.
       session_id:
@@ -2675,7 +2675,7 @@ definitions:
           (msg.Artifacts[index]); dropping it would shift every later file's index
           and hand an old link the wrong blob. Keeping it also keeps the entry in
           ArtifactCollector's de-duplication set, so the next collect does not
-          re-attach the very file that was deleted — its sandbox mtime has not
+          re-attach the very file that was deleted - its sandbox mtime has not
           moved. Clients filter these out; the bytes are already reclaimed.
         type: string
       file_name:
@@ -3096,7 +3096,7 @@ definitions:
         description: |-
           OwnerTenantID is the persisted owner workspace of the organization
           (Plan 3, migration 000046). Frontend uses this to identify the
-          "owner row" in the workspace-keyed members list — comparing
+          "owner row" in the workspace-keyed members list - comparing
           member.tenant_id against owner_tenant_id is the post-Plan-3
           equivalent of the old member.user_id == owner_id check.
         type: integer
@@ -4287,7 +4287,7 @@ definitions:
       last_modified_by_name:
         description: |-
           LastModifiedByName is a display label resolved from LastModifiedBy
-          (the user's UUID) at handler time — username when available,
+          (the user's UUID) at handler time - username when available,
           otherwise email. Empty for virtual rows that were never persisted
           (LastModifiedBy=""). Not stored: derived per request so renaming
           a user reflects on the next reload without a backfill job.
@@ -4456,7 +4456,7 @@ definitions:
           type: string
         description: "EnvVars are additional environment variables injected into every\nsandbox
           created for this tenant. \U0001F512 Values are encrypted at rest.\nThese
-          become visible to all scripts running in the tenant's\nsandboxes — do not
+          become visible to all scripts running in the tenant's\nsandboxes - do not
           place secrets here that scripts must not access."
         type: object
       network:
@@ -4464,7 +4464,7 @@ definitions:
         - $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.SandboxNetworkPolicy'
         description: |-
           Network is the outbound/inbound network policy applied to every sandbox
-          created from this config — chat sessions, skill installs and deep
+          created from this config - chat sessions, skill installs and deep
           connectivity probes alike. nil and the zero value mean the same thing:
           outbound egress allowed, inbound public access closed.
       sandbox_type:
@@ -4874,8 +4874,9 @@ definitions:
         description: 'Deprecated: Use WebSearchProviderEntity.Parameters.APIKey instead.'
         type: string
       proxy_url:
-        description: Optional per-request proxy override; normally empty — use WebSearchProviderEntity.Parameters.proxy_url.
-          Merged at call time when set.
+        description: |-
+          Optional per-request proxy override; normally empty, use
+          WebSearchProviderEntity.Parameters.proxy_url. Merged at call time when set.
         type: string
       rerank_model_id:
         description: rerank model ID (RAG compression)
@@ -5247,7 +5248,7 @@ definitions:
       chunk_refs:
         description: |-
           ChunkRefs records the specific source-document chunks this page was
-          built from — one UUID per cited chunk. Populated during ingest from
+          built from - one UUID per cited chunk. Populated during ingest from
           the chunk-citation pass; refreshed wholesale whenever the page is
           re-materialized. Empty for summary pages (they are document-level
           synopses and don't carry chunk-level citations). Use this when you
@@ -5272,7 +5273,7 @@ definitions:
       folder_id:
         description: |-
           FolderID is the single source of truth for where this page sits in the
-          directory tree — a reference to wiki_folders.id ("" = wiki root). The
+          directory tree - a reference to wiki_folders.id ("" = wiki root). The
           CategoryPath / WikiPath / Depth fields below are denormalized caches
           recomputed from this folder's chain on every write so list/index/search
           queries don't have to join wiki_folders.
@@ -5385,7 +5386,7 @@ definitions:
       chunk_refs:
         description: |-
           ChunkRefs records the specific source-document chunks this page was
-          built from — one UUID per cited chunk. Populated during ingest from
+          built from - one UUID per cited chunk. Populated during ingest from
           the chunk-citation pass; refreshed wholesale whenever the page is
           re-materialized. Empty for summary pages (they are document-level
           synopses and don't carry chunk-level citations). Use this when you
@@ -5410,7 +5411,7 @@ definitions:
       folder_id:
         description: |-
           FolderID is the single source of truth for where this page sits in the
-          directory tree — a reference to wiki_folders.id ("" = wiki root). The
+          directory tree - a reference to wiki_folders.id ("" = wiki root). The
           CategoryPath / WikiPath / Depth fields below are denormalized caches
           recomputed from this folder's chain on every write so list/index/search
           queries don't have to join wiki_folders.
@@ -16101,9 +16102,9 @@ paths:
   /sandbox-configs/{id}/skills/{skillId}/transcript:
     get:
       description: |-
-        Server-sent replay of everything the installer agent did — the
+        Server-sent replay of everything the installer agent did - the
         prompt it was given, its thinking, the commands it ran and
-        their output — followed live while the install is still
+        their output - followed live while the install is still
         running. Frames are the same shape the chat stream uses, so a
         console renders an install with the components it renders a
         chat turn with. 404 once the event log has expired; the

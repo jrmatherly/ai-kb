@@ -25,7 +25,7 @@ type DataSourceService interface {
 	DeleteDataSource(ctx context.Context, id string) error
 
 	// UpdateDataSourceCredentials replaces the connector credential map.
-	// DataSource credentials are per-connector atomic — there is no
+	// DataSource credentials are per-connector atomic - there is no
 	// individual-field PUT, the whole map gets replaced. Returns the updated
 	// data source so the caller can re-fetch the redacted shape.
 	UpdateDataSourceCredentials(

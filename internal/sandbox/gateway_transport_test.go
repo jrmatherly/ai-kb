@@ -158,7 +158,7 @@ func TestSandboxGatewayTransportPoolRoutesE2BDataPlane(t *testing.T) {
 // The configured sandbox domain is not a reliable way to recognise data-plane
 // traffic. sandbox_domain is optional for E2B (MissingRequiredFields does not
 // demand it) and, more fundamentally, go-e2b's envdBaseURL prefers the domain
-// the control plane reported over the client-wide one — so the authority the
+// the control plane reported over the client-wide one - so the authority the
 // SDK actually dials can differ from anything in the config. Matching on it
 // meant a configured gateway was silently never used.
 func TestGatewaySplitTransportRoutesDataPlaneWithoutConfiguredDomain(t *testing.T) {
@@ -190,7 +190,7 @@ func TestGatewaySplitTransportRoutesDataPlaneOnServerReportedDomain(t *testing.T
 
 // E2B's own defaults are api.e2b.app plus sandbox domain e2b.app, so suffix
 // matching classified every control-plane call as data-plane traffic and dialled
-// it at the gateway — sending X-API-Key to the wrong endpoint, and downgrading
+// it at the gateway - sending X-API-Key to the wrong endpoint, and downgrading
 // it to plaintext when the gateway is http://.
 func TestGatewaySplitTransportKeepsControlHostOnControlTransport(t *testing.T) {
 	pool := NewSandboxGatewayTransportPoolWithPolicy(

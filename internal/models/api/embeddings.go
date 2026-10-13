@@ -14,7 +14,7 @@ type EmbeddingAPI string
 // The embedding protocols AI KB speaks.
 const (
 	// EmbeddingOpenAI is POST {base}/embeddings with {model, input[]} answering
-	// {data: [{embedding, index}]} — the shape OpenAI defined and every
+	// {data: [{embedding, index}]} - the shape OpenAI defined and every
 	// compatible gateway copied. Jina, NVIDIA, Azure and AI KB Cloud speak
 	// it too, with their own optional fields, URL or credential.
 	EmbeddingOpenAI EmbeddingAPI = "openai-embeddings"
@@ -86,7 +86,7 @@ type ImageEmbedder interface {
 // not cover every input.
 //
 // Both halves matter. A vendor is free to answer out of order, so the index
-// has to be honoured rather than assumed — and reading the wrong field for it
+// has to be honoured rather than assumed - and reading the wrong field for it
 // silently collapses a whole batch onto slot 0, which is what
 // Tencent/WeKnora#3484 was. An unfilled slot then reaches the index as an
 // empty vector, where it is stored and poisons retrieval without anything

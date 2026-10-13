@@ -112,7 +112,7 @@ func (u *TokenUsage) Accumulate(other TokenUsage) {
 
 // mergeUnreportedCacheStatus folds the statuses of never-reported usage.
 // "unsupported" survives only while every accumulated call was itself
-// classified unsupported — the first accumulation adopts the incoming
+// classified unsupported - the first accumulation adopts the incoming
 // classification, and any later call that is not known-unsupported (an
 // unreported or unclassified one) degrades the aggregate to unreported.
 func mergeUnreportedCacheStatus(accumulated, incoming PromptCacheStatus) PromptCacheStatus {
@@ -219,7 +219,7 @@ type ChatResponse struct {
 	// streamed live to the final-answer UI area during this round (i.e. the
 	// model answered with plain content). When true, the natural-stop branch
 	// must only emit the closing
-	// Done marker for AnswerEventID instead of re-emitting the whole answer —
+	// Done marker for AnswerEventID instead of re-emitting the whole answer -
 	// otherwise the answer would render twice and "jump" at end of stream.
 	// Transient, never persisted.
 	AnswerStreamed bool `json:"-"`
@@ -262,12 +262,13 @@ const (
 	// The UI shows a toolbar placeholder until ResponseTypeComplete carries
 	// the file list.
 	ResponseTypeArtifactsPending ResponseType = "artifacts_pending"
-	// ToolApprovalRequired: MCP tool marked dangerous — UI must collect user approval before execution continues
+	// ResponseTypeToolApprovalRequired means an MCP tool marked dangerous needs
+	// the user's approval, collected by the UI, before execution continues.
 	ResponseTypeToolApprovalRequired ResponseType = "tool_approval_required"
 	// ToolApprovalResolved: user approved/rejected (or timeout); informational for UI replay
 	ResponseTypeToolApprovalResolved ResponseType = "tool_approval_resolved"
 	// MCPOAuthRequired: an OAuth-enabled MCP service was invoked but the user
-	// has not authorized it — UI must surface an "Authorize" prompt and the
+	// has not authorized it - UI must surface an "Authorize" prompt and the
 	// agent pauses until authorization completes (or the wait times out).
 	ResponseTypeMCPOAuthRequired ResponseType = "mcp_oauth_required"
 	// MCPOAuthResolved: authorization completed / timed out / canceled;
@@ -282,7 +283,7 @@ const (
 	// so it never appears on the user-visible SSE stream. The running engine
 	// drains it at the next round boundary (SteerSink.PollSteer) or, when the
 	// loop has already exited, the run's teardown paths hand it to the next
-	// run — unless the turn was stopped, in which case it is discarded.
+	// run - unless the turn was stopped, in which case it is discarded.
 	ResponseTypeSteer ResponseType = "steer"
 	// ResponseTypeUserMessageInjected is emitted on the user-visible stream
 	// right after a steered message was accepted into the running turn: a
@@ -293,13 +294,13 @@ const (
 	ResponseTypeUserMessageInjected ResponseType = "user_message_injected"
 	// ResponseTypeContextCompacted is older conversation summarized away to
 	// fit the context window. Surfaced because it changes what the agent
-	// remembers — an answer that forgets an earlier instruction is otherwise
+	// remembers - an answer that forgets an earlier instruction is otherwise
 	// indistinguishable from the model ignoring it.
 	ResponseTypeContextCompacted ResponseType = "context_compacted"
 	// ResponseTypeInstallPrompt is the instruction a skill install handed to
 	// the installer agent. Only the skill install transcript emits this, and
-	// it emits it first, so replaying the log alone shows what was asked for
-	// — the console does not have to read the durable prompt row to caption
+	// it emits it first, so replaying the log alone shows what was asked for -
+	// the console does not have to read the durable prompt row to caption
 	// the run.
 	ResponseTypeInstallPrompt ResponseType = "install_prompt"
 )

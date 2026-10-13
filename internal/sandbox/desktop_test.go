@@ -90,7 +90,7 @@ func shellCode(src string) string {
 func TestStartDesktopScriptFastPathRequiresVNCPort(t *testing.T) {
 	// 6080-only "already ready" lets websockify sit up while x11vnc is dead.
 	// DialDesktop then 101s, RFB hello never comes, and the session slot is
-	// held until the handshake read times out — every retry is DESKTOP_BUSY.
+	// held until the handshake read times out - every retry is DESKTOP_BUSY.
 	src := startDesktopScript(t)
 	require.Contains(t, src, "port_open 6080")
 	require.Contains(t, src, "port_open 5900")
@@ -101,7 +101,7 @@ func TestStartDesktopScriptClosesLockFDInEveryDaemon(t *testing.T) {
 	// xfce4-session, dbus-launch, x11vnc and websockify all inherited fd 9
 	// and kept holding the flock after the script exited. Killing x11vnc and
 	// websockify then left Xvfb/XFCE holding it, so the next run blocked on
-	// flock forever — Exec timed out at 60s (exit=-1) and 6080 never returned.
+	// flock forever - Exec timed out at 60s (exit=-1) and 6080 never returned.
 	code := shellCode(startDesktopScript(t))
 	// spawn() carries both `9>&-` and the private stdio; the two daemons that
 	// cannot use it (dbus --fork, x11vnc -bg) spell it out.

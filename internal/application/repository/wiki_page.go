@@ -96,13 +96,13 @@ func (r *wikiPageRepository) Create(ctx context.Context, page *types.WikiPage) e
 }
 
 // Update updates an existing wiki page record with optimistic locking.
-// Increments version — use only for content changes visible to the user.
+// Increments version - use only for content changes visible to the user.
 // The caller must set page.Version to the expected current version.
 //
 // The write goes through an explicit column map (not GORM's struct Updates)
 // so cleared fields persist: struct Updates skips zero values, which used to
 // make "empty the summary" silently not stick while the follow-up UpdateMeta
-// map call *did* write empty status — one inconsistent half-update. The map
+// map call *did* write empty status - one inconsistent half-update. The map
 // covers every column UpdatePage mutates, so no UpdateMeta chaser is needed.
 func (r *wikiPageRepository) Update(ctx context.Context, page *types.WikiPage) error {
 	return updateWikiPageRow(r.db.WithContext(ctx), page)
@@ -170,7 +170,7 @@ func updateWikiPageRow(db *gorm.DB, page *types.WikiPage) error {
 	}
 	if result.RowsAffected == 0 {
 		page.Version = expectedVersion
-		// Could be not found or version conflict — check which
+		// Could be not found or version conflict - check which
 		var count int64
 		db.Model(&types.WikiPage{}).Where("id = ?", page.ID).Count(&count)
 		if count == 0 {
@@ -181,7 +181,7 @@ func updateWikiPageRow(db *gorm.DB, page *types.WikiPage) error {
 	return nil
 }
 
-// wikiRevisionListColumns is the projection for revision listings — every
+// wikiRevisionListColumns is the projection for revision listings - every
 // column except the potentially multi-hundred-KB content body.
 const wikiRevisionListColumns = "id, tenant_id, knowledge_base_id, page_id, slug, version, " +
 	"title, page_type, status, summary, aliases, edit_source, editor_id, edited_at, created_at"
@@ -254,7 +254,7 @@ func (r *wikiPageRepository) PruneRevisions(ctx context.Context, req types.WikiR
 
 // DeleteRevisionsByPage hard-deletes a page's whole snapshot history. Pages
 // themselves are soft-deleted, but a soft-deleted page is unreachable through
-// every read path, so its snapshots would be dead weight — and they are the
+// every read path, so its snapshots would be dead weight - and they are the
 // bulkiest rows the wiki stores.
 func (r *wikiPageRepository) DeleteRevisionsByPage(ctx context.Context, pageID string) error {
 	if pageID == "" {
@@ -291,8 +291,8 @@ func (r *wikiPageRepository) UpdateAutoLinkedContent(ctx context.Context, page *
 
 // UpdateMeta updates bookkeeping / provenance fields WITHOUT incrementing the
 // version number. "Content" for versioning purposes is the user-visible page
-// body (title/content/summary/page_type/status); everything else — links,
-// source refs, chunk refs, page_metadata — is considered bookkeeping and is
+// body (title/content/summary/page_type/status); everything else - links,
+// source refs, chunk refs, page_metadata - is considered bookkeeping and is
 // refreshed here so the version counter only advances on real edits.
 //
 // Used by link maintenance, re-ingest (same-content case), and status changes.
@@ -444,7 +444,7 @@ func (r *wikiPageRepository) ListByType(ctx context.Context, kbID string, pageTy
 // ListByTypeLight projects only the columns needed to render an index
 // directory entry (slug, title, summary) and paginates by title ASC.
 // This keeps the GET /wiki/index response cheap on KBs with tens of
-// thousands of pages — the old path loaded every row including its TEXT
+// thousands of pages - the old path loaded every row including its TEXT
 // content just to throw the content away on the way out.
 //
 // Archived pages are excluded. `limit` clamps to [1, 200]; `offset` is
@@ -542,7 +542,7 @@ func (r *wikiPageRepository) ListBySourceRef(ctx context.Context, kbID string, s
 //
 // Backed by idx_wiki_pages_source_refs (GIN jsonb_path_ops) for the
 // containment branch and idx_wiki_pages_source_refs_text for the legacy
-// text-LIKE branch — both added in migration 000041.
+// text-LIKE branch - both added in migration 000041.
 func (r *wikiPageRepository) ListSlugsBySourceRef(ctx context.Context, kbID string, sourceKnowledgeID string) ([]string, error) {
 	needle, err := json.Marshal([]string{sourceKnowledgeID})
 	if err != nil {
@@ -579,7 +579,7 @@ func (r *wikiPageRepository) ListSlugsBySourceRef(ctx context.Context, kbID stri
 //
 // Empty input returns nil, nil. Slugs not present in the KB are silently
 // dropped from the returned map (caller treats absent slugs as "no
-// such page" — the same shape ListAll had via missing keys).
+// such page" - the same shape ListAll had via missing keys).
 func (r *wikiPageRepository) ListBySlugs(
 	ctx context.Context,
 	kbID string,
@@ -1001,7 +1001,7 @@ func (r *wikiPageRepository) ListPagesCursor(
 
 // ListByTypeRecent returns up to `limit` summary-typed pages ordered
 // by updated_at DESC, projected to slug/title/summary. Used by the
-// rebuildIndexPage first-time generation path — historically that
+// rebuildIndexPage first-time generation path - historically that
 // loaded EVERY summary page and concatenated them into the prompt,
 // which broke the LLM context window once a KB grew past a few
 // thousand documents. The recent-N projection caps the prompt size
@@ -1284,8 +1284,8 @@ func (r *wikiPageRepository) DeleteFoldersByKnowledgeBaseID(
 }
 
 // DeleteRevisionsByKnowledgeBaseID hard-deletes all wiki page revisions in a
-// knowledge base. wiki_page_revisions has no deleted_at column — it stores
-// immutable snapshots, not soft-deletable rows — so GORM's Delete falls back
+// knowledge base. wiki_page_revisions has no deleted_at column - it stores
+// immutable snapshots, not soft-deletable rows - so GORM's Delete falls back
 // to a physical DELETE, same as DeleteRevisionsByPage but scoped to the KB
 // via the indexed knowledge_base_id column.
 func (r *wikiPageRepository) DeleteRevisionsByKnowledgeBaseID(
@@ -1320,7 +1320,7 @@ func escapeLikePattern(s string) string {
 //	title    hit → rank 4 (most obvious intent: user typed what the page is called)
 //	slug     hit → rank 3 (url-like identifiers, direct jump)
 //	summary  hit → rank 2 (short authored abstract)
-//	content  hit → rank 1 (body mention — often surfaces unrelated pages whose
+//	content  hit → rank 1 (body mention - often surfaces unrelated pages whose
 //	                       prose merely mentions the query as trivia)
 //
 // Without this ranking, a user searching for a person's name on a 40,000-page wiki will

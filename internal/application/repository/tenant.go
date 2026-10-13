@@ -162,7 +162,7 @@ func (r *tenantRepository) AdjustStorageUsed(ctx context.Context, tenantID uint6
 // No transaction here: the operation is a single statement and we
 // don't want to hold a long lock just to update a single column. If
 // a concurrent CreateTenant lands in the middle, the new row gets
-// the new default via the system-setting resolver in the handler —
+// the new default via the system-setting resolver in the handler -
 // no risk of the new tenant being skipped.
 func (r *tenantRepository) BulkSetStorageQuota(ctx context.Context, quotaBytes int64) (int64, error) {
 	res := r.db.WithContext(ctx).

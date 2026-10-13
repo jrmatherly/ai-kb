@@ -89,7 +89,7 @@ type KnowledgeBaseInfo struct {
 	// Capabilities lists the retrieval surfaces this KB exposes. Any subset of
 	// {"wiki", "chunks"}. "chunks" is present when the KB has vector and/or
 	// keyword (BM25) indexing enabled. This is the *deterministic* source of
-	// truth the agent should consult before picking a retrieval strategy —
+	// truth the agent should consult before picking a retrieval strategy -
 	// significantly more reliable than running probing searches.
 	Capabilities []string
 	RecentDocs   []RecentDocInfo // Recently added documents (up to 10)
@@ -213,7 +213,7 @@ func writeKnowledgeBaseProfile(b *strings.Builder, profile *types.KnowledgeBaseP
 //     placeholder is expanded to a short pointer so legacy / custom
 //     templates that still reference `{{knowledge_bases}}` degrade
 //     gracefully instead of dumping the detail twice.
-//   - `<must_use>` is NOT a placeholder — when the user @mentions MCP/Skill,
+//   - `<must_use>` is NOT a placeholder - when the user @mentions MCP/Skill,
 //     observe.buildMustUseBlock injects it as a sibling block in the user
 //     message; system prompts document it by convention (see agent_system_prompt.yaml).
 func renderPromptPlaceholders(template string, knowledgeBases []*KnowledgeBaseInfo) string {
@@ -364,7 +364,7 @@ func sandboxArtifactReferenceGuidance() string {
 	builder.WriteString("    - Images render inline; charts, tables, and documents ")
 	builder.WriteString("render as a card the user clicks to preview\n")
 	builder.WriteString("    - Never reference a sandbox path (`/workspace/output/...`) ")
-	builder.WriteString("or a bare file name directly — neither resolves in the browser\n")
+	builder.WriteString("or a bare file name directly - neither resolves in the browser\n")
 	builder.WriteString("    - Prefer output file names without spaces or parentheses; ")
 	builder.WriteString("they keep the reference unambiguous\n")
 	return builder.String()

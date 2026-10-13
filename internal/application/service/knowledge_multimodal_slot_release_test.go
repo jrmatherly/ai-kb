@@ -17,7 +17,7 @@ import (
 // test can reproduce a fan-out that only partially reaches the queue.
 //
 // onImageEnqueued lets a test simulate an image worker that finishes before
-// the fan-out loop returns — the ordering that decides whether the shortfall
+// the fan-out loop returns - the ordering that decides whether the shortfall
 // release or the last sibling owns the finalize.
 type slotReleaseEnqueuer struct {
 	failAt          map[int]bool
@@ -78,7 +78,7 @@ func slotReleaseFixture(images int) (
 }
 
 // The happy path must leave the counter at exactly the number of enqueued
-// tasks and must NOT enqueue post-process — the last image to finish owns it.
+// tasks and must NOT enqueue post-process - the last image to finish owns it.
 func TestEnqueueImageMultimodalTasksSeedsCounterForEveryImage(t *testing.T) {
 	mr, rdb := newSlotReleaseRedis(t)
 	enqueuer := &slotReleaseEnqueuer{}
@@ -149,7 +149,7 @@ func TestEnqueueImageMultimodalTasksFinalizesWhenNoTaskEnqueued(t *testing.T) {
 
 // Lite mode: no Redis at all. A partial fan-out must not crash, and the
 // surviving task still drives post-process through the nil-client path in
-// checkAndFinalizeAllImages — so the fan-out must stay quiet.
+// checkAndFinalizeAllImages - so the fan-out must stay quiet.
 func TestEnqueueImageMultimodalTasksWithoutRedisLeavesFinalizeToWorkers(t *testing.T) {
 	enqueuer := &slotReleaseEnqueuer{failAt: map[int]bool{0: true}}
 	svc := &knowledgeService{task: enqueuer}

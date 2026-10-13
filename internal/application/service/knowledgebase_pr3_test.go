@@ -28,7 +28,7 @@ import (
 //     VectorStoreID copy.
 //
 // These are pure logic tests that drive `validateVectorStoreBinding` and
-// `CopyKnowledgeBase` through stubbed dependencies — no DB I/O.
+// `CopyKnowledgeBase` through stubbed dependencies - no DB I/O.
 // ---------------------------------------------------------------------------
 
 // validKBStoreUUID is a well-formed UUID used to drive the validation
@@ -73,7 +73,7 @@ func (f *fakeRegistry) GetOrLoadByStoreID(
 
 // fakeKBRepo is the smallest KnowledgeBaseRepository needed by
 // CreateKnowledgeBase + CopyKnowledgeBase tests. It stores rows in a map
-// keyed by ID. No tenant scoping is applied — the tested paths already
+// keyed by ID. No tenant scoping is applied - the tested paths already
 // enforce that explicitly.
 type fakeKBRepo struct {
 	rows      map[string]*types.KnowledgeBase
@@ -215,7 +215,7 @@ func TestCreateKnowledgeBase_DefaultStorageProviderRespectsAllowList(t *testing.
 }
 
 // ---------------------------------------------------------------------------
-// CreateKnowledgeBase — vector_store_id binding validation matrix
+// CreateKnowledgeBase - vector_store_id binding validation matrix
 // ---------------------------------------------------------------------------
 
 func TestCreateKnowledgeBase_VectorStoreBinding(t *testing.T) {
@@ -324,7 +324,7 @@ func TestCreateKnowledgeBase_VectorStoreBinding(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// CopyKnowledgeBase — embedding model + vector store defenses
+// CopyKnowledgeBase - embedding model + vector store defenses
 // ---------------------------------------------------------------------------
 
 func TestCopyKnowledgeBase_CarriesProfileConfigButNotGeneratedProfile(t *testing.T) {

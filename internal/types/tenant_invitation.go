@@ -66,7 +66,7 @@ type TenantInvitation struct {
 	TenantID uint64 `json:"tenant_id" gorm:"not null;index"`
 	// InviteeUserID references users.id when this row represents a
 	// per-user invitation (Owner picked a registered email). For
-	// share-link rows the field is the empty-string sentinel — there
+	// share-link rows the field is the empty-string sentinel - there
 	// is no specific invitee yet; whoever holds the link can register.
 	// The (tenant_id, invitee_user_id) partial unique index in
 	// migration 000054 was relaxed to skip empty values so multiple
@@ -75,7 +75,7 @@ type TenantInvitation struct {
 	// Token holds the plaintext registration token for share-link
 	// rows. Empty for per-user invitations (those use the in-app
 	// inbox, not a URL). Stored plaintext so the management UI can
-	// re-display the link on demand — the threat model is bounded by
+	// re-display the link on demand - the threat model is bounded by
 	// short TTL, revocability, and the fact that all the link grants
 	// is membership in this one tenant. Excluded from JSON to keep
 	// the wire shape small; handlers emit invite_url instead.
@@ -90,7 +90,7 @@ type TenantInvitation struct {
 	// accepted/declined/revoked/expired exactly once.
 	Status TenantInvitationStatus `json:"status" gorm:"type:varchar(20);not null;default:'pending'"`
 	// Message is an optional free-text note the Owner can include in
-	// the invitation (e.g. "joining the design squad — welcome!").
+	// the invitation (e.g. "joining the design squad - welcome!").
 	Message string `json:"message,omitempty" gorm:"type:varchar(500)"`
 	// ExpiresAt is when this row auto-flips to expired if still pending.
 	// Set at creation time from AIKB_INVITATION_TTL (default 7d).
@@ -103,7 +103,7 @@ type TenantInvitation struct {
 	// AcceptedCount counts how many users have completed registration
 	// through this invitation. Per-user invitations cap out at 1 (and
 	// the row flips to accepted in the same step). Share-link rows can
-	// accumulate many — this is what the management UI surfaces as the
+	// accumulate many - this is what the management UI surfaces as the
 	// "N joined" caption so Owners can see whether a link is fresh
 	// or has already been used widely.
 	AcceptedCount int `json:"accepted_count" gorm:"column:accepted_count;not null;default:0"`

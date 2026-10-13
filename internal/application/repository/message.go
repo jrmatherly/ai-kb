@@ -279,7 +279,7 @@ func (r *messageRepository) UpdateMessage(ctx context.Context, message *types.Me
 // with everything after it (the client prefills that question back into the
 // composer), while an assistant rewind point survives and the conversation
 // resumes after it. The cursor is composite for the same reason
-// ListMessagesBySessionUpTo is — two messages written in the same millisecond
+// ListMessagesBySessionUpTo is - two messages written in the same millisecond
 // are ordered by ID, so the cut is reproducible.
 //
 // The read and the delete share one transaction: the returned rows must be

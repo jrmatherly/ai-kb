@@ -245,7 +245,7 @@ type MessageArtifact struct {
 	// (msg.Artifacts[index]); dropping it would shift every later file's index
 	// and hand an old link the wrong blob. Keeping it also keeps the entry in
 	// ArtifactCollector's de-duplication set, so the next collect does not
-	// re-attach the very file that was deleted — its sandbox mtime has not
+	// re-attach the very file that was deleted - its sandbox mtime has not
 	// moved. Clients filter these out; the bytes are already reclaimed.
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
@@ -257,7 +257,7 @@ func (a MessageArtifact) Deleted() bool { return a.DeletedAt != nil }
 type MessageArtifacts []MessageArtifact
 
 // Live returns the artifacts the user has not deleted, preserving order. The
-// caller loses the positional index, so use it for counting and display only —
+// caller loses the positional index, so use it for counting and display only -
 // anything that addresses an artifact for download must index the full slice.
 func (m MessageArtifacts) Live() MessageArtifacts {
 	out := make(MessageArtifacts, 0, len(m))
@@ -298,8 +298,8 @@ func (m *MessageArtifacts) Scan(value interface{}) error {
 
 // WithRestoredMtime stamps sandbox mtime onto the artifact at sourcePath
 // whose ContentHash already matches. Used after a fork checkout so later
-// collects can skip by path+mtime. Other versions at the same path —
-// including empty-hash legacy rows — are left alone. The returned slice is a
+// collects can skip by path+mtime. Other versions at the same path -
+// including empty-hash legacy rows - are left alone. The returned slice is a
 // copy.
 func (m MessageArtifacts) WithRestoredMtime(sourcePath string, mod time.Time, hash string) (MessageArtifacts, bool) {
 	if len(m) == 0 || sourcePath == "" || hash == "" {
@@ -430,7 +430,7 @@ type Message struct {
 	UsedMemories UsedMemories `json:"used_memories,omitempty" gorm:"type:jsonb;column:used_memories"`
 	// SandboxCheckpoint is the git commit this assistant turn produced in the
 	// session sandbox's /workspace. Nil for user messages, for turns that ran
-	// without a sandbox, and for turns whose commit failed (best-effort — a
+	// without a sandbox, and for turns whose commit failed (best-effort - a
 	// failed checkpoint must never block the reply). A message without a
 	// checkpoint cannot serve as a fork point with sandbox state.
 	SandboxCheckpoint *SandboxCheckpoint `json:"sandbox_checkpoint,omitempty" gorm:"type:jsonb"`

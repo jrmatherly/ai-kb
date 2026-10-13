@@ -4,7 +4,7 @@
 // stuck in "processing" longer than any reasonable execution window and
 // marks them as failed. This is the safety net that catches anything the
 // other defences (asynq retry, dead-letter callback, image_multimodal
-// finalize-on-last-attempt) miss — for example:
+// finalize-on-last-attempt) miss - for example:
 //
 //   - Worker process killed mid-handler before any defer could run.
 //   - DocReader call genuinely exceeding DocReaderCallTimeout AND the
@@ -13,7 +13,7 @@
 //     ways that bypass finalize (extremely rare; defence-in-depth here).
 //
 // Without this sweep, a single unlucky failure mode can leave a knowledge
-// row in "processing" forever — invisible to users except as a permanent
+// row in "processing" forever - invisible to users except as a permanent
 // spinner. With this sweep the worst-case latency from stall to user-
 // visible failure is bounded to ~1 stale-threshold + 1 sweep interval.
 package service
@@ -46,7 +46,7 @@ type HousekeepingService struct {
 	// inspector lets the sweep distinguish a genuinely orphaned row from
 	// one whose enrichment subtasks are merely backlogged behind a busy
 	// queue (no span heartbeat yet because no worker has picked them up).
-	// nil-safe — a nil inspector disables only the transient queue check.
+	// nil-safe - a nil inspector disables only the transient queue check.
 	// Durable Wiki ownership in task_pending_ops is always probed through db,
 	// so the sweep never falls back to the span/updated_at heuristics alone.
 	inspector interfaces.TaskInspector
@@ -83,7 +83,7 @@ var terminalParseStatuses = []string{
 const terminalSpanMessage = "row reached a terminal state without closing its trace spans"
 
 // NewHousekeepingService constructs a HousekeepingService. It does NOT start
-// the cron — call Start in the application bootstrap so a misconfigured
+// the cron - call Start in the application bootstrap so a misconfigured
 // cron schedule cannot prevent the rest of the service from coming up.
 func NewHousekeepingService(
 	db *gorm.DB, cfg *config.Config, inspector interfaces.TaskInspector, task interfaces.TaskEnqueuer,
@@ -104,7 +104,7 @@ func NewHousekeepingService(
 }
 
 // Start registers the sweep schedule and begins the background runner.
-// Idempotent — repeated calls are a no-op so wiring code can call Start
+// Idempotent - repeated calls are a no-op so wiring code can call Start
 // without coordinating ordering.
 func (h *HousekeepingService) Start(ctx context.Context) error {
 	h.mu.Lock()
@@ -116,7 +116,7 @@ func (h *HousekeepingService) Start(ctx context.Context) error {
 		logger.Infof(ctx, "[Housekeeping] disabled via AIKB_HOUSEKEEPING_ENABLED=false")
 		return nil
 	}
-	// Every 5 minutes — frequent enough that user-visible recovery latency
+	// Every 5 minutes - frequent enough that user-visible recovery latency
 	// is acceptable, infrequent enough that the SQL sweep is invisible to
 	// query load even on large knowledge tables.
 	if _, err := h.cron.AddFunc("0 */5 * * * *", func() {
@@ -150,7 +150,7 @@ func (h *HousekeepingService) StopWithin(timeout time.Duration) {
 	h.started = false
 }
 
-// runSweep is exported on the type for testability — tests can drive a
+// runSweep is exported on the type for testability - tests can drive a
 // single sweep without waiting for the cron tick.
 func (h *HousekeepingService) runSweep(ctx context.Context) {
 	threshold := h.staleThreshold()
@@ -163,14 +163,14 @@ func (h *HousekeepingService) runSweep(ctx context.Context) {
 	// a 500MB PDF, embedding 5K chunks) can run for an hour with no
 	// status change. Using updated_at alone would falsely kill that
 	// run. So we OR-combine knowledge.updated_at with the most recent
-	// span row's updated_at — every Begin/End/Fail/Skip from
+	// span row's updated_at - every Begin/End/Fail/Skip from
 	// SpanTracker bumps the span row, so an actively-progressing
 	// pipeline always has a recent span heartbeat even when the
 	// parent knowledge row is "frozen" mid-stage.
 	//
 	// Knowledge rows with no spans at all (lite mode, in-flight tasks
 	// from before this code shipped) fall back to the simple
-	// updated_at check — they have no heartbeat to consult.
+	// updated_at check - they have no heartbeat to consult.
 	// Include 'pending' so a task whose enqueue was lost is eventually
 	// recovered too; filterOutQueued below protects legitimately backlogged
 	// tasks. Include 'finalizing' alongside 'processing': finalizing rows still
@@ -193,8 +193,8 @@ func (h *HousekeepingService) runSweep(ctx context.Context) {
 
 	// Second-stage gate: a row can have a stale span heartbeat yet still
 	// be perfectly healthy when its enrichment subtasks (summary /
-	// question / graph / wiki) are merely backlogged behind a busy queue
-	// — no worker has picked them up, so no span has been written since
+	// question / graph / wiki) are merely backlogged behind a busy queue -
+	// no worker has picked them up, so no span has been written since
 	// post-process fanned them out. Killing such a row is the false-
 	// positive users hit under heavy upload bursts. Drop any candidate
 	// that still has a queued/active task referencing it; only rows with
@@ -220,17 +220,17 @@ func (h *HousekeepingService) runSweep(ctx context.Context) {
 		// span tree showed they're still progressing". Ops can grep
 		// for this if they suspect housekeeping over- or under-fires.
 		logger.Infof(ctx,
-			"[Housekeeping] %d candidate(s) skipped — span heartbeat within threshold",
+			"[Housekeeping] %d candidate(s) skipped - span heartbeat within threshold",
 			spanSkipped)
 	}
 	if queueSkipped > 0 {
-		// Visibility into "stale span heartbeat but tasks still queued"
-		// — i.e. backpressure, not a stuck row. Persistent counts here
+		// Visibility into "stale span heartbeat but tasks still queued" -
+		// i.e. backpressure, not a stuck row. Persistent counts here
 		// mean the queue is the bottleneck (raise the matching per-pool or
 		// shared asynq concurrency, or document_process_timeout), not that
 		// housekeeping misfires.
 		logger.Infof(ctx,
-			"[Housekeeping] %d candidate(s) skipped — tasks still queued (backpressure, not stuck)",
+			"[Housekeeping] %d candidate(s) skipped - tasks still queued (backpressure, not stuck)",
 			queueSkipped)
 	}
 
@@ -258,7 +258,7 @@ func (h *HousekeepingService) runSweep(ctx context.Context) {
 	// delete intent can then be retried; the delete executor is idempotent
 	// and plans by row ID, so a late-arriving task still finishes cleanly).
 	//
-	// Liveness gate: a backlogged delete is not stranded — probe the queue
+	// Liveness gate: a backlogged delete is not stranded - probe the queue
 	// for a live knowledge:list_delete covering the row before touching it.
 	// A nil inspector (nothing wired at all) defers every candidate to the
 	// next sweep: we cannot tell backlog from orphan without it, and
@@ -400,7 +400,7 @@ func (h *HousekeepingService) recoverStrandedPendingSummaries(ctx context.Contex
 }
 
 // filterByLastSpanActivity returns the subset of candidates whose most
-// recent span row predates `cutoff` — i.e. genuinely stuck. Candidates
+// recent span row predates `cutoff` - i.e. genuinely stuck. Candidates
 // with no span rows at all also pass through (they're lite-mode or
 // pre-instrumentation tasks; the simple updated_at check already proved
 // them stuck and we have no heartbeat to override that).
@@ -417,7 +417,7 @@ func (h *HousekeepingService) filterByLastSpanActivity(
 
 	// We scan MAX(updated_at) as string then parse client-side. That
 	// dodges the SQLite driver's well-known refusal to auto-convert
-	// aggregate datetime values into time.Time on its own — Postgres
+	// aggregate datetime values into time.Time on its own - Postgres
 	// happily round-trips, but the same query shape must work in
 	// Lite mode too. Since we only compare against a cutoff, the
 	// parse layer below tries the formats both Postgres and SQLite
@@ -434,7 +434,7 @@ func (h *HousekeepingService) filterByLastSpanActivity(
 		Group("knowledge_id").
 		Find(&beats).Error
 	if err != nil {
-		// On query failure, fail safe — assume nothing has a
+		// On query failure, fail safe - assume nothing has a
 		// heartbeat (so all candidates are "stuck"). This matches
 		// the previous-version behaviour and never under-recovers.
 		logger.Warnf(ctx, "[Housekeeping] span heartbeat query failed: %v (will fail safe and recover all candidates)", err)
@@ -450,7 +450,7 @@ func (h *HousekeepingService) filterByLastSpanActivity(
 	out := candidates[:0]
 	for _, k := range candidates {
 		if last, ok := heartbeat[k.ID]; ok && last.After(cutoff) {
-			// Active span heartbeat — leave alone.
+			// Active span heartbeat - leave alone.
 			continue
 		}
 		out = append(out, k)
@@ -670,14 +670,14 @@ func (h *HousekeepingService) closeStalledSpans(
 // filterOutQueued returns the subset of candidates that have NO work left
 // in either the durable pending-op table or the queue backend, plus a count
 // of how many were dropped because work still references them. A dropped
-// candidate is "backlogged, not orphaned" — its enrichment subtasks are
+// candidate is "backlogged, not orphaned" - its enrichment subtasks are
 // waiting for a worker, so the missing span heartbeat is expected and
 // recovering it would be a false positive.
 //
 // The asynq inspector alone cannot answer this for Wiki. Wiki ingest work is
 // durable per document in task_pending_ops (dedup_key = knowledge ID), while
 // asynq only carries a per-KB wake-up trigger whose payload has no knowledge
-// ID — and TypeWikiIngest is deliberately absent from the inspector's
+// ID - and TypeWikiIngest is deliberately absent from the inspector's
 // taskTypesForKnowledgeCancel set anyway. So HasQueuedTasksForKnowledge
 // structurally reports "nothing queued" for a document whose only outstanding
 // work is a queued Wiki ingest, and the sweep force-fails a perfectly healthy
@@ -687,7 +687,7 @@ func (h *HousekeepingService) closeStalledSpans(
 // transient queue check is skipped. On probe error we fail safe, but in
 // opposite directions by design: an inspector error KEEPS the candidate as
 // stuck (matching the span heartbeat query), whereas a durable-table error
-// DEFERS every candidate to the next sweep — we cannot tell backlog from
+// DEFERS every candidate to the next sweep - we cannot tell backlog from
 // orphan without it, and wrongly failing a live document is not recoverable
 // by the user, while waiting one more interval is.
 func (h *HousekeepingService) filterOutQueued(

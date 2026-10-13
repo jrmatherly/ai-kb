@@ -230,7 +230,7 @@ type notionFile struct {
 }
 
 // GetURL returns the file URL regardless of type (hosted or external).
-// For file_upload type, returns empty — caller must resolve via client.GetFileUploadURL().
+// For file_upload type, returns empty - caller must resolve via client.GetFileUploadURL().
 func (f *notionFile) GetURL() string {
 	if f.File != nil {
 		return f.File.URL
@@ -270,8 +270,8 @@ type attachment struct {
 
 // notionRequestStatus is the vendor's completeness marker on a paginated response.
 // Notion sets Type to "incomplete" when it capped the returned set for a vendor-side
-// reason — for example IncompleteReason "query_result_limit_reached" once a data
-// source query reaches the 10,000-row per-query limit — and still reports
+// reason - for example IncompleteReason "query_result_limit_reached" once a data
+// source query reaches the 10,000-row per-query limit - and still reports
 // has_more=false, so a capped page is otherwise indistinguishable from the last one.
 // See https://developers.notion.com/guides/data-apis/query-large-data-sources
 type notionRequestStatus struct {

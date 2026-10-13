@@ -52,7 +52,7 @@ func (c *CompositeRetrieveEngine) BatchIndexVectors(ctx context.Context,
 }
 
 // precomputedEmbedder answers with vectors computed beforehand, in the order
-// they were given. Everything else — name, id, dimensions — is the model's
+// they were given. Everything else - name, id, dimensions - is the model's
 // that produced them.
 type precomputedEmbedder struct {
 	embedding.Embedder

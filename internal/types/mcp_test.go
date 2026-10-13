@@ -39,7 +39,7 @@ func TestMCPAuthConfig_Value_EncryptsWhenKeySet(t *testing.T) {
 	assert.True(t, strings.HasPrefix(stored.APIKey, "enc:v1:"))
 	assert.True(t, strings.HasPrefix(stored.Token, "enc:v1:"))
 
-	// In-memory caller's struct must not be mutated — encryption operates
+	// In-memory caller's struct must not be mutated - encryption operates
 	// on a local copy. Otherwise the next read of cfg.APIKey would surface
 	// ciphertext as if it were the API key.
 	assert.Equal(t, "sk-real-secret", cfg.APIKey)
@@ -77,7 +77,7 @@ func TestMCPAuthConfig_ScanRoundtrip(t *testing.T) {
 }
 
 func TestMCPAuthConfig_Scan_LegacyPlaintextPassesThrough(t *testing.T) {
-	// Rows written before encryption was enabled have no enc:v1: prefix —
+	// Rows written before encryption was enabled have no enc:v1: prefix -
 	// DecryptStoredSecret must return them unchanged so historical data
 	// continues to work without a migration.
 	withAESKey(t, testAESKey32)

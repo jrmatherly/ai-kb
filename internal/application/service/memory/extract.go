@@ -51,7 +51,7 @@ const (
 	// mind to decide whether one sentence updates any of them, the prompt grows
 	// without bound, and unrelated memories invite spurious update and delete
 	// decisions. mem0 shows 10 by vector similarity, Graphiti at most 15 per
-	// entity — a small, relevant set is the shape that works.
+	// entity - a small, relevant set is the shape that works.
 	//
 	// Which 15 is decided by searching the whole store, not by pre-selecting a
 	// pool: the memory a new statement duplicates is not reliably one of the
@@ -59,7 +59,7 @@ const (
 	extractRelevantCandidates = 15
 	// extractShownTopics bounds the tracked subjects shown to the extraction
 	// call. The resolver still considers more; this is about anchoring, not
-	// cost — the longer the list, the likelier the model files a question under
+	// cost - the longer the list, the likelier the model files a question under
 	// something merely adjacent.
 	extractShownTopics = 12
 	// extractBudgetTokens is the completion budget for one extraction call.
@@ -185,7 +185,7 @@ func (s *Service) releaseSlot(ctx context.Context, scope interfaces.MemoryScope)
 
 // extractionDecision is one instruction from the extraction model.
 type extractionDecision struct {
-	// Action is add, update, delete or none. Anything else is ignored — an
+	// Action is add, update, delete or none. Anything else is ignored - an
 	// empty action used to be treated as add, which turned a truncated
 	// response into a silent write.
 	Action string `json:"action"`
@@ -586,7 +586,7 @@ What to record
   general knowledge and is not recorded; "I'm looking for a restaurant in
   Shanghai" is a question and IS recorded, because it says what they are doing.
 - Set "inferred" to true when you are deducing something about the user rather
-  than repeating what they said — for example concluding from questions about
+  than repeating what they said - for example concluding from questions about
   award ceremonies and venue clearing that they organise events. Such entries
   are shown to the user for confirmation instead of taking effect silently, so
   a reasonable guess is welcome; a confident assertion is not.
@@ -601,8 +601,8 @@ The "topics" list
 - Name the subject AREA, at a level that could plausibly come up again in
   another conversation. Not the individual question. This is the whole point:
   a label that can only ever match itself is counted once and never again.
-- The specifics of one question — a name, an identifier, a date, a version, a
-  quantity — belong to the question, not to the subject name. Strip them.
+- The specifics of one question - a name, an identifier, a date, a version, a
+  quantity - belong to the question, not to the subject name. Strip them.
 
   question: Which inbound receipt numbers did warehouse No. 3 have last month?
   subject:  warehouse inbound receipt lookup    NOT warehouse 3 last-month inbound receipt numbers
@@ -629,7 +629,7 @@ Actions
 
 Time
 - REFERENCE TIME is given with each line. Write dates absolutely: "hand in the
-  weekly report before 2026-08-15", never "next Friday" — the note is read
+  weekly report before 2026-08-15", never "next Friday" - the note is read
   months later.
 - Set "expires_at" for anything true only for a while, typically a task.
   Use null when the statement has no end.
@@ -646,8 +646,8 @@ Existing notes: (none)
 {"action":"add","target":null,"kind":"preference","topic":"answer style",
  "content":"Give the conclusion directly, no preamble","importance":5,"source":2,"expires_at":null}],
 "topics":["medical imaging backend development","Go concurrency debugging"]}
-Line 3 is a passing question about general knowledge, so it produces no memory
-— but its subject still belongs in "topics".
+Line 3 is a passing question about general knowledge, so it produces no memory -
+but its subject still belongs in "topics".
 
 Lines:
 [1] (2026-03-09) Last week we moved the production database from MySQL to PostgreSQL
@@ -759,7 +759,7 @@ func buildExtractionPrompt(
 		//
 		// The wording has to test identity, not relatedness. It used to say
 		// "when the transcript is about one of these", and a question about one
-		// athlete's events genuinely *is* about children's swimming events — so
+		// athlete's events genuinely *is* about children's swimming events - so
 		// the model dutifully filed it under "store shift scheduling" and every specific
 		// question in the domain collapsed into one bucket.
 		builder.WriteString("\nSubjects already tracked for this user:\n")
@@ -806,7 +806,7 @@ func buildExtractionPrompt(
 // conversation used", so blank must resolve rather than disable anything. Every
 // caller in this package has to go through here: when only the extraction call
 // applied the fallback, the topic resolver quietly lost its model tier on every
-// workspace that had not picked a model — which is all of them by default.
+// workspace that had not picked a model - which is all of them by default.
 func (s *Service) extractionModelID(
 	ctx context.Context, cfg *types.MemoryConfig, payload types.MemoryExtractPayload,
 ) string {
@@ -817,7 +817,7 @@ func (s *Service) extractionModelID(
 		return payload.ChatModelID
 	}
 	// The turn that produced this task does not always carry the model that
-	// answered it — the effective model is resolved inside the QA pipeline and
+	// answered it - the effective model is resolved inside the QA pipeline and
 	// is not written back onto the message. Falling back to the workspace's own
 	// QA model keeps the documented "blank means use the conversation model"
 	// behaviour from degrading into "memory quietly does nothing".
@@ -853,7 +853,7 @@ func (s *Service) workspaceChatModelID(ctx context.Context) string {
 }
 
 // relevantExisting loads the stored memories this segment could plausibly be
-// about — the ones the model is shown so it can update or supersede them
+// about - the ones the model is shown so it can update or supersede them
 // instead of writing a near-duplicate.
 //
 // The selection is a semantic search over everything the subject has stored.
@@ -927,7 +927,7 @@ func (s *Service) callExtractionModel(
 		// Returning an error keeps the watermark where it is. Skipping here
 		// silently consumed every message the run was given: distillation
 		// reported success, advanced past them, and no model had ever seen
-		// them — which is how a workspace on default settings ends up with an
+		// them - which is how a workspace on default settings ends up with an
 		// enabled memory feature that has learned nothing.
 		return extractionResponse{}, fmt.Errorf(
 			"no chat model available for memory extraction; " +

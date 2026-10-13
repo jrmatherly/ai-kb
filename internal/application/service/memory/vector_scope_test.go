@@ -14,7 +14,7 @@ import (
 // Semantic recall used to score only the memories a prior `ORDER BY
 // importance` had already listed. Importance says nothing about whether a
 // memory answers the question, so the ranking could re-order that window but
-// never look outside it — a well-matching memory below the cut was
+// never look outside it - a well-matching memory below the cut was
 // unreachable, and the only knob available was to make the window bigger.
 //
 // These tests pin the inverted order: the store is asked which memories are
@@ -160,8 +160,8 @@ func TestLexicalPoolCoversEveryLiveMemory(t *testing.T) {
 
 // Extraction decides whether a sentence updates something already stored, so
 // the memories it is shown have to be the ones the sentence might collide
-// with. Selecting them by importance first — which is what listing a pool did
-// — hides exactly the collision that matters: a memory nobody marked important
+// with. Selecting them by importance first - which is what listing a pool did -
+// hides exactly the collision that matters: a memory nobody marked important
 // gets a second, contradicting copy written next to it, and both stay active.
 func TestExtractionSeesTheMemoryItWouldDuplicateEvenWhenUnimportant(t *testing.T) {
 	svc, tenantRepo, messages, models, enqueuer := newExtractionHarness(t)

@@ -64,7 +64,7 @@ func preferAnydocWhenAvailable(fileType string) string {
 }
 
 // ---------------------------------------------------------------------------
-// builtin — DocReader-backed parser for complex document formats.
+// builtin - DocReader-backed parser for complex document formats.
 // ---------------------------------------------------------------------------
 
 type builtinEngine struct{}
@@ -97,7 +97,7 @@ func (e *builtinEngine) NewReader(_ context.Context, deps ReaderDeps) (interface
 }
 
 // ---------------------------------------------------------------------------
-// simple — Go handles md/txt/csv/json natively, no external service needed.
+// simple - Go handles md/txt/csv/json natively, no external service needed.
 // Distinct from docreader's "builtin", which uses Python libraries for complex
 // formats (docx, pdf, ...).
 // ---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ func (e *simpleEngine) NewReader(_ context.Context, _ ReaderDeps) (interfaces.Do
 }
 
 // ---------------------------------------------------------------------------
-// anydoc — office documents converted in this process, no external service.
+// anydoc - office documents converted in this process, no external service.
 // Only present in builds that link the converter (see the anydoc package).
 // ---------------------------------------------------------------------------
 
@@ -156,7 +156,7 @@ func (e *anydocEngine) NewReader(_ context.Context, deps ReaderDeps) (interfaces
 }
 
 // ---------------------------------------------------------------------------
-// weknoracloud — Tenant-scoped WeKnoraCloud docreader with signed requests.
+// weknoracloud - Tenant-scoped WeKnoraCloud docreader with signed requests.
 // ---------------------------------------------------------------------------
 
 type weKnoraCloudEngine struct{}
@@ -190,7 +190,7 @@ func (e *weKnoraCloudEngine) NewReader(
 }
 
 // ---------------------------------------------------------------------------
-// mineru — Go-native, calls self-hosted MinerU API directly
+// mineru - Go-native, calls self-hosted MinerU API directly
 // ---------------------------------------------------------------------------
 
 type mineruEngine struct{}
@@ -216,7 +216,7 @@ func (e *mineruEngine) NewReader(_ context.Context, deps ReaderDeps) (interfaces
 }
 
 // ---------------------------------------------------------------------------
-// mineru_cloud — Go-native, calls MinerU Cloud API directly
+// mineru_cloud - Go-native, calls MinerU Cloud API directly
 // ---------------------------------------------------------------------------
 
 type mineruCloudEngine struct{}
@@ -242,7 +242,7 @@ func (e *mineruCloudEngine) NewReader(_ context.Context, deps ReaderDeps) (inter
 }
 
 // ---------------------------------------------------------------------------
-// paddleocr_vl — Go-native, calls a self-hosted PaddleOCR-VL pipeline service
+// paddleocr_vl - Go-native, calls a self-hosted PaddleOCR-VL pipeline service
 // ---------------------------------------------------------------------------
 
 type paddleOCRVLEngine struct{}
@@ -268,7 +268,7 @@ func (e *paddleOCRVLEngine) NewReader(_ context.Context, deps ReaderDeps) (inter
 }
 
 // ---------------------------------------------------------------------------
-// paddleocr_vl_cloud — Go-native, calls the PaddleOCR-VL AI Studio cloud API
+// paddleocr_vl_cloud - Go-native, calls the PaddleOCR-VL AI Studio cloud API
 // ---------------------------------------------------------------------------
 
 type paddleOCRVLCloudEngine struct{}

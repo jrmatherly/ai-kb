@@ -1,5 +1,5 @@
 // Package dto holds response shapes for handler responses that need to differ
-// from the persisted GORM model — most notably, response types that must NOT
+// from the persisted GORM model - most notably, response types that must NOT
 // carry secret fields.
 //
 // Why a separate package: response DTOs are deliberately distinct from the
@@ -40,7 +40,7 @@ type MCPServiceResponse struct {
 	UpdatedAt         time.Time                `json:"updated_at"`
 	// Credentials is the per-field "configured?" map. Embedded on the main
 	// response so the credential UI doesn't need a follow-up GET. The
-	// frontend never sees the actual secret value — only whether one is
+	// frontend never sees the actual secret value - only whether one is
 	// stored. Omitted entirely for builtin services (they can't have
 	// per-tenant credentials).
 	Credentials map[string]CredentialFieldMetadata `json:"credentials,omitempty"`
@@ -77,7 +77,7 @@ type CredentialFieldMetadata struct {
 // NewMCPServiceResponse converts a stored MCPService into its response shape.
 //
 // Builtin MCP services have their tenant-specific transport details (URL,
-// Headers, EnvVars, StdioConfig) stripped — these reveal how the tenant
+// Headers, EnvVars, StdioConfig) stripped - these reveal how the tenant
 // configured an upstream provider and must not be visible to other tenants
 // that see the same builtin row via the cross-tenant list.
 func NewMCPServiceResponse(ctx context.Context, svc *types.MCPService) *MCPServiceResponse {
@@ -123,7 +123,7 @@ func NewMCPServiceResponse(ctx context.Context, svc *types.MCPService) *MCPServi
 		resp.AuthConfig = auth
 	}
 	if svc.IsBuiltin {
-		// Builtin services are shared across tenants — strip everything that
+		// Builtin services are shared across tenants - strip everything that
 		// could leak how this tenant configured the underlying provider.
 		resp.URL = nil
 		resp.Headers = nil

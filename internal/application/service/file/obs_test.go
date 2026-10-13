@@ -14,7 +14,7 @@ import (
 // capturingRoundTripper records the first HTTP request URL the S3 client
 // would send, without dialing the network. That is the invariant #3269
 // actually cares about: PutObject must hit {bucket}.{host}/{key}, not
-// {host}/{bucket}/{key}. Checking UsePathStyle alone is not enough — PR
+// {host}/{bucket}/{key}. Checking UsePathStyle alone is not enough - PR
 // #3272 set that flag while HostnameImmutable still forced path-style.
 type capturingRoundTripper struct {
 	host string

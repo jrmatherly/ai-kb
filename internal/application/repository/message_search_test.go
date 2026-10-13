@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// SearchMessagesByKeyword runs on every supported main-database dialect —
+// SearchMessagesByKeyword runs on every supported main-database dialect -
 // the Lite build serves POST /messages/search from SQLite. The query used to
 // be Postgres-only ILIKE, which is a syntax error everywhere else.
 
@@ -60,7 +60,7 @@ func TestSearchMessagesByKeywordTreatsWildcardsLiterally(t *testing.T) {
 
 	// A keyword containing % must match the literal character, not act as a
 	// LIKE wildcard. escapeLikeKeyword emits \%, which only works when the
-	// query declares ESCAPE '\' — SQLite has no default escape character.
+	// query declares ESCAPE '\' - SQLite has no default escape character.
 	results, err := repo.SearchMessagesByKeyword(
 		context.Background(), 7, "web_user:alice", "100%", nil, 10)
 	require.NoError(t, err)

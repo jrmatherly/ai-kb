@@ -15,7 +15,7 @@ import (
 
 // statefulFeishu is a fake Feishu server whose per-node export outcome can be
 // changed between sync passes. A node whose obj_token is in failTokens has its
-// export status poll return a failed job, so fetchNodeContent errors for it —
+// export status poll return a failed job, so fetchNodeContent errors for it -
 // modelling a transient rate-limit / export failure that later recovers.
 type statefulFeishu struct {
 	mu         sync.Mutex
@@ -152,7 +152,7 @@ func lastCheckpointCursor(h *convergenceHandler, t *testing.T) *types.SyncCursor
 // transient per-node export failure and (b) is killed by the 2h task timeout
 // mid-traversal must, on the asynq retry, resume from the last Checkpoint,
 // re-core.Fetch only what is outstanding, retry the transiently-failed node, and end
-// with EVERY document synced exactly once — no permanent core.Skip, no full restart,
+// with EVERY document synced exactly once - no permanent core.Skip, no full restart,
 // no redundant re-export of already-done nodes.
 func TestFetchStream_ResumeConvergesAfterTimeoutAndTransientFailure(t *testing.T) {
 	// Checkpoint on every processed node so the persisted cursor is precise.
@@ -189,11 +189,11 @@ func TestFetchStream_ResumeConvergesAfterTimeoutAndTransientFailure(t *testing.T
 	}
 
 	// The persisted cursor (last Checkpoint) must contain nt1 but NOT the
-	// aborted nt3, nor the transiently-failed nt2 — otherwise resume would core.Skip
+	// aborted nt3, nor the transiently-failed nt2 - otherwise resume would core.Skip
 	// them forever.
 	persisted := lastCheckpointCursor(h1, t)
 	if persisted == nil {
-		t.Fatalf("pass 1 wrote no Checkpoint — resume would restart from scratch")
+		t.Fatalf("pass 1 wrote no Checkpoint - resume would restart from scratch")
 	}
 	var pc core.FeishuCursor
 	pb, _ := json.Marshal(persisted.ConnectorCursor)
@@ -203,10 +203,10 @@ func TestFetchStream_ResumeConvergesAfterTimeoutAndTransientFailure(t *testing.T
 		t.Errorf("persisted cursor missing nt1 (done work lost on resume)")
 	}
 	if _, ok := p["nt2"]; ok {
-		t.Errorf("persisted cursor recorded transiently-failed nt2 — it would be core.Skipped forever")
+		t.Errorf("persisted cursor recorded transiently-failed nt2 - it would be core.Skipped forever")
 	}
 	if _, ok := p["nt3"]; ok {
-		t.Errorf("persisted cursor recorded aborted nt3 — it would be core.Skipped forever")
+		t.Errorf("persisted cursor recorded aborted nt3 - it would be core.Skipped forever")
 	}
 
 	// ---- Pass 2: asynq retry. obj2 has recovered; run to completion resuming
@@ -221,7 +221,7 @@ func TestFetchStream_ResumeConvergesAfterTimeoutAndTransientFailure(t *testing.T
 	// nt1 was already done → must be core.Skipped (not re-exported, not re-ingested).
 	for _, id := range h2.ingested {
 		if id == "nt1" {
-			t.Errorf("pass 2 re-ingested nt1 — redundant re-export of completed work")
+			t.Errorf("pass 2 re-ingested nt1 - redundant re-export of completed work")
 		}
 	}
 	// Everything still outstanding (nt2 transiently-failed, nt3 aborted, nt4, nt5)
@@ -247,7 +247,7 @@ func TestFetchStream_ResumeConvergesAfterTimeoutAndTransientFailure(t *testing.T
 	}
 	for _, n := range nodes {
 		if !union[n.NodeToken] {
-			t.Errorf("node %s was NEVER synced across both passes — data loss (#2136)", n.NodeToken)
+			t.Errorf("node %s was NEVER synced across both passes - data loss (#2136)", n.NodeToken)
 		}
 	}
 	if len(union) != len(nodes) {
@@ -261,7 +261,7 @@ func TestFetchStream_ResumeConvergesAfterTimeoutAndTransientFailure(t *testing.T
 	_ = json.Unmarshal(nb, &fc)
 	for _, n := range nodes {
 		if _, ok := fc.SpaceNodeTimes["space1"][n.NodeToken]; !ok {
-			t.Errorf("final cursor missing %s — incremental sync would re-core.Fetch it", n.NodeToken)
+			t.Errorf("final cursor missing %s - incremental sync would re-core.Fetch it", n.NodeToken)
 		}
 	}
 }

@@ -88,7 +88,7 @@ func (s *customAgentService) CreateAgent(ctx context.Context, agent *types.Custo
 	}
 	agent.TenantID = tenantID
 
-	// Record the creator. Mirrors KnowledgeBase.CreatorID — needed by
+	// Record the creator. Mirrors KnowledgeBase.CreatorID - needed by
 	// RBAC's RequireOwnershipOrRole so Contributors can edit their own
 	// agents. Synthetic system-{tenantID} users (X-API-Key path) leave
 	// the field empty via IsSyntheticUserID, which makes the agent
@@ -508,7 +508,7 @@ func (s *customAgentService) CopyAgent(ctx context.Context, id string) (*types.C
 		UpdatedAt:   time.Now(),
 	}
 	// The clone is owned by whoever ran the copy, not the original
-	// creator — same reasoning as CopyKnowledgeBase. Skip synthetic
+	// creator - same reasoning as CopyKnowledgeBase. Skip synthetic
 	// API-key users.
 	if uid, ok := types.UserIDFromContext(ctx); ok && !types.IsSyntheticUserID(uid) {
 		newAgent.CreatedBy = uid
@@ -724,7 +724,7 @@ func (s *customAgentService) getSuggestedQuestions(
 	// KBs reached via an organization share map to the source tenant ID; the chunk
 	// rows live under that tenant. Without this grouping a caller in tenant A
 	// querying a KB shared from tenant B would hit `tenant_id = A` and get zero
-	// rows back — the symptom is "suggested questions never appear for shared KBs".
+	// rows back - the symptom is "suggested questions never appear for shared KBs".
 	scopeKBIDs := mergeUniqueStrings(queryKBIDs, resolvedTags.KnowledgeBaseIDs)
 	kbGroups := s.groupKBIDsByEffectiveTenant(ctx, scopeKBIDs)
 	// Always keep the caller's tenant in the iteration so knowledge_ids-only
@@ -1156,7 +1156,7 @@ func (s *customAgentService) readableSuggestionKnowledgeIDs(ctx context.Context,
 //     has at least Viewer access via an organization share, in which case
 //     the KB maps to its source tenant id (where the chunks actually live).
 //   - KBs the caller cannot reach (no membership, no share) are silently
-//     dropped — the suggestion endpoint never returns 403, it just shows
+//     dropped - the suggestion endpoint never returns 403, it just shows
 //     nothing for that KB, mirroring how search results are scoped.
 //
 // The result is keyed by effective tenant id so the caller can issue one

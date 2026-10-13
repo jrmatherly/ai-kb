@@ -10,7 +10,7 @@
 //     (https://api-inference.modelscope.cn/anthropic/v1/messages); this vendor
 //     only selects Chat Completions;
 //   - model ids are ModelScope repo ids ("Owner/Model-Name"); which of them
-//     API-Inference serves changes over time — the docs state outright that
+//     API-Inference serves changes over time - the docs state outright that
 //     older models are taken offline as newer ones land, and only the model
 //     page (the API-Inference panel) is authoritative;
 //   - API-Inference is a free, non-commercial service with dynamic rate limits
@@ -20,7 +20,7 @@
 //   - the documented scope is open LLM, multimodal (MLLM) and AIGC
 //     text-to-image models.
 //
-// Unverified: the thinking switch — ModelScope documents no thinking
+// Unverified: the thinking switch - ModelScope documents no thinking
 // parameter, so the top-level `enable_thinking` of the DashScope/Bailian
 // channel behind API-Inference is kept as a guess, as is `max_tokens` for the
 // output cap; embedding support is not documented anywhere on the
@@ -29,7 +29,7 @@
 // thinking flag below predates the current lineup, and as of 2026-09-20 none
 // of them advertises a "ModelScope" provider on
 // https://modelscope.cn/api/v1/inference/list_model_providers (models that are
-// served, such as Qwen/Qwen3.5-35B-A3B or ZhipuAI/GLM-5.2, do) — they are kept
+// served, such as Qwen/Qwen3.5-35B-A3B or ZhipuAI/GLM-5.2, do) - they are kept
 // because no official page states their retirement, but the list needs a
 // refresh against the model pages.
 package providers

@@ -33,7 +33,7 @@ func persistedTestUser(t *testing.T, tenantID uint64, email, password string) *t
 
 // A token the database has no row for is rejected by ValidateToken on the very
 // next request, and the client is told its session was revoked. Login must
-// therefore fail — and must not hand out the signed pair — when either insert
+// therefore fail - and must not hand out the signed pair - when either insert
 // fails.
 func TestLoginFailsWhenTokensCannotBePersisted(t *testing.T) {
 	ctx := context.Background()

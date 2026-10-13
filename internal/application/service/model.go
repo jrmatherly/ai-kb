@@ -359,7 +359,7 @@ func (s *modelService) UpdateModel(ctx context.Context, model *types.Model) erro
 // UpdateModelCredentials writes one or more credential fields on the model's
 // Parameters jsonb. Models are not pooled per-instance the way MCP clients
 // are (each call to GetEmbeddingModel/GetChatModel rebuilds the client from
-// the current Parameters), so no explicit cache invalidation is required —
+// the current Parameters), so no explicit cache invalidation is required -
 // the next call will pick up the new credential automatically.
 func (s *modelService) UpdateModelCredentials(
 	ctx context.Context, id string, apiKey, appSecret *string,

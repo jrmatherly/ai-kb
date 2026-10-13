@@ -216,7 +216,7 @@ func (s *tenantService) ListAllTenants(ctx context.Context) ([]*types.Tenant, er
 }
 
 // BulkSetStorageQuota delegates to the repository. Validation is
-// minimal — quotaBytes <= 0 is rejected because the storage-quota
+// minimal - quotaBytes <= 0 is rejected because the storage-quota
 // enforcement in knowledge_create.go treats <=0 as "unlimited", which
 // is never what a SystemAdmin pressing "apply default" intends.
 func (s *tenantService) BulkSetStorageQuota(ctx context.Context, quotaBytes int64) (int64, error) {

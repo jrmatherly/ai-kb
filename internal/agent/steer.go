@@ -19,7 +19,7 @@ func sanitizeSteerContent(content string) string {
 }
 
 // SetSteerSink wires the optional steer channel. Nil (the default) disables
-// mid-run injection entirely — every existing call site keeps working. The
+// mid-run injection entirely - every existing call site keeps working. The
 // sink satisfies types.SteerSink structurally.
 func (e *AgentEngine) SetSteerSink(sink types.SteerSink) {
 	e.steerSink = sink

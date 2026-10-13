@@ -69,7 +69,7 @@ func selectImageActionRounds(p *types.ImageMultimodalPayload) []ActionRound {
 // executeActionRound runs one dispatch step. Observation and caption are
 // physically merged into a single VLM call (the describe round); a caption-only
 // round (caption+OCR mode) uses the plain caption prompt; an OCR-only round uses
-// prompt. The transport here is the direct vlmModel.Predict shim — PR-E will
+// prompt. The transport here is the direct vlmModel.Predict shim - PR-E will
 // route it through a VLM request manager without touching this dispatch logic.
 func (s *ImageMultimodalService) executeActionRound(
 	ctx context.Context,
@@ -91,7 +91,7 @@ func (s *ImageMultimodalService) executeActionRound(
 		obs, ok := types.ParseImageAttrsResponse(raw)
 		applyImageObservation(imageInfo, obs.Attrs, obs.Description, out, payload.EnableCaption)
 		if !obs.Observed {
-			// The model ignored the attribute protocol — a user custom
+			// The model ignored the attribute protocol - a user custom
 			// instruction may have derailed the format, or it answered in prose.
 			// Nothing is invented to fill the gap: the attribute table stays
 			// empty and the OCR policy falls back to its conservative

@@ -338,7 +338,7 @@ func (r *memoryRepository) TouchUsed(
 
 // ArchiveLowestRanked keeps the `keep` best active items and archives the
 // rest. Ranking is importance first, then recency of use, then recency of
-// creation — no decay curve, because a half-life that silently buries a
+// creation - no decay curve, because a half-life that silently buries a
 // correct memory is worse than a hard cap the user can see in the list.
 func (r *memoryRepository) ArchiveLowestRanked(
 	ctx context.Context, scope interfaces.MemoryScope, keep int,
@@ -559,7 +559,7 @@ func (r *memoryRepository) ItemEmbeddings(
 // ItemsMissingEmbeddings finds the backlog.
 //
 // Every memory written before an embedding model was configured, and every one
-// written while the model was unreachable, has no vector — and a memory with no
+// written while the model was unreachable, has no vector - and a memory with no
 // vector is invisible to semantic recall. Without a backfill the feature would
 // only ever work for memories created after it was switched on.
 func (r *memoryRepository) ItemsMissingEmbeddings(
@@ -675,7 +675,7 @@ func (r *memoryRepository) BumpTopic(
 // earlier sighting was counted under, and dropping it would make the next
 // occurrence of that wording look like a brand new subject. Returns false when
 // the new key already belongs to another row, in which case the rename is
-// skipped — folding two rows together is a different operation with different
+// skipped - folding two rows together is a different operation with different
 // risks, and doing it as a side effect of a rename would lose counts.
 func (r *memoryRepository) RenameTopic(
 	ctx context.Context, scope interfaces.MemoryScope, oldKey, newKey, newLabel string,

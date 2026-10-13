@@ -124,7 +124,7 @@ func TestCopyReferences_DisabledReturnsInput(t *testing.T) {
 	assert.Equal(t, refs, w.CopyReferences(context.Background(), refs))
 }
 
-// Agent tool metadata is tool-defined, so every string leaf is rewritten — and
+// Agent tool metadata is tool-defined, so every string leaf is rewritten - and
 // the source map, which the replay buffer also holds, must not be mutated.
 func TestCopyData_RewritesNestedStringsWithoutMutating(t *testing.T) {
 	w := publicRewriter("https://cdn.example.com/x.png")

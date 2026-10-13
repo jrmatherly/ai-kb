@@ -238,7 +238,7 @@ func TestInferScope_Priority(t *testing.T) {
 			wantID:    "7",
 		},
 		{
-			name:      "no identifiers — unknown scope",
+			name:      "no identifiers - unknown scope",
 			probe:     payloadProbe{},
 			wantScope: types.TaskScopeUnknown,
 			wantID:    "",

@@ -59,7 +59,7 @@ var ImageAttrRegistry = []AttrSpec{
 		Type: AttrTypeExtent,
 		Values: []AttrValue{
 			{Value: "none", Label: "None", Description: "no text at all"},
-			{Value: "sparse", Label: "Sparse", Description: "a few words — a logo, a road sign, a single label"},
+			{Value: "sparse", Label: "Sparse", Description: "a few words: a logo, a road sign, a single label"},
 			{Value: "block", Label: "Block", Description: "a block of body text: screenshot, table, document page"},
 		},
 		Question: "How much body text does the image carry? Answer exactly one of: " +
@@ -137,7 +137,7 @@ func (a ImageAttrs) TextExtent() string {
 }
 
 // DataVisual returns the observed contain.data_visual value, or false when the
-// attribute was not observed. Absence is not the same as an observed "false" —
+// attribute was not observed. Absence is not the same as an observed "false" -
 // use Observed to distinguish them, which is what DecideOCR does.
 func (a ImageAttrs) DataVisual() bool {
 	if a.Attrs == nil {
@@ -165,7 +165,7 @@ type ImageOCRAction struct {
 	// turns OCR on.
 	On []ImageAttrCondition `json:"on"`
 	// OnUnobserved is the OCR decision used when the observation does not
-	// answer for one of the attributes the policy reads — the attribute is
+	// answer for one of the attributes the policy reads - the attribute is
 	// absent because the model skipped the line, or because the value it wrote
 	// was not one of the allowed ones. The default is true: an incomplete
 	// observation keeps extracting, so a missed block of text costs one extra
@@ -233,7 +233,7 @@ type AttrObservation struct {
 	Description string
 	// Observed reports whether the model returned at least one well-formed
 	// attribute line with a usable value. When false no attribute was observed
-	// at all and the observation round effectively produced nothing — the
+	// at all and the observation round effectively produced nothing - the
 	// caller mirrors this into the trace (observation_failed) so a prompt that
 	// derailed the attribute protocol is visible instead of passing for a
 	// confident read. It is a runtime signal only and is never persisted: only
@@ -251,8 +251,8 @@ type AttrObservation struct {
 // yields false. Prose that skips the labels is kept as the description: the
 // model answered the question, it just did not format the answer.
 //
-// An attribute the answer does not spell out — because the model skipped the
-// line, or because the value it wrote is not one of the allowed ones — is
+// An attribute the answer does not spell out - because the model skipped the
+// line, or because the value it wrote is not one of the allowed ones - is
 // simply absent from Attrs. Nothing is invented in its place: writing a
 // conservative default there would make an unanswered question look like a
 // confident "block", and would leave the OCR policy's OnUnobserved clause
@@ -324,8 +324,8 @@ func lookupAttrSpec(key string) (AttrSpec, bool) {
 }
 
 // coerceAttrValue validates a raw value against the attribute's allowed set. It
-// reports false when the model wrote nothing usable — an empty value, or one
-// outside the allowed set — and the caller then leaves the attribute absent
+// reports false when the model wrote nothing usable - an empty value, or one
+// outside the allowed set - and the caller then leaves the attribute absent
 // instead of substituting a default.
 func coerceAttrValue(spec AttrSpec, raw string) (any, bool) {
 	v := strings.TrimSpace(strings.ToLower(raw))

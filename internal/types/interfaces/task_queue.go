@@ -31,7 +31,7 @@ type TaskPendingOpsRepository interface {
 
 	// PeekBatch returns up to `limit` rows for the given queue tuple,
 	// ordered by fail_count ASC, id ASC (least-failed first; FIFO among
-	// rows with the same fail_count). Rows are NOT removed — callers must
+	// rows with the same fail_count). Rows are NOT removed - callers must
 	// DeleteByIDs once the ops have been processed (or IncrFailCount and
 	// leave them for the next pass).
 	PeekBatch(ctx context.Context, taskType, scope, scopeID string, limit int) ([]*types.TaskPendingOp, error)
@@ -42,7 +42,7 @@ type TaskPendingOpsRepository interface {
 	// sharing a chosen dedup_key are claimed together so a document with
 	// several queued ops is never split across two concurrent batches.
 	// A row is eligible when it is unclaimed (claimed_at IS NULL) or its
-	// claim is stale (claimed_at < staleBefore) — the latter recovers rows
+	// claim is stale (claimed_at < staleBefore) - the latter recovers rows
 	// abandoned by a crashed worker. Keys are selected least-failed first
 	// (then oldest id) so a retried row cannot starve never-attempted
 	// work. On Postgres the per-key anchor row is locked with FOR UPDATE
@@ -79,7 +79,7 @@ type TaskPendingOpsRepository interface {
 	// DeleteByDedupKey removes rows for the tuple whose DedupKey
 	// matches. If `op` is non-empty, only rows with that exact op are
 	// removed (this lets wiki ingest scrub queued "ingest" ops while
-	// preserving "retract" ops for the same knowledge — retract is
+	// preserving "retract" ops for the same knowledge - retract is
 	// still needed to clean up wiki pages after the source doc is
 	// deleted). If `op` is empty, every matching row is removed
 	// regardless of op.
@@ -125,7 +125,7 @@ type TaskPendingOpsKnowledgeBaseGuard interface {
 // soft-deleted). Wiki task consumers use it to guarantee a deleted tenant
 // never triggers new model requests: the check runs at task entry (ingest
 // and finalize) and inside the guarded enqueue, alongside the KB-active
-// check — tenant soft-deletion removes the workspace without touching its
+// check - tenant soft-deletion removes the workspace without touching its
 // knowledge bases or durable pending ops.
 type TaskPendingOpsTenantLiveness interface {
 	HasActiveTenant(ctx context.Context, tenantID uint64) (bool, error)
@@ -147,7 +147,7 @@ type TaskPendingOpsFinalizingSeeder interface {
 // archive (`task_dead_letters`). Two writers exist: the asynq
 // dead-letter middleware (one row per archived asynq task), and the
 // service-level retry handlers (one row per in-batch op that exhausted
-// its consumer-defined retry budget — wiki ingest is the current case).
+// its consumer-defined retry budget - wiki ingest is the current case).
 //
 // Reads are operator-driven: list by scope to triage a single KB,
 // list by task_type for cross-KB symptom hunting. No TTL.

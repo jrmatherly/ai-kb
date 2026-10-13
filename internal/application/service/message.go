@@ -338,7 +338,7 @@ func (s *messageService) ClearSessionMessages(ctx context.Context, sessionID str
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Chat History Knowledge Base — Configuration-driven (via Tenant.ChatHistoryConfig)
+// Chat History Knowledge Base - Configuration-driven (via Tenant.ChatHistoryConfig)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // getChatHistoryConfig reads the chat history KB configuration from the tenant's settings.
@@ -370,7 +370,7 @@ func (s *messageService) getRetrievalConfig(ctx context.Context) *types.Retrieva
 // IndexMessageToKB indexes a message (Q&A pair) into the chat history knowledge base asynchronously.
 // It creates a Knowledge entry (passage) containing both the user query and assistant answer,
 // then links the message to the Knowledge entry via the knowledge_id field.
-// The KB ID is read from the tenant's ChatHistoryConfig — if not configured, indexing is skipped.
+// The KB ID is read from the tenant's ChatHistoryConfig - if not configured, indexing is skipped.
 func (s *messageService) IndexMessageToKB(ctx context.Context, userQuery string, assistantAnswer string, messageID string, sessionID string) {
 	// Strip thinking content (<think>...</think>) before indexing to avoid
 	// polluting the knowledge base with intermediate reasoning that would

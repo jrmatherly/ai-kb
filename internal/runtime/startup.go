@@ -34,7 +34,7 @@ func SilenceGinRouteSpam() {
 	gin.DebugPrintFunc = func(format string, values ...interface{}) {
 		msg := strings.TrimRight(fmt.Sprintf(format, values...), "\n")
 		// Drop the redundant "Creating an Engine instance with the Logger
-		// and Recovery middleware already attached" — purely informational.
+		// and Recovery middleware already attached" - purely informational.
 		if strings.Contains(msg, "Creating an Engine instance") {
 			return
 		}
@@ -65,12 +65,12 @@ type envVarSpec struct {
 }
 
 // startupEnvVars lists the env vars whose presence is most worth
-// surfacing at boot — primarily security-sensitive ones whose silent
+// surfacing at boot - primarily security-sensitive ones whose silent
 // absence has caused real incidents (SYSTEM_AES_KEY rotation, JWT secret
 // drift) plus the basic DB / storage selectors that change behaviour
 // significantly.
 //
-// Keep the list short — this banner exists to answer "is the config I
+// Keep the list short - this banner exists to answer "is the config I
 // expect actually loaded?" at a glance, not to dump the entire env.
 var startupEnvVars = []envVarSpec{
 	// Security
@@ -108,7 +108,7 @@ var startupEnvVars = []envVarSpec{
 
 // LogStartupEnv prints a single banner block summarising the curated set
 // of env vars in startupEnvVars. Sensitive values are reported as
-// "set (N chars)" — the goal is to give the operator confidence the
+// "set (N chars)" - the goal is to give the operator confidence the
 // config they expected actually landed, without echoing secrets to logs.
 //
 // Output format (one line per var to stay grep-able):
@@ -119,7 +119,7 @@ var startupEnvVars = []envVarSpec{
 //
 // Special call-outs are printed afterwards for misconfigurations that
 // would silently degrade behaviour (e.g. SYSTEM_AES_KEY set but wrong
-// length is treated as unset by crypto.GetAESKey — easy to miss without
+// length is treated as unset by crypto.GetAESKey - easy to miss without
 // a loud warning).
 func LogStartupEnv(ctx context.Context) {
 	// Sort by name for deterministic output.
@@ -134,25 +134,27 @@ func LogStartupEnv(ctx context.Context) {
 	}
 
 	// Targeted warnings for footguns. SYSTEM_AES_KEY set to wrong length
-	// is the most common one — utils.GetAESKey() silently falls back to
+	// is the most common one - utils.GetAESKey() silently falls back to
 	// nil (== "no encryption") when len != 32.
 	if k := os.Getenv("SYSTEM_AES_KEY"); k != "" && len(k) != 32 {
 		logger.Warnf(ctx,
-			"[startup-env] SYSTEM_AES_KEY is set but %d bytes long; AES-256 requires exactly 32 bytes — encryption is DISABLED",
+			"[startup-env] SYSTEM_AES_KEY is set but %d bytes long; AES-256 requires exactly 32 bytes - encryption "+
+				"is DISABLED",
 			len(k))
 	}
 	// Upgrades from example configs keep the published example AES key,
-	// which SystemHMACKey rejects — embed sessions and presigned links then
+	// which SystemHMACKey rejects - embed sessions and presigned links then
 	// fail at request time with no hint at boot.
 	if len(utils.SystemHMACKey()) == 0 {
 		logger.Warn(ctx,
-			"[startup-env] no usable signing key: set SYSTEM_SIGNING_KEY (e.g. `openssl rand -hex 32`) — "+
+			"[startup-env] no usable signing key: set SYSTEM_SIGNING_KEY (e.g. `openssl rand -hex 32`) - "+
 				"embed sessions and presigned file links are DISABLED. SYSTEM_AES_KEY is only used as a fallback "+
 				"when it is at least 16 chars and not an example value; do not change it to fix this")
 	}
 	if strings.EqualFold(strings.TrimSpace(os.Getenv("REDIS_TLS_INSECURE_SKIP_VERIFY")), "true") {
 		logger.Warn(ctx,
-			"[startup-env] REDIS_TLS_INSECURE_SKIP_VERIFY=true — Redis TLS certificate verification is DISABLED; do not use in production")
+			"[startup-env] REDIS_TLS_INSECURE_SKIP_VERIFY=true - Redis TLS certificate verification is DISABLED; do "+
+				"not use in production")
 	}
 }
 

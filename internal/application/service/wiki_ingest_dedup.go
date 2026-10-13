@@ -16,7 +16,7 @@ import (
 //
 // Without pre-filtering, the dedup prompt packs the entire entity+concept
 // page corpus into <existing_pages>. On knowledge bases with 100+ pages
-// this inflates input tokens and — more importantly — gives weaker LLMs
+// this inflates input tokens and - more importantly - gives weaker LLMs
 // enough rope to hallucinate merges between totally unrelated slugs just
 // because the output looked plausible. Observed cases include
 // "registered urban unemployed" → "fine traditional Chinese culture" (zero
@@ -24,7 +24,7 @@ import (
 //
 // The filter below keeps only pages that share at least some cheap
 // surface-level signal with one of the new items. Fast to compute, no
-// external calls, and it only ever *removes* candidates from the prompt —
+// external calls, and it only ever *removes* candidates from the prompt -
 // the downstream validMerge check still guards the final write.
 const (
 	// dedupCandidateTopK bounds how many trigram-similar existing pages
@@ -56,14 +56,14 @@ const (
 // a (new item, existing page) comparison.
 type dedupSurface struct {
 	// slugTokens are the kebab-case tokens from the slug base (after "/").
-	// Slugs are an orthogonal signal to the surface names — Chinese pages
+	// Slugs are an orthogonal signal to the surface names - Chinese pages
 	// carry their pinyin here, which keeps the filter useful on purely
 	// Latin-script new items too.
 	slugTokens map[string]struct{}
 
 	// nameGramSets holds one char-bigram set per surface form (name and
 	// each alias). We keep them separate so the pair score is max-over-
-	// surfaces — a rare alias match shouldn't be diluted by the primary
+	// surfaces - a rare alias match shouldn't be diluted by the primary
 	// name disagreeing.
 	nameGramSets []map[string]struct{}
 }
@@ -140,7 +140,7 @@ func selectDedupCandidatePages(
 				continue
 			}
 			// Below the floor but we still owe the LLM some candidates so
-			// it can decline cleanly — fill the top-K budget with the
+			// it can decline cleanly - fill the top-K budget with the
 			// highest-scoring remaining pages, as long as the score isn't
 			// flatly zero (a zero score means we have nothing in common
 			// with this page and including it just invites hallucination).

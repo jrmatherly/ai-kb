@@ -37,7 +37,7 @@ var (
 	errImageTooLarge        = errors.New("confluence image exceeds size limit")
 	errImageNonImageContent = errors.New("confluence image response is not an image")
 	// errImageRedirectOffOrigin fires whenever a redirect target leaves the base
-	// URL boundary resolveEndpoint enforces — a different origin, or the same host
+	// URL boundary resolveEndpoint enforces - a different origin, or the same host
 	// but a path outside the configured context path (e.g. /wiki → /other-app).
 	errImageRedirectOffOrigin = errors.New("confluence image redirect left the configured base URL")
 )
@@ -258,7 +258,7 @@ func (c *client) sameOrigin(u *url.URL) bool {
 // withinImageScope reports whether u stays inside the boundary resolveEndpoint
 // enforces for the initial image URL: the same origin AND a path inside the
 // configured context path. Redirect targets are validated with this same rule,
-// not merely sameOrigin, because Go forwards Basic Auth on a same-host redirect —
+// not merely sameOrigin, because Go forwards Basic Auth on a same-host redirect -
 // so a hop like /wiki/download → /other-app/image must fail closed too.
 func (c *client) withinImageScope(u *url.URL) bool {
 	if u == nil {
@@ -313,9 +313,9 @@ func (c *client) downloadImage(ctx context.Context, absURL string) ([]byte, stri
 // imageHTTPClient reuses the connector's SSRF-safe transport and timeout but
 // pins redirects to the configured Confluence base, so a private-image fetch can
 // never be bounced to a third party or to another app on the same host. The
-// redirect check fails closed: any hop that resolveEndpoint would reject — a
+// redirect check fails closed: any hop that resolveEndpoint would reject - a
 // foreign origin, or a same-host path outside the context path (which Go would
-// still send Basic Auth to) — is refused outright rather than merely stripped of
+// still send Basic Auth to) - is refused outright rather than merely stripped of
 // credentials.
 func (c *client) imageHTTPClient() *http.Client {
 	return &http.Client{

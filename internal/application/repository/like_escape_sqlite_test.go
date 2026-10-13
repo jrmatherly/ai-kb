@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// SQLite — the database behind the Lite build — has no default LIKE escape
+// SQLite - the database behind the Lite build - has no default LIKE escape
 // character, while Postgres defaults to backslash. escapeLikeKeyword /
 // escapeLikePattern emit \% and \_ on the assumption that the pattern is
 // consumed by a predicate with an explicit ESCAPE clause; without one, SQLite

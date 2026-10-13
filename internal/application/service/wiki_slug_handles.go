@@ -4,7 +4,7 @@ import "github.com/jrmatherly/ai-kb/internal/modelcontext"
 
 // wikiSlugHandles maps real wiki slugs to short, low-entropy model handles
 // (ref-1, ref-2, …) so the ingest editor LLM never has to reproduce a
-// high-entropy slug verbatim — most importantly the UUID-based summary slugs
+// high-entropy slug verbatim - most importantly the UUID-based summary slugs
 // (summary/<knowledgeID>) that models routinely mangle by inserting or
 // dropping hex digits. The model copies the tiny handle; we translate handles
 // back to real slugs on output.
@@ -56,7 +56,7 @@ func (h *wikiSlugHandles) encodeContent(content string, known map[string]struct{
 }
 
 // decodeContent rewrites [[handle|disp]] / [[handle]] occurrences back to their
-// real slug. Handles with no mapping are left untouched — they fall through to
+// real slug. Handles with no mapping are left untouched - they fall through to
 // the ordinary parse/dead-link-cleanup path, which is the correct behavior for
 // anything the model invented that isn't a known reference.
 func (h *wikiSlugHandles) decodeContent(content string) string {

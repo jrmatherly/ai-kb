@@ -66,7 +66,7 @@ type StreamAssembler struct {
 // is done. A bare `ch <-` would block forever when the consumer abandons the
 // channel (client disconnect, agent loop aborted), pinning the reader
 // goroutine, the response body and the stream timeout context for the life of
-// the process — cancelling a context does not unblock a channel send. Once a
+// the process - cancelling a context does not unblock a channel send. Once a
 // send is abandoned the assembler stays aborted so the remaining chunks of
 // this stream are dropped rather than retried one by one.
 func (a *StreamAssembler) emit(ch chan<- types.StreamResponse, resp types.StreamResponse) bool {
@@ -119,8 +119,8 @@ func (a *StreamAssembler) elapsedMs() int64 {
 //
 // The indices are the vendor's, not ours: gateways number calls from 1, and
 // parallel calls can arrive with gaps. Walking 0..len(map) would silently drop
-// every call outside that range — and a round that loses its calls reaches the
-// agent as a plain answer — so the keys are sorted instead.
+// every call outside that range - and a round that loses its calls reaches the
+// agent as a plain answer - so the keys are sorted instead.
 func (a *StreamAssembler) OrderedToolCalls() []types.LLMToolCall {
 	if len(a.toolCallMap) == 0 {
 		return nil

@@ -11,7 +11,7 @@
 // whether an edit stranded anything, editing .env silently re-pointed configs
 // that had left fields blank without cordoning their live sandboxes, and a
 // config whose provider differed from the deployment mode inherited built-in
-// constants instead — quietly dialling 127.0.0.1.
+// constants instead - quietly dialling 127.0.0.1.
 //
 // What still comes from the baseline is deliberately narrow: the deployment's
 // script execution timeout, which is an operational guardrail rather than part
@@ -176,8 +176,8 @@ func ResolveEffectiveConfig(
 	// only what the admin typed would let a deployment whose DOCKER_HOST is a
 	// plaintext tcp:// daemon save a config that then fails at its first
 	// sandbox, with an error the settings form never had a chance to show.
-	// It runs after RequireCompleteConfig so a missing image — a field the
-	// admin can see and fix — is still the first thing reported.
+	// It runs after RequireCompleteConfig so a missing image - a field the
+	// admin can see and fix - is still the first thing reported.
 	if effective.Type == SandboxTypeDocker {
 		if err := ValidateDockerHost(
 			effective.DockerHost, effective.AllowPrivateEndpoints,
@@ -333,8 +333,8 @@ func resolveNetworkPolicy(stored *types.SandboxNetworkPolicy) RemoteNetworkPolic
 	// fail create, or accept a domain allow-list without actually denying the
 	// rest of the internet.
 	policy.DenyOut = types.CanonicalizeDenyOut(stored.DenyOut)
-	// DenyEgressByDefault means "install a 0.0.0.0/0 deny-all" — that is the
-	// stored field's documented definition — so materialise it as a real deny
+	// DenyEgressByDefault means "install a 0.0.0.0/0 deny-all" - that is the
+	// stored field's documented definition - so materialise it as a real deny
 	// entry instead of leaving it implied by the top-level switch. E2B
 	// validates the two independently and rejects a create whose allowOut
 	// names a domain unless denyOut carries the entry:

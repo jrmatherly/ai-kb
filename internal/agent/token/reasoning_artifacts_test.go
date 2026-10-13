@@ -70,7 +70,7 @@ func TestEstimateReasoningArtifactsEmpty(t *testing.T) {
 
 // Gemini thought signatures and OpenAI Responses item ids ride on the tool
 // call, not on the message, and are replayed on every later turn. Counting
-// only name+arguments under-measured a parallel tool round by kilobytes —
+// only name+arguments under-measured a parallel tool round by kilobytes -
 // the same failure mode as the message-level artifacts above.
 func TestEstimateMessageCountsToolCallProviderMetadata(t *testing.T) {
 	est, err := NewEstimator()

@@ -288,7 +288,7 @@ func (h *ModelHandler) ResolveModelCatalog(c *gin.Context) {
 		}
 	}
 	// The preview must resolve against the same inputs the runtime will see,
-	// or it describes a different request than the one the row will make —
+	// or it describes a different request than the one the row will make -
 	// Azure is the sharp case: api_version alone decides between the v1 data
 	// plane and the dated deployments path. Forward the vendor's own declared
 	// fields rather than a hardcoded list, so a new vendor needs no change
@@ -327,7 +327,7 @@ func (h *ModelHandler) ResolveModelCatalog(c *gin.Context) {
 		"capabilities": caps,
 	}
 	// base_url and the resolved endpoint are configuration, and with no
-	// base_url in the query they fall back to the vendor default — which a
+	// base_url in the query they fall back to the vendor default - which a
 	// deployment overlay may have repointed at an internal gateway. Same
 	// gate as the vendor list and as the model rows themselves.
 	if dto.CanViewIntegrationSecrets(ctx) {

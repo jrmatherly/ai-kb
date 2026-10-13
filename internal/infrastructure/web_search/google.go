@@ -21,7 +21,7 @@ type GoogleProvider struct {
 }
 
 // NewGoogleProvider creates a new Google provider from parameters (no environment variables).
-// The API endpoint is the official Google Custom Search endpoint — not tenant-configurable.
+// The API endpoint is the official Google Custom Search endpoint - not tenant-configurable.
 func NewGoogleProvider(params types.WebSearchProviderParameters) (interfaces.WebSearchProvider, error) {
 	if params.APIKey == "" {
 		return nil, fmt.Errorf("API key is required for Google provider")

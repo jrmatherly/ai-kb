@@ -467,7 +467,9 @@ func (h *IMHandler) IMCallback(c *gin.Context) {
 	// If nil, it's a non-message event - just acknowledge
 	if msg == nil {
 		if channel.Platform == "mattermost" {
-			logger.Infof(ctx, "[IM] Mattermost callback ignored (no message): path_channel_id=%s — check: (1) trigger word must be the *first word* of the post; (2) if channel+trigger are both set, post must be in that channel; (3) bot_user_id must not match the sender", channelID)
+			logger.Infof(ctx, "[IM] Mattermost callback ignored (no message): path_channel_id=%s - check: (1) "+
+				"trigger word must be the *first word* of the post; (2) if channel+trigger are both set, post must "+
+				"be in that channel; (3) bot_user_id must not match the sender", channelID)
 		} else {
 			logger.Infof(ctx, "[IM] Callback parsed no message to process platform=%s path_channel_id=%s", channel.Platform, channelID)
 		}

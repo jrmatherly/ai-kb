@@ -127,7 +127,7 @@ func DefaultMode(ctx context.Context) Mode {
 // Limits:
 //   - A ctx pinned by WithForcedHandleMode (anonymous embed traffic) is silently
 //     downgraded rather than rejected, so an embed client that happens to send
-//     the parameter keeps working — it just never gets a public URL.
+//     the parameter keeps working - it just never gets a public URL.
 //   - A knowledge-base-restricted API key is rejected with
 //     ErrPublicModeForbidden. Such a key is already denied the `/files` proxy,
 //     so handing it anonymous file URLs would widen its scope from "chunk text"

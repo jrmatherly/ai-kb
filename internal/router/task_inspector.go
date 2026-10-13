@@ -68,7 +68,7 @@ type runtimeTaskPayloadProbe struct {
 }
 
 // queuesScanned is the fixed set of queue names this codebase enqueues
-// into. Kept tight on purpose — we never scan user-defined queues.
+// into. Kept tight on purpose - we never scan user-defined queues.
 // MUST include every queue any cancelable task type can land in; the
 // multimodal queue is required here so cancelling a knowledge also purges
 // its (potentially hundreds of) pending image:multimodal tasks.
@@ -183,7 +183,7 @@ func matchesKnowledgeListDelete(taskType string, payload []byte, knowledgeID str
 
 // HasQueuedTasksForKnowledge reports whether any pending / scheduled /
 // retry / active task referencing knowledgeID still lives in the queue.
-// Read-only counterpart of CancelTasksForKnowledge — the housekeeping
+// Read-only counterpart of CancelTasksForKnowledge - the housekeeping
 // sweep uses it to avoid flagging a backlogged-but-not-orphaned row as
 // failed. Short-circuits on the first match and never deletes anything.
 func (a *asynqTaskInspector) HasQueuedTasksForKnowledge(

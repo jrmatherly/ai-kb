@@ -17,7 +17,7 @@ import (
 // caller can hold it back until the next chunk completes it.
 
 // incompleteRefSuffixRe matches a storage reference that reaches the end of the
-// string — it may continue in the next chunk.
+// string - it may continue in the next chunk.
 var incompleteRefSuffixRe = regexp.MustCompile(
 	`\b(?:resource|storage|local|minio|s3|cos|tos|oss|obs|ks3)://[^\s)\]>"]*$`,
 )
@@ -33,7 +33,7 @@ func FindIncompleteRef(s string) int {
 }
 
 // incompleteMarkdownImageSuffixRe matches a Markdown image whose destination URL
-// (the parenthesized part) is not yet closed — e.g. "![alt](minio://part" or
+// (the parenthesized part) is not yet closed - e.g. "![alt](minio://part" or
 // "![alt](". Holding back only from "minio://" would flush "![alt](" to the
 // client and break the image once the URL arrives in the next chunk.
 //

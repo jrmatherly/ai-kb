@@ -164,7 +164,7 @@ func (artifactFileCatalog) GetMessageFileBindings(
 
 // Deleting a generated file does not rewrite the answer that produced it, so
 // its handle stays in message.Content. The message-scoped file proxy must not
-// treat that leftover text as permission to keep serving the file — including
+// treat that leftover text as permission to keep serving the file - including
 // when the bytes survived because a knowledge entry still holds them, and
 // including for a shared-agent visitor who never had delete rights.
 func TestDeletedArtifactIsNotServedFromTheAnswerText(t *testing.T) {

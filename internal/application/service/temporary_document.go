@@ -43,7 +43,7 @@ const (
 	// OCR'd by the VLM at once. Multi-page scans benefit from concurrent OCR
 	// (wall-clock latency drops roughly linearly); the default matches the page
 	// cap so a full scan finishes in a single wave. Raising it loads the VLM
-	// backend harder — tune via AIKB_CHAT_ATTACHMENT_OCR_CONCURRENCY.
+	// backend harder - tune via AIKB_CHAT_ATTACHMENT_OCR_CONCURRENCY.
 	defaultTemporaryDocumentOCRConcurrency = 8
 	// temporaryDocumentOCRSufficientRunes is the OCR-yield threshold (in runes)
 	// above which a standalone image is treated as text-rich enough that a VLM
@@ -563,8 +563,8 @@ func (s *temporaryDocumentService) applyImageUnderstanding(
 // caption is generated only when captionFallback is set AND the combined OCR
 // yield is too sparse to be useful (below temporaryDocumentOCRSufficientRunes).
 // This mirrors RAGFlow's OCR>VLM cascade: text-bearing images are served by OCR
-// alone in a single round-trip, while diagrams/photos/icons — where OCR finds
-// little — get a semantic caption instead. Errors on individual images are
+// alone in a single round-trip, while diagrams/photos/icons - where OCR finds
+// little - get a semantic caption instead. Errors on individual images are
 // logged and skipped; the combined extracted text is returned best-effort.
 func (s *temporaryDocumentService) understandImagesWithVLM(
 	ctx context.Context, vlmModelID string, images [][]byte, scanned, captionFallback bool,

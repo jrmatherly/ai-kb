@@ -254,7 +254,7 @@ func TestTaskPendingOps_PeekBatch_ScopedAndOrdered(t *testing.T) {
 	require.NoError(t, repo.Enqueue(ctx, makePendingOp("wiki:ingest", "knowledge_base", "kb-B", "ingest", "k5", nil)))
 	require.NoError(t, repo.Enqueue(ctx, makePendingOp("summary:gen", "knowledge_base", "kb-A", "ingest", "k6", nil)))
 
-	// Peek up to 10 from kb-A — should see exactly 3, in insertion order.
+	// Peek up to 10 from kb-A - should see exactly 3, in insertion order.
 	got, err := repo.PeekBatch(ctx, "wiki:ingest", "knowledge_base", "kb-A", 10)
 	require.NoError(t, err)
 	require.Len(t, got, 3)
@@ -587,9 +587,9 @@ func TestTaskPendingOps_ClaimBatch_MarksAndReturnsDisjoint(t *testing.T) {
 }
 
 // TestTaskPendingOps_ClaimBatch_PrefersLeastFailed guards the starvation fix.
-// A retried document keeps its ORIGINAL id — requeueFailedOps releases the
+// A retried document keeps its ORIGINAL id - requeueFailedOps releases the
 // claim rather than moving the row, so the fail_count budget keeps counting
-// down — which under a pure `id ASC` ordering let it park at the head of the
+// down - which under a pure `id ASC` ordering let it park at the head of the
 // queue while never-attempted documents sat behind it. Observed on a real
 // 87-document KB: four re-run documents held the head and all forty
 // never-started ones waited. Selection must drain untried work first, without
@@ -665,7 +665,7 @@ func TestTaskPendingOps_ClaimBatch_KeepsSameKeyTogether(t *testing.T) {
 	assert.Equal(t, 1, byKey["k2"])
 	assert.Zero(t, byKey["k3"], "k3 belongs to the next batch (limit was 2 keys)")
 
-	// A concurrent-style second claim gets the remaining key only — it can
+	// A concurrent-style second claim gets the remaining key only - it can
 	// never see k1's rows again (disjoint).
 	second, err := repo.ClaimBatch(ctx, "wiki:ingest", "knowledge_base", "kb", 10, stale)
 	require.NoError(t, err)
@@ -695,7 +695,7 @@ func TestTaskPendingOps_ClaimBatch_LateSiblingBlockedByFreshClaim(t *testing.T) 
 	// A retract for the same, still-in-flight document arrives.
 	require.NoError(t, repo.Enqueue(ctx, makePendingOp("wiki:ingest", "knowledge_base", "kb", "retract", "k1", nil)))
 
-	// The retract must NOT be claimed while the ingest claim is fresh —
+	// The retract must NOT be claimed while the ingest claim is fresh -
 	// the whole k1 key is blocked.
 	second, err := repo.ClaimBatch(ctx, "wiki:ingest", "knowledge_base", "kb", 5, stale)
 	require.NoError(t, err)
@@ -712,7 +712,7 @@ func TestTaskPendingOps_ClaimBatch_LateSiblingBlockedByFreshClaim(t *testing.T) 
 
 // TestTaskPendingOps_ClaimBatch_LateSiblingClaimableAfterStale verifies the
 // other release path: if the holder CRASHES (claim never cleared), the whole
-// key — original row + late sibling — becomes claimable together once the
+// key - original row + late sibling - becomes claimable together once the
 // claim goes stale, so the pair is folded back into one batch.
 func TestTaskPendingOps_ClaimBatch_LateSiblingClaimableAfterStale(t *testing.T) {
 	db := setupTaskQueueTestDB(t)
@@ -751,7 +751,7 @@ func TestTaskPendingOps_ClaimBatch_ReclaimsStale(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, got, 1)
 
-	// A stale threshold in the past — the fresh claim is NOT stale yet.
+	// A stale threshold in the past - the fresh claim is NOT stale yet.
 	got, err = repo.ClaimBatch(ctx, "wiki:ingest", "knowledge_base", "kb", 10, time.Now().Add(-time.Hour))
 	require.NoError(t, err)
 	assert.Len(t, got, 0, "fresh claim must not be re-claimed")
@@ -819,8 +819,8 @@ func TestTaskDeadLetter_Insert_DefaultsAndAssignsID(t *testing.T) {
 		TaskType:  "wiki:ingest",
 		ScopeID:   "kb",
 		FailCount: 3,
-		// Scope intentionally empty — should default to "unknown".
-		// Payload intentionally nil — should default to "{}".
+		// Scope intentionally empty - should default to "unknown".
+		// Payload intentionally nil - should default to "{}".
 	}
 	require.NoError(t, repo.Insert(ctx, dl))
 	assert.NotZero(t, dl.ID)
@@ -872,7 +872,7 @@ func TestTaskDeadLetter_ListByScope_NewestFirstAndCursored(t *testing.T) {
 	assert.True(t, page1[1].ID > page2[0].ID, "page2 should continue past page1")
 	require.NotEmpty(t, cursor)
 
-	// Last page — only 1 row left, cursor goes empty since len < limit.
+	// Last page - only 1 row left, cursor goes empty since len < limit.
 	page3, cursor, err := repo.ListByScope(ctx, "knowledge_base", "kb-A", cursor, 2)
 	require.NoError(t, err)
 	require.Len(t, page3, 1)
@@ -922,7 +922,7 @@ func TestTaskDeadLetter_ListByTaskType_FiltersAndPaginates(t *testing.T) {
 }
 
 // TestTaskDeadLetter_DeleteByID_IsIdempotent confirms a missing row does
-// not produce an error — operators triggering concurrent deletes should
+// not produce an error - operators triggering concurrent deletes should
 // see clean success.
 func TestTaskDeadLetter_DeleteByID_IsIdempotent(t *testing.T) {
 	db := setupTaskQueueTestDB(t)

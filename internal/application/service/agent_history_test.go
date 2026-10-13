@@ -88,7 +88,7 @@ func TestBuildUserHistoryMessage_RenderedContentRebuildsAttachment(t *testing.T)
 
 // TestBuildAssistantHistoryMessages_NaturalFinishEmitsSingleAnswer covers the
 // most common path: a turn with no tool calls (model answered directly). The
-// result must be a single assistant message holding the canonical answer —
+// result must be a single assistant message holding the canonical answer -
 // duplicates would inflate token usage every turn.
 func TestBuildAssistantHistoryMessages_NaturalFinishEmitsSingleAnswer(t *testing.T) {
 	msg := &types.Message{
@@ -140,7 +140,7 @@ func TestAssistantHistoryScopesArtifactVersionsToHistoricalTurn(t *testing.T) {
 // option-B replay: non-terminal tool calls from AgentSteps become proper
 // assistant_with_tool_calls + tool messages, and the canonical final answer is
 // appended last. final_answer entries are filtered because they're terminal
-// signals — the trailing assistant message already carries the answer.
+// signals - the trailing assistant message already carries the answer.
 func TestBuildAssistantHistoryMessages_ToolCallsExpandIntoOpenAIShape(t *testing.T) {
 	msg := &types.Message{
 		Role:    "assistant",
@@ -201,7 +201,7 @@ func TestBuildAssistantHistoryMessages_ToolCallsExpandIntoOpenAIShape(t *testing
 
 // A fast-answer turn persists its retrieval stages so the UI can redraw the
 // timeline after a reload. Those calls came from the pipeline, not the model, so
-// replaying them would hand the model tool calls it never made — and, in a
+// replaying them would hand the model tool calls it never made - and, in a
 // KnowledgeQA turn, tools it was never offered.
 func TestBuildAssistantHistoryMessages_SkipsPipelineTimelineToolCalls(t *testing.T) {
 	msg := &types.Message{
@@ -306,7 +306,7 @@ func TestBuildAssistantHistoryMessages_SkillScriptFailureKeepsStdout(t *testing.
 // A steered turn has more than one user message: the original question plus
 // whatever the user injected while the agent was working, all sharing the
 // run's request ID. Replaying only one of them would hand the next turn a
-// conversation that never happened — typically losing the original question,
+// conversation that never happened - typically losing the original question,
 // since the injected message is the newer row.
 func TestBuildTurnBodyMessages_KeepsMidRunUsersInPlace(t *testing.T) {
 	firstStep := time.Date(2026, 9, 4, 10, 0, 0, 0, time.UTC)
@@ -394,7 +394,7 @@ func TestBuildTurnBodyMessages_LateMidRunUserPrecedesAnswer(t *testing.T) {
 }
 
 // TestFilterNonTerminalToolCalls confirms a legacy final_answer entry is
-// dropped — every other tool (KB search, web search, MCP tools…) must survive.
+// dropped - every other tool (KB search, web search, MCP tools…) must survive.
 func TestFilterNonTerminalToolCalls(t *testing.T) {
 	in := []types.ToolCall{
 		{Name: agenttools.ToolSearchKnowledge},
@@ -455,9 +455,9 @@ func TestBuildAssistantHistoryMessages_ReplaysReasoningContent(t *testing.T) {
 //
 // The engine records that closing round as an ordinary step, artifacts and
 // all, but buildAgentStepMessages emits nothing for a step without tool calls,
-// so everything the provider needs back — the OpenAI Responses encrypted
+// so everything the provider needs back - the OpenAI Responses encrypted
 // reasoning items, a DeepSeek/MiMo reasoning_content, an Anthropic thinking
-// signature — used to end at the turn boundary.
+// signature - used to end at the turn boundary.
 func TestBuildAssistantHistoryMessages_ReplaysFinalAnswerReasoning(t *testing.T) {
 	items := json.RawMessage(`[{"type":"reasoning","id":"rs_1","encrypted_content":"opaque"}]`)
 	msg := &types.Message{

@@ -34,7 +34,7 @@ const pubsubChannelBase = "aikb:system_settings:changed"
 
 // pubsubChannel resolves the effective channel name (with optional
 // namespace suffix). Called both at publish time and inside the
-// subscriber loop — keep it pure.
+// subscriber loop - keep it pure.
 func pubsubChannel() string {
 	if ns := strings.TrimSpace(os.Getenv("AIKB_REDIS_NAMESPACE")); ns != "" {
 		return pubsubChannelBase + ":" + ns
@@ -44,7 +44,7 @@ func pubsubChannel() string {
 
 // changeMessage is the JSON payload published whenever a setting is
 // updated. OriginID lets the publishing replica skip its own message
-// (it already updated its local cache inline) — without it every
+// (it already updated its local cache inline) - without it every
 // publish would trigger a redundant DB roundtrip per replica.
 type changeMessage struct {
 	Key      string `json:"key"`
@@ -61,7 +61,7 @@ type changeMessage struct {
 //  3. Replacing existing os.Getenv() reads with calls into the
 //     service.
 //
-// Update rejects any key not in this registry — so the UI cannot inject
+// Update rejects any key not in this registry - so the UI cannot inject
 // arbitrary keys into the DB, even with an attacker-controlled body.
 type settingSpec struct {
 	// Type is one of "int" | "string" | "bool" | "string_list". Update
@@ -70,7 +70,7 @@ type settingSpec struct {
 	// EnvName is the legacy environment variable consulted when the DB
 	// row is absent. Empty string means "no ENV fallback for this key"
 	// (the caller passes the desired default explicitly via the GetXxx
-	// def parameter — useful when the cfg already coerced it at startup).
+	// def parameter - useful when the cfg already coerced it at startup).
 	EnvName string
 	// Default is the built-in fallback used when both DB and ENV miss.
 	// Type must match the Type field (int → int64, string → string,
@@ -96,7 +96,7 @@ type settingSpec struct {
 }
 
 // registry pins the set of legal keys. Expanding it is a deliberate,
-// reviewable operation — the implicit contract is "every key here is
+// reviewable operation - the implicit contract is "every key here is
 // safely runtime-tunable (no startup caching that would not honour
 // the new value, no in-memory state bound at init time we cannot
 // re-derive)".
@@ -142,7 +142,7 @@ var registry = map[string]settingSpec{
 	},
 	"auth.registration_mode": {
 		Type:     "string",
-		EnvName:  "", // No env fallback — handler passes cfg.Auth.RegistrationMode as default
+		EnvName:  "", // No env fallback - handler passes cfg.Auth.RegistrationMode as default
 		Default:  "self_serve",
 		Enum:     []string{"self_serve", "invite_register", "invite_only"},
 		Category: "auth",
@@ -176,7 +176,7 @@ var registry = map[string]settingSpec{
 	// a JSON document (types.GalleryPolicyTier) that can toggle attribute
 	// sources and override per-attribute usage flags (in_filter /
 	// in_searchfield / in_sortfield) on top of what the sources declare.
-	// Read on every gallery request — edits take effect on the next gallery
+	// Read on every gallery request - edits take effect on the next gallery
 	// page load, no restart. Empty string = no overrides (use source
 	// declarations as-is). See types.ResolveGalleryConfig for the merge
 	// semantics (user > KB > system > source).
@@ -194,7 +194,7 @@ var registry = map[string]settingSpec{
 	},
 	// tenant.max_owned_per_user caps how many tenants a single non-superuser
 	// can create (and Own) via self-service POST /tenants. Read on every
-	// request — UI edits take effect immediately, no restart required. The
+	// request - UI edits take effect immediately, no restart required. The
 	// EnvName is the same AIKB_TENANT_MAX_OWNED_PER_USER that
 	// applyAuthAndTenantDefaults parses at boot, so a deployment that
 	// hasn't created a DB row keeps reading from env exactly as before.
@@ -220,7 +220,7 @@ var registry = map[string]settingSpec{
 	},
 	// tenant.default_storage_quota_gb is the default storage quota (in GB)
 	// applied to a newly-created tenant when the caller doesn't specify
-	// one explicitly. Read at create time only — changing the value does
+	// one explicitly. Read at create time only - changing the value does
 	// NOT retroactively resize already-existing tenants (they keep the
 	// quota stored on their row at creation; superusers can edit
 	// individual tenants via the existing tenant-update path).
@@ -315,7 +315,7 @@ var registry = map[string]settingSpec{
 	},
 	// asynq.wiki_concurrency is the size of the DEDICATED wiki worker pool,
 	// separate from the upstream pools. Read once when the wiki asynq server
-	// starts — changing it in the UI requires a process restart. Mirrors
+	// starts - changing it in the UI requires a process restart. Mirrors
 	// AIKB_WIKI_ASYNQ_CONCURRENCY (default 8).
 	"asynq.wiki_concurrency": {
 		Type:            "int",
@@ -356,13 +356,13 @@ var registry = map[string]settingSpec{
 // the Redis client + an in-memory cache. Cache strategy is "preload
 // at boot, invalidate via pubsub":
 //
-//   - On startup we async-load every row into `cache` (best-effort —
+//   - On startup we async-load every row into `cache` (best-effort -
 //     a DB hiccup just means a slower warmup, not a fatal error).
 //   - GetXxx reads from cache (microsecond latency).
 //   - Update writes DB → updates local cache → publishes a change
 //     notification to Redis.
 //   - Subscribers on every replica read the notification and re-fetch
-//     the row from DB (NOT from the message payload — the message only
+//     the row from DB (NOT from the message payload - the message only
 //     carries the key, never the value, so we never trust pubsub-as-
 //     transport with config bytes).
 //   - The publishing replica skips its own messages by matching
@@ -395,15 +395,15 @@ type systemSettingService struct {
 	loaded atomic.Bool
 
 	// subOnce guarantees SubscribeRedis can be called multiple times
-	// without spawning duplicate goroutines (defensive — main only
+	// without spawning duplicate goroutines (defensive - main only
 	// calls it once).
 	subOnce sync.Once
 }
 
 // NewSystemSettingService is the dig provider. audit may be nil
-// (matches the tenantMemberService convention — tests that don't care
+// (matches the tenantMemberService convention - tests that don't care
 // about audit can pass nil and emitAudit no-ops). rdb may also be nil
-// when REDIS_ADDR is unset — the service still uses its local cache,
+// when REDIS_ADDR is unset - the service still uses its local cache,
 // but skips cross-replica pubsub invalidation.
 func NewSystemSettingService(
 	repo interfaces.SystemSettingRepository,
@@ -419,7 +419,7 @@ func NewSystemSettingService(
 		instanceID: uuid.NewString(),
 		cache:      make(map[string]*types.SystemSetting),
 	}
-	// Async preload — don't block container build / handler readiness
+	// Async preload - don't block container build / handler readiness
 	// on a slow DB. The first few requests may miss cache and hit the
 	// DB directly via the resolver fallback; that's a few ms each and
 	// completes long before the cache is full.
@@ -463,7 +463,7 @@ func (s *systemSettingService) preload(ctx context.Context) {
 // default. Mirrors encodeForType but operates on already-typed Go
 // values from registry so we never have to round-trip through `any`
 // type assertions on the seed path. Returns an error when spec.Default
-// is missing or its Go type doesn't match spec.Type — that's a code
+// is missing or its Go type doesn't match spec.Type - that's a code
 // bug in the registry entry, surface it loudly rather than silently
 // seeding the wrong shape.
 func encodeDefault(spec settingSpec) (types.JSON, error) {
@@ -516,7 +516,7 @@ func encodeDefault(spec settingSpec) (types.JSON, error) {
 
 // reload re-fetches a single key from DB and updates the cache. Called
 // from the pubsub subscriber loop after another replica publishes a
-// change. A repo.Get(nil) result removes the entry — the row must have
+// change. A repo.Get(nil) result removes the entry - the row must have
 // been deleted by an out-of-band tool (P1 has no Delete endpoint, but
 // hand-edits still work).
 func (s *systemSettingService) reload(ctx context.Context, key string) {
@@ -534,7 +534,7 @@ func (s *systemSettingService) reload(ctx context.Context, key string) {
 	s.mu.Unlock()
 
 	// Push any side-effect bridges for the changed key. Bridges are
-	// idempotent — calling them on every reload (even when the change
+	// idempotent - calling them on every reload (even when the change
 	// is to a different key) is fine and lets us avoid plumbing a
 	// per-key dispatch table.
 	s.dispatchSideEffects(ctx, key)
@@ -542,7 +542,7 @@ func (s *systemSettingService) reload(ctx context.Context, key string) {
 
 // dispatchSideEffects fans out post-Update / post-reload work to
 // subsystems whose state depends on a system_setting. Each bridge
-// looks up its own keys and decides whether to act — this keeps the
+// looks up its own keys and decides whether to act - this keeps the
 // dispatcher trivial as we add more.
 func (s *systemSettingService) dispatchSideEffects(ctx context.Context, changedKey string) {
 	switch changedKey {
@@ -602,7 +602,7 @@ func (s *systemSettingService) applyDockerBackendEnabled(ctx context.Context) {
 }
 
 // publishChange fans the change out to peers. Best-effort: a Redis
-// outage logs a warning but does not fail the Update — the DB write
+// outage logs a warning but does not fail the Update - the DB write
 // already succeeded and our local cache is up-to-date. Other replicas
 // will pick up the new value on their next preload (e.g. restart) or
 // when their own resolver detects a stale cache via fallback.
@@ -623,13 +623,13 @@ func (s *systemSettingService) publishChange(ctx context.Context, key string) {
 }
 
 // NewSystemSettingService is the dig provider. audit may be nil
-// (matches the tenantMemberService convention — tests that don't care
+// (matches the tenantMemberService convention - tests that don't care
 // about audit can pass nil and emitAudit no-ops).
 //
 // Compatibility shim: the real ctor lives above (with rdb). Keeping this
 // alternate signature would break dig (two providers for one type), so
 // it is intentionally NOT exported separately. Tests that don't have a
-// Redis client should pass nil — the service detects nil and degrades
+// Redis client should pass nil - the service detects nil and degrades
 // to the P1 "no cache, no pubsub" path.
 
 // resolveRaw runs the 3-tier fallback ladder for an arbitrary key and
@@ -638,13 +638,13 @@ func (s *systemSettingService) publishChange(ctx context.Context, key string) {
 //
 // P2: cache-first. If the preload finished and the cache has an entry
 // for this key, return it. Cache misses (key absent) are AUTHORITATIVE
-// when loaded.IsTrue — preload populated every existing row, and any
+// when loaded.IsTrue - preload populated every existing row, and any
 // subsequent Update would have updated the cache inline. So a miss
 // after preload means the row genuinely doesn't exist and we should
 // skip the DB query entirely. Before preload finishes we still consult
 // the DB to avoid a "cold-start serves defaults" surprise.
 //
-// Errors at the DB layer degrade to ENV/default with a warning log —
+// Errors at the DB layer degrade to ENV/default with a warning log -
 // upstream business code (file upload, etc.) gets a usable answer
 // instead of a 500. This is the deliberate degradation policy spelled
 // out in the interface comment.
@@ -961,7 +961,7 @@ func jsonEqual(a, b types.JSON) bool {
 }
 
 // Update validates and persists a new value. Steps:
-//  1. Look up the registry spec — reject unknown keys with 400 semantics.
+//  1. Look up the registry spec - reject unknown keys with 400 semantics.
 //  2. Coerce + validate the rawValue against spec.Type. Numeric inputs
 //     from JSON unmarshalling arrive as float64; we accept both int64
 //     and float64 for "int" and round-trip through strconv to surface
@@ -987,7 +987,7 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 	// encodeForType so we know the raw value passed type validation.
 	//
 	// Use a local name `str` rather than `s` to avoid shadowing the
-	// outer `*systemSettingService` receiver — the previous version
+	// outer `*systemSettingService` receiver - the previous version
 	// relied on the shadow being unused inside the block, which was a
 	// trap for future edits.
 	if len(spec.Enum) > 0 && spec.Type == "string" {
@@ -1015,7 +1015,7 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 		return nil, fmt.Errorf("invalid value for %q: %w", key, err)
 	}
 
-	// Capture pre-image for the audit log — pulled fresh, not from
+	// Capture pre-image for the audit log - pulled fresh, not from
 	// any cache, so concurrent admin edits race-fairly (last writer
 	// wins, audit reflects what was actually replaced).
 	prev, _ := s.repo.Get(ctx, key)
@@ -1057,7 +1057,7 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 	// Re-read so caller sees DB-side defaults (id, updated_at) populated.
 	persisted, err := s.repo.Get(ctx, key)
 	if err != nil || persisted == nil {
-		// Don't fail the operation just because the read-back hiccuped —
+		// Don't fail the operation just because the read-back hiccuped -
 		// the upsert already succeeded. Return the optimistic value.
 		persisted = row
 	}
@@ -1087,13 +1087,13 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 }
 
 // Reset deletes the DB override for `key` so the resolver falls back
-// to ENV / built-in default. Idempotent — deleting a key that was
+// to ENV / built-in default. Idempotent - deleting a key that was
 // never persisted is treated as success (no audit row written, since
 // nothing actually changed) so retries from the UI can't pile up
 // noise. Mirrors Update's cache+pubsub+audit+side-effect plumbing on
 // the success path so other replicas drop the entry too.
 //
-// Unknown keys still 400 — we don't want a typo on the URL to silently
+// Unknown keys still 400 - we don't want a typo on the URL to silently
 // pretend it cleared something.
 func (s *systemSettingService) Reset(ctx context.Context, key string) error {
 	spec, ok := registry[key]
@@ -1135,7 +1135,7 @@ func (s *systemSettingService) Reset(ctx context.Context, key string) error {
 // SubscribeRedis starts a single goroutine that subscribes to the
 // pubsub channel and refreshes the local cache when peers publish
 // changes. Idempotent (subOnce). When Redis is nil (lite mode) returns
-// nil immediately — single-replica deployments don't need pubsub
+// nil immediately - single-replica deployments don't need pubsub
 // because Update already writes the local cache inline.
 //
 // The subscriber loop runs until ctx is cancelled (server shutdown).
@@ -1212,7 +1212,7 @@ func (s *systemSettingService) consumeMessages(ctx context.Context, ch <-chan *r
 				logger.Warnf(ctx, "[system_settings] bad pubsub payload: %v", err)
 				continue
 			}
-			// Skip our own publish — the local cache is already fresh
+			// Skip our own publish - the local cache is already fresh
 			// (Update wrote it inline). Without this every Update would
 			// trigger a redundant DB roundtrip on the publishing replica.
 			if m.OriginID == s.instanceID {
@@ -1224,7 +1224,7 @@ func (s *systemSettingService) consumeMessages(ctx context.Context, ch <-chan *r
 }
 
 // emitChangeAudit writes one audit row per successful Update. Best-
-// effort — a nil audit service or a write failure does not bubble up.
+// effort - a nil audit service or a write failure does not bubble up.
 // This mirrors tenantMemberService.emitAudit's failure semantics: the
 // business op (config update) succeeds even if audit is broken.
 func (s *systemSettingService) emitChangeAudit(
@@ -1303,11 +1303,11 @@ func encodeForType(declared string, rawValue any) (types.JSON, error) {
 		b, _ := json.Marshal(v)
 		return types.JSON(b), nil
 	case "string_list":
-		// Accept either a JSON array of strings (the canonical UI shape
-		// — t-tag-input emits string[]) or a single comma-separated
+		// Accept either a JSON array of strings (the canonical UI shape -
+		// t-tag-input emits string[]) or a single comma-separated
 		// string (operator pasting from a legacy ENV value). Reject
 		// arrays containing non-strings to avoid silently coercing
-		// `[1, 2]` into `["1", "2"]` — that hides typos.
+		// `[1, 2]` into `["1", "2"]` - that hides typos.
 		var entries []string
 		switch v := rawValue.(type) {
 		case []any:
@@ -1357,7 +1357,7 @@ func encodeForType(declared string, rawValue any) (types.JSON, error) {
 //
 // Adding new validators:
 //   - keep them strict (reject silently-broken input rather than fixing
-//     it server-side — the user should see what they typed),
+//     it server-side - the user should see what they typed),
 //   - keep them deterministic (no DNS lookups, no env reads),
 //   - keep error messages user-facing (the handler surfaces them as the
 //     400 body verbatim).
@@ -1375,8 +1375,8 @@ func validateRegistryEntry(key string, rawValue any) error {
 		}
 	case "ssrf.whitelist":
 		// Coerce into the same shape encodeForType produced. We don't
-		// look at the encoded JSON because that's already canonicalised
-		// — easier to validate the raw input the user typed.
+		// look at the encoded JSON because that's already canonicalised -
+		// easier to validate the raw input the user typed.
 		entries, err := coerceToStringSlice(rawValue)
 		if err != nil {
 			return err

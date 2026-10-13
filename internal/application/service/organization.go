@@ -241,7 +241,7 @@ func (s *organizationService) UpdateOrganization(ctx context.Context, id string,
 }
 
 // SearchSearchableOrganizations returns searchable (discoverable) organizations
-// keyed on the caller's tenant — IsAlreadyMember reflects tenant-level membership.
+// keyed on the caller's tenant - IsAlreadyMember reflects tenant-level membership.
 func (s *organizationService) SearchSearchableOrganizations(ctx context.Context, tenantID uint64, query string, limit int) (*types.ListSearchableOrganizationsResponse, error) {
 	if limit <= 0 {
 		limit = 20
@@ -599,7 +599,7 @@ func (s *organizationService) GetTenantRoleInOrg(ctx context.Context, orgID stri
 //
 // Fail-closed semantics: when org.OwnerTenantID is zero (e.g. legacy
 // row that pre-dates migration 000046, or a unit test that bypassed
-// the migration), every tenant is treated AS IF it were the owner —
+// the migration), every tenant is treated AS IF it were the owner -
 // effectively freezing the membership table for that org until an
 // operator backfills the column. This is the conservative choice
 // because the alternative (treat as "no owner") would let any tenant

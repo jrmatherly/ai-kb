@@ -9,8 +9,8 @@ import (
 
 // ValidateRow checks that a stored model row resolves against the catalog.
 //
-// It is the one gate shared by every write path — the REST create/update
-// handlers and the declarative builtin_models.yaml loader — so an unknown
+// It is the one gate shared by every write path - the REST create/update
+// handlers and the declarative builtin_models.yaml loader - so an unknown
 // protocol, a bad compat key or an invalid thinking level is rejected where
 // it is written instead of surfacing as a failed chat call much later.
 //

@@ -48,8 +48,8 @@ func LimitsOf(in api.ImageInput) Limits {
 
 // Prepare turns stored image bytes into an image the model will take.
 // An image already in an accepted format and within the byte limit goes as
-// it is; anything else is re-encoded — as JPEG where the vendor takes it,
-// PNG otherwise — and scaled down until it fits.
+// it is; anything else is re-encoded - as JPEG where the vendor takes it,
+// PNG otherwise - and scaled down until it fits.
 func Prepare(data []byte, limits Limits) (api.EmbedImage, error) {
 	if len(data) == 0 {
 		return api.EmbedImage{}, fmt.Errorf("image is empty")

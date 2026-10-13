@@ -315,7 +315,7 @@ func TestTrace_FinishMetadataMerged(t *testing.T) {
 
 // TestStartGeneration_AutoRootExported guards the regression where a
 // generation started with no active trace auto-opened a root span that was
-// never ended and therefore never exported — leaving the generation's parent
+// never ended and therefore never exported - leaving the generation's parent
 // dangling. After the fix the auto root is exported and shares the trace id.
 func TestStartGeneration_AutoRootExported(t *testing.T) {
 	m, exp := newTestManager(t)
@@ -372,7 +372,7 @@ func TestStartSpan_AutoRootExported(t *testing.T) {
 
 // TestTraceparentPropagation is the sop3 correlation core test: an incoming
 // W3C traceparent (as injected by an upstream caller like sop3) is extracted,
-// and the AI KB root span inherits the upstream trace id — so in LiteFuse
+// and the AI KB root span inherits the upstream trace id - so in LiteFuse
 // the AI KB trace and the upstream caller's trace are the same trace.
 func TestTraceparentPropagation(t *testing.T) {
 	m, exp := newTestManager(t)
@@ -420,7 +420,7 @@ func TestAttachTraceparent_FollowUpJoinsOriginatingTrace(t *testing.T) {
 	}
 	httpTrace.Finish(nil, nil)
 
-	// Separate request: no *Trace, no OTel span — this is POST /suggestions.
+	// Separate request: no *Trace, no OTel span - this is POST /suggestions.
 	followCtx := AttachTraceparent(context.Background(), traceparent)
 	followCtx, span := m.StartSpan(followCtx, SpanOptions{Name: "follow_up.suggestions"})
 	_, gen := m.StartGeneration(followCtx, GenerationOptions{Name: "chat.completion", Model: "m"})

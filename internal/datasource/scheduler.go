@@ -38,8 +38,8 @@ func ValidateSyncSchedule(schedule string) error {
 // at the top of every hour regardless of when the process started). So multiple
 // instances will fire at the same moment. Dedup is handled by two layers:
 //
-//  1. HasRunningSync — if a previous sync is still running, skip (prevent overlap).
-//  2. asynq.TaskID  — deterministic ID per (dataSourceID, minute). Redis ensures
+//  1. HasRunningSync - if a previous sync is still running, skip (prevent overlap).
+//  2. asynq.TaskID  - deterministic ID per (dataSourceID, minute). Redis ensures
 //     only one task with a given ID is enqueued. Losers get ErrTaskIDConflict.
 type Scheduler struct {
 	cron         *cron.Cron
@@ -168,10 +168,10 @@ func (s *Scheduler) addEntryLocked(ds *types.DataSource) error {
 
 // triggerSync is called by the cron runner on each tick.
 //
-// Layer 1 — DB: if a previous sync is still running, skip. This prevents
+// Layer 1 - DB: if a previous sync is still running, skip. This prevents
 // overlap when a sync takes longer than the cron interval.
 //
-// Layer 2 — Redis: deterministic asynq.TaskID = "dssync:<dsID>:<minute>".
+// Layer 2 - Redis: deterministic asynq.TaskID = "dssync:<dsID>:<minute>".
 // Since robfig/cron fires at absolute wall-clock times, all instances trigger
 // at the same minute. The first Enqueue wins; others get ErrTaskIDConflict.
 func (s *Scheduler) triggerSync(dataSourceID string, tenantID uint64) {
@@ -211,7 +211,7 @@ func (s *Scheduler) triggerSync(dataSourceID string, tenantID uint64) {
 	payloadJSON, _ := json.Marshal(payload)
 	task := asynq.NewTask(types.TypeDataSourceSync, payloadJSON)
 
-	// Layer 2: deterministic TaskID — all instances in the same minute produce the same ID
+	// Layer 2: deterministic TaskID - all instances in the same minute produce the same ID
 	taskID := fmt.Sprintf("dssync:%s:%s", dataSourceID, time.Now().UTC().Truncate(time.Minute).Format("200601021504"))
 
 	_, err = s.taskEnqueuer.Enqueue(task,

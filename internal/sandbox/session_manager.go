@@ -133,7 +133,7 @@ type SessionBoundManagerConfig struct {
 // operation flows through these three dependencies; the manager never keeps
 // authoritative session→sandbox state locally.
 //
-// Provider identity comes from deps.Client.Provider() — not Config.Type —
+// Provider identity comes from deps.Client.Provider() - not Config.Type -
 // so test harnesses and custom wiring that inject a different client backend
 // always project the correct template, TTL, and health timeout.
 func NewSessionBoundManager(deps SessionBoundManagerConfig) (*SessionBoundManager, error) {
@@ -737,7 +737,7 @@ type ShellExecOptions struct {
 	AsRoot bool
 	// SkipWorkspacePrep omits prepareSessionDirs. Desktop maintenance and
 	// workspace checkpoints operate on an existing layout. Never set this from a model-authored tool
-	// such as shell_exec — agents still need the workspace contract.
+	// such as shell_exec - agents still need the workspace contract.
 	SkipWorkspacePrep bool
 }
 
@@ -978,7 +978,7 @@ func (m *SessionBoundManager) SessionTerminalManager() SessionTerminalManager {
 // ErrNoLiveSessionSandbox instead of provisioning, because the terminal
 // entry point lacks the config-pin context that agent-driven creation
 // relies on. A bound sandbox that is not confirmed running returns
-// ErrSandboxPaused unless opts.AllowResume is set — Connect would wake a
+// ErrSandboxPaused unless opts.AllowResume is set - Connect would wake a
 // paused instance. A backend that cannot stream PTYs returns
 // ErrTerminalUnsupported, not "no sandbox".
 func (m *SessionBoundManager) OpenSessionTerminal(
@@ -1060,7 +1060,7 @@ func (m *SessionBoundManager) RequireRunningSessionSandbox(
 // Unlike OpenSessionTerminal there is no AllowResume branch: by the time this
 // runs, SandboxDesktopService has already driven the same
 // resolveSandboxForExecution path a chat turn uses, so the sandbox is live
-// and — critically — its inbound token is registered on THIS replica.
+// and - critically - its inbound token is registered on THIS replica.
 // Reaching here with no binding means the sandbox went away in between,
 // which is an error, not a reason to provision.
 func (m *SessionBoundManager) OpenSessionDesktop(
@@ -1460,8 +1460,8 @@ func (m *SessionBoundManager) walkSessionFiles(
 // bindings globally addressable in Redis.
 //
 // It reads the session-owner tenant rather than the ambient request tenant so
-// that a shared agent — which runs under the agent owner's workspace so its
-// models, KBs and named sandbox configs resolve there — still binds its sandbox
+// that a shared agent - which runs under the agent owner's workspace so its
+// models, KBs and named sandbox configs resolve there - still binds its sandbox
 // under the session's own tenant. Session deletion tears the sandbox down from a
 // request that knows only that tenant, so any other choice would strand the
 // MicroVM. SandboxTenantIDFromContext falls back to the request tenant, which
@@ -1562,7 +1562,7 @@ func cleanSessionWorkDir(workDir string, allowSkillsRoot bool) (string, error) {
 // lifecycle coordinator; env vars propagate as-is.
 //
 // The provider parameter (derived from RemoteSandboxClient.Provider()) is the
-// authoritative source of identity — it selects the correct Config fields so
+// authoritative source of identity - it selects the correct Config fields so
 // Cube and E2B never read each other's templates or TTLs.
 func buildSessionCreateRequest(provider RemoteProvider, cfg *Config) (RemoteCreateRequest, error) {
 	envVars := withWorkspaceEnvDefaults(cloneMetadata(cfg.EnvVars))

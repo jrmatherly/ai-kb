@@ -123,7 +123,7 @@ func TestRetrievalProgressEmitsSingleToolCallAndResult(t *testing.T) {
 
 // A turn whose candidates all fell below the relevance threshold answers from
 // the fallback, which never sees a retrieved chunk. Reporting the raw hits as
-// the result count claimed context the answer did not have — and offered a row
+// the result count claimed context the answer did not have - and offered a row
 // with no references behind it.
 func TestRetrievalProgressReportsNoResultsWhenPipelineFellBack(t *testing.T) {
 	bus := &recordingEventBus{}

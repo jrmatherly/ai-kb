@@ -81,12 +81,12 @@ func (a *Adapter) Platform() im.Platform {
 	return im.PlatformWeChat
 }
 
-// VerifyCallback is not supported — WeChat iLink uses long-polling, not webhooks.
+// VerifyCallback is not supported - WeChat iLink uses long-polling, not webhooks.
 func (a *Adapter) VerifyCallback(c *gin.Context) error {
 	return fmt.Errorf("WeChat adapter does not support webhook callbacks")
 }
 
-// ParseCallback is not supported — messages arrive via long-polling.
+// ParseCallback is not supported - messages arrive via long-polling.
 func (a *Adapter) ParseCallback(c *gin.Context) (*im.IncomingMessage, error) {
 	return nil, fmt.Errorf("WeChat adapter does not support webhook callbacks")
 }

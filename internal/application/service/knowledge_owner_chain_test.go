@@ -10,7 +10,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
-// PR 5 (#1303) — service-layer chain helper for the per-KB ownership
+// PR 5 (#1303) - service-layer chain helper for the per-KB ownership
 // lookups. The handler-level adapters in internal/handler/rbac_lookups.go
 // translate this method's repository sentinels into
 // middleware.ErrResourceNotFound; this file pins the contract on the
@@ -30,7 +30,7 @@ func (s *stubKnowledgeRepoForChain) GetKnowledgeByID(
 }
 
 // stubKBServiceForChain mirrors the handler-side stub but lives in the
-// service test package — embedding the interface keeps untouched
+// service test package - embedding the interface keeps untouched
 // methods nil-panicky on purpose.
 type stubKBServiceForChain struct {
 	interfaces.KnowledgeBaseService
@@ -77,7 +77,7 @@ func TestGetOwningKBCreatorID_KnowledgeNotFound(t *testing.T) {
 
 func TestGetOwningKBCreatorID_KBNotFound(t *testing.T) {
 	// Knowledge resolves but its KB has been deleted (or was never
-	// created — defence-in-depth). The KB sentinel must surface so the
+	// created - defence-in-depth). The KB sentinel must surface so the
 	// handler can render 404 rather than 503/500.
 	s := newKnowledgeServiceForChain(
 		&stubKnowledgeRepoForChain{

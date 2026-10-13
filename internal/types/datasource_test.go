@@ -37,7 +37,7 @@ func TestDataSourceConfig_ToJSON_EncryptsStringCredentials(t *testing.T) {
 	assert.True(t, strings.HasPrefix(creds["client_secret"].(string), "enc:v1:"))
 
 	// Non-string credentials survive verbatim (some connectors persist
-	// integers / bools alongside the secrets — refresh_count and friends).
+	// integers / bools alongside the secrets - refresh_count and friends).
 	assert.EqualValues(t, 42, creds["refresh_count"])
 	assert.EqualValues(t, true, creds["refresh_enabled"])
 
@@ -78,8 +78,8 @@ func TestDataSource_ParseConfig_Roundtrip(t *testing.T) {
 }
 
 func TestDataSource_ParseConfig_LegacyPlaintext(t *testing.T) {
-	// Rows persisted before encryption was wired in have no enc:v1: prefix
-	// — DecryptStoredSecret returns them verbatim. Historical data must
+	// Rows persisted before encryption was wired in have no enc:v1: prefix -
+	// DecryptStoredSecret returns them verbatim. Historical data must
 	// keep working without an offline migration.
 	withAESKey(t, testAESKey32)
 	legacy := JSON([]byte(`{"type":"github","credentials":{"token":"legacy-plain"}}`))
@@ -91,7 +91,7 @@ func TestDataSource_ParseConfig_LegacyPlaintext(t *testing.T) {
 
 func TestDataSource_ParseConfig_MissingKeyDegradesGracefully(t *testing.T) {
 	// Encrypt with key, drop the key, then load. ParseConfig must succeed
-	// so the data source row is still visible — the credential blanks
+	// so the data source row is still visible - the credential blanks
 	// out so HasCredentials() returns false and the UI shows
 	// "not configured". A loud Scan failure would break the whole list.
 	withAESKey(t, testAESKey32)
@@ -161,7 +161,7 @@ func TestSubtreeChildID_MatchesPrefix(t *testing.T) {
 	assert.True(t, strings.HasPrefix(imageChild, prefix))
 
 	// A sibling node "node1234" (shares the "node123" leading substring but is a
-	// different node) must NOT be caught by node123's prefix — the '#' guards it.
+	// different node) must NOT be caught by node123's prefix - the '#' guards it.
 	sibling := SubtreeChildID("node1234", "file", "tokABC")
 	assert.False(t, strings.HasPrefix(sibling, prefix),
 		"sibling node whose id shares a leading substring must not match the prefix")

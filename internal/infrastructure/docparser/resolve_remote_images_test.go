@@ -245,7 +245,7 @@ func TestExtFromURLPath(t *testing.T) {
 	}{
 		{"https://example.com/photo.jpg", ".jpg"},
 		{"https://example.com/photo.JPEG", ".jpeg"},
-		{"https://example.com/photo.png?v=2", ""}, // query param — path.Ext won't catch it cleanly but that's ok
+		{"https://example.com/photo.png?v=2", ""}, // query param - path.Ext won't catch it cleanly but that's ok
 		{"https://example.com/photo.gif", ".gif"},
 		{"https://example.com/photo.webp", ".webp"},
 		{"https://example.com/photo.bmp", ".bmp"},

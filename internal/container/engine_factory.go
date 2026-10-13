@@ -41,7 +41,7 @@ import (
 // NewEngineFactory returns an EngineFactory function closed over db, cfg, and
 // an audit sink (built from the AuditLogService). Registered in dig and
 // injected into VectorStoreService for dynamic registry updates. The
-// EngineFactory type itself is unchanged — the audit sink is captured in the
+// EngineFactory type itself is unchanged - the audit sink is captured in the
 // closure rather than added to the signature.
 func NewEngineFactory(db *gorm.DB, cfg *config.Config, auditSvc interfaces.AuditLogService) interfaces.EngineFactory {
 	sink := newAuditSinkAdapter(auditSvc)
@@ -307,7 +307,7 @@ func createWeaviateEngine(store types.VectorStore) (interfaces.RetrieveEngineSer
 		Scheme: scheme,
 	}
 	// Unlike the env path (which checks WEAVIATE_AUTH_ENABLED), the factory uses
-	// APIKey directly — if a user provides it, they intend to use it.
+	// APIKey directly - if a user provides it, they intend to use it.
 	if cc.APIKey != "" {
 		weaviateCfg.AuthConfig = auth.ApiKey{Value: cc.APIKey}
 	}

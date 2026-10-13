@@ -1,7 +1,7 @@
 //go:build integration
 
 // Package sandbox integration tests against a locally-running CubeSandbox
-// deployment. These tests DO NOT use any mock — they connect straight to a
+// deployment. These tests DO NOT use any mock - they connect straight to a
 // live CubeAPI + CubeProxy pair. Enable them with the `integration` build tag:
 //
 //	CUBE_API_URL=http://127.0.0.1:33000 \
@@ -35,7 +35,7 @@ const (
 	// local Cube deployment: CubeAPI on 33000, CubeProxy (openresty inside
 	// the cube-proxy docker container) on the host's port 80. The Dashboard
 	// (cube-webui) is exposed on 12088 and MUST NOT be used as a data-plane
-	// endpoint — POST requests against it return 405 because Dashboard is a
+	// endpoint - POST requests against it return 405 because Dashboard is a
 	// static SPA server, not a routing proxy.
 	integrationDefaultAPIURL   = "http://127.0.0.1:33000"
 	integrationDefaultProxyURL = "http://127.0.0.1:80"
@@ -167,7 +167,7 @@ func TestIntegrationCubeClient_HealthAndList(t *testing.T) {
 // TestIntegrationCubeClient_CreateConnectRoundTrip validates that Create +
 // Connect + Get form a consistent lifecycle round-trip through the real
 // CubeAPI. It replaces the old ConnectRoundTripRequiresTimeout test which
-// verified the SDK connect body patch — that patch is now handled internally
+// verified the SDK connect body patch - that patch is now handled internally
 // by CubeRemoteClient.
 func TestIntegrationCubeClient_CreateConnectRoundTrip(t *testing.T) {
 	cfg := integrationConfig(t)
@@ -209,7 +209,7 @@ func TestIntegrationCubeClient_CreateConnectRoundTrip(t *testing.T) {
 		t.Fatalf("Get returned unexpected summary: %#v", summary)
 	}
 
-	// Reconnect to the same sandbox — this is the critical path that
+	// Reconnect to the same sandbox - this is the critical path that
 	// exercises CubeAPI's /sandboxes/{id}/connect endpoint.
 	reattached, err := client.Connect(ctx, RemoteConnectRequest{SandboxID: sandboxID})
 	if err != nil {
@@ -308,7 +308,7 @@ func TestIntegrationCubeClient_LifecycleRoundTrip(t *testing.T) {
 		t.Fatalf("Get after delete: %v", err)
 	}
 	if summary != nil {
-		t.Logf("sandbox still visible right after delete (state=%s) — acceptable eventual-consistency window", summary.State)
+		t.Logf("sandbox still visible right after delete (state=%s) - acceptable eventual-consistency window", summary.State)
 	}
 }
 
@@ -418,7 +418,7 @@ func TestIntegrationCubeClient_FilesystemOps(t *testing.T) {
 
 // TestIntegrationRemoteSandbox_EphemeralExecute exercises the empty-SessionID
 // path through SessionBoundManager: the manager allocates a fresh MicroVM,
-// runs the script, and tears it down — same wire behaviour Docker
+// runs the script, and tears it down - same wire behaviour Docker
 // sandboxes present per Execute.
 func TestIntegrationRemoteSandbox_EphemeralExecute(t *testing.T) {
 	mgr := newIntegrationManager(t)

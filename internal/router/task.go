@@ -209,7 +209,7 @@ func RunAsynqServer(params AsynqTaskParams) *asynq.ServeMux {
 	// Install the dead-letter middleware FIRST so it sees the raw error
 	// returned by the handler, before any other middleware that might
 	// transform it. The middleware records one task_dead_letters row per
-	// task that exhausts its retry budget — operators can then SQL-query
+	// task that exhausts its retry budget - operators can then SQL-query
 	// failures by task type, scope, or tenant without scraping logs.
 	// Best-effort: a DB failure is logged and swallowed; the original task
 	// error always propagates upstream to asynq for retry/archival.
@@ -217,7 +217,7 @@ func RunAsynqServer(params AsynqTaskParams) *asynq.ServeMux {
 	// The callback flips Knowledge.parse_status to "failed" the moment a
 	// document-related task exhausts its retry budget. Without this hook,
 	// a permanently-failing task left its parent knowledge stranded in
-	// "processing" until housekeeping cron caught it minutes later — the
+	// "processing" until housekeeping cron caught it minutes later - the
 	// UI signal users actually see.
 	knowledgeFailer := newDeadLetterKnowledgeFailer(params.KnowledgeService, params.SpanTracker)
 	mux.Use(asynqdl.MiddlewareWithCallback(params.DeadLetterRepo, knowledgeFailer))
@@ -321,8 +321,8 @@ type deadLetterKnowledgePayload struct {
 	KnowledgeBaseID string `json:"knowledge_base_id"`
 	KnowledgeID     string `json:"knowledge_id,omitempty"`
 	// Attempt threads through DocumentProcess / ManualProcess /
-	// KnowledgePostProcess payloads (added when span tracking shipped)
-	// — extracted here so the dead-letter callback can also close the
+	// KnowledgePostProcess payloads (added when span tracking shipped) -
+	// extracted here so the dead-letter callback can also close the
 	// matching root span as failed. Older in-flight payloads without
 	// this field decode as 0 and the tracker call no-ops.
 	Attempt int `json:"attempt,omitempty"`
@@ -336,7 +336,7 @@ type deadLetterKnowledgePayload struct {
 //   - TypeImageMultimodal: a single image hitting dead-letter would have
 //     been counted by isFinalAsynqAttempt (see image_multimodal.go), so
 //     the parent might still complete via remaining images. We DO NOT mark
-//     the parent failed for this case — finalize-on-last-attempt already
+//     the parent failed for this case - finalize-on-last-attempt already
 //     ensures progress.
 //   - TypeKnowledgePostProcess: terminal stage; failure here strands the
 //     knowledge in "processing".
@@ -357,7 +357,7 @@ var taskTypesAffectingKnowledgeStatus = map[string]struct{}{
 //
 // All work is best-effort: missing payload, missing knowledge_id, or DB
 // errors are logged and swallowed. The dead-letter record is the source of
-// truth — this is purely a UX shortcut so users don't wait for the
+// truth - this is purely a UX shortcut so users don't wait for the
 // housekeeping cron's next sweep.
 func newDeadLetterKnowledgeFailer(ks interfaces.KnowledgeService, tracker service.SpanTracker) asynqdl.OnDeadLetter {
 	if ks == nil {

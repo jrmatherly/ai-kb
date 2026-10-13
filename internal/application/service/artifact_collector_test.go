@@ -543,7 +543,7 @@ func TestArtifactCollector_ReattachesOnMtimeChange(t *testing.T) {
 	src := &fakeSandboxSource{
 		entries: map[string][]sandbox.RemoteDirEntry{
 			"sess-1": {
-				// Same path, newer mtime *and* a different size — the skill
+				// Same path, newer mtime *and* a different size - the skill
 				// actually rewrote the file this turn.
 				{
 					Name:    "report.pptx",
@@ -681,7 +681,7 @@ func TestArtifactCollector_EmptyWhenNoEntries(t *testing.T) {
 }
 
 func TestArtifactCollector_EmptyWhenNoSessionID(t *testing.T) {
-	// The collector treats empty session ID as "nothing to do" — the design
+	// The collector treats empty session ID as "nothing to do" - the design
 	// spec forbids sandbox lookups for chat-only sessions.
 	ctx := context.Background()
 	src := &fakeSandboxSource{}
@@ -712,7 +712,7 @@ func TestArtifactCollector_ListErrorDegrades(t *testing.T) {
 }
 
 func TestArtifactCollector_UploadFailureIsPerFile(t *testing.T) {
-	// A single failed upload must NOT abort the whole batch — the other
+	// A single failed upload must NOT abort the whole batch - the other
 	// files should still be persisted, matching the best-effort contract.
 	ctx := context.Background()
 	src := &fakeSandboxSource{
@@ -727,7 +727,7 @@ func TestArtifactCollector_UploadFailureIsPerFile(t *testing.T) {
 			"/workspace/output/b.txt": []byte("b"),
 		},
 	}
-	// FileService fails on every call — both files should be skipped without
+	// FileService fails on every call - both files should be skipped without
 	// propagating an error.
 	fs := &fakeFileService{saveErr: stderrors.New("s3 dead")}
 	c := newTestCollector(src, &fakeStore{}, fs, 1<<20)
@@ -1019,7 +1019,7 @@ func TestArtifactCollector_DeletedFileDoesNotComeBackUntouched(t *testing.T) {
 	}
 }
 
-// But a turn that actually rewrites the file — new mtime — regenerates it, and
+// But a turn that actually rewrites the file - new mtime - regenerates it, and
 // the user gets it back even when the bytes come out identical. The tombstone
 // must not feed the same-content restore short circuit: doing so would make a
 // deleted file impossible to reproduce byte-for-byte ever again.
@@ -1063,7 +1063,7 @@ func TestArtifactCollector_DeletedFileReturnsWhenRegenerated(t *testing.T) {
 	}
 }
 
-// A live artifact's same-content restore still short-circuits — the tombstone
+// A live artifact's same-content restore still short-circuits - the tombstone
 // change must not weaken the fork-checkout path it was built for.
 func TestArtifactCollector_LiveRestoreStillSkipsAlongsideATombstone(t *testing.T) {
 	ctx := context.Background()

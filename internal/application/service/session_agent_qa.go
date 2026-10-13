@@ -97,7 +97,7 @@ func (s *sessionService) AgentQA(
 
 	// The model's own metadata decides two things the agent cannot guess: how
 	// much history fits before compaction, and whether images can be passed
-	// through. Resolve it once, before the engine is built — the engine sizes
+	// through. Resolve it once, before the engine is built - the engine sizes
 	// its memory consolidator from MaxContextTokens at construction.
 	var agentModelSupportsVision bool
 	modelContextWindow := 0
@@ -146,7 +146,7 @@ func (s *sessionService) AgentQA(
 	// Load multi-turn history directly from DB (the single source of truth).
 	// AgentSteps on each historical assistant message are expanded into proper
 	// assistant_with_tool_calls + tool messages so the model can see what was
-	// tried last turn — except final_answer, which is replayed as the trailing
+	// tried last turn - except final_answer, which is replayed as the trailing
 	// canonical assistant message. History is sized by the window, not by a
 	// turn count: compaction and its persisted checkpoints keep it in bounds.
 	var llmContext []chat.Message
@@ -181,7 +181,7 @@ func (s *sessionService) AgentQA(
 
 	// Reconcile all durable session attachments into the session's remote
 	// sandbox before the model can request shell or skill execution. The
-	// durable storage URL — not the ephemeral sandbox path — remains the
+	// durable storage URL - not the ephemeral sandbox path - remains the
 	// source of truth. Gated on the sandbox manager advertising a session
 	// filesystem capability so provider-neutral remote wiring stays here.
 	var stagedAttachments []stagedSessionAttachment
@@ -666,7 +666,7 @@ func dedupPreservingOrder(values []string) []string {
 
 // configureSkillsFromAgent turns the agent's skill picker into runtime flags.
 // The skills themselves come from the sandbox image (TenantSkills), not from
-// a host skill directory — that copy is not what shell_exec would find
+// a host skill directory - that copy is not what shell_exec would find
 // inside the sandbox.
 func (s *sessionService) configureSkillsFromAgent(
 	ctx context.Context,

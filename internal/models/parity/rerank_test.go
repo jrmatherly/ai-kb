@@ -268,7 +268,7 @@ func TestTruncatePromptTokensRejectsAnInvalidValue(t *testing.T) {
 
 // TestRerankCeilingsAreTheDocumentedOnes pins the numbers the shared batching
 // layer enforces. They used to live inside each client, where a dedicated
-// test watched them; now they are declarations, so they need their own guard —
+// test watched them; now they are declarations, so they need their own guard -
 // TestEveryRerankVendorResolvesToAKnownProtocol only checks they are sane.
 func TestRerankCeilingsAreTheDocumentedOnes(t *testing.T) {
 	for id, want := range map[string]api.RerankSettings{
@@ -330,7 +330,7 @@ func TestWeKnoraCloudRerankKeepsItsDeadline(t *testing.T) {
 // Before the catalog it was readable from extra_config but had no input in the
 // model editor, so the only way to set it was the API or the database.
 // GET /models/providers renders extra fields dynamically, so declaring one is
-// all it takes — and it must be declared exactly where the extension is
+// all it takes - and it must be declared exactly where the extension is
 // accepted, or the form offers a switch the vendor will reject.
 func TestTruncatePromptTokensIsReachableFromTheEditor(t *testing.T) {
 	for _, v := range modelruntime.ListByType(types.ModelTypeRerank) {
@@ -384,7 +384,7 @@ func TestRerankScoreScalesMatchTheVendorDocs(t *testing.T) {
 // native text-rerank endpoint. Alibaba also documents a flat
 // /compatible-api/v1/reranks shape for it, but the native endpoint serves the
 // same model with identical scores (#3558), and v0.8.0 deployments already
-// have rows that name it — refusing it would break them on upgrade.
+// have rows that name it - refusing it would break them on upgrade.
 func TestQwen3RerankUsesNativeDashScopeProtocol(t *testing.T) {
 	v, ok := modelruntime.Get("aliyun")
 	require.True(t, ok)
@@ -407,7 +407,7 @@ func TestQwen3RerankUsesNativeDashScopeProtocol(t *testing.T) {
 
 // TestGatewayRerankEndpoints pins the URL each gateway's rerank rows reach.
 // All three serve the Cohere dialect the protocol package already speaks, so
-// opening the type was a declaration — but LiteLLM documents the route on the
+// opening the type was a declaration - but LiteLLM documents the route on the
 // proxy root rather than under /v1, which is why it needs its own default.
 func TestGatewayRerankEndpoints(t *testing.T) {
 	for _, tc := range []struct {
@@ -418,7 +418,7 @@ func TestGatewayRerankEndpoints(t *testing.T) {
 		{provider: "novita", wantURL: "https://api.novita.ai/openai/v1/rerank"},
 		// https://openrouter.ai/docs/api/api-reference/rerank/submit-a-rerank-request
 		{provider: "openrouter", wantURL: "https://openrouter.ai/api/v1/rerank"},
-		// https://docs.litellm.ai/docs/rerank — the curl example posts to
+		// https://docs.litellm.ai/docs/rerank - the curl example posts to
 		// http://0.0.0.0:4000/rerank, not /v1/rerank.
 		{provider: "litellm", wantURL: "http://your_litellm_proxy/rerank"},
 	} {
@@ -441,7 +441,7 @@ func TestGatewayRerankEndpoints(t *testing.T) {
 
 // TestScoreScaleIsOverridablePerRow covers the gateways, where the vendor
 // cannot know the answer: GPUStack and a generic endpoint serve whatever
-// reranker was deployed behind them, and the two families disagree — BGE
+// reranker was deployed behind them, and the two families disagree - BGE
 // answers a 0..1 probability, Qwen3-Reranker an unbounded score. Converting a
 // probability as if it were a logit squeezes every score into [0.5, 0.73],
 // which makes a relevance threshold meaningless, so the operator needs a way

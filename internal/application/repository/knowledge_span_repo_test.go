@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// spansTestDDL mirrors migration 000053 for SQLite — same column order
+// spansTestDDL mirrors migration 000053 for SQLite - same column order
 // minus the JSONB type (SQLite stores JSON as TEXT, the JSONMap Scanner
 // handles the round trip transparently). Inlined for the same reason
 // knowledgebase_sqlite_test.go inlines its DDL: GORM AutoMigrate doesn't
@@ -73,7 +73,7 @@ func TestKnowledgeSpanRepo_UpsertAndList(t *testing.T) {
 	require.NoError(t, repo.Upsert(ctx, row))
 
 	// Second Upsert with same (kid, attempt, span_id) flips status and
-	// sets finished_at — must overwrite, not insert a duplicate.
+	// sets finished_at - must overwrite, not insert a duplicate.
 	finished := now.Add(2 * time.Second)
 	row.Status = types.SpanStatusDone
 	row.FinishedAt = &finished
@@ -255,7 +255,7 @@ func TestKnowledgeSpanRepo_CancelPathsSanitizeErrorFields(t *testing.T) {
 }
 
 // TestKnowledgeSpanRepo_ListAttemptIsolation guarantees that different
-// attempts of the same knowledge stay queryable independently — the
+// attempts of the same knowledge stay queryable independently - the
 // foundation for the "show history" UI navigation (?attempt=N).
 func TestKnowledgeSpanRepo_ListAttemptIsolation(t *testing.T) {
 	repo, _ := setupSpanTestRepo(t)

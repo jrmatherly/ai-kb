@@ -270,7 +270,7 @@ func (g *Gate) runSubscriber() {
 			}
 			switch {
 			case err == nil, errors.Is(err, ErrPendingNotFound):
-				// Either delivered or this isn't the owning replica — quiet.
+				// Either delivered or this isn't the owning replica - quiet.
 			default:
 				logger.GetLogger(ctx).Warnf("mcp approval pubsub deliver: %v", err)
 			}
@@ -439,7 +439,7 @@ func (g *Gate) RequestAndWait(ctx context.Context, req PendingRequest) (Decision
 // the request ctx is canceled. A returned Decision.Approved==true means the
 // user completed authorization and the tool call should be retried.
 //
-// Unlike RequestAndWait this does NOT consult the approval checker — it is
+// Unlike RequestAndWait this does NOT consult the approval checker - it is
 // driven reactively by an authorization-required error from the MCP transport.
 func (g *Gate) RequestOAuthAndWait(ctx context.Context, req OAuthPendingRequest) (Decision, error) {
 	if g == nil {
@@ -615,7 +615,7 @@ func (g *Gate) resolveCrossInstance(tenantID uint64, userID, pendingID string, d
 		return fmt.Errorf("publish approval resolve: %w", pErr)
 	}
 
-	// Wait for the owning instance to ack. Window is short (3s) — UX wins
+	// Wait for the owning instance to ack. Window is short (3s) - UX wins
 	// from getting an accurate 404/409 over slowly returning 200.
 	ackCtx, ackCancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer ackCancel()

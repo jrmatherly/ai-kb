@@ -394,7 +394,7 @@ func (g *pgRepository) VectorRetrieve(ctx context.Context,
 	// pgvector requires the ORDER BY expression to match the indexed expression
 	// EXACTLY, otherwise the planner falls back to a sequential scan. The
 	// `embedding::halfvec(%d)` cast on both sides of `<=>` is therefore NOT
-	// redundant — it is the only way to make the HNSW index get used at all.
+	// redundant - it is the only way to make the HNSW index get used at all.
 	// See: pgvector issues #702, #835 and ParadeDB "indexing-expressions" docs.
 	subqueryLimitParam := len(allVars) + 1
 	thresholdParam := len(allVars) + 2

@@ -18,7 +18,7 @@ import (
 // Returning NotFound rather than Forbidden avoids leaking the existence
 // of unauthorized KB IDs that the caller could not otherwise observe.
 // Structured logs record the rejection with the offending kb_id (always
-// safe — KB IDs are UUIDs without sensitive content) and the requesting
+// safe - KB IDs are UUIDs without sensitive content) and the requesting
 // tenant for audit.
 func AuthorizeKBAccess(
 	ctx context.Context,

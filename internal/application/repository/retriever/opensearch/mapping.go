@@ -91,12 +91,12 @@ func (r *Repository) createIndexAndAlias(ctx context.Context, dim int) error {
 // filters hit them without the ES v8 "useKeywordSuffix" auto-detection
 // dance.
 //
-// match_type is intentionally NOT in the mapping — it's a per-result
+// match_type is intentionally NOT in the mapping - it's a per-result
 // classification derived from RetrieverType at parse time. source_type
 // is stored as `integer` (not stringified) so the wire format remains
 // stable across SourceType enum extension.
 //
-// Pure function — no IO, no logging. Easy to unit-test (byte-exact diff).
+// Pure function - no IO, no logging. Easy to unit-test (byte-exact diff).
 func buildIndexMapping(cfg internalCfg, dim int) ([]byte, error) {
 	type mapping struct {
 		Settings struct {
@@ -152,8 +152,8 @@ func buildIndexMapping(cfg internalCfg, dim int) ([]byte, error) {
 }
 
 // buildKeywordsMapping returns the mapping for the dim-less keyword-only
-// index. Same as buildIndexMapping but with the embedding field omitted
-// — used by the no-embedding save path (the service layer dispatches
+// index. Same as buildIndexMapping but with the embedding field omitted -
+// used by the no-embedding save path (the service layer dispatches
 // there when the knowledge base has vector indexing disabled).
 func buildKeywordsMapping(cfg internalCfg) ([]byte, error) {
 	type mapping struct {
@@ -202,7 +202,7 @@ func (r *Repository) ensureKeywordsIndex(ctx context.Context) error {
 		return nil
 	}
 	if r.keywordsErr != nil && !isTransientErr(r.keywordsErr) {
-		// Permanent failure — don't retry, surface the same error.
+		// Permanent failure - don't retry, surface the same error.
 		return r.keywordsErr
 	}
 
@@ -228,7 +228,7 @@ func (r *Repository) ensureKeywordsIndex(ctx context.Context) error {
 			r.keywordsErr = err
 			return err
 		}
-		// resource_already_exists_exception — race with concurrent process,
+		// resource_already_exists_exception - race with concurrent process,
 		// treat as success.
 	} else {
 		created = true
@@ -270,7 +270,7 @@ func (r *Repository) indicesDelete(ctx context.Context, name string) error {
 	return nil
 }
 
-// aliasExists uses HEAD /_alias/<name> (Indices.Alias.Exists) — returns
+// aliasExists uses HEAD /_alias/<name> (Indices.Alias.Exists) - returns
 // true on 200, false on 404, error on 5xx / transport.
 //
 // SDK quirk (opensearch-go v4.6.0): the Exists method passes
@@ -292,7 +292,7 @@ func (r *Repository) aliasExists(ctx context.Context, alias string) (bool, error
 		case 404:
 			return false, nil
 		}
-		// Unexpected status (5xx) — fall through to the err path so
+		// Unexpected status (5xx) - fall through to the err path so
 		// wrapTransport can classify (and so the test handler's
 		// errBody is logged for diagnosis).
 	}
@@ -303,7 +303,7 @@ func (r *Repository) aliasExists(ctx context.Context, alias string) (bool, error
 }
 
 // aliasPut creates an alias pointing at index. Single add operation
-// (rolling-reindex atomic swap is deferred to a follow-up PR — see
+// (rolling-reindex atomic swap is deferred to a follow-up PR - see
 // stubs.go swapToVersion).
 func (r *Repository) aliasPut(ctx context.Context, index, alias string) error {
 	req := osapi.AliasPutReq{
@@ -388,7 +388,7 @@ func extractMappingFingerprintFromResp(resp *osapi.MappingGetResp, index string)
 		return embFingerprint{}, fmt.Errorf("index %s not in mapping response", index)
 	}
 	// MappingGetResp.Indices[index].Mappings is a json.RawMessage in
-	// the SDK — we decode the inner properties shape ourselves.
+	// the SDK - we decode the inner properties shape ourselves.
 	var m struct {
 		Properties map[string]any `json:"properties"`
 	}

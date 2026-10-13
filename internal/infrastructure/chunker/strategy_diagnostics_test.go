@@ -49,7 +49,7 @@ func TestSplitWithDiagnostics_EmptyText(t *testing.T) {
 
 // TestSplit_AndDiagnostics_AgreeOnChunks ensures Split (no diagnostics)
 // and SplitWithDiagnostics produce the same chunk set for a given input.
-// They run independent loops as of the post-audit refactor — this test
+// They run independent loops as of the post-audit refactor - this test
 // is the regression wall against them drifting.
 func TestSplit_AndDiagnostics_AgreeOnChunks(t *testing.T) {
 	text := "para one.\n\npara two.\n\npara three."
@@ -70,7 +70,7 @@ func TestSplit_AndDiagnostics_AgreeOnChunks(t *testing.T) {
 }
 
 // TestSplitWithDiagnostics_ProfileSetForAuto verifies that auto-strategy
-// returns the DocProfile that drove tier selection — required by the
+// returns the DocProfile that drove tier selection - required by the
 // preview endpoint to avoid double-profiling.
 func TestSplitWithDiagnostics_ProfileSetForAuto(t *testing.T) {
 	doc := "# Top\nintro.\n\n## A\nbody A.\n\n## B\nbody B."

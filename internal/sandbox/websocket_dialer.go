@@ -9,7 +9,7 @@
 // runs two SandboxGatewayTransportPools with two InboundTokenRegistries
 // (tenant_resolver.go), selected by cfg.AllowPrivateEndpoints. A free function
 // holding only cfg cannot know which registry to read; reading the wrong one
-// returns an empty token and the gateway answers 401 — a symptom identical to
+// returns an empty token and the gateway answers 401 - a symptom identical to
 // the replica-affinity failure, and nearly impossible to tell apart in
 // production.
 package sandbox
@@ -95,7 +95,7 @@ func sandboxDomainFor(cfg *Config) string {
 
 // Dial opens a WebSocket to port/path of sandboxID.
 //
-// extraHeader carries credentials the caller owns — for the desktop that is
+// extraHeader carries credentials the caller owns - for the desktop that is
 // Authorization: Basic for websockify, and the handle's inbound traffic token
 // when the registry has not been written yet (Cube Create/Connect historically
 // skipped that Put). The registry fills the inbound header only if missing.
@@ -103,7 +103,7 @@ func sandboxDomainFor(cfg *Config) string {
 // The negotiated subprotocol is pinned to "binary" and verified after the
 // handshake. If an upstream ever selected base64, the bytes on the sandbox
 // side would be base64 text and every byte offset the RFB parser computes
-// would be wrong — silently, and only under load.
+// would be wrong - silently, and only under load.
 func (d *WebsocketDialer) Dial(
 	ctx context.Context,
 	sandboxID string,
@@ -147,11 +147,11 @@ func (d *WebsocketDialer) Dial(
 	guardedDial := GuardedDialContext(d.policy)
 	dialer := &websocket.Dialer{
 		HandshakeTimeout: 15 * time.Second,
-		// Only "binary" — see the doc comment.
+		// Only "binary" - see the doc comment.
 		Subprotocols: []string{"binary"},
 		NetDialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			// Ignore addr and dial the gateway, exactly as
-			// newGatewayDataTransportWithPolicy does for HTTP — both go
+			// newGatewayDataTransportWithPolicy does for HTTP - both go
 			// through GuardedDialContext, so the two data planes judge the
 			// same name at the same point.
 			if d.target != "" {

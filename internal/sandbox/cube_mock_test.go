@@ -577,7 +577,7 @@ func writeEnvdCommandResult(w http.ResponseWriter, stdout, stderr string, exitCo
 	})
 	writeConnectFrame(&body, startJSON)
 
-	// data event (if there is output) — stdout/stderr must be base64-encoded
+	// data event (if there is output) - stdout/stderr must be base64-encoded
 	if stdout != "" || stderr != "" {
 		dataJSON, _ := json.Marshal(map[string]any{
 			"event": map[string]any{

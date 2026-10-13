@@ -37,14 +37,14 @@ func TestRegion_WikiURL(t *testing.T) {
 	if got, want := RegionLark.WikiURL("spc123"), "https://larksuite.com/wiki/spc123"; got != want {
 		t.Errorf("Lark WikiURL = %q, want %q", got, want)
 	}
-	// A Lark link must never point at the Feishu host — that was the bug.
+	// A Lark link must never point at the Feishu host - that was the bug.
 	if strings.Contains(RegionLark.WikiURL("x"), "feishu") {
 		t.Errorf("Lark WikiURL leaks the Feishu host: %q", RegionLark.WikiURL("x"))
 	}
 }
 
 // base_url stays an override so data sources created before the lark connector
-// existed — a "feishu" connector pointed at open.larksuite.com — keep working.
+// existed - a "feishu" connector pointed at open.larksuite.com - keep working.
 func TestParseFeishuConfig_BaseURLDefaultsToRegion(t *testing.T) {
 	cases := []struct {
 		name    string

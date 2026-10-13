@@ -106,7 +106,7 @@ func resolve(t *testing.T, provider, model string) *modelruntime.Resolved {
 //
 // `want` lists fields that must match the old implementation; a nil value
 // means the field must be absent, exactly as before. `divergence` documents
-// a deliberate behaviour change — those entries assert the NEW behaviour and
+// a deliberate behaviour change - those entries assert the NEW behaviour and
 // carry the reason, so the change stays visible in review.
 func TestLegacyWireParity(t *testing.T) {
 	cases := []struct {
@@ -470,7 +470,7 @@ func TestLegacyProviderDetection(t *testing.T) {
 
 // TestCatalogInvariants walks every registered vendor and model. It is the
 // net that catches a newly added vendor or model entry that is malformed,
-// contradictory, or unresolvable — without anyone updating this test.
+// contradictory, or unresolvable - without anyone updating this test.
 func TestCatalogInvariants(t *testing.T) {
 	vendors := modelruntime.List()
 	require.NotEmpty(t, vendors, "no vendors registered")
@@ -669,9 +669,9 @@ func TestGeminiLegacyBaseURLKeepsOpenAIProtocol(t *testing.T) {
 }
 
 // TestGeminiCredentialFollowsTheProtocol pins the header each Gemini path
-// authenticates with. The two surfaces document different credentials —
+// authenticates with. The two surfaces document different credentials -
 // x-goog-api-key for native generateContent, Authorization: Bearer for the
-// OpenAI-compatible facade (https://ai.google.dev/gemini-api/docs/openai) —
+// OpenAI-compatible facade (https://ai.google.dev/gemini-api/docs/openai) -
 // and the auth style is a vendor-wide setting, so without the per-protocol
 // override every row stored before the native protocol became the default
 // would silently change credential: they all carry the /v1beta/openai base
@@ -760,7 +760,7 @@ func TestConcurrentResolve(t *testing.T) {
 // page they came from is recorded next to them, and the model editor links an
 // operator straight to that page from the picker. models.json may state the
 // URL once at file level for the entries a single page covers, so this also
-// covers the generator preserving per-entry sources — previously it was parsed and
+// covers the generator preserving per-entry sources - previously it was parsed and
 // dropped, and most entries had nothing to link to.
 func TestEveryCatalogModelDocumentsItsSource(t *testing.T) {
 	for _, vendor := range modelruntime.List() {

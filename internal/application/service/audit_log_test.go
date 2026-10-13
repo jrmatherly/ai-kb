@@ -110,7 +110,7 @@ func TestAuditLog_Log_RejectsEmptyAction(t *testing.T) {
 
 func TestAuditLog_LogDenied_DedupesRepeatedRejectsWithinWindow(t *testing.T) {
 	// First denied write hits the table; second within the window does
-	// NOT — the dedup primitive is the headline durability guarantee
+	// NOT - the dedup primitive is the headline durability guarantee
 	// against probing clients filling the audit table at line rate.
 	svc, repo, _ := newSvcForTest()
 	c := newDeniedCtx(t, "PUT", "/api/v1/tenants/7")
@@ -127,7 +127,7 @@ func TestAuditLog_LogDenied_DedupesRepeatedRejectsWithinWindow(t *testing.T) {
 }
 
 func TestAuditLog_LogDenied_WritesAgainAfterWindowExpires(t *testing.T) {
-	// The dedup is a sliding window, not a once-per-tuple lock — once
+	// The dedup is a sliding window, not a once-per-tuple lock - once
 	// the trailing window is empty, the next denied call must record.
 	svc, repo, clock := newSvcForTest()
 	c := newDeniedCtx(t, "PUT", "/api/v1/tenants/7")
@@ -144,7 +144,7 @@ func TestAuditLog_LogDenied_WritesAgainAfterWindowExpires(t *testing.T) {
 func TestAuditLog_LogDenied_DedupIsPerActorAndPath(t *testing.T) {
 	// Two distinct actors hitting the same endpoint, or the same actor
 	// hitting two distinct endpoints, must each record. The dedup key
-	// is (tenant, actor, action, path) — anything else collides.
+	// is (tenant, actor, action, path) - anything else collides.
 	svc, repo, _ := newSvcForTest()
 	c1 := newDeniedCtx(t, "PUT", "/api/v1/tenants/7")
 	c2 := newDeniedCtx(t, "PUT", "/api/v1/agents/abc")

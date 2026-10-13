@@ -431,7 +431,7 @@ func skipPast(s, end string) string {
 // A new id creates a full entry. An id that already exists is *patched*, not
 // replaced: both config/models.json.example and the docs present `models` as
 // the way to restate a known model with corrected facts, and most fields of
-// models.ModelSpec cannot tell "absent" from "zero" — Reasoning is a plain bool, so
+// models.ModelSpec cannot tell "absent" from "zero" - Reasoning is a plain bool, so
 // an entry that only fixes context_window used to silently turn reasoning
 // off and drop thinking levels, compat and input along with it. Unmarshaling
 // the operator's JSON onto a copy of the stored entry leaves every key they

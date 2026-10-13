@@ -29,7 +29,7 @@ import (
 // Lifecycle: NewRepository validates connectivity + cluster version +
 // k-NN plugin, but does NOT create any index. Index creation happens
 // lazily on first Save / BatchSave / Retrieve once the embedding
-// dimension is known (see ensureReady — per-dimension index naming).
+// dimension is known (see ensureReady - per-dimension index naming).
 //
 // Concurrency: A single Repository instance is shared across N goroutines
 // concurrently retrieving from the same store (the multi-store fan-out
@@ -38,7 +38,7 @@ import (
 // sync.Once + initErr maps, each guarded by its own mutex.
 //
 // CRITICAL INVARIANT: initErr[dim] = err must be written INSIDE the
-// once.Do closure — moving it outside opens a TOCTOU where a concurrent
+// once.Do closure - moving it outside opens a TOCTOU where a concurrent
 // caller reads zero before the first caller persists.
 type Repository struct {
 	client    *osapi.Client
@@ -49,7 +49,7 @@ type Repository struct {
 	// entry the first time dim is seen, runs the create-index work inside
 	// sync.Once, and persists any permanent error so subsequent callers
 	// see the same failure without re-attempting the PUT. Transient
-	// errors (ErrTransport, ErrCircuitBreaker) are NOT persisted — the
+	// errors (ErrTransport, ErrCircuitBreaker) are NOT persisted - the
 	// next caller retries.
 	onceMu  sync.Mutex
 	once    map[int]*sync.Once
@@ -59,7 +59,7 @@ type Repository struct {
 	// Lazy init state for the dim-less keyword-only index used by the
 	// no-embedding path (concurrentBatchSaveNoEmbedding in the service
 	// layer). Mutex + flag pattern (rather than sync.Once) so transient
-	// failures can be retried by the next caller — sync.Once does not
+	// failures can be retried by the next caller - sync.Once does not
 	// support reset.
 	keywordsMu    sync.Mutex
 	keywordsReady bool
@@ -71,25 +71,25 @@ type Repository struct {
 	sink AuditSink
 }
 
-// Compile-time interface satisfaction (Go best practice — keeps the build
+// Compile-time interface satisfaction (Go best practice - keeps the build
 // red if the interface drifts and our implementation lags).
 var _ interfaces.RetrieveEngineRepository = (*Repository)(nil)
 
 // NewRepository builds a new OpenSearch k-NN repository and verifies the
 // backing cluster is reachable + version-compatible + has the k-NN
-// plugin installed on every cluster node. It does NOT create any index —
+// plugin installed on every cluster node. It does NOT create any index -
 // callers (Save / Retrieve) trigger lazy per-dimension creation via
 // ensureReady on first use.
 //
 // storeID is the VectorStore.ID owning this repository instance. It is
 // folded into the base index name so multiple OpenSearch VectorStores
 // pointing at the same cluster do not collide:
-//   - storeID == ""       — env-path; no prefix, base index = "aikb".
-//   - len(storeID) >= 16  — DB-store path; prefix = storeID[:12]
+//   - storeID == ""       - env-path; no prefix, base index = "aikb".
+//   - len(storeID) >= 16  - DB-store path; prefix = storeID[:12]
 //     (48-bit collision space).
-//   - 1..15 chars         — rejected with ErrConfigInvalid.
+//   - 1..15 chars         - rejected with ErrConfigInvalid.
 //
-// indexCfg is optional — pass nil to use env var (OPENSEARCH_INDEX) or
+// indexCfg is optional - pass nil to use env var (OPENSEARCH_INDEX) or
 // default ("aikb") values.
 //
 // Optional behavior is configured via functional options (e.g.
@@ -160,7 +160,7 @@ func NewRepository(
 // Transient vs permanent error handling:
 //   - PERMANENT failures (ErrConfigInvalid, ErrAuth, ErrVersionUnsupported,
 //     ErrDimensionMismatch) are persisted in initErr[dim] and re-served to
-//     all future callers without retry — caller must restart or fix config.
+//     all future callers without retry - caller must restart or fix config.
 //   - TRANSIENT failures (ErrTransport, ErrCircuitBreaker) are NOT
 //     persisted; the sync.Once is reset for that dim so the next caller
 //     can retry. This prevents a single cluster blip from permanently
@@ -197,7 +197,7 @@ func (r *Repository) ensureReady(ctx context.Context, dim int) error {
 			r.onceMu.Lock()
 			delete(r.once, dim)
 			r.onceMu.Unlock()
-			// Fall through — caller still sees this attempt's err.
+			// Fall through - caller still sees this attempt's err.
 		}
 		r.initMu.Lock()
 		if err == nil || !isTransientErr(err) {
@@ -299,14 +299,14 @@ func parseMajorMinor(num string) (major, minor int) {
 // probeKNNPlugin verifies the OpenSearch cluster has the opensearch-knn
 // plugin installed on EVERY node. Without it on at least one node,
 // knn_vector queries that route a shard to that node fail with opaque
-// shard-failure errors — we surface this as a clear "plugin missing on
+// shard-failure errors - we surface this as a clear "plugin missing on
 // N nodes" message at registration.
 //
 // Implementation: _cat/plugins returns one row per (node, plugin) pair.
 // We group by node name and verify every distinct node has the
 // opensearch-knn component.
 func probeKNNPlugin(ctx context.Context, client *osapi.Client) error {
-	// CatPluginsReq's Params struct has no Format field — the SDK
+	// CatPluginsReq's Params struct has no Format field - the SDK
 	// negotiates JSON via Accept header and returns a typed
 	// CatPluginsResp with .Plugins []CatPluginResp already parsed.
 	resp, err := client.Cat.Plugins(ctx, &osapi.CatPluginsReq{})
@@ -348,7 +348,7 @@ func probeKNNPlugin(ctx context.Context, client *osapi.Client) error {
 // wrapTransport classifies a raw transport error into one of the
 // driver's sentinel errors based on HTTP status ONLY. The cluster-side
 // error message (err.Error()) is intentionally NOT included in the
-// wrapped public error — it may contain internal index names, shard
+// wrapped public error - it may contain internal index names, shard
 // IDs, node hostnames, or document content snippets. The full SDK
 // error is routed to log.Debug for operator forensics.
 //
@@ -365,7 +365,7 @@ func wrapTransport(err error) error {
 		return nil
 	}
 	// Route the verbose SDK message to debug log (operator-visible, not
-	// user-visible). Background ctx is intentional — wrapTransport may
+	// user-visible). Background ctx is intentional - wrapTransport may
 	// be invoked from any caller including the constructor.
 	logger.GetLogger(context.Background()).Debugf("[OpenSearch] transport err: %v", err)
 
@@ -414,7 +414,7 @@ func isAlreadyExistsError(err error) bool {
 var sanitizeRe = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,254}$`)
 
 // sanitizeIndexName rejects names that violate the OpenSearch index-name
-// rules. Any non-conforming input returns ErrConfigInvalid — the driver
+// rules. Any non-conforming input returns ErrConfigInvalid - the driver
 // does NOT silently rewrite invalid input so operators get a clear
 // error at registration.
 func sanitizeIndexName(name string) (string, error) {
@@ -435,7 +435,7 @@ func sanitizeIndexName(name string) (string, error) {
 	return name, nil
 }
 
-// drainAndClose closes the response body after draining unread bytes —
+// drainAndClose closes the response body after draining unread bytes -
 // required for HTTP keep-alive connection reuse. opensearch-go does NOT
 // drain the body for us; failing to drain on every response will starve
 // the per-host connection pool under load.

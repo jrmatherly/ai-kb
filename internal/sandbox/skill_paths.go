@@ -116,14 +116,14 @@ func RunnableWorkspaceScript(scriptPath string) (string, bool) {
 //
 // It is the single gate for every AIKB_SKILL_OUTPUT_DIR override, wherever
 // it comes from: the host environment the app reads at startup, or a tenant's
-// sandbox config. Without it the two disagreed — execution validated the path
+// sandbox config. Without it the two disagreed - execution validated the path
 // and fell back to SessionOutputRoot, while the tools and the artifact
 // collector took the host value as-is. Keep this separate from shell working
 // directories: access to a sandbox path does not make it a delivery directory.
 //
 // SessionWorkspaceRoot itself is refused. An artifact directory equal to the
-// workspace root is not a delivery tree — it is the whole workspace, drafts
-// included — and callers that compare the two (artifact collection) read
+// workspace root is not a delivery tree - it is the whole workspace, drafts
+// included - and callers that compare the two (artifact collection) read
 // that as "this backend collects nothing", silently dropping every artifact.
 func ValidatedSessionOutputDir(dir string) (string, bool) {
 	clean := path.Clean(strings.TrimSpace(dir))

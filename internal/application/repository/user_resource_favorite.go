@@ -30,7 +30,7 @@ func (r *userResourceFavoriteRepository) List(
 }
 
 // Add upserts the favorite. We rely on the composite primary key + GORM's
-// FirstOrCreate to make the insertion idempotent — concurrent double-clicks
+// FirstOrCreate to make the insertion idempotent - concurrent double-clicks
 // from the same user collapse into one row with no error path needed.
 // `created` reflects whether the row was newly inserted vs already present.
 func (r *userResourceFavoriteRepository) Add(

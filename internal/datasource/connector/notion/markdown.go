@@ -227,10 +227,10 @@ func renderBlock(b *strings.Builder, block notionBlock, depth int, attachments *
 		b.WriteString(fmt.Sprintf("- [%s](https://notion.so/%s)\n", title, strings.ReplaceAll(block.ID, "-", "")))
 
 	case "table_of_contents", "breadcrumb", "template", "table_row", "unsupported":
-		// Skip — no meaningful content
+		// Skip - no meaningful content
 
 	default:
-		// Unknown block type — skip silently for forward compatibility
+		// Unknown block type - skip silently for forward compatibility
 	}
 }
 

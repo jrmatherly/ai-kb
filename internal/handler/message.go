@@ -204,7 +204,7 @@ func (h *MessageHandler) DeleteMessage(c *gin.Context) {
 	// Delete the message using the message service
 	if err := h.MessageService.DeleteMessage(ctx, sessionID, messageID); err != nil {
 		if stderrors.Is(err, errors.ErrSessionNotFound) {
-			// See note on LoadMessages above — message-service operations
+			// See note on LoadMessages above - message-service operations
 			// surface ErrSessionNotFound when the caller can't see the
 			// owning session (post-#1309 user scope).
 			logger.Warnf(ctx, "Session not found, ID: %s", sessionID)
@@ -212,7 +212,7 @@ func (h *MessageHandler) DeleteMessage(c *gin.Context) {
 			return
 		}
 		if stderrors.Is(err, gorm.ErrRecordNotFound) {
-			// The message_id doesn't exist under this session — a client error,
+			// The message_id doesn't exist under this session - a client error,
 			// not a server fault. 404 so callers read resource.not_found (a
 			// permanent condition, not retryable) instead of a 5xx. Mirrors the
 			// ContinueStream / kb / doc / chunk not-found handling.

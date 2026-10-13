@@ -191,7 +191,7 @@ func TestResolveModelCatalogForwardsVendorExtraFields(t *testing.T) {
 }
 
 // Omitting base_url makes the resolution fall back to the vendor default,
-// which a deployment overlay may have repointed at an internal gateway — so
+// which a deployment overlay may have repointed at an internal gateway - so
 // the same gate that hides defaultUrls has to cover this response.
 func TestResolveModelCatalogHidesEndpointFromViewers(t *testing.T) {
 	query := "provider=azure_openai&model=gpt-4o&base_url=https://acme.openai.azure.com&model_type=chat"

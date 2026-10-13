@@ -208,7 +208,7 @@ func TestSurfacesTheVendorErrorBody(t *testing.T) {
 
 // truncate_prompt_tokens is a vLLM extension that appears in no managed
 // vendor's documented schema. It is sent only where the vendor declared it
-// and the operator opted in, and never by default — sending it unasked is how
+// and the operator opted in, and never by default - sending it unasked is how
 // an undocumented field ends up on every request to every gateway.
 func TestTruncatePromptTokensIsAbsentByDefault(t *testing.T) {
 	c := newClient(t, "https://example.invalid/v1", api.RerankSettings{})

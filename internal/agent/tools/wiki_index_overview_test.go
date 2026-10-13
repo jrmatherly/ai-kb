@@ -41,9 +41,9 @@ func TestRenderIndexOverviewForAgent_IncludesIntroAndTruncationHint(t *testing.T
 	assertContains(t, got, "4500 total, showing top 2")
 	// Non-truncated group uses the simple "(N)" form.
 	assertContains(t, got, "## Concept (2)")
-	// Entry formatting — with and without summary. Entries emit the
+	// Entry formatting - with and without summary. Entries emit the
 	// [[slug|title]] form so the LLM sees the human-readable name.
-	assertContains(t, got, "[[entity/acme|Acme]] — A company")
+	assertContains(t, got, "[[entity/acme|Acme]] - A company")
 	// When the entry has a title but no summary, slug|title still
 	// renders; the dash + summary portion is elided.
 	assertContains(t, got, "[[concept/emb|Embedding]]")
@@ -52,7 +52,7 @@ func TestRenderIndexOverviewForAgent_IncludesIntroAndTruncationHint(t *testing.T
 }
 
 // TestRenderIndexOverviewForAgent_EmptyKB explains to the model that the
-// wiki has no pages yet — otherwise it might hallucinate slugs to read.
+// wiki has no pages yet - otherwise it might hallucinate slugs to read.
 func TestRenderIndexOverviewForAgent_EmptyKB(t *testing.T) {
 	resp := &types.WikiIndexResponse{
 		Intro: "# Empty\n",
@@ -69,7 +69,7 @@ func TestRenderIndexOverviewForAgent_EmptyKB(t *testing.T) {
 }
 
 // TestRenderIndexOverviewForAgent_UnknownType falls through to the raw
-// type string — covers forward compatibility for LLM-created page types
+// type string - covers forward compatibility for LLM-created page types
 // the frontend label map does not yet know about.
 func TestRenderIndexOverviewForAgent_UnknownType(t *testing.T) {
 	resp := &types.WikiIndexResponse{
@@ -95,7 +95,8 @@ func TestRenderIndexOverviewForAgent_UnknownType(t *testing.T) {
 // loop emits below.
 func TestRenderIndexOverviewForAgent_StripsLegacyInlineDirectory(t *testing.T) {
 	resp := &types.WikiIndexResponse{
-		Intro: "# Wiki Index\n\nWelcome.\n\n## Summary (3)\n\n[[summary/legacy]] — old",
+		// Legacy index rows were written with an em dash (\u2014) before the summary.
+		Intro: "# Wiki Index\n\nWelcome.\n\n## Summary (3)\n\n[[summary/legacy]] \u2014 old",
 		Groups: []types.WikiIndexGroup{
 			{
 				Type:  types.WikiPageTypeEntity,
@@ -110,7 +111,7 @@ func TestRenderIndexOverviewForAgent_StripsLegacyInlineDirectory(t *testing.T) {
 		t.Fatalf("legacy inline directory should have been stripped, got:\n%s", got)
 	}
 	assertContains(t, got, "Welcome.")
-	assertContains(t, got, "[[entity/live|Live]] — fresh")
+	assertContains(t, got, "[[entity/live|Live]] - fresh")
 }
 
 func assertContains(t *testing.T, haystack, needle string) {

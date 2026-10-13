@@ -268,7 +268,7 @@ func (s *localFileService) GetFileURL(ctx context.Context, filePath string) (str
 		// Tenant ID is parsed from the storage path, which encodes the
 		// resource owner's tenant (not the caller's). The verifier on
 		// /api/v1/files/presigned uses this ID to look up the owning
-		// tenant's StorageEngineConfig — using the caller's tenant would
+		// tenant's StorageEngineConfig - using the caller's tenant would
 		// break cross-tenant shared resources (e.g. shared KB images).
 		tenantID := secutils.ParseTenantIDFromStoragePath(normalized)
 		presignedURL, err := secutils.SignFileURL(s.externalURL, normalized, tenantID, 0)
@@ -288,7 +288,7 @@ func (s *localFileService) GetFileURL(ctx context.Context, filePath string) (str
 // wrapper (e.g. the process-wide default file service used by KB deletion),
 // these scoped paths reach the raw local provider, where they used to fall
 // through to the relative-path branch, get joined under baseDir, and produce a
-// nonexistent path — silently leaking the physical file on delete. Path
+// nonexistent path - silently leaking the physical file on delete. Path
 // normalization (filepath.Clean) may also collapse "storage://" into
 // "storage:/", so both forms are accepted.
 const storageScheme = "storage:"
@@ -301,7 +301,7 @@ func trimStorageScope(path string) string {
 		return path
 	}
 	rest := strings.TrimPrefix(path, storageScheme)
-	// Tolerate "storage://", "storage:/" and even a bare "storage:" prefix —
+	// Tolerate "storage://", "storage:/" and even a bare "storage:" prefix -
 	// filepath.Clean collapses "//" to "/", so cleaned paths arrive single-slashed.
 	rest = strings.TrimLeft(rest, "/")
 	// Skip the backend-id segment; the remainder is the provider path.

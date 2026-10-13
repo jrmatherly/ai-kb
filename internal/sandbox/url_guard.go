@@ -16,7 +16,7 @@
 //
 // Self-hosted deployments complicate this, so private endpoints are an
 // explicit field on each workspace config. Even when enabled, link-local
-// ranges — including cloud metadata — stay blocked, and that holds for the
+// ranges - including cloud metadata - stay blocked, and that holds for the
 // IPv6 encodings that carry an IPv4 link-local address in their payload.
 package sandbox
 

@@ -20,7 +20,7 @@ import (
 )
 
 // stubTenantService is a minimal stub of interfaces.TenantService that only
-// implements GetTenantByID. Every other method panics — those code paths
+// implements GetTenantByID. Every other method panics - those code paths
 // must not be exercised by presigned routes; the panic surfaces test bugs
 // instead of silently returning zero values.
 type stubTenantService struct {
@@ -146,7 +146,7 @@ func TestPresignedFile_HEAD_Returns200WithoutBody(t *testing.T) {
 	if got := w.Header().Get("Content-Type"); got != "image/png" {
 		t.Fatalf("Content-Type = %q, want image/png", got)
 	}
-	// HEAD must not stream the body — protects backing storage from a
+	// HEAD must not stream the body - protects backing storage from a
 	// full read on every IM preview probe.
 	if w.Body.Len() != 0 {
 		t.Fatalf("HEAD response body should be empty, got %d bytes", w.Body.Len())

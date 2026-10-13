@@ -8,7 +8,7 @@
 // tenant already uses for uploaded attachments.
 //
 // Contract:
-//   - Never delete files from the sandbox — skills can share files across
+//   - Never delete files from the sandbox - skills can share files across
 //     turns; deletion would break that ("do not clear the output directory").
 //   - Never lazy-create a sandbox: the collector reads from an already-live
 //     sandbox and returns an empty slice when none exists.
@@ -96,7 +96,7 @@ type ArtifactCollector struct {
 	store       SessionArtifactStore
 	// catalog binds each persisted artifact resource to its owning message.
 	// Optional: nil when the deployment runs without a resource registry, in
-	// which case artifacts are still saved and downloadable — they just are
+	// which case artifacts are still saved and downloadable - they just are
 	// not tracked as owned resources.
 	catalog interfaces.ResourceCatalog
 	config  ArtifactCollectorConfig
@@ -137,7 +137,7 @@ func NewArtifactCollector(
 // underlying implementation actually supports per-session file inspection
 // (currently *sandbox.SessionBoundManager). For any other backend the
 // returned *ArtifactCollector is nil, which the AgentStreamHandler treats
-// as "no artifacts to attach" — matching the graceful-degradation contract
+// as "no artifacts to attach" - matching the graceful-degradation contract
 // documented in the design spec.
 // The resolver is consulted per turn so a workspace whose own backend supports
 // artifacts still gets them even when the process-wide default does not. The
@@ -236,7 +236,7 @@ func (c *ArtifactCollector) hostSessionSource(ctx context.Context, sessionID str
 // advertised a workspace with no separate output tree, OutputDir is Root, or
 // the layout provider failed. A nil source is also skip: there is nothing to
 // drain, and skip=false would let the caller fill /workspace/output. An empty
-// dir with skip false means the backend advertises no layout at all — the
+// dir with skip false means the backend advertises no layout at all - the
 // caller's remote default applies.
 //
 // The directory and the skip decision come from one lookup on purpose. Asking
@@ -281,7 +281,7 @@ func newBoundedConfig(cfg ArtifactCollectorConfig) ArtifactCollectorConfig {
 //
 // The returned slice contains one MessageArtifact per persisted file. When
 // no sandbox is bound to the session, or when the source is nil (skill
-// backend disabled), Collect returns nil, nil — the caller is expected to
+// backend disabled), Collect returns nil, nil - the caller is expected to
 // treat both cases as "nothing to attach" and NOT set message.Artifacts.
 //
 // Errors returned by Collect are limited to internal invariants (nil
@@ -375,7 +375,8 @@ func (c *ArtifactCollector) collect(
 		// exactly this branch: either the sandbox was already reaped or
 		// the skill wrote to a different directory. Logging the exact
 		// (session, dir) pair makes it a 30-second grep to confirm.
-		logger.Infof(ctx, "[ArtifactCollector] no entries under %s (session=%s) — sandbox reaped or skill wrote elsewhere",
+		logger.Infof(ctx, "[ArtifactCollector] no entries under %s (session=%s) - sandbox reaped or skill wrote "+
+			"elsewhere",
 			outputDir, sessionID)
 		return nil, nil
 	}
@@ -587,7 +588,7 @@ func (c *ArtifactCollector) hashStoredArtifact(ctx context.Context, art types.Me
 //
 // The binding is only attempted when (a) the catalog is wired in, (b) we have
 // a message ID to own the resource, and (c) SaveBytes actually returned a
-// resource:// reference — i.e. the file service is resource-catalog-backed.
+// resource:// reference - i.e. the file service is resource-catalog-backed.
 // Raw provider paths (no catalog decorator) are left unbound rather than
 // generating spurious "invalid resource reference" errors.
 func (c *ArtifactCollector) bindArtifactResource(ctx context.Context, ref, messageID string) {
@@ -608,9 +609,9 @@ func (c *ArtifactCollector) bindArtifactResource(ctx context.Context, ref, messa
 // dropping the turn.
 //
 // Callers need this to resolve an answer's file references: a turn can name a
-// file it did not (re)generate — the first turn after a session fork points the
+// file it did not (re)generate - the first turn after a session fork points the
 // sandbox back at an earlier commit, so every unchanged file is de-duplicated
-// out of that turn's own artifact list — and the reference still has to be bound
+// out of that turn's own artifact list - and the reference still has to be bound
 // to that file's stable handle.
 //
 // Files the user deleted are filtered out: they are still in the store as
@@ -713,7 +714,7 @@ func (k *artifactKnownSet) remember(art types.MessageArtifact) {
 // known set. The content hash is deliberately left out, and so is byPath: those
 // two drive the same-content short circuit in knownSameContent, and a turn that
 // rewrites the file with identical bytes is a genuine regeneration the user
-// should get back — not a restore to skip. Keeping the hash here would make a
+// should get back - not a restore to skip. Keeping the hash here would make a
 // deleted file impossible to reproduce byte-for-byte ever again.
 func (k *artifactKnownSet) rememberDeleted(art types.MessageArtifact) {
 	if k == nil {

@@ -22,7 +22,7 @@ import (
 
 // TestDeletedMemoryIsNotReExtracted is the one users would hit first. An
 // explicit "remember X" is stored immediately, and the debounced distillation
-// for that same turn reads the same message minutes later — so deleting the
+// for that same turn reads the same message minutes later - so deleting the
 // memory in between used to be undone by the system itself.
 func TestDeletedMemoryIsNotReExtracted(t *testing.T) {
 	svc, tenantRepo, messages, models, enqueuer := newExtractionHarness(t)

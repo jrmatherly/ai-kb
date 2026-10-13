@@ -104,7 +104,7 @@ func TestRegister_InviteOnlyRejects(t *testing.T) {
 func TestRegister_SelfServeAllowsRegistration(t *testing.T) {
 	// Default registration_mode keeps PR 1 behaviour intact: the gate
 	// is dormant and the request reaches the user service. We don't
-	// exercise the real service here — just confirm the gate let it
+	// exercise the real service here - just confirm the gate let it
 	// through by observing the stub being invoked.
 	called := false
 	us := &stubRegisterUserService{
@@ -195,7 +195,7 @@ func TestRegister_NilAuthConfigDoesNotPanic(t *testing.T) {
 // rewrites tabs/newlines/control chars before hashing, so a password
 // that registers successfully cannot be used at login.
 func TestRegister_PreservesPasswordBytes(t *testing.T) {
-	// Password contains a tab and a newline — both are rewritten by
+	// Password contains a tab and a newline - both are rewritten by
 	// SanitizeForLog (tab → space, newline → space). The handler must
 	// pass the exact original string to UserService.Register.
 	const originalPassword = "abc\t123!\nX"

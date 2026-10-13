@@ -140,7 +140,7 @@ func TestNilBootstrapperIsANoOp(t *testing.T) {
 }
 
 // A missing fork snapshot must not be retried forever. Create using the
-// override failed, so the bootstrapper has to be told — AfterCreate never
+// override failed, so the bootstrapper has to be told - AfterCreate never
 // runs, and abandon on git-reset-failure cannot fire.
 func TestCreateFailureWithOverrideNotifiesBootstrapper(t *testing.T) {
 	lc, client, _ := newLifecycleForTest(t)

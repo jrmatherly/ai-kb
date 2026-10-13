@@ -26,7 +26,7 @@ import (
 // Test helpers
 //
 // newTestClient builds an *osapi.Client pointing at an httptest URL. No TLS,
-// no auth — the test server is plain http:// on localhost. This helper lives
+// no auth - the test server is plain http:// on localhost. This helper lives
 // in *_test.go so it can never bleed into production code (build tag).
 // ============================================================================
 
@@ -98,7 +98,7 @@ func newTestRepo(t *testing.T, handler http.HandlerFunc) (*Repository, *httptest
 }
 
 // ============================================================================
-// Interface satisfaction (compile-time check — duplicates the var _ assertion
+// Interface satisfaction (compile-time check - duplicates the var _ assertion
 // in repository.go but documents the intent explicitly in tests).
 // ============================================================================
 
@@ -134,7 +134,7 @@ func TestRepository_Support_KeywordsAndVector(t *testing.T) {
 }
 
 // ============================================================================
-// Sentinel errors — errors.Is chain compatibility
+// Sentinel errors - errors.Is chain compatibility
 // ============================================================================
 
 func TestSentinelErrors_AreErrorsIsCompatible(t *testing.T) {
@@ -186,7 +186,7 @@ func TestIsTransientErr(t *testing.T) {
 }
 
 // ============================================================================
-// sanitizeIndexName — strict OS-compatible name spec
+// sanitizeIndexName - strict OS-compatible name spec
 // ============================================================================
 
 func TestSanitizeIndexName_AcceptsValidNames(t *testing.T) {
@@ -244,7 +244,7 @@ func TestSanitizeIndexName_RejectsInvalid(t *testing.T) {
 }
 
 // ============================================================================
-// parseMajorMinor — robust semver parsing
+// parseMajorMinor - robust semver parsing
 // ============================================================================
 
 func TestParseMajorMinor(t *testing.T) {
@@ -256,7 +256,7 @@ func TestParseMajorMinor(t *testing.T) {
 	}{
 		{"3.3.2", 3, 3},
 		{"2.10.0", 2, 10},
-		{"2.10", 2, 10}, // missing patch — must still parse
+		{"2.10", 2, 10}, // missing patch - must still parse
 		{"3.0.0-rc1", 3, 0},
 		{"2.10.0-SNAPSHOT", 2, 10},
 		{"1.3.18", 1, 3},
@@ -276,7 +276,7 @@ func TestParseMajorMinor(t *testing.T) {
 }
 
 // ============================================================================
-// buildIndexMapping — pure func, JSON shape pin
+// buildIndexMapping - pure func, JSON shape pin
 // ============================================================================
 
 func TestBuildIndexMapping_LuceneEngine_768Dim(t *testing.T) {
@@ -302,7 +302,7 @@ func TestBuildIndexMapping_LuceneEngine_768Dim(t *testing.T) {
 	}
 	props := parsed["mappings"].(map[string]any)["properties"].(map[string]any)
 
-	// match_type must NOT be in the mapping — derived from RetrieverType at parse time.
+	// match_type must NOT be in the mapping - derived from RetrieverType at parse time.
 	if _, ok := props["match_type"]; ok {
 		t.Error("match_type must NOT be in mapping (derived from RetrieverType)")
 	}
@@ -376,7 +376,7 @@ func TestBuildKeywordsMapping_OmitsEmbeddingField(t *testing.T) {
 }
 
 // ============================================================================
-// retrieveFilters — typed filter struct closes JSON injection surface
+// retrieveFilters - typed filter struct closes JSON injection surface
 // ============================================================================
 
 func TestRetrieveFilters_RejectsJSONFragmentInjection(t *testing.T) {
@@ -444,7 +444,7 @@ func TestRetrieveFilters_DefaultPinsIsEnabledTrue(t *testing.T) {
 }
 
 // ============================================================================
-// buildKNNQuery / buildKeywordQuery — min_score from threshold
+// buildKNNQuery / buildKeywordQuery - min_score from threshold
 // ============================================================================
 
 func TestBuildKNNQuery_AppliesMinScoreWhenThreshold(t *testing.T) {
@@ -484,7 +484,7 @@ func TestBuildKeywordQuery_AppendsContentMatch(t *testing.T) {
 }
 
 // ============================================================================
-// toDoc — keyword-only path omits embedding field; source_type is integer
+// toDoc - keyword-only path omits embedding field; source_type is integer
 // ============================================================================
 
 func TestToDoc_OmitsEmbeddingField_WhenEmpty(t *testing.T) {
@@ -542,7 +542,7 @@ func TestToDoc_PreservesIsRecommended(t *testing.T) {
 }
 
 // ============================================================================
-// lookupEmbedding / lookupChunkEnabled — additionalParams keying contract
+// lookupEmbedding / lookupChunkEnabled - additionalParams keying contract
 // (embedding keyed by SourceID, chunk_enabled keyed by ChunkID)
 // ============================================================================
 
@@ -606,7 +606,7 @@ func TestLookupChunkEnabled_OverrideAndDefault(t *testing.T) {
 }
 
 // ============================================================================
-// extractBatchEmbeddings — mixed-dim rejection
+// extractBatchEmbeddings - mixed-dim rejection
 // ============================================================================
 
 func TestExtractBatchEmbeddings_MixedDims_Rejected(t *testing.T) {
@@ -617,7 +617,7 @@ func TestExtractBatchEmbeddings_MixedDims_Rejected(t *testing.T) {
 	params := map[string]any{
 		"embedding": map[string][]float32{
 			"a": {1, 2, 3, 4}, // dim 4
-			"b": {5, 6, 7},    // dim 3 — mismatch
+			"b": {5, 6, 7},    // dim 3 - mismatch
 		},
 	}
 	_, _, err := extractBatchEmbeddings(params, infos)
@@ -684,7 +684,7 @@ func TestEffectiveTopK(t *testing.T) {
 }
 
 // ============================================================================
-// resolveDim — dim resolution priority + cross-dim fallback
+// resolveDim - dim resolution priority + cross-dim fallback
 // ============================================================================
 
 func TestResolveDim_AdditionalParamsTakesPrecedence(t *testing.T) {
@@ -718,7 +718,7 @@ func TestResolveDim_NoneTriggersMultiIndex(t *testing.T) {
 }
 
 // ============================================================================
-// inspectBulkResponse — Reason leak guard + total count
+// inspectBulkResponse - Reason leak guard + total count
 // ============================================================================
 
 func TestInspectBulkResponse_AllSucceeded_NoError(t *testing.T) {
@@ -764,7 +764,7 @@ func TestInspectBulkResponse_TotalCount(t *testing.T) {
 }
 
 // ============================================================================
-// probeVersion — supported-version acceptance/rejection matrix
+// probeVersion - supported-version acceptance/rejection matrix
 // ============================================================================
 
 func versionHandler(distribution, number string) http.HandlerFunc {
@@ -843,7 +843,7 @@ func TestProbeVersion_HandlesPreReleaseSuffix(t *testing.T) {
 }
 
 // ============================================================================
-// probeKNNPlugin — multi-node coverage
+// probeKNNPlugin - multi-node coverage
 // ============================================================================
 
 func pluginsHandler(rows []osapi.CatPluginResp) http.HandlerFunc {
@@ -895,7 +895,7 @@ func TestProbeKNNPlugin_EmptyResponse(t *testing.T) {
 }
 
 // ============================================================================
-// ensureReady — concurrency + transient vs permanent error caching
+// ensureReady - concurrency + transient vs permanent error caching
 // ============================================================================
 
 func TestEnsureReady_ZeroDim_Rejected(t *testing.T) {
@@ -955,10 +955,10 @@ func (h *indexLifecycleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		// createIndexAndAlias proceeds to PUT.
 		w.WriteHeader(http.StatusNotFound)
 	case r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/_alias/"):
-		// Alias PUT — acknowledge, do NOT count.
+		// Alias PUT - acknowledge, do NOT count.
 		_, _ = w.Write([]byte(`{"acknowledged": true}`))
 	case r.Method == http.MethodPut && strings.HasSuffix(r.URL.Path, "_v1"):
-		// Index PUT — count it. Path is exactly /<base>_<dim>_v1.
+		// Index PUT - count it. Path is exactly /<base>_<dim>_v1.
 		h.puts.Add(1)
 		_, _ = w.Write([]byte(`{"acknowledged": true}`))
 	case r.Method == http.MethodPost && r.URL.Path == "/_aliases":
@@ -1034,7 +1034,7 @@ func (h *errorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodHead:
 		w.WriteHeader(http.StatusNotFound)
 	case r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/_alias/"):
-		// Alias PUT — do not count, just acknowledge (though this path
+		// Alias PUT - do not count, just acknowledge (though this path
 		// only triggers if index create succeeds, which it doesn't in
 		// the error handler's case).
 		_, _ = w.Write([]byte(`{"acknowledged":true}`))
@@ -1068,7 +1068,7 @@ func TestEnsureReady_TransientError_NotCached(t *testing.T) {
 	_ = repo.ensureReady(context.Background(), 768)
 	first := h.indexPutsAttempted.Load()
 
-	// Second call MUST retry — transient errors are not persisted.
+	// Second call MUST retry - transient errors are not persisted.
 	_ = repo.ensureReady(context.Background(), 768)
 	second := h.indexPutsAttempted.Load()
 
@@ -1156,7 +1156,7 @@ func TestNewRepository_AcceptsLongStoreID(t *testing.T) {
 }
 
 // ============================================================================
-// Stub coverage — remaining stubs return the not-enabled sentinel
+// Stub coverage - remaining stubs return the not-enabled sentinel
 //
 // CopyIndices / BatchUpdateChunkEnabledStatus / BatchUpdateChunkTagID are now
 // implemented (see copy_bulk_test.go for their behavioral tests); their stub
@@ -1185,7 +1185,7 @@ func TestStub_SwapToVersion_ReturnsFeatureNotEnabled(t *testing.T) {
 }
 
 // ============================================================================
-// Delete path cap — ErrBatchTooLarge guard
+// Delete path cap - ErrBatchTooLarge guard
 // ============================================================================
 
 func TestDeleteByChunkIDList_OverCap_ReturnsErrBatchTooLarge(t *testing.T) {
@@ -1216,7 +1216,7 @@ func TestDeleteByChunkIDList_Empty_NoOp(t *testing.T) {
 }
 
 // ============================================================================
-// BatchSave pre-marshal cap — ErrBatchTooLarge guard
+// BatchSave pre-marshal cap - ErrBatchTooLarge guard
 // ============================================================================
 
 func TestBatchSave_OverDocCountCap_ReturnsErrBatchTooLarge(t *testing.T) {
@@ -1255,7 +1255,7 @@ func TestBatchSave_EmptyList_NoOp(t *testing.T) {
 }
 
 // ============================================================================
-// wrapTransport — sentinel mapping + leak guard
+// wrapTransport - sentinel mapping + leak guard
 // ============================================================================
 
 func TestWrapTransport_NilPassthrough(t *testing.T) {
@@ -1351,7 +1351,7 @@ func TestIsAlreadyExistsError(t *testing.T) {
 
 func TestLimitedDecode_AppliesLimit(t *testing.T) {
 	t.Parallel()
-	// 100MB of zeros — limitedDecode with 1KB cap should fail to decode
+	// 100MB of zeros - limitedDecode with 1KB cap should fail to decode
 	// (truncated JSON) rather than allocate the whole thing.
 	huge := bytes.NewReader(make([]byte, 100<<20))
 	var out map[string]any

@@ -140,7 +140,7 @@ func (p *PluginQueryUnderstand) OnEvent(ctx context.Context,
 	// --- Parse structured output ---
 	p.parseOutput(chatManage, response.Content)
 
-	// Persist image description asynchronously — this DB write does not affect
+	// Persist image description asynchronously - this DB write does not affect
 	// the current pipeline result, so it can run in the background.
 	if chatManage.ImageDescription != "" && chatManage.UserMessageID != "" {
 		go p.updateUserMessageImageCaption(context.WithoutCancel(ctx), chatManage)
@@ -359,7 +359,7 @@ func (p *PluginQueryUnderstand) memoryBackground(ctx context.Context, chatManage
 	b.WriteString("\n</asker_background>")
 
 	// Deliberately does not add to chatManage.UsedMemories. What this reads is
-	// the whole standing background, unfiltered — that is the right input for a
+	// the whole standing background, unfiltered - that is the right input for a
 	// rewriter, but reporting it would claim every turn recalled memories that
 	// have nothing to do with the question. Which memories this turn actually
 	// used is decided in MEMORY_RECALL, by relevance, and the profile entries

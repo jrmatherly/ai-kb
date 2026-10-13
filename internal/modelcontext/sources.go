@@ -463,7 +463,7 @@ func (r *sourceRegistry) registerToolArgumentValue(key string, value interface{}
 
 // registerSourceIDByKey is the single key→source-space dispatch used for tool
 // arguments, structured tool results, and database rows. It is driven by
-// sourceKeySpaces — the same table that gates handle decode — so the recognized
+// sourceKeySpaces - the same table that gates handle decode - so the recognized
 // key set (and the http/https guard for web references) cannot drift between
 // registration and decoding.
 func (r *sourceRegistry) registerSourceIDByKey(key, value string, evidence bool) {

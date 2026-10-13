@@ -36,8 +36,8 @@ var storedRefRE = regexp.MustCompile(
 )
 
 // resourceHandleShapeRE matches the handle syntax produced by EncodeText. It
-// is used to spot handle-shaped tokens the registry cannot map back — either a
-// hallucinated reference or a coincidental collision — and by the stream-side
+// is used to spot handle-shaped tokens the registry cannot map back - either a
+// hallucinated reference or a coincidental collision - and by the stream-side
 // orphan filter.
 var resourceHandleShapeRE = regexp.MustCompile(`res://\d+`)
 
@@ -66,7 +66,7 @@ func (r *resourceRegistry) EncodeText(value string) string {
 }
 
 // DecodeText restores every handle currently known to the registry. Handles are
-// replaced longest-first with no word-boundary check — this plain substring
+// replaced longest-first with no word-boundary check - this plain substring
 // behavior is load-bearing for handles adjacent to punctuation in Markdown.
 func (r *resourceRegistry) DecodeText(value string) string {
 	if r == nil || value == "" {

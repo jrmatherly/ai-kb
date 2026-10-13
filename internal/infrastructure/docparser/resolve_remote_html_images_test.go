@@ -237,7 +237,7 @@ func TestResolveRemoteImages_HyphenatedAttributeOnlyIsNotResolved(t *testing.T) 
 
 	// The other half of the same trade-off, pinned deliberately. Requiring
 	// whitespace before src means a tag carrying only a hyphenated *-src is no
-	// longer treated as an image at all — the previous boundary did resolve it.
+	// longer treated as an image at all - the previous boundary did resolve it.
 	// Recovering that needs an attribute parser rather than a regex; capturing a
 	// lazy-loading placeholder while the real src goes unvisited is the worse of
 	// the two failures.

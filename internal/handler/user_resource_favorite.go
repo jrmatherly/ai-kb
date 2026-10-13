@@ -16,7 +16,7 @@ import (
 //
 // Authorization model: a user can only manipulate *their own* favorites in
 // the tenant they're currently scoped into (TenantIDContextKey from the
-// auth middleware). Cross-user or cross-tenant access is not allowed —
+// auth middleware). Cross-user or cross-tenant access is not allowed -
 // callers cannot pass a user_id or tenant_id query param. This matches
 // the data-model rationale: favorites are personal navigation aids, not
 // shareable resources, so there's no value in admin-style listing.
@@ -78,7 +78,7 @@ func (h *UserResourceFavoriteHandler) ListFavorites(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": list})
 }
 
-// AddFavoriteRequest is the body for POST /user/favorites — kept symmetric
+// AddFavoriteRequest is the body for POST /user/favorites - kept symmetric
 // with the DELETE path parameters so the frontend can build a single API
 // helper that switches verb on toggle.
 type AddFavoriteRequest struct {

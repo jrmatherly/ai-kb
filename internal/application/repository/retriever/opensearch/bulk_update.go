@@ -14,7 +14,7 @@ import (
 // BatchUpdateChunkEnabledStatus flips is_enabled for the given chunks. The
 // status map is grouped by value into one _update_by_query per distinct value
 // (mirrors the Qdrant grouping pattern), so the request body carries the
-// chunk ids via a terms filter and the new value via bound script params —
+// chunk ids via a terms filter and the new value via bound script params -
 // never per-chunk string interpolation.
 //
 // Targets the cross-dim <base>_* pattern: a chunk's embedding dimension is
@@ -88,7 +88,7 @@ func (r *Repository) updateByQueryScript(
 	if err != nil {
 		return fmt.Errorf("opensearch: marshal update_by_query body: %w", err)
 	}
-	// Q2: UpdateByQueryParams.Refresh is *bool — the wire value "wait_for" is
+	// Q2: UpdateByQueryParams.Refresh is *bool - the wire value "wait_for" is
 	// not expressible via the typed SDK, so we force an immediate refresh.
 	refresh := true
 	resp, err := r.client.UpdateByQuery(ctx, osapi.UpdateByQueryReq{

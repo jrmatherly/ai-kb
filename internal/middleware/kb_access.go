@@ -109,7 +109,7 @@ func KBIDFromKnowledgeIDParam(param string, kgService KnowledgeLookup) KBIDResol
 // KBIDFromChunkIDParam walks chunk_id -> knowledge_id -> kb_id.
 // Used by /chunks/by-id/:id routes that address a chunk directly. The
 // chunk's KnowledgeBaseID is denormalised on the row, so a single
-// lookup is enough — no need to chain through GetKnowledgeByIDOnly.
+// lookup is enough - no need to chain through GetKnowledgeByIDOnly.
 //
 // Not-found / transient split mirrors KBIDFromKnowledgeIDParam.
 func KBIDFromChunkIDParam(param string, chunkService ChunkLookup) KBIDResolver {

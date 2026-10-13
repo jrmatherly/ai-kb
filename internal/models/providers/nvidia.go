@@ -20,7 +20,7 @@
 //     "reasoning_effort": ...}`, GLM-5.3 takes a top-level `reasoning_effort`
 //     defaulting to max, MiniMax M3 takes `thinking_mode`, and Gemma 4
 //     switches thinking with a `<|think|>` token in the system prompt rather
-//     than any parameter — which is why the gemma entry sets thinking_format
+//     than any parameter - which is why the gemma entry sets thinking_format
 //     "none" instead of pretending a switch exists. The entries that grade
 //     with a top-level `reasoning_effort` carry thinking_format "openai";
 //     without it the vendor default would emit a chat-template switch and

@@ -31,8 +31,8 @@ var (
 //	effective = min(share.Permission, tenant_org_role, tenant_role_cap)
 //
 // where tenant_role_cap pins tenant Viewers to OrgRoleViewer regardless
-// of what the org-level grant said. That keeps the tenant RBAC promise
-// — Viewer in your own tenant cannot write — even when the access is
+// of what the org-level grant said. That keeps the tenant RBAC promise -
+// Viewer in your own tenant cannot write - even when the access is
 // routed through cross-tenant sharing.
 type kbShareService struct {
 	shareRepo interfaces.KBShareRepository
@@ -223,8 +223,8 @@ type shareRecord struct {
 // removal. The caller's tenant role comes from ctx; a missing role counts as
 // Viewer (fail-closed). Allowed callers:
 //
-//	(1) the original sharer, acting from the source tenant as Contributor+
-//	    — the user ID alone is not proof once they left or were demoted;
+//	(1) the original sharer, acting from the source tenant as Contributor+ -
+//	    the user ID alone is not proof once they left or were demoted;
 //	(2) a source-tenant Admin+: Plan 3 ownership is tenant-level, so any
 //	    Admin can manage what the tenant shared after the sharer has gone;
 //	(3) an Admin+ of a tenant that is admin in the target org, for

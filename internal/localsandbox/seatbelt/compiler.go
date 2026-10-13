@@ -98,7 +98,7 @@ func compileSeatbelt(p core.Policy) (seatbeltProgram, error) {
 	for i, root := range p.ReadableRoots {
 		param := fmt.Sprintf("READABLE_ROOT_%d", i)
 		params = append(params, fmt.Sprintf("-D%s=%s", param, root))
-		// A readable root may be a single file — a shell startup script —
+		// A readable root may be a single file - a shell startup script -
 		// which subpath does not match on its own.
 		readAllows = append(readAllows,
 			fmt.Sprintf("(allow file-read* (subpath (param %q)))", param),

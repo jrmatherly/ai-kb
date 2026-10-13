@@ -97,7 +97,7 @@ func TestRebuildLinksReportsPartialWriteFailure(t *testing.T) {
 	require.NoError(t, getErr)
 	require.Equal(t, []string{"concept/b"}, []string(a.OutLinks))
 
-	// concept/b keeps the stale links — the exact half-rebuilt state the
+	// concept/b keeps the stale links - the exact half-rebuilt state the
 	// caller has to be told about.
 	b, getErr := repo.GetBySlug(ctx, rebuildLinksTestKBID, "concept/b")
 	require.NoError(t, getErr)

@@ -146,8 +146,8 @@ func (s *fakeMilvusCopyService) Query(
 // of the stored order that advances by one on every acknowledged write.
 //
 // Milvus does not make the order of a scalar query result part of its API
-// contract — results are merged segment by segment, and the segment set changes
-// while data is written — and CopyIndices writes into the collection it reads
+// contract - results are merged segment by segment, and the segment set changes
+// while data is written - and CopyIndices writes into the collection it reads
 // from on every page. A client that addresses pages by offset therefore gets a
 // moving window even though every single request succeeds: rows can be skipped
 // (the page after the cursor starts past them) or repeated. The row set below
@@ -352,7 +352,7 @@ func (h *copyMilvusHarness) copy(t *testing.T, sourceToTargetChunkIDMap map[stri
 // no matter how the backend orders the rows of the queries it serves. A page
 // cursor that is an offset into that order can slide between requests while
 // every request still succeeds, which drops the vectors the cursor skipped and
-// re-copies the ones it slid back over — the copy still reports success, so the
+// re-copies the ones it slid back over - the copy still reports success, so the
 // loss is only visible as worse recall in the cloned knowledge base.
 func TestCopyIndicesCopiesEveryMappedChunkWhenResultOrderDrifts(t *testing.T) {
 	const rowCount = 200

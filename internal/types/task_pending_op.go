@@ -25,7 +25,7 @@ type TaskPendingOp struct {
 	TenantID uint64 `json:"tenant_id" gorm:"index"`
 	// Free-form task identifier (e.g. "wiki:ingest"). Should match an
 	// asynq task type when applicable, but the queue itself doesn't
-	// enforce that — it's just a string.
+	// enforce that - it's just a string.
 	TaskType string `json:"task_type" gorm:"type:varchar(64)"`
 	// Logical scope, e.g. "knowledge_base" / "knowledge" / "tenant".
 	// Read together with ScopeID.
@@ -37,7 +37,7 @@ type TaskPendingOp struct {
 	Op string `json:"op" gorm:"type:varchar(32)"`
 	// Optional service-defined deduplication key. The consumer is
 	// responsible for collapsing equivalent ops within a peeked batch
-	// (the queue itself does NOT enforce uniqueness — multiple rows with
+	// (the queue itself does NOT enforce uniqueness - multiple rows with
 	// the same DedupKey can coexist; the consumer chooses which wins).
 	DedupKey string `json:"dedup_key" gorm:"type:varchar(128);default:''"`
 	// JSON-serialized op payload. Schema is consumer-defined; the queue

@@ -69,7 +69,7 @@ func NewMinioFileService(endpoint,
 }
 
 // CheckConnectivity verifies MinIO is reachable and, if a bucket is configured,
-// that the bucket exists. This is a read-only probe — it never creates a bucket.
+// that the bucket exists. This is a read-only probe - it never creates a bucket.
 func (s *minioFileService) CheckConnectivity(ctx context.Context) error {
 	checkCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()

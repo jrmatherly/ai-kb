@@ -602,7 +602,7 @@ func (h *Handler) setSessionPinned(c *gin.Context, pinned bool) {
 	ctx := c.Request.Context()
 
 	// POST and DELETE for /sessions/.../pin register under different wildcards
-	// (POST :session_id, DELETE :id — see router.go). Accept whichever is set.
+	// (POST :session_id, DELETE :id - see router.go). Accept whichever is set.
 	rawID := c.Param("session_id")
 	if rawID == "" {
 		rawID = c.Param("id")

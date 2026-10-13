@@ -86,8 +86,8 @@ func reloadKB(t *testing.T, db *gorm.DB, id string) types.KnowledgeBase {
 	return got
 }
 
-// TestKnowledgeBase_VectorStoreID_Save_Immutable verifies that db.Save(kb)
-// — which AI KB's UpdateKnowledgeBase repository path uses today — does
+// TestKnowledgeBase_VectorStoreID_Save_Immutable verifies that db.Save(kb) -
+// which AI KB's UpdateKnowledgeBase repository path uses today - does
 // NOT overwrite the vector_store_id column, thanks to the GORM
 // `<-:create` tag. This is the primary automated defense for the H1 review
 // finding (silent overwrite of the binding via full-struct UPDATE).
@@ -148,8 +148,8 @@ func TestKnowledgeBase_VectorStoreID_Updates_Immutable(t *testing.T) {
 // opt in" scheme.
 //
 // The implication for Phase 4 (cross-store migration) is that ORM-level
-// updates cannot move bindings. Migration code must use raw SQL (db.Exec)
-// — see TestKnowledgeBase_VectorStoreID_RawSQL_EscapeHatch below.
+// updates cannot move bindings. Migration code must use raw SQL (db.Exec) -
+// see TestKnowledgeBase_VectorStoreID_RawSQL_EscapeHatch below.
 func TestKnowledgeBase_VectorStoreID_Select_StillImmutable(t *testing.T) {
 	db := setupKBTestDB(t)
 
@@ -227,7 +227,7 @@ func TestKnowledgeBase_VectorStoreID_Roundtrip_Value(t *testing.T) {
 // VectorStore delete guard. Verifies tenant scoping, the GORM auto soft-delete
 // filter (no explicit `deleted_at IS NULL` literal in the query), and the
 // edge case where a row stores an empty-string vector_store_id (SQLite
-// treats "" and NULL differently — we want both excluded from a non-empty
+// treats "" and NULL differently - we want both excluded from a non-empty
 // storeID lookup).
 func TestCountByVectorStoreID(t *testing.T) {
 	db := setupKBTestDB(t)
@@ -252,7 +252,7 @@ func TestCountByVectorStoreID(t *testing.T) {
 	require.NoError(t, db.Create(kbDeleted).Error)
 	require.NoError(t, db.Delete(kbDeleted).Error)
 
-	// Row with empty-string vector_store_id (regression — sqlite quirk).
+	// Row with empty-string vector_store_id (regression - sqlite quirk).
 	kbEmpty := makeKB(kbStrPtr(""))
 	require.NoError(t, db.Create(kbEmpty).Error)
 
@@ -289,7 +289,7 @@ func TestCountByVectorStoreID(t *testing.T) {
 	t.Run("non-empty lookup does not match empty-string rows", func(t *testing.T) {
 		count, err := repo.CountByVectorStoreID(ctx, nil, 1, "")
 		require.NoError(t, err)
-		// Only the empty-string-vsid row matches "" exactly (SQLite quirk —
+		// Only the empty-string-vsid row matches "" exactly (SQLite quirk -
 		// "" is not NULL). The non-empty rows do not.
 		assert.Equal(t, int64(1), count, "empty-string lookup matches only the empty row")
 	})

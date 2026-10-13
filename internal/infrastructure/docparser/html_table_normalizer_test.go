@@ -70,7 +70,7 @@ func TestNormalizeHTMLTables_SpanValueOneIsConvertible(t *testing.T) {
 
 func TestNormalizeHTMLTables_RealSpanKeepsHTMLWithRowNewlines(t *testing.T) {
 	// Genuine merges (colspan>1 / rowspan>1) cannot be GFM, so the table stays
-	// HTML — but each row must start on its own line so the chunker can split it.
+	// HTML - but each row must start on its own line so the chunker can split it.
 	input := "<table><tr><td colspan=\"6\" style=\"text-align:center;\">\u5408\u8ba1</td></tr>" +
 		`<tr><td rowspan="3">A</td><td>1</td></tr>` +
 		`<tr><td rowspan = 2>B</td><td>2</td></tr></table>`

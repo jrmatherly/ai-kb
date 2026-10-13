@@ -1,4 +1,4 @@
-// Package tools — write_sandbox_file.
+// Package tools - write_sandbox_file.
 //
 // Lets the LLM write a text file into the current session's sandbox without
 // stuffing the bytes through a shell_exec heredoc. shell_exec keeps an 8 KiB
@@ -46,8 +46,8 @@ const maxSandboxFileBytes = 8 * 1024 * 1024
 // Deliberately pessimistic. A CJK character is one token and three UTF-8
 // bytes; ASCII source runs three to four bytes per token; JSON string escaping
 // inflates both. Advertising a size the model cannot reach is exactly the
-// failure this replaces — the model plans a 256KB write, gets cut off at the
-// token cap, and retries the same doomed call — so the number must err low.
+// failure this replaces - the model plans a 256KB write, gets cut off at the
+// token cap, and retries the same doomed call - so the number must err low.
 const bytesPerCompletionToken = 2
 
 // completionTokensReservedForCall covers everything in the response that is
@@ -184,7 +184,7 @@ const hostWriteSandboxFileDescription = "Create, overwrite, or append a text fil
 // writeSizeGuidance states how much content one call should carry and why.
 //
 // The number is a forecast of what fits in one response, not a rule the tool
-// enforces — a call that lands intact is written whatever its size. The reason
+// enforces - a call that lands intact is written whatever its size. The reason
 // to respect it is the real one: go far past it and the response gets cut off
 // mid-string, and a truncated call is refused before it ever reaches the tool.
 // A model told only a number treats it as arbitrary; told that its own response
@@ -262,7 +262,7 @@ func (t *WriteSandboxFileTool) Execute(ctx context.Context, args json.RawMessage
 	//
 	// That budget is a forecast of what fits in one response, derived from
 	// token math whose bytes-per-token factor swings by 3x between ASCII and
-	// CJK. Content that reaches this point already arrived intact — a response
+	// CJK. Content that reaches this point already arrived intact - a response
 	// cut off at the token cap was refused in act.go, and arguments closed by
 	// JSON repair were refused there too. Rejecting a complete payload for
 	// beating a wrong forecast discards work already paid for and forces the

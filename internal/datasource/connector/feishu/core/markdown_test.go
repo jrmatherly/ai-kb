@@ -142,7 +142,7 @@ func TestBlocksToMarkdown_NativeTableFromCellChildren(t *testing.T) {
 
 func TestBlocksToMarkdown_AttachmentInsideTableCellStillCollected(t *testing.T) {
 	// A file block nested inside a table cell must still be collected as an
-	// attachment — the table "consumed" set marks a cell's text structure but
+	// attachment - the table "consumed" set marks a cell's text structure but
 	// must NOT swallow attachment/media blocks, or embedded files silently vanish.
 	blocks := []DocxBlock{
 		{BlockID: "root", BlockType: BlockTypePage},

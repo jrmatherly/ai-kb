@@ -46,7 +46,7 @@ More body.`
 }
 
 func TestProfileDocument_DominantLevelFallback(t *testing.T) {
-	// No level reaches 3 occurrences — should fall back to most frequent.
+	// No level reaches 3 occurrences - should fall back to most frequent.
 	doc := "# Single H1\n## H2 a\n## H2 b\n"
 	p := ProfileDocument(doc)
 	if p.DominantHeadingLevel() != 2 {

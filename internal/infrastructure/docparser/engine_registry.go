@@ -11,7 +11,7 @@ import (
 // EngineRegistration is what every locally registered parser engine provides:
 // the metadata the engine list shows, and the reader that does the parsing.
 // Remote-only engines (e.g. markitdown) live in the Python docreader, are
-// discovered through its ListEngines RPC, and never register here — the
+// discovered through its ListEngines RPC, and never register here - the
 // registry routes them to the docreader client by default.
 type EngineRegistration interface {
 	Name() string
@@ -42,7 +42,7 @@ type ReaderDeps struct {
 }
 
 // localEngines holds all locally registered parser engines, in registration
-// order — which is also the order the engine list is shown in.
+// order - which is also the order the engine list is shown in.
 var localEngines []EngineRegistration
 
 // RegisterEngine adds an engine to the local registry. Called from init().
@@ -79,7 +79,7 @@ func NewReader(
 }
 
 // remoteReader returns the docreader client, or an error when the service is
-// not connected — a nil interface value here would panic at the call site.
+// not connected - a nil interface value here would panic at the call site.
 func remoteReader(deps ReaderDeps) (interfaces.DocReader, error) {
 	if deps.Remote == nil {
 		return nil, errNotConnected

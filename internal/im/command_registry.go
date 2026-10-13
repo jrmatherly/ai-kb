@@ -74,7 +74,7 @@ func (r *CommandRegistry) All() []Command {
 	return cmds
 }
 
-// LooksLikeCommand returns true when content appears to be a command attempt—
+// LooksLikeCommand returns true when content appears to be a command attempt -
 // it starts with "/" and the first token contains no further "/" separators.
 //
 // This distinguishes "/help" (command attempt) from "/api/v2/users" (URL path

@@ -7,9 +7,9 @@
 //     them at /v1-openai and documented /v1 as an alias for everything but
 //     the models endpoint, so /v1 is the one path that works on both lines;
 //     the 2.x page no longer mentions /v1-openai at all. Rerank is served at
-//     /v1/rerank as well — "the OpenAI-compatible APIs does not provide a
+//     /v1/rerank as well - "the OpenAI-compatible APIs does not provide a
 //     `rerank` API, so GPUStack serves Jina compatible Rerank API using the
-//     `/v1/rerank` path" — so chat, embeddings, transcriptions and rerank now
+//     `/v1/rerank` path" - so chat, embeddings, transcriptions and rerank now
 //     share one base URL;
 //   - authentication is `Authorization: Bearer <api key>`;
 //   - output cap is `max_tokens`: every GPUStack example uses it and
@@ -46,7 +46,7 @@ var gpustackIcon []byte
 const GpustackID = "gpustack"
 
 // GpustackBaseURL is the OpenAI-compatible placeholder. Since GPUStack 2.x every
-// surface — chat, embeddings, transcriptions and the Jina-style rerank —
+// surface - chat, embeddings, transcriptions and the Jina-style rerank -
 // hangs off /v1.
 const GpustackBaseURL = "http://your_gpustack_server_url/v1"
 
@@ -110,7 +110,7 @@ func newGpustackProvider() *Definition {
 			// Transcriptions keeps the baseline, json by default. GPUStack
 			// serves audio through vox-box (https://github.com/gpustack/vox-box),
 			// whose route wraps a json answer as {"text": ...} but returns
-			// verbose_json as whatever the backend produced — and its FunASR
+			// verbose_json as whatever the backend produced - and its FunASR
 			// backend (SenseVoice, Paraformer) produces a bare string for every
 			// format. The pre-catalog client's verbose_json therefore arrived
 			// as a JSON string that could not be decoded. The route reads a

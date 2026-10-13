@@ -15,7 +15,7 @@ import (
 //
 // Auth is HTTP Basic (public_key:secret_key). The x-langfuse-ingestion-version
 // header is the gate opt-in that LiteFuse/Langfuse v3 require for the OTel
-// direct-write path (verified against directWriteHelpers.ts — without it the
+// direct-write path (verified against directWriteHelpers.ts - without it the
 // server returns 400 "requires Python SDK >= 4.0.0"). The x-langfuse-sdk-*
 // markers are sent for parity; AI KB is a Go client, not the Python SDK.
 func newExporter(ctx context.Context, cfg Config) (sdktrace.SpanExporter, error) {

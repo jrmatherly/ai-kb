@@ -101,7 +101,7 @@ type OrganizationRepository interface {
 //	effective = min(share.Permission, tenant_org_role, tenant_role_cap)
 //
 // where tenant_role_cap pins tenant Viewers to OrgRoleViewer regardless
-// of the org-level grant — Viewer in your own tenant must always be
+// of the org-level grant - Viewer in your own tenant must always be
 // read-only on shared resources.
 type KBShareService interface {
 	// Share Management

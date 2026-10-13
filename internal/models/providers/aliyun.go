@@ -131,7 +131,7 @@ func newAliyunProvider() *Definition {
 		},
 		RerankAPI: api.RerankDashScope,
 		// Text and multimodal embeddings live under different roots of the
-		// same host — /compatible-mode/v1 and /api/v1 — and a row stores one
+		// same host - /compatible-mode/v1 and /api/v1 - and a row stores one
 		// base URL for both, so the request is placed from the host. A base
 		// URL without either root is taken as the host itself, which keeps a
 		// workspace or international domain instead of replacing it with the

@@ -4,7 +4,7 @@ import "testing"
 
 // Every key a tool declares as a source-ID argument must have a registration
 // space, otherwise its values could be decoded from handles but never
-// registered (or vice versa) — the drift this table exists to prevent.
+// registered (or vice versa) - the drift this table exists to prevent.
 func TestEverySourceIDKeyHasARegistrationSpace(t *testing.T) {
 	for tool, policy := range toolHandlePolicies {
 		for key := range policy.sourceIDKeys {

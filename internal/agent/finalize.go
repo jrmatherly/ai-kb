@@ -105,7 +105,7 @@ func (e *AgentEngine) streamFinalAnswerToEventBus(
 		})
 	}
 
-	// The synthesis call is often the largest of the turn — fold its usage
+	// The synthesis call is often the largest of the turn - fold its usage
 	// into the turn aggregate like every ReAct round.
 	if llmResult.Usage != nil {
 		state.TurnUsage.Accumulate(*llmResult.Usage)

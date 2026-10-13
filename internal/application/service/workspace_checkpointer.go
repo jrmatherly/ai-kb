@@ -68,7 +68,7 @@ func NewWorkspaceCheckpointer(runner SandboxShellRunner) *WorkspaceCheckpointer 
 //
 //   - `safe.directory` is passed per-invocation via git_ws. /workspace is
 //     owned by uid 1000 while shell_exec runs as root by default, and git
-//     refuses to touch a dubiously-owned repository — including from the
+//     refuses to touch a dubiously-owned repository - including from the
 //     rev-parse probe below. -c avoids writing ~/.gitconfig every turn.
 //
 //   - `--allow-empty` is mandatory. A turn that only answered a question

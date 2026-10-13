@@ -200,7 +200,7 @@ func (s *resourceCatalog) GetMessageFileBindings(
 //
 // Unbinding and counting are deliberately not a single transaction. A racing
 // bind that lands between them makes the count too high, which keeps a live
-// file — the safe direction. The opposite ordering could delete bytes another
+// file - the safe direction. The opposite ordering could delete bytes another
 // owner had just claimed.
 func (s *resourceCatalog) Release(
 	ctx context.Context, reference, ownerType, ownerID string,
@@ -315,7 +315,7 @@ func (s *resourceCatalog) CreateAccessGrant(ctx context.Context, reference strin
 // The token is derived rather than random so it can be recomputed without ever
 // storing it: the table holds only the hash, as before, and the plaintext token
 // cannot be reconstructed from a database dump without SYSTEM_AES_KEY.
-// Authorization still lives entirely in the row — a revoked or expired grant
+// Authorization still lives entirely in the row - a revoked or expired grant
 // stops resolving even though the token derives to the same value.
 func (s *resourceCatalog) reuseOrCreateDerivedGrant(
 	ctx context.Context, resourceID string, ttl time.Duration,

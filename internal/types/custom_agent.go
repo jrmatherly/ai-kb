@@ -55,7 +55,7 @@ const (
 	AgentTypeHybridRAGWiki = "hybrid-rag-wiki"
 	// AgentTypeDataAnalysis runs SQL / statistics over tabular files (CSV, Excel)
 	// uploaded into the KB. Retrieval semantics (vector/wiki/…) are largely
-	// irrelevant — this type is about data_schema + data_analysis tools.
+	// irrelevant - this type is about data_schema + data_analysis tools.
 	AgentTypeDataAnalysis = "data-analysis"
 	// AgentTypeCustom is the "no preset" option; user-configured end to end.
 	AgentTypeCustom = "custom"
@@ -103,8 +103,8 @@ const maxAgentAvatarLength = 64
 // ValidateAvatar rejects an avatar value the DB column cannot store.
 //
 // Without it, an oversized avatar (a data-URI icon, say) reaches postgres
-// unchecked and comes back as a raw driver error — "ERROR: value too long for
-// type character varying(64) (SQLSTATE 22001)" — which is then forwarded to
+// unchecked and comes back as a raw driver error - "ERROR: value too long for
+// type character varying(64) (SQLSTATE 22001)" - which is then forwarded to
 // the client as a 500. That is two problems at once: the caller only learns
 // the real limit from a crash, and internal database details leak into a
 // public API. Checking here turns it into an ordinary 400 that names the
@@ -498,8 +498,8 @@ func (CustomAgent) TableName() string {
 // reasoningEffortEnablesThinking mirrors api.ParseReasoningEffort followed by
 // api.ReasoningEffort.Enabled(), for the strings this package can see.
 // internal/types cannot import internal/models/api (api imports types), so the
-// whole vocabulary — api.AllReasoningEfforts plus the aliases
-// api.ParseReasoningEffort accepts — is restated here. Keep the two in sync:
+// whole vocabulary - api.AllReasoningEfforts plus the aliases
+// api.ParseReasoningEffort accepts - is restated here. Keep the two in sync:
 // the cases below are exactly that function's, in the same order, and like it
 // they neither trim nor lowercase, so a spelling it rejects is rejected here
 // too.
@@ -588,7 +588,7 @@ func (a *CustomAgent) EnsureDefaults() {
 		a.Config.FallbackStrategy = "model"
 	}
 	// MaxCompletionTokens 0 means "use DefaultMaxCompletionTokens at call
-	// time". Do not materialize a number here — that would make the editor
+	// time". Do not materialize a number here - that would make the editor
 	// treat a chosen default as a custom cap.
 	// Agent mode should always enable multi-turn conversation
 	if a.Config.AgentMode == AgentModeSmartReasoning {
@@ -596,8 +596,8 @@ func (a *CustomAgent) EnsureDefaults() {
 	}
 	// Keep the legacy boolean consistent with the graded level. ReasoningEffort
 	// wins wherever both are read (api.Options.Reasoning), but everything that
-	// still reads only Thinking — the agent editor, the pipeline logs, the
-	// "thinking is off" warning in applyAgentOverridesToChatManage — would
+	// still reads only Thinking - the agent editor, the pipeline logs, the
+	// "thinking is off" warning in applyAgentOverridesToChatManage - would
 	// otherwise report an agent configured for `high` as thinking-off.
 	//
 	// A level outside that vocabulary is left alone rather than read as "on":
@@ -649,9 +649,9 @@ var BuiltinAgentRegistry = map[string]func(uint64) *CustomAgent{}
 // that are exposed in the user-facing agent list (ListAgents).
 //
 // NOTE: BuiltinWikiFixerID and BuiltinSkillInstallerID are intentionally
-// excluded here. Both are internal agents invoked programmatically — the wiki
+// excluded here. Both are internal agents invoked programmatically - the wiki
 // fixer from the Wiki editor, the skill installer from the sandbox-config skill
-// upload flow — and should not clutter the tenant's agent picker. They remain
+// upload flow - and should not clutter the tenant's agent picker. They remain
 // fully usable via GetAgentByID because the YAML entries still register them in
 // BuiltinAgentRegistry.
 var builtinAgentIDsOrdered = []string{

@@ -167,7 +167,7 @@ func coalesceTinyChunks(in []Chunk, chunkSize int) []Chunk {
 	}
 	out = append(out, cur)
 
-	// Re-sequence — downstream code (knowledge.go) expects Seq to be a dense
+	// Re-sequence - downstream code (knowledge.go) expects Seq to be a dense
 	// 0..N-1 range over the returned slice.
 	for i := range out {
 		out[i].Seq = i
@@ -204,7 +204,7 @@ func commonHeadingPrefix(a, b string) string {
 
 // findHeadingBoundaries returns one boundary at offset 0 plus one per
 // Markdown heading at level <= primaryLevel that sits outside fenced code
-// blocks. Heading detection is line-oriented — a heading must occupy a
+// blocks. Heading detection is line-oriented - a heading must occupy a
 // whole line to be recognized.
 func findHeadingBoundaries(text string, primaryLevel int) []headingBoundary {
 	runes := []rune(text)
@@ -228,7 +228,7 @@ func findHeadingBoundaries(text string, primaryLevel int) []headingBoundary {
 					})
 				}
 				if level >= 1 && level <= primaryLevel && pos == 0 {
-					// First line is a heading — replace the leading boundary
+					// First line is a heading - replace the leading boundary
 					bounds[0].line = line
 				}
 			}
@@ -304,8 +304,8 @@ func sectionBreadcrumbs(sectionRunes []rune, primaryLevel int, seed HeadingHiera
 	return result
 }
 
-// breadcrumbAtOffset returns the breadcrumb in effect at the given rune offset
-// — the last entry whose runeStart <= offset. fallback covers the (unreachable
+// breadcrumbAtOffset returns the breadcrumb in effect at the given rune offset -
+// the last entry whose runeStart <= offset. fallback covers the (unreachable
 // in practice) empty-slice case.
 func breadcrumbAtOffset(bcs []sectionBreadcrumb, offset int, fallback string) string {
 	bc := fallback

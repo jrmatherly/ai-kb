@@ -128,7 +128,7 @@ func (s *wikiPageService) CreatePage(ctx context.Context, page *types.WikiPage) 
 //
 // Version bump policy: the `version` column is intended to track the user-
 // visible content revision, not every row rewrite. We therefore bump it only
-// when at least one of the user-facing fields actually changes — title,
+// when at least one of the user-facing fields actually changes - title,
 // content, summary, page_type, or status. Bookkeeping-only writes (refreshing
 // source_refs after re-ingest when the body is identical, rebuilding the index
 // page with the same directory, cross-link injection that ends up replacing
@@ -147,7 +147,7 @@ func (s *wikiPageService) UpdatePage(ctx context.Context, page *types.WikiPage) 
 	// back, and markdown tables are the shape it gets wrong most often: a
 	// hundred-row certificate ledger returns with thirty rows, finish_reason=
 	// stop, no provider error. That is not the completion-budget truncation
-	// handled on the ingest side (which continues and then refuses) — the answer
+	// handled on the ingest side (which continues and then refuses) - the answer
 	// is complete, it is simply short on rows. Storing it shrinks the page with
 	// no error, no failed addition, and a revision entry that reads like any
 	// other edit. Measured on a table-heavy knowledge base: a bulk ingest left a
@@ -163,8 +163,8 @@ func (s *wikiPageService) UpdatePage(ctx context.Context, page *types.WikiPage) 
 	//     to "no stored row identity may vanish": its loss limit is zero and any
 	//     loss refuses the write, which the tool returns to the model so it can
 	//     re-emit the page (or switch to exact-text replacement).
-	//   - Ingest cannot retry cheaply — a refusal keeps the contributing
-	//     documents queued for another full Map and spends their retry budget —
+	//   - Ingest cannot retry cheaply - a refusal keeps the contributing
+	//     documents queued for another full Map and spends their retry budget -
 	//     and its editor prompt explicitly allows de-duplicating rows, so only a
 	//     loss STRICTLY above wikiWriteIngestRowIdentityLossLimit counts as
 	//     truncation. The ratio is computed over distinct identities (see
@@ -209,8 +209,8 @@ func (s *wikiPageService) UpdatePage(ctx context.Context, page *types.WikiPage) 
 				// user-visible leaves `version` alone too (see the version-bump
 				// policy above), so the version cannot tell a caller whether
 				// its write landed. Ingest maps this sentinel to a deferred
-				// update — the documents behind it are kept for a later batch
-				// instead of being trimmed — while the agent surfaces it to the
+				// update - the documents behind it are kept for a later batch
+				// instead of being trimmed - while the agent surfaces it to the
 				// model, which can re-emit the rows.
 				return nil, fmt.Errorf(
 					"%w: slug %s lost %d of %d table row identities (e.g. %s); the stored page is unchanged",
@@ -256,7 +256,7 @@ func (s *wikiPageService) UpdatePage(ctx context.Context, page *types.WikiPage) 
 	existing.Status = page.Status
 	existing.UpdatedAt = time.Now()
 
-	// CategoryPath is a derived cache of FolderID — recompute it from the
+	// CategoryPath is a derived cache of FolderID - recompute it from the
 	// folder chain rather than trusting whatever the caller sent.
 	if err := s.applyFolderToPage(ctx, existing); err != nil {
 		return nil, err
@@ -279,11 +279,11 @@ func (s *wikiPageService) UpdatePage(ctx context.Context, page *types.WikiPage) 
 		if err := s.repo.UpdateWithRevision(ctx, existing, revisionFromPage(&prev)); err != nil {
 			return nil, fmt.Errorf("update wiki page: %w", err)
 		}
-		// Bound per-page history; best-effort — a failed prune only means
+		// Bound per-page history; best-effort - a failed prune only means
 		// slightly more storage until the next content change.
 		s.pruneRevisions(ctx, existing.ID, existing.Version)
 	} else {
-		// No user-visible change — persist bookkeeping fields but preserve
+		// No user-visible change - persist bookkeeping fields but preserve
 		// the version so downstream consumers can rely on it.
 		if err := s.repo.UpdateMeta(ctx, existing); err != nil {
 			return nil, fmt.Errorf("update wiki page meta: %w", err)
@@ -309,7 +309,7 @@ func (s *wikiPageService) UpdatePageMeta(ctx context.Context, page *types.WikiPa
 // decorators (cross-link injection / dead-link cleanup) without bumping
 // `version`. Out-links are re-parsed from the new body and bidirectional
 // in-link references on target pages are refreshed so link navigation stays
-// consistent — only the user-facing revision counter is preserved.
+// consistent - only the user-facing revision counter is preserved.
 func (s *wikiPageService) UpdateAutoLinkedContent(ctx context.Context, page *types.WikiPage) error {
 	existing, err := s.repo.GetBySlug(ctx, page.KnowledgeBaseID, page.Slug)
 	if err != nil {
@@ -333,8 +333,8 @@ func (s *wikiPageService) UpdateAutoLinkedContent(ctx context.Context, page *typ
 }
 
 // revisionFromPage builds the immutable snapshot row for the given page
-// state. EditSource on the snapshot is the author of THAT version — the
-// page's provenance columns as they stood while the version was current —
+// state. EditSource on the snapshot is the author of THAT version - the
+// page's provenance columns as they stood while the version was current -
 // not whoever is performing the write that supersedes it.
 func revisionFromPage(p *types.WikiPage) *types.WikiPageRevision {
 	return &types.WikiPageRevision{
@@ -377,7 +377,7 @@ func (s *wikiPageService) pruneRevisions(ctx context.Context, pageID string, cur
 }
 
 // ErrWikiRevertToCurrentVersion is returned when a revert targets the version
-// the page is already on — a client-side mistake (usually a stale history
+// the page is already on - a client-side mistake (usually a stale history
 // list), not a server fault, so handlers map it to 400.
 var ErrWikiRevertToCurrentVersion = errors.New("cannot revert to the current version")
 
@@ -415,7 +415,7 @@ func (s *wikiPageService) GetRevision(
 // RevertPageToVersion rolls the page back to a stored revision by applying
 // that revision's content fields as a regular edit: the pre-revert state is
 // snapshotted, version advances, links are re-parsed. Placement (folder,
-// sort order) and provenance refs keep their current values — a revert is
+// sort order) and provenance refs keep their current values - a revert is
 // about content, not about undoing directory moves.
 func (s *wikiPageService) RevertPageToVersion(
 	ctx context.Context, kbID string, slug string, version int,
@@ -513,7 +513,7 @@ func (s *wikiPageService) DeletePage(ctx context.Context, kbID string, slug stri
 
 	// Drop the snapshot history too: the page is gone from every read path,
 	// so its revisions are unreachable rows holding full content bodies.
-	// Best-effort — the page is already deleted and cannot be rolled back.
+	// Best-effort - the page is already deleted and cannot be rolled back.
 	if err := s.repo.DeleteRevisionsByPage(ctx, page.ID); err != nil {
 		logger.Warnf(ctx, "delete wiki page revisions for %s failed: %v", page.ID, err)
 	}
@@ -552,7 +552,7 @@ var wikiIndexContentPageTypes = []string{
 
 // GetIndexView builds the structured index response without ever
 // materializing a multi-MB directory markdown string. Intro is read from
-// the index wiki_page row (which now carries only intro text — see
+// the index wiki_page row (which now carries only intro text - see
 // rebuildIndexPage). Each requested page_type is paginated independently
 // with ListByTypeLight so reads stay O(page_size) rather than O(total
 // pages in the KB).
@@ -562,7 +562,7 @@ var wikiIndexContentPageTypes = []string{
 // `cursor` is an opaque offset string; currently we use the stringified
 // offset so clients can resume where they left off. Because different
 // page_types paginate independently, `cursor` applies uniformly to every
-// group — if the caller wants per-group cursors it should request one
+// group - if the caller wants per-group cursors it should request one
 // type at a time via `pageTypes`. That simplifies the wire format and
 // matches the frontend's tabbed UX.
 func (s *wikiPageService) GetIndexView(
@@ -652,7 +652,7 @@ func (s *wikiPageService) GetIndexView(
 //
 //   - WikiGraphModeOverview (default): returns the top `Limit` pages sorted
 //     by link_count (in+out), plus every edge that connects two surviving
-//     nodes. This is what the frontend fetches on the first graph open —
+//     nodes. This is what the frontend fetches on the first graph open -
 //     40,000-page wikis would otherwise ship ~30MB of JSON and crash the
 //     browser trying to render 100k SVG elements.
 //
@@ -674,7 +674,7 @@ func (s *wikiPageService) GetIndexView(
 // pages that's ~10MB of rows + deserialization, which is already on the
 // expensive side but still tractable and keeps the repository interface
 // unchanged. Pushing the filter/top-N down into SQL is a follow-up step
-// (cache layer + DB-side projection) — see CLAUDE.md plan.
+// (cache layer + DB-side projection) - see CLAUDE.md plan.
 func (s *wikiPageService) GetGraph(ctx context.Context, req *types.WikiGraphRequest) (*types.WikiGraphData, error) {
 	if req == nil {
 		return nil, errors.New("wiki graph request is required")
@@ -866,7 +866,7 @@ func computeGraphSubset(pages []*types.WikiPage, req *types.WikiGraphRequest) (*
 			Familiar:  p.BuiltFrom(familiarSet),
 		})
 	}
-	// Deterministic node ordering — the map iteration above is random.
+	// Deterministic node ordering - the map iteration above is random.
 	sort.Slice(nodes, func(i, j int) bool {
 		if nodes[i].LinkCount != nodes[j].LinkCount {
 			return nodes[i].LinkCount > nodes[j].LinkCount
@@ -911,7 +911,7 @@ func computeGraphSubset(pages []*types.WikiPage, req *types.WikiGraphRequest) (*
 		edges = append(edges, types.WikiGraphEdge{Source: e[0], Target: e[1]})
 	}
 
-	// total is the count of candidate nodes before truncation — i.e. the
+	// total is the count of candidate nodes before truncation - i.e. the
 	// population the frontend would need to fetch if it asked for the
 	// whole graph. For overview this respects the type filter; for ego
 	// it is the total KB page count (the user still sees "X of Y" based
@@ -969,7 +969,7 @@ func graphOverviewTypeRank(pageType string) int {
 
 // bfsEgoSlugs computes the undirected BFS neighborhood of `center` up to
 // `depth` hops using both inbound and outbound links. Type-filtered pages
-// are excluded from the result but are also NOT traversed through — so a
+// are excluded from the result but are also NOT traversed through - so a
 // filter that hides "index" pages will not leak the whole wiki via the
 // index. The caller guarantees center exists in pageBySlug.
 func bfsEgoSlugs(
@@ -986,7 +986,7 @@ func bfsEgoSlugs(
 		return map[string]struct{}{}
 	}
 	// If the center itself fails the type filter we honor the filter and
-	// return an empty set — the handler will surface Returned=0.
+	// return an empty set - the handler will surface Returned=0.
 	if hasTypeFilter && !typeAllow[centerPage.PageType] {
 		return map[string]struct{}{}
 	}
@@ -1140,8 +1140,8 @@ func (s *wikiPageService) RebuildLinks(ctx context.Context, kbID string) error {
 	}
 
 	// Save all pages (link rebuild is metadata-only, no version bump).
-	// The rebuild stays best-effort — one unwritable page must not discard the
-	// pages that can be written — but the failures are accumulated and
+	// The rebuild stays best-effort - one unwritable page must not discard the
+	// pages that can be written - but the failures are accumulated and
 	// reported, so callers never see a successful rebuild for a half-written
 	// link graph.
 	var failures []error
@@ -1181,7 +1181,7 @@ func (s *wikiPageService) ListPagesBySourceRef(ctx context.Context, kbID string,
 
 // ListSlugsBySourceRef returns just the slugs of pages that cite the given
 // knowledge id. Backed by the source_refs GIN index added in migration
-// 000041 — the wiki ingest pipeline uses it as a cheap "before" snapshot
+// 000041 - the wiki ingest pipeline uses it as a cheap "before" snapshot
 // when reconciling old vs new extraction sets.
 func (s *wikiPageService) ListSlugsBySourceRef(ctx context.Context, kbID string, knowledgeID string) ([]string, error) {
 	return s.repo.ListSlugsBySourceRef(ctx, kbID, knowledgeID)
@@ -1377,7 +1377,7 @@ func (s *wikiPageService) parseOutLinks(content string) types.StringArray {
 	for _, match := range matches {
 		if len(match) > 1 {
 			slug := strings.TrimSpace(match[1])
-			// Handle [[slug|display name]] format — slug is the first part
+			// Handle [[slug|display name]] format - slug is the first part
 			if parts := strings.SplitN(slug, "|", 2); len(parts) == 2 {
 				slug = strings.TrimSpace(parts[0])
 			}
@@ -1411,7 +1411,7 @@ func slugNamespace(slug string) string {
 // content and lets `resolve` decide, per link, whether to rewrite the slug.
 // `resolve` receives the normalized slug and its display text and returns the
 // replacement slug plus true to rewrite, or ("", false) to leave the link
-// untouched. Display text is preserved verbatim. This is a pure helper — the
+// untouched. Display text is preserved verbatim. This is a pure helper - the
 // resolution policy lives entirely in the callback.
 func rewriteDeadWikiLinks(content string, resolve func(normSlug, display string) (string, bool)) (string, bool) {
 	changed := false
@@ -1450,7 +1450,7 @@ func rewriteDeadWikiLinks(content string, resolve func(normSlug, display string)
 // Unlike stripDeadWikiLinks (the ingest cleanup pass), this method is
 // REWRITE-ONLY: a dead link is corrected only when a confident live candidate
 // exists; otherwise it is left completely untouched. It NEVER strips a link to
-// plain text, so it is safe on any write path — including writes whose targets
+// plain text, so it is safe on any write path - including writes whose targets
 // legitimately do not exist yet (those simply stay as-is until they do).
 //
 // The candidate pool for each dead link is scoped to live slugs that share the
@@ -1759,8 +1759,8 @@ func (s *wikiPageService) GetFolder(ctx context.Context, kbID string, id string)
 // scoped to pageTypes. PageCount is recursive (the folder's whole subtree) so
 // a parent reflects everything filed beneath it. A folder is shown when its
 // subtree holds a page matching pageTypes. Wholly-empty folders (no pages of
-// any type underneath) are only listed when multiple types are requested —
-// the merged knowledge view — so single-type tabs like summary do not surface
+// any type underneath) are only listed when multiple types are requested -
+// the merged knowledge view - so single-type tabs like summary do not surface
 // empty containers.
 func (s *wikiPageService) ListChildFolders(
 	ctx context.Context, kbID string, parentID string, pageTypes []string,
@@ -1784,7 +1784,7 @@ func (s *wikiPageService) ListChildFolders(
 	recAll := recursiveFolderCounts(all, allDirect)
 	showEmptyFolders := len(pageTypes) > 1
 	// A folder belongs in this view if it (recursively) contains a page of the
-	// requested types, or — only in the merged knowledge view — if it is a
+	// requested types, or - only in the merged knowledge view - if it is a
 	// completely empty container with no pages of any type underneath.
 	relevant := func(id string) bool {
 		if recScoped[id] > 0 {
@@ -1933,7 +1933,7 @@ func (s *wikiPageService) FindOrCreateFolderPath(
 			}
 			if cerr := s.repo.CreateFolder(ctx, child); cerr != nil {
 				// Lost a create race (or unique violation): the sibling must
-				// now exist — re-fetch it rather than failing the whole plan.
+				// now exist - re-fetch it rather than failing the whole plan.
 				child, err = s.repo.GetChildFolderByName(ctx, kbID, parentID, name)
 				if err != nil {
 					return "", nil, fmt.Errorf("create wiki folder %q: %w", fp, cerr)
@@ -2239,7 +2239,7 @@ func (s *wikiPageService) InjectCrossLinks(ctx context.Context, kbID string, aff
 // RebuildIndexPage was historically called by agent write/rename tools to
 // refresh the index page's directory listing after a page mutation.
 //
-// The directory is no longer persisted in wiki_pages.content — it is
+// The directory is no longer persisted in wiki_pages.content - it is
 // assembled on demand by GetIndexView from the lightweight ListByTypeLight
 // projection, so individual page writes don't need to redo O(N) string
 // concatenation and rewrite a multi-MB TEXT column anymore. Keeping the

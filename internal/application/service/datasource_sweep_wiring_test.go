@@ -94,7 +94,7 @@ func (k *sweepFakeKS) CreateKnowledgeFromFile(
 // orphan-cleanup wiring end-to-end at the service layer: when a re-synced parent
 // item carries ReplacesSubtree, ingestItem must (1) query the child subtree by
 // the "<externalID>#" prefix, (2) delete every stale child, and (3) do so only
-// AFTER the parent content is written — so a failed/duplicate-skipped parent
+// AFTER the parent content is written - so a failed/duplicate-skipped parent
 // write never destroys existing children (the new children arrive as separate
 // items later in the same sync, so the sweep still precedes their creation).
 func TestIngestItem_ReplacesSubtreeSweepsStaleChildrenAfterCreate(t *testing.T) {
@@ -155,7 +155,7 @@ func TestIngestItem_ReplacesSubtreeSweepsOnDuplicateParent(t *testing.T) {
 	repo := &sweepFakeRepo{prefixReturn: []*types.Knowledge{
 		childWithExternalID("stale-child-1", "nt-parent#file#1", "ds-1"),
 	}}
-	// The dedup hit is THIS node's own row (same external_id) — a genuine
+	// The dedup hit is THIS node's own row (same external_id) - a genuine
 	// self-dedup where the parent effectively exists, so the sweep must run.
 	ks := &sweepFakeKS{
 		repo:      repo,
@@ -187,7 +187,7 @@ func TestIngestItem_ReplacesSubtreeSweepsOnDuplicateParent(t *testing.T) {
 // when an updated node's rebuilt body content-hash-collides with a DIFFERENT
 // knowledge item (dedup keys on file_hash plus file_type), the parent row under this
 // node's external_id no longer exists (it was deleted for the update and never
-// recreated), so the subtree must NOT be swept — deleting the children would
+// recreated), so the subtree must NOT be swept - deleting the children would
 // destroy them with no parent to replace them.
 func TestIngestItem_NoSweepWhenDuplicateIsDifferentNode(t *testing.T) {
 	repo := &sweepFakeRepo{prefixReturn: []*types.Knowledge{{ID: "would-be-orphaned-child"}}}
@@ -285,7 +285,7 @@ func TestIngestItem_SubtreeSweepSkipsOtherDataSourceChildren(t *testing.T) {
 }
 
 // TestIngestItem_NoSweepWhenFlagUnset verifies a normal item (ReplacesSubtree
-// false) never triggers the subtree prefix query — the sweep is opt-in.
+// false) never triggers the subtree prefix query - the sweep is opt-in.
 func TestIngestItem_NoSweepWhenFlagUnset(t *testing.T) {
 	repo := &sweepFakeRepo{}
 	ks := &sweepFakeKS{repo: repo}

@@ -12,7 +12,7 @@ import (
 
 // Sentinel errors returned by factory functions. Callers may use errors.Is to
 // classify. User-facing responses MUST wrap or replace these with generic
-// messages — the sentinels intentionally omit store UUIDs to avoid enumeration
+// messages - the sentinels intentionally omit store UUIDs to avoid enumeration
 // leaks. Structured logs inside the factory record the tenant/store IDs.
 var (
 	// ErrTenantInfoMissing is returned when the factory needs a tenant from
@@ -25,7 +25,7 @@ var (
 	ErrVectorStoreNotFound = errors.New("vector store not available")
 
 	// ErrVectorStoreUnavailable is returned when the store exists but its
-	// engine could not be produced right now — the metadata database was
+	// engine could not be produced right now - the metadata database was
 	// unreachable, or building the engine failed against a backend that may
 	// simply be down. Async workers should retry rather than discard the task,
 	// which is why this is a separate sentinel: reporting it as not-found
@@ -171,7 +171,7 @@ func CreateRetrieveEngineForKB(
 //
 // Tasks enqueued before vectorStoreID was added to the payload decode it as
 // nil and transparently fall back to the pre-serialized effectiveEngines
-// path — no in-flight task is lost across upgrades.
+// path - no in-flight task is lost across upgrades.
 func CreateRetrieveEngineFromPayload(
 	ctx context.Context,
 	registry interfaces.RetrieveEngineRegistry,
@@ -207,7 +207,7 @@ func resolveBoundEngine(
 		if isContextError(err) {
 			return nil, err
 		}
-		// Infrastructure failure — record the raw error for operators but
+		// Infrastructure failure - record the raw error for operators but
 		// do not leak internals to the caller. The store itself may be fine,
 		// so this is retryable rather than not-found.
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
@@ -244,7 +244,7 @@ func resolveBoundEngine(
 	// We cannot delegate to NewCompositeRetrieveEngine here because that
 	// function resolves engines through registry.GetRetrieveEngineService,
 	// which reads from the byEngineType map (env stores). DB stores live
-	// in the byStoreID map and are not reachable via engine type alone —
+	// in the byStoreID map and are not reachable via engine type alone -
 	// multiple stores can share the same engine type.
 	//
 	// Semantics: a KB bound to a DB store uses every retriever type that

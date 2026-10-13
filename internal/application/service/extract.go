@@ -86,7 +86,7 @@ Please output in the following format (one paragraph per column):
 // NewChunkExtractTask creates a new chunk extract task. It returns
 // (enqueued, err): enqueued is true only when a task was actually placed on
 // the queue. When NEO4J is disabled the call is a no-op and returns
-// (false, nil) — callers that seeded a pending-subtask counter for this chunk
+// (false, nil) - callers that seeded a pending-subtask counter for this chunk
 // MUST release that slot, otherwise the parent knowledge stays stuck in
 // "finalizing" forever (the graph subtask it's waiting on was never enqueued).
 func NewChunkExtractTask(
@@ -282,7 +282,7 @@ func (s *ChunkExtractService) Handle(ctx context.Context, t *asynq.Task) error {
 	}()
 
 	// Short-circuit when the parent knowledge has been cancelled / deleted.
-	// Each graph extract is per-chunk and runs one LLM call — the most
+	// Each graph extract is per-chunk and runs one LLM call - the most
 	// expensive enrichment fan-out in the pipeline. Skipping on cancel
 	// is the whole point of the finalizing-state machinery above.
 	if p.KnowledgeID != "" && s.knowledgeRepo != nil {
@@ -303,7 +303,7 @@ func (s *ChunkExtractService) Handle(ctx context.Context, t *asynq.Task) error {
 		handleErr = err
 		return err
 	}
-	// Capture chunk content shape on output — lets traces answer "WHAT
+	// Capture chunk content shape on output - lets traces answer "WHAT
 	// did the LLM call see?" without joining back to the chunk store.
 	// Preview is truncated to keep span rows reasonable.
 	if gSpan != nil {
@@ -390,7 +390,7 @@ func (s *ChunkExtractService) Handle(ctx context.Context, t *asynq.Task) error {
 	graphOut["relations_added"] = len(graph.Relation)
 	// Capture a couple of sample nodes/relations so the trace viewer can
 	// answer "what did the LLM actually extract?" without round-tripping
-	// to the graph store. Cap to two each — anything more bloats span
+	// to the graph store. Cap to two each - anything more bloats span
 	// rows and the full graph is queryable elsewhere.
 	if len(graph.Node) > 0 {
 		samples := graph.Node

@@ -33,7 +33,7 @@ func TestAuditAction_DotNamespaceConvention(t *testing.T) {
 		AuditActionOpenSearchIndexCreated,
 		AuditActionOpenSearchIndexDeleted,
 		AuditActionOpenSearchReindexExecuted,
-		// System namespace (this PR — system admin & settings)
+		// System namespace (this PR - system admin & settings)
 		AuditActionSystemSettingChanged,
 		AuditActionSystemAdminPromoted,
 		AuditActionSystemAdminRevoked,
@@ -76,7 +76,7 @@ func TestAuditAction_VectorStoreNamespacePrefix(t *testing.T) {
 // TestAuditAction_OpenSearchNamespacePrefix pins the three
 // opensearch.* actions added in Phase 3 PR 1 to their shared area
 // prefix. OpenSearch index lifecycle is a driver-specific concern
-// distinct from VectorStore lifecycle — both can co-occur for the
+// distinct from VectorStore lifecycle - both can co-occur for the
 // same logical operation (e.g. CreateVectorStore + IndexCreated).
 func TestAuditAction_OpenSearchNamespacePrefix(t *testing.T) {
 	cases := []AuditAction{
@@ -136,7 +136,7 @@ func TestAuditAction_NoCollisionsAcrossNamespaces(t *testing.T) {
 // TestAuditAction_SystemNamespacePrefix pins the system.* actions
 // added in this PR to their shared area prefix. The prefix is the
 // contract by which the platform audit log endpoint
-// (GET /system/admin/audit-log) filters out per-tenant rbac.* rows —
+// (GET /system/admin/audit-log) filters out per-tenant rbac.* rows -
 // any drift here would either leak per-tenant events into the
 // platform feed or silently hide platform events from SystemAdmin.
 func TestAuditAction_SystemNamespacePrefix(t *testing.T) {

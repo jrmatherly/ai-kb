@@ -15,7 +15,7 @@
 //   - Incremental: feed-level signals skip full-text article fetches when a feed
 //     entry is unchanged; item fingerprints detect title, link and body changes.
 //     Article-only edits without feed updates may be missed until the feed entry changes.
-//     Deletions are NOT synced — feeds routinely drop old items.
+//     Deletions are NOT synced - feeds routinely drop old items.
 //
 // All outbound requests go through the SSRF-safe HTTP client so a malicious
 // feed cannot redirect AI KB to internal services.

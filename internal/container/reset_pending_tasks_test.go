@@ -106,7 +106,7 @@ func setupResetPendingDB(t *testing.T) *gorm.DB {
 	require.NoError(t, db.Exec(resetPendingOpsDDL).Error)
 	require.NoError(t, db.Exec(resetPendingKnowledgeBasesDDL).Error)
 	require.NoError(t, db.Exec(resetPendingTenantsDDL).Error)
-	// Tenants 7 and 8 are alive; tenant 9 is soft-deleted — its KB-scoped
+	// Tenants 7 and 8 are alive; tenant 9 is soft-deleted - its KB-scoped
 	// pending rows must be purged by recovery even though the KB row is
 	// still present (#3593).
 	require.NoError(t, db.Exec(

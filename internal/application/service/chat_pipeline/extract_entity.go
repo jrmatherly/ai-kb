@@ -167,7 +167,7 @@ func (p *PluginExtractEntity) OnEvent(ctx context.Context,
 const entityExtractionMaxTokens = 8192
 
 // ErrModelDeclined marks an LLM response that is prose rather than the
-// requested structured output — typically a refusal for chunks that carry
+// requested structured output - typically a refusal for chunks that carry
 // no extractable entities (table-of-contents pages, prompts with no content).
 // Retrying the same input cannot change the outcome (issue #3600), so the
 // async chunk-extraction task treats it as a skip. Other callers (the
@@ -612,9 +612,9 @@ func (f *Formater) extractContent(ctx context.Context, text string) string {
 	default:
 		// Fallback strategies for cases where the fence regex fails to match.
 		// This commonly happens when:
-		//   1. The LLM output is truncated (no closing fence) — issue #1113 Pattern 3.
+		//   1. The LLM output is truncated (no closing fence) - issue #1113 Pattern 3.
 		//   2. The opening fence is malformed or surrounded by unexpected content,
-		//      so the non-greedy regex falls back to the raw text — issue #1113 Pattern 1.
+		//      so the non-greedy regex falls back to the raw text - issue #1113 Pattern 1.
 		// Without these fallbacks, the raw text (including backticks) is passed to
 		// json.Unmarshal and fails with `invalid character '`'`.
 		if extracted := stripFencesAndExtract(text, f.formatType); extracted != "" {

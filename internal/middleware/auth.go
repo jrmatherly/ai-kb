@@ -41,7 +41,7 @@ var noAuthAPI = map[string][]string{
 	// Share-link surfaces accept a plaintext invite token from anonymous
 	// callers (an invitee who hasn't registered yet). They are registered
 	// as public routes in RegisterAuthRoutes and rate-limited by IP, so the
-	// global Auth middleware must let them through — otherwise opening a
+	// global Auth middleware must let them through - otherwise opening a
 	// share link while logged out 401s and the frontend bounces the user to
 	// /login instead of the register page (issue #1617).
 	"/api/v1/auth/invitations/lookup": {"POST"},
@@ -58,7 +58,7 @@ var noAuthAPI = map[string][]string{
 	"/api/v1/auth/refresh":       {"POST"},
 	// IM platforms (Feishu, Slack, etc.) commonly issue a HEAD request
 	// before GET to validate Content-Type / Content-Length when rendering
-	// image previews — both verbs must be allowed for image links to work.
+	// image previews - both verbs must be allowed for image links to work.
 	"/api/v1/files/presigned": {"GET", "HEAD"},
 }
 
@@ -269,17 +269,17 @@ func authenticateJWTUser(
 // resolveTargetTenant decides which tenant this request operates in.
 //
 // Priority:
-//  1. X-Tenant-ID header — must parse to a positive integer, the user must
+//  1. X-Tenant-ID header - must parse to a positive integer, the user must
 //     be allowed to access it (home tenant / cross-tenant superuser / active
 //     membership, see IsTenantAccessible) and the tenant must exist. The
 //     fetched tenant is returned so the caller doesn't refetch it.
 //  2. JWT tenant claim (falling back to user.TenantID when the claim is 0).
-//  3. First active membership — lets a tenantless session become usable as
+//  3. First active membership - lets a tenantless session become usable as
 //     soon as an invitation is accepted (see resolveFirstMembershipTarget).
 //
 // Returns ok=false when the response has already been written (malformed
 // header, inaccessible or missing target tenant). targetTenantID == 0 with
-// ok=true means "authenticated but no usable workspace" — the caller decides
+// ok=true means "authenticated but no usable workspace" - the caller decides
 // between tenantless routes and TENANT_REQUIRED.
 func resolveTargetTenant(
 	c *gin.Context,
@@ -730,7 +730,7 @@ func principalTenantIDFromClaims(claims jwt.MapClaims) uint64 {
 //     promoted to Owner; tenant deletion / API-key rotation should always
 //     stay with a real Owner inside the target tenant. Cross-tenant access
 //     is also never allowed to trigger the orphan-tenant auto-promotion
-//     below — a superuser only visits, never claims ownership.
+//     below - a superuser only visits, never claims ownership.
 //  3. No membership but the tenant currently has zero active members AND
 //     the caller is authenticating into their own home tenant (i.e.
 //     targetTenantID == user.TenantID and this is not a cross-tenant

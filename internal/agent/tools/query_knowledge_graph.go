@@ -190,7 +190,7 @@ func NewQueryKnowledgeGraphTool(
 		BaseTool:         queryKnowledgeGraphTool,
 		knowledgeService: knowledgeService,
 	}
-	// Presence of the variadic argument — not its length — enables the Agent
+	// Presence of the variadic argument - not its length - enables the Agent
 	// authorization boundary, so an empty scope fails closed.
 	if len(searchTargets) > 0 {
 		tool.searchTargets = searchTargets[0]

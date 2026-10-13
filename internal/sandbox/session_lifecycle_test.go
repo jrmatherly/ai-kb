@@ -551,7 +551,7 @@ func newTestRemoteSessionLifecycleWithPolicy(
 
 // A metadata-adopted sandbox has no binding to supply its inbound token. When
 // the policy closed inbound, adopting it would bind a sandbox whose every
-// data-plane call answers 403 — and 403 is RemoteErrorKindAuthentication, which
+// data-plane call answers 403 - and 403 is RemoteErrorKindAuthentication, which
 // CanReplaceRemoteBinding refuses to replace, so the session would stay wedged
 // until an operator intervened. Creating a fresh sandbox is the only recovery.
 func TestRemoteSessionLifecycleSkipsTokenlessAdoptionWhenInboundClosed(t *testing.T) {
@@ -588,7 +588,7 @@ func TestRemoteSessionLifecycleSkipsTokenlessAdoptionWhenInboundClosed(t *testin
 // RemoteInboundTokenCarrier and InboundTokenOf always returns "". The guard
 // must not read that as a lost credential: Docker never had the 403 wedge, and
 // firing here would destroy a healthy container and its /workspace on every
-// binding loss — on precisely the single-node deployment the guard was for.
+// binding loss - on precisely the single-node deployment the guard was for.
 func TestRemoteSessionLifecycleAdoptsWhenProviderHasNoInboundCredential(t *testing.T) {
 	closed := false
 	client := newFakeRemoteClient(SandboxTypeDocker)

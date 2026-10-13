@@ -104,7 +104,7 @@ func TestEmptyInputMakesNoRequest(t *testing.T) {
 
 // NIM returns the raw logit of its relevance head. The retrieval pipeline
 // compares scores against RerankThreshold, which is tuned for probabilities,
-// so the logit is converted rather than passed through — otherwise the
+// so the logit is converted rather than passed through - otherwise the
 // default threshold of 0.2 keeps only documents whose logit is positive.
 func TestLogitScoresBecomeProbabilities(t *testing.T) {
 	for _, tc := range []struct {

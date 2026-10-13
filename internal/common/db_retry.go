@@ -12,7 +12,7 @@ const defaultMaxDeadlockRetries = 3
 
 // WithDeadlockRetry retries fn when MySQL returns Error 1213 (deadlock).
 // Retries up to 3 times with exponential backoff (50ms, 100ms, 200ms).
-// Safe for all DB drivers — non-deadlock errors are returned immediately.
+// Safe for all DB drivers - non-deadlock errors are returned immediately.
 func WithDeadlockRetry(ctx context.Context, fn func() error) error {
 	var err error
 	for attempt := 0; attempt <= defaultMaxDeadlockRetries; attempt++ {

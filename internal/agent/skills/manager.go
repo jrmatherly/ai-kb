@@ -36,8 +36,8 @@ const artifactHistoryEnvVar = "AIKB_SKILL_HISTORY_ROOT"
 const skillDirEnvVar = "AIKB_SKILL_DIR"
 
 // nodePathEnvVar carries the skill's own node_modules. pythonPathEnvVar is
-// never injected — a skill's Python packages arrive through its venv
-// interpreter — but stays on the blacklist below, because a stored PYTHONPATH
+// never injected - a skill's Python packages arrive through its venv
+// interpreter - but stays on the blacklist below, because a stored PYTHONPATH
 // could otherwise shadow exactly those packages.
 const pythonPathEnvVar = "PYTHONPATH"
 const nodePathEnvVar = "NODE_PATH"
@@ -312,7 +312,7 @@ func (m *Manager) ListSkillFiles(ctx context.Context, skillName string) ([]strin
 //
 // Only an installed skill has one. A host skill is uploaded from the AI KB
 // machine for the session, so its original base path names a directory that no
-// sandbox shell command can reach — telling the model about it would be worse
+// sandbox shell command can reach - telling the model about it would be worse
 // than saying nothing.
 func (m *Manager) SandboxSkillDir(skillName string) (string, bool) {
 	if m == nil || !m.enabled || !m.isSkillAllowed(skillName) {

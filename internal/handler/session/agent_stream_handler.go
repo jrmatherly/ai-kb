@@ -775,7 +775,7 @@ func (h *AgentStreamHandler) handleComplete(ctx context.Context, evt event.Event
 		// storage. Best-effort: any failure is logged and the turn is
 		// persisted without artifacts. Collect is a no-op when either the
 		// collector wasn't wired in, no sandbox is bound, or no files were
-		// produced — those cases must not disturb the completion path.
+		// produced - those cases must not disturb the completion path.
 		//
 		// Layouts without a separate output tree must not be collected
 		// (scanning Root would upload the whole project). Remote backends keep
@@ -810,7 +810,7 @@ func (h *AgentStreamHandler) handleComplete(ctx context.Context, evt event.Event
 			//
 			// A turn can legitimately reference a file it did not regenerate.
 			// The first turn after a session fork is restored to the fork point,
-			// so every unchanged file is de-duplicated out of `artifacts` — yet
+			// so every unchanged file is de-duplicated out of `artifacts` - yet
 			// the model still writes `sandbox:<name>` for it. Gating the
 			// rewrite on `artifacts` alone would leave those references
 			// unnormalized, and the client resolves names only against the
@@ -898,8 +898,8 @@ func (h *AgentStreamHandler) handleComplete(ctx context.Context, evt event.Event
 	}
 	// Attach the freshly-collected artifacts so the frontend can render the
 	// download button without waiting for a page refresh. We strip the
-	// storage URL and any other server-only fields via publicArtifactViews
-	// — clients only ever download through /artifacts/:index which enforces
+	// storage URL and any other server-only fields via publicArtifactViews -
+	// clients only ever download through /artifacts/:index which enforces
 	// tenant ownership.
 	if len(h.assistantMessage.Artifacts) > 0 {
 		completeData["artifacts"] = publicArtifactViews(h.assistantMessage.Artifacts)
@@ -941,7 +941,7 @@ func (h *AgentStreamHandler) publishCompletion(ctx context.Context) error {
 }
 
 // emitArtifactsPending tells the live UI that sandbox files exist and are
-// being uploaded. It must not take h.mu — Collect calls it while
+// being uploaded. It must not take h.mu - Collect calls it while
 // handleComplete already holds the lock.
 func (h *AgentStreamHandler) emitArtifactsPending(count int) {
 	if h == nil || h.streamManager == nil || count <= 0 {

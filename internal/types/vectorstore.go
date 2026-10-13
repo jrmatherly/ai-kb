@@ -74,12 +74,12 @@ func (v *VectorStore) BeforeCreate(tx *gorm.DB) error {
 // listed in GetVectorStoreTypes for the UI dropdown).
 //
 // Excluded engines:
-//   - Infinity / ElasticFaiss — legacy/experimental, no standalone deployable instance.
-//   - Postgres / SQLite — only meaningful when bound to the app's default DB
+//   - Infinity / ElasticFaiss - legacy/experimental, no standalone deployable instance.
+//   - Postgres / SQLite - only meaningful when bound to the app's default DB
 //     connection (UseDefaultConnection=true). The Postgres retriever's
 //     embeddings table is a single hard-coded name with no per-store
 //     partitioning, so registering a second Postgres store on the same
-//     instance has no separation effect — every KB sharing this engine
+//     instance has no separation effect - every KB sharing this engine
 //     ends up in the same physical table. These engines are still
 //     reachable via env stores (RETRIEVE_DRIVER=postgres/sqlite), which
 //     route through a separate code path (BuildEnvVectorStores) and do
@@ -132,7 +132,7 @@ type ConnectionConfig struct {
 	// the system CA pool. Cross-driver applicable but currently only
 	// the OpenSearch driver (Phase 3) reads this field. Note: this
 	// differs from the Qdrant-specific UseTLS below, which *enables*
-	// TLS on gRPC connections — InsecureSkipVerify only controls
+	// TLS on gRPC connections - InsecureSkipVerify only controls
 	// *verification* of an already-TLS connection.
 	InsecureSkipVerify bool `yaml:"insecure_skip_verify" json:"insecure_skip_verify,omitempty"`
 	// Qdrant
@@ -329,7 +329,7 @@ func (c IndexConfig) GetIndexNameOrDefault(engineType RetrieverEngineType) strin
 }
 
 // ---------------------------------------------------------------------------
-// IndexConfig — getter helpers (pointer receiver for nil safety)
+// IndexConfig - getter helpers (pointer receiver for nil safety)
 // ---------------------------------------------------------------------------
 
 // GetNumberOfShards returns the configured number_of_shards, or def if unset/zero.
@@ -410,7 +410,7 @@ func (c *IndexConfig) GetReplicationNum(def int) int {
 }
 
 // ---------------------------------------------------------------------------
-// IndexConfig — resolve helpers (for Repository layer, with env var fallback)
+// IndexConfig - resolve helpers (for Repository layer, with env var fallback)
 // ---------------------------------------------------------------------------
 
 // ResolveIndexName returns the index name from IndexConfig, falling back to env var and then default.
@@ -428,7 +428,7 @@ func ResolveIndexName(ic *IndexConfig, envKey, defaultVal string) string {
 // ResolveCollectionName returns the collection name from IndexConfig, falling back to env var and then default.
 // Priority: CollectionPrefix > CollectionName > env var > defaultVal.
 // CollectionPrefix is checked first because Qdrant/Weaviate use it as the base name.
-// CollectionName (Milvus) is checked second. If both are set, CollectionPrefix wins —
+// CollectionName (Milvus) is checked second. If both are set, CollectionPrefix wins -
 // this is safe because each VectorStore has a single engine type, so only one field is relevant.
 func ResolveCollectionName(ic *IndexConfig, envKey, defaultVal string) string {
 	if ic != nil {
@@ -456,7 +456,7 @@ func OptionalUint32(v int) *uint32 {
 }
 
 // ---------------------------------------------------------------------------
-// IndexConfig — validation
+// IndexConfig - validation
 // ---------------------------------------------------------------------------
 
 const (
@@ -487,7 +487,7 @@ func ValidateIndexConfig(ic IndexConfig) error {
 			"collection_name must start with a letter and contain only alphanumeric, underscore, or hyphen characters (max 128)")
 	}
 
-	// Validate numeric fields (shards/replicas) — must be within safe bounds
+	// Validate numeric fields (shards/replicas) - must be within safe bounds
 	if ic.NumberOfShards < 0 || ic.NumberOfShards > maxShards {
 		return errors.NewValidationError(fmt.Sprintf("number_of_shards must be between 0 and %d", maxShards))
 	}
@@ -520,7 +520,7 @@ func ValidateIndexConfig(ic IndexConfig) error {
 }
 
 // ---------------------------------------------------------------------------
-// StoreDisplay — API-safe projection embedded in other resource responses
+// StoreDisplay - API-safe projection embedded in other resource responses
 // ---------------------------------------------------------------------------
 
 // Vector store source classifiers used by API responses.
@@ -529,13 +529,13 @@ func ValidateIndexConfig(ic IndexConfig) error {
 const (
 	StoreSourceEnv         = "env"         // env-driven (RETRIEVE_DRIVER)
 	StoreSourceUser        = "user"        // DB-managed VectorStore row
-	StoreSourceShared      = "shared"      // cross-tenant access — metadata suppressed
+	StoreSourceShared      = "shared"      // cross-tenant access - metadata suppressed
 	StoreSourceUnavailable = "unavailable" // bound store row missing / registry miss
 )
 
 // StoreDisplay is the API-safe projection of a VectorStore for embedding in
 // other resource responses (notably KnowledgeBase). It carries only the
-// display-safe identifiers — never connection credentials.
+// display-safe identifiers - never connection credentials.
 //
 // Source is one of the StoreSource* constants. EngineType is the underlying
 // engine name (e.g. "elasticsearch"). Status mirrors Source by default but
@@ -569,7 +569,7 @@ func UnavailableStoreDisplay() StoreDisplay {
 }
 
 // SharedStoreDisplay is returned for cross-tenant shared KB views so that
-// the underlying owner-tenant store's name and engine remain hidden — only
+// the underlying owner-tenant store's name and engine remain hidden - only
 // the fact that "this KB is shared" leaks, which is already implied by the
 // share grant itself.
 func SharedStoreDisplay() StoreDisplay {
@@ -580,7 +580,7 @@ func SharedStoreDisplay() StoreDisplay {
 }
 
 // ---------------------------------------------------------------------------
-// VectorStoreResponse — API response DTO
+// VectorStoreResponse - API response DTO
 // ---------------------------------------------------------------------------
 
 // VectorStoreResponse is the API response DTO for vector store.
@@ -604,7 +604,7 @@ func NewVectorStoreResponse(store *VectorStore, source string, readonly bool) Ve
 }
 
 // ---------------------------------------------------------------------------
-// VectorStore type metadata — for /types endpoint
+// VectorStore type metadata - for /types endpoint
 // ---------------------------------------------------------------------------
 
 // VectorStoreTypeInfo describes a supported engine type and its configuration schema.
@@ -768,7 +768,7 @@ func GetVectorStoreTypes() []VectorStoreTypeInfo {
 				{Name: "username", Type: "string", Required: false, Description: "Username", Default: "admin"},
 				{Name: "password", Type: "string", Required: false, Sensitive: true, Description: "Password"},
 				{Name: "insecure_skip_verify", Type: "boolean", Required: false, Default: false,
-					Description: "Skip TLS certificate verification. For self-signed dev clusters only — never enable in production."},
+					Description: "Skip TLS verification. Self-signed dev clusters only; never in production."},
 			},
 			IndexFields: []VectorStoreFieldInfo{
 				{Name: "index_name", Type: "string", Required: false, Description: "Index Name", Default: "aikb"},
@@ -787,7 +787,7 @@ func GetVectorStoreTypes() []VectorStoreTypeInfo {
 func floatPtr(v float64) *float64 { return &v }
 
 // ---------------------------------------------------------------------------
-// BuildEnvVectorStores — virtual stores from RETRIEVE_DRIVER env var
+// BuildEnvVectorStores - virtual stores from RETRIEVE_DRIVER env var
 // ---------------------------------------------------------------------------
 
 // BuildEnvVectorStores builds virtual VectorStore entries from RETRIEVE_DRIVER.
@@ -795,7 +795,7 @@ func floatPtr(v float64) *float64 { return &v }
 // duplicate checking) can use them directly. API responses should wrap them
 // via NewVectorStoreResponse.
 //
-// Pure function — does not call os.Getenv directly.
+// Pure function - does not call os.Getenv directly.
 //
 // Usage:
 //

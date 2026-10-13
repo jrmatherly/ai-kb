@@ -185,7 +185,7 @@ func TestMilvusKeywordsRetrieveFailsWhenEveryMatchedCollectionFails(t *testing.T
 
 // One failing collection must not fail the batch as long as another one
 // answered: partial results are still results. The failure must travel with
-// them though (RetrieveResult.Error) — otherwise callers treat the incomplete
+// them though (RetrieveResult.Error) - otherwise callers treat the incomplete
 // answer as a complete one (#3835).
 func TestMilvusKeywordsRetrieveKeepsResultsWhenOnlySomeCollectionsFail(t *testing.T) {
 	logs := captureMilvusLogs(t)

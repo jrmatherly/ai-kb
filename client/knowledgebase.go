@@ -179,7 +179,7 @@ type KnowledgeBaseListResponse struct {
 
 // MatchType records which retrieval channel produced a SearchResult.
 // Numeric values are the wire contract; they mirror the iota order in
-// server-side internal/types/embedding.go — do not reorder without
+// server-side internal/types/embedding.go - do not reorder without
 // coordinating a server bump. Server-side names are preserved as
 // trailing comments so cross-repo grep works in both directions.
 //
@@ -197,14 +197,14 @@ const (
 	MatchTypeRelation MatchType = 5 // server: MatchTypeRelationChunk
 	MatchTypeGraph    MatchType = 6 // server: MatchTypeGraph
 	MatchTypeWeb      MatchType = 7 // server: MatchTypeWebSearch
-	MatchTypeDirect   MatchType = 8 // server: MatchTypeDirectLoad — chunk loaded by ID without scoring
-	MatchTypeData     MatchType = 9 // server: MatchTypeDataAnalysis — produced by analytical pipeline, not retrieval
+	MatchTypeDirect   MatchType = 8 // server: MatchTypeDirectLoad - chunk loaded by ID without scoring
+	MatchTypeData     MatchType = 9 // server: MatchTypeDataAnalysis - produced by analytical pipeline, not retrieval
 )
 
 // SearchResult represents search result.
 //
 // Score is the RRF (reciprocal-rank-fusion) score combining vector and
-// keyword channels — typically in the [0, ~0.03] range when both channels
+// keyword channels - typically in the [0, ~0.03] range when both channels
 // hit, NOT the raw vector similarity. Use MatchType to tell which channel
 // produced each result. Per-channel thresholds (vector_threshold,
 // keyword_threshold) filter pre-fusion at retrieval time, before RRF runs.
@@ -464,7 +464,7 @@ func (c *Client) HybridSearchDetailed(
 
 // TogglePinKnowledgeBase toggles the pin status of a knowledge base.
 // Server route is PUT (see internal/router/router.go); using POST silently
-// 404s — the router treats unknown method on a known path as not-found,
+// 404s - the router treats unknown method on a known path as not-found,
 // not 405.
 func (c *Client) TogglePinKnowledgeBase(ctx context.Context, knowledgeBaseID string) (*KnowledgeBase, error) {
 	path := fmt.Sprintf("/api/v1/knowledge-bases/%s/pin", knowledgeBaseID)

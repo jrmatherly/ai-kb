@@ -1,7 +1,7 @@
 package types
 
-// The builtin attribute source models the image fields every gallery has —
-// caption, OCR text, timestamps and the chunk enabled flag — as attributes,
+// The builtin attribute source models the image fields every gallery has -
+// caption, OCR text, timestamps and the chunk enabled flag - as attributes,
 // so the gallery's filter / search / sort UI is rendered from one uniform
 // contract with no hardcoded special cases. Values of builtin attributes do
 // not live in image_info.attrs; the service layer resolves them from the

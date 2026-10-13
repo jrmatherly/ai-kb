@@ -168,8 +168,8 @@ func anyStrings(in []string) []any {
 }
 
 // TestRerankWireFormatPerVendor pins, for every rerank vendor in the catalog,
-// the request the factory actually sends — URL, credential and the complete
-// body — and that the answer comes back ranked on the 0..1 scale the
+// the request the factory actually sends - URL, credential and the complete
+// body - and that the answer comes back ranked on the 0..1 scale the
 // retrieval threshold assumes. Each expectation traces to the vendor's
 // reference as cited in its vendor.go.
 func TestRerankWireFormatPerVendor(t *testing.T) {

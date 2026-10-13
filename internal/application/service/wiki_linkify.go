@@ -123,7 +123,7 @@ func findFirstSafeMatch(haystack, needle string, forbidden []span) int {
 }
 
 // hasASCIILetterEdge reports whether the needle starts or ends with an ASCII
-// letter/digit. Only such needles need word-boundary checks — pure CJK or
+// letter/digit. Only such needles need word-boundary checks - pure CJK or
 // punctuation-led matchText doesn't have a word-boundary concept.
 func hasASCIILetterEdge(s string) bool {
 	if s == "" {
@@ -155,7 +155,7 @@ func isASCIIWordRune(r rune) bool {
 // are not ASCII word runes (letters/digits/underscore). Non-ASCII runes (e.g.
 // CJK) are treated as boundaries so "Beijing" embedded in the Chinese name of
 // Beijing University of Posts and Telecommunications still
-// matches — length-descending ordering handles that conflict separately.
+// matches - length-descending ordering handles that conflict separately.
 func hasWordBoundary(s string, pos, end int) bool {
 	if pos > 0 {
 		r, _ := utf8.DecodeLastRuneInString(s[:pos])
@@ -257,7 +257,7 @@ func computeForbiddenSpans(s string) ([]span, map[string]struct{}) {
 			spans = append(spans, span{start: i, end: closeIdx + run})
 			i = closeIdx + run
 		case '[':
-			// [[slug...]] wiki link — record the slug in `used`
+			// [[slug...]] wiki link - record the slug in `used`
 			if i+1 < n && s[i+1] == '[' {
 				if close := strings.Index(s[i+2:], "]]"); close >= 0 {
 					end := i + 2 + close + 2

@@ -13,7 +13,7 @@
 // It is all-or-nothing for the filesystem: handing back a sandbox that sits
 // at the fork MOMENT rather than the fork POINT would look normal while
 // silently working from the wrong baseline. Snapshot deletion is not part of
-// that contract — Cube refuses to delete a snapshot while the source and
+// that contract - Cube refuses to delete a snapshot while the source and
 // child sandboxes still hold runtime refs, and failing the bootstrap for that
 // would destroy a correctly rolled-back sandbox.
 package service
@@ -173,7 +173,7 @@ func (b *ForkBootstrapper) AfterCreate(
 	// source sandbox and the sandbox just created from it still hold runtime
 	// refs. Failing here would make lifecycle destroy a correctly rolled-back
 	// sandbox, then the next Resolve would boot from the same snapshot and
-	// hit the same delete — a create/destroy loop. Snapshot GC is best-effort;
+	// hit the same delete - a create/destroy loop. Snapshot GC is best-effort;
 	// the reaper retries leftover IDs after the refs drop.
 	if keep, err := b.snapshotStillShared(ctx, key.SessionID, pending.SnapshotID); err != nil {
 		logger.Warnf(ctx, "[ForkBootstrap] lookup shared snapshot %s failed; leaving it: %v",

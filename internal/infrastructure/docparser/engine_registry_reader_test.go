@@ -10,7 +10,7 @@ import (
 )
 
 // stubRemote stands in for the docreader client. NewReader only ever hands it
-// back, so the embedded interface is never called — and would panic if routing
+// back, so the embedded interface is never called - and would panic if routing
 // ever sent a parse here by mistake.
 type stubRemote struct{ interfaces.DocReader }
 

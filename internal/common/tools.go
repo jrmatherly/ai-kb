@@ -119,7 +119,7 @@ func ParseLLMJsonResponse(content string, target interface{}) error {
 
 	// Last resort: models often wrap the payload in prose ("Sure, here is
 	// the JSON: {...}"). Scan for a balanced object/array so trailing
-	// commentary — including bracket-like text such as "[1]" — cannot
+	// commentary - including bracket-like text such as "[1]" - cannot
 	// truncate the payload.
 	if extracted := ExtractBalancedJSON(content); extracted != "" {
 		if scanErr := json.Unmarshal([]byte(extracted), target); scanErr == nil {

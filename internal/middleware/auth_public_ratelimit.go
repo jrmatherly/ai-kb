@@ -9,7 +9,7 @@ import (
 	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 )
 
-// auth_public_ratelimit.go — sliding-window IP rate limiter for the
+// auth_public_ratelimit.go - sliding-window IP rate limiter for the
 // unauthenticated share-link endpoints (/auth/invitations/lookup and
 // /auth/register-by-invite). Both surfaces accept a plaintext token
 // from the request and either reveal tenant context (lookup) or
@@ -21,7 +21,7 @@ import (
 // leaks (e.g. via referrer / clipboard managers / accidental commits)
 // and bounds the noise this endpoint can add to the user-create path.
 //
-// Local in-memory only — fine for typical deployments since both
+// Local in-memory only - fine for typical deployments since both
 // endpoints handle low absolute volumes; if/when AI KB horizontally
 // scales the auth surface, swap to the Redis-backed limiter in
 // internal/ratelimit (shared with IM + embed surfaces).
@@ -58,7 +58,7 @@ func newIPRateLimiter(window time.Duration, max int) *ipRateLimiter {
 
 // allow returns true if the IP is within budget for the current
 // window. Empty IP (proxy stripped X-Forwarded-For) is treated as a
-// shared bucket — slightly over-restrictive vs. dropping the limit
+// shared bucket - slightly over-restrictive vs. dropping the limit
 // entirely, which would let a misconfigured proxy bypass the gate.
 func (l *ipRateLimiter) allow(ip string) bool {
 	if ip == "" {
@@ -105,7 +105,7 @@ func (l *ipRateLimiter) cleanupLoop() {
 	}
 }
 
-// publicAuthLimiter — package-singleton so each route registration
+// publicAuthLimiter - package-singleton so each route registration
 // shares a single bucket map per process. Each route still gets its
 // own Gin handler that calls into this same limiter; per-route
 // isolation isn't important here (real users don't hit both

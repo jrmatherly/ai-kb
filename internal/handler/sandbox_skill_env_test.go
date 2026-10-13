@@ -65,7 +65,7 @@ func TestSkillResponsePatchWritesEnvValues(t *testing.T) {
 	require.True(t, svc.skills["skill-1"].Enabled, "envs-only patch must not touch visibility")
 }
 
-// An empty object is a real request — "clear everything you sent me" — and is
+// An empty object is a real request - "clear everything you sent me" - and is
 // distinguishable from a body that never mentioned envs at all.
 func TestSkillResponsePatchAcceptsAnEmptyEnvsObject(t *testing.T) {
 	svc := &fakeSandboxSkillService{skills: map[string]*types.TenantSkillEntity{

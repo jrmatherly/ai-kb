@@ -14,7 +14,7 @@ import (
 // KnowledgeSpanRepository persists the per-attempt span tree used by the
 // processing pipeline. Operations are deliberately narrow:
 //
-//   - Upsert covers Begin/End/Fail/Skip — every state transition routes
+//   - Upsert covers Begin/End/Fail/Skip - every state transition routes
 //     through the same write so the row stays internally consistent.
 //   - NextAttempt allocates a new attempt for re-parses without touching
 //     historical rows. Old attempts stay queryable for post-mortem.
@@ -36,7 +36,7 @@ type KnowledgeSpanRepository interface {
 	// regardless of tree position. Used by the user-cancel path where
 	// fan-out stages (e.g. multimodal recognition) flip themselves to done as soon
 	// as they finish dispatching, while their async children are still
-	// running — a tree walk that stops at terminal parents would miss
+	// running - a tree walk that stops at terminal parents would miss
 	// those orphan leaves.
 	CancelAllOpenSpans(ctx context.Context, knowledgeID string, attempt int, errorCode, reason string) (int64, error)
 	// CancelOpenSpansBeforeAttempt flips every pending/running span belonging to
@@ -79,7 +79,7 @@ func (r *knowledgeSpanRepository) Upsert(ctx context.Context, row *types.Knowled
 	row.ErrorDetail = common.CleanInvalidUTF8(row.ErrorDetail)
 	// We let GORM populate created_at/updated_at via the autoCreate /
 	// autoUpdate tags. ON CONFLICT updates only the fields that may
-	// transition between calls — name/kind/parent are immutable once
+	// transition between calls - name/kind/parent are immutable once
 	// set so we don't list them in DoUpdates (saves a few bytes per
 	// write, and any mismatch indicates a programming error).
 	//
@@ -89,7 +89,7 @@ func (r *knowledgeSpanRepository) Upsert(ctx context.Context, row *types.Knowled
 	// DoUpdates, the End call would clobber the input set by Begin with
 	// NULL. Same for metadata. Build the DoUpdates list dynamically and
 	// skip these three columns when the incoming row has nothing to
-	// write — so "no value" preserves the existing column instead of
+	// write - so "no value" preserves the existing column instead of
 	// nuking it.
 	cols := []string{
 		"status",
@@ -150,7 +150,7 @@ func (r *knowledgeSpanRepository) ListByAttempt(ctx context.Context, knowledgeID
 	if attempt > 0 {
 		q = q.Where("attempt = ?", attempt)
 	}
-	// id ASC keeps the natural insertion order — useful for stable
+	// id ASC keeps the natural insertion order - useful for stable
 	// rendering of fan-out subspans (e.g. multimodal.image[0..N] in
 	// the order they were enqueued).
 	err := q.Order("id ASC").Find(&rows).Error
@@ -185,7 +185,7 @@ func (r *knowledgeSpanRepository) CancelDescendants(ctx context.Context, knowled
 	for depth := 0; depth < 16 && len(frontier) > 0; depth++ {
 		var nextFrontier []string
 		// Find children of every span currently on the frontier
-		// that are still in a non-terminal state — terminal rows
+		// that are still in a non-terminal state - terminal rows
 		// (done/failed/skipped/cancelled) are left as-is so the UI
 		// can still see their original outcome.
 		var children []types.KnowledgeProcessingSpan
@@ -225,7 +225,7 @@ func (r *knowledgeSpanRepository) CancelDescendants(ctx context.Context, knowled
 // CancelDescendants. It avoids the BFS entirely so spans whose parent
 // is already terminal (typical for stage fan-outs that EndSpan as soon
 // as they finish dispatching async work) still get flipped to cancelled.
-// We deliberately do NOT touch finished_at / duration_ms here — the
+// We deliberately do NOT touch finished_at / duration_ms here - the
 // span row remains observable in the trace tree with its original
 // start time and gets a cancelled status + reason, which is enough
 // for the UI to drop the running-bar styling.

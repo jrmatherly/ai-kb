@@ -4,12 +4,12 @@
 // (types.TokenUsage), returned with every LLM response. This package serves as
 // a supplementary estimator used in two scenarios:
 //
-//  1. Delta estimation — after an LLM call, new messages (assistant reply +
+//  1. Delta estimation - after an LLM call, new messages (assistant reply +
 //     tool results) are appended before the next call. The Estimator computes
 //     the token cost of these new messages so the engine can decide whether
 //     context compression is needed without making an extra API round-trip.
 //
-//  2. First-round fallback — on the very first round of a session, no prior
+//  2. First-round fallback - on the very first round of a session, no prior
 //     API Usage is available, so the Estimator provides a full estimate.
 //
 // The encoding used (cl100k_base) is an approximation. Different model families
@@ -136,7 +136,7 @@ func (e *Estimator) EstimateString(s string) int {
 // thinking models (DeepSeek V3.2/V4, MiMo) require the previous turns'
 // reasoning_content to be sent back verbatim, and it is typically several times
 // longer than the visible reply. Omitting it made a 130k context measure as
-// 26k — compaction then cut in the wrong place, freed almost nothing, and ran
+// 26k - compaction then cut in the wrong place, freed almost nothing, and ran
 // again the next round. Reasoning content is counted alongside text and tool
 // calls for that reason.
 //

@@ -108,7 +108,7 @@ func newZhipuProvider() *Definition {
 				// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E8%AF%AD%E9%9F%B3%E8%BD%AC%E6%96%87%E6%9C%AC
 				// POST {base}/audio/transcriptions, multipart file + model
 				// (glm-asr-2512), answering {text}. The file is ".wav / .mp3",
-				// at most 25 MB and 30 seconds — the duration cannot be checked
+				// at most 25 MB and 30 seconds - the duration cannot be checked
 				// here without decoding, so a longer file is the vendor's error.
 				MaxFileBytes: api.Ptr(25 << 20),
 				// No language field; prompt and hotwords are its only hints.
@@ -118,7 +118,7 @@ func newZhipuProvider() *Definition {
 				// Text embeddings reference:
 				// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E5%B5%8C%E5%85%A5
 				// model,
-				// input, dimensions — no encoding_format. embedding-2 is fixed at
+				// input, dimensions - no encoding_format. embedding-2 is fixed at
 				// 1024 and its entry turns dimensions off; embedding-3 takes at
 				// most 64 inputs per request.
 				DimensionsField: api.Ptr("dimensions"),

@@ -13,7 +13,7 @@ import (
 )
 
 // stubAuditRepoForRetention captures DeleteOlderThan calls. We embed
-// the interface so any unstubbed method nil-panics — that's the same
+// the interface so any unstubbed method nil-panics - that's the same
 // contract-drift signal stubAuditRepo uses, kept consistent across
 // the package's audit log tests.
 type stubAuditRepoForRetention struct {
@@ -110,7 +110,7 @@ func (p *purgeCountingService) Purge(_ context.Context, _ int) (int64, error) {
 }
 
 func TestAuditLogRetentionRunner_StartIsNoOpWhenDisabled(t *testing.T) {
-	// retention_days <= 0 keeps the goroutine asleep — Start logs a
+	// retention_days <= 0 keeps the goroutine asleep - Start logs a
 	// "disabled" line and Stop returns immediately. This is the
 	// configured way to turn retention off, and the runner must not
 	// kick a goroutine for it.
@@ -130,7 +130,7 @@ func TestAuditLogRetentionRunner_StartIsNoOpWhenDisabled(t *testing.T) {
 }
 
 func TestAuditLogRetentionRunner_StopIsIdempotent(t *testing.T) {
-	// Calling Stop twice must not panic — container shutdown ordering
+	// Calling Stop twice must not panic - container shutdown ordering
 	// can race ResourceCleaner with other shutdown hooks, and we'd
 	// rather no-op than crash on the second call.
 	svc := &purgeCountingService{}
@@ -265,7 +265,7 @@ func TestAuditLogRetentionRunner_PurgesOnTickerCadence(t *testing.T) {
 }
 
 func TestAuditLogRetentionRunner_RunOnceLogsButDoesNotPanicOnError(t *testing.T) {
-	// runOnce must swallow Purge errors — a stuck DB shouldn't propagate
+	// runOnce must swallow Purge errors - a stuck DB shouldn't propagate
 	// a panic up out of the goroutine and crash the app. The behaviour
 	// is "log at WARN and try again next tick".
 	repo := &stubAuditRepoForRetention{deleteError: errors.New("simulated")}
@@ -285,7 +285,7 @@ var _ interfaces.AuditLogRepository = (*stubAuditRepo)(nil)
 var _ interfaces.AuditLogRepository = (*stubAuditRepoForRetention)(nil)
 
 // Sanity check the audit entry struct's fields stay attached to the
-// retention path — guards against a refactor that drops CreatedAt
+// retention path - guards against a refactor that drops CreatedAt
 // from the model and silently breaks the cutoff filter.
 func TestAuditLogModel_HasCreatedAtField(t *testing.T) {
 	entry := types.AuditLog{}

@@ -69,12 +69,12 @@ func NewSandboxTerminalService(
 //
 // Error contract (the WebSocket handler maps these onto protocol error
 // frames):
-//   - sandbox.ErrNoLiveSessionSandbox — the session has no bound sandbox.
-//   - sandbox.ErrSandboxPaused — the bound sandbox is paused; resume needs
+//   - sandbox.ErrNoLiveSessionSandbox - the session has no bound sandbox.
+//   - sandbox.ErrSandboxPaused - the bound sandbox is paused; resume needs
 //     an explicit click (EnsureSessionTerminal with AllowResume).
-//   - ErrTerminalUnsupported — the resolved backend cannot stream PTYs
+//   - ErrTerminalUnsupported - the resolved backend cannot stream PTYs
 //     (Docker, disabled manager).
-//   - any other error — resolution or provider failure.
+//   - any other error - resolution or provider failure.
 func (s *SandboxTerminalService) OpenSessionTerminal(
 	ctx context.Context,
 	sessionID string,
@@ -127,9 +127,9 @@ func (s *SandboxTerminalService) resolveSessionManager(
 // infrastructure, so the lookup-only OpenSessionTerminal is what a page load
 // or a background reconnect must use.
 //
-// Provisioning reuses the exact chat-flow path — the resolved agent's sandbox
+// Provisioning reuses the exact chat-flow path - the resolved agent's sandbox
 // config, the workspace kill switch, and the pin claim in
-// resolveSandboxForExecution — so a terminal-created sandbox is
+// resolveSandboxForExecution - so a terminal-created sandbox is
 // indistinguishable from one created by a conversation turn. The WebSocket
 // handler must resolve the agent the same way a chat turn does (own agent
 // or shared agent from another workspace) and pass that agent's config AND

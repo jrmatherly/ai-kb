@@ -443,7 +443,7 @@ func TestScheduler_TriggerSync_InactiveSkipped(t *testing.T) {
 	enqueuer := &fakeTaskEnqueuer{}
 	scheduler := NewScheduler(repo, newFakeSyncLogRepo(), enqueuer)
 
-	// Directly call triggerSync — it should skip because ds is not active
+	// Directly call triggerSync - it should skip because ds is not active
 	scheduler.triggerSync("ds-inactive", 1)
 
 	if enqueuer.count.Load() != 0 {

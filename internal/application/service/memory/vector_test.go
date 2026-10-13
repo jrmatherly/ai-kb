@@ -214,7 +214,7 @@ func TestVectorRecallCanBeTurnedOff(t *testing.T) {
 }
 
 // Fusion, not replacement: lexical still wins on the exact tokens that models
-// embed poorly — version numbers, error codes, product names.
+// embed poorly - version numbers, error codes, product names.
 func TestFusionKeepsWhatEachSignalIsGoodAt(t *testing.T) {
 	lexical := []int{3, 1}
 	vector := []int{1, 2}
@@ -308,7 +308,7 @@ func existingNotesBlock(prompt string) string {
 }
 
 // Without a similarity floor, every memory that has a vector enters the
-// ranking — including the ones scoring zero — and fusion then pulls them into
+// ranking - including the ones scoring zero - and fusion then pulls them into
 // the prompt. The feature would go straight from "cannot find a re-worded
 // memory" to "recalls everything", which is worse.
 func TestUnrelatedMemoriesAreNotPulledInByVectorRecall(t *testing.T) {

@@ -26,7 +26,7 @@
 //   - it therefore needs the TC3-HMAC-SHA256 credential pair: the API key
 //     field carries the SecretId and the rerank-only extra fields carry the
 //     SecretKey and the region (default ap-guangzhou). The SecretKey is
-//     genuinely required — TC3 signing cannot be done without it;
+//     genuinely required - TC3 signing cannot be done without it;
 //   - the optional Model parameter defaults to lke-reranker-base, which is
 //     documented as the only available rerank model.
 //

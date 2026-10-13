@@ -24,7 +24,7 @@
 //     (/anthropic/v1/messages) and xhigh is unreachable through it.
 //
 // Unverified:
-//   - Requesty warns "Do not hardcode model versions — model availability
+//   - Requesty warns "Do not hardcode model versions - model availability
 //     changes", and several routes only exist in dated form
 //     (deepseek/deepseek-v4-pro-0813). The undated deepseek-v4-flash has no
 //     first-party route at all, so it is left out rather than guessed;

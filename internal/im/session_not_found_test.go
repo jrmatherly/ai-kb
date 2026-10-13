@@ -14,7 +14,7 @@ import (
 // The session repository translates gorm.ErrRecordNotFound into
 // apperrors.ErrSessionNotFound, so an `errors.Is(err, gorm.ErrRecordNotFound)`
 // check on the value returned by SessionService.GetSession would silently
-// miss — leaving the IM bot permanently unresponsive after the user deletes
+// miss - leaving the IM bot permanently unresponsive after the user deletes
 // the underlying session from the UI.
 func TestIsSessionNotFound(t *testing.T) {
 	tests := []struct {

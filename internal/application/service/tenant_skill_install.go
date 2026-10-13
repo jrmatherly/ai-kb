@@ -361,7 +361,7 @@ func restoreServedVersion(e *types.TenantSkillEntity) string {
 // The transcript locators are cleared along with the error. They name the
 // session and message of the run that just ended, and a row that says
 // "installing" while still pointing at them tells every reader that the
-// finished conversation is this one's live output — which is how a retry came
+// finished conversation is this one's live output - which is how a retry came
 // to replay the previous attempt's report before its own agent had started.
 // They are rewritten by beginInstallTranscript once this run has a message of
 // its own; until then the honest answer is that there is nothing to show yet.
@@ -378,9 +378,9 @@ func takeSkillRowForInstall(row *types.TenantSkillEntity, bundle *SkillBundle, n
 }
 
 // ReinstallSkill runs the install again from the archive already stored for
-// this skill. Most failed installs have nothing to do with the archive — an
+// this skill. Most failed installs have nothing to do with the archive - an
 // unreachable sandbox, a package index that timed out, a checker that has
-// since been corrected — and making the operator find the original zip again
+// since been corrected - and making the operator find the original zip again
 // (or the registry URL it came from) is a poor answer to any of them.
 //
 // It deliberately shares the upload path rather than jumping to runInstall.
@@ -398,7 +398,7 @@ func (s *TenantSkillService) ReinstallSkill(
 		return "", apperrors.NewNotFoundError("skill not found")
 	}
 	// The zip is owned by the catalog. An empty install BundleRef is not
-	// itself a failure — fall through to skillBundleArchive, which is what
+	// itself a failure - fall through to skillBundleArchive, which is what
 	// reports a definition whose files are actually gone.
 	archive, err := s.skillBundleArchive(ctx, tenantID, configID, skillID)
 	if err != nil {
@@ -431,7 +431,7 @@ func (s *TenantSkillService) runInstall(
 	// only in a log line).
 	//
 	// Only cancellation is detached here; the deadline is NOT. An install runs
-	// for minutes — a single agent command may take installCommandTimeout — so
+	// for minutes - a single agent command may take installCommandTimeout - so
 	// a timeout started at this line would already be spent by the time any
 	// compensating work begins. Each consumer calls cleanupContext to start its
 	// own budget at the moment it needs one.
@@ -514,7 +514,7 @@ func (s *TenantSkillService) runInstall(
 	// Snapshots are private to the provider account that created them. The
 	// fingerprint is captured here, from the credentials this sandbox will
 	// actually use, and switchImagePointer refuses to stamp a later rotation
-	// onto that ID — that would make the session layer trust a snapshot the
+	// onto that ID - that would make the session layer trust a snapshot the
 	// live key cannot resolve.
 	builtFingerprint := skillOwnerFingerprint(cfgEntity.Config)
 	if strings.TrimSpace(builtFingerprint) == "" {
@@ -571,7 +571,7 @@ func (s *TenantSkillService) runInstall(
 
 	// 3-5. Install dependencies and verify the result. "The agent said it
 	//      worked" is a sentence, not evidence, and this is the last gate
-	//      before the image is switched — but the gate and the agent must not
+	//      before the image is switched - but the gate and the agent must not
 	//      answer "what does this skill need" separately, so a failure it can
 	//      still fix goes back to the same agent before the run is failed.
 	if err := s.installDependenciesAndVerify(ctx, installerJob{
@@ -764,7 +764,7 @@ func (s *TenantSkillService) cleanupContext(
 // every later snapshot while BundleSHA256 claims the tree equals the archive.
 //
 // Creating the directory is what makes the FIRST install work at all: the
-// skills root is not part of the base image. No chown here — the default exec
+// skills root is not part of the base image. No chown here - the default exec
 // account is root under one-session-one-sandbox, so chown root:root would be a
 // no-op, and there is no shared-volume tenant boundary to defend with it.
 func (s *TenantSkillService) resetSkillDir(
@@ -939,8 +939,8 @@ type installerJob struct {
 // authority here, so its own findings become the next round's instruction, and
 // nothing in this path derives that list a second time.
 //
-// A failure the gate marked unrepairable — a syntax error, a file the execution
-// user cannot read — ends the run immediately. Another round cannot change it,
+// A failure the gate marked unrepairable - a syntax error, a file the execution
+// user cannot read - ends the run immediately. Another round cannot change it,
 // and the bundle has to change instead.
 func (s *TenantSkillService) installDependenciesAndVerify(
 	ctx context.Context, job installerJob,
@@ -963,8 +963,8 @@ func (s *TenantSkillService) installDependenciesAndVerify(
 		s.publishProgress(ctx, job.tenantID, job.configID, job.skillID,
 			SkillProgress{Percent: 80, Stage: "agent_done"})
 		// The agent's part of this round is over: mute the asymptotic activity
-		// progress so verification and any repair round — which publish their
-		// own stage anchors (80 / 82) — cannot be dragged back below them by
+		// progress so verification and any repair round - which publish their
+		// own stage anchors (80 / 82) - cannot be dragged back below them by
 		// the next round's tool calls.
 		job.transcript.muteActivityProgress()
 
@@ -1056,7 +1056,7 @@ func (s *TenantSkillService) openInstallerRun(
 // round runs one installer turn.
 //
 // No conversation history is replayed. The engine is stateless across turns, so
-// a repair round could be handed the first round's transcript — but what the
+// a repair round could be handed the first round's transcript - but what the
 // gate reported is both shorter and more exact than anything that could be
 // inferred from it, and re-reading the round that already missed a dependency
 // is not what makes the next one find it.
@@ -1144,7 +1144,7 @@ func (s *TenantSkillService) reportVerificationNotes(
 // authority on what has to resolve in this image, and a second description
 // written here could disagree with it. Every repairable finding names a
 // distribution one of the skill's manifests declares and pip did not land, so
-// the brief is short — install what the lines name, change nothing else.
+// the brief is short - install what the lines name, change nothing else.
 func buildRepairPrompt(skillDir string, gate *skillVerificationError) string {
 	var findings strings.Builder
 	for _, problem := range gate.Problems {
@@ -1164,7 +1164,7 @@ assess prerequisites from SKILL.md and write the report. Never erase a prerequis
 - Do NOT edit SKILL.md, requirements.txt, pyproject.toml or package.json to
   make the check pass. Those files are what read_skill serves, so weakening a
   declaration here makes the installed skill differ from what everyone else
-  sees — and the dependency would still be missing at run time.
+  sees - and the dependency would still be missing at run time.
 - If a package genuinely cannot be installed in this image, say so plainly in
   your summary rather than working around it.
 
@@ -1175,7 +1175,7 @@ The same verification runs again as soon as you finish.
 // skillCacheBudgetMB caps the package download caches one image carries into
 // its next generation, as one total across both accounts. Retaining the caches
 // lets a future install resolve a package a previous install already fetched
-// without touching the network — minutes of the agent phase. Letting them grow
+// without touching the network - minutes of the agent phase. Letting them grow
 // unbounded would bake every version ever downloaded into every future
 // snapshot, so the total is measured and anything over the budget is wiped
 // whole.
@@ -1186,7 +1186,7 @@ const skillCacheBudgetMB = 256
 // snapshot carrying it would hand every future session this run's scratch
 // files, and the wipe takes the base image's own input/output directories with
 // it, so the same command restores them with the ownership the session account
-// needs — the only step of an install that runs with the privileges to do it.
+// needs - the only step of an install that runs with the privileges to do it.
 // /run/desktop goes with it: start-desktop.sh writes the websockify Basic
 // password there, and a snapshot that kept it would reuse that password on
 // every later sandbox (Cube's host-port NAT has no other gate). That half is
@@ -1196,7 +1196,7 @@ const skillCacheBudgetMB = 256
 // than wiped: pip, uv, npm and pnpm caches are first trimmed with the tools'
 // own collectors, then measured as one total across both accounts and wiped
 // whole when they exceed skillCacheBudgetMB. That half is best-effort by
-// construction — every statement in it is guarded, and a prune that failed or
+// construction - every statement in it is guarded, and a prune that failed or
 // a size that could not be measured only means a larger image, never a failed
 // install.
 func (s *TenantSkillService) cleanImageScratch(
@@ -1218,7 +1218,7 @@ func (s *TenantSkillService) cleanImageScratch(
 // into one command, one round trip. The workspace half decides the exit code:
 // its status is captured right after it runs and is what the command exits
 // with, so merging cannot soften the old semantics. The retention half follows
-// and cannot change that code — it is written to always succeed, and the shell
+// and cannot change that code - it is written to always succeed, and the shell
 // it lands in has no set -e to turn a swallowed prune failure into an abort.
 func cleanImageScratchCommand() string {
 	inputRoot := sandbox.ShellQuote(sandbox.SessionInputRoot)
@@ -1229,7 +1229,7 @@ func cleanImageScratchCommand() string {
 		inputRoot, outputRoot,
 		inputRoot, outputRoot,
 	)
-	// The prunes run as root, so they only ever trim root's caches — which is
+	// The prunes run as root, so they only ever trim root's caches - which is
 	// now the only account scripts run as. The budget guard below no longer
 	// needs to cover a second "user" account's caches; it needs nothing but du
 	// and rm, and this runs as root.
@@ -1251,7 +1251,7 @@ func cleanImageScratchCommand() string {
 // cacheBudgetGuardCommand emits the shell that measures the given cache
 // directories as one total and wipes them whole when they exceed budgetKB.
 // Keeping the caches is the point, so every way the measurement can fail keeps
-// them: no du, no directories, an unreadable size — all leave the caches in
+// them: no du, no directories, an unreadable size - all leave the caches in
 // place. The total is echoed in both cases so the install log records what the
 // image carries, which is the data the budget is tuned from.
 func cacheBudgetGuardCommand(paths []string, budgetKB int) string {
@@ -1376,9 +1376,9 @@ func (s *TenantSkillService) pointInstallAtCatalog(
 		}); err != nil {
 		return err
 	}
-	// This install now reads the definition's copy, so whatever it named before
-	// — a pre-catalog object of its own, or an archive pinned by an earlier
-	// replacement — has one reader fewer.
+	// This install now reads the definition's copy, so whatever it named before -
+	// a pre-catalog object of its own, or an archive pinned by an earlier
+	// replacement - has one reader fewer.
 	if superseded != "" && superseded != strings.TrimSpace(catalog.BundleRef) {
 		s.releaseInstallBundle(ctx, skill.TenantID, superseded)
 	}
@@ -1496,7 +1496,7 @@ func (s *TenantSkillService) failSkill(
 // flipped it to failed; a newer upload of the same name replaced BundleSHA256;
 // a queued remove flipped the status; a sibling retry of the same archive
 // found the first run had already landed in the live image. Any of those means
-// this run must not snapshot — failSkill would stamp the newer owner's row,
+// this run must not snapshot - failSkill would stamp the newer owner's row,
 // and a snapshot with no matching row is an orphan the ledger cannot name.
 func (s *TenantSkillService) installStillOwnsTheRow(
 	ctx context.Context, tenantID uint64, configID, skillID string, bundle *SkillBundle,
@@ -1536,7 +1536,7 @@ func (s *TenantSkillService) installStillOwnsTheRow(
 // installed" and this upload would report a success that never happened.
 //
 // A failed skill with the same digest is a retry: the previous attempt never
-// made it into the image. A removal in flight is not a skip either — taking
+// made it into the image. A removal in flight is not a skip either - taking
 // the row back to installing is how an upload cancels it.
 func (s *TenantSkillService) canSkipInstall(
 	ctx context.Context, existing *types.TenantSkillEntity, bundle *SkillBundle,
@@ -1565,8 +1565,8 @@ func (s *TenantSkillService) canSkipInstall(
 // be allowed to start a new run rather than wait for the stuck-run reaper.
 //
 // Reading the submission time instead would force a choice between calling a
-// slow install dead — a single agent command may take installCommandTimeout,
-// and an install runs several — and leaving a dead one unrecoverable.
+// slow install dead - a single agent command may take installCommandTimeout,
+// and an install runs several - and leaving a dead one unrecoverable.
 func (s *TenantSkillService) installIsInFlight(existing *types.TenantSkillEntity) bool {
 	if existing == nil || existing.InstallingSince == nil {
 		return false
@@ -1724,7 +1724,7 @@ func (s *TenantSkillService) deleteSnapshotBestEffort(
 // runInstall, which happened minutes and one whole agent conversation ago. The
 // repository Update overwrites name, description, sandbox type and the entire
 // config blob, and config edits are serialised by the config service's cordon
-// rather than by this task's lock — so writing back the stale entity would
+// rather than by this task's lock - so writing back the stale entity would
 // silently revert an admin's rename or credential rotation.
 //
 // builtFingerprint is the account the maintenance sandbox (and therefore the
@@ -1988,7 +1988,7 @@ stall at chat time unless those packages are already in the venv.
 %s
 - If an installer script needs --yes / --all / every extra flag, pass them.
 %s
-Before you finish, PROVE the skill's imports resolve. Do not reason about it —
+Before you finish, PROVE the skill's imports resolve. Do not reason about it -
 run it. The server's own check cannot: it parses files without executing them,
 so it never learns whether an import would have worked. You have the real
 interpreter, so this is your job and yours only.
@@ -1996,7 +1996,7 @@ interpreter, so this is your job and yours only.
   `+"`%s/.venv/bin/python -c 'import x'`"+`, or the script's own
   `+"`--help`"+` if it has one.
 - A failure here is usually one of two things. A missing distribution: install
-  it. Or a module the skill ships that Python cannot find — then the script
+  it. Or a module the skill ships that Python cannot find - then the script
   needs the directory on sys.path, and you fix the script with edit_skill_file
   rather than installing anything.
 - Do not declare success until every entry point imports cleanly.
@@ -2006,7 +2006,7 @@ did rather than whether it passed. It confirms every file parses with the
 interpreter that would run it, and that every distribution named in
 requirements.txt / pyproject.toml is installed in the venv. It never runs the
 skill's code and never judges an import.
-Lazy imports and install_deps.py extras are invisible to that check — you still
+Lazy imports and install_deps.py extras are invisible to that check - you still
 have to install them.
 
 %s
@@ -2061,7 +2061,7 @@ func formatFrontmatterRepairNote(bundle *SkillBundle) string {
 
 // installProbeTools are the executables the installer agent reaches for. The
 // probe resolves each one's absolute path so the prompt can hand them over
-// instead of leaving the agent to burn a turn on `which` — or to gamble that
+// instead of leaving the agent to burn a turn on `which` - or to gamble that
 // the shell_exec PATH contains, say, /root/.local/bin.
 var installProbeTools = []string{"uv", "npm", "pnpm", "pip3", "pip", "python3", "node"}
 
@@ -2094,7 +2094,7 @@ func parseToolProbeOutput(stdout string) map[string]string {
 }
 
 // probeInstallTools resolves the absolute paths of the package managers the
-// installer may reach for. One command, one round trip — the same probe
+// installer may reach for. One command, one round trip - the same probe
 // `uv available` used to cost, carrying every tool instead of one bit. A
 // failed probe is not an install failure: the prompt falls back to telling
 // the agent to discover the toolchain itself.
@@ -2110,7 +2110,7 @@ func (s *TenantSkillService) probeInstallTools(
 
 // formatToolchainSection renders the probe result for the prompt: one line
 // per tool with its absolute path, one line grouping whatever is missing.
-// An empty result — a probe that failed, or an image with none of the tools —
+// An empty result - a probe that failed, or an image with none of the tools -
 // reads the same to the agent: locate them yourself before relying on PATH.
 func formatToolchainSection(tools map[string]string) string {
 	if len(tools) == 0 {
@@ -2150,8 +2150,8 @@ func installerAgentDefaults(ctx context.Context, tenantID uint64) *types.CustomA
 // installerAgentConfig builds the config the install session runs under.
 //
 // `defaults` must be the built-in registry entry, never the tenant-editable
-// record. Everything that decides what the root shell is asked to do — system
-// prompt, tool whitelist, iteration budget — is fixed by the platform here.
+// record. Everything that decides what the root shell is asked to do - system
+// prompt, tool whitelist, iteration budget - is fixed by the platform here.
 // A tenant can edit any built-in agent's stored Config, and "can edit an
 // agent" must not become "can script a root shell whose output is baked into
 // the shared sandbox image": that is a different permission from "can upload a
@@ -2160,7 +2160,7 @@ func installerAgentDefaults(ctx context.Context, tenantID uint64) *types.CustomA
 //
 // skillDir scopes the skill file tools to the one skill this install owns. The
 // installer's shell already runs as root in the shared image, so the tools add
-// no reach — they replace `cat` with a heredoc, whose command-length cap and
+// no reach - they replace `cat` with a heredoc, whose command-length cap and
 // double quoting truncated or mangled every file the agent tried to write.
 func installerAgentConfig(
 	defaults *types.CustomAgent, configID, skillDir string,
@@ -2199,7 +2199,7 @@ func installerAgentConfig(
 	}
 	// The install tools are unioned in rather than read off the registry entry.
 	// An install that cannot write its own skill directory cannot record what
-	// it did, and the platform YAML predates these tools — a deployment that
+	// it did, and the platform YAML predates these tools - a deployment that
 	// has not re-synced it must not silently lose them.
 	cfg.AllowedTools = unionTools(custom.AllowedTools, installTools)
 	cfg.Temperature = custom.Temperature
@@ -2424,8 +2424,8 @@ func installFileStore(mgr sandbox.Manager) (sessionInstallFileStore, error) {
 
 // installerAgentSource is the one thing the install flow needs from the agent
 // side: the stored installer record, read for its model choice.
-// interfaces.AgentService does not carry this method — it belongs to
-// interfaces.CustomAgentService — so the dependency is injected separately and
+// interfaces.AgentService does not carry this method - it belongs to
+// interfaces.CustomAgentService - so the dependency is injected separately and
 // narrowed to this method here rather than fished out of the agent service at
 // runtime, which could only ever fail.
 type installerAgentSource interface {

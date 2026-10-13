@@ -24,7 +24,7 @@ func newSteerWiringGinContext() *gin.Context {
 
 // TestSetupSSEStreamMirrorsSteerSinkOntoRequestContext is the regression guard
 // for the wiring bug where the sink was created on sseStreamContext but
-// buildQARequest read qaRequestContext.steerSink — which nobody ever set — so
+// buildQARequest read qaRequestContext.steerSink - which nobody ever set - so
 // queued steer messages were never handed to the engine and sat in the
 // sub-list forever. The sink must be reachable from BOTH holders.
 func TestSetupSSEStreamMirrorsSteerSinkOntoRequestContext(t *testing.T) {
@@ -52,7 +52,7 @@ func TestSetupSSEStreamMirrorsSteerSinkOntoRequestContext(t *testing.T) {
 	require.NotNil(t, streamCtx, "setupSSEStream returned nil")
 	require.NotNil(t, streamCtx.steerSink, "streamCtx.steerSink must be created for agent runs")
 	assert.NotNil(t, reqCtx.steerSink,
-		"reqCtx.steerSink must mirror the streamCtx sink — buildQARequest reads it; "+
+		"reqCtx.steerSink must mirror the streamCtx sink - buildQARequest reads it; "+
 			"if this is nil the engine never receives a SteerSink and queued messages are silently dropped")
 	assert.Same(t, streamCtx.steerSink, reqCtx.steerSink,
 		"both holders must point at the same sink instance")
@@ -60,7 +60,7 @@ func TestSetupSSEStreamMirrorsSteerSinkOntoRequestContext(t *testing.T) {
 	// The built QA request must carry the sink through to the service layer.
 	qaReq := reqCtx.buildQARequest()
 	assert.NotNil(t, qaReq.SteerSink,
-		"QARequest.SteerSink must be set for agent runs — nil here means the engine runs without mid-run injection")
+		"QARequest.SteerSink must be set for agent runs - nil here means the engine runs without mid-run injection")
 
 	// The live-run marker must be published through the StreamManager, not a
 	// process-local map: a steer request that lands on another replica has

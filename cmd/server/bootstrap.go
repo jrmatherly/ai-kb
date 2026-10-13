@@ -45,7 +45,7 @@ func runStartupBootstrap(c *dig.Container) {
 	}
 	// dig.Invoke resolves UserService from the container; if user
 	// service registration is broken we want to know loudly, but still
-	// not abort startup — bootstrap is best-effort.
+	// not abort startup - bootstrap is best-effort.
 	if err := c.Invoke(func(userSvc interfaces.UserService) {
 		bootstrapSystemAdmin(ctx, userSvc, email)
 	}); err != nil {
@@ -55,7 +55,7 @@ func runStartupBootstrap(c *dig.Container) {
 
 // bootstrapSystemAdmin promotes the user identified by `email` to system
 // administrator only when the deployment currently has no system admins.
-// The function is idempotent and non-fatal — it warns and returns on
+// The function is idempotent and non-fatal - it warns and returns on
 // every error path.
 //
 // The bootstrap intentionally does NOT create a user when the email is
@@ -67,7 +67,7 @@ func bootstrapSystemAdmin(ctx context.Context, userSvc interfaces.UserService, e
 	user, err := userSvc.GetUserByEmail(ctx, email)
 	if err != nil {
 		// "not found" surfaces as an error in this codebase; treat it
-		// gently — operators commonly set the var before the user has
+		// gently - operators commonly set the var before the user has
 		// signed up. The next restart after registration will succeed.
 		logger.Warnf(ctx,
 			"[bootstrap] %s=%s: user lookup failed (have they signed up yet?): %v",

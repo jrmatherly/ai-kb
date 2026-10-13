@@ -70,7 +70,7 @@ func newStreamHandler(svc *DataSourceService, ds *types.DataSource, result *type
 // items count into result.Deleted (the actual deletion, scoping and failure
 // counters are covered by the ProcessSync tests) and connector-reported
 // failures (an item carrying only a Metadata["error"]) land in result.Failed
-// with a message — never silently lost.
+// with a message - never silently lost.
 func TestStreamHandler_EmitClassifiesDeletedAndFailed(t *testing.T) {
 	ds := &types.DataSource{
 		ID: "ds-1", TenantID: 1, KnowledgeBaseID: "kb-1",

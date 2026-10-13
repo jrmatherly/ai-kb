@@ -171,8 +171,8 @@ func TestSetSteerDeliveryUpdatesExistingAfterEvent(t *testing.T) {
 
 // TestPollSteerMarksConsumedDurably pins the cross-replica contract: once the
 // engine has taken a message, the flag lives on the event itself. Anything
-// that reads the queue afterwards — the overlay, the depth guard, a follow-up
-// handoff running in another process — must see it as gone.
+// that reads the queue afterwards - the overlay, the depth guard, a follow-up
+// handoff running in another process - must see it as gone.
 func TestPollSteerMarksConsumedDurably(t *testing.T) {
 	mgr := stream.NewMemoryStreamManager()
 	ctx := context.Background()

@@ -93,7 +93,7 @@ func (s *Service) workspaceFor(
 	}
 	// Strict enforcement boundary. Normalizing user input is the caller's job
 	// (see ParseApprovalMode); by the time a mode reaches here, honouring it
-	// or refusing are the only honest options — substituting a different
+	// or refusing are the only honest options - substituting a different
 	// permission stance for the one that was asked for is not.
 	if !mode.Shipped() {
 		logger.Warnf(ctx, "[LocalSandbox] refusing session=%s: approval mode %q is not available",
@@ -214,7 +214,7 @@ func (s *Service) runPolicy(ctx context.Context, lockRoot string, policy Policy,
 	}
 
 	// Kill the process group on timeout or caller cancel. Stop the watcher
-	// as soon as Wait returns so a finished process is never signalled —
+	// as soon as Wait returns so a finished process is never signalled -
 	// process-group Kill(-pid) after wait has a PID-reuse window.
 	// Drain both pipes concurrently before Wait: sequential reads deadlock
 	// when the unread pipe fills.

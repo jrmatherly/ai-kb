@@ -5,7 +5,7 @@ package agent
 // The failure this exists to catch is silent by nature: the estimate and the
 // provider's bill disagree, and nothing in the normal logs compares them. That
 // is how reasoning_content went uncounted long enough to make a 130k context
-// measure as 26k — compaction fired constantly, cut in the wrong place, and
+// measure as 26k - compaction fired constantly, cut in the wrong place, and
 // freed nothing, with every individual log line looking reasonable.
 //
 // So the load-bearing line here is the drift check: what we predicted the
@@ -137,7 +137,7 @@ func (e *AgentEngine) logContextPrediction(
 	if predicted > 0 && compare > 0 {
 		if ratio := float64(predicted) / float64(compare); ratio > 1.5 || ratio < 0.67 {
 			logger.Warnf(ctx, "[Agent][Round-%d][ctx] usage baseline and direct estimate "+
-				"disagree by %.1fx (predicted=%d, estimated=%d) — one of them is missing "+
+				"disagree by %.1fx (predicted=%d, estimated=%d) - one of them is missing "+
 				"content the other counts", round, ratio, predicted, compare)
 		}
 	}
@@ -162,11 +162,11 @@ func (e *AgentEngine) logContextDrift(ctx context.Context, round, predicted int,
 	// sent that the provider then rejects for size.
 	if pct < -25 {
 		logger.Warnf(ctx, "[Agent][Round-%d][ctx] estimate is %.0f%% below the provider's "+
-			"count (predicted=%d actual=%d) — compaction will fire late and cut too little",
+			"count (predicted=%d actual=%d) - compaction will fire late and cut too little",
 			round, -pct, predicted, actual)
 	} else if pct > 50 {
 		logger.Warnf(ctx, "[Agent][Round-%d][ctx] estimate is %.0f%% above the provider's "+
-			"count (predicted=%d actual=%d) — compaction will fire on a context that fits",
+			"count (predicted=%d actual=%d) - compaction will fire on a context that fits",
 			round, pct, predicted, actual)
 	}
 }

@@ -34,7 +34,7 @@ func TestRFBValidateServerHandshake(t *testing.T) {
 func TestRFBReadServerVersionStopsAtTwelveBytes(t *testing.T) {
 	// RFB 3.8 §7.1.1: the server sends its 12-byte ProtocolVersion and then
 	// waits for the CLIENT's version before offering security types. The
-	// relay never answers — noVNC does — so a reader that waits for 13 bytes
+	// relay never answers - noVNC does - so a reader that waits for 13 bytes
 	// hangs until its deadline. Verified against the live sandbox: silent
 	// client, zero further bytes in 10s; after replying, types arrive in
 	// 0.25s.
@@ -190,7 +190,7 @@ func TestRFBClientMessageSize(t *testing.T) {
 func TestRFBOpcodeCountsAsActivity(t *testing.T) {
 	// Only real user input counts. FramebufferUpdateRequest (3) is driven by
 	// the server's own updates, so counting it would make a wallpaper with a
-	// clock look like a person at the keyboard — the whole reason byte
+	// clock look like a person at the keyboard - the whole reason byte
 	// counting was rejected.
 	require.True(t, rfbOpcodeCountsAsActivity(4))  // KeyEvent
 	require.True(t, rfbOpcodeCountsAsActivity(5))  // PointerEvent

@@ -107,7 +107,7 @@ func (r *ToolRegistry) BindSession(id string) {
 }
 
 // ListTools returns all registered tool names sorted alphabetically.
-// Sorting keeps the order stable across calls — Go map iteration is
+// Sorting keeps the order stable across calls - Go map iteration is
 // intentionally randomized.
 func (r *ToolRegistry) ListTools() []string {
 	names := make([]string, 0, len(r.tools))
@@ -121,7 +121,7 @@ func (r *ToolRegistry) ListTools() []string {
 // GetFunctionDefinitions returns function definitions for all registered tools.
 // The slice is sorted by tool name so the serialized payload sent to the LLM
 // is byte-identical across requests. Providers that key prompt caching on a
-// byte-level prefix match (e.g. Qwen explicit caching) require this — map
+// byte-level prefix match (e.g. Qwen explicit caching) require this - map
 // iteration order would otherwise reshuffle the tools block and break cache
 // hits.
 func (r *ToolRegistry) GetFunctionDefinitions() []types.FunctionDefinition {

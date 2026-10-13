@@ -42,7 +42,7 @@ func NewModelHandler(service interfaces.ModelService) *ModelHandler {
 }
 
 // Per-response redaction/stripping for Model now lives in
-// dto.NewModelResponse — handlers must use it for every body that contains a
+// dto.NewModelResponse - handlers must use it for every body that contains a
 // model. The previous hideSensitiveInfo helper has been removed.
 
 // CreateModelRequest defines the structure for model creation requests
@@ -327,7 +327,7 @@ func parseModelDebugOptions(raw string) (ModelDebugOptions, error) {
 
 // redactedDebugConfig masks the credentials inside an extra_config before it
 // is echoed in the debug preview. The catalog's own Secret declaration is the
-// source of truth — the same one the read path uses — so a new vendor field
+// source of truth - the same one the read path uses - so a new vendor field
 // is covered by declaring it, whatever it is called. The name heuristic stays
 // as a net under it, for keys no vendor declares (deployment overlays,
 // hand-written rows).
@@ -475,7 +475,7 @@ func (h *ModelHandler) DebugModel(c *gin.Context) {
 	}
 
 	// The optional file makes this a multipart body, so the cap has to be in
-	// place before the first PostForm below — that call is what parses it, and
+	// place before the first PostForm below - that call is what parses it, and
 	// parsing is what buffers the upload to disk. Answer an oversized body here
 	// too: the file is read with a `fileErr == nil` guard further down, which
 	// would otherwise report a rejected upload as one that was never sent.
@@ -807,7 +807,7 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 		_ = c.Error(errors.NewBadRequestError(err.Error()))
 		return
 	}
-	// Credentials (api_key, app_secret) NEVER flow through this endpoint —
+	// Credentials (api_key, app_secret) NEVER flow through this endpoint -
 	// they live behind the /credentials subresource. Force-preserve them by
 	// snapshotting the stored values before copying request fields in, so
 	// that even a misbehaving caller that puts api_key in the body cannot
@@ -835,7 +835,7 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 	}
 	// extra_config is replaced wholesale here, but GET redacts the vendor's
 	// secret extra fields (dto.NewModelResponse), so a UI round-trip carries
-	// no value for them — keep the stored secret unless the caller sent a new
+	// no value for them - keep the stored secret unless the caller sent a new
 	// one. This also covers the request that omits extra_config entirely.
 	// Both vendor identities are passed: moving the row to another vendor
 	// must drop the old credential, not merge it back in.

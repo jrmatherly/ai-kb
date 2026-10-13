@@ -195,7 +195,7 @@ func TestCreateKnowledgeFromFilePersistsStoredFilePathOnCreate(t *testing.T) {
 // Datasource sync deletes the previous knowledge for an external_id before
 // calling CreateKnowledgeFromFile. Early JSON rejection here would leave a
 // gap (old gone, nothing created). Malformed .json must still create a row
-// and fail later in async parse — HTTP upload rejects via the handler instead.
+// and fail later in async parse - HTTP upload rejects via the handler instead.
 func TestCreateKnowledgeFromFileAcceptsInvalidJSONForAsyncParse(t *testing.T) {
 	t.Parallel()
 

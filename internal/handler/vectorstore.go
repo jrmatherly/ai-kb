@@ -37,7 +37,7 @@ type CreateStoreRequest struct {
 }
 
 // UpdateStoreRequest defines the request body for updating a vector store.
-// Only name is mutable — engine_type, connection_config, index_config are immutable.
+// Only name is mutable - engine_type, connection_config, index_config are immutable.
 type UpdateStoreRequest struct {
 	Name string `json:"name" binding:"required"`
 }
@@ -375,7 +375,7 @@ func (h *VectorStoreHandler) TestStoreByID(c *gin.Context) {
 
 	id := c.Param("id")
 
-	// env store — test with unmasked config
+	// env store - test with unmasked config
 	if types.IsEnvStoreID(id) {
 		envStore := types.FindEnvVectorStore(os.Getenv("RETRIEVE_DRIVER"), os.Getenv, id)
 		if envStore == nil {

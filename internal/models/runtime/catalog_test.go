@@ -299,7 +299,7 @@ func TestResolve_AlwaysOnModelCannotBeSwitchedOff(t *testing.T) {
 }
 
 // A chat-template switch carries only the enable_thinking boolean, so every
-// graded rung is silently dropped on the wire — and a relay backend that does
+// graded rung is silently dropped on the wire - and a relay backend that does
 // not know enable_thinking drops the boolean too. Capabilities must not
 // advertise levels the wire format cannot express, or the UI renders a
 // selector whose choice does nothing. #3489 fixed the two catalogued NIM
@@ -308,7 +308,7 @@ func TestResolve_AlwaysOnModelCannotBeSwitchedOff(t *testing.T) {
 func TestResolve_BooleanThinkingSwitchHidesGradedLevels(t *testing.T) {
 	registerTestVendors(t)
 
-	// Uncatalogued model on the generic vendor — a relay row. The empty level
+	// Uncatalogued model on the generic vendor - a relay row. The empty level
 	// map's missing-key pass-through used to advertise six rungs here.
 	r, err := modelruntime.Resolve(modelruntime.Ref{
 		Provider: "generic", Model: "glm-5.3", BaseURL: "https://relay.example.com/v1",

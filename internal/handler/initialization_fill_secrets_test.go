@@ -54,7 +54,7 @@ func TestFillSecretsFromStoredModel_FillsExtraConfig(t *testing.T) {
 
 // TestFillSecretsFromStoredModel_RequestExtraConfigWins: when the caller
 // actively sends an extraConfig payload (user editing the form), the stored
-// one must not overwrite it — same precedence as the secret fields.
+// one must not overwrite it - same precedence as the secret fields.
 func TestFillSecretsFromStoredModel_RequestExtraConfigWins(t *testing.T) {
 	stored := &types.Model{
 		Parameters: types.ModelParameters{
@@ -84,7 +84,7 @@ func TestFillSecretsFromStoredModel_RequestExtraConfigWins(t *testing.T) {
 }
 
 // TestFillSecretsFromStoredModel_SecretsStillFilledWithoutExtraConfig:
-// regression guard for the early-return — a request that already carries
+// regression guard for the early-return - a request that already carries
 // both secrets but no extraConfig must still pick up the stored
 // extraConfig (this is the exact #3057 scenario: the frontend "test"
 // button only sends modelId).

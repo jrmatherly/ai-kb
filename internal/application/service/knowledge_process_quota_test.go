@@ -55,7 +55,7 @@ func (r quotaTenantRepo) GetTenantByID(context.Context, uint64) (*types.Tenant, 
 
 // A knowledge that fails the storage quota check (or cannot re-read the
 // tenant for it) must not leave the chunks written just before the check
-// active under a failed knowledge — the BatchIndex failure path already
+// active under a failed knowledge - the BatchIndex failure path already
 // removes them, and the quota branches have to do the same.
 func TestProcessChunksDeletesChunksWhenStorageQuotaCheckFails(t *testing.T) {
 	for _, tc := range []struct {

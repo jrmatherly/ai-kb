@@ -10,7 +10,7 @@ import (
 // stage that hits the same provider budget as chat. Like chat, it must be
 // governed at the client layer so an image-heavy ingestion storm can't burst
 // the whole worker pool against one VLM provider. Only background (asynq
-// worker) calls are throttled — see limiter.Gate / types.IsBackgroundTask.
+// worker) calls are throttled - see limiter.Gate / types.IsBackgroundTask.
 type concurrencyVLM struct {
 	inner VLM
 	// limit is this model's configured per-model background cap; 0 falls back

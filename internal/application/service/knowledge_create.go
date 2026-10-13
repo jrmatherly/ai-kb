@@ -58,7 +58,7 @@ func (s *knowledgeService) CreateKnowledgeFromFile(ctx context.Context,
 		return nil, err
 	}
 
-	// FAQ knowledge bases should not accept file uploads — use the FAQ import API instead
+	// FAQ knowledge bases should not accept file uploads - use the FAQ import API instead
 	if kb.Type == types.KnowledgeBaseTypeFAQ {
 		return nil, werrors.NewBadRequestError(
 			"FAQ knowledge bases do not support file upload. Use FAQ import instead.")
@@ -80,7 +80,7 @@ func (s *knowledgeService) CreateKnowledgeFromFile(ctx context.Context,
 	// JSON content validation stays in the HTTP upload handler (and
 	// ReplaceKnowledgeFile), not here: datasource sync may have already
 	// deleted the previous knowledge for this external_id, and IM swallows
-	// create errors — an early 400 would drop the document with no failed row.
+	// create errors - an early 400 would drop the document with no failed row.
 
 	// Calculate file hash for deduplication
 	logger.Info(ctx, "Calculating file hash")
@@ -1212,7 +1212,7 @@ func sanitizeManualDownloadFilename(title string) string {
 //
 // A manual document routinely points at files it did not upload: an answer saved
 // from a chat carries the very `resource://` handles the assistant message still
-// shows. Claiming them is what makes that copy safe — no bytes are duplicated,
+// shows. Claiming them is what makes that copy safe - no bytes are duplicated,
 // and neither the message nor the document can delete a file the other still
 // needs. Handles belonging to another workspace are skipped, so a pasted
 // reference cannot pull in a file the caller may not read.

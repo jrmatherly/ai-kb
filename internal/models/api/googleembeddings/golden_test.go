@@ -12,7 +12,7 @@ import (
 )
 
 // documentedResponse is the batchEmbedContents response shape:
-// https://ai.google.dev/api/embeddings — embeddings[].values, positional.
+// https://ai.google.dev/api/embeddings - embeddings[].values, positional.
 const documentedResponse = `{"embeddings":[{"values":[0.1,0.2]},{"values":[0.3,0.4]}]}`
 
 var retrievalTasks = map[string]string{"document": "RETRIEVAL_DOCUMENT", "query": "RETRIEVAL_QUERY"}

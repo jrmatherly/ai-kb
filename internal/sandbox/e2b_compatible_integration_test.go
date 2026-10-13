@@ -6,8 +6,8 @@
 // sandboxes, so the same suite must pass against every implementation of it:
 // E2B Cloud, a self-hosted e2b-dev/infra, CubeSandbox's CubeAPI, or a
 // container-backed gateway such as Agent-Sandbox. It drives the same public
-// surface the agent runtime uses — session-scoped script execution, shell
-// commands, attachment staging, artifact listing, teardown — rather than the
+// surface the agent runtime uses - session-scoped script execution, shell
+// commands, attachment staging, artifact listing, teardown - rather than the
 // individual client methods, so a backend that passes here is usable by the
 // product and not merely reachable.
 //

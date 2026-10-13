@@ -7,7 +7,7 @@ import (
 )
 
 // imImageConfigWarning warns only when IM channels are active AND APP_EXTERNAL_URL
-// is unset — the config state that silently breaks resource:// images in IM.
+// is unset - the config state that silently breaks resource:// images in IM.
 func TestIMImageConfigWarning(t *testing.T) {
 	t.Run("no channels -> silent", func(t *testing.T) {
 		assert.Empty(t, imImageConfigWarning(0, ""))

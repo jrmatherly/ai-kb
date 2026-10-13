@@ -16,7 +16,7 @@ import (
 
 // imageAssetBackends runs fn against in-memory SQLite and, when
 // AIKB_REPOSITORY_TEST_POSTGRES_DSN points at a disposable database, against
-// PostgreSQL too — the gallery query is spelled differently per dialect, so
+// PostgreSQL too - the gallery query is spelled differently per dialect, so
 // both spellings need the same assertions. For example:
 //
 //	docker run -d --rm -e POSTGRES_PASSWORD=pg -e POSTGRES_DB=ai_kb -p 55432:5432 \

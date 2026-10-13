@@ -20,7 +20,7 @@ import (
 // rejects KB-restricted API keys. That gate exists because `/files` takes an
 // arbitrary caller-supplied path it cannot bind to a KB allow-list. Here the
 // references come from a response the caller is already authorized to receive,
-// so the server — not the client — chooses which resources get a URL.
+// so the server - not the client - chooses which resources get a URL.
 func NewRequestRewriter(
 	ctx context.Context,
 	mode Mode,

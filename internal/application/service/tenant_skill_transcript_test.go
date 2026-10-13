@@ -149,7 +149,7 @@ func TestInstallTranscriptProjectsTheAgentsWork(t *testing.T) {
 }
 
 // A failed command is the single most useful thing in an install transcript,
-// so it must reach the stream as a tool result carrying success=false —
+// so it must reach the stream as a tool result carrying success=false -
 // response_type=error is reserved for internal failures, not tool outcomes.
 func TestInstallTranscriptReportsAFailedCommandAsAToolResult(t *testing.T) {
 	_, bus, streams, _ := newTranscriptForTest(t)
@@ -199,7 +199,7 @@ func TestInstallTranscriptPersistsTheAnswerAndStepsOnComplete(t *testing.T) {
 // EventAgentFinalAnswer, so every "now I'll check X" preamble arrives as an
 // answer chunk. Only the prose of the round that ends the run is the answer.
 // Without retracting the preambles the persisted record is every round's
-// commentary glued end to end, which is unreadable — and is what the console
+// commentary glued end to end, which is unreadable - and is what the console
 // renders as the install's result.
 func TestInstallTranscriptRetractsPreamblesSupersededByAToolCall(t *testing.T) {
 	tr, bus, _, messages := newTranscriptForTest(t)
@@ -310,7 +310,7 @@ func TestInstallTranscriptCreateOpensTheLogWithThePrompt(t *testing.T) {
 // An install may run a second installer round, because verification happens
 // after the agent stops and a dependency it names is something the agent can
 // still fix. The engine reports "complete" at the end of every turn, so the
-// transcript must not treat the first one as the end of the install — a console
+// transcript must not treat the first one as the end of the install - a console
 // that saw it would stop following before the repair round began.
 func TestInstallTranscriptStaysOpenAcrossInstallerRounds(t *testing.T) {
 	tr, bus, streams, messages := newTranscriptForTest(t)
@@ -378,14 +378,14 @@ func TestAsymptoticInstallPercent(t *testing.T) {
 		prev = p
 	}
 	require.Equal(t, 79, asymptoticInstallPercent(200))
-	// A run that exhausts max_iterations=30 tops out around 75 — the ceiling
+	// A run that exhausts max_iterations=30 tops out around 75 - the ceiling
 	// belongs to the stage anchor, not to any finite command count.
 	require.Equal(t, 75, asymptoticInstallPercent(30))
 }
 
 // The progress card watches the same bus the transcript does, so every command
-// the installer runs is one step forward — with a one-line summary of what it
-// was — and muting after the first round stops the flow entirely.
+// the installer runs is one step forward - with a one-line summary of what it
+// was - and muting after the first round stops the flow entirely.
 func TestInstallTranscriptPublishesActivityProgressOnToolCalls(t *testing.T) {
 	bus := event.NewEventBus()
 	streams := &transcriptStreams{}

@@ -51,7 +51,7 @@ type ExtraField struct {
 //
 // Most vendors take an API key and need none of this. LKEAP and Volcengine
 // authenticate their rerank API with a CAM / IAM identity pair instead, where
-// the first field is a SecretId / AccessKeyId — calling it "API Key" leads
+// the first field is a SecretId / AccessKeyId - calling it "API Key" leads
 // operators to paste an `sk-` token that can never authenticate. The vendor
 // says what the field is called rather than the editor hardcoding a table of
 // vendor ids, which is what this whole layer exists to avoid.

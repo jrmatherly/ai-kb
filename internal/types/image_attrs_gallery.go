@@ -4,12 +4,12 @@ package types
 // attribute declared for the observe-and-describe pipeline is offered to the
 // image gallery, defaulting to filterable (the observation values are small
 // ordered sets, which is what the gallery's extent / presence filters render
-// best). The gallery's config tiers can override these flags at runtime —
+// best). The gallery's config tiers can override these flags at runtime -
 // this registration is only the lowest-priority fallback.
 //
 // This file depends on the gallery's neutral source hook
 // (types/gallery_attr_source.go). Merge the gallery PR first, or land the
-// hook file together with this commit — both PRs carry byte-identical copies
+// hook file together with this commit - both PRs carry byte-identical copies
 // of that file so either merge order resolves cleanly.
 func init() {
 	RegisterGalleryAttrSource("system", func(string) []GalleryAttrDef {

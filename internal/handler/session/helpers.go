@@ -353,7 +353,7 @@ const stopWatcherMaxDuration = 2 * time.Hour
 // client closes the SSE stream (common for API-Key / programmatic callers that
 // close the stream before POSTing /stop), that loop returns and nothing
 // converts the stop marker (written to the shared StreamManager by
-// StopSession) into a context cancellation — so generation keeps running to
+// StopSession) into a context cancellation - so generation keeps running to
 // completion even though /stop returned success.
 //
 // The watcher is intentionally self-terminating rather than tied to the QA

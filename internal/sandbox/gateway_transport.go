@@ -160,7 +160,7 @@ func newGatewayDataTransportWithPolicy(target string, policy OutboundURLPolicy) 
 	// The same guarded dial as the websocket data plane: in whitelist-only
 	// mode a non-whitelisted gateway hostname is refused before this resolves
 	// it, and the policy's Control hook then judges the address (#3378). The
-	// SDK's authority is ignored — the gateway is addressed by `target`.
+	// SDK's authority is ignored - the gateway is addressed by `target`.
 	guardedDial := GuardedDialContext(policy)
 	return &http.Transport{
 		// The gateway is addressed directly; an ambient HTTP proxy would
@@ -240,15 +240,15 @@ func (t *gatewaySplitTransport) applyGatewayScheme(req *http.Request) *http.Requ
 
 // isDataPlane reports whether host addresses a sandbox rather than the control
 // plane, by the "<port>-<sandboxID>.<domain>" authority shape both SDKs
-// generate — the same test withInboundToken already applies to the same
+// generate - the same test withInboundToken already applies to the same
 // request.
 //
 // It deliberately does NOT compare against the configured sandbox domain.
 // That field is optional for E2B, and go-e2b's envdBaseURL prefers whatever
 // domain the control plane reported over the client-wide one, so the authority
 // actually dialled need not appear anywhere in the config. Matching on it
-// meant a configured gateway was silently never used, and — because the check
-// was a suffix match — that E2B's own defaults (api.e2b.app under sandbox
+// meant a configured gateway was silently never used, and - because the check
+// was a suffix match - that E2B's own defaults (api.e2b.app under sandbox
 // domain e2b.app) sent every control-plane call to the gateway instead.
 //
 // The control host is excluded explicitly because the shape test alone would

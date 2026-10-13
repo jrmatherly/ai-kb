@@ -43,7 +43,7 @@ type invitationLookupResponse struct {
 // instead of the URL path: GET /auth/invitations/:token would have
 // landed the plaintext token in access logs, browser history, and
 // tracing spans. POST + body keeps the token out of those surfaces
-// at the cost of "this endpoint reads, why is it POST" — worth it
+// at the cost of "this endpoint reads, why is it POST" - worth it
 // because the token is the sole authorisation for registration.
 type invitationLookupRequest struct {
 	Token string `json:"token" binding:"required"`
@@ -148,7 +148,7 @@ func (h *AuthHandler) RegisterByInvite(c *gin.Context) {
 	req.Username = strings.TrimSpace(req.Username)
 	// Password is intentionally NOT sanitized: SanitizeForLog strips
 	// \n, \r, \t and control chars to make a string safe to write into
-	// a log line — applying it to a real password would silently
+	// a log line - applying it to a real password would silently
 	// rewrite the stored credential and lock the user out. Passwords
 	// must never be logged, so they don't need that defence here.
 	if req.Token == "" || req.Email == "" || req.Username == "" || req.Password == "" {

@@ -119,7 +119,7 @@ func testPostgresConnection(ctx context.Context, config types.ConnectionConfig) 
 	defer cancel()
 
 	if config.UseDefaultConnection {
-		// Using the default app DB connection — always reachable if the app is running.
+		// Using the default app DB connection - always reachable if the app is running.
 		// Cannot query version without a DB handle; return empty.
 		return "", nil
 	}

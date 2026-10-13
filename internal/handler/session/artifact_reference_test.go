@@ -20,7 +20,7 @@ func refFor(i int) string {
 	return types.BuildResourcePath(handleFor(i))
 }
 
-// artifactsFixture builds artifacts whose storage URL is a catalog handle —
+// artifactsFixture builds artifacts whose storage URL is a catalog handle -
 // the normal deployment. Use artifactsWithoutCatalog for the degraded case.
 func artifactsFixture(names ...string) types.MessageArtifacts {
 	list := make(types.MessageArtifacts, 0, len(names))

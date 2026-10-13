@@ -28,7 +28,7 @@ import (
 //  5. only after that succeeds, delete the old file.
 //
 // If step 3 fails the new file is discarded, unless a re-read shows the write
-// committed despite the error — in that case reparse continues so the row is
+// committed despite the error - in that case reparse continues so the row is
 // not left completed against a new file. If step 4 fails the previous source
 // columns are restored (marked failed, since cleanup may already have removed
 // the old index) and the new file is discarded. A file is never deleted while
@@ -37,7 +37,7 @@ import (
 // Identical content under the same name and folder is not re-parsed: changed
 // metadata is persisted and a DuplicateKnowledgeError carrying this knowledge
 // is returned. Unlike CreateKnowledgeFromFile, this does not treat another
-// knowledge's hash as a duplicate — path identity is what connectors need.
+// knowledge's hash as a duplicate - path identity is what connectors need.
 func (s *knowledgeService) ReplaceKnowledgeFile(ctx context.Context,
 	knowledgeID string, file *multipart.FileHeader, customFileName string, metadata map[string]string,
 ) (*types.Knowledge, error) {

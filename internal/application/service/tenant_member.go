@@ -25,7 +25,7 @@ import (
 // gorm.ErrDuplicatedKey covers the dialect-translated case (gorm ≥1.25
 // with TranslateError enabled). The string match on "duplicate" /
 // "unique" is the fallback for raw drivers that don't surface the
-// sentinel — Postgres "duplicate key value violates unique constraint",
+// sentinel - Postgres "duplicate key value violates unique constraint",
 // SQLite "UNIQUE constraint failed", MySQL "Duplicate entry" all
 // contain at least one of those tokens.
 func isDuplicateMembership(err error) bool {
@@ -83,7 +83,7 @@ type tenantMemberService struct {
 
 // NewTenantMemberService constructs the service. Wired up via the DI
 // container alongside the other application services. The auditService
-// is optional — passing nil disables durable audit but keeps the
+// is optional - passing nil disables durable audit but keeps the
 // underlying mutations working, so a container reshuffle that
 // constructs tenant_member before audit_log won't crash and tests
 // don't need to stub the dependency unless they care about audit
@@ -469,7 +469,7 @@ func (s *tenantMemberService) cleanupRemovedMemberState(ctx context.Context, use
 
 // emitRemovalAudit picks AuditActionMemberLeft when the caller is
 // removing themselves, AuditActionMemberRemoved otherwise. Caller
-// detection uses the user-id from the request context — the same
+// detection uses the user-id from the request context - the same
 // source the LeaveTenant handler uses to derive its `userID` arg.
 func (s *tenantMemberService) emitRemovalAudit(
 	ctx context.Context,

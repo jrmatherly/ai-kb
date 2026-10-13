@@ -406,7 +406,7 @@ func (c *Connector) item(ctx context.Context, p *project, ref, file string) (typ
 	// an item with no content and no URL as "nothing to sync" (see
 	// datasource_service applyFetchedItem): the sync is acknowledged as
 	// successful while the body indexed from an earlier commit stays fully
-	// searchable. Nothing revisits it afterwards either — a full sync sees the
+	// searchable. Nothing revisits it afterwards either - a full sync sees the
 	// file present in the tree, and an incremental sync only walks the diffs of
 	// commits newer than the recorded head, which the emptying commit already
 	// moved past.

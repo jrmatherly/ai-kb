@@ -11,7 +11,7 @@ import (
 // The initialization endpoint's model creation used to insert rows without a
 // tenant: toModel() carries no TenantID, so models landed at tenant_id = 0
 // where the (tenant_id = ? OR is_builtin) read filter made them invisible to
-// every tenant — including the one that just configured the KB — leaving the
+// every tenant - including the one that just configured the KB - leaving the
 // KB bound to unreadable model IDs (issue #3333).
 
 type stubTenantStampModelService struct {

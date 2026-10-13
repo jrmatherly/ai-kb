@@ -27,7 +27,7 @@ const artifactLoadBatch = 500
 // A delete that already happened is re-applied on top of the incoming list, by
 // position. The caller usually carries the tombstones itself (they round-trip
 // through MessageArtifact.DeletedAt), but it may be holding a slice it read
-// before the delete — this is a full replace, so that snapshot would resurrect
+// before the delete - this is a full replace, so that snapshot would resurrect
 // the row while its bytes are already being reclaimed, leaving a live-looking
 // entry whose download 404s. Deletion is the one property of a row that a stale
 // writer must not be able to undo.
@@ -161,8 +161,8 @@ func attachArtifactsWithSession(ctx context.Context, db *gorm.DB, results []*typ
 //
 // User-deleted artifacts are included as tombstones. ArtifactCollector builds
 // its de-duplication set from this call, and a tombstone is exactly what stops
-// it re-attaching a file the user deleted while the sandbox copy — same path,
-// same mtime — is still sitting there. Display paths filter with
+// it re-attaching a file the user deleted while the sandbox copy - same path,
+// same mtime - is still sitting there. Display paths filter with
 // MessageArtifacts.Live.
 func (r *messageRepository) GetSessionArtifacts(
 	ctx context.Context, sessionID string,
@@ -327,7 +327,7 @@ func (r *messageRepository) ListArtifactLibrary(
 }
 
 // FindSessionArtifact returns one live artifact row of the session addressed by
-// (message, position) — the same coordinates the download endpoint uses.
+// (message, position) - the same coordinates the download endpoint uses.
 // A tombstone is reported as not found, so deleting twice is a 404 rather than
 // a second blob reclaim.
 func (r *messageRepository) FindSessionArtifact(
@@ -355,7 +355,7 @@ func (r *messageRepository) FindSessionArtifact(
 
 // FindSessionArtifactVersions returns every live row of the session that shares
 // sourcePath, i.e. the regenerations the artifact library folds into one entry.
-// An empty sourcePath has no version group — the artifact stands alone — so the
+// An empty sourcePath has no version group - the artifact stands alone - so the
 // caller gets nothing back and deletes just the row it started from.
 func (r *messageRepository) FindSessionArtifactVersions(
 	ctx context.Context, sessionID, sourcePath string,

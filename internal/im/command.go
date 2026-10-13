@@ -7,7 +7,7 @@ import (
 )
 
 // CommandAction represents a service-level side effect that a command requests.
-// Using an enum keeps commands free of service/DB dependencies—they declare intent,
+// Using an enum keeps commands free of service/DB dependencies - they declare intent,
 // the Service executes it.
 type CommandAction int
 

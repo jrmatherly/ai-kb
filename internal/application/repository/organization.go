@@ -115,9 +115,9 @@ func (r *organizationRepository) Delete(ctx context.Context, id string) error {
 }
 
 // AddTenantMember inserts a new (org, tenant) membership row. Returns
-// ErrOrgMemberAlreadyExists if a row already exists for this tuple — the
+// ErrOrgMemberAlreadyExists if a row already exists for this tuple - the
 // service layer treats that as a no-op when the caller is just confirming
-// an idempotent join — and ErrOrgMemberLimitReached when a positive
+// an idempotent join - and ErrOrgMemberLimitReached when a positive
 // memberLimit is already reached.
 func (r *organizationRepository) AddTenantMember(
 	ctx context.Context, member *types.OrganizationTenantMember, memberLimit int,
@@ -206,7 +206,7 @@ func (r *organizationRepository) ListTenantMembers(ctx context.Context, orgID st
 
 // GetTenantMember returns the (org, tenant) membership row, or
 // ErrOrgMemberNotFound when missing. This is the canonical permission
-// check primitive — callers compose this with the share permission
+// check primitive - callers compose this with the share permission
 // to compute effective access.
 func (r *organizationRepository) GetTenantMember(ctx context.Context, orgID string, tenantID uint64) (*types.OrganizationTenantMember, error) {
 	var member types.OrganizationTenantMember
@@ -292,8 +292,8 @@ func (r *organizationRepository) GetJoinRequestByID(ctx context.Context, id stri
 }
 
 // GetPendingJoinRequestByTenant returns a pending request for the given
-// (org, tenant). After Plan 3 the dedup key is per-tenant, not per-user
-// — the user requesting and the user reviewing may be different humans
+// (org, tenant). After Plan 3 the dedup key is per-tenant, not per-user -
+// the user requesting and the user reviewing may be different humans
 // in the same tenant, but the resource being granted is tenant-level
 // access.
 func (r *organizationRepository) GetPendingJoinRequestByTenant(ctx context.Context, orgID string, tenantID uint64) (*types.OrganizationJoinRequest, error) {

@@ -87,7 +87,7 @@ var (
 // "agent_type_presets.yaml". Called once at startup (after LoadConfig determines
 // the config directory).
 //
-// If the file does not exist, this is a no-op and the registry stays empty —
+// If the file does not exist, this is a no-op and the registry stays empty -
 // in that case the frontend will simply not offer the agent-type dropdown.
 func LoadAgentTypePresetsConfig(configDir string) error {
 	var loadErr error

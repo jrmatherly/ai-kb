@@ -68,7 +68,7 @@ func newRehydratingRegistry(factory interfaces.EngineFactory) *RetrieveEngineReg
 //
 // Two requests miss the registry for the same store, so they collapse into one
 // engine build. If that shared build inherits the first caller's context, the
-// first caller going away — a closed browser tab, a shutting-down worker —
+// first caller going away - a closed browser tab, a shutting-down worker -
 // aborts the build and hands its cancellation error to every other caller
 // waiting on it. Those callers are alive and would then be told the store is
 // unavailable, which is the very failure this rehydration exists to remove.
@@ -108,7 +108,7 @@ func TestGetOrLoadByStoreID_LeaderCancelDoesNotPoisonWaiters(t *testing.T) {
 
 	// Wait for the waiter to attach before letting the build finish. Released
 	// any earlier, the build would complete and register, and the waiter would
-	// read that engine directly instead of ever sharing the build — which the
+	// read that engine directly instead of ever sharing the build - which the
 	// result assertions alone cannot tell apart.
 	<-joined
 
@@ -384,7 +384,7 @@ func TestBoundLookup_OwnershipOutageIsRetryable(t *testing.T) {
 //
 // Registering a store publishes its engine directly. If a rebuild that started
 // earlier finished afterwards and published its own, the engine callers had
-// just been given would be replaced by a second one built from the same row —
+// just been given would be replaced by a second one built from the same row -
 // and the first would be left running with its connections open and nobody
 // holding it.
 func TestGetOrLoadByStoreID_BuildDoesNotOverwriteAConcurrentRegistration(t *testing.T) {

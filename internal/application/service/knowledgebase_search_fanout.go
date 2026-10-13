@@ -31,7 +31,7 @@ const (
 //
 // Failure policy: all-or-nothing for store-level failures. The first group
 // error fails the whole search and cancels siblings via errgroup, matching the
-// existing single-store behavior — chat/agent callers already treat "search
+// existing single-store behavior - chat/agent callers already treat "search
 // failed" as abort. A retrieve call that returns results *and* an error is a
 // different case: CompositeRetrieveEngine only does that when individual result
 // sets carry a partial failure (RetrieveResult.Error), i.e. some collections
@@ -110,7 +110,7 @@ func (s *knowledgeBaseService) retrieveFromStores(
 	}
 
 	// Apply normalizer only when results span >1 distinct engine type.
-	// Same-engine results keep their native scale — raw scores produced by
+	// Same-engine results keep their native scale - raw scores produced by
 	// the same engine are directly comparable.
 	if hasMixedEngineTypes(all) {
 		seenUnknown := make(map[types.RetrieverEngineType]struct{})
@@ -165,8 +165,8 @@ func retrieveGroup(ctx context.Context, g *storeGroup) ([]*types.RetrieveResult,
 // collections of the store answered, others did not. Dropping the results would
 // turn a degraded store into a total search failure and lose the evidence that
 // was retrieved; returning them without a trace would let callers treat an
-// incomplete answer as complete. So the failure is logged at WARN — this is the
-// closest consumer that still knows the store group — and the results are
+// incomplete answer as complete. So the failure is logged at WARN - this is the
+// closest consumer that still knows the store group - and the results are
 // returned with a nil error, leaving the all-or-nothing policy for store-level
 // failures untouched (those come back with no results, so err stays fatal).
 func retainPartialResults(
@@ -195,7 +195,7 @@ func retainPartialResults(
 // AdditionalParams). All fan-out goroutines from a single
 // retrieveFromStores call therefore share the same backing arrays for
 // those fields. Every retriever implementation today treats them as
-// read-only, so this is safe — but the immutability of reference
+// read-only, so this is safe - but the immutability of reference
 // fields is a caller contract. If a future retriever ever mutates
 // Embedding in-place (e.g. to L2-normalize), -race will surface the
 // regression.
@@ -273,7 +273,7 @@ func storeKindLabel(storeID string) string {
 
 // isParentCancelled reports whether the parent ctx was explicitly
 // cancelled by the caller (client hang-up). A parent ctx whose deadline
-// merely expired is NOT treated as a client cancel — that path falls
+// merely expired is NOT treated as a client cancel - that path falls
 // through to the typed 2201 AppError so middleware emits a clean 4xx
 // instead of leaking context.DeadlineExceeded.
 func isParentCancelled(ctx context.Context) bool {

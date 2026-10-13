@@ -545,7 +545,7 @@ func clearLegacyVLMFields(cfg *types.VLMConfig) {
 
 // UpdateKnowledgeBase updates a knowledge base's mutable properties.
 //
-// IMPORTANT — vector_store_id immutability contract:
+// IMPORTANT - vector_store_id immutability contract:
 // The vector_store_id binding is deliberately not accepted by this method.
 // Two layers enforce immutability:
 //
@@ -559,7 +559,7 @@ func clearLegacyVLMFields(cfg *types.VLMConfig) {
 //     is added back, alerting future maintainers.
 //
 // Any future cross-store rebind workflow must use raw SQL through a
-// dedicated repository method — the only sanctioned write path post-creation.
+// dedicated repository method - the only sanctioned write path post-creation.
 func (s *knowledgeBaseService) UpdateKnowledgeBase(ctx context.Context,
 	id string,
 	name string,
@@ -619,7 +619,7 @@ func (s *knowledgeBaseService) UpdateKnowledgeBase(ctx context.Context,
 			profileWasEnabled = kb.ProfileConfig.IsEnabled()
 			kb.ProfileConfig = config.ProfileConfig
 		}
-		// Update indexing strategy — syncs to ExtractConfig for backward compat
+		// Update indexing strategy - syncs to ExtractConfig for backward compat
 		if config.IndexingStrategy != nil {
 			if !config.IndexingStrategy.HasAnyIndexing() {
 				return nil, errors.New("at least one indexing strategy must be enabled")
@@ -682,7 +682,7 @@ func (s *knowledgeBaseService) UpdateKnowledgeBase(ctx context.Context,
 // public signature is unchanged so the HTTP handler / CLI / SDK don't
 // move.
 //
-// The KB still has to belong to the caller's tenant — the route is
+// The KB still has to belong to the caller's tenant - the route is
 // already gated behind KBAccessRead, but we re-check via
 // GetKnowledgeBaseByIDAndTenant so a stale param survives a tenant
 // switch cleanly.
@@ -764,7 +764,7 @@ func (s *knowledgeBaseService) applyUserKBPins(
 	if err != nil {
 		// Pin enrichment is best-effort: a transient DB blip here
 		// should not break listing KBs. Log and bail without altering
-		// the slice — caller still gets a valid list, just unsorted by
+		// the slice - caller still gets a valid list, just unsorted by
 		// pin.
 		logger.Warnf(ctx, "applyUserKBPins: failed to load pins for tenant=%d user=%s: %v",
 			tenantID, userID, err)
@@ -921,7 +921,7 @@ func (s *knowledgeBaseService) ProcessKBDelete(ctx context.Context, t *asynq.Tas
 	ctx = context.WithValue(ctx, types.TenantIDContextKey, tenantID)
 	defer func() {
 		// Wiki rows are independent of the vector engine. Run this on every
-		// return path — including SkipRetry — with its own timeout so a slow
+		// return path - including SkipRetry - with its own timeout so a slow
 		// Redis queue scan cannot starve the SQL deletes.
 		wikiCtx, cancelWiki := context.WithTimeout(context.WithoutCancel(ctx), kbTaskCleanupTimeout)
 		wikiErr := s.cleanupWikiForKnowledgeBase(wikiCtx, tenantID, kbID)
@@ -994,8 +994,8 @@ func (s *knowledgeBaseService) ProcessKBDelete(ctx context.Context, t *asynq.Tas
 			return asynq.SkipRetry
 		}
 		if err != nil {
-			// Transient failures — store temporarily unavailable, request
-			// cancellation during resolution, or other retryable errors —
+			// Transient failures - store temporarily unavailable, request
+			// cancellation during resolution, or other retryable errors -
 			// must not fall through and report success while embeddings remain.
 			logger.Errorf(ctx, "KB delete task deferred: %v (tenant=%d, kb=%s)", err, payload.TenantID, payload.KnowledgeBaseID)
 			return err
@@ -1093,7 +1093,7 @@ func (s *knowledgeBaseService) ProcessKBDelete(ctx context.Context, t *asynq.Tas
 // cleanupWikiForKnowledgeBase removes wiki pages, folders, revisions, and
 // issues for a deleted knowledge base. Pages, folders, and issues are
 // soft-deleted (they carry DeletedAt); revisions are hard-deleted (no
-// deleted_at column — they are immutable snapshots).
+// deleted_at column - they are immutable snapshots).
 //
 // nil-safe for tests that construct knowledgeBaseService without wikiRepo.
 // Failures are returned so the KB delete task can retry; the caller logs.
@@ -1169,7 +1169,7 @@ func (s *knowledgeBaseService) cleanupTasksForKnowledgeBase(
 
 // deleteDataSourcesForKnowledgeBase mirrors DataSourceService.DeleteDataSource for
 // every data source attached to the KB. Errors on individual sources are logged
-// but do not fail KB deletion — the KB record is already soft-deleted.
+// but do not fail KB deletion - the KB record is already soft-deleted.
 func (s *knowledgeBaseService) deleteDataSourcesForKnowledgeBase(ctx context.Context, kbID string) []string {
 	if s.dsRepo == nil {
 		return nil
@@ -1334,7 +1334,7 @@ func (s *knowledgeBaseService) CopyKnowledgeBase(ctx context.Context,
 			ProfileConfig:         profileConfig,
 			VectorStoreID:         sourceKB.VectorStoreID,
 		}
-		// The clone is owned by the caller, not the original creator —
+		// The clone is owned by the caller, not the original creator -
 		// otherwise a Contributor copying someone else's KB would still
 		// not be able to edit the result. Skip synthetic API-key users
 		// (see CreateKnowledgeBase for the same reasoning).

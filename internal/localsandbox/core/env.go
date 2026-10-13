@@ -47,7 +47,7 @@ func EnvSlice(env map[string]string) []string {
 // BuildCommandEnv is the Service-layer env contract: start from a filtered
 // inherit, overlay the caller's explicit vars, then prepend extra PATH
 // entries (toolchain bins). A nil or empty explicit map both mean "no extra
-// vars" — they must not wipe PATH.
+// vars" - they must not wipe PATH.
 //
 // Explicit keys are the caller's responsibility: this is how skill credentials
 // reach the child. Adapters must not pass os.Environ() here. Loader-injection

@@ -240,7 +240,7 @@ func TestVerifySkillTreeIssuesOneCommandRegardlessOfScriptCount(t *testing.T) {
 
 // The retention half of the cleanup runs for real inside the sandbox, so its
 // guard is tested against an actual shell: a cache under the budget survives,
-// an over-budget one is wiped whole, and the total is reported either way —
+// an over-budget one is wiped whole, and the total is reported either way -
 // that report is the data the budget constant is tuned from.
 func TestCacheBudgetGuardKeepsSmallWipesBig(t *testing.T) {
 	dir := t.TempDir()
@@ -267,7 +267,7 @@ func TestCacheBudgetGuardKeepsSmallWipesBig(t *testing.T) {
 }
 
 // The retention command is one opaque string to the sandbox; pinning its
-// structure here keeps the shell contract from drifting silently — in
+// structure here keeps the shell contract from drifting silently - in
 // particular that the workspace half still owns the exit code and the
 // retention half can only ever keep or lose caches.
 func TestCleanImageScratchCommandShape(t *testing.T) {
@@ -625,7 +625,7 @@ func TestBuildInstallPromptAsksForADeclarationWithoutValues(t *testing.T) {
 }
 
 // shell_exec used to default to /workspace, so the installer opened command
-// after command with `cd <skill-dir> &&` — the one spelling guaranteed to land
+// after command with `cd <skill-dir> &&` - the one spelling guaranteed to land
 // somewhere useful. The default is now the skill directory, and the prompt has
 // to say so, because a model that is not told keeps paying for the prefix.
 func TestBuildInstallPromptSaysCommandsAlreadyStartInTheSkillDirectory(t *testing.T) {
@@ -1319,8 +1319,8 @@ func TestSkillVerifyCommandsQuoteAwkwardPaths(t *testing.T) {
 }
 
 // A skill's shell scripts carry a bash shebang almost exclusively, and
-// SkillInterpreterCommand runs them with bash. Checking them with sh — dash on
-// Debian — refused installs over array literals, `function f()`, C-style for
+// SkillInterpreterCommand runs them with bash. Checking them with sh - dash on
+// Debian - refused installs over array literals, `function f()`, C-style for
 // loops and process substitution, none of which dash can parse.
 func TestSkillShellVerifyCommandParsesWithBash(t *testing.T) {
 	command := skillShellVerifyCommand("/opt/skills/demo", []string{"bin/setup.sh"})
@@ -1587,8 +1587,8 @@ func TestRunInstallDoesNotFailASkillThatIsAlreadyServing(t *testing.T) {
 	require.NoError(t, getErr)
 	// R9 leaves the row exactly as the install found it: still "installing",
 	// with no error text, because labelling a serving skill failed would send
-	// admins to fix something that works. The residual — a row that stays
-	// "installing" once all three retries fail — is the stuck-run reaper's to
+	// admins to fix something that works. The residual - a row that stays
+	// "installing" once all three retries fail - is the stuck-run reaper's to
 	// resolve, and this assertion is what will flip when it does.
 	require.Equal(t, types.SkillStatusInstalling, skill.Status,
 		"a serving skill must not be labelled failed; the ready write is what is missing")
@@ -1619,8 +1619,8 @@ func TestRunInstallKeepsOldImageWhenVerificationFails(t *testing.T) {
 // The failure this closes: the installer derives what to install from SKILL.md
 // prose, and the gate derives what must resolve from the imports every file
 // executes. Those disagree on any skill whose library modules import something
-// its documentation never names — the official office toolkit imports
-// defusedxml and lxml at module level and mentions neither — so the install
+// its documentation never names - the official office toolkit imports
+// defusedxml and lxml at module level and mentions neither - so the install
 // died with the answer already in hand, and a retry replayed the same prompt to
 // the same effect. The gate's own lines are the repair round's brief.
 func TestRunInstallHandsVerificationFindingsBackToTheInstaller(t *testing.T) {
@@ -1655,7 +1655,7 @@ func TestRunInstallHandsVerificationFindingsBackToTheInstaller(t *testing.T) {
 // under the default root account it reaches it directly: modes left behind by
 // an earlier pass do not stop root, and the tree is never handed to another
 // account. What a repair round needs is a second agent turn and a second
-// verification — not a permission fix-up.
+// verification - not a permission fix-up.
 func TestRunInstallRepairsWithoutReopeningTheTree(t *testing.T) {
 	fx := newInstallFixture(t)
 	fx.loadCheckExitCodes = []int{skillVerifyRepairableExit, 0}
@@ -1819,7 +1819,7 @@ func TestResolveInstallerModelFallsBackWhenTheAgentNamesNoModel(t *testing.T) {
 }
 
 // The console attaches to a running install through the assistant message, so
-// the locators must be on the skill row before the engine starts — not after
+// the locators must be on the skill row before the engine starts - not after
 // the run ends, by which point there is nothing live left to watch.
 func TestRunInstallPublishesTranscriptLocatorsBeforeTheAgentRuns(t *testing.T) {
 	fx := newInstallFixture(t)

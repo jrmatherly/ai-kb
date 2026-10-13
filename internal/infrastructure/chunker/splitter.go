@@ -32,7 +32,7 @@ type Chunk struct {
 }
 
 // EmbeddingContent returns the text that should be fed to the embedding
-// model — the ContextHeader prepended (when set) plus the chunk content.
+// model - the ContextHeader prepended (when set) plus the chunk content.
 // Use this where Content alone would lose semantic context (Tier-1 chunks).
 //
 // Content is returned verbatim from the source document (the End-Start
@@ -76,7 +76,7 @@ type SplitterConfig struct {
 // Default chunk sizing constants. Single source of truth for the entire
 // chunker package and the knowledge service via NormalizeSplitterConfig.
 // The frontend KnowledgeBaseEditorModal mirrors these numbers in its initial
-// form state — keep them in sync if you change either value here.
+// form state - keep them in sync if you change either value here.
 //
 // DefaultChunkSize = 512 chars: ~100–130 English tokens / ~300 Chinese
 // tokens. Validated as a strong baseline by the Vecta Feb-2026 benchmark
@@ -218,7 +218,7 @@ type splitUnit struct {
 // chunkSize. Mirrors the recursive priority semantics of the Python
 // reference splitter (docreader/splitter/splitter.py:_split): if `\n\n`
 // produces a piece that's still too big, `\n` (and subsequent separators)
-// are applied within that piece — not to the whole text.
+// are applied within that piece - not to the whole text.
 //
 // chunkSize == 0 disables the recursion guard; callers that don't care
 // about size budget (e.g. a final mergeUnits-style pass) pass 0.

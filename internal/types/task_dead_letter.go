@@ -21,8 +21,8 @@ import (
 //     `task_pending_ops`, and once the count exceeds wikiMaxFailRetries
 //     the op is moved here instead of being requeued.
 //
-// Operators query by (Scope, ScopeID) — e.g. "all dead letters for KB
-// abc" — or by TaskType — e.g. "all summary:generation failures in the
+// Operators query by (Scope, ScopeID) - e.g. "all dead letters for KB
+// abc" - or by TaskType - e.g. "all summary:generation failures in the
 // last 24h". The table has no TTL; rows are kept until manually pruned.
 type TaskDeadLetter struct {
 	// Auto-increment row id.

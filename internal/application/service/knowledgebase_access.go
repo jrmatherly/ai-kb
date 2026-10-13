@@ -20,8 +20,8 @@ func kbReadPermissions(ctx context.Context, shares access.KBShareLookup) *access
 
 // kbWritableIDs returns the target KBs the caller may modify: those of its own
 // workspace, and those shared to it with at least editor permission (capped by
-// the caller's tenant role). A read grant — a viewer share or a shared agent's
-// scope — never makes a KB writable.
+// the caller's tenant role). A read grant - a viewer share or a shared agent's
+// scope - never makes a KB writable.
 //
 // The caller must also be allowed to write KB content at all, as on the HTTP
 // write routes: Contributor+ (a tenant Viewer, and the IM, embed and MCP

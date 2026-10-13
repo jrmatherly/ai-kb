@@ -15,7 +15,7 @@ import (
 // the handler chain returns; individual LLM calls inside the handler attach
 // their generations to this trace via the request context.
 //
-// Only paths matching shouldTrace are traced — static assets, health checks
+// Only paths matching shouldTrace are traced - static assets, health checks
 // and polling endpoints are noisy and uninteresting.
 func GinMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -64,8 +64,8 @@ func GinMiddleware() gin.HandlerFunc {
 }
 
 // shouldTrace restricts tracing to endpoints where LLM work (or the asynq
-// jobs that will run LLM work) originates. Everything else — auth, list,
-// config fetches, static assets, health checks — is skipped to keep the
+// jobs that will run LLM work) originates. Everything else - auth, list,
+// config fetches, static assets, health checks - is skipped to keep the
 // Langfuse dashboard's signal-to-noise ratio high.
 //
 // The list below is grouped by purpose:

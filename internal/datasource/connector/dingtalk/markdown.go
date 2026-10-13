@@ -198,7 +198,7 @@ func renderBlock(
 		unknown[marker] = struct{}{}
 		// Some unmodelled blocks still carry their body text: the live `sdt`
 		// block is a table of contents and holds the whole thing. The type stays
-		// unknown — the marker above still reports it — but the text must not be
+		// unknown - the marker above still reports it - but the text must not be
 		// dropped just because the presentation semantics are not modelled.
 		if text := strings.TrimSpace(value.Unknown.Text); text != "" {
 			writeParagraph(builder, escapeText(text))
@@ -211,7 +211,7 @@ func renderBlock(
 
 // renderListBlock renders one list block.
 //
-// Documented shape: children are inline elements and one block is one item —
+// Documented shape: children are inline elements and one block is one item -
 // nesting comes from list.level (0-based) and the items of one list are linked
 // by a shared listId across sibling blocks, not by structural nesting. The
 // child walk below also accepts block children, which the contract does not
@@ -256,7 +256,7 @@ func renderListBlock(
 	// block of nine production documents there is no children, no list.level
 	// and no listId. Every other text-bearing block type already falls back to
 	// its own text field; lists were the one that did not, so their content was
-	// dropped without even an unknown-type marker — the type is known, it just
+	// dropped without even an unknown-type marker - the type is known, it just
 	// carried nothing the renderer read.
 	ownText := strings.TrimSpace(listOwnText(value, blockType))
 	if ownText != "" {

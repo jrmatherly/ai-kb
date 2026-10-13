@@ -69,7 +69,7 @@ type citationPipelineOutcome struct {
 // those will come from the chunk-citation pass instead.
 //
 // Returns (entities, concepts, slugItems, error). On LLM or parse failure it
-// returns an error — the caller can then fall back to the legacy extractor.
+// returns an error - the caller can then fall back to the legacy extractor.
 func (s *wikiIngestService) extractCandidateSlugs(
 	ctx context.Context,
 	chatModel chat.Chat,
@@ -90,7 +90,7 @@ func (s *wikiIngestService) extractCandidateSlugs(
 		prevSlugsText = sb.String()
 	}
 	if prevSlugsText == "" {
-		prevSlugsText = "(none — this is a new document)"
+		prevSlugsText = "(none - this is a new document)"
 	}
 
 	granularity := batchCtx.ExtractionGranularity.Normalize()
@@ -149,7 +149,7 @@ type chunkBatch struct {
 // The invocation-local table translates model output back to stable chunk IDs
 // before any result reaches application state.
 func splitChunksIntoCitationBatches(chunks []*types.Chunk) []chunkBatch {
-	// Only cite text chunks — image/ocr chunks are already merged into the
+	// Only cite text chunks - image/ocr chunks are already merged into the
 	// text content via reconstructEnrichedContent and the LLM doesn't see
 	// them as standalone units.
 	filtered := make([]*types.Chunk, 0, len(chunks))
@@ -192,7 +192,7 @@ func splitChunksIntoCitationBatches(chunks []*types.Chunk) []chunkBatch {
 		runeLen := len([]rune(c.Content))
 		// If adding this chunk would exceed the budget and the current batch
 		// isn't empty, flush first so the oversized chunk is not merged with
-		// already-queued ones. Oversized chunks still go through — they just
+		// already-queued ones. Oversized chunks still go through - they just
 		// get their own batch.
 		if len(current.chunks) > 0 && current.totalRuneLen+runeLen > maxRunesPerCitationBatch {
 			flush()
@@ -370,7 +370,7 @@ func (s *wikiIngestService) resolveCitedChunks(
 	tenantID uint64,
 	additions []SlugUpdate,
 ) map[string]string {
-	// Group chunk IDs by knowledge ID — chunk repo queries are scoped by
+	// Group chunk IDs by knowledge ID - chunk repo queries are scoped by
 	// tenant but not by knowledge, so we could fetch everything in one go.
 	// We batch per knowledge anyway to keep the IN(...) list bounded for
 	// large multi-knowledge reduces.
@@ -456,7 +456,7 @@ func collectCitedChunkContent(chunkIDs []string, contentByID map[string]string) 
 // mergeCitationsIntoItems backfills SourceChunks on every extractedItem from
 // the citation map, and augments the item slices with any genuinely new slugs
 // the citation pass discovered. Items whose slug is not in citations are left
-// untouched — Reduce will fall back to Description/Details for them.
+// untouched - Reduce will fall back to Description/Details for them.
 //
 // Returns the updated entity and concept slices plus a count of candidates
 // that ended with zero citations (for observability).

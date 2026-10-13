@@ -16,18 +16,18 @@ import (
 // access.go centralises the tenant-access checks that previously lived
 // scattered across handlers and the various RBAC middlewares:
 //
-//   - "is the caller an org-level superuser" — used by the role guards
+//   - "is the caller an org-level superuser" - used by the role guards
 //     in rbac.go, the X-Tenant-ID branch in auth.go, the tenant
 //     handler's authorizeTenantAccess, and the tenant member handler's
 //     resolveTenantIDFromPath.
 //
-//   - "can the caller access target tenant X" — used by the
+//   - "can the caller access target tenant X" - used by the
 //     X-Tenant-ID branch in auth.go to decide whether to honour the
 //     header. Originally allowed only superusers; now also allows
 //     ordinary multi-tenant members who have an active row in the
 //     target tenant's tenant_members table.
 //
-//   - "must the URL :id match the active tenant" — used by every
+//   - "must the URL :id match the active tenant" - used by every
 //     tenant-scoped route. Was duplicated in tenant.go (4 callers) and
 //     tenant_member.go (1 caller) before; now lives here as a route
 //     middleware so the route declaration is the single source of
@@ -72,7 +72,7 @@ func IsCrossTenantSuperuser(ctx context.Context, cfg *config.Config) bool {
 //     tenant grants access (this is what makes cross-tenant browsing
 //     work for non-superusers added via PR 3's member management).
 //
-// Lookup errors are treated as "not a member" — the safest fallback
+// Lookup errors are treated as "not a member" - the safest fallback
 // that doesn't expose other tenants on a transient DB hiccup.
 func IsTenantAccessible(
 	ctx context.Context,
@@ -102,7 +102,7 @@ func IsTenantAccessible(
 
 // RequireCrossTenantAccess gates a route on the caller being an
 // org-level superuser. Used by /tenants/all, /tenants/search,
-// POST /tenants, GET /tenants — endpoints that operate across tenants
+// POST /tenants, GET /tenants - endpoints that operate across tenants
 // rather than inside one.
 //
 // Unlike RequireRole this is NOT modulated by cfg.Tenant.EnableRBAC:
@@ -115,7 +115,7 @@ func RequireCrossTenantAccess(cfg *config.Config) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		// First the cluster-wide flag — if it's off, nobody gets through,
+		// First the cluster-wide flag - if it's off, nobody gets through,
 		// not even users with CanAccessAllTenants=true. This mirrors the
 		// "must require BOTH" rule that previously lived in tenant.go.
 		if cfg == nil || cfg.Tenant == nil || !cfg.Tenant.EnableCrossTenantAccess {
@@ -153,7 +153,7 @@ func RequireCrossTenantAccess(cfg *config.Config) gin.HandlerFunc {
 // previously a copy-pasted block in each handler.
 //
 // Reads :id off c.Param. If the param is missing or non-numeric the
-// request is rejected as 400 — the route can't have meaningfully
+// request is rejected as 400 - the route can't have meaningfully
 // matched without it.
 func RequirePathTenantMatch(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {

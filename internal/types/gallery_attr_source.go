@@ -25,7 +25,7 @@ type GalleryUsage struct {
 // Label is the short name that goes on screen (a filter checkbox, a search
 // field, a sort option), while Description holds the longer explanation that
 // would blow a compact control apart if it were shown inline. Callers pick
-// the one they need — the filter panel renders Label and moves Description
+// the one they need - the filter panel renders Label and moves Description
 // into a tooltip, the detail panel can show both.
 //
 // Value stays the raw machine value: it is what gets filtered, searched and
@@ -104,7 +104,7 @@ func RegisterGalleryAttrSource(id string, fn func(kbID string) []GalleryAttrDef)
 
 // GalleryAttrSources resolves every registered source for a KB, in
 // registration (priority) order. A source returning nothing yields an empty
-// attribute list, not an error — an absent source is a normal state (e.g.
+// attribute list, not an error - an absent source is a normal state (e.g.
 // the system attribute pipeline not deployed).
 func GalleryAttrSources(kbID string) []GalleryAttrSource {
 	galleryAttrSourcesMu.RLock()

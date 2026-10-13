@@ -27,13 +27,13 @@ const wikiIndexAgentTopK = 20
 // renderIndexOverviewForAgent formats a WikiIndexResponse as a compact
 // markdown block suitable for embedding inside the <content> tag that
 // wiki_read_page returns. We deliberately keep the structure almost
-// identical to the legacy "intro + ## Type (N)\n[[slug]] — summary"
+// identical to the legacy "intro + ## Type (N)\n[[slug]] - summary"
 // markdown so existing agent prompts (prompts_wiki.go) that reason
 // about index layouts do not need retraining.
 func renderIndexOverviewForAgent(resp *types.WikiIndexResponse) string {
 	var sb strings.Builder
 	// Intro may still carry a legacy inline directory on KBs that
-	// haven't been re-ingested since the index refactor — clip
+	// haven't been re-ingested since the index refactor - clip
 	// everything from the first "\n## " heading onwards so the model
 	// doesn't see the old directory alongside the live top-K below.
 	intro := strings.TrimSpace(resp.Intro)
@@ -78,7 +78,7 @@ func renderIndexOverviewForAgent(resp *types.WikiIndexResponse) string {
 				display = item.Slug
 			}
 			if item.Summary != "" {
-				fmt.Fprintf(&sb, "[[%s|%s]] — %s\n", item.Slug, display, item.Summary)
+				fmt.Fprintf(&sb, "[[%s|%s]] - %s\n", item.Slug, display, item.Summary)
 			} else {
 				fmt.Fprintf(&sb, "[[%s|%s]]\n", item.Slug, display)
 			}
@@ -218,8 +218,8 @@ func isStructuralPage(page *types.WikiPage) bool {
 
 // registerLinkedSlugs records the KB that owns this page for every slug the
 // page links to (outbound) or is linked from (inbound). Wiki links are
-// KB-local — a `[[slug]]` inside page X in KB A always refers to another
-// page in KB A — so sharing the KB mapping with neighbours is safe and lets
+// KB-local - a `[[slug]]` inside page X in KB A always refers to another
+// page in KB A - so sharing the KB mapping with neighbours is safe and lets
 // the frontend resolve a slug the model echoed from a page body (e.g. an
 // `index` page's table of contents) without an extra round trip.
 func registerLinkedSlugs(foundKBs map[string][]string, page *types.WikiPage, kbID string) {
@@ -369,7 +369,7 @@ func (p pendingWikiPage) render(body string) string {
 // renderWikiPagesWithinBudget renders a batch of pages so that the result fits
 // the tool output ceiling with every page still well-formed. Pages are trimmed
 // by fair-sharing the body budget, and only when even a minimal body no longer
-// fits are trailing pages dropped — by name, so the model knows to re-read them.
+// fits are trailing pages dropped - by name, so the model knows to re-read them.
 //
 // It returns the joined output plus the slugs whose body was trimmed and the
 // slugs that were not rendered at all.
@@ -582,7 +582,7 @@ func (t *wikiReadPageTool) Execute(ctx context.Context, args json.RawMessage) (*
 		// After the index refactor, content holds only the intro, and
 		// the directory is assembled on demand. Surface a bounded
 		// top-K overview so the agent still sees the wiki's shape
-		// without overflowing its context window — the explicit hint
+		// without overflowing its context window - the explicit hint
 		// steers the model to wiki_search for deeper exploration.
 		if page.PageType == types.WikiPageTypeIndex {
 			if overview, err := t.wikiService.GetIndexView(ctx, kbID, nil, wikiIndexAgentTopK, ""); err == nil && overview != nil {

@@ -18,8 +18,8 @@ import "sort"
 // TestEveryContextKeyDeclaresACloneDecision fails when a new key arrives
 // without one instead of letting it opt out by silence.
 //
-// false is a valid, meaningful answer — it means "deliberately does not
-// survive a detach" — and is not the same as being absent.
+// false is a valid, meaningful answer - it means "deliberately does not
+// survive a detach" - and is not the same as being absent.
 var contextCloneAcrossDetach = map[ContextKey]bool{
 	// Caller identity and workspace scope. Background work runs as the same
 	// principal in the same workspace, so all of this has to survive; a
@@ -36,7 +36,7 @@ var contextCloneAcrossDetach = map[ContextKey]bool{
 	PrincipalContextKey:        true,
 	SystemAdminContextKey:      true,
 	// TenantRoleContextKey: the caller's resolved role in the active tenant
-	// (PR 2 #1303). Must survive for the same reason as TenantIDContextKey —
+	// (PR 2 #1303). Must survive for the same reason as TenantIDContextKey -
 	// any handler that does `ctx := logger.CloneContext(c.Request.Context())`
 	// and then reads the role via TenantRoleFromContext would otherwise see
 	// the type-zero TenantRole and fall back to Viewer, blocking even Owners.
@@ -81,7 +81,7 @@ var contextCloneAcrossDetach = map[ContextKey]bool{
 
 	// Marks model calls as coming from an asynq worker so the per-model chat
 	// concurrency governor throttles them, leaving interactive chat latency
-	// alone. Document ingestion detaches mid-flight — knowledge_create hands
+	// alone. Document ingestion detaches mid-flight - knowledge_create hands
 	// processChunks to a goroutine on a cloned context, and processChunks is
 	// what vectorises every chunk. Dropping the mark there would let exactly
 	// the ingestion storm the governor exists to contain run past it. Keeping

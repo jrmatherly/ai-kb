@@ -7,7 +7,7 @@ import (
 )
 
 // langfuseASR wraps an ASR implementation and reports each Transcribe call
-// as a Langfuse generation observation. Audio bytes are not uploaded — we
+// as a Langfuse generation observation. Audio bytes are not uploaded - we
 // record file name, audio size and duration (as the vendor reports it, or
 // from segment end times)
 // so usage can be billed by second/minute, which is how most ASR providers

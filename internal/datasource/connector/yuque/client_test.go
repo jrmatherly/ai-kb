@@ -123,7 +123,7 @@ func TestClient_TokenNeverLoggedInFull(t *testing.T) {
 
 	// Redirect the project's internal logger to an in-memory buffer so we can
 	// assert the raw token never appears in log output. Using stdlib `log`
-	// would be vacuous — the real logger is a private logrus instance.
+	// would be vacuous - the real logger is a private logrus instance.
 	var buf bytes.Buffer
 	logger.SetOutput(&buf)
 	defer logger.SetOutput(os.Stdout)
@@ -138,7 +138,7 @@ func TestClient_TokenNeverLoggedInFull(t *testing.T) {
 
 	out := buf.String()
 	if out == "" {
-		t.Fatal("expected logger output (sanity check — SetOutput wiring may be broken)")
+		t.Fatal("expected logger output (sanity check - SetOutput wiring may be broken)")
 	}
 	if strings.Contains(out, rawToken) {
 		t.Errorf("raw token leaked into logs:\n%s", out)

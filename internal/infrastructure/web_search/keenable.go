@@ -16,7 +16,7 @@ import (
 
 const (
 	// defaultKeenableBaseURL is the hardcoded Keenable API base URL.
-	// Not configurable by tenants — prevents SSRF.
+	// Not configurable by tenants - prevents SSRF.
 	defaultKeenableBaseURL = "https://api.keenable.ai"
 	// keenableTitle is the attribution tag Keenable segments integration traffic by.
 	keenableTitle = "AI KB"

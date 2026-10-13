@@ -21,7 +21,7 @@ import (
 
 // stubMemberService is a TenantMemberService whose individual methods can
 // be overridden per-test. Embedding the interface keeps the fixture
-// minimal — any method not set in a given test will nil-panic if it's
+// minimal - any method not set in a given test will nil-panic if it's
 // reached, which is exactly what we want for "the test should not have
 // gotten here" assertions.
 type stubMemberService struct {
@@ -132,7 +132,7 @@ func newTestMemberHandler(ms interfaces.TenantMemberService, us interfaces.UserS
 // memberTestRouter wires the handler with the same errorCapture middleware
 // production uses, so c.Error() shows up as a real HTTP status in the
 // recorder. It also mounts middleware.RequirePathTenantMatch on the
-// /tenants/:id group, mirroring router.RegisterTenantRoutes — that's
+// /tenants/:id group, mirroring router.RegisterTenantRoutes - that's
 // where the URL-vs-active-tenant cross-check now lives, and the
 // per-handler tests below assert it through this layer.
 func memberTestRouter(h *TenantMemberHandler) *gin.Engine {
@@ -501,7 +501,7 @@ func TestTenantMember_LeaveTenant_HappyPath(t *testing.T) {
 func TestTenantMember_LeaveTenant_LastOwnerMaps409(t *testing.T) {
 	// The whole point of having a separate leave endpoint is that
 	// non-Owners can quit, but the same last-Owner invariant still
-	// applies — an Owner that's the only one left must transfer
+	// applies - an Owner that's the only one left must transfer
 	// ownership before they can leave.
 	ms := &stubMemberService{
 		remove: func(_ context.Context, _ string, _ uint64) error {
@@ -622,8 +622,8 @@ func TestTenantMember_RejectsCrossTenantURL_Remove(t *testing.T) {
 }
 
 func TestTenantMember_RejectsCrossTenantURL_Leave(t *testing.T) {
-	// Even LeaveTenant — although functionally a no-op for non-members
-	// — must reject mismatched URLs to keep the handler contract
+	// Even LeaveTenant - although functionally a no-op for non-members -
+	// must reject mismatched URLs to keep the handler contract
 	// uniform with the other endpoints.
 	ms := &stubMemberService{remove: func(context.Context, string, uint64) error {
 		t.Fatalf("RemoveMember must not be reached")
@@ -641,7 +641,7 @@ func TestTenantMember_CrossTenantSuperuserBypassesURLCheck(t *testing.T) {
 	// CanAccessAllTenants + EnableCrossTenantAccess is the documented
 	// escape hatch (mirrors middleware/rbac.go). Once flipped on, an
 	// org-level operator can drive any tenant's member list from any
-	// session — including a session whose active tenant != URL.
+	// session - including a session whose active tenant != URL.
 	called := false
 	ms := &stubMemberService{
 		listTenant: func(_ context.Context, tenantID uint64) ([]*types.TenantMember, error) {
@@ -672,7 +672,7 @@ func TestTenantMember_CrossTenantSuperuserBypassesURLCheck(t *testing.T) {
 
 func TestTenantMember_SuperuserBypassRequiresFeatureFlag(t *testing.T) {
 	// Just having user.CanAccessAllTenants on the User struct is not
-	// enough — the cluster operator must also have flipped
+	// enough - the cluster operator must also have flipped
 	// cfg.Tenant.EnableCrossTenantAccess. Otherwise a stale token
 	// claim couldn't be revoked operationally.
 	called := false
@@ -682,7 +682,7 @@ func TestTenantMember_SuperuserBypassRequiresFeatureFlag(t *testing.T) {
 			return nil, nil
 		},
 	}
-	// Build the router with the flag explicitly off — the carve-out
+	// Build the router with the flag explicitly off - the carve-out
 	// now lives in middleware.RequirePathTenantMatch, which the router
 	// helper mounts.
 	h := NewTenantMemberHandler(ms, &stubMemberUserService{})

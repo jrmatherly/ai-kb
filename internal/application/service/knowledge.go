@@ -153,7 +153,7 @@ func NewKnowledgeService(
 	}, nil
 }
 
-// tracker returns a usable SpanTracker — falls back to a no-op when the
+// tracker returns a usable SpanTracker - falls back to a no-op when the
 // service was constructed without one (test harness, lite mode w/o repo).
 // All pipeline call sites go through this so they never need a nil check.
 func (s *knowledgeService) tracker() SpanTracker {
@@ -191,7 +191,7 @@ func attemptFromCtx(ctx context.Context) int {
 // attemptSuperseded reports whether a newer parse attempt has started for the
 // knowledge since this enrichment subtask was enqueued. Stale subtasks from a
 // previous upload/edit/reparse that is still draining must NOT touch the new
-// attempt's chunks or decrement its pending_subtasks_count — doing so would
+// attempt's chunks or decrement its pending_subtasks_count - doing so would
 // race-promote the row to completed before the new attempt finishes. An attempt
 // of 0 predates attempt tracking (or tracking is disabled) and is never treated
 // as superseded.
@@ -231,7 +231,7 @@ func isInFlightParseStatus(status string) bool {
 const finalizeSubtaskDetachedTimeout = 10 * time.Second
 
 // finalizeSubtaskDetached evaluates the drain decision for a subtask's
-// terminal exit and — when the subtask should drain — decrements
+// terminal exit and - when the subtask should drain - decrements
 // pending_subtasks_count using a context DETACHED from the caller's
 // cancellation.
 //
@@ -245,7 +245,7 @@ const finalizeSubtaskDetachedTimeout = 10 * time.Second
 // shutdown, a worker being preempted, or the task being interrupted under
 // load) would make the DB UPDATE fail. That failure is only logged and
 // swallowed, and because enrichment handlers frequently still return success
-// (per-chunk LLM errors are tolerated, not propagated), asynq never retries —
+// (per-chunk LLM errors are tolerated, not propagated), asynq never retries -
 // so the slot is never drained and the parent knowledge is stranded in
 // "finalizing" forever with a non-zero counter. Detaching keeps the counter
 // correct across cancellation; a bounded timeout guards against a wedged DB.
@@ -270,8 +270,8 @@ func finalizeSubtaskDetached(
 }
 
 // subtaskSlotReleaseAttempts bounds the retry of one slot release. The
-// release is the only thing that drains the slot — the task has already
-// finished — so one transient DB error must not strand the row in
+// release is the only thing that drains the slot - the task has already
+// finished - so one transient DB error must not strand the row in
 // "finalizing". The decrement and promote commit together, so a failed
 // attempt rolled back and retrying it cannot drain twice.
 const (
@@ -307,7 +307,7 @@ func releaseSubtaskSlot(ctx context.Context, repo interfaces.KnowledgeRepository
 // beginStage / endStage / failStage / skipStage are the by-name shims
 // the pipeline uses so call sites don't have to thread *Span values
 // through the existing function signatures. Each helper looks up the
-// stage from (kid, attempt-from-ctx, stageName) at write time — costs
+// stage from (kid, attempt-from-ctx, stageName) at write time - costs
 // one extra DB read per terminal transition (≤ a dozen per knowledge),
 // which is dwarfed by the work the stages themselves do.
 func (s *knowledgeService) beginStage(ctx context.Context, kid, name string, input types.JSONMap) {
@@ -349,7 +349,7 @@ func (s *knowledgeService) skipStage(ctx context.Context, kid, name, reason stri
 	}
 	span := s.tracker().LookupStage(ctx, kid, a, name)
 	if span == nil {
-		// No begin recorded — synthesize a span row for skipped state.
+		// No begin recorded - synthesize a span row for skipped state.
 		// Use BeginStage with no input then SkipSpan to keep schema
 		// invariants (started_at / kind set).
 		span = s.tracker().BeginStage(ctx, kid, a, name, nil)
@@ -368,7 +368,7 @@ func (s *knowledgeService) skipStage(ctx context.Context, kid, name, reason stri
 //   - the postprocess stage span is missing (parse predates tracker, or
 //     the upstream BeginStage call failed)
 //
-// Callers must tolerate nil — pair every begin with a deferred
+// Callers must tolerate nil - pair every begin with a deferred
 // endPostprocessSubspan / failPostprocessSubspan that no-ops on nil.
 func (s *knowledgeService) beginPostprocessSubspan(
 	ctx context.Context, knowledgeID string, attempt int, name string, input types.JSONMap,
@@ -485,7 +485,7 @@ func abortRetryErr(ctx context.Context, knowledgeID, status string) error {
 // cancelled → keep partially written data per user expectation.
 //
 // Only a row that is really gone reads as deleting. A transient read error
-// must not — callers would wipe a live document's chunks and index — nor may
+// must not - callers would wipe a live document's chunks and index - nor may
 // it read as "not aborted", or the caller's later full-row Save could
 // overwrite a cancel it failed to see. It reports abortStatusUnreadable.
 func (s *knowledgeService) isKnowledgeAborted(
@@ -799,7 +799,7 @@ func (s *knowledgeService) GetKnowledgeFile(ctx context.Context, id string) (io.
 		return nil, "", err
 	}
 
-	// Manual knowledge stores content in Metadata — stream it directly as a .md file.
+	// Manual knowledge stores content in Metadata - stream it directly as a .md file.
 	if knowledge.IsManual() {
 		meta, err := knowledge.ManualMetadata()
 		if err != nil {

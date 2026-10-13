@@ -15,8 +15,8 @@ import (
 
 // A shared agent runs in ITS OWNER's workspace, so its sandbox is created on
 // that workspace's config. Everything that touches the sandbox outside the
-// chat turn — session teardown, the terminal and desktop panels, fork
-// snapshots — runs from a plain request whose only tenant is the session
+// chat turn - session teardown, the terminal and desktop panels, fork
+// snapshots - runs from a plain request whose only tenant is the session
 // owner's. Resolving a lent config there finds nothing, because
 // tenant_sandbox_configs is keyed by (tenant_id, id).
 //
@@ -112,7 +112,7 @@ func TestDestroyBoundSandboxTearsDownALentWorkspacesSandbox(t *testing.T) {
 }
 
 // An own agent's pin carries no workspace, so teardown keeps resolving it in
-// the session's own — unchanged behaviour, and what every pre-existing row
+// the session's own - unchanged behaviour, and what every pre-existing row
 // falls back to after the migration.
 func TestDestroyBoundSandboxStillUsesTheSessionWorkspaceForOwnAgents(t *testing.T) {
 	pinner := NewSessionSandboxPinner(borrowedSessionDB(t))

@@ -6,7 +6,7 @@
 // The integration is fully opt-in: when disabled (the default), every public
 // entry point is a cheap no-op, so callers can wire them unconditionally. A
 // W3C traceparent propagated from upstream callers (e.g. sop3) is inherited so
-// AI KB's trace shares the upstream trace id — correlating runs across
+// AI KB's trace shares the upstream trace id - correlating runs across
 // services in the LiteFuse UI.
 package langfuse
 
@@ -22,8 +22,8 @@ import (
 
 // Config holds the runtime configuration for the Langfuse client.
 //
-// In practice users enable Langfuse purely through environment variables —
-// Host / PublicKey / SecretKey — which matches every other Langfuse SDK and
+// In practice users enable Langfuse purely through environment variables -
+// Host / PublicKey / SecretKey - which matches every other Langfuse SDK and
 // keeps AI KB's YAML config free of secrets.
 type Config struct {
 	// Enabled is the master switch. If false the entire package is a no-op.
@@ -56,7 +56,7 @@ type Config struct {
 	// it to inject an in-memory span exporter (tracetest.InMemoryExporter) so
 	// they can assert on exported spans deterministically without an HTTP
 	// server. Init registers it with a SimpleSpanProcessor (synchronous
-	// export on span End) when set. Unexported — production never sets it.
+	// export on span End) when set. Unexported - production never sets it.
 	testExporter sdktrace.SpanExporter
 }
 
@@ -79,7 +79,7 @@ func LoadConfigFromEnv() Config {
 	if v := strings.TrimSpace(os.Getenv("LANGFUSE_ENABLED")); v != "" {
 		cfg.Enabled = parseBool(v)
 	} else if cfg.PublicKey != "" && cfg.SecretKey != "" {
-		// Auto-enable when credentials are present — matches the Python SDK.
+		// Auto-enable when credentials are present - matches the Python SDK.
 		cfg.Enabled = true
 	}
 

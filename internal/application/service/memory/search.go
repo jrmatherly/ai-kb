@@ -13,7 +13,7 @@ import (
 // lexicalPoolSize is how many stored items the lexical ranking scans.
 //
 // It is the workspace capacity cap, which is the most active memories a
-// subject can hold at all — so the pool is no longer a second, invisible limit
+// subject can hold at all - so the pool is no longer a second, invisible limit
 // sitting underneath it. It used to be a fixed 400 while the cap goes up to
 // 2000, which made every memory past the 400th most important one impossible
 // to recall, whatever the question was.

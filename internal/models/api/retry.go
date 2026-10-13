@@ -44,7 +44,7 @@ func (p RetryPolicy) delay(attempt int) time.Duration {
 // retry loops this replaces kept `resp` and `err` in the enclosing scope and
 // returned `(nil, err)` at the end, so writing `req, err := ...` inside the
 // loop shadowed the error, left the outer one nil, and handed the caller a
-// nil response with no error to check — a nil-pointer panic that took the
+// nil response with no error to check - a nil-pointer panic that took the
 // process down instead of reporting "connection refused" (Tencent/WeKnora#3484).
 // Here the last error is captured in the enclosing scope on purpose and the
 // function cannot fall through without it.

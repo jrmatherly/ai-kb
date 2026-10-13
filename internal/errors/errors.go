@@ -247,7 +247,7 @@ func NewAgentInvalidTemperatureError() *AppError {
 // NewVectorStoreBindingInvalidError signals that a knowledge base create
 // request referenced a vector store that does not exist under the caller's
 // tenant (or carried a malformed UUID). The user-facing message is
-// intentionally generic to avoid enumeration oracles — see the structured
+// intentionally generic to avoid enumeration oracles - see the structured
 // log at the call site for the tenant/store pair.
 func NewVectorStoreBindingInvalidError(message string) *AppError {
 	if message == "" {

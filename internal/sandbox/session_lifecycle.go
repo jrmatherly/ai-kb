@@ -359,7 +359,7 @@ func (l *remoteSessionLifecycle) recoverOwnedSandbox(
 		// The test is whether the provider HAS the concept, not whether the
 		// token is empty. Docker's handle omits RemoteInboundTokenCarrier
 		// because it has no inbound credential and no provider gateway, so an
-		// empty token there means "not applicable" rather than "lost" — and
+		// empty token there means "not applicable" rather than "lost" - and
 		// destroying a healthy container over it would cost /workspace on
 		// every binding loss.
 		if l.missingRequiredInboundToken(handle) {
@@ -425,7 +425,7 @@ func (l *remoteSessionLifecycle) createAndBind(
 	// request is a VALUE copy of l.createRequest, and every mutation below
 	// must stay on the copy. l.createRequest is shared by every session this
 	// config serves, so writing the override onto it would make unrelated
-	// sessions boot from another session's fork snapshot — a failure that
+	// sessions boot from another session's fork snapshot - a failure that
 	// reproduces only under specific interleavings and is brutal to diagnose.
 	request := l.createRequest
 	request.Metadata = nil

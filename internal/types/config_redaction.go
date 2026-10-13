@@ -363,7 +363,7 @@ func MergeSandboxConfigForUpdate(incoming, existing *TenantSandboxConfig) *Tenan
 
 	// Network is an editor-owned field, so incoming decides its shape; only
 	// the credential values fall back to what is stored. Unlike SkillImage,
-	// omitting it clears it — the admin deleting every rule must stick.
+	// omitting it clears it - the admin deleting every rule must stick.
 	if out.Network != nil {
 		var prev *SandboxNetworkPolicy
 		if existing != nil {
@@ -376,8 +376,8 @@ func MergeSandboxConfigForUpdate(incoming, existing *TenantSandboxConfig) *Tenan
 	// by the sandbox settings form. The editor rebuilds the payload without
 	// either field, so copying incoming as-is would wipe a live snapshot on
 	// every runtime save and leave sessions booting the base template while the
-	// skill rows still claim ready. Reading them from the stored row instead —
-	// and clearing when there is no stored row — also means a crafted PUT can
+	// skill rows still claim ready. Reading them from the stored row instead -
+	// and clearing when there is no stored row - also means a crafted PUT can
 	// neither plant nor wipe a pointer.
 	out.SkillImage = nil
 	out.VolumeMount = nil
@@ -404,7 +404,7 @@ func MergeSandboxConfigForUpdate(incoming, existing *TenantSandboxConfig) *Tenan
 // mergeNetworkPolicyForUpdate resolves redacted injected-header secrets in
 // incoming against existing. Rules are matched by the identity the admin sees:
 // a Cube inject by (rule name, header name), an E2B header by (host, header
-// name). A renamed rule therefore loses its stored secret, which is correct —
+// name). A renamed rule therefore loses its stored secret, which is correct -
 // there is no way to tell a rename from a replacement.
 func mergeNetworkPolicyForUpdate(
 	incoming, existing *SandboxNetworkPolicy,

@@ -25,8 +25,8 @@ func NewConnector() *Connector { return &Connector{} }
 // Type returns the connector type identifier.
 func (c *Connector) Type() string { return types.ConnectorTypeIMA }
 
-// Validate verifies the credentials by calling get_addable_knowledge_base_list
-// — the endpoint most likely to succeed even when the token has zero KBs, and
+// Validate verifies the credentials by calling get_addable_knowledge_base_list -
+// the endpoint most likely to succeed even when the token has zero KBs, and
 // the same one ListResources uses. It returns 110030 (no permission) when the token
 // itself is invalid, which client.callAPI already maps to ErrInvalidCredentials.
 func (c *Connector) Validate(ctx context.Context, config *types.DataSourceConfig) error {
@@ -77,7 +77,7 @@ func nextPageCursor(
 }
 
 // ListResources returns the flat list of knowledge bases the token can read.
-// parentID is honoured only for the "no children" contract — see the note on
+// parentID is honoured only for the "no children" contract - see the note on
 // Connector.ListResources in internal/datasource/connector.go.
 //
 // Primary source is get_addable_knowledge_base_list, which returns the KBs the
@@ -206,7 +206,7 @@ func (c *Connector) FetchAll(
 // FetchIncremental syncs new / replaced / removed items against the cursor.
 //
 // Each IMA item is identified by a stable logical_key (see logicalKey), NOT by
-// media_id — because IMA reassigns media_id whenever a same-named file is
+// media_id - because IMA reassigns media_id whenever a same-named file is
 // replaced in place, and we want that replacement to surface as an UPDATE to
 // the same knowledge item rather than a delete-plus-insert pair.
 //
@@ -333,7 +333,7 @@ func (c *Connector) walk(
 			}
 		}
 
-		// Deletion detection (incremental only) — based on logical_key vanishing
+		// Deletion detection (incremental only) - based on logical_key vanishing
 		// from the listing, so neither a same-name replacement (media_id churns
 		// but logical_key stays) nor a failed download fires a spurious delete.
 		deleted := 0
@@ -367,7 +367,7 @@ func (c *Connector) walk(
 type walkedFile struct {
 	knowledgeInfo
 	// FolderPath is the "/A/B" style path (folder names, no leading slash)
-	// of the containing folder — empty for root-level items.
+	// of the containing folder - empty for root-level items.
 	FolderPath string
 }
 
@@ -439,7 +439,7 @@ func listAllKBFiles(
 // read from the separate note namespace.
 //
 // The body arrives as plain text but is ingested as Markdown, because IMA notes
-// are authored as rich text and the export keeps its heading and list markers —
+// are authored as rich text and the export keeps its heading and list markers -
 // parsing it as Markdown preserves that structure for chunking, and text with
 // no markers is unaffected.
 func fetchNote(
@@ -503,7 +503,7 @@ const (
 // fetchOneMedia calls get_media_info for a single item and, when possible,
 // downloads its body.
 //
-// externalID is the stable logical_key computed by the caller — same value
+// externalID is the stable logical_key computed by the caller - same value
 // across syncs even after an IMA same-name replacement mints a new media_id.
 // The raw media_id is still preserved in metadata for observability.
 func fetchOneMedia(
@@ -537,7 +537,7 @@ func fetchOneMedia(
 	// normally handed to the ingest layer as a bare URL so AI KB fetches it
 	// itself. That only works for publicly reachable links: when IMA attaches
 	// auth headers the URL points at IMA-hosted storage and AI KB's own
-	// fetch — which cannot carry those headers — would be rejected. In that
+	// fetch - which cannot carry those headers - would be rejected. In that
 	// case download here, where the headers are available, and infer the
 	// extension from the response instead.
 	if ext == "" {
@@ -590,7 +590,7 @@ func fetchOneMedia(
 
 // baseMetadata builds the metadata map preserved on every ingested item.
 // externalID (the caller's logical_key) is stored so operators can join the
-// stable identity back to the raw media_id — useful when debugging why a
+// stable identity back to the raw media_id - useful when debugging why a
 // same-name replacement showed up as an update instead of an add.
 func baseMetadata(
 	externalID string, f walkedFile, folderPath map[string]string,

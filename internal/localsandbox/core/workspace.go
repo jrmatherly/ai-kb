@@ -40,9 +40,9 @@ type Workspace struct {
 // ProjectLookup reports whether a session is bound to a user-selected project.
 //
 // Three outcomes:
-//   - ("", false, nil) — unbound; Resolve allocates a session workspace
-//   - (dir, true, nil) — bound and still approved
-//   - ("", false, err) — bound but no longer approved, or lookup failed;
+//   - ("", false, nil) - unbound; Resolve allocates a session workspace
+//   - (dir, true, nil) - bound and still approved
+//   - ("", false, err) - bound but no longer approved, or lookup failed;
 //     Resolve must not allocate a replacement directory
 type ProjectLookup interface {
 	ProjectDirForSession(ctx context.Context, sessionID string) (string, bool, error)

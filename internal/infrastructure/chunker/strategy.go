@@ -4,7 +4,7 @@
 // a tier based on document profile and the SplitterConfig.Strategy hint.
 //
 // The legacy entry points still exist in splitter.go for backwards
-// compatibility — strategy.go simply layers a tier-selector on top.
+// compatibility - strategy.go simply layers a tier-selector on top.
 package chunker
 
 import (
@@ -70,7 +70,7 @@ type TierRejection struct {
 // document profile that drove tier selection.
 //
 // Useful for surfacing in a debug UI; not produced by the normal Split
-// path. The JSON shape is part of the public preview-endpoint API — keep
+// path. The JSON shape is part of the public preview-endpoint API - keep
 // field names stable.
 type Diagnostics struct {
 	SelectedTier StrategyTier    `json:"selected_tier"`
@@ -87,7 +87,7 @@ type Diagnostics struct {
 // where the caller wants to know which tier won and why others lost.
 func SplitWithDiagnostics(text string, cfg SplitterConfig) ([]Chunk, *Diagnostics) {
 	// Default selected tier to legacy so an empty diag never carries the
-	// zero string — that would render as a blank tag in the debug UI.
+	// zero string - that would render as a blank tag in the debug UI.
 	diag := &Diagnostics{SelectedTier: TierLegacy}
 	if text == "" {
 		return nil, diag

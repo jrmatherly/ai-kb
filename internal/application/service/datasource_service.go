@@ -176,7 +176,7 @@ func (s *DataSourceService) UpdateDataSource(ctx context.Context, ds *types.Data
 		return nil, err
 	}
 
-	// Credentials NEVER flow through this endpoint — they live behind the
+	// Credentials NEVER flow through this endpoint - they live behind the
 	// /credentials subresource. Force-preserve the stored credentials map
 	// regardless of what the body says. Log a warning if a stale caller
 	// passes one so we can spot them and migrate later. Non-credential
@@ -268,7 +268,7 @@ func (s *DataSourceService) UpdateDataSourceCredentials(
 	}
 	existing.Config = blob
 
-	// Run live validation now that the credentials are in place — surfaces
+	// Run live validation now that the credentials are in place - surfaces
 	// "wrong token" feedback immediately to the user instead of waiting for
 	// the next scheduled sync.
 	if err := s.validateDataSourceConfig(ctx, existing); err != nil {
@@ -964,7 +964,7 @@ func (s *DataSourceService) applyFetchedItem(
 		var dupErr *types.DuplicateKnowledgeError
 		switch {
 		case errors.As(err, &dupErr):
-			// Duplicate file/URL is not a failure — count as skipped.
+			// Duplicate file/URL is not a failure - count as skipped.
 			logger.Infof(ctx, "item %q (external_id=%s) already exists, skipping", item.Title, item.ExternalID)
 			result.Skipped++
 		case item.Metadata["embedded_image"] == "true":
@@ -1154,7 +1154,7 @@ func (s *DataSourceService) processSyncStreaming(
 	ds.LastSyncAt = timePtr(time.Now().UTC())
 
 	// Surface per-document failures as a partial sync (not silent success), so
-	// the sync-log drawer's failure detail explains which docs didn't make it —
+	// the sync-log drawer's failure detail explains which docs didn't make it -
 	// the visibility gap behind "status normal but not everything syncs"
 	// (Tencent/WeKnora#2136). Fetch failures abort the stream before the failed
 	// page is checkpointed, so the next run retries them; deletion failures are
@@ -1290,7 +1290,7 @@ func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *ty
 //   - Has Content bytes → CreateKnowledgeFromFile (runs the full document parsing pipeline)
 //   - Has URL only      → CreateKnowledgeFromURL  (AI KB downloads and parses it)
 //
-// Returns (isUpdate, error) — isUpdate is true when an existing item was replaced.
+// Returns (isUpdate, error) - isUpdate is true when an existing item was replaced.
 func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource, item *types.FetchedItem, tagIDs []string) (bool, error) {
 	// Channel decides the knowledge "source" label shown in the UI. Prefer the
 	// connector-supplied metadata["channel"] (e.g. Feishu Drive sets it to
@@ -1358,7 +1358,7 @@ func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource
 			fh,
 			metadata,
 			nil,           // use KB default for multimodal
-			item.FileName, // customFileName — must include extension for file-type validation
+			item.FileName, // customFileName - must include extension for file-type validation
 			tagIDs,        // auto-tag from data source
 			channel,
 			nil,
@@ -1366,7 +1366,7 @@ func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource
 			var dupErr *types.DuplicateKnowledgeError
 			if errors.As(err, &dupErr) && dupIsSameNode(dupErr, item) {
 				// Identical content is already present in the KB under THIS node's
-				// own external_id, so the parent effectively exists — reconcile the
+				// own external_id, so the parent effectively exists - reconcile the
 				// subtree so children removed from the doc do not linger.
 				s.sweepStaleSubtree(ctx, ds, item)
 			}
@@ -1376,7 +1376,7 @@ func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource
 		return isUpdate, nil
 	}
 
-	// Case 2: only a remote URL — let AI KB handle downloading and parsing
+	// Case 2: only a remote URL - let AI KB handle downloading and parsing
 	if item.URL != "" {
 		created, err := s.knowledgeService.CreateKnowledgeFromURL(
 			ctx,
@@ -1394,7 +1394,7 @@ func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource
 			var dupErr *types.DuplicateKnowledgeError
 			if errors.As(err, &dupErr) && dupIsSameNode(dupErr, item) {
 				// Identical content is already present in the KB under THIS node's
-				// own external_id, so the parent effectively exists — reconcile the
+				// own external_id, so the parent effectively exists - reconcile the
 				// subtree so children removed from the doc do not linger.
 				s.sweepStaleSubtree(ctx, ds, item)
 			}
@@ -1427,13 +1427,13 @@ func (s *DataSourceService) ingestItem(ctx context.Context, ds *types.DataSource
 }
 
 // dupIsSameNode reports whether a duplicate-content error means the parent still
-// exists in the KB *under this item's own external_id* — i.e. a content-dedup hit
+// exists in the KB *under this item's own external_id* - i.e. a content-dedup hit
 // against this same node, so reconciling its subtree is safe. File deduplication
 // keys on file_hash plus file_type (CheckKnowledgeExists), so an updated node whose rebuilt body
 // happens to hash-collide with a DIFFERENT knowledge item (another node, or a
 // manually-uploaded file with no external_id) would otherwise sweep this node's
 // children even though its own parent row was just deleted for the update and
-// never recreated — deleting those children with no parent to replace them. In
+// never recreated - deleting those children with no parent to replace them. In
 // that case the matched row's external_id differs (or is absent), so we skip the
 // sweep and leave the children intact.
 func dupIsSameNode(dupErr *types.DuplicateKnowledgeError, item *types.FetchedItem) bool {
@@ -1441,7 +1441,7 @@ func dupIsSameNode(dupErr *types.DuplicateKnowledgeError, item *types.FetchedIte
 		dupErr.Knowledge.GetMetadata()["external_id"] == item.ExternalID
 }
 
-// sweepStaleSubtree deletes STALE sub-items of item — knowledge whose external_id
+// sweepStaleSubtree deletes STALE sub-items of item - knowledge whose external_id
 // is prefixed with "<item.ExternalID>#" (e.g. attachment children of a docx node)
 // that is NOT listed in item.SubtreeKeep, i.e. no longer present in the source.
 //

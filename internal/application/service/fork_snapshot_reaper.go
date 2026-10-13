@@ -31,7 +31,7 @@ const DefaultForkSnapshotRetention = 7 * 24 * time.Hour
 
 // DefaultForkSnapshotLeaseGrace is how long a snapshot lease lives before the
 // reaper treats it as abandoned. It must outlast CreateForked (milliseconds)
-// and a brief process restart, but not a week — there is no session for the
+// and a brief process restart, but not a week - there is no session for the
 // user to come back to.
 const DefaultForkSnapshotLeaseGrace = 15 * time.Minute
 

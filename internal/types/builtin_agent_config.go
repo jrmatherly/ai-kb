@@ -101,7 +101,7 @@ func rebuildRegistryFromConfig() {
 }
 
 // ---------------------------------------------------------------------------
-// Public API — context-aware, i18n-capable
+// Public API - context-aware, i18n-capable
 // ---------------------------------------------------------------------------
 
 // GetBuiltinAgentWithContext returns a built-in agent whose Name and
@@ -115,7 +115,7 @@ func GetBuiltinAgentWithContext(ctx context.Context, id string, tenantID uint64)
 	builtinAgentEntriesMu.RUnlock()
 
 	if !ok || entry == nil {
-		// No YAML entry — fall back to hard-coded factory.
+		// No YAML entry - fall back to hard-coded factory.
 		if factory, exists := BuiltinAgentRegistry[id]; exists {
 			return factory(tenantID)
 		}

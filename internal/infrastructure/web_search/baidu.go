@@ -19,7 +19,7 @@ import (
 
 const (
 	// defaultBaiduWebSearchURL is the hardcoded Baidu AI Search API URL.
-	// Not configurable by tenants — prevents SSRF.
+	// Not configurable by tenants - prevents SSRF.
 	defaultBaiduWebSearchURL = "https://qianfan.baidubce.com/v2/ai_search/web_search"
 	defaultBaiduTimeout      = 15 * time.Second
 	defaultBaiduResults      = 5
@@ -45,7 +45,7 @@ func NewBaiduProvider(params types.WebSearchProviderParameters) (interfaces.WebS
 	}
 	return &BaiduProvider{
 		client:  client,
-		baseURL: defaultBaiduWebSearchURL, // Hardcoded — not tenant-configurable
+		baseURL: defaultBaiduWebSearchURL, // Hardcoded - not tenant-configurable
 		apiKey:  params.APIKey,
 	}, nil
 }

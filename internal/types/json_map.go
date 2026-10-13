@@ -11,7 +11,7 @@ import (
 // to scan JSONB into a typed map, so we hand-roll Value() / Scan().
 //
 // Lives here (not in /utils) because the only callers are types whose
-// schemas already declare JSONB columns — keeping the helper next to its
+// schemas already declare JSONB columns - keeping the helper next to its
 // users avoids a circular import in any package that already pulls in
 // /types.
 type JSONMap map[string]any

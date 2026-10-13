@@ -54,7 +54,7 @@ func flattenLists(lists [][]*types.IndexWithScore) []*types.IndexWithScore {
 //   - hybrid: weighted RRF divided by its maximum (a chunk ranked first by
 //     both retrievers scores 1).
 //
-// retrievalCfg may be nil — defaults are then used for RRF parameters.
+// retrievalCfg may be nil - defaults are then used for RRF parameters.
 func fuseOrDeduplicate(
 	ctx context.Context, vectorLists, keywordLists [][]*types.IndexWithScore, retrievalCfg *types.RetrievalConfig,
 ) []*types.IndexWithScore {
@@ -177,7 +177,7 @@ func fuseWithRRF(
 	vectorRanks := bestRanks(vectorLists)
 	keywordRanks := bestRanks(keywordLists)
 
-	// Collect all unique chunks — prefer vector result's metadata for each chunk
+	// Collect all unique chunks - prefer vector result's metadata for each chunk
 	chunkInfoMap := make(map[string]*types.IndexWithScore)
 	for _, r := range flattenLists(vectorLists) {
 		if existing, exists := chunkInfoMap[r.ChunkID]; !exists || r.Score > existing.Score {

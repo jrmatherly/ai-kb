@@ -53,7 +53,7 @@ type topicResolution struct {
 // The problem this solves is that a model asked to name a topic will not name
 // it the same way twice: "store shift scheduling" one run, "staff rota
 // planning" the next. Treating the string as an identity means the same subject is counted
-// under several keys and never reaches the promotion threshold — the feature
+// under several keys and never reaches the promotion threshold - the feature
 // looks enabled and learns nothing.
 //
 // The fix is the one both mem0 and Graphiti converged on: never trust the
@@ -90,8 +90,8 @@ func (s *Service) resolveTopics(
 			resolution.Canonical = match
 			// Distinguish "the extraction model echoed a tracked label" from
 			// "the resolver's own normalisation matched". Both look like an
-			// exact hit here, but only the first is a judgement the model made
-			// — and reporting that as the cheapest, most certain tier is how an
+			// exact hit here, but only the first is a judgement the model made -
+			// and reporting that as the cheapest, most certain tier is how an
 			// over-merge hides.
 			if surface == match.Topic {
 				resolution.Tier = "reused"
@@ -228,7 +228,7 @@ func (s *Service) adjudicateTopics(
 ) {
 	if modelID == "" {
 		// Nothing to fall back on. Every label here becomes its own subject,
-		// which is the wrong answer but a visible one — as opposed to silently
+		// which is the wrong answer but a visible one - as opposed to silently
 		// skipping the tier, which is what happened while this checked the
 		// configured extraction model directly: blank is the *default* and
 		// means "use the conversation model", so on a default workspace the

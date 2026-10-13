@@ -36,7 +36,7 @@ const (
 	// Two properties make this the only correct source for replay. First,
 	// Claude signs the exact text of each block, so one assistant turn with
 	// interleaved thinking carries several (text, signature) pairs that a
-	// single ReasoningContent / ReasoningSignature pair cannot represent —
+	// single ReasoningContent / ReasoningSignature pair cannot represent -
 	// concatenating them produces a signature that matches nothing. Second,
 	// ReasoningContent is rewritten downstream (resource-handle encoding,
 	// citation compaction, special-token neutralisation) for the benefit of
@@ -411,7 +411,7 @@ func replayThinkingBlocks(msg api.Message) []contentBlock {
 					// An unsigned block cannot go back: Claude rejects a
 					// thinking block without a signature. It means the stream
 					// ended inside that block (truncation), so it is the last
-					// one and produced no tool_use of its own. Skip just it —
+					// one and produced no tool_use of its own. Skip just it -
 					// discarding the whole turn's blocks instead would strip
 					// the signed ones that a completed tool_use in the same
 					// turn still needs, which is the 400 this replay exists

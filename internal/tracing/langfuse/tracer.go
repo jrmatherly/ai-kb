@@ -14,8 +14,8 @@ import (
 // Trace represents an active root observation. A Trace is conceptually one
 // "request" (e.g. a chat turn). Generations and spans attached to it roll up
 // as children in the Langfuse UI. It wraps an OpenTelemetry root span; its
-// ID is the OTel trace id (W3C 32-hex), which — when the request carried a
-// traceparent header — is the upstream caller's trace id (sop3 correlation).
+// ID is the OTel trace id (W3C 32-hex), which - when the request carried a
+// traceparent header - is the upstream caller's trace id (sop3 correlation).
 type Trace struct {
 	ID      string
 	span    trace.Span
@@ -37,7 +37,7 @@ type Generation struct {
 	autoTrace *Trace
 }
 
-// Span represents a logical unit of work that isn't itself an LLM call — for
+// Span represents a logical unit of work that isn't itself an LLM call - for
 // example an asynq task execution, a pipeline stage, or a document-processing
 // step. Generations and nested spans attach as children via the OTel span
 // context (parenting is automatic through trace.SpanFromContext).
@@ -84,7 +84,7 @@ type SpanOptions struct {
 
 // StartTrace opens a root span. When ctx carries a remote SpanContext (from a
 // W3C traceparent extracted by GinMiddleware), the root span inherits the
-// upstream trace id — this is what makes a sop3 run and its AI KB call land
+// upstream trace id - this is what makes a sop3 run and its AI KB call land
 // under the same trace in LiteFuse. The returned *Trace is non-nil even when
 // disabled (methods are no-ops), so callers don't need nil checks.
 func (m *Manager) StartTrace(ctx context.Context, opts TraceOptions) (context.Context, *Trace) {
@@ -144,7 +144,7 @@ func (t *Trace) Finish(output interface{}, metadata map[string]interface{}) {
 }
 
 // ResumeTrace reconstructs a *Trace handle from an externally-provided W3C
-// trace id (and optional parent span id), without creating a new root span —
+// trace id (and optional parent span id), without creating a new root span -
 // the originating process (e.g. an HTTP request that already opened a trace)
 // owns the root. Used to graft async work onto an existing trace: it sets a
 // remote SpanContext on ctx so any child span/generation started under it
@@ -222,7 +222,7 @@ func (m *Manager) startSpan(ctx context.Context, opts SpanOptions, createTrace b
 	var autoTrace *Trace
 	if _, ok := traceFromCtx(ctx); !ok && createTrace {
 		// No active trace: open a shallow root so the span isn't orphaned.
-		// Hold the handle so Finish can End it — otherwise the root span is
+		// Hold the handle so Finish can End it - otherwise the root span is
 		// never exported and this span's parent points at a missing span.
 		ctx, autoTrace = m.StartTrace(ctx, TraceOptions{Name: opts.Name})
 	}
@@ -351,7 +351,7 @@ func mergeMetadata(start, finish map[string]interface{}) map[string]interface{} 
 }
 
 // jsonAttr serializes v to a compact JSON string and wraps it as a string
-// OTel attribute — matching how langfuse-python stores structured fields
+// OTel attribute - matching how langfuse-python stores structured fields
 // (input/output/metadata/usage) on spans. nil/zero values return an empty
 // KeyValue (harmless on SetAttributes).
 func jsonAttr(key string, v interface{}) attribute.KeyValue {

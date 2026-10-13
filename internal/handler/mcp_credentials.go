@@ -16,7 +16,7 @@ import (
 // dedicated subresource (/mcp-services/{id}/credentials). Splitting this out
 // of UpdateMCPService delivers three concrete benefits:
 //
-//  1. The main MCP PUT body never carries secrets — eliminating the
+//  1. The main MCP PUT body never carries secrets - eliminating the
 //     "masked-value round-trip overwrites stored secret" class of bug at the
 //     contract level rather than via runtime preserve-on-redacted defenses.
 //
@@ -25,7 +25,7 @@ import (
 //     operations are explicit and atomic.
 //
 //  3. The "is this configured?" metadata travels on the main resource
-//     response (MCPServiceResponse.Credentials) — no separate GET endpoint
+//     response (MCPServiceResponse.Credentials) - no separate GET endpoint
 //     needed. Only PUT and DELETE live here.
 type MCPCredentialsHandler struct {
 	svc interfaces.MCPServiceService
@@ -79,7 +79,7 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 		return
 	}
 
-	// Nothing to do — but rather than 400 (benign no-op), look up current
+	// Nothing to do - but rather than 400 (benign no-op), look up current
 	// state and return it. Client treats this identically to a real save.
 	if req.APIKey == nil && req.Token == nil {
 		svc, err := h.svc.GetMCPServiceByID(ctx, tenantID, serviceID)

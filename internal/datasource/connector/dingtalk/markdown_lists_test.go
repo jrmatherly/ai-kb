@@ -92,7 +92,7 @@ func TestRenderListIndentsContinuationLines(t *testing.T) {
 
 // The documented list shape is flat: one block per item, nesting carried by
 // list.level, the items of one list linked by a shared listId across sibling
-// blocks. This pins that main path — two sibling items at different levels —
+// blocks. This pins that main path - two sibling items at different levels -
 // so the defensive block-child handling above cannot become the assumed model.
 func TestRenderListFollowsTheFlatDocumentedShape(t *testing.T) {
 	result := renderDocument("", []json.RawMessage{

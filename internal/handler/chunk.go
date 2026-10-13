@@ -18,14 +18,14 @@ import (
 // All KB-access checks (own / org-shared / via shared agent) are now
 // performed by the route-level g.KBAccessRead*FromKnowledgeIDParam /
 // g.KBAccessWrite*FromKnowledgeIDParam / g.KBAccess*FromChunkIDParam
-// guards in router.go — the guard rewrites c.Request.Context() to
+// guards in router.go - the guard rewrites c.Request.Context() to
 // carry the effective tenant ID, so the handler reads tenant from
 // context the way it always did.
 //
 // kgService is retained because the route-level *creator-ownership*
 // lookup KBCreatorLookupFromKnowledgeIDParam still walks
 // knowledge_id -> kb_id to resolve creator_id (separate axis from
-// access — that lookup answers "is the caller the creator of THIS
+// access - that lookup answers "is the caller the creator of THIS
 // resource", not "does the caller's tenant have access").
 type ChunkHandler struct {
 	service   interfaces.ChunkService

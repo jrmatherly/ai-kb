@@ -521,7 +521,7 @@ func (h *WikiPageHandler) UpdatePage(c *gin.Context) {
 	}
 
 	// Merge the provided fields onto the stored page so absent fields keep
-	// their value — the service's UpdatePage semantics are "full intended
+	// their value - the service's UpdatePage semantics are "full intended
 	// state", and sending it a half-empty struct would clear real data.
 	page := *existing
 	if req.Title != nil {
@@ -793,8 +793,8 @@ func (h *WikiPageHandler) GetIndex(c *gin.Context) {
 }
 
 // Graph query parameter bounds. The defaults cap an `overview` request at
-// 500 nodes — comfortably renderable in the frontend's hand-rolled SVG
-// force simulation — while the hard max of 2000 is the upper bound a
+// 500 nodes - comfortably renderable in the frontend's hand-rolled SVG
+// force simulation - while the hard max of 2000 is the upper bound a
 // power user can opt into before rendering gets choppy. Ego depth is
 // capped at 3 hops because the node population grows super-linearly with
 // depth and wider searches are better served by repeated ego jumps.

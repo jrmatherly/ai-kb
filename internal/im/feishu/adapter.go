@@ -1,7 +1,7 @@
 // Package feishu implements the Feishu IM adapter for AI KB, and with
 // it the Lark adapter: Feishu and Lark are the same product on two isolated
 // clouds (open.feishu.cn and open.larksuite.com) sharing one API surface, so a
-// single implementation serves both. A Region picks the cloud — see region.go.
+// single implementation serves both. A Region picks the cloud - see region.go.
 //
 // Bot flow:
 // 1. User sends a message to the bot (direct or @mention in group)
@@ -569,13 +569,13 @@ func (a *Adapter) sendTextReply(ctx context.Context, incoming *im.IncomingMessag
 	// Build text message content
 	content, _ := json.Marshal(map[string]string{"text": text})
 
-	// Reply payload (no receive_id — the path message_id locates the chat)
+	// Reply payload (no receive_id - the path message_id locates the chat)
 	replyPayload := map[string]interface{}{
 		"msg_type": "text",
 		"content":  string(content),
 	}
 
-	// Fallback payload (plain send-message API) — needs receive_id
+	// Fallback payload (plain send-message API) - needs receive_id
 	receiveIDType, receiveID := a.resolveReceiveID(incoming)
 	fallbackPayload := map[string]interface{}{
 		"receive_id": receiveID,
@@ -613,9 +613,9 @@ var fallbackEligibleErrorCodes = map[int]bool{
 // (POST /im/v1/messages/:message_id/reply), and on a fallback-eligible error
 // retries once via the plain send-message API (POST /im/v1/messages).
 //
-//   - replyPayload   — body for the reply API (no receive_id needed)
-//   - fallbackPayload — body for the send API (includes receive_id)
-//   - receiveIDType   — receive_id_type query param for the fallback send API
+//   - replyPayload   - body for the reply API (no receive_id needed)
+//   - fallbackPayload - body for the send API (includes receive_id)
+//   - receiveIDType   - receive_id_type query param for the fallback send API
 func (a *Adapter) sendWithFallback(
 	ctx context.Context,
 	accessToken string,
@@ -625,14 +625,14 @@ func (a *Adapter) sendWithFallback(
 ) error {
 	// If we have a usable message_id, try the reply API first so the reply
 	// lands under the original message / thread. If message_id is empty (rare:
-	// some event payloads omit it), skip straight to the fallback send API —
+	// some event payloads omit it), skip straight to the fallback send API -
 	// the reply API needs a message_id in the path and can't work without one.
 	if incoming.MessageID != "" && feishuSafePathParam(incoming.MessageID) {
 		replyURL := a.api("/open-apis/im/v1/messages/%s/reply", incoming.MessageID)
 		code, msg, err := a.postFeishuMessage(ctx, accessToken, replyURL, replyPayload)
 		switch {
 		case err != nil:
-			// Network/transport error — try the fallback since send-message is
+			// Network/transport error - try the fallback since send-message is
 			// a different endpoint that might succeed.
 			logger.Warnf(ctx, "[%s] reply API transport error (will try fallback): %v", a.region.Label, err)
 		case code == 0:
@@ -645,7 +645,7 @@ func (a *Adapter) sendWithFallback(
 				a.region.Label, code, msg)
 		}
 	} else if incoming.MessageID != "" {
-		// message_id present but contains unsafe characters — refuse rather
+		// message_id present but contains unsafe characters - refuse rather
 		// than put it in a URL path. Don't fall back either, since a malformed
 		// id suggests a tampered payload.
 		return fmt.Errorf("invalid message_id for reply API: %q", incoming.MessageID)
@@ -772,10 +772,10 @@ func (a *Adapter) DownloadFile(ctx context.Context, msg *im.IncomingMessage) (io
 // Feishu CardKit v1 streaming implementation (official best practice)
 //
 // Flow:
-//  1. POST  /cardkit/v1/cards                                      — create card entity
-//  2. POST  /im/v1/messages  content={"type":"card","data":{"card_id":"…"}} — send card
-//  3. PUT   /cardkit/v1/cards/{id}/elements/{eid}/content          — stream element content
-//  4. PATCH /cardkit/v1/cards/{id}/settings                        — finalize streaming and summary
+//  1. POST  /cardkit/v1/cards                                      - create card entity
+//  2. POST  /im/v1/messages  content={"type":"card","data":{"card_id":"…"}} - send card
+//  3. PUT   /cardkit/v1/cards/{id}/elements/{eid}/content          - stream element content
+//  4. PATCH /cardkit/v1/cards/{id}/settings                        - finalize streaming and summary
 //
 // Reference: https://github.com/larksuite/openclaw-lark (official Lark plugin)
 //            https://open.feishu.cn/document/cardkit-v1/streaming-updates-openapi-overview
@@ -1036,7 +1036,7 @@ func (a *Adapter) sendCardByCardID(ctx context.Context, accessToken string, inco
 	})
 
 	// Reply payload (no receive_id) and fallback payload (with receive_id)
-	// share the same content/msg_type — only receive_id differs.
+	// share the same content/msg_type - only receive_id differs.
 	replyPayload := map[string]interface{}{
 		"msg_type": "interactive",
 		"content":  string(content),

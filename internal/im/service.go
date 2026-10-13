@@ -99,7 +99,7 @@ func stripImageXMLTags(s string) string {
 }
 
 // rewriteStorageURLs replaces all storage references in content with HTTP URLs
-// so IM clients — which cannot attach AI KB credentials to an image fetch —
+// so IM clients - which cannot attach AI KB credentials to an image fetch -
 // can render them. See internal/storageurl for the shared implementation.
 func rewriteStorageURLs(ctx context.Context, content string, resolver *storageurl.FileServiceResolver) string {
 	if resolver == nil {
@@ -234,12 +234,12 @@ const (
 // All IM-related Redis keys are defined here for discoverability and to avoid
 // scattered string literals across multiple files.
 const (
-	RedisKeyLeader     = "im:ws:leader:"    // + channelID — WebSocket leader election
-	RedisKeyDedup      = "im:dedup:"        // + messageID — message deduplication
-	RedisKeyStop       = "im:stop:"         // + userKey   — cross-instance /stop marker (pre-execution)
-	RedisKeyInflight   = "im:inflight:"     // + userKey   — maps userKey → sessionID:messageID for cross-instance /stop
-	RedisKeyQueueUser  = "im:queue:user:"   // + userKey   — global per-user queue counter
-	RedisKeyRateLimit  = "im:ratelimit:"    // + key       — sliding-window rate limiting
+	RedisKeyLeader     = "im:ws:leader:"    // + channelID - WebSocket leader election
+	RedisKeyDedup      = "im:dedup:"        // + messageID - message deduplication
+	RedisKeyStop       = "im:stop:"         // + userKey   - cross-instance /stop marker (pre-execution)
+	RedisKeyInflight   = "im:inflight:"     // + userKey   - maps userKey → sessionID:messageID for cross-instance /stop
+	RedisKeyQueueUser  = "im:queue:user:"   // + userKey   - global per-user queue counter
+	RedisKeyRateLimit  = "im:ratelimit:"    // + key       - sliding-window rate limiting
 	RedisKeyGlobalGate = "im:global:active" // global concurrent worker counter
 	// RedisChannelConfig broadcasts durable im_channels mutations so every
 	// application replica invalidates its local adapter/config snapshot.
@@ -842,9 +842,9 @@ func resolveIMConfig(appCfg *config.Config) (workers, maxQueue, maxPerUser, glob
 }
 
 // NewService creates a new IM service.
-// redisClient may be nil — in that case the service falls back to local
+// redisClient may be nil - in that case the service falls back to local
 // in-memory state (Lite / single-instance mode).
-// cfg may be nil — in that case built-in defaults are used.
+// cfg may be nil - in that case built-in defaults are used.
 func NewService(
 	db *gorm.DB,
 	sessionService interfaces.SessionService,
@@ -983,7 +983,7 @@ func imImageConfigWarning(activeChannels int, externalURL string) string {
 		return ""
 	}
 	return fmt.Sprintf("[IM] %d IM channel(s) active but APP_EXTERNAL_URL is unset; "+
-		"resource:// images render only if the storage backend is publicly reachable — "+
+		"resource:// images render only if the storage backend is publicly reachable - "+
 		"otherwise set APP_EXTERNAL_URL so they route through nginx /r/",
 		activeChannels)
 }
@@ -1297,7 +1297,7 @@ func (s *Service) wsLeaderRenewLoop(ctx context.Context, channelID string) {
 				s.handleWSLeadershipLoss(channelID)
 				return
 			}
-			// Still the leader — verify the channel is still active. A
+			// Still the leader - verify the channel is still active. A
 			// delete/disable is served by whichever instance got the HTTP
 			// request; without this check the leader would keep the long
 			// connection open until process restart. The renew interval
@@ -1310,7 +1310,7 @@ func (s *Service) wsLeaderRenewLoop(ctx context.Context, channelID string) {
 				return
 			}
 			if err != nil {
-				// Transient DB error — don't stop a possibly-healthy channel
+				// Transient DB error - don't stop a possibly-healthy channel
 				// on a DB hiccup. Skip this round; the next renewal re-checks.
 				logger.Warnf(context.Background(),
 					"[IM] DB check failed for channel %s during leader renewal: %v (skipping this round)", channelID, err)
@@ -1407,14 +1407,14 @@ func (s *Service) wsLeaderRetryLoop(ctx context.Context, channel *IMChannel, sta
 				// stopped channel (and reopen its long connection).
 				fresh, err := s.GetChannelByID(channel.ID)
 				if errors.Is(err, gorm.ErrRecordNotFound) {
-					// Channel was actually deleted — give up for good.
+					// Channel was actually deleted - give up for good.
 					s.releaseWSLeader(channel.ID)
 					logger.Infof(context.Background(),
 						"[IM] Channel %s deleted while waiting for leadership; aborting leader takeover", channel.ID)
 					return
 				}
 				if err != nil {
-					// Transient DB error — don't make a destructive decision.
+					// Transient DB error - don't make a destructive decision.
 					// Release the lock for this round and retry on the next tick.
 					s.releaseWSLeader(channel.ID)
 					logger.Warnf(context.Background(),
@@ -1656,7 +1656,7 @@ func (s *Service) GetChannelByIDAndTenant(channelID string, tenantID uint64) (*I
 //
 // Multi-instance mode (Redis available): uses Redis SetNX for cross-instance
 // deduplication. If Redis fails, returns true (fail-closed) to prevent
-// duplicate processing across instances — a dropped message can be retried
+// duplicate processing across instances - a dropped message can be retried
 // by the user, but a duplicate LLM response wastes resources and confuses.
 //
 // Single-instance mode (no Redis): uses a local sync.Map, which is sufficient
@@ -1668,7 +1668,7 @@ func (s *Service) isDuplicate(ctx context.Context, messageID string) bool {
 		if err == nil {
 			return !ok // SetNX returns true when key was newly set (not a duplicate)
 		}
-		// Redis is configured but failed — fail-closed to avoid cross-instance
+		// Redis is configured but failed - fail-closed to avoid cross-instance
 		// duplicate processing. The user can simply resend the message.
 		logger.Errorf(ctx, "[IM] Redis dedup failed (fail-closed, message dropped): %v", err)
 		return true
@@ -1713,7 +1713,7 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 		}
 	}
 
-	// Resolve threadID for key building — only include in thread mode to avoid
+	// Resolve threadID for key building - only include in thread mode to avoid
 	// leaking thread scope into user-mode rate limit / inflight keys.
 	threadID := ""
 	if channel.SessionMode == string(SessionModeThread) {
@@ -1837,7 +1837,7 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 
 	// Title an untitled IM session from its first text message, like web chats.
 	// GenerateTitleAsync self-guards on a non-empty title and persists to the DB;
-	// nil eventBus is fine (IM has no live stream — the sidebar reloads it).
+	// nil eventBus is fine (IM has no live stream - the sidebar reloads it).
 	if session.Title == "" && strings.TrimSpace(msg.Content) != "" {
 		// Copy the session: the async title goroutine writes Title while the QA
 		// worker below shares the same *session.
@@ -1904,7 +1904,7 @@ func emptyIncomingMessageReply(msg *IncomingMessage) (string, bool) {
 		return "", false
 	}
 	// Image/file events are allowed to arrive without a caption. Do not depend
-	// on fileMessageQAContent having already filled Content — a later reorder
+	// on fileMessageQAContent having already filled Content - a later reorder
 	// of HandleMessage must not reject attachments.
 	hasAttachment := msg.MessageType == MessageTypeFile ||
 		msg.MessageType == MessageTypeImage ||
@@ -2247,7 +2247,7 @@ func (s *Service) resolveSession(ctx context.Context, msg *IncomingMessage, tena
 // buildUserSessionTitle produces a human-distinguishable title for a user-mode
 // IM session. Platform adapters only surface ChatID, not a readable chat name,
 // so we fall back to short ID suffixes to keep group/DM sessions visually distinct.
-// Platform prefix is intentionally omitted — the UI renders a platform icon badge
+// Platform prefix is intentionally omitted - the UI renders a platform icon badge
 // alongside the title, so the `[feishu]` prefix would be redundant clutter.
 func buildUserSessionTitle(msg *IncomingMessage) string {
 	var b strings.Builder
@@ -2303,7 +2303,7 @@ func imInitialSessionTitle(msg *IncomingMessage, identityTitle func(*IncomingMes
 // resolveUserSession finds or creates a ChannelSession keyed by (platform, user_id, chat_id, tenant_id, agent_id).
 // This is the original session resolution strategy.
 //
-// Invariant: a cache miss creates a brand-new session — we never attach a second
+// Invariant: a cache miss creates a brand-new session - we never attach a second
 // mapping to an existing session. The session-list source filter (repository
 // QueryPaged) relies on this one-mapping-per-session property; if this ever
 // re-maps an existing session, that JOIN needs a one-row-per-session guard.
@@ -2659,7 +2659,7 @@ func (s *Service) handleMessageStream(ctx context.Context, msg *IncomingMessage,
 		return nil
 	})
 
-	// Subscribe to agent thought events — stream thinking content into <think> block
+	// Subscribe to agent thought events - stream thinking content into <think> block
 	eventBus.On(event.EventAgentThought, func(_ context.Context, evt event.Event) error {
 		data, ok := evt.Data.(event.AgentThoughtData)
 		if !ok {
@@ -2675,7 +2675,7 @@ func (s *Service) handleMessageStream(ctx context.Context, msg *IncomingMessage,
 		return nil
 	})
 
-	// Subscribe to agent tool call events — write status line into the think block.
+	// Subscribe to agent tool call events - write status line into the think block.
 	eventBus.On(event.EventAgentToolCall, func(_ context.Context, evt event.Event) error {
 		data, ok := evt.Data.(event.AgentToolCallData)
 		if !ok {
@@ -2796,7 +2796,7 @@ func (s *Service) handleMessageStream(ctx context.Context, msg *IncomingMessage,
 	s.storeInflightMapping(qaCtx, userKey, session.ID, assistantMsg.ID)
 	defer s.clearInflightMapping(ctx, userKey)
 
-	// Start StreamManager stop watcher — mirrors web's handleAgentEventsForSSE
+	// Start StreamManager stop watcher - mirrors web's handleAgentEventsForSSE
 	// stop detection. Cancels qaCtx if a stop event is written by any instance.
 	go s.watchStreamManagerStop(qaCtx, session.ID, assistantMsg.ID, qaCancel)
 
@@ -3153,7 +3153,7 @@ func (s *Service) runQA(ctx context.Context, session *types.Session, query strin
 		logger.Warnf(ctx, "[IM] Failed to update assistant message: %v", err)
 	}
 
-	// Return raw answer — callers apply cleanIMContent with the appropriate FileService.
+	// Return raw answer - callers apply cleanIMContent with the appropriate FileService.
 	return answer, nil
 }
 

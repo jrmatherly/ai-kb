@@ -13,7 +13,7 @@ import (
 // guard: a reuse_vectors move whose source and target KBs are bound to different
 // vector stores must be rejected before any index copy runs. The guard fires at
 // the top of moveKnowledgeReuseVectors, so an empty knowledgeService (no repos)
-// is sufficient — the function returns before touching any dependency.
+// is sufficient - the function returns before touching any dependency.
 func TestMoveKnowledgeReuseVectors_CrossStoreRejected(t *testing.T) {
 	s := &knowledgeService{}
 	ctx := context.WithValue(context.Background(), types.TenantIDContextKey, uint64(1))

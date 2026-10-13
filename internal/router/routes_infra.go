@@ -39,7 +39,7 @@ func RegisterModelRoutes(
 		models.PUT("/:id", g.AdminOrSystemAdmin(), handler.UpdateModel)
 		// Delete a model: Admin+
 		models.DELETE("/:id", g.Admin(), handler.DeleteModel)
-		// Per-field credential subresource (see internal/handler/model_credentials.go) — Admin+
+		// Per-field credential subresource (see internal/handler/model_credentials.go) - Admin+
 		models.PUT("/:id/credentials", g.AdminOrSystemAdmin(), credHandler.Put)
 		models.DELETE("/:id/credentials/:field", g.AdminOrSystemAdmin(), credHandler.DeleteField)
 	}
@@ -149,24 +149,24 @@ func RegisterMCPServiceRoutes(
 	// MCP OAuth provider redirect. Registered OUTSIDE the /mcp-services group
 	// to avoid a static-vs-":id" route conflict, and left unauthenticated
 	// (allow-listed in middleware/auth.go) because the third-party browser
-	// redirect carries no AI KB bearer — the single-use state authenticates.
+	// redirect carries no AI KB bearer - the single-use state authenticates.
 	r.GET("/mcp-oauth/callback", oauthHandler.Callback)
 
 	mcpServices := g.apiKeyGroup(r.Group("/mcp-services"), apiKeyManageMCPServices(apiKeyFullAccess()))
 	{
-		// Create MCP service — Admin+
+		// Create MCP service - Admin+
 		mcpServices.POST("", g.Admin(), handler.CreateMCPService)
-		// List MCP services — Viewer+
+		// List MCP services - Viewer+
 		mcpServices.GET("", g.Viewer(), handler.ListMCPServices)
-		// Get MCP service by ID — Viewer+
+		// Get MCP service by ID - Viewer+
 		mcpServices.GET("/:id", g.Viewer(), handler.GetMCPService)
-		// Update MCP service — Admin+
+		// Update MCP service - Admin+
 		mcpServices.PUT("/:id", g.Admin(), handler.UpdateMCPService)
-		// Delete MCP service — Admin+
+		// Delete MCP service - Admin+
 		mcpServices.DELETE("/:id", g.Admin(), handler.DeleteMCPService)
-		// Test MCP service connection — Admin+ (probes external infra)
+		// Test MCP service connection - Admin+ (probes external infra)
 		mcpServices.POST("/:id/test", g.Admin(), handler.TestMCPService)
-		// Get MCP service tools — Viewer+
+		// Get MCP service tools - Viewer+
 		mcpServices.GET("/:id/tools", g.Viewer(), handler.GetMCPServiceTools)
 		mcpServices.GET("/:id/metadata", g.Viewer(), handler.GetMCPMetadata)
 		// Refresh writes a principal-scoped OAuth snapshot for the caller
@@ -174,13 +174,13 @@ func RegisterMCPServiceRoutes(
 		// handler). GET /tools remains Viewer+ and does not persist.
 		mcpServices.POST("/:id/metadata/refresh", g.Viewer(), handler.RefreshMCPMetadata)
 		mcpServices.POST("/:id/usage-instructions/generate", g.Admin(), handler.GenerateMCPUsageInstructions)
-		// Get MCP service resources — Viewer+
+		// Get MCP service resources - Viewer+
 		mcpServices.GET("/:id/resources", g.Viewer(), handler.GetMCPServiceResources)
 		// Per-field credential subresource: secrets never travel via the main
-		// PUT body. See internal/handler/mcp_credentials.go for the contract. — Admin+
+		// PUT body. See internal/handler/mcp_credentials.go for the contract. - Admin+
 		mcpServices.PUT("/:id/credentials", g.Admin(), credHandler.Put)
 		mcpServices.DELETE("/:id/credentials/:field", g.Admin(), credHandler.DeleteField)
-		// MCP tool human approval (issue #1173) — Viewer+ to read, Admin+ to set policy
+		// MCP tool human approval (issue #1173) - Viewer+ to read, Admin+ to set policy
 		mcpServices.GET("/:id/tool-approvals", g.Viewer(), handler.ListMCPToolApprovals)
 		mcpServices.PUT("/:id/tool-approvals/:tool_name", g.Admin(), handler.SetMCPToolApproval)
 		// Per-user OAuth authorization flow. Viewer+ may authorize/inspect/
@@ -197,7 +197,7 @@ func RegisterMCPServiceRoutes(
 	{
 		// Resolving a pending tool-approval is gated to tenant members
 		// (Viewer+). The approval card surfaces inside an agent chat the
-		// caller initiated — restricting it to Admin+ blocks the only
+		// caller initiated - restricting it to Admin+ blocks the only
 		// people who actually have context to approve, so the gate is
 		// kept at "anyone in the tenant" instead.
 		agentTool.POST("/tool-approvals/:pending_id", g.Viewer(), handler.ResolveToolApproval)
@@ -210,7 +210,7 @@ func RegisterMCPServiceRoutes(
 
 // RegisterWebSearchRoutes registers web search routes
 func RegisterWebSearchRoutes(r *gin.RouterGroup, webSearchHandler *handler.WebSearchHandler, g *rbacGuards) {
-	// Web search providers — Viewer+ (read-only listing of provider catalog).
+	// Web search providers - Viewer+ (read-only listing of provider catalog).
 	webSearch := r.Group("/web-search")
 	{
 		webSearch.GET("/providers", g.Viewer(), webSearchHandler.GetProviders)
@@ -232,9 +232,9 @@ func RegisterWebSearchProviderRoutes(
 ) {
 	providers := g.apiKeyGroup(r.Group("/web-search-providers"), apiKeyManageWebSearch(apiKeyFullAccess()))
 	{
-		// List available provider types (metadata for UI forms) — Viewer+
+		// List available provider types (metadata for UI forms) - Viewer+
 		providers.GET("/types", g.Viewer(), h.ListProviderTypes)
-		// Test with raw credentials (no persistence) — Admin+
+		// Test with raw credentials (no persistence) - Admin+
 		providers.POST("/test", g.Admin(), h.TestProviderRaw)
 		// CRUD
 		providers.POST("", g.Admin(), h.CreateProvider)
@@ -242,10 +242,10 @@ func RegisterWebSearchProviderRoutes(
 		providers.GET("/:id", g.Viewer(), h.GetProvider)
 		providers.PUT("/:id", g.Admin(), h.UpdateProvider)
 		providers.DELETE("/:id", g.Admin(), h.DeleteProvider)
-		// Per-field credential subresource — Admin+
+		// Per-field credential subresource - Admin+
 		providers.PUT("/:id/credentials", g.Admin(), credHandler.Put)
 		providers.DELETE("/:id/credentials/:field", g.Admin(), credHandler.DeleteField)
-		// Test existing saved provider — Admin+
+		// Test existing saved provider - Admin+
 		providers.POST("/:id/test", g.Admin(), h.TestProviderByID)
 	}
 }
@@ -258,9 +258,9 @@ func RegisterWebSearchProviderRoutes(
 func RegisterVectorStoreRoutes(r *gin.RouterGroup, h *handler.VectorStoreHandler, g *rbacGuards) {
 	stores := g.apiKeyGroup(r.Group("/vector-stores"), apiKeyManageVectorStores(apiKeyFullAccess()))
 	{
-		// List available engine types (metadata for UI forms) — Viewer+
+		// List available engine types (metadata for UI forms) - Viewer+
 		stores.GET("/types", g.Viewer(), h.ListStoreTypes)
-		// Test with raw credentials (no persistence) — Admin+
+		// Test with raw credentials (no persistence) - Admin+
 		stores.POST("/test", g.Admin(), h.TestStoreRaw)
 		// CRUD
 		stores.POST("", g.Admin(), h.CreateStore)
@@ -268,7 +268,7 @@ func RegisterVectorStoreRoutes(r *gin.RouterGroup, h *handler.VectorStoreHandler
 		stores.GET("/:id", g.Viewer(), h.GetStore)
 		stores.PUT("/:id", g.Admin(), h.UpdateStore)
 		stores.DELETE("/:id", g.Admin(), h.DeleteStore)
-		// Test existing saved or env store — Admin+
+		// Test existing saved or env store - Admin+
 		stores.POST("/:id/test", g.Admin(), h.TestStoreByID)
 	}
 }
@@ -304,10 +304,10 @@ func RegisterDataSourceRoutes(
 	// Data source routes
 	ds := g.apiKeyGroup(r.Group("/datasource"), apiKeyManageDataSources(apiKeyFullAccess()))
 	{
-		// Get available connector types — Viewer+
+		// Get available connector types - Viewer+
 		ds.GET("/types", g.Viewer(), handler.GetAvailableConnectors)
 
-		// Validate credentials without persistence (for "Test Connection" button) — Admin+
+		// Validate credentials without persistence (for "Test Connection" button) - Admin+
 		ds.POST("/validate-credentials", g.Admin(), handler.ValidateCredentials)
 
 		// CRUD operations
@@ -319,21 +319,21 @@ func RegisterDataSourceRoutes(
 
 		// Credential subresource. Single logical field "credentials" because
 		// connector credentials are a per-connector atomic map (see
-		// internal/handler/datasource_credentials.go). — Admin+
+		// internal/handler/datasource_credentials.go). - Admin+
 		ds.PUT("/:id/credentials", g.Admin(), credHandler.Put)
 		ds.DELETE("/:id/credentials/:field", g.Admin(), credHandler.DeleteField)
 
-		// Connection and resource management — Admin+
+		// Connection and resource management - Admin+
 		ds.POST("/:id/validate", g.Admin(), handler.ValidateConnection)
 		ds.GET("/:id/resources", g.Admin(), handler.ListAvailableResources)
 		ds.POST("/:id/resource-ancestors", g.Admin(), handler.ResolveResourceAncestors)
 
-		// Sync management — Admin+
+		// Sync management - Admin+
 		ds.POST("/:id/sync", g.Admin(), handler.ManualSync)
 		ds.POST("/:id/pause", g.Admin(), handler.PauseDataSource)
 		ds.POST("/:id/resume", g.Admin(), handler.ResumeDataSource)
 
-		// Sync logs — Viewer+ (read-only audit trail)
+		// Sync logs - Viewer+ (read-only audit trail)
 		ds.GET("/:id/logs", g.Viewer(), handler.GetSyncLogs)
 		ds.GET("/logs/:log_id", g.Viewer(), handler.GetSyncLog)
 	}

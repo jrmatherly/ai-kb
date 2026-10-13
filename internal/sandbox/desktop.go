@@ -96,7 +96,7 @@ type RemoteDesktopManager interface {
 //
 // Both signals must agree, exactly as in TerminalManagerFrom: the type
 // assertion finds the method, and SupportsDesktop is the advertised
-// capability. Either one alone is not enough — a decorator can carry the
+// capability. Either one alone is not enough - a decorator can carry the
 // method while the inner backend cannot serve it.
 func DesktopManagerFrom(client RemoteSandboxClient) (RemoteDesktopManager, bool) {
 	if client == nil {

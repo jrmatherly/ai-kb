@@ -40,7 +40,7 @@ func TestSplit_EmptyStrategyEqualsLegacy(t *testing.T) {
 func TestSplit_AutoStrategy_PicksHeadingForMarkdownDoc(t *testing.T) {
 	doc := strings.Repeat("# A\nbody\n## B\nbody\n## C\nbody\n## D\nbody\n", 1)
 	cfg := SplitterConfig{ChunkSize: 200, ChunkOverlap: 20, Strategy: StrategyAuto}
-	// Until heading_splitter is wired, this falls through to SplitText —
+	// Until heading_splitter is wired, this falls through to SplitText -
 	// just assert we get a valid result.
 	chunks := Split(doc, cfg)
 	if len(chunks) == 0 {
@@ -70,7 +70,7 @@ short faq.`
 }
 
 // TestSplit_PreservesPositionInvariantAcrossTiers ensures every chunk's
-// (Start, End, Content) triple stays consistent — End-Start must equal the
+// (Start, End, Content) triple stays consistent - End-Start must equal the
 // rune length of Content, and runes[Start:End] must equal Content. This is
 // the contract that knowledge.go:2278+ relies on for document reconstruction
 // during summary generation.
@@ -132,7 +132,7 @@ func TestSplitParentChild_AutoStrategyEnrichesChildBreadcrumbs(t *testing.T) {
 	}
 
 	// At least one child should carry a breadcrumb that includes a
-	// sub-heading (## Section …) — that's only possible if the child
+	// sub-heading (## Section …) - that's only possible if the child
 	// splitter re-detected headings inside the parent.
 	saw := false
 	for _, c := range res.Children {

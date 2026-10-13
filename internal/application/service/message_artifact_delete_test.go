@@ -77,7 +77,7 @@ func artifactRow(messageID string, pos int, url, path string) types.MessageArtif
 	}
 }
 
-// Deleting is a write on the session, so it is scoped to its owner — unlike the
+// Deleting is a write on the session, so it is scoped to its owner - unlike the
 // download path, which also honours shared-agent read access.
 func TestDeleteSessionArtifactIsScopedToTheSessionOwner(t *testing.T) {
 	sessions := &deleteSessionRepo{}

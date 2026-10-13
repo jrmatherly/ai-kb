@@ -39,7 +39,7 @@ func (s *stubGraphChunkRepo) ListChunksByIDOnly(_ context.Context, ids []string)
 
 // The tool used to run plain text search only. It now looks the entities up
 // in the graph, returns their relations, and puts the chunks they came from
-// first — only chunks of the queried, authorized knowledge base.
+// first - only chunks of the queried, authorized knowledge base.
 func TestQueryKnowledgeGraph_QueriesTheGraph(t *testing.T) {
 	graphRepo := &stubGraphRepo{graph: &types.GraphData{
 		Node: []*types.GraphNode{

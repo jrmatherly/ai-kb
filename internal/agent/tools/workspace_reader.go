@@ -1,4 +1,4 @@
-// Package tools — read_file.
+// Package tools - read_file.
 //
 // Read-only tool that lets the LLM read a file inside the session's
 // sandbox. Known paths can be read directly;
@@ -76,7 +76,7 @@ type readCacheEntry struct {
 // nothing indicates the file changed.
 //
 // A page is cut out of the whole file, and none of the sandbox backends expose
-// a range read — RemoteClient.ReadFile takes a path and returns everything. So
+// a range read - RemoteClient.ReadFile takes a path and returns everything. So
 // without this, every page downloads the file again: paging a 1 MB artifact at
 // roughly 23 KB per page is 45 full downloads and, worse, 45 round trips. The
 // backends have no range read, so the only way to page is to keep the last
@@ -242,9 +242,10 @@ func renderFilePage(ctx context.Context, input ReadFileInput, data []byte, sessi
 	if binary {
 		fmt.Fprintf(&b, "size=%d bytes, returned=0 bytes\n", total)
 		if strings.HasPrefix(clean, "skill://") {
-			b.WriteString("binary skill resource — text suppressed. Use the skill's execution guidance to process bundled binary files; reading a resource does not create a downloadable artifact.\n")
+			b.WriteString("binary skill resource - text suppressed. Use the skill's execution guidance to process " +
+				"bundled binary files; reading a resource does not create a downloadable artifact.\n")
 		} else {
-			b.WriteString("binary file — content suppressed; use the artifact attachment to download it.\n")
+			b.WriteString("binary file - content suppressed; use the artifact attachment to download it.\n")
 		}
 		resultData["returned_bytes"] = 0
 		resultData["truncated"] = false
@@ -309,7 +310,7 @@ func renderFilePage(ctx context.Context, input ReadFileInput, data []byte, sessi
 		)
 	} else if page.startLine > 1 {
 		fmt.Fprintf(&b,
-			"\n[Showing lines %d-%d of %d — end of file.]\n",
+			"\n[Showing lines %d-%d of %d - end of file.]\n",
 			page.startLine, page.endLine, page.totalLines,
 		)
 	}

@@ -398,8 +398,8 @@ func TestDockerOpenTerminalTagsEachSession(t *testing.T) {
 }
 
 // Cancelling the caller's context must end the session, exactly like an
-// explicit Close. Nothing else in the adapter honours the context — the pump
-// only reads the hijacked stream and the refresh rides a detached context — so
+// explicit Close. Nothing else in the adapter honours the context - the pump
+// only reads the hijacked stream and the refresh rides a detached context - so
 // without a watcher a cancelled context would leak the shell and pin the
 // container (its marker stays fresh forever).
 func TestDockerTerminalContextCancelEndsSession(t *testing.T) {

@@ -4,7 +4,7 @@
 // chapter markers, visual separators, all-caps section titles, page footers).
 //
 // The algorithm finds all candidate boundary positions, then performs greedy
-// bin-packing — accumulating blocks between boundaries into chunks until the
+// bin-packing - accumulating blocks between boundaries into chunks until the
 // next block would exceed cfg.ChunkSize. Blocks larger than ChunkSize are
 // recursively delegated to the legacy splitter for inner segmentation.
 package chunker
@@ -30,7 +30,7 @@ type boundary struct {
 //
 // profile is currently unused (this tier scans for boundaries directly) but
 // is accepted to keep the splitByHeadings / splitByHeuristics signatures
-// uniform — see strategy.runTier.
+// uniform - see strategy.runTier.
 func splitByHeuristicsImpl(text string, cfg SplitterConfig, _ *DocProfile) []Chunk {
 	if text == "" {
 		return nil
@@ -43,7 +43,7 @@ func splitByHeuristicsImpl(text string, cfg SplitterConfig, _ *DocProfile) []Chu
 
 	bounds := findHeuristicBoundaries(text, cfg.Languages)
 	// Drop any boundary that falls strictly inside a protected region (table,
-	// fenced code block, LaTeX block, etc.) — splitting there would cut
+	// fenced code block, LaTeX block, etc.) - splitting there would cut
 	// through atomic content. Boundaries on a span edge are kept since they
 	// align with the protected region start/end.
 	if prot := protectedSpansRune(text, protectedSpans(text)); len(prot) > 0 {
@@ -112,7 +112,7 @@ func splitByHeuristicsImpl(text string, cfg SplitterConfig, _ *DocProfile) []Chu
 func findHeuristicBoundaries(text string, langs []string) []boundary {
 	var bounds []boundary
 
-	// Form feeds — strongest single-character boundary.
+	// Form feeds - strongest single-character boundary.
 	for _, idx := range allRuneIndices(text, "\f") {
 		bounds = append(bounds, boundary{runeStart: idx, priority: PrioFormFeed})
 	}
@@ -189,7 +189,7 @@ func findHeuristicBoundaries(text string, langs []string) []boundary {
 
 // dropBoundsInsideSpans returns bounds with entries that fall strictly
 // inside any of the (rune-offset) protected spans removed. Bounds at a
-// span's start or end are kept — they align with the span edge and don't
+// span's start or end are kept - they align with the span edge and don't
 // split protected content. spans must be sorted by start.
 func dropBoundsInsideSpans(bounds []boundary, spans []span) []boundary {
 	if len(spans) == 0 {
@@ -200,7 +200,7 @@ boundLoop:
 	for _, b := range bounds {
 		for _, s := range spans {
 			if s.start >= b.runeStart {
-				break // remaining spans start at or after b — can't contain b
+				break // remaining spans start at or after b - can't contain b
 			}
 			if b.runeStart < s.end {
 				continue boundLoop
@@ -230,7 +230,7 @@ func allRuneIndices(text, needle string) []int {
 
 // appendChunk slices runes[start:end] into a Chunk and appends it to out.
 // Pure-whitespace slices are skipped (boundary clustering can occasionally
-// produce them). The Content stored is the raw slice — Start/End rune
+// produce them). The Content stored is the raw slice - Start/End rune
 // offsets must match utf8.RuneCountInString(Content) for downstream
 // reconstruction code; whitespace stripping for embedding happens in
 // Chunk.EmbeddingContent.
@@ -275,7 +275,7 @@ func appendOversizeBlock(out []Chunk, runes []rune, start, end int, cfg Splitter
 // target only if neither option is available.
 //
 // curEnd itself is always a boundary (the bin-packer flushes at boundary
-// positions), so we exclude it from the search — picking it would yield
+// positions), so we exclude it from the search - picking it would yield
 // zero overlap, defeating the purpose of this function.
 func applyOverlapAligned(runes []rune, curEnd, overlap int, bounds []boundary) int {
 	if overlap <= 0 {

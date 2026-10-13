@@ -19,7 +19,7 @@ import (
 // BatchSave per-call cap so each copied page is a single bulk request.
 const copyBatchSize = 500
 
-// copySourceDoc is the full _source read during CopyIndices — it includes the
+// copySourceDoc is the full _source read during CopyIndices - it includes the
 // embedding vector and is_recommended, which the retrieve-path hit struct
 // omits because retrieval does not need them.
 type copySourceDoc struct {
@@ -51,7 +51,7 @@ func transformSourceID(sourceID, chunkID, targetChunkID string) string {
 }
 
 // CopyIndices copies all docs of one knowledge base into another (within the
-// same store) by scanning the source and re-saving via BatchSave — mirroring
+// same store) by scanning the source and re-saving via BatchSave - mirroring
 // the Elasticsearch / Qdrant drivers (search→BatchSave), which yields the
 // source_id transformation and dim/keyword routing for free. Runs
 // synchronously and paginates; the large-batch background-task path is a
@@ -110,7 +110,7 @@ func (r *Repository) CopyIndices(
 			targetSourceID := transformSourceID(d.SourceID, d.ChunkID, targetChunkID)
 			if len(d.Embedding) > 0 {
 				// BatchSave looks up embeddings by SourceID (lookupEmbedding),
-				// so key by the target source id — not the chunk id, which is
+				// so key by the target source id - not the chunk id, which is
 				// the Elasticsearch driver's convention.
 				embMap[targetSourceID] = d.Embedding
 			}

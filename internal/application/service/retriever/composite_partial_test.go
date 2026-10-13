@@ -79,7 +79,7 @@ func TestCompositeRetrieveExposesPartialResultError(t *testing.T) {
 	require.ErrorIs(t, results[0].Error, cause, "the result set keeps its own failure")
 }
 
-// A complete search — including a genuine zero-hit one — must stay quiet.
+// A complete search - including a genuine zero-hit one - must stay quiet.
 func TestCompositeRetrieveStaysSilentWhenResultSetsAreComplete(t *testing.T) {
 	engine := &cannedEngine{
 		engineType: types.QdrantRetrieverEngineType,

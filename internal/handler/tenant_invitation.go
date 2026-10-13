@@ -89,7 +89,7 @@ func parseInvitationIDFromPath(c *gin.Context) (uint64, bool) {
 //
 // Share-link rows (InviteeUserID == "") get the IsShareLink flag set
 // so the SPA can render them differently. invite_url is NOT populated
-// here — projectInvitationWithLink layers it on for the management
+// here - projectInvitationWithLink layers it on for the management
 // view that needs the copy-link affordance.
 func projectInvitation(
 	inv *types.TenantInvitation,
@@ -129,7 +129,7 @@ func projectInvitation(
 // projectInvitationWithLink layers invite_url on top of projectInvitation
 // for share-link rows that are still pending. The Owner-facing list and
 // the create response go through here so a "copy link" button can sit
-// on every active row — Owners can dispatch the link on demand without
+// on every active row - Owners can dispatch the link on demand without
 // the "copy now or revoke" pressure.
 //
 // The /me/invitations inbox path does NOT use this helper: per-user
@@ -233,7 +233,7 @@ func (h *TenantInvitationHandler) ListTenantInvitations(c *gin.Context) {
 	for _, inv := range rows {
 		// Within the tenant view we don't bother hydrating tenant name
 		// (the caller already knows the tenant). Pass an empty map.
-		// Share-link URLs embed the registration token — only Owners may
+		// Share-link URLs embed the registration token - only Owners may
 		// re-copy them; other roles see metadata without invite_url.
 		if showShareLinks {
 			resp = append(resp, h.projectInvitationWithLink(inv, usersByID, nil))
@@ -335,7 +335,7 @@ func (h *TenantInvitationHandler) CreateInvitation(c *gin.Context) {
 
 	usersByID := map[string]*types.User{user.ID: user}
 	if invitedBy != nil {
-		// Best-effort hydrate inviter too. Errors are swallowed —
+		// Best-effort hydrate inviter too. Errors are swallowed -
 		// the response degrades to just the invitee fields.
 		if u, lookupErr := h.userService.GetUserByID(ctx, *invitedBy); lookupErr == nil && u != nil {
 			usersByID[u.ID] = u
@@ -410,8 +410,8 @@ func (h *TenantInvitationHandler) RevokeInvitation(c *gin.Context) {
 	// Cross-check the invitation lives in the URL :id. The route layer
 	// already verifies the caller has Owner on the active tenant AND
 	// the URL :id matches the active tenant (PathTenantMatch), but the
-	// invitation row itself carries its own tenant_id we have to honour
-	// — otherwise an Owner of A could revoke invitations of B by URL-
+	// invitation row itself carries its own tenant_id we have to honour -
+	// otherwise an Owner of A could revoke invitations of B by URL-
 	// crafting against /tenants/A/invitations/<inv-of-B>.
 	inv, err := h.invitationService.GetByID(ctx, invID)
 	if err != nil {

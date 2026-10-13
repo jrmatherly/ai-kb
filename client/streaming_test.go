@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-// agentSSEEvent serializes resp as one SSE frame — a `data:` line followed by
-// the empty line that dispatches it — matching the wire shape the SDK
+// agentSSEEvent serializes resp as one SSE frame - a `data:` line followed by
+// the empty line that dispatches it - matching the wire shape the SDK
 // streaming endpoints and processAgentSSEStream consume.
 func agentSSEEvent(t *testing.T, w io.Writer, resp AgentStreamResponse) {
 	t.Helper()

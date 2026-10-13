@@ -390,7 +390,7 @@ func (h *OrganizationHandler) ListMembers(c *gin.Context) {
 	// Member roster is sensitive: it surfaces every tenant in the org
 	// plus the representative user (username/email/avatar). Only orgs
 	// the caller's tenant actually belongs to may be listed; non-members
-	// get 403 — mirrors ListOrgShares / ListOrgAgentShares which already
+	// get 403 - mirrors ListOrgShares / ListOrgAgentShares which already
 	// gate on GetTenantMember.
 	if _, err := h.orgService.GetTenantMember(ctx, orgID, tenantID); err != nil {
 		c.Error(apperrors.NewForbiddenError("Your workspace is not a member of this organization"))
@@ -1746,7 +1746,7 @@ func (h *OrganizationHandler) ListOrganizationSharedKnowledgeBases(c *gin.Contex
 	// uniformly across the space view as well. is_mine and the optional
 	// source_from_agent payload are passed through as extras so the
 	// frontend can keep its current rendering branches. Rows where
-	// is_mine is true are still strip-projected here — callers see the
+	// is_mine is true are still strip-projected here - callers see the
 	// rich view of their own bindings on the regular KB list / detail
 	// endpoints, so dropping the owner-side enrichment from the space
 	// view trades a small UI nicety for a strictly simpler invariant
@@ -2019,7 +2019,7 @@ func (h *OrganizationHandler) InviteMember(c *gin.Context) {
 		return
 	}
 
-	// Plan 3: resolve the target tenant — preferably from tenant_id, or (the
+	// Plan 3: resolve the target tenant - preferably from tenant_id, or (the
 	// pre-Plan-3 SDK contract) from the tenant of user_id.
 	//
 	// A direct add enrols a workspace without anyone in it taking part, so no

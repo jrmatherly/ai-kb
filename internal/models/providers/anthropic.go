@@ -1,13 +1,13 @@
 // Package providers registers Anthropic's native Messages API.
 //
-// Facts (https://platform.claude.com/docs/en/api/messages — docs.anthropic.com
+// Facts (https://platform.claude.com/docs/en/api/messages - docs.anthropic.com
 // now redirects there):
 //   - authentication is the `x-api-key` header plus `anthropic-version`,
 //     still 2023-06-01 in every current example;
 //   - `max_tokens` is mandatory (the protocol default of 4096 applies when
 //     the caller sets no budget);
 //   - `output_config.effort` takes low | medium | high | xhigh | max and
-//     nothing else — there is no "minimal" rung, so the vendor level map
+//     nothing else - there is no "minimal" rung, so the vendor level map
 //     folds minimal onto low
 //     (https://platform.claude.com/docs/en/build-with-claude/effort).
 //     `max` is listed for Fable 5.1 / Fable 5 / Opus 5 / Opus 4.8 / Opus 4.7 /

@@ -2,7 +2,7 @@
 //
 // We avoid pulling in a tokenizer dependency (e.g. tiktoken) and instead use
 // per-language chars-per-token ratios derived from common embedding model
-// vocabularies. The numbers are conservative — they tend to slightly
+// vocabularies. The numbers are conservative - they tend to slightly
 // over-estimate token counts so that chunks stay safely under model limits.
 package chunker
 
@@ -59,7 +59,7 @@ func ApproxTokenCountFromRuneLen(runeLen int, lang string) int {
 
 // DetectLanguage returns a coarse language label by counting CJK runes vs.
 // Latin runes. The result is one of LangChinese, LangGerman, LangEnglish or
-// LangMixed. Detection is cheap and meant only for heuristic dispatch — it
+// LangMixed. Detection is cheap and meant only for heuristic dispatch - it
 // is NOT a replacement for proper language identification.
 func DetectLanguage(s string) string {
 	if s == "" {
@@ -105,7 +105,7 @@ func isGermanUmlaut(r rune) bool {
 }
 
 // hasGermanWords does a tiny stop-word check to bias towards "de" when the
-// text uses common German function words. Cheap heuristic — false positives
+// text uses common German function words. Cheap heuristic - false positives
 // on borrowed terms are acceptable.
 func hasGermanWords(s string) bool {
 	const sample = 512

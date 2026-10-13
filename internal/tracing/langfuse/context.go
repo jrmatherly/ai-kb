@@ -9,8 +9,8 @@ import (
 )
 
 // traceCtxKey is the exported context key defined in types/const.go. It lives
-// there (not inside this package) so that logger.CloneContext — which rebuilds
-// a stripped-down context on every request — can preserve the Langfuse trace
+// there (not inside this package) so that logger.CloneContext - which rebuilds
+// a stripped-down context on every request - can preserve the Langfuse trace
 // without importing this package. If we kept the key private here, every
 // CloneContext call would drop the trace and downstream LLM wrappers would
 // each auto-create their own shallow trace, fragmenting a single HTTP request

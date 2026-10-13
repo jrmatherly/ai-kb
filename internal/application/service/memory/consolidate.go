@@ -19,7 +19,7 @@ const (
 	// a model call, so it is deliberately infrequent.
 	consolidateInterval = 24 * time.Hour
 	// forcedConsolidateInterval is the floor between two reviews one person
-	// asks for. Short enough that a real retry — fix the model, press again —
+	// asks for. Short enough that a real retry - fix the model, press again -
 	// is not blocked, long enough that the button cannot be scripted into a
 	// stream of model calls.
 	forcedConsolidateInterval = time.Minute
@@ -37,7 +37,7 @@ const (
 	consolidateMinOverlap = 0.55
 	// forcedMinOverlap is the same bar for a review someone asked for.
 	//
-	// Low on purpose. Candidate selection is recall, not judgement — every
+	// Low on purpose. Candidate selection is recall, not judgement - every
 	// group goes to the model, which answers with an empty statement when the
 	// records turn out to be different things. A strict bar only hides pairs
 	// from the one component able to tell them apart: "my name is wizard, I am
@@ -141,8 +141,8 @@ func (s *Service) reviewStore(
 	// ever saw the newest rows, and consolidation is the one stage whose job is
 	// to notice things that drifted apart over weeks.
 	//
-	// Reading more costs no model calls. Candidate selection is local — token
-	// overlap plus the vectors recall already stored — and the number of groups
+	// Reading more costs no model calls. Candidate selection is local - token
+	// overlap plus the vectors recall already stored - and the number of groups
 	// actually put to a model is capped separately by maxClusters.
 	items, _, err := s.repo.ListItems(ctx, scope, types.MemoryStatusActive, cfg.EffectiveMaxItems(), 0)
 	if err != nil {
@@ -165,7 +165,7 @@ func (s *Service) reviewStore(
 	s.backfillEmbeddings(ctx, scope, cfg)
 
 	// Vectors that exist but predate the database being able to rank them.
-	// Cheap — no model is called, the numbers are already stored — and until
+	// Cheap - no model is called, the numbers are already stored - and until
 	// it runs, those memories are invisible to the SQL ranking.
 	if moved, err := s.repo.SyncVectorColumn(ctx, scope, vectorSyncPerRun); err != nil {
 		logger.Warnf(ctx, "memory: sync vector column failed: %v", err)
@@ -194,7 +194,7 @@ func (s *Service) reviewStore(
 // demoteStaleTasks lowers the importance of tasks nobody has mentioned in
 // months.
 //
-// Deleting them would be wrong — the user never said they finished, and we do
+// Deleting them would be wrong - the user never said they finished, and we do
 // not delete what we were told. Lowering importance is enough: it drops them
 // out of the resident block and makes them the first to go when the store hits
 // its cap, while leaving them visible and explainable in the memory manager.
@@ -227,7 +227,7 @@ func (s *Service) demoteStaleTasks(
 // mergeRedundant folds groups of near-duplicate memories into one statement.
 //
 // candidates is how many groups were found, which is not len(clusters) after
-// capping — it is what tells a caller whether an empty result means "nothing
+// capping - it is what tells a caller whether an empty result means "nothing
 // looked alike" or "the model said no".
 func (s *Service) mergeRedundant(
 	ctx context.Context,
@@ -308,7 +308,7 @@ func (s *Service) mergeRedundant(
 // Two signals, either of which is enough. Wording overlap catches restatements
 // of the same sentence; cosine over the vectors already stored for recall
 // catches the same claim said differently, which no amount of token counting
-// can. Neither decides anything — every group is put to the model.
+// can. Neither decides anything - every group is put to the model.
 func (s *Service) mergeCandidates(
 	ctx context.Context,
 	scope interfaces.MemoryScope,

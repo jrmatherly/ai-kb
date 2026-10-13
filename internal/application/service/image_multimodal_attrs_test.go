@@ -103,7 +103,7 @@ func newAttrsTestService(fileSvc interfaces.FileService, repo *attrsChunkRepo) *
 }
 
 // runProcessImage drives one image through the pipeline and returns the trace
-// map the per-image span is closed with — the same map Handle owns.
+// map the per-image span is closed with - the same map Handle owns.
 func runProcessImage(
 	t *testing.T,
 	svc *ImageMultimodalService,
@@ -120,7 +120,7 @@ func runProcessImage(
 }
 
 // persistedAttrCounts counts a single observed attribute value written onto
-// each persisted chunk — how the "the observation is stored, not just logged"
+// each persisted chunk - how the "the observation is stored, not just logged"
 // contract is checked.
 func persistedAttrCounts(t *testing.T, chunks []*types.Chunk, key string) map[string]int {
 	t.Helper()
@@ -169,7 +169,7 @@ func countCallsWith(calls []attrsVLMCall, needle string) int {
 	return n
 }
 
-// observedAttrs builds a complete attribute table — the shape the parser
+// observedAttrs builds a complete attribute table - the shape the parser
 // produces from an observe round the model answered in full.
 func observedAttrs(text string, dataVisual bool) types.ImageAttrs {
 	return types.ImageAttrs{Attrs: map[string]any{
@@ -218,7 +218,7 @@ func TestBuildImageAttrsPrompt(t *testing.T) {
 // TestDecideOCR pins the pure OCR decision: a block of text, a data visual, or
 // an attribute the observation did not answer for all trigger OCR; sparse (a
 // logo) and an explicit absence do not. The decision is a function of observed
-// attributes and the policy only — no model, no repo.
+// attributes and the policy only - no model, no repo.
 func TestDecideOCR(t *testing.T) {
 	t.Parallel()
 	def := types.DefaultImageActions()
@@ -233,7 +233,7 @@ func TestDecideOCR(t *testing.T) {
 		{"data visual", observedAttrs("sparse", true), true},
 		{"none", observedAttrs("none", false), false},
 		// Incomplete observations: the parser leaves an unanswered attribute
-		// absent, so the conservative clause has to carry the decision — these
+		// absent, so the conservative clause has to carry the decision - these
 		// must never be read as a confident negative.
 		{
 			"unobserved text is conservative",
@@ -355,7 +355,7 @@ func TestProcessImageObservesAndDescribes(t *testing.T) {
 // observation_failed in the trace instead of passing an empty attribute table
 // off as a confident read. Nothing is invented to fill the table, so the OCR
 // policy falls back to its conservative OnUnobserved clause (OCR on) and the
-// image is not lost — only the observation is recorded as having failed.
+// image is not lost - only the observation is recorded as having failed.
 func TestProcessImageMarksObservationFailed(t *testing.T) {
 	t.Parallel()
 
@@ -368,7 +368,7 @@ func TestProcessImageMarksObservationFailed(t *testing.T) {
 		if strings.Contains(prompt, "OCR assistant") {
 			return "some text", nil
 		}
-		// Prose only — no contain.text: / contain.data_visual: lines.
+		// Prose only - no contain.text: / contain.data_visual: lines.
 		return "This is a diagram showing the overall data flow and module layout of the system.", nil
 	}
 
@@ -455,7 +455,7 @@ func TestProcessImageSkipsOCRForQuietAttr(t *testing.T) {
 
 // TestProcessImageKeepsAttrsButDropsCaptionWhenCaptionsAreOff pins how the two
 // whole-task switches compose in the attribute pipeline: the observe round is
-// not optional, because the observation is what the OCR policy reads — but when
+// not optional, because the observation is what the OCR policy reads - but when
 // captions are turned off the description that round produced must not be
 // stored, or the switch would be a no-op on this path.
 func TestProcessImageKeepsAttrsButDropsCaptionWhenCaptionsAreOff(t *testing.T) {
@@ -577,7 +577,7 @@ func TestProcessImageProseAnswerIsStillCaptionedAndOCRed(t *testing.T) {
 
 // TestProcessImageLabelOnlyAnswerKeepsAttrsWithoutCaption covers the one reply
 // the parser reports as unusable: attributes and nothing else. The attributes
-// are real information and are kept — they are what the OCR policy reads — but
+// are real information and are kept - they are what the OCR policy reads - but
 // the raw reply must never become the caption, or "contain.text: block" ends up
 // in the index as the image's description.
 func TestProcessImageLabelOnlyAnswerKeepsAttrsWithoutCaption(t *testing.T) {

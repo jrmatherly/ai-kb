@@ -37,7 +37,7 @@ type TenantInvitationRepository interface {
 	// ListByTenant returns invitations for the tenant ordered by
 	// id DESC (newest first). includeTerminal controls whether
 	// non-pending rows (accepted/declined/revoked/expired) are
-	// returned — the management UI shows pending by default, with
+	// returned - the management UI shows pending by default, with
 	// a "history" toggle for the rest.
 	ListByTenant(ctx context.Context, tenantID uint64, includeTerminal bool) ([]*types.TenantInvitation, error)
 
@@ -64,7 +64,7 @@ type TenantInvitationRepository interface {
 	// to the supplied status. respondedAt is recorded as the
 	// transition time. Returns gorm.ErrRecordNotFound when the row
 	// does not exist or is already in a non-pending state, which the
-	// service layer maps to ErrInvitationNotPending — that error is
+	// service layer maps to ErrInvitationNotPending - that error is
 	// the "stale state machine" signal callers care about.
 	MarkStatusIfPending(
 		ctx context.Context,
@@ -76,7 +76,7 @@ type TenantInvitationRepository interface {
 	// SweepExpired transitions all pending rows whose expires_at is
 	// before `now` into the expired state. Returns the affected row
 	// count so callers can decide whether to emit per-row audit
-	// events (we don't — the volume could be high and the audit-log
+	// events (we don't - the volume could be high and the audit-log
 	// table already records the original invitation_sent rows).
 	SweepExpired(ctx context.Context, now time.Time) (int64, error)
 

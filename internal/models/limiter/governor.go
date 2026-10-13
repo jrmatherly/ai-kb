@@ -9,8 +9,8 @@ import (
 )
 
 // The concurrency governor is process-wide, shared by every model-client layer
-// that fronts a provider (chat, vlm). Keeping the singleton here — rather than
-// inside one client package — lets all of them gate against the same limiter
+// that fronts a provider (chat, vlm). Keeping the singleton here - rather than
+// inside one client package - lets all of them gate against the same limiter
 // and per-model limit without importing each other. Wired once at startup (see
 // container.registerModelConcurrencyLimiter) via SetGovernor.
 var (
@@ -51,7 +51,7 @@ func Gate(ctx context.Context, modelID string) func() {
 // model's own configured cap; a value <= 0 means "fall back to the process-wide
 // default" (governorN). It returns a release func that is ALWAYS safe to call:
 // on the passthrough / fail-open paths it is a cheap no-op. The gate never
-// blocks a call permanently — a limiter/Redis outage or a cancelled context
+// blocks a call permanently - a limiter/Redis outage or a cancelled context
 // fails open.
 func GateN(ctx context.Context, modelID string, modelLimit int) func() {
 	return GateNamedN(ctx, modelID, "", modelLimit)
@@ -100,7 +100,7 @@ func RuntimeStats(ctx context.Context) ([]RuntimeStat, bool, error) {
 // localLimiter is an in-process (single-node) counting semaphore keyed by
 // model ID. It is the Lite-mode counterpart to the Redis limiter: Lite runs a
 // single process with no Redis, so a shared distributed semaphore is neither
-// available nor needed — but background ingestion can still burst the whole
+// available nor needed - but background ingestion can still burst the whole
 // worker pool against one provider, so we still cap concurrency locally.
 type localLimiter struct {
 	mu      sync.Mutex

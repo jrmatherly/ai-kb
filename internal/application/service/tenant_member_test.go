@@ -253,7 +253,7 @@ var _ interfaces.TenantMemberRepository = (*fakeTenantMemberRepo)(nil)
 
 func newServiceWithRepo() (interfaces.TenantMemberService, *fakeTenantMemberRepo) {
 	r := newFakeRepo()
-	// Audit / user / token dependencies are intentionally nil — these
+	// Audit / user / token dependencies are intentionally nil - these
 	// tests pre-date PR 6 and exercise membership invariants only. The
 	// service's audit and RemoveMember-cleanup hooks are nil-safe, so
 	// passing nil keeps existing coverage intact without forcing stubs.

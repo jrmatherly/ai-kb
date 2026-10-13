@@ -7,7 +7,7 @@
 //     thinking format is used and graded effort is supported. The documented
 //     vocabulary is minimal | low | medium | high | xhigh | max (mapped onto
 //     Anthropic budgets of 1024/1024/2048/4096/8192/16384), plus `none` to
-//     turn thinking off — which is why the vendor level map spells "off" as
+//     turn thinking off - which is why the vendor level map spells "off" as
 //     "none" and keeps xhigh and max enabled;
 //   - both `max_tokens` and `max_completion_tokens` are listed as supported
 //     input params (https://docs.litellm.ai/docs/completion/input) with no

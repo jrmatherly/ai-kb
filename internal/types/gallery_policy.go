@@ -12,7 +12,7 @@ package types
 //
 // The three JSON tiers share one schema (GalleryPolicyTier) so the merge
 // engine below is tier-agnostic and new storage homes plug in without
-// changing the contract. Only the user tier carries mode/status — the
+// changing the contract. Only the user tier carries mode/status - the
 // search-field activation state is personal by definition.
 //
 // Only attribute USAGE (eligibility) is configurable here; attribute
@@ -109,7 +109,7 @@ const (
 // ResolveGalleryConfig merges the registered sources with the configuration
 // tiers (system -> KB -> user, each overriding field by field) and returns
 // the contract the gallery frontend renders from. A nil tier simply does not
-// exist; the KB tier is reserved for the per-KB config (not wired yet — the
+// exist; the KB tier is reserved for the per-KB config (not wired yet - the
 // engine already accepts it).
 func ResolveGalleryConfig(kbID string, system, kb, user *GalleryPolicyTier) *GalleryResolvedConfig {
 	res := &GalleryResolvedConfig{

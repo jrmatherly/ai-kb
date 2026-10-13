@@ -248,8 +248,8 @@ func (p *AttachmentProcessor) processWithDocumentReader(
 
 	// Engines that parse in this process (anydoc, MinerU, ...) are resolved
 	// through the registry so a chat attachment honours the same engine rules
-	// as an ingested document. Anything the registry cannot build here — a
-	// cloud engine whose credentials this path cannot resolve — falls back to
+	// as an ingested document. Anything the registry cannot build here - a
+	// cloud engine whose credentials this path cannot resolve - falls back to
 	// the docreader, which is where every engine name went before.
 	reader, err := docparser.NewReader(ctx, parserEngine, normalizedType, false, docparser.ReaderDeps{
 		Overrides: overrides,

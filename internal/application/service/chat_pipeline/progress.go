@@ -68,7 +68,7 @@ func LastConsolidatedRetrievalStage(eventList []types.EventType, chatManage *typ
 // ShouldCloseRetrievalProgress reports whether the consolidated retrieval
 // progress window must be closed after a pipeline stage. It returns true when
 // either the planned last retrieval stage completed, or a retrieval stage
-// short-circuited the pipeline with an error — including ErrSearchNothing,
+// short-circuited the pipeline with an error - including ErrSearchNothing,
 // which routes into the fallback response. Closing on the error paths prevents
 // the frontend "knowledge_search" spinner from hanging forever when the
 // pipeline early-returns before reaching the last retrieval stage.
@@ -189,7 +189,7 @@ func EndRetrievalProgress(
 	// a knowledge-base listing rather than any retrieved chunk. So no chunk
 	// reached the model, and none can be cited either. Reporting the raw hits as
 	// the result count is what made the timeline promise results the answer never
-	// saw — and offer a row with no references to open. The raw hits stay
+	// saw - and offer a row with no references to open. The raw hits stay
 	// available as candidates, which is the useful part when a threshold is what
 	// rejected them.
 	candidateCount := 0

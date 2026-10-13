@@ -199,12 +199,12 @@ func (s *knowledgeBaseService) hybridSearchCandidates(ctx context.Context,
 	// Explicit embedding-model consistency check. Multi-KB searches that
 	// span different embedding spaces would otherwise silently produce
 	// meaningless cross-model scores. Same-model wiki/graph KBs are
-	// tolerated — see validateSameEmbeddingModel for the carve-out.
+	// tolerated - see validateSameEmbeddingModel for the carve-out.
 	if err := s.validateSameEmbeddingModel(ctx, kbs); err != nil {
 		return nil, err
 	}
 
-	// Resolve the primary KB — embedding model + FAQ type come from this
+	// Resolve the primary KB - embedding model + FAQ type come from this
 	// one. Miss → 404 (no kbs[0] fallback; a silent pivot to an arbitrary
 	// KB would hide caller bugs and reveal foreign KB metadata).
 	kb := pickPrimary(kbs, id)
@@ -222,7 +222,7 @@ func (s *knowledgeBaseService) hybridSearchCandidates(ctx context.Context,
 
 	// Compute the query embedding once before fan-out and propagate via
 	// params.QueryEmbedding. Without this, each storeGroup's
-	// buildRetrievalParams would re-embed the same query text — for N
+	// buildRetrievalParams would re-embed the same query text - for N
 	// stores that means N API calls of identical input.
 	//
 	// Skip when params already carries an embedding (e.g. the agent
@@ -327,8 +327,8 @@ func (s *knowledgeBaseService) hybridSearchCandidates(ctx context.Context,
 
 // normalizedMatchCount resolves the effective primary-match cap for a search.
 //
-// MatchCount arrives as Go's zero value whenever a caller omits it — JSON
-// cannot tell an absent match_count from an explicit 0 — and three consumers
+// MatchCount arrives as Go's zero value whenever a caller omits it - JSON
+// cannot tell an absent match_count from an explicit 0 - and three consumers
 // inside HybridSearch read it: the over-retrieval floor, the FAQ
 // iterative-retrieval trigger, and the final truncation. They must agree, so
 // the value is resolved here rather than at each use site. A raw 0 truncates
@@ -364,7 +364,7 @@ func hasEmbeddingModel(kb *types.KnowledgeBase) bool {
 // The primary KB drives the embedding model and FAQ-type decisions for
 // buildRetrievalParams. If the caller selects a wiki-only / graph-only
 // KB as primary, the multi-KB search is implicitly demoted to
-// keyword-only retrieval — vector retrieval is skipped because
+// keyword-only retrieval - vector retrieval is skipped because
 // primary.IsVectorEnabled() is false. Callers that mix vector-enabled
 // and non-vector KBs should pass a vector-enabled KB as id.
 func pickPrimary(kbs []*types.KnowledgeBase, id string) *types.KnowledgeBase {
@@ -378,7 +378,7 @@ func pickPrimary(kbs []*types.KnowledgeBase, id string) *types.KnowledgeBase {
 
 // allBaseParamsEmpty reports whether every store group has an empty
 // BaseParams slice. True only when every KB in scope is wiki-only or
-// graph-only with neither vector nor keyword indexing — HybridSearch then
+// graph-only with neither vector nor keyword indexing - HybridSearch then
 // returns nil so callers that combine searchable + non-searchable KBs
 // (agent tools, chat pipeline) degrade gracefully.
 func allBaseParamsEmpty(groups []*storeGroup) bool {
@@ -409,7 +409,7 @@ func totalHits(rrs []*types.RetrieveResult) int {
 // routing: KBs in the group are split into a FAQ subset (retrieved from the
 // FAQ vector index) and a document subset (retrieved from the default vector
 // index plus the keyword index). Deciding this from the primary KB alone would
-// route every KB in scope into the primary's index — e.g. a FAQ primary would
+// route every KB in scope into the primary's index - e.g. a FAQ primary would
 // drag a document-type KB into the FAQ index and skip its keyword recall.
 //
 // primary is used only to resolve the shared query embedding model; every KB
@@ -519,7 +519,7 @@ func (s *knowledgeBaseService) buildRetrievalParams(
 
 // resolveQueryEmbedding returns the query embedding for a store group. It
 // reuses params.QueryEmbedding when the caller pre-computed it (the common
-// path — HybridSearch embeds once before fan-out), otherwise it embeds the
+// path - HybridSearch embeds once before fan-out), otherwise it embeds the
 // query text using the embedding model of the supplied KB. For cross-tenant
 // shared KBs the source tenant's embedding model is used so the produced
 // vector is compatible with the index it will be searched against.

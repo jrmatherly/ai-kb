@@ -50,7 +50,7 @@ func certLedgerRow(i int) string {
 		"2099-01-01 |", i, i)
 }
 
-// certLedgerBlock renders the first n rows of a certificate ledger — the shape of
+// certLedgerBlock renders the first n rows of a certificate ledger - the shape of
 // a table-heavy page whose rewrite came back short.
 func certLedgerBlock(first, last int) string {
 	var b strings.Builder
@@ -93,7 +93,7 @@ func modifyTemplateData() map[string]string {
 // TestPageRewriteContinuesWhenProviderHitsCompletionBudget is the regression
 // for the "long list comes back short" report: the editor emits a page top-down,
 // the provider stops it at the completion budget (finish_reason=length) and the
-// fragment used to be persisted verbatim — the page was written half-finished
+// fragment used to be persisted verbatim - the page was written half-finished
 // with nothing in the logs saying "truncated".
 func TestPageRewriteContinuesWhenProviderHitsCompletionBudget(t *testing.T) {
 	model := &scriptedTemplateChatModel{responses: []*types.ChatResponse{
@@ -122,7 +122,7 @@ func TestPageRewriteContinuesWhenProviderHitsCompletionBudget(t *testing.T) {
 	}
 
 	// The continuation must replay the partial page as an assistant turn and
-	// follow it with the continuation instruction — without that the model
+	// follow it with the continuation instruction - without that the model
 	// answers the original question again from the top (#3446).
 	second := model.calls[1]
 	if len(second) != 4 {

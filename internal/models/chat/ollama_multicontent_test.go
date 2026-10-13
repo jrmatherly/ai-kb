@@ -6,8 +6,8 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/models/api"
 )
 
-// The agent composes multimodal turns as MultiContent parts — the shape every
-// remote protocol prefers — while older callers fill Images. Ollama read only
+// The agent composes multimodal turns as MultiContent parts - the shape every
+// remote protocol prefers - while older callers fill Images. Ollama read only
 // the latter, so such a turn reached the model with neither its question nor
 // its picture and came back answering about nothing.
 func TestOllamaConvertMessagesReadsMultiContent(t *testing.T) {

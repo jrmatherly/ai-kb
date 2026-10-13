@@ -17,8 +17,8 @@ import (
 // that cannot be reviewed by reading the code. Both failure directions are
 // silent and both make the feature useless:
 //
-//	too strict — one subject spreads across rows, none reaches the threshold
-//	too loose  — every specific question in a domain collapses into one bucket
+//	too strict - one subject spreads across rows, none reaches the threshold
+//	too loose  - every specific question in a domain collapses into one bucket
 //
 // This file is how that gets measured instead of argued about. Offline it
 // checks the deterministic tiers and that the prompt still carries the rules
@@ -57,7 +57,7 @@ func loadTopicEvalSet(t *testing.T) topicEvalSet {
 }
 
 // The cheap tiers must never merge a pair the set says is different. They are
-// allowed to miss a merge — that is what the model tier is for — but a wrong
+// allowed to miss a merge - that is what the model tier is for - but a wrong
 // merge here happens with no model in the loop and no way to notice.
 func TestCheapTiersNeverMergeDifferentSubjects(t *testing.T) {
 	set := loadTopicEvalSet(t)
@@ -70,7 +70,7 @@ func TestCheapTiersNeverMergeDifferentSubjects(t *testing.T) {
 			matchTopicLoosely(c.Incoming, existing) != nil
 		if !c.Same {
 			require.False(t, merged,
-				"case %q: %q must not be folded into %q without a model saying so — %s",
+				"case %q: %q must not be folded into %q without a model saying so - %s",
 				c.Name, c.Incoming, c.Tracked, c.Why)
 		}
 	}
@@ -106,8 +106,8 @@ func TestTopicTierCoverageIsVisible(t *testing.T) {
 }
 
 // The rules the boundary cases depend on have to actually be in the prompts.
-// This is a weak check, but it is the one that catches a rule being edited away
-// — which is exactly how the "specific lookup" case started merging.
+// This is a weak check, but it is the one that catches a rule being edited away -
+// which is exactly how the "specific lookup" case started merging.
 func TestTopicPromptsCarryTheRulesTheEvalSetDependsOn(t *testing.T) {
 	require.Contains(t, topicAdjudicationPrompt, "specific query",
 		"the adjudication prompt must still separate a specific lookup from a standing interest")
@@ -161,7 +161,7 @@ func TestTopicMergeEval(t *testing.T) {
 			t.Logf("PASS %-40s same=%v", c.Name, c.Same)
 			continue
 		}
-		t.Logf("FAIL %-40s expected same=%v, got %v — %s", c.Name, c.Same, decided, c.Why)
+		t.Logf("FAIL %-40s expected same=%v, got %v - %s", c.Name, c.Same, decided, c.Why)
 	}
 	t.Logf("topic merge: %d/%d", correct, len(set.Cases))
 }
@@ -204,7 +204,7 @@ func askTopicMerge(chatModel chat.Chat, user string) (bool, error) {
 
 // The fuzzy threshold is only defensible if there is daylight between the pairs
 // that mean the same thing and the pairs that do not. This measures that gap
-// and fails when an edit closes it — which is the only way to know a threshold
+// and fails when an edit closes it - which is the only way to know a threshold
 // change is safe without shipping it and waiting for someone to notice their
 // interests turned into one bucket.
 func TestFuzzyThresholdSitsInARealGap(t *testing.T) {
@@ -247,7 +247,7 @@ type topicGranularityCase struct {
 }
 
 // A subject has to recur to be worth anything. A label carrying the parameters
-// of one question — a name, an age group, a distance, an edition number — can
+// of one question - a name, an age group, a distance, an edition number - can
 // only ever match itself, so it is counted once and sits at one hit forever
 // while the feature looks like it is working.
 //
@@ -281,7 +281,7 @@ func TestExtractionPromptTeachesSubjectLevelNaming(t *testing.T) {
 		"the reason a subject must be nameable at a recurring level has to be stated")
 	require.Contains(t, extractionSystemPrompt, "belong to the question, not to the subject name")
 	require.Contains(t, extractionSystemPrompt, "are categories, not",
-		"the opposite failure — naming a category — has to stay ruled out too")
+		"the opposite failure - naming a category - has to stay ruled out too")
 
 	prompt := buildExtractionPrompt(
 		transcriptSegment{lines: []transcriptLine{{content: "question"}}}, nil, nil,

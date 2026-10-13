@@ -25,7 +25,9 @@ type WebSearchConfig struct {
 	EmbeddingDimension int    `json:"embedding_dimension,omitempty"` // embedding dimension (RAG compression)
 	RerankModelID      string `json:"rerank_model_id,omitempty"`     // rerank model ID (RAG compression)
 	DocumentFragments  int    `json:"document_fragments,omitempty"`  // number of document fragments (RAG compression)
-	ProxyURL           string `json:"proxy_url,omitempty"`           // Optional per-request proxy override; normally empty — use WebSearchProviderEntity.Parameters.proxy_url. Merged at call time when set.
+	// Optional per-request proxy override; normally empty, use
+	// WebSearchProviderEntity.Parameters.proxy_url. Merged at call time when set.
+	ProxyURL string `json:"proxy_url,omitempty"`
 }
 
 const (

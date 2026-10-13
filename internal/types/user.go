@@ -12,7 +12,7 @@ import (
 // UserPreferences holds per-user preferences persisted server-side
 // so they sync across devices/browsers. Fields are pointers so we can
 // distinguish "client didn't send this key" (leave existing value alone)
-// from "client explicitly set false" — the partial-update merge in
+// from "client explicitly set false" - the partial-update merge in
 // UpdateUserPreferences relies on this.
 //
 // Adding a new preference key:
@@ -20,7 +20,7 @@ import (
 //  2. Extend the merge logic in service.UserService.UpdateUserPreferences.
 //  3. Surface the new knob in the frontend settings store.
 //
-// No DB DDL is required — preferences is a single jsonb column.
+// No DB DDL is required - preferences is a single jsonb column.
 type UserPreferences struct {
 	// BrowserSearchInstructions customizes browser search for this user. Nil/empty uses the platform default.
 	BrowserSearchInstructions *string `json:"browser_search_instructions,omitempty"`
@@ -69,7 +69,7 @@ type GalleryUserPrefs struct {
 	Mode string `json:"mode,omitempty"`
 	// Status maps a namespaced attribute id ("builtin:caption") to
 	// "on"/"off". Only consulted in custom mode; an unrecorded field is
-	// off. Source-declared on/off does not exist — activation is always
+	// off. Source-declared on/off does not exist - activation is always
 	// the user's own record.
 	Status map[string]string `json:"status,omitempty"`
 }
@@ -264,7 +264,7 @@ type LoginResponse struct {
 	// who only belong to their home workspace) so frontends can render a
 	// workspace switcher without a follow-up request. Serialised without
 	// omitempty so the field is always present as a JSON array (possibly
-	// empty) — the "always populated" contract relies on the server side
+	// empty) - the "always populated" contract relies on the server side
 	// guaranteeing a non-nil slice.
 	Memberships  []Membership `json:"memberships"`
 	Token        string       `json:"token,omitempty"`

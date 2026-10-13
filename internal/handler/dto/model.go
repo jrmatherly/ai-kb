@@ -50,8 +50,8 @@ func secretKeysOf(v *modelruntime.Provider, into map[string]bool) map[string]boo
 
 // SecretExtraConfigKeys returns the extra_config keys the vendor declares as
 // secret (providers.ExtraField.Secret, or a password input). These are real
-// credentials — LKEAP and Volcengine rerank keep an IAM/CAM secret key there
-// — so they get the same treatment as api_key / app_secret: never echoed,
+// credentials - LKEAP and Volcengine rerank keep an IAM/CAM secret key there -
+// so they get the same treatment as api_key / app_secret: never echoed,
 // only reported as present.
 //
 // The field's ModelTypes restriction is deliberately ignored: a key that is
@@ -72,7 +72,7 @@ func SecretExtraConfigKeys(provider, baseURL string) map[string]bool {
 // declared the key: a row whose provider was switched, hand-edited or never
 // stored would otherwise echo a credential in plaintext simply because its
 // current vendor declares no secret field. Treating a name that is secret
-// somewhere as secret everywhere is the safe direction — the worst case is
+// somewhere as secret everywhere is the safe direction - the worst case is
 // withholding a value that happened to reuse the name.
 func AllSecretExtraConfigKeys() map[string]bool {
 	var keys map[string]bool
@@ -105,7 +105,7 @@ func redactedSecretPlaceholder(v string) bool {
 // row to another vendor, and then the stored credential must be dropped
 // rather than carried over: it belongs to the previous integration's account,
 // the editor no longer renders a field for it, and the new vendor may not
-// declare it secret at all — which is how it ended up echoed in plaintext.
+// declare it secret at all - which is how it ended up echoed in plaintext.
 //
 // incoming is filled in place and returned.
 func PreserveStoredSecretExtras(
@@ -200,7 +200,7 @@ type ModelResponse struct {
 }
 
 // ModelParametersDTO carries every parameter field EXCEPT the two secret
-// ones (APIKey, AppSecret). AppID is non-secret and stays — it's an account
+// ones (APIKey, AppSecret). AppID is non-secret and stays - it's an account
 // identifier the AI KB Cloud frontend renders. CustomHeaders is also kept
 // (structural metadata, not a credential).
 type ModelParametersDTO struct {
@@ -221,7 +221,7 @@ type ModelParametersDTO struct {
 
 // NewModelResponse converts a stored Model into its response shape.
 //
-// Builtin models are shared across tenants — strip BaseURL (which can leak
+// Builtin models are shared across tenants - strip BaseURL (which can leak
 // the tenant's private endpoint) and any non-shared parameters.
 func NewModelResponse(ctx context.Context, m *types.Model) *ModelResponse {
 	if m == nil {
@@ -266,9 +266,9 @@ func NewModelResponse(ctx context.Context, m *types.Model) *ModelResponse {
 		params.Spec = nil
 	}
 	// Vendor-declared secret extra fields are credentials that happen to be
-	// stored in extra_config. Drop them from the echoed map — even for
+	// stored in extra_config. Drop them from the echoed map - even for
 	// callers allowed to see integration detail, exactly as api_key is
-	// withheld from an admin — and report presence instead. The stored map is
+	// withheld from an admin - and report presence instead. The stored map is
 	// never mutated: params.ExtraConfig still aliases it here.
 	//
 	// Redaction spans every registered vendor, not just this row's: a row
@@ -297,7 +297,7 @@ func NewModelResponse(ctx context.Context, m *types.Model) *ModelResponse {
 			}
 		}
 		// A key this row's vendor does not declare was still withheld above,
-		// so say it is there — otherwise the value silently vanishes from the
+		// so say it is there - otherwise the value silently vanishes from the
 		// editor with nothing to explain why.
 		for key := range redactKeys {
 			if _, reported := creds[key]; reported {

@@ -34,8 +34,8 @@ const (
 //
 // The Engine pauses the container for the duration of the commit unless we
 // opt out (we do not): that is the same "provider pauses while snapshotting"
-// contract Cube and E2B honour. The resulting tag is a template ID — Create
-// accepts it as RemoteCreateRequest.TemplateID — so the skill install path
+// contract Cube and E2B honour. The resulting tag is a template ID - Create
+// accepts it as RemoteCreateRequest.TemplateID - so the skill install path
 // needs no Docker-specific branch past this adapter.
 func (c *DockerRemoteClient) CreateSnapshot(
 	ctx context.Context, sandboxID string, name string,
@@ -109,7 +109,7 @@ func (c *DockerRemoteClient) commitSnapshot(
 // PruneChildren is what makes the delete reclaim anything. Each generation is
 // committed from a container started off the previous one, so generation N+1
 // holds generation N's layers as ancestors. Untagging N alone therefore frees
-// nothing while N+1 exists — which is correct and unavoidable — but the layers
+// nothing while N+1 exists - which is correct and unavoidable - but the layers
 // of a chain whose every tag has been retired would stay on disk forever
 // without this, because the Go client defaults to noprune. Layers a live image
 // still references are refcounted by the daemon, so cascading here cannot take
@@ -143,7 +143,7 @@ func (c *DockerRemoteClient) DeleteSnapshot(ctx context.Context, snapshotID stri
 // construction. They are left behind by a commit whose ledger write or pointer
 // switch failed, and by every delete that ran before PruneChildren was set.
 //
-// Best effort by nature — reclaiming storage must never turn a successful
+// Best effort by nature - reclaiming storage must never turn a successful
 // delete into a failed one. An image a container still holds comes back as a
 // conflict and is skipped; the next pass retries once that container is gone.
 func (c *DockerRemoteClient) pruneDanglingSkillImages(ctx context.Context) {

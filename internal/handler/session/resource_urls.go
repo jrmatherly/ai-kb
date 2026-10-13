@@ -128,8 +128,8 @@ func emitStreamEvent(
 // flushHeldStreamContent emits whatever the holdback buffer still retains, so a
 // trailing reference is not dropped when a delta stream ends without a terminal
 // chunk. Every path that stops streaming while the client is still connected
-// must call it — completion, a user-requested stop, or giving up on the event
-// store — otherwise the tail is silently lost. If the client has already gone
+// must call it - completion, a user-requested stop, or giving up on the event
+// store - otherwise the tail is silently lost. If the client has already gone
 // there is nobody left to receive it.
 func flushHeldStreamContent(
 	ctx context.Context,
@@ -158,8 +158,8 @@ func flushHeldStreamContent(
 }
 
 // heldFragmentData rebuilds the metadata for a released tail from the event it
-// was cut from, so a client keying off `event_id` — or off anything else the
-// original event carried, such as `is_fallback` — sees the same shape. The map
+// was cut from, so a client keying off `event_id` - or off anything else the
+// original event carried, such as `is_fallback` - sees the same shape. The map
 // is copied because an unchanged rewrite returns the stream buffer's own map.
 func heldFragmentData(meta interface{}, eventID string) map[string]interface{} {
 	original, _ := meta.(map[string]interface{})

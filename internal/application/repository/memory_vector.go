@@ -24,7 +24,7 @@ const fallbackVectorScanCap = 5000
 //
 // Checked once and cached. It is false on SQLite, and false on a PostgreSQL
 // deployment that never installed pgvector because its retrieval driver does
-// not use it — both of which keep working through the fallback below, just
+// not use it - both of which keep working through the fallback below, just
 // with every vector crossing the wire.
 func (r *memoryRepository) vectorColumnReady() bool {
 	r.vectorOnce.Do(func() {
@@ -65,7 +65,7 @@ type vectorHitRow struct {
 // The candidate set is every vector the subject has, not a window of them.
 // This is the difference that matters: the previous implementation listed
 // items by importance, loaded the vectors belonging to that list, and scored
-// those — so relevance could only ever re-order what importance had already
+// those - so relevance could only ever re-order what importance had already
 // chosen, and a matching memory outside the window was unreachable.
 func (r *memoryRepository) SearchItemsByVector(
 	ctx context.Context, scope interfaces.MemoryScope, query interfaces.MemoryVectorQuery,
@@ -165,7 +165,7 @@ func (r *memoryRepository) rankInDatabase(
 
 // rankInProcess is the portable path: read this subject's vectors and score
 // them here. Bounded by the same capacity cap that bounds the subject itself,
-// so it still sees everything — it just pays to transfer it.
+// so it still sees everything - it just pays to transfer it.
 func (r *memoryRepository) rankInProcess(
 	ctx context.Context, scope interfaces.MemoryScope, query interfaces.MemoryVectorQuery, limit int,
 ) ([]vectorHitRow, error) {
@@ -223,7 +223,7 @@ func sortVectorHitsDesc(rows []vectorHitRow) {
 
 // SyncVectorColumn moves already-embedded rows into the database's vector
 // type. Rows written before migration 000095 hold only the blob, and a row the
-// SQL ranking cannot see is a memory that semantic recall cannot find — so this
+// SQL ranking cannot see is a memory that semantic recall cannot find - so this
 // has to drain without waiting for an embedding model to be called again.
 func (r *memoryRepository) SyncVectorColumn(
 	ctx context.Context, scope interfaces.MemoryScope, limit int,

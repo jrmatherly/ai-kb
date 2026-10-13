@@ -74,8 +74,8 @@ var (
 
 // ReapStuckRuns recovers skill rows whose install or remove process died.
 //
-// Both branches turn on one question — does the image every new session boots
-// still carry this skill's files — and skillFilesInLiveImage answers it from
+// Both branches turn on one question - does the image every new session boots
+// still carry this skill's files - and skillFilesInLiveImage answers it from
 // the snapshot ledger rather than from the row.
 //
 // An installing row whose heartbeat has been silent for skillInstallStuckTTL
@@ -253,7 +253,7 @@ func (s *TenantSkillService) reapStuckUpgrade(
 // one. A config holds a single pointer that every install and removal
 // advances, and each new snapshot is grown from the current one, so a skill
 // installed two generations ago is still in the image under a snapshot ID its
-// row never hears about — nothing rewrites one skill's row when another skill
+// row never hears about - nothing rewrites one skill's row when another skill
 // is installed. Comparing the two IDs calls such a skill gone: it fails
 // healthy installs and, worse, deletes the row and bundle of a stuck removal
 // whose files are still in the image.
@@ -276,7 +276,7 @@ func (s *TenantSkillService) skillFilesInLiveImage(
 	}
 	if live = strings.TrimSpace(live); live == "" {
 		// The config boots its base template, which carries no skill by
-		// construction — the last removal of the config cleared the pointer.
+		// construction - the last removal of the config cleared the pointer.
 		return "", false, true
 	}
 	ledger, err := s.skills.ListSnapshotsByConfig(ctx, row.TenantID, row.SandboxConfigID)
@@ -643,8 +643,8 @@ func (s *TenantSkillService) reapAbandonedBuilds(
 	reaped := 0
 	for _, row := range pending {
 		found := matchSnapshotByName(listed, row.PlannedName)
-		// Unreachable by construction — the pointer moves after the ID is
-		// recorded, so a building row cannot be live — but the delete is
+		// Unreachable by construction - the pointer moves after the ID is
+		// recorded, so a building row cannot be live - but the delete is
 		// irreversible, so the guard stays.
 		if found == "" || found == live {
 			continue
@@ -716,7 +716,7 @@ func (s *TenantSkillService) configHasInFlightSkill(
 //
 // The age check alone would be enough for any commit that finishes in the
 // minutes it normally takes, but a huge image on a slow remote daemon could
-// exceed it — and deleting the snapshot of a commit that then succeeds would
+// exceed it - and deleting the snapshot of a commit that then succeeds would
 // switch the config's pointer to an image that no longer exists. The install
 // keeps stamping InstallingSince, so that is what says "still working".
 func (s *TenantSkillService) buildStillRunning(
@@ -844,7 +844,7 @@ func (s *TenantSkillService) runSkillReaper(ctx context.Context) {
 }
 
 // Start registers the five-minute stuck-run sweep and begins the background
-// runner. Idempotent — repeated calls are a no-op so wiring code can call
+// runner. Idempotent - repeated calls are a no-op so wiring code can call
 // Start without coordinating ordering.
 func (s *TenantSkillService) Start(ctx context.Context) error {
 	s.cronMu.Lock()

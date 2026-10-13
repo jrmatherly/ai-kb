@@ -64,7 +64,7 @@ func steerEntry(id, content string) map[string]interface{} {
 
 // TestDrainSteerMessagesInjectsIntoTail verifies the core mid-run steering
 // behaviour: a queued message becomes the last user message, is persisted,
-// and emits an EventUserMessageInjected on the bus — all at the drain point,
+// and emits an EventUserMessageInjected on the bus - all at the drain point,
 // before the next LLM call would be built.
 func TestDrainSteerMessagesInjectsIntoTail(t *testing.T) {
 	model := &mockChat{}
@@ -99,7 +99,7 @@ func TestDrainSteerMessagesInjectsIntoTail(t *testing.T) {
 	require.Len(t, messages, 5)
 	assert.Equal(t, "user", messages[4].Role)
 	assert.Equal(t, types.SteerMessageContent("One more thing: also compare the costs"), messages[4].Content)
-	// Tool result pairing is untouched — the tool message stays where it was.
+	// Tool result pairing is untouched - the tool message stays where it was.
 	assert.Equal(t, "tool", messages[3].Role)
 	assert.Equal(t, []string{"user-row-for-One more thing: also compare the costs"}, state.PendingSteerMessages)
 
@@ -147,7 +147,7 @@ func TestDrainSteerMessagesEmptyAndOffset(t *testing.T) {
 }
 
 // TestDrainSteerMessagesNilSinkNoOp ensures the default engine (no sink) is
-// completely unaffected — the mid-run steering feature is opt-in.
+// completely unaffected - the mid-run steering feature is opt-in.
 func TestDrainSteerMessagesNilSinkNoOp(t *testing.T) {
 	model := &mockChat{}
 	engine := newTestEngine(t, model)
@@ -259,7 +259,7 @@ func TestExecuteLoopInjectsBeforeNextLLMCall(t *testing.T) {
 
 // delayedSteerSink hides queued messages until the Nth PollSteer call. Used
 // to simulate a user sending a mid-run inject while round 1's LLM call is
-// in flight — the round-start drain sees nothing, the natural-stop drain
+// in flight - the round-start drain sees nothing, the natural-stop drain
 // sees the message.
 type delayedSteerSink struct {
 	fakeSteerSink

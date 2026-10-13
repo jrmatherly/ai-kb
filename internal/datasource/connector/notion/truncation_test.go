@@ -21,7 +21,7 @@ type childrenPageFunc func(offset, end int) (hasMore bool, nextCursor interface{
 
 // fakeChildrenPages serves GET /v1/blocks/{blockID}/children in pages of
 // pageSize blocks, emulating Notion's pagination contract. The client does not
-// pass page_size, so the real API defaults to 100 — the same default used here.
+// pass page_size, so the real API defaults to 100 - the same default used here.
 // It returns the number of children requests it saw via the second result.
 func fakeChildrenPages(t *testing.T, blockID string, total, pageSize int) (*httptest.Server, *int32) {
 	t.Helper()
@@ -134,7 +134,7 @@ func TestBlockCapWarnsOnTruncation(t *testing.T) {
 // TestBlockCapWarnsWhenHasMoreHasNoCursor covers the response the documented
 // contract does not promise: the page that reaches the cap claims has_more=true
 // but carries no next_cursor, so pagination cannot continue. Both facts must be
-// reported — the cap hit and the unusable cursor. This is the exact cell that
+// reported - the cap hit and the unusable cursor. This is the exact cell that
 // used to be silent: the old predicate required a non-empty cursor, so the cap
 // warning was skipped and the dropped tail left no trace at all.
 func TestBlockCapWarnsWhenHasMoreHasNoCursor(t *testing.T) {
@@ -178,7 +178,7 @@ func TestBlockCapWarnsWhenHasMoreHasNoCursor(t *testing.T) {
 
 // TestHasMoreWithoutCursorWarnsBelowTheCap pins the other half of the anomaly:
 // has_more=true with an empty cursor stops pagination no matter how far below
-// the cap the client is, so a dropped tail must be reported there as well — the
+// the cap the client is, so a dropped tail must be reported there as well - the
 // cap warning is not what makes this case observable.
 func TestHasMoreWithoutCursorWarnsBelowTheCap(t *testing.T) {
 	const total = 500
@@ -244,7 +244,7 @@ func TestBlockCapExactlyAtLimitDoesNotWarn(t *testing.T) {
 
 func TestBlocksTruncated(t *testing.T) {
 	// has_more is the only signal consulted: "cap hit while has_more=true but
-	// next_cursor empty" is no longer classified as "not truncated" here — the
+	// next_cursor empty" is no longer classified as "not truncated" here - the
 	// paging loop warns about it unconditionally (see
 	// TestBlockCapWarnsWhenHasMoreHasNoCursor and
 	// TestHasMoreWithoutCursorWarnsBelowTheCap).

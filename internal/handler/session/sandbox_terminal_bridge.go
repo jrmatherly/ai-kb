@@ -147,7 +147,7 @@ func (b *terminalBridge) pumpInput() {
 	for {
 		messageType, payload, err := b.conn.ReadMessage()
 		if err != nil {
-			// Normal close or transport failure — both end the session.
+			// Normal close or transport failure - both end the session.
 			return
 		}
 		_ = b.conn.SetReadDeadline(time.Now().Add(terminalReadTimeout))
@@ -314,7 +314,7 @@ func (b *terminalBridge) heartbeat(done chan struct{}) {
 			// concurrently with other writers: pumpOutput streams PTY bytes
 			// at the same time, and two concurrent WriteMessage calls would
 			// corrupt the connection state (and, once c.writeErr is set,
-			// poison every later write — the premature-disconnect symptom).
+			// poison every later write - the premature-disconnect symptom).
 			if err := b.conn.WriteControl(
 				websocket.PingMessage,
 				nil,

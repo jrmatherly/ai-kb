@@ -11,8 +11,8 @@ import (
 //
 // recover only covers the goroutine that calls it, so the barrier in
 // executeRecovered (registry.go) protects the call to tool.Execute alone: a
-// goroutine a tool starts for itself — an MCP client, a sandbox, a third-party
-// SDK, a retrieval adapter — must install its own barrier, or one panic escapes
+// goroutine a tool starts for itself - an MCP client, a sandbox, a third-party
+// SDK, a retrieval adapter - must install its own barrier, or one panic escapes
 // every recover site and takes the whole server (and every conversation,
 // upload and sync in flight) down with it.
 //
@@ -28,7 +28,7 @@ func GoRecovered(ctx context.Context, fn func()) {
 
 // RecoverGoroutine is deferred by a goroutine that must not let a panic escape
 // (either directly or through GoRecovered). It logs the panic with its stack,
-// then calls onPanic — when set — on that same goroutine so the caller can mark
+// then calls onPanic - when set - on that same goroutine so the caller can mark
 // the failed unit of work: one MCP service, one knowledge base, one retrieval
 // call. label names that work in the log; an empty one leaves it unnamed.
 //

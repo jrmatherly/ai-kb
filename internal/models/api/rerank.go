@@ -10,7 +10,7 @@ type RerankAPI string
 
 // The rerank protocols AI KB speaks.
 const (
-	// RerankCohere is the de-facto standard shape — POST {base}/rerank with
+	// RerankCohere is the de-facto standard shape - POST {base}/rerank with
 	// {model, query, documents} and a results array of {index,
 	// relevance_score, document}. Cohere defined it; Jina, Zhipu,
 	// SiliconFlow, Qianfan, GPUStack and every OpenAI-compatible gateway

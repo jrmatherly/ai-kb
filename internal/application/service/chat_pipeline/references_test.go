@@ -172,7 +172,7 @@ func TestPrepareMessagesWithModelContextReportsTruncatedRetrieval(t *testing.T) 
 }
 
 // End to end: FILTER_TOP_K drops candidates, INTO_CHAT_MESSAGE renders the
-// passages, and the caveat must land in the messages the model reads — not in
+// passages, and the caveat must land in the messages the model reads - not in
 // RenderedContexts, which this stage replaces wholesale.
 func TestTruncatedRetrievalReachesModelMessages(t *testing.T) {
 	manage := &types.ChatManage{

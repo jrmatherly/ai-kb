@@ -8,7 +8,7 @@
 // the host forever.
 //
 // The sweep needs to know when a sandbox was last used, and Docker exposes no
-// exec timestamps. Labels cannot help either — they are immutable after
+// exec timestamps. Labels cannot help either - they are immutable after
 // create. So each exec touches an activity marker file inside the container
 // (folded into the exec wrapper, costing no extra round-trip), and the sweep
 // reads its mtime with a single HEAD /archive call per container.

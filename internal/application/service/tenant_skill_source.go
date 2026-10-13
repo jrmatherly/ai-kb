@@ -489,7 +489,7 @@ func skillsShBarePayload(input string) (string, bool) {
 }
 
 // parseSkillsShLocator maps a ClawHub/OpenClaw skills-sh reference onto the
-// install resolver. The locator is always owner/repo/slug — three segments.
+// install resolver. The locator is always owner/repo/slug - three segments.
 // The GitHub folder is not assumed to equal the slug; fetch asks ClawHub.
 func parseSkillsShLocator(registry string, parts []string) (parsedSkillSource, error) {
 	if len(parts) != 3 {
@@ -819,7 +819,7 @@ func getSkillURL(
 	defer func() { _ = resp.Body.Close() }()
 
 	maxBytes := secutils.GetMaxSkillBundleSize()
-	// The cap is the downloaded body — a GitHub zipball is the whole
+	// The cap is the downloaded body - a GitHub zipball is the whole
 	// repository, not the SKILL.md subtree counted later at parse time.
 	if resp.ContentLength > maxBytes {
 		return nil, "", fmt.Errorf("%w: skill bundle cannot exceed %d MB",

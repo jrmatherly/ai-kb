@@ -61,7 +61,7 @@ type UserService interface {
 	SwitchTenant(ctx context.Context, user *types.User, targetTenantID uint64, currentRefreshToken string) (*types.LoginResponse, error)
 	// ValidateToken validates an access token. It returns the user
 	// referenced by the token plus the active tenant ID encoded in the
-	// JWT's `tenant_id` claim — the latter lets the auth middleware
+	// JWT's `tenant_id` claim - the latter lets the auth middleware
 	// honour /auth/switch-tenant sessions that were minted with a
 	// non-home tenant. Falls back to user.TenantID when the claim is
 	// missing (old tokens issued before tenant-level RBAC).

@@ -1,7 +1,7 @@
 // Package compaction keeps an agent turn inside the model's context window by
 // replacing older conversation with a structured summary.
 //
-// The cut point is chosen by token budget alone — never by "keep the current
+// The cut point is chosen by token budget alone - never by "keep the current
 // turn intact". A ReAct loop is a single turn that can run twenty rounds and
 // produce a hundred thousand tokens of tool traffic; a compactor that refuses
 // to touch the current turn has nothing left to compact and burns an LLM call
@@ -73,7 +73,7 @@ func (s Settings) Normalize() Settings {
 	// half the threshold, which is several rounds of work.
 	//
 	// Large windows are unaffected: the default keep-recent budget is already
-	// well under a quarter of them. Tool schemas are not subtracted here —
+	// well under a quarter of them. Tool schemas are not subtracted here -
 	// keepRecentTokens is a fixed conversation budget, not "whatever is left
 	// after the tool list".
 	if s.MaxContextTokens > 0 {
@@ -112,7 +112,7 @@ func (s Settings) ShouldCompact(contextTokens int) bool {
 // It is additionally capped at the keep-recent budget. The summary occupies the
 // compacted context alongside the retained tail, and successive compactions
 // update the summary in place under instructions to preserve what is already
-// there — so without a ceiling tied to the same budget it grows every round and
+// there - so without a ceiling tied to the same budget it grows every round and
 // slowly reclaims the room compaction just freed.
 func (s Settings) summaryBudget() int {
 	budget := s.ReserveTokens * 4 / 5

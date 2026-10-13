@@ -1,4 +1,4 @@
-// Package tools — list_sandbox_files.
+// Package tools - list_sandbox_files.
 //
 // Read-only tool that lets the LLM enumerate files under a session's
 // inspectable sandbox directories. Without this tool, the LLM cannot
@@ -288,7 +288,7 @@ func resolveSessionID(ctx context.Context) string {
 // arguments must already be cleaned. On a remote sandbox this labels roots
 // and protects the attachment tree; shell_exec can still reach the same
 // files. On a host layout, write scope and work_dir clamping use this as
-// the tool-layer boundary — the OS sandbox PathGuard remains the real
+// the tool-layer boundary - the OS sandbox PathGuard remains the real
 // privilege check, including symlink follow.
 func isUnderRoot(clean, root string) bool {
 	if clean == root {

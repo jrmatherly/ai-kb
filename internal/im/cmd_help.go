@@ -22,7 +22,7 @@ func (c *HelpCommand) Description() string {
 }
 
 func (c *HelpCommand) Execute(_ context.Context, _ *CommandContext, args []string) (*CommandResult, error) {
-	// /help <command> — show detailed usage for a specific command
+	// /help <command> - show detailed usage for a specific command
 	if len(args) > 0 {
 		name := strings.ToLower(args[0])
 		cmd, _, ok := c.registry.Parse("/" + name)
@@ -32,18 +32,18 @@ func (c *HelpCommand) Execute(_ context.Context, _ *CommandContext, args []strin
 			}, nil
 		}
 		return &CommandResult{
-			Content: fmt.Sprintf("**/%s** — %s", cmd.Name(), cmd.Description()),
+			Content: fmt.Sprintf("**/%s** - %s", cmd.Name(), cmd.Description()),
 		}, nil
 	}
 
-	// /help — list all commands sorted by name
+	// /help - list all commands sorted by name
 	cmds := c.registry.All()
 	sort.Slice(cmds, func(i, j int) bool { return cmds[i].Name() < cmds[j].Name() })
 
 	var sb strings.Builder
 	sb.WriteString("**Available commands**\n\n")
 	for _, cmd := range cmds {
-		fmt.Fprintf(&sb, "· `/%s` — %s\n", cmd.Name(), cmd.Description())
+		fmt.Fprintf(&sb, "· `/%s` - %s\n", cmd.Name(), cmd.Description())
 	}
 	sb.WriteString("\nSend `/help <command>` for detailed usage")
 	return &CommandResult{Content: sb.String()}, nil

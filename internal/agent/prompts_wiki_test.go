@@ -102,7 +102,8 @@ func TestWikiChunkCitationPrompt_StablePrefixAcrossBatches(t *testing.T) {
 	}
 
 	if a[:ia] != b[:ib] {
-		t.Errorf("prompt prefix before <chunks> differs across batches — provider prefix cache will miss.\nA-prefix:\n%s\n---\nB-prefix:\n%s", a[:ia], b[:ib])
+		t.Errorf("prompt prefix before <chunks> differs across batches - provider prefix cache will "+
+			"miss.\nA-prefix:\n%s\n---\nB-prefix:\n%s", a[:ia], b[:ib])
 	}
 
 	// The static rules and per-document candidate-slug block must live inside

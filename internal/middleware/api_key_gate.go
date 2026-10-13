@@ -155,7 +155,7 @@ func (a *APIKeyRouteAuthorizer) authorize(scope types.TenantAPIKeyScope, method,
 // DenyAPIKeyPrincipal returns a middleware that rejects any X-API-Key
 // principal outright. Use it on routes registered directly on the engine
 // (outside the /api/v1 group) where the APIKeyRouteAuthorizer.Middleware
-// gate does NOT run — the JWT role guards (RequireRole / RequireSystemAdmin
+// gate does NOT run - the JWT role guards (RequireRole / RequireSystemAdmin
 // / RequireOwnershipOrRole) short-circuit API-key principals on the
 // assumption the gate already authorized them, so an ungated route would
 // otherwise let any valid key through. JWT sessions pass straight through.
@@ -173,8 +173,8 @@ func DenyAPIKeyPrincipal() gin.HandlerFunc {
 
 // AllowFileServeAPIKey guards the tenant-scoped file-proxy routes (/files and
 // the KB-scoped image proxy) for X-API-Key callers. Those routes serve an
-// arbitrary storage path that only carries a tenant segment — there is no KB
-// id in the path a KB-restricted key's allow-list could be checked against —
+// arbitrary storage path that only carries a tenant segment - there is no KB
+// id in the path a KB-restricted key's allow-list could be checked against -
 // so a KB-restricted key is denied outright (it must download KB content via
 // the KB-scoped routes such as /knowledge/:id/download, which DO enforce the
 // allow-list). A key passes when it is full-access, or when it is NOT

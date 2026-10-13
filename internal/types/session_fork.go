@@ -54,7 +54,7 @@ func (c *SandboxCheckpoint) Scan(value any) error {
 // config's template, then roll /workspace back to CommitSHA.
 //
 // It is consumed exactly once. After ConsumedAt is set the forked session is
-// indistinguishable from an ordinary session — matching the durability
+// indistinguishable from an ordinary session - matching the durability
 // semantics every session already has, where a reaped sandbox loses
 // /workspace.
 type ForkBootstrap struct {

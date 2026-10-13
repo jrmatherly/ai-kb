@@ -132,7 +132,7 @@ func (p *GRPCDocumentReader) Read(ctx context.Context, req *types.ReadRequest) (
 	if err != nil {
 		// An older docreader build may not implement ReadStream. Fall back to
 		// the unary Read RPC so a version-skewed deployment still parses
-		// documents (small/medium docs only — the unary path remains capped by
+		// documents (small/medium docs only - the unary path remains capped by
 		// the gRPC message-size limit, which is exactly what streaming avoids).
 		if status.Code(err) == codes.Unimplemented {
 			logger.Warnf(ctx, "docreader ReadStream unimplemented, falling back to unary Read: %v", err)

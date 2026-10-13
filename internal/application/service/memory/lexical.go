@@ -168,7 +168,7 @@ func selectRecallItems(query string, items []*types.MemoryItem, maxItems, runeBu
 //
 // Indexes rather than ids because a ranking is only ever meaningful against the
 // candidate slice it was produced from, and because an item is not guaranteed
-// to carry an id — keying on one silently collapses every id-less item onto the
+// to carry an id - keying on one silently collapses every id-less item onto the
 // same entry.
 func lexicalRanking(query string, items []*types.MemoryItem) []int {
 	index := make(map[*types.MemoryItem]int, len(items))

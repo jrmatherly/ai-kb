@@ -9,7 +9,7 @@ import (
 
 // retrieveFilters is the typed shape of OpenSearch query filter
 // clauses. It is the ONLY way callers (Retrieve) can constrain a
-// query — there is no JSON-fragment escape hatch. This prevents the
+// query - there is no JSON-fragment escape hatch. This prevents the
 // "map[string]interface{} injection" failure mode where a hostile
 // chunk_id like {"$or":[...]} would otherwise be inlined as JSON DSL.
 //
@@ -17,8 +17,8 @@ import (
 // query). Empty slice = no constraint on that dimension.
 //
 // IncludeDisabled controls the implicit is_enabled = true clause:
-//   - false (default) — appends is_enabled term, hiding disabled chunks
-//   - true             — omits the clause; admin / audit callers can
+//   - false (default) - appends is_enabled term, hiding disabled chunks
+//   - true             - omits the clause; admin / audit callers can
 //     observe disabled chunks. Service layer pins false for user-facing
 //     APIs.
 type retrieveFilters struct {
@@ -41,7 +41,7 @@ func fromParams(p types.RetrieveParams) *retrieveFilters {
 		TagIDs:              p.TagIDs,
 		ExcludeChunkIDs:     p.ExcludeChunkIDs,
 		ExcludeKnowledgeIDs: p.ExcludeKnowledgeIDs,
-		// IncludeDisabled stays false — set explicitly by admin callers
+		// IncludeDisabled stays false - set explicitly by admin callers
 		// only. Driver receives this from a typed field, not from
 		// AdditionalParams, so the contract is checked at compile time.
 	}
@@ -95,7 +95,7 @@ func (f *retrieveFilters) toBoolMust() []map[string]any {
 }
 
 // buildKNNQuery composes a pure k-NN ANN query with caller filters. No
-// hybrid pipeline — native hybrid is out of scope for this PR; fusion
+// hybrid pipeline - native hybrid is out of scope for this PR; fusion
 // stays in the service-layer RRF.
 //
 // Applies `min_score` when threshold > 0. The OpenSearch k-NN plugin's
@@ -132,7 +132,7 @@ func buildKNNQuery(embedding []float32, topK int, threshold float64, f *retrieve
 
 // buildKeywordQuery composes a BM25 match query against the content
 // field with caller filters. Score range is OpenSearch BM25 native (no
-// upper bound) — the normalizer keyword-passthrough rule treats keyword
+// upper bound) - the normalizer keyword-passthrough rule treats keyword
 // retrievers as rank-based for RRF, so the score scale does not need
 // normalization here. min_score still applied if requested.
 func buildKeywordQuery(queryText string, topK int, threshold float64, f *retrieveFilters) ([]byte, error) {

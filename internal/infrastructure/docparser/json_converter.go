@@ -125,7 +125,7 @@ func recursiveJSONSplit(
 		remaining := defaultJSONChunkSize - chunkSize
 
 		if itemSize <= remaining {
-			// Item fits in the current chunk — add it preserving the path
+			// Item fits in the current chunk - add it preserving the path
 			setNestedDict(chunks[len(chunks)-1], newPath, value)
 		} else {
 			// Item doesn't fit
@@ -140,7 +140,7 @@ func recursiveJSONSplit(
 				// Recurse into the sub-object
 				chunks = recursiveJSONSplit(subDict, newPath, chunks)
 			} else {
-				// Cannot split further (scalar or single-key dict) — place as-is
+				// Cannot split further (scalar or single-key dict) - place as-is
 				setNestedDict(chunks[len(chunks)-1], newPath, value)
 			}
 		}
@@ -168,7 +168,7 @@ func setNestedDict(d map[string]interface{}, path []string, value interface{}) {
 		if nextDict, ok := next.(map[string]interface{}); ok {
 			current = nextDict
 		} else {
-			// Path conflict (existing value is not a dict) — overwrite
+			// Path conflict (existing value is not a dict) - overwrite
 			newDict := map[string]interface{}{}
 			current[key] = newDict
 			current = newDict

@@ -51,7 +51,7 @@ func (c *E2BRemoteClient) OpenTerminal(
 	}
 	c.inboundTokens.Put(sbx.ID, sbx.TrafficAccessToken)
 
-	// The terminal session — not the SDK's per-command timeout — owns the
+	// The terminal session - not the SDK's per-command timeout - owns the
 	// PTY lifetime: WithPtyTimeout(0) disables the context wrapping so the
 	// stream survives as long as ptyCtx below.
 	ptyOpts := []e2b.PtyOption{
@@ -137,7 +137,7 @@ func (s *e2bTerminalSession) pump() {
 	}))
 
 	// Close (or OpenTerminal-context cancellation) tears the stream down;
-	// that is teardown, not a terminal failure — report nothing further.
+	// that is teardown, not a terminal failure - report nothing further.
 	select {
 	case <-s.closedCh:
 		return

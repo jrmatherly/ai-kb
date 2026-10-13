@@ -9,7 +9,7 @@ import (
 
 // ErrPathDenied is returned for every rejected path. Callers surface it to
 // the model as a scope error, so it deliberately carries no distinction
-// between "outside the workspace" and "explicitly denied" — telling the
+// between "outside the workspace" and "explicitly denied" - telling the
 // model which secret paths exist is itself a small leak.
 var ErrPathDenied = errors.New("localsandbox: path is outside the permitted workspace")
 

@@ -77,7 +77,7 @@ func TestRepairJSON(t *testing.T) {
 	})
 
 	t.Run("invalid escape: regex plus (C\\+\\+)", func(t *testing.T) {
-		// The LLM emits a raw regex without double-escaping — \+ is not a
+		// The LLM emits a raw regex without double-escaping - \+ is not a
 		// legal JSON escape. Repair should rewrite it to \\+ so the
 		// unmarshalled string is the regex pattern `C\+\+`, matching
 		// literal `C++`.
@@ -101,7 +101,7 @@ func TestRepairJSON(t *testing.T) {
 			Queries []string `json:"queries"`
 		}
 		require.NoError(t, json.Unmarshal([]byte(result), &parsed))
-		// \b is a VALID JSON escape (backspace) — the LLM gets what it asked
+		// \b is a VALID JSON escape (backspace) - the LLM gets what it asked
 		// for (a backspace char), we don't silently rewrite valid escapes.
 		// \d, \., \| are invalid → repaired to literal backslash sequences.
 		assert.Equal(t, `\d+\.\d+`, parsed.Queries[0])

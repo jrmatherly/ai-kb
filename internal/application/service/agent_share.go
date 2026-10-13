@@ -298,7 +298,7 @@ func (s *agentShareService) RemoveShare(ctx context.Context, shareID string, use
 // Ownership is enforced here (not only at the route layer): the caller must
 // own the agent, mirroring ListSharesByKnowledgeBase. This is the sole guard
 // for API-key principals, whose route-level OwnedAgentOrAdmin check
-// short-circuits — without this, a full-access key could enumerate any
+// short-circuits - without this, a full-access key could enumerate any
 // tenant's agent shares by ID (cross-tenant IDOR).
 func (s *agentShareService) ListSharesByAgent(
 	ctx context.Context, agentID string, tenantID uint64,

@@ -7,7 +7,7 @@ import (
 )
 
 // This file holds the remaining stubs for methods whose real implementation
-// has not landed yet — the rolling-reindex swap (swapToVersion) and the
+// has not landed yet - the rolling-reindex swap (swapToVersion) and the
 // precise storage estimate. CopyIndices (copy.go), BatchUpdateChunkEnabledStatus
 // and BatchUpdateChunkTagID (bulk_update.go) are now implemented. Each
 // remaining stub returns ErrFeatureNotEnabled (or, for EstimateStorageSize, a
@@ -40,12 +40,12 @@ func (r *Repository) EstimateStorageSize(
 }
 
 // swapToVersion is a stub for the future rolling-reindex swap path.
-// Calling it is illegal at this stage — alias is fixed at "_v1" and only
+// Calling it is illegal at this stage - alias is fixed at "_v1" and only
 // a follow-up change ships the swap orchestration. The surface exists so
 // the future API contract is reviewable now.
 //
 // Unexported because it is not part of the public
-// RetrieveEngineRepository interface — exposing it would require an
+// RetrieveEngineRepository interface - exposing it would require an
 // interface widening in internal/types/interfaces.
 func (r *Repository) swapToVersion(_ context.Context, _ int, _ int) error {
 	return ErrFeatureNotEnabled

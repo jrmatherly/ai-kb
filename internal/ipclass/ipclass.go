@@ -112,8 +112,8 @@ func mustCIDR(s string) *net.IPNet {
 // Classify categorises ip and returns a human-readable reason naming the
 // class. The reason is empty for Public.
 func Classify(ip net.IP) (Class, string) {
-	// A net.IP is only meaningful at 4 or 16 bytes. Anything else — nil, or a
-	// slice built by hand — must not fall through to Public, because callers
+	// A net.IP is only meaningful at 4 or 16 bytes. Anything else - nil, or a
+	// slice built by hand - must not fall through to Public, because callers
 	// read Public as permission to dial.
 	if len(ip) != net.IPv4len && len(ip) != net.IPv6len {
 		return Invalid, "invalid address"

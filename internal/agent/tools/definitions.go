@@ -30,7 +30,7 @@ const (
 	// skill resources follow SkillsEnabled and do not require a sandbox.
 	ToolReadFile = "read_file"
 	// Sandbox filesystem tools (only available when the sandbox backend
-	// supports per-session files — Cube, E2B, Docker). list/read inspect
+	// supports per-session files - Cube, E2B, Docker). list/read inspect
 	// the session workspace; write creates text files so generated
 	// scripts do not have to travel through a shell_exec heredoc; edit
 	// patches an existing file without regenerating it.
@@ -39,7 +39,7 @@ const (
 	// DefaultAllowedTools, like search_memory and web_search: the sandbox
 	// switch already decides whether a run has a workspace at all, and
 	// registerSandboxFileTools registers these from that capability rather
-	// than from the allowlist. A checkbox would have been a lie — clearing
+	// than from the allowlist. A checkbox would have been a lie - clearing
 	// it changed nothing.
 	ToolListSandboxFiles = "list_sandbox_files"
 	ToolWriteSandboxFile = "write_sandbox_file"

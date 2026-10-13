@@ -46,7 +46,7 @@ const (
 func isIconImage(data []byte) bool {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
-		// Cannot decode dimensions — fall back to size-only heuristic.
+		// Cannot decode dimensions - fall back to size-only heuristic.
 		return len(data) < minImageBytes
 	}
 	if cfg.Width < minImageDimension && cfg.Height < minImageDimension {
@@ -250,7 +250,7 @@ func isProviderScheme(p string) bool {
 }
 
 // isWhitelistedImageHost checks if the image URL's host is in the whitelist.
-// Whitelisted hosts are trusted (e.g. internal MinerU service) — images are
+// Whitelisted hosts are trusted (e.g. internal MinerU service) - images are
 // still downloaded for validation and OCR/caption analysis, but not uploaded
 // to object storage. The markdown keeps the original URL.
 // Configure via IMAGE_HOST_KEEP_URL env var (comma-separated hosts).
@@ -340,7 +340,7 @@ var imgHTMLDataURI = regexp.MustCompile(
 )
 
 // imgHTMLSrc matches an HTML <img> tag carrying a quoted src attribute. It does
-// not care what the src points at — callers select the references they handle by
+// not care what the src points at - callers select the references they handle by
 // inspecting the scheme, which is how the relative and the remote paths divide
 // the same tags between them.
 //
@@ -503,7 +503,7 @@ func (r *ImageResolver) resolveBareDataURIs(
 		if m[0] > 0 {
 			prev := markdown[m[0]-1]
 			if prev == '"' || prev == '\'' {
-				continue // inside HTML attribute — already handled by ResolveHTMLDataURIImages
+				continue // inside HTML attribute - already handled by ResolveHTMLDataURIImages
 			}
 			if prev == '(' {
 				insideWrapper = true // likely inside a broken ![...](...) ref
@@ -545,7 +545,7 @@ func (r *ImageResolver) resolveBareDataURIs(
 			MimeType:    mimeType,
 		})
 		if insideWrapper {
-			// Inside a broken markdown ref like ![weird]alt](data:...) — replace data URI only
+			// Inside a broken markdown ref like ![weird]alt](data:...) - replace data URI only
 			markdown = markdown[:m[0]] + servingURL + markdown[m[1]:]
 		} else {
 			markdown = markdown[:m[0]] + fmt.Sprintf("![image](%s)", servingURL) + markdown[m[1]:]
@@ -573,7 +573,7 @@ func (r *ImageResolver) resolveBareBase64Prefix(
 			break
 		}
 		m := matches[i]
-		// Skip if preceded by ';' — this is part of a data URI handled above
+		// Skip if preceded by ';' - this is part of a data URI handled above
 		if m[0] > 0 && markdown[m[0]-1] == ';' {
 			continue
 		}
@@ -637,7 +637,7 @@ const (
 // The URL groups support one level of balanced parentheses.
 var reLinkedImage = regexp.MustCompile(
 	`\[!\[([^\]]*)\]\(([^()\s]*(?:\([^)]*\)[^()\s]*)*)\)\]` + // [![alt](img_url)]
-		`\([^()\s]*(?:\([^)]*\)[^()\s]*)*\)`, // (link_url) — captured but discarded
+		`\([^()\s]*(?:\([^)]*\)[^()\s]*)*\)`, // (link_url) - captured but discarded
 )
 
 // UnwrapLinkedImages replaces all [![alt](img_url)](link_url) occurrences in
@@ -758,7 +758,7 @@ var errRemoteImageIsIcon = errors.New("filtered out as icon")
 // remoteImageResult describes one image that was fetched successfully.
 type remoteImageResult struct {
 	// ServingURL is empty when KeepOriginalURL is set. The caller fills it in
-	// with the normalized request URL — NOT the raw document bytes. Later stages
+	// with the normalized request URL - NOT the raw document bytes. Later stages
 	// both search the document for this string and fetch it, so a padded or
 	// entity-encoded value satisfies neither.
 	ServingURL string
@@ -938,7 +938,7 @@ func resolveRemoteImagePass(
 // htmlAttrSrc normalizes an HTML src attribute value into the URL to request.
 //
 // Three things are HTML-specific. An attribute value may be padded, so it is
-// trimmed — on both sides of the decode, because an entity can itself expand to
+// trimmed - on both sides of the decode, because an entity can itself expand to
 // whitespace. It may carry entities, and `&amp;` is the correct spelling of a
 // query separator, so it is unescaped. And the scheme may be written in any
 // case, while every fetcher downstream compares it byte-for-byte, so it is

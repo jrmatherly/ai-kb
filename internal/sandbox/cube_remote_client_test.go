@@ -15,7 +15,7 @@ import (
 
 // newTestCubeRemoteClient wires a real CubeRemoteClient at the cubeMockServer.
 // Tests exercise the adapter through its public RemoteSandboxClient surface
-// only — no intermediate backend interfaces exist below CubeRemoteClient.
+// only - no intermediate backend interfaces exist below CubeRemoteClient.
 func newTestCubeRemoteClient(t *testing.T, mock *cubeMockServer) *CubeRemoteClient {
 	t.Helper()
 	client, err := NewCubeRemoteClient(testConfig(t, mock))
@@ -185,7 +185,7 @@ func TestCubeRemoteClientCreateWritesLifecyclePayload(t *testing.T) {
 
 // Counterpart to the E2B test of the same name. resolveNetworkPolicy
 // materialises DenyEgressByDefault into an explicit deny-all entry, and both
-// adapters must put it on the wire — otherwise the two providers drift and only
+// adapters must put it on the wire - otherwise the two providers drift and only
 // one of them enforces what the admin ticked.
 func TestCubeRemoteClientCreateSendsDenyAllForStoredDenyByDefault(t *testing.T) {
 	tenantCfg := completeCubeTenantConfig()
@@ -322,7 +322,7 @@ func TestCubeRemoteHandleExposesTrafficAccessToken(t *testing.T) {
 }
 
 // The provider issues the traffic token once, at create time. Everything that
-// re-attaches later — auto-resume, a AI KB restart, an artifact download —
+// re-attaches later - auto-resume, a AI KB restart, an artifact download -
 // has to put it back or every data-plane call answers 403.
 func TestCubeRemoteClientConnectRestoresTrafficAccessToken(t *testing.T) {
 	mock := newCubeMockServer(t)

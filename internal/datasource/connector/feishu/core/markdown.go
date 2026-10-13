@@ -141,7 +141,7 @@ func headingText(b DocxBlock) *BlockText {
 	return b.Text
 }
 
-// tableDescendants returns the set of block IDs that belong to a native table —
+// tableDescendants returns the set of block IDs that belong to a native table -
 // every cell listed in a table block plus everything reachable through those
 // cells' Children. blocksToMarkdown skips these so table content is emitted only
 // by the table renderer, never a second time as loose paragraphs.
@@ -154,8 +154,8 @@ func tableDescendants(blocks []DocxBlock, byID map[string]DocxBlock) map[string]
 			return
 		}
 		// Attachment/media blocks nested in a cell must still be collected (and
-		// their reference emitted) by the main loop — the table renderer only
-		// extracts text — so do not consume them, only their text structure.
+		// their reference emitted) by the main loop - the table renderer only
+		// extracts text - so do not consume them, only their text structure.
 		if b.BlockType == BlockTypeFile || b.BlockType == BlockTypeImage {
 			return
 		}
@@ -167,7 +167,7 @@ func tableDescendants(blocks []DocxBlock, byID map[string]DocxBlock) map[string]
 	for _, b := range blocks {
 		// Only consume cells of tables we will actually render. A table that
 		// renderNativeTable would bail on (missing property / zero columns) must
-		// NOT have its cells consumed, or their text would be dropped entirely —
+		// NOT have its cells consumed, or their text would be dropped entirely -
 		// leave them for the flat loop to Emit as loose paragraphs instead.
 		if b.BlockType == BlockTypeTable && tableRenderable(b) {
 			for _, cid := range b.Table.Cells {
@@ -249,7 +249,7 @@ func renderNativeTable(b DocxBlock, byID map[string]DocxBlock) string {
 // markdownTable renders a [][]string (first row = header) as a GFM table.
 func markdownTable(rows [][]string) string {
 	// A zero-column header (an embedded sheet/bitable with no columns) would Emit
-	// a header line of "|  |" and a separator of just "|" — malformed GFM. Render
+	// a header line of "|  |" and a separator of just "|" - malformed GFM. Render
 	// nothing instead.
 	if len(rows) == 0 || len(rows[0]) == 0 {
 		return ""

@@ -144,7 +144,7 @@ func TestValidateConnectionAddrSSRF_WhitelistSkipsPortBlock(t *testing.T) {
 // TestValidateConnectionAddrSSRF_Completeness guards against a future engine
 // being added to validEngineTypes without an SSRF address mapping. Such an
 // engine would fall into the fail-closed default branch and error even with a
-// whitelisted address — this test catches that at build/test time.
+// whitelisted address - this test catches that at build/test time.
 func TestValidateConnectionAddrSSRF_Completeness(t *testing.T) {
 	withSSRFWhitelist(t, "any.allowed.test")
 

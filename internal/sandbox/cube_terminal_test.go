@@ -103,7 +103,7 @@ func TestCubeOpenTerminalRefreshesSandboxTTL(t *testing.T) {
 func TestCubeDialDesktopRefreshesSandboxTTL(t *testing.T) {
 	// Desktop traffic is websockify on 6080, not envd, so CubeMaster never
 	// sees it. SetTimeout must follow the relay lifetime (WithoutCancel),
-	// not DialDesktop's request ctx — that ctx is cancelled on handshake
+	// not DialDesktop's request ctx - that ctx is cancelled on handshake
 	// abort and must not take the refresh loop with it.
 	prevMin := terminalTTLRefreshMin
 	terminalTTLRefreshMin = 40 * time.Millisecond

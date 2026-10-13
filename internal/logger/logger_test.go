@@ -215,7 +215,7 @@ func TestCloneContextPreservesTenantAPIKeyScope(t *testing.T) {
 
 // setupSSEStream builds its async context through CloneContext, so dropping
 // this key here would silently re-key every session→sandbox binding onto the
-// tenant a shared agent borrowed — stranding the MicroVM at session deletion.
+// tenant a shared agent borrowed - stranding the MicroVM at session deletion.
 func TestCloneContextPreservesSandboxTenantID(t *testing.T) {
 	t.Parallel()
 

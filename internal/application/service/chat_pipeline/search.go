@@ -185,7 +185,7 @@ func removeDuplicateResults(results []*types.SearchResult) []*types.SearchResult
 	contentSig := make(map[string]*types.SearchResult) // sig -> first chunk
 	var uniqueResults []*types.SearchResult
 	for _, r := range results {
-		// Only deduplicate by exact chunk ID — do NOT treat shared ParentChunkID
+		// Only deduplicate by exact chunk ID - do NOT treat shared ParentChunkID
 		// as duplicates, because different child chunks of the same parent carry
 		// different content segments that may all be relevant.
 		if seen[r.ID] {

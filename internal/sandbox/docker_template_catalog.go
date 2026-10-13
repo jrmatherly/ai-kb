@@ -1,6 +1,6 @@
 // Images as templates for the docker backend.
 //
-// The settings wizard asks every backend the same two questions — which
+// The settings wizard asks every backend the same two questions - which
 // templates exist, and please make sure the standard one does. For Docker the
 // answer is images on the daemon: an image is a pre-baked filesystem a sandbox
 // starts from, which is exactly what a Cube or E2B template is.

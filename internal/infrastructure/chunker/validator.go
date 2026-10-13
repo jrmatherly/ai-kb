@@ -22,7 +22,7 @@ func ValidateChunks(chunks []Chunk, totalChars, chunkSize int) ValidationResult 
 	}
 
 	// A single chunk for a document much larger than chunkSize means the
-	// strategy did not actually split — fail so the next tier runs.
+	// strategy did not actually split - fail so the next tier runs.
 	if len(chunks) == 1 && totalChars > 2*chunkSize {
 		return ValidationResult{Reason: "single chunk for large document"}
 	}
@@ -58,14 +58,14 @@ func ValidateChunks(chunks []Chunk, totalChars, chunkSize int) ValidationResult 
 		return ValidationResult{Reason: "too many tiny chunks"}
 	}
 
-	// Reject when no chunk reached at least 25% of the target — the splitter
+	// Reject when no chunk reached at least 25% of the target - the splitter
 	// is fragmenting too aggressively to be useful.
 	if maxLen < chunkSize/4 && totalChars > chunkSize {
 		return ValidationResult{Reason: "all chunks far below target size"}
 	}
 
 	// Sanity check on absolute upper bound. Anything past 2x chunkSize is a
-	// red flag — the splitter ignored its size budget.
+	// red flag - the splitter ignored its size budget.
 	if maxLen > 2*chunkSize && chunkSize > 0 {
 		return ValidationResult{Reason: "chunk exceeds 2x target size"}
 	}

@@ -489,7 +489,7 @@ func TestValidateProbesNodeAndDocumentAccess(t *testing.T) {
 
 // Expanding a document is answered with no children rather than an error: a
 // leaf genuinely has none, and the picker renders an error as a failed
-// expansion — a toast on a step whose selection syncs perfectly well. The
+// expansion - a toast on a step whose selection syncs perfectly well. The
 // listing already reports HasChildren=false for a document, which keeps the
 // picker from offering the expander; this is the answer for a client that
 // expands anyway, or for a selection saved by a build that did offer it.
@@ -656,7 +656,7 @@ func TestSyncLogsPerScopeSummary(t *testing.T) {
 	}
 }
 
-// A transient read failure is counted as failed — not as skipped — is logged as
+// A transient read failure is counted as failed - not as skipped - is logged as
 // retryable, and still leaves the document out of the cursor.
 func TestSyncSummaryCountsTransientFailuresAndStillRetries(t *testing.T) {
 	api := skippedNodesFixture()

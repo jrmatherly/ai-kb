@@ -141,9 +141,9 @@ func TestRealAPI_SeedDocs(t *testing.T) {
 				}},
 			}, &blockResp)
 		if berr != nil {
-			t.Logf("warn: add content to doc %d failed (%v) — doc still created, export may be empty", i, berr)
+			t.Logf("warn: add content to doc %d failed (%v) - doc still created, export may be empty", i, berr)
 		} else if blockResp.Code != 0 {
-			t.Logf("warn: add content to doc %d: code=%d msg=%s (needs docx:document write scope) — doc still created", i, blockResp.Code, blockResp.Msg)
+			t.Logf("warn: add content to doc %d: code=%d msg=%s (needs docx:document write scope) - doc still created", i, blockResp.Code, blockResp.Msg)
 		}
 
 		t.Logf("created doc %d: title=%q node_token=%s obj_token=%s", i, title, created.Data.Node.NodeToken, docID)

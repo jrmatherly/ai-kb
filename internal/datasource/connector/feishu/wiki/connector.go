@@ -16,7 +16,7 @@ import (
 
 // Connector implements the datasource.Connector interface for Feishu and, with
 // the same code, for Lark: the two clouds expose an identical wiki/docx/drive
-// API surface. A core.Region picks the cloud — see region.go.
+// API surface. A core.Region picks the cloud - see region.go.
 type Connector struct {
 	region core.Region
 }

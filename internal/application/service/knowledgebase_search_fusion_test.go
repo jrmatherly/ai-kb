@@ -98,7 +98,7 @@ func TestFuseOrDeduplicate_HybridTopOfBothScoresOne(t *testing.T) {
 }
 
 // Lists are ranked on their own. The FAQ list arrives second (goroutine
-// completion order), but its best hit is still vector rank 1 — not rank 4
+// completion order), but its best hit is still vector rank 1 - not rank 4
 // behind every document hit.
 func TestFuseOrDeduplicate_HybridRanksEachListOnItsOwn(t *testing.T) {
 	t.Parallel()

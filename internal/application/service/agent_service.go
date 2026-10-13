@@ -60,7 +60,7 @@ func withoutString(in []string, drop string) []string {
 
 // agentHasKnowledgeScope reports whether the agent has any KB retrieval scope for
 // this turn. Tag-only @mentions populate SearchTargets (with TagIDs) but leave
-// KnowledgeBases / KnowledgeIDs empty — those must still count as in-scope.
+// KnowledgeBases / KnowledgeIDs empty - those must still count as in-scope.
 func agentHasKnowledgeScope(config *types.AgentConfig) bool {
 	if config == nil {
 		return false
@@ -77,7 +77,7 @@ func agentHasKnowledgeScope(config *types.AgentConfig) bool {
 //
 // The tenant map always comes from SearchTargets, which buildSearchTargets has
 // already resolved (and authorized) per KB: a directly shared KB carries its
-// source tenant there. KnowledgeBases alone cannot tell own from shared KBs —
+// source tenant there. KnowledgeBases alone cannot tell own from shared KBs -
 // both KBSelectionMode="all" and an @mention put shared KB IDs into it.
 // KBs missing from the map fall back to the caller's tenant.
 func knowledgeBaseScopesForPrompt(config *types.AgentConfig) ([]string, map[string]uint64) {
@@ -281,9 +281,10 @@ func (s *agentService) CreateAgentEngine(
 	// The shell is registered above by registerSandboxShellIfAllowed and
 	// follows SkillsEnabled rather than requiring a ready skill to already
 	// exist. offerSkills only gates the skills manager that feeds the model
-	// the installed-skill list and the read_file / shell_exec environment. A sandbox whose skills are still installing —
-	// or that simply has none yet — therefore gets a shell without an
-	// empty skills manager or skill tools that cannot succeed.
+	// the installed-skill list and the read_file / shell_exec environment. A
+	// sandbox whose skills are still installing, or that simply has none yet,
+	// therefore gets a shell without an empty skills manager or skill tools
+	// that cannot succeed.
 	offerSkills := config.SkillsEnabled &&
 		(len(config.SkillDirs) > 0 || len(config.TenantSkills) > 0)
 	if offerSkills {
@@ -429,7 +430,7 @@ func (s *agentService) resolveKBAndDocInfos(
 // (that tree is wiped before the snapshot). Offering the file tools made
 // the first write of every install fail, then fall back to a shell heredoc.
 // Install mode gets write_skill_file / edit_skill_file instead, which write
-// the image tree and are scoped to the one skill being installed —
+// the image tree and are scoped to the one skill being installed -
 // see registerSkillFileTools.
 func (s *agentService) registerSandboxFileTools(
 	ctx context.Context,
@@ -765,7 +766,7 @@ func (s *agentService) tenantSkillSource(
 // loadInstalledSkillBundle reads the archive one installed skill was built
 // from. An object named by the row itself is that archive. A row that only
 // names a catalog is answered from the definition's zip, but the definition is
-// mutable — registering the same skill again stores a new object and updates
+// mutable - registering the same skill again stores a new object and updates
 // the catalog ref, while this sandbox goes on running the image built from the
 // previous bytes. Skill resources serve what was installed, so a
 // definition that has moved on is reported rather than substituted.
@@ -956,7 +957,7 @@ func (s *agentService) readSkillBundle(
 // for every provider.
 //
 // The skill installer agent gets the install-mode variant, which runs as root
-// and may work inside the skills image root — it exists to install
+// and may work inside the skills image root - it exists to install
 // dependencies into the image, which the ordinary contract forbids on both
 // counts. Every other agent keeps the session-layout executor: remote
 // work_dir is the whole sandbox, host work_dir is clamped to writable roots.
@@ -1010,7 +1011,7 @@ func (s *agentService) registerTools(
 	sessionID string,
 ) error {
 	// Source of truth policy:
-	//   - `config.AllowedTools` is the explicit, user-editable whitelist —
+	//   - `config.AllowedTools` is the explicit, user-editable whitelist -
 	//     populated by the agent-type preset on create and freely editable
 	//     afterwards.
 	//   - We never silently *inject* tools the user didn't pick.
@@ -1128,8 +1129,8 @@ func (s *agentService) registerTools(
 	// agent cannot reach past what each turn injects for it.
 	//
 	// The tool is dropped before it is re-added so that an allowlist which
-	// still names it — a preset, an API caller, or a config saved while memory
-	// was on — cannot outlive the switch being turned off.
+	// still names it - a preset, an API caller, or a config saved while memory
+	// was on - cannot outlive the switch being turned off.
 	allowedTools = withoutString(allowedTools, tools.ToolSearchMemory)
 	if s.memoryService != nil &&
 		s.memoryService.MemoryAvailable(types.ApplyAgentMemoryPreference(ctx, config.MemoryEnabled)) {
@@ -1138,7 +1139,7 @@ func (s *agentService) registerTools(
 		logger.Infof(ctx, "search_memory not registered: long-term memory is off for this request")
 	}
 
-	// Tool capability sets — used by the hard safety nets below to drop tools
+	// Tool capability sets - used by the hard safety nets below to drop tools
 	// whose runtime prerequisite (a matching KB surface) is missing.
 	//
 	// NOTE: ragToolSet must stay in sync with frontend `knowledgeBaseTools`
@@ -1281,7 +1282,7 @@ func (s *agentService) registerTools(
 				WithSearchTargets(config.SearchTargets)
 			logger.Infof(ctx, "Registered data_schema tool")
 
-		// Wiki tools — only registered when wiki KBs are detected
+		// Wiki tools - only registered when wiki KBs are detected
 		case tools.ToolWikiReadPage:
 			toolToRegister = tools.NewWikiReadPageTool(s.wikiPageService, s.knowledgeService, wikiScopes, wikiRoutes)
 		case tools.ToolWikiSearch:
@@ -1403,7 +1404,7 @@ func (s *agentService) getKnowledgeBaseInfos(ctx context.Context, kbIDs []string
 		}
 
 		// Document/FAQ listing below is tenant-scoped, so a directly shared KB
-		// must be queried under its source tenant — the request context belongs
+		// must be queried under its source tenant - the request context belongs
 		// to the receiving tenant and would silently yield doc_count=0. The
 		// tenant comes from the SearchTarget that buildSearchTargets already
 		// authorized; this only widens the metadata query, never the KB set.
@@ -1503,7 +1504,7 @@ func (s *agentService) getKnowledgeBaseInfos(ctx context.Context, kbIDs []string
 
 // kbRetrievalCapabilities reports which retrieval surfaces a KB exposes.
 // Surfaces are the static facts the hybrid agent prompt consults to pick its
-// retrieval strategy — the agent should NOT need to probe this via search.
+// retrieval strategy - the agent should NOT need to probe this via search.
 //
 // Returned values are a subset of {"wiki", "chunks"}:
 //   - "wiki"   → the KB has wiki ingestion enabled (wiki_search / wiki_read_page)

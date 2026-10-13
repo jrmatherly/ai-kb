@@ -71,7 +71,7 @@ type ImageListFilter struct {
 	//
 	// When more than one rule speaks about the same image, "on" outranks
 	// "off": a forced display beats a forced hide. Everything unclaimed
-	// stays visible, which is what makes the default state usable — a
+	// stays visible, which is what makes the default state usable - a
 	// filter narrows the list, it never empties it.
 	AttrRules map[string]map[string]string
 	// IsEnabled, when non-nil, restricts to chunks with that enabled state.

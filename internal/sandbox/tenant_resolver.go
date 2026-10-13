@@ -1,6 +1,6 @@
 // Package sandbox: per-config sandbox manager resolution.
 //
-// A manager is built for one (tenant, sandbox config) pair — a workspace holds
+// A manager is built for one (tenant, sandbox config) pair - a workspace holds
 // several named configs and each agent selects one. Managers are built per
 // request and deliberately NOT cached, mirroring modelService, which rebuilds
 // model clients on every call (see internal/application/service/model.go).

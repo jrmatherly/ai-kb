@@ -46,7 +46,7 @@ func (s *stubMessageService) DeleteMessage(ctx context.Context, sessionID, id st
 }
 
 // newMessageTestRouter mounts the standard ErrorHandler middleware so
-// c.Error(NewNotFoundError(...)) renders as a real 404 envelope —
+// c.Error(NewNotFoundError(...)) renders as a real 404 envelope -
 // matching production routing exactly.
 func newMessageTestRouter(svc interfaces.MessageService) *gin.Engine {
 	gin.SetMode(gin.TestMode)

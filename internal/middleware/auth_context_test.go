@@ -77,7 +77,7 @@ func TestApplyAuthSessionSetsBothSurfaces(t *testing.T) {
 }
 
 // TestApplyAuthSessionTenantless verifies that a tenantless session attaches
-// neither tenant keys nor a role key — RequireRole's fail-closed Viewer
+// neither tenant keys nor a role key - RequireRole's fail-closed Viewer
 // default depends on the role key being absent, and TENANT_REQUIRED
 // handling depends on the tenant key being absent.
 func TestApplyAuthSessionTenantless(t *testing.T) {

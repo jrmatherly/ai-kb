@@ -76,7 +76,7 @@ func interpolateBuiltinModelEnv(s string) string {
 //     reappears in the file).
 //   - After all UPSERTs, any pre-existing yaml-managed row whose id is no
 //     longer in the file is soft-deleted. Removing an entry from YAML is
-//     therefore the supported way to retire a built-in model — no manual
+//     therefore the supported way to retire a built-in model - no manual
 //     SQL needed.
 //   - If is_default=true is set on a YAML entry, the loader first clears
 //     is_default on any other rows in the same (tenant_id, type) bucket,
@@ -202,7 +202,7 @@ func LoadBuiltinModelsConfig(ctx context.Context, db *gorm.DB, configDir string)
 // from builtin_models.yaml. Returns the number of rows affected.
 //
 // Safety:
-//   - Only rows tagged managed_by='yaml' are eligible — manual rows are
+//   - Only rows tagged managed_by='yaml' are eligible - manual rows are
 //     never visible to this query.
 //   - Already-soft-deleted rows are skipped (GORM default scope), so this
 //     is idempotent across restarts.

@@ -132,7 +132,7 @@ func finishToolSpan(span *langfuse.Span, tc types.ToolCall, execErr error, durat
 	}
 	// Classify the span's outcome: a non-nil execErr is always an error, and
 	// a result with Success=false is treated as an error too (matches the
-	// user-visible behaviour — the LLM would see this as a failed tool call
+	// user-visible behaviour - the LLM would see this as a failed tool call
 	// and try a different approach).
 	var spanErr error
 	switch {
@@ -361,8 +361,8 @@ func panickedToolCall(tc types.LLMToolCall, i int) types.ToolCall {
 }
 
 // emitToolOutcome publishes the result and action events for one finished tool
-// call. Every path that produces a ToolCall goes through here — sequential,
-// parallel, and refused-as-truncated — so the UI sees one event shape.
+// call. Every path that produces a ToolCall goes through here - sequential,
+// parallel, and refused-as-truncated - so the UI sees one event shape.
 func (e *AgentEngine) emitToolOutcome(
 	ctx context.Context, toolCall types.ToolCall, iteration int, sessionID string,
 ) {
@@ -448,7 +448,7 @@ func (e *AgentEngine) runToolCall(
 		// Closing off an unterminated string or bracket makes the payload
 		// parse, but the values inside are still the partial ones the provider
 		// managed to emit. Executing that writes half a file or searches half a
-		// query, and the tool reports success either way — so refuse instead.
+		// query, and the tool reports success either way - so refuse instead.
 		// This is the belt for streams that break without a finish reason,
 		// where the length check in executeToolCalls has nothing to match on.
 		if truncated {

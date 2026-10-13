@@ -7,21 +7,21 @@ import (
 )
 
 // SystemSettingRepository is the storage layer for the platform-wide
-// system_settings table. All methods are system-scoped — there is no
+// system_settings table. All methods are system-scoped - there is no
 // tenant_id; rows are global to the deployment.
 type SystemSettingRepository interface {
 	// Get fetches a row by key. Returns (nil, nil) when the key is not
-	// present — callers fall back to ENV / default at the service layer.
+	// present - callers fall back to ENV / default at the service layer.
 	Get(ctx context.Context, key string) (*types.SystemSetting, error)
 	// List returns every row. Used by the management UI to render the
-	// settings page; no pagination yet (the registry is small — single
+	// settings page; no pagination yet (the registry is small - single
 	// digits in P1, expected to stay double-digits long-term).
 	List(ctx context.Context) ([]*types.SystemSetting, error)
 	// Upsert writes a row keyed by Key. Insert if missing, update if
 	// present. Used by SystemSettingService.Update on every save.
 	Upsert(ctx context.Context, s *types.SystemSetting) error
 	// Delete removes the row by key. Returns (true, nil) if a row was
-	// deleted, (false, nil) if no row matched (idempotent — service
+	// deleted, (false, nil) if no row matched (idempotent - service
 	// layer treats this as a no-op for audit purposes). Real DB errors
 	// surface as (_, err).
 	Delete(ctx context.Context, key string) (bool, error)
@@ -49,7 +49,7 @@ type SystemSettingService interface {
 	// Errors at the DB layer degrade gracefully: the function logs a
 	// warning and falls through to ENV / default rather than returning
 	// an error to upstream business code (which would have to bubble
-	// it through every caller — we'd rather mis-serve a request with
+	// it through every caller - we'd rather mis-serve a request with
 	// the default than 500 a file upload).
 	GetInt(ctx context.Context, key string, envName string, def int64) int64
 	GetString(ctx context.Context, key string, envName string, def string) string
@@ -66,7 +66,7 @@ type SystemSettingService interface {
 	List(ctx context.Context) ([]*types.SystemSetting, error)
 	Get(ctx context.Context, key string) (*types.SystemSetting, error)
 	// Update writes a new value for `key`, validating that:
-	//   1. key is in the in-code registry (rejects 400 otherwise — UI
+	//   1. key is in the in-code registry (rejects 400 otherwise - UI
 	//      cannot inject arbitrary keys),
 	//   2. rawValue's Go type matches the registry's expected type
 	//      (e.g. int64 / float64 for "int", string for "string", bool
@@ -80,7 +80,7 @@ type SystemSettingService interface {
 	// was never persisted returns nil. Emits an audit row on actual
 	// deletions, invalidates the local cache, and publishes to peers.
 	// Returns an error only when the DB write itself fails; callers
-	// must NOT translate "no row" into a 404 — that's the success
+	// must NOT translate "no row" into a 404 - that's the success
 	// path for an idempotent reset.
 	Reset(ctx context.Context, key string) error
 

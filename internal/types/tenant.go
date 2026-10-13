@@ -667,7 +667,7 @@ type TenantSandboxConfig struct {
 	// EnvVars are additional environment variables injected into every
 	// sandbox created for this tenant. 🔒 Values are encrypted at rest.
 	// These become visible to all scripts running in the tenant's
-	// sandboxes — do not place secrets here that scripts must not access.
+	// sandboxes - do not place secrets here that scripts must not access.
 	EnvVars map[string]string `json:"env_vars,omitempty"`
 
 	// VolumeMount configures an optional shared volume mounted into every
@@ -691,7 +691,7 @@ type TenantSandboxConfig struct {
 	SkillRollout string `json:"skill_rollout,omitempty"`
 
 	// Network is the outbound/inbound network policy applied to every sandbox
-	// created from this config — chat sessions, skill installs and deep
+	// created from this config - chat sessions, skill installs and deep
 	// connectivity probes alike. nil and the zero value mean the same thing:
 	// outbound egress allowed, inbound public access closed.
 	Network *SandboxNetworkPolicy `json:"network,omitempty"`
@@ -782,7 +782,7 @@ type DockerSandboxConfig struct {
 	PidsLimit int `json:"pids_limit,omitempty"`
 
 	// NetworkMode is the Docker network sandboxes join: "bridge" (default) or
-	// "none" for no egress. Nothing else is accepted — host and container:
+	// "none" for no egress. Nothing else is accepted - host and container:
 	// modes share another namespace outright, and a named network is usually
 	// the deployment's own compose network, which would put the sandbox next
 	// to Postgres and Redis.
@@ -926,7 +926,7 @@ func (c *TenantSandboxConfig) Value() (driver.Value, error) {
 
 // Scan implements the sql.Scanner interface. Secrets that cannot be decrypted
 // (missing or rotated SYSTEM_AES_KEY) are blanked and logged rather than
-// failing the whole load, matching ModelParameters.Scan — a tenant must stay
+// failing the whole load, matching ModelParameters.Scan - a tenant must stay
 // listable even if its sandbox credentials became unreadable.
 func (c *TenantSandboxConfig) Scan(value interface{}) error {
 	if value == nil {

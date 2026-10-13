@@ -76,7 +76,7 @@ func (e *WebSearchProviderEntity) BeforeCreate(tx *gorm.DB) (err error) {
 //
 // Credential mutation flows through the dedicated /credentials subresource
 // (see internal/handler/web_search_provider_credentials.go). Secret fields
-// are never returned in responses — handlers serialize via
+// are never returned in responses - handlers serialize via
 // dto.NewWebSearchProviderResponse which omits APIKey by construction.
 type WebSearchProviderParameters struct {
 	// API key for the search provider (encrypted in DB)
@@ -136,7 +136,7 @@ type WebSearchProviderTypeInfo struct {
 	// Whether the provider requires an API key
 	RequiresAPIKey bool `json:"requires_api_key"`
 	// Whether the provider accepts an optional API key (keyless by default, but a
-	// key unlocks higher limits — e.g. Keenable). Mutually exclusive with RequiresAPIKey.
+	// key unlocks higher limits - e.g. Keenable). Mutually exclusive with RequiresAPIKey.
 	SupportsOptionalAPIKey bool `json:"supports_optional_api_key,omitempty"`
 	// Whether the provider requires an engine ID (e.g., Google CSE)
 	RequiresEngineID bool `json:"requires_engine_id"`

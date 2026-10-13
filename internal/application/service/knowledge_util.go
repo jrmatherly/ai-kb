@@ -102,7 +102,7 @@ func readMultipartFileContent(file *multipart.FileHeader) ([]byte, error) {
 
 // ValidateJSONUploadContent rejects malformed .json uploads before they are
 // stored and queued. Shares the same validity gate as the simple JSON reader.
-// Call this from HTTP upload / replace handlers only — CreateKnowledgeFromFile
+// Call this from HTTP upload / replace handlers only - CreateKnowledgeFromFile
 // itself must not, so datasource sync and IM can still create a knowledge row
 // that fails in async parse (delete-then-create must not leave a gap).
 func ValidateJSONUploadContent(fileName string, file *multipart.FileHeader) error {
@@ -253,7 +253,7 @@ func (s *knowledgeService) buildStorageConfig(ctx context.Context, kb *types.Kno
 		}
 		// Provider list must match types.StorageEngineConfig + ParseProviderScheme.
 		// Missing a case here causes DocParserStorageConfig to be returned with only
-		// Provider set — bucket/endpoint/credentials are silently dropped, and the
+		// Provider set - bucket/endpoint/credentials are silently dropped, and the
 		// docreader then fails or fetches from the wrong location. See issue #1117.
 		switch provider {
 		case "local":
@@ -480,7 +480,7 @@ func IsVideoType(fileType string) bool {
 // downloadFileFromURL downloads a remote file to a temp file and returns its binary content.
 // payloadFileName and payloadFileType are in/out pointers: if they point to an empty string,
 // the function resolves the value from Content-Disposition / URL path and writes it back.
-// It does NOT perform SSRF validation — callers are responsible for that.
+// It does NOT perform SSRF validation - callers are responsible for that.
 func downloadFileFromURL(ctx context.Context, fileURL string, payloadFileName, payloadFileType *string) ([]byte, error) {
 	httpClient := secutils.NewSSRFSafeHTTPClient(secutils.SSRFSafeHTTPClientConfig{
 		Timeout:      60 * time.Second,

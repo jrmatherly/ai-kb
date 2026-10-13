@@ -149,11 +149,11 @@ const (
 	// WikiPageTypeIndex represents the wiki index page (index.md)
 	WikiPageTypeIndex = "index"
 	// WikiPageTypeSynthesis represents a synthesis/analysis page.
-	// NOT auto-created by ingest — Agent creates these via wiki_write_page tool
+	// NOT auto-created by ingest - Agent creates these via wiki_write_page tool
 	// when it generates cross-document analysis, trends, or insights during conversations.
 	WikiPageTypeSynthesis = "synthesis"
 	// WikiPageTypeComparison represents a comparison page.
-	// NOT auto-created by ingest — Agent creates these via wiki_write_page tool
+	// NOT auto-created by ingest - Agent creates these via wiki_write_page tool
 	// when the user asks to compare entities, concepts, or approaches.
 	WikiPageTypeComparison = "comparison"
 )
@@ -221,7 +221,7 @@ type WikiPage struct {
 	// when the page is grouped only by FolderID.
 	ParentSlug string `json:"parent_slug,omitempty" gorm:"type:varchar(255);index"`
 	// FolderID is the single source of truth for where this page sits in the
-	// directory tree — a reference to wiki_folders.id ("" = wiki root). The
+	// directory tree - a reference to wiki_folders.id ("" = wiki root). The
 	// CategoryPath / WikiPath / Depth fields below are denormalized caches
 	// recomputed from this folder's chain on every write so list/index/search
 	// queries don't have to join wiki_folders.
@@ -244,7 +244,7 @@ type WikiPage struct {
 	// to recover the title. Document-level granularity.
 	SourceRefs StringArray `json:"source_refs" gorm:"type:json"`
 	// ChunkRefs records the specific source-document chunks this page was
-	// built from — one UUID per cited chunk. Populated during ingest from
+	// built from - one UUID per cited chunk. Populated during ingest from
 	// the chunk-citation pass; refreshed wholesale whenever the page is
 	// re-materialized. Empty for summary pages (they are document-level
 	// synopses and don't carry chunk-level citations). Use this when you
@@ -386,7 +386,7 @@ type WikiRevisionPruneRequest struct {
 }
 
 // WikiPageUpdateRequest is the partial-update payload for
-// PUT /wiki/pages/*slug. All content fields are optional pointers — absent
+// PUT /wiki/pages/*slug. All content fields are optional pointers - absent
 // fields keep their stored value, so a client can change just the body
 // without re-sending (and risking clobbering) title/status/aliases.
 type WikiPageUpdateRequest struct {
@@ -425,7 +425,7 @@ type WikiPageRevertRequest struct {
 const WikiFolderRootID = ""
 
 // WikiFolder is a first-class directory node in the wiki browser. Folders
-// exist independently of pages — an empty folder persists so users can lay
+// exist independently of pages - an empty folder persists so users can lay
 // out a skeleton and file pages into it later. The tree is an adjacency list
 // (ParentID, "" = root); Path is the materialized "/"-joined name chain kept
 // purely for cheap display/sort. A wiki page's placement is WikiPage.FolderID.
@@ -773,7 +773,7 @@ func (WikiPageIssue) TableName() string {
 
 // WikiIndexEntry is a single row in the structured wiki index response.
 // Only the columns needed to render a clickable directory entry are
-// carried — the backend projects SELECT slug, title, summary so a 40k-
+// carried - the backend projects SELECT slug, title, summary so a 40k-
 // page KB does not pay for TEXT content transport on every index open.
 type WikiIndexEntry struct {
 	Slug         string      `json:"slug"`
@@ -798,7 +798,7 @@ type WikiIndexGroup struct {
 }
 
 // WikiIndexResponse is what GET /wiki/index returns. The heavy directory
-// markdown that used to sit in wiki_pages.content is gone — only the LLM-
+// markdown that used to sit in wiki_pages.content is gone - only the LLM-
 // generated intro survives there. Everything else is assembled on demand
 // from the index repo's light-column projection, keeping index reads
 // O(page_size) regardless of KB size.

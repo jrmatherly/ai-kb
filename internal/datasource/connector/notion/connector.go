@@ -155,7 +155,7 @@ func (c *Connector) FetchAll(ctx context.Context, config *types.DataSourceConfig
 			allItems = append(allItems, pageItems...)
 			continue
 		}
-		// Not a page — treat as database/data_source.
+		// Not a page - treat as database/data_source.
 		// fetchDatabase handles both data_source IDs (from search) and
 		// database container IDs (from child_database blocks).
 		items, _ := c.fetchDatabase(ctx, client, resourceID, visited)
@@ -356,7 +356,7 @@ func (c *Connector) fetchPage(
 		return nil, false, nil
 	}
 
-	// Database records store content in properties, not blocks — delegate to
+	// Database records store content in properties, not blocks - delegate to
 	// buildRecordItem so they aren't dropped as empty pages. Record parent.type
 	// can be either "database_id" (older GetPage responses) or "data_source_id"
 	// (search API and 2025-09-03+ workspaces); accept both.
@@ -417,7 +417,7 @@ func (c *Connector) fetchPage(
 	}
 
 	// Download file attachments (PDF, documents, etc.)
-	// Skip images — they're already referenced in Markdown as ![](url),
+	// Skip images - they're already referenced in Markdown as ![](url),
 	// and downloading them as separate items requires VLM to process.
 	for _, att := range attachmentList {
 		if att.URL == "" || att.Type == "image" {

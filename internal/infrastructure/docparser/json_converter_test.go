@@ -120,7 +120,7 @@ func allBlocksValidJSON(result string) bool {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Group 1: Small inputs — kept intact, NOT split
+// Group 1: Small inputs - kept intact, NOT split
 // ═══════════════════════════════════════════════════════════════════════════
 
 func TestJsonToMarkdown_SmallObject(t *testing.T) {
@@ -204,7 +204,7 @@ func TestJsonToMarkdown_PrimitiveNull(t *testing.T) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Group 2: Large data — smart recursive splitting
+// Group 2: Large data - smart recursive splitting
 // ═══════════════════════════════════════════════════════════════════════════
 
 func TestJsonToMarkdown_LargeObject(t *testing.T) {
@@ -535,7 +535,7 @@ func TestJsonToMarkdown_RealisticLargeNestedConfig(t *testing.T) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Group 6: Integration — SimpleFormatReader
+// Group 6: Integration - SimpleFormatReader
 // ═══════════════════════════════════════════════════════════════════════════
 
 func TestSimpleFormatReader_JSON(t *testing.T) {

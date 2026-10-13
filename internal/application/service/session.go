@@ -139,7 +139,7 @@ func generateEventID(suffix string) string {
 
 // sessionService implements the SessionService interface for managing conversation sessions.
 // History for multi-turn conversations is rebuilt from the messages table on demand
-// (see service.LoadAgentHistory and chat_pipeline history loading) — there is no
+// (see service.LoadAgentHistory and chat_pipeline history loading) - there is no
 // separate cross-turn cache layer.
 type sessionService struct {
 	cfg                   *config.Config                         // Application configuration
@@ -490,7 +490,7 @@ func (s *sessionService) UpdateSession(ctx context.Context, session *types.Sessi
 // UpdateSessionLastRequestState persists the input-bar state used by the most
 // recent QA request on this session. Called from the QA handler after a
 // request is accepted so the UI can rehydrate the same settings on reopen.
-// Best-effort: scope mismatches are logged and swallowed — failing to record
+// Best-effort: scope mismatches are logged and swallowed - failing to record
 // the UI memo should never fail the user's chat request.
 func (s *sessionService) UpdateSessionLastRequestState(
 	ctx context.Context, sessionID string, state *types.SessionLastRequestState,
@@ -554,7 +554,7 @@ func (s *sessionService) DeleteSession(ctx context.Context, id string) error {
 	// any future "restore soft-deleted session" flow silently broken, and (c)
 	// leave 404s in the download endpoint if the message row is ever surfaced
 	// again. A dedicated GC job or explicit hard-delete API is the right
-	// place to reclaim storage — not this soft-delete path.
+	// place to reclaim storage - not this soft-delete path.
 
 	// Cleanup temporary KB stored in Redis for this session
 	if err := s.webSearchStateRepo.DeleteWebSearchTempKBState(ctx, id); err != nil {
@@ -633,7 +633,7 @@ func (s *sessionService) BatchDeleteSessions(ctx context.Context, ids []string) 
 		if err := s.webSearchStateRepo.DeleteWebSearchTempKBState(ctx, id); err != nil {
 			logger.Warnf(ctx, "Failed to cleanup temporary KB for session %s: %v", id, err)
 		}
-		// Artifact blobs are kept alongside soft-deleted messages — see
+		// Artifact blobs are kept alongside soft-deleted messages - see
 		// DeleteSession for the rationale.
 	}
 
@@ -693,7 +693,7 @@ func (s *sessionService) DeleteAllSessions(ctx context.Context) error {
 			if err := s.webSearchStateRepo.DeleteWebSearchTempKBState(ctx, session.ID); err != nil {
 				logger.Warnf(ctx, "Failed to cleanup temporary KB for session %s: %v", session.ID, err)
 			}
-			// Artifact blobs are kept alongside soft-deleted messages — see
+			// Artifact blobs are kept alongside soft-deleted messages - see
 			// DeleteSession for the rationale.
 		}
 	}
@@ -729,7 +729,7 @@ func (s *sessionService) DeleteAllSessions(ctx context.Context) error {
 //
 // Only SessionBoundManager implements the DestroySession method, which every
 // session-scoped backend resolves to (Cube, E2B, Docker). For Disabled
-// the type assertion fails and the call is a no-op — that backend holds no
+// the type assertion fails and the call is a no-op - that backend holds no
 // resources keyed on session ID.
 //
 // Errors are logged but never propagated: sandbox teardown must not block
@@ -1023,7 +1023,7 @@ func (s *sessionService) GenerateTitleAsync(
 // A rewind in progress is a hard failure: the agent must not start on a
 // workspace that git reset is about to rewrite. Every other lease error
 // degrades to "no lease" and lets the turn run, as it did before rewind
-// existed — a Redis blip on the lease script must not reject the user's
+// existed - a Redis blip on the lease script must not reject the user's
 // message, and rewind reads the same Redis to decide it is busy, so it
 // cannot silently proceed while this store is unreachable either.
 func (s *sessionService) holdSandboxTurn(

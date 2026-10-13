@@ -62,7 +62,7 @@ func TestDefaultParserEnginePrefersAnydocWhenLinked(t *testing.T) {
 
 // The PDF exclusion only matters because anydoc still claims the type. If a
 // future anydoc drops pdf, the exclusion becomes dead code and should go with
-// it — this guard runs in every build, tagged or not.
+// it - this guard runs in every build, tagged or not.
 func TestPreferAnydocSkipsPDF(t *testing.T) {
 	if !anydoc.Supports("pdf", "") {
 		t.Fatal("anydoc no longer claims pdf; drop the explicit exclusion in preferAnydocWhenAvailable")

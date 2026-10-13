@@ -54,7 +54,7 @@ func TestInjectTracing_PopulatesTraceparent(t *testing.T) {
 // TestAsynqMiddleware_TraceparentPropagation is the cross-process correlation
 // core test: InjectTracing stamps a traceparent onto the payload; the worker
 // middleware re-extracts it, and the worker span inherits the upstream trace
-// id — stitching the HTTP trace and the async job into one LiteFuse tree.
+// id - stitching the HTTP trace and the async job into one LiteFuse tree.
 func TestAsynqMiddleware_TraceparentPropagation(t *testing.T) {
 	m, exp := newTestManager(t)
 

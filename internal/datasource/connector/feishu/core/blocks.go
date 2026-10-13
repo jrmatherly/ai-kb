@@ -265,7 +265,7 @@ type bitableColumn struct {
 func bitableFieldCell(v any, col bitableColumn, loc *time.Location) string {
 	if col.fieldType == bitableFieldTypeDateTime {
 		// Empty date cells arrive as nil (→ fall through to blank); ms==0 (epoch) is
-		// not a real Feishu date value either — render blank, not "1970-01-01" or "0".
+		// not a real Feishu date value either - render blank, not "1970-01-01" or "0".
 		if ms, ok := v.(float64); ok {
 			if ms == 0 {
 				return ""
@@ -282,15 +282,15 @@ func bitableFieldCell(v any, col bitableColumn, loc *time.Location) string {
 
 // dateFormatterHasTime reports whether a Feishu date_formatter includes a time
 // component. Feishu formatters are Java-style: 'H'/'h' hour, lowercase 'm' minute,
-// uppercase 'M' month — so a time part is present iff the string carries an hour or
+// uppercase 'M' month - so a time part is present iff the string carries an hour or
 // a lowercase-'m' minute token (e.g. "yyyy-MM-dd HH:mm"). An empty formatter
 // (Feishu's default "yyyy/MM/dd") is date-only.
 func dateFormatterHasTime(f string) bool {
 	return strings.ContainsAny(f, "Hh") || strings.Contains(f, "m")
 }
 
-// bitableCellToString renders a bitable field value — which may be text segments,
-// a person/link object, or an attachment/multi-select array — to a readable
+// bitableCellToString renders a bitable field value - which may be text segments,
+// a person/link object, or an attachment/multi-select array - to a readable
 // string for RAG. Scalars delegate to cellToString.
 func bitableCellToString(v any) string {
 	switch t := v.(type) {
@@ -404,7 +404,7 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 		}
 		if len(fieldsResp.Data.Items) == 0 {
 			// Defensive: an empty page with has_more=true never advances, so the
-			// size cap below would never trip — stop instead of looping until the
+			// size cap below would never trip - stop instead of looping until the
 			// task deadline. Nothing more to read.
 			break
 		}
@@ -438,7 +438,7 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 	// GET .../records is officially deprecated ("no longer recommended, use [query records] instead").
 	// An empty body queries the table's default view, paginated via page_token
 	// (we page to the end below), so a default view with a filter would omit the
-	// filtered-out records — acceptable for RAG, but not literally "all records".
+	// filtered-out records - acceptable for RAG, but not literally "all records".
 	baseRPath := fmt.Sprintf("/open-apis/bitable/v1/apps/%s/tables/%s/records/search?page_size=500",
 		url.PathEscape(appToken), url.PathEscape(tableID))
 	pageToken := ""
@@ -463,7 +463,7 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 		}
 		if len(rec.Data.Items) == 0 {
 			// Defensive: an empty page with has_more=true never advances dataRows,
-			// so the maxTableRows cap below would never trip — stop instead of
+			// so the maxTableRows cap below would never trip - stop instead of
 			// looping until the task deadline.
 			break
 		}

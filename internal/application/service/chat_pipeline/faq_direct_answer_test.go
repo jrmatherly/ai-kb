@@ -9,7 +9,7 @@ import (
 )
 
 // The direct-answer threshold is compared against the score before boosts,
-// and the FAQ that cleared it is the one marked exact — not whichever FAQ
+// and the FAQ that cleared it is the one marked exact - not whichever FAQ
 // happens to rank first after boosting.
 func TestIntoChatMessage_ExactFAQUsesPreBoostScore(t *testing.T) {
 	cm := &types.ChatManage{

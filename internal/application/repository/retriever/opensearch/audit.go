@@ -4,7 +4,7 @@ import "context"
 
 // AuditSink receives audit events emitted from within the driver at the
 // exact moment they occur (index provisioned, reindex executed). The driver
-// owns this abstraction so it imports no service package — the dependency
+// owns this abstraction so it imports no service package - the dependency
 // arrow stays one-way (service implements AuditSink; the driver only invokes
 // it). A nil sink is a no-op, so tests and the env-path (no audit service)
 // need no special casing.

@@ -34,7 +34,7 @@ func GetMaxFileSize() int64 {
 }
 
 // GetMaxFileSizeMB returns the maximum file upload size in MB. Same
-// caveat as GetMaxFileSize — handlers should prefer SystemSettingService.GetInt.
+// caveat as GetMaxFileSize - handlers should prefer SystemSettingService.GetInt.
 func GetMaxFileSizeMB() int64 {
 	return envSizeMB("MAX_FILE_SIZE_MB", defaultMaxFileSizeMB)
 }

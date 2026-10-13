@@ -47,7 +47,7 @@ type Preparation struct {
 
 // Prepare picks the cut point and collects the message ranges around it.
 //
-// It returns nil when compaction cannot help — no messages fall outside the
+// It returns nil when compaction cannot help - no messages fall outside the
 // keep-recent budget, or the last compaction already left nothing to remove.
 // That nil is the guard against the failure mode where every round spends a
 // summarization call on a context it cannot shrink.

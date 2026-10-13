@@ -1,7 +1,7 @@
 // Package providers registers the AI KB managed model service.
 //
 // unverified: this is a first-party endpoint with no published API
-// reference — https://ai-kb-docs.matherly.net/docs documents the AI KB
+// reference - https://ai-kb-docs.matherly.net/docs documents the AI KB
 // product, not the model gateway's wire protocol. Every fact below is taken
 // from this repository's own clients rather than from vendor documentation,
 // and is cited accordingly:

@@ -39,7 +39,7 @@ func (IMChannel) TableName() string {
 }
 
 // IMChannelSummary is the HTTP-safe list shape for IM channels. Credentials
-// are never included — use Admin+ Create/Update responses to read back
+// are never included - use Admin+ Create/Update responses to read back
 // values immediately after a mutation.
 type IMChannelSummary struct {
 	ID                    string    `json:"id"`

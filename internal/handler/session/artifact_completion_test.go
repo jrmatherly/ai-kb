@@ -61,7 +61,7 @@ func TestCompletionPublishesReconciledArtifactContent(t *testing.T) {
 
 // A turn that re-references a file it did not regenerate must still resolve the
 // name. ArtifactCollector de-duplicates identical content, so this turn's
-// `artifacts` is empty — and the rewrite used to be gated on it, leaving the
+// `artifacts` is empty - and the rewrite used to be gated on it, leaving the
 // body's `sandbox:<name>` unnormalized and rendering as a missing file.
 //
 // The first turn after a session fork is exactly this: the sandbox is rolled
@@ -95,8 +95,8 @@ func TestCompletionResolvesReferencesWhenNothingWasPersisted(t *testing.T) {
 }
 
 // KnownArtifacts is creation order (oldest first). A name with several
-// versions must resolve to the latest recorded file — the one sitting in
-// the sandbox at the fork point — not the first time that name appeared.
+// versions must resolve to the latest recorded file - the one sitting in
+// the sandbox at the fork point - not the first time that name appeared.
 func TestCompletionResolvesNameToLatestKnownVersion(t *testing.T) {
 	old := types.MessageArtifact{
 		URL:        types.BuildResourcePath(strings.Repeat("a", types.ResourceHandleLength)),

@@ -15,7 +15,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
-// ListKnowledgeBases store-enrichment — every KB in the list response
+// ListKnowledgeBases store-enrichment - every KB in the list response
 // carries the same resolved vector_store_* metadata as the single-KB
 // endpoint. The list path funnels the resolution through
 // BatchResolveStoreView so an N-KB list costs one service call rather
@@ -39,7 +39,7 @@ func (s *stubListKBService) ListKnowledgeBases(context.Context) ([]*types.Knowle
 // path depends on: BatchResolveStoreView for bound KBs and
 // EnvDefaultStoreView for env-fallback KBs. ResolveStoreView is
 // intentionally left nil because ListKnowledgeBases must never reach
-// into the single-KB resolver — doing so per row would be the N+1
+// into the single-KB resolver - doing so per row would be the N+1
 // pattern this path is designed to avoid.
 type stubVectorStoreService struct {
 	interfaces.VectorStoreService
@@ -110,7 +110,7 @@ func TestListKB_EnrichesEnvBoundAndSharedDistinctly(t *testing.T) {
 				EngineType: "qdrant",
 				Status:     "available",
 			},
-			// storeForeign is intentionally absent — shared KBs do not
+			// storeForeign is intentionally absent - shared KBs do not
 			// flow through BatchResolveStoreView so the stub must never
 			// see it. The assertion below confirms.
 		},
@@ -140,7 +140,7 @@ func TestListKB_EnrichesEnvBoundAndSharedDistinctly(t *testing.T) {
 		byID[row["id"].(string)] = row
 	}
 
-	// 1) env-store KB — System default labelling, no engine type.
+	// 1) env-store KB - System default labelling, no engine type.
 	envRow := byID["kb-env"]
 	if envRow["vector_store_source"] != string(types.StoreSourceEnv) {
 		t.Errorf("env KB: expected source=env, got %v", envRow["vector_store_source"])
@@ -149,7 +149,7 @@ func TestListKB_EnrichesEnvBoundAndSharedDistinctly(t *testing.T) {
 		t.Errorf("env KB: expected non-empty system-default name")
 	}
 
-	// 2) own-tenant bound KB — name + engine surfaced.
+	// 2) own-tenant bound KB - name + engine surfaced.
 	boundRow := byID["kb-bound"]
 	if boundRow["vector_store_source"] != string(types.StoreSourceUser) {
 		t.Errorf("bound KB: expected source=user, got %v", boundRow["vector_store_source"])
@@ -161,7 +161,7 @@ func TestListKB_EnrichesEnvBoundAndSharedDistinctly(t *testing.T) {
 		t.Errorf("bound KB: expected engine=qdrant, got %v", boundRow["vector_store_engine_type"])
 	}
 
-	// 3) cross-tenant shared KB — UUID stripped, source=shared, no name.
+	// 3) cross-tenant shared KB - UUID stripped, source=shared, no name.
 	sharedRow := byID["kb-shared"]
 	if _, exists := sharedRow["vector_store_id"]; exists {
 		t.Errorf("shared KB must NOT expose vector_store_id, got %v", sharedRow["vector_store_id"])
@@ -183,7 +183,7 @@ func TestListKB_EnrichesEnvBoundAndSharedDistinctly(t *testing.T) {
 func TestListKB_BatchesStoreLookupsToAvoidNPlus1(t *testing.T) {
 	// Five KBs bound to three distinct stores. The list endpoint must
 	// resolve them in a single BatchResolveStoreView call regardless of
-	// row count — calling the per-KB ResolveStoreView path inside the
+	// row count - calling the per-KB ResolveStoreView path inside the
 	// loop would issue one service call per KB (the N+1 pattern this
 	// test pins against).
 	s1, s2, s3 := "store-1", "store-2", "store-3"
@@ -215,7 +215,7 @@ func TestListKB_BatchesStoreLookupsToAvoidNPlus1(t *testing.T) {
 
 func TestListKB_GracefullyDegradesWhenBatchResolveFails(t *testing.T) {
 	// If the store-view resolver fails, the list response must still
-	// succeed — bound KBs render as unavailable. The list endpoint is
+	// succeed - bound KBs render as unavailable. The list endpoint is
 	// not allowed to 500 just because the vector-store service is
 	// momentarily unhealthy.
 	storeID := "aaaa-bbbb"

@@ -37,7 +37,7 @@ type EnvVarView struct {
 }
 
 // SkillEnvGroup is one skill's declared credentials. It carries the skill's
-// identity (name and the SKILL.md one-liner) and nothing else about it — not
+// identity (name and the SKILL.md one-liner) and nothing else about it - not
 // the instructions, not the bundle, not the install state, all of which are
 // Admin+ disclosure.
 type SkillEnvGroup struct {
@@ -319,7 +319,7 @@ func (s *UserEnvService) SetMineSkill(ctx context.Context, skillID, name, value 
 //
 // It deliberately does not require the skill to be visible: the delete is
 // already scoped to rows this identity owns, and revoking a credential must keep
-// working after an admin disables the skill it was entered for — which is
+// working after an admin disables the skill it was entered for - which is
 // precisely when somebody is most likely to want it gone.
 func (s *UserEnvService) DeleteMineSkill(ctx context.Context, skillID, name string) error {
 	tenantID, principal, err := s.caller(ctx)

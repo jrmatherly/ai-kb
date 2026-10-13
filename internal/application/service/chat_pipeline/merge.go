@@ -88,7 +88,7 @@ func (p *PluginMerge) OnEvent(ctx context.Context,
 	// Step 7.5: Re-merge overlapping ranges introduced by expansion
 	mergedChunks = p.groupAndMergeCurrentContent(ctx, mergedChunks)
 
-	// Step 8: Final dedup — catches exact duplicates plus partial content overlaps
+	// Step 8: Final dedup - catches exact duplicates plus partial content overlaps
 	mergedChunks = p.dedup(ctx, "final_dedup", mergedChunks)
 	mergedChunks = removePartialOverlaps(ctx, mergedChunks)
 
@@ -100,8 +100,8 @@ func (p *PluginMerge) OnEvent(ctx context.Context,
 // selectInputResults picks rerank results if available, falling back to search
 // results sorted by score descending and cut to RerankTopK. Without the cut,
 // a turn whose rerank did not run (no model, model unavailable, API error)
-// resolved parents, FAQ answers and neighbors for every search hit — up to
-// hundreds with query expansion and per-document targets — before top-k
+// resolved parents, FAQ answers and neighbors for every search hit - up to
+// hundreds with query expansion and per-document targets - before top-k
 // dropped most of them.
 func (p *PluginMerge) selectInputResults(ctx context.Context, chatManage *types.ChatManage) []*types.SearchResult {
 	if len(chatManage.RerankResult) > 0 {

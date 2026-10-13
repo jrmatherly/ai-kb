@@ -30,7 +30,7 @@ func TestReconnectDelayOverflow(t *testing.T) {
 				t.Errorf("reconnectDelay(%d) = %v, want %v", tt.attempt, got, tt.want)
 			}
 			if got <= 0 {
-				t.Errorf("reconnectDelay(%d) returned non-positive %v — would cause busy loop", tt.attempt, got)
+				t.Errorf("reconnectDelay(%d) returned non-positive %v - would cause busy loop", tt.attempt, got)
 			}
 		})
 	}

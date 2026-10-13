@@ -9,7 +9,7 @@ import (
 )
 
 // A model asked to name a topic will not name it the same way twice. Counting
-// the raw string is therefore not a small inaccuracy — it is the difference
+// the raw string is therefore not a small inaccuracy - it is the difference
 // between the feature working and the feature silently never promoting
 // anything. These tests use the drift that actually shows up in practice.
 
@@ -143,7 +143,7 @@ func TestTwoNewWordingsInOneRunBecomeOneTopic(t *testing.T) {
 
 // A synonym is not something character overlap can decide. "staff rota planning"
 // and "store shift scheduling" (in Chinese) share one bigram out of fourteen, so the only tier
-// that can resolve them is the model — and once it has, the answer is stored as
+// that can resolve them is the model - and once it has, the answer is stored as
 // an alias so it is never asked again.
 func TestASynonymIsResolvedByTheModelAndThenRemembered(t *testing.T) {
 	svc, tenantRepo, _, models, _ := newExtractionHarness(t)
@@ -268,7 +268,7 @@ func TestAMergeCanAdoptTheBetterName(t *testing.T) {
 
 // A model asked what two labels have in common will reach for something broader
 // every time. Left unchecked, each merge widens the subject until it is an
-// umbrella that means nothing — the exact failure this feature was just fixed
+// umbrella that means nothing - the exact failure this feature was just fixed
 // for, arriving through a different door.
 func TestAMergeCannotMakeTheSubjectVaguer(t *testing.T) {
 	svc, tenantRepo, _, models, _ := newExtractionHarness(t)

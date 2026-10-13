@@ -13,7 +13,7 @@ import (
 // newEvalChatModel builds a bare OpenAI-compatible client from the
 // environment. The eval harness deliberately does not go through ModelService:
 // scoring a prompt should not require a database, a workspace or a configured
-// model row — just an endpoint.
+// model row - just an endpoint.
 func newEvalChatModel(modelID string) (chat.Chat, error) {
 	baseURL := strings.TrimSpace(firstNonEmpty(
 		os.Getenv("AIKB_MEMORY_EVAL_BASE_URL"),

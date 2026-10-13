@@ -18,8 +18,8 @@ import (
 // reference (POST /api/v3/embeddings), now filed under its retired
 // documentation: https://docs.volcengine.com/docs/ark/TextVectorizationAPI
 //
-// It is the OpenAI shape exactly — data is an array whose elements carry an
-// index — which is why rows that still name a doubao-embedding text model
+// It is the OpenAI shape exactly - data is an array whose elements carry an
+// index - which is why rows that still name a doubao-embedding text model
 // speak this protocol rather than Ark's multimodal one.
 const arkTextResponse = `{
   "created": 1743575029,

@@ -107,7 +107,7 @@ func TestInstallShellExecDescriptionDoesNotPointAtWriteSandboxFile(t *testing.T)
 }
 
 // The model reached for `cd <skill-dir> && …` on command after command because
-// the default landed it in /workspace — a directory an install is told not to
+// the default landed it in /workspace - a directory an install is told not to
 // touch, since it is wiped before the snapshot. Naming the skill directory as
 // the default is what removes the prefix.
 func TestInstallShellExecDefaultsToTheSkillDirectory(t *testing.T) {

@@ -149,7 +149,7 @@ func (h *Handler) IssueSandboxDesktopTicket(c *gin.Context) {
 // DESKTOP_UNSUPPORTED / DESKTOP_START_FAILED) must upgrade and then close
 // with a reason: the JS WebSocket API never exposes a failed handshake's
 // HTTP status, so a 409 here becomes a generic error overlay instead of
-// the confirm card. Handshake prelude failures stay HTTP — by then the
+// the confirm card. Handshake prelude failures stay HTTP - by then the
 // sandbox is already live and the frontend must not show "create sandbox".
 func (h *Handler) SandboxDesktopWS(c *gin.Context) {
 	sessionID := desktopSessionIDParam(c)
@@ -160,7 +160,7 @@ func (h *Handler) SandboxDesktopWS(c *gin.Context) {
 
 	// 1. One-shot ticket. Auth reads the incoming request; workspace identity
 	//    is attached next. Do not capture c.Request.Context() before
-	//    AttachAuthenticatedUser — that snapshot has no tenant, and
+	//    AttachAuthenticatedUser - that snapshot has no tenant, and
 	//    EnsureSessionDesktop then fails with "missing workspace context"
 	//    (mapped to DESKTOP_UPSTREAM). SandboxTerminalWS binds ctx after attach
 	//    for the same reason.
@@ -210,7 +210,7 @@ func (h *Handler) SandboxDesktopWS(c *gin.Context) {
 
 	// 3. Start, dial. Provisioning is opt-in per connect, because it creates
 	//    (or resumes and re-bills) a microVM and this is a GET. A bare
-	//    handshake — panel opened, tab restored, background reconnect —
+	//    handshake - panel opened, tab restored, background reconnect -
 	//    stays lookup-only: a running sandbox is attached, a paused one
 	//    reports SANDBOX_PAUSED, and a missing one reports SANDBOX_NOT_BOUND.
 	//    Only a confirmed click sets provision=1. Use the request context so
@@ -251,7 +251,7 @@ func (h *Handler) SandboxDesktopWS(c *gin.Context) {
 	//
 	//    Only the version. The server withholds the security-type list until
 	//    the client answers with its own version, and that answer is noVNC's
-	//    to send — waiting for it here deadlocks until the deadline and looks
+	//    to send - waiting for it here deadlocks until the deadline and looks
 	//    exactly like a dead upstream. The "None and only None" assertion
 	//    moved onto the relay (see desktopRelay.serverStream).
 	//
@@ -683,7 +683,7 @@ func (r *desktopRelay) isIdle(now time.Time) bool {
 
 // watchIdle closes the relay once nobody has touched the desktop for
 // idleDisconnect. closePeers cancels relayCtx, which stops the
-// StartTTLRefresh loop started after upgrade — that is what finally lets
+// StartTTLRefresh loop started after upgrade - that is what finally lets
 // the sandbox pause on its own provider timeout.
 func (r *desktopRelay) watchIdle(done <-chan struct{}) {
 	if r.idleDisconnect <= 0 {
@@ -713,7 +713,7 @@ func (r *desktopRelay) watchIdle(done <-chan struct{}) {
 }
 
 // watchContext unblocks run() when the relay ctx is canceled from outside
-// the pumps — notably when the Redis slot hold is lost. closePeers is what
+// the pumps - notably when the Redis slot hold is lost. closePeers is what
 // unblocks ReadMessage; canceling ctx alone would sit on desktopReadTimeout.
 func (r *desktopRelay) watchContext(done <-chan struct{}) {
 	select {

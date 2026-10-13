@@ -4,8 +4,8 @@
 //
 // Jina, Zhipu, SiliconFlow, Qianfan, GPUStack, AI KB Cloud and any
 // OpenAI-compatible gateway that serves rerank all speak it. Their
-// differences — which optional fields are accepted, where the endpoint sits,
-// what the documented ceilings are — arrive as api.RerankSettings; this
+// differences - which optional fields are accepted, where the endpoint sits,
+// what the documented ceilings are - arrive as api.RerankSettings; this
 // package contains no vendor names.
 package cohererank
 
@@ -35,7 +35,7 @@ func New(cfg Config) *Client { return &Client{cfg: cfg} }
 const defaultPath = "/rerank"
 
 // url resolves the endpoint. A vendor whose default base URL already names
-// the full rerank endpoint — and an operator who pasted one — must not have
+// the full rerank endpoint - and an operator who pasted one - must not have
 // the path appended twice.
 func (c *Client) url() string {
 	if c.cfg.Endpoint.URL != "" {

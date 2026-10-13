@@ -1,9 +1,9 @@
-// Package tools — edit_sandbox_file.
+// Package tools - edit_sandbox_file.
 //
 // Surgical text replacement for a file already in the session sandbox.
 // write_sandbox_file is the right first step for a new script; this tool
 // exists so a one-line path fix (or similar) does not force the model to
-// regenerate the whole file — that burns tokens and often truncates.
+// regenerate the whole file - that burns tokens and often truncates.
 //
 // Design notes:
 //   - Same writable scope as write_sandbox_file: session sandbox except
@@ -35,7 +35,7 @@ import (
 // (typically a truncated call that omitted path or old_string).
 const editSandboxMissingFieldHint = "\nIf the previous call was truncated, retry with a complete JSON object: " +
 	"put `path` first, then `edits` as an array of {old_string, new_string}. " +
-	"Do not send the whole file — this tool replaces snippets."
+	"Do not send the whole file - this tool replaces snippets."
 
 // SandboxFileEditor reads then writes a session workspace file. Production
 // uses *sandbox.SessionBoundManager via SessionFileStore.

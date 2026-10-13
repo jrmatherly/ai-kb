@@ -193,7 +193,7 @@ func (s *sessionService) KnowledgeQA(
 
 	var pipeline []types.EventType
 	if !needsRAG {
-		// Pure chat — no retrieval needed.
+		// Pure chat - no retrieval needed.
 		userContent := req.Query
 		if req.ImageDescription != "" && !chatModelSupportsVision {
 			userContent += "\n\n[User-uploaded image content]\n" + req.ImageDescription
@@ -213,7 +213,7 @@ func (s *sessionService) KnowledgeQA(
 			Add(types.CHAT_COMPLETION_STREAM).
 			Build()
 	} else {
-		// RAG — dynamically assemble based on feature flags.
+		// RAG - dynamically assemble based on feature flags.
 		pipeline = types.NewPipelineBuilder().
 			AddIf(hasHistory, types.LOAD_HISTORY).
 			Add(types.MEMORY_RECALL).
@@ -712,8 +712,8 @@ func (s *sessionService) KnowledgeQAByEvent(ctx context.Context,
 		stageStart := time.Now()
 		// Wrap each pipeline stage in a Langfuse span so the trace timeline
 		// shows the gaps between LLM/embedding/rerank generations (the work
-		// that happens between them — vector DB search, merge, filter, prompt
-		// assembly — was previously invisible). Generations created inside
+		// that happens between them - vector DB search, merge, filter, prompt
+		// assembly - was previously invisible). Generations created inside
 		// the stage automatically nest under this span.
 		//
 		// CHAT_COMPLETION_STREAM is intentionally skipped: its OnEvent kicks
@@ -743,7 +743,7 @@ func (s *sessionService) KnowledgeQAByEvent(ctx context.Context,
 		}
 		// Emit references before answer streaming so the SSE client receives
 		// them while the connection is still open. Previously references were
-		// emitted after the pipeline returned — by then the `complete` event had
+		// emitted after the pipeline returned - by then the `complete` event had
 		// already closed the stream, so the frontend only saw citations on refresh.
 		if eventType == types.CHAT_COMPLETION_STREAM {
 			emitKnowledgeReferencesEvent(ctx, chatManage)
@@ -853,7 +853,7 @@ func (s *sessionService) SearchKnowledge(ctx context.Context,
 		return nil, fmt.Errorf("workspace ID not found in context")
 	}
 
-	// Load tenant-level retrieval config (nil is safe — GetEffective* methods handle nil receiver)
+	// Load tenant-level retrieval config (nil is safe - GetEffective* methods handle nil receiver)
 	var rc *types.RetrievalConfig
 	if tenant, err2 := s.tenantService.GetTenantByID(ctx, tenantID); err2 == nil {
 		rc = tenant.RetrievalConfig

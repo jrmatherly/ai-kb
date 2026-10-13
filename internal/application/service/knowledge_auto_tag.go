@@ -191,7 +191,7 @@ func (s *KnowledgeAutoTagService) Handle(ctx context.Context, task *asynq.Task) 
 	}
 
 	// Existing tags are loaded before the model call so a document that is
-	// already classified — manually or by an earlier run — costs no LLM
+	// already classified - manually or by an earlier run - costs no LLM
 	// round-trip at all when skip_if_tagged is on.
 	existing, err := s.knowledgeRepo.GetKnowledgeTags(ctx, []string{payload.KnowledgeID})
 	if err != nil {

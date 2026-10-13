@@ -20,7 +20,7 @@ const oauthStateTTL = 10 * time.Minute
 // OAuthState is the transient data needed to complete an authorization-code
 // exchange. It is keyed by the opaque OAuth `state` parameter and MUST hold
 // the PKCE code_verifier, which is a secret that must never reach the
-// authorization server — hence server-side storage rather than encoding it
+// authorization server - hence server-side storage rather than encoding it
 // into the state parameter.
 type OAuthState struct {
 	TenantID     uint64          `json:"tenant_id"`

@@ -122,28 +122,28 @@ type knowledgeBaseInfo struct {
 	RecommendedQuestions []string `json:"recommended_questions"`
 }
 
-// searchedKnowledgeBaseInfo — search_knowledge_base returns fewer fields.
+// searchedKnowledgeBaseInfo - search_knowledge_base returns fewer fields.
 type searchedKnowledgeBaseInfo struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	CoverURL string `json:"cover_url"`
 }
 
-// searchKnowledgeBaseResp — search_knowledge_base response.
+// searchKnowledgeBaseResp - search_knowledge_base response.
 type searchKnowledgeBaseResp struct {
 	InfoList   []searchedKnowledgeBaseInfo `json:"info_list"`
 	IsEnd      bool                        `json:"is_end"`
 	NextCursor string                      `json:"next_cursor"`
 }
 
-// addableKnowledgeBaseInfo — get_addable_knowledge_base_list item.
+// addableKnowledgeBaseInfo - get_addable_knowledge_base_list item.
 // Contains only id + name (no cover_url), see api.md §7.
 type addableKnowledgeBaseInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// getAddableKnowledgeBaseListResp — get_addable_knowledge_base_list response.
+// getAddableKnowledgeBaseListResp - get_addable_knowledge_base_list response.
 // NOTE: the JSON field is `addable_knowledge_base_list`, not `info_list`.
 type getAddableKnowledgeBaseListResp struct {
 	AddableKnowledgeBaseList []addableKnowledgeBaseInfo `json:"addable_knowledge_base_list"`
@@ -151,7 +151,7 @@ type getAddableKnowledgeBaseListResp struct {
 	NextCursor               string                     `json:"next_cursor"`
 }
 
-// getKnowledgeBaseResp — get_knowledge_base response (map keyed by id).
+// getKnowledgeBaseResp - get_knowledge_base response (map keyed by id).
 type getKnowledgeBaseResp struct {
 	Infos map[string]knowledgeBaseInfo `json:"infos"`
 }
@@ -200,7 +200,7 @@ func (f folderInfo) FolderCount() int64 {
 	return n
 }
 
-// getKnowledgeListResp — get_knowledge_list response.
+// getKnowledgeListResp - get_knowledge_list response.
 // The response returns files and folders together in knowledge_list;
 // media_type distinguishes folders from knowledge items.
 type getKnowledgeListResp struct {
@@ -218,19 +218,19 @@ type urlInfo struct {
 	Headers map[string]string `json:"headers"`
 }
 
-// notebookExtInfo — set on notes (media_type=11).
+// notebookExtInfo - set on notes (media_type=11).
 type notebookExtInfo struct {
 	NotebookID string `json:"notebook_id"`
 }
 
-// getMediaInfoResp — get_media_info response.
+// getMediaInfoResp - get_media_info response.
 type getMediaInfoResp struct {
 	MediaType       int32           `json:"media_type"`
 	URLInfo         urlInfo         `json:"url_info"`
 	NotebookExtInfo notebookExtInfo `json:"notebook_ext_info"`
 }
 
-// getDocContentResp — note/v1 get_doc_content response. Content is the note
+// getDocContentResp - note/v1 get_doc_content response. Content is the note
 // body; with target_content_format=0 it is plain text.
 type getDocContentResp struct {
 	Content string `json:"content"`
@@ -238,7 +238,7 @@ type getDocContentResp struct {
 
 // imaCursor tracks per-knowledge-base state seen during the last sync.
 //
-// KBLogical: { logical_key: media_id } — the authoritative source for both
+// KBLogical: { logical_key: media_id } - the authoritative source for both
 // delete detection AND "replacement" detection. IMA reassigns media_id
 // whenever a same-named file is replaced in place, so a logical key (see
 // logicalKey) is what we treat as a document's stable identity.
@@ -269,16 +269,16 @@ type imaCursor struct {
 //   - kb_id keeps identities isolated across knowledge bases (same file
 //     copied into two KBs is two distinct docs from AI KB's perspective).
 //   - parent_folder_id + title anchor the doc to its folder location and
-//     display name — the tuple IMA's own check_repeated_names uses to gate
+//     display name - the tuple IMA's own check_repeated_names uses to gate
 //     uploads (see api.md), so IMA's own uniqueness constraint enforces
 //     this key's uniqueness inside a KB.
 //
 // media_type is deliberately NOT part of the key: get_knowledge_list omits it
 // (it only arrives later from get_media_info), so folding it in would mean
 // every external_id shifts the day IMA starts populating the field in list
-// responses — which reads as "every document deleted and re-added".
+// responses - which reads as "every document deleted and re-added".
 //
-// Emitted as "ima_" + first 32 hex chars (128 bits) — small enough to fit
+// Emitted as "ima_" + first 32 hex chars (128 bits) - small enough to fit
 // well within Postgres varchar(64) external_id columns, still >> collision
 // resistant for any realistic KB size.
 func logicalKey(kbID, parentFolderID, title string) string {
@@ -312,7 +312,7 @@ const (
 
 // extensionForMediaType maps IMA media types to a file extension.
 // Returns "" when the media type has no downloadable body (web page, note, AI
-// session, video-parse) — callers should skip those or treat them as URL-only.
+// session, video-parse) - callers should skip those or treat them as URL-only.
 func extensionForMediaType(t int32) string {
 	switch t {
 	case mediaTypePDF:

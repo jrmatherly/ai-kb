@@ -32,7 +32,7 @@ func (s *stubKBLookup) GetKnowledgeBaseByID(_ context.Context, id string) (*type
 	return nil, apprepo.ErrKnowledgeBaseNotFound
 }
 
-// stubKBShareForGuard implements just the methods the guard touches —
+// stubKBShareForGuard implements just the methods the guard touches -
 // CheckTenantKBPermission. The other methods on
 // the interface panic so any unintended new dependency surfaces
 // immediately.
@@ -222,7 +222,7 @@ func runGuard(
 	}
 
 	// Convert the package-local concrete stub types to typed interface
-	// nils when they aren't supplied — otherwise the interface wraps a
+	// nils when they aren't supplied - otherwise the interface wraps a
 	// nil pointer and `iface != nil` evaluates true on the guard side
 	// (classic Go typed-nil trap).
 	var shareSvc interfaces.KBShareService
@@ -269,7 +269,7 @@ func TestRequireKBAccess_OwnKB(t *testing.T) {
 // *document* (knowledge) is treated as not-found, not a transient error.
 // Regression: ErrKnowledgeNotFound was absent from the predicate, so
 // GET/DELETE /knowledge/:id and chunk list resolved a missing doc into a
-// raw 500 instead of a 404 — which the CLI then surfaced as a retryable
+// raw 500 instead of a 404 - which the CLI then surfaced as a retryable
 // server.error (exit 7), looping agents on a permanently-absent doc.
 func TestIsResourceNotFound_RecognisesKnowledgeSentinel(t *testing.T) {
 	require.True(t, isResourceNotFound(apprepo.ErrKnowledgeNotFound),
@@ -277,7 +277,8 @@ func TestIsResourceNotFound_RecognisesKnowledgeSentinel(t *testing.T) {
 	require.True(t, isResourceNotFound(apprepo.ErrKnowledgeBaseNotFound),
 		"missing KB must still classify as not-found")
 	require.True(t, isResourceNotFound(apprepo.ErrChunkNotFound),
-		"missing chunk (ErrChunkNotFound) must classify as not-found — chunk view/by-id resolved a missing chunk into a raw 500 (exit 7) otherwise")
+		"missing chunk (ErrChunkNotFound) must classify as not-found - chunk view/by-id resolved a missing chunk "+
+			"into a raw 500 (exit 7) otherwise")
 	require.True(t, isResourceNotFound(ErrResourceNotFound),
 		"generic resource-not-found sentinel must still classify as not-found")
 	require.False(t, isResourceNotFound(errors.New("connection refused")),
@@ -445,7 +446,7 @@ func TestRequireKBAccess_AgentShare_SpecificAgent_ModeSelected_Miss(t *testing.T
 				},
 			},
 		},
-		// any-agent fallback would have said yes — but agent_id=A pins us.
+		// any-agent fallback would have said yes - but agent_id=A pins us.
 		kbsViaSomeAgent: map[string]bool{"kb-shared": true},
 	}
 	_, c := runGuard(t, 100, "kb-shared",

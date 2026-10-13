@@ -540,7 +540,7 @@ func TestReplayKeepsSignedTextWhenReasoningContentWasRewritten(t *testing.T) {
 	c := newClient(t, "https://api.anthropic.com/v1", nil)
 	// internal/modelcontext rewrites ReasoningContent (resource handles,
 	// citation compaction) and clears the now-stale signature. The signed
-	// bytes survive in the metadata, so the turn still replays — which
+	// bytes survive in the metadata, so the turn still replays - which
 	// matters because dropping the thinking block while keeping tool_use is
 	// a 400 from Claude, not a degradation.
 	msg := api.Message{
@@ -607,7 +607,7 @@ func TestTruncatedInterleavedTurnStillReplaysItsSignedBlocks(t *testing.T) {
 	c := newClient(t, "https://api.anthropic.com/v1", nil)
 	// thinking(signed) → tool_use(completed) → thinking(stream cut before
 	// signature_delta). Claude rejects an unsigned thinking block, and it
-	// also rejects a tool_use that is not preceded by thinking — so the
+	// also rejects a tool_use that is not preceded by thinking - so the
 	// signed block must survive the unsigned one.
 	msg := api.Message{
 		Role:             "assistant",

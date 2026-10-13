@@ -56,7 +56,7 @@ const (
 	// DefaultDockerImage tracks main rather than latest. The latest tag only
 	// moves when a version is released, so it still carries the image from
 	// before /workspace and its input/output directories were handed to the
-	// sandbox account — a sandbox built from it cannot write its own artifact
+	// sandbox account - a sandbox built from it cannot write its own artifact
 	// directory. Point this back at latest once a release ships that fix.
 	DefaultDockerImage = "ghcr.io/jrmatherly/ai-kb-sandbox:main"
 
@@ -66,7 +66,7 @@ const (
 	// Cube turns an OCI image into a template directly and gates the build on
 	// GET :49983/health, which only envd answers. Building a Cube template from
 	// DefaultDockerImage therefore always fails the probe with "connection
-	// refused" — E2B gets away with that image because its own builder injects
+	// refused" - E2B gets away with that image because its own builder injects
 	// envd, and the Docker backend never needs one.
 	DefaultCubeTemplateImage = "ghcr.io/jrmatherly/ai-kb-sandbox:main-cube"
 

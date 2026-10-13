@@ -16,7 +16,7 @@ import (
 
 const (
 	// defaultOllamaWebSearchURL is the hardcoded Ollama web search API URL.
-	// Not configurable by tenants — prevents SSRF.
+	// Not configurable by tenants - prevents SSRF.
 	defaultOllamaWebSearchURL = "https://ollama.com/api/web_search"
 	defaultOllamaTimeout      = 10 * time.Second
 	defaultOllamaResults      = 5
@@ -41,7 +41,7 @@ func NewOllamaProvider(params types.WebSearchProviderParameters) (interfaces.Web
 	}
 	return &OllamaProvider{
 		client:  client,
-		baseURL: defaultOllamaWebSearchURL, // Hardcoded — not tenant-configurable
+		baseURL: defaultOllamaWebSearchURL, // Hardcoded - not tenant-configurable
 		apiKey:  params.APIKey,
 	}, nil
 }

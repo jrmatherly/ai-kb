@@ -9,7 +9,7 @@ import (
 )
 
 // TestNewOpenSearchClient_RejectsEmptyAddr verifies the constructor
-// refuses an empty Addr — operators who forget to set OPENSEARCH_ADDR
+// refuses an empty Addr - operators who forget to set OPENSEARCH_ADDR
 // get a clear ErrConfigInvalid at registration instead of a cryptic
 // transport error later.
 func TestNewOpenSearchClient_RejectsEmptyAddr(t *testing.T) {
@@ -25,7 +25,7 @@ func TestNewOpenSearchClient_RejectsEmptyAddr(t *testing.T) {
 }
 
 // TestNewOpenSearchClient_Succeeds_OnValidAddr is a smoke test for the
-// happy path — a non-empty Addr must produce a non-nil *osapi.Client.
+// happy path - a non-empty Addr must produce a non-nil *osapi.Client.
 // We don't probe the cluster (no network), just verify the constructor
 // returns successfully.
 func TestNewOpenSearchClient_Succeeds_OnValidAddr(t *testing.T) {
@@ -33,7 +33,7 @@ func TestNewOpenSearchClient_Succeeds_OnValidAddr(t *testing.T) {
 	client, err := NewOpenSearchClient(&types.ConnectionConfig{
 		Addr:     "https://opensearch.example.com:9200",
 		Username: "admin",
-		Password: "secret", // not a real password — wire-format only
+		Password: "secret", // not a real password - wire-format only
 	})
 	if err != nil {
 		t.Fatalf("NewOpenSearchClient: %v", err)

@@ -36,7 +36,7 @@ func escapeLikeKeyword(keyword string) string {
 // UpdateKnowledge call persists the WHOLE in-memory struct, so any
 // concurrent enrichment subtask that loaded the row, did slow work
 // (e.g. an LLM call), then saved an unrelated field would otherwise
-// write back the STALE counter it read at load time — clobbering the
+// write back the STALE counter it read at load time - clobbering the
 // decrements other subtasks performed in the meantime. That made the
 // counter jump back up and never reach zero (the "stuck
 // pending_subtasks_count / never promoted to completed" bug). Omitting
@@ -134,7 +134,7 @@ func applyKnowledgeListFilter(query *gorm.DB, filter types.KnowledgeListFilter) 
 	}
 	if filter.Keyword != "" {
 		// Case-insensitive (LOWER … LIKE LOWER) so keyword search matches
-		// regardless of the stored casing — consistent with the sibling
+		// regardless of the stored casing - consistent with the sibling
 		// LOWER() filters in this file and with the client-side `search kb`
 		// / `search sessions` filters. Plain LIKE is case-sensitive in
 		// Postgres, which surprised callers searching with lowercase.
@@ -669,7 +669,7 @@ func (r *knowledgeRepository) UpdateActiveDeletingKnowledgeColumns(
 // promote UPDATE) because GORM does not expose a portable RETURNING
 // across PostgreSQL and SQLite. The promote UPDATE's WHERE clause
 // (parse_status='finalizing' AND pending_subtasks_count=0) makes it
-// safe to run from any number of concurrent callers — at most one wins.
+// safe to run from any number of concurrent callers - at most one wins.
 // Both run in one transaction: a promote that failed after its decrement
 // committed left the counter at zero with nobody left to promote the row.
 func (r *knowledgeRepository) FinalizeSubtask(
@@ -705,7 +705,7 @@ func (r *knowledgeRepository) FinalizeSubtask(
 func finalizeSubtask(db *gorm.DB, id string) (bool, error) {
 	now := time.Now()
 	// 1) Atomic decrement, clamped at zero. The `pending_subtasks_count > 0`
-	//    guard is purely a safety net for accounting bugs — under normal
+	//    guard is purely a safety net for accounting bugs - under normal
 	//    operation each subtask handler decrements at most once per task,
 	//    so the counter cannot go negative.
 	res := db.Model(&types.Knowledge{}).
@@ -719,7 +719,7 @@ func finalizeSubtask(db *gorm.DB, id string) (bool, error) {
 	}
 
 	// 2) Guarded promote. EVERY caller unconditionally attempts this after
-	//    decrementing — we must NOT gate it on a separate SELECT of the
+	//    decrementing - we must NOT gate it on a separate SELECT of the
 	//    counter. That read can be served by a lagging read-replica (or a
 	//    stale connection snapshot) and return a non-zero value even after
 	//    the counter has truly reached zero on the primary; if every caller

@@ -37,7 +37,7 @@ type Config struct {
 	// FrontendBaseURL is the externally-visible origin of the SPA, used
 	// to compose absolute share-link URLs. Empty falls back to a host-
 	// relative URL ("/register?token=…") which the SPA then resolves
-	// against window.location.origin — fine for typical single-origin
+	// against window.location.origin - fine for typical single-origin
 	// deployments. Sourced from FRONTEND_BASE_URL env at startup.
 	FrontendBaseURL string `yaml:"frontend_base_url" json:"frontend_base_url"`
 }
@@ -53,7 +53,7 @@ type AgentConfig struct {
 }
 
 // IMConfig configures the IM integration service.
-// All fields are optional — zero values fall back to built-in defaults so
+// All fields are optional - zero values fall back to built-in defaults so
 // existing deployments need no config changes.
 type IMConfig struct {
 	// Workers is the number of concurrent QA worker goroutines per instance.
@@ -62,7 +62,7 @@ type IMConfig struct {
 	// GlobalMaxWorkers is the maximum number of QA requests that can execute
 	// concurrently across ALL instances. Enforced via a Redis counter; when the
 	// global limit is reached, local workers wait until a slot opens.
-	// Requires Redis — ignored in single-instance mode.
+	// Requires Redis - ignored in single-instance mode.
 	// 0 (default) means no global limit.
 	GlobalMaxWorkers int `yaml:"global_max_workers" json:"global_max_workers"`
 	// MaxQueueSize is the maximum number of pending QA requests per instance.
@@ -106,7 +106,7 @@ type ConversationConfig struct {
 	EnableRerank         bool           `yaml:"enable_rerank"                    json:"enable_rerank"`
 	Summary              *SummaryConfig `yaml:"summary"                          json:"summary"`
 
-	// Prompt template ID fields — resolved to text by backfillConversationDefaults
+	// Prompt template ID fields - resolved to text by backfillConversationDefaults
 	FallbackPromptID             string `yaml:"fallback_prompt_id"                json:"fallback_prompt_id"`
 	RewritePromptID              string `yaml:"rewrite_prompt_id"                 json:"rewrite_prompt_id"`
 	GenerateSessionTitlePromptID string `yaml:"generate_session_title_prompt_id"  json:"generate_session_title_prompt_id"`
@@ -151,7 +151,7 @@ type SummaryConfig struct {
 	NoMatchPrefix       string  `yaml:"no_match_prefix"       json:"no_match_prefix"`
 	Thinking            *bool   `yaml:"thinking"              json:"thinking"`
 
-	// Prompt template ID fields — resolved to text by backfillConversationDefaults
+	// Prompt template ID fields - resolved to text by backfillConversationDefaults
 	PromptID          string `yaml:"prompt_id"           json:"prompt_id"`
 	ContextTemplateID string `yaml:"context_template_id" json:"context_template_id"`
 
@@ -211,12 +211,12 @@ type TenantConfig struct {
 	EnableCrossTenantAccess bool `yaml:"enable_cross_tenant_access" json:"enable_cross_tenant_access"`
 	// EnableRBAC turns on tenant-level role enforcement (issue #1303).
 	// Pointer so we can distinguish "unset" from "explicit false":
-	//   nil           — fall back to the built-in default (true) applied
+	//   nil           - fall back to the built-in default (true) applied
 	//                   by applyAuthAndTenantDefaults.
-	//   pointer false — operators opted into the logging-only rollout
+	//   pointer false - operators opted into the logging-only rollout
 	//                   window (set via config.yaml `enable_rbac: false`
 	//                   or env `AIKB_TENANT_ENABLE_RBAC=false`).
-	//   pointer true  — enforcement on (the new default).
+	//   pointer true  - enforcement on (the new default).
 	// Read through IsRBACEnforced so callers stay nil-safe.
 	EnableRBAC *bool `yaml:"enable_rbac" json:"enable_rbac"`
 	// MaxOwnedPerUser caps how many tenants a single non-superuser can
@@ -224,9 +224,9 @@ type TenantConfig struct {
 	// memberships so being invited as Admin/Editor/Viewer in another
 	// tenant doesn't burn quota. Cross-tenant superusers
 	// (CanAccessAllTenants) are exempt.
-	//   > 0 — enforce the cap (handler returns 429 when reached).
-	//   = 0 — fall back to defaultMaxOwnedTenantsPerUser in the handler.
-	//   < 0 — disable the cap entirely (not recommended in shared deployments).
+	//   > 0 - enforce the cap (handler returns 429 when reached).
+	//   = 0 - fall back to defaultMaxOwnedTenantsPerUser in the handler.
+	//   < 0 - disable the cap entirely (not recommended in shared deployments).
 	//
 	// Env override: AIKB_TENANT_MAX_OWNED_PER_USER (integer). When set
 	// and parseable it always wins over config.yaml so operators can
@@ -265,9 +265,9 @@ func (t *TenantConfig) IsSelfServiceCreationEnabled() bool {
 type AuditConfig struct {
 	// RetentionDays is how many days of audit history to keep. Older
 	// rows are deleted by a daily background sweep.
-	//   > 0 — purge rows whose created_at < NOW() - retention_days.
-	//   = 0 — disable purge entirely (the pre-rollout default).
-	//   < 0 — invalid; ValidateConfig rejects it.
+	//   > 0 - purge rows whose created_at < NOW() - retention_days.
+	//   = 0 - disable purge entirely (the pre-rollout default).
+	//   < 0 - invalid; ValidateConfig rejects it.
 	// Default: 90 (set by applyAuditDefaults when the section is omitted).
 	RetentionDays int `yaml:"retention_days" json:"retention_days"`
 }
@@ -275,11 +275,11 @@ type AuditConfig struct {
 // AuthConfig governs the user authentication entry points.
 type AuthConfig struct {
 	// RegistrationMode controls public and invitation password registration.
-	//   "self_serve" (default) — anyone may register; a new tenant is
+	//   "self_serve" (default) - anyone may register; a new tenant is
 	//                            auto-created and the registrant becomes
 	//                            its Owner. Preserves existing behaviour.
-	//   "invite_register"      — new users need a valid invitation link.
-	//   "invite_only"          — no password registration; invitations can
+	//   "invite_register"      - new users need a valid invitation link.
+	//   "invite_only"          - no password registration; invitations can
 	//                            only be accepted by existing accounts.
 	//                            Kept as the legacy disabled mode.
 	RegistrationMode string `yaml:"registration_mode" json:"registration_mode"`
@@ -855,7 +855,7 @@ func applyAgentEnvOverrides(cfg *Config) {
 // long-standing DISABLE_REGISTRATION=true env var is the single env-layer
 // knob and, when set, coerces registration_mode to invite_only here. That
 // way both the API gate (handler) and the /auth/config-driven UI gate
-// (frontend hides the register entry) stay consistent — without needing
+// (frontend hides the register entry) stay consistent - without needing
 // two parallel env vars.
 func applyAuthAndTenantDefaults(cfg *Config) {
 	if cfg.Auth == nil {
@@ -906,7 +906,7 @@ func applyAuthAndTenantDefaults(cfg *Config) {
 
 	// AIKB_TENANT_ENABLE_CROSS_TENANT_ACCESS mirrors the RBAC switch above.
 	// It must be read explicitly: viper.AutomaticEnv has no SetEnvPrefix, so the
-	// AIKB_-prefixed env var is never bound to the nested struct field —
+	// AIKB_-prefixed env var is never bound to the nested struct field -
 	// without this block, only config.yaml's enable_cross_tenant_access takes
 	// effect and the documented env override is silently ignored. The default
 	// stays whatever config.yaml provides (false unless set there).

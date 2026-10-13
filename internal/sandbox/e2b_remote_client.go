@@ -254,7 +254,7 @@ func (c *E2BRemoteClient) Capabilities() RemoteSandboxCapabilities {
 //
 // It deliberately uses the v2 listing rather than the legacy one: v2 is what
 // every other call in this client already depends on, and E2B-compatible
-// control planes (Agent-Sandbox, for one) implement only that one — probing
+// control planes (Agent-Sandbox, for one) implement only that one - probing
 // the legacy path would report a perfectly healthy backend as unreachable.
 func (c *E2BRemoteClient) Health(ctx context.Context) error {
 	if _, err := c.client.ListSandboxesV2(ctx, e2b.WithSandboxLimit(1)); err != nil {
@@ -319,7 +319,7 @@ func (c *E2BRemoteClient) ListTemplates(ctx context.Context) ([]RemoteTemplate, 
 //
 // Only the template's *current* build counts as evidence. E2B spawns from that
 // build alone, so neither an older successful build nor a non-zero spawn count
-// proves the template can boot now — both happily coexist with a template that
+// proves the template can boot now - both happily coexist with a template that
 // answers every sandbox creation with a 404. It returns an empty string when
 // nothing more authoritative than the list status could be established.
 func (c *E2BRemoteClient) reconcileE2BTemplateStatus(
@@ -333,7 +333,7 @@ func (c *E2BRemoteClient) reconcileE2BTemplateStatus(
 	}
 	// buildID is "the last successful build", so the all-zero UUID means the
 	// provider sees none under the tag it resolves. When builds did finish, the
-	// template is not building at all — its builds are untagged, and no amount
+	// template is not building at all - its builds are untagged, and no amount
 	// of waiting will change that.
 	if isBlankE2BUUID(buildID) {
 		if item.BuildCount > 0 && c.hasSuccessfulE2BBuild(ctx, templateID) {
@@ -558,7 +558,7 @@ func (c *E2BRemoteClient) buildStandardTemplate(ctx context.Context) (*RemoteTem
 // The SDK helper generates `while ! ss -tln | grep -q ':6080 '; ...`
 // (template_builder.go:183-186), and ss comes from iproute2, which
 // python slim does not ship and Dockerfile.sandbox does not install.
-// ss then exits 127 — non-zero — so the loop never terminates and the ready
+// ss then exits 127 - non-zero - so the loop never terminates and the ready
 // probe hangs instead of failing.
 //
 // This is deliberately the same probe as port_open() in
@@ -640,7 +640,7 @@ func (c *E2BRemoteClient) Create(
 	// Deliberately the opposite of E2B's own default (which is public).
 	// Closing inbound requires Secure=true, pinned below, and makes the
 	// create response carry a traffic access token that the lifecycle
-	// persists — go-e2b stores that token but never sends it, so
+	// persists - go-e2b stores that token but never sends it, so
 	// gatewaySplitTransport is what puts it on data-plane requests.
 	// Do not change this to true.
 	if policy.AllowPublicTraffic == nil {
@@ -671,7 +671,7 @@ func (c *E2BRemoteClient) Create(
 	// Aliyun stores env and function config inside the snapshot. Resending
 	// them is an override and the control plane answers 400 before the
 	// sandbox exists. Official E2B still accepts the fields, so they stay
-	// unless this client is pointed at Aliyun — or the provider says so.
+	// unless this client is pointed at Aliyun - or the provider says so.
 	if request.FromSnapshot && c.snapshotCreateImmutable {
 		if dropped := stripSnapshotCreateOverrides(&config); dropped != "" {
 			logger.Infof(ctx,
@@ -1049,7 +1049,7 @@ func (c *E2BRemoteClient) Exec(
 		// with the captured output still attached. This is a normal
 		// execution signal (a failing script, `grep` with no match,
 		// `exit 1`), not a wire failure, so lower it to a RemoteExecResult
-		// exactly like the Cube adapter — whose SDK returns the exit code
+		// exactly like the Cube adapter - whose SDK returns the exit code
 		// inline. Only genuine transport/RPC errors fall through to
 		// normalizeE2BError below.
 		var exitErr *e2b.CommandExitError
@@ -1377,8 +1377,8 @@ func toE2BVolumeMounts(src []RemoteVolumeMount) []e2b.VolumeMount {
 }
 
 // toE2BRequestRules maps the neutral host rules onto E2B's per-host transform
-// map. E2B has no notion of a deny verdict or an audit level here — a rule is
-// only ever a header injection — which is why the neutral type carries the
+// map. E2B has no notion of a deny verdict or an audit level here - a rule is
+// only ever a header injection - which is why the neutral type carries the
 // richer Cube shape separately instead of one merged rule type.
 func toE2BRequestRules(rules []RemoteE2BHostRule) map[string][]e2b.RequestRule {
 	if len(rules) == 0 {

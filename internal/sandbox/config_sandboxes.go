@@ -83,7 +83,7 @@ func ListConfigSandboxes(
 //
 // This is deliberately NOT exposed as an admin action. Its one caller is the
 // sweep that runs immediately after a config's credentials are overwritten,
-// using the outgoing credentials still held in memory — the only remaining
+// using the outgoing credentials still held in memory - the only remaining
 // moment those sandboxes can be reached at all. An admin blocked from editing a
 // config is instead told to end the owning sessions or create a second config.
 //

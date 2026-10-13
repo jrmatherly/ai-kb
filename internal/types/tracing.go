@@ -2,7 +2,7 @@ package types
 
 // TracingContext is an embeddable struct that carries observability context
 // (currently Langfuse trace/span ids plus user/session hints) across process
-// boundaries — specifically, from an HTTP request into an asynq task payload
+// boundaries - specifically, from an HTTP request into an asynq task payload
 // and back out inside the worker.
 //
 // It lives in the types package, not the langfuse package, so that:
@@ -28,7 +28,7 @@ type TracingContext struct {
 	LangfuseParentObservationID string `json:"lf_parent_obs_id,omitempty"`
 	// LangfuseTraceparent carries the W3C Trace Context (`traceparent` header
 	// value: `00-<trace_id>-<span_id>-<flags>`) from the enqueuing request.
-	// The worker re-extracts it so its spans are children of the same trace —
+	// The worker re-extracts it so its spans are children of the same trace -
 	// stitching the HTTP request and the async job into one LiteFuse tree. This
 	// is also what propagates a sop3 run's W3C trace_id into any asynq jobs
 	// AI KB enqueues while serving sop3's agent-chat call.

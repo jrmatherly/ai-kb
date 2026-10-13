@@ -18,7 +18,7 @@ var ErrChunkRevisionConflict = errors.New("chunk revision conflict")
 
 // ErrChunkNotFound is returned when a chunk lookup finds no row. A typed
 // sentinel (matching the ErrXNotFound convention used by the other repos)
-// so callers can errors.Is it safely through wrapping — replacing the
+// so callers can errors.Is it safely through wrapping - replacing the
 // previous bare errors.New("chunk not found") that forced fragile
 // string-equality matching in the service layer.
 var ErrChunkNotFound = errors.New("chunk not found")
@@ -71,7 +71,7 @@ func (r *chunkRepository) CreateChunks(ctx context.Context, chunks []*types.Chun
 		// SQLite doesn't support autoIncrement on non-PK columns, so SeqIDs are
 		// pre-assigned from MAX(seq_id). Doing it inside the write transaction
 		// keeps the read and the insert on the same connection.
-		// PostgreSQL uses a DB sequence — skip to avoid duplicate key races.
+		// PostgreSQL uses a DB sequence - skip to avoid duplicate key races.
 		if tx.Name() == "sqlite" {
 			if err := types.AssignChunkSeqIDs(tx, chunks); err != nil {
 				return fmt.Errorf("failed to assign chunk seq_ids: %w", err)
@@ -643,7 +643,7 @@ func (r *chunkRepository) DeleteChunksByKnowledgeID(ctx context.Context, tenantI
 }
 
 // ListImageInfoByKnowledgeIDs returns non-empty image_info values for the given knowledge IDs.
-// No chunk_type filter — collects from text, image_ocr, and image_caption chunks.
+// No chunk_type filter - collects from text, image_ocr, and image_caption chunks.
 func (r *chunkRepository) ListImageInfoByKnowledgeIDs(
 	ctx context.Context, tenantID uint64, knowledgeIDs []string,
 ) ([]interfaces.ChunkImageInfo, error) {

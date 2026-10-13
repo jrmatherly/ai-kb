@@ -203,7 +203,7 @@ func (n *Neo4jRepository) SearchNode(
 		if len(graphData.Relation) >= graphSearchMaxRows {
 			logger.Warnf(ctx,
 				"graph search hit the row cap: %d nodes / %d relations returned "+
-					"(seed cap %d, row cap %d) — results are truncated; "+
+					"(seed cap %d, row cap %d) - results are truncated; "+
 					"narrow the entity or raise graphSearchMaxRows",
 				len(graphData.Node), len(graphData.Relation),
 				graphSearchMaxSeedNodes, graphSearchMaxRows)
@@ -309,7 +309,7 @@ func decodeGraphNode(node neo4j.Node) (*types.GraphNode, error) {
 // then exceeded the reranker's per-request limit and made chunk_merge walk the
 // entire set. Three rules keep the caps from deciding the result by accident:
 //
-//   - Only entities that have at least one relationship can seed an expansion —
+//   - Only entities that have at least one relationship can seed an expansion -
 //     a relation-less match occupies one of the seed slots and then contributes
 //     nothing.
 //   - Exact name matches rank first, then the shortest names, then alphabetical

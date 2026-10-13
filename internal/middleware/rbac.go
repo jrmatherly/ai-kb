@@ -18,7 +18,7 @@ import (
 // the row is genuinely missing or its tenant doesn't match). When a
 // lookup returns this error, RequireOwnershipOrRole intentionally lets
 // the request proceed so the downstream handler can respond with its
-// own 404 — middleware-level 403 would hide real "URL is wrong" failures
+// own 404 - middleware-level 403 would hide real "URL is wrong" failures
 // behind a permissions error, which breaks client diagnostics and
 // operator dashboards.
 var ErrResourceNotFound = access.ErrResourceNotFound
@@ -57,7 +57,7 @@ type CreatorLookup func(c *gin.Context) (creatorID string, err error)
 // grant extra reach, only honours what was already approved.
 //
 // When cfg.Tenant.EnableRBAC is false, the middleware logs the would-be
-// rejection but lets the request through — preserving today's behaviour
+// rejection but lets the request through - preserving today's behaviour
 // during the rollout window. Once operators flip the flag to true,
 // the same code paths start rejecting unauthorised callers.
 //
@@ -174,7 +174,7 @@ func RequireSystemAdmin(cfg *config.Config) gin.HandlerFunc {
 		logger.Warnf(ctx,
 			"[rbac] system admin required: user=%s path=%s",
 			uid, c.Request.URL.Path)
-		// Durable audit row for the reject — same dedup as RequireRole.
+		// Durable audit row for the reject - same dedup as RequireRole.
 		if svc := AuditServiceFromContext(c); svc != nil {
 			tenantID := types.CallerFromContext(ctx).TenantID
 			_ = svc.LogDenied(ctx, c, tenantID, uid, "user", "system_admin")
@@ -318,7 +318,7 @@ func logOwnershipDecision(
 // warnOnNilConfig emits a one-shot startup warning when a guard is
 // constructed with a nil-or-incomplete config. nil cfg makes
 // rbacEnforcementEnabled return false, which means an entire deployment
-// silently runs with RBAC disabled — usually because of a configuration
+// silently runs with RBAC disabled - usually because of a configuration
 // bug rather than an intentional choice. Operators should see a noisy
 // log line at boot pointing at the misconfiguration.
 var nilCfgWarnOnce sync.Once

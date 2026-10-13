@@ -44,7 +44,7 @@ func preparePendingOp(op *types.TaskPendingOp) error {
 		return errors.New("task pending ops: op is required")
 	}
 	if len(op.Payload) == 0 {
-		// Make sure the JSONB column never sees NULL — the schema sets a
+		// Make sure the JSONB column never sees NULL - the schema sets a
 		// default but explicit "{}" keeps the row uniform regardless of
 		// driver-level default handling.
 		op.Payload = []byte("{}")
@@ -226,7 +226,7 @@ func (r *taskPendingOpsRepository) PeekBatch(
 // dedup_key. `limit` counts DISTINCT dedup_keys (i.e. documents), NOT rows:
 // ALL eligible rows sharing a chosen dedup_key are claimed together and
 // returned in the same batch. This is the invariant the concurrent wiki
-// consumers rely on — a document with multiple queued ops (e.g. an ingest
+// consumers rely on - a document with multiple queued ops (e.g. an ingest
 // followed by a retract) must never be split across two concurrent batches,
 // otherwise each batch's per-batch last-write-wins dedup can't collapse the
 // pair and the two ops race (a stale ingest could resurrect a retracted doc).
@@ -234,7 +234,7 @@ func (r *taskPendingOpsRepository) PeekBatch(
 // To uphold that invariant even for a sibling enqueued AFTER a batch already
 // claimed the key (e.g. a retract arriving while the ingest is still in
 // flight), a dedup_key that has ANY fresh claim (claimed_at >= staleBefore) is
-// skipped ENTIRELY — not just its already-claimed rows. The late sibling waits
+// skipped ENTIRELY - not just its already-claimed rows. The late sibling waits
 // for the holder to finish (which deletes the claimed rows, freeing the key) or
 // for the claim to go stale. This serializes same-document ops across
 // concurrent batches instead of letting them race on wall-clock completion.
@@ -246,7 +246,7 @@ func (r *taskPendingOpsRepository) PeekBatch(
 //   - Postgres: we lock the ANCHOR row (least-failed, then earliest
 //     eligible id) of each candidate dedup_key with FOR UPDATE SKIP
 //     LOCKED. Because the anchor uniquely represents its key, SKIP LOCKED
-//     hands concurrent claimers DISJOINT key sets — a key whose anchor is
+//     hands concurrent claimers DISJOINT key sets - a key whose anchor is
 //     already locked by another in-flight claim is skipped entirely rather
 //     than half-claimed. We then stamp every eligible row of the chosen
 //     keys and read them back.
@@ -276,7 +276,7 @@ func (r *taskPendingOpsRepository) ClaimBatch(
 		//    first, oldest first within the same fail_count. A failed op keeps
 		//    its original id AND its original position, so ordering purely by
 		//    id lets a repeatedly-retried head block every never-attempted
-		//    sibling behind it until its own retry budget runs out — the queue
+		//    sibling behind it until its own retry budget runs out - the queue
 		//    drains a handful of stuck documents while the backlog starves.
 		//    Keys with a fresh claim are excluded WHOLESALE so a late sibling
 		//    of an in-flight document never gets claimed on its own.
@@ -625,7 +625,7 @@ func (r *taskDeadLetterRepository) list(
 }
 
 // DeleteByID drops a single dead letter row. Returns nil even if the
-// row is already gone — operators issuing concurrent deletes shouldn't
+// row is already gone - operators issuing concurrent deletes shouldn't
 // see spurious errors.
 func (r *taskDeadLetterRepository) DeleteByID(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).

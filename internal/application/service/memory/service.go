@@ -158,7 +158,7 @@ func (s *Service) Recall(ctx context.Context, query string) interfaces.MemoryRec
 	blockItems := append(append([]*types.MemoryItem(nil), standing...), selectedInterests...)
 
 	// Render from the items rather than from subject.BlockText. The cached
-	// block saves nothing here — the items were just loaded either way — and
+	// block saves nothing here - the items were just loaded either way - and
 	// trusting it means any change that alters what belongs in the block
 	// (a write that failed, a new resident kind) stays invisible until the
 	// user's next write. The cache is only a fallback for a failed load.
@@ -437,7 +437,7 @@ func (s *Service) writeReplacing(ctx context.Context, scope interfaces.MemorySco
 //
 // Containment is deliberately the whole rule. It is cheap, explainable to a
 // user reading their own memory list, and it cannot merge two statements that
-// merely share a topic — only ones where the shorter adds nothing the longer
+// merely share a topic - only ones where the shorter adds nothing the longer
 // does not already say. The returned bool reports whether the new statement is
 // the longer of the two.
 func (s *Service) findContainedDuplicate(
@@ -473,7 +473,7 @@ func (s *Service) findContainedDuplicate(
 // for the user.
 //
 // Something the user said takes effect at once. Something the system guessed
-// about them — their role, their domain, inferred from the questions they ask —
+// about them - their role, their domain, inferred from the questions they ask -
 // is proposed instead. Inference is where the value is and also where the harm
 // is: a wrong guess asserted silently is how a memory feature loses trust for
 // good, and unlike ChatGPT's background layer this one stays auditable.
@@ -1077,7 +1077,7 @@ func (s *Service) RecordAnswerSources(ctx context.Context, refs []types.MemoryDo
 // into memory once it recurs.
 //
 // This is the answer to "a knowledge-base question is not about the user, so it
-// produces nothing". A single question really is noise — recording it would
+// produces nothing". A single question really is noise - recording it would
 // fill the profile with every passing curiosity. But the same subject across
 // several conversations says something durable about the person, and counting
 // first is how MemoryOS separates the two without a rule that throws away every
@@ -1095,8 +1095,8 @@ func (s *Service) ObserveQuestionTopics(ctx context.Context, topics []string) []
 
 // observeTopics is the scope-explicit form.
 //
-// Distillation runs on a background worker whose context carries no principal —
-// its scope comes from the task payload — so anything the distiller calls has
+// Distillation runs on a background worker whose context carries no principal -
+// its scope comes from the task payload - so anything the distiller calls has
 // to be handed the scope rather than re-deriving it from the request.
 func (s *Service) observeTopics(
 	ctx context.Context,
@@ -1157,7 +1157,7 @@ func (s *Service) observeTopics(
 		}
 		// Without this line there is no way to tell, from the outside, whether
 		// a topic was counted, which subject it was folded into, or which tier
-		// decided — and "hits is always 1" looks identical to "nothing ran".
+		// decided - and "hits is always 1" looks identical to "nothing ran".
 		logger.Infof(ctx,
 			"memory: topic %q -> %q (tier=%s, hits=%d, threshold=%d)",
 			resolution.Surface, canonicalTopic, resolutionTier(resolution), stat.Hits, threshold)

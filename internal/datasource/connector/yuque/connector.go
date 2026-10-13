@@ -73,7 +73,7 @@ func (c *Connector) ListResources(
 
 	repos := make(map[int64]v2Repo)
 
-	// Team token: /api/v2/user returns type="Group" — the token represents a team,
+	// Team token: /api/v2/user returns type="Group" - the token represents a team,
 	// not a personal user. In this case, directly list the team's own repos instead
 	// of going through the personal-repos + user-groups flow.
 	if me.Type == "Group" {
@@ -100,8 +100,8 @@ func (c *Connector) ListResources(
 		groups, err := cli.ListUserGroups(ctx, me.ID)
 		if err != nil {
 			// Yuque returns 404 when the user has not joined any groups (teams),
-			// instead of an empty list. Treat this as "no groups" and continue
-			// — personal repos were already fetched above.
+			// instead of an empty list. Treat this as "no groups" and continue -
+			// personal repos were already fetched above.
 			logger.Warnf(ctx, "[Yuque] list user groups failed (treating as empty): %v", err)
 			groups = nil
 		}
@@ -209,7 +209,7 @@ func (c *Connector) walk(
 		var skippedType, skippedDraft, skippedNotInTOC, kept int
 		var sampleSkipType, sampleSkipDraft, sampleSkipNotInTOC string
 		for _, d := range docs {
-			// Empty type/status is treated as acceptable — forward-compat with
+			// Empty type/status is treated as acceptable - forward-compat with
 			// API variations that omit the field.
 			if d.Type != "" && d.Type != "Doc" {
 				skippedType++
@@ -236,7 +236,7 @@ func (c *Connector) walk(
 			currentDocs[docIDStr] = true
 
 			// Filter out documents that do not appear in the TOC. Applies only when
-			// the TOC was actually fetched — see the tocOK comment above. The
+			// the TOC was actually fetched - see the tocOK comment above. The
 			// predicate is membership in the TOC node list, not "has a path":
 			// a document may sit in the TOC with no enclosing group.
 			if settings.TOCOnly && tocOK && !inTOC[d.ID] {
@@ -249,7 +249,7 @@ func (c *Connector) walk(
 			kept++
 			// Only admitted documents enter the cursor. A filtered document has to
 			// stay unknown to the incremental comparison, so that admitting it
-			// later — by attaching it to the TOC, or by switching toc_only off —
+			// later - by attaching it to the TOC, or by switching toc_only off -
 			// ingests it rather than dismissing it as unchanged.
 			newCursor.BookDocTimes[bookIDStr][docIDStr] = d.ContentUpdatedAt
 
@@ -301,7 +301,7 @@ func (c *Connector) walk(
 			}
 
 			// Yuque serializes `body` as Markdown when format is "markdown" or
-			// "lake" (Lake XML lives separately in `body_lake`) — empirically
+			// "lake" (Lake XML lives separately in `body_lake`) - empirically
 			// verified against the v2 API. Any other format (e.g. "html") may
 			// put non-Markdown content in `body`, so skip defensively.
 			if detail.Format != "" && detail.Format != "markdown" && detail.Format != "lake" {

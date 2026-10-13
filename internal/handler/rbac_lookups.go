@@ -114,7 +114,7 @@ var (
 //
 // The chain (knowledge_id -> kb_id -> KB.CreatorID) lives in the
 // service layer (KnowledgeService.GetOwningKBCreatorID) so this lookup
-// stays a pure adapter — same shape as KBCreatorLookup.
+// stays a pure adapter - same shape as KBCreatorLookup.
 func (h *KnowledgeHandler) KBCreatorLookupFromKnowledgeID(c *gin.Context) (string, error) {
 	knowledgeID := c.Param("id")
 	if knowledgeID == "" {
@@ -144,7 +144,7 @@ func (h *ChunkHandler) KBCreatorLookupFromKnowledgeIDParam(c *gin.Context) (stri
 // deletion follows the same OwnedKBOrAdmin matrix as every other
 // chunk-level mutation, instead of the looser "any Contributor in the
 // tenant" gate. The tenant scope is re-checked explicitly here even
-// though the underlying GetChunkByIDOnly is unscoped — same defence-
+// though the underlying GetChunkByIDOnly is unscoped - same defence-
 // in-depth pattern as KBCreatorLookup.
 func (h *ChunkHandler) KBCreatorLookupFromChunkIDParam(c *gin.Context) (string, error) {
 	chunkID := c.Param("id")
@@ -175,7 +175,7 @@ func (h *ChunkHandler) KBCreatorLookupFromChunkIDParam(c *gin.Context) (string, 
 }
 
 // KBCreatorLookupFromKBPath resolves :kb_id (used by wiki routes) to
-// KnowledgeBase.CreatorID. No chain hop — the wiki page URL already
+// KnowledgeBase.CreatorID. No chain hop - the wiki page URL already
 // carries the owning KB id, so we go straight to the KB service. The
 // tenant defence-in-depth re-check stays the same as KBCreatorLookup:
 // repo.GetKnowledgeBaseByID is unscoped, so we explicitly compare

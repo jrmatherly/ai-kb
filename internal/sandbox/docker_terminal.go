@@ -11,7 +11,7 @@
 // so RemoteTerminalOptions.AttachPID is ignored and every reconnecting browser
 // gets a fresh shell. It also cannot be left running: unlike Cube/E2B, closing
 // the hijacked connection does NOT end the shell (verified against a live
-// daemon — an idle bash and its foreground jobs survive), so abandoning it
+// daemon - an idle bash and its foreground jobs survive), so abandoning it
 // would strand processes in the container. Close therefore hangs up the shell
 // the way a closing terminal emulator would. See dockerTerminalKillCmd.
 
@@ -54,7 +54,7 @@ const (
 
 // dockerTerminalIDEnv tags every process of one terminal. The PTY exec gets
 // this variable set to a per-open token, and every process it starts inherits
-// it — which is what lets teardown find and kill the shell's whole tree from
+// it - which is what lets teardown find and kill the shell's whole tree from
 // inside the container, without having to map ExecInspect's host PID into the
 // container's PID namespace.
 const dockerTerminalIDEnv = "AIKB_TERMINAL_ID"
@@ -102,7 +102,7 @@ func dockerTerminalShellCmd() []string {
 
 // OpenTerminal opens an interactive shell PTY inside the container behind
 // handle. The returned session streams until the shell exits, the context
-// passed to OpenTerminal is cancelled, or Close is called — the last two end
+// passed to OpenTerminal is cancelled, or Close is called - the last two end
 // it identically (through Close, which also terminates the shell).
 func (c *DockerRemoteClient) OpenTerminal(
 	ctx context.Context,
@@ -141,7 +141,7 @@ func (c *DockerRemoteClient) OpenTerminal(
 	}
 
 	// ExecAttach both starts the exec and hijacks its stdio. With TTY=true the
-	// hijacked stream is raw bytes — no stdcopy 8-byte framing — so the pump
+	// hijacked stream is raw bytes - no stdcopy 8-byte framing - so the pump
 	// below reads it directly.
 	attached, err := c.api.ExecAttach(ctx, created.ID, client.ExecAttachOptions{TTY: true})
 	if err != nil {
@@ -169,7 +169,7 @@ func (c *DockerRemoteClient) OpenTerminal(
 	// E2B. Nothing else can honour it: the pump only reads the hijacked stream
 	// and the moby hijack stops watching the context once the connection is
 	// upgraded, so without this watcher a caller that only cancels its context
-	// (never calling Close) would leave the shell running — and, worse, the TTL
+	// (never calling Close) would leave the shell running - and, worse, the TTL
 	// refresh below rides a detached context, so it would keep the container
 	// from ever being idle-reclaimed. Cancellation goes through the same Close
 	// path as everything else, so it reaps the shell too.
@@ -330,8 +330,8 @@ func (s *dockerTerminalSession) Resize(ctx context.Context, cols, rows uint32) e
 
 // Close detaches AI KB from the PTY and, because Docker has no re-attach to
 // preserve, hangs up the shell inside the container. Unlike Cube/E2B,
-// closing the hijacked connection does not end the exec — the daemon keeps it
-// (and any foreground jobs) alive — so a bare disconnect would strand the
+// closing the hijacked connection does not end the exec - the daemon keeps it
+// (and any foreground jobs) alive - so a bare disconnect would strand the
 // process until the container is swept. Safe to call more than once.
 func (s *dockerTerminalSession) Close() error {
 	s.teardown()
@@ -372,7 +372,7 @@ func (s *dockerTerminalSession) terminate() {
 //
 // It matches on the marker environment variable rather than a PID because
 // ExecInspect reports the *host* PID, which is meaningless inside the
-// container's PID namespace — a kill exec running there cannot see /proc/<pid>.
+// container's PID namespace - a kill exec running there cannot see /proc/<pid>.
 // Every process the shell starts inherits AIKB_TERMINAL_ID, so walking
 // /proc finds the shell and its whole job tree (a running foreground job is in
 // its own process group, so signalling the shell or its group alone would
@@ -382,7 +382,7 @@ func (s *dockerTerminalSession) terminate() {
 // The signals mirror a terminal emulator closing: SIGHUP (plus SIGCONT so a
 // stopped job sees it) ends the shell and its jobs, while anything the user
 // detached on purpose with nohup or a HUP trap keeps running, as it would on
-// any real terminal. Only the session leader — the shell itself — is SIGKILLed
+// any real terminal. Only the session leader - the shell itself - is SIGKILLed
 // if it is still alive after the grace period.
 //
 // /proc is read directly instead of shelling out to pgrep/pkill, which minimal

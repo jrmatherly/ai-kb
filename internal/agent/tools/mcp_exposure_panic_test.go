@@ -12,7 +12,7 @@ import (
 // A panic raised by the MCP client on a catalog preload worker used to kill the
 // whole process: the preload goroutines in mcp_exposure.go had no recover, and
 // the recover sites in registry.go and act.go only cover their own goroutine.
-// Before the fix this test never reaches its assertions — the test binary dies
+// Before the fix this test never reaches its assertions - the test binary dies
 // on prepareMCPToolsWithMode.func1.1.1 (mcp_exposure.go:139 -> snapshot -> load).
 func TestMCPPreloadWorkerPanicIsContained(t *testing.T) {
 	ctx := catalogTestContext()

@@ -165,7 +165,7 @@ func (s *SandboxDesktopService) resolveRunningManager(
 	if !errors.Is(err, sandbox.ErrNoLiveSessionSandbox) || lookupOnly {
 		return nil, err
 	}
-	// provision.TenantID owns provision.ConfigID — the lending workspace for a
+	// provision.TenantID owns provision.ConfigID - the lending workspace for a
 	// shared agent, which is where its config actually exists.
 	sessionTenantID, _ := types.TenantIDFromContext(ctx)
 	mgr, _, err = resolveSandboxForExecution(

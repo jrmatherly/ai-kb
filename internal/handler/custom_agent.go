@@ -34,7 +34,7 @@ type CustomAgentHandler struct {
 	// userService is used only by the list endpoint to backfill creator_name; see
 	// KnowledgeBaseHandler.userService.
 	userService interfaces.UserService
-	// sandboxConfigs validates an agent's sandbox backend selection. Optional —
+	// sandboxConfigs validates an agent's sandbox backend selection. Optional -
 	// nil in partially-wired unit tests, where the selection is left unchecked.
 	sandboxConfigs sandboxConfigLookup
 	desktop        bool
@@ -240,7 +240,7 @@ func (h *CustomAgentHandler) ListAgents(c *gin.Context) {
 		return
 	}
 
-	// Optional creator filter — see the matching block in
+	// Optional creator filter - see the matching block in
 	// KnowledgeBaseHandler.ListKnowledgeBases for rationale. Built-in
 	// agents (IsBuiltin=true, CreatedBy="") are tenant-level fixtures
 	// rather than user creations; we always keep them regardless of the
@@ -398,7 +398,7 @@ func (h *CustomAgentHandler) UpdateAgent(c *gin.Context) {
 		}
 	}
 
-	// Build agent object. Avatar is deliberately absent here — it reaches the
+	// Build agent object. Avatar is deliberately absent here - it reaches the
 	// service as a separate pointer, so that "not sent" survives the trip.
 	agent := &types.CustomAgent{
 		ID:          id,

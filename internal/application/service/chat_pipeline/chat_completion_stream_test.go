@@ -60,8 +60,8 @@ func (b *syncEventBus) finalAnswerEvents() []event.AgentFinalAnswerData {
 }
 
 // openStreamChat returns a buffered channel preloaded with chunks and never
-// closes it, so the stream plugin blocks on the channel until ctx is cancelled
-// — deterministically exercising the ctx.Done() branch.
+// closes it, so the stream plugin blocks on the channel until ctx is cancelled -
+// deterministically exercising the ctx.Done() branch.
 type openStreamChat struct {
 	chunks      []types.StreamResponse
 	closeStream bool

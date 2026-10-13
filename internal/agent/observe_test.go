@@ -69,7 +69,7 @@ func TestTrimToolResultsKeepsNewestAndPairing(t *testing.T) {
 }
 
 // TestAnalyzeResponse_ToolCall_DoesNotTerminate is a regression guard: the
-// agent has no dedicated terminal tool — any round that requests tool calls is
+// agent has no dedicated terminal tool - any round that requests tool calls is
 // non-terminal and must keep the loop running. The agent ends only by stopping
 // naturally with its answer as plain text.
 func TestAnalyzeResponse_ToolCall_DoesNotTerminate(t *testing.T) {
@@ -174,7 +174,7 @@ func TestAppendToolResults_PreservesReasoningContent(t *testing.T) {
 
 	t.Run("reasoning_content alone produces an assistant message", func(t *testing.T) {
 		// A pure thinking emission with no visible content / tool calls is
-		// unusual but legal — preserve it so the next round's request still
+		// unusual but legal - preserve it so the next round's request still
 		// carries reasoning_content for strict providers.
 		step := types.AgentStep{
 			Iteration:        0,
@@ -437,7 +437,7 @@ func newEngineWithTool(t *testing.T, name string) (*AgentEngine, *countingTool) 
 	return engine, tool
 }
 
-// "length" alone does not mean the window is full — it usually means the model
+// "length" alone does not mean the window is full - it usually means the model
 // used the budget we gave it. Retrying those would burn a round reproducing the
 // same truncation, so only a response that stopped short of its own budget
 // counts as something compaction can fix.
@@ -518,7 +518,7 @@ func TestExecuteToolCalls_TruncatedArgsWithoutFinishReason_Refuses(t *testing.T)
 	assert.Contains(t, step.ToolCalls[0].Result.Error, "was not executed")
 }
 
-// Well-formed arguments must still run — the refusal keys on truncation, not on
+// Well-formed arguments must still run - the refusal keys on truncation, not on
 // having gone through the repair path at all.
 func TestExecuteToolCalls_CompleteArgs_StillExecute(t *testing.T) {
 	engine, tool := newEngineWithTool(t, "write_sandbox_file")

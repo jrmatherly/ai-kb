@@ -158,7 +158,7 @@ func TestSessionModeConstants(t *testing.T) {
 }
 
 // BotIdentity carries a unique index, so Feishu and Lark channels must never
-// derive the same identity — otherwise a Lark bot would be rejected as a
+// derive the same identity - otherwise a Lark bot would be rejected as a
 // duplicate of an unrelated Feishu bot that happens to share an app_id.
 func TestComputeBotIdentity_FeishuAndLarkAreDistinct(t *testing.T) {
 	const creds = `{"app_id":"cli_a1b2c3","app_secret":"s"}`

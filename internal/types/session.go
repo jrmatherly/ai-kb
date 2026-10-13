@@ -328,7 +328,7 @@ func (c *SummaryConfig) Scan(value interface{}) error {
 
 // SessionLastRequestState captures the user-facing input-bar state at the
 // time of the most recent QA request on a session. It is purely a UI memory
-// aid — none of the fields here drive backend behaviour. They are echoed back
+// aid - none of the fields here drive backend behaviour. They are echoed back
 // to the frontend by GetSession so the chat input can restore the same agent,
 // model, KB scope, etc. the user had selected last time.
 type SessionLastRequestState struct {
@@ -356,7 +356,7 @@ func (s *SessionLastRequestState) Value() (driver.Value, error) {
 
 // Scan implements sql.Scanner for SessionLastRequestState (JSONB).
 // Tolerates legacy values that may not match the current schema by silently
-// ignoring unmarshal errors — the stored row predates this struct.
+// ignoring unmarshal errors - the stored row predates this struct.
 func (s *SessionLastRequestState) Scan(value interface{}) error {
 	if value == nil {
 		return nil

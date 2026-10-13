@@ -10,7 +10,7 @@ import (
 // authSession is the resolved identity an auth middleware attaches to the
 // request. One struct + one apply function replaces the five near-identical
 // "c.Set + context.WithValue" blocks that used to live in the JWT branch,
-// the tenantless branch, both API-key attach helpers and EmbedAuth — keeping
+// the tenantless branch, both API-key attach helpers and EmbedAuth - keeping
 // the gin-keys surface (c.Keys) and the request-context surface in lockstep
 // is exactly the invariant that was easy to break when each caller wrote the
 // pairs out by hand.

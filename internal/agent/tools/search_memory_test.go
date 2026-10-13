@@ -61,7 +61,7 @@ func TestSearchMemoryLabelsResultsAsDataNotInstructions(t *testing.T) {
 }
 
 // Reporting an empty store to someone who switched memory off would have the
-// agent tell them it remembers nothing about them — wrong, and the opposite of
+// agent tell them it remembers nothing about them - wrong, and the opposite of
 // what turning memory off was supposed to do.
 func TestSearchMemoryDistinguishesDisabledFromEmpty(t *testing.T) {
 	off := &stubMemorySearch{result: interfaces.MemorySearchResult{Available: false}}
@@ -97,7 +97,7 @@ func TestSearchMemoryRejectsABlankQuery(t *testing.T) {
 // Whether the agent may read memory is settled by the workspace, the user and
 // the agent's own preference. Letting the tool list say it a fourth time would
 // produce configurations where memory is on but the agent cannot reach past
-// what each turn injects — so the tool appears in neither list and is injected
+// what each turn injects - so the tool appears in neither list and is injected
 // by registerTools instead, the same way web_search is.
 func TestSearchMemoryIsNotChosenFromTheToolList(t *testing.T) {
 	require.NotContains(t, DefaultAllowedTools(), ToolSearchMemory)

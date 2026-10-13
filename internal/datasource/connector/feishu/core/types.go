@@ -167,9 +167,9 @@ type WikiNode struct {
 	Creator        string `json:"creator"`
 	Owner          string `json:"owner"`
 	ObjCreateTime  string `json:"obj_create_time"`  // document creation time (unix timestamp string)
-	ObjEditTime    string `json:"obj_edit_time"`    // document last edit time (unix timestamp string) — tracks content changes
+	ObjEditTime    string `json:"obj_edit_time"`    // document edit time (unix timestamp string); content changes
 	NodeCreateTime string `json:"node_create_time"` // node creation time (unix timestamp string)
-	NodeEditTime   string `json:"node_edit_time"`   // node edit time (unix timestamp string) — only tracks node attribute changes
+	NodeEditTime   string `json:"node_edit_time"`   // node edit time (unix timestamp string); attribute changes only
 }
 
 // WikiNodeInfoData is the data payload of WikiNodeInfoResponse.

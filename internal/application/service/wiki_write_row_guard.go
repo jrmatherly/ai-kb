@@ -10,7 +10,7 @@ import (
 // gets when the incoming body no longer carries table rows the stored page
 // still has. The stored page is left untouched.
 //
-// It is returned for both guarded policies — see UpdatePage — and it exists
+// It is returned for both guarded policies - see UpdatePage - and it exists
 // because an unchanged `version` cannot stand in for it: UpdatePage leaves the
 // version alone for a successful write that changes nothing user-visible, so
 // callers that must retry a refused contribution (wiki ingest's reduce) need a
@@ -27,7 +27,7 @@ const wikiWriteGuardLogLimit = 5
 //
 // Ingest needs the tolerance because its editor prompt explicitly allows
 // de-duplicating rows, and a refused write keeps the contributing documents
-// queued for another full Map — a legitimate de-duplication that tripped the
+// queued for another full Map - a legitimate de-duplication that tripped the
 // guard on every batch would spend the documents' retry budget and end in the
 // dead-letter lane with their additions never stored. The agent's whole-page
 // writer has no such allowance; see UpdatePage.
@@ -70,7 +70,7 @@ func normalizeWikiWriteCell(cell string) string {
 }
 
 // wikiWriteRowIdentity returns the normalized first non-empty cell of a table
-// row — the cell that says what the row is about — or "" when the row names
+// row - the cell that says what the row is about - or "" when the row names
 // nothing at all.
 func wikiWriteRowIdentity(line string) string {
 	for _, cell := range strings.Split(line, "|") {
@@ -103,7 +103,7 @@ func wikiWriteTableRowIdentities(content string) []string {
 }
 
 // wikiWriteUniqueRowIdentityCount counts the DISTINCT data-row identities in
-// content — the denominator of the loss ratio. Rows that name the same entity
+// content - the denominator of the loss ratio. Rows that name the same entity
 // in their first non-empty cell count once, however many times the page lists
 // them, so a page that repeats a holder does not dilute the ratio.
 func wikiWriteUniqueRowIdentityCount(content string) int {
@@ -140,8 +140,8 @@ func wikiWriteRowIdentityLossRatio(missing, stored int) float64 {
 // first non-empty cell into one is not a loss, however many times the stored
 // page listed them.
 //
-// The scope of that identity is deliberately narrow — it is only the row's
-// first non-empty cell — so this reports rows that vanished, not rows that
+// The scope of that identity is deliberately narrow - it is only the row's
+// first non-empty cell - so this reports rows that vanished, not rows that
 // lost information: a rewrite that keeps the holder name but blanks, truncates
 // or rewrites the other columns is NOT reported. Merging same-identity rows is
 // therefore allowed without any guarantee that their remaining columns stay

@@ -333,7 +333,7 @@ func skillArchiveSHA256(archive []byte) string {
 
 // archiveMatchesSHA reports whether archive is the digest the row claims.
 // An empty expected digest is treated as unknown, not as a match against
-// whatever happens to be on disk — callers that want a fallback must opt in.
+// whatever happens to be on disk - callers that want a fallback must opt in.
 func archiveMatchesSHA(archive []byte, want string) bool {
 	want = strings.TrimSpace(want)
 	if want == "" || len(archive) == 0 {
@@ -372,7 +372,7 @@ func zipSkillFiles(files map[string][]byte) ([]byte, error) {
 //
 // Shell safety is not this function's job: every interpolation of a bundle
 // path goes through sandbox.ShellQuote, which makes any name inert. What
-// quoting cannot fix is a name that rewrites the lines it is printed into —
+// quoting cannot fix is a name that rewrites the lines it is printed into -
 // the entry names also reach log lines, error messages and the image
 // manifest, and a newline or an escape sequence there forges a second record.
 // So control characters (NUL included) are refused and ordinary punctuation is

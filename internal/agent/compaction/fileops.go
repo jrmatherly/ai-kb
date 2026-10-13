@@ -4,7 +4,7 @@ package compaction
 //
 // Dropping the history that says "I wrote /workspace/output/deck.html" leaves
 // the model with no record of the artifacts it already produced, so it starts
-// rebuilding files that are already on disk — and for a file large enough to
+// rebuilding files that are already on disk - and for a file large enough to
 // need chunked writes, restarting is exactly the loop that never terminates.
 // The LLM summary is supposed to carry this, but it is prose and a list of
 // paths is the first detail a summarizer drops. So the paths are extracted

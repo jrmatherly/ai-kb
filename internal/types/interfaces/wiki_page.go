@@ -17,7 +17,7 @@ type WikiPageService interface {
 	// UpdatePage updates an existing wiki page, re-parses links, and updates
 	// bidirectional references. The `version` field is incremented only when
 	// a user-visible content field (title, content, summary, page_type,
-	// status) actually differs from the stored value — bookkeeping-only
+	// status) actually differs from the stored value - bookkeeping-only
 	// writes (e.g. refreshing source_refs after a same-content re-ingest) are
 	// persisted without bumping the version.
 	UpdatePage(ctx context.Context, page *types.WikiPage) (*types.WikiPage, error)
@@ -28,8 +28,8 @@ type WikiPageService interface {
 	UpdatePageMeta(ctx context.Context, page *types.WikiPage) error
 
 	// UpdateAutoLinkedContent persists content changes that come from
-	// machine-only link decoration — cross-link injection and dead-link
-	// cleanup — without bumping `version`. Out-links are re-parsed from the
+	// machine-only link decoration - cross-link injection and dead-link
+	// cleanup - without bumping `version`. Out-links are re-parsed from the
 	// new body and bidirectional in-link references on target pages are
 	// refreshed. Conceptually the body still represents the same revision
 	// the user saw before, just with wiki-link markup added or stripped, so
@@ -40,7 +40,7 @@ type WikiPageService interface {
 	GetPageBySlug(ctx context.Context, kbID string, slug string) (*types.WikiPage, error)
 
 	// RepairContentLinks rewrites dead [[slug]] references in content to their
-	// most likely live target (rewrite-only — never strips). Used by the agent
+	// most likely live target (rewrite-only - never strips). Used by the agent
 	// write path to auto-correct LLM-mangled slugs (especially UUID-based
 	// summary slugs) before persistence. Returns the possibly-updated content
 	// and whether any rewrite happened. Best-effort: callers may ignore errors.
@@ -59,12 +59,12 @@ type WikiPageService interface {
 	// Creates a default one if it doesn't exist.
 	//
 	// The index row now carries only the LLM-generated intro in its content
-	// column — the heavy directory listing was moved out of wiki_pages.
+	// column - the heavy directory listing was moved out of wiki_pages.
 	// Callers that want a renderable directory should use GetIndexView,
 	// which assembles {intro, groups} structured output on demand.
 	GetIndex(ctx context.Context, kbID string) (*types.WikiPage, error)
 
-	// GetIndexView returns the structured index response — intro (from the
+	// GetIndexView returns the structured index response - intro (from the
 	// index row) plus a paginated window of directory entries per requested
 	// page_type. `types` restricts which page types to include (empty =
 	// all), `limit` bounds the per-type window size, `cursor` is an opaque
@@ -106,7 +106,7 @@ type WikiPageService interface {
 	// ListByType returns every wiki page of the given type. Used by
 	// callers that need the full set for a specific type (e.g. intro
 	// regeneration needs summary pages). For directory rendering, use
-	// GetIndexView instead — it paginates via ListByTypeLight.
+	// GetIndexView instead - it paginates via ListByTypeLight.
 	ListByType(ctx context.Context, kbID string, pageType string) ([]*types.WikiPage, error)
 
 	// ListPagesBySourceRef retrieves all wiki pages whose source_refs reference
@@ -225,7 +225,7 @@ type WikiPageService interface {
 	// ListRevisions returns the stored historical snapshots for a page
 	// (newest first, content omitted) plus the total snapshot count and the
 	// page's current version. The current version itself has no revision
-	// row — it lives in wiki_pages.
+	// row - it lives in wiki_pages.
 	ListRevisions(ctx context.Context, kbID string, slug string, limit int, offset int) (*types.WikiPageRevisionListResponse, error)
 
 	// GetRevision returns one historical snapshot (content included).
@@ -254,7 +254,7 @@ type WikiPageRepository interface {
 
 	// Update rewrites a wiki page record with optimistic locking and
 	// unconditionally increments `version`. Callers are responsible for
-	// deciding whether the edit is user-visible — the service layer uses
+	// deciding whether the edit is user-visible - the service layer uses
 	// UpdateMeta for bookkeeping-only writes instead.
 	Update(ctx context.Context, page *types.WikiPage) error
 
@@ -431,20 +431,20 @@ type WikiPageRepository interface {
 	// DeleteByKnowledgeBaseID soft-deletes all wiki pages for tenantID+kbID.
 	// Used by KB delete cleanup to batch-soft-delete every page without walking
 	// the folder tree. Bypasses the per-page chunk/link reconciliation that
-	// DeletePage does — the whole KB is going away, so cross-link cleanup is
+	// DeletePage does - the whole KB is going away, so cross-link cleanup is
 	// the KB delete flow's responsibility. tenantID is required so a tampered
 	// delete payload cannot wipe another tenant's wiki by kbID alone.
 	DeleteByKnowledgeBaseID(ctx context.Context, tenantID uint64, kbID string) error
 
 	// DeleteFoldersByKnowledgeBaseID soft-deletes all wiki folders for
 	// tenantID+kbID. Unlike DeleteFolder this does NOT enforce the emptiness
-	// guard — the KB is being deleted, so non-empty folders must go too.
+	// guard - the KB is being deleted, so non-empty folders must go too.
 	DeleteFoldersByKnowledgeBaseID(ctx context.Context, tenantID uint64, kbID string) error
 
 	// DeleteRevisionsByKnowledgeBaseID hard-deletes all wiki page revisions
 	// for tenantID+kbID. Revisions have no deleted_at column (they are
 	// immutable snapshots, not soft-deletable rows), so this is a physical
-	// DELETE — same semantics as DeleteRevisionsByPage but scoped to the
+	// DELETE - same semantics as DeleteRevisionsByPage but scoped to the
 	// whole KB.
 	DeleteRevisionsByKnowledgeBaseID(ctx context.Context, tenantID uint64, kbID string) error
 

@@ -22,7 +22,7 @@ func (liveKnowledgeStub) GetKnowledgeByIDOnly(context.Context, string) (*types.K
 
 // reduceGuardedEntityPage runs one reduce round for an entity page over a real
 // wiki page store, with modelResponse as the editor's answer. The returned
-// updateDeferred is what ProcessWikiIngest turns into collectUnapplied — the
+// updateDeferred is what ProcessWikiIngest turns into collectUnapplied - the
 // set of knowledge ids kept out of the trim phase so a later batch retries them.
 func reduceGuardedEntityPage(
 	t *testing.T, svc *wikiIngestService, slug, modelResponse string,
@@ -50,7 +50,7 @@ func reduceGuardedEntityPage(
 
 // Regression for the version-based deferral signal: UpdatePage leaves `version`
 // alone for a successful write that changes nothing user-visible (identical
-// body with refreshed bookkeeping — see the version-bump policy in
+// body with refreshed bookkeeping - see the version-bump policy in
 // wiki_page.go). Reading "same version" as "the guard refused" re-queued those
 // applied contributions forever, so reduce must see no refusal here.
 func TestReduceSlugUpdatesDoesNotDeferAWriteThatChangedNothing(t *testing.T) {

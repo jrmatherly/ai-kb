@@ -66,7 +66,7 @@ func newAcceptByTokenTestRouter(h *TenantInvitationHandler) *gin.Engine {
 	r.Use(func(c *gin.Context) {
 		// Production auth middleware injects the caller via the request
 		// context (context.WithValue), which is what UserIDFromContext
-		// reads — NOT gin's c.Keys. Mirror that here.
+		// reads - NOT gin's c.Keys. Mirror that here.
 		c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), types.UserIDContextKey, "u-test"))
 		c.Next()
 	}, errorCapture())

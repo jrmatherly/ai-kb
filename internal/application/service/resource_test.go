@@ -225,7 +225,7 @@ func TestResourceCatalogDoesNotReviveRevokedGrant(t *testing.T) {
 }
 
 // Without a signing key the deployment cannot derive tokens, so grants stay
-// random and per-request — the behaviour before reuse existed.
+// random and per-request - the behaviour before reuse existed.
 func TestResourceCatalogWithoutSigningKeyMintsFreshGrants(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
 	t.Setenv("SYSTEM_AES_KEY", "")

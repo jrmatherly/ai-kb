@@ -49,7 +49,7 @@ func TestUpdateKnowledgeBaseAppliesVLMConfig(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, kb.VLMConfig.Enabled, "absent vlm_config must not enable multimodal")
 
-	// Providing vlm_config must persist it — this was silently dropped before #1723.
+	// Providing vlm_config must persist it - this was silently dropped before #1723.
 	kb, err = svc.UpdateKnowledgeBase(ctx, "kb-1", "n", "d", nil,
 		&types.VLMConfig{Enabled: true, ModelID: "vlm-1"})
 	require.NoError(t, err)

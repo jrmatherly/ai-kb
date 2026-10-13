@@ -322,7 +322,7 @@ func TestSessionRepositoryQueryPagedAPISourceReturnsAllTenantAPIKeySessions(t *t
 
 // Maintenance sessions (skill install / remove) are real sessions with real
 // transcripts, but they are infrastructure, not conversations. They must be
-// invisible in every bucket — including the unfiltered listing, which is why
+// invisible in every bucket - including the unfiltered listing, which is why
 // the exclusion lives in applyBase and not in the "web" source branch.
 func TestSessionRepositoryQueryPagedHidesMaintenanceSessions(t *testing.T) {
 	repo, db := newSessionRepositoryForTest(t)

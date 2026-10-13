@@ -190,7 +190,7 @@ func TestEmitStreamEvent_FlushesHeldContentBeforeCompletion(t *testing.T) {
 	)
 }
 
-// An error can be the last event of a run, so it must release the buffer too —
+// An error can be the last event of a run, so it must release the buffer too -
 // otherwise the tail generated before the failure is lost.
 func TestEmitStreamEvent_FlushesHeldContentOnError(t *testing.T) {
 	rewriter := publicStreamRewriter()

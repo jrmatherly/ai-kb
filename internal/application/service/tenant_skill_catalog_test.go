@@ -246,7 +246,7 @@ func TestRegisterCatalogReplacesThePreviousZip(t *testing.T) {
 
 // A re-register that cannot commit the row has to be a no-op. Retiring the
 // previous object before the write would leave the stored definition naming a
-// ref that no longer resolves, which takes its files down for good — far worse
+// ref that no longer resolves, which takes its files down for good - far worse
 // than the failed upload the caller asked about.
 func TestRegisterCatalogKeepsThePreviousZipWhenTheRowFailsToCommit(t *testing.T) {
 	fx := newInstallFixture(t)

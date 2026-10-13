@@ -11,7 +11,7 @@ import (
 
 // RecoverMiddleware turns a handler panic into an ordinary task error.
 // asynq recovers panics itself, but only in its processor, above every
-// middleware — so a panic skips the dead-letter callback and a document on
+// middleware - so a panic skips the dead-letter callback and a document on
 // its last attempt stays "processing" until housekeeping. Install it right
 // after MiddlewareWithCallback so that callback sees the error.
 func RecoverMiddleware() asynq.MiddlewareFunc {

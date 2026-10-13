@@ -29,7 +29,7 @@ import (
 //
 // Q1. Does the resource have a creator?
 //
-//	YES — KB, Agent, Knowledge document, Chunk, WikiPage, FAQ entry,
+//	YES - KB, Agent, Knowledge document, Chunk, WikiPage, FAQ entry,
 //	      KB tag, anything stamped with creator_id / created_by.
 //	      => Mutating routes use OwnedXxxOrAdmin.
 //	      The creator passes regardless of role; everyone else needs
@@ -37,14 +37,14 @@ import (
 //	      like Owner; Contributor in someone else's KB acts like
 //	      Viewer" hold uniformly.
 //
-//	NO  — Tenant-wide infrastructure: Model, VectorStore, IM channel,
+//	NO  - Tenant-wide infrastructure: Model, VectorStore, IM channel,
 //	      WebSearchProvider, DataSource, MCPService, WeKnoraCloud
 //	      credentials.
 //	      => Mutating routes use Admin().
 //	      There is no "creator-of-the-vector-store" concept; configuring
 //	      it affects everyone, so only Admin+ may touch it.
 //
-//	ENTRY POINT — Routes that CREATE a new owned resource (POST
+//	ENTRY POINT - Routes that CREATE a new owned resource (POST
 //	      /knowledge-bases, POST /agents).
 //	      => Use Contributor() (or whatever the floor is).
 //	      No resource exists yet, so we can only gate on role. Once
@@ -52,12 +52,12 @@ import (
 //
 // Q2. Is the side effect "private to me" or "visible to others"?
 //
-//	PRIVATE — Action only affects the caller's own state (e.g.
+//	PRIVATE - Action only affects the caller's own state (e.g.
 //	      POST /agents/:id/copy creates a copy that belongs to the
 //	      caller; the source agent is untouched).
 //	      => Contributor() is fine.
 //
-//	PUBLIC — Action exposes a resource beyond its current scope or
+//	PUBLIC - Action exposes a resource beyond its current scope or
 //	      changes state visible to other tenants/users (sharing a KB
 //	      to an org, disabling an agent for the whole tenant,
 //	      transferring ownership).
@@ -189,7 +189,7 @@ func newRBACGuards(
 	return g
 }
 
-// Role-only guards — pure RequireRole convenience wrappers, named after
+// Role-only guards - pure RequireRole convenience wrappers, named after
 // the matrix entries so route lines stay readable.
 
 func (g *rbacGuards) Viewer() gin.HandlerFunc {
@@ -212,7 +212,7 @@ func (g *rbacGuards) Owner() gin.HandlerFunc {
 	return middleware.RequireRole(types.TenantRoleOwner, g.cfg)
 }
 
-// API-key authorization — a SEPARATE authority from the JWT role/ownership
+// API-key authorization - a SEPARATE authority from the JWT role/ownership
 // guards above. Instead of stacking a per-route guard that also had to know
 // the caller's ownership, every API-key-accessible route declares one
 // APIKeyRoutePolicy via the apiKeyGroup helpers; the gate on /api/v1 enforces
@@ -414,7 +414,7 @@ func (g *rbacGuards) assertAPIKeyPoliciesMatchRoutes(engine *gin.Engine) {
 		// normalize gin's reported path the same way. Otherwise a route
 		// registered with a "/" rel (gin path ".../evaluation/") would look
 		// missing against the normalized key (".../evaluation") even though
-		// the gate — which also normalizes c.FullPath() — matches it fine.
+		// the gate - which also normalizes c.FullPath() - matches it fine.
 		p := ri.Path
 		if len(p) > 1 {
 			p = strings.TrimRight(p, "/")
@@ -451,8 +451,8 @@ func (g *rbacGuards) OwnedKBOrAdmin() gin.HandlerFunc {
 
 // OwnedKBOrAdminFromKbIDParam is the same matrix as OwnedKBOrAdmin but
 // addresses the KB via :kbId (used by /initialization/* routes). KB
-// configuration changes — picking the embedding/parser/storage
-// engine, materialising indexes — are at least as sensitive as
+// configuration changes - picking the embedding/parser/storage
+// engine, materialising indexes - are at least as sensitive as
 // updating the KB itself, so they share the "creator OR Admin+" rule.
 func (g *rbacGuards) OwnedKBOrAdminFromKbIDParam() gin.HandlerFunc {
 	return middleware.RequireOwnershipOrRole(types.TenantRoleAdmin, g.kbCreatorFromKbIDParam, g.cfg)
@@ -466,7 +466,7 @@ func (g *rbacGuards) OwnedAgentOrAdmin() gin.HandlerFunc {
 }
 
 // OwnedKnowledgeKBOrAdmin: per-knowledge mutations (update / delete /
-// reparse / image edit) — the URL :id is a knowledge id, the lookup
+// reparse / image edit) - the URL :id is a knowledge id, the lookup
 // walks it back to the owning KB's CreatorID. Same "creator OR Admin+"
 // rule as OwnedKBOrAdmin, just one chain hop deeper. PR 5 (#1303).
 func (g *rbacGuards) OwnedKnowledgeKBOrAdmin() gin.HandlerFunc {
@@ -477,7 +477,7 @@ func (g *rbacGuards) OwnedKnowledgeKBOrAdmin() gin.HandlerFunc {
 // Reuses the same chain helper as OwnedKnowledgeKBOrAdmin so a
 // Contributor with KB ownership can manage all chunks under any of
 // their documents. For chunk routes addressed via :id (no knowledge
-// id in the URL — only chunks.DELETE("/by-id/:id/questions") today),
+// id in the URL - only chunks.DELETE("/by-id/:id/questions") today),
 // see OwnedChunkKBOrAdminFromChunkID below: same matrix, walks one
 // extra hop (chunk_id -> knowledge_id) before reusing this chain.
 func (g *rbacGuards) OwnedChunkKBOrAdmin() gin.HandlerFunc {
@@ -487,7 +487,7 @@ func (g *rbacGuards) OwnedChunkKBOrAdmin() gin.HandlerFunc {
 // OwnedChunkKBOrAdminFromChunkID: chunk mutations addressed via :id
 // (the chunk's own id, no knowledge id in the URL). Used by
 // chunks.DELETE("/by-id/:id/questions"). Same OwnedKBOrAdmin matrix
-// as the rest of the chunk routes — earlier this endpoint stayed at
+// as the rest of the chunk routes - earlier this endpoint stayed at
 // flat Contributor because the chunk-id -> knowledge-id -> kb chain
 // wasn't wired; that's now plumbed through KBCreatorLookupFromChunkIDParam.
 func (g *rbacGuards) OwnedChunkKBOrAdminFromChunkID() gin.HandlerFunc {
@@ -496,7 +496,7 @@ func (g *rbacGuards) OwnedChunkKBOrAdminFromChunkID() gin.HandlerFunc {
 
 // OwnedWikiKBOrAdmin: wiki page CRUD and maintenance ops. Wiki routes
 // use :kb_id directly so the lookup is a single hop into the KB
-// service — no knowledge chain. Same matrix as OwnedKBOrAdmin.
+// service - no knowledge chain. Same matrix as OwnedKBOrAdmin.
 func (g *rbacGuards) OwnedWikiKBOrAdmin() gin.HandlerFunc {
 	return middleware.RequireOwnershipOrRole(types.TenantRoleAdmin, g.wikiKBCreator, g.cfg)
 }
@@ -509,7 +509,7 @@ func (g *rbacGuards) OwnedWikiKBOrAdmin() gin.HandlerFunc {
 
 // CrossTenant gates a route on the caller being an org-level
 // superuser (CanAccessAllTenants AND EnableCrossTenantAccess). Used by
-// /tenants/all, /tenants/search, POST /tenants, GET /tenants — the
+// /tenants/all, /tenants/search, POST /tenants, GET /tenants - the
 // endpoints that operate across tenants. Replaces the if-blocks that
 // used to live inside ListAllTenants/SearchTenants/CreateTenant.
 func (g *rbacGuards) CrossTenant() gin.HandlerFunc {
@@ -518,27 +518,27 @@ func (g *rbacGuards) CrossTenant() gin.HandlerFunc {
 
 // PathTenantMatch enforces that the URL :id matches the caller's
 // active tenant context (cross-tenant superusers bypass). Routes apply
-// it at the /tenants/:id group level so every per-tenant endpoint —
+// it at the /tenants/:id group level so every per-tenant endpoint -
 // GetTenant / UpdateTenant / DeleteTenant / member
-// management / leave — shares the same check. Replaces the
+// management / leave - shares the same check. Replaces the
 // authorizeTenantAccess helper that used to live inside the tenant
 // handler.
 func (g *rbacGuards) PathTenantMatch() gin.HandlerFunc {
 	return middleware.RequirePathTenantMatch(g.cfg)
 }
 
-// KB-access guards — orthogonal to the role-and-ownership matrix
+// KB-access guards - orthogonal to the role-and-ownership matrix
 // above. They answer "can the caller's tenant operate on THIS KB?"
 // taking into account three paths:
 //
-//   1. Own KB                         — full access (Admin)
-//   2. Org-shared KB (Plan 3)         — capped permission
-//   3. Visible via shared agent       — read-only
+//   1. Own KB                         - full access (Admin)
+//   2. Org-shared KB (Plan 3)         - capped permission
+//   3. Visible via shared agent       - read-only
 //
 // On success the resolved (KB + effective tenant id + permission)
 // tuple is stashed on c.Keys under middleware.KBAccessContextKey AND
-// the request context's tenant ID is rewritten to the effective tenant
-// — so handlers downstream just read tenant the way they always did
+// the request context's tenant ID is rewritten to the effective tenant -
+// so handlers downstream just read tenant the way they always did
 // (types.MustTenantIDFromContext) without knowing whether the KB is
 // owned or shared.
 //
@@ -550,7 +550,7 @@ func (g *rbacGuards) PathTenantMatch() gin.HandlerFunc {
 
 // KBAccessRead gates a KB-scoped read route on the caller having at
 // least Viewer-level access. The agent-share fallback only activates
-// at this level — Editor/Admin reads never go through "I just see it
+// at this level - Editor/Admin reads never go through "I just see it
 // because someone shared an agent". The kbID is read from the gin
 // param named in `param` (typically "id" for /knowledge-bases/:id/...).
 func (g *rbacGuards) KBAccessRead(param string) gin.HandlerFunc {
@@ -620,7 +620,7 @@ func (g *rbacGuards) KBAccessReadFromChunkIDParam(param string) gin.HandlerFunc 
 	)
 }
 
-// KBAccessWriteFromChunkIDParam — same as KBAccessReadFromChunkIDParam
+// KBAccessWriteFromChunkIDParam - same as KBAccessReadFromChunkIDParam
 // but requires Editor minimum. Used by chunk write routes that
 // address the chunk via /chunks/by-id/:id.
 func (g *rbacGuards) KBAccessWriteFromChunkIDParam(param string) gin.HandlerFunc {

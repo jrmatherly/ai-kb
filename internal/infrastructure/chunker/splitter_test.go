@@ -191,13 +191,13 @@ func TestSplitText_RecursiveSeparators_NoOversizeChunks(t *testing.T) {
 	if len(chunks) < 2 {
 		t.Fatalf("expected multiple chunks, got %d", len(chunks))
 	}
-	// No chunk should exceed roughly 1.5x ChunkSize — recursive splitting
+	// No chunk should exceed roughly 1.5x ChunkSize - recursive splitting
 	// at the next-priority separator should keep this bounded.
 	maxAllowed := cfg.ChunkSize * 3 / 2
 	for i, c := range chunks {
 		l := len([]rune(c.Content))
 		if l > maxAllowed {
-			t.Errorf("chunk %d is %d runes, > 1.5x ChunkSize (%d) — recursive split missing", i, l, maxAllowed)
+			t.Errorf("chunk %d is %d runes, > 1.5x ChunkSize (%d) - recursive split missing", i, l, maxAllowed)
 		}
 	}
 }
@@ -1104,7 +1104,7 @@ func TestSplitText_MultipleTablesInDocument(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Start/End restoration tests — verify original text can be reconstructed
+// Start/End restoration tests - verify original text can be reconstructed
 // ---------------------------------------------------------------------------
 
 // restoreTextFromChunks reconstructs the original text using only chunk
@@ -1116,7 +1116,7 @@ func restoreTextFromChunks(chunks []Chunk) string {
 		return ""
 	}
 
-	// Sort by End (ascending), then Start (ascending) — same order as Python restore_text
+	// Sort by End (ascending), then Start (ascending) - same order as Python restore_text
 	sorted := make([]Chunk, len(chunks))
 	copy(sorted, chunks)
 	for i := 1; i < len(sorted); i++ {
@@ -1163,7 +1163,7 @@ func restoreTextFromChunks(chunks []Chunk) string {
 }
 
 func TestSplitText_RestoreTextNoTable(t *testing.T) {
-	// Plain Chinese text without any tables — baseline restoration check.
+	// Plain Chinese text without any tables - baseline restoration check.
 	var sb strings.Builder
 	for i := 0; i < 30; i++ {
 		fmt.Fprintf(&sb, "\u7b2c%d\u6bb5\uff1a\u8fd9\u662f\u4e00\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u7684\u4e2d"+
@@ -1247,7 +1247,7 @@ func TestSplitText_RestoreTextWithTable(t *testing.T) {
 		spanLen := c.End - c.Start
 		headerLen := len(contentRunes) - spanLen
 		if headerLen < 0 {
-			t.Errorf("chunk[%d]: Content rune len (%d) < span len (%d) — impossible",
+			t.Errorf("chunk[%d]: Content rune len (%d) < span len (%d) - impossible",
 				i, len(contentRunes), spanLen)
 			continue
 		}
@@ -1293,10 +1293,10 @@ func TestSplitText_RestoreTextWithTable(t *testing.T) {
 			}
 		}
 	} else {
-		t.Log("restoration OK — original text perfectly reconstructed from Start/End")
+		t.Log("restoration OK - original text perfectly reconstructed from Start/End")
 	}
 
-	// 4. Verify full coverage — Start/End spans must cover [0, len(textRunes))
+	// 4. Verify full coverage - Start/End spans must cover [0, len(textRunes))
 	covered := make([]bool, len(textRunes))
 	for _, c := range chunks {
 		for p := c.Start; p < c.End && p < len(textRunes); p++ {

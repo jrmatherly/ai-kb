@@ -25,7 +25,7 @@ const storeResolveBudget = 12 * time.Second
 //
 // Partition key is (VectorStoreID, OwnerTenantID), not VectorStoreID alone,
 // because Organization-shared KBs (kb.TenantID != requestTenantID) need
-// their own group whose ownership lookup runs against kb.TenantID — the
+// their own group whose ownership lookup runs against kb.TenantID - the
 // store is owned by the source tenant, not the caller.
 //
 // BaseParams are immutable across iterations and goroutines. TopK is the
@@ -51,7 +51,7 @@ type storeGroup struct {
 	KBIDs []string
 
 	// Engine is the resolved CompositeRetrieveEngine for this group.
-	// Reused across iterative FAQ retries — never re-resolved.
+	// Reused across iterative FAQ retries - never re-resolved.
 	Engine *retriever.CompositeRetrieveEngine
 
 	// BaseParams is the immutable per-group retrieval parameter list.

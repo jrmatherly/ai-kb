@@ -2,7 +2,7 @@ package types
 
 import "time"
 
-// Resource type constants for UserResourceFavorite. Extensible — adding a
+// Resource type constants for UserResourceFavorite. Extensible - adding a
 // new favoritable resource is just a new constant string + a frontend hook,
 // no schema change required.
 const (

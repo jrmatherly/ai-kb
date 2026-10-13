@@ -82,7 +82,7 @@ func (s *vectorStoreService) CreateStore(ctx context.Context, store *types.Vecto
 		}
 	}
 
-	// 3. Duplicate check — DB stores
+	// 3. Duplicate check - DB stores
 	endpoint := store.ConnectionConfig.GetEndpoint()
 	indexName := store.IndexConfig.GetIndexNameOrDefault(store.EngineType)
 
@@ -94,7 +94,7 @@ func (s *vectorStoreService) CreateStore(ctx context.Context, store *types.Vecto
 		return errors.NewConflictError("a vector store with the same endpoint and index already exists")
 	}
 
-	// 4. Duplicate check — env stores. We re-derive on each create because
+	// 4. Duplicate check - env stores. We re-derive on each create because
 	// CreateStore is a low-frequency admin action; consistency with the
 	// startup-cached envStores is enforced by RETRIEVE_DRIVER being read
 	// only at process start.
@@ -165,7 +165,7 @@ func (s *vectorStoreService) UpdateStore(ctx context.Context, store *types.Vecto
 //  3. Count knowledge_bases rows via the shared CountByVectorStoreID
 //     repository method (tx-aware), which leverages the composite index
 //     (tenant_id, vector_store_id). GORM auto-applies the soft-delete
-//     scope — no explicit deleted_at predicate is needed.
+//     scope - no explicit deleted_at predicate is needed.
 //  4. After commit, unregister from the in-memory registry. Wrapped in
 //     defer/recover so a panic in UnregisterByStoreID surfaces as a
 //     structured warning instead of silently leaking the stale engine.
@@ -173,7 +173,7 @@ func (s *vectorStoreService) UpdateStore(ctx context.Context, store *types.Vecto
 // Race window remaining:
 //
 //	A narrow window exists between CreateKnowledgeBase's binding check and
-//	the INSERT — a KB can be created against a store that is simultaneously
+//	the INSERT - a KB can be created against a store that is simultaneously
 //	being deleted. The retrieve-engine factory then rejects searches with
 //	the ErrVectorStoreForbidden / NotFound sentinel; the KB response view
 //	surfaces the condition through vector_store_status="unavailable" so the
@@ -221,7 +221,7 @@ func (s *vectorStoreService) DeleteStore(ctx context.Context, tenantID uint64, i
 		return err
 	}
 
-	// 4. Unregister from registry — wrapped to convert panics into ops
+	// 4. Unregister from registry - wrapped to convert panics into ops
 	//    warnings rather than silent stale-engine leaks.
 	s.unregisterSafely(ctx, id)
 	logger.Infof(ctx, "Deleted vector store: tenant=%d, id=%s", tenantID,
@@ -231,7 +231,7 @@ func (s *vectorStoreService) DeleteStore(ctx context.Context, tenantID uint64, i
 
 // unregisterSafely calls the registry's idempotent unregister with panic
 // containment. A panic here is recoverable because the registry is
-// in-memory and self-heals on process restart — but it must be loud
+// in-memory and self-heals on process restart - but it must be loud
 // enough for ops to purge the stale engine on running replicas.
 func (s *vectorStoreService) unregisterSafely(ctx context.Context, storeID string) {
 	defer func() {
@@ -406,7 +406,7 @@ func (s *vectorStoreService) defaultStoreDisplay() types.StoreDisplay {
 }
 
 // registerInRegistry creates an engine service and registers it in the registry.
-// Logs and skips on failure — the store is already persisted in DB,
+// Logs and skips on failure - the store is already persisted in DB,
 // and will be loaded on next app restart (self-healing).
 func (s *vectorStoreService) registerInRegistry(ctx context.Context, store *types.VectorStore) {
 	if s.storeRegistry == nil || s.factory == nil {
@@ -480,12 +480,12 @@ func validateConnectionConfig(engineType types.RetrieverEngineType, config types
 // validateConnectionAddrSSRF validates every user-supplied address field of a
 // connection config against the SSRF policy (whitelist first, then the strict
 // IP / port / DNS checks inside secutils.ValidateURLForSSRF). It is applied
-// ONLY at user-input boundaries — CreateStore and TestRawConnection. Env
+// ONLY at user-input boundaries - CreateStore and TestRawConnection. Env
 // stores and already-stored configs are trusted and intentionally skip it.
 //
 // Unknown engine types are REJECTED (fail-closed): a newly added engine must
 // not be able to reach a dial path without an explicit address mapping here.
-// Empty fields are skipped — required-field presence is the responsibility of
+// Empty fields are skipped - required-field presence is the responsibility of
 // validateConnectionConfig, which runs first on every guarded path.
 func validateConnectionAddrSSRF(engineType types.RetrieverEngineType, config types.ConnectionConfig) error {
 	// check validates a single address field. Empty fields are no-ops so this
@@ -511,7 +511,7 @@ func validateConnectionAddrSSRF(engineType types.RetrieverEngineType, config typ
 		// (milvus/tencent/doris). ValidateURLForSSRF normalises both.
 		return check(config.Addr)
 	case types.QdrantRetrieverEngineType:
-		// Host (+ optional Port) — combine so the port blocklist applies to
+		// Host (+ optional Port) - combine so the port blocklist applies to
 		// the actual dial target rather than just the bare host.
 		addr := config.Host
 		if addr != "" && config.Port != 0 {
@@ -540,8 +540,8 @@ func validateConnectionAddrSSRF(engineType types.RetrieverEngineType, config typ
 	}
 }
 
-// TestRawConnection validates raw (unpersisted) user-supplied connection config
-// — engine-type allowlist, required fields, then the SSRF policy — before
+// TestRawConnection validates raw (unpersisted) user-supplied connection config -
+// engine-type allowlist, required fields, then the SSRF policy - before
 // delegating to TestConnection. Handlers MUST use this for raw user input
 // (e.g. POST /vector-stores/test).
 //
@@ -573,7 +573,7 @@ func (s *vectorStoreService) TestRawConnection(
 	return s.TestConnection(ctx, engineType, config)
 }
 
-// openSearch HNSW bound constants. Shards / replicas are NOT validated here —
+// openSearch HNSW bound constants. Shards / replicas are NOT validated here -
 // the flat types.ValidateIndexConfig already enforces those caps for every
 // engine. These caps mirror the GetVectorStoreTypes Min/Max so the UI and
 // backend agree. A zero / empty field means "use the driver default" and is

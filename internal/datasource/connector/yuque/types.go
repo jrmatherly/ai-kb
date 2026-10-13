@@ -108,7 +108,7 @@ func (s *flexibleStatus) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 	// Integer form. We decode to int64 so that floats, booleans, arrays, and
-	// objects fail loudly instead of being silently stringified — if Yuque
+	// objects fail loudly instead of being silently stringified - if Yuque
 	// changes the shape again, we'd rather surface a clear error than feed
 	// garbage to the Status == "1" comparison.
 	var i int64
@@ -181,8 +181,8 @@ type v2Doc struct {
 	Title            string         `json:"title"`
 	BookID           int64          `json:"book_id"`
 	UserID           int64          `json:"user_id"`
-	Status           flexibleStatus `json:"status"`             // "0" draft, "1" published — API may return int or string
-	ContentUpdatedAt string         `json:"content_updated_at"` // RFC3339 string — use for change detection
+	Status           flexibleStatus `json:"status"`             // "0" draft, "1" published; the API sends int or string
+	ContentUpdatedAt string         `json:"content_updated_at"` // RFC3339 string - use for change detection
 	UpdatedAt        string         `json:"updated_at"`
 	WordCount        int            `json:"word_count"`
 }
@@ -301,15 +301,15 @@ const maxTOCDepth = 32
 
 // buildTOCPaths folds a flat TOC node list into two per-document lookup maps:
 //
-//	segs  — doc_id → ancestor titles, root-first, each already passed through
+//	segs  - doc_id → ancestor titles, root-first, each already passed through
 //	        sanitizeFileName. Absent when the document sits directly under the
 //	        book root.
-//	inTOC — doc_id → whether the document appears in the TOC node list at all.
+//	inTOC - doc_id → whether the document appears in the TOC node list at all.
 //
 // The two maps are deliberately separate and must stay that way. A document can
 // legitimately appear in the TOC without belonging to any group, in which case
 // inTOC is true and segs is empty. A caller filtering out "documents that are
-// not in the TOC" must test inTOC — testing segs[id] instead would also drop
+// not in the TOC" must test inTOC - testing segs[id] instead would also drop
 // those group-less documents.
 //
 // Sanitising per segment here (rather than on the joined path) is what keeps a
@@ -438,13 +438,13 @@ func settingBool(v interface{}, def bool) bool {
 // (SplitKnowledgeRelativePath → NormalizeKnowledgeFolderPath), so the folder
 // hierarchy has to be encoded here as a relative path.
 //
-// With the default settings — or whenever the book's TOC could not be loaded —
+// With the default settings - or whenever the book's TOC could not be loaded -
 // this returns exactly "<title>.md", which is the byte-for-byte behaviour of
 // previous releases.
 //
 // When the TOC is in play the book name is always the first segment. It is the
-// only carrier of the "which book" dimension — the automatic tag granularity is
-// per data source, not per book — and omitting it would silently merge
+// only carrier of the "which book" dimension - the automatic tag granularity is
+// per data source, not per book - and omitting it would silently merge
 // same-named top-level groups from different books into one folder.
 func buildFolderFileName(
 	settings folderSettings, tocOK bool, bookName string, tocSegs []string, title string,

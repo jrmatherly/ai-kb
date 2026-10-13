@@ -116,7 +116,7 @@ func TestEvaluateOwnershipOrRole_ShortCircuitsAPIKey(t *testing.T) {
 	}
 }
 
-// Sanity: a JWT Viewer with a foreign creator is still forbidden — the
+// Sanity: a JWT Viewer with a foreign creator is still forbidden - the
 // short-circuit must be scoped to API-key principals only.
 func TestEvaluateOwnershipOrRole_JWTViewerStillDenied(t *testing.T) {
 	ctx := context.WithValue(context.Background(), types.TenantRoleContextKey, types.TenantRoleViewer)
@@ -129,7 +129,7 @@ func TestEvaluateOwnershipOrRole_JWTViewerStillDenied(t *testing.T) {
 	}
 }
 
-// Sanity: a real JWT Viewer is still rejected by the Admin gate — the
+// Sanity: a real JWT Viewer is still rejected by the Admin gate - the
 // short-circuit must be scoped to API-key principals only.
 func TestRequireRole_JWTViewerStillDenied(t *testing.T) {
 	gin.SetMode(gin.TestMode)

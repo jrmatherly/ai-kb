@@ -219,7 +219,7 @@ func TestLegacyRowsValidateAndResolve(t *testing.T) {
 }
 
 // TestEveryCataloguedModelResolves walks the whole catalog so a row naming any
-// shipped model id — which is what the old model picker wrote — is known to
+// shipped model id - which is what the old model picker wrote - is known to
 // resolve.
 func TestEveryCataloguedModelResolves(t *testing.T) {
 	for _, v := range modelruntime.List() {
@@ -356,8 +356,8 @@ func TestUnknownProviderFallsBackToGeneric(t *testing.T) {
 
 // TestLegacyStoredBaseURLSelectsSameProtocol pins the protocol an existing
 // row resolves to. Old rows always store an explicit base_url (the model
-// editor pre-filled the provider default), so the stored URL — not the new
-// vendor default — decides the wire protocol on upgrade. The Gemini case and
+// editor pre-filled the provider default), so the stored URL - not the new
+// vendor default - decides the wire protocol on upgrade. The Gemini case and
 // the first-party OpenAI move to Responses are covered in
 // internal/models/parity; what is asserted here is the relay case, where the
 // same provider id must NOT follow OpenAI onto /responses.
@@ -409,8 +409,8 @@ func TestLegacyStoredBaseURLSelectsSameProtocol(t *testing.T) {
 // extra_config has always been a free-form map[string]string: the old backend
 // read only thinking_control, remote_model_name, api_version, secret_key,
 // region, instruction and truncate_prompt_tokens from it and ignored every
-// other key. The catalog gave the key "api" a meaning — it forces the wire
-// protocol — and ValidateRow now rejects a value that is not one of the five
+// other key. The catalog gave the key "api" a meaning - it forces the wire
+// protocol - and ValidateRow now rejects a value that is not one of the five
 // protocol names. A row that an operator hand-populated with, say,
 // {"api": "v1"} therefore fails PUT /models/{id} with 400 and fails every
 // chat call, even though nothing about that row changed.

@@ -130,7 +130,7 @@ func TestRequireRole_NilConfigFailsOpen(t *testing.T) {
 
 func TestRequireRole_CrossTenantSuperuserBypass(t *testing.T) {
 	// Org-level superusers (User.CanAccessAllTenants) bypass tenant role
-	// gates — see auth.go's resolveTenantRole, which gives them a
+	// gates - see auth.go's resolveTenantRole, which gives them a
 	// transient Admin in foreign tenants. RequireRole has to honour the
 	// same bypass for Owner-only gates, otherwise a superuser would be
 	// locked out of DELETE /tenants/:id once enforcement turns on.
@@ -330,7 +330,7 @@ func TestRequireOwnershipOrRole_FailOpenWhenRBACDisabled(t *testing.T) {
 }
 
 func TestRequireOwnershipOrRole_FailOpenOnLookupErrorWhenRBACDisabled(t *testing.T) {
-	// Lookup errors in fail-open mode also let the request through —
+	// Lookup errors in fail-open mode also let the request through -
 	// otherwise turning RBAC off wouldn't actually unblock anything that
 	// needs the lookup.
 	lookup := func(c *gin.Context) (string, error) { return "", errors.New("boom") }

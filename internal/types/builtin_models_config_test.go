@@ -48,7 +48,7 @@ func countModels(t *testing.T, db *gorm.DB, id string) (live, deleted int64) {
 
 func TestLoadBuiltinModelsConfig_FileMissing(t *testing.T) {
 	db := setupBuiltinModelsDB(t)
-	dir := t.TempDir() // empty — no builtin_models.yaml inside
+	dir := t.TempDir() // empty - no builtin_models.yaml inside
 
 	// Pre-seed a yaml-managed row to verify it is NOT touched when the
 	// config file is absent (file-missing path must skip the sweep).
@@ -67,7 +67,7 @@ func TestLoadBuiltinModelsConfig_FileMissing(t *testing.T) {
 
 func TestLoadBuiltinModelsConfig_ParseError(t *testing.T) {
 	db := setupBuiltinModelsDB(t)
-	// Malformed YAML — should warn + return without sweeping.
+	// Malformed YAML - should warn + return without sweeping.
 	dir := writeYAML(t, "builtin_models: [oops: : bad")
 
 	require.NoError(t, db.Create(&Model{

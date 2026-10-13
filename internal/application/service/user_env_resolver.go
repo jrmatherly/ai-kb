@@ -23,7 +23,7 @@ type userEnvResolver struct {
 	userEnvs userEnvReader
 	// containerEnv is the sandbox config's env_vars, already loaded by the
 	// caller. They were baked into the container at creation and only
-	// participate in the required check — they are not copied into the
+	// participate in the required check - they are not copied into the
 	// per-exec map.
 	containerEnv map[string]string
 	// tenantID and configID are the scope the rows came from, not whatever the

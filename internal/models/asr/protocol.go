@@ -46,7 +46,7 @@ func newASR(config *Config) (ASR, error) {
 		return nil, err
 	}
 	// A vendor that does not declare speech recognition has not been checked
-	// for it, and its Endpoint hook may still compute a path — Azure's does.
+	// for it, and its Endpoint hook may still compute a path - Azure's does.
 	// A row that named the vendor is refused; a row that named none and was
 	// matched by its URL is what the pre-catalog client served: an
 	// OpenAI-compatible endpoint at that URL.

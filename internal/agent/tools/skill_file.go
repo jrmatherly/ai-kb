@@ -1,4 +1,4 @@
-// Package tools — write_skill_file / edit_skill_file.
+// Package tools - write_skill_file / edit_skill_file.
 //
 // The installer agent's only writer used to be `shell_exec` with a heredoc.
 // That caps every file at the shell's command-length limit and puts the
@@ -55,7 +55,7 @@ var writeSkillFileTool = BaseTool{
 
 ## When NOT to Use
 - To change a few lines of an existing file, call ` + "`edit_skill_file`" + `.
-- To write scratch files — the skill directory is snapshotted; keep it clean.
+- To write scratch files - the skill directory is snapshotted; keep it clean.
 - Binary content. Have a script produce binary files instead.
 
 ## Path Rules
@@ -188,7 +188,7 @@ var editSkillFileTool = BaseTool{
 	description: `Replace exact text in a file inside the skill directory being installed.
 
 ## Usage
-- Use this when only a few lines of an existing file need to change — a wrong
+- Use this when only a few lines of an existing file need to change - a wrong
   path, an import, a constant.
 - ` + "`old_string`" + ` must match the file exactly, including whitespace and
   quotes. Include a few surrounding lines so the match is unique.
@@ -197,8 +197,8 @@ var editSkillFileTool = BaseTool{
 - ` + pythonQuoteGuidance + `
 
 ## When NOT to Use
-- Creating a new file — use ` + "`write_skill_file`" + `.
-- Replacing most of the file — rewrite it with ` + "`write_skill_file`" + `.
+- Creating a new file - use ` + "`write_skill_file`" + `.
+- Replacing most of the file - rewrite it with ` + "`write_skill_file`" + `.
 - Binary files.
 
 ## Path Rules

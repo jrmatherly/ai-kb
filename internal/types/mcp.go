@@ -75,7 +75,7 @@ const (
 // MCPAuthConfig represents authentication configuration for MCP service.
 //
 // Secret fields (APIKey, Token) are persisted in this struct but are NEVER
-// returned through main resource responses — those go through
+// returned through main resource responses - those go through
 // dto.MCPServiceResponse which omits them by construction. Credential
 // mutations happen through the dedicated /credentials subresource handled
 // by MCPCredentialsHandler.
@@ -224,7 +224,7 @@ func (h *MCPHeaders) Scan(value interface{}) error {
 // Value implements driver.Valuer for MCPAuthConfig.
 //
 // When SYSTEM_AES_KEY is configured, APIKey and Token are AES-256-GCM
-// encrypted before serialization — mirroring the ModelParameters /
+// encrypted before serialization - mirroring the ModelParameters /
 // WebSearchProviderParameters pattern so MCP secrets are not the odd
 // resource stored in plaintext. Encryption operates on a local copy to
 // avoid mutating the caller's in-memory struct (subsequent reads of the

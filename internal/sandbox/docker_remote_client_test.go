@@ -83,7 +83,7 @@ type fakeDockerEngine struct {
 	// PTY (terminal) path. attachedOptions records every ExecAttach so a test
 	// can assert TTY was requested; execResizes records ExecResize calls.
 	// terminalStream, when set, is handed to a TTY attach verbatim (no stdcopy
-	// framing — that is exactly what a real TTY attach looks like).
+	// framing - that is exactly what a real TTY attach looks like).
 	attachedOptions []client.ExecAttachOptions
 	execResizes     []client.ExecResizeOptions
 	execResizeErr   error
@@ -1350,7 +1350,7 @@ func TestFileOpAgainstVanishedContainerRebinds(t *testing.T) {
 }
 
 // A genuine command failure with the container still alive keeps the
-// InvalidRequest classification — and with it the binding.
+// InvalidRequest classification - and with it the binding.
 func TestFileOpGenuineFailureKeepsBinding(t *testing.T) {
 	engine := newFakeDockerEngine()
 	engine.execExit = 1

@@ -135,7 +135,7 @@ func TestAnalyzeResponse_TruncatedToolCallRoundIsNotTerminal(t *testing.T) {
 }
 
 // The #3446 reproduction. One response, cut off at the cap, no tool calls.
-// The turn must end on it — mockChat fails the test if a second round is
+// The turn must end on it - mockChat fails the test if a second round is
 // attempted, which is exactly what used to happen (and produced the
 // rewrite-from-the-top spiral).
 func TestExecuteLoop_TruncatedAnswerDoesNotReAnswer(t *testing.T) {
@@ -222,7 +222,7 @@ func TestExecuteLoop_RepeatedEmptyRoundsStopAtTheStuckGuard(t *testing.T) {
 	assert.Equal(t, stalledAnswerFallback, state.FinalAnswer)
 }
 
-// A guard can stop a turn on a round whose text never went out as a stream —
+// A guard can stop a turn on a round whose text never went out as a stream -
 // the fallback it chooses, or content the round accumulated without
 // streaming. Either way the client must receive the text before the Done
 // marker, not a Done for something it never saw.
@@ -297,7 +297,7 @@ func TestFinishStalledTurn_ReusesTheLiveAnswerStream(t *testing.T) {
 
 // A model that writes its reasoning inline as <think> can be cut off before
 // the closing tag. The pair regex leaves such a block whole, so the round
-// looks like it produced an answer when all it produced was reasoning —
+// looks like it produced an answer when all it produced was reasoning -
 // which would both leak the chain of thought into the answer area and skip
 // the empty-content retry this case is supposed to use.
 func TestAnalyzeResponse_UnterminatedThinkCountsAsNoAnswer(t *testing.T) {

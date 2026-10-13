@@ -117,7 +117,7 @@ func (h *MCPServiceHandler) CreateMCPService(c *gin.Context) {
 	}
 
 	// Response uses dto.MCPServiceResponse which omits secret fields by
-	// construction — no runtime redaction needed.
+	// construction - no runtime redaction needed.
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    dto.NewMCPServiceResponse(ctx, &service),
@@ -150,7 +150,7 @@ func (h *MCPServiceHandler) ListMCPServices(c *gin.Context) {
 
 	// A shared agent reaches its OWNER's MCP services, so the picker has to
 	// list them there. Without this the picker showed the caller's own
-	// services, whose ids can never match the agent's preset — the backend
+	// services, whose ids can never match the agent's preset - the backend
 	// dropped every such @mention with only a warning in the log.
 	agent, err := sharedAgentPickerScope(c, h.agents)
 	if err != nil {
@@ -177,7 +177,7 @@ func (h *MCPServiceHandler) ListMCPServices(c *gin.Context) {
 
 // listSharedAgentMCPServices serves the @MCP picker for a borrowed agent.
 //
-// The set is the agent's explicit preset resolved in its owner's workspace —
+// The set is the agent's explicit preset resolved in its owner's workspace -
 // see sharedAgentMCPScope for why it is the preset and not the owner's whole
 // inventory. The response uses the narrowed cross-workspace shape, and the
 // tool-count summaries are read under the owner too, since that is where the
@@ -377,7 +377,7 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 	if authConfig, ok := updateData["auth_config"].(map[string]interface{}); ok {
 		service.AuthConfig = &types.MCPAuthConfig{}
 		// Secret fields (api_key, token) are intentionally NOT read from the
-		// main PUT body — they live behind the /credentials subresource so
+		// main PUT body - they live behind the /credentials subresource so
 		// editing unrelated config (timeout, enabled, etc.) cannot
 		// accidentally clobber a stored credential. Log a warning when a
 		// client still tries to send them so we can spot stale callers.
@@ -391,7 +391,7 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 				"deprecated: token in PUT /mcp-services/%s body is ignored; use PUT /credentials instead",
 				secutils.SanitizeForLog(serviceID))
 		}
-		// CustomHeaders is structural (not a secret) — keep accepting it here.
+		// CustomHeaders is structural (not a secret) - keep accepting it here.
 		// nil preserves existing, non-nil replaces; the service layer treats a
 		// nil CustomHeaders as "no change".
 		if customHeaders, ok := authConfig["custom_headers"].(map[string]interface{}); ok {

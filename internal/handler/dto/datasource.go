@@ -13,7 +13,7 @@ import (
 // presence is exposed via the dedicated /credentials subresource.
 //
 // Unlike MCP / Model / WebSearch (which have a flat set of named credential
-// fields), DataSource credentials are a per-connector atomic map — an OAuth
+// fields), DataSource credentials are a per-connector atomic map - an OAuth
 // token pair, a Confluence email+token bundle, etc. Splitting them at the
 // field level would leave half-configured states that can't actually
 // authenticate. The subresource therefore exposes only one logical field,
@@ -39,7 +39,7 @@ type DataSourceResponse struct {
 	UpdatedAt            time.Time            `json:"updated_at"`
 	TotalItemsSynced     int64                `json:"total_items_synced"`
 	LatestSyncLog        *types.SyncLog       `json:"latest_sync_log,omitempty"`
-	// Single logical credential field — DataSource credentials are a
+	// Single logical credential field - DataSource credentials are a
 	// per-connector atomic map, so "configured?" applies to the whole set.
 	Credentials map[string]CredentialFieldMetadata `json:"credentials,omitempty"`
 }

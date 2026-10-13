@@ -53,7 +53,7 @@ type TranscriptionsSettings struct {
 	// RequestTimeout caps one request, in seconds.
 	RequestTimeout int
 	// UnsupportedReason is set where a vendor's recognition models, or some
-	// of them, cannot be called with the audio in the request — they take a
+	// of them, cannot be called with the audio in the request - they take a
 	// public URL or run as asynchronous tasks. Resolve refuses such a model
 	// rather than sending it a shape it does not accept.
 	UnsupportedReason string

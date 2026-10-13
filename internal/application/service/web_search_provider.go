@@ -73,8 +73,8 @@ func (s *webSearchProviderService) UpdateProvider(ctx context.Context, provider 
 }
 
 // UpdateProviderCredentials writes the api_key credential field. Web search
-// providers are stateless from our side — every search call rebuilds a
-// transport from current Parameters — so no cache invalidation is required.
+// providers are stateless from our side - every search call rebuilds a
+// transport from current Parameters - so no cache invalidation is required.
 func (s *webSearchProviderService) UpdateProviderCredentials(
 	ctx context.Context, tenantID uint64, id string, apiKey *string,
 ) (*types.WebSearchProviderEntity, error) {

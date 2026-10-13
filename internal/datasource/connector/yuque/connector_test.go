@@ -193,7 +193,7 @@ func TestConnector_FetchAll_DocDetailError_EmitsPlaceholder(t *testing.T) {
 	if len(items) != 2 {
 		t.Fatalf("want 2 items (placeholder + ok), got %d: %+v", len(items), items)
 	}
-	// Find the placeholder — the one with the "error" metadata key.
+	// Find the placeholder - the one with the "error" metadata key.
 	var placeholder *types.FetchedItem
 	for i := range items {
 		if items[i].Metadata["error"] != "" {
@@ -392,7 +392,7 @@ func TestConnector_FetchIncremental_ReturnsOnlyChanged(t *testing.T) {
 		{ID: 2, Type: "Doc", Status: "1", Title: "B2", Slug: "b", ContentUpdatedAt: "2026-04-20T12:00:00Z"},
 	}})
 	// Only doc 2's detail should be fetched; if the implementation incorrectly
-	// fetches doc 1, the test will still pass metadata-wise — but this handler
+	// fetches doc 1, the test will still pass metadata-wise - but this handler
 	// makes the expected single call clear.
 	f2.handleJSON("/api/v2/repos/docs/2", 200, v2DocDetailResponse{Data: v2DocDetail{ID: 2, Title: "B2", Body: "b2 updated", Status: "1", ContentUpdatedAt: "2026-04-20T12:00:00Z"}})
 
@@ -464,7 +464,7 @@ func TestConnector_ListResources_ContinuesOnGroupFailure(t *testing.T) {
 	f.handleJSON("/api/v2/groups/team-ok/repos", 200, v2RepoListResponse{Data: []v2Repo{
 		{ID: 20, Slug: "ok", Name: "OK Book", Type: "Book", Namespace: "team-ok/ok"},
 	}})
-	// team-forbidden returns 403 — should be skipped, not abort the whole call.
+	// team-forbidden returns 403 - should be skipped, not abort the whole call.
 	f.mux.HandleFunc("/api/v2/groups/team-forbidden/repos", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		_, _ = w.Write([]byte(`{"message":"forbidden"}`))
@@ -517,7 +517,7 @@ func TestConnector_FetchAll_FileNamePolicy(t *testing.T) {
 
 // Regression for Tencent/WeKnora#3690: when an existing doc's detail fetch
 // fails after its content changed, the incremental cursor must keep the doc's
-// previously synced version instead of acknowledging the new one — otherwise
+// previously synced version instead of acknowledging the new one - otherwise
 // every later sync sees the doc as unchanged and never retries the fetch.
 func TestConnector_FetchIncremental_DetailFailureDoesNotAckVersion(t *testing.T) {
 	// First sync: docs 1 and 2, both at t0.
@@ -540,7 +540,7 @@ func TestConnector_FetchIncremental_DetailFailureDoesNotAckVersion(t *testing.T)
 	f1.Close()
 
 	// Second sync: doc 2 changed to t1 but its detail endpoint fails (mixed
-	// success/failure — doc 1 is unchanged, so the batch is not all-failed).
+	// success/failure - doc 1 is unchanged, so the batch is not all-failed).
 	f2 := newFakeYuque()
 	f2.handleJSON("/api/v2/repos/12/docs", 200, v2DocListResponse{Data: []v2Doc{
 		{ID: 1, Type: "Doc", Status: "1", Title: "A", Slug: "a", ContentUpdatedAt: "2026-04-20T10:00:00Z"},

@@ -9,7 +9,7 @@ import (
 // TestImageAttrRegistryHasActiveAttributes pins the v1 observation set: the
 // registry is the single source of truth that drives both the OCR decision and
 // the frontend panel, so adding an attribute later is a one-line change here
-// and nowhere else. It also pins that every row can explain itself — the
+// and nowhere else. It also pins that every row can explain itself - the
 // settings panel is rendered from these fields, so a row without text would
 // reach a non-technical operator as a blank line, and a value without a meaning
 // as a bare code like "sparse".
@@ -100,7 +100,7 @@ func TestParseImageAttrsResponse(t *testing.T) {
 
 	t.Run("keeps a prose answer that ignores the protocol", func(t *testing.T) {
 		// No attribute lines at all: the model still described the image, so it
-		// becomes the caption, but nothing is claimed about the attributes —
+		// becomes the caption, but nothing is claimed about the attributes -
 		// they stay absent so the caller's OnUnobserved clause decides.
 		obs, ok := ParseImageAttrsResponse("- A wiring diagram.\n")
 		if !ok {

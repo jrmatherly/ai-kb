@@ -39,7 +39,7 @@ func imageConfiguredKB() *types.KnowledgeBase {
 // A request that does not mention image_processing_config must leave the image
 // settings alone. Clients that predate the attribute pipeline send no such
 // field at all, and without this contract saving such a knowledge base silently
-// resets the switch and the action table — which turns "rename a knowledge base"
+// resets the switch and the action table - which turns "rename a knowledge base"
 // into data loss.
 func TestUpdateKnowledgeBase_KeepsImageConfigWhenRequestOmitsIt(t *testing.T) {
 	t.Parallel()
@@ -49,7 +49,7 @@ func TestUpdateKnowledgeBase_KeepsImageConfigWhenRequestOmitsIt(t *testing.T) {
 	stored := imageConfiguredKB()
 	repo.rows[stored.ID] = stored
 
-	// The whole config is present but the image section is absent — this is the
+	// The whole config is present but the image section is absent - this is the
 	// shape every existing client sends.
 	updated, err := svc.UpdateKnowledgeBase(ctxWithTenant(1), stored.ID, "renamed", "desc",
 		&types.KnowledgeBaseConfig{}, nil)
@@ -66,7 +66,7 @@ func TestUpdateKnowledgeBase_KeepsImageConfigWhenRequestOmitsIt(t *testing.T) {
 	assert.Equal(t, "desc", updated.Description)
 }
 
-// Sending the object replaces the configuration wholesale, empty included —
+// Sending the object replaces the configuration wholesale, empty included -
 // that is how a caller clears the settings on purpose. Pinned so the
 // nil-means-unchanged rule is not mistaken for a merge.
 func TestUpdateKnowledgeBase_ReplacesImageConfigWhenRequestCarriesIt(t *testing.T) {

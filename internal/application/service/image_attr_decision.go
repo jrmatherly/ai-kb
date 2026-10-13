@@ -17,7 +17,7 @@ import (
 //	    || the attribute was not observed (conservative: OnUnobserved)
 //
 // where "not observed" covers both a line the model never wrote and a value that
-// was not one of the allowed ones — the parser leaves such an attribute absent
+// was not one of the allowed ones - the parser leaves such an attribute absent
 // rather than inventing a default. An incomplete observation therefore keeps
 // extracting, so a missed block of text costs one extra call instead of being
 // lost.
@@ -28,7 +28,7 @@ import (
 func DecideOCR(attrs types.ImageAttrs, actions types.ImageActionsConfig) bool {
 	if len(actions.OCR.On) == 0 {
 		// An empty condition list is never a resolved policy (ResolveImageActions
-		// always fills it), only a payload that carries none — its zero-value
+		// always fills it), only a payload that carries none - its zero-value
 		// OnUnobserved=false would silently drop OCR. Fall back to the built-in
 		// table, the same conservative policy the payload field promises.
 		actions = types.DefaultImageActions()
@@ -38,7 +38,7 @@ func DecideOCR(attrs types.ImageAttrs, actions types.ImageActionsConfig) bool {
 		v, ok := attrs.Attrs[cond.Prop]
 		if !ok {
 			// The observation does not answer for this attribute, so it cannot
-			// decide on its own — and it cannot be read as "condition not met"
+			// decide on its own - and it cannot be read as "condition not met"
 			// either, which would silently treat a failed observation as a
 			// confident negative. Remember it and let OnUnobserved decide.
 			incomplete = true
@@ -49,7 +49,7 @@ func DecideOCR(attrs types.ImageAttrs, actions types.ImageActionsConfig) bool {
 		}
 	}
 	// Nothing matched. Either the observation answered for every attribute the
-	// policy reads (a real, complete negative), or it did not — in which case
+	// policy reads (a real, complete negative), or it did not - in which case
 	// the conservative clause decides.
 	if incomplete {
 		return actions.OCR.OnUnobserved

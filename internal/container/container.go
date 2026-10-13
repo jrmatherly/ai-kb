@@ -360,7 +360,7 @@ func BuildContainer(container *dig.Container) *dig.Container {
 	// WorkspaceCheckpointer commits the sandbox /workspace after each agent
 	// turn so session fork can roll a forked sandbox back to a given message.
 	// The process-wide Manager is DisabledManager, so the runner and ID lookup
-	// go through the session pin + per-tenant resolver — the same path
+	// go through the session pin + per-tenant resolver - the same path
 	// ArtifactCollector already uses. Direct Manager type-asserts still win
 	// when a deployment injects a SessionBoundManager as the process default.
 	must(container.Provide(func(
@@ -512,7 +512,7 @@ func BuildContainer(container *dig.Container) *dig.Container {
 	// TenantSkillService is provided next to SessionService (handlers need
 	// it), but Invoke constructs the whole chain. SessionService needs
 	// *chatpipeline.EventManager, which only exists after the pipeline
-	// block above — starting the reaper any earlier panics.
+	// block above - starting the reaper any earlier panics.
 	must(container.Invoke(startTenantSkillReaper))
 	logger.Debugf(ctx, "[Container] Tenant skill reaper registered")
 	must(container.Provide(func(
@@ -702,8 +702,8 @@ func must(err error) {
 
 // initLangfuse initializes the Langfuse ingestion client.
 // Configuration is read from LANGFUSE_* environment variables (see
-// website-docs/03-features/16-observability.md). Returns a disabled manager if credentials are absent —
-// never an error — so deployments that don't use Langfuse are unaffected.
+// website-docs/03-features/16-observability.md). Returns a disabled manager if credentials are absent -
+// never an error - so deployments that don't use Langfuse are unaffected.
 func initLangfuse() (*langfuse.Manager, error) {
 	cfg := langfuse.LoadConfigFromEnv()
 	return langfuse.Init(cfg)
@@ -719,7 +719,7 @@ const defaultModelMaxConcurrency = 32
 // resolveModelMaxConcurrency reads the per-model background concurrency limit
 // from system settings / env, defaulting to defaultModelMaxConcurrency when
 // unset. A configured value of 0 (or negative) is honoured and disables the
-// governor — that is the supported way to turn throttling off via config/env.
+// governor - that is the supported way to turn throttling off via config/env.
 func resolveModelMaxConcurrency(ss interfaces.SystemSettingService) int {
 	if ss == nil {
 		return defaultModelMaxConcurrency
@@ -1932,7 +1932,7 @@ func startDataSourceScheduler(scheduler *datasource.Scheduler, cleaner interface
 // cleanup. This is the safety net that recovers any knowledge stuck in
 // "processing" past a configurable threshold (see HousekeepingService for
 // rationale). Best-effort: a startup error is logged but does NOT abort the
-// container — the rest of the system stays usable.
+// container - the rest of the system stays usable.
 func startHousekeepingService(svc *service.HousekeepingService, cleaner interfaces.ResourceCleaner) {
 	if svc == nil {
 		return
@@ -1948,7 +1948,7 @@ func startHousekeepingService(svc *service.HousekeepingService, cleaner interfac
 
 // startTenantSkillReaper starts the stuck-install / orphan-snapshot cron and
 // registers cleanup. Best-effort: a startup error is logged but does NOT abort
-// the container — the rest of the system stays usable.
+// the container - the rest of the system stays usable.
 func startTenantSkillReaper(svc *service.TenantSkillService, cleaner interfaces.ResourceCleaner) {
 	if svc == nil {
 		return

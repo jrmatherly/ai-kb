@@ -10,7 +10,7 @@ import (
 )
 
 // auditLogRepository persists audit events to the audit_logs table.
-// Rows are append-only — there is no Update, no soft-delete, no
+// Rows are append-only - there is no Update, no soft-delete, no
 // Modify hook. The cursor pagination uses the monotonic id column,
 // not created_at, so duplicate timestamps don't break iteration.
 type auditLogRepository struct {
@@ -23,7 +23,7 @@ func NewAuditLogRepository(db *gorm.DB) interfaces.AuditLogRepository {
 	return &auditLogRepository{db: db}
 }
 
-// Create inserts a single audit row. Validation is light — Action is
+// Create inserts a single audit row. Validation is light - Action is
 // the only required field at the schema level; CreatedAt is filled by
 // the database default if zero. Service-layer Log() fills both before
 // calling here so this is mostly a pass-through.
@@ -38,7 +38,7 @@ const auditLogListLimitMax = 100
 
 // List returns audit log rows for a tenant, newest-first, applying the
 // optional cursor and filters from AuditLogQuery. Both Action and
-// Outcome are exact-match — the filter set is small enough that we
+// Outcome are exact-match - the filter set is small enough that we
 // don't need substring matching yet.
 func (r *auditLogRepository) List(
 	ctx context.Context,
@@ -124,7 +124,7 @@ func (r *auditLogRepository) CountSinceForDedup(
 // rather than overload this primitive.
 //
 // Returns the number of rows affected so the caller can log the sweep
-// outcome at INFO. Errors propagate verbatim — the caller decides
+// outcome at INFO. Errors propagate verbatim - the caller decides
 // whether they're terminal or transient.
 func (r *auditLogRepository) DeleteOlderThan(ctx context.Context, cutoff time.Time) (int64, error) {
 	res := r.db.WithContext(ctx).

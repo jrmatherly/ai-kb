@@ -10,10 +10,10 @@ import (
 // vectorises every chunk, so a single batch upload can burst the whole worker
 // pool against one embedding provider. Like chat and vlm, embedding is governed
 // at the client layer via the shared per-model concurrency governor. Only
-// background (asynq worker) calls are throttled — see limiter.Gate /
+// background (asynq worker) calls are throttled - see limiter.Gate /
 // types.IsBackgroundTask; interactive query embedding is never gated.
 //
-// Placement note: unlike chat/vlm (outermost), this wrapper sits INNERMOST —
+// Placement note: unlike chat/vlm (outermost), this wrapper sits INNERMOST -
 // directly around the real embedder, BELOW the debug/langfuse decorators.
 // BatchEmbedWithPool fans a batch out into per-sub-batch BatchEmbed calls
 // through the pooler, and the pooler invokes BatchEmbed on whichever Embedder

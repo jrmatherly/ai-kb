@@ -22,7 +22,7 @@ import (
 // It is the installer's counterpart to handler/session.AgentStreamHandler, not
 // a copy of it: that type lives above the service layer (it needs the artifact
 // collector), so importing it here would close an import cycle. The overlap is
-// bounded on purpose — install mode registers only shell_exec, so the six
+// bounded on purpose - install mode registers only shell_exec, so the six
 // events below are all an install can produce, and references, memories,
 // reflection, tool approvals and MCP OAuth are unreachable.
 //
@@ -528,8 +528,8 @@ func installToolCallSummary(data event.AgentToolCallData) string {
 }
 
 // muteActivityProgress stops the asymptotic progress wherever it has reached.
-// Called once the first installer round ends: everything after it —
-// verification and any repair rounds — is covered by the explicit stage
+// Called once the first installer round ends: everything after it -
+// verification and any repair rounds - is covered by the explicit stage
 // anchors (agent_done 80, repairing 82), and tool calls from a repair round
 // publishing again would drag the bar back below those anchors.
 func (tr *installTranscript) muteActivityProgress() {
@@ -544,7 +544,7 @@ func (tr *installTranscript) muteActivityProgress() {
 // asymptoticInstallPercent fills the 35→79 span with no knowledge of the
 // total: each command advances the bar by a shrinking share of what is left,
 // so the curve is monotonic for any round count and converges below the
-// agent_done anchor at 80 — never past it, never stalls on the way.
+// agent_done anchor at 80 - never past it, never stalls on the way.
 //
 // The shape is 35 + 44·(1 − e^(−k/12)): the first command moves ~4 points, the
 // tenth ~60%, the twentieth ~71%, and even a run that exhausts

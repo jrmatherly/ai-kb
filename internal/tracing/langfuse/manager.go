@@ -22,7 +22,7 @@ var propagator = propagation.TraceContext{}
 
 // Manager is the public façade of the langfuse package. A singleton is
 // installed via Init(); callers should treat a nil *Manager as "disabled"
-// and still invoke methods — every public method tolerates a nil receiver.
+// and still invoke methods - every public method tolerates a nil receiver.
 //
 // Internally the manager owns an OpenTelemetry TracerProvider backed by an
 // OTLP/HTTP exporter pointing at the Langfuse v3+ / LiteFuse OTel endpoint.
@@ -93,7 +93,7 @@ func Init(cfg Config) (*Manager, error) {
 		)
 		// Extraction/injection in this package use the package-level
 		// `propagator` directly, so we deliberately do NOT call
-		// otel.SetTextMapPropagator here — mutating global OTel state could
+		// otel.SetTextMapPropagator here - mutating global OTel state could
 		// interfere with any other OTel instrumentation in the process.
 	}
 

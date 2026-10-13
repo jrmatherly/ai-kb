@@ -71,7 +71,7 @@ func (e *skillVerificationError) Error() string {
 //
 // Import resolution is deliberately absent. Whether `import helper` resolves
 // depends on what a script does to sys.path before the import runs, which no
-// static evaluator can enumerate — and every approximation of it refused
+// static evaluator can enumerate - and every approximation of it refused
 // skills that run perfectly. That proof belongs to the installer agent, which
 // holds a root shell and the real interpreter and can simply run the import.
 // See the header of tenant_skill_verify.py.
@@ -106,7 +106,7 @@ func (s *TenantSkillService) verifySkill(
 // a skill with dozens of scripts was spending minutes on that round-trip tax.
 // Every missing file is reported on its own stderr line and the check keeps
 // going, so one round trip returns every finding instead of stopping at the
-// first — an install that fails anyway may as well fail completely.
+// first - an install that fails anyway may as well fail completely.
 func (s *TenantSkillService) verifySkillTree(
 	ctx context.Context, mgr sandbox.Manager, sessionID, skillDir string, bundle *SkillBundle,
 ) error {
@@ -138,8 +138,8 @@ func (s *TenantSkillService) verifySkillTree(
 // skillTreeVerifyCommand folds the structural check into one command: the
 // SKILL.md probe plus one test per bundled script, each missing file reported
 // without stopping the rest. It cds into the skill directory and iterates
-// relative paths, which makes every stderr line the final user-facing message
-// — the Go side never has to reassemble one. Paths reach the command only
+// relative paths, which makes every stderr line the final user-facing message -
+// the Go side never has to reassemble one. Paths reach the command only
 // through ShellQuote: a file name comes from an uploaded archive, and a
 // metacharacter in one must stay a literal.
 func skillTreeVerifyCommand(skillDir string, scripts []string) string {
@@ -190,7 +190,7 @@ func (s *TenantSkillService) verifyDeclaredDependencies(
 // pass covers every file of that language: parsing is a property of the file,
 // not of a guessed entry point.
 //
-// All three passes are parse-only — `ast.parse`, `node --check`, `bash -n`.
+// All three passes are parse-only - `ast.parse`, `node --check`, `bash -n`.
 // None of them executes the skill's code and none of them decides whether an
 // import resolves. The Python pass additionally checks the manifests against
 // what pip actually landed, which is the one finding here another installer
@@ -296,7 +296,7 @@ func verificationProblems(stderr string) []string {
 // skillPythonVerifyCommand pipes the parser into the same interpreter a
 // runtime skill call would use, and names the files to check on the command
 // line. The list is explicit rather than a directory walk so the pass covers
-// exactly the uploaded sources — never .venv, node_modules or anything else
+// exactly the uploaded sources - never .venv, node_modules or anything else
 // the agent created while installing.
 //
 // Auxiliary files are named after --optional. They are checked the same way,
@@ -356,7 +356,7 @@ func skillNodeVerifyCommand(skillDir string, scripts, deps []string) string {
 // bash, not sh: skills ship `#!/bin/bash` almost exclusively, and
 // SkillInterpreterCommand runs them with bash for that reason. /bin/sh is dash
 // on Debian, where an array literal, `function f()`, a C-style for loop and
-// process substitution are all outright syntax errors — so checking with sh
+// process substitution are all outright syntax errors - so checking with sh
 // would refuse installs over scripts that run perfectly.
 func skillShellVerifyCommand(skillDir string, scripts []string) string {
 	return "if command -v bash >/dev/null 2>&1; then parser=bash; else parser=sh; fi; " +
@@ -434,7 +434,7 @@ var allScriptExtensions = []string{".py", ".js", ".mjs", ".cjs", ".sh"}
 // one command from this list; the trees' health is covered by the dependency
 // verification passes instead. Bundles are author-zipped, so a vendored tree
 // can sit inside a subproject directory (tools/.venv/…) as easily as at the
-// root — both placements are filtered.
+// root - both placements are filtered.
 func sortedScriptPaths(bundle *SkillBundle, suffixes ...string) []string {
 	if bundle == nil {
 		return nil

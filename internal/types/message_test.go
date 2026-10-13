@@ -79,7 +79,7 @@ func TestMessageArtifacts_ValueScanRoundTrip(t *testing.T) {
 		}
 	}
 
-	// Also assert Scan(string) is accepted — some drivers (e.g. sqlite) return
+	// Also assert Scan(string) is accepted - some drivers (e.g. sqlite) return
 	// TEXT for JSONB columns, so the code path must not care.
 	var fromString MessageArtifacts
 	if err := fromString.Scan(string(rawBytes)); err != nil {

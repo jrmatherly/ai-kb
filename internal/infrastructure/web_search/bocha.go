@@ -18,7 +18,7 @@ import (
 
 const (
 	// defaultBochaSearchURL is the hardcoded Bocha API URL.
-	// Not configurable by tenants — prevents SSRF.
+	// Not configurable by tenants - prevents SSRF.
 	defaultBochaSearchURL = "https://api.bochaai.com/v1/web-search"
 	defaultBochaTimeout   = 30 * time.Second
 	defaultBochaResults   = 10

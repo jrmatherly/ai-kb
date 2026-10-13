@@ -29,7 +29,7 @@ func AuditServiceProvider(svc interfaces.AuditLogService) gin.HandlerFunc {
 
 // AuditServiceFromContext fetches the audit service injected by
 // AuditServiceProvider, or returns nil if no provider was wired
-// upstream. Callers MUST nil-check before invoking — audit failure
+// upstream. Callers MUST nil-check before invoking - audit failure
 // must never break the underlying business operation.
 func AuditServiceFromContext(c *gin.Context) interfaces.AuditLogService {
 	if v, ok := c.Get(auditServiceContextKey); ok {

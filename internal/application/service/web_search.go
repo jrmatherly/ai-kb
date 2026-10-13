@@ -96,8 +96,8 @@ func (s *WebSearchService) Search(
 }
 
 // resolveProvider resolves a WebSearchProvider instance from either:
-// 1. A provider entity ID (new path) — loads from DB, creates via registry
-// 2. The deprecated config.Provider field (backward compatibility) — creates with empty params
+// 1. A provider entity ID (new path) - loads from DB, creates via registry
+// 2. The deprecated config.Provider field (backward compatibility) - creates with empty params
 func (s *WebSearchService) resolveProvider(
 	ctx context.Context,
 	providerID string,

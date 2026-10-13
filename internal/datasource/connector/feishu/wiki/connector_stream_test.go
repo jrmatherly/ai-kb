@@ -16,7 +16,7 @@ import (
 
 // fakeFeishuFailingExport serves the auth/spaces/nodes endpoints normally but
 // fails every document export (code != 0), so fetchNodeContent returns an error
-// for each supported node — modelling a rate-limited / broken export.
+// for each supported node - modelling a rate-limited / broken export.
 func fakeFeishuFailingExport(nodes []core.WikiNode) (*httptest.Server, *core.Config) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/open-apis/auth/v3/tenant_access_token/internal", func(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +71,7 @@ func TestFetchStream_FailedFetchRetainsPriorCursor(t *testing.T) {
 	_ = json.Unmarshal(b, &fc)
 	got := fc.SpaceNodeTimes["space1"]["nt1"]
 	if got == "100" {
-		t.Fatalf("failed node advanced to current edit time %q — it will be core.Skipped forever", got)
+		t.Fatalf("failed node advanced to current edit time %q - it will be core.Skipped forever", got)
 	}
 	if got != "50" {
 		t.Errorf("failed node cursor = %q, want prior value \"50\" (retry next run)", got)
@@ -101,8 +101,8 @@ func TestFetchStream_FailedFetchNoPriorOmitsFromCursor(t *testing.T) {
 }
 
 // recordingHandler captures the items and checkpoints a streaming core.Fetch emits.
-// Checkpoints are snapshotted (JSON-encoded) at call time — mirroring the
-// service, which serializes the cursor synchronously inside Checkpoint — so the
+// Checkpoints are snapshotted (JSON-encoded) at call time - mirroring the
+// service, which serializes the cursor synchronously inside Checkpoint - so the
 // test observes the cursor state as it was when Checkpoint was called, not the
 // connector's later-mutated map.
 type recordingHandler struct {
@@ -241,7 +241,7 @@ func TestFetchStream_CheckpointsProgress(t *testing.T) {
 // Checkpoints must ALSO fire on elapsed time, not only every N nodes.
 // Otherwise a sync with fewer than the node interval of slow (rate-limited)
 // exports reaches the 2h task timeout having never checkpointed, and resumes
-// from scratch forever — exactly the #2136 "never fully syncs" case. With the
+// from scratch forever - exactly the #2136 "never fully syncs" case. With the
 // node interval effectively disabled and the time interval at 0, every
 // processed node must still produce a Checkpoint.
 func TestFetchStream_CheckpointsOnElapsedTime(t *testing.T) {
@@ -271,7 +271,7 @@ func TestFetchStream_CheckpointsOnElapsedTime(t *testing.T) {
 	}
 }
 
-// An Emit error aborts the stream immediately — the connector must return the
+// An Emit error aborts the stream immediately - the connector must return the
 // error and stop fetching further nodes (the sync is failing; do not burn API
 // budget on the rest of the tree).
 func TestFetchStream_EmitErrorAborts(t *testing.T) {
@@ -383,7 +383,7 @@ func fakeFeishuWithBlocksFallback(nodes []core.WikiNode, docToken string) (*http
 		})
 	})
 
-	// Blocks API — always returns HTTP 500 (missing scope / permission denied).
+	// Blocks API - always returns HTTP 500 (missing scope / permission denied).
 	blocksPath := "/open-apis/docx/v1/documents/" + docToken + "/blocks"
 	mux.HandleFunc(blocksPath, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -438,7 +438,7 @@ func fakeFeishuWithBlocksFallback(nodes []core.WikiNode, docToken string) (*http
 // TestFetchStream_DocxBlocksFallback proves that when the blocks API returns HTTP 500
 // (e.g. missing docx:document:readonly scope), the connector automatically falls back
 // to the export-API path and emits exactly one item with ContentType
-// "application/octet-stream", not "text/markdown". No hard failure occurs —
+// "application/octet-stream", not "text/markdown". No hard failure occurs -
 // the sync completes successfully with the exported binary.
 func TestFetchStream_DocxBlocksFallback(t *testing.T) {
 	t.Setenv("FEISHU_DOCX_PARSE_MODE", "blocks")
@@ -481,7 +481,7 @@ func TestFetchStream_DocxBlocksFallback(t *testing.T) {
 		t.Errorf("fallback item should have no error metadata, got %q", item.Metadata["error"])
 	}
 	// The export fallback cannot re-enumerate the doc's attachments, so it must
-	// NOT set ReplacesSubtree — otherwise a transient blocks-API failure would
+	// NOT set ReplacesSubtree - otherwise a transient blocks-API failure would
 	// sweep and permanently delete the good attachment children from the prior
 	// blocks-path sync with nothing to replace them.
 	if item.ReplacesSubtree {

@@ -105,7 +105,7 @@ const (
 
 // NeedsKBRetrieval returns true when the intent requires knowledge base search.
 // The zero value (empty string) is treated as needing retrieval for safety.
-// Note: IntentWebSearch is NOT included — use ChatManage.NeedsRetrieval()
+// Note: IntentWebSearch is NOT included - use ChatManage.NeedsRetrieval()
 // which also considers the WebSearchEnabled flag.
 func (i QueryIntent) NeedsKBRetrieval() bool {
 	switch i {
@@ -136,8 +136,8 @@ const (
 // the number of candidate passages that stage received, so the pair always
 // describes one population: the retrieval set that entered the ranked filter
 // chain (rerank → merge → FILTER_TOP_K). Candidates is a pipeline-local count
-// of retrieved passages — never the number of matches in the knowledge base,
-// which retrieval never computes — and a later, narrower cut never replaces
+// of retrieved passages - never the number of matches in the knowledge base,
+// which retrieval never computes - and a later, narrower cut never replaces
 // it. How many of those candidates the prompt actually shows is counted where
 // the prompt is built, so the caveat is only emitted when the context really
 // is a subset.

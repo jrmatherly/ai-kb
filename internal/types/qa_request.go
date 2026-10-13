@@ -31,7 +31,7 @@ type SteerSink interface {
 	// PersistSteerMessage stores the accepted message as a user-role row
 	// under the run's request ID and returns the new row's ID. An empty ID
 	// means persistence failed: the caller must not append the text, so the
-	// next drain can retry. Mentions are recorded for history only — the
+	// next drain can retry. Mentions are recorded for history only - the
 	// running turn's scope is not widened mid-flight.
 	// channel is the source of the steered send ("web", "api", "im"); empty
 	// is stored as "web".

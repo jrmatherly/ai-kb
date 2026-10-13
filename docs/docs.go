@@ -13437,7 +13437,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Server-sent replay of everything the installer agent did — the\nprompt it was given, its thinking, the commands it ran and\ntheir output — followed live while the install is still\nrunning. Frames are the same shape the chat stream uses, so a\nconsole renders an install with the components it renders a\nchat turn with. 404 once the event log has expired; the\ndurable message history is the fallback.",
+                "description": "Server-sent replay of everything the installer agent did - the\nprompt it was given, its thinking, the commands it ran and\ntheir output - followed live while the install is still\nrunning. Frames are the same shape the chat stream uses, so a\nconsole renders an install with the components it renders a\nchat turn with. 404 once the event log has expired; the\ndurable message history is the fallback.",
                 "produces": [
                     "text/event-stream"
                 ],
@@ -19083,7 +19083,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "reasoning_content": {
-                    "description": "ReasoningContent stores the OpenAI-protocol reasoning_content emitted by the\nmodel in this round. Persisted on AgentStep so cross-turn replay can put it\nback on the assistant message — required by MiMo / DeepSeek V3.2+ thinking\nmode, ignored by providers that don't recognize the field.",
+                    "description": "ReasoningContent stores the OpenAI-protocol reasoning_content emitted by the\nmodel in this round. Persisted on AgentStep so cross-turn replay can put it\nback on the assistant message - required by MiMo / DeepSeek V3.2+ thinking\nmode, ignored by providers that don't recognize the field.",
                     "type": "string"
                 },
                 "reasoning_metadata": {
@@ -19485,7 +19485,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "insecure_skip_verify": {
-                    "description": "InsecureSkipVerify disables TLS certificate verification when\ntalking to the backing store over HTTPS. Defaults to false\n(secure). Set to true ONLY for self-signed development clusters;\nproduction deployments should provide trusted certificates via\nthe system CA pool. Cross-driver applicable but currently only\nthe OpenSearch driver (Phase 3) reads this field. Note: this\ndiffers from the Qdrant-specific UseTLS below, which *enables*\nTLS on gRPC connections — InsecureSkipVerify only controls\n*verification* of an already-TLS connection.",
+                    "description": "InsecureSkipVerify disables TLS certificate verification when\ntalking to the backing store over HTTPS. Defaults to false\n(secure). Set to true ONLY for self-signed development clusters;\nproduction deployments should provide trusted certificates via\nthe system CA pool. Cross-driver applicable but currently only\nthe OpenSearch driver (Phase 3) reads this field. Note: this\ndiffers from the Qdrant-specific UseTLS below, which *enables*\nTLS on gRPC connections - InsecureSkipVerify only controls\n*verification* of an already-TLS connection.",
                     "type": "boolean"
                 },
                 "password": {
@@ -20093,7 +20093,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "network_mode": {
-                    "description": "NetworkMode is the Docker network sandboxes join: \"bridge\" (default) or\n\"none\" for no egress. Nothing else is accepted — host and container:\nmodes share another namespace outright, and a named network is usually\nthe deployment's own compose network, which would put the sandbox next\nto Postgres and Redis.",
+                    "description": "NetworkMode is the Docker network sandboxes join: \"bridge\" (default) or\n\"none\" for no egress. Nothing else is accepted - host and container:\nmodes share another namespace outright, and a named network is usually\nthe deployment's own compose network, which would put the sandbox next\nto Postgres and Redis.",
                     "type": "string"
                 },
                 "pids_limit": {
@@ -20438,7 +20438,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "description": "Status maps a namespaced attribute id (\"builtin:caption\") to\n\"on\"/\"off\". Only consulted in custom mode; an unrecorded field is\noff. Source-declared on/off does not exist — activation is always\nthe user's own record.",
+                    "description": "Status maps a namespaced attribute id (\"builtin:caption\") to\n\"on\"/\"off\". Only consulted in custom mode; an unrecorded field is\noff. Source-declared on/off does not exist - activation is always\nthe user's own record.",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
@@ -20510,7 +20510,7 @@ const docTemplate = `{
                     }
                 },
                 "on_unobserved": {
-                    "description": "OnUnobserved is the OCR decision used when the observation does not\nanswer for one of the attributes the policy reads — the attribute is\nabsent because the model skipped the line, or because the value it wrote\nwas not one of the allowed ones. The default is true: an incomplete\nobservation keeps extracting, so a missed block of text costs one extra\ncall instead of being lost. Turn it off only with a model reliable enough\nto answer every attribute line.",
+                    "description": "OnUnobserved is the OCR decision used when the observation does not\nanswer for one of the attributes the policy reads - the attribute is\nabsent because the model skipped the line, or because the value it wrote\nwas not one of the allowed ones. The default is true: an incomplete\nobservation keeps extracting, so a missed block of text costs one extra\ncall instead of being lost. Turn it off only with a model reliable enough\nto answer every attribute line.",
                     "type": "boolean"
                 }
             }
@@ -20837,7 +20837,7 @@ const docTemplate = `{
                     ]
                 },
                 "is_pinned": {
-                    "description": "IsPinned and PinnedAt are computed per-caller from user_kb_pins\n(see migration 000050). They used to be stored on the row itself,\nwhich made pinning a workspace-wide ordering decision gated behind\nthe kb-edit RBAC guard. The columns are still present in legacy\nschemas for rollback safety but are no longer read or written by\nthe application — both fields are tagged ` + "`" + `gorm:\"-\"` + "`" + ` so GORM\nignores them on every CRUD call and the list handler stamps them\nafter enriching with the caller's pin set.",
+                    "description": "IsPinned and PinnedAt are computed per-caller from user_kb_pins\n(see migration 000050). They used to be stored on the row itself,\nwhich made pinning a workspace-wide ordering decision gated behind\nthe kb-edit RBAC guard. The columns are still present in legacy\nschemas for rollback safety but are no longer read or written by\nthe application - both fields are tagged ` + "`" + `gorm:\"-\"` + "`" + ` so GORM\nignores them on every CRUD call and the list handler stamps them\nafter enriching with the caller's pin set.",
                     "type": "boolean"
                 },
                 "is_processing": {
@@ -20970,7 +20970,7 @@ const docTemplate = `{
                     ]
                 },
                 "image_processing_config": {
-                    "description": "Image processing configuration.\n\nnil means \"no change\" when updating, the same contract IndexingStrategy\nuses. A request that does not mention this field must leave the image\nsettings alone: the attribute-observation switch and the attribute policy\nare things a knowledge base accumulates, and a client that predates them\nwould otherwise reset the lot on any save. Sending an object — empty\nincluded — replaces the whole configuration.",
+                    "description": "Image processing configuration.\n\nnil means \"no change\" when updating, the same contract IndexingStrategy\nuses. A request that does not mention this field must leave the image\nsettings alone: the attribute-observation switch and the attribute policy\nare things a knowledge base accumulates, and a client that predates them\nwould otherwise reset the lot on any save. Sending an object - empty\nincluded - replaces the whole configuration.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.ImageProcessingConfig"
@@ -21375,7 +21375,7 @@ const docTemplate = `{
                     ]
                 },
                 "memberships": {
-                    "description": "Memberships lists every workspace the user can authenticate into,\nalong with their role in each. Always populated (length 1 for users\nwho only belong to their home workspace) so frontends can render a\nworkspace switcher without a follow-up request. Serialised without\nomitempty so the field is always present as a JSON array (possibly\nempty) — the \"always populated\" contract relies on the server side\nguaranteeing a non-nil slice.",
+                    "description": "Memberships lists every workspace the user can authenticate into,\nalong with their role in each. Always populated (length 1 for users\nwho only belong to their home workspace) so frontends can render a\nworkspace switcher without a follow-up request. Serialised without\nomitempty so the field is always present as a JSON array (possibly\nempty) - the \"always populated\" contract relies on the server side\nguaranteeing a non-nil slice.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Membership"
@@ -21726,7 +21726,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "retrieval_conditioning": {
-                    "description": "RetrievalConditioning lets memory shape retrieval — query rewriting and\nper-document ranking — rather than only being appended to the answer\nprompt. This is where memory earns its keep in a knowledge-base product.",
+                    "description": "RetrievalConditioning lets memory shape retrieval - query rewriting and\nper-document ranking - rather than only being appended to the answer\nprompt. This is where memory earns its keep in a knowledge-base product.",
                     "type": "boolean"
                 },
                 "vector_recall": {
@@ -21876,7 +21876,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sandbox_checkpoint": {
-                    "description": "SandboxCheckpoint is the git commit this assistant turn produced in the\nsession sandbox's /workspace. Nil for user messages, for turns that ran\nwithout a sandbox, and for turns whose commit failed (best-effort — a\nfailed checkpoint must never block the reply). A message without a\ncheckpoint cannot serve as a fork point with sandbox state.",
+                    "description": "SandboxCheckpoint is the git commit this assistant turn produced in the\nsession sandbox's /workspace. Nil for user messages, for turns that ran\nwithout a sandbox, and for turns whose commit failed (best-effort - a\nfailed checkpoint must never block the reply). A message without a\ncheckpoint cannot serve as a fork point with sandbox state.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SandboxCheckpoint"
@@ -21920,7 +21920,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "deleted_at": {
-                    "description": "DeletedAt marks a file the user deleted. The entry stays in the list\nrather than being removed because its position IS the download address\n(msg.Artifacts[index]); dropping it would shift every later file's index\nand hand an old link the wrong blob. Keeping it also keeps the entry in\nArtifactCollector's de-duplication set, so the next collect does not\nre-attach the very file that was deleted — its sandbox mtime has not\nmoved. Clients filter these out; the bytes are already reclaimed.",
+                    "description": "DeletedAt marks a file the user deleted. The entry stays in the list\nrather than being removed because its position IS the download address\n(msg.Artifacts[index]); dropping it would shift every later file's index\nand hand an old link the wrong blob. Keeping it also keeps the entry in\nArtifactCollector's de-duplication set, so the next collect does not\nre-attach the very file that was deleted - its sandbox mtime has not\nmoved. Clients filter these out; the bytes are already reclaimed.",
                     "type": "string"
                 },
                 "file_name": {
@@ -22458,7 +22458,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "owner_tenant_id": {
-                    "description": "OwnerTenantID is the persisted owner workspace of the organization\n(Plan 3, migration 000046). Frontend uses this to identify the\n\"owner row\" in the workspace-keyed members list — comparing\nmember.tenant_id against owner_tenant_id is the post-Plan-3\nequivalent of the old member.user_id == owner_id check.",
+                    "description": "OwnerTenantID is the persisted owner workspace of the organization\n(Plan 3, migration 000046). Frontend uses this to identify the\n\"owner row\" in the workspace-keyed members list - comparing\nmember.tenant_id against owner_tenant_id is the post-Plan-3\nequivalent of the old member.user_id == owner_id check.",
                     "type": "integer"
                 },
                 "pending_join_request_count": {
@@ -23963,7 +23963,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "last_modified_by_name": {
-                    "description": "LastModifiedByName is a display label resolved from LastModifiedBy\n(the user's UUID) at handler time — username when available,\notherwise email. Empty for virtual rows that were never persisted\n(LastModifiedBy=\"\"). Not stored: derived per request so renaming\na user reflects on the next reload without a backfill job.",
+                    "description": "LastModifiedByName is a display label resolved from LastModifiedBy\n(the user's UUID) at handler time - username when available,\notherwise email. Empty for virtual rows that were never persisted\n(LastModifiedBy=\"\"). Not stored: derived per request so renaming\na user reflects on the next reload without a backfill job.",
                     "type": "string"
                 },
                 "requires_restart": {
@@ -24179,14 +24179,14 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.E2BSandboxConfig"
                 },
                 "env_vars": {
-                    "description": "EnvVars are additional environment variables injected into every\nsandbox created for this tenant. 🔒 Values are encrypted at rest.\nThese become visible to all scripts running in the tenant's\nsandboxes — do not place secrets here that scripts must not access.",
+                    "description": "EnvVars are additional environment variables injected into every\nsandbox created for this tenant. 🔒 Values are encrypted at rest.\nThese become visible to all scripts running in the tenant's\nsandboxes - do not place secrets here that scripts must not access.",
                     "type": "object",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
                 "network": {
-                    "description": "Network is the outbound/inbound network policy applied to every sandbox\ncreated from this config — chat sessions, skill installs and deep\nconnectivity probes alike. nil and the zero value mean the same thing:\noutbound egress allowed, inbound public access closed.",
+                    "description": "Network is the outbound/inbound network policy applied to every sandbox\ncreated from this config - chat sessions, skill installs and deep\nconnectivity probes alike. nil and the zero value mean the same thing:\noutbound egress allowed, inbound public access closed.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.SandboxNetworkPolicy"
@@ -24686,7 +24686,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "proxy_url": {
-                    "description": "Optional per-request proxy override; normally empty — use WebSearchProviderEntity.Parameters.proxy_url. Merged at call time when set.",
+                    "description": "Optional per-request proxy override; normally empty, use\nWebSearchProviderEntity.Parameters.proxy_url. Merged at call time when set.",
                     "type": "string"
                 },
                 "rerank_model_id": {
@@ -25162,7 +25162,7 @@ const docTemplate = `{
                     }
                 },
                 "chunk_refs": {
-                    "description": "ChunkRefs records the specific source-document chunks this page was\nbuilt from — one UUID per cited chunk. Populated during ingest from\nthe chunk-citation pass; refreshed wholesale whenever the page is\nre-materialized. Empty for summary pages (they are document-level\nsynopses and don't carry chunk-level citations). Use this when you\nneed to surface the underlying evidence for a wiki page, or to\nretract citations when a source document is deleted.",
+                    "description": "ChunkRefs records the specific source-document chunks this page was\nbuilt from - one UUID per cited chunk. Populated during ingest from\nthe chunk-citation pass; refreshed wholesale whenever the page is\nre-materialized. Empty for summary pages (they are document-level\nsynopses and don't carry chunk-level citations). Use this when you\nneed to surface the underlying evidence for a wiki page, or to\nretract citations when a source document is deleted.",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -25189,7 +25189,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "folder_id": {
-                    "description": "FolderID is the single source of truth for where this page sits in the\ndirectory tree — a reference to wiki_folders.id (\"\" = wiki root). The\nCategoryPath / WikiPath / Depth fields below are denormalized caches\nrecomputed from this folder's chain on every write so list/index/search\nqueries don't have to join wiki_folders.",
+                    "description": "FolderID is the single source of truth for where this page sits in the\ndirectory tree - a reference to wiki_folders.id (\"\" = wiki root). The\nCategoryPath / WikiPath / Depth fields below are denormalized caches\nrecomputed from this folder's chain on every write so list/index/search\nqueries don't have to join wiki_folders.",
                     "type": "string"
                 },
                 "id": {
@@ -25300,7 +25300,7 @@ const docTemplate = `{
                     }
                 },
                 "chunk_refs": {
-                    "description": "ChunkRefs records the specific source-document chunks this page was\nbuilt from — one UUID per cited chunk. Populated during ingest from\nthe chunk-citation pass; refreshed wholesale whenever the page is\nre-materialized. Empty for summary pages (they are document-level\nsynopses and don't carry chunk-level citations). Use this when you\nneed to surface the underlying evidence for a wiki page, or to\nretract citations when a source document is deleted.",
+                    "description": "ChunkRefs records the specific source-document chunks this page was\nbuilt from - one UUID per cited chunk. Populated during ingest from\nthe chunk-citation pass; refreshed wholesale whenever the page is\nre-materialized. Empty for summary pages (they are document-level\nsynopses and don't carry chunk-level citations). Use this when you\nneed to surface the underlying evidence for a wiki page, or to\nretract citations when a source document is deleted.",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -25327,7 +25327,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "folder_id": {
-                    "description": "FolderID is the single source of truth for where this page sits in the\ndirectory tree — a reference to wiki_folders.id (\"\" = wiki root). The\nCategoryPath / WikiPath / Depth fields below are denormalized caches\nrecomputed from this folder's chain on every write so list/index/search\nqueries don't have to join wiki_folders.",
+                    "description": "FolderID is the single source of truth for where this page sits in the\ndirectory tree - a reference to wiki_folders.id (\"\" = wiki root). The\nCategoryPath / WikiPath / Depth fields below are denormalized caches\nrecomputed from this folder's chain on every write so list/index/search\nqueries don't have to join wiki_folders.",
                     "type": "string"
                 },
                 "id": {

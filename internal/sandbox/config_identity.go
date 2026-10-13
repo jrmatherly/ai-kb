@@ -48,7 +48,7 @@ type SandboxIdentity struct {
 //
 // This runs no SSRF guard and returns no error on purpose. It answers "would this
 // edit strand anything", a question that must stay answerable when the OLD
-// endpoint no longer resolves — precisely the situation in which an admin needs
+// endpoint no longer resolves - precisely the situation in which an admin needs
 // to re-point the config. Validating the incoming URLs is the save path's job.
 func IdentityOf(tenantCfg *types.TenantSandboxConfig) SandboxIdentity {
 	if tenantCfg == nil {
@@ -75,7 +75,7 @@ func IdentityOf(tenantCfg *types.TenantSandboxConfig) SandboxIdentity {
 		// The daemon endpoint is both planes at once: containers are created,
 		// exec'd and deleted over the same socket, so re-pointing it strands
 		// every sandbox this config owns. The image is not part of the
-		// identity — changing it only affects sandboxes created afterwards.
+		// identity - changing it only affects sandboxes created afterwards.
 		if docker := tenantCfg.Docker; docker != nil {
 			identity.APIURL = docker.Host
 			identity.APIKey = docker.TLSCertPath

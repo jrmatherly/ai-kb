@@ -47,7 +47,7 @@ func withActor(userID string) context.Context {
 // the business path from a misconfigured container at runtime.
 func TestEmitAdminAudit_NilServiceIsNoop(t *testing.T) {
 	h := newSystemHandlerWithAudit(nil)
-	// If this panicked the deferred t.Fatalf wouldn't fire — gating on
+	// If this panicked the deferred t.Fatalf wouldn't fire - gating on
 	// a nil receiver is the entire point of this case.
 	h.emitAdminAudit(
 		context.Background(),
@@ -130,7 +130,7 @@ func TestEmitAdminAudit_PopulatesCanonicalFields(t *testing.T) {
 }
 
 // TestEmitAdminAudit_NilDetailsLeavesEmptyPayload ensures the helper
-// doesn't fabricate a payload when the caller passes nil — important
+// doesn't fabricate a payload when the caller passes nil - important
 // because the audit_logs.details column defaults to '{}' at the DB
 // layer, and emitting an explicit `null` would muddle filters that
 // look for "no extra context".
@@ -159,7 +159,7 @@ func TestEmitAdminAudit_NilDetailsLeavesEmptyPayload(t *testing.T) {
 // nil-target branch. promote/revoke handlers always supply a target
 // today, but the guard exists so future call sites (e.g. a "self
 // service" revoke fired without a hydrated user) don't crash. The row
-// still goes out with empty target ids — better than dropping it.
+// still goes out with empty target ids - better than dropping it.
 func TestEmitAdminAudit_NilTargetStillEmitsRow(t *testing.T) {
 	svc := &capturingAuditService{}
 	h := newSystemHandlerWithAudit(svc)
@@ -198,7 +198,7 @@ func TestEmitAdminAudit_NilTargetStillEmitsRow(t *testing.T) {
 //     with; the operation succeeded as a no-op, and the audit reader
 //     should be able to distinguish this from a real revoke.
 //
-// Both flags are booleans, which JSON encodes faithfully — this case
+// Both flags are booleans, which JSON encodes faithfully - this case
 // is the regression guard against someone accidentally swapping the
 // payload to a stringly-typed shape ("true" / "false").
 func TestEmitAdminAudit_IdempotentBranchSurvivesMarshal(t *testing.T) {
@@ -240,7 +240,7 @@ func TestEmitAdminAudit_IdempotentBranchSurvivesMarshal(t *testing.T) {
 
 // TestEmitAdminAudit_LogErrorIsSwallowed pins the best-effort contract
 // documented at the top of emitAdminAudit. A failing audit write must
-// NOT bubble up — the underlying business operation (promote / revoke)
+// NOT bubble up - the underlying business operation (promote / revoke)
 // has already succeeded, and propagating the error would force the
 // caller to either retry the privilege change or roll it back, both
 // strictly worse than logging-and-continuing.

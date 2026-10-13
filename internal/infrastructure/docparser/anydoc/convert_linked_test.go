@@ -179,7 +179,7 @@ func TestConvertPDFIgnoresAssetRequest(t *testing.T) {
 // RUSTSEC-2026-0187: lopdf 0.41 recursed per nesting level and killed the
 // process with an uncatchable stack overflow, which no Go-side or Rust-side
 // recover can contain. The pinned dependency in third_party/anydoc-go bounds
-// the recursion, so this must come back as an ordinary error — and if a
+// the recursion, so this must come back as an ordinary error - and if a
 // dependency bump ever reintroduces it, this test crashes rather than passing
 // quietly.
 func TestDeeplyNestedPDFFailsWithoutKillingTheProcess(t *testing.T) {
@@ -197,7 +197,7 @@ func TestDeeplyNestedPDFFailsWithoutKillingTheProcess(t *testing.T) {
 // `] TJ` tokens cost time quadratic in its length: before pdf-inspector 1.14.2
 // this input took 26 seconds of CPU, and a 2 MB one took nearly two minutes.
 // Unbounded work is the half of the hostile-PDF problem that guarded() cannot
-// catch — it never panics, it just holds the core — so the bound is pinned
+// catch - it never panics, it just holds the core - so the bound is pinned
 // here. The budget is deliberately far above the ~7ms a bounded lookback needs:
 // what it has to distinguish is linear from quadratic, not fast from slow.
 func TestDetectorLookbackStaysLinear(t *testing.T) {

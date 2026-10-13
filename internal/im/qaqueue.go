@@ -248,7 +248,7 @@ func (q *qaQueue) runWorker(id int) {
 
 		// Acquire global concurrency slot (blocks until a slot opens or request is cancelled).
 		if !q.acquireGlobalGate(req.ctx) {
-			// Context cancelled while waiting for a global slot — treat as timeout.
+			// Context cancelled while waiting for a global slot - treat as timeout.
 			q.totalTimeout.Add(1)
 			q.redisDecrUser(context.Background(), req.userKey)
 			logger.Warnf(req.ctx, "[IM] Global gate wait cancelled: worker=%d user=%s", id, req.msg.UserID)
@@ -326,7 +326,7 @@ func (q *qaQueue) acquireGlobalGate(ctx context.Context) bool {
 			q.globalMaxWorkers, globalGateTTL.Milliseconds(),
 		).Int64()
 		if err != nil {
-			// Redis error — skip global check to avoid blocking the worker.
+			// Redis error - skip global check to avoid blocking the worker.
 			logger.Warnf(ctx, "[IM] Global gate Redis error (proceeding without limit): %v", err)
 			return true
 		}
@@ -334,7 +334,7 @@ func (q *qaQueue) acquireGlobalGate(ctx context.Context) bool {
 			return true
 		}
 
-		// Global limit reached — wait and retry.
+		// Global limit reached - wait and retry.
 		select {
 		case <-ctx.Done():
 			return false
@@ -363,7 +363,7 @@ func (q *qaQueue) redisCheckAndIncrUser(ctx context.Context, userKey string) err
 	key := RedisKeyQueueUser + userKey
 	count, err := q.redis.Incr(ctx, key).Result()
 	if err != nil {
-		// Redis error — skip global check, rely on local limit.
+		// Redis error - skip global check, rely on local limit.
 		return nil
 	}
 	q.redis.Expire(ctx, key, redisQueueUserTTL)

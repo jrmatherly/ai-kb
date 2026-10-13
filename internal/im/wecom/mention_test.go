@@ -78,7 +78,7 @@ func TestLongConnClient_StripAtMention(t *testing.T) {
 		c := &LongConnClient{}
 		c.botDisplayName.Store("Bot")
 
-		// "@BotX /stop" should NOT match cached "Bot" — "BotX" is a different name.
+		// "@BotX /stop" should NOT match cached "Bot" - "BotX" is a different name.
 		// Falls through to Strategy 3 (strip first @word).
 		got := c.stripAtMention("@BotX /stop")
 		if got != "/stop" {
@@ -102,7 +102,7 @@ func TestLongConnClient_StripAtMention(t *testing.T) {
 		c := &LongConnClient{}
 		c.botDisplayName.Store("Bot")
 
-		// User content has double space — should NOT overwrite "Bot" with "Bot hello"
+		// User content has double space - should NOT overwrite "Bot" with "Bot hello"
 		got := c.stripAtMention("@Bot  hello  world")
 		if got != "hello  world" {
 			t.Errorf("got %q, want %q", got, "hello  world")

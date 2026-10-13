@@ -30,7 +30,7 @@ var ErrTerminalAuthDenied = errors.New("terminal authorization no longer valid")
 //
 // Call it before the upgrade and periodically on the live bridge; using the
 // one function for both is deliberate, so a live terminal is held to exactly
-// the checks that admitted it — except token expiry. Handshake minting and
+// the checks that admitted it - except token expiry. Handshake minting and
 // the upgrade still require a non-expired access token; the live recheck
 // does not, because axios silently rotates access tokens without revoking
 // the row the ticket was bound to. Logout / password reset still revoke
@@ -147,8 +147,8 @@ func AssertAccessTokenStillActive(token *types.AuthToken, userID string, now tim
 // The two are deliberately NOT shared. resolveTenantRole derives a role for a
 // fresh request and self-heals (it can auto-promote the owner of an orphan
 // workspace, writing a tenant_members row); a recheck on a live socket must
-// only observe, never grant. What the two do share — active membership,
-// superuser bypass, and the RBAC fail-open switch — is kept in step here on
+// only observe, never grant. What the two do share - active membership,
+// superuser bypass, and the RBAC fail-open switch - is kept in step here on
 // purpose, so change both if that policy moves.
 //
 // Where they differ, this one is the more permissive: the handshake already

@@ -3,11 +3,11 @@
 //
 // Three facts shape it. The per-request `model` must be the fully qualified
 // `models/{id}`, not the bare id the URL already carries. The per-request
-// options — `taskType`, `outputDimensionality` — belong inside
+// options - `taskType`, `outputDimensionality` - belong inside
 // `embedContentConfig`; the reference marks the same names at the top level
 // of the request "Deprecated: Please use EmbedContentConfig…". And
 // `taskType` exists on gemini-embedding-001 but not on gemini-embedding-2,
-// which takes its task instruction in the prompt instead — so the field is
+// which takes its task instruction in the prompt instead - so the field is
 // declared per model rather than for the vendor.
 //
 // Each text is its own request with a single part: gemini-embedding-2 fuses

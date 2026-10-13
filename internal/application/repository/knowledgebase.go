@@ -76,7 +76,7 @@ func (r *knowledgeBaseRepository) ListKnowledgeBases(ctx context.Context) ([]*ty
 //
 // Ordering used to also include `is_pinned DESC, pinned_at DESC` so the
 // repository would return tenant-wide pinned rows first. That column is
-// no longer the source of truth (see migration 000050) — pin state is
+// no longer the source of truth (see migration 000050) - pin state is
 // now per (user, kb) and applied by the service layer after enrichment.
 // We keep `created_at DESC` here so callers that don't enrich (chat
 // pipeline, agent editor, IM commands) still get a stable ordering.
@@ -202,7 +202,7 @@ func (r *knowledgeBaseRepository) DeleteKnowledgeBase(ctx context.Context, id st
 // given vector store within a tenant scope.
 //
 // Soft-delete filter is applied automatically by GORM because KnowledgeBase
-// has a gorm.DeletedAt column — we deliberately do not add an explicit
+// has a gorm.DeletedAt column - we deliberately do not add an explicit
 // `deleted_at IS NULL` predicate to keep the single source of truth on the
 // auto-scope.
 //

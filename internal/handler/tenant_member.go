@@ -19,8 +19,8 @@ import (
 )
 
 // TenantMemberHandler exposes /tenants/:id/members CRUD. The route layer
-// enforces RBAC (Viewer for list, Owner for any mutation) — see
-// router.RegisterTenantRoutes — so we don't re-check role here.
+// enforces RBAC (Viewer for list, Owner for any mutation) - see
+// router.RegisterTenantRoutes - so we don't re-check role here.
 //
 // Tenant scoping: the auth middleware resolves the caller's role against
 // the *active* tenant (JWT / X-Tenant-ID switch / API-key). The URL :id
@@ -55,7 +55,7 @@ func NewTenantMemberHandler(
 // addMemberRequest is the JSON body for POST /tenants/:id/members.
 // Email is the user-facing invite identifier; the handler resolves it to a
 // User via UserService.GetUserByEmail. PR 3 does not implement
-// email-based invitations for users that don't exist yet — the invitee
+// email-based invitations for users that don't exist yet - the invitee
 // must already have an account. Sending an email invite is tracked as a
 // PR 4 candidate.
 type addMemberRequest struct {
@@ -121,7 +121,7 @@ func (h *TenantMemberHandler) ListMembers(c *gin.Context) {
 	// Hydrate user-facing fields in one batched query. Before this we
 	// did N+1 GetUserByID calls; tenants with hundreds of members
 	// pressed the user repo hard for no good reason. Failure is
-	// best-effort — a transient batch error degrades to "no email /
+	// best-effort - a transient batch error degrades to "no email /
 	// username on this page" rather than dropping rows, so dangling
 	// memberships can still be cleaned up by the Owner.
 	ids := make([]string, 0, len(members))
@@ -200,7 +200,7 @@ func (h *TenantMemberHandler) AddMember(c *gin.Context) {
 		c.Error(apperrors.NewValidationError("invalid request body").WithDetails(err.Error()))
 		return
 	}
-	// Defence in depth — service also re-validates, but rejecting early
+	// Defence in depth - service also re-validates, but rejecting early
 	// gives the client a better error message than the generic service
 	// sentinel-mapped 400.
 	if !req.Role.IsValid() {
@@ -228,8 +228,8 @@ func (h *TenantMemberHandler) AddMember(c *gin.Context) {
 	// path attaches a synthetic "system-<tenantID>" user (see
 	// types.IsSyntheticUserID); recording that as invited_by would
 	// permanently break join-with-users views and any future "who
-	// invited whom" UX. Leaving invited_by NULL is the correct fallback
-	// — matches the same treatment KB.CreatorID gets in PR 2.
+	// invited whom" UX. Leaving invited_by NULL is the correct fallback -
+	// matches the same treatment KB.CreatorID gets in PR 2.
 	caller, _ := types.UserIDFromContext(ctx)
 	var invitedBy *string
 	if caller != "" && !types.IsSyntheticUserID(caller) {

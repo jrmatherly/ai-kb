@@ -362,7 +362,7 @@ func main() {
 
 // checkCLIOrphan reproduces what today's CLI-based DockerSandbox does on
 // timeout: exec.CommandContext kills the `docker run --rm` client process. The
-// workload lives in the daemon, so killing the client does not stop it — the
+// workload lives in the daemon, so killing the client does not stop it - the
 // timeout is reported to the caller while the container keeps burning CPU.
 func checkCLIOrphan(ctx context.Context) {
 	if _, err := exec.LookPath("docker"); err != nil {

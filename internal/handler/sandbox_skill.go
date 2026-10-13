@@ -593,7 +593,7 @@ func skillEventFromProgress(p service.SkillProgress) skillInstallEvent {
 // terminalSkillEvent derives an end-of-stream frame from the durable state, for
 // every run that ends without publishing one: a duplicate removal returns
 // early, and a run whose process died publishes nothing ever again. A nil skill
-// is a finished removal — the row is deleted by the last step of one.
+// is a finished removal - the row is deleted by the last step of one.
 func terminalSkillEvent(skill *types.TenantSkillEntity) (skillInstallEvent, bool) {
 	if skill == nil {
 		return skillInstallEvent{
@@ -675,7 +675,7 @@ func (h *SandboxSkillHandler) InstallEvents(c *gin.Context) {
 	// here would mean the run finished, and the client would reload and
 	// subscribe again for as long as the row stays in progress. A receive on
 	// a nil channel never fires, so the poll below is what notices the row
-	// leaving installing or removing — the same fallback a dropped
+	// leaving installing or removing - the same fallback a dropped
 	// subscription already uses.
 
 	poll := time.NewTicker(h.pollInterval)
@@ -735,9 +735,9 @@ func (h *SandboxSkillHandler) InstallEvents(c *gin.Context) {
 
 // InstallTranscript godoc
 // @Summary      Follow an install's agent transcript
-// @Description  Server-sent replay of everything the installer agent did — the
+// @Description  Server-sent replay of everything the installer agent did - the
 // @Description  prompt it was given, its thinking, the commands it ran and
-// @Description  their output — followed live while the install is still
+// @Description  their output - followed live while the install is still
 // @Description  running. Frames are the same shape the chat stream uses, so a
 // @Description  console renders an install with the components it renders a
 // @Description  chat turn with. 404 once the event log has expired; the
@@ -757,7 +757,7 @@ func (h *SandboxSkillHandler) InstallEvents(c *gin.Context) {
 // The transcript deliberately does not reuse /sessions/continue-stream. That
 // endpoint authorizes by "does this chat session belong to you", while an
 // install is a workspace-level maintenance run whose session is hidden from the
-// session list on purpose — the two rules pull in opposite directions. Here the
+// session list on purpose - the two rules pull in opposite directions. Here the
 // skill lookup above is the authorization, exactly as it is for every other
 // route in this file.
 func (h *SandboxSkillHandler) InstallTranscript(c *gin.Context) {

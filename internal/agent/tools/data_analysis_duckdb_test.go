@@ -13,7 +13,7 @@ import (
 
 // newTestDuckDB opens an in-memory DuckDB and loads the extensions the
 // Data Analysis tool needs. If the extensions can't be installed (e.g. the
-// test environment has no network), the test is skipped — we can't validate
+// test environment has no network), the test is skipped - we can't validate
 // Excel handling without them.
 func newTestDuckDB(t *testing.T) *sql.DB {
 	t.Helper()

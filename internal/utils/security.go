@@ -724,7 +724,7 @@ func stripRedirectSensitiveHeaders(req *http.Request) {
 
 // NewSSRFSafeTransport builds an *http.Transport whose connections are guarded
 // by SSRFSafeDialContext. The transport carries no per-request timeout and no
-// redirect policy — those live on the *http.Client — so a single transport can
+// redirect policy - those live on the *http.Client - so a single transport can
 // be shared across many clients to pool keep-alive connections globally.
 func NewSSRFSafeTransport(config SSRFSafeHTTPClientConfig) *http.Transport {
 	return &http.Transport{
@@ -832,7 +832,7 @@ func SSRFSafeGRPCDialer(ctx context.Context, addr string) (net.Conn, error) {
 
 // outboundDialTimeoutNanos caps how long SSRFSafeDialContext may spend
 // establishing a TCP connection to an outbound (SSRF-validated) endpoint before
-// giving up. A black-holed or otherwise unreachable endpoint should fail fast —
+// giving up. A black-holed or otherwise unreachable endpoint should fail fast -
 // if a dial takes longer than this, the remote service is effectively
 // unavailable and the caller (e.g. the VLM/LLM client) can surface the error
 // immediately instead of letting the UI show a misleading "thinking" state.
@@ -957,7 +957,7 @@ var (
 	// ssrfWhitelistOnce protects the cold-start ENV-only path. Once
 	// SystemSettingService has called SetSSRFWhitelistFromRaw, the
 	// atomic pointer below takes over and this Once is never observed
-	// again — we keep it for tests (resetSSRFWhitelistForTest) and the
+	// again - we keep it for tests (resetSSRFWhitelistForTest) and the
 	// rare deployment that runs without DB-backed system_settings.
 	ssrfWhitelistOnce sync.Once
 	ssrfWhitelist     *ssrfWhitelistConfig
@@ -982,9 +982,9 @@ type ssrfWhitelistConfig struct {
 
 // loadSSRFWhitelist returns the active whitelist config. Resolution
 // order:
-//  1. ssrfWhitelistAtomic — set by SystemSettingService whenever DB
+//  1. ssrfWhitelistAtomic - set by SystemSettingService whenever DB
 //     ssrf.whitelist changes. This is the runtime-tunable path.
-//  2. ENV fallback — sync.Once-cached parse of SSRF_WHITELIST and
+//  2. ENV fallback - sync.Once-cached parse of SSRF_WHITELIST and
 //     SSRF_WHITELIST_EXTRA. Used during the startup window before
 //     the service has finished its preload, and on deployments that
 //     don't run system_settings (lite mode).
@@ -1016,7 +1016,7 @@ func loadSSRFWhitelist() *ssrfWhitelistConfig {
 //
 // Note: this replaces the ENV-only fallback completely. If you want
 // SSRF_WHITELIST_EXTRA to keep being merged, the caller must do the
-// merge before calling this — see service.systemSettingService.
+// merge before calling this - see service.systemSettingService.
 // applySSRFWhitelist for the canonical merge logic.
 func SetSSRFWhitelistFromRaw(raw string) {
 	ssrfWhitelistAtomic.Store(parseSSRFWhitelistRaw(raw))
@@ -1031,7 +1031,7 @@ func SetSSRFWhitelistFromRaw(raw string) {
 // without a "*." prefix, etc.) are dropped with a `[ssrf-whitelist]`
 // log line rather than silently falling through to the exact-host
 // branch. Falling through used to turn "10.0.0.0/333" into a literal
-// host string that never matches anything — operators would believe
+// host string that never matches anything - operators would believe
 // the entry was active when in reality their SSRF check was unchanged.
 //
 // Callers that want hard rejection (e.g. ValidateSSRFWhitelistEntries
@@ -1049,7 +1049,7 @@ func parseSSRFWhitelistRaw(raw string) *ssrfWhitelistConfig {
 		if entry == "" {
 			continue
 		}
-		// CIDR range — entries containing '/' are exclusively CIDRs.
+		// CIDR range - entries containing '/' are exclusively CIDRs.
 		// A parse failure must NOT fall through to the exact-host
 		// branch (which would store "10.0.0.0/333" as a literal
 		// hostname that can never match anything).
@@ -1072,7 +1072,7 @@ func parseSSRFWhitelistRaw(raw string) *ssrfWhitelistConfig {
 			cfg.suffixHosts = append(cfg.suffixHosts, suffix)
 			continue
 		}
-		// Reject mid-string wildcards like "foo.*.bar" — they look
+		// Reject mid-string wildcards like "foo.*.bar" - they look
 		// useful but neither parseSSRFWhitelistRaw nor IsSSRFWhitelisted
 		// implement glob matching, so the entry would silently never
 		// match. Surface it loudly.
@@ -1150,7 +1150,7 @@ func IsSSRFWhitelisted(hostname string) bool {
 	if whitelistedByName(wl, hostname) {
 		return true
 	}
-	// Also resolve and check resolved IPs against CIDR whitelist — never in
+	// Also resolve and check resolved IPs against CIDR whitelist - never in
 	// whitelist-only mode, where a hostname outside the whitelist must not
 	// reach DNS at all.
 	if wl == nil || len(wl.cidrNets) == 0 || net.ParseIP(hostname) != nil || SSRFWhitelistOnlyEnabled() {
@@ -1242,9 +1242,9 @@ func CheckSSRFWhitelistOnly(host string) error {
 
 // CheckDialWhitelistOnly is CheckSSRFWhitelistOnly for a dial address, and it
 // judges hostnames only. An IP literal arriving at a dialer is either a name
-// something else already resolved — gRPC's own resolver runs before the
+// something else already resolved - gRPC's own resolver runs before the
 // dialer it was given, so a whitelisted service name reaches this point as an
-// address — or a literal the URL layer already refused. Refusing it again
+// address - or a literal the URL layer already refused. Refusing it again
 // here would break clients whose whitelisted host was resolved for them,
 // while adding nothing the URL layer does not already do.
 func CheckDialWhitelistOnly(host string) error {
@@ -1257,10 +1257,10 @@ func CheckDialWhitelistOnly(host string) error {
 // ResetSSRFWhitelistForTest resets the whitelist singleton so tests in any
 // package can re-read the SSRF_WHITELIST environment variable after changing
 // it. Exported (rather than unexported) because callers exist outside
-// internal/utils — notably internal/infrastructure/web_search/searxng_test.go,
+// internal/utils - notably internal/infrastructure/web_search/searxng_test.go,
 // whose tests would otherwise see whatever whitelist an alphabetically-
 // earlier test in the same binary (e.g. proxy_test.go's TestValidateProxyURL)
-// cached via the first sync.Once.Do(). NOT for production use — the ForTest
+// cached via the first sync.Once.Do(). NOT for production use - the ForTest
 // suffix is the contract.
 func ResetSSRFWhitelistForTest() {
 	ssrfWhitelistOnce = sync.Once{}
@@ -1270,7 +1270,7 @@ func ResetSSRFWhitelistForTest() {
 }
 
 // FormatSSRFError takes the error returned by ValidateURLForSSRF and wraps
-// it with operator guidance — specifically how to add a host to the SSRF
+// it with operator guidance - specifically how to add a host to the SSRF
 // allow-list. Without this hint, users hit "Base URL failed the security check" with
 // no idea how to recover (the allowlist is configured server-side, not
 // in the UI). The hint references SSRF_WHITELIST_EXTRA rather than
@@ -1306,7 +1306,7 @@ func FormatSSRFError(label, rawURL string, err error) string {
 }
 
 // parseHostForHint extracts a hostname from rawURL purely so we can echo
-// it back inside the SSRF hint. Best-effort — returns ("", err) for
+// it back inside the SSRF hint. Best-effort - returns ("", err) for
 // completely unparseable input and the caller falls back to the raw URL.
 func parseHostForHint(rawURL string) (string, error) {
 	if rawURL == "" {

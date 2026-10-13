@@ -466,7 +466,7 @@ func TestGetSessionAllowsEmbedRuntimeToReadOwnEmbedSession(t *testing.T) {
 	require.NoError(t, db.Create(ownSession).Error)
 
 	// The embed widget authenticates as a Viewer (embed_auth.go) but is the
-	// legitimate owner of its own channel session — symmetric to the IM and
+	// legitimate owner of its own channel session - symmetric to the IM and
 	// API-tenant runtimes above.
 	ctx := context.WithValue(
 		testSessionScopeContext(1, "system-1"),
@@ -494,7 +494,7 @@ func TestGetSessionDeniesEmbedRuntimeFromReadingForeignEmbedSession(t *testing.T
 	}
 	require.NoError(t, db.Create(foreignSession).Error)
 
-	// A different embed session principal must not read it — the owner scope
+	// A different embed session principal must not read it - the owner scope
 	// keeps each visitor's conversation isolated even after the bypass is granted.
 	ctx := context.WithValue(
 		testSessionScopeContext(1, "system-1"),

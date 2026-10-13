@@ -20,7 +20,7 @@ type CutPoint struct {
 
 // isCutPointMessage reports whether history may be cut immediately before this
 // message. Everything except a tool result qualifies. Tool results are excluded
-// because they must stay with the assistant message that requested them —
+// because they must stay with the assistant message that requested them -
 // cutting between the two leaves an orphaned tool result and providers reject
 // the request outright.
 //
@@ -39,7 +39,7 @@ func isTurnStartMessage(msg *chat.Message) bool {
 }
 
 // historyStart is the first index compaction may touch. The system prompt is
-// never a candidate — it carries the agent's instructions, not its history.
+// never a candidate - it carries the agent's instructions, not its history.
 func historyStart(messages []chat.Message) int {
 	if len(messages) > 0 && messages[0].Role == "system" {
 		return 1
@@ -78,7 +78,7 @@ func FindCutPoint(
 	}
 
 	// Worst case, keep only the newest group. A single message larger than the
-	// whole budget cannot be cut any further here — trimming that is the tool
+	// whole budget cannot be cut any further here - trimming that is the tool
 	// result trimmer's job, not the cut point's.
 	cutIdx := cutPoints[len(cutPoints)-1]
 	accumulated := 0

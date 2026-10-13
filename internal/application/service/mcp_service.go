@@ -88,7 +88,7 @@ func (s *mcpServiceService) GetMCPServiceByID(
 
 // ListMCPServices lists all MCP services for a tenant.
 //
-// Same contract as GetMCPServiceByID — returns raw entities; handlers MUST
+// Same contract as GetMCPServiceByID - returns raw entities; handlers MUST
 // convert to dto.MCPServiceResponse before responding.
 func (s *mcpServiceService) ListMCPServices(ctx context.Context, tenantID uint64) ([]*types.MCPService, error) {
 	services, err := s.mcpServiceRepo.List(ctx, tenantID)
@@ -161,7 +161,7 @@ func (s *mcpServiceService) UpdateMCPService(
 	// existing.URL = service.URL, after which any post-merge comparison
 	// between service.URL and existing.URL would trivially match.
 	//
-	// AuthConfig is intentionally NOT snapshotted/compared here — credential
+	// AuthConfig is intentionally NOT snapshotted/compared here - credential
 	// changes now flow through the dedicated /credentials subresource which
 	// handles its own CloseClient call. Main PUT does not accept secret
 	// fields (see handler comment on UpdateMCPService).
@@ -190,7 +190,7 @@ func (s *mcpServiceService) UpdateMCPService(
 		preAPIKeyHeader = existing.AuthConfig.APIKeyHeader
 	}
 
-	// CustomHeaders flows through main PUT (it's structural, not a secret) —
+	// CustomHeaders flows through main PUT (it's structural, not a secret) -
 	// nil preserves, non-nil replaces. Other AuthConfig fields (APIKey/Token)
 	// are never accepted via main PUT; the handler strips them up front.
 	//
@@ -265,7 +265,7 @@ func (s *mcpServiceService) UpdateMCPService(
 
 	// Check if critical configuration changed (URL / StdioConfig / transport
 	// type / custom headers). Comparisons MUST be against the pre-merge
-	// snapshots captured above — after the in-place merge, service.URL and
+	// snapshots captured above - after the in-place merge, service.URL and
 	// existing.URL point to the same memory, making any post-merge compare
 	// vacuously equal.
 	//

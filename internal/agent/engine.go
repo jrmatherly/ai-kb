@@ -23,7 +23,7 @@ import (
 )
 
 // langfuseQueryPreview caps the query length we ship as the agent.execute
-// span input — long quoted-context queries can be many KB of prose.
+// span input - long quoted-context queries can be many KB of prose.
 const langfuseQueryPreview = 2000
 
 // AgentEngine is the core engine for running ReAct agents.
@@ -283,7 +283,7 @@ func (e *AgentEngine) estimateCurrentTokens(messages []chat.Message) int {
 func (e *AgentEngine) deltaStart(messages []chat.Message) int {
 	start := e.lastSentMsgCount
 	// The reply to the previous request lands here. Its tokens are the usage's
-	// completion half, so skip it — but only if it is really there, since a
+	// completion half, so skip it - but only if it is really there, since a
 	// failed round appends nothing.
 	if start < len(messages) && messages[start].Role == "assistant" {
 		start++
@@ -322,8 +322,8 @@ func (e *AgentEngine) Execute(
 		"context_msgs": len(llmContext),
 	})
 
-	// Open a top-level Langfuse span so the agent run — including every
-	// round's LLM call and every tool execution — groups under a single
+	// Open a top-level Langfuse span so the agent run - including every
+	// round's LLM call and every tool execution - groups under a single
 	// node in the Langfuse UI instead of being flat children of the HTTP
 	// trace. No-op when Langfuse is disabled.
 	imgCount := 0
@@ -532,8 +532,8 @@ func (e *AgentEngine) finishStalledTurn(
 	response *types.ChatResponse,
 	truncated bool,
 ) {
-	// Text that arrived alongside tool calls is a preamble — "let me look that
-	// up" — from a round that meant to keep working. Presenting it as the final
+	// Text that arrived alongside tool calls is a preamble - "let me look that
+	// up" - from a round that meant to keep working. Presenting it as the final
 	// answer would show an opening line and call the turn finished, so the
 	// fallback speaks for it instead.
 	answer := response.Content
@@ -663,7 +663,7 @@ loop:
 		}
 	}
 
-	// If loop finished without final answer, generate one — but skip this
+	// If loop finished without final answer, generate one - but skip this
 	// when the context was cancelled (user pressed stop). In that case the
 	// fallback LLM call would fail on the already-cancelled ctx and set
 	// state.FinalAnswer to the generic "Sorry, I was unable to generate a
@@ -693,7 +693,7 @@ const (
 
 // runReActIteration executes one ReAct step: think → analyze → act → observe.
 // Extracted from executeLoop so the whole iteration body can live inside a
-// single `defer span.Finish()` scope — otherwise we'd need to sprinkle
+// single `defer span.Finish()` scope - otherwise we'd need to sprinkle
 // manual finish calls across every break/continue/return branch.
 //
 // The mutable loop state (messages and the no-progress guards) is shared
@@ -759,7 +759,7 @@ func (e *AgentEngine) runReActIteration(
 	}()
 
 	// Compact older history before the next assistant response when the
-	// estimate is over the threshold. The trigger is estimateCurrentTokens —
+	// estimate is over the threshold. The trigger is estimateCurrentTokens -
 	// usage+delta when a previous round reported one, otherwise the message
 	// list alone. Tool schemas are not added here.
 	currentTokens := e.estimateCurrentTokens(*messagesPtr)
@@ -798,8 +798,8 @@ func (e *AgentEngine) runReActIteration(
 		return iterOutcomeBreak, nil
 	}
 
-	// The round's own token estimate can be wrong — history is estimated, not
-	// counted — so a request that looked safe can still come back having hit
+	// The round's own token estimate can be wrong - history is estimated, not
+	// counted - so a request that looked safe can still come back having hit
 	// the window. Compacting and retrying once turns that into a recovered
 	// round instead of a wasted one. Once per turn: if the retry overflows
 	// too, the problem is not the history size.
@@ -877,8 +877,8 @@ func (e *AgentEngine) runReActIteration(
 	}
 
 	// Detect stuck loops: a round with no tool calls that repeats the previous
-	// such round is not making progress. An identical *lack* of content counts
-	// — a model burning its whole budget on reasoning returns empty every
+	// such round is not making progress. An identical *lack* of content counts -
+	// a model burning its whole budget on reasoning returns empty every
 	// round, which used to land in the else branch and reset the counter, so
 	// the guard could never fire on the one shape that needs it most (#3446).
 	if len(response.ToolCalls) == 0 {
@@ -918,7 +918,7 @@ func (e *AgentEngine) runReActIteration(
 	// user pressed "stop"), the stream driver still returns a usable
 	// response (partial content / finish_reason="stop" / no tool calls).
 	// Do NOT let analyzeResponse treat that partial thinking text as the
-	// final answer — it would pollute Message.Content with mid-stream
+	// final answer - it would pollute Message.Content with mid-stream
 	// thinking and show up as a duplicate card next to the intermediate-
 	// steps tree. Preserve the partial thinking as an AgentStep and break
 	// out of the loop without marking state.IsComplete. executeLoop's
@@ -951,7 +951,7 @@ func (e *AgentEngine) runReActIteration(
 				})
 				return iterOutcomeContinue, nil
 			}
-			// Retries exhausted — use fallback message rather than empty answer.
+			// Retries exhausted - use fallback message rather than empty answer.
 			// analyzeResponse emitted nothing for the empty rounds (they were
 			// retryable), so the fallback must be emitted here as the turn's
 			// sole terminal answer event (#2906).
@@ -1114,7 +1114,7 @@ func decodeDataURIBytes(dataURI string) ([]byte, error) {
 	raw := dataURI[idx+8:]
 	decoded, err := base64.StdEncoding.DecodeString(raw)
 	if err != nil {
-		// Retry without padding — some MCP servers omit trailing '='
+		// Retry without padding - some MCP servers omit trailing '='
 		decoded, err = base64.RawStdEncoding.DecodeString(raw)
 	}
 	return decoded, err

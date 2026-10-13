@@ -7,7 +7,7 @@ import (
 )
 
 // langfuseVLM wraps a VLM and reports each Predict call as a Langfuse
-// generation. The raw image bytes are NOT uploaded — Langfuse traces are
+// generation. The raw image bytes are NOT uploaded - Langfuse traces are
 // designed for text. We include image count and total byte size in the
 // metadata, plus the text prompt, which matches how Langfuse's own VLM
 // integrations report multimodal calls.

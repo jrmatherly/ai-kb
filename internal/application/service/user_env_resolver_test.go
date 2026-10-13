@@ -274,7 +274,7 @@ func TestResolverWithoutAPrincipalUsesWorkspaceValuesOnly(t *testing.T) {
 }
 
 // Preloaded skills reach the resolver too and carry no declaration, so an
-// unknown name is not an error — it just resolves the config-wide scope.
+// unknown name is not an error - it just resolves the config-wide scope.
 func TestResolverUnknownSkillStillGetsConfigWideValues(t *testing.T) {
 	reader := &fakeUserEnvReader{tenantID: testEnvTenantID}
 	reader.put(webPrincipal("u1"), testEnvConfigID, "",
@@ -306,7 +306,7 @@ func TestResolverWorksWithNoInstalledSkills(t *testing.T) {
 
 // A required skill key filled in on the sandbox config is already in the
 // container from creation. The gate must not refuse that run, and must not
-// copy the value into the per-exec map — that would change create-time
+// copy the value into the per-exec map - that would change create-time
 // injection into a live overlay.
 func TestResolverSandboxConfigSatisfiesRequiredWithoutInjecting(t *testing.T) {
 	row := searchSkillRow()

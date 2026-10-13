@@ -203,7 +203,7 @@ func TestResolveLocation(t *testing.T) {
 // TestReadBitableRecords_DateColumnUsesFormatterAndTimezone proves the date fix
 // end-to-end: property.date_formatter is parsed from the fields response, a type-5
 // column is detected, and the ms instant is rendered in the client timezone
-// (GMT+8) — date-only vs datetime distinguished by the formatter.
+// (GMT+8) - date-only vs datetime distinguished by the formatter.
 func TestReadBitableRecords_DateColumnUsesFormatterAndTimezone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -358,7 +358,7 @@ func bitableRows(n int) []map[string]any {
 }
 
 // TestReadBitableRecords_PaginatesAndTruncatesRecords exercises the record-side
-// pagination advance and the >maxTableRows truncation — the boundary logic that
+// pagination advance and the >maxTableRows truncation - the boundary logic that
 // no prior test reached (every other bitable test returns a single sub-cap page).
 func TestReadBitableRecords_PaginatesAndTruncatesRecords(t *testing.T) {
 	var secondPageToken string

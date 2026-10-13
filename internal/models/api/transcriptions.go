@@ -9,7 +9,7 @@ type TranscriptionAPI string
 // The transcription protocols AI KB speaks.
 const (
 	// TranscriptionOpenAI is POST {base}/audio/transcriptions as a multipart
-	// form carrying file and model, answering {text} — or {text, segments}
+	// form carrying file and model, answering {text} - or {text, segments}
 	// when verbose_json is asked for.
 	TranscriptionOpenAI TranscriptionAPI = "openai-transcriptions"
 	// TranscriptionChatAudio is a dedicated speech-recognition model behind
@@ -36,8 +36,8 @@ type TranscriptionSegment struct {
 type Transcription struct {
 	Text     string
 	Segments []TranscriptionSegment
-	// Duration is the audio length in seconds when the reply states it —
-	// OpenAI-shaped duration or usage.seconds — and 0 otherwise.
+	// Duration is the audio length in seconds when the reply states it -
+	// OpenAI-shaped duration or usage.seconds - and 0 otherwise.
 	Duration float64
 }
 

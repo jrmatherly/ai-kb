@@ -2,7 +2,7 @@
 //
 // The Sandbox / Manager pair intentionally hides provider identity (Cube,
 // E2B, Docker) from the application layer. Higher layers should never
-// branch on Manager.GetType() to decide whether a feature is supported —
+// branch on Manager.GetType() to decide whether a feature is supported -
 // that couples them to a specific backend.
 //
 // Instead, session-scoped features (shell execution, per-session file
@@ -50,7 +50,7 @@ type SessionFileStore interface {
 	ListSessionFiles(ctx context.Context, sessionID, dir string) ([]RemoteDirEntry, error)
 
 	// StatSessionFile returns metadata for a single file. Errors when the
-	// session has no bound sandbox — callers of this method already hold a
+	// session has no bound sandbox - callers of this method already hold a
 	// path from a prior ListSessionFiles call.
 	StatSessionFile(ctx context.Context, sessionID, path string) (*RemoteStatEntry, error)
 

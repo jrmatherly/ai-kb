@@ -11,7 +11,7 @@ const (
 	ActionCaption ActionKind = "caption"
 	// ActionObservation asks the model to observe the registered attributes
 	// (contain.text, contain.data_visual, ...). It is the only action that
-	// feeds a later decision — the OCR policy reads its result.
+	// feeds a later decision - the OCR policy reads its result.
 	ActionObservation ActionKind = "observation"
 	// ActionOCR extracts the text the image carries, when the policy wants it.
 	ActionOCR ActionKind = "ocr"
@@ -46,7 +46,7 @@ func PipelineModeFor(attrsEnabled bool) PipelineMode {
 // DefaultEnabledActions returns the per-action default-on flags for a pipeline
 // mode. Observation mode observes and captions by default and lets the OCR
 // decision gate OCR; caption+OCR mode captions and OCRs every image. This is
-// the single source of default action membership — a new action is enabled
+// the single source of default action membership - a new action is enabled
 // here, never scattered across call sites.
 //
 // Note the deliberate parallel with DefaultImageActions: this is which actions

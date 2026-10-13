@@ -20,7 +20,7 @@ import (
 //  1. config.FrontendBaseURL (set in YAML or via ${FRONTEND_BASE_URL})
 //  2. FRONTEND_BASE_URL env at request time (so an operator can roll
 //     the value out without restarting the server)
-//  3. empty — handler emits a host-relative URL ("/register?token=…")
+//  3. empty - handler emits a host-relative URL ("/register?token=…")
 //     and the SPA resolves it against the current origin.
 //
 // Trailing slashes are stripped so callers can append "/register?…"
@@ -47,7 +47,7 @@ func buildInviteRegisterURL(cfg *config.Config, plainToken string) string {
 }
 
 // createInviteLinkRequest is the body for POST /tenants/:id/invite-links.
-// Only role + optional message — share-link rows have no specific
+// Only role + optional message - share-link rows have no specific
 // invitee, so the Owner just picks "what role does the holder get".
 type createInviteLinkRequest struct {
 	Role    types.TenantRole `json:"role"    binding:"required"`

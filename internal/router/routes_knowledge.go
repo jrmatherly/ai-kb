@@ -9,7 +9,7 @@ import (
 )
 
 // RegisterChunkerDebugRoutes wires the read-only chunker preview endpoint
-// used by the KB editor's debug panel. Stateless — uses no service deps.
+// used by the KB editor's debug panel. Stateless - uses no service deps.
 //
 // Viewer+ floor: the endpoint surfaces inside the tenant UI, so any
 // authenticated tenant member can call it; revoked accounts whose JWT
@@ -108,12 +108,12 @@ func RegisterKnowledgeRoutes(r *gin.RouterGroup, handler *handler.KnowledgeHandl
 	kRead := k.With(apiKeyRetrieve(apiKeyFullAccess()))
 	{
 		// Cross-knowledge endpoints (no :id) can't be gated on a single
-		// KB via the URL — they accept a kb_id (or source/target KB) in the
+		// KB via the URL - they accept a kb_id (or source/target KB) in the
 		// body and the handler fans out the access check itself. /batch and
 		// /search are read routes (retrieve). /move, /batch-delete,
 		// /batch-reparse and /tags are content writes that each bound
 		// themselves to a single (or source+target) KB and enforce the API
-		// key's KB allow-list downstream — MoveKnowledge via
+		// key's KB allow-list downstream - MoveKnowledge via
 		// requireTenantAPIKeyKnowledgeBases(source,target); the batch ops via
 		// validateKnowledgeBaseAccessWithKBID (requireTenantAPIKeyKnowledgeBase)
 		// plus a per-item "belongs to the authorized KB" check in the handler
@@ -171,7 +171,7 @@ func RegisterFAQRoutes(r *gin.RouterGroup, handler *handler.FAQHandler, g *rbacG
 	faqRead := faq.With(apiKeyRetrieve(apiKeyFullAccess()))
 	{
 		// KBAccessRead/Write resolve own/shared/agent-visible access and
-		// rewrite the request's tenant context — handler no longer
+		// rewrite the request's tenant context - handler no longer
 		// carries an effectiveCtxForKB helper.
 		faqRead.GET("/entries", g.Viewer(), g.KBAccessRead("id"), handler.ListEntries)
 		faqRead.GET("/entries/export", g.Viewer(), g.KBAccessRead("id"), handler.ExportEntries)
@@ -190,7 +190,7 @@ func RegisterFAQRoutes(r *gin.RouterGroup, handler *handler.FAQHandler, g *rbacG
 		// FAQ import result display status
 		faq.PUT("/import/last-result/display", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.UpdateLastImportResultDisplayStatus)
 	}
-	// FAQ import progress route (outside of knowledge-base scope) — Viewer+.
+	// FAQ import progress route (outside of knowledge-base scope) - Viewer+.
 	// Scoped API keys that can ingest (they start the import) or retrieve may
 	// poll their own import/dry-run progress. The task is tenant-scoped by
 	// requireTaskProgressTenant, so a key only ever sees its own tenant's
@@ -243,8 +243,8 @@ func RegisterKnowledgeBaseRoutes(r *gin.RouterGroup, handler *handler.KnowledgeB
 		kbManagement.DELETE("/:id", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), handler.DeleteKnowledgeBase)
 		// Pin/unpin a knowledge base: the creator OR Admin+, with write access to the KB
 		// Pin state is now per-(user, kb) (migration 000050). Anyone with
-		// at least Viewer-level read access to the KB — including users
-		// who reached it via a shared agent — may pin it for themselves;
+		// at least Viewer-level read access to the KB - including users
+		// who reached it via a shared agent - may pin it for themselves;
 		// no edit permission is required. The OwnedKBOrAdmin guard was
 		// removed accordingly. The route still requires KB read access
 		// so callers can't poke at KBs they can't see.
@@ -281,9 +281,9 @@ func RegisterKnowledgeBaseRoutes(r *gin.RouterGroup, handler *handler.KnowledgeB
 //
 // The registry is a single source of truth, so adding an attribute is a
 // backend-only change (one registry row) and the UI follows automatically. It
-// carries no KB id and needs only the Viewer role, so — like the other
+// carries no KB id and needs only the Viewer role, so - like the other
 // read-only KB-editor helpers GET /chunker/preview and GET
-// /system/parser-engines — it is mounted at the top level rather than under
+// /system/parser-engines - it is mounted at the top level rather than under
 // the /knowledge-bases collection.
 func RegisterImageAttrRoutes(r *gin.RouterGroup, handler *handler.KnowledgeBaseHandler, g *rbacGuards) {
 	g.apiKeyRoute(r, http.MethodGet, "/image-attrs/schema",
@@ -320,7 +320,7 @@ func RegisterKnowledgeTagRoutes(r *gin.RouterGroup, tagHandler *handler.TagHandl
 	{
 		// KBAccessRead/Write resolve own/shared/agent-visible access and
 		// rewrite the request's tenant context to the effective tenant
-		// for the duration of the handler — so the handler no longer
+		// for the duration of the handler - so the handler no longer
 		// needs its own effectiveCtxForKB helper.
 		kbTagsRead.GET("", g.Viewer(), g.KBAccessRead("id"), tagHandler.ListTags)
 		kbTags.POST("", g.OwnedKBOrAdmin(), g.KBAccessWrite("id"), tagHandler.CreateTag)

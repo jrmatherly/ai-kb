@@ -31,7 +31,7 @@ not in the current conversation:
 - The user assumes shared context that this session does not contain
 
 Do not use when:
-- The answer is in documents (use search_knowledge — that is the knowledge base)
+- The answer is in documents (use search_knowledge - that is the knowledge base)
 - The information is in the current conversation already
 - The user is asking a general question with no reference to the past
 
@@ -71,7 +71,7 @@ type SearchConversationsInput struct {
 // history.
 //
 // A long-term memory feature that distils conversations into a few dozen
-// sentences will always lose detail — the exact config someone was given three
+// sentences will always lose detail - the exact config someone was given three
 // weeks ago is not a durable fact about them, and storing it would be the wrong
 // shape. Keeping the transcripts searchable and letting the agent go back for
 // them is the same division of labour MemGPT uses: a small always-present

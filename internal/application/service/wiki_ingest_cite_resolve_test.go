@@ -64,7 +64,7 @@ func imageChildChunk(id, parentID, chunkType types.ChunkType, imageInfoJSON stri
 
 // TestResolveCitedChunksEnrichesWithImageInfo verifies that the Reduce phase
 // receives cited text chunks enriched with the caption/OCR info of their
-// (enabled) image child chunks — the same treatment the summary page gets via
+// (enabled) image child chunks - the same treatment the summary page gets via
 // reconstructEnrichedContent. Disabled image children must be skipped so the
 // decorative-image cleanup composes with this path.
 func TestResolveCitedChunksEnrichesWithImageInfo(t *testing.T) {

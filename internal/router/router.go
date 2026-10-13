@@ -198,7 +198,7 @@ func NewRouter(params RouterParams) *gin.Engine {
 	serveResourceGrants(r, params.ResourceCatalog, params.TenantService, params.FileService, params.StorageBackendResolver)
 
 	// Sandbox terminal WebSocket (self-authenticated via a short-lived
-	// query ticket — see RegisterSandboxTerminalRoutes; browsers cannot set
+	// query ticket - see RegisterSandboxTerminalRoutes; browsers cannot set
 	// auth headers on the WS handshake, so this must precede the global Auth
 	// middleware). The ticket is minted by an authenticated POST.
 	RegisterSandboxTerminalRoutes(r, params.SessionHandler)
@@ -219,11 +219,11 @@ func NewRouter(params RouterParams) *gin.Engine {
 	// Diagnostic preview of presigned URLs (Admin only, behind auth middleware).
 	servePresignedPreview(r, params.Config, params.StorageBackendResolver, params.ResourceCatalog)
 
-	// Langfuse observability — only active when LANGFUSE_* env vars are set.
+	// Langfuse observability - only active when LANGFUSE_* env vars are set.
 	// The middleware is registered unconditionally; when disabled it's a no-op.
 	r.Use(langfuse.GinMiddleware())
 
-	// Audit log injection — middleware/rbac.go's reject paths and the
+	// Audit log injection - middleware/rbac.go's reject paths and the
 	// admin-only /tenants/:id/audit-log endpoint pull the service out
 	// of the gin context. Provider is a no-op when AuditLogService is
 	// nil (e.g. lite mode without DB), so the rbac path degrades to

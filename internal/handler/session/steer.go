@@ -55,7 +55,7 @@ type SteerMessageRequest struct {
 }
 
 // Steer request limits. maxSteerQueueDepth bounds how many messages a single
-// run can accumulate — past that the run is clearly ignoring its user and the
+// run can accumulate - past that the run is clearly ignoring its user and the
 // honest answer is to refuse instead of queueing silently.
 const (
 	maxSteerQueueDepth   = 10
@@ -207,7 +207,7 @@ func steerEventToRaw(evt interfaces.StreamEvent) map[string]interface{} {
 //
 // Mentions are stored for display and for the next turn only. The running
 // turn's tool, KB and skill scope was resolved when it started and is not
-// widened mid-flight — @-ing a knowledge base in a steered message does not
+// widened mid-flight - @-ing a knowledge base in a steered message does not
 // hand the in-flight agent a new retriever.
 func (s *steerSink) PersistSteerMessage(
 	ctx context.Context, sessionID, messageID, steerID, content string,
@@ -561,7 +561,7 @@ func (h *Handler) SteerMessage(c *gin.Context) {
 	}
 
 	// Queue depth guard: refuse rather than silently accumulate. Only pending
-	// messages count — a turn that already absorbed ten injects still has an
+	// messages count - a turn that already absorbed ten injects still has an
 	// empty overlay, so charging the user for them would refuse a send with
 	// nothing on screen to explain it.
 	existing, _, err := h.streamManager.GetSteerEvents(ctx, sessionID, assistantID, 0)
@@ -804,7 +804,7 @@ func (h *Handler) DeleteSteerMessage(c *gin.Context) {
 		return
 	}
 
-	// A message the engine already took cannot be unsent — it is in the
+	// A message the engine already took cannot be unsent - it is in the
 	// model's context. Say so instead of reporting a delete that did not
 	// change what the agent saw.
 	events, _, err := h.streamManager.GetSteerEvents(ctx, sessionID, assistantID, 0)

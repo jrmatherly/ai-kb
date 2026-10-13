@@ -180,7 +180,7 @@ func ScanResourceReferences(text string) []string {
 	var refs []string
 	for _, span := range resourceReferenceRE.FindAllStringIndex(text, -1) {
 		// A longer run of handle characters is not a 22-char handle with
-		// trailing text — it is a different (invalid) token, and binding the
+		// trailing text - it is a different (invalid) token, and binding the
 		// truncated prefix would attach the wrong file.
 		if span[1] < len(text) && isResourceHandleChar(text[span[1]]) {
 			continue

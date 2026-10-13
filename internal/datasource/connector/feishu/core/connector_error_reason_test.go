@@ -65,7 +65,7 @@ func TestFeishuFailure(t *testing.T) {
 		},
 		{
 			// "decode"/"encode"/"unicode" all contain the substring "code" but
-			// are not Feishu API errors — they must not be classified as one.
+			// are not Feishu API errors - they must not be classified as one.
 			name:     "decode error is not a feishu api error",
 			err:      errors.New("failed to decode response body"),
 			wantCode: "sync_failed",

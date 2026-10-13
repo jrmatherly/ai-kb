@@ -1,4 +1,4 @@
-// Package handler — chunker_debug.go exposes a read-only preview endpoint
+// Package handler - chunker_debug.go exposes a read-only preview endpoint
 // that runs the adaptive chunker on supplied text without touching the DB
 // or generating embeddings. Used by the KB editor's debug panel so users
 // can experiment with chunking parameters before committing to a re-index.
@@ -135,7 +135,7 @@ func PreviewChunking(c *gin.Context) {
 	if strings.TrimSpace(req.Text) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "text is empty — paste a sample to preview chunking",
+			"error":   "text is empty: paste a sample to preview chunking",
 		})
 		return
 	}
@@ -161,7 +161,7 @@ func PreviewChunking(c *gin.Context) {
 	})
 
 	// Run the splitter on a goroutine so we can honor the request timeout.
-	// The splitter is CPU-bound and doesn't accept a context — wrapping
+	// The splitter is CPU-bound and doesn't accept a context - wrapping
 	// here is the cheapest cancellation we can offer.
 	type splitResult struct {
 		chunks []chunker.Chunk

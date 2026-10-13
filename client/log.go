@@ -19,7 +19,7 @@ var debugLogger = slog.New(slog.NewTextHandler(io.Discard, nil))
 // insensitive); any other value (including "") disables output entirely
 // (writes to io.Discard).
 //
-// Not safe for concurrent use while SDK calls are in flight — call once
+// Not safe for concurrent use while SDK calls are in flight - call once
 // at startup before any client method is invoked.
 func SetDebugLevel(level string) {
 	switch strings.ToLower(level) {

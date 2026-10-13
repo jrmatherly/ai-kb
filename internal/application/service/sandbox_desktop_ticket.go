@@ -3,7 +3,7 @@
 // Unlike the terminal's ticket (sandbox_terminal_ticket.go) this is an opaque
 // random string in a store, not a signed JWT. The desktop ticket must be
 // single-use, and once a store is needed to enforce that, the stateless JWT's
-// only advantage is gone — while its drawback (an HS256 blob sitting in
+// only advantage is gone - while its drawback (an HS256 blob sitting in
 // gateway access logs and browser history for its whole TTL) remains. The
 // terminal's implementation is deliberately left untouched.
 package service

@@ -5,7 +5,7 @@
 // to boot from a snapshot of the source sandbox rolled back to the fork point.
 //
 // The whole operation is cheap and synchronous: it writes the database and
-// takes one provider snapshot. No sandbox is created here — provisioning stays
+// takes one provider snapshot. No sandbox is created here - provisioning stays
 // lazy, exactly as it is for ordinary sessions.
 package service
 
@@ -26,8 +26,8 @@ import (
 )
 
 // ForkDegradeReason explains why a fork could not carry the source sandbox's
-// state over. A degraded fork still succeeds — it just starts from a brand new
-// sandbox — because the alternative (refusing) would block the common cases:
+// state over. A degraded fork still succeeds - it just starts from a brand new
+// sandbox - because the alternative (refusing) would block the common cases:
 // Docker kills idle containers outright, and plain chat sessions never had a
 // sandbox to begin with.
 type ForkDegradeReason string
@@ -378,7 +378,7 @@ func (s *SessionForkService) recordSnapshotLease(
 	lease := &types.ForkSnapshotLease{
 		SnapshotID: bootstrap.SnapshotID,
 		// The reaper resolves (TenantID, SandboxConfigID) as a pair, so this
-		// must be the workspace that owns the config — the lending one when
+		// must be the workspace that owns the config - the lending one when
 		// the snapshot was taken on a shared agent's sandbox.
 		TenantID:        source.SandboxConfigOwner(),
 		SandboxConfigID: source.SandboxConfigID,
@@ -401,7 +401,7 @@ func (s *SessionForkService) clearSnapshotLease(ctx context.Context, snapshotID 
 
 // abandonCreatedSnapshot deletes a snapshot this fork just created. On success
 // it also drops the lease. On delete failure the lease stays so the reaper
-// can retry — there is no session row to hang the ID on.
+// can retry - there is no session row to hang the ID on.
 func (s *SessionForkService) abandonCreatedSnapshot(ctx context.Context, sourceSessionID, snapshotID string) {
 	snapshotID = strings.TrimSpace(snapshotID)
 	if snapshotID == "" || s.sandbox == nil {

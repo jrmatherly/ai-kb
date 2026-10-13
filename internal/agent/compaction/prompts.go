@@ -2,7 +2,7 @@ package compaction
 
 // The sections are not decoration: the summary is the agent's only memory of
 // the dropped turns, and unstructured prose reliably loses the two things the
-// next round actually needs — what is already finished, and what was about to
+// next round actually needs - what is already finished, and what was about to
 // happen next.
 
 const summarizationSystemPrompt = "" +
@@ -33,7 +33,7 @@ const summaryFormat = "" +
 	"- [Facts, numbers, identifiers, paths, and error messages later steps depend on]\n" +
 	"- [Or \"(none)\"]\n\n" +
 	"Keep each section concise. Write in the same language as the conversation. " +
-	"Preserve exact values — paths, names, numbers, and error text — rather than " +
+	"Preserve exact values - paths, names, numbers, and error text - rather than " +
 	"paraphrasing them. Output only the summary, with no preamble.\n\n" +
 	"Length matters: this summary shares the context window with the retained " +
 	"recent messages, so it must stay compact enough to be worth having. Aim for " +
@@ -64,7 +64,7 @@ const updateSummarizationInstructions = "" +
 // turnPrefixInstructions summarizes the discarded head of a split turn. It is
 // a different job from the history summary: the retained suffix is still in
 // context, so this only has to supply what the suffix cannot explain about
-// itself — above all, what the user originally asked for.
+// itself - above all, what the user originally asked for.
 const turnPrefixInstructions = "" +
 	"This is the PREFIX of a turn that was too large to keep. The SUFFIX (recent work) " +
 	"is retained in the conversation and is NOT shown here.\n\n" +

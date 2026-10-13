@@ -166,7 +166,7 @@ func (ht *headerTracker) getHeaders() string {
 }
 
 // isEmptyTableHeaderRow checks if the header row (the line before the separator)
-// contains only pipes and whitespace — meaning the column names are empty.
+// contains only pipes and whitespace - meaning the column names are empty.
 // This is common with MarkItDown and similar converters that produce tables like:
 //
 //	||

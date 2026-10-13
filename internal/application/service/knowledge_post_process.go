@@ -142,7 +142,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	// post-process). If the parent skipped multimodal entirely, the
 	// stage row will already be in "skipped" state and must remain so.
 	// Per-image success/failure counts are NOT
-	// aggregated here — the frontend already walks the children when
+	// aggregated here - the frontend already walks the children when
 	// rendering the multimodal stage detail and counts them itself,
 	// avoiding an extra query path.
 	s.finishRunningMultimodalStage(ctx, payload.KnowledgeID, attempt)
@@ -172,7 +172,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 
 	// 2. Fetch all text-like chunks. ListChunksByKnowledgeID is text-only by
 	//    design, which silently dropped the OCR / Caption chunks that
-	//    multimodal parsing adds for scanned PDFs — leaving graph extraction
+	//    multimodal parsing adds for scanned PDFs - leaving graph extraction
 	//    with nothing but image-link placeholders. Ask the repository for the
 	//    exact chunk types we enrich instead.
 	chunks, err := s.chunkRepo.ListChunksByKnowledgeIDAndTypes(ctx, payload.TenantID, payload.KnowledgeID,
@@ -209,7 +209,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	//    per-knowledge op, and the batch worker calls FinalizeSubtask once
 	//    when that op reaches a terminal state (mapped successfully or
 	//    dead-lettered after exhausting retries). Counting it keeps the row
-	//    in "finalizing" — i.e. shown as in-progress and still cancellable —
+	//    in "finalizing" - i.e. shown as in-progress and still cancellable -
 	//    until wiki generation actually finishes instead of flipping to
 	//    completed while wiki runs minutes later. A wiki op that never
 	//    drains is bounded by the housekeeping finalizing sweep.
@@ -224,7 +224,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	// Question generation now fans out one subtask per plain text chunk
 	// (mirroring the graph-extract per-chunk pattern) so each chunk's LLM
 	// call retries / cancels / traces independently. We only target
-	// ChunkTypeText here — OCR / Caption chunks were never fed to question
+	// ChunkTypeText here - OCR / Caption chunks were never fed to question
 	// generation in the legacy whole-knowledge loop, so excluding them
 	// keeps behavior identical. Link-only text chunks (scanned PDF pages)
 	// are skipped: the LLM has nothing to ask about and tends to echo the
@@ -286,7 +286,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	case knowledge.ParseStatus != types.ParseStatusProcessing:
 		// The row was already in some other state (deleting / cancelled /
 		// failed / completed) when we arrived. Don't touch parse_status
-		// and don't spawn enrichment — the upstream that put the row in
+		// and don't spawn enrichment - the upstream that put the row in
 		// that state has already decided this attempt is over.
 		logger.Infof(ctx, "[KnowledgePostProcess] Knowledge %s is in %s, skipping enrichment fan-out.",
 			payload.KnowledgeID, knowledge.ParseStatus)
@@ -399,7 +399,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 		// Create the postprocess.question grouping span up front so the
 		// per-batch subspans (enqueued just below, run later in their own
 		// workers) have a parent to nest under. It's begun and ended right
-		// here as a structural container — the batches extend past it,
+		// here as a structural container - the batches extend past it,
 		// which the timeline renders with the wrapping outline bar.
 		if grp := s.tracker().BeginSubSpan(ctx, postSpan, postprocessQuestionGroupSpanName,
 			types.SpanKindSubSpan, types.JSONMap{
@@ -417,7 +417,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 		)
 	}
 
-	// 5. Spawn Graph RAG Tasks — only when graph indexing is enabled in IndexingStrategy
+	// 5. Spawn Graph RAG Tasks - only when graph indexing is enabled in IndexingStrategy
 	enqueuedGraphCount := 0
 	if graphChunkCount > 0 {
 		logger.Infof(ctx,
@@ -457,7 +457,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	// task drains; a slot whose task was never enqueued (graph with NEO4J
 	// off, a transient enqueue/marshal failure, a nil enqueuer) has no owner
 	// and would otherwise strand the row in "finalizing". Release exactly the
-	// shortfall — each release is a clamped decrement that promotes the row to
+	// shortfall - each release is a clamped decrement that promotes the row to
 	// "completed" if it brings the counter to zero. Safe against fast workers:
 	// shortfall slots have no draining
 	// task, so total drains == seeded count regardless of ordering.
@@ -465,7 +465,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	// Detached ctx: the same reasoning that motivates finalizeSubtaskDetached
 	// for terminal worker drains applies here. If the postprocess handler's
 	// ctx is cancelled (graceful shutdown, preempted worker) between SetFinalizing
-	// and this point, the seeded slots have NO other path to drain — every
+	// and this point, the seeded slots have NO other path to drain - every
 	// owning task either failed to enqueue or was never created. Riding a
 	// cancelled ctx would silently abort the releases and strand the row in
 	// "finalizing". The bound is per-call (matches the helper) so a wedged
@@ -515,7 +515,7 @@ func (s *KnowledgePostProcessService) Handle(ctx context.Context, task *asynq.Ta
 	if wikiSlotOwned && wikiEnqueueErr != nil {
 		return fmt.Errorf("enqueue wiki ingest trigger: %w", wikiEnqueueErr)
 	}
-	// Close the root span — the parse pipeline is done. Async
+	// Close the root span - the parse pipeline is done. Async
 	// downstream stages (summary/question/wiki/graph) record their
 	// own spans independently; their finishing extends the trace's
 	// end-time but does not reopen the root. A late failure in one
@@ -611,7 +611,7 @@ const postprocessQuestionGroupSpanName = "postprocess.question"
 
 // enqueueQuestionGenerationTasks fans out one TypeQuestionGeneration task per
 // batch of questionGenChunkBatchSize text chunks. Each task carries only chunk
-// ids (+ the adjacent boundary ids for context) — never the chunk content — so
+// ids (+ the adjacent boundary ids for context) - never the chunk content - so
 // the payload stays small and the worker reads fresh content at run time,
 // matching the ExtractChunkPayload precedent.
 //

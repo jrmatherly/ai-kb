@@ -148,7 +148,7 @@ func (s EmbeddingsSettings) InputTypeValue(kind EmbedInputType) string {
 
 // DefaultEmbeddings is the protocol baseline, and it is deliberately bare:
 // `model` and `input` are the only two fields every vendor in this catalog
-// documents. The rest disagree — NVIDIA NIM and Volcengine's text endpoint
+// documents. The rest disagree - NVIDIA NIM and Volcengine's text endpoint
 // have no `dimensions` at all, Zhipu has no `encoding_format`, and the
 // parameter that separates a query from a document is spelled three
 // different ways. A vendor that documents one declares it; nothing is sent

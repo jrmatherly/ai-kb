@@ -41,7 +41,7 @@ func TestIsTransientLLMError_HTTPStatuses(t *testing.T) {
 
 // TestIsTransientLLMError_TransportSubstrings covers providers (and Go
 // stdlib errors) that surface transient conditions as free-form text
-// without a numeric status code — DNS blips, TLS handshake failures,
+// without a numeric status code - DNS blips, TLS handshake failures,
 // broken pipes during an in-flight body read, etc.
 func TestIsTransientLLMError_TransportSubstrings(t *testing.T) {
 	ctx := context.Background()
@@ -58,7 +58,7 @@ func TestIsTransientLLMError_TransportSubstrings(t *testing.T) {
 		{"send request: tls handshake timeout", true},
 		{"send request: unexpected EOF", true},
 		// Not transient: the error is actionable (missing model id,
-		// malformed tool call, etc.) — retry is just wasted budget.
+		// malformed tool call, etc.) - retry is just wasted budget.
 		{"model not configured for tool use", false},
 		{"invalid JSON in tool arguments", false},
 		{"parse template: syntax error", false},
@@ -89,7 +89,7 @@ func TestIsTransientLLMError_AbortsWhenParentCtxDone(t *testing.T) {
 	}
 }
 
-// TestIsTransientLLMError_NilError is a sanity check — nil should never
+// TestIsTransientLLMError_NilError is a sanity check - nil should never
 // be treated as retryable, otherwise callers that forget to handle the
 // happy path would spin forever.
 func TestIsTransientLLMError_NilError(t *testing.T) {
@@ -102,7 +102,7 @@ func TestIsTransientLLMError_NilError(t *testing.T) {
 // throttling as HTTP 403 with a rate-limit body instead of 429 (e.g. a MaaS
 // gateway returning code 0x04030020 with a Chinese message meaning "call rate (qpm) exceeded"). These carry the
 // provider-embedded response body "API request failed with status 403: {...}",
-// and only body-rated limit wording classifies them as transient — a plain
+// and only body-rated limit wording classifies them as transient - a plain
 // authorization 403 must stay permanent.
 func TestIsTransientLLMError_RateLimit403(t *testing.T) {
 	ctx := context.Background()

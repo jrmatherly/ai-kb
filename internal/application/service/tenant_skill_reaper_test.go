@@ -58,7 +58,7 @@ func TestReapStuckRunsRestoresAbandonedRemovals(t *testing.T) {
 
 // A config accumulates generations, and only the skill being installed gets
 // its row rewritten. Judging an older skill by whether its own snapshot is
-// still the live one therefore condemns every skill but the most recent —
+// still the live one therefore condemns every skill but the most recent -
 // here by deleting the row and bundle of files the image still carries.
 func TestReapStuckRunsRestoresRemovalOfSkillInheritedByALaterSnapshot(t *testing.T) {
 	fx := newReaperFixture(t)

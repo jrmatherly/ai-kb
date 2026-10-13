@@ -198,7 +198,7 @@ func TestSelectDedupCandidatePages_SmallCorpusBypass(t *testing.T) {
 }
 
 // Non-entity/concept pages (summaries, comparisons, …) must be stripped regardless
-// of corpus size — they are never valid merge targets.
+// of corpus size - they are never valid merge targets.
 func TestSelectDedupCandidatePages_DropsNonEntityConcept(t *testing.T) {
 	newItems := []extractedItem{
 		{Slug: "concept/foo", Name: "Foo"},

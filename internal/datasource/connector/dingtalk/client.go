@@ -665,7 +665,7 @@ func (c *client) fetchSigned(ctx context.Context, target downloadTarget) ([]byte
 
 // errDocumentTooLarge marks a document whose transfer passed the configured
 // size cap. The size is a property of the stored object rather than a transient
-// failure — a freshly signed URL returns the very same bytes — so a caller must
+// failure - a freshly signed URL returns the very same bytes - so a caller must
 // not retry it.
 var errDocumentTooLarge = errors.New("document exceeds the download limit")
 

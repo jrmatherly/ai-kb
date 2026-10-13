@@ -21,7 +21,7 @@ func TestFindIncompleteRef(t *testing.T) {
 			"complete URL terminated by )",
 			"![img](local://1/abc/img.png)",
 			// The URL `local://1/abc/img.png` ends with `)` which is a terminator,
-			// but the regex [^\s)\]>"]* matches up to `)` — the `)` is NOT included.
+			// but the regex [^\s)\]>"]* matches up to `)` - the `)` is NOT included.
 			// So the URL portion is `local://1/abc/img.png` and `)` terminates it.
 			// The match does NOT reach end of string → should return -1.
 			-1,
@@ -204,7 +204,7 @@ func TestStreamRewriter_DisabledIsPassThrough(t *testing.T) {
 }
 
 // Two goroutines pushing different streams share one resolver, so resolution
-// must be serialised — this fails under -race if it is not.
+// must be serialised - this fails under -race if it is not.
 func TestStreamRewriter_ConcurrentPushIsSafe(t *testing.T) {
 	sr := NewStreamRewriter(NewRewriter(stubResolver("https://cdn.example.com/x.png"), "TEST"))
 	ctx := context.Background()

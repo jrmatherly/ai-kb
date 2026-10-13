@@ -17,8 +17,8 @@ import (
 // Client is the client for interacting with the AI KB service.
 //
 // Authentication uses one of two credential kinds:
-//   - API key (long-lived, set via X-API-Key)        — see WithAPIKey
-//   - Bearer JWT (short-lived, set via Authorization)— see WithBearerToken
+//   - API key (long-lived, set via X-API-Key)        - see WithAPIKey
+//   - Bearer JWT (short-lived, set via Authorization) - see WithBearerToken
 //
 // Both may be configured simultaneously; X-API-Key takes precedence at the
 // HTTP layer. The legacy WithToken is kept as an alias for WithAPIKey for two
@@ -87,7 +87,7 @@ func WithToken(token string) ClientOption {
 }
 
 // WithTenantID sets X-Tenant-ID on every request. Use only for explicit
-// cross-tenant access by callers with CanAccessAllTenants — the server's
+// cross-tenant access by callers with CanAccessAllTenants - the server's
 // auth middleware runs the cross-tenant gate whenever this header is
 // present on a bearer request, even when the value matches the credential's
 // own tenant, and 403s normal users. JWT bearer tokens and tenant-scoped

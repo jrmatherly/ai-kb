@@ -51,8 +51,8 @@ type SessionSandboxBinding struct {
 	// staleness mark must not depend on the provider being reachable.
 	//
 	// Bindings written before this field existed carry an empty value. They are
-	// deliberately still valid — refusing them would break every live session
-	// on upgrade — and simply match no config until they are rebuilt.
+	// deliberately still valid - refusing them would break every live session
+	// on upgrade - and simply match no config until they are rebuilt.
 	ConfigID string `json:"config_id,omitempty"`
 
 	// StaleAt marks a binding whose sandbox boots an image the config has
@@ -68,7 +68,7 @@ type SessionSandboxBinding struct {
 	// binding is the only place the credential survives a AI KB restart.
 	//
 	// Stored as-is. It is a bearer credential, so the Redis instance holding
-	// these bindings must be access-controlled — it already holds the
+	// these bindings must be access-controlled - it already holds the
 	// session-to-sandbox ownership anyway. Never log the binding payload.
 	//
 	// Empty for Docker (no such credential) and for bindings written before
@@ -188,7 +188,7 @@ type tenantBindingScanner interface {
 // The lock is what makes the mark reliable: resolve reads the binding, decides
 // whether to replace the sandbox, and rebinds all inside it, so marking outside
 // would silently lose against a resolve running at the same moment. The mark
-// itself is only ever an added field — the binding is never deleted here — so a
+// itself is only ever an added field - the binding is never deleted here - so a
 // concurrent resolve can lose a mark but never a sandbox.
 //
 // One session that cannot be marked does not stop the others: the image pointer

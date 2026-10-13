@@ -102,8 +102,8 @@ func TestCheckKnowledgeExists_FileSourceIdentity(t *testing.T) {
 
 func TestCheckKnowledgeExists_ParseStatusMatrix(t *testing.T) {
 	// Pins the duplicate-check status policy (issue #3338): failed and
-	// deleting rows must not block an upload — a deleting row is on its way
-	// out regardless of how the async delete task concludes — while pending,
+	// deleting rows must not block an upload - a deleting row is on its way
+	// out regardless of how the async delete task concludes - while pending,
 	// processing and completed rows remain real duplicates.
 	for _, tc := range []struct {
 		parseStatus string
@@ -141,7 +141,7 @@ func TestCheckKnowledgeExists_ParseStatusMatrix(t *testing.T) {
 
 // TestCountKnowledgeByKnowledgeBaseID_ExcludesDeleting pins the count/list
 // alignment (issues #3338/#3345): the document list hides rows mid-deletion,
-// so the KB card count must not include them either — otherwise a stranded
+// so the KB card count must not include them either - otherwise a stranded
 // delete shows up as "4 documents, 3 listed".
 func TestCountKnowledgeByKnowledgeBaseID_ExcludesDeleting(t *testing.T) {
 	db := setupKnowledgeTestDB(t)

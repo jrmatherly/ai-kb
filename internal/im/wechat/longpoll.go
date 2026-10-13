@@ -72,7 +72,7 @@ func (c *LongPollClient) Start(ctx context.Context) error {
 		pollStart := time.Now()
 		err := c.poll(ctx)
 		if err == nil {
-			// Successful poll — reset attempts
+			// Successful poll - reset attempts
 			attempts = 0
 			continue
 		}

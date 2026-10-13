@@ -76,7 +76,7 @@ func AgentRoundMaxCompletionTokens(configured int) int {
 // configured per-round budget when a sandbox is bound. write_sandbox_file and
 // edit_sandbox_file carry the whole file body inside the tool-call JSON, so a
 // cap sized for ordinary chat truncates the arguments mid-string on every
-// attempt — the agent then burns its rounds rewriting a file it can never
+// attempt - the agent then burns its rounds rewriting a file it can never
 // finish. Below this the setting is not a preference, it is a deadlock.
 const MinSandboxWriteCompletionTokens = 8192
 
@@ -103,7 +103,7 @@ const UnlimitedMaxIterations = -1
 // This includes all configuration parameters for agent execution
 type AgentConfig struct {
 	// MaxIterations caps ReAct rounds. Zero is unset (filled with a default);
-	// a negative value is unlimited — the loop runs until the model stops,
+	// a negative value is unlimited - the loop runs until the model stops,
 	// the user cancels, or another guard fires. See UnlimitedMaxIterations.
 	MaxIterations  int      `json:"max_iterations"`
 	AllowedTools   []string `json:"allowed_tools"`           // List of allowed tool names
@@ -226,7 +226,7 @@ type AgentConfig struct {
 //
 // The privilege and its scope are granted together: a caller cannot obtain the
 // root shell without naming the directory the file tools will be confined to.
-// skillDir is stored verbatim and validated where the tools are constructed —
+// skillDir is stored verbatim and validated where the tools are constructed -
 // types cannot import the sandbox package that owns the path rules.
 func (c *AgentConfig) EnableSkillInstallMode(agentID, skillDir string) {
 	if c == nil || agentID != BuiltinSkillInstallerID {
@@ -441,7 +441,7 @@ type AgentStep struct {
 	IntermediateAnswer bool `json:"intermediate_answer,omitempty"`
 	// ReasoningContent stores the OpenAI-protocol reasoning_content emitted by the
 	// model in this round. Persisted on AgentStep so cross-turn replay can put it
-	// back on the assistant message — required by MiMo / DeepSeek V3.2+ thinking
+	// back on the assistant message - required by MiMo / DeepSeek V3.2+ thinking
 	// mode, ignored by providers that don't recognize the field.
 	ReasoningContent string `json:"reasoning_content,omitempty"`
 	// ReasoningSignature / ReasoningMetadata are the provider artifacts that

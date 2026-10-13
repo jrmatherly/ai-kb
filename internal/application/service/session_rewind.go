@@ -3,7 +3,7 @@
 // Rewind truncates the current session at a chosen user or assistant message
 // and, when the live sandbox still holds that turn's git checkpoint, rolls
 // /workspace back to it. Unlike fork it does not snapshot, does not create a
-// session, and refuses the whole operation if git reset fails — a half-applied
+// session, and refuses the whole operation if git reset fails - a half-applied
 // rewind (conversation gone, files still ahead) is harder to recover from
 // than a 500 the user can retry.
 //
@@ -122,7 +122,7 @@ type rewindIncompleteFinder interface {
 
 // rewindCheckpointLister is the cheap path for "which checkpoint does kept
 // history still reach". Rewind never reads message bodies, so a store that
-// can return the assistant turns alone — no content, no artifact join —
+// can return the assistant turns alone - no content, no artifact join -
 // answers it without dragging the whole conversation into memory.
 type rewindCheckpointLister interface {
 	ListAssistantCheckpointsUpTo(

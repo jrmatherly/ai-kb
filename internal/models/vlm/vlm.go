@@ -39,7 +39,7 @@ type Config struct {
 	MaxConcurrency int
 	// Spec carries per-row catalog overrides (protocol, compat, levels). VLM
 	// calls now go through the chat factory, so the override has to travel
-	// with them — otherwise /models reports capabilities computed WITH the
+	// with them - otherwise /models reports capabilities computed WITH the
 	// override while the actual request is built without it.
 	Spec  *types.ModelSpecOverride
 	Extra map[string]any

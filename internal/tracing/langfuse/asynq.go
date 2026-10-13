@@ -17,13 +17,13 @@ import (
 //
 // The traceparent is produced by propagator.Inject from the active OTel span
 // context (the HTTP root span opened by GinMiddleware). The asynq worker
-// re-extracts it so worker-side spans are children of the same trace —
+// re-extracts it so worker-side spans are children of the same trace -
 // giving LiteFuse one stitched tree across the HTTP request and the async
 // processing. This also makes a sop3 run's traceparent propagate through to
 // any asynq jobs AI KB enqueues while serving sop3's agent-chat call.
 //
 // Safe to call unconditionally: when Langfuse is disabled or no span is
-// present on ctx, it writes a zero-valued TracingContext — which round-trips
+// present on ctx, it writes a zero-valued TracingContext - which round-trips
 // through JSON as absent fields and costs nothing.
 func InjectTracing(ctx context.Context, carrier types.LangfuseTracingCarrier) {
 	if carrier == nil {
@@ -52,7 +52,7 @@ func InjectTracing(ctx context.Context, carrier types.LangfuseTracingCarrier) {
 // is a JSON object at the top level, and absent/mismatched fields decode to
 // the zero value. If unmarshalling fails entirely (e.g. the payload isn't
 // JSON at all) we return a zero TracingContext and let the main handler
-// deal with its own error — we never want an observability bug to mask a
+// deal with its own error - we never want an observability bug to mask a
 // real task failure.
 func peekTracingContext(payload []byte) types.TracingContext {
 	if len(payload) == 0 {

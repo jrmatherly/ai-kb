@@ -87,7 +87,7 @@ func insertProcessingKnowledge(t *testing.T, db *gorm.DB) string {
 }
 
 // reloadKnowledgeRow returns the parse_status and pending_subtasks_count of
-// a row directly via raw SQL — bypasses any GORM hook noise.
+// a row directly via raw SQL - bypasses any GORM hook noise.
 func reloadKnowledgeRow(t *testing.T, db *gorm.DB, id string) (status string, count int) {
 	t.Helper()
 	row := db.Raw(`SELECT parse_status, pending_subtasks_count FROM knowledges WHERE id = ?`, id).Row()
@@ -182,7 +182,7 @@ func TestFinalizeSubtask_Concurrent_ExactlyOnePromote(t *testing.T) {
 
 // TestFinalizeSubtask_PartialDecrement_StaysFinalizing verifies the row
 // remains in "finalizing" with the expected residual count when fewer
-// callers decrement than were seeded — the promote guard must not fire
+// callers decrement than were seeded - the promote guard must not fire
 // early.
 func TestFinalizeSubtask_PartialDecrement_StaysFinalizing(t *testing.T) {
 	db := setupKnowledgeTestDB(t)
@@ -355,7 +355,7 @@ func TestUpdateKnowledge_DoesNotClobberPendingCounter(t *testing.T) {
 	require.NoError(t, err)
 
 	// Step 4: caller A persists an unrelated change. The in-memory copy
-	// of PendingSubtasksCount is the STALE 5 — Save must NOT write it.
+	// of PendingSubtasksCount is the STALE 5 - Save must NOT write it.
 	loaded.Title = "renamed-after-stale-load"
 	require.NoError(t, repo.UpdateKnowledge(ctx, loaded))
 
@@ -387,7 +387,7 @@ func TestUpdateKnowledge_PendingCounterOmittedOnReset(t *testing.T) {
 	loaded, err := repo.GetKnowledgeByID(ctx, 1, id)
 	require.NoError(t, err)
 
-	// Caller tries to reset the counter via Save — this must be a no-op
+	// Caller tries to reset the counter via Save - this must be a no-op
 	// for that column. The dedicated UpdateKnowledgeColumn is the only
 	// path that actually writes pending_subtasks_count.
 	loaded.PendingSubtasksCount = 0

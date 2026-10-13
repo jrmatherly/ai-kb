@@ -214,7 +214,7 @@ func (s *SyncLog) BeforeCreate(tx *gorm.DB) error {
 //
 // Credential management lives in the dedicated /credentials subresource
 // (see internal/handler/datasource_credentials.go). Secret values are never
-// included in API responses — handlers serialize via dto.NewDataSourceResponse
+// included in API responses - handlers serialize via dto.NewDataSourceResponse
 // which strips the Credentials map by construction.
 type DataSourceConfig struct {
 	// Common fields applicable to most connectors
@@ -231,7 +231,7 @@ type DataSourceConfig struct {
 
 	// MultimodalEnabled mirrors the target knowledge base's VLM/multimodal
 	// setting for the current sync run. The service populates it before each fetch
-	// and it is never persisted (json:"-") — the KB owns the setting. Connectors
+	// and it is never persisted (json:"-") - the KB owns the setting. Connectors
 	// use it to decide whether extracting embedded images for OCR is worthwhile:
 	// ingesting an image into a KB without VLM is rejected, so image extraction is
 	// skipped when this is false.
@@ -352,7 +352,7 @@ type FetchedItem struct {
 	// source node out into a parent document plus attachment/image sub-items
 	// (e.g. Feishu docx).
 	//
-	// PRECONDITIONS the sweep relies on — a connector setting this MUST honour:
+	// PRECONDITIONS the sweep relies on - a connector setting this MUST honour:
 	//   1. Child external_ids are built with SubtreeChildID, so they share the
 	//      '#' prefix the sweep matches. A child ID without that prefix is never
 	//      swept (silently orphaned); an unrelated item that happens to start
@@ -369,7 +369,7 @@ type FetchedItem struct {
 	// preserves these children even if they could not be re-ingested this cycle
 	// (transient download/parse failure, or an unclassifiable filename), so a
 	// still-present attachment never loses its previously-synced good copy. Only
-	// children absent from this set — genuinely removed from the source — are
+	// children absent from this set - genuinely removed from the source - are
 	// swept.
 	//
 	// CONTRACT: an empty (or nil) SubtreeKeep with ReplacesSubtree=true means
@@ -383,7 +383,7 @@ type FetchedItem struct {
 }
 
 // SubtreeChildID builds the external_id of a sub-item fanned out from a parent
-// source node — e.g. a docx node's attachment or embedded image. The shape is
+// source node - e.g. a docx node's attachment or embedded image. The shape is
 // "<parentExternalID>#<kind>#<token>". The '#' separator is the contract the
 // subtree sweep depends on (see SubtreeChildPrefix and FetchedItem.ReplacesSubtree):
 // producers MUST build child IDs with this helper so the producer and the sweep
@@ -449,7 +449,7 @@ type SyncResult struct {
 // SyncItemError is one user-facing failure sample. It carries a stable i18n
 // Code (+ interpolation Params) so the frontend localises it to the viewer's
 // language, plus a Message fallback for clients without the key. The raw API
-// status/body/log_id is never stored here — that stays in the server logs.
+// status/body/log_id is never stored here - that stays in the server logs.
 type SyncItemError struct {
 	// Title is the document title (user content, not translated).
 	Title string `json:"title,omitempty"`
@@ -605,7 +605,7 @@ func (d *DataSource) ParseConfig() (*DataSourceConfig, error) {
 			config.Credentials[k] = plain
 			continue
 		}
-		// Same rationale as the other Scan paths: don't fail the load —
+		// Same rationale as the other Scan paths: don't fail the load -
 		// blank the field so the row stays visible. ParseConfig callers
 		// then see an empty credential string; HasCredentials() returns
 		// false; the UI surfaces "credential not configured" and the

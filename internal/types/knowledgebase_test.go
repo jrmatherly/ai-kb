@@ -68,7 +68,7 @@ func strPtr(s string) *string { return &s }
 // The `empty string pointer` case is fixed here as a behavior snapshot:
 // raw JSON encoding accepts it and stores &"" verbatim. Service-layer
 // CreateKnowledgeBase normalizes &"" to nil before persistence
-// (see (*KnowledgeBase).Normalize), so the stored DB row is NULL — but the
+// (see (*KnowledgeBase).Normalize), so the stored DB row is NULL - but the
 // JSON shape on the way in is whatever the client sent.
 func TestKnowledgeBase_VectorStoreID_JSON(t *testing.T) {
 	t.Run("marshal nil omits field (omitempty)", func(t *testing.T) {

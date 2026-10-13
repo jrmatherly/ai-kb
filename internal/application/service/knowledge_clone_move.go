@@ -31,7 +31,7 @@ import (
 // because GET /knowledge-bases/:id/files only serves objects that pass
 // ValidateKBScopedStoragePath (i.e. {tenant}/exports/...). CopyFile writes to
 // the knowledge-scoped upload layout ({tenant}/{knowledgeID}/...) used for raw
-// source files, which the KB proxy rejects — so a clone that used CopyFile
+// source files, which the KB proxy rejects - so a clone that used CopyFile
 // produced images that could no longer be rendered. Instead, read the source
 // bytes and re-save them via SaveBytes, exactly mirroring how the original
 // images were persisted during ingestion (see image_resolver.saveReferencedImage),
@@ -187,7 +187,7 @@ func cloneChunkImageInfo(
 // new (copied) URL in content, using the old->new mapping accumulated in
 // urlCache. It is the second half of the image deep-copy: chunk Content embeds
 // image URLs as Markdown ![](url) references, but for document knowledge the
-// image objects live in independent image_ocr/image_caption child chunks — the
+// image objects live in independent image_ocr/image_caption child chunks - the
 // parent text chunk carries the ![](url) reference with an empty image_info. So
 // the old->new mapping is only known after every chunk's image_info has been
 // processed; this rewrite must therefore run as a final pass once urlCache is
@@ -436,7 +436,7 @@ func (s *knowledgeService) CloneChunk(ctx context.Context, src, dst *types.Knowl
 
 	tenantID := types.MustTenantIDFromContext(ctx)
 	// Route CopyIndices via the source KB's bound store. This function does
-	// not handle cross-store copies — embeddings written by different
+	// not handle cross-store copies - embeddings written by different
 	// VectorStore backends are not bit-compatible, so callers that allow
 	// source/target KBs to bind to different stores must perform their own
 	// cross-store migration before invoking this.

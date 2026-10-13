@@ -66,7 +66,7 @@ var agentHistoryThinkTagRegex = regexp.MustCompile(`(?s)<think>.*?</think>`)
 // first compaction check uses the same scale. Budget and trigger must agree,
 // or turns the loader drops can sit below a trigger that never fires.
 //
-// DB is treated as the single source of truth — there is no Redis/in-memory
+// DB is treated as the single source of truth - there is no Redis/in-memory
 // cache layer above this function. Callers are expected to invoke it once
 // per turn before handing the messages to the agent engine.
 func LoadAgentHistory(
@@ -188,7 +188,7 @@ type agentHistoryTurn struct {
 
 // completeHistoryTurns groups rows into completed turns, oldest first. Unless
 // the read reached the session's first row, the turn owning the oldest row
-// read may be missing its earlier rows — its original question above all — so
+// read may be missing its earlier rows - its original question above all - so
 // it is left out. When that oldest row is itself a user message the turn is
 // whole: steered messages are written after the turn's assistant row, so a
 // user row older than it can only be the question, and a steered row with no
@@ -499,7 +499,7 @@ func buildUserHistoryMessage(m *types.Message) chat.Message {
 // final answer as a trailing assistant message.
 //
 // AgentSteps from KnowledgeQA-mode turns are empty, in which case the result
-// is just the single final-answer assistant message — exactly mirroring how
+// is just the single final-answer assistant message - exactly mirroring how
 // the KnowledgeQA pipeline replays history today.
 func buildAssistantHistoryMessages(m *types.Message) []chat.Message {
 	msgs := make([]chat.Message, 0, len(m.AgentSteps)*2+1)
@@ -564,7 +564,7 @@ func buildAgentStepMessages(step types.AgentStep) []chat.Message {
 // turn produced no text (stopped, or answered purely through tools). The
 // generated-file markers belong to that turn, so they are relabeled before
 // being replayed into a later turn's history. It also carries the closing
-// round's reasoning artifacts — see finalAnswerReasoningStep.
+// round's reasoning artifacts - see finalAnswerReasoningStep.
 func finalAnswerHistoryMessage(m *types.Message) *chat.Message {
 	finalContent := agentHistoryThinkTagRegex.ReplaceAllString(m.Content, "")
 	// Version clarification was written for that message's turn, not this one.
@@ -591,7 +591,7 @@ func finalAnswerHistoryMessage(m *types.Message) *chat.Message {
 //
 // A turn normally ends with a plain answer and no tool calls. The engine
 // records that closing round like any other, artifacts included, but
-// buildAgentStepMessages emits nothing for a step without tool calls — so
+// buildAgentStepMessages emits nothing for a step without tool calls - so
 // everything the next turn has to hand back (the OpenAI Responses encrypted
 // reasoning items, a DeepSeek/MiMo reasoning_content, an Anthropic thinking
 // signature) stopped at the turn boundary, exactly as the tool rounds' did

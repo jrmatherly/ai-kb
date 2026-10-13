@@ -46,7 +46,7 @@ type Policy struct {
 	// also the list that decides what survives inside a private subtree.
 	// An entry may name a file (a shell startup script), not just a directory.
 	ReadableRoots []string
-	// PrivateRoots are subtrees denied read wholesale — in practice the user's
+	// PrivateRoots are subtrees denied read wholesale - in practice the user's
 	// home directory. WritableRoots and ReadableRoots are re-opened inside
 	// them; DenyRead still wins over both.
 	//

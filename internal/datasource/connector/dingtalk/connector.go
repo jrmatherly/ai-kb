@@ -264,8 +264,8 @@ func sampleWorkspace(
 		for {
 			// Reserve one listing per sibling already queued before spending
 			// another page on this folder. The root's own pages have an empty
-			// queue here — its children are not queued until the root is
-			// finished — so a document on the root's next page is still read
+			// queue here - its children are not queued until the root is
+			// finished - so a document on the root's next page is still read
 			// before the walk descends.
 			if pageToken != "" && *listings+len(queue) >= maxValidateListings {
 				if len(queue) == 0 {
@@ -344,7 +344,7 @@ func sampleWorkspace(
 }
 
 // verifyDocument proves one visible document is readable. Native documents are
-// probed through their own read API — the blocks API for adoc — while uploaded
+// probed through their own read API - the blocks API for adoc - while uploaded
 // files resolve their DingTalk Drive download location, which exercises the same
 // permissions and returns the same errors a real download would, without
 // transferring the payload.
@@ -745,7 +745,7 @@ func (c *Connector) sync(
 		}
 
 		// Skipped nodes are deterministic: this connector has no ingest path for
-		// them, so they are reported once and never retried — unlike a failed
+		// them, so they are reported once and never retried - unlike a failed
 		// read below, which must stay retryable.
 		for _, node := range skipped {
 			logger.Infof(ctx, "[DingTalk] skip node %s (name=%q type=%s category=%s extension=%s): %s",
@@ -805,8 +805,8 @@ func (c *Connector) sync(
 		next.Resources[scope.ResourceID] = newRevisions
 
 		// One line per scope, in the same shape as the IMA connector's. total
-		// counts every file the scope listed — synced + still-unchanged +
-		// failed + skipped — so a scope that quietly loses two thirds of its
+		// counts every file the scope listed - synced + still-unchanged +
+		// failed + skipped - so a scope that quietly loses two thirds of its
 		// nodes can no longer look like a clean run.
 		logger.Infof(ctx, "[DingTalk] scope %s: total=%d synced=%d skipped=%d failed=%d",
 			scopeLabel(scope), len(documents)+len(skipped), synced, len(skipped), failed)
@@ -1214,8 +1214,8 @@ func fetchedDocument(
 }
 
 // renderedDocumentFileName names a document this connector renders as markdown.
-// The node's name is used as reported — a DingTalk name normally carries its
-// own extension — but ".md" is appended exactly once, so a name that already
+// The node's name is used as reported - a DingTalk name normally carries its
+// own extension - but ".md" is appended exactly once, so a name that already
 // ends in .md does not grow a second extension.
 func renderedDocumentFileName(title string) string {
 	name := sanitizeFilename(title)

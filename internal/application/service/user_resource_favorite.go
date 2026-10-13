@@ -22,7 +22,7 @@ type userResourceFavoriteService struct {
 
 // NewUserResourceFavoriteService wraps the repository with input
 // validation (allowlist of resource types, non-empty resource id).
-// We keep service thin on purpose — favoriting is a non-business action
+// We keep service thin on purpose - favoriting is a non-business action
 // that doesn't need audit logging or cross-aggregate side effects.
 func NewUserResourceFavoriteService(repo interfaces.UserResourceFavoriteRepository) interfaces.UserResourceFavoriteService {
 	return &userResourceFavoriteService{repo: repo}

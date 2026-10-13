@@ -14,7 +14,7 @@ import (
 // An emptied file is still a file. Ingestion treats an item with neither content
 // nor URL as nothing to ingest and acknowledges the sync, so emitting the
 // emptied blob verbatim leaves the body indexed from an earlier commit
-// searchable forever — and no later sync revisits it, because a full sync still
+// searchable forever - and no later sync revisits it, because a full sync still
 // sees the path in the tree and an incremental sync has already moved its head
 // past the commit that emptied it.
 //

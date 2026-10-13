@@ -12,7 +12,7 @@ import (
 // behind the vector_store_id immutability contract. The GORM `<-:create`
 // tag on KnowledgeBase.VectorStoreID already blocks every ORM UPDATE path
 // (verified by the repository-level sqlite immutability tests), but the
-// service DTO must independently refuse to even *accept* the field —
+// service DTO must independently refuse to even *accept* the field -
 // otherwise a future maintainer who adds it to UpdateKnowledgeBaseRequest
 // or KnowledgeBaseConfig opens a path where the field is silently ignored
 // by the ORM, which is worse than an explicit rejection.
@@ -48,11 +48,11 @@ func assertNoVectorStoreIDField(t *testing.T, typ reflect.Type) {
 			f := rt.Field(i)
 			full := path + "." + f.Name
 			if f.Name == "VectorStoreID" {
-				t.Fatalf("%s declares VectorStoreID — vector_store_id is immutable post-create "+
+				t.Fatalf("%s declares VectorStoreID - vector_store_id is immutable post-create "+
 					"and must not be accepted by update DTOs", full)
 			}
 			if tag := strings.Split(f.Tag.Get("json"), ",")[0]; tag == "vector_store_id" {
-				t.Fatalf("%s carries json tag \"vector_store_id\" — the field is immutable "+
+				t.Fatalf("%s carries json tag \"vector_store_id\" - the field is immutable "+
 					"post-create and must not be accepted by update DTOs", full)
 			}
 			if f.Anonymous {

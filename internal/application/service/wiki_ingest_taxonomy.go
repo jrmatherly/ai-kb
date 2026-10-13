@@ -25,7 +25,7 @@ type wikiTaxonomyItem struct {
 // planBatchTaxonomy assigns a directory path to every entity/concept slug in the
 // batch in ONE planning pass (chunked for large batches), so the whole set lands
 // on a single coherent tree that reuses existing folders. This replaces per-page,
-// parallel CATEGORY invention — which couldn't converge, worst of all on the
+// parallel CATEGORY invention - which couldn't converge, worst of all on the
 // founding batch when the KB has no folders to anchor on. The returned map is
 // keyed by slug; an entry may be an empty slice when the item is unclassifiable.
 // Reduce applies these only to pages that don't already have a category.
@@ -45,7 +45,7 @@ func (s *wikiIngestService) planBatchTaxonomy(
 	}
 
 	// Existing folders anchor reuse. Errors (e.g. a dialect without the query)
-	// just mean the plan designs a fresh tree — no fatal dependency.
+	// just mean the plan designs a fresh tree - no fatal dependency.
 	var pool [][]string
 	if s.wikiService != nil {
 		paths, err := s.wikiService.ListDistinctCategoryPaths(ctx, kb.ID, wikiTaxonomyFolderPoolMax)
@@ -170,7 +170,7 @@ func (s *wikiIngestService) selectRelevantFolders(
 		}
 	}
 
-	// Gate purely on whether an embedding model is configured — NOT on
+	// Gate purely on whether an embedding model is configured - NOT on
 	// NeedsEmbeddingModel(), which is false for wiki-only KBs that may still
 	// opt into an embedding model purely for directory/taxonomy similarity.
 	if strings.TrimSpace(kb.EmbeddingModelID) == "" || len(deeper) == 0 {

@@ -22,7 +22,7 @@ import (
 // The service is intentionally nil-tolerant when consumed: the
 // tenant_member service holds it as an optional field, so a future
 // container reshuffle that constructs tenant_member before audit_log
-// won't crash. Callers should still aim to inject a real instance —
+// won't crash. Callers should still aim to inject a real instance -
 // the nil path is a degraded mode, not a default.
 type auditLogService struct {
 	repo interfaces.AuditLogRepository
@@ -61,7 +61,7 @@ func (s *auditLogService) Log(ctx context.Context, entry *types.AuditLog) error 
 	if err := s.repo.Create(ctx, entry); err != nil {
 		// Log loudly but do NOT propagate the error to the caller in
 		// the production wiring (see callers in tenant_member service
-		// and rbac middleware — both ignore the return). Audit failure
+		// and rbac middleware - both ignore the return). Audit failure
 		// must never break the underlying business operation.
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
 			"audit_action": entry.Action,
@@ -78,7 +78,7 @@ func (s *auditLogService) Log(ctx context.Context, entry *types.AuditLog) error 
 // client cannot flood the table.
 //
 // The non-durable advisory log line `[rbac] role insufficient: ...`
-// continues to fire on every reject (in middleware/rbac.go) — the
+// continues to fire on every reject (in middleware/rbac.go) - the
 // dedup only suppresses durable writes, not stderr observability.
 func (s *auditLogService) LogDenied(
 	ctx context.Context,
@@ -110,7 +110,7 @@ func (s *auditLogService) LogDenied(
 	}
 
 	// Dedup probe: skip the durable write if this exact tuple already
-	// has a row in the trailing window. Failure here is non-fatal —
+	// has a row in the trailing window. Failure here is non-fatal -
 	// degraded behaviour is "write a duplicate" which is preferable to
 	// "skip the audit because the count failed".
 	since := s.now().Add(-denyDedupWindow)
@@ -149,7 +149,7 @@ func (s *auditLogService) List(
 }
 
 // Purge deletes rows whose created_at is strictly older than
-// `retentionDays` ago. retentionDays <= 0 short-circuits — operators
+// `retentionDays` ago. retentionDays <= 0 short-circuits - operators
 // who configured no retention pay zero database round-trips.
 //
 // The cutoff is computed off the service's clock (s.now) so tests
@@ -159,7 +159,7 @@ func (s *auditLogService) List(
 // realistically reaches in a 24h window, a single DELETE-with-index
 // finishes in well under a second on Postgres. If the table ever
 // grows large enough that a single sweep blocks vacuum, the repo
-// helper is the place to add LIMIT-style chunking — the service stays
+// helper is the place to add LIMIT-style chunking - the service stays
 // simple.
 func (s *auditLogService) Purge(ctx context.Context, retentionDays int) (int64, error) {
 	if retentionDays <= 0 {

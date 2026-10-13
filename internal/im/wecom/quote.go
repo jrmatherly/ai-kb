@@ -8,7 +8,7 @@ import (
 
 // extractQuoteContent extracts text content from a quoted botMessage.
 // Only returns actual textual content. Non-text types (image, file, video, etc.)
-// return empty string so that buildQuotedMessage discards them — injecting
+// return empty string so that buildQuotedMessage discards them - injecting
 // "cannot see image" placeholders causes LLM hallucination from conversation history.
 func extractQuoteContent(quote *botMessage) string {
 	if quote == nil {
@@ -29,7 +29,7 @@ func extractQuoteContent(quote *botMessage) string {
 		}
 		return strings.Join(parts, "\n")
 	default:
-		// image, file, video, unknown — no textual content available, discard.
+		// image, file, video, unknown - no textual content available, discard.
 		return ""
 	}
 }

@@ -16,14 +16,14 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
-// CreateKnowledgeBase typed-error preservation — the handler must surface
+// CreateKnowledgeBase typed-error preservation - the handler must surface
 // the typed AppError (ErrVectorStoreBindingInvalid / ErrVectorStoreUnavailable)
 // returned by validateVectorStoreBinding instead of stripping it into a
 // generic 500 via NewInternalServerError. Without the IsAppError unwrap in
 // the handler, the typed error codes would be silently nullified at the
 // HTTP boundary and clients would lose the ability to branch on the cause.
 //
-// Shared-KB UUID suppression — responses for cross-tenant shared KBs must
+// Shared-KB UUID suppression - responses for cross-tenant shared KBs must
 // not leak the owner tenant's vector_store_id UUID. SharedStoreDisplay
 // suppresses store name + engine_type for cross-tenant callers, but the
 // underlying KnowledgeBase.MarshalJSON still emits the UUID; the
@@ -102,7 +102,7 @@ func TestCreateKB_PreservesTypedErrorCode_2201(t *testing.T) {
 }
 
 func TestCreateKB_GenericErrorStillFallsThroughTo500(t *testing.T) {
-	// A non-AppError must NOT be auto-rewritten to 200/400 — operational
+	// A non-AppError must NOT be auto-rewritten to 200/400 - operational
 	// monitoring still needs to see infrastructure failures as 5xx.
 	svc := &stubKBCreateService{createErr: errSentinel("connection refused")}
 	w := httptest.NewRecorder()
@@ -157,7 +157,7 @@ func TestBuildKBResponse_StripsVectorStoreIDForSharedKB(t *testing.T) {
 }
 
 func TestBuildKBResponse_KeepsVectorStoreIDForOwnerKB(t *testing.T) {
-	// Same setup but with the user-source display — owner caller should
+	// Same setup but with the user-source display - owner caller should
 	// still see the UUID alongside the resolved metadata.
 	storeID := "aaaa-bbbb-cccc-dddd"
 	kb := &types.KnowledgeBase{

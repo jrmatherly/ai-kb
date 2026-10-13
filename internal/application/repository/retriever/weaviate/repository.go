@@ -50,7 +50,7 @@ const (
 )
 
 // NewWeaviateRetrieveEngineRepository creates and initializes a new Weaviate repository.
-// indexCfg is optional — pass nil to use env var / default values (env path).
+// indexCfg is optional - pass nil to use env var / default values (env path).
 func NewWeaviateRetrieveEngineRepository(client *weaviate.Client, indexCfg *types.IndexConfig) interfaces.RetrieveEngineRepository {
 	log := logger.GetLogger(context.Background())
 	log.Info("[Weaviate] Initializing Weaviate retriever engine repository")

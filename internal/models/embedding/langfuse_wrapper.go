@@ -51,7 +51,7 @@ func (l *langfuseEmbedder) BatchEmbed(ctx context.Context, texts []string) ([][]
 		Model: l.inner.GetModelName(),
 		Input: map[string]interface{}{
 			"count": len(texts),
-			// Avoid sending megabytes of full text — Langfuse truncates but
+			// Avoid sending megabytes of full text - Langfuse truncates but
 			// the network cost is still real. Keep a short preview instead.
 			"preview": previewTexts(texts, 5),
 		},
@@ -127,7 +127,7 @@ func (l *langfuseEmbedder) GetModelID() string   { return l.inner.GetModelID() }
 
 // approxEmbeddingUsage estimates input tokens as ~rune_count / 4, matching the
 // rule of thumb OpenAI uses in their tokenizer docs. This is purely for cost
-// reporting — Langfuse lets users define per-model cost multipliers, so the
+// reporting - Langfuse lets users define per-model cost multipliers, so the
 // approximation need only be proportional to length.
 func approxEmbeddingUsage(texts []string) *langfuse.TokenUsage {
 	total := 0

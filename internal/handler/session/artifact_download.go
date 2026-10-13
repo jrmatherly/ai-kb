@@ -247,8 +247,8 @@ func (h *Handler) DownloadMessageArtifact(c *gin.Context) {
 
 // artifactListItem is the JSON shape returned by ListSessionArtifacts /
 // ListMessageArtifacts. It carries the resource handle but never the storage
-// path: the handle is the artifact's public identity — it is what the answer
-// body references and what an authorizing proxy resolves — while the physical
+// path: the handle is the artifact's public identity - it is what the answer
+// body references and what an authorizing proxy resolves - while the physical
 // bucket/key stays server side.
 type artifactListItem struct {
 	Index int `json:"index"`
@@ -260,7 +260,7 @@ type artifactListItem struct {
 	FileType   string `json:"file_type"`
 	FileSize   int64  `json:"file_size"`
 	SourcePath string `json:"source_path"`
-	// time-typed fields serialise as RFC3339 strings — same convention as
+	// time-typed fields serialise as RFC3339 strings - same convention as
 	// the rest of the messages API.
 	ModTime   any `json:"mod_time"`
 	CreatedAt any `json:"created_at"`
@@ -268,7 +268,7 @@ type artifactListItem struct {
 
 // mimeTypeFor picks a Content-Type by extension and falls back to
 // application/octet-stream so unknown types force a download prompt rather
-// than being sniffed. Kept private to this file — the /files route has a
+// than being sniffed. Kept private to this file - the /files route has a
 // stricter version with an SVG-neutralising branch; we don't need that here
 // because Content-Disposition already blocks inline rendering.
 func mimeTypeFor(name string) string {

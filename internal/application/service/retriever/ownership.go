@@ -11,7 +11,7 @@ import (
 //
 // The repository's GetByID already scopes to the given tenantID
 // (WHERE id = ? AND tenant_id = ?), so "exists under this tenant"
-// is equivalent to "owned by this tenant" — no additional tenant
+// is equivalent to "owned by this tenant" - no additional tenant
 // comparison is needed on top of the returned row.
 type vectorStoreRepoOwnership struct {
 	repo interfaces.VectorStoreRepository

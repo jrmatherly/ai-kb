@@ -29,7 +29,7 @@ type meEnvVarService interface {
 // even for reads on purpose: an upload there drives a root shell whose output is
 // baked into the image every session of that config boots, and the listing names
 // what that image carries. This handler returns declarations and set/unset
-// status only — never a value.
+// status only - never a value.
 type MeEnvVarHandler struct {
 	service meEnvVarService
 }

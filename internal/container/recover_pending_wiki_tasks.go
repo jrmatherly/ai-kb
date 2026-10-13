@@ -36,7 +36,7 @@ func recoverPendingWikiTasks(db *gorm.DB, task interfaces.TaskEnqueuer) {
 	ctx := context.Background()
 	// The outer parentheses matter: the cleanup below negates this whole
 	// predicate with NOT, and `NOT EXISTS(...) AND EXISTS(...)` would parse
-	// as `(NOT EXISTS(...)) AND EXISTS(...)` — silently matching nothing.
+	// as `(NOT EXISTS(...)) AND EXISTS(...)` - silently matching nothing.
 	const activeKnowledgeBase = `(EXISTS (
 		SELECT 1 FROM knowledge_bases kb
 		WHERE kb.id = task_pending_ops.scope_id
@@ -49,7 +49,7 @@ func recoverPendingWikiTasks(db *gorm.DB, task interfaces.TaskEnqueuer) {
 	))`
 	wikiTaskTypes := []string{types.TypeWikiIngest, types.TypeWikiFinalize}
 
-	// Durable rows for a deleted/missing KB — or a soft-deleted tenant —
+	// Durable rows for a deleted/missing KB - or a soft-deleted tenant -
 	// must not recreate ephemeral triggers at startup. Fail closed if this
 	// cleanup cannot be verified.
 	cleanup := db.WithContext(ctx).

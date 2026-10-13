@@ -14,7 +14,7 @@ import (
 )
 
 // Retrieve dispatches to vectorRetrieve or keywordsRetrieve based on
-// params.RetrieverType. Returns exactly one *RetrieveResult — the
+// params.RetrieverType. Returns exactly one *RetrieveResult - the
 // service-layer multi-store dispatcher depends on this one-bundle-per-
 // driver protocol. Score in result is RAW [0, 1] passthrough (the
 // OpenSearch k-NN plugin's SpaceType.COSINESIMIL.scoreTranslation has
@@ -46,7 +46,7 @@ func (r *Repository) Retrieve(
 		return r.vectorRetrieve(ctx, params, dim)
 	case types.KeywordsRetrieverType:
 		if multiIndex {
-			// BM25-only path without dim — search across "<base>_*"
+			// BM25-only path without dim - search across "<base>_*"
 			// wildcard pattern. Slower than a single-index search but
 			// correct for admin / keyword-only callers.
 			return r.keywordsRetrieve(ctx, params, r.baseIndex+"_*")
@@ -62,7 +62,7 @@ func (r *Repository) Retrieve(
 
 // resolveDim returns (dim, multiIndex). multiIndex=true means dim is
 // unknown and the caller should use a wildcard alias pattern (keyword
-// path only — vector retrieve cannot be dim-less).
+// path only - vector retrieve cannot be dim-less).
 func resolveDim(p types.RetrieveParams) (int, bool) {
 	if p.AdditionalParams != nil {
 		if v, ok := p.AdditionalParams["dim"].(int); ok && v > 0 {
@@ -72,7 +72,7 @@ func resolveDim(p types.RetrieveParams) (int, bool) {
 	if len(p.Embedding) > 0 {
 		return len(p.Embedding), false
 	}
-	return 0, true // unknown — multi-index fallback for keyword
+	return 0, true // unknown - multi-index fallback for keyword
 }
 
 func (r *Repository) vectorRetrieve(
@@ -104,7 +104,7 @@ func (r *Repository) keywordsRetrieve(
 }
 
 // effectiveTopK returns the caller's TopK or 10 if unset. The 10 is a
-// defensive default — every real caller sets TopK, so a TopK=10 in
+// defensive default - every real caller sets TopK, so a TopK=10 in
 // production logs indicates a caller bug. Caps at 10000 to stay below
 // OpenSearch's index.max_result_window default.
 func effectiveTopK(ctx context.Context, p types.RetrieveParams) int {
@@ -167,13 +167,13 @@ func parseSearchHits(body io.Reader) ([]hit, error) {
 }
 
 // wrapResults converts OpenSearch hits to the upstream IndexWithScore
-// shape. Always returns exactly one *RetrieveResult — the service-layer
+// shape. Always returns exactly one *RetrieveResult - the service-layer
 // multi-store dispatcher depends on this "one engine result per driver"
 // contract.
 //
 // Defensive: warns if hit._id != _source.chunk_id (we set _id=chunk_id
 // on every write, so a mismatch means external tooling has been writing
-// into the index) but does not fail the query — the result is still
+// into the index) but does not fail the query - the result is still
 // usable for ranking, just suspicious.
 func wrapResults(ctx context.Context, hits []hit, rt types.RetrieverType, mt types.MatchType) []*types.RetrieveResult {
 	log := logger.GetLogger(ctx)

@@ -220,7 +220,7 @@ func TestCubeDialDesktopReachesWebsockifyPath(t *testing.T) {
 func TestCubeDialDesktopUsesHandleTokenWhenRegistryEmpty(t *testing.T) {
 	// Cube exec/PTY attach the traffic token from the SDK sandbox object, so
 	// the terminal keeps working after a restart. DialDesktop used to read
-	// only the pool registry, which Cube Create/Connect never wrote — CubeProxy
+	// only the pool registry, which Cube Create/Connect never wrote - CubeProxy
 	// then 401'd the websockify handshake while envd still answered.
 	var seen http.Request
 	srv := desktopEchoServer(t, &seen)

@@ -145,7 +145,7 @@ func estimateBulkBodyBytes(n, dim int) int {
 }
 
 // buildBulkBody constructs the NDJSON request body. emb[i] may be nil/
-// empty — toDoc handles the keyword-only case by omitting the
+// empty - toDoc handles the keyword-only case by omitting the
 // "embedding" field. chunk_enabled lookup also happens per-doc.
 func buildBulkBody(alias string, infos []*types.IndexInfo, emb [][]float32, params map[string]any) ([]byte, error) {
 	var buf bytes.Buffer
@@ -225,7 +225,7 @@ func inspectBulkResponse(body io.Reader) error {
 }
 
 // toDoc projects IndexInfo + embedding to the OpenSearch document
-// shape. source_type is `int` (not stringified) — mapping declared as
+// shape. source_type is `int` (not stringified) - mapping declared as
 // `integer` field for stable cross-enum-extension behavior. Omits the
 // "embedding" field entirely when emb is empty (keyword-only doc, no
 // k-NN graph entry).
@@ -248,7 +248,7 @@ func toDoc(info *types.IndexInfo, emb []float32, enabled bool) map[string]any {
 }
 
 // lookupEmbedding returns the embedding vector for info.SourceID.
-// Empty slice (not nil) indicates "no embedding provided" — caller
+// Empty slice (not nil) indicates "no embedding provided" - caller
 // MUST check len(emb) before calling ensureReady.
 //
 // Defense in depth: tolerates the wrong shape rather than crash. The
@@ -296,7 +296,7 @@ func lookupChunkEnabled(params map[string]any, chunkID string, def bool) bool {
 // extractBatchEmbeddings projects the params["embedding"] map onto the
 // info list, returning per-info embeddings (some may be empty) and the
 // dimension inferred from the first non-empty entry. Returns dim=0 if
-// no info has an embedding — caller routes to the keywords-only path.
+// no info has an embedding - caller routes to the keywords-only path.
 //
 // Defense in depth: all non-empty embeddings MUST share the same
 // dimension. Mixed-dim → ErrDimensionMismatch.
@@ -321,7 +321,7 @@ func extractBatchEmbeddings(params map[string]any, infos []*types.IndexInfo) ([]
 }
 
 // DeleteByChunkIDList runs _delete_by_query with a terms filter on
-// chunk_id. Sync only — large batches (>1000) are rejected with
+// chunk_id. Sync only - large batches (>1000) are rejected with
 // ErrBatchTooLarge; the async task path that lifts the cap arrives in
 // a later change.
 //

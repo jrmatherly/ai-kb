@@ -30,7 +30,7 @@ func (c Command) Validate() error {
 
 // Prepared is an opaque handle to one compiled policy. macOS stores the sbpl
 // text and its -D parameters; Windows will store a restricted token handle,
-// capability SIDs and refreshed ACL state. Callers must not inspect it — that
+// capability SIDs and refreshed ACL state. Callers must not inspect it - that
 // opacity is what lets the two platforms differ completely.
 type Prepared interface {
 	// Fingerprint reports which Policy this was prepared from.

@@ -19,11 +19,11 @@ import (
 // span tracker tests use a real GORM-backed repo against an in-memory
 // SQLite DB. We do this instead of a stub repo because the cascade /
 // LookupStage logic interacts non-trivially with the persistence layer
-// (UPSERT, MAX(attempt), parent IN ...) — a stub would let regressions
+// (UPSERT, MAX(attempt), parent IN ...) - a stub would let regressions
 // in those queries slip through.
 //
 // We DDL-define the spans table inline (same content as the repo test's
-// spansTestDDL — kept duplicated rather than exported because a service
+// spansTestDDL - kept duplicated rather than exported because a service
 // test crossing into the repository test file's identifiers couples the
 // two too tightly).
 const spanTrackerTestDDL = `
@@ -83,7 +83,7 @@ func TestSpanTracker_OpenAttempt_AllocatesFreshNumbers(t *testing.T) {
 	assert.Equal(t, 2, n2, "second OpenAttempt must allocate attempt 2")
 	assert.NotEqual(t, root1.SpanID, root2.SpanID, "each attempt has its own root span ID")
 
-	// Both roots must persist — a reparse must NOT erase the previous
+	// Both roots must persist - a reparse must NOT erase the previous
 	// attempt's history.
 	var count int64
 	require.NoError(t, db.Table("knowledge_processing_spans").
@@ -95,7 +95,7 @@ func TestSpanTracker_OpenAttempt_AllocatesFreshNumbers(t *testing.T) {
 // TestSpanTracker_FailSpan_CascadesDownstream verifies that failing a
 // stage flips its dependent stages to "cancelled" so the UI shows a
 // clear blast radius instead of orphan spinners. This is the central
-// guarantee of the DAG model — without it, a Chunking failure leaves
+// guarantee of the DAG model - without it, a Chunking failure leaves
 // Embedding/Multimodal/PostProcess as pending forever.
 func TestSpanTracker_FailSpan_CascadesDownstream(t *testing.T) {
 	tracker, db := setupSpanTrackerTest(t)
@@ -156,7 +156,7 @@ func TestSpanTracker_LookupStage_FindsAcrossProcesses(t *testing.T) {
 	mm := tracker.BeginStage(ctx, "kid", attempt, types.StageMultimodal, nil)
 	require.NotNil(t, mm)
 
-	// Pretend we're a different process — the in-memory `starts`
+	// Pretend we're a different process - the in-memory `starts`
 	// cache is the same map here, but the cross-process semantics
 	// don't depend on it; LookupStage hits the DB.
 	found := tracker.LookupStage(ctx, "kid", attempt, types.StageMultimodal)
@@ -261,7 +261,7 @@ func TestSpanTracker_LookupSpanByName_FitsLongName(t *testing.T) {
 }
 
 // TestSpanTracker_BeginSubSpan_HangsUnderParent confirms multimodal /
-// embedding fan-out subspans reference the parent stage's span_id —
+// embedding fan-out subspans reference the parent stage's span_id -
 // the structural invariant the buildSpanTree handler walks.
 func TestSpanTracker_BeginSubSpan_HangsUnderParent(t *testing.T) {
 	tracker, db := setupSpanTrackerTest(t)
@@ -295,7 +295,7 @@ func TestSpanTracker_BeginSubSpan_HangsUnderParent(t *testing.T) {
 // span row instead of inserting a duplicate. Without this, an asynq retry
 // or any code path that begins a stage twice would produce two timeline
 // segments for the same stage, and LookupStage would resolve to whichever
-// row sorts first — both regressions the original implementation had.
+// row sorts first - both regressions the original implementation had.
 func TestSpanTracker_BeginStage_ReentryIsIdempotent(t *testing.T) {
 	tracker, db := setupSpanTrackerTest(t)
 	ctx := context.Background()
@@ -379,7 +379,7 @@ func TestPostprocessSubspan_AttachesUnderPostProcessStage(t *testing.T) {
 	ctx := context.Background()
 	repo := repository.NewKnowledgeSpanRepository(db)
 
-	// Set up the parent attempt with a closed postprocess stage — the
+	// Set up the parent attempt with a closed postprocess stage - the
 	// async worker must still find it via LookupStage.
 	_, attempt, err := tracker.OpenAttempt(ctx, "kid", "lf-trace")
 	require.NoError(t, err)
@@ -431,7 +431,7 @@ func TestPostprocessSubspan_AttachesUnderPostProcessStage(t *testing.T) {
 // path: an in-flight async task may carry attempt=0 (queued before the
 // span-tracking field was added) or hit a knowledge whose postprocess
 // stage row is missing (parse predates tracker). LookupStage returning
-// nil must NOT crash the handler — the caller is expected to skip span
+// nil must NOT crash the handler - the caller is expected to skip span
 // recording and continue normal processing.
 func TestPostprocessSubspan_MissingParentFallsThrough(t *testing.T) {
 	tracker, _ := setupSpanTrackerTest(t)

@@ -18,7 +18,7 @@ import (
 // The handle is the same identity every other stored file uses (knowledge-base
 // images, chat attachments), which is what makes a saved answer keep working:
 // re-binding the handle to a knowledge entry is enough, with no copy and no
-// second rewrite. It is also opaque — the physical storage path stays server
+// second rewrite. It is also opaque - the physical storage path stays server
 // side, and every read still goes through an authorizing proxy.
 //
 // A deployment without the resource catalog has no handle to point at, so those
@@ -30,7 +30,7 @@ import (
 // /workspace/output, so every artifact already has its handle.
 
 // fencedOrInlineCodeRE splits content so destinations inside code samples are
-// never rewritten — a documentation snippet showing the syntax must survive.
+// never rewritten - a documentation snippet showing the syntax must survive.
 var fencedOrInlineCodeRE = regexp.MustCompile("(?s)(```.*?```|~~~.*?~~~|`[^`\n]*`)")
 
 // schemeRE matches an already-qualified URL (http://, resource://, data:, …).
@@ -50,8 +50,8 @@ var titleSuffixRE = regexp.MustCompile(`(?s)^(.*?)(\s+(?:"[^"]*"|'[^']*'))$`)
 //	![Score](market-profile-score.html)
 //	![Score](./output/market-profile-score.html)
 //
-// Anything else — an http URL, a resource:// handle the model copied from
-// context, an unknown file name — is returned unchanged so existing behaviour
+// Anything else - an http URL, a resource:// handle the model copied from
+// context, an unknown file name - is returned unchanged so existing behaviour
 // (knowledge-base images, web links) is untouched.
 func rewriteArtifactReferences(content string, artifacts types.MessageArtifacts) string {
 	if content == "" || len(artifacts) == 0 {
@@ -200,7 +200,7 @@ func lookupArtifactRef(destination string, byName map[string]string, image bool)
 
 // artifactDestinationName normalizes one Markdown link/image destination down to
 // the sandbox-output file name it names. ok is false when the destination is not
-// a sandbox-local file name at all — a real URL, a resource:// handle, a bare
+// a sandbox-local file name at all - a real URL, a resource:// handle, a bare
 // name in an ordinary link, or incidental prose punctuation.
 func artifactDestinationName(destination string, image bool) (string, bool) {
 	candidate := strings.TrimSpace(destination)
@@ -208,7 +208,7 @@ func artifactDestinationName(destination string, image bool) (string, bool) {
 		return "", false
 	}
 	// Trim the optional angle-bracket form Markdown allows around a
-	// destination: `[x](<name with space>)` — kept for completeness even
+	// destination: `[x](<name with space>)` - kept for completeness even
 	// though the outer regex rejects inner whitespace.
 	candidate = strings.TrimPrefix(strings.TrimSuffix(candidate, ">"), "<")
 
@@ -233,7 +233,7 @@ func artifactDestinationName(destination string, image bool) (string, bool) {
 	candidate = strings.TrimSpace(candidate)
 	// Bare names are rewritten for images (`![chart](a.html)`) because that is
 	// how models actually cite generated files. Ordinary links (`[docs](README.md)`)
-	// are left alone unless they already carry a sandbox prefix or path —
+	// are left alone unless they already carry a sandbox prefix or path -
 	// otherwise a colliding artifact name would hijack a real hyperlink.
 	if !hadSandboxPrefix && !image && !looksLikeSandboxOutputPath(candidate) {
 		return "", false
@@ -290,7 +290,7 @@ func walkSegmentDestinations(segment string, fn func(name string)) {
 // candidate order.
 //
 // A candidate is named when the body carries its resource:// handle, or when a
-// link/image destination resolves to its file name — the same spellings
+// link/image destination resolves to its file name - the same spellings
 // rewriteArtifactReferences accepts. Matching goes through the Markdown
 // destination rules rather than a substring search, so a file that merely
 // appears in prose is not treated as a reference.

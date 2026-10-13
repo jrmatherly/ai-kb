@@ -1,6 +1,6 @@
 // Package session provides RFB (VNC) client-stream parsing for the sandbox desktop relay.
 //
-// The relay is transparent — it forwards bytes without rewriting them — but it
+// The relay is transparent - it forwards bytes without rewriting them - but it
 // still has to know where client messages start and end, because idle
 // detection is by message opcode, not by byte count. Byte counting was
 // rejected: the XFCE panel clock, websockify's --heartbeat 30, and
@@ -46,8 +46,8 @@ const rfbMaxClientMessageBytes = 1 << 20
 // rfbProtocolVersionBytes is the length of the server's opening message, and
 // the most the relay can read before the upgrade: under RFB 3.8 the server
 // sends these 12 bytes and then waits for the CLIENT's version before it
-// offers anything else (RFC 6143 §7.1.1). The relay must not answer — that
-// handshake belongs to noVNC — so reading further here only blocks.
+// offers anything else (RFC 6143 §7.1.1). The relay must not answer - that
+// handshake belongs to noVNC - so reading further here only blocks.
 const rfbProtocolVersionBytes = 12
 
 // rfbValidateServerVersion is the assertion that still runs before the
@@ -164,7 +164,7 @@ func rfbClientMessageSize(buf []byte) (size int, complete bool, known bool) {
 	case 251: // SetDesktopSize: 8-byte header + 16 bytes per screen
 		// Modelled for completeness, but it should never arrive: the
 		// frontend pins resizeSession:false in SandboxDesktop.vue. That is a
-		// parser contract, not a UX preference — do not turn it on without
+		// parser contract, not a UX preference - do not turn it on without
 		// re-reading this case.
 		if len(buf) < 8 {
 			return 0, false, true
@@ -298,8 +298,8 @@ var errRFBHandshakeIncomplete = errors.New("rfb: server handshake ended early")
 // It deliberately stops there. Waiting for the security-type list as well
 // deadlocks: the server does not send it until the client answers with its
 // own version, and the client here is noVNC, which has not been connected
-// yet. That bug looked exactly like a dead upstream — the dial 101'd and the
-// read then timed out — while the sandbox was serving other clients fine.
+// yet. That bug looked exactly like a dead upstream - the dial 101'd and the
+// read then timed out - while the sandbox was serving other clients fine.
 func rfbReadServerVersion(next func() ([]byte, error)) ([]byte, error) {
 	var buf []byte
 	for attempt := 0; attempt < 64; attempt++ {

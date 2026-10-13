@@ -3,8 +3,8 @@
 // {"type": "input_audio", "input_audio": {"data": "data:<mime>;base64,..."}},
 // answered by an assistant message whose content is the transcript.
 //
-// Only dedicated recognition models are addressed this way — Alibaba's
-// qwen3-asr-flash and Xiaomi's mimo-v2.5-asr — so no instruction is sent: the
+// Only dedicated recognition models are addressed this way - Alibaba's
+// qwen3-asr-flash and Xiaomi's mimo-v2.5-asr - so no instruction is sent: the
 // model transcribes whatever it is given. A general audio-capable chat model
 // would need a prompt and would answer about the audio rather than transcribe
 // it, which is why this is its own protocol and not a chat request.
@@ -86,8 +86,8 @@ func (c *Client) BuildRequestBody(req api.TranscriptionRequest) (map[string]any,
 	if err != nil {
 		return nil, err
 	}
-	// The ceiling is on the whole string as sent — "encoded string size must
-	// not exceed 10 MB" — so the data: prefix counts too.
+	// The ceiling is on the whole string as sent - "encoded string size must
+	// not exceed 10 MB" - so the data: prefix counts too.
 	if limit := c.cfg.Settings.MaxEncodedBytes; limit > 0 && len(uri) > limit {
 		return nil, fmt.Errorf(
 			"the audio is %.1f MB and %.1f MB once base64-encoded; this model accepts at most %.1f MB encoded",

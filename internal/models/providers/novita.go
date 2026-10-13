@@ -1,10 +1,10 @@
 // Package providers registers the Novita AI gateway.
 //
-// Facts (https://docs.novita.ai — novita.ai/docs/* redirects there):
+// Facts (https://docs.novita.ai - novita.ai/docs/* redirects there):
 //   - chat, embedding, VLM and rerank share https://api.novita.ai/openai/v1;
 //     /v1/completions, /v1/batches and /v1/files sit alongside;
-//   - rerank is the Cohere shape — {model, query, documents, top_n} answering
-//     results[].{index, relevance_score, document.text} — so it needs no
+//   - rerank is the Cohere shape - {model, query, documents, top_n} answering
+//     results[].{index, relevance_score, document.text} - so it needs no
 //     vendor settings beyond the type being open
 //     (https://docs.novita.ai/api-reference/model-apis-llm-create-rerank).
 //     No ceiling on the document count is documented, and the reference
@@ -12,8 +12,8 @@
 //   - output cap is `max_tokens`, documented as required;
 //     `max_completion_tokens` is never mentioned;
 //   - the thinking switch is a **top-level** `enable_thinking` boolean
-//     (default true) — "Controls the switches between thinking and
-//     non-thinking modes" — not `chat_template_kwargs.enable_thinking` and
+//     (default true) - "Controls the switches between thinking and
+//     non-thinking modes" - not `chat_template_kwargs.enable_thinking` and
 //     not `reasoning_effort`, neither of which appears anywhere in the docs.
 //     There is no graded effort, so supports_reasoning_effort stays off and
 //     models that cannot stop reasoning are marked "off": null.

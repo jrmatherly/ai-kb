@@ -136,7 +136,7 @@ func TestDetectExplicitMemory(t *testing.T) {
 }
 
 // A memory is injected into the system prompt of every later turn, so a
-// credential that reaches storage is not merely retained — it is re-sent to a
+// credential that reaches storage is not merely retained - it is re-sent to a
 // model repeatedly. These cases are the ones a user actually pastes.
 func TestRedactSensitiveRemovesCredentials(t *testing.T) {
 	cases := []struct {

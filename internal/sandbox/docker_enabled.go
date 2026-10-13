@@ -13,7 +13,7 @@ import (
 // when a row has been pushed by SystemSettingService.
 //
 // A workspace admin who can save a Docker config can create containers on
-// whatever Engine API this process can reach — typically the host's
+// whatever Engine API this process can reach - typically the host's
 // docker.sock, which is host root. It is therefore off until a
 // SystemAdmin or deployer opts in.
 const DockerBackendEnabledEnv = "AIKB_SANDBOX_DOCKER_ENABLED"

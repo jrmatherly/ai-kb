@@ -100,7 +100,7 @@ func (a *WSAdapter) DownloadFile(ctx context.Context, msg *im.IncomingMessage) (
 	// connection mode where each file/image message carries a per-message aeskey.
 	aesKeyB64 := msg.Extra["aes_key"]
 	if aesKeyB64 == "" {
-		// No encryption — return raw content (e.g. webhook mode uses media API)
+		// No encryption - return raw content (e.g. webhook mode uses media API)
 		return reader, fileName, nil
 	}
 
@@ -167,13 +167,13 @@ func decryptAESCBC(ciphertext []byte, aesKeyB64 string) ([]byte, error) {
 	}
 	padLen := int(plaintext[len(plaintext)-1])
 	if padLen > aes.BlockSize || padLen == 0 || padLen > len(plaintext) {
-		// No valid PKCS#7 padding — return as-is (some implementations may not pad)
+		// No valid PKCS#7 padding - return as-is (some implementations may not pad)
 		return plaintext, nil
 	}
 	// Verify padding bytes
 	for i := 0; i < padLen; i++ {
 		if plaintext[len(plaintext)-1-i] != byte(padLen) {
-			// Invalid padding — return as-is
+			// Invalid padding - return as-is
 			return plaintext, nil
 		}
 	}

@@ -53,7 +53,7 @@ func resolveSharedAgentForRequest(
 // filling for, or (nil, nil) when the request names none.
 //
 // The @Skill and @MCP pickers offer what the SELECTED agent can invoke, and a
-// shared agent invokes its owner's skills and MCP services — its sandbox config
+// shared agent invokes its owner's skills and MCP services - its sandbox config
 // and service ids do not exist in the caller's own workspace, so listing them
 // there returns nothing. A request that names no source workspace is an
 // ordinary own-agent request and keeps reading the caller's own resources.

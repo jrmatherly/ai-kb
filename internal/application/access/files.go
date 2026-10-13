@@ -133,7 +133,7 @@ func MessageReferencesFile(message *types.Message, reference string) bool {
 	// no. Deleting a generated file does not rewrite the answer that produced
 	// it, so its `resource://` handle is still sitting in message.Content; if
 	// the text were consulted first, the message-scoped file proxy would keep
-	// serving a file the user deleted — including to a shared-agent visitor,
+	// serving a file the user deleted - including to a shared-agent visitor,
 	// and including the case where the bytes survived because a knowledge entry
 	// still holds them. Those other owners have their own access paths.
 	switch artifactReferenceState(message, reference) {

@@ -27,7 +27,7 @@ const (
 	// IMA hard limit: get_knowledge_list max limit=50; search_knowledge_base max=20.
 	searchPageSize = 20
 
-	// Default per-item download timeout — IMA COS URLs can be slow for large PDFs.
+	// Default per-item download timeout - IMA COS URLs can be slow for large PDFs.
 	downloadTimeout = 120 * time.Second
 
 	// Max body we accept from get_media_info-URLs. 200MB matches IMA's largest
@@ -220,7 +220,7 @@ func (c *client) callAPIAt(
 		// 110030 (no permission) is mapped to ErrInvalidCredentials so the service marks
 		// the source in `error` state and stops scheduling until re-authenticated.
 		// 110021 (rate limited) is retried. Everything else - including 110001 (invalid parameter),
-		// which is a bug on our side rather than a credential problem — surfaces
+		// which is a bug on our side rather than a credential problem - surfaces
 		// verbatim so the user sees IMA's own message.
 		if code := env.statusCode(); code != 0 {
 			if code == 110030 {
@@ -247,7 +247,7 @@ func (c *client) callAPIAt(
 	return lastErr
 }
 
-// SearchKnowledgeBase — POST /search_knowledge_base. Empty query returns the
+// SearchKnowledgeBase - POST /search_knowledge_base. Empty query returns the
 // list of every knowledge base visible to the current token (see api.md §7).
 func (c *client) SearchKnowledgeBase(
 	ctx context.Context, query, cursor string, limit int,
@@ -267,7 +267,7 @@ func (c *client) SearchKnowledgeBase(
 	return &resp, nil
 }
 
-// GetKnowledgeBase — POST /get_knowledge_base for a batch of ids (1-20).
+// GetKnowledgeBase - POST /get_knowledge_base for a batch of ids (1-20).
 func (c *client) GetKnowledgeBase(ctx context.Context, ids []string) (map[string]knowledgeBaseInfo, error) {
 	if len(ids) == 0 {
 		return map[string]knowledgeBaseInfo{}, nil
@@ -283,10 +283,10 @@ func (c *client) GetKnowledgeBase(ctx context.Context, ids []string) (map[string
 	return resp.Infos, nil
 }
 
-// GetAddableKnowledgeBaseList — POST /get_addable_knowledge_base_list.
+// GetAddableKnowledgeBaseList - POST /get_addable_knowledge_base_list.
 // Lists knowledge bases the current token has permission to add content to.
 // This is the authoritative "what KBs can this credential see?" endpoint
-// (see api.md §7). Used as the primary enumeration source in ListResources —
+// (see api.md §7). Used as the primary enumeration source in ListResources -
 // search_knowledge_base with empty query has been observed to return an empty
 // list even when the token owns KBs, so we prefer this endpoint.
 func (c *client) GetAddableKnowledgeBaseList(
@@ -306,7 +306,7 @@ func (c *client) GetAddableKnowledgeBaseList(
 	return &resp, nil
 }
 
-// GetKnowledgeList — POST /get_knowledge_list. folderID may be empty for root.
+// GetKnowledgeList - POST /get_knowledge_list. folderID may be empty for root.
 func (c *client) GetKnowledgeList(
 	ctx context.Context, kbID, folderID, cursor string, limit int,
 ) (*getKnowledgeListResp, error) {
@@ -328,7 +328,7 @@ func (c *client) GetKnowledgeList(
 	return &resp, nil
 }
 
-// GetMediaInfo — POST /get_media_info. Returns URL access info and (for notes)
+// GetMediaInfo - POST /get_media_info. Returns URL access info and (for notes)
 // the notebook_id under notebook_ext_info.
 func (c *client) GetMediaInfo(ctx context.Context, mediaID string) (*getMediaInfoResp, error) {
 	req := map[string]interface{}{"media_id": mediaID}
@@ -339,7 +339,7 @@ func (c *client) GetMediaInfo(ctx context.Context, mediaID string) (*getMediaInf
 	return &resp, nil
 }
 
-// GetNoteContent — POST /openapi/note/v1/get_doc_content. Returns an IMA note's
+// GetNoteContent - POST /openapi/note/v1/get_doc_content. Returns an IMA note's
 // body as plain text (target_content_format=0).
 //
 // noteID is the notebook_id that get_media_info reports for a note: the wiki

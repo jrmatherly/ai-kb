@@ -36,7 +36,7 @@ func TestBuildStreamResponseLeavesUsageNilWhenAbsent(t *testing.T) {
 
 func TestStreamEventUsageSurvivesJSONRoundTrip(t *testing.T) {
 	// The stream manager persists events as JSON (Redis) before the SSE loop
-	// reads them back — the typed usage must survive that round trip.
+	// reads them back - the typed usage must survive that round trip.
 	usage := &types.TokenUsage{PromptTokens: 100, CompletionTokens: 20, TotalTokens: 120}
 	usage.SetPromptCacheUsage(80, 0, 20, true)
 

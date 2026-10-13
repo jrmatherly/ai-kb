@@ -206,7 +206,7 @@ func TestRepairContentLinks(t *testing.T) {
 	seed("entity/mongodb", "MongoDB", types.WikiPageTypeEntity)
 
 	t.Run("mangled uuid summary link repaired via bigram", func(t *testing.T) {
-		// One hex digit inserted into the last group — 404s on exact lookup.
+		// One hex digit inserted into the last group - 404s on exact lookup.
 		content := "See [[summary/07a20bb1-a662-47cf-9929-06fb14d5b14b14e|AI KB \u8bd5\u9519\u8bb0\u5f55.md - " +
 			"Summary]] for context."
 		got, changed, err := svc.RepairContentLinks(ctx, kbID, "synthesis/notes", content)
@@ -420,7 +420,7 @@ func nodeSlugs(data *types.WikiGraphData) map[string]bool {
 // TestComputeGraphSubset_OverviewTruncatesByLinkCount verifies that overview
 // mode returns the most-connected nodes first and reports truncation
 // honestly in Meta. At 40,000 pages this is the path that must NOT return the
-// full graph — the cap is what keeps the response size and frontend
+// full graph - the cap is what keeps the response size and frontend
 // rendering tractable.
 func TestComputeGraphSubset_OverviewTruncatesByLinkCount(t *testing.T) {
 	pages := makeGraphFixture()
@@ -763,7 +763,7 @@ func TestComputeGraphSubset_EgoDepth2ExpandsFrontier(t *testing.T) {
 
 // TestComputeGraphSubset_EgoRejectsMissingCenter ensures we fail fast
 // rather than returning an empty graph when the caller points at a
-// non-existent slug — an empty result here would look identical to "your
+// non-existent slug - an empty result here would look identical to "your
 // wiki has no links to that page" and hide the real bug.
 func TestComputeGraphSubset_EgoRejectsMissingCenter(t *testing.T) {
 	pages := makeGraphFixture()

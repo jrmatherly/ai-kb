@@ -11,7 +11,7 @@
 //     .../openai/deployments/{deployment}/chat/completions?api-version=...,
 //     is still served but its newest GA api-version is 2024-10-21, which
 //     predates `max_completion_tokens` (2024-09-01-preview) and
-//     `reasoning_effort` (2024-12-01-preview) — so a reasoning deployment
+//     `reasoning_effort` (2024-12-01-preview) - so a reasoning deployment
 //     cannot work on it. The Endpoint hook therefore emits the v1 shape by
 //     default and only falls back to the legacy shape when the operator
 //     explicitly fills the api_version extra field;
@@ -60,7 +60,7 @@
 // "POST {endpoint}/openai/v1/embeddings", with `api-version` marked
 // "Required: No" and defaulting to v1). The lifecycle page's prerequisites
 // for the v1 API are only a subscription, a Foundry or Azure OpenAI resource
-// in a supported region, and at least one model deployment — there is no
+// in a supported region, and at least one model deployment - there is no
 // resource-level switch to flip, and `base_url` is documented to accept the
 // https://{resource}.openai.azure.com/openai/v1/ form. The dated path is not
 // a parallel modern option: 2024-10-21 is still the newest GA api-version
@@ -122,10 +122,10 @@ func newAzureOpenaiProvider() *Definition {
 		},
 		// ASR is deliberately absent. The ASR client now resolves through
 		// this vendor (api-key header, Endpoint hook below), but the only
-		// v1 reference for audio is the preview one —
+		// v1 reference for audio is the preview one -
 		// POST {endpoint}/openai/v1/audio/transcriptions?api-version=preview
-		// (https://learn.microsoft.com/en-us/azure/foundry/openai/reference-preview-latest)
-		// — while the hook sends a row without api_version to the v1 path
+		// (https://learn.microsoft.com/en-us/azure/foundry/openai/reference-preview-latest) -
+		// while the hook sends a row without api_version to the v1 path
 		// with no version at all. Until that is verified against a live
 		// resource, advertising the type would let the picker create a row
 		// that may fail at first use. A row with an explicit api_version

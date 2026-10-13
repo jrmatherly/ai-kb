@@ -124,7 +124,7 @@ func (t *discoverTransport) RequiresLegacyProtocol() bool {
 	return ok && legacy.RequiresLegacyProtocol()
 }
 
-// applyAuthHeaders injects the auth header for the SELECTED strategy only —
+// applyAuthHeaders injects the auth header for the SELECTED strategy only -
 // driven by AuthType so static API key / bearer are mutually exclusive (the old
 // code emitted both whenever the fields happened to be set, which double-authed
 // after a strategy switch). OAuth is handled separately by the caller.
@@ -164,8 +164,8 @@ func applyAuthHeaders(headers map[string]string, ac *types.MCPAuthConfig) {
 }
 
 // OAuthRequiredError signals that the target MCP server requires OAuth
-// authorization — it answered the connect/initialize handshake with a 401 that
-// advertised RFC 9728 protected-resource metadata — even though the service was
+// authorization - it answered the connect/initialize handshake with a 401 that
+// advertised RFC 9728 protected-resource metadata - even though the service was
 // NOT configured to use OAuth. Callers use this to guide the user to switch the
 // auth strategy to OAuth instead of surfacing a generic "401" failure.
 type OAuthRequiredError struct {
@@ -184,7 +184,7 @@ func (e *OAuthRequiredError) Unwrap() error { return e.Err }
 
 // asOAuthRequired inspects err for a transport-level authorization-required
 // signal that carries RFC 9728 protected-resource metadata. It returns a
-// non-nil *OAuthRequiredError ONLY when the server advertised a metadata URL —
+// non-nil *OAuthRequiredError ONLY when the server advertised a metadata URL -
 // a bare 401 without metadata is treated as an ordinary auth failure (e.g. a
 // wrong/missing API key) so we don't misdirect the user toward OAuth.
 func asOAuthRequired(err error) *OAuthRequiredError {
@@ -373,11 +373,11 @@ func (c *mcpGoClient) checkErrorAndDisconnectIfNeeded(err error) {
 	}
 	errMsg := transportErr.Err.Error()
 	// Known session invalidation errors from MCP servers:
-	//   - a 404, reported as transport.ErrSessionTerminated — the spec's signal
+	//   - a 404, reported as transport.ErrSessionTerminated - the spec's signal
 	//     that the server no longer knows the session (it restarted or expired
 	//     it) and the client has to initialize a new one
-	//   - "Invalid session ID"  — server recognises the header but rejects the value
-	//   - "No active connection" — server has no record of the session at all
+	//   - "Invalid session ID"  - server recognises the header but rejects the value
+	//   - "No active connection" - server has no record of the session at all
 	if errors.Is(transportErr.Err, transport.ErrSessionTerminated) ||
 		strings.Contains(errMsg, "Invalid session ID") ||
 		strings.Contains(errMsg, "No active connection") {

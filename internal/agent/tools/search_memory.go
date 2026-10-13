@@ -62,8 +62,8 @@ type SearchMemoryInput struct {
 // single turn's system prompt, and both stop being the right call once an
 // agent has spent ten iterations working its way to a sub-problem the opening
 // question never mentioned. This is the same division of labour
-// SearchConversationsTool describes — a small always-present summary plus
-// retrieval on demand — applied to the memory store rather than to
+// SearchConversationsTool describes - a small always-present summary plus
+// retrieval on demand - applied to the memory store rather than to
 // transcripts.
 //
 // The tool takes no owner argument. Which memory space is read is derived
@@ -127,7 +127,7 @@ func (t *SearchMemoryTool) Execute(
 			Success: true,
 			Output: "<user_memory_search />\n" +
 				"Long-term memory is switched off for this conversation, so there is " +
-				"nothing to search. Do not tell the user their memory is empty — say " +
+				"nothing to search. Do not tell the user their memory is empty - say " +
 				"memory is disabled if it comes up at all.",
 			Data: map[string]interface{}{"query": query, "available": false, "matches": 0},
 		}, nil
@@ -138,7 +138,7 @@ func (t *SearchMemoryTool) Execute(
 			Success: true,
 			Output: "<user_memory_search />\n" +
 				"Nothing in this user's long-term memory matches. Do not invent a " +
-				"memory, and do not assume the fact is false — it may simply never " +
+				"memory, and do not assume the fact is false - it may simply never " +
 				"have been recorded.",
 			Data: map[string]interface{}{"query": query, "available": true, "matches": 0},
 		}, nil

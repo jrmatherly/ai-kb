@@ -140,7 +140,7 @@ func newArtifactTestRouter(h *Handler) *gin.Engine {
 		c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), types.TenantIDContextKey, uint64(42)))
 		c.Next()
 	})
-	// Match the production route's wildcard names (see router.go — GET tree
+	// Match the production route's wildcard names (see router.go - GET tree
 	// binds :id to align with /sessions/:id) so paramSessionID resolves via
 	// the same code path exercised in prod.
 	r.GET("/sessions/:id/artifacts", h.ListSessionArtifacts)

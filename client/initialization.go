@@ -10,7 +10,7 @@ import (
 
 // InitializationConfig is the WRITE payload for InitializeByKB / UpdateKBConfig
 // (the server's write endpoint accepts these flat model ids). It is NOT the
-// shape the read endpoint returns — see KBModelConfigView / GetInitializationConfig.
+// shape the read endpoint returns - see KBModelConfigView / GetInitializationConfig.
 type InitializationConfig struct {
 	ChatModelID      string `json:"chat_model_id,omitempty"`
 	EmbeddingModelID string `json:"embedding_model_id,omitempty"`

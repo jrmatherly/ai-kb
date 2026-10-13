@@ -68,7 +68,7 @@ func TestSplitByHeadings_LargeSectionRecursesIntoLegacy(t *testing.T) {
 
 func TestSplitByHeadings_BreadcrumbReflectsLatestPath(t *testing.T) {
 	// Sized so each section stays its own chunk after the tiny-section
-	// coalesce pass — we're verifying breadcrumb assignment per section,
+	// coalesce pass - we're verifying breadcrumb assignment per section,
 	// not the merge behavior.
 	body := strings.Repeat("Lorem ipsum dolor sit amet consectetur adipiscing elit. ", 4)
 	doc := "# Chapter 1\n" + body + "\n\n## Section A\n" + body + "\n\n## Section B\n" + body
@@ -249,7 +249,7 @@ short C.`
 }
 
 // TestSplitByHeadings_CoalesceRespectsChunkSize ensures the merge target
-// stays within the ChunkSize budget — the validator caps oversize chunks
+// stays within the ChunkSize budget - the validator caps oversize chunks
 // at 2x and we should never approach that line via merging.
 func TestSplitByHeadings_CoalesceRespectsChunkSize(t *testing.T) {
 	const sections = 30
@@ -307,7 +307,7 @@ body B.`
 		for _, heading := range []string{"## Section A", "## Section B"} {
 			n := strings.Count(c.Content, heading)
 			if n > 1 {
-				t.Errorf("chunk %d contains %q %d times — duplicated by breadcrumb prepend:\n%s",
+				t.Errorf("chunk %d contains %q %d times - duplicated by breadcrumb prepend:\n%s",
 					i, heading, n, c.Content)
 			}
 		}

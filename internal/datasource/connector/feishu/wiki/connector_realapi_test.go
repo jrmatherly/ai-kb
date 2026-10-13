@@ -105,7 +105,7 @@ func TestRealAPI_ListSpaces(t *testing.T) {
 		t.Fatalf("ListWikiSpaces: %v", err)
 	}
 	if len(spaces) == 0 {
-		t.Fatalf("app can access 0 wiki spaces — add the app as a member of a knowledge base")
+		t.Fatalf("app can access 0 wiki spaces - add the app as a member of a knowledge base")
 	}
 	for _, s := range spaces {
 		t.Logf("SPACE space_id=%s name=%q", s.SpaceID, s.Name)
@@ -145,7 +145,7 @@ func TestRealAPI_FetchStreamResumeConverges(t *testing.T) {
 	n := len(h1.ingested)
 	t.Logf("pass 1: ingested=%d failed=%d cursor_nodes=%d", n, len(h1.failed), countNodes(nodeTimes(t, cur1)))
 	if n == 0 {
-		t.Fatalf("pass 1 ingested 0 documents — create a few docs in the space, or check app scopes (wiki/docx/drive read)")
+		t.Fatalf("pass 1 ingested 0 documents - create a few docs in the space, or check app scopes (wiki/docx/drive read)")
 	}
 	// Every ingested *node* must be recorded in the cursor. A multi-item node (a
 	// docx that fans out into a main document plus attachment/image sub-items)
@@ -174,10 +174,10 @@ func TestRealAPI_FetchStreamResumeConverges(t *testing.T) {
 	}
 	t.Logf("pass 2: re-ingested=%d (want 0)", len(h2.ingested))
 	if len(h2.ingested) != 0 {
-		t.Errorf("pass 2 re-ingested %v — real edit-time is unstable or core.Skip logic is broken", h2.ingested)
+		t.Errorf("pass 2 re-ingested %v - real edit-time is unstable or core.Skip logic is broken", h2.ingested)
 	}
 	if got := countNodes(nodeTimes(t, cur2)); got != countNodes(nt1AsMap(nt1)) {
-		t.Logf("note: cursor node count changed between passes (%d→%d) — space may have been edited concurrently", countNodes(nt1AsMap(nt1)), got)
+		t.Logf("note: cursor node count changed between passes (%d→%d) - space may have been edited concurrently", countNodes(nt1AsMap(nt1)), got)
 	}
 
 	// ---- Pass 3: interrupt mid-sync then resume, against the real API.
@@ -198,7 +198,7 @@ func TestRealAPI_FetchStreamResumeConverges(t *testing.T) {
 		t.Fatalf("pass 3 expected an abort error from the simulated timeout")
 	}
 	if len(h3.checkpoints) == 0 {
-		t.Fatalf("pass 3 wrote no Checkpoint — resume would restart from scratch")
+		t.Fatalf("pass 3 wrote no Checkpoint - resume would restart from scratch")
 	}
 	persisted := h3.checkpoints[len(h3.checkpoints)-1]
 	t.Logf("pass 3: ingested=%d before abort, persisted cursor nodes=%d", len(h3.ingested), countNodes(nodeTimes(t, persisted)))
@@ -218,7 +218,7 @@ func TestRealAPI_FetchStreamResumeConverges(t *testing.T) {
 	}
 	t.Logf("pass 3+4 union ingested=%d, pass-1 full=%d", len(union), n)
 	if len(union) < n {
-		t.Errorf("resume converged to %d docs but full sync had %d — a document was lost across interrupt+resume", len(union), n)
+		t.Errorf("resume converged to %d docs but full sync had %d - a document was lost across interrupt+resume", len(union), n)
 	}
 	// Resume must not redo already-checkpointed work.
 	done := nodeTimes(t, persisted)[spaceID]

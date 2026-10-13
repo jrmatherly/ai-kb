@@ -13,7 +13,7 @@ func TestEngineAwareNormalizer_KeywordPassthrough(t *testing.T) {
 	n := EngineAwareNormalizer{}
 	cases := []float64{-12.5, 0, 0.7, 1, 27.3, math.Inf(1)}
 	for _, s := range cases {
-		// Any keyword retriever, any engine — must be identity.
+		// Any keyword retriever, any engine - must be identity.
 		got := n.Normalize(context.Background(), s, types.KeywordsRetrieverType,
 			types.ElasticsearchRetrieverEngineType)
 		if got != s {
@@ -57,19 +57,19 @@ func TestEngineAwareNormalizer_UnitInterval(t *testing.T) {
 	n := EngineAwareNormalizer{}
 	// All engines whose effective score arriving at the normalizer is
 	// already in [0, 1]:
-	//   - Elasticsearch v8 / ElasticFaiss — Lucene script_score's
+	//   - Elasticsearch v8 / ElasticFaiss - Lucene script_score's
 	//     non-negative invariant truncates the theoretical [-1, 1]
 	//     cosineSimilarity output to [0, 1].
-	//   - OpenSearch — the k-NN plugin's
+	//   - OpenSearch - the k-NN plugin's
 	//     SpaceType.COSINESIMIL.scoreTranslation pre-maps to (1 + cos)/2.
-	//   - Weaviate — driver requests certainty, intrinsically in [0, 1].
+	//   - Weaviate - driver requests certainty, intrinsically in [0, 1].
 	//   - Postgres pgvector / SQLite sqlite-vec / Qdrant /
-	//     TencentVectorDB / Doris — theoretically [-1, 1] but the
+	//     TencentVectorDB / Doris - theoretically [-1, 1] but the
 	//     IR-normalized embeddings AI KB targets (BGE / OpenAI /
 	//     Cohere / sentence-transformers) keep the observed range
 	//     in [0, 1]; the silent floor at clamp01(<0) → 0 is the
 	//     defense for embedding models that violate that assumption.
-	//   - Infinity — dead enum reference; case label kept for switch
+	//   - Infinity - dead enum reference; case label kept for switch
 	//     exhaustiveness, never reached in production.
 	cases := []struct {
 		score float64
@@ -161,7 +161,7 @@ func TestEngineAwareNormalizer_OpenSearchCosinePassthrough(t *testing.T) {
 	// (clamping only to guard against engine drift and NaN/Inf inputs that
 	// could otherwise break the slices.SortFunc strict-weak-ordering
 	// invariant downstream).
-	// Subtests run serially (no inner t.Parallel) — consistent with
+	// Subtests run serially (no inner t.Parallel) - consistent with
 	// the other table-driven tests in this file.
 	cases := []struct {
 		name  string
@@ -200,7 +200,7 @@ func TestEngineAwareNormalizer_OpenSearchKeywordPassthrough(t *testing.T) {
 	t.Parallel()
 	n := EngineAwareNormalizer{}
 	// BM25 keyword scores on OpenSearch are unbounded positive raw
-	// values — they MUST pass through unchanged so the service-layer
+	// values - they MUST pass through unchanged so the service-layer
 	// RRF rank-based fusion handles the scale-mixed combination.
 	got := n.Normalize(context.Background(), 12.7,
 		types.KeywordsRetrieverType, types.OpenSearchRetrieverEngineType)
@@ -211,7 +211,7 @@ func TestEngineAwareNormalizer_OpenSearchKeywordPassthrough(t *testing.T) {
 
 func TestEngineAwareNormalizer_OpenSearchNilCtx_DoesNotPanic(t *testing.T) {
 	// nil ctx must not panic. The OpenSearch case is IO-free by
-	// contract — it never reads from ctx and never logs.
+	// contract - it never reads from ctx and never logs.
 	t.Parallel()
 	defer func() {
 		if r := recover(); r != nil {
@@ -240,7 +240,7 @@ func TestEngineAwareNormalizer_Unknown_ClampsAndDoesNotPanic(t *testing.T) {
 }
 
 func TestEngineAwareNormalizer_NilCtx_DoesNotPanic(t *testing.T) {
-	// nil ctx must not panic. Normalize is IO-free by contract — it never
+	// nil ctx must not panic. Normalize is IO-free by contract - it never
 	// reads from ctx and never logs. The unknown-engine warning is
 	// emitted by the caller (retrieveFromStores), where ctx is always
 	// live.

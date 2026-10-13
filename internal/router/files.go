@@ -34,7 +34,7 @@ import (
 //   - /r/:token                           short-lived capability URLs
 //
 // The handlers differ in how they authenticate and which tenant owns the
-// object, but share the same storage plumbing — the helpers directly below
+// object, but share the same storage plumbing - the helpers directly below
 // are that shared plumbing.
 
 // getRouteRegistrar is the minimal registration surface serveFiles* needs;
@@ -60,7 +60,7 @@ func localStorageBaseDir() string {
 	return baseDir
 }
 
-// localStorageAbsDir is localStorageBaseDir made absolute — the form the
+// localStorageAbsDir is localStorageBaseDir made absolute - the form the
 // storage resolvers expect.
 func localStorageAbsDir() string {
 	absDir, _ := filepath.Abs(localStorageBaseDir())
@@ -122,8 +122,8 @@ func resolveCatalogResource(
 	return resolvedPath, true, true
 }
 
-// resolveFileService picks the file service for (tenant, backendID, provider)
-// — via the storage resolver when wired, else directly from the tenant's
+// resolveFileService picks the file service for (tenant, backendID, provider) -
+// via the storage resolver when wired, else directly from the tenant's
 // storage config. No fallback; used by the presigned surfaces where a
 // missing tenant config must surface as an error.
 func resolveFileService(
@@ -386,9 +386,9 @@ func newKBScopedFileServeHandlerWithResources(
 // assistant message. The message service first proves that the caller owns the
 // containing session, and the persisted message must reference the exact file.
 // For cross-workspace resources we then require either the
-// message's agent to still be shared from the resource-owning workspace, or —
+// message's agent to still be shared from the resource-owning workspace, or -
 // when the reply was produced by the caller's own agent over an org-shared
-// knowledge base — that the resource's KB is still shared to the caller.
+// knowledge base - that the resource's KB is still shared to the caller.
 //
 // The owner tenant comes from the resource registry whenever possible. This
 // also keeps old messages (written before agent_tenant_id was populated)
@@ -539,7 +539,7 @@ func servePresignedFiles(r *gin.Engine, tenantService interfaces.TenantService, 
 
 // presignedFileHandler returns the shared Gin handler used by both GET and HEAD.
 // For HEAD requests it returns the same status + headers but does not stream
-// the body — this is enough for IM platforms to validate the URL while saving
+// the body - this is enough for IM platforms to validate the URL while saving
 // us a full read of the backing object.
 func presignedFileHandler(tenantService interfaces.TenantService, absDir string, resolvers ...interfaces.StorageBackendResolver) gin.HandlerFunc {
 	var storageResolver interfaces.StorageBackendResolver
@@ -622,7 +622,7 @@ func presignedFileHandler(tenantService interfaces.TenantService, absDir string,
 
 // servePresignedPreview registers an Admin-only diagnostic endpoint that
 // returns the presigned HTTP URL that *would be* generated for a given
-// storage path by the calling tenant's current storage config — exactly the
+// storage path by the calling tenant's current storage config - exactly the
 // URL an IM channel would embed in a reply. Operators can paste the result
 // into a 4G/mobile browser to verify public reachability without having to
 // send a real message through an IM bot.

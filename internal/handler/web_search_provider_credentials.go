@@ -14,7 +14,7 @@ import (
 
 // WebSearchProviderCredentialsHandler handles credentials for web search
 // providers via the dedicated /credentials subresource. Currently the only
-// recognized field is "api_key" — every provider that needs credentials uses
+// recognized field is "api_key" - every provider that needs credentials uses
 // just one key (Bing / Google / Tavily / Ollama / Baidu), and DuckDuckGo /
 // SearXNG don't need credentials at all.
 type WebSearchProviderCredentialsHandler struct {

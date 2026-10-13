@@ -12,8 +12,8 @@ import (
 
 // systemSettingRepository implements interfaces.SystemSettingRepository
 // against the system_settings table (migration 000053). The table is
-// system-scoped (no tenant_id column) and intentionally tiny — single-
-// digit rows in P1 — so List does not paginate.
+// system-scoped (no tenant_id column) and intentionally tiny - single-
+// digit rows in P1 - so List does not paginate.
 type systemSettingRepository struct {
 	db *gorm.DB
 }
@@ -25,7 +25,7 @@ func NewSystemSettingRepository(db *gorm.DB) interfaces.SystemSettingRepository 
 }
 
 // Get fetches a system setting by key. Returns (nil, nil) when the row
-// does not exist — the resolver service treats "missing" as "fall back
+// does not exist - the resolver service treats "missing" as "fall back
 // to ENV / default", so a 404 here is a normal control-flow signal,
 // not an error. Real DB errors (connection lost, etc.) surface up.
 func (r *systemSettingRepository) Get(ctx context.Context, key string) (*types.SystemSetting, error) {
@@ -41,7 +41,7 @@ func (r *systemSettingRepository) Get(ctx context.Context, key string) (*types.S
 }
 
 // List returns every system_settings row, ordered by category then key
-// for stable management-UI rendering. No pagination — see type comment.
+// for stable management-UI rendering. No pagination - see type comment.
 func (r *systemSettingRepository) List(ctx context.Context) ([]*types.SystemSetting, error) {
 	var rows []*types.SystemSetting
 	err := r.db.WithContext(ctx).Order("category ASC, key ASC").Find(&rows).Error
@@ -78,7 +78,7 @@ func (r *systemSettingRepository) Upsert(ctx context.Context, s *types.SystemSet
 // Delete removes the row by key. The boolean return indicates whether
 // a row was actually deleted, so the service layer can audit only real
 // deletions (vs the idempotent no-op when the key was already absent).
-// gorm's RowsAffected is 0 for "no match" — we keep that as (false, nil)
+// gorm's RowsAffected is 0 for "no match" - we keep that as (false, nil)
 // rather than translating to gorm.ErrRecordNotFound so the caller's
 // happy path is a single nil check on err.
 func (r *systemSettingRepository) Delete(ctx context.Context, key string) (bool, error) {

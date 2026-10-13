@@ -516,7 +516,7 @@ func TestIsValidEngineType(t *testing.T) {
 		})
 	}
 
-	// Postgres and SQLite are intentionally NOT registerable as DB stores —
+	// Postgres and SQLite are intentionally NOT registerable as DB stores -
 	// they only make sense as env stores driven by RETRIEVE_DRIVER (see the
 	// doc comment on validEngineTypes). UI/API surface stays consistent:
 	// GetVectorStoreTypes does not list them, Validate rejects them, and
@@ -558,7 +558,7 @@ func TestConnectionConfig_ValueScan(t *testing.T) {
 			APIKey:   "sk-api-key",
 		}
 
-		// Value — encrypt
+		// Value - encrypt
 		raw, err := original.Value()
 		require.NoError(t, err)
 
@@ -571,7 +571,7 @@ func TestConnectionConfig_ValueScan(t *testing.T) {
 		assert.Equal(t, "http://es:9200", intermediate["addr"])
 		assert.Equal(t, "elastic", intermediate["username"])
 
-		// Scan — decrypt
+		// Scan - decrypt
 		var scanned ConnectionConfig
 		err = scanned.Scan(raw.([]byte))
 		require.NoError(t, err)
@@ -873,7 +873,7 @@ func TestIndexConfig_GetIndexNameOrDefault(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// IndexConfig — getter helpers
+// IndexConfig - getter helpers
 // ---------------------------------------------------------------------------
 
 func TestIndexConfig_GetterHelpers(t *testing.T) {
@@ -939,7 +939,7 @@ func TestIndexConfig_GetterHelpers(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// IndexConfig — resolve helpers
+// IndexConfig - resolve helpers
 // ---------------------------------------------------------------------------
 
 func TestResolveIndexName(t *testing.T) {
@@ -1161,7 +1161,7 @@ func TestValidateIndexConfig(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// IndexConfig — scalability fields round-trip
+// IndexConfig - scalability fields round-trip
 // ---------------------------------------------------------------------------
 
 func TestIndexConfig_ScalabilityFieldsRoundTrip(t *testing.T) {
@@ -1240,9 +1240,9 @@ func TestVectorStore_PostgresSqliteNotRegisterable(t *testing.T) {
 			got = append(got, info.Type)
 		}
 		assert.NotContains(t, got, string(PostgresRetrieverEngineType),
-			"postgres must not appear in the UI dropdown — env-store only")
+			"postgres must not appear in the UI dropdown - env-store only")
 		assert.NotContains(t, got, string(SQLiteRetrieverEngineType),
-			"sqlite must not appear in the UI dropdown — env-store only")
+			"sqlite must not appear in the UI dropdown - env-store only")
 	})
 }
 
@@ -1280,7 +1280,7 @@ func TestConnectionConfig_InsecureSkipVerify_BackwardCompat(t *testing.T) {
 
 // TestConnectionConfig_InsecureSkipVerify_RoundTrip verifies that the
 // new field serializes correctly when set, and is omitted (omitempty)
-// when false — so existing entries do not gain a new wire-format key
+// when false - so existing entries do not gain a new wire-format key
 // after the Phase 3 schema extension lands.
 func TestConnectionConfig_InsecureSkipVerify_RoundTrip(t *testing.T) {
 	t.Run("true serializes the field", func(t *testing.T) {
@@ -1313,7 +1313,7 @@ func TestConnectionConfig_AESGCMRoundTrip_PreservesInsecureSkipVerify(t *testing
 		InsecureSkipVerify: true,
 	}
 
-	// Value — encrypt
+	// Value - encrypt
 	raw, err := original.Value()
 	require.NoError(t, err)
 
@@ -1326,7 +1326,7 @@ func TestConnectionConfig_AESGCMRoundTrip_PreservesInsecureSkipVerify(t *testing
 	assert.Equal(t, true, intermediate["insecure_skip_verify"],
 		"insecure_skip_verify should be plaintext bool")
 
-	// Scan — decrypt secrets and preserve the flag
+	// Scan - decrypt secrets and preserve the flag
 	var scanned ConnectionConfig
 	require.NoError(t, scanned.Scan(raw.([]byte)))
 	assert.Equal(t, "secret-pass", scanned.Password)
@@ -1358,7 +1358,7 @@ func TestVectorStoreFieldInfo_OmitemptyPreservesWire(t *testing.T) {
 }
 
 // TestVectorStoreFieldInfo_NewFieldsSerialize verifies the new fields
-// appear in JSON when set — exercised by the OpenSearch IndexFields
+// appear in JSON when set - exercised by the OpenSearch IndexFields
 // entry that lands in a later Phase 3 PR.
 func TestVectorStoreFieldInfo_NewFieldsSerialize(t *testing.T) {
 	t.Run("immutable", func(t *testing.T) {
@@ -1432,7 +1432,7 @@ func TestVectorStoreFieldInfo_RoundTrip(t *testing.T) {
 
 	t.Run("nil enum omits via omitempty", func(t *testing.T) {
 		// `nil` and `[]string{}` both round-trip through omitempty
-		// identically — pin both shapes so a future Go encoder
+		// identically - pin both shapes so a future Go encoder
 		// behavior change cannot regress the wire format.
 		f := VectorStoreFieldInfo{Name: "addr", Type: "string"} // Enum nil
 		out, err := json.Marshal(f)

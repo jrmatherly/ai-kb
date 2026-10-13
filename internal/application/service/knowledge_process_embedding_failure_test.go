@@ -20,7 +20,7 @@ type embedFailureKnowledgeRepo struct {
 	// reads have been served. The delay matters: processChunks already
 	// guards its entry, so a test that returns the cancelled / replaced row
 	// from the very first read never reaches the code under test. Delaying
-	// it models the real window — resolving an embedding model reads the
+	// it models the real window - resolving an embedding model reads the
 	// database, so a cancel or a replacement can land while it runs.
 	stored           *types.Knowledge
 	storedAfterReads int
@@ -55,7 +55,7 @@ func (s embedFailureModelService) GetEmbeddingModel(
 }
 
 // A KB that indexes vectors cannot proceed without an embedder, and
-// processChunks reports nothing to its callers — so this failure has to be
+// processChunks reports nothing to its callers - so this failure has to be
 // persisted here or the row stays "processing" with no task left to move it,
 // visible to the user only as an hour-long spinner followed by a generic
 // housekeeping failure.
@@ -96,7 +96,7 @@ func TestProcessChunksFailsKnowledgeWhenEmbeddingModelUnavailable(t *testing.T) 
 }
 
 // A cancelled context means the run was interrupted, not that the model is
-// unusable — the user cancelled (asynq CancelProcessing cancels the handler
+// unusable - the user cancelled (asynq CancelProcessing cancels the handler
 // context), the worker was preempted, or the process is shutting down.
 // Recording a model failure here would both mislabel the cause and overwrite
 // the cancelled status the abort path just wrote.
@@ -145,7 +145,7 @@ func TestProcessChunksLeavesStatusAloneWhenEmbeddingModelCallIsCancelled(t *test
 }
 
 // The row was cancelled after the entry guard ran. Resolving a model reads the
-// database, so that window is real — and the cancelled status must survive it.
+// database, so that window is real - and the cancelled status must survive it.
 func TestProcessChunksDoesNotOverwriteCancelledRowOnEmbeddingFailure(t *testing.T) {
 	knowledge := &types.Knowledge{
 		ID:              "knowledge-1",

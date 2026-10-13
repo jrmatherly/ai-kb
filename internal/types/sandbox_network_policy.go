@@ -1,7 +1,7 @@
 // Sandbox network policy stored on a tenant sandbox config.
 //
 // One sandbox config carries one network policy, applied to every sandbox
-// created from it — chat sessions, skill installs and connectivity probes
+// created from it - chat sessions, skill installs and connectivity probes
 // alike. The provider-facing translation lives in internal/sandbox; this file
 // is only the stored shape, its secret handling, and its validation.
 
@@ -231,7 +231,7 @@ func ValidateSandboxNetworkPolicy(cfg *TenantSandboxConfig) error {
 
 // DenyOutCoversAllIPv4 reports whether a deny list blocks every IPv4
 // destination. That is the second of the two ways an admin can express the
-// deny-all fallback — the first being DenyEgressByDefault — and
+// deny-all fallback - the first being DenyEgressByDefault - and
 // ValidateSandboxNetworkPolicy treats them as equivalent, so every consumer
 // that asks "does this policy deny by default?" has to accept both or it will
 // misjudge a config the admin was allowed to save.

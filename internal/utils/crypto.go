@@ -97,7 +97,7 @@ func DecryptAESGCM(encrypted string, key []byte) (string, error) {
 
 // DecryptStoredSecret decrypts a value loaded from the database with strict
 // error propagation. Use this in hot-path code that is about to actually
-// USE the credential (e.g. building an upstream HTTP request) — a rotated
+// USE the credential (e.g. building an upstream HTTP request) - a rotated
 // or missing key must surface as a loud error rather than silently
 // degrading to "no credential", because the user expects the configured
 // upstream call to either work or fail with a clear "auth misconfigured"
@@ -114,7 +114,7 @@ func DecryptAESGCM(encrypted string, key []byte) (string, error) {
 //
 // For GORM Scan paths that load a whole row (where erroring out hides the
 // rest of the resource from the user) use DecryptStoredSecretLenient
-// instead — it lets the row load with the secret blanked out so the UI
+// instead - it lets the row load with the secret blanked out so the UI
 // can render "credential not configured" and the user can re-enter it,
 // without crashing list endpoints when the operator rotates or removes
 // SYSTEM_AES_KEY.

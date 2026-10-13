@@ -22,7 +22,7 @@ func (s stubSandboxResolver) Resolve(context.Context, uint64, string) (sandbox.M
 }
 
 // artifactFallbackManager is a minimal sandbox.Manager that delegates artifact
-// reads to a SandboxArtifactSource — used when tests exercise sentinel pins.
+// reads to a SandboxArtifactSource - used when tests exercise sentinel pins.
 type artifactFallbackManager struct {
 	source SandboxArtifactSource
 }

@@ -73,7 +73,7 @@ func TestApplyAuthHeaders(t *testing.T) {
 			want: map[string]string{"Authorization": "Bearer t1"},
 		},
 		{
-			name: "selected strategy is exclusive — stale token is not emitted",
+			name: "selected strategy is exclusive - stale token is not emitted",
 			ac: &types.MCPAuthConfig{
 				AuthType: types.MCPAuthAPIKey,
 				APIKey:   "k1",

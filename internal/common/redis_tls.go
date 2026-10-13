@@ -18,7 +18,7 @@ import (
 //	                               verification and SNI (useful when the address
 //	                               is an IP rather than a hostname).
 //	REDIS_TLS_INSECURE_SKIP_VERIFY Skip server certificate verification when
-//	                               "true". INSECURE — intended for development or
+//	                               "true". INSECURE - intended for development or
 //	                               self-signed setups only; do not use in production.
 //
 // The server certificate is verified by default; verification is only relaxed

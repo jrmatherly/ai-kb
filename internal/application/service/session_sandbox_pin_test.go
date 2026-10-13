@@ -319,8 +319,8 @@ func TestResolveSandboxForExecutionDoesNotPersistOwnerWhenResolveFails(t *testin
 // resolveTenantSandboxForConfig answers the workspace kill switch with a
 // disabled manager and NO error, before it ever reads the config row. A nil
 // error is therefore not proof that this workspace owns the pinned config, and
-// stamping it would brand a legacy pin with a workspace that cannot resolve it
-// — recreating the stranded MicroVM this column exists to prevent.
+// stamping it would brand a legacy pin with a workspace that cannot resolve it -
+// recreating the stranded MicroVM this column exists to prevent.
 //
 // The end-to-end shape: a session of workspace 7 pinned to a config workspace 7
 // owns (left at 0 by the backfill, correctly), then one turn of a shared agent

@@ -536,7 +536,7 @@ func (c *Client) DownloadKnowledgeFile(ctx context.Context, knowledgeID string, 
 // body. Callers MUST Close the returned reader.
 //
 // Used by `aikb doc download` so the CLI can inspect the filename
-// before opening the destination file — avoids streaming the full body
+// before opening the destination file - avoids streaming the full body
 // to a temp file just to discover the request would have been rejected
 // (overwrite without --force, missing --out for unnamed downloads, etc.).
 func (c *Client) OpenKnowledgeFile(ctx context.Context, knowledgeID string) (string, io.ReadCloser, error) {
@@ -602,7 +602,7 @@ func (c *Client) OpenKnowledgeFilesArchive(ctx context.Context, knowledgeBaseID 
 
 // filenameFromContentDisposition extracts the filename parameter from a
 // Content-Disposition header. Returns "" on any parse failure or missing
-// parameter — callers fall back to their own default in that case.
+// parameter - callers fall back to their own default in that case.
 func filenameFromContentDisposition(h string) string {
 	if h == "" {
 		return ""
@@ -677,9 +677,9 @@ func (c *Client) ReparseKnowledge(ctx context.Context, knowledgeID string) (*Kno
 // parsing later via ReparseKnowledge.
 //
 // Cancellable parse_status values:
-//   - pending      — task has not started
-//   - processing   — DocReader / chunking / embedding stage
-//   - finalizing   — primary parse done, enrichment subtasks (summary,
+//   - pending      - task has not started
+//   - processing   - DocReader / chunking / embedding stage
+//   - finalizing   - primary parse done, enrichment subtasks (summary,
 //     question generation, graph extract) still running
 //
 // Returns an error when the knowledge is in a terminal state

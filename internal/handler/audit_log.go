@@ -15,7 +15,7 @@ import (
 // AuditLogHandler exposes the per-tenant audit-log feed (PR 6, #1303).
 // The route group lives under /tenants/:id/audit-log, gated by
 // PathTenantMatch (URL :id == active tenant) plus an Admin role
-// requirement — leaks of denied-action histories should not surface
+// requirement - leaks of denied-action histories should not surface
 // to ordinary members.
 type AuditLogHandler struct {
 	auditService interfaces.AuditLogService
@@ -59,7 +59,7 @@ func (h *AuditLogHandler) ListTenantAuditLog(c *gin.Context) {
 		return
 	}
 
-	// after_id cursor — invalid values are tolerated (treated as "from
+	// after_id cursor - invalid values are tolerated (treated as "from
 	// the top") so a misconfigured client doesn't see a hard 400 on
 	// the empty / first request. Tighter validation belongs at the
 	// frontend.

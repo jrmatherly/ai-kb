@@ -12,7 +12,7 @@ import (
 // entries. AfterID is the last id from the previous page (rows with
 // id < AfterID are returned, newest first); 0 means "from the top".
 // Limit is capped at 100 inside the repository regardless of caller
-// input — keeps unbounded scans off the table.
+// input - keeps unbounded scans off the table.
 type AuditLogQuery struct {
 	AfterID      uint64
 	Limit        int
@@ -26,11 +26,11 @@ type AuditLogQuery struct {
 
 // AuditLogRepository is the storage primitive for the audit table.
 // All writes are inserts (immutable rows); the only "update" surface
-// is none — once written, an entry is permanent.
+// is none - once written, an entry is permanent.
 type AuditLogRepository interface {
 	Create(ctx context.Context, entry *types.AuditLog) error
 	List(ctx context.Context, tenantID uint64, q *AuditLogQuery) ([]*types.AuditLog, error)
-	// CountSinceForDedup is the rate-limit primitive for LogDenied —
+	// CountSinceForDedup is the rate-limit primitive for LogDenied -
 	// returns the count of matching rows in the trailing window so the
 	// service can skip writing duplicates. Filter is
 	// (tenant_id, actor_user_id, action, request_path, created_at >= since).

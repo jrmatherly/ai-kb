@@ -32,7 +32,7 @@ const (
 )
 
 // NewQdrantRetrieveEngineRepository creates and initializes a new Qdrant repository.
-// indexCfg is optional — pass nil to use env var / default values (env path).
+// indexCfg is optional - pass nil to use env var / default values (env path).
 func NewQdrantRetrieveEngineRepository(client *qdrant.Client, indexCfg *types.IndexConfig) interfaces.RetrieveEngineRepository {
 	log := logger.GetLogger(context.Background())
 	log.Info("[Qdrant] Initializing Qdrant retriever engine repository")
@@ -79,7 +79,7 @@ func (q *qdrantRepository) collectionExists(ctx context.Context, dimension int) 
 
 // deleteTarget resolves the collection a delete should run against and reports
 // whether the delete is worth issuing. A dimension-specific collection that was
-// never created holds no points, so deleting from it is a no-op — the same rule
+// never created holds no points, so deleting from it is a no-op - the same rule
 // VectorRetrieve already applies to reads.
 //
 // This matters because the ingest paths re-index a chunk by deleting first and

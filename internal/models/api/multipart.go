@@ -28,9 +28,9 @@ type FormFile struct {
 // what a signing vendor hashes and what every retry sends again.
 //
 // The file part carries a filename and no Content-Type of its own. Servers
-// identify the format from the extension then — OpenAI asks for "an
+// identify the format from the extension then - OpenAI asks for "an
 // extension-bearing filename", and vox-box (GPUStack's audio backend) falls
-// back to guessing from it — whereas a guessed type that a server does not
+// back to guessing from it - whereas a guessed type that a server does not
 // list is rejected outright.
 func EncodeMultipart(fields []FormField, file FormFile) ([]byte, string, error) {
 	var buf bytes.Buffer

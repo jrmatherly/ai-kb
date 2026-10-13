@@ -91,7 +91,7 @@ func (e *AgentEngine) streamLLMToEventBus(
 		responseTypeCounts[string(chunk.ResponseType)]++
 
 		// Capture error messages from the stream (e.g., "context deadline exceeded")
-		// but do NOT append them to result.Content — they would leak to the user
+		// but do NOT append them to result.Content - they would leak to the user
 		// as if they were part of the LLM answer. The tool calls and finish
 		// reason riding along on the error chunk are what the provider had
 		// assembled when the stream broke; keeping them lets the caller log and
@@ -206,7 +206,7 @@ func (e *AgentEngine) streamLLMToEventBus(
 		streamDuration.Milliseconds(), responseTypeCounts)
 
 	// A stream that ended on an error never delivered a finish reason, so
-	// everything collected is a partial response — a cut-off preamble, a
+	// everything collected is a partial response - a cut-off preamble, a
 	// half-serialized tool call. Always surface it as a Go error so the caller
 	// retries or degrades. Returning it as success once let a 238-character
 	// preamble stand in as the final answer while a 30 KB write_sandbox_file
@@ -564,7 +564,7 @@ func (e *AgentEngine) callLLMWithRetry(
 			"compacting and retrying once: %v", round, err)
 		// The engine's copy stays unsanitized. Sanitizing merges consecutive
 		// same-role messages, and the summary is a `user` message that can end
-		// up adjacent to a real one — merging them folds live conversation
+		// up adjacent to a real one - merging them folds live conversation
 		// into the summary envelope, where the next compaction cannot read it
 		// back out. The provider gets the sanitized view; the engine keeps the
 		// structured one.
@@ -607,7 +607,7 @@ func (e *AgentEngine) callLLMWithRetry(
 		// Graceful degradation: if we have tool results from previous rounds,
 		// try to synthesize a final answer from them instead of losing everything.
 		if totalTC := countTotalToolCalls(state.RoundSteps); totalTC > 0 {
-			logger.Warnf(ctx, "[Agent] LLM failed but have %d steps with %d tool calls — "+
+			logger.Warnf(ctx, "[Agent] LLM failed but have %d steps with %d tool calls - "+
 				"attempting final answer synthesis from existing results",
 				len(state.RoundSteps), totalTC)
 			common.PipelineWarn(ctx, "Agent", "llm_failed_synthesizing", map[string]interface{}{

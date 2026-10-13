@@ -208,7 +208,7 @@ func (s *userService) Register(ctx context.Context, req *types.RegisterRequest) 
 	}
 
 	// Bootstrap an Owner membership so the registrant has full control over
-	// the tenant their account just created. Failure here only logs — the
+	// the tenant their account just created. Failure here only logs - the
 	// user record exists and the auth middleware's orphan-tenant recovery
 	// path will recreate the membership on next login.
 	if createdTenant != nil && s.memberService != nil {
@@ -266,7 +266,7 @@ func (s *userService) Login(ctx context.Context, req *types.LoginRequest) (*type
 	logger.Info(ctx, "Password verification successful")
 
 	// Generate tokens. Resolve the target tenant once so the JWT claim
-	// and the tenant we return below agree — otherwise an honoured
+	// and the tenant we return below agree - otherwise an honoured
 	// "last active tenant" preference would mint a token for tenant N
 	// but tell the client they're in their home tenant.
 	logger.Info(ctx, "Generating tokens")
@@ -311,7 +311,7 @@ func (s *userService) Login(ctx context.Context, req *types.LoginRequest) (*type
 // into the login-response shape. activeTenant (if non-nil and matching one
 // of the rows) is used to reuse its already-fetched name without a second
 // DB lookup; other tenants are looked up individually. Errors are logged
-// but never propagated — a missing memberships array degrades gracefully
+// but never propagated - a missing memberships array degrades gracefully
 // to length 0 rather than failing the whole login.
 //
 // When the membership service is unavailable (e.g. in tests that wire only
@@ -645,7 +645,7 @@ func (s *userService) RevokeSystemAdmin(ctx context.Context, userID, actorID str
 // (non-nil pointer fields) replace the existing value; everything else
 // is preserved. This lets the front-end PUT only the preference that
 // changed without having to read-modify-write the whole struct, and
-// also makes the endpoint forward-compatible — older clients that
+// also makes the endpoint forward-compatible - older clients that
 // don't know about newer keys won't accidentally erase them.
 func (s *userService) UpdateUserPreferences(
 	ctx context.Context,
@@ -674,7 +674,7 @@ func (s *userService) UpdateUserPreferences(
 	if patch.LastActiveTenantID != nil {
 		// *0 = "forget my preference, fall back to home on next login";
 		// any positive value = set/replace. We do not validate membership
-		// here — invalid values get culled on the next login via
+		// here - invalid values get culled on the next login via
 		// resolveLoginTenantID, keeping this endpoint cheap.
 		if *patch.LastActiveTenantID == 0 {
 			merged.LastActiveTenantID = nil
@@ -910,7 +910,7 @@ func (s *userService) ValidatePassword(ctx context.Context, userID string, passw
 // GenerateTokens generates access and refresh tokens for user. The
 // access token's tenant_id claim defaults to user.TenantID (home), but
 // if the user has persisted a still-valid "last active tenant"
-// preference we honour it instead — so login (and the refresh-token
+// preference we honour it instead - so login (and the refresh-token
 // rotation path that also calls into here) lands the user back where
 // they left off across devices. SwitchTenant remains the explicit tool
 // for switching to an arbitrary membership.
@@ -925,7 +925,7 @@ func (s *userService) GenerateTokens(
 // freshly minted access token. The contract:
 //
 //  1. If the user has no LastActiveTenantID preference set (or it points
-//     at home), return home — the historical behaviour. A tenantless user
+//     at home), return home - the historical behaviour. A tenantless user
 //     with an active membership adopts their earliest membership instead;
 //     this repairs partial invitation/admin-assignment flows.
 //  2. Otherwise validate the preference: the tenant must still exist and
@@ -982,8 +982,8 @@ func (s *userService) resolveLoginTenantID(ctx context.Context, user *types.User
 	return preferred
 }
 
-// homeOrFirstMembershipTenant returns the user's home tenant, or — for a
-// tenantless identity (TenantID == 0) — the earliest active membership.
+// homeOrFirstMembershipTenant returns the user's home tenant, or - for a
+// tenantless identity (TenantID == 0) - the earliest active membership.
 // Shared by the happy path and the stale-preference fallbacks so a
 // tenantless session with a valid membership never gets a zero-tenant
 // token when a usable tenant is available (repairs partial
@@ -1235,7 +1235,7 @@ func (s *userService) SwitchTenant(
 	}
 
 	// Best-effort revoke of the previous refresh token. Failure is
-	// logged but not fatal — the new tokens are already issued and the
+	// logged but not fatal - the new tokens are already issued and the
 	// old refresh token will expire naturally.
 	if strings.TrimSpace(currentRefreshToken) != "" {
 		if err := s.RevokeToken(ctx, currentRefreshToken); err != nil {
@@ -1260,7 +1260,7 @@ func (s *userService) SwitchTenant(
 // tenant preference so fresh logins and refresh-token rotations land
 // in the last activated workspace. Switching home writes the home ID
 // rather than clearing; resolveLoginTenantID treats *home the same as
-// nil today. (The SPA still sends 0 when switching home — landing is
+// nil today. (The SPA still sends 0 when switching home - landing is
 // equivalent unless home tenant_id is later rewritten while the old
 // home membership remains.) Errors are returned to the caller.
 func (s *userService) recordLastActiveTenant(ctx context.Context, user *types.User, tenantID uint64) error {
@@ -1278,7 +1278,7 @@ func (s *userService) recordLastActiveTenant(ctx context.Context, user *types.Us
 }
 
 // ValidateToken validates an access token. The second return value is
-// the JWT's `tenant_id` claim — i.e. the tenant the token was minted
+// the JWT's `tenant_id` claim - i.e. the tenant the token was minted
 // for, which may differ from user.TenantID after a /auth/switch-tenant
 // call. Tokens minted before tenant-level RBAC don't carry the claim;
 // in that case we fall back to user.TenantID for backward compatibility.

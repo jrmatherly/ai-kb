@@ -74,7 +74,7 @@ func TestEnsureDefaultsKeepsLegacyThinkingWhenNoLevel(t *testing.T) {
 // A level api.ParseReasoningEffort rejects is dropped at call time
 // (api.SanitizeReasoningEffort returns "", so api.Options.Reasoning falls back
 // to the boolean). If EnsureDefaults derived `Thinking = true` from that same
-// typo, the fallback would enable thinking at the provider default — the exact
+// typo, the fallback would enable thinking at the provider default - the exact
 // outcome the 400 on the write path and the sanitiser exist to prevent. Builtin
 // YAML agents and rows written before the 400 existed reach EnsureDefaults
 // without ever passing the handler's normalisation, so this is the last guard.

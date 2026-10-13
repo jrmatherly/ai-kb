@@ -10,8 +10,8 @@ import (
 // where the slug is *almost* right but not exactly the one in the KB.
 //
 // Background: the wiki ingest LLM is given an `<available_wiki_pages>`
-// block listing exact `[[slug]] = title` entries. Empirically — even
-// when the prompt explicitly says "copy-paste the slug verbatim" —
+// block listing exact `[[slug]] = title` entries. Empirically - even
+// when the prompt explicitly says "copy-paste the slug verbatim" -
 // open-source models such as deepseek-v3 routinely munge slugs in
 // predictable ways:
 //
@@ -25,7 +25,7 @@ import (
 // copy-pastes the title), so we have two levers to find the *real*
 // slug: a tolerant string compare on the slug itself, and a reverse
 // lookup from display text. Combined, these recover the vast majority
-// of broken links without any LLM cost — the alternative being
+// of broken links without any LLM cost - the alternative being
 // stripDeadWikiLinks, which gives up and emits plain text.
 //
 // Cleanup callers (stripDeadWikiLinks, cleanDeadLinks) consult
@@ -50,7 +50,7 @@ const slugResolveBigramThreshold = 0.8
 //     produces capitalized forms),
 //   - removes every hyphen and underscore.
 //
-// Hyphens in wiki slugs are purely visual separators — slugify uses
+// Hyphens in wiki slugs are purely visual separators - slugify uses
 // them between word fragments. Removing them lets us treat
 // "shang-hai-tower" and "shanghai-tower" as the same logical token bag.
 //
@@ -87,7 +87,7 @@ func normalizeSlugForCompare(slug string) string {
 // The candidate pool is supplied by the caller as `liveSlugs`. The
 // caller is also responsible for passing a `titleToSlug` map keyed
 // by exact (case-sensitive) page title and alias surface forms. Both
-// maps are consulted only — never mutated.
+// maps are consulted only - never mutated.
 func resolveDeadSlug(
 	deadSlug string,
 	displayText string,
@@ -115,13 +115,13 @@ func resolveDeadSlug(
 
 	// (2) Normalized-equality check. Compute the dead slug's normal
 	// form once and compare against every live candidate's normal
-	// form. O(N) but N is bounded — this only fires on the dead-link
+	// form. O(N) but N is bounded - this only fires on the dead-link
 	// path, and `liveSlugs` is the per-batch affected set, not the
 	// full KB.
 	deadNorm := normalizeSlugForCompare(deadSlug)
 	if deadNorm == "" {
-		// Slug was nothing but hyphens / underscores after normalize
-		// — nothing meaningful to compare against.
+		// Slug was nothing but hyphens / underscores after normalize -
+		// nothing meaningful to compare against.
 		return "", false
 	}
 	for cand := range liveSlugs {

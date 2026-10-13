@@ -140,7 +140,7 @@ func (r *protocolReranker) concurrency() int {
 // pipeline compares against RerankThreshold.
 //
 // Most protocols already return a relevance probability. NIM returns the raw
-// logit of its relevance head instead — unbounded and routinely negative —
+// logit of its relevance head instead - unbounded and routinely negative -
 // so a threshold tuned for probabilities would reject almost everything on
 // that vendor. The logistic function is the inverse of a log-odds, so this is
 // a unit conversion rather than a heuristic: it maps the vendor's own ranking

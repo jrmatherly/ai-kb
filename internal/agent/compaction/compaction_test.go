@@ -178,8 +178,8 @@ func TestKeptTailNeverStartsWithAnOrphanToolResult(t *testing.T) {
 	}
 }
 
-// The keep-recent budget is a ceiling. Treating it as a floor — stop at the
-// first message that reaches the budget and keep that message too — is what
+// The keep-recent budget is a ceiling. Treating it as a floor - stop at the
+// first message that reaches the budget and keep that message too - is what
 // made compaction fire every couple of rounds: one knowledge_search result is
 // routinely larger than the whole budget, so the retained tail overshot and
 // left almost no headroom before the next threshold crossing.

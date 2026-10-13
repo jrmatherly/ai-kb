@@ -46,9 +46,9 @@ const (
 	readTimeout = 3 * defaultHeartbeatInterval
 
 	// writeTimeout bounds a single frame write. Without it a stalled peer can
-	// block a write while holding c.mu, which in turn blocks Stop() and — since
-	// the IM service tears channels down while holding its own channel-map lock
-	// — every other channel operation in the process.
+	// block a write while holding c.mu, which in turn blocks Stop() and - since
+	// the IM service tears channels down while holding its own channel-map lock -
+	// every other channel operation in the process.
 	writeTimeout = 10 * time.Second
 )
 
@@ -194,7 +194,7 @@ func (c *LongConnClient) Start(ctx context.Context) error {
 		}
 
 		// If the connection was up for longer than the max backoff window,
-		// the disconnect is likely transient — reset so we retry quickly.
+		// the disconnect is likely transient - reset so we retry quickly.
 		if time.Since(connectedAt) > defaultReconnectMaxDelay {
 			attempts = 0
 		}
@@ -380,7 +380,7 @@ func (c *LongConnClient) connectAndRun(ctx context.Context) error {
 	defer func() {
 		c.closeConnIf(conn)
 		// NOTE: streamBufs is intentionally NOT cleared on reconnect.
-		// Active streams survive reconnections — the WeCom replace-based
+		// Active streams survive reconnections - the WeCom replace-based
 		// protocol means the next UpdateStreamContent will resend the full
 		// accumulated content on the new connection. EndStream always
 		// cleans up the buffer, so there is no memory leak.
@@ -427,7 +427,7 @@ func (c *LongConnClient) connectAndRun(ctx context.Context) error {
 			// Detach from connection ctx so in-flight messages survive reconnects.
 			go c.handleCallback(context.WithoutCancel(ctx), conn, frame)
 		default:
-			// pong or other control frames — ignore
+			// pong or other control frames - ignore
 		}
 	}
 }
@@ -562,7 +562,7 @@ func (c *LongConnClient) handleCallback(ctx context.Context, conn *ws.Conn, fram
 		}
 
 	case "voice":
-		// WeCom returns speech-to-text content directly — treat as text query
+		// WeCom returns speech-to-text content directly - treat as text query
 		if msg.Voice.Content == "" {
 			logger.Infof(ctx, "[WeCom] Ignoring voice message with empty content")
 			return
@@ -647,7 +647,7 @@ func (c *LongConnClient) handleCallback(ctx context.Context, conn *ws.Conn, fram
 
 // convertMixedMessage converts a WeCom mixed (text+image) message.
 // When the message contains both text and images, the first image is kept as
-// the QA attachment and the text is preserved as its caption — the IM service
+// the QA attachment and the text is preserved as its caption - the IM service
 // treats a captioned image exactly like a standalone image message, so the
 // model sees the image and the user's question together. Text-only and
 // image-only messages keep their previous behavior.
@@ -735,8 +735,8 @@ func (c *LongConnClient) closeConn() {
 }
 
 // closeConnIf closes conn only while it is still the active connection.
-// Callers bound to a single connection generation — the heartbeat loop and the
-// detached callback handlers — must use this instead of closeConn: their
+// Callers bound to a single connection generation - the heartbeat loop and the
+// detached callback handlers - must use this instead of closeConn: their
 // goroutines can outlive the connection that spawned them, and an unconditional
 // close would tear down a healthy connection opened by a later reconnect.
 func (c *LongConnClient) closeConnIf(conn *ws.Conn) {

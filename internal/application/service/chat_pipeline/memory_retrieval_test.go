@@ -105,8 +105,8 @@ func TestFamiliarDocumentsRankHigher(t *testing.T) {
 }
 
 func TestAnUnrelatedDocumentIsNotDraggedToTheTop(t *testing.T) {
-	// The signal is weak — it says the retriever kept picking a document, not
-	// that the user found it useful — so it must never overturn a clear
+	// The signal is weak - it says the retriever kept picking a document, not
+	// that the user found it useful - so it must never overturn a clear
 	// relevance gap.
 	memoryService := &stubRetrievalMemory{affinity: map[string]int{"doc-familiar": 1000}}
 	plugin := &PluginMemoryAffinity{memoryService: memoryService}

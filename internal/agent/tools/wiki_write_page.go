@@ -167,7 +167,7 @@ func (t *wikiWritePageTool) Execute(ctx context.Context, args json.RawMessage) (
 	// Auto-repair dead [[slug]] references in the body before persisting.
 	// This rewrites LLM-mangled links (most importantly UUID-based summary
 	// slugs) back to their real target when a confident match exists, and
-	// leaves everything else untouched. Best-effort — never block the write.
+	// leaves everything else untouched. Best-effort - never block the write.
 	if repaired, changed, rerr := t.wikiPageService.RepairContentLinks(ctx, kbID, params.Slug, params.Content); rerr == nil && changed {
 		params.Content = repaired
 	}

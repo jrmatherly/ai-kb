@@ -171,7 +171,7 @@ func TestSendReply_EndToEnd_FallsBackToSendAPI(t *testing.T) {
 // A non-fallback-eligible error must surface, not be silently swallowed.
 func TestSendReply_EndToEnd_HardErrorSurfaces(t *testing.T) {
 	useTestHTTPClient(t)
-	fake := &fakeOpenPlatform{replyCode: 99991663} // app ticket invalid — not retryable
+	fake := &fakeOpenPlatform{replyCode: 99991663} // app ticket invalid - not retryable
 	srv := httptest.NewServer(fake.handler())
 	defer srv.Close()
 

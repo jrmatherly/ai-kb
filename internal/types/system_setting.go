@@ -54,14 +54,14 @@ type SystemSetting struct {
 	Enum []string `gorm:"-" json:"enum,omitempty"`
 
 	// LastModifiedByName is a display label resolved from LastModifiedBy
-	// (the user's UUID) at handler time — username when available,
+	// (the user's UUID) at handler time - username when available,
 	// otherwise email. Empty for virtual rows that were never persisted
 	// (LastModifiedBy=""). Not stored: derived per request so renaming
 	// a user reflects on the next reload without a backfill job.
 	LastModifiedByName string `gorm:"-" json:"last_modified_by_name,omitempty"`
 }
 
-// TableName pins the schema to migration 000053 — GORM's default
+// TableName pins the schema to migration 000053 - GORM's default
 // pluralisation would yield "system_settings" anyway, but spelling it
 // out shields against future renames.
 func (SystemSetting) TableName() string {
@@ -86,7 +86,7 @@ func (s *SystemSetting) AsInt() (int64, error) {
 	if err := json.Unmarshal(s.Value, &n); err == nil {
 		return n, nil
 	}
-	// Fall back to quoted string ("42") — tolerate hand-edited rows.
+	// Fall back to quoted string ("42") - tolerate hand-edited rows.
 	var raw string
 	if err := json.Unmarshal(s.Value, &raw); err == nil {
 		if v, err := strconv.ParseInt(raw, 10, 64); err == nil {

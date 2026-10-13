@@ -128,7 +128,7 @@ tail text`
 	}
 
 	// Window that cuts the tag in half: nothing matches, which is the known
-	// limitation — an HTML tag is several times longer than ![](url) and
+	// limitation - an HTML tag is several times longer than ![](url) and
 	// straddles a child window far more often.
 	if got := FilterImageInfoByMatchRange(parent, 0, 0, 20, imageInfoJSON(t, info)); got != "" {
 		t.Errorf("expected a truncated tag not to match, got %s", got)

@@ -150,8 +150,8 @@ func (e Endpoint) Do(req *http.Request) (*http.Response, error) {
 // out. It is the whole round-trip for the non-streaming protocols (rerank,
 // embeddings), which have no SSE to assemble.
 //
-// It never returns a nil error with nothing decoded: every failure path —
-// marshalling, SSRF, transport, non-2xx, decoding — returns an error, so a
+// It never returns a nil error with nothing decoded: every failure path -
+// marshalling, SSRF, transport, non-2xx, decoding - returns an error, so a
 // caller cannot mistake an empty result for a successful empty answer.
 func (e Endpoint) PostJSON(ctx context.Context, url string, body, out any) error {
 	req, _, err := e.NewRequest(ctx, url, body, false)

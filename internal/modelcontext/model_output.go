@@ -413,7 +413,7 @@ func annotateSearchNotes(output string, data map[string]interface{}) string {
 			"truncation.</subset>\n", shown, candidates, shown, candidates)
 	}
 	for _, failure := range failures {
-		fmt.Fprintf(&b, "  <partial_failure>%s — these knowledge bases were not searched.</partial_failure>\n",
+		fmt.Fprintf(&b, "  <partial_failure>%s - these knowledge bases were not searched.</partial_failure>\n",
 			escapeText(failure))
 	}
 	return strings.TrimSuffix(output, "</retrieval>") + b.String() + "</retrieval>"
@@ -422,7 +422,7 @@ func annotateSearchNotes(output string, data map[string]interface{}) string {
 // annotateWebSearchNotes restates a clamped count inside the retrieval block.
 // web_search also writes the note into ToolResult.Output, but once there is at
 // least one row the model only sees this rendered view, so the note has to
-// travel in Data — the same reason annotateSearchNotes reads Data, not Output.
+// travel in Data - the same reason annotateSearchNotes reads Data, not Output.
 func annotateWebSearchNotes(output string, data map[string]interface{}) string {
 	if !boolValue(data, "count_clamped") || !strings.HasSuffix(output, "</retrieval>") {
 		return output

@@ -33,7 +33,7 @@ type CompositeRetrieveEngine struct {
 //
 // Error contract: a store-level failure is returned with no results, matching
 // the long-standing all-or-nothing policy. A result set that reports a partial
-// failure in RetrieveResult.Error is different — the hits it did return are
+// failure in RetrieveResult.Error is different - the hits it did return are
 // kept and the failure is returned *alongside* them, so callers can log the
 // gap without losing the evidence. Callers must therefore treat a non-nil
 // error with non-nil results as "incomplete", not as "no results".

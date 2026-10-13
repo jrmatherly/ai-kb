@@ -109,8 +109,8 @@ func (Organization) TableName() string {
 // OrganizationTenantMember represents a tenant participating in an
 // organization. Plan 3 of #1303 lifts the "Org member" abstraction from
 // per-user (`organization_members`) to per-tenant (this table). The
-// representative_user_id is informational only — the user who first
-// brought this tenant into the org — and is used purely for UI/audit
+// representative_user_id is informational only - the user who first
+// brought this tenant into the org - and is used purely for UI/audit
 // labels. Permission checks are driven exclusively by (org, tenant, role).
 type OrganizationTenantMember struct {
 	ID                   string        `json:"id" gorm:"type:varchar(36);primaryKey"`
@@ -408,7 +408,7 @@ type OrganizationResponse struct {
 	OwnerID     string `json:"owner_id"`
 	// OwnerTenantID is the persisted owner workspace of the organization
 	// (Plan 3, migration 000046). Frontend uses this to identify the
-	// "owner row" in the workspace-keyed members list — comparing
+	// "owner row" in the workspace-keyed members list - comparing
 	// member.tenant_id against owner_tenant_id is the post-Plan-3
 	// equivalent of the old member.user_id == owner_id check.
 	OwnerTenantID          uint64     `json:"owner_tenant_id"`

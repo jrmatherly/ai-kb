@@ -18,7 +18,7 @@ const (
 // SearchCommand implements /search <query>.
 //
 // It runs a hybrid search (vector + keywords) against the user's selected
-// knowledge bases—or the bot-level defaults when no override is active—and
+// knowledge bases - or the bot-level defaults when no override is active - and
 // returns the raw matching passages without AI summarisation. This is useful
 // when the user needs to inspect source text directly.
 type SearchCommand struct {
@@ -75,7 +75,7 @@ func (c *SearchCommand) Execute(ctx context.Context, cmdCtx *CommandContext, arg
 				}
 			}
 		case "none":
-			// No knowledge bases configured — will return empty results.
+			// No knowledge bases configured - will return empty results.
 		case "selected":
 			kbIDs = cmdCtx.CustomAgent.Config.KnowledgeBases
 		default:

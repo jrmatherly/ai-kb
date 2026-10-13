@@ -8,7 +8,7 @@
 //     exclusive: Gemini 3.x takes `thinkingConfig.thinkingLevel`, Gemini 2.5
 //     takes `thinkingConfig.thinkingBudget` and ignores/rejects
 //     thinkingLevel; sending both in one call is a 400. The per-model level
-//     sets differ too — 3.8 Flash, 3.7 Flash and 3.1 Pro accept
+//     sets differ too - 3.8 Flash, 3.7 Flash and 3.1 Pro accept
 //     low | medium | high, 3.6 Flash, 3.5 Flash, 3.5 Flash Lite, 3.1 Flash
 //     Lite and 3 Flash Preview add minimal, and 3 Pro Preview accepts only
 //     low | high, which is what the conservative gemini-3* family entry
@@ -81,7 +81,7 @@ func newGeminiProvider() *Definition {
 		Auth:         AuthGoogleAPIKey,
 		// The OpenAI-compatible facade documents only Authorization: Bearer.
 		// Sending x-goog-api-key there would change the credential of every
-		// row stored before the native protocol became the default — they all
+		// row stored before the native protocol became the default - they all
 		// carry the .../v1beta/openai base URL.
 		AuthByAPI: map[api.API]AuthStyle{
 			api.APIOpenAICompletions: AuthBearer,

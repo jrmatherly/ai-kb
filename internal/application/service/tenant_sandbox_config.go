@@ -58,7 +58,7 @@ const sandboxConfigCleanupTimeout = 20 * time.Second
 //
 // The comparison needs no deployment baseline: named configs inherit nothing, so
 // the stored fields are the whole identity. It is also deliberately free of
-// validation — see sandbox.IdentityOf for why an unreachable old endpoint must
+// validation - see sandbox.IdentityOf for why an unreachable old endpoint must
 // still be judgeable.
 func SandboxIdentityChanged(oldCfg, newCfg *types.TenantSandboxConfig) bool {
 	if oldCfg == nil {
@@ -653,7 +653,7 @@ func (s *TenantSandboxConfigService) QueryTemplates(
 	// Missing first-party templates are filled from the published Hub images
 	// (ensure_standard / ensure_desktop). That is idempotent while a usable
 	// template already exists, so a catalog refresh cannot apply a new DNS or
-	// image spec — replace_standard / replace_desktop remains the explicit
+	// image spec - replace_standard / replace_desktop remains the explicit
 	// rebuild.
 	wantStandard := in.ReplaceStandard || (in.EnsureStandard && usable == nil)
 	if wantStandard {
@@ -1130,7 +1130,7 @@ func (s *TenantSandboxConfigService) Update(
 	defer s.clearCordonAfterRequest(ctx, tenantID, id)
 
 	// When old credentials no longer reach the provider we cannot enumerate
-	// sandboxes to refuse the edit — but blocking the save traps the admin on
+	// sandboxes to refuse the edit - but blocking the save traps the admin on
 	// a key they are trying to fix. Proceed and skip the post-write sweep;
 	// sandboxes we cannot see may become orphans and need provider-side cleanup.
 	oldClient, err := s.clientFor(entity.Config)
@@ -1171,7 +1171,7 @@ func (s *TenantSandboxConfigService) Update(
 // force covers two cases we cannot complete from here: the provider could not
 // be reached to list sandboxes, and a skill snapshot could not be destroyed.
 // Without it a config whose endpoint's DNS record disappeared, or whose
-// snapshot API is down, could never be removed — unlike an edit, deletion has
+// snapshot API is down, could never be removed - unlike an edit, deletion has
 // no "create a second config" way out. It does NOT override sandboxes we can
 // actually see; those still have to be dealt with through their sessions,
 // otherwise the forced deletion would be precisely the permanent leak this
@@ -1219,8 +1219,8 @@ func snapshotReleaserFrom(client sandbox.ConfigSandboxClient) (sandboxSnapshotRe
 }
 
 // pendingNeedProvider reports whether releasing these rows has to talk to the
-// provider at all. A planned name counts: it is how an abandoned build — one
-// whose commit outlived the process that started it — is still addressable.
+// provider at all. A planned name counts: it is how an abandoned build - one
+// whose commit outlived the process that started it - is still addressable.
 func pendingNeedProvider(rows []*types.TenantSkillSnapshotEntity) bool {
 	for _, row := range rows {
 		if row == nil {
@@ -1239,7 +1239,7 @@ func pendingNeedProvider(rows []*types.TenantSkillSnapshotEntity) bool {
 //
 // This is the last chance to reclaim one: PruneSupersededSnapshots walks live
 // configs, so once this config's row is gone the snapshot is unreachable by
-// anything. A name that resolves to nothing is left alone — the usual reason
+// anything. A name that resolves to nothing is left alone - the usual reason
 // is that the commit never happened, and there is no resource to release.
 func resolveAbandonedBuildIDs(
 	ctx context.Context,

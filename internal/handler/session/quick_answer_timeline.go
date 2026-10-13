@@ -11,7 +11,7 @@ import (
 
 // quickAnswerTimelineTools are the stages a fast-answer turn draws on its
 // timeline. A turn that retrieved nothing still reports the search it ran, so
-// the set is what decides whether the step survives a reload — not whether it
+// the set is what decides whether the step survives a reload - not whether it
 // produced citations. Keep in sync with RAG_TIMELINE_TOOL_NAMES on the frontend.
 var quickAnswerTimelineTools = map[string]struct{}{
 	"query_understand":   {},

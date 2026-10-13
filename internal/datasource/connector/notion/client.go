@@ -307,12 +307,12 @@ func (c *notionClient) GetBlockChildrenFlat(ctx context.Context, blockID string)
 }
 
 const (
-	maxBlockDepth    = 5    // Limit recursion depth — deeper content has diminishing value for knowledge bases
+	maxBlockDepth    = 5    // Limit recursion depth - deeper content has diminishing value for knowledge bases
 	maxBlocksPerPage = 1000 // Limit total blocks fetched per page to prevent runaway API calls
 )
 
 // blocksTruncated reports whether the maxBlocksPerPage cap stopped pagination
-// while the API still offered another page — i.e. whether content was actually
+// while the API still offered another page - i.e. whether content was actually
 // dropped. Hitting the cap on the last page of a document is not truncation,
 // so the caller can warn without a false positive.
 //
@@ -425,7 +425,7 @@ func (c *notionClient) QueryDatabaseAll(ctx context.Context, id string) ([]notio
 		return records, err
 	}
 
-	// If 404, id might be a database container ID — resolve to data_source_id
+	// If 404, id might be a database container ID - resolve to data_source_id
 	info, dbErr := c.GetDatabaseInfo(ctx, id)
 	if dbErr != nil {
 		return nil, fmt.Errorf("query database %s: not a data_source (%v) and not a database (%v)", id, err, dbErr)
@@ -451,7 +451,7 @@ func (c *notionClient) ResolveBlock(ctx context.Context, blockID string) (*notio
 	return &block, nil
 }
 
-const maxDownloadSize = 100 * 1024 * 1024 // 100MB — prevent OOM from oversized files
+const maxDownloadSize = 100 * 1024 * 1024 // 100MB - prevent OOM from oversized files
 
 // DownloadFile downloads a file from the given URL (typically an S3 signed URL).
 // Does not go through the rate limiter since it's not a Notion API call.
@@ -543,7 +543,7 @@ var errQueryResultTruncated = errors.New("notion paginated response incomplete: 
 
 // paginatePages fetches all pages from a cursor-paginated Notion API endpoint
 // (POST /v1/search). Endpoints that can return more rows than a single query
-// allows — data source queries — go through queryDataSourceAll instead, which
+// allows - data source queries - go through queryDataSourceAll instead, which
 // splits the walk into created_time windows when the vendor caps a query.
 func (c *notionClient) paginatePages(ctx context.Context, method, path string) ([]notionPage, error) {
 	var allPages []notionPage

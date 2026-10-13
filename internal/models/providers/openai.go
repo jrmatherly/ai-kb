@@ -1,6 +1,6 @@
 // Package providers registers OpenAI's first-party platform.
 //
-// Facts (https://developers.openai.com/api/docs — platform.openai.com/docs
+// Facts (https://developers.openai.com/api/docs - platform.openai.com/docs
 // now redirects there):
 //   - output cap is `max_completion_tokens` (`max_tokens` is one of the
 //     parameters reasoning models reject outright);
@@ -84,9 +84,9 @@ func newOpenaiProvider() *Definition {
 			types.ModelTypeVLLM:        OpenaiBaseURL,
 			types.ModelTypeASR:         OpenaiBaseURL,
 		},
-		// No rerank: OpenAI's API has no rerank endpoint — the reference
+		// No rerank: OpenAI's API has no rerank endpoint - the reference
 		// index (https://developers.openai.com/api/llms.txt) does not mention
-		// one — so a row created here would only ever 404. A relay that
+		// one - so a row created here would only ever 404. A relay that
 		// serves rerank behind an OpenAI-style URL is a generic row.
 		ModelTypes: []types.ModelType{
 			types.ModelTypeKnowledgeQA,
@@ -97,9 +97,9 @@ func newOpenaiProvider() *Definition {
 		Compat: VendorCompat{
 			Transcriptions: api.TranscriptionsCompat{
 				// The transcription reference (URL in openaitranscriptions):
-				// response_format differs per model — "For gpt-4o-transcribe
+				// response_format differs per model - "For gpt-4o-transcribe
 				// and gpt-4o-mini-transcribe, the only supported format is
-				// json", the default — so it is declared per entry, not here.
+				// json", the default - so it is declared per entry, not here.
 				// "Files can be up to 25 MB"
 				// (https://developers.openai.com/api/docs/guides/speech-to-text).
 				MaxFileBytes: api.Ptr(25 << 20),
@@ -112,7 +112,7 @@ func newOpenaiProvider() *Definition {
 				// https://developers.openai.com/api/reference/resources/embeddings/methods/create:
 				// model, input, dimensions (text-embedding-3 and later; the ada-002
 				// entry turns it off), encoding_format, user. An input array
-				// "must be 2048 dimensions or less" — elements, despite the word.
+				// "must be 2048 dimensions or less" - elements, despite the word.
 				SendEncodingFormat: api.Ptr(true),
 				DimensionsField:    api.Ptr("dimensions"),
 				MaxBatchSize:       api.Ptr(2048),

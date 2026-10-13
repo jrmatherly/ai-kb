@@ -234,7 +234,7 @@ func TestValidateCapsProbesWhenEveryDocumentIsUnreadable(t *testing.T) {
 		t.Fatalf("Validate made %d document probes, want %d", total, maxValidateProbes)
 	}
 	// The first workspace has four unreadable documents, so the cap must be
-	// spent there and on the next workspace's first document — not one probe
+	// spent there and on the next workspace's first document - not one probe
 	// per workspace, and not on a third workspace.
 	if api.blockCalls["doc-0-1"] != 1 {
 		t.Fatal("a failed probe must not stop the workspace from trying its next document")

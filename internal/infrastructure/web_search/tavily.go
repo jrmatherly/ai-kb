@@ -16,7 +16,7 @@ import (
 
 const (
 	// defaultTavilySearchURL is the hardcoded Tavily API URL.
-	// Not configurable by tenants — prevents SSRF.
+	// Not configurable by tenants - prevents SSRF.
 	defaultTavilySearchURL = "https://api.tavily.com/search"
 )
 

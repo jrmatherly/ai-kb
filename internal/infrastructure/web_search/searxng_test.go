@@ -75,7 +75,7 @@ func TestParseSearxngDate(t *testing.T) {
 }
 
 func TestSearxngProvider_Search(t *testing.T) {
-	// See TestValidateSearxngBaseURL comment — reset the SSRF whitelist
+	// See TestValidateSearxngBaseURL comment - reset the SSRF whitelist
 	// singleton so the setenv below is actually observed by the cached
 	// ssrfWhitelistConfig in internal/utils.
 	utils.ResetSSRFWhitelistForTest()

@@ -15,7 +15,7 @@ import (
 
 // Adapter presents the local sandbox through the session-scoped capability
 // interfaces the agent already consumes. It *is* the session shell, file
-// store, and layout provider — not a wrapper around a second remote path.
+// store, and layout provider - not a wrapper around a second remote path.
 //
 // File operations do NOT go through the OS sandbox: AI KB itself is trusted
 // and already holds the user's privileges, so putting it inside Seatbelt would

@@ -64,8 +64,8 @@ type ResourceCatalog interface {
 	Bind(ctx context.Context, reference, ownerType, ownerID, relation string) error
 	// Release drops one owner's claim on a resource and reports how many
 	// claims remain. Callers use the count to decide whether the bytes may be
-	// deleted: a resource still referenced by another owner — the assistant
-	// message an answer was saved from, a second knowledge entry — must
+	// deleted: a resource still referenced by another owner - the assistant
+	// message an answer was saved from, a second knowledge entry - must
 	// survive the owner being removed.
 	//
 	// remaining is -1 when the answer is unknown (the reference is not a

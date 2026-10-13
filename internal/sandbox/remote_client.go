@@ -430,7 +430,7 @@ type RemoteSandboxCapabilities struct {
 
 	// SupportsFilesystemEnumeration is true when the provider implements
 	// ListDir, MakeDir, Stat, and Remove. SessionBoundManager only
-	// advertises the SessionFileStore capability when this is true — the
+	// advertises the SessionFileStore capability when this is true - the
 	// application layer then knows to deregister list/read/attachment
 	// staging tools that would otherwise fail at request time.
 	SupportsFilesystemEnumeration bool
@@ -456,7 +456,7 @@ type RemoteSandboxCapabilities struct {
 	// non-envd data-plane port inside the sandbox, which is what the VNC
 	// desktop needs (websockify on 6080). It is separate from
 	// SupportsTerminals: the terminal rides envd's PTY service, the desktop
-	// rides a raw port through the gateway. Docker is false — not because it
+	// rides a raw port through the gateway. Docker is false - not because it
 	// cannot, but because it is not scheduled.
 	SupportsDesktop bool
 }

@@ -428,7 +428,7 @@ type IndexDeletePayload struct {
 	EffectiveEngines []RetrieverEngineParams `json:"effective_engines"`
 	// VectorStoreID is the bound store snapshot taken at enqueue time so the
 	// async worker can resolve the same store the KB was bound to.
-	// nil means the KB had no binding — falls back to EffectiveEngines.
+	// nil means the KB had no binding - falls back to EffectiveEngines.
 	VectorStoreID *string `json:"vector_store_id,omitempty"`
 }
 
@@ -441,7 +441,7 @@ type KBDeletePayload struct {
 	EffectiveEngines []RetrieverEngineParams `json:"effective_engines"`
 	// VectorStoreID is the bound store snapshot taken at enqueue time (before
 	// soft-delete) so the async worker can resolve the right store. nil means
-	// the KB had no binding — falls back to EffectiveEngines.
+	// the KB had no binding - falls back to EffectiveEngines.
 	VectorStoreID *string `json:"vector_store_id,omitempty"`
 }
 
@@ -529,13 +529,13 @@ type ImageMultimodalPayload struct {
 	// parent's image set. Used as the subspan name suffix
 	// ("multimodal.image[3]") so the timeline preserves order.
 	ImageIndex int `json:"image_index,omitempty"`
-	// ImageAttrsEnabled selects which image pipeline the task runs — see
+	// ImageAttrsEnabled selects which image pipeline the task runs - see
 	// PipelineModeFor and the PipelineMode constants. True is the
 	// attribute-observed pipeline: the describe round also observes image
 	// attributes, and the attribute policy decides whether OCR runs for it.
 	// False is the upstream behaviour: a plain caption, then OCR, no attribute
 	// observation. In flight tasks enqueued before the field existed read
-	// false, which is what they were enqueued for — the reason the flag travels
+	// false, which is what they were enqueued for - the reason the flag travels
 	// in the payload rather than being re-read from the knowledge base at handle
 	// time.
 	ImageAttrsEnabled bool `json:"image_attrs_enabled,omitempty"`
@@ -543,8 +543,8 @@ type ImageMultimodalPayload struct {
 	// fallback for tasks queued before per-document indexing overrides existed.
 	ImageVectorEnabled *bool `json:"image_vector_enabled,omitempty"`
 	// ImageActions is the attribute→work table, resolved from the KB config at
-	// enqueue time. A task without it — one already in flight when attribute
-	// observation shipped — falls back to the conservative policy: run OCR.
+	// enqueue time. A task without it - one already in flight when attribute
+	// observation shipped - falls back to the conservative policy: run OCR.
 	ImageActions ImageActionsConfig `json:"image_actions,omitempty"`
 	// SourceLocators place the image in the original file; copied onto the
 	// OCR and caption chunks built from it.

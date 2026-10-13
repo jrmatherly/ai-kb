@@ -51,7 +51,7 @@ type VectorStoreService interface {
 	// ResolveStoreView returns the API-safe display projection of a single
 	// store ID, scoped to the given tenant. Tries DB stores first, then the
 	// cached env-store set. Returns types.UnavailableStoreDisplay() when the
-	// store cannot be resolved — callers should still succeed in such cases
+	// store cannot be resolved - callers should still succeed in such cases
 	// (the response carries a "unavailable" status signal for the UI).
 	//
 	// Never returns connection credentials in any form: the StoreDisplay

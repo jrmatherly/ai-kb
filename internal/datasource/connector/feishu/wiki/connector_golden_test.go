@@ -39,7 +39,7 @@ func fileBlk(id, token, name string) core.DocxBlock {
 }
 
 // cellBlk builds a table_cell container. A real Feishu table_cell holds no
-// inline text of its own — its text lives in a child block, so the cell only
+// inline text of its own - its text lives in a child block, so the cell only
 // references the child id (see cellTextBlk).
 func cellBlk(id string) core.DocxBlock {
 	return core.DocxBlock{BlockID: id, BlockType: core.BlockTypeTableCell, Children: []string{id + "_txt"}}
@@ -73,7 +73,7 @@ func fakeFeishuGolden(nodes []core.WikiNode, docToken string, blocks []core.Docx
 		writeJSON(w, core.WikiNodeListResponse{ApiResponse: core.ApiResponse{Code: 0}, Data: core.WikiNodeListData{Items: nodes}})
 	})
 
-	// docx blocks — paginated across two pages to exercise the paging glue.
+	// docx blocks - paginated across two pages to exercise the paging glue.
 	mux.HandleFunc("/open-apis/docx/v1/documents/"+docToken+"/blocks", func(w http.ResponseWriter, r *http.Request) {
 		half := len(blocks) / 2
 		page := blocks[:half]
@@ -157,7 +157,7 @@ func TestGolden_RichDocxAllCapabilities(t *testing.T) {
 		fileBlk("fbig", "tok-big", "\u624b\u518c.pdf"),
 		fileBlk("flogo", "tok-logo", "logo.png"),    // non-whitelisted ext → no sub-item
 		fileBlk("fsmall", "tok-small", "small.pdf"), // whitelisted but too small → no sub-item
-		// table cells (containers) + their child text blocks — both are core.Skipped by
+		// table cells (containers) + their child text blocks - both are core.Skipped by
 		// the main loop and read by the table renderer via the cells' Children.
 		cellBlk("c1"), cellBlk("c2"), cellBlk("c3"), cellBlk("c4"),
 		cellTextBlk("c1", "\u5217A"), cellTextBlk("c2", "\u5217B"),

@@ -8,7 +8,7 @@ import (
 
 // Live write/edit progress while the model is still emitting tool-call JSON:
 // path as soon as it appears, then a running +N / -M as content lands. The
-// SSE payload is only those stats plus a short preview — never the whole file.
+// SSE payload is only those stats plus a short preview - never the whole file.
 
 const (
 	sandboxFilePreviewMaxLines = 10

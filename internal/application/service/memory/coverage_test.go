@@ -18,7 +18,7 @@ import (
 //
 // It exists because the first version of the scheduler compared the current
 // time against the last run and returned early inside the interval, which
-// silently discarded every turn in that window — the feature looked enabled and
+// silently discarded every turn in that window - the feature looked enabled and
 // quietly learned nothing. Timers may delay a message; they may not lose it.
 
 func userMessage(sessionID, content string, at time.Time) *types.Message {
@@ -302,7 +302,7 @@ var (
 	_ asynq.Task
 )
 
-// Distillation runs on a worker whose context carries no principal — its scope
+// Distillation runs on a worker whose context carries no principal - its scope
 // travels in the task payload. Anything the distiller calls therefore has to be
 // handed that scope explicitly. When topic counting re-derived the scope from
 // the context instead, it silently counted nothing: extraction looked healthy,
@@ -340,7 +340,7 @@ func TestTopicsAreCountedOnTheBackgroundWorker(t *testing.T) {
 // and returns an empty string with finish_reason=length. Treating that as
 // "nothing worth recording" advanced the watermark over messages no model had
 // ever read, so the run reported success, the coverage guarantee held on paper,
-// and the feature learned nothing — silently, forever.
+// and the feature learned nothing - silently, forever.
 func TestATruncatedRunDoesNotSwallowTheMessages(t *testing.T) {
 	svc, tenantRepo, messages, models, enqueuer := newExtractionHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
@@ -465,7 +465,7 @@ func TestNoAvailableModelDoesNotConsumeTheMessages(t *testing.T) {
 
 // The model tier of topic resolution has to use the same fallback the
 // extraction call does. While it read the configured model directly, a default
-// workspace lost the tier entirely — and losing it looks exactly like the
+// workspace lost the tier entirely - and losing it looks exactly like the
 // symptom that led here: several wordings of one subject, each in its own row,
 // each stuck at one hit, none ever reaching the threshold.
 func TestTopicResolutionUsesTheSameModelFallbackAsExtraction(t *testing.T) {

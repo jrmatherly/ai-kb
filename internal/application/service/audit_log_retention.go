@@ -14,7 +14,7 @@ import (
 
 // AuditLogRetentionRunner sweeps audit_logs once a day, deleting rows
 // older than `retentionDays`. It is a small, self-contained
-// background goroutine — no robfig/cron, no asynq — because retention
+// background goroutine - no robfig/cron, no asynq - because retention
 // has no wall-clock alignment requirement: we just need "approximately
 // daily, eventually". A bare time.Ticker keeps the dependency surface
 // minimal.
@@ -41,7 +41,7 @@ type AuditLogRetentionRunner struct {
 }
 
 // auditLogPurgeInterval is the gap between sweeps. 24h is enough for
-// a per-day retention horizon — the cutoff moves by 24h between runs
+// a per-day retention horizon - the cutoff moves by 24h between runs
 // so each sweep deletes one day's worth of rolled-off rows. Shortening
 // this would just cause empty sweeps; lengthening it would pile up
 // stale rows for a day.
@@ -56,8 +56,8 @@ const auditLogPurgeStartupDelay = 10 * time.Minute
 
 // NewAuditLogRetentionRunner constructs the runner with production
 // defaults. retention_days is read from the config; passing the full
-// *config.Config (rather than just an int) keeps the dig wiring trivial
-// — it's the same shape as every other config-aware constructor in
+// *config.Config (rather than just an int) keeps the dig wiring trivial -
+// it's the same shape as every other config-aware constructor in
 // the container. The constructor only validates inputs; nothing fires
 // until Start is called.
 func NewAuditLogRetentionRunner(
@@ -79,7 +79,7 @@ func NewAuditLogRetentionRunner(
 // Start spins up the background goroutine. Calling it more than once
 // is a no-op (sync.Once), so container wiring that mistakenly invokes
 // us twice doesn't double-purge. retentionDays <= 0 means the runner
-// stays dormant — Stop will still complete cleanly.
+// stays dormant - Stop will still complete cleanly.
 func (r *AuditLogRetentionRunner) Start(ctx context.Context) {
 	if r == nil || r.svc == nil {
 		return
@@ -101,7 +101,7 @@ func (r *AuditLogRetentionRunner) Start(ctx context.Context) {
 
 // Stop signals the loop to exit and blocks until it returns. Idempotent.
 // If Start was never called, Stop returns immediately (no doneCh to
-// wait on — see the `started` flag in the struct comment).
+// wait on - see the `started` flag in the struct comment).
 func (r *AuditLogRetentionRunner) Stop() {
 	r.StopWithin(0)
 }
@@ -127,7 +127,7 @@ func (r *AuditLogRetentionRunner) StopWithin(timeout time.Duration) {
 
 // loop runs the actual sweep cadence. Uses a fresh context.Background
 // per iteration because the request-scoped ctx from Start would be
-// cancelled the moment Start's caller returned — and that caller is
+// cancelled the moment Start's caller returned - and that caller is
 // container init.
 func (r *AuditLogRetentionRunner) loop() {
 	defer close(r.doneCh)
@@ -156,7 +156,7 @@ func (r *AuditLogRetentionRunner) loop() {
 
 // runOnce performs a single sweep. The DB call is given a generous
 // timeout (30 s) so a stuck connection doesn't hold the goroutine
-// hostage forever — if the sweep doesn't finish in 30 s we'll log
+// hostage forever - if the sweep doesn't finish in 30 s we'll log
 // and try again 24 h later. Errors are logged at WARN, not ERROR,
 // because the table just keeps growing one more day; nothing breaks.
 func (r *AuditLogRetentionRunner) runOnce() {

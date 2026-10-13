@@ -76,8 +76,8 @@ type SkillAdminUpdate struct {
 // Of the values, only declared names are written, and a name outside the
 // declaration is ignored rather than refused: a stale settings tab must not
 // fail an otherwise valid save, and an invented variable would store a value
-// nothing reads while making the declaration — the record of what this skill
-// consumes — untrustworthy. An empty string clears the value and keeps the
+// nothing reads while making the declaration - the record of what this skill
+// consumes - untrustworthy. An empty string clears the value and keeps the
 // declaration, because "nobody filled this in" and "this is not needed" are
 // different states.
 //
@@ -95,7 +95,7 @@ func (s *TenantSkillService) UpdateSkillAdmin(
 	}
 
 	// Every value is checked before any part of the request is applied, so a
-	// rejected entry cannot leave the declaration — or the toggle — half
+	// rejected entry cannot leave the declaration - or the toggle - half
 	// written.
 	for name, value := range update.EnvValues {
 		if _, declared := skill.Envs.Get(name); !declared {
@@ -152,8 +152,8 @@ func (s *TenantSkillService) SetSkillEnvValues(
 
 // SubscribeProgress follows one install or removal.
 //
-// A nil channel means there is no live stream to follow — without Redis
-// nothing is published at all — and the caller is expected to fall back to the
+// A nil channel means there is no live stream to follow - without Redis
+// nothing is published at all - and the caller is expected to fall back to the
 // durable status. The returned closer must always be called: it releases the
 // Redis subscription, which would otherwise outlive the request.
 func (s *TenantSkillService) SubscribeProgress(

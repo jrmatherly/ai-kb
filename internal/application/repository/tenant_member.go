@@ -274,7 +274,7 @@ func (r *tenantMemberRepository) RemoveOwnerAtomically(
 
 // HasAnyMembers reports whether the tenant has at least one active
 // membership row. Uses a LIMIT 1 SELECT (instead of COUNT(*)) so the query
-// short-circuits after the first match — important because this is on the
+// short-circuits after the first match - important because this is on the
 // auth middleware's hot path for users without a cached membership.
 func (r *tenantMemberRepository) HasAnyMembers(ctx context.Context, tenantID uint64) (bool, error) {
 	var probe struct {

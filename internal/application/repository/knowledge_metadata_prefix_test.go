@@ -14,9 +14,9 @@ import (
 // knowledge items whose metadata["external_id"] starts with the given prefix.
 //
 // Setup: three rows in the same KB:
-//   - "nodeA"          — the parent document; must NOT be matched by prefix "nodeA#"
-//   - "nodeA#file#x"   — an attachment child; MUST be matched
-//   - "nodeB"          — a sibling document; must NOT be matched
+//   - "nodeA"          - the parent document; must NOT be matched by prefix "nodeA#"
+//   - "nodeA#file#x"   - an attachment child; MUST be matched
+//   - "nodeB"          - a sibling document; must NOT be matched
 //
 // A fourth row in a different KB with a matching external_id is also inserted to
 // verify tenant/KB isolation.
@@ -40,10 +40,10 @@ func TestFindByMetadataKeyPrefix(t *testing.T) {
 		return id
 	}
 
-	_ = insertRow(tenantID, kbID, "nodeA")               // parent — must NOT match
-	childID := insertRow(tenantID, kbID, "nodeA#file#x") // attachment child — MUST match
-	_ = insertRow(tenantID, kbID, "nodeB")               // sibling — must NOT match
-	_ = insertRow(tenantID, otherKBID, "nodeA#file#y")   // different KB — must be excluded
+	_ = insertRow(tenantID, kbID, "nodeA")               // parent - must NOT match
+	childID := insertRow(tenantID, kbID, "nodeA#file#x") // attachment child - MUST match
+	_ = insertRow(tenantID, kbID, "nodeB")               // sibling - must NOT match
+	_ = insertRow(tenantID, otherKBID, "nodeA#file#y")   // different KB - must be excluded
 
 	results, err := repo.FindByMetadataKeyPrefix(ctx, tenantID, kbID, "external_id", "nodeA#")
 	require.NoError(t, err)
@@ -101,8 +101,8 @@ func TestFindByMetadataKeyPrefix_UnderscoreIsLiteral(t *testing.T) {
 	// The prefix we will search for is "ab_c#". Without escaping, '_' is a
 	// wildcard that matches any single character, so "abXc#file#y" would also
 	// be returned. With escaping it must NOT be returned.
-	targetID := insertRow("ab_c#file#x") // literal underscore — MUST match
-	_ = insertRow("abXc#file#y")         // 'X' instead of '_' — must NOT match
+	targetID := insertRow("ab_c#file#x") // literal underscore - MUST match
+	_ = insertRow("abXc#file#y")         // 'X' instead of '_' - must NOT match
 
 	results, err := repo.FindByMetadataKeyPrefix(ctx, tenantID, kbID, "external_id", "ab_c#")
 	require.NoError(t, err)

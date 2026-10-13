@@ -477,7 +477,7 @@ func TestCaptureSkillEnvDoesNotCopyAdminValueIntoUserSlot(t *testing.T) {
 }
 
 // A workspace value is one an admin typed. A value read out of a command the
-// model composed must not displace it for this caller — that is what the
+// model composed must not displace it for this caller - that is what the
 // settings page is for.
 func TestCaptureSkillEnvLeavesTheAdminValueInPlace(t *testing.T) {
 	svc, repo := newUserEnvFixture(t)

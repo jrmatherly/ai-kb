@@ -226,7 +226,7 @@ func TestToolRegistryFirstWinsPolicy(t *testing.T) {
 	mcpGot, ok := got.(*MCPTool)
 	require.True(t, ok)
 	assert.Equal(t, "id-1", mcpGot.service.ID,
-		"first registered tool should win — the second registration must be rejected")
+		"first registered tool should win - the second registration must be rejected")
 }
 
 func TestToolRegistryMCPToolLookup(t *testing.T) {
@@ -243,7 +243,7 @@ func TestToolRegistryMCPToolLookup(t *testing.T) {
 
 	oldName := "mcp_ed606721_gethazardouschemicalbybizid"
 	_, err = registry.GetTool(oldName)
-	assert.Error(t, err, "UUID-based tool name must NOT resolve — this was the old bug")
+	assert.Error(t, err, "UUID-based tool name must NOT resolve - this was the old bug")
 	assert.Contains(t, err.Error(), "tool not found")
 }
 

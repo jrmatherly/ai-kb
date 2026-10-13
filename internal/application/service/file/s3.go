@@ -178,7 +178,7 @@ func (s *s3FileService) createBucket(ctx context.Context) error {
 }
 
 // CheckConnectivity verifies S3 is reachable and, if a bucket is configured,
-// that the bucket exists. This is a read-only probe — it never creates a bucket.
+// that the bucket exists. This is a read-only probe - it never creates a bucket.
 func (s *s3FileService) CheckConnectivity(ctx context.Context) error {
 	checkCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()

@@ -224,7 +224,7 @@ func TestWriteSandboxDescriptionExplainsABudgetDerivedLimit(t *testing.T) {
 }
 
 // The advertised budget is a forecast, not a rule. Content that arrived intact
-// beat the forecast, which means the forecast was wrong — its bytes-per-token
+// beat the forecast, which means the forecast was wrong - its bytes-per-token
 // factor swings by 3x between ASCII and CJK. Rejecting it would discard work
 // already paid for in tokens and force the model to re-emit the same bytes in
 // chunks, which costs more and is likelier to truncate than the call that just
@@ -304,7 +304,7 @@ func TestWriteSandboxFileRejectsUnknownMode(t *testing.T) {
 }
 
 // A chunk boundary lands mid-source, so the syntax check has to look at the
-// assembled file — judging the chunk alone would flag every valid split.
+// assembled file - judging the chunk alone would flag every valid split.
 func TestWriteSandboxFileAppendChecksSyntaxOfWholeFile(t *testing.T) {
 	const path = "/workspace/output/gen.py"
 	sink := &fakeSandboxFileSink{}

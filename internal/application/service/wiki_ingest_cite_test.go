@@ -74,7 +74,7 @@ func TestMergeCitationsIntoItems_AddsNewSlugsAndUnionsChunksAcrossBatches(t *tes
 			SourceChunks: []string{"c001", "c002"},
 		},
 		{
-			// Same slug as above, appears in another batch — must union.
+			// Same slug as above, appears in another batch - must union.
 			Type:         "entity",
 			Name:         "Fresh Entity",
 			Slug:         "entity/fresh",
@@ -87,7 +87,7 @@ func TestMergeCitationsIntoItems_AddsNewSlugsAndUnionsChunksAcrossBatches(t *tes
 			SourceChunks: []string{"c010"},
 		},
 		{
-			// Duplicate of an existing candidate — should NOT produce a
+			// Duplicate of an existing candidate - should NOT produce a
 			// duplicate entry (Known already exists in `entities`).
 			Type:         "entity",
 			Name:         "Known",

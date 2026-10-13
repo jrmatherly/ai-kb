@@ -126,7 +126,7 @@ type KnowledgeBase struct {
 	// which made pinning a workspace-wide ordering decision gated behind
 	// the kb-edit RBAC guard. The columns are still present in legacy
 	// schemas for rollback safety but are no longer read or written by
-	// the application — both fields are tagged `gorm:"-"` so GORM
+	// the application - both fields are tagged `gorm:"-"` so GORM
 	// ignores them on every CRUD call and the list handler stamps them
 	// after enriching with the caller's pin set.
 	IsPinned bool `yaml:"is_pinned"               json:"is_pinned"               gorm:"-"`
@@ -166,8 +166,8 @@ type KnowledgeBaseConfig struct {
 	// uses. A request that does not mention this field must leave the image
 	// settings alone: the attribute-observation switch and the attribute policy
 	// are things a knowledge base accumulates, and a client that predates them
-	// would otherwise reset the lot on any save. Sending an object — empty
-	// included — replaces the whole configuration.
+	// would otherwise reset the lot on any save. Sending an object - empty
+	// included - replaces the whole configuration.
 	ImageProcessingConfig *ImageProcessingConfig `yaml:"image_processing_config" json:"image_processing_config"`
 	// FAQ configuration (only for FAQ type knowledge bases)
 	FAQConfig *FAQConfig `yaml:"faq_config"              json:"faq_config"`
@@ -847,7 +847,7 @@ func (kb *KnowledgeBase) Capabilities() KBCapabilities {
 // The legacy inline credentials (storage_config secret_id / secret_key and
 // vlm_config api_key) are withheld. Their DB columns are written by
 // StorageConfig.Value / VLMConfig.Value, so persistence is unaffected, while
-// every JSON rendering of a KB is an API or tool response — including the
+// every JSON rendering of a KB is an API or tool response - including the
 // lists shown to org-share receivers, who must never see the owner's keys.
 // Clients only need these fields' presence, which /initialization/config
 // reports separately.
@@ -948,8 +948,8 @@ func (kb *KnowledgeBase) Normalize() {
 //
 // Empty-string VectorStoreID is treated as equivalent to nil so that rows
 // persisted by callers that did not run Normalize first (raw-SQL writes,
-// external migrations, ops scripts) still compare correctly. The alternative
-// — treating `&""` as a distinct binding — would reject otherwise valid
+// external migrations, ops scripts) still compare correctly. The alternative -
+// treating `&""` as a distinct binding - would reject otherwise valid
 // CopyKnowledgeBase clones with a confusing "different vector stores" 400.
 // This normalization is read-only; it does not mutate the receivers.
 //

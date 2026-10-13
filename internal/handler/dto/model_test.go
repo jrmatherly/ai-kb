@@ -138,7 +138,7 @@ func registerSecretExtraVendor(t *testing.T) string {
 }
 
 // A vendor-declared secret extra field is a credential that happens to live
-// in extra_config: GET must report its presence, never its value — even to a
+// in extra_config: GET must report its presence, never its value - even to a
 // caller allowed to see integration detail, exactly like api_key.
 func TestModelResponse_RedactsVendorSecretExtraConfig(t *testing.T) {
 	provider := registerSecretExtraVendor(t)

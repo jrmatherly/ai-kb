@@ -74,7 +74,7 @@ func envVarRequest(method, path, body string) *http.Request {
 }
 
 // The principal is derived from the context, so the request type must have no
-// field that could name one — absent rather than ignored, because an ignored
+// field that could name one - absent rather than ignored, because an ignored
 // field is one refactor away from being honoured.
 func TestMeEnvVarRequestCannotCarryAPrincipal(t *testing.T) {
 	rt := reflect.TypeOf(meEnvVarRequest{})

@@ -20,8 +20,8 @@ import (
 
 // validateAndGetKnowledgeBase (knowledgebase.go) and the four sibling
 // helpers in faq.go / knowledge.go / tag.go / initialization.go used to
-// wrap every Get*ByID error — including the well-known
-// repository.ErrKnowledgeBaseNotFound sentinel — as a 500. That turned
+// wrap every Get*ByID error - including the well-known
+// repository.ErrKnowledgeBaseNotFound sentinel - as a 500. That turned
 // every probe of a stale or cross-tenant KB id into a fake "internal
 // server error" envelope. These tests pin the corrected mapping (404)
 // at the HTTP boundary so a future refactor can't quietly regress it.
@@ -109,7 +109,7 @@ func TestKBHandlerHonoursWrappedErrKnowledgeBaseNotFound(t *testing.T) {
 }
 
 func TestKBHandlerKeeps500ForGenuineInfraErrors(t *testing.T) {
-	// The mapping is *only* for the not-found sentinel — every other
+	// The mapping is *only* for the not-found sentinel - every other
 	// error must still surface as a real 5xx so monitoring catches
 	// genuine DB / repo failures.
 	svc := &stubKBOnlyService{

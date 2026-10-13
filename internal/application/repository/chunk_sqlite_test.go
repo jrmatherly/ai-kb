@@ -202,7 +202,7 @@ func TestCreateChunks_SQLite_SeqIDAfterSoftDelete(t *testing.T) {
 	db.Model(&types.Chunk{}).Where("knowledge_base_id = ?", kbID).Count(&activeCount)
 	assert.Equal(t, int64(0), activeCount, "all chunks should be soft-deleted")
 
-	// Create second batch — seq_ids must NOT conflict with soft-deleted ones
+	// Create second batch - seq_ids must NOT conflict with soft-deleted ones
 	batch2 := []*types.Chunk{
 		makeChunk(kbID, knowledgeID, "faq"),
 		makeChunk(kbID, knowledgeID, "faq"),
@@ -228,7 +228,7 @@ func TestUpdateChunk_SQLite_NoNOWError(t *testing.T) {
 	chunk := makeChunk(kbID, knowledgeID, "faq")
 	require.NoError(t, db.WithContext(ctx).Create(chunk).Error)
 
-	// Test updating a chunk field — verifies no NOW() related errors
+	// Test updating a chunk field - verifies no NOW() related errors
 	err := db.WithContext(ctx).Model(chunk).Update("content", "updated content").Error
 	assert.NoError(t, err)
 

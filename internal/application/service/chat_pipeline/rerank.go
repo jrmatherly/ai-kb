@@ -123,7 +123,7 @@ func (p *PluginRerank) OnEvent(ctx context.Context,
 	diag.ModelID = chatManage.RerankModelID
 
 	if diag.Outcome == types.RerankOutcomeModelError {
-		// Rerank API failed — fall back to the retrieval results so the
+		// Rerank API failed - fall back to the retrieval results so the
 		// pipeline can still return something useful to the caller.
 		pipelineWarn(ctx, "Rerank", "api_error_fallback", map[string]interface{}{
 			"error":         diag.Error,

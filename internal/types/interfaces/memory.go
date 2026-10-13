@@ -133,8 +133,8 @@ type MemoryRepository interface {
 	// UpsertItemEmbedding stores or replaces the vector for one memory.
 	UpsertItemEmbedding(ctx context.Context, scope MemoryScope, embedding *types.MemoryItemEmbedding) error
 	// DeleteItemEmbedding drops one memory's vector. What a memory embeds to
-	// can change after it is written — an interest embeds the other wordings
-	// of its subject — and dropping the vector is how the existing backfill is
+	// can change after it is written - an interest embeds the other wordings
+	// of its subject - and dropping the vector is how the existing backfill is
 	// asked to rebuild it.
 	DeleteItemEmbedding(ctx context.Context, scope MemoryScope, itemID string) error
 	// ItemEmbeddings loads the vectors for the given items, keyed by item id.
@@ -242,7 +242,7 @@ type MemoryRecall struct {
 // different answers, and collapsing both into an empty slice would have the
 // agent report a blank memory store to someone who simply disabled it.
 type MemorySearchResult struct {
-	// Available is false when memory is off at any level — workspace, user or
+	// Available is false when memory is off at any level - workspace, user or
 	// the agent handling this request.
 	Available bool
 	// Items are the matches, most relevant first.
@@ -254,9 +254,9 @@ type MemorySearchResult struct {
 // documents they rely on.
 //
 // This is the part of memory that earns its keep in a knowledge-base product.
-// The same question means different things to different people — "how do I tune
+// The same question means different things to different people - "how do I tune
 // the segmentation" from someone working on medical imaging should not retrieve
-// the same passages as it would from someone working on autonomous driving —
+// the same passages as it would from someone working on autonomous driving -
 // and that difference has to be applied before retrieval, not after.
 type RetrievalContext struct {
 	// Background is a compact description of the person, for query rewriting.
@@ -288,7 +288,7 @@ type MemoryService interface {
 	// the workspace switch, the user's own opt out and the agent's preference
 	// combined.
 	//
-	// Read paths do not need this — Recall and SearchMemory already degrade on
+	// Read paths do not need this - Recall and SearchMemory already degrade on
 	// their own. It exists for callers that must decide whether to *offer* a
 	// memory-backed feature, where the difference between "off" and "empty"
 	// has to be settled before anything is built rather than after it is

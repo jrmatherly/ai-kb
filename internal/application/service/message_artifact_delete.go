@@ -24,7 +24,7 @@ var ErrArtifactNotFound = errors.NewNotFoundError("artifact not found")
 // not changed just because the user deleted the stored version.
 //
 // The bytes are a separate concern: this method reports them in Reclaim and the
-// caller — which has the tenant's file service and the resource catalog —
+// caller - which has the tenant's file service and the resource catalog -
 // releases the binding and deletes the object. Doing it here would mean giving
 // the message service a storage dependency it otherwise has no use for.
 //
@@ -39,7 +39,7 @@ func (s *messageService) DeleteSessionArtifact(
 	}
 
 	// Ownership: the session must belong to the caller. Deleting is not covered
-	// by the shared-agent read access the download endpoint honours — a viewer
+	// by the shared-agent read access the download endpoint honours - a viewer
 	// of someone else's shared session may fetch a file, not destroy it.
 	tenantID := types.MustTenantIDFromContext(ctx)
 	if _, err := s.sessionRepo.Get(ctx, tenantID, sessionUserIDForLookup(ctx), req.SessionID); err != nil {
@@ -124,8 +124,8 @@ func (s *messageService) reclaimableBlobs(
 
 // artifactDeleteSet expands the request into the rows to tombstone: the one
 // addressed row, or every live version of the same sandbox file when the caller
-// asked for all of them. An artifact with no source path has no version group —
-// nothing else in the session is the "same file" — so it deletes alone.
+// asked for all of them. An artifact with no source path has no version group -
+// nothing else in the session is the "same file" - so it deletes alone.
 func (s *messageService) artifactDeleteSet(
 	ctx context.Context, req *types.ArtifactDeleteRequest, target types.MessageArtifactRecord,
 ) ([]types.MessageArtifactRecord, error) {

@@ -144,7 +144,7 @@ type KnowledgeService interface {
 	// user. The knowledge row and any partially written chunks/index are
 	// kept; downstream queued tasks for the same knowledge are best-effort
 	// dequeued and active workers are signalled to stop at their next
-	// checkpoint. Idempotent — returns the existing row when the knowledge
+	// checkpoint. Idempotent - returns the existing row when the knowledge
 	// is already cancelled. Returns an error when the knowledge is in a
 	// terminal state (completed / failed) or being deleted.
 	CancelKnowledgeParse(ctx context.Context, knowledgeID string) (*types.Knowledge, error)

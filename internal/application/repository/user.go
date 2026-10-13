@@ -168,7 +168,7 @@ func (r *userRepository) ListUsers(ctx context.Context, offset, limit int) ([]*t
 // ListSystemAdmins lists users where is_system_admin = true.
 //
 // Walks idx_users_is_system_admin (created in migration 000052), so the
-// query stays cheap even on a large users table — only the small subset
+// query stays cheap even on a large users table - only the small subset
 // of system admins is scanned. Returns total count alongside the page so
 // the management UI can render pagination without a second roundtrip.
 //
@@ -285,7 +285,7 @@ func (r *userRepository) SetUserActive(ctx context.Context, userID, actorID stri
 //   - (user, nil): revoke actually happened; user.IsSystemAdmin == false
 //   - (user, ErrUserNotSystemAdmin): target was already not an admin;
 //     no row was written. Caller should treat as idempotent success but
-//     MUST distinguish it from a real revoke for audit purposes — the
+//     MUST distinguish it from a real revoke for audit purposes - the
 //     surfaced `user` is the unchanged DB row.
 //   - (nil, ErrCannotRevokeSelf | ErrLastSystemAdmin | ErrUserNotFound | …):
 //     hard rejection; no row written.

@@ -97,7 +97,7 @@ func TestPolicyAllowsPrivateTargetsWhenOptedIn(t *testing.T) {
 
 func TestPolicyAllowsPublicLiteralAddresses(t *testing.T) {
 	// Literal addresses keep this hermetic: no DNS required. They are
-	// documentation ranges, which this policy accepts on purpose — they are
+	// documentation ranges, which this policy accepts on purpose - they are
 	// never routed, so refusing them would protect nothing while costing every
 	// test here a DNS lookup. The end-user URL guard in internal/utils makes
 	// the opposite call for the same class.

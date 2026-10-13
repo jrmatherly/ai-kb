@@ -214,8 +214,8 @@ type ProcessChunksOptions struct {
 // finalizeIndexedKnowledgeState makes a document retrievable as soon as chunks
 // and indexes are persisted (enable_status=enabled), but it deliberately does
 // NOT mark the row completed when enrichment is still expected. Whenever the
-// document still has work to fan out — pending multimodal image tasks, or text
-// chunks that feed summary/question/graph generation — parse_status stays
+// document still has work to fan out - pending multimodal image tasks, or text
+// chunks that feed summary/question/graph generation - parse_status stays
 // "processing" so KnowledgePostProcess remains the single authority that drives
 // processing → finalizing → completed. Marking the row completed here would make
 // post-process hit its "non-processing status" guard and skip the summary
@@ -234,7 +234,7 @@ func finalizeIndexedKnowledgeState(
 		// No text chunks and no pending multimodal work: there is nothing for
 		// post-process to enrich, so complete immediately. This is the only
 		// route to 'completed' that bypasses FinalizeSubtask, so it has to
-		// clear error_message itself — otherwise a successfully indexed row
+		// clear error_message itself - otherwise a successfully indexed row
 		// keeps reporting a failure from an earlier attempt.
 		knowledge.ParseStatus = types.ParseStatusCompleted
 		knowledge.SummaryStatus = types.SummaryStatusNone
@@ -263,7 +263,7 @@ func markKnowledgeProcessing(knowledge *types.Knowledge, now time.Time) {
 //
 // It re-reads the row instead of trusting the entry guard, because resolving a
 // model reads the database: a cancel or a ReplaceKnowledgeFile can land in the
-// window between that guard and this write. Both would be clobbered otherwise —
+// window between that guard and this write. Both would be clobbered otherwise -
 // UpdateKnowledge is a full-row Save and file_path is not among the omitted
 // columns, so a stale in-memory row would roll file_path back over the
 // replacement and mark the replacement's live attempt failed.
@@ -282,7 +282,7 @@ func (s *knowledgeService) failKnowledgeOnEmbeddingModel(
 func (s *knowledgeService) failKnowledgeAtEmbedding(
 	ctx context.Context, kb *types.KnowledgeBase, knowledge *types.Knowledge, code, what string, cause error,
 ) error {
-	// A cancelled or expired context means the run was interrupted — the user
+	// A cancelled or expired context means the run was interrupted - the user
 	// cancelled (asynq CancelProcessing cancels the handler context), the
 	// worker was preempted, the process is shutting down. The model itself is
 	// not implicated, so recording "failed to get embedding model" would both
@@ -312,7 +312,7 @@ func (s *knowledgeService) failKnowledgeAtEmbedding(
 		"model_id": kb.EmbeddingModelID,
 	})
 	// The span's error_message is what the timeline renders, and its
-	// error_detail is withheld from non-admin responses — so carry the same
+	// error_detail is withheld from non-admin responses - so carry the same
 	// text the document list shows rather than a fixed generic string.
 	s.failStage(ctx, knowledge.ID, types.StageEmbedding, code, knowledge.ErrorMessage, cause)
 	return nil
@@ -380,7 +380,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 	}
 
 	// Check if knowledge is being deleted/cancelled before processing.
-	// Both statuses short-circuit identically here — there's nothing to clean
+	// Both statuses short-circuit identically here - there's nothing to clean
 	// up yet so the branch is purely "stop early".
 	if aborted, status := s.isKnowledgeAborted(ctx, knowledge.TenantID, knowledge.ID); aborted {
 		logger.Infof(ctx, "Knowledge aborted (%s), skipping chunk processing: %s", status, knowledge.ID)
@@ -397,7 +397,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 		return nil
 	}
 
-	// Get embedding model for vectorization — only needed when vector/keyword indexing is enabled
+	// Get embedding model for vectorization - only needed when vector/keyword indexing is enabled
 	var embeddingModel embedding.Embedder
 	if kb.NeedsEmbeddingModel() {
 		var err error
@@ -411,7 +411,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 			// here names the real cause instead: a model row that was
 			// deleted or deactivated, or a configuration the embedder factory
 			// refuses. (Credential and connectivity problems surface later, on
-			// the first BatchIndex round-trip — resolving a model only reads
+			// the first BatchIndex round-trip - resolving a model only reads
 			// the row and constructs a client.)
 			logger.GetLogger(ctx).WithField("error", err).Errorf("processChunks get embedding model failed")
 			return s.failKnowledgeOnEmbeddingModel(ctx, kb, knowledge, err)
@@ -637,7 +637,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 		return nil
 	}
 
-	// Save chunks to database — ALWAYS, regardless of indexing strategy.
+	// Save chunks to database - ALWAYS, regardless of indexing strategy.
 	// Chunks are needed for wiki generation, graph extraction, and summary generation
 	// even when vector/keyword indexing is disabled.
 	s.beginStage(ctx, knowledge.ID, types.StageChunking, types.JSONMap{
@@ -661,7 +661,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 		"total_text_chars": totalChunkChars,
 	})
 
-	// Create index information and perform vector indexing — only when vector/keyword is enabled.
+	// Create index information and perform vector indexing - only when vector/keyword is enabled.
 	// Chunks are ALWAYS saved to DB (above) because wiki and graph need them even without vector indexing.
 	var totalStorageSize int64
 	if kb.NeedsEmbeddingModel() && embeddingModel != nil {
@@ -673,7 +673,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 			embedInput["dim"] = dim
 		}
 		s.beginStage(ctx, knowledge.ID, types.StageEmbedding, embedInput)
-		// Create index information — only for child/flat chunks, NOT parent chunks.
+		// Create index information - only for child/flat chunks, NOT parent chunks.
 		// Parent chunks are stored for context retrieval but do not need vector embeddings.
 		// Prepend the document title to improve semantic alignment between
 		// question-style queries and statement-style chunk content.
@@ -835,7 +835,7 @@ func (s *knowledgeService) processChunks(ctx context.Context,
 	if options.EnableMultimodel && len(options.StoredImages) > 0 {
 		// Counts only, no policy claims: whether a given image is OCR'd is
 		// decided per image once its attributes are observed, so a boolean here
-		// would assert something the pipeline has not decided yet — and would
+		// would assert something the pipeline has not decided yet - and would
 		// drift from what actually happened.
 		s.beginStage(ctx, knowledge.ID, types.StageMultimodal, types.JSONMap{
 			"image_count": len(options.StoredImages),
@@ -916,7 +916,7 @@ func normalizeSummaryReplyContent(content string) string {
 // An object opening ("{") always counts, parseable or not: half an object is
 // exactly the reply that must never be stored as a summary. A bracket opening
 // is ambiguous - "[1] …" and "[Document summary] …" are prose with a leading citation,
-// not broken JSON — so it only counts when the reply is a JSON array or opens
+// not broken JSON - so it only counts when the reply is a JSON array or opens
 // an array of objects/strings.
 func summaryReplyIsJSONShaped(content string) bool {
 	content = normalizeSummaryReplyContent(content)
@@ -1003,7 +1003,7 @@ func buildSummaryChunkContent(summary string, profile *types.KnowledgeProfile) s
 }
 
 // imageDominatedTextThreshold is the rune count below which a document is
-// considered "image-dominated" — i.e. the body text is so sparse that we
+// considered "image-dominated" - i.e. the body text is so sparse that we
 // should fall back to full image enrichment (caption + OCR) for the summary
 // LLM call. Above this threshold the document has enough native text that
 // caption-only enrichment is preferable (OCR text from incidental figures
@@ -1019,7 +1019,7 @@ var (
 	errInsufficientSummaryContent = errors.New("insufficient text content for summary generation")
 	errEmptySummaryOutput         = errors.New("summary model returned empty output")
 	// errSummaryOutputNotParsable marks a reply that is JSON-shaped but yields
-	// no usable summary text — broken JSON (cut off at the completion budget,
+	// no usable summary text - broken JSON (cut off at the completion budget,
 	// unescaped newline) or an object without summary/gist. It is deliberately
 	// not stored: the raw reply is not a summary.
 	errSummaryOutputNotParsable = errors.New("summary model returned JSON without a usable summary")
@@ -1048,7 +1048,7 @@ func validateSummaryOutput(response *types.ChatResponse) (string, error) {
 
 // validateStructuredSummaryDocument is the validator for the document-summary
 // entry point (getSummary). On top of validateSummaryOutput it rejects a reply
-// the provider cut off at the completion budget — but only when the reply was
+// the provider cut off at the completion budget - but only when the reply was
 // producing a structured summary, because that is the case where the truncated
 // text is half a JSON object. A plain-text summary that hit the budget is
 // still usable text and keeps the legacy fallback.
@@ -1232,14 +1232,14 @@ func (s *knowledgeService) getSummary(ctx context.Context,
 	if mergedImageInfo != "" {
 		// For image-dominated documents (e.g. a docx whose only payload is a
 		// single embedded picture, or a screenshot-only file), captions alone
-		// often carry too little signal — the real content lives in OCR text.
+		// often carry too little signal - the real content lives in OCR text.
 		// Detect that case by measuring the document's real (non-image-markup)
 		// text BEFORE enrichment, and switch to full enrichment (caption + OCR)
 		// when the body is essentially empty. Text-heavy documents stay on the
 		// caption-only path to avoid OCR noise (page headers/footers/watermarks
 		// from many figures diluting the main topic).
 		if realTextRuneCount(chunkContents) < imageDominatedTextThreshold {
-			// Caption + OCR (no URL/original wrappers — those are pure noise
+			// Caption + OCR (no URL/original wrappers - those are pure noise
 			// for the summary LLM and have been observed to trigger the
 			// "image reference with no extracted text" refusal heuristic).
 			chunkContents = searchutil.EnrichContentCaptionAndOCR(chunkContents, mergedImageInfo)
@@ -1408,7 +1408,7 @@ func (s *knowledgeService) ProcessSummaryGeneration(ctx context.Context, t *asyn
 	// Open a subspan under the parent attempt's postprocess stage so the
 	// trace surface shows the real summary-generation duration (LLM call
 	// + chunk write + index) instead of just the upstream's enqueue time.
-	// Closes via the deferred handler below — every return path lands in
+	// Closes via the deferred handler below - every return path lands in
 	// the defer, including the early returns ahead.
 	span := s.beginPostprocessSubspan(ctx, payload.KnowledgeID, payload.Attempt, "postprocess.summary",
 		types.JSONMap{
@@ -1425,7 +1425,7 @@ func (s *knowledgeService) ProcessSummaryGeneration(ctx context.Context, t *asyn
 		// summaryErr: several branches record a failure on the span
 		// (summaryErr != nil) yet deliberately `return nil` so asynq does
 		// NOT retry (e.g. insufficient text content, KB/knowledge fetch
-		// failures). Those are terminal and must drain — keying on
+		// failures). Those are terminal and must drain - keying on
 		// summaryErr would skip them and leave the row stuck in
 		// "finalizing". When we DO return an error asynq will retry, so
 		// we only drain on the final attempt.
@@ -1456,7 +1456,7 @@ func (s *knowledgeService) ProcessSummaryGeneration(ctx context.Context, t *asyn
 		return nil
 	}
 	// Capture the resolved model id on the span output the moment we
-	// know it — debugging "summary stage took 60s" benefits hugely from
+	// know it - debugging "summary stage took 60s" benefits hugely from
 	// seeing WHICH chat model was actually used (kb config drift, fall-
 	// throughs to a slow upstream, etc.).
 	summaryOut["model_id"] = kb.SummaryModelID
@@ -1663,7 +1663,7 @@ func (s *knowledgeService) ProcessSummaryGeneration(ctx context.Context, t *asyn
 		return fmt.Errorf("failed to update knowledge: %w", err)
 	}
 
-	// Create summary chunk and index it — only when RAG indexing is enabled.
+	// Create summary chunk and index it - only when RAG indexing is enabled.
 	// Wiki-only KBs don't need summary chunks in the vector index.
 	if strings.TrimSpace(summary) != "" && kb.NeedsEmbeddingModel() {
 		// Get max chunk index
@@ -1813,7 +1813,7 @@ func (s *knowledgeService) processQuestionGenerationForKnowledge(ctx context.Con
 	// knowledge fetch failures); those are terminal and must drain.
 	// Keying on qErr would skip them and strand the row in "finalizing".
 	// When we return an error asynq retries, so we only drain on the
-	// final attempt. Runs AFTER the stats-log defer below — defers
+	// final attempt. Runs AFTER the stats-log defer below - defers
 	// unwind LIFO, so this one declared first executes last.
 	defer func() {
 		finalizeSubtaskDetached(ctx, s.repo, payload.KnowledgeID, "question_legacy",
@@ -1864,7 +1864,7 @@ func (s *knowledgeService) processQuestionGenerationForKnowledge(ctx context.Con
 			}
 			// Surface the resolved model id and a sample question on the
 			// span output. These help debugging "why is question generation
-			// slow" — both questions ("which model was hit?") and ("what
+			// slow" - both questions ("which model was hit?") and ("what
 			// did it produce?") are hard to answer from logs alone.
 			if resolvedModelID != "" {
 				out["model_id"] = resolvedModelID
@@ -2279,7 +2279,7 @@ func (s *knowledgeService) processQuestionGenerationForChunks(ctx context.Contex
 		return nil
 	}
 	// Short-circuit when the user cancelled parsing or the row is being
-	// deleted — batched fan-out means we get this check for free on every
+	// deleted - batched fan-out means we get this check for free on every
 	// batch, so a cancel stops burning LLM quota on the remaining batches.
 	if knowledge != nil {
 		switch knowledge.ParseStatus {
@@ -2885,8 +2885,8 @@ func (s *knowledgeService) reparseKnowledge(
 
 	// Keep wiki's pending queue consistent across both manual and non-manual
 	// paths. The destructive work (swapping old wiki contributions for new)
-	// happens asynchronously inside mapOneDocument — see its oldPageSlugs
-	// handling — once post-process re-enqueues wiki ingest. All we need to
+	// happens asynchronously inside mapOneDocument - see its oldPageSlugs
+	// handling - once post-process re-enqueues wiki ingest. All we need to
 	// do here is stop any stale pending ingest op from firing against the
 	// pre-reparse chunk set. The op's finalizing slot is not released: the
 	// reset below zeroes the counter. Scrub even when wiki is off now: an op
@@ -3130,7 +3130,7 @@ func resetKnowledgeForReparse(knowledge *types.Knowledge, kb *types.KnowledgeBas
 //   - The asynq inspector (if available) dequeues pending / scheduled / retry
 //     tasks for this knowledge_id across all queues used by the pipeline
 //     and signals active workers to stop. Lite mode (no Redis) skips the
-//     dequeue step — the checkpoint-based abort is the only stop signal there.
+//     dequeue step - the checkpoint-based abort is the only stop signal there.
 //   - Idempotent: re-calling on an already-cancelled row is a no-op.
 //
 // Errors:
@@ -3151,7 +3151,7 @@ func (s *knowledgeService) CancelKnowledgeParse(
 
 	switch existing.ParseStatus {
 	case types.ParseStatusCancelled:
-		// Idempotent — still attempt the dequeue in case earlier calls
+		// Idempotent - still attempt the dequeue in case earlier calls
 		// raced an enqueue, but skip the row update / span close path.
 		s.dequeueKnowledgeTasks(ctx, knowledgeID)
 		return existing, nil
@@ -3164,7 +3164,7 @@ func (s *knowledgeService) CancelKnowledgeParse(
 		// where graph-extract / summary / question subtasks are still
 		// running; cancel here stops the LLM cost they would burn.
 	default:
-		// Unknown status — let it through but log. Should never happen
+		// Unknown status - let it through but log. Should never happen
 		// outside test fixtures or hand-edited rows.
 		logger.Warnf(ctx, "CancelKnowledgeParse: unexpected status %q for %s, proceeding",
 			existing.ParseStatus, knowledgeID)
@@ -3173,7 +3173,7 @@ func (s *knowledgeService) CancelKnowledgeParse(
 	// Flip the row to cancelled and zero the enrichment counter in one
 	// update so a late subtask FinalizeSubtask call can't race-promote
 	// the row back to completed. Persisted partial data is left in
-	// place — the user can reuse it on the next reparse attempt.
+	// place - the user can reuse it on the next reparse attempt.
 	now := time.Now()
 	if err := s.repo.UpdateKnowledgeColumns(ctx, existing.ID, map[string]interface{}{
 		"parse_status":           types.ParseStatusCancelled,
@@ -3208,7 +3208,7 @@ func (s *knowledgeService) CancelKnowledgeParse(
 			"USER_CANCELLED", "Parsing cancelled by user", "Parsing cancelled by user")
 	}
 
-	// Best-effort dequeue. Failures here don't block the cancel — the
+	// Best-effort dequeue. Failures here don't block the cancel - the
 	// downstream tasks will still self-abort at their entry guards.
 	s.dequeueKnowledgeTasks(ctx, knowledgeID)
 	// Wiki ingest lives in its own per-KB pending queue (task_pending_ops)
@@ -3590,7 +3590,7 @@ func (s *knowledgeService) ProcessManualUpdate(ctx context.Context, t *asynq.Tas
 		return fmt.Errorf("invalid processing scope: %v: %w", err, asynq.SkipRetry)
 	}
 
-	// Re-check abort status right before marking processing — see the same
+	// Re-check abort status right before marking processing - see the same
 	// note in ProcessDocument for the cancel race this guards.
 	if aborted, status := s.isKnowledgeAborted(ctx, knowledge.TenantID, knowledge.ID); aborted {
 		logger.Infof(ctx, "ProcessManualUpdate: knowledge aborted (%s), skipping: %s", status, knowledge.ID)
@@ -3605,7 +3605,7 @@ func (s *knowledgeService) ProcessManualUpdate(ctx context.Context, t *asynq.Tas
 
 	// Allocate a fresh span-tracking attempt for this manual (re)index.
 	// Without it attemptFromCtx stays 0, so processChunks drops all stage
-	// spans and KnowledgePostProcess falls back to LatestAttempt — piling
+	// spans and KnowledgePostProcess falls back to LatestAttempt - piling
 	// this run's summary/wiki subspans onto the previous attempt's trace.
 	attempt := 0
 	if root, n, err := s.tracker().OpenAttempt(ctx, knowledge.ID, payload.LangfuseTraceID); err == nil && root != nil {
@@ -3755,7 +3755,7 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 	processOverrides, _ := knowledge.ProcessOverrides()
 	eff := ResolveProcessConfig(kb, processOverrides)
 
-	// Re-check abort status right before flipping to "processing" — closes
+	// Re-check abort status right before flipping to "processing" - closes
 	// the race where the user cancels between the entry guard above and
 	// this write (otherwise the worker would overwrite cancelled→processing
 	// and downstream checkpoints would treat the run as live).
@@ -4165,7 +4165,7 @@ func (s *knowledgeService) convert(
 ) (*types.ReadResult, error) {
 	// Stage tracking: docreader. Mark the stage as running here so the
 	// timeline reflects "DocReader" the moment a worker picks the task
-	// up — before that, the stage stays "pending" from the initial
+	// up - before that, the stage stays "pending" from the initial
 	// upload. Failure/skip transitions are emitted at the specific
 	// failure points below; success is emitted at the bottom.
 	docInput := types.JSONMap{
@@ -4298,8 +4298,8 @@ func (s *knowledgeService) convert(
 // callDocReaderWithTimeout wraps the DocReader RPC in a child context whose
 // deadline is min(parent_deadline, DocReaderCallTimeout). Without this cap,
 // a hung docreader (network partition, GC pause, OCR runaway) silently
-// burns the whole DocumentProcessTimeout budget and pins a worker for hours
-// — the #1 cause of "knowledge stuck in processing" reports.
+// burns the whole DocumentProcessTimeout budget and pins a worker for hours -
+// the #1 cause of "knowledge stuck in processing" reports.
 //
 // On timeout we annotate the error so retries / dead-letter consumers can
 // distinguish "docreader was slow" from "docreader returned an error".
@@ -4332,7 +4332,7 @@ func (s *knowledgeService) callDocReaderWithTimeout(
 }
 
 // isLikelyRateLimitError performs a fuzzy classification of an error as a
-// rate-limit / quota / backpressure failure. We only need a hint — the
+// rate-limit / quota / backpressure failure. We only need a hint - the
 // caller maps to one of two error_codes so the UI can offer "retry later"
 // vs. "fix configuration" advice. False positives are harmless (the
 // detail is preserved in error_detail anyway).
@@ -4351,8 +4351,8 @@ func isLikelyRateLimitError(err error) bool {
 
 // resolveDocReader picks the reader for one parse request. The engine catalog
 // itself lives in the docparser registry; this only supplies the dependencies
-// the service owns. Returns nil when the chosen engine cannot run — an
-// unconfigured cloud engine, a disconnected docreader — after logging why.
+// the service owns. Returns nil when the chosen engine cannot run - an
+// unconfigured cloud engine, a disconnected docreader - after logging why.
 func (s *knowledgeService) resolveDocReader(
 	ctx context.Context, engine, fileType string, isURL bool, overrides map[string]string,
 ) interfaces.DocReader {
@@ -4414,7 +4414,7 @@ func (s *knowledgeService) enqueueImageMultimodalTasks(
 	// task that finishes early would otherwise decrement a key we are about to
 	// overwrite, and its slot would be counted twice. The cost of seeding
 	// first is that a slot whose task never reaches the queue has no owner to
-	// drain it — releaseUnownedMultimodalSlots settles that after the fan-out.
+	// drain it - releaseUnownedMultimodalSlots settles that after the fan-out.
 	counterSeeded := false
 	if s.redisClient != nil {
 		if err := s.redisClient.Set(ctx, redisKey, len(images), 24*time.Hour).Err(); err != nil {
@@ -4491,7 +4491,7 @@ func (s *knowledgeService) enqueueImageMultimodalTasks(
 // slot whose task was never enqueued (payload marshal failure, asynq refusing
 // the write) has no owner, so without this release the counter stalls above
 // zero, post-process is never triggered, and the row sits in "processing"
-// until the housekeeping sweep fails it an hour later — which reaches the user
+// until the housekeeping sweep fails it an hour later - which reaches the user
 // as an unexplained parse failure. This mirrors the shortfall release
 // KnowledgePostProcess already performs for its own enrichment subtasks.
 func (s *knowledgeService) releaseUnownedMultimodalSlots(
@@ -4577,7 +4577,7 @@ func (s *knowledgeService) delMultimodalCounter(ctx context.Context, redisKey st
 // multimodalSlotReleaseAttempts bounds the retry on the release decrement.
 //
 // The release is the only thing that can ever drain an un-owned slot, so a
-// single transient Redis error must not be the end of it — that would strand
+// single transient Redis error must not be the end of it - that would strand
 // the row exactly as it did before this fix. Attempts stay small because they
 // share the detached context's budget, and the housekeeping sweep is still the
 // backstop when Redis is genuinely down.

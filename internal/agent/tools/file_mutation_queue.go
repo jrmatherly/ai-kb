@@ -6,7 +6,7 @@ package tools
 // read-modify-write against a remote filesystem that exposes no atomic
 // primitive. When the model emits several tool calls in one response the
 // engine may run them concurrently, and two calls touching one path then read
-// the same bytes and the second write silently discards the first — the failure
+// the same bytes and the second write silently discards the first - the failure
 // looks like the model's own output going missing, which is unfalsifiable from
 // the logs.
 //
@@ -28,7 +28,7 @@ import (
 // one second on some backends, so an edit and a re-read in the same second can
 // look untouched. A counter cannot miss that.
 //
-// It is global rather than per path, which over-invalidates — writing file B
+// It is global rather than per path, which over-invalidates - writing file B
 // drops a cached file A. That costs one re-download in a case that barely
 // happens (paging a file while writing another) and buys a counter that needs
 // no bookkeeping and cannot grow.

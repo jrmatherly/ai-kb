@@ -425,7 +425,7 @@ func (s *knowledgeTagService) ProcessIndexDelete(ctx context.Context, t *asynq.T
 	// Create retrieve engine.
 	// The factory verifies the payload's tenant owns the bound store, so a
 	// tampered queue entry cannot reach a cross-tenant store.
-	// Forbidden/NotFound are non-retryable — SkipRetry prevents burning the
+	// Forbidden/NotFound are non-retryable - SkipRetry prevents burning the
 	// full retry budget on an unrecoverable task.
 	retrieveEngine, err := retriever.CreateRetrieveEngineFromPayload(
 		ctx, s.retrieveEngine, s.ownership,

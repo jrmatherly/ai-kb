@@ -227,8 +227,8 @@ func resolveWithVendor(ref Ref, vendor *Provider) (*Resolved, error) {
 // silenceThinkingForNonReasoningModel drops every thinking field for a
 // catalogued model the vendor documents as non-reasoning (DeepSeek's
 // non-thinking alias, LKEAP's V3-0324 generation, plain instruct models).
-// Without this, a caller that asks for thinking — an agent whose config says
-// so, or the model debug drawer — would send a switch the model does not
+// Without this, a caller that asks for thinking - an agent whose config says
+// so, or the model debug drawer - would send a switch the model does not
 // understand, and some vendors answer 400.
 //
 // The gate deliberately applies only to catalogued entries: an unknown model

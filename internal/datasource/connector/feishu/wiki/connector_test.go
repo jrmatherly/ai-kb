@@ -317,7 +317,7 @@ func TestSanitizeFileName_TruncatesAtRuneBoundary(t *testing.T) {
 
 func TestSanitizeFileName_PreservesExtensionOnTruncation(t *testing.T) {
 	// A pathologically long (>200-byte) CJK attachment name ending in ".pdf".
-	// Truncation must keep the ".pdf" suffix — downstream file-type validation
+	// Truncation must keep the ".pdf" suffix - downstream file-type validation
 	// classifies by extension, so a chopped extension would reject the file.
 	long := strings.Repeat("\u62a5\u544a", 150) + ".pdf" // 150*6 bytes + ".pdf"
 	got := core.SanitizeFileName(long)
@@ -450,7 +450,7 @@ func TestConnectorListResources(t *testing.T) {
 }
 
 // TestConnectorListResources_LazyLoadsOneLevel verifies that ListResources loads
-// the wiki tree lazily — only the requested level — instead of recursing the whole
+// the wiki tree lazily - only the requested level - instead of recursing the whole
 // tree up front (Tencent/WeKnora#1672).
 func TestConnectorListResources_LazyLoadsOneLevel(t *testing.T) {
 	topNodes := []core.WikiNode{
@@ -1475,7 +1475,7 @@ func fakeFeishuWithBlocksAndDownloadStatus(nodes []core.WikiNode, docToken, attT
 		})
 	})
 
-	// blocks API — one text block + one parseable .pdf file block
+	// blocks API - one text block + one parseable .pdf file block
 	blocksPath := "/open-apis/docx/v1/documents/" + docToken + "/blocks"
 	mux.HandleFunc(blocksPath, func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, core.DocxBlocksResponse{
@@ -1724,7 +1724,7 @@ func TestFetchDocxWithBlocks_EmbeddedImage(t *testing.T) {
 }
 
 // TestFetchDocxWithBlocks_ImageDownloadFailure verifies that a failed image
-// download (a genuine core.Fetch failure — revoked token, permission gap, transient
+// download (a genuine core.Fetch failure - revoked token, permission gap, transient
 // error) surfaces a visible error sub-item exactly like a failed attachment
 // download, rather than being silently dropped to a server log. The image is
 // still kept in SubtreeKeep so any prior OCR'd copy is preserved.
@@ -1842,7 +1842,7 @@ func TestFetchDocxWithBlocks_NonWhitelistedExtNotPromoted(t *testing.T) {
 		attToken  = "ft-icon"
 		attName   = "icon.png"
 	)
-	// Content size well above core.MinAttachmentBytes — the filter must be extension, not size.
+	// Content size well above core.MinAttachmentBytes - the filter must be extension, not size.
 	attContent := bytes.Repeat([]byte("x"), core.MinAttachmentBytes+100)
 
 	nodes := []core.WikiNode{{
@@ -1861,7 +1861,7 @@ func TestFetchDocxWithBlocks_NonWhitelistedExtNotPromoted(t *testing.T) {
 		t.Fatalf("FetchAll() error: %v", err)
 	}
 
-	// Only the main doc — no sub-item for a non-parseable extension.
+	// Only the main doc - no sub-item for a non-parseable extension.
 	if len(items) != 1 {
 		t.Fatalf("want 1 item (main doc only, .png not promoted), got %d: %+v", len(items), items)
 	}
@@ -1901,7 +1901,7 @@ func TestFetchDocxWithBlocks_WhitelistedTinyAttachmentNotPromoted(t *testing.T) 
 		t.Fatalf("FetchAll() error: %v", err)
 	}
 
-	// Only the main doc — no sub-item for a file below the size threshold.
+	// Only the main doc - no sub-item for a file below the size threshold.
 	if len(items) != 1 {
 		t.Fatalf("want 1 item (main doc only, tiny .pdf not promoted), got %d: %+v", len(items), items)
 	}

@@ -14,7 +14,7 @@ import (
 
 // fakeInvitationRepo is an in-memory stand-in for
 // interfaces.TenantInvitationRepository. The implementation is
-// deliberately tiny — these tests focus on the service-layer state
+// deliberately tiny - these tests focus on the service-layer state
 // machine (Accept / Decline / Revoke / lazy sweep / duplicate guard)
 // rather than the SQL surface. The production repo gets exercised via
 // the real DB in repo tests if/when those are added.
@@ -299,7 +299,7 @@ func TestInvitationService_Accept_HappyPath_CreatesMembership(t *testing.T) {
 		t.Fatalf("unexpected membership: %+v", mb)
 	}
 	// Re-acceptance must be a state-machine rejection, not silent
-	// success — otherwise a duplicate click double-creates audit rows.
+	// success - otherwise a duplicate click double-creates audit rows.
 	if _, err := svc.Accept(ctx, inv.ID, "u-bob"); !errors.Is(err, ErrInvitationNotPending) {
 		t.Fatalf("re-accept must reject as ErrInvitationNotPending, got %v", err)
 	}
@@ -313,7 +313,7 @@ func TestInvitationService_Accept_HappyPath_CreatesMembership(t *testing.T) {
 func TestInvitationService_Accept_IdempotentWhenAlreadyMember(t *testing.T) {
 	// If the invitee somehow became an active member between Create
 	// and Accept (e.g. a parallel direct-add via POST /members), the
-	// Accept call must not 500 — it should fold gracefully into "you
+	// Accept call must not 500 - it should fold gracefully into "you
 	// are already in" and flip the invitation to accepted for audit.
 	svc, invRepo, memberSvc := newInvitationSvc()
 	ctx := context.Background()
@@ -375,7 +375,7 @@ func TestInvitationService_Revoke_MarksRevoked(t *testing.T) {
 	if row.Status != types.TenantInvitationStatusRevoked {
 		t.Fatalf("want revoked status, got %s", row.Status)
 	}
-	// Revoked rows can be re-invited via a fresh Create — the
+	// Revoked rows can be re-invited via a fresh Create - the
 	// partial unique index only guards PENDING.
 	if _, err := svc.Create(ctx, 1, "u-bob", types.TenantRoleContributor, nil, ""); err != nil {
 		t.Fatalf("re-invite after revoke must succeed, got %v", err)
@@ -384,7 +384,7 @@ func TestInvitationService_Revoke_MarksRevoked(t *testing.T) {
 
 func TestInvitationService_LazySweepExpires(t *testing.T) {
 	// Drop a row directly into the repo with an ExpiresAt in the past,
-	// then call ListByInvitee — the sweep must flip it to expired
+	// then call ListByInvitee - the sweep must flip it to expired
 	// before the read returns.
 	svc, invRepo, _ := newInvitationSvc()
 	now := time.Now()

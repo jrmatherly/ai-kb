@@ -17,7 +17,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
-// MoveKnowledge cross-store reuse_vectors gate — handler-level pre-flight tests.
+// MoveKnowledge cross-store reuse_vectors gate - handler-level pre-flight tests.
 //
 // reuse_vectors copies vector indices between KBs through the source store only;
 // a cross-store reuse_vectors move would corrupt vector data. The handler must
@@ -37,7 +37,7 @@ func (s *stubMoveKBService) GetKnowledgeBaseByID(ctx context.Context, id string)
 
 // stubMoveKGService.GetKnowledgeByID always reports not-found, so any request
 // that PASSES the store gate fails at the later knowledge-ID validation with a
-// distinct message — letting the test tell "rejected by gate" apart from
+// distinct message - letting the test tell "rejected by gate" apart from
 // "passed the gate."
 type stubMoveKGService struct {
 	interfaces.KnowledgeService

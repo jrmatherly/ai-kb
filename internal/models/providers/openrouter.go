@@ -1,6 +1,6 @@
 // Package providers registers the OpenRouter gateway.
 //
-// Facts (https://openrouter.ai/docs/guides/best-practices/reasoning-tokens —
+// Facts (https://openrouter.ai/docs/guides/best-practices/reasoning-tokens -
 // the old /docs/use-cases/ path now redirects there):
 //   - `max_tokens` is documented as deprecated ("Maximum tokens
 //     (deprecated, use max_completion_tokens)") and some upstreams enforce a
@@ -25,8 +25,8 @@
 //   - embeddings are routed through the same /api/v1 base
 //     (https://openrouter.ai/docs/api_reference/embeddings).
 //
-// Unverified: GET /api/v1/models lists chat models only — embedding models
-// live behind /api/v1/embeddings/models — so any future auto-sync of this
+// Unverified: GET /api/v1/models lists chat models only - embedding models
+// live behind /api/v1/embeddings/models - so any future auto-sync of this
 // catalog has to read both listings or it will silently lose embeddings.
 package providers
 

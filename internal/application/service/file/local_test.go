@@ -20,7 +20,7 @@ func extractTenantIDFromPresignedURL(t *testing.T, presigned string) string {
 }
 
 // TestLocalGetFileURL_TenantIDFromPath verifies that tenant ID is extracted
-// from the storage path — which encodes the resource owner, so cross-tenant
+// from the storage path - which encodes the resource owner, so cross-tenant
 // shared resources resolve to the correct owning tenant's storage config.
 func TestLocalGetFileURL_TenantIDFromPath(t *testing.T) {
 	t.Setenv("SYSTEM_SIGNING_KEY", "")
@@ -47,8 +47,8 @@ func TestLocalGetFileURL_NoExternalURL(t *testing.T) {
 // carrying the storage://<backend-id>/ scope wrapper (written by
 // backend-scoped chains, e.g. "storage://uuid/local://10000/doc/file.md")
 // resolve to the same file as their unscoped provider path. Scoped paths
-// reach the raw provider on chains without the scoped wrapper — notably KB
-// deletion — and previously fell into the relative-path branch, producing a
+// reach the raw provider on chains without the scoped wrapper - notably KB
+// deletion - and previously fell into the relative-path branch, producing a
 // nonexistent path under baseDir and silently leaking physical files.
 func TestNormalizePathForBase_StripsStorageBackendScope(t *testing.T) {
 	svc := NewLocalFileService("/data/files", "").(*localFileService)

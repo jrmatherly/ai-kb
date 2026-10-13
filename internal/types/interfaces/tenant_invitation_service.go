@@ -29,7 +29,7 @@ type TenantInvitationService interface {
 
 	// Accept transitions the pending row into accepted AND creates the
 	// active tenant_members row in the same transaction. The callerUserID
-	// MUST equal inv.InviteeUserID — the service rejects anyone else.
+	// MUST equal inv.InviteeUserID - the service rejects anyone else.
 	// Returns the freshly created membership for the response shape.
 	Accept(ctx context.Context, invID uint64, callerUserID string) (*types.TenantMember, error)
 
@@ -67,7 +67,7 @@ type TenantInvitationService interface {
 
 	// CreateShareLink generates a multi-use share-link invitation for
 	// the tenant. The plaintext token is persisted on the row and also
-	// returned for the handler to compose the registration URL — the
+	// returned for the handler to compose the registration URL - the
 	// token stays available via list/get for as long as the row is
 	// pending so Owners can re-share without "copy now or lose it"
 	// pressure. Multiple share-link rows can coexist on the same
@@ -89,7 +89,7 @@ type TenantInvitationService interface {
 
 	// AcceptByToken creates a tenant_members row binding newUserID to
 	// the share-link's tenant + role. Unlike Accept, this does NOT flip
-	// the invitation row into a terminal state — share-link rows stay
+	// the invitation row into a terminal state - share-link rows stay
 	// pending so subsequent invitees can also register through the
 	// same link. Idempotent: if the user already has membership, the
 	// existing row is returned. If the same user also has a pending direct

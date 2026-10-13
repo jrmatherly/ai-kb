@@ -59,7 +59,7 @@ func (e *AgentEngine) manageContextWindow(
 	}
 
 	// Still over budget after compaction means the weight is inside the
-	// keep-recent window, which the cut point cannot reach — one tool result
+	// keep-recent window, which the cut point cannot reach - one tool result
 	// large enough to matter on its own. Trimming those is lossy, so it stays
 	// a fallback rather than a routine step.
 	trimmed, ok := e.trimToolResults(ctx, messages, round, settings)
@@ -451,7 +451,7 @@ func (e *AgentEngine) analyzeResponse(
 
 		// Emit the final answer. The answer text reaches the UI by one of two
 		// paths:
-		//   (a) Already streamed live during the think phase — the common case
+		//   (a) Already streamed live during the think phase - the common case
 		//       now that plain assistant content is routed straight to
 		//       EventAgentFinalAnswer (response.AnswerStreamed). Re-emitting the
 		//       full content here would render it twice and produce the
@@ -459,7 +459,7 @@ func (e *AgentEngine) analyzeResponse(
 		//       so we only close the existing stream with a Done marker on the
 		//       same event ID.
 		//   (b) Not streamed live (e.g. the content only surfaced in the
-		//       accumulated result) — emit the full content, then Done.
+		//       accumulated result) - emit the full content, then Done.
 		var answerID string
 		if response.AnswerStreamed && response.AnswerEventID != "" {
 			answerID = response.AnswerEventID
@@ -593,7 +593,7 @@ func escapeXMLAttr(s string) string {
 // buildRuntimeContextBlock builds a metadata block with current time, session
 // info, and the *active retrieval scope for this turn only*. It is injected
 // into the current user message for the LLM call and is not persisted into
-// conversation history — replayed user turns keep bare Content so stale scope
+// conversation history - replayed user turns keep bare Content so stale scope
 // snapshots do not steer follow-up questions.
 //
 // Emitted as an XML-ish block (not free prose) so it is a visually distinct,
@@ -681,7 +681,7 @@ func writeQuestionOrigin(sb *strings.Builder, origin *QuestionOriginInfo) {
 }
 
 // buildMustUseBlock emits a short per-turn hint when the user @mentioned MCP/Skill.
-// Tool names are not listed here — they are already in the function-calling schema.
+// Tool names are not listed here - they are already in the function-calling schema.
 func buildMustUseBlock(mcpServices []*PinnedMCPServiceInfo, skills []*PinnedSkillInfo) string {
 	var lines []string
 	for _, svc := range mcpServices {
@@ -1002,8 +1002,9 @@ func redactHistoryKBResults(llmContext []chat.Message) []chat.Message {
 	for _, msg := range llmContext {
 		if msg.Role == "tool" && kbToolNames[msg.Name] {
 			redacted = append(redacted, chat.Message{
-				Role:       msg.Role,
-				Content:    "[Previous retrieval result omitted — knowledge base may have changed. Please perform a fresh search.]",
+				Role: msg.Role,
+				Content: "[Previous retrieval result omitted - knowledge base may have changed. Please perform a " +
+					"fresh search.]",
 				ToolCallID: msg.ToolCallID,
 				Name:       msg.Name,
 				TurnID:     msg.TurnID,

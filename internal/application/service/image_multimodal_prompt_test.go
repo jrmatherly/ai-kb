@@ -54,7 +54,7 @@ func TestVLMOCRPromptExcludesCustomInstructions(t *testing.T) {
 		t.Fatalf("regular source must use the default OCR prompt verbatim")
 	}
 
-	// The caption path keeps its custom instructions — only the OCR append was
+	// The caption path keeps its custom instructions - only the OCR append was
 	// removed.
 	caption := buildVLMCaptionPrompt(context.Background(), cfg)
 	if !strings.Contains(caption, marker) {

@@ -2,8 +2,8 @@
 //
 // Session sandboxes are created with onTimeout=pause + autoResume (see
 // buildSessionCreateRequest), so the provider TTL PAUSES them rather than
-// destroying them. When a binding is replaced — the CAS that happens when a
-// workspace switches provider — or lost (Redis TTL, process restart), the old
+// destroying them. When a binding is replaced - the CAS that happens when a
+// workspace switches provider - or lost (Redis TTL, process restart), the old
 // sandbox ID disappears from our records while the sandbox itself lingers in a
 // paused state, consuming snapshot storage and money.
 //

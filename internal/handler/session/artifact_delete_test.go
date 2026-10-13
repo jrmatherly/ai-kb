@@ -108,8 +108,8 @@ func TestDeleteMessageArtifactReclaimsTheBlob(t *testing.T) {
 	}
 }
 
-// A blob another owner still claims — an answer saved into a knowledge base, a
-// later turn that re-attached the same file — must survive the delete.
+// A blob another owner still claims - an answer saved into a knowledge base, a
+// later turn that re-attached the same file - must survive the delete.
 func TestDeleteMessageArtifactKeepsBlobStillReferenced(t *testing.T) {
 	catalog := &deleteCatalogStub{remaining: 1}
 	files := &deletingFileService{}

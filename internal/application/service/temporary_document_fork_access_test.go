@@ -14,7 +14,7 @@ import (
 // Fork copies message attachment IDs onto the new session but leaves the
 // temporary_documents row on the parent. Preview/Get are session-scoped, so
 // they must still resolve a parent-owned document when this session's copied
-// messages reference it — and must not leak a document that is not on the
+// messages reference it - and must not leak a document that is not on the
 // fork's history.
 
 type forkAccessDocRepo struct {

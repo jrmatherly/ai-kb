@@ -7,7 +7,7 @@ import (
 )
 
 // NormalizeCubeDNSServers trims, drops empties, rejects non-IP values, and
-// de-duplicates. Cube's template `dns` field is a list of nameserver IPs —
+// de-duplicates. Cube's template `dns` field is a list of nameserver IPs -
 // hostnames are not accepted. An empty result means "leave Cubelet's default".
 func NormalizeCubeDNSServers(raw []string) ([]string, error) {
 	if len(raw) == 0 {

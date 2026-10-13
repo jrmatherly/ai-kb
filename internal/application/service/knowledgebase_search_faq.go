@@ -92,7 +92,7 @@ func (s *knowledgeBaseService) applyFAQPostProcessing(
 // invalid) is propagated to the caller so the user sees an honest failure
 // instead of a silently truncated result set. Non-AppError failures
 // continue to break the loop with a warning and return whatever partial
-// uniqueChunks have been accumulated — preserving the existing behavior
+// uniqueChunks have been accumulated - preserving the existing behavior
 // for transient retrieve errors.
 func (s *knowledgeBaseService) iterativeRetrieveWithDeduplication(ctx context.Context,
 	groups []*storeGroup,
@@ -102,7 +102,7 @@ func (s *knowledgeBaseService) iterativeRetrieveWithDeduplication(ctx context.Co
 ) ([]*types.IndexWithScore, error) {
 	maxIterations := 5
 	// matchCount is caller-supplied, so both the seed and the per-iteration
-	// doubling are bounded by maxRetrievalPoolSize — otherwise a single request
+	// doubling are bounded by maxRetrievalPoolSize - otherwise a single request
 	// could drive the vector-store query depth arbitrarily deep.
 	currentTopK := min(max(matchCount*3, initialDepth*2), maxRetrievalPoolSize)
 	var uniqueChunks []*types.IndexWithScore

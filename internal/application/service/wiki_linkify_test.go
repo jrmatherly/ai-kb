@@ -91,7 +91,7 @@ func TestLinkifyContent_SkipsExistingWikiLink(t *testing.T) {
 	refs := []linkRef{
 		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
-	// Already linked — should not double-wrap.
+	// Already linked - should not double-wrap.
 	in := "\u6211\u4f4f\u5728[[beijing|\u5317\u4eac]]\u5e02"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
@@ -121,14 +121,14 @@ func TestLinkifyContent_SkipsInsideInlineCode(t *testing.T) {
 	refs := []linkRef{
 		{slug: "foo", matchText: "Foo"},
 	}
-	// Only occurrence is inside `Foo` — must NOT be linked.
+	// Only occurrence is inside `Foo` - must NOT be linked.
 	in := "Use the `Foo` type."
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("should not link inside inline code: %q", got)
 	}
 
-	// Second case: prose before the inline code — should link the prose one.
+	// Second case: prose before the inline code - should link the prose one.
 	in2 := "Foo is a type. Use `Foo` here."
 	got2, changed2 := linkifyContent(in2, refs, "")
 	if !changed2 {
@@ -178,7 +178,7 @@ func TestLinkifyContent_SkipsSelfSlug(t *testing.T) {
 	refs := []linkRef{
 		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
-	// Rendering on the beijing page itself — must not self-link.
+	// Rendering on the beijing page itself - must not self-link.
 	got, changed := linkifyContent("\u5317\u4eac\u662f\u9996\u90fd", refs, "beijing")
 	if changed {
 		t.Fatalf("should not self-link: %q", got)
@@ -276,7 +276,7 @@ func TestLinkifyContent_SkipsInsideReferenceStyleLink(t *testing.T) {
 	refs := []linkRef{
 		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
-	// [text][label] form — occurrence should not be linkified.
+	// [text][label] form - occurrence should not be linkified.
 	in := "See [\u5317\u4eac][capital] for details.\n\n[capital]: https://example.com/beijing"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {

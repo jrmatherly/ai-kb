@@ -1,4 +1,4 @@
-// Package tools — shell_exec.
+// Package tools - shell_exec.
 //
 // General shell command execution primitive for the agent. The LLM can freely
 // explore and operate inside its session-scoped Cube MicroVM: inspect files,
@@ -21,8 +21,8 @@
 //     were killed or timed out surface as ToolResult.Success = false.
 //   - Output truncation: shell installers produce thousands of lines that
 //     would blow up the LLM context. We keep the head (leading messages)
-//     and the tail (final errors) with an ellipsis marker so the tail —
-//     usually the most informative segment — is preserved.
+//     and the tail (final errors) with an ellipsis marker so the tail -
+//     usually the most informative segment - is preserved.
 //   - Command shape blacklist: the sandbox is throwaway, but we still refuse
 //     obviously destructive patterns (rm -rf /, fork bombs, mkfs...) to
 //     protect the LLM from its own hallucinations.
@@ -54,7 +54,7 @@ import (
 // sandbox manager that supports executing arbitrary shell commands. In
 // production it is satisfied by *sandbox.SessionBoundManager; tests can stub
 // it with an in-memory fake. Kept local to the tools package for the same
-// reason as SandboxFileSource — no dependency leak into higher layers.
+// reason as SandboxFileSource - no dependency leak into higher layers.
 type SandboxCommandExecutor interface {
 	ExecShellCommand(
 		ctx context.Context,
@@ -66,7 +66,7 @@ type SandboxCommandExecutor interface {
 	) (*sandbox.ExecuteResult, error)
 }
 
-// Limits — kept generous enough for `pip install tensorflow` while still
+// Limits - kept generous enough for `pip install tensorflow` while still
 // bounding the LLM context blast radius.
 const (
 	// defaultShellExecTimeout is applied when the caller omits timeout_sec.
@@ -92,7 +92,7 @@ const (
 )
 
 // Blacklist patterns. These are cheap sanity checks, not a security
-// perimeter — the Cube MicroVM session isolation is the real perimeter.
+// perimeter - the Cube MicroVM session isolation is the real perimeter.
 // The intent is to prevent the LLM from bricking its own session with a
 // hallucinated one-liner (e.g. `rm -rf /`).
 //
@@ -105,7 +105,7 @@ var shellExecBlacklist = []struct {
 }{
 	// `rm -rf /` and variants (including `rm -Rf --no-preserve-root /`).
 	// Reject any rm with a recursive+force flag targeting the filesystem
-	// root. We intentionally do NOT block `rm -rf /workspace/foo` — a
+	// root. We intentionally do NOT block `rm -rf /workspace/foo` - a
 	// skill legitimately might clean up its scratch directory.
 	{name: "rm_root", re: regexp.MustCompile(`(?i)\brm\s+(?:-[a-z]*[rR][a-z]*[fF][a-z]*|-[a-z]*[fF][a-z]*[rR][a-z]*|--recursive[^;|&]*--force|--force[^;|&]*--recursive)\s+(?:--no-preserve-root\s+)?/(?:\s|$)`)},
 	// Classic fork bomb.
@@ -259,7 +259,7 @@ type ShellExecTool struct {
 	defaultTimeout time.Duration
 	// envResolver, when non-nil, lets a call carrying SkillName pull that
 	// skill's per-caller env into the one command it runs. Nil means no skill
-	// env is ever injected — identical to today's behaviour.
+	// env is ever injected - identical to today's behaviour.
 	envResolver skills.SkillEnvResolver
 	// envCapture, when non-nil, records declared skill credentials a
 	// successful ordinary command already used so the next named run can
@@ -408,7 +408,7 @@ func installShellExecDescription(defaultWorkDir string) string {
 
 ## Returns
 - ` + "`exit_code`" + `, ` + "`stdout`" + `, ` + "`stderr`" + `. Non-zero is not a
-  tool error — read stderr and adapt.`
+  tool error - read stderr and adapt.`
 }
 
 // WithEnvCapture attaches an optional capture hook. A nil hook is a no-op so
@@ -977,9 +977,10 @@ func shellCommandNotFoundHint(exitCode int, command, stderr string) string {
 	case "tree", "less", "more", "nano", "vim", "vi":
 		return "Hint: `" + missing + "` is not in the default sandbox image. Use find/ls, head, sed, and `file`. " +
 			"Skill scripts: `read_file` for skill instructions, then the execution tool named there. Do not " +
-			"apt-get install inspection tools — session packages are discarded."
+			"apt-get install inspection tools - session packages are discarded."
 	default:
-		return "Hint: that command is not installed. Prefer find, ls, head, tail, cat, sed, grep, awk, file. apt-get install only for a package this task actually needs — session installs are discarded."
+		return "Hint: that command is not installed. Prefer find, ls, head, tail, cat, sed, grep, awk, file. apt-get " +
+			"install only for a package this task actually needs - session installs are discarded."
 	}
 }
 

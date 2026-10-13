@@ -20,7 +20,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// Fan-out helper unit tests — no service dependencies
+// Fan-out helper unit tests - no service dependencies
 // ---------------------------------------------------------------------------
 
 func TestParamsWithTopK_RebuildsFresh(t *testing.T) {
@@ -116,7 +116,7 @@ func TestStoreKindLabel(t *testing.T) {
 }
 
 func TestMultiStoreRetrieveTimeout(t *testing.T) {
-	// Not Parallel — mutates a process-global env var.
+	// Not Parallel - mutates a process-global env var.
 	t.Setenv("MULTI_STORE_RETRIEVE_TIMEOUT_SEC", "")
 	os.Unsetenv("MULTI_STORE_RETRIEVE_TIMEOUT_SEC")
 	if got := multiStoreRetrieveTimeout(); got != defaultMultiStoreRetrieveTimeout {
@@ -186,7 +186,7 @@ func TestTotalHits(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// classifyFactoryError — sentinel→typed AppError mapping
+// classifyFactoryError - sentinel→typed AppError mapping
 // ---------------------------------------------------------------------------
 
 func TestClassifyFactoryError_ForbiddenMapsTo2200(t *testing.T) {
@@ -259,14 +259,14 @@ func TestClassifyFactoryError_GenericErrorPassesThrough(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// validateSameEmbeddingModel — uses a narrowly faked model service
+// validateSameEmbeddingModel - uses a narrowly faked model service
 // ---------------------------------------------------------------------------
 
 // fakeModelSvcForKeys is the smallest ModelService subset needed by
 // ResolveEmbeddingModelKeys → validateSameEmbeddingModel.
 //
 // ResolveEmbeddingModelKeys calls GetModelByID(ctx, modelID); the rest are
-// panic-only — none are exercised by these tests.
+// panic-only - none are exercised by these tests.
 type fakeModelSvcForKeys struct {
 	byID map[string]*types.Model // modelID → model
 	interfaces.ModelService
@@ -350,7 +350,7 @@ func TestValidateSameEmbeddingModel_WikiOnly_Tolerated(t *testing.T) {
 
 func TestValidateSameEmbeddingModel_LogInjection_Sanitized(t *testing.T) {
 	t.Parallel()
-	// BaseURL with CRLF — SanitizeForLog should keep us safe.
+	// BaseURL with CRLF - SanitizeForLog should keep us safe.
 	models := map[string]*types.Model{
 		"m-1": buildModel("m-1", "bge-m3", "http://a\r\nfoo"),
 		"m-2": buildModel("m-2", "openai", "http://b\r\nbar"),
@@ -626,7 +626,7 @@ func TestRetrieveFromStores_MixedEngine_Normalizes(t *testing.T) {
 	assert.InDelta(t, 0.9, scoresByChunk["pg1"], 1e-9)
 
 	// ES passthrough on a production-possible mid-range cosine: 0.3 → 0.3
-	// (below PG 0.8, so PG out-ranks ES — the property the old cosine-shift
+	// (below PG 0.8, so PG out-ranks ES - the property the old cosine-shift
 	// test asserted, restated for the passthrough policy).
 	fakeES2 := &fakeRetrieveEngineService{
 		engineType: types.ElasticsearchRetrieverEngineType,
@@ -689,7 +689,7 @@ func TestRetrieveFromStores_MixedEngine_Normalizes(t *testing.T) {
 func TestRetrieveFromStores_KeywordPassthroughOnMixed(t *testing.T) {
 	t.Parallel()
 	// One ES vector group + one PG keyword group. Even with mixed engine
-	// types, the keyword score is NOT rescaled (BM25 unbounded — RRF
+	// types, the keyword score is NOT rescaled (BM25 unbounded - RRF
 	// fusion handles via rank).
 	fakeES := &fakeRetrieveEngineService{
 		engineType: types.ElasticsearchRetrieverEngineType,
@@ -751,7 +751,7 @@ func TestRetrieveFromStores_OneGroupFails_AllFail(t *testing.T) {
 }
 
 func TestRetrieveFromStores_PerGroupTimeout(t *testing.T) {
-	// Not Parallel — mutates env. t.Setenv restores cleanly after the test.
+	// Not Parallel - mutates env. t.Setenv restores cleanly after the test.
 	t.Setenv("MULTI_STORE_RETRIEVE_TIMEOUT_SEC", "1")
 
 	fakeSlow := &fakeRetrieveEngineService{
@@ -780,7 +780,7 @@ func TestRetrieveFromStores_PerGroupTimeout(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// authorizeKBAccess — per-KB authorization on multi-KB search scope
+// authorizeKBAccess - per-KB authorization on multi-KB search scope
 // ---------------------------------------------------------------------------
 
 // fakeKBShareForAuth implements just enough of KBShareService for the
@@ -898,7 +898,7 @@ func TestIterativeRetrieve_PropagatesTypedAppError(t *testing.T) {
 }
 
 // TestApplyFAQPostProcessing_PropagatesError is the matching test at the
-// applyFAQPostProcessing layer — the error path must surface upward.
+// applyFAQPostProcessing layer - the error path must surface upward.
 func TestApplyFAQPostProcessing_PropagatesError(t *testing.T) {
 	t.Parallel()
 	bad := &fakeRetrieveEngineService{

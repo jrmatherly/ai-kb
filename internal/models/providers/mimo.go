@@ -20,7 +20,7 @@
 //     and the request behaves as auto;
 //   - usage reports `prompt_tokens_details.cached_tokens` (cache writes are
 //     free for now), so cache accounting is on;
-//   - mimo-v2-flash — together with mimo-v2-pro, mimo-v2-omni and mimo-v2-tts —
+//   - mimo-v2-flash - together with mimo-v2-pro, mimo-v2-omni and mimo-v2-tts -
 //     was retired on 2026-06-30 and is kept only as a deprecated entry
 //     (https://mimo.mi.com/static/docs/updates/deprecate.md).
 //

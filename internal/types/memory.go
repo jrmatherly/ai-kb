@@ -87,7 +87,7 @@ const (
 	// MemoryResidentInterestMaxItems bounds how many interests the resident
 	// block may carry.
 	//
-	// Interests are not filtered away by relevance — a question about the
+	// Interests are not filtered away by relevance - a question about the
 	// person ("what am I working on") shares no words with the interest's own
 	// text, so relevance would drop exactly the memories that answer it. But a
 	// long-running user accumulates dozens of them, and the resident block is
@@ -374,8 +374,8 @@ type MemoryConfig struct {
 	// cost is one embedding call per turn, bounded and degraded to lexical on
 	// failure, so the feature never becomes a reason a chat is slow.
 	VectorRecall *bool `json:"vector_recall"`
-	// RetrievalConditioning lets memory shape retrieval — query rewriting and
-	// per-document ranking — rather than only being appended to the answer
+	// RetrievalConditioning lets memory shape retrieval - query rewriting and
+	// per-document ranking - rather than only being appended to the answer
 	// prompt. This is where memory earns its keep in a knowledge-base product.
 	RetrievalConditioning *bool `json:"retrieval_conditioning"`
 }
@@ -546,7 +546,7 @@ func (c *MemoryConfig) MemoryEnabled() bool {
 // "the production DB runs PostgreSQL" are the same note with a corrected value, and the
 // second has to replace the first rather than sit beside it. That only works if
 // two labels for the same subject produce the same key, which is why this uses
-// the topic normaliser rather than the character-bag key below — the same
+// the topic normaliser rather than the character-bag key below - the same
 // reason topic counting needed it.
 //
 // Content is the fallback when a statement arrives without a topic, where there
@@ -716,7 +716,7 @@ type MemoryTopicStat struct {
 	// Aliases are the other wordings this same subject has arrived as. A model
 	// asked to name a topic will not name it the same way twice, so the label
 	// the user sees is the canonical one and every surface form that resolved
-	// to it is kept here — both as an audit trail and as an exact-match index
+	// to it is kept here - both as an audit trail and as an exact-match index
 	// that saves the resolver from re-deciding the same question.
 	Aliases    MemoryTopicAliases `json:"aliases" gorm:"type:jsonb;column:aliases"`
 	Hits       int                `json:"hits"       gorm:"not null;default:0"`
@@ -1015,7 +1015,7 @@ const (
 )
 
 // MemoryConsolidationResult is what a whole-store review did. Zeroes mean the
-// store was already tidy, not that the review failed — Skipped says which.
+// store was already tidy, not that the review failed - Skipped says which.
 type MemoryConsolidationResult struct {
 	Merged  int `json:"merged"`
 	Demoted int `json:"demoted"`
@@ -1181,8 +1181,8 @@ func DetectExplicitMemory(query string) (string, bool) {
 // MergeUsedMemories combines two lists of shown memories, keeping the first
 // occurrence of each id.
 //
-// A memory can influence a turn twice — once by shaping the search and once by
-// being quoted in the answer — and the user should see it listed once.
+// A memory can influence a turn twice - once by shaping the search and once by
+// being quoted in the answer - and the user should see it listed once.
 func MergeUsedMemories(existing, additional []UsedMemory) []UsedMemory {
 	if len(additional) == 0 {
 		return existing
@@ -1226,15 +1226,15 @@ var topicNoiseWords = []string{
 // NormalizeTopicKey reduces a topic label to a stable identity key.
 //
 // This is deliberately NOT NormalizeMemoryKey, which sorts and de-duplicates
-// characters. That behaviour is defensible for a memory item — where word order
-// should not matter and a containment check catches what it misses — but as a
+// characters. That behaviour is defensible for a memory item - where word order
+// should not matter and a containment check catches what it misses - but as a
 // topic identity it is wrong in both directions: it treats a label with and
 // without the particle "de" as different subjects because of one extra
 // character, and it would treat two anagrams as the same one.
 //
 // Order is preserved here, and only genuinely uninformative characters and
 // trailing qualifiers are removed. Everything a model might vary that is not
-// purely cosmetic — synonyms, different phrasings — is left for the resolver,
+// purely cosmetic - synonyms, different phrasings - is left for the resolver,
 // which has more than string comparison available to it.
 func NormalizeTopicKey(topic string) string {
 	topic = strings.ToLower(strings.TrimSpace(topic))
@@ -1272,7 +1272,7 @@ func NormalizeTopicKey(topic string) string {
 //
 // Bigrams rather than whole words because Chinese has no word separators, and
 // Dice rather than Jaccard because it is more forgiving of one label being
-// longer than the other — which is the common case when a model elaborates
+// longer than the other - which is the common case when a model elaborates
 // ("shift scheduling" vs "store shift scheduling").
 func TopicSimilarity(a, b string) float64 {
 	left, right := topicBigrams(a), topicBigrams(b)
@@ -1318,7 +1318,7 @@ func TopicIsSpecificEnoughToMatchLoosely(topic string) bool {
 // canonical one when two subjects merge.
 //
 // The label that survives a merge is currently just whichever arrived first,
-// which is arbitrary — and it matters, because interests are fed to the query
+// which is arbitrary - and it matters, because interests are fed to the query
 // rewriter as vocabulary and shown to the user as what we think they care
 // about. Letting the model propose a better name is worth doing, but it opens a
 // ratchet: a model asked to name what two labels have in common will reach for
@@ -1326,7 +1326,7 @@ func TopicIsSpecificEnoughToMatchLoosely(topic string) bool {
 // umbrella that means nothing.
 //
 // So a replacement has to be more complete, never more general. This mirrors
-// what entity-resolution systems that do rename converge on — Graphiti keeps
+// what entity-resolution systems that do rename converge on - Graphiti keeps
 // the more specific node when collapsing duplicates, and LLM-driven merges in
 // the wild pick the fullest form of a name rather than a category for it.
 func TopicLabelIsAnImprovement(canonical, incoming, proposed string) bool {
@@ -1361,7 +1361,7 @@ func TopicLabelIsAnImprovement(canonical, incoming, proposed string) bool {
 // A subject has to recur to be worth anything: it is counted, and only becomes
 // a memory once several conversations touch it. A label like
 // "v2.3 orders API pagination parameter default value lookup" can only ever match
-// itself, so it is counted once and then sits at one hit forever — the counting
+// itself, so it is counted once and then sits at one hit forever - the counting
 // mechanism is dead and nothing says so.
 //
 // Length is a blunt proxy, but a subject that cannot be named in a couple of

@@ -22,7 +22,7 @@ const (
 	// AuditActionMemberRoleChanged fires for promote/demote operations.
 	// The Details payload carries old_role and new_role.
 	AuditActionMemberRoleChanged AuditAction = "rbac.member_role_changed"
-	// AuditActionMemberLeft fires on POST /tenants/:id/leave — the
+	// AuditActionMemberLeft fires on POST /tenants/:id/leave - the
 	// actor and target are the same user.
 	AuditActionMemberLeft AuditAction = "rbac.member_left"
 	// AuditActionAccessDenied fires when middleware/rbac.go's
@@ -63,7 +63,7 @@ const (
 	AuditActionVectorStoreCreated AuditAction = "vector_store.created"
 	// AuditActionVectorStoreUpdated fires on UPDATE of any VectorStore
 	// mutable field. Details payload carries the changed key set
-	// (never the secret values themselves — only the field names).
+	// (never the secret values themselves - only the field names).
 	AuditActionVectorStoreUpdated AuditAction = "vector_store.updated"
 	// AuditActionVectorStoreDeleted fires when a VectorStore is
 	// (soft-)deleted. Phase 2's delete guard already prevents deletion
@@ -73,7 +73,7 @@ const (
 
 	// OpenSearch-specific actions emitted by the driver shipped in
 	// Phase 3. The OpenSearch index is a derived resource of the
-	// VectorStore — these events capture cluster-side side effects
+	// VectorStore - these events capture cluster-side side effects
 	// (PUT /<index>, DELETE /<index>, POST /_reindex) that operators
 	// may need to correlate with VectorStore lifecycle events.
 
@@ -93,7 +93,7 @@ const (
 	// AuditActionSystemSettingChanged fires when a SystemAdmin updates
 	// a row in the platform-wide system_settings table via
 	// PUT /api/v1/system/admin/settings/:key. Details payload carries
-	// {key, value_type, old_value, new_value} — sensitive values are
+	// {key, value_type, old_value, new_value} - sensitive values are
 	// redacted server-side before logging when is_secret=true (P3+;
 	// for now no setting is marked secret). Audit rows always have
 	// tenant_id=0 because the change is system-scope, not workspace-scoped.
@@ -103,7 +103,7 @@ const (
 	// system-administrator privileges to another user via
 	// POST /api/v1/system/admin/promote. ActorUserID is the promoter,
 	// TargetUserID is the user being promoted. Details payload carries
-	// {target_email, target_username, idempotent} — `idempotent=true`
+	// {target_email, target_username, idempotent} - `idempotent=true`
 	// means the user was already a system admin and no row was written
 	// (we still emit the row so probing the endpoint leaves a trail).
 	// TenantID=0 because the change is system-scope.
@@ -111,7 +111,7 @@ const (
 	// AuditActionSystemAdminRevoked fires when a SystemAdmin removes
 	// system-administrator privileges from another user via
 	// POST /api/v1/system/admin/revoke. Details payload carries
-	// {target_email, target_username, changed} — `changed=false` covers
+	// {target_email, target_username, changed} - `changed=false` covers
 	// the idempotent path (target was already not an admin) so an audit
 	// reader can distinguish a real revoke from a noop attempt.
 	// TenantID=0 because the change is system-scope.
@@ -211,7 +211,7 @@ const (
 // bounded convention inside Details: task_id, trigger, processing_status,
 // source/target ids, aggregate counts, and operation-specific mode/attempt.
 //
-// Rows are append-only — no UpdatedAt, no soft-delete column. The
+// Rows are append-only - no UpdatedAt, no soft-delete column. The
 // monotonic ID acts as both primary key and pagination cursor (newest-
 // first is `WHERE id < AfterID ORDER BY id DESC`).
 type AuditLog struct {

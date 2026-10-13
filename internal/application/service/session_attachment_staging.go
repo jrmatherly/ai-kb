@@ -99,7 +99,7 @@ func (s *agentService) sessionSandboxInputStore(
 // stageSessionAttachments reconciles the layout's InputDir with the durable
 // attachment inventory. Remote backends pass RemoteWorkspaceLayout() so
 // InputDir is still /workspace/input. Host layouts leave InputDir empty:
-// staging is skipped entirely — never list /workspace/input, and never copy
+// staging is skipped entirely - never list /workspace/input, and never copy
 // chat attachments into the user's directory.
 func (s *agentService) stageSessionAttachments(
 	ctx context.Context,

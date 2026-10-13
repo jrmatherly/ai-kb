@@ -37,7 +37,7 @@ func (s *stubUpdateModelService) UpdateModel(_ context.Context, m *types.Model) 
 
 const (
 	secretExtraProvider = "handler-secret-extra-vendor"
-	// plainExtraProvider declares no secret extra field at all — the vendor a
+	// plainExtraProvider declares no secret extra field at all - the vendor a
 	// row is switched *to* in the provider-change tests below.
 	plainExtraProvider = "handler-plain-extra-vendor"
 )
@@ -122,7 +122,7 @@ func putModel(t *testing.T, extraConfig map[string]string) *types.Model {
 }
 
 // The frontend always sends extra_config for remote rows, but GET redacts
-// the vendor's secret fields — so the map it sends back carries no
+// the vendor's secret fields - so the map it sends back carries no
 // secret_key. Saving must not wipe the stored one.
 func TestUpdateModel_KeepsStoredSecretExtraWhenRequestOmitsIt(t *testing.T) {
 	registerSecretExtraVendor(t)
@@ -153,7 +153,7 @@ func TestUpdateModel_ResponseDoesNotEchoSecretExtra(t *testing.T) {
 }
 
 // Switching the row to a vendor that declares no secret field used to write
-// the previous vendor's CAM/IAM key back into the row — the merge looked at
+// the previous vendor's CAM/IAM key back into the row - the merge looked at
 // the stored provider while the redactor looked at the new one, so the key
 // came back in plaintext in this response and in every later GET.
 func TestUpdateModel_ProviderChangeDoesNotEchoOldSecretExtra(t *testing.T) {
@@ -167,8 +167,8 @@ func TestUpdateModel_ProviderChangeDoesNotEchoOldSecretExtra(t *testing.T) {
 	assert.NotContains(t, body, "cam-secret-stored")
 }
 
-// Even a row that somehow still carries the key — hand-edited provider, or a
-// provider that was never stored — must not have it echoed: redaction asks
+// Even a row that somehow still carries the key - hand-edited provider, or a
+// provider that was never stored - must not have it echoed: redaction asks
 // every registered vendor, not just this row's.
 func TestUpdateModel_ResponseRedactsSecretExtraOfAnotherVendor(t *testing.T) {
 	registerSecretExtraVendor(t)

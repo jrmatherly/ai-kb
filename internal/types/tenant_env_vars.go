@@ -183,7 +183,7 @@ func (e *TenantUserEnvVar) AfterFind(tx *gorm.DB) error {
 }
 
 // encryptEnvValue returns the ciphertext, or the input unchanged when there is
-// no key configured to encrypt with — the same deployment-wide degradation
+// no key configured to encrypt with - the same deployment-wide degradation
 // every other secret column accepts.
 //
 // A key that exists but fails to encrypt is different: it means something is

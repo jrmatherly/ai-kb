@@ -91,7 +91,8 @@ func (c *Client) CreatePost(ctx context.Context, channelID, rootID, message stri
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		if resp.StatusCode == http.StatusForbidden {
-			return "", fmt.Errorf("mattermost create post: 403 forbidden — add the bot user to this Mattermost channel (Channel menu → Members → Add); body=%s", truncateForErr(respBody))
+			return "", fmt.Errorf("mattermost create post: 403 forbidden - add the bot user to this Mattermost "+
+				"channel (Channel menu → Members → Add); body=%s", truncateForErr(respBody))
 		}
 		return "", fmt.Errorf("mattermost create post: status=%d body=%s", resp.StatusCode, truncateForErr(respBody))
 	}

@@ -432,7 +432,7 @@ with open(%q) as handle:
 // A session owns /workspace, so it can replace its own artifact directory with
 // a symlink pointing anywhere in the container. chown and chmod follow
 // symlinks, so if the pre-execution bootstrap ran as root it would hand the
-// session ownership of the link's target — /etc here, which is enough to
+// session ownership of the link's target - /etc here, which is enough to
 // rewrite passwd and give the sandbox account uid 0 on the next exec.
 //
 // Session-scoped containers are what make this reachable: the link planted by
@@ -940,9 +940,9 @@ func TestDockerBackendTerminalCloseTerminatesShellIntegration(t *testing.T) {
 }
 
 // Cancelling the caller's context must terminate the shell just like Close. The
-// adapter's stream never observes the context on its own — the pump reads the
+// adapter's stream never observes the context on its own - the pump reads the
 // hijacked connection and the moby hijack stops watching the context once
-// upgraded — so without the lifetime watcher a cancelled context would leak the
+// upgraded - so without the lifetime watcher a cancelled context would leak the
 // shell and (via the detached TTL refresh) pin the container forever.
 func TestDockerBackendTerminalContextCancelTerminatesShellIntegration(t *testing.T) {
 	cfg := dockerIntegrationConfig(t)

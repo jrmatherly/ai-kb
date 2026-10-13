@@ -111,7 +111,7 @@ const dockerLocalDaemonIdentity = "local-daemon"
 
 // dockerSkillOwnerIdentity is the daemon identity a skill snapshot is stamped
 // with. It reads the STORED config rather than a resolved one so that every
-// caller — the install path, SkillImageActive and ResolveEffectiveConfig —
+// caller - the install path, SkillImageActive and ResolveEffectiveConfig -
 // computes the fingerprint from the same inputs.
 func dockerSkillOwnerIdentity(docker *types.DockerSandboxConfig) (host, tls string) {
 	if docker == nil {

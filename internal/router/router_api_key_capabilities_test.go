@@ -590,7 +590,7 @@ func TestChunkerPreviewRouteRequiresRetrieveOrIngestCapability(t *testing.T) {
 
 // The batch / cross-KB content-write routes bind themselves to a single (or
 // source+target) KB and enforce the API key's KB allow-list downstream, so
-// they are reachable by an ingest-capable (or full-access) key — matching
+// they are reachable by an ingest-capable (or full-access) key - matching
 // their single-document siblings.
 func TestKnowledgeBatchWriteRoutesDeclareIngestCapability(t *testing.T) {
 	gin.SetMode(gin.TestMode)

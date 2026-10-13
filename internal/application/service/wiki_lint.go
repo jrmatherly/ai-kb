@@ -85,7 +85,7 @@ const lintCursorBatch = 200
 // approach was the dominant tail in this method (and intermittently
 // caused OOM in production). We now walk the page set via
 // ListPagesCursor in lintCursorBatch-sized windows, accumulating
-// issues incrementally — memory stays bounded regardless of KB size.
+// issues incrementally - memory stays bounded regardless of KB size.
 //
 // We also drop the GetGraph(Limit:0) call that the legacy path used
 // to compute the live-slug set. ListAllSlugs is a one-column projection
@@ -153,16 +153,17 @@ func (s *WikiLintService) RunLint(ctx context.Context, kbID string) (*WikiLintRe
 			if page.PageType != types.WikiPageTypeIndex {
 				if len(page.InLinks) == 0 {
 					issues = append(issues, WikiLintIssue{
-						Type:        LintIssueOrphanPage,
-						Severity:    SeverityWarning,
-						PageSlug:    page.Slug,
-						Description: fmt.Sprintf("Page '%s' has no inbound links — it's disconnected from the wiki", page.Title),
+						Type:     LintIssueOrphanPage,
+						Severity: SeverityWarning,
+						PageSlug: page.Slug,
+						Description: fmt.Sprintf("Page '%s' has no inbound links - it's disconnected from the "+
+							"wiki", page.Title),
 						AutoFixable: false,
 					})
 				}
 			}
 
-			// Check 2: Broken links — outlinks pointing at slugs that
+			// Check 2: Broken links - outlinks pointing at slugs that
 			// don't exist in the live set.
 			for _, outLink := range page.OutLinks {
 				if !slugSet[outLink] {
@@ -189,7 +190,7 @@ func (s *WikiLintService) RunLint(ctx context.Context, kbID string) (*WikiLintRe
 				})
 			}
 
-			// Check 4: Stale source refs — source_refs pointing at
+			// Check 4: Stale source refs - source_refs pointing at
 			// soft-deleted knowledge. Cached knowledgeLive lookup keeps
 			// per-kid checks O(1) after the first batch encounters
 			// each id.
@@ -226,7 +227,7 @@ func (s *WikiLintService) RunLint(ctx context.Context, kbID string) (*WikiLintRe
 
 	// Second-pass walk: missing-cross-ref check. This needs the full
 	// entitySlugs map (built in pass 1), so it has to be a separate
-	// pass — but it's still streaming.
+	// pass - but it's still streaming.
 	cursor = ""
 	for {
 		pages, next, err := s.wikiService.ListPagesCursor(ctx, kbID, cursor, lintCursorBatch)
@@ -337,7 +338,7 @@ func (s *WikiLintService) RunLint(ctx context.Context, kbID string) (*WikiLintRe
 		Summary:         summary.String(),
 	}
 
-	logger.Infof(ctx, "wiki lint: KB %s — health score %d/100, %d issues", kbID, healthScore, len(issues))
+	logger.Infof(ctx, "wiki lint: KB %s - health score %d/100, %d issues", kbID, healthScore, len(issues))
 
 	return report, nil
 }
@@ -389,7 +390,7 @@ func (s *WikiLintService) AutoFix(ctx context.Context, kbID string) (int, error)
 
 		case LintIssueStaleRef:
 			// Strip source_refs that point at soft-deleted knowledge. If the
-			// page has no other live sources, delete it outright — leaving
+			// page has no other live sources, delete it outright - leaving
 			// an orphan summary page is worse than removing it, because the
 			// model would still link to it from other pages and the
 			// wiki_read_source_doc drill-down would always fail.
@@ -422,6 +423,6 @@ func (s *WikiLintService) AutoFix(ctx context.Context, kbID string) (int, error)
 		_ = s.wikiService.RebuildLinks(ctx, kbID)
 	}
 
-	logger.Infof(ctx, "wiki auto-fix: KB %s — fixed %d issues", kbID, fixed)
+	logger.Infof(ctx, "wiki auto-fix: KB %s - fixed %d issues", kbID, fixed)
 	return fixed, nil
 }

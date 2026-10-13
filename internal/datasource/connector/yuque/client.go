@@ -183,7 +183,7 @@ func (c *client) doRequest(ctx context.Context, method, path string, result inte
 
 // parseRetryAfter returns the Retry-After duration from the header, or fallback if unparseable.
 // Retry-After: "0" (or negative) is coerced to 100ms so we still yield and don't busy-retry.
-// Note: only integer-seconds form is supported (RFC 7231 also allows HTTP-date — not seen from Yuque).
+// Note: only integer-seconds form is supported (RFC 7231 also allows HTTP-date - not seen from Yuque).
 func parseRetryAfter(header string, fallback time.Duration) time.Duration {
 	if header == "" {
 		return fallback
@@ -247,7 +247,7 @@ func (c *client) GetCurrentUser(ctx context.Context) (v2User, error) {
 }
 
 // ListUserGroups returns the groups the given user belongs to.
-// Note: userID is Yuque's numeric user ID (not the login) — the /users/{id}/groups
+// Note: userID is Yuque's numeric user ID (not the login) - the /users/{id}/groups
 // endpoint requires the integer ID form.
 func (c *client) ListUserGroups(ctx context.Context, userID int64) ([]v2Group, error) {
 	path := fmt.Sprintf("/api/v2/users/%d/groups", userID)
@@ -293,7 +293,7 @@ func (c *client) listReposPaginated(ctx context.Context, basePath string) ([]v2R
 }
 
 // ListBookDocs lists all documents in a book, handling pagination.
-// Returns summaries only (body not included — use GetDocDetail to fetch body per doc).
+// Returns summaries only (body not included - use GetDocDetail to fetch body per doc).
 func (c *client) ListBookDocs(ctx context.Context, bookID int64) ([]v2Doc, error) {
 	basePath := fmt.Sprintf("/api/v2/repos/%d/docs", bookID)
 	var all []v2Doc

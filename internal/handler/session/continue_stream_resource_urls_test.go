@@ -150,8 +150,8 @@ func TestContinueStream_DefaultEmitsHandles(t *testing.T) {
 	assert.NotContains(t, body, "cdn.example.com")
 }
 
-// With resource_urls=public the whole stream — answer text and the references
-// payload — carries URLs a third-party app can load directly.
+// With resource_urls=public the whole stream - answer text and the references
+// payload - carries URLs a third-party app can load directly.
 func TestContinueStream_PublicModeEmitsLoadableURLs(t *testing.T) {
 	code, body := continueStream(t, "&resource_urls=public")
 	require.Equal(t, http.StatusOK, code, body)

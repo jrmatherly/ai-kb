@@ -48,7 +48,7 @@ type MCPCatalogSummary struct {
 //
 // Secret fields (APIKey, Token) are accepted on create but are never returned
 // by the server. To mutate credentials on an existing service, use the
-// dedicated /credentials subresource — see the MCP credentials API for the
+// dedicated /credentials subresource - see the MCP credentials API for the
 // PUT / DELETE shape. Sending secret fields in a main PUT body is silently
 // ignored server-side.
 type MCPAuthConfig struct {

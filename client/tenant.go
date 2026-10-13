@@ -45,7 +45,7 @@ type Tenant struct {
 	// APIKey is only populated by CreateTenant when the server has
 	// tenant.auto_create_api_key (env AIKB_TENANT_AUTO_CREATE_API_KEY)
 	// enabled: it carries the plaintext token of an auto-created full_access
-	// key. Empty otherwise. Save it on receipt — it is never returned again.
+	// key. Empty otherwise. Save it on receipt - it is never returned again.
 	APIKey string `yaml:"api_key,omitempty" json:"api_key,omitempty"`
 	// Creation timestamp
 	CreatedAt time.Time `yaml:"created_at"        json:"created_at"`

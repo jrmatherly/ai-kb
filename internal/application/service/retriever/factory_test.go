@@ -226,7 +226,7 @@ func TestCreateRetrieveEngineForKB_CrossTenant(t *testing.T) {
 	require.Error(t, err)
 	assert.True(t, errors.Is(err, ErrVectorStoreForbidden),
 		"cross-tenant access must yield ErrVectorStoreForbidden; got %q", err)
-	// Sanity: no store UUID in the sentinel's message — the structured log
+	// Sanity: no store UUID in the sentinel's message - the structured log
 	// emitted inside the factory is where UUIDs live. The user-visible
 	// error is intentionally opaque.
 	assert.NotContains(t, err.Error(), "store-A",
@@ -388,7 +388,7 @@ func TestFactoryParallelInvocation(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// VerifyBinding tests — sentinel SSOT used by the KB create-validation
+// VerifyBinding tests - sentinel SSOT used by the KB create-validation
 // path. Mirrors the branches of resolveBoundEngine without constructing an
 // actual CompositeRetrieveEngine.
 // ---------------------------------------------------------------------------

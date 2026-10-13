@@ -122,8 +122,8 @@ func classifyAIKBTemplate(name, image string) (standard, desktop bool) {
 }
 
 // isStandardTemplateImage recognises our template by the image it was built
-// from. Names are the primary key, but a provider that drops them — Cube omits
-// the field entirely when a template carries no alias — would otherwise make
+// from. Names are the primary key, but a provider that drops them - Cube omits
+// the field entirely when a template carries no alias - would otherwise make
 // every catalog refresh look at a cluster with no standard template and build
 // yet another one.
 func isStandardTemplateImage(image string) bool {

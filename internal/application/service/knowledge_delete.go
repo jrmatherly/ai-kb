@@ -104,7 +104,7 @@ func knowledgeResourceOwners(catalog interfaces.ResourceCatalog, knowledgeIDs ..
 // resourceReleaser decides whether a stored file's bytes may be deleted along
 // with the domain object that referenced them.
 //
-// A file can be claimed by more than one owner — an answer saved into the
+// A file can be claimed by more than one owner - an answer saved into the
 // knowledge base shares the very blob the chat message still shows, and two
 // knowledge entries can share an image. Deleting one owner must drop only that
 // owner's claim; the bytes go away when the last claim does.
@@ -143,7 +143,7 @@ func (r *resourceReleaser) deletable(ctx context.Context, ref string) bool {
 }
 
 // deleteExtractedImages deletes all extracted image files from storage.
-// Standalone function — callable from both knowledgeService and knowledgeBaseService.
+// Standalone function - callable from both knowledgeService and knowledgeBaseService.
 // Errors are logged but do not fail the overall deletion.
 //
 // releaser may be nil, in which case every file is deleted unconditionally.
@@ -187,7 +187,7 @@ func (s *knowledgeService) DeleteKnowledge(ctx context.Context, id string) error
 // The function is deliberately best-effort and idempotent:
 //   - It writes a tombstone + scrubs pending ingest ops so new pages cannot be
 //     born with a stale source_ref (guards (a) queued ingest and (b) ingest
-//     tasks mid-LLM call — both consult the tombstone before writing).
+//     tasks mid-LLM call - both consult the tombstone before writing).
 //   - It persists a retract task before reconciling existing pages (delete
 //     if only source, or strip the source if shared), preserving retry evidence.
 //     Crucially we DO NOT gate
@@ -195,7 +195,7 @@ func (s *knowledgeService) DeleteKnowledge(ctx context.Context, id string) error
 //     knowledge may have pages that exist only after this function returns
 //     (the ingest task fires later and, absent the tombstone, would have
 //     created them). The retract handler re-queries ListPagesBySourceRef at
-//     run time, so even with an empty PageSlugs it will do the right thing —
+//     run time, so even with an empty PageSlugs it will do the right thing -
 //     and at worst it's a cheap no-op.
 func (s *knowledgeService) cleanupWikiOnKnowledgeDelete(ctx context.Context, knowledge *types.Knowledge) {
 	if err := s.cleanupWikiReferences(ctx, knowledge, s.wikiChunkRefsForKnowledge(ctx, knowledge)); err != nil {
@@ -219,7 +219,7 @@ func (s *knowledgeService) cleanupWikiReferences(
 
 	var cleanupErr error
 
-	// (1) Tombstone + scrub pending ingest — must happen first so any
+	// (1) Tombstone + scrub pending ingest - must happen first so any
 	// wiki_ingest task that wakes up between here and the retract enqueue
 	// below sees "knowledge gone" and bails out.
 	if s.redisClient != nil {
@@ -235,7 +235,7 @@ func (s *knowledgeService) cleanupWikiReferences(
 		}
 	}
 
-	// Pull title/summary from the knowledge itself — do NOT read them from
+	// Pull title/summary from the knowledge itself - do NOT read them from
 	// existing wiki pages. In the race window wiki pages may not exist yet,
 	// and even when they do their "summary" is the LLM-extracted one which
 	// we're about to invalidate anyway. The knowledge row still has the
@@ -251,7 +251,7 @@ func (s *knowledgeService) cleanupWikiReferences(
 	docSummary := knowledge.Description
 
 	// (2) Immediate reconciliation for pages already present. If ingest
-	// hasn't run yet this simply finds nothing; that's fine — see (3).
+	// hasn't run yet this simply finds nothing; that's fine - see (3).
 	pages, err := s.wikiRepo.ListBySourceRef(ctx, kbID, knowledgeID)
 	if err != nil {
 		logger.Warnf(ctx, "wiki cleanup: failed to list pages by source ref %s: %v", knowledgeID, err)
@@ -343,10 +343,10 @@ func (s *knowledgeService) wikiChunkRefsForKnowledge(ctx context.Context, knowle
 // from task_pending_ops. Used by both the delete path (we're about to
 // soft-delete the doc, no point ingesting it) and the reparse path (the
 // old chunks are about to vanish, so any pending ingest would either race
-// with the cleanup or no-op on an empty chunk set — and the post-process
+// with the cleanup or no-op on an empty chunk set - and the post-process
 // task will enqueue a fresh ingest once new chunks land anyway).
 //
-// Retract entries stay put — delete still needs them to unlink referencing
+// Retract entries stay put - delete still needs them to unlink referencing
 // pages, and reparse never enqueues retracts for the doc being reparsed.
 // We pass op=WikiOpIngest so DeleteByDedupKey filters to the ingest rows
 // only.
@@ -370,7 +370,7 @@ func (s *knowledgeService) scrubWikiPendingIngest(ctx context.Context, kbID, kno
 // Why no retract / tombstone here: reparse is not a "K is gone" event, it's
 // a "K's contribution is about to be swapped for a new version" event. The
 // actual swap happens asynchronously inside mapOneDocument (see its
-// oldPageSlugs handling) — that's where we have both the old page set and
+// oldPageSlugs handling) - that's where we have both the old page set and
 // the freshly extracted candidate slugs, which is exactly the information
 // the WikiPageModifyUserPrompt needs to do a correct replace-not-append.
 //
