@@ -29,6 +29,15 @@ log_warning() {
     printf "%b\n" "${YELLOW}[WARNING]${NC} $1"
 }
 
+case "${1:-}" in
+    -h|--help)
+        echo "Usage: $0 [dev.sh start options]"
+        echo "Starts the dev infrastructure (./scripts/dev.sh start with the given options, such as --qdrant or --full),"
+        echo "then asks whether to run the backend and the frontend in the background."
+        exit 0
+        ;;
+esac
+
 echo ""
 printf "%b\n" "${GREEN}========================================${NC}"
 printf "%b\n" "${GREEN}  AI KB quick dev environment start${NC}"
@@ -36,12 +45,13 @@ printf "%b\n" "${GREEN}========================================${NC}"
 echo ""
 
 # Make sure we are in the project root
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT" || exit 1
+mkdir -p logs tmp
+rm -f tmp/backend.pid tmp/frontend.pid
 
 # 1. Start the infrastructure
 log_info "Step 1/3: starting infrastructure services..."
-./scripts/dev.sh start
-if [ $? -ne 0 ]; then
+if ! ./scripts/dev.sh start "$@"; then
     log_error "Infrastructure failed to start"
     exit 1
 fi
@@ -59,7 +69,7 @@ read -r start_backend
 if [ "$start_backend" = "y" ] || [ "$start_backend" = "Y" ]; then
     log_info "Starting the backend..."
     # Start the backend in the background
-    nohup bash -c 'cd "'$PROJECT_ROOT'" && ./scripts/dev.sh app' > "$PROJECT_ROOT/logs/backend.log" 2>&1 &
+    nohup ./scripts/dev.sh app > "$PROJECT_ROOT/logs/backend.log" 2>&1 &
     BACKEND_PID=$!
     echo $BACKEND_PID > "$PROJECT_ROOT/tmp/backend.pid"
     log_success "Backend started in the background (PID: $BACKEND_PID)"
@@ -78,7 +88,7 @@ read -r start_frontend
 if [ "$start_frontend" = "y" ] || [ "$start_frontend" = "Y" ]; then
     log_info "Starting the frontend..."
     # Start the frontend in the background
-    nohup bash -c 'cd "'$PROJECT_ROOT'/frontend" && npm run dev' > "$PROJECT_ROOT/logs/frontend.log" 2>&1 &
+    nohup ./scripts/dev.sh frontend > "$PROJECT_ROOT/logs/frontend.log" 2>&1 &
     FRONTEND_PID=$!
     echo $FRONTEND_PID > "$PROJECT_ROOT/tmp/frontend.pid"
     log_success "Frontend started in the background (PID: $FRONTEND_PID)"
@@ -98,7 +108,6 @@ echo ""
 log_info "URLs:"
 echo "  - Frontend: http://localhost:5173"
 echo "  - Backend API: http://localhost:8080"
-echo "  - MinIO Console: http://localhost:9001"
 echo ""
 
 log_info "Management commands:"

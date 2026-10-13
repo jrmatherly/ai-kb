@@ -173,7 +173,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 | `make build-lite` / `run-lite` / `package-lite` | Build / run (reads `.env.lite`) / package the Lite edition |
 | `make package-mac-app` | Package the macOS desktop application |
 | `make docs` / `install-swagger` | Generate the Swagger docs (`http://localhost:8080/swagger/index.html`, disabled in release mode) |
-| `make clean-db` | Delete the postgres/minio/redis data volumes (destructive) |
+| `make clean-db` | Delete the postgres and minio data volumes (destructive) |
 
 ## scripts/ startup scripts
 

@@ -56,7 +56,7 @@ make dev-frontend                   # same as ./scripts/dev.sh frontend
 make dev-status   # container status
 make dev-logs     # follow logs
 make dev-stop     # stop
-make dev-restart  # stop, then start again with the default profiles only (DEV_ARGS is not passed on)
+make dev-restart  # stop, then start again (takes DEV_ARGS like dev-start)
 ```
 
 `dev-app` points the backend at the containers on the host loopback address: it exports `DB_HOST=127.0.0.1`, `DOCREADER_ADDR=127.0.0.1:50051`, `MINIO_ENDPOINT=127.0.0.1:9000`, `REDIS_ADDR=127.0.0.1:6379`, `MILVUS_ADDRESS=127.0.0.1:19530`, `NEO4J_URI=bolt://127.0.0.1:7687` and `QDRANT_HOST=127.0.0.1`, overriding the container service names in `.env`. It also replaces the container path `LOCAL_STORAGE_BASE_DIR=/data/files` with the repository-local `.local-data/files`, and adds the `anydoc` build tag when `make anydoc-lib` has built the static library for the host platform.
@@ -101,7 +101,7 @@ VITE_DEV_PROXY_TARGET=https://kb.example.com npm run dev
 | `odl-hybrid` | Built locally from `docker/Dockerfile.odl-hybrid` (Docling PDF backend) | `5002` | `--odl-hybrid` (large image, start on demand) |
 | `sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` (sandbox for skill scripts; build/pull only, not a long-running service) | - | Profile `full` |
 
-`dev.sh start` options: `--minio`, `--qdrant`, `--neo4j`, `--dex`, `--langfuse` (on by default), `--no-langfuse`, `--odl-hybrid`, `--full` (all optional services except odl-hybrid). Pass them through the Makefile with `make dev-start DEV_ARGS=--odl-hybrid`. `--full` ends option parsing and replaces the profile list, so `--odl-hybrid` has no effect when combined with `--full`; start odl-hybrid in a separate `make dev-start DEV_ARGS=--odl-hybrid` run.
+`dev.sh start` options: `--minio`, `--qdrant`, `--neo4j`, `--dex`, `--langfuse` (on by default), `--no-langfuse`, `--odl-hybrid`, `--full` (all optional services except odl-hybrid, Langfuse included). Pass them through the Makefile with `make dev-start DEV_ARGS=--odl-hybrid`, or combine them: `make dev-start DEV_ARGS="--full --odl-hybrid"`. `dev-stop` stops every service of the dev project, whichever profiles started it.
 
 ### Run docreader locally
 
@@ -162,7 +162,7 @@ These targets are defined in the root `Makefile`. `make help` prints a summary o
 | `build-images` / `build-images-app` / `build-images-docreader` / `build-images-frontend` / `clean-images` | `scripts/build_images.sh` builds images from source or removes them |
 | `check-env` / `list-containers` / `pull-images` | `start_all.sh --check / --list / --pull` |
 | `show-platform` | Prints `uname -m` and the Docker build platform (amd64/arm64 detected automatically) |
-| `clean-db` | Deletes the Docker volumes `aikb_postgres-data`, `aikb_minio_data` and `aikb_redis_data` (**erases data**) |
+| `clean-db` | Deletes the Docker volumes `<project>_postgres-data` and `<project>_minio_data` of the `docker-compose.yml` stack, where `<project>` is `COMPOSE_PROJECT_NAME` or the checkout directory name (**erases data**) |
 
 ### Database migrations
 

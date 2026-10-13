@@ -57,7 +57,7 @@ show_help() {
     echo "Commands:"
     echo "  start      start the infrastructure services (postgres, redis, docreader, langfuse)"
     echo "  stop       stop all services"
-    echo "  restart    restart all services"
+    echo "  restart    restart all services (takes the same options as start)"
     echo "  logs       show service logs"
     echo "  status     show service status"
     echo "  app        start the backend (runs locally)"
@@ -72,7 +72,7 @@ show_help() {
     echo "  --langfuse    start Langfuse (on by default)"
     echo "  --no-langfuse do not start Langfuse"
     echo "  --odl-hybrid  start OpenDataLoader hybrid (Docling, large image, enable when needed)"
-    echo "  --full        start all optional services (excludes odl-hybrid, add --odl-hybrid for it)"
+    echo "  --full        start all optional services, langfuse included (excludes odl-hybrid, add --odl-hybrid for it)"
     echo ""
     echo "Examples:"
     echo "  $0 start                    # start the base services"
@@ -244,9 +244,8 @@ start_services() {
                 fi
                 ;;
             --full)
-                PROFILES="--profile full"
-                ENABLED_SERVICES="minio qdrant neo4j dex"
-                break
+                PROFILES="$PROFILES --profile full"
+                ENABLED_SERVICES="$ENABLED_SERVICES minio qdrant neo4j dex langfuse"
                 ;;
             *)
                 log_warning "Unknown argument: $1"
@@ -319,7 +318,8 @@ stop_services() {
     fi
     
     cd "$PROJECT_ROOT"
-    "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml down
+    # Without --profile '*', down leaves every profiled service (langfuse, minio, ...) running.
+    "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD -f docker-compose.dev.yml --profile '*' down
     
     if [ $? -eq 0 ]; then
         log_success "All services stopped"
@@ -334,7 +334,7 @@ stop_services() {
 restart_services() {
     stop_services
     sleep 2
-    start_services
+    start_services "$@"
 }
 
 # Show logs
@@ -574,7 +574,7 @@ case "$CMD" in
         stop_services
         ;;
     restart)
-        restart_services
+        restart_services "$@"
         ;;
     logs)
         show_logs

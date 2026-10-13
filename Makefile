@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama stop-ollama build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc
+.PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc
 
 # Show help
 help:
@@ -187,7 +187,7 @@ stop-all:
 
 # Stop Docker container (legacy method)
 docker-stop:
-	docker-compose down
+	docker-compose --profile '*' down
 
 # Build images from source
 build-images:
@@ -328,17 +328,16 @@ package-mac-app:
 download_spatial:
 	go run cmd/download/duckdb/duckdb.go
 
+# Compose prefixes volume names with the project name: COMPOSE_PROJECT_NAME, else
+# the checkout directory name, lowercased with anything outside [a-z0-9_-] dropped.
 clean-db:
 	@echo "Cleaning database..."
-	@if [ $$(docker volume ls -q -f name=aikb_postgres-data) ]; then \
-		docker volume rm aikb_postgres-data; \
-	fi
-	@if [ $$(docker volume ls -q -f name=aikb_minio_data) ]; then \
-		docker volume rm aikb_minio_data; \
-	fi
-	@if [ $$(docker volume ls -q -f name=aikb_redis_data) ]; then \
-		docker volume rm aikb_redis_data; \
-	fi
+	@project="$${COMPOSE_PROJECT_NAME:-$$(basename "$(CURDIR)" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')}"; \
+	for v in postgres-data minio_data; do \
+		if docker volume inspect "$${project}_$$v" >/dev/null 2>&1; then \
+			docker volume rm "$${project}_$$v"; \
+		fi; \
+	done
 
 # Environment check
 check-env:
@@ -365,7 +364,7 @@ dev-stop:
 	./scripts/dev.sh stop
 
 dev-restart:
-	./scripts/dev.sh restart
+	./scripts/dev.sh restart $(DEV_ARGS)
 
 dev-logs:
 	./scripts/dev.sh logs
