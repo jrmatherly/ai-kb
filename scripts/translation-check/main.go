@@ -2,12 +2,15 @@
 //
 //	go run ./scripts/translation-check [-rev HEAD] [-escape] <file.go>...
 //
-// Each file is compared with its version at -rev. Every token other than comments and string
-// literals must be identical; a difference exits 1. Changed literals are listed, and a literal is
-// flagged when a translation can break it: it sits in a _test.go file, it is compared, switched on,
-// compiled as a regexp or passed to strings.Contains-style matchers, or its old text also occurs
-// in another tracked file. -escape additionally requires each changed literal to keep its exact
-// value (for \uXXXX escaping of Chinese that must stay).
+// Each file is compared with its version at -rev. Every token other than comments and string or
+// rune literals must be identical; a difference exits 1. What wrapping for lll and gofumpt forces
+// is tolerated: both sides fold "a" + "b" into one literal when every operand is a string
+// literal, drop a comma right before ) } or ], and compare rune literals like strings, by value.
+// Changed literals are listed, and a literal is flagged when a translation can break it: it sits
+// in a _test.go file, it is compared, switched on, compiled as a regexp or passed to
+// strings.Contains-style matchers, or its old text also occurs in another tracked file. -escape
+// additionally requires each changed literal to keep its exact value (for \uXXXX escaping of
+// Chinese that must stay); a folded literal is checked by its concatenated value.
 package main
 
 import (
@@ -28,9 +31,12 @@ import (
 
 type tok struct {
 	kind token.Token
-	lit  string
+	lit  string // source text; a folded literal joins its pieces with " + "
+	val  string // decoded value of a STRING or CHAR
 	pos  token.Pos
 }
+
+func isLit(k token.Token) bool { return k == token.STRING || k == token.CHAR }
 
 func main() {
 	rev := flag.String("rev", "HEAD", "revision to compare against")
@@ -58,32 +64,39 @@ func check(path, rev string, escape bool) bool {
 		fmt.Fprintf(os.Stderr, "%s: not in %s, nothing to compare\n", path, rev)
 		return false
 	}
+	var out bytes.Buffer
+	ok := compare(&out, path, rev, oldSrc, newSrc, escape)
+	_, _ = out.WriteTo(os.Stdout)
+	return ok
+}
+
+func compare(w *bytes.Buffer, path, rev string, oldSrc, newSrc []byte, escape bool) bool {
 	fset := token.NewFileSet()
 	oldToks := scan(fset, path, oldSrc)
 	newToks := scan(fset, path, newSrc)
 	if len(oldToks) != len(newToks) {
-		fmt.Printf("%s: FAIL token count %d -> %d (code changed, not only text)\n", path, len(oldToks), len(newToks))
+		fmt.Fprintf(w, "%s: FAIL token count %d -> %d (code changed, not only text)\n",
+			path, len(oldToks), len(newToks))
 		return false
 	}
 	ctx := literalContexts(path, newSrc)
 	ok := true
 	for i, o := range oldToks {
 		n := newToks[i]
-		if o.kind != n.kind || (o.kind != token.STRING && o.lit != n.lit) {
-			fmt.Printf("%s: FAIL %s: %q -> %q\n", path, fset.Position(n.pos), o.lit, n.lit)
+		if o.kind != n.kind || (!isLit(o.kind) && o.lit != n.lit) {
+			fmt.Fprintf(w, "%s: FAIL %s: %q -> %q\n", path, fset.Position(n.pos), o.lit, n.lit)
 			ok = false
 			continue
 		}
-		if o.kind != token.STRING || o.lit == n.lit {
+		if !isLit(o.kind) || o.lit == n.lit {
 			continue
 		}
 		if c := ctx[fset.Position(n.pos).Offset]; c == "import" || c == "tag" {
-			fmt.Printf("%s: FAIL %s: %s changed: %s -> %s\n", path, fset.Position(n.pos), c, o.lit, n.lit)
+			fmt.Fprintf(w, "%s: FAIL %s: %s changed: %s -> %s\n", path, fset.Position(n.pos), c, o.lit, n.lit)
 			ok = false
 			continue
 		}
-		ov, _ := strconv.Unquote(o.lit)
-		nv, _ := strconv.Unquote(n.lit)
+		ov, nv := o.val, n.val
 		var flags []string
 		if escape && ov != nv {
 			flags = append(flags, "VALUE-CHANGED")
@@ -98,11 +111,11 @@ func check(path, rev string, escape bool) bool {
 		if run := longestNonASCII(ov); run != "" && usedElsewhere(run, path, rev) {
 			flags = append(flags, "old-text-used-elsewhere:"+run)
 		}
-		fmt.Printf("%s: %s %s\n    - %s\n    + %s\n",
+		fmt.Fprintf(w, "%s: %s %s\n    - %s\n    + %s\n",
 			path, fset.Position(n.pos), strings.Join(flags, ","), o.lit, n.lit)
 	}
 	if ok {
-		fmt.Printf("%s: OK (only comments and string literals differ)\n", path)
+		fmt.Fprintf(w, "%s: OK (only comments and string literals differ)\n", path)
 	}
 	return ok
 }
@@ -114,13 +127,13 @@ func scan(fset *token.FileSet, path string, src []byte) []tok {
 	for {
 		pos, kind, lit := s.Scan()
 		if kind == token.EOF {
-			return out
+			return normalize(out)
 		}
 		if kind == token.COMMENT {
 			if directive.MatchString(lit) {
-				out = append(out, tok{kind, lit, pos})
+				out = append(out, tok{kind, lit, "", pos})
 			} else {
-				pending = append(pending, tok{kind, lit, pos})
+				pending = append(pending, tok{kind, lit, "", pos})
 			}
 			continue
 		}
@@ -137,9 +150,43 @@ func scan(fset *token.FileSet, path string, src []byte) []tok {
 		if kind == token.SEMICOLON {
 			lit = ";"
 		}
-		out = append(out, tok{kind, lit, pos})
+		var val string
+		if isLit(kind) {
+			val, _ = strconv.Unquote(lit)
+		}
+		out = append(out, tok{kind, lit, val, pos})
 	}
 }
+
+// normalize undoes what wrapping a long line forces: a trailing comma before a closer, and a
+// literal split into "a" + "b". A run folds only when no non-literal operand touches it, since
+// x + "a" + "b" and "a" + "b"[i] are not a single literal.
+func normalize(ts []tok) []tok {
+	var out []tok
+	for i := 0; i < len(ts); i++ {
+		t := ts[i]
+		if t.kind == token.COMMA && i+1 < len(ts) && closes(ts[i+1].kind) {
+			continue
+		}
+		if t.kind == token.STRING && (len(out) == 0 || out[len(out)-1].kind != token.ADD) {
+			j := i
+			for j+2 < len(ts) && ts[j+1].kind == token.ADD && ts[j+2].kind == token.STRING {
+				j += 2
+			}
+			if j > i && (j+1 == len(ts) || (ts[j+1].kind != token.ADD && ts[j+1].kind != token.LBRACK)) {
+				for k := i + 2; k <= j; k += 2 {
+					t.lit += " + " + ts[k].lit
+					t.val += ts[k].val
+				}
+				i = j
+			}
+		}
+		out = append(out, t)
+	}
+	return out
+}
+
+func closes(k token.Token) bool { return k == token.RPAREN || k == token.RBRACE || k == token.RBRACK }
 
 // directive matches comments the toolchain or a generator reads: build constraints, go: directives,
 // cgo exports, linter suppressions, and swag lines that shape the generated API spec.
@@ -153,9 +200,19 @@ func literalContexts(path string, src []byte) map[int]string {
 	if err != nil {
 		return marks
 	}
-	mark := func(e ast.Expr, why string) {
-		if lit, ok := e.(*ast.BasicLit); ok && lit.Kind == token.STRING {
-			marks[fset.Position(lit.Pos()).Offset] = why
+	// A folded literal carries the position of its first piece, so marking every piece covers it.
+	var mark func(e ast.Expr, why string)
+	mark = func(e ast.Expr, why string) {
+		switch x := e.(type) {
+		case *ast.BasicLit:
+			if isLit(x.Kind) {
+				marks[fset.Position(x.Pos()).Offset] = why
+			}
+		case *ast.BinaryExpr:
+			if x.Op == token.ADD {
+				mark(x.X, why)
+				mark(x.Y, why)
+			}
 		}
 	}
 	ast.Inspect(f, func(n ast.Node) bool {

@@ -42,7 +42,7 @@ go run ./scripts/translation-check <file.go>...            # comments and string
 go run ./scripts/translation-check -escape <file.go>...    # files where Chinese was only escaped
 ```
 
-It exits 1 if any other token changed, including import paths, struct tags (`json:"..."` is wire format), `//go:` and `//nolint` directives, swag `@Router` lines and cgo preambles; translate around them. It lists every changed literal and flags `test`, `compared`, `case`, `matcher:<func>` and `old-text-used-elsewhere:<text>`. Resolve each flag before you report: find the other end (`git grep -n '<text>'`) and change it in the batch, or escape instead of translating. Non-Go files have no such tool; diff them and confirm by reading that only text changed.
+It exits 1 if any other token changed, including import paths, struct tags (`json:"..."` is wire format), `//go:` and `//nolint` directives, swag `@Router` lines and cgo preambles; translate around them. Wrapping a long line is fine: it folds a literal split into `"a" + "b"` (every operand a string literal), ignores a trailing comma before `)`, `}` or `]`, and compares rune literals by value, so `'报'` matches the rune it escapes. Any other added token, such as `_ = ` before an unchecked call, still fails. It lists every changed literal and flags `test`, `compared`, `case`, `matcher:<func>` and `old-text-used-elsewhere:<text>`. Resolve each flag before you report: find the other end (`git grep -n '<text>'`) and change it in the batch, or escape instead of translating. Non-Go files have no such tool; diff them and confirm by reading that only text changed.
 
 ## Gates
 
