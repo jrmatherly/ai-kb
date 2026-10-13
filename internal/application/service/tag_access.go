@@ -12,14 +12,14 @@ func (s *knowledgeTagService) requireTagWrite(
 	tag *types.KnowledgeTag,
 ) (*types.KnowledgeBase, context.Context, error) {
 	if tag == nil {
-		return nil, ctx, apperrors.NewNotFoundError("标签不存在")
+		return nil, ctx, apperrors.NewNotFoundError("tag not found")
 	}
 	kb, err := s.kbService.GetKnowledgeBaseByID(ctx, tag.KnowledgeBaseID)
 	if err != nil {
 		return nil, ctx, err
 	}
 	if kb == nil || kb.ID != tag.KnowledgeBaseID || kb.TenantID != tag.TenantID {
-		return nil, ctx, apperrors.NewForbiddenError("标签不属于当前知识库")
+		return nil, ctx, apperrors.NewForbiddenError("the tag does not belong to this knowledge base")
 	}
 	ctx, err = requireKBWrite(ctx, kb)
 	return kb, ctx, err
@@ -34,7 +34,7 @@ func (s *knowledgeTagService) validateTagDeleteExclusions(
 		return nil
 	}
 	if kb.Type != types.KnowledgeBaseTypeFAQ {
-		return apperrors.NewBadRequestError("仅 FAQ 条目删除支持排除条目")
+		return apperrors.NewBadRequestError("excluded entries are supported only when deleting FAQ entries")
 	}
 	wanted := make(map[string]bool, len(ids))
 	for _, id := range ids {
@@ -49,12 +49,12 @@ func (s *knowledgeTagService) validateTagDeleteExclusions(
 			continue
 		}
 		if chunk.TenantID != kb.TenantID || chunk.KnowledgeBaseID != kb.ID || chunk.ChunkType != types.ChunkTypeFAQ {
-			return apperrors.NewForbiddenError("排除条目不属于当前知识库")
+			return apperrors.NewForbiddenError("an excluded entry does not belong to this knowledge base")
 		}
 		delete(wanted, chunk.ID)
 	}
 	if len(wanted) != 0 {
-		return apperrors.NewNotFoundError("排除条目不存在")
+		return apperrors.NewNotFoundError("excluded entry not found")
 	}
 	return nil
 }

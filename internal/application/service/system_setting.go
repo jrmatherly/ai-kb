@@ -124,16 +124,21 @@ var registry = map[string]settingSpec{
 		EnvName:  "SSRF_WHITELIST",
 		Default:  []string{},
 		Category: "security",
-		Description: "SSRF 防护白名单。可填入 example.com / *.foo.com / 10.0.0.0/8 / 2001:db8::1。" +
-			"修改后立即生效。SSRF_WHITELIST_EXTRA 环境变量仍由部署方维护，不在此处覆盖。",
+		Description: "SSRF protection allowlist. Accepts entries such as example.com / *.foo.com / 10.0.0.0/8 / " +
+			"2001:db8::1. " +
+			"Changes take effect immediately. The SSRF_WHITELIST_EXTRA environment variable is still managed by the " +
+			"deployment and is not overridden here.",
 	},
 	"sandbox.docker_enabled": {
 		Type:     "bool",
 		EnvName:  sandbox.DockerBackendEnabledEnv,
 		Default:  false,
 		Category: "security",
-		Description: "是否允许 Docker 沙箱后端。本机 docker.sock 等同宿主机 root，默认关闭。" +
-			"仅系统管理员可打开；打开后立即生效，无需重启。私有化单机且已挂载 daemon socket，或配置了带 TLS 的远程 tcp:// 时再启用。",
+		Description: "Allow the Docker sandbox backend. A local docker.sock is equivalent to root on the host, so " +
+			"this is off by default. " +
+			"Only a system administrator can turn it on; it takes effect immediately with no restart. Enable it only " +
+			"on a single-node install on your own infrastructure that mounts the daemon socket, or with a " +
+			"TLS-protected remote tcp:// endpoint.",
 	},
 	"auth.registration_mode": {
 		Type:     "string",
@@ -141,8 +146,10 @@ var registry = map[string]settingSpec{
 		Default:  "self_serve",
 		Enum:     []string{"self_serve", "invite_register", "invite_only"},
 		Category: "auth",
-		Description: "注册模式。self_serve = 开放注册；invite_register = 仅持有效邀请链接的新用户可注册；" +
-			"invite_only = 禁止注册，邀请仅供已有账号加入空间。保存后立即生效。",
+		Description: "Registration mode. self_serve = open registration; invite_register = only new users with a " +
+			"valid invitation link can register; " +
+			"invite_only = registration is disabled and invitations only let existing accounts join a workspace. " +
+			"Takes effect on save.",
 	},
 	"auth.default_tenant_mode": {
 		Type:     "string",
@@ -150,16 +157,20 @@ var registry = map[string]settingSpec{
 		Default:  "create_personal",
 		Enum:     []string{"create_personal", "tenantless"},
 		Category: "auth",
-		Description: "公开注册成功后的默认空间策略。create_personal = 自动创建个人空间并设为 Owner；" +
-			"tenantless = 仅创建用户，等待接受邀请或主动创建空间。修改后只影响新注册用户。",
+		Description: "Default workspace policy after a successful public registration. create_personal = create a " +
+			"personal workspace and make the user its Owner; " +
+			"tenantless = create only the user, who then accepts an invitation or creates a workspace. Changes " +
+			"affect only newly registered users.",
 	},
 	"auth.complex_password_enabled": {
 		Type:     "bool",
 		EnvName:  "AIKB_AUTH_COMPLEX_PASSWORD_ENABLED",
 		Default:  false,
 		Category: "auth",
-		Description: "是否启用复杂密码。开启后密码必须包含大小写字母、数字和特殊字符。" +
-			"修改后立即生效，只影响新注册用户或新密码修改/重置操作。特殊字符包含：!@#$%^&*()_+-=[]{}|;:,.<>?",
+		Description: "Require complex passwords. When on, a password must contain upper- and lowercase letters, " +
+			"digits and special characters. " +
+			"Takes effect immediately and applies only to new registrations and to password changes or resets. " +
+			"Special characters are: !@#$%^&*()_+-=[]{}|;:,.<>?",
 	},
 	// gallery.policy is the platform-wide image-gallery attribute policy:
 	// a JSON document (types.GalleryPolicyTier) that can toggle attribute
@@ -174,10 +185,12 @@ var registry = map[string]settingSpec{
 		EnvName:  "",
 		Default:  "",
 		Category: "gallery",
-		Description: "图库属性策略（JSON，可选）。可启停属性来源（sources）或按属性 ID 覆盖用法" +
-			"（overrides，字段级：in_filter / in_searchfield / in_sortfield），例如：" +
-			"{\"overrides\":{\"system:contain.text\":{\"in_searchfield\":true}}}。" +
-			"留空 = 完全使用来源端声明。修改后立即生效，刷新图库页可见。",
+		Description: "Gallery attribute policy (JSON, optional). Turns attribute sources (sources) on or off, or " +
+			"overrides usage per attribute ID " +
+			"(overrides, per field: in_filter / in_searchfield / in_sortfield), for example: " +
+			"{\"overrides\":{\"system:contain.text\":{\"in_searchfield\":true}}}. " +
+			"Empty = use the source declarations as they are. Takes effect immediately; reload the gallery page to " +
+			"see it.",
 	},
 	// tenant.max_owned_per_user caps how many tenants a single non-superuser
 	// can create (and Own) via self-service POST /tenants. Read on every
@@ -191,16 +204,19 @@ var registry = map[string]settingSpec{
 		EnvName:  "AIKB_TENANT_MAX_OWNED_PER_USER",
 		Default:  int64(10),
 		Category: "tenant",
-		Description: "每个非超管用户通过自助创建可拥有的最大空间数。每次创建空间时实时读取，" +
-			"修改后立即生效。0 表示使用内置默认值 10；负数表示完全关闭限制（不建议在公开部署使用）。",
+		Description: "Maximum number of workspaces each non-superuser can own through self-service creation. Read on " +
+			"every workspace creation, " +
+			"so changes take effect immediately. 0 uses the built-in default of 10; a negative value disables the " +
+			"limit (not recommended for public deployments).",
 	},
 	"tenant.self_service_creation_enabled": {
 		Type:     "bool",
 		EnvName:  "AIKB_TENANT_SELF_SERVICE_CREATION_ENABLED",
 		Default:  true,
 		Category: "tenant",
-		Description: "是否允许非超管用户主动创建空间。关闭后，普通用户只能通过邀请加入已有空间；" +
-			"跨空间超管仍可创建。修改后立即生效。",
+		Description: "Allow non-superusers to create workspaces. When off, regular users can only join existing " +
+			"workspaces by invitation; " +
+			"cross-workspace superusers can still create them. Changes take effect immediately.",
 	},
 	// tenant.default_storage_quota_gb is the default storage quota (in GB)
 	// applied to a newly-created tenant when the caller doesn't specify
@@ -214,9 +230,11 @@ var registry = map[string]settingSpec{
 		EnvName:  "AIKB_TENANT_DEFAULT_STORAGE_QUOTA_GB",
 		Default:  int64(10),
 		Category: "tenant",
-		Description: "新建空间时默认分配的存储配额（GB），包含向量、原文、文本、索引等。" +
-			"仅在创建时读取，修改后只对之后新建的空间生效，不会回写已存在的空间。" +
-			"0 或负数表示使用内置默认值 10GB。",
+		Description: "Default storage quota (GB) assigned to a new workspace, covering vectors, originals, text, " +
+			"indexes and so on. " +
+			"Read only at creation time, so changes apply to workspaces created afterwards and are not written back " +
+			"to existing ones. " +
+			"0 or a negative value uses the built-in default of 10GB.",
 	},
 	// tenant.auto_create_api_key restores the legacy behaviour where creating
 	// a tenant also minted a full-access API key and returned its plaintext
@@ -231,9 +249,12 @@ var registry = map[string]settingSpec{
 		EnvName:  "AIKB_TENANT_AUTO_CREATE_API_KEY",
 		Default:  false,
 		Category: "tenant",
-		Description: "创建空间时是否自动生成一个全量权限（full_access）的 API Key，并在创建接口的响应中返回其明文 token。" +
-			"用于兼容旧版本「创建空间即下发默认 API Key」的行为（属于破坏性变更的回退开关）。" +
-			"每次创建空间时实时读取，修改后立即生效。默认 false（不自动创建，需通过 API Key 管理显式创建）。",
+		Description: "Automatically create a full-access (full_access) API key when a workspace is created, and " +
+			"return its plaintext token in the create response. " +
+			"Keeps the legacy behavior where creating a workspace issued a default API key (a fallback switch for a " +
+			"breaking change). " +
+			"Read on every workspace creation, so changes take effect immediately. Default false (no automatic key; " +
+			"create keys explicitly in API key management).",
 	},
 	// tenant.auto_accept_invitation: invite = auto-join switch (default false).
 	"tenant.auto_accept_invitation": {
@@ -241,9 +262,11 @@ var registry = map[string]settingSpec{
 		EnvName:  "AIKB_TENANT_AUTO_ACCEPT_INVITATION",
 		Default:  false,
 		Category: "tenant",
-		Description: "全局开关：开启后，空间管理员通过邮箱邀请已注册用户加入空间时，" +
-			"被邀请人将被立即自动加入（直接写入成员关系），无需在收件箱手动接受，也不再生成待接受的邀请记录。" +
-			"关闭时保持原有「发出邀请 → 被邀请人收件箱确认」流程。每次邀请时实时读取，修改后立即生效。默认 false。",
+		Description: "Global switch. When on and a workspace admin invites a registered user by email, " +
+			"the invitee joins immediately (the membership is written directly), with no inbox acceptance and no " +
+			"pending invitation record. " +
+			"When off, the usual flow applies: the invitation is sent and the invitee confirms it in their inbox. " +
+			"Read on every invitation, so changes take effect immediately. Default false.",
 	},
 	"asynq.core_concurrency": {
 		Type:            "int",
@@ -251,7 +274,8 @@ var registry = map[string]settingSpec{
 		Default:         int64(types.DefaultCoreWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
-		Description:     "文档解析、手工重解析等核心任务的每实例保底并发。可额外使用共享弹性池；修改后需重启。",
+		Description: "Guaranteed per-instance concurrency for core tasks such as document parsing and manual " +
+			"re-parsing. Can also use the shared elastic pool; requires a restart.",
 	},
 	"asynq.postprocess_concurrency": {
 		Type:            "int",
@@ -259,7 +283,8 @@ var registry = map[string]settingSpec{
 		Default:         int64(types.DefaultPostProcessWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
-		Description:     "解析完成后的轻量编排与富化扇出专用并发，避免被长时间文档解析阻塞；修改后需重启。",
+		Description: "Dedicated concurrency for the lightweight orchestration and enrichment fan-out after " +
+			"parsing, so long document parses cannot block it; requires a restart.",
 	},
 	"asynq.enrichment_concurrency": {
 		Type:            "int",
@@ -267,7 +292,8 @@ var registry = map[string]settingSpec{
 		Default:         int64(types.DefaultEnrichmentWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
-		Description:     "摘要、图片、图谱和问题生成的每实例保底并发。可额外使用共享弹性池；修改后需重启。",
+		Description: "Guaranteed per-instance concurrency for summary, image, graph and question generation. Can " +
+			"also use the shared elastic pool; requires a restart.",
 	},
 	"asynq.maintenance_concurrency": {
 		Type:            "int",
@@ -275,7 +301,8 @@ var registry = map[string]settingSpec{
 		Default:         int64(types.DefaultMaintenanceWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
-		Description:     "数据源同步、批处理、移动和删除清理的每实例保底并发，与用户面流水线硬隔离；修改后需重启。",
+		Description: "Guaranteed per-instance concurrency for data source sync, batch work, moves and delete " +
+			"cleanup, hard-isolated from the user-facing pipeline; requires a restart.",
 	},
 	"asynq.shared_concurrency": {
 		Type:            "int",
@@ -283,7 +310,8 @@ var registry = map[string]settingSpec{
 		Default:         int64(types.DefaultSharedWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
-		Description:     "核心解析与内容富化共用的每实例弹性并发。空闲容量由有积压的一侧借用；修改后需重启。",
+		Description: "Per-instance elastic concurrency shared by core parsing and content enrichment. Whichever " +
+			"side has a backlog borrows the idle capacity; requires a restart.",
 	},
 	// asynq.wiki_concurrency is the size of the DEDICATED wiki worker pool,
 	// separate from the upstream pools. Read once when the wiki asynq server
@@ -295,9 +323,12 @@ var registry = map[string]settingSpec{
 		Default:         int64(types.DefaultWikiWorkerConcurrency),
 		Category:        "worker",
 		RequiresRestart: true,
-		Description: "Wiki 生成专用池的 worker 并发数（与文档解析池相互隔离）。" +
-			"Wiki 生成以合成大模型调用为主，独立并发预算可避免上传高峰期被解析任务饿死，" +
-			"同时不会因 Wiki 洪峰拖慢用户面解析。修改后需重启服务进程方可生效。",
+		Description: "Worker concurrency of the dedicated Wiki generation pool (isolated from the document parsing " +
+			"pool). " +
+			"Wiki generation is mostly LLM synthesis calls; a separate concurrency budget keeps it from being " +
+			"starved by parsing during upload peaks, " +
+			"and keeps a Wiki surge from slowing user-facing parsing. Requires a service process restart to take " +
+			"effect.",
 	},
 	// model.max_concurrency is the DEFAULT per-model cap on concurrent
 	// background (ingestion/enrichment) LLM/embedding/VLM calls, keyed by
@@ -312,9 +343,12 @@ var registry = map[string]settingSpec{
 		EnvName:  "AIKB_MODEL_MAX_CONCURRENCY",
 		Default:  int64(32),
 		Category: "worker",
-		Description: "后台任务（文档入库/富化）对单个模型的默认并发上限，按模型 ID 全副本共享。" +
-			"每次调用实时读取，修改后立即生效、无需重启。0 或负数表示关闭默认限制" +
-			"（各模型仍会尊重自身在模型管理里配置的上限）。仅影响后台任务，不影响交互式对话。",
+		Description: "Default cap on concurrent background (document import/enrichment) calls to a single model, " +
+			"keyed by model ID and shared across replicas. " +
+			"Read on every call, so changes take effect immediately with no restart. 0 or a negative value disables " +
+			"the default cap " +
+			"(each model still honors its own limit configured in model management). Affects background tasks only, " +
+			"not interactive chat.",
 	},
 }
 

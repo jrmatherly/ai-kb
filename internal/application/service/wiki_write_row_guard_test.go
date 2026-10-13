@@ -17,8 +17,8 @@ import (
 // rewrite that drops some of them shrinks the page. The first column names the
 // holder, and the guard keys a row on exactly that column.
 func ledger(title string, holders ...string) string {
-	body := "# " + title + "\n\n## 持证人员明细\n\n" +
-		"| 姓名 | 证书编号 | 有效期止 |\n| --- | --- | --- |\n"
+	body := "# " + title + "\n\n## \u6301\u8bc1\u4eba\u5458\u660e\u7ec6\n\n" +
+		"| \u59d3\u540d | \u8bc1\u4e66\u7f16\u53f7 | \u6709\u6548\u671f\u6b62 |\n| --- | --- | --- |\n"
 	for _, holder := range holders {
 		body += "| " + holder + " | CERT-2020 | 2099-01-01 |\n"
 	}
@@ -26,7 +26,7 @@ func ledger(title string, holders ...string) string {
 }
 
 func TestWikiWriteMissingRowIdentities(t *testing.T) {
-	full := ledger("PMP", "张三", "李四", "王五")
+	full := ledger("PMP", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94")
 	cases := []struct {
 		name      string
 		existing  string
@@ -36,35 +36,35 @@ func TestWikiWriteMissingRowIdentities(t *testing.T) {
 		{"identical body keeps every row", full, full, nil},
 		{
 			"reordered rows are all still there",
-			full, ledger("PMP", "王五", "张三", "李四"), nil,
+			full, ledger("PMP", "\u738b\u4e94", "\u5f20\u4e09", "\u674e\u56db"), nil,
 		},
 		{
 			"emphasis, padding and case changes are not lost rows",
-			full, ledger("PMP", "**张三**", " 李四 ", "王五"), nil,
+			full, ledger("PMP", "**\u5f20\u4e09**", " \u674e\u56db ", "\u738b\u4e94"), nil,
 		},
 		{
 			"a renamed header is not a lost row",
 			full,
-			"# PMP 证书\n\n## 持证人员明细\n\n" +
-				"| 持证人 | 证书编号 | 有效期至 |\n| --- | --- | --- |\n" +
-				"| 张三 | CERT-2020 | 2099-01-01 |\n| 李四 | CERT-2020 | 2099-01-01 |\n" +
-				"| 王五 | CERT-2020 | 2099-01-01 |\n",
+			"# PMP \u8bc1\u4e66\n\n## \u6301\u8bc1\u4eba\u5458\u660e\u7ec6\n\n" +
+				"| \u6301\u8bc1\u4eba | \u8bc1\u4e66\u7f16\u53f7 | \u6709\u6548\u671f\u81f3 |\n| --- | --- | --- |\n" +
+				"| \u5f20\u4e09 | CERT-2020 | 2099-01-01 |\n| \u674e\u56db | CERT-2020 | 2099-01-01 |\n" +
+				"| \u738b\u4e94 | CERT-2020 | 2099-01-01 |\n",
 			nil,
 		},
 		{
 			"an added row is not a loss",
-			full, ledger("PMP", "张三", "李四", "王五", "赵六"), nil,
+			full, ledger("PMP", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94", "\u8d75\u516d"), nil,
 		},
 		{"prose-only pages have nothing to guard", "just prose", "shorter prose", nil},
 		{
 			"one dropped row is reported",
-			full, ledger("PMP", "张三", "李四"),
-			[]string{"王五"},
+			full, ledger("PMP", "\u5f20\u4e09", "\u674e\u56db"),
+			[]string{"\u738b\u4e94"},
 		},
 		{
 			"a truncated rewrite reports every missing row",
-			full, ledger("PMP", "张三"),
-			[]string{"李四", "王五"},
+			full, ledger("PMP", "\u5f20\u4e09"),
+			[]string{"\u674e\u56db", "\u738b\u4e94"},
 		},
 	}
 	for _, testCase := range cases {
@@ -81,9 +81,9 @@ func TestWikiWriteMissingRowIdentities(t *testing.T) {
 // Only when the identity no longer appears at all is it reported, and then
 // once, not once per stored row.
 func TestWikiWriteMissingRowIdentitiesComparesIdentitiesAsASet(t *testing.T) {
-	existing := ledger("证书", "张三", "张三")
-	require.Empty(t, wikiWriteMissingRowIdentities(existing, ledger("证书", "张三")))
-	require.Equal(t, []string{"张三"}, wikiWriteMissingRowIdentities(existing, ledger("证书")))
+	existing := ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u5f20\u4e09")
+	require.Empty(t, wikiWriteMissingRowIdentities(existing, ledger("\u8bc1\u4e66", "\u5f20\u4e09")))
+	require.Equal(t, []string{"\u5f20\u4e09"}, wikiWriteMissingRowIdentities(existing, ledger("\u8bc1\u4e66")))
 }
 
 // The ratio denominator is the number of DISTINCT identities: repeating a
@@ -91,8 +91,8 @@ func TestWikiWriteMissingRowIdentitiesComparesIdentitiesAsASet(t *testing.T) {
 // page full of duplicates could lose whole subjects under the threshold.
 func TestWikiWriteUniqueRowIdentityCountCountsEachIdentityOnce(t *testing.T) {
 	require.Equal(t, 0, wikiWriteUniqueRowIdentityCount("just prose"))
-	require.Equal(t, 1, wikiWriteUniqueRowIdentityCount(ledger("证书", "张三", "张三")))
-	repeated := ledger("证书", "张三", "张三", "李四", "王五", "李四")
+	require.Equal(t, 1, wikiWriteUniqueRowIdentityCount(ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u5f20\u4e09")))
+	repeated := ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94", "\u674e\u56db")
 	require.Equal(t, 3, wikiWriteUniqueRowIdentityCount(repeated))
 }
 
@@ -108,19 +108,19 @@ func TestWikiWriteRowIdentityLossRatioBoundary(t *testing.T) {
 // every table in the page is surveyed: a rewrite that keeps one table intact
 // while emptying another is still a truncation.
 func TestWikiWriteTableRowIdentitiesSkipsHeadersAndCoversEveryTable(t *testing.T) {
-	content := "| 姓名 | 证书编号 |\n| --- | --- |\n| 张三 | CERT-1 |\n\nprose\n\n" +
-		"| 项目 | 金额 |\n| --- | --- |\n| 差旅 | 100 |\n| 会务 | 200 |\n"
-	require.Equal(t, []string{"张三", "差旅", "会务"}, wikiWriteTableRowIdentities(content))
+	content := "| \u59d3\u540d | \u8bc1\u4e66\u7f16\u53f7 |\n| --- | --- |\n| \u5f20\u4e09 | CERT-1 |\n\nprose\n\n" +
+		"| \u9879\u76ee | \u91d1\u989d |\n| --- | --- |\n| \u5dee\u65c5 | 100 |\n| \u4f1a\u52a1 | 200 |\n"
+	require.Equal(t, []string{"\u5f20\u4e09", "\u5dee\u65c5", "\u4f1a\u52a1"}, wikiWriteTableRowIdentities(content))
 
-	rewritten := "| 姓名 | 证书编号 |\n| --- | --- |\n| 张三 | CERT-1 |\n\nprose\n\n" +
-		"| 项目 | 金额 |\n| --- | --- |\n| 差旅 | 100 |\n"
-	require.Equal(t, []string{"会务"}, wikiWriteMissingRowIdentities(content, rewritten))
+	rewritten := "| \u59d3\u540d | \u8bc1\u4e66\u7f16\u53f7 |\n| --- | --- |\n| \u5f20\u4e09 | CERT-1 |\n\nprose\n\n" +
+		"| \u9879\u76ee | \u91d1\u989d |\n| --- | --- |\n| \u5dee\u65c5 | 100 |\n"
+	require.Equal(t, []string{"\u4f1a\u52a1"}, wikiWriteMissingRowIdentities(content, rewritten))
 }
 
 // A row whose first cell is empty still names an entity in its next non-empty
 // cell, so it is counted rather than silently ignored.
 func TestWikiWriteRowIdentityFallsBackToTheNextNonEmptyCell(t *testing.T) {
-	content := "| 姓名 | 证书编号 |\n| --- | --- |\n|  | CERT-1 |\n"
+	content := "| \u59d3\u540d | \u8bc1\u4e66\u7f16\u53f7 |\n| --- | --- |\n|  | CERT-1 |\n"
 	require.Equal(t, []string{"cert-1"}, wikiWriteTableRowIdentities(content))
 }
 
@@ -132,7 +132,7 @@ func TestWikiWriteTableRowIdentitiesIgnoresLonePipesInProse(t *testing.T) {
 
 func newWikiWriteGuardHarness(t *testing.T) (interfaces.WikiPageService, *types.WikiPage) {
 	t.Helper()
-	return newWikiWriteGuardStore(t, ledger("PMP", "张三", "李四", "王五"))
+	return newWikiWriteGuardStore(t, ledger("PMP", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94"))
 }
 
 // newWikiWriteGuardStore builds the same isolated page store as
@@ -158,7 +158,7 @@ func newWikiWriteGuardStore(t *testing.T, content string) (interfaces.WikiPageSe
 func ledgerHolders(n int) []string {
 	names := make([]string, 0, n)
 	for i := 1; i <= n; i++ {
-		names = append(names, fmt.Sprintf("持证人%02d", i))
+		names = append(names, fmt.Sprintf("\u6301\u8bc1\u4eba%02d", i))
 	}
 	return names
 }
@@ -209,12 +209,13 @@ func TestUpdatePageWritesAnIngestRewriteBelowTheLossLimit(t *testing.T) {
 
 // An ingest rewrite that keeps every stored identity while de-duplicating a
 // repeated row is a normal write: identities are compared as a set, so merging
-// the two 张三 rows into one loses nothing. Under occurrence counting this was
+// the two Zhang San rows into one loses nothing. Under occurrence counting this was
 // a refusal on every batch.
 func TestUpdatePageWritesAnIngestRewriteThatMergesDuplicateRows(t *testing.T) {
-	svc, page := newWikiWriteGuardStore(t, ledger("证书", "张三", "张三", "李四", "王五"))
+	svc, page := newWikiWriteGuardStore(t, ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u5f20\u4e09", "\u674e\u56db",
+		"\u738b\u4e94"))
 	rewritten := *page
-	rewritten.Content = ledger("证书", "张三", "李四", "王五")
+	rewritten.Content = ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94")
 
 	updated, err := svc.UpdatePage(context.Background(), &rewritten)
 	require.NoError(t, err)
@@ -223,12 +224,13 @@ func TestUpdatePageWritesAnIngestRewriteThatMergesDuplicateRows(t *testing.T) {
 }
 
 // The ratio denominator counts distinct identities, not rows: three stored rows
-// naming 张三 are one identity, so losing 李四 from that page is a loss of 1/3,
+// naming Zhang San are one identity, so losing Li Si from that page is a loss of 1/3,
 // not of 1/5. Counting rows here would have let a whole subject disappear.
 func TestUpdatePageWeighsDuplicateIdentitiesOnceInTheLossRatio(t *testing.T) {
-	svc, page := newWikiWriteGuardStore(t, ledger("证书", "张三", "张三", "张三", "李四", "王五"))
+	svc, page := newWikiWriteGuardStore(t, ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u5f20\u4e09", "\u5f20\u4e09",
+		"\u674e\u56db", "\u738b\u4e94"))
 	rewritten := *page
-	rewritten.Content = ledger("证书", "张三", "王五")
+	rewritten.Content = ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u738b\u4e94")
 
 	kept, err := svc.UpdatePage(context.Background(), &rewritten)
 	require.ErrorIs(t, err, ErrWikiWriteDroppedTableRows)
@@ -246,7 +248,7 @@ func TestUpdatePageReportsTheRefusalToTheAgentWriter(t *testing.T) {
 	ctx := types.WithWikiEditSource(context.Background(), types.WikiEditSourceAgent)
 
 	truncated := *page
-	truncated.Content = ledger("PMP", "张三")
+	truncated.Content = ledger("PMP", "\u5f20\u4e09")
 	_, err := svc.UpdatePage(ctx, &truncated)
 	require.ErrorIs(t, err, ErrWikiWriteDroppedTableRows)
 
@@ -292,7 +294,7 @@ func TestUpdatePageAllowsDeliberateShrinkage(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			svc, page := newWikiWriteGuardHarness(t)
 			truncated := *page
-			truncated.Content = ledger("PMP", "张三")
+			truncated.Content = ledger("PMP", "\u5f20\u4e09")
 			updated, err := svc.UpdatePage(testCase.ctx, &truncated)
 			require.NoError(t, err)
 			require.Equal(t, truncated.Content, updated.Content)
@@ -305,7 +307,7 @@ func TestUpdatePageAllowsDeliberateShrinkage(t *testing.T) {
 func TestUpdatePageWritesARewriteThatKeepsEveryRow(t *testing.T) {
 	svc, page := newWikiWriteGuardHarness(t)
 	rewritten := *page
-	rewritten.Content = ledger("PMP 证书", "李四", "**张三**", "王五", "赵六")
+	rewritten.Content = ledger("PMP \u8bc1\u4e66", "\u674e\u56db", "**\u5f20\u4e09**", "\u738b\u4e94", "\u8d75\u516d")
 
 	updated, err := svc.UpdatePage(context.Background(), &rewritten)
 	require.NoError(t, err)

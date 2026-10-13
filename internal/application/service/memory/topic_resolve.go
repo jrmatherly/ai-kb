@@ -51,8 +51,8 @@ type topicResolution struct {
 // this person already has.
 //
 // The problem this solves is that a model asked to name a topic will not name
-// it the same way twice: "门店排班管理" one run, "店员班次安排" the
-// next. Treating the string as an identity means the same subject is counted
+// it the same way twice: "store shift scheduling" one run, "staff rota
+// planning" the next. Treating the string as an identity means the same subject is counted
 // under several keys and never reaches the promotion threshold — the feature
 // looks enabled and learns nothing.
 //
@@ -161,32 +161,38 @@ func matchTopicLoosely(surface string, existing []*types.MemoryTopicStat) *types
 	return best
 }
 
-const topicAdjudicationPrompt = `你在维护一个人的关注主题列表。下面给出「已有主题」和「新出现的说法」。
+const topicAdjudicationPrompt = `You maintain the list of subjects one person keeps coming back to.
+Below are the "Tracked topics" and the "New phrasings".
 
-对每个新说法，判断它和某个已有主题**说的是不是同一件事**——注意是同一件事，不是有关系。
+For each new phrasing, decide whether it and one of the tracked topics **are the same thing**.
+Same thing, not merely related.
 
-判为同一件事时，如果其中一个名字明显更完整、更准确，可以在 label 里给出应该保留的那个名字：
-- 「CI 流水线」和「持续集成流水线」→ label 用全称「持续集成流水线」。
-- 「PostgreSQL 连接池」和「PostgreSQL 连接池调优」→ label 用更具体的那个。
-- 两个名字差不多好，就不要填 label。
-- **绝对不要**给一个更宽泛的名字（「门店」「系统」「数据库相关」），也不要把两个名字拼起来
-  （「A与B」）。名字只能变得更准确，不能变得更笼统——否则每合并一次主题就宽一点，最后变成
-  一个什么都装的桶。
+When you judge them the same and one of the two names is clearly more complete or more accurate,
+you may give the name to keep in label:
+- "CI pipeline" and "continuous integration pipeline" → label is the full name "continuous integration pipeline".
+- "PostgreSQL connection pool" and "PostgreSQL connection pool tuning" → label is the more specific one.
+- If the two names are about equally good, leave label empty.
+- **Never** give a broader name ("stores", "system", "database-related"), and never join the two names
+  ("A and B"). A name may only become more precise, never more general. Otherwise every merge widens the
+  topic a little, until it becomes a bucket that holds everything.
 
-算同一件事：
-- 同义、换个说法、详略不同的同一件事：「店员班次安排」和「门店排班管理」。
-- 加了个无关紧要的限定词：「PostgreSQL 连接池」和「PostgreSQL 连接池问题」。
+Counts as the same thing:
+- Synonyms, rewordings, or more or less detailed versions of the same thing:
+  "staff rota planning" and "store shift scheduling".
+- An added qualifier that does not matter: "PostgreSQL connection pool" and "PostgreSQL connection pool issues".
 
-不算同一件事：
-- 同一领域里的不同问题：「PostgreSQL 连接池」和「PostgreSQL 备份恢复」。
-- 一个是另一个范围内的**具体查询**：已有「门店排班管理」，新说法是「三号店下周三的排班表」——
-  后者确实属于前者的领域，但它是一次具体查询，不是同一个长期关注点。这类要判为不同。
-- 一个是另一个的下位概念：「数据库」和「PostgreSQL 连接池」。
+Does not count as the same thing:
+- Different problems in the same area: "PostgreSQL connection pool" and "PostgreSQL backup and restore".
+- One is a **specific query** within the other's scope: "store shift scheduling" is tracked and the new
+  phrasing is "next Wednesday's rota for store No. 3". The latter does fall in the former's area, but it
+  is a one-off specific query, not the same long-term interest. Judge these as different.
+- One is a narrower concept than the other: "database" and "PostgreSQL connection pool".
 
-拿不准就判不同。合并错了会把两件事的计数混在一起、事后完全看不出来；没合并只是暂时多一条。
+When unsure, judge them different. A wrong merge mixes the counts of two things together and can never be
+seen afterwards; a missed merge only leaves one extra row for a while.
 
-只输出 JSON：
-{"resolutions":[{"index":<新说法的序号>,"same_as":<已有主题的序号，没有则 null>,"label":<更好的名字，没有则 null>}]}`
+Output JSON only:
+{"resolutions":[{"index":<new phrasing index>,"same_as":<tracked topic index or null>,"label":<better name or null>}]}`
 
 var topicAdjudicationSchema = json.RawMessage(`{
   "type": "object",
@@ -238,11 +244,11 @@ func (s *Service) adjudicateTopics(
 	}
 
 	var b strings.Builder
-	b.WriteString("已有主题：\n")
+	b.WriteString("Tracked topics:\n")
 	for i, stat := range existing {
 		fmt.Fprintf(&b, "[%d] %s\n", i, stat.Topic)
 	}
-	b.WriteString("\n新出现的说法：\n")
+	b.WriteString("\nNew phrasings:\n")
 	for _, idx := range unresolved {
 		fmt.Fprintf(&b, "[%d] %s\n", idx, resolutions[idx].Surface)
 	}

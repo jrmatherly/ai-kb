@@ -109,16 +109,16 @@ func TestTopicTierCoverageIsVisible(t *testing.T) {
 // This is a weak check, but it is the one that catches a rule being edited away
 // — which is exactly how the "specific lookup" case started merging.
 func TestTopicPromptsCarryTheRulesTheEvalSetDependsOn(t *testing.T) {
-	require.Contains(t, topicAdjudicationPrompt, "具体查询",
+	require.Contains(t, topicAdjudicationPrompt, "specific query",
 		"the adjudication prompt must still separate a specific lookup from a standing interest")
-	require.Contains(t, topicAdjudicationPrompt, "拿不准就判不同",
+	require.Contains(t, topicAdjudicationPrompt, "When unsure, judge them different",
 		"a merge is unrecoverable in a way a miss is not, so ties have to break apart")
-	require.NotContains(t, topicAdjudicationPrompt, "算同一件事，归到已有主题",
+	require.NotContains(t, topicAdjudicationPrompt, "counts as the same thing, file it under the tracked topic",
 		"folding subtopics into their parent is what collapsed a domain into one bucket")
 
-	segment := transcriptSegment{lines: []transcriptLine{{content: "问题"}}}
+	segment := transcriptSegment{lines: []transcriptLine{{content: "question"}}}
 	prompt := buildExtractionPrompt(segment, nil, nil,
-		[]*types.MemoryTopicStat{{Topic: "门店排班管理"}}, "")
+		[]*types.MemoryTopicStat{{Topic: "store shift scheduling"}}, "")
 	require.Contains(t, prompt, "SAME subject",
 		"reuse has to be an identity test; 'is about' is a relatedness test and merges everything adjacent")
 	require.Contains(t, prompt, "Do not force a fit")
@@ -129,12 +129,12 @@ func TestTopicPromptsCarryTheRulesTheEvalSetDependsOn(t *testing.T) {
 func TestExtractionPromptDoesNotDumpEveryTrackedTopic(t *testing.T) {
 	var tracked []*types.MemoryTopicStat
 	for i := 0; i < extractShownTopics*3; i++ {
-		tracked = append(tracked, &types.MemoryTopicStat{Topic: fmt.Sprintf("主题%d", i)})
+		tracked = append(tracked, &types.MemoryTopicStat{Topic: fmt.Sprintf("topic%d", i)})
 	}
 	prompt := buildExtractionPrompt(
-		transcriptSegment{lines: []transcriptLine{{content: "问题"}}}, nil, nil, tracked, "")
-	require.Contains(t, prompt, "主题0")
-	require.NotContains(t, prompt, fmt.Sprintf("主题%d", extractShownTopics))
+		transcriptSegment{lines: []transcriptLine{{content: "question"}}}, nil, nil, tracked, "")
+	require.Contains(t, prompt, "topic0")
+	require.NotContains(t, prompt, fmt.Sprintf("topic%d", extractShownTopics))
 }
 
 // TestTopicMergeEval scores the model tier against the golden set.
@@ -150,7 +150,7 @@ func TestTopicMergeEval(t *testing.T) {
 
 	correct := 0
 	for _, c := range set.Cases {
-		user := fmt.Sprintf("已有主题：\n[0] %s\n\n新出现的说法：\n[0] %s\n", c.Tracked, c.Incoming)
+		user := fmt.Sprintf("Tracked topics:\n[0] %s\n\nNew phrasings:\n[0] %s\n", c.Tracked, c.Incoming)
 		decided, err := askTopicMerge(chatModel, user)
 		if err != nil {
 			t.Errorf("%s: %v", c.Name, err)
@@ -251,9 +251,9 @@ type topicGranularityCase struct {
 // only ever match itself, so it is counted once and sits at one hit forever
 // while the feature looks like it is working.
 //
-// This is not hypothetical: the prompt used to offer "某选手的参赛项目" as the
+// This is not hypothetical: the prompt used to offer "a contestant's events" as the
 // model of a good separate subject, and production filled up with labels like
-// "v2.3版本orders接口分页参数默认值查询".
+// "v2.3 orders API page-size default lookup".
 func TestGoodSubjectsRecurAndQueryShapedOnesDoNot(t *testing.T) {
 	var set struct {
 		Granularity struct {
@@ -284,9 +284,9 @@ func TestExtractionPromptTeachesSubjectLevelNaming(t *testing.T) {
 		"the opposite failure — naming a category — has to stay ruled out too")
 
 	prompt := buildExtractionPrompt(
-		transcriptSegment{lines: []transcriptLine{{content: "问题"}}}, nil, nil,
-		[]*types.MemoryTopicStat{{Topic: "门店排班管理"}}, "")
-	require.NotContains(t, prompt, "某选手的参赛项目",
+		transcriptSegment{lines: []transcriptLine{{content: "question"}}}, nil, nil,
+		[]*types.MemoryTopicStat{{Topic: "store shift scheduling"}}, "")
+	require.NotContains(t, prompt, "a contestant's events",
 		"that example taught the model to name queries, which is how the topic table filled "+
 			"with labels that can never match anything again")
 	require.Contains(t, prompt, "same level of",

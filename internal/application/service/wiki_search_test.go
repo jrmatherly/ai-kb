@@ -79,20 +79,20 @@ func TestSearchPagesAcross_RanksAcrossEnabledKBs(t *testing.T) {
 
 	titleHit := &types.WikiPage{
 		ID: "p-title", TenantID: 1, KnowledgeBaseID: "kb-b",
-		Slug: "entity/wangxin", Title: "王新", PageType: types.WikiPageTypeEntity,
+		Slug: "entity/wangxin", Title: "\u738b\u65b0", PageType: types.WikiPageTypeEntity,
 		Status: types.WikiPageStatusPublished, Content: "other", Version: 1,
 		CreatedAt: time.Now(), UpdatedAt: time.Now().Add(-time.Hour),
 	}
 	contentHit := &types.WikiPage{
 		ID: "p-body", TenantID: 1, KnowledgeBaseID: "kb-a",
-		Slug: "entity/huawei", Title: "华为", PageType: types.WikiPageTypeEntity,
-		Status: types.WikiPageStatusPublished, Content: "mentions 王新", Version: 1,
+		Slug: "entity/huawei", Title: "\u534e\u4e3a", PageType: types.WikiPageTypeEntity,
+		Status: types.WikiPageStatusPublished, Content: "mentions \u738b\u65b0", Version: 1,
 		CreatedAt: time.Now(), UpdatedAt: time.Now(),
 	}
 	require.NoError(t, repo.Create(ctx, titleHit))
 	require.NoError(t, repo.Create(ctx, contentHit))
 
-	pages, err := svc.SearchPagesAcross(ctx, []string{"kb-a", "kb-b"}, "王新", 10)
+	pages, err := svc.SearchPagesAcross(ctx, []string{"kb-a", "kb-b"}, "\u738b\u65b0", 10)
 	require.NoError(t, err)
 	require.Len(t, pages, 2)
 	assert.Equal(t, "p-title", pages[0].ID)
@@ -163,13 +163,13 @@ func TestSearchPagesAcross_ForeignTenantWithShareOK(t *testing.T) {
 
 	page := &types.WikiPage{
 		ID: "p-shared", TenantID: 99, KnowledgeBaseID: "kb-foreign",
-		Slug: "concept/share", Title: "共享", PageType: types.WikiPageTypeConcept,
+		Slug: "concept/share", Title: "\u5171\u4eab", PageType: types.WikiPageTypeConcept,
 		Status: types.WikiPageStatusPublished, Content: "body", Version: 1,
 		CreatedAt: time.Now(), UpdatedAt: time.Now(),
 	}
 	require.NoError(t, repo.Create(ctx, page))
 
-	pages, err := svc.SearchPagesAcross(ctx, []string{"kb-foreign"}, "共享", 10)
+	pages, err := svc.SearchPagesAcross(ctx, []string{"kb-foreign"}, "\u5171\u4eab", 10)
 	require.NoError(t, err)
 	require.Len(t, pages, 1)
 	assert.Equal(t, "p-shared", pages[0].ID)

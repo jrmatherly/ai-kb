@@ -61,12 +61,13 @@ func TestRememberStoresAndRecalls(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindPreference, Content: "回答请直接给结论，不要铺垫", Importance: 4,
+		Kind:    types.MemoryKindPreference,
+		Content: "\u56de\u7b54\u8bf7\u76f4\u63a5\u7ed9\u7ed3\u8bba\uff0c\u4e0d\u8981\u94fa\u57ab", Importance: 4,
 	})
 	require.NoError(t, err)
 
-	recall := svc.Recall(ctx, "帮我看看这个报错")
-	require.Contains(t, recall.Prompt, "回答请直接给结论")
+	recall := svc.Recall(ctx, "\u5e2e\u6211\u770b\u770b\u8fd9\u4e2a\u62a5\u9519")
+	require.Contains(t, recall.Prompt, "\u56de\u7b54\u8bf7\u76f4\u63a5\u7ed9\u7ed3\u8bba")
 	require.Len(t, recall.Items, 1)
 }
 
@@ -100,14 +101,14 @@ func TestExtractedFactStillNeedsAQueryMatch(t *testing.T) {
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
 		Kind:    types.MemoryKindFact,
-		Topic:   "编辑器",
-		Content: "用的编辑器是 Neovim",
+		Topic:   "\u7f16\u8f91\u5668",
+		Content: "\u7528\u7684\u7f16\u8f91\u5668\u662f Neovim",
 		Origin:  types.MemoryOriginExtracted,
 	})
 	require.NoError(t, err)
 
-	require.Empty(t, svc.Recall(ctx, "帮我算一下这个月的账").Prompt)
-	require.Contains(t, svc.Recall(ctx, "编辑器怎么配置").Prompt, "Neovim")
+	require.Empty(t, svc.Recall(ctx, "\u5e2e\u6211\u7b97\u4e00\u4e0b\u8fd9\u4e2a\u6708\u7684\u8d26").Prompt)
+	require.Contains(t, svc.Recall(ctx, "\u7f16\u8f91\u5668\u600e\u4e48\u914d\u7f6e").Prompt, "Neovim")
 }
 
 // TestRecalledItemIsNotListedTwice guards the seam between the resident block
@@ -118,14 +119,14 @@ func TestRecalledItemIsNotListedTwice(t *testing.T) {
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
 		Kind:    types.MemoryKindFact,
-		Content: "生产数据库是 PostgreSQL 17",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17",
 		Origin:  types.MemoryOriginExplicit,
 	})
 	require.NoError(t, err)
 
-	recall := svc.Recall(ctx, "数据库连接池配多大")
+	recall := svc.Recall(ctx, "\u6570\u636e\u5e93\u8fde\u63a5\u6c60\u914d\u591a\u5927")
 	require.Len(t, recall.Items, 1, "the same memory must not be reported twice")
-	require.Equal(t, 1, strings.Count(recall.Prompt, "生产数据库是 PostgreSQL 17"))
+	require.Equal(t, 1, strings.Count(recall.Prompt, "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17"))
 }
 
 func TestRecallMatchesSituationalItemsByQuery(t *testing.T) {
@@ -133,15 +134,17 @@ func TestRecallMatchesSituationalItemsByQuery(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Content: "生产数据库是 PostgreSQL 17，部署在法兰克福",
+		Kind: types.MemoryKindFact,
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b" +
+			"\u798f",
 	})
 	require.NoError(t, err)
 	_, err = svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Content: "前端用 Vue 3 加 Vite",
+		Kind: types.MemoryKindFact, Content: "\u524d\u7aef\u7528 Vue 3 \u52a0 Vite",
 	})
 	require.NoError(t, err)
 
-	recall := svc.Recall(ctx, "数据库连接超时应该怎么排查")
+	recall := svc.Recall(ctx, "\u6570\u636e\u5e93\u8fde\u63a5\u8d85\u65f6\u5e94\u8be5\u600e\u4e48\u6392\u67e5")
 	require.Contains(t, recall.Prompt, "PostgreSQL 17")
 	// An unrelated fact must stay out: injecting it would spend context and
 	// invite the model to use it.
@@ -153,11 +156,13 @@ func TestContradictionSupersedesRatherThanDeletes(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	first, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "在用的数据库", Content: "我们用的是 MySQL",
+		Kind: types.MemoryKindFact, Topic: "\u5728\u7528\u7684\u6570\u636e\u5e93",
+		Content: "\u6211\u4eec\u7528\u7684\u662f MySQL",
 	})
 	require.NoError(t, err)
 	second, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "在用的数据库", Content: "我们已经迁到 PostgreSQL",
+		Kind: types.MemoryKindFact, Topic: "\u5728\u7528\u7684\u6570\u636e\u5e93",
+		Content: "\u6211\u4eec\u5df2\u7ecf\u8fc1\u5230 PostgreSQL",
 	})
 	require.NoError(t, err)
 	require.NotEqual(t, first.ID, second.ID)
@@ -168,10 +173,10 @@ func TestContradictionSupersedesRatherThanDeletes(t *testing.T) {
 		"the outdated statement must be superseded, not left active")
 	require.Equal(t, second.ID, old.SupersededBy)
 	require.NotNil(t, old.InvalidAt, "a superseded item must record when it stopped being true")
-	require.Equal(t, "我们用的是 MySQL", old.Content,
+	require.Equal(t, "\u6211\u4eec\u7528\u7684\u662f MySQL", old.Content,
 		"history must stay readable, so the old content is preserved")
 
-	recall := svc.Recall(ctx, "我们的数据库是什么")
+	recall := svc.Recall(ctx, "\u6211\u4eec\u7684\u6570\u636e\u5e93\u662f\u4ec0\u4e48")
 	require.Contains(t, recall.Prompt, "PostgreSQL")
 	require.NotContains(t, recall.Prompt, "MySQL")
 }
@@ -181,11 +186,11 @@ func TestRepeatedIdenticalStatementDoesNotChurn(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	first, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindProfile, Topic: "职位", Content: "后端工程师",
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4f4d", Content: "\u540e\u7aef\u5de5\u7a0b\u5e08",
 	})
 	require.NoError(t, err)
 	second, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindProfile, Topic: "职位", Content: "后端工程师",
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4f4d", Content: "\u540e\u7aef\u5de5\u7a0b\u5e08",
 	})
 	require.NoError(t, err)
 	require.Equal(t, first.ID, second.ID, "an unchanged statement must not create a new row")
@@ -205,17 +210,18 @@ func TestRestatedFactDoesNotDuplicate(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	explicit, err := svc.Remember(ctx, types.MemoryItem{
-		Kind:    types.MemoryKindFact,
-		Content: "我们的生产数据库是 PostgreSQL 17，部署在法兰克福",
-		Origin:  types.MemoryOriginExplicit,
+		Kind: types.MemoryKindFact,
+		Content: "\u6211\u4eec\u7684\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5" +
+			"\u5170\u514b\u798f",
+		Origin: types.MemoryOriginExplicit,
 	})
 	require.NoError(t, err)
 
 	// The distillation restates it more tersely and under its own topic.
 	extracted, err := svc.Remember(ctx, types.MemoryItem{
 		Kind:    types.MemoryKindFact,
-		Topic:   "生产数据库",
-		Content: "生产数据库是 PostgreSQL 17，部署在法兰克福",
+		Topic:   "\u751f\u4ea7\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b\u798f",
 		Origin:  types.MemoryOriginExtracted,
 	})
 	require.NoError(t, err)
@@ -235,11 +241,14 @@ func TestMoreSpecificRestatementSupersedes(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	short, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "生产数据库", Content: "生产数据库是 PostgreSQL 17",
+		Kind: types.MemoryKindFact, Topic: "\u751f\u4ea7\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17",
 	})
 	require.NoError(t, err)
 	long, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Content: "生产数据库是 PostgreSQL 17，部署在法兰克福",
+		Kind: types.MemoryKindFact,
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b" +
+			"\u798f",
 	})
 	require.NoError(t, err)
 	require.NotEqual(t, short.ID, long.ID)
@@ -247,7 +256,9 @@ func TestMoreSpecificRestatementSupersedes(t *testing.T) {
 	items, total, err := svc.ListItems(ctx, types.MemoryStatusActive, 10, 0)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total)
-	require.Equal(t, "生产数据库是 PostgreSQL 17，部署在法兰克福", items[0].Content)
+	require.Equal(t,
+		"\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b\u798f",
+		items[0].Content)
 }
 
 // TestDifferentFactsSharingWordsAreKept guards the containment rule from being
@@ -257,11 +268,13 @@ func TestDifferentFactsSharingWordsAreKept(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "生产数据库", Content: "生产数据库是 PostgreSQL 17",
+		Kind: types.MemoryKindFact, Topic: "\u751f\u4ea7\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17",
 	})
 	require.NoError(t, err)
 	_, err = svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "测试数据库", Content: "测试数据库是 PostgreSQL 15",
+		Kind: types.MemoryKindFact, Topic: "\u6d4b\u8bd5\u6570\u636e\u5e93",
+		Content: "\u6d4b\u8bd5\u6570\u636e\u5e93\u662f PostgreSQL 15",
 	})
 	require.NoError(t, err)
 
@@ -275,28 +288,32 @@ func TestMemoriesAreIsolatedAcrossSubjectsAndWorkspaces(t *testing.T) {
 
 	aliceInOne := enabledCtx(t, tenantRepo, 1, "alice")
 	_, err := svc.Remember(aliceInOne, types.MemoryItem{
-		Kind: types.MemoryKindProfile, Content: "爱丽丝在做医疗影像项目",
+		Kind: types.MemoryKindProfile, Content: "\u7231\u4e3d\u4e1d\u5728\u505a\u533b\u7597\u5f71\u50cf\u9879\u76ee",
 	})
 	require.NoError(t, err)
 
 	// Same workspace, different person.
 	bobInOne := enabledCtx(t, tenantRepo, 1, "bob")
-	require.Empty(t, svc.Recall(bobInOne, "我在做什么项目").Prompt,
+	require.Empty(t, svc.Recall(bobInOne, "\u6211\u5728\u505a\u4ec0\u4e48\u9879\u76ee").Prompt,
 		"another user in the same workspace must not see the memory")
 
 	// Same person, different workspace: the agreed scope is (workspace,
 	// principal), so work memories do not follow someone across workspaces.
 	aliceInTwo := enabledCtx(t, tenantRepo, 2, "alice")
-	require.Empty(t, svc.Recall(aliceInTwo, "我在做什么项目").Prompt,
+	require.Empty(t, svc.Recall(aliceInTwo, "\u6211\u5728\u505a\u4ec0\u4e48\u9879\u76ee").Prompt,
 		"the same user in another workspace must not see the memory")
 
-	require.Contains(t, svc.Recall(aliceInOne, "我在做什么项目").Prompt, "医疗影像")
+	require.Contains(t, svc.Recall(aliceInOne, "\u6211\u5728\u505a\u4ec0\u4e48\u9879\u76ee").Prompt,
+		"\u533b\u7597\u5f71\u50cf")
 }
 
 func TestListItemsIsScopedToTheCaller(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	aliceCtx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.Remember(aliceCtx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "爱丽丝的秘密"})
+	_, err := svc.Remember(aliceCtx, types.MemoryItem{
+		Kind:    types.MemoryKindFact,
+		Content: "\u7231\u4e3d\u4e1d\u7684\u79d8\u5bc6",
+	})
 	require.NoError(t, err)
 
 	bobCtx := enabledCtx(t, tenantRepo, 1, "bob")
@@ -309,62 +326,70 @@ func TestListItemsIsScopedToTheCaller(t *testing.T) {
 func TestDeleteAnotherUsersMemoryIsNotFound(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	aliceCtx := enabledCtx(t, tenantRepo, 1, "alice")
-	item, err := svc.Remember(aliceCtx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "爱丽丝的秘密"})
+	item, err := svc.Remember(aliceCtx, types.MemoryItem{
+		Kind:    types.MemoryKindFact,
+		Content: "\u7231\u4e3d\u4e1d\u7684\u79d8\u5bc6",
+	})
 	require.NoError(t, err)
 
 	bobCtx := enabledCtx(t, tenantRepo, 1, "bob")
 	require.ErrorIs(t, svc.DeleteItem(bobCtx, item.ID), ErrItemNotFound)
 
 	// And the item survives the attempt.
-	require.Contains(t, svc.Recall(aliceCtx, "爱丽丝的秘密").Prompt, "爱丽丝的秘密")
+	require.Contains(t, svc.Recall(aliceCtx, "\u7231\u4e3d\u4e1d\u7684\u79d8\u5bc6").Prompt,
+		"\u7231\u4e3d\u4e1d\u7684\u79d8\u5bc6")
 }
 
 func TestWorkspaceSwitchOffDisablesReadAndWrite(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "记住的东西"})
+	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "\u8bb0\u4f4f\u7684\u4e1c\u897f"})
 	require.NoError(t, err)
 
 	tenantRepo.set(1, &types.MemoryConfig{Enabled: false})
-	require.Empty(t, svc.Recall(ctx, "记住的东西").Prompt)
-	_, err = svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "新的东西"})
+	require.Empty(t, svc.Recall(ctx, "\u8bb0\u4f4f\u7684\u4e1c\u897f").Prompt)
+	_, err = svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "\u65b0\u7684\u4e1c\u897f"})
 	require.ErrorIs(t, err, ErrMemoryDisabled)
 }
 
 func TestUserSwitchOffDisablesReadAndWrite(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "记住的东西"})
+	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "\u8bb0\u4f4f\u7684\u4e1c\u897f"})
 	require.NoError(t, err)
 
 	require.NoError(t, svc.SetEnabled(ctx, false))
-	require.Empty(t, svc.Recall(ctx, "记住的东西").Prompt)
-	_, err = svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "新的东西"})
+	require.Empty(t, svc.Recall(ctx, "\u8bb0\u4f4f\u7684\u4e1c\u897f").Prompt)
+	_, err = svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "\u65b0\u7684\u4e1c\u897f"})
 	require.ErrorIs(t, err, ErrMemoryDisabled)
 
 	// Turning it back on restores what was stored: an opt out pauses memory,
 	// it does not erase it.
 	require.NoError(t, svc.SetEnabled(ctx, true))
-	require.Contains(t, svc.Recall(ctx, "记住的东西").Prompt, "记住的东西")
+	require.Contains(t, svc.Recall(ctx, "\u8bb0\u4f4f\u7684\u4e1c\u897f").Prompt, "\u8bb0\u4f4f\u7684\u4e1c\u897f")
 }
 
 func TestAgentOptOutDisablesRecall(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindPreference, Content: "只要中文回答"})
+	_, err := svc.Remember(ctx, types.MemoryItem{
+		Kind:    types.MemoryKindPreference,
+		Content: "\u53ea\u8981\u4e2d\u6587\u56de\u7b54",
+	})
 	require.NoError(t, err)
 
 	disabled := false
 	agentCtx := types.ApplyAgentMemoryPreference(ctx, &disabled)
-	require.Empty(t, svc.Recall(agentCtx, "帮我写个函数").Prompt)
-	require.Contains(t, svc.Recall(ctx, "帮我写个函数").Prompt, "只要中文回答")
+	require.Empty(t, svc.Recall(agentCtx, "\u5e2e\u6211\u5199\u4e2a\u51fd\u6570").Prompt)
+	require.Contains(t, svc.Recall(ctx, "\u5e2e\u6211\u5199\u4e2a\u51fd\u6570").Prompt,
+		"\u53ea\u8981\u4e2d\u6587\u56de\u7b54")
 }
 
 func TestRecallWithoutPrincipalIsEmpty(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	tenantRepo.set(1, &types.MemoryConfig{Enabled: true})
 	ctx := context.WithValue(t.Context(), types.TenantIDContextKey, uint64(1))
-	require.Empty(t, svc.Recall(ctx, "任何问题").Prompt,
+	require.Empty(t, svc.Recall(ctx, "\u4efb\u4f55\u95ee\u9898").Prompt,
 		"a request with no principal has no memory space to read")
 }
 
@@ -375,14 +400,15 @@ func TestCapacityCapArchivesLowestRanked(t *testing.T) {
 
 	// The important one is written first so recency alone would evict it.
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "关键事实", Content: "最重要的事实", Importance: 5,
+		Kind: types.MemoryKindFact, Topic: "\u5173\u952e\u4e8b\u5b9e", Content: "\u6700\u91cd\u8981\u7684\u4e8b\u5b9e",
+		Importance: 5,
 	})
 	require.NoError(t, err)
 	for i := 0; i < 5; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind:       types.MemoryKindFact,
-			Topic:      fmt.Sprintf("次要事实-%d", i),
-			Content:    fmt.Sprintf("次要事实 %d", i),
+			Topic:      fmt.Sprintf("\u6b21\u8981\u4e8b\u5b9e-%d", i),
+			Content:    fmt.Sprintf("\u6b21\u8981\u4e8b\u5b9e %d", i),
 			Importance: 1,
 		})
 		require.NoError(t, err)
@@ -396,7 +422,7 @@ func TestCapacityCapArchivesLowestRanked(t *testing.T) {
 	for _, item := range active {
 		kept = append(kept, item.Content)
 	}
-	require.Contains(t, kept, "最重要的事实", "importance must outrank recency")
+	require.Contains(t, kept, "\u6700\u91cd\u8981\u7684\u4e8b\u5b9e", "importance must outrank recency")
 
 	// Overflow is archived, not deleted, so it stays visible in the manager.
 	_, archivedTotal, err := svc.ListItems(ctx, types.MemoryStatusArchived, 50, 0)
@@ -409,7 +435,7 @@ func TestClearForgetsEverything(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	for i := 0; i < 3; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
-			Kind: types.MemoryKindFact, Topic: fmt.Sprintf("k%d", i), Content: fmt.Sprintf("事实 %d", i),
+			Kind: types.MemoryKindFact, Topic: fmt.Sprintf("k%d", i), Content: fmt.Sprintf("\u4e8b\u5b9e %d", i),
 		})
 		require.NoError(t, err)
 	}
@@ -417,7 +443,7 @@ func TestClearForgetsEverything(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(3), removed)
 
-	require.Empty(t, svc.Recall(ctx, "事实").Prompt)
+	require.Empty(t, svc.Recall(ctx, "\u4e8b\u5b9e").Prompt)
 	settings, err := svc.GetSettings(ctx)
 	require.NoError(t, err)
 	require.Zero(t, settings.ItemCount)
@@ -425,7 +451,7 @@ func TestClearForgetsEverything(t *testing.T) {
 	tenantRepo.set(1, &types.MemoryConfig{
 		Enabled: true, WriteMode: types.MemoryWriteAuto, InterestThreshold: 3,
 	})
-	svc.ObserveQuestionTopics(ctx, []string{"门店排班管理"})
+	svc.ObserveQuestionTopics(ctx, []string{"\u95e8\u5e97\u6392\u73ed\u7ba1\u7406"})
 	_, err = svc.Clear(ctx)
 	require.NoError(t, err)
 	topics, total, err := svc.ListTopics(ctx, 10, 0)
@@ -447,8 +473,8 @@ func TestClearTombstonesLiveMemoriesFirst(t *testing.T) {
 	// The one memory still in use, deliberately the oldest row in the store.
 	require.NoError(t, db.Create(&types.MemoryItem{
 		ID: "live-1", TenantID: 1, SubjectID: "web_user:alice",
-		Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产库是 PostgreSQL",
-		NormalizedKey: "数据库|生产库是 postgresql", Status: types.MemoryStatusActive,
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93", Content: "\u751f\u4ea7\u5e93\u662f PostgreSQL",
+		NormalizedKey: "\u6570\u636e\u5e93|\u751f\u4ea7\u5e93\u662f postgresql", Status: types.MemoryStatusActive,
 		ValidFrom: time.Now().Add(-24 * time.Hour),
 	}).Error)
 
@@ -456,8 +482,8 @@ func TestClearTombstonesLiveMemoriesFirst(t *testing.T) {
 	for i := 0; i < types.MaxMemoryTombstones+10; i++ {
 		require.NoError(t, db.Create(&types.MemoryItem{
 			ID: fmt.Sprintf("dead-%d", i), TenantID: 1, SubjectID: "web_user:alice",
-			Kind: types.MemoryKindFact, Content: fmt.Sprintf("旧的说法 %d", i),
-			NormalizedKey: fmt.Sprintf("旧|%d", i), Status: types.MemoryStatusSuperseded,
+			Kind: types.MemoryKindFact, Content: fmt.Sprintf("\u65e7\u7684\u8bf4\u6cd5 %d", i),
+			NormalizedKey: fmt.Sprintf("\u65e7|%d", i), Status: types.MemoryStatusSuperseded,
 			ValidFrom: time.Now(),
 		}).Error)
 	}
@@ -466,7 +492,7 @@ func TestClearTombstonesLiveMemoriesFirst(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产库是 PostgreSQL",
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93", Content: "\u751f\u4ea7\u5e93\u662f PostgreSQL",
 	})
 	require.ErrorIs(t, err, ErrPreviouslyForgotten,
 		"the memory that was in use must keep its tombstone, not be crowded out by dead rows")
@@ -475,7 +501,7 @@ func TestClearTombstonesLiveMemoriesFirst(t *testing.T) {
 func TestGetSettingsReportsMergedState(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "一条记忆"})
+	_, err := svc.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "\u4e00\u6761\u8bb0\u5fc6"})
 	require.NoError(t, err)
 
 	settings, err := svc.GetSettings(ctx)
@@ -497,25 +523,26 @@ func TestUpdateItemMarksMemoryAsManual(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	item, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindPreference, Content: "喜欢很长的解释",
+		Kind: types.MemoryKindPreference, Content: "\u559c\u6b22\u5f88\u957f\u7684\u89e3\u91ca",
 	})
 	require.NoError(t, err)
 
-	updated, err := svc.UpdateItem(ctx, item.ID, "喜欢简短的解释", 5)
+	updated, err := svc.UpdateItem(ctx, item.ID, "\u559c\u6b22\u7b80\u77ed\u7684\u89e3\u91ca", 5)
 	require.NoError(t, err)
-	require.Equal(t, "喜欢简短的解释", updated.Content)
+	require.Equal(t, "\u559c\u6b22\u7b80\u77ed\u7684\u89e3\u91ca", updated.Content)
 	require.Equal(t, 5, updated.Importance)
 	require.Equal(t, types.MemoryOriginManual, updated.Origin,
 		"a corrected memory must be marked manual so extraction does not undo it")
 
-	require.Contains(t, svc.Recall(ctx, "随便问点什么").Prompt, "喜欢简短的解释")
+	require.Contains(t, svc.Recall(ctx, "\u968f\u4fbf\u95ee\u70b9\u4ec0\u4e48").Prompt,
+		"\u559c\u6b22\u7b80\u77ed\u7684\u89e3\u91ca")
 }
 
 func TestResidentBlockSurvivesCacheLoss(t *testing.T) {
 	svc, db, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindProfile, Content: "在做医疗影像",
+		Kind: types.MemoryKindProfile, Content: "\u5728\u505a\u533b\u7597\u5f71\u50cf",
 	})
 	require.NoError(t, err)
 
@@ -523,24 +550,26 @@ func TestResidentBlockSurvivesCacheLoss(t *testing.T) {
 	require.NoError(t, db.Model(&types.MemorySubject{}).
 		Where("1 = 1").Update("block_text", "").Error)
 
-	require.Contains(t, svc.Recall(ctx, "随便问").Prompt, "在做医疗影像",
+	require.Contains(t, svc.Recall(ctx, "\u968f\u4fbf\u95ee").Prompt, "\u5728\u505a\u533b\u7597\u5f71\u50cf",
 		"an empty block cache must not silently drop the user's memories")
 }
 
 // An interest is a standing property of the person, so it has to be present
 // whatever they ask. The case that forced this: "what am I focused on" shares
-// no words with "小微SDK设备接入", so query matching can never reach it, and
+// no words with "Xiaowei SDK device onboarding" (in Chinese), so query matching can never reach it, and
 // the assistant claimed to know nothing about a memory the user could see
 // listed in the memory manager.
 func TestInterestIsPresentRegardlessOfTheQuestion(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.CreateItem(ctx, types.MemoryKindInterest, "小微SDK设备接入", 3)
+	_, err := svc.CreateItem(ctx, types.MemoryKindInterest, "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165", 3)
 	require.NoError(t, err)
 
-	require.Contains(t, svc.Recall(ctx, "我关注哪些事情？").Prompt, "小微SDK设备接入")
-	require.Contains(t, svc.Recall(ctx, "我关注哪些事情？").Prompt, "Long-term focus")
-	require.Contains(t, svc.Recall(ctx, "今天天气怎么样").Prompt, "小微SDK设备接入")
+	require.Contains(t, svc.Recall(ctx, "\u6211\u5173\u6ce8\u54ea\u4e9b\u4e8b\u60c5\uff1f").Prompt,
+		"\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165")
+	require.Contains(t, svc.Recall(ctx, "\u6211\u5173\u6ce8\u54ea\u4e9b\u4e8b\u60c5\uff1f").Prompt, "Long-term focus")
+	require.Contains(t, svc.Recall(ctx, "\u4eca\u5929\u5929\u6c14\u600e\u4e48\u6837").Prompt,
+		"\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165")
 }
 
 // Being injected and being reported are different things. An interest that is
@@ -550,15 +579,15 @@ func TestInterestIsPresentRegardlessOfTheQuestion(t *testing.T) {
 func TestUnrelatedInterestIsInjectedButNotReported(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
-	_, err := svc.CreateItem(ctx, types.MemoryKindInterest, "小微SDK设备接入", 3)
+	_, err := svc.CreateItem(ctx, types.MemoryKindInterest, "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165", 3)
 	require.NoError(t, err)
 
-	unrelated := svc.Recall(ctx, "今天天气怎么样")
-	require.Contains(t, unrelated.Prompt, "小微SDK设备接入")
+	unrelated := svc.Recall(ctx, "\u4eca\u5929\u5929\u6c14\u600e\u4e48\u6837")
+	require.Contains(t, unrelated.Prompt, "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165")
 	require.Empty(t, unrelated.Items)
 
-	related := svc.Recall(ctx, "小微SDK怎么接入设备")
-	require.Contains(t, related.Prompt, "小微SDK设备接入")
+	related := svc.Recall(ctx, "\u5c0f\u5faeSDK\u600e\u4e48\u63a5\u5165\u8bbe\u5907")
+	require.Contains(t, related.Prompt, "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165")
 	require.Len(t, related.Items, 1, "an interest the question matches is a real recall")
 }
 
@@ -568,16 +597,17 @@ func TestInterestsBeyondTheCapAreChosenByRelevance(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	topics := []string{
-		"医学影像分割", "数据库调优", "前端构建速度", "指标监控告警",
-		"日志采集链路", "小微SDK设备接入",
+		"\u533b\u5b66\u5f71\u50cf\u5206\u5272", "\u6570\u636e\u5e93\u8c03\u4f18",
+		"\u524d\u7aef\u6784\u5efa\u901f\u5ea6", "\u6307\u6807\u76d1\u63a7\u544a\u8b66",
+		"\u65e5\u5fd7\u91c7\u96c6\u94fe\u8def", "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165",
 	}
 	for _, topic := range topics {
 		_, err := svc.CreateItem(ctx, types.MemoryKindInterest, topic, 3)
 		require.NoError(t, err)
 	}
 
-	recall := svc.Recall(ctx, "小微SDK怎么接入设备")
-	require.Contains(t, recall.Prompt, "小微SDK设备接入",
+	recall := svc.Recall(ctx, "\u5c0f\u5faeSDK\u600e\u4e48\u63a5\u5165\u8bbe\u5907")
+	require.Contains(t, recall.Prompt, "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165",
 		"the interest the question is about must not be the one dropped by the cap")
 
 	var injected int
@@ -594,13 +624,14 @@ func TestCreateItemFromManagerGoesThroughTheWritePath(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
-	_, err := svc.CreateItem(ctx, types.MemoryKindPreference, "  回答请用中文  \n", 0)
+	_, err := svc.CreateItem(ctx, types.MemoryKindPreference, "  \u56de\u7b54\u8bf7\u7528\u4e2d\u6587  \n", 0)
 	require.NoError(t, err)
 
 	items, _, err := svc.ListItems(ctx, types.MemoryStatusActive, 10, 0)
 	require.NoError(t, err)
 	require.Len(t, items, 1)
-	require.Equal(t, "回答请用中文", items[0].Content, "manual input must be sanitized like any other")
+	require.Equal(t, "\u56de\u7b54\u8bf7\u7528\u4e2d\u6587", items[0].Content,
+		"manual input must be sanitized like any other")
 	require.Equal(t, types.MemoryOriginManual, items[0].Origin)
 	require.False(t, strings.Contains(items[0].Content, "\n"))
 }

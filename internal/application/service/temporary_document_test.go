@@ -121,7 +121,8 @@ func TestApplyImageUnderstandingImageFileRunsVLM(t *testing.T) {
 
 func TestApplyImageUnderstandingImageOCRSufficientSkipsCaption(t *testing.T) {
 	fv := &promptAwareVLM{
-		ocrResponse:     strings.Repeat("发票明细行内容 ", 8), // > temporaryDocumentOCRSufficientRunes
+		ocrResponse: strings.Repeat("\u53d1\u7968\u660e\u7ec6\u884c\u5185\u5bb9 ", 8),
+		// > temporaryDocumentOCRSufficientRunes
 		captionResponse: "should-not-be-used",
 	}
 	svc := &temporaryDocumentService{modelService: &fakeVLMModelService{model: fv}}
@@ -200,12 +201,12 @@ func TestApplyImageUnderstandingDocumentGatedByFlag(t *testing.T) {
 }
 
 func TestApplyImageUnderstandingScannedDocumentRunsOCR(t *testing.T) {
-	fv := &fakeVLM{response: "第一页扫描文字内容"}
+	fv := &fakeVLM{response: "\u7b2c\u4e00\u9875\u626b\u63cf\u6587\u5b57\u5185\u5bb9"}
 	svc := &temporaryDocumentService{modelService: &fakeVLMModelService{model: fv}}
 	options := types.TemporaryDocumentCreateOptions{VLMModelID: "fake", ImageUnderstanding: true}
 	pages := [][]byte{[]byte("page-1")}
 	content := svc.applyImageUnderstanding(context.Background(), "pdf", options, nil, pages, "![p](x)")
-	if !strings.Contains(content, "第一页扫描文字内容") {
+	if !strings.Contains(content, "\u7b2c\u4e00\u9875\u626b\u63cf\u6587\u5b57\u5185\u5bb9") {
 		t.Fatalf("scanned document should get OCR text merged, got %q", content)
 	}
 }
@@ -215,7 +216,8 @@ func TestApplyImageUnderstandingHighTextDocumentSkipsOCR(t *testing.T) {
 	svc := &temporaryDocumentService{modelService: &fakeVLMModelService{model: fv}}
 	options := types.TemporaryDocumentCreateOptions{VLMModelID: "fake", ImageUnderstanding: true}
 	pages := [][]byte{[]byte("page-1")}
-	longText := strings.Repeat("这是一段已经解析出来的正文内容。", 40)
+	longText := strings.Repeat("\u8fd9\u662f\u4e00\u6bb5\u5df2\u7ecf\u89e3\u6790\u51fa\u6765\u7684\u6b63\u6587\u5185"+
+		"\u5bb9\u3002", 40)
 	if got := svc.applyImageUnderstanding(context.Background(), "pdf", options, nil, pages, longText); got != "" {
 		t.Fatalf("text-rich document should not trigger OCR, got a change")
 	}
@@ -237,7 +239,8 @@ func TestSelectTemporaryDocumentContentRanksRelevantLargeDocumentChunks(t *testi
 	for i := 0; i < 20; i++ {
 		content := "ordinary background material"
 		if i == 17 {
-			content = "退款政策规定，订阅后七天内可以退款。"
+			content = "\u9000\u6b3e\u653f\u7b56\u89c4\u5b9a\uff0c\u8ba2\u9605\u540e\u4e03\u5929\u5185\u53ef\u4ee5" +
+				"\u9000\u6b3e\u3002"
 		}
 		chunks = append(chunks, types.TemporaryDocumentChunk{Seq: i, Content: content, TokenCount: 900})
 	}
@@ -246,8 +249,9 @@ func TestSelectTemporaryDocumentContentRanksRelevantLargeDocumentChunks(t *testi
 		t.Fatal(err)
 	}
 	document := &types.TemporaryDocument{Content: "large", TokenCount: 18000, Chunks: types.JSON(raw)}
-	content, selected, total := selectTemporaryDocumentContent(document, "退款政策是什么？")
-	if !strings.Contains(content, "七天内可以退款") {
+	content, selected, total := selectTemporaryDocumentContent(document,
+		"\u9000\u6b3e\u653f\u7b56\u662f\u4ec0\u4e48\uff1f")
+	if !strings.Contains(content, "\u4e03\u5929\u5185\u53ef\u4ee5\u9000\u6b3e") {
 		t.Fatalf("relevant chunk was not selected: %q", content)
 	}
 	if selected == 0 || selected >= total || total != 20 {
@@ -269,12 +273,15 @@ func TestSelectTemporaryDocumentContentHonorsSharedPromptBudget(t *testing.T) {
 }
 
 func TestVisualDocumentQueryDetection(t *testing.T) {
-	for _, query := range []string{"解释第三页的图", "What does this chart show?", "describe the layout"} {
+	for _, query := range []string{
+		"\u89e3\u91ca\u7b2c\u4e09\u9875\u7684\u56fe", "What does this chart show?",
+		"describe the layout",
+	} {
 		if !isVisualDocumentQuery(query) {
 			t.Fatalf("query %q should request visual context", query)
 		}
 	}
-	if isVisualDocumentQuery("总结退款政策") {
+	if isVisualDocumentQuery("\u603b\u7ed3\u9000\u6b3e\u653f\u7b56") {
 		t.Fatal("plain text query should not request visual context")
 	}
 }

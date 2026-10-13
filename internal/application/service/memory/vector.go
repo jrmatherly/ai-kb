@@ -124,10 +124,10 @@ func (s *Service) storeItemEmbedding(
 //
 // Topic and content together, because the topic carries the subject the
 // statement is about and the statement alone is often too terse to place —
-// "PostgreSQL 17" means little without "生产数据库".
+// "PostgreSQL 17" means little without "production database".
 //
 // An interest is promoted from a subject label, so its topic and content are
-// the same string. Joining them would embed "X：X", which is not the sentence
+// the same string. Joining them would embed "X: X", which is not the sentence
 // any question resembles.
 //
 // aliases are the other wordings this person has used for the same subject.
@@ -141,7 +141,7 @@ func embeddableText(item *types.MemoryItem, aliases []string) string {
 	content := types.SanitizeMemoryContent(item.Content)
 	text := content
 	if topic != "" && topic != content {
-		text = topic + "：" + content
+		text = topic + ": " + content
 	}
 	if text == "" {
 		return ""
@@ -153,7 +153,7 @@ func embeddableText(item *types.MemoryItem, aliases []string) string {
 			continue
 		}
 		seen[alias] = true
-		text += "；" + alias
+		text += "; " + alias
 	}
 	return text
 }

@@ -16,14 +16,16 @@ var (
 	htmlDocPattern    = regexp.MustCompile(`(?i)^\s*(<\!DOCTYPE|<html|<body|<div|<p[\s>]|<table|<h[1-6][\s>])`)
 	multipleNewlines  = regexp.MustCompile(`\n{3,}`)
 	knownEmptyReplies = []string{
-		"无文字内容",
-		"无法识别",
+		// Chinese VLM replies: "no text content", "cannot recognize".
+		"\u65e0\u6587\u5b57\u5185\u5bb9",
+		"\u65e0\u6cd5\u8bc6\u522b",
 		"no text",
 		"no text content",
 		"no content",
 		"empty",
-		"图片中没有文字",
-		"图片中没有可识别的文字",
+		// Chinese: "there is no text in the image", "no recognizable text in the image".
+		"\u56fe\u7247\u4e2d\u6ca1\u6709\u6587\u5b57",
+		"\u56fe\u7247\u4e2d\u6ca1\u6709\u53ef\u8bc6\u522b\u7684\u6587\u5b57",
 	}
 )
 
@@ -190,7 +192,8 @@ func ocrHTMLToMarkdown(content string) string {
 // responses like "No text content." still match "no text content".
 func isKnownEmptyReply(text string) bool {
 	lower := strings.ToLower(strings.TrimSpace(text))
-	lower = strings.TrimRight(lower, ".!?。！？")
+	// Also trims the ideographic full stop and fullwidth ! and ?.
+	lower = strings.TrimRight(lower, ".!?\u3002\uff01\uff1f")
 	for _, phrase := range knownEmptyReplies {
 		if lower == strings.ToLower(phrase) {
 			return true

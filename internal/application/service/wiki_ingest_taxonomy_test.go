@@ -9,17 +9,17 @@ import (
 
 func TestFormatExistingTaxonomyForPrompt(t *testing.T) {
 	got := formatExistingTaxonomyForPrompt([][]string{
-		{"春节", "传统习俗"},
-		{"春节", "文化习俗", "节日习俗"},
-		{"春节习俗"},
-		{"产品定位"},
+		{"\u6625\u8282", "\u4f20\u7edf\u4e60\u4fd7"},
+		{"\u6625\u8282", "\u6587\u5316\u4e60\u4fd7", "\u8282\u65e5\u4e60\u4fd7"},
+		{"\u6625\u8282\u4e60\u4fd7"},
+		{"\u4ea7\u54c1\u5b9a\u4f4d"},
 	})
-	want := "产品定位\n" +
-		"春节\n" +
-		"  传统习俗\n" +
-		"  文化习俗\n" +
-		"    节日习俗\n" +
-		"春节习俗"
+	want := "\u4ea7\u54c1\u5b9a\u4f4d\n" +
+		"\u6625\u8282\n" +
+		"  \u4f20\u7edf\u4e60\u4fd7\n" +
+		"  \u6587\u5316\u4e60\u4fd7\n" +
+		"    \u8282\u65e5\u4e60\u4fd7\n" +
+		"\u6625\u8282\u4e60\u4fd7"
 	if got != want {
 		t.Fatalf("formatExistingTaxonomyForPrompt():\n%q\nwant:\n%q", got, want)
 	}
@@ -33,8 +33,8 @@ func TestFormatExistingTaxonomyForPromptEmpty(t *testing.T) {
 
 func TestParseTaxonomyAssignments(t *testing.T) {
 	raw := "```json\n{\"assignments\":[" +
-		"{\"slug\":\"entity/zhang-san\",\"path\":[\"人物\"]}," +
-		"{\"slug\":\"concept/spring\",\"path\":[\"节日\",\"传统节日\"]}," +
+		"{\"slug\":\"entity/zhang-san\",\"path\":[\"\u4eba\u7269\"]}," +
+		"{\"slug\":\"concept/spring\",\"path\":[\"\u8282\u65e5\",\"\u4f20\u7edf\u8282\u65e5\"]}," +
 		"{\"slug\":\"  \",\"path\":[\"X\"]}," +
 		"{\"slug\":\"entity/unclassified\",\"path\":[]}" +
 		"]}\n```"
@@ -43,11 +43,11 @@ func TestParseTaxonomyAssignments(t *testing.T) {
 	if len(got) != 3 {
 		t.Fatalf("parseTaxonomyAssignments() returned %d entries, want 3 (blank slug dropped): %v", len(got), got)
 	}
-	if strings.Join(got["entity/zhang-san"], "/") != "人物" {
-		t.Fatalf("zhang-san path = %v, want [人物]", got["entity/zhang-san"])
+	if strings.Join(got["entity/zhang-san"], "/") != "\u4eba\u7269" {
+		t.Fatalf("zhang-san path = %v, want [\u4eba\u7269]", got["entity/zhang-san"])
 	}
-	if strings.Join(got["concept/spring"], "/") != "节日/传统节日" {
-		t.Fatalf("spring path = %v, want [节日 传统节日]", got["concept/spring"])
+	if strings.Join(got["concept/spring"], "/") != "\u8282\u65e5/\u4f20\u7edf\u8282\u65e5" {
+		t.Fatalf("spring path = %v, want [\u8282\u65e5 \u4f20\u7edf\u8282\u65e5]", got["concept/spring"])
 	}
 	if p, ok := got["entity/unclassified"]; !ok || len(p) != 0 {
 		t.Fatalf("unclassified path = %v (ok=%v), want empty slice present", p, ok)
@@ -77,9 +77,9 @@ func TestCosineSimilarity(t *testing.T) {
 
 func TestSelectFoldersByVectors(t *testing.T) {
 	deeper := [][]string{
-		{"AI", "厂商"}, // 0
-		{"AI", "模型"}, // 1
-		{"地理", "城市"}, // 2
+		{"AI", "\u5382\u5546"},           // 0
+		{"AI", "\u6a21\u578b"},           // 1
+		{"\u5730\u7406", "\u57ce\u5e02"}, // 2
 	}
 	folderVecs := [][]float32{
 		{1, 0, 0},
@@ -94,8 +94,8 @@ func TestSelectFoldersByVectors(t *testing.T) {
 		t.Fatalf("selectFoldersByVectors() returned %d folders, want 2: %v", len(got), got)
 	}
 	// Input order preserved: folders 0 and 1, not the orthogonal 2.
-	if strings.Join(got[0], "/") != "AI/厂商" || strings.Join(got[1], "/") != "AI/模型" {
-		t.Fatalf("selectFoldersByVectors() = %v, want [[AI 厂商] [AI 模型]]", got)
+	if strings.Join(got[0], "/") != "AI/\u5382\u5546" || strings.Join(got[1], "/") != "AI/\u6a21\u578b" {
+		t.Fatalf("selectFoldersByVectors() = %v, want [[AI \u5382\u5546] [AI \u6a21\u578b]]", got)
 	}
 }
 

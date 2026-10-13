@@ -40,14 +40,15 @@ const (
 	// Low on purpose. Candidate selection is recall, not judgement — every
 	// group goes to the model, which answers with an empty statement when the
 	// records turn out to be different things. A strict bar only hides pairs
-	// from the one component able to tell them apart: "我叫wizard，我是一个画家"
-	// against "职业：我叫wizardchen，我是一个作家" shares 0.50 of its tokens and
+	// from the one component able to tell them apart: "my name is wizard, I am
+	// a painter" against "occupation: my name is wizardchen, I am a writer"
+	// (both written in Chinese) shares 0.50 of its tokens and
 	// so never reached the model, yet resolving exactly that contradiction is
 	// why someone presses the button.
 	forcedMinOverlap = 0.3
 	// consolidateMinCosine and forcedMinCosine are the same two bars for
-	// memories that were embedded. Wording overlap cannot see that "喜欢用 Go"
-	// and "偏好 Golang 开发" are one preference; the vectors already stored for
+	// memories that were embedded. Wording overlap cannot see that "likes using Go"
+	// and "prefers Golang development" are one preference; the vectors already stored for
 	// recall can, at no extra model call.
 	consolidateMinCosine = 0.86
 	forcedMinCosine      = 0.75
@@ -450,15 +451,16 @@ func jaccardSets(a, b map[string]struct{}) float64 {
 	return float64(shared) / float64(union)
 }
 
-const consolidationSystemPrompt = `你在整理一个人的长期记忆。下面几条记录说的是同一件事，请合并成一条。
+const consolidationSystemPrompt = `You are tidying one person's long-term memory.
+The records below say the same thing; merge them into one.
 
-规则：
-- 只用这些记录里已有的信息，不要补充、不要推测。
-- 如果它们互相矛盾，以日期最新的一条为准。
-- 保留最具体的细节（具体的名称、数字、版本），丢掉重复的说法。
-- 用记录本身的语言，一句话，不超过 60 字。
-- 只输出 JSON：{"statement":"合并后的一句话"}
-- 如果这些记录其实不是同一件事，输出 {"statement":""}。`
+Rules:
+- Use only information already in these records. Do not add or infer anything.
+- If they contradict each other, the record with the latest date wins.
+- Keep the most specific details (exact names, numbers, versions) and drop repeated wording.
+- Write in the records' own language, as one sentence of no more than 60 characters.
+- Output JSON only: {"statement":"the merged sentence"}
+- If these records are not actually the same thing, output {"statement":""}.`
 
 var consolidationSchema = json.RawMessage(`{
   "type": "object",

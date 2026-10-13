@@ -383,7 +383,7 @@ func (s *Service) writeReplacing(ctx context.Context, scope interfaces.MemorySco
 	if existing == nil {
 		// The same fact often arrives twice: once because the user said
 		// "remember ..." and again from the background distillation, phrased
-		// slightly differently ("我们的生产库是 X" vs "生产库是 X"). They get
+		// slightly differently ("our production database is X" vs "the production database is X"). They get
 		// different topic keys, so key matching alone lets both through and
 		// the user sees their memory duplicated.
 		duplicate, longer, err := s.findContainedDuplicate(ctx, scope, item.Kind, content)
@@ -997,7 +997,7 @@ func (s *Service) RetrievalContextFor(ctx context.Context) interfaces.RetrievalC
 	documents := s.topDocumentTitles(condCtx, scope)
 
 	retrievalCtx := interfaces.RetrievalContext{
-		Background: strings.Join(background, "；"),
+		Background: strings.Join(background, "; "),
 		Interests:  interests,
 		Documents:  documents,
 		Items:      used,

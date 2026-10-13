@@ -11,7 +11,7 @@ func TestNormalizeSlugForCompare(t *testing.T) {
 		"entity/shanghai-tower": "entity/shanghaitower",
 		"":                      "",
 		"---":                   "",
-		"中文-slug":               "中文slug",
+		"\u4e2d\u6587-slug":     "\u4e2d\u6587slug",
 	}
 	for input, want := range cases {
 		t.Run(input, func(t *testing.T) {
@@ -32,11 +32,11 @@ func TestResolveDeadSlug_HyphenVariation(t *testing.T) {
 		"entity/shanghai-tower": {},
 	}
 	titleToSlug := map[string]string{
-		"上海中心大厦": "entity/shanghai-tower",
+		"\u4e0a\u6d77\u4e2d\u5fc3\u5927\u53a6": "entity/shanghai-tower",
 	}
 	got, ok := resolveDeadSlug(
 		"entity/shang-hai-tower",
-		"上海中心大厦",
+		"\u4e0a\u6d77\u4e2d\u5fc3\u5927\u53a6",
 		live, titleToSlug,
 	)
 	if !ok {

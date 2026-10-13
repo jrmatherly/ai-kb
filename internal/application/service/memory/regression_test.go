@@ -37,90 +37,116 @@ type memoryScenario struct {
 func TestCrossSessionMemoryScenarios(t *testing.T) {
 	scenarios := []memoryScenario{
 		{
-			name:      "记住个人画像并在新会话里带上",
-			userTurns: []string{"我是做医疗影像的后端工程师，主要写 Go"},
+			name: "\u8bb0\u4f4f\u4e2a\u4eba\u753b\u50cf\u5e76\u5728\u65b0\u4f1a\u8bdd\u91cc\u5e26\u4e0a",
+			userTurns: []string{"\u6211\u662f\u505a\u533b\u7597\u5f71\u50cf\u7684\u540e\u7aef\u5de5\u7a0b\u5e08\uff0c" +
+				"\u4e3b\u8981\u5199 Go"},
 			extracted: []map[string]any{
 				{
-					"action": "add", "kind": "profile", "topic": "职业",
-					"content": "医疗影像方向的后端工程师，主要写 Go",
+					"action": "add", "kind": "profile", "topic": "\u804c\u4e1a",
+					"content": "\u533b\u7597\u5f71\u50cf\u65b9\u5411\u7684\u540e\u7aef\u5de5\u7a0b\u5e08\uff0c\u4e3b" +
+						"\u8981\u5199 Go",
 				},
 			},
-			laterQuery:   "帮我设计一个接口",
-			wantInPrompt: []string{"医疗影像", "后端工程师"},
+			laterQuery:   "\u5e2e\u6211\u8bbe\u8ba1\u4e00\u4e2a\u63a5\u53e3",
+			wantInPrompt: []string{"\u533b\u7597\u5f71\u50cf", "\u540e\u7aef\u5de5\u7a0b\u5e08"},
 		},
 		{
-			name:      "偏好常驻，与问题内容无关也会带上",
-			userTurns: []string{"以后回答直接给结论，不要长篇铺垫"},
+			name: "\u504f\u597d\u5e38\u9a7b\uff0c\u4e0e\u95ee\u9898\u5185\u5bb9\u65e0\u5173\u4e5f\u4f1a\u5e26" +
+				"\u4e0a",
+			userTurns: []string{"\u4ee5\u540e\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\uff0c\u4e0d\u8981\u957f\u7bc7" +
+				"\u94fa\u57ab"},
 			extracted: []map[string]any{
-				{"action": "add", "kind": "preference", "topic": "回答风格", "content": "回答直接给结论，不要铺垫"},
+				{
+					"action": "add", "kind": "preference", "topic": "\u56de\u7b54\u98ce\u683c",
+					"content": "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\uff0c\u4e0d\u8981\u94fa\u57ab",
+				},
 			},
-			laterQuery:   "今天的天气适合跑步吗",
-			wantInPrompt: []string{"直接给结论"},
+			laterQuery:   "\u4eca\u5929\u7684\u5929\u6c14\u9002\u5408\u8dd1\u6b65\u5417",
+			wantInPrompt: []string{"\u76f4\u63a5\u7ed9\u7ed3\u8bba"},
 		},
 		{
-			name: "事实按问题相关性召回，不相关的不进上下文",
+			name: "\u4e8b\u5b9e\u6309\u95ee\u9898\u76f8\u5173\u6027\u53ec\u56de\uff0c\u4e0d\u76f8\u5173\u7684\u4e0d" +
+				"\u8fdb\u4e0a\u4e0b\u6587",
 			userTurns: []string{
-				"我们生产库是 PostgreSQL 17，跑在法兰克福",
-				"前端是 Vue 3 加 Vite",
+				"\u6211\u4eec\u751f\u4ea7\u5e93\u662f PostgreSQL 17\uff0c\u8dd1\u5728\u6cd5\u5170\u514b\u798f",
+				"\u524d\u7aef\u662f Vue 3 \u52a0 Vite",
 			},
 			extracted: []map[string]any{
 				{
-					"action": "add", "kind": "fact", "topic": "生产数据库",
-					"content": "生产库是 PostgreSQL 17，部署在法兰克福",
+					"action": "add", "kind": "fact", "topic": "\u751f\u4ea7\u6570\u636e\u5e93",
+					"content": "\u751f\u4ea7\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b\u798f",
 				},
-				{"action": "add", "kind": "fact", "topic": "前端技术栈", "content": "前端是 Vue 3 加 Vite"},
+				{
+					"action": "add", "kind": "fact", "topic": "\u524d\u7aef\u6280\u672f\u6808",
+					"content": "\u524d\u7aef\u662f Vue 3 \u52a0 Vite",
+				},
 			},
-			laterQuery:   "数据库连接池应该配多大",
+			laterQuery:   "\u6570\u636e\u5e93\u8fde\u63a5\u6c60\u5e94\u8be5\u914d\u591a\u5927",
 			wantInPrompt: []string{"PostgreSQL 17"},
 			wantAbsent:   []string{"Vue 3"},
 		},
 		{
-			name: "修正矛盾信息后只保留最新的",
+			name: "\u4fee\u6b63\u77db\u76fe\u4fe1\u606f\u540e\u53ea\u4fdd\u7559\u6700\u65b0\u7684",
 			userTurns: []string{
-				"我们用的是 MySQL",
-				"更正一下，我们上个月已经迁到 PostgreSQL 了",
+				"\u6211\u4eec\u7528\u7684\u662f MySQL",
+				"\u66f4\u6b63\u4e00\u4e0b\uff0c\u6211\u4eec\u4e0a\u4e2a\u6708\u5df2\u7ecf\u8fc1\u5230 PostgreSQL " +
+					"\u4e86",
 			},
 			extracted: []map[string]any{
-				{"action": "add", "kind": "fact", "topic": "在用的数据库", "content": "用的是 MySQL"},
-				{"action": "update", "kind": "fact", "topic": "在用的数据库", "content": "已经迁到 PostgreSQL"},
+				{
+					"action": "add", "kind": "fact", "topic": "\u5728\u7528\u7684\u6570\u636e\u5e93",
+					"content": "\u7528\u7684\u662f MySQL",
+				},
+				{
+					"action": "update", "kind": "fact", "topic": "\u5728\u7528\u7684\u6570\u636e\u5e93",
+					"content": "\u5df2\u7ecf\u8fc1\u5230 PostgreSQL",
+				},
 			},
-			laterQuery:   "写一段连接数据库的示例代码",
+			laterQuery:   "\u5199\u4e00\u6bb5\u8fde\u63a5\u6570\u636e\u5e93\u7684\u793a\u4f8b\u4ee3\u7801",
 			wantInPrompt: []string{"PostgreSQL"},
 			wantAbsent:   []string{"MySQL"},
 		},
 		{
-			name:      "在办事项可以跨会话续接",
-			userTurns: []string{"这周在重构订单服务的支付流程，还没弄完"},
+			name: "\u5728\u529e\u4e8b\u9879\u53ef\u4ee5\u8de8\u4f1a\u8bdd\u7eed\u63a5",
+			userTurns: []string{"\u8fd9\u5468\u5728\u91cd\u6784\u8ba2\u5355\u670d\u52a1\u7684\u652f\u4ed8\u6d41\u7a0b" +
+				"\uff0c\u8fd8\u6ca1\u5f04\u5b8c"},
 			extracted: []map[string]any{
 				{
-					"action": "add", "kind": "task", "topic": "在做的重构",
-					"content": "在重构订单服务的支付流程，尚未完成",
+					"action": "add", "kind": "task", "topic": "\u5728\u505a\u7684\u91cd\u6784",
+					"content": "\u5728\u91cd\u6784\u8ba2\u5355\u670d\u52a1\u7684\u652f\u4ed8\u6d41\u7a0b\uff0c\u5c1a" +
+						"\u672a\u5b8c\u6210",
 				},
 			},
-			laterQuery:   "订单服务那个重构接着往下怎么做",
-			wantInPrompt: []string{"支付流程"},
+			laterQuery:   "\u8ba2\u5355\u670d\u52a1\u90a3\u4e2a\u91cd\u6784\u63a5\u7740\u5f80\u4e0b\u600e\u4e48\u505a",
+			wantInPrompt: []string{"\u652f\u4ed8\u6d41\u7a0b"},
 		},
 		{
-			name: "事情做完后不再被召回",
+			name: "\u4e8b\u60c5\u505a\u5b8c\u540e\u4e0d\u518d\u88ab\u53ec\u56de",
 			userTurns: []string{
-				"在重构订单服务的支付流程",
-				"支付流程重构已经上线了",
+				"\u5728\u91cd\u6784\u8ba2\u5355\u670d\u52a1\u7684\u652f\u4ed8\u6d41\u7a0b",
+				"\u652f\u4ed8\u6d41\u7a0b\u91cd\u6784\u5df2\u7ecf\u4e0a\u7ebf\u4e86",
 			},
 			extracted: []map[string]any{
-				{"action": "add", "kind": "task", "topic": "在做的重构", "content": "在重构订单服务的支付流程"},
-				{"action": "delete", "kind": "task", "topic": "在做的重构", "content": "支付流程重构已完成"},
+				{
+					"action": "add", "kind": "task", "topic": "\u5728\u505a\u7684\u91cd\u6784",
+					"content": "\u5728\u91cd\u6784\u8ba2\u5355\u670d\u52a1\u7684\u652f\u4ed8\u6d41\u7a0b",
+				},
+				{
+					"action": "delete", "kind": "task", "topic": "\u5728\u505a\u7684\u91cd\u6784",
+					"content": "\u652f\u4ed8\u6d41\u7a0b\u91cd\u6784\u5df2\u5b8c\u6210",
+				},
 			},
-			laterQuery: "订单服务现在还有什么在做的",
-			wantAbsent: []string{"在重构订单服务的支付流程"},
+			laterQuery: "\u8ba2\u5355\u670d\u52a1\u73b0\u5728\u8fd8\u6709\u4ec0\u4e48\u5728\u505a\u7684",
+			wantAbsent: []string{"\u5728\u91cd\u6784\u8ba2\u5355\u670d\u52a1\u7684\u652f\u4ed8\u6d41\u7a0b"},
 		},
 		{
-			name:      "一次性的提问不该被记成长期事实",
-			userTurns: []string{"Go 的 map 是并发安全的吗"},
+			name:      "\u4e00\u6b21\u6027\u7684\u63d0\u95ee\u4e0d\u8be5\u88ab\u8bb0\u6210\u957f\u671f\u4e8b\u5b9e",
+			userTurns: []string{"Go \u7684 map \u662f\u5e76\u53d1\u5b89\u5168\u7684\u5417"},
 			// A well-behaved extraction returns nothing here, which is the
 			// normal outcome; the assertion is that we store nothing either.
 			extracted:  nil,
-			laterQuery: "Go 的 slice 底层是怎么扩容的",
-			wantAbsent: []string{"map", "并发安全"},
+			laterQuery: "Go \u7684 slice \u5e95\u5c42\u662f\u600e\u4e48\u6269\u5bb9\u7684",
+			wantAbsent: []string{"map", "\u5e76\u53d1\u5b89\u5168"},
 		},
 	}
 
@@ -174,14 +200,14 @@ func TestReadPathMakesNoModelCall(t *testing.T) {
 	for i := 0; i < 30; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind:    types.MemoryKindFact,
-			Topic:   "事实" + string(rune('a'+i)),
-			Content: "数据库相关的事实 " + string(rune('a'+i)),
+			Topic:   "\u4e8b\u5b9e" + string(rune('a'+i)),
+			Content: "\u6570\u636e\u5e93\u76f8\u5173\u7684\u4e8b\u5b9e " + string(rune('a'+i)),
 		})
 		require.NoError(t, err)
 	}
 
 	for i := 0; i < 5; i++ {
-		require.NotEmpty(t, svc.Recall(ctx, "数据库怎么调优").Prompt)
+		require.NotEmpty(t, svc.Recall(ctx, "\u6570\u636e\u5e93\u600e\u4e48\u8c03\u4f18").Prompt)
 	}
 	require.Zero(t, models.calls, "the read path must not call a model")
 }
@@ -194,19 +220,20 @@ func TestInjectedMemoryStaysInsideItsBudget(t *testing.T) {
 	for i := 0; i < 40; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind:    types.MemoryKindPreference,
-			Topic:   "偏好" + string(rune('a'+i)),
-			Content: strings.Repeat("很长的偏好说明", 8) + string(rune('a'+i)),
+			Topic:   "\u504f\u597d" + string(rune('a'+i)),
+			Content: strings.Repeat("\u5f88\u957f\u7684\u504f\u597d\u8bf4\u660e", 8) + string(rune('a'+i)),
 		})
 		require.NoError(t, err)
 		_, err = svc.Remember(ctx, types.MemoryItem{
-			Kind:    types.MemoryKindFact,
-			Topic:   "事实" + string(rune('a'+i)),
-			Content: "数据库" + strings.Repeat("很长的事实说明", 8) + string(rune('a'+i)),
+			Kind:  types.MemoryKindFact,
+			Topic: "\u4e8b\u5b9e" + string(rune('a'+i)),
+			Content: "\u6570\u636e\u5e93" + strings.Repeat("\u5f88\u957f\u7684\u4e8b\u5b9e\u8bf4\u660e",
+				8) + string(rune('a'+i)),
 		})
 		require.NoError(t, err)
 	}
 
-	prompt := svc.Recall(ctx, "数据库怎么调优").Prompt
+	prompt := svc.Recall(ctx, "\u6570\u636e\u5e93\u600e\u4e48\u8c03\u4f18").Prompt
 	require.NotEmpty(t, prompt)
 	// Envelope wording aside, the memory content itself must fit in the two
 	// declared budgets.

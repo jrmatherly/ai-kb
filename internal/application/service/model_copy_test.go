@@ -50,7 +50,7 @@ func TestCopyModel_CopiesCredentialsAndKeepsName(t *testing.T) {
 		ID:          "src",
 		TenantID:    7,
 		Name:        "gpt-4o",
-		DisplayName: "生产 GPT",
+		DisplayName: "Production GPT",
 		Type:        types.ModelTypeKnowledgeQA,
 		Source:      types.ModelSourceRemote,
 		Description: "primary",
@@ -75,14 +75,14 @@ func TestCopyModel_CopiesCredentialsAndKeepsName(t *testing.T) {
 	svc := NewModelService(repo, &stubKBRepoForModelDelete{}, &stubAgentRepoForModelDelete{}, nil, nil, nil)
 	ctx := context.WithValue(context.Background(), types.TenantIDContextKey, uint64(7))
 
-	copied, err := svc.CopyModel(ctx, "src", "  生产 GPT 副本\n")
+	copied, err := svc.CopyModel(ctx, "src", "  Production GPT copy\n")
 	require.NoError(t, err)
 	require.NotNil(t, repo.created)
 	assert.Equal(t, copied, repo.created)
 	assert.Empty(t, copied.ID)
 	assert.Equal(t, uint64(7), copied.TenantID)
 	assert.Equal(t, "gpt-4o", copied.Name)
-	assert.Equal(t, "生产 GPT 副本", copied.DisplayName)
+	assert.Equal(t, "Production GPT copy", copied.DisplayName)
 	assert.Equal(t, "primary", copied.Description)
 	assert.Equal(t, types.ModelStatusActive, copied.Status)
 	assert.False(t, copied.IsDefault)
@@ -113,7 +113,7 @@ func TestCopyModel_ActiveLocalModelSkipsDownload(t *testing.T) {
 	svc := NewModelService(repo, &stubKBRepoForModelDelete{}, &stubAgentRepoForModelDelete{}, nil, nil, nil)
 	ctx := context.WithValue(context.Background(), types.TenantIDContextKey, uint64(7))
 
-	copied, err := svc.CopyModel(ctx, "local-src", "qwen3:8b 副本")
+	copied, err := svc.CopyModel(ctx, "local-src", "qwen3:8b copy")
 	require.NoError(t, err)
 	assert.Equal(t, "qwen3:8b", copied.Name)
 	assert.Equal(t, types.ModelStatusActive, copied.Status)
@@ -132,14 +132,14 @@ func TestCopyModel_RejectsBuiltinMissingAndOverlongDisplayName(t *testing.T) {
 	svc := NewModelService(repo, &stubKBRepoForModelDelete{}, &stubAgentRepoForModelDelete{}, nil, nil, nil)
 	ctx := context.WithValue(context.Background(), types.TenantIDContextKey, uint64(7))
 
-	_, err := svc.CopyModel(ctx, "builtin", "副本")
+	_, err := svc.CopyModel(ctx, "builtin", "copy")
 	require.Error(t, err)
 	appErr, ok := apperrors.IsAppError(err)
 	require.True(t, ok)
 	assert.Equal(t, apperrors.ErrBadRequest, appErr.Code)
 	assert.Nil(t, repo.created)
 
-	_, err = svc.CopyModel(ctx, "missing", "副本")
+	_, err = svc.CopyModel(ctx, "missing", "copy")
 	assert.ErrorIs(t, err, ErrModelNotFound)
 
 	_, err = svc.CopyModel(ctx, "builtin", "   ")
@@ -147,7 +147,7 @@ func TestCopyModel_RejectsBuiltinMissingAndOverlongDisplayName(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, apperrors.ErrBadRequest, appErr.Code)
 
-	_, err = svc.CopyModel(ctx, "builtin", strings.Repeat("名", types.ModelDisplayNameMaxLen+1))
+	_, err = svc.CopyModel(ctx, "builtin", strings.Repeat("\u540d", types.ModelDisplayNameMaxLen+1))
 	appErr, ok = apperrors.IsAppError(err)
 	require.True(t, ok)
 	assert.Equal(t, apperrors.ErrBadRequest, appErr.Code)

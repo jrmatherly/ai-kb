@@ -9,9 +9,9 @@ import (
 
 func TestParseGeneratedSuggestionsFiltersAndDeduplicates(t *testing.T) {
 	content := "```json\n{\"questions\":[" +
-		"{\"text\":\"如何继续实施？\",\"category\":\"action\"}," +
-		"{\"text\":\"如何继续实施?\",\"category\":\"action\"}," +
-		"{\"text\":\"有哪些风险？\",\"category\":\"unknown\"}" +
+		"{\"text\":\"\u5982\u4f55\u7ee7\u7eed\u5b9e\u65bd\uff1f\",\"category\":\"action\"}," +
+		"{\"text\":\"\u5982\u4f55\u7ee7\u7eed\u5b9e\u65bd?\",\"category\":\"action\"}," +
+		"{\"text\":\"\u6709\u54ea\u4e9b\u98ce\u9669\uff1f\",\"category\":\"unknown\"}" +
 		"]}\n```"
 	items, err := parseGeneratedSuggestions(content, []string{"clarify", "action"}, 3)
 	if err != nil {
@@ -34,11 +34,11 @@ func TestParseGeneratedSuggestionsFiltersAndDeduplicates(t *testing.T) {
 }
 
 func TestFilterSuggestionItemsAgainstQueryDropsNormalizedEchoes(t *testing.T) {
-	const currentQuery = "介绍一下手冲咖啡"
+	const currentQuery = "\u4ecb\u7ecd\u4e00\u4e0b\u624b\u51b2\u5496\u5561"
 	items := types.SuggestionItems{
-		{ID: "model-echo", Text: "介绍一下 手冲咖啡？", Source: "model"},
-		{ID: "wiki-echo", Text: "介绍一下手冲咖啡。", Source: "wiki"},
-		{ID: "keep", Text: "手冲咖啡适合用什么水温？", Source: "model"},
+		{ID: "model-echo", Text: "\u4ecb\u7ecd\u4e00\u4e0b \u624b\u51b2\u5496\u5561\uff1f", Source: "model"},
+		{ID: "wiki-echo", Text: "\u4ecb\u7ecd\u4e00\u4e0b\u624b\u51b2\u5496\u5561\u3002", Source: "wiki"},
+		{ID: "keep", Text: "\u624b\u51b2\u5496\u5561\u9002\u5408\u7528\u4ec0\u4e48\u6c34\u6e29\uff1f", Source: "model"},
 	}
 	got := filterSuggestionItemsAgainstQuery(items, currentQuery)
 	if len(got) != 1 || got[0].ID != "keep" {
@@ -51,7 +51,7 @@ func TestFilterSuggestionItemsAgainstQueryKeepsAllWhenQueryEmpty(t *testing.T) {
 		{ID: "1", Text: "A?", Source: "model"},
 		{ID: "2", Text: "B?", Source: "wiki"},
 	}
-	for _, query := range []string{"", "   ", "？？"} {
+	for _, query := range []string{"", "   ", "\uff1f\uff1f"} {
 		got := filterSuggestionItemsAgainstQuery(items, query)
 		if len(got) != 2 {
 			t.Fatalf("query %q: len = %d, want 2", query, len(got))
@@ -65,11 +65,11 @@ func TestSuggestionMatchesQueryIgnoresPunctuationAndCase(t *testing.T) {
 		want         bool
 	}{
 		{"Tell me about Foo?", "tell me about foo", true},
-		{"介绍一下X", "介绍一下X？", true},
-		{"介绍一下 X", "介绍一下X", true},
-		{"什么是X？", "介绍一下X", false},
-		{"介绍一下XY", "介绍一下X", false},
-		{"介绍一下X", "", false},
+		{"\u4ecb\u7ecd\u4e00\u4e0bX", "\u4ecb\u7ecd\u4e00\u4e0bX\uff1f", true},
+		{"\u4ecb\u7ecd\u4e00\u4e0b X", "\u4ecb\u7ecd\u4e00\u4e0bX", true},
+		{"\u4ec0\u4e48\u662fX\uff1f", "\u4ecb\u7ecd\u4e00\u4e0bX", false},
+		{"\u4ecb\u7ecd\u4e00\u4e0bXY", "\u4ecb\u7ecd\u4e00\u4e0bX", false},
+		{"\u4ecb\u7ecd\u4e00\u4e0bX", "", false},
 	}
 	for _, c := range cases {
 		if got := suggestionMatchesQuery(c.value, c.query); got != c.want {
@@ -81,14 +81,14 @@ func TestSuggestionMatchesQueryIgnoresPunctuationAndCase(t *testing.T) {
 // Removing the echo must not collapse the hybrid layout: the knowledge slot
 // should be filled by the next knowledge candidate, not stolen by the model.
 func TestMergeHybridKeepsLayoutAfterEchoRemoved(t *testing.T) {
-	const currentQuery = "介绍一下手冲咖啡"
+	const currentQuery = "\u4ecb\u7ecd\u4e00\u4e0b\u624b\u51b2\u5496\u5561"
 	model := types.SuggestionItems{
-		{ID: "m1", Text: "手冲咖啡适合用什么水温？", Source: "model"},
-		{ID: "m2", Text: "如何选择咖啡豆？", Source: "model"},
+		{ID: "m1", Text: "\u624b\u51b2\u5496\u5561\u9002\u5408\u7528\u4ec0\u4e48\u6c34\u6e29\uff1f", Source: "model"},
+		{ID: "m2", Text: "\u5982\u4f55\u9009\u62e9\u5496\u5561\u8c46\uff1f", Source: "model"},
 	}
 	knowledge := filterSuggestionItemsAgainstQuery(types.SuggestionItems{
 		{ID: "k-echo", Text: currentQuery, Source: "wiki"},
-		{ID: "k2", Text: "咖啡豆应该如何保存？", Source: "wiki"},
+		{ID: "k2", Text: "\u5496\u5561\u8c46\u5e94\u8be5\u5982\u4f55\u4fdd\u5b58\uff1f", Source: "wiki"},
 	}, currentQuery)
 
 	got := mergeHybridSuggestionItems(model, knowledge, 3)
@@ -108,7 +108,7 @@ func TestMergeHybridKeepsLayoutAfterEchoRemoved(t *testing.T) {
 func TestMergeSuggestionItemsPreservesPriorityAndLimit(t *testing.T) {
 	primary := types.SuggestionItems{{ID: "1", Text: "A?", Source: "model"}}
 	fallback := types.SuggestionItems{
-		{ID: "2", Text: "A？", Source: "faq"},
+		{ID: "2", Text: "A\uff1f", Source: "faq"},
 		{ID: "3", Text: "B?", Source: "faq"},
 		{ID: "4", Text: "C?", Source: "faq"},
 	}
@@ -119,13 +119,13 @@ func TestMergeSuggestionItemsPreservesPriorityAndLimit(t *testing.T) {
 }
 
 func TestAnswerEndsWithQuestion(t *testing.T) {
-	if !answerEndsWithQuestion("请补充具体时间？  ") {
+	if !answerEndsWithQuestion("\u8bf7\u8865\u5145\u5177\u4f53\u65f6\u95f4\uff1f  ") {
 		t.Fatal("Chinese question ending was not detected")
 	}
-	if answerEndsWithQuestion("结论已经给出。") {
+	if answerEndsWithQuestion("\u7ed3\u8bba\u5df2\u7ecf\u7ed9\u51fa\u3002") {
 		t.Fatal("statement was incorrectly detected as question")
 	}
-	if !answerEndsWithQuestion("需要我继续展开吗？\n<kb>1</kb>") {
+	if !answerEndsWithQuestion("\u9700\u8981\u6211\u7ee7\u7eed\u5c55\u5f00\u5417\uff1f\n<kb>1</kb>") {
 		t.Fatal("question before a trailing citation was not detected")
 	}
 }
@@ -270,7 +270,7 @@ func TestMergeHybridSuggestionItemsFillsMissingKnowledgeSlotsFromModel(t *testin
 }
 
 func TestQueryMatchesSuggestionTextAllowsHostContextEnvelope(t *testing.T) {
-	const suggestion = "如何重置密码？"
+	const suggestion = "\u5982\u4f55\u91cd\u7f6e\u5bc6\u7801\uff1f"
 	cases := []struct {
 		name  string
 		query string
@@ -287,8 +287,8 @@ func TestQueryMatchesSuggestionTextAllowsHostContextEnvelope(t *testing.T) {
 		},
 		{
 			name:  "host context keeps blank lines inside the question",
-			query: "[Host context]\npage: /pricing\n\n第一行\n\n第二行",
-			text:  "第一行\n\n第二行",
+			query: "[Host context]\npage: /pricing\n\n\u7b2c\u4e00\u884c\n\n\u7b2c\u4e8c\u884c",
+			text:  "\u7b2c\u4e00\u884c\n\n\u7b2c\u4e8c\u884c",
 			want:  true,
 		},
 		{
@@ -305,19 +305,19 @@ func TestQueryMatchesSuggestionTextAllowsHostContextEnvelope(t *testing.T) {
 		},
 		{
 			name:  "string value with a blank line",
-			query: "[Host context]\nnote: 第一行\n\n第二行\n\n" + suggestion,
+			query: "[Host context]\nnote: \u7b2c\u4e00\u884c\n\n\u7b2c\u4e8c\u884c\n\n" + suggestion,
 			text:  suggestion,
 			want:  true,
 		},
 		{
 			name:  "extra text between envelope and question",
-			query: "[Host context]\nnote: line1\n\n请额外执行\n" + suggestion,
+			query: "[Host context]\nnote: line1\n\n\u8bf7\u989d\u5916\u6267\u884c\n" + suggestion,
 			text:  suggestion,
 			want:  false,
 		},
 		{
 			name:  "extra text after the question",
-			query: "[Host context]\npage: /pricing\n\n" + suggestion + "\n再加一句",
+			query: "[Host context]\npage: /pricing\n\n" + suggestion + "\n\u518d\u52a0\u4e00\u53e5",
 			text:  suggestion,
 			want:  false,
 		},
@@ -359,7 +359,7 @@ func TestQueryMatchesSuggestionTextAllowsHostContextEnvelope(t *testing.T) {
 		},
 		{
 			name:  "different question",
-			query: "[Host context]\npage: /pricing\n\n另一个问题",
+			query: "[Host context]\npage: /pricing\n\n\u53e6\u4e00\u4e2a\u95ee\u9898",
 			text:  suggestion,
 			want:  false,
 		},

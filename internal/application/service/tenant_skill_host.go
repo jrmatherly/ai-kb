@@ -16,7 +16,7 @@ import (
 )
 
 // hostSkillTargetName labels local installs wherever a config name is shown.
-const hostSkillTargetName = "本机"
+const hostSkillTargetName = "This computer"
 
 // requireSkillTarget is the existence check every skill entry point runs
 // before doing work. Lite accepts only the host target; the standard edition
@@ -90,7 +90,7 @@ func (s *TenantSkillService) runHostInstall(ctx context.Context, r hostInstallRu
 	release := installer.Bind(sess.ID, versionDir)
 	defer release()
 	s.publishProgress(ctx, r.tenantID, r.configID, r.skillID, SkillProgress{
-		Percent: 25, Stage: "sandbox_ready", Log: "已准备本机目录",
+		Percent: 25, Stage: "sandbox_ready", Log: "Local directory ready",
 	})
 
 	if err := writeHostSkillFiles(versionDir, r.bundle); err != nil {

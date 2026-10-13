@@ -19,7 +19,8 @@ import (
 // this inflates input tokens and — more importantly — gives weaker LLMs
 // enough rope to hallucinate merges between totally unrelated slugs just
 // because the output looked plausible. Observed cases include
-// "城镇登记失业人员" → "中华优秀传统文化" (zero shared characters).
+// "registered urban unemployed" → "fine traditional Chinese culture" (zero
+// shared characters in the Chinese titles).
 //
 // The filter below keeps only pages that share at least some cheap
 // surface-level signal with one of the new items. Fast to compute, no
@@ -38,7 +39,7 @@ const (
 
 	// dedupCandidateScoreFloor is the Jaccard floor. Pairs at or above
 	// this similarity are always included regardless of the top-K cap.
-	// Tuned so that "城镇登记失业人员" vs "中华优秀传统文化" (Jaccard 0)
+	// Tuned so that the two Chinese titles above (Jaccard 0)
 	// is excluded while "Acme Corp" vs "Acme Corporation" (Jaccard ≈ 0.5)
 	// clearly passes.
 	dedupCandidateScoreFloor = 0.08
@@ -202,8 +203,8 @@ func dedupMergeRejectReason(srcSlug, dstSlug string, srcCandidates map[string]bo
 // normalizeWikiIdentityTitle returns the conservative identity key used to
 // prevent same-title pages from being created under different slugs, both
 // within a page type and across the entity ↔ concept types (see
-// exactIdentityTarget). It intentionally preserves punctuation: "寓言" and
-// "《寓言》" can represent a concept and a work/chapter and must remain
+// exactIdentityTarget). It intentionally preserves punctuation: "Fable" and
+// the same word in Chinese title brackets can represent a concept and a work/chapter and must remain
 // distinguishable. Removing whitespace and folding case is enough to close
 // model formatting drift such as "Acme Corp" vs "acme  corp".
 func normalizeWikiIdentityTitle(title string) string {
@@ -335,7 +336,8 @@ func (s *wikiIngestService) claimWikiIdentitySlug(
 }
 
 // preferWikiIdentityDisplayName keeps the tighter display form when two names
-// fold to the same identity ("孔子" over "孔 子") and returns the discarded
+// fold to the same identity ("Confucius" written without the stray space
+// between its two characters) and returns the discarded
 // form so it can be recorded as an alias.
 func preferWikiIdentityDisplayName(dst, src string) (name, extraAlias string) {
 	if dst == "" {

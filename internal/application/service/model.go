@@ -53,7 +53,7 @@ func NewModelService(repo interfaces.ModelRepository,
 	}
 }
 
-// decryptAppSecret 解密 AppSecret（如果为空或 cryptoSvc 为空则原样返回）
+// decryptAppSecret decrypts an AppSecret, returning it unchanged when it is empty or cannot be decrypted.
 func (s *modelService) decryptAppSecret(encrypted string) string {
 	if encrypted == "" {
 		return encrypted
@@ -66,8 +66,9 @@ func (s *modelService) decryptAppSecret(encrypted string) string {
 	return encrypted
 }
 
-// resolveWeKnoraCloudCredentials 为 WeKnoraCloud 厂商模型补全 AppID/AppSecret。
-// 当模型自身参数中未存储凭证时，自动从空间配置中获取（SaveCredentials 保存的凭证）。
+// resolveWeKnoraCloudCredentials fills in the AppID/AppSecret for a WeKnoraCloud provider model.
+// When the model's own parameters store no credentials, they come from the workspace configuration
+// (the credentials SaveCredentials stored).
 func (s *modelService) resolveWeKnoraCloudCredentials(ctx context.Context, params *types.ModelParameters) (appID, appSecret string) {
 	appID = params.AppID
 	appSecret = s.decryptAppSecret(params.AppSecret)

@@ -50,9 +50,9 @@ func TestSlugify(t *testing.T) {
 		{"Special!@#Chars", "specialchars"},
 		{"CamelCase", "camelcase"},
 		{"", ""},
-		{"a/b/c", "a/b/c"},               // preserve slashes for hierarchical slugs
-		{"中文标题", "中文标题"},                 // preserve CJK
-		{"Mix 中英文 Test", "mix-中英文-test"}, // mixed
+		{"a/b/c", "a/b/c"},                                             // preserve slashes for hierarchical slugs
+		{"\u4e2d\u6587\u6807\u9898", "\u4e2d\u6587\u6807\u9898"},       // preserve CJK
+		{"Mix \u4e2d\u82f1\u6587 Test", "mix-\u4e2d\u82f1\u6587-test"}, // mixed
 	}
 
 	for _, tt := range tests {
@@ -76,7 +76,7 @@ func TestTruncateString(t *testing.T) {
 		{"", 10, ""},
 		{"abc", 3, "abc"},
 		{"abcd", 3, "abc..."},
-		{"中文测试", 2, "中文..."},
+		{"\u4e2d\u6587\u6d4b\u8bd5", 2, "\u4e2d\u6587..."},
 	}
 
 	for _, tt := range tests {

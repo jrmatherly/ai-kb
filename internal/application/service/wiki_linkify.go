@@ -48,8 +48,9 @@ func linkifyContent(content string, refs []linkRef, selfSlug string) (string, bo
 			continue
 		}
 		// A single Han character has no reliable token boundary in unsegmented
-		// Chinese prose. Substring-linking it would turn words such as 风沙、
-		// 栏目 and 核心 into broken links. Keep one-character Wiki pages and
+		// Chinese prose. Substring-linking it would cut a link out of the middle
+		// of ordinary two-character words (such as the words for sandstorm,
+		// column and core). Keep one-character Wiki pages and
 		// any explicit [[...]] links authored by the generator, but never
 		// inject a new cross-link for such a surface form.
 		if isSingleHanRune(r.matchText) {
@@ -152,7 +153,8 @@ func isASCIIWordRune(r rune) bool {
 
 // hasWordBoundary checks that the characters immediately before pos and at end
 // are not ASCII word runes (letters/digits/underscore). Non-ASCII runes (e.g.
-// CJK) are treated as boundaries so "北京" embedded in "北京邮电大学" still
+// CJK) are treated as boundaries so "Beijing" embedded in the Chinese name of
+// Beijing University of Posts and Telecommunications still
 // matches — length-descending ordering handles that conflict separately.
 func hasWordBoundary(s string, pos, end int) bool {
 	if pos > 0 {

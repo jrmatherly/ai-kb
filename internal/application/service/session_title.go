@@ -38,8 +38,12 @@ var (
 	// titleTableSeparatorPattern matches a Markdown table separator cell run
 	// such as "|---|:--:|", even when the whole table was collapsed onto one line.
 	titleTableSeparatorPattern = regexp.MustCompile(`\|\s*:?-{3,}:?\s*\|`)
-	titleBlockPrefixPattern    = regexp.MustCompile(`^(?:#{1,6}\s+|>\s*|[-*+•]\s+|\d{1,3}[.)]\s+|\d{1,3}、\s*)+`)
-	titleLabelPattern          = regexp.MustCompile(`(?i)^(?:session\s+title|title|会话标题|标题)\s*[:：]\s*`)
+	// The last alternative is a number followed by the ideographic comma, a Chinese list marker.
+	titleBlockPrefixPattern = regexp.MustCompile(`^(?:#{1,6}\s+|>\s*|[-*+•]\s+|\d{1,3}[.)]\s+|\d{1,3}` +
+		"\u3001" + `\s*)+`)
+	// Also matches the Chinese labels for "session title" and "title", and the fullwidth colon.
+	titleLabelPattern = regexp.MustCompile(`(?i)^(?:session\s+title|title|` +
+		"\u4f1a\u8bdd\u6807\u9898|\u6807\u9898" + `)\s*[:` + "\uff1a" + `]\s*`)
 	titleLinkPattern           = regexp.MustCompile(`!?\[([^\]]*)\]\([^)]*\)`)
 	titleHorizontalRulePattern = regexp.MustCompile(`^(?:[-*_=]\s*){3,}$`)
 	titleInlineMarkupReplacer  = strings.NewReplacer("**", "", "__", "", "~~", "", "`", "")
@@ -51,9 +55,10 @@ var titleQuotePairs = [][2]string{
 	{"'", "'"},
 	{"“", "”"},
 	{"‘", "’"},
-	{"「", "」"},
-	{"『", "』"},
-	{"《", "》"},
+	// CJK corner brackets, white corner brackets and double angle brackets.
+	{"\u300c", "\u300d"},
+	{"\u300e", "\u300f"},
+	{"\u300a", "\u300b"},
 	{"*", "*"},
 	{"_", "_"},
 }

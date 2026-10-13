@@ -100,7 +100,7 @@ func TestIsTransientLLMError_NilError(t *testing.T) {
 
 // TestIsTransientLLMError_RateLimit403 covers gateways that report QPM/QPS
 // throttling as HTTP 403 with a rate-limit body instead of 429 (e.g. a MaaS
-// gateway returning code 0x04030020, "调用频率（qpm）超限"). These carry the
+// gateway returning code 0x04030020 with a Chinese message meaning "call rate (qpm) exceeded"). These carry the
 // provider-embedded response body "API request failed with status 403: {...}",
 // and only body-rated limit wording classifies them as transient — a plain
 // authorization 403 must stay permanent.
@@ -111,13 +111,21 @@ func TestIsTransientLLMError_RateLimit403(t *testing.T) {
 		msg  string
 		want bool
 	}{
-		{"qpm gateway", `API request failed with status 403: {"code":"0x04030020","message":"调用频率（qpm）超限"}`, true},
+		{
+			"qpm gateway",
+			"API request failed with status 403: {\"code\":\"0x04030020\",\"message\":\"\u8c03\u7528\u9891\u7387" +
+				"\uff08qpm\uff09\u8d85\u9650\"}", true,
+		},
 		{"qps gateway", `API request failed with status 403: {"message":"qps exceeded"}`, true},
 		{"rate limit", "API request failed with status 403: rate limit reached", true},
 		{"too many requests", "API request failed with status 403: too many requests", true},
 		{"throttled", "API request failed with status 403: request throttled", true},
-		{"chinese frequency", "API request failed with status 403: 请求过于频繁，请稍后重试", true},
-		{"busy", "API request failed with status 403: 服务繁忙", true},
+		{
+			"chinese frequency",
+			"API request failed with status 403: \u8bf7\u6c42\u8fc7\u4e8e\u9891\u7e41\uff0c\u8bf7\u7a0d\u540e\u91cd" +
+				"\u8bd5", true,
+		},
+		{"busy", "API request failed with status 403: \u670d\u52a1\u7e41\u5fd9", true},
 		{"try again later", "API request failed with status 403: please try again later", true},
 		{"slow down", "API request failed with status 403: slow down your requests", true},
 		// Authorization-shaped 403s stay permanent.

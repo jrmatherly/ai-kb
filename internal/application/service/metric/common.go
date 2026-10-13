@@ -37,21 +37,20 @@ func max(a, b int) int {
 }
 
 func splitSentences(text string) []string {
-	// 编译正则表达式（匹配中文句号或英文句号）
-	re := regexp.MustCompile(`([。.])`)
+	// Splits on the Chinese ideographic full stop or the ASCII period.
+	re := regexp.MustCompile("([\u3002.])")
 
-	// 分割文本并保留分隔符用于定位
 	split := re.Split(text, -1)
 
 	var sentences []string
 	current := strings.Builder{}
 
 	for i, s := range split {
-		// 交替获取文本段和分隔符（奇数为分隔符）
+		// Assumes text and separators alternate, with separators at odd indexes.
 		if i%2 == 0 {
 			current.WriteString(s)
 		} else {
-			// 当遇到分隔符时，完成当前句子
+			// A separator ends the current sentence.
 			if current.Len() > 0 {
 				sentence := strings.TrimSpace(current.String())
 				if sentence != "" {
@@ -62,7 +61,7 @@ func splitSentences(text string) []string {
 		}
 	}
 
-	// 处理最后一个无分隔符的文本段
+	// The last segment has no trailing separator.
 	if remaining := strings.TrimSpace(current.String()); remaining != "" {
 		sentences = append(sentences, remaining)
 	}
@@ -71,7 +70,7 @@ func splitSentences(text string) []string {
 }
 
 func splitIntoWords(sentences []string) []string {
-	// 正则匹配中英文段落（中文块、英文块、其他字符）
+	// Matches a Chinese run, an English run or a punctuation character.
 	re := regexp.MustCompile(`([\p{Han}]+)|([a-zA-Z0-9_.,!?]+)|(\p{P})`)
 
 	var tokens []string
@@ -84,13 +83,13 @@ func splitIntoWords(sentences []string) []string {
 			punctuation := groups[3]
 
 			switch {
-			case chineseBlock != "": // 处理中文部分
+			case chineseBlock != "":
 				words := types.Jieba.Cut(chineseBlock, true)
 				tokens = append(tokens, words...)
-			case englishBlock != "": // 处理英文部分
+			case englishBlock != "":
 				engTokens := strings.Fields(englishBlock)
 				tokens = append(tokens, engTokens...)
-			case punctuation != "": // 保留标点符号
+			case punctuation != "":
 				tokens = append(tokens, punctuation)
 			}
 		}

@@ -30,14 +30,16 @@ func topicItem(kind, topic, content string, importance int) *types.MemoryItem {
 // value, so matching on the statement alone would miss it.
 func TestTopicIsPartOfTheRetrievalHandle(t *testing.T) {
 	items := []*types.MemoryItem{
-		topicItem(types.MemoryKindFact, "在用的数据库", "已经从 MySQL 迁到 PostgreSQL", 3),
-		topicItem(types.MemoryKindFact, "前端技术栈", "用的是 Vue 3 加 Vite", 3),
+		topicItem(types.MemoryKindFact, "\u5728\u7528\u7684\u6570\u636e\u5e93",
+			"\u5df2\u7ecf\u4ece MySQL \u8fc1\u5230 PostgreSQL", 3),
+		topicItem(types.MemoryKindFact, "\u524d\u7aef\u6280\u672f\u6808", "\u7528\u7684\u662f Vue 3 \u52a0 Vite", 3),
 	}
-	selected := selectRecallItems("写一段连接数据库的示例代码", items,
+	selected := selectRecallItems("\u5199\u4e00\u6bb5\u8fde\u63a5\u6570\u636e\u5e93\u7684\u793a\u4f8b\u4ee3\u7801",
+		items,
 		types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
 	require.NotEmpty(t, selected)
-	require.Equal(t, "已经从 MySQL 迁到 PostgreSQL", selected[0].Content)
-	require.NotContains(t, contents(selected), "用的是 Vue 3 加 Vite")
+	require.Equal(t, "\u5df2\u7ecf\u4ece MySQL \u8fc1\u5230 PostgreSQL", selected[0].Content)
+	require.NotContains(t, contents(selected), "\u7528\u7684\u662f Vue 3 \u52a0 Vite")
 }
 
 func contents(items []*types.MemoryItem) []string {
@@ -50,15 +52,16 @@ func contents(items []*types.MemoryItem) []string {
 
 func TestSelectRecallItemsRanksChineseByTopic(t *testing.T) {
 	items := []*types.MemoryItem{
-		item(types.MemoryKindFact, "生产数据库是 PostgreSQL 17", 3),
-		item(types.MemoryKindFact, "前端框架用的是 Vue 3", 3),
-		item(types.MemoryKindTask, "在重构订单服务的支付流程", 3),
+		item(types.MemoryKindFact, "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17", 3),
+		item(types.MemoryKindFact, "\u524d\u7aef\u6846\u67b6\u7528\u7684\u662f Vue 3", 3),
+		item(types.MemoryKindTask, "\u5728\u91cd\u6784\u8ba2\u5355\u670d\u52a1\u7684\u652f\u4ed8\u6d41\u7a0b", 3),
 	}
-	selected := selectRecallItems("数据库最近连接超时，怎么排查", items,
+	selected := selectRecallItems("\u6570\u636e\u5e93\u6700\u8fd1\u8fde\u63a5\u8d85\u65f6\uff0c\u600e\u4e48\u6392"+
+		"\u67e5", items,
 		types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
 	require.NotEmpty(t, selected)
-	require.Equal(t, "生产数据库是 PostgreSQL 17", selected[0].Content)
-	require.NotContains(t, contents(selected), "前端框架用的是 Vue 3")
+	require.Equal(t, "\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17", selected[0].Content)
+	require.NotContains(t, contents(selected), "\u524d\u7aef\u6846\u67b6\u7528\u7684\u662f Vue 3")
 }
 
 func TestSelectRecallItemsMatchesEnglish(t *testing.T) {
@@ -74,33 +77,34 @@ func TestSelectRecallItemsMatchesEnglish(t *testing.T) {
 
 func TestSelectRecallItemsDropsWeakMatches(t *testing.T) {
 	items := []*types.MemoryItem{
-		item(types.MemoryKindFact, "我平时用 Go 写服务", 3),
+		item(types.MemoryKindFact, "\u6211\u5e73\u65f6\u7528 Go \u5199\u670d\u52a1", 3),
 	}
-	// "的" and similar filler share nothing meaningful with the memory: a
+	// The possessive particle and similar filler share nothing meaningful with the memory: a
 	// weakly related memory must not be injected at all.
-	require.Empty(t, selectRecallItems("今天天气怎么样", items,
+	require.Empty(t, selectRecallItems("\u4eca\u5929\u5929\u6c14\u600e\u4e48\u6837", items,
 		types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget))
 }
 
 func TestSelectRecallItemsRespectsCountBudget(t *testing.T) {
 	var items []*types.MemoryItem
 	for i := 0; i < 20; i++ {
-		items = append(items, item(types.MemoryKindFact, "数据库相关的事实 "+string(rune('a'+i)), 3))
+		items = append(items, item(types.MemoryKindFact,
+			"\u6570\u636e\u5e93\u76f8\u5173\u7684\u4e8b\u5b9e "+string(rune('a'+i)), 3))
 	}
-	selected := selectRecallItems("数据库", items, types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
+	selected := selectRecallItems("\u6570\u636e\u5e93", items, types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
 	require.LessOrEqual(t, len(selected), types.MemoryRecallMaxItems)
 }
 
 func TestSelectRecallItemsRespectsRuneBudget(t *testing.T) {
 	var items []*types.MemoryItem
 	for i := 0; i < 5; i++ {
-		long := "数据库"
+		long := "\u6570\u636e\u5e93"
 		for j := 0; j < 60; j++ {
-			long += "很长的说明"
+			long += "\u5f88\u957f\u7684\u8bf4\u660e"
 		}
 		items = append(items, item(types.MemoryKindFact, long, 3))
 	}
-	selected := selectRecallItems("数据库", items, types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
+	selected := selectRecallItems("\u6570\u636e\u5e93", items, types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
 	total := 0
 	for _, entry := range selected {
 		total += len([]rune(entry.Content))
@@ -109,20 +113,21 @@ func TestSelectRecallItemsRespectsRuneBudget(t *testing.T) {
 }
 
 func TestSelectRecallItemsEmptyQuery(t *testing.T) {
-	items := []*types.MemoryItem{item(types.MemoryKindFact, "任何事实", 3)}
+	items := []*types.MemoryItem{item(types.MemoryKindFact, "\u4efb\u4f55\u4e8b\u5b9e", 3)}
 	require.Empty(t, selectRecallItems("   ", items,
 		types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget))
 }
 
 func TestBigramsBeatSingleCharacterNoise(t *testing.T) {
-	// "数" alone appears in 数据, 参数, 数量 — a single ideograph must not be
+	// The character for "number" alone appears in the words for data, parameter
+	// and quantity. A single ideograph must not be
 	// enough to pull an unrelated memory into context.
 	items := []*types.MemoryItem{
-		item(types.MemoryKindFact, "参数校验统一放在 handler 层", 3),
-		item(types.MemoryKindFact, "数据迁移脚本放在 migrations 目录", 3),
+		item(types.MemoryKindFact, "\u53c2\u6570\u6821\u9a8c\u7edf\u4e00\u653e\u5728 handler \u5c42", 3),
+		item(types.MemoryKindFact, "\u6570\u636e\u8fc1\u79fb\u811a\u672c\u653e\u5728 migrations \u76ee\u5f55", 3),
 	}
-	selected := selectRecallItems("数据迁移脚本放在哪", items,
+	selected := selectRecallItems("\u6570\u636e\u8fc1\u79fb\u811a\u672c\u653e\u5728\u54ea", items,
 		types.MemoryRecallMaxItems, types.MemoryRecallRuneBudget)
 	require.NotEmpty(t, selected)
-	require.Equal(t, "数据迁移脚本放在 migrations 目录", selected[0].Content)
+	require.Equal(t, "\u6570\u636e\u8fc1\u79fb\u811a\u672c\u653e\u5728 migrations \u76ee\u5f55", selected[0].Content)
 }

@@ -526,7 +526,7 @@ func TestTenantMemberService_UpdateRole_NoopOnSameRole(t *testing.T) {
 	if _, err := svc.EnsureOwner(ctx, "owner", 1); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	// 把"还是 Owner"作为 no-op 处理，必须不触发 ErrLastOwner（同一角色不算降级）。
+	// "Still Owner" is a no-op and must not trigger ErrLastOwner (the same role is not a demotion).
 	if err := svc.UpdateRole(ctx, "owner", 1, types.TenantRoleOwner); err != nil {
 		t.Fatalf("UpdateRole same role should be a no-op, got %v", err)
 	}

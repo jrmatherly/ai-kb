@@ -66,9 +66,9 @@ func normalizeSlugForCompare(slug string) string {
 // resolveDeadSlug attempts to map a dead `[[slug]]` reference back to
 // a live KB slug, using progressively more permissive heuristics:
 //
-//  1. Display-text reverse lookup. If the LLM emitted "[[bad-slug|上海
-//     中心大厦]]" and there's a live page whose Title or alias is
-//     "上海中心大厦", return its slug. This is the most common case
+//  1. Display-text reverse lookup. If the LLM emitted "[[bad-slug|Shanghai
+//     Tower]]" and there's a live page whose Title or alias is
+//     "Shanghai Tower", return its slug. This is the most common case
 //     by far (the model copies the title correctly even when it
 //     mangles the slug).
 //

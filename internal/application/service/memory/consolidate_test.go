@@ -20,7 +20,7 @@ func newConsolidationHarness(t *testing.T) (*Service, *stubTenantRepo, *stubMode
 		workspaceModels: []*types.Model{
 			{ID: "chat-1", Type: types.ModelTypeKnowledgeQA, Status: types.ModelStatusActive},
 		},
-		response: `{"statement":"回答直接给结论，不要铺垫"}`,
+		response: "{\"statement\":\"\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\uff0c\u4e0d\u8981\u94fa\u57ab\"}",
 	}
 	svc.modelService = models
 	return svc, tenantRepo, models
@@ -41,8 +41,10 @@ func seedItem(
 
 func seedSimilarPreferences(t *testing.T, svc *Service, ctx context.Context, scope interfaces.MemoryScope) {
 	t.Helper()
-	seedItem(t, svc, ctx, scope, types.MemoryKindPreference, "回答风格", "回答直接给结论不要铺垫", "k-a")
-	seedItem(t, svc, ctx, scope, types.MemoryKindPreference, "回答风格", "回答直接给结论不用铺垫", "k-b")
+	seedItem(t, svc, ctx, scope, types.MemoryKindPreference, "\u56de\u7b54\u98ce\u683c",
+		"\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\u4e0d\u8981\u94fa\u57ab", "k-a")
+	seedItem(t, svc, ctx, scope, types.MemoryKindPreference, "\u56de\u7b54\u98ce\u683c",
+		"\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\u4e0d\u7528\u94fa\u57ab", "k-b")
 }
 
 func TestConsolidateNowMergesNearDuplicatesWithoutWaiting(t *testing.T) {
@@ -74,13 +76,15 @@ func TestConsolidateNowMergesNearDuplicatesWithoutWaiting(t *testing.T) {
 // seeing the one contradiction a person would want resolved.
 func TestAReviewSomeoneAskedForShowsTheModelBorderlinePairs(t *testing.T) {
 	svc, tenantRepo, models := newConsolidationHarness(t)
-	models.response = `{"statement":"我叫wizardchen，我是一个作家"}`
+	models.response = "{\"statement\":\"\u6211\u53ebwizardchen\uff0c\u6211\u662f\u4e00\u4e2a\u4f5c\u5bb6\"}"
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	scope := scopeFor(t, ctx)
 	_, err := svc.repo.EnsureSubject(ctx, scope)
 	require.NoError(t, err)
-	seedItem(t, svc, ctx, scope, types.MemoryKindProfile, "", "我叫wizard，我是一个画家", "p-a")
-	seedItem(t, svc, ctx, scope, types.MemoryKindProfile, "职业", "我叫wizardchen，我是一个作家", "p-b")
+	seedItem(t, svc, ctx, scope, types.MemoryKindProfile, "",
+		"\u6211\u53ebwizard\uff0c\u6211\u662f\u4e00\u4e2a\u753b\u5bb6", "p-a")
+	seedItem(t, svc, ctx, scope, types.MemoryKindProfile, "\u804c\u4e1a",
+		"\u6211\u53ebwizardchen\uff0c\u6211\u662f\u4e00\u4e2a\u4f5c\u5bb6", "p-b")
 
 	items, _, err := svc.repo.ListItems(ctx, scope, types.MemoryStatusActive, 50, 0)
 	require.NoError(t, err)
@@ -147,8 +151,10 @@ func TestAReviewThatChangesNothingSaysWhy(t *testing.T) {
 	scope := scopeFor(t, ctx)
 	_, err := svc.repo.EnsureSubject(ctx, scope)
 	require.NoError(t, err)
-	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "小微SDK设备接入", "小微SDK设备接入", "i-a")
-	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "AI KB混合检索", "AI KB混合检索", "i-b")
+	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165",
+		"\u5c0f\u5faeSDK\u8bbe\u5907\u63a5\u5165", "i-a")
+	seedItem(t, svc, ctx, scope, types.MemoryKindInterest, "AI KB\u6df7\u5408\u68c0\u7d22",
+		"AI KB\u6df7\u5408\u68c0\u7d22", "i-b")
 
 	result, err := svc.ConsolidateNow(ctx)
 	require.NoError(t, err)

@@ -47,11 +47,17 @@ func TestMemoryConsistencyRealMessagePaging(t *testing.T) {
 func TestMemoryConsistencyReplacementRollsBackAsOneOperation(t *testing.T) {
 	s, db, tr := newMemoryHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Topic: "数据库", Content: "使用 MySQL"})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93",
+		Content: "\u4f7f\u7528 MySQL",
+	})
 	require.NoError(t, err)
 	require.NoError(t, db.Exec(`CREATE TRIGGER fail_supersede BEFORE UPDATE OF status ON memory_items
  WHEN NEW.status = 'superseded' BEGIN SELECT RAISE(ABORT, 'injected failure'); END`).Error)
-	_, err = s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Topic: "数据库", Content: "已迁移到 PostgreSQL"})
+	_, err = s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93",
+		Content: "\u5df2\u8fc1\u79fb\u5230 PostgreSQL",
+	})
 	require.Error(t, err)
 	items, total, err := s.ListItems(ctx, "", 20, 0)
 	require.NoError(t, err)

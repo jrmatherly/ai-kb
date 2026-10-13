@@ -9,7 +9,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-const skillInstallStoppedMessage = "安装已停止"
+const skillInstallStoppedMessage = "Install stopped"
 
 var errSkillInstallStopped = errors.New(skillInstallStoppedMessage)
 

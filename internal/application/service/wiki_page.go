@@ -645,7 +645,7 @@ func (s *wikiPageService) GetIndexView(
 //   - WikiGraphModeOverview (default): returns the top `Limit` pages sorted
 //     by link_count (in+out), plus every edge that connects two surviving
 //     nodes. This is what the frontend fetches on the first graph open —
-//     4万-page wikis would otherwise ship ~30MB of JSON and crash the
+//     40,000-page wikis would otherwise ship ~30MB of JSON and crash the
 //     browser trying to render 100k SVG elements.
 //
 //   - WikiGraphModeEgo: returns the BFS neighborhood of `Center` up to
@@ -662,7 +662,7 @@ func (s *wikiPageService) GetIndexView(
 // handler always clamps Limit into a safe range so external traffic can
 // never opt out of truncation.
 //
-// Implementation note: pages are still fetched via repo.ListAll. At 4万
+// Implementation note: pages are still fetched via repo.ListAll. At 40,000
 // pages that's ~10MB of rows + deserialization, which is already on the
 // expensive side but still tractable and keeps the repository interface
 // unchanged. Pushing the filter/top-N down into SQL is a follow-up step
@@ -1616,7 +1616,7 @@ func normalizeWikiHierarchy(page *types.WikiPage) {
 
 	// A page filed in a folder mirrors the folder tree exactly: its
 	// category_path was derived from the validated folder path, so the
-	// model-noise cleaning (which drops type-like labels such as "概念") must
+	// model-noise cleaning (which drops type-like labels such as "Concepts") must
 	// not rewrite it. Only pages without a folder carry model-authored labels.
 	var cleanPath types.StringArray
 	if strings.TrimSpace(page.FolderID) != "" {
@@ -1710,7 +1710,7 @@ func (s *wikiPageService) UpdateIssueStatus(ctx context.Context, kbID string, is
 
 // wikiFolderSegments splits a materialized folder path ("AI/RAG") into its
 // literal segments. Empty/blank path yields nil (the wiki root). Folder names
-// are authoritative, so a folder named like a page type ("概念", "Concepts")
+// are authoritative, so a folder named like a page type ("Concepts", in any language)
 // is kept rather than dropped as model noise.
 func wikiFolderSegments(path string) []string {
 	return types.WikiFolderPathSegments(path)
@@ -1831,7 +1831,8 @@ func validateFolderName(name string) (string, error) {
 	if name == "" {
 		return "", errors.New("folder name is required")
 	}
-	if strings.ContainsAny(name, "/｜|／") {
+	// Includes the fullwidth vertical bar and fullwidth slash.
+	if strings.ContainsAny(name, "/\uff5c|\uff0f") {
 		return "", fmt.Errorf("folder name %q must not contain a path separator", name)
 	}
 	return name, nil

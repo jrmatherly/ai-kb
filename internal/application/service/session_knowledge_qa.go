@@ -196,7 +196,7 @@ func (s *sessionService) KnowledgeQA(
 		// Pure chat — no retrieval needed.
 		userContent := req.Query
 		if req.ImageDescription != "" && !chatModelSupportsVision {
-			userContent += "\n\n[用户上传图片内容]\n" + req.ImageDescription
+			userContent += "\n\n[User-uploaded image content]\n" + req.ImageDescription
 		}
 		if req.QuotedContext != "" {
 			userContent += "\n\n" + req.QuotedContext
@@ -758,7 +758,7 @@ func (s *sessionService) KnowledgeQAByEvent(ctx context.Context,
 		// retrieval stage short-circuited the pipeline (ErrSearchNothing or a
 		// hard error). The early returns below (fallback / stage_failed) would
 		// otherwise skip EndRetrievalProgress, leaving the "knowledge_search"
-		// tool_call pending — so the frontend keeps spinning on "正在检索知识库"
+		// tool_call pending, so the frontend keeps spinning on "Searching the knowledge base"
 		// forever even though the fallback answer has already streamed.
 		if retrievalProgress != nil && chatpipeline.ShouldCloseRetrievalProgress(eventType, lastRetrievalStage, err) {
 			chatpipeline.EndRetrievalProgress(stageCtx, chatManage, retrievalProgress, retrievalStart, err)
@@ -1180,7 +1180,7 @@ func (s *sessionService) renderFallbackPrompt(ctx context.Context, chatManage *t
 	})
 
 	if chatManage.ImageDescription != "" && !chatManage.ChatModelSupportsVision {
-		result += "\n\n[用户上传图片内容]\n" + chatManage.ImageDescription
+		result += "\n\n[User-uploaded image content]\n" + chatManage.ImageDescription
 	}
 	if chatManage.QuotedContext != "" {
 		result += "\n\n" + chatManage.QuotedContext

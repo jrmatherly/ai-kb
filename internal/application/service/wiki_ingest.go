@@ -2353,15 +2353,16 @@ func (s *wikiIngestService) rebuildIndexPage(ctx context.Context, chatModel chat
 // Returns (summary, content). If no SUMMARY line found, summary is empty.
 func splitSummaryLine(raw string) (summary string, content string) {
 	raw = strings.TrimSpace(raw)
-	if strings.HasPrefix(raw, "SUMMARY:") || strings.HasPrefix(raw, "SUMMARY：") {
+	// The second prefix uses the fullwidth colon some models emit.
+	if strings.HasPrefix(raw, "SUMMARY:") || strings.HasPrefix(raw, "SUMMARY\uff1a") {
 		idx := strings.IndexByte(raw, '\n')
 		if idx < 0 {
 			// Only one line
-			return strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(raw, "SUMMARY:"), "SUMMARY：")), ""
+			return strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(raw, "SUMMARY:"), "SUMMARY\uff1a")), ""
 		}
 		summaryLine := raw[:idx]
 		summaryLine = strings.TrimPrefix(summaryLine, "SUMMARY:")
-		summaryLine = strings.TrimPrefix(summaryLine, "SUMMARY：")
+		summaryLine = strings.TrimPrefix(summaryLine, "SUMMARY\uff1a")
 		return strings.TrimSpace(summaryLine), strings.TrimSpace(raw[idx+1:])
 	}
 	return "", raw
@@ -2969,19 +2970,21 @@ func (s *wikiIngestService) awaitWikiPromptWarmup(ctx context.Context, key strin
 // body as rate limiting rather than authorization failure. Providers embed
 // the response body in their errors ("API request failed with status 403:
 // {...}"), and some gateways throttle with 403 (e.g. code 0x04030020,
-// "调用频率（qpm）超限") instead of the standard 429, so the status alone
+// with a Chinese message meaning "call rate (qpm) exceeded") instead of the standard 429, so the status alone
 // is not enough to classify the failure.
 var rateLimitErrorIndicators = []string{
-	"qpm",        // 网关 qpm 配额（0x04030020）
-	"qps",        // 网关 qps 配额
+	"qpm",        // gateway qpm quota (0x04030020)
+	"qps",        // gateway qps quota
 	"rate limit", // OpenAI-style "rate limit reached"
 	"rate_limit",
 	"too many requests", // RFC 6585 language
 	"throttl",           // "throttled"
-	"调用频率",              // 中文网关常见措辞
-	"频率超限",
-	"请求过于频繁",
-	"繁忙", // "服务繁忙，请稍后重试"
+	// Common Chinese gateway wording: "call rate", "rate exceeded", "too many
+	// requests", "busy" (as in "service busy, retry later").
+	"\u8c03\u7528\u9891\u7387",
+	"\u9891\u7387\u8d85\u9650",
+	"\u8bf7\u6c42\u8fc7\u4e8e\u9891\u7e41",
+	"\u7e41\u5fd9",
 	"try again later",
 	"retry later",
 	"slow down",
@@ -3013,7 +3016,7 @@ func isTransientLLMError(ctx context.Context, err error) bool {
 	lower := strings.ToLower(msg)
 	// Some gateways report QPM/QPS throttling as HTTP 403 instead of 429
 	// (e.g. a MaaS gateway returning code 0x04030020, message
-	// "调用频率（qpm）超限"). A plain 403 is usually an authorization
+	// meaning "call rate (qpm) exceeded"). A plain 403 is usually an authorization
 	// failure and must NOT be retried, so this stays gated on rate-limit
 	// indicators in the response body, which provider errors embed:
 	// "API request failed with status 403: {"code":0x04030020,...}".
@@ -3145,7 +3148,8 @@ func reconstructContent(chunks []*types.Chunk) string {
 		}
 	}
 
-	// 重叠去重与排序统一交给公共逻辑（按文本匹配，兼容补写表头 / HTML 实体）。
+	// Overlap dedup and ordering go through the shared logic, which matches on text and tolerates re-added table
+	// headers and HTML entities.
 	return searchutil.MergeTextChunks(textChunks, "\n")
 }
 

@@ -36,9 +36,12 @@ func reduceGuardedEntityPage(
 		Slug:        slug,
 		Type:        types.WikiPageTypeEntity,
 		KnowledgeID: "k-row-guard",
-		DocTitle:    "证书台账",
-		SourceRef:   "k-row-guard|证书台账",
-		Item:        extractedItem{Name: "证书台账", Description: "持证人员明细"},
+		DocTitle:    "\u8bc1\u4e66\u53f0\u8d26",
+		SourceRef:   "k-row-guard|\u8bc1\u4e66\u53f0\u8d26",
+		Item: extractedItem{
+			Name:        "\u8bc1\u4e66\u53f0\u8d26",
+			Description: "\u6301\u8bc1\u4eba\u5458\u660e\u7ec6",
+		},
 	}}
 	_, _, _, deferred, err = svc.reduceSlugUpdates(
 		context.Background(), model, "kb-row-guard", slug, updates, 1, batchCtx, nil)
@@ -54,7 +57,7 @@ func TestReduceSlugUpdatesDoesNotDeferAWriteThatChangedNothing(t *testing.T) {
 	// reduce splits the SUMMARY line off with strings.TrimSpace, so the stored
 	// body has to be the trimmed form for the editor's identical answer to be
 	// a true no-op.
-	stored := strings.TrimSpace(ledger("PMP", "张三", "李四", "王五"))
+	stored := strings.TrimSpace(ledger("PMP", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94"))
 	pageSvc, page := newWikiWriteGuardStore(t, stored)
 	svc := &wikiIngestService{wikiService: pageSvc, knowledgeSvc: liveKnowledgeStub{}}
 
@@ -76,13 +79,13 @@ func TestReduceSlugUpdatesDoesNotDeferAWriteThatChangedNothing(t *testing.T) {
 // was never applied, so its contributing documents must survive the trim phase
 // and come back in a later batch.
 func TestReduceSlugUpdatesDefersAWriteTheRowGuardRefused(t *testing.T) {
-	stored := ledger("PMP", "张三", "李四", "王五", "赵六", "钱七")
+	stored := ledger("PMP", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94", "\u8d75\u516d", "\u94b1\u4e03")
 	pageSvc, page := newWikiWriteGuardStore(t, stored)
 	svc := &wikiIngestService{wikiService: pageSvc, knowledgeSvc: liveKnowledgeStub{}}
 
 	// Four of the five stored identities are gone: far above the ingest limit,
 	// so UpdatePage refuses and reduce must defer instead of reporting success.
-	deferred, err := reduceGuardedEntityPage(t, svc, "entity/pmp", ledger("PMP", "张三"))
+	deferred, err := reduceGuardedEntityPage(t, svc, "entity/pmp", ledger("PMP", "\u5f20\u4e09"))
 
 	require.NoError(t, err, "a guard refusal is not a reduce failure")
 	require.True(t, deferred,
@@ -97,11 +100,11 @@ func TestReduceSlugUpdatesDefersAWriteTheRowGuardRefused(t *testing.T) {
 // A same-identity merge is inside the ingest tolerance, so the write lands and
 // the documents are not re-queued.
 func TestReduceSlugUpdatesAppliesAMergeInsideTheLossLimit(t *testing.T) {
-	stored := ledger("证书", "张三", "张三", "李四", "王五")
+	stored := ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94")
 	pageSvc, page := newWikiWriteGuardStore(t, stored)
 	svc := &wikiIngestService{wikiService: pageSvc, knowledgeSvc: liveKnowledgeStub{}}
 
-	merged := ledger("证书", "张三", "李四", "王五")
+	merged := ledger("\u8bc1\u4e66", "\u5f20\u4e09", "\u674e\u56db", "\u738b\u4e94")
 	deferred, err := reduceGuardedEntityPage(t, svc, "entity/pmp", merged)
 
 	require.NoError(t, err)
@@ -122,7 +125,7 @@ func TestReduceSlugUpdatesSurfacesAGenuineWriteError(t *testing.T) {
 		knowledgeSvc: liveKnowledgeStub{},
 	}
 
-	deferred, err := reduceGuardedEntityPage(t, svc, "entity/pmp", ledger("PMP", "张三"))
+	deferred, err := reduceGuardedEntityPage(t, svc, "entity/pmp", ledger("PMP", "\u5f20\u4e09"))
 
 	require.ErrorIs(t, err, writeErr)
 	require.False(t, deferred)

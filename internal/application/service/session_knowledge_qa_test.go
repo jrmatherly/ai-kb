@@ -149,7 +149,7 @@ func TestHandleModelFallback_IncludesHistoryMessages(t *testing.T) {
 	cm := &types.ChatManage{
 		PipelineRequest: types.PipelineRequest{
 			SessionID:      "session-1",
-			Query:          "现在还能继续讲吗？",
+			Query:          "Can you keep going now?",
 			ChatModelID:    "chat-model",
 			FallbackPrompt: "Answer the latest user question: {{query}}",
 			SummaryConfig: types.SummaryConfig{
@@ -160,8 +160,8 @@ func TestHandleModelFallback_IncludesHistoryMessages(t *testing.T) {
 		PipelineState: types.PipelineState{
 			History: []*types.History{
 				{
-					Query:  "先介绍一下 AI KB",
-					Answer: "AI KB 是一个知识库问答系统。",
+					Query:  "First, tell me about AI KB",
+					Answer: "AI KB is a knowledge base Q&A system.",
 				},
 			},
 		},
@@ -179,9 +179,9 @@ func TestHandleModelFallback_IncludesHistoryMessages(t *testing.T) {
 	assert.Equal(t, "system", chatModel.lastMessages[0].Role)
 	assert.Contains(t, chatModel.lastMessages[0].Content, "Answer the latest user question")
 	assert.Equal(t, "user", chatModel.lastMessages[1].Role)
-	assert.Equal(t, "先介绍一下 AI KB", chatModel.lastMessages[1].Content)
+	assert.Equal(t, "First, tell me about AI KB", chatModel.lastMessages[1].Content)
 	assert.Equal(t, "assistant", chatModel.lastMessages[2].Role)
-	assert.Equal(t, "AI KB 是一个知识库问答系统。", chatModel.lastMessages[2].Content)
+	assert.Equal(t, "AI KB is a knowledge base Q&A system.", chatModel.lastMessages[2].Content)
 	assert.Equal(t, "user", chatModel.lastMessages[3].Role)
-	assert.Contains(t, chatModel.lastMessages[3].Content, "现在还能继续讲吗？")
+	assert.Contains(t, chatModel.lastMessages[3].Content, "Can you keep going now?")
 }

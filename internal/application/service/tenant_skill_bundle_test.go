@@ -275,40 +275,24 @@ Use this skill for .docx files.
 
 	t.Run("repairs version and description nested under name", func(t *testing.T) {
 		data := zipBundle(t, map[string]string{
-			"SKILL.md": `---
-name: 命理大师
-  version: 1.2.6
-  description: |
-    全体系命理大师。
----
-Use the scripts in this skill.
-`,
+			"SKILL.md": "---\nname: \u547d\u7406\u5927\u5e08\n  version: 1.2.6\n  description: |\n    " +
+				"\u5168\u4f53\u7cfb\u547d\u7406\u5927\u5e08\u3002\n---\nUse the scripts in this skill.\n",
 		})
 
 		bundle, err := ParseSkillBundle(data)
 
 		require.NoError(t, err)
 		require.True(t, bundle.FrontmatterRepaired)
-		require.Equal(t, "命理大师", bundle.Name)
+		require.Equal(t, "\u547d\u7406\u5927\u5e08", bundle.Name)
 		require.Equal(t, "1.2.6", bundle.Version)
-		require.Contains(t, bundle.Description, "全体系命理大师")
+		require.Contains(t, bundle.Description, "\u5168\u4f53\u7cfb\u547d\u7406\u5927\u5e08")
 	})
 
 	t.Run("rejects a SkillHub archive whose extra YAML is still invalid after repair", func(t *testing.T) {
 		data := zipBundle(t, map[string]string{
-			"SKILL.md": `---
-name: 命理大师
-  version: 1.2.6
-  description: |
-    全体系命理大师。
-metadata:
-  openclaw:
-    install:
-      - kind: node
-      package: iztro
----
-Use the scripts in this skill.
-`,
+			"SKILL.md": "---\nname: \u547d\u7406\u5927\u5e08\n  version: 1.2.6\n  description: |\n    " +
+				"\u5168\u4f53\u7cfb\u547d\u7406\u5927\u5e08\u3002\nmetadata:\n  openclaw:\n    install:\n      - " +
+				"kind: node\n      package: iztro\n---\nUse the scripts in this skill.\n",
 		})
 
 		_, err := ParseSkillBundle(data)
@@ -476,12 +460,12 @@ Use the scripts in this skill.
 
 	t.Run("accepts non-ASCII entry names", func(t *testing.T) {
 		bundle, err := ParseSkillBundle(zipBundle(t, map[string]string{
-			"SKILL.md":            validSkillMD,
-			"references/参考 手册.md": "x",
+			"SKILL.md": validSkillMD,
+			"references/\u53c2\u8003 \u624b\u518c.md": "x",
 		}))
 
 		require.NoError(t, err)
-		require.Contains(t, bundle.Files, "references/参考 手册.md",
+		require.Contains(t, bundle.Files, "references/\u53c2\u8003 \u624b\u518c.md",
 			"real skills ship documents named in the operator's own language")
 	})
 

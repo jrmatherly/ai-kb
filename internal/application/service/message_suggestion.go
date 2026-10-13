@@ -509,9 +509,9 @@ func (s *messageSuggestionService) generateFromKnowledge(
 		// starts with CurrentQuery and IsContentContained adds +1, so a
 		// candidate identical to the question just asked is actively promoted
 		// to the top of the knowledge pool.
-		// Typical trigger: the user asks "介绍一下X" while X has an
+		// Typical trigger: the user asks "Tell me about X" while X has an
 		// entity/summary wiki page, which wikiSuggestionFromPage turns into
-		// the very same "介绍一下X".
+		// the very same "Tell me about X".
 		// Skip via continue rather than filtering afterwards so that later
 		// candidates can backfill and the configured count is preserved.
 		if text == "" || suggestionMatchesQuery(text, generationContext.CurrentQuery) {
@@ -993,7 +993,8 @@ func suggestionMatchesQuery(value, currentQuery string) bool {
 
 func normalizeSuggestionText(value string) string {
 	return strings.Map(func(r rune) rune {
-		if unicode.IsSpace(r) || strings.ContainsRune("?？!！,，.。:：;；\"'", r) {
+		// ASCII punctuation plus its fullwidth and ideographic Chinese forms.
+		if unicode.IsSpace(r) || strings.ContainsRune("?\uff1f!\uff01,\uff0c.\u3002:\uff1a;\uff1b\"'", r) {
 			return -1
 		}
 		return unicode.ToLower(r)
@@ -1011,7 +1012,8 @@ func containsSuggestionID(items types.SuggestionItems, id string) bool {
 
 func answerEndsWithQuestion(answer string) bool {
 	answer = strings.TrimSpace(trailingCitationTags.ReplaceAllString(answer, ""))
-	return strings.HasSuffix(answer, "?") || strings.HasSuffix(answer, "？")
+	// The second suffix is the fullwidth question mark used in Chinese text.
+	return strings.HasSuffix(answer, "?") || strings.HasSuffix(answer, "\uff1f")
 }
 
 func truncateRunes(value string, limit int) string {

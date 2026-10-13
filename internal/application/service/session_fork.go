@@ -514,7 +514,7 @@ func historyThroughForkPoint(listed []*types.Message, forkPoint *types.Message) 
 //
 // Copies deliberately keep their Artifacts and Attachments. CreateForked
 // writes the copied artifact rows (same storage URLs) under the new message
-// IDs, so the forked session's 产物 tab can list and download the same files. Attachment storage handles live in
+// IDs, so the forked session's Artifacts tab can list and download the same files. Attachment storage handles live in
 // temporary_documents (still scoped to the parent session) and are resolved
 // by ID at preview and staging time when the copied messages reference them.
 func copyMessagesInto(newSessionID string, history []*types.Message) []*types.Message {
@@ -545,7 +545,7 @@ func forkTitle(requested, sourceTitle string) string {
 	if requested != "" {
 		return requested
 	}
-	return sourceTitle + "（分支）"
+	return sourceTitle + " (fork)"
 }
 
 func forkSnapshotName(sourceSessionID string) string {

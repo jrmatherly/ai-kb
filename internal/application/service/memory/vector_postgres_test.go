@@ -72,9 +72,15 @@ func TestVectorSearchRanksInPostgres(t *testing.T) {
 		vector  []float32
 		expires *time.Time
 	}{
-		{content: "回答直接给结论", kind: types.MemoryKindFact, vector: []float32{1, 0, 0}},
-		{content: "生产库的连接池配置", kind: types.MemoryKindFact, vector: []float32{0, 1, 0}},
-		{content: "本周的评审安排", kind: types.MemoryKindTask, vector: []float32{0.99, 0.1, 0}},
+		{content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba", kind: types.MemoryKindFact, vector: []float32{1, 0, 0}},
+		{
+			content: "\u751f\u4ea7\u5e93\u7684\u8fde\u63a5\u6c60\u914d\u7f6e", kind: types.MemoryKindFact,
+			vector: []float32{0, 1, 0},
+		},
+		{content: "\u672c\u5468\u7684\u8bc4\u5ba1\u5b89\u6392", kind: types.MemoryKindTask, vector: []float32{
+			0.99, 0.1,
+			0,
+		}},
 	}
 	past := time.Now().Add(-time.Hour)
 	seed[2].expires = &past

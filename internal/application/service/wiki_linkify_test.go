@@ -7,13 +7,13 @@ import (
 
 func TestLinkifyContent_BasicCJK(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
-	got, changed := linkifyContent("我住在北京市", refs, "")
+	got, changed := linkifyContent("\u6211\u4f4f\u5728\u5317\u4eac\u5e02", refs, "")
 	if !changed {
 		t.Fatalf("expected change")
 	}
-	want := "我住在[[beijing|北京]]市"
+	want := "\u6211\u4f4f\u5728[[beijing|\u5317\u4eac]]\u5e02"
 	if got != want {
 		t.Fatalf("got %q, want %q", got, want)
 	}
@@ -21,15 +21,15 @@ func TestLinkifyContent_BasicCJK(t *testing.T) {
 
 func TestLinkifyContent_LongerNameWinsOverSubstring(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
-		{slug: "bupt", matchText: "北京邮电大学"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
+		{slug: "bupt", matchText: "\u5317\u4eac\u90ae\u7535\u5927\u5b66"},
 	}
-	got, changed := linkifyContent("我就读于北京邮电大学", refs, "")
+	got, changed := linkifyContent("\u6211\u5c31\u8bfb\u4e8e\u5317\u4eac\u90ae\u7535\u5927\u5b66", refs, "")
 	if !changed {
 		t.Fatalf("expected change")
 	}
-	// The longer match should win; "北京" must not swallow the prefix.
-	if !strings.Contains(got, "[[bupt|北京邮电大学]]") {
+	// The longer match should win; "Beijing" must not swallow the prefix.
+	if !strings.Contains(got, "[[bupt|\u5317\u4eac\u90ae\u7535\u5927\u5b66]]") {
 		t.Fatalf("longer match not preferred: %q", got)
 	}
 	if strings.Contains(got, "[[beijing|") {
@@ -39,9 +39,9 @@ func TestLinkifyContent_LongerNameWinsOverSubstring(t *testing.T) {
 
 func TestLinkifyContent_SkipsSingleHanRuneAutoLink(t *testing.T) {
 	refs := []linkRef{
-		{slug: "entity/feng", matchText: "风"},
+		{slug: "entity/feng", matchText: "\u98ce"},
 	}
-	in := "穿越河西走廊体验大漠风沙。"
+	in := "\u7a7f\u8d8a\u6cb3\u897f\u8d70\u5eca\u4f53\u9a8c\u5927\u6f20\u98ce\u6c99\u3002"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("single Han rune must not be auto-linked: %q", got)
@@ -53,9 +53,9 @@ func TestLinkifyContent_SkipsSingleHanRuneAutoLink(t *testing.T) {
 
 func TestLinkifyContent_PreservesExplicitSingleHanRuneLink(t *testing.T) {
 	refs := []linkRef{
-		{slug: "entity/feng", matchText: "风"},
+		{slug: "entity/feng", matchText: "\u98ce"},
 	}
-	in := "寓言中，[[entity/feng|风]]羡慕目。"
+	in := "\u5bd3\u8a00\u4e2d\uff0c[[entity/feng|\u98ce]]\u7fa1\u6155\u76ee\u3002"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("explicit single-character link must be preserved without reinjection: %q", got)
@@ -89,10 +89,10 @@ func TestLinkifyContent_ASCIIWordBoundary(t *testing.T) {
 
 func TestLinkifyContent_SkipsExistingWikiLink(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
 	// Already linked — should not double-wrap.
-	in := "我住在[[beijing|北京]]市"
+	in := "\u6211\u4f4f\u5728[[beijing|\u5317\u4eac]]\u5e02"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("should not change already-linked content: %q", got)
@@ -144,10 +144,10 @@ func TestLinkifyContent_SkipsInsideInlineCode(t *testing.T) {
 
 func TestLinkifyContent_SkipsInsideMarkdownLink(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
 	// Occurrence inside [text](url) should be skipped.
-	in := "参见 [北京](https://example.com/beijing)"
+	in := "\u53c2\u89c1 [\u5317\u4eac](https://example.com/beijing)"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("should not link inside markdown link text: %q", got)
@@ -156,30 +156,30 @@ func TestLinkifyContent_SkipsInsideMarkdownLink(t *testing.T) {
 
 func TestLinkifyContent_OnlyFirstOccurrenceWrapped(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
-	in := "北京很大。北京有很多人。北京是首都。"
+	in := "\u5317\u4eac\u5f88\u5927\u3002\u5317\u4eac\u6709\u5f88\u591a\u4eba\u3002\u5317\u4eac\u662f\u9996\u90fd\u3002"
 	got, changed := linkifyContent(in, refs, "")
 	if !changed {
 		t.Fatalf("expected change")
 	}
 	// Only first match should be wrapped.
-	count := strings.Count(got, "[[beijing|北京]]")
+	count := strings.Count(got, "[[beijing|\u5317\u4eac]]")
 	if count != 1 {
 		t.Fatalf("expected exactly 1 link, got %d: %q", count, got)
 	}
 	// Later occurrences remain bare.
-	if strings.Count(got, "北京") != 3 {
-		t.Fatalf("expected 3 total 北京 (incl. one inside the link), got content %q", got)
+	if strings.Count(got, "\u5317\u4eac") != 3 {
+		t.Fatalf("expected 3 total Beijing (incl. one inside the link), got content %q", got)
 	}
 }
 
 func TestLinkifyContent_SkipsSelfSlug(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
 	// Rendering on the beijing page itself — must not self-link.
-	got, changed := linkifyContent("北京是首都", refs, "beijing")
+	got, changed := linkifyContent("\u5317\u4eac\u662f\u9996\u90fd", refs, "beijing")
 	if changed {
 		t.Fatalf("should not self-link: %q", got)
 	}
@@ -188,10 +188,10 @@ func TestLinkifyContent_SkipsSelfSlug(t *testing.T) {
 func TestLinkifyContent_SkipsWhenSlugAlreadyUsed(t *testing.T) {
 	// Title matches by alias, but slug already appears via a different mention.
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
-		{slug: "beijing", matchText: "京师"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
+		{slug: "beijing", matchText: "\u4eac\u5e08"},
 	}
-	in := "我在[[beijing|京师]]出差，后来去了北京。"
+	in := "\u6211\u5728[[beijing|\u4eac\u5e08]]\u51fa\u5dee\uff0c\u540e\u6765\u53bb\u4e86\u5317\u4eac\u3002"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("should skip when slug already linked: %q", got)
@@ -200,18 +200,18 @@ func TestLinkifyContent_SkipsWhenSlugAlreadyUsed(t *testing.T) {
 
 func TestLinkifyContent_MultipleRefsDisjoint(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
-		{slug: "shanghai", matchText: "上海"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
+		{slug: "shanghai", matchText: "\u4e0a\u6d77"},
 	}
-	in := "我今天去北京，明天去上海。"
+	in := "\u6211\u4eca\u5929\u53bb\u5317\u4eac\uff0c\u660e\u5929\u53bb\u4e0a\u6d77\u3002"
 	got, changed := linkifyContent(in, refs, "")
 	if !changed {
 		t.Fatalf("expected change")
 	}
-	if !strings.Contains(got, "[[beijing|北京]]") {
+	if !strings.Contains(got, "[[beijing|\u5317\u4eac]]") {
 		t.Fatalf("missing beijing link: %q", got)
 	}
-	if !strings.Contains(got, "[[shanghai|上海]]") {
+	if !strings.Contains(got, "[[shanghai|\u4e0a\u6d77]]") {
 		t.Fatalf("missing shanghai link: %q", got)
 	}
 }
@@ -263,7 +263,7 @@ func TestComputeForbiddenSpans_FencedCode(t *testing.T) {
 }
 
 func TestComputeForbiddenSpans_CollectsUsedSlugs(t *testing.T) {
-	s := "Refer to [[beijing|北京]] and [[shanghai]] and [[nope|x]]."
+	s := "Refer to [[beijing|\u5317\u4eac]] and [[shanghai]] and [[nope|x]]."
 	_, used := computeForbiddenSpans(s)
 	for _, slug := range []string{"beijing", "shanghai", "nope"} {
 		if _, ok := used[slug]; !ok {
@@ -274,10 +274,10 @@ func TestComputeForbiddenSpans_CollectsUsedSlugs(t *testing.T) {
 
 func TestLinkifyContent_SkipsInsideReferenceStyleLink(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
 	}
 	// [text][label] form — occurrence should not be linkified.
-	in := "See [北京][capital] for details.\n\n[capital]: https://example.com/beijing"
+	in := "See [\u5317\u4eac][capital] for details.\n\n[capital]: https://example.com/beijing"
 	got, changed := linkifyContent(in, refs, "")
 	if changed {
 		t.Fatalf("should not link inside reference-style link or definition: %q", got)
@@ -298,10 +298,10 @@ func TestLinkifyContent_SkipsReferenceDefinitionLine(t *testing.T) {
 
 func TestLinkifyContent_RepeatedLinkifyIsIdempotent(t *testing.T) {
 	refs := []linkRef{
-		{slug: "beijing", matchText: "北京"},
-		{slug: "shanghai", matchText: "上海"},
+		{slug: "beijing", matchText: "\u5317\u4eac"},
+		{slug: "shanghai", matchText: "\u4e0a\u6d77"},
 	}
-	in := "今天去北京，明天去上海。"
+	in := "\u4eca\u5929\u53bb\u5317\u4eac\uff0c\u660e\u5929\u53bb\u4e0a\u6d77\u3002"
 	once, _ := linkifyContent(in, refs, "")
 	twice, changed := linkifyContent(once, refs, "")
 	if changed {

@@ -358,7 +358,8 @@ func (s *tenantService) validateStorageBucketUniqueness(ctx context.Context, ten
 		oldB := oldBuckets[p]
 		if b != oldB { // User is trying to change their bucket name or set a new one
 			if usedByOthers[p] != nil && usedByOthers[p][b] {
-				return werrors.NewBadRequestError("存储桶名称「" + b + "」已被其他空间使用，为保证数据隔离，请使用其他名称")
+				return werrors.NewBadRequestError("bucket name \"" + b + "\" is already used by another workspace; " +
+					"use a different name to keep data isolated")
 			}
 		}
 	}

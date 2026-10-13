@@ -28,18 +28,20 @@ func TestVectorSearchRanksTheWholeSubjectNotAListedWindow(t *testing.T) {
 	// The memory that answers the question is the least important one, so any
 	// importance-ordered window of size one excludes it.
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "回答风格", Content: "回答直接给结论", Importance: 1,
+		Kind: types.MemoryKindFact, Topic: "\u56de\u7b54\u98ce\u683c",
+		Content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba", Importance: 1,
 	})
 	require.NoError(t, err)
 	_, err = svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产库的连接池配置", Importance: 5,
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u5e93\u7684\u8fde\u63a5\u6c60\u914d\u7f6e", Importance: 5,
 	})
 	require.NoError(t, err)
 
 	window, err := svc.repo.ListActiveByKinds(ctx, scope, []string{types.MemoryKindFact}, 1)
 	require.NoError(t, err)
 	require.Len(t, window, 1)
-	require.Equal(t, "生产库的连接池配置", window[0].Content,
+	require.Equal(t, "\u751f\u4ea7\u5e93\u7684\u8fde\u63a5\u6c60\u914d\u7f6e", window[0].Content,
 		"the window the old implementation scored holds the wrong memory")
 
 	hits, err := svc.repo.SearchItemsByVector(ctx, scope, interfaces.MemoryVectorQuery{
@@ -51,7 +53,7 @@ func TestVectorSearchRanksTheWholeSubjectNotAListedWindow(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.Len(t, hits, 1)
-	require.Equal(t, "回答直接给结论", hits[0].Item.Content,
+	require.Equal(t, "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba", hits[0].Item.Content,
 		"the search has to see every stored vector, not the ones importance listed")
 	require.Greater(t, hits[0].Score, minCosine)
 }
@@ -65,11 +67,13 @@ func TestVectorSearchHonoursKindAndLifecycleFilters(t *testing.T) {
 	scope := scopeFor(t, ctx)
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindPreference, Topic: "回答风格", Content: "回答直接给结论",
+		Kind: types.MemoryKindPreference, Topic: "\u56de\u7b54\u98ce\u683c",
+		Content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba",
 	})
 	require.NoError(t, err)
 	expired, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindTask, Topic: "待办", Content: "本周要回答直接给结论的评审",
+		Kind: types.MemoryKindTask, Topic: "\u5f85\u529e",
+		Content: "\u672c\u5468\u8981\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\u7684\u8bc4\u5ba1",
 	})
 	require.NoError(t, err)
 	require.NoError(t, db.Exec("UPDATE memory_items SET expires_at = ? WHERE id = ?",
@@ -99,9 +103,9 @@ func TestVectorSearchHonoursKindAndLifecycleFilters(t *testing.T) {
 // found has to be added to that slice. Dropping it instead would make the
 // wider search pointless.
 func TestMergeVectorHitsGrowsThePoolWithWhatItDidNotHold(t *testing.T) {
-	inPool := &types.MemoryItem{ID: "a", Content: "已经在候选池里"}
-	outsidePool := &types.MemoryItem{ID: "b", Content: "候选池没有的记忆"}
-	excluded := &types.MemoryItem{ID: "c", Content: "常驻块已经写过"}
+	inPool := &types.MemoryItem{ID: "a", Content: "\u5df2\u7ecf\u5728\u5019\u9009\u6c60\u91cc"}
+	outsidePool := &types.MemoryItem{ID: "b", Content: "\u5019\u9009\u6c60\u6ca1\u6709\u7684\u8bb0\u5fc6"}
+	excluded := &types.MemoryItem{ID: "c", Content: "\u5e38\u9a7b\u5757\u5df2\u7ecf\u5199\u8fc7"}
 
 	// Room to spare, so an append that forgot to copy would overwrite the
 	// caller's slice rather than allocate.
@@ -138,7 +142,10 @@ func TestLexicalPoolCoversEveryLiveMemory(t *testing.T) {
 	tenantRepo.set(1, cfg)
 	scope := scopeFor(t, ctx)
 
-	for _, content := range []string{"第一条记忆", "第二条记忆", "第三条记忆", "第四条记忆", "第五条记忆"} {
+	for _, content := range []string{
+		"\u7b2c\u4e00\u6761\u8bb0\u5fc6", "\u7b2c\u4e8c\u6761\u8bb0\u5fc6",
+		"\u7b2c\u4e09\u6761\u8bb0\u5fc6", "\u7b2c\u56db\u6761\u8bb0\u5fc6", "\u7b2c\u4e94\u6761\u8bb0\u5fc6",
+	} {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind: types.MemoryKindFact, Topic: content, Content: content,
 		})
@@ -168,8 +175,8 @@ func TestExtractionSeesTheMemoryItWouldDuplicateEvenWhenUnimportant(t *testing.T
 		{ID: "embed-1", Type: types.ModelTypeEmbedding, Status: types.ModelStatusActive},
 	}
 	models.embedder = &stubEmbedder{vectors: map[string][]float32{
-		"连接数": {1, 0, 0},
-		"生产库": {1, 0, 0},
+		"\u8fde\u63a5\u6570": {1, 0, 0},
+		"\u751f\u4ea7\u5e93": {1, 0, 0},
 	}}
 	models.response = `{"memories":[]}`
 
@@ -177,8 +184,8 @@ func TestExtractionSeesTheMemoryItWouldDuplicateEvenWhenUnimportant(t *testing.T
 	for i := 0; i <= extractRelevantCandidates; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind: types.MemoryKindFact, Importance: 5,
-			Topic:   fmt.Sprintf("话题%d", i),
-			Content: fmt.Sprintf("与本次提问无关的第 %d 条记忆", i),
+			Topic:   fmt.Sprintf("\u8bdd\u9898%d", i),
+			Content: fmt.Sprintf("\u4e0e\u672c\u6b21\u63d0\u95ee\u65e0\u5173\u7684\u7b2c %d \u6761\u8bb0\u5fc6", i),
 		})
 		require.NoError(t, err)
 	}
@@ -186,18 +193,19 @@ func TestExtractionSeesTheMemoryItWouldDuplicateEvenWhenUnimportant(t *testing.T
 	// every importance-ordered window excludes it.
 	_, err := svc.Remember(ctx, types.MemoryItem{
 		Kind: types.MemoryKindFact, Importance: 1,
-		Topic: "生产库", Content: "生产库连接数上限是 200",
+		Topic: "\u751f\u4ea7\u5e93", Content: "\u751f\u4ea7\u5e93\u8fde\u63a5\u6570\u4e0a\u9650\u662f 200",
 	})
 	require.NoError(t, err)
 
 	messages.set("session-1", []*types.Message{
-		userMessage("session-1", "生产库连接数上限昨天调成 500 了", time.Now().Add(-time.Hour)),
+		userMessage("session-1", "\u751f\u4ea7\u5e93\u8fde\u63a5\u6570\u4e0a\u9650\u6628\u5929\u8c03\u6210 500 \u4e86",
+			time.Now().Add(-time.Hour)),
 	})
 	svc.ScheduleExtraction(ctx, "session-1", "message-1", "model-1")
 	drainExtractions(t, svc, enqueuer)
 
 	notes := existingNotesBlock(models.lastPromptContaining("What the user said:"))
-	require.Contains(t, notes, "生产库连接数上限是 200",
+	require.Contains(t, notes, "\u751f\u4ea7\u5e93\u8fde\u63a5\u6570\u4e0a\u9650\u662f 200",
 		"the model cannot supersede a memory it was never shown")
 	require.LessOrEqual(t, strings.Count(notes, "\n["), extractRelevantCandidates,
 		"and it still must not be shown the whole store")

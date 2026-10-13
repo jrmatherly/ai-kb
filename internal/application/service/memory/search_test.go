@@ -17,8 +17,14 @@ func TestSearchFindsWhatTheOpeningQuestionDidNotMatch(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	for _, item := range []types.MemoryItem{
-		{Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产数据库用的是 PostgreSQL"},
-		{Kind: types.MemoryKindFact, Topic: "部署", Content: "部署走的是蓝绿发布"},
+		{
+			Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93",
+			Content: "\u751f\u4ea7\u6570\u636e\u5e93\u7528\u7684\u662f PostgreSQL",
+		},
+		{
+			Kind: types.MemoryKindFact, Topic: "\u90e8\u7f72",
+			Content: "\u90e8\u7f72\u8d70\u7684\u662f\u84dd\u7eff\u53d1\u5e03",
+		},
 	} {
 		_, err := svc.Remember(ctx, item)
 		require.NoError(t, err)
@@ -26,15 +32,15 @@ func TestSearchFindsWhatTheOpeningQuestionDidNotMatch(t *testing.T) {
 
 	// The turn opened with a database question, so that is what recall ranked
 	// against and the deployment memory is nowhere in the prompt.
-	recall := svc.Recall(ctx, "帮我看看数据库连接池的配置")
+	recall := svc.Recall(ctx, "\u5e2e\u6211\u770b\u770b\u6570\u636e\u5e93\u8fde\u63a5\u6c60\u7684\u914d\u7f6e")
 	require.Contains(t, recall.Prompt, "PostgreSQL")
-	require.NotContains(t, recall.Prompt, "蓝绿发布")
+	require.NotContains(t, recall.Prompt, "\u84dd\u7eff\u53d1\u5e03")
 
 	// Several iterations later the agent is looking at deployment instead.
-	result := svc.SearchMemory(ctx, "部署方式", 10)
+	result := svc.SearchMemory(ctx, "\u90e8\u7f72\u65b9\u5f0f", 10)
 	require.True(t, result.Available)
 	require.Len(t, result.Items, 1)
-	require.Equal(t, "部署走的是蓝绿发布", result.Items[0].Content)
+	require.Equal(t, "\u90e8\u7f72\u8d70\u7684\u662f\u84dd\u7eff\u53d1\u5e03", result.Items[0].Content)
 }
 
 // The other half of the gap: recall admits five situational items no matter
@@ -47,16 +53,16 @@ func TestSearchReachesPastTheFiveItemTurnBudget(t *testing.T) {
 	for i := 0; i < 8; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind:    types.MemoryKindFact,
-			Topic:   fmt.Sprintf("配置项-%d", i),
-			Content: fmt.Sprintf("网关配置第 %d 项已经调过", i),
+			Topic:   fmt.Sprintf("\u914d\u7f6e\u9879-%d", i),
+			Content: fmt.Sprintf("\u7f51\u5173\u914d\u7f6e\u7b2c %d \u9879\u5df2\u7ecf\u8c03\u8fc7", i),
 		})
 		require.NoError(t, err)
 	}
 
-	recall := svc.Recall(ctx, "网关配置")
+	recall := svc.Recall(ctx, "\u7f51\u5173\u914d\u7f6e")
 	require.Len(t, recall.Items, types.MemoryRecallMaxItems)
 
-	result := svc.SearchMemory(ctx, "网关配置", 8)
+	result := svc.SearchMemory(ctx, "\u7f51\u5173\u914d\u7f6e", 8)
 	require.True(t, result.Available)
 	require.Len(t, result.Items, 8)
 }
@@ -70,11 +76,12 @@ func TestSearchCoversTheResidentKindsToo(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindPreference, Topic: "代码风格", Content: "代码注释统一用英文",
+		Kind: types.MemoryKindPreference, Topic: "\u4ee3\u7801\u98ce\u683c",
+		Content: "\u4ee3\u7801\u6ce8\u91ca\u7edf\u4e00\u7528\u82f1\u6587",
 	})
 	require.NoError(t, err)
 
-	result := svc.SearchMemory(ctx, "代码注释", 10)
+	result := svc.SearchMemory(ctx, "\u4ee3\u7801\u6ce8\u91ca", 10)
 	require.True(t, result.Available)
 	require.Len(t, result.Items, 1)
 	require.Equal(t, types.MemoryKindPreference, result.Items[0].Kind)
@@ -88,15 +95,17 @@ func TestSearchDoesNotResurrectReplacedMemories(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "生产数据库", Content: "生产数据库用的是 MySQL",
+		Kind: types.MemoryKindFact, Topic: "\u751f\u4ea7\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u7528\u7684\u662f MySQL",
 	})
 	require.NoError(t, err)
 	_, err = svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "生产数据库", Content: "生产数据库已经迁到 PostgreSQL",
+		Kind: types.MemoryKindFact, Topic: "\u751f\u4ea7\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u5df2\u7ecf\u8fc1\u5230 PostgreSQL",
 	})
 	require.NoError(t, err)
 
-	result := svc.SearchMemory(ctx, "生产数据库", 10)
+	result := svc.SearchMemory(ctx, "\u751f\u4ea7\u6570\u636e\u5e93", 10)
 	require.True(t, result.Available)
 	require.Len(t, result.Items, 1)
 	require.Contains(t, result.Items[0].Content, "PostgreSQL")
@@ -109,16 +118,17 @@ func TestSearchTellsDisabledApartFromEmpty(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产数据库用的是 PostgreSQL",
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u7528\u7684\u662f PostgreSQL",
 	})
 	require.NoError(t, err)
 
-	empty := svc.SearchMemory(ctx, "完全无关的题目", 10)
+	empty := svc.SearchMemory(ctx, "\u5b8c\u5168\u65e0\u5173\u7684\u9898\u76ee", 10)
 	require.True(t, empty.Available, "memory is on, this user simply has no match")
 	require.Empty(t, empty.Items)
 
 	disabled := false
-	off := svc.SearchMemory(types.ApplyAgentMemoryPreference(ctx, &disabled), "数据库", 10)
+	off := svc.SearchMemory(types.ApplyAgentMemoryPreference(ctx, &disabled), "\u6570\u636e\u5e93", 10)
 	require.False(t, off.Available, "an agent opting out must not be able to search either")
 	require.Empty(t, off.Items)
 }
@@ -131,7 +141,7 @@ func TestMemoryAvailableTracksAllThreeSwitches(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	require.True(t, svc.MemoryAvailable(ctx))
 
-	// The user's own toggle in 我的记忆.
+	// The user's own toggle in My memory.
 	require.NoError(t, svc.SetEnabled(ctx, false))
 	require.False(t, svc.MemoryAvailable(ctx), "the user opted out")
 	require.NoError(t, svc.SetEnabled(ctx, true))
@@ -153,15 +163,16 @@ func TestMemoryAvailableAgreesWithSearch(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindFact, Topic: "数据库", Content: "生产数据库用的是 PostgreSQL",
+		Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93",
+		Content: "\u751f\u4ea7\u6570\u636e\u5e93\u7528\u7684\u662f PostgreSQL",
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, svc.MemoryAvailable(ctx), svc.SearchMemory(ctx, "数据库", 10).Available)
+	require.Equal(t, svc.MemoryAvailable(ctx), svc.SearchMemory(ctx, "\u6570\u636e\u5e93", 10).Available)
 
 	require.NoError(t, svc.SetEnabled(ctx, false))
-	require.Equal(t, svc.MemoryAvailable(ctx), svc.SearchMemory(ctx, "数据库", 10).Available)
-	require.False(t, svc.SearchMemory(ctx, "数据库", 10).Available)
+	require.Equal(t, svc.MemoryAvailable(ctx), svc.SearchMemory(ctx, "\u6570\u636e\u5e93", 10).Available)
+	require.False(t, svc.SearchMemory(ctx, "\u6570\u636e\u5e93", 10).Available)
 }
 
 func TestSearchWithoutPrincipalIsUnavailable(t *testing.T) {
@@ -169,7 +180,7 @@ func TestSearchWithoutPrincipalIsUnavailable(t *testing.T) {
 	tenantRepo.set(1, &types.MemoryConfig{Enabled: true})
 	ctx := t.Context()
 
-	result := svc.SearchMemory(ctx, "数据库", 10)
+	result := svc.SearchMemory(ctx, "\u6570\u636e\u5e93", 10)
 	require.False(t, result.Available,
 		"a request with no principal has no memory space to search")
 }
@@ -181,13 +192,13 @@ func TestSearchClampsAnAbsurdLimit(t *testing.T) {
 	for i := 0; i < types.MemorySearchMaxItems+10; i++ {
 		_, err := svc.Remember(ctx, types.MemoryItem{
 			Kind:    types.MemoryKindFact,
-			Topic:   fmt.Sprintf("网关-%d", i),
-			Content: fmt.Sprintf("网关配置第 %d 项已经调过", i),
+			Topic:   fmt.Sprintf("\u7f51\u5173-%d", i),
+			Content: fmt.Sprintf("\u7f51\u5173\u914d\u7f6e\u7b2c %d \u9879\u5df2\u7ecf\u8c03\u8fc7", i),
 		})
 		require.NoError(t, err)
 	}
 
-	result := svc.SearchMemory(ctx, "网关配置", 10_000)
+	result := svc.SearchMemory(ctx, "\u7f51\u5173\u914d\u7f6e", 10_000)
 	require.True(t, result.Available)
 	require.LessOrEqual(t, len(result.Items), types.MemorySearchMaxItems)
 }

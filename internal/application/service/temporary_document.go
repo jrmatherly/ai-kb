@@ -807,7 +807,11 @@ func temporaryDocumentQueryTerms(query string) []string {
 
 func isVisualDocumentQuery(query string) bool {
 	lower := strings.ToLower(query)
-	for _, marker := range []string{"图", "表格", "截图", "页面", "排版", "chart", "figure", "diagram", "image", "layout"} {
+	// The Chinese markers are figure/image, table, screenshot, page and layout.
+	for _, marker := range []string{
+		"\u56fe", "\u8868\u683c", "\u622a\u56fe", "\u9875\u9762", "\u6392\u7248", "chart",
+		"figure", "diagram", "image", "layout",
+	} {
 		if strings.Contains(lower, marker) {
 			return true
 		}

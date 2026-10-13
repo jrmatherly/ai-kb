@@ -102,26 +102,33 @@ func containsSlug(pages []*types.WikiPage, slug string) bool {
 // be offered to the LLM as a candidate for that new item.
 func TestSelectDedupCandidatePages_FiltersUnrelatedHallucinationTarget(t *testing.T) {
 	newItems := []extractedItem{
-		{Slug: "concept/chengzhen-dengji-shiye-renyuan", Name: "城镇登记失业人员", Aliases: []string{"登记失业人员"}},
-		{Slug: "entity/beijing-nongshang-yinxing", Name: "北京农商银行"},
+		{
+			Slug: "concept/chengzhen-dengji-shiye-renyuan", Name: "\u57ce\u9547\u767b\u8bb0\u5931\u4e1a\u4eba\u5458",
+			Aliases: []string{"\u767b\u8bb0\u5931\u4e1a\u4eba\u5458"},
+		},
+		{Slug: "entity/beijing-nongshang-yinxing", Name: "\u5317\u4eac\u519c\u5546\u94f6\u884c"},
 	}
 
 	// Build a corpus that mirrors the real log's shape: ~90 unrelated pages
 	// plus a few that share tokens with the new items (so the prefilter has
 	// plausible near-matches to keep).
 	pages := []*types.WikiPage{
-		makePage("concept/zhong-hua-you-xiu-chuan-tong-wen-hua", "中华优秀传统文化", "concept"),
-		makePage("concept/jiuye-jineng-peixun", "就业技能培训", "concept"),
-		makePage("concept/peixun-kaohe-pingjia", "培训考核评价", "concept"),
-		makePage("concept/ren-gong-zhi-neng-an-quan", "人工智能安全", "concept", "AI安全"),
-		makePage("entity/bei-jing-shi-jiao-yu-wei-yuan-hui", "北京市教育委员会", "entity", "北京市教委"),
-		makePage("entity/beijingshi-changping-zhiye-xuexiao", "北京市昌平职业学校", "entity"),
+		makePage("concept/zhong-hua-you-xiu-chuan-tong-wen-hua", "\u4e2d\u534e\u4f18\u79c0\u4f20\u7edf\u6587\u5316",
+			"concept"),
+		makePage("concept/jiuye-jineng-peixun", "\u5c31\u4e1a\u6280\u80fd\u57f9\u8bad", "concept"),
+		makePage("concept/peixun-kaohe-pingjia", "\u57f9\u8bad\u8003\u6838\u8bc4\u4ef7", "concept"),
+		makePage("concept/ren-gong-zhi-neng-an-quan", "\u4eba\u5de5\u667a\u80fd\u5b89\u5168", "concept",
+			"AI\u5b89\u5168"),
+		makePage("entity/bei-jing-shi-jiao-yu-wei-yuan-hui", "\u5317\u4eac\u5e02\u6559\u80b2\u59d4\u5458\u4f1a",
+			"entity", "\u5317\u4eac\u5e02\u6559\u59d4"),
+		makePage("entity/beijingshi-changping-zhiye-xuexiao", "\u5317\u4eac\u5e02\u660c\u5e73\u804c\u4e1a\u5b66\u6821",
+			"entity"),
 	}
 	// Pad with filler so we exceed dedupSmallCorpusBypass.
 	for i := 0; i < 40; i++ {
 		pages = append(pages, makePage(
 			"concept/filler-"+strings.Repeat("x", i+1),
-			"填充概念"+strings.Repeat("占位", i+1),
+			"\u586b\u5145\u6982\u5ff5"+strings.Repeat("\u5360\u4f4d", i+1),
 			"concept",
 		))
 	}
@@ -142,20 +149,25 @@ func TestSelectDedupCandidatePages_FiltersUnrelatedHallucinationTarget(t *testin
 // the prefilter so the LLM can still evaluate the merge.
 func TestSelectDedupCandidatePages_KeepsRelatedPages(t *testing.T) {
 	newItems := []extractedItem{
-		{Slug: "concept/chengzhen-dengji-shiye-renyuan", Name: "城镇登记失业人员", Aliases: []string{"登记失业人员"}},
+		{
+			Slug: "concept/chengzhen-dengji-shiye-renyuan", Name: "\u57ce\u9547\u767b\u8bb0\u5931\u4e1a\u4eba\u5458",
+			Aliases: []string{"\u767b\u8bb0\u5931\u4e1a\u4eba\u5458"},
+		},
 	}
 	// Build > dedupSmallCorpusBypass pages so the filter actually runs.
 	pages := []*types.WikiPage{
 		// Directly related: existing page whose title overlaps with the new
-		// item on "登记失业人员". Prefilter MUST keep this.
-		makePage("concept/deng-ji-shi-ye-ren-yuan", "登记失业人员", "concept", "城镇登记失业人员"),
+		// item on "registered unemployed" (in Chinese). Prefilter MUST keep this.
+		makePage("concept/deng-ji-shi-ye-ren-yuan", "\u767b\u8bb0\u5931\u4e1a\u4eba\u5458", "concept",
+			"\u57ce\u9547\u767b\u8bb0\u5931\u4e1a\u4eba\u5458"),
 		// Unrelated.
-		makePage("concept/zhong-hua-you-xiu-chuan-tong-wen-hua", "中华优秀传统文化", "concept"),
+		makePage("concept/zhong-hua-you-xiu-chuan-tong-wen-hua", "\u4e2d\u534e\u4f18\u79c0\u4f20\u7edf\u6587\u5316",
+			"concept"),
 	}
 	for i := 0; i < 30; i++ {
 		pages = append(pages, makePage(
 			"entity/filler-"+strings.Repeat("x", i+1),
-			"填充实体"+strings.Repeat("占位", i+1),
+			"\u586b\u5145\u5b9e\u4f53"+strings.Repeat("\u5360\u4f4d", i+1),
 			"entity",
 		))
 	}
@@ -175,9 +187,9 @@ func TestSelectDedupCandidatePages_SmallCorpusBypass(t *testing.T) {
 		{Slug: "concept/a", Name: "A"},
 	}
 	pages := []*types.WikiPage{
-		makePage("concept/wholly-unrelated-1", "毫不相关一", "concept"),
-		makePage("concept/wholly-unrelated-2", "毫不相关二", "concept"),
-		makePage("concept/wholly-unrelated-3", "毫不相关三", "concept"),
+		makePage("concept/wholly-unrelated-1", "\u6beb\u4e0d\u76f8\u5173\u4e00", "concept"),
+		makePage("concept/wholly-unrelated-2", "\u6beb\u4e0d\u76f8\u5173\u4e8c", "concept"),
+		makePage("concept/wholly-unrelated-3", "\u6beb\u4e0d\u76f8\u5173\u4e09", "concept"),
 	}
 	got := selectDedupCandidatePages(newItems, pages)
 	if len(got) != len(pages) {
@@ -208,8 +220,8 @@ func TestSelectDedupCandidatePages_DropsNonEntityConcept(t *testing.T) {
 // surfaceGrams must yield empty intersection for the real hallucinated pair,
 // confirming the underlying similarity signal is doing its job.
 func TestSurfaceGrams_UnrelatedCJKPair(t *testing.T) {
-	a := surfaceGrams("城镇登记失业人员")
-	b := surfaceGrams("中华优秀传统文化")
+	a := surfaceGrams("\u57ce\u9547\u767b\u8bb0\u5931\u4e1a\u4eba\u5458")
+	b := surfaceGrams("\u4e2d\u534e\u4f18\u79c0\u4f20\u7edf\u6587\u5316")
 	for k := range a {
 		if _, ok := b[k]; ok {
 			t.Fatalf("expected zero bigram overlap, but shared %q", k)
@@ -238,12 +250,15 @@ func TestDedupPairScore_AcmeCorpVariant(t *testing.T) {
 // Unrelated CJK pair (the exact case observed in production) must score 0.
 func TestDedupPairScore_UnrelatedCJKPair(t *testing.T) {
 	a := dedupSurface{
-		slugTokens:   slugBaseTokens("concept/chengzhen-dengji-shiye-renyuan"),
-		nameGramSets: gramsPerSurface([]string{"城镇登记失业人员", "登记失业人员"}),
+		slugTokens: slugBaseTokens("concept/chengzhen-dengji-shiye-renyuan"),
+		nameGramSets: gramsPerSurface([]string{
+			"\u57ce\u9547\u767b\u8bb0\u5931\u4e1a\u4eba\u5458",
+			"\u767b\u8bb0\u5931\u4e1a\u4eba\u5458",
+		}),
 	}
 	b := dedupSurface{
 		slugTokens:   slugBaseTokens("concept/zhong-hua-you-xiu-chuan-tong-wen-hua"),
-		nameGramSets: gramsPerSurface([]string{"中华优秀传统文化"}),
+		nameGramSets: gramsPerSurface([]string{"\u4e2d\u534e\u4f18\u79c0\u4f20\u7edf\u6587\u5316"}),
 	}
 	if s := dedupPairScore(a, b); s >= dedupCandidateScoreFloor {
 		t.Fatalf("expected unrelated CJK pair to score below floor %v, got %v",
@@ -255,7 +270,7 @@ func TestNormalizeWikiIdentityTitlePreservesSemanticPunctuation(t *testing.T) {
 	if got := normalizeWikiIdentityTitle("  Acme  Corp "); got != "acmecorp" {
 		t.Fatalf("normalizeWikiIdentityTitle whitespace/case = %q, want acmecorp", got)
 	}
-	if normalizeWikiIdentityTitle("寓言") == normalizeWikiIdentityTitle("《寓言》") {
+	if normalizeWikiIdentityTitle("\u5bd3\u8a00") == normalizeWikiIdentityTitle("\u300a\u5bd3\u8a00\u300b") {
 		t.Fatal("concept title and work/chapter title must keep distinct identities")
 	}
 }
@@ -264,16 +279,16 @@ func TestNormalizeWikiIdentityTitlePreservesSemanticPunctuation(t *testing.T) {
 // exactIdentityTarget now that a cross-type exact-title page is reused when
 // no same-type page exists (issue #3526).
 func TestExactIdentityTargetPrefersSameType(t *testing.T) {
-	item := extractedItem{Name: "孔子", Slug: "entity/kong-zi"}
+	item := extractedItem{Name: "\u5b54\u5b50", Slug: "entity/kong-zi"}
 	pages := map[string]*types.WikiPageLite{
 		"entity/confucius": {
 			Slug:     "entity/confucius",
-			Title:    "孔 子",
+			Title:    "\u5b54 \u5b50",
 			PageType: types.WikiPageTypeEntity,
 		},
 		"concept/confucius": {
 			Slug:     "concept/confucius",
-			Title:    "孔子",
+			Title:    "\u5b54\u5b50",
 			PageType: types.WikiPageTypeConcept,
 		},
 	}
@@ -291,11 +306,11 @@ func TestExactIdentityTargetPrefersSameType(t *testing.T) {
 // same-type page, the existing cross-type page must be reused instead of
 // materializing a concept/X + entity/X twin.
 func TestExactIdentityTargetCrossTypeFallback(t *testing.T) {
-	item := extractedItem{Name: "孔子", Slug: "entity/kong-zi"}
+	item := extractedItem{Name: "\u5b54\u5b50", Slug: "entity/kong-zi"}
 	pages := map[string]*types.WikiPageLite{
 		"concept/confucius": {
 			Slug:     "concept/confucius",
-			Title:    "孔子",
+			Title:    "\u5b54\u5b50",
 			PageType: types.WikiPageTypeConcept,
 		},
 	}
@@ -306,7 +321,7 @@ func TestExactIdentityTargetCrossTypeFallback(t *testing.T) {
 
 	// Same-type match still wins over the cross-type page.
 	pages["entity/confucius"] = &types.WikiPageLite{
-		Slug: "entity/confucius", Title: "孔 子", PageType: types.WikiPageTypeEntity,
+		Slug: "entity/confucius", Title: "\u5b54 \u5b50", PageType: types.WikiPageTypeEntity,
 	}
 	candidates["entity/confucius"] = true
 	if got := exactIdentityTarget(item, types.WikiPageTypeEntity, candidates, pages); got != "entity/confucius" {
@@ -314,7 +329,7 @@ func TestExactIdentityTargetCrossTypeFallback(t *testing.T) {
 	}
 
 	// Differently-titled cross-type pages must not be reused.
-	other := extractedItem{Name: "孟子", Slug: "entity/mencius"}
+	other := extractedItem{Name: "\u5b5f\u5b50", Slug: "entity/mencius"}
 	if got := exactIdentityTarget(other, types.WikiPageTypeEntity, candidates, pages); got != "" {
 		t.Fatalf("exactIdentityTarget = %q, want empty for unrelated title", got)
 	}
@@ -346,7 +361,7 @@ func TestWikiIdentityClaimConvergesDifferentSlugs(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			results[i] = svc.claimWikiIdentitySlug(
-				ctx, "kb-1", types.WikiPageTypeEntity, "孔 子", proposal, false, &WikiBatchContext{},
+				ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54 \u5b50", proposal, false, &WikiBatchContext{},
 			)
 		}()
 	}
@@ -360,10 +375,10 @@ func TestWikiIdentityClaimConvergesDifferentSlugs(t *testing.T) {
 	// A verified existing page is authoritative and replaces a provisional
 	// reservation left by an earlier map worker.
 	authoritative := svc.claimWikiIdentitySlug(
-		ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/confucius", true, &WikiBatchContext{},
+		ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/confucius", true, &WikiBatchContext{},
 	)
 	third := svc.claimWikiIdentitySlug(
-		ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kongzi", false, &WikiBatchContext{},
+		ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kongzi", false, &WikiBatchContext{},
 	)
 	if authoritative != "entity/confucius" || third != authoritative {
 		t.Fatalf("authoritative identity did not replace claim: authoritative=%q third=%q", authoritative, third)
@@ -376,13 +391,13 @@ func TestWikiIdentityClaimKeepsDistinctTypesAndPunctuation(t *testing.T) {
 	ctx := context.Background()
 
 	concept := svc.claimWikiIdentitySlug(
-		ctx, "kb-1", types.WikiPageTypeConcept, "寓言", "concept/fable-zhuangzi", false, batch,
+		ctx, "kb-1", types.WikiPageTypeConcept, "\u5bd3\u8a00", "concept/fable-zhuangzi", false, batch,
 	)
 	chapter := svc.claimWikiIdentitySlug(
-		ctx, "kb-1", types.WikiPageTypeConcept, "《寓言》", "concept/yuyan-chapter", false, batch,
+		ctx, "kb-1", types.WikiPageTypeConcept, "\u300a\u5bd3\u8a00\u300b", "concept/yuyan-chapter", false, batch,
 	)
 	entity := svc.claimWikiIdentitySlug(
-		ctx, "kb-1", types.WikiPageTypeEntity, "寓言", "entity/yuyan-zhuangzi", false, batch,
+		ctx, "kb-1", types.WikiPageTypeEntity, "\u5bd3\u8a00", "entity/yuyan-zhuangzi", false, batch,
 	)
 	if concept != "concept/fable-zhuangzi" || chapter != "concept/yuyan-chapter" || entity != "entity/yuyan-zhuangzi" {
 		t.Fatalf("distinct identities were collapsed: concept=%q chapter=%q entity=%q", concept, chapter, entity)
@@ -394,12 +409,13 @@ func TestStabilizeExtractedIdentitiesCoalescesEvidence(t *testing.T) {
 	batch := &WikiBatchContext{}
 	items := []extractedItem{
 		{
-			Name: "孔 子", Slug: "entity/kong-zi", Aliases: []string{"孔丘"},
-			Description: "思想家", Details: "短", SourceChunks: []string{"chunk-1"},
+			Name: "\u5b54 \u5b50", Slug: "entity/kong-zi", Aliases: []string{"\u5b54\u4e18"},
+			Description: "\u601d\u60f3\u5bb6", Details: "\u77ed", SourceChunks: []string{"chunk-1"},
 		},
 		{
-			Name: "孔子", Slug: "entity/confucius", Aliases: []string{"Confucius"},
-			Description: "中国古代思想家、教育家", Details: "更完整的说明", SourceChunks: []string{"chunk-2"},
+			Name: "\u5b54\u5b50", Slug: "entity/confucius", Aliases: []string{"Confucius"},
+			Description: "\u4e2d\u56fd\u53e4\u4ee3\u601d\u60f3\u5bb6\u3001\u6559\u80b2\u5bb6",
+			Details:     "\u66f4\u5b8c\u6574\u7684\u8bf4\u660e", SourceChunks: []string{"chunk-2"},
 		},
 	}
 	got := svc.stabilizeExtractedIdentities(
@@ -411,10 +427,11 @@ func TestStabilizeExtractedIdentitiesCoalescesEvidence(t *testing.T) {
 	if got[0].Slug != "entity/kong-zi" {
 		t.Fatalf("stabilized slug = %q, want first claimed slug", got[0].Slug)
 	}
-	if got[0].Name != "孔子" {
+	if got[0].Name != "\u5b54\u5b50" {
 		t.Fatalf("compact display name not preferred: %#v", got[0])
 	}
-	if got[0].Description != "中国古代思想家、教育家" || got[0].Details != "更完整的说明" {
+	if got[0].Description != "\u4e2d\u56fd\u53e4\u4ee3\u601d\u60f3\u5bb6\u3001\u6559\u80b2\u5bb6" ||
+		got[0].Details != "\u66f4\u5b8c\u6574\u7684\u8bf4\u660e" {
 		t.Fatalf("richer fallback text not preserved: %#v", got[0])
 	}
 	if len(got[0].SourceChunks) != 2 {
@@ -434,13 +451,14 @@ func TestWikiIdentityClaimRedisOverridesStaleLocal(t *testing.T) {
 	svc := &wikiIngestService{redisClient: rdb}
 	ctx := context.Background()
 	batch := &WikiBatchContext{}
-	identity := normalizeWikiIdentityTitle("孔子")
+	identity := normalizeWikiIdentityTitle("\u5b54\u5b50")
 	batch.identityClaims.Store(types.WikiPageTypeEntity+"\x00"+identity, "entity/kong-zi")
 	if err := rdb.Set(ctx, wikiIdentityClaimPrefix+"kb-1:"+types.WikiPageTypeEntity+":"+identity, "entity/confucius", wikiIdentityClaimTTL).Err(); err != nil {
 		t.Fatalf("seed redis claim: %v", err)
 	}
 
-	got := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kongqiu", false, batch)
+	got := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kongqiu", false,
+		batch)
 	if got != "entity/confucius" {
 		t.Fatalf("redis claim should beat stale local map: got %q", got)
 	}
@@ -462,13 +480,14 @@ func TestStabilizeLLMMergeDoesNotOverrideRedisClaim(t *testing.T) {
 	ctx := context.Background()
 	batch := &WikiBatchContext{}
 
-	first := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kong-zi", false, batch)
+	first := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kong-zi", false,
+		batch)
 	if first != "entity/kong-zi" {
 		t.Fatalf("provisional claim = %q, want entity/kong-zi", first)
 	}
 
 	got := svc.stabilizeExtractedIdentities(ctx, "kb-1", types.WikiPageTypeEntity, []extractedItem{
-		{Name: "孔子", Slug: "entity/confucius"},
+		{Name: "\u5b54\u5b50", Slug: "entity/confucius"},
 	}, map[string]string{"entity/confucius": "entity/kong-zi-institute"}, nil, batch)
 	if len(got) != 1 || got[0].Slug != "entity/kong-zi" {
 		t.Fatalf("LLM merge overwrote identity claim: %#v", got)
@@ -488,15 +507,16 @@ func TestStabilizeExactTargetIsAuthoritative(t *testing.T) {
 	ctx := context.Background()
 	batch := &WikiBatchContext{}
 
-	svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kong-zi", false, batch)
+	svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kong-zi", false, batch)
 	got := svc.stabilizeExtractedIdentities(ctx, "kb-1", types.WikiPageTypeEntity, []extractedItem{
-		{Name: "孔子", Slug: "entity/kong-zi"},
+		{Name: "\u5b54\u5b50", Slug: "entity/kong-zi"},
 	}, nil, map[string]string{"entity/kong-zi": "entity/confucius"}, batch)
 	if len(got) != 1 || got[0].Slug != "entity/confucius" {
 		t.Fatalf("exact existing page should replace provisional claim: %#v", got)
 	}
 
-	follow := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kongqiu", false, &WikiBatchContext{})
+	follow := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kongqiu", false,
+		&WikiBatchContext{})
 	if follow != "entity/confucius" {
 		t.Fatalf("authoritative exact hit did not stick in redis: %q", follow)
 	}
@@ -514,7 +534,8 @@ func TestWikiIdentityClaimLiteConcurrentSameBatch(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			results[i] = svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", proposal, false, batch)
+			results[i] = svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", proposal,
+				false, batch)
 		}()
 	}
 	wg.Wait()
@@ -529,16 +550,16 @@ func TestRemapSlugUpdatesByIdentityConverges(t *testing.T) {
 	svc := &wikiIngestService{}
 	batch := &WikiBatchContext{}
 	ctx := context.Background()
-	svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kong-zi", false, batch)
+	svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kong-zi", false, batch)
 
 	got := svc.remapSlugUpdatesByIdentity(ctx, "kb-1", map[string][]SlugUpdate{
 		"entity/kong-zi": {{
 			Slug: "entity/kong-zi", Type: types.WikiPageTypeEntity,
-			Item: extractedItem{Name: "孔子", Slug: "entity/kong-zi"},
+			Item: extractedItem{Name: "\u5b54\u5b50", Slug: "entity/kong-zi"},
 		}},
 		"entity/confucius": {{
 			Slug: "entity/confucius", Type: types.WikiPageTypeEntity,
-			Item: extractedItem{Name: "孔 子", Slug: "entity/confucius"},
+			Item: extractedItem{Name: "\u5b54 \u5b50", Slug: "entity/confucius"},
 		}},
 		"summary/doc": {{Slug: "summary/doc", Type: types.WikiPageTypeSummary}},
 	}, batch)
@@ -561,11 +582,12 @@ func TestRemapSlugUpdatesByIdentityConverges(t *testing.T) {
 func TestReclaimExtractedIdentitiesCoalescesCitationSlugs(t *testing.T) {
 	svc := &wikiIngestService{}
 	batch := &WikiBatchContext{}
-	svc.claimWikiIdentitySlug(context.Background(), "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kong-zi", false, batch)
+	svc.claimWikiIdentitySlug(context.Background(), "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kong-zi",
+		false, batch)
 
 	entities, concepts := svc.reclaimExtractedIdentities(context.Background(), "kb-1", []extractedItem{
-		{Name: "孔子", Slug: "entity/kong-zi", SourceChunks: []string{"c1"}},
-		{Name: "孔 子", Slug: "entity/confucius", SourceChunks: []string{"c2"}},
+		{Name: "\u5b54\u5b50", Slug: "entity/kong-zi", SourceChunks: []string{"c1"}},
+		{Name: "\u5b54 \u5b50", Slug: "entity/confucius", SourceChunks: []string{"c2"}},
 	}, nil, batch)
 	if len(entities) != 1 || entities[0].Slug != "entity/kong-zi" {
 		t.Fatalf("citation slugs did not reclaim onto identity: entities=%#v", entities)
@@ -589,16 +611,18 @@ func TestWikiIdentityClaimReplacesInvalidRedisValue(t *testing.T) {
 	defer rdb.Close()
 	svc := &wikiIngestService{redisClient: rdb}
 	ctx := context.Background()
-	identity := normalizeWikiIdentityTitle("孔子")
+	identity := normalizeWikiIdentityTitle("\u5b54\u5b50")
 	if err := rdb.Set(ctx, wikiIdentityClaimPrefix+"kb-1:"+types.WikiPageTypeEntity+":"+identity, "garbage", wikiIdentityClaimTTL).Err(); err != nil {
 		t.Fatalf("seed invalid redis claim: %v", err)
 	}
 
-	first := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/kong-zi", false, &WikiBatchContext{})
+	first := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/kong-zi", false,
+		&WikiBatchContext{})
 	if first != "entity/kong-zi" {
 		t.Fatalf("invalid redis value should be replaced: got %q", first)
 	}
-	second := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "孔子", "entity/confucius", false, &WikiBatchContext{})
+	second := svc.claimWikiIdentitySlug(ctx, "kb-1", types.WikiPageTypeEntity, "\u5b54\u5b50", "entity/confucius",
+		false, &WikiBatchContext{})
 	if second != "entity/kong-zi" {
 		t.Fatalf("callers did not converge after replacing invalid value: %q", second)
 	}
@@ -639,18 +663,18 @@ func (s *stubNormalizedTitleWiki) FindPagesByNormalizedTitles(
 func TestAttachExactIdentityPagesBatchesAndCaches(t *testing.T) {
 	stub := &stubNormalizedTitleWiki{
 		pages: []*types.WikiPageLite{
-			{Slug: "entity/confucius", Title: "孔 子", PageType: types.WikiPageTypeEntity},
+			{Slug: "entity/confucius", Title: "\u5b54 \u5b50", PageType: types.WikiPageTypeEntity},
 			// Cross-type twin used to assert the issue #3526 safety net.
-			{Slug: "concept/mencius", Title: "孟子", PageType: types.WikiPageTypeConcept},
+			{Slug: "concept/mencius", Title: "\u5b5f\u5b50", PageType: types.WikiPageTypeConcept},
 		},
 	}
 	svc := &wikiIngestService{wikiService: stub}
 	batch := &WikiBatchContext{}
 	ctx := context.Background()
 	items := []extractedItem{
-		{Name: "孔子", Slug: "entity/kong-zi"},
-		{Name: "孔 子", Slug: "entity/kongqiu"},
-		{Name: "孟子", Slug: "entity/mencius"},
+		{Name: "\u5b54\u5b50", Slug: "entity/kong-zi"},
+		{Name: "\u5b54 \u5b50", Slug: "entity/kongqiu"},
+		{Name: "\u5b5f\u5b50", Slug: "entity/mencius"},
 	}
 
 	candidatePages := make(map[string]*types.WikiPageLite)
@@ -665,12 +689,12 @@ func TestAttachExactIdentityPagesBatchesAndCaches(t *testing.T) {
 		t.Fatalf("exact page not bound to both romanizations: %#v", itemCandidates)
 	}
 	if itemCandidates["entity/mencius"]["entity/confucius"] {
-		t.Fatalf("confucius page leaked onto 孟子: %#v", itemCandidates)
+		t.Fatalf("confucius page leaked onto Mencius: %#v", itemCandidates)
 	}
 	// Cross-type safety net: the same-title concept page must be bound to
 	// the entity item so exactIdentityTarget can reuse it (issue #3526).
 	if !itemCandidates["entity/mencius"]["concept/mencius"] {
-		t.Fatalf("cross-type concept page not bound onto 孟子: %#v", itemCandidates["entity/mencius"])
+		t.Fatalf("cross-type concept page not bound onto Mencius: %#v", itemCandidates["entity/mencius"])
 	}
 	if candidatePages["concept/mencius"] == nil {
 		t.Fatalf("cross-type page missing from candidatePages: %#v", candidatePages)
@@ -682,13 +706,13 @@ func TestAttachExactIdentityPagesBatchesAndCaches(t *testing.T) {
 	}
 
 	svc.attachExactIdentityPages(ctx, "kb-1", types.WikiPageTypeEntity, append(items,
-		extractedItem{Name: "荀子", Slug: "entity/xunzi"},
+		extractedItem{Name: "\u8340\u5b50", Slug: "entity/xunzi"},
 	), candidatePages, itemCandidates, batch)
 	if stub.callsByType[types.WikiPageTypeEntity] != 2 {
 		t.Fatalf("cache miss should query only the new identity, got byType=%v", stub.callsByType)
 	}
 	last := stub.lastByType[types.WikiPageTypeEntity]
-	if len(last) != 1 || last[0] != normalizeWikiIdentityTitle("荀子") {
-		t.Fatalf("second lookup should only ask for 荀子: %v", last)
+	if len(last) != 1 || last[0] != normalizeWikiIdentityTitle("\u8340\u5b50") {
+		t.Fatalf("second lookup should only ask for Xunzi: %v", last)
 	}
 }

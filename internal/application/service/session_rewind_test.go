@@ -117,7 +117,7 @@ func newRewindFixture(t *testing.T, port SessionRewindSandboxPort, messages []*t
 ) {
 	t.Helper()
 	sessions := newFakeSessionStore(&types.Session{
-		ID: "src", TenantID: 1, UserID: "u1", Title: "原会话", SandboxConfigID: "cfg-1",
+		ID: "src", TenantID: 1, UserID: "u1", Title: "Original session", SandboxConfigID: "cfg-1",
 	})
 	msgs := newFakeMessageStore(messages)
 	return NewSessionRewindService(sessions, msgs, port, nil, nil), msgs
@@ -364,7 +364,7 @@ func TestRewindRejectsEmptyOwnerSession(t *testing.T) {
 	turn := rewindCompletedTurn("u-1", "a-1", "sbx-1", rewindSHA1, 0)
 	port := newFakeRewindPort()
 	sessions := newFakeSessionStore(&types.Session{
-		ID: "src", TenantID: 1, UserID: "", Title: "租户会话",
+		ID: "src", TenantID: 1, UserID: "", Title: "Workspace session",
 	})
 	msgs := newFakeMessageStore(turn)
 	svc := NewSessionRewindService(sessions, msgs, port, nil, nil)
@@ -571,7 +571,7 @@ func newUnopenedForkRewindFixture(
 	port.bound = false
 	port.boundID = ""
 	sessions := newFakeSessionStore(&types.Session{
-		ID: "src", TenantID: 1, UserID: "u1", Title: "分支",
+		ID: "src", TenantID: 1, UserID: "u1", Title: "Fork",
 		SandboxConfigID: "cfg-1", ForkBootstrap: bootstrap,
 	})
 	msgs := newFakeMessageStore(messages)
@@ -696,7 +696,7 @@ func TestRewindLiveSandboxDoesNotRewritePendingBootstrap(t *testing.T) {
 	later := rewindCompletedTurn("u-2", "a-2", "sbx-1", rewindSHA2, 10*time.Second)
 	port := newFakeRewindPort()
 	sessions := newFakeSessionStore(&types.Session{
-		ID: "src", TenantID: 1, UserID: "u1", Title: "分支",
+		ID: "src", TenantID: 1, UserID: "u1", Title: "Fork",
 		ForkBootstrap: pendingForkBootstrap(rewindSHA2),
 	})
 	msgs := newFakeMessageStore(append(turn1, later...))

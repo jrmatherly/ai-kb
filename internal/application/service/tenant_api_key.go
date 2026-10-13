@@ -130,8 +130,9 @@ func (s *tenantAPIKeyService) ListPlatformAPIKeys(ctx context.Context) ([]*types
 	return s.repo.ListPlatformAPIKeys(ctx)
 }
 
-// UpdateAPIKey 按创建接口的相同语义更新租户 API Key 配置。
-// scoped Key 需要至少一个能力；full-access Key 会清空细粒度能力和知识库范围。
+// UpdateAPIKey updates a workspace API key with the same semantics as creation.
+// A scoped key needs at least one capability; a full-access key clears the fine-grained capabilities and knowledge base
+// scope.
 func (s *tenantAPIKeyService) UpdateAPIKey(
 	ctx context.Context, req interfaces.TenantAPIKeyUpdateRequest,
 ) (*types.TenantAPIKey, error) {

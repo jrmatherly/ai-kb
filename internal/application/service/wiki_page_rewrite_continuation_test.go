@@ -46,14 +46,16 @@ func (m *scriptedTemplateChatModel) GetModelID() string   { return "scripted" }
 
 // certLedgerRows renders a Markdown table row.
 func certLedgerRow(i int) string {
-	return fmt.Sprintf("| %d | 成员%d | 示例科技有限公司 | 2020-01-01 | 2099-01-01 |", i, i)
+	return fmt.Sprintf("| %d | \u6210\u5458%d | \u793a\u4f8b\u79d1\u6280\u6709\u9650\u516c\u53f8 | 2020-01-01 | "+
+		"2099-01-01 |", i, i)
 }
 
 // certLedgerBlock renders the first n rows of a certificate ledger — the shape of
 // a table-heavy page whose rewrite came back short.
 func certLedgerBlock(first, last int) string {
 	var b strings.Builder
-	b.WriteString("SUMMARY: 证书台账\n# 证书台账\n\n| 编号 | 姓名 | 所属公司 | 有效期起 | 有效期止 |\n")
+	b.WriteString("SUMMARY: \u8bc1\u4e66\u53f0\u8d26\n# \u8bc1\u4e66\u53f0\u8d26\n\n| \u7f16\u53f7 | \u59d3\u540d | " +
+		"\u6240\u5c5e\u516c\u53f8 | \u6709\u6548\u671f\u8d77 | \u6709\u6548\u671f\u6b62 |\n")
 	b.WriteString("| --- | --- | --- | --- | --- |\n")
 	for i := first; i <= last; i++ {
 		b.WriteString(certLedgerRow(i))
@@ -77,7 +79,7 @@ func modifyTemplateData() map[string]string {
 	return map[string]string{
 		"HasAdditions":         "1",
 		"PageSlug":             "entity/cert-ledger",
-		"PageTitle":            "Example 证书台账",
+		"PageTitle":            "Example \u8bc1\u4e66\u53f0\u8d26",
 		"PageType":             "entity",
 		"ExistingContent":      "(New page)",
 		"NewContent":           certLedgerBlock(1, 90),

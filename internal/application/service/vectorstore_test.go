@@ -680,7 +680,7 @@ func TestTestConnection_PostgresDefaultConnection(t *testing.T) {
 }
 
 func TestTestConnection_DorisInvalidAddr(t *testing.T) {
-	// 给一个不可达的地址 + 5s timeout，期望返回 BadRequestError 而非 panic。
+	// An unreachable address plus a 5s timeout must return a BadRequestError, not panic.
 	repo := &mockVectorStoreRepo{}
 	svc := NewVectorStoreService(repo, nil, nil, nil, nil)
 
@@ -688,7 +688,7 @@ func TestTestConnection_DorisInvalidAddr(t *testing.T) {
 	defer cancel()
 
 	_, err := svc.TestConnection(ctx, types.DorisRetrieverEngineType, types.ConnectionConfig{
-		Addr:     "127.0.0.1:1", // 一定不可连通
+		Addr:     "127.0.0.1:1", // never reachable
 		Database: "aikb",
 		Username: "root",
 	})

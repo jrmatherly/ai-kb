@@ -19,13 +19,13 @@ func TestRetrievalContextCarriesWhoIsAsking(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindProfile, Content: "在做医学影像的后端", Importance: 4,
+		Kind: types.MemoryKindProfile, Content: "\u5728\u505a\u533b\u5b66\u5f71\u50cf\u7684\u540e\u7aef", Importance: 4,
 	})
 	require.NoError(t, err)
 
 	memCtx := svc.RetrievalContextFor(ctx)
 	require.False(t, memCtx.Empty())
-	require.Contains(t, memCtx.Background, "医学影像")
+	require.Contains(t, memCtx.Background, "\u533b\u5b66\u5f71\u50cf")
 	require.NotEmpty(t, memCtx.Items, "the UI has to be able to show what shaped the search")
 }
 
@@ -33,7 +33,7 @@ func TestRetrievalContextIsEmptyWhenConditioningIsOff(t *testing.T) {
 	svc, _, tenantRepo := newMemoryHarness(t)
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 	_, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindProfile, Content: "在做医学影像的后端", Importance: 4,
+		Kind: types.MemoryKindProfile, Content: "\u5728\u505a\u533b\u5b66\u5f71\u50cf\u7684\u540e\u7aef", Importance: 4,
 	})
 	require.NoError(t, err)
 
@@ -47,7 +47,7 @@ func TestRetrievalContextIsEmptyWhenConditioningIsOff(t *testing.T) {
 	require.True(t, svc.RetrievalContextFor(ctx).Empty())
 	// The answer prompt is a separate switch, and turning off conditioning
 	// must not quietly turn off memory itself.
-	require.NotEmpty(t, svc.Recall(ctx, "医学影像").Items)
+	require.NotEmpty(t, svc.Recall(ctx, "\u533b\u5b66\u5f71\u50cf").Items)
 }
 
 func TestPendingMemoriesNeverReachAPrompt(t *testing.T) {
@@ -56,14 +56,14 @@ func TestPendingMemoriesNeverReachAPrompt(t *testing.T) {
 
 	_, err := svc.Remember(ctx, types.MemoryItem{
 		Kind:       types.MemoryKindProfile,
-		Content:    "可能在负责连锁门店的排班",
+		Content:    "\u53ef\u80fd\u5728\u8d1f\u8d23\u8fde\u9501\u95e8\u5e97\u7684\u6392\u73ed",
 		Importance: 3,
 		Origin:     types.MemoryOriginExtracted,
 		Inferred:   true,
 	})
 	require.NoError(t, err)
 
-	require.Empty(t, svc.Recall(ctx, "入库流程").Items,
+	require.Empty(t, svc.Recall(ctx, "\u5165\u5e93\u6d41\u7a0b").Items,
 		"a guess about the user must not be asserted before they confirm it")
 	require.True(t, svc.RetrievalContextFor(ctx).Empty(),
 		"an unconfirmed guess must not steer retrieval either")
@@ -75,7 +75,7 @@ func TestPendingMemoriesNeverReachAPrompt(t *testing.T) {
 	confirmed, err := svc.ConfirmItem(ctx, items[0].ID)
 	require.NoError(t, err)
 	require.Equal(t, types.MemoryStatusActive, confirmed.Status)
-	require.NotEmpty(t, svc.Recall(ctx, "入库流程").Items)
+	require.NotEmpty(t, svc.Recall(ctx, "\u5165\u5e93\u6d41\u7a0b").Items)
 }
 
 func TestRejectingAGuessStopsItComingBack(t *testing.T) {
@@ -84,7 +84,7 @@ func TestRejectingAGuessStopsItComingBack(t *testing.T) {
 
 	stored, err := svc.Remember(ctx, types.MemoryItem{
 		Kind:       types.MemoryKindProfile,
-		Content:    "可能在负责连锁门店的排班",
+		Content:    "\u53ef\u80fd\u5728\u8d1f\u8d23\u8fde\u9501\u95e8\u5e97\u7684\u6392\u73ed",
 		Importance: 3,
 		Origin:     types.MemoryOriginExtracted,
 		Inferred:   true,
@@ -94,7 +94,7 @@ func TestRejectingAGuessStopsItComingBack(t *testing.T) {
 
 	_, err = svc.Remember(ctx, types.MemoryItem{
 		Kind:       types.MemoryKindProfile,
-		Content:    "可能在负责连锁门店的排班",
+		Content:    "\u53ef\u80fd\u5728\u8d1f\u8d23\u8fde\u9501\u95e8\u5e97\u7684\u6392\u73ed",
 		Importance: 3,
 		Origin:     types.MemoryOriginExtracted,
 		Inferred:   true,
@@ -110,18 +110,18 @@ func TestATopicBecomesAnInterestOnlyWhenItRecurs(t *testing.T) {
 		Enabled: true, WriteMode: types.MemoryWriteAuto, InterestThreshold: 3,
 	})
 
-	require.Empty(t, svc.ObserveQuestionTopics(ctx, []string{"门店排班管理"}),
+	require.Empty(t, svc.ObserveQuestionTopics(ctx, []string{"\u95e8\u5e97\u6392\u73ed\u7ba1\u7406"}),
 		"one question is a passing curiosity, not a fact about the person")
-	require.Empty(t, svc.ObserveQuestionTopics(ctx, []string{"门店排班管理"}))
+	require.Empty(t, svc.ObserveQuestionTopics(ctx, []string{"\u95e8\u5e97\u6392\u73ed\u7ba1\u7406"}))
 
-	promoted := svc.ObserveQuestionTopics(ctx, []string{"门店排班管理"})
-	require.Equal(t, []string{"门店排班管理"}, promoted,
+	promoted := svc.ObserveQuestionTopics(ctx, []string{"\u95e8\u5e97\u6392\u73ed\u7ba1\u7406"})
+	require.Equal(t, []string{"\u95e8\u5e97\u6392\u73ed\u7ba1\u7406"}, promoted,
 		"the same subject across conversations is a signal worth keeping")
 
 	memCtx := svc.RetrievalContextFor(ctx)
-	require.Contains(t, memCtx.Interests, "门店排班管理")
+	require.Contains(t, memCtx.Interests, "\u95e8\u5e97\u6392\u73ed\u7ba1\u7406")
 
-	require.Empty(t, svc.ObserveQuestionTopics(ctx, []string{"门店排班管理"}),
+	require.Empty(t, svc.ObserveQuestionTopics(ctx, []string{"\u95e8\u5e97\u6392\u73ed\u7ba1\u7406"}),
 		"and it is promoted once, not on every question thereafter")
 }
 
@@ -133,8 +133,8 @@ func TestInterestsDoNotCrossBetweenPeople(t *testing.T) {
 		Enabled: true, WriteMode: types.MemoryWriteAuto, InterestThreshold: 2,
 	})
 
-	svc.ObserveQuestionTopics(alice, []string{"医学影像分割"})
-	require.Empty(t, svc.ObserveQuestionTopics(bob, []string{"医学影像分割"}),
+	svc.ObserveQuestionTopics(alice, []string{"\u533b\u5b66\u5f71\u50cf\u5206\u5272"})
+	require.Empty(t, svc.ObserveQuestionTopics(bob, []string{"\u533b\u5b66\u5f71\u50cf\u5206\u5272"}),
 		"bob asking once must not inherit alice's count")
 	require.Empty(t, svc.RetrievalContextFor(bob).Interests)
 }
@@ -144,7 +144,7 @@ func TestDocumentAffinityGrowsWithUseAndStaysPerPerson(t *testing.T) {
 	alice := enabledCtx(t, tenantRepo, 1, "alice")
 	bob := enabledCtx(t, tenantRepo, 1, "bob")
 
-	refs := []types.MemoryDocAffinity{{KnowledgeID: "doc-1", Title: "分割模型调参手册"}}
+	refs := []types.MemoryDocAffinity{{KnowledgeID: "doc-1", Title: "\u5206\u5272\u6a21\u578b\u8c03\u53c2\u624b\u518c"}}
 	svc.RecordAnswerSources(alice, refs)
 	svc.RecordAnswerSources(alice, refs)
 
@@ -153,7 +153,7 @@ func TestDocumentAffinityGrowsWithUseAndStaysPerPerson(t *testing.T) {
 		"what alice reads must not reorder bob's results")
 
 	// Two sightings is a habit worth telling the rewriter about; one is not.
-	require.Contains(t, svc.RetrievalContextFor(alice).Documents, "分割模型调参手册")
+	require.Contains(t, svc.RetrievalContextFor(alice).Documents, "\u5206\u5272\u6a21\u578b\u8c03\u53c2\u624b\u518c")
 }
 
 func TestMemoryIsNotSharedAcrossWorkspaces(t *testing.T) {
@@ -162,7 +162,7 @@ func TestMemoryIsNotSharedAcrossWorkspaces(t *testing.T) {
 	second := enabledCtx(t, tenantRepo, 2, "alice")
 
 	svc.RecordAnswerSources(first, []types.MemoryDocAffinity{
-		{KnowledgeID: "doc-1", Title: "内部定价说明"},
+		{KnowledgeID: "doc-1", Title: "\u5185\u90e8\u5b9a\u4ef7\u8bf4\u660e"},
 	})
 	require.Empty(t, svc.DocumentAffinity(second, []string{"doc-1"}))
 	require.Empty(t, svc.RetrievalContextFor(second).Documents)
@@ -173,7 +173,8 @@ func TestStaleTasksAreDemotedRatherThanDeleted(t *testing.T) {
 	ctx := enabledCtx(t, tenantRepo, 1, "alice")
 
 	stored, err := svc.Remember(ctx, types.MemoryItem{
-		Kind: types.MemoryKindTask, Content: "重构支付流程，计划本周完成", Importance: 4,
+		Kind:    types.MemoryKindTask,
+		Content: "\u91cd\u6784\u652f\u4ed8\u6d41\u7a0b\uff0c\u8ba1\u5212\u672c\u5468\u5b8c\u6210", Importance: 4,
 	})
 	require.NoError(t, err)
 
@@ -199,9 +200,18 @@ func TestOnlySimilarMemoriesAreEverMerged(t *testing.T) {
 	// user actually told us. A missed merge only leaves the store redundant,
 	// so the threshold is deliberately lopsided.
 	items := []*types.MemoryItem{
-		{ID: "a", Kind: types.MemoryKindPreference, Topic: "回答风格", Content: "回答直接给结论不要铺垫"},
-		{ID: "b", Kind: types.MemoryKindPreference, Topic: "回答风格", Content: "回答直接给结论不用铺垫"},
-		{ID: "c", Kind: types.MemoryKindPreference, Topic: "输出语言", Content: "始终使用中文回复我"},
+		{
+			ID: "a", Kind: types.MemoryKindPreference, Topic: "\u56de\u7b54\u98ce\u683c",
+			Content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\u4e0d\u8981\u94fa\u57ab",
+		},
+		{
+			ID: "b", Kind: types.MemoryKindPreference, Topic: "\u56de\u7b54\u98ce\u683c",
+			Content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba\u4e0d\u7528\u94fa\u57ab",
+		},
+		{
+			ID: "c", Kind: types.MemoryKindPreference, Topic: "\u8f93\u51fa\u8bed\u8a00",
+			Content: "\u59cb\u7ec8\u4f7f\u7528\u4e2d\u6587\u56de\u590d\u6211",
+		},
 	}
 	clusters := clusterSimilar(items)
 	require.Len(t, clusters, 1)
@@ -212,8 +222,14 @@ func TestOnlySimilarMemoriesAreEverMerged(t *testing.T) {
 
 func TestMemoriesOfDifferentKindsAreNeverMerged(t *testing.T) {
 	items := []*types.MemoryItem{
-		{ID: "a", Kind: types.MemoryKindTask, Topic: "支付重构", Content: "本周要重构支付流程"},
-		{ID: "b", Kind: types.MemoryKindFact, Topic: "支付重构", Content: "本周要重构支付流程"},
+		{
+			ID: "a", Kind: types.MemoryKindTask, Topic: "\u652f\u4ed8\u91cd\u6784",
+			Content: "\u672c\u5468\u8981\u91cd\u6784\u652f\u4ed8\u6d41\u7a0b",
+		},
+		{
+			ID: "b", Kind: types.MemoryKindFact, Topic: "\u652f\u4ed8\u91cd\u6784",
+			Content: "\u672c\u5468\u8981\u91cd\u6784\u652f\u4ed8\u6d41\u7a0b",
+		},
 	}
 	require.Empty(t, clusterSimilar(items),
 		"what someone is doing and what is true of their system are different claims")
@@ -236,8 +252,8 @@ func TestARepeatedGuessDoesNotStackUpInTheInbox(t *testing.T) {
 
 	guess := types.MemoryItem{
 		Kind:       types.MemoryKindProfile,
-		Topic:      "可能的身份",
-		Content:    "可能在负责连锁门店的排班",
+		Topic:      "\u53ef\u80fd\u7684\u8eab\u4efd",
+		Content:    "\u53ef\u80fd\u5728\u8d1f\u8d23\u8fde\u9501\u95e8\u5e97\u7684\u6392\u73ed",
 		Importance: 2,
 		Origin:     types.MemoryOriginExtracted,
 		Inferred:   true,

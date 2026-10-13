@@ -3,99 +3,99 @@
   "cases": [
     {
       "name": "rephrasing",
-      "tracked": "门店排班管理",
-      "incoming": "店员班次安排",
+      "tracked": "\u95e8\u5e97\u6392\u73ed\u7ba1\u7406",
+      "incoming": "\u5e97\u5458\u73ed\u6b21\u5b89\u6392",
       "same": true,
-      "why": "两个说法指的是同一件事，只是用词不同。词面几乎不重叠，只有模型层能判。"
+      "why": "\"store shift scheduling\" vs \"staff rota planning\": the two phrasings mean the same thing in different words. They share almost no characters, so only the model tier can decide."
     },
     {
       "name": "elaboration",
-      "tracked": "连锁门店排班管理",
-      "incoming": "门店排班管理",
+      "tracked": "\u8fde\u9501\u95e8\u5e97\u6392\u73ed\u7ba1\u7406",
+      "incoming": "\u95e8\u5e97\u6392\u73ed\u7ba1\u7406",
       "same": true,
-      "why": "一方比另一方少一个限定词，说的仍是同一件事。"
+      "why": "\"chain store shift scheduling\" vs \"store shift scheduling\": one has one qualifier fewer and still names the same thing."
     },
     {
       "name": "harmless qualifier",
-      "tracked": "订单接口限流",
-      "incoming": "订单接口限流问题",
+      "tracked": "\u8ba2\u5355\u63a5\u53e3\u9650\u6d41",
+      "incoming": "\u8ba2\u5355\u63a5\u53e3\u9650\u6d41\u95ee\u9898",
       "same": true,
-      "why": "「问题」不改变主题本身。"
+      "why": "\"order API rate limiting\" vs \"order API rate limiting issues\": the word \"issues\" does not change the subject."
     },
     {
       "name": "abbreviation",
-      "tracked": "CI 流水线",
-      "incoming": "持续集成流水线",
+      "tracked": "CI \u6d41\u6c34\u7ebf",
+      "incoming": "\u6301\u7eed\u96c6\u6210\u6d41\u6c34\u7ebf",
       "same": true,
-      "why": "缩写和全称是同一件事，词面上却几乎没有重叠。"
+      "why": "\"CI pipeline\" vs \"continuous integration pipeline\": an abbreviation and its full name are the same thing, yet share almost no characters."
     },
     {
       "name": "specific lookup inside a broad subject",
-      "tracked": "仓库入库流程",
-      "incoming": "三号仓库上月入库单号",
+      "tracked": "\u4ed3\u5e93\u5165\u5e93\u6d41\u7a0b",
+      "incoming": "\u4e09\u53f7\u4ed3\u5e93\u4e0a\u6708\u5165\u5e93\u5355\u53f7",
       "same": false,
-      "why": "确实属于同一领域，但这是一次具体查询，不是同一个长期关注点。把它折进去会让关注面变成一个什么都装的桶。"
+      "why": "\"warehouse inbound process\" vs \"warehouse No. 3 last month's inbound receipt numbers\": same area, but this is a one-off specific query, not the same standing interest. Folding it in turns the interest into a bucket that holds everything."
     },
     {
       "name": "different question in the same domain",
-      "tracked": "订单接口限流",
-      "incoming": "订单接口鉴权",
+      "tracked": "\u8ba2\u5355\u63a5\u53e3\u9650\u6d41",
+      "incoming": "\u8ba2\u5355\u63a5\u53e3\u9274\u6743",
       "same": false,
-      "why": "同一个接口的两件不同的事。"
+      "why": "\"order API rate limiting\" vs \"order API authentication\": two different things about the same API."
     },
     {
       "name": "hyponym",
-      "tracked": "后端架构选型",
-      "incoming": "订单接口限流调优",
+      "tracked": "\u540e\u7aef\u67b6\u6784\u9009\u578b",
+      "incoming": "\u8ba2\u5355\u63a5\u53e3\u9650\u6d41\u8c03\u4f18",
       "same": false,
-      "why": "下位概念不是同一件事，否则一个宽泛主题会吸收整个领域。"
+      "why": "\"backend architecture choices\" vs \"order API rate limit tuning\": a narrower concept is not the same thing, or a broad topic would absorb the whole domain."
     },
     {
       "name": "two aspects of one thing",
-      "tracked": "年度审计资料准备",
-      "incoming": "年度审计问询回复",
+      "tracked": "\u5e74\u5ea6\u5ba1\u8ba1\u8d44\u6599\u51c6\u5907",
+      "incoming": "\u5e74\u5ea6\u5ba1\u8ba1\u95ee\u8be2\u56de\u590d",
       "same": false,
-      "why": "同一件事的两个不同阶段，关心的是不同的东西。线上真实出现过这类被合并。"
+      "why": "\"annual audit material preparation\" vs \"annual audit inquiry replies\": two stages of one thing that care about different things. Merges like this really happened in production."
     },
     {
       "name": "broad subject versus a lookup in it",
-      "tracked": "年会组织",
-      "incoming": "年会报名信息查询",
+      "tracked": "\u5e74\u4f1a\u7ec4\u7ec7",
+      "incoming": "\u5e74\u4f1a\u62a5\u540d\u4fe1\u606f\u67e5\u8be2",
       "same": false,
-      "why": "组织一场活动和查询谁报了名，是两件不同的事。线上真实出现过这类被合并。"
+      "why": "\"annual party organization\" vs \"annual party sign-up lookup\": organizing an event and checking who signed up are different things. Merges like this really happened in production."
     },
     {
       "name": "unrelated",
-      "tracked": "门店排班管理",
-      "incoming": "订单接口限流",
+      "tracked": "\u95e8\u5e97\u6392\u73ed\u7ba1\u7406",
+      "incoming": "\u8ba2\u5355\u63a5\u53e3\u9650\u6d41",
       "same": false,
-      "why": "毫无关系，任何一层都不该合并。"
+      "why": "\"store shift scheduling\" vs \"order API rate limiting\": unrelated, and no tier should merge them."
     },
     {
       "name": "same word different field",
-      "tracked": "图像分割模型调参",
-      "incoming": "数据库分库分表",
+      "tracked": "\u56fe\u50cf\u5206\u5272\u6a21\u578b\u8c03\u53c2",
+      "incoming": "\u6570\u636e\u5e93\u5206\u5e93\u5206\u8868",
       "same": false,
-      "why": "共享一个「分」字不构成任何关系。"
+      "why": "\"image segmentation model tuning\" vs \"database sharding\": sharing one character (meaning \"divide\") makes no relationship."
     }
   ],
   "granularity": {
-    "note": "主题必须是能复现的「领域」，不是单个问题。标签里带上人名、编号、日期、版本、数量，就只能匹配它自己：计数一次之后永远停在 1，阈值形同虚设。",
+    "note": "A topic must be a recurring area, not a single question. A label that carries a person's name, a number, a date, a version or a quantity can only ever match itself: it is counted once, stays at 1 forever, and the threshold means nothing. The questions are about warehouse No. 3's inbound receipts last month, the orders API page-size default in v2.3, and how to reach the settlement platform's business contact.",
     "cases": [
       {
-        "question": "三号仓库上个月的入库单号有哪些？",
-        "good": "仓库入库单查询",
-        "bad": "三号仓库2026年3月入库单号查询记录"
+        "question": "\u4e09\u53f7\u4ed3\u5e93\u4e0a\u4e2a\u6708\u7684\u5165\u5e93\u5355\u53f7\u6709\u54ea\u4e9b\uff1f",
+        "good": "\u4ed3\u5e93\u5165\u5e93\u5355\u67e5\u8be2",
+        "bad": "\u4e09\u53f7\u4ed3\u5e932026\u5e743\u6708\u5165\u5e93\u5355\u53f7\u67e5\u8be2\u8bb0\u5f55"
       },
       {
-        "question": "v2.3 版本 orders 接口的分页参数默认值是多少？",
-        "good": "订单接口用法",
-        "bad": "v2.3版本orders接口分页参数默认值查询"
+        "question": "v2.3 \u7248\u672c orders \u63a5\u53e3\u7684\u5206\u9875\u53c2\u6570\u9ed8\u8ba4\u503c\u662f\u591a\u5c11\uff1f",
+        "good": "\u8ba2\u5355\u63a5\u53e3\u7528\u6cd5",
+        "bad": "v2.3\u7248\u672corders\u63a5\u53e3\u5206\u9875\u53c2\u6570\u9ed8\u8ba4\u503c\u67e5\u8be2"
       },
       {
-        "question": "结算平台的商务怎么联系？",
-        "good": "结算平台",
-        "bad": "结算平台商务联系方式查询记录"
+        "question": "\u7ed3\u7b97\u5e73\u53f0\u7684\u5546\u52a1\u600e\u4e48\u8054\u7cfb\uff1f",
+        "good": "\u7ed3\u7b97\u5e73\u53f0",
+        "bad": "\u7ed3\u7b97\u5e73\u53f0\u5546\u52a1\u8054\u7cfb\u65b9\u5f0f\u67e5\u8be2\u8bb0\u5f55"
       }
     ]
   }

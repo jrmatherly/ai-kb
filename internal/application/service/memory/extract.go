@@ -35,7 +35,7 @@ const (
 	// run, so the cap never loses a message.
 	extractMaxSegmentsPerRun = 3
 	// extractContextLines is how many earlier user messages are shown as
-	// read-only context, so a statement like "就用前面那个吧" can be resolved.
+	// read-only context, so a statement like "let's just use the earlier one" can be resolved.
 	extractContextLines = 4
 	// extractMaxLineRunes truncates one very long pasted message.
 	extractMaxLineRunes = 1000
@@ -518,7 +518,7 @@ func (s *Service) collectSessionSegments(ctx context.Context, session types.Memo
 
 // priorContext fetches the few user messages just before a segment.
 //
-// Without it a run sees only what is new, so a turn like "就用前面那个吧" arrives
+// Without it a run sees only what is new, so a turn like "let's just use the earlier one" arrives
 // with nothing to resolve it against and the model either invents a subject or
 // silently drops a real preference. The context is shown to the model and never
 // extracted from, so it cannot re-produce memories from messages the watermark
@@ -604,16 +604,16 @@ The "topics" list
 - The specifics of one question — a name, an identifier, a date, a version, a
   quantity — belong to the question, not to the subject name. Strip them.
 
-  question: 三号仓库上个月的入库单号有哪些？
-  subject:  仓库入库单查询    NOT 三号仓库上月入库单号查询
-  question: v2.3 版本 orders 接口的分页参数默认值是多少？
-  subject:  订单接口用法      NOT v2.3版本orders接口分页参数默认值
-  question: 结算平台的商务怎么联系？
-  subject:  结算平台          NOT 结算平台商务联系方式
+  question: Which inbound receipt numbers did warehouse No. 3 have last month?
+  subject:  warehouse inbound receipt lookup    NOT warehouse 3 last-month inbound receipt numbers
+  question: What is the default page-size parameter of the orders API in v2.3?
+  subject:  orders API usage                    NOT v2.3 orders API page-size default
+  question: How do I reach the settlement platform's business contact?
+  subject:  settlement platform                 NOT settlement platform business contact
 
-- Do not go the other way either. "接口"、"平台"、"管理" are categories, not
+- Do not go the other way either. "API", "platform", "management" are categories, not
   subjects: they say nothing about what this person works on.
-- Two to eight characters of qualifier is usually the right size.
+- Two to four words of qualifier is usually the right size.
 
 How to reference things
 - "source" is the LINE number the statement came from. Always set it.
@@ -636,39 +636,39 @@ Time
 
 Examples
 Lines:
-[1] (2026-03-02) 我在一家做医疗影像的公司写后端，主要用 Go
-[2] (2026-03-02) 以后回答直接给结论，别铺垫
-[3] (2026-03-02) 帮我看下这个 goroutine 泄漏怎么排查
+[1] (2026-03-02) I write backend code at a medical imaging company, mostly in Go
+[2] (2026-03-02) From now on give me the conclusion first, no preamble
+[3] (2026-03-02) Help me figure out how to track down this goroutine leak
 Existing notes: (none)
 {"memories":[
-{"action":"add","target":null,"kind":"profile","topic":"职业",
- "content":"在医疗影像公司做后端，主要用 Go","importance":4,"source":1,"expires_at":null},
-{"action":"add","target":null,"kind":"preference","topic":"回答风格",
- "content":"回答直接给结论，不要铺垫","importance":5,"source":2,"expires_at":null}],
-"topics":["医疗影像后端开发","Go 并发排查"]}
+{"action":"add","target":null,"kind":"profile","topic":"occupation",
+ "content":"Backend developer at a medical imaging firm, mostly Go","importance":4,"source":1,"expires_at":null},
+{"action":"add","target":null,"kind":"preference","topic":"answer style",
+ "content":"Give the conclusion directly, no preamble","importance":5,"source":2,"expires_at":null}],
+"topics":["medical imaging backend development","Go concurrency debugging"]}
 Line 3 is a passing question about general knowledge, so it produces no memory
 — but its subject still belongs in "topics".
 
 Lines:
-[1] (2026-03-09) 我们上周把生产库从 MySQL 迁到 PostgreSQL 了
-[2] (2026-03-09) 这周要把支付流程重构完
+[1] (2026-03-09) Last week we moved the production database from MySQL to PostgreSQL
+[2] (2026-03-09) I need to finish refactoring the payment flow this week
 Existing notes:
-[0] [fact] (topic: 在用的数据库) 生产库用的是 MySQL
+[0] [fact] (topic: database in use) The production database is MySQL
 {"memories":[
-{"action":"update","target":0,"kind":"fact","topic":"在用的数据库",
- "content":"生产库已从 MySQL 迁到 PostgreSQL","importance":4,"source":1,"expires_at":null},
-{"action":"add","target":null,"kind":"task","topic":"在做的重构",
- "content":"重构支付流程，计划本周完成","importance":3,"source":2,"expires_at":"2026-03-16"}],
-"topics":["数据库迁移","支付流程重构"]}
+{"action":"update","target":0,"kind":"fact","topic":"database in use",
+ "content":"The production database moved from MySQL to PostgreSQL","importance":4,"source":1,"expires_at":null},
+{"action":"add","target":null,"kind":"task","topic":"current refactor",
+ "content":"Refactoring the payment flow, due this week","importance":3,"source":2,"expires_at":"2026-03-16"}],
+"topics":["database migration","payment flow refactor"]}
 
 Lines:
-[1] (2026-04-02) 三号仓库的入库单要保留多久？
+[1] (2026-04-02) How long do warehouse No. 3's inbound receipts have to be kept?
 Existing notes: (none)
 {"memories":[
-{"action":"add","target":null,"kind":"profile","topic":"可能的身份",
- "content":"可能在负责仓库单据管理","importance":2,"source":1,
+{"action":"add","target":null,"kind":"profile","topic":"possible role",
+ "content":"May be responsible for managing warehouse documents","importance":2,"source":1,
  "expires_at":null,"inferred":true}],
-"topics":["仓库单据保留规则"]}
+"topics":["warehouse document retention rules"]}
 The identity is a guess, so it is marked inferred and waits for confirmation.
 The subject is counted either way.
 
@@ -760,7 +760,7 @@ func buildExtractionPrompt(
 		// The wording has to test identity, not relatedness. It used to say
 		// "when the transcript is about one of these", and a question about one
 		// athlete's events genuinely *is* about children's swimming events — so
-		// the model dutifully filed it under 门店排班管理 and every specific
+		// the model dutifully filed it under "store shift scheduling" and every specific
 		// question in the domain collapsed into one bucket.
 		builder.WriteString("\nSubjects already tracked for this user:\n")
 		shown := 0
@@ -779,8 +779,8 @@ func buildExtractionPrompt(
 		builder.WriteString(
 			"Reuse one of these labels EXACTLY only when the transcript is about the SAME subject,\n" +
 				"just worded differently. Being in the same domain is not enough: if\n" +
-				"\"门店排班管理\" is tracked and the user asks how a shift swap gets approved, that\n" +
-				"is a different subject (\"排班审批流程\") — building the roster and approving\n" +
+				"\"store shift scheduling\" is tracked and the user asks how a shift swap gets approved, that\n" +
+				"is a different subject (\"shift change approval\"): building the roster and approving\n" +
 				"changes to it are different things this person does.\n" +
 				"When nothing above names the same subject, write a new label at the same level of\n" +
 				"generality as these. Do not force a fit, and do not name the individual question.\n")

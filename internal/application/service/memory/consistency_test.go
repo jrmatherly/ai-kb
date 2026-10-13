@@ -15,27 +15,46 @@ func TestMemoryConsistencyPendingMustNotReplaceActive(t *testing.T) {
 	s, _, tr := newMemoryHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
 	scope := scopeFor(t, ctx)
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "我是后端工程师", Origin: types.MemoryOriginManual})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u6211\u662f\u540e\u7aef\u5de5\u7a0b\u5e08", Origin: types.MemoryOriginManual,
+	})
 	require.NoError(t, err)
-	proposal, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "可能是产品经理", Origin: types.MemoryOriginExtracted, Inferred: true})
+	proposal, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u53ef\u80fd\u662f\u4ea7\u54c1\u7ecf\u7406", Origin: types.MemoryOriginExtracted, Inferred: true,
+	})
 	require.NoError(t, err)
 	require.Equal(t, types.MemoryStatusPending, proposal.Status)
 	current, err := s.repo.GetItem(ctx, scope, old.ID)
 	require.NoError(t, err)
 	require.Equal(t, types.MemoryStatusActive, current.Status, "unconfirmed inference must not retire a confirmed fact")
 }
+
 func TestMemoryConsistencyUpdateTargetMustWinOverChangedTopic(t *testing.T) {
 	s, _, tr := newMemoryHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
 	scope := scopeFor(t, ctx)
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Topic: "生产数据库", Content: "线上使用 MySQL"})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindFact, Topic: "\u751f\u4ea7\u6570\u636e\u5e93",
+		Content: "\u7ebf\u4e0a\u4f7f\u7528 MySQL",
+	})
 	require.NoError(t, err)
 	zero := 0
-	require.NoError(t, s.applyDecisions(ctx, scope, s.workspaceConfig(ctx, 1), transcriptSegment{lines: []transcriptLine{{sessionID: "s", messageID: "m", content: "迁移到 PostgreSQL"}}}, []*types.MemoryItem{old}, []extractionDecision{{Action: "update", Target: &zero, Kind: types.MemoryKindFact, Topic: "数据库选型", Content: "线上已迁移到 PostgreSQL"}}))
+	require.NoError(t, s.applyDecisions(ctx, scope, s.workspaceConfig(ctx, 1),
+		transcriptSegment{lines: []transcriptLine{{
+			sessionID: "s", messageID: "m",
+			content: "\u8fc1\u79fb\u5230 PostgreSQL",
+		}}}, []*types.MemoryItem{old}, []extractionDecision{{
+			Action: "update",
+			Target: &zero, Kind: types.MemoryKindFact, Topic: "\u6570\u636e\u5e93\u9009\u578b",
+			Content: "\u7ebf\u4e0a\u5df2\u8fc1\u79fb\u5230 PostgreSQL",
+		}}))
 	_, total, err := s.ListItems(ctx, types.MemoryStatusActive, 20, 0)
 	require.NoError(t, err)
 	require.Equal(t, int64(1), total, "indexed update must not leave contradictory old memory active")
 }
+
 func TestMemoryConsistencyCappedSessionsMustBeFollowedUp(t *testing.T) {
 	s, tr, msg, model, q := newExtractionHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
@@ -49,6 +68,7 @@ func TestMemoryConsistencyCappedSessionsMustBeFollowedUp(t *testing.T) {
 	drainExtractions(t, s, q)
 	require.True(t, strings.Contains(model.seenTranscripts(), "unique-session-marker-3"), "fourth claimed session must survive the three-segment cap")
 }
+
 func TestMemoryConsistencyRetryMustKeepAllClaimedSessions(t *testing.T) {
 	s, tr, msg, model, q := newExtractionHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
@@ -72,9 +92,12 @@ func TestMemoryConsistencyManualEditMustRefreshEmbedding(t *testing.T) {
 	s, tr, _ := newVectorHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
 	scope := scopeFor(t, ctx)
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "回答直接给结论"})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind:    types.MemoryKindFact,
+		Content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba",
+	})
 	require.NoError(t, err)
-	_, err = s.UpdateItem(ctx, old.ID, "生产环境需要调大连接池", 3)
+	_, err = s.UpdateItem(ctx, old.ID, "\u751f\u4ea7\u73af\u5883\u9700\u8981\u8c03\u5927\u8fde\u63a5\u6c60", 3)
 	require.NoError(t, err)
 	s.backfillEmbeddings(ctx, scope, s.workspaceConfig(ctx, 1))
 	vectors, err := s.repo.ItemEmbeddings(ctx, scope, []string{old.ID}, "embed-1")
@@ -88,9 +111,15 @@ func TestMemoryConsistencyProposalConfirmationAndRejection(t *testing.T) {
 			s, _, tr := newMemoryHarness(t)
 			ctx := enabledCtx(t, tr, 1, "alice")
 			scope := scopeFor(t, ctx)
-			old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "我是工程师", Origin: types.MemoryOriginManual})
+			old, err := s.Remember(ctx, types.MemoryItem{
+				Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+				Content: "\u6211\u662f\u5de5\u7a0b\u5e08", Origin: types.MemoryOriginManual,
+			})
 			require.NoError(t, err)
-			proposal, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "可能是经理", Inferred: true})
+			proposal, err := s.Remember(ctx, types.MemoryItem{
+				Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+				Content: "\u53ef\u80fd\u662f\u7ecf\u7406", Inferred: true,
+			})
 			require.NoError(t, err)
 			require.Equal(t, old.ID, proposal.ReplacesID)
 			if confirm {
@@ -119,28 +148,43 @@ func TestMemoryConsistencyProposalConfirmationAndRejection(t *testing.T) {
 func TestMemoryConsistencyEditInvalidatesOldProposals(t *testing.T) {
 	s, _, tr := newMemoryHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "我是工程师"})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u6211\u662f\u5de5\u7a0b\u5e08",
+	})
 	require.NoError(t, err)
-	proposal, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "可能是经理", Inferred: true})
+	proposal, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u53ef\u80fd\u662f\u7ecf\u7406", Inferred: true,
+	})
 	require.NoError(t, err)
-	_, err = s.UpdateItem(ctx, old.ID, "我是设计师", 4)
+	_, err = s.UpdateItem(ctx, old.ID, "\u6211\u662f\u8bbe\u8ba1\u5e08", 4)
 	require.NoError(t, err)
 	_, err = s.ConfirmItem(ctx, proposal.ID)
 	require.ErrorIs(t, err, types.ErrMemoryConflict)
 	items, _, err := s.ListItems(ctx, types.MemoryStatusActive, 20, 0)
 	require.NoError(t, err)
 	require.Len(t, items, 1)
-	require.Equal(t, "我是设计师", items[0].Content)
+	require.Equal(t, "\u6211\u662f\u8bbe\u8ba1\u5e08", items[0].Content)
 }
 
 func TestMemoryConsistencyReplacingProposalKeepsOriginalTarget(t *testing.T) {
 	s, _, tr := newMemoryHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "我是工程师"})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u6211\u662f\u5de5\u7a0b\u5e08",
+	})
 	require.NoError(t, err)
-	first, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "可能是经理", Inferred: true})
+	first, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u53ef\u80fd\u662f\u7ecf\u7406", Inferred: true,
+	})
 	require.NoError(t, err)
-	second, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindProfile, Topic: "职业", Content: "可能是设计师", Inferred: true})
+	second, err := s.Remember(ctx, types.MemoryItem{
+		Kind: types.MemoryKindProfile, Topic: "\u804c\u4e1a",
+		Content: "\u53ef\u80fd\u662f\u8bbe\u8ba1\u5e08", Inferred: true,
+	})
 	require.NoError(t, err)
 	require.Equal(t, old.ID, second.ReplacesID)
 	_, err = s.ConfirmItem(ctx, first.ID)
@@ -245,10 +289,13 @@ func TestMemoryConsistencyEmbeddingFailureAndStaleCompletion(t *testing.T) {
 	s, tr, model := newVectorHarness(t)
 	ctx := enabledCtx(t, tr, 1, "alice")
 	scope := scopeFor(t, ctx)
-	old, err := s.Remember(ctx, types.MemoryItem{Kind: types.MemoryKindFact, Content: "回答直接给结论"})
+	old, err := s.Remember(ctx, types.MemoryItem{
+		Kind:    types.MemoryKindFact,
+		Content: "\u56de\u7b54\u76f4\u63a5\u7ed9\u7ed3\u8bba",
+	})
 	require.NoError(t, err)
 	model.embedder.fail = true
-	_, err = s.UpdateItem(ctx, old.ID, "生产环境需要调大连接池", 3)
+	_, err = s.UpdateItem(ctx, old.ID, "\u751f\u4ea7\u73af\u5883\u9700\u8981\u8c03\u5927\u8fde\u63a5\u6c60", 3)
 	require.NoError(t, err)
 	vectors, err := s.repo.ItemEmbeddings(ctx, scope, []string{old.ID}, "embed-1")
 	require.NoError(t, err)
