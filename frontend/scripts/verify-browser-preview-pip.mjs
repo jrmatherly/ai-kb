@@ -129,7 +129,7 @@ try {
   }, name);
   await clickPip('Pause browser');
   await until(() => status.paused, 'pause command');
-  await page.waitForFunction(() => documentPictureInPicture.window.document.body.textContent.includes('Resume browser'));
+  await page.waitForFunction(() => documentPictureInPicture.window.document.querySelector('button[aria-label="Resume browser"]'));
   await clickPip('Resume browser');
   await until(() => !status.paused, 'resume command');
   await page.waitForFunction(() => !documentPictureInPicture.window.document.querySelector('.preview-actions button').disabled);
