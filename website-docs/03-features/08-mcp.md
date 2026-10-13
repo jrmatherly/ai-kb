@@ -498,10 +498,10 @@ The Python service under `mcp-server/` predates the built-in MCP server: each pr
 :::
 
 
-`mcp-server/` is a standalone Python package, published on PyPI as **`ai-kb-mcp`** (currently 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/aikb_mcp_server.py`: `AIKBClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("ai-kb-server", version="1.1.1")` registers the tools and serves them over the selected transport.
+`mcp-server/` is a standalone Python package named **`ai-kb-mcp`** (version 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/aikb_mcp_server.py`: `AIKBClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("ai-kb-server", version="1.1.1")` registers the tools and serves them over the selected transport.
 
 ::: warning Package name and API changes (v1.1.x)
-- The official package name is `ai-kb-mcp`; the early community package `ai-kb-mcp` is no longer used. The command-line entry points are still `ai-kb-mcp-server` and `ai-kb-server`.
+- The package name is `ai-kb-mcp` (`mcp-server/pyproject.toml`). It is not published on PyPI yet, so install it from the repository as shown below. The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
 - The implementation uses the high-level API of mcp 2.x: a tool is a plain function with the `@mcp.tool()` decorator, its parameter JSON Schema is derived from the type annotations, the description comes from the docstring, and the return value is serialized automatically. The old `handle_list_tools()` / `handle_call_tool()` dispatch is gone; adding a tool means adding one decorated function.
 - Blocking network I/O (`chat` and `agent_chat`) runs in a thread pool and does not block the asyncio event loop.
 :::
@@ -518,14 +518,14 @@ pip install -r requirements.txt
 python main.py            # or python run.py / python run_server.py
 ```
 
-**Install from PyPI** (two console entry points, `ai-kb-mcp-server` and `ai-kb-server`):
+**Install from the repository** (two console entry points, `ai-kb-mcp-server` and `ai-kb-server`). The `ai-kb-mcp` package is not on PyPI yet, so `pip install ai-kb-mcp` fails; point pip or uvx at the `mcp-server/` directory of a checkout instead:
 
 ```bash
-pip install ai-kb-mcp
+pip install ./mcp-server
 ai-kb-mcp-server
 
 # Or run without installing, through uvx
-uvx --from ai-kb-mcp ai-kb-mcp-server
+uvx --from ./mcp-server ai-kb-mcp-server
 ```
 
 **Local development install**:
@@ -680,14 +680,14 @@ The stdio transport (`claude_desktop_config.json` in Claude Desktop):
 }
 ```
 
-When installed from PyPI, `command` can be `ai-kb-mcp-server` directly, or use `uvx` without installing:
+After `pip install ./mcp-server`, `command` can be `ai-kb-mcp-server` directly. Or use `uvx` without installing, with `--from` set to the absolute path of the `mcp-server/` directory (the package is not on PyPI yet):
 
 ```json
 {
   "mcpServers": {
     "aikb": {
       "command": "uvx",
-      "args": ["--from", "ai-kb-mcp", "ai-kb-mcp-server"],
+      "args": ["--from", "/path/to/ai-kb/mcp-server", "ai-kb-mcp-server"],
       "env": {
         "AIKB_BASE_URL": "http://localhost:8080/api/v1",
         "AIKB_API_KEY": "your-api-key"
