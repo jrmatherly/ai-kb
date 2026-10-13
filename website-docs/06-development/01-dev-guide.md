@@ -155,8 +155,8 @@ These targets are defined in the root `Makefile`. `make help` prints a summary o
 | `docker-build-docreader` | Builds `ghcr.io/jrmatherly/ai-kb-docreader` (`docker/Dockerfile.docreader`) |
 | `docker-build-frontend` | Multi-stage build of `ghcr.io/jrmatherly/ai-kb-ui` (`npm ci` + `npm run build` inside the builder, no prebuilt dist needed on the host; `VITE_FRONTEND_COMMIT` comes from git) |
 | `docker-build-all` | All three images above |
-| `docker-run` | Makes sure `.env` exists (copied from `.env.example`, or touched when that is missing), then `docker-compose up` |
-| `docker-stop` / `docker-restart` | `docker-compose down` / `stop -t 60` + `up` |
+| `docker-run` | Makes sure `.env` exists (copied from `.env.example`, or touched when that is missing), then `docker compose up` |
+| `docker-stop` / `docker-restart` | `docker compose --profile '*' down` / `stop -t 60` + `up` |
 | `start-all` / `stop-all` | `scripts/start_all.sh` (start or stop all services) |
 | `start-ollama` / `start-docker` | `start_all.sh --ollama` / `--docker` |
 | `build-images` / `build-images-app` / `build-images-docreader` / `build-images-frontend` / `clean-images` | `scripts/build_images.sh` builds images from source or removes them |

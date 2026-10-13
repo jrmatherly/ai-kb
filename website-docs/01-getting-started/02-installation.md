@@ -164,7 +164,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 | --- | --- |
 | `make start-all` / `stop-all` | Start or stop the whole stack through `scripts/start_all.sh` (Ollama check, `.env` fallback, sandbox image pre-pull) |
 | `make start-ollama` / `start-docker` | Start only Ollama / only the Docker services |
-| `make docker-run` / `docker-stop` / `docker-restart` | Classic `docker-compose up/down/restart` (creates a fallback `.env`) |
+| `make docker-run` / `docker-stop` / `docker-restart` | `docker compose up` / `down` / `stop -t 60` + `up` (creates a fallback `.env`) |
 | `make build-images*` / `clean-images` / `pull-images` | Build from source / remove / pull images |
 | `make check-env` / `list-containers` / `show-platform` | Environment check (`scripts/start_all.sh --check`) / list containers / build platform (detects amd64/arm64) |
 | `make migrate-up` / `migrate-down` / `migrate-version` / `migrate-create name=x` / `migrate-force version=n` / `migrate-goto version=n` | Database migrations (`scripts/migrate.sh`; inside the container `AUTO_MIGRATE=true` migrates automatically on startup) |

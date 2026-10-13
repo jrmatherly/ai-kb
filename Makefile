@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc
+.PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama start-docker build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc
 
 # Show help
 help:
@@ -25,6 +25,7 @@ help:
 	@echo "  start-all         Start all services"
 	@echo "  stop-all          Stop all services"
 	@echo "  start-ollama      Start only the Ollama service"
+	@echo "  start-docker      Start only the Docker containers"
 	@echo ""
 	@echo "Image builds:"
 	@echo "  build-images      Build all images from source"
@@ -167,7 +168,7 @@ docker-build-all: docker-build-app docker-build-docreader docker-build-frontend
 # direct path needs its own guard.
 docker-run:
 	@[ -f .env ] || ([ -f .env.example ] && cp .env.example .env || touch .env)
-	docker-compose up
+	docker compose up
 
 # Start all services with the new script
 start-all:
@@ -187,7 +188,7 @@ stop-all:
 
 # Stop Docker container (legacy method)
 docker-stop:
-	docker-compose --profile '*' down
+	docker compose --profile '*' down
 
 # Build images from source
 build-images:
@@ -208,8 +209,8 @@ clean-images:
 # Restart Docker container (stop, start)
 docker-restart:
 	@[ -f .env ] || ([ -f .env.example ] && cp .env.example .env || touch .env)
-	docker-compose stop -t 60
-	docker-compose up
+	docker compose stop -t 60
+	docker compose up
 
 # Database migrations
 migrate-up:
