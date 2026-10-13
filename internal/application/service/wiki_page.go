@@ -1078,11 +1078,12 @@ func (s *wikiPageService) GetStats(ctx context.Context, kbID string) (*types.Wik
 		pendingTasks, _ = s.taskPendingRepo.PendingCount(ctx, wikiTaskType, wikiTaskScope, kbID)
 	}
 	if s.redisClient != nil {
-		// The "active batch in progress" flag is still a Redis-only
-		// short-lived signal (per-process lock with TTL renew); not
-		// worth migrating since it carries no durable state.
-		activeFlag, _ := s.redisClient.Exists(ctx, "wiki:active:"+kbID).Result()
-		isActive = activeFlag > 0
+		// Every running standard-mode batch holds an unexpired slot in the
+		// per-KB in-flight set (reserveInflightSlot); expired slots belong to
+		// crashed workers.
+		live, _ := s.redisClient.ZCount(ctx, wikiInflightPrefix+kbID,
+			strconv.FormatInt(time.Now().UnixMilli(), 10), "+inf").Result()
+		isActive = live > 0
 	}
 
 	issues, _ := s.ListIssues(ctx, kbID, "", "pending")

@@ -7,7 +7,7 @@ Document parsing, index building, summary and question generation, graph extract
 AI KB has two task execution modes, chosen by the deployment form:
 
 - **asynq mode (standard deployment)**: a task is serialized to a JSON payload by `asynq.Client` and written to a Redis queue, then consumed by several independent `asynq.Server` instances (worker pools). `RunAsynqServer()` in `internal/router/task.go` builds one shared `asynq.ServeMux` and runs it on 6 pools.
-- **Lite mode (single machine / macOS app, no Redis)**: `SyncTaskExecutor` in `internal/router/sync_task.go` implements the same `interfaces.TaskEnqueuer` interface. `Enqueue` dispatches the task straight to a goroutine. It honours `ProcessIn` / `ProcessAt` (delay), `MaxRetry`, `Timeout` and `Deadline`, whether they were given to `asynq.NewTask` or to `Enqueue` (the latter wins). A task with no timeout runs unbounded, unlike asynq's default of 30 minutes. Retries use linear backoff (`attempt * 5s`, capped at 30s); a task that returns `asynq.SkipRetry` is not retried. A panic inside a handler is recovered and treated as a failure; it does not take the process down. When retries are exhausted the same wrap-up runs as the dead-letter callback in standard mode: document tasks mark the knowledge item `failed`.
+- **Lite mode (single machine / macOS app, no Redis)**: `SyncTaskExecutor` in `internal/router/sync_task.go` implements the same `interfaces.TaskEnqueuer` interface. `Enqueue` dispatches the task straight to a goroutine. It honours `ProcessIn` / `ProcessAt` (delay), `MaxRetry`, `Timeout` and `Deadline`, whether they were given to `asynq.NewTask` or to `Enqueue` (the latter wins). A task with no timeout runs unbounded, unlike asynq's default of 30 minutes. Retries use linear backoff (`attempt * 5s`, capped at 30s), except that a Wiki ingest lock conflict waits a fixed 15s (see [Retry backoff](#retry-backoff)); a task that returns `asynq.SkipRetry` is not retried. A panic inside a handler is recovered and treated as a failure; it does not take the process down. When retries are exhausted the same wrap-up runs as the dead-letter callback in standard mode: document tasks mark the knowledge item `failed`.
 
 ```go
 // internal/router/sync_task.go
@@ -198,7 +198,7 @@ func asynqRetryDelayFunc(n int, e error, t *asynq.Task) time.Duration {
 }
 ```
 
-The intent: an orphaned lock expires within 60s, so a fixed 15s retry almost always succeeds, while exponential backoff would leave a KB stuck for 7 to 10 minutes after a crash-restart. In the current code only Lite mode returns `ErrWikiIngestConcurrent` (standard mode no longer takes a per-KB batch lock), and the Lite executor retries with its own linear backoff rather than this function, so the override is not reached on either path.
+The intent: an orphaned lock expires within 60s, so a fixed 15s retry almost always succeeds, while exponential backoff would leave a KB stuck for 7 to 10 minutes after a crash-restart. Only Lite mode returns `ErrWikiIngestConcurrent` (standard mode no longer takes a per-KB batch lock), so the Lite executor applies the same fixed 15s delay to it (`syncRetryDelay` in `internal/router/sync_task.go`); every other Lite retry backs off linearly, 5s per attempt up to 30s.
 
 ## Task lifecycle state machine
 

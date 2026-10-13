@@ -171,10 +171,7 @@ func (e *SyncTaskExecutor) Enqueue(task *asynq.Task, opts ...asynq.Option) (*asy
 		var attemptCtx context.Context
 		for attempt := 0; attempt <= maxRetry; attempt++ {
 			if attempt > 0 {
-				backoff := time.Duration(attempt) * 5 * time.Second
-				if backoff > 30*time.Second {
-					backoff = 30 * time.Second
-				}
+				backoff := syncRetryDelay(attempt, lastErr)
 				logger.Infof(ctx, "[SyncTask] Retrying task type=%s id=%s attempt=%d/%d backoff=%s",
 					task.Type(), taskID, attempt, maxRetry, backoff)
 				time.Sleep(backoff)
@@ -267,4 +264,14 @@ func RegisterSyncHandlers(params SyncTaskParams) {
 	params.Executor.RegisterHandler(types.TypeWikiFinalize, params.WikiIngest.Handle)
 	params.Executor.RegisterHandler(types.TypeMemoryExtract, params.MemoryService.Handle)
 	logger.Infof(context.Background(), "[SyncTask] All task handlers registered (Lite mode, no Redis)")
+}
+
+// syncRetryDelay is the Lite executor's counterpart of asynqRetryDelayFunc:
+// the same fixed delay for a wiki ingest lock conflict, otherwise linear
+// backoff capped at 30s.
+func syncRetryDelay(attempt int, err error) time.Duration {
+	if errors.Is(err, service.ErrWikiIngestConcurrent) {
+		return wikiIngestRetryDelay
+	}
+	return min(time.Duration(attempt)*5*time.Second, 30*time.Second)
 }

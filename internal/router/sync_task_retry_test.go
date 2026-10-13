@@ -2,10 +2,13 @@ package router
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/hibiken/asynq"
+	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -34,5 +37,20 @@ func TestSyncTaskExecutorInjectsRetryMetadata(t *testing.T) {
 		}
 	case <-time.After(2 * time.Second):
 		t.Fatal("timed out waiting for sync task")
+	}
+}
+
+func TestSyncRetryDelayUsesFixedWikiConflictDelay(t *testing.T) {
+	conflict := fmt.Errorf("batch: %w", service.ErrWikiIngestConcurrent)
+	for attempt, want := range map[int]time.Duration{1: 15 * time.Second, 4: 15 * time.Second, 9: 15 * time.Second} {
+		if got := syncRetryDelay(attempt, conflict); got != want {
+			t.Fatalf("wiki conflict attempt %d: delay %s, want %s", attempt, got, want)
+		}
+	}
+	other := errors.New("transient")
+	for attempt, want := range map[int]time.Duration{1: 5 * time.Second, 3: 15 * time.Second, 9: 30 * time.Second} {
+		if got := syncRetryDelay(attempt, other); got != want {
+			t.Fatalf("other error attempt %d: delay %s, want %s", attempt, got, want)
+		}
 	}
 }

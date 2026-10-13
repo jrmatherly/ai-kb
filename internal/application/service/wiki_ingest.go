@@ -30,11 +30,11 @@ import (
 
 // ErrWikiIngestConcurrent is returned by the wiki ingest handler in Lite mode
 // when another batch is already running for the same KB (the in-process
-// liteLocks guard is held). The asynq/sync executor's RetryDelayFunc uses
-// errors.Is on this sentinel to apply a short, fixed retry delay instead of
-// exponential backoff, so the deferred batch retries promptly once the active
-// one releases. Standard (Redis) mode no longer takes an exclusive per-KB
-// lock (Phase 3) and never returns this.
+// liteLocks guard is held). The Lite sync executor (syncRetryDelay) and the
+// asynq RetryDelayFunc use errors.Is on this sentinel to apply a short, fixed
+// retry delay instead of their usual backoff, so the deferred batch retries
+// promptly once the active one releases. Standard (Redis) mode no longer
+// takes an exclusive per-KB lock (Phase 3) and never returns this.
 var ErrWikiIngestConcurrent = errors.New("concurrent wiki task active")
 
 const (
@@ -381,10 +381,11 @@ type WikiPendingOp struct {
 //     also writes asynq-level archived rows here uniformly across
 //     every task type.
 //
-// Redis is still used for the per-KB active-batch lock
-// (wiki:active:<kbID>) and the delete tombstone (wiki:deleted:<...>),
-// both of which are correctness-critical short-lived flags rather
-// than data the system should survive without.
+// Redis is still used for the per-KB in-flight slot set
+// (wiki:inflight:<kbID>, which also backs the stats is_active flag) and
+// the delete tombstone (wiki:deleted:<...>), both of which are
+// correctness-critical short-lived flags rather than data the system
+// should survive without.
 type wikiIngestService struct {
 	wikiService    interfaces.WikiPageService
 	kbService      interfaces.KnowledgeBaseService

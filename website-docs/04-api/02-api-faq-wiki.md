@@ -402,7 +402,7 @@ curl "$BASE/api/v1/knowledgebase/kb-1/wiki/graph?mode=ego&center=entity/acme-cor
 
 Purpose: Wiki statistics.
 
-Response: 200 `WikiStats` (`total_pages`, `pages_by_type`, `total_links`, `orphan_count`, `recent_updates`, `pending_tasks`, `pending_issues`, `is_active`)
+Response: 200 `WikiStats` (`total_pages`, `pages_by_type`, `total_links`, `orphan_count`, `recent_updates`, `pending_tasks`, `pending_issues`, `is_active`). `is_active` is true while at least one ingest batch for the knowledge base holds a live slot in the Redis in-flight set `wiki:inflight:<kb_id>`; Lite mode has no Redis and always reports false.
 
 ```bash
 curl $BASE/api/v1/knowledgebase/kb-1/wiki/stats -H "Authorization: Bearer $TOKEN"
