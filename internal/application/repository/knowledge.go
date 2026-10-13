@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -917,23 +918,46 @@ func (r *knowledgeRepository) FindByDataSourceExternalID(
 	return &knowledge, nil
 }
 
+// dataSourceItems scopes a query to the live knowledge items one data source
+// owns in a knowledge base.
+func (r *knowledgeRepository) dataSourceItems(
+	ctx context.Context, tenantID uint64, kbID, dataSourceID string,
+) *gorm.DB {
+	return r.db.WithContext(ctx).Model(&types.Knowledge{}).
+		Where("tenant_id = ? AND knowledge_base_id = ? AND deleted_at IS NULL", tenantID, kbID).
+		Where("metadata->>'datasource_id' = ? AND metadata->>'external_id' <> ''", dataSourceID)
+}
+
+// dataSourceItemIDBatch keeps an external-ID IN list under SQLite's and
+// PostgreSQL's bind-parameter limits.
+const dataSourceItemIDBatch = 1000
+
 // ListDataSourceItems returns the live knowledge items one data source owns in a
-// knowledge base, one per external ID. Only three columns are read, so a
-// full-sync reconcile over a large source stays small in memory.
+// knowledge base, one per external ID, or only those among externalIDs when any
+// are given. Only three columns are read, so a full-sync reconcile over a large
+// source stays small in memory.
 func (r *knowledgeRepository) ListDataSourceItems(
 	ctx context.Context,
 	tenantID uint64,
 	kbID, dataSourceID string,
+	externalIDs ...string,
 ) ([]types.DataSourceItemRef, error) {
+	const columns = "metadata->>'external_id' AS external_id, title, " +
+		"COALESCE(metadata->>'source_resource_id', '') AS source_resource_id"
 	var rows []types.DataSourceItemRef
-	err := r.db.WithContext(ctx).Model(&types.Knowledge{}).
-		Select("metadata->>'external_id' AS external_id, title, "+
-			"COALESCE(metadata->>'source_resource_id', '') AS source_resource_id").
-		Where("tenant_id = ? AND knowledge_base_id = ? AND deleted_at IS NULL", tenantID, kbID).
-		Where("metadata->>'datasource_id' = ? AND metadata->>'external_id' <> ''", dataSourceID).
-		Scan(&rows).Error
-	if err != nil {
-		return nil, err
+	if len(externalIDs) == 0 {
+		if err := r.dataSourceItems(ctx, tenantID, kbID, dataSourceID).Select(columns).Scan(&rows).Error; err != nil {
+			return nil, err
+		}
+	}
+	for batch := range slices.Chunk(externalIDs, dataSourceItemIDBatch) {
+		var part []types.DataSourceItemRef
+		err := r.dataSourceItems(ctx, tenantID, kbID, dataSourceID).Select(columns).
+			Where("metadata->>'external_id' IN ?", batch).Scan(&part).Error
+		if err != nil {
+			return nil, err
+		}
+		rows = append(rows, part...)
 	}
 	seen := make(map[string]struct{}, len(rows))
 	items := rows[:0]
@@ -945,6 +969,16 @@ func (r *knowledgeRepository) ListDataSourceItems(
 		items = append(items, row)
 	}
 	return items, nil
+}
+
+// CountDataSourceItems counts the external IDs ListDataSourceItems would return.
+func (r *knowledgeRepository) CountDataSourceItems(
+	ctx context.Context, tenantID uint64, kbID, dataSourceID string,
+) (int, error) {
+	var count int64
+	err := r.dataSourceItems(ctx, tenantID, kbID, dataSourceID).
+		Select("COUNT(DISTINCT metadata->>'external_id')").Scan(&count).Error
+	return int(count), err
 }
 
 // HardDeleteKnowledge physically removes a knowledge row. Call it AFTER

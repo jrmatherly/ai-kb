@@ -161,8 +161,15 @@ func (r *seafileKnowledgeRepo) HardDeleteKnowledge(_ context.Context, _ uint64, 
 	return nil
 }
 
+func (r *seafileKnowledgeRepo) CountDataSourceItems(
+	ctx context.Context, tenantID uint64, kbID, dsID string,
+) (int, error) {
+	items, err := r.ListDataSourceItems(ctx, tenantID, kbID, dsID)
+	return len(items), err
+}
+
 func (r *seafileKnowledgeRepo) ListDataSourceItems(
-	_ context.Context, _ uint64, _, dsID string,
+	_ context.Context, _ uint64, _, dsID string, _ ...string,
 ) ([]types.DataSourceItemRef, error) {
 	var items []types.DataSourceItemRef
 	for key := range r.live {

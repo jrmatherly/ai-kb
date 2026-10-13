@@ -167,10 +167,20 @@ func (s *DataSourceService) settleDeletions(
 		}
 		return
 	}
-	// Owned is read before anything is deleted, so the guard measures the batch
-	// against the whole source.
-	owned, err := s.knowledgeService.GetRepository().ListDataSourceItems(
-		ctx, ds.TenantID, ds.KnowledgeBaseID, ds.ID)
+	// Owned is counted before anything is deleted, so the guard measures the
+	// batch against the whole source. Only a reconcile reads every owned item;
+	// other runs read just their pending ones.
+	repo := s.knowledgeService.GetRepository()
+	var owned []types.DataSourceItemRef
+	var ownedCount int
+	var err error
+	if reconcile {
+		owned, err = repo.ListDataSourceItems(ctx, ds.TenantID, ds.KnowledgeBaseID, ds.ID)
+		ownedCount = len(owned)
+	} else if ownedCount, err = repo.CountDataSourceItems(ctx, ds.TenantID, ds.KnowledgeBaseID, ds.ID); err == nil {
+		owned, err = repo.ListDataSourceItems(ctx, ds.TenantID, ds.KnowledgeBaseID, ds.ID,
+			slices.Collect(maps.Keys(d.pending))...)
+	}
 	if err != nil {
 		logger.Errorf(ctx, "deletions for ds=%s left pending: list owned items: %v", ds.ID, err)
 		return
@@ -209,25 +219,25 @@ func (s *DataSourceService) settleDeletions(
 
 	switch {
 	case allowMass:
-	case reconcile && len(d.seen) == 0 && len(owned) > 0:
+	case reconcile && len(d.seen) == 0 && ownedCount > 0:
 		// An empty listing more likely means lost access than an emptied source.
 		report.Held = &types.SyncItemError{
 			Code:   syncCodeReconcileListingEmpty,
-			Params: map[string]string{"owned": strconv.Itoa(len(owned))},
+			Params: map[string]string{"owned": strconv.Itoa(ownedCount)},
 			Message: fmt.Sprintf("Deletions held back: the listing returned nothing while the data source "+
-				"owns %d item(s)", len(owned)),
+				"owns %d item(s)", ownedCount),
 		}
-	case len(doomed) > 0 && (d.held || deletionGuardTrips(len(doomed), len(owned))):
-		percent := len(doomed) * 100 / len(owned)
+	case len(doomed) > 0 && (d.held || deletionGuardTrips(len(doomed), ownedCount)):
+		percent := len(doomed) * 100 / ownedCount
 		report.Held = &types.SyncItemError{
 			Code: syncCodeDeletionGuardTripped,
 			Params: map[string]string{
-				"count": strconv.Itoa(len(doomed)), "owned": strconv.Itoa(len(owned)),
+				"count": strconv.Itoa(len(doomed)), "owned": strconv.Itoa(ownedCount),
 				"percent": strconv.Itoa(percent), "deselected": strconv.Itoa(report.Deselected),
 			},
 			Message: fmt.Sprintf("Deletions held back: %d item(s), %d%% of the %d this data source owns "+
 				"(%d from resources removed from the selection); run Sync and apply deletions if this is expected",
-				len(doomed), percent, len(owned), report.Deselected),
+				len(doomed), percent, ownedCount, report.Deselected),
 		}
 	}
 	if report.Held != nil && report.Held != incomplete {
@@ -237,7 +247,7 @@ func (s *DataSourceService) settleDeletions(
 			report.Pending = append(report.Pending, cmp.Or(item.Title, item.ExternalID))
 		}
 		logger.Warnf(ctx, "deletion guard held back %d of %d owned item(s) for ds=%s",
-			len(doomed), len(owned), ds.ID)
+			len(doomed), ownedCount, ds.ID)
 		return
 	}
 	d.held = false
@@ -257,7 +267,7 @@ func (s *DataSourceService) settleDeletions(
 		}
 	}
 	logger.Infof(ctx, "deletions for ds=%s: %d owned item(s), %d deselected, %d missing",
-		ds.ID, len(owned), report.Deselected, report.Missing)
+		ds.ID, ownedCount, report.Deselected, report.Missing)
 }
 
 // runStatus folds a run's per-item failures and held deletions into its

@@ -335,9 +335,13 @@ func (r *deletionLookupKnowledgeRepo) FindByDataSourceExternalID(
 // ListDataSourceItems reports the harness connector's one item as owned; the
 // lookup decides whether it still exists.
 func (r *deletionLookupKnowledgeRepo) ListDataSourceItems(
-	context.Context, uint64, string, string,
+	context.Context, uint64, string, string, ...string,
 ) ([]types.DataSourceItemRef, error) {
 	return []types.DataSourceItemRef{{ExternalID: "file:gone"}}, nil
+}
+
+func (r *deletionLookupKnowledgeRepo) CountDataSourceItems(context.Context, uint64, string, string) (int, error) {
+	return 1, nil
 }
 
 func (r *deletionLookupKnowledgeRepo) HardDeleteKnowledge(_ context.Context, _ uint64, id string) error {
@@ -400,8 +404,12 @@ func (r *keyedDeletionRepo) FindByDataSourceExternalID(
 	return r.items[externalID], nil
 }
 
+func (r *keyedDeletionRepo) CountDataSourceItems(context.Context, uint64, string, string) (int, error) {
+	return len(r.items), nil
+}
+
 func (r *keyedDeletionRepo) ListDataSourceItems(
-	context.Context, uint64, string, string,
+	context.Context, uint64, string, string, ...string,
 ) ([]types.DataSourceItemRef, error) {
 	refs := make([]types.DataSourceItemRef, 0, len(r.items))
 	for id := range r.items {

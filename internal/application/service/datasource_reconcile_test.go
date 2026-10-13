@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"testing"
 	"time"
@@ -98,21 +99,32 @@ func streamOf(items []types.FetchedItem, fail error) reconcileStreamConnector {
 
 // reconcileRepo holds live knowledge per data source and external ID. sources
 // maps a ds-a external ID to the source_resource_id ListDataSourceItems reports.
+// lists records the externalIDs filter of every ListDataSourceItems call, nil
+// for a full read.
 type reconcileRepo struct {
 	interfaces.KnowledgeRepository
 	live    map[string]map[string]*types.Knowledge
 	sources map[string]string
+	lists   [][]string
 }
 
 func (r *reconcileRepo) ListDataSourceItems(
-	_ context.Context, _ uint64, _, dsID string,
+	_ context.Context, _ uint64, _, dsID string, externalIDs ...string,
 ) ([]types.DataSourceItemRef, error) {
+	r.lists = append(r.lists, externalIDs)
 	items := make([]types.DataSourceItemRef, 0, len(r.live[dsID]))
 	for id, k := range r.live[dsID] {
+		if len(externalIDs) > 0 && !slices.Contains(externalIDs, id) {
+			continue
+		}
 		items = append(items, types.DataSourceItemRef{ExternalID: id, Title: k.Title, SourceResourceID: r.sources[id]})
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].ExternalID < items[j].ExternalID })
 	return items, nil
+}
+
+func (r *reconcileRepo) CountDataSourceItems(_ context.Context, _ uint64, _, dsID string) (int, error) {
+	return len(r.live[dsID]), nil
 }
 
 func (r *reconcileRepo) FindByDataSourceExternalID(
@@ -556,6 +568,18 @@ func TestProcessSync_TombstonesUnderTheGuardApplyInAnIncrementalRun(t *testing.T
 	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
 	assert.Equal(t, &types.SyncReconcile{Missing: 3}, reconcileReport(t, log))
 	assert.Nil(t, h.pending(t))
+}
+
+// An incremental run counts what the source owns and reads only the item its
+// tombstone names, never the whole list.
+func TestProcessSync_IncrementalTombstoneReadsOnlyItsItem(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, kept: 50, tombstones: 1})
+	log, err := h.sync(t, reconcileConnector{items: h.items}, false, false)
+	require.NoError(t, err)
+
+	assert.Equal(t, [][]string{{"doc:tomb-0000"}}, h.repo.lists)
+	assert.Equal(t, []string{"k-doc:tomb-0000"}, h.deleted())
+	assert.Equal(t, 1, log.ItemsDeleted)
 }
 
 // Tombstones are not part of the listing, so a full sync that emits nothing

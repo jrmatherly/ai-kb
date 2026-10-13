@@ -352,10 +352,13 @@ type KnowledgeRepository interface {
 		ctx context.Context, tenantID uint64, kbID, dataSourceID, externalID string,
 	) (*types.Knowledge, error)
 	// ListDataSourceItems returns the live knowledge items one data source owns
-	// in a knowledge base, one per external ID.
+	// in a knowledge base, one per external ID, or only those among externalIDs
+	// when any are given.
 	ListDataSourceItems(
-		ctx context.Context, tenantID uint64, kbID, dataSourceID string,
+		ctx context.Context, tenantID uint64, kbID, dataSourceID string, externalIDs ...string,
 	) ([]types.DataSourceItemRef, error)
+	// CountDataSourceItems counts the external IDs ListDataSourceItems returns.
+	CountDataSourceItems(ctx context.Context, tenantID uint64, kbID, dataSourceID string) (int, error)
 	// HardDeleteKnowledge physically removes a row after DeleteKnowledge's soft-delete
 	// cascade. Sync-internal deletions use this so rows never become tombstones.
 	HardDeleteKnowledge(ctx context.Context, tenantID uint64, id string) error

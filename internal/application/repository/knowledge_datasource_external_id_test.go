@@ -95,6 +95,14 @@ func TestListDataSourceItems(t *testing.T) {
 		{ExternalID: "doc:1", Title: "t", SourceResourceID: "space-1"},
 		{ExternalID: "doc:2", Title: "t"},
 	}, items)
+
+	items, err = repo.ListDataSourceItems(ctx, tenantID, kbID, "ds-a", "doc:1", "doc:3", "doc:gone", "doc:none")
+	require.NoError(t, err)
+	assert.Equal(t, []types.DataSourceItemRef{{ExternalID: "doc:1", Title: "t", SourceResourceID: "space-1"}}, items)
+
+	count, err := repo.CountDataSourceItems(ctx, tenantID, kbID, "ds-a")
+	require.NoError(t, err)
+	assert.Equal(t, 2, count)
 }
 
 func TestHardDeleteKnowledge(t *testing.T) {
