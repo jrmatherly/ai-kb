@@ -60,6 +60,7 @@ func auditableHarness(
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(ErrorHandler())
 	r.Use(AuditServiceProvider(audit))
 	r.Use(func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), types.TenantRoleContextKey, role)

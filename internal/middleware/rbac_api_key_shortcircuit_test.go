@@ -18,6 +18,7 @@ import (
 func apiKeyRBACHarness(scope types.TenantAPIKeyScope, role types.TenantRole, mw gin.HandlerFunc) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(ErrorHandler())
 	r.Use(func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), types.TenantRoleContextKey, role)
 		ctx = types.WithTenantAPIKeyScope(ctx, scope)
@@ -134,6 +135,7 @@ func TestEvaluateOwnershipOrRole_JWTViewerStillDenied(t *testing.T) {
 func TestRequireRole_JWTViewerStillDenied(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(ErrorHandler())
 	r.Use(func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), types.TenantRoleContextKey, types.TenantRoleViewer)
 		c.Request = c.Request.WithContext(ctx)

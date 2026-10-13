@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/sirupsen/logrus"
 )
@@ -26,10 +28,11 @@ func Recovery() gin.HandlerFunc {
 					"stacktrace": string(stacktrace),
 				})
 
-				// Return a 500 error
-				c.AbortWithStatusJSON(500, gin.H{
-					"error":   "Internal Server Error",
-					"message": fmt.Sprintf("%v", err),
+				// Recovery wraps ErrorHandler, and a panic skips ErrorHandler's post-Next code,
+				// so the envelope is written here. The panic value stays in the log: it can
+				// carry internal state the client must not see.
+				c.AbortWithStatusJSON(http.StatusInternalServerError, apperrors.ErrorResponse{
+					Error: *apperrors.NewInternalServerError("Internal Server Error"),
 				})
 			}
 		}()

@@ -27,6 +27,7 @@ func runGate(t *testing.T, a *APIKeyRouteAuthorizer, scope *types.TenantAPIKeySc
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(ErrorHandler())
 	engine.Use(func(c *gin.Context) {
 		if scope != nil {
 			c.Request = c.Request.WithContext(types.WithTenantAPIKeyScope(c.Request.Context(), *scope))
@@ -72,6 +73,7 @@ func TestGateDefaultDeny(t *testing.T) {
 	full := &types.TenantAPIKeyScope{FullAccess: true}
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(ErrorHandler())
 	engine.Use(func(c *gin.Context) {
 		c.Request = c.Request.WithContext(types.WithTenantAPIKeyScope(c.Request.Context(), *full))
 		c.Next()
@@ -206,6 +208,7 @@ func runDenyAPIKey(t *testing.T, scope *types.TenantAPIKeyScope) (reached bool, 
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(ErrorHandler())
 	engine.Use(func(c *gin.Context) {
 		if scope != nil {
 			c.Request = c.Request.WithContext(types.WithTenantAPIKeyScope(c.Request.Context(), *scope))
@@ -250,6 +253,7 @@ func runAllowFileServe(t *testing.T, scope *types.TenantAPIKeyScope) (reached bo
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.Use(ErrorHandler())
 	engine.Use(func(c *gin.Context) {
 		if scope != nil {
 			c.Request = c.Request.WithContext(types.WithTenantAPIKeyScope(c.Request.Context(), *scope))

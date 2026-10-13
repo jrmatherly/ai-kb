@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -13,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"github.com/jrmatherly/ai-kb/internal/embedpolicy"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/ratelimit"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -81,14 +81,14 @@ func EmbedAuth(
 	return func(c *gin.Context) {
 		channelID := strings.TrimSpace(c.Param("channel_id"))
 		if channelID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "channel_id is required"})
+			_ = c.Error(apperrors.NewBadRequestError("channel_id is required"))
 			c.Abort()
 			return
 		}
 
 		token := extractEmbedToken(c)
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "embed publish token is required"})
+			_ = c.Error(apperrors.NewUnauthorizedError("embed publish token is required"))
 			c.Abort()
 			return
 		}
@@ -98,7 +98,7 @@ func EmbedAuth(
 		if service.IsEmbedSessionToken(token) {
 			resolvedID, resolveErr := svc.ResolveSessionToken(c.Request.Context(), token)
 			if resolveErr != nil || resolvedID != channelID {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid embed channel or token"})
+				_ = c.Error(apperrors.NewUnauthorizedError("invalid embed channel or token"))
 				c.Abort()
 				return
 			}
@@ -108,11 +108,11 @@ func EmbedAuth(
 		}
 		if err != nil {
 			if errors.Is(err, service.ErrEmbedChannelDisabled) {
-				c.JSON(http.StatusForbidden, gin.H{"error": "embed channel is disabled"})
+				_ = c.Error(apperrors.NewForbiddenError("embed channel is disabled"))
 				c.Abort()
 				return
 			}
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid embed channel or token"})
+			_ = c.Error(apperrors.NewUnauthorizedError("invalid embed channel or token"))
 			c.Abort()
 			return
 		}
@@ -120,7 +120,7 @@ func EmbedAuth(
 		origin := requestOrigin(c)
 		if !embedRequestOriginAllowed(c, origin, ch.AllowedOriginsList()) {
 			logger.Warnf(c.Request.Context(), "[embed_auth] origin %q not allowed for channel %s", origin, channelID)
-			c.JSON(http.StatusForbidden, gin.H{"error": "origin not allowed"})
+			_ = c.Error(apperrors.NewForbiddenError("origin not allowed"))
 			c.Abort()
 			return
 		}
@@ -128,27 +128,27 @@ func EmbedAuth(
 		// Per-IP per-minute cap.
 		rateKey := fmt.Sprintf("%s:%s", channelID, c.ClientIP())
 		if !limiter.Allow(c.Request.Context(), rateKey, ch.RateLimitPerMinute) {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})
+			_ = c.Error(apperrors.NewTooManyRequestsError("rate limit exceeded"))
 			c.Abort()
 			return
 		}
 		// Channel-wide per-minute cap (bounds burst across rotating IPs since
 		// the publish token is publicly visible).
 		if !limiter.Allow(c.Request.Context(), channelID+":__global", embedGlobalPerMinute(ch.RateLimitPerMinute)) {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})
+			_ = c.Error(apperrors.NewTooManyRequestsError("rate limit exceeded"))
 			c.Abort()
 			return
 		}
 		// Channel-wide daily total cap (bounds sustained abuse).
 		if !dailyLimiter.Allow(c.Request.Context(), channelID, ch.RateLimitPerDay) {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "daily request limit exceeded"})
+			_ = c.Error(apperrors.NewTooManyRequestsError("daily request limit exceeded"))
 			c.Abort()
 			return
 		}
 
 		tenant, err := tenantSvc.GetTenantByID(c.Request.Context(), ch.TenantID)
 		if err != nil || tenant == nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "workspace unavailable"})
+			_ = c.Error(apperrors.NewInternalServerError("workspace unavailable"))
 			c.Abort()
 			return
 		}

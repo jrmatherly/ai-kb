@@ -285,6 +285,7 @@ func TestEmbedAuthSessionTokenPath(t *testing.T) {
 	tenantSvc := &fakeTenantService{tenant: &types.Tenant{ID: 42}}
 
 	r := gin.New()
+	r.Use(ErrorHandler())
 	r.GET("/api/v1/embed/:channel_id/config", EmbedAuth(svc, tenantSvc, nil), func(c *gin.Context) {
 		ch, ok := EmbedChannelFromContext(c.Request.Context())
 		if !ok || ch.ID != channelID {
@@ -333,6 +334,7 @@ func TestEmbedAuthPublishTokenValid(t *testing.T) {
 	tenantSvc := &fakeTenantService{tenant: &types.Tenant{ID: 11}}
 
 	r := gin.New()
+	r.Use(ErrorHandler())
 	r.GET("/api/v1/embed/:channel_id/config", EmbedAuth(svc, tenantSvc, nil), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": true})
 	})
@@ -363,17 +365,21 @@ func TestEmbedAuthPublishTokenInvalid(t *testing.T) {
 			},
 		},
 	}
-	handler := EmbedAuth(svc, &fakeTenantService{tenant: &types.Tenant{ID: 11}}, nil)
+	r := gin.New()
+	r.Use(ErrorHandler())
+	r.GET("/api/v1/embed/:channel_id/config", EmbedAuth(svc, &fakeTenantService{tenant: &types.Tenant{ID: 11}}, nil))
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/embed/"+channelID+"/config", nil)
+	req.Header.Set("Authorization", "Embed em_wrong_token")
+	req.Header.Set("Origin", "https://app.example.com")
 	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/embed/"+channelID+"/config", nil)
-	c.Request.Header.Set("Authorization", "Embed em_wrong_token")
-	c.Request.Header.Set("Origin", "https://app.example.com")
-	c.Params = gin.Params{{Key: "channel_id", Value: channelID}}
-	handler(c)
+	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want %d, body = %s", w.Code, http.StatusUnauthorized, w.Body.String())
+	}
+	const want = `{"success":false,"error":{"code":1001,"message":"invalid embed channel or token"}}`
+	if got := w.Body.String(); got != want {
+		t.Fatalf("body = %s, want %s", got, want)
 	}
 }
 
@@ -386,13 +392,13 @@ func TestEmbedAuthSessionTokenMismatch(t *testing.T) {
 			"ems_other": "other-channel",
 		},
 	}
-	handler := EmbedAuth(svc, &fakeTenantService{tenant: &types.Tenant{ID: 1}}, nil)
+	r := gin.New()
+	r.Use(ErrorHandler())
+	r.GET("/api/v1/embed/:channel_id/config", EmbedAuth(svc, &fakeTenantService{tenant: &types.Tenant{ID: 1}}, nil))
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/embed/"+channelID+"/config", nil)
+	req.Header.Set("Authorization", "Embed ems_other")
 	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/embed/"+channelID+"/config", nil)
-	c.Request.Header.Set("Authorization", "Embed ems_other")
-	c.Params = gin.Params{{Key: "channel_id", Value: channelID}}
-	handler(c)
+	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want %d, body = %s", w.Code, http.StatusUnauthorized, w.Body.String())
@@ -527,6 +533,7 @@ func TestEmbedAuthHostAllowlist(t *testing.T) {
 				},
 			}, sessions: map[string]string{"ems_test": "channel"}}
 			r := gin.New()
+			r.Use(ErrorHandler())
 			tenantSvc := &fakeTenantService{tenant: &types.Tenant{ID: 11}}
 			r.Any("/api/v1/embed/:channel_id/config", EmbedAuth(svc, tenantSvc, nil), func(c *gin.Context) {
 				c.Status(200)

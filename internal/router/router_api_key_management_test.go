@@ -19,6 +19,7 @@ func TestAPIKeyGateDeniesTenantKeyManagementPaths(t *testing.T) {
 
 	gate := middleware.NewAPIKeyRouteAuthorizer()
 	engine := gin.New()
+	engine.Use(middleware.ErrorHandler())
 	engine.Use(func(c *gin.Context) {
 		scope := types.TenantAPIKeyScope{FullAccess: true}
 		c.Request = c.Request.WithContext(types.WithTenantAPIKeyScope(c.Request.Context(), scope))
@@ -77,6 +78,7 @@ func TestAPIKeyGateAllowsDeclaredTenantKVRead(t *testing.T) {
 	g.apiKeyRoute(v1.Group("/tenants"), http.MethodGet, "/kv/:key", apiKeyFullAccess(), reachedOK)
 
 	engine := gin.New()
+	engine.Use(middleware.ErrorHandler())
 	engine.Use(func(c *gin.Context) {
 		scope := types.TenantAPIKeyScope{FullAccess: true}
 		c.Request = c.Request.WithContext(types.WithTenantAPIKeyScope(c.Request.Context(), scope))

@@ -23,6 +23,7 @@ import (
 func rbacTestHarness(role types.TenantRole, userID string, mw gin.HandlerFunc) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(ErrorHandler())
 	r.Use(func(c *gin.Context) {
 		// Mirror what middleware/auth.go's JWT path sets.
 		ctx := context.WithValue(c.Request.Context(), types.TenantRoleContextKey, role)
@@ -84,6 +85,7 @@ func TestRequireRole_RejectsBelowMin(t *testing.T) {
 func TestRequireRoleOrSystemAdmin_AllowsSystemAdminBelowTenantRole(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	router.Use(ErrorHandler())
 	router.Use(func(c *gin.Context) {
 		ctx := context.WithValue(c.Request.Context(), types.TenantRoleContextKey, types.TenantRoleViewer)
 		ctx = context.WithValue(ctx, types.SystemAdminContextKey, true)
@@ -139,6 +141,7 @@ func TestRequireRole_CrossTenantSuperuserBypass(t *testing.T) {
 	// the superuser check ends up after the enforcement branch, this
 	// test fails before the change ships.
 	router := gin.New()
+	router.Use(ErrorHandler())
 	router.Use(func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx = context.WithValue(ctx, types.TenantRoleContextKey, types.TenantRoleViewer)
@@ -238,6 +241,7 @@ func TestRequireOwnershipOrRole_NotFoundPassesThroughTo404(t *testing.T) {
 		return "", ErrResourceNotFound
 	}
 	router := gin.New()
+	router.Use(ErrorHandler())
 	router.Use(func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx = context.WithValue(ctx, types.TenantRoleContextKey, types.TenantRoleContributor)
@@ -292,6 +296,7 @@ func TestRequireOwnershipOrRole_CrossTenantSuperuserBypass(t *testing.T) {
 		return "", nil
 	}
 	router := gin.New()
+	router.Use(ErrorHandler())
 	router.Use(func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx = context.WithValue(ctx, types.TenantRoleContextKey, types.TenantRoleAdmin)

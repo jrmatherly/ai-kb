@@ -25,7 +25,7 @@ Authorization: Bearer <access_token>
 
 - `POST /api/v1/auth/login` (or register / OIDC; the native desktop app uses auto-setup) returns `token` and `refresh_token`. `POST /api/v1/auth/refresh` issues a new token.
 - Optional header `X-Tenant-ID: <tenant_id>` switches to a workspace other than the one in the JWT. The user must be an active member of that workspace or carry the cross-workspace superuser attribute `CanAccessAllTenants`. A malformed or `0` value returns 400.
-- When the JWT resolves to no workspace and the route is not on the tenantless allowlist (`/auth/me`, `/me/invitations` and the like), the response is 409 `{"code":"TENANT_REQUIRED"}`.
+- When the JWT resolves to no workspace and the route is not on the tenantless allowlist (`/auth/me`, `/me/invitations` and the like), the response is 409 with error code 1005 and `"details": {"reason": "TENANT_REQUIRED"}`.
 
 ### API key (machine principals)
 
@@ -34,7 +34,7 @@ X-API-Key: <api_key>
 ```
 
 - Workspace keys: created with `POST /api/v1/tenants/:id/api-keys` and bound to one workspace. Sending `X-Tenant-ID` for another workspace returns 403.
-- Platform keys: created with `POST /api/v1/system/admin/api-keys`. They must send `X-Tenant-ID` to choose the target workspace (except on `/system/admin/*`, `GET /tenants/all|search` and `POST /tenants`), otherwise the response is 409 `TENANT_REQUIRED`.
+- Platform keys: created with `POST /api/v1/system/admin/api-keys`. They must send `X-Tenant-ID` to choose the target workspace (except on `/system/admin/*`, `GET /tenants/all|search` and `POST /tenants`), otherwise the response is the same 409 with `details.reason` `TENANT_REQUIRED`.
 - Authorization model (`internal/middleware/api_key_gate.go`, default deny): every `/api/v1` route declares an API key policy. A route without one returns 403 to any key.
   - `full_access` key: full authority inside the workspace (the machine form of Owner).
   - Scoped key: admitted per capability and bounded by the `knowledge_base_ids` allowlist. The capability constants live in `internal/types/tenant_api_key.go`: `retrieve`, `ingest`, `chat`, `read_agents`, `manage_kbs`, `manage_agents`, `message_history`, `manage_models`, `manage_mcp_services`, `manage_datasources`, `manage_channels`, `manage_vector_stores`, `manage_storage_backends`, `manage_web_search`, `run_evaluations`, `manage_members`, `manage_spaces`, `manage_tenant_settings`. Platform capabilities: `system_tenants_read/manage`, `system_settings_read/manage`, `system_runtime_read/manage`, `system_audit_read`.
@@ -130,7 +130,7 @@ Errors are rendered by `internal/middleware/error_handler.go` from an `AppError`
 
 `details` is present only when the error carries some. The swagger schema for this body is `errors.ErrorResponse`.
 
-The middleware layer (authentication, RBAC) returns `{"error": "..."}` directly, sometimes with a string `"code"` such as `TENANT_REQUIRED`.
+The middleware layer (authentication, RBAC, API key gate, embed and MCP endpoint auth, panic recovery) returns the same envelope. A rejection that needs more than the numeric code carries it in `details`: the 409 for a request with no workspace has `"details": {"reason": "TENANT_REQUIRED"}`.
 
 | Code | Meaning | HTTP |
 | --- | --- | --- |

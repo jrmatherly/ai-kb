@@ -8,12 +8,12 @@
 package middleware
 
 import (
-	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/config"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -36,7 +36,7 @@ func AttachAuthenticatedUser(
 	jwtTenantID uint64,
 ) bool {
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid or expired token"})
+		_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: invalid or expired token"))
 		c.Abort()
 		return false
 	}

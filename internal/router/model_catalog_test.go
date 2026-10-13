@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/config"
 	"github.com/jrmatherly/ai-kb/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,6 +16,7 @@ func TestModelCatalogRequiresSystemAdmin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	g := &rbacGuards{cfg: &config.Config{}}
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	RegisterSystemAdminRoutes(r.Group("/api/v1"), &handler.SystemHandler{}, nil, g)
 	for _, tc := range []struct{ method, path string }{
 		{http.MethodGet, "/api/v1/system/admin/model-catalog"},

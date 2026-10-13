@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jrmatherly/ai-kb/internal/config"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -30,6 +31,10 @@ var (
 	errMissingDirectHeader      = errors.New("missing external user id header")
 	errInvalidExternalUserID    = errors.New("invalid external user id")
 	errInvalidExternalUserToken = errors.New("invalid external user token")
+
+	// Sent as error.details on the 409 for a request that resolves to no workspace, so a client
+	// can tell "create or join a workspace" apart from other conflicts. Read-only.
+	tenantRequiredDetails = map[string]string{"reason": "TENANT_REQUIRED"}
 )
 
 // APIs that need no authentication
@@ -160,7 +165,7 @@ func Auth(
 		// Try X-API-Key authentication (compatibility mode)
 		if apiKey := c.GetHeader("X-API-Key"); apiKey != "" {
 			if apiKeyService == nil {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: API key service is not configured"})
+				_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: API key service is not configured"))
 				c.Abort()
 				return
 			}
@@ -172,9 +177,9 @@ func Auth(
 
 		// No channel authenticated the request
 		if bearerPresented {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid or expired token"})
+			_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: invalid or expired token"))
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: missing authentication"})
+			_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: missing authentication"))
 		}
 		c.Abort()
 	}
@@ -216,10 +221,7 @@ func authenticateJWTUser(
 			attachTenantlessUserContext(c, user)
 			return true
 		}
-		c.JSON(http.StatusConflict, gin.H{
-			"error": "Workspace required",
-			"code":  "TENANT_REQUIRED",
-		})
+		_ = c.Error(apperrors.NewConflictError("Workspace required").WithDetails(tenantRequiredDetails))
 		c.Abort()
 		return false
 	}
@@ -231,9 +233,7 @@ func authenticateJWTUser(
 		tenant, err = tenantService.GetTenantByID(ctx, targetTenantID)
 		if err != nil || tenant == nil {
 			logger.Warnf(ctx, "[auth] tenant lookup failed: tenant=%d user=%s err=%v", targetTenantID, user.ID, err)
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Unauthorized: invalid workspace",
-			})
+			_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: invalid workspace"))
 			c.Abort()
 			return false
 		}
@@ -245,9 +245,7 @@ func authenticateJWTUser(
 		// With RBAC enforced, a missing active membership is rejected; the fail-open path is handled
 		// inside resolveTenantRole.
 		logger.Warnf(ctx, "User %s has no active membership in tenant %d", user.ID, targetTenantID)
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Forbidden: not a member of the target workspace",
-		})
+		_ = c.Error(apperrors.NewForbiddenError("Forbidden: not a member of the target workspace"))
 		c.Abort()
 		return false
 	}
@@ -305,7 +303,7 @@ func resolveTargetTenant(
 		parsedTenantID, err := strconv.ParseUint(tenantHeader, 10, 64)
 		if err != nil || parsedTenantID == 0 {
 			logger.Warnf(ctx, "Invalid X-Tenant-ID header from user=%s: %q (err=%v)", user.ID, tenantHeader, err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-Tenant-ID header"})
+			_ = c.Error(apperrors.NewBadRequestError("Invalid X-Tenant-ID header"))
 			c.Abort()
 			return 0, nil, false, false
 		}
@@ -313,9 +311,7 @@ func resolveTargetTenant(
 		// super admin, or an active membership row. IsTenantAccessible decides all three.
 		if !IsTenantAccessible(ctx, user, parsedTenantID, memberService, cfg) {
 			logger.Warnf(ctx, "User %s attempted to access tenant %d without permission", user.ID, parsedTenantID)
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "Forbidden: insufficient permissions to access target workspace",
-			})
+			_ = c.Error(apperrors.NewForbiddenError("Forbidden: insufficient permissions to access target workspace"))
 			c.Abort()
 			return 0, nil, false, false
 		}
@@ -323,7 +319,7 @@ func resolveTargetTenant(
 		targetTenant, err := tenantService.GetTenantByID(ctx, parsedTenantID)
 		if err != nil || targetTenant == nil {
 			logger.Warnf(ctx, "Error getting target tenant by ID: %v, tenantID: %d", err, parsedTenantID)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid target workspace ID"})
+			_ = c.Error(apperrors.NewBadRequestError("Invalid target workspace ID"))
 			c.Abort()
 			return 0, nil, false, false
 		}
@@ -379,7 +375,7 @@ func authenticateAPIKeyRequest(
 	// AuthenticateAPIKey resolves the key by its SHA-256 hash.
 	key, err := apiKeyService.AuthenticateAPIKey(ctx, apiKey)
 	if err != nil || key == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid API key"})
+		_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: invalid API key"))
 		c.Abort()
 		return false
 	}
@@ -388,10 +384,8 @@ func authenticateAPIKeyRequest(
 		tenantHeader := strings.TrimSpace(c.GetHeader("X-Tenant-ID"))
 		if tenantHeader == "" {
 			if !isPlatformTenantOptionalAPI(c.Request.URL.Path, c.Request.Method) {
-				c.JSON(http.StatusConflict, gin.H{
-					"error": "Workspace required: platform API keys must send X-Tenant-ID",
-					"code":  "TENANT_REQUIRED",
-				})
+				_ = c.Error(apperrors.NewConflictError("Workspace required: platform API keys must send X-Tenant-ID").
+					WithDetails(tenantRequiredDetails))
 				c.Abort()
 				return false
 			}
@@ -399,7 +393,7 @@ func authenticateAPIKeyRequest(
 		} else {
 			targetTenantID, parseErr := strconv.ParseUint(tenantHeader, 10, 64)
 			if parseErr != nil || targetTenantID == 0 {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-Tenant-ID header"})
+				_ = c.Error(apperrors.NewBadRequestError("Invalid X-Tenant-ID header"))
 				c.Abort()
 				return false
 			}
@@ -408,21 +402,19 @@ func authenticateAPIKeyRequest(
 	} else {
 		tenantID := key.TenantIDValue()
 		if tenantID == 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid API key scope"})
+			_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: invalid API key scope"))
 			c.Abort()
 			return false
 		}
 		if tenantHeader := strings.TrimSpace(c.GetHeader("X-Tenant-ID")); tenantHeader != "" {
 			requestedTenantID, parseErr := strconv.ParseUint(tenantHeader, 10, 64)
 			if parseErr != nil || requestedTenantID == 0 {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-Tenant-ID header"})
+				_ = c.Error(apperrors.NewBadRequestError("Invalid X-Tenant-ID header"))
 				c.Abort()
 				return false
 			}
 			if requestedTenantID != tenantID {
-				c.JSON(http.StatusForbidden, gin.H{
-					"error": "Forbidden: workspace API key cannot switch workspaces",
-				})
+				_ = c.Error(apperrors.NewForbiddenError("Forbidden: workspace API key cannot switch workspaces"))
 				c.Abort()
 				return false
 			}
@@ -495,7 +487,7 @@ func attachAPIKeyAuthContext(
 	t, err := tenantService.GetTenantByID(c.Request.Context(), tenantID)
 	if err != nil {
 		logger.Warnf(c.Request.Context(), "[auth] API key tenant lookup failed: tenant=%d err=%v", tenantID, err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: invalid API key"})
+		_ = c.Error(apperrors.NewUnauthorizedError("Unauthorized: invalid API key"))
 		c.Abort()
 		return
 	}
@@ -525,7 +517,7 @@ func attachAPIKeyAuthContext(
 		var principalErr error
 		principal, principalErr = resolveAPIPrincipal(c.Request.Context(), t, c.Request.Header)
 		if principalErr != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": apiPrincipalAuthErrorMessage(principalErr)})
+			_ = c.Error(apperrors.NewUnauthorizedError(apiPrincipalAuthErrorMessage(principalErr)))
 			c.Abort()
 			return
 		}

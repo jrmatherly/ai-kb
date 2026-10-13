@@ -2,10 +2,10 @@ package middleware
 
 import (
 	stderrors "errors"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -116,9 +116,8 @@ func (a *APIKeyRouteAuthorizer) Middleware() gin.HandlerFunc {
 			return
 		}
 		if err := a.authorize(scope, c.Request.Method, c.FullPath()); err != nil {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"error": "Forbidden: API key scope does not allow this operation",
-			})
+			_ = c.Error(apperrors.NewForbiddenError("Forbidden: API key scope does not allow this operation"))
+			c.Abort()
 			return
 		}
 		c.Next()
@@ -162,9 +161,8 @@ func (a *APIKeyRouteAuthorizer) authorize(scope types.TenantAPIKeyScope, method,
 func DenyAPIKeyPrincipal() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if _, ok := types.TenantAPIKeyScopeFromContext(c.Request.Context()); ok {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"error": "Forbidden: API keys cannot access this endpoint",
-			})
+			_ = c.Error(apperrors.NewForbiddenError("Forbidden: API keys cannot access this endpoint"))
+			c.Abort()
 			return
 		}
 		c.Next()
@@ -196,9 +194,8 @@ func AllowFileServeAPIKey() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"error": "Forbidden: API key scope does not allow this operation",
-		})
+		_ = c.Error(apperrors.NewForbiddenError("Forbidden: API key scope does not allow this operation"))
+		c.Abort()
 	}
 }
 

@@ -377,6 +377,7 @@ func TestServeFilesAPIKeyScopeMatrix(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			engine := gin.New()
+			engine.Use(middleware.ErrorHandler())
 			serveFiles(engine, &stubFileService{
 				getFile: func(_ context.Context, _ string) (io.ReadCloser, error) {
 					return io.NopCloser(strings.NewReader("body")), nil

@@ -3,12 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
-	"net/http"
 	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/access"
 	"github.com/jrmatherly/ai-kb/internal/config"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -104,9 +104,7 @@ func RequireRole(min types.TenantRole, cfg *config.Config) gin.HandlerFunc {
 			tenantID := types.CallerFromContext(ctx).TenantID
 			_ = svc.LogDenied(ctx, c, tenantID, uid, string(role), min)
 		}
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Forbidden: insufficient workspace role",
-		})
+		_ = c.Error(apperrors.NewForbiddenError("Forbidden: insufficient workspace role"))
 		c.Abort()
 	}
 }
@@ -160,9 +158,7 @@ func RequireSystemAdmin(cfg *config.Config) gin.HandlerFunc {
 			logger.Warnf(ctx,
 				"[rbac] system admin required: API-key principal denied path=%s",
 				c.Request.URL.Path)
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "Forbidden: API keys cannot access this endpoint",
-			})
+			_ = c.Error(apperrors.NewForbiddenError("Forbidden: API keys cannot access this endpoint"))
 			c.Abort()
 			return
 		}
@@ -179,9 +175,7 @@ func RequireSystemAdmin(cfg *config.Config) gin.HandlerFunc {
 			tenantID := types.CallerFromContext(ctx).TenantID
 			_ = svc.LogDenied(ctx, c, tenantID, uid, "user", "system_admin")
 		}
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Forbidden: system administrator required",
-		})
+		_ = c.Error(apperrors.NewForbiddenError("Forbidden: system administrator required"))
 		c.Abort()
 	}
 }
@@ -233,16 +227,12 @@ func RequireOwnershipOrRole(min types.TenantRole, lookup CreatorLookup, cfg *con
 				tenantID := types.CallerFromContext(ctx).TenantID
 				_ = svc.LogDenied(ctx, c, tenantID, request.UserID, string(request.Role), min)
 			}
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "Forbidden: must own the resource or have the required role",
-			})
+			_ = c.Error(apperrors.NewForbiddenError("Forbidden: must own the resource or have the required role"))
 		default:
 			logger.Errorf(ctx,
 				"[rbac] creator lookup failed: user=%s path=%s err=%v",
 				request.UserID, c.Request.URL.Path, err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"error": "Service Unavailable: cannot verify resource ownership",
-			})
+			_ = c.Error(apperrors.NewServiceUnavailableError("Service Unavailable: cannot verify resource ownership"))
 		}
 		c.Abort()
 	}
