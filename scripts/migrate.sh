@@ -5,12 +5,26 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-# Load .env file if it exists (for development mode)
+usage() {
+    echo "Usage: $0 {up|down|create <migration_name>|version|force <version>|goto <version>}"
+    echo "Connection: DB_URL, or DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME (exported values win over .env)"
+}
+
+case "${1:-}" in
+    up|down|create|version|force|goto) ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; exit 1 ;;
+esac
+
+# Load .env file if it exists (for development mode); variables already exported take precedence
 if [ -f "$PROJECT_ROOT/.env" ]; then
     echo "Loading .env file from $PROJECT_ROOT/.env"
+    exported=$(export -p)
     set -a
+    # shellcheck source=/dev/null
     source "$PROJECT_ROOT/.env"
     set +a
+    eval "$exported"
 fi
 
 # Database connection details (can be overridden by environment variables)
@@ -21,7 +35,7 @@ DB_PASSWORD=${DB_PASSWORD:-postgres}
 DB_NAME=${DB_NAME:-ai_kb}
 
 # Use versioned migrations directory
-MIGRATIONS_DIR="${MIGRATIONS_DIR:-migrations/versioned}"
+MIGRATIONS_DIR="${MIGRATIONS_DIR:-$PROJECT_ROOT/migrations/versioned}"
 
 # Check if migrate tool is installed
 if ! command -v migrate &> /dev/null; then
@@ -48,33 +62,31 @@ if [ -n "$DB_URL" ]; then
         DB_URL="${DB_URL//sslmode=prefer/sslmode=disable}"
     fi
 else
-    # Use Python to properly URL encode password if it contains special characters
-    # This handles special characters in passwords correctly
+    # URL-encode user and password; the values travel as argv, never as Python source
     if command -v python3 &> /dev/null; then
-        ENCODED_PASSWORD=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$DB_PASSWORD', safe=''))")
+        url_encode() { python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$1"; }
     else
-        # Fallback: try to use printf for basic encoding (may not work for all special chars)
-        ENCODED_PASSWORD="$DB_PASSWORD"
+        echo "Warning: python3 not found, DB_USER and DB_PASSWORD are used without URL encoding"
+        url_encode() { printf '%s\n' "$1"; }
     fi
-    DB_URL="postgres://${DB_USER}:${ENCODED_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable"
+    DB_URL="postgres://$(url_encode "$DB_USER"):$(url_encode "$DB_PASSWORD")@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable"
 fi
 
 # Execute migration based on command
 case "$1" in
     up)
         echo "Running migrations up..."
-        echo "DB_URL: ${DB_URL}"
+        echo "DB_URL: $(printf '%s' "$DB_URL" | sed -E 's#(://[^:/@]*:)[^@]*@#\1****@#')"
         echo "DB_USER: ${DB_USER}"
-        echo "DB_PASSWORD: ${DB_PASSWORD}"
         echo "DB_HOST: ${DB_HOST}"
         echo "DB_PORT: ${DB_PORT}"
         echo "DB_NAME: ${DB_NAME}"
         echo "MIGRATIONS_DIR: ${MIGRATIONS_DIR}"
-        migrate -path ${MIGRATIONS_DIR} -database ${DB_URL} up
+        migrate -path "${MIGRATIONS_DIR}" -database "${DB_URL}" up
         ;;
     down)
         echo "Running migrations down..."
-        migrate -path ${MIGRATIONS_DIR} -database ${DB_URL} down
+        migrate -path "${MIGRATIONS_DIR}" -database "${DB_URL}" down
         ;;
     create)
         if [ -z "$2" ]; then
@@ -83,14 +95,11 @@ case "$1" in
             exit 1
         fi
         echo "Creating migration files for $2..."
-        migrate create -ext sql -dir ${MIGRATIONS_DIR} -seq $2
-        echo "Created:"
-        echo "  - ${MIGRATIONS_DIR}/$(ls -t ${MIGRATIONS_DIR} | head -1)"
-        echo "  - ${MIGRATIONS_DIR}/$(ls -t ${MIGRATIONS_DIR} | head -2 | tail -1)"
+        migrate create -ext sql -dir "${MIGRATIONS_DIR}" -seq "$2"
         ;;
     version)
         echo "Checking current migration version..."
-        migrate -path ${MIGRATIONS_DIR} -database ${DB_URL} version
+        migrate -path "${MIGRATIONS_DIR}" -database "${DB_URL}" version
         ;;
     force)
         if [ -z "$2" ]; then
@@ -111,11 +120,7 @@ case "$1" in
             exit 1
         fi
         echo "Migrating to version $2..."
-        migrate -path ${MIGRATIONS_DIR} -database ${DB_URL} goto $2
-        ;;
-    *)
-        echo "Usage: $0 {up|down|create <migration_name>|version|force <version>|goto <version>}"
-        exit 1
+        migrate -path "${MIGRATIONS_DIR}" -database "${DB_URL}" goto "$2"
         ;;
 esac
 

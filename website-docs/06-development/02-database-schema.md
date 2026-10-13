@@ -367,9 +367,9 @@ So postgres and ParadeDB use `migrations/versioned/`, and SQLite uses `migration
 
 `scripts/migrate.sh` wraps the `migrate` CLI (the Makefile `migrate-*` targets call it):
 
-- It loads the root `.env` automatically.
-- The DSN comes from `DB_URL` first (adding `sslmode=disable` when no sslmode is set and replacing `sslmode=require/prefer` with `disable`). Otherwise it is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` (defaults `localhost`, `5432`, user and password `postgres`, and a script default for the database name). The password is URL-encoded with Python `urllib.parse.quote` to handle special characters.
-- The migration directory defaults to `MIGRATIONS_DIR=migrations/versioned`.
+- It loads the root `.env` automatically. Variables already exported in the shell win over `.env`, so `DB_HOST=127.0.0.1 make migrate-up` reaches the dev container even though `.env` names the compose host `postgres`.
+- The DSN comes from `DB_URL` first (adding `sslmode=disable` when no sslmode is set and replacing `sslmode=require/prefer` with `disable`). Otherwise it is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` (defaults `localhost`, `5432`, user and password `postgres`, database `ai_kb`). The user and password are URL-encoded with Python `urllib.parse.quote` to handle special characters, and `up` prints the URL with the password masked.
+- The migration directory defaults to `MIGRATIONS_DIR=<repo>/migrations/versioned`, so the script runs from any directory.
 - If `migrate` is not installed, it prints: `go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest`.
 
 ```bash
