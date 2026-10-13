@@ -298,7 +298,7 @@ curl -X POST $BASE/api/v1/web-search-providers/wsp-1/test -H "Authorization: Bea
 
 ## Data sources (/api/v1/datasource)
 
-External content connectors (Feishu, Notion, Yuque and others) whose sync jobs write into a knowledge base. Handler: `internal/handler/datasource.go`. Most responses in this group are raw objects or arrays (no `success` envelope). Every route checks that the data source's knowledge base belongs to the caller's workspace (404 when the data source is unknown, 403 when the knowledge base belongs to another workspace or is outside the API key's allow-list).
+External content connectors (Feishu, Notion, Yuque and others) whose sync jobs write into a knowledge base. Handler: `internal/handler/datasource.go`. Most successful responses in this group are raw objects or arrays (no `success` envelope); errors use the standard error envelope (`{"success":false,"error":{"code":...,"message":"..."}}`, see [Response format and error codes](./01-api-overview.md#response-format-and-error-codes)). Every route checks that the data source's knowledge base belongs to the caller's workspace (404 when the data source is unknown, 403 when the knowledge base belongs to another workspace or is outside the API key's allow-list).
 
 12 connector types are registered: feishu, lark, feishu_drive, lark_drive, notion, confluence, yuque, dingtalk, ima, rss, gitlab and seafile. The credentials, resource selection and sync limits of each connector are in [Data sources](../03-features/10-datasource.md). With `sync_deletions` on, knowledge items that belong to the data source and were deleted at the source are really deleted; `source_created_at` and `source_updated_at` are stored in the knowledge item metadata.
 
@@ -321,7 +321,7 @@ Purpose: validate raw credentials (the 'Test connection' button; nothing is save
 | `type` | string | yes (`binding:"required"`) | Connector type |
 | `credentials` | map | yes (`binding:"required"`) | Credentials |
 
-Response: 200 `{"status":"connected"}`; failure 400 `{"error":"..."}`
+Response: 200 `{"status":"connected"}`; failure 400 with the error envelope
 
 ```bash
 curl -X POST $BASE/api/v1/datasource/validate-credentials -H "Authorization: Bearer $TOKEN" \
@@ -344,7 +344,7 @@ Purpose: create a data source. Permission: Admin+. Request body (`types.DataSour
 | `sync_deletions` | bool | no | Default true |
 | `sync_log_retention_days` | int | no | Default 30 |
 
-Response: 201 `DataSourceResponse` (credentials stripped, see `internal/handler/dto/datasource.go`); a validation failure returns 400 `{"error":"..."}`.
+Response: 201 `DataSourceResponse` (credentials stripped, see `internal/handler/dto/datasource.go`); a validation failure returns 400 with the error envelope.
 
 ```bash
 curl -X POST $BASE/api/v1/datasource -H "Authorization: Bearer $TOKEN" \
@@ -364,7 +364,7 @@ curl "$BASE/api/v1/datasource?kb_id=kb-1" -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/datasource/:id
 
-Purpose: detail. Permission: Viewer+. Response: 200 `DataSourceResponse`; 404 `{"error":"data source not found"}`
+Purpose: detail. Permission: Viewer+. Response: 200 `DataSourceResponse`; 404 with the error envelope, message `data source not found`
 
 ```bash
 curl $BASE/api/v1/datasource/ds-1 -H "Authorization: Bearer $TOKEN"
@@ -416,7 +416,7 @@ curl -X DELETE $BASE/api/v1/datasource/ds-1/credentials/credentials -H "Authoriz
 
 ### POST /api/v1/datasource/:id/validate
 
-Purpose: validate the connection of a saved data source. Permission: Admin+. Response: 200 `{"status":"connected"}`; failure 400 `{"error":"..."}`
+Purpose: validate the connection of a saved data source. Permission: Admin+. Response: 200 `{"status":"connected"}`; failure 400 with the error envelope
 
 ```bash
 curl -X POST $BASE/api/v1/datasource/ds-1/validate -H "Authorization: Bearer $TOKEN"
@@ -473,7 +473,7 @@ curl "$BASE/api/v1/datasource/ds-1/logs?limit=10" -H "Authorization: Bearer $TOK
 
 ### GET /api/v1/datasource/logs/:log_id
 
-Purpose: one sync log. Permission: Viewer+. Response: 200 `SyncLog`; 404 `{"error":"sync log not found"}`
+Purpose: one sync log. Permission: Viewer+. Response: 200 `SyncLog`; 404 with the error envelope, message `sync log not found`
 
 ```bash
 curl $BASE/api/v1/datasource/logs/log-1 -H "Authorization: Bearer $TOKEN"

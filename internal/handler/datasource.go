@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/handler/dto"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -41,41 +42,41 @@ func (h *DataSourceHandler) getOwnedKnowledgeBase(
 	ctx context.Context,
 	tenantID uint64,
 	kbID string,
-) (*types.KnowledgeBase, int, string) {
+) (*types.KnowledgeBase, *apperrors.AppError) {
 	if kbID == "" {
-		return nil, http.StatusBadRequest, "kb_id is required"
+		return nil, apperrors.NewBadRequestError("kb_id is required")
 	}
 
 	kb, err := h.kbService.GetKnowledgeBaseByID(ctx, kbID)
 	if err != nil || kb == nil {
-		return nil, http.StatusNotFound, "knowledge base not found"
+		return nil, apperrors.NewNotFoundError("knowledge base not found")
 	}
 
 	if kb.TenantID != tenantID {
-		return nil, http.StatusForbidden, "access denied"
+		return nil, apperrors.NewForbiddenError("access denied")
 	}
 	if err := types.AuthorizeTenantAPIKeyKnowledgeBases(ctx, kbID); err != nil {
-		return nil, http.StatusForbidden, err.Error()
+		return nil, apperrors.NewForbiddenError(err.Error())
 	}
 
-	return kb, http.StatusOK, ""
+	return kb, nil
 }
 
 func (h *DataSourceHandler) getOwnedDataSource(
 	ctx context.Context,
 	tenantID uint64,
 	id string,
-) (*types.DataSource, int, string) {
+) (*types.DataSource, *apperrors.AppError) {
 	ds, err := h.service.GetDataSource(ctx, id)
 	if err != nil {
-		return nil, http.StatusNotFound, "data source not found"
+		return nil, apperrors.NewNotFoundError("data source not found")
 	}
 
-	if _, status, msg := h.getOwnedKnowledgeBase(ctx, tenantID, ds.KnowledgeBaseID); status != http.StatusOK {
-		return nil, status, msg
+	if _, appErr := h.getOwnedKnowledgeBase(ctx, tenantID, ds.KnowledgeBaseID); appErr != nil {
+		return nil, appErr
 	}
 
-	return ds, http.StatusOK, ""
+	return ds, nil
 }
 
 // CreateDataSource godoc
@@ -86,7 +87,7 @@ func (h *DataSourceHandler) getOwnedDataSource(
 // @Produce json
 // @Param request body types.DataSource true "Data source configuration"
 // @Success 201 {object} types.DataSource
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource [post]
 func (h *DataSourceHandler) CreateDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -94,18 +95,18 @@ func (h *DataSourceHandler) CreateDataSource(c *gin.Context) {
 	// Extract tenant ID from context (set by auth middleware)
 	tenantID := c.GetUint64(types.TenantIDContextKey.String())
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized: workspace context missing"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
 	var req types.DataSource
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		_ = c.Error(apperrors.NewBadRequestError("invalid request"))
 		return
 	}
 
-	if _, status, msg := h.getOwnedKnowledgeBase(ctx, tenantID, req.KnowledgeBaseID); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedKnowledgeBase(ctx, tenantID, req.KnowledgeBaseID); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -114,7 +115,7 @@ func (h *DataSourceHandler) CreateDataSource(c *gin.Context) {
 
 	ds, err := h.service.CreateDataSource(ctx, &req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -128,21 +129,21 @@ func (h *DataSourceHandler) CreateDataSource(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Data source ID"
 // @Success 200 {object} types.DataSource
-// @Failure 404 {object} map[string]string
+// @Failure 404 {object} apperrors.ErrorResponse
 // @Router /datasource/{id} [get]
 func (h *DataSourceHandler) GetDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	ds, status, msg := h.getOwnedDataSource(ctx, tenantID, id)
-	if status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	ds, appErr := h.getOwnedDataSource(ctx, tenantID, id)
+	if appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -156,7 +157,7 @@ func (h *DataSourceHandler) GetDataSource(c *gin.Context) {
 // @Produce json
 // @Param kb_id query string true "Knowledge base ID"
 // @Success 200 {object} []types.DataSource
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource [get]
 func (h *DataSourceHandler) ListDataSources(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -164,18 +165,18 @@ func (h *DataSourceHandler) ListDataSources(c *gin.Context) {
 	// Extract tenant ID from context
 	tenantID := c.GetUint64(types.TenantIDContextKey.String())
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized: workspace context missing"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
 	kbID := c.Query("kb_id")
-	if _, status, msg := h.getOwnedKnowledgeBase(ctx, tenantID, kbID); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedKnowledgeBase(ctx, tenantID, kbID); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 	dataSources, err := h.service.ListDataSources(ctx, kbID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list data sources"})
+		_ = c.Error(apperrors.NewInternalServerError("failed to list data sources"))
 		return
 	}
 
@@ -194,13 +195,13 @@ func (h *DataSourceHandler) ListDataSources(c *gin.Context) {
 // @Param id path string true "Data source ID"
 // @Param request body types.DataSource true "Updated configuration"
 // @Success 200 {object} types.DataSource
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id} [put]
 func (h *DataSourceHandler) UpdateDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
@@ -208,13 +209,13 @@ func (h *DataSourceHandler) UpdateDataSource(c *gin.Context) {
 
 	var req types.DataSource
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		_ = c.Error(apperrors.NewBadRequestError("invalid request"))
 		return
 	}
 
-	existing, status, msg := h.getOwnedDataSource(ctx, tenantID, id)
-	if status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	existing, appErr := h.getOwnedDataSource(ctx, tenantID, id)
+	if appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -223,7 +224,7 @@ func (h *DataSourceHandler) UpdateDataSource(c *gin.Context) {
 	req.KnowledgeBaseID = existing.KnowledgeBaseID
 	ds, err := h.service.UpdateDataSource(ctx, &req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -236,25 +237,25 @@ func (h *DataSourceHandler) UpdateDataSource(c *gin.Context) {
 // @Tags DataSource
 // @Param id path string true "Data source ID"
 // @Success 204
-// @Failure 404 {object} map[string]string
+// @Failure 404 {object} apperrors.ErrorResponse
 // @Router /datasource/{id} [delete]
 func (h *DataSourceHandler) DeleteDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	if err := h.service.DeleteDataSource(ctx, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete data source"})
+		_ = c.Error(apperrors.NewInternalServerError("failed to delete data source"))
 		return
 	}
 
@@ -267,25 +268,25 @@ func (h *DataSourceHandler) DeleteDataSource(c *gin.Context) {
 // @Tags DataSource
 // @Param id path string true "Data source ID"
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/validate [post]
 func (h *DataSourceHandler) ValidateConnection(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	if err := h.service.ValidateConnection(ctx, id); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -304,13 +305,13 @@ func (h *DataSourceHandler) ValidateConnection(c *gin.Context) {
 // @Produce json
 // @Param request body object true "type and credentials"
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/validate-credentials [post]
 func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
@@ -319,12 +320,12 @@ func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 		Credentials map[string]interface{} `json:"credentials" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: type and credentials are required"})
+		_ = c.Error(apperrors.NewBadRequestError("invalid request: type and credentials are required"))
 		return
 	}
 
 	if err := h.service.ValidateCredentials(ctx, req.Type, req.Credentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -338,27 +339,27 @@ func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 // @Param id path string true "Data source ID"
 // @Param parent_id query string false "Parent resource ExternalID; empty lists the top level"
 // @Success 200 {object} []types.Resource
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/resources [get]
 func (h *DataSourceHandler) ListAvailableResources(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 	parentID := c.Query("parent_id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	resources, err := h.service.ListAvailableResources(ctx, id, parentID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -376,32 +377,32 @@ func (h *DataSourceHandler) ListAvailableResources(c *gin.Context) {
 // @Param id path string true "Data source ID"
 // @Param request body resolveAncestorsRequest true "Resource IDs to resolve"
 // @Success 200 {object} map[string][]string
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/resource-ancestors [post]
 func (h *DataSourceHandler) ResolveResourceAncestors(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	var req resolveAncestorsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
 	ancestors, err := h.service.ResolveResourceAncestors(ctx, id, req.ResourceIDs)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -422,26 +423,26 @@ type resolveAncestorsRequest struct {
 // @Tags DataSource
 // @Param id path string true "Data source ID"
 // @Success 200 {object} types.SyncLog
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/sync [post]
 func (h *DataSourceHandler) ManualSync(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	syncLog, err := h.service.ManualSync(ctx, id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -454,25 +455,25 @@ func (h *DataSourceHandler) ManualSync(c *gin.Context) {
 // @Tags DataSource
 // @Param id path string true "Data source ID"
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/pause [post]
 func (h *DataSourceHandler) PauseDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	if err := h.service.PauseDataSource(ctx, id); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -485,25 +486,25 @@ func (h *DataSourceHandler) PauseDataSource(c *gin.Context) {
 // @Tags DataSource
 // @Param id path string true "Data source ID"
 // @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/resume [post]
 func (h *DataSourceHandler) ResumeDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
 	if err := h.service.ResumeDataSource(ctx, id); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -519,20 +520,20 @@ func (h *DataSourceHandler) ResumeDataSource(c *gin.Context) {
 // @Param limit query int false "Limit (default: 10)"
 // @Param offset query int false "Offset (default: 0)"
 // @Success 200 {object} []types.SyncLog
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} apperrors.ErrorResponse
 // @Router /datasource/{id}/logs [get]
 func (h *DataSourceHandler) GetSyncLogs(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
 	id := c.Param("id")
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -542,7 +543,7 @@ func (h *DataSourceHandler) GetSyncLogs(c *gin.Context) {
 	if l := c.Query("limit"); l != "" {
 		v, err := strconv.Atoi(l)
 		if err != nil || v <= 0 || v > maxListPageSize {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "limit must be between 1 and " + strconv.Itoa(maxListPageSize)})
+			_ = c.Error(apperrors.NewBadRequestError("limit must be between 1 and " + strconv.Itoa(maxListPageSize)))
 			return
 		}
 		limit = v
@@ -556,7 +557,7 @@ func (h *DataSourceHandler) GetSyncLogs(c *gin.Context) {
 
 	logs, err := h.service.GetSyncLogs(ctx, id, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -573,13 +574,13 @@ func (h *DataSourceHandler) GetSyncLogs(c *gin.Context) {
 // @Produce json
 // @Param log_id path string true "Sync log ID"
 // @Success 200 {object} types.SyncLog
-// @Failure 404 {object} map[string]string
+// @Failure 404 {object} apperrors.ErrorResponse
 // @Router /datasource/logs/{log_id} [get]
 func (h *DataSourceHandler) GetSyncLog(c *gin.Context) {
 	ctx := c.Request.Context()
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
 		return
 	}
 
@@ -587,12 +588,12 @@ func (h *DataSourceHandler) GetSyncLog(c *gin.Context) {
 
 	log, err := h.service.GetSyncLog(ctx, logID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "sync log not found"})
+		_ = c.Error(apperrors.NewNotFoundError("sync log not found"))
 		return
 	}
 
-	if _, status, msg := h.getOwnedDataSource(ctx, tenantID, log.DataSourceID); status != http.StatusOK {
-		c.JSON(status, gin.H{"error": msg})
+	if _, appErr := h.getOwnedDataSource(ctx, tenantID, log.DataSourceID); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 

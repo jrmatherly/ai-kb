@@ -2,12 +2,12 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -47,7 +47,7 @@ func (s *stubKBServiceForDS) GetKnowledgeBaseByID(ctx context.Context, id string
 func newDataSourceTestRouter(h *DataSourceHandler) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.Use(errorCapture())
+	r.Use(middleware.ErrorHandler())
 	r.Use(func(c *gin.Context) {
 		if tenantID, ok := c.Request.Context().Value(types.TenantIDContextKey).(uint64); ok {
 			c.Set(types.TenantIDContextKey.String(), tenantID)
@@ -126,16 +126,36 @@ func TestDataSource_GetSyncLogs_LimitExceedingMaximum(t *testing.T) {
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for limit > 100, got %d body=%s", w.Code, w.Body.String())
 	}
-	var resp map[string]interface{}
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("unmarshal: %v", err)
+	want := `{"success":false,"error":{"code":1000,"message":"limit must be between 1 and 100"}}`
+	if got := w.Body.String(); got != want {
+		t.Fatalf("body = %s, want %s", got, want)
 	}
-	errMsg, ok := resp["error"].(string)
-	if !ok || errMsg == "" {
-		t.Fatalf("expected error message in response")
+}
+
+func TestDataSource_GetSyncLogs_ForeignDataSourceIsForbidden(t *testing.T) {
+	dsSvc := &stubDataSourceService{
+		getDataSource: func(_ context.Context, id string) (*types.DataSource, error) {
+			return &types.DataSource{ID: id, KnowledgeBaseID: "kb1"}, nil
+		},
 	}
-	if errMsg != "limit must be between 1 and 100" {
-		t.Fatalf("expected specific error message, got %q", errMsg)
+	kbSvc := &stubKBServiceForDS{
+		getByID: func(_ context.Context, _ string) (*types.KnowledgeBase, error) {
+			return &types.KnowledgeBase{ID: "kb1", TenantID: 2}, nil
+		},
+	}
+	h := NewDataSourceHandler(dsSvc, kbSvc)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/datasource/ds1/logs", nil)
+	req = withDSCtx(req, 1)
+	newDataSourceTestRouter(h).ServeHTTP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d body=%s", w.Code, w.Body.String())
+	}
+	want := `{"success":false,"error":{"code":1002,"message":"access denied"}}`
+	if got := w.Body.String(); got != want {
+		t.Fatalf("body = %s, want %s", got, want)
 	}
 }
 
