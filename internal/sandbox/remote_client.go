@@ -408,11 +408,11 @@ type RemoteStatEntry struct {
 // SupportsReconnect is required for persistent session lifecycle management.
 type RemoteSandboxCapabilities struct {
 	// SupportsReconnect is true when Connect can recover an operable handle
-	// from a provider-scoped sandbox ID after a AI KB process restart.
+	// from a provider-scoped sandbox ID after an AI KB process restart.
 	SupportsReconnect bool
 
 	// SupportsMetadata is true when Create+List preserve the Metadata bag,
-	// enabling orphan-sandbox recovery after a AI KB restart.
+	// enabling orphan-sandbox recovery after an AI KB restart.
 	SupportsMetadata bool
 
 	// SupportsListSandboxes is true when List enumerates existing sandboxes

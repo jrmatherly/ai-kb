@@ -1,13 +1,13 @@
 ---
 name: ai-kb-shared
-description: Use when driving a AI KB RAG server through the `aikb` CLI as an agent - authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
+description: Use when driving an AI KB RAG server through the `aikb` CLI as an agent - authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
 metadata:
   tested_against: v0.10
 ---
 
 # AI KB CLI - shared base
 
-`aikb` is the agent-first CLI for a AI KB RAG server. Every command prints
+`aikb` is the agent-first CLI for an AI KB RAG server. Every command prints
 a JSON envelope and uses a typed exit code, so you branch on machine-readable
 output, not prose. Read this skill before any task-specific `ai-kb-*` skill.
 

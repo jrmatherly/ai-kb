@@ -78,7 +78,7 @@ const API_ROOT = /\/api\/v\d+$/
 const TOOL_PREFIX = /^[a-z][a-z0-9_]*$/
 
 /**
- * Normalize a AI KB base URL to an API root. Both `https://kb.example.com`
+ * Normalize an AI KB base URL to an API root. Both `https://kb.example.com`
  * and `https://kb.example.com/api/v1` are accepted, because a deployment's
  * documented address is usually the bare origin.
  */

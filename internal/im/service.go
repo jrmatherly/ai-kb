@@ -283,7 +283,7 @@ type inflightEntry struct {
 
 // Service orchestrates IM message handling:
 // 1. Receives a unified IncomingMessage from an Adapter
-// 2. Resolves or creates a AI KB session for the IM channel
+// 2. Resolves or creates an AI KB session for the IM channel
 // 3. Dispatches slash-commands (/help, /kb, /clear, etc.) without entering QA
 // 4. Calls the AI KB QA pipeline for normal messages
 // 5. Collects the streaming answer and sends it back via the Adapter
@@ -1777,7 +1777,7 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 	sessionCtx := context.WithValue(ctx, types.TenantInfoContextKey, tenant)
 	sessionCtx = withIMIdentity(sessionCtx, channel, msg)
 
-	// 2. Resolve or create a AI KB session
+	// 2. Resolve or create an AI KB session
 	channelSession, err := s.resolveSession(sessionCtx, msg, tenantID, agentID, channelID, channel.SessionMode)
 	if err != nil {
 		return fmt.Errorf("resolve session: %w", err)

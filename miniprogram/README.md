@@ -2,7 +2,7 @@
 
 This directory contains a WeChat Mini Program plugin for AI KB. It gives mobile users a lightweight entry point to:
 
-- configure a AI KB API endpoint and tenant API key;
+- configure an AI KB API endpoint and tenant API key;
 - list available knowledge bases;
 - import a URL into a selected knowledge base;
 - ask a selected knowledge base through AI KB knowledge chat.

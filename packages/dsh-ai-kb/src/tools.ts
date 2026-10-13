@@ -363,7 +363,7 @@ export function createTools(client: AikbClient, config: ResolvedConfig): ToolDef
   if (config.tools.readDocument) {
     definitions.push({
       name: name('read_document'),
-      description: 'Read a AI KB document\'s stored passages in order, reassembled into text. '
+      description: 'Read an AI KB document\'s stored passages in order, reassembled into text. '
         + `Use it after ${name('search')} when one passage is not enough context; page through long documents.`,
       parameters: {
         type: 'object',

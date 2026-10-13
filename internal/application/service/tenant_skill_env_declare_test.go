@@ -92,7 +92,7 @@ func TestValidateUserEnvNameFormatLayer(t *testing.T) {
 func TestValidateUserEnvNameReservedLayer(t *testing.T) {
 	require.NoError(t, validateEnvNameNotReserved("TAVILY_API_KEY"))
 	require.NoError(t, validateEnvNameNotReserved("AIKB_API_KEY"),
-		"credential names a AI KB skill reads are not sandbox-injected")
+		"credential names an AI KB skill reads are not sandbox-injected")
 	require.NoError(t, validateEnvNameNotReserved("AIKB_BASE_URL"))
 	require.NoError(t, validateEnvNameNotReserved("lowercase-is-a-format-concern"),
 		"reserved-name validation must remain independent of name format")

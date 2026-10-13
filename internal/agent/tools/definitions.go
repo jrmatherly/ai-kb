@@ -202,7 +202,7 @@ func NormalizeAllowedTools(allowed []string) []string {
 }
 
 // RetiredToolReplacement tells the model how to replace a removed tool.
-// Empty when name was never a AI KB tool.
+// Empty when name was never an AI KB tool.
 func RetiredToolReplacement(name string) string {
 	switch name {
 	case LegacyToolExecuteSkillScript:

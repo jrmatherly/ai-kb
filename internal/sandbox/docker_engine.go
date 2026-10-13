@@ -455,7 +455,7 @@ func dockerSandboxMetadata(labels map[string]string) map[string]string {
 }
 
 // dockerManagedLabel marks every container this backend creates. Sweeps filter
-// on it so a AI KB deployment sharing a daemon with other workloads can
+// on it so an AI KB deployment sharing a daemon with other workloads can
 // never delete a container it does not own.
 const dockerManagedLabel = "com.aikb.sandbox.managed"
 

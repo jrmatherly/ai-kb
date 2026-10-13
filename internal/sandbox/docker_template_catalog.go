@@ -31,7 +31,7 @@ import (
 	"github.com/moby/moby/client"
 )
 
-// dockerTemplateLabel marks an image as a AI KB sandbox template. Images
+// dockerTemplateLabel marks an image as an AI KB sandbox template. Images
 // built by an operator can opt into the catalog by carrying it.
 const dockerTemplateLabel = "com.aikb.sandbox.template"
 

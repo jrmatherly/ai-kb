@@ -1,6 +1,6 @@
 ---
 name: ai-kb-rag-search
-description: Use when retrieving from or asking questions against a AI KB knowledge base via the `aikb` CLI - and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
+description: Use when retrieving from or asking questions against an AI KB knowledge base via the `aikb` CLI - and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
 metadata:
   tested_against: v0.10
 ---

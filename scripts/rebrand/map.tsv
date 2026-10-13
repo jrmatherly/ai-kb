@@ -77,3 +77,5 @@ WEKNORA_	AIKB_
 Weknora(?=[A-Z])	Aikb
 (?<=[a-z])Weknora\b	Aikb
 (?<![A-Za-z0-9_/.-])WeKnora(?![A-Za-z0-9_-])	AI KB
+# English article for the new name: "a WeKnora" became "a AI KB".
+\b([Aa]) AI KB\b	$1n AI KB

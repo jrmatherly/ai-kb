@@ -1,6 +1,6 @@
 // Package rss implements the RSS/Atom data source connector for AI KB.
 //
-// It syncs articles from one or more RSS/Atom/JSON feeds into a AI KB
+// It syncs articles from one or more RSS/Atom/JSON feeds into an AI KB
 // knowledge base. Each configured feed URL is treated as a selectable
 // resource; each feed item becomes a knowledge entry whose body is the
 // article's full text rendered as Markdown.

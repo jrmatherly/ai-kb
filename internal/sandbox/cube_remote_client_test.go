@@ -322,7 +322,7 @@ func TestCubeRemoteHandleExposesTrafficAccessToken(t *testing.T) {
 }
 
 // The provider issues the traffic token once, at create time. Everything that
-// re-attaches later - auto-resume, a AI KB restart, an artifact download -
+// re-attaches later - auto-resume, an AI KB restart, an artifact download -
 // has to put it back or every data-plane call answers 403.
 func TestCubeRemoteClientConnectRestoresTrafficAccessToken(t *testing.T) {
 	mock := newCubeMockServer(t)

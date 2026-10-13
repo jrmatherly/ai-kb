@@ -1,6 +1,6 @@
 /**
  * dsh-ai-kb: a DeepSeek Harness plugin that gives the agent retrieval,
- * document reading and composed answers from a AI KB knowledge base.
+ * document reading and composed answers from an AI KB knowledge base.
  * @module dsh-ai-kb
  */
 

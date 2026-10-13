@@ -1,6 +1,6 @@
 # Web embed (embed channel)
 
-An embed channel puts a knowledge base chat widget on a website or help center. You create a channel, bind it to an agent and add the generated script to the page; visitors chat without a AI KB account. The visitor's retrieval scope and model are decided entirely by the agent bound to the channel: the server discards any knowledge base, document, tag, @mention, skill or model override in the request.
+An embed channel puts a knowledge base chat widget on a website or help center. You create a channel, bind it to an agent and add the generated script to the page; visitors chat without an AI KB account. The visitor's retrieval scope and model are decided entirely by the agent bound to the channel: the server discards any knowledge base, document, tag, @mention, skill or model override in the request.
 
 Create the channel under Settings → Publish & Integrations → Web Embed, bind an agent, set the host domains allowed to embed it, then copy the snippet. Before public use, configure the origin allowlist and the rate limits so that both the source and the volume of requests are bounded.
 
@@ -47,7 +47,7 @@ The publish token stays on your own backend, and the page points `data-token-end
 
 Your backend implements that endpoint: it holds the `em_` token, calls `POST /api/v1/embed/{channel_id}/exchange` to obtain a short-lived `ems_` token and returns `{ "token": "ems_...", "expiresIn": 1800 }` (the widget also accepts `session_token` and `expires_in`, optionally wrapped in a `data` object). The widget refreshes the token at about 80% of its TTL, never sooner than 30 seconds (`scheduleRefresh` in `ai-kb-widget.js`). **The publish token never reaches the browser.**
 
-The exchange endpoint must first verify your own session or JWT and the visitor's access rights; checking that a cookie or `Authorization` header merely exists is not authentication. When your server calls the exchange, send an `Origin` header that matches the channel allowlist, for example `Origin: https://shop.example.com`. Never expose a AI KB management token to visitors.
+The exchange endpoint must first verify your own session or JWT and the visitor's access rights; checking that a cookie or `Authorization` header merely exists is not authentication. When your server calls the exchange, send an `Origin` header that matches the channel allowlist, for example `Origin: https://shop.example.com`. Never expose an AI KB management token to visitors.
 
 Other optional attributes: `data-base-url` (derived from the script `src` by default), `data-width` / `data-height` (panel size, default 400×600), `data-sandbox` (the iframe `sandbox` policy; `true` applies `allow-scripts allow-forms allow-popups allow-modals allow-same-origin`, which is also added automatically when the host and the embed page are on different origins, and `false` turns it off).
 

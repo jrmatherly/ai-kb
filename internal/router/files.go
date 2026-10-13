@@ -256,7 +256,7 @@ func serveFilesWithResources(
 }
 
 // serveResourceGrants exposes short, revocable capability URLs for clients
-// such as IM platforms that cannot attach a AI KB bearer/embed token.
+// such as IM platforms that cannot attach an AI KB bearer/embed token.
 func serveResourceGrants(
 	r *gin.Engine,
 	resourceCatalog interfaces.ResourceCatalog,
