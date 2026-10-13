@@ -6,7 +6,7 @@ set -euo pipefail
 #
 # Usage:
 #   ./scripts/package-lite.sh              # detect the version automatically
-#   ./scripts/package-lite.sh v0.2.0       # set the version
+#   ./scripts/package-lite.sh v2026.10.13  # set the version
 #   SKIP_FRONTEND=1 ./scripts/package-lite.sh  # skip the frontend build (use the existing web/)
 #
 

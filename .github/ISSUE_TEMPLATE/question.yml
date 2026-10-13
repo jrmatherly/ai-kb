@@ -57,8 +57,8 @@ body:
       label: Other Environment Info
       description: Please provide other relevant environment information
       placeholder: |
-        - AI KB App Version: [concrete version from Settings → Version Info, e.g., v0.8.2, NOT "latest"]
-        - AI KB UI Version: [concrete version from Settings → Version Info, e.g., v0.8.2]
+        - AI KB App Version: [concrete version from Settings → Version Info, e.g., 2026.10.13, NOT "latest"]
+        - AI KB UI Version: [concrete version from Settings → Version Info, e.g., 2026.10.13]
         - Deployment: [e.g., Docker, build from source]
         - Other relevant info...
 

@@ -92,21 +92,20 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 ## Version and changelog
 
 - `CHANGELOG.md` stays as upstream left it, as history. New entries are ours; do not port upstream's entries. Record adopted SHAs in the decision log.
-- Versioning switches to dated CalVer (decided 2026-10-12). Format `YYYY.M.D[.MICRO]` (decided 2026-10-12, as `~/dev/ai-workspace` uses), so `frontend/package.json` and the Helm chart take the same string as valid semver. Until the switch lands, `VERSION`, `frontend/package.json` `version` and `website-docs/VERSION` follow upstream and a release bump is ADOPT. After it, never take upstream's version: keep ours on conflict.
+- Versioning is dated CalVer, `YYYY.M.D[.MICRO]` unpadded (decided 2026-10-12 as `~/dev/ai-workspace` uses; landed 2026-10-13 at `2026.10.13`, a second release that day is `2026.10.13.1`). Release tags are `vYYYY.M.D[.MICRO]`; `docker-image.yml` tags images with the tag and with the bare version through a `type=match` rule, since `type=semver` drops a four-part version. The string lives in `VERSION`, `website-docs/VERSION`, the `version` of `frontend/package.json` and `website-docs/package.json` (and their lockfiles) and `helm/Chart.yaml` `appVersion` (v-prefixed, the default image tag). The chart's own `version`, `packages/dsh-ai-kb` (npm) and `mcp-server` (PyPI) keep their own semver. Bump npm versions with `npm pkg set version=<ver>` then `npm install --package-lock-only --ignore-scripts`; `npm version` mangles a four-part version. Never take upstream's version: an upstream release bump is SKIP, and a conflict on a version line keeps ours.
 
 ## Dependencies
 
-At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock` and the `cli/` and `client/` module files are upstream's; dependency-only upstream commits are ADOPT while that holds. If this copy later takes its own upgrade policy, flip this section the way the version section will, and expect `~` on every lockfile.
+At the seed `go.mod`, `go.sum`, `frontend/package-lock.json`, `docreader/uv.lock` and the `cli/` and `client/` module files are upstream's; dependency-only upstream commits are ADOPT while that holds. If this copy later takes its own upgrade policy, flip this section the way the version section did, and expect `~` on every lockfile.
 
 ## Deviations decided 2026-10-12 (planned, not landed)
 
-The rename landed 2026-10-12 and moved to "Name translations when porting" below. `website-docs/` is translated, `sample-data/` included; the root config, compose files and Makefile are translated (2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. When a row below lands, move it into the next section with the status removed, and add any deleted path to "Deleted or moved paths".
+The rename landed 2026-10-12 and moved to "Name translations when porting" below; CalVer landed 2026-10-13 and moved to "Version and changelog". `website-docs/` is translated, `sample-data/` included; the root config, compose files and Makefile are translated (2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. When a row below lands, move it into the next section with the status removed, and add any deleted path to "Deleted or moved paths".
 
 | Upstream | Ours | Notes |
 | --- | --- | --- |
 | locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
 | `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | Upstream commits touching them: SKIP. |
-| `VERSION` semver `0.8.x` | dated CalVer `YYYY.M.D[.MICRO]` | See "Version and changelog". |
 
 Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
 

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.10.13] - 2026-10-13
+
+First AI KB release, from upstream WeKnora 0.8.2 plus later upstream commits. Entries below this section are upstream's history.
+
+### Changes
+
+- **CHANGED**: **Dated CalVer versioning** - versions are `YYYY.M.D[.MICRO]` (a second release on the same day adds `.1`), release tags are `vYYYY.M.D[.MICRO]`, and images are tagged with both the tag and the bare version.
+- **CHANGED**: **Renamed to AI KB** - images `ghcr.io/jrmatherly/ai-kb-*`, binary `ai-kb`, CLI `aikb`, environment prefix `AIKB_`, Helm chart `ai-kb`.
+
 ## [0.8.2] - 2026-09-24
 
 ### New Features

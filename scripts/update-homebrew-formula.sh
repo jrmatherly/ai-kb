@@ -5,7 +5,7 @@ set -euo pipefail
 # Update the version and sha256 in the Homebrew Formula
 #
 # Usage:
-#   ./scripts/update-homebrew-formula.sh v0.2.0
+#   ./scripts/update-homebrew-formula.sh v2026.10.13
 #
 # Downloads the .sha256 files from the GitHub release to fill in the Formula.
 # Run it once the release carries the four Lite tarballs and their .sha256 files.
@@ -14,7 +14,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-VERSION="${1:?Usage: $0 <version>  (e.g. v0.2.0)}"
+VERSION="${1:?Usage: $0 <version>  (e.g. v2026.10.13)}"
 VERSION_BARE="${VERSION#v}"
 FORMULA="${ROOT_DIR}/Formula/ai-kb-lite.rb"
 REPO="jrmatherly/ai-kb"

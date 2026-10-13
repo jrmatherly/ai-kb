@@ -35,7 +35,7 @@ Extract each release into a new, empty directory so that files from an older sit
 
 ```bash
 sudo mkdir -p /srv/www/aikb/releases/20260915-1
-sudo tar -xzf ai-kb-site-v0.8.2.tar.gz -C /srv/www/aikb/releases/20260915-1
+sudo tar -xzf ai-kb-site-v2026.10.13.tar.gz -C /srv/www/aikb/releases/20260915-1
 ```
 
 After extraction the directory contains `index.html`, `404.html` and `docs/` directly, with no extra `static-site/` level.
@@ -80,8 +80,8 @@ The image builds from a clean checkout. The host needs no Node.js and no pre-gen
 From the repository root:
 
 ```bash
-docker build -t ai-kb-site:0.8.2 website-docs
-docker run -d --name ai-kb-site --restart unless-stopped -p 8080:80 ai-kb-site:0.8.2
+docker build -t ai-kb-site:2026.10.13 website-docs
+docker run -d --name ai-kb-site --restart unless-stopped -p 8080:80 ai-kb-site:2026.10.13
 ```
 
 Open `http://<server-address>:8080/`. For a domain with HTTPS, have the existing reverse proxy forward to that port. The image already contains the homepage, the documentation and the Nginx routing configuration.
@@ -89,14 +89,14 @@ Open `http://<server-address>:8080/`. For a domain with HTTPS, have the existing
 Nginx in the container listens on port 80 by default. The image's `/docker-entrypoint.sh` writes the port from the `WEBSITE_NGINX_PORT` environment variable into the Nginx configuration at startup, so you can change it without rebuilding. Set it when you use `--network host` or when the platform requires the container to listen on a given port:
 
 ```bash
-docker run -d --name ai-kb-site --restart unless-stopped -e WEBSITE_NGINX_PORT=8080 -p 8080:8080 ai-kb-site:0.8.2
+docker run -d --name ai-kb-site --restart unless-stopped -e WEBSITE_NGINX_PORT=8080 -p 8080:8080 ai-kb-site:2026.10.13
 ```
 
 A platform that replaces the entrypoint with its own startup command skips that substitution. In that case bake the port in at build time with `--build-arg WEBSITE_NGINX_PORT=8080`.
 
 To change only the port exposed on the host, change the host side of `-p`, for example `-p 9000:80`.
 
-You can also copy just the `website-docs/` directory and run `docker build -t ai-kb-site:0.8.2 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
+You can also copy just the `website-docs/` directory and run `docker build -t ai-kb-site:2026.10.13 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
 
 When migrating from the old documentation image, change the container port in the port mapping or the reverse proxy target from `8081` to `80` (choose any host port, for example `-p 8081:80`). The domain root `/` now serves the homepage and `/docs/` serves the documentation, so the reverse proxy must cover the whole site and keep the request path.
 
@@ -104,7 +104,7 @@ After building, you can run the following check on a machine with Node.js 24 and
 
 ```bash
 cd website-docs
-npm run test:docker -- ai-kb-site:0.8.2
+npm run test:docker -- ai-kb-site:2026.10.13
 ```
 
 ## Local development

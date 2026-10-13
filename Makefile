@@ -282,8 +282,10 @@ deps:
 # google.golang.org/protobuf/reflect/protoregistry.conflictPolicy=warn for qdrant milvus proto conflict
 # GO_BUILD_TAGS adds optional build tags, e.g. GO_BUILD_TAGS=anydoc to link the
 # in-process office document parser (run `make anydoc-lib` first).
+# The version comes from $VERSION (set by Dockerfile.app) or the VERSION file, the
+# same source as scripts/get_version.sh, never from the v-prefixed release tag.
 build-prod:
-	VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "$${VERSION:-$$(cat VERSION 2>/dev/null || echo unknown)}"); \
+	VERSION=$${VERSION:-$$(cat VERSION 2>/dev/null || echo unknown)}; \
 	COMMIT_ID=$${COMMIT_ID:-unknown}; \
 	BUILD_TIME=$${BUILD_TIME:-unknown}; \
 	GO_VERSION=$${GO_VERSION:-unknown}; \

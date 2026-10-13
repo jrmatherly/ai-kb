@@ -162,8 +162,8 @@ sed -i 's/^GIN_MODE=.*/GIN_MODE=release/' .env || true
 # Align AIKB_VERSION with AIKB_REF so docker compose pulls the image tag that matches
 # the ref. Always overwrite, so .env never keeps an old version from a previous prepare.
 # Image tags on ghcr.io/jrmatherly/ai-kb-* are the git ref unchanged: the branch name
-# (main) or the release tag. So the ref is not rewritten here and nothing maps to latest.
-# This copy has no image publishing workflow yet, so the tag must already exist.
+# (main) or the release tag (vYYYY.M.D[.MICRO], published by docker-image.yml). So the
+# ref is not rewritten here and nothing maps to latest.
 AIKB_VERSION_VAL="${AIKB_REF}"
 if grep -qE '^AIKB_VERSION=' .env; then
   sed -i "s|^AIKB_VERSION=.*|AIKB_VERSION=${AIKB_VERSION_VAL}|" .env

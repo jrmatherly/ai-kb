@@ -142,7 +142,7 @@ These targets are defined in the root `Makefile`. `make help` prints a summary o
 | `run` | `build`, then runs `./ai-kb` |
 | `test` | `go test -v ./...` |
 | `clean` | `go clean` and deletes the binary |
-| `build-prod` | Production build: CGO_ENABLED=1, `-ldflags "-w -s"` injects Version/Edition/CommitID/BuildTime/GoVersion (package variables in `internal/handler`) and sets protobuf `conflictPolicy=warn` (avoids the qdrant/milvus proto conflict). `GO_BUILD_TAGS` adds build tags, for example `anydoc` |
+| `build-prod` | Production build: CGO_ENABLED=1, `-ldflags "-w -s"` injects Version (from `$VERSION`, else the `VERSION` file)/Edition/CommitID/BuildTime/GoVersion (package variables in `internal/handler`) and sets protobuf `conflictPolicy=warn` (avoids the qdrant/milvus proto conflict). `GO_BUILD_TAGS` adds build tags, for example `anydoc` |
 | `fmt` | `go fmt ./...` |
 | `lint` | `golangci-lint run` |
 | `deps` | `go mod download` |

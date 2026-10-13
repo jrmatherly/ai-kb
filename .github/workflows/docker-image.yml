@@ -69,6 +69,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-ui
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
 
       - name: 🐳 Build and push ui image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -124,6 +129,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-docreader
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
 
       - name: 🐳 Build and push docreader image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -165,6 +175,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
 
       - name: 🐳 Build and push sandbox image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -186,6 +201,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
           flavor: |
             suffix=-cube,onlatest=true
 
@@ -207,6 +227,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
           flavor: |
             suffix=-desktop,onlatest=true
 
@@ -228,6 +253,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
           flavor: |
             suffix=-desktop-cube,onlatest=true
 
@@ -281,6 +311,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-app
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
 
       - name: 🏷️ Prepare version info
         id: version
@@ -363,6 +398,11 @@ jobs:
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ env.IMAGE_PREFIX }}-app
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
 
       - name: 🚀 Create manifest list and push
         working-directory: ${{ runner.temp }}/digests

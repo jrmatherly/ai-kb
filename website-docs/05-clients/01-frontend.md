@@ -10,7 +10,7 @@ The AI KB web frontend is a single-page application (SPA) built on **Vue 3 + Typ
 
 Use this table to see which libraries the frontend is built on and which versions it pins.
 
-From `frontend/package.json` (version 0.8.2):
+From `frontend/package.json` (version 2026.10.13):
 
 | Category | Choice | Version | Notes |
 | --- | --- | --- | --- |
