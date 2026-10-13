@@ -51,6 +51,14 @@ type wikiPageService struct {
 	kbShareService  interfaces.KBShareService
 	taskPendingRepo interfaces.TaskPendingOpsRepository
 	redisClient     *redis.Client
+	// liteBatches reports Lite-mode ingest batches, which hold an in-process
+	// lock instead of a Redis in-flight slot. Set by NewWikiIngestService.
+	liteBatches wikiBatchActivity
+}
+
+// wikiBatchActivity reports whether an ingest batch is running for a KB.
+type wikiBatchActivity interface {
+	batchActive(kbID string) bool
 }
 
 const maxWikiSearchKnowledgeBases = 32
@@ -1084,6 +1092,8 @@ func (s *wikiPageService) GetStats(ctx context.Context, kbID string) (*types.Wik
 		live, _ := s.redisClient.ZCount(ctx, wikiInflightPrefix+kbID,
 			strconv.FormatInt(time.Now().UnixMilli(), 10), "+inf").Result()
 		isActive = live > 0
+	} else if s.liteBatches != nil {
+		isActive = s.liteBatches.batchActive(kbID)
 	}
 
 	issues, _ := s.ListIssues(ctx, kbID, "", "pending")

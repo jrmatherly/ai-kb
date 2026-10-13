@@ -454,7 +454,15 @@ func NewWikiIngestService(
 		redisClient:    redisClient,
 		spanTracker:    spanTracker,
 	}
+	if pages, ok := wikiService.(*wikiPageService); ok {
+		pages.liteBatches = svc
+	}
 	return svc
+}
+
+func (s *wikiIngestService) batchActive(kbID string) bool {
+	_, held := s.liteLocks.Load(kbID)
+	return held
 }
 
 // tracker returns a non-nil span tracker so callers don't have to

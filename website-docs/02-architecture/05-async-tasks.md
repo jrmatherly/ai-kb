@@ -23,7 +23,7 @@ Both modes register exactly the same set of handlers (compare `RunAsynqServer` w
 | --- | --- | --- |
 | asynq broker | Every task queue (pending list, scheduled/retry ZSET, archived ZSET) lives in Redis; dequeue is atomic (`BRPOPLPUSH`), so one task runs on exactly one worker | `internal/router/task.go` `getAsynqRedisClientOpt()` |
 | Task inspection data source | `asynq.Inspector` plus direct `LPos` / `ZRank` / `ZRevRank` reads for pagination | `internal/router/task_inspector.go` |
-| Wiki ingest locks | The per-slug reduce lock (5 min TTL) and the KB-level finalize lock (60 s TTL) are `SetNX` + TTL. Standard mode no longer takes an exclusive per-KB batch lock; concurrent batches are kept safe by row claiming in `task_pending_ops`. Lite mode serializes per KB with an in-process map | `internal/application/service/wiki_ingest.go`, `wiki_ingest_batch.go` |
+| Wiki ingest locks | The per-slug reduce lock (5 min TTL) and the KB-level finalize lock (60 s TTL) are `SetNX` + TTL. Standard mode no longer takes an exclusive per-KB batch lock; concurrent batches are kept safe by row claiming in `task_pending_ops`. Lite mode serializes per KB with an in-process map, which also backs the Wiki stats `is_active` flag (standard mode reads the `wiki:inflight:<kb_id>` slot set) | `internal/application/service/wiki_ingest.go`, `wiki_ingest_batch.go` |
 | Multimodal subtask counter | Counts completed image subtasks (`DECR`); the last attempt triggers finalize. Lite mode uses an in-process counter instead | `internal/application/service/multimodal_pending_counter.go` and the `image_multimodal` service |
 | Rate limiting | Sliding-window limiter on a ZSET (see [Observability](../03-features/16-observability.md)) | `internal/ratelimit/limiter.go` |
 

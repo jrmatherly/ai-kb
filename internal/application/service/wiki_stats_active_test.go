@@ -43,3 +43,29 @@ func TestWikiStatsIsActiveWhileIngestBatchRuns(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, stats.IsActive)
 }
+
+// Lite mode has no Redis; is_active follows the in-process per-KB batch lock.
+func TestWikiStatsIsActiveWhileLiteBatchRuns(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(&types.WikiFolder{}, &types.WikiPage{}, &types.WikiPageIssue{}))
+
+	pages := NewWikiPageService(repository.NewWikiPageRepository(db), nil, nil, nil, nil, nil)
+	ingest := NewWikiIngestService(pages, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil).(*wikiIngestService)
+	ctx := context.Background()
+
+	stats, err := pages.GetStats(ctx, "kb-1")
+	require.NoError(t, err)
+	require.False(t, stats.IsActive)
+
+	_, held := ingest.liteLocks.LoadOrStore("kb-1", struct{}{})
+	require.False(t, held)
+	stats, err = pages.GetStats(ctx, "kb-1")
+	require.NoError(t, err)
+	require.True(t, stats.IsActive)
+
+	ingest.liteLocks.Delete("kb-1")
+	stats, err = pages.GetStats(ctx, "kb-1")
+	require.NoError(t, err)
+	require.False(t, stats.IsActive)
+}
