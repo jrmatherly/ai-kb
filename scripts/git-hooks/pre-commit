@@ -20,6 +20,9 @@ check_whitespace --cached
 # English-only copy: block CJK text in added lines (scripts/check-english-only.sh --diff).
 "$ROOT/scripts/check-english-only.sh" --diff
 
+# No em dashes outside scripts/emdash-allowlist.txt (scripts/check-emdash.sh).
+"$ROOT/scripts/check-emdash.sh" --cached
+
 staged_go=()
 while IFS= read -r line; do
   [[ -n "$line" ]] && staged_go+=("$line")

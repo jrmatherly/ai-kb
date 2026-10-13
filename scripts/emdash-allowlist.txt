@@ -1,0 +1,9 @@
+# Paths scripts/check-emdash.sh skips, one git pathspec per line (* also matches /).
+# History is quoted as written, vendored code is upstream's, and generated output follows its source.
+CHANGELOG*
+*/CHANGELOG*
+website-docs/07-releases/
+third_party/
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml

@@ -75,6 +75,28 @@ if (cd "$gate" && printf '\xe4\xb8\xad\n' > b.txt && git add b.txt && ./check.sh
 fi
 grep -q '^b.txt: ' "$gate/out.log"
 
+# Em dash gate: a clean tree passes, an allowlisted path passes, a planted em dash fails and names its line,
+# in the working tree and in the index.
+dash="$fixture/dash"
+mkdir -p "$dash/scripts" && git -C "$dash" init -q
+cp "$repo_root/scripts/check-emdash.sh" "$repo_root/scripts/emdash-allowlist.txt" "$dash/scripts/"
+printf 'plain - dash\n' > "$dash/a.txt"
+printf 'kept \xe2\x80\x94 history\n' > "$dash/CHANGELOG.md"
+git -C "$dash" add -A
+(cd "$dash" && scripts/check-emdash.sh && scripts/check-emdash.sh --cached)
+printf 'planted \xe2\x80\x94 dash\n' >> "$dash/a.txt"
+if (cd "$dash" && scripts/check-emdash.sh > out.log 2>&1); then
+  echo "em dash gate accepted a planted em dash" >&2
+  exit 1
+fi
+grep -q '^a.txt:2:' "$dash/out.log"
+(cd "$dash" && scripts/check-emdash.sh --cached)
+git -C "$dash" add a.txt
+if (cd "$dash" && scripts/check-emdash.sh --cached > out.log 2>&1); then
+  echo "em dash gate accepted a staged em dash" >&2
+  exit 1
+fi
+
 # post-edit hook: an em dash already in a tracked file is not reported and an added one is, also for a
 # worktree file while CLAUDE_PROJECT_DIR names the main checkout (as in a worktree session).
 repo="$fixture/repo"
@@ -100,7 +122,8 @@ done
 md="$fixture/md"
 mkdir -p "$md/scripts/git-hooks" && git -C "$md" init -q
 cp "$repo_root/scripts/git-hooks/pre-commit" "$repo_root/scripts/git-hooks/common.sh" "$md/scripts/git-hooks/"
-cp "$repo_root/scripts/check-english-only.sh" "$md/scripts/"
+cp "$repo_root/scripts/check-english-only.sh" "$repo_root/scripts/check-emdash.sh" \
+  "$repo_root/scripts/emdash-allowlist.txt" "$md/scripts/"
 cp "$repo_root/.markdownlint-cli2.jsonc" "$md/"
 printf '# Good\n\nText.\n' > "$md/good.md"
 git -C "$md" add good.md

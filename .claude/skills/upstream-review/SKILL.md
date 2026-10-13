@@ -19,6 +19,7 @@ This repo is a copy of `Tencent/WeKnora` taken at upstream commit `97796c637` (2
 | --- | --- |
 | Driver | `${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh` |
 | English-only check | `scripts/check-english-only.sh` |
+| Em dash check | `scripts/check-emdash.sh` (upstream text carries em dashes; rewrite them in the pick) |
 | Watermark (tracked) | `.upstream-review/watermark.json` (`seedSha` fixed, `lastReviewedSha` advances) |
 | Decision logs (tracked) | `.upstream-review/reviews/<YYYY-MM-DD>-review.md` |
 

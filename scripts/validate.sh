@@ -68,8 +68,8 @@ if has 'client/*' .golangci.yml; then areas+=(client); fi
 if has 'frontend/*' scripts/build_frontend_dist.sh scripts/test_embed_nginx.py scripts/verify_frontend_pr.sh; then areas+=(frontend); fi
 if has 'docreader/*' go.mod go.sum 'testdata/*' docker/Dockerfile.docreader docker/Dockerfile.odl-hybrid; then areas+=(docreader); fi
 if has 'internal/models/catalog/data/*' 'scripts/model-catalog/*'; then areas+=(model-catalog); fi
-if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-only.sh \
-  .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
+if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-only.sh scripts/check-emdash.sh \
+  scripts/emdash-allowlist.txt .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
 if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md; then areas+=(licenses); fi
 if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastructure/docparser/*'; then areas+=(anydoc); fi
@@ -79,7 +79,7 @@ if has 'packages/dsh-ai-kb/*'; then areas+=(dsh-plugin); fi
 if has 'miniprogram/*' 'tests/miniprogram/*'; then areas+=(miniprogram); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
 if has '*.md' .markdownlint-cli2.jsonc; then areas+=(markdown); fi
-areas+=(english-only)
+areas+=(english-only emdash)
 if [ ${#forced[@]} -gt 0 ]; then areas=("${forced[@]}"); fi
 
 log_step "${#changed[@]} changed path(s) since $base; areas: ${areas[*]}"
@@ -301,6 +301,11 @@ area_markdown() {
 # Lines added since base, committed or not; untracked files are covered by the PostToolUse hook and pre-commit.
 area_english-only() {
   scripts/check-english-only.sh --diff "$base"
+}
+
+# The whole tree minus scripts/emdash-allowlist.txt: none remain, so any hit is new.
+area_emdash() {
+  scripts/check-emdash.sh
 }
 
 for area in "${areas[@]}"; do

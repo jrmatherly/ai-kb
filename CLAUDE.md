@@ -38,7 +38,7 @@ Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, Eng
 
 ## Writing style
 
-- No em dashes in prose, comments, docs or commit messages. Use a plain dash or a new sentence.
+- No em dashes in prose, comments, docs or commit messages. Use a plain dash or a new sentence. `scripts/check-emdash.sh` gates tracked files (validate, pre-commit); code that must match the character spells it as an escape, and history, `third_party/` and generated Swagger are in `scripts/emdash-allowlist.txt`.
 - Terse and precise. A comment states a non-obvious why; history belongs in the commit message.
 
 ## Agent tooling
