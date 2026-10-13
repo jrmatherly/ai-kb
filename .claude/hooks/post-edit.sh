@@ -4,8 +4,11 @@
 set -uo pipefail
 f="$(jq -r '.tool_input.file_path // empty')"
 [ -n "$f" ] && [ -f "$f" ] || exit 0
-cd "${CLAUDE_PROJECT_DIR:-$PWD}" || exit 0
 case "$f" in *.go) gofmt -w "$f" 2>/dev/null ;; esac
+# The file's own checkout, not CLAUDE_PROJECT_DIR: in a worktree session that is the main checkout,
+# which cannot see the worktree's index and would report every line as added.
+cd "$(dirname "$f")" && root="$(git rev-parse --show-toplevel 2>/dev/null)" && cd "$root" || exit 0
+[ -x scripts/check-english-only.sh ] || exit 0   # another repository
 # Lines added against HEAD as "<line>: <text>" (the whole file when untracked); a file keeps
 # being reported until its added CJK or em dash is gone.
 if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then
