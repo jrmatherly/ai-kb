@@ -2,7 +2,7 @@ class AiKbLite < Formula
   desc "Knowledge base management system, single-binary Lite edition"
   homepage "https://github.com/jrmatherly/ai-kb"
   version "0.3.6-test"
-  license "Apache-2.0"
+  license "MIT"
 
   on_macos do
     on_arm do
@@ -51,9 +51,8 @@ class AiKbLite < Formula
 
       if [ ! -f "$CONFIG_DIR/.env.lite" ]; then
         cp "#{pkgshare}/.env.lite.example" "$CONFIG_DIR/.env.lite"
-        sed -i '' "s|DB_PATH=.*|DB_PATH=$DATA_DIR/aikb.db|" "$CONFIG_DIR/.env.lite"
-        sed -i '' "s|LOCAL_STORAGE_BASE_DIR=.*|LOCAL_STORAGE_BASE_DIR=$DATA_DIR/files|" "$CONFIG_DIR/.env.lite"
-        rm -f "$CONFIG_DIR/.env.lite-e"
+        sed -i.bak -e "s|DB_PATH=.*|DB_PATH=$DATA_DIR/aikb.db|" -e "s|LOCAL_STORAGE_BASE_DIR=.*|LOCAL_STORAGE_BASE_DIR=$DATA_DIR/files|" "$CONFIG_DIR/.env.lite"
+        rm -f "$CONFIG_DIR/.env.lite.bak"
         echo ""
         echo "Created config file: $CONFIG_DIR/.env.lite"
         echo "Edit it as needed (for example the LLM endpoint or the secret keys)."

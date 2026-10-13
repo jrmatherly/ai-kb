@@ -65,7 +65,7 @@ class AikbLiteTest < Formula
   desc "AI KB Lite (local test)"
   homepage "https://github.com/jrmatherly/ai-kb"
   version "${VERSION}"
-  license "Apache-2.0"
+  license "MIT"
 
   url "file://${TARBALL}"
   sha256 "${SHA}"
@@ -96,8 +96,8 @@ class AikbLiteTest < Formula
 
       if [ ! -f "\\\$CONFIG_DIR/.env.lite" ]; then
         cp "#{pkgshare}/.env.lite.example" "\\\$CONFIG_DIR/.env.lite"
-        sed -i'' -e "s|DB_PATH=.*|DB_PATH=\\\$DATA_DIR/aikb.db|" "\\\$CONFIG_DIR/.env.lite"
-        sed -i'' -e "s|LOCAL_STORAGE_BASE_DIR=.*|LOCAL_STORAGE_BASE_DIR=\\\$DATA_DIR/files|" "\\\$CONFIG_DIR/.env.lite"
+        sed -i.bak -e "s|DB_PATH=.*|DB_PATH=\\\$DATA_DIR/aikb.db|" -e "s|LOCAL_STORAGE_BASE_DIR=.*|LOCAL_STORAGE_BASE_DIR=\\\$DATA_DIR/files|" "\\\$CONFIG_DIR/.env.lite"
+        rm -f "\\\$CONFIG_DIR/.env.lite.bak"
         echo ""
         echo "Created config file: \\\$CONFIG_DIR/.env.lite"
         echo ""

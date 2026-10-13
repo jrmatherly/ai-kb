@@ -7,8 +7,8 @@ set -euo pipefail
 # Usage:
 #   ./scripts/update-homebrew-formula.sh v0.2.0
 #
-# Downloads the .sha256 files from GitHub Releases to fill in the Formula.
-# Called by the release-lite workflow in CI.
+# Downloads the .sha256 files from the GitHub release to fill in the Formula.
+# Run it once the release carries the four Lite tarballs and their .sha256 files.
 #
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
