@@ -60,7 +60,8 @@ to see which mode each profile uses, and construct the matching HTTP header:
 			// so it defaults to the raw token — overriding the global json
 			// default, the same way `doc download` streams raw bytes. Explicit
 			// --format json / AIKB_FORMAT=json still emit the
-			// {token,mode,profile} envelope.
+			// {token,mode,profile} envelope, and FromEnv lets --jq override
+			// AIKB_FORMAT=text.
 			fopts.FromEnv()
 			if fopts.Mode == "" {
 				// --jq implies JSON (it filters the envelope); without it,

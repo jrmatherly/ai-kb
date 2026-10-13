@@ -167,7 +167,7 @@ To script the CLI or drive it from an agent, you rely on its output contract: a 
 | Flag | Short | Description |
 |---|---|---|
 | `--format` | | Output format: `text` \| `json` \| `ndjson`. **The default is `json`** whether or not stdout is a TTY (an agent-first design; people pass `--format text` explicitly). `AIKB_FORMAT` and `defaults.format` in config.yaml set a default. Precedence: `--format` > `AIKB_FORMAT` > `defaults.format` > the json default |
-| `--jq` | `-q` | Filters JSON output with a jq expression (requires `--format json\|ndjson`; combining it with an explicit `--format text` is an error) |
+| `--jq` | `-q` | Filters JSON output with a jq expression. With `--format` unset it selects JSON output, even when `AIKB_FORMAT` or `defaults.format` is `text`; combining it with an explicit `--format text` is an error (exit 2) |
 | `--profile` | | Overrides the active profile for this invocation (nothing written to disk) |
 | `--log-level` | | SDK debug log level: error \| warn \| info \| debug |
 | `--yes` | `-y` | Skips the confirmation prompt on destructive operations |

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -127,9 +129,7 @@ func TestResolveDefault(t *testing.T) {
 		{"empty no-tty", "", "", false, FormatJSON},
 		{"already set keeps value tty", FormatNDJSON, "", true, FormatNDJSON},
 		{"already set keeps value no-tty", FormatJSON, "", false, FormatJSON},
-		// --jq with unset --format promotes to JSON regardless of TTY so the
-		// filter has somewhere to apply (silent text drop would surprise users).
-		{"jq forces json on TTY", "", ".[]", true, FormatJSON},
+		{"jq with json default on TTY", "", ".[]", true, FormatJSON},
 		{"jq with explicit ndjson preserved", FormatNDJSON, ".[]", true, FormatNDJSON},
 	}
 	for _, tc := range cases {
@@ -275,5 +275,47 @@ func TestResolveDefault_NoEnvNoFlag_UsesDefault(t *testing.T) {
 	o.ResolveDefault(false)
 	if o.Mode != DefaultFormatMode {
 		t.Errorf("no flag + no env must fall back to default %v; got %v", DefaultFormatMode, o.Mode)
+	}
+}
+
+// --jq promotes a text default (AIKB_FORMAT or config.yaml defaults.format) to
+// JSON; a non-text default is kept.
+func TestResolveDefault_JQOverDefault(t *testing.T) {
+	for _, tc := range []struct {
+		name, env, config string
+		want              FormatMode
+	}{
+		{"env text", "text", "", FormatJSON},
+		{"config text", "", "defaults:\n  format: text\n", FormatJSON},
+		{"env ndjson", "ndjson", "", FormatNDJSON},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if tc.config != "" {
+				if err := os.MkdirAll(filepath.Join(dir, "aikb"), 0o700); err != nil {
+					t.Fatal(err)
+				}
+				cfg := filepath.Join(dir, "aikb", "config.yaml")
+				if err := os.WriteFile(cfg, []byte(tc.config), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			t.Setenv("XDG_CONFIG_HOME", dir)
+			t.Setenv("AIKB_FORMAT", tc.env)
+			o := &FormatOptions{JQ: ".data"}
+			o.ResolveDefault(false)
+			if o.Mode != tc.want {
+				t.Errorf("mode=%q want %q", o.Mode, tc.want)
+			}
+		})
+	}
+}
+
+func TestFromEnv_JQOverTextEnv(t *testing.T) {
+	t.Setenv("AIKB_FORMAT", "text")
+	o := &FormatOptions{JQ: ".data"}
+	o.FromEnv()
+	if o.Mode != FormatJSON {
+		t.Errorf("--jq must promote AIKB_FORMAT=text to json; got %v", o.Mode)
 	}
 }

@@ -163,8 +163,8 @@ func TestRoot_ProfileFlagPropagation(t *testing.T) {
 }
 
 // resolveFormatEarly must default to the JSON envelope when no --format/env is
-// given, so cobra-side errors (unknown flag, arg-count) — which fire before
-// PersistentPreRunE runs ResolveDefault — emit a machine-readable envelope on
+// given, so cobra-side errors (unknown flag, arg-count), which fire before
+// PersistentPreRunE runs ResolveDefault, emit a machine-readable envelope on
 // stderr, not bare prose. Regression for the success-path-defaults-to-json /
 // error-path-defaults-to-prose asymmetry.
 func TestResolveFormatEarly_DefaultsToEnvelope(t *testing.T) {
@@ -188,5 +188,30 @@ func TestResolveFormatEarly_DefaultsToEnvelope(t *testing.T) {
 			assert.Equal(t, tc.want, isEnvelope,
 				"args=%v: got %q", tc.args, buf.String())
 		})
+	}
+}
+
+// Under a text default, --jq selects JSON on the success path, so cobra-side
+// errors must use the envelope too.
+func TestResolveFormatEarly_JQOverTextDefault(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("AIKB_FORMAT", "text")
+	const prose = "accepts 1 arg(s), received 0\n"
+	const envelope = `{"ok":false,"error":{"type":"input.invalid_argument","message":"accepts 1 arg(s), received 0",` +
+		`"exit_code":2,"hint":"see ` + "`aikb <command> --help`" + ` for valid usage","retryable":false}}` + "\n"
+	for _, tc := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"kb", "view"}, prose},
+		{[]string{"kb", "view", "--jq", ".data"}, envelope},
+		{[]string{"kb", "view", "--jq=.data"}, envelope},
+		{[]string{"kb", "view", "-q", ".data"}, envelope},
+		{[]string{"kb", "view", "--format", "text", "--jq", ".data"}, prose},
+	} {
+		resolveFormatEarly(tc.args)
+		var buf bytes.Buffer
+		cmdutil.PrintError(&buf, MapCobraError(errors.New("accepts 1 arg(s), received 0")))
+		assert.Equal(t, tc.want, buf.String(), "args=%v", tc.args)
 	}
 }

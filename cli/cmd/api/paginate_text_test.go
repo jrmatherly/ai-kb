@@ -47,6 +47,8 @@ func TestAPI_PaginateFormats(t *testing.T) {
 		post     bool
 		single   bool
 		wantExit int
+		errMsg   string
+		errCalls int32
 	}{
 		{
 			name: "text single page", bodies: one, flags: []string{"--format", "text"},
@@ -76,14 +78,17 @@ func TestAPI_PaginateFormats(t *testing.T) {
 			flags: []string{"--format", "ndjson", "--jq", ".data | length"}, json: "3",
 		},
 		{
-			name: "text environment jq rejected", bodies: pages, env: "text",
-			flags: []string{"--jq", ".data | length"}, wantExit: 2,
+			name: "text environment jq selects json", bodies: pages, env: "text",
+			flags: []string{"--jq", ".data.data | length"}, json: "3",
 		},
 		{
-			name: "text environment malformed jq rejected", bodies: pages, env: "text",
-			flags: []string{"--jq", "["}, wantExit: 2,
+			name: "text environment malformed jq", bodies: pages, env: "text",
+			flags: []string{"--jq", "["}, wantExit: 5, errMsg: "jq parse", errCalls: 3,
 		},
-		{name: "text jq rejected", bodies: pages, flags: []string{"--format", "text", "--jq", ".data"}, wantExit: 2},
+		{
+			name: "text jq rejected", bodies: pages, flags: []string{"--format", "text", "--jq", ".data"},
+			wantExit: 2, errMsg: "--jq requires --format json|ndjson",
+		},
 		{name: "text precise values", bodies: precise, flags: []string{"--format", "text"}, json: preciseMerged},
 		{
 			name: "json precise values", bodies: precise, flags: []string{"--format", "json"},
@@ -158,8 +163,8 @@ func TestAPI_PaginateFormats(t *testing.T) {
 			if tc.wantExit != 0 {
 				require.Error(t, err)
 				assert.Equal(t, tc.wantExit, cmdutil.ExitCode(err))
-				assert.Contains(t, err.Error(), "--jq requires --format json|ndjson")
-				assert.Zero(t, calls.Load())
+				assert.Contains(t, err.Error(), tc.errMsg)
+				assert.Equal(t, tc.errCalls, calls.Load())
 				assert.Empty(t, out.String())
 				return
 			}

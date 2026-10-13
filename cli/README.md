@@ -233,6 +233,8 @@ aikb kb list --format json --jq '.meta.count'           # number returned
 element is emitted as its own JSON line. `--format json` is the default
 regardless of TTY — running `aikb kb list | jq` works without an
 explicit flag. Use `--format text` for human-readable output.
+`--jq` without `--format` always selects JSON, even when `AIKB_FORMAT`
+or `defaults.format` is `text`; `--format text --jq` is an error.
 
 ### Errors
 

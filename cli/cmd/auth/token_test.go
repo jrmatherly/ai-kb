@@ -82,6 +82,32 @@ func TestAuthToken_JQImpliesJSON(t *testing.T) {
 	}
 }
 
+// AIKB_FORMAT=text is a default, so --jq still selects the JSON envelope
+// instead of printing the raw token.
+func TestAuthToken_JQOverTextEnv(t *testing.T) {
+	t.Setenv("AIKB_FORMAT", "text")
+	cfg := &config.Config{
+		CurrentProfile: "prod",
+		Profiles: map[string]config.Profile{
+			"prod": {Host: "https://kb.example.com", TokenRef: "prod:access"},
+		},
+	}
+	store := secrets.NewMemStore()
+	_ = store.Set("prod", "access", "jwt-env-xyz")
+
+	out, _ := iostreams.SetForTest(t)
+	cmd := NewCmdToken(tokenTestFactory(t, cfg, store))
+	cmd.PersistentFlags().String("format", "", "")
+	cmd.PersistentFlags().StringP("jq", "q", "", "")
+	cmd.SetArgs([]string{"--jq", ".data.mode"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if got := out.String(); got != "bearer\n" {
+		t.Errorf("got %q, want %q", got, "bearer\n")
+	}
+}
+
 func TestAuthToken_BearerMode_PlainOutput(t *testing.T) {
 	cfg := &config.Config{
 		CurrentProfile: "prod",

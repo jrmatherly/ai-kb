@@ -426,9 +426,6 @@ func emitRawBody(body []byte, fopts *cmdutil.FormatOptions) error {
 // response is passed through via passThroughFallback which respects the
 // --format envelope contract (same shape as runAPISingle's fallback path).
 func runAPIPaginated(ctx context.Context, opts *Options, fopts *cmdutil.FormatOptions, svc Service, path string) error {
-	if fopts.Mode == cmdutil.FormatText && fopts.JQ != "" {
-		return cmdutil.NewFlagError(fmt.Errorf("--jq requires --format json|ndjson"))
-	}
 	if !strings.HasPrefix(path, "/") {
 		return cmdutil.NewError(cmdutil.CodeInputInvalidArgument, fmt.Sprintf("path must start with /: %s", path))
 	}

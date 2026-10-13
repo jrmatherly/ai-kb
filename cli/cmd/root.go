@@ -41,6 +41,7 @@ import (
 // re-runs CheckFormatFlag and calls SetFormatMode again with the same value).
 func resolveFormatEarly(args []string) {
 	var mode string
+	jq := false
 	for i, a := range args {
 		if a == "--format" && i+1 < len(args) {
 			mode = strings.ToLower(args[i+1])
@@ -50,12 +51,19 @@ func resolveFormatEarly(args []string) {
 			mode = strings.ToLower(strings.TrimPrefix(a, "--format="))
 			break
 		}
+		if a == "--jq" || a == "-q" || strings.HasPrefix(a, "--jq=") {
+			jq = true
+		}
 	}
 	if mode == "" {
 		// Cobra parse errors fire before PersistentPreRunE runs ResolveDefault,
-		// so apply the same default here or the error path would emit prose
-		// while the success path emits the envelope.
+		// so apply the same default here, including --jq promoting text to
+		// JSON, or the error path would emit prose while the success path
+		// emits the envelope.
 		mode = string(cmdutil.ConfiguredDefaultMode())
+		if jq && mode == string(cmdutil.FormatText) {
+			mode = string(cmdutil.FormatJSON)
+		}
 	}
 	switch mode {
 	case "ndjson", "text":
@@ -234,9 +242,10 @@ func addGlobalFlags(cmd *cobra.Command) {
 	// (e.g. `aikb fooo --format json`) reach the typed-envelope guard
 	// instead of being rejected as "unknown flag" exit 2 by cobra. Commands
 	// that don't produce JSON output (e.g. `completion bash`) ignore the flag
-	// rather than error — the unified agent contract is worth the trade.
+	// rather than error. The unified agent contract is worth the trade.
 	pf.String("format", "", "Output format: text | json | ndjson (default: json; env: AIKB_FORMAT)")
-	pf.StringP("jq", "q", "", "Filter JSON output using a jq `expression` (requires --format json|ndjson)")
+	pf.StringP("jq", "q", "",
+		"Filter JSON output using a jq `expression` (implies --format json; conflicts with --format text)")
 }
 
 // versionFields enumerates the fields surfaced for `--format json` discovery on

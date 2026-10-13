@@ -66,8 +66,8 @@ func AddFormatFlag(cmd *cobra.Command, fieldHints ...string) {
 //   - (*FormatOptions{Mode:v,JQ:q}, nil)    valid values
 //   - (nil, *FlagError)                     invalid --format, or --jq with explicit --format text
 //
-// --jq with --format unset is accepted: ResolveDefault below will promote
-// the mode to FormatJSON so the filter has somewhere to apply.
+// --jq with --format unset is accepted: ResolveDefault and FromEnv promote a
+// text default to FormatJSON so the filter has somewhere to apply.
 func CheckFormatFlag(cmd *cobra.Command) (*FormatOptions, error) {
 	fopts := &FormatOptions{}
 	if f := cmd.Flags().Lookup("format"); f != nil {
@@ -85,8 +85,8 @@ func CheckFormatFlag(cmd *cobra.Command) (*FormatOptions, error) {
 		fopts.JQ = f.Value.String()
 	}
 	// --jq only meaningful for JSON-shaped output. Reject the explicit
-	// `--format text --jq ...` combination; the `--jq` with --format unset
-	// case is handled by ResolveDefault.
+	// `--format text --jq ...` combination; with --format unset, ResolveDefault
+	// and FromEnv promote a text default to JSON.
 	if fopts.JQ != "" && fopts.Mode == FormatText {
 		return nil, NewFlagError(errors.New("--jq requires --format json|ndjson"))
 	}
@@ -149,6 +149,7 @@ func mapJQError(err error) error {
 
 // ResolveDefault fills in Mode when the caller has not explicitly set it:
 //   - Mode comes from ConfiguredDefaultMode (FormatJSON unless configured), regardless of TTY
+//   - --jq promotes a text default to FormatJSON, since the filter needs JSON
 //   - TTY only affects the indent decision (auto-indent in TTY; compact in pipe)
 //   - For human-readable rendering, pass --format text explicitly
 //
@@ -161,6 +162,15 @@ func (o *FormatOptions) ResolveDefault(tty bool) {
 	// --format was already set on o.Mode by CheckFormatFlag.
 	if o.Mode == "" {
 		o.Mode = ConfiguredDefaultMode()
+	}
+	o.jqImpliesJSON()
+}
+
+// jqImpliesJSON promotes text to JSON when --jq is set. Text reaching here is
+// always a default: CheckFormatFlag rejects an explicit --format text --jq.
+func (o *FormatOptions) jqImpliesJSON() {
+	if o.JQ != "" && o.Mode == FormatText {
+		o.Mode = FormatJSON
 	}
 }
 
@@ -189,7 +199,8 @@ func parseFormatMode(v string) (FormatMode, bool) {
 
 // FromEnv applies AIKB_FORMAT when Mode hasn't been set by --format, without
 // the config.yaml default. For commands such as `auth token` whose own
-// default replaces the CLI-wide one. Invalid values are ignored.
+// default replaces the CLI-wide one. Invalid values are ignored, and --jq
+// promotes AIKB_FORMAT=text to JSON as in ResolveDefault.
 func (o *FormatOptions) FromEnv() {
 	if o.Mode != "" {
 		return
@@ -197,4 +208,5 @@ func (o *FormatOptions) FromEnv() {
 	if m, ok := parseFormatMode(os.Getenv("AIKB_FORMAT")); ok {
 		o.Mode = m
 	}
+	o.jqImpliesJSON()
 }
