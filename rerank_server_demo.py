@@ -3,6 +3,8 @@
 # dependencies = ["fastapi", "pydantic>=2", "torch", "transformers", "uvicorn"]
 # ///
 """Minimal self-hosted rerank service for testing rerank clients. Run: uv run rerank_server_demo.py"""
+# The dependencies exist only in the environment uv run builds from the block above, which no checker sees.
+# pyrefly: ignore-errors[missing-import]
 import gc
 import os
 import sys

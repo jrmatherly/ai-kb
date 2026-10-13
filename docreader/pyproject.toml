@@ -28,3 +28,9 @@ dependencies = [
     "textract==1.5.0",
     "trafilatura>=2.0.0",
 ]
+
+# The code imports itself as the `docreader` package, so the import root is the repository root.
+# The interpreter is the uv environment (`uv sync --project docreader`), not whatever python3 is first on PATH.
+[tool.pyrefly]
+search-path = [".."]
+python-interpreter-path = ".venv/bin/python"

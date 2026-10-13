@@ -984,7 +984,6 @@ class Docx:
                 processed_content = []
                 if line_data.content_sequence:  # Check if we have processed_content
                     processed_content = line_data.content_sequence
-                    page_num = line_data.page_num
 
                 # Reconstruct text with images in original positions
                 combined_parts = []
@@ -1005,7 +1004,7 @@ class Docx:
                 final_text = "\n\n".join(part for part in combined_parts if part)
                 processed_lines.append(
                     LineData(
-                        text=final_text, page_num=page_num, images=line_data.images
+                        text=final_text, page_num=line_data.page_num, images=line_data.images
                     )
                 )
         else:
