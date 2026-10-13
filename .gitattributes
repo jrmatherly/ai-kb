@@ -22,3 +22,5 @@ patches/browserskill/*.patch whitespace=-blank-at-eol
 # May contain CJK text: the translation glossary maps Chinese source terms to English (scripts/check-english-only.sh)
 .claude/skills/translate-docs/SKILL.md -english-only
 .claude/skills/translate-code/SKILL.md -english-only
+# Traditional-to-Simplified Chinese conversion tables (internal/textconv) are data, not prose
+internal/textconv/data/*.txt -english-only
