@@ -106,3 +106,47 @@ func TestUpdateFAQEntrySeparateModeRemovesDroppedSimilarQuestion(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []string{"Lost password", "Reset password"}, store.contents())
 }
+
+func TestUpdateFAQEntrySeparateModeIndexesOriginalText(t *testing.T) {
+	f := newFAQWriteFixture(t)
+	f.kb.EmbeddingModelID = "embed"
+	f.kb.FAQConfig = &types.FAQConfig{
+		IndexMode:         types.FAQIndexModeQuestionOnly,
+		QuestionIndexMode: types.FAQQuestionIndexModeSeparate,
+	}
+	store := &faqIndexStore{items: map[string]*types.IndexInfo{}}
+	f.svc.retrieveEngine = &fakeFanoutRegistry{
+		byStore: map[string]interfaces.RetrieveEngineService{"write-store": store},
+	}
+	f.svc.modelService = parentChildModelService{embedder: parentChildEmbedder{}}
+	f.svc.chunkService = &faqChunkUpdater{repo: f.chunks}
+
+	chunk, err := f.chunks.GetChunkByID(f.ctx, 7, "one")
+	require.NoError(t, err)
+	require.NoError(t, chunk.SetFAQMetadata(&types.FAQChunkMetadata{
+		StandardQuestion: "Reset password",
+		SimilarQuestions: []string{"Lost password"},
+		Answers:          []string{"Use the reset link."},
+	}))
+	require.NoError(t, f.chunks.UpdateChunk(f.ctx, chunk))
+	knowledge, err := f.svc.repo.GetKnowledgeByID(f.ctx, 7, "faq")
+	require.NoError(t, err)
+	require.NoError(t, f.svc.indexFAQChunks(f.ctx, f.kb, knowledge, []*types.Chunk{chunk},
+		parentChildEmbedder{}, false, true))
+
+	_, err = f.svc.UpdateFAQEntry(f.ctx, "kb", 1, &types.FAQEntryPayload{
+		StandardQuestion: "Reset my Password?",
+		SimilarQuestions: []string{"Lost password", "Can't log in?"},
+		Answers:          []string{"Use the reset link."},
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{"Can't log in?", "Lost password", "Reset my Password?"}, store.contents())
+
+	edited, err := f.chunks.GetChunkByID(f.ctx, 7, "one")
+	require.NoError(t, err)
+	full, err := f.svc.buildFAQIndexInfoList(f.ctx, f.kb, edited)
+	require.NoError(t, err)
+	for _, info := range full {
+		require.Equal(t, info.Content, store.items[info.SourceID].Content, info.SourceID)
+	}
+}

@@ -1790,6 +1790,19 @@ func faqSimilarQuestionSourceID(chunkID, normalizedQuestion string) string {
 	return chunkID + "-" + hex.EncodeToString(h[:4])
 }
 
+// faqSimilarQuestionsByKey maps each normalized similar question to its first original text.
+func faqSimilarQuestionsByKey(questions []string) map[string]string {
+	out := make(map[string]string, len(questions))
+	for _, q := range questions {
+		q = strings.TrimSpace(q)
+		key := types.NormalizeQuestion(q)
+		if _, seen := out[key]; key != "" && !seen {
+			out[key] = q
+		}
+	}
+	return out
+}
+
 // resolveTagID resolves tag ID (UUID) from payload, prioritizing tag_id (seq_id) over tag_name
 // If no tag is specified, creates or finds the untagged tag (types.UntaggedTagName)
 // Returns the internal UUID of the tag

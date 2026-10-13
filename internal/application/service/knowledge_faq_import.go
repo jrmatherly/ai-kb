@@ -1903,19 +1903,14 @@ func (s *knowledgeService) incrementalIndexFAQEntry(
 		indexMode = kb.FAQConfig.IndexMode
 	}
 
-	// Normalize old and new data, to match buildFAQIndexInfoList
-	// Normalize old data
-	oldStandardQuestion = types.NormalizeQuestion(oldStandardQuestion)
-	normalizedOldSimilarQuestions := make([]string, 0, len(oldSimilarQuestions))
-	for _, q := range oldSimilarQuestions {
-		if nq := types.NormalizeQuestion(q); nq != "" {
-			normalizedOldSimilarQuestions = append(normalizedOldSimilarQuestions, nq)
-		}
-	}
-	oldSimilarQuestions = normalizedOldSimilarQuestions
+	// Content keeps the original text, as buildFAQIndexInfoList writes it. The normalized
+	// question only keys similar questions and their source IDs.
+	oldStandardQuestion = strings.TrimSpace(oldStandardQuestion)
 	oldAnswers = types.SanitizeStrings(oldAnswers)
-	// Normalize new data
-	normalizedNewMeta := newMeta.Normalize()
+	newStandardQuestion := strings.TrimSpace(newMeta.StandardQuestion)
+	newAnswers := types.SanitizeStrings(newMeta.Answers)
+	oldSimilar := faqSimilarQuestionsByKey(oldSimilarQuestions)
+	newSimilar := faqSimilarQuestionsByKey(newMeta.SimilarQuestions)
 
 	// Build the index content
 	buildContent := func(question string, answers []string) string {
@@ -1932,16 +1927,16 @@ func (s *knowledgeService) incrementalIndexFAQEntry(
 	}
 
 	// Did the answers change? (affects the index only in QuestionAnswer mode)
-	answersChanged := indexMode == types.FAQIndexModeQuestionAnswer && !slices.Equal(oldAnswers, normalizedNewMeta.Answers)
+	answersChanged := indexMode == types.FAQIndexModeQuestionAnswer && !slices.Equal(oldAnswers, newAnswers)
 	logger.Debugf(ctx, "incrementalIndexFAQEntry: answersChanged=%v (indexMode=%s), oldAnswers=%d, newAnswers=%d",
-		answersChanged, indexMode, len(oldAnswers), len(normalizedNewMeta.Answers))
+		answersChanged, indexMode, len(oldAnswers), len(newAnswers))
 
 	// Collect the index items to update
 	var indexInfoToUpdate []*types.IndexInfo
 
 	// 1. Does the standard question need updating?
 	oldStdContent := buildContent(oldStandardQuestion, oldAnswers)
-	newStdContent := buildContent(normalizedNewMeta.StandardQuestion, normalizedNewMeta.Answers)
+	newStdContent := buildContent(newStandardQuestion, newAnswers)
 	stdQuestionChanged := oldStdContent != newStdContent
 	if stdQuestionChanged {
 		logger.Debugf(ctx, "incrementalIndexFAQEntry: standard question changed, sourceID=%s", chunk.ID)
@@ -1959,41 +1954,24 @@ func (s *knowledgeService) incrementalIndexFAQEntry(
 		})
 	}
 
-	// 2. Add, remove and update similar questions by content hash
-	// Old question set (question -> present)
-	oldQuestionsSet := make(map[string]struct{}, len(oldSimilarQuestions))
-	for _, q := range oldSimilarQuestions {
-		oldQuestionsSet[q] = struct{}{}
-	}
-
-	// New question set
-	newQuestionsSet := make(map[string]struct{}, len(normalizedNewMeta.SimilarQuestions))
-	for _, q := range normalizedNewMeta.SimilarQuestions {
-		newQuestionsSet[q] = struct{}{}
-	}
-
-	// Questions to delete (in the old set but not the new one)
+	// 2. Add, remove and update similar questions, keyed by normalized question
 	var sourceIDsToDelete []string
 	var deletedQuestions []string
-	for oldQ := range oldQuestionsSet {
-		if _, exists := newQuestionsSet[oldQ]; !exists {
-			sourceID := faqSimilarQuestionSourceID(chunk.ID, oldQ)
-			sourceIDsToDelete = append(sourceIDsToDelete, sourceID)
+	for key, oldQ := range oldSimilar {
+		if _, exists := newSimilar[key]; !exists {
+			sourceIDsToDelete = append(sourceIDsToDelete, faqSimilarQuestionSourceID(chunk.ID, key))
 			deletedQuestions = append(deletedQuestions, oldQ)
 		}
 	}
 
-	// Questions to add or update
 	var addedQuestions, updatedQuestions []string
-	for newQ := range newQuestionsSet {
-		_, existedBefore := oldQuestionsSet[newQ]
-		// Update when:
-		// 1. the question is new (did not exist before)
-		// 2. the answers changed (needs re-embedding)
-		if !existedBefore || answersChanged {
-			sourceID := faqSimilarQuestionSourceID(chunk.ID, newQ)
+	for key, newQ := range newSimilar {
+		oldQ, existedBefore := oldSimilar[key]
+		// A rewording that normalizes to the same key still changes the indexed text.
+		if !existedBefore || answersChanged || oldQ != newQ {
+			sourceID := faqSimilarQuestionSourceID(chunk.ID, key)
 			indexInfoToUpdate = append(indexInfoToUpdate, &types.IndexInfo{
-				Content:         buildContent(newQ, normalizedNewMeta.Answers),
+				Content:         buildContent(newQ, newAnswers),
 				SourceID:        sourceID,
 				SourceType:      types.ChunkSourceType,
 				ChunkID:         chunk.ID,
@@ -2037,7 +2015,7 @@ func (s *knowledgeService) incrementalIndexFAQEntry(
 	}
 
 	// 4. Batch index the content to update
-	newCount := len(normalizedNewMeta.SimilarQuestions)
+	newCount := len(newSimilar)
 	if len(indexInfoToUpdate) > 0 {
 		logger.Debugf(ctx, "incrementalIndexFAQEntry: updating %d index entries (skipped %d unchanged)",
 			len(indexInfoToUpdate), 1+newCount-len(indexInfoToUpdate))
