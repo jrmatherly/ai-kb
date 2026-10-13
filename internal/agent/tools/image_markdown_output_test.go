@@ -37,7 +37,8 @@ func TestLLMToolOutputsUseMarkdownImages(t *testing.T) {
 		"enrich_chunk_content": enrichedOutput,
 	} {
 		t.Run(name, func(t *testing.T) {
-			if !strings.Contains(output, "![\u76ee\u6807\u8bf4\u8bdd\u4eba\u63d0\u53d6\u6d41\u7a0b\u56fe](resource://AbCdEfGhIjKlMnOpQrStUv)") {
+			if !strings.Contains(output, "![\u76ee\u6807\u8bf4\u8bdd\u4eba\u63d0\u53d6\u6d41\u7a0b\u56fe](resource://"+
+				"AbCdEfGhIjKlMnOpQrStUv)") {
 				t.Fatalf("expected Markdown image in tool output:\n%s", output)
 			}
 			if strings.Contains(output, "<image") || strings.Contains(output, "<caption>") || strings.Contains(output, "<ocr_text>") {

@@ -367,7 +367,8 @@ func TestJsonToMarkdown_BOM(t *testing.T) {
 }
 
 func TestJsonToMarkdown_UnicodeContent(t *testing.T) {
-	input := "{\"\u540d\u79f0\": \"AI KB \u77e5\u8bc6\u5e93\", \"\u63cf\u8ff0\": \"\u652f\u6301\u4e2d\u6587 JSON 🎉\", \"emoji\": \"🚀\"}"
+	input := "{\"\u540d\u79f0\": \"AI KB \u77e5\u8bc6\u5e93\", \"\u63cf\u8ff0\": \"\u652f\u6301\u4e2d\u6587 JSON " +
+		"🎉\", \"emoji\": \"🚀\"}"
 	result, err := jsonToMarkdown([]byte(input))
 	visualReport(t, "Unicode / Chinese / Emoji", input, result, err, []checkResult{
 		check("no error", err == nil),
@@ -614,9 +615,14 @@ func TestIsSimpleFormat_JSON(t *testing.T) {
 		input string
 		want  bool
 	}{
-		{"json", true}, {"JSON", true}, {".json", true}, {"Json", true},
-		{"txt", true}, {"csv", true},
-		{"pdf", false}, {"docx", false},
+		{"json", true},
+		{"JSON", true},
+		{".json", true},
+		{"Json", true},
+		{"txt", true},
+		{"csv", true},
+		{"pdf", false},
+		{"docx", false},
 	}
 
 	t.Logf("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")

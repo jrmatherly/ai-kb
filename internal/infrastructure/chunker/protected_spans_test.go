@@ -19,7 +19,8 @@ func buildOCRStrayBracketDoc() string {
 	for i := 0; i < 60; i++ {
 		sb.WriteString("\u8fd9\u662f\u7b2c")
 		sb.WriteString(strconv.Itoa(i))
-		sb.WriteString("\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u5207\u5206\u7684\u4e2d\u6587\u5185\u5bb9\uff0c\u5305\u542b\u5e38\u89c1\u6807\u70b9\u7b26\u53f7\u3002\n\n")
+		sb.WriteString("\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u5207\u5206\u7684\u4e2d\u6587\u5185\u5bb9\uff0c\u5305\u542b" +
+			"\u5e38\u89c1\u6807\u70b9\u7b26\u53f7\u3002\n\n")
 	}
 	sb.WriteString("\u7b2c\u4e09\u6bb5\uff08\u5317\u4eac)\n\n")
 	sb.WriteString("[\u5f15\u7528](\u6765\u6e90)")
@@ -128,7 +129,8 @@ func TestProtectedSpans_MultilineLinkIntentionallyUnprotected(t *testing.T) {
 }
 
 func TestProtectedSpans_LiteralCrossLineExample(t *testing.T) {
-	doc := "[\u516c\u7ae0\u3011\n\n\u7b2c\u4e00\u6bb5\u3002\n\n\u7b2c\u4e8c\u6bb5\u3002\n\n\u7b2c\u4e09\u6bb5\uff08\u5317\u4eac)"
+	doc := "[\u516c\u7ae0\u3011\n\n\u7b2c\u4e00\u6bb5\u3002\n\n\u7b2c\u4e8c\u6bb5\u3002\n\n\u7b2c\u4e09\u6bb5\uff08" +
+		"\u5317\u4eac)"
 	if spans := protectedSpans(doc); len(spans) != 0 {
 		t.Fatalf("expected no protected span, got %v", spans)
 	}

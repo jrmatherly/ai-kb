@@ -41,7 +41,8 @@ func TestBlocksToMarkdown_EmbeddedSheetAndFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
-	if !strings.Contains(string(md), "| \u540d\u79f0 | \u6570\u91cf |") || !strings.Contains(string(md), "| \u82f9\u679c | 3 |") {
+	if !strings.Contains(string(md), "| \u540d\u79f0 | \u6570\u91cf |") || !strings.Contains(string(md), "| "+
+		"\u82f9\u679c | 3 |") {
 		t.Errorf("sheet not inlined:\n%s", md)
 	}
 	if !strings.Contains(string(md), "![image]()") {
@@ -101,8 +102,10 @@ func TestBlocksToMarkdown_BitableInlinedAndDegrades(t *testing.T) {
 		return string(md)
 	}
 
-	inlined := mk(fakeReader{bitable: [][]string{{"\u4efb\u52a1", "\u72b6\u6001"}, {"\u5199\u6587\u6863", "\u8fdb\u884c\u4e2d"}}})
-	if !strings.Contains(inlined, "| \u4efb\u52a1 | \u72b6\u6001 |") || !strings.Contains(inlined, "| \u5199\u6587\u6863 | \u8fdb\u884c\u4e2d |") {
+	inlined := mk(fakeReader{bitable: [][]string{{"\u4efb\u52a1", "\u72b6\u6001"}, {"\u5199\u6587\u6863", "\u8fdb" +
+		"\u884c\u4e2d"}}})
+	if !strings.Contains(inlined, "| \u4efb\u52a1 | \u72b6\u6001 |") || !strings.Contains(inlined, "| "+
+		"\u5199\u6587\u6863 | \u8fdb\u884c\u4e2d |") {
 		t.Errorf("bitable not inlined:\n%s", inlined)
 	}
 

@@ -26,7 +26,8 @@ func TestSplitText_BasicASCII(t *testing.T) {
 func TestSplitText_ChineseText_StartEndAreRuneOffsets(t *testing.T) {
 	// Each Chinese character is 3 bytes in UTF-8 but 1 rune.
 	// This test ensures Start/End are rune offsets, not byte offsets.
-	text := "\u4f60\u597d\u4e16\u754c\u8fd9\u662f\u4e00\u4e2a\u6d4b\u8bd5\u6587\u672c\u7528\u4e8e\u68c0\u9a8c\u5206\u5272\u4f4d\u7f6e"
+	text := "\u4f60\u597d\u4e16\u754c\u8fd9\u662f\u4e00\u4e2a\u6d4b\u8bd5\u6587\u672c\u7528\u4e8e\u68c0\u9a8c\u5206" +
+		"\u5272\u4f4d\u7f6e"
 	runeCount := utf8.RuneCountInString(text)
 	byteCount := len(text)
 	if runeCount == byteCount {
@@ -52,7 +53,8 @@ func TestSplitText_ChineseText_StartEndAreRuneOffsets(t *testing.T) {
 
 func TestSplitText_ChineseMultiChunk_StartEndConsistency(t *testing.T) {
 	// Build a long Chinese text that will be split into multiple chunks.
-	line := "\u8fd9\u662f\u4e00\u6bb5\u4e2d\u6587\u5185\u5bb9\u7528\u4e8e\u6d4b\u8bd5\u5206\u5272\u529f\u80fd\u662f\u5426\u6b63\u786e\u3002"
+	line := "\u8fd9\u662f\u4e00\u6bb5\u4e2d\u6587\u5185\u5bb9\u7528\u4e8e\u6d4b\u8bd5\u5206\u5272\u529f\u80fd\u662f" +
+		"\u5426\u6b63\u786e\u3002"
 	text := strings.Repeat(line+"\n\n", 20)
 	text = strings.TrimRight(text, "\n")
 
@@ -112,7 +114,8 @@ func TestSplitText_MixedChineseAndASCII(t *testing.T) {
 
 func TestSplitText_ProtectedPattern_ChineseContext(t *testing.T) {
 	// Test protected markdown images in Chinese context.
-	text := "\u8fd9\u662f\u524d\u9762\u7684\u4e2d\u6587\u5185\u5bb9\u3002![\u56fe\u7247\u63cf\u8ff0](http://example.com/img.png)\u8fd9\u662f\u540e\u9762\u7684\u4e2d\u6587\u5185\u5bb9\u3002"
+	text := "\u8fd9\u662f\u524d\u9762\u7684\u4e2d\u6587\u5185\u5bb9\u3002![\u56fe\u7247\u63cf\u8ff0](http://example.c" +
+		"om/img.png)\u8fd9\u662f\u540e\u9762\u7684\u4e2d\u6587\u5185\u5bb9\u3002"
 	cfg := SplitterConfig{ChunkSize: 200, ChunkOverlap: 0, Separators: []string{"\u3002"}}
 	chunks := SplitText(text, cfg)
 
@@ -134,7 +137,8 @@ func TestSplitText_ProtectedPattern_ChineseContext(t *testing.T) {
 func TestSplitText_SimulateMergeSlicing(t *testing.T) {
 	// Simulate what merge.go:104-106 does to ensure it won't panic.
 	// This is the exact pattern that caused the production crash.
-	line := "\u8fd9\u662f\u7b2c\u4e00\u6bb5\u5185\u5bb9\u7528\u4e8e\u6a21\u62df\u77e5\u8bc6\u5e93\u95ee\u7b54\u7684\u6587\u672c"
+	line := "\u8fd9\u662f\u7b2c\u4e00\u6bb5\u5185\u5bb9\u7528\u4e8e\u6a21\u62df\u77e5\u8bc6\u5e93\u95ee\u7b54\u7684" +
+		"\u6587\u672c"
 	text := line + "\n\n" + line + "\n\n" + line
 
 	cfg := SplitterConfig{ChunkSize: 25, ChunkOverlap: 5, Separators: []string{"\n\n", "\n"}}
@@ -278,7 +282,8 @@ func TestFindSemanticOverlapBoundary_PriorityThenEarliest(t *testing.T) {
 	}{
 		{
 			name: "paragraph outranks earlier sentence and line",
-			text: "\u7b2c\u4e00\u53e5\u3002\u7b2c\u4e8c\u53e5\n\u666e\u901a\u6362\u884c\u540e\u7684\u5185\u5bb9\n\n\u6700\u540e\u4e00\u6bb5",
+			text: "\u7b2c\u4e00\u53e5\u3002\u7b2c\u4e8c\u53e5\n\u666e\u901a\u6362\u884c\u540e\u7684\u5185\u5bb9\n\n" +
+				"\u6700\u540e\u4e00\u6bb5",
 			want: "\u6700\u540e\u4e00\u6bb5",
 		},
 		{
@@ -611,7 +616,9 @@ func TestSplitText_LargeChineseDocument(t *testing.T) {
 	// Simulate a real document with paragraphs of Chinese text.
 	var sb strings.Builder
 	for i := 0; i < 100; i++ {
-		sb.WriteString(fmt.Sprintf("\u7b2c%d\u6bb5\uff1a\u8fd9\u662f\u4e00\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u7684\u4e2d\u6587\u5185\u5bb9\uff0c\u5305\u542b\u5404\u79cd\u5e38\u89c1\u7684\u6c49\u5b57\u548c\u6807\u70b9\u7b26\u53f7\u3002", i))
+		fmt.Fprintf(&sb, "\u7b2c%d\u6bb5\uff1a\u8fd9\u662f\u4e00\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u7684\u4e2d"+
+			"\u6587\u5185\u5bb9\uff0c\u5305\u542b\u5404\u79cd\u5e38\u89c1\u7684\u6c49\u5b57\u548c\u6807\u70b9\u7b26"+
+			"\u53f7\u3002", i)
 		sb.WriteString("\n\n")
 	}
 	text := sb.String()
@@ -715,7 +722,8 @@ func TestSplitText_TableHeaderPrependedToChunks(t *testing.T) {
 
 func TestSplitText_NoHeaderForNonTableContent(t *testing.T) {
 	// Ensure header prepending doesn't affect non-table content.
-	text := strings.Repeat("\u8fd9\u662f\u4e00\u6bb5\u666e\u901a\u7684\u4e2d\u6587\u6587\u672c\uff0c\u4e0d\u5305\u542b\u4efb\u4f55\u8868\u683c\u3002\n\n", 10)
+	text := strings.Repeat("\u8fd9\u662f\u4e00\u6bb5\u666e\u901a\u7684\u4e2d\u6587\u6587\u672c\uff0c\u4e0d\u5305"+
+		"\u542b\u4efb\u4f55\u8868\u683c\u3002\n\n", 10)
 
 	cfg := SplitterConfig{ChunkSize: 30, ChunkOverlap: 5, Separators: []string{"\n\n", "\n"}}
 	chunks := SplitText(text, cfg)
@@ -741,7 +749,8 @@ func TestSplitText_TableHeaderEndedByEmptyLine(t *testing.T) {
 		"| 1 | 2 |\n" +
 		"| 3 | 4 |\n" +
 		"\n" +
-		"\u8fd9\u662f\u8868\u683c\u4e4b\u540e\u7684\u666e\u901a\u6587\u672c\u5185\u5bb9\uff0c\u4e0d\u5e94\u8be5\u5305\u542b\u8868\u5934\u3002\n" +
+		"\u8fd9\u662f\u8868\u683c\u4e4b\u540e\u7684\u666e\u901a\u6587\u672c\u5185\u5bb9\uff0c\u4e0d\u5e94\u8be5\u5305" +
+		"\u542b\u8868\u5934\u3002\n" +
 		"\u66f4\u591a\u7684\u666e\u901a\u6587\u672c\u5185\u5bb9\u7528\u4e8e\u586b\u5145\u3002"
 
 	cfg := SplitterConfig{ChunkSize: 40, ChunkOverlap: 5, Separators: []string{"\n\n", "\n"}}
@@ -749,7 +758,8 @@ func TestSplitText_TableHeaderEndedByEmptyLine(t *testing.T) {
 
 	for _, c := range chunks {
 		hasTableRow := strings.Contains(c.Content, "| A | B |") || strings.Contains(c.Content, "|")
-		hasPlainText := strings.Contains(c.Content, "\u8fd9\u662f\u8868\u683c\u4e4b\u540e") || strings.Contains(c.Content, "\u66f4\u591a\u7684\u666e\u901a")
+		hasPlainText := strings.Contains(c.Content, "\u8fd9\u662f\u8868\u683c\u4e4b"+
+			"\u540e") || strings.Contains(c.Content, "\u66f4\u591a\u7684\u666e\u901a")
 		if hasPlainText && !hasTableRow {
 			// This chunk is purely post-table text; should NOT have table header
 			if strings.Contains(c.Content, "| --- |") {
@@ -1156,7 +1166,8 @@ func TestSplitText_RestoreTextNoTable(t *testing.T) {
 	// Plain Chinese text without any tables — baseline restoration check.
 	var sb strings.Builder
 	for i := 0; i < 30; i++ {
-		sb.WriteString(fmt.Sprintf("\u7b2c%d\u6bb5\uff1a\u8fd9\u662f\u4e00\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u7684\u4e2d\u6587\u5185\u5bb9\uff0c\u5305\u542b\u5404\u79cd\u6807\u70b9\u7b26\u53f7\u3002", i))
+		fmt.Fprintf(&sb, "\u7b2c%d\u6bb5\uff1a\u8fd9\u662f\u4e00\u6bb5\u7528\u4e8e\u6d4b\u8bd5\u7684\u4e2d"+
+			"\u6587\u5185\u5bb9\uff0c\u5305\u542b\u5404\u79cd\u6807\u70b9\u7b26\u53f7\u3002", i)
 		sb.WriteString("\n\n")
 	}
 	text := sb.String()

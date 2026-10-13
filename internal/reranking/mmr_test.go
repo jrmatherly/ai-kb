@@ -138,9 +138,12 @@ func TestSelectMMR_preservesDiversityAndTies(t *testing.T) {
 
 func TestSelectMMR_multilingualEnrichedPassages(t *testing.T) {
 	results := []*types.SearchResult{
-		{Content: "\u6df7\u5408\u68c0\u7d22\u7ed3\u5408\u8bed\u4e49\u5411\u91cf\u548c\u5173\u952e\u8bcd\u7d22\u5f15\uff0c\u63d0\u9ad8\u77e5\u8bc6\u5e93\u68c0\u7d22\u8986\u76d6\u7387\u3002", Score: 0.9},
-		{Content: "\u6df7\u5408\u68c0\u7d22\u7ed3\u5408\u8bed\u4e49\u5411\u91cf\u548c\u5173\u952e\u8bcd\u7d22\u5f15\uff0c\u63d0\u9ad8\u77e5\u8bc6\u5e93\u68c0\u7d22\u8986\u76d6\u7387\u3002", Score: 0.85},
-		{Content: "Wiki \u6784\u5efa\u4ece\u6587\u6863\u62bd\u53d6\u5b9e\u4f53\u548c\u6982\u5ff5\uff0c\u4fdd\u7559\u4e8b\u5b9e\u5f15\u7528\u4e0e\u6765\u6e90\u5206\u5757\u3002", Score: 0.8},
+		{Content: "\u6df7\u5408\u68c0\u7d22\u7ed3\u5408\u8bed\u4e49\u5411\u91cf\u548c\u5173\u952e\u8bcd\u7d22\u5f15" +
+			"\uff0c\u63d0\u9ad8\u77e5\u8bc6\u5e93\u68c0\u7d22\u8986\u76d6\u7387\u3002", Score: 0.9},
+		{Content: "\u6df7\u5408\u68c0\u7d22\u7ed3\u5408\u8bed\u4e49\u5411\u91cf\u548c\u5173\u952e\u8bcd\u7d22\u5f15" +
+			"\uff0c\u63d0\u9ad8\u77e5\u8bc6\u5e93\u68c0\u7d22\u8986\u76d6\u7387\u3002", Score: 0.85},
+		{Content: "Wiki \u6784\u5efa\u4ece\u6587\u6863\u62bd\u53d6\u5b9e\u4f53\u548c\u6982\u5ff5\uff0c\u4fdd\u7559" +
+			"\u4e8b\u5b9e\u5f15\u7528\u4e0e\u6765\u6e90\u5206\u5757\u3002", Score: 0.8},
 		{Content: "retrieval", ImageInfo: `[{"caption":"semantic vectors and keyword search"}]`, Score: 0.75},
 		{
 			Content: "sources", Score: 0.7,
@@ -166,7 +169,8 @@ func TestSelectMMR_multilingualEnrichedPassages(t *testing.T) {
 // the benchmarks measure MMR computation, not end-to-end retrieval quality.
 func mmrPassageCorpus(n, words int, chinese bool) []*types.SearchResult {
 	results := make([]*types.SearchResult, n)
-	terms := []string{"\u68c0\u7d22", "\u77e5\u8bc6\u5e93", "\u5411\u91cf", "\u7d22\u5f15", "\u8bed\u4e49", "\u6587\u6863", "\u5f15\u7528", "\u5b9e\u4f53", "\u6982\u5ff5", "\u6784\u5efa", "\u7b54\u6848", "\u6a21\u578b"}
+	terms := []string{"\u68c0\u7d22", "\u77e5\u8bc6\u5e93", "\u5411\u91cf", "\u7d22\u5f15", "\u8bed\u4e49", "\u6587" +
+		"\u6863", "\u5f15\u7528", "\u5b9e\u4f53", "\u6982\u5ff5", "\u6784\u5efa", "\u7b54\u6848", "\u6a21\u578b"}
 	for i := range results {
 		var content strings.Builder
 		for j := 0; j < words; j++ {

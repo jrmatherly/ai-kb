@@ -77,7 +77,8 @@ func TestFindIncompleteMarkdownImage(t *testing.T) {
 	}{
 		{"complete image", "![img](local://1/a.png)", -1},
 		{"complete then text", "![img](local://1/a.png) trailing", -1},
-		{"truncated provider URL in image", "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852", 0},
+		{"truncated provider URL in image", "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe" +
+			"\u754c\u9762](minio://wizard-test/10000/exports/c91cf852", 0},
 		{"open paren only", "text ![alt](", 5},
 		{"bare provider suffix without markdown", "text minio://wizard-test/10000/exp", -1},
 		{"two images complete", "![a](local://1/a.png) ![b](local://1/b.png)", -1},

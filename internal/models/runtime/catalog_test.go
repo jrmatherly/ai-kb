@@ -372,7 +372,15 @@ func TestModelsByType(t *testing.T) {
 func TestApplyOverlay(t *testing.T) {
 	registerTestVendors(t)
 	t.Setenv("ACME_KEY", "sk-from-env")
-	overlay := "{\n\t  \"providers\": {\n\t    \"acme\": {\n\t      \"base_url\": \"https://acme.internal/v1\",\n\t      \"api_key\": \"${ACME_KEY}\",\n\t      \"headers\": {\"X-Team\": \"$ACME_KEY\"},\n\t      \"thinking_levels\": {\"xhigh\": \"max\"},\n\t      \"models\": [{\"id\": \"acme-ultra\", \"reasoning\": true, \"context_window\": 400000}],\n\t      \"model_overrides\": {\"acme-pro\": {\"context_window\": 123, \"compat\": {\"supports_temperature\": true}}}\n\t    },\n\t    \"my-vllm\": {\n\t      \"name\": \"Lab vLLM\",\n\t      \"names\": {\"zh-CN\": \"\u5b9e\u9a8c\u5ba4 vLLM\"},\n\t      \"base_url\": \"http://vllm.lab:8000/v1\",\n\t      \"requires_auth\": false,\n\t      \"compat\": {\"thinking_format\": \"chat-template-kwargs\", \"max_tokens_field\": \"max_tokens\"},\n\t      \"models\": [{\"id\": \"Qwen/Qwen3-32B\", \"reasoning\": true}]\n\t    }\n\t  }\n\t}"
+	overlay := "{\n\t  \"providers\": {\n\t    \"acme\": {\n\t      \"base_url\": \"https://acme.internal/v1\",\n\t  " +
+		"    \"api_key\": \"${ACME_KEY}\",\n\t      \"headers\": {\"X-Team\": \"$ACME_KEY\"},\n\t      " +
+		"\"thinking_levels\": {\"xhigh\": \"max\"},\n\t      \"models\": [{\"id\": \"acme-ultra\", \"reasoning\": " +
+		"true, \"context_window\": 400000}],\n\t      \"model_overrides\": {\"acme-pro\": {\"context_window\": 123, " +
+		"\"compat\": {\"supports_temperature\": true}}}\n\t    },\n\t    \"my-vllm\": {\n\t      \"name\": \"Lab " +
+		"vLLM\",\n\t      \"names\": {\"zh-CN\": \"\u5b9e\u9a8c\u5ba4 vLLM\"},\n\t      \"base_url\": " +
+		"\"http://vllm.lab:8000/v1\",\n\t      \"requires_auth\": false,\n\t      \"compat\": " +
+		"{\"thinking_format\": \"chat-template-kwargs\", \"max_tokens_field\": \"max_tokens\"},\n\t      " +
+		"\"models\": [{\"id\": \"Qwen/Qwen3-32B\", \"reasoning\": true}]\n\t    }\n\t  }\n\t}"
 	require.NoError(t, modelruntime.ApplyOverlay([]byte(overlay), t.TempDir()))
 
 	acme, ok := modelruntime.Get("acme")

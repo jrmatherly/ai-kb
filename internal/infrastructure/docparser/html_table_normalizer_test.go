@@ -8,9 +8,11 @@ import (
 func TestNormalizeHTMLTables_ConvertsStyledTableToMarkdown(t *testing.T) {
 	// Mirrors PaddleOCR-VL output: a data table where every cell carries a
 	// text-align style that wastes tokens.
-	input := "# \u62a5\u544a\n\n<table><tr><td style=\"text-align:center;\">\u6307\u6807</td><td style=\"text-align:center;\">\u6570\u503c</td></tr>" +
+	input := "# \u62a5\u544a\n\n<table><tr><td style=\"text-align:center;\">\u6307\u6807</td><td " +
+		"style=\"text-align:center;\">\u6570\u503c</td></tr>" +
 		"<tr><td style=\"text-align:center;\">\u8425\u6536</td><td style=\"text-align:right;\">10\u4ebf</td></tr>" +
-		"<tr><td style=\"text-align:center;\">\u5229\u6da6</td><td style=\"text-align:right;\">2.3\u4ebf</td></tr></table>\n\n\u7ed3\u5c3e\u3002"
+		"<tr><td style=\"text-align:center;\">\u5229\u6da6</td><td style=\"text-align:right;\">2.3\u4ebf</td></tr></t" +
+		"able>\n\n\u7ed3\u5c3e\u3002"
 
 	got := NormalizeHTMLTables(input)
 
@@ -23,7 +25,8 @@ func TestNormalizeHTMLTables_ConvertsStyledTableToMarkdown(t *testing.T) {
 	if !markdownTableSeparatorPattern.MatchString(got) {
 		t.Fatalf("expected a Markdown table separator row, got:\n%s", got)
 	}
-	for _, want := range []string{"\u6307\u6807", "\u6570\u503c", "\u8425\u6536", "10\u4ebf", "\u5229\u6da6", "2.3\u4ebf"} {
+	for _, want := range []string{"\u6307\u6807", "\u6570\u503c", "\u8425\u6536", "10\u4ebf", "\u5229\u6da6", "2.3" +
+		"\u4ebf"} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("expected converted table to retain %q, got:\n%s", want, got)
 		}
@@ -34,7 +37,8 @@ func TestNormalizeHTMLTables_ConvertsStyledTableToMarkdown(t *testing.T) {
 }
 
 func TestNormalizeHTMLTables_NoTableUnchanged(t *testing.T) {
-	input := "# \u6807\u9898\n\n\u666e\u901a\u6bb5\u843d\uff0c\u6ca1\u6709\u8868\u683c\u3002\n\n| a | b |\n| --- | --- |\n| 1 | 2 |"
+	input := "# \u6807\u9898\n\n\u666e\u901a\u6bb5\u843d\uff0c\u6ca1\u6709\u8868\u683c\u3002\n\n| a | b |\n| --- | " +
+		"--- |\n| 1 | 2 |"
 	if got := NormalizeHTMLTables(input); got != input {
 		t.Fatalf("expected content without HTML tables to be unchanged, got:\n%s", got)
 	}
@@ -166,7 +170,8 @@ func TestNormalizeHTMLTables_ListInCellFallsBackToSplittableHTML(t *testing.T) {
 }
 
 func TestNormalizeHTMLTables_SingleColumnConvertsToGFM(t *testing.T) {
-	input := "<table><tr><td>\u76ee\u5f55</td></tr><tr><td>\u7b2c\u4e00\u7ae0</td></tr><tr><td>\u7b2c\u4e8c\u7ae0</td></tr></table>"
+	input := "<table><tr><td>\u76ee\u5f55</td></tr><tr><td>\u7b2c\u4e00\u7ae0</td></tr><tr><td>\u7b2c\u4e8c\u7ae0</td" +
+		"></tr></table>"
 
 	got := NormalizeHTMLTables(input)
 

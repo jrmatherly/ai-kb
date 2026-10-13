@@ -43,7 +43,8 @@ func TestMinerUUploadFileName(t *testing.T) {
 		fileType string
 		want     string
 	}{
-		{name: "original basename", fileName: "reports/Illustrator \u7814\u62a5.pdf", fileType: "pdf", want: "Illustrator \u7814\u62a5.pdf"},
+		{name: "original basename", fileName: "reports/Illustrator \u7814\u62a5.pdf", fileType: "pdf", want: "Illustr" +
+			"ator \u7814\u62a5.pdf"},
 		{
 			name:     "strip multipart controls",
 			fileName: "reports/\r\nIllustrator\x00 export.pdf",
@@ -143,7 +144,8 @@ func TestMinerUReaderPreservesMultipartFilename(t *testing.T) {
 		fileType string
 		want     string
 	}{
-		{name: "original basename", fileName: "reports/Illustrator \u7814\u62a5.pdf", fileType: "pdf", want: "Illustrator \u7814\u62a5.pdf"},
+		{name: "original basename", fileName: "reports/Illustrator \u7814\u62a5.pdf", fileType: "pdf", want: "Illustr" +
+			"ator \u7814\u62a5.pdf"},
 		{
 			name:     "strip multipart controls",
 			fileName: "reports/\r\nIllustrator\x00 export.pdf",

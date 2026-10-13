@@ -6,7 +6,8 @@ import (
 )
 
 func TestKnowledgeFileName(t *testing.T) {
-	if got := knowledgeFileName("01-\u673a\u573a\u7ebf", "/\u4ea7\u54c1/\u4ea7\u54c1A/\u9700\u6c42: v2.docx"); got != "01-\u673a\u573a\u7ebf/\u4ea7\u54c1/\u4ea7\u54c1A/\u9700\u6c42_ v2.docx" {
+	if got := knowledgeFileName("01-\u673a\u573a\u7ebf", "/\u4ea7\u54c1/\u4ea7\u54c1A/\u9700\u6c42: "+
+		"v2.docx"); got != "01-\u673a\u573a\u7ebf/\u4ea7\u54c1/\u4ea7\u54c1A/\u9700\u6c42_ v2.docx" {
 		t.Fatalf("filename = %q", got)
 	}
 	p := "/" + strings.Repeat("\u5c42\u7ea7/", 20) + "\u8bf4\u660e.pdf"

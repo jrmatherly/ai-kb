@@ -112,8 +112,9 @@ func TestCleanPassageForRerank(t *testing.T) {
 			expect: "\u8fd9\u662f\u4e00\u6bb5\u5f15\u7528\n\u7b2c\u4e8c\u884c\u5f15\u7528",
 		},
 		{
-			name:   "unwrap bold and italic",
-			input:  "\u8fd9\u662f **\u52a0\u7c97** \u548c *\u659c\u4f53* \u4ee5\u53ca ***\u7c97\u659c\u4f53*** \u6587\u672c",
+			name: "unwrap bold and italic",
+			input: "\u8fd9\u662f **\u52a0\u7c97** \u548c *\u659c\u4f53* \u4ee5\u53ca ***\u7c97\u659c\u4f53*** " +
+				"\u6587\u672c",
 			expect: "\u8fd9\u662f \u52a0\u7c97 \u548c \u659c\u4f53 \u4ee5\u53ca \u7c97\u659c\u4f53 \u6587\u672c",
 		},
 		{
@@ -132,9 +133,14 @@ func TestCleanPassageForRerank(t *testing.T) {
 			expect: "\u6bb5\u843d\u4e00\n\n\u6bb5\u843d\u4e8c",
 		},
 		{
-			name:   "combined real-world passage",
-			input:  "## \u4ea7\u54c1\u4ecb\u7ecd\n\n\u8fd9\u662f\u4e00\u4e2a **\u91cd\u8981\u7684** \u4ea7\u54c1\u3002\u8be6\u89c1 [\u4ea7\u54c1\u9875\u9762](https://example.com/product)\u3002\n\n![\u4ea7\u54c1\u622a\u56fe](images/product.png)\n\n> \u7528\u6237\u8bc4\u4ef7\uff1a\u975e\u5e38\u597d\u7528\n\n- \u529f\u80fd\u4e00\n- \u529f\u80fd\u4e8c\n\n" + "```json\n{\"key\": \"value\"}\n```",
-			expect: "\u4ea7\u54c1\u4ecb\u7ecd\n\n\u8fd9\u662f\u4e00\u4e2a \u91cd\u8981\u7684 \u4ea7\u54c1\u3002\u8be6\u89c1 \u4ea7\u54c1\u9875\u9762\u3002\n\n\u7528\u6237\u8bc4\u4ef7\uff1a\u975e\u5e38\u597d\u7528\n\n\u529f\u80fd\u4e00\n\u529f\u80fd\u4e8c\n\n{\"key\": \"value\"}",
+			name: "combined real-world passage",
+			input: "## \u4ea7\u54c1\u4ecb\u7ecd\n\n\u8fd9\u662f\u4e00\u4e2a **\u91cd\u8981\u7684** " +
+				"\u4ea7\u54c1\u3002\u8be6\u89c1 [\u4ea7\u54c1\u9875\u9762](https://example.com/product)\u3002\n\n![" +
+				"\u4ea7\u54c1\u622a\u56fe](images/product.png)\n\n> \u7528\u6237\u8bc4\u4ef7\uff1a\u975e\u5e38\u597d" +
+				"\u7528\n\n- \u529f\u80fd\u4e00\n- \u529f\u80fd\u4e8c\n\n" + "```json\n{\"key\": \"value\"}\n```",
+			expect: "\u4ea7\u54c1\u4ecb\u7ecd\n\n\u8fd9\u662f\u4e00\u4e2a \u91cd\u8981\u7684 " +
+				"\u4ea7\u54c1\u3002\u8be6\u89c1 \u4ea7\u54c1\u9875\u9762\u3002\n\n\u7528\u6237\u8bc4\u4ef7\uff1a" +
+				"\u975e\u5e38\u597d\u7528\n\n\u529f\u80fd\u4e00\n\u529f\u80fd\u4e8c\n\n{\"key\": \"value\"}",
 		},
 		{
 			name:   "convert table data rows to plain text",
@@ -171,10 +177,12 @@ func TestCleanPassageForRerank(t *testing.T) {
 func TestModelPassage_includesHeadingBreadcrumb(t *testing.T) {
 	t.Parallel()
 	got := ModelPassage(context.Background(), &types.SearchResult{
-		Content: "7 \u5929\u5185\u53ef\u7533\u8bf7", KnowledgeTitle: "\u552e\u540e\u624b\u518c", ContextHeader: "\u9000\u6b3e\u653f\u7b56 > \u7533\u8bf7\u6761\u4ef6",
+		Content: "7 \u5929\u5185\u53ef\u7533\u8bf7", KnowledgeTitle: "\u552e\u540e\u624b" +
+			"\u518c", ContextHeader: "\u9000\u6b3e\u653f\u7b56 > \u7533\u8bf7\u6761\u4ef6",
 		ChunkType: string(types.ChunkTypeText),
 	})
-	if got != "\u552e\u540e\u624b\u518c\n\n\u9000\u6b3e\u653f\u7b56 > \u7533\u8bf7\u6761\u4ef6\n\n7 \u5929\u5185\u53ef\u7533\u8bf7" {
+	if got != "\u552e\u540e\u624b\u518c\n\n\u9000\u6b3e\u653f\u7b56 > \u7533\u8bf7\u6761\u4ef6\n\n7 "+
+		"\u5929\u5185\u53ef\u7533\u8bf7" {
 		t.Fatalf("passage = %q", got)
 	}
 }

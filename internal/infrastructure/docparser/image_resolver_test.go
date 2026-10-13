@@ -391,7 +391,8 @@ func TestResolveAndStoreMarkdownImageTitleContainingRightParen(t *testing.T) {
 	if len(imgs) != 1 || len(svc.saved) != 1 {
 		t.Fatalf("expected one stored image, got imgs=%d saved=%d", len(imgs), len(svc.saved))
 	}
-	if !strings.Contains(out, "![\u56fe\u7247](local://test/") || !strings.Contains(out, " \"\u9636\u6bb5 1) \u56fe\u7247\")") {
+	if !strings.Contains(out, "![\u56fe\u7247](local://test/") || !strings.Contains(out, " \"\u9636\u6bb5 1) "+
+		"\u56fe\u7247\")") {
 		t.Fatalf("right-paren title was not preserved around stored URL: %s", out)
 	}
 }
@@ -419,7 +420,8 @@ func TestResolveAndStoreMarkdownImageWithMultilineTitle(t *testing.T) {
 	if len(imgs) != 1 || len(svc.saved) != 1 {
 		t.Fatalf("expected one stored image, got imgs=%d saved=%d", len(imgs), len(svc.saved))
 	}
-	if !strings.Contains(out, "![\u56fe\u7247](local://test/") || !strings.Contains(out, "\n  \"\u56fe\u7247\u8bf4\u660e\")") {
+	if !strings.Contains(out, "![\u56fe\u7247](local://test/") || !strings.Contains(out, "\n  "+
+		"\"\u56fe\u7247\u8bf4\u660e\")") {
 		t.Fatalf("multiline title was not preserved around stored URL: %s", out)
 	}
 }
@@ -427,7 +429,8 @@ func TestResolveAndStoreMarkdownImageWithMultilineTitle(t *testing.T) {
 func TestResolveAndStoreMarkdownImageWithAngleDestination(t *testing.T) {
 	png := createTestPNG(200, 150)
 	result := &types.ReadResult{
-		MarkdownContent: "![\u56fe\u7247](<images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).png> \"\u9636\u6bb5 1) \u56fe\u7247\")",
+		MarkdownContent: "![\u56fe\u7247](<images/\u7b2c 1 \u9875 (\u6d4b\u8bd5).png> \"\u9636\u6bb5 1) " +
+			"\u56fe\u7247\")",
 		ImageRefs: []types.ImageRef{
 			{
 				Filename:    "\u7b2c 1 \u9875 (\u6d4b\u8bd5).png",
@@ -447,7 +450,8 @@ func TestResolveAndStoreMarkdownImageWithAngleDestination(t *testing.T) {
 	if len(imgs) != 1 || len(svc.saved) != 1 {
 		t.Fatalf("expected one stored image, got imgs=%d saved=%d", len(imgs), len(svc.saved))
 	}
-	if !strings.Contains(out, "![\u56fe\u7247](<local://test/") || !strings.Contains(out, "> \"\u9636\u6bb5 1) \u56fe\u7247\")") {
+	if !strings.Contains(out, "![\u56fe\u7247](<local://test/") || !strings.Contains(out, "> \"\u9636\u6bb5 1) "+
+		"\u56fe\u7247\")") {
 		t.Fatalf("angle destination wrapper or title was not preserved: %s", out)
 	}
 }
@@ -588,7 +592,8 @@ func TestResolveAndStoreSharedMHTMLContract(t *testing.T) {
 	if !strings.Contains(out, "| \u8d5b\u5b63\u5236\u5efa\u7acb | BP\u3001Rank |\n\n![\u56fe\u7247](local://test/") {
 		t.Fatalf("table-to-image block boundary changed: %s", out)
 	}
-	if !strings.Contains(out, "\"\u9636\u6bb5 1) \u56fe\u7247\")"+"\n\n\u9ad8\u673a\u52a8\u6027\u8eab\u6cd5\u4e0e\u72ec\u7279\u67aa\u68b0\u53cd\u9988") {
+	if !strings.Contains(out, "\"\u9636\u6bb5 1) \u56fe\u7247\")"+"\n\n\u9ad8\u673a\u52a8\u6027\u8eab\u6cd5\u4e0e"+
+		"\u72ec\u7279\u67aa\u68b0\u53cd\u9988") {
 		t.Fatalf("image-to-body block boundary changed: %s", out)
 	}
 	if !strings.Contains(out, "alpha  \nbeta") {

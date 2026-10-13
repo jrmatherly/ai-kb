@@ -81,7 +81,8 @@ func TestSplit_PreservesPositionInvariantAcrossTiers(t *testing.T) {
 			"\n\n" + strings.Repeat("Kapitel 2: Hauptteil\n", 1) + strings.Repeat("Mehr Text. ", 50),
 		"recursive-tier": strings.Repeat("plain prose without structure. ", 100),
 	}
-	cfg := SplitterConfig{ChunkSize: 300, ChunkOverlap: 30, Separators: []string{"\n\n", "\n", "\u3002", ". "}, Strategy: StrategyAuto}
+	cfg := SplitterConfig{ChunkSize: 300, ChunkOverlap: 30, Separators: []string{"\n\n", "\n", "\u3002", "." +
+		" "}, Strategy: StrategyAuto}
 
 	for name, doc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -292,7 +293,8 @@ func TestDeriveParentChildConfigs_AppliesEmbeddingTokenLimitOnlyToChildren(t *te
 		t.Fatalf("child languages: got %v want [%s]", child.Languages, LangChinese)
 	}
 
-	text := strings.Repeat("\u8fd9\u662f\u7528\u4e8e\u9a8c\u8bc1\u4e2d\u6587\u5206\u5757\u9884\u7b97\u7684\u53e5\u5b50\u3002", 100)
+	text := strings.Repeat("\u8fd9\u662f\u7528\u4e8e\u9a8c\u8bc1\u4e2d\u6587\u5206\u5757\u9884\u7b97\u7684\u53e5"+
+		"\u5b50\u3002", 100)
 	result := SplitParentChild(text, parent, child)
 	if len(result.Parents) != 1 {
 		t.Fatalf("parents: got %d want 1", len(result.Parents))

@@ -391,7 +391,9 @@ func formatQuotedContext(quote *QuotedMessage) string {
 		if label == "" {
 			label = "content of this type"
 		}
-		return "The user quoted a message containing " + label + ", but you cannot view it. Tell the user directly that you cannot process " + label + " right now, and suggest they describe the question in text. Do not guess what the message contains."
+		return "The user quoted a message containing " + label +
+			", but you cannot view it. Tell the user directly that you cannot process " + label +
+			" right now, and suggest they describe the question in text. Do not guess what the message contains."
 	}
 	if quote.Content == "" {
 		return ""
@@ -513,7 +515,8 @@ func (s *Service) buildIMMCPAuthNotice(ctx context.Context, services []imMCPAuth
 		}
 	}
 
-	return "⚠️ The following MCP services need authorization before they can be used. Open each link to authorize, then send your message again:\n" +
+	return "⚠️ The following MCP services need authorization before they can be used. " +
+		"Open each link to authorize, then send your message again:\n" +
 		strings.Join(lines, "\n")
 }
 
@@ -1915,11 +1918,14 @@ func emptyIncomingMessageReply(msg *IncomingMessage) (string, bool) {
 	}
 	switch rawType {
 	case "audio":
-		return "Could not recognize any text in this voice message. Please send plain text instead, or say it again.", true
+		return "Could not recognize any text in this voice message. Please send plain text instead, or say it " +
+			"again.", true
 	case "video":
-		return "Video messages are not supported yet. Please send plain text instead; send images or files separately.", true
+		return "Video messages are not supported yet. Please send plain text instead; send images or files " +
+			"separately.", true
 	default:
-		return "Could not recognize any text in this message. Please send plain text instead; send images or files separately.", true
+		return "Could not recognize any text in this message. Please send plain text instead; send images or files " +
+			"separately.", true
 	}
 }
 
@@ -1956,7 +1962,8 @@ func (s *Service) executeQARequest(req *qaRequest) {
 	attachments, imageURLs, downloaded, err := s.prepareIMAttachments(ctx, req.msg, req.adapter)
 	if err != nil {
 		logger.Warnf(ctx, "[IM] attachment preparation failed: %v", err)
-		if sendErr := req.adapter.SendReply(ctx, req.msg, &ReplyMessage{Content: "❌ Could not read this attachment. Please try again or describe it in text.", IsFinal: true}); sendErr != nil {
+		if sendErr := req.adapter.SendReply(ctx, req.msg, &ReplyMessage{Content: "❌ Could not read this attachment. " +
+			"Please try again or describe it in text.", IsFinal: true}); sendErr != nil {
 			logger.Warnf(ctx, "[IM] Failed to send attachment error reply: %v", sendErr)
 		}
 		return
@@ -3419,7 +3426,8 @@ func fileMessageQAContent(msg *IncomingMessage) string {
 	if fileName == "" {
 		fileName = "untitled file"
 	}
-	return fmt.Sprintf("I uploaded the file \"%s\". Please confirm you received it and tell me how you can help next.", fileName)
+	return fmt.Sprintf("I uploaded the file \"%s\". Please confirm you received it and tell me how you can help "+
+		"next.", fileName)
 }
 
 // processDownloadedFileToKnowledgeBase stores bytes already downloaded for QA.

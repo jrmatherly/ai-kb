@@ -19,14 +19,17 @@ func TestAppendWithOverlap_ContiguousNoTrim(t *testing.T) {
 }
 
 func TestAppendWithOverlap_PrependedTableHeaderSkipped(t *testing.T) {
-	// Simulate the chunker repeating the header on a split table: next starts with an extra header (zero-width, invisible to positions)
-	// and the real overlapping rows follow it. Position trimming misaligns; text matching must dedupe correctly.
+	// Simulate the chunker repeating the header on a split table: next starts with an extra header
+	// (zero-width, invisible to positions) and the real overlapping rows follow it. Position trimming
+	// misaligns; text matching must dedupe correctly.
 	header := "| \u52171 | \u52172 | \u52173 |\n|:---|:---|:---|\n"
-	overlapRows := "| \u7b2c5\u884c | \u5185\u5bb95A | \u5185\u5bb95B |\n| \u7b2c6\u884c | \u5185\u5bb96A | \u5185\u5bb96B |\n"
+	overlapRows := "| \u7b2c5\u884c | \u5185\u5bb95A | \u5185\u5bb95B |\n| \u7b2c6\u884c | \u5185\u5bb96A | " +
+		"\u5185\u5bb96B |\n"
 	accTail := "| \u7b2c4\u884c | \u5185\u5bb94A | \u5185\u5bb94B |\n" + overlapRows
 	acc := header + "| \u7b2c1\u884c | x | \u2014 |\n" + accTail
 
-	newRows := "| \u7b2c7\u884c | \u5185\u5bb97A | \u5185\u5bb97B |\n| \u7b2c8\u884c | \u5185\u5bb98A | \u5185\u5bb98B |\n"
+	newRows := "| \u7b2c7\u884c | \u5185\u5bb97A | \u5185\u5bb97B |\n| \u7b2c8\u884c | \u5185\u5bb98A | " +
+		"\u5185\u5bb98B |\n"
 	next := header + overlapRows + newRows
 
 	// The position overlap is roughly two rows long (an approximation is enough, it only sizes the window).

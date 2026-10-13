@@ -57,7 +57,8 @@ func TestStreamDisplayPipeline_agentScenario_redGreen(t *testing.T) {
 	// Simulates the agent IM stream lifecycle aligned with Web:
 	// 1) intermediate updates show styled thinking + tools
 	// 2) final replace shows answer only (no collapsed think header)
-	rawIntermediate := "<think>\nAnalyzing the Civilization VI question\nCalling Text Pattern Search...\nText Pattern Search\n</think>\n\n"
+	rawIntermediate := "<think>\nAnalyzing the Civilization VI question\nCalling Text Pattern Search...\nText " +
+		"Pattern Search\n</think>\n\n"
 
 	rec := &recordingStreamSender{}
 	ctx := context.Background()

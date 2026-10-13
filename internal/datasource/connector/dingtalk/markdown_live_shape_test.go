@@ -17,12 +17,14 @@ import (
 func TestRenderListReadsTheLiveFlatShape(t *testing.T) {
 	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"unorderedList","index":87,"id":"m050v0j3o1iic0pr7xg",` +
-			"\"unorderedList\":{\"text\":\"\u786e\u8ba4\u662f\u5426\u81ea\u5b9a\u4e49\u5168\u7aef\u53e3\uff0c\u9ed8\u8ba4\u662f\u5e38\u89c1\u7aef\u53e3\"}}"),
+			"\"unorderedList\":{\"text\":\"\u786e\u8ba4\u662f\u5426\u81ea\u5b9a\u4e49\u5168\u7aef\u53e3\uff0c\u9ed8" +
+			"\u8ba4\u662f\u5e38\u89c1\u7aef\u53e3\"}}"),
 		rawJSON(`{"blockType":"orderedList","index":88,"id":"m050w04e41a0sfbcy1",` +
 			"\"orderedList\":{\"text\":\"\u7b2c\u4e00\u6b65\uff1a\u786e\u8ba4\u8d44\u4ea7\u8303\u56f4\"}}"),
 	})
 
-	want := "# \u6d4b\u8bd5\u6587\u6863\n\n- \u786e\u8ba4\u662f\u5426\u81ea\u5b9a\u4e49\u5168\u7aef\u53e3\uff0c\u9ed8\u8ba4\u662f\u5e38\u89c1\u7aef\u53e3\n1. \u7b2c\u4e00\u6b65\uff1a\u786e\u8ba4\u8d44\u4ea7\u8303\u56f4\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n- \u786e\u8ba4\u662f\u5426\u81ea\u5b9a\u4e49\u5168\u7aef\u53e3\uff0c\u9ed8" +
+		"\u8ba4\u662f\u5e38\u89c1\u7aef\u53e3\n1. \u7b2c\u4e00\u6b65\uff1a\u786e\u8ba4\u8d44\u4ea7\u8303\u56f4\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -37,12 +39,16 @@ func TestRenderListReadsTheLiveFlatShape(t *testing.T) {
 // showed up in the unknown-type report either.
 func TestRenderListKeepsEveryItemOfALiveDocument(t *testing.T) {
 	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
-		rawJSON("{\"blockType\":\"unorderedList\",\"index\":1,\"id\":\"a\",\"unorderedList\":{\"text\":\"\u9879\u76ee\u5206\u4eab\uff08\u56e2\u961f\u7248\u4e2d\uff09\"}}"),
-		rawJSON("{\"blockType\":\"unorderedList\",\"index\":2,\"id\":\"b\",\"unorderedList\":{\"text\":\"\u9879\u76ee\u62a5\u544a\u5bfc\u51fa\"}}"),
-		rawJSON("{\"blockType\":\"unorderedList\",\"index\":3,\"id\":\"c\",\"unorderedList\":{\"text\":\"\u4efb\u52a1\u4e0b\u53d1\"}}"),
+		rawJSON("{\"blockType\":\"unorderedList\",\"index\":1,\"id\":\"a\",\"unorderedList\":{\"text\":\"\u9879\u76ee" +
+			"\u5206\u4eab\uff08\u56e2\u961f\u7248\u4e2d\uff09\"}}"),
+		rawJSON("{\"blockType\":\"unorderedList\",\"index\":2,\"id\":\"b\",\"unorderedList\":{\"text\":\"\u9879\u76ee" +
+			"\u62a5\u544a\u5bfc\u51fa\"}}"),
+		rawJSON("{\"blockType\":\"unorderedList\",\"index\":3,\"id\":\"c\",\"unorderedList\":{\"text\":\"\u4efb\u52a1" +
+			"\u4e0b\u53d1\"}}"),
 	})
 
-	want := "# \u6d4b\u8bd5\u6587\u6863\n\n- \u9879\u76ee\u5206\u4eab\uff08\u56e2\u961f\u7248\u4e2d\uff09\n- \u9879\u76ee\u62a5\u544a\u5bfc\u51fa\n- \u4efb\u52a1\u4e0b\u53d1\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n- \u9879\u76ee\u5206\u4eab\uff08\u56e2\u961f\u7248\u4e2d\uff09\n- " +
+		"\u9879\u76ee\u62a5\u544a\u5bfc\u51fa\n- \u4efb\u52a1\u4e0b\u53d1\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -53,10 +59,12 @@ func TestRenderListKeepsEveryItemOfALiveDocument(t *testing.T) {
 func TestRenderListKeepsLiveMultiLineItem(t *testing.T) {
 	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"orderedList","index":4,"id":"d",` +
-			"\"orderedList\":{\"text\":\"\u8fde\u63a5\u5230\u5185\u7f51\u63a2\u6d4b\u6a21\u5757\uff1a\\n\u6267\u884c\u6240\u4e0b\u8f7d\u7684\u63a2\u6d4bAgent\"}}"),
+			"\"orderedList\":{\"text\":\"\u8fde\u63a5\u5230\u5185\u7f51\u63a2\u6d4b\u6a21\u5757\uff1a\\n\u6267\u884c" +
+			"\u6240\u4e0b\u8f7d\u7684\u63a2\u6d4bAgent\"}}"),
 	})
 
-	want := "# \u6d4b\u8bd5\u6587\u6863\n\n1. \u8fde\u63a5\u5230\u5185\u7f51\u63a2\u6d4b\u6a21\u5757\uff1a\n   \u6267\u884c\u6240\u4e0b\u8f7d\u7684\u63a2\u6d4bAgent\n"
+	want := "# \u6d4b\u8bd5\u6587\u6863\n\n1. \u8fde\u63a5\u5230\u5185\u7f51\u63a2\u6d4b\u6a21\u5757\uff1a\n   " +
+		"\u6267\u884c\u6240\u4e0b\u8f7d\u7684\u63a2\u6d4bAgent\n"
 	if result.Markdown != want {
 		t.Fatalf("Markdown = %q, want %q", result.Markdown, want)
 	}
@@ -69,7 +77,8 @@ func TestRenderListKeepsLiveMultiLineItem(t *testing.T) {
 func TestRenderUnknownBlockRendersItsLiveText(t *testing.T) {
 	result := renderDocument("\u6d4b\u8bd5\u6587\u6863", []json.RawMessage{
 		rawJSON(`{"blockType":"unknown","index":19,"id":"lqaap37i2lv2yn7i5w7",` +
-			"\"unknown\":{\"rawType\":\"sdt\",\"text\":\"\u76ee\u5f55\u76ee\u5f551\u524d\u8a0011. \u4ea7\u54c1\u4ecb\u7ecd1\"}}"),
+			"\"unknown\":{\"rawType\":\"sdt\",\"text\":\"\u76ee\u5f55\u76ee\u5f551\u524d\u8a0011. " +
+			"\u4ea7\u54c1\u4ecb\u7ecd1\"}}"),
 	})
 
 	want := "# \u6d4b\u8bd5\u6587\u6863\n\n\u76ee\u5f55\u76ee\u5f551\u524d\u8a0011. \u4ea7\u54c1\u4ecb\u7ecd1\n"

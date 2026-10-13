@@ -49,7 +49,8 @@ func TestVolcengineClientOutboundShape(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	got, err := client.Rerank(context.Background(), "\u4fdd\u7559\u5bf9\u8bdd\u6570\u636e\u5417", []string{"\u4f1a\u4fdd\u7559", "\u4e0d\u4f1a\u4fdd\u7559"})
+	got, err := client.Rerank(context.Background(), "\u4fdd\u7559\u5bf9\u8bdd\u6570\u636e\u5417", []string{"\u4f1a" +
+		"\u4fdd\u7559", "\u4e0d\u4f1a\u4fdd\u7559"})
 	require.NoError(t, err)
 	require.Len(t, got, 2)
 	assert.Equal(t, 0, got[0].Index)

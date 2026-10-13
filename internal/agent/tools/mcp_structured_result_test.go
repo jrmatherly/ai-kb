@@ -85,7 +85,8 @@ func TestMCPStructuredResultThroughCatalog(t *testing.T) {
 		{
 			name: "bounded_output",
 			result: &sdkmcp.CallToolResult{
-				Content: []sdkmcp.Content{}, StructuredContent: map[string]any{"body": strings.Repeat("\u8d44\u6599", 2000)},
+				Content: []sdkmcp.Content{}, StructuredContent: map[string]any{"body": strings.Repeat("\u8d44"+
+					"\u6599", 2000)},
 			},
 			budget: 512,
 		},
@@ -143,7 +144,8 @@ func TestMCPStructuredResultThroughCatalog(t *testing.T) {
 				require.NotContains(t, string(metadata), "aGVsbG8=")
 			}
 			if tt.name == "serialized_fallback" || tt.name == "formatted_fallback" {
-				require.Equal(t, 1, strings.Count(visible, "\u8ba2\u5355-42"), "do not duplicate the compatibility text payload")
+				require.Equal(t, 1, strings.Count(visible, "\u8ba2\u5355-42"), "do not duplicate the compatibility "+
+					"text payload")
 			}
 			if tt.name == "summary_and_structured" {
 				require.Contains(t, visible, "Order found")

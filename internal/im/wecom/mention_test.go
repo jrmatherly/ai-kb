@@ -17,9 +17,11 @@ func TestStripAtMentionBasic(t *testing.T) {
 		{"single-word bot single-space", "@Bot /stop", "/stop"},
 		{"single-word bot double-space chinese", "@Bot  \u4f60\u597d\u4e16\u754c", "\u4f60\u597d\u4e16\u754c"},
 		{"multi-word bot double-space", "@AI KB Bot  /stop", "/stop"},
-		{"multi-word bot double-space chinese", "@AI KB Bot  \u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b", "\u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b"},
+		{"multi-word bot double-space chinese", "@AI KB Bot  \u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5" +
+			"\u7a0b", "\u4ec0\u4e48\u662f\u4e0a\u4e0b\u6587\u5de5\u7a0b"},
 		{"multi-word bot single-space command", "@AI KB Bot /stop", "/stop"},
-		{"multi-word bot single-space chinese", "@AI KB Bot \u4ec0\u4e48\u662f\u8001\u767b", "\u4ec0\u4e48\u662f\u8001\u767b"},
+		{"multi-word bot single-space chinese", "@AI KB Bot \u4ec0\u4e48\u662f\u8001\u767b", "\u4ec0\u4e48\u662f" +
+			"\u8001\u767b"},
 		{"leading whitespace", "  @Bot  hello  ", "hello"},
 		{"double-space in user content", "@Bot  hello  world", "hello  world"},
 	}

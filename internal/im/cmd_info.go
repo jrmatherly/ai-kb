@@ -68,7 +68,7 @@ func (c *InfoCommand) Execute(ctx context.Context, cmdCtx *CommandContext, _ []s
 			for _, kb := range kbs {
 				sb.WriteString(fmt.Sprintf("  · %s\n", kb.Name))
 			}
-			sb.WriteString(fmt.Sprintf("  %d total (all enabled)\n", len(kbs)))
+			fmt.Fprintf(&sb, "  %d total (all enabled)\n", len(kbs))
 		} else {
 			sb.WriteString("  All enabled\n")
 		}
@@ -87,7 +87,7 @@ func (c *InfoCommand) Execute(ctx context.Context, cmdCtx *CommandContext, _ []s
 				sb.WriteString(fmt.Sprintf("  · %s\n", label))
 			}
 		} else {
-			sb.WriteString(fmt.Sprintf("  %d selected\n", len(cfg.KnowledgeBases)))
+			fmt.Fprintf(&sb, "  %d selected\n", len(cfg.KnowledgeBases))
 		}
 	} else {
 		sb.WriteString("  Not configured\n")
@@ -110,7 +110,7 @@ func (c *InfoCommand) Execute(ctx context.Context, cmdCtx *CommandContext, _ []s
 	if cfg.MCPSelectionMode == "all" {
 		sb.WriteString("  All connected\n")
 	} else if cfg.MCPSelectionMode == "selected" && len(cfg.MCPServices) > 0 {
-		sb.WriteString(fmt.Sprintf("  %d service(s) connected\n", len(cfg.MCPServices)))
+		fmt.Fprintf(&sb, "  %d service(s) connected\n", len(cfg.MCPServices))
 	} else {
 		sb.WriteString("  Not configured\n")
 	}
@@ -128,7 +128,7 @@ func (c *InfoCommand) Execute(ctx context.Context, cmdCtx *CommandContext, _ []s
 	if cmdCtx.ChannelOutputMode == "full" {
 		outputLabel = "Full output"
 	}
-	sb.WriteString(fmt.Sprintf("\n⚙️ **Output mode**\n  %s\n", outputLabel))
+	fmt.Fprintf(&sb, "\n⚙️ **Output mode**\n  %s\n", outputLabel)
 	sb.WriteString("\n---\nSend `/help` to see all available commands")
 
 	return &CommandResult{Content: sb.String()}, nil

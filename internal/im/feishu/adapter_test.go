@@ -440,13 +440,15 @@ func TestCardSummaryPreview(t *testing.T) {
 		want string
 	}{
 		{name: "collapse whitespace", in: "  \u6700\u7ec8\n\u56de\u7b54\t✅  ", want: "\u6700\u7ec8 \u56de\u7b54 ✅"},
-		{name: "image keeps alt only", in: "![\u67b6\u6784\u56fe](https://cdn.example/a.png?sig=secret) \u8bf4\u660e", want: "\u67b6\u6784\u56fe \u8bf4\u660e"},
+		{name: "image keeps alt only", in: "![\u67b6\u6784\u56fe](https://cdn.example/a.png?sig=secret) " +
+			"\u8bf4\u660e", want: "\u67b6\u6784\u56fe \u8bf4\u660e"},
 		{
 			name: "resource image keeps alt only",
 			in:   "![diagram](resource://Zb2IrqfTdlCFkbUqFtmS5A) \u8bf4\u660e",
 			want: "diagram \u8bf4\u660e",
 		},
-		{name: "link keeps text only", in: "\u89c1 [\u6587\u6863](https://cdn.example/a.png?sig=secret) \u8bf4\u660e", want: "\u89c1 \u6587\u6863 \u8bf4\u660e"},
+		{name: "link keeps text only", in: "\u89c1 [\u6587\u6863](https://cdn.example/a.png?sig=secret) " +
+			"\u8bf4\u660e", want: "\u89c1 \u6587\u6863 \u8bf4\u660e"},
 		{name: "unicode limit", in: strings.Repeat("\u754c", 121), want: strings.Repeat("\u754c", 120)},
 		{name: "empty", in: " \n\t ", want: ""},
 	}

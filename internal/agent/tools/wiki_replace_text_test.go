@@ -101,7 +101,8 @@ func TestWikiReplaceTextExactMatchCases(t *testing.T) {
 		},
 		{
 			name: "unicode exact matches", content: "\u65e7\u6587\u672c\u4e0e\u65e7\u6587\u672c",
-			oldText: "\u65e7\u6587\u672c", newText: "\u65b0\u6587\u672c", want: "\u65b0\u6587\u672c\u4e0e\u65b0\u6587\u672c", wantCount: 2,
+			oldText: "\u65e7\u6587\u672c", newText: "\u65b0\u6587\u672c", want: "\u65b0\u6587\u672c\u4e0e\u65b0\u6587" +
+				"\u672c", wantCount: 2,
 		},
 		{
 			name: "markdown links remain plain exact text", content: "See [[concept/old]] and [[concept/old]].",

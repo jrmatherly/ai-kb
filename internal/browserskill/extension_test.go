@@ -61,7 +61,10 @@ func TestRealExtension(t *testing.T) {
 		}
 		if r.URL.Path == "/login" {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			_, _ = io.WriteString(w, "<!doctype html><title>Fixture login</title>\n<button>\u770b\u8fc7</button>\n<form action=\"/login-complete\" method=\"post\">\n<label>Account <input id=\"login-account\" name=\"account\"></label>\n<label>Password <input id=\"login-password\" type=\"password\" name=\"password\"></label>\n<button id=\"login-submit\" type=\"submit\">Sign in</button></form>")
+			_, _ = io.WriteString(w, "<!doctype html><title>Fixture login</title>\n<button>\u770b\u8fc7</button>\n<fo"+
+				"rm action=\"/login-complete\" method=\"post\">\n<label>Account <input id=\"login-account\" "+
+				"name=\"account\"></label>\n<label>Password <input id=\"login-password\" type=\"password\" "+
+				"name=\"password\"></label>\n<button id=\"login-submit\" type=\"submit\">Sign in</button></form>")
 			return
 		}
 		if r.URL.Path == "/login-complete" {
@@ -98,7 +101,12 @@ func TestRealExtension(t *testing.T) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = io.WriteString(
 			w,
-			"<!doctype html><title>BrowserSkill integration</title>\n<label>Name <input id=\"name\"></label>\n<button\n onclick=\"document.querySelector('#result').textContent='\u4f60\u597d '+document.querySelector('#name').value\">Save</button>\n<p id=\"result\"></p>\n<a id=\"new-tab\" href=\"/linked\" target=\"_blank\" rel=\"noopener\">Open linked page</a>\n<button id=\"popup\" onclick=\"window.open('/popup', '_blank', 'width=480,height=320')\">Open popup</button>\n<p id=\"scroll-target\" style=\"margin-top:2400px\">Scroll destination</p>",
+			"<!doctype html><title>BrowserSkill integration</title>\n<label>Name <input "+
+				"id=\"name\"></label>\n<button\n onclick=\"document.querySelector('#result').textContent='\u4f60"+
+				"\u597d '+document.querySelector('#name').value\">Save</button>\n<p id=\"result\"></p>\n<a "+
+				"id=\"new-tab\" href=\"/linked\" target=\"_blank\" rel=\"noopener\">Open linked page</a>\n<button "+
+				"id=\"popup\" onclick=\"window.open('/popup', '_blank', 'width=480,height=320')\">Open "+
+				"popup</button>\n<p id=\"scroll-target\" style=\"margin-top:2400px\">Scroll destination</p>",
 		)
 	}))
 	defer fixture.Close()
@@ -283,7 +291,8 @@ func TestRealExtension(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if _, err = call(ctx, scope, "chat", "fill", map[string]any{"selector": "#name", "value": "\u4e16\u754c"}); err != nil {
+	if _, err = call(ctx, scope, "chat", "fill", map[string]any{"selector": "#name", "value": "\u4e16" +
+		"\u754c"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = call(ctx, scope, "chat", "click", map[string]any{"selector": "button"}); err != nil {

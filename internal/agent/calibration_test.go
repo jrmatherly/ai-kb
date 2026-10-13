@@ -58,7 +58,8 @@ func (r *calibrationRun) appendRound(result string) int {
 	return estimated
 }
 
-var chineseResult = strings.Repeat("\u5408\u540c\u7b2c\u5341\u4e8c\u6761\u7ea6\u5b9a\uff0c\u4e59\u65b9\u5e94\u5728\u9a8c\u6536\u5408\u683c\u540e\u4e09\u5341\u65e5\u5185\u652f\u4ed8\u5269\u4f59\u6b3e\u9879\u3002", 40)
+var chineseResult = strings.Repeat("\u5408\u540c\u7b2c\u5341\u4e8c\u6761\u7ea6\u5b9a\uff0c\u4e59\u65b9\u5e94\u5728"+
+	"\u9a8c\u6536\u5408\u683c\u540e\u4e09\u5341\u65e5\u5185\u652f\u4ed8\u5269\u4f59\u6b3e\u9879\u3002", 40)
 
 // The scale is the provider's growth between two requests over the estimate
 // of what was appended, and it is carried to the next turn on the usage.
@@ -184,7 +185,8 @@ func TestExecuteCalibratesFromPromptCountsWithoutATotal(t *testing.T) {
 			Usage: &types.TokenUsage{PromptTokens: 1000},
 		}}},
 		{chunks: []types.StreamResponse{{
-			ResponseType: types.ResponseTypeAnswer, Content: "\u4ed8\u6b3e\u671f\u9650\u4e3a\u9a8c\u6536\u540e\u4e09\u5341\u65e5\u3002",
+			ResponseType: types.ResponseTypeAnswer, Content: "\u4ed8\u6b3e\u671f\u9650\u4e3a\u9a8c\u6536\u540e\u4e09" +
+				"\u5341\u65e5\u3002",
 			Done: true, FinishReason: "stop",
 			Usage: &types.TokenUsage{PromptTokens: 1000 + 700},
 		}}},
@@ -193,7 +195,8 @@ func TestExecuteCalibratesFromPromptCountsWithoutATotal(t *testing.T) {
 	engine.toolRegistry = agenttools.NewToolRegistry()
 	engine.toolRegistry.RegisterTool(tool)
 
-	state, err := engine.Execute(context.Background(), "session", "message", "\u4ed8\u6b3e\u671f\u9650\u662f\u591a\u4e45", nil)
+	state, err := engine.Execute(context.Background(), "session", "message", "\u4ed8\u6b3e\u671f\u9650\u662f\u591a"+
+		"\u4e45", nil)
 	require.NoError(t, err)
 	require.InDelta(t, 0.6, state.TurnUsage.ContextTokenScale, 0.1)
 	usage := turnUsage(state)

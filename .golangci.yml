@@ -12,6 +12,10 @@ linters:
     paths:
       # swag embeds OpenAPI as single-line JSON strings; line-length is not meaningful.
       - docs/docs\.go$
+    rules:
+      # A URL cannot be wrapped.
+      - linters: [lll]
+        source: '^\s*// https?://\S+$'
 formatters:
   enable:
     - gofmt

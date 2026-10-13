@@ -532,7 +532,8 @@ func TestShellExecHintsWhenVenvHasNoPip(t *testing.T) {
 	}}, nil)
 
 	result, err := tool.Execute(shellExecTestContext(), json.RawMessage(
-		"{\"command\":\"/opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/.venv/bin/python /opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/scripts/install_deps.py --word --yes\"}",
+		"{\"command\":\"/opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/.venv/bin/python "+
+			"/opt/ai-kb/tenant/skills/\u5f8b\u5e08\u52a9\u624b/scripts/install_deps.py --word --yes\"}",
 	))
 	require.NoError(t, err)
 	require.True(t, result.Success)

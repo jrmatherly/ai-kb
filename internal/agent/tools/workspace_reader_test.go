@@ -299,7 +299,8 @@ func TestReadFileWorkspaceCacheIsDroppedAfterShellExec(t *testing.T) {
 func TestPaginateSandboxFileNeverSplitsARune(t *testing.T) {
 	var content strings.Builder
 	for i := 0; i < 100; i++ {
-		content.WriteString("\u8fd9\u662f\u4e00\u884c\u4e2d\u6587\u6587\u672c\uff0c\u7528\u6765\u6d4b\u8bd5\u5206\u9875\u8fb9\u754c")
+		content.WriteString("\u8fd9\u662f\u4e00\u884c\u4e2d\u6587\u6587\u672c\uff0c\u7528\u6765\u6d4b\u8bd5\u5206" +
+			"\u9875\u8fb9\u754c")
 		content.WriteString("\n")
 	}
 

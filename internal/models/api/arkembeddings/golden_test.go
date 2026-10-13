@@ -48,7 +48,8 @@ func TestRequestBodyMatchesTheDocumentedSchema(t *testing.T) {
 		"model":           "doubao-embedding-vision-251215",
 		"encoding_format": "float",
 		"dimensions":      2048,
-		"input":           []any{map[string]any{"type": "text", "text": "\u89c6\u9891\u548c\u56fe\u7247\u91cc\u6709\u4ec0\u4e48"}},
+		"input": []any{map[string]any{"type": "text", "text": "\u89c6\u9891\u548c\u56fe\u7247\u91cc\u6709" +
+			"\u4ec0\u4e48"}},
 	}, body)
 }
 

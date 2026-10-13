@@ -564,7 +564,8 @@ func TestModelOutputWebFetchKeepsEveryPageAndAccurateContinuation(t *testing.T) 
 	for i := 0; i < 8; i++ {
 		rows = append(rows, map[string]interface{}{
 			"url": fmt.Sprintf("https://example.com/%d", i), "status": "success",
-			"raw_content": strings.Repeat("\u6587\u5b57", 5000), "offset": 100, "content_length": 20000, "truncated": true,
+			"raw_content": strings.Repeat("\u6587\u5b57", 5000), "offset": 100, "content_length": 20000, "truncate" +
+				"d": true,
 		})
 	}
 	output := registry.ModelOutput(&types.ToolResult{

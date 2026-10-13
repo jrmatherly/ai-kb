@@ -11,7 +11,8 @@ func TestApproxTokenCount_English(t *testing.T) {
 }
 
 func TestApproxTokenCount_Chinese(t *testing.T) {
-	got := ApproxTokenCount("\u8fd9\u662f\u4e00\u6bb5\u4e2d\u6587\u6d4b\u8bd5\u5185\u5bb9\u7528\u4e8e\u68c0\u9a8c\u5206\u8bcd\u4f30\u7b97", LangChinese)
+	got := ApproxTokenCount("\u8fd9\u662f\u4e00\u6bb5\u4e2d\u6587\u6d4b\u8bd5\u5185\u5bb9\u7528\u4e8e\u68c0\u9a8c"+
+		"\u5206\u8bcd\u4f30\u7b97", LangChinese)
 	// 18 runes / 1.7 ≈ 10
 	if got < 9 || got > 12 {
 		t.Errorf("Chinese token estimate out of range: got %d, want 9..12", got)

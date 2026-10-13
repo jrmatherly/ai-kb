@@ -45,8 +45,9 @@ func TestConvertMixedMessage(t *testing.T) {
 		wantAESKey  string
 	}{
 		{
-			name:        "text plus image: image kept as attachment, text as caption",
-			msg:         mixedMsg(textItem("\u8fd9\u5f20\u56fe\u91cc\u662f\u4ec0\u4e48\uff1f"), imageItem("https://img.example/1", "key1")),
+			name: "text plus image: image kept as attachment, text as caption",
+			msg: mixedMsg(textItem("\u8fd9\u5f20\u56fe\u91cc\u662f\u4ec0\u4e48\uff1f"), imageItem("https://im"+
+				"g.example/1", "key1")),
 			chatType:    im.ChatTypeDirect,
 			wantType:    im.MessageTypeImage,
 			wantContent: "\u8fd9\u5f20\u56fe\u91cc\u662f\u4ec0\u4e48\uff1f",
@@ -85,8 +86,9 @@ func TestConvertMixedMessage(t *testing.T) {
 			wantAESKey:  "keyOnly",
 		},
 		{
-			name:        "group chat: mention stripped from caption",
-			msg:         mixedMsg(textItem("@AI KB Bot  \u8fd9\u5f20\u56fe\u91cc\u662f\u4ec0\u4e48\uff1f"), imageItem("https://img.example/1", "key1")),
+			name: "group chat: mention stripped from caption",
+			msg: mixedMsg(textItem("@AI KB Bot  \u8fd9\u5f20\u56fe\u91cc\u662f\u4ec0\u4e48"+
+				"\uff1f"), imageItem("https://img.example/1", "key1")),
 			chatType:    im.ChatTypeGroup,
 			wantType:    im.MessageTypeImage,
 			wantContent: "\u8fd9\u5f20\u56fe\u91cc\u662f\u4ec0\u4e48\uff1f",

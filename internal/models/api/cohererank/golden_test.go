@@ -14,14 +14,20 @@ import (
 
 // zhipuResponse is the documented response of Zhipu's rerank endpoint, whose
 // result objects carry document / index / relevance_score and whose envelope
-// adds id, request_id, created and usage:
-// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E9%87%8D%E6%8E%92%E5%BA%8F (text rerank)
-const zhipuResponse = "{\n  \"id\": \"8305283656248111323\",\n  \"request_id\": \"8305283656248111323\",\n  \"created\": 1769040000,\n  \"results\": [\n    {\"index\": 1, \"relevance_score\": 0.9819, \"document\": \"\u4e0a\u6d77\u6c14\u5019\"},\n    {\"index\": 0, \"relevance_score\": 0.0021, \"document\": \"\u5317\u4eac\u7f8e\u98df\"}\n  ],\n  \"usage\": {\"prompt_tokens\": 24, \"total_tokens\": 24}\n}"
+// adds id, request_id, created and usage (text rerank):
+// https://docs.bigmodel.cn/api-reference/%E6%A8%A1%E5%9E%8B-api/%E6%96%87%E6%9C%AC%E9%87%8D%E6%8E%92%E5%BA%8F
+const zhipuResponse = "{\n  \"id\": \"8305283656248111323\",\n  \"request_id\": \"8305283656248111323\",\n  " +
+	"\"created\": 1769040000,\n  \"results\": [\n    {\"index\": 1, \"relevance_score\": 0.9819, \"document\": " +
+	"\"\u4e0a\u6d77\u6c14\u5019\"},\n    {\"index\": 0, \"relevance_score\": 0.0021, \"document\": " +
+	"\"\u5317\u4eac\u7f8e\u98df\"}\n  ],\n  \"usage\": {\"prompt_tokens\": 24, \"total_tokens\": 24}\n}"
 
 // jinaResponse spells the echoed document as an object instead of a string,
 // which is the other shape vendors use for the same field:
 // https://jina.ai/reranker/
-const jinaResponse = "{\n  \"model\": \"jina-reranker-v3.5\",\n  \"results\": [\n    {\"index\": 0, \"relevance_score\": 0.95, \"document\": {\"text\": \"\u4e0a\u6d77\u6c14\u5019\"}},\n    {\"index\": 1, \"relevance_score\": 0.11, \"document\": {\"text\": \"\u5317\u4eac\u7f8e\u98df\"}}\n  ],\n  \"usage\": {\"total_tokens\": 32}\n}"
+const jinaResponse = "{\n  \"model\": \"jina-reranker-v3.5\",\n  \"results\": [\n    {\"index\": 0, " +
+	"\"relevance_score\": 0.95, \"document\": {\"text\": \"\u4e0a\u6d77\u6c14\u5019\"}},\n    {\"index\": 1, " +
+	"\"relevance_score\": 0.11, \"document\": {\"text\": \"\u5317\u4eac\u7f8e\u98df\"}}\n  ],\n  \"usage\": " +
+	"{\"total_tokens\": 32}\n}"
 
 func newClient(t *testing.T, url string, settings api.RerankSettings) *Client {
 	t.Helper()
@@ -79,7 +85,8 @@ func serve(t *testing.T, payload string) (*httptest.Server, *string, *map[string
 
 func TestRequestBodyCarriesOnlyWhatTheVendorDeclares(t *testing.T) {
 	c := newClient(t, "https://example.invalid/v1", api.RerankSettings{})
-	body, err := c.BuildRequestBody("\u4e0a\u6d77\u5929\u6c14", []string{"\u4e0a\u6d77\u6c14\u5019", "\u5317\u4eac\u7f8e\u98df"})
+	body, err := c.BuildRequestBody("\u4e0a\u6d77\u5929\u6c14", []string{"\u4e0a\u6d77\u6c14\u5019", "\u5317\u4eac" +
+		"\u7f8e\u98df"})
 	require.NoError(t, err)
 
 	assert.Equal(t, map[string]any{
@@ -104,7 +111,8 @@ func TestDecodesAStringDocument(t *testing.T) {
 	defer server.Close()
 
 	c := newClient(t, server.URL, api.RerankSettings{})
-	got, err := c.Rerank(context.Background(), "\u4e0a\u6d77\u5929\u6c14", []string{"\u5317\u4eac\u7f8e\u98df", "\u4e0a\u6d77\u6c14\u5019"})
+	got, err := c.Rerank(context.Background(), "\u4e0a\u6d77\u5929\u6c14", []string{"\u5317\u4eac\u7f8e" +
+		"\u98df", "\u4e0a\u6d77\u6c14\u5019"})
 	require.NoError(t, err)
 
 	assert.Equal(t, []api.RerankResult{
@@ -118,7 +126,8 @@ func TestDecodesAnObjectDocument(t *testing.T) {
 	defer server.Close()
 
 	c := newClient(t, server.URL, api.RerankSettings{})
-	got, err := c.Rerank(context.Background(), "\u4e0a\u6d77\u5929\u6c14", []string{"\u4e0a\u6d77\u6c14\u5019", "\u5317\u4eac\u7f8e\u98df"})
+	got, err := c.Rerank(context.Background(), "\u4e0a\u6d77\u5929\u6c14", []string{"\u4e0a\u6d77\u6c14" +
+		"\u5019", "\u5317\u4eac\u7f8e\u98df"})
 	require.NoError(t, err)
 
 	assert.Equal(t, []api.RerankResult{

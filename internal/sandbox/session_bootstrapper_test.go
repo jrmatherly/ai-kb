@@ -76,7 +76,8 @@ func TestTemplateOverrideDoesNotMutateSharedCreateRequest(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, baseTemplate, lc.createRequest.TemplateID,
-		"the shared createRequest was modified; other sessions with the same config would boot from someone else's snapshot")
+		"the shared createRequest was modified; other sessions with the same config would boot from someone else's "+
+			"snapshot")
 }
 
 func TestAfterCreateRunsWithTheNewHandle(t *testing.T) {

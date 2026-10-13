@@ -21,12 +21,19 @@ const WikiTaxonomyPlanPrompt = `You are organizing a wiki knowledge base into a 
 For every item, output a category path: an array of folder labels from broad to narrow (at most 2 levels). The category classifies WHAT the item fundamentally IS (the stable library "shelf" it always sits on), never the role it plays in one document.
 
 How to choose a path for each item:
-1. If an existing folder in <existing_folders> fits, REUSE its EXACT label (character-for-character). Do NOT invent a synonym folder (e.g. do NOT create "Spring Festival Customs" when "Spring Festival / Traditional Customs" already fits).
-2. If NO existing folder fits, CREATE a new, broad, durable folder for it (e.g. an organization → "Organizations", a legal idea → "Legal Concepts", a place → "Places"). The directory does not have to stay small: most items DO have a natural home, so coin a sensible top-level folder rather than leaving them unfiled. Group items of the SAME kind under the SAME new folder so the tree stays coherent.
+1. If an existing folder in <existing_folders> fits, REUSE its EXACT label (character-for-character). Do NOT invent ` +
+	`a synonym folder (e.g. do NOT create "Spring Festival Customs" when "Spring Festival / Traditional Customs" ` +
+	`already fits).
+2. If NO existing folder fits, CREATE a new, broad, durable folder for it (e.g. an organization → "Organizations", a ` +
+	`legal idea → "Legal Concepts", a place → "Places"). The directory does not have to stay small: most items DO ` +
+	`have a natural home, so coin a sensible top-level folder rather than leaving them unfiled. Group items of the ` +
+	`SAME kind under the SAME new folder so the tree stays coherent.
 3. Only give an empty path [] when an item genuinely belongs to NO durable subject at all. This must be RARE. The absence of a matching existing folder is NOT a reason for []; create a folder instead.
 
 Other rules:
-- Group items of the SAME kind under the SAME folder at the SAME depth. Do not file one equivalent item a level deeper than its siblings (e.g. avoid "Places / Addresses / Address1" next to "Places / Address2"; pick one consistent depth for equivalent items).
+- Group items of the SAME kind under the SAME folder at the SAME depth. Do not file one equivalent item a level ` +
+	`deeper than its siblings (e.g. avoid "Places / Addresses / Address1" next to "Places / Address2"; pick one ` +
+	`consistent depth for equivalent items).
 - Prefer a single broad top-level folder; add a second level only for a genuinely durable sub-domain shared by several items.
 - Do NOT use the item type ("entity"/"concept") as a folder. Do NOT put slashes inside a single label.
 - Every item slug in <items> MUST appear exactly once in the output.
@@ -74,7 +81,10 @@ const WikiSummaryPrompt = `You are a wiki editor. Given the following document c
 2. After the SUMMARY line, write a comprehensive summary of the document in Markdown format.
 3. Include the key facts, arguments, and conclusions.
 4. Use proper heading hierarchy (## for sections, ### for subsections).
-5. **Wiki-link rule**: The available_wiki_pages list above maps slugs to display names and their aliases (format: "[[slug]] = display name (Aliases: a, b)"). Whenever you mention a name or alias that matches a listed entry, you MUST write it as [[slug|display name]] (e.g. [[entity/china|China]]), NOT as bold (**name**) or bare [[slug]]. Use the EXACT slugs provided; do NOT invent new slugs.
+5. **Wiki-link rule**: The available_wiki_pages list above maps slugs to display names and their aliases (format: ` +
+	`"[[slug]] = display name (Aliases: a, b)"). Whenever you mention a name or alias that matches a listed entry, ` +
+	`you MUST write it as [[slug|display name]] (e.g. [[entity/china|China]]), NOT as bold (**name**) or bare ` +
+	`[[slug]]. Use the EXACT slugs provided; do NOT invent new slugs.
 6. **Image rule**: If the document contains <images> tags with <image> elements, you SHOULD include the relevant images in your summary using the Markdown syntax: ![caption](url). Place the images where they are contextually relevant to the text. The URL inside ![caption](url) is an opaque token; reproduce it EXACTLY and VERBATIM, do not alter, shorten, or normalize it.
 7. At the end, include a "## Key Takeaways" section with bullet points.
 8. Write in {{.Language}}.
@@ -116,7 +126,11 @@ If previous slugs are provided above, you MUST follow these rules:
 Each entity should have:
 - "name": The entity name in {{.Language}} (human-readable)
 - "slug": URL-friendly slug, format "entity/<lowercase-hyphenated-name>" (use romanized/pinyin form for non-Latin names). **Reuse previous slug if the entity was extracted before.**
-- "aliases": An array of strings representing names that refer to THE EXACT SAME entity. Only include: official abbreviations (e.g. "IBM" for "International Business Machines"), full/short name variants (e.g. "Tencent" for "Tencent Holdings Limited"), translations (e.g. "Germany" for "Deutschland"), and well-known alternate names (e.g. "Alphabet" for "Google's parent company"). Do NOT include parent categories, related products, generic terms, or broader concepts. Provide [] if none.
+- "aliases": An array of strings representing names that refer to THE EXACT SAME entity. Only include: official ` +
+	`abbreviations (e.g. "IBM" for "International Business Machines"), full/short name variants (e.g. "Tencent" for ` +
+	`"Tencent Holdings Limited"), translations (e.g. "Germany" for "Deutschland"), and well-known alternate names ` +
+	`(e.g. "Alphabet" for "Google's parent company"). Do NOT include parent categories, related products, generic ` +
+	`terms, or broader concepts. Provide [] if none.
 - "description": **Index listing summary** — one sentence, 15-40 words, in {{.Language}}. Describes WHAT this entity IS and its role in the document. Must be self-contained (understandable without reading the full page). This will be displayed in the wiki index.
 - "details": A 2-5 sentence summary in {{.Language}} of key facts from the document. **Image rule**: If the document contains relevant <image> elements in an <images> tag, include them in the details using Markdown syntax: ![caption](url). The URL inside ![caption](url) is an opaque token; reproduce it EXACTLY and VERBATIM, do not alter, shorten, or normalize it.
 
@@ -201,7 +215,10 @@ If previous slugs are provided above, you MUST follow these rules:
 Each entity should have:
 - "name": The entity name in {{.Language}} (human-readable).
 - "slug": URL-friendly slug, format "entity/<lowercase-hyphenated-name>" (use romanized/pinyin form for non-Latin names). **Reuse previous slug if the entity was extracted before.**
-- "aliases": An array of strings representing names that refer to THE EXACT SAME entity. Only include: official abbreviations (e.g. "IBM" for "International Business Machines"), full/short name variants (e.g. "Tencent" for "Tencent Holdings Limited"), translations, and well-known alternate names. Do NOT include parent categories, related products, generic terms, or broader concepts. Provide [] if none.
+- "aliases": An array of strings representing names that refer to THE EXACT SAME entity. Only include: official ` +
+	`abbreviations (e.g. "IBM" for "International Business Machines"), full/short name variants (e.g. "Tencent" for ` +
+	`"Tencent Holdings Limited"), translations, and well-known alternate names. Do NOT include parent categories, ` +
+	`related products, generic terms, or broader concepts. Provide [] if none.
 - "description": **Index listing summary** — one sentence, 15-40 words, in {{.Language}}. Describes WHAT this entity IS and its role in the document. Must be self-contained. This will be displayed in the wiki index.
 - "details": A short 1-3 sentence fallback summary in {{.Language}}. This is ONLY used when chunk-level citation fails downstream, so it does NOT need to be exhaustive. Keep it under 300 characters.
 
@@ -330,7 +347,8 @@ const WikiPageModifySystemPrompt = `You are a wiki editor tasked with updating a
 ### EDITING AND OUTPUT RULES:
 1. You are a COMPILER, not a creative writer. Stay close to the verbatim source wording. You may lightly reorder, deduplicate, and join related sentences, but must not rephrase for style, expand short statements, or invent transitions.
 2. Do not over-structure. Introduce a section heading only if the source or existing page uses it. Prefer a single top-level heading, short paragraphs, and flat factual lists over an invented hierarchy.
-3. Do not add rhetorical filler such as "aims to provide", "designed to", "aims to help", "is committed to", or "is of great significance" unless it appears verbatim in an evidentiary source chunk.
+3. Do not add rhetorical filler such as "aims to provide", "designed to", "aims to help", "is committed to", or "is ` +
+	`of great significance" unless it appears verbatim in an evidentiary source chunk.
 4. Keep self-reported claims scoped and attributed. Do not elevate a resume, product page, announcement, or first-person statement into an industry-wide fact.
 5. Preserve existing information that remains valid and on-topic. Maintain the existing page's structure and formatting style where possible.
 6. Keep a [[slug|name]] link only when its slug is present in the supplied valid-link list. Never invent a slug and never link a page to itself.
@@ -388,7 +406,11 @@ The <new_information> block above is assembled from VERBATIM source chunks alrea
 {{end}}
 {{if .HasAdditions}}
 3. ADD and MERGE the facts from <new_information> into the page. You are a COMPILER, not a writer:
-   - **CRITICAL CONFLICT CHECK**: First verify that the <new_information> is actually about **{{.PageTitle}}** (as declared in <page_metadata>). If a piece of new info clearly belongs to a DIFFERENT but related thing (e.g., this page is about "Hunyuan Model" but the new info is about "Qwen3"; or this page is about "Resident ID Card" but the new info is about "Work Residence Permit"), you MUST REJECT that part of the new information and DO NOT add it.
+   - **CRITICAL CONFLICT CHECK**: First verify that the <new_information> is actually about **{{.PageTitle}}** (as ` +
+	`declared in <page_metadata>). If a piece of new info clearly belongs to a DIFFERENT but related thing (e.g., ` +
+	`this page is about "Hunyuan Model" but the new info is about "Qwen3"; or this page is about "Resident ID Card" ` +
+	`but the new info is about "Work Residence Permit"), you MUST REJECT that part of the new information and DO NOT ` +
+	`add it.
    - If it is genuinely about {{.PageTitle}} and contradicts old content, prefer the newer information.
 {{end}}
 4. Preserve existing information that is still valid and still about {{.PageTitle}}.
@@ -498,7 +520,8 @@ Aliases are supporting evidence, NOT unique identifiers. A shared alias or acron
 - "RAG" → "Retrieval-Augmented Generation" (same concept, acronym)
 - "Deutschland" → "Germany" (same entity, translation)
 - New item: name="IBM", no aliases. Candidate: name="International Business Machines", alias="IBM". Merge: the new name matches the candidate's explicitly provided acronym, and both refer to the same organization.
-- New item: name="Retrieval Augmented Generation", alias="RAG". Candidate: name="Génération augmentée par récupération", alias="RAG". Merge: the names are translations of the same concept, supported by the shared alias.
+- New item: name="Retrieval Augmented Generation", alias="RAG". Candidate: name="Génération augmentée par ` +
+	`récupération", alias="RAG". Merge: the names are translations of the same concept, supported by the shared alias.
 
 ### Examples of INCORRECT merges — do NOT merge these:
 - New item: name="Alpha Research Center", alias="ARC". Candidate: name="Advanced Robotics Company", alias="ARC". Do NOT merge: the shared acronym does not establish that these are the same organization.
@@ -510,7 +533,8 @@ Aliases are supporting evidence, NOT unique identifiers. A shared alias or acron
 - "Competition Categories" → "Age Groups" (age groups are one aspect of categories, not the same concept)
 - "Performance Standard" → "Competition Rounds" (both relate to competitions, but are different concepts)
 - "Machine Learning" → "Neural Networks" (neural networks are a subset of ML, not the same concept)
-- "Resident ID Card" → "Work Residence Permit" (both are government-issued documents but completely different credentials)
+- "Resident ID Card" → "Work Residence Permit" (both are government-issued documents but completely different ` +
+	`credentials)
 - "Driver's License" → "Vehicle Registration" (both are car-related certificates but different documents)
 - "Degree Certificate" → "Graduation Certificate" (both educational documents but distinct)
 

@@ -103,7 +103,7 @@ func (c *SearchCommand) Execute(ctx context.Context, cmdCtx *CommandContext, arg
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("🔍 **Search \"%s\"** · %d result(s)\n\n", query, len(results)))
+	fmt.Fprintf(&sb, "🔍 **Search \"%s\"** · %d result(s)\n\n", query, len(results))
 
 	for i, r := range shown {
 		// Trim content to a readable length.
@@ -123,13 +123,13 @@ func (c *SearchCommand) Execute(ctx context.Context, cmdCtx *CommandContext, arg
 		sb.WriteString(fmt.Sprintf("**[%d]** %s\n> %s%s\n", i+1, source, string(content), suffix))
 
 		if r.Score > 0 {
-			sb.WriteString(fmt.Sprintf("Match: %.0f%%\n", r.Score*100))
+			fmt.Fprintf(&sb, "Match: %.0f%%\n", r.Score*100)
 		}
 		sb.WriteString("\n")
 	}
 
 	if len(results) > searchMaxResults {
-		sb.WriteString(fmt.Sprintf("_(Showing the first %d of %d results)_", searchMaxResults, len(results)))
+		fmt.Fprintf(&sb, "_(Showing the first %d of %d results)_", searchMaxResults, len(results))
 	}
 
 	return &CommandResult{Content: sb.String()}, nil

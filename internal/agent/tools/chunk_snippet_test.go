@@ -12,12 +12,15 @@ func faqChunkForSnippetTest(t *testing.T) *types.Chunk {
 	t.Helper()
 	chunk := &types.Chunk{
 		ChunkType: types.ChunkTypeFAQ,
-		Content:   "Q: \u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49\nSimilar Questions:\n- \u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49\n- \u8bbe\u7f6e\u79bb\u804c\u539f\u56e0",
+		Content: "Q: \u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49\nSimilar Questions:\n- " +
+			"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49\n- \u8bbe\u7f6e\u79bb\u804c\u539f\u56e0",
 	}
 	meta := &types.FAQChunkMetadata{
 		StandardQuestion: "\u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49",
-		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"},
-		Answers:          []string{"\u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u81ea\u5b9a\u4e49\u79bb\u804c\u539f\u56e0\u3002"},
+		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f" +
+			"\u56e0"},
+		Answers: []string{"\u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u81ea\u5b9a\u4e49\u79bb" +
+			"\u804c\u539f\u56e0\u3002"},
 	}
 	if err := chunk.SetFAQMetadata(meta); err != nil {
 		t.Fatalf("SetFAQMetadata: %v", err)
@@ -36,7 +39,8 @@ func TestFaqMatchSnippet_StandardQuestionAndMetadataAnswer(t *testing.T) {
 	if !strings.Contains(snippet, "A: \u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d") {
 		t.Fatalf("want metadata answer in snippet, got: %s", snippet)
 	}
-	for _, unwanted := range []string{"Similar Questions", "\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"} {
+	for _, unwanted := range []string{"Similar Questions", "\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe" +
+		"\u7f6e\u79bb\u804c\u539f\u56e0"} {
 		if strings.Contains(snippet, unwanted) {
 			t.Errorf("snippet should not include similar-question noise %q: %s", unwanted, snippet)
 		}
@@ -46,8 +50,10 @@ func TestFaqMatchSnippet_StandardQuestionAndMetadataAnswer(t *testing.T) {
 func TestFaqMatchSnippetFromQueries_StandardQuestionAndMetadataAnswer(t *testing.T) {
 	meta := &types.FAQChunkMetadata{
 		StandardQuestion: "\u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49",
-		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"},
-		Answers:          []string{"\u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u81ea\u5b9a\u4e49\u79bb\u804c\u539f\u56e0\u3002"},
+		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f" +
+			"\u56e0"},
+		Answers: []string{"\u53ef\u4ee5\uff0c\u5728\u7cfb\u7edf\u8bbe\u7f6e\u4e2d\u81ea\u5b9a\u4e49\u79bb" +
+			"\u804c\u539f\u56e0\u3002"},
 	}
 	snippet := faqMatchSnippetFromQueries(meta, []string{"\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49"})
 
@@ -65,8 +71,9 @@ func TestFaqMatchSnippetFromQueries_StandardQuestionAndMetadataAnswer(t *testing
 func TestFaqMatchSnippetFromQueries_SimilarQuestionHitShowsMatchedVariant(t *testing.T) {
 	meta := &types.FAQChunkMetadata{
 		StandardQuestion: "\u79bb\u804c\u539f\u56e0\u662f\u5426\u53ef\u4ee5\u81ea\u5b9a\u4e49",
-		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f\u56e0"},
-		Answers:          []string{"\u53ef\u4ee5\u81ea\u5b9a\u4e49\u3002"},
+		SimilarQuestions: []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49", "\u8bbe\u7f6e\u79bb\u804c\u539f" +
+			"\u56e0"},
+		Answers: []string{"\u53ef\u4ee5\u81ea\u5b9a\u4e49\u3002"},
 	}
 	snippet := faqMatchSnippetFromQueries(meta, []string{"\u79bb\u804c\u539f\u56e0\u81ea\u5b9a\u4e49"})
 
@@ -105,8 +112,12 @@ func TestExtractChunkMatchSnippet_NonFAQUsesBodyContext(t *testing.T) {
 // A Chinese question has no spaces; it is segmented into words so the
 // snippet lands on the matching passage instead of the chunk's opening.
 func TestExtractSnippetForChineseQuery(t *testing.T) {
-	content := strings.Repeat("\u65e0\u5173\u7684\u5f00\u5934\u5185\u5bb9\u3002", 60) + "\u9000\u6b3e\u7533\u8bf7\u9700\u8981\u5728\u6536\u8d27\u540e\u4e03\u5929\u5185\u63d0\u4ea4\u3002" + strings.Repeat("\u5176\u4ed6\u5185\u5bb9\u3002", 20)
-	snippet := extractSnippetForQueries(content, []string{"\u9000\u6b3e\u7533\u8bf7\u7684\u65f6\u9650\u662f\u591a\u4e45\uff1f"})
+	content := strings.Repeat("\u65e0\u5173\u7684\u5f00\u5934\u5185\u5bb9"+
+		"\u3002", 60) +
+		"\u9000\u6b3e\u7533\u8bf7\u9700\u8981\u5728\u6536\u8d27\u540e\u4e03\u5929\u5185\u63d0\u4ea4\u3002" +
+		strings.Repeat("\u5176\u4ed6\u5185\u5bb9\u3002", 20)
+	snippet := extractSnippetForQueries(content, []string{"\u9000\u6b3e\u7533\u8bf7\u7684\u65f6\u9650\u662f\u591a" +
+		"\u4e45\uff1f"})
 	if !strings.Contains(snippet, "\u9000\u6b3e\u7533\u8bf7") {
 		t.Fatalf("snippet did not reach the matching passage: %q", snippet)
 	}

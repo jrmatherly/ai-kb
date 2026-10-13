@@ -35,12 +35,14 @@ func TestFileMessageQAContent(t *testing.T) {
 		{
 			name: "builds query for file-only event",
 			msg:  &IncomingMessage{FileName: "report.pdf"},
-			want: "I uploaded the file \"report.pdf\". Please confirm you received it and tell me how you can help next.",
+			want: "I uploaded the file \"report.pdf\". Please confirm you received it and tell me how you can help " +
+				"next.",
 		},
 		{
 			name: "uses safe name when platform omits filename",
 			msg:  &IncomingMessage{},
-			want: "I uploaded the file \"untitled file\". Please confirm you received it and tell me how you can help next.",
+			want: "I uploaded the file \"untitled file\". Please confirm you received it and tell me how you can " +
+				"help next.",
 		},
 	}
 
@@ -69,7 +71,8 @@ func TestEmptyIncomingMessageReply(t *testing.T) {
 			name:      "blank text is rejected",
 			msg:       &IncomingMessage{MessageType: MessageTypeText, Content: " \n\t "},
 			wantEmpty: true,
-			wantHint:  "Could not recognize any text in this message. Please send plain text instead; send images or files separately.",
+			wantHint: "Could not recognize any text in this message. Please send plain text instead; send images or " +
+				"files separately.",
 		},
 		{
 			name:      "image without caption is accepted before QA content fill",
@@ -93,7 +96,8 @@ func TestEmptyIncomingMessageReply(t *testing.T) {
 				Extra:       map[string]string{"raw_msgtype": "audio"},
 			},
 			wantEmpty: true,
-			wantHint:  "Could not recognize any text in this voice message. Please send plain text instead, or say it again.",
+			wantHint: "Could not recognize any text in this voice message. Please send plain text instead, or say " +
+				"it again.",
 		},
 		{
 			name: "video uses an unsupported-type hint",
@@ -102,7 +106,8 @@ func TestEmptyIncomingMessageReply(t *testing.T) {
 				Extra:       map[string]string{"raw_msgtype": "video"},
 			},
 			wantEmpty: true,
-			wantHint:  "Video messages are not supported yet. Please send plain text instead; send images or files separately.",
+			wantHint: "Video messages are not supported yet. Please send plain text instead; send images or files " +
+				"separately.",
 		},
 	}
 

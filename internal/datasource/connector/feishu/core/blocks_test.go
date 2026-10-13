@@ -66,7 +66,8 @@ func TestReadSheetRange_SplitsTokenAndReadsValues(t *testing.T) {
 		}
 		gotPath = r.URL.Path
 		_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
-			"valueRange": map[string]any{"values": [][]any{{"\u540d\u79f0", "\u6570\u91cf"}, {"\u82f9\u679c", 3}, {"\u68a8", nil}}},
+			"valueRange": map[string]any{"values": [][]any{{"\u540d\u79f0", "\u6570\u91cf"}, {"\u82f9" +
+				"\u679c", 3}, {"\u68a8", nil}}},
 		}})
 	}))
 	defer srv.Close()
@@ -211,14 +212,17 @@ func TestReadBitableRecords_DateColumnUsesFormatterAndTimezone(t *testing.T) {
 		case strings.HasSuffix(r.URL.Path, "/fields"):
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"items": []map[string]any{
-					{"field_name": "\u622a\u6b62\u65e5\u671f", "type": 5, "property": map[string]any{"date_formatter": "yyyy/MM/dd"}},
-					{"field_name": "\u63d0\u9192\u65f6\u95f4", "type": 5, "property": map[string]any{"date_formatter": "yyyy-MM-dd HH:mm"}},
+					{"field_name": "\u622a\u6b62\u65e5\u671f", "type": 5, "property": map[string]any{"date_formatte" +
+						"r": "yyyy/MM/dd"}},
+					{"field_name": "\u63d0\u9192\u65f6\u95f4", "type": 5, "property": map[string]any{"date_formatte" +
+						"r": "yyyy-MM-dd HH:mm"}},
 				},
 			}})
 		case strings.HasSuffix(r.URL.Path, "/records/search"):
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"has_more": false, "items": []map[string]any{
-					{"fields": map[string]any{"\u622a\u6b62\u65e5\u671f": float64(1711900800000), "\u63d0\u9192\u65f6\u95f4": float64(1719802800000)}},
+					{"fields": map[string]any{"\u622a\u6b62\u65e5\u671f": float64(1711900800000), "\u63d0\u9192\u65f6" +
+						"\u95f4": float64(1719802800000)}},
 				},
 			}})
 		}
@@ -262,7 +266,8 @@ func TestReadBitableRecords_SplitsTokenAndBuildsTable(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": map[string]any{
 				"has_more": false,
 				"items": []map[string]any{
-					{"fields": map[string]any{"\u4efb\u52a1": "\u5199\u6587\u6863", "\u72b6\u6001": "\u8fdb\u884c\u4e2d"}},
+					{"fields": map[string]any{"\u4efb\u52a1": "\u5199\u6587\u6863", "\u72b6\u6001": "\u8fdb\u884c" +
+						"\u4e2d"}},
 				},
 			}})
 		}
@@ -277,7 +282,8 @@ func TestReadBitableRecords_SplitsTokenAndBuildsTable(t *testing.T) {
 	if truncated {
 		t.Errorf("did not expect truncation")
 	}
-	if len(rows) != 2 || rows[0][0] != "\u4efb\u52a1" || rows[0][1] != "\u72b6\u6001" || rows[1][0] != "\u5199\u6587\u6863" || rows[1][1] != "\u8fdb\u884c\u4e2d" {
+	if len(rows) != 2 || rows[0][0] != "\u4efb\u52a1" || rows[0][1] != "\u72b6\u6001" || rows[1][0] != "\u5199\u6587"+
+		"\u6863" || rows[1][1] != "\u8fdb\u884c\u4e2d" {
 		t.Errorf("rows = %+v", rows)
 	}
 }

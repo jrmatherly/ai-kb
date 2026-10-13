@@ -33,8 +33,9 @@ func TestFeishuFailure(t *testing.T) {
 			noLeak:   []string{"body=", "{"},
 		},
 		{
-			name:     "export timeout",
-			err:      errors.New("export \u5b63\u5ea6\u62a5\u544a (docx): export task timed out after 60s (ticket=abc)"),
+			name: "export timeout",
+			err: errors.New("export \u5b63\u5ea6\u62a5\u544a (docx): export task timed out after 60s " +
+				"(ticket=abc)"),
 			wantCode: "feishu_timeout",
 			noLeak:   []string{"ticket=", "abc"},
 		},

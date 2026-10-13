@@ -186,14 +186,19 @@ func TestParseCallbackMessage_RichTextPreservesTextAndPictureMetadata(t *testing
 		MsgID:     "rich-1",
 		Msgtype:   "richText",
 		RobotCode: "robot-123",
-		Content:   json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"  \u8fd9\u4e2a\u95ee\u9898\u793a\u4f8b\u56fe\u5982\u4e0b\uff1a  \"},\n\t\t\t\t{\"pictureDownloadCode\":\"PIC-FALLBACK\",\"downloadCode\":\"PIC-CODE\",\"type\":\"picture\"},\n\t\t\t\t{\"text\":\"\u901a\u8fc7\u4ee5\u4e0a\u793a\u610f\u56fe\u53ef\u4ee5\u660e\u767d\u5b8c\u6574\u7684\u4ea4\u4e92\u6d41\u7a0b\"}\n\t\t\t]\n\t\t}"),
+		Content: json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"  " +
+			"\u8fd9\u4e2a\u95ee\u9898\u793a\u4f8b\u56fe\u5982\u4e0b\uff1a  \"},\n\t\t\t\t{\"pictureDownloadCode\":\"P" +
+			"IC-FALLBACK\",\"downloadCode\":\"PIC-CODE\",\"type\":\"picture\"},\n\t\t\t\t{\"text\":\"\u901a\u8fc7" +
+			"\u4ee5\u4e0a\u793a\u610f\u56fe\u53ef\u4ee5\u660e\u767d\u5b8c\u6574\u7684\u4ea4\u4e92\u6d41\u7a0b\"}\n\t" +
+			"\t\t]\n\t\t}"),
 	}
 
 	got := parseCallbackMessage(msg)
 	if got.MessageType != im.MessageTypeImage {
 		t.Fatalf("MessageType = %q, want %q", got.MessageType, im.MessageTypeImage)
 	}
-	if got.Content != "\u8fd9\u4e2a\u95ee\u9898\u793a\u4f8b\u56fe\u5982\u4e0b\uff1a\n\u901a\u8fc7\u4ee5\u4e0a\u793a\u610f\u56fe\u53ef\u4ee5\u660e\u767d\u5b8c\u6574\u7684\u4ea4\u4e92\u6d41\u7a0b" {
+	if got.Content != "\u8fd9\u4e2a\u95ee\u9898\u793a\u4f8b\u56fe\u5982\u4e0b\uff1a\n\u901a\u8fc7\u4ee5\u4e0a\u793a"+
+		"\u610f\u56fe\u53ef\u4ee5\u660e\u767d\u5b8c\u6574\u7684\u4ea4\u4e92\u6d41\u7a0b" {
 		t.Errorf("Content = %q", got.Content)
 	}
 	if got.FileKey != "PIC-CODE" {
@@ -258,7 +263,8 @@ func TestParseCallbackMessage_RichTextOfficialPictureSample(t *testing.T) {
 		MsgID:     "official-rich",
 		Msgtype:   "richText",
 		RobotCode: "robot-123",
-		Content:   json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"\u4f60\u597d\"},\n\t\t\t\t{\"downloadCode\":\"OFFICIAL-PIC\",\"type\":\"picture\"}\n\t\t\t]\n\t\t}"),
+		Content: json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"\u4f60\u597d\"},\n\t\t\t\t{\"downloa" +
+			"dCode\":\"OFFICIAL-PIC\",\"type\":\"picture\"}\n\t\t\t]\n\t\t}"),
 	}
 
 	got := parseCallbackMessage(msg)
@@ -277,7 +283,9 @@ func TestParseCallbackMessage_RichTextKeepsFirstPictureAndHints(t *testing.T) {
 	msg := &callbackMessage{
 		MsgID:   "rich-multi",
 		Msgtype: "richText",
-		Content: json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"\u5bf9\u6bd4\u8fd9\u51e0\u5f20\u56fe\"},\n\t\t\t\t{\"downloadCode\":\"PIC-1\",\"type\":\"picture\"},\n\t\t\t\t{\"downloadCode\":\"PIC-2\",\"type\":\"picture\"},\n\t\t\t\t{\"downloadCode\":\"PIC-3\",\"type\":\"picture\"}\n\t\t\t]\n\t\t}"),
+		Content: json.RawMessage("{\n\t\t\t\"richText\":[\n\t\t\t\t{\"text\":\"\u5bf9\u6bd4\u8fd9\u51e0\u5f20\u56fe\"" +
+			"},\n\t\t\t\t{\"downloadCode\":\"PIC-1\",\"type\":\"picture\"},\n\t\t\t\t{\"downloadCode\":\"PIC-2\",\"ty" +
+			"pe\":\"picture\"},\n\t\t\t\t{\"downloadCode\":\"PIC-3\",\"type\":\"picture\"}\n\t\t\t]\n\t\t}"),
 	}
 
 	got := parseCallbackMessage(msg)
@@ -287,7 +295,8 @@ func TestParseCallbackMessage_RichTextKeepsFirstPictureAndHints(t *testing.T) {
 	if got.Extra["rich_text_picture_count"] != "3" {
 		t.Errorf("rich_text_picture_count = %q, want 3", got.Extra["rich_text_picture_count"])
 	}
-	if !strings.Contains(got.Content, "\u5bf9\u6bd4\u8fd9\u51e0\u5f20\u56fe") || !strings.Contains(got.Content, "contains 3 images") {
+	if !strings.Contains(got.Content, "\u5bf9\u6bd4\u8fd9\u51e0\u5f20\u56fe") || !strings.Contains(got.Content, "cont"+
+		"ains 3 images") {
 		t.Errorf("Content = %q, want text plus dropped-picture hint", got.Content)
 	}
 }
@@ -332,7 +341,8 @@ func TestParseCallbackMessage_AudioUsesRecognition(t *testing.T) {
 	msg := &callbackMessage{
 		MsgID:   "audio-1",
 		Msgtype: "audio",
-		Content: json.RawMessage("{\"duration\":4000,\"downloadCode\":\"AUD-CODE\",\"recognition\":\"  \u9489\u9489\uff0c\u8ba9\u8fdb\u6b65\u53d1\u751f  \"}"),
+		Content: json.RawMessage("{\"duration\":4000,\"downloadCode\":\"AUD-CODE\",\"recognition\":\"  " +
+			"\u9489\u9489\uff0c\u8ba9\u8fdb\u6b65\u53d1\u751f  \"}"),
 	}
 
 	got := parseCallbackMessage(msg)
@@ -426,7 +436,8 @@ func TestStreamToIncoming_RichTextPreservesTextAndPictureMetadata(t *testing.T) 
 		Msgtype: "richText",
 		Content: map[string]interface{}{
 			"richText": []interface{}{
-				map[string]interface{}{"text": "\u8fd9\u79cd\u573a\u666f\u4e0b\uff0cAI \u53bb\u7eb9\u8eab\u53bb\u4e0d\u5e72\u51c0"},
+				map[string]interface{}{"text": "\u8fd9\u79cd\u573a\u666f\u4e0b\uff0cAI " +
+					"\u53bb\u7eb9\u8eab\u53bb\u4e0d\u5e72\u51c0"},
 				map[string]interface{}{"downloadCode": "STREAM-PIC", "type": "picture"},
 			},
 		},

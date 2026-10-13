@@ -104,7 +104,8 @@ func TestRewriteStorageURLs_MinIOFallbackViaGlobal(t *testing.T) {
 			},
 		},
 	}
-	in := "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/10000/exports/c91cf852.png)"
+	in := "![\u77e5\u8bc6\u52a9\u7406\"\u77e5\u8bc6\u5e93\"\u7ba1\u7406\u89c6\u56fe\u754c\u9762](minio://wizard-test/" +
+		"10000/exports/c91cf852.png)"
 	resolver := newIMFileServiceResolver(tenant, stub)
 	out := rewriteStorageURLs(context.Background(), in, resolver)
 	assert.Contains(t, out, "https://minio.example/presigned")

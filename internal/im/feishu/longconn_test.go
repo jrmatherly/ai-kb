@@ -8,7 +8,8 @@ import (
 )
 
 func TestConvertPostEventPreservesEmbeddedImage(t *testing.T) {
-	content := "{\"title\":\"\",\"content\":[[{\"tag\":\"at\",\"user_id\":\"ou_bot\"},{\"tag\":\"text\",\"text\":\"\u8bf7\u63cf\u8ff0\u8fd9\u5f20\u56fe\"},{\"tag\":\"img\",\"image_key\":\"img_v3_abc\"}]]}"
+	content := "{\"title\":\"\",\"content\":[[{\"tag\":\"at\",\"user_id\":\"ou_bot\"},{\"tag\":\"text\",\"text\":\"" +
+		"\u8bf7\u63cf\u8ff0\u8fd9\u5f20\u56fe\"},{\"tag\":\"img\",\"image_key\":\"img_v3_abc\"}]]}"
 	msg := &larkim.EventMessage{Content: &content}
 
 	got := convertPostEvent(RegionFeishu, msg, "ou_user", "oc_group", im.ChatTypeGroup, "om_message")

@@ -9,7 +9,8 @@ import (
 
 func TestFirstBrokenPythonQuoteCatchesNestedASCIIQuotes(t *testing.T) {
 	src := "slides = [\n" +
-		"    (\"\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a\uff0c\u800c\u662f\u4e00\u4e2a\u9002\u5408\u6574\u7406\u3001\u6c89\u6dc0\u3001\", False),\n" +
+		"    (\"\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a\uff0c\u800c\u662f\u4e00" +
+		"\u4e2a\u9002\u5408\u6574\u7406\u3001\u6c89\u6dc0\u3001\", False),\n" +
 		"]\n"
 	line, ok := firstBrokenPythonQuote(src)
 	require.True(t, ok)
@@ -27,12 +28,14 @@ func TestFirstBrokenPythonQuoteAllowsImplicitConcat(t *testing.T) {
 }
 
 func TestFirstBrokenPythonQuoteAllowsSingleQuotedChinese(t *testing.T) {
-	_, ok := firstBrokenPythonQuote("x = '\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a'\n")
+	_, ok := firstBrokenPythonQuote("x = '\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c" +
+		"\u665a'\n")
 	assert.False(t, ok)
 }
 
 func TestFirstBrokenPythonQuoteAllowsCornerQuotes(t *testing.T) {
-	_, ok := firstBrokenPythonQuote("x = \"\u8fd9\u4e0d\u662f\u4e00\u4e2a\u300c\u5927\u5e72\u5feb\u4e0a\u300d\u7684\u591c\u665a\"\n")
+	_, ok := firstBrokenPythonQuote("x = \"\u8fd9\u4e0d\u662f\u4e00\u4e2a\u300c\u5927\u5e72\u5feb\u4e0a\u300d\u7684" +
+		"\u591c\u665a\"\n")
 	assert.False(t, ok)
 }
 

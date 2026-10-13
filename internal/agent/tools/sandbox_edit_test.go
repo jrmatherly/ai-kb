@@ -261,7 +261,8 @@ func TestEditSandboxFileReplacesUniqueSnippet(t *testing.T) {
 	assert.Equal(t, path, result.Data["path"])
 	assert.Equal(t, 1, result.Data["added_lines"])
 	assert.Equal(t, 1, result.Data["removed_lines"])
-	assert.Contains(t, string(editor.files[path]), "/workspace/output/Windows_Server_2008_WiFi\u8fde\u63a5\u6307\u5357.pptx")
+	assert.Contains(t, string(editor.files[path]), "/workspace/output/Windows_Server_2008_WiFi\u8fde\u63a5\u6307"+
+		"\u5357.pptx")
 	assert.NotContains(t, string(editor.files[path]), "/home/user/Desktop")
 	assert.NotContains(t, result.Output, original)
 	_, hasContent := result.Data["content"]
@@ -275,7 +276,8 @@ func TestEditSandboxFileFlagsNestedPythonQuotes(t *testing.T) {
 
 	result, err := NewEditSandboxFileTool(editor).Execute(
 		sandboxFileTestContext(),
-		mustEditSandboxArgs(path, "placeholder", "\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684\u591c\u665a", false),
+		mustEditSandboxArgs(path, "placeholder", "\u8fd9\u4e0d\u662f\u4e00\u4e2a\"\u5927\u5e72\u5feb\u4e0a\"\u7684"+
+			"\u591c\u665a", false),
 	)
 
 	require.NoError(t, err)

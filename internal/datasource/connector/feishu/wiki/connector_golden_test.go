@@ -94,17 +94,20 @@ func fakeFeishuGolden(nodes []core.WikiNode, docToken string, blocks []core.Docx
 	// nested anonymous-struct literals.
 	mux.HandleFunc("/open-apis/sheets/v2/spreadsheets/sht_spread/values/0", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("{\"code\":0,\"msg\":\"\",\"data\":{\"valueRange\":{\"values\":[[\"\u540d\u79f0\",\"\u6570\u91cf\"],[\"\u82f9\u679c\",3]]}}}"))
+		_, _ = w.Write([]byte("{\"code\":0,\"msg\":\"\",\"data\":{\"valueRange\":{\"values\":[[\"\u540d\u79f0\",\"" +
+			"\u6570\u91cf\"],[\"\u82f9\u679c\",3]]}}}"))
 	})
 
 	// bitable-v1 fields + records: bascApp_tblMain → app "bascApp", table "tblMain".
 	mux.HandleFunc("/open-apis/bitable/v1/apps/bascApp/tables/tblMain/fields", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("{\"code\":0,\"msg\":\"\",\"data\":{\"items\":[{\"field_name\":\"\u4efb\u52a1\"},{\"field_name\":\"\u72b6\u6001\"}]}}"))
+		_, _ = w.Write([]byte("{\"code\":0,\"msg\":\"\",\"data\":{\"items\":[{\"field_name\":\"\u4efb\u52a1\"},{\"fie" +
+			"ld_name\":\"\u72b6\u6001\"}]}}"))
 	})
 	mux.HandleFunc("/open-apis/bitable/v1/apps/bascApp/tables/tblMain/records/search", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("{\"code\":0,\"msg\":\"\",\"data\":{\"has_more\":false,\"page_token\":\"\",\"items\":[{\"fields\":{\"\u4efb\u52a1\":\"\u5199\u7801\",\"\u72b6\u6001\":\"\u5b8c\u6210\"}}]}}"))
+		_, _ = w.Write([]byte("{\"code\":0,\"msg\":\"\",\"data\":{\"has_more\":false,\"page_token\":\"\",\"items\":[{" +
+			"\"fields\":{\"\u4efb\u52a1\":\"\u5199\u7801\",\"\u72b6\u6001\":\"\u5b8c\u6210\"}}]}}"))
 	})
 
 	// medias download, routed by token embedded in the path.
@@ -232,7 +235,8 @@ func TestGolden_RichDocxAllCapabilities(t *testing.T) {
 	}
 
 	// ── document order preserved (heading before table before attachments) ──
-	order := []string{"# \u5b63\u5ea6\u62a5\u544a", "## \u5173\u952e\u6307\u6807", "| \u5217A | \u5217B |", "| \u540d\u79f0 | \u6570\u91cf |", "| \u4efb\u52a1 | \u72b6\u6001 |", "📎 Attachment: \u624b\u518c.pdf"}
+	order := []string{"# \u5b63\u5ea6\u62a5\u544a", "## \u5173\u952e\u6307\u6807", "| \u5217A | \u5217B |", "| " +
+		"\u540d\u79f0 | \u6570\u91cf |", "| \u4efb\u52a1 | \u72b6\u6001 |", "📎 Attachment: \u624b\u518c.pdf"}
 	last := -1
 	for _, f := range order {
 		idx := strings.Index(md, f)

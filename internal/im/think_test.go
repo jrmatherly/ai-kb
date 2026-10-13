@@ -19,9 +19,10 @@ func TestStripThinkBlocks(t *testing.T) {
 			want:  "The answer is 42.",
 		},
 		{
-			name:  "multiline think with tools",
-			input: "<think>\nLet me search the knowledge base first\nCalling Text Pattern Search...\nKeyword search: \"civilization\"\n</think>\n\nCivilization VI is a strategy game.",
-			want:  "Civilization VI is a strategy game.",
+			name: "multiline think with tools",
+			input: "<think>\nLet me search the knowledge base first\nCalling Text Pattern Search...\nKeyword search: " +
+				"\"civilization\"\n</think>\n\nCivilization VI is a strategy game.",
+			want: "Civilization VI is a strategy game.",
 		},
 		{
 			name:  "multiple blocks",
@@ -86,7 +87,8 @@ func TestFormatIMDisplayContent_intermediate_showsAnswerPreview(t *testing.T) {
 }
 
 func TestFormatIMDisplayContent_final_stripsThinkingAndTools(t *testing.T) {
-	raw := "<think>\nLet me search the knowledge base first\nCalling Text Pattern Search...\nKeyword search: \"civilization\"\n</think>\n\nCivilization VI is a strategy game."
+	raw := "<think>\nLet me search the knowledge base first\nCalling Text Pattern Search...\nKeyword search: " +
+		"\"civilization\"\n</think>\n\nCivilization VI is a strategy game."
 	got := FormatIMDisplayContent(raw, StreamDisplayFinal)
 
 	want := "Civilization VI is a strategy game."
@@ -104,7 +106,8 @@ func TestFormatIMDisplayContent_final_plainAnswerUnchanged(t *testing.T) {
 }
 
 func TestFormatIMDisplayContent_final_ragPipelineHidden(t *testing.T) {
-	raw := "<think>\nUnderstanding query...\nQuery understood\nSearching knowledge base...\nSearched knowledge base: \"query\" · Found 3 result(s)\n</think>\n\nAccording to the knowledge base, the answer is A."
+	raw := "<think>\nUnderstanding query...\nQuery understood\nSearching knowledge base...\nSearched knowledge base: " +
+		"\"query\" · Found 3 result(s)\n</think>\n\nAccording to the knowledge base, the answer is A."
 	got := FormatIMDisplayContent(raw, StreamDisplayFinal)
 
 	if strings.Contains(got, "Query understood") || strings.Contains(got, "Searched knowledge base") {

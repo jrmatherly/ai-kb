@@ -289,7 +289,8 @@ func TestMCPCatalogEnumeratesAllToolsWithoutSchemas(t *testing.T) {
 
 func TestMCPCatalogSearchMissStillAllowsExactDiscovery(t *testing.T) {
 	ctx, r, _, _, _ := catalogFixture(t, 1)
-	page := discoverPage(ctx, t, r, map[string]any{"mode": "search", "server_id": "server-1", "query": "\u4e2d\u6587\u4e0d\u5339\u914d"})
+	page := discoverPage(ctx, t, r, map[string]any{"mode": "search", "server_id": "server-1", "query": "\u4e2d\u6587" +
+		"\u4e0d\u5339\u914d"})
 	require.Zero(t, page.Total)
 	require.Equal(t, "ready", page.Status)
 	page = discoverPage(ctx, t, r, map[string]any{"mode": "list_tools", "server_id": "server-1"})
