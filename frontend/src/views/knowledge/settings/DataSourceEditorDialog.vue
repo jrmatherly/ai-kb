@@ -1311,6 +1311,23 @@ async function handleDrawerConfirm() {
   }
 }
 
+// Connectors whose sync deletes the items of a resource taken out of the
+// selection: the backend's full_sync_reconcile capability.
+const deselectionDeletes = new Set([
+  'feishu', 'lark', 'feishu_drive', 'lark_drive', 'confluence', 'dingtalk', 'seafile',
+])
+
+// An edit that drops a saved resource, or turns off DingTalk uploaded files,
+// with deletion sync on: the items it takes out of scope get deleted.
+const scopeNarrowed = computed(() => {
+  if (!isEdit.value || !form.value.sync_deletions || !deselectionDeletes.has(form.value.type)) return false
+  const saved = props.dataSource?.config || {}
+  const kept = new Set(selectedResourceIds.value)
+  if ((saved.resource_ids || []).some((id: string) => !kept.has(id))) return true
+  return form.value.type === 'dingtalk' && saved.settings?.include_uploaded_files === true &&
+    !dingtalkIncludeUploadedFiles.value
+})
+
 const selectedResourceCount = computed(() => {
   let count = 0
   for (const state of checkStates.value.values()) {
@@ -2002,6 +2019,7 @@ const drawerConfirmText = computed(() => {
         <div class="form-item form-item--flat">
           <t-checkbox v-model="form.sync_deletions">{{ t('datasource.syncDeletions') }}</t-checkbox>
         </div>
+        <p v-if="scopeNarrowed" class="form-desc" role="status">{{ t('datasource.scopeNarrowedNotice') }}</p>
       </section>
 
       <!-- DingTalk only: which extra node types the connector may ingest. -->

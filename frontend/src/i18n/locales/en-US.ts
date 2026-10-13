@@ -6768,6 +6768,7 @@ export default {
       skip: 'Skip existing'
     },
     syncDeletions: 'Sync deletions (remove knowledge when deleted at source)',
+    scopeNarrowedNotice: 'This change takes content out of the sync scope. With sync deletions on, its knowledge items will be deleted, at the latest by the next full-mode sync.',
     createAndSync: 'Create & Sync Now',
     createAndSyncSuccess: 'Data source created and sync task submitted',
     createButSyncFailed: 'Data source created, but failed to trigger sync',

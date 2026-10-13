@@ -394,3 +394,47 @@ test('Cloud hierarchy limitation stays visible after an empty space expansion', 
     assert.equal(f.vm.visibleTree.some((row: any) => row.noticeAfter), true)
   } finally { f.close() }
 })
+
+function savedSource(type: string, resourceIds: string[], settings: Record<string, unknown> = {}) {
+  return {
+    id: 'source-one', name: 'Saved', type, credentials: { credentials: { configured: true } },
+    config: { resource_ids: resourceIds, settings },
+    sync_schedule: '0 0 */6 * * *', sync_mode: 'full', conflict_strategy: 'overwrite', sync_deletions: true,
+  }
+}
+
+test('dropping a saved resource with deletion sync on shows the scope notice', async () => {
+  const f = await fixture({ dataSource: savedSource('feishu', ['space-a', 'space-b']) })
+  try {
+    assert.equal(f.vm.scopeNarrowed, false)
+    f.vm.selectedResourceIds = ['space-a', 'space-c']
+    assert.equal(f.vm.scopeNarrowed, true)
+    f.vm.form.sync_deletions = false
+    assert.equal(f.vm.scopeNarrowed, false)
+  } finally { f.close() }
+})
+
+test('adding resources never shows the scope notice', async () => {
+  const f = await fixture({ dataSource: savedSource('confluence', ['space-a']) })
+  try {
+    f.vm.selectedResourceIds = ['space-a', 'space-b']
+    assert.equal(f.vm.scopeNarrowed, false)
+  } finally { f.close() }
+})
+
+test('turning off DingTalk uploaded files shows the scope notice', async () => {
+  const f = await fixture({ dataSource: savedSource('dingtalk', ['ws-1'], { include_uploaded_files: true }) })
+  try {
+    assert.equal(f.vm.scopeNarrowed, false)
+    f.vm.dingtalkIncludeUploadedFiles = false
+    assert.equal(f.vm.scopeNarrowed, true)
+  } finally { f.close() }
+})
+
+test('connectors that keep deselected items never show the scope notice', async () => {
+  const f = await fixture({ dataSource: savedSource('notion', ['page-a']) })
+  try {
+    f.vm.selectedResourceIds = []
+    assert.equal(f.vm.scopeNarrowed, false)
+  } finally { f.close() }
+})
