@@ -452,7 +452,7 @@ const showPrePipelineWait = computed(() => {
 })
 
 // Only show the thinking row once the backend actually streams thinking events.
-// Do not pre-empt during the model phase — that flashes "思考" even when thinking is disabled.
+// Do not pre-empt during the model phase; that flashes "Thinking" even when thinking is disabled.
 const showThinkingStep = computed(() => hasThinkingEvent.value)
 
 const thinkingPending = computed(

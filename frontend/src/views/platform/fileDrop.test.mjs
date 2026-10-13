@@ -8,7 +8,7 @@ import { ref } from 'vue'
 const source = readFileSync(new URL('./index.vue', import.meta.url), 'utf8')
 const handlers = ts.transpile(source.slice(
   source.indexOf('let dragCounter = 0'),
-  source.indexOf('// 组件挂载时添加全局事件监听器'),
+  source.indexOf('// Add global event listeners when the component mounts'),
 ))
 
 function fixture(name, { kbId, settingsOpen = false } = {}) {

@@ -6,7 +6,7 @@
     </div>
 
     <div class="settings-group">
-      <!-- LLM 大语言模型 -->
+      <!-- LLM -->
       <div class="setting-row" data-guide="kb-create-llm">
         <div class="setting-info">
           <label>{{ $t('knowledgeEditor.models.llmLabel') }} <span class="required">*</span></label>
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <!-- Embedding 嵌入模型: RAG 检索启用时必填; 纯 Wiki 时可选(用于目录归类相似度) -->
+      <!-- Embedding model: required when RAG retrieval is enabled; optional for wiki-only (used for directory clustering similarity) -->
       <div v-if="ragEnabled !== false || wikiEnabled" class="setting-row" data-guide="kb-create-embedding">
         <div class="setting-info">
           <label>
@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      <!-- Wiki 合成模型 (仅当 Wiki 启用时显示) -->
+      <!-- Wiki synthesis model (shown only when the wiki is enabled) -->
       <div v-if="wikiEnabled" class="setting-row">
         <div class="setting-info">
           <label>{{ $t('knowledgeEditor.wiki.synthesisModelLabel') }}</label>

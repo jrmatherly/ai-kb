@@ -92,17 +92,17 @@
       <div class="test-case shimmer-demo">
         <div class="action-card action-pending">
           <div class="action-title">
-            <span class="action-name">正在检索知识库…</span>
+            <span class="action-name">Searching the knowledge base…</span>
           </div>
         </div>
         <div class="action-card action-pending">
           <div class="action-title">
-            <span class="action-name">正在生成回答…</span>
+            <span class="action-name">Generating the answer…</span>
           </div>
         </div>
         <div class="action-card">
           <div class="action-title">
-            <span class="action-name is-done">检索完成（静态对照）</span>
+            <span class="action-name is-done">Search complete (static reference)</span>
           </div>
         </div>
       </div>
@@ -179,18 +179,18 @@ const renderStreamMarkdown = (raw: string): string => {
 
 // --- Test Data ---
 
-const basicTextSample = `这是一段普通文本，包含 **加粗**、*斜体*、***加粗斜体***、~~删除线~~、行内 \`code\`。
+const basicTextSample = `This is plain text with **bold**, *italic*, ***bold italic***, ~~strikethrough~~ and inline \`code\`.
 
-也可以包含快捷键样式：<kbd>⌘</kbd> + <kbd>K</kbd>。
+It can also include keyboard shortcut styles: <kbd>⌘</kbd> + <kbd>K</kbd>.
 
-这里有一个链接：[GitHub](https://github.com)。
+Here is a link: [GitHub](https://github.com).
 
-> 一级引用
+> First-level quote
 >
-> > 嵌套引用，用于对比 GPT 的引用层级与字重。
+> > Nested quote, for comparing GPT's quote levels and font weight.
 
-- [ ] 未完成任务
-- [x] 已完成任务
+- [ ] Open task
+- [x] Completed task
 `;
 
 const latexCases = [
@@ -287,17 +287,17 @@ graph TD
 
 // --- Streaming Simulation ---
 const fullStreamText = `
-好的，以下是根据知识库中**《xxx》学程手册**整理的有关XXX的介绍：
+Sure. Here is an introduction to XXX, compiled from the **"xxx" course handbook** in the knowledge base:
 
-**XBRL（eXtensible Business Reporting Language，可扩展商业报告语言）**是一种基于XML的标准化标记语言，专门用于电子化商业和财务报告的编制、交换和分析
+**XBRL (eXtensible Business Reporting Language)** is an XML-based standardized markup language for preparing, exchanging and analyzing electronic business and financial reports
 
-该数据集包含90个文本和方程对，挑战模型提取、解释和推理相互关联的财务术语和公式的能力，例如：
+The dataset contains 90 text and equation pairs that challenge a model's ability to extract, interpret and reason about interrelated financial terms and formulas, for example:
 \`\`\`
 APR = ((Fees + Interest) / Principal) × (365 / Days in Loan Term)
 \`\`\`
 <kb doc="2502.08127v1.pdf" chunk_id="1ecdce8a-f922-4d0c-b124-257ab4634da2" />
 
-### 重要性
+### Importance
 
 
 1. **AAAAA**
@@ -314,9 +314,9 @@ APR = ((Fees + Interest) / Principal) × (365 / Days in Loan Term)
 8. **HHH**
 9. **III**
 
-**标题：JJJ**
+**Title: JJJ**
 
-**标题：KKK**
+**Title: KKK**
 
 
 The energy-mass equivalence is $E = mc^2$.
@@ -364,50 +364,50 @@ graph TD
 
 \`\`\`mermaid
 sequenceDiagram
-    participant Driver as 驾驶员 (Driver)
-    participant HMI as 人机交互界面 (HMI/Cluster)
-    participant ADAS as 组合驾驶辅助系统 (ADAS ECU)
-    participant Sensor as 传感器/定位模块
-    participant Cloud as 云端服务平台 (可选)
+    participant Driver as Driver
+    participant HMI as Human-machine interface (HMI/Cluster)
+    participant ADAS as Combined driver assistance system (ADAS ECU)
+    participant Sensor as Sensor/positioning module
+    participant Cloud as Cloud service platform (optional)
 
-    Note over ADAS, Sensor: 阶段1：正常运行与监控
-    Driver->>Sensor: 车辆正常行驶中
-    Sensor->>ADAS: 状态数据 (环境、定位、车辆状态)
-    ADAS-->>Driver: 维持组合驾驶辅助状态 (显示图标正常)
+    Note over ADAS, Sensor: Phase 1: normal operation and monitoring
+    Driver->>Sensor: Vehicle driving normally
+    Sensor->>ADAS: Status data (environment, position, vehicle state)
+    ADAS-->>Driver: Keep combined driver assistance active (icon shown as normal)
 
-    Note over ADAS, Sensor: 阶段2：触发接管条件
-    alt 系统检测到需接管场景
-        Sensor->>ADAS: 检测条件满足 (如: 地图数据缺失/限速变化/系统故障/驾驶员分心)
-        ADAS->>HMI: 发送接管请求信号 (HOR Signal)
+    Note over ADAS, Sensor: Phase 2: takeover condition triggered
+    alt System detects a takeover scenario
+        Sensor->>ADAS: Condition met (e.g. missing map data/speed limit change/system fault/driver distraction)
+        ADAS->>HMI: Send takeover request signal (HOR Signal)
         
-        Note right of HMI: 阶段3：分级提醒策略 (符合国标要求)
-        HMI-->>Driver: 视觉提示 (仪表盘图标闪烁/颜色变化)
-        HMI-->>Driver: 听觉提示 (轻柔蜂鸣声)
+        Note right of HMI: Phase 3: tiered alert strategy (meets national standard requirements)
+        HMI-->>Driver: Visual cue (cluster icon flashing/color change)
+        HMI-->>Driver: Audible cue (soft beep)
         
-        ADAS->>HMI: 增强提醒 (若驾驶员无响应)
-        HMI-->>Driver: 强视觉警告 (红色边框/文字)
-        HMI-->>Driver: 强听觉警告 (连续急促蜂鸣)
-        HMI-->>Driver: 触觉提示 (方向盘震动/座椅振动)
+        ADAS->>HMI: Escalated alert (if the driver does not respond)
+        HMI-->>Driver: Strong visual warning (red border/text)
+        HMI-->>Driver: Strong audible warning (continuous rapid beeping)
+        HMI-->>Driver: Haptic cue (steering wheel/seat vibration)
     end
 
-    Note over Driver, ADAS: 阶段4：驾驶员响应处理
-    alt 驾驶员及时接管
-        Driver->>HMI: 手握方向盘动作 (Torque/Grip Detection)
-        HMI->>ADAS: 确认驾驶员介入信号
-        ADAS-->>Driver: 退出自动驾驶，切换至人工驾驶模式
-        ADAS->>HMI: 清除警告提示
-    else 驾驶员未响应
-        alt 达到最后接管时限 (e.g., T+5s)
-            ADAS->>ADAS: 启动最小风险策略 (MRM/MLR)
-            ADAS->>HMI: 触发紧急减速/停车提示
-            HMI-->>Driver: 紧急警告 (最高级别)
-            ADAS->>Sensor: 执行安全停车动作 (靠边、刹车、双闪)
+    Note over Driver, ADAS: Phase 4: driver response handling
+    alt Driver takes over in time
+        Driver->>HMI: Hands on the steering wheel (Torque/Grip Detection)
+        HMI->>ADAS: Confirm driver intervention signal
+        ADAS-->>Driver: Exit automated driving, switch to manual driving mode
+        ADAS->>HMI: Clear the warning prompts
+    else Driver does not respond
+        alt Final takeover deadline reached (e.g., T+5s)
+            ADAS->>ADAS: Start the minimal risk maneuver (MRM/MLR)
+            ADAS->>HMI: Trigger the emergency deceleration/stop prompt
+            HMI-->>Driver: Emergency warning (highest level)
+            ADAS->>Sensor: Perform a safe stop (pull over, brake, hazard lights)
         end
     end
 
-    Note over Cloud, Driver: 阶段5：数据记录与上报
-    ADAS->>Cloud: 上传接管事件数据 (时间、原因、驾驶员响应)
-    Note right of Cloud: 用于事故定责与算法优化
+    Note over Cloud, Driver: Phase 5: data logging and reporting
+    ADAS->>Cloud: Upload takeover event data (time, cause, driver response)
+    Note right of Cloud: Used for accident liability and algorithm tuning
 \`\`\`
 
 Done.`;

@@ -193,7 +193,7 @@ const toolArguments = computed(() => props.arguments || {});
       background: var(--td-bg-color-container);
       display: block;
 
-      // 滚动条样式
+      // Scrollbar styles
       &::-webkit-scrollbar {
         width: 8px;
         height: 8px;

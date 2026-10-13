@@ -37,7 +37,7 @@
               class="toolbox-tab-count">{{ counts[item.key] }}</span>
           </button>
         </div>
-        <!-- 面板通过 Teleport 把搜索框放到标签栏右侧 -->
+        <!-- The panel teleports its search box to the right side of the tab bar -->
         <div id="toolbox-toolbar" class="toolbox-toolbar" />
       </div>
 

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { resolveForkAffordance } from './forkPoint'
 
-test('第一条 user 消息可以分叉', () => {
+test('the first user message can be forked', () => {
   const messages = [
     { id: 'u1', role: 'user' },
     { id: 'a1', role: 'assistant' },
@@ -10,7 +10,7 @@ test('第一条 user 消息可以分叉', () => {
   assert.deepEqual(resolveForkAffordance(messages, 'u1'), { canFork: true })
 })
 
-test('前置 assistant 无论有没有 checkpoint 都可以分叉', () => {
+test('a preceding assistant message can be forked with or without a checkpoint', () => {
   const messages = [
     { id: 'u1', role: 'user' },
     { id: 'a1', role: 'assistant' },
@@ -19,7 +19,7 @@ test('前置 assistant 无论有没有 checkpoint 都可以分叉', () => {
   assert.deepEqual(resolveForkAffordance(messages, 'u2'), { canFork: true })
 })
 
-test('assistant 消息可以分叉', () => {
+test('an assistant message can be forked', () => {
   const messages = [
     { id: 'u1', role: 'user' },
     { id: 'a1', role: 'assistant', is_completed: true },
@@ -27,7 +27,7 @@ test('assistant 消息可以分叉', () => {
   assert.deepEqual(resolveForkAffordance(messages, 'a1'), { canFork: true })
 })
 
-test('未知角色不能作为分叉点', () => {
+test('an unknown role cannot be a fork point', () => {
   const messages = [
     { id: 'u1', role: 'user' },
     { id: 's1', role: 'system' },
@@ -35,14 +35,14 @@ test('未知角色不能作为分叉点', () => {
   assert.deepEqual(resolveForkAffordance(messages, 's1'), { canFork: false })
 })
 
-test('未知消息 ID 不能分叉', () => {
+test('an unknown message ID cannot be forked', () => {
   assert.deepEqual(
     resolveForkAffordance([{ id: 'u1', role: 'user' }], 'nope'),
     { canFork: false },
   )
 })
 
-test('未完成的 assistant 消息意味着本轮还在跑，不给分叉', () => {
+test('an unfinished assistant message means the turn is still running, so it cannot be forked', () => {
   const messages = [
     { id: 'u1', role: 'user' },
     { id: 'a1', role: 'assistant', is_completed: false },

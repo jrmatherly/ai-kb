@@ -117,7 +117,7 @@ test('viewer controls and builtin mutations cannot update services', async () =>
 
 const rows = () => [
   { id: 'builtin', name: 'Knowledge', description: 'Search docs', enabled: false, is_builtin: true, transport_type: 'http-streamable' },
-  { id: 'logs', name: '日志 Logs', description: 'hidden legacy text', usage_instructions: 'Audit REPORT', enabled: true, transport_type: 'sse', headers: { Authorization: 'secret-fixture' } },
+  { id: 'logs', name: '\u65e5\u5fd7 Logs', description: 'hidden legacy text', usage_instructions: 'Audit REPORT', enabled: true, transport_type: 'sse', headers: { Authorization: 'secret-fixture' } },
   { id: 'local', name: 'Local', description: '', enabled: false, transport_type: 'stdio' },
 ]
 const ids = (vm: any) => Array.from(vm.filteredServices, (row: any) => row.id)
@@ -126,7 +126,7 @@ test('MCP search matches visible metadata and clearing restores every service', 
   const f = await fixture()
   try {
     f.vm.services = rows()
-    f.vm.query = ' 日志   report '
+    f.vm.query = ' \u65e5\u5fd7   report '
     assert.deepEqual(ids(f.vm), ['logs'])
     f.vm.query = 'knowledge docs'
     assert.deepEqual(ids(f.vm), ['builtin'])

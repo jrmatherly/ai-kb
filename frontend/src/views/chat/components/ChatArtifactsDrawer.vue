@@ -170,7 +170,7 @@
  *     refreshed page still shows something without waiting for the parent
  *     to re-hydrate.
  *   - Errors during download are surfaced via MessagePlugin.error but do
- *     NOT close the drawer, matching spec §7: "抽屉保持打开以便重试其他文件".
+ *     NOT close the drawer, matching spec §7: "the drawer stays open so another file can be retried".
  *   - Overlay / Esc while a file is previewed pop back to the list (same as
  *     the header chevron). TDesign still emits update:visible=false after
  *     @close, so we swallow that one emit; the header X still closes all.

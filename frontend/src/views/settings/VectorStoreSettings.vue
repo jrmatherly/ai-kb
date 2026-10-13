@@ -14,9 +14,9 @@
       <div class="settings-group">
         <h3 class="list-section-title">{{ t('vectorStoreSettings.storesTitle') }}</h3>
 
-        <!-- 与其它 settings 列表同形：左侧 engine 徽章 + 标题 + env pill + 副标题 + 测试动作。
-             env 来源是只读的 (engine_type / connection_config 由 .env 写入），所以没有更多菜单；
-             user 来源沿用三点菜单的编辑 / 删除入口；测试结果作为卡片底部的彩色条出现。 -->
+        <!-- Same shape as the other settings lists: engine badge on the left + title + env pill + subtitle + test action.
+             The env source is read-only (engine_type / connection_config are written by .env), so there is no more menu;
+             the user source keeps the three-dot menu's edit / delete entries; the test result appears as a colored bar at the bottom of the card. -->
         <div v-if="stores.length === 0 && !authStore.hasRole('admin')" class="empty-stores">
           <t-empty :description="t('vectorStoreSettings.emptyDesc')" />
         </div>
@@ -59,8 +59,8 @@
                     {{ t('vectorStoreSettings.envTag') }}
                   </span>
                   <!--
-                    测试连接已挪到编辑抽屉的 footer，外层菜单不再有"测试"入口。
-                    env 来源（.env 写入）也不需要 dropdown — 没有可执行的动作。
+                    Test connection moved to the edit drawer's footer; the outer menu no longer has a "Test" entry.
+                    The env source (written by .env) needs no dropdown either: there is no action to run.
                   -->
                   <div
                     v-if="authStore.hasRole('admin') && storeActionsFor(store).length > 0"
@@ -105,7 +105,7 @@
       </div>
     </template>
 
-    <!-- Add/Edit Drawer — 与 ModelEditorDialog/Storage/Parser/WebSearch 同款 -->
+    <!-- Add/Edit Drawer, same as ModelEditorDialog/Storage/Parser/WebSearch -->
     <SettingDrawer
       v-model:visible="showDialog"
       :title="editingStore ? t('vectorStoreSettings.editStore') : t('vectorStoreSettings.addStore')"
@@ -115,8 +115,8 @@
       @cancel="showDialog = false"
     >
       <!--
-        Header icon — 与列表 .store-card__badge 同款 logo/mono/fallback。
-        per-engine 配色由非 scoped 块的 .vectorstore-drawer--{engine} 注入。
+        Header icon: the same logo/mono/fallback as the list's .store-card__badge.
+        Per-engine colors are injected by .vectorstore-drawer--{engine} in the non-scoped block.
       -->
       <template v-if="form.engine_type" #headerIcon>
         <img
@@ -133,15 +133,15 @@
         <span v-else class="header-icon__text">{{ engineInitial(form.engine_type) }}</span>
       </template>
 
-      <!-- 副标题：engine display_name -->
+      <!-- Subtitle: engine display_name -->
       <template v-if="selectedType" #subtitle>
         <span>{{ selectedType.display_name || form.engine_type }}</span>
       </template>
 
       <!--
-        Test connection (footer-left). create 模式：实时验证当前表单的连接信息；
-        edit 模式：用存储的连接配置（连接配置在编辑模式不可改 — engine 是 immutable）。
-        始终显示按钮，由 canTestConnection 控制 disabled。
+        Test connection (footer-left). Create mode: validates the current form's connection info live;
+        edit mode: uses the stored connection config (the connection config cannot change in edit mode; the engine is immutable).
+        The button is always shown, with disabled controlled by canTestConnection.
       -->
       <template #footer-left>
         <t-button
@@ -168,12 +168,12 @@
 
       <t-form ref="formRef" :data="form" :rules="formRules" label-align="top" class="store-form">
         <!--
-          Edit 模式特殊提示：engine_type / connection_config / index_config
-          创建后不可改，仅 name 可编辑。用 inline-alert 而不是大块 banner，
-          视觉与其他抽屉的提示一致。
+          Edit mode notice: engine_type / connection_config / index_config
+          cannot change after creation; only name is editable. Uses an inline-alert rather than a large banner,
+          visually matching the notices in the other drawers.
         -->
         <section v-if="editingStore" class="setting-drawer__section">
-          <h4 class="setting-drawer__section-title">{{ t('vectorStoreSettings.basicSection', '基本信息') }}</h4>
+          <h4 class="setting-drawer__section-title">{{ t('vectorStoreSettings.basicSection', 'Basic') }}</h4>
 
           <div class="inline-alert inline-alert--info">
             <t-icon name="info-circle-filled" class="inline-alert__icon" />
@@ -185,7 +185,7 @@
             <t-input v-model="form.name" :placeholder="t('vectorStoreSettings.namePlaceholder')" />
           </div>
 
-          <!-- 只读字段以 inline list 展示（轻量 readonly 行） -->
+          <!-- Read-only fields shown as an inline list (lightweight readonly rows) -->
           <div class="readonly-fields">
             <div class="readonly-row">
               <span class="readonly-label">{{ t('vectorStoreSettings.engineTypeLabel') }}</span>
@@ -212,11 +212,11 @@
           </div>
         </section>
 
-        <!-- Create 模式：基本信息 + 连接配置 + 高级索引 三段 -->
+        <!-- Create mode: basic info + connection config + advanced index, three sections -->
         <template v-else>
-          <!-- Section 1 — 基本信息：engine 类型 + 名称 -->
+          <!-- Section 1: basic info: engine type + name -->
           <section class="setting-drawer__section">
-            <h4 class="setting-drawer__section-title">{{ t('vectorStoreSettings.basicSection', '基本信息') }}</h4>
+            <h4 class="setting-drawer__section-title">{{ t('vectorStoreSettings.basicSection', 'Basic') }}</h4>
 
             <div class="form-item">
               <label class="form-label required">{{ t('vectorStoreSettings.engineTypeLabel') }}</label>
@@ -236,7 +236,7 @@
             </div>
           </section>
 
-          <!-- Section 2 — 连接配置（engine type 决定具体字段） -->
+          <!-- Section 2: connection config (the engine type decides the fields) -->
           <section v-if="selectedType" class="setting-drawer__section">
             <h4 class="setting-drawer__section-title">{{ t('vectorStoreSettings.connectionInfo') }}</h4>
 
@@ -250,7 +250,7 @@
                 :class="{ required: field.required }"
               >{{ fieldLabel(field.name) }}</label>
 
-              <!-- boolean 字段：switch + 行内描述 / TLS 警告 -->
+              <!-- boolean field: switch + inline description / TLS warning -->
               <template v-if="field.type === 'boolean'">
                 <div class="vision-toggle">
                   <t-switch v-model="form.connection_config[field.name]" />
@@ -263,7 +263,7 @@
                 </p>
               </template>
 
-              <!-- 敏感字段（password / api key 等）：lock prefix + password -->
+              <!-- Sensitive fields (password / api key and so on): lock prefix + password -->
               <t-input
                 v-else-if="field.type === 'string' && field.sensitive"
                 v-model="form.connection_config[field.name]"
@@ -273,7 +273,7 @@
                 <template #prefix-icon><t-icon name="lock-on" /></template>
               </t-input>
 
-              <!-- 数字字段：用 t-input + type=number，与 MCP 高级配置同款；无单位提示 -->
+              <!-- Number field: t-input + type=number, same as the MCP advanced config; no unit hint -->
               <t-input
                 v-else-if="field.type === 'number'"
                 v-model="connectionNumberTextProxy[field.name].value"
@@ -282,7 +282,7 @@
                 class="number-input"
               />
 
-              <!-- 普通字符串 -->
+              <!-- Plain string -->
               <t-input
                 v-else
                 v-model="form.connection_config[field.name]"
@@ -291,18 +291,18 @@
             </div>
           </section>
 
-          <!-- Section 3 — 高级索引（仅 selectedType 有 index_fields 时显示） -->
+          <!-- Section 3: advanced index (shown only when selectedType has index_fields) -->
           <section v-if="selectedType?.index_fields?.length" class="setting-drawer__section">
             <h4 class="setting-drawer__section-title">{{ t('vectorStoreSettings.advancedIndexConfig') }}</h4>
 
-            <!-- 折叠/展开开关：保留之前的可选展示行为，但样式更轻量 -->
+            <!-- Collapse/expand toggle: keeps the earlier optional display behavior, with lighter styling -->
             <button
               type="button"
               class="advanced-toggle"
               @click="showAdvanced = !showAdvanced"
             >
               <t-icon :name="showAdvanced ? 'chevron-down' : 'chevron-right'" />
-              <span>{{ showAdvanced ? t('common.collapse', '收起') : t('common.expand', '展开') }}</span>
+              <span>{{ showAdvanced ? t('common.collapse', 'Collapse') : t('common.expand', 'Expand') }}</span>
             </button>
 
             <template v-if="showAdvanced">
@@ -313,7 +313,7 @@
               >
                 <label class="form-label">{{ fieldLabel(field.name) }}</label>
 
-                <!-- 枚举 → 下拉 -->
+                <!-- Enum → dropdown -->
                 <t-select
                   v-if="field.enum && field.enum.length"
                   v-model="form.index_config[field.name]"
@@ -322,7 +322,7 @@
                   <t-option v-for="opt in field.enum" :key="opt" :value="opt" :label="opt" />
                 </t-select>
 
-                <!-- 数字 → number input -->
+                <!-- Number → number input -->
                 <t-input
                   v-else-if="field.type === 'number'"
                   v-model="indexNumberTextProxy[field.name].value"
@@ -333,7 +333,7 @@
                   class="number-input"
                 />
 
-                <!-- 字符串 -->
+                <!-- String -->
                 <t-input
                   v-else
                   v-model="form.index_config[field.name]"
@@ -411,8 +411,8 @@ const envStores = computed(() => stores.value.filter(s => s.source === 'env'))
 const userStores = computed(() => stores.value.filter(s => s.source === 'user'))
 const selectedType = computed(() => storeTypes.value.find(st => st.type === form.value.engine_type))
 
-// Drawer header logo — 与列表 .store-card__badge 同源（providerLogo()），让
-// 列表卡 → 抽屉 hand-off 视觉连贯。
+// Drawer header logo, from the same source as the list's .store-card__badge (providerLogo()), so the
+// list card → drawer hand-off looks continuous.
 const drawerLogo = computed(() => {
   if (!form.value.engine_type) return null
   return providerLogo('vectorstore', form.value.engine_type)
@@ -431,8 +431,8 @@ const drawerClass = computed(() => {
     : 'vectorstore-drawer'
 })
 
-// 测试连接是否可点。create 模式：必须填全所有 required 连接字段；
-// edit 模式：engine 不可改、连接配置只读，禁用测试（要重新建条目，不在抽屉里测）。
+// Whether test connection is clickable. Create mode: every required connection field must be filled;
+// edit mode: the engine cannot change and the connection config is read-only, so testing is disabled (create a new entry instead of testing in the drawer).
 const canTestConnection = computed(() => {
   if (editingStore.value) return false
   const st = selectedType.value
@@ -445,9 +445,9 @@ const canTestConnection = computed(() => {
   return true
 })
 
-// Per-store dropdown options. env 来源由 .env 写入，UI 不允许 edit / delete；
-// 测试连接已挪到编辑抽屉的 footer，外层菜单不再露出"测试"项。env 来源没有
-// 编辑/删除入口 → 整个 dropdown 都不需要展示。
+// Per-store dropdown options. The env source is written by .env, and the UI allows no edit / delete;
+// test connection moved to the edit drawer's footer, and the outer menu no longer shows a "Test" item. The env source has no
+// edit/delete entries → no dropdown needs to be shown at all.
 const storeActionsFor = (store: VectorStoreEntity) => {
   if (store.source === 'env') return []
   return [
@@ -507,14 +507,14 @@ const getStoreEndpoint = (store: VectorStoreEntity): string => {
   return cc.addr || cc.host || ''
 }
 
-// 卡片徽章首字母。engine_type 都是英文 ASCII，直接 charAt。
+// Card badge initial. engine_type is always ASCII, so charAt directly.
 const engineInitial = (engineType: string): string => {
   return (engineType || '?').charAt(0).toUpperCase()
 }
 
-// 当 engine 有 logo 资源时，把 SVG URL 透传给 CSS（::before 用 mask-image
-// 渲染），并把卡片底色切回中性白；没有 logo 时返回空对象，沿用每个 engine
-// 的品牌色 monogram 样式。color 模式不需要 mask 染色，所以 url 不上报。
+// When the engine has a logo asset, pass the SVG URL through to CSS (::before renders it with mask-image)
+// and switch the card background back to neutral white; with no logo return an empty object, keeping each engine's
+// brand-color monogram style. Color mode needs no mask tint, so the url is not reported.
 const resolveLogo = (engineType: string) => providerLogo('vectorstore', engineType)
 
 const badgeClass = (engineType: string) => {
@@ -542,10 +542,10 @@ const onEngineTypeChange = () => {
 }
 
 // ---- Number-input text proxies (lazy per field name) ----
-// type=number 输入会因为 v-model 把空字符串 coerce 成 0 / NaN，导致
-// "用户清空 → 自动塞回 0" 的烦躁交互。我们用 WritableComputedRef 包一层：
-// 读取时把数字转成字符串展示；写入时空串 → 删除字段（让 placeholder 显示
-// 出来），非空 → 转 int。Proxy 按字段名按需创建并缓存，避免重复 computed。
+// A type=number input coerces an empty string to 0 / NaN through v-model, causing
+// the annoying "user clears it → 0 comes back" interaction. We wrap it in a WritableComputedRef:
+// on read the number is shown as a string; on write an empty string → delete the field (so the placeholder shows),
+// non-empty → convert to int. The proxy is created per field name on demand and cached, avoiding repeated computeds.
 const connectionNumberText: Record<string, WritableComputedRef<string>> = {}
 const indexNumberText: Record<string, WritableComputedRef<string>> = {}
 
@@ -615,7 +615,7 @@ const openAddDialog = () => {
   showDialog.value = true
 }
 
-// env 来源由 .env 注入，与列表菜单一致：不可点击编辑
+// The env source is injected by .env, consistent with the list menu: not clickable for editing
 const isStoreCardClickable = (store: VectorStoreEntity) =>
   authStore.hasRole('admin') && store.source !== 'env'
 
@@ -647,12 +647,12 @@ const editStore = (store: VectorStoreEntity) => {
   showDialog.value = true
 }
 
-// SettingDrawer 的"保存"按钮触发：手动校验后写后端。
-// edit 模式只能改 name；create 模式提交完整 connection / index 配置。
+// Triggered by the SettingDrawer "Save" button: validate manually, then write to the backend.
+// Edit mode can change only name; create mode submits the full connection / index config.
 const onDrawerConfirm = async () => {
   const result = await formRef.value?.validate()
   if (result !== true && result !== undefined) {
-    // 取第一条错误展示
+    // Show the first error
     const firstError =
       typeof result === 'object'
         ? Object.values(result).map((errs: any) => Array.isArray(errs) ? errs[0]?.message : '').find(Boolean)
@@ -691,7 +691,7 @@ const onDrawerConfirm = async () => {
 }
 
 const handleAction = (action: { value: string }, store: VectorStoreEntity) => {
-  // test 已挪到抽屉，外层菜单不再处理 'test' 值。
+  // test moved to the drawer; the outer menu no longer handles the 'test' value.
   if (action.value === 'edit') {
     editStore(store)
   } else if (action.value === 'delete') {
@@ -718,8 +718,8 @@ const confirmDelete = (store: VectorStoreEntity) => {
   })
 }
 
-// 测试连接（在抽屉内触发）。create 模式下用当前表单数据，调
-// /test/raw 端点。edit 模式按钮 disabled，所以这里只处理 create 路径。
+// Test connection (triggered inside the drawer). In create mode it uses the current form data and calls
+// the /test/raw endpoint. In edit mode the button is disabled, so only the create path is handled here.
 const onDrawerTest = async () => {
   if (editingStore.value) return
   testing.value = true
@@ -796,8 +796,8 @@ onMounted(async () => {
   }
 }
 
-// 与 Parser / Storage / Model 等同形：徽章 + 三段式。env 来源走 secondaryContainer
-// 底色暗示只读；test 按钮做成 text 模式，避免在标题行抢眼。
+// Same shape as Parser / Storage / Model and others: badge + three parts. The env source uses the secondaryContainer
+// background to hint read-only; the test button is text mode, so it does not stand out in the title row.
 .store-card {
   .provider-card();
   flex-direction: column;
@@ -863,15 +863,15 @@ onMounted(async () => {
   .provider-card-badge-color(#0052d9);
 }
 
-// 真实品牌 logo 的渲染：保留每个 engine 类的 color 作为品牌色，
-// 把背景换成中性白 + 细边框；用 ::before mask-image 把单色 SVG 染成 currentColor。
-// 选择器叠了一层 .store-card 是为了胜过 `.store-card--<engine> .store-card__badge`
-// 那条更具体的品牌底色规则。
+// Rendering a real brand logo: keep each engine class's color as the brand color,
+// switch the background to neutral white + a thin border, and tint the single-color SVG to currentColor with ::before mask-image.
+// The selector stacks an extra .store-card to win over the more specific
+// `.store-card--<engine> .store-card__badge` brand background rule.
 .store-card__badge-img {
   .provider-card-badge-img();
 }
 
-// 各 vector engine 配色（覆盖 11 类常见后端，未列出的回落到默认蓝）
+// Colors per vector engine (covering 11 common backends; unlisted ones fall back to the default blue)
 .store-card--qdrant .store-card__badge {
   .provider-card-badge-color(#e12626);
 }
@@ -971,7 +971,7 @@ onMounted(async () => {
   }
 }
 
-// ---- 抽屉内容 — 与 ModelEditorDialog 同款约定 ----
+// ---- Drawer content, same conventions as ModelEditorDialog ----
 .form-item {
   margin-bottom: 0;
 }
@@ -1001,7 +1001,7 @@ onMounted(async () => {
 
   &--inline { margin: 0; }
 
-  // TLS 警告等"危险确认"用红字
+  // "Danger confirmations" such as the TLS warning use red text
   &--warn { color: var(--td-error-color); }
 }
 
@@ -1012,7 +1012,7 @@ onMounted(async () => {
   font-size: var(--app-text-md);
 }
 
-// 隐藏 t-form 默认 form-item 容器 — 走自定义 .form-item / .form-label
+// Hide t-form's default form-item container; use custom .form-item / .form-label
 :deep(.t-form) .t-form-item {
   display: none;
 }
@@ -1023,7 +1023,7 @@ onMounted(async () => {
   gap: 8px;
 }
 
-// ---- inline alert（替代之前的 .immutable-notice 大块横幅） ----
+// ---- inline alert (replaces the earlier large .immutable-notice banner) ----
 .inline-alert {
   display: flex;
   align-items: center;
@@ -1053,7 +1053,7 @@ onMounted(async () => {
   }
 }
 
-// ---- 编辑模式只读字段列表（保持原有视觉，但去掉外框，紧贴 alert 下方）----
+// ---- Edit mode read-only field list (keeps the original look without the outer frame, right below the alert) ----
 .readonly-fields {
   padding: 10px 12px;
   background: var(--td-bg-color-secondarycontainer);
@@ -1086,7 +1086,7 @@ onMounted(async () => {
   word-break: break-all;
 }
 
-// ---- 高级索引展开/收起按钮 ----
+// ---- Advanced index expand/collapse button ----
 .advanced-toggle {
   display: inline-flex;
   align-items: center;
@@ -1106,7 +1106,7 @@ onMounted(async () => {
   .t-icon { font-size: var(--app-text-base); }
 }
 
-// ---- Number input：去原生 spinner（与 MCP 高级配置同款）----
+// ---- Number input: remove the native spinner (same as the MCP advanced config) ----
 .number-input {
   :deep(input::-webkit-outer-spin-button),
   :deep(input::-webkit-inner-spin-button) {
@@ -1121,7 +1121,7 @@ onMounted(async () => {
   }
 }
 
-// ---- Header 图标徽章 ----
+// ---- Header icon badge ----
 .header-icon__img {
   width: 24px;
   height: 24px;
@@ -1150,7 +1150,7 @@ onMounted(async () => {
   letter-spacing: 0.02em;
 }
 
-// ---- footer-left 测试按钮的状态 icon ----
+// ---- Status icon for the footer-left test button ----
 .status-icon {
   font-size: var(--app-text-xl);
   flex-shrink: 0;
@@ -1169,7 +1169,7 @@ onMounted(async () => {
   list-card → drawer hand-off stays visually continuous.
 -->
 <style lang="less">
-// 彩色 logo 时给 header-icon 容器一个白底 + 1px 边
+// For a color logo give the header-icon container a white background + 1px border
 .vectorstore-drawer .setting-drawer__header-icon:has(.header-icon__img) {
   background: var(--td-bg-color-container);
   box-shadow: inset 0 0 0 1px var(--td-component-stroke);

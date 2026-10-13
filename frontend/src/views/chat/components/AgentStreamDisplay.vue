@@ -579,7 +579,7 @@
       </div>
     </div>
   </div>
-  <!-- 引用 hover 浮层（与历史消息共用同一组件） -->
+  <!-- Citation hover overlay (the same component as history messages) -->
   <ChatCitationFloat :float="citationFloat" :on-enter="cancelCitationClose" :on-leave="scheduleCitationClose" />
 
   <!-- Image Preview -->
@@ -833,7 +833,7 @@ const sanitizeForDisplay = (text: string): string => {
   return result;
 };
 
-// 根元素引用
+// Root element ref
 const rootElement = ref<HTMLElement | null>(null);
 
 function escapeHtml(value: string): string {
@@ -847,7 +847,7 @@ function escapeHtml(value: string): string {
 
 const streamingStepsContainer = ref<HTMLElement | null>(null);
 
-// 图片预览状态
+// Image preview state
 const imagePreviewVisible = ref(false);
 const imagePreviewUrl = ref('');
 
@@ -860,7 +860,7 @@ const closeImagePreview = () => {
   imagePreviewVisible.value = false;
 };
 
-// Wiki Drawer 状态
+// Wiki Drawer state
 const wikiDrawerVisible = ref(false);
 const wikiDrawerPage = ref<WikiPage | null>(null);
 const wikiDrawerBodyRef = ref<HTMLElement | null>(null);
@@ -1005,7 +1005,7 @@ const emit = defineEmits<{
 
 const canFork = computed(() => props.canFork === true && !props.embeddedMode)
 const canRewind = computed(() => props.canRewind === true && !props.embeddedMode)
-const forkTooltip = '从这条回答继续分叉'
+const forkTooltip = 'Fork from this answer'
 const rewindTooltip = computed(() => t('chat.rewind.tooltip'))
 const emitFork = () => {
   const messageId = persistedAssistantId(props.session) || String(props.session?.id || '')
@@ -1962,7 +1962,7 @@ const buildFullEventList = (stream: any[]) => {
 
   // Drop thinking cards that are entirely empty (no title and no body). Some
   // models emit "\n\n" before a tool call (e.g. qwen3 blank lines between
-  // [assistant] and tool_calls), which would otherwise show an empty "思考"
+  // [assistant] and tool_calls), which would otherwise show an empty "Thinking"
   // card. Keep cards that carry a title (a relocated preamble) even with no
   // reasoning body.
   return folded.filter((e: any) => {
@@ -2103,7 +2103,7 @@ const displayEvents = computed(() => {
     // free text). Synthesize a virtual
     // `answer` event from the trailing thinking content so it renders with
     // the answer card UI (expanded markdown + copy/add toolbar) rather than
-    // the collapsed "思考" card. The original thinking event is still in
+    // the collapsed "Thinking" card. The original thinking event is still in
     // the intermediate-steps tree when applicable.
     const thinking = result.find((e: any) =>
       e.type === 'thinking' && e.event_id === final.event_id
@@ -2513,7 +2513,7 @@ onUpdated(() => {
   });
 });
 
-// 自定义渲染器 - 支持 Mermaid
+// Custom renderer with Mermaid support
 const agentRenderer = new marked.Renderer();
 agentRenderer.code = createMermaidCodeRenderer('mermaid-agent');
 
@@ -2571,7 +2571,7 @@ const renderAgentMarkdown = (
   });
 };
 
-// 单次渲染 Markdown 内容（替代 token-by-token，修复 KaTeX 公式在 streaming 时闪烁消失的问题）
+// Render the Markdown content in one pass (instead of token-by-token, which fixes KaTeX formulas flickering away during streaming)
 const renderMarkdownContent = (content: unknown): string => {
   return renderAgentMarkdown(content, sanitizeForDisplay);
 };
@@ -2597,7 +2597,7 @@ const renderMarkdown = (content: unknown): string => {
   }
 };
 
-// 渲染 Mermaid 图表的函数
+// Render Mermaid diagrams
 const renderMermaidDiagrams = async () => {
   await enhanceMarkdownContainer(rootElement.value);
 };
@@ -2849,7 +2849,7 @@ const getToolTitle = (event: any): string => {
       getQueryText(event.arguments) ||
       getQueryText(event.tool_data);
     if (queryText) {
-      return `${baseTitle}：「${queryText}」`;
+      return `${baseTitle}: "${queryText}"`;
     }
     return baseTitle;
   }
@@ -2863,7 +2863,7 @@ const getToolTitle = (event: any): string => {
       const query = event.arguments.query;
       // Handle both string and array formats
       if (Array.isArray(query)) {
-        queryText = query.filter((q: any) => q && typeof q === 'string').join('，');
+        queryText = query.filter((q: any) => q && typeof q === 'string').join(', ');
       } else if (typeof query === 'string') {
         queryText = query;
       }
@@ -2871,13 +2871,13 @@ const getToolTitle = (event: any): string => {
       const query = event.tool_data.query;
       // Handle both string and array formats
       if (Array.isArray(query)) {
-        queryText = query.filter((q: any) => q && typeof q === 'string').join('，');
+        queryText = query.filter((q: any) => q && typeof q === 'string').join(', ');
       } else if (typeof query === 'string') {
         queryText = query;
       }
     }
     if (queryText) {
-      return `${baseTitle}：「${queryText}」`;
+      return `${baseTitle}: "${queryText}"`;
     }
     return baseTitle;
   }
@@ -2911,9 +2911,9 @@ const getToolTitle = (event: any): string => {
     if (patterns.length > 0) {
       // Show up to 2 patterns in title
       const displayPatterns = patterns.slice(0, 2);
-      const patternText = displayPatterns.join('、');
+      const patternText = displayPatterns.join(', ');
       const moreText = patterns.length > 2 ? ` +${patterns.length - 2}` : '';
-      return `${baseTitle}：「${patternText}${moreText}」`;
+      return `${baseTitle}: "${patternText}${moreText}"`;
     }
     return baseTitle;
   }
@@ -2925,7 +2925,7 @@ const getToolTitle = (event: any): string => {
       getWikiPageText(event.tool_data)
     ).trim();
     const baseTitle = getToolDescription(event);
-    return pageLabel ? `${baseTitle}：「${sanitizeForDisplay(pageLabel)}」` : baseTitle;
+    return pageLabel ? `${baseTitle}: "${sanitizeForDisplay(pageLabel)}"` : baseTitle;
   }
 
   if (toolName === 'read_skill') {
@@ -2940,13 +2940,13 @@ const getToolTitle = (event: any): string => {
     const command = previewShellCommand(skillScriptCommandLabel(event))
     const baseTitle = formatToolTitleWithDetail(getToolDescription(event), getEventSkillName(event))
     const rest = skillScriptTitleCommand(getEventSkillName(event), command)
-    return rest ? `${baseTitle}：${rest}` : baseTitle
+    return rest ? `${baseTitle}: ${rest}` : baseTitle
   }
 
   if (toolName === 'shell_exec') {
     const command = previewShellCommand(skillScriptCommandLabel(event))
     const baseTitle = getToolDescription(event)
-    return command ? `${baseTitle}：${command}` : baseTitle
+    return command ? `${baseTitle}: ${command}` : baseTitle
   }
 
   // Use tool summary if available
@@ -3195,7 +3195,7 @@ const handleAddToKnowledge = (answerEvent: any) => {
   margin-bottom: 8px;
 
   &.event-answer {
-    // answer 事件无特殊左侧装饰
+    // the answer event has no special left decoration
   }
 }
 
@@ -3300,7 +3300,7 @@ const handleAddToKnowledge = (answerEvent: any) => {
   }
 }
 
-// Answer Event - 无边框，直接显示内容
+// Answer Event - no border, shows the content directly
 .answer-event {
   animation: fadeInUp 0.25s ease-out;
   min-height: 20px;
@@ -3324,7 +3324,7 @@ const handleAddToKnowledge = (answerEvent: any) => {
 
       :deep(img) {
         background-color: var(--td-bg-color-secondarycontainer);
-        /* 加载时的占位背景色 */
+        /* Placeholder background while loading */
       }
     }
   }

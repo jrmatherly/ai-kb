@@ -485,7 +485,7 @@ watch(() => props.parserEngineRules, (v) => {
   }
 }
 
-// ---- 下拉选项样式 ----
+// ---- Dropdown option styles ----
 .kb-parser-settings--embedded {
   .settings-group {
     border: 1px solid var(--td-component-stroke);

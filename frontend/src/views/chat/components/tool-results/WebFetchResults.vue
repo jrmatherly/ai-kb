@@ -86,7 +86,7 @@
               <div class="info-section-title">
                 {{ $t('chat.rawTextLabel') }}
                 <span class="raw-length" v-if="item.content_length">
-                  （{{ formatLength(item.content_length) }}）
+                  ({{ formatLength(item.content_length) }})
                 </span>
               </div>
               <div v-if="item.offset !== undefined" class="info-field">

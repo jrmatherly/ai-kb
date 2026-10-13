@@ -142,7 +142,7 @@ test('isValidEnvValueLength measures UTF-8 bytes, not JavaScript characters', ()
   assert.equal(isValidEnvValueLength('x'.repeat(MAX_ENV_VALUE_BYTES)), true)
   assert.equal(isValidEnvValueLength('x'.repeat(MAX_ENV_VALUE_BYTES + 1)), false)
 
-  const nonAscii = '你'.repeat(3000)
+  const nonAscii = '\u4f60'.repeat(3000)
   assert.equal(nonAscii.length < MAX_ENV_VALUE_BYTES, true)
   assert.equal(isValidEnvValueLength(nonAscii), false)
 })
@@ -282,8 +282,8 @@ test('skillSecretCards lifts declared skills out of config groups and skips empt
 
 test('skillSecretCards labels the host sandbox like the sandbox cards do', () => {
   const hostSkill = skill('aikb', 'aikb', [envVar({ name: 'AIKB_API_KEY' })])
-  const groups = [config('host', '本机', [], [hostSkill])]
+  const groups = [config('host', 'Local machine', [], [hostSkill])]
 
   assert.equal(skillSecretCards(groups, 'This computer')[0].sandbox_config_name, 'This computer')
-  assert.equal(skillSecretCards(groups)[0].sandbox_config_name, '本机')
+  assert.equal(skillSecretCards(groups)[0].sandbox_config_name, 'Local machine')
 })

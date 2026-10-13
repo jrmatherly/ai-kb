@@ -71,7 +71,7 @@ const statusText = computed(() => {
   }
 })
 
-// unsupported 是配置问题，重试一万次也一样，所以不给按钮。
+// unsupported is a configuration problem; retrying ten thousand times gives the same result, so no button.
 const actionLabel = computed(() => {
   switch (status.value) {
     case 'idle':
@@ -108,8 +108,8 @@ onMounted(() => {
   connectLookup()
 })
 
-// 兜底的活动信号：只有后端 opcode 解析降级时才真正生效，composable 内部已按
-// 30 秒 debounce。
+// Fallback activity signal: only takes effect when backend opcode parsing degrades; the composable already
+// debounces it by 30 seconds.
 function onUserActivity() {
   desktop.reportActivity()
 }

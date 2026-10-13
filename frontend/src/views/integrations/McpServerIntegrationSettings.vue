@@ -401,7 +401,7 @@ async function loadOptions() {
   kbLoading.value = true
   agentsLoading.value = true
   try {
-    // 刷新失败时给空列表，而不是把上一次的共享快照当成本次结果展示。
+    // On a failed refresh show an empty list rather than presenting the last shared snapshot as this result.
     const [kbResult, sharedKbResult, agentResult] = await Promise.allSettled([
       chatResources.ensureKnowledgeBases(),
       orgStore.fetchSharedKnowledgeBases(),

@@ -285,7 +285,7 @@ const loadInfo = async () => {
     loading.value = true
     error.value = ''
     
-    // 设置面板每次打开都要最新值；侧栏启动时拉过的快照走同一个 store。
+    // The settings panel needs fresh values each time it opens; the snapshot the sidebar fetched at startup goes through the same store.
     await editorResources.ensureSystemInfo(true)
 
     if (editorResources.systemInfo) {

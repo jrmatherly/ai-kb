@@ -563,7 +563,7 @@ const handleAction = (action: 'download' | 'edit' | 'view-trace' | 'reparse' | '
               <button v-for="tag in item.tags.slice(0, 1)" :key="tag.id" type="button" class="card-tag-chip"
                 :disabled="!canEdit" :title="tag.name">{{ tag.name }}</button>
               <button v-if="item.tags.length > 1" type="button" class="card-tag-overflow" :disabled="!canEdit"
-                :title="item.tags.slice(1).map(tag => tag.name).join('、')">+{{ item.tags.length - 1 }}</button>
+                :title="item.tags.slice(1).map(tag => tag.name).join(', ')">+{{ item.tags.length - 1 }}</button>
             </template>
             <button v-else-if="canEdit" type="button" class="card-tag-add">
               <t-icon name="add" size="12px" />{{ t('knowledgeBase.tagAddAction') }}
@@ -617,7 +617,7 @@ const handleAction = (action: 'download' | 'edit' | 'view-trace' | 'reparse' | '
           </div>
           <div class="card-popover-extra">
             <span v-if="(hoveredCardItem as any).created_at" class="card-popover-created">
-              {{ $t('knowledgeBase.createdAt') }}：{{ formatDocTime((hoveredCardItem as any).created_at) }}
+              {{ $t('knowledgeBase.createdAt') }}: {{ formatDocTime((hoveredCardItem as any).created_at) }}
             </span>
             <span v-if="formatFileSize((hoveredCardItem as any).file_size)" class="card-popover-size">
               {{ formatFileSize((hoveredCardItem as any).file_size) }}
@@ -625,7 +625,7 @@ const handleAction = (action: 'download' | 'edit' | 'view-trace' | 'reparse' | '
           </div>
         </template>
         <div class="card-popover-meta">
-          <span class="card-popover-time">{{ $t('knowledgeBase.updatedAt') }}：{{ formatDocTime(hoveredCardItem.updated_at) }}</span>
+          <span class="card-popover-time">{{ $t('knowledgeBase.updatedAt') }}: {{ formatDocTime(hoveredCardItem.updated_at) }}</span>
           <span
             v-if="(hoveredCardItem as any).channel && (hoveredCardItem as any).channel !== 'web'"
             class="card-popover-channel"

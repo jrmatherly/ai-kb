@@ -6,7 +6,7 @@
     </div>
 
     <div class="settings-group">
-      <!-- Ollama 服务状态 -->
+      <!-- Ollama service status -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('ollamaSettings.status.label') }}</label>
@@ -61,7 +61,7 @@
         </div>
       </div>
 
-      <!-- Ollama 服务地址 -->
+      <!-- Ollama service address -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ $t('ollamaSettings.address.label') }}</label>
@@ -87,7 +87,7 @@
 
     </div>
 
-    <!-- 下载新模型 -->
+    <!-- Download a new model -->
     <div v-if="connectionStatus === true" class="model-category-section">
       <div class="category-header">
         <div class="header-info">
@@ -133,7 +133,7 @@
       </div>
     </div>
 
-    <!-- 已下载的模型 -->
+    <!-- Downloaded models -->
     <div v-if="connectionStatus === true" class="model-category-section">
       <div class="category-header">
         <div class="header-info">
@@ -195,19 +195,19 @@ const downloading = ref(false)
 const downloadModelName = ref('')
 const downloadProgress = ref(0)
 
-// 测试连接
+// Test the connection
 const testConnection = async () => {
   testing.value = true
   connectionStatus.value = null
   
   try {
-    // 保存配置
+    // Save the config
     settingsStore.updateOllamaConfig({ baseUrl: localBaseUrl.value })
     
-    // 调用真实 Ollama API 测试连接
+    // Test the connection against the real Ollama API
     const result = await checkOllamaStatus()
     
-    // 如果接口返回了 baseUrl 且与当前输入框的值不同，更新为接口返回的值
+    // If the API returned a baseUrl that differs from the input value, update to the returned value
     if (result.baseUrl && result.baseUrl !== localBaseUrl.value) {
       localBaseUrl.value = result.baseUrl
       settingsStore.updateOllamaConfig({ baseUrl: result.baseUrl })
@@ -229,23 +229,23 @@ const testConnection = async () => {
   }
 }
 
-// 刷新模型列表
+// Refresh the model list
 const refreshModels = async () => {
   loadingModels.value = true
   
   try {
-    // 调用真实 Ollama API 获取模型列表（现在返回完整的模型信息）
+    // Get the model list from the real Ollama API (it now returns full model info)
     const models = await listOllamaModels()
     downloadedModels.value = models
   } catch (error: any) {
-    console.error('获取模型列表失败:', error)
+    console.error('Failed to get the model list:', error)
     MessagePlugin.error(error.message || t('ollamaSettings.toasts.listFailed'))
   } finally {
     loadingModels.value = false
   }
 }
 
-// 格式化文件大小
+// Format the file size
 const formatSize = (bytes: number): string => {
   if (!bytes || bytes === 0 || isNaN(bytes)) return '0 B'
   if (bytes < 1024) return bytes + ' B'
@@ -254,7 +254,7 @@ const formatSize = (bytes: number): string => {
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB'
 }
 
-// 格式化日期
+// Format the date
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return t('ollama.unknown')
 
@@ -271,7 +271,7 @@ const formatDate = (dateStr: string): string => {
   return date.toLocaleDateString()
 }
 
-// 下载模型
+// Download a model
 const downloadModel = async () => {
   if (!downloadModelName.value.trim()) return
   
@@ -279,7 +279,7 @@ const downloadModel = async () => {
   downloadProgress.value = 0
   
   try {
-    // 调用真实 Ollama API 下载模型
+    // Download the model through the real Ollama API
     const result = await downloadOllamaModel(downloadModelName.value)
     
     if (result.status === 'failed') {
@@ -291,7 +291,7 @@ const downloadModel = async () => {
     
     MessagePlugin.success(t('ollamaSettings.toasts.downloadStarted', { name: downloadModelName.value }))
     
-    // 查询下载进度
+    // Poll the download progress
     const taskId = result.taskId
     const progressInterval = setInterval(async () => {
       try {
@@ -319,30 +319,30 @@ const downloadModel = async () => {
       }
     }, 1000)
   } catch (error: any) {
-    console.error('下载失败:', error)
+    console.error('Download failed:', error)
     MessagePlugin.error(error.message || t('ollamaSettings.toasts.downloadFailed'))
     downloading.value = false
     downloadProgress.value = 0
   }
 }
 
-// 初始化 Ollama 服务地址
+// Initialize the Ollama service address
 const initOllamaBaseUrl = async () => {
   try {
     const result = await checkOllamaStatus()
-    // 如果接口返回了 baseUrl，优先使用接口返回的值
+    // If the API returned a baseUrl, prefer it
     if (result.baseUrl) {
       localBaseUrl.value = result.baseUrl
-      // 如果 store 中没有保存过，也保存到 store 中
+      // If the store has none saved yet, save it to the store too
       if (!settingsStore.settings.ollamaConfig?.baseUrl) {
         settingsStore.updateOllamaConfig({ baseUrl: result.baseUrl })
       }
     } else if (!localBaseUrl.value) {
-      // 如果接口没返回且 store 中也没有，使用默认值
+      // If the API returned none and the store has none, use the default
       localBaseUrl.value = 'http://localhost:11434'
     }
     
-    // 直接使用初始化时获取的状态，避免重复调用
+    // Use the status fetched at init directly, to avoid a repeat call
       connectionStatus.value = result.available
       if (result.available) {
         refreshModels()
@@ -350,8 +350,8 @@ const initOllamaBaseUrl = async () => {
     
     return result
   } catch (error) {
-    console.error('初始化 Ollama 地址失败:', error)
-    // 如果获取失败，使用默认值或 store 中的值
+    console.error('Failed to initialize the Ollama address:', error)
+    // On failure, use the default or the store value
     if (!localBaseUrl.value) {
       localBaseUrl.value = 'http://localhost:11434'
     }
@@ -359,9 +359,9 @@ const initOllamaBaseUrl = async () => {
   }
 }
 
-// 组件挂载时自动检查连接
+// Check the connection automatically on mount
 onMounted(async () => {
-  // 初始化服务地址，如果启用则直接使用返回的状态，避免重复调用
+  // Initialize the service address; if enabled, use the returned status directly to avoid a repeat call
   await initOllamaBaseUrl()
 })
 </script>

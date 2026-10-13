@@ -19,9 +19,9 @@ test('buildMcpEndpointUrl strips the api prefix and joins the endpoint path', ()
 test('mcpServerKey slugs the endpoint name', () => {
   assert.equal(mcpServerKey('Docs Bot!'), 'ai-kb-docs-bot')
   assert.equal(mcpServerKey('  '), 'aikb')
-  assert.equal(mcpServerKey('产品知识库'), 'aikb')
-  assert.equal(mcpServerKey('产品知识库', '3f9a2c1e-aaaa'), 'ai-kb-3f9a2c1e')
-  assert.notEqual(mcpServerKey('知识库A', 'id-one'), mcpServerKey('知识库B', 'id-two'))
+  assert.equal(mcpServerKey('\u4ea7\u54c1\u77e5\u8bc6\u5e93'), 'aikb')
+  assert.equal(mcpServerKey('\u4ea7\u54c1\u77e5\u8bc6\u5e93', '3f9a2c1e-aaaa'), 'ai-kb-3f9a2c1e')
+  assert.notEqual(mcpServerKey('\u77e5\u8bc6\u5e93A', 'id-one'), mcpServerKey('\u77e5\u8bc6\u5e93B', 'id-two'))
 })
 
 test('http snippet carries url and bearer header', () => {

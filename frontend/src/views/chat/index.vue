@@ -29,7 +29,7 @@
             <div ref="scrollContainer" class="chat_scroll_box" @scroll="handleScroll">
                 <div class="chat_scroll_content">
                     <div class="msg_list" :class="{ 'is-embedded': embeddedMode }">
-                        <!-- 消息列表骨架屏 -->
+                        <!-- Message list skeleton -->
                         <div v-if="historyLoading && messagesList.length === 0" class="msg-skeleton-list">
                             <div class="msg-skeleton msg-skeleton-user">
                                 <t-skeleton animation="gradient"
@@ -48,11 +48,11 @@
                                     :row-col="[{ width: '70%', height: '16px' }, { width: '90%', height: '16px' }]" />
                             </div>
                         </div>
-                        <!-- 推荐问题卡片 - 仅在新会话（无消息）时展示 -->
+                        <!-- Suggested question cards, shown only in a new session (no messages) -->
                         <div v-if="!embeddedMode && messagesList.length === 0 && !loading"
                             class="suggested-questions-container"
                             :class="{ 'has-questions': suggestedQuestions.length > 0 || suggestedQuestionsLoading }">
-                            <!-- 骨架屏占位 -->
+                            <!-- Skeleton placeholder -->
                             <div v-if="suggestedQuestionsLoading && suggestedQuestions.length === 0"
                                 class="suggested-questions-inner">
                                 <div class="suggested-questions-title"><t-skeleton animation="gradient"
@@ -94,12 +94,12 @@
                             </transition>
                         </div>
                         <!--
-                      关键：必须用 session.id 作为 key，不能用 v-for 的索引。
-                      向上滚动加载历史时会插入一批消息（push/unshift）到列表，
-                      若用索引作 key 会让所有已渲染消息的 key 漂移，触发整个列表的销毁重建
-                      （botmsg / AgentStreamDisplay 全部重新挂载、markdown 重新渲染），
-                      这是历史加载时白屏 + layout shift 蔓延到 session 列表的根因。
-                      仅对极少数尚未拿到 id 的本地占位消息 fallback 到 role+created_at+index。
+                      Key point: the key must be session.id, not the v-for index.
+                      Scrolling up to load history inserts a batch of messages (push/unshift) into the list,
+                      and an index key would shift the key of every rendered message, destroying and rebuilding the whole list
+                      (every botmsg / AgentStreamDisplay remounts and the markdown re-renders),
+                      which is the root cause of the blank screen + layout shift spreading to the session list during history loads.
+                      Only the rare local placeholder messages that have no id yet fall back to role+created_at+index.
                     -->
                         <div v-for="(session, index) in messagesList"
                             :key="session.id || `${session.role}-${session.created_at}-${index}`" class="msg-item-wrapper"
@@ -306,9 +306,9 @@ const router = useRouter();
 const session_id = ref(props.session_id || route.params.chatid);
 const currentSession = ref(null);
 
-// 拉 session 详情，并按其 last_request_state 把输入栏状态恢复到当时的发起态。
-// 嵌入式（embeddedMode）由宿主页面注入 agent/KB，所以跳过整套恢复逻辑，
-// 避免污染宿主的 settings store。
+// Fetch the session detail and restore the input bar to the state it was sent from, per its last_request_state.
+// Embedded mode (embeddedMode) has the agent/KB injected by the host page, so the whole restore is skipped
+// to avoid polluting the host's settings store.
 const loadSessionAndHydrate = async (sid) => {
     if (!sid || props.embeddedMode) return;
     // Capture before awaiting: onMounted sends and clears firstQuery while this
@@ -421,7 +421,7 @@ async function handleFork(messageId) {
         usemenuStore.updataMenuChildren({
             id: data.session_id,
             path: `chat/${data.session_id}`,
-            title: `${sourceTitle}（分支）`,
+            title: `${sourceTitle} (fork)`,
             parent_session_id: sourceSessionId,
             isMore: false,
             isNoTitle: false,
@@ -432,10 +432,10 @@ async function handleFork(messageId) {
         await router.push(`/platform/chat/${data.session_id}`)
     } catch (err) {
         if (err?.status === 409 || err?.$httpStatus === 409) {
-            MessagePlugin.warning('请等本轮回答结束后再分叉')
+            MessagePlugin.warning('Wait for this answer to finish before forking')
             return
         }
-        MessagePlugin.error('分叉失败，请重试')
+        MessagePlugin.error('Fork failed, please try again')
     } finally {
         forkInFlight = false
     }
@@ -548,7 +548,7 @@ const sessionArtifactsCollecting = computed(() =>
 );
 const steerQueue = ref([]);
 const isReplying = ref(false);
-const currentAssistantMessageId = ref(''); // 当前正在生成的 assistant message ID
+const currentAssistantMessageId = ref(''); // ID of the assistant message being generated
 // True only while attaching to an in-flight *IM-originated* reply via continue-stream.
 // Such replies are generated on the IM side and never stream through this server, so
 // continue-stream always fails even though the answer is coming — recover by polling
@@ -632,10 +632,10 @@ const handleKBEditorSuccess = (kbId) => {
     navigateToKnowledgeBaseList(kbId)
 }
 
-// ===== 推荐问题 =====
+// ===== Suggested questions =====
 const suggestedQuestions = ref([]);
 const suggestedQuestionsLoading = ref(false);
-let suggestedQuestionsFetchId = 0; // 用于取消过时的请求
+let suggestedQuestionsFetchId = 0; // used to cancel stale requests
 let suggestedDebounceTimer = null;
 let pendingSuggestionAttribution = null;
 let pendingSuggestionKnowledgeBaseIds = [];
@@ -652,7 +652,7 @@ const cancelSuggestedQuestionsFetch = () => {
 
 const fetchSuggestedQuestionsIfNeeded = async () => {
     if (props.embeddedMode) return;
-    // 初始历史尚未拉完时不能判断是否有消息，避免有历史的会话误请求推荐问法
+    // Until the initial history is loaded we cannot tell whether there are messages; avoid fetching suggestions for a session that has history
     if (historyLoading.value || messagesList.length > 0) {
         if (messagesList.length > 0) {
             cancelSuggestedQuestionsFetch();
@@ -668,7 +668,7 @@ const fetchSuggestedQuestions = async () => {
     }
     const fetchId = ++suggestedQuestionsFetchId;
     suggestedQuestionsLoading.value = true;
-    // 加载期间保留旧数据，不清空，避免布局抖动
+    // Keep the old data during loading rather than clearing it, to avoid layout jitter
     try {
         const agentId = useSettingsStoreInstance.selectedAgentId;
         if (!agentId) return;
@@ -753,14 +753,14 @@ const dismissSuggestions = (message, set) => {
     recordSuggestionEvent(message, set, 'dismiss');
 };
 
-// 防抖包装，切换知识库/文件时300ms内不重复请求
+// Debounced so switching knowledge bases or files within 300ms does not repeat the request
 const debouncedFetchSuggestions = () => {
     if (historyLoading.value || messagesList.length > 0) return;
     if (suggestedDebounceTimer) clearTimeout(suggestedDebounceTimer);
     suggestedDebounceTimer = setTimeout(() => { fetchSuggestedQuestionsIfNeeded(); }, 300);
 };
 
-// 监听 Agent / 知识库 / 文件 / 标签 / MCP / Skill @mention，重新获取推荐问题
+// Watch Agent / knowledge base / file / tag / MCP / Skill @mentions and refetch the suggested questions
 watch(
     () => ({
         agentId: useSettingsStoreInstance.selectedAgentId,
@@ -806,7 +806,7 @@ watch([() => route.params], async (newvalue) => {
         currentSession.value = null;
         clearCitationChunkCache();
 
-        // 切换会话时，重置状态
+        // Reset state when switching sessions
         historyLoading.value = true;
         historyLoadingMore.value = false;
         hasMoreHistory.value = true;
@@ -816,8 +816,8 @@ watch([() => route.params], async (newvalue) => {
         currentAssistantMessageId.value = '';
         userHasScrolledUp.value = false;
 
-        // 跨会话切换：先把旧会话覆盖前的全局默认还原，再让新会话重新拍快照
-        // 并应用自己的 last_request_state（在 loadSessionAndHydrate 内部完成）。
+        // Cross-session switch: first restore the global defaults the old session overrode, then let the new session take a fresh snapshot
+        // and apply its own last_request_state (done inside loadSessionAndHydrate).
         useSettingsStoreInstance.restoreDefaultsIfSnapshotted();
 
         await loadSessionAndHydrate(session_id.value);
@@ -1064,8 +1064,8 @@ const getmsgList = (data, isScrollType = false, scrollHeight) => {
     })
 }
 
-// 发送消息
-// 处理停止生成事件 - 立即清除 loading 状态
+// Send a message
+// Handle the stop-generation event: clear the loading state immediately
 const handleStopGeneration = () => {
     console.log('[Stop Generation] Immediately clearing loading state');
     stopStream();
@@ -1100,8 +1100,8 @@ const handleSteerMsg = async (value, mentionedItems = [], delivery = 'after', re
     if (composerLocked.value) return
     if (!session_id.value || !value?.trim()) return;
     if (!isReplying.value && !retryId) {
-        // 空闲时没有运行中的 turn 可排队：直接走正常发送，而不是把
-        // steering（服务端为 handleSteer/指定事务）当隐形 sendMsg 用。
+        // When idle there is no running turn to queue on: send normally rather than
+        // using steering (handleSteer on the server, a dedicated transaction) as a hidden sendMsg.
         await sendMsg(value, '', mentionedItems);
         return;
     }
@@ -1488,7 +1488,7 @@ const sendMsg = async (value, modelId = '', mentionedItems = [], imageFiles = []
         }
     }
 
-    // 将@提及的知识库和文件信息存入用户消息
+    // Store the @-mentioned knowledge base and file info on the user message
     messagesList.push({ content: value, role: 'user', mentioned_items: mentionedItems, images: userImages, attachments: attachmentFiles.map(a => ({ id: a.documentId, file_name: a.name, file_size: a.size, file_type: '.' + a.name.split('.').pop()?.toLowerCase() })), channel: 'web', created_at: new Date().toISOString() });
     userHasScrolledUp.value = false;
     scrollToBottom(true);
@@ -1620,7 +1620,7 @@ watch(error, (newError) => {
     MessagePlugin.error(newError);
     isReplying.value = false;
     loading.value = false;
-    // 清空当前 assistant message ID
+    // Clear the current assistant message ID
     currentAssistantMessageId.value = '';
 });
 
@@ -1665,7 +1665,7 @@ const handleSessionMutation = (event) => {
 };
 
 onBeforeMount(async () => {
-    // 若从智能体列表点击共享智能体进入，URL 带 agent_id 与 source_tenant_id，同步到 store
+    // When a shared agent is opened from the agent list, the URL carries agent_id and source_tenant_id; sync them to the store
     const agentIdFromQuery = props.agentId || (route.query.agent_id && String(route.query.agent_id));
     const sourceTenantIdFromQuery = route.query.source_tenant_id && String(route.query.source_tenant_id);
     if (agentIdFromQuery && sourceTenantIdFromQuery) {
@@ -1678,7 +1678,7 @@ onBeforeMount(async () => {
         useSettingsStoreInstance.selectKnowledgeBases(props.kbIds);
     }
 
-    // 必须在 Input-field onMounted 之前完成：按 session.last_request_state 恢复输入栏
+    // Must finish before Input-field's onMounted: restores the input bar from session.last_request_state
     await loadSessionAndHydrate(session_id.value);
 });
 
@@ -1687,7 +1687,7 @@ onMounted(async () => {
     messagesList.splice(0);
     steerQueue.value = [];
 
-    // 初始化状态：加载历史消息时不应显示loading
+    // Initial state: no loading while history messages load
     loading.value = false;
     isReplying.value = false;
 
@@ -1734,21 +1734,21 @@ onUnmounted(() => {
 });
 onBeforeRouteLeave((to, from, next) => {
     clearData()
-    // 离开聊天会话 → 还原"用户全局默认"，避免旧会话的请求态泄漏到新建对话。
+    // Leaving a chat session → restore the "user global defaults", so the old session's request state does not leak into a new chat.
     useSettingsStoreInstance.restoreDefaultsIfSnapshotted();
     next()
 })
 onBeforeRouteUpdate((to, from, next) => {
     clearData()
-    // 仅"会话 → 会话"会落到这里；跨会话覆盖的还原放到 route.params 的 watch 里，
-    // 因为新会话的 getSession 也在那边触发，便于保证 restore→snapshot→apply 顺序。
+    // Only "session → session" lands here; restoring the cross-session overrides lives in the route.params watch,
+    // because the new session's getSession also fires there, which keeps the restore→snapshot→apply order.
     next()
 })
 </script>
 <style lang="less" scoped>
 .chat {
-    // 水平方向不留 padding，让滚动条贴到内容区最右缘；
-    // 消息列与输入列各自用 --chat-content-inset 做左右对称的留白（窄屏时才可见）。
+    // No horizontal padding, so the scrollbar sits at the right edge of the content area;
+    // the message column and the input column each use --chat-content-inset for symmetric side spacing (visible only on narrow screens).
     padding: 0;
     --chat-content-inset: 20px;
     box-sizing: border-box;
@@ -1788,8 +1788,8 @@ onBeforeRouteUpdate((to, from, next) => {
         }
     }
 
-    // 沙箱可视化右侧面板：宽度可拖拽调整（--sandbox-panel-width 由
-    // composable 持久化），聊天区 padding 跟随面板宽度让位。
+    // Sandbox visualization right panel: width is drag-resizable (--sandbox-panel-width is
+    // persisted by the composable), and the chat area padding makes room to match the panel width.
     &.has-sandbox-panel:not(.is-embedded) {
         @media (min-width: 960px) {
             padding-right: var(--sandbox-panel-width, 420px);
@@ -2083,16 +2083,16 @@ onBeforeRouteUpdate((to, from, next) => {
     }
 
     /*
-      给每条消息加 layout/style containment：
-      - 一条消息的内部布局变化不再让浏览器去 invalidate 整个文档，
-        这是修掉"hover 到 session 列表也变白"那个问题的关键。
-      - 不要再用 content-visibility: auto / contain-intrinsic-size：
-        agent 消息真实高度差异巨大（几百 ~ 数千 px），估的占位高度会让消息进入视口时
-        反复发生"占位 -> 真实高度"的大幅 layout shift + 首次 paint 滞后，
-        反而在向上滚动时制造"未画完"的白屏闪烁。
-        当前 handleMsgList 全流程 ~50ms，根本无需跳过渲染，老老实实正常渲染最稳。
-      - 不开 contain: paint：AgentStreamDisplay 里有 tooltip / popover 等会溢出的浮层，
-        paint containment 会把它们裁掉。
+      Give each message layout/style containment:
+      - a layout change inside one message no longer makes the browser invalidate the whole document,
+        which is the key to fixing the "hovering the session list also goes blank" problem.
+      - do not go back to content-visibility: auto / contain-intrinsic-size:
+        agent message heights vary hugely (hundreds to thousands of px), and an estimated placeholder height makes messages entering the viewport
+        repeatedly hit a large "placeholder -> real height" layout shift + delayed first paint,
+        which instead causes a "not finished drawing" blank flicker when scrolling up.
+        The whole handleMsgList flow takes ~50ms, so there is no need to skip rendering; plain normal rendering is the most stable.
+      - no contain: paint: AgentStreamDisplay has tooltip / popover overlays that overflow,
+        and paint containment would clip them.
     */
     .msg-item-wrapper {
         contain: layout style;

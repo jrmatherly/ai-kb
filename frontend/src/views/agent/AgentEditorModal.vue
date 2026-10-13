@@ -4,7 +4,7 @@
     v-model="currentSection" :nav-groups="navGroups" :loading="editorInitializing" :z-index="1000"
     nav-guide="agent-editor-sidebar" nav-item-guide-prefix="agent-editor-nav" @close="modalShell.requestClose">
     <div ref="contentWrapperRef" class="content-wrapper" :class="{ 'content-wrapper--prompts': currentSection === 'prompts' }">
-      <!-- 基础设置 -->
+      <!-- Basic settings -->
       <div v-show="currentSection === 'basic'" class="section">
         <div class="section-header">
           <div class="section-header-title">
@@ -20,7 +20,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 智能体 ID（用于 API 集成） -->
+          <!-- Agent ID (for API integration) -->
           <div v-if="editorMode === 'edit' && editorAgent?.id" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.agentId') }}</label>
@@ -39,7 +39,7 @@
             </div>
           </div>
 
-          <!-- 集成渠道状态（编辑模式，配置在集成中心） -->
+          <!-- Integration channel status (edit mode; configured in the integration center) -->
           <div v-if="editorMode === 'edit' && editorAgent?.id" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('integrations.agentEditor.label') }}</label>
@@ -60,7 +60,7 @@
             </div>
           </div>
 
-          <!-- 运行模式（首先选择） -->
+          <!-- Run mode (chosen first) -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.mode') }} <span class="required">*</span></label>
@@ -79,7 +79,7 @@
             </div>
           </div>
 
-          <!-- 智能体类型（仅智能推理模式下显示） -->
+          <!-- Agent type (shown only in Smart Reasoning mode) -->
           <div v-if="isAgentMode && agentTypePresets.length > 0" class="setting-row setting-row--emphasize"
             data-guide="agent-create-agent-type">
             <div class="setting-info">
@@ -102,7 +102,7 @@
             </div>
           </div>
 
-          <!-- 名称 -->
+          <!-- Name -->
           <div class="setting-row" data-guide="agent-create-name">
             <div class="setting-info">
               <label>{{ $t('agent.editor.name') }} <span v-if="!isBuiltinAgent"
@@ -111,11 +111,11 @@
             </div>
             <div class="setting-control">
               <div class="name-input-wrapper">
-                <!-- 内置智能体使用简洁图标 -->
+                <!-- Built-in agents use a simple icon -->
                 <div v-if="isBuiltinAgent" class="builtin-avatar" :class="isAgentMode ? 'agent' : 'normal'">
                   <t-icon :name="isAgentMode ? 'control-platform' : 'chat'" size="24px" />
                 </div>
-                <!-- 自定义智能体使用 AgentAvatar -->
+                <!-- Custom agents use AgentAvatar -->
                 <AgentAvatar v-else :name="formData.name || '?'" size="medium" />
                 <t-input v-model="formData.name" :placeholder="$t('agent.editor.namePlaceholder')"
                   class="name-input" :disabled="isBuiltinAgent" />
@@ -123,7 +123,7 @@
             </div>
           </div>
 
-          <!-- 描述 -->
+          <!-- Description -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.description') }}</label>
@@ -136,9 +136,9 @@
             </div>
           </div>
 
-          <!-- 长期记忆。留在基础信息这一组而不是「多轮对话」，是因为它与
-               多轮历史窗口无关，且智能推理恰恰是最需要这个开关的模式。
-               这个开关只能"关"：空间或个人设置关闭时，这里打开也不生效。 -->
+          <!-- Long-term memory. It stays in the basic info group rather than "Multi-turn conversation" because it is
+               unrelated to the multi-turn history window, and Smart Reasoning is exactly the mode that needs this switch most.
+               This switch can only turn memory "off": when the workspace or personal setting is off, turning it on here has no effect. -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.memoryEnabled') }}</label>
@@ -152,7 +152,7 @@
         </div>
       </div>
 
-      <!-- 提示词 -->
+      <!-- Prompts -->
       <div v-show="currentSection === 'prompts'" class="section section--prompts">
         <div class="prompts-panel">
           <div class="prompts-panel__header">
@@ -176,7 +176,7 @@
 
           <div class="prompts-panel__body">
             <div class="settings-group">
-              <!-- 系统提示词 -->
+              <!-- System prompt -->
               <div v-show="activePromptAnchor === 'system'"
                 class="setting-row setting-row-vertical prompts-panel__pane">
             <div class="setting-info">
@@ -197,7 +197,7 @@
               </div>
             </div>
             <div class="setting-control setting-control-full" style="position: relative;">
-              <!-- Agent模式：统一提示词（使用 {{web_search_status}} 占位符动态控制行为） -->
+              <!-- Agent mode: one unified prompt (the {{web_search_status}} placeholder controls behavior dynamically) -->
               <div v-if="isAgentMode" class="textarea-with-template">
                 <t-textarea ref="promptTextareaRef" v-model="formData.config.system_prompt"
                   :placeholder="systemPromptPlaceholder" :autosize="{ minRows: 10, maxRows: 25 }"
@@ -206,7 +206,7 @@
                   :hasKnowledgeBase="hasKnowledgeBase" @select="handleSystemPromptTemplateSelect"
                   @reset-default="handleAgentSystemPromptResetDefault" />
               </div>
-              <!-- 普通模式：单个提示词 -->
+              <!-- Normal mode: a single prompt -->
               <div v-else class="textarea-with-template">
                 <t-textarea ref="promptTextareaRef" v-model="formData.config.system_prompt"
                   :placeholder="systemPromptPlaceholder" :autosize="{ minRows: 10, maxRows: 25 }"
@@ -215,7 +215,7 @@
                   :hasKnowledgeBase="hasKnowledgeBase" @select="handleSystemPromptTemplateSelect"
                   @reset-default="handleSystemPromptTemplateSelect" />
               </div>
-              <!-- 占位符提示下拉框 -->
+              <!-- Placeholder hint dropdown -->
               <Teleport to="body">
                 <div v-if="showPlaceholderPopup && filteredPlaceholders.length > 0"
                   class="placeholder-popup-wrapper" :style="popupStyle">
@@ -235,7 +235,7 @@
             </div>
           </div>
 
-          <!-- 上下文模板（仅普通模式） -->
+          <!-- Context template (normal mode only) -->
           <div v-if="!isAgentMode" v-show="activePromptAnchor === 'context'"
             class="setting-row setting-row-vertical prompts-panel__pane">
             <div class="setting-info">
@@ -263,7 +263,7 @@
                   :hasKnowledgeBase="hasKnowledgeBase" @select="handleContextTemplateSelect"
                   @reset-default="handleContextTemplateSelect" />
               </div>
-              <!-- 上下文模板占位符提示下拉框 -->
+              <!-- Context template placeholder hint dropdown -->
               <Teleport to="body">
                 <div v-if="showContextPlaceholderPopup && filteredContextPlaceholders.length > 0"
                   class="placeholder-popup-wrapper" :style="contextPopupStyle">
@@ -283,7 +283,7 @@
             </div>
           </div>
 
-          <!-- 意图提示词（仅普通模式） -->
+          <!-- Intent prompt (normal mode only) -->
           <div v-if="!isAgentMode" v-show="activePromptAnchor === 'intent'"
             class="setting-row setting-row-vertical prompts-panel__pane">
             <div class="setting-info">
@@ -358,7 +358,7 @@
             </div>
           </div>
 
-          <!-- 改写提示词（多轮对话 + 问题改写开启时） -->
+          <!-- Rewrite prompt (multi-turn conversation + question rewrite on) -->
           <template
             v-if="!isAgentMode && formData.config.multi_turn_enabled && formData.config.enable_rewrite">
             <div v-show="activePromptAnchor === 'rewrite-system'"
@@ -452,7 +452,7 @@
             </div>
           </template>
 
-          <!-- 检索兜底（普通模式 + 启用知识库） -->
+          <!-- Retrieval fallback (normal mode + knowledge base enabled) -->
           <div v-if="!isAgentMode && hasKnowledgeBase" v-show="activePromptAnchor === 'fallback'"
             class="prompts-panel__pane prompts-panel__pane--stack">
             <div class="setting-row">
@@ -538,7 +538,7 @@
         </div>
       </div>
 
-      <!-- 模型配置 -->
+      <!-- Model config -->
       <div v-show="currentSection === 'model'" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.modelConfig') }}</h2>
@@ -546,7 +546,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 模型选择 -->
+          <!-- Model selection -->
           <div
             class="setting-row"
             data-guide="agent-create-model"
@@ -565,7 +565,7 @@
             </div>
           </div>
 
-          <!-- 温度 -->
+          <!-- Temperature -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.temperature') }}</label>
@@ -579,7 +579,7 @@
             </div>
           </div>
 
-          <!-- 最大生成Token数：0 表示跟随系统默认；自定义后按输入值保存 -->
+          <!-- Max generated tokens: 0 follows the system default; a custom value is saved as entered -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.maxCompletionTokens') }}</label>
@@ -602,7 +602,7 @@
             </div>
           </div>
 
-          <!-- 思考强度：off / auto + 所选对话模型目录上报的等级 -->
+          <!-- Reasoning effort: off / auto + the levels the selected chat model's catalog entry reports -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.thinking') }}</label>
@@ -628,7 +628,7 @@
             </div>
           </div>
 
-          <!-- 来源引用 -->
+          <!-- Source citations -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.citationEnabled') }}</label>
@@ -639,7 +639,7 @@
             </div>
           </div>
 
-          <!-- ReRank 模型（启用知识库或 search_knowledge 工具时显示） -->
+          <!-- ReRank model (shown when a knowledge base or the search_knowledge tool is enabled) -->
           <div
             v-if="showRerankModelField"
             class="setting-row"
@@ -669,7 +669,7 @@
             </div>
           </div>
 
-          <!-- 问题理解模型（多轮改写时，留空则复用主对话模型） -->
+          <!-- Question understanding model (for multi-turn rewrite; empty reuses the main chat model) -->
           <div
             v-if="!isAgentMode && formData.config.multi_turn_enabled && formData.config.enable_rewrite"
             class="setting-row">
@@ -687,7 +687,7 @@
             </div>
           </div>
 
-          <!-- 最大迭代次数（Agent 模式）：正数为上限，-1 为不限制 -->
+          <!-- Max iterations (Agent mode): a positive number is the limit, -1 means unlimited -->
           <div v-if="isAgentMode" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.maxIterations') }}</label>
@@ -703,7 +703,7 @@
             </div>
           </div>
 
-          <!-- LLM 调用超时（Agent 模式） -->
+          <!-- LLM call timeout (Agent mode) -->
           <div v-if="isAgentMode" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.llmCallTimeout.label') }}</label>
@@ -719,7 +719,7 @@
         </div>
       </div>
 
-      <!-- 附件上传 -->
+      <!-- Attachment upload -->
       <div v-show="currentSection === 'multimodal'" class="section">
         <div class="section-header">
           <h2>{{ $t('agentEditor.imageUpload.sectionTitle') }}</h2>
@@ -727,7 +727,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 图片上传 -->
+          <!-- Image upload -->
           <div class="setting-row" data-guide="agent-create-multimodal">
             <div class="setting-info">
               <label>{{ $t('agentEditor.imageUpload.label') }}</label>
@@ -738,7 +738,7 @@
             </div>
           </div>
 
-          <!-- VLM 模型（图片上传启用时） -->
+          <!-- VLM model (when image upload is enabled) -->
           <div v-if="formData.config.image_upload_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.imageUpload.vlmModel') }} <span class="required">*</span></label>
@@ -753,7 +753,7 @@
             </div>
           </div>
 
-          <!-- 附件图片理解 / 扫描件 OCR（图片上传启用时） -->
+          <!-- Attachment image understanding / scanned-document OCR (when image upload is enabled) -->
           <div v-if="formData.config.image_upload_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.imageUpload.imageUnderstandingLabel') }}</label>
@@ -764,7 +764,7 @@
             </div>
           </div>
 
-          <!-- 扫描件 OCR 最大页数（开启附件图片理解时） -->
+          <!-- Max OCR pages for scanned documents (when attachment image understanding is on) -->
           <div v-if="formData.config.image_upload_enabled && formData.config.attachment_image_understanding"
             class="setting-row">
             <div class="setting-info">
@@ -778,7 +778,7 @@
             </div>
           </div>
 
-          <!-- 图片存储 Provider（图片上传启用时） -->
+          <!-- Image storage provider (when image upload is enabled) -->
           <div v-if="formData.config.image_upload_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.imageUpload.storageProvider') }}</label>
@@ -804,7 +804,7 @@
             </div>
           </div>
 
-          <!-- 音频上传开关 -->
+          <!-- Audio upload switch -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.audioUpload.label') }}</label>
@@ -815,7 +815,7 @@
             </div>
           </div>
 
-          <!-- ASR 模型（音频上传启用时） -->
+          <!-- ASR model (when audio upload is enabled) -->
           <div v-if="formData.config.audio_upload_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.audioUpload.asrModel') }}</label>
@@ -831,7 +831,7 @@
             </div>
           </div>
 
-          <!-- 单轮等待附件解析超时（秒） -->
+          <!-- Per-turn timeout waiting for attachment parsing (seconds) -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.chatParser.waitTimeoutLabel') }}</label>
@@ -844,7 +844,7 @@
             </div>
           </div>
 
-          <!-- 聊天附件解析策略 -->
+          <!-- Chat attachment parsing strategy -->
           <div class="parser-policy-block">
             <div class="parser-policy-block__header">
               <label>{{ $t('agentEditor.chatParser.label') }}</label>
@@ -861,9 +861,9 @@
         </div>
       </div>
 
-      <!-- 多轮对话。两种模式都保留本组：Agent 模式在这里说明历史按上下文窗口
-           自动管理，并承载跨轮保留检索结果；开关由 EnsureDefaults 强制开启，
-           故只在普通模式展示。 -->
+      <!-- Multi-turn conversation. Both modes keep this group: in Agent mode it explains that history is managed automatically
+           by the context window and carries keeping retrieval results across turns; the switch is forced on by EnsureDefaults,
+           so it is shown only in normal mode. -->
       <div v-show="currentSection === 'conversation'" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.conversationSettings') }}</h2>
@@ -871,8 +871,8 @@
         </div>
 
         <div class="settings-group">
-          <!-- 多轮对话开关（仅普通模式：Agent 模式由 EnsureDefaults 强制开启，
-               展示可关闭的开关只会被服务端改回去） -->
+          <!-- Multi-turn conversation switch (normal mode only: Agent mode is forced on by EnsureDefaults,
+               and a switch that can be turned off would only be changed back by the server) -->
           <div v-if="!isAgentMode" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.multiTurn') }}</label>
@@ -883,8 +883,8 @@
             </div>
           </div>
 
-          <!-- 保留轮数（仅普通模式：Agent 模式按上下文窗口加载历史、超出时压缩成
-               摘要，见 session_agent_qa.go -> LoadAgentHistory，不读 history_turns） -->
+          <!-- Turns kept (normal mode only: Agent mode loads history by context window and compresses the overflow into
+               a summary, see session_agent_qa.go -> LoadAgentHistory, without reading history_turns) -->
           <div v-if="!isAgentMode && formData.config.multi_turn_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.historyTurns') }}</label>
@@ -895,8 +895,8 @@
             </div>
           </div>
 
-          <!-- 跨轮保留检索结果。只有 agent 链路读取该值（internal/agent/observe.go），
-               且改写的只是 KB/Wiki 这八个工具的历史结果，所以没有知识库时不展示。 -->
+          <!-- Keep retrieval results across turns. Only the agent path reads this value (internal/agent/observe.go),
+               and it rewrites only the history results of the eight KB/Wiki tools, so it is hidden without a knowledge base. -->
           <div v-if="isAgentMode && hasKnowledgeBase" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.retainRetrievalHistory') }}</label>
@@ -907,7 +907,7 @@
             </div>
           </div>
 
-          <!-- 问题改写（仅多轮对话开启且普通模式时显示） -->
+          <!-- Question rewrite (shown only with multi-turn conversation on, in normal mode) -->
           <div v-if="formData.config.multi_turn_enabled && !isAgentMode" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.enableRewrite') }}</label>
@@ -920,7 +920,7 @@
         </div>
       </div>
 
-      <!-- 对话问题推荐 -->
+      <!-- Conversation question suggestions -->
       <div v-show="currentSection === 'suggestions'" class="section">
         <div class="section-header">
           <h2>{{ $t('agentEditor.questionSuggestions.title') }}</h2>
@@ -1103,14 +1103,14 @@
         </div>
       </div>
 
-      <!-- 工具配置（仅 Agent 模式） -->
+      <!-- Tool config (Agent mode only) -->
       <div v-show="currentSection === 'tools' && isAgentMode" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.toolsConfig') }}</h2>
           <p class="section-description">{{ $t('agent.editor.toolsConfigDesc') }}</p>
         </div>
 
-        <!-- 合并面板：能力状态 + 预设切换 -->
+        <!-- Combined panel: capability status + preset switch -->
         <div class="tools-overview">
           <div class="tools-overview-row">
             <div class="tools-status-chip">
@@ -1136,7 +1136,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 允许的工具（按组渲染，统一网格） -->
+          <!-- Allowed tools (rendered by group, one uniform grid) -->
           <div
             class="setting-row setting-row-vertical"
             data-agent-field="allowed_tools"
@@ -1182,7 +1182,7 @@
             </div>
           </div>
 
-          <!-- 有效工具预览：所见即所得 -->
+          <!-- Effective tools preview: what you see is what you get -->
           <div class="setting-row setting-row-vertical">
             <div class="setting-info">
               <label>{{ $t('agentEditor.tools.effectiveLabel') }}</label>
@@ -1209,7 +1209,7 @@
         </div>
       </div>
 
-      <!-- MCP 服务配置（仅 Agent 模式） -->
+      <!-- MCP service config (Agent mode only) -->
       <div v-show="currentSection === 'mcp' && isAgentMode" class="section">
         <div class="section-header">
           <h2>{{ $t('agentEditor.mcp.label') }}</h2>
@@ -1217,7 +1217,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- MCP 服务选择 -->
+          <!-- MCP service selection -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.mcp.label') }}</label>
@@ -1232,7 +1232,7 @@
             </div>
           </div>
 
-          <!-- 选择指定 MCP 服务 -->
+          <!-- Select specific MCP services -->
           <div v-if="mcpSelectionMode === 'selected' && showMcpServiceSelect" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.mcp.selectLabel') }}</label>
@@ -1247,7 +1247,7 @@
             </div>
           </div>
 
-          <!-- 授权等待超时：对话中触发 OAuth 授权时的等待秒数 -->
+          <!-- Authorization wait timeout: seconds to wait when an OAuth authorization fires during a chat -->
           <div v-if="mcpSelectionMode !== 'none'" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.mcp.authWaitTimeout') }}</label>
@@ -1261,7 +1261,7 @@
         </div>
       </div>
 
-      <!-- 技能：脚本跑在所选沙箱里，可用列表也来自这份配置 -->
+      <!-- Skills: scripts run in the selected sandbox, and the available list also comes from that config -->
       <div v-show="currentSection === 'skills' && isAgentMode" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.skillsConfig') }}</h2>
@@ -1458,7 +1458,7 @@
         </div>
       </div>
 
-      <!-- 知识库配置 -->
+      <!-- Knowledge base config -->
       <div v-show="currentSection === 'knowledge'" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.knowledgeConfig') }}</h2>
@@ -1466,7 +1466,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 关联知识库 -->
+          <!-- Linked knowledge bases -->
           <div class="setting-row" data-guide="agent-create-knowledge">
             <div class="setting-info">
               <label>{{ $t('agent.editor.knowledgeBases') }}</label>
@@ -1482,7 +1482,7 @@
             </div>
           </div>
 
-          <!-- 选择指定知识库（仅在选择"指定知识库"时显示） -->
+          <!-- Select specific knowledge bases (shown only when "Specific knowledge bases" is chosen) -->
           <div v-if="kbSelectionMode === 'selected'" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.selectKnowledgeBases') }}</label>
@@ -1528,7 +1528,7 @@
             </div>
           </div>
 
-          <!-- 支持的文件类型（限制用户可选择的文件类型） -->
+          <!-- Supported file types (limits the file types the user can choose) -->
           <div v-if="hasKnowledgeBase" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.fileTypes.label') }}</label>
@@ -1543,7 +1543,7 @@
             </div>
           </div>
 
-          <!-- 仅在提及时检索知识库（当配置了知识库时显示） -->
+          <!-- Search the knowledge base only when mentioned (shown when knowledge bases are configured) -->
           <div v-if="hasKnowledgeBase" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.retrieveKBOnlyWhenMentioned') }}</label>
@@ -1557,7 +1557,7 @@
         </div>
       </div>
 
-      <!-- 网络搜索配置 -->
+      <!-- Web search config -->
       <div v-show="currentSection === 'websearch'" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.webSearchConfig') }}</h2>
@@ -1565,7 +1565,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 网络搜索 -->
+          <!-- Web search -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.webSearch') }}</label>
@@ -1576,7 +1576,7 @@
             </div>
           </div>
 
-          <!-- 网络搜索最大结果数 -->
+          <!-- Web search max results -->
           <div v-if="formData.config.web_search_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.webSearchProvider') }}</label>
@@ -1595,7 +1595,7 @@
             </div>
           </div>
 
-          <!-- 网络搜索最大结果数 -->
+          <!-- Web search max results -->
           <div v-if="formData.config.web_search_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.webSearchMaxResults') }}</label>
@@ -1609,7 +1609,7 @@
             </div>
           </div>
 
-          <!-- 自动抓取页面内容 -->
+          <!-- Fetch page content automatically -->
           <div v-if="formData.config.web_search_enabled" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.webFetchEnabled') }}</label>
@@ -1620,7 +1620,7 @@
             </div>
           </div>
 
-          <!-- 抓取页面数 -->
+          <!-- Pages to fetch -->
           <div v-if="formData.config.web_search_enabled && formData.config.web_fetch_enabled"
             class="setting-row">
             <div class="setting-info">
@@ -1637,8 +1637,8 @@
         </div>
       </div>
 
-      <!-- 检索策略（仅普通模式且有知识库能力时显示；Agent 模式的 search_knowledge
-           使用全局检索配置，这里的设置对它不生效） -->
+      <!-- Retrieval strategy (shown only in normal mode with knowledge base capability; Agent mode's search_knowledge
+           uses the global retrieval config, so these settings do not apply to it) -->
       <div v-show="currentSection === 'retrieval' && hasKnowledgeBase && !isAgentMode" class="section">
         <div class="section-header">
           <h2>{{ $t('agent.editor.retrievalStrategy') }}</h2>
@@ -1646,7 +1646,7 @@
         </div>
 
         <div class="settings-group">
-          <!-- 查询扩展（仅普通模式） -->
+          <!-- Query expansion (normal mode only) -->
           <div v-if="!isAgentMode" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.enableQueryExpansion') }}</label>
@@ -1657,7 +1657,7 @@
             </div>
           </div>
 
-          <!-- 向量召回TopK -->
+          <!-- Vector recall TopK -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.embeddingTopK') }}</label>
@@ -1668,7 +1668,7 @@
             </div>
           </div>
 
-          <!-- 关键词阈值 -->
+          <!-- Keyword threshold -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.keywordThreshold') }}</label>
@@ -1682,7 +1682,7 @@
             </div>
           </div>
 
-          <!-- 向量阈值 -->
+          <!-- Vector threshold -->
           <div class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.vectorThreshold') }}</label>
@@ -1696,7 +1696,7 @@
             </div>
           </div>
 
-          <!-- 重排TopK（仅在配置了 Rerank 模型时展示） -->
+          <!-- Rerank TopK (shown only when a Rerank model is configured) -->
           <div v-if="formData.config.rerank_model_id" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.rerankTopK') }}</label>
@@ -1707,7 +1707,7 @@
             </div>
           </div>
 
-          <!-- 重排阈值（仅在配置了 Rerank 模型时展示） -->
+          <!-- Rerank threshold (shown only when a Rerank model is configured) -->
           <div v-if="formData.config.rerank_model_id" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.rerankThreshold') }}</label>
@@ -1721,7 +1721,7 @@
             </div>
           </div>
 
-          <!-- FAQ 优先策略（关联 FAQ 类型知识库时显示） -->
+          <!-- FAQ priority strategy (shown when a FAQ-type knowledge base is linked) -->
           <div v-if="hasFaqKnowledgeBase" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.faq.enableLabel') }}</label>
@@ -1760,7 +1760,7 @@
             </div>
           </div>
 
-          <!-- 表格数据分析（仅普通模式，命中 CSV/Excel 时会多一次 LLM 调用生成 SQL） -->
+          <!-- Table data analysis (normal mode only; a CSV/Excel hit adds one LLM call to generate SQL) -->
           <div v-if="!isAgentMode" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agentEditor.dataAnalysis.enableLabel') }}</label>
@@ -1773,7 +1773,7 @@
         </div>
       </div>
 
-      <!-- 共享管理（仅编辑模式且非内置智能体） -->
+      <!-- Sharing management (edit mode only, and not for built-in agents) -->
       <div v-if="editorMode === 'edit' && editorAgent?.id && !editorAgent?.is_builtin"
         v-show="currentSection === 'share'" class="section">
         <AgentShareSettings :agent-id="editorAgent.id" :agent="editorAgent" />
@@ -1925,7 +1925,7 @@ const props = defineProps<{
   initialSection?: string;
   initialHighlightField?: string;
   // readOnly hides the save button so a Viewer who clicks an agent
-  // card to inspect its config doesn't see a "确定" that 403s on the
+  // card to inspect its config doesn't see an "OK" that 403s on the
   // backend update endpoint. Field-level disable is intentionally NOT
   // wired here yet (the modal has 3000+ lines of form inputs); instead
   // we just remove the only mutation surface — the footer button.
@@ -1937,7 +1937,7 @@ const emit = defineEmits<{
   (e: 'success', agent?: CustomAgent): void;
 }>();
 
-/** 首次保存创建成功后留在弹窗内，用本地状态切换到编辑模式以展示 IM / 嵌入等入口 */
+/** After the first save creates the agent, stay in the modal and switch to edit mode with local state to show the IM / embed entries */
 const savedAgent = ref<CustomAgent | null>(null);
 const editorMode = computed(() => (savedAgent.value ? 'edit' : props.mode));
 const editorAgent = computed(() => savedAgent.value ?? props.agent ?? null);
@@ -1952,7 +1952,7 @@ const copyAgentId = async () => {
   await copyWithToast(editorAgent.value?.id, 'common.copied');
 };
 
-// 旧入口把技能沙箱拆成独立 tab；合并后仍接受 section=sandbox。
+// The old entry split the skill sandbox into its own tab; after the merge, section=sandbox is still accepted.
 const AGENT_EDITOR_SECTION_ALIASES: Record<string, string> = {
   sandbox: 'skills',
 };
@@ -2049,9 +2049,9 @@ const editorInitializing = ref(false);
 const allModels = ref<ModelConfig[]>([]);
 const kbOptions = ref<{ label: string; value: string; type?: 'document' | 'faq'; count?: number; shared?: boolean; orgName?: string; ragEnabled?: boolean; wikiEnabled?: boolean; capabilities?: KBCapabilities }[]>([]);
 
-// 智能体类型预设（仅 smart-reasoning 模式下展示）
+// Agent type presets (shown only in smart-reasoning mode)
 const agentTypePresets = ref<AgentTypePreset[]>([]);
-// Agent 系统提示词模板缓存（用于切换智能体类型时根据 system_prompt_id 解析出实际文本填入）
+// Agent system prompt template cache (used to resolve the actual text from system_prompt_id when switching agent types)
 const agentSystemPromptTemplates = ref<PromptTemplate[]>([]);
 const promptTemplates = ref<PromptTemplatesConfig | null>(null);
 const intentPromptTemplates = ref<PromptTemplate[]>([]);
@@ -2349,8 +2349,8 @@ async function installCatalogToCurrent(skill: CatalogSkillRow) {
     installingCatalogId.value = ''
   }
 }
-// 空间内的具名沙箱后端配置。始终包含当前已选中的那份，即使它已被删除——
-// 否则下拉会静默显示为“不启用沙箱”，看不出该智能体其实指着一份不存在的配置。
+// The named sandbox backend configs in the workspace. Always includes the currently selected one, even if it was deleted;
+// otherwise the dropdown would silently show "No sandbox" and hide that the agent points at a config that no longer exists.
 const sandboxConfigOptions = computed(() => {
   const configs = chatResources.sandboxConfigs.filter((cfg) => isNamedSandboxBackend(cfg.sandbox_type));
   const selected = formData.value.config.sandbox_config_id;
@@ -2386,7 +2386,7 @@ const selectedSandboxSummary = computed(() => {
   if (desc) parts.push(desc)
   return parts.filter(Boolean).join(' · ')
 })
-// 存储引擎可用状态（用于图片存储 provider 选择）
+// Storage engine availability (for choosing the image storage provider)
 const storageEngineStatus = ref<StorageEngineStatusItem[]>([]);
 const imageStorageOptions = computed(() => {
   const statusMap: Record<string, boolean> = {};
@@ -2403,18 +2403,18 @@ const imageStorageOptions = computed(() => {
   ];
 });
 
-// 系统默认配置（用于内置智能体显示默认提示词）
-// Agent (smart-reasoning) 模式的默认系统提示词。直接从 prompt-templates
-// 的 agent_system_prompt 数组里挑 mode==='rag' && default 的那条得到，
-// 与后端 agent.GetProgressiveRAGSystemPrompt 是同一份数据源。
+// System default config (for showing the default prompts of built-in agents)
+// The default system prompt for Agent (smart-reasoning) mode. Picked directly from the prompt-templates
+// agent_system_prompt array as the entry with mode==='rag' && default,
+// the same data source as the backend's agent.GetProgressiveRAGSystemPrompt.
 const defaultAgentSystemPrompt = ref('');
-const defaultNormalSystemPrompt = ref('');  // 普通模式默认系统提示词（来自 prompt-templates 的 default 项）
+const defaultNormalSystemPrompt = ref('');  // default system prompt for normal mode (from the prompt-templates default entry)
 const defaultContextTemplate = ref('');
 const defaultRewritePromptSystem = ref('');
 const defaultRewritePromptUser = ref('');
 const defaultFallbackPrompt = ref('');
 const defaultFallbackResponse = ref('');
-// 默认检索参数
+// Default retrieval parameters
 const defaultEmbeddingTopK = ref(10);
 const defaultKeywordThreshold = ref(0.3);
 const defaultVectorThreshold = ref(0.5);
@@ -2434,55 +2434,55 @@ const defaultMaxCompletionTokensFor = (mode: string, sandboxConfigId?: string) =
   return defaultQuickAnswerMaxCompletionTokens;
 };
 
-// 知识库相关工具列表（用于 watch(hasKnowledgeBase) 从"无"变"有"时 seed 默认工具）
+// Knowledge base tools (for seeding default tools when watch(hasKnowledgeBase) goes from "none" to "some")
 const knowledgeBaseTools = ['search_knowledge', 'read_document', 'list_documents'];
 
-// Wiki 读取类工具（用于 watch(agentMode) 切到 smart-reasoning 时 seed 默认工具）
+// Wiki read tools (for seeding default tools when watch(agentMode) switches to smart-reasoning)
 const wikiReadTools = ['wiki_search', 'wiki_read_page', 'read_document', 'wiki_flag_issue'];
 
-// 初始化标志，防止初始化时触发 watch 自动添加工具
+// Initialization flag, so watches do not add tools automatically during initialization
 const isInitializing = ref(false);
 
-// 知识库选择模式：all=全部, selected=指定, none=不使用
+// Knowledge base selection mode: all=all, selected=specific, none=not used
 const kbSelectionMode = ref<'all' | 'selected' | 'none'>('none');
 
-// MCP 服务选择模式：all=全部, selected=指定, none=不使用
+// MCP service selection mode: all=all, selected=specific, none=not used
 const mcpSelectionMode = ref<'all' | 'selected' | 'none'>('none');
 
-// 可用工具列表（与后台 internal/agent/tools/definitions.go 保持一致）
-// group 决定 UI 分组：base / rag / wiki_read / wiki_edit / wiki_issue / data
-// danger: 写类破坏性工具，UI 上给出显著提示
-// 工具的 KB 能力依赖关系统一在 `@/utils/tool-capabilities` 声明，
-// `availableTools` 通过 `evaluateToolRequirement` 读取，不在这里重复维护。
+// Available tools (kept in sync with the backend internal/agent/tools/definitions.go)
+// group decides the UI grouping: base / rag / wiki_read / wiki_edit / wiki_issue / data
+// danger: destructive write tools, flagged prominently in the UI
+// The tools' KB capability dependencies are declared once in `@/utils/tool-capabilities`;
+// `availableTools` reads them through `evaluateToolRequirement`, so they are not maintained here twice.
 const allTools = computed(() => [
-  // 基础思考类
+  // Basic thinking
   { value: 'thinking', label: t('agentEditor.tools.thinking'), description: t('agentEditor.tools.thinkingDesc'), group: 'base' },
   { value: 'todo_write', label: t('agentEditor.tools.todoWrite'), description: t('agentEditor.tools.todoWriteDesc'), group: 'base' },
-  // 知识库检索 / 文档阅读（旧的 grep_chunks / knowledge_search / list_knowledge_chunks /
-  // get_document_info 已合并，旧配置加载时由 normalizeLegacyToolNames 映射到新名字）
+  // Knowledge base search / document reading (the old grep_chunks / knowledge_search / list_knowledge_chunks /
+  // get_document_info were merged; normalizeLegacyToolNames maps them to the new names when an old config loads)
   { value: 'search_knowledge', label: t('agentEditor.tools.searchKnowledge'), description: t('agentEditor.tools.searchKnowledgeDesc'), group: 'rag' },
   { value: 'read_document', label: t('agentEditor.tools.readDocument'), description: t('agentEditor.tools.readDocumentDesc'), group: 'rag' },
   { value: 'list_documents', label: t('agentEditor.tools.listDocuments'), description: t('agentEditor.tools.listDocumentsDesc'), group: 'rag' },
   { value: 'query_knowledge_graph', label: t('agentEditor.tools.queryGraph'), description: t('agentEditor.tools.queryGraphDesc'), group: 'rag' },
   { value: 'database_query', label: t('agentEditor.tools.dbQuery'), description: t('agentEditor.tools.dbQueryDesc'), group: 'rag' },
-  // Wiki 读取类（阅读、搜索、标记问题）
+  // Wiki read (read, search, flag issues)
   { value: 'wiki_search', label: t('agentEditor.tools.wikiSearch'), description: t('agentEditor.tools.wikiSearchDesc'), group: 'wiki_read' },
   { value: 'wiki_read_page', label: t('agentEditor.tools.wikiReadPage'), description: t('agentEditor.tools.wikiReadPageDesc'), group: 'wiki_read' },
   { value: 'wiki_flag_issue', label: t('agentEditor.tools.wikiFlagIssue'), description: t('agentEditor.tools.wikiFlagIssueDesc'), group: 'wiki_read' },
-  // Wiki 编辑类（会直接修改 Wiki 内容）
+  // Wiki edit (modifies wiki content directly)
   { value: 'wiki_write_page', label: t('agentEditor.tools.wikiWritePage'), description: t('agentEditor.tools.wikiWritePageDesc'), group: 'wiki_edit', danger: true },
   { value: 'wiki_replace_text', label: t('agentEditor.tools.wikiReplaceText'), description: t('agentEditor.tools.wikiReplaceTextDesc'), group: 'wiki_edit', danger: true },
   { value: 'wiki_rename_page', label: t('agentEditor.tools.wikiRenamePage'), description: t('agentEditor.tools.wikiRenamePageDesc'), group: 'wiki_edit', danger: true },
   { value: 'wiki_delete_page', label: t('agentEditor.tools.wikiDeletePage'), description: t('agentEditor.tools.wikiDeletePageDesc'), group: 'wiki_edit', danger: true },
-  // Wiki 巡检类
+  // Wiki inspection
   { value: 'wiki_read_issue', label: t('agentEditor.tools.wikiReadIssue'), description: t('agentEditor.tools.wikiReadIssueDesc'), group: 'wiki_issue' },
   { value: 'wiki_update_issue', label: t('agentEditor.tools.wikiUpdateIssue'), description: t('agentEditor.tools.wikiUpdateIssueDesc'), group: 'wiki_issue' },
-  // 数据分析
+  // Data analysis
   { value: 'data_analysis', label: t('agentEditor.tools.dataAnalysis'), description: t('agentEditor.tools.dataAnalysisDesc'), group: 'data' },
   { value: 'data_schema', label: t('agentEditor.tools.dataSchema'), description: t('agentEditor.tools.dataSchemaDesc'), group: 'data' },
 ]);
 
-// 工具分组元信息
+// Tool group metadata
 const toolGroups = computed(() => [
   { key: 'base', label: t('agentEditor.tools.groupBase') },
   { key: 'rag', label: t('agentEditor.tools.groupRag') },
@@ -2492,11 +2492,11 @@ const toolGroups = computed(() => [
   { key: 'data', label: t('agentEditor.tools.groupData') },
 ]);
 
-// 知识库分组：我的 vs 共享的
+// Knowledge base groups: mine vs shared
 const myKbOptions = computed(() => kbOptions.value.filter(kb => !kb.shared));
 const sharedKbOptions = computed(() => kbOptions.value.filter(kb => kb.shared));
 
-// 根据知识库配置动态计算是否有知识库能力
+// Whether there is knowledge base capability, computed from the knowledge base config
 const hasKnowledgeBase = computed(() => {
   return kbSelectionMode.value !== 'none';
 });
@@ -2506,9 +2506,9 @@ const showRerankModelField = computed(() => {
   return hasKnowledgeBase.value || agentRequiresRerankModel(formData.value.config);
 });
 
-// 当前配置下进入到智能体作用域的知识库列表
-// 注意：用户可能选了 knowledge_bases（按库级），也可能选了 knowledge_ids（按文档级）
-// 这里仅用于 UI 上的工具可用性判定，按库级来计算
+// The knowledge bases in the agent's scope under the current config
+// Note: the user may have chosen knowledge_bases (per base) or knowledge_ids (per document);
+// this is only for tool availability in the UI, so it counts per base
 const kbsInScope = computed(() => {
   if (kbSelectionMode.value === 'none') return [];
   if (kbSelectionMode.value === 'all') return kbOptions.value;
@@ -2516,34 +2516,34 @@ const kbsInScope = computed(() => {
   return kbOptions.value.filter(kb => selectedIds.includes(kb.value));
 });
 
-// 是否存在至少一个启用了 RAG 能力的知识库（向量 or 关键词）
+// Whether at least one knowledge base has RAG capability enabled (vector or keyword)
 const hasRagKnowledgeBase = computed(() => {
   return kbsInScope.value.some(kb => kb.ragEnabled);
 });
 
-// 是否存在至少一个启用了 Wiki 能力的知识库
+// Whether at least one knowledge base has wiki capability enabled
 const hasWikiKnowledgeBase = computed(() => {
   return kbsInScope.value.some(kb => kb.wikiEnabled);
 });
 
-// 作用域内 RAG/Wiki 知识库数量（用于顶部状态栏）
+// RAG/wiki knowledge base counts in scope (for the top status bar)
 const ragKbCount = computed(() => kbsInScope.value.filter(kb => kb.ragEnabled).length);
 const wikiKbCount = computed(() => kbsInScope.value.filter(kb => kb.wikiEnabled).length);
 
-// 检测选择的知识库中是否包含 FAQ 类型
+// Detect whether the selected knowledge bases include the FAQ type
 const hasFaqKnowledgeBase = computed(() => {
   if (kbSelectionMode.value === 'none') return false;
   if (kbSelectionMode.value === 'all') {
-    // 全部知识库模式，检查是否有任何 FAQ 类型的知识库
+    // All knowledge bases mode: check whether any knowledge base is of FAQ type
     return kbOptions.value.some(kb => kb.type === 'faq');
   }
-  // 指定知识库模式，检查选中的知识库中是否有 FAQ 类型
+  // Specific knowledge bases mode: check whether a selected knowledge base is of FAQ type
   const selectedKbIds = formData.value.config.knowledge_bases || [];
   return kbOptions.value.some(kb => selectedKbIds.includes(kb.value) && kb.type === 'faq');
 });
 
-// 把"作用域内 KB 能力"聚合成一个 ScopeCapabilities 对象，交给
-// `evaluateToolRequirement` 统一判定；UI 上的所有可用性提示都应出自此处。
+// Aggregate the "in-scope KB capabilities" into one ScopeCapabilities object for
+// `evaluateToolRequirement` to decide; every availability hint in the UI should come from here.
 const scopeCapabilities = computed<ScopeCapabilities>(() => {
   const scope: ScopeCapabilities = { vector: false, keyword: false, wiki: false, graph: false, faq: false };
   for (const kb of kbsInScope.value) {
@@ -2555,7 +2555,7 @@ const scopeCapabilities = computed<ScopeCapabilities>(() => {
       if (caps.graph) scope.graph = true;
       if (caps.faq) scope.faq = true;
     } else {
-      // 向后兼容：capabilities 尚未加载时，退回到 ragEnabled/wikiEnabled 推断
+      // Backward compatibility: while capabilities are not loaded yet, infer from ragEnabled/wikiEnabled
       if (kb.ragEnabled) { scope.vector = true; scope.keyword = true; }
       if (kb.wikiEnabled) scope.wiki = true;
       if (kb.type === 'faq') scope.faq = true;
@@ -2564,9 +2564,9 @@ const scopeCapabilities = computed<ScopeCapabilities>(() => {
   return scope;
 });
 
-// 把 evaluateToolRequirement 返回的 missKind 映射到 i18n 文案。
-// 新增的 needsGraph / needsFaq 暂时复用 requiresRagKb 文案（"需要 RAG 知识库"），
-// 后续可按需增加独立的 i18n 键。
+// Map the missKind returned by evaluateToolRequirement to i18n text.
+// The new needsGraph / needsFaq reuse the requiresRagKb text ("Requires a RAG knowledge base") for now;
+// separate i18n keys can be added later as needed.
 const missKindToReason = (kind: RequirementMissKind): string | undefined => {
   switch (kind) {
     case 'needsKb': return t('agentEditor.tools.requiresKb');
@@ -2592,7 +2592,7 @@ const availableTools = computed(() => {
   });
 });
 
-// 按分组切片后的工具列表，用于模板分组渲染
+// The tool list sliced by group, for grouped rendering in the template
 const groupedAvailableTools = computed(() => {
   const map: Record<string, typeof availableTools.value> = {};
   for (const tool of availableTools.value) {
@@ -2608,12 +2608,12 @@ const groupedAvailableTools = computed(() => {
     .filter(g => g.tools.length > 0);
 });
 
-// ==================== 有效工具预览 ====================
-// 最终运行时智能体实际能使用的工具集合（仅做预览展示）
-// 规则：基于 allowed_tools 过滤
-//   1) 勾选但缺失对应能力（无 KB / 无 Wiki 能力 KB）的工具会被灰显/隐藏
-//   2) 无论是否勾选，web_search / web_fetch 随 web_search_enabled 出现
-//   3) 当 kb_selection_mode === 'none' 时，RAG/Wiki 工具都视为不可用
+// ==================== Effective tools preview ====================
+// The set of tools the agent can actually use at runtime (preview only)
+// Rules: filtered from allowed_tools
+//   1) Checked tools that lack the matching capability (no KB / no wiki-capable KB) are grayed out/hidden
+//   2) Whether checked or not, web_search / web_fetch appear with web_search_enabled
+//   3) When kb_selection_mode === 'none', the RAG/wiki tools all count as unavailable
 const effectiveTools = computed(() => {
   const chosen = new Set(formData.value.config.allowed_tools || []);
   const items: Array<{ value: string; label: string; reason?: string; active: boolean }> = [];
@@ -2633,10 +2633,10 @@ const effectiveTools = computed(() => {
   return items;
 });
 
-// 勾选了但当前配置下无法生效的工具数量（用于顶部状态提示）
+// Number of tools that are checked but cannot take effect under the current config (for the top status hint)
 const inactiveToolCount = computed(() => effectiveTools.value.filter(i => !i.active).length);
 
-// 可用文件类型列表
+// Available file types
 const availableFileTypes = [
   { value: 'pdf', label: 'PDF', description: t('agentEditor.fileTypes.pdf') },
   { value: 'docx', label: 'Word', description: t('agentEditor.fileTypes.word') },
@@ -2647,7 +2647,7 @@ const availableFileTypes = [
   { value: 'jpg', label: t('agentEditor.fileTypes.imageLabel'), description: t('agentEditor.fileTypes.image') },
 ];
 
-// 占位符相关 - 从 API 获取
+// Placeholders, fetched from the API
 const placeholderData = ref<{
   system_prompt: PlaceholderDefinition[];
   agent_system_prompt: PlaceholderDefinition[];
@@ -2664,21 +2664,21 @@ const placeholderData = ref<{
   fallback_prompt: [],
 });
 
-// 系统提示词占位符（根据模式动态选择）
+// System prompt placeholders (chosen dynamically by mode)
 const availablePlaceholders = computed(() => {
   return isAgentMode.value ? placeholderData.value.agent_system_prompt : placeholderData.value.system_prompt;
 });
 
-// 上下文模板占位符
+// Context template placeholders
 const contextTemplatePlaceholders = computed(() => placeholderData.value.context_template);
 
-// 改写系统提示词占位符
+// Rewrite system prompt placeholders
 const rewriteSystemPlaceholders = computed(() => placeholderData.value.rewrite_system_prompt);
 
-// 改写用户提示词占位符
+// Rewrite user prompt placeholders
 const rewritePlaceholders = computed(() => placeholderData.value.rewrite_prompt);
 
-// 兜底提示词占位符
+// Fallback prompt placeholders
 const fallbackPlaceholders = computed(() => placeholderData.value.fallback_prompt);
 
 const promptTextareaRef = ref<any>(null);
@@ -2688,7 +2688,7 @@ const placeholderPrefix = ref('');
 const popupStyle = ref({ top: '0px', left: '0px' });
 let placeholderPopupTimer: any = null;
 
-// 上下文模板占位符相关
+// Context template placeholder state
 const contextTemplateTextareaRef = ref<any>(null);
 const showContextPlaceholderPopup = ref(false);
 const selectedContextPlaceholderIndex = ref(0);
@@ -2696,13 +2696,13 @@ const contextPlaceholderPrefix = ref('');
 const contextPopupStyle = ref({ top: '0px', left: '0px' });
 let contextPlaceholderPopupTimer: any = null;
 
-// 意图提示词编辑相关
+// Intent prompt editing state
 const selectedIntent = ref('');
 const intentEditorValue = ref('');
 const intentPromptsSyncing = ref(false);
 const intentPromptTextareaRef = ref<any>(null);
 
-// 通用占位符弹出相关（用于改写提示词和兜底提示词）
+// Generic placeholder popup state (for the rewrite and fallback prompts)
 interface PlaceholderPopupState {
   show: boolean;
   selectedIndex: number;
@@ -2738,31 +2738,31 @@ const navItems = computed(() => {
     { key: 'model', icon: 'control-platform', label: t('agent.editor.modelConfig') },
     { key: 'suggestions', icon: 'help-circle', label: t('agentEditor.questionSuggestions.navLabel') },
   ];
-  // 多轮对话（两种模式都需要：Agent 模式在这里说明历史自动管理、保留检索结果）
+  // Multi-turn conversation (both modes need it: in Agent mode it explains automatic history management and keeping retrieval results)
   items.push({ key: 'conversation', icon: 'chat', label: t('agent.editor.conversationSettings') });
-  // 知识库与检索
+  // Knowledge base and retrieval
   items.push({ key: 'knowledge', icon: 'folder', label: t('agent.editor.knowledgeConfig') });
-  // 检索策略只作用于普通模式的问答流程；Agent 模式的检索工具不读这些设置，
-  // 显示出来只会让用户调了参数却没有任何效果。
+  // The retrieval strategy only applies to the normal-mode Q&A flow; Agent mode's retrieval tools do not read these settings,
+  // so showing them would only let users tune parameters with no effect.
   if (hasKnowledgeBase.value && !isAgentMode.value) {
     items.push({ key: 'retrieval', icon: 'search', label: t('agent.editor.retrievalStrategy') });
   }
   items.push({ key: 'websearch', icon: 'internet', label: t('agent.editor.webSearchConfig') });
   items.push({ key: 'multimodal', icon: 'attach', label: t('agentEditor.imageUpload.navLabel') });
-  // Agent 模式能力
+  // Agent mode capabilities
   if (isAgentMode.value) {
     items.push({ key: 'tools', icon: 'tools', label: t('agent.editor.toolsConfig') });
     items.push({ key: 'mcp', icon: 'server', label: t('agentEditor.mcp.label') });
     items.push({ key: 'skills', icon: SKILL_ICON, label: t('agent.editor.skillsConfig') });
   }
-  // 发布（仅编辑模式）
+  // Publishing (edit mode only)
   if (editorMode.value === 'edit' && editorAgent.value?.id && !editorAgent.value?.is_builtin && !authStore.isLiteMode) {
     items.push({ key: 'share', icon: 'share', label: t('knowledgeEditor.sidebar.share') });
   }
   return items;
 });
 
-// 左侧导航分组（参考「头像-设置」的分组方式）
+// Left nav groups (modeled on the grouping in "Avatar → Settings")
 const navGroups = computed(() => {
   const itemMap = new Map(navItems.value.map((item) => [item.key, item]));
   const pickItems = (keys: string[]) =>
@@ -2791,85 +2791,85 @@ const navGroups = computed(() => {
   ].filter((group) => group.items.length > 0);
 });
 
-// 初始数据
+// Initial data
 const defaultFormData = {
   name: '',
   description: '',
   is_builtin: false,
   config: {
-    // 基础设置
+    // Basic settings
     agent_mode: 'smart-reasoning' as 'quick-answer' | 'smart-reasoning',
     system_prompt: '',
     context_template: '',
-    // 模型设置
+    // Model settings
     model_id: '',
     rerank_model_id: '',
     temperature: 0.7,
     max_completion_tokens: 0,
-    thinking: false, // 默认禁用思考模式
-    reasoning_effort: 'off', // 思考强度；与 thinking 布尔保持同步
-    citation_enabled: true, // 默认输出知识库/网页来源引用
-    // Agent模式设置
+    thinking: false, // thinking mode disabled by default
+    reasoning_effort: 'off', // reasoning effort; kept in sync with the thinking boolean
+    citation_enabled: true, // cite knowledge base/web sources by default
+    // Agent mode settings
     max_iterations: 10,
     llm_call_timeout: 120,  // 120 seconds
     allowed_tools: [] as string[],
     reflection_enabled: false,
-    // MCP 服务设置
+    // MCP service settings
     mcp_selection_mode: 'none' as 'all' | 'selected' | 'none',
     mcp_services: [] as string[],
-    // 对话中触发 OAuth 授权时的等待超时（秒），默认 600
+    // Wait timeout (seconds) when an OAuth authorization fires during a chat, default 600
     mcp_auth_wait_timeout: 600,
-    // Skills 设置
+    // Skills settings
     skills_selection_mode: 'none' as 'all' | 'selected' | 'none',
     selected_skills: [] as string[],
-    // 技能脚本运行在哪份空间沙箱配置上。留空表示禁用脚本执行。
+    // Which workspace sandbox config skill scripts run on. Empty disables script execution.
     sandbox_config_id: '' as string,
-    // 知识库设置：新建智能体默认选择 "全部知识库"，
-    // 让用户无需先去勾选 KB 即可上手；如有需要可改为 "selected" / "none"。
+    // Knowledge base settings: a new agent defaults to "All knowledge bases",
+    // so users can start without first checking KBs; change to "selected" / "none" as needed.
     kb_selection_mode: 'all' as 'all' | 'selected' | 'none',
     knowledge_bases: [] as string[],
     retrieve_kb_only_when_mentioned: false,
-    // 智能推理下的类型预设：新建 agent 时默认给 RAG 问答（最常用场景）。
-    // 编辑既有 agent 时会被 agent 自己保存的 agent_type 覆盖。
+    // Type preset under Smart Reasoning: a new agent defaults to RAG Q&A (the most common case).
+    // When editing an existing agent, the agent_type it saved overrides this.
     agent_type: 'rag-qa' as AgentType,
     system_prompt_id: '' as string,
-    // 附件上传设置
+    // Attachment upload settings
     image_upload_enabled: false,
     vlm_model_id: '',
     image_storage_provider: '',
-    // 附件图片理解 / 扫描件 OCR 开关（默认关闭，避免解析耗时增加）
+    // Attachment image understanding / scanned-document OCR switch (off by default, to avoid longer parsing)
     attachment_image_understanding: false,
-    // 扫描件 OCR 最大页数（0 = 使用全局默认）
+    // Max OCR pages for scanned documents (0 = use the global default)
     attachment_ocr_max_pages: 0,
-    // 单轮问答等待附件解析完成的最长时间（秒，0 = 使用全局默认）
+    // Longest time (seconds) a single Q&A turn waits for attachment parsing to finish (0 = use the global default)
     attachment_parse_wait_timeout_sec: 0,
-    // 聊天附件解析引擎策略（按文件类型选引擎）
+    // Chat attachment parsing engine strategy (engine chosen per file type)
     chat_parser_engine_rules: [] as ParserEngineRule[],
-    // 文件类型限制
+    // File type limits
     supported_file_types: [] as string[],
-    // 数据分析阶段开关（默认关闭，避免在普通问答上多一次 LLM 调用生成 SQL）
+    // Data analysis stage switch (off by default, to avoid an extra LLM call generating SQL on normal Q&A)
     data_analysis_enabled: false,
-    // FAQ 策略设置
-    faq_priority_enabled: true, // 是否启用 FAQ 优先策略
-    faq_direct_answer_threshold: 0.9, // FAQ 直接回答阈值（相似度高于此值直接使用 FAQ 答案）
-    faq_score_boost: 1.2, // FAQ 分数加权系数
-    // 网络搜索设置
+    // FAQ strategy settings
+    faq_priority_enabled: true, // whether the FAQ priority strategy is enabled
+    faq_direct_answer_threshold: 0.9, // FAQ direct answer threshold (above this similarity the FAQ answer is used directly)
+    faq_score_boost: 1.2, // FAQ score boost factor
+    // Web search settings
     web_search_enabled: false,
     web_search_max_results: 5,
-    // 多轮对话设置
+    // Multi-turn conversation settings
     multi_turn_enabled: false,
     history_turns: 5,
     retain_retrieval_history: false,
-    // 长期记忆：默认跟随空间设置。写 true 与不写等价，只有 false 才会
-    // 让这个智能体单独不读记忆。
+    // Long-term memory: follows the workspace setting by default. Writing true is the same as omitting it; only false
+    // makes this agent alone skip reading memory.
     memory_enabled: true,
-    // 检索策略设置
+    // Retrieval strategy settings
     embedding_top_k: 10,
     keyword_threshold: 0.3,
     vector_threshold: 0.5,
     rerank_top_k: 5,
     rerank_threshold: 0.5,
-    // 高级设置（普通模式）
+    // Advanced settings (normal mode)
     enable_query_expansion: true,
     enable_rewrite: true,
     query_understand_model_id: '',
@@ -2899,7 +2899,7 @@ const defaultFormData = {
         allow_regenerate: false,
       },
     },
-    // 已废弃字段（保留兼容）
+    // Deprecated fields (kept for compatibility)
     welcome_message: '',
   }
 };
@@ -3005,8 +3005,8 @@ const hasAnyIntentCustomized = computed(() =>
   intentPromptTemplates.value.some((item) => isIntentCustomized(item.id)),
 );
 
-// Agent 模式下本组只剩「保留轮数」（以及有知识库时的检索保留），
-// 默认文案里的「问题改写」并不展示，故按模式分开。
+// In Agent mode this group only has "Turns kept" (plus retrieval retention when there is a knowledge base),
+// and the default text's "Question rewrite" is not shown, so the text is split by mode.
 const conversationSectionDesc = computed(() =>
   isAgentMode.value
     ? t('agentEditor.desc.conversationSectionAgent')
@@ -3184,9 +3184,9 @@ const resetCurrentIntentPrompt = () => {
 };
 
 // ============================================================================
-// 智能体类型预设（仅 smart-reasoning 模式下可见）
-// 选择类型后自动填充 system_prompt_id / allowed_tools 等；
-// 选择 "custom" 或没有匹配预设时不做任何覆盖。
+// Agent type presets (visible only in smart-reasoning mode)
+// Choosing a type fills system_prompt_id / allowed_tools and so on automatically;
+// choosing "custom" or a type with no matching preset overrides nothing.
 // ============================================================================
 
 const agentType = computed({
@@ -3194,7 +3194,7 @@ const agentType = computed({
   set: (val: AgentType) => { formData.value.config.agent_type = val; },
 });
 
-// 当前激活的预设对象（用于 KB 过滤 / UI 徽章）
+// The currently active preset object (for KB filtering / UI badges)
 const activeAgentTypePreset = computed<AgentTypePreset | null>(() => {
   if (!isAgentMode.value) return null;
   const id = agentType.value;
@@ -3202,7 +3202,7 @@ const activeAgentTypePreset = computed<AgentTypePreset | null>(() => {
   return agentTypePresets.value.find(p => p.id === id) || null;
 });
 
-// 根据当前 locale 挑选 i18n 标签
+// Pick the i18n label for the current locale
 const agentTypePresetLabel = (p: AgentTypePreset): string => {
   const locale = i18nLocale.value || 'default';
   return p.i18n?.[locale]?.label || p.i18n?.default?.label || p.id;
@@ -3212,7 +3212,7 @@ const agentTypePresetDescription = (p: AgentTypePreset): string => {
   return p.i18n?.[locale]?.description || p.i18n?.default?.description || '';
 };
 
-// t-select 的 options 数据：label 给 TDesign 自己（用于选中态显示），desc 走自定义 option slot
+// Options data for t-select: label goes to TDesign itself (for the selected display), desc goes through the custom option slot
 const agentTypeSelectOptions = computed(() => {
   return agentTypePresets.value.map(p => ({
     value: p.id,
@@ -3221,8 +3221,8 @@ const agentTypeSelectOptions = computed(() => {
   }));
 });
 
-// 为每个预设生成"我的 <label>"的默认名称，让用户可以一键保存
-// custom 类型默认名为空（让用户自己想）
+// Generate a default name "My <label>" for each preset, so the user can save in one click
+// The custom type's default name is empty (the user picks one)
 const getPresetDefaultName = (preset: AgentTypePreset | null): string => {
   if (!preset || preset.id === 'custom') return '';
   return t('agentEditor.agentType.defaultNamePattern', { label: agentTypePresetLabel(preset) });
@@ -3232,8 +3232,8 @@ const getPresetDefaultDescription = (preset: AgentTypePreset | null): string => 
   return agentTypePresetDescription(preset);
 };
 
-// 判断当前名称/描述是否由系统自动填入（任一预设的默认值 或 空）
-// 用于在切换类型时只覆盖"未被用户手动编辑"的值，避免覆盖用户输入
+// Whether the current name/description was filled in by the system (any preset's default value, or empty)
+// Used to overwrite only values "not edited by the user" when switching types, so user input is never overwritten
 const isNameSystemGenerated = (name: string): boolean => {
   if (!name) return true;
   return agentTypePresets.value.some(p => getPresetDefaultName(p) === name);
@@ -3243,9 +3243,9 @@ const isDescriptionSystemGenerated = (desc: string): boolean => {
   return agentTypePresets.value.some(p => getPresetDefaultDescription(p) === desc);
 };
 
-// 按预设 id 返回面向用户的不兼容原因文案。
-// 不要直接把 "vector / keyword / wiki" 这些底层 capability 名回传给用户 —
-// 用户不关心技术实现，只想知道"为什么我这个知识库不能用"。
+// Return the user-facing incompatibility reason text for a preset id.
+// Do not pass low-level capability names such as "vector / keyword / wiki" back to the user;
+// users do not care about the implementation, they only want to know "why can't I use this knowledge base".
 const presetKbMismatchKeyMap: Record<string, string> = {
   'rag-qa': 'ragQa',
   'wiki-qa': 'wikiQa',
@@ -3258,24 +3258,24 @@ const presetKbMismatchReason = (preset: AgentTypePreset): string => {
   return t('agentEditor.agentType.kbMismatch.generic');
 };
 
-// 计算预设的"有效 KB 过滤器"：工具推导 + YAML 增量叠加。
+// Compute a preset's "effective KB filter": derived from the tools + incremental YAML overlay.
 //
-// 设计原则：
-//   - 工具 → any_of（"KB 至少要能被其中一个工具用得上"）由
-//     `deriveKbFilterFromTools` 自动算出；
-//   - YAML 里的 `kb_filter` 只负责**工具推不出来**的业务规则（如
-//     data-analysis 的 `none_of: ["faq"]`），作为增量合并，而不是整体覆盖；
-//   - `all_of` / `none_of` 直接从 YAML 继承（工具不表达这类约束）。
+// Design principles:
+//   - tools → any_of ("the KB must be usable by at least one of the tools") is
+//     computed automatically by `deriveKbFilterFromTools`;
+//   - the YAML `kb_filter` only carries business rules **the tools cannot derive** (such as
+//     data-analysis's `none_of: ["faq"]`), merged incrementally rather than replacing everything;
+//   - `all_of` / `none_of` are inherited directly from the YAML (the tools do not express these constraints).
 //
-// 这样 rag-qa / wiki-qa / hybrid 在 YAML 里彻底不写 `kb_filter`，
-// data-analysis 只需声明额外的 `none_of`，"工具→能力"的映射只在
-// `@/utils/tool-capabilities` 维护一份。
+// This way rag-qa / wiki-qa / hybrid write no `kb_filter` in the YAML at all,
+// data-analysis only declares the extra `none_of`, and the "tool → capability" mapping is maintained
+// once, in `@/utils/tool-capabilities`.
 const effectiveKbFilter = (preset: AgentTypePreset | null): AgentTypeKBFilter | null => {
   if (!preset) return null;
   const derived = deriveKbFilterFromTools(preset.config?.allowed_tools || []);
   const yaml = preset.kb_filter;
 
-  // YAML 提供 any_of 时整体覆盖推导（给显式控制留口子）；否则用推导的
+  // When the YAML provides any_of it replaces the derivation entirely (leaving room for explicit control); otherwise use the derived one
   const anyOf = (yaml?.any_of && yaml.any_of.length > 0) ? yaml.any_of : (derived?.any_of ?? []);
   const allOf = yaml?.all_of ?? [];
   const noneOf = yaml?.none_of ?? [];
@@ -3283,7 +3283,7 @@ const effectiveKbFilter = (preset: AgentTypePreset | null): AgentTypeKBFilter | 
   return { any_of: anyOf, all_of: allOf, none_of: noneOf };
 };
 
-// 评估单个 KB 是否满足给定预设的 kb_filter
+// Evaluate whether a single KB satisfies the given preset's kb_filter
 const kbSatisfiesPresetFilter = (kb: { capabilities?: KBCapabilities; ragEnabled?: boolean; wikiEnabled?: boolean; type?: string }, preset: AgentTypePreset | null): { ok: boolean; reason: string } => {
   const filter = effectiveKbFilter(preset);
   if (!preset || !filter) return { ok: true, reason: '' };
@@ -3323,10 +3323,10 @@ const kbSatisfiesPresetFilter = (kb: { capabilities?: KBCapabilities; ragEnabled
   return { ok: true, reason: '' };
 };
 
-// "快速问答 / RAG 模式"对 KB 的隐式要求：必须有 vector 或 keyword 索引。
-// 这里跟 `activeAgentTypePreset` 解耦——quick-answer 没有 agent_type，
-// 所以预设链路恒为 null，但 wiki-only KB 在 RAG 模式下检索结果永远为空，
-// 必须在 UI 上 disable + 提示，避免用户白选。
+// The implicit requirement "Quick Answer / RAG mode" puts on a KB: it must have a vector or keyword index.
+// This is decoupled from `activeAgentTypePreset`: quick-answer has no agent_type,
+// so the preset chain is always null, but a wiki-only KB always returns empty retrieval in RAG mode,
+// so the UI must disable it + explain, to keep users from choosing it in vain.
 const kbSatisfiesQuickAnswerMode = (kb: { capabilities?: KBCapabilities; ragEnabled?: boolean }): { ok: boolean; reason: string } => {
   if (agentMode.value !== 'quick-answer') return { ok: true, reason: '' };
   const hasRag = kb.capabilities
@@ -3336,7 +3336,7 @@ const kbSatisfiesQuickAnswerMode = (kb: { capabilities?: KBCapabilities; ragEnab
   return { ok: false, reason: t('agentEditor.agentType.kbMismatch.quickAnswer') };
 };
 
-// KB 过滤后的选项（用于"指定知识库"下拉）— 不满足的仍保留但标记 disabled + tooltip
+// KB options after filtering (for the "Specific knowledge bases" dropdown); ones that do not qualify stay but are marked disabled + tooltip
 const filteredKbOptionsForPreset = computed(() => {
   const preset = activeAgentTypePreset.value;
   return kbOptions.value.map(kb => {
@@ -3350,28 +3350,28 @@ const filteredKbOptionsForPreset = computed(() => {
 const filteredMyKbOptions = computed(() => filteredKbOptionsForPreset.value.filter(kb => !kb.shared));
 const filteredSharedKbOptions = computed(() => filteredKbOptionsForPreset.value.filter(kb => kb.shared));
 
-// 当前选中的 KB 中，有多少个在新预设 / 模式下会被禁用（用于保存前提示）。
-// quick-answer 模式下 preset 恒为 null，但 wiki-only KB 仍属"被禁用"，
-// 所以这里不再依赖 preset 是否存在，直接看是否有被 disable 的选中项。
+// How many of the selected KBs would be disabled under the new preset / mode (for a hint before saving).
+// In quick-answer mode the preset is always null, but a wiki-only KB still counts as "disabled",
+// so this no longer depends on whether a preset exists and looks directly for disabled selected items.
 const incompatibleSelectedKbCount = computed(() => {
   if (kbSelectionMode.value !== 'selected') return 0;
   const selected = new Set(formData.value.config.knowledge_bases || []);
   return filteredKbOptionsForPreset.value.filter(kb => selected.has(kb.value) && kb.disabled).length;
 });
 
-// 应用一个预设的 config 到 formData.config（仅覆盖预设里明确设置的字段，其他不动）
+// Apply a preset's config to formData.config (overwriting only the fields the preset sets explicitly, leaving the rest)
 const applyAgentTypePreset = (preset: AgentTypePreset | null) => {
   if (!preset || !preset.config) return;
   const c = preset.config;
   const target = formData.value.config;
   if (c.system_prompt_id !== undefined) {
     target.system_prompt_id = c.system_prompt_id;
-    // 根据 system_prompt_id 从已加载的模板列表里查出正文并回填到用户可见的 textarea
+    // Look up the text by system_prompt_id in the loaded template list and fill it into the user-visible textarea
     const tmpl = agentSystemPromptTemplates.value.find(t => t.id === c.system_prompt_id);
     if (tmpl && typeof tmpl.content === 'string') {
       target.system_prompt = tmpl.content;
     } else {
-      // 模板列表还没加载完 / 或预设引用了不存在的 id：清空让用户感知到变化
+      // The template list has not loaded yet / or the preset references an id that does not exist: clear it so the user notices the change
       target.system_prompt = '';
       if (c.system_prompt_id) {
         console.warn(`[AgentType] system_prompt_id "${c.system_prompt_id}" not found in agent_system_prompt templates`);
@@ -3384,24 +3384,24 @@ const applyAgentTypePreset = (preset: AgentTypePreset | null) => {
   if (typeof c.retain_retrieval_history === 'boolean') target.retain_retrieval_history = c.retain_retrieval_history;
   if (typeof c.faq_priority_enabled === 'boolean') target.faq_priority_enabled = c.faq_priority_enabled;
   if (typeof c.web_search_enabled === 'boolean') target.web_search_enabled = c.web_search_enabled;
-  // supported_file_types 采用"强同步"语义：只有 data-analysis 需要限定 csv/xlsx，
-  // 其余类型切过来时必须清空，否则会从上一个类型带过来残留。
+  // supported_file_types uses "strong sync" semantics: only data-analysis needs to restrict to csv/xlsx,
+  // and switching to any other type must clear it, or leftovers carry over from the previous type.
   if (Array.isArray(c.supported_file_types)) {
     target.supported_file_types = [...c.supported_file_types];
   } else {
     target.supported_file_types = [];
   }
-  // kb_selection_mode 同步到 formData 以及 UI 状态（两处都要改，否则单选按钮不更新）
+  // Sync kb_selection_mode to formData and the UI state (both must change, or the radio buttons do not update)
   if (c.kb_selection_mode) {
     target.kb_selection_mode = c.kb_selection_mode;
     kbSelectionMode.value = c.kb_selection_mode;
   }
 };
 
-// 用户手动切换类型 → 应用预设
+// The user switches the type manually → apply the preset
 const onAgentTypeChange = (val: AgentType) => {
-  // 切换前捕获"名称/描述是否可安全覆盖"
-  // 已编辑过的用户输入（不等于任何预设默认值）绝不覆盖
+  // Before switching, capture whether the name/description can be safely overwritten
+  // User input that has been edited (not equal to any preset default) is never overwritten
   const canOverrideName = isNameSystemGenerated(formData.value.name);
   const canOverrideDesc = isDescriptionSystemGenerated(formData.value.description);
 
@@ -3411,7 +3411,7 @@ const onAgentTypeChange = (val: AgentType) => {
     applyAgentTypePreset(preset);
   }
 
-  // 用新预设的默认名/描述刷新自动填充字段
+  // Refresh the auto-filled fields with the new preset's default name/description
   if (canOverrideName) {
     formData.value.name = getPresetDefaultName(preset);
   }
@@ -3419,7 +3419,7 @@ const onAgentTypeChange = (val: AgentType) => {
     formData.value.description = getPresetDefaultDescription(preset);
   }
 
-  // 如果新预设与当前已选 KB 冲突，软提示（不强制移除）
+  // If the new preset conflicts with the currently selected KBs, show a soft hint (without forcing removal)
   if (incompatibleSelectedKbCount.value > 0) {
     MessagePlugin.warning(
       t('agentEditor.agentType.kbIncompatibleWarn', { count: incompatibleSelectedKbCount.value }),
@@ -3428,19 +3428,19 @@ const onAgentTypeChange = (val: AgentType) => {
   }
 };
 
-// 思考强度：reasoning_effort 为准，旧数据只有 thinking 布尔时按 true→auto / false→off 推导。
-// 写入时同步维护 thinking 布尔，保证旧后端 / 旧读取路径继续工作。
+// Reasoning effort: reasoning_effort is authoritative; old data with only the thinking boolean derives true→auto / false→off.
+// On write the thinking boolean is kept in sync, so old backends / old read paths keep working.
 const selectedChatModel = computed(() =>
   allModels.value.find(model => model.id === formData.value.config.model_id),
 );
 const selectedChatModelCanThink = computed(() => modelCanThink(selectedChatModel.value?.capabilities));
-// 所选模型无法关闭思考（deepseek-reasoner / qwq-plus / gemini-3 等）时给出提示，
-// 否则下拉里没有「关闭」看起来像 bug。
+// When the selected model cannot turn thinking off (deepseek-reasoner / qwq-plus / gemini-3 and so on), show a hint,
+// otherwise a dropdown with no "Off" looks like a bug.
 const selectedChatModelAlwaysThinks = computed(
   () => modelCannotDisableThinking(selectedChatModel.value?.capabilities),
 );
-// 目录上报 capabilities 时严格按 thinking_levels 出选项（含「没有 off」这一事实）；
-// 没有 capabilities 的模型（本地 / Ollama / 模型列表未加载）才退回通用梯度。
+// When the catalog reports capabilities, the options follow thinking_levels strictly (including the fact that there is "no off");
+// only models without capabilities (local / Ollama / model list not loaded) fall back to the generic ladder.
 const reasoningEffortOptions = computed<ReasoningLevel[]>(() => optionsFor(selectedChatModel.value?.capabilities));
 const reasoningEffortLevel = computed<ReasoningLevel>({
   get: () => levelFromLegacy(formData.value.config.thinking, formData.value.config.reasoning_effort),
@@ -3449,12 +3449,12 @@ const reasoningEffortLevel = computed<ReasoningLevel>({
     formData.value.config.thinking = levelEnablesThinking(level);
   },
 });
-// 已存等级可能不在所选模型的可用集合里（换模型，或加载了一个旧智能体）：
-// 夹到可用集合上，并同步 thinking 布尔（由 setter 负责），避免界面显示「关闭」
-// 而后端其实没下发任何开关、模型照样思考。
+// The saved level may not be in the selected model's available set (model changed, or an old agent loaded):
+// clamp it onto the available set and sync the thinking boolean (the setter handles it), so the UI does not show "Off"
+// while the backend sends no switch at all and the model keeps thinking.
 //
-// 只在模型真正解析出来之后才夹：模型列表异步加载期间 capabilities 还是 undefined，
-// 此时的通用梯度会把已保存的 max/xhigh 误降级成 auto。
+// Clamp only after the model has actually resolved: while the model list loads asynchronously capabilities is still undefined,
+// and the generic ladder would wrongly downgrade a saved max/xhigh to auto.
 const clampReasoningEffortToModel = () => {
   if (!selectedChatModel.value) return;
   const clamped = clampLevel(reasoningEffortLevel.value, reasoningEffortOptions.value);
@@ -3472,27 +3472,27 @@ watch(
   { immediate: true },
 );
 
-// 是否为内置智能体
+// Whether this is a built-in agent
 const isBuiltinAgent = computed(() => {
   return formData.value.is_builtin === true;
 });
 
-// 系统提示词的 placeholder
+// System prompt placeholder
 const systemPromptPlaceholder = computed(() => {
   return t('agent.editor.systemPromptPlaceholder');
 });
 
-// 上下文模板的 placeholder
+// Context template placeholder
 const contextTemplatePlaceholder = computed(() => {
   return t('agent.editor.contextTemplatePlaceholder');
 });
 
-// 是否需要配置 ReRank 模型（仅当关联的知识库中有 RAG 类型时需要）
+// Whether a ReRank model is needed (only when the linked knowledge bases include a RAG type)
 const needsRerankModel = computed(() => {
   if (!hasKnowledgeBase.value) return false;
   const mode = kbSelectionMode.value;
   if (mode === 'all') {
-    // "全部"模式下，只要存在任何一个 RAG 知识库就需要
+    // In "All" mode, it is needed as soon as any RAG knowledge base exists
     return kbOptions.value.some(kb => kb.ragEnabled);
   }
   if (mode === 'selected') {
@@ -3504,7 +3504,7 @@ const needsRerankModel = computed(() => {
 
 let editorInitializationGeneration = 0;
 
-// 监听可见性变化，重置表单
+// Watch visibility changes and reset the form
 watch(() => props.visible, async (val) => {
   const generation = ++editorInitializationGeneration;
   if (val) {
@@ -3513,20 +3513,20 @@ watch(() => props.visible, async (val) => {
     try {
     savedAgent.value = null;
     currentSection.value = resolveEditorSection(props.initialSection);
-    // 先加载依赖数据（包括默认配置）
+    // Load the dependency data first (including the default config)
     await loadDependencies();
     if (generation !== editorInitializationGeneration || !props.visible) return;
 
     if (props.mode === 'edit' && props.agent) {
-      // 深度复制对象以避免引用问题
+      // Deep copy the object to avoid reference problems
       const agentData = JSON.parse(JSON.stringify(props.agent));
 
-      // 确保 config 对象存在
+      // Make sure the config object exists
       if (!agentData.config) {
         agentData.config = JSON.parse(JSON.stringify(defaultFormData.config));
       }
 
-      // 补全可能缺失的字段
+      // Fill in fields that may be missing
       agentData.config = { ...defaultFormData.config, ...agentData.config };
       if (agentData.config.thinking == null) {
         agentData.config.thinking = false;
@@ -3549,46 +3549,46 @@ watch(() => props.visible, async (val) => {
             || [...defaultFormData.config.question_suggestions.follow_ups.categories],
         },
       };
-      // 确保数组字段存在
+      // Make sure the array fields exist
       if (!agentData.config.knowledge_bases) agentData.config.knowledge_bases = [];
-      // 旧配置里可能还带着已合并的工具名（knowledge_search / grep_chunks /
-      // list_knowledge_chunks / get_document_info / wiki_read_source_doc），
-      // 映射到新名字并去重，否则复选框对不上 allTools。
+      // Old configs may still carry merged tool names (knowledge_search / grep_chunks /
+      // list_knowledge_chunks / get_document_info / wiki_read_source_doc);
+      // map them to the new names and dedupe, or the checkboxes will not match allTools.
       agentData.config.allowed_tools = normalizeLegacyToolNames(agentData.config.allowed_tools);
       if (!agentData.config.mcp_services) agentData.config.mcp_services = [];
-      // 授权等待超时：旧数据缺省时用默认 600 秒
+      // Authorization wait timeout: default to 600 seconds when old data lacks it
       if (agentData.config.mcp_auth_wait_timeout == null || agentData.config.mcp_auth_wait_timeout <= 0) {
         agentData.config.mcp_auth_wait_timeout = 600;
       }
       if (!agentData.config.selected_skills) agentData.config.selected_skills = [];
       if (!agentData.config.supported_file_types) agentData.config.supported_file_types = [];
       if (!agentData.config.chat_parser_engine_rules) agentData.config.chat_parser_engine_rules = [];
-      // 附件解析调优字段：旧数据缺省时置 0（表示使用全局默认）
+      // Attachment parsing tuning fields: set to 0 when old data lacks them (meaning use the global default)
       if (agentData.config.attachment_ocr_max_pages == null) agentData.config.attachment_ocr_max_pages = 0;
       if (agentData.config.attachment_parse_wait_timeout_sec == null) agentData.config.attachment_parse_wait_timeout_sec = 0;
       if (agentData.config.max_completion_tokens == null) agentData.config.max_completion_tokens = 0;
-      // 长期记忆：后端用 omitempty，跟随空间设置的智能体不带这个字段。
-      // 不补成 true 的话开关会显示为"关"，用户随手一存就真的把记忆关了。
+      // Long-term memory: the backend uses omitempty, so an agent following the workspace setting carries no such field.
+      // Without filling it in as true the switch would show "off", and a casual save would really turn memory off.
       if (agentData.config.memory_enabled == null) agentData.config.memory_enabled = true;
 
-      // 兼容旧数据：如果没有 agent_mode 字段，根据 allowed_tools 推断
+      // Old data compatibility: without an agent_mode field, infer it from allowed_tools
       if (!agentData.config.agent_mode) {
         const isAgent = agentData.config.max_iterations < 0 || agentData.config.max_iterations > 1 || (agentData.config.allowed_tools && agentData.config.allowed_tools.length > 0);
         agentData.config.agent_mode = isAgent ? 'smart-reasoning' : 'quick-answer';
       }
 
-      // 设置初始化标志，防止 watch 自动添加工具
+      // Set the initialization flag so watches do not add tools automatically
       isInitializing.value = true;
       agentData.config = hydrateAgentPromptRefs(agentData.config, promptTemplates.value);
       formData.value = agentData;
       if (agentData.config.max_iterations > 1) {
         lastFiniteMaxIterations.value = agentData.config.max_iterations;
       }
-      // 初始化知识库选择模式
+      // Initialize the knowledge base selection mode
       initKbSelectionMode();
       initMcpSelectionMode();
       initSkillsSelectionMode();
-      // 初始化完成后重置标志
+      // Reset the flag after initialization
       nextTick(() => {
         isInitializing.value = false;
       });
@@ -3596,9 +3596,9 @@ watch(() => props.visible, async (val) => {
       fillBuiltinAgentDefaults();
       void loadAgentIntegrationCounts(agentData.id);
     } else {
-      // 创建新智能体，使用系统默认值
+      // Create a new agent with the system defaults
       const newFormData = JSON.parse(JSON.stringify(defaultFormData));
-      // 应用系统默认检索参数
+      // Apply the system default retrieval parameters
       newFormData.config.embedding_top_k = defaultEmbeddingTopK.value;
       newFormData.config.keyword_threshold = defaultKeywordThreshold.value;
       newFormData.config.vector_threshold = defaultVectorThreshold.value;
@@ -3606,15 +3606,15 @@ watch(() => props.visible, async (val) => {
       newFormData.config.rerank_threshold = defaultRerankThreshold.value;
       newFormData.config.max_completion_tokens = 0;
       newFormData.config.temperature = defaultTemperature.value;
-      // 应用系统默认提示词（根据模式填充）
+      // Apply the system default prompt (filled by mode)
       const isAgent = newFormData.config.agent_mode === 'smart-reasoning';
       if (isAgent) {
-        // Agent 模式使用 agent-config 的默认系统提示词
+        // Agent mode uses the default system prompt from agent-config
         if (defaultAgentSystemPrompt.value) {
           newFormData.config.system_prompt = defaultAgentSystemPrompt.value;
         }
       } else {
-        // 快速问答模式：默认提示词来自 prompt-templates 的 default 项
+        // Quick Answer mode: the default prompt comes from the prompt-templates default entry
         if (defaultNormalSystemPrompt.value) {
           newFormData.config.system_prompt = defaultNormalSystemPrompt.value;
         }
@@ -3635,22 +3635,22 @@ watch(() => props.visible, async (val) => {
         }
       }
       formData.value = newFormData;
-      // 新建智能体：知识库默认 "全部"，MCP / Skills 仍默认 "不使用"。
+      // New agent: knowledge bases default to "All", MCP / Skills still default to "Not used".
       kbSelectionMode.value = 'all';
       mcpSelectionMode.value = 'none';
       skillsSelectionMode.value = 'none';
 
-      // 新建智能推理 agent 时，立即应用默认的 agent_type 预设
-      // （补齐 system_prompt / allowed_tools / kb_selection_mode 等），
-      // 否则用户在 modal 打开瞬间看到的"默认表单"和类型下拉显示的类型不一致。
+      // When creating a Smart Reasoning agent, apply the default agent_type preset right away
+      // (filling in system_prompt / allowed_tools / kb_selection_mode and so on),
+      // otherwise the "default form" the user sees as the modal opens would not match the type shown in the dropdown.
       if (newFormData.config.agent_mode === 'smart-reasoning') {
         const defaultTypeId = newFormData.config.agent_type as AgentType;
         const preset = agentTypePresets.value.find(p => p.id === defaultTypeId) || null;
         if (defaultTypeId && defaultTypeId !== 'custom') {
           applyAgentTypePreset(preset);
         }
-        // 给新建表单补上"我的 XXX"默认名 + 预设描述，让用户可直接保存；
-        // 用户输入过的值不会被覆盖（此处是新建场景，字段必定为空）。
+        // Give the new form the default name "My XXX" + the preset description, so the user can save directly;
+        // values the user typed are never overwritten (this is the create case, so the fields are always empty).
         if (!formData.value.name) {
           formData.value.name = getPresetDefaultName(preset);
         }
@@ -3692,39 +3692,39 @@ watch(() => props.visible, async (val) => {
   }
 });
 
-// 初始化知识库选择模式
+// Initialize the knowledge base selection mode
 const initKbSelectionMode = () => {
   if (formData.value.config.kb_selection_mode) {
-    // 如果有保存的模式，直接使用
+    // If there is a saved mode, use it directly
     kbSelectionMode.value = formData.value.config.kb_selection_mode;
   } else if (formData.value.config.knowledge_bases?.length > 0) {
-    // 有指定知识库
+    // There are specific knowledge bases
     kbSelectionMode.value = 'selected';
   } else {
     kbSelectionMode.value = 'none';
   }
 };
 
-// 初始化 MCP 选择模式
+// Initialize the MCP selection mode
 const initMcpSelectionMode = () => {
   if (formData.value.config.mcp_selection_mode) {
-    // 如果有保存的模式，直接使用
+    // If there is a saved mode, use it directly
     mcpSelectionMode.value = formData.value.config.mcp_selection_mode;
   } else if (formData.value.config.mcp_services?.length > 0) {
-    // 有指定 MCP 服务
+    // There are specific MCP services
     mcpSelectionMode.value = 'selected';
   } else {
     mcpSelectionMode.value = 'none';
   }
 };
 
-// 初始化 Skills 选择模式
+// Initialize the Skills selection mode
 const initSkillsSelectionMode = () => {
   if (formData.value.config.skills_selection_mode) {
-    // 如果有保存的模式，直接使用
+    // If there is a saved mode, use it directly
     skillsSelectionMode.value = formData.value.config.skills_selection_mode;
   } else if (formData.value.config.selected_skills?.length > 0) {
-    // 有指定 Skills
+    // There are specific Skills
     skillsSelectionMode.value = 'selected';
   } else {
     skillsSelectionMode.value = 'none';
@@ -3732,18 +3732,18 @@ const initSkillsSelectionMode = () => {
   autoBindSoleSandbox();
 };
 
-// 内置智能体：填入系统默认值
+// Built-in agent: fill in the system defaults
 const fillBuiltinAgentDefaults = () => {
   const config = formData.value.config;
   const isAgent = config.agent_mode === 'smart-reasoning';
 
   if (isAgent) {
-    // Agent 模式：使用 agent-config 的默认提示词
+    // Agent mode: use the default prompt from agent-config
     if (!config.system_prompt && defaultAgentSystemPrompt.value) {
       config.system_prompt = defaultAgentSystemPrompt.value;
     }
   } else {
-    // 普通模式：默认系统提示词、上下文模板等来自 prompt-templates 的 default 项
+    // Normal mode: the default system prompt, context template and so on come from the prompt-templates default entry
     if (!config.system_prompt && defaultNormalSystemPrompt.value) {
       config.system_prompt = defaultNormalSystemPrompt.value;
     }
@@ -3752,7 +3752,7 @@ const fillBuiltinAgentDefaults = () => {
     }
   }
 
-  // 通用默认值
+  // Generic defaults
   if (!config.rewrite_prompt_system && defaultRewritePromptSystem.value) {
     config.rewrite_prompt_system = defaultRewritePromptSystem.value;
   }
@@ -3767,30 +3767,30 @@ const fillBuiltinAgentDefaults = () => {
   }
 };
 
-// 监听知识库选择模式变化
+// Watch the knowledge base selection mode
 watch(kbSelectionMode, (mode) => {
   formData.value.config.kb_selection_mode = mode;
   if (mode === 'none') {
-    // 不使用知识库，清空相关配置
+    // No knowledge base: clear the related config
     formData.value.config.knowledge_bases = [];
   } else if (mode === 'all') {
-    // 全部知识库，清空指定列表
+    // All knowledge bases: clear the specific list
     formData.value.config.knowledge_bases = [];
   }
-  // selected 模式保持 knowledge_bases 不变
+  // selected mode keeps knowledge_bases unchanged
 });
 
-// 监听 MCP 选择模式变化
+// Watch the MCP selection mode
 watch(mcpSelectionMode, (mode) => {
   formData.value.config.mcp_selection_mode = mode;
   if (mode === 'none') {
-    // 不使用 MCP，清空相关配置
+    // No MCP: clear the related config
     formData.value.config.mcp_services = [];
   } else if (mode === 'all') {
-    // 全部 MCP，清空指定列表
+    // All MCP: clear the specific list
     formData.value.config.mcp_services = [];
   }
-  // selected 模式保持 mcp_services 不变
+  // selected mode keeps mcp_services unchanged
 });
 
 watch(() => formData.value.config.sandbox_config_id, async () => {
@@ -3825,28 +3825,28 @@ watch(
   { flush: 'post' },
 )
 
-// 监听 Skills 选择模式变化
+// Watch the Skills selection mode
 watch(skillsSelectionMode, (mode) => {
   formData.value.config.skills_selection_mode = mode;
   if (mode === 'none') {
-    // 不使用 Skills，清空相关配置
+    // No Skills: clear the related config
     formData.value.config.selected_skills = [];
   } else if (mode === 'all') {
-    // 全部 Skills，清空指定列表
+    // All Skills: clear the specific list
     formData.value.config.selected_skills = [];
     autoBindSoleSandbox()
   } else {
     autoBindSoleSandbox()
   }
-  // selected 模式保持 selected_skills 不变
+  // selected mode keeps selected_skills unchanged
 });
 
-// 监听模式变化，自动调整配置
+// Watch mode changes and adjust the config automatically
 watch(agentMode, (val, _oldVal) => {
   if (val === 'smart-reasoning') {
-    // 切换到 Agent 模式，根据知识库配置启用工具。
-    // 注意：默认不注入 thinking / todo_write —— 它们用于显式反思或多步计划，
-    // 会显著增加 token 消耗，用户按需手动勾选。
+    // Switching to Agent mode: enable tools based on the knowledge base config.
+    // Note: thinking / todo_write are not injected by default; they are for explicit reflection or multi-step plans
+    // and raise token use noticeably, so users check them by hand as needed.
     if (formData.value.config.allowed_tools.length === 0) {
       const tools: string[] = [];
       if (hasRagKnowledgeBase.value) {
@@ -3860,7 +3860,7 @@ watch(agentMode, (val, _oldVal) => {
     if (formData.value.config.max_iterations >= 0 && formData.value.config.max_iterations <= 1) {
       formData.value.config.max_iterations = 10;
     }
-    // 切换到 Agent 模式时，如果系统提示词是快速问答的默认值或为空，替换为 Agent 默认提示词
+    // When switching to Agent mode, if the system prompt is the Quick Answer default or empty, replace it with the Agent default prompt
     if (defaultAgentSystemPrompt.value) {
       const isDefaultNormalPrompt = formData.value.config.system_prompt === defaultNormalSystemPrompt.value;
       if (!formData.value.config.system_prompt || isDefaultNormalPrompt) {
@@ -3868,17 +3868,17 @@ watch(agentMode, (val, _oldVal) => {
       }
     }
   } else {
-    // 切换到普通模式，清空工具
+    // Switching to normal mode: clear the tools
     formData.value.config.allowed_tools = [];
-    formData.value.config.max_iterations = 1; // 设置为1表示单轮 RAG
-    // 切换到快速问答模式时，如果系统提示词是 Agent 的默认值或为空，替换为快速问答默认提示词
+    formData.value.config.max_iterations = 1; // 1 means single-turn RAG
+    // When switching to Quick Answer mode, if the system prompt is the Agent default or empty, replace it with the Quick Answer default prompt
     if (defaultNormalSystemPrompt.value) {
       const isDefaultAgentPrompt = formData.value.config.system_prompt === defaultAgentSystemPrompt.value;
       if (!formData.value.config.system_prompt || isDefaultAgentPrompt) {
         formData.value.config.system_prompt = defaultNormalSystemPrompt.value;
       }
     }
-    // 其他提示词只在为空时填充
+    // Other prompts are filled only when empty
     if (!formData.value.config.context_template && defaultContextTemplate.value) {
       formData.value.config.context_template = defaultContextTemplate.value;
     }
@@ -3897,34 +3897,34 @@ watch(agentMode, (val, _oldVal) => {
   }
 });
 
-// 监听知识库启用状态变化：
-//   - 从"无"变"有"：自动补齐 RAG 基础工具，方便用户开箱即用（仅 seed 行为）；
-//   - 从"有"变"无"：**不再**自动擦工具，依赖不满足时由 `availableTools` 灰显
-//     + 运行时工具注册器过滤。`allowed_tools` 代表用户意图，只应在用户显式操作
-//     （切 agent_type / 切 agent_mode / 手勾工具）时变更。
-// 历史背景：旧版本在 KB 能力消失时会擦除 KB/Wiki 工具，导致用户切换
-// `kb_selection_mode` 到 "selected"、但尚未勾具体 KB 的过渡期里静默丢失工具，
-// 对默认工具全是 wiki_* 的内置"维基问答"智能体尤为致命。
+// Watch the knowledge base enabled state:
+//   - from "none" to "some": fill in the basic RAG tools automatically, so it works out of the box (seed only);
+//   - from "some" to "none": tools are **no longer** wiped automatically; unmet dependencies are grayed out by `availableTools`
+//     + filtered by the runtime tool registry. `allowed_tools` represents user intent and should change only on explicit user actions
+//     (switching agent_type / switching agent_mode / checking tools by hand).
+// Background: older versions wiped the KB/wiki tools when KB capability disappeared, so a user switching
+// `kb_selection_mode` to "selected" without checking specific KBs yet silently lost tools in that transition,
+// which was especially fatal for the built-in "Wiki Q&A" agent whose default tools are all wiki_*.
 watch(hasKnowledgeBase, (hasKB, oldHasKB) => {
-  // 如果当前在检索策略页面但没有知识库能力了，切换到基础设置
+  // If the current page is the retrieval strategy page but knowledge base capability is gone, switch to basic settings
   if (!hasKB && currentSection.value === 'retrieval') {
     currentSection.value = 'basic';
   }
 
-  // 初始化期间或非 Agent 模式下不自动调整工具
+  // Do not adjust tools automatically during initialization or outside Agent mode
   if (isInitializing.value || !isAgentMode.value) return;
 
   if (hasKB && !oldHasKB) {
-    // 从无知识库变为有知识库，seed 默认的 RAG 工具（仅补齐未勾的）
+    // From no knowledge base to a knowledge base: seed the default RAG tools (filling in only unchecked ones)
     const currentTools = formData.value.config.allowed_tools || [];
     const toolsToAdd = knowledgeBaseTools.filter((tool: string) => !currentTools.includes(tool));
     formData.value.config.allowed_tools = [...currentTools, ...toolsToAdd];
   }
 });
 
-// 监听运行模式变化，自动切换页面
+// Watch run mode changes and switch pages automatically
 watch(isAgentMode, (isAgent) => {
-  // 如果当前在高级设置或检索策略页面但切换到了Agent模式，切换到基础设置
+  // If the current page is advanced settings or retrieval strategy but the mode switched to Agent, switch to basic settings
   if (isAgent && (currentSection.value === 'advanced' || currentSection.value === 'retrieval')) {
     currentSection.value = 'basic';
   }
@@ -3933,7 +3933,7 @@ watch(isAgentMode, (isAgent) => {
   }
 });
 
-// 监听设置弹窗关闭，刷新模型列表
+// Watch the settings modal closing and refresh the model list
 watch(() => uiStore.showSettingsModal, async (visible, prevVisible) => {
   if (prevVisible && !visible && props.visible) {
     try {
@@ -4008,7 +4008,7 @@ const applyPromptTemplateDefaults = (cfg: PromptTemplatesConfig | null) => {
   }
 };
 
-// 加载依赖数据（复用空间级缓存，避免重复请求）
+// Load the dependency data (reusing the workspace-level cache to avoid repeat requests)
 const loadDependencies = async () => {
   try {
     await Promise.all([
@@ -4052,7 +4052,7 @@ const loadDependencies = async () => {
   }
 };
 
-// 跳转到模型管理页面添加模型
+// Go to the model management page to add a model
 const handleAddModel = (subSection: string) => {
   uiStore.openSettings('models', subSection);
 };
@@ -4081,7 +4081,7 @@ const modalShell = useModalShell({
     fallbackPromptPopup.value.show,
 });
 
-// 过滤后的占位符列表
+// Filtered placeholder list
 const filteredPlaceholders = computed(() => {
   if (!placeholderPrefix.value) {
     return availablePlaceholders.value;
@@ -4092,7 +4092,7 @@ const filteredPlaceholders = computed(() => {
   );
 });
 
-// 过滤后的上下文模板占位符列表
+// Filtered context template placeholder list
 const filteredContextPlaceholders = computed(() => {
   if (!contextPlaceholderPrefix.value) {
     return contextTemplatePlaceholders.value;
@@ -4103,7 +4103,7 @@ const filteredContextPlaceholders = computed(() => {
   );
 });
 
-// 过滤后的改写系统提示词占位符列表
+// Filtered rewrite system prompt placeholder list
 const filteredRewriteSystemPlaceholders = computed(() => {
   if (!rewriteSystemPopup.value.prefix) {
     return rewriteSystemPlaceholders.value;
@@ -4114,7 +4114,7 @@ const filteredRewriteSystemPlaceholders = computed(() => {
   );
 });
 
-// 过滤后的改写用户提示词占位符列表
+// Filtered rewrite user prompt placeholder list
 const filteredRewriteUserPlaceholders = computed(() => {
   if (!rewriteUserPopup.value.prefix) {
     return rewritePlaceholders.value;
@@ -4125,7 +4125,7 @@ const filteredRewriteUserPlaceholders = computed(() => {
   );
 });
 
-// 过滤后的兜底提示词占位符列表
+// Filtered fallback prompt placeholder list
 const filteredFallbackPlaceholders = computed(() => {
   if (!fallbackPromptPopup.value.prefix) {
     return fallbackPlaceholders.value;
@@ -4136,7 +4136,7 @@ const filteredFallbackPlaceholders = computed(() => {
   );
 });
 
-// 获取 textarea 元素
+// Get the textarea element
 const getTextareaElement = (): HTMLTextAreaElement | null => {
   if (promptTextareaRef.value) {
     if (promptTextareaRef.value.$el) {
@@ -4149,7 +4149,7 @@ const getTextareaElement = (): HTMLTextAreaElement | null => {
   return null;
 };
 
-// 计算光标位置
+// Compute the caret position
 const calculateCursorPosition = (textarea: HTMLTextAreaElement) => {
   const cursorPos = textarea.selectionStart;
   const textBeforeCursor = formData.value.config.system_prompt.substring(0, cursorPos);
@@ -4163,12 +4163,12 @@ const calculateCursorPosition = (textarea: HTMLTextAreaElement) => {
   const paddingTop = parseFloat(style.paddingTop) || 0;
   const paddingLeft = parseFloat(style.paddingLeft) || 0;
 
-  // 计算当前行号
+  // Compute the current line number
   const lines = textBeforeCursor.split('\n');
   const currentLine = lines.length - 1;
   const currentLineText = lines[currentLine];
 
-  // 创建临时 span 计算文本宽度
+  // Create a temporary span to measure the text width
   const span = document.createElement('span');
   span.style.font = style.font;
   span.style.visibility = 'hidden';
@@ -4187,7 +4187,7 @@ const calculateCursorPosition = (textarea: HTMLTextAreaElement) => {
   return { top, left };
 };
 
-// 检查并显示占位符提示
+// Check for and show the placeholder hint
 const checkAndShowPlaceholderPopup = () => {
   const textarea = getTextareaElement();
   if (!textarea) return;
@@ -4195,7 +4195,7 @@ const checkAndShowPlaceholderPopup = () => {
   const cursorPos = textarea.selectionStart;
   const textBeforeCursor = formData.value.config.system_prompt.substring(0, cursorPos);
 
-  // 查找最近的 {{ 位置
+  // Find the nearest {{ position
   let lastOpenPos = -1;
   for (let i = textBeforeCursor.length - 1; i >= 1; i--) {
     if (textBeforeCursor[i] === '{' && textBeforeCursor[i - 1] === '{') {
@@ -4232,7 +4232,7 @@ const checkAndShowPlaceholderPopup = () => {
   }
 };
 
-// 处理输入
+// Handle input
 const handlePromptInput = () => {
   if (placeholderPopupTimer) {
     clearTimeout(placeholderPopupTimer);
@@ -4242,7 +4242,7 @@ const handlePromptInput = () => {
   }, 50);
 };
 
-// 插入占位符
+// Insert a placeholder
 const insertPlaceholder = (placeholderName: string, fromPopup: boolean = false) => {
   const textarea = getTextareaElement();
   if (!textarea) return;
@@ -4257,7 +4257,7 @@ const insertPlaceholder = (placeholderName: string, fromPopup: boolean = false) 
     const textBeforeCursor = currentValue.substring(0, cursorPos);
     const textAfterCursor = currentValue.substring(cursorPos);
 
-    // 只有从下拉列表选择时才查找 {{ 并替换
+    // Only look up and replace {{ when chosen from the dropdown
     if (fromPopup) {
       let lastOpenPos = -1;
       for (let i = textBeforeCursor.length - 1; i >= 1; i--) {
@@ -4281,7 +4281,7 @@ const insertPlaceholder = (placeholderName: string, fromPopup: boolean = false) 
       }
     }
 
-    // 直接在光标位置插入完整占位符
+    // Insert the full placeholder directly at the caret
     const newValue = textBeforeCursor + `{{${placeholderName}}}` + textAfterCursor;
     formData.value.config.system_prompt = newValue;
 
@@ -4293,7 +4293,7 @@ const insertPlaceholder = (placeholderName: string, fromPopup: boolean = false) 
   });
 };
 
-// 获取上下文模板 textarea 元素
+// Get the context template textarea element
 const getContextTemplateTextareaElement = (): HTMLTextAreaElement | null => {
   if (contextTemplateTextareaRef.value) {
     if (contextTemplateTextareaRef.value.$el) {
@@ -4306,7 +4306,7 @@ const getContextTemplateTextareaElement = (): HTMLTextAreaElement | null => {
   return null;
 };
 
-// 计算上下文模板光标位置
+// Compute the context template caret position
 const calculateContextCursorPosition = (textarea: HTMLTextAreaElement) => {
   const cursorPos = textarea.selectionStart;
   const textBeforeCursor = formData.value.config.context_template.substring(0, cursorPos);
@@ -4341,7 +4341,7 @@ const calculateContextCursorPosition = (textarea: HTMLTextAreaElement) => {
   return { top, left };
 };
 
-// 检查并显示上下文模板占位符提示
+// Check for and show the context template placeholder hint
 const checkAndShowContextPlaceholderPopup = () => {
   const textarea = getContextTemplateTextareaElement();
   if (!textarea) return;
@@ -4385,7 +4385,7 @@ const checkAndShowContextPlaceholderPopup = () => {
   }
 };
 
-// 处理上下文模板输入
+// Handle context template input
 const handleContextTemplateInput = () => {
   if (contextPlaceholderPopupTimer) {
     clearTimeout(contextPlaceholderPopupTimer);
@@ -4395,7 +4395,7 @@ const handleContextTemplateInput = () => {
   }, 50);
 };
 
-// 插入上下文模板占位符
+// Insert a context template placeholder
 const insertContextPlaceholder = (placeholderName: string, fromPopup: boolean = false) => {
   const textarea = getContextTemplateTextareaElement();
   if (!textarea) return;
@@ -4410,7 +4410,7 @@ const insertContextPlaceholder = (placeholderName: string, fromPopup: boolean = 
     const textBeforeCursor = currentValue.substring(0, cursorPos);
     const textAfterCursor = currentValue.substring(cursorPos);
 
-    // 只有从下拉列表选择时才查找 {{ 并替换
+    // Only look up and replace {{ when chosen from the dropdown
     if (fromPopup) {
       let lastOpenPos = -1;
       for (let i = textBeforeCursor.length - 1; i >= 1; i--) {
@@ -4434,7 +4434,7 @@ const insertContextPlaceholder = (placeholderName: string, fromPopup: boolean = 
       }
     }
 
-    // 直接在光标位置插入完整占位符
+    // Insert the full placeholder directly at the caret
     const newValue = textBeforeCursor + `{{${placeholderName}}}` + textAfterCursor;
     formData.value.config.context_template = newValue;
 
@@ -4467,7 +4467,7 @@ const setGenericPlaceholderFieldValue = (type: GenericPlaceholderType, value: st
   (formData.value.config as any)[genericPlaceholderFieldKeyMap[type]] = value;
 };
 
-// 通用获取 textarea 元素
+// Generic: get the textarea element
 const getGenericTextareaElement = (type: GenericPlaceholderType): HTMLTextAreaElement | null => {
   const refMap = {
     rewriteSystem: rewriteSystemTextareaRef,
@@ -4487,7 +4487,7 @@ const getGenericTextareaElement = (type: GenericPlaceholderType): HTMLTextAreaEl
   return null;
 };
 
-// 通用计算光标位置
+// Generic: compute the caret position
 const calculateGenericCursorPosition = (textarea: HTMLTextAreaElement, fieldValue: string) => {
   const cursorPos = textarea.selectionStart;
   const textBeforeCursor = fieldValue.substring(0, cursorPos);
@@ -4520,7 +4520,7 @@ const calculateGenericCursorPosition = (textarea: HTMLTextAreaElement, fieldValu
   return { top, left };
 };
 
-// 通用检查并显示占位符弹出
+// Generic: check for and show the placeholder popup
 const checkAndShowGenericPlaceholderPopup = (
   type: GenericPlaceholderType,
   popup: typeof rewriteSystemPopup,
@@ -4568,7 +4568,7 @@ const checkAndShowGenericPlaceholderPopup = (
   }
 };
 
-// 处理改写系统提示词输入
+// Handle rewrite system prompt input
 const handleRewriteSystemInput = () => {
   if (rewriteSystemPopup.value.timer) {
     clearTimeout(rewriteSystemPopup.value.timer);
@@ -4578,7 +4578,7 @@ const handleRewriteSystemInput = () => {
   }, 50);
 };
 
-// 处理改写用户提示词输入
+// Handle rewrite user prompt input
 const handleRewriteUserInput = () => {
   if (rewriteUserPopup.value.timer) {
     clearTimeout(rewriteUserPopup.value.timer);
@@ -4588,7 +4588,7 @@ const handleRewriteUserInput = () => {
   }, 50);
 };
 
-// 处理兜底提示词输入
+// Handle fallback prompt input
 const handleFallbackPromptInput = () => {
   if (fallbackPromptPopup.value.timer) {
     clearTimeout(fallbackPromptPopup.value.timer);
@@ -4598,7 +4598,7 @@ const handleFallbackPromptInput = () => {
   }, 50);
 };
 
-// 处理意图提示词输入
+// Handle intent prompt input
 const handleIntentPromptInput = () => {
   if (intentPromptPopup.value.timer) {
     clearTimeout(intentPromptPopup.value.timer);
@@ -4608,7 +4608,7 @@ const handleIntentPromptInput = () => {
   }, 50);
 };
 
-// 通用插入占位符
+// Generic: insert a placeholder
 const insertGenericPlaceholder = (type: GenericPlaceholderType, placeholderName: string, fromPopup: boolean = false) => {
   const textarea = getGenericTextareaElement(type);
   if (!textarea) return;
@@ -4632,7 +4632,7 @@ const insertGenericPlaceholder = (type: GenericPlaceholderType, placeholderName:
     const textBeforeCursor = currentValue.substring(0, cursorPos);
     const textAfterCursor = currentValue.substring(cursorPos);
 
-    // 只有从下拉列表选择时才查找 {{ 并替换
+    // Only look up and replace {{ when chosen from the dropdown
     if (fromPopup) {
       let lastOpenPos = -1;
       for (let i = textBeforeCursor.length - 1; i >= 1; i--) {
@@ -4656,7 +4656,7 @@ const insertGenericPlaceholder = (type: GenericPlaceholderType, placeholderName:
       }
     }
 
-    // 直接在光标位置插入完整占位符
+    // Insert the full placeholder directly at the caret
     const newValue = textBeforeCursor + `{{${placeholderName}}}` + textAfterCursor;
     setGenericPlaceholderFieldValue(type, newValue);
 
@@ -4668,7 +4668,7 @@ const insertGenericPlaceholder = (type: GenericPlaceholderType, placeholderName:
   });
 };
 
-// 设置上下文模板 textarea 事件监听
+// Set up the context template textarea event listeners
 const setupContextTemplateEventListeners = () => {
   nextTick(() => {
     const textarea = getContextTemplateTextareaElement();
@@ -4710,7 +4710,7 @@ const setupContextTemplateEventListeners = () => {
   });
 };
 
-// 设置 textarea 事件监听
+// Set up the textarea event listeners
 const setupTextareaEventListeners = () => {
   nextTick(() => {
     const textarea = getTextareaElement();
@@ -4752,7 +4752,7 @@ const setupTextareaEventListeners = () => {
   });
 };
 
-// 通用设置 textarea 事件监听
+// Generic: set up the textarea event listeners
 const setupGenericTextareaEventListeners = (
   type: GenericPlaceholderType,
   popup: typeof rewriteSystemPopup,
@@ -4799,7 +4799,7 @@ const setupGenericTextareaEventListeners = (
   });
 };
 
-// 处理点击占位符标签
+// Handle a click on a placeholder tag
 const handlePlaceholderClick = (type: 'system' | 'context' | 'rewriteSystem' | 'rewriteUser' | 'fallback' | 'intent', placeholderName: string) => {
   if (type === 'system') {
     insertPlaceholder(placeholderName);
@@ -4810,7 +4810,7 @@ const handlePlaceholderClick = (type: 'system' | 'context' | 'rewriteSystem' | '
   }
 };
 
-// 监听 visible 变化设置事件监听
+// Watch visible to set up the event listeners
 watch(() => props.visible, (val) => {
   if (val) {
     nextTick(() => {
@@ -4824,17 +4824,17 @@ watch(() => props.visible, (val) => {
   }
 });
 
-// 模板选择处理函数
+// Template selection handler
 const handleSystemPromptTemplateSelect = (template: PromptTemplate) => {
   formData.value.config.system_prompt = template.content;
   formData.value.config.system_prompt_id = template.id;
 };
 
-// Agent 系统提示词的"恢复默认"：
-// 当前选中了非 custom 的智能体类型时，"默认"应当是该类型预设绑定的提示词
-// （比如 Wiki 问答 → wiki_researcher），而不是 agent_system_prompt 模板表里
-// 全局 default: true 的那一条。只有当类型为 custom 或找不到预设绑定的模板时，
-// 才回退到 PromptTemplateSelector 传来的全局默认模板。
+// "Restore default" for the Agent system prompt:
+// when a non-custom agent type is selected, the "default" should be the prompt bound to that type's preset
+// (for example Wiki Q&A → wiki_researcher), not the global default: true entry in the
+// agent_system_prompt template table. Only when the type is custom or no template is bound to the preset
+// does it fall back to the global default template passed by PromptTemplateSelector.
 const handleAgentSystemPromptResetDefault = (fallback: PromptTemplate) => {
   const typeId = agentType.value;
   if (typeId && typeId !== 'custom') {
@@ -4849,7 +4849,7 @@ const handleAgentSystemPromptResetDefault = (fallback: PromptTemplate) => {
       }
     }
   }
-  // Fallback：没有合适的类型预设，用 PromptTemplateSelector 找到的全局默认
+  // Fallback: no suitable type preset, so use the global default PromptTemplateSelector found
   formData.value.config.system_prompt = fallback.content;
   formData.value.config.system_prompt_id = fallback.id;
 };
@@ -4875,14 +4875,14 @@ const handleFallbackPromptTemplateSelect = (template: PromptTemplate) => {
   formData.value.config.fallback_prompt = template.content;
 };
 
-// 辅助函数：检查提示词是否包含指定占位符
+// Helper: check whether a prompt contains the given placeholder
 const hasPlaceholder = (text: string | undefined, placeholder: string): boolean => {
   if (!text) return false;
   return text.includes(`{{${placeholder}}}`);
 };
 
 const handleSave = async () => {
-  // 验证必填项（内置智能体不验证名称和系统提示词）
+  // Validate required fields (built-in agents skip name and system prompt validation)
   if (!isBuiltinAgent.value) {
     if (!formData.value.name || !formData.value.name.trim()) {
       MessagePlugin.error(t('agent.editor.nameRequired'));
@@ -4890,14 +4890,14 @@ const handleSave = async () => {
       return;
     }
 
-    // 自定义智能体必须填写系统提示词
+    // A custom agent must have a system prompt
     if (!formData.value.config.system_prompt || !formData.value.config.system_prompt.trim()) {
       MessagePlugin.error(t('agent.editor.systemPromptRequired'));
       currentSection.value = 'prompts';
       return;
     }
 
-    // 自定义智能体普通模式必须填写上下文模板
+    // A custom agent in normal mode must have a context template
     if (!isAgentMode.value && (!formData.value.config.context_template || !formData.value.config.context_template.trim())) {
       MessagePlugin.error(t('agent.editor.contextTemplateRequired'));
       currentSection.value = 'prompts';
@@ -4905,10 +4905,10 @@ const handleSave = async () => {
     }
   }
 
-  // 校验占位符（普通模式 + 开启多轮对话改写）
+  // Validate placeholders (normal mode + multi-turn conversation rewrite on)
   if (!isAgentMode.value && formData.value.config.multi_turn_enabled && formData.value.config.enable_rewrite) {
     const rewritePrompt = formData.value.config.rewrite_prompt_user || '';
-    // 只有用户自定义了改写提示词时才校验
+    // Validate only when the user customized the rewrite prompt
     if (rewritePrompt.trim()) {
       if (!hasPlaceholder(rewritePrompt, 'query')) {
         MessagePlugin.error(t('agent.editor.queryMissingInRewrite'));
@@ -4918,10 +4918,10 @@ const handleSave = async () => {
     }
   }
 
-  // 校验占位符（兜底策略为模型生成时）
+  // Validate placeholders (when the fallback strategy is model-generated)
   if (!isAgentMode.value && formData.value.config.fallback_strategy === 'model') {
     const fallbackPrompt = formData.value.config.fallback_prompt || '';
-    // 只有用户自定义了兜底提示词时才校验
+    // Validate only when the user customized the fallback prompt
     if (fallbackPrompt.trim() && !hasPlaceholder(fallbackPrompt, 'query')) {
       MessagePlugin.error(t('agent.editor.queryMissingInFallback'));
       currentSection.value = 'prompts';
@@ -4935,15 +4935,15 @@ const handleSave = async () => {
     return;
   }
 
-  // 校验 VLM 模型（当图片上传启用时必填）
+  // Validate the VLM model (required when image upload is enabled)
   if (formData.value.config.image_upload_enabled && !formData.value.config.vlm_model_id) {
     MessagePlugin.error(t('agentEditor.imageUpload.vlmModelRequired'));
     currentSection.value = 'multimodal';
     return;
   }
 
-  // ReRank 模型按运行范围按需使用：知识库范围为 none，或未启用
-  // search_knowledge 时不需要；其余情况由对话入口在使用前给出明确提示。
+  // The ReRank model is used on demand by run scope: it is not needed when the knowledge base scope is none or
+  // search_knowledge is not enabled; otherwise the chat entry gives a clear hint before use.
 
   formData.value.config.question_suggestions.starters.items =
     formData.value.config.question_suggestions.starters.items
@@ -4990,8 +4990,8 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="less">
-// 复用创建知识库的样式
-/* 左侧导航：与「头像-设置」弹窗对齐 */
+// Reuse the create knowledge base styles
+/* Left nav: aligned with the "Avatar → Settings" modal */
 .section--prompts {
   flex: 1;
   min-height: 0;
@@ -5157,7 +5157,7 @@ const handleSave = async () => {
   }
 }
 
-// 与知识库设置一致的 settings-group 样式
+// settings-group styles, consistent with the knowledge base settings
 .settings-group {
   display: flex;
   flex-direction: column;
@@ -5211,8 +5211,8 @@ const handleSave = async () => {
     }
   }
 
-  // 强调行：用于"智能体类型"这类对用户影响最大、需要突出的关键配置。
-  // 视觉上只做极轻度强调 —— 左侧 3px 品牌色竖条 + label 加粗。
+  // Emphasized row: for key configs such as "Agent type" that affect users most and need to stand out.
+  // Visually only a very light emphasis: a 3px brand-color bar on the left + a bold label.
   &.setting-row--emphasize {
     position: relative;
     padding-left: 14px;
@@ -5330,7 +5330,7 @@ const handleSave = async () => {
     }
   }
 
-  // 让 select 和 input 占满控件区域
+  // Make select and input fill the control area
   :deep(.t-select),
   :deep(.t-input),
   :deep(.t-textarea) {
@@ -5503,7 +5503,7 @@ const handleSave = async () => {
   word-break: break-word;
 }
 
-// 名称输入框带头像预览
+// Name input with an avatar preview
 .name-input-wrapper {
   display: flex;
   align-items: center;
@@ -5551,7 +5551,7 @@ const handleSave = async () => {
   }
 }
 
-/* 滚动条：与设置弹窗一致 */
+/* Scrollbar: consistent with the settings modal */
 .content-wrapper::-webkit-scrollbar {
   width: 6px;
 }
@@ -5569,7 +5569,7 @@ const handleSave = async () => {
   background: var(--td-gray-color-6);
 }
 
-// 模式提示样式
+// Mode hint styles
 .mode-hint {
   display: flex;
   align-items: center;
@@ -5582,8 +5582,8 @@ const handleSave = async () => {
   line-height: 1.5;
 }
 
-// 过渡动画
-// Slider 样式
+// Transition animation
+// Slider styles
 .slider-wrapper {
   display: flex;
   align-items: center;
@@ -5610,7 +5610,7 @@ const handleSave = async () => {
   color: var(--td-text-color-placeholder);
 }
 
-// 推荐问题列表
+// Suggested question list
 .suggested-prompts-list {
   display: flex;
   flex-direction: column;
@@ -5628,7 +5628,7 @@ const handleSave = async () => {
   }
 }
 
-// 开场 / 回答后推荐用顶部 tab 区分（参照模型管理），避免整块包围框
+// Opening / after-answer suggestions are split by top tabs (modeled on model management), avoiding a whole surrounding box
 .suggestion-tabs {
   margin-bottom: 4px;
 
@@ -5640,7 +5640,7 @@ const handleSave = async () => {
     display: none;
   }
 
-  // 只用 tab 作导航，内容自行渲染在下方
+  // Tabs are only for navigation; the content renders itself below
   :deep(.t-tabs__content) {
     display: none;
   }
@@ -5670,8 +5670,8 @@ const handleSave = async () => {
   }
 }
 
-// 计数徽标紧贴标签，避免在整宽行里被 space-between 甩开
-// 需与基础 `.setting-info .setting-info-header`（space-between）同等特异性才能覆盖
+// The count badge sits right next to the label, so space-between does not fling it away in a full-width row
+// It needs the same specificity as the base `.setting-info .setting-info-header` (space-between) to override it
 .setting-info-header.setting-info-header--inline {
   justify-content: flex-start;
   gap: 8px;
@@ -5697,7 +5697,7 @@ const handleSave = async () => {
   width: 100%;
 }
 
-// ===== 工具配置：overview 面板 =====
+// ===== Tool config: overview panel =====
 .tools-overview {
   display: flex;
   flex-direction: column;
@@ -5765,7 +5765,7 @@ const handleSave = async () => {
   }
 }
 
-// ===== 按组的卡片网格 =====
+// ===== Card grid by group =====
 .tool-groups {
   display: flex;
   flex-direction: column;
@@ -5829,7 +5829,7 @@ const handleSave = async () => {
   }
 }
 
-// 不同分组的左侧色条
+// Left color bar per group
 .tool-group--base .tool-group-bar {
   background: var(--td-gray-color-6);
 }
@@ -5854,7 +5854,7 @@ const handleSave = async () => {
   background: var(--td-cyan-6, #09a3b7);
 }
 
-// 统一两列网格；小屏退化单列
+// A uniform two-column grid; single column on small screens
 .tool-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5866,9 +5866,9 @@ const handleSave = async () => {
   }
 }
 
-// ===== 工具卡片（基于 t-checkbox 的 label 结构） =====
+// ===== Tool cards (based on the t-checkbox label structure) =====
 .tool-card {
-  margin: 0; // 清掉 TDesign checkbox 默认外边距
+  margin: 0; // clear TDesign checkbox's default margin
   padding: 12px 14px;
   background: var(--td-bg-color-container);
   border-radius: var(--app-radius-md);
@@ -5882,7 +5882,7 @@ const handleSave = async () => {
     background: var(--td-brand-color-1);
   }
 
-  // checkbox 的勾选框 + label 改造
+  // Reshape the checkbox's check box + label
   :deep(.t-checkbox__input) {
     margin-top: 2px;
     flex-shrink: 0;
@@ -5982,7 +5982,7 @@ const handleSave = async () => {
   }
 }
 
-// ===== 有效工具预览（芯片组）=====
+// ===== Effective tools preview (chip group) =====
 .effective-tools {
   display: flex;
   flex-wrap: wrap;
@@ -6243,7 +6243,7 @@ const handleSave = async () => {
   }
 }
 
-// textarea 与模板选择器容器
+// textarea and template selector container
 .textarea-with-template {
   position: relative;
   width: 100%;
@@ -6302,7 +6302,7 @@ const handleSave = async () => {
   line-height: 1.5;
 }
 
-// 系统提示词输入框样式
+// System prompt input styles
 .system-prompt-textarea {
   width: 100%;
   font-family: var(--app-font-family-mono);
@@ -6314,7 +6314,7 @@ const handleSave = async () => {
   }
 }
 
-// 占位符标签组样式
+// Placeholder tag group styles
 .placeholder-tags {
   margin-top: 6px;
   display: flex;
@@ -6326,7 +6326,7 @@ const handleSave = async () => {
   white-space: nowrap;
   padding-bottom: 4px;
 
-  // 隐藏滚动条但保持可滚动
+  // Hide the scrollbar but keep it scrollable
   scrollbar-width: thin;
 
   &::-webkit-scrollbar {
@@ -6445,7 +6445,7 @@ const handleSave = async () => {
   }
 }
 
-// 内置智能体头像
+// Built-in agent avatar
 .builtin-avatar {
   display: flex;
   align-items: center;
@@ -6466,7 +6466,7 @@ const handleSave = async () => {
   }
 }
 
-// 提示词开关
+// Prompt switch
 .prompt-toggle {
   display: flex;
   align-items: center;
@@ -6479,7 +6479,7 @@ const handleSave = async () => {
   }
 }
 
-// 提示词禁用提示
+// Prompt disabled hint
 .prompt-disabled-hint {
   color: var(--td-text-color-placeholder);
   font-size: var(--app-text-md);
@@ -6489,7 +6489,7 @@ const handleSave = async () => {
   border-radius: var(--app-radius-sm);
 }
 
-// 系统提示词Tabs
+// System prompt tabs
 .system-prompt-tabs {
   width: 100%;
 
@@ -6500,7 +6500,7 @@ const handleSave = async () => {
   }
 }
 
-// 知识库选项样式
+// Knowledge base option styles
 .kb-option-item {
   display: flex;
   align-items: center;
@@ -6645,7 +6645,7 @@ const handleSave = async () => {
 
 .agent-type-popup {
   .t-select-option {
-    // 默认 option 是 32px 单行；我们要双行显示，取消固定高度并放宽 padding
+    // The default option is a 32px single line; we want two lines, so drop the fixed height and loosen the padding
     height: auto !important;
     min-height: 48px;
     line-height: 1.4;

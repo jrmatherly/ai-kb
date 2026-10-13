@@ -97,8 +97,8 @@ type KbTab = typeof validTabs[number]
 const initTab = validTabs.includes(route.query.tab as any) ? (route.query.tab as KbTab) : 'documents'
 const activeKbTab = ref<KbTab>(initTab);
 
-// Wiki 状态用于面包屑上的索引中指示。父组件自行拉取，避免依赖 WikiBrowser 挂载状态
-// （用户切到"文档" tab 时 WikiBrowser 会卸载，这里仍需持续反映后台索引进度）。
+// The wiki status drives the indexing indicator on the breadcrumb. The parent fetches it itself, so it does not depend on WikiBrowser being mounted
+// (WikiBrowser unmounts when the user switches to the "Documents" tab, but this still has to reflect background indexing progress).
 const wikiStatus = ref<{ pendingTasks: number; isActive: boolean; pendingIssues: number }>({
   pendingTasks: 0,
   isActive: false,
@@ -163,7 +163,7 @@ const fetchWikiStatusOnce = async () => {
       isActive: !!data.is_active,
       pendingIssues: data.pending_issues || 0,
     }
-    // 活跃时轮询，空闲时停掉定时器，避免无谓请求
+    // Poll while active and stop the timer while idle, to avoid needless requests
     if (wikiIsIndexing.value) {
       if (!wikiStatusTimer) {
         wikiStatusTimer = setInterval(fetchWikiStatusOnce, 5000)
@@ -173,10 +173,10 @@ const fetchWikiStatusOnce = async () => {
     }
   } catch (_) { /* ignore */ }
 }
-// 用户刚触发了一个上传 / reparse / URL 导入之类的动作后，后台通常要过
-// 一小段时间才会把 wiki 任务真正塞进队列；如果这时空闲轮询刚好停了，
-// 面包屑的"索引中"会延迟很久才亮起。所以这里安排几次退避重试，
-// 主动把面包屑的 loading 尽快点亮，一旦探测到任务就会走正常的 5s 轮询。
+// Right after the user triggers an upload / reparse / URL import or similar, the backend usually takes
+// a little while before the wiki task actually lands in the queue; if the idle polling has just stopped,
+// the breadcrumb's "Indexing" would light up very late. So schedule a few backoff retries here
+// to light up the breadcrumb loading as soon as possible; once a task is detected the normal 5s polling takes over.
 const scheduleWikiStatusProbes = () => {
   if (!kbId.value || !isWiki.value) return
   clearWikiStatusProbes()
@@ -516,7 +516,7 @@ const handleBatchDownload = async () => {
     document.body.appendChild(link);
     link.click();
     link.remove();
-    // 延迟释放，给浏览器留出开始保存文件的时间。
+    // Release after a delay, giving the browser time to start saving the file.
     window.setTimeout(() => URL.revokeObjectURL(url), 60000);
     MessagePlugin.success(t('knowledgeBase.batchDownloadStarted'));
   } catch (error: any) {
@@ -1035,7 +1035,7 @@ const handleTagFilterChange = (tagIds: string[]) => {
     id, tagMap.value[id]?.name || selectedTagNames.value[id] || t('knowledgeBase.columnTag'),
   ]));
   selectedTagIds.value = tagIds;
-  // 同步更新 store 中的 selectedTagIds，供 menu.vue 上传时使用
+  // Keep selectedTagIds in the store in sync, for menu.vue to use on upload
   uiStore.clearSelectedTagIds();
   tagIds.forEach(id => uiStore.toggleSelectedTagId(id));
   resetPage();
@@ -1066,7 +1066,7 @@ const loadKnowledgeBaseInfo = async (targetKbId: string, force = false) => {
     selectedTagIds.value = [];
     selectedTagNames.value = {};
     uiStore.clearSelectedTagIds();
-    // 重置store中的标签选择状态，避免上传文档时自动带上之前选择的标签
+    // Reset the tag selection in the store, so uploading a document does not carry the previously selected tags
     uiStore.clearSelectedTagIds();
     if (!isFAQ.value) {
       loadKnowledgeFiles(targetKbId);
@@ -1119,7 +1119,7 @@ const loadKnowledgeList = async () => {
   }
 };
 
-// 监听路由参数变化，重新获取知识库内容
+// Watch route parameter changes and refetch the knowledge base content
 // Sync activeKbTab to URL query so it survives page refresh
 watch(activeKbTab, (tab) => {
   const query = { ...route.query }
@@ -1174,7 +1174,7 @@ watch(tagSearchQuery, (newVal, oldVal) => {
   }, 300);
 });
 
-// 监听文档搜索关键词变化
+// Watch the document search keyword
 watch(docSearchKeyword, (newVal, oldVal) => {
   if (newVal === oldVal) return;
   if (docSearchDebounce) {
@@ -1188,7 +1188,7 @@ watch(docSearchKeyword, (newVal, oldVal) => {
   }, 300);
 });
 
-// 监听文件类型筛选变化
+// Watch the file type filter
 watch(selectedFileType, (newVal, oldVal) => {
   if (newVal === oldVal) return;
   if (kbId.value) {
@@ -1197,7 +1197,7 @@ watch(selectedFileType, (newVal, oldVal) => {
   }
 });
 
-// 监听解析状态/来源/更新时间范围筛选变化（与文件类型行为一致）
+// Watch the parse status / source / update time range filters (same behavior as the file type)
 watch([selectedParseStatus, selectedSource, updatedTimeRange], () => {
   if (kbId.value) {
     resetPage();
@@ -1205,8 +1205,8 @@ watch([selectedParseStatus, selectedSource, updatedTimeRange], () => {
   }
 }, { deep: true });
 
-// 切换目录只改变列表范围，行为与其他筛选一致。浏览态与筛选态之间的切换由各筛选项
-// 自身的 watcher 触发刷新，这里不重复请求。
+// Switching folders only changes the list scope, the same as the other filters. Switching between browse and filter state is
+// refreshed by each filter's own watcher, so no repeat request here.
 watch(selectedFolderPath, () => {
   if (!kbId.value || isFAQ.value) return;
   clearSelection();
@@ -1214,33 +1214,33 @@ watch(selectedFolderPath, () => {
   loadKnowledgeFiles(kbId.value);
 });
 
-// 监听文件上传事件
+// Watch the file upload event
 const handleFileUploaded = (event: CustomEvent) => {
   const uploadedKbId = event.detail.kbId;
-  console.log('接收到文件上传事件，上传的知识库ID:', uploadedKbId, '当前知识库ID:', kbId.value);
+  console.log('Received file upload event, uploaded knowledge base ID:', uploadedKbId, 'current knowledge base ID:', kbId.value);
   if (uploadedKbId && uploadedKbId === kbId.value && !isFAQ.value) {
     // Mid-batch refreshes (settled === false) only bring new rows and folders
     // in, and are skipped once the user scrolled past the first page because
     // reloading resets the list to it. The batch's final event refreshes fully.
     const midBatch = event.detail.settled === false;
     if (midBatch && page > 1) return;
-    console.log('匹配当前知识库，开始刷新文件列表');
-    // 如果上传的文件属于当前知识库，使用 loadKnowledgeFiles 刷新文件列表
+    console.log('Matches the current knowledge base, refreshing the file list');
+    // If the uploaded file belongs to the current knowledge base, refresh the file list with loadKnowledgeFiles
     resetPage(); // Reset page counter when reloading files after upload
     loadKnowledgeFiles(uploadedKbId);
     void loadFolderTree(uploadedKbId);
     if (midBatch) return;
     loadTags(uploadedKbId);
-    // 启动几次探测，尽快让面包屑的"索引中"亮起。
+    // Start a few probes so the breadcrumb's "Indexing" lights up as soon as possible.
     scheduleWikiStatusProbes();
   }
 };
 
 
-// 监听从菜单触发的URL导入事件
+// Watch the URL import event triggered from the menu
 const handleOpenURLImportDialog = (event: CustomEvent) => {
   const eventKbId = event.detail.kbId;
-  console.log('接收到URL导入对话框打开事件，知识库ID:', eventKbId, '当前知识库ID:', kbId.value);
+  console.log('Received URL import dialog open event, knowledge base ID:', eventKbId, 'current knowledge base ID:', kbId.value);
   if (eventKbId && eventKbId === kbId.value && !isFAQ.value) {
     if (ensureDocumentKbReady()) {
       uploadSourceRef.value?.openUrlDialog();
@@ -1475,7 +1475,7 @@ const updateStatus = (analyzeList: KnowledgeCard[], delay = 1500) => {
         updateStatus(stillPending, pollDelayFor(stillPending));
       }
     }).catch((_err) => {
-      // 错误处理
+      // Error handling
       const stillPending = cardList.value.filter(needsStatusPolling);
       if (stillPending.length > 0) {
         updateStatus(stillPending, pollDelayFor(stillPending));
@@ -1485,7 +1485,7 @@ const updateStatus = (analyzeList: KnowledgeCard[], delay = 1500) => {
 };
 
 
-// 恢复文档处理状态（用于刷新后恢复）
+// Restore the document processing state (for restoring after a refresh)
 
 const closeDoc = () => {
   isCardDetails.value = false;
@@ -1987,7 +1987,7 @@ const clearSelection = () => {
   lastSelectedIndex = -1;
 };
 
-// Batch (multi-select) mode mirrors the session list's "批量管理" UX: while off,
+// Batch (multi-select) mode mirrors the session list's "Batch manage" UX: while off,
 // no checkbox is rendered so the title doesn't jitter on hover; while on,
 // checkboxes are persistent and clicking a card toggles its selection.
 const batchMode = ref(false);
@@ -1995,13 +1995,13 @@ const toggleBatchMode = () => {
   batchMode.value = !batchMode.value;
   if (!batchMode.value) clearSelection();
 };
-// "取消选择" / 退出批量管理：清空选择，并退出 grid 视图下的批量模式。
+// "Clear selection" / exit batch manage: clear the selection and exit batch mode in the grid view.
 const handleBatchCancel = () => {
   clearSelection();
   batchMode.value = false;
 };
-// 切到卡片视图时，如果列表视图里已经勾选过文档，需要自动开启批量管理模式，
-// 否则卡片视图默认不渲染 checkbox，会看不到勾选态。
+// When switching to the card view with documents already checked in the list view, batch manage must turn on automatically,
+// otherwise the card view renders no checkbox by default and the checked state is invisible.
 watch(viewMode, (mode) => {
   if (mode === 'grid' && selectedIds.value.size > 0) {
     batchMode.value = true;
@@ -2247,7 +2247,7 @@ watch(cardList, () => {
   }
 }, { deep: false });
 
-// 处理知识库编辑成功后的回调
+// Callback after the knowledge base edit succeeds
 const handleKBEditorSuccess = (kbIdValue: string) => {
   chatResources.invalidateKnowledgeBaseDetail(kbIdValue);
   chatResources.invalidate('knowledgeBases');
@@ -2302,7 +2302,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
                 </t-tooltip>
               </div>
             </h2>
-            <!-- 标题行右侧的动作锚点：聚拢"信息"和"设置"两个圆形按钮。 -->
+            <!-- Action anchor on the right of the title row: groups the two round "Info" and "Settings" buttons. -->
             <div class="kb-title-actions">
               <KBInfoPopover v-if="kbInfo && !authStore.isLiteMode" :kb-info="kbInfo"
                 :supported-file-types="[...supportedFileTypes]" />
@@ -2317,7 +2317,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
           <p v-if="unsupportedFileTypes.length" class="parser-hint" @click="goToParserSettings">
             <t-icon name="info-circle" class="parser-hint-icon" />
             <span>{{$t('knowledgeBase.unsupportedTypesHint', {
-              types: unsupportedFileTypes.map(t => '.' + t).join('、')
+              types: unsupportedFileTypes.map(t => '.' + t).join(', ')
             })
               }}</span>
             <span class="parser-hint-link">{{ $t('knowledgeBase.goToParserSettings') }} →</span>
@@ -2507,7 +2507,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
                 <div v-if="docMarqueeVisible" class="doc-marquee-box"
                   :class="{ 'is-add': docMarqueeMode === 'add', 'is-subtract': docMarqueeMode === 'subtract' }"
                   :style="docMarqueeBoxStyle" aria-hidden="true" />
-                <!-- 文档骨架屏 -->
+                <!-- Document skeleton -->
                 <div v-if="docListLoading && !cardList.length && viewMode === 'list'" class="doc-list-skeleton">
                   <div v-for="n in 8" :key="n" class="doc-list-skeleton-row">
                     <t-skeleton animation="gradient" :row-col="[[{ width: '32px', height: '38px', type: 'rect' }, { width: '55%', height: '16px' }]]" />
@@ -2621,14 +2621,14 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
     </div>
   </template>
 
-  <!-- 知识库编辑器（创建/编辑统一组件） -->
+  <!-- Knowledge base editor (one component for create and edit) -->
   <KnowledgeBaseEditorModal :visible="uiStore.showKBEditorModal" :mode="uiStore.kbEditorMode"
     :kb-id="uiStore.currentKBId || undefined" :initial-type="uiStore.kbEditorType"
     @update:visible="(val) => val ? null : uiStore.closeKBEditor()" @success="handleKBEditorSuccess" />
 
   <ContextualGuide tour="kbDetail" :when="showKbDetailContextualGuide" />
 
-  <!-- 批量打标签弹窗 -->
+  <!-- Batch tagging dialog -->
   <BatchTagDialog @tags-changed="onTagCatalogChanged" :visible="batchTagDialogVisible"
     :count="selectedIds.size" :kb-id="kbId"
     :pre-selected-tag-ids="batchTagPreSelectedIds"
@@ -2637,7 +2637,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
 
 </template>
 <style>
-/* 下拉菜单容器样式已统一至 @/assets/dropdown-menu.less */
+/* Dropdown menu container styles are unified in @/assets/dropdown-menu.less */
 .document-filter-popup .t-popup__content {
   border: 1px solid var(--td-component-stroke);
   border-radius: var(--app-radius-xl);
@@ -2659,7 +2659,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
   box-sizing: border-box;
 }
 
-// View switch (文档 / Wiki / 图谱 / 画廊): a segmented control after the
+// View switch (Documents / Wiki / Graph / Gallery): a segmented control after the
 // breadcrumb, drawn like the documents tab's view toggle so the four views
 // read as siblings rather than as another breadcrumb level.
 .kb-view-tabs {
@@ -2742,7 +2742,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
   }
 }
 
-// 标签筛选浮层：点击工具栏入口展开，不占文档列表横向空间
+// Tag filter overlay: opens from the toolbar entry, taking no horizontal space from the document list
 
 .tag-content {
   flex: 1;
@@ -3100,7 +3100,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
   }
 }
 
-// Header 样式（无底部分割线，留更多空间给下方内容区）
+// Header styles (no bottom divider, leaving more room for the content area below)
 .document-header {
   display: flex;
   align-items: flex-start;
@@ -3329,7 +3329,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
 .doc-card-list {
   box-sizing: border-box;
   display: grid;
-  // 文档卡片信息量较大（标题 + 摘要 + 标签/类型），保持稍宽的最小列宽，避免一行塞太多导致内容拥挤。
+  // Document cards carry a lot (title + summary + tags/type), so keep a slightly wider minimum column width to avoid crowding a row.
   grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 10px;
   align-content: flex-start;

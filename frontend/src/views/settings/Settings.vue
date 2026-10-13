@@ -10,7 +10,7 @@
             'has-submenu': item.children && item.children.length > 0,
             'expanded': expandedMenus.includes(item.key)
           }]" @click="handleNavClick(item)">
-            <!-- 网络搜索使用自定义 SVG 图标 -->
+            <!-- Web search uses a custom SVG icon -->
             <svg v-if="item.key === 'websearch'" width="17" height="17" viewBox="0 0 18 18" fill="none"
               xmlns="http://www.w3.org/2000/svg" class="nav-icon">
               <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.2" fill="none" />
@@ -21,7 +21,7 @@
               <line x1="2.94" y1="12.5" x2="15.06" y2="12.5" stroke="currentColor" stroke-width="1.2"
                 stroke-linecap="round" />
             </svg>
-            <!-- AI KB Cloud 使用自定义 W 图标 -->
+            <!-- AI KB Cloud uses a custom W icon -->
             <svg v-else-if="item.key === 'weknoracloud'" width="17" height="17" viewBox="0 0 18 18"
               fill="none" xmlns="http://www.w3.org/2000/svg" class="nav-icon">
               <rect x="1.5" y="1.5" width="15" height="15" rx="3.5" stroke="currentColor" stroke-width="1.2"
@@ -29,7 +29,7 @@
               <path d="M4.5 5.5L6.5 12.5L9 7.5L11.5 12.5L13.5 5.5" stroke="currentColor" stroke-width="1.3"
                 stroke-linecap="round" stroke-linejoin="round" fill="none" />
             </svg>
-            <!-- 沙箱：隔离运行窗口，避免和 Ollama / 系统设置共用 server -->
+            <!-- Sandbox: an isolated run window, so it does not share a server with Ollama / system settings -->
             <svg v-else-if="item.key === 'sandbox'" width="17" height="17" viewBox="0 0 18 18" fill="none"
               xmlns="http://www.w3.org/2000/svg" class="nav-icon">
               <rect x="2.5" y="3" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.2"
@@ -46,7 +46,7 @@
               class="expand-icon" />
           </div>
 
-          <!-- 子菜单 -->
+          <!-- Submenu -->
           <Transition name="submenu">
             <div v-if="item.children && expandedMenus.includes(item.key)" class="submenu">
               <div v-for="(child, childIndex) in item.children" :key="childIndex"
@@ -64,9 +64,9 @@
       'content-wrapper--resource-list': ['models', 'mymemory', 'platform-api-keys', 'model-catalog', 'members', 'sandbox'].includes(currentSection),
       'content-wrapper--full': SYSTEM_ADMIN_SECTIONS.has(currentSection) || isIntegrationSection(currentSection),
     }">
-      <!-- 角色不允许访问当前 section（deep-link 进来 / 跨空间切换后角色降级）—— 优先于具体 section 渲染。
-           正常导航走 navItems filter 不会到这里，但 watch(navItems) 的 fallback 会在角色降级
-           的瞬间触发；这一段做兜底兼容旧 URL。 -->
+      <!-- The role may not access the current section (arrived by deep link / role downgraded after a cross-workspace switch); this renders before any specific section.
+           Normal navigation goes through the navItems filter and never lands here, but the watch(navItems) fallback fires at the moment
+           the role is downgraded; this block is the fallback that keeps old URLs working. -->
       <div v-if="!canSeeSection(currentSection)" class="section role-denied">
         <div class="role-denied-icon">
           <t-icon name="lock-on" size="48px" />
@@ -75,12 +75,12 @@
         <div class="role-denied-desc">{{ $t('settings.roleDenied.desc') }}</div>
       </div>
       <template v-else>
-        <!-- 常规设置 -->
+        <!-- General settings -->
         <div v-if="currentSection === 'general'" class="section">
           <GeneralSettings />
         </div>
 
-        <!-- Ollama 设置 -->
+        <!-- Ollama settings -->
         <div v-if="currentSection === 'ollama'" class="section">
           <OllamaSettings />
         </div>
@@ -90,62 +90,62 @@
           <WeKnoraCloudSettings />
         </div>
 
-        <!-- 模型配置 -->
+        <!-- Model config -->
         <div v-if="currentSection === 'models'" class="section">
           <ModelSettings />
         </div>
 
-        <!-- 网络搜索配置 -->
+        <!-- Web search config -->
         <div v-if="currentSection === 'websearch'" class="section">
           <WebSearchSettings />
         </div>
 
-        <!-- 消息管理 -->
+        <!-- Message management -->
         <div v-if="currentSection === 'chathistory'" class="section">
           <ChatHistorySettings />
         </div>
 
-        <!-- 长期记忆（空间级开关） -->
+        <!-- Long-term memory (workspace-level switch) -->
         <div v-if="currentSection === 'memory'" class="section">
           <MemoryWorkspaceSettings />
         </div>
 
-        <!-- 我的记忆（个人记忆管理） -->
+        <!-- My memory (personal memory management) -->
         <div v-if="currentSection === 'mymemory'" class="section">
           <MemorySettings />
         </div>
 
-        <!-- 沙箱密钥（成员自己的技能 / 沙箱密钥） -->
+        <!-- Sandbox secrets (the member's own skill / sandbox secrets) -->
         <div v-if="currentSection === 'envvars'" class="section">
           <EnvVarSettings />
         </div>
 
-        <!-- 向量数据库引擎 -->
+        <!-- Vector database engine -->
         <div v-if="currentSection === 'vectorstore'" class="section">
           <VectorStoreSettings />
         </div>
 
-        <!-- 解析引擎 -->
+        <!-- Parser engine -->
         <div v-if="currentSection === 'parser'" class="section">
           <ParserEngineSettings />
         </div>
 
-        <!-- 存储引擎 -->
+        <!-- Storage engine -->
         <div v-if="currentSection === 'storage'" class="section">
           <StorageBackendSettings />
         </div>
 
-        <!-- 沙箱 -->
+        <!-- Sandbox -->
         <div v-if="currentSection === 'sandbox'" class="section">
           <SandboxSettings />
         </div>
 
-        <!-- 系统信息 -->
+        <!-- System info -->
         <div v-if="currentSection === 'system'" class="section">
           <SystemInfo />
         </div>
 
-        <!-- 系统管理员可见的全局运行时设置 -->
+        <!-- Global runtime settings visible to system administrators -->
         <div v-if="currentSection === 'system-global'" class="section">
           <SystemSettings />
         </div>
@@ -154,7 +154,7 @@
           <ModelCatalog />
         </div>
 
-        <!-- 系统管理员可见的任务队列运行状态 -->
+        <!-- Task queue status visible to system administrators -->
         <div v-if="currentSection === 'runtime-queues'" class="section">
           <RuntimeQueues />
         </div>
@@ -167,23 +167,23 @@
           <SystemAuditLog />
         </div>
 
-        <!-- 用户信息（账户基础信息：ID / 用户名 / 邮箱 / 注册时间）。
-           用户的基本信息不该跟 owner 权限绑定。 -->
+        <!-- User info (basic account info: ID / username / email / registration time).
+           A user's basic info should not be tied to owner permission. -->
         <div v-if="currentSection === 'userprofile'" class="section">
           <UserProfile />
         </div>
 
-        <!-- 空间信息 -->
+        <!-- Workspace info -->
         <div v-if="currentSection === 'tenant'" class="section">
           <TenantInfo />
         </div>
 
-        <!-- 成员管理 (#1303 PR 3) -->
+        <!-- Member management (#1303 PR 3) -->
         <div v-if="currentSection === 'members'" class="section">
           <TenantMembers />
         </div>
 
-        <!-- 发布集成 -->
+        <!-- Publishing integrations -->
         <div v-if="isIntegrationSection(currentSection)" class="section">
           <IntegrationSettingsSection :tab="integrationTabFromSection(currentSection)" />
         </div>
@@ -281,21 +281,21 @@ type NavGroup = {
   items: NavItem[]
 }
 
-// 设置二级导航的最低可见角色来自 settingsAccess.ts，和
-// internal/router/router.go 的守卫矩阵对齐。
-// 以「页面里至少有 1 个有意义的写操作所要求的最低角色」为基准，把基础设
-// 施配置（models 写、ollama 下载、websearch 写、parser/storage/vector/mcp
-// CRUD、sandbox 连接、skills 安装、chat-history 配置）统一收到 admin；只读类（general / system info /
-// tenant-info / members 名册）保留 viewer 可见；最高敏感的 reset api
-// key 是 owner-only。改这张表前请在 router.go 里复核对应路由组。
+// The minimum visible role for the settings second-level nav comes from settingsAccess.ts and
+// aligns with the guard matrix in internal/router/router.go.
+// The baseline is "the lowest role required by at least one meaningful write on the page": infrastructure
+// config (models write, ollama download, websearch write, parser/storage/vector/mcp
+// CRUD, sandbox connections, skills install, chat-history config) all goes to admin; read-only pages (general / system info /
+// tenant-info / members roster) stay visible to viewer; the most sensitive reset api
+// key is owner-only. Before changing this table, recheck the matching route groups in router.go.
 //
-// 特别说明：
-// - chathistory 页面唯一的「启用消息索引」开关 PUT /tenants/kv/chat-history-config
-//   后端走 g.Admin()。给 viewer/contributor 看到入口、点开开关、保存时
-//   403，体验很差，所以入口本身归 admin。
-// - models 列表 viewer 可读，页面内的「+ 添加模型 / 编辑 / 删除」按钮在
-//   ModelSettings.vue 里另用 hasRole('admin') 自己 gate，所以入口保留
-//   viewer 是合理的（contributor 也能浏览模型列表）。
+// Notes:
+// - The only switch on the chathistory page, "Enable message index", PUT /tenants/kv/chat-history-config,
+//   goes through g.Admin() on the backend. Showing viewer/contributor the entry, letting them flip the switch and then
+//   failing with 403 on save is a poor experience, so the entry itself belongs to admin.
+// - The models list is readable by viewer, and the "+ Add model / Edit / Delete" buttons on the page are
+//   gated separately with hasRole('admin') in ModelSettings.vue, so keeping the entry for
+//   viewer is reasonable (contributors can browse the model list too).
 const SYSTEM_ADMIN_SECTIONS = SYSTEM_ADMIN_SETTINGS_SECTIONS
 
 const normalizeSettingsSection = (section: string) => {
@@ -335,16 +335,16 @@ const canSeeSection = (key: string): boolean => {
     return authStore.isSystemAdmin
   }
   const min = SETTINGS_SECTION_MIN_ROLE[key] ?? 'viewer'
-  // canAccessAllTenants（superuser）和路由层一样必须 bypass，否则 cross-tenant
-  // 管理员看不到自己有权操作的入口（参考 TenantMembers.vue 的 canManage）。
+  // canAccessAllTenants (superuser) must bypass just like the router layer, otherwise cross-tenant
+  // admins cannot see the entries they are allowed to operate (see canManage in TenantMembers.vue).
   if (authStore.canAccessAllTenants) return true
   return authStore.hasRole(min)
 }
 
 const navItems = computed(() => {
-  // 一律走 SETTINGS_SECTION_MIN_ROLE 表，避免 ad-hoc isAdmin/isOwner 散落在多处。
-  // 服务端在每条路由上仍以 g.Viewer/Admin/Owner 为准，这里只决定 UI 是
-  // 否露入口；改动入口规则请同步更新 settingsAccess.ts 和对应后端路由。
+  // Always go through the SETTINGS_SECTION_MIN_ROLE table, so ad-hoc isAdmin/isOwner checks do not scatter.
+  // The server still enforces g.Viewer/Admin/Owner on every route; this only decides whether the UI
+  // shows the entry. When changing entry rules, update settingsAccess.ts and the matching backend routes too.
   const integrationItems: NavItem[] = INTEGRATION_PREVIEW_ITEMS.map((item) => ({
     key: integrationSectionKey(item.key),
     icon: item.icon.type === 'icon' ? item.icon.name : 'integration',
@@ -376,9 +376,9 @@ const navItems = computed(() => {
     { key: 'members', icon: 'usergroup', label: t('tenantMember.title') },
     ...integrationItems,
   ]
-  // currentTenantRole 为空表示「membership 还没加载」—— 比起渲染整套
-  // viewer 入口然后角色一返回又消失，先卡住不渲染更稳，跟原先 members
-  // 入口的策略一致。
+  // An empty currentTenantRole means "membership not loaded yet". Rather than rendering the whole set of
+  // viewer entries and having them vanish when the role arrives, hold off rendering, which is more stable and matches the old members
+  // entry strategy.
   if (!authStore.currentTenantRole && !authStore.canAccessAllTenants) {
     return [] as NavItem[]
   }
@@ -388,10 +388,10 @@ const navItems = computed(() => {
 const navGroups = computed<NavGroup[]>(() => {
   const itemMap = new Map(navItems.value.map((item) => [item.key, item]))
   const pickItems = (keys: string[]) => keys.map((key) => itemMap.get(key)).filter(Boolean) as NavItem[]
-  // 分组：账户 → 空间 → 模型 → 发布集成 → 数据与扩展 → 系统管理 → 平台
-  // 关键调整：把个人偏好(general)和用户信息收进「账户」；
-  // 把空间内功能开关(chathistory)从「平台」挪到「空间」；
-  // 把检索引擎和外部集成合并为「数据与扩展」，避免两个 2~3 项的窄分组。
+  // Groups: Account → Workspace → Models → Publishing integrations → Data and extensions → System administration → Platform
+  // Key changes: personal preferences (general) and user info move into "Account";
+  // the in-workspace feature switch (chathistory) moves from "Platform" to "Workspace";
+  // retrieval engines and external integrations merge into "Data and extensions", avoiding two narrow groups of 2-3 items.
   return [
     {
       key: 'account',
@@ -437,10 +437,10 @@ const navGroups = computed<NavGroup[]>(() => {
   ].filter((group) => group.items.length > 0)
 })
 
-// 导航项点击处理
+// Nav item click handling
 const handleNavClick = (item: any) => {
   if (item.children && item.children.length > 0) {
-    // 有子菜单，切换展开状态
+    // Has a submenu: toggle its expanded state
     const index = expandedMenus.value.indexOf(item.key)
     if (index > -1) {
       expandedMenus.value.splice(index, 1)
@@ -452,18 +452,18 @@ const handleNavClick = (item: any) => {
     currentSubSection.value = ''
   }
 
-  // 切换到对应页面，并同步 URL 为 ?section=<navKey>（含 integration-claw）。
-  // 否则从其它 section 点进来时 query 不变，路由监听会把内容拉回去。
+  // Switch to the matching page and sync the URL to ?section=<navKey> (integration-claw included).
+  // Otherwise, arriving from another section leaves the query unchanged and the route watcher pulls the content back.
   currentSection.value = item.key
   syncSettingsRoute(item.key)
 }
 
-// 子菜单点击处理
+// Submenu click handling
 const handleSubMenuClick = (parentKey: string, childKey: string) => {
   currentSection.value = parentKey
   currentSubSection.value = childKey
 
-  // 滚动到对应的模型类型区域
+  // Scroll to the matching model type area
   setTimeout(() => {
     const element = document.querySelector(`[data-model-type="${childKey}"]`)
     if (element) {
@@ -472,19 +472,19 @@ const handleSubMenuClick = (parentKey: string, childKey: string) => {
   }, 100)
 }
 
-// 控制弹窗显示
+// Controls modal visibility
 const visible = computed(() => {
   return route.path === '/platform/settings' || uiStore.showSettingsModal
 })
 
-// 关闭弹窗
+// Close the modal
 const handleClose = () => {
   // Blur before unmount so TDesign textarea autosize won't run on a detached node.
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur()
   }
   uiStore.closeSettings()
-  // 如果当前路由是设置页，返回上一页
+  // If the current route is the settings page, go back
   if (route.path === '/platform/settings') {
     const sec = route.query.section
     if (sec === 'model-catalog' || sec === 'system-global' || sec === 'runtime-queues' || sec === 'platform-api-keys' || sec === 'system-audit-log') {
@@ -504,7 +504,7 @@ const redirectToToolbox = (section: string, subSection?: string | null) => {
   return true
 }
 
-// 监听初始导航设置
+// Watch the initial navigation settings
 watch(() => uiStore.settingsInitialSection, (section) => {
   if (section && visible.value) {
     const normalizedSection = normalizeSettingsSection(section)
@@ -564,8 +564,8 @@ watch(
   { immediate: true },
 )
 
-// 切换空间后角色可能变化，原本可见的 admin-only 面板可能消失。
-// 如果 currentSection 落到了不再显示的 key 上，就回退到第一个可见项。
+// The role may change after switching workspaces, and admin-only panels that were visible may disappear.
+// If currentSection lands on a key that is no longer shown, fall back to the first visible item.
 watch(navItems, (items) => {
   if (!items.some((item) => item.key === currentSection.value)) {
     const fallback = items[0]?.key || 'general'
@@ -575,13 +575,13 @@ watch(navItems, (items) => {
   }
 })
 
-// Esc / 遮罩点击关闭（与其他设置类弹窗共用同一壳层交互）
+// Close on Esc / mask click (the same shell interaction as the other settings modals)
 const modalShell = useModalShell({
   visible: () => visible.value,
   close: handleClose,
 })
 
-// 处理快捷导航事件
+// Handle quick navigation events
 const handleSettingsNav = (e: CustomEvent) => {
   const { section, subsection } = e.detail
   if (section) {
@@ -595,13 +595,13 @@ const handleSettingsNav = (e: CustomEvent) => {
     }
     currentSection.value = normalizedSection
     syncSettingsRoute(normalizedSection)
-    // 如果有子菜单，自动展开
+    // If there is a submenu, expand it automatically
     const navItem = (navItems.value as any[]).find((item: any) => item.key === normalizedSection)
     if (navItem && navItem.children && navItem.children.length > 0) {
       if (!expandedMenus.value.includes(section)) {
         expandedMenus.value.push(section)
       }
-      // 如果有 subsection，选中对应的子菜单项
+      // If there is a subsection, select the matching submenu item
       currentSubSection.value = subsection || navItem.children[0].key
     }
   }
@@ -630,17 +630,17 @@ onUnmounted(() => {
 </style>
 
 <style lang="less" scoped>
-/* 遮罩层 */
-/* 弹窗容器 */
-/* 关闭按钮 */
-/* 左侧导航栏：略紧凑于最初版，字号与留白适中 */
+/* Mask layer */
+/* Modal container */
+/* Close button */
+/* Left nav: slightly more compact than the first version, with moderate font size and spacing */
 .expand-icon {
   margin-left: 4px;
   font-size: var(--app-text-base);
   transition: transform var(--app-motion-base) ease;
 }
 
-/* 子菜单 */
+/* Submenu */
 .submenu {
   margin-left: 28px;
   margin-bottom: 3px;
@@ -673,7 +673,7 @@ onUnmounted(() => {
   display: block;
 }
 
-/* 子菜单动画 */
+/* Submenu animation */
 .submenu-enter-active,
 .submenu-leave-active {
   transition: all var(--app-motion-base) ease;
@@ -699,14 +699,14 @@ onUnmounted(() => {
   max-height: 0;
 }
 
-/* 右侧内容区域 */
+/* Right content area */
 .content-wrapper {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
   padding: 40px 48px;
 
-  /* 表格页面缩小内边距，为多列内容留出空间。 */
+  /* Table pages use less padding, leaving room for multi-column content. */
   &--wide {
     padding: 32px 36px 40px;
   }
@@ -750,8 +750,8 @@ onUnmounted(() => {
   }
 }
 
-/* 弹窗动画 */
-/* 滚动条样式 */
+/* Modal animation */
+/* Scrollbar styles */
 .role-denied {
   display: flex;
   flex-direction: column;

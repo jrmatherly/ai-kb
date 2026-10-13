@@ -1,13 +1,13 @@
-// 设置卡片左侧 logo 查询表。
+// Lookup table for the logo on the left of each settings card.
 //
-// 资源被分到两类：
-//   color/ —— 厂商官方多色 SVG，<img> 直渲，保留品牌原色
-//   mono/  —— 单色 SVG（多取自 simple-icons / 厂商 mark），用 mask-image 染成
-//             卡片自身的品牌 color，从而沿用 .store-card--<id> 这类规则定义的
-//             低饱和品牌色调。
+// Assets fall into two groups:
+//   color/ - the vendor's official multicolor SVG, rendered directly by <img>, keeping the brand colors
+//   mono/  - single-color SVG (mostly from simple-icons / the vendor mark), tinted with mask-image to
+//             the card's own brand color, so it keeps the low-saturation brand tone defined by
+//             rules such as .store-card--<id>.
 //
-// 调用方传入 (category, id) 拿到 { mode, url }；找不到时返回 undefined，
-// 卡片会回落到原有的首字母 monogram。
+// Callers pass (category, id) and get { mode, url }; when nothing matches it returns undefined
+// and the card falls back to its initial-letter monogram.
 
 const colorModules = import.meta.glob('@/assets/img/providers/color/*/*.svg', {
   eager: true,

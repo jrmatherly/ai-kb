@@ -22,7 +22,7 @@
     </div>
 
     <div v-if="isGraphDatabaseEnabled" class="settings-group">
-      <!-- 启用实体关系提取 -->
+      <!-- Enable entity relation extraction -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ t('graphSettings.enableLabel') }}</label>
@@ -52,7 +52,7 @@
         </div>
       </div>
 
-      <!-- 关系类型配置 -->
+      <!-- Relation type config -->
       <div v-if="localGraphExtract.enabled" class="setting-row vertical">
         <div class="setting-info">
           <label>{{ t('graphSettings.tagsLabel') }}</label>
@@ -89,7 +89,7 @@
         </div>
       </div>
 
-      <!-- 示例文本 -->
+      <!-- Sample text -->
       <div v-if="localGraphExtract.enabled" class="setting-row vertical">
         <div class="setting-info">
           <label>{{ t('graphSettings.sampleTextLabel') }}</label>
@@ -125,7 +125,7 @@
         </div>
       </div>
 
-      <!-- 实体列表 -->
+      <!-- Entity list -->
       <div v-if="localGraphExtract.enabled && localGraphExtract.nodes.length > 0" class="setting-row vertical">
         <div class="setting-info">
           <label>{{ t('graphSettings.entityListLabel') }}</label>
@@ -180,7 +180,7 @@
         </div>
       </div>
 
-      <!-- 添加实体按钮 -->
+      <!-- Add entity button -->
       <div v-if="localGraphExtract.enabled" class="setting-row">
         <div class="setting-info">
           <label>{{ t('graphSettings.manageEntitiesLabel') }}</label>
@@ -196,7 +196,7 @@
         </div>
       </div>
 
-      <!-- 关系列表 -->
+      <!-- Relation list -->
       <div v-if="localGraphExtract.enabled && localGraphExtract.relations.length > 0" class="setting-row vertical">
         <div class="setting-info">
           <label>{{ t('graphSettings.relationListLabel') }}</label>
@@ -261,7 +261,7 @@
         </div>
       </div>
 
-      <!-- 添加关系按钮 -->
+      <!-- Add relation button -->
       <div v-if="localGraphExtract.enabled" class="setting-row">
         <div class="setting-info">
           <label>{{ t('graphSettings.manageRelationsLabel') }}</label>
@@ -277,7 +277,7 @@
         </div>
       </div>
 
-      <!-- 提取操作按钮 -->
+      <!-- Extraction action buttons -->
       <div v-if="localGraphExtract.enabled" class="setting-row">
         <div class="setting-info">
           <label>{{ t('graphSettings.extractActionsLabel') }}</label>
@@ -325,9 +325,9 @@ import { docsUrl } from '@/utils/docsUrl'
 const { t } = useI18n()
 const authStore = useAuthStore()
 
-// canRunGraphExtract 对应后端 POST /initialization/extract/{fabri-tag,fabri-text,
-// text-relation} 的 g.Admin() 守卫——这三个都是会调用大模型 + 写库的 admin
-// 工具。Contributor 看到按钮点了只会撞 403。
+// canRunGraphExtract matches the g.Admin() guard on the backend POST /initialization/extract/{fabri-tag,fabri-text,
+// text-relation}; all three are admin tools that call the LLM and write to the database,
+// so a Contributor who clicks the button only hits a 403.
 const canRunGraphExtract = computed(() => authStore.hasRole('admin'))
 
 interface GraphExtractConfig {
@@ -360,7 +360,7 @@ const modelStatus = computed(() => ({
   }
 }))
 
-// 本地状态
+// Local state
 const localGraphExtract = ref<GraphExtractConfig>({
   ...props.graphExtract,
   nodes: props.graphExtract.nodes || [],
@@ -368,15 +368,15 @@ const localGraphExtract = ref<GraphExtractConfig>({
   customInstructions: props.graphExtract.customInstructions || ''
 })
 
-// 加载状态
+// Loading state
 const tagFabring = ref(false)
 const textFabring = ref(false)
 const extracting = ref(false)
 
-// 系统信息
+// System info
 const systemInfo = ref<any>(null)
 
-// 计算图数据库是否启用
+// Whether the graph database is enabled
 const isGraphDatabaseEnabled = computed(() => {
   return systemInfo.value?.graph_database_engine && systemInfo.value.graph_database_engine !== 'Not Enabled'
 })
@@ -391,14 +391,14 @@ watch(() => props.graphExtract, (newVal) => {
   }
 }, { deep: true })
 
-// 处理配置变更
+// Handle config changes
 const handleConfigChange = () => {
   emit('update:graphExtract', localGraphExtract.value)
 }
 
-// 处理启用/禁用切换
+// Handle the enable/disable toggle
 const handleEnabledChange = () => {
-  // 当关闭提取功能时，清空示例数据，但保留自定义指令以便再次启用时恢复。
+  // When extraction is turned off, clear the sample data but keep the custom instructions so they come back when it is re-enabled.
   if (!localGraphExtract.value.enabled) {
     localGraphExtract.value.text = ''
     localGraphExtract.value.tags = []
@@ -424,7 +424,7 @@ const handleRelationsChange = () => {
   handleConfigChange()
 }
 
-// 节点操作
+// Node operations
 const addNode = () => {
   if (!localGraphExtract.value.nodes) {
     localGraphExtract.value.nodes = []
@@ -451,7 +451,7 @@ const removeAttribute = (nodeIndex: number, attrIndex: number) => {
   handleNodesChange()
 }
 
-// 关系操作
+// Relation operations
 const addRelation = () => {
   if (!localGraphExtract.value.relations) {
     localGraphExtract.value.relations = []
@@ -469,7 +469,7 @@ const removeRelation = (index: number) => {
   handleRelationsChange()
 }
 
-// 生成随机标签
+// Generate random tags
 const handleFabriTag = async () => {
   tagFabring.value = true
   try {
@@ -485,7 +485,7 @@ const handleFabriTag = async () => {
   }
 }
 
-// 生成随机文本
+// Generate random text
 const handleFabriText = async () => {
   if (!props.modelId) {
     MessagePlugin.warning(t('graphSettings.completeModelConfig'))
@@ -509,7 +509,7 @@ const handleFabriText = async () => {
   }
 }
 
-// 提取实体关系
+// Extract entity relations
 const handleExtract = async () => {
   if (!props.modelId) {
     MessagePlugin.warning(t('graphSettings.completeModelConfig'))
@@ -540,7 +540,7 @@ const handleExtract = async () => {
   }
 }
 
-// 默认示例
+// Default sample
 const defaultExtractExample = () => {
   localGraphExtract.value.text = `"Romeo and Juliet" is a tragedy written by William Shakespeare early in his career, and is one of the most frequently performed plays in world literature. The play follows two young lovers from feuding families in Verona, Italy — the Montagues and the Capulets. Written around 1594-1596, it was first published in quarto in 1597. The full title is "The Most Excellent and Lamentable Tragedy of Romeo and Juliet." The story has been adapted countless times for stage, film, and other media.`
   localGraphExtract.value.tags = ['Author', 'Alias']
@@ -559,7 +559,7 @@ const defaultExtractExample = () => {
   MessagePlugin.success(t('graphSettings.exampleLoaded'))
 }
 
-// 清除示例
+// Clear the sample
 const clearExtractExample = () => {
   localGraphExtract.value.text = ''
   localGraphExtract.value.tags = []
@@ -571,7 +571,7 @@ const clearExtractExample = () => {
 
 const editorResources = useEditorResourcesStore()
 
-// 加载系统信息
+// Load system info
 const loadSystemInfo = async (force = false) => {
   try {
     await editorResources.ensureSystemInfo(force)
@@ -589,7 +589,7 @@ const handleOpenGraphGuide = () => {
   window.open(graphGuideUrl, '_blank', 'noopener')
 }
 
-// 初始化
+// Initialize
 onMounted(async () => {
   await loadSystemInfo()
 })

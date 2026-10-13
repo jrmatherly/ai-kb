@@ -87,7 +87,7 @@ async function fixture() {
 test('page navigation consumes all response titles without a separate title request', async () => {
   const f = await fixture()
   try {
-    const titles = Object.fromEntries(Array.from({ length: 2507 }, (_, i) => [`concept/${i}-${'a'.repeat(200)}`, `标题 ${i}`]))
+    const titles = Object.fromEntries(Array.from({ length: 2507 }, (_, i) => [`concept/${i}-${'a'.repeat(200)}`, `Title ${i}`]))
     f.respond(page('first', titles))
     await f.vm.selectPage({ id: 'first', slug: 'first' })
     await nextTick()
@@ -131,9 +131,9 @@ test('Markdown caller handles prototype names, missing titles and explicit label
     }
     f.vm.pages = [{ slug: 'concept/loaded', title: 'Loaded title' }]
     assert.match(f.vm.renderMarkdown('[[concept/loaded]] [[concept/missing]]'), />Loaded title<\/a>.*>missing<\/a>/)
-    f.respond(page('current', JSON.parse('{"constructor":"构造函数","__proto__":"原型"}')))
+    f.respond(page('current', JSON.parse('{"constructor":"Constructor","__proto__":"Prototype"}')))
     await f.vm.refreshSelectedPage()
-    assert.match(f.vm.renderMarkdown('[[constructor]] [[__proto__]]'), />构造函数<\/a>.*>原型<\/a>/)
+    assert.match(f.vm.renderMarkdown('[[constructor]] [[__proto__]]'), />Constructor<\/a>.*>Prototype<\/a>/)
     assert.equal(f.errors.length, 0)
   } finally { f.close() }
 })

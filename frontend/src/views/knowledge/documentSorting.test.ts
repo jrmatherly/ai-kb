@@ -8,7 +8,7 @@ import {
   getDocumentSortParams,
 } from './documentSorting';
 
-test('文档排序默认使用创建时间倒序', () => {
+test('document sorting defaults to creation time, newest first', () => {
   assert.equal(DEFAULT_DOCUMENT_SORT, 'created_desc');
   assert.deepEqual(getDocumentSortParams(DEFAULT_DOCUMENT_SORT), {
     sort_by: 'created_at',
@@ -16,7 +16,7 @@ test('文档排序默认使用创建时间倒序', () => {
   });
 });
 
-test('文档排序提供三组共六个选项并映射到服务端白名单参数', () => {
+test('document sorting offers three groups of six options mapped to the server allowlist parameters', () => {
   assert.equal(DOCUMENT_SORT_OPTIONS.length, 6);
   assert.deepEqual(
     DOCUMENT_SORT_OPTIONS.map(({ value, sortBy, sortOrder }) => [value, sortBy, sortOrder]),
@@ -31,6 +31,6 @@ test('文档排序提供三组共六个选项并映射到服务端白名单参�
   );
 });
 
-test('未知排序值会安全回退到默认选项', () => {
+test('an unknown sort value falls back safely to the default option', () => {
   assert.equal(getDocumentSortOption('invalid' as never).value, DEFAULT_DOCUMENT_SORT);
 });

@@ -255,13 +255,13 @@ const loadingChildrenIds = ref(new Set<string>())
 // never needs an extra request.
 const treeFullyLoaded = ref(false)
 
-// Drive (云盘) root input: the Drive connectors have no "list spaces" API, so
+// Drive (cloud drive) root input: the Drive connectors have no "list spaces" API, so
 // the user must supply a root folder_token. We collect it here, write it into
 // form.config.resource_ids as the single root, then loadResources lists its
-// children. See 飞书云盘数据源设计.md §5.2 / ADR-0004.
+// children. See the Feishu Drive data source design doc, section 5.2 / ADR-0004.
 const driveFolderToken = ref('')
-// 必填校验的内联错误文案：非空时输入框显示 error 状态 + 下方 tips,
-// 替代全局 MessagePlugin,与表单字段的就地校验风格一致。
+// Inline error text for the required check: when non-empty the input shows the error state and tips below it,
+// instead of the global MessagePlugin, matching the in-place validation of the form fields.
 const driveFolderTokenError = ref('')
 const driveRootLoaded = ref(false)
 const isDriveConnector = (type: string) => type === 'feishu_drive' || type === 'lark_drive'
@@ -626,7 +626,7 @@ const connectorDefs = computed<ConnectorDef[]>(() => [
     ],
   },
   {
-    // Feishu Drive (云盘) mode: sync documents/files under a user-supplied Drive
+    // Feishu Drive (cloud drive) mode: sync documents/files under a user-supplied Drive
     // folder_token. Same auth as the wiki connector but no wiki:wiki:readonly
     // scope - Drive only needs drive + export + docx.
     type: 'feishu_drive',
@@ -1158,8 +1158,8 @@ async function nextStep() {
     }
   }
   if (step.value === 2 && isDriveConnector(form.value.type)) {
-    // folder_token 是 Drive 连接器的必填项：为空就地标错并留在本步,
-    // 不允许带着空 token 进入同步策略。
+    // folder_token is required for the Drive connector: when empty, flag it in place and stay on this step,
+    // rather than entering the sync policy with an empty token.
     if (!driveFolderToken.value.trim()) {
       driveFolderTokenError.value = t('datasource.drive.folderTokenRequired')
       return
@@ -1765,7 +1765,7 @@ const drawerConfirmText = computed(() => {
       <h4 class="setting-drawer__section-title">{{ t('datasource.step.resources') }}</h4>
       <p class="ds-resource-hint">{{ t('datasource.resourceHint') }}</p>
 
-      <!-- Drive (云盘) root input: shown alongside the tree (not as a switch).
+      <!-- Drive (cloud drive) root input: shown alongside the tree (not as a switch).
            The user supplies a folder_token (or a Drive folder URL) and clicks
            "load"; the tree below stays as a placeholder until load succeeds.
            Other connectors skip this and go straight to the tree. -->
@@ -2490,7 +2490,7 @@ const drawerConfirmText = computed(() => {
   color: var(--td-text-color-placeholder);
 }
 
-/* Drive (云盘) root folder_token input - shown before the lazy-load tree. */
+/* Drive (cloud drive) root folder_token input - shown before the lazy-load tree. */
 .drive-folder-input {
   display: flex;
   flex-direction: column;
@@ -2509,7 +2509,7 @@ const drawerConfirmText = computed(() => {
   font-weight: 500;
   color: var(--td-text-color-primary);
 
-  /* 与 .form-label.required 一致的红星必填标记 */
+  /* Red-star required marker, matching .form-label.required */
   &.required::before {
     content: '*';
     color: var(--td-error-color);
@@ -2964,8 +2964,8 @@ const drawerConfirmText = computed(() => {
   object-fit: contain;
 }
 
-/* Step 2「选择范围」:整步不滚动 —— token 输入区固定,下方资源区域
-   (占位 / 加载 / 空态 / 目录树)撑满抽屉剩余高度,树列表内部滚动。 */
+/* Step 2 "Select scope": the step does not scroll as a whole. The token input stays fixed and the resource area below
+   (placeholder / loading / empty state / folder tree) fills the drawer's remaining height; the tree list scrolls inside. */
 .ds-fixed-step {
   .t-drawer__body {
     display: flex;

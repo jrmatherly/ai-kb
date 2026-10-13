@@ -346,10 +346,10 @@ const languageOptions = computed(() => [
 const separatorOptions = computed(() => [
   { label: t('knowledgeEditor.chunking.separators.doubleNewline'), value: '\n\n' },
   { label: t('knowledgeEditor.chunking.separators.singleNewline'), value: '\n' },
-  { label: t('knowledgeEditor.chunking.separators.periodCn'), value: '。' },
-  { label: t('knowledgeEditor.chunking.separators.exclamationCn'), value: '！' },
-  { label: t('knowledgeEditor.chunking.separators.questionCn'), value: '？' },
-  { label: t('knowledgeEditor.chunking.separators.semicolonCn'), value: '；' },
+  { label: t('knowledgeEditor.chunking.separators.periodCn'), value: '\u3002' }, // CJK full stop
+  { label: t('knowledgeEditor.chunking.separators.exclamationCn'), value: '\uff01' }, // fullwidth exclamation mark
+  { label: t('knowledgeEditor.chunking.separators.questionCn'), value: '\uff1f' }, // fullwidth question mark
+  { label: t('knowledgeEditor.chunking.separators.semicolonCn'), value: '\uff1b' }, // fullwidth semicolon
   { label: t('knowledgeEditor.chunking.separators.semicolonEn'), value: ';' },
   { label: t('knowledgeEditor.chunking.separators.space'), value: ' ' }
 ])

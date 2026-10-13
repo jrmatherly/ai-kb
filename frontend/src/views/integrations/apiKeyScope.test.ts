@@ -4,8 +4,8 @@ import test from 'node:test'
 import { normalizeAPIKeyKnowledgeBaseIDs } from './apiKeyScope.ts'
 
 /**
- * 验证完全授权 Key 的 null/undefined 范围会转换为空数组，避免列表渲染读取 length 时白屏。
- * 传入服务端可能返回的空值，期望返回表示“全部知识库”的空数组。
+ * A fully authorized key's null/undefined scope becomes an empty array, so the list does not blank out reading length.
+ * Passes the empty values the server may return and expects the empty array that means "all knowledge bases".
  */
 test('normalizes missing API key knowledge base scope to an empty array', () => {
   assert.deepEqual(normalizeAPIKeyKnowledgeBaseIDs(null), [])
@@ -13,8 +13,8 @@ test('normalizes missing API key knowledge base scope to an empty array', () => 
 })
 
 /**
- * 验证 scoped Key 的知识库 ID 会被完整复制，且返回值不是原数组，避免编辑表单污染列表数据。
- * 传入两个知识库 ID，期望按原顺序返回一份新数组。
+ * A scoped key's knowledge base IDs are copied in full, and the result is not the original array, so the edit form cannot corrupt the list data.
+ * Passes two knowledge base IDs and expects a new array in the original order.
  */
 test('copies configured API key knowledge base scope', () => {
   const ids = ['kb-1', 'kb-2']

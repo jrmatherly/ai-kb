@@ -48,7 +48,7 @@
                   <t-icon name="setting" size="16px" />
                 </button>
               </t-tooltip>
-              <!-- 导入结果：默认仅图标，hover / 点击展开详情 -->
+              <!-- Import result: icon only by default, details expand on hover / click -->
               <div v-if="showImportResultBadge" class="faq-import-host"
                 :class="{ 'is-expanded': importResultExpanded }">
                 <button type="button" class="faq-import-trigger"
@@ -77,7 +77,7 @@
                   </div>
                 </div>
               </div>
-              <!-- 导入进行中 -->
+              <!-- Import in progress -->
               <div v-else-if="isImportInProgress && importState.taskStatus"
                 class="faq-import-strip faq-import-strip--in-title"
                 :class="`faq-import-strip--${importState.taskStatus.status}`">
@@ -98,7 +98,7 @@
 
       <div class="faq-main">
         <div class="faq-card-area">
-          <!-- 搜索栏与标签筛选 -->
+          <!-- Search bar and tag filter -->
           <div class="faq-filter-bar">
             <t-input v-model.trim="entrySearchKeyword" :placeholder="$t('knowledgeEditor.faq.searchPlaceholder')"
               clearable class="faq-search-input" @clear="loadEntries()" @enter="loadEntries()">
@@ -114,7 +114,7 @@
                 @load-more="loadTags()" @manage="openTagManageDrawer" />
             </div>
             <div class="faq-filter-bar__trailing">
-              <!-- 新建：新建条目 / 导入 -->
+              <!-- New: new entry / import -->
               <template v-if="faqCreateOptions.length">
                 <t-tooltip :content="$t('knowledgeEditor.faq.createGroup')" placement="top">
                   <t-dropdown :options="faqCreateOptions" trigger="click" placement="bottom-right"
@@ -125,7 +125,7 @@
                   </t-dropdown>
                 </t-tooltip>
               </template>
-              <!-- 导出 -->
+              <!-- Export -->
               <t-dropdown :options="faqExportOptions" trigger="click" placement="bottom-right"
                 @click="handleFaqAction">
                 <t-tooltip :content="$t('knowledgeEditor.faqExport.exportButton')" placement="top">
@@ -135,7 +135,7 @@
                   </t-button>
                 </t-tooltip>
               </t-dropdown>
-              <!-- 检索 -->
+              <!-- Search -->
               <t-tooltip :content="$t('knowledgeEditor.faq.searchTest')" placement="top">
                 <t-button variant="text" theme="default" class="content-bar-icon-btn" size="small"
                   @click="handleFaqAction({ value: 'search' })">
@@ -147,7 +147,7 @@
           <!-- Card List Container with Scroll -->
           <div ref="scrollContainer" class="faq-scroll-container"
             :class="{ 'has-batch-bar': selectedRowKeys.length > 0 && canSelectEntries }" @scroll="handleScroll">
-            <!-- FAQ 骨架屏 -->
+            <!-- FAQ skeleton -->
             <div v-if="loading && entries.length === 0" class="faq-skeleton-grid">
               <div v-for="n in 6" :key="'faq-skel-' + n" class="faq-card faq-card-skeleton">
                 <div class="faq-card-header">
@@ -339,7 +339,7 @@
         <t-form ref="editorFormRef" :data="editorForm" :rules="editorRules" layout="vertical" :label-width="0"
           class="faq-editor-form">
           <div class="settings-group">
-            <!-- 标准问 -->
+            <!-- Standard question -->
             <div class="setting-row vertical setting-row-primary">
               <div class="setting-info">
                 <label class="required-label">
@@ -353,7 +353,7 @@
               </div>
             </div>
 
-            <!-- 相似问 -->
+            <!-- Similar questions -->
             <div class="setting-row vertical setting-row-optional setting-row-similar">
               <div class="setting-info">
                 <label class="optional-label">{{ $t('knowledgeEditor.faq.similarQuestions') }}</label>
@@ -381,7 +381,7 @@
               </div>
             </div>
 
-            <!-- 反例 -->
+            <!-- Negative examples -->
             <div class="setting-row vertical setting-row-optional setting-row-negative">
               <div class="setting-info">
                 <label class="optional-label">{{ $t('knowledgeEditor.faq.negativeQuestions') }}</label>
@@ -410,7 +410,7 @@
               </div>
             </div>
 
-            <!-- 答案 -->
+            <!-- Answers -->
             <div class="setting-row vertical setting-row-primary setting-row-answer">
               <div class="setting-info">
                 <label class="required-label">
@@ -476,7 +476,7 @@
       <Transition name="modal">
         <div v-if="importVisible" class="faq-import-overlay" @click.self="importVisible = false">
           <div class="faq-import-modal">
-            <!-- 关闭按钮 -->
+            <!-- Close button -->
             <button class="close-btn" @click="importVisible = false" :aria-label="$t('general.close')">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -489,7 +489,7 @@
               </div>
 
               <div class="faq-import-content">
-                <!-- 导入模式选择 -->
+                <!-- Import mode selection -->
                 <div class="import-form-item">
                   <label class="import-form-label required">{{ $t('knowledgeEditor.faqImport.modeLabel') }}</label>
                   <t-radio-group v-model="importState.mode" class="import-radio-group">
@@ -498,7 +498,7 @@
                   </t-radio-group>
                 </div>
 
-                <!-- 文件上传区域 -->
+                <!-- File upload area -->
                 <div class="import-form-item">
                   <div class="file-label-row">
                     <label class="import-form-label required">{{ $t('knowledgeEditor.faqImport.fileLabel') }}</label>
@@ -535,7 +535,7 @@
                   </div>
                 </div>
 
-                <!-- 预览区域 -->
+                <!-- Preview area -->
                 <div v-if="importState.preview.length" class="import-preview">
                   <div class="preview-header">
                     <t-icon name="file-view" size="16px" class="preview-icon" />
@@ -579,7 +579,7 @@
       <Transition name="modal">
         <div v-if="batchTagDialogVisible" class="batch-tag-overlay" @click.self="batchTagDialogVisible = false">
           <div class="batch-tag-modal">
-            <!-- 关闭按钮 -->
+            <!-- Close button -->
             <button class="batch-tag-close-btn" @click="batchTagDialogVisible = false"
               :aria-label="$t('general.close')">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -632,7 +632,7 @@
       <div class="search-test-content">
         <t-form layout="vertical" class="search-form" :label-width="0">
           <div class="settings-group">
-            <!-- 查询文本 -->
+            <!-- Query text -->
             <div class="setting-row vertical search-first-row">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.faq.queryLabel') }}</label>
@@ -644,7 +644,7 @@
               </div>
             </div>
 
-            <!-- 相似度阈值 -->
+            <!-- Similarity threshold -->
             <div class="setting-row vertical">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.faq.similarityThresholdLabel') }}</label>
@@ -659,7 +659,7 @@
               </div>
             </div>
 
-            <!-- 匹配数量 -->
+            <!-- Match count -->
             <div class="setting-row vertical">
               <div class="setting-info">
                 <label>{{ $t('knowledgeEditor.faq.matchCountLabel') }}</label>
@@ -673,7 +673,7 @@
               </div>
             </div>
 
-            <!-- 搜索按钮 -->
+            <!-- Search button -->
             <div class="setting-row vertical">
               <div class="setting-control">
                 <t-button theme="primary" block :loading="searching" @click="handleSearch" class="search-button">
@@ -896,7 +896,7 @@ const faqExportOptions = computed(() => [
   { content: t('knowledgeEditor.faqExport.exportJSON'), value: 'export_json' },
 ])
 
-// FAQ 操作：新建组（新建条目 + 导入）
+// FAQ actions: the new group (new entry + import)
 const faqCreateOptions = computed(() => {
   if (!canEdit.value) return []
   return [
@@ -905,7 +905,7 @@ const faqCreateOptions = computed(() => {
   ]
 })
 
-// 处理 FAQ 操作
+// Handle FAQ actions
 const handleFaqAction = (data: { value: string }) => {
   switch (data.value) {
     case 'create':
@@ -1049,7 +1049,7 @@ const editorForm = reactive<FAQEntryPayload>({
 const editorFormRef = ref<FormInstanceFunctions>()
 const savingEntry = ref(false)
 
-// 输入框状态
+// Input state
 const answerInput = ref('')
 const similarInput = ref('')
 const negativeInput = ref('')
@@ -1073,7 +1073,7 @@ const importState = reactive({
   pollingInterval: null as ReturnType<typeof setInterval> | null,
 })
 
-// FAQ导入结果状态（持久化的）
+// FAQ import result state (persisted)
 type FAQImportResultView = {
   total_entries: number
   success_count: number
@@ -1310,20 +1310,20 @@ const handleEntryStatusChange = async (entry: FAQEntry, value: boolean) => {
   if (entryIndex === -1) {
     return
   }
-  // 从数组中获取实际的对象引用，确保使用最新的数据
+  // Get the actual object reference from the array, to make sure the latest data is used
   const actualEntry = entries.value[entryIndex]
   const previous = actualEntry.is_enabled
   if (previous === value) {
     return
   }
-  // 直接更新属性，Vue 3 的响应式系统应该能够检测到
+  // Update the property directly; Vue 3 reactivity should detect it
   actualEntry.is_enabled = value
   entryStatusLoading[entry.id] = true
   try {
     await updateFAQEntryFieldsBatch(props.kbId, { by_id: { [entry.id]: { is_enabled: value } } })
     MessagePlugin.success(t(value ? 'knowledgeEditor.faq.statusEnableSuccess' : 'knowledgeEditor.faq.statusDisableSuccess'))
   } catch (error: any) {
-    // 失败时回滚
+    // Roll back on failure
     actualEntry.is_enabled = previous
     MessagePlugin.error(error?.message || t('knowledgeEditor.faq.statusUpdateFailed'))
   } finally {
@@ -1381,9 +1381,9 @@ const loadEntries = async (append = false) => {
     const newEntries = (pageData.data || []).map(entry => ({
       ...entry,
       showMore: false,
-      similarCollapsed: true,  // 相似问默认折叠
-      negativeCollapsed: true,  // 反例默认折叠
-      answersCollapsed: true,   // 答案默认折叠
+      similarCollapsed: true,  // similar questions collapsed by default
+      negativeCollapsed: true,  // negative examples collapsed by default
+      answersCollapsed: true,   // answers collapsed by default
       is_enabled: entry.is_enabled !== false,
     }))
 
@@ -1392,11 +1392,11 @@ const loadEntries = async (append = false) => {
     } else {
       entries.value = newEntries
     }
-    // 判断是否还有更多数据
+    // Whether there is more data
     hasMore.value = entries.value.length < (pageData.total || 0)
     currentPage++
 
-    // 等待 DOM 更新后重新布局
+    // Re-layout after the DOM updates
     await nextTick()
     arrangeCards()
   } catch (error: any) {
@@ -1405,8 +1405,8 @@ const loadEntries = async (append = false) => {
     loading.value = false
     loadingMore.value = false
 
-    // 检查是否需要继续加载以填满可视区域
-    // 延迟执行以确保 arrangeCards 的 requestAnimationFrame 完成
+    // Check whether to keep loading to fill the visible area
+    // Delayed so that arrangeCards' requestAnimationFrame finishes
     setTimeout(() => {
       checkAndLoadMore()
     }, 350)
@@ -1421,13 +1421,13 @@ const handleScroll = () => {
   const scrollHeight = container.scrollHeight
   const clientHeight = container.clientHeight
 
-  // 当滚动到距离底部 200px 时加载更多
+  // Load more when scrolled within 200px of the bottom
   if (scrollTop + clientHeight >= scrollHeight - 200) {
     loadEntries(true)
   }
 }
 
-// 检查内容是否填满可视区域，如果没有且还有更多数据，继续加载
+// Check whether the content fills the visible area; if not and there is more data, keep loading
 const checkAndLoadMore = () => {
   if (!scrollContainer.value) return
   if (loadingMore.value || loading.value) return
@@ -1437,7 +1437,7 @@ const checkAndLoadMore = () => {
   const scrollHeight = container.scrollHeight
   const clientHeight = container.clientHeight
 
-  // 如果内容高度小于容器高度 + 50px 的缓冲，说明可能没有滚动条或接近底部，需要继续加载
+  // If the content height is below the container height + a 50px buffer, there may be no scrollbar or it is near the bottom, so keep loading
   if (scrollHeight <= clientHeight + 50) {
     loadEntries(true)
   }
@@ -1494,7 +1494,7 @@ const openEditor = (entry?: FAQEntry) => {
 }
 
 const handleEditorClose = () => {
-  // 关闭时重置表单
+  // Reset the form on close
   resetEditorForm()
   answerInput.value = ''
   similarInput.value = ''
@@ -1502,7 +1502,7 @@ const handleEditorClose = () => {
   editorFormRef.value?.clearValidate?.()
 }
 
-// 添加答案
+// Add an answer
 const addAnswer = () => {
   const trimmed = answerInput.value.trim()
   if (trimmed && editorForm.answers.length < 5 && !editorForm.answers.includes(trimmed)) {
@@ -1511,12 +1511,12 @@ const addAnswer = () => {
   }
 }
 
-// 删除答案
+// Delete an answer
 const removeAnswer = (index: number) => {
   editorForm.answers.splice(index, 1)
 }
 
-// 添加相似问
+// Add a similar question
 const addSimilar = () => {
   const trimmed = similarInput.value.trim()
   if (trimmed && editorForm.similar_questions.length < 10 && !editorForm.similar_questions.includes(trimmed)) {
@@ -1525,12 +1525,12 @@ const addSimilar = () => {
   }
 }
 
-// 删除相似问
+// Delete a similar question
 const removeSimilar = (index: number) => {
   editorForm.similar_questions.splice(index, 1)
 }
 
-// 添加反例
+// Add a negative example
 const addNegative = () => {
   const trimmed = negativeInput.value.trim()
   if (trimmed && editorForm.negative_questions.length < 10 && !editorForm.negative_questions.includes(trimmed)) {
@@ -1539,7 +1539,7 @@ const addNegative = () => {
   }
 }
 
-// 删除反例
+// Delete a negative example
 const removeNegative = (index: number) => {
   editorForm.negative_questions.splice(index, 1)
 }
@@ -1590,7 +1590,7 @@ const handleBatchDelete = async () => {
   }
 }
 
-// 批量状态更新对话框
+// Batch status update dialog
 const batchTagDialogVisible = ref(false)
 const batchTagValue = ref<string>('')
 
@@ -1664,7 +1664,7 @@ const handleMenuDelete = (entry: FAQEntry) => {
 }
 
 const openImportDialog = () => {
-  // 如果正在导入，不允许打开导入对话框
+  // While an import is running, the import dialog cannot open
   if (importState.taskStatus?.status === 'running') {
     MessagePlugin.warning(t('faqManager.import.importInProgress'))
     return
@@ -1674,7 +1674,7 @@ const openImportDialog = () => {
   importState.file = null
   importState.preview = []
   importState.mode = 'append'
-  // 注意：不清除taskId和taskStatus，以便在关闭对话框后仍能看到进度
+  // Note: taskId and taskStatus are not cleared, so progress stays visible after the dialog closes
   importState.importing = false
 }
 
@@ -1726,20 +1726,20 @@ const parseJSONFile = async (file: File): Promise<FAQEntryPayload[]> => {
 const parseCSVFile = async (file: File): Promise<FAQEntryPayload[]> => {
   const text = await file.text()
 
-  // 使用 papaparse 解析 CSV，自动处理引号、转义、分隔符等
+  // Parse the CSV with papaparse, which handles quotes, escapes, delimiters and so on
   return new Promise((resolve, reject) => {
     Papa.parse(text, {
       header: true,
       skipEmptyLines: true,
-      delimiter: '', // 自动检测分隔符（逗号或制表符）
+      delimiter: '', // auto-detect the delimiter (comma or tab)
       quoteChar: '"',
       escapeChar: '"',
       transformHeader: (header: string) => {
-        // 移除字段名中的括号和说明，只保留核心字段名
+        // Strip the parentheses and notes from the field name, keeping only the core field name
         const cleaned = header.trim()
-          .replace(/\([^)]*\)/g, '') // 移除括号及内容
+          .replace(/\([^)]*\)/g, '') // strip parentheses and their content
           .trim()
-        // 对于中文字段名，不转换为小写；对于英文字段名，转换为小写
+        // Chinese field names (legacy headers) are not lowercased; English field names are
         return /[\u4e00-\u9fa5]/.test(cleaned) ? cleaned : cleaned.toLowerCase()
       },
       complete: (results) => {
@@ -1747,21 +1747,21 @@ const parseCSVFile = async (file: File): Promise<FAQEntryPayload[]> => {
           const payloads: FAQEntryPayload[] = []
           results.data.forEach((row: any) => {
             const record: Record<string, string> = {}
-            // 将行数据转换为记录对象
+            // Turn the row data into a record object
             Object.keys(row).forEach((key) => {
               record[key] = String(row[key] || '').trim()
             })
 
-            const isDisabled = parseBooleanField(record['是否停用'], false)
+            const isDisabled = parseBooleanField(record['\u662f\u5426\u505c\u7528'] || record['is_disabled'], false) // Chinese keys below are the legacy export headers
             payloads.push(
               normalizePayload({
-                standard_question: record['问题'] || record['standard_question'] || record['question'] || '',
-                answers: splitByDelimiter(record['机器人回答'] || record['answers']),
-                similar_questions: splitByDelimiter(record['相似问题'] || record['similar_questions']),
-                negative_questions: splitByDelimiter(record['反例问题'] || record['negative_questions']),
+                standard_question: record['\u95ee\u9898'] || record['standard_question'] || record['question'] || '',
+                answers: splitByDelimiter(record['\u673a\u5668\u4eba\u56de\u7b54'] || record['answers']),
+                similar_questions: splitByDelimiter(record['\u76f8\u4f3c\u95ee\u9898'] || record['similar_questions']),
+                negative_questions: splitByDelimiter(record['\u53cd\u4f8b\u95ee\u9898'] || record['negative_questions']),
                 tag_id: record['tag_id'] ? Number(record['tag_id']) : undefined,
-                tag_name: record['标签'] || record['分类'] || record['tag_name'] || '',
-                is_enabled: isDisabled !== undefined ? !isDisabled : undefined, // 是否停用：FALSE表示启用，TRUE表示停用，所以取反
+                tag_name: record['\u6807\u7b7e'] || record['\u5206\u7c7b'] || record['tag_name'] || '',
+                is_enabled: isDisabled !== undefined ? !isDisabled : undefined, // is_disabled: FALSE means enabled, TRUE means disabled, so invert it
               }),
             )
           })
@@ -1782,44 +1782,44 @@ const parseExcelFile = async (file: File): Promise<FAQEntryPayload[]> => {
   const workbook = XLSX.read(data, { type: 'array' })
   const sheetName = workbook.SheetNames[0]
   const worksheet = workbook.Sheets[sheetName]
-  // 使用 raw: false 确保正确处理引号和转义
+  // raw: false makes quotes and escapes parse correctly
   const json = XLSX.utils.sheet_to_json<Record<string, string>>(worksheet, {
     defval: '',
-    raw: false // 确保字符串值被正确解析
+    raw: false // makes string values parse correctly
   })
   return json.map((row) => {
-    // 获取原始表头（去除括号说明）
+    // Get the original header (with the parenthesized notes stripped)
     const normalizedRow: Record<string, string> = {}
     Object.keys(row).forEach((key) => {
       const normalizedKey = key.trim()
-        .replace(/\([^)]*\)/g, '') // 移除括号及内容
+        .replace(/\([^)]*\)/g, '') // strip parentheses and their content
         .trim()
-      // 对于中文字段名，不转换为小写；对于英文字段名，转换为小写
+      // Chinese field names (legacy headers) are not lowercased; English field names are
       const finalKey = /[\u4e00-\u9fa5]/.test(normalizedKey) ? normalizedKey : normalizedKey.toLowerCase()
-      // 确保值是字符串类型
+      // Make sure the value is a string
       normalizedRow[finalKey] = String(row[key] || '').trim()
     })
 
-    const isDisabled = parseBooleanField(normalizedRow['是否停用'], false)
+    const isDisabled = parseBooleanField(normalizedRow['\u662f\u5426\u505c\u7528'] || normalizedRow['is_disabled'], false) // Chinese keys below are the legacy export headers
     return normalizePayload({
-      standard_question: normalizedRow['问题'] || normalizedRow['standard_question'] || normalizedRow['question'] || '',
-      answers: splitByDelimiter(normalizedRow['机器人回答'] || normalizedRow['answers']),
-      similar_questions: splitByDelimiter(normalizedRow['相似问题'] || normalizedRow['similar_questions']),
-      negative_questions: splitByDelimiter(normalizedRow['反例问题'] || normalizedRow['negative_questions']),
+      standard_question: normalizedRow['\u95ee\u9898'] || normalizedRow['standard_question'] || normalizedRow['question'] || '',
+      answers: splitByDelimiter(normalizedRow['\u673a\u5668\u4eba\u56de\u7b54'] || normalizedRow['answers']),
+      similar_questions: splitByDelimiter(normalizedRow['\u76f8\u4f3c\u95ee\u9898'] || normalizedRow['similar_questions']),
+      negative_questions: splitByDelimiter(normalizedRow['\u53cd\u4f8b\u95ee\u9898'] || normalizedRow['negative_questions']),
       tag_id: normalizedRow['tag_id'] ? Number(normalizedRow['tag_id']) : undefined,
-      tag_name: normalizedRow['标签'] || normalizedRow['分类'] || normalizedRow['tag_name'] || '',
-      is_enabled: isDisabled !== undefined ? !isDisabled : undefined, // 是否停用：FALSE表示启用，TRUE表示停用，所以取反
+      tag_name: normalizedRow['\u6807\u7b7e'] || normalizedRow['\u5206\u7c7b'] || normalizedRow['tag_name'] || '',
+      is_enabled: isDisabled !== undefined ? !isDisabled : undefined, // is_disabled: FALSE means enabled, TRUE means disabled, so invert it
     })
   })
 }
 
 const splitByDelimiter = (value?: string) => {
   if (!value) return []
-  // 只使用 ## 作为分隔符，避免错误分割包含逗号、分号等内容
+  // Use only ## as the delimiter, to avoid wrongly splitting content that contains commas, semicolons and so on
   const trimmedValue = value.trim()
   if (!trimmedValue) return []
 
-  // 如果包含 ## 分隔符，按 ## 分割
+  // If it contains the ## delimiter, split on ##
   if (trimmedValue.includes('##')) {
     return trimmedValue
       .split('##')
@@ -1827,18 +1827,18 @@ const splitByDelimiter = (value?: string) => {
       .filter(Boolean)
   }
 
-  // 如果没有 ## 分隔符，整个值作为一个答案
+  // Without the ## delimiter, the whole value is one answer
   return [trimmedValue]
 }
 
-// 解析布尔字段（支持多种格式：TRUE/FALSE, true/false, 是/否, 1/0等）
+// Parse a boolean field (supports TRUE/FALSE, true/false, the legacy Chinese yes/no, 1/0 and so on)
 const parseBooleanField = (value?: string, defaultValue: boolean = true): boolean | undefined => {
   if (!value) return undefined
   const normalized = value.trim().toUpperCase()
-  if (normalized === 'TRUE' || normalized === '1' || normalized === '是' || normalized === 'YES') {
+  if (normalized === 'TRUE' || normalized === '1' || normalized === '\u662f' || normalized === 'YES') { // Chinese "yes"
     return true
   }
-  if (normalized === 'FALSE' || normalized === '0' || normalized === '否' || normalized === 'NO') {
+  if (normalized === 'FALSE' || normalized === '0' || normalized === '\u5426' || normalized === 'NO') { // Chinese "no"
     return false
   }
   return defaultValue
@@ -1863,10 +1863,10 @@ const stopPolling = () => {
 
 const startPolling = (taskId: string) => {
   stopPolling()
-  // 保存taskId到localStorage，以便刷新后恢复
+  // Save the taskId to localStorage so it can be restored after a refresh
   saveTaskIdToStorage(taskId)
 
-  // 记录上次已处理数量，用于判断是否需要刷新列表
+  // Remember the last processed count, to decide whether the list needs a refresh
   let lastProcessed = 0
 
   importState.pollingInterval = setInterval(async () => {
@@ -1874,7 +1874,7 @@ const startPolling = (taskId: string) => {
       const res: any = await getFAQImportProgress(taskId)
       const progressData = res?.data
       if (progressData) {
-        // 从Redis进度数据中提取状态
+        // Extract the status from the Redis progress data
         // status: "pending" -> "pending", "processing" -> "running", "completed" -> "success", "failed" -> "failed"
         let status = progressData.status
         if (status === 'processing') {
@@ -1898,23 +1898,23 @@ const startPolling = (taskId: string) => {
           error: error,
         }
 
-        // 进度更新时刷新FAQ列表（每增加一些条目就刷新一次）
+        // Refresh the FAQ list on progress updates (once per batch of new entries)
         if (processed > lastProcessed) {
           lastProcessed = processed
           await loadEntries()
           await loadTags(true)
         }
 
-        // 任务完成或失败，停止轮询（但不自动关闭进度条，让用户手动关闭）
+        // The task finished or failed: stop polling (but do not close the progress bar automatically; the user closes it)
         if (status === 'success' || status === 'failed') {
           stopPolling()
           if (status === 'success') {
-            // 保存已完成的 taskId 用于后续加载结果
+            // Save the finished taskId for loading the result later
             if (importState.taskId) {
               saveLastCompletedTaskId(importState.taskId)
             }
             MessagePlugin.success(progressData.message || t('knowledgeEditor.faqImport.importSuccess'))
-            // 清除筛选条件，确保用户能看到所有新导入的数据
+            // Clear the filters so the user sees all the newly imported data
             selectedTagIds.value = []
             tagFilterCleared.value = false
             uiStore.clearSelectedTagIds()
@@ -1922,8 +1922,8 @@ const startPolling = (taskId: string) => {
             overallFAQTotal.value = 0  // Reset to trigger re-fetch
             await loadEntries()
             await loadTags(true)
-            await loadImportResult() // 加载最新的导入结果统计
-            // 任务完成后，3秒后自动关闭进度条
+            await loadImportResult() // load the latest import result stats
+            // After the task finishes, close the progress bar automatically after 3 seconds
             setTimeout(() => {
               if (importState.taskStatus?.status === 'success') {
                 handleCloseProgress()
@@ -1931,13 +1931,13 @@ const startPolling = (taskId: string) => {
             }, 3000)
           } else {
             MessagePlugin.error(error || t('common.operationFailed'))
-            // 失败时不自动关闭，让用户看到错误信息
+            // Do not close automatically on failure, so the user sees the error
           }
         }
       }
     } catch (error: any) {
       console.error('Failed to poll task status:', error)
-      // 如果任务不存在或已过期，清除存储
+      // If the task does not exist or has expired, clear the storage
       if (error?.response?.status === 404 || error?.message?.includes('not found')) {
         clearTaskIdFromStorage()
         stopPolling()
@@ -1945,7 +1945,7 @@ const startPolling = (taskId: string) => {
         importState.taskStatus = null
       }
     }
-  }, 3000) // 每3秒轮询一次
+  }, 3000) // poll every 3 seconds
 }
 
 const handleCancelImport = () => {
@@ -1954,7 +1954,7 @@ const handleCancelImport = () => {
   importState.taskId = null
   importState.taskStatus = null
   importVisible.value = false
-  // 注意：不清除localStorage，因为任务可能还在进行中
+  // Note: localStorage is not cleared, since the task may still be running
 }
 
 const handleCloseProgress = () => {
@@ -1964,7 +1964,7 @@ const handleCloseProgress = () => {
   clearTaskIdFromStorage()
 }
 
-// localStorage相关函数
+// localStorage helpers
 const getStorageKey = () => {
   return `faq_import_task_${props.kbId}`
 }
@@ -1997,7 +1997,7 @@ const clearTaskIdFromStorage = () => {
   }
 }
 
-// 恢复导入任务状态（用于刷新后恢复）
+// Restore the import task state (for restoring after a refresh)
 const restoreImportTask = async () => {
   if (!props.kbId) return
 
@@ -2005,12 +2005,12 @@ const restoreImportTask = async () => {
   if (!savedTaskId) return
 
   try {
-    // 查询Redis中的进度状态
+    // Query the progress status in Redis
     const res: any = await getFAQImportProgress(savedTaskId)
     const progressData = res?.data
 
     if (progressData) {
-      // 从Redis进度数据中提取状态
+      // Extract the status from the Redis progress data
       let status = progressData.status
       if (status === 'processing') {
         status = 'running'
@@ -2033,20 +2033,20 @@ const restoreImportTask = async () => {
         error: error,
       }
 
-      // 如果任务还在进行中，恢复轮询
+      // If the task is still running, resume polling
       if (status === 'pending' || status === 'running') {
         startPolling(savedTaskId)
       } else {
-        // 任务已完成或失败，清除存储
+        // The task finished or failed, clear the storage
         clearTaskIdFromStorage()
       }
     } else {
-      // 任务不存在，清除存储
+      // The task does not exist, clear the storage
       clearTaskIdFromStorage()
     }
   } catch (error: any) {
     console.error('Failed to restore import task:', error)
-    // 如果任务不存在或已过期，清除存储
+    // If the task does not exist or has expired, clear the storage
     if (error?.response?.status === 404 || error?.message?.includes('not found')) {
       clearTaskIdFromStorage()
     }
@@ -2076,7 +2076,7 @@ const getLastCompletedTaskId = (): string | null => {
   }
 }
 
-// 加载持久化的导入结果统计
+// Load the persisted import result stats
 const loadImportResult = async () => {
   if (!props.kbId) return
 
@@ -2090,7 +2090,7 @@ const loadImportResult = async () => {
     const res: any = await getFAQImportProgress(lastTaskId)
     const data = res?.data
     if (data && data.status === 'completed') {
-      // 检查后端返回的 display_status，如果是 close 则不显示
+      // Check the display_status the backend returns; hide it if it is close
       if (data.display_status === 'close') {
         importResult.value = null
         return
@@ -2122,7 +2122,7 @@ const loadImportResult = async () => {
   }
 }
 
-// 关闭导入结果统计卡片
+// Close the import result stats card
 const closeImportResult = async () => {
   importResultExpanded.value = false
   if (!props.kbId) return
@@ -2136,17 +2136,17 @@ const closeImportResult = async () => {
   }
 }
 
-// 下载失败条目原因
+// Download the failed entries with reasons
 const downloadFailedEntries = () => {
   if (!importResult.value?.failed_entries_url) {
     MessagePlugin.warning(t('faqManager.import.noFailedRecords'))
     return
   }
-  // 直接打开下载链接
+  // Open the download link directly
   window.open(importResult.value.failed_entries_url, '_blank')
 }
 
-// 格式化导入时间
+// Format the import time
 const formatImportTime = (timeStr?: string) => {
   if (!timeStr) return ''
   try {
@@ -2163,12 +2163,12 @@ const handleImport = async () => {
     return
   }
 
-  // 如果任务已完成或失败，关闭对话框
+  // If the task finished or failed, close the dialog
   if (importState.taskStatus?.status === 'success' || importState.taskStatus?.status === 'failed') {
     if (importState.taskStatus.status === 'success') {
       handleCancelImport()
     } else {
-      // 失败时重试
+      // Retry on failure
       importState.taskId = null
       importState.taskStatus = null
       importState.importing = false
@@ -2193,16 +2193,16 @@ const handleImport = async () => {
         processed: 0,
         message: t('faqManager.import.progressHint'),
       }
-      // 开始轮询任务状态
+      // Start polling the task status
       startPolling(taskId)
-      // 立即关闭导入对话框，进度将在列表页面顶部显示
+      // Close the import dialog right away; progress shows at the top of the list page
       importVisible.value = false
-      // 重置导入对话框状态（但保留taskId和taskStatus用于进度显示）
+      // Reset the import dialog state (but keep taskId and taskStatus for the progress display)
       importState.file = null
       importState.preview = []
       importState.importing = false
     } else {
-      // 如果没有返回任务ID，可能是旧版本API，使用同步方式
+      // No task ID returned: possibly an old API version, so use the synchronous path
       MessagePlugin.success(t('knowledgeEditor.faqImport.importSuccess'))
       importVisible.value = false
       await loadEntries()
@@ -2215,37 +2215,37 @@ const handleImport = async () => {
   }
 }
 
-// 组件卸载时清理轮询
+// Clean up polling when the component unmounts
 onUnmounted(() => {
   stopPolling()
 })
 
-// 下载示例文件选项
+// Download example file options
 const downloadExampleOptions = computed(() => [
   { content: t('knowledgeEditor.faqImport.downloadExampleJSON'), value: 'json' },
   { content: t('knowledgeEditor.faqImport.downloadExampleCSV'), value: 'csv' },
   { content: t('knowledgeEditor.faqImport.downloadExampleExcel'), value: 'excel' },
 ])
 
-// 示例数据
+// Example data
 const exampleData: FAQEntryPayload[] = [
   {
-    standard_question: '什么是 AI KB？',
-    answers: ['AI KB 是一个智能知识库管理系统', '它支持多种知识库类型和导入方式'],
-    similar_questions: ['AI KB 是什么？', '介绍一下 AI KB'],
-    negative_questions: ['这不是 AI KB', '与 AI KB 无关'],
-    tag_name: '产品介绍',
+    standard_question: 'What is AI KB?',
+    answers: ['AI KB is an intelligent knowledge base management system', 'It supports several knowledge base types and import methods'],
+    similar_questions: ['What is AI KB about?', 'Tell me about AI KB'],
+    negative_questions: ['This is not AI KB', 'Unrelated to AI KB'],
+    tag_name: 'Product overview',
   },
   {
-    standard_question: '如何创建知识库？',
-    answers: ['点击"新建知识库"按钮', '选择知识库类型并填写相关信息', '完成创建后即可开始使用'],
-    similar_questions: ['怎么创建知识库？', '如何新建知识库？'],
+    standard_question: 'How do I create a knowledge base?',
+    answers: ['Click the "New knowledge base" button', 'Choose a knowledge base type and fill in the details', 'Once it is created you can start using it'],
+    similar_questions: ['How can I create a knowledge base?', 'How do I add a new knowledge base?'],
     negative_questions: [],
-    tag_name: '使用指南',
+    tag_name: 'User guide',
   },
 ]
 
-// 下载示例文件
+// Download an example file
 const handleDownloadExample = (data: { value: string }) => {
   const { value } = data
   switch (value) {
@@ -2261,7 +2261,7 @@ const handleDownloadExample = (data: { value: string }) => {
   }
 }
 
-// 下载 JSON 示例
+// Download the JSON example
 const downloadJSONExample = () => {
   const jsonStr = JSON.stringify(exampleData, null, 2)
   const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' })
@@ -2275,25 +2275,25 @@ const downloadJSONExample = () => {
   URL.revokeObjectURL(url)
 }
 
-// 下载 CSV 示例
+// Download the CSV example (headers match the server export in knowledge_faq.go)
 const downloadCSVExample = () => {
-  const headers = ['标签(必填)', '问题(必填)', '相似问题(选填-多个用##分隔)', '反例问题(选填-多个用##分隔)', '机器人回答(必填-多个用##分隔)', '是否全部回复(选填-默认FALSE)', '是否停用(选填-默认FALSE)', '是否禁止被推荐(选填-默认False 可被推荐)']
+  const headers = ['tag_name(required)', 'standard_question(required)', 'similar_questions(optional - separate multiple with ##)', 'negative_questions(optional - separate multiple with ##)', 'answers(required - separate multiple with ##)', 'answer_all(optional - default FALSE)', 'is_disabled(optional - default FALSE)', 'not_recommended(optional - default FALSE means recommendable)']
   const rows = exampleData.map((item) => {
     return [
-      item.tag_name || '', // 标签
+      item.tag_name || '', // tag_name
       item.standard_question,
       item.similar_questions.join('##'),
       item.negative_questions.join('##'),
       item.answers.join('##'),
-      'FALSE', // 是否全部回复
-      'FALSE', // 是否停用
-      'FALSE', // 是否禁止被推荐
+      'FALSE', // answer_all
+      'FALSE', // is_disabled
+      'FALSE', // not_recommended
     ]
   })
   const csvContent = [
-    headers.join('\t'), // 使用制表符分隔
+    headers.join('\t'), // tab-separated
     ...rows.map((row) => row.map((cell) => {
-      // 如果包含制表符、换行符或引号，需要用引号包裹
+      // Quote the cell if it contains a tab, newline or quote
       if (cell.includes('\t') || cell.includes('\n') || cell.includes('"')) {
         return `"${cell.replace(/"/g, '""')}"`
       }
@@ -2311,18 +2311,18 @@ const downloadCSVExample = () => {
   URL.revokeObjectURL(url)
 }
 
-// 下载 Excel 示例
+// Download the Excel example
 const downloadExcelExample = () => {
   const worksheet = XLSX.utils.json_to_sheet(
     exampleData.map((item) => ({
-      '标签(必填)': item.tag_name || '',
-      '问题(必填)': item.standard_question,
-      '相似问题(选填-多个用##分隔)': item.similar_questions.join('##'),
-      '反例问题(选填-多个用##分隔)': item.negative_questions.join('##'),
-      '机器人回答(必填-多个用##分隔)': item.answers.join('##'),
-      '是否全部回复(选填-默认FALSE)': 'FALSE',
-      '是否停用(选填-默认FALSE)': 'FALSE',
-      '是否禁止被推荐(选填-默认False 可被推荐)': 'FALSE',
+      'tag_name(required)': item.tag_name || '',
+      'standard_question(required)': item.standard_question,
+      'similar_questions(optional - separate multiple with ##)': item.similar_questions.join('##'),
+      'negative_questions(optional - separate multiple with ##)': item.negative_questions.join('##'),
+      'answers(required - separate multiple with ##)': item.answers.join('##'),
+      'answer_all(optional - default FALSE)': 'FALSE',
+      'is_disabled(optional - default FALSE)': 'FALSE',
+      'not_recommended(optional - default FALSE means recommendable)': 'FALSE',
     })),
   )
   const workbook = XLSX.utils.book_new()
@@ -2330,7 +2330,7 @@ const downloadExcelExample = () => {
   XLSX.writeFile(workbook, 'faq_example.xlsx')
 }
 
-// 导出 FAQ 数据
+// Export FAQ data
 const exportLoading = ref(false)
 const downloadExportBlob = (blob: Blob, ext: 'csv' | 'json') => {
   const url = URL.createObjectURL(blob)
@@ -2376,7 +2376,7 @@ watch(
 
     if (!newKbId) {
       kbInfo.value = null
-      // kbId变化时，清除之前的任务状态
+      // Clear the previous task state when kbId changes
       stopPolling()
       importState.taskId = null
       importState.taskStatus = null
@@ -2391,7 +2391,7 @@ watch(
 
     loadEntries()
     loadTags(true)
-    // 恢复导入任务状态（如果存在）
+    // Restore the import task state (if any)
     await restoreImportTask()
   },
   { immediate: true },
@@ -2417,7 +2417,7 @@ watch(tagSearchQuery, (newVal, oldVal) => {
   }, 300)
 })
 
-// 监听FAQ搜索关键词变化
+// Watch the FAQ search keyword
 watch(entrySearchKeyword, (newVal, oldVal) => {
   if (newVal === oldVal) return
   if (entrySearchDebounce) {
@@ -2444,13 +2444,13 @@ const handleSearch = async () => {
     })
     const results = (res.data || []).map((entry: FAQEntry) => ({
       ...entry,
-      similarCollapsed: true,  // 相似问默认折叠
-      negativeCollapsed: true,  // 反例默认折叠
-      answersCollapsed: true,   // 答案默认折叠
+      similarCollapsed: true,  // similar questions collapsed by default
+      negativeCollapsed: true,  // negative examples collapsed by default
+      answersCollapsed: true,   // answers collapsed by default
       expanded: false,
     })) as FAQEntry[]
 
-    // 按score从大到小排序
+    // Sort by score, highest first
     searchResults.value = results.sort((a, b) => (b.score || 0) - (a.score || 0))
   } catch (error: any) {
     MessagePlugin.error(error?.message || t('common.operationFailed'))
@@ -2464,7 +2464,7 @@ const toggleResult = (result: FAQEntry) => {
   result.expanded = !result.expanded
 }
 
-// 防抖函数
+// Debounce function
 let arrangeCardsTimer: ReturnType<typeof setTimeout> | null = null
 const debounceArrangeCards = (delay = 100) => {
   if (arrangeCardsTimer) {
@@ -2476,19 +2476,19 @@ const debounceArrangeCards = (delay = 100) => {
   }, delay)
 }
 
-// 瀑布流布局函数 - 优化版本，避免闪烁
+// Masonry layout function, optimized to avoid flicker
 const arrangeCards = () => {
   if (!cardListRef.value) return
 
   const cards = cardListRef.value.querySelectorAll('.faq-card') as NodeListOf<HTMLElement>
   if (cards.length === 0) return
 
-  // 获取容器宽度和列数
+  // Get the container width and column count
   const containerWidth = cardListRef.value.offsetWidth
-  const gap = 12 // 与 CSS gap 保持一致
+  const gap = 12 // matches the CSS gap
   let columnCount = 1
 
-  // 根据容器宽度计算列数（增加每行的卡片数量）
+  // Compute the column count from the container width (more cards per row)
   if (containerWidth >= 2560) columnCount = 12
   else if (containerWidth >= 1920) columnCount = 10
   else if (containerWidth >= 1536) columnCount = 8
@@ -2499,31 +2499,31 @@ const arrangeCards = () => {
 
   const columnWidth = (containerWidth - (gap * (columnCount - 1))) / columnCount
 
-  // 初始化每列的高度数组
+  // Initialize the height array for each column
   const columnHeights = new Array(columnCount).fill(0)
 
-  // 使用 requestAnimationFrame 优化性能
+  // Use requestAnimationFrame for performance
   requestAnimationFrame(() => {
-    // 先设置宽度，保持当前位置不变
+    // Set the width first, keeping the current position
     cards.forEach((card) => {
-      // 确保卡片是绝对定位
+      // Make sure the card is absolutely positioned
       if (card.style.position !== 'absolute') {
         card.style.position = 'absolute'
       }
-      // 设置宽度以便正确计算高度
+      // Set the width so the height computes correctly
       card.style.width = `${columnWidth}px`
     })
 
-    // 等待浏览器重新计算布局
+    // Wait for the browser to recompute layout
     requestAnimationFrame(() => {
-      // 计算所有卡片的高度（不改变位置）
+      // Compute every card's height (without moving it)
       const cardHeights: number[] = []
       cards.forEach((card) => {
         const height = card.offsetHeight || card.getBoundingClientRect().height
         cardHeights.push(height)
       })
 
-      // 计算新位置
+      // Compute the new positions
       const newPositions: Array<{ top: number; left: number }> = []
       cardHeights.forEach((height) => {
         const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights))
@@ -2534,15 +2534,15 @@ const arrangeCards = () => {
         columnHeights[shortestColumnIndex] += height + gap
       })
 
-      // 批量更新所有卡片位置，使用CSS过渡实现平滑移动
+      // Update every card position in one batch, with a CSS transition for smooth movement
       cards.forEach((card, index) => {
         const { top, left } = newPositions[index]
         const currentTop = parseFloat(card.style.top) || 0
         const currentLeft = parseFloat(card.style.left) || 0
 
-        // 如果位置发生变化，添加过渡效果
+        // If the position changed, add the transition
         if (Math.abs(currentTop - top) > 1 || Math.abs(currentLeft - left) > 1) {
-          // 使用 will-change 提示浏览器优化
+          // Hint the browser with will-change
           card.style.willChange = 'top, left'
           card.style.transition = 'top 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }
@@ -2553,14 +2553,14 @@ const arrangeCards = () => {
         card.style.width = `${columnWidth}px`
       })
 
-      // 设置容器高度
+      // Set the container height
       const maxHeight = Math.max(...columnHeights)
       if (cardListRef.value) {
         cardListRef.value.style.height = `${maxHeight}px`
         cardListRef.value.style.position = 'relative'
       }
 
-      // 动画完成后移除过渡和 will-change，避免影响后续交互
+      // After the animation, remove the transition and will-change so later interaction is unaffected
       setTimeout(() => {
         cards.forEach((card) => {
           card.style.transition = ''
@@ -2571,7 +2571,7 @@ const arrangeCards = () => {
   })
 }
 
-// 监听窗口大小变化（使用防抖）
+// Watch window resizes (debounced)
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
 const handleResize = () => {
   if (resizeTimer) {
@@ -2579,7 +2579,7 @@ const handleResize = () => {
   }
   resizeTimer = setTimeout(() => {
     arrangeCards()
-    // 窗口变大时可能需要加载更多，延迟执行确保布局完成
+    // A larger window may need more data; delayed so layout finishes first
     setTimeout(() => {
       checkAndLoadMore()
     }, 350)
@@ -2592,10 +2592,10 @@ onMounted(async () => {
   orgStore.fetchSharedKnowledgeBases()
   loadKnowledgeList()
   window.addEventListener('resize', handleResize)
-  // 如果已有kbId，恢复导入任务状态
+  // If there is already a kbId, restore the import task state
   if (props.kbId) {
     await restoreImportTask()
-    await loadImportResult() // 加载导入结果
+    await loadImportResult() // load the import result
   }
 })
 
@@ -2609,28 +2609,28 @@ onUnmounted(() => {
   }
 })
 
-// 监听 entries 变化，重新布局
+// Watch entries and re-layout
 watch(() => entries.value.length, () => {
   nextTick(() => {
     arrangeCards()
   })
 })
 
-// 监听折叠状态变化，重新布局（使用防抖和动画完成后的回调）
+// Watch the collapse state and re-layout (debounced, with a callback after the animation)
 watch(() => entries.value.map(e => ({
   id: e.id,
   similarCollapsed: e.similarCollapsed,
   negativeCollapsed: e.negativeCollapsed,
   answersCollapsed: e.answersCollapsed
 })), () => {
-  // 使用 nextTick 确保 DOM 更新
+  // nextTick makes sure the DOM has updated
   nextTick(() => {
-    // 等待一个渲染帧，让高度变化生效
+    // Wait one render frame for the height change to take effect
     requestAnimationFrame(() => {
-      // 再等待一个渲染帧，确保高度计算准确
+      // Wait one more render frame so the height measures accurately
       requestAnimationFrame(() => {
-        // 等待 Transition 动画完成后再布局（slide-down 动画时长约 200ms）
-        // 使用防抖避免频繁调用
+        // Lay out after the Transition animation finishes (slide-down takes about 200ms)
+        // Debounced to avoid frequent calls
         debounceArrangeCards(250)
       })
     })
@@ -2663,7 +2663,7 @@ watch(() => entries.value.map(e => ({
   gap: 20px;
 }
 
-// 与列表页一致：浅灰底圆角区，左侧筛选为白底卡片
+// Same as the list page: a light gray rounded area, with the filters on the left as a white card
 .faq-main {
   display: flex;
   flex: 1;
@@ -2890,7 +2890,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 导入结果入口：默认仅图标，hover / 点击展开浮层
+// Import result entry: icon only by default, the overlay expands on hover / click
 .faq-import-host {
   position: relative;
   flex-shrink: 0;
@@ -2947,7 +2947,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// FAQ 导入提示条（紧凑单行）
+// FAQ import hint bar (compact single line)
 .faq-import-strip {
   display: inline-flex;
   align-items: center;
@@ -3121,7 +3121,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 滚动容器
+// Scroll container
 .faq-scroll-container {
   flex: 1;
   overflow-y: auto;
@@ -3188,7 +3188,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 卡片列表样式 - 使用绝对定位实现瀑布流，下一行补齐上一行空缺
+// Card list styles: absolute positioning for a masonry layout, where the next row fills gaps in the previous one
 .faq-card-list {
   position: relative;
   width: 100%;
@@ -3434,7 +3434,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-/* card-menu 样式已统一至 @/assets/dropdown-menu.less，使用 .popup-menu 类 */
+/* card-menu styles are unified in @/assets/dropdown-menu.less, using the .popup-menu class */
 
 .faq-question {
   flex: 1;
@@ -3510,7 +3510,7 @@ watch(() => entries.value.map(e => ({
       font-size: var(--app-text-md);
       color: var(--td-text-color-placeholder);
       flex-shrink: 0;
-      margin-left: auto; // 让箭头靠右对齐
+      margin-left: auto; // align the arrow right
     }
 
     .section-count {
@@ -3541,16 +3541,16 @@ watch(() => entries.value.map(e => ({
   min-width: 0;
   width: 100%;
   overflow: hidden;
-  contain: layout style paint; // 优化渲染性能
+  contain: layout style paint; // rendering performance
 
-  // 确保每个标签都有最大宽度限制
+  // Make sure every tag has a max width
   >* {
     max-width: 100%;
     min-width: 0;
     flex: 0 1 auto;
   }
 
-  // 当标签单独一行时，限制最大宽度
+  // Limit the max width when a tag is alone on a line
   >*:first-child:last-child {
     max-width: 100%;
   }
@@ -3579,7 +3579,7 @@ watch(() => entries.value.map(e => ({
     color: var(--td-text-color-primary);
   }
 
-  // 针对TDesign tag内部的span元素
+  // For the span inside a TDesign tag
   :deep(.t-tag span),
   :deep(.t-tag > span) {
     display: block !important;
@@ -3593,7 +3593,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 确保 tag 本身不会超出容器
+// Make sure the tag itself does not overflow the container
 .faq-tags :deep(.t-tag) {
   max-width: 100%;
   min-width: 0;
@@ -3630,7 +3630,7 @@ watch(() => entries.value.map(e => ({
   font-style: italic;
 }
 
-// 空状态样式
+// Empty state styles
 .faq-empty-state {
   display: flex;
   justify-content: center;
@@ -3669,7 +3669,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 导入对话框样式 - 与创建知识库弹窗风格一致
+// Import dialog styles, matching the create knowledge base dialog
 .faq-import-overlay {
   position: fixed;
   inset: 0;
@@ -3745,9 +3745,9 @@ watch(() => entries.value.map(e => ({
   overflow-x: hidden;
   padding: 24px;
   min-height: 0;
-  max-height: calc(90vh - 140px); // 减去 header 和 footer 的高度
+  max-height: calc(90vh - 140px); // minus the header and footer height
 
-  // 自定义滚动条
+  // Custom scrollbar
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -3777,7 +3777,7 @@ watch(() => entries.value.map(e => ({
   flex-shrink: 0;
 }
 
-// 导入表单项
+// Import form item
 .import-form-item {
   margin-bottom: 24px;
 
@@ -3786,7 +3786,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 文件标签行
+// File label row
 .file-label-row {
   display: flex;
   align-items: center;
@@ -3795,7 +3795,7 @@ watch(() => entries.value.map(e => ({
   gap: 12px;
 }
 
-// 下载示例按钮
+// Download example button
 .download-example-btn {
   display: flex;
   align-items: center;
@@ -3827,7 +3827,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 导入表单标签
+// Import form label
 .import-form-label {
   display: block;
   margin-bottom: 0;
@@ -3846,12 +3846,12 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 文件上传包装器
+// File upload wrapper
 .file-upload-wrapper {
   width: 100%;
 }
 
-// 隐藏的文件输入
+// Hidden file input
 .file-input-hidden {
   position: absolute;
   width: 0;
@@ -3861,7 +3861,7 @@ watch(() => entries.value.map(e => ({
   pointer-events: none;
 }
 
-// 文件上传区域
+// File upload area
 .file-upload-area {
   position: relative;
   width: 100%;
@@ -3887,7 +3887,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 文件上传内容
+// File upload content
 .file-upload-content {
   display: flex;
   flex-direction: column;
@@ -3932,7 +3932,7 @@ watch(() => entries.value.map(e => ({
   word-break: break-all;
 }
 
-// 导入表单提示
+// Import form hint
 .import-form-tip {
   margin-top: 8px;
   font-family: var(--app-font-family);
@@ -3941,7 +3941,7 @@ watch(() => entries.value.map(e => ({
   line-height: 18px;
 }
 
-// 预览区域
+// Preview area
 .import-preview {
   margin-top: 20px;
   padding: 16px;
@@ -4028,11 +4028,11 @@ watch(() => entries.value.map(e => ({
   text-align: center;
 }
 
-// 响应式布局由 JavaScript 动态计算，这里不需要媒体查询
+// The responsive layout is computed in JavaScript, so no media queries are needed here
 
-// 卡片菜单弹窗样式已统一至 @/assets/dropdown-menu.less
+// Card menu popup styles are unified in @/assets/dropdown-menu.less
 
-// FAQ 编辑器抽屉样式
+// FAQ editor drawer styles
 :deep(.faq-editor-drawer) {
   .t-drawer__body {
     padding: 20px;
@@ -4063,7 +4063,7 @@ watch(() => entries.value.map(e => ({
   overflow-x: hidden;
   min-height: 0;
 
-  // 自定义滚动条
+  // Custom scrollbar
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -4094,7 +4094,7 @@ watch(() => entries.value.map(e => ({
   gap: 12px;
 }
 
-// 全宽输入框包装器 - 统一样式
+// Full-width input wrapper, unified styles
 .full-width-input-wrapper {
   display: flex;
   gap: 8px;
@@ -4115,7 +4115,7 @@ watch(() => entries.value.map(e => ({
     }
   }
 
-  // textarea需要顶部对齐
+  // a textarea needs top alignment
   &.textarea-wrapper {
     align-items: flex-start;
   }
@@ -4281,11 +4281,11 @@ watch(() => entries.value.map(e => ({
   font-family: var(--app-font-family);
 }
 
-// FAQ编辑器表单样式 - 完全参考设置页面
+// FAQ editor form styles, modeled entirely on the settings page
 .faq-editor-form {
   width: 100%;
 
-  // 隐藏Form的默认结构
+  // Hide the Form's default structure
   :deep(.t-form__label) {
     display: none !important;
     width: 0 !important;
@@ -4338,18 +4338,18 @@ watch(() => entries.value.map(e => ({
     }
   }
 
-  // 主要字段（标准问、答案）的强调样式
+  // Emphasis for the main fields (standard question, answers)
   &.setting-row-primary {
     padding: 20px 0;
     padding-left: 12px;
     position: relative;
 
-    // 第一个（标准问）去掉顶部间距
+    // The first one (standard question) drops the top spacing
     &:first-child {
       padding-top: 0;
     }
 
-    // 左侧颜色标记（标准问和答案都用绿色）
+    // Left color marker (green for both standard question and answers)
     &::before {
       content: '';
       position: absolute;
@@ -4367,12 +4367,12 @@ watch(() => entries.value.map(e => ({
     }
   }
 
-  // 可选字段（相似问、反例）的次要样式
+  // Secondary style for the optional fields (similar questions, negative examples)
   &.setting-row-optional {
     padding-left: 12px;
     position: relative;
 
-    // 左侧颜色标记
+    // Left color marker
     &::before {
       content: '';
       position: absolute;
@@ -4395,17 +4395,17 @@ watch(() => entries.value.map(e => ({
     }
   }
 
-  // 相似问的蓝色标记
+  // Blue marker for similar questions
   &.setting-row-similar::before {
     background: var(--td-brand-color);
   }
 
-  // 反例的橙色标记
+  // Orange marker for negative examples
   &.setting-row-negative::before {
     background: var(--td-warning-color);
   }
 
-  // 答案去掉底部边框
+  // Answers drop the bottom border
   &.setting-row-answer {
     border-bottom: none;
   }
@@ -4484,7 +4484,7 @@ watch(() => entries.value.map(e => ({
   flex-direction: column;
 }
 
-// 垂直布局中的输入框确保全宽
+// Inputs in the vertical layout are always full width
 .setting-row.vertical .full-width-input {
   width: 100%;
 
@@ -4501,7 +4501,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// Input 组件样式 - 与登录页面一致
+// Input component styles, matching the login page
 :deep(.t-input) {
   font-family: var(--app-font-family);
   font-size: var(--app-text-base);
@@ -4546,7 +4546,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// Textarea 组件样式
+// Textarea component styles
 :deep(.t-textarea) {
   font-family: var(--app-font-family);
   font-size: var(--app-text-base);
@@ -4588,7 +4588,7 @@ watch(() => entries.value.map(e => ({
   }
 }
 
-// 导入弹窗动画
+// Import dialog animation
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity var(--app-motion-base) ease;
@@ -4614,7 +4614,7 @@ watch(() => entries.value.map(e => ({
   opacity: 0;
 }
 
-// Tag 样式优化
+// Tag style tweaks
 .answer-tag {
   background: var(--td-brand-color)1a;
   color: var(--td-brand-color);
@@ -4627,7 +4627,7 @@ watch(() => entries.value.map(e => ({
   color: var(--td-text-color-placeholder);
 }
 
-// Search test drawer styles - 与编辑器抽屉风格一致
+// Search test drawer styles, matching the editor drawer
 :deep(.faq-search-drawer) {
   .t-drawer__body {
     padding: 20px;
@@ -4655,7 +4655,7 @@ watch(() => entries.value.map(e => ({
   overflow-y: auto;
   padding-right: 0;
 
-  // 隐藏滚动条但保持滚动功能
+  // Hide the scrollbar but keep scrolling
   scrollbar-width: none; // Firefox
   -ms-overflow-style: none; // IE and Edge
 
@@ -4971,7 +4971,7 @@ watch(() => entries.value.map(e => ({
   width: 100%;
 }
 
-// Slide down animation - 优化性能
+// Slide down animation, optimized for performance
 .slide-down-enter-active {
   transition: opacity var(--app-motion-base) cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -5012,7 +5012,7 @@ watch(() => entries.value.map(e => ({
   gap: 8px;
 }
 
-// 批量标签弹窗样式 - 与导入对话框风格一致
+// Batch tag dialog styles, matching the import dialog
 .batch-tag-overlay {
   position: fixed;
   inset: 0;

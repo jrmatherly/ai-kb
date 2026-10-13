@@ -84,7 +84,7 @@
       </button>
     </div>
 
-    <!-- Add/Edit Drawer — 与 ModelEditorDialog / Parser / Storage 抽屉同款风格 -->
+    <!-- Add/Edit Drawer, in the same style as the ModelEditorDialog / Parser / Storage drawers -->
     <SettingDrawer
       v-model:visible="showAddProviderDialog"
       :title="editingProvider ? t('webSearchSettings.editProvider') : t('webSearchSettings.addProvider')"
@@ -93,10 +93,10 @@
       @confirm="saveProvider"
     >
       <!--
-        Header icon — 与列表 .provider-card__badge 同款 logo/mono/fallback。
-        - color logo（如 Bing/Google 彩色徽标）→ <img>，header 容器变白底 + 细边
-        - mono logo（mask-image）→ ::before-style span，currentColor 染色
-        - fallback：providerId 首字母 monogram
+        Header icon: the same logo/mono/fallback as the list's .provider-card__badge.
+        - color logo (such as the Bing/Google color marks) → <img>, and the header container gets a white background + thin border
+        - mono logo (mask-image) → ::before-style span, tinted with currentColor
+        - fallback: providerId initial-letter monogram
       -->
       <template v-if="selectedProviderType" #headerIcon>
         <img
@@ -114,7 +114,7 @@
       </template>
 
       <!--
-        Subtitle: provider 类型名 + 官方文档外链（若有）。
+        Subtitle: provider type name + official docs link (if any).
       -->
       <template v-if="selectedProviderType" #subtitle>
         <span>{{ selectedProviderType.name }}</span>
@@ -131,13 +131,13 @@
       </template>
 
       <!--
-        Test connection (footer-left, 与其他抽屉同款)。已经统一为唯一入口 —
-        外层卡片菜单不再露出"测试连接"，所有测试都从这里发起。
+        Test connection (footer-left, same as the other drawers). This is now the single entry point:
+        the outer card menu no longer shows "Test connection", so every test starts here.
 
-        全部 provider 都显示按钮（包括 DuckDuckGo / SearXNG 这些"免费"的）—
-        免费只是不要 api_key，不代表不需要测：DuckDuckGo 走外网可能被墙、
-        SearXNG 是自托管要验 base_url 可达性。disabled 由 canTestConnection
-        统一控制，缺哪个必填字段就置灰。
+        Every provider shows the button (including "free" ones such as DuckDuckGo / SearXNG).
+        Free only means no api_key, not that no test is needed: DuckDuckGo goes over the internet and may be blocked,
+        and SearXNG is self-hosted, so base_url reachability needs checking. disabled is controlled by canTestConnection
+        throughout, graying the button out when any required field is missing.
       -->
       <template v-if="selectedProviderType" #footer-left>
         <t-button
@@ -163,11 +163,11 @@
       </template>
 
       <t-form ref="formRef" :data="providerForm" label-align="top" class="provider-form">
-        <!-- Section 1 — 基本信息 -->
+        <!-- Section 1: basic info -->
         <section class="setting-drawer__section">
-          <h4 class="setting-drawer__section-title">{{ t('webSearchSettings.basicSection', '基本信息') }}</h4>
+          <h4 class="setting-drawer__section-title">{{ t('webSearchSettings.basicSection', 'Basic') }}</h4>
 
-          <!-- providerType 选择器：仅在新建时可改 -->
+          <!-- providerType picker: editable only when creating -->
           <div class="form-item">
             <label class="form-label required">{{ t('webSearchSettings.providerTypeLabel') }}</label>
             <t-select
@@ -176,10 +176,10 @@
               @change="onProviderTypeChange"
             >
               <!--
-                Just provider name in each option — we used to append a "免费"
+                Just provider name in each option. We used to append a "Free"
                 t-tag for providers that don't take an api_key, but the
-                "免费"分类对用户决策没什么帮助（DuckDuckGo / SearXNG 也都
-                需要可用的网络/自托管实例），反而占视觉空间。
+                "Free" category did not help users decide (DuckDuckGo / SearXNG also
+                need a working network or self-hosted instance) and took up visual space.
               -->
               <t-option v-for="pt in providerTypes" :key="pt.id" :value="pt.id" :label="pt.name" />
             </t-select>
@@ -202,12 +202,12 @@
           </div>
         </section>
 
-        <!-- Section 2 — 连接配置（base url / api key / engine id），仅当任意字段需要时渲染 -->
+        <!-- Section 2: connection config (base url / api key / engine id), rendered only when some field needs it -->
         <section
           v-if="selectedProviderType?.requires_api_key || selectedProviderType?.supports_optional_api_key || selectedProviderType?.requires_engine_id || selectedProviderType?.requires_base_url || selectedProviderType?.config_fields?.length"
           class="setting-drawer__section"
         >
-          <h4 class="setting-drawer__section-title">{{ t('webSearchSettings.credentialsSection', '连接配置') }}</h4>
+          <h4 class="setting-drawer__section-title">{{ t('webSearchSettings.credentialsSection', 'Connection') }}</h4>
 
           <div v-if="selectedProviderType?.requires_base_url" class="form-item">
             <label class="form-label required">{{ t('webSearchSettings.baseUrlLabel') }}</label>
@@ -218,14 +218,14 @@
           </div>
 
           <!--
-            Edit 模式下凭证由 CredentialResource 管理（独立的 /credentials
-            子资源调用），不与本表单 submit 耦合；Create 模式下用 plain
-            password input + lock prefix-icon，与 ModelEditorDialog 一致。
+            In Edit mode credentials are managed by CredentialResource (separate /credentials
+            subresource calls), not coupled to this form's submit; Create mode uses a plain
+            password input + lock prefix-icon, matching ModelEditorDialog.
           -->
           <div v-if="selectedProviderType?.requires_api_key || selectedProviderType?.supports_optional_api_key" class="form-item">
             <label class="form-label" :class="{ required: selectedProviderType?.requires_api_key }">
               {{ selectedProviderType?.supports_optional_api_key && !selectedProviderType?.requires_api_key
-                ? t('webSearchSettings.apiKeyOptionalLabel', 'API Key（可选）')
+                ? t('webSearchSettings.apiKeyOptionalLabel', 'API Key (optional)')
                 : t('webSearchSettings.apiKeyLabel') }}
             </label>
             <CredentialResource
@@ -277,12 +277,12 @@
           </div>
         </section>
 
-        <!-- Section 3 — 选项（代理 / 默认） -->
+        <!-- Section 3: options (proxy / default) -->
         <section
           v-if="selectedProviderType?.supports_proxy || selectedProviderType"
           class="setting-drawer__section"
         >
-          <h4 class="setting-drawer__section-title">{{ t('webSearchSettings.optionsSection', '选项') }}</h4>
+          <h4 class="setting-drawer__section-title">{{ t('webSearchSettings.optionsSection', 'Options') }}</h4>
 
           <div v-if="selectedProviderType?.supports_proxy" class="form-item">
             <label class="form-label">{{ t('webSearchSettings.proxyUrlLabel') }}</label>
@@ -459,13 +459,13 @@ const canTestConnection = computed(() => {
   return true
 })
 
-// 卡片首字母徽章。复用 providerType 信息表，让多字节缩写也走同一处。
+// Card initial-letter badge. Reuses the providerType info table so multi-byte abbreviations go through one place too.
 const providerInitial = (providerId: string) => {
   const label = providerTypes.value.find(p => p.id === providerId)?.name || providerId
   return (label.trim().charAt(0) || '?').toUpperCase()
 }
 
-// 见 VectorStoreSettings 的同名注释：返回 --logo-url 给 ::before 用 mask 渲染。
+// See the comment of the same name in VectorStoreSettings: returns --logo-url for ::before to render with a mask.
 const resolveLogo = (providerId: string) => providerLogo('websearch', providerId)
 
 const badgeClass = (providerId: string) => {
@@ -507,8 +507,8 @@ const onProviderTypeChange = () => {
   lastTestOk.value = null
 }
 
-// 走 chatResources 的共享快照并强刷：增删改之后对话输入栏读到的就是最新列表，
-// 不需要它再监听设置弹窗关闭去重拉。
+// Use chatResources' shared snapshot with a forced refresh: after a create, edit or delete the chat input bar reads the latest list,
+// so it does not need to watch the settings modal closing to refetch.
 const loadProviderEntities = async () => {
   try {
     await chatResources.ensureWebSearchProviders(true)
@@ -686,8 +686,8 @@ const getProviderOptions = (_entity: WebSearchProviderEntity) => {
   // Web search providers carry external API credentials; the backend
   // gates every mutation/test behind Admin+ (RegisterWebSearchProviderRoutes).
   // Hide the action menu entirely for non-Admins so they don't trip 403s.
-  // 测试连接已挪到编辑抽屉的 footer，不再放在外层菜单里 — 单一入口减少
-  // 用户疑惑（"为什么有两个测试入口，结果一样吗？"）。
+  // Test connection moved to the edit drawer's footer and is no longer in the outer menu; a single entry avoids
+  // user confusion ("why are there two test entries, do they give the same result?").
   if (!authStore.hasRole('admin')) {
     return []
   }
@@ -745,9 +745,9 @@ onMounted(async () => {
   }
 }
 
-// 卡片视觉与 ModelSettings 的 model-card 同构（徽章 + 标题 / 副标题 / url 三段式）。
-// 现阶段两份样式各自维护避免过度抽象；如果后续 Mcp / 第四个消费者出现，
-// 再把共用片段抽到 components/settings/ 下的基类。
+// The card visuals mirror ModelSettings' model-card (badge + title / subtitle / url in three parts).
+// For now each copy keeps its own styles to avoid premature abstraction; if Mcp or a fourth consumer shows up,
+// extract the shared pieces into a base under components/settings/.
 .provider-card {
   .provider-card();
 
@@ -796,13 +796,13 @@ onMounted(async () => {
   .provider-card-badge-color(#0052d9);
 }
 
-// 真实品牌 logo：白底 + 细边，logo 用 mask-image 染成 currentColor（沿用品牌色）。
-// 多套一层 .provider-card 以胜过 `.provider-card--<id> .provider-card__badge` 的具体规则。
+// Real brand logo: white background + thin border, and the logo is tinted to currentColor with mask-image (keeping the brand color).
+// The extra .provider-card level wins over the specific `.provider-card--<id> .provider-card__badge` rule.
 .provider-card__badge-img {
   .provider-card-badge-img();
 }
 
-// 各搜索源的徽章配色 —— 不强求与官方 logo 一致，挑同色系低饱和版即可。
+// Badge colors per search provider: no need to match the official logo, a low-saturation shade of the same hue is enough.
 .provider-card--duckduckgo .provider-card__badge {
   .provider-card-badge-color(#de5833);
 }
@@ -901,7 +901,7 @@ onMounted(async () => {
   width: 100%;
 }
 
-// ---- 抽屉内容 — 与 ModelEditorDialog 同款约定 ----
+// ---- Drawer content, same conventions as ModelEditorDialog ----
 .form-item {
   margin-bottom: 0;
 }
@@ -942,7 +942,7 @@ onMounted(async () => {
   font-size: var(--app-text-md);
 }
 
-// 隐藏 t-form 默认的 form-item 容器 — 我们走自定义 .form-item / .form-label。
+// Hide t-form's default form-item container; we use custom .form-item / .form-label.
 :deep(.t-form) .t-form-item {
   display: none;
 }
@@ -953,7 +953,7 @@ onMounted(async () => {
   gap: 8px;
 }
 
-// ---- footer-left 测试按钮的状态 icon（与 ModelEditorDialog/MCP 同款） ----
+// ---- Status icon for the footer-left test button (same as ModelEditorDialog/MCP) ----
 .status-icon {
   font-size: var(--app-text-xl);
   flex-shrink: 0;
@@ -967,7 +967,7 @@ onMounted(async () => {
   }
 }
 
-// ---- Header 图标徽章 ----
+// ---- Header icon badge ----
 .header-icon__img {
   width: 24px;
   height: 24px;
@@ -1036,8 +1036,8 @@ onMounted(async () => {
   block above so list-card → drawer hand-off stays visually continuous.
 -->
 <style lang="less">
-// 彩色 logo 时给 header-icon 容器一个白底 + 1px 边，避免品牌色浅底压在
-// 彩色图标上影响对比度。
+// For a color logo give the header-icon container a white background + 1px border, so a light brand-colored background
+// does not sit under the color icon and hurt contrast.
 .websearch-drawer .setting-drawer__header-icon:has(.header-icon__img) {
   background: var(--td-bg-color-container);
   box-shadow: inset 0 0 0 1px var(--td-component-stroke);

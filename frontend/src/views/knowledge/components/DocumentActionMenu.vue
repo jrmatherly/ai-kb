@@ -41,7 +41,7 @@ const fileName = computed(() => props.item.file_name || props.item.title || prop
 </script>
 
 <template>
-  <!-- 下载原始文档 -->
+  <!-- Download the original document -->
   <div
     v-if="canDownload && (item.type === 'file' || item.type === 'manual')"
     class="doc-action-menu-item"
@@ -51,25 +51,25 @@ const fileName = computed(() => props.item.file_name || props.item.title || prop
     <span>{{ $t('common.download') }}</span>
   </div>
 
-  <!-- 编辑文档 -->
+  <!-- Edit document -->
   <div v-if="item.type === 'manual'" class="doc-action-menu-item" @click.stop="emit('edit')">
     <t-icon class="icon" name="edit" />
     <span>{{ $t('knowledgeBase.editDocument') }}</span>
   </div>
 
-  <!-- 查看处理过程 -->
+  <!-- View processing -->
   <div v-if="traceVisible" class="doc-action-menu-item" @click.stop="emit('view-trace')">
     <t-icon class="icon" name="chart-bar" />
     <span>{{ $t('knowledgeStages.viewTrace') }}</span>
   </div>
 
-  <!-- 重建知识 (in-flight: no popconfirm, just emits) -->
+  <!-- Rebuild knowledge (in-flight: no popconfirm, just emits) -->
   <div v-if="isParseInFlight" class="doc-action-menu-item" @click.stop="emit('reparse')">
     <t-icon class="icon" name="refresh" />
     <span>{{ $t('knowledgeBase.rebuildDocument') }}</span>
   </div>
 
-  <!-- 重建知识 (normal: with popconfirm) -->
+  <!-- Rebuild knowledge (normal: with popconfirm) -->
   <t-popconfirm v-else theme="warning"
     :content="$t('knowledgeBase.rebuildConfirm', { fileName })"
     :confirm-btn="{ content: $t('common.confirm'), theme: 'primary' }"
@@ -81,7 +81,7 @@ const fileName = computed(() => props.item.file_name || props.item.title || prop
     </div>
   </t-popconfirm>
 
-  <!-- 取消解析 -->
+  <!-- Cancel parsing -->
   <t-popconfirm v-if="isParseInFlight" theme="warning"
     :content="$t('knowledgeBase.cancelParseConfirmBody', { title: fileName })"
     :confirm-btn="{ content: $t('knowledgeBase.cancelParse'), theme: 'danger' }"
@@ -93,25 +93,25 @@ const fileName = computed(() => props.item.file_name || props.item.title || prop
     </div>
   </t-popconfirm>
 
-  <!-- 移动到目录 -->
+  <!-- Move to folder -->
   <div v-if="canMutateKnowledge" class="doc-action-menu-item" @click.stop="emit('move-folder')">
     <t-icon class="icon" name="folder" />
     <span>{{ $t('knowledgeBase.moveToFolder.action') }}</span>
   </div>
 
-  <!-- 移动到其他知识库 -->
+  <!-- Move to another knowledge base -->
   <div v-if="canMutateKnowledge" class="doc-action-menu-item" @click.stop="emit('move')">
     <t-icon class="icon" name="swap" />
     <span>{{ $t('knowledgeBase.moveDocument') }}</span>
   </div>
 
-  <!-- 批量管理 -->
+  <!-- Batch manage -->
   <div v-if="canMutateKnowledge || canDownload" class="doc-action-menu-item" @click.stop="emit('batch-manage')">
     <t-icon class="icon" name="queue" />
     <span>{{ $t('menu.batchManage') }}</span>
   </div>
 
-  <!-- 删除文档 -->
+  <!-- Delete document -->
   <t-popconfirm theme="warning"
     :content="$t('knowledgeBase.confirmDeleteDocument', { fileName })"
     :confirm-btn="{ content: $t('knowledgeBase.confirmDelete'), theme: 'danger' }"

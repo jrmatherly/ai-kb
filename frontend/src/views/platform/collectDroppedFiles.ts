@@ -1,8 +1,8 @@
-// 拖拽文件夹时，Chrome/Edge 会用"假"目录条目（size 0、无扩展名）填充
-// dataTransfer.files，而非文件夹内的真实文件。只有 webkitGetAsEntry()
-// 能递归遍历拖入的目录，因此必须优先尝试它，仅在入口 API 不可用时才回退
-// 到 dataTransfer.files。Firefox 在拖拽文件夹时 dataTransfer.files 为空，
-// 同样需要走 entry 遍历路径。
+// When a folder is dragged in, Chrome/Edge fill dataTransfer.files with "fake"
+// directory entries (size 0, no extension) instead of the real files inside. Only
+// webkitGetAsEntry() can walk a dropped directory recursively, so it must be tried first,
+// falling back to dataTransfer.files only when the entry API is unavailable. Firefox leaves
+// dataTransfer.files empty for a dropped folder, so it also needs the entry walk.
 
 const isHiddenSegment = (segment: string): boolean => segment.startsWith('.')
 
@@ -15,8 +15,8 @@ export const setRelativePath = (file: File, relativePath: string): void => {
       configurable: true,
     })
   } catch {
-    // 旧版 Safari 可能拒绝在 File 上 defineProperty，这些文件
-    // 不会携带相对路径，将以平铺方式上传。
+    // Older Safari may refuse defineProperty on File; those files
+    // carry no relative path and upload flat.
   }
 }
 
@@ -50,9 +50,9 @@ export const traverseEntry = (entry: any, path: string): Promise<File[]> => {
           return
         }
         entry.file((file: File) => {
-          // 仅对目录内的文件设置 webkitRelativePath，与
-          // <input webkitdirectory> 行为一致。顶层拖入的文件
-          // 保持空值，作为普通文件上传。
+          // Set webkitRelativePath only for files inside a directory, matching
+          // <input webkitdirectory>. Files dropped at the top level
+          // keep an empty value and upload as plain files.
           if (path) {
             const relativePath = `${path}/${file.name}`
             if (relativePath.split('/').some(isHiddenSegment)) {
@@ -65,7 +65,7 @@ export const traverseEntry = (entry: any, path: string): Promise<File[]> => {
         }, () => resolve([]))
       } else if (entry.isDirectory) {
         const dirPath = path ? `${path}/${entry.name}` : entry.name
-        // 跳过隐藏目录（.git、.DS_Store 等）
+        // Skip hidden directories (.git, .DS_Store and so on)
         if (dirPath.split('/').some(isHiddenSegment)) {
           resolve([])
           return
@@ -92,7 +92,7 @@ export const traverseEntry = (entry: any, path: string): Promise<File[]> => {
 export const collectDroppedFiles = async (event: DragEvent): Promise<File[]> => {
   const dataTransfer = event.dataTransfer
   const items = dataTransfer?.items ? Array.from(dataTransfer.items) : []
-  // DataTransfer 仅在 drop 同步阶段保证可用，回退列表必须先拷贝。
+  // DataTransfer is only guaranteed during the synchronous drop phase, so the fallback list must be copied first.
   const fallbackFiles = dataTransfer?.files ? Array.from(dataTransfer.files) : []
 
   if (items.length === 0) {
@@ -113,7 +113,7 @@ export const collectDroppedFiles = async (event: DragEvent): Promise<File[]> => 
   })
   const usable = pairs.filter(p => p.entry != null)
   if (usable.length === 0) {
-    // 浏览器不支持 webkitGetAsEntry，退回已快照的 FileList。
+    // The browser lacks webkitGetAsEntry; fall back to the snapshotted FileList.
     return fallbackFiles
   }
 
@@ -122,7 +122,7 @@ export const collectDroppedFiles = async (event: DragEvent): Promise<File[]> => 
       if (entry.isDirectory) {
         return await traverseEntry(entry, '')
       }
-      // 顶层文件用 getAsFile：同步、保留空 webkitRelativePath。
+      // Top-level files use getAsFile: synchronous, and it keeps an empty webkitRelativePath.
       const file = item.getAsFile()
       if (file) return [file]
       return await traverseEntry(entry, '')
@@ -133,8 +133,8 @@ export const collectDroppedFiles = async (event: DragEvent): Promise<File[]> => 
     }
   }))
 
-  // 只要拿到了 FileSystemEntry，就采信遍历结果（包括空数组）。
-  // 空文件夹 / 全是隐藏文件时若再回退 dataTransfer.files，
-  // Chrome/Edge 会再次交出 size 0 的幽灵目录项。
+  // Once a FileSystemEntry is in hand, trust the walk result (an empty array included).
+  // Falling back to dataTransfer.files for an empty folder or one with only hidden files
+  // makes Chrome/Edge hand over the size-0 phantom directory entries again.
   return results.flat()
 }

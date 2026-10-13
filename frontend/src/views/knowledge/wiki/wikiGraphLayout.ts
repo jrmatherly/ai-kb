@@ -90,7 +90,7 @@ export function graphCommunities(neighbors: readonly (readonly number[])[]): num
 export function graphLandmarkTitle(title: string): string {
   const name = title.replace(/\s*-\s*Summary$/i, '')
     .replace(/\.(pdf|docx?|pptx?|xlsx?|csv|md|txt|html?|json|ya?ml|xml|png|jpe?g)$/i, '')
-    .replace(/\s*[(（]\d+[)）]$/, '').trim()
+    .replace(/\s*[(\uff08]\d+[)\uff09]$/, '').trim() // trailing "(2)" in ASCII or fullwidth parentheses
   return name || title
 }
 
@@ -153,10 +153,10 @@ export function selectGraphAnchors(
   const candidates = themes.filter(theme => theme !== home && theme.size >= minimum)
   // A second name for something already labeled: nearly the same
   // neighborhood (an author next to their paper) or a title that contains
-  // the other ("北京市第三代社保卡" next to "第三代社保卡").
+  // the other ("Beijing third-generation social security card" next to "third-generation social security card").
   const closed = (i: number) => new Set([i, ...neighbors[i]!])
   const normalized = (i: number) => graphLandmarkTitle(pages.get(order[i]!)?.title ?? '')
-    .toLowerCase().replace(/[\s《》“”"'‘’（）()·・]/g, '')
+    .toLowerCase().replace(/[\s\u300a\u300b“”"'‘’\uff08\uff09()·\u30fb]/g, '') // whitespace, quotes, brackets and middle dots, ASCII and CJK
   const redundant = (i: number, chosen: number[]) => chosen.some(s => {
     const a = closed(i), b = closed(s)
     const shared = [...a].filter(x => b.has(x)).length

@@ -21,9 +21,9 @@ const emit = defineEmits<{ (e: 'count', value: number): void }>()
 const { t } = useI18n()
 const authStore = useAuthStore()
 
-// 后端 /datasource 的 list/logs 是 Viewer+，但所有写操作（POST/PUT/DELETE
-// 以及 sync/pause/resume/validate）都是 Admin+。低权限用户保留只读视图，
-// 增删改和触发同步全部隐藏，而不是按下去再撞 403。
+// The backend /datasource list/logs need Viewer+, but every write (POST/PUT/DELETE
+// and sync/pause/resume/validate) needs Admin+. Lower-privilege users keep a read-only view,
+// with create, edit, delete and sync hidden, rather than hitting a 403 on click.
 const canManageDataSource = computed(() => authStore.hasRole('admin'))
 
 const dataSources = ref<DataSource[]>([])

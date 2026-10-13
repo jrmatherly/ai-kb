@@ -12,7 +12,7 @@ import seafileIcon from '@/assets/img/datasource-seafile.png'
 export const datasourceIconMap: Record<string, string> = {
   feishu: feishuIcon,
   lark: larkIcon,
-  // Drive (云盘) connectors reuse the wiki icons - same product, same brand.
+  // Drive (cloud drive) connectors reuse the wiki icons - same product, same brand.
   feishu_drive: feishuIcon,
   lark_drive: larkIcon,
   notion: notionIcon,

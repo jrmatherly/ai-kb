@@ -91,12 +91,12 @@ async function fixture(initial: SkillCatalogItem[], host = false) {
 const ids = (vm: any) => Array.from(vm.filteredCatalog, (row: any) => row.id)
 
 test('skill search matches names and descriptions without changing order or row identity', async () => {
-  const data = [item('财务 Report', ['ready']), item('未安装'), item('mixed', ['ready', 'failed'])]
-  data[2]!.description = '财务 REPORT'
+  const data = [item('\u8d22\u52a1 Report', ['ready']), item('\u672a\u5b89\u88c5'), item('mixed', ['ready', 'failed'])]
+  data[2]!.description = '\u8d22\u52a1 REPORT'
   const f = await fixture(data)
   try {
-    f.vm.query = ' 财务 report '
-    assert.deepEqual(ids(f.vm), ['财务 Report', 'mixed'])
+    f.vm.query = ' \u8d22\u52a1 report '
+    assert.deepEqual(ids(f.vm), ['\u8d22\u52a1 Report', 'mixed'])
     assert.equal(f.vm.filteredCatalog[1], f.vm.catalog[2])
     f.vm.openCatalogFiles(f.vm.filteredCatalog[1])
     assert.equal(f.vm.filesCatalogId, 'mixed')

@@ -515,7 +515,7 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--td-component-stroke);
 }
 
-// 与右侧 32px 的搜索框同高：3px 内边距 × 2 + 26px 按钮
+// Same height as the 32px search box on the right: 3px padding x 2 + 26px button
 .category-tabs {
   .artifact-filter-tabs();
   button { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; }

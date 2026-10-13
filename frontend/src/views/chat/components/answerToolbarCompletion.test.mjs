@@ -52,7 +52,7 @@ test('artifact toolbar uses a folder icon and replaces it while collecting', () 
   assert.match(agentStream, /answer-toolbar__artifact[\s\S]{0,800}name="folder"/)
   assert.match(botMessage, /class="answer-toolbar__artifact-spinner"/)
   assert.match(agentStream, /class="answer-toolbar__artifact-spinner"/)
-  // 旋转动画统一为 theme.css 里的全局 wk-spin
+  // The spin animation is the global wk-spin in theme.css
   assert.match(sharedStyles, /answer-toolbar__artifact-spinner[\s\S]{0,400}animation: wk-spin/)
   assert.doesNotMatch(botMessage, /answer-toolbar__artifact[\s\S]{0,800}:loading=/)
   assert.doesNotMatch(agentStream, /answer-toolbar__artifact[\s\S]{0,800}:loading=/)

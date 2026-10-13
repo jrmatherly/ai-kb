@@ -37,13 +37,13 @@
              field are kept so a future "filter by member" entry point
              (e.g. clicking an avatar) can deep-link without re-plumbing. -->
 
-        <!-- 未初始化知识库提示 -->
+        <!-- Uninitialized knowledge base notice -->
         <div v-if="hasUninitializedKbs" class="warning-banner">
           <t-icon name="info-circle" size="16px" />
           <span>{{ $t('knowledgeList.uninitializedBanner') }}</span>
         </div>
 
-        <!-- 骨架屏占位 -->
+        <!-- Skeleton placeholder -->
         <div v-if="loading && kbs.length === 0" class="kb-card-wrap">
           <div v-for="n in 6" :key="'skel-' + n" class="kb-card kb-card-skeleton is-skeleton">
             <div class="card-header">
@@ -60,12 +60,12 @@
           </div>
         </div>
 
-        <!-- 卡片网格：全部 / 收藏 / 最近 — 共用同一份卡片模板，
-             仅依赖 filteredKnowledgeBases 切片即可切换视图 -->
+        <!-- Card grid: All / Favorites / Recent share one card template,
+             and switching views only depends on the filteredKnowledgeBases slice -->
         <div
           v-if="(spaceSelection === 'all' || spaceSelection === 'favorites' || spaceSelection === 'recents') && filteredKnowledgeBases.length > 0"
           class="kb-card-wrap">
-          <!-- 置顶分组标题 -->
+          <!-- Pinned group heading -->
           <div
             v-if="filteredKnowledgeBases[0] && filteredKnowledgeBases[0].isMine && filteredKnowledgeBases[0].is_pinned"
             class="kb-section-header kb-section-header-pinned" role="button" tabindex="0"
@@ -78,13 +78,13 @@
             <t-icon class="kb-section-toggle" :name="isKbSectionCollapsed('pinned') ? 'chevron-right' : 'chevron-down'"
               size="14px" />
           </div>
-          <!-- 全部：我的知识库 + 共享给我的知识库。
-               「已置顶」分组由顶部 header 接管。其余分段（我创建 / 本空间 ·
-               仅查看 / 共享给我）各自打自己的标题；原本的「其他」过渡标题
-               在 per-user 置顶模型下已无意义，删除以免和具体子段标题叠加。 -->
+          <!-- All: my knowledge bases + knowledge bases shared with me.
+               The "Pinned" group is handled by the top header. The other parts (created by me / this workspace ·
+               view only / shared with me) each print their own heading; the old "Other" transition heading
+               is meaningless under the per-user pinning model, so it is removed to avoid stacking with the specific part headings. -->
           <template v-for="(kb, index) in filteredKnowledgeBases" :key="kb.id">
-            <!-- 我创建的：第一张「我创建」非置顶卡片前打标题，
-                 对所有角色显示，不受上方是否存在「已置顶」分组影响。 -->
+            <!-- Created by me: heading before the first unpinned "created by me" card,
+                 shown for every role, regardless of whether a "Pinned" group exists above. -->
             <div v-if="kb.isMine
               && isMyKb(kb as KB)
               && !kb.is_pinned
@@ -99,10 +99,10 @@
               <t-icon class="kb-section-toggle" :name="isKbSectionCollapsed('mine') ? 'chevron-right' : 'chevron-down'"
                 size="14px" />
             </div>
-            <!-- 本空间 · 仅查看：本空间里同事创建、对当前 contributor 不可编辑。
-                 当前卡片必须是非置顶（否则归在「已置顶」），且前一张要么
-                 不存在、要么是「共享给我」、要么是我创建、要么是置顶卡片
-                 （置顶→非置顶的过渡同样要打这个标题）。 -->
+            <!-- This workspace · view only: colleagues' KBs in this workspace that the current contributor cannot edit.
+                 The current card must be unpinned (otherwise it belongs in "Pinned"), and the previous one either
+                 does not exist, is "shared with me", is created by me, or is a pinned card
+                 (the pinned → unpinned transition also gets this heading). -->
             <div v-if="kb.isMine
               && !isMyKb(kb as KB)
               && !kb.is_pinned
@@ -119,7 +119,7 @@
               <t-icon class="kb-section-toggle"
                 :name="isKbSectionCollapsed('tenantOthers') ? 'chevron-right' : 'chevron-down'" size="14px" />
             </div>
-            <!-- 共享给我 · 可编辑：从「我的（含同事）」首次过渡到共享 + 可编辑 -->
+            <!-- Shared with me · editable: the first transition from "mine (colleagues included)" into shared + editable -->
             <div v-if="!kb.isMine
               && isSharedKbEditable((kb as any).permission)
               && (index === 0 || filteredKnowledgeBases[index - 1].isMine)" class="kb-section-header" role="button"
@@ -133,7 +133,7 @@
               <t-icon class="kb-section-toggle"
                 :name="isKbSectionCollapsed('sharedEditable') ? 'chevron-right' : 'chevron-down'" size="14px" />
             </div>
-            <!-- 共享给我 · 仅查看：从「可编辑共享 / 我的」过渡到 viewer 共享 -->
+            <!-- Shared with me · view only: the transition from "editable shared / mine" into viewer shares -->
             <div v-if="!kb.isMine
               && !isSharedKbEditable((kb as any).permission)
               && (index === 0
@@ -149,7 +149,7 @@
               <t-icon class="kb-section-toggle"
                 :name="isKbSectionCollapsed('sharedReadonly') ? 'chevron-right' : 'chevron-down'" size="14px" />
             </div>
-            <!-- 我的知识库卡片 -->
+            <!-- My knowledge base card -->
             <div v-if="kb.isMine" v-show="!isKbSectionCollapsed(kbSectionOf(kb))" class="kb-card" :class="{
               'uninitialized': !isInitialized(kb),
               'kb-type-document': (kb.type || 'document') === 'document',
@@ -158,12 +158,12 @@
             }"
               :ref="el => { if (highlightedKbId !== null && highlightedKbId === kb.id && el) highlightedCardRef = el as HTMLElement }"
               role="link" tabindex="0" @keydown.enter.self.prevent="handleCardClick(kb)" @keydown.space.self.prevent="handleCardClick(kb)" @click="handleCardClick(kb)">
-              <!-- 行尾收藏操作，与更多菜单分开。 -->
+              <!-- Trailing favorite action, separate from the more menu. -->
               <button type="button" class="kb-favorite-star" :class="{ 'is-favorited': isKbFavorited(kb.id) }"
                 :aria-label="$t('listSpaceSidebar.favorites')" :aria-pressed="isKbFavorited(kb.id)" @click.stop="toggleFavoriteKb(kb.id, $event)">
                 <t-icon :name="isKbFavorited(kb.id) ? 'star-filled' : 'star'" size="14px" />
               </button>
-              <!-- 卡片头部 -->
+              <!-- Card header -->
               <div class="card-header">
                 <KbTypeAvatar :type="kb.type" />
                 <span class="card-title" :title="kb.name">
@@ -204,14 +204,14 @@
                 </t-popup>
               </div>
 
-              <!-- 卡片内容 -->
+              <!-- Card body -->
               <div class="card-content">
                 <div class="card-description" :class="{ 'is-empty': !kb.description }" :title="kb.description || $t('knowledgeBase.noDescription')">
                   {{ kb.description || $t('knowledgeBase.noDescription') }}
                 </div>
               </div>
 
-              <!-- 卡片底部 -->
+              <!-- Card footer -->
               <div class="card-bottom">
                 <div class="bottom-left">
                   <div class="feature-badges">
@@ -261,7 +261,7 @@
               </div>
             </div>
 
-            <!-- 共享知识库卡片 -->
+            <!-- Shared knowledge base card -->
             <div v-else v-show="!isKbSectionCollapsed(kbSectionOf(kb))" class="kb-card shared-kb-card" :class="{
               'kb-type-document': (kb.type || 'document') === 'document',
               'kb-type-faq': kb.type === 'faq'
@@ -270,7 +270,7 @@
                 :aria-label="$t('listSpaceSidebar.favorites')" :aria-pressed="isKbFavorited(kb.id)" @click.stop="toggleFavoriteKb(kb.id, $event)">
                 <t-icon :name="isKbFavorited(kb.id) ? 'star-filled' : 'star'" size="14px" />
               </button>
-              <!-- 卡片头部 -->
+              <!-- Card header -->
               <div class="card-header">
                 <KbTypeAvatar :type="kb.type" />
                 <span class="card-title" :title="kb.name">
@@ -284,14 +284,14 @@
                 </t-tooltip>
               </div>
 
-              <!-- 卡片内容 -->
+              <!-- Card body -->
               <div class="card-content">
                 <div class="card-description" :class="{ 'is-empty': !kb.description }" :title="kb.description || $t('knowledgeBase.noDescription')">
                   {{ kb.description || $t('knowledgeBase.noDescription') }}
                 </div>
               </div>
 
-              <!-- 卡片底部 -->
+              <!-- Card footer -->
               <div class="card-bottom">
                 <div class="bottom-left">
                   <div class="feature-badges">
@@ -345,7 +345,7 @@
         </div>
 
         <div v-if="spaceSelection === 'mine' && sortedMineKbs.length > 0" class="kb-card-wrap">
-          <!-- 置顶分组标题 -->
+          <!-- Pinned group heading -->
           <div v-if="sortedMineKbs[0] && sortedMineKbs[0].is_pinned" class="kb-section-header kb-section-header-pinned"
             role="button" tabindex="0" :aria-expanded="!isKbSectionCollapsed('pinned')" @click="toggleKbSection('pinned')"
             @keydown.enter.prevent="toggleKbSection('pinned')"
@@ -356,12 +356,12 @@
             <t-icon class="kb-section-toggle" :name="isKbSectionCollapsed('pinned') ? 'chevron-right' : 'chevron-down'"
               size="14px" />
           </div>
-          <!-- 我的知识库。「已置顶」由顶部 header 接管；其余各分段各打各的
-               标题——见「全部」tab 同处注释。 -->
+          <!-- My knowledge bases. "Pinned" is handled by the top header; the other parts each print their own
+               heading; see the same comment in the "All" tab. -->
           <template v-for="(kb, index) in sortedMineKbs" :key="kb.id">
-            <!-- 我创建的：第一张非置顶的我创建卡片前打标题，无论上方是否
-                 有「已置顶」段都要显示，和「本空间 · 仅查看」对齐——见
-                 「全部」tab 同处注释。 -->
+            <!-- Created by me: heading before the first unpinned card I created, shown whether or not
+                 a "Pinned" part exists above, aligned with "This workspace · view only"; see
+                 the same comment in the "All" tab. -->
             <div v-if="isMyKb(kb)
               && !kb.is_pinned
               && (index === 0 || sortedMineKbs[index - 1].is_pinned)" class="kb-section-header" role="button"
@@ -374,8 +374,8 @@
               <t-icon class="kb-section-toggle" :name="isKbSectionCollapsed('mine') ? 'chevron-right' : 'chevron-down'"
                 size="14px" />
             </div>
-            <!-- 本空间 · 仅查看：当前非置顶的同事 KB，且前一张要么不存在、
-                 要么是我创建、要么是置顶卡片（置顶→非置顶过渡）。 -->
+            <!-- This workspace · view only: the current unpinned colleague KB, where the previous one either does not exist,
+                 is created by me, or is a pinned card (pinned → unpinned transition). -->
             <div v-if="!isMyKb(kb)
               && !kb.is_pinned
               && (index === 0
@@ -402,7 +402,7 @@
                 :aria-label="$t('listSpaceSidebar.favorites')" :aria-pressed="isKbFavorited(kb.id)" @click.stop="toggleFavoriteKb(kb.id, $event)">
                 <t-icon :name="isKbFavorited(kb.id) ? 'star-filled' : 'star'" size="14px" />
               </button>
-              <!-- 卡片头部 -->
+              <!-- Card header -->
               <div class="card-header">
                 <KbTypeAvatar :type="kb.type" />
                 <span class="card-title" :title="kb.name">
@@ -441,14 +441,14 @@
                 </t-popup>
               </div>
 
-              <!-- 卡片内容 -->
+              <!-- Card body -->
               <div class="card-content">
                 <div class="card-description" :class="{ 'is-empty': !kb.description }" :title="kb.description || $t('knowledgeBase.noDescription')">
                   {{ kb.description || $t('knowledgeBase.noDescription') }}
                 </div>
               </div>
 
-              <!-- 卡片底部 -->
+              <!-- Card footer -->
               <div class="card-bottom">
                 <div class="bottom-left">
                   <div class="feature-badges">
@@ -485,7 +485,7 @@
                         <t-icon name="help-circle" size="14px" />
                       </div>
                     </t-tooltip>
-                    <!-- 共享状态图标 -->
+                    <!-- Sharing status icon -->
                     <t-tooltip v-if="(kb.share_count ?? 0) > 0"
                       :content="$t('knowledgeList.sharedToOrgs', { count: kb.share_count ?? 0 })" placement="top">
                       <div class="feature-badge shared">
@@ -502,16 +502,16 @@
           </template>
         </div>
 
-        <!-- 协作 / 共享给我 聚合视图已移除：共享 KB 走「全部」或具体空间下展示 -->
+        <!-- The collaboration / shared-with-me aggregate view is removed: shared KBs show under "All" or a specific shared space -->
 
-        <!-- 按空间筛选：该空间内全部知识库（含我共享的） -->
+        <!-- Filter by shared space: every knowledge base in that shared space (including those I shared) -->
         <div v-if="spaceSelectionOrgId && spaceKbsLoading" class="kb-list-main-loading">
           <t-loading size="medium" text="" />
         </div>
         <div v-else-if="spaceSelectionOrgId && sortedSpaceKbsList.length > 0" class="kb-card-wrap">
           <template v-for="(shared, index) in sortedSpaceKbsList"
             :key="'shared-' + (shared.share_id || `agent-${shared.knowledge_base?.id}-${shared.source_from_agent?.agent_id || ''}`)">
-            <!-- 我共享的：本空间下我自己创建并共享进来的条目，只在第一条 is_mine 上挂标题 -->
+            <!-- Shared by me: entries in this shared space that I created and shared in; heading only on the first is_mine -->
             <div v-if="shared.is_mine && index === 0" class="kb-section-header"
               role="button" tabindex="0" :aria-expanded="!isKbSectionCollapsed('sharedByMe')" @click="toggleKbSection('sharedByMe')"
               @keydown.enter.prevent="toggleKbSection('sharedByMe')"
@@ -522,7 +522,7 @@
               <t-icon class="kb-section-toggle"
                 :name="isKbSectionCollapsed('sharedByMe') ? 'chevron-right' : 'chevron-down'" size="14px" />
             </div>
-            <!-- 共享给我 · 可编辑：从「我的」首次进入「共享 + 可编辑」 -->
+            <!-- Shared with me · editable: the first entry from "mine" into "shared + editable" -->
             <div v-if="!shared.is_mine
               && isSharedKbEditable(shared.permission)
               && (index === 0 || sortedSpaceKbsList[index - 1].is_mine)" class="kb-section-header"
@@ -536,7 +536,7 @@
               <t-icon class="kb-section-toggle"
                 :name="isKbSectionCollapsed('sharedEditable') ? 'chevron-right' : 'chevron-down'" size="14px" />
             </div>
-            <!-- 共享给我 · 仅查看：从「可编辑共享 / 我的」首次进入「viewer」 -->
+            <!-- Shared with me · view only: the first entry from "editable shared / mine" into "viewer" -->
             <div v-if="!shared.is_mine
               && !isSharedKbEditable(shared.permission)
               && (index === 0
@@ -556,7 +556,7 @@
               'kb-type-document': (shared.knowledge_base.type || 'document') === 'document',
               'kb-type-faq': shared.knowledge_base.type === 'faq'
             }" role="link" tabindex="0" @keydown.enter.self.prevent="handleSharedKbClick(shared)" @keydown.space.self.prevent="handleSharedKbClick(shared)" @click="handleSharedKbClick(shared)">
-              <!-- 卡片头部 -->
+              <!-- Card header -->
               <div class="card-header">
                 <KbTypeAvatar :type="shared.knowledge_base.type" />
                 <span class="card-title" :title="shared.knowledge_base.name">
@@ -570,14 +570,14 @@
                 </t-tooltip>
               </div>
 
-              <!-- 卡片内容 -->
+              <!-- Card body -->
               <div class="card-content">
                 <div class="card-description" :class="{ 'is-empty': !shared.knowledge_base.description }" :title="shared.knowledge_base.description || $t('knowledgeBase.noDescription')">
                   {{ shared.knowledge_base.description || $t('knowledgeBase.noDescription') }}
                 </div>
               </div>
 
-              <!-- 卡片底部 -->
+              <!-- Card footer -->
               <div class="card-bottom">
                 <div class="bottom-left">
                   <div class="feature-badges">
@@ -603,7 +603,7 @@
           </template>
         </div>
 
-        <!-- 全部空状态：保留「新建知识库」CTA，因为是空间没有任何 KB 的真空场景 -->
+        <!-- All empty state: keeps the "New knowledge base" CTA, because the workspace truly has no KB -->
         <EmptyState v-if="!keyword.trim() && spaceSelection === 'all' && filteredKnowledgeBases.length === 0 && !loading" :title="$t('knowledgeList.empty.title')"
           :description="$t('knowledgeList.empty.description')">
           <template #icon><ResourceIcon type="knowledge" :size="32" /></template>
@@ -614,16 +614,16 @@
           </t-button>
         </EmptyState>
 
-        <!-- 收藏空状态：不放创建按钮——「没有收藏」 ≠ 「没有知识库」，
-             正确引导是「去星标一下」，不是「再建一个」。 -->
+        <!-- Favorites empty state, with no create button: "no favorites" ≠ "no knowledge bases",
+             so the right nudge is "go star one", not "create another". -->
         <EmptyState v-if="!keyword.trim() && spaceSelection === 'favorites' && filteredKnowledgeBases.length === 0 && !loading" icon="star" :title="$t('knowledgeList.empty.favoritesTitle')"
           :description="$t('knowledgeList.empty.favoritesDescription')" />
 
-        <!-- 最近空状态：同理，引导是「去打开一个」。 -->
+        <!-- Recent empty state: likewise, the nudge is "go open one". -->
         <EmptyState v-if="!keyword.trim() && spaceSelection === 'recents' && filteredKnowledgeBases.length === 0 && !loading" icon="history" :title="$t('knowledgeList.empty.recentsTitle')"
           :description="$t('knowledgeList.empty.recentsDescription')" />
 
-        <!-- 我的知识库空状态 -->
+        <!-- My knowledge bases empty state -->
         <EmptyState v-if="!keyword.trim() && spaceSelection === 'mine' && kbs.length === 0 && !loading" :title="$t('knowledgeList.empty.title')"
           :description="$t('knowledgeList.empty.description')">
           <template #icon><ResourceIcon type="knowledge" :size="32" /></template>
@@ -634,7 +634,7 @@
           </t-button>
         </EmptyState>
 
-        <!-- 空间下知识库空状态 -->
+        <!-- Shared space knowledge bases empty state -->
         <EmptyState v-if="!keyword.trim() && spaceSelectionOrgId && !spaceKbsLoading && spaceKbsList.length === 0" :title="$t('knowledgeList.empty.sharedTitle')"
           :description="$t('knowledgeList.empty.sharedDescription')">
           <template #icon><ResourceIcon type="knowledge" :size="32" /></template>
@@ -642,12 +642,12 @@
       </div>
     </div>
 
-    <!-- 知识库编辑器（创建/编辑统一组件） -->
+    <!-- Knowledge base editor (one component for create and edit) -->
     <KnowledgeBaseEditorModal :visible="uiStore.showKBEditorModal" :mode="uiStore.kbEditorMode"
       :kb-id="uiStore.currentKBId || undefined" :initial-type="uiStore.kbEditorType"
       @update:visible="(val) => val ? null : uiStore.closeKBEditor()" @success="handleKBEditorSuccess" />
 
-    <!-- 右侧：共享知识库详情面板 -->
+    <!-- Right side: shared knowledge base detail panel -->
     <Teleport to="body">
       <Transition name="shared-detail-drawer">
         <div v-if="sharedDetailPanelVisible && currentSharedKbForDetail" class="shared-detail-drawer-overlay"
@@ -766,10 +766,10 @@ const chatResources = useChatResourcesStore()
 const { t } = useI18n()
 const selectedResourceSort = ref<ResourceSortValue>(DEFAULT_RESOURCE_SORT)
 
-// 左侧空间选择：默认根据当前角色决定。
-// Viewer 在该空间里通常 0 KB owned，"我的"会显示空状态、又把共享 KB 藏起来，
-// 体验非常误导；所以 Viewer 默认落到 "all"（我的 + 共享给我都显示）。
-// Contributor 及以上一进来主要管理自己创建的 KB，仍默认 "mine"。
+// Workspace / shared space selection on the left: defaults by the current role.
+// A Viewer usually owns 0 KBs in the workspace, so "mine" would show an empty state while hiding the shared KBs,
+// which is very misleading; so a Viewer defaults to "all" (both mine and shared with me).
+// Contributor and above mostly manage their own KBs on arrival, so they still default to "mine".
 //
 // State lives in `?scope=` so links are shareable/bookmarkable; the
 // composable handles two-way sync with the URL. We keep "mine" as the
@@ -817,7 +817,7 @@ interface KB {
   // gating the per-card more-menu (Settings / Delete). Empty for legacy
   // KBs created before PR 5; those fall back to the role gate.
   creator_id?: string;
-  // creator_name 由后端 list 接口回填，仅用于卡片右下角来源徽章的 tooltip。
+  // creator_name is filled in by the backend list API, used only for the tooltip of the origin badge at the card's bottom right.
   creator_name?: string;
 }
 
@@ -849,7 +849,7 @@ const sharedKbs = computed<SharedKnowledgeBase[]>(() => orgStore.sharedKnowledge
 
 const allKnowledgeBases = computed(() => kbs.value.length + sharedKbs.value.length)
 
-// 当前选中的是空间 ID（非全部、非我的、非收藏/最近这类伪 scope）
+// The current selection is a shared space ID (not all, mine, or a pseudo scope such as favorites/recent)
 // NB: keep the reserved-scope list in sync with ResourceListToolbar's
 // non-org buckets — otherwise a new pseudo-scope (e.g. "favorites")
 // falls through here and triggers the per-space code paths, which
@@ -860,11 +860,11 @@ const spaceSelectionOrgId = computed(() => {
   return !!s && !RESERVED_SCOPES.has(s)
 })
 
-// 空间视角：该空间内全部知识库（含我共享的），选中空间时请求新接口
+// Shared space view: every knowledge base in that shared space (including those I shared); selecting a shared space requests the new API
 const spaceKbsList = ref<OrganizationSharedKnowledgeBaseItem[]>([])
 const spaceKbsLoading = ref(false)
 
-// 「工作空间」固定保持“置顶 → 我创建 → 同事创建”，用户选择只影响组内顺序。
+// "Workspace" always keeps "pinned → created by me → created by colleagues"; the user's choice only affects order within groups.
 const unsearchedSortedMineKbs = computed<KB[]>(() => {
   return sortResourcesWithinGroups(
     kbs.value,
@@ -876,7 +876,7 @@ const unsearchedSortedMineKbs = computed<KB[]>(() => {
 })
 const sortedMineKbs = computed(() => unsearchedSortedMineKbs.value.filter(item => matchesResourceQuery(item, keyword.value)))
 
-// 空间视角固定保持“我共享的 → 可编辑 → 仅查看”，用户选择只影响组内顺序。
+// The shared space view always keeps "shared by me → editable → view only"; the user's choice only affects order within groups.
 const unsearchedSortedSpaceKbsList = computed(() => {
   return sortResourcesWithinGroups(
     spaceKbsList.value,
@@ -891,7 +891,7 @@ const unsearchedSortedSpaceKbsList = computed(() => {
 const sortedSpaceKbsList = computed(() => unsearchedSortedSpaceKbsList.value.filter(item => matchesResourceQuery(item.knowledge_base, keyword.value)))
 const spaceCountByOrg = ref<Record<string, number>>({})
 
-// 各空间下的共享知识库数量（用于侧栏展示）：优先用接口返回的该空间总数，否则用「共享给我」数量
+// Shared knowledge base count per shared space (for the sidebar): prefer the shared space total the API returns, otherwise the "shared with me" count
 const sharedCountByOrg = computed<Record<string, number>>(() => {
   const map: Record<string, number> = {}
   sharedKbs.value.forEach(s => {
@@ -982,57 +982,57 @@ const recentsList = computed(() => {
     .filter((x): x is NonNullable<typeof x> => x !== null)
 })
 
-// 可编辑权限：editor / admin。viewer 进入「仅查看」组。
-// 用 share-level permission（不是空间角色）做判断——跨空间拿到 viewer 的，
-// 即便我在本空间是 owner 也确实改不动那个 KB；反过来跨空间拿到 editor 的，
-// 哪怕我在本空间是 contributor 也确实能改。
+// Editable permission: editor / admin. viewer goes into the "View only" group.
+// Decide by the share-level permission (not the workspace role): a KB received cross-workspace as viewer
+// really cannot be edited even if I am owner in this workspace; conversely one received cross-workspace as editor
+// really can be edited even if I am a contributor in this workspace.
 const EDITABLE_PERMS = new Set(['admin', 'editor'])
 function isSharedKbEditable(perm: string | undefined): boolean {
   return !!perm && EDITABLE_PERMS.has(perm)
 }
 
-// 同空间、非当前用户创建的 KB 分组标题。
-// contributor / viewer 在本空间里对这些 KB 没有写权限，所以打"仅查看"；
-// admin / owner 反而对整个空间都有编辑权限，"仅查看"会反复误导他们以为
-// 自己改不了——这一段实际上是"工作空间里其他成员创建的 KB"，按所有权
-// 而非权限来标注更准确。
+// Group heading for KBs in the same workspace not created by the current user.
+// contributor / viewer have no write permission on these KBs in this workspace, so they read "View only";
+// admin / owner can edit the whole workspace, and "View only" would keep misleading them into thinking
+// they cannot edit; this part is really "KBs created by other members of the workspace", so labeling by ownership
+// rather than permission is more accurate.
 const tenantSectionLabelKey = computed(() =>
   authStore.hasRole('admin')
     ? 'knowledgeList.sections.tenantOthers'
     : 'knowledgeList.sections.tenantReadonly'
 )
 
-// 图标和上面的文案对齐：admin/owner 看到的是"本空间 · 其他成员"，按所有权
-// 划分，配 usergroup（多人）更贴；contributor/viewer 看到的是"仅查看"，
-// 维持 browse（眼睛）传达"只能看不能改"的语义。
+// The icon matches the text above: admin/owner see "This workspace · other members", split by ownership,
+// which fits usergroup (several people); contributor/viewer see "View only",
+// keeping browse (an eye) to convey "can view but not edit".
 const tenantSectionIconName = computed(() =>
   authStore.hasRole('admin') ? 'usergroup' : 'browse'
 )
 
-// 分组折叠：ephemeral，只在当前会话里生效，不落 localStorage/服务器。
-// 之所以走"折叠集合"而不是"展开集合"，是因为默认全展开——空 Set
-// 即表示初始的全展开状态，避免每次新加分段还得回头维护默认值。
+// Group collapse: ephemeral, only for the current session, not saved to localStorage/the server.
+// It tracks a "collapsed set" rather than an "expanded set" because everything starts expanded: an empty Set
+// is the initial all-expanded state, so a new section never needs a default value maintained.
 type KbSectionKey = 'pinned' | 'mine' | 'tenantOthers' | 'sharedByMe' | 'sharedEditable' | 'sharedReadonly'
 const collapsedKbSections = ref<Set<KbSectionKey>>(new Set())
 const isKbSectionCollapsed = (key: KbSectionKey) => collapsedKbSections.value.has(key)
 const toggleKbSection = (key: KbSectionKey) => {
-  // 重新赋一个新的 Set 是为了让 ref 的 .value 身份变化触发模板重渲染；
-  // 直接 .add/.delete 在 Vue 3 的 reactive Set 里也能 work，但 ref(Set) 的
-  // 内层代理行为在不同版本上略有差异，整体替换最稳。
+  // Assigning a new Set changes the identity of the ref's .value, which triggers a template re-render;
+  // .add/.delete directly also works on a reactive Set in Vue 3, but the inner proxy behavior of ref(Set)
+  // differs slightly across versions, so replacing it whole is the most stable.
   const next = new Set(collapsedKbSections.value)
   if (next.has(key)) next.delete(key)
   else next.add(key)
   collapsedKbSections.value = next
 }
-// 判断一条 KB 应该归在哪个分组——和模板里几处 v-if 用的是同一套判定，
-// 抽出来是为了 v-show 卡片时复用，避免把 5 个分组的 v-if 重新拼一遍。
+// Decide which group a KB belongs to, using the same checks as the v-ifs in the template;
+// extracted so v-show on cards can reuse it, instead of rebuilding the 5 groups' v-ifs.
 //
-// 输入有两种形态：
-//   1. filteredKnowledgeBases 的元素，会显式带 `isMine` 标志（见
-//      filteredKnowledgeBases 里的 spread；跨空间 shared 拆给 isMine=false）。
-//   2. sortedMineKbs 的元素就是原始 KB，无 isMine、也无 permission 字段。
-// 跨空间共享条目一定带 `permission`，本空间条目永远没有，所以"无 permission"
-// 是本空间的安全标识。综合：先看 isMine，再回退到 permission 是否存在。
+// The input has two shapes:
+//   1. Elements of filteredKnowledgeBases, which carry an explicit `isMine` flag (see
+//      the spread in filteredKnowledgeBases; cross-workspace shared items get isMine=false).
+//   2. Elements of sortedMineKbs are raw KBs, with no isMine and no permission field.
+// Cross-workspace shared entries always carry `permission` and in-workspace entries never do, so "no permission"
+// safely marks this workspace. Altogether: check isMine first, then fall back to whether permission exists.
 const kbSectionOf = (kb: any): KbSectionKey => {
   if (kb?.is_pinned) return 'pinned'
   const isOwnTenant = kb?.isMine === true || (kb?.isMine !== false && kb?.permission == null)
@@ -1040,16 +1040,16 @@ const kbSectionOf = (kb: any): KbSectionKey => {
   return isSharedKbEditable(kb?.permission) ? 'sharedEditable' : 'sharedReadonly'
 }
 
-// 空间筛选视图（sortedSpaceKbsList）的条目结构与上面不同：is_mine 直接标识
-// 「我共享出来的」，其余按 permission 走 sharedEditable / sharedReadonly。
+// Entries in the shared space filter view (sortedSpaceKbsList) have a different structure: is_mine directly marks
+// "shared out by me", and the rest go by permission into sharedEditable / sharedReadonly.
 const spaceKbSectionOf = (shared: any): KbSectionKey => {
   if (shared?.is_mine) return 'sharedByMe'
   return isSharedKbEditable(shared?.permission) ? 'sharedEditable' : 'sharedReadonly'
 }
 const isSpaceKbCollapsed = (shared: any): boolean => isKbSectionCollapsed(spaceKbSectionOf(shared))
 
-// 每个分组里实际有多少张卡片——直接把分组判定函数复用一遍。组标题上展示
-// "(N)" 让用户一眼知道折叠后会藏掉多少，也方便核对筛选结果。
+// How many cards each group actually has, reusing the group check function. The group heading shows
+// "(N)", so users see at a glance how many collapsing will hide, and can check the filter results.
 const emptyKbCounts = (): Record<KbSectionKey, number> => ({
   pinned: 0, mine: 0, tenantOthers: 0, sharedByMe: 0, sharedEditable: 0, sharedReadonly: 0,
 })
@@ -1069,7 +1069,7 @@ const spaceKbSectionCounts = computed<Record<KbSectionKey, number>>(() => {
   return c
 })
 
-// 收藏、最近、全部和工作空间都使用同一排序选项，同时保持原有分组顺序。
+// Favorites, recent, all and workspace all use the same sort option while keeping the original group order.
 const unsearchedFilteredKnowledgeBases = computed(() => {
   if (spaceSelection.value === 'favorites') {
     return sortResourcesWithinGroups(
@@ -1150,15 +1150,15 @@ const fetchList = (force = false) => {
     orgStore.fetchSharedKnowledgeBases({ force }),
     orgStore.fetchOrganizations({ force }),
   ]).finally(() => { loading.value = false }).then(() => {
-    // 各空间知识库数量已由 GET /organizations 的 resource_counts 带回，存于 orgStore.resourceCounts
+    // Knowledge base counts per shared space come back in resource_counts from GET /organizations, stored in orgStore.resourceCounts
     const counts = orgStore.resourceCounts?.knowledge_bases?.by_organization
     if (counts) spaceCountByOrg.value = { ...counts }
   })
 }
 
-// 选中空间时请求该空间内全部知识库（含我共享的）
+// When a shared space is selected, request every knowledge base in it (including those I shared)
 watch(spaceSelection, (val) => {
-  // Stale URL guard: an older "协作" view used scope=shared; that view
+  // Stale URL guard: an older "collaboration" view used scope=shared; that view
   // was removed, so normalize back to "all" instead of letting the
   // value fall through to the per-space fetch branch (which would 404
   // on the string "shared").
@@ -1192,7 +1192,7 @@ watch(creatorFilter, () => {
 
 onMounted(() => {
   fetchList().then(() => {
-    // 检查路由参数中是否有需要高亮的知识库ID
+    // Check whether the route parameters have a knowledge base ID to highlight
     const highlightKbId = route.query.highlightKbId as string
     if (highlightKbId) {
       triggerHighlightFlash(highlightKbId)
@@ -1215,7 +1215,7 @@ onUnmounted(() => {
   }
 })
 
-// 监听路由变化，处理从其他页面跳转过来的高亮需求
+// Watch route changes to handle highlight requests when arriving from other pages
 watch(() => route.query.highlightKbId, (newKbId) => {
   if (newKbId && typeof newKbId === 'string' && kbs.value.length > 0) {
     triggerHighlightFlash(newKbId)
@@ -1225,20 +1225,20 @@ watch(() => route.query.highlightKbId, (newKbId) => {
 })
 
 const openMore = (index: number) => {
-  // 只记录当前打开的索引，用于显示激活样式
-  // 弹窗的开关由 v-model 自动管理
+  // Only record the currently open index, for the active style
+  // The dialog's open state is managed by v-model
   currentMoreIndex.value = index
 }
 
 const onVisibleChange = (visible: boolean) => {
-  // 弹窗关闭时重置索引
+  // Reset the index when the dialog closes
   if (!visible) {
     currentMoreIndex.value = -1
   }
 }
 
 const handleSettings = (kb: KB) => {
-  // 手动关闭弹窗
+  // Close the dialog manually
   kb.showMore = false
   goSettings(kb.id)
 }
@@ -1279,22 +1279,22 @@ function canDuplicateKBCard(kb: any): boolean {
   return authStore.hasRole('contributor') && kb.isMine !== false
 }
 
-// isMyKb 仅用于卡片右下角徽章在「我创建」与「同空间其他成员创建」之间切换。
-// 与 canManageKBCard 不同：管理权限有 admin 兜底，徽章纯粹按创建者匹配。
-// creator_id 为空（PR 5 RBAC 迁移之前的老 KB）一律按 tenant 处理——避免把
-// 全空间共有的旧 KB 错误地都标成「我创建」。
+// isMyKb only switches the bottom-right card badge between "created by me" and "created by another member of the same workspace".
+// Unlike canManageKBCard: management rights have an admin fallback, while the badge matches purely on the creator.
+// An empty creator_id (old KBs from before the PR 5 RBAC migration) is always treated as tenant, so
+// old workspace-wide KBs are not all wrongly marked "created by me".
 function isMyKb(kb: { creator_id?: string }): boolean {
   const userId = authStore.user?.id || ''
   return !!(kb.creator_id && userId && kb.creator_id === userId)
 }
 
-// kbOriginVariant 决定卡片右下角徽章的展示形态：
-//   - 我自己创建的：mine（绿色 "我创建"）
-//   - 同空间他人创建的：creator 变体——只显示创建者名字。用户始终在
-//     某个工作空间内浏览（顶部 TenantSelector 已经标了空间身份），右下
-//     角再贴一遍空间名属于重复信息；contributor / admin / owner / viewer
-//     看到的徽章一致。创建者无法解析时，creator 变体自动回退到
-//     resourceOrigin.tenant 文案（"本空间"），不会出现空标签。
+// kbOriginVariant decides how the badge at the card's bottom right is shown:
+//   - created by me: mine (green "Created by me")
+//   - created by someone else in the same workspace: the creator variant, showing only the creator name. The user always
+//     browses inside some workspace (the TenantSelector at the top already marks the workspace identity), so repeating
+//     the workspace name at the bottom right is redundant; contributor / admin / owner / viewer
+//     all see the same badge. When the creator cannot be resolved, the creator variant falls back to
+//     the resourceOrigin.tenant text ("This workspace"), so no empty tag appears.
 function kbOriginVariant(kb: { creator_id?: string }): 'mine' | 'creator' {
   return isMyKb(kb) ? 'mine' : 'creator'
 }
@@ -1308,12 +1308,12 @@ function showKbOriginBadge(kb: { creator_id?: string; creator_name?: string }): 
   })
 }
 
-// 通过 ID 处理设置（用于全部 Tab 下的知识库）
+// Handle settings by ID (for knowledge bases in the All tab)
 const handleSettingsById = (id: string) => {
   goSettings(id)
 }
 
-// 通过 ID 处理删除（用于全部 Tab 下的知识库）
+// Handle delete by ID (for knowledge bases in the All tab)
 const handleDeleteById = (id: string) => {
   const kb = kbs.value.find(k => k.id === id)
   if (kb) requestDelete(kb)
@@ -1377,17 +1377,17 @@ const duplicateKB = async (id: string) => {
 
 const handleSharedKbClick = (sharedKb: SharedKnowledgeBase) => {
   pins.touchRecent('kb', sharedKb.knowledge_base.id)
-  // 跳转到共享知识库详情页
+  // Navigate to the shared knowledge base detail page
   router.push(`/platform/knowledge-bases/${sharedKb.knowledge_base.id}`)
 }
 
-// 处理"全部"Tab 中的共享知识库卡片点击（直接进入知识库）
+// Handle a click on a shared knowledge base card in the "All" tab (opens the knowledge base directly)
 const handleSharedKbClickFromAll = (kb: any) => {
   pins.touchRecent('kb', kb.id)
   router.push(`/platform/knowledge-bases/${kb.id}`)
 }
 
-// 右侧详情面板：共享知识库详情（含直接共享与来自智能体的）
+// Right detail panel: shared knowledge base details (both direct shares and those via an agent)
 type SharedKbDetailItem = SharedKnowledgeBase & { is_mine?: boolean; source_from_agent?: SourceFromAgentInfo }
 const sharedDetailPanelVisible = ref(false)
 const currentSharedKbForDetail = ref<SharedKbDetailItem | null>(null)
@@ -1397,7 +1397,7 @@ const closeSharedDetailPanel = () => {
   currentSharedKbForDetail.value = null
 }
 
-// 打开右侧详情面板（全部 Tab 共享卡片）
+// Open the right detail panel (shared card in the All tab)
 const openSharedDetailFromAll = (kb: any) => {
   const sharedKb = sharedKbs.value.find(s => s.knowledge_base.id === kb.id)
   if (sharedKb) {
@@ -1406,20 +1406,20 @@ const openSharedDetailFromAll = (kb: any) => {
   }
 }
 
-// 打开右侧详情面板（空间 Tab：直接共享或来自智能体）
+// Open the right detail panel (shared space tab: direct share or via an agent)
 const openSharedDetail = (sharedKb: SharedKbDetailItem) => {
   currentSharedKbForDetail.value = sharedKb
   sharedDetailPanelVisible.value = true
 }
 
-// 智能体对知识库的策略文案（用于抽屉「来源方式」为智能体时）
+// An agent's policy text for the knowledge base (for when the drawer's "source" is an agent)
 const agentKbStrategyText = (mode: string) => {
   if (mode === 'all') return t('knowledgeList.detail.agentKbStrategyAll')
   if (mode === 'selected') return t('knowledgeList.detail.agentKbStrategySelected')
   return t('knowledgeList.detail.agentKbStrategyNone')
 }
 
-// 从右侧面板进入知识库
+// Enter the knowledge base from the right panel
 const goToSharedKbFromPanel = () => {
   if (currentSharedKbForDetail.value) {
     router.push(`/platform/knowledge-bases/${currentSharedKbForDetail.value.knowledge_base.id}`)
@@ -1428,7 +1428,7 @@ const goToSharedKbFromPanel = () => {
 }
 
 const handleDelete = (kb: KB) => {
-  // 手动关闭弹窗
+  // Close the dialog manually
   kb.showMore = false
   requestDelete(kb)
 }
@@ -1466,7 +1466,7 @@ const isInitialized = (kb: KB) => {
 const isWikiKb = (kb: unknown) =>
   !!(kb as { indexing_strategy?: { wiki_enabled?: boolean } } | null | undefined)?.indexing_strategy?.wiki_enabled
 
-// 计算是否有未初始化的知识库
+// Whether there is an uninitialized knowledge base
 const hasUninitializedKbs = computed(() => {
   return kbs.value.some(kb => !isInitialized(kb))
 })
@@ -1496,30 +1496,30 @@ const goDetail = (id: string) => {
 }
 
 const goSettings = (id: string) => {
-  // 使用模态框打开设置
+  // Open settings in a modal
   uiStore.openKBSettings(id)
 }
 
-// 创建知识库
+// Create a knowledge base
 const handleCreateKnowledgeBase = () => {
   markContextualGuideDone('kbList')
-  // 无模型时仍打开创建向导，并定位到模型配置页；用户可在向导内添加模型，无需先跳转系统设置
+  // With no model, still open the create wizard on the model config page; the user can add a model in the wizard without going to system settings first
   const initialSection =
     modelsReadyLoaded.value && !isReadyForDocumentKb.value ? 'models' : undefined
   uiStore.openCreateKB('document', initialSection)
 }
 
-// 知识库编辑器成功回调（创建或编辑成功）
+// Knowledge base editor success callback (create or edit succeeded)
 const handleKBEditorSuccess = (kbId: string) => {
   console.log('[KnowledgeBaseList] knowledge operation success:', kbId)
   const shouldOpenDetailForUploadGuide = !isContextualGuideDone('kbDetail')
-  // 列表页编辑同样要让单 KB 详情缓存失效，否则侧栏 / 详情页 60s 内仍显示旧信息
+  // Editing from the list page must also invalidate the single-KB detail cache, or the sidebar / detail page shows stale info for 60s
   chatResources.invalidateKnowledgeBaseDetail(kbId)
   fetchList(true).then(() => {
     if (shouldOpenDetailForUploadGuide && kbId && !uiStore.showKBEditorModal) {
       goDetail(kbId)
     }
-    // 如果是从路由参数中获取的高亮ID，触发闪烁效果
+    // If the highlight ID came from the route parameters, trigger the flash effect
     if (route.query.highlightKbId === kbId) {
       triggerHighlightFlash(kbId)
       const { highlightKbId: _drop, ...rest } = route.query
@@ -1528,18 +1528,18 @@ const handleKBEditorSuccess = (kbId: string) => {
   })
 }
 
-// 触发高亮闪烁效果
+// Trigger the highlight flash effect
 const triggerHighlightFlash = (kbId: string) => {
   highlightedKbId.value = kbId
   nextTick(() => {
     if (highlightedCardRef.value) {
-      // 滚动到高亮的卡片
+      // Scroll to the highlighted card
       highlightedCardRef.value.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       })
     }
-    // 3秒后清除高亮
+    // Clear the highlight after 3 seconds
     setTimeout(() => {
       highlightedKbId.value = null
     }, 3000)
@@ -1666,7 +1666,7 @@ watch(keyword, () => { collapsedKbSections.value = new Set() })
   }
 }
 
-// 来源组织（空间图标 + 空间名）
+// Source shared space (shared space icon + name)
 .org-source {
   display: inline-flex;
   align-items: center;
@@ -1756,7 +1756,7 @@ watch(keyword, () => { collapsedKbSections.value = new Set() })
 
 }
 
-/* 三个列表卡片统一：描述字体 */
+/* Unified across the three list cards: description font */
 .bottom-left {
   display: flex;
   align-items: center;
@@ -1887,7 +1887,7 @@ watch(keyword, () => { collapsedKbSections.value = new Set() })
   box-shadow: 0 0 12px color-mix(in srgb, var(--td-brand-color) 30%, transparent) !important;
 }
 
-// 删除确认对话框样式
+// Delete confirmation dialog styles
 :deep(.t-dialog__position.t-dialog--top) {
   padding-top: 40vh !important;
 }
@@ -1897,9 +1897,9 @@ watch(keyword, () => { collapsedKbSections.value = new Set() })
 </style>
 
 <style lang="less">
-/* 下拉菜单样式已统一至 @/assets/dropdown-menu.less */
+/* Dropdown menu styles are unified in @/assets/dropdown-menu.less */
 
-// 共享知识库卡片：详情触发（替代三点，用「查看详情」链接样式）
+// Shared knowledge base card: detail trigger (replaces the three dots with a "View details" link style)
 .shared-detail-trigger {
   display: inline-flex;
   align-items: center;
@@ -1924,7 +1924,7 @@ watch(keyword, () => { collapsedKbSections.value = new Set() })
   }
 }
 
-// 右侧滑出：共享知识库详情面板
+// Right slide-out: shared knowledge base detail panel
 .shared-detail-drawer-overlay {
   position: fixed;
   top: 0;
@@ -2044,7 +2044,7 @@ watch(keyword, () => { collapsedKbSections.value = new Set() })
   }
 }
 
-// 右侧滑入动画
+// Right slide-in animation
 .shared-detail-drawer-enter-active,
 .shared-detail-drawer-leave-active {
   transition: opacity 0.25s ease;

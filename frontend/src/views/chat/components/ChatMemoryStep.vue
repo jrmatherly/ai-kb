@@ -155,7 +155,7 @@ const memoryKindLabel = (kind: string) => {
   padding: 2px 0;
 }
 
-// A plain label would run straight into the sentence ("个人信息在做医疗影像
+// A plain label would run straight into the sentence ("Personal info working on medical imaging
 // …"), so the kind reads as a tag rather than as the first words of the memory.
 .memory-kind {
   flex-shrink: 0;

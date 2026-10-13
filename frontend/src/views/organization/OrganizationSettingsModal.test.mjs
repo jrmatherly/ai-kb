@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 const source = readFileSync(new URL('./OrganizationSettingsModal.vue', import.meta.url), 'utf8')
-// 遮罩层由共享壳 SettingsModalShell 渲染，overscroll 规则也随之搬到那里。
+// The mask layer is rendered by the shared SettingsModalShell, and the overscroll rule moved there with it.
 const shellSource = readFileSync(new URL('../../components/SettingsModalShell.vue', import.meta.url), 'utf8')
 
 test('reviewing join requests goes through the store and refreshes modal data', () => {

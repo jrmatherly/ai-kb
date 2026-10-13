@@ -1,5 +1,5 @@
 // Curated sample texts for the chunking debug drawer. Each preset is sized
-// to ≈2000–4000 characters and shaped to exercise a distinct tier of the
+// to ≈3000–4500 characters and shaped to exercise a distinct tier of the
 // chunker, so users can quickly see how their config behaves on realistic
 // content without preparing their own sample.
 
@@ -10,113 +10,113 @@ export interface ChunkingSample {
   text: string
 }
 
-const MARKDOWN_SAMPLE = `# AI KB 知识框架
+const MARKDOWN_SAMPLE = `# The AI KB Knowledge Framework
 
-AI KB 是一个基于 LLM 的开源企业知识框架，集 RAG 问答、ReAct 智能体、Wiki 知识图谱于一体。本文介绍其设计动机、架构与典型用法。
+AI KB is an open-source, LLM-based enterprise knowledge framework that combines RAG question answering, ReAct agents and a wiki knowledge graph. This document covers its motivation, architecture and typical usage.
 
-## 设计动机
+## Motivation
 
-企业内部知识散落在 Confluence、飞书、Notion、Git 仓库等多种系统，传统全文检索难以理解语义，单一 LLM 又缺少可信赖的上下文来源。AI KB 的目标是：
+Internal company knowledge is scattered across Confluence, Feishu, Notion, Git repositories and other systems. Traditional full-text search struggles with meaning, and an LLM on its own lacks a trustworthy source of context. AI KB aims for:
 
-- **多源接入**：把分散内容统一抽取、清洗、向量化
-- **多策略检索**：稠密、稀疏、知识图谱多路召回 + RRF 融合
-- **可解释推理**：ReAct Agent 让推理链条可追踪、可干预
-- **可观测**：原生集成 Langfuse，每一步推理、每一次工具调用都有 trace
+- **Multi-source ingestion**: extract, clean and vectorize scattered content in one pipeline
+- **Multi-strategy retrieval**: dense, sparse and knowledge graph recall paths + RRF fusion
+- **Explainable reasoning**: ReAct agents make the reasoning chain traceable and steerable
+- **Observability**: native Langfuse integration, with a trace for every reasoning step and every tool call
 
-## 核心特性
+## Core features
 
-### 多模型支持
+### Multi-model support
 
-兼容 20+ 主流 LLM：OpenAI、Anthropic、DeepSeek、Qwen、智谱、混元、Gemini，以及本地 Ollama。模型层抽象 \`Provider\` 接口，新增厂商只需实现 \`Chat()\` 方法并注册即可。
+Compatible with 20+ mainstream LLMs: OpenAI, Anthropic, DeepSeek, Qwen, Zhipu, Hunyuan, Gemini, and local Ollama. The model layer abstracts a \`Provider\` interface, so a new vendor only needs to implement the \`Chat()\` method and register it.
 
-### 多向量库支持
+### Multiple vector stores
 
-通过 \`RETRIEVE_DRIVER\` 环境变量切换：
+Switch with the \`RETRIEVE_DRIVER\` environment variable:
 
-| 驱动 | 适合场景 |
+| Driver | Best for |
 |------|---------|
-| pgvector | 已有 PostgreSQL，规模 < 1000 万 chunk |
-| Elasticsearch | 需要混合检索 + 关键词高亮 |
-| Milvus | 大规模、低延迟 |
-| Weaviate | 需要混合 BM25 + GraphQL 查询 |
-| Qdrant | 默认推荐，部署简单、性能均衡 |
+| pgvector | Existing PostgreSQL, under 10 million chunks |
+| Elasticsearch | Hybrid retrieval + keyword highlighting |
+| Milvus | Large scale, low latency |
+| Weaviate | Hybrid BM25 + GraphQL queries |
+| Qdrant | Recommended default, simple to deploy, balanced performance |
 
-### 数据源连接器
+### Data source connectors
 
-- **飞书**：自动同步知识库与文档树，支持增量更新
-- **Notion**：基于 API 抽取 Page / Database
-- **语雀**：按 Group 拉取，保留多级目录
+- **Feishu**: syncs knowledge bases and document trees automatically, with incremental updates
+- **Notion**: extracts Pages / Databases through the API
+- **Yuque**: pulls by Group, keeping the multi-level directory
 
-每个连接器实现统一的 \`DataSource\` 接口，新增数据源约 200 行代码。
+Every connector implements the shared \`DataSource\` interface; a new data source takes about 200 lines of code.
 
-## 快速开始
+## Quick start
 
-### 环境要求
+### Requirements
 
-- Docker 20.10+ 与 Docker Compose v2
-- 至少 8GB 内存、20GB 磁盘空间
-- 如需本地运行 LLM，建议 NVIDIA GPU 24GB 以上显存
+- Docker 20.10+ and Docker Compose v2
+- At least 8GB of memory and 20GB of disk space
+- To run an LLM locally, an NVIDIA GPU with 24GB or more of VRAM is recommended
 
-### 启动命令
+### Start commands
 
 \`\`\`bash
 git clone https://github.com/jrmatherly/ai-kb && cd ai-kb
-cp .env.example .env       # 修改你的模型与数据库配置
-make dev-start             # 启动 postgres / redis / qdrant
-make dev-app               # 启动后端，热重载
-make dev-frontend          # 启动前端，自动刷新
+cp .env.example .env       # set your model and database config
+make dev-start             # start postgres / redis / qdrant
+make dev-app               # start the backend with hot reload
+make dev-frontend          # start the frontend with auto refresh
 \`\`\`
 
-打开浏览器访问 http://localhost:5173 即可。
+Then open http://localhost:5173 in a browser.
 
-## 架构概览
+## Architecture overview
 
-AI KB 后端采用清晰的分层架构：
+The AI KB backend uses a clean layered architecture:
 
 \`\`\`
 ┌────────────────────────┐
-│   HTTP 层 (Gin)        │  请求路由 / 鉴权 / 限流
+│   HTTP layer (Gin)     │  request routing / auth / rate limiting
 ├────────────────────────┤
-│   业务层 (service)     │  核心算法 / 编排
+│   Service layer        │  core algorithms / orchestration
 ├────────────────────────┤
-│   数据层 (repository)  │  数据库访问 / 缓存
+│   Repository layer     │  database access / caching
 ├────────────────────────┤
-│   领域模型 (types)     │  KnowledgeBase / Chunk / Agent ...
+│   Domain model (types) │  KnowledgeBase / Chunk / Agent ...
 └────────────────────────┘
 \`\`\`
 
-依赖注入容器（go/dig）在 \`cmd/server/main.go\` 装配所有依赖，handler 通过接口拿到 service，service 通过接口拿到 repository，所有可替换实现都在启动时绑定。
+The dependency injection container (go/dig) wires every dependency in \`cmd/server/main.go\`: handlers get services through interfaces, services get repositories through interfaces, and every replaceable implementation is bound at startup.
 
-### 检索流水线
+### Retrieval pipeline
 
-文档上传 → docreader 服务解析 → 分块（含父子分块） → 嵌入 → 写入向量库与图数据库 → 用户查询时多路召回 → RRF 融合 → 重排 → 返回。
+Document upload → parsed by the docreader service → chunking (parent-child chunks included) → embedding → written to the vector store and graph database → multi-path recall at query time → RRF fusion → rerank → response.
 
-### Agent 编排
+### Agent orchestration
 
-Agent 引擎执行经典 ReAct 循环：
+The agent engine runs the classic ReAct loop:
 
-1. **Reason**：LLM 根据系统提示和当前观察输出推理
-2. **Act**：解析工具调用 JSON，分发给内置工具或 MCP 工具
-3. **Observe**：把工具返回值塞回上下文
-4. 重复 1-3 直到产出最终答案或达到最大迭代
+1. **Reason**: the LLM outputs its reasoning from the system prompt and the current observation
+2. **Act**: parse the tool call JSON and dispatch it to a built-in tool or an MCP tool
+3. **Observe**: put the tool's return value back into the context
+4. Repeat 1-3 until a final answer is produced or the iteration limit is reached
 
-每一步都通过 SSE 流式返回前端，并写入 Langfuse trace 便于排查。
+Every step streams to the frontend over SSE and is written to a Langfuse trace for troubleshooting.
 
-## 进一步阅读
+## Further reading
 
-- API 文档：\`website-docs/04-api/01-api-overview.md\`
-- 配置项清单：\`config/config.yaml\` 与 \`.env.example\`
-- 故障排查：\`website-docs/01-getting-started/05-troubleshooting.md\`
-- 产品介绍：\`website-docs/01-getting-started/01-introduction.md\``
+- API docs: \`website-docs/04-api/01-api-overview.md\`
+- Config reference: \`config/config.yaml\` and \`.env.example\`
+- Troubleshooting: \`website-docs/01-getting-started/05-troubleshooting.md\`
+- Product introduction: \`website-docs/01-getting-started/01-introduction.md\``
 
-const FAQ_SAMPLE = `# AI KB 部署与使用 FAQ
+const FAQ_SAMPLE = `# AI KB Deployment and Usage FAQ
 
-本文档汇总社区与内部用户最常问到的问题，按"安装 / 配置 / 检索 / 模型 / 性能"分类。
+This document collects the questions community and internal users ask most, grouped as "install / config / retrieval / models / performance".
 
-## 安装与启动
+## Install and start
 
-### Q1: Docker 镜像在哪里下载？
-官方镜像通过 daocloud 加速分发：
+### Q1: Where do I download the Docker images?
+The official images are distributed through a registry mirror:
 
 \`\`\`
 docker pull ghcr.io/jrmatherly/ai-kb-app:v0.5.0
@@ -124,162 +124,162 @@ docker pull ghcr.io/jrmatherly/ai-kb-docreader:v0.5.0
 docker pull ghcr.io/jrmatherly/ai-kb-ui:v0.5.0
 \`\`\`
 
-### Q2: 启动后访问 5173 显示旧界面？
-浏览器缓存了旧版前端资源。Ctrl+Shift+R 强制刷新即可，必要时清空站点存储。
+### Q2: Port 5173 shows the old UI after startup?
+The browser cached the old frontend assets. Force a refresh with Ctrl+Shift+R, and clear the site storage if needed.
 
-### Q3: 注册新用户报 500 Internal Server Error
-通常是后端容器未正常启动。先检查 \`make dev-logs | grep app\`，常见为数据库连接失败或迁移未执行。
+### Q3: Registering a new user returns 500 Internal Server Error
+Usually the backend container did not start properly. Check \`make dev-logs | grep app\` first; the common causes are a failed database connection or migrations that did not run.
 
-### Q4: 上传文档报 column "xxx" does not exist
-数据库迁移未完成。运行 \`make migrate-up\`，确认所有迁移成功后重启 app 容器。
+### Q4: Uploading a document reports column "xxx" does not exist
+The database migrations are incomplete. Run \`make migrate-up\`, confirm every migration succeeded, then restart the app container.
 
-### Q5: 文档上传后状态一直是 processing
-检查 docreader 容器是否运行（\`docker compose ps\`），并查看其日志中是否有解析报错。常见原因：依赖的 Python 包缺失、PDF 加密、扫描件 OCR 超时。
+### Q5: A document stays in processing after upload
+Check that the docreader container is running (\`docker compose ps\`) and look for parse errors in its logs. Common causes: a missing Python dependency, an encrypted PDF, or OCR timing out on a scan.
 
-## 配置
+## Configuration
 
-### Q6: 如何切换向量库？
-修改 \`.env\` 中的 \`RETRIEVE_DRIVER\`，可选值：\`qdrant\` (默认) / \`pgvector\` / \`elasticsearch\` / \`milvus\` / \`weaviate\`。切换后需要重新嵌入存量数据。
+### Q6: How do I switch the vector store?
+Change \`RETRIEVE_DRIVER\` in \`.env\`. Values: \`qdrant\` (default) / \`pgvector\` / \`elasticsearch\` / \`milvus\` / \`weaviate\`. Existing data must be re-embedded after switching.
 
-### Q7: 如何修改默认 chunk 大小？
-全局默认在 \`config/config.yaml\` 的 \`knowledge.chunking\` 段；单个知识库可在 UI 的"分块设置"页覆盖。修改后仅对新上传文档生效。
+### Q7: How do I change the default chunk size?
+The global default is in the \`knowledge.chunking\` section of \`config/config.yaml\`; a single knowledge base can override it on the "Chunking settings" page in the UI. Changes apply only to newly uploaded documents.
 
-### Q8: 如何启用多模态？
-在知识库的"多模态配置"中开启，并选择一个 VLM 模型（如 GPT-4o、Qwen2.5-VL）。开启后，文档中的图片会被 VLM 描述并参与检索。
+### Q8: How do I enable multimodal?
+Turn it on in the knowledge base's "Multimodal config" and pick a VLM (such as GPT-4o or Qwen2.5-VL). Once on, images in documents are described by the VLM and take part in retrieval.
 
-### Q9: 怎么把日志改成 JSON 格式？
-设置 \`LOG_FORMAT=json LOG_LEVEL=info\`，便于接入 ELK / Loki 等日志栈。
+### Q9: How do I switch the logs to JSON?
+Set \`LOG_FORMAT=json LOG_LEVEL=info\`, which makes it easy to feed a log stack such as ELK / Loki.
 
-## 检索与召回
+## Retrieval and recall
 
-### Q10: 检索结果为空但确认文档已索引
-按这个顺序排查：
+### Q10: Retrieval returns nothing although the document is indexed
+Check in this order:
 
-1. 确认知识库状态为 \`completed\`，而不是 \`indexing\` 或 \`failed\`
-2. 检查向量库连接（默认 qdrant:6334），\`docker compose ps\` 看 qdrant 是否健康
-3. 在管理页"重建索引"，确认嵌入模型工作正常
-4. 查看后端日志中 retriever 是否报 dimension mismatch
+1. Confirm the knowledge base status is \`completed\`, not \`indexing\` or \`failed\`
+2. Check the vector store connection (qdrant:6334 by default); \`docker compose ps\` shows whether qdrant is healthy
+3. Run "Rebuild index" on the admin page and confirm the embedding model works
+4. Look for a dimension mismatch from the retriever in the backend logs
 
-### Q11: 检索结果命中但答非所问
-通常是 chunk 边界切割了关键句。尝试：
+### Q11: Retrieval hits but the answer misses the question
+Usually a chunk boundary cut through a key sentence. Try:
 
-- 启用父子分块，让向量召回小块、上下文用大块
-- 调高 chunk overlap 到 chunk size 的 15%-20%
-- 切换到"按标题切分"或"结构感知"策略
+- Enable parent-child chunking, so vectors recall small chunks and the context uses large ones
+- Raise the chunk overlap to 15%-20% of the chunk size
+- Switch to the "split by heading" or "structure-aware" strategy
 
-### Q12: 排序看起来不合理
-重排（rerank）模型可能未启用。在"模型设置"中配置 BGE-Reranker 或 Cohere Rerank，并在知识库配置中打开重排。
+### Q12: The ranking looks wrong
+The rerank model may not be enabled. Configure BGE-Reranker or Cohere Rerank in "Model settings", and turn on rerank in the knowledge base config.
 
-## 模型与 Token
+## Models and tokens
 
-### Q13: 调用 OpenAI 超时
-检查代理网络与 \`OPENAI_BASE_URL\` 配置；本地无外网时切换到 Ollama 或国内大模型。
+### Q13: Calls to OpenAI time out
+Check the proxy network and the \`OPENAI_BASE_URL\` config; without internet access, switch to Ollama or a regionally hosted model.
 
-### Q14: token 用量在哪里看？
-开启 Langfuse 后，每个会话、每次推理、每个工具调用的 token 消耗都有完整 trace，可按时间、空间、模型聚合。
+### Q14: Where do I see token usage?
+With Langfuse on, every session, every reasoning step and every tool call has a full trace of its token use, which can be aggregated by time, workspace and model.
 
-### Q15: 如何接入私有 LLM？
-实现 \`internal/models/chat/provider/Provider\` 接口，注册到 provider 工厂，配置文件中加一条记录即可，约 100-200 行代码。
+### Q15: How do I connect a private LLM?
+Implement the \`internal/models/chat/provider/Provider\` interface, register it with the provider factory and add one entry to the config file; about 100-200 lines of code.
 
-## 性能
+## Performance
 
-### Q16: 大文档上传慢怎么办？
-docreader 是 CPU 密集型，建议横向扩容：在 docker-compose 中调高 docreader 服务的 \`deploy.replicas\`，或独立部署到更强的机器。
+### Q16: Large document uploads are slow
+docreader is CPU-bound, so scale it out: raise \`deploy.replicas\` for the docreader service in docker-compose, or deploy it separately on a stronger machine.
 
-### Q17: 嵌入吞吐瓶颈
-切换到本地 Ollama + GPU 加速，或用商用 API 的批量端点（如 OpenAI 的 batch API）。设置 \`EMBED_BATCH_SIZE=64\` 显著提升吞吐。
+### Q17: Embedding throughput is the bottleneck
+Switch to local Ollama with GPU acceleration, or use a commercial API's batch endpoint (such as OpenAI's batch API). Setting \`EMBED_BATCH_SIZE=64\` raises throughput noticeably.
 
-### Q18: 数据库慢查询
-启用 \`pg_stat_statements\`，定位慢 SQL；常见瓶颈是 chunks 表的元数据 JSONB 查询，可针对热点字段加索引。`
+### Q18: Slow database queries
+Enable \`pg_stat_statements\` to find the slow SQL; the common bottleneck is JSONB metadata queries on the chunks table, which an index on the hot fields can fix.`
 
-const CHAPTER_SAMPLE = `第 1 章 引言
+const CHAPTER_SAMPLE = `Chapter 1 Introduction
 
-1.1 文档目的
+1.1 Purpose of this document
 
-本文档描述某分布式知识检索平台的整体架构、组件划分与部署方案，面向运维工程师、SRE 与系统架构师。读者应熟悉 Docker、Kubernetes、PostgreSQL 等基础组件。
+This document describes the overall architecture, component breakdown and deployment plan of a distributed knowledge retrieval platform, for operations engineers, SREs and system architects. Readers should know foundational components such as Docker, Kubernetes and PostgreSQL.
 
-1.2 名词约定
+1.2 Terminology
 
-- 网关层（Gateway）：负责入口流量调度与协议转换
-- 业务层（Service）：承载领域逻辑与编排
-- 存储层（Storage）：封装持久化与缓存细节
-- 推理层（Inference）：与外部 LLM / 嵌入模型交互的隔离层
+- Gateway layer (Gateway): schedules ingress traffic and converts protocols
+- Service layer (Service): carries the domain logic and orchestration
+- Storage layer (Storage): encapsulates persistence and caching details
+- Inference layer (Inference): the isolation layer for talking to external LLMs / embedding models
 
-1.3 文档版本
+1.3 Document version
 
-本版本 v1.4，对应平台代码 v0.5.x 系列。文档随代码同步更新，主要变更见附录 A。
+This is version v1.4, matching the v0.5.x series of the platform code. The document is updated with the code; see Appendix A for the main changes.
 
-第 2 章 系统架构
+Chapter 2 System architecture
 
-2.1 总体设计
+2.1 Overall design
 
-平台采用经典的微服务架构，但在边界划分上保持克制——只在确有独立伸缩需求的位置切分服务。当前共 4 个长驻服务：网关、业务后端、文档解析、向量索引。
+The platform uses a classic microservice architecture but stays restrained about boundaries, splitting out a service only where it truly needs to scale on its own. There are currently 4 long-running services: the gateway, the business backend, document parsing and the vector index.
 
-2.2 模块划分
+2.2 Module breakdown
 
-2.2.1 用户与权限
+2.2.1 Users and permissions
 
-用户、组织、共享空间、角色与权限规则集中在 user-service 中。RBAC 模型支持继承与覆盖，外部 OIDC 接入通过适配层完成。
+Users, organizations, shared spaces, roles and permission rules live together in user-service. The RBAC model supports inheritance and overrides, and external OIDC is connected through an adapter layer.
 
-2.2.2 内容与索引
+2.2.2 Content and indexing
 
-内容侧负责文档生命周期：上传、解析、分块、嵌入、入库、检索、引用追踪。Chunk 是最细粒度的检索单元，每个 chunk 携带源文档元数据与位置信息。
+The content side owns the document lifecycle: upload, parsing, chunking, embedding, storage, retrieval and citation tracking. A chunk is the finest-grained retrieval unit, and every chunk carries the source document metadata and position.
 
-2.2.3 推理与编排
+2.2.3 Inference and orchestration
 
-Agent 编排器负责 ReAct 循环，工具调用通过 MCP 协议或内置注册表分发。所有 LLM 调用统一经过模型代理层，方便切换、限流与计费。
+The agent orchestrator runs the ReAct loop, and tool calls are dispatched through the MCP protocol or the built-in registry. Every LLM call goes through the model proxy layer, which makes switching, rate limiting and billing easy.
 
-2.3 数据流
+2.3 Data flow
 
-文档上传后依次经过：解析 → 清洗 → 分块 → 嵌入 → 写库。查询路径：rewrite → 多路召回 → fusion → rerank → context 拼接 → LLM 生成。
+After upload a document goes through: parsing → cleaning → chunking → embedding → storage. The query path: rewrite → multi-path recall → fusion → rerank → context assembly → LLM generation.
 
-第 3 章 部署指南
+Chapter 3 Deployment guide
 
-3.1 环境要求
+3.1 Requirements
 
-物理资源：8 vCPU / 16 GB 内存 / 100 GB SSD 起步；生产环境建议 16 vCPU / 32 GB / 500 GB。GPU 仅在本地推理时必需。
+Physical resources: start at 8 vCPU / 16 GB memory / 100 GB SSD; for production, 16 vCPU / 32 GB / 500 GB is recommended. A GPU is required only for local inference.
 
-3.2 容器编排
+3.2 Container orchestration
 
-3.2.1 单机 Docker Compose
+3.2.1 Single-host Docker Compose
 
-适合 PoC 与中小团队（< 100 人，< 100 万 chunk）。一条命令拉起全部服务：
+Suited to PoCs and small to midsize teams (under 100 people, under 1 million chunks). One command brings up every service:
 
 docker compose up -d
 
 3.2.2 Kubernetes Helm
 
-适合规模化部署。Helm chart 在 helm/ 目录，包含 statefulset、配置 secret、ingress 模版。可与现有 PG / Redis 集群对接。
+Suited to deployment at scale. The Helm chart is in the helm/ directory, with statefulset, config secret and ingress templates. It can connect to existing PG / Redis clusters.
 
-3.3 配置最佳实践
+3.3 Configuration best practices
 
-- 把外部依赖（数据库、对象存储、向量库）放在配置中心，避免硬编码
-- 模型 API key 用 Secret 管理，按环境隔离
-- 日志走 stdout/stderr 由编排平台采集，避免本地落盘
+- Keep external dependencies (database, object storage, vector store) in a config center rather than hard-coding them
+- Manage model API keys as Secrets, isolated per environment
+- Send logs to stdout/stderr for the orchestration platform to collect, rather than writing them to local disk
 
-第 4 章 常见运维场景
+Chapter 4 Common operations scenarios
 
-4.1 升级流程
+4.1 Upgrade process
 
-蓝绿或滚动均可。升级前必看 CHANGELOG 中是否有 schema 变更，迁移先于业务镜像替换。
+Blue-green or rolling both work. Before upgrading, always check the CHANGELOG for schema changes; migrations run before the business image is replaced.
 
-4.2 备份与恢复
+4.2 Backup and restore
 
-PG 全量每日备份 + WAL 增量；MinIO/对象存储依赖云端版本管理。Qdrant 用 snapshot 接口定期落盘到对象存储。
+Daily full PG backups + WAL increments; MinIO/object storage relies on cloud versioning. Qdrant snapshots are saved to object storage on a schedule through the snapshot API.
 
-4.3 故障排查
+4.3 Troubleshooting
 
-按"网关 → 业务 → 存储 → 模型"四个维度逐层排查。每层都有健康检查接口与 Langfuse trace 入口，组合起来可在 5 分钟内定位 80% 问题。`
+Work through four layers in order: "gateway → business → storage → model". Every layer has a health check endpoint and a Langfuse trace entry, and together they locate 80% of problems within 5 minutes.`
 
-const PLAIN_SAMPLE = `知识库的检索质量受多个因素影响，最直接的是切分策略与嵌入模型的匹配度。切分过粗会导致单段语义混杂、相关度被稀释；切分过细则丢失上下文，单独检索某一段无法回答跨段问题。一般建议切分大小落在嵌入模型推荐窗口的 50%–80%，既保证语义完整又留出余量。常见嵌入模型如 BGE、Cohere 的 embed-v3 推荐窗口为 512 tokens，对应字符大致在 300–800 之间，因为中文一个字约 0.5–1.2 个 token，英文一个词约 1.3 个 token。
+const PLAIN_SAMPLE = `Retrieval quality in a knowledge base depends on several factors, and the most direct is how well the splitting strategy matches the embedding model. Splitting too coarsely mixes meanings within one passage and dilutes relevance; splitting too finely loses context, so a single retrieved passage cannot answer a question that spans passages. A common recommendation is a chunk size of 50%–80% of the embedding model's recommended window, which keeps meaning intact while leaving headroom. Common embedding models such as BGE and Cohere's embed-v3 recommend a 512-token window, roughly 300–800 characters, since a CJK character is about 0.5–1.2 tokens and an English word about 1.3 tokens.
 
-除了切分大小，重叠（overlap）也会显著影响召回完整性。重叠为 0 时，跨段问题往往只能召回半句话；重叠 10%–20% 通常就足够覆盖大多数边界情况；重叠超过 30% 会让相邻分块大量同质化，反而增加索引成本而不提升召回。一个简单的判断方法：对你的目标查询，平均答案长度的 1/3 作为 overlap 起点，再根据 A/B 测试微调。
+Besides chunk size, overlap also strongly affects recall completeness. With zero overlap, a question that spans passages often recalls only half a sentence; 10%–20% overlap usually covers most boundary cases; overlap above 30% makes neighboring chunks largely redundant, raising indexing cost without improving recall. A simple rule of thumb: for your target queries, start the overlap at one third of the average answer length, then tune it with A/B tests.
 
-分隔符的选择应贴合文档真实结构。纯文本可保留默认双换行作为强分隔；Markdown 文档建议保留标题层级，先按标题切，再在大标题内部按段落切；代码与表格混合的内容则需要更精细的策略，例如 Tree-sitter 抽取代码结构、识别表格边界，或者直接用脚本把这两类内容预先分离再走文本切分。如果文档里大量混合中英文，分隔符里务必同时包含中文标点（。！？）和英文标点（. ! ?），否则只对一种语言生效，效果会很差。
+Separators should follow the real structure of the document. Plain text can keep the default double newline as a strong separator; Markdown documents should keep the heading levels, splitting by heading first and then by paragraph inside large sections; content that mixes code and tables needs a finer strategy, such as extracting code structure with Tree-sitter, detecting table boundaries, or using a script to separate the two kinds of content before text splitting. If a document mixes Chinese and English heavily, the separators must include both fullwidth CJK punctuation and ASCII punctuation (. ! ?), or they work for only one language and the results suffer.
 
-嵌入模型的选择往往被低估。开源里 BGE-large 系列在中文 benchmark 上稳定领先，BGE-M3 同时支持稠密、稀疏、ColBERT 多向量；商用 OpenAI text-embedding-3-large 通用性强、成本不算高，Voyage-3-large 在英文上略胜一筹但中文一般。对长文档场景，注意嵌入模型的最大输入长度——OpenAI 是 8191 tokens，BGE 默认 512，超长输入会被截断或分段嵌入再平均，效果都不好。
+The choice of embedding model is often underrated. Among open-source models the BGE-large series leads steadily on Chinese benchmarks, and BGE-M3 supports dense, sparse and ColBERT multi-vector retrieval at once; the commercial OpenAI text-embedding-3-large is versatile and not expensive, and Voyage-3-large is slightly ahead on English but average on Chinese. For long documents, mind the embedding model's maximum input length: OpenAI allows 8191 tokens and BGE defaults to 512, and overlong input is either truncated or embedded in segments and averaged, neither of which works well.
 
-最后，别忽视后处理。重排（rerank）几乎在所有场景都能提升 5%–15% 的端到端效果，代价是每次查询多 100–300ms 延迟。常见 reranker 包括 BGE-Reranker、Cohere Rerank，前者开源、后者付费但效果略好。如果你的检索路径包含关键词召回，强烈建议用 reranker 做第二层过滤，不然 BM25 的纯字面命中会污染上下文。`
+Finally, do not neglect post-processing. Rerank improves end-to-end results by 5%–15% in almost every scenario, at the cost of 100–300ms of extra latency per query. Common rerankers include BGE-Reranker and Cohere Rerank; the former is open source, the latter is paid but slightly better. If your retrieval path includes keyword recall, a reranker as a second filter is strongly recommended, or BM25's purely literal hits will pollute the context.`
 
 export const CHUNKING_SAMPLES: ChunkingSample[] = [
   { id: "markdown", labelKey: "samples.markdown", text: MARKDOWN_SAMPLE },

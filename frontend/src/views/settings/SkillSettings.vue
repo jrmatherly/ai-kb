@@ -1687,7 +1687,7 @@ onUnmounted(() => {
     color: var(--td-success-color);
   }
 
-  // 异常状态只用前置圆点着色，避免整排卡片铺满红黄底色
+  // Abnormal states color only the leading dot, so a row of cards is not filled with red and yellow backgrounds
   &.skill-card__entry--stale::before,
   &.skill-card__entry--failed::before {
     content: '';

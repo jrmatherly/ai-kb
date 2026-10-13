@@ -6,7 +6,7 @@
     </div>
 
     <div class="settings-group">
-      <!-- 启用开关 -->
+      <!-- Enable switch -->
       <div class="setting-row">
         <div class="setting-info">
           <label>{{ t('chatHistorySettings.enableLabel') }}</label>
@@ -20,7 +20,7 @@
         </div>
       </div>
 
-      <!-- Embedding 模型选择 -->
+      <!-- Embedding model selection -->
       <div v-if="localEnabled" class="setting-row">
         <div class="setting-info">
           <label>{{ t('chatHistorySettings.embeddingModelLabel') }}</label>
@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <!-- 统计信息 -->
+    <!-- Statistics -->
     <div class="stats-section">
       <h3 class="stats-title">{{ t('chatHistorySettings.statsTitle') }}</h3>
       <div v-if="stats && stats.enabled && stats.knowledge_base_id" class="stats-grid">

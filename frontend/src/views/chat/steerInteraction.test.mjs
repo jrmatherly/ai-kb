@@ -63,9 +63,9 @@ test('direct inject shows immediately and an early SSE receipt does not duplicat
   const h = harness({ steerSession: () => request.promise })
   const assistant = { id: 'assistant', role: 'assistant', request_id: 'request', is_completed: false }
   h.state.messagesList.push(assistant)
-  const sending = h.handleSteerMsg('补充', [], 'inject')
+  const sending = h.handleSteerMsg('Follow-up', [], 'inject')
   const item = h.state.steerQueue.value[0]
-  assert.equal(h.state.messagesList[1].content, '补充')
+  assert.equal(h.state.messagesList[1].content, 'Follow-up')
   forkAfterInjectedUser(h.state.messagesList, assistant, h.state.messagesList[1], item.steer_id)
   h.state.steerQueue.value.splice(0, 1) // onUserMessageInjected receipt
   request.resolve({ status: 'queued', steer_id: item.steer_id })
@@ -81,7 +81,7 @@ test('failed inject retries with the same ID and bubble', async () => {
     if (ids.length === 1) throw new Error('network')
     return { status: 'queued', steer_id: args[5] }
   } })
-  await h.handleSteerMsg('补充', [], 'inject')
+  await h.handleSteerMsg('Follow-up', [], 'inject')
   assert.equal(h.state.messagesList[0]._steerFailed, true)
   await h.handleRetrySteer(ids[0])
   assert.deepEqual(ids, [ids[0], ids[0]])
@@ -92,7 +92,7 @@ test('failed inject retries with the same ID and bubble', async () => {
 test('a lost HTTP response after a delivery receipt does not report a failed send', async () => {
   const request = deferred(), errors = []
   const h = harness({ steerSession: () => request.promise, MessagePlugin: { info() {}, error: message => errors.push(message) } })
-  const sending = h.handleSteerMsg('补充', [], 'inject')
+  const sending = h.handleSteerMsg('Follow-up', [], 'inject')
   h.state.steerQueue.value.splice(0, 1) // receipt already removed the item
   request.reject(new Error('response lost'))
   await sending
@@ -101,7 +101,7 @@ test('a lost HTTP response after a delivery receipt does not report a failed sen
 
 test('failed promotion restores the after queue and removes only its optimistic row', async () => {
   const h = harness({ promoteSteerSession: async () => { throw new Error('network') } })
-  h.state.steerQueue.value.push({ steer_id: 'queued', content: '补充', delivery: 'after' })
+  h.state.steerQueue.value.push({ steer_id: 'queued', content: 'Follow-up', delivery: 'after' })
   await h.handlePromoteSteer('queued')
   assert.equal(h.state.steerQueue.value[0].delivery, 'after')
   assert.equal(h.state.messagesList.length, 0)
@@ -119,7 +119,7 @@ function receiveInjection(h, steerId, userId) {
   vm.runInNewContext(receipt, {
     messagesList: h.state.messagesList,
     message: h.state.messagesList.findLast(m => m.role === 'assistant'),
-    dataPayload: { steer_id: steerId, user_message_id: userId, content: '写到Docx' },
+    dataPayload: { steer_id: steerId, user_message_id: userId, content: 'Write to Docx' },
     data: {}, dataId: 'request', replaySegments: new Map(),
     forkAfterInjectedUser, log() {}, emitMessageCreated() {}, onAgentChunkBound() {},
     onUserMessageInjected(id) {
@@ -134,7 +134,7 @@ for (const receiptFirst of [false, true]) {
     const request = deferred()
     const h = harness({ steerSession: () => request.promise })
     h.state.messagesList.push({ id: 'assistant', role: 'assistant', request_id: 'request', is_completed: false })
-    const sending = h.handleSteerMsg('写到Docx', [{ id: 'mention' }], 'inject')
+    const sending = h.handleSteerMsg('Write to Docx', [{ id: 'mention' }], 'inject')
     if (receiptFirst) receiveInjection(h, 'server-steer', 'persisted-user')
     request.resolve({ status: 'queued', steer_id: 'server-steer' })
     await sending
@@ -154,8 +154,8 @@ test('concurrent identical injects reconcile by their HTTP receipts without merg
   let calls = 0
   const h = harness({ steerSession: () => (++calls === 1 ? first.promise : second.promise) })
   h.state.messagesList.push({ id: 'assistant', role: 'assistant', request_id: 'request', is_completed: false })
-  const sendingFirst = h.handleSteerMsg('写到Docx', [{ id: 'first' }], 'inject')
-  const sendingSecond = h.handleSteerMsg('写到Docx', [{ id: 'second' }], 'inject')
+  const sendingFirst = h.handleSteerMsg('Write to Docx', [{ id: 'first' }], 'inject')
+  const sendingSecond = h.handleSteerMsg('Write to Docx', [{ id: 'second' }], 'inject')
   receiveInjection(h, 'server-first', 'user-first')
   receiveInjection(h, 'server-second', 'user-second')
   second.resolve({ status: 'queued', steer_id: 'server-second' })

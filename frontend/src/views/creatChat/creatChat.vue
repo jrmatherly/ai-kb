@@ -4,9 +4,9 @@
             <div class="dialogue-title" style="--wails-draggable: drag">
                 <span style="--wails-draggable: drag">{{ $t('createChat.title') }}</span>
             </div>
-            <!-- 推荐问题 -->
+            <!-- Suggested questions -->
             <div ref="sqContainerRef" class="suggested-questions-container">
-                <!-- 骨架屏占位 -->
+                <!-- Skeleton placeholder -->
                 <div v-if="sqLoading && suggestedQuestions.length === 0" class="suggested-questions-inner">
                     <div class="suggested-questions-title"><t-skeleton animation="gradient"
                             :row-col="[{ width: '120px', height: '14px' }]" /></div>
@@ -64,7 +64,7 @@
 
     <ContextualGuide tour="chat" :when="showChatContextualGuide" />
 
-    <!-- 知识库编辑器（创建/编辑统一组件） -->
+    <!-- Knowledge base editor (one component for create and edit) -->
     <KnowledgeBaseEditorModal :visible="uiStore.showKBEditorModal" :mode="uiStore.kbEditorMode"
         :kb-id="uiStore.currentKBId || undefined" :initial-type="uiStore.kbEditorType"
         @update:visible="(val) => val ? null : uiStore.closeKBEditor()" @success="handleKBEditorSuccess" />
@@ -115,7 +115,7 @@ const showChatContextualGuide = computed(() => {
     return route.name === 'globalCreatChat' || route.name === 'kbCreatChat';
 });
 
-// ===== 推荐问题 =====
+// ===== Suggested questions =====
 const suggestedQuestions = ref<SuggestedQuestion[]>([]);
 const sqLoading = ref(true);
 const sqCardsRevealed = ref(false);
@@ -124,7 +124,7 @@ const sqContainerRef = ref<HTMLElement | null>(null);
 let suggestedQuestionsFetchId = 0;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-// --- 高度平滑过渡钩子 ---
+// --- Smooth height transition hooks ---
 const onBeforeLeave = () => {
     const c = sqContainerRef.value;
     if (!c) return;
@@ -190,13 +190,13 @@ const fetchSuggestedQuestions = async () => {
     }
 };
 
-// 防抖包装，切换知识库/文件时300ms内不重复请求
+// Debounced so switching knowledge bases or files within 300ms does not repeat the request
 const debouncedFetch = () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => { fetchSuggestedQuestions(); }, 300);
 };
 
-// 监听 Agent / 知识库 / 文件 / 标签 / MCP / Skill @mention
+// Watch Agent / knowledge base / file / tag / MCP / Skill @mentions
 watch(
     () => ({
         agentId: settingsStore.selectedAgentId,
@@ -230,16 +230,16 @@ async function createNewSession(value: string, modelId: string, mentionedItems: 
     const selectedKbs = settingsStore.settings.selectedKnowledgeBases || [];
     const selectedFiles = settingsStore.settings.selectedFiles || [];
 
-    // 构建 session 数据，包含 Agent 配置
+    // Build the session data, including the Agent config
     const sessionData: any = {};
 
-    // 添加 Agent 配置（知识库信息在 agent_config 中）
+    // Add the Agent config (knowledge base info lives in agent_config)
     sessionData.agent_config = {
         enabled: true,
         max_iterations: settingsStore.agentConfig.maxIterations,
         temperature: settingsStore.agentConfig.temperature,
-        knowledge_bases: selectedKbs,  // 所有选中的知识库
-        knowledge_ids: selectedFiles,  // 所有选中的普通知识/文件
+        knowledge_bases: selectedKbs,  // every selected knowledge base
+        knowledge_ids: selectedFiles,  // every selected plain knowledge item or file
         allowed_tools: settingsStore.agentConfig.allowedTools
     };
 

@@ -16,13 +16,13 @@
       </p>
     </div>
 
-    <!-- 未配置 -->
+    <!-- Not configured -->
     <div v-if="credentialState === 'unconfigured'" class="credential-status unconfigured">
       <t-icon name="info-circle" style="font-size: 16px; flex-shrink: 0;" />
       <span>{{ $t('settings.weknoraCloud.unconfigured') }}</span>
     </div>
 
-    <!-- 凭证失效 -->
+    <!-- Credentials invalid -->
     <div v-else-if="credentialState === 'expired'" class="credential-warning">
       <t-icon name="error-circle" style="font-size: 16px; color: #f97316; flex-shrink: 0; margin-top: 1px;" />
       <div class="warning-text">
@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <!-- 已配置正常 -->
+    <!-- Configured and healthy -->
     <div v-else-if="credentialState === 'configured'" class="credential-status success">
       <t-icon name="check-circle" style="font-size: 16px; color: var(--td-brand-color); flex-shrink: 0;" />
       <span class="status-text">{{ $t('settings.weknoraCloud.configured') }}</span>
@@ -47,7 +47,7 @@
       </t-button>
     </div>
 
-    <!-- 配置表单 -->
+    <!-- Configuration form -->
     <div v-if="formExpanded" class="settings-group">
       <div class="setting-row">
         <div class="setting-info">
@@ -97,7 +97,7 @@
       </div>
     </div>
 
-    <!-- 云模型：凭证就绪后原地展示接入状态 -->
+    <!-- Cloud models: once credentials are ready, show the connection status in place -->
     <section
       class="models-section"
       :class="{ 'models-section--disabled': credentialState !== 'configured' }"
@@ -195,7 +195,7 @@
       </p>
     </section>
 
-    <!-- 使用说明 -->
+    <!-- Usage notes -->
     <div class="usage-hint">
       <p class="hint-title">{{ $t('settings.weknoraCloud.usageTitle') }}</p>
       <p class="hint-text" v-html="$t('settings.weknoraCloud.usageSteps').replace(/\n/g, '<br />')" />

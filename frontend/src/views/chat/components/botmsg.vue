@@ -1,7 +1,7 @@
 <template>
     <div class="bot_msg" :class="{ 'is-embedded': embeddedMode }">
         <div style="display: flex;flex-direction: column; gap:8px">
-            <!-- 显示@的知识库和文件（非 Agent 模式下显示） -->
+            <!-- Show the @-mentioned knowledge bases and files (outside Agent mode) -->
             <div v-if="!session.isAgentMode && mentionedItems && mentionedItems.length > 0" class="mentioned_items">
                 <span v-for="item in mentionedItems" :key="item.id" class="mentioned_tag" :class="[
                     mentionTagClass(item)
@@ -44,15 +44,15 @@
             </template>
             <deepThink :deepSession="session" v-if="session.showThink && !session.isAgentMode"></deepThink>
         </div>
-        <!-- 非 Agent 模式下才显示传统的 markdown 渲染 -->
+        <!-- The classic markdown rendering shows only outside Agent mode -->
         <div ref="parentMd" v-if="!session.hideContent && !session.isAgentMode">
-            <!-- 直接渲染完整内容，避免切分导致的问题，样式与 thinking 一致 -->
-            <!-- 只有当有实际内容时才显示包围框 -->
+            <!-- Render the full content directly to avoid problems from splitting; styled like thinking -->
+            <!-- Show the wrapper box only when there is actual content -->
             <div class="content-wrapper" v-if="hasActualContent">
                 <div class="ai-markdown-template markdown-content" v-stable-html="renderedHTML">
                 </div>
             </div>
-            <!-- 复制和添加到知识库按钮 - 非 Agent 模式下显示 -->
+            <!-- Copy and add-to-knowledge-base buttons, shown outside Agent mode -->
             <div v-if="answerFullyRendered && (content || session.content)" class="answer-toolbar">
                 <t-tooltip v-if="canFork" :content="forkTooltip">
                     <t-button size="small" variant="outline" shape="round" @click.stop="emitFork">
@@ -99,13 +99,13 @@
                     </t-button>
                     <span v-if="hasArtifacts" class="answer-toolbar__artifact-count" aria-hidden="true">{{ artifactCount }}</span>
                 </span>
-                <!-- Fallback 提示图标 -->
+                <!-- Fallback hint icon -->
                 <t-tooltip v-if="session.is_fallback" :content="$t('chat.fallbackHint')" placement="top">
                     <t-button size="small" variant="outline" shape="round" class="fallback-icon-btn">
                         <t-icon name="info-circle" />
                     </t-button>
                 </t-tooltip>
-                <!-- 输出被单次上限截断的提示 -->
+                <!-- Hint that the output was cut off by the per-call limit -->
                 <t-tooltip v-if="session.truncated" :content="$t('chat.truncatedHint')" placement="top">
                     <t-button size="small" variant="outline" shape="round" class="fallback-icon-btn">
                         <t-icon name="info-circle" />
@@ -207,7 +207,7 @@ let reviewUrl = ref('')
 let reviewImg = ref(false)
 let isImgLoading = ref(false);
 const props = defineProps({
-    // 必填项
+    // required
     content: {
         type: String,
         required: false
@@ -254,7 +254,7 @@ const { float: citationFloat, rebind: rebindCitations, cancelClose: cancelCitati
 
 const canFork = computed(() => props.canFork === true && !props.embeddedMode)
 const canRewind = computed(() => props.canRewind === true && !props.embeddedMode)
-const forkTooltip = '从这条回答继续分叉'
+const forkTooltip = 'Fork from this answer'
 const rewindTooltip = computed(() => t('chat.rewind.tooltip'))
 const emitFork = () => {
     const messageId = persistedAssistantId(props.session) || props.session?.id
@@ -377,7 +377,7 @@ const markdownRenderer = createChatMarkdownRenderer({
     isValidImageUrl: (href) => isArtifactRefHref(href) || isValidImageURL(href),
 });
 
-// 计算属性：将 Markdown 文本转换为 tokens
+// Computed: convert the Markdown text into tokens
 const mentionedItems = computed(() => {
     return props.session?.mentioned_items || [];
 });
@@ -410,7 +410,7 @@ watch(
     { immediate: true },
 );
 
-// 单次渲染整个 Markdown 内容（替代 token-by-token，修复 KaTeX 公式在 streaming 时闪烁消失的问题）
+// Render the whole Markdown content in one pass (instead of token-by-token, which fixes KaTeX formulas flickering away during streaming)
 const renderedHTML = computed(() => {
     const text = typedAnswer.value;
     if (!text || typeof text !== 'string') return '';
@@ -423,18 +423,18 @@ const renderedHTML = computed(() => {
     });
 });
 
-// 计算属性：判断是否有实际内容（非空且不只是空白）
+// Computed: whether there is actual content (non-empty and not only whitespace)
 const hasActualContent = computed(() => {
     const text = props.content || props.session?.content || '';
     return text && text.trim().length > 0;
 });
 
-// 获取实际内容
+// Get the actual content
 const getActualContent = () => {
     return (props.content || props.session?.content || '').trim();
 };
 
-// 复制回答内容
+// Copy the answer content
 const handleCopyAnswer = async () => {
     const content = getActualContent();
     if (!content) {
@@ -445,7 +445,7 @@ const handleCopyAnswer = async () => {
     await copyWithToast(content, 'common.copySuccess', 'common.copyFailed');
 };
 
-// 添加到知识库
+// Add to the knowledge base
 const handleAddToKnowledge = () => {
     const content = getActualContent();
     if (!content) {
@@ -467,7 +467,7 @@ const handleAddToKnowledge = () => {
     MessagePlugin.info(t('chat.editorOpened'));
 };
 
-// 处理 markdown-content 中图片的点击事件
+// Handle clicks on images in markdown-content
 const handleMarkdownImageClick = (e) => {
     const target = e.target;
     const artifactIndex = artifactIndexFromEventTarget(target);
@@ -493,7 +493,7 @@ watch(renderedHTML, () => {
     });
 });
 
-// 渲染 Mermaid 图表的函数
+// Render Mermaid diagrams
 onUpdated(() => {
     nextTick(async () => {
         await hydrateProtectedFileImages(parentMd.value, protectedFileAccess.value);
@@ -506,7 +506,7 @@ onUpdated(() => {
 });
 
 onMounted(async () => {
-    // 为 markdown-content 中的图片添加点击事件
+    // Add click handlers to the images in markdown-content
     nextTick(async () => {
         if (parentMd.value) {
             parentMd.value.addEventListener('click', handleMarkdownImageClick, true);
@@ -545,7 +545,7 @@ onBeforeUnmount(() => {
     gap: 0;
 }
 
-// 内容包装器 - 与 Agent 模式的 answer 样式一致
+// Content wrapper, styled like the Agent mode answer
 .content-wrapper {
     padding: 2px 0;
 }

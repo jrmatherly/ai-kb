@@ -4,7 +4,7 @@ import { getDatasourceIconUrl, datasourceIconMap } from './datasourceIcons'
 const props = withDefaults(defineProps<{
   type: string
   size?: number
-  /** inline: 类型选择等小尺寸场景；badge: 嵌入 ds-card__badge 等父级徽章容器 */
+  /** inline: small contexts such as type pickers; badge: inside a parent badge container such as ds-card__badge */
   variant?: 'inline' | 'badge'
 }>(), {
   size: 20,

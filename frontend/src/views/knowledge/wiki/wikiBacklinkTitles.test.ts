@@ -7,10 +7,10 @@ test('uses the response title for an unloaded backlink', () => {
   assert.equal(
     resolveWikiBacklinkTitle(
       'concept/gong-si-zi-ben-zhi-du',
-      { 'concept/gong-si-zi-ben-zhi-du': '公司资本制度' },
+      { 'concept/gong-si-zi-ben-zhi-du': '\u516c\u53f8\u8d44\u672c\u5236\u5ea6' },
       [],
     ),
-    '公司资本制度',
+    '\u516c\u53f8\u8d44\u672c\u5236\u5ea6',
   )
 })
 
@@ -18,8 +18,8 @@ test('only uses own string titles and preserves fallback for prototype property 
   for (const slug of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
     assert.equal(resolveWikiBacklinkTitle(slug, {}, []), slug)
     assert.equal(resolveWikiBacklinkTitle(slug, {}, [{ slug, title: 'Loaded title' }]), 'Loaded title')
-    const titles = JSON.parse(JSON.stringify({ [slug]: '  中文标题  ' }))
-    assert.equal(resolveWikiBacklinkTitle(slug, titles, []), '中文标题')
+    const titles = JSON.parse(JSON.stringify({ [slug]: '  \u4e2d\u6587\u6807\u9898  ' }))
+    assert.equal(resolveWikiBacklinkTitle(slug, titles, []), '\u4e2d\u6587\u6807\u9898')
   }
   const inherited = Object.create({ 'concept/page': 'Inherited title' })
   assert.equal(resolveWikiBacklinkTitle('concept/page', inherited, []), 'page')

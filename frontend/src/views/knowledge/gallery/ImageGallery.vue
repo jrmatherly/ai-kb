@@ -341,7 +341,7 @@ function verdictLabel(v: Verdict): string {
 
 function onKeywordsInput(attrId: string, raw: string) {
   const values = raw
-    .split(/[,，;；\n]/)
+    .split(/[,\uff0c;\uff1b\n]/) // ASCII and fullwidth commas and semicolons
     .map((s) => s.trim())
     .filter(Boolean)
   attrSelections.value = { ...attrSelections.value, [attrId]: values }

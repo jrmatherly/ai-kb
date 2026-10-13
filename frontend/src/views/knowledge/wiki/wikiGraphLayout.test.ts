@@ -268,17 +268,17 @@ test('a theme is not named again by a page whose title repeats an existing label
   })
   link('r0-0', 'r1-0')
   const pages = new Map([
-    ['r0-0', { page_type: 'concept', title: '第三代社保卡' }],
-    ['r1-0', { page_type: 'entity', title: '北京市第三代社保卡' }],
-    ['r1-1', { page_type: 'concept', title: '线上申领' }],
+    ['r0-0', { page_type: 'concept', title: '\u7b2c\u4e09\u4ee3\u793e\u4fdd\u5361' }],
+    ['r1-0', { page_type: 'entity', title: '\u5317\u4eac\u5e02\u7b2c\u4e09\u4ee3\u793e\u4fdd\u5361' }],
+    ['r1-1', { page_type: 'concept', title: '\u7ebf\u4e0a\u7533\u9886' }],
   ])
   assert.deepEqual(selectGraphAnchors(slugs, adjacency, pages), ['r0-0', 'r1-1'])
 })
 
 test('a summary names the document it dominates, but a nearly as central entity still wins', () => {
   const pages = new Map([
-    ['summary', { page_type: 'summary', title: '初中63组语文古诗词高频考点(2).pdf - Summary' }],
-    ['subject', { page_type: 'entity', title: '范仲淹' }],
+    ['summary', { page_type: 'summary', title: '\u521d\u4e2d63\u7ec4\u8bed\u6587\u53e4\u8bd7\u8bcd\u9ad8\u9891\u8003\u70b9(2).pdf - Summary' }],
+    ['subject', { page_type: 'entity', title: '\u8303\u4ef2\u6df9' }],
   ])
   const anchorsWhenSubjectLinks = (details: number) => {
     const slugs = ['summary', 'subject', ...Array.from({ length: 10 }, (_, i) => `detail${i}`)]
@@ -300,9 +300,9 @@ test('a component of several documents also names the page they share', () => {
       for (const s of [a, b]) if (!adjacency.has(s)) { adjacency.set(s, new Set()); slugs.push(s) }
       adjacency.get(a)!.add(b); adjacency.get(b)!.add(a)
     }
-    const pages = new Map<string, { page_type: string; title: string }>([['bridge', { page_type: 'concept', title: '强化学习' }]])
+    const pages = new Map<string, { page_type: string; title: string }>([['bridge', { page_type: 'concept', title: '\u5f3a\u5316\u5b66\u4e60' }]])
     for (let d = 0; d < 3; d++) {
-      pages.set(`doc${d}`, { page_type: 'summary', title: `论文${d}.pdf - Summary` })
+      pages.set(`doc${d}`, { page_type: 'summary', title: `\u8bba\u6587${d}.pdf - Summary` })
       for (let i = 0; i < 8; i++) {
         link(`doc${d}`, `d${d}-${i}`)
         if (i > 0) link(`d${d}-${i}`, `d${d}-${i - 1}`)
@@ -327,7 +327,7 @@ test('an identifier-like file name does not name a theme over a readable page', 
   for (let i = 0; i < 5; i++) link('subject', `detail${i}`)
   const pages = new Map([
     ['summary', { page_type: 'summary', title: '2412.18925v1.pdf - Summary' }],
-    ['subject', { page_type: 'entity', title: '香港中文大学（深圳）' }],
+    ['subject', { page_type: 'entity', title: '\u9999\u6e2f\u4e2d\u6587\u5927\u5b66\uff08\u6df1\u5733\uff09' }],
   ])
   assert.deepEqual(selectGraphAnchors(slugs, adjacency, pages), ['subject'])
 })
