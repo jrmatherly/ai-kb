@@ -93,7 +93,7 @@ type TenantInvitation struct {
 	// the invitation (e.g. "joining the design squad — welcome!").
 	Message string `json:"message,omitempty" gorm:"type:varchar(500)"`
 	// ExpiresAt is when this row auto-flips to expired if still pending.
-	// Set at creation time from RBAC_INVITATION_TTL (default 7d).
+	// Set at creation time from AIKB_INVITATION_TTL (default 7d).
 	ExpiresAt time.Time `json:"expires_at"`
 	// RespondedAt records when the row left pending. Nil while pending.
 	RespondedAt *time.Time     `json:"responded_at,omitempty"`
