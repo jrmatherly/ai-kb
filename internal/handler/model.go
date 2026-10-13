@@ -64,7 +64,7 @@ type CreateModelRequest struct {
 // @Produce      json
 // @Param        request  body      CreateModelRequest  true  "Model details"
 // @Success      201      {object}  map[string]interface{}  "Created model"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models [post]
@@ -148,8 +148,8 @@ type CopyModelRequest struct {
 // @Param        id       path      string           true  "Source model ID"
 // @Param        request  body      CopyModelRequest true  "Display name of the copy"
 // @Success      201      {object}  map[string]interface{}  "Copied model"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404      {object}  errors.AppError         "Model not found"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404      {object}  errors.ErrorResponse         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id}/copy [post]
@@ -210,7 +210,7 @@ func (h *ModelHandler) CopyModel(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Model ID"
 // @Success      200  {object}  map[string]interface{}  "Model details"
-// @Failure      404  {object}  errors.AppError         "Model not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id} [get]
@@ -254,7 +254,7 @@ func (h *ModelHandler) GetModel(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Model list"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models [get]
@@ -743,7 +743,7 @@ type UpdateModelRequest struct {
 // @Param        id       path      string              true  "Model ID"
 // @Param        request  body      UpdateModelRequest  true  "Update details"
 // @Success      200      {object}  map[string]interface{}  "Updated model"
-// @Failure      404      {object}  errors.AppError         "Model not found"
+// @Failure      404      {object}  errors.ErrorResponse         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id} [put]
@@ -876,8 +876,8 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Model ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
-// @Failure      400  {object}  errors.AppError         "Model still used by a knowledge base, agent or memory"
-// @Failure      404  {object}  errors.AppError         "Model not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Model still used by a knowledge base, agent or memory"
+// @Failure      404  {object}  errors.ErrorResponse         "Model not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /models/{id} [delete]

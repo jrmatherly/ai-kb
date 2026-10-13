@@ -482,9 +482,9 @@ func mentionedItemsToRaw(items types.MentionedItems) []interface{} {
 // @Param        session_id  path  string  true  "Session ID"
 // @Param        request     body  SteerMessageRequest  true  "Message to append"
 // @Success      200  {object}  map[string]interface{}  "queued | new_run"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Session not found"
-// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Session not found"
+// @Failure      503  {object}  errors.ErrorResponse         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/steer [post]
@@ -638,9 +638,9 @@ func (h *Handler) SteerMessage(c *gin.Context) {
 // @Param        session_id  path  string  true  "Session ID"
 // @Param        steer_id    path  string  true  "Queued message ID"
 // @Success      200  {object}  map[string]interface{}  "queued | new_run"
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      503  {object}  errors.ErrorResponse         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/steer/{steer_id}/inject [post]
@@ -719,8 +719,8 @@ func (h *Handler) PromoteSteerMessage(c *gin.Context) {
 // @Produce      json
 // @Param        id  path  string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      404  {object}  errors.AppError
-// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      503  {object}  errors.ErrorResponse         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id}/steer [get]
@@ -772,8 +772,8 @@ func (h *Handler) ListSteerMessages(c *gin.Context) {
 // @Param        id        path  string  true  "Session ID"
 // @Param        steer_id  path  string  true  "Queued message ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      404  {object}  errors.AppError
-// @Failure      503  {object}  errors.AppError         "Live turn lookup failed, retryable"
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      503  {object}  errors.ErrorResponse         "Live turn lookup failed, retryable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id}/steer/{steer_id} [delete]

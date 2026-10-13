@@ -47,7 +47,7 @@ type auditLogListResponse struct {
 // @Param        outcome   query  string  false  "Exact match on outcome (success / denied)"
 // @Param        actor     query  string  false  "Exact match on actor_user_id"
 // @Success      200  {object}  auditLogListResponse
-// @Failure      400  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/{id}/audit-log [get]
@@ -123,7 +123,7 @@ func (h *AuditLogHandler) ListTenantAuditLog(c *gin.Context) {
 // @Param        outcome   query  string  false  "Exact match on outcome"
 // @Param        actor     query  string  false  "Exact match on actor_user_id"
 // @Success      200  {object}  auditLogListResponse
-// @Failure      403  {object}  errors.AppError
+// @Failure      403  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledge-bases/{id}/activity [get]
 func (h *AuditLogHandler) ListKnowledgeBaseActivity(c *gin.Context) {
@@ -200,7 +200,7 @@ func parseAuditCursor(c *gin.Context) (uint64, int) {
 // @Param        outcome   query  string  false  "Exact match on outcome (success / denied)"
 // @Param        actor     query  string  false  "Exact match on actor_user_id"
 // @Success      200  {object}  auditLogListResponse
-// @Failure      500  {object}  errors.AppError
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /system/admin/audit-log [get]

@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/access"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
-	// Referenced only by the @Failure annotations (errors.AppError); swag
+	// Referenced only by the @Failure annotations (errors.ErrorResponse); swag
 	// resolves annotation types through the file's imports.
-	"github.com/gin-gonic/gin"
 	_ "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -72,7 +72,7 @@ type SkillInfoResponse struct {
 // @Param        agent_id               query  string  false  "Agent ID; needs agent_source_tenant_id"
 // @Param        agent_source_tenant_id query  int     false  "Shared agent source workspace"
 // @Success      200  {object}  map[string]interface{}  "Skill list"
-// @Failure      403  {object}  errors.AppError         "Not allowed to use this shared agent"
+// @Failure      403  {object}  errors.ErrorResponse         "Not allowed to use this shared agent"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /skills [get]

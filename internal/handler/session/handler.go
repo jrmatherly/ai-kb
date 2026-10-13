@@ -162,7 +162,7 @@ func NewHandler(
 // @Produce      json
 // @Param        request  body      CreateSessionRequest  true  "Session creation request"
 // @Success      201      {object}  map[string]interface{}  "Created session"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions [post]
@@ -238,7 +238,7 @@ func (h *Handler) CreateSession(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}  "Session details"
-// @Failure      404  {object}  errors.AppError         "Session not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Session not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id} [get]
@@ -289,7 +289,7 @@ func (h *Handler) GetSession(c *gin.Context) {
 // @Param        source     query     string  false  "web/embed/api/feishu/wechat/slack/...; api/embed/IM need Admin+"
 // @Param        agent_id   query     string  false  "Filter by agent (IM sessions only)"
 // @Success      200        {object}  map[string]interface{}  "Session list"
-// @Failure      400        {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400        {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions [get]
@@ -338,7 +338,7 @@ func (h *Handler) GetSessionsByTenant(c *gin.Context) {
 // @Param        id       path      string         true  "Session ID"
 // @Param        request  body      types.Session  true  "Session info"
 // @Success      200      {object}  map[string]interface{}  "Updated session"
-// @Failure      404      {object}  errors.AppError         "Session not found"
+// @Failure      404      {object}  errors.ErrorResponse         "Session not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id} [put]
@@ -408,7 +408,7 @@ func (h *Handler) UpdateSession(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
-// @Failure      404  {object}  errors.AppError         "Session not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Session not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id} [delete]
@@ -453,8 +453,8 @@ func (h *Handler) DeleteSession(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}  "Cleared"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Session not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Session not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id}/messages [delete]
@@ -503,7 +503,7 @@ type batchDeleteRequest struct {
 // @Produce      json
 // @Param        request  body      batchDeleteRequest  true  "Batch delete request"
 // @Success      200      {object}  map[string]interface{}  "Delete result"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/batch [delete]
@@ -575,7 +575,7 @@ func (h *Handler) BatchDeleteSessions(c *gin.Context) {
 // @Produce      json
 // @Param        session_id   path      string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}  "Pinned"
-// @Failure      404  {object}  errors.AppError         "Session not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Session not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/pin [post]
@@ -590,7 +590,7 @@ func (h *Handler) PinSession(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}  "Unpinned"
-// @Failure      404  {object}  errors.AppError         "Session not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Session not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{id}/pin [delete]

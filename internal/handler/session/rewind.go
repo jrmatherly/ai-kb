@@ -42,10 +42,10 @@ type RewindSessionRequest struct {
 // @Param        session_id  path      string                true  "Session ID"
 // @Param        request     body      RewindSessionRequest  true  "Rewind request"
 // @Success      200         {object}  map[string]interface{}  "Rewind result"
-// @Failure      400         {object}  errors.AppError         "Invalid parameters / unsupported rewind point role"
-// @Failure      404         {object}  errors.AppError         "Session or message not found"
-// @Failure      409         {object}  errors.AppError         "Session generating / no checkpoint / sandbox replaced"
-// @Failure      500         {object}  errors.AppError         "Workspace rewind failed"
+// @Failure      400         {object}  errors.ErrorResponse         "Invalid parameters / unsupported rewind point role"
+// @Failure      404         {object}  errors.ErrorResponse         "Session or message not found"
+// @Failure      409         {object}  errors.ErrorResponse  "Session generating / no checkpoint / sandbox replaced"
+// @Failure      500         {object}  errors.ErrorResponse         "Workspace rewind failed"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/rewind [post]

@@ -37,7 +37,7 @@ type EvaluationRequest struct {
 // @Produce      json
 // @Param        request  body      EvaluationRequest  true  "Evaluation request"
 // @Success      200      {object}  map[string]interface{}  "Evaluation task"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /evaluation/ [post]
@@ -100,7 +100,7 @@ type GetEvaluationRequest struct {
 // @Produce      json
 // @Param        task_id  query     string  true  "Evaluation task ID"
 // @Success      200      {object}  map[string]interface{}  "Evaluation result"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /evaluation/ [get]

@@ -22,9 +22,9 @@ import (
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Catalog snapshot"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      401  {object}  errors.AppError         "OAuth catalog has no authorized principal"
-// @Failure      404  {object}  errors.AppError         "Service not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      401  {object}  errors.ErrorResponse         "OAuth catalog has no authorized principal"
+// @Failure      404  {object}  errors.ErrorResponse         "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/metadata [get]
@@ -40,12 +40,12 @@ func (h *MCPServiceHandler) GetMCPMetadata(c *gin.Context) { h.mcpMetadata(c, fa
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Catalog snapshot after sync"
-// @Failure      400  {object}  errors.AppError         "Catalog incomplete or failed validation"
-// @Failure      401  {object}  errors.AppError         "OAuth catalog has no authorized principal"
-// @Failure      403  {object}  errors.AppError         "A static-auth catalog must be refreshed by an admin"
-// @Failure      404  {object}  errors.AppError         "Service not found"
-// @Failure      409  {object}  errors.AppError         "Connection config changed during the refresh"
-// @Failure      503  {object}  errors.AppError         "Metadata store unavailable"
+// @Failure      400  {object}  errors.ErrorResponse         "Catalog incomplete or failed validation"
+// @Failure      401  {object}  errors.ErrorResponse         "OAuth catalog has no authorized principal"
+// @Failure      403  {object}  errors.ErrorResponse         "A static-auth catalog must be refreshed by an admin"
+// @Failure      404  {object}  errors.ErrorResponse         "Service not found"
+// @Failure      409  {object}  errors.ErrorResponse         "Connection config changed during the refresh"
+// @Failure      503  {object}  errors.ErrorResponse         "Metadata store unavailable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/metadata/refresh [post]

@@ -74,7 +74,7 @@ func (h *MCPServiceHandler) mcpServiceResponses(
 // @Produce      json
 // @Param        request  body      types.MCPService  true  "MCP service config"
 // @Success      200      {object}  map[string]interface{}  "Created MCP service"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services [post]
@@ -133,8 +133,8 @@ func (h *MCPServiceHandler) CreateMCPService(c *gin.Context) {
 // @Param        agent_id               query  string  false  "Agent ID; needs agent_source_tenant_id"
 // @Param        agent_source_tenant_id query  int     false  "Shared agent source workspace"
 // @Success      200  {object}  map[string]interface{}  "MCP service list"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      403  {object}  errors.AppError         "Not allowed to use this shared agent"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403  {object}  errors.ErrorResponse         "Not allowed to use this shared agent"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services [get]
@@ -225,7 +225,7 @@ func (h *MCPServiceHandler) listSharedAgentMCPServices(c *gin.Context, agent *ty
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "MCP service details"
-// @Failure      404  {object}  errors.AppError         "Service not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id} [get]
@@ -265,7 +265,7 @@ func (h *MCPServiceHandler) GetMCPService(c *gin.Context) {
 // @Param        id       path      string  true  "MCP service ID"
 // @Param        request  body      object  true  "Fields to update"
 // @Success      200      {object}  map[string]interface{}  "Updated MCP service"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id} [put]
@@ -475,7 +475,7 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id} [delete]
@@ -511,7 +511,7 @@ func (h *MCPServiceHandler) DeleteMCPService(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Test result"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/test [post]
@@ -556,7 +556,7 @@ func (h *MCPServiceHandler) TestMCPService(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Tool list"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/tools [get]
@@ -592,7 +592,7 @@ func (h *MCPServiceHandler) GetMCPServiceTools(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Resource list"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/resources [get]
@@ -667,8 +667,8 @@ type setMCPToolApprovalBody struct {
 // @Param        tool_name  path      string                  true  "Tool name"
 // @Param        request    body      map[string]interface{}  true  "{require_approval?: bool, enabled?: bool}"
 // @Success      200        {object}  map[string]interface{}  "Update result"
-// @Failure      400        {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404        {object}  errors.AppError         "MCP service or tool not found"
+// @Failure      400        {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404        {object}  errors.ErrorResponse         "MCP service or tool not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/tool-approvals/{tool_name} [put]
@@ -726,8 +726,8 @@ type resolveToolApprovalBody struct {
 // @Param        pending_id  path      string                  true  "Pending approval ID"
 // @Param        request     body      map[string]interface{}  true  "{decision: \"approve\"|\"reject\", reason?: string, modified_args?: object}"
 // @Success      200         {object}  map[string]interface{}  "Approval result"
-// @Failure      400         {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404         {object}  errors.AppError         "Pending approval not found"
+// @Failure      400         {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404         {object}  errors.ErrorResponse         "Pending approval not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agent/tool-approvals/{pending_id} [post]

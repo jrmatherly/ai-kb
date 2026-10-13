@@ -59,8 +59,8 @@ type mcpCredentialsPutRequest struct {
 // @Param        id       path      string                  true  "MCP service ID"
 // @Param        request  body      map[string]interface{}  true  "{api_key?: string, token?: string}"
 // @Success      200      {object}  map[string]interface{}  "Credential status after the write"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404      {object}  errors.AppError         "Service not found"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404      {object}  errors.ErrorResponse         "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/credentials [put]
@@ -125,8 +125,8 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 // @Param        id     path      string  true  "MCP service ID"
 // @Param        field  path      string  true  "Field name (api_key | token)"
 // @Success      204
-// @Failure      400  {object}  errors.AppError  "Invalid field name"
-// @Failure      404  {object}  errors.AppError  "Service not found"
+// @Failure      400  {object}  errors.ErrorResponse  "Invalid field name"
+// @Failure      404  {object}  errors.ErrorResponse  "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/credentials/{field} [delete]

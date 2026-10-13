@@ -189,7 +189,7 @@ func TestGetPageTitleLookupFailureDoesNotReturnPartialSuccess(t *testing.T) {
 			rec := requestWikiPageTitles(fake, fakeWikiPageTitlesKBService{}, "current")
 			assert.Equal(t, http.StatusInternalServerError, rec.Code)
 			assert.JSONEq(t,
-				`{"success":false,"error":{"code":1007,"message":"title query failed","details":null}}`,
+				`{"success":false,"error":{"code":1007,"message":"title query failed"}}`,
 				rec.Body.String())
 		})
 	}

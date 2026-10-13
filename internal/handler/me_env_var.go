@@ -90,7 +90,7 @@ func (h *MeEnvVarHandler) List(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      meEnvVarRequest         true  "Skill, variable name and value"
 // @Success      200      {object}  map[string]interface{}  "Stored"
-// @Failure      400      {object}  apperrors.AppError      "Invalid request"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request"
 // @Security     Bearer
 // @Router       /me/env-vars/skill [put]
 func (h *MeEnvVarHandler) SetSkill(c *gin.Context) {
@@ -113,7 +113,7 @@ func (h *MeEnvVarHandler) SetSkill(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      meEnvVarRequest         true  "Skill and variable name"
 // @Success      200      {object}  map[string]interface{}  "Deleted"
-// @Failure      404      {object}  apperrors.AppError      "Not set"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Not set"
 // @Security     Bearer
 // @Router       /me/env-vars/skill [delete]
 func (h *MeEnvVarHandler) DeleteSkill(c *gin.Context) {
@@ -136,7 +136,7 @@ func (h *MeEnvVarHandler) DeleteSkill(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      meEnvVarRequest         true  "Sandbox config, variable name and value"
 // @Success      200      {object}  map[string]interface{}  "Stored"
-// @Failure      400      {object}  apperrors.AppError      "Invalid request"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request"
 // @Security     Bearer
 // @Router       /me/env-vars/sandbox [put]
 func (h *MeEnvVarHandler) SetSandbox(c *gin.Context) {
@@ -161,7 +161,7 @@ func (h *MeEnvVarHandler) SetSandbox(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      meEnvVarRequest         true  "Sandbox config and variable name"
 // @Success      200      {object}  map[string]interface{}  "Deleted"
-// @Failure      404      {object}  apperrors.AppError      "Not set"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Not set"
 // @Security     Bearer
 // @Router       /me/env-vars/sandbox [delete]
 func (h *MeEnvVarHandler) DeleteSandbox(c *gin.Context) {

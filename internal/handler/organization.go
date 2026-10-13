@@ -67,7 +67,7 @@ func NewOrganizationHandler(
 // @Produce      json
 // @Param        request  body      types.CreateOrganizationRequest  true  "Organization details"
 // @Success      201      {object}  map[string]interface{}
-// @Failure      400      {object}  apperrors.AppError
+// @Failure      400      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations [post]
 func (h *OrganizationHandler) CreateOrganization(c *gin.Context) {
@@ -108,7 +108,7 @@ func (h *OrganizationHandler) CreateOrganization(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Organization ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      404  {object}  apperrors.AppError
+// @Failure      404  {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id} [get]
 func (h *OrganizationHandler) GetOrganization(c *gin.Context) {
@@ -307,7 +307,7 @@ func (h *OrganizationHandler) buildResourceCountsByOrg(ctx context.Context, orgs
 // @Param        id       path      string                           true  "Organization ID"
 // @Param        request  body      types.UpdateOrganizationRequest  true  "Fields to update"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      403      {object}  apperrors.AppError
+// @Failure      403      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id} [put]
 func (h *OrganizationHandler) UpdateOrganization(c *gin.Context) {
@@ -350,7 +350,7 @@ func (h *OrganizationHandler) UpdateOrganization(c *gin.Context) {
 // @Tags         Organizations
 // @Param        id  path  string  true  "Organization ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      403  {object}  apperrors.AppError
+// @Failure      403  {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id} [delete]
 func (h *OrganizationHandler) DeleteOrganization(c *gin.Context) {
@@ -455,7 +455,7 @@ func (h *OrganizationHandler) ListMembers(c *gin.Context) {
 // @Param        tenant_id   path      string                       true  "Member workspace ID"
 // @Param        request     body      types.UpdateMemberRoleRequest  true  "Role"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      403      {object}  apperrors.AppError
+// @Failure      403      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/members/{tenant_id} [put]
 func (h *OrganizationHandler) UpdateMemberRole(c *gin.Context) {
@@ -496,7 +496,7 @@ func (h *OrganizationHandler) UpdateMemberRole(c *gin.Context) {
 // @Param        id         path  string  true  "Organization ID"
 // @Param        tenant_id  path  string  true  "Member workspace ID"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      403      {object}  apperrors.AppError
+// @Failure      403      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/members/{tenant_id} [delete]
 func (h *OrganizationHandler) RemoveMember(c *gin.Context) {
@@ -531,7 +531,7 @@ func (h *OrganizationHandler) RemoveMember(c *gin.Context) {
 // @Produce      json
 // @Param        id  path  string  true  "Organization ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      403  {object}  apperrors.AppError
+// @Failure      403  {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/invite-code [post]
 func (h *OrganizationHandler) GenerateInviteCode(c *gin.Context) {
@@ -566,7 +566,7 @@ func (h *OrganizationHandler) GenerateInviteCode(c *gin.Context) {
 // @Produce      json
 // @Param        code  path  string  true  "Invite code"
 // @Success      200   {object}  map[string]interface{}
-// @Failure      404   {object}  apperrors.AppError
+// @Failure      404   {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/preview/{code} [get]
 func (h *OrganizationHandler) PreviewByInviteCode(c *gin.Context) {
@@ -622,7 +622,7 @@ func (h *OrganizationHandler) PreviewByInviteCode(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      types.JoinOrganizationRequest  true  "Invite code"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      404      {object}  apperrors.AppError
+// @Failure      404      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/join [post]
 func (h *OrganizationHandler) JoinByInviteCode(c *gin.Context) {
@@ -663,7 +663,7 @@ func (h *OrganizationHandler) JoinByInviteCode(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      types.SubmitJoinRequestRequest  true  "Request details"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      400      {object}  apperrors.AppError
+// @Failure      400      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/join-request [post]
 func (h *OrganizationHandler) SubmitJoinRequest(c *gin.Context) {
@@ -769,7 +769,7 @@ func (h *OrganizationHandler) SearchOrganizations(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      types.JoinByOrganizationIDRequest  true  "Organization ID"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      403      {object}  apperrors.AppError
+// @Failure      403      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/join-by-id [post]
 func (h *OrganizationHandler) JoinByOrganizationID(c *gin.Context) {
@@ -825,7 +825,7 @@ func (h *OrganizationHandler) JoinByOrganizationID(c *gin.Context) {
 // @Param        id       path      string                          true  "Organization ID"
 // @Param        request  body      types.RequestRoleUpgradeRequest  true  "Request details"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      400      {object}  apperrors.AppError
+// @Failure      400      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/request-upgrade [post]
 func (h *OrganizationHandler) RequestRoleUpgrade(c *gin.Context) {
@@ -883,7 +883,7 @@ func (h *OrganizationHandler) RequestRoleUpgrade(c *gin.Context) {
 // @Tags         Organizations
 // @Param        id  path  string  true  "Organization ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      403  {object}  apperrors.AppError
+// @Failure      403  {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/leave [post]
 func (h *OrganizationHandler) LeaveOrganization(c *gin.Context) {
@@ -929,7 +929,7 @@ func (h *OrganizationHandler) LeaveOrganization(c *gin.Context) {
 // @Produce      json
 // @Param        id   path  string  true  "Organization ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      403  {object}  apperrors.AppError
+// @Failure      403  {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/join-requests [get]
 func (h *OrganizationHandler) ListJoinRequests(c *gin.Context) {
@@ -999,7 +999,7 @@ func (h *OrganizationHandler) ListJoinRequests(c *gin.Context) {
 // @Param        request_id  path  string  true  "Request ID"
 // @Param        request    body  types.ReviewJoinRequestRequest  true  "Review result"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      403  {object}  apperrors.AppError
+// @Failure      403  {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/join-requests/{request_id}/review [put]
 func (h *OrganizationHandler) ReviewJoinRequest(c *gin.Context) {
@@ -1060,7 +1060,7 @@ func (h *OrganizationHandler) ReviewJoinRequest(c *gin.Context) {
 // @Param        id       path      string                         true  "Knowledge base ID"
 // @Param        request  body      types.ShareKnowledgeBaseRequest  true  "Share details"
 // @Success      201      {object}  map[string]interface{}
-// @Failure      403      {object}  apperrors.AppError
+// @Failure      403      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledge-bases/{id}/shares [post]
 func (h *OrganizationHandler) ShareKnowledgeBase(c *gin.Context) {
@@ -1163,7 +1163,7 @@ func (h *OrganizationHandler) ListKBShares(c *gin.Context) {
 // @Param        share_id  path      string                          true  "Share record ID"
 // @Param        request   body      types.UpdateSharePermissionRequest  true  "Permission"
 // @Success      200       {object}  map[string]interface{}
-// @Failure      403       {object}  apperrors.AppError
+// @Failure      403       {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledge-bases/{id}/shares/{share_id} [put]
 func (h *OrganizationHandler) UpdateSharePermission(c *gin.Context) {
@@ -1239,7 +1239,7 @@ func (h *OrganizationHandler) agentShareOnPath(c *gin.Context, shareID string) b
 // @Param        id        path  string  true  "Knowledge base ID"
 // @Param        share_id  path  string  true  "Share record ID"
 // @Success      200       {object}  map[string]interface{}
-// @Failure      403       {object}  apperrors.AppError
+// @Failure      403       {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledge-bases/{id}/shares/{share_id} [delete]
 func (h *OrganizationHandler) RemoveShare(c *gin.Context) {
@@ -1471,7 +1471,7 @@ func (h *OrganizationHandler) ListAgentShares(c *gin.Context) {
 // @Param        id        path      string                  true  "Agent ID"
 // @Param        share_id  path      string                  true  "Share record ID"
 // @Success      200       {object}  map[string]interface{}  "success: true"
-// @Failure      403       {object}  apperrors.AppError         "Forbidden"
+// @Failure      403       {object}  apperrors.ErrorResponse         "Forbidden"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents/{id}/shares/{share_id} [delete]
@@ -1500,7 +1500,7 @@ func (h *OrganizationHandler) RemoveAgentShare(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string                  true  "Organization ID"
 // @Success      200  {object}  map[string]interface{}  "Agent shares + total"
-// @Failure      403  {object}  apperrors.AppError         "Not an organization member"
+// @Failure      403  {object}  apperrors.ErrorResponse         "Not an organization member"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /organizations/{id}/agent-shares [get]
@@ -1575,7 +1575,7 @@ func (h *OrganizationHandler) ListOrgAgentShares(c *gin.Context) {
 // @Tags         Organization
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Agents + total"
-// @Failure      500  {object}  apperrors.AppError         "Internal server error"
+// @Failure      500  {object}  apperrors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /shared-agents [get]
@@ -1989,8 +1989,8 @@ func (h *OrganizationHandler) SearchUsersForInvite(c *gin.Context) {
 // @Param        id       path      string                         true  "Organization ID"
 // @Param        request  body      types.InviteMemberRequest      true  "Invitation details"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      400      {object}  apperrors.AppError
-// @Failure      403      {object}  apperrors.AppError
+// @Failure      400      {object}  apperrors.ErrorResponse
+// @Failure      403      {object}  apperrors.ErrorResponse
 // @Security     Bearer
 // @Router       /organizations/{id}/invite [post]
 func (h *OrganizationHandler) InviteMember(c *gin.Context) {

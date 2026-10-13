@@ -59,6 +59,12 @@ type AppError struct {
 	HTTPCode int       `json:"-"`
 }
 
+// ErrorResponse is the body middleware.ErrorHandler writes for every failed request.
+type ErrorResponse struct {
+	Success bool     `json:"success" example:"false"`
+	Error   AppError `json:"error"`
+}
+
 // Error returns the message alone: callers paste it into agent tool results
 // and response bodies, where the numeric code means nothing to the reader.
 func (e *AppError) Error() string {

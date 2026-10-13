@@ -849,7 +849,7 @@ func (h *Handler) setupSSEStream(reqCtx *qaRequestContext, generateTitle bool, m
 // @Param        request  body      SearchKnowledgeRequest  true  "Search request"
 // @Param        resource_urls  query     string  false  "public: direct links"  Enums(handle, public)  default(handle)
 // @Success      200      {object}  map[string]interface{}  "Search results"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-search [post]
@@ -988,7 +988,7 @@ func knowledgeSearchOptions(request *SearchKnowledgeRequest) (*types.KnowledgeSe
 // @Param        request     body      CreateKnowledgeQARequest true  "QA request"
 // @Param        resource_urls  query     string  false  "public: direct links"  Enums(handle, public)  default(handle)
 // @Success      200         {object}  map[string]interface{}   "QA result (SSE stream)"
-// @Failure      400         {object}  errors.AppError          "Invalid request parameters"
+// @Failure      400         {object}  errors.ErrorResponse          "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-chat/{session_id} [post]
@@ -1018,7 +1018,7 @@ func (h *Handler) KnowledgeQA(c *gin.Context) {
 // @Param        request     body      CreateKnowledgeQARequest true  "QA request"
 // @Param        resource_urls  query     string  false  "public: direct links"  Enums(handle, public)  default(handle)
 // @Success      200         {object}  map[string]interface{}   "QA result (SSE stream)"
-// @Failure      400         {object}  errors.AppError          "Invalid request parameters"
+// @Failure      400         {object}  errors.ErrorResponse          "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agent-chat/{session_id} [post]

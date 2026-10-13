@@ -18,7 +18,7 @@ import (
 // @Param        session_id  path      string                true  "Session ID"
 // @Param        request     body      GenerateTitleRequest  true  "Generate request"
 // @Success      200         {object}  map[string]interface{}  "Generated title"
-// @Failure      400         {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400         {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/title [post]

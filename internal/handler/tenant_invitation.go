@@ -598,7 +598,7 @@ type acceptInvitationByTokenRequest struct {
 // @Produce      json
 // @Param        request  body      acceptInvitationByTokenRequest  true  "Invitation token"
 // @Success      200      {object}  map[string]interface{}
-// @Failure      410      {object}  apperrors.AppError  "Link is invalid or revoked"
+// @Failure      410      {object}  apperrors.ErrorResponse  "Link is invalid or revoked"
 // @Security     Bearer
 // @Router       /me/invitations/accept-by-token [post]
 func (h *TenantInvitationHandler) AcceptMyInvitationByToken(c *gin.Context) {

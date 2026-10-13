@@ -24,7 +24,7 @@ import (
 // @Param        index         path   int     true   "Position of the artifact in the message"
 // @Param        all_versions  query  bool    false  "Delete every version of the file"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      404  {object}  errors.AppError
+// @Failure      404  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /sessions/{session_id}/messages/{message_id}/artifacts/{index} [delete]
 //
@@ -59,7 +59,7 @@ func (h *Handler) DeleteMessageArtifact(c *gin.Context) {
 // @Param        index         query  int     true   "Position of the artifact in the message"
 // @Param        all_versions  query  bool    false  "Delete every version, default true"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      404  {object}  errors.AppError
+// @Failure      404  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /artifacts [delete]
 //

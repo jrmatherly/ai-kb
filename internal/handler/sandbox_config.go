@@ -304,7 +304,7 @@ func (h *SandboxConfigHandler) SetWorkspacePolicy(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      sandboxConfigRequest    true  "Sandbox backend config"
 // @Success      201      {object}  map[string]interface{}  "Created sandbox config"
-// @Failure      400      {object}  apperrors.AppError      "Invalid request or validation failure"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request or validation failure"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -339,7 +339,7 @@ func (h *SandboxConfigHandler) Create(c *gin.Context) {
 // @Param        id   path      string  true  "Sandbox config ID"
 // @Success      200  {object}  map[string]interface{}   "Sandbox config"
 // @Failure      401  {object}  map[string]interface{}   "Unauthorized"
-// @Failure      404  {object}  apperrors.AppError       "Sandbox config not found"
+// @Failure      404  {object}  apperrors.ErrorResponse       "Sandbox config not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id} [get]
@@ -368,9 +368,9 @@ func (h *SandboxConfigHandler) Get(c *gin.Context) {
 // @Param        id       path      string                true  "Sandbox config ID"
 // @Param        request  body      sandboxConfigRequest  true  "Updated sandbox config"
 // @Success      200      {object}  map[string]interface{}  "Updated sandbox config"
-// @Failure      400      {object}  apperrors.AppError      "Invalid request or validation failure"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request or validation failure"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Sandbox config not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Sandbox config not found"
 // @Failure      409      {object}  map[string]interface{}  "Live sandboxes or unverifiable inventory"
 // @Failure      423      {object}  map[string]interface{}  "Sandbox config is being modified by another request"
 // @Security     Bearer

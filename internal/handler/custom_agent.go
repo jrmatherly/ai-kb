@@ -87,7 +87,7 @@ type UpdateAgentRequest struct {
 // @Produce      json
 // @Param        request  body      CreateAgentRequest  true  "Agent details"
 // @Success      201      {object}  map[string]interface{}  "Created agent"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents [post]
@@ -171,8 +171,8 @@ func (h *CustomAgentHandler) CreateAgent(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Agent ID"
 // @Success      200  {object}  map[string]interface{}  "Agent details"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Agent not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Agent not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents/{id} [get]
@@ -221,7 +221,7 @@ func (h *CustomAgentHandler) GetAgent(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Agent list"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents [get]
@@ -348,8 +348,8 @@ func enrichAgentCreatorNames(ctx context.Context, userSvc interfaces.UserService
 // @Param        id       path      string              true  "Agent ID"
 // @Param        request  body      UpdateAgentRequest  true  "Update request"
 // @Success      200      {object}  map[string]interface{}  "Updated agent"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError         "Built-in agents cannot be modified"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse         "Built-in agents cannot be modified"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents/{id} [put]
@@ -455,9 +455,9 @@ func (h *CustomAgentHandler) UpdateAgent(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Agent ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      403  {object}  errors.AppError         "Built-in agents cannot be deleted"
-// @Failure      404  {object}  errors.AppError         "Agent not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403  {object}  errors.ErrorResponse         "Built-in agents cannot be deleted"
+// @Failure      404  {object}  errors.ErrorResponse         "Agent not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents/{id} [delete]
@@ -526,8 +526,8 @@ func (h *CustomAgentHandler) DeleteAgent(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Agent ID"
 // @Success      201  {object}  map[string]interface{}  "Copied"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Agent not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Agent not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents/{id}/copy [post]
@@ -652,8 +652,8 @@ func (h *CustomAgentHandler) GetAgentTypePresets(c *gin.Context) {
 // @Param        tag_scopes          query     string  false  "Tag scopes with their knowledge base (JSON)"
 // @Param        limit               query     int     false  "Max results (default: agent opening questions, max 30)"
 // @Success      200                 {object}  map[string]interface{}  "Suggested questions"
-// @Failure      400                 {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404                 {object}  errors.AppError         "Agent not found"
+// @Failure      400                 {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404                 {object}  errors.ErrorResponse         "Agent not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /agents/{id}/suggested-questions [get]

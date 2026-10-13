@@ -36,7 +36,7 @@ func paramSessionID(c *gin.Context) string {
 // @Produce      json
 // @Param        session_id  path  string  true  "Session ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      404  {object}  errors.AppError
+// @Failure      404  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /sessions/{session_id}/artifacts [get]
 //

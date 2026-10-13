@@ -74,7 +74,7 @@ type updateLastFAQImportResultDisplayStatusRequest struct {
 // @Param        sort_order   query     string  false  "asc: oldest update first (default newest)"
 // @Param        is_enabled   query     bool    false  "Filter by enabled state; all entries when omitted"
 // @Success      200        {object}  map[string]interface{}  "FAQ list"
-// @Failure      400        {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400        {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries [get]
@@ -156,7 +156,7 @@ func parseOptionalFAQEnabled(c *gin.Context) (*bool, error) {
 // @Param        id       path      string                    true  "Knowledge base ID"
 // @Param        request  body      types.FAQBatchUpsertPayload  true  "Batch request"
 // @Success      200      {object}  map[string]interface{}    "Task ID"
-// @Failure      400      {object}  errors.AppError           "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse           "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries [post]
@@ -195,7 +195,7 @@ func (h *FAQHandler) UpsertEntries(c *gin.Context) {
 // @Param        id       path      string                true  "Knowledge base ID"
 // @Param        request  body      types.FAQEntryPayload true  "FAQ entry"
 // @Success      200      {object}  map[string]interface{}  "Created FAQ entry"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entry [post]
@@ -233,7 +233,7 @@ func (h *FAQHandler) CreateEntry(c *gin.Context) {
 // @Param        entry_id  path      int                   true  "FAQ entry ID (seq_id)"
 // @Param        request   body      types.FAQEntryPayload true  "FAQ entry"
 // @Success      200       {object}  map[string]interface{}  "Updated"
-// @Failure      400       {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400       {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries/{entry_id} [put]
@@ -276,7 +276,7 @@ func (h *FAQHandler) UpdateEntry(c *gin.Context) {
 // @Param        id       path      string  true  "Knowledge base ID"
 // @Param        request  body      object  true  "Tag update request"
 // @Success      200      {object}  map[string]interface{}  "Updated"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries/tags [put]
@@ -309,7 +309,7 @@ func (h *FAQHandler) UpdateEntryTagBatch(c *gin.Context) {
 // @Param        id       path      string                        true  "Knowledge base ID"
 // @Param        request  body      types.FAQEntryFieldsBatchUpdate  true  "Field update request"
 // @Success      200      {object}  map[string]interface{}        "Updated"
-// @Failure      400      {object}  errors.AppError               "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse               "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries/fields [put]
@@ -342,7 +342,7 @@ func (h *FAQHandler) UpdateEntryFieldsBatch(c *gin.Context) {
 // @Param        id       path      string  true  "Knowledge base ID"
 // @Param        request  body      object{ids=[]int}  true  "FAQ IDs to delete (seq_id)"
 // @Success      200      {object}  map[string]interface{}  "Deleted"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries [delete]
@@ -378,7 +378,7 @@ func (h *FAQHandler) DeleteEntries(c *gin.Context) {
 // @Param        id       path      string                true  "Knowledge base ID"
 // @Param        request  body      types.FAQSearchRequest  true  "Search request"
 // @Success      200      {object}  map[string]interface{}  "Search results"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/search [post]
@@ -423,7 +423,7 @@ func (h *FAQHandler) SearchFAQ(c *gin.Context) {
 // @Param        id      path      string  true   "Knowledge base ID"
 // @Param        format  query     string  false  "Export format: csv (default) or json"
 // @Success      200     {file}    file    "Exported file"
-// @Failure      400     {object}  errors.AppError  "Invalid request parameters"
+// @Failure      400     {object}  errors.ErrorResponse  "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries/export [get]
@@ -469,8 +469,8 @@ func (h *FAQHandler) ExportEntries(c *gin.Context) {
 // @Param        id        path      string  true  "Knowledge base ID"
 // @Param        entry_id  path      int     true  "FAQ entry ID (seq_id)"
 // @Success      200       {object}  map[string]interface{}  "FAQ entry details"
-// @Failure      400       {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404       {object}  errors.AppError         "Entry not found"
+// @Failure      400       {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404       {object}  errors.ErrorResponse         "Entry not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries/{entry_id} [get]
@@ -505,7 +505,7 @@ func (h *FAQHandler) GetEntry(c *gin.Context) {
 // @Produce      json
 // @Param        task_id  path      string  true  "Task ID"
 // @Success      200      {object}  map[string]interface{}  "Import progress"
-// @Failure      404      {object}  errors.AppError         "Task not found"
+// @Failure      404      {object}  errors.ErrorResponse         "Task not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /faq/import/progress/{task_id} [get]
@@ -539,8 +539,8 @@ func (h *FAQHandler) GetImportProgress(c *gin.Context) {
 // @Param        id      path      string                                         true  "Knowledge base ID"
 // @Param        request body      updateLastFAQImportResultDisplayStatusRequest  true  "Status update request"
 // @Success      200     {object}  map[string]interface{}                         "Updated"
-// @Failure      400     {object}  errors.AppError                                "Invalid request parameters"
-// @Failure      404     {object}  errors.AppError                                "KB or import record not found"
+// @Failure      400     {object}  errors.ErrorResponse                                "Invalid request parameters"
+// @Failure      404     {object}  errors.ErrorResponse                                "KB or import record not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/import/last-result/display [put]
@@ -576,8 +576,8 @@ func (h *FAQHandler) UpdateLastImportResultDisplayStatus(c *gin.Context) {
 // @Param        entry_id  path      int                         true  "FAQ entry ID (seq_id)"
 // @Param        request   body      addSimilarQuestionsRequest  true  "Similar questions"
 // @Success      200       {object}  map[string]interface{}      "Updated FAQ entry"
-// @Failure      400       {object}  errors.AppError             "Invalid request parameters"
-// @Failure      404       {object}  errors.AppError             "Entry not found"
+// @Failure      400       {object}  errors.ErrorResponse             "Invalid request parameters"
+// @Failure      404       {object}  errors.ErrorResponse             "Entry not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/faq/entries/{entry_id}/similar-questions [post]

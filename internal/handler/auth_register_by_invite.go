@@ -60,7 +60,7 @@ type invitationLookupRequest struct {
 // @Produce      json
 // @Param        request  body      invitationLookupRequest  true  "Invitation token"
 // @Success      200      {object}  invitationLookupResponse
-// @Failure      410      {object}  apperrors.AppError  "Link is invalid or revoked"
+// @Failure      410      {object}  apperrors.ErrorResponse  "Link is invalid or revoked"
 // @Router       /auth/invitations/lookup [post]
 func (h *AuthHandler) LookupInvitationByToken(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -117,10 +117,10 @@ func (h *AuthHandler) LookupInvitationByToken(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      registerByInviteRequest  true  "Invitation registration request"
 // @Success      201      {object}  types.LoginResponse
-// @Failure      400      {object}  apperrors.AppError  "Invalid request parameters"
-// @Failure      403      {object}  apperrors.AppError  "Registration is disabled"
-// @Failure      409      {object}  apperrors.AppError  "Email already registered"
-// @Failure      410      {object}  apperrors.AppError  "Link is invalid or revoked"
+// @Failure      400      {object}  apperrors.ErrorResponse  "Invalid request parameters"
+// @Failure      403      {object}  apperrors.ErrorResponse  "Registration is disabled"
+// @Failure      409      {object}  apperrors.ErrorResponse  "Email already registered"
+// @Failure      410      {object}  apperrors.ErrorResponse  "Link is invalid or revoked"
 // @Router       /auth/register-by-invite [post]
 //
 // RegisterByInvite requires both an enabled registration mode and a valid token.

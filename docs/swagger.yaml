@@ -143,6 +143,14 @@ definitions:
     - ErrVectorStoreBindingInvalid
     - ErrVectorStoreUnavailable
     - ErrModelInUse
+  github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+      success:
+        example: false
+        type: boolean
+    type: object
   github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.DocProfile:
     properties:
       all_caps_short_line_count:
@@ -7381,7 +7389,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7419,11 +7427,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: The user has not completed authorization
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Complete in-chat MCP OAuth authorization
@@ -7449,7 +7457,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Skip in-chat MCP OAuth authorization
@@ -7485,11 +7493,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Pending approval not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7512,7 +7520,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7541,7 +7549,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7570,15 +7578,15 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Built-in agents cannot be deleted
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Agent not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7606,11 +7614,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Agent not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7644,11 +7652,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Built-in agents cannot be modified
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7677,11 +7685,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Agent not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7713,7 +7721,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7759,11 +7767,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Agent not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -7877,7 +7885,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete a file from the artifact library
@@ -7935,7 +7943,7 @@ paths:
         "403":
           description: Not the Lite edition
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Auto setup (Lite desktop edition)
       tags:
       - Auth
@@ -7970,7 +7978,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Change password
@@ -8020,7 +8028,7 @@ paths:
         "410":
           description: Link is invalid or revoked
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Resolve a shared invitation link token
       tags:
       - Auth
@@ -8046,7 +8054,7 @@ paths:
         "401":
           description: Authentication failed
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Log in
       tags:
       - Auth
@@ -8066,7 +8074,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Log out
@@ -8088,7 +8096,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get the current user
@@ -8119,11 +8127,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update the current user's preferences
@@ -8209,11 +8217,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: OIDC is not enabled
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Get the OIDC authorization URL
       tags:
       - Auth
@@ -8243,7 +8251,7 @@ paths:
         "401":
           description: Invalid token
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Refresh token
       tags:
       - Auth
@@ -8269,11 +8277,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Registration is disabled
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Register
       tags:
       - Auth
@@ -8302,19 +8310,19 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Registration is disabled
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Email already registered
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "410":
           description: Link is invalid or revoked
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Register with a shared link
       tags:
       - Auth
@@ -8351,11 +8359,11 @@ paths:
         "400":
           description: Invalid parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: No membership in the workspace, or the preference write failed
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Switch the active workspace
@@ -8377,7 +8385,7 @@ paths:
         "401":
           description: Invalid token
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Validate token
@@ -8447,7 +8455,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -8485,7 +8493,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -8519,11 +8527,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Chunk not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -8562,11 +8570,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Chunk not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -8597,11 +8605,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Chunk not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -8639,11 +8647,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Chunk not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9078,7 +9086,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9107,7 +9115,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9136,7 +9144,7 @@ paths:
         "404":
           description: Task not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9341,7 +9349,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9370,7 +9378,7 @@ paths:
         "404":
           description: Knowledge base not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9405,11 +9413,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Knowledge base not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9439,7 +9447,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9485,7 +9493,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9515,7 +9523,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9550,7 +9558,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9602,7 +9610,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9631,7 +9639,7 @@ paths:
         "404":
           description: Task not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9673,7 +9681,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9708,7 +9716,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9741,7 +9749,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9787,7 +9795,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9817,7 +9825,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9848,7 +9856,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9877,7 +9885,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9906,7 +9914,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9941,11 +9949,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Knowledge base not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9979,7 +9987,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10027,7 +10035,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get knowledge base activity
@@ -10057,7 +10065,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Duplicate a knowledge base
@@ -10096,7 +10104,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10157,7 +10165,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10197,7 +10205,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10231,11 +10239,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Entry not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10274,7 +10282,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10314,11 +10322,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Entry not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10353,7 +10361,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10389,7 +10397,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10424,7 +10432,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10459,7 +10467,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10495,11 +10503,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: KB or import record not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10536,7 +10544,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10582,7 +10590,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10627,7 +10635,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10700,7 +10708,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10736,7 +10744,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10767,11 +10775,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10851,7 +10859,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10888,27 +10896,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "429":
           description: Too Many Requests
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10962,7 +10970,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Duplicate file
           schema:
@@ -10998,7 +11006,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11034,11 +11042,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11073,7 +11081,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11125,7 +11133,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Duplicate URL
           schema:
@@ -11159,11 +11167,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Knowledge base not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11192,7 +11200,7 @@ paths:
         "404":
           description: Knowledge base not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11221,7 +11229,7 @@ paths:
         "400":
           description: Knowledge base type not supported or no model configured
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11276,7 +11284,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Share knowledge base with organization
@@ -11305,7 +11313,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Remove share
@@ -11343,7 +11351,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update share permission
@@ -11383,7 +11391,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11424,7 +11432,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11473,7 +11481,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11512,7 +11520,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11542,7 +11550,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11571,7 +11579,7 @@ paths:
         "404":
           description: Task not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11615,7 +11623,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11656,7 +11664,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11689,7 +11697,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11717,11 +11725,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Knowledge not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11757,7 +11765,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11789,15 +11797,15 @@ paths:
         "400":
           description: Status does not allow cancellation
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Knowledge not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11825,7 +11833,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11858,7 +11866,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11893,11 +11901,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11943,7 +11951,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11973,11 +11981,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12007,11 +12015,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12044,11 +12052,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Permission denied
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12091,7 +12099,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12126,7 +12134,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12157,7 +12165,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12183,7 +12191,7 @@ paths:
         "404":
           description: Task not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12236,7 +12244,7 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12268,7 +12276,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -12295,15 +12303,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Auto-fix wiki issues
@@ -12334,15 +12342,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List wiki folders
@@ -12374,19 +12382,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Create a wiki folder
@@ -12412,19 +12420,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete an empty wiki folder
@@ -12462,19 +12470,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Rename or move a wiki folder
@@ -12523,15 +12531,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get wiki link graph
@@ -12573,15 +12581,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get wiki index view
@@ -12616,15 +12624,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List wiki page issues
@@ -12664,15 +12672,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update wiki page issue status
@@ -12697,15 +12705,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Run wiki lint
@@ -12739,15 +12747,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Move a wiki page into a folder
@@ -12800,15 +12808,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List wiki pages
@@ -12840,15 +12848,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Create a wiki page
@@ -12874,15 +12882,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete a wiki page
@@ -12912,15 +12920,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get a wiki page by slug
@@ -12962,19 +12970,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update a wiki page
@@ -12999,15 +13007,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Rebuild wiki links
@@ -13044,19 +13052,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Revert a wiki page to an earlier revision
@@ -13101,15 +13109,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List wiki page revisions
@@ -13145,15 +13153,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Search wiki pages
@@ -13178,15 +13186,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get wiki statistics
@@ -13404,11 +13412,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Not allowed to use this shared agent
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13437,7 +13445,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13466,7 +13474,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13494,7 +13502,7 @@ paths:
         "404":
           description: Service not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13528,7 +13536,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13566,11 +13574,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Service not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13600,11 +13608,11 @@ paths:
         "400":
           description: Invalid field name
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Service not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13635,15 +13643,15 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: OAuth catalog has no authorized principal
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Service not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13675,27 +13683,27 @@ paths:
         "400":
           description: Catalog incomplete or failed validation
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: OAuth catalog has no authorized principal
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: A static-auth catalog must be refreshed by an admin
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Service not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Connection config changed during the refresh
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "503":
           description: Metadata store unavailable
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13733,7 +13741,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Start MCP OAuth authorization
@@ -13809,7 +13817,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13838,7 +13846,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13881,11 +13889,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: MCP service or tool not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13914,7 +13922,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13991,7 +13999,7 @@ paths:
         "404":
           description: Not set
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete one of my sandbox environment variables
@@ -14021,7 +14029,7 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Set one of my sandbox environment variables
@@ -14051,7 +14059,7 @@ paths:
         "404":
           description: Not set
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete one of my skill credentials
@@ -14081,7 +14089,7 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Set one of my skill credentials
@@ -14182,7 +14190,7 @@ paths:
         "410":
           description: Link is invalid or revoked
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Join workspace with a shared link
@@ -14604,7 +14612,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14650,7 +14658,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14702,7 +14710,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14725,7 +14733,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14754,7 +14762,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14783,11 +14791,11 @@ paths:
         "400":
           description: Model still used by a knowledge base, agent or memory
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Model not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14815,7 +14823,7 @@ paths:
         "404":
           description: Model not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14849,7 +14857,7 @@ paths:
         "404":
           description: Model not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -14886,11 +14894,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Model not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15025,7 +15033,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Create organization
@@ -15049,7 +15057,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete organization
@@ -15074,7 +15082,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get organization
@@ -15107,7 +15115,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update organization
@@ -15134,7 +15142,7 @@ paths:
         "403":
           description: Not an organization member
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15169,11 +15177,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Invite member
@@ -15199,7 +15207,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Generate invite code
@@ -15225,7 +15233,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List pending join requests
@@ -15264,7 +15272,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Review join request
@@ -15288,7 +15296,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Leave organization
@@ -15338,7 +15346,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Remove member
@@ -15376,7 +15384,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update member role
@@ -15410,7 +15418,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Request role upgrade
@@ -15538,7 +15546,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Join organization by invite code
@@ -15567,7 +15575,7 @@ paths:
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Join by organization ID (searchable organizations)
@@ -15596,7 +15604,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Submit join request
@@ -15622,7 +15630,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Preview organization by invite code
@@ -15699,7 +15707,7 @@ paths:
         "400":
           description: Invalid request or validation failure
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -15773,7 +15781,7 @@ paths:
         "404":
           description: Sandbox config not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15808,7 +15816,7 @@ paths:
         "400":
           description: Invalid request or validation failure
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -15817,7 +15825,7 @@ paths:
         "404":
           description: Sandbox config not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Live sandboxes or unverifiable inventory
           schema:
@@ -15888,7 +15896,7 @@ paths:
         "404":
           description: Sandbox config not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15937,7 +15945,7 @@ paths:
         "400":
           description: Missing, oversized or invalid bundle or source
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -15946,7 +15954,7 @@ paths:
         "404":
           description: Sandbox config not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15986,7 +15994,7 @@ paths:
         "404":
           description: Skill not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16022,7 +16030,7 @@ paths:
         "404":
           description: Skill not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16063,7 +16071,7 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -16072,7 +16080,7 @@ paths:
         "404":
           description: Skill not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16109,7 +16117,7 @@ paths:
         "404":
           description: Skill or files not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16146,7 +16154,7 @@ paths:
         "400":
           description: Invalid path
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -16155,7 +16163,7 @@ paths:
         "404":
           description: Skill or file not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16195,7 +16203,7 @@ paths:
         "404":
           description: Skill not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16227,7 +16235,7 @@ paths:
         "400":
           description: The stored archive is gone
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -16236,7 +16244,7 @@ paths:
         "404":
           description: Skill not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16271,7 +16279,7 @@ paths:
         "400":
           description: Skill is not installing
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -16280,7 +16288,7 @@ paths:
         "404":
           description: Skill not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16327,7 +16335,7 @@ paths:
         "404":
           description: Skill or transcript not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16372,7 +16380,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16401,7 +16409,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16430,7 +16438,7 @@ paths:
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16458,7 +16466,7 @@ paths:
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16492,7 +16500,7 @@ paths:
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16523,11 +16531,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16554,7 +16562,7 @@ paths:
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16583,11 +16591,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "503":
           description: Live turn lookup failed, retryable
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16620,11 +16628,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "503":
           description: Live turn lookup failed, retryable
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16652,7 +16660,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List the artifact files a session generated
@@ -16689,15 +16697,15 @@ paths:
         "400":
           description: Invalid parameters / unsupported fork point role
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Session or message not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Source session is generating
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16743,7 +16751,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete a session artifact file
@@ -16840,7 +16848,7 @@ paths:
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16877,19 +16885,19 @@ paths:
         "400":
           description: Invalid parameters / unsupported rewind point role
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Session or message not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Session generating / no checkpoint / sandbox replaced
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Workspace rewind failed
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16926,15 +16934,15 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Session not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "503":
           description: Live turn lookup failed, retryable
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -16968,15 +16976,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "503":
           description: Live turn lookup failed, retryable
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17011,7 +17019,7 @@ paths:
         "404":
           description: Session or message not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17072,7 +17080,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17104,7 +17112,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17146,7 +17154,7 @@ paths:
         "404":
           description: Session or message not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17168,7 +17176,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17223,7 +17231,7 @@ paths:
         "403":
           description: Not allowed to use this shared agent
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17398,7 +17406,7 @@ paths:
         "400":
           description: Invalid request, validation, or connectivity test failure
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -17407,7 +17415,7 @@ paths:
         "409":
           description: A storage backend with this name already exists
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17436,7 +17444,7 @@ paths:
         "400":
           description: Backend is default, bound, read-only, or legacy alias
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -17445,7 +17453,7 @@ paths:
         "404":
           description: Storage backend not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17477,7 +17485,7 @@ paths:
         "404":
           description: Storage backend not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17512,10 +17520,9 @@ paths:
             additionalProperties: true
             type: object
         "400":
-          description: Immutable field change, read-only backend, validation, or connectivity
-            failure
+          description: Immutable field, read-only backend, invalid or unreachable
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -17524,7 +17531,7 @@ paths:
         "404":
           description: Storage backend not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17553,7 +17560,7 @@ paths:
         "400":
           description: Backend is not active
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -17562,7 +17569,7 @@ paths:
         "404":
           description: Storage backend not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17596,7 +17603,7 @@ paths:
         "404":
           description: Storage backend not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17628,7 +17635,7 @@ paths:
         "400":
           description: Invalid request or validation error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -17759,7 +17766,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -18434,7 +18441,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List workspaces
@@ -18467,7 +18474,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Create workspace
@@ -18495,7 +18502,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Delete workspace
@@ -18522,11 +18529,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Workspace not found
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -18560,7 +18567,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update workspace
@@ -18588,11 +18595,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Insufficient permissions
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Get workspace API key identity config
@@ -18626,11 +18633,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Insufficient permissions
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Update workspace API key identity config
@@ -18665,11 +18672,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Insufficient permissions
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Generate API Playground test JWT
@@ -18716,7 +18723,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19023,7 +19030,7 @@ paths:
         "403":
           description: Insufficient permissions
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List all workspaces
@@ -19053,7 +19060,7 @@ paths:
         "400":
           description: Unsupported key
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19089,7 +19096,7 @@ paths:
         "400":
           description: Unsupported key
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19112,7 +19119,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19135,7 +19142,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19177,7 +19184,7 @@ paths:
         "403":
           description: Insufficient permissions
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19287,7 +19294,7 @@ paths:
         "400":
           description: Invalid request or validation error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -19296,7 +19303,7 @@ paths:
         "409":
           description: Duplicate endpoint and index
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19478,7 +19485,7 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -19810,15 +19817,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError'
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []

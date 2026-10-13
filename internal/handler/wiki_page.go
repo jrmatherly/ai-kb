@@ -93,9 +93,9 @@ func getSlugParam(c *gin.Context) string {
 // @Param        sort_by    query     string  false  "Sort field"
 // @Param        sort_order query     string  false  "Sort order (asc/desc)"
 // @Success      200  {object}  types.WikiPageListResponse
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/pages [get]
 func (h *WikiPageHandler) ListPages(c *gin.Context) {
@@ -153,9 +153,9 @@ func (h *WikiPageHandler) ListPages(c *gin.Context) {
 // @Param        kb_id     path   string  true   "Knowledge base ID"
 // @Param        parent_id query  string  false  "Parent folder id (empty = root)"
 // @Success      200  {object}  types.WikiFolderListResponse
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/folders [get]
 func (h *WikiPageHandler) ListFolders(c *gin.Context) {
@@ -193,10 +193,10 @@ func (h *WikiPageHandler) ListFolders(c *gin.Context) {
 // @Param        kb_id  path  string                       true  "Knowledge base ID"
 // @Param        folder body  types.WikiFolderCreateRequest true  "Folder data"
 // @Success      201  {object}  types.WikiFolder
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      409  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      409  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/folders [post]
 func (h *WikiPageHandler) CreateFolder(c *gin.Context) {
@@ -228,10 +228,10 @@ func (h *WikiPageHandler) CreateFolder(c *gin.Context) {
 // @Param        folder_id path  string                        true  "Folder ID"
 // @Param        folder    body  types.WikiFolderUpdateRequest true  "Folder update"
 // @Success      200  {object}  types.WikiFolder
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      409  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      409  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/folders/{folder_id} [put]
 func (h *WikiPageHandler) UpdateFolder(c *gin.Context) {
@@ -266,10 +266,10 @@ func (h *WikiPageHandler) UpdateFolder(c *gin.Context) {
 // @Param        kb_id     path  string  true  "Knowledge base ID"
 // @Param        folder_id path  string  true  "Folder ID"
 // @Success      204
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      409  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      409  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/folders/{folder_id} [delete]
 func (h *WikiPageHandler) DeleteFolder(c *gin.Context) {
@@ -299,9 +299,9 @@ func (h *WikiPageHandler) DeleteFolder(c *gin.Context) {
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Param        move   body  types.WikiPageMoveRequest true "Move target"
 // @Success      200  {object}  types.WikiPage
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/move-page [put]
 func (h *WikiPageHandler) MovePage(c *gin.Context) {
@@ -367,9 +367,9 @@ func parseWikiCategoryPath(raw string) []string {
 // @Param        kb_id  path  string          true  "Knowledge base ID"
 // @Param        page   body  types.WikiPage  true  "Wiki page data"
 // @Success      201  {object}  types.WikiPage
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/pages [post]
 func (h *WikiPageHandler) CreatePage(c *gin.Context) {
@@ -430,9 +430,9 @@ func (h *WikiPageHandler) recordManualWikiActivity(
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Param        slug   path  string  true  "Page slug"
 // @Success      200  {object}  types.WikiPageDetail
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/pages/{slug} [get]
 func (h *WikiPageHandler) GetPage(c *gin.Context) {
@@ -492,10 +492,10 @@ func (h *WikiPageHandler) GetPage(c *gin.Context) {
 // @Param        slug   path  string                       true  "Page slug"
 // @Param        page   body  types.WikiPageUpdateRequest  true  "Fields to update"
 // @Success      200  {object}  types.WikiPage
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      409  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      409  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/pages/{slug} [put]
 func (h *WikiPageHandler) UpdatePage(c *gin.Context) {
@@ -599,9 +599,9 @@ func (h *WikiPageHandler) UpdatePage(c *gin.Context) {
 // @Param        limit    query  int     false  "Page size (default 50, max 200)"
 // @Param        offset   query  int     false  "Offset into the newest-first list"
 // @Success      200  {object}  types.WikiPageRevisionListResponse
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/revisions/{slug} [get]
 func (h *WikiPageHandler) ListRevisions(c *gin.Context) {
@@ -674,10 +674,10 @@ func (h *WikiPageHandler) ListRevisions(c *gin.Context) {
 // @Param        kb_id   path  string                       true  "Knowledge base ID"
 // @Param        revert  body  types.WikiPageRevertRequest  true  "Revert target"
 // @Success      200  {object}  types.WikiPage
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      409  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      409  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/revert [post]
 func (h *WikiPageHandler) RevertPage(c *gin.Context) {
@@ -729,9 +729,9 @@ func (h *WikiPageHandler) RevertPage(c *gin.Context) {
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Param        slug   path  string  true  "Page slug"
 // @Success      204
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/pages/{slug} [delete]
 func (h *WikiPageHandler) DeletePage(c *gin.Context) {
@@ -778,9 +778,9 @@ func (h *WikiPageHandler) DeletePage(c *gin.Context) {
 // @Param        limit   query  int     false  "Per-group window size, 1-200 (default 50)"
 // @Param        cursor  query  string  false  "Opaque offset cursor from previous response"
 // @Success      200  {object}  types.WikiIndexResponse
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/index [get]
 func (h *WikiPageHandler) GetIndex(c *gin.Context) {
@@ -844,9 +844,9 @@ const (
 // @Param        types   query string  false  "Comma-separated page_type allow-list"
 // @Param        limit   query int     false  "Max nodes to return (default 500, max 2000)"
 // @Success      200  {object}  types.WikiGraphData
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/graph [get]
 func (h *WikiPageHandler) GetGraph(c *gin.Context) {
@@ -935,9 +935,9 @@ func (h *WikiPageHandler) GetGraph(c *gin.Context) {
 // @Produce      json
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Success      200  {object}  types.WikiStats
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/stats [get]
 func (h *WikiPageHandler) GetStats(c *gin.Context) {
@@ -965,9 +965,9 @@ func (h *WikiPageHandler) GetStats(c *gin.Context) {
 // @Param        slug   query  string  false  "Filter by page slug"
 // @Param        status query  string  false  "Filter by status (pending, ignored, resolved)"
 // @Success      200  {array}  types.WikiPageIssue
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/issues [get]
 func (h *WikiPageHandler) ListIssues(c *gin.Context) {
@@ -999,9 +999,9 @@ func (h *WikiPageHandler) ListIssues(c *gin.Context) {
 // @Param        issue_id path  string  true  "Issue ID"
 // @Param        status   body  object  true  "New status {'status': 'ignored'}"
 // @Success      200  {object}  map[string]string
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/issues/{issue_id}/status [put]
 func (h *WikiPageHandler) UpdateIssueStatus(c *gin.Context) {
@@ -1052,9 +1052,9 @@ func (h *WikiPageHandler) UpdateIssueStatus(c *gin.Context) {
 // @Param        q      query  string  true   "Search query"
 // @Param        limit  query  int     false  "Max results (default 10)"
 // @Success      200  {array}  types.WikiPage
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/search [get]
 func (h *WikiPageHandler) SearchPages(c *gin.Context) {
@@ -1110,9 +1110,9 @@ type WikiSearchHit struct {
 // @Produce      json
 // @Param        request  body  SearchWikiRequest  true  "Wiki search request"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      400  {object}  errors.AppError
-// @Failure      403  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      403  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /wiki-search [post]
@@ -1201,9 +1201,9 @@ func mergeWikiSearchKBIDs(ids []string, single string) []string {
 // @Tags         Wiki
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]string
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/rebuild-links [post]
 func (h *WikiPageHandler) RebuildLinks(c *gin.Context) {
@@ -1228,9 +1228,9 @@ func (h *WikiPageHandler) RebuildLinks(c *gin.Context) {
 // @Produce      json
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Success      200  {object}  service.WikiLintReport
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/lint [get]
 func (h *WikiPageHandler) Lint(c *gin.Context) {
@@ -1256,9 +1256,9 @@ func (h *WikiPageHandler) Lint(c *gin.Context) {
 // @Produce      json
 // @Param        kb_id  path  string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      400  {object}  errors.AppError
-// @Failure      404  {object}  errors.AppError
-// @Failure      500  {object}  errors.AppError
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /knowledgebase/{kb_id}/wiki/auto-fix [post]
 func (h *WikiPageHandler) AutoFix(c *gin.Context) {

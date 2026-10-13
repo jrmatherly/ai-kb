@@ -173,8 +173,8 @@ func (h *SystemHandler) complexPasswordEnabled(ctx context.Context) bool {
 // @Produce      json
 // @Param        request  body      types.RegisterRequest  true  "Registration request"
 // @Success      201      {object}  types.RegisterResponse
-// @Failure      400      {object}  errors.AppError  "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError  "Registration is disabled"
+// @Failure      400      {object}  errors.ErrorResponse  "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse  "Registration is disabled"
 // @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -254,7 +254,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      types.LoginRequest  true  "Login request"
 // @Success      200      {object}  types.LoginResponse
-// @Failure      401      {object}  errors.AppError  "Authentication failed"
+// @Failure      401      {object}  errors.ErrorResponse  "Authentication failed"
 // @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -308,8 +308,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Produce      json
 // @Param        redirect_uri  query     string  true  "OIDC callback URL"
 // @Success      200           {object}  types.OIDCAuthURLResponse
-// @Failure      400           {object}  errors.AppError  "Invalid request parameters"
-// @Failure      403           {object}  errors.AppError  "OIDC is not enabled"
+// @Failure      400           {object}  errors.ErrorResponse  "Invalid request parameters"
+// @Failure      403           {object}  errors.ErrorResponse  "OIDC is not enabled"
 // @Router       /auth/oidc/url [get]
 func (h *AuthHandler) GetOIDCAuthorizationURL(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -518,7 +518,7 @@ func urlQueryEscape(value string) string {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Logged out"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Router       /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -571,7 +571,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      object{refreshToken=string}  true  "Refresh token"
 // @Success      200      {object}  map[string]interface{}       "New tokens"
-// @Failure      401      {object}  errors.AppError              "Invalid token"
+// @Failure      401      {object}  errors.ErrorResponse              "Invalid token"
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -614,7 +614,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "User info"
-// @Failure      401  {object}  errors.AppError         "Unauthorized"
+// @Failure      401  {object}  errors.ErrorResponse         "Unauthorized"
 // @Security     Bearer
 // @Router       /auth/me [get]
 func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
@@ -700,8 +700,8 @@ type updateMyPreferencesRequest struct {
 // @Produce      json
 // @Param        request  body      updateMyPreferencesRequest  true  "Preferences patch"
 // @Success      200      {object}  map[string]interface{}      "Updated preferences"
-// @Failure      400      {object}  errors.AppError             "Invalid request parameters"
-// @Failure      401      {object}  errors.AppError             "Unauthorized"
+// @Failure      400      {object}  errors.ErrorResponse             "Invalid request parameters"
+// @Failure      401      {object}  errors.ErrorResponse             "Unauthorized"
 // @Security     Bearer
 // @Router       /auth/me/preferences [put]
 func (h *AuthHandler) UpdateMyPreferences(c *gin.Context) {
@@ -749,7 +749,7 @@ func (h *AuthHandler) UpdateMyPreferences(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      object{old_password=string,new_password=string}  true  "Password change request"
 // @Success      200      {object}  map[string]interface{}                           "Changed"
-// @Failure      400      {object}  errors.AppError                                  "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse                                  "Invalid request parameters"
 // @Security     Bearer
 // @Router       /auth/change-password [post]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
@@ -858,8 +858,8 @@ func (h *AuthHandler) GetAuthConfig(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      object{tenant_id=integer,refresh_token=string}  true  "Switch request"
 // @Success      200      {object}  types.LoginResponse
-// @Failure      400      {object}  errors.AppError  "Invalid parameters"
-// @Failure      403      {object}  errors.AppError  "No membership in the workspace, or the preference write failed"
+// @Failure      400      {object}  errors.ErrorResponse  "Invalid parameters"
+// @Failure  403  {object}  errors.ErrorResponse  "No membership in the workspace, or the preference write failed"
 // @Security     Bearer
 // @Router       /auth/switch-tenant [post]
 //
@@ -905,7 +905,7 @@ func (h *AuthHandler) SwitchTenant(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  types.LoginResponse
-// @Failure      403  {object}  errors.AppError  "Not the Lite edition"
+// @Failure      403  {object}  errors.ErrorResponse  "Not the Lite edition"
 // @Router       /auth/auto-setup [post]
 func (h *AuthHandler) AutoSetup(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -999,7 +999,7 @@ func tenantNameOrEmpty(t *types.Tenant) string {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Token is valid"
-// @Failure      401  {object}  errors.AppError         "Invalid token"
+// @Failure      401  {object}  errors.ErrorResponse         "Invalid token"
 // @Security     Bearer
 // @Router       /auth/validate [get]
 func (h *AuthHandler) ValidateToken(c *gin.Context) {

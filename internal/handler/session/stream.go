@@ -28,7 +28,7 @@ import (
 // @Param        message_id     query     string  true   "Message ID"
 // @Param        resource_urls  query     string  false  "public: direct links"  Enums(handle, public)  default(handle)
 // @Success      200            {object}  map[string]interface{}  "Streaming response"
-// @Failure      404         {object}  errors.AppError         "Session or message not found"
+// @Failure      404         {object}  errors.ErrorResponse         "Session or message not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/continue-stream/{session_id} [get]
@@ -213,7 +213,7 @@ func (h *Handler) ContinueStream(c *gin.Context) {
 // @Param        session_id  path      string              true  "Session ID"
 // @Param        request     body      StopSessionRequest  true  "Stop request"
 // @Success      200         {object}  map[string]interface{}  "Stopped"
-// @Failure      404         {object}  errors.AppError         "Session or message not found"
+// @Failure      404         {object}  errors.ErrorResponse         "Session or message not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/stop [post]

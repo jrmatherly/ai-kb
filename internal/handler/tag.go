@@ -80,7 +80,7 @@ func (h *TagHandler) getChunksBySeqIDs(ctx context.Context, tenantID uint64, seq
 // @Param        page_size  query     int     false  "Page size"
 // @Param        keyword    query     string  false  "Keyword search"
 // @Success      200        {object}  map[string]interface{}  "Tag list"
-// @Failure      400        {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400        {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/tags [get]
@@ -125,7 +125,7 @@ type createTagRequest struct {
 // @Param        id       path      string  true  "Knowledge base ID"
 // @Param        request  body      object{name=string,color=string,sort_order=int}  true  "Tag info"
 // @Success      200      {object}  map[string]interface{}  "Created tag"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/tags [post]
@@ -172,7 +172,7 @@ type updateTagRequest struct {
 // @Param        tag_id   path      string  true  "Tag ID (UUID or seq_id)"
 // @Param        request  body      object  true  "Tag update"
 // @Success      200      {object}  map[string]interface{}  "Updated tag"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/tags/{tag_id} [put]
@@ -220,7 +220,7 @@ func (h *TagHandler) UpdateTag(c *gin.Context) {
 // @Param        content_only  query     bool                false  "Delete only the content, keep the tag"
 // @Param        body          body      DeleteTagRequest    false  "Delete options"
 // @Success      200           {object}  map[string]interface{}  "Deleted"
-// @Failure      400           {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400           {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/tags/{tag_id} [delete]

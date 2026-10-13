@@ -76,7 +76,7 @@ func (h *MessageHandler) resolveResourceRewriter(c *gin.Context) (*storageurl.Re
 // @Param        before_time    query     string  false  "Messages before this time (RFC3339Nano)"
 // @Param        resource_urls  query     string  false  "public: direct links"  Enums(handle, public)  default(handle)
 // @Success      200            {object}  map[string]interface{}  "Message list"
-// @Failure      400          {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400          {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /messages/{session_id}/load [get]
@@ -186,7 +186,7 @@ func (h *MessageHandler) LoadMessages(c *gin.Context) {
 // @Param        session_id  path      string  true  "Session ID"
 // @Param        id          path      string  true  "Message ID"
 // @Success      200         {object}  map[string]interface{}  "Deleted"
-// @Failure      500         {object}  errors.AppError         "Internal server error"
+// @Failure      500         {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /messages/{session_id}/{id} [delete]
@@ -240,7 +240,7 @@ func (h *MessageHandler) DeleteMessage(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      SearchMessagesRequest  true  "Search request"
 // @Success      200      {object}  map[string]interface{}  "Search results"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /messages/search [post]

@@ -73,7 +73,7 @@ type mcpOAuthAuthorizeRequest struct {
 // @Param        id       path      string                    true  "MCP service ID"
 // @Param        request  body      map[string]interface{}    true  "{redirect_uri: string, frontend_redirect?: string}"
 // @Success      200      {object}  map[string]interface{}    "{authorization_url: string, authorization_attempt: string}"
-// @Failure      400      {object}  errors.AppError
+// @Failure      400      {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /mcp-services/{id}/oauth/authorize-url [post]
 func (h *MCPOAuthHandler) AuthorizeURL(c *gin.Context) {
@@ -290,8 +290,8 @@ type resolveMCPOAuthBody struct {
 // @Param        pending_id  path  string                  true  "Pending authorization ID"
 // @Param        request     body  map[string]interface{}  true  "{service_id: string}"
 // @Success      200         {object}  map[string]interface{}
-// @Failure      400         {object}  errors.AppError
-// @Failure      409         {object}  errors.AppError  "The user has not completed authorization"
+// @Failure      400         {object}  errors.ErrorResponse
+// @Failure      409         {object}  errors.ErrorResponse  "The user has not completed authorization"
 // @Security     Bearer
 // @Router       /agent/mcp-oauth-resolutions/{pending_id} [post]
 func (h *MCPOAuthHandler) ResolveMCPOAuth(c *gin.Context) {
@@ -399,7 +399,7 @@ func (h *MCPOAuthHandler) ResolveMCPOAuth(c *gin.Context) {
 // @Produce      json
 // @Param        pending_id  path  string  true  "Pending authorization ID"
 // @Success      200         {object}  map[string]interface{}
-// @Failure      404         {object}  errors.AppError
+// @Failure      404         {object}  errors.ErrorResponse
 // @Security     Bearer
 // @Router       /agent/mcp-oauth-resolutions/{pending_id}/cancel [post]
 func (h *MCPOAuthHandler) CancelMCPOAuth(c *gin.Context) {

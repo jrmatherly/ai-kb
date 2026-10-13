@@ -80,7 +80,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -134,13 +134,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "The user has not completed authorization",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -181,7 +181,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -238,13 +238,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Pending approval not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -282,7 +282,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -329,7 +329,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -440,13 +440,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -500,13 +500,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Built-in agents cannot be modified",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -551,19 +551,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Built-in agents cannot be deleted",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -610,13 +610,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -667,7 +667,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -738,13 +738,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Agent not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -897,7 +897,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -926,7 +926,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Not the Lite edition",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -980,7 +980,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1044,7 +1044,7 @@ const docTemplate = `{
                     "410": {
                         "description": "Link is invalid or revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1084,7 +1084,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Authentication failed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1119,7 +1119,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1154,7 +1154,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1200,13 +1200,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1321,13 +1321,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "OIDC is not enabled",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1373,7 +1373,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1413,13 +1413,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Registration is disabled",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1459,25 +1459,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Registration is disabled",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Email already registered",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "410": {
                         "description": "Link is invalid or revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1530,13 +1530,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "No membership in the workspace, or the preference write failed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1571,7 +1571,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Invalid token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1681,13 +1681,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1748,13 +1748,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1815,7 +1815,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1860,7 +1860,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1923,13 +1923,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -1981,13 +1981,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Chunk not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -2644,7 +2644,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -2691,7 +2691,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -2738,7 +2738,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3046,7 +3046,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3093,7 +3093,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3147,13 +3147,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3202,7 +3202,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3275,7 +3275,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3324,7 +3324,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3380,7 +3380,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3460,7 +3460,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3507,7 +3507,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3577,7 +3577,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3634,7 +3634,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3688,7 +3688,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3761,7 +3761,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3810,7 +3810,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3856,7 +3856,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3903,7 +3903,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3952,7 +3952,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -3999,7 +3999,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4052,13 +4052,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4112,7 +4112,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4157,7 +4157,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4227,7 +4227,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4271,7 +4271,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4366,7 +4366,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4420,7 +4420,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4482,7 +4482,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4535,7 +4535,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4591,7 +4591,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4647,7 +4647,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4701,13 +4701,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Entry not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4768,7 +4768,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4831,13 +4831,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Entry not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4893,7 +4893,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -4949,13 +4949,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "KB or import record not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5011,7 +5011,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5078,7 +5078,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5143,7 +5143,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5250,7 +5250,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5303,7 +5303,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5428,7 +5428,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5473,13 +5473,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5534,37 +5534,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "429": {
                         "description": "Too Many Requests",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5648,7 +5648,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
@@ -5702,7 +5702,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5756,13 +5756,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5818,7 +5818,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -5897,7 +5897,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
@@ -5948,13 +5948,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6001,7 +6001,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Knowledge base not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6045,7 +6045,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Knowledge base type not supported or no model configured",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6130,7 +6130,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6190,7 +6190,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6233,7 +6233,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6298,7 +6298,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6363,7 +6363,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6426,7 +6426,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6498,7 +6498,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6565,7 +6565,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6625,7 +6625,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6688,7 +6688,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6737,13 +6737,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6792,13 +6792,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6847,13 +6847,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6921,7 +6921,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -6977,7 +6977,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7025,7 +7025,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7068,7 +7068,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Task not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7147,7 +7147,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7196,7 +7196,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7243,13 +7243,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Knowledge not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7303,7 +7303,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7348,7 +7348,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7395,19 +7395,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Status does not allow cancellation",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Knowledge not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7453,7 +7453,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7502,7 +7502,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7557,13 +7557,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Permission denied",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7604,19 +7604,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7662,19 +7662,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7724,25 +7724,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7801,25 +7801,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7858,25 +7858,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -7946,19 +7946,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8016,19 +8016,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8083,19 +8083,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8157,19 +8157,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8209,19 +8209,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8273,19 +8273,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8367,19 +8367,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8429,19 +8429,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8488,19 +8488,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8557,25 +8557,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8614,19 +8614,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8666,19 +8666,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8730,25 +8730,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8813,19 +8813,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8881,19 +8881,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -8933,19 +8933,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9294,13 +9294,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Not allowed to use this shared agent",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9347,7 +9347,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9428,7 +9428,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9482,7 +9482,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9527,7 +9527,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9584,13 +9584,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9637,13 +9637,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid field name",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9690,19 +9690,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "OAuth catalog has no authorized principal",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9749,37 +9749,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Catalog incomplete or failed validation",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "OAuth catalog has no authorized principal",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "A static-auth catalog must be refreshed by an admin",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Service not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Connection config changed during the refresh",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Metadata store unavailable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9833,7 +9833,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9952,7 +9952,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -9999,7 +9999,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10063,13 +10063,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "MCP service or tool not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10116,7 +10116,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10195,7 +10195,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10239,7 +10239,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not set",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10285,7 +10285,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10329,7 +10329,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not set",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -10409,7 +10409,7 @@ const docTemplate = `{
                     "410": {
                         "description": "Link is invalid or revoked",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11154,7 +11154,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11225,7 +11225,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11279,7 +11279,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11317,7 +11317,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11364,7 +11364,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11546,7 +11546,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11600,7 +11600,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11645,13 +11645,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Model still used by a knowledge base, agent or memory",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11707,13 +11707,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Model not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11782,7 +11782,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11828,7 +11828,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11874,7 +11874,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11920,7 +11920,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -11961,7 +11961,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12043,7 +12043,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12094,7 +12094,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12130,7 +12130,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12174,7 +12174,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Not an organization member",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12227,13 +12227,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12274,7 +12274,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12315,7 +12315,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12375,7 +12375,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12413,7 +12413,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12507,7 +12507,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12550,7 +12550,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12603,7 +12603,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12837,7 +12837,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -12895,7 +12895,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -12949,7 +12949,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -12962,7 +12962,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
@@ -13128,7 +13128,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13188,7 +13188,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Missing, oversized or invalid bundle or source",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -13201,7 +13201,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Sandbox config not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13259,7 +13259,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13315,7 +13315,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13376,7 +13376,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -13389,7 +13389,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13447,7 +13447,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill or files not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13505,7 +13505,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid path",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -13518,7 +13518,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill or file not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13575,7 +13575,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13626,7 +13626,7 @@ const docTemplate = `{
                     "400": {
                         "description": "The stored archive is gone",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -13639,7 +13639,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13690,7 +13690,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Skill is not installing",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -13703,7 +13703,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13766,7 +13766,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Skill or transcript not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13836,7 +13836,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13883,7 +13883,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13932,7 +13932,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -13997,7 +13997,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14044,7 +14044,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14098,7 +14098,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14143,7 +14143,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14190,13 +14190,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14240,7 +14240,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14284,13 +14284,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14341,13 +14341,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14388,7 +14388,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14444,19 +14444,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters / unsupported fork point role",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Source session is generating",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14522,7 +14522,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14676,7 +14676,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14732,25 +14732,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters / unsupported rewind point role",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Session generating / no checkpoint / sandbox replaced",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Workspace rewind failed",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14806,19 +14806,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Session not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14869,19 +14869,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Live turn lookup failed, retryable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -14937,7 +14937,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Session or message not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15036,7 +15036,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15071,7 +15071,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15155,7 +15155,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Not allowed to use this shared agent",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15416,7 +15416,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request, validation, or connectivity test failure",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -15429,7 +15429,7 @@ const docTemplate = `{
                     "409": {
                         "description": "A storage backend with this name already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15478,7 +15478,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -15565,7 +15565,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15617,9 +15617,9 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Immutable field change, read-only backend, validation, or connectivity failure",
+                        "description": "Immutable field, read-only backend, invalid or unreachable",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -15632,7 +15632,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15674,7 +15674,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Backend is default, bound, read-only, or legacy alias",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -15687,7 +15687,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15731,7 +15731,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Backend is not active",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -15744,7 +15744,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15795,7 +15795,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Storage backend not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -15960,7 +15960,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -16894,7 +16894,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -16938,7 +16938,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -16973,7 +16973,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17011,7 +17011,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17049,7 +17049,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17096,7 +17096,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Unsupported key",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17150,7 +17150,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Unsupported key",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17216,7 +17216,7 @@ const docTemplate = `{
                     "403": {
                         "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17263,13 +17263,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Workspace not found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17320,7 +17320,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17362,7 +17362,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17406,13 +17406,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17463,13 +17463,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17522,13 +17522,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request parameters",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Insufficient permissions",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -17601,7 +17601,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -18187,7 +18187,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request or validation error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -18200,7 +18200,7 @@ const docTemplate = `{
                     "409": {
                         "description": "Duplicate endpoint and index",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -18249,7 +18249,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "401": {
@@ -19002,19 +19002,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     }
                 }
@@ -19200,6 +19200,18 @@ const docTemplate = `{
                 "ErrVectorStoreUnavailable",
                 "ErrModelInUse"
             ]
+        },
+        "github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
         },
         "github_com_jrmatherly_ai-kb_internal_infrastructure_chunker.DocProfile": {
             "type": "object",

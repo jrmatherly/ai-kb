@@ -85,9 +85,9 @@ func envStoreReadonlyError() gin.H {
 // @Produce      json
 // @Param        request  body      CreateStoreRequest       true  "Vector store configuration"
 // @Success      201      {object}  map[string]interface{}   "Created vector store"
-// @Failure      400      {object}  errors.AppError          "Invalid request or validation error"
+// @Failure      400      {object}  errors.ErrorResponse          "Invalid request or validation error"
 // @Failure      401      {object}  map[string]interface{}   "Unauthorized"
-// @Failure      409      {object}  errors.AppError          "Duplicate endpoint and index"
+// @Failure      409      {object}  errors.ErrorResponse          "Duplicate endpoint and index"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /vector-stores [post]
@@ -424,7 +424,7 @@ func (h *VectorStoreHandler) TestStoreByID(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      TestStoreRequest         true  "Engine type and connection config"
 // @Success      200      {object}  map[string]interface{}   "Connection test result (success, version)"
-// @Failure      400      {object}  errors.AppError          "Invalid request"
+// @Failure      400      {object}  errors.ErrorResponse          "Invalid request"
 // @Failure      401      {object}  map[string]interface{}   "Unauthorized"
 // @Security     Bearer
 // @Security     ApiKeyAuth

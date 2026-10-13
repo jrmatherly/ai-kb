@@ -45,9 +45,9 @@ type ForkSessionRequest struct {
 // @Param        session_id  path      string              true  "Source session ID"
 // @Param        request     body      ForkSessionRequest  true  "Fork request"
 // @Success      200         {object}  map[string]interface{}  "New session"
-// @Failure      400         {object}  errors.AppError         "Invalid parameters / unsupported fork point role"
-// @Failure      404         {object}  errors.AppError         "Session or message not found"
-// @Failure      409         {object}  errors.AppError         "Source session is generating"
+// @Failure      400         {object}  errors.ErrorResponse         "Invalid parameters / unsupported fork point role"
+// @Failure      404         {object}  errors.ErrorResponse         "Session or message not found"
+// @Failure      409         {object}  errors.ErrorResponse         "Source session is generating"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sessions/{session_id}/fork [post]

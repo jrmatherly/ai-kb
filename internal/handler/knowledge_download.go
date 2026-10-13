@@ -49,12 +49,12 @@ type knowledgeDownloadEntry struct {
 // @Param id path string true "Knowledge base ID"
 // @Param request body BatchDownloadKnowledgeRequest true "Document IDs"
 // @Success 200 {file} file "ZIP archive"
-// @Failure 400 {object} errors.AppError
-// @Failure 401 {object} errors.AppError
-// @Failure 403 {object} errors.AppError
-// @Failure 404 {object} errors.AppError
-// @Failure 429 {object} errors.AppError
-// @Failure 500 {object} errors.AppError
+// @Failure 400 {object} errors.ErrorResponse
+// @Failure 401 {object} errors.ErrorResponse
+// @Failure 403 {object} errors.ErrorResponse
+// @Failure 404 {object} errors.ErrorResponse
+// @Failure 429 {object} errors.ErrorResponse
+// @Failure 500 {object} errors.ErrorResponse
 // @Security Bearer
 // @Security ApiKeyAuth
 // @Router /knowledge-bases/{id}/knowledge/batch-download [post]

@@ -46,8 +46,8 @@ func NewChunkHandler(service interfaces.ChunkService, kgService interfaces.Knowl
 // @Produce      json
 // @Param        id   path      string  true  "Chunk ID"
 // @Success      200  {object}  map[string]interface{}  "Chunk details"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Chunk not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Chunk not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunks/by-id/{id} [get]
@@ -93,7 +93,7 @@ func (h *ChunkHandler) GetChunkByIDOnly(c *gin.Context) {
 // @Param        page          query     int     false  "Page number"  default(1)
 // @Param        page_size     query     int     false  "Page size"  default(10)
 // @Success      200           {object}  map[string]interface{}  "Chunk list"
-// @Failure      400           {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400           {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunks/{knowledge_id} [get]
@@ -217,8 +217,8 @@ func chunkServiceError(err error) *errors.AppError {
 // @Param        id            path      string              true  "Chunk ID"
 // @Param        request       body      UpdateChunkRequest  true  "Update request"
 // @Success      200           {object}  map[string]interface{}  "Updated chunk"
-// @Failure      400           {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404           {object}  errors.AppError         "Chunk not found"
+// @Failure      400           {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404           {object}  errors.ErrorResponse         "Chunk not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunks/{knowledge_id}/{id} [put]
@@ -357,8 +357,8 @@ func (h *ChunkHandler) RegenerateGeneratedQuestions(c *gin.Context) {
 // @Param        knowledge_id  path      string  true  "Knowledge ID"
 // @Param        id            path      string  true  "Chunk ID"
 // @Success      200           {object}  map[string]interface{}  "Deleted"
-// @Failure      400           {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404           {object}  errors.AppError         "Chunk not found"
+// @Failure      400           {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404           {object}  errors.ErrorResponse         "Chunk not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunks/{knowledge_id}/{id} [delete]
@@ -392,7 +392,7 @@ func (h *ChunkHandler) DeleteChunk(c *gin.Context) {
 // @Produce      json
 // @Param        knowledge_id  path      string  true  "Knowledge ID"
 // @Success      200           {object}  map[string]interface{}  "Deleted"
-// @Failure      400           {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400           {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunks/{knowledge_id} [delete]
@@ -428,8 +428,8 @@ func (h *ChunkHandler) DeleteChunksByKnowledgeID(c *gin.Context) {
 // @Param        id       path      string                       true  "Chunk ID"
 // @Param        request  body      object{question_id=string}   true  "Question ID"
 // @Success      200      {object}  map[string]interface{}       "Deleted"
-// @Failure      400      {object}  errors.AppError              "Invalid request parameters"
-// @Failure      404      {object}  errors.AppError              "Chunk not found"
+// @Failure      400      {object}  errors.ErrorResponse              "Invalid request parameters"
+// @Failure      404      {object}  errors.ErrorResponse              "Chunk not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunks/by-id/{id}/questions [delete]

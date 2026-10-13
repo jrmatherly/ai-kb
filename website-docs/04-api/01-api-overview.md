@@ -125,8 +125,10 @@ List endpoints usually add `total`, `page` and `page_size`. Exceptions: some rea
 Errors are rendered by `internal/middleware/error_handler.go` from an `AppError` (`internal/errors/errors.go`):
 
 ```json
-{ "success": false, "error": { "code": 1003, "message": "...", "details": null } }
+{ "success": false, "error": { "code": 1003, "message": "...", "details": { ... } } }
 ```
+
+`details` is present only when the error carries some. The swagger schema for this body is `errors.ErrorResponse`.
 
 The middleware layer (authentication, RBAC) returns `{"error": "..."}` directly, sometimes with a string `"code"` such as `TENANT_REQUIRED`.
 

@@ -233,8 +233,8 @@ type InitializationRequest struct {
 // @Param        kbId     path      string               true  "Knowledge base ID"
 // @Param        request  body      KBModelConfigRequest true  "Configuration request"
 // @Success      200      {object}  map[string]interface{}  "Updated"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404      {object}  errors.AppError         "Knowledge base not found"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404      {object}  errors.ErrorResponse         "Knowledge base not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/config/{kbId} [put]
@@ -550,7 +550,7 @@ func (h *InitializationHandler) applyKBStorageBinding(
 // @Param        kbId     path      string  true  "Knowledge base ID"
 // @Param        request  body      handler.InitializationRequest  true  "Initialization request"
 // @Success      200      {object}  map[string]interface{}  "Initialized"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/initialize/{kbId} [post]
@@ -1101,7 +1101,7 @@ func (h *InitializationHandler) CheckOllamaStatus(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      object{models=[]string}  true  "Model names"
 // @Success      200      {object}  map[string]interface{}   "Model status"
-// @Failure      400      {object}  errors.AppError          "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse          "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/models/check [post]
@@ -1161,7 +1161,7 @@ func (h *InitializationHandler) CheckOllamaModels(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      object{modelName=string}  true  "Model name"
 // @Success      200      {object}  map[string]interface{}    "Download task"
-// @Failure      400      {object}  errors.AppError           "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse           "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/models/download [post]
@@ -1269,7 +1269,7 @@ func (h *InitializationHandler) DownloadOllamaModel(c *gin.Context) {
 // @Produce      json
 // @Param        taskId  path      string  true  "Task ID"
 // @Success      200     {object}  map[string]interface{}  "Download progress"
-// @Failure      404     {object}  errors.AppError         "Task not found"
+// @Failure      404     {object}  errors.ErrorResponse         "Task not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/download/progress/{taskId} [get]
@@ -1327,7 +1327,7 @@ func (h *InitializationHandler) ListDownloadTasks(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Model list"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/models [get]
@@ -1457,7 +1457,7 @@ func (h *InitializationHandler) updateTaskStatus(
 // @Produce      json
 // @Param        kbId  path      string  true  "Knowledge base ID"
 // @Success      200   {object}  map[string]interface{}  "Configuration"
-// @Failure      404   {object}  errors.AppError         "Knowledge base not found"
+// @Failure      404   {object}  errors.ErrorResponse         "Knowledge base not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/config/{kbId} [get]
@@ -1886,7 +1886,7 @@ func (h *InitializationHandler) resolveTenantWeKnoraCloudCreds(ctx context.Conte
 // @Produce      json
 // @Param        request  body      RemoteModelCheckRequest  true  "Model check request"
 // @Success      200      {object}  map[string]interface{}   "Check result"
-// @Failure      400      {object}  errors.AppError          "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse          "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/remote/check [post]
@@ -1943,7 +1943,7 @@ func (h *InitializationHandler) CheckRemoteModel(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      handler.ModelTestRequest  true  "Embedding test request"
 // @Success      200      {object}  map[string]interface{}  "Test result"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/embedding/test [post]
@@ -2138,7 +2138,7 @@ func (h *InitializationHandler) checkRerankModelConnection(
 // @Produce      json
 // @Param        request  body      handler.ModelTestRequest  true  "Rerank check request"
 // @Success      200      {object}  map[string]interface{}  "Check result"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/rerank/check [post]
@@ -2203,7 +2203,7 @@ func (h *InitializationHandler) CheckRerankModel(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      handler.ModelTestRequest  true  "ASR check request"
 // @Success      200      {object}  map[string]interface{}  "Check result"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/asr/check [post]
@@ -2333,7 +2333,7 @@ type testMultimodalForm struct {
 // @Param        vlm_interface_type formData string  false  "VLM interface type"
 // @Param        storage_type      formData  string  true   "Storage type (cos/minio)"
 // @Success      200               {object}  map[string]interface{}  "Test result"
-// @Failure      400               {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400               {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/multimodal/test [post]
@@ -2559,7 +2559,7 @@ type TextRelationExtractionResponse struct {
 // @Produce      json
 // @Param        request  body      TextRelationExtractionRequest  true  "Extraction request"
 // @Success      200      {object}  map[string]interface{}         "Extraction result"
-// @Failure      400      {object}  errors.AppError                "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse                "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/extract/text-relation [post]
@@ -2656,7 +2656,7 @@ type FabriTextResponse struct {
 // @Produce      json
 // @Param        request  body      FabriTextRequest  true  "Generation request"
 // @Success      200      {object}  map[string]interface{}  "Generated text"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/extract/fabri-text [post]

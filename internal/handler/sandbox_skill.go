@@ -192,7 +192,7 @@ func respondSkillServiceError(c *gin.Context, err error) {
 // @Param        id   path      string  true  "Sandbox config ID"
 // @Success      200  {object}  map[string]interface{}  "Installed skills"
 // @Failure      401  {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404  {object}  apperrors.AppError      "Sandbox config not found"
+// @Failure      404  {object}  apperrors.ErrorResponse      "Sandbox config not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills [get]
@@ -218,7 +218,7 @@ func (h *SandboxSkillHandler) List(c *gin.Context) {
 // @Param        skillId  path      string  true  "Skill ID"
 // @Success      200      {object}  map[string]interface{}  "Installed skill"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId} [get]
@@ -240,7 +240,7 @@ func (h *SandboxSkillHandler) Get(c *gin.Context) {
 // @Param        skillId  path      string  true  "Skill ID"
 // @Success      200      {object}  map[string]interface{}  "Skill files"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill or files not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill or files not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId}/files [get]
@@ -264,9 +264,9 @@ func (h *SandboxSkillHandler) ListFiles(c *gin.Context) {
 // @Param        skillId  path      string  true  "Skill ID"
 // @Param        path     query     string  true  "Skill-root-relative file path"
 // @Success      200      {object}  map[string]interface{}  "Skill file"
-// @Failure      400      {object}  apperrors.AppError      "Invalid path"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Invalid path"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill or file not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill or file not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId}/files/content [get]
@@ -303,9 +303,9 @@ func (h *SandboxSkillHandler) GetFile(c *gin.Context) {
 // @Param        file    formData  file                false  "Skill bundle (zip)"
 // @Param        request body      skillSourceRequest  false  "Install from a registry, git host, or archive URL"
 // @Success      202     {object}  map[string]interface{}  "Install accepted"
-// @Failure      400     {object}  apperrors.AppError      "Missing, oversized or invalid bundle or source"
+// @Failure      400     {object}  apperrors.ErrorResponse      "Missing, oversized or invalid bundle or source"
 // @Failure      401   {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404   {object}  apperrors.AppError      "Sandbox config not found"
+// @Failure      404   {object}  apperrors.ErrorResponse      "Sandbox config not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills [post]
@@ -398,9 +398,9 @@ func (h *SandboxSkillHandler) installFromSource(c *gin.Context) {
 // @Param        id       path      string  true  "Sandbox config ID"
 // @Param        skillId  path      string  true  "Skill ID"
 // @Success      202      {object}  map[string]interface{}  "Reinstall accepted"
-// @Failure      400      {object}  apperrors.AppError      "The stored archive is gone"
+// @Failure      400      {object}  apperrors.ErrorResponse      "The stored archive is gone"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId}/reinstall [post]
@@ -430,9 +430,9 @@ func (h *SandboxSkillHandler) Reinstall(c *gin.Context) {
 // @Param        id       path      string  true  "Sandbox config ID"
 // @Param        skillId  path      string  true  "Skill ID"
 // @Success      200      {object}  map[string]interface{}  "Stopped skill"
-// @Failure      400      {object}  apperrors.AppError      "Skill is not installing"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Skill is not installing"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId}/stop [post]
@@ -484,9 +484,9 @@ type skillPatchRequest struct {
 // @Param        skillId  path      string             true  "Skill ID"
 // @Param        request  body      skillPatchRequest  true  "Fields to update"
 // @Success      200      {object}  map[string]interface{}  "Updated skill"
-// @Failure      400      {object}  apperrors.AppError      "Invalid request"
+// @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId} [patch]
@@ -540,7 +540,7 @@ func (h *SandboxSkillHandler) Patch(c *gin.Context) {
 // @Param        skillId  path      string  true  "Skill ID"
 // @Success      202      {object}  map[string]interface{}  "Removal accepted"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId} [delete]
@@ -628,7 +628,7 @@ func terminalSkillEvent(skill *types.TenantSkillEntity) (skillInstallEvent, bool
 // @Param        skillId  path      string  true  "Skill ID"
 // @Success      200      {string}  string  "SSE stream of progress events"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId}/install-events [get]
@@ -749,7 +749,7 @@ func (h *SandboxSkillHandler) InstallEvents(c *gin.Context) {
 // @Success      200      {string}  string  "SSE stream of transcript events"
 // @Success      204      {string}  string  "Install is still preparing; retry once locators exist"
 // @Failure      401      {object}  map[string]interface{}  "Unauthorized"
-// @Failure      404      {object}  apperrors.AppError      "Skill or transcript not found"
+// @Failure      404      {object}  apperrors.ErrorResponse      "Skill or transcript not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/skills/{skillId}/transcript [get]

@@ -19,28 +19,15 @@ func ErrorHandler() gin.HandlerFunc {
 			// Get the last error
 			err := c.Errors.Last().Err
 
-			// Check whether it is an application error
-			if appErr, ok := errors.IsAppError(err); ok {
-				// Return the application error
-				c.JSON(appErr.HTTPCode, gin.H{
-					"success": false,
-					"error": gin.H{
-						"code":    appErr.Code,
-						"message": appErr.Message,
-						"details": appErr.Details,
-					},
-				})
-				return
+			appErr, ok := errors.IsAppError(err)
+			if !ok {
+				appErr = &errors.AppError{
+					Code:     errors.ErrInternalServer,
+					Message:  "Internal server error",
+					HTTPCode: http.StatusInternalServerError,
+				}
 			}
-
-			// Handle other error types
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"success": false,
-				"error": gin.H{
-					"code":    errors.ErrInternalServer,
-					"message": "Internal server error",
-				},
-			})
+			c.JSON(appErr.HTTPCode, errors.ErrorResponse{Error: *appErr})
 		}
 	}
 }

@@ -315,7 +315,7 @@ func (h *KnowledgeBaseHandler) resolveKBStoreView(
 // @Param        request        body      types.SearchParams true   "Search parameters"
 // @Param resource_urls query string false "public returns direct file links" Enums(handle, public) default(handle)
 // @Success      200            {object}  map[string]interface{}  "Search results"
-// @Failure      400            {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400            {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/hybrid-search [post]
@@ -411,7 +411,7 @@ func (h *KnowledgeBaseHandler) HybridSearch(c *gin.Context) {
 // @Produce      json
 // @Param        request  body      types.KnowledgeBase  true  "Knowledge base info"
 // @Success      201      {object}  map[string]interface{}  "Created knowledge base"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases [post]
@@ -497,8 +497,8 @@ func (h *KnowledgeBaseHandler) validateAndGetKnowledgeBase(
 // @Param        id         path      string  true   "Knowledge base ID"
 // @Param agent_id query string false "Shared agent ID (checks that the agent may access this knowledge base)"
 // @Success      200  {object}  map[string]interface{}  "Knowledge base details"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Knowledge base not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Knowledge base not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id} [get]
@@ -533,7 +533,7 @@ func (h *KnowledgeBaseHandler) GetKnowledgeBase(c *gin.Context) {
 // @Produce      json
 // @Param agent_id query string false "Shared agent ID (returns the knowledge bases available to that agent)"
 // @Success      200  {object}  map[string]interface{}  "Knowledge base list"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases [get]
@@ -707,7 +707,7 @@ func pickUserDisplayName(u *types.User) string {
 // @Produce      json
 // @Param        id  path      string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]interface{}  "Updated knowledge base"
-// @Failure      404  {object}  errors.AppError         "Knowledge base not found"
+// @Failure      404  {object}  errors.ErrorResponse         "Knowledge base not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/pin [put]
@@ -757,7 +757,7 @@ type UpdateKnowledgeBaseRequest struct {
 // @Param        id       path      string                     true  "Knowledge base ID"
 // @Param        request  body      UpdateKnowledgeBaseRequest true  "Update request"
 // @Success      200      {object}  map[string]interface{}     "Updated knowledge base"
-// @Failure      400      {object}  errors.AppError            "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse            "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id} [put]
@@ -841,7 +841,7 @@ func (h *KnowledgeBaseHandler) UpdateKnowledgeBase(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]interface{}  "Generated knowledge base profile"
-// @Failure      400  {object}  errors.AppError         "Knowledge base type not supported or no model configured"
+// @Failure      400  {object}  errors.ErrorResponse         "Knowledge base type not supported or no model configured"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/profile/generate [post]
@@ -890,7 +890,7 @@ const knowledgeBaseProfileRequestTimeout = 2 * time.Minute
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id} [delete]
@@ -959,7 +959,7 @@ type DuplicateKnowledgeBaseResponse struct {
 // @Produce      json
 // @Param        request  body      CopyKnowledgeBaseRequest   true  "Copy request"
 // @Success      200      {object}  map[string]interface{}     "Task ID"
-// @Failure      400      {object}  errors.AppError            "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse            "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/copy [post]
@@ -1112,7 +1112,7 @@ func (h *KnowledgeBaseHandler) CopyKnowledgeBase(c *gin.Context) {
 // @Produce      json
 // @Param        id       path      string                  true  "Source knowledge base ID"
 // @Success      201      {object}  map[string]interface{}  "Created knowledge base copy"
-// @Failure      400      {object}  errors.AppError                 "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse                 "Invalid request parameters"
 // @Security     Bearer
 // @Router       /knowledge-bases/{id}/duplicate [post]
 func (h *KnowledgeBaseHandler) DuplicateKnowledgeBase(c *gin.Context) {
@@ -1178,7 +1178,7 @@ func (h *KnowledgeBaseHandler) DuplicateKnowledgeBase(c *gin.Context) {
 // @Produce      json
 // @Param        task_id  path      string  true  "Task ID"
 // @Success      200      {object}  map[string]interface{}  "Progress"
-// @Failure      404      {object}  errors.AppError         "Task not found"
+// @Failure      404      {object}  errors.ErrorResponse         "Task not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/copy/progress/{task_id} [get]
@@ -1293,8 +1293,8 @@ func validateKnowledgeBasePromptInstructions(kb *types.KnowledgeBase) error {
 // @Produce      json
 // @Param        id   path      string                  true  "Source knowledge base ID"
 // @Success      200  {object}  map[string]interface{}  "Move targets"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Knowledge base not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Knowledge base not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/move-targets [get]

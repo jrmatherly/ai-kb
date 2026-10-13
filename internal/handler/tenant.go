@@ -220,7 +220,7 @@ func (h *TenantHandler) resolveMaxOwnedTenantsPerUser(ctx context.Context) int {
 // @Produce      json
 // @Param        request  body      handler.createTenantRequest  true  "Workspace details"
 // @Success      201      {object}  map[string]interface{}  "Created workspace (optionally with api_key)"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Router       /tenants [post]
 func (h *TenantHandler) CreateTenant(c *gin.Context) {
@@ -533,8 +533,8 @@ func (h *TenantHandler) autoCreateTenantAPIKey(ctx context.Context) bool {
 // @Produce      json
 // @Param        id   path      int  true  "Workspace ID"
 // @Success      200  {object}  map[string]interface{}  "Workspace details"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Workspace not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Workspace not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/{id} [get]
@@ -575,7 +575,7 @@ func (h *TenantHandler) GetTenant(c *gin.Context) {
 // @Param        id       path      int           true  "Workspace ID"
 // @Param        request  body      types.Tenant  true  "Workspace details"
 // @Success      200      {object}  map[string]interface{}  "Updated workspace"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Router       /tenants/{id} [put]
 func (h *TenantHandler) UpdateTenant(c *gin.Context) {
@@ -893,8 +893,8 @@ func apiPrincipalConfigForResponse(cfg *types.APIPrincipalConfig) apiPrincipalCo
 // @Produce      json
 // @Param        id   path      int  true  "Workspace ID"
 // @Success      200  {object}  map[string]interface{}  "API principal config"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      403  {object}  errors.AppError         "Insufficient permissions"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403  {object}  errors.ErrorResponse         "Insufficient permissions"
 // @Security     Bearer
 // @Router       /tenants/{id}/api-principal-config [get]
 func (h *TenantHandler) GetAPIPrincipalConfig(c *gin.Context) {
@@ -928,8 +928,8 @@ func (h *TenantHandler) GetAPIPrincipalConfig(c *gin.Context) {
 // @Param        id       path      int                           true  "Workspace ID"
 // @Param        request  body      handler.apiPrincipalConfigRequest  true  "API principal config"
 // @Success      200      {object}  map[string]interface{}        "Updated config"
-// @Failure      400      {object}  errors.AppError               "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError               "Insufficient permissions"
+// @Failure      400      {object}  errors.ErrorResponse               "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse               "Insufficient permissions"
 // @Security     Bearer
 // @Router       /tenants/{id}/api-principal-config [put]
 func (h *TenantHandler) UpdateAPIPrincipalConfig(c *gin.Context) {
@@ -1016,8 +1016,8 @@ func (h *TenantHandler) UpdateAPIPrincipalConfig(c *gin.Context) {
 // @Param        id       path      int                                  true  "Workspace ID"
 // @Param        request  body      handler.apiPrincipalTestTokenRequest true  "Test token parameters"
 // @Success      200      {object}  map[string]interface{}               "Short-lived JWT"
-// @Failure      400      {object}  errors.AppError                      "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError                      "Insufficient permissions"
+// @Failure      400      {object}  errors.ErrorResponse                      "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse                      "Insufficient permissions"
 // @Security     Bearer
 // @Router       /tenants/{id}/api-principal-test-token [post]
 func (h *TenantHandler) CreateAPIPrincipalTestToken(c *gin.Context) {
@@ -1119,7 +1119,7 @@ func validateAPIPrincipalExternalUserID(id string) error {
 // @Produce      json
 // @Param        id   path      int  true  "Workspace ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Router       /tenants/{id} [delete]
 func (h *TenantHandler) DeleteTenant(c *gin.Context) {
@@ -1161,7 +1161,7 @@ func (h *TenantHandler) DeleteTenant(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Workspaces"
-// @Failure      500  {object}  errors.AppError         "Internal server error"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Router       /tenants [get]
 func (h *TenantHandler) ListTenants(c *gin.Context) {
@@ -1188,7 +1188,7 @@ func (h *TenantHandler) ListTenants(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "All workspaces"
-// @Failure      403  {object}  errors.AppError         "Insufficient permissions"
+// @Failure      403  {object}  errors.ErrorResponse         "Insufficient permissions"
 // @Security     Bearer
 // @Router       /tenants/all [get]
 func (h *TenantHandler) ListAllTenants(c *gin.Context) {
@@ -1229,7 +1229,7 @@ func (h *TenantHandler) ListAllTenants(c *gin.Context) {
 // @Param        page       query     int     false  "Page number"  default(1)
 // @Param        page_size  query     int     false  "Page size"  default(20)
 // @Success      200        {object}  map[string]interface{}  "Search results"
-// @Failure      403        {object}  errors.AppError         "Insufficient permissions"
+// @Failure      403        {object}  errors.ErrorResponse         "Insufficient permissions"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/search [get]
@@ -1300,7 +1300,7 @@ func (h *TenantHandler) SearchTenants(c *gin.Context) {
 // @Produce      json
 // @Param        key  path      string  true  "Config key"
 // @Success      200  {object}  map[string]interface{}  "Config value"
-// @Failure      400  {object}  errors.AppError         "Unsupported key"
+// @Failure      400  {object}  errors.ErrorResponse         "Unsupported key"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/kv/{key} [get]
@@ -1355,7 +1355,7 @@ func (h *TenantHandler) GetTenantKV(c *gin.Context) {
 // @Param        key      path      string  true  "Config key"
 // @Param        request  body      object  true  "Config value"
 // @Success      200      {object}  map[string]interface{}  "Updated"
-// @Failure      400      {object}  errors.AppError         "Unsupported key"
+// @Failure      400      {object}  errors.ErrorResponse         "Unsupported key"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/kv/{key} [put]
@@ -1450,7 +1450,7 @@ func (h *TenantHandler) updateTenantWebSearchConfigInternal(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Web search config"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/kv/web-search-config [get]
@@ -1602,7 +1602,7 @@ func (h *TenantHandler) updateTenantStorageEngineConfigInternal(c *gin.Context) 
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Prompt template config"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /tenants/kv/prompt-templates [get]

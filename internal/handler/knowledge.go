@@ -305,7 +305,7 @@ func (h *KnowledgeHandler) enqueueKnowledgeListReparse(
 // @Param        tag_ids       formData  string  false  "Comma-separated tag IDs"
 // @Param        process_config    formData  string  false  "Processing config JSON (KnowledgeProcessOverrides)"
 // @Success      200               {object}  map[string]interface{}  "Created knowledge"
-// @Failure      400               {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400               {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Failure      409               {object}  map[string]interface{}  "Duplicate file"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -470,7 +470,7 @@ func (h *KnowledgeHandler) CreateKnowledgeFromFile(c *gin.Context) {
 // @Param        id       path      string  true  "Knowledge base ID"
 // @Param request body object{url=string,file_name=string,file_type=string,enable_multimodel=bool,title=string,tag_ids=[]string} true "URL request"
 // @Success      201      {object}  map[string]interface{}  "Created knowledge"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Failure      409      {object}  map[string]interface{}  "Duplicate URL"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -570,7 +570,7 @@ func (h *KnowledgeHandler) CreateKnowledgeFromURL(c *gin.Context) {
 // @Param        id       path      string                       true  "Knowledge base ID"
 // @Param        request  body      types.ManualKnowledgePayload true  "Manual knowledge content"
 // @Success      200      {object}  map[string]interface{}       "Created knowledge"
-// @Failure      400      {object}  errors.AppError              "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse              "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge/manual [post]
@@ -628,8 +628,8 @@ func (h *KnowledgeHandler) CreateManualKnowledge(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge ID"
 // @Success      200  {object}  map[string]interface{}  "Knowledge details"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      404  {object}  errors.AppError         "Knowledge not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "Knowledge not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id} [get]
@@ -1023,7 +1023,7 @@ func buildSpanTree(knowledgeID string, attempt int, rows []types.KnowledgeProces
 // @Param        sort_by      query     string  false  "Sort field: updated_at/created_at/file_name, default created_at"
 // @Param        sort_order   query     string  false  "Sort direction: asc/desc, default desc"
 // @Success      200        {object}  map[string]interface{}  "Knowledge list"
-// @Failure      400        {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400        {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge [get]
@@ -1163,7 +1163,7 @@ func (h *KnowledgeHandler) ListKnowledge(c *gin.Context) {
 // @Param attr_filters query string false "Attribute filter JSON: values ORed, attributes ANDed"
 // @Param attr_rules query string false "Per-value attribute rules JSON (off hides, on forces display; on wins)"
 // @Success      200  {object}  map[string]interface{}  "Paginated image assets"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/images [get]
@@ -1341,7 +1341,7 @@ type imageListRequestBody struct {
 // @Param        id    path      string              true  "Knowledge base ID"
 // @Param body body imageListRequestBody false "Filters (same meaning as the GET /images parameters of the same name)"
 // @Success      200  {object}  map[string]interface{}  "Paginated image assets"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/images [post]
@@ -1503,7 +1503,7 @@ func (h *KnowledgeHandler) GetGalleryConfig(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]interface{}  "Folder tree"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge/folders [get]
@@ -1554,8 +1554,8 @@ type MoveKnowledgeToFolderRequest struct {
 // @Produce      json
 // @Param        request  body      MoveKnowledgeToFolderRequest  true  "Move request"
 // @Success      200      {object}  map[string]interface{}        "Moved"
-// @Failure      400      {object}  errors.AppError               "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError               "Permission denied"
+// @Failure      400      {object}  errors.ErrorResponse               "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse               "Permission denied"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/folder [post]
@@ -1630,8 +1630,8 @@ type RenameKnowledgeFolderRequest struct {
 // @Param        id       path      string                        true  "Knowledge base ID"
 // @Param        request  body      RenameKnowledgeFolderRequest  true  "Rename request"
 // @Success      200      {object}  map[string]interface{}        "Renamed"
-// @Failure      400      {object}  errors.AppError               "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError               "Permission denied"
+// @Failure      400      {object}  errors.ErrorResponse               "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse               "Permission denied"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge/folders [put]
@@ -1754,7 +1754,7 @@ func (h *KnowledgeHandler) requireKnowledgeInKB(
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge ID"
 // @Success      200  {object}  map[string]interface{}  "Task submitted, returns task_id"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id} [delete]
@@ -1823,8 +1823,8 @@ type BatchDeleteKnowledgeRequest struct {
 // @Produce      json
 // @Param        request  body      BatchDeleteKnowledgeRequest  true  "Batch delete request"
 // @Success      200      {object}  map[string]interface{}       "Deleted"
-// @Failure      400      {object}  errors.AppError              "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError              "Permission denied"
+// @Failure      400      {object}  errors.ErrorResponse              "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse              "Permission denied"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/batch-delete [post]
@@ -1918,8 +1918,8 @@ func (h *KnowledgeHandler) BatchDeleteKnowledge(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge base ID"
 // @Success      200  {object}  map[string]interface{}  "Clear task submitted"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      403  {object}  errors.AppError         "Permission denied"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403  {object}  errors.ErrorResponse         "Permission denied"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge [delete]
@@ -1993,7 +1993,7 @@ func (h *KnowledgeHandler) ClearKnowledgeBaseContents(c *gin.Context) {
 // @Produce      application/octet-stream
 // @Param        id   path      string  true  "Knowledge ID"
 // @Success      200  {file}    file    "File content"
-// @Failure      400  {object}  errors.AppError  "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse  "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id}/download [get]
@@ -2044,7 +2044,7 @@ func (h *KnowledgeHandler) DownloadKnowledgeFile(c *gin.Context) {
 // @Produce      application/pdf,image/jpeg,image/png,text/plain
 // @Param        id   path      string  true  "Knowledge ID"
 // @Success      200  {file}    file    "File content"
-// @Failure      400  {object}  errors.AppError  "Invalid request parameters"
+// @Failure      400  {object}  errors.ErrorResponse  "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id}/preview [get]
@@ -2097,7 +2097,7 @@ type GetKnowledgeBatchRequest struct {
 // @Param kb_id query string false "Optional knowledge base ID (scopes the lookup for a shared knowledge base)"
 // @Param agent_id query string false "Optional shared agent ID (fetches file details in the agent's workspace)"
 // @Success      200       {object}  map[string]interface{}  "Knowledge list"
-// @Failure      400       {object}  errors.AppError        "Invalid request parameters"
+// @Failure      400       {object}  errors.ErrorResponse        "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/batch [get]
@@ -2317,7 +2317,7 @@ type UpdateKnowledgeRequest struct {
 // @Param        id       path      string                   true  "Knowledge ID"
 // @Param        request  body      UpdateKnowledgeRequest   true  "Fields to update (all optional)"
 // @Success      200      {object}  map[string]interface{}  "Updated"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id} [put]
@@ -2429,7 +2429,7 @@ func (h *KnowledgeHandler) RegenerateKnowledgeSummary(c *gin.Context) {
 // @Param        id       path      string                       true  "Knowledge ID"
 // @Param        request  body      types.ManualKnowledgePayload true  "Manual knowledge content"
 // @Success      200      {object}  map[string]interface{}       "Updated knowledge"
-// @Failure      400      {object}  errors.AppError              "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse              "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/manual/{id} [put]
@@ -2486,8 +2486,8 @@ func (h *KnowledgeHandler) UpdateManualKnowledge(c *gin.Context) {
 // @Param        id   path      string  true  "Knowledge ID"
 // @Param body body object false "Optional processing config override: {\"process_config\": KnowledgeProcessOverrides}"
 // @Success      200  {object}  map[string]interface{}  "Reparse task submitted"
-// @Failure      400  {object}  errors.AppError         "Invalid request parameters"
-// @Failure      403  {object}  errors.AppError         "Permission denied"
+// @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403  {object}  errors.ErrorResponse         "Permission denied"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id}/reparse [post]
@@ -2556,9 +2556,9 @@ func (h *KnowledgeHandler) ReparseKnowledge(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Knowledge ID"
 // @Success      200  {object}  map[string]interface{}  "Cancellation submitted"
-// @Failure      400  {object}  errors.AppError         "Status does not allow cancellation"
-// @Failure      403  {object}  errors.AppError         "Permission denied"
-// @Failure      404  {object}  errors.AppError         "Knowledge not found"
+// @Failure      400  {object}  errors.ErrorResponse         "Status does not allow cancellation"
+// @Failure      403  {object}  errors.ErrorResponse         "Permission denied"
+// @Failure      404  {object}  errors.ErrorResponse         "Knowledge not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/{id}/cancel-parse [post]
@@ -2615,7 +2615,7 @@ type knowledgeTagBatchRequest struct {
 // @Produce      json
 // @Param        request  body      object  true  "Tag update request (updates required, kb_id optional)"
 // @Success      200      {object}  map[string]interface{}  "Updated"
-// @Failure      400      {object}  errors.AppError         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/tags [put]
@@ -2692,7 +2692,7 @@ func (h *KnowledgeHandler) UpdateKnowledgeTagBatch(c *gin.Context) {
 // @Param        chunk_id  path      string  true  "Chunk ID"
 // @Param        request   body      object{image_info=string}  true  "Image info"
 // @Success      200       {object}  map[string]interface{}     "Updated"
-// @Failure      400       {object}  errors.AppError            "Invalid request parameters"
+// @Failure      400       {object}  errors.ErrorResponse            "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/image/{id}/{chunk_id} [put]
@@ -2762,7 +2762,7 @@ func (h *KnowledgeHandler) UpdateImageInfo(c *gin.Context) {
 // @Param        agent_id   query     string  false "Shared agent ID (search within agent's KB scope)"
 // @Param        recent     query     bool    false "Return recent files when keyword is empty"
 // @Success      200         {object}  map[string]interface{}     "Search results"
-// @Failure      400         {object}  errors.AppError            "Invalid request"
+// @Failure      400         {object}  errors.ErrorResponse            "Invalid request"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/search [get]
@@ -2934,7 +2934,7 @@ type MoveKnowledgeResponse struct {
 // @Produce      json
 // @Param        request  body      handler.MoveKnowledgeRequest  true  "{source_kb_id, target_kb_id, knowledge_ids}"
 // @Success      200      {object}  handler.MoveKnowledgeResponse  "Task info"
-// @Failure      400      {object}  errors.AppError                "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse                "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/move [post]
@@ -3132,7 +3132,7 @@ func (h *KnowledgeHandler) MoveKnowledge(c *gin.Context) {
 // @Produce      json
 // @Param        task_id  path      string                       true  "Move task ID"
 // @Success      200      {object}  types.KnowledgeMoveProgress  "Progress"
-// @Failure      404      {object}  errors.AppError              "Task not found"
+// @Failure      404      {object}  errors.ErrorResponse              "Task not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/move/progress/{task_id} [get]
@@ -3214,8 +3214,8 @@ type batchReparseKnowledgeRequest struct {
 // @Produce      json
 // @Param        request  body      batchReparseKnowledgeRequest  true  "Batch reparse request"
 // @Success      200      {object}  map[string]interface{}        "Task submitted"
-// @Failure      400      {object}  errors.AppError               "Invalid request parameters"
-// @Failure      403      {object}  errors.AppError               "Permission denied"
+// @Failure      400      {object}  errors.ErrorResponse               "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse               "Permission denied"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge/batch-reparse [post]
