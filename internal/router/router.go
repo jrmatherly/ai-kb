@@ -130,7 +130,9 @@ func NewRouter(params RouterParams) *gin.Engine {
 			// the /mcp/:endpoint_id surface.
 			"MCP-Protocol-Version", "Mcp-Method", "Mcp-Name", "Mcp-Session-Id", "Last-Event-ID",
 		},
-		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Mcp-Session-Id"},
+		ExposeHeaders: []string{
+			"Content-Length", "Content-Disposition", "Access-Control-Allow-Origin", "Mcp-Session-Id",
+		},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))

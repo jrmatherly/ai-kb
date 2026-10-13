@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { type TestContext } from 'node:test'
 import { clearProtectedFileFailureCache, hydrateProtectedFileImages, protectProviderImageSrcInHTML } from './security.ts'
-import { responseFileName } from './protectedResource.ts'
+import { namedDownload, responseFileName } from './protectedResource.ts'
 import { applyFinalArtifactContent } from './finalArtifactContent.ts'
 
 test('completion updates both streaming timeline and persisted-style content', () => {
@@ -26,6 +26,14 @@ test('download filenames preserve Unicode and remove path components', () => {
   assert.equal(responseFileName("inline; filename*=utf-8''%E6%AF%94%E8%B5%9B.pptx", ''), '\u6bd4\u8d5b.pptx')
   assert.equal(responseFileName('attachment; filename="../../deck.pptx"', ''), 'deck.pptx')
   assert.equal(responseFileName(null, 'local://1/exports/deck.pptx'), 'deck.pptx')
+})
+
+test('downloads carry the server filename', () => {
+  const blob = new Blob(['PK'], { type: 'application/zip' })
+  const named = namedDownload(blob, 'attachment; filename=browser-skill-ai-kb-0.3.1.zip') as File
+  assert.equal(named.name, 'browser-skill-ai-kb-0.3.1.zip')
+  assert.equal(named.type, 'application/zip')
+  assert.equal(namedDownload(blob, undefined), blob)
 })
 
 // Minimal DOM adapter exercises the actual hydration/fetch pipeline without

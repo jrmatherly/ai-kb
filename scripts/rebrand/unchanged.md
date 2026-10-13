@@ -8,7 +8,9 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
   and `/api` paths). Only `/docs` and website links on that host moved to `ai-kb-docs.matherly.net`.
 - **ClawHub skill `@lyingbug/weknora`** (third party): its package name and the `WEKNORA_BASE_URL` / `WEKNORA_API_KEY`
   variables it reads, shielded per path by `keep.tsv`.
-- **BrowserSkill**: `Tencent/BrowserSkill`, the `bsk` daemon, release artifacts `browser-skill-weknora-*.zip`.
+- **BrowserSkill**: `Tencent/BrowserSkill`, the `bsk` daemon, its upstream build output
+  `browser-skillextension-*-chrome.zip`. `scripts/build_browserskill.sh` renames that to `browser-skill-ai-kb-*.zip`,
+  the name the server serves.
 - `WeKnora-Chrome-Extension`: a separately checked-out folder, named only in `.gitignore`, `.dockerignore`
   and `.air.toml`.
 - `LICENSE`: Tencent's WeKnora notice is upstream's text, verbatim, below this project's own notice; `keep.tsv`

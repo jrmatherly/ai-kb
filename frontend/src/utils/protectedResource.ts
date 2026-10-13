@@ -16,6 +16,11 @@ export function responseFileName(disposition: string | null, source: string): st
     .replace(/[\x00-\x1f\x7f]/g, '').trim() || 'download';
 }
 
+export function namedDownload(data: unknown, disposition: unknown): unknown {
+  if (!(data instanceof Blob) || typeof disposition !== 'string') return data;
+  return new File([data], responseFileName(disposition, ''), { type: data.type });
+}
+
 // The browser cannot render an Office document as an <img>. Keep a real
 // download link as fallback; the app's preview host intercepts normal clicks.
 export function applyProtectedFile(img: HTMLImageElement, file: LoadedProtectedFile, source: string): void {

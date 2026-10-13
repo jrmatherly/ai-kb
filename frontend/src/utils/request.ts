@@ -5,6 +5,7 @@ import i18n from '@/i18n'
 import { getApiBaseUrl } from './api-base';
 import { isSkillBundleUploadUrl } from './uploadLimit';
 import { isTimeoutError, uploadTimeoutMs } from './requestTimeouts';
+import { namedDownload } from './protectedResource';
 import {
   forceReloginRedirect,
   isEmbedPage,
@@ -227,9 +228,11 @@ export function get<T = any>(url: string, config?: any): Promise<WithStatus<T>> 
   return instance.get<T>(url, config) as unknown as Promise<WithStatus<T>>;
 }
 
+// Resolves to a File named by the response's Content-Disposition when the server sends one.
 export async function getDown(url: string): Promise<Blob> {
   const res = await instance.get<Blob>(url, {
     responseType: "blob",
+    transformResponse: (data, headers) => namedDownload(data, headers?.['content-disposition']),
   }) as unknown as Blob;
   return res
 }

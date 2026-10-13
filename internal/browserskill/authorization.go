@@ -8,8 +8,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -243,7 +245,8 @@ func (m *Manager) DownloadExtension(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", `attachment; filename="browser-skill-weknora.zip"`)
+	w.Header().Set("Content-Disposition",
+		mime.FormatMediaType("attachment", map[string]string{"filename": filepath.Base(p)}))
 	w.Header().Set("Cache-Control", "no-store")
 	http.ServeFile(w, r, p)
 }
