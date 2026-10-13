@@ -6,8 +6,11 @@ The DeepSeek Harness (dsh) plugin connects to an existing AI KB deployment over 
 
 This section installs the plugin into a dsh profile and points it at your deployment.
 
+The `@jrmatherly/dsh-ai-kb` package is not published on npm yet, so install it from a checkout of the repository. Build it first. The package entry point is `dist/index.js`, which `npm ci` compiles through the `prepare` script. Then run `dsh plugin add` from the repository root.
+
 ```sh
-dsh plugin --profile web add @jrmatherly/dsh-ai-kb
+(cd packages/dsh-ai-kb && npm ci)
+dsh plugin --profile web add ./packages/dsh-ai-kb
 
 export AIKB_BASE_URL=https://kb.example.com
 export AIKB_API_KEY='<api-key>'
@@ -16,7 +19,7 @@ export AIKB_RESOURCE_URLS=public
 dsh web
 ```
 
-You can also run `dsh plugin --profile web add ./packages/dsh-ai-kb` from the repository root. The plugin itself requires Node 20.11 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.1.0-rc.8 and AI KB 0.8.0. For other versions, confirm compatibility against the dsh plugin interface.
+Once the package is published, `dsh plugin --profile web add @jrmatherly/dsh-ai-kb` will install the prebuilt code instead. The plugin itself requires Node 20.11 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.1.0-rc.8 and AI KB 0.8.0. For other versions, confirm compatibility against the dsh plugin interface.
 
 The service address may include `/api/v1`. When it does not, the plugin appends it. The API key is sent in `X-API-Key` and needs the `retrieve` capability. Calling `ask` also needs `chat`. With a platform key, set `tenantId`, which requests send as `X-Tenant-ID`.
 
