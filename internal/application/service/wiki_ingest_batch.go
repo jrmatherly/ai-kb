@@ -362,7 +362,8 @@ func (s *wikiIngestService) ProcessWikiIngest(ctx context.Context, t *asynq.Task
 		mode = "lite"
 		if _, loaded := s.liteLocks.LoadOrStore(payload.KnowledgeBaseID, struct{}{}); loaded {
 			exitStatus = "active_lock_conflict"
-			logger.Infof(ctx, "wiki ingest: another batch active for KB %s (lite lock), deferring to asynq retry", payload.KnowledgeBaseID)
+			logger.Infof(ctx, "wiki ingest: another batch active for KB %s (lite lock), "+
+				"deferring to the Lite executor's retry", payload.KnowledgeBaseID)
 			return ErrWikiIngestConcurrent
 		}
 		defer s.liteLocks.Delete(payload.KnowledgeBaseID)
