@@ -10,14 +10,38 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jrmatherly/ai-kb/internal/handler"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
-	"golang.org/x/mod/semver"
 )
+
+// calVerNewer reports whether CalVer tag a (vYYYY.M.D[.MICRO], a missing MICRO
+// is 0) is newer than b. A tag that is not CalVer is never newer.
+func calVerNewer(a, b string) bool {
+	va, okA := parseCalVer(a)
+	vb, okB := parseCalVer(b)
+	return okA && okB && slices.Compare(va[:], vb[:]) > 0
+}
+
+func parseCalVer(s string) (v [4]int, ok bool) {
+	parts := strings.Split(strings.TrimPrefix(s, "v"), ".")
+	if len(parts) != 3 && len(parts) != 4 {
+		return v, false
+	}
+	for i, p := range parts {
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 0 {
+			return v, false
+		}
+		v[i] = n
+	}
+	return v, true
+}
 
 type githubAsset struct {
 	Name               string `json:"name"`
@@ -109,34 +133,34 @@ func checkUpdate(ctx context.Context, currentVersion string, showUpToDate bool, 
 			latestVersion = "v" + latestVersion
 		}
 
-		if semver.IsValid(latestVersion) && semver.IsValid(currentVersion) {
-			if semver.Compare(latestVersion, currentVersion) > 0 {
-				assetURL, assetName := findBestAsset(release.Assets, runtime.GOOS, runtime.GOARCH)
+		if calVerNewer(latestVersion, currentVersion) {
+			assetURL, assetName := findBestAsset(release.Assets, runtime.GOOS, runtime.GOARCH)
 
-				if autoDownload && assetURL != "" {
-					// Silent download in background
-					downloadAndInstall(ctx, assetURL, assetName, currentVersion, latestVersion, true)
-					return
-				}
-
-				msg := fmt.Sprintf("A new version of AI KB Lite is available!\n\nCurrent version: %s\nLatest version: %s\n\nWould you like to download it now?", currentVersion, latestVersion)
-				choice, _ := wailsruntime.MessageDialog(ctx, wailsruntime.MessageDialogOptions{
-					Type:          wailsruntime.InfoDialog,
-					Title:         "Update Available",
-					Message:       msg,
-					Buttons:       []string{"Download", "Cancel"},
-					DefaultButton: "Download",
-				})
-				if choice == "Download" {
-					if assetURL != "" {
-						downloadAndInstall(ctx, assetURL, assetName, currentVersion, latestVersion, false)
-					} else {
-						// Fallback to opening the release page if no specific asset is found
-						wailsruntime.BrowserOpenURL(ctx, release.HTMLURL)
-					}
-				}
+			if autoDownload && assetURL != "" {
+				// Silent download in background
+				downloadAndInstall(ctx, assetURL, assetName, currentVersion, latestVersion, true)
 				return
 			}
+
+			msg := fmt.Sprintf("A new version of AI KB Lite is available!\n\n"+
+				"Current version: %s\nLatest version: %s\n\nWould you like to download it now?",
+				currentVersion, latestVersion)
+			choice, _ := wailsruntime.MessageDialog(ctx, wailsruntime.MessageDialogOptions{
+				Type:          wailsruntime.InfoDialog,
+				Title:         "Update Available",
+				Message:       msg,
+				Buttons:       []string{"Download", "Cancel"},
+				DefaultButton: "Download",
+			})
+			if choice == "Download" {
+				if assetURL != "" {
+					downloadAndInstall(ctx, assetURL, assetName, currentVersion, latestVersion, false)
+				} else {
+					// Fallback to opening the release page if no specific asset is found
+					wailsruntime.BrowserOpenURL(ctx, release.HTMLURL)
+				}
+			}
+			return
 		}
 
 		if showUpToDate {

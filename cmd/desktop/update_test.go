@@ -2,6 +2,31 @@ package main
 
 import "testing"
 
+func TestCalVerNewer(t *testing.T) {
+	for _, tc := range []struct {
+		a, b string
+		want bool
+	}{
+		{"v2026.10.13.1", "v2026.10.13", true},
+		{"v2026.10.13", "v2026.10.12.5", true},
+		{"v2026.10.13.1", "v2026.10.12.5", true},
+		{"v2026.10.13", "v2026.10.13.1", false},
+		{"v2026.10.12.5", "v2026.10.13", false},
+		{"v2026.10.13", "v2026.10.13.0", false},
+		{"v2026.10.1", "v2026.9.30", true},
+		{"v2027.1.1", "v2026.12.31", true},
+		{"vlatest", "v2026.10.13", false},
+		{"v2026.11", "v2026.10.13", false},
+		{"v2026.11.1-rc1", "v2026.10.13", false},
+		{"v2026.11.1.1.1", "v2026.10.13", false},
+		{"v2026.11.1", "vdev", false},
+	} {
+		if got := calVerNewer(tc.a, tc.b); got != tc.want {
+			t.Errorf("calVerNewer(%q, %q) = %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}
+
 func TestFindBestAssetPicksDesktopAsset(t *testing.T) {
 	v := "v2026.10.13"
 	var assets []githubAsset
