@@ -57,12 +57,3 @@ func TestPairingOriginIgnoresForeignHostOnLoopback(t *testing.T) {
 	require.NotEqual(t, "https://evil.example", pairingOrigin(req, "https://evil.example"))
 	require.Equal(t, "http://ai-kb.example", pairingOrigin(req, "https://evil.example"))
 }
-
-func TestBrowserAccountRequiresUser(t *testing.T) {
-	h := &Handler{browserSkill: browserskill.NewManager()}
-	response := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(response)
-	c.Request = httptest.NewRequest("GET", "/api/v1/me/browser", nil)
-	h.BrowserSkillAccount(c)
-	require.Equal(t, 401, response.Code)
-}

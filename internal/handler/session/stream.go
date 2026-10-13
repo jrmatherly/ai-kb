@@ -4,7 +4,6 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -105,10 +104,7 @@ func (h *Handler) ContinueStream(c *gin.Context) {
 
 	if message == nil {
 		logger.Warnf(ctx, "Incomplete message not found, session ID: %s, message ID: %s", sessionID, messageID)
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "Incomplete message not found",
-		})
+		_ = c.Error(errors.NewNotFoundError("Incomplete message not found"))
 		return
 	}
 
@@ -122,10 +118,7 @@ func (h *Handler) ContinueStream(c *gin.Context) {
 
 	if len(events) == 0 {
 		logger.Warnf(ctx, "No events found in stream, session ID: %s, message ID: %s", sessionID, messageID)
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   "No stream events found",
-		})
+		_ = c.Error(errors.NewNotFoundError("No stream events found"))
 		return
 	}
 
@@ -222,7 +215,7 @@ func (h *Handler) StopSession(c *gin.Context) {
 	sessionID := secutils.SanitizeForLog(c.Param("session_id"))
 
 	if sessionID == "" {
-		c.JSON(400, gin.H{"error": "Session ID is required"})
+		_ = c.Error(errors.NewBadRequestError("Session ID is required"))
 		return
 	}
 
@@ -232,7 +225,7 @@ func (h *Handler) StopSession(c *gin.Context) {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
 			"session_id": sessionID,
 		})
-		c.JSON(400, gin.H{"error": "message_id is required"})
+		_ = c.Error(errors.NewBadRequestError("message_id is required"))
 		return
 	}
 
@@ -243,7 +236,7 @@ func (h *Handler) StopSession(c *gin.Context) {
 	tenantID, exists := c.Get(types.TenantIDContextKey.String())
 	if !exists {
 		logger.Error(ctx, "Failed to get tenant ID")
-		c.JSON(401, gin.H{"error": "Unauthorized"})
+		_ = c.Error(errors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 	tenantIDUint := tenantID.(uint64)
@@ -255,14 +248,14 @@ func (h *Handler) StopSession(c *gin.Context) {
 			"session_id": sessionID,
 			"message_id": assistantMessageID,
 		})
-		c.JSON(404, gin.H{"error": "Message not found"})
+		_ = c.Error(errors.NewNotFoundError("Message not found"))
 		return
 	}
 
 	// Verify message belongs to this session (double check)
 	if message.SessionID != sessionID {
 		logger.Warnf(ctx, "Message %s does not belong to session %s", assistantMessageID, sessionID)
-		c.JSON(403, gin.H{"error": "Message does not belong to this session"})
+		_ = c.Error(errors.NewForbiddenError("Message does not belong to this session"))
 		return
 	}
 
@@ -274,13 +267,13 @@ func (h *Handler) StopSession(c *gin.Context) {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
 			"session_id": sessionID,
 		})
-		c.JSON(404, gin.H{"error": "Session not found"})
+		_ = c.Error(errors.NewNotFoundError("Session not found"))
 		return
 	}
 
 	if session.TenantID != tenantIDUint {
 		logger.Warnf(ctx, "Session %s does not belong to tenant %d", sessionID, tenantIDUint)
-		c.JSON(403, gin.H{"error": "Access denied"})
+		_ = c.Error(errors.NewForbiddenError("Access denied"))
 		return
 	}
 
@@ -313,7 +306,7 @@ func (h *Handler) StopSession(c *gin.Context) {
 			"session_id": sessionID,
 			"message_id": assistantMessageID,
 		})
-		c.JSON(500, gin.H{"error": "Failed to write stop event"})
+		_ = c.Error(errors.NewInternalServerError("Failed to write stop event"))
 		return
 	}
 

@@ -117,8 +117,8 @@ async function mintDesktopTicket(sessionId: string): Promise<string> {
 }
 
 /**
- * post() rejection value: a non-enumerable `$httpStatus` + gin `{ error: "<code>" }`.
- * 409 means both DESKTOP_BUSY and SANDBOX_NOT_BOUND, so error must be read to tell them apart.
+ * post() rejection value: a non-enumerable `$httpStatus` + the envelope's `error.message`, lifted to `message`.
+ * 409 means both DESKTOP_BUSY and SANDBOX_NOT_BOUND, so the message must be read to tell them apart.
  */
 function statusFromHttpStatus(
   status: number,
@@ -138,8 +138,8 @@ function statusFromHttpStatus(
 
 function errorCodeFromRejected(err: unknown): string | undefined {
   if (typeof err !== 'object' || err === null) return undefined
-  const error = (err as { error?: unknown }).error
-  return typeof error === 'string' ? error : undefined
+  const message = (err as { message?: unknown }).message
+  return typeof message === 'string' ? message : undefined
 }
 
 function httpStatusFromRejected(err: unknown): number | undefined {

@@ -422,6 +422,8 @@ func TestEmbedStopSessionMissingMessageID(t *testing.T) {
 	}
 	c, w := newEmbedStopSessionCtx(ch, testEmbedSessionID, sig, `{}`)
 	h.EmbedStopSession(c)
+	// StopSession reports through c.Error; the middleware renders it.
+	middleware.ErrorHandler()(c)
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
 	}
