@@ -8415,18 +8415,15 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "413":
           description: Text exceeds the preview limit
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "504":
           description: Chunking timed out
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -8679,9 +8676,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: List data sources for a knowledge base
       tags:
       - DataSource
@@ -8706,9 +8701,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Create a new data source
       tags:
       - DataSource
@@ -8727,9 +8720,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Delete a data source
       tags:
       - DataSource
@@ -8751,9 +8742,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Get a data source by ID
       tags:
       - DataSource
@@ -8783,9 +8772,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Update a data source
       tags:
       - DataSource
@@ -8818,9 +8805,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Get sync logs
       tags:
       - DataSource
@@ -8843,9 +8828,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Pause data source
       tags:
       - DataSource
@@ -8882,9 +8865,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Resolve resource ancestors
       tags:
       - DataSource
@@ -8915,9 +8896,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: List available resources in data source
       tags:
       - DataSource
@@ -8940,9 +8919,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Resume data source
       tags:
       - DataSource
@@ -8963,9 +8940,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Trigger immediate sync
       tags:
       - DataSource
@@ -8988,9 +8963,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test data source connection
       tags:
       - DataSource
@@ -9013,9 +8986,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Get specific sync log
       tags:
       - DataSource
@@ -9058,9 +9029,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test connection with raw credentials (no persistence)
       tags:
       - DataSource
@@ -9171,13 +9140,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Channel not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9213,13 +9180,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Channel not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9246,13 +9211,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Channel not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -10974,8 +10937,7 @@ paths:
         "409":
           description: Duplicate file
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -11137,8 +11099,7 @@ paths:
         "409":
           description: Duplicate URL
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13239,8 +13200,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13266,8 +13226,7 @@ paths:
         "404":
           description: Endpoint not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13292,8 +13251,7 @@ paths:
         "404":
           description: Endpoint not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13326,13 +13284,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Endpoint not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13360,8 +13316,7 @@ paths:
         "404":
           description: Endpoint not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13969,8 +13924,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: List my environment variables
@@ -14986,8 +14940,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15676,8 +15629,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15711,8 +15663,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15744,13 +15695,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Live sandboxes or unverifiable inventory
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15776,8 +15725,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Sandbox config not found
           schema:
@@ -15820,8 +15768,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Sandbox config not found
           schema:
@@ -15829,13 +15776,11 @@ paths:
         "409":
           description: Live sandboxes or unverifiable inventory
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "423":
           description: Sandbox config is being modified by another request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15863,8 +15808,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -15891,8 +15835,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Sandbox config not found
           schema:
@@ -15949,8 +15892,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Sandbox config not found
           schema:
@@ -15989,8 +15931,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill not found
           schema:
@@ -16025,8 +15966,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill not found
           schema:
@@ -16075,8 +16015,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill not found
           schema:
@@ -16112,8 +16051,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill or files not found
           schema:
@@ -16158,8 +16096,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill or file not found
           schema:
@@ -16198,8 +16135,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill not found
           schema:
@@ -16239,8 +16175,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill not found
           schema:
@@ -16283,8 +16218,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill not found
           schema:
@@ -16330,8 +16264,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Skill or transcript not found
           schema:
@@ -17374,8 +17307,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17410,8 +17342,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: A storage backend with this name already exists
           schema:
@@ -17448,8 +17379,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Storage backend not found
           schema:
@@ -17480,8 +17410,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Storage backend not found
           schema:
@@ -17526,8 +17455,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Storage backend not found
           schema:
@@ -17564,8 +17492,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Storage backend not found
           schema:
@@ -17598,8 +17525,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Storage backend not found
           schema:
@@ -17639,8 +17565,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -17801,8 +17726,7 @@ paths:
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: List all system administrators
       tags:
       - System Admin
@@ -17831,18 +17755,15 @@ paths:
         "400":
           description: Bad request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Promote a user to system administrator
       tags:
       - System Admin
@@ -17873,18 +17794,15 @@ paths:
         "400":
           description: Bad request / would remove last admin / self-revoke
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Revoke system administrator privileges from a user
       tags:
       - System Admin
@@ -18017,13 +17935,11 @@ paths:
         "400":
           description: Unknown key
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: DB write failed
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Reset a system setting to ENV / built-in default
       tags:
       - System Admin
@@ -18047,13 +17963,11 @@ paths:
         "400":
           description: Unknown key
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Key registered but DB row absent
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Get a single system setting by key
       tags:
       - System Admin
@@ -18087,13 +18001,11 @@ paths:
         "400":
           description: Bad request / unknown key / type mismatch
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Update a system setting value
       tags:
       - System Admin
@@ -18117,8 +18029,7 @@ paths:
         "500":
           description: DB write failed
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Apply the default storage quota to every existing workspace
       tags:
       - System Admin
@@ -18149,8 +18060,7 @@ paths:
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: List all platform users
       tags:
       - System Admin
@@ -18186,23 +18096,19 @@ paths:
         "400":
           description: Invalid request or weak password
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Email and username refer to conflicting identities
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Create a new user (SystemAdmin)
       tags:
       - System Admin
@@ -18231,18 +18137,15 @@ paths:
         "400":
           description: Invalid request, weak password, or self reset
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
           description: 'Forbidden: not a system admin'
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Reset another user's password
       tags:
       - System Admin
@@ -18271,13 +18174,11 @@ paths:
         "400":
           description: Self-disable / last-admin guard
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: User not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Enable or disable a user account
       tags:
       - System Admin
@@ -18313,6 +18214,14 @@ paths:
       responses:
         "200":
           description: OK
+        "400":
+          description: Missing or disallowed address
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Document converter not initialized
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Reconnect the document parsing service
       tags:
       - System
@@ -18360,6 +18269,10 @@ paths:
       responses:
         "200":
           description: OK
+        "400":
+          description: Malformed request body
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Check parser engine availability with the given settings
       tags:
       - System
@@ -18384,6 +18297,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/internal_handler.SandboxCheckResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test sandbox connectivity
       tags:
       - System
@@ -18407,6 +18324,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/internal_handler.StorageCheckResponse'
+        "400":
+          description: Malformed request body
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "403":
+          description: Storage engine disabled
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test storage engine connectivity
       tags:
       - System
@@ -19264,8 +19189,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19298,8 +19222,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "409":
           description: Duplicate endpoint and index
           schema:
@@ -19330,18 +19253,15 @@ paths:
         "400":
           description: Env store cannot be deleted
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Vector store not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19368,13 +19288,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Vector store not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19409,18 +19327,15 @@ paths:
         "400":
           description: Env store or validation error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Vector store not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19448,13 +19363,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Vector store not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19489,8 +19402,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19532,8 +19444,7 @@ paths:
         "404":
           description: Provider not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19558,8 +19469,7 @@ paths:
         "404":
           description: Provider not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19592,13 +19502,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Provider not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19625,8 +19533,7 @@ paths:
         "404":
           description: Provider not found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19657,8 +19564,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19714,8 +19620,7 @@ paths:
         "500":
           description: QR code generation failed
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19747,13 +19652,11 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -19785,8 +19688,7 @@ paths:
         "400":
           description: Invalid request parameters
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
