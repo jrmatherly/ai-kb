@@ -10,7 +10,7 @@ AI KB is made of three processes that are developed independently, plus a CLI:
 | --- | --- | --- | --- |
 | Main backend `app` | `cmd/server` + `internal/` | Go | **Go 1.26.0** (`go 1.26.0` in `go.mod`). Needs CGO (DuckDB and sqlite-vec bindings) |
 | Document parsing service `docreader` | `docreader/` | Python + gRPC | **Python >= 3.10.18** (`requires-python` in `docreader/pyproject.toml`). Dependencies are managed with **uv** (the repository has `uv.lock`; the Docker image runs `uv sync --locked`) |
-| Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node 22 line (`devDependencies` include `@tsconfig/node22` and `@types/node ^22`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign, package version `0.8.2` |
+| Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (the `frontend/Dockerfile` builder is `node:24-bookworm-slim`; `package.json` declares no `engines`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign, package version `0.8.2` |
 | CLI | `cli/` (separate Go module) | Go | Go 1.26 (`go 1.26.0` in `cli/go.mod`) |
 
 Recommended extra development tools:
@@ -29,7 +29,7 @@ make install-swagger    # go install github.com/swaggo/swag/cmd/swag@latest
 pip install uv          # docreader installs its dependencies with uv sync
 
 # Hot reload for make dev-app (optional; without it dev-app falls back to go run)
-go install github.com/air-verse/air@latest
+go install github.com/air-verse/air@latest   # or: brew install go-air (the Homebrew formula named air is an unrelated R formatter)
 
 # Docker + Docker Compose (the v2 plugin or standalone docker-compose; scripts/dev.sh detects either)
 ```
@@ -41,6 +41,8 @@ Development mode runs the infrastructure in Docker and runs `app` and `frontend`
 ```bash
 # 1. Prepare environment variables: dev.sh loads .env (required), then overrides it with .env.local (optional)
 cp .env.example .env
+# Fill in JWT_SECRET (openssl rand -hex 32) and SYSTEM_AES_KEY (openssl rand -hex 16). With JWT_SECRET empty
+# every backend restart, including each Air rebuild, signs you out; without SYSTEM_AES_KEY model API keys are stored unencrypted.
 
 # 2. Start the infrastructure (ParadeDB/Postgres + Redis + docreader, plus Langfuse by default)
 make dev-start                      # same as ./scripts/dev.sh start

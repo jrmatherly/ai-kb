@@ -2,12 +2,12 @@
 
 Register an account, create a knowledge base, configure its models, upload documents and ask a question. The answer cites the source passages. The steps below use the web UI; the matching API calls are at the end of the page.
 
-Complete the [installation](02-installation.md) first and have a chat model and an embedding model available.
+Complete the [installation](02-installation.md) first and have a chat model, an embedding model and a rerank model available.
 
 ## Before you start
 
 - Start the services. After the steps in [Installation](./02-installation.md), the frontend is at `http://localhost` and the backend at `http://localhost:8080`.
-- Prepare model connection details: a local Ollama (default address from inside the container `http://host.docker.internal:11434`), or the `base_url` and `api_key` of any OpenAI-compatible service. You need at least one chat model and one embedding model.
+- Prepare model connection details: a local Ollama (default address from inside the container `http://host.docker.internal:11434`), or the `base_url` and `api_key` of any OpenAI-compatible service. You need a chat model, an embedding model and a rerank model: the built-in Quick Answer agent will not answer until it has a chat model and a rerank model. A model server on `localhost` or a private address is blocked by the SSRF check until its host is in `SSRF_WHITELIST_EXTRA` (see [Configuration](./04-configuration.md)).
 - Check backend health: `curl http://localhost:8080/health` returns `{"status":"ok"}`.
 
 ## Register and log in
@@ -21,7 +21,7 @@ The first visit opens the login page. When the deployment allows public registra
 
 Registration rules and deployment differences:
 
-- The username is 2 to 50 characters. The password is 8 to 32 characters and contains at least one letter and one digit. With the complex-password policy enabled it must also contain upper-case and lower-case letters and a special character. The UI and the API apply the same policy.
+- The API accepts a username of 2 to 50 characters. The registration form is stricter: at most 20 characters, and only letters, digits, underscores and Chinese characters (no spaces). The password is 8 to 32 characters and contains at least one letter and one digit. With the complex-password policy enabled it must also contain upper-case and lower-case letters and a special character. The UI and the API apply the same policy.
 - A team deployment can turn public registration off and add members through invitation links afterwards. Set `DISABLE_REGISTRATION=true` (forces the registration mode to `invite_only` at startup), or have a system administrator change `auth.registration_mode` to `invite_only` under Settings → System (takes effect immediately, no restart).
 - If the deployment sets the default workspace policy to `tenantless` (`auth.default_tenant_mode`), registration does **not** create a workspace. The user is sent to `/onboarding/workspace` and has to create a workspace or accept an invitation before continuing.
 - The desktop application needs no registration; it creates a local account and logs in at launch. The Lite single binary still requires registration and login when opened in a browser.
@@ -32,21 +32,21 @@ A workspace Owner manages the members, models and knowledge bases of that worksp
 To set up the first system administrator, register an account, then set `AIKB_BOOTSTRAP_SYSTEM_ADMIN_EMAIL=<that account's email>` on the app service and restart. This only takes effect while the deployment has no system administrator yet. Full steps and limits: [Platform administration and system administrators](../03-features/20-platform-admin.md).
 :::
 
-## Create a knowledge base and configure models
+## Add models, then create a knowledge base
 
-After you create a knowledge base on the Knowledge Bases page, the initialization wizard walks you through the models that knowledge base uses. Each knowledge base chooses its own models.
+Models are registered once per workspace under Settings → Model Management; each knowledge base and each agent then picks from that list.
 
-1. On the Knowledge Bases page click New, enter a name and pick a type: `document` (a regular document base) or `faq` (a question-and-answer base).
-2. In the initialization wizard choose the models:
-   - **Chat model (LLM)** generates answers.
-   - **Embedding model** turns documents into vectors. Changing it later requires rebuilding the index.
-   - Rerank, image understanding (VLM), speech-to-text (ASR), knowledge graph extraction and question generation are optional, depending on your material and needs.
-3. Use the Test button in the wizard to confirm each model connects, then save.
+1. Open Settings → Model Management and click Add Model. Pick the model type (Chat, Embedding, ReRank, Vision or Speech), the source (API or Ollama) and the provider, enter the model name and Base URL (plus the API key when the service needs one), click Test Connection, then Save and close. Add at least:
+   - a **Chat** model, which generates answers;
+   - an **Embedding** model, which turns documents into vectors (changing it later requires rebuilding the index);
+   - a **ReRank** model, which the built-in Quick Answer agent requires.
+2. On the Knowledge Base page click Create Knowledge Base, enter a name and pick a type: Document-based or FAQ Q&A. Under Model Configuration choose the LLM model and the Embedding model; RAG Search needs the embedding model. Image processing (VLM), audio (ASR), the knowledge graph and question generation are optional settings in the same dialog.
+3. Open Agents → Quick Answer → Model Config, choose the chat model under Model and the rerank model under ReRank Model, then Save and Close. Until both are set, sending a message shows "Agent "Quick Answer" is not ready".
 
 <Screenshot
   src="/screenshots/quickstart-init-wizard.png"
-  caption="Initialization wizard: choose the chat model and the embedding model for a knowledge base"
-  hint="Show the model source (Ollama / remote API), the model name and Base URL inputs, and the message that the connectivity test passed." />
+  caption="Add Model: a custom OpenAI-compatible chat model after a successful connection test"
+  hint="Show the model type, source and provider, the model name and Base URL inputs, and the message that the connection test passed." />
 
 ::: tip Connecting to Ollama from a container
 Inside the backend container `localhost` is the container itself. To reach an Ollama on the host, use `http://host.docker.internal:11434`.
