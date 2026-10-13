@@ -166,3 +166,22 @@ func TestSubtreeChildID_MatchesPrefix(t *testing.T) {
 	assert.False(t, strings.HasPrefix(sibling, prefix),
 		"sibling node whose id shares a leading substring must not match the prefix")
 }
+
+func TestSubtreeParentID(t *testing.T) {
+	for _, tc := range []struct {
+		id, parent string
+		ok         bool
+	}{
+		{id: SubtreeChildID("node123", "file", "tokABC"), parent: "node123", ok: true},
+		{id: SubtreeChildID("a#b", "image", "tok"), parent: "a#b", ok: true},
+		{id: "seafile:repo:/docs/a.md#old.md"},
+		{id: "node123"},
+		{id: "node123##tok"},
+		{id: "node123#file#"},
+		{id: "#file#tok"},
+	} {
+		parent, ok := SubtreeParentID(tc.id)
+		assert.Equal(t, tc.ok, ok, tc.id)
+		assert.Equal(t, tc.parent, parent, tc.id)
+	}
+}

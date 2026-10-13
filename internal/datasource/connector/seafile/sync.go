@@ -53,6 +53,9 @@ func (c *Connector) runSync(
 	if err != nil {
 		return nil, err
 	}
+	// A file is skipped only when the cursor already holds its fingerprint, so a
+	// full run that starts with none emits every supported file it lists.
+	emitsAll := forceFull && len(cur.Files) == 0
 	r := &syncRun{ctx: ctx, client: newClient(cfg), h: h, cur: cur, repoID: repoID, seen: make(map[string]bool)}
 	if changed {
 		r.unsaved++
@@ -84,7 +87,11 @@ func (c *Connector) runSync(
 		return nil, err
 	}
 	logger.Infof(ctx, "[Seafile] sync finished: %d files in scope, %d tracked", len(r.seen), len(r.cur.Files))
-	return r.cur.toSyncCursor(), nil
+	// Every listing failure returned above, so reaching here means every root
+	// was enumerated.
+	next := r.cur.toSyncCursor()
+	next.CompleteListing = emitsAll
+	return next, nil
 }
 
 // canceledOr reports cancellation as ErrSyncCanceled and passes other errors

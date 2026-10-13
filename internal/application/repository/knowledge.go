@@ -917,6 +917,23 @@ func (r *knowledgeRepository) FindByDataSourceExternalID(
 	return &knowledge, nil
 }
 
+// ListDataSourceExternalIDs returns the distinct external IDs of the live
+// knowledge items one data source owns in a knowledge base. Only the ID column
+// is read, so a full-sync reconcile over a large source stays small in memory.
+func (r *knowledgeRepository) ListDataSourceExternalIDs(
+	ctx context.Context,
+	tenantID uint64,
+	kbID, dataSourceID string,
+) ([]string, error) {
+	var ids []string
+	err := r.db.WithContext(ctx).Model(&types.Knowledge{}).
+		Where("tenant_id = ? AND knowledge_base_id = ? AND deleted_at IS NULL", tenantID, kbID).
+		Where("metadata->>'datasource_id' = ? AND metadata->>'external_id' <> ''", dataSourceID).
+		Distinct().
+		Pluck("metadata->>'external_id'", &ids).Error
+	return ids, err
+}
+
 // HardDeleteKnowledge physically removes a knowledge row. Call it AFTER
 // DeleteKnowledge's soft-delete cascade so sync-internal deletions never
 // become tombstones that block a later re-sync of the same external item.

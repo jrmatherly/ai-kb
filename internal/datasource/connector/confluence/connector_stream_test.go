@@ -591,6 +591,40 @@ func TestFetchFullStreamResumesFromCheckpoint(t *testing.T) {
 	if decoded := decodeCursor(next); decoded.FullSync || decoded.SpacePages["1"]["p2"] != "v:1" {
 		t.Fatalf("completed resume cursor = %#v", decoded)
 	}
+	if next.CompleteListing {
+		t.Fatal("a resumed full sync skipped p1, so it must not report a complete listing")
+	}
+}
+
+func TestFetchStreamReportsCompleteListing(t *testing.T) {
+	old := streamCursor(map[string]string{"p1": "v:1"})
+	pages := []streamPage{{id: "p1", title: "Page", version: 1}}
+	for _, tc := range []struct {
+		name      string
+		full      bool
+		cutShort  bool
+		wantClaim bool
+	}{
+		{name: "fresh full sync", full: true, wantClaim: true},
+		{name: "full sync with server listing cut short", full: true, cutShort: true},
+		{name: "incremental sync", full: false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			api := &streamAPI{pages: pages, endlessNext: tc.cutShort}
+			conn := newStreamConnector(api)
+			fetch := conn.FetchStream
+			if tc.full {
+				fetch = conn.FetchFullStream
+			}
+			next, err := fetch(context.Background(), streamConfig(), old, &captureHandler{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if next.CompleteListing != tc.wantClaim {
+				t.Fatalf("CompleteListing = %v, want %v", next.CompleteListing, tc.wantClaim)
+			}
+		})
+	}
 }
 
 func TestFetchFullStreamRetryRefetchesFailedPage(t *testing.T) {

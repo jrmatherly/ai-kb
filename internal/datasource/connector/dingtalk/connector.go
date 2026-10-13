@@ -627,6 +627,7 @@ func (c *Connector) syncAndEncodeCursor(
 	return items, &types.SyncCursor{
 		LastSyncTime:    next.SyncedAt,
 		ConnectorCursor: encoded,
+		CompleteListing: next.emittedAll,
 	}, syncErr
 }
 
@@ -635,6 +636,9 @@ type cursorState struct {
 	SyncedAt   time.Time                    `json:"synced_at"`
 	Resources  map[string]map[string]string `json:"resources"`
 	Workspaces map[string]map[string]string `json:"workspaces,omitempty"`
+	// emittedAll reports that every selected scope was scanned and every
+	// ingestible document in it was emitted. Not persisted.
+	emittedAll bool
 }
 
 type syncMode struct {
@@ -837,6 +841,10 @@ func (c *Connector) sync(
 	}
 	if !mode.skipUnchanged && !mode.reconcileDeletions {
 		next = nil
+	} else {
+		// A failed document read is still emitted as an error item under its
+		// own ID, so only a failed scope makes the listing incomplete.
+		next.emittedAll = complete && !mode.skipUnchanged
 	}
 	if !complete || failedDocuments > 0 {
 		// Failure items carry localized reason codes. Returning the same raw

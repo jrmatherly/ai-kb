@@ -327,6 +327,9 @@ func (c *Connector) fetchStream(
 		currentRoots[root.ResourceID] = true
 	}
 	baseline, next := prepareSyncCursors(old, forceFull)
+	// A full run skips only pages it already re-fetched before a checkpoint, so
+	// starting with none recorded means every listed page is emitted.
+	emitsAll := forceFull && !hasPages(next.SpacePages)
 	// A prior successful body is reusable when ownership moves to a different
 	// selected root and this run cannot fetch the new body. Keep that version in
 	// the new root rather than dropping it during ownership reconciliation.
@@ -547,7 +550,18 @@ func (c *Connector) fetchStream(
 	next.SpacePages = committedRoots
 	next.FullSync = false
 	next.FullSyncBaseline = nil
-	return next.syncCursor(), nil
+	result := next.syncCursor()
+	result.CompleteListing = emitsAll && len(incompleteRoots) == 0
+	return result, nil
+}
+
+func hasPages(spacePages map[string]map[string]string) bool {
+	for _, pages := range spacePages {
+		if len(pages) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func failedPageItem(resourceID string, summary page, err error) types.FetchedItem {

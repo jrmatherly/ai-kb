@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -152,7 +153,24 @@ func (r *seafileKnowledgeRepo) FindByDataSourceExternalID(
 
 func (r *seafileKnowledgeRepo) HardDeleteKnowledge(_ context.Context, _ uint64, id string) error {
 	r.hardDeleted = append(r.hardDeleted, id)
+	for key, k := range r.live {
+		if k.ID == id {
+			delete(r.live, key)
+		}
+	}
 	return nil
+}
+
+func (r *seafileKnowledgeRepo) ListDataSourceExternalIDs(
+	_ context.Context, _ uint64, _, dsID string,
+) ([]string, error) {
+	var ids []string
+	for key := range r.live {
+		if ext, ok := strings.CutPrefix(key, dsID+"|"); ok {
+			ids = append(ids, ext)
+		}
+	}
+	return ids, nil
 }
 
 type seafileCreatedFile struct {
@@ -165,14 +183,18 @@ type seafileCreatedFile struct {
 // knowledge base.
 type seafileKnowledgeService struct {
 	interfaces.KnowledgeService
-	repo    *seafileKnowledgeRepo
-	created []seafileCreatedFile
-	deleted []string
+	repo      *seafileKnowledgeRepo
+	created   []seafileCreatedFile
+	deleted   []string
+	deleteErr error
 }
 
 func (k *seafileKnowledgeService) GetRepository() interfaces.KnowledgeRepository { return k.repo }
 
 func (k *seafileKnowledgeService) DeleteKnowledge(_ context.Context, id string) error {
+	if k.deleteErr != nil {
+		return k.deleteErr
+	}
 	k.deleted = append(k.deleted, id)
 	return nil
 }
@@ -383,6 +405,81 @@ func TestProcessSync_SeafileFullStreamReceivesStoredCursor(t *testing.T) {
 	require.NoError(t, err)
 	assert.Nil(t, cur.ConnectorCursor["full_sync"], "completed full sync must clear its state")
 	assert.Equal(t, []string{"/docs/keep.pdf"}, keysOf(h.cursorFiles(t)))
+}
+
+// A full sync with a complete listing deletes an item this data source owns
+// that no longer exists, even when the cursor never tracked it (the case a
+// cursor-diff tombstone cannot reach), and leaves another data source alone.
+func TestProcessSync_SeafileFullSyncReconcilesUntrackedItem(t *testing.T) {
+	for _, syncDeletions := range []bool{true, false} {
+		t.Run(fmt.Sprintf("sync_deletions=%v", syncDeletions), func(t *testing.T) {
+			orphan := seafileExternalID("/docs/orphan.pdf")
+			h := newSeafileSyncHarness(t, syncDeletions, seafileCursor(seafileTestRepo, map[string]string{}))
+			h.server.files["/docs/keep.pdf"] = []byte("keep")
+			h.repo.live["ds-seafile|"+orphan] = &types.Knowledge{ID: "knowledge-orphan"}
+			h.repo.live["ds-other|"+orphan] = &types.Knowledge{ID: "knowledge-other"}
+
+			log, err := h.run(t, true)
+			require.NoError(t, err)
+			assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+			if syncDeletions {
+				assert.Equal(t, 1, log.ItemsDeleted)
+				assert.Equal(t, []string{"knowledge-orphan"}, h.knowledge.deleted)
+			} else {
+				assert.Equal(t, 0, log.ItemsDeleted)
+				assert.Empty(t, h.knowledge.deleted)
+			}
+			assert.Contains(t, h.repo.live, "ds-other|"+orphan)
+		})
+	}
+}
+
+// A full sync resumed from a checkpoint skips files it already re-fetched, so
+// its listing does not prove absence and nothing is reconciled.
+func TestProcessSync_SeafileResumedFullSyncDoesNotReconcile(t *testing.T) {
+	orphan := seafileExternalID("/docs/orphan.pdf")
+	cursor := seafileCursor(seafileTestRepo, map[string]string{"/docs/keep.pdf": "o:keep|m:1|s:4"})
+	cursor.ConnectorCursor["full_sync"] = true
+	h := newSeafileSyncHarness(t, true, cursor)
+	h.server.files["/docs/keep.pdf"] = []byte("keep")
+	h.repo.live["ds-seafile|"+orphan] = &types.Knowledge{ID: "knowledge-orphan"}
+
+	log, err := h.run(t, true)
+	require.NoError(t, err)
+	assert.Equal(t, 0, log.ItemsDeleted)
+	assert.Empty(t, h.knowledge.deleted)
+}
+
+// A deletion that failed in an incremental sync drops out of the cursor, so
+// later incremental syncs never retry it; the next full sync does.
+func TestProcessSync_SeafileFailedDeletionRetriedByNextFullSync(t *testing.T) {
+	gone := seafileExternalID("/docs/gone.pdf")
+	h := newSeafileSyncHarness(t, true, seafileCursor(seafileTestRepo, map[string]string{
+		"/docs/gone.pdf": "o:old|m:1|s:4",
+	}))
+	h.server.files["/docs/keep.pdf"] = []byte("keep")
+	h.repo.live["ds-seafile|"+gone] = &types.Knowledge{ID: "knowledge-gone"}
+	h.knowledge.deleteErr = errors.New("delete failed")
+
+	log, err := h.run(t, false)
+	require.NoError(t, err)
+	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
+	assert.Equal(t, 1, deletionFailedCount(t, log))
+	assert.Equal(t, "1 document(s) failed to sync; 1 deletion(s) failed, "+
+		"the next full sync retries them when its listing is complete", log.ErrorMessage)
+	assert.Equal(t, []string{"/docs/keep.pdf"}, keysOf(h.cursorFiles(t)))
+
+	h.knowledge.deleteErr = nil
+	log, err = h.run(t, false)
+	require.NoError(t, err)
+	assert.Equal(t, 0, log.ItemsDeleted, "an incremental sync no longer sees the tombstone")
+
+	log, err = h.run(t, true)
+	require.NoError(t, err)
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Equal(t, 1, log.ItemsDeleted)
+	assert.Equal(t, []string{"knowledge-gone"}, h.knowledge.deleted)
+	assert.NotContains(t, h.repo.live, "ds-seafile|"+gone)
 }
 
 // Pointing an already synced data source at another library fails before any

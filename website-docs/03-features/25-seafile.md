@@ -88,7 +88,7 @@ Sync log error codes:
 Keep these limits in mind when you change a data source or clean up after one.
 
 - A synced data source cannot be re-pointed at another library. After changing the selection, the next sync fails with "this data source already synced Seafile library …" (naming the original library) and the cursor stays unchanged; create a new data source instead. To switch libraries before the first sync, clear the selection before saving.
-- Deletion reconciliation does not guarantee catch-up deletions. A run whose directory scan failed produces no deletions, and deletions that happened while "Sync deletions" was off are not applied retroactively when it is turned back on.
+- An incremental run does not catch up on missed deletions: a run whose directory scan failed produces no deletions, and a deletion that failed or happened while "Sync deletions" was off is no longer in the cursor. A forced full sync with "Sync deletions" on catches up: when it enumerated every root and started with no file already re-downloaded, it deletes each knowledge item of this data source that it did not list, including files of directories removed from the selection. A full sync that resumed from a checkpoint, or that listed no file at all, skips this step.
 - Deleting or recreating a data source does not remove the knowledge items it imported; clean up leftover content in the knowledge base yourself.
 - Encrypted libraries do not appear in the picker and cannot be synced. SeaDoc online documents, custom properties and two-way sync are out of scope.
 

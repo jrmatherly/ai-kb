@@ -238,3 +238,35 @@ func TestFetchAllFromCursorReFetchesAndReconcilesDeletions(t *testing.T) {
 		t.Fatalf("full sync deletion: %#v, %v", items, err)
 	}
 }
+
+func TestFetchAllFromCursorReportsCompleteListing(t *testing.T) {
+	c, api, cfg, _, _ := twoFolderFixture(t)
+	api.nodes["a"] = []node{syncDocument()}
+	_, cursor, err := c.FetchIncremental(context.Background(), cfg, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cursor.CompleteListing {
+		t.Fatal("an incremental sync skips unchanged documents, so it must not report a complete listing")
+	}
+
+	_, next, err := c.FetchAllFromCursor(context.Background(), cfg, cfg.ResourceIDs, cursor)
+	if err != nil || !next.CompleteListing {
+		t.Fatalf("complete full sync: CompleteListing=%v err=%v", next.CompleteListing, err)
+	}
+
+	// A failed document read is still emitted under its own ID.
+	api.blockErrors["doc"] = errors.New("permission denied")
+	_, next, err = c.FetchAllFromCursor(context.Background(), cfg, cfg.ResourceIDs, cursor)
+	var partial *datasource.PartialFetchError
+	if !errors.As(err, &partial) || !next.CompleteListing {
+		t.Fatalf("failed read: CompleteListing=%v err=%v", next.CompleteListing, err)
+	}
+	delete(api.blockErrors, "doc")
+
+	api.nodeErrors["b"] = errors.New("temporary failure")
+	_, next, err = c.FetchAllFromCursor(context.Background(), cfg, cfg.ResourceIDs, cursor)
+	if !errors.As(err, &partial) || next.CompleteListing {
+		t.Fatalf("failed scope: CompleteListing=%v err=%v", next.CompleteListing, err)
+	}
+}

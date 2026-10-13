@@ -62,6 +62,37 @@ func TestFindByDataSourceExternalID_DeletedRowsExcluded(t *testing.T) {
 	assert.Nil(t, found)
 }
 
+func TestListDataSourceExternalIDs(t *testing.T) {
+	db := setupKnowledgeTestDB(t)
+	repo := NewKnowledgeRepository(db).(*knowledgeRepository)
+	ctx := context.Background()
+
+	const tenantID uint64 = 53
+	kbID := uuid.New().String()
+	insert := func(kb, metadata, deletedAt string) {
+		var deleted any
+		if deletedAt != "" {
+			deleted = deletedAt
+		}
+		require.NoError(t, db.Exec(`
+			INSERT INTO knowledges
+			  (id, tenant_id, knowledge_base_id, type, title, source, parse_status, metadata, deleted_at)
+			VALUES (?, ?, ?, 'document', 't', 'feishu', 'completed', ?, ?)
+		`, uuid.New().String(), tenantID, kb, metadata, deleted).Error)
+	}
+	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:1"}`, "")
+	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:1"}`, "")
+	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:2"}`, "")
+	insert(kbID, `{"datasource_id":"ds-a","external_id":"doc:gone"}`, "2026-01-01 00:00:00")
+	insert(kbID, `{"datasource_id":"ds-a"}`, "")
+	insert(kbID, `{"datasource_id":"ds-b","external_id":"doc:3"}`, "")
+	insert(uuid.New().String(), `{"datasource_id":"ds-a","external_id":"doc:4"}`, "")
+
+	ids, err := repo.ListDataSourceExternalIDs(ctx, tenantID, kbID, "ds-a")
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"doc:1", "doc:2"}, ids)
+}
+
 func TestHardDeleteKnowledge(t *testing.T) {
 	db := setupKnowledgeTestDB(t)
 	repo := NewKnowledgeRepository(db).(*knowledgeRepository)

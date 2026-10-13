@@ -99,6 +99,9 @@ func runSync[N any](
 
 	newTimes := make(map[string]map[string]string)
 	lastSync := time.Now()
+	// Without previous edit times no node takes the skip fast-path, so every
+	// listed node is emitted; a partial listing below revokes the claim.
+	complete := prevTimes == nil
 
 	processed := 0
 	lastCheckpoint := time.Now()
@@ -108,6 +111,7 @@ func runSync[N any](
 			return nil, fmt.Errorf("list %s for resource %s: %w", ops.ResourceNoun(), resourceID, err)
 		}
 		if partial != nil {
+			complete = false
 			for _, item := range ops.ListFailureItems(resourceID, partial) {
 				if eerr := h.Emit(ctx, item); eerr != nil {
 					return nil, eerr
@@ -218,7 +222,9 @@ func runSync[N any](
 		logger.Infof(ctx, "%s stream summary resource=%s %s", ops.LogTag(), resourceID, tally.summary())
 	}
 
-	return ops.EncodeCursor(newTimes, lastSync), nil
+	next := ops.EncodeCursor(newTimes, lastSync)
+	next.CompleteListing = complete
+	return next, nil
 }
 
 // FetchStreamEngine runs the streaming sync. FetchStream / FetchIncremental

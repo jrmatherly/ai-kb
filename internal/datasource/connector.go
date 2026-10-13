@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"context"
+	"slices"
 
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
@@ -171,6 +172,17 @@ type ConnectorMetadata struct {
 	Capabilities []string `json:"capabilities"` // "incremental", "webhook", "deletion_sync", etc.
 }
 
+// CapabilityFullSyncReconcile marks a connector that sets
+// types.SyncCursor.CompleteListing, so a full sync with deletion sync on
+// deletes knowledge items missing from a complete listing.
+const CapabilityFullSyncReconcile = "full_sync_reconcile"
+
+// ReconcilesOnFullSync reports whether a connector type declares
+// CapabilityFullSyncReconcile.
+func ReconcilesOnFullSync(connectorType string) bool {
+	return slices.Contains(ConnectorMetadataRegistry[connectorType].Capabilities, CapabilityFullSyncReconcile)
+}
+
 // GetConnectorMetadata returns metadata for all available connectors
 // This is used by the frontend to display connector options
 var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
@@ -180,7 +192,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync documents, wikis, and content from Feishu",
 		Priority:     0,
 		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync"},
+		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeLark: {
 		Type:         types.ConnectorTypeLark,
@@ -188,7 +200,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync documents, wikis, and content from Lark (Feishu international)",
 		Priority:     0,
 		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync"},
+		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeFeishuDrive: {
 		Type:         types.ConnectorTypeFeishuDrive,
@@ -196,7 +208,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync documents and files from a Feishu Drive folder",
 		Priority:     0,
 		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync"},
+		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeLarkDrive: {
 		Type:         types.ConnectorTypeLarkDrive,
@@ -204,7 +216,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync documents and files from a Lark Drive folder",
 		Priority:     0,
 		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync"},
+		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeNotion: {
 		Type:         types.ConnectorTypeNotion,
@@ -220,7 +232,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync spaces and pages from Atlassian Confluence",
 		Priority:     2,
 		AuthType:     "api_key",
-		Capabilities: []string{"incremental", "deletion_sync"},
+		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeYuque: {
 		Type:         types.ConnectorTypeYuque,
@@ -268,7 +280,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync online documents from DingTalk knowledge bases",
 		Priority:     7,
 		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync"},
+		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 	types.ConnectorTypeWebCrawler: {
 		Type:         types.ConnectorTypeWebCrawler,
@@ -316,7 +328,7 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Description:  "Sync folders and files from Seafile libraries",
 		Priority:     13,
 		AuthType:     "token",
-		Capabilities: []string{"incremental", "hierarchical", "deletion_sync"},
+		Capabilities: []string{"incremental", "hierarchical", "deletion_sync", CapabilityFullSyncReconcile},
 	},
 }
 

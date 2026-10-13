@@ -394,6 +394,20 @@ func SubtreeChildID(parentExternalID, kind, token string) string {
 	return parentExternalID + "#" + kind + "#" + token
 }
 
+// SubtreeParentID returns the parent external_id of an ID built with
+// SubtreeChildID, or false when id does not have that shape.
+func SubtreeParentID(id string) (string, bool) {
+	kindSep := strings.LastIndex(id, "#")
+	if kindSep <= 0 {
+		return "", false
+	}
+	parentSep := strings.LastIndex(id[:kindSep], "#")
+	if parentSep <= 0 || parentSep+1 == kindSep || kindSep+1 == len(id) {
+		return "", false
+	}
+	return id[:parentSep], true
+}
+
 // SubtreeChildPrefix is the external_id prefix that matches every child of a
 // parent node built with SubtreeChildID. The sweep deletes prior children whose
 // external_id starts with this prefix and are absent from SubtreeKeep. It must
@@ -413,6 +427,14 @@ type SyncCursor struct {
 
 	// Hash of the last full sync to detect schema changes
 	LastSchemaHash string `json:"last_schema_hash"`
+
+	// CompleteListing is set by a connector on the cursor it returns when this
+	// run listed every selected resource completely AND emitted every live item
+	// in them (a fresh full pass, not one resumed from a checkpoint that skipped
+	// already-synced items). The service then deletes this data source's
+	// knowledge items that the run did not emit. A connector that cannot promise
+	// both leaves it false. Never persisted.
+	CompleteListing bool `json:"-"`
 }
 
 // SyncResult summarizes the outcome of a sync operation
@@ -436,7 +458,8 @@ type SyncResult struct {
 	Failed int `json:"failed"`
 
 	// Deleted items whose KB deletion failed (a subset of Failed). Past the
-	// connector cursor, so normally only a later full sync retries them.
+	// connector cursor, so only the reconcile of a later complete full sync
+	// retries them.
 	DeletionFailed int `json:"deletion_failed,omitempty"`
 
 	// Per-item failure samples (capped), shown in the sync-log UI.
