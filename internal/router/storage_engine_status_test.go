@@ -41,8 +41,19 @@ func TestStorageEngineStatusReportsEnvConfiguredBackend(t *testing.T) {
 			"OBS_ACCESS_KEY": "ak", "OBS_SECRET_KEY": "sk", "OBS_BUCKET_NAME": "b",
 		},
 	}
+	// Blank every storage variable first so a developer's exported env cannot
+	// change the result.
+	storageEnv := []string{"MINIO_ENDPOINT", "MINIO_ACCESS_KEY_ID", "MINIO_SECRET_ACCESS_KEY", "MINIO_BUCKET_NAME"}
+	for _, env := range cases {
+		for k := range env {
+			storageEnv = append(storageEnv, k)
+		}
+	}
 	for provider, env := range cases {
 		t.Run(provider, func(t *testing.T) {
+			for _, k := range storageEnv {
+				t.Setenv(k, "")
+			}
 			t.Setenv(storageallowlist.AllowListEnv, "")
 			t.Setenv("STORAGE_TYPE", provider)
 			for k, v := range env {
