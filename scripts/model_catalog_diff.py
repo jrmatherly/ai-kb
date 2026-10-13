@@ -4,7 +4,7 @@
 Development-time helper, never run at runtime: it reports numeric facts
 (context window, max output, cost, new/retired ids) so a maintainer can update
 internal/models/catalog/data/seed.json by hand. Behavioural facts (compat,
-thinking format) are intentionally out of scope — models.dev does not carry
+thinking format) are intentionally out of scope: models.dev does not carry
 them and they must come from vendor documentation.
 
 Usage:
@@ -14,7 +14,7 @@ Usage:
     scripts/model_catalog_diff.py --exit-code      # non-zero when anything differs
 
 Findings are advisory: `+` is a model upstream has and we do not, `~` is a
-numeric difference, `?` is an entry upstream does not list (often correct —
+numeric difference, `?` is an entry upstream does not list (often correct:
 vendor-specific aliases and China-only ids are missing from models.dev).
 """
 
@@ -109,6 +109,8 @@ def main():
         help="exit 1 when there are findings (for a scheduled job); default always exits 0",
     )
     args = parser.parse_args()
+    if args.vendor and args.vendor not in PROVIDER_MAP:
+        parser.error(f"unknown vendor {args.vendor!r}; known: {', '.join(sorted(PROVIDER_MAP))}")
 
     api = load_api(args.api)
     vendors = [args.vendor] if args.vendor else sorted(PROVIDER_MAP)
@@ -123,7 +125,7 @@ def main():
             print(f"== {vendor}: models.dev provider {upstream_id!r} missing", file=sys.stderr)
             continue
         lines = compare(vendor, upstream, load_catalog(vendor))
-        print(f"== {vendor} (models.dev: {upstream_id}) — {len(lines)} finding(s)")
+        print(f"== {vendor} (models.dev: {upstream_id}) - {len(lines)} finding(s)")
         for line in lines:
             print(line)
         if lines:
