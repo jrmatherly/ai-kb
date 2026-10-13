@@ -129,7 +129,7 @@ ai-kb/mcp-server/
 ├── aikb_mcp_server.py   # MCP server implementation
 ├── requirements.txt        # dependency list
 ├── setup.py               # install script
-├── pyproject.toml         # project metadata (PyPI: ai-kb-mcp)
+├── pyproject.toml         # project metadata (package ai-kb-mcp, not on PyPI)
 ├── MANIFEST.in            # package file manifest
 ├── LICENSE                # license
 ├── README.md              # project overview
