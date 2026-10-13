@@ -32,7 +32,7 @@ show_help() {
     echo "  -p, --pull     pull the latest Docker images"
     echo "  --no-pull      do not pull images on start (pulls by default)"
     echo "  -v, --version  show version information"
-    exit 0
+    exit "${1:-0}"
 }
 
 # Show version information
@@ -97,6 +97,18 @@ detect_compose_cmd() {
 	return 1
 }
 
+# Read .env, keeping any variable the caller already exported (the same precedence docker compose uses)
+source_env_file() {
+    local exported
+    exported=$(export -p)
+    # shellcheck source=/dev/null
+    source "$PROJECT_ROOT/.env"
+    # export, not the declare -x that export -p prints: declare inside a function makes a local.
+    # sed anchors at line starts, which ${var//} cannot.
+    # shellcheck disable=SC2001
+    eval "$(sed 's/^declare -x /export /' <<< "$exported")"
+}
+
 # Check for the .env file and create it if missing
 check_env_file() {
     log_info "Checking the environment variable configuration..."
@@ -114,7 +126,7 @@ check_env_file() {
     fi
     
     # Check that the required environment variables are set
-    source "$PROJECT_ROOT/.env"
+    source_env_file
     local missing_vars=()
     
     # Check the base variables
@@ -339,11 +351,11 @@ ensure_sandbox_image() {
 
     # Pull in the background so the main flow is not blocked
     (
-        if PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD --profile sandbox pull sandbox 2>/dev/null; then
+        if PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD pull sandbox 2>/dev/null; then
             log_success "Sandbox image pulled: $sandbox_image"
         else
             log_warning "Sandbox image pull failed. Agent Skills may be unavailable"
-            log_warning "Pull it by hand later: $DOCKER_COMPOSE_BIN $DOCKER_COMPOSE_SUBCMD --profile sandbox pull sandbox"
+            log_warning "Pull it by hand later: $DOCKER_COMPOSE_BIN $DOCKER_COMPOSE_SUBCMD pull sandbox"
         fi
     ) &
 
@@ -364,7 +376,7 @@ start_docker() {
     check_env_file
     
     # Read the .env file
-    source "$PROJECT_ROOT/.env"
+    source_env_file
     storage_type=${STORAGE_TYPE:-local}
     
     check_platform
@@ -418,7 +430,8 @@ stop_docker() {
     cd "$PROJECT_ROOT"
     
     # Stop all containers
-	"$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD down --remove-orphans
+	# Without --profile '*', down leaves every profiled service running.
+	"$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD --profile '*' down --remove-orphans
     if [ $? -ne 0 ]; then
         log_error "Docker containers failed to stop"
         return 1
@@ -462,7 +475,7 @@ pull_images() {
     check_env_file
     
     # Read the .env file
-    source "$PROJECT_ROOT/.env"
+    source_env_file
     storage_type=${STORAGE_TYPE:-local}
     
     check_platform
@@ -480,7 +493,7 @@ pull_images() {
 
     # Pull the sandbox image (sandbox is in a profile, so it needs its own pull)
     log_info "Pulling the sandbox image..."
-    PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD --profile sandbox pull sandbox 2>/dev/null || \
+    PLATFORM=$PLATFORM "$DOCKER_COMPOSE_BIN" $DOCKER_COMPOSE_SUBCMD pull sandbox 2>/dev/null || \
         log_warning "Sandbox image pull failed (optional, skipping)"
 
     log_success "All images pulled to the latest version"
@@ -564,7 +577,7 @@ check_environment() {
     if [ $IS_REMOTE -eq 1 ]; then
         log_info "Remote Ollama service configured"
         if curl -s "$OLLAMA_URL/api/tags" &> /dev/null; then
-            version=$(curl -s "$OLLAMA_URL/api/tags" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+            version=$(curl -s "$OLLAMA_URL/api/version" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
             log_success "Remote Ollama service is reachable, version: $version"
         else
             log_warning "Remote Ollama service is unreachable. Check that the address is right and the service is running"
@@ -573,7 +586,7 @@ check_environment() {
         if command -v ollama &> /dev/null; then
             log_success "Local Ollama is installed"
             if curl -s "http://localhost:$OLLAMA_PORT/api/tags" &> /dev/null; then
-                version=$(curl -s "http://localhost:$OLLAMA_PORT/api/tags" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+                version=$(curl -s "http://localhost:$OLLAMA_PORT/api/version" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
                 log_success "Local Ollama service is running, version: $version"
             else
                 log_warning "Local Ollama is installed but the service is not running"
@@ -674,7 +687,7 @@ while [ "$1" != "" ]; do
         -v | --version )    show_version
                             ;;
         * )                 log_error "Unknown option: $1"
-                            show_help
+                            show_help 1
                             ;;
     esac
     shift
@@ -729,6 +742,7 @@ if [ "$STOP_SERVICES" = true ]; then
     fi
     
     log_success "Services stopped."
+    [ $OLLAMA_RESULT -eq 0 ] && [ $DOCKER_RESULT -eq 0 ] || exit 1
 else
     # Start the services
     OLLAMA_RESULT=1
@@ -786,4 +800,7 @@ else
     fi
 fi
 
+if { [ "$START_OLLAMA" = true ] && [ $OLLAMA_RESULT -ne 0 ]; } || { [ "$START_DOCKER" = true ] && [ $DOCKER_RESULT -ne 0 ]; }; then
+    exit 1
+fi
 exit 0
