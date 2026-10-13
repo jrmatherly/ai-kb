@@ -52,7 +52,7 @@ test = [
 
 [project.urls]
 Homepage = "https://github.com/jrmatherly/ai-kb"
-Documentation = "https://https://ai-kb-docs.matherly.net"
+Documentation = "https://ai-kb-docs.matherly.net"
 Repository = "https://github.com/jrmatherly/ai-kb/tree/main/mcp-server"
 "Bug Reports" = "https://github.com/jrmatherly/ai-kb/issues"
 Changelog = "https://github.com/jrmatherly/ai-kb/blob/main/mcp-server/CHANGELOG.md"

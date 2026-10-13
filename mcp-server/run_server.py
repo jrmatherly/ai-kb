@@ -32,6 +32,9 @@ def check_environment():
 
 def main():
     """Entry point."""
+    if any(arg in ("-h", "--help") for arg in sys.argv[1:]):
+        print("usage: ai-kb-server\nStarts the AI KB MCP server on stdio. For options, use ai-kb-mcp-server --help.")
+        return
     print("Starting AI KB MCP Server...", file=sys.stderr)
     check_environment()
 

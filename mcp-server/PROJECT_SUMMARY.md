@@ -273,6 +273,6 @@ python test_module.py            # run the tests
 
 **Project status**: ✅ Complete and ready to use
 **Project repository**: https://github.com/jrmatherly/ai-kb/tree/main/mcp-server
-**PyPI package**: `ai-kb-mcp`
+**Package name**: `ai-kb-mcp` (not published on PyPI)
 **Last updated**: October 2025
 **Version**: 1.0.0

@@ -62,17 +62,17 @@ python main.py --version              # show the version
 
 ## Install as a Python package
 
-### From PyPI
+### From the checkout
 
 ```bash
-pip install ai-kb-mcp
-# Or run it directly with uvx (no install needed)
-uvx --from ai-kb-mcp ai-kb-mcp-server
+pip install ./mcp-server
+# Or run it with uvx without installing
+uvx --from ./mcp-server ai-kb-mcp-server
 ```
 
-> The official PyPI package is **`ai-kb-mcp`** (maintained by jrmatherly/ai-kb, published with Trusted Publishing).
-> Do not use the old community package `ai-kb-mcp`.
-> After installation the command-line entry points are still `ai-kb-mcp-server` / `ai-kb-server`.
+> The distribution is named **`ai-kb-mcp`** (`setup.py`, `pyproject.toml`) and is not published on PyPI, so install it from this repository.
+> The MCP packages on PyPI under the upstream project's name belong to that project and read its own variable names, not `AIKB_*`.
+> The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
 
 ### Development install
 ```bash
