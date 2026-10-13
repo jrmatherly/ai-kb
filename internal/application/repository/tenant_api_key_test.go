@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -14,7 +15,7 @@ import (
 func TestTenantAPIKeyRepositoryPersistsUTCExpiry(t *testing.T) {
 	t.Setenv("TZ", "Asia/Shanghai")
 
-	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file:"+uuid.NewString()+"?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.TenantAPIKey{}))
 
@@ -44,7 +45,7 @@ func TestTenantAPIKeyRepositoryPersistsUTCExpiry(t *testing.T) {
 // It takes a key in the same workspace and one in another: the first gets every
 // configurable field updated, the second must return not found.
 func TestTenantAPIKeyRepositoryUpdateIsTenantScoped(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file:"+uuid.NewString()+"?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.TenantAPIKey{}))
 	repo := NewTenantAPIKeyRepository(db)

@@ -56,8 +56,7 @@ func (skillBundleResolver) ResolveBackend(
 
 func newAgentSkillBundleService(t *testing.T, files map[string][]byte) (*agentService, *gorm.DB) {
 	t.Helper()
-	dsn := "file:agent-skill-" + strings.ReplaceAll(t.Name(), "/", "_") + "?mode=memory&cache=shared"
-	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(
 		&types.TenantSkillEntity{}, &types.TenantSkillCatalogEntity{},

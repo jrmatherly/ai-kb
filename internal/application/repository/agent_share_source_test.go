@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func TestGetShareByAgentIDAndSourceForTenantDisambiguatesSource(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:agent-share-source?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file:"+uuid.NewString()+"?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)
 	statements := []string{
 		`CREATE TABLE agent_shares (

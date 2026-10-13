@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -15,13 +16,17 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// memoryDBSeq keeps each harness database distinct: t.Name() repeats under
+// -count>1 and a shared-cache database lives while gorm holds a connection.
+var memoryDBSeq atomic.Uint64
+
 // newMemoryHarness builds a service over a real SQLite database. The write
 // path is mostly about what ends up in the database after a conflict, so a
 // mocked repository would assert the wrong thing.
 func newMemoryHarness(t *testing.T) (*Service, *gorm.DB, *stubTenantRepo) {
 	t.Helper()
 	db, err := gorm.Open(
-		sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())),
+		sqlite.Open(fmt.Sprintf("file:%s-%d?mode=memory&cache=shared", t.Name(), memoryDBSeq.Add(1))),
 		&gorm.Config{Logger: logger.Discard},
 	)
 	require.NoError(t, err)

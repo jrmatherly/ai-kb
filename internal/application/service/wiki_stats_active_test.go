@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/alicebob/miniredis/v2"
@@ -17,7 +16,7 @@ import (
 
 // Standard mode reports is_active while an ingest batch holds an in-flight slot.
 func TestWikiStatsIsActiveWhileIngestBatchRuns(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.WikiFolder{}, &types.WikiPage{}, &types.WikiPageIssue{}))
 	mr := miniredis.RunT(t)
@@ -46,7 +45,7 @@ func TestWikiStatsIsActiveWhileIngestBatchRuns(t *testing.T) {
 
 // Lite mode has no Redis; is_active follows the in-process per-KB batch lock.
 func TestWikiStatsIsActiveWhileLiteBatchRuns(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.WikiFolder{}, &types.WikiPage{}, &types.WikiPageIssue{}))
 

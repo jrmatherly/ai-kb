@@ -14,7 +14,7 @@ import (
 )
 
 func TestMCPDirectoryBatchPolicyUsesOneDatabaseQuery(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.MCPToolApproval{}))
 	mcpRepo := newFakeMCPRepo()
@@ -48,7 +48,7 @@ func TestMCPDirectoryBatchPolicyUsesOneDatabaseQuery(t *testing.T) {
 
 func newMCPToolApprovalServiceForTest(t *testing.T) (*mcpToolApprovalService, *fakeMCPRepo) {
 	t.Helper()
-	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.MCPToolApproval{}))
 

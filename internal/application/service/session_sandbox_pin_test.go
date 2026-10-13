@@ -25,7 +25,7 @@ func (m *pinTestManager) GetType() sandbox.SandboxType  { return m.typ }
 
 func newPinTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
-	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.Migrator().DropTable(&types.Session{}))
 	require.NoError(t, db.AutoMigrate(&types.Session{}))

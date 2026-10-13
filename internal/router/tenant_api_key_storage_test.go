@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"github.com/jrmatherly/ai-kb/internal/config"
@@ -38,7 +39,7 @@ func (apiKeyTestUserService) GetUserByTenantID(context.Context, uint64) (*types.
 // with the returned token, lists the masked value, and checks that no column holds the token.
 func TestTenantAPIKeyStoredAsHashAndHint(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file:"+uuid.NewString()+"?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.TenantAPIKey{}))
 	keys := service.NewTenantAPIKeyService(repository.NewTenantAPIKeyRepository(db))

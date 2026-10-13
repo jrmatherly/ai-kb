@@ -62,7 +62,7 @@ func setupWikiSearchService(
 	share interfaces.KBShareService,
 ) (context.Context, interfaces.WikiPageService, interfaces.WikiPageRepository) {
 	t.Helper()
-	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(testMemoryDSN(t)), &gorm.Config{})
 	require.NoError(t, err)
 	require.NoError(t, db.AutoMigrate(&types.WikiFolder{}, &types.WikiPage{}, &types.WikiPageRevision{}))
 	repo := repository.NewWikiPageRepository(db)
