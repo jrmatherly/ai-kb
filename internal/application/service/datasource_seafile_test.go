@@ -450,9 +450,9 @@ func TestProcessSync_SeafileResumedFullSyncDoesNotReconcile(t *testing.T) {
 	assert.Empty(t, h.knowledge.deleted)
 }
 
-// A deletion that failed in an incremental sync drops out of the cursor, so
-// later incremental syncs never retry it; the next full sync does.
-func TestProcessSync_SeafileFailedDeletionRetriedByNextFullSync(t *testing.T) {
+// A deletion that failed in an incremental sync drops out of Seafile's file
+// map but stays pending in the cursor, so the next incremental sync retries it.
+func TestProcessSync_SeafileFailedDeletionRetriedByNextSync(t *testing.T) {
 	gone := seafileExternalID("/docs/gone.pdf")
 	h := newSeafileSyncHarness(t, true, seafileCursor(seafileTestRepo, map[string]string{
 		"/docs/gone.pdf": "o:old|m:1|s:4",
@@ -465,16 +465,15 @@ func TestProcessSync_SeafileFailedDeletionRetriedByNextFullSync(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
 	assert.Equal(t, 1, deletionFailedCount(t, log))
-	assert.Equal(t, "1 document(s) failed to sync; 1 deletion(s) failed, "+
-		"the next full sync retries them when its listing is complete", log.ErrorMessage)
+	assert.Equal(t, "1 document(s) failed to sync; 1 deletion(s) failed, the next sync retries them",
+		log.ErrorMessage)
 	assert.Equal(t, []string{"/docs/keep.pdf"}, keysOf(h.cursorFiles(t)))
+	cur, err := h.ds.ParseSyncCursor()
+	require.NoError(t, err)
+	assert.Equal(t, []string{gone}, cur.PendingDeletions)
 
 	h.knowledge.deleteErr = nil
 	log, err = h.run(t, false)
-	require.NoError(t, err)
-	assert.Equal(t, 0, log.ItemsDeleted, "an incremental sync no longer sees the tombstone")
-
-	log, err = h.run(t, true)
 	require.NoError(t, err)
 	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
 	assert.Equal(t, 1, log.ItemsDeleted)

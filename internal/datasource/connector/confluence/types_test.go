@@ -5,8 +5,18 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
+
+func TestOnlyServerEditionsReconcileFullSyncs(t *testing.T) {
+	for edition, want := range map[string]bool{"cloud": false, "Cloud": false, "server": true, "": true} {
+		cfg := &types.DataSourceConfig{Credentials: map[string]interface{}{"edition": edition}}
+		if got := datasource.ReconcilesFullSync(NewConnector(), cfg); got != want {
+			t.Errorf("ReconcilesFullSync(edition %q) = %v, want %v", edition, got, want)
+		}
+	}
+}
 
 func TestSafeFilenameKeepsUTF8ValidAtLimit(t *testing.T) {
 	name := strings.Repeat("\u77e5\u8bc6\u5e93", 150)

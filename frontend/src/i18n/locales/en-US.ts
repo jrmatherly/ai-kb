@@ -6768,7 +6768,7 @@ export default {
       skip: 'Skip existing'
     },
     syncDeletions: 'Sync deletions (remove knowledge when deleted at source)',
-    scopeNarrowedNotice: 'This change takes content out of the sync scope. With sync deletions on, its knowledge items will be deleted, at the latest by the next full-mode sync.',
+    scopeNarrowedNotice: 'This change takes content out of the sync scope. With sync deletions on, its knowledge items will be deleted, at the latest by the next full-mode sync. A large removal waits for "Sync and apply deletions".',
     createAndSync: 'Create & Sync Now',
     createAndSyncSuccess: 'Data source created and sync task submitted',
     createButSyncFailed: 'Data source created, but failed to trigger sync',
@@ -6807,7 +6807,7 @@ export default {
       failedItems: 'Failed documents',
       failedItemsMore: '{n} more failed documents not shown',
       docsFailedSummary: '{n} document(s) failed to sync',
-      reconcileCounts: 'Reconcile removed {deselected} item(s) from resources taken out of the selection and {missing} no longer listed by the source',
+      reconcileCounts: 'Deletions: {deselected} item(s) from resources taken out of the selection, {missing} gone from the source',
       pendingDeletions: 'Held-back deletions',
       pendingDeletionsMore: '{n} more not shown'
     },
@@ -6989,7 +6989,7 @@ export default {
       seafile_fetch_failed: 'Failed to fetch the file from Seafile; the next sync retries it.',
       deletion_guard_tripped: 'Deletions held back: {count} item(s), {percent}% of the {owned} this data source owns ({deselected} from resources removed from the selection). If this is expected, use "Sync and apply deletions".',
       reconcile_listing_empty: 'Deletions held back: the source listed nothing while this data source owns {owned} item(s), which usually means lost access. If the source really is empty, use "Sync and apply deletions".',
-      reconcile_listing_incomplete: 'Deletions were not reconciled: the connector could not confirm a complete listing (a resumed or partial run, or Confluence Cloud). Deletions the connector itself detects still apply.'
+      reconcile_listing_incomplete: 'Deletions were not reconciled: the connector could not confirm a complete listing (a resumed or partial run). Deletions the connector reports itself still apply.'
     }
   },
   integrations: {

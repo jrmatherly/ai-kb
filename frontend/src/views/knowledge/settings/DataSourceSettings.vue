@@ -172,11 +172,9 @@ function isSyncRunning(ds: DataSource) {
   return ds.latest_sync_log?.status === 'running'
 }
 
-// The last sync's reconcile held back deletions that a one-run override can
-// apply. An incomplete listing is excluded: the next complete full sync settles it.
+// The last sync held back deletions that a one-run override can apply.
 function hasHeldDeletions(ds: DataSource) {
-  const code = ds.latest_sync_log?.result?.reconcile?.held?.code
-  return code === 'deletion_guard_tripped' || code === 'reconcile_listing_empty'
+  return ds.latest_sync_log?.result?.reconcile?.overridable === true
 }
 
 function onEditorSaved() {

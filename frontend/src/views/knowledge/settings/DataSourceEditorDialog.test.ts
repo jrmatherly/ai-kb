@@ -72,6 +72,15 @@ async function fixture({
       calls.push({ method: 'resolveResourceAncestors', args: [id, ids] })
       return { data: { ancestors: [] } }
     },
+    // GET /datasource/types answers with a bare array.
+    async getConnectorTypes() {
+      return [
+        { type: 'feishu', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
+        { type: 'confluence', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
+        { type: 'dingtalk', capabilities: ['incremental', 'deletion_sync', 'full_sync_reconcile'] },
+        { type: 'notion', capabilities: ['incremental'] },
+      ]
+    },
   }
   const props = reactive({
     visible: false, kbId: 'kb-one',
@@ -403,8 +412,15 @@ function savedSource(type: string, resourceIds: string[], settings: Record<strin
   }
 }
 
+// Opens a saved data source and waits for the connector capabilities to load.
+async function scopeFixture(dataSource: ReturnType<typeof savedSource>) {
+  const f = await fixture({ dataSource })
+  await flush()
+  return f
+}
+
 test('dropping a saved resource with deletion sync on shows the scope notice', async () => {
-  const f = await fixture({ dataSource: savedSource('feishu', ['space-a', 'space-b']) })
+  const f = await scopeFixture(savedSource('feishu', ['space-a', 'space-b']))
   try {
     assert.equal(f.vm.scopeNarrowed, false)
     f.vm.selectedResourceIds = ['space-a', 'space-c']
@@ -415,15 +431,31 @@ test('dropping a saved resource with deletion sync on shows the scope notice', a
 })
 
 test('adding resources never shows the scope notice', async () => {
-  const f = await fixture({ dataSource: savedSource('confluence', ['space-a']) })
+  const f = await scopeFixture(savedSource('confluence', ['space-a']))
   try {
     f.vm.selectedResourceIds = ['space-a', 'space-b']
     assert.equal(f.vm.scopeNarrowed, false)
   } finally { f.close() }
 })
 
+test('checking the parent of a saved resource widens the scope without the notice', async () => {
+  const f = await scopeFixture(savedSource('feishu', ['page-child']))
+  try {
+    f.vm.resources = [
+      { external_id: 'space-a', name: 'Space A', type: 'space', has_children: true },
+      { external_id: 'page-child', name: 'Child', type: 'page', parent_id: 'space-a' },
+      { external_id: 'space-b', name: 'Space B', type: 'space' },
+    ]
+    // The minimal cover set replaces the saved child with its parent.
+    f.vm.selectedResourceIds = ['space-a']
+    assert.equal(f.vm.scopeNarrowed, false)
+    f.vm.selectedResourceIds = ['space-b']
+    assert.equal(f.vm.scopeNarrowed, true)
+  } finally { f.close() }
+})
+
 test('turning off DingTalk uploaded files shows the scope notice', async () => {
-  const f = await fixture({ dataSource: savedSource('dingtalk', ['ws-1'], { include_uploaded_files: true }) })
+  const f = await scopeFixture(savedSource('dingtalk', ['ws-1'], { include_uploaded_files: true }))
   try {
     assert.equal(f.vm.scopeNarrowed, false)
     f.vm.dingtalkIncludeUploadedFiles = false
@@ -432,7 +464,7 @@ test('turning off DingTalk uploaded files shows the scope notice', async () => {
 })
 
 test('connectors that keep deselected items never show the scope notice', async () => {
-  const f = await fixture({ dataSource: savedSource('notion', ['page-a']) })
+  const f = await scopeFixture(savedSource('notion', ['page-a']))
   try {
     f.vm.selectedResourceIds = []
     assert.equal(f.vm.scopeNarrowed, false)

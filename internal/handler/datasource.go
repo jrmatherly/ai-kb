@@ -421,15 +421,15 @@ type resolveAncestorsRequest struct {
 
 // manualSyncRequest is the optional body of ManualSync.
 type manualSyncRequest struct {
-	// AllowMassDeletion lets this run's full-sync reconcile delete past the
-	// mass-deletion guard. It is never stored on the data source.
+	// AllowMassDeletion lets this run delete past the mass-deletion guard,
+	// earlier runs' held deletions included. It is never stored on the data source.
 	AllowMassDeletion bool `json:"allow_mass_deletion"`
 }
 
 // ManualSync godoc
 // @Summary Trigger immediate sync
-// @Description Trigger an immediate sync for a data source. With allow_mass_deletion, that one run's
-// @Description full-sync reconcile applies the deletions the mass-deletion guard holds back.
+// @Description Trigger an immediate sync for a data source. With allow_mass_deletion, that one run
+// @Description applies its deletions and those the mass-deletion guard held back.
 // @Tags DataSource
 // @Accept json
 // @Param id path string true "Data source ID"

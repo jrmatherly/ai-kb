@@ -6933,8 +6933,8 @@ definitions:
     properties:
       allow_mass_deletion:
         description: |-
-          AllowMassDeletion lets this run's full-sync reconcile delete past the
-          mass-deletion guard. It is never stored on the data source.
+          AllowMassDeletion lets this run delete past the mass-deletion guard,
+          earlier runs' held deletions included. It is never stored on the data source.
         type: boolean
     type: object
   internal_handler.meEnvVarRequest:
@@ -8936,8 +8936,8 @@ paths:
       consumes:
       - application/json
       description: |-
-        Trigger an immediate sync for a data source. With allow_mass_deletion, that one run's
-        full-sync reconcile applies the deletions the mass-deletion guard holds back.
+        Trigger an immediate sync for a data source. With allow_mass_deletion, that one run
+        applies its deletions and those the mass-deletion guard held back.
       parameters:
       - description: Data source ID
         in: path

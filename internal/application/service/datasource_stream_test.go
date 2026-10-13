@@ -63,14 +63,15 @@ func TestStreamStartCursor_IncrementalKeepsCursor(t *testing.T) {
 }
 
 func newStreamHandler(svc *DataSourceService, ds *types.DataSource, result *types.SyncResult, syncLog *types.SyncLog) *streamSyncHandler {
-	return &streamSyncHandler{svc: svc, ds: ds, result: result, syncLog: syncLog}
+	return &streamSyncHandler{
+		svc: svc, ds: ds, result: result, syncLog: syncLog, deletions: newRunDeletions(ds, nil, false),
+	}
 }
 
-// Emit routes items through the same classification as the batch loop: deleted
-// items count into result.Deleted (the actual deletion, scoping and failure
-// counters are covered by the ProcessSync tests) and connector-reported
-// failures (an item carrying only a Metadata["error"]) land in result.Failed
-// with a message - never silently lost.
+// Emit routes items through the same classification as the batch loop:
+// tombstones wait for settleDeletions (covered by the ProcessSync tests) and
+// connector-reported failures (an item carrying only a Metadata["error"]) land
+// in result.Failed with a message - never silently lost.
 func TestStreamHandler_EmitClassifiesDeletedAndFailed(t *testing.T) {
 	ds := &types.DataSource{
 		ID: "ds-1", TenantID: 1, KnowledgeBaseID: "kb-1",
@@ -87,7 +88,10 @@ func TestStreamHandler_EmitClassifiesDeletedAndFailed(t *testing.T) {
 		Metadata: map[string]string{"error": "export failed"},
 	}))
 
-	assert.Equal(t, 1, result.Deleted)
+	assert.Equal(t, 0, result.Deleted)
+	assert.Empty(t, knowledgeSvc.deleted)
+	assert.Equal(t, map[string]bool{"gone": true}, h.deletions.pending)
+	assert.Equal(t, 2, result.Total)
 	assert.Equal(t, 1, result.Failed)
 	require.Len(t, result.Errors, 1)
 	assert.Equal(t, "Broken Doc", result.Errors[0].Title)

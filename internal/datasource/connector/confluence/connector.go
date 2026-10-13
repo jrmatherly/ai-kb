@@ -86,6 +86,13 @@ func pickerSpaceCacheKey(cfg config) string {
 // Type returns the connector type identifier.
 func (*Connector) Type() string { return types.ConnectorTypeConfluence }
 
+// ReportsCompleteListing implements datasource.ConfigDependentListing: Cloud
+// listings follow _links.next with nothing to detect a listing cut short, so
+// only Server/DC full syncs reconcile deletions.
+func (*Connector) ReportsCompleteListing(ds *types.DataSourceConfig) bool {
+	return !strings.EqualFold(configValue(ds, "edition"), editionCloud)
+}
+
 func (c *Connector) configured(ds *types.DataSourceConfig) (*client, config, error) {
 	cfg, err := parseConfig(ds)
 	if err != nil {

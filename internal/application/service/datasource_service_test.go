@@ -332,6 +332,14 @@ func (r *deletionLookupKnowledgeRepo) FindByDataSourceExternalID(
 	return r.knowledge, nil
 }
 
+// ListDataSourceItems reports the harness connector's one item as owned; the
+// lookup decides whether it still exists.
+func (r *deletionLookupKnowledgeRepo) ListDataSourceItems(
+	context.Context, uint64, string, string,
+) ([]types.DataSourceItemRef, error) {
+	return []types.DataSourceItemRef{{ExternalID: "file:gone"}}, nil
+}
+
 func (r *deletionLookupKnowledgeRepo) HardDeleteKnowledge(_ context.Context, _ uint64, id string) error {
 	if r.hardDeleteErr != nil {
 		return r.hardDeleteErr
@@ -390,6 +398,16 @@ func (r *keyedDeletionRepo) FindByDataSourceExternalID(
 		return nil, nil
 	}
 	return r.items[externalID], nil
+}
+
+func (r *keyedDeletionRepo) ListDataSourceItems(
+	context.Context, uint64, string, string,
+) ([]types.DataSourceItemRef, error) {
+	refs := make([]types.DataSourceItemRef, 0, len(r.items))
+	for id := range r.items {
+		refs = append(refs, types.DataSourceItemRef{ExternalID: id})
+	}
+	return refs, nil
 }
 
 func (r *keyedDeletionRepo) HardDeleteKnowledge(_ context.Context, _ uint64, id string) error {
@@ -616,7 +634,8 @@ func TestProcessSync_SyncDeletionsLookupFailureCountsFailed(t *testing.T) {
 	repo := &deletionLookupKnowledgeRepo{lookupErr: errors.New("lookup failed")}
 	h := newSyncDeletionHarness(t, true, "ds-delete-lookup-fail", "log-delete-lookup-fail", repo, nil)
 	updated, err := h.run(t)
-	require.Error(t, err)
+	require.NoError(t, err, "a failed deletion stays pending, it does not fail the run")
+	assert.Equal(t, types.SyncLogStatusPartial, updated.Status)
 
 	assert.Empty(t, h.knowledgeSvc.deleted)
 	assert.Equal(t, 0, updated.ItemsDeleted)
@@ -636,7 +655,8 @@ func TestProcessSync_SyncDeletionsDeleteFailureCountsFailed(t *testing.T) {
 	h := newSyncDeletionHarness(t, true, "ds-delete-fail", "log-delete-fail", nil, nil)
 	h.knowledgeSvc.deleteErr = errors.New("delete failed")
 	updated, err := h.run(t)
-	require.Error(t, err)
+	require.NoError(t, err, "a failed deletion stays pending, it does not fail the run")
+	assert.Equal(t, types.SyncLogStatusPartial, updated.Status)
 
 	assert.Equal(t, []string{"knowledge-gone"}, h.knowledgeSvc.deleted)
 	assert.Equal(t, 0, updated.ItemsDeleted)
@@ -757,8 +777,8 @@ func TestProcessSync_SyncDeletionsPartialWhenMixedResults(t *testing.T) {
 	assert.Equal(t, types.SyncLogStatusPartial, updated.Status)
 	assert.Equal(t, 1, updated.ItemsFailed)
 	assert.Equal(t, 1, updated.ItemsCreated)
-	assert.Equal(t, "1 document(s) failed to sync; 1 deletion(s) failed and will not be retried, "+
-		"remove the item(s) from the knowledge base by hand", updated.ErrorMessage)
+	assert.Equal(t, "1 document(s) failed to sync; 1 deletion(s) failed, the next sync retries them",
+		updated.ErrorMessage)
 }
 
 func TestIngestItem_URLCreationMetadataAttachFailure(t *testing.T) {

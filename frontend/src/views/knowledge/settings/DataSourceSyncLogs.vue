@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getSyncLogs, type SyncLog, type SyncItemError } from '@/api/datasource'
+import { getSyncLogs, type SyncLog, type SyncItemError, type SyncReconcile } from '@/api/datasource'
 
 const props = defineProps<{
   dataSourceId: string
@@ -139,9 +139,18 @@ function failedItems(log: SyncLog): SyncItemError[] {
   return (log.result?.errors || []).slice(0, FAILED_ITEMS_CAP)
 }
 
+const NO_RECONCILE: SyncReconcile = { deselected: 0, missing: 0 }
+
+function reconcileOf(log: SyncLog): SyncReconcile {
+  return log.result?.reconcile ?? NO_RECONCILE
+}
+
 function reconcileCount(log: SyncLog): number {
-  const r = log.result?.reconcile
-  return r ? r.deselected + r.missing : 0
+  return reconcileOf(log).deselected + reconcileOf(log).missing
+}
+
+function pendingTitles(log: SyncLog): string[] {
+  return reconcileOf(log).pending ?? []
 }
 
 // Render one failure sample. The backend sends a stable i18n `code` (+ params)
@@ -158,6 +167,12 @@ function formatSyncError(e: SyncItemError): string {
     reason = e.message || ''
   }
   return e.title ? (reason ? `${e.title} - ${reason}` : e.title) : reason
+}
+
+// Why the run held back its deletions, or '' when it did not.
+function heldReason(log: SyncLog): string {
+  const held = reconcileOf(log).held
+  return held ? formatSyncError(held) : ''
 }
 
 // Group logs by date
@@ -287,28 +302,28 @@ const groupedLogs = computed(() => {
                 <div v-if="log.items_failed > 0" class="tl-error">
                   {{ t('datasource.logDetail.docsFailedSummary', { n: log.items_failed }) }}
                 </div>
-                <div v-else-if="log.error_message && !log.result?.reconcile?.held" class="tl-error">
+                <div v-else-if="log.error_message && !reconcileOf(log).held" class="tl-error">
                   {{ log.error_message }}
                 </div>
 
-                <!-- Full-sync deletion reconcile: why it held back, and what. -->
-                <div v-if="log.result?.reconcile?.held" class="tl-error">
-                  {{ formatSyncError(log.result.reconcile.held) }}
+                <!-- The run's deletions: why it held them back, and what. -->
+                <div v-if="heldReason(log)" class="tl-error">
+                  {{ heldReason(log) }}
                 </div>
                 <div v-else-if="reconcileCount(log)" class="detail-row">
                   {{ t('datasource.logDetail.reconcileCounts', {
-                    deselected: log.result?.reconcile?.deselected ?? 0,
-                    missing: log.result?.reconcile?.missing ?? 0,
+                    deselected: reconcileOf(log).deselected,
+                    missing: reconcileOf(log).missing,
                   }) }}
                 </div>
-                <div v-if="log.result?.reconcile?.pending?.length" class="tl-failed">
+                <div v-if="pendingTitles(log).length" class="tl-failed">
                   <div class="tl-failed-title">{{ t('datasource.logDetail.pendingDeletions') }}</div>
-                  <div v-for="(title, i) in log.result.reconcile.pending" :key="i" class="tl-failed-item" :title="title">
+                  <div v-for="(title, i) in pendingTitles(log)" :key="i" class="tl-failed-item" :title="title">
                     {{ title }}
                   </div>
-                  <div v-if="reconcileCount(log) > log.result.reconcile.pending.length" class="tl-failed-more">
+                  <div v-if="reconcileCount(log) > pendingTitles(log).length" class="tl-failed-more">
                     {{ t('datasource.logDetail.pendingDeletionsMore', {
-                      n: reconcileCount(log) - log.result.reconcile.pending.length,
+                      n: reconcileCount(log) - pendingTitles(log).length,
                     }) }}
                   </div>
                 </div>

@@ -13,6 +13,8 @@ import {
   deleteDataSource,
   putDataSourceCredentials,
   deleteDataSourceCredentials,
+  getConnectorTypes,
+  type ConnectorMeta,
   type DataSource,
   type Resource,
 } from '@/api/datasource'
@@ -815,6 +817,7 @@ watch(visible, async (v) => {
     replaceCredentialsMode.value = false
     credentialsConfigured.value = false
     refreshCredentialsStatus()
+    void loadDeselectionDeletes()
     testResult.value = credentialsConfigured.value ? 'success' : ''
     const editConfig = props.dataSource.config || {}
     form.value = {
@@ -1311,19 +1314,32 @@ async function handleDrawerConfirm() {
   }
 }
 
-// Connectors whose sync deletes the items of a resource taken out of the
-// selection: the backend's full_sync_reconcile capability.
-const deselectionDeletes = new Set([
-  'feishu', 'lark', 'feishu_drive', 'lark_drive', 'confluence', 'dingtalk', 'seafile',
-])
+// Connector types whose sync deletes the items of a resource taken out of the
+// selection: those declaring the backend's full_sync_reconcile capability.
+const deselectionDeletes = ref(new Set<string>())
+
+// The scope notice is advisory, so a failed load only leaves it hidden.
+async function loadDeselectionDeletes() {
+  try {
+    const res: any = await getConnectorTypes()
+    const connectors: ConnectorMeta[] = Array.isArray(res) ? res : res?.data || []
+    deselectionDeletes.value = new Set(
+      connectors.filter(c => c.capabilities?.includes('full_sync_reconcile')).map(c => c.type),
+    )
+  } catch {
+    deselectionDeletes.value = new Set()
+  }
+}
 
 // An edit that drops a saved resource, or turns off DingTalk uploaded files,
-// with deletion sync on: the items it takes out of scope get deleted.
+// with deletion sync on: the items it takes out of scope get deleted. A saved
+// resource under a newly checked ancestor stays in scope; revealExistingSelections
+// loads every saved resource's ancestors, so parentMap can tell.
 const scopeNarrowed = computed(() => {
-  if (!isEdit.value || !form.value.sync_deletions || !deselectionDeletes.has(form.value.type)) return false
+  if (!isEdit.value || !form.value.sync_deletions || !deselectionDeletes.value.has(form.value.type)) return false
   const saved = props.dataSource?.config || {}
   const kept = new Set(selectedResourceIds.value)
-  if ((saved.resource_ids || []).some((id: string) => !kept.has(id))) return true
+  if ((saved.resource_ids || []).some((id: string) => !isCovered(id, kept))) return true
   return form.value.type === 'dingtalk' && saved.settings?.include_uploaded_files === true &&
     !dingtalkIncludeUploadedFiles.value
 })

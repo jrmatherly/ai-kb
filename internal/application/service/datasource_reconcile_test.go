@@ -21,14 +21,20 @@ import (
 // datasource.CapabilityFullSyncReconcile.
 const reconcileConnectorType = types.ConnectorTypeDingTalk
 
-// reconcileConnector is a batch connector whose full sync returns fixed items
-// and reports the given listing completeness.
+// reconcileConnector is a batch connector whose syncs return fixed items and
+// report the given listing completeness. incompleteConfig makes it, like
+// Confluence Cloud, unable to report a complete listing under its config.
 type reconcileConnector struct {
-	items    []types.FetchedItem
-	complete bool
+	items            []types.FetchedItem
+	complete         bool
+	incompleteConfig bool
 }
 
 func (reconcileConnector) Type() string { return reconcileConnectorType }
+
+func (c reconcileConnector) ReportsCompleteListing(*types.DataSourceConfig) bool {
+	return !c.incompleteConfig
+}
 
 func (reconcileConnector) Validate(context.Context, *types.DataSourceConfig) error { return nil }
 
@@ -56,6 +62,38 @@ func (c reconcileConnector) FetchIncremental(
 	context.Context, *types.DataSourceConfig, *types.SyncCursor,
 ) ([]types.FetchedItem, *types.SyncCursor, error) {
 	return c.items, &types.SyncCursor{CompleteListing: c.complete}, nil
+}
+
+// reconcileStreamConnector streams the same items, checkpointing after each
+// tombstone the way Confluence drops it from its cursor; fail ends the stream
+// with that error after every item was emitted.
+type reconcileStreamConnector struct {
+	reconcileConnector
+	fail error
+}
+
+func (c reconcileStreamConnector) FetchStream(
+	ctx context.Context, _ *types.DataSourceConfig, _ *types.SyncCursor, h datasource.StreamHandler,
+) (*types.SyncCursor, error) {
+	for i, item := range c.items {
+		if err := h.Emit(ctx, item); err != nil {
+			return nil, err
+		}
+		if item.IsDeleted {
+			checkpoint := &types.SyncCursor{ConnectorCursor: map[string]any{"emitted": i + 1}}
+			if err := h.Checkpoint(ctx, checkpoint); err != nil {
+				return nil, err
+			}
+		}
+	}
+	if c.fail != nil {
+		return nil, c.fail
+	}
+	return &types.SyncCursor{ConnectorCursor: map[string]any{"emitted": len(c.items)}, CompleteListing: c.complete}, nil
+}
+
+func streamOf(items []types.FetchedItem, fail error) reconcileStreamConnector {
+	return reconcileStreamConnector{reconcileConnector: reconcileConnector{items: items}, fail: fail}
 }
 
 // reconcileRepo holds live knowledge per data source and external ID. sources
@@ -107,30 +145,37 @@ type reconcileCase struct {
 	allowMass     bool
 	// kept adds owned items the connector still emits; missing adds stale items
 	// of the selected resource; deselected adds stale items of a resource no
-	// longer selected.
-	kept, missing, deselected int
+	// longer selected; tombstones adds items of the selected resource the
+	// connector reports deleted.
+	kept, missing, deselected, tombstones int
 }
 
-// runReconcile syncs data source ds-a, whose connector emits doc:keep, against
-// a knowledge base that also holds items of ds-b. Besides the case's extra
-// items, ds-a owns four: doc:keep and its sub-item, and doc:gone and its
-// sub-item, both stale with no source resource. It returns the sync log and the
-// IDs of the knowledge items deleted.
-func runReconcile(t *testing.T, c reconcileCase) (*types.SyncLog, []string) {
+// reconcileHarness is data source ds-a in a knowledge base that also holds
+// items of ds-b. Its store persists across syncs, as does ds-a's cursor.
+type reconcileHarness struct {
+	ds   *types.DataSource
+	repo *reconcileRepo
+	ks   *sweepFakeKS
+	logs *processSyncSyncLogRepo
+	svc  *DataSourceService
+	// items is what the case's connector emits: doc:keep, the kept items and
+	// the tombstones.
+	items []types.FetchedItem
+}
+
+// newReconcileHarness builds ds-a for c. Besides the case's extra items, ds-a
+// owns four: doc:keep and its sub-item, and doc:gone and its sub-item, both
+// stale with no source resource.
+func newReconcileHarness(t *testing.T, c reconcileCase) *reconcileHarness {
 	t.Helper()
 	configJSON, err := (&types.DataSourceConfig{
 		Type: reconcileConnectorType, ResourceIDs: []string{reconcileSelection},
 	}).ToJSON()
 	require.NoError(t, err)
-	syncMode := types.SyncModeIncremental
 	ds := &types.DataSource{
 		ID: "ds-a", TenantID: 1, KnowledgeBaseID: "kb-1", Name: "Reconcile",
-		Type: reconcileConnectorType, Config: configJSON, SyncMode: syncMode,
+		Type: reconcileConnectorType, Config: configJSON, SyncMode: types.SyncModeIncremental,
 		Status: types.DataSourceStatusActive, SyncDeletions: c.syncDeletions,
-	}
-	syncLog := &types.SyncLog{
-		ID: "log-reconcile", DataSourceID: ds.ID, TenantID: ds.TenantID,
-		Status: types.SyncLogStatusRunning, StartedAt: time.Now().UTC(),
 	}
 	repo := &reconcileRepo{live: map[string]map[string]*types.Knowledge{
 		"ds-a": {
@@ -145,47 +190,92 @@ func runReconcile(t *testing.T, c reconcileCase) (*types.SyncLog, []string) {
 		},
 	}, sources: map[string]string{}}
 	items := []types.FetchedItem{{ExternalID: "doc:keep", Title: "keep"}}
-	own := func(prefix, source string, n int, emit bool) {
+	var tombstones []types.FetchedItem
+	own := func(prefix, source string, n int) []string {
+		ids := make([]string, n)
 		for i := range n {
-			ext := fmt.Sprintf("doc:%s-%04d", prefix, i)
-			repo.live["ds-a"][ext] = &types.Knowledge{ID: "k-" + ext, Title: fmt.Sprintf("%s %d", prefix, i)}
-			repo.sources[ext] = source
-			if emit {
-				items = append(items, types.FetchedItem{ExternalID: ext})
-			}
+			ids[i] = fmt.Sprintf("doc:%s-%04d", prefix, i)
+			repo.live["ds-a"][ids[i]] = &types.Knowledge{ID: "k-" + ids[i], Title: fmt.Sprintf("%s %d", prefix, i)}
+			repo.sources[ids[i]] = source
 		}
+		return ids
 	}
-	own("kept", reconcileSelection, c.kept, true)
-	own("missing", reconcileSelection, c.missing, false)
-	own("deselected", "res-old", c.deselected, false)
+	for _, id := range own("kept", reconcileSelection, c.kept) {
+		items = append(items, types.FetchedItem{ExternalID: id})
+	}
+	own("missing", reconcileSelection, c.missing)
+	own("deselected", "res-old", c.deselected)
+	for _, id := range own("tomb", reconcileSelection, c.tombstones) {
+		tombstones = append(tombstones, types.FetchedItem{ExternalID: id, IsDeleted: true})
+	}
 	if c.emitNothing {
 		items = nil
 	}
 	ks := &sweepFakeKS{repo: repo, deleteErr: c.deleteErr}
-	syncLogRepo := &processSyncSyncLogRepo{logs: map[string]*types.SyncLog{syncLog.ID: syncLog}}
-	registry := datasource.NewConnectorRegistry()
-	require.NoError(t, registry.Register(reconcileConnector{items: items, complete: c.complete}))
-	svc := &DataSourceService{
-		dsRepo:           newKBDeleteDSRepo(ds.KnowledgeBaseID, ds),
-		syncLogRepo:      syncLogRepo,
-		knowledgeService: ks,
-		kbService: &processSyncKBService{
-			kb: &types.KnowledgeBase{ID: ds.KnowledgeBaseID, TenantID: ds.TenantID},
+	logs := &processSyncSyncLogRepo{logs: map[string]*types.SyncLog{}}
+	return &reconcileHarness{
+		ds: ds, repo: repo, ks: ks, logs: logs, items: append(items, tombstones...),
+		svc: &DataSourceService{
+			dsRepo:           newKBDeleteDSRepo(ds.KnowledgeBaseID, ds),
+			syncLogRepo:      logs,
+			knowledgeService: ks,
+			kbService: &processSyncKBService{
+				kb: &types.KnowledgeBase{ID: ds.KnowledgeBaseID, TenantID: ds.TenantID},
+			},
+			tenantRepo: &processSyncTenantRepo{tenant: &types.Tenant{ID: ds.TenantID}},
+			tagService: &processSyncTagService{},
 		},
-		connectorRegistry: registry,
-		tenantRepo:        &processSyncTenantRepo{tenant: &types.Tenant{ID: ds.TenantID}},
-		tagService:        &processSyncTagService{},
 	}
+}
+
+// sync runs one ProcessSync through conn and returns its sync log and error.
+func (h *reconcileHarness) sync(
+	t *testing.T, conn datasource.Connector, forceFull, allowMass bool,
+) (*types.SyncLog, error) {
+	t.Helper()
+	logID := fmt.Sprintf("log-%d", len(h.logs.logs))
+	h.logs.logs[logID] = &types.SyncLog{
+		ID: logID, DataSourceID: h.ds.ID, TenantID: h.ds.TenantID,
+		Status: types.SyncLogStatusRunning, StartedAt: time.Now().UTC(),
+	}
+	registry := datasource.NewConnectorRegistry()
+	require.NoError(t, registry.Register(conn))
+	h.svc.connectorRegistry = registry
 	payload, err := json.Marshal(types.DataSourceSyncPayload{
-		DataSourceID: ds.ID, TenantID: ds.TenantID, SyncLogID: syncLog.ID, ForceFull: c.forceFull,
-		AllowMassDeletion: c.allowMass,
+		DataSourceID: h.ds.ID, TenantID: h.ds.TenantID, SyncLogID: logID, ForceFull: forceFull,
+		AllowMassDeletion: allowMass,
 	})
 	require.NoError(t, err)
-	require.NoError(t, svc.ProcessSync(context.Background(), asynq.NewTask(types.TypeDataSourceSync, payload)))
+	err = h.svc.ProcessSync(context.Background(), asynq.NewTask(types.TypeDataSourceSync, payload))
+	return h.logs.logs[logID], err
+}
 
-	deleted := append([]string(nil), ks.deleted...)
+// deleted returns the sorted IDs of the knowledge items deleted so far.
+func (h *reconcileHarness) deleted() []string {
+	deleted := append([]string(nil), h.ks.deleted...)
 	sort.Strings(deleted)
-	return syncLogRepo.logs[syncLog.ID], deleted
+	return deleted
+}
+
+// pending returns the deletions ds-a's stored cursor carries to the next run.
+func (h *reconcileHarness) pending(t *testing.T) []string {
+	t.Helper()
+	cursor, err := h.ds.ParseSyncCursor()
+	require.NoError(t, err)
+	if cursor == nil {
+		return nil
+	}
+	return cursor.PendingDeletions
+}
+
+// runReconcile runs one batch sync of c and returns the sync log and the IDs
+// of the knowledge items deleted.
+func runReconcile(t *testing.T, c reconcileCase) (*types.SyncLog, []string) {
+	t.Helper()
+	h := newReconcileHarness(t, c)
+	log, err := h.sync(t, reconcileConnector{items: h.items, complete: c.complete}, c.forceFull, c.allowMass)
+	require.NoError(t, err)
+	return log, h.deleted()
 }
 
 // reconcileReport decodes the reconcile section of a sync log's result.
@@ -236,8 +326,8 @@ func TestProcessSync_FullSyncReconcileCountsFailedDeletions(t *testing.T) {
 	assert.Equal(t, 2, log.ItemsFailed)
 	assert.Equal(t, 2, deletionFailedCount(t, log))
 	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
-	assert.Equal(t, "2 document(s) failed to sync; 2 deletion(s) failed, "+
-		"the next full sync retries them when its listing is complete", log.ErrorMessage)
+	assert.Equal(t, "2 document(s) failed to sync; 2 deletion(s) failed, the next sync retries them",
+		log.ErrorMessage)
 }
 
 func TestProcessSync_FullSyncReconcileSkipsEmptyListing(t *testing.T) {
@@ -392,4 +482,142 @@ func TestManualSync_CarriesAllowMassDeletionInTheRunPayload(t *testing.T) {
 		assert.Equal(t, allow, payload.AllowMassDeletion)
 		assert.False(t, payload.ForceFull)
 	}
+}
+
+// tombIDs returns the external IDs of the first n tombstoned items.
+func tombIDs(n int) []string {
+	ids := make([]string, n)
+	for i := range ids {
+		ids[i] = fmt.Sprintf("doc:tomb-%04d", i)
+	}
+	return ids
+}
+
+// The reported DingTalk failure: 1000 documents, an incremental run lists 100
+// from a scope not marked failed, and the connector tombstones the other 900.
+func TestProcessSync_ConnectorTombstonesPastTheGuardAreHeld(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, kept: 99, tombstones: 900})
+	log, err := h.sync(t, reconcileConnector{items: h.items}, false, false)
+	require.NoError(t, err)
+
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, 0, log.ItemsDeleted)
+	assert.Equal(t, 1000, log.ItemsTotal)
+	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
+	assert.Equal(t, "Deletions held back: 900 item(s), 89% of the 1003 this data source owns "+
+		"(0 from resources removed from the selection); run Sync and apply deletions if this is expected",
+		log.ErrorMessage)
+	report := reconcileReport(t, log)
+	assert.Equal(t, "deletion_guard_tripped", report.Held.Code)
+	assert.Equal(t, map[string]string{"count": "900", "owned": "1003", "percent": "89", "deselected": "0"},
+		report.Held.Params)
+	assert.True(t, report.Overridable)
+	assert.Equal(t, 900, report.Missing)
+	assert.Len(t, report.Pending, 100)
+	assert.Equal(t, "tomb 0", report.Pending[0])
+	assert.Equal(t, tombIDs(900), h.pending(t))
+
+	// The connector has dropped the tombstones from its cursor; the held set
+	// keeps them, and a later unguarded run holds them again.
+	log, err = h.sync(t, reconcileConnector{items: h.items[:1]}, false, false)
+	require.NoError(t, err)
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
+	assert.Equal(t, "900", reconcileReport(t, log).Held.Params["count"])
+	assert.Equal(t, tombIDs(900), h.pending(t))
+}
+
+func TestProcessSync_OverrideAppliesHeldTombstonesItsListingNoLongerEmits(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, kept: 99, tombstones: 900})
+	_, err := h.sync(t, reconcileConnector{items: h.items}, false, false)
+	require.NoError(t, err)
+	require.Len(t, h.pending(t), 900)
+
+	log, err := h.sync(t, reconcileConnector{items: h.items[:1]}, false, true)
+	require.NoError(t, err)
+
+	assert.Len(t, h.deleted(), 900)
+	assert.Equal(t, "k-doc:tomb-0000", h.deleted()[0])
+	assert.Equal(t, 900, log.ItemsDeleted)
+	assert.Equal(t, 901, log.ItemsTotal)
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Equal(t, &types.SyncReconcile{Missing: 900}, reconcileReport(t, log))
+	assert.Nil(t, h.pending(t))
+}
+
+func TestProcessSync_TombstonesUnderTheGuardApplyInAnIncrementalRun(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, kept: 97, tombstones: 3})
+	log, err := h.sync(t, reconcileConnector{items: h.items}, false, false)
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"k-doc:tomb-0000", "k-doc:tomb-0001", "k-doc:tomb-0002"}, h.deleted())
+	assert.Equal(t, 3, log.ItemsDeleted)
+	assert.Equal(t, 101, log.ItemsTotal)
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Equal(t, &types.SyncReconcile{Missing: 3}, reconcileReport(t, log))
+	assert.Nil(t, h.pending(t))
+}
+
+// Tombstones are not part of the listing, so a full sync that emits nothing
+// else listed nothing.
+func TestProcessSync_ListingOfOnlyTombstonesIsHeldAsEmpty(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{
+		syncDeletions: true, forceFull: true, complete: true, emitNothing: true, tombstones: 2,
+	})
+	log, err := h.sync(t, reconcileConnector{items: h.items, complete: true}, true, false)
+	require.NoError(t, err)
+
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
+	assert.Equal(t, &types.SyncItemError{
+		Code: "reconcile_listing_empty", Params: map[string]string{"owned": "6"},
+		Message: "Deletions held back: the listing returned nothing while the data source owns 6 item(s)",
+	}, reconcileReport(t, log).Held)
+	assert.Equal(t, []string{
+		"doc:gone", "doc:gone#file#2", "doc:keep", "doc:keep#image#1", "doc:tomb-0000", "doc:tomb-0001",
+	}, h.pending(t))
+}
+
+func TestProcessSync_StreamingTombstonesPastTheGuardAreHeld(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, kept: 99, tombstones: 900})
+	log, err := h.sync(t, streamOf(h.items, nil), false, false)
+	require.NoError(t, err)
+
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, types.SyncLogStatusPartial, log.Status)
+	assert.Equal(t, "deletion_guard_tripped", reconcileReport(t, log).Held.Code)
+	assert.Equal(t, tombIDs(900), h.pending(t))
+}
+
+// A streaming run that fails after checkpointing past a tombstone keeps the
+// tombstone in the same cursor write, so the next run applies it.
+func TestProcessSync_StreamingCheckpointKeepsDeferredTombstones(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true, tombstones: 1})
+	log, err := h.sync(t, streamOf(h.items, errors.New("reset")), false, false)
+	require.Error(t, err)
+
+	assert.Equal(t, types.SyncLogStatusFailed, log.Status)
+	assert.Empty(t, h.deleted())
+	cursor, err := h.ds.ParseSyncCursor()
+	require.NoError(t, err)
+	assert.Equal(t, float64(2), cursor.ConnectorCursor["emitted"])
+	assert.Equal(t, []string{"doc:tomb-0000"}, cursor.PendingDeletions)
+
+	log, err = h.sync(t, streamOf(h.items[:1], nil), false, false)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"k-doc:tomb-0000"}, h.deleted())
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Nil(t, h.pending(t))
+}
+
+// Confluence Cloud's case: the connector type reconciles, this configuration
+// cannot, so a full sync neither reconciles nor reports an incomplete listing.
+func TestProcessSync_ConfigWithoutCompleteListingsDoesNotReconcile(t *testing.T) {
+	h := newReconcileHarness(t, reconcileCase{syncDeletions: true})
+	log, err := h.sync(t, reconcileConnector{items: h.items, complete: true, incompleteConfig: true}, true, false)
+	require.NoError(t, err)
+
+	assert.Empty(t, h.deleted())
+	assert.Equal(t, types.SyncLogStatusSuccess, log.Status)
+	assert.Nil(t, reconcileReport(t, log))
 }

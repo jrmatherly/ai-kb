@@ -435,6 +435,13 @@ type SyncCursor struct {
 	// knowledge items that the run did not emit. A connector that cannot promise
 	// both leaves it false. Never persisted.
 	CompleteListing bool `json:"-"`
+
+	// PendingDeletions holds the external IDs of knowledge items whose deletion
+	// a sync collected but did not apply: held back by the mass-deletion guard,
+	// failed, or deferred when a streaming run checkpointed. The service owns it
+	// and settles it on the next run, since connectors drop a tombstone from
+	// their own cursor state once emitted.
+	PendingDeletions []string `json:"pending_deletions,omitempty"`
 }
 
 // SyncResult summarizes the outcome of a sync operation
@@ -457,34 +464,37 @@ type SyncResult struct {
 	// Items that failed
 	Failed int `json:"failed"`
 
-	// Deleted items whose KB deletion failed (a subset of Failed). Past the
-	// connector cursor, so only the reconcile of a later complete full sync
-	// retries them.
+	// Deleted items whose KB deletion failed (a subset of Failed). They stay in
+	// the cursor's PendingDeletions, so the next sync retries them.
 	DeletionFailed int `json:"deletion_failed,omitempty"`
 
 	// Per-item failure samples (capped), shown in the sync-log UI.
 	Errors []SyncItemError `json:"errors,omitempty"`
 
-	// Reconcile reports a full sync's deletion reconcile; nil when the run could
-	// not reconcile (not full mode, deletion sync off, or no connector support).
+	// Reconcile reports the run's deletions: connector tombstones, deletions
+	// left pending by earlier runs and, on a full sync, items missing from a
+	// complete listing. nil when the run had none to consider.
 	Reconcile *SyncReconcile `json:"reconcile,omitempty"`
 
 	// Updated cursor for next incremental sync
 	NextCursor *SyncCursor `json:"next_cursor,omitempty"`
 }
 
-// SyncReconcile reports what a full sync's deletion reconcile found: the owned
-// knowledge items the run did not emit, split by why they are stale.
+// SyncReconcile reports what a sync run's deletions found: the owned knowledge
+// items it would delete, split by why.
 type SyncReconcile struct {
-	// Deselected counts stale items whose source resource is no longer
-	// selected; Missing counts the rest (gone from the source, filtered out by a
-	// setting, or of unknown origin).
+	// Deselected counts items whose source resource is no longer selected;
+	// Missing counts the rest (gone from the source, filtered out by a setting,
+	// or of unknown origin).
 	Deselected int `json:"deselected"`
 	Missing    int `json:"missing"`
-	// Held is set when the reconcile deleted nothing on purpose. Its Code says
-	// why (deletion_guard_tripped, reconcile_listing_empty,
+	// Held is set when the run deleted nothing on purpose. Its Code says why
+	// (deletion_guard_tripped, reconcile_listing_empty,
 	// reconcile_listing_incomplete) and is localized like SyncItemError.Code.
 	Held *SyncItemError `json:"held,omitempty"`
+	// Overridable is set when a manual sync with allow_mass_deletion would
+	// apply the held deletions.
+	Overridable bool `json:"overridable,omitempty"`
 	// Pending samples the titles of the items the guard held back.
 	Pending []string `json:"pending,omitempty"`
 }
@@ -563,9 +573,9 @@ type DataSourceSyncPayload struct {
 	// Force full sync even if incremental mode is configured
 	ForceFull bool `json:"force_full"`
 
-	// AllowMassDeletion lets this run's full-sync reconcile delete past the
-	// mass-deletion guard. Set only by a manual sync that asks for it; never
-	// stored on the data source.
+	// AllowMassDeletion lets this run apply its deletions, and those earlier
+	// runs held back, past the mass-deletion guard. Set only by a manual sync
+	// that asks for it; never stored on the data source.
 	AllowMassDeletion bool `json:"allow_mass_deletion,omitempty"`
 
 	// Maximum number of items to fetch (0 = unlimited)

@@ -49,11 +49,13 @@ export interface SyncResultDetail {
   reconcile?: SyncReconcile
 }
 
-/** A full sync's deletion reconcile. `held` says why it deleted nothing. */
+/** A sync's deletions. `held` says why it deleted nothing. */
 export interface SyncReconcile {
   deselected: number
   missing: number
   held?: SyncItemError
+  /** A manual sync with allow_mass_deletion would apply the held deletions. */
+  overridable?: boolean
   /** Titles of the items the mass-deletion guard held back (capped). */
   pending?: string[]
 }
@@ -146,8 +148,8 @@ export function resolveResourceAncestors(id: string, resourceIds: string[]) {
   return post(`/api/v1/datasource/${id}/resource-ancestors`, { resource_ids: resourceIds }, { timeout: 120000 })
 }
 
-// allowMassDeletion lets this one run apply the deletions the full-sync
-// reconcile's mass-deletion guard held back; it is never saved.
+// allowMassDeletion lets this one run apply the deletions the mass-deletion
+// guard held back; it is never saved.
 export function triggerSync(id: string, opts: { allowMassDeletion?: boolean } = {}) {
   return post(`/api/v1/datasource/${id}/sync`, opts.allowMassDeletion ? { allow_mass_deletion: true } : {})
 }

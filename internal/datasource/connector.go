@@ -172,51 +172,82 @@ type ConnectorMetadata struct {
 	Capabilities []string `json:"capabilities"` // "incremental", "webhook", "deletion_sync", etc.
 }
 
-// CapabilityFullSyncReconcile marks a connector that sets
+// CapabilityFullSyncReconcile marks a connector type that can set
 // types.SyncCursor.CompleteListing, so a full sync with deletion sync on
-// deletes knowledge items missing from a complete listing.
+// deletes knowledge items missing from a complete listing. Its connectors also
+// delete the items of a resource taken out of the selection.
 const CapabilityFullSyncReconcile = "full_sync_reconcile"
 
-// ReconcilesOnFullSync reports whether a connector type declares
-// CapabilityFullSyncReconcile.
-func ReconcilesOnFullSync(connectorType string) bool {
-	return slices.Contains(ConnectorMetadataRegistry[connectorType].Capabilities, CapabilityFullSyncReconcile)
+// CapabilitySelectionTracksSource marks a connector whose items store, as
+// source_resource_id, the selected resource ID they were listed under, so an
+// item whose ID is no longer selected was deselected. Seafile lacks it: it
+// stores the library root while the selection may name folders inside it.
+const CapabilitySelectionTracksSource = "selection_tracks_source"
+
+// HasCapability reports whether a connector type declares capability.
+func HasCapability(connectorType, capability string) bool {
+	return slices.Contains(ConnectorMetadataRegistry[connectorType].Capabilities, capability)
+}
+
+// ConfigDependentListing is implemented by a connector declaring
+// CapabilityFullSyncReconcile that reports a complete listing only under some
+// configurations (Confluence: Server/DC, not Cloud).
+type ConfigDependentListing interface {
+	ReportsCompleteListing(config *types.DataSourceConfig) bool
+}
+
+// ReconcilesFullSync reports whether a full sync of c under config can report
+// a complete listing and so reconcile deletions.
+func ReconcilesFullSync(c Connector, config *types.DataSourceConfig) bool {
+	if !HasCapability(c.Type(), CapabilityFullSyncReconcile) {
+		return false
+	}
+	l, ok := c.(ConfigDependentListing)
+	return !ok || l.ReportsCompleteListing(config)
 }
 
 // GetConnectorMetadata returns metadata for all available connectors
 // This is used by the frontend to display connector options
 var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 	types.ConnectorTypeFeishu: {
-		Type:         types.ConnectorTypeFeishu,
-		Name:         "Feishu",
-		Description:  "Sync documents, wikis, and content from Feishu",
-		Priority:     0,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeFeishu,
+		Name:        "Feishu",
+		Description: "Sync documents, wikis, and content from Feishu",
+		Priority:    0,
+		AuthType:    "oauth2",
+		Capabilities: []string{
+			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+		},
 	},
 	types.ConnectorTypeLark: {
-		Type:         types.ConnectorTypeLark,
-		Name:         "Lark",
-		Description:  "Sync documents, wikis, and content from Lark (Feishu international)",
-		Priority:     0,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeLark,
+		Name:        "Lark",
+		Description: "Sync documents, wikis, and content from Lark (Feishu international)",
+		Priority:    0,
+		AuthType:    "oauth2",
+		Capabilities: []string{
+			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+		},
 	},
 	types.ConnectorTypeFeishuDrive: {
-		Type:         types.ConnectorTypeFeishuDrive,
-		Name:         "Feishu Drive",
-		Description:  "Sync documents and files from a Feishu Drive folder",
-		Priority:     0,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeFeishuDrive,
+		Name:        "Feishu Drive",
+		Description: "Sync documents and files from a Feishu Drive folder",
+		Priority:    0,
+		AuthType:    "oauth2",
+		Capabilities: []string{
+			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+		},
 	},
 	types.ConnectorTypeLarkDrive: {
-		Type:         types.ConnectorTypeLarkDrive,
-		Name:         "Lark Drive",
-		Description:  "Sync documents and files from a Lark Drive folder",
-		Priority:     0,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeLarkDrive,
+		Name:        "Lark Drive",
+		Description: "Sync documents and files from a Lark Drive folder",
+		Priority:    0,
+		AuthType:    "oauth2",
+		Capabilities: []string{
+			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+		},
 	},
 	types.ConnectorTypeNotion: {
 		Type:         types.ConnectorTypeNotion,
@@ -227,12 +258,14 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Capabilities: []string{"incremental"},
 	},
 	types.ConnectorTypeConfluence: {
-		Type:         types.ConnectorTypeConfluence,
-		Name:         "Confluence",
-		Description:  "Sync spaces and pages from Atlassian Confluence",
-		Priority:     2,
-		AuthType:     "api_key",
-		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeConfluence,
+		Name:        "Confluence",
+		Description: "Sync spaces and pages from Atlassian Confluence",
+		Priority:    2,
+		AuthType:    "api_key",
+		Capabilities: []string{
+			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+		},
 	},
 	types.ConnectorTypeYuque: {
 		Type:         types.ConnectorTypeYuque,
@@ -275,12 +308,14 @@ var ConnectorMetadataRegistry = map[string]ConnectorMetadata{
 		Capabilities: []string{"incremental"},
 	},
 	types.ConnectorTypeDingTalk: {
-		Type:         types.ConnectorTypeDingTalk,
-		Name:         "DingTalk",
-		Description:  "Sync online documents from DingTalk knowledge bases",
-		Priority:     7,
-		AuthType:     "oauth2",
-		Capabilities: []string{"incremental", "deletion_sync", CapabilityFullSyncReconcile},
+		Type:        types.ConnectorTypeDingTalk,
+		Name:        "DingTalk",
+		Description: "Sync online documents from DingTalk knowledge bases",
+		Priority:    7,
+		AuthType:    "oauth2",
+		Capabilities: []string{
+			"incremental", "deletion_sync", CapabilityFullSyncReconcile, CapabilitySelectionTracksSource,
+		},
 	},
 	types.ConnectorTypeWebCrawler: {
 		Type:         types.ConnectorTypeWebCrawler,
