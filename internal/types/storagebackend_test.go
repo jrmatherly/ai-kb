@@ -3,6 +3,7 @@ package types
 import (
 	"testing"
 
+	"github.com/jrmatherly/ai-kb/internal/storageallowlist"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -75,4 +76,36 @@ func TestStorageBackendRejectsTraversingPathPrefix(t *testing.T) {
 		Config: StorageBackendConfig{PathPrefix: "../outside"},
 	}
 	require.Error(t, backend.Validate())
+}
+
+// S3 needs only a region and a bucket: an empty endpoint means AWS itself, and
+// no keys means the AWS default credential chain (IAM roles, IRSA, env).
+func TestStorageBackendS3Validation(t *testing.T) {
+	cases := []struct {
+		name string
+		cfg  StorageBackendConfig
+		want string
+	}{
+		{"default chain on AWS", StorageBackendConfig{Region: "us-east-1", BucketName: "b"}, ""},
+		{"static keys", StorageBackendConfig{
+			Region: "us-east-1", BucketName: "b", AccessKeyID: "ak", SecretAccessKey: "sk",
+		}, ""},
+		{"half a key pair", StorageBackendConfig{
+			Region: "us-east-1", BucketName: "b", AccessKeyID: "ak",
+		}, "access_key_id and secret_access_key must be set together"},
+		{"no region", StorageBackendConfig{BucketName: "b"}, "region is required"},
+		{"no bucket", StorageBackendConfig{Region: "us-east-1"}, "bucket_name is required"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv(storageallowlist.AllowListEnv, "")
+			err := (&StorageBackend{TenantID: 1, Name: "s3", Provider: "s3", Config: tc.cfg}).Validate()
+			if tc.want == "" {
+				require.NoError(t, err)
+				return
+			}
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tc.want)
+		})
+	}
 }

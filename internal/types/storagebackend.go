@@ -198,6 +198,19 @@ func (c StorageBackendConfig) ValidateForProvider(provider string) error {
 			}
 		}
 		return nil
+	case "s3":
+		// An empty endpoint targets AWS itself and no keys selects the AWS default
+		// credential chain, as in the S3 file service.
+		if err := required("region", c.Region); err != nil {
+			return err
+		}
+		if err := required("bucket_name", c.BucketName); err != nil {
+			return err
+		}
+		if (strings.TrimSpace(c.AccessKeyID) == "") != (strings.TrimSpace(c.SecretAccessKey) == "") {
+			return errors.NewValidationError("access_key_id and secret_access_key must be set together")
+		}
+		return nil
 	default:
 		for name, value := range map[string]string{"endpoint": c.Endpoint, "region": c.Region, "access_key_id": c.AccessKeyID, "secret_access_key": c.SecretAccessKey, "bucket_name": c.BucketName} {
 			if err := required(name, value); err != nil {
