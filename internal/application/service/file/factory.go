@@ -97,44 +97,20 @@ func NewFileServiceFromStorageConfig(
 		return svc, p, err
 
 	case "obs":
-		obsEndpoint, obsRegion, obsAccessKey := "", "", ""
-		obsSecretKey, obsBucketName, obsPathPrefix := "", "", ""
-		if sec != nil && sec.OBS != nil {
-			obsEndpoint = strings.TrimSpace(sec.OBS.Endpoint)
-			obsRegion = strings.TrimSpace(sec.OBS.Region)
-			obsAccessKey = strings.TrimSpace(sec.OBS.AccessKey)
-			obsSecretKey = strings.TrimSpace(sec.OBS.SecretKey)
-			obsBucketName = strings.TrimSpace(sec.OBS.BucketName)
-			obsPathPrefix = strings.TrimSpace(sec.OBS.PathPrefix)
-		}
-		if obsEndpoint == "" {
-			obsEndpoint = strings.TrimSpace(os.Getenv("OBS_ENDPOINT"))
-		}
-		if obsRegion == "" {
-			obsRegion = strings.TrimSpace(os.Getenv("OBS_REGION"))
-		}
-		if obsAccessKey == "" {
-			obsAccessKey = strings.TrimSpace(os.Getenv("OBS_ACCESS_KEY"))
-		}
-		if obsSecretKey == "" {
-			obsSecretKey = strings.TrimSpace(os.Getenv("OBS_SECRET_KEY"))
-		}
-		if obsBucketName == "" {
-			obsBucketName = strings.TrimSpace(os.Getenv("OBS_BUCKET_NAME"))
-		}
-		if obsPathPrefix == "" {
-			obsPathPrefix = strings.TrimSpace(os.Getenv("OBS_PATH_PREFIX"))
-		}
-		if obsPathPrefix == "" {
-			obsPathPrefix = "aikb/"
-		}
-		if obsEndpoint == "" || obsAccessKey == "" || obsSecretKey == "" || obsBucketName == "" {
+		if sec == nil || sec.OBS == nil || sec.OBS.Endpoint == "" || sec.OBS.AccessKey == "" ||
+			sec.OBS.SecretKey == "" || sec.OBS.BucketName == "" {
 			return nil, p, fmt.Errorf("incomplete obs config")
 		}
-		if obsRegion == "" {
-			obsRegion = "cn-north-4"
+		region := strings.TrimSpace(sec.OBS.Region)
+		if region == "" {
+			region = "cn-north-4"
 		}
-		svc, err := NewObsFileService(obsEndpoint, obsRegion, obsAccessKey, obsSecretKey, obsBucketName, obsPathPrefix)
+		pathPrefix := strings.TrimSpace(sec.OBS.PathPrefix)
+		if pathPrefix == "" {
+			pathPrefix = "aikb/"
+		}
+		svc, err := NewObsFileService(strings.TrimSpace(sec.OBS.Endpoint), region, strings.TrimSpace(sec.OBS.AccessKey),
+			strings.TrimSpace(sec.OBS.SecretKey), strings.TrimSpace(sec.OBS.BucketName), pathPrefix)
 		return svc, p, err
 
 	case "oss":

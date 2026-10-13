@@ -743,27 +743,9 @@ func storageConfigComplete(provider string, sec *types.StorageEngineConfig) bool
 		return set(x.Endpoint, x.Region, x.AccessKey, x.SecretKey, x.BucketName)
 	case provider == "obs" && sec.OBS != nil:
 		x := sec.OBS
-		return set(x.Endpoint, x.Region, x.AccessKey, x.SecretKey, x.BucketName)
+		return set(x.Endpoint, x.AccessKey, x.SecretKey, x.BucketName)
 	}
 	return false
-}
-
-// isTOSEnvAvailable checks whether TOS env vars are set.
-func (h *SystemHandler) isTOSEnvAvailable() bool {
-	return os.Getenv("TOS_ENDPOINT") != "" &&
-		os.Getenv("TOS_REGION") != "" &&
-		os.Getenv("TOS_ACCESS_KEY") != "" &&
-		os.Getenv("TOS_SECRET_KEY") != "" &&
-		os.Getenv("TOS_BUCKET_NAME") != ""
-}
-
-// isOBSEnvAvailable checks whether OBS env vars are set.
-func (h *SystemHandler) isOBSEnvAvailable() bool {
-	return os.Getenv("OBS_ENDPOINT") != "" &&
-		os.Getenv("OBS_REGION") != "" &&
-		os.Getenv("OBS_ACCESS_KEY") != "" &&
-		os.Getenv("OBS_SECRET_KEY") != "" &&
-		os.Getenv("OBS_BUCKET_NAME") != ""
 }
 
 // StorageEngineStatusItem describes one storage engine's availability and description.
@@ -803,11 +785,11 @@ func (h *SystemHandler) GetStorageEngineStatus(c *gin.Context) {
 			storageConfigComplete(provider, envSec)
 	}
 	cosConfigured := configured("cos")
-	tosConfigured := configured("tos") || h.isTOSEnvAvailable()
+	tosConfigured := configured("tos")
 	s3Configured := configured("s3")
 	ossConfigured := configured("oss")
 	ks3Configured := configured("ks3")
-	obsConfigured := configured("obs") || h.isOBSEnvAvailable()
+	obsConfigured := configured("obs")
 	allowed := getAllowedStorageProviders()
 	allowedProviders := make([]string, 0, len(getSupportedStorageProviders()))
 	for _, provider := range getSupportedStorageProviders() {

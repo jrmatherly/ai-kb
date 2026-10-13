@@ -24,6 +24,22 @@ func TestStorageEngineStatusReportsEnvConfiguredBackend(t *testing.T) {
 		},
 		"cos": {"COS_REGION": "ap-guangzhou", "COS_SECRET_ID": "ak", "COS_SECRET_KEY": "sk", "COS_BUCKET_NAME": "b"},
 		"s3":  {"S3_REGION": "us-east-1", "S3_ACCESS_KEY": "ak", "S3_SECRET_KEY": "sk", "S3_BUCKET_NAME": "b"},
+		"tos": {
+			"TOS_ENDPOINT": "tos-cn-beijing.volces.com", "TOS_REGION": "cn-beijing",
+			"TOS_ACCESS_KEY": "ak", "TOS_SECRET_KEY": "sk", "TOS_BUCKET_NAME": "b",
+		},
+		// OBS_REGION is optional: the file service defaults it.
+		"obs": {
+			"OBS_ENDPOINT":   "obs.cn-north-4.myhuaweicloud.com",
+			"OBS_ACCESS_KEY": "ak", "OBS_SECRET_KEY": "sk", "OBS_BUCKET_NAME": "b",
+		},
+		// Credentials for providers other than STORAGE_TYPE configure nothing.
+		"local": {
+			"TOS_ENDPOINT": "tos-cn-beijing.volces.com", "TOS_REGION": "cn-beijing",
+			"TOS_ACCESS_KEY": "ak", "TOS_SECRET_KEY": "sk", "TOS_BUCKET_NAME": "b",
+			"OBS_ENDPOINT": "obs.cn-north-4.myhuaweicloud.com", "OBS_REGION": "cn-north-4",
+			"OBS_ACCESS_KEY": "ak", "OBS_SECRET_KEY": "sk", "OBS_BUCKET_NAME": "b",
+		},
 	}
 	for provider, env := range cases {
 		t.Run(provider, func(t *testing.T) {
@@ -50,8 +66,8 @@ func TestStorageEngineStatusReportsEnvConfiguredBackend(t *testing.T) {
 				available[e.Name] = e.Available
 			}
 			require.Equal(t, map[string]bool{
-				"local": true, "minio": false, "cos": provider == "cos", "tos": false,
-				"s3": provider == "s3", "oss": provider == "oss", "ks3": provider == "ks3", "obs": false,
+				"local": true, "minio": false, "cos": provider == "cos", "tos": provider == "tos",
+				"s3": provider == "s3", "oss": provider == "oss", "ks3": provider == "ks3", "obs": provider == "obs",
 			}, available)
 		})
 	}
