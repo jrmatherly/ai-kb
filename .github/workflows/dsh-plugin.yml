@@ -271,8 +271,8 @@ jobs:
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # Trusted publishing (OIDC, id-token: write above) with no token. npm only accepts a trusted
+      # publisher for a package that already exists, so the first version is published by hand.
       - name: 🚀 Publish
         if: steps.check_npm.outputs.should_publish == 'true'
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
