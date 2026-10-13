@@ -41,7 +41,7 @@
     <input
       ref="fileInputRef"
       type="file"
-      accept=".pdf,.doc,.docx,.txt,.md,.csv,.xlsx,.xls,.ppt,.pptx,application/pdf,text/plain"
+      accept=".pdf,.doc,.docx,.txt,.md,.csv,.xlsx,.xls,.xlsb,.ppt,.pptx,application/pdf,text/plain"
       multiple
       class="embed-hidden-file-input"
       @change="handleFileSelect"

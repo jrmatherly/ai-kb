@@ -33,6 +33,8 @@ test('resolvePreviewKind covers office, tables, html, media, and code', () => {
   assert.equal(resolvePreviewKind('ppt'), 'unsupported')
   // SheetJS renders legacy .xls fine, so it stays previewable.
   assert.equal(resolvePreviewKind('xls'), 'excel')
+  // SheetJS also reads the binary .xlsb workbook.
+  assert.equal(resolvePreviewKind('xlsb'), 'excel')
   assert.equal(resolvePreviewKind('png'), 'image')
   assert.equal(resolvePreviewKind('svg'), 'image')
   assert.equal(resolvePreviewKind('md'), 'markdown')

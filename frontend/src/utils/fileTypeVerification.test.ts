@@ -24,3 +24,8 @@ test('XMind uploads work before engine discovery and respect discovered capabili
     assert.equal(shouldRejectKnowledgeFileType(filename, ['pdf']), true)
   }
 })
+
+test('binary Excel workbooks are accepted before engine discovery', () => {
+  assert.equal(shouldRejectKnowledgeFileType('ledger.xlsb'), false)
+  assert.equal(shouldRejectKnowledgeFileType('LEDGER.XLSB'), false)
+})

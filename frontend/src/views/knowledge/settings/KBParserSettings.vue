@@ -139,7 +139,7 @@ const fileTypeGroups = computed(() => {
   const pdfExts = ['pdf'].filter(e => ft.has(e))
   const officeExts = ['docx', 'doc'].filter(e => ft.has(e))
   const pptExts = ['pptx', 'ppt'].filter(e => ft.has(e))
-  const excelExts = ['xlsx', 'xls'].filter(e => ft.has(e))
+  const excelExts = ['xlsx', 'xls', 'xlsb'].filter(e => ft.has(e))
   const ebookExts = ['epub'].filter(e => ft.has(e))
   const webArchiveExts = ['mhtml'].filter(e => ft.has(e))
   const csvExts = ['csv'].filter(e => ft.has(e))

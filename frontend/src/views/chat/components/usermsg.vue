@@ -194,7 +194,7 @@ const getAttachmentIcon = (fileNameOrType) => {
     const ext = (fileNameOrType || '').split('.').pop()?.toLowerCase();
     if (['pdf'].includes(ext)) return 'file-pdf';
     if (['doc', 'docx'].includes(ext)) return 'file-word';
-    if (['xls', 'xlsx'].includes(ext)) return 'file-excel';
+    if (['xls', 'xlsx', 'xlsb'].includes(ext)) return 'file-excel';
     if (['ppt', 'pptx'].includes(ext)) return 'file-powerpoint';
     if (['txt', 'md'].includes(ext)) return 'file';
     if (['mp3', 'wav', 'm4a', 'flac', 'ogg', 'aac'].includes(ext)) return 'sound';

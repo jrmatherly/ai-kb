@@ -49,7 +49,7 @@ let disposed = false;
 // Supported file types (matching backend)
 const supportedTypes = ref([
   // Documents
-  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.epub', '.mhtml', '.xmind',
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.xlsb', '.ppt', '.pptx', '.epub', '.mhtml', '.xmind',
   // Text
   '.txt', '.md', '.csv', '.json', '.xml', '.html',
 	'.markdown', '.yaml', '.yml', '.log',
@@ -224,7 +224,7 @@ const getFileIcon = (fileName: string): string => {
   const ext = fileName.split('.').pop()?.toLowerCase();
   if (['pdf'].includes(ext || '')) return 'file-pdf';
   if (['doc', 'docx'].includes(ext || '')) return 'file-word';
-  if (['xls', 'xlsx'].includes(ext || '')) return 'file-excel';
+  if (['xls', 'xlsx', 'xlsb'].includes(ext || '')) return 'file-excel';
   if (['ppt', 'pptx'].includes(ext || '')) return 'file-powerpoint';
   if (['epub', 'mhtml'].includes(ext || '')) return 'file';
   if (['txt', 'md'].includes(ext || '')) return 'file';

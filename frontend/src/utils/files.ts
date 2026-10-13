@@ -29,7 +29,7 @@ export function getFileIcon(input: string | { type?: string; file_type?: string;
   if (!ext) return 'file';
   if (['pdf'].includes(ext)) return 'file-pdf';
   if (['doc', 'docx'].includes(ext)) return 'file-word';
-  if (['xls', 'xlsx', 'csv'].includes(ext)) return 'file-excel';
+  if (['xls', 'xlsx', 'xlsb', 'csv'].includes(ext)) return 'file-excel';
   if (['ppt', 'pptx'].includes(ext)) return 'file-powerpoint';
   // TDesign has no stable `file-text` glyph and renders a blank, so all plain-text types use `file`
   if (['txt', 'md', 'markdown', 'json', 'log', 'yaml', 'yml', 'xml'].includes(ext)) return 'file';

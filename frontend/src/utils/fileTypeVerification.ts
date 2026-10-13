@@ -17,6 +17,7 @@ const DEFAULT_VALID_TYPES = new Set([
   "csv",
   "xlsx",
   "xls",
+  "xlsb",
   "mp3",
   "wav",
   "m4a",
