@@ -757,7 +757,8 @@ func TestProcessSync_SyncDeletionsPartialWhenMixedResults(t *testing.T) {
 	assert.Equal(t, types.SyncLogStatusPartial, updated.Status)
 	assert.Equal(t, 1, updated.ItemsFailed)
 	assert.Equal(t, 1, updated.ItemsCreated)
-	assert.Contains(t, updated.ErrorMessage, "deletion failure(s) will only retry on the next full sync")
+	assert.Equal(t, "1 document(s) failed to sync; 1 deletion(s) failed and will not be retried, "+
+		"remove the item(s) from the knowledge base by hand", updated.ErrorMessage)
 }
 
 func TestIngestItem_URLCreationMetadataAttachFailure(t *testing.T) {

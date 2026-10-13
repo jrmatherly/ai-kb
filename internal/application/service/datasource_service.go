@@ -796,17 +796,13 @@ func (s *DataSourceService) ProcessSync(ctx context.Context, task *asynq.Task) e
 	}
 	if result.Failed > 0 {
 		// Per-document failures flip the sync to partial so the drawer shows
-		// which docs didn't make it (mirrors the streaming path). Deletion
-		// failures additionally only retry on a later full sync.
+		// which docs didn't make it (mirrors the streaming path).
 		syncStatus = types.SyncLogStatusPartial
 		if syncErrorMessage != "" {
 			syncErrorMessage += "; "
 		}
 		syncErrorMessage += fmt.Sprintf("%d document(s) failed to sync", result.Failed)
-		if result.DeletionFailed > 0 {
-			syncErrorMessage += fmt.Sprintf(
-				"; %d deletion failure(s) will only retry on the next full sync", result.DeletionFailed)
-		}
+		syncErrorMessage += deletionFailureNote(result.DeletionFailed)
 	}
 	s.updateSyncRunResult(ctx, ds, syncLog, result, resultJSON, syncStatus, syncErrorMessage, wasPaused)
 
@@ -866,6 +862,18 @@ func fetchFailureSyncError(item *types.FetchedItem, rawMsg string) types.SyncIte
 	return e
 }
 
+// deletionFailureNote is the sync-log suffix for failed deletions. Connectors
+// drop a tombstone from their cursor once it is emitted and Emit does not
+// report the deletion outcome, so no later sync, full or incremental, emits the
+// deletion again.
+func deletionFailureNote(failed int) string {
+	if failed == 0 {
+		return ""
+	}
+	return fmt.Sprintf("; %d deletion(s) failed and will not be retried, "+
+		"remove the item(s) from the knowledge base by hand", failed)
+}
+
 // applyFetchedItem writes a single fetched item into the knowledge base and
 // updates result counters. It is the shared core of the batch loop and the
 // streaming handler so item classification (deleted / empty / ingest outcome)
@@ -909,9 +917,8 @@ func (s *DataSourceService) applyFetchedItem(
 			return
 		}
 		if deleteErr := s.knowledgeService.DeleteKnowledge(ctx, existing.ID); deleteErr != nil {
-			// The cursor is already past this item, so a failed deletion normally
-			// retries only on a later full sync. Counted separately so the
-			// sync-log message can warn the operator about this gap.
+			// Counted separately so the sync log can tell the operator to finish
+			// the deletion by hand (see deletionFailureNote).
 			result.Failed++
 			result.DeletionFailed++
 			logger.Errorf(ctx, "failed to delete knowledge %s for external_id=%s (ds=%s): %v",
@@ -1151,16 +1158,13 @@ func (s *DataSourceService) processSyncStreaming(
 	// the visibility gap behind "status normal but not everything syncs"
 	// (Tencent/WeKnora#2136). Fetch failures abort the stream before the failed
 	// page is checkpointed, so the next run retries them; deletion failures are
-	// past the cursor and only retry on a full sync in the normal case (see
-	// applyFetchedItem).
+	// not retried (see deletionFailureNote).
 	status := types.SyncLogStatusSuccess
 	errMsg := ""
 	if result.Failed > 0 {
 		status = types.SyncLogStatusPartial
 		errMsg = fmt.Sprintf("%d document(s) failed to sync", result.Failed)
-		if result.DeletionFailed > 0 {
-			errMsg += fmt.Sprintf("; %d deletion failure(s) will only retry on the next full sync", result.DeletionFailed)
-		}
+		errMsg += deletionFailureNote(result.DeletionFailed)
 	}
 	s.updateSyncRunResult(ctx, ds, syncLog, result, resultJSON, status, errMsg, wasPaused)
 	logger.Infof(ctx, "streaming sync completed: ds=%s created=%d updated=%d deleted=%d skipped=%d failed=%d",
