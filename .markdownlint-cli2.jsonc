@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint-cli2/v0.23.3/schema/markdownlint-cli2-config-schema.json",
+  // markdownlint-cli2 (https://github.com/DavidAnson/markdownlint-cli2). Run from the repo root: npx --yes markdownlint-cli2@0.23.3 (add --fix to repair).
+  "globs": ["**/*.md"],
+  "gitignore": true,
+  "ignores": [
+    "**/node_modules/**",
+    // test fixtures: parsers and tests read these bytes, so a reformat changes test input
+    "**/testdata/**",
+    // vendored crate docs, not ours to reformat
+    "third_party/**",
+    // upstream history stays as upstream left it (upstream-review "Version and changelog")
+    "CHANGELOG.md",
+    "cli/CHANGELOG.md",
+    "mcp-server/CHANGELOG.md"
+  ],
+  "noProgress": true,
+  "config": {
+    "default": true,
+    // prose is one paragraph per line; wrapping adds nothing and churns every edit
+    "line-length": false,
+    // skills, agents and rules open with front matter; the README opens with a hero block
+    "first-line-heading": false,
+    // release notes and API pages repeat section names under different parents
+    "no-duplicate-heading": { "siblings_only": true },
+    // README hero (picture, badges, sub caption), VitePress Screenshot component, v-pre spans, index.md script setup
+    "no-inline-html": {
+      "allowed_elements": ["a", "b", "br", "details", "img", "p", "picture", "Screenshot", "script", "source", "span", "sub", "summary", "table", "td", "tr"]
+    },
+    // tabs inside fences are content (gofmt Go, Makefiles); the fixer would turn each into one space
+    "no-hard-tabs": { "code_blocks": false },
+    // the style pins below lock in the one form the repo already uses (0 violations), so new files cannot mix forms
+    "ul-style": { "style": "dash" },
+    // compact tables: the fixer repairs them, and rows never need realigning when a cell grows
+    "table-column-style": { "style": "compact" },
+    "emphasis-style": { "style": "asterisk" },
+    "strong-style": { "style": "asterisk" },
+    "code-fence-style": { "style": "backtick" },
+    "heading-style": { "style": "atx" },
+    "code-block-style": { "style": "fenced" }
+  },
+  "overrides": [
+    {
+      "filter": ["website-docs/**"],
+      "combine": "merge",
+      "config": {
+        // the sidebar entry is the page's first `# ` heading (.vitepress/config.mts itemText)
+        "first-line-heading": true,
+        // VitePress slugs differ from GitHub's (`_` and `.` become `-`); website-docs/scripts/check-anchors.mjs checks fragments with VitePress's slugify
+        "link-fragments": false
+      }
+    }
+  ]
+}

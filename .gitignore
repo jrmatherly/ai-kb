@@ -4,6 +4,7 @@
 !.env.example
 !.gitignore
 !.gitkeep
+!.markdownlint-cli2.jsonc
 !.shellcheckrc
 !.github/
 
