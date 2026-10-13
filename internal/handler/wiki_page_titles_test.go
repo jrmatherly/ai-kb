@@ -201,9 +201,9 @@ func TestGetPageValidatesBeforeTitleLookup(t *testing.T) {
 	}{
 		{"missing slug", "", fakeWikiPageTitlesKBService{}, nil, http.StatusBadRequest},
 		{
-			"inaccessible KB", "current",
+			"KB lookup failure", "current",
 			fakeWikiPageTitlesKBService{err: errors.New("denied")},
-			nil, http.StatusBadRequest,
+			nil, http.StatusInternalServerError,
 		},
 		{"wiki disabled", "current", fakeWikiPageTitlesKBService{disabled: true}, nil, http.StatusBadRequest},
 		{"missing page", "current", fakeWikiPageTitlesKBService{}, repository.ErrWikiPageNotFound, http.StatusNotFound},
