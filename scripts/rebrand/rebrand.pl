@@ -10,7 +10,9 @@ use File::Basename qw(dirname);
 binmode STDOUT, ':encoding(UTF-8)'; binmode STDERR, ':encoding(UTF-8)';
 
 my $mode = shift // '';
-die "usage: $0 --apply|--check <file>...\n" unless $mode =~ /^--(apply|check)$/ && @ARGV;
+my $usage = "usage: $0 --apply|--check <file>...\n";
+if (grep { /^(-h|--help)$/ } $mode, @ARGV) { print $usage; exit 0 }
+unless ($mode =~ /^--(apply|check)$/ && @ARGV) { print STDERR $usage; exit 2 }
 my $map = dirname(__FILE__) . '/map.tsv';
 open my $m, '<:encoding(UTF-8)', $map or die "$map: $!\n";
 my @rules;
