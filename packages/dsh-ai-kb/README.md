@@ -9,15 +9,19 @@ workspace, and `web_search` reads the internet. This plugin fills that gap with 
 
 ## Install
 
-The package is not published on npm yet, so install it from a checkout of this repository. `npm ci` builds the
-entry point `dist/index.js` through the `prepare` script; then add the package from the repository root:
+Install the published package from npm:
+
+```sh
+dsh plugin --profile web add @jrmatherly/dsh-ai-kb
+```
+
+To run unreleased changes, install it from a checkout of this repository instead. `npm ci` builds the entry point
+`dist/index.js` through the `prepare` script; then add the package from the repository root:
 
 ```sh
 (cd packages/dsh-ai-kb && npm ci)
 dsh plugin --profile web add ./packages/dsh-ai-kb
 ```
-
-Once it is published, `dsh plugin --profile web add @jrmatherly/dsh-ai-kb` will install the prebuilt code instead.
 
 Then point it at your deployment. The shipped configuration layer reads environment variables, so the quickest start is:
 
