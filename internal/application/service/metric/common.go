@@ -36,36 +36,17 @@ func max(a, b int) int {
 	return b
 }
 
+var sentenceSeparator = regexp.MustCompile("[\u3002.]")
+
+// splitSentences splits on the ideographic full stop or the ASCII period and
+// drops empty sentences.
 func splitSentences(text string) []string {
-	// Splits on the Chinese ideographic full stop or the ASCII period.
-	re := regexp.MustCompile("([\u3002.])")
-
-	split := re.Split(text, -1)
-
 	var sentences []string
-	current := strings.Builder{}
-
-	for i, s := range split {
-		// Assumes text and separators alternate, with separators at odd indexes.
-		if i%2 == 0 {
-			current.WriteString(s)
-		} else {
-			// A separator ends the current sentence.
-			if current.Len() > 0 {
-				sentence := strings.TrimSpace(current.String())
-				if sentence != "" {
-					sentences = append(sentences, sentence)
-				}
-				current.Reset()
-			}
+	for _, s := range sentenceSeparator.Split(text, -1) {
+		if s = strings.TrimSpace(s); s != "" {
+			sentences = append(sentences, s)
 		}
 	}
-
-	// The last segment has no trailing separator.
-	if remaining := strings.TrimSpace(current.String()); remaining != "" {
-		sentences = append(sentences, remaining)
-	}
-
 	return sentences
 }
 
