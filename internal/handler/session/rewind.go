@@ -84,27 +84,18 @@ func (h *Handler) RewindSession(c *gin.Context) {
 	)
 	if err != nil {
 		if stderrors.Is(err, service.ErrRewindSourceBusy) {
-			c.JSON(http.StatusConflict, gin.H{
-				"success": false,
-				"error":   "session has an active turn",
-				"code":    "REWIND_SOURCE_BUSY",
-			})
+			_ = c.Error(errors.NewConflictError("session has an active turn").
+				WithDetails(gin.H{"code": "REWIND_SOURCE_BUSY"}))
 			return
 		}
 		if stderrors.Is(err, service.ErrRewindNoCheckpoint) {
-			c.JSON(http.StatusConflict, gin.H{
-				"success": false,
-				"error":   "no reachable workspace checkpoint",
-				"code":    "REWIND_NO_CHECKPOINT",
-			})
+			_ = c.Error(errors.NewConflictError("no reachable workspace checkpoint").
+				WithDetails(gin.H{"code": "REWIND_NO_CHECKPOINT"}))
 			return
 		}
 		if stderrors.Is(err, service.ErrRewindSandboxReplaced) {
-			c.JSON(http.StatusConflict, gin.H{
-				"success": false,
-				"error":   "sandbox was replaced",
-				"code":    "REWIND_SANDBOX_REPLACED",
-			})
+			_ = c.Error(errors.NewConflictError("sandbox was replaced").
+				WithDetails(gin.H{"code": "REWIND_SANDBOX_REPLACED"}))
 			return
 		}
 		if stderrors.Is(err, service.ErrRewindSessionNotFound) {

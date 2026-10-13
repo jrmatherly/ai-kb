@@ -138,57 +138,45 @@ func toSandboxConfigResponse(e *types.TenantSandboxConfigEntity) sandboxConfigRe
 	}
 }
 
+// sandboxConflict is a 409 whose details.code names the refusal, so the UI can
+// pick a recovery path without parsing the message.
+func sandboxConflict(code, message string, data any) *apperrors.AppError {
+	details := gin.H{"code": code}
+	if data != nil {
+		details["data"] = data
+	}
+	return apperrors.NewConflictError(message).WithDetails(details)
+}
+
 // respondSandboxesStillLive carries the exact inventory that refused the write;
 // recomputing it could race and show the admin a different reason.
 func respondSandboxesStillLive(c *gin.Context, inv service.SandboxInventory) {
-	c.JSON(http.StatusConflict, gin.H{
-		"success": false,
-		"error": gin.H{
-			"code":    "sandboxes_still_live",
-			"message": "This config still has running or paused sandboxes; end their sessions or create a new config",
-			"data":    inv,
-		},
-	})
+	_ = c.Error(sandboxConflict("sandboxes_still_live",
+		"This config still has running or paused sandboxes; end their sessions or create a new config", inv))
 }
 
 func respondSandboxInventoryUnverifiable(c *gin.Context) {
-	c.JSON(http.StatusConflict, gin.H{
-		"success": false,
-		"error": gin.H{
-			"code":    "sandbox_inventory_unverifiable",
-			"message": "Cannot connect to the backend to verify whether sandboxes remain",
-		},
-	})
+	_ = c.Error(sandboxConflict("sandbox_inventory_unverifiable",
+		"Cannot connect to the backend to verify whether sandboxes remain", nil))
 }
 
 func respondSkillSnapshotReleaseFailed(c *gin.Context, remaining []string) {
-	c.JSON(http.StatusConflict, gin.H{
-		"success": false,
-		"error": gin.H{
-			"code":    "skill_snapshot_release_failed",
-			"message": "Cannot destroy this config's skill snapshots; deletion aborted so they do not keep billing",
-			"data":    gin.H{"snapshot_ids": remaining},
-		},
-	})
+	_ = c.Error(sandboxConflict("skill_snapshot_release_failed",
+		"Cannot destroy this config's skill snapshots; deletion aborted so they do not keep billing",
+		gin.H{"snapshot_ids": remaining}))
 }
 
 func respondSkillSnapshotBlocksTemplate(c *gin.Context) {
-	c.JSON(http.StatusConflict, gin.H{
-		"success": false,
-		"error": gin.H{
-			"code":    "skill_snapshot_blocks_template",
-			"message": "Skills installed: connection, DNS and runtime template cannot be changed; use a new config",
-		},
-	})
+	_ = c.Error(sandboxConflict("skill_snapshot_blocks_template",
+		"Skills installed: connection, DNS and runtime template cannot be changed; use a new config", nil))
 }
 
 func respondSandboxConfigCordoned(c *gin.Context) {
-	c.JSON(http.StatusLocked, gin.H{
-		"success": false,
-		"error": gin.H{
-			"code":    "sandbox_config_cordoned",
-			"message": "Someone else is modifying this config; retry later",
-		},
+	_ = c.Error(&apperrors.AppError{
+		Code:     apperrors.ErrConflict,
+		Message:  "Someone else is modifying this config; retry later",
+		Details:  gin.H{"code": "sandbox_config_cordoned"},
+		HTTPCode: http.StatusLocked,
 	})
 }
 
@@ -233,9 +221,9 @@ func respondSandboxConfigServiceError(c *gin.Context, err error) {
 		stderrors.Is(err, sandbox.ErrUnsafeOutboundURL),
 		stderrors.Is(err, sandbox.ErrSandboxConfigIncomplete),
 		stderrors.Is(err, sandbox.ErrDockerBackendDisabled):
-		c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 	default:
-		c.Error(err)
+		_ = c.Error(err)
 	}
 }
 
@@ -245,7 +233,7 @@ func respondSandboxConfigServiceError(c *gin.Context, err error) {
 // @Tags         SandboxConfig
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}   "Sandbox configs and defaults"
-// @Failure      401  {object}  map[string]interface{}   "Unauthorized"
+// @Failure      401  {object}  apperrors.ErrorResponse  "Unauthorized"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs [get]
@@ -305,7 +293,7 @@ func (h *SandboxConfigHandler) SetWorkspacePolicy(c *gin.Context) {
 // @Param        request  body      sandboxConfigRequest    true  "Sandbox backend config"
 // @Success      201      {object}  map[string]interface{}  "Created sandbox config"
 // @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request or validation failure"
-// @Failure      401      {object}  map[string]interface{}  "Unauthorized"
+// @Failure      401      {object}  apperrors.ErrorResponse  "Unauthorized"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs [post]
@@ -338,7 +326,7 @@ func (h *SandboxConfigHandler) Create(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Sandbox config ID"
 // @Success      200  {object}  map[string]interface{}   "Sandbox config"
-// @Failure      401  {object}  map[string]interface{}   "Unauthorized"
+// @Failure      401  {object}  apperrors.ErrorResponse  "Unauthorized"
 // @Failure      404  {object}  apperrors.ErrorResponse       "Sandbox config not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -369,10 +357,10 @@ func (h *SandboxConfigHandler) Get(c *gin.Context) {
 // @Param        request  body      sandboxConfigRequest  true  "Updated sandbox config"
 // @Success      200      {object}  map[string]interface{}  "Updated sandbox config"
 // @Failure      400      {object}  apperrors.ErrorResponse      "Invalid request or validation failure"
-// @Failure      401      {object}  map[string]interface{}  "Unauthorized"
+// @Failure      401      {object}  apperrors.ErrorResponse  "Unauthorized"
 // @Failure      404      {object}  apperrors.ErrorResponse      "Sandbox config not found"
-// @Failure      409      {object}  map[string]interface{}  "Live sandboxes or unverifiable inventory"
-// @Failure      423      {object}  map[string]interface{}  "Sandbox config is being modified by another request"
+// @Failure      409      {object}  apperrors.ErrorResponse  "Live sandboxes or unverifiable inventory"
+// @Failure      423      {object}  apperrors.ErrorResponse  "Sandbox config is being modified by another request"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id} [put]
@@ -413,8 +401,8 @@ func (h *SandboxConfigHandler) Update(c *gin.Context) {
 // @Param        id     path   string  true   "Sandbox config ID"
 // @Param        force  query  bool    false  "Force delete when inventory is unverifiable"
 // @Success      200    {object}  map[string]interface{}  "Deletion success"
-// @Failure      401    {object}  map[string]interface{}  "Unauthorized"
-// @Failure      409    {object}  map[string]interface{}  "Live sandboxes or unverifiable inventory"
+// @Failure      401    {object}  apperrors.ErrorResponse  "Unauthorized"
+// @Failure      409    {object}  apperrors.ErrorResponse  "Live sandboxes or unverifiable inventory"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id} [delete]
@@ -440,7 +428,7 @@ func (h *SandboxConfigHandler) Delete(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Sandbox config ID"
 // @Success      200  {object}  map[string]interface{}  "Sandbox inventory"
-// @Failure      401  {object}  map[string]interface{}  "Unauthorized"
+// @Failure      401  {object}  apperrors.ErrorResponse  "Unauthorized"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /sandbox-configs/{id}/sandboxes [get]

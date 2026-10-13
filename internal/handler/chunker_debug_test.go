@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 )
 
 func init() {
@@ -66,6 +68,7 @@ func TestComputeChunkSizeStats_NoVarianceUnderflow(t *testing.T) {
 
 func newPreviewRouter() *gin.Engine {
 	r := gin.New()
+	r.Use(middleware.ErrorHandler())
 	r.POST("/chunker/preview", PreviewChunking)
 	return r
 }
@@ -126,23 +129,26 @@ func TestPreviewChunking_HappyPath_AutoStrategy(t *testing.T) {
 }
 
 func TestPreviewChunking_RejectsEmptyText(t *testing.T) {
-	w, parsed := postPreview(t, PreviewChunkingRequest{Text: "   \n\t   "})
+	w, _ := postPreview(t, PreviewChunkingRequest{Text: "   \n\t   "})
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("status: got %d want 400", w.Code)
 	}
-	if errStr, _ := parsed["error"].(string); !strings.Contains(errStr, "empty") {
-		t.Errorf("error should mention 'empty', got %q", errStr)
+	want := `{"success":false,"error":{"code":1000,"message":"text is empty: paste a sample to preview chunking"}}`
+	if got := strings.TrimSpace(w.Body.String()); got != want {
+		t.Errorf("body:\n got %s\nwant %s", got, want)
 	}
 }
 
 func TestPreviewChunking_RejectsOversizedText(t *testing.T) {
 	body := PreviewChunkingRequest{Text: strings.Repeat("a", previewMaxChars+1)}
-	w, parsed := postPreview(t, body)
+	w, _ := postPreview(t, body)
 	if w.Code != http.StatusRequestEntityTooLarge {
 		t.Errorf("status: got %d want 413", w.Code)
 	}
-	if parsed["limit"] == nil {
-		t.Errorf("response should include limit hint, got %v", parsed)
+	want := fmt.Sprintf(`{"success":false,"error":{"code":1000,"message":"text exceeds preview limit",`+
+		`"details":{"limit":%d}}}`, previewMaxChars)
+	if got := strings.TrimSpace(w.Body.String()); got != want {
+		t.Errorf("body:\n got %s\nwant %s", got, want)
 	}
 }
 

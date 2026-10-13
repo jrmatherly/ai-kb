@@ -81,9 +81,8 @@ func TestForkSessionMapsBusySourceTo409(t *testing.T) {
 	w := performFork(t, forker, `{"message_id":"u-2"}`)
 
 	require.Equal(t, http.StatusConflict, w.Code)
-	var body map[string]any
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
-	require.Equal(t, "FORK_SOURCE_BUSY", body["code"])
+	require.JSONEq(t, `{"success":false,"error":{"code":1005,"message":"source session has an active turn",`+
+		`"details":{"code":"FORK_SOURCE_BUSY"}}}`, w.Body.String())
 }
 
 func TestForkSessionMapsMissingSessionTo404(t *testing.T) {

@@ -129,7 +129,12 @@ test('classifyUploadResult reads success, duplicate rejections and failures', ()
     { kind: 'uploaded', knowledgeId: 'k1', parseStatus: 'pending' },
   )
   assert.deepEqual(
-    classifyUploadResult({ status: 409, success: false, code: 'duplicate_file', message: 'exists', data: { id: 'k0' } }),
+    classifyUploadResult({
+      status: 409,
+      success: false,
+      message: 'exists',
+      error: { code: 1005, message: 'exists', details: { code: 'duplicate_file', data: { id: 'k0' } } },
+    }),
     { kind: 'duplicate', knowledgeId: 'k0', message: 'exists' },
   )
   assert.deepEqual(

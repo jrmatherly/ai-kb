@@ -419,30 +419,32 @@ func (h *SystemHandler) ListParserEngines(c *gin.Context) {
 // @Produce      json
 // @Param        request  body  object{addr string} true "DocReader address"
 // @Success      200
+// @Failure      400  {object}  apperrors.ErrorResponse  "Missing or disallowed address"
+// @Failure      500  {object}  apperrors.ErrorResponse  "Document converter not initialized"
 // @Router       /system/docreader/reconnect [post]
 func (h *SystemHandler) ReconnectDocReader(c *gin.Context) {
 	var req struct {
 		Addr string `json:"addr" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"code": 1, "msg": "addr is required"})
+		_ = c.Error(apperrors.NewBadRequestError("addr is required"))
 		return
 	}
 	addr := strings.TrimSpace(req.Addr)
 	if addr == "" {
-		c.JSON(400, gin.H{"code": 1, "msg": "addr must not be empty"})
+		_ = c.Error(apperrors.NewBadRequestError("addr must not be empty"))
 		return
 	}
 
 	// SSRF validation for docreader address
 	if err := secutils.ValidateURLForSSRF(addr); err != nil {
 		logger.Warnf(c.Request.Context(), "SSRF validation failed for docreader addr: %v", err)
-		c.JSON(400, gin.H{"code": 1, "msg": secutils.FormatSSRFError("DocReader address", addr, err)})
+		_ = c.Error(apperrors.NewBadRequestError(secutils.FormatSSRFError("DocReader address", addr, err)))
 		return
 	}
 
 	if h.documentReader == nil {
-		c.JSON(500, gin.H{"code": 1, "msg": "document converter not initialized"})
+		_ = c.Error(apperrors.NewInternalServerError("document converter not initialized"))
 		return
 	}
 
@@ -484,11 +486,12 @@ func (h *SystemHandler) ReconnectDocReader(c *gin.Context) {
 // @Produce      json
 // @Param        body  body  object  true  "Parser engine config (same shape as the save endpoint)"
 // @Success      200
+// @Failure      400  {object}  apperrors.ErrorResponse  "Malformed request body"
 // @Router       /system/parser-engines/check [post]
 func (h *SystemHandler) CheckParserEngines(c *gin.Context) {
 	var body types.ParserEngineConfig
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(400, gin.H{"code": 1, "msg": "Malformed request body"})
+		_ = c.Error(apperrors.NewBadRequestError("Malformed request body"))
 		return
 	}
 	var existing *types.ParserEngineConfig
@@ -916,17 +919,19 @@ type StorageCheckResponse struct {
 // @Produce      json
 // @Param        body  body  StorageCheckRequest  true  "Storage engine config"
 // @Success      200   {object}  StorageCheckResponse
+// @Failure      400   {object}  apperrors.ErrorResponse  "Malformed request body"
+// @Failure      403   {object}  apperrors.ErrorResponse  "Storage engine disabled"
 // @Router       /system/storage-engine-check [post]
 func (h *SystemHandler) CheckStorageEngine(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req StorageCheckRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"code": 1, "msg": "Malformed request body"})
+		_ = c.Error(apperrors.NewBadRequestError("Malformed request body"))
 		return
 	}
 	if !isStorageProviderAllowed(req.Provider) {
-		c.JSON(403, gin.H{"code": 1, "msg": "This storage engine is disabled"})
+		_ = c.Error(apperrors.NewForbiddenError("This storage engine is disabled"))
 		return
 	}
 
@@ -1400,7 +1405,7 @@ type PromoteUserToSystemAdminRequest struct {
 // @Param        request body PromoteUserToSystemAdminRequest true "User promotion request"
 // @Success      200  {object}  types.UserInfo  "User promoted successfully"
 // @Failure      400  {object}  apperrors.ErrorResponse  "Bad request"
-// @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
+// @Failure      403  {object}  apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/promote [post]
 func (h *SystemHandler) PromoteUserToSystemAdmin(c *gin.Context) {
@@ -1490,7 +1495,7 @@ type RevokeSystemAdminRequest struct {
 // @Param        request body RevokeSystemAdminRequest true "User revocation request"
 // @Success      200  {object}  types.UserInfo  "Privileges revoked successfully"
 // @Failure      400  {object}  apperrors.ErrorResponse  "Bad request / would remove last admin / self-revoke"
-// @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
+// @Failure      403  {object}  apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/revoke [post]
 func (h *SystemHandler) RevokeSystemAdmin(c *gin.Context) {
@@ -1569,7 +1574,7 @@ type ListSystemAdminsResponse struct {
 // @Param        offset query int false "Page offset" default(0)
 // @Param        limit  query int false "Page size (max 200)" default(50)
 // @Success      200  {object}  ListSystemAdminsResponse  "System admins retrieved successfully"
-// @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
+// @Failure      403  {object}  apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Router       /system/admin/list [get]
 func (h *SystemHandler) ListSystemAdmins(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
@@ -1634,7 +1639,7 @@ type ListAllUsersResponse struct {
 // @Param        offset query int false "Page offset" default(0)
 // @Param        limit  query int false "Page size (max 200)" default(50)
 // @Success      200  {object}  ListAllUsersResponse  "Users retrieved successfully"
-// @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
+// @Failure      403  {object}  apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Router       /system/admin/users [get]
 func (h *SystemHandler) ListUsers(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
@@ -1744,7 +1749,7 @@ type ResetUserPasswordRequest struct {
 // @Param        request body ResetUserPasswordRequest true "Password reset request"
 // @Success      200  {object}  map[string]interface{}  "Password reset successfully"
 // @Failure      400  {object}  apperrors.ErrorResponse  "Invalid request, weak password, or self reset"
-// @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
+// @Failure      403  {object}  apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Failure      404  {object}  apperrors.ErrorResponse  "User not found"
 // @Router       /system/admin/users/reset-password [post]
 func (h *SystemHandler) ResetUserPassword(c *gin.Context) {
@@ -1818,7 +1823,7 @@ type CreateSystemUserResponse struct {
 // @Success      201  {object}  CreateSystemUserResponse  "User created successfully"
 // @Success      200  {object}  CreateSystemUserResponse  "Identity already exists, returns the existing user"
 // @Failure      400  {object}  apperrors.ErrorResponse  "Invalid request or weak password"
-// @Failure      403  {object}  map[string]interface{}  "Forbidden: not a system admin"
+// @Failure      403  {object}  apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Failure      409  {object}  apperrors.ErrorResponse  "Email and username refer to conflicting identities"
 // @Failure      500  {object}  apperrors.ErrorResponse  "Internal error"
 // @Router       /system/admin/users/create [post]
@@ -1902,7 +1907,7 @@ func (h *SystemHandler) CreateSystemUser(c *gin.Context) {
 // @Tags         System Admin
 // @Produce      json
 // @Success      200 {array} types.SystemSetting "list of settings"
-// @Failure      403 {object} map[string]interface{} "Forbidden: not a system admin"
+// @Failure      403 {object} apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Router       /system/admin/settings [get]
 // RuntimeQueuesResponse is the payload for the SystemAdmin runtime queue
 // dashboard. `available` is false in Lite mode (no Redis/asynq) so the
@@ -2475,7 +2480,7 @@ type UpdateSystemSettingRequest struct {
 // @Param        request body UpdateSystemSettingRequest   true "New value"
 // @Success      200 {object} types.SystemSetting "the updated row"
 // @Failure      400 {object} apperrors.ErrorResponse "Bad request / unknown key / type mismatch"
-// @Failure      403 {object} map[string]interface{} "Forbidden: not a system admin"
+// @Failure      403 {object} apperrors.ErrorResponse  "Forbidden: not a system admin"
 // @Router       /system/admin/settings/{key} [put]
 func (h *SystemHandler) UpdateSystemSetting(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())

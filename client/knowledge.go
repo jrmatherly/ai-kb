@@ -204,14 +204,30 @@ func (c *Client) CreateKnowledgeFromFile(ctx context.Context,
 	// Parse the response
 	var response KnowledgeResponse
 	if resp.StatusCode == http.StatusConflict {
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, fmt.Errorf("failed to parse response: %w", err)
+		existing, err := decodeDuplicateKnowledge(resp.Body)
+		if err != nil {
+			return nil, err
 		}
-		return &response.Data, ErrDuplicateFile
+		return existing, ErrDuplicateFile
 	} else if err := parseResponse(resp, &response); err != nil {
 		return nil, err
 	}
 	return &response.Data, nil
+}
+
+// decodeDuplicateKnowledge reads the existing entry a duplicate 409 carries in error.details.data.
+func decodeDuplicateKnowledge(body io.Reader) (*Knowledge, error) {
+	var conflict struct {
+		Error struct {
+			Details struct {
+				Data Knowledge `json:"data"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if err := json.NewDecoder(body).Decode(&conflict); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+	return &conflict.Error.Details.Data, nil
 }
 
 // CreateKnowledgeFromURLRequest contains the parameters for creating a knowledge entry from a URL.
@@ -255,10 +271,11 @@ func (c *Client) CreateKnowledgeFromURL(
 
 	var response KnowledgeResponse
 	if resp.StatusCode == http.StatusConflict {
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, fmt.Errorf("failed to parse response: %w", err)
+		existing, err := decodeDuplicateKnowledge(resp.Body)
+		if err != nil {
+			return nil, err
 		}
-		return &response.Data, ErrDuplicateURL
+		return existing, ErrDuplicateURL
 	} else if err := parseResponse(resp, &response); err != nil {
 		return nil, err
 	}

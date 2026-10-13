@@ -229,12 +229,10 @@ func (h *KnowledgeHandler) handleDuplicateKnowledgeError(c *gin.Context,
 	if dupErr, ok := err.(*types.DuplicateKnowledgeError); ok {
 		ctx := c.Request.Context()
 		logger.Warnf(ctx, "Detected duplicate %s: %s", duplicateType, secutils.SanitizeForLog(dupErr.Error()))
-		c.JSON(http.StatusConflict, gin.H{
-			"success": false,
-			"message": dupErr.Error(),
-			"data":    knowledge, // knowledge contains the existing document
-			"code":    fmt.Sprintf("duplicate_%s", duplicateType),
-		})
+		_ = c.Error(errors.NewConflictError(dupErr.Error()).WithDetails(gin.H{
+			"code": "duplicate_" + duplicateType,
+			"data": knowledge, // the existing document
+		}))
 		return true
 	}
 	return false
@@ -306,7 +304,7 @@ func (h *KnowledgeHandler) enqueueKnowledgeListReparse(
 // @Param        process_config    formData  string  false  "Processing config JSON (KnowledgeProcessOverrides)"
 // @Success      200               {object}  map[string]interface{}  "Created knowledge"
 // @Failure      400               {object}  errors.ErrorResponse         "Invalid request parameters"
-// @Failure      409               {object}  map[string]interface{}  "Duplicate file"
+// @Failure      409               {object}  errors.ErrorResponse    "Duplicate file"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge/file [post]
@@ -471,7 +469,7 @@ func (h *KnowledgeHandler) CreateKnowledgeFromFile(c *gin.Context) {
 // @Param request body object{url=string,file_name=string,file_type=string,enable_multimodel=bool,title=string,tag_ids=[]string} true "URL request"
 // @Success      201      {object}  map[string]interface{}  "Created knowledge"
 // @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
-// @Failure      409      {object}  map[string]interface{}  "Duplicate URL"
+// @Failure      409      {object}  errors.ErrorResponse    "Duplicate URL"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /knowledge-bases/{id}/knowledge/url [post]

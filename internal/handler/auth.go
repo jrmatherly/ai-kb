@@ -290,7 +290,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Check if login was successful
 	if !response.Success {
 		logger.Warnf(ctx, "Login failed: %s", response.Message)
-		c.JSON(http.StatusUnauthorized, dto.NewAuthLoginResponse(response))
+		_ = c.Error(errors.NewUnauthorizedError(response.Message))
 		return
 	}
 

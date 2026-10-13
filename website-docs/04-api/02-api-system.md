@@ -6,7 +6,7 @@ The whole `/system/admin/*` group carries the `SystemAdmin()` guard. Platform AP
 
 ## System information (/api/v1/system)
 
-Handler: `internal/handler/system.go`. API key: `manage_vector_stores` or full access (except where noted). Responses in this group use the `{"code":0,"msg":"success","data":...}` envelope.
+Handler: `internal/handler/system.go`. API key: `manage_vector_stores` or full access (except where noted). Successful responses in this group use the `{"code":0,"msg":"success","data":...}` envelope; 4xx and 5xx responses use the standard error envelope.
 
 ### GET /api/v1/system/capabilities
 

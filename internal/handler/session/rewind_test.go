@@ -106,9 +106,8 @@ func TestRewindSessionMapsBusySourceTo409(t *testing.T) {
 	w := performRewind(t, rewinder, `{"message_id":"u-2"}`)
 
 	require.Equal(t, http.StatusConflict, w.Code)
-	var body map[string]any
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
-	require.Equal(t, "REWIND_SOURCE_BUSY", body["code"])
+	require.JSONEq(t, `{"success":false,"error":{"code":1005,"message":"session has an active turn",`+
+		`"details":{"code":"REWIND_SOURCE_BUSY"}}}`, w.Body.String())
 }
 
 func TestRewindSessionMapsReplacedSandboxTo409(t *testing.T) {
@@ -117,9 +116,15 @@ func TestRewindSessionMapsReplacedSandboxTo409(t *testing.T) {
 	w := performRewind(t, rewinder, `{"message_id":"u-2"}`)
 
 	require.Equal(t, http.StatusConflict, w.Code)
-	var body map[string]any
+	var body struct {
+		Error struct {
+			Details struct {
+				Code string `json:"code"`
+			} `json:"details"`
+		} `json:"error"`
+	}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
-	require.Equal(t, "REWIND_SANDBOX_REPLACED", body["code"])
+	require.Equal(t, "REWIND_SANDBOX_REPLACED", body.Error.Details.Code)
 }
 
 func TestRewindSessionUnavailableWhenUnwired(t *testing.T) {

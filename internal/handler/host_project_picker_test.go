@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
+
+	"github.com/jrmatherly/ai-kb/internal/middleware"
 )
 
 func TestPickHostProjectDirUnavailableWithoutDesktop(t *testing.T) {
@@ -15,11 +17,14 @@ func TestPickHostProjectDirUnavailableWithoutDesktop(t *testing.T) {
 	SetHostProjectPicker(nil)
 	t.Cleanup(func() { SetHostProjectPicker(nil) })
 
+	r := gin.New()
+	r.Use(middleware.ErrorHandler())
+	r.POST("/api/v1/system/host-project-dir", (&SystemHandler{}).PickHostProjectDir)
 	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/system/host-project-dir", nil)
-	(&SystemHandler{}).PickHostProjectDir(c)
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/api/v1/system/host-project-dir", nil))
 	require.Equal(t, http.StatusNotFound, w.Code)
+	require.JSONEq(t, `{"success":false,"error":{"code":1003,"message":"host project picker is not available"}}`,
+		w.Body.String())
 }
 
 func TestPickHostProjectDirReturnsPickedPath(t *testing.T) {

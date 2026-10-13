@@ -143,14 +143,14 @@ The middleware layer (authentication, RBAC, API key gate, embed and MCP endpoint
 | 1006 | ErrTooManyRequests, rate limit or quota | 429 |
 | 1007 | ErrInternalServer | 500 |
 | 1008 | ErrServiceUnavailable | 503 |
-| 1009 | ErrTimeout | - |
+| 1009 | ErrTimeout | 504 (chunker preview) |
 | 1010 | ErrValidation, parameter validation failed | 400 |
 | 2000-2005 | Workspace: not found / already exists / inactive / name required / invalid status / self-service creation disabled | 404 / 409 / 403 / - / - / 403 (2003 and 2004 are defined but no constructor raises them) |
 | 2100-2103 | Agent: missing thinking model / missing allowed tools / invalid max iterations (1-20) / invalid temperature (0-2) | 400 |
 | 2200-2201 | Vector store binding invalid / currently unavailable | 400 |
 | 2300 | Model in use (ErrModelInUse); `details` carries the usage breakdown | 400 |
 
-Two errors carry no numeric code: `types.StorageQuotaExceededError` (storage quota exceeded) and `types.DuplicateKnowledgeError` (duplicate file or URL; the upload endpoints return 409 with `"code":"duplicate_file"` or `"duplicate_url"` and `data` set to the existing knowledge item).
+`types.StorageQuotaExceededError` (storage quota exceeded) carries no numeric code. A duplicate file or URL (`types.DuplicateKnowledgeError`) is a 1005 conflict: the upload endpoints return 409 with `error.details.code` set to `"duplicate_file"` or `"duplicate_url"` and `error.details.data` set to the existing knowledge item.
 
 ## Pagination
 

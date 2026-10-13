@@ -58,18 +58,17 @@ func (h *WebSearchProviderHandler) getTenantID(c *gin.Context) uint64 {
 }
 
 // getOwnedProvider loads a provider and verifies it belongs to the given tenant.
-// Returns (nil, status, msg) on failure so callers can respond immediately.
 func (h *WebSearchProviderHandler) getOwnedProvider(
 	ctx context.Context, tenantID uint64, id string,
-) (*types.WebSearchProviderEntity, int, string) {
+) (*types.WebSearchProviderEntity, *errors.AppError) {
 	provider, err := h.repo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return nil, http.StatusInternalServerError, "failed to query provider"
+		return nil, errors.NewInternalServerError("failed to query provider")
 	}
 	if provider == nil {
-		return nil, http.StatusNotFound, "web search provider not found"
+		return nil, errors.NewNotFoundError("web search provider not found")
 	}
-	return provider, http.StatusOK, ""
+	return provider, nil
 }
 
 // --- endpoints ---
@@ -80,7 +79,7 @@ func (h *WebSearchProviderHandler) CreateProvider(c *gin.Context) {
 
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "unauthorized: workspace context missing"})
+		_ = c.Error(errors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
@@ -121,7 +120,7 @@ func (h *WebSearchProviderHandler) ListProviders(c *gin.Context) {
 
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "unauthorized: workspace context missing"})
+		_ = c.Error(errors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
@@ -147,7 +146,7 @@ func (h *WebSearchProviderHandler) ListProviders(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string                          true  "Provider ID"
 // @Success      200  {object}  types.WebSearchProviderEntity   "Provider details"
-// @Failure      404  {object}  map[string]interface{}          "Provider not found"
+// @Failure      404  {object}  errors.ErrorResponse            "Provider not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /web-search-providers/{id} [get]
@@ -156,14 +155,14 @@ func (h *WebSearchProviderHandler) GetProvider(c *gin.Context) {
 
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "unauthorized: workspace context missing"})
+		_ = c.Error(errors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
 	id := c.Param("id")
-	provider, status, msg := h.getOwnedProvider(ctx, tenantID, id)
-	if status != http.StatusOK {
-		c.JSON(status, gin.H{"success": false, "error": msg})
+	provider, appErr := h.getOwnedProvider(ctx, tenantID, id)
+	if appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -184,8 +183,8 @@ func (h *WebSearchProviderHandler) GetProvider(c *gin.Context) {
 // @Param        id       path      string                          true  "Provider ID"
 // @Param        request  body      handler.UpdateProviderRequest   true  "Fields to update"
 // @Success      200      {object}  types.WebSearchProviderEntity   "Updated provider"
-// @Failure      400      {object}  map[string]interface{}          "Invalid request parameters"
-// @Failure      404      {object}  map[string]interface{}          "Provider not found"
+// @Failure      400      {object}  errors.ErrorResponse            "Invalid request parameters"
+// @Failure      404      {object}  errors.ErrorResponse            "Provider not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /web-search-providers/{id} [put]
@@ -194,16 +193,16 @@ func (h *WebSearchProviderHandler) UpdateProvider(c *gin.Context) {
 
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "unauthorized: workspace context missing"})
+		_ = c.Error(errors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
 	id := c.Param("id")
 
 	// Ownership check
-	existing, status, msg := h.getOwnedProvider(ctx, tenantID, id)
-	if status != http.StatusOK {
-		c.JSON(status, gin.H{"success": false, "error": msg})
+	existing, appErr := h.getOwnedProvider(ctx, tenantID, id)
+	if appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -278,7 +277,7 @@ func (h *WebSearchProviderHandler) UpdateProvider(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string                  true  "Provider ID"
 // @Success      200  {object}  map[string]interface{}  "success: true"
-// @Failure      404  {object}  map[string]interface{}  "Provider not found"
+// @Failure      404  {object}  errors.ErrorResponse    "Provider not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /web-search-providers/{id} [delete]
@@ -287,15 +286,15 @@ func (h *WebSearchProviderHandler) DeleteProvider(c *gin.Context) {
 
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "unauthorized: workspace context missing"})
+		_ = c.Error(errors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
 	id := c.Param("id")
 
 	// Ownership check
-	if _, status, msg := h.getOwnedProvider(ctx, tenantID, id); status != http.StatusOK {
-		c.JSON(status, gin.H{"success": false, "error": msg})
+	if _, appErr := h.getOwnedProvider(ctx, tenantID, id); appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -335,7 +334,7 @@ func (h *WebSearchProviderHandler) ListProviderTypes(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string                  true  "Provider ID"
 // @Success      200  {object}  map[string]interface{}  "Test result"
-// @Failure      404  {object}  map[string]interface{}  "Provider not found"
+// @Failure      404  {object}  errors.ErrorResponse    "Provider not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /web-search-providers/{id}/test [post]
@@ -344,14 +343,14 @@ func (h *WebSearchProviderHandler) TestProviderByID(c *gin.Context) {
 
 	tenantID := h.getTenantID(c)
 	if tenantID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "unauthorized: workspace context missing"})
+		_ = c.Error(errors.NewUnauthorizedError("unauthorized: workspace context missing"))
 		return
 	}
 
 	id := c.Param("id")
-	provider, status, msg := h.getOwnedProvider(ctx, tenantID, id)
-	if status != http.StatusOK {
-		c.JSON(status, gin.H{"success": false, "error": msg})
+	provider, appErr := h.getOwnedProvider(ctx, tenantID, id)
+	if appErr != nil {
+		_ = c.Error(appErr)
 		return
 	}
 
@@ -380,7 +379,7 @@ type TestProviderRequest struct {
 // @Produce      json
 // @Param        request  body      handler.TestProviderRequest  true  "{provider, parameters}"
 // @Success      200      {object}  map[string]interface{}  "Test result"
-// @Failure      400      {object}  map[string]interface{}  "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse    "Invalid request parameters"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /web-search-providers/test [post]

@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -94,18 +95,19 @@ func (r *SandboxCheckResponse) skip(name, reason string) {
 // @Produce      json
 // @Param        body  body  SandboxCheckRequest  true  "Sandbox config"
 // @Success      200   {object}  SandboxCheckResponse
+// @Failure      400   {object}  apperrors.ErrorResponse
 // @Router       /system/sandbox-check [post]
 func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 
 	var req SandboxCheckRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Malformed request body"})
+		_ = c.Error(apperrors.NewBadRequestError("Malformed request body"))
 		return
 	}
 	tenant, _ := types.TenantInfoFromContext(c.Request.Context())
 	if tenant == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Workspace is empty"})
+		_ = c.Error(apperrors.NewBadRequestError("Workspace is empty"))
 		return
 	}
 
@@ -113,16 +115,16 @@ func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 	incoming := req.Config
 	if req.ConfigID != "" {
 		if h.sandboxConfigSvc == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Sandbox config service unavailable"})
+			_ = c.Error(apperrors.NewBadRequestError("Sandbox config service unavailable"))
 			return
 		}
 		entity, err := h.sandboxConfigSvc.Get(ctx, tenant.ID, req.ConfigID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": err.Error()})
+			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 			return
 		}
 		if entity == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": "Sandbox config not found"})
+			_ = c.Error(apperrors.NewBadRequestError("Sandbox config not found"))
 			return
 		}
 		stored = entity.Config
@@ -135,12 +137,12 @@ func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 	}
 	merged, err := service.SanitizeSandboxConfig(incoming, stored)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 	effective, err := sandbox.ResolveEffectiveConfig(merged, sandbox.DefaultConfig())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 1, "msg": err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
 

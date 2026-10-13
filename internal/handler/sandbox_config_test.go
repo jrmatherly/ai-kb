@@ -51,6 +51,7 @@ func TestSandboxConfigResponseMasksSecrets(t *testing.T) {
 func TestSandboxesStillLiveMapsTo409WithCounts(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	router.Use(middleware.ErrorHandler())
 	router.PUT("/sandbox-configs/:id", func(c *gin.Context) {
 		respondSandboxesStillLive(c, service.SandboxInventory{
 			SandboxCount: 3,
@@ -68,24 +69,27 @@ func TestSandboxesStillLiveMapsTo409WithCounts(t *testing.T) {
 
 	var payload struct {
 		Error struct {
-			Code string `json:"code"`
-			Data struct {
-				SandboxCount int      `json:"sandbox_count"`
-				SessionIDs   []string `json:"session_ids"`
-				AgentNames   []string `json:"agent_names"`
-			} `json:"data"`
+			Details struct {
+				Code string `json:"code"`
+				Data struct {
+					SandboxCount int      `json:"sandbox_count"`
+					SessionIDs   []string `json:"session_ids"`
+					AgentNames   []string `json:"agent_names"`
+				} `json:"data"`
+			} `json:"details"`
 		} `json:"error"`
 	}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &payload))
-	require.Equal(t, "sandboxes_still_live", payload.Error.Code)
-	require.Equal(t, 3, payload.Error.Data.SandboxCount)
-	require.Len(t, payload.Error.Data.SessionIDs, 2)
-	require.Equal(t, []string{"Data Analysis"}, payload.Error.Data.AgentNames)
+	require.Equal(t, "sandboxes_still_live", payload.Error.Details.Code)
+	require.Equal(t, 3, payload.Error.Details.Data.SandboxCount)
+	require.Len(t, payload.Error.Details.Data.SessionIDs, 2)
+	require.Equal(t, []string{"Data Analysis"}, payload.Error.Details.Data.AgentNames)
 }
 
 func TestSandboxInventoryUnverifiableMapsToDistinct409(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	router.Use(middleware.ErrorHandler())
 	router.DELETE("/sandbox-configs/:id", func(c *gin.Context) {
 		respondSandboxInventoryUnverifiable(c)
 	})
@@ -96,20 +100,15 @@ func TestSandboxInventoryUnverifiableMapsToDistinct409(t *testing.T) {
 
 	require.Equal(t, http.StatusConflict, w.Code)
 
-	var payload struct {
-		Error struct {
-			Code    string `json:"code"`
-			Message string `json:"message"`
-		} `json:"error"`
-	}
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &payload))
-	require.Equal(t, "sandbox_inventory_unverifiable", payload.Error.Code)
-	require.Contains(t, payload.Error.Message, "Cannot connect")
+	require.JSONEq(t, `{"success":false,"error":{"code":1005,`+
+		`"message":"Cannot connect to the backend to verify whether sandboxes remain",`+
+		`"details":{"code":"sandbox_inventory_unverifiable"}}}`, w.Body.String())
 }
 
 func TestSkillSnapshotReleaseFailedMapsTo409WithRemaining(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	router.Use(middleware.ErrorHandler())
 	router.DELETE("/sandbox-configs/:id", func(c *gin.Context) {
 		if !respondSandboxConfigRefusal(c, &service.SkillSnapshotReleaseFailedError{
 			Remaining: []string{"snap-2"},
@@ -126,20 +125,23 @@ func TestSkillSnapshotReleaseFailedMapsTo409WithRemaining(t *testing.T) {
 
 	var payload struct {
 		Error struct {
-			Code string `json:"code"`
-			Data struct {
-				SnapshotIDs []string `json:"snapshot_ids"`
-			} `json:"data"`
+			Details struct {
+				Code string `json:"code"`
+				Data struct {
+					SnapshotIDs []string `json:"snapshot_ids"`
+				} `json:"data"`
+			} `json:"details"`
 		} `json:"error"`
 	}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &payload))
-	require.Equal(t, "skill_snapshot_release_failed", payload.Error.Code)
-	require.Equal(t, []string{"snap-2"}, payload.Error.Data.SnapshotIDs)
+	require.Equal(t, "skill_snapshot_release_failed", payload.Error.Details.Code)
+	require.Equal(t, []string{"snap-2"}, payload.Error.Details.Data.SnapshotIDs)
 }
 
 func TestSkillSnapshotBlocksTemplateMapsTo409(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	router.Use(middleware.ErrorHandler())
 	router.POST("/sandbox-configs/templates/query", func(c *gin.Context) {
 		if !respondSandboxConfigRefusal(c, service.ErrSkillSnapshotBlocksTemplateChange) {
 			t.Fatal("expected skill snapshot template lock to map as a refusal")
@@ -154,12 +156,14 @@ func TestSkillSnapshotBlocksTemplateMapsTo409(t *testing.T) {
 
 	var payload struct {
 		Error struct {
-			Code    string `json:"code"`
 			Message string `json:"message"`
+			Details struct {
+				Code string `json:"code"`
+			} `json:"details"`
 		} `json:"error"`
 	}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &payload))
-	require.Equal(t, "skill_snapshot_blocks_template", payload.Error.Code)
+	require.Equal(t, "skill_snapshot_blocks_template", payload.Error.Details.Code)
 	require.Contains(t, payload.Error.Message, "cannot be changed")
 }
 

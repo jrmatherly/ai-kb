@@ -51,7 +51,23 @@ func newWikiErrorsEngine(t *testing.T) *gin.Engine {
 	engine.POST("/knowledgebase/:kb_id/wiki/folders", h.CreateFolder)
 	engine.GET("/knowledgebase/:kb_id/wiki/graph", h.GetGraph)
 	engine.GET("/knowledgebase/:kb_id/wiki/index", h.GetIndex)
+	engine.PUT("/knowledgebase/:kb_id/wiki/pages/*slug", h.UpdatePage)
 	return engine
+}
+
+// A stale optimistic-lock version is a 409 whose details carry the version the
+// editor must reload, so the UI can offer it without a second fetch.
+func TestWikiUpdatePageStaleVersionReturnsConflictEnvelope(t *testing.T) {
+	engine := newWikiErrorsEngine(t)
+	req := httptest.NewRequest(http.MethodPut, "/knowledgebase/kb-1/wiki/pages/concept/a",
+		strings.NewReader(`{"title":"A2","version":7}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	engine.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusConflict, w.Code)
+	require.JSONEq(t, `{"success":false,"error":{"code":1005,"message":"Wiki page was modified by someone else",`+
+		`"details":{"current_version":1}}}`, w.Body.String())
 }
 
 // Caller mistakes on the wiki routes must surface as 4xx with the service's

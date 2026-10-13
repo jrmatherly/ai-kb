@@ -142,7 +142,7 @@ Copied messages keep their original timeline and generated files; the new sessio
 | `SANDBOX_GONE` | The source session currently has no sandbox to snapshot |
 | `SNAPSHOT_UNSUPPORTED` | The sandbox backend does not support snapshots, or the snapshot failed |
 
-Response: 200 `{"success":true,"data":{"session_id":"new session ID","degraded":false}}`. 409 (`code: FORK_SOURCE_BUSY`) when the source session is generating or the fork point is an unfinished answer; 404 when the session or message does not exist; 400 when the fork point is neither a user nor an assistant message.
+Response: 200 `{"success":true,"data":{"session_id":"new session ID","degraded":false}}`. 409 (`error.details.code` is `FORK_SOURCE_BUSY`) when the source session is generating or the fork point is an unfinished answer; 404 when the session or message does not exist; 400 when the fork point is neither a user nor an assistant message.
 
 ```bash
 curl -X POST $BASE/api/v1/sessions/s-1/fork -H "Authorization: Bearer $TOKEN" \
@@ -161,7 +161,7 @@ Generated files, follow-up suggestions and chat history index entries of the del
 
 Response: 200 `{"success":true,"data":{"deleted_messages":N,"workspace_reset":true,"reason":""}}`. When `workspace_reset` is false, `reason` says why only the conversation was rewound: `NO_SANDBOX` (the session has no sandbox) or `NO_CHECKPOINT` (the kept history has no checkpoint).
 
-| Status | `code` | Meaning |
+| Status | `error.details.code` | Meaning |
 | --- | --- | --- |
 | 409 | `REWIND_SOURCE_BUSY` | The session is generating, or the rewind point is an unfinished answer |
 | 409 | `REWIND_NO_CHECKPOINT` | The sandbox is still there but the kept history has no usable checkpoint; refused so the files do not run ahead of the conversation |

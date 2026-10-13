@@ -70,7 +70,7 @@ func respondEnvVarError(c *gin.Context, err error) {
 // @Tags         Me
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "One group per sandbox config"
-// @Failure      401  {object}  map[string]interface{}  "Unauthorized"
+// @Failure      401  {object}  apperrors.ErrorResponse  "Unauthorized"
 // @Security     Bearer
 // @Router       /me/env-vars [get]
 func (h *MeEnvVarHandler) List(c *gin.Context) {

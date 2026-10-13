@@ -89,11 +89,8 @@ func (h *Handler) ForkSession(c *gin.Context) {
 		// A busy source is a retryable, user-actionable state, not a fault:
 		// snapshotting would pause the sandbox and interrupt the running turn.
 		if stderrors.Is(err, service.ErrForkSourceBusy) {
-			c.JSON(http.StatusConflict, gin.H{
-				"success": false,
-				"error":   "source session has an active turn",
-				"code":    "FORK_SOURCE_BUSY",
-			})
+			_ = c.Error(errors.NewConflictError("source session has an active turn").
+				WithDetails(gin.H{"code": "FORK_SOURCE_BUSY"}))
 			return
 		}
 		if stderrors.Is(err, service.ErrForkSessionNotFound) {

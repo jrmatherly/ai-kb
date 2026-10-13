@@ -3047,9 +3047,9 @@ async function savePageEdit(versionOverride?: number) {
     MessagePlugin.success(t('knowledgeEditor.wikiBrowser.editSaveSuccess'))
   } catch (e: any) {
     // The request interceptor rejects with a flattened { status, message,
-    // ...body } object, so the conflict payload sits on `e` directly.
+    // ...body } object, so the conflict payload sits on `e.error.details`.
     if (e?.status === 409) {
-      editConflictVersion.value = e?.current_version ?? 0
+      editConflictVersion.value = e?.error?.details?.current_version ?? 0
     } else {
       MessagePlugin.error(e?.message || t('knowledgeEditor.wikiBrowser.editSaveFailed'))
     }

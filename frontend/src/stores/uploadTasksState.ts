@@ -222,12 +222,13 @@ export type UploadOutcome =
 /**
  * Classify a resolved or rejected upload call. request.ts rejects non-2xx
  * responses with the JSON body spread over `{ status, message }`, so a 409
- * duplicate arrives as a rejection carrying `code` and the existing row in `data`.
+ * duplicate arrives as a rejection carrying `error.details.code` and the
+ * existing row in `error.details.data`.
  */
 export function classifyUploadResult(result: any): UploadOutcome {
-  const code = result?.code ?? result?.error?.code
-  if (code === 'duplicate_file') {
-    return { kind: 'duplicate', knowledgeId: result?.data?.id, message: result?.message }
+  const details = result?.error?.details
+  if (details?.code === 'duplicate_file') {
+    return { kind: 'duplicate', knowledgeId: details?.data?.id, message: result?.message }
   }
   if (result?.success === true) {
     return { kind: 'uploaded', knowledgeId: result?.data?.id, parseStatus: result?.data?.parse_status }

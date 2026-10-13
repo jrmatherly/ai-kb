@@ -81,9 +81,10 @@ test('offers rewind on user and assistant messages unless outgoing work or an in
 })
 
 test('maps rewind HTTP conflicts onto dedicated copy', () => {
-  assert.equal(rewindHttpConflictCode({ status: 409, code: 'REWIND_NO_CHECKPOINT' }), 'REWIND_NO_CHECKPOINT')
-  assert.equal(rewindHttpConflictCode({ $httpStatus: 409, code: 'REWIND_SOURCE_BUSY' }), 'REWIND_SOURCE_BUSY')
-  assert.equal(rewindHttpConflictCode({ status: 500, code: 'REWIND_NO_CHECKPOINT' }), '')
+  const conflict = (code: string) => ({ success: false, error: { code: 1005, message: 'm', details: { code } } })
+  assert.equal(rewindHttpConflictCode({ status: 409, ...conflict('REWIND_NO_CHECKPOINT') }), 'REWIND_NO_CHECKPOINT')
+  assert.equal(rewindHttpConflictCode({ $httpStatus: 409, ...conflict('REWIND_SOURCE_BUSY') }), 'REWIND_SOURCE_BUSY')
+  assert.equal(rewindHttpConflictCode({ status: 500, ...conflict('REWIND_NO_CHECKPOINT') }), '')
   assert.equal(rewindConflictI18nKey('REWIND_NO_CHECKPOINT'), 'chat.rewind.noCheckpoint')
   assert.equal(rewindConflictI18nKey('REWIND_SANDBOX_REPLACED'), 'chat.rewind.sandboxReplaced')
   assert.equal(rewindConflictI18nKey('REWIND_SOURCE_BUSY'), 'chat.rewind.busy')

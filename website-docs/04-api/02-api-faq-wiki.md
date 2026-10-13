@@ -261,7 +261,7 @@ curl $BASE/api/v1/knowledgebase/kb-1/wiki/pages/overview -H "Authorization: Bear
 
 ### PUT /api/v1/knowledgebase/:kb_id/wiki/pages/*slug
 
-Purpose: update a page (same body as create; absent fields keep their stored value). The previous version is first snapshotted in full into `wiki_page_revisions`, `version` increments, and `last_edit_source` is recorded as `user` (`agent` when an agent tool writes). A concurrent edit returns 409.
+Purpose: update a page (same body as create; absent fields keep their stored value). The previous version is first snapshotted in full into `wiki_page_revisions`, `version` increments, and `last_edit_source` is recorded as `user` (`agent` when an agent tool writes). A concurrent edit returns 409 with the page's current version in `error.details.current_version`.
 
 Response: 200 `WikiPage`
 

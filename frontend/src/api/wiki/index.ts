@@ -187,7 +187,7 @@ export function getWikiPage(kbId: string, slug: string) {
 // WikiPageUpdatePayload is a partial update: absent fields keep their stored
 // value. `version` is the optimistic-lock guard - send the version the page
 // had when the user started editing; the backend answers 409 (with
-// `current_version` in the body) when someone else edited in between.
+// `error.details.current_version`) when someone else edited in between.
 export interface WikiPageUpdatePayload {
   title?: string;
   content?: string;

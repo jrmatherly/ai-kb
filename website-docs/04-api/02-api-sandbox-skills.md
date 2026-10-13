@@ -65,7 +65,7 @@ curl "$BASE/api/v1/sandbox-configs/cfg-1/sandboxes" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Changing the backend identity and deleting a config both check the remote instances. A 409 carries `error.code` such as `sandboxes_still_live`, `sandbox_inventory_unverifiable` or `skill_snapshot_release_failed`; 423 means another request is modifying the config. `force=true` only allows deletion when the inventory cannot be verified; it never skips confirmed live or paused instances. The occupancy data in the response points to the related sessions and agents.
+Changing the backend identity and deleting a config both check the remote instances. A 409 carries `error.details.code` such as `sandboxes_still_live`, `sandbox_inventory_unverifiable` or `skill_snapshot_release_failed`; 423 means another request is modifying the config. `force=true` only allows deletion when the inventory cannot be verified; it never skips confirmed live or paused instances. The occupancy data in `error.details.data` points to the related sessions and agents.
 
 ### Network policy
 

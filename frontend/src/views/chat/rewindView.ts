@@ -99,12 +99,13 @@ export function rewindHttpConflictCode(err: unknown): string {
   if (!err || typeof err !== 'object') {
     return ''
   }
-  const rec = err as { code?: unknown; status?: unknown; $httpStatus?: unknown }
+  const rec = err as { error?: { details?: { code?: unknown } }; status?: unknown; $httpStatus?: unknown }
   const status = rec.status ?? rec.$httpStatus
   if (status !== 409) {
     return ''
   }
-  return typeof rec.code === 'string' ? rec.code : ''
+  const code = rec.error?.details?.code
+  return typeof code === 'string' ? code : ''
 }
 
 export function rewindConflictI18nKey(code: string): string {

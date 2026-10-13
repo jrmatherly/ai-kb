@@ -108,7 +108,7 @@ test('classifies duplicates and failures, and retries a failed file', async () =
   const { calls, ends, queue, batch, byName } = setup()
   queue.add(batch(), [{ file: file('dup', 1) }, { file: file('bad', 2) }])
 
-  calls[0].reject({ status: 409, code: 'duplicate_file', data: { id: 'k-old' } })
+  calls[0].reject({ status: 409, error: { code: 1005, details: { code: 'duplicate_file', data: { id: 'k-old' } } } })
   calls[1].reject({ status: 400, message: 'too large' })
   await flush()
   assert.equal(byName('dup').transfer, 'duplicate')

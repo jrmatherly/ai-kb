@@ -266,7 +266,7 @@ Common `process_config` fields (all optional; an omitted field uses the knowledg
 | `question_generation_config` | object | KB configuration | Question generation |
 | `graph_enabled` / `extract_config` | - | KB configuration | Knowledge graph extraction |
 
-Response: 200 `{"success":true,"data":{Knowledge}}`. A duplicate file returns 409 with `success:false`, `code:"duplicate_file"` and the existing Knowledge in `data`. Same-name items that are being deleted or whose parse failed do not count as duplicates.
+Response: 200 `{"success":true,"data":{Knowledge}}`. A duplicate file returns 409 with `error.details.code` set to `"duplicate_file"` and the existing Knowledge in `error.details.data`. Same-name items that are being deleted or whose parse failed do not count as duplicates.
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/knowledge/file \
@@ -301,7 +301,7 @@ Purpose: create a knowledge item by fetching a URL. Permission and API key as ab
 | `channel` | string | no | Channel |
 | `process_config` | object | no | Parse overrides |
 
-Response: 201 `{"success":true,"data":{Knowledge}}`; a duplicate URL returns 409 (`code:"duplicate_url"`).
+Response: 201 `{"success":true,"data":{Knowledge}}`; a duplicate URL returns 409 (`error.details.code` is `"duplicate_url"`).
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge-bases/kb-1/knowledge/url -H "X-API-Key: $API_KEY" \

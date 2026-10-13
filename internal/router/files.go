@@ -677,21 +677,19 @@ func servePresignedPreview(
 			backendID, provider := parseStorageTarget(filePath)
 			fileSvc, resolvedProvider, err := resolveFileService(ctx, tenant, backendID, provider, absDir, storageResolver)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error":    err.Error(),
+				_ = c.Error(apperrors.NewBadRequestError(err.Error()).WithDetails(gin.H{
 					"provider": provider,
 					"hint":     "workspace storage config is missing or incomplete for this provider",
-				})
+				}))
 				return
 			}
 
 			httpURL, err := fileSvc.GetFileURL(ctx, filePath)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":    err.Error(),
+				_ = c.Error(apperrors.NewInternalServerError(err.Error()).WithDetails(gin.H{
 					"provider": resolvedProvider,
 					"hint":     "GetFileURL failed; for local storage this usually means APP_EXTERNAL_URL is unset",
-				})
+				}))
 				return
 			}
 

@@ -1710,14 +1710,11 @@ const executeUrlImport = async (
       } else if (responseData?.message) {
         errorMessage = responseData.message;
       }
-      if (responseData?.code === 'duplicate_url' || responseData?.error?.code === 'duplicate_url') {
-        errorMessage = t('knowledgeBase.urlExists');
-      }
       MessagePlugin.error(errorMessage);
     }
   } catch (error: any) {
     let errorMessage = error?.error?.message || error?.message || t('knowledgeBase.urlImportFailed');
-    if (error?.code === 'duplicate_url') {
+    if (error?.error?.details?.code === 'duplicate_url') {
       errorMessage = t('knowledgeBase.urlExists');
     }
     MessagePlugin.error(errorMessage);

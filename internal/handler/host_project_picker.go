@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 )
 
 // hostProjectPicker opens the native folder dialog on Lite desktop.
@@ -33,18 +34,12 @@ func currentHostProjectPicker() func() (string, error) {
 func (*SystemHandler) PickHostProjectDir(c *gin.Context) {
 	picker := currentHostProjectPicker()
 	if picker == nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error":   gin.H{"message": "host project picker is not available"},
-		})
+		_ = c.Error(apperrors.NewNotFoundError("host project picker is not available"))
 		return
 	}
 	dir, err := picker()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   gin.H{"message": err.Error()},
-		})
+		_ = c.Error(apperrors.NewInternalServerError(err.Error()))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

@@ -529,10 +529,8 @@ func (h *WikiPageHandler) UpdatePage(c *gin.Context) {
 		return
 	}
 	if req.Version > 0 && req.Version != existing.Version {
-		c.JSON(http.StatusConflict, gin.H{
-			"error":           "Wiki page was modified by someone else",
-			"current_version": existing.Version,
-		})
+		_ = c.Error(errors.NewConflictError("Wiki page was modified by someone else").
+			WithDetails(gin.H{"current_version": existing.Version}))
 		return
 	}
 

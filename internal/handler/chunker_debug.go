@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/logger"
@@ -116,9 +117,9 @@ type PreviewChunkingResponse struct {
 // @Produce      json
 // @Param        request  body      handler.PreviewChunkingRequest   true  "{text, chunking_config}"
 // @Success      200      {object}  handler.PreviewChunkingResponse  "Chunking result"
-// @Failure      400      {object}  map[string]interface{}           "Invalid request parameters"
-// @Failure      413      {object}  map[string]interface{}           "Text exceeds the preview limit"
-// @Failure      504      {object}  map[string]interface{}           "Chunking timed out"
+// @Failure      400      {object}  apperrors.ErrorResponse          "Invalid request parameters"
+// @Failure      413      {object}  apperrors.ErrorResponse          "Text exceeds the preview limit"
+// @Failure      504      {object}  apperrors.ErrorResponse          "Chunking timed out"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /chunker/preview [post]
@@ -128,23 +129,21 @@ func PreviewChunking(c *gin.Context) {
 
 	var req PreviewChunkingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "invalid request body: " + err.Error()})
+		_ = c.Error(apperrors.NewBadRequestError("invalid request body: " + err.Error()))
 		return
 	}
 
 	if strings.TrimSpace(req.Text) == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   "text is empty: paste a sample to preview chunking",
-		})
+		_ = c.Error(apperrors.NewBadRequestError("text is empty: paste a sample to preview chunking"))
 		return
 	}
 
 	if utf8.RuneCountInString(req.Text) > previewMaxChars {
-		c.JSON(http.StatusRequestEntityTooLarge, gin.H{
-			"success": false,
-			"error":   "text exceeds preview limit",
-			"limit":   previewMaxChars,
+		_ = c.Error(&apperrors.AppError{
+			Code:     apperrors.ErrBadRequest,
+			Message:  "text exceeds preview limit",
+			Details:  gin.H{"limit": previewMaxChars},
+			HTTPCode: http.StatusRequestEntityTooLarge,
 		})
 		return
 	}
@@ -193,9 +192,10 @@ func PreviewChunking(c *gin.Context) {
 	select {
 	case sr = <-resCh:
 	case <-ctx.Done():
-		c.JSON(http.StatusGatewayTimeout, gin.H{
-			"success": false,
-			"error":   "chunker preview timed out",
+		_ = c.Error(&apperrors.AppError{
+			Code:     apperrors.ErrTimeout,
+			Message:  "chunker preview timed out",
+			HTTPCode: http.StatusGatewayTimeout,
 		})
 		return
 	}

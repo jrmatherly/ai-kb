@@ -1059,13 +1059,16 @@ export interface SandboxConflict {
  * when the failure is anything else.
  *
  * The interceptor spreads the response body onto the rejection, so the code
- * sits at `err.error.code`. Parsing it in one place keeps callers from
+ * sits at `err.error.details.code`. Parsing it in one place keeps callers from
  * hard-coding that shape - and from confusing the two conflicts, which drive
  * different recovery paths in the UI.
  */
 export function parseSandboxConflict(err: unknown): SandboxConflict | null {
   if (typeof err !== 'object' || err === null) return null
-  const detail = (err as { error?: { code?: string; message?: string; data?: SandboxInventory } }).error
+  const body = (err as {
+    error?: { message?: string; details?: { code?: string; data?: SandboxInventory } }
+  }).error
+  const detail = body?.details
   if (!detail || typeof detail !== 'object') return null
   if (
     detail.code !== 'sandboxes_still_live' &&
@@ -1074,7 +1077,7 @@ export function parseSandboxConflict(err: unknown): SandboxConflict | null {
   ) {
     return null
   }
-  return { code: detail.code, message: detail.message, inventory: detail.data }
+  return { code: detail.code, message: body?.message, inventory: detail.data }
 }
 
 // --- Agent skills installed onto a sandbox config's image ---

@@ -216,7 +216,7 @@ Purpose: stateless chunking preview (the debug panel of the knowledge base edito
 
 Inline HTML `<table>` elements in the sample are converted to Markdown tables first, as during import. The text is neither stored nor embedded nor logged.
 
-Response: 200 `{"success":true,"data":{"selected_tier","tier_chain","rejected","profile","chunks":[{"seq","start","end","size_chars","size_tokens_approx","context_header","content"}],"stats":{count,avg_chars,min_chars,max_chars,stddev_chars,truncated_to}}}`. At most 500 chunks are returned; when the split produced more, `stats.truncated_to` holds the full count and the stats still describe the full set. Text over the limit returns 413, a split that exceeds 5 seconds returns 504; these error bodies are `{"success":false,"error":"..."}` rather than the standard error envelope.
+Response: 200 `{"success":true,"data":{"selected_tier","tier_chain","rejected","profile","chunks":[{"seq","start","end","size_chars","size_tokens_approx","context_header","content"}],"stats":{count,avg_chars,min_chars,max_chars,stddev_chars,truncated_to}}}`. At most 500 chunks are returned; when the split produced more, `stats.truncated_to` holds the full count and the stats still describe the full set. Text over the limit returns 413 with the limit in `error.details.limit`, and a split that exceeds 5 seconds returns 504; both use the standard error envelope.
 
 ```bash
 curl -X POST $BASE/api/v1/chunker/preview -H "Authorization: Bearer $TOKEN" \
