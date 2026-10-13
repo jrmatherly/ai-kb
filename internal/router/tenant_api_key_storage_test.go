@@ -41,6 +41,12 @@ func TestTenantAPIKeyStoredAsHashAndHint(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db, err := gorm.Open(sqlite.Open("file:"+uuid.NewString()+"?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)
+	// Authentication writes last_used_at on a detached goroutine. A second
+	// shared-cache connection reading meanwhile fails with "table is locked",
+	// so one connection lets the driver serialize them.
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	sqlDB.SetMaxOpenConns(1)
 	require.NoError(t, db.AutoMigrate(&types.TenantAPIKey{}))
 	keys := service.NewTenantAPIKeyService(repository.NewTenantAPIKeyRepository(db))
 
