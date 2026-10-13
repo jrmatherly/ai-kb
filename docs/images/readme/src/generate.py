@@ -3,8 +3,8 @@
 Outputs hero-*.svg, capabilities-*.svg, architecture-*.svg (per theme) and
 icons/*.svg into the directory above this script. Colors and fonts follow
 website-docs/shared/brand.css; line icons come from website-docs/homepage/app/ui.tsx.
-The wordmark PNGs are docs/images/logo.png cropped, with the white ground turned
-into alpha (dark variant recolors the navy lettering and keeps the gold).
+The wordmark PNGs come from scripts/brand/generate.mjs (light: black lettering,
+dark: white lettering, both on alpha).
 
     python3 docs/images/readme/src/generate.py
 """
@@ -141,7 +141,7 @@ def wordmark(theme):
 
 COPY = {
     "en": dict(
-        eyebrow="TENCENT OPEN SOURCE · WEKNORA",
+        eyebrow="OPEN SOURCE · AI KB",
         h1=["Find the answers,", "and put knowledge to work."], h1_size=68,
         desc=["Tencent's open-source knowledge management framework.", "Bring team documents together for Q&A, tasks and wikis."],
         highlights=["RAG Q&A", "Agent reasoning", "Auto Wiki", "Local browser", "Skills & sandbox", "MCP Server", "Long-term memory", "Sources & IM"],
@@ -162,7 +162,7 @@ def hero(lang, theme):
     desc_y = l2 + 72
     rule_y = desc_y + 42 * (len(c["desc"]) - 1) + 56
     H = rule_y + 104
-    o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="WeKnora">',
+    o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="AI KB">',
          f'<rect x="1" y="1" width="{W-2}" height="{H-2}" rx="20" fill="{t["panel"]}" stroke="{t["rule"]}" stroke-width="2"/>',
          f'<image href="{wordmark(theme)}" x="72" y="60" width="226" height="52"/>']
     # eyebrow + headline + description
@@ -267,7 +267,7 @@ ICONS.update({
 
 ARCH = {
     "en": dict(
-        heads=["Clients and channels", "WeKnora app", "Runtime services", "Storage"],
+        heads=["Clients and channels", "AI KB app", "Runtime services", "Storage"],
         access=[("monitor", "Web UI", "Vue 3 · HTTP / SSE"), ("terminal", "API · CLI · SDK", "Scoped API keys"),
                 ("channels", "IM channels", "WeCom · Feishu · Slack …"), ("code", "Website embed", "Widget · domain allowlist"),
                 ("plug", "MCP clients", "Streamable HTTP"), ("browser", "Local browser", "BrowserSkill · WebSocket")],
@@ -288,7 +288,7 @@ ARCH = {
                 ("Neo4j", "Knowledge graph (optional)"), ("Langfuse", "Tracing (optional)")],
     ),
 }
-EYEBROWS = ["01 / ACCESS", "02 / WEKNORA APP", "03 / SERVICES", "04 / STORAGE"]
+EYEBROWS = ["01 / ACCESS", "02 / AI KB APP", "03 / SERVICES", "04 / STORAGE"]
 
 
 def wrap_sep(s, size, width, sep=" · "):
@@ -472,7 +472,7 @@ def architecture(lang, theme):
     o.append(arrowhead(x0, gy + 17, "down"))
 
     H = gy + gh + 40
-    head = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="WeKnora architecture">'
+    head = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" aria-label="AI KB architecture">'
             f'<rect width="{W}" height="{H}" fill="none"/>')
     return head + "\n" + "\n".join(o) + "\n</svg>"
 

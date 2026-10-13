@@ -4,8 +4,9 @@ Logos identify supported integrations; their names and marks belong to their res
 
 Paths below written as `public/brand/…`, `public/brands/…` and `public/product/…` live under `public/docs/_home/`, so the site serves them from `/docs/_home/` next to the rest of the documentation.
 
-- Product logo (**pending replacement**): `public/brand/ai-kb-original.png` is still the upstream project's README logo (`docs/images/logo.png`), copied unchanged. It shows the upstream name, not AI KB, and is replaced when an AI KB logo exists. CSS hides only the empty outer canvas and blends the white background into the page; dark mode uses an inverted presentation with hue rotation.
-- Browser icon (**pending replacement**): copied unchanged from the product's `frontend/public/favicon.ico` into the documentation (`/docs/favicon.ico`), which the homepage also uses. It is still the upstream icon.
+- Product logo: `public/brand/ai-kb-original.png` is the AI KB lockup (the Kay mark on its black tile beside "AI KB" in Helvetica Neue Bold) on a white 945 x 650 canvas, the same file as `docs/images/logo.png`. The lockup fills the 945 x 238 band at y=208 that `.wk-logo` in `shared/brand.css` crops; CSS blends the white ground into the page, and dark mode inverts it with a hue rotation. The file name predates the AI KB logo and stays so the header, the homepage and the site tests keep their references.
+- Browser icon: `/docs/favicon.ico` (16 and 32 px, the Kay mark on its tile), the same file as the product's `frontend/public/favicon.ico`. The homepage reuses it.
+- Both are rendered by `node scripts/brand/generate.mjs` at the repository root, the single source for every AI KB logo: the marks, accent palette and the full list of outputs live in that script, and its SVG sources are written to `docs/images/brand/`. Rendering needs Google Chrome and ImageMagick. Change `DEFAULT` in the script and rerun it to switch the mark or accent everywhere, then rerun `docs/images/readme/src/generate.py`, which embeds the wordmark PNGs in the README hero.
 - Feishu, GitLab, Tencent IMA, Notion, Yuque, RSS, WeCom, Slack, Telegram: copied unchanged from the product frontend asset library.
 - OpenAI, DeepSeek, Qwen, Hunyuan, Gemini, Ollama, MCP: static SVGs from [Lobe Icons](https://github.com/lobehub/lobe-icons), `@lobehub/icons-static-svg@1.95.0`. Upstream MIT license included with assets.
 - Confluence, DingTalk: copied unchanged from the product frontend asset library (`frontend/src/assets/img/datasource-confluence.svg`, `frontend/src/assets/img/im/dingtalk.svg`).
@@ -19,12 +20,6 @@ Paths below written as `public/brand/…`, `public/brands/…` and `public/produ
 
 ## Product screenshots
 
-Every screenshot below was captured from the upstream build and shows the upstream logo and a Chinese UI. All are **pending replacement** with English AI KB captures under the same file names.
+The upstream screenshots showed the upstream logo and a Chinese UI, so they were removed on 2026-10-13 (backups in the untracked `private/removed/`). Every gallery entry in `app/page.tsx` now renders its "Screenshot pending" placeholder, which names the expected file, until an English capture from the running AI KB app is saved under `public/product/` with that name (3840 x 2112 PNG). The video in the demo section no longer has a poster for the same reason.
 
-- Skill catalog and sandbox terminal: copied unchanged from `../public/screenshots/skill-catalog.png` and `sandbox-panel-terminal.png` to `public/product/skill-catalog.png` and `sandbox-terminal.png`, for the skills & sandbox gallery.
-- Sandbox desktop (`public/product/sandbox-desktop.png`): the chat's sandbox panel on the Desktop tab, showing the XFCE desktop of a desktop template. It shares the Desktop and terminal card with the terminal screenshot, switched inside the card.
-- v0.8.2 gallery: `mcp-server-endpoint.png`, `chat-steer-queue.png` and `browser-connection.png` copied unchanged from `../public/screenshots/` to `public/product/`. The local browser card switches between two views of the same capability: Run a task (below) and Connect the extension (the browser connection page).
-- Browser task (`public/product/local-browser-task.png`): the default view of the local browser card, a smart-reasoning chat driving the connected Chrome through BrowserSkill (GitHub release lookup, then filling the httpbin.org sample order form without submitting), with the in-chat task preview and pause / end controls.
-
-- Wiki browser: copied unchanged from `../public/screenshots/wiki-browser.png` to `public/product/wiki-browser.png`. Shows the actual Wiki directory, linked page and source references using sample company policies.
-- Wiki graph and revision history: copied unchanged from `../public/screenshots/wiki-graph.png` and `wiki-revision-history.png` to matching files in `public/product/`, for the horizontal Wiki gallery.
+Expected files: `local-browser-task.png`, `browser-connection.png`, `mcp-server-endpoint.png`, `chat-steer-queue.png`, `wiki-graph.png`, `wiki-browser.png`, `wiki-revision-history.png`, `skill-sandbox-chat.png`, `sandbox-desktop.png`, `sandbox-terminal.png`, `skill-catalog.png`, and `agent-chat.png` if the video poster comes back.

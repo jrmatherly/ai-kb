@@ -52,4 +52,4 @@ The product UI is rebuilt in HTML rather than screenshotted, so the text stays s
 - **Counts:** the model provider count in the ecosystem scene ("27 providers").
 - **Lists:** the data sources and channels, when integrations are added or removed.
 
-`assets/logo-light.png` and `assets/logo-dark.png` are generated from `docs/images/logo.png` by `make-logos.py` (needs Pillow).
+`assets/logo-light.png` (black lettering, for paper backgrounds) and `assets/logo-dark.png` (white lettering, for navy backgrounds) come from `node scripts/brand/generate.mjs` at the repository root.

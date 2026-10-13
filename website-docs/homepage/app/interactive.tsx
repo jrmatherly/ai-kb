@@ -3,7 +3,7 @@ import { BrandLogo } from "./brand-logo";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { Icon } from "./ui";
 import { getThemeSnapshot, subscribeToTheme, toggleTheme } from "./theme";
-import { siteNavigation, repositoryUrl, headerIcons, homeAssets } from "../../shared/header";
+import { siteNavigation, repositoryUrl, headerIcons } from "../../shared/header";
 import s from "./home.module.css";
 const videoUrl = "https://github.com/user-attachments/assets/2819598d-3140-4623-814a-8162a22b653c";
 
@@ -47,7 +47,7 @@ export function ProductVideo() {
   return <figure id="demo" className={s.videoFigure}>
     <div className={s.videoTop}><span>Product demo <span className={s.videoDot}>/</span> PRODUCT FILM</span><span>02:25 <span className={s.videoDot}>/</span> 1080P</span></div>
     <div className={s.videoStage}>
-      <video ref={player} controls={started} playsInline preload="none" poster={`${homeAssets}/product/agent-chat.png`} aria-label="AI KB product introduction, English narration, English and Chinese subtitles" aria-describedby="video-caption" tabIndex={started ? 0 : -1} onError={() => setFailed(true)} />
+      <video ref={player} controls={started} playsInline preload="none" aria-label="AI KB product introduction, English narration, English and Chinese subtitles" aria-describedby="video-caption" tabIndex={started ? 0 : -1} onError={() => setFailed(true)} />
       {!started && <button className={s.videoCover} onClick={play} aria-label="Play the AI KB product introduction video, 2 minutes 25 seconds"><span className={s.playCircle}><Icon name="play" /></span><span className={s.videoCoverTitle}>AI KB product demo</span><span className={s.videoCoverHint}>Play the introduction · 2 min 25 s</span></button>}
       {failed && <div className={s.videoError} role="status"><p>The video cannot be loaded right now</p><a href={videoUrl} target="_blank" rel="noreferrer">Open the original video on GitHub <Icon name="external" /></a></div>}
     </div>
