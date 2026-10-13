@@ -278,7 +278,7 @@ make build && ./ai-kb                       # or make build-prod
 cd frontend && npm ci && npm run dev          # development; npm run build produces dist/
 
 # docreader
-cd docreader && uv sync --locked && bash scripts/generate_proto.sh && uv run -m docreader.main  # same as the image CMD
+make -C docreader proto && make -C docreader run  # uv sync, regenerate the stubs, then the image CMD (python -m docreader.main from the repository root)
 ```
 
 Configuration file lookup order (`LoadConfig` in `internal/config/config.go`): the current directory, then `./config`, then `$HOME/.appname`, then `/etc/appname/`. The file name is `config.yaml`.

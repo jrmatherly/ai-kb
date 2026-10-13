@@ -1,23 +1,22 @@
-.PHONY: proto build run docker-build docker-run clean
+.PHONY: proto build run clean
 
-# Generate protobuf code
+# Generate protobuf code with the locked grpcio-tools (the Go stubs also need protoc and its plugins on PATH)
 proto:
 	@echo "Generating protobuf code..."
-	@sh ./scripts/generate_proto.sh
+	@uv run --locked bash ./scripts/generate_proto.sh
 
-# Build the Go client
+# Compile the Go client and proto packages (libraries, so nothing is written)
 build:
 	@echo "Building Go client..."
-	@go build -o bin/client ./src/client
+	@go build ./client ./proto
 
-# Run the Python service
+# Run the Python service (docreader must be importable as a package, so run from the repository root)
 run:
 	@echo "Running Python server..."
-	@python src/server/server.py
+	@cd .. && uv run --project docreader python -m docreader.main
 
 # Clean up
 clean:
 	@echo "Cleaning up..."
-	@rm -rf bin/
 	@find . -name "*.pyc" -delete
-	@find . -name "__pycache__" -delete 
+	@find . -name "__pycache__" -type d -prune -exec rm -rf {} + 

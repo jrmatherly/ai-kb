@@ -1,6 +1,9 @@
 #!/bin/bash
 set -ex
 
+# The paths below are relative to the repository root; make -C docreader proto runs from docreader/.
+cd "$(dirname "$0")/../.."
+
 # Directories
 PROTO_DIR="docreader/proto"
 PYTHON_OUT="docreader/proto"
