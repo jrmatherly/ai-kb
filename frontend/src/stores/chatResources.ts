@@ -23,11 +23,11 @@ function isKbModelReady(kb: any): boolean {
 }
 
 /**
- * 空间级资源（知识库 / 智能体 / 模型 / 联网搜索 / 沙箱后端）的共享快照。
+ * Shared snapshot of space-level resources (knowledge bases / agents / models / web search / sandbox backends).
  *
- * 没有 TTL：每次 `ensureX()` 都会发请求（同一时刻只有一个在飞行，挂载突发共用它），
- * 写操作之后由调用方 `ensureX(true)`、`replaceModels()` 或 `invalidate()` 显式刷新。
- * 页面直接读这里的 ref 渲染，旧快照在新数据到达前先撑着。
+ * No TTL: every `ensureX()` sends a request (at most one in flight at a time, shared by mount bursts),
+ * and after a write the caller refreshes explicitly with `ensureX(true)`, `replaceModels()` or `invalidate()`.
+ * Pages render straight from the refs here, and the old snapshot holds until new data arrives.
  */
 export const useChatResourcesStore = defineStore('chatResources', () => {
   const rawKnowledgeBases = ref<any[]>([])
@@ -50,8 +50,8 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     },
   )
 
-  // 内置智能体名称/描述由后端按 Accept-Language 本地化返回；快照只对拉取时的
-  // UI 语言有效。agentsLoadedLocale 必须是「请求发起时」的语言，不能在 await 之后再读。
+  // Built-in agent names and descriptions come back localized by the backend per Accept-Language; the snapshot is valid only for the
+  // UI language at fetch time. agentsLoadedLocale must be the language "when the request was sent", not read after await.
   let agentsLoadedLocale = ''
   let agentsInflightLocale = ''
   const agentsResource = createCachedResource(
@@ -99,10 +99,10 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     },
   )
 
-  // 失败只吞掉不抛：这是可选资源——拿不到就只剩「不启用沙箱」一项，
-  // 智能体照样能编辑保存。调用方通常把它和一堆必需资源放在同一个
-  // Promise.all 里，若在这里抛出，整个编辑器的依赖加载都会连坐
-  // （技能可用性拿不到 ⇒ 技能配置分组直接消失）。
+  // Swallow failures, do not throw: this is an optional resource. Without it the only option left is "no sandbox",
+  // and the agent can still be edited and saved. Callers usually put it in the same Promise.all as a set of required
+  // resources, so throwing here would fail the whole editor's dependency load with it
+  // (no skill availability means the skill config group disappears).
   const sandboxConfigsResource = createCachedResource(
     async () => {
       try {
@@ -126,8 +126,8 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     sandboxConfigs: sandboxConfigsResource,
   }
 
-  // 智能体可见知识库、单个知识库详情：拿到过就一直用，直到显式失效。
-  // @ 提及列表会逐条补 count，这类按 key 的读取不能每次都打接口。
+  // Knowledge bases visible to an agent and single knowledge base details: once fetched they are reused until explicitly invalidated.
+  // The @ mention list fills counts one by one, so these per-key reads cannot hit the API every time.
   const agentKbCache = createKeyedSnapshotCache(async (cacheKey: string) => {
     const [agentId, sourceTenantId] = cacheKey.split(':')
     const res: any = await listKnowledgeBases({
@@ -145,7 +145,7 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     }
   })
 
-  /** 是否已有快照（区别于「是否新鲜」：本 store 不再有新鲜度窗口）。 */
+  /** Whether a snapshot exists (as opposed to "is it fresh": this store no longer has a freshness window). */
   function isLoaded(key: ResourceKey): boolean {
     if (key === 'agents') {
       return isLocalizedSnapshotUsable(agentsResource.isLoaded(), agentsLoadedLocale, getCurrentLanguage())
@@ -154,15 +154,15 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
   }
 
   /**
-   * 知识库列表（支持 creator 筛选）。creator=all 走共享快照供对话页复用。
+   * Knowledge base list (supports a creator filter). creator=all uses the shared snapshot so the chat page can reuse it.
    */
   async function fetchKnowledgeBasesForList(
     params?: { creator?: ListCreatorFilter },
     force = false,
   ): Promise<any[]> {
     const creator = params?.creator ?? 'all'
-    // 带 creator 过滤的列表是列表页专用、不进快照，直接透传请求。
-    // 写操作后的强刷同时把全量快照刷一遍，否则对话输入栏会看到已删除的知识库。
+    // A creator-filtered list is for the list page only and is not snapshotted; the request passes straight through.
+    // The forced refresh after a write also refreshes the full snapshot, otherwise the chat input bar would show deleted knowledge bases.
     if (creator !== 'all') {
       if (force) void ensureKnowledgeBases(true).catch(() => {})
       const res: any = await listKnowledgeBases({ creator })
@@ -172,9 +172,9 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     return rawKnowledgeBases.value
   }
 
-  // 共享资源是附带刷新：它的接口挂了不能连坐自己的列表，否则调用方的 catch
-  // 会把已经拿到的自己的知识库 / 智能体一起清掉（手动文档编辑器、API 集成页）。
-  // 共享列表失败时保留上一次快照，由页面自己决定要不要单独强刷。
+  // Shared resources are a side refresh: their endpoint failing must not take down the user's own list, otherwise the caller's catch
+  // would clear the user's own knowledge bases and agents it already has (manual document editor, API integration page).
+  // When the shared list fails, keep the last snapshot and let the page decide whether to force a separate refresh.
   const swallow = (p: Promise<unknown>) => p.catch(() => undefined)
 
   async function ensureKnowledgeBases(force = false): Promise<void> {
@@ -186,7 +186,7 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
   }
 
   /**
-   * 智能体列表（支持 creator 筛选）。creator=all 走共享快照。
+   * Agent list (supports a creator filter). creator=all uses the shared snapshot.
    */
   async function fetchAgentsForList(
     params?: { creator?: ListCreatorFilter },
@@ -195,7 +195,7 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     const creator = params?.creator ?? 'all'
     const orgStore = useOrganizationStore()
 
-    // 带 creator 过滤的列表不进快照，但仍需刷新共享智能体（与全量路径保持一致）。
+    // A creator-filtered list is not snapshotted, but shared agents still need a refresh (consistent with the full path).
     if (creator !== 'all') {
       if (force) void ensureAgents(true).catch(() => {})
       const [agentsRes] = await Promise.all([
@@ -213,7 +213,7 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
   async function ensureAgents(force = false): Promise<void> {
     const orgStore = useOrganizationStore()
     const locale = getCurrentLanguage()
-    // 飞行中的请求是用另一种语言发起的：不能复用它，排在它后面再发一次。
+    // The in-flight request was sent in another language: it cannot be reused, so queue another one after it.
     const mustForce =
       force ||
       shouldForceLocalizedRefetch(agentsResource.hasInFlightRequest(), agentsInflightLocale, locale)
@@ -227,13 +227,13 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     return modelsResource.ensure(force)
   }
 
-  /** 用刚拉到的列表覆盖快照（设置页增删改模型之后调用），并作废飞行中的旧请求。 */
+  /** Overwrite the snapshot with a freshly fetched list (called after models are added, removed or changed in settings), and void the in-flight old request. */
   function replaceModels(models: ModelConfig[]) {
     allModels.value = Array.isArray(models) ? models : []
     modelsResource.markLoaded()
   }
 
-  /** @deprecated 使用 ensureModels；保留别名供对话输入栏调用 */
+  /** @deprecated Use ensureModels; the alias stays for the chat input bar */
   async function ensureChatModels(force = false): Promise<void> {
     return ensureModels(force)
   }
@@ -243,14 +243,14 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
   }
 
   /**
-   * 沙箱后端配置，供智能体编辑器的后端选择器使用。
-   * 不进 prefetchChatInput：只有编辑智能体时才需要，对话输入栏用不到。
+   * Sandbox backend configs, for the backend picker in the agent editor.
+   * Not in prefetchChatInput: only agent editing needs it; the chat input bar does not.
    */
   async function ensureSandboxConfigs(force = false): Promise<void> {
     return sandboxConfigsResource.ensure(force)
   }
 
-  /** 并行预取对话输入栏及列表页常用的空间级资源 */
+  /** Prefetch in parallel the space-level resources the chat input bar and list pages commonly use */
   async function prefetchChatInput(force = false): Promise<void> {
     const orgStore = useOrganizationStore()
     await Promise.all([
@@ -266,7 +266,7 @@ export const useChatResourcesStore = defineStore('chatResources', () => {
     return agentKbCache.ensure(`${agentId}:${sourceTenantId || 'current'}`, force)
   }
 
-  /** 单个知识库详情（侧栏 + 详情页共用，去重并发请求） */
+  /** Single knowledge base details (shared by the sidebar and the details page, concurrent requests deduplicated) */
   async function fetchKnowledgeBaseById(kbId: string, force = false): Promise<any | null> {
     if (!kbId) return null
     return kbDetailCache.ensure(kbId, force)

@@ -65,11 +65,11 @@ const props = withDefaults(
   defineProps<{
     active: boolean
     steps: SpotlightGuideStep[]
-    /** i18n 前缀，步骤文案为 `${stepI18nPrefix}.${key}.title|desc` */
+    /** i18n prefix; step text is `${stepI18nPrefix}.${key}.title|desc` */
     stepI18nPrefix: string
-    /** skip/prev/next/done/stepOf 所在前缀，默认 newUserGuide */
+    /** Prefix holding skip/prev/next/done/stepOf, default newUserGuide */
     labelsPrefix?: string
-    /** 每步 before 执行后的等待毫秒数 */
+    /** Milliseconds to wait after each step's before hook runs */
     beforeDelayMs?: number
   }>(),
   {

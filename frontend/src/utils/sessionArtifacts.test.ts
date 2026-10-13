@@ -72,17 +72,17 @@ test('artifacts after a live inject use the persisted assistant ID regardless of
   const assistant = { id: 'assistant', request_id: 'request', role: 'assistant' }
   const list = [assistant]
   const continuation = forkAfterInjectedUser(list, assistant, { id: 'user', role: 'user' }, 'steer')
-  continuation.artifacts = [{ file_name: 'AI KB-示例文档.docx', index: 3 }]
+  continuation.artifacts = [{ file_name: 'AI KB-sample-document.docx', index: 3 }]
   const items = collectSessionArtifacts(list)
   assert.equal(items[0]?.messageId, 'assistant')
   assert.equal(items[0]?.index, 3)
-  assert.equal(items[0]?.file_name, 'AI KB-示例文档.docx')
+  assert.equal(items[0]?.file_name, 'AI KB-sample-document.docx')
 })
 
 test('history-split artifacts keep their persisted download address after refresh', () => {
   const list = expandSteerForksInHistory([
     { id: 'assistant', role: 'assistant', request_id: 'request', is_completed: true,
-      artifacts: [{ file_name: '示例.docx' }, { file_name: 'example.docx' }] },
+      artifacts: [{ file_name: 'sample.docx' }, { file_name: 'example.docx' }] },
     { id: 'user', role: 'user', request_id: 'request', created_at: '2026-09-09T12:00:00Z' },
   ])
   const items = collectSessionArtifacts(list)

@@ -178,7 +178,7 @@
                 </span>
                 <span v-if="item.serviceName" class="detail-kb">
                   <t-icon name="tools" class="detail-icon" />
-                  <span class="detail-label">MCP：</span>
+                  <span class="detail-label">MCP:</span>
                   <span class="detail-value">{{ item.serviceName }}</span>
                 </span>
               </div>
@@ -293,11 +293,11 @@ const props = defineProps<{
   activeIndex: number;
   hasMore?: boolean;
   loading?: boolean;
-  // 空态下替换默认 "无结果" 文案，用于给上游（如"被智能体工具兼容性过滤掉了"）透传具体原因
+  // Replaces the default "No results" text in the empty state, to pass a specific reason through from upstream (such as "filtered out by agent tool compatibility")
   emptyHint?: string;
-  // 输入 @ 后的筛选关键词；非空时平铺展示匹配项，不再要求进入二级目录
+  // Filter keyword typed after @; when non-empty, matches are listed flat without entering a submenu
   query?: string;
-  // 分组入口展示用的总数（如文件搜索的 total），避免仅用首屏已加载条数
+  // Total shown on group entries (such as the file search total), instead of only the count loaded on the first screen
   groupCounts?: Partial<Record<MentionItemType, number>>;
 }>();
 
@@ -319,7 +319,7 @@ onBeforeUnmount(() => {
   if (scrollTimer) clearTimeout(scrollTimer);
 });
 
-// 共享智能体上下文：用于请求知识库/知识详情时带 agent_id，后端据此校验权限
+// Shared agent context: sends agent_id when requesting knowledge base or knowledge details, so the backend can check permissions
 const agentIdForDetail = computed(() => {
   const sourceTenantId = settingsStore.selectedAgentSourceTenantId;
   const agentId = settingsStore.selectedAgentId;
@@ -332,7 +332,7 @@ const fileItems = computed(() => props.items.filter(item => item.type === 'file'
 
 const mentionGroupDefs = computed<Array<{ type: MentionItemType; label: string; icon: string }>>(() => [
   { type: 'kb', label: t('common.knowledgeBase'), icon: 'folder' },
-  { type: 'tag', label: '标签', icon: 'tag' },
+  { type: 'tag', label: 'Tag', icon: 'tag' },
   { type: 'mcp', label: 'MCP', icon: 'tools' },
   { type: 'skill', label: t('common.skill'), icon: SKILL_ICON },
   { type: 'file', label: t('common.file'), icon: 'file' },
@@ -496,15 +496,15 @@ function handleKbClick(kbId: string | undefined) {
 
 function handleOrgClick(orgName: string) {
   if (!orgName) return;
-  // 从共享知识库列表中找到对应的组织 ID
+  // Find the organization ID in the shared knowledge base list
   const sharedKb = orgStore.sharedKnowledgeBases.find(
     (s: any) => s.org_name === orgName
   );
   if (sharedKb?.organization_id) {
-    // 跳转到组织列表页（目前组织详情页可能不存在，先跳转到列表页）
+    // Go to the organization list (an organization detail page may not exist yet, so go to the list)
     router.push('/platform/organizations');
   } else {
-    // 如果找不到组织 ID，也跳转到组织列表页
+    // Go to the organization list as well when no organization ID is found
     router.push('/platform/organizations');
   }
 }
@@ -568,11 +568,11 @@ const scrollToItem = (index: number) => {
       const menuRect = menu.getBoundingClientRect();
       const itemRect = activeItem.getBoundingClientRect();
       
-      // 检查是否在上方被遮挡
+      // Check whether it is clipped above
       if (itemRect.top < menuRect.top) {
         menu.scrollTop -= (menuRect.top - itemRect.top);
       }
-      // 检查是否在下方被遮挡
+      // Check whether it is clipped below
       else if (itemRect.bottom > menuRect.bottom) {
         menu.scrollTop += (itemRect.bottom - menuRect.bottom);
       }
@@ -743,7 +743,7 @@ const scrollToItem = (index: number) => {
   font-size: var(--app-text-xl);
 }
 
-/* 右下角组织角标：柔和小圆 + 绿色/灰色 icon，不刺眼 */
+/* Organization corner badge at the bottom right: a soft small circle with a green or gray icon, not glaring */
 .org-badge-wrap {
   position: absolute;
   right: 0;
@@ -765,7 +765,7 @@ const scrollToItem = (index: number) => {
   object-fit: contain;
 }
 
-/* 知识库 / 文件 - 无背景，与整体一致 */
+/* Knowledge base / file - no background, consistent with the rest */
 .kb-icon,
 .faq-icon,
 .file-icon,
@@ -799,7 +799,7 @@ const scrollToItem = (index: number) => {
   white-space: nowrap;
 }
 
-/* 文件项中的 name 需要占据剩余空间，将 kb-name 推到右边 */
+/* The name in a file item takes the remaining space and pushes kb-name to the right */
 .mention-item > .name {
   flex: 1;
   min-width: 0;
@@ -852,7 +852,7 @@ const scrollToItem = (index: number) => {
 </style>
 
 <style>
-/* 详情浮层在 Teleport 中，需全局样式 */
+/* The details popover lives in a Teleport, so it needs global styles */
 .mention-detail-popup-wrap.t-popup__content {
   min-width: 220px;
   max-width: 280px;

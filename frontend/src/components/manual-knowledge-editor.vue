@@ -599,7 +599,7 @@ const lastUpdatedText = computed(() =>
 const loadKnowledgeBases = async () => {
   kbLoading.value = true
   try {
-    // ensureKnowledgeBases 同时刷新自己的与共享的知识库快照。
+    // ensureKnowledgeBases refreshes both the user's own and the shared knowledge base snapshots.
     await chatResources.ensureKnowledgeBases()
     const sharedKbs = organizationStore.sharedKnowledgeBases
 
@@ -1122,8 +1122,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="less">
-/* 复用模型管理同款 SettingDrawer：分组 section / header 图标 / footer 按钮 / 拖拽调宽。
-   这里只负责本编辑器特有的内容样式。内容内联渲染（无 teleport），scoped 生效。 */
+/* Reuses the same SettingDrawer as model management: grouped sections / header icon / footer buttons / drag to resize.
+   This only styles the content specific to this editor. The content renders inline (no teleport), so scoped styles apply. */
 .manual-editor {
   flex: 1;
   min-height: 0;
@@ -1139,7 +1139,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   color: var(--td-text-color-placeholder);
 
-  /* 状态标签保持整行，窄抽屉里让后面的时间先省略 */
+  /* The status tag keeps a whole line; in a narrow drawer the time after it is truncated first */
   :deep(.t-tag) {
     flex-shrink: 0;
     white-space: nowrap;
@@ -1177,7 +1177,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* ---------- 文档头：标题 + 存入位置 ---------- */
+/* ---------- Document header: title + destination ---------- */
 .doc-head {
   flex-shrink: 0;
   display: flex;
@@ -1185,13 +1185,13 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-/* 标题按“文档标题”排版，不做成表单控件；hover/聚焦才显出输入框的边界 */
+/* The title is laid out as a "document title", not a form control; the input box edge shows only on hover or focus */
 :deep(.doc-title) {
   flex: 1 1 auto;
   min-width: 0;
   padding: 0;
   background: transparent;
-  /* 负外边距抵掉内边距：文字和下方编辑卡左对齐，hover 底色仍有呼吸空间 */
+  /* A negative margin cancels the padding: the text left-aligns with the edit card below, and the hover background still has room */
   margin: 0 -8px;
 
   .t-input {
@@ -1232,8 +1232,8 @@ onBeforeUnmount(() => {
 }
 
 :deep(.doc-meta__kb) {
-  /* TDesign 的 select 根节点是块级；这里让它收到内容宽度，
-     否则框比文字宽，箭头够不到右边缘，看着就是没对齐 */
+  /* TDesign's select root is a block; shrink it to the content width here,
+     otherwise the box is wider than the text, the arrow does not reach the right edge, and it looks misaligned */
   flex: 0 1 auto;
   width: auto;
   min-width: 0;
@@ -1268,8 +1268,8 @@ onBeforeUnmount(() => {
   color: var(--td-text-color-placeholder);
 }
 
-/* 窄抽屉：与其让工具栏折行（视图切换会悬在第二行），不如把视图切换收成图标，
-   一行仍然装得下。文字含义由 tooltip 兜底。 */
+/* Narrow drawer: rather than letting the toolbar wrap (the view switch would hang on a second line), collapse the view switch into icons
+   so it still fits on one line. The tooltip carries the text meaning. */
 .manual-editor--narrow {
   .view-switch__btn {
     padding: 0 6px;
@@ -1279,7 +1279,7 @@ onBeforeUnmount(() => {
     display: none;
   }
 
-  /* 极窄时的兜底：真放不下才换行，而不是把按钮藏进隐藏的滚动条里 */
+  /* Fallback when extremely narrow: wrap only when it truly does not fit, instead of hiding buttons in a hidden scrollbar */
   .editor-toolbar {
     flex-wrap: wrap;
   }
@@ -1290,10 +1290,10 @@ onBeforeUnmount(() => {
   }
 }
 
-/* ---------- 编辑区 ---------- */
+/* ---------- Edit area ---------- */
 .editor-area {
   flex: 1;
-  /* 视口很矮时不再继续压缩，改由抽屉主体滚动 */
+  /* Stop shrinking when the viewport is very short; the drawer body scrolls instead */
   min-height: 260px;
   display: flex;
   flex-direction: column;
@@ -1343,7 +1343,7 @@ onBeforeUnmount(() => {
   border-left: 1px solid var(--td-component-stroke);
 }
 
-/* 编辑 / 分屏 / 预览：一组分段控件，当前视图一眼可见 */
+/* Edit / split / preview: one segmented control, so the current view is visible at a glance */
 .view-switch {
   display: flex;
   align-items: center;
@@ -1392,7 +1392,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* 快捷键速查：和视图切换同处工具栏右端，省掉一整条状态栏 */
+/* Shortcut cheat sheet: at the right end of the toolbar with the view switch, saving a whole status bar */
 .toolbar-shortcuts {
   display: flex;
   align-items: center;
@@ -1522,7 +1522,7 @@ onBeforeUnmount(() => {
   background: var(--td-bg-color-container);
 }
 
-/* 分屏时两栏之间给一道分隔线，预览栏底色略沉，区分“源码 / 成稿” */
+/* In split view, a divider between the two columns, and a slightly darker preview background to tell "source" from "rendered" */
 .editor-area--split {
   .editor-pane--preview {
     border-left: 1px solid var(--td-component-stroke);
@@ -1587,7 +1587,7 @@ onBeforeUnmount(() => {
     overflow: auto;
   }
 
-  /* 与 chat-markdown.less 的引用块一致：中性描边、无底色 */
+  /* Same as the blockquote in chat-markdown.less: neutral border, no background */
   :deep(blockquote) {
     border-left: 2px solid var(--td-component-stroke);
     padding: 6px 0 6px 14px;
@@ -1653,10 +1653,10 @@ onBeforeUnmount(() => {
 }
 
 .manual-editor-drawer {
-  /* 没有副标题的抽屉不需要 65px 的头：收一圈内边距、缩小图标徽章，
-     把高度还给正文。只作用于本抽屉，不动共用的 SettingDrawer。 */
+  /* A drawer without a subtitle does not need a 65px header: trim the padding and shrink the icon badge
+     to give the height back to the body. Applies only to this drawer, not to the shared SettingDrawer. */
   .t-drawer__header {
-    /* TDesign 给 header 兜了 56px 的 min-height，不解开就只是白留一圈空 */
+    /* TDesign gives the header a 56px min-height fallback; without undoing it, it only leaves a blank band */
     min-height: 0;
     padding: 9px 18px;
   }

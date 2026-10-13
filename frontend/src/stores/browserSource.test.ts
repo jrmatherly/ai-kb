@@ -108,7 +108,7 @@ test('new-session hydration preserves the createChat draft after the first query
   const store = useSettingsStore(createPinia())
   store.toggleLocalBrowser(true)
   store.toggleWebSearch(true)
-  let firstQuery = '用浏览器查一下'
+  let firstQuery = 'look this up in the browser'
   const preserveDraft = Boolean(firstQuery)
   let finishLoad!: (state: Record<string, boolean>) => void
   const pendingSession = new Promise<Record<string, boolean>>(resolve => { finishLoad = resolve })

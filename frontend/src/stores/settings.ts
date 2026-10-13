@@ -6,31 +6,31 @@ import { isAgentStreamAgentId } from "@/utils/agent-mode";
 import { loadAndReconcileSettings } from "@/stores/settingsStorage";
 import { isReasoningLevel, type ReasoningLevel } from "@/utils/reasoningEffort";
 
-// 定义设置接口
+// Settings interface
 interface Settings {
   endpoint: string;
   apiKey: string;
   knowledgeBaseId: string;
   isAgentEnabled: boolean;
   agentConfig: AgentConfig;
-  selectedKnowledgeBases: string[];  // 当前选中的知识库ID列表
-  selectedFiles: string[]; // 当前选中的文件ID列表
-  selectedFileKbMap: Record<string, string>; // 文件ID -> 知识库ID，用于刷新后带 kb_id 拉取共享知识库文件
+  selectedKnowledgeBases: string[];  // IDs of the currently selected knowledge bases
+  selectedFiles: string[]; // IDs of the currently selected files
+  selectedFileKbMap: Record<string, string>; // file ID -> knowledge base ID, so shared knowledge base files can be fetched with kb_id after a refresh
   selectedTags: Array<{ id: string; name: string; kbId: string; kbName?: string }>;
   selectedMCPServices: string[];
   selectedSkills: string[];
   selectedTools?: string[];
-  modelConfig: ModelConfig;  // 模型配置
-  ollamaConfig: OllamaConfig;  // Ollama配置
+  modelConfig: ModelConfig;  // model config
+  ollamaConfig: OllamaConfig;  // Ollama config
   localBrowserEnabled: boolean; // Explicit source preference; composer activates it only while the extension is online
-  webSearchEnabled: boolean;  // 网络搜索是否启用
+  webSearchEnabled: boolean;  // whether web search is enabled
   conversationModels: ConversationModels;
-  selectedAgentId: string;  // 当前选中的智能体ID
-  selectedAgentSourceTenantId: string | null;  // 当使用共享智能体时，来源空间 ID（用于后端 model/KB/MCP 解析）
-  autoCheckUpdate?: boolean; // 是否自动检查并下载更新
+  selectedAgentId: string;  // ID of the currently selected agent
+  selectedAgentSourceTenantId: string | null;  // with a shared agent, the source space ID (for backend model/KB/MCP resolution)
+  autoCheckUpdate?: boolean; // whether to check for and download updates automatically
 }
 
-// Agent 配置接口
+// Agent config interface
 interface AgentConfig {
   maxIterations: number;
   temperature: number;
@@ -41,37 +41,37 @@ interface AgentConfig {
 interface ConversationModels {
   summaryModelId: string;
   rerankModelId: string;
-  selectedChatModelId: string;  // 用户当前选择的对话模型ID
+  selectedChatModelId: string;  // ID of the chat model the user currently selected
 }
 
-// 单个模型项接口
+// Single model item interface
 interface ModelItem {
-  id: string;  // 唯一ID
-  name: string;  // 显示名称
-  source: 'local' | 'remote';  // 模型来源
-  modelName: string;  // 模型标识
-  baseUrl?: string;  // 远程API URL
-  apiKey?: string;  // 远程API Key
-  dimension?: number;  // Embedding专用：向量维度
-  interfaceType?: 'ollama' | 'openai';  // VLLM专用：接口类型
-  isDefault?: boolean;  // 是否为默认模型
+  id: string;  // unique ID
+  name: string;  // display name
+  source: 'local' | 'remote';  // model source
+  modelName: string;  // model identifier
+  baseUrl?: string;  // remote API URL
+  apiKey?: string;  // remote API key
+  dimension?: number;  // embedding only: vector dimension
+  interfaceType?: 'ollama' | 'openai';  // VLLM only: interface type
+  isDefault?: boolean;  // whether this is the default model
 }
 
-// 模型配置接口 - 支持多模型
+// Model config interface - supports multiple models
 interface ModelConfig {
   chatModels: ModelItem[];
   embeddingModels: ModelItem[];
   rerankModels: ModelItem[];
-  vllmModels: ModelItem[];  // VLLM视觉模型
+  vllmModels: ModelItem[];  // VLLM vision models
 }
 
-// Ollama 配置接口
+// Ollama config interface
 interface OllamaConfig {
-  baseUrl: string;  // Ollama 服务地址
-  enabled: boolean;  // 是否启用
+  baseUrl: string;  // Ollama service address
+  enabled: boolean;  // whether it is enabled
 }
 
-// 默认设置
+// Default settings
 const defaultSettings: Settings = {
   endpoint: getApiBaseUrl(),
   apiKey: "",
@@ -80,12 +80,12 @@ const defaultSettings: Settings = {
   agentConfig: {
     maxIterations: 5,
     temperature: 0.7,
-    allowedTools: [],  // 默认为空，需要通过 API 从后端加载
+    allowedTools: [],  // empty by default; loaded from the backend through the API
     system_prompt: "",
   },
-  selectedKnowledgeBases: [],  // 默认为空数组
-  selectedFiles: [], // 默认为空数组
-  selectedFileKbMap: {},  // 文件ID -> 知识库ID
+  selectedKnowledgeBases: [],  // empty array by default
+  selectedFiles: [], // empty array by default
+  selectedFileKbMap: {},  // file ID -> knowledge base ID
   selectedTags: [],
   selectedMCPServices: [],
   selectedSkills: [],
@@ -100,47 +100,47 @@ const defaultSettings: Settings = {
     enabled: true
   },
   localBrowserEnabled: false,
-  webSearchEnabled: false,  // 默认关闭网络搜索
+  webSearchEnabled: false,  // web search off by default
   conversationModels: {
     summaryModelId: "",
     rerankModelId: "",
-    selectedChatModelId: "",  // 用户当前选择的对话模型ID
+    selectedChatModelId: "",  // ID of the chat model the user currently selected
   },
-  selectedAgentId: BUILTIN_QUICK_ANSWER_ID,  // 默认选中快速问答模式
-  selectedAgentSourceTenantId: null as string | null,  // 共享智能体来源空间 ID
+  selectedAgentId: BUILTIN_QUICK_ANSWER_ID,  // quick answer mode selected by default
+  selectedAgentSourceTenantId: null as string | null,  // source space ID of a shared agent
   autoCheckUpdate: true,
 };
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
-    // 从本地存储加载设置，如果没有则使用默认设置
+    // Load settings from local storage, or use the defaults
     settings: loadAndReconcileSettings(defaultSettings),
-    // 进入会话时拍下"全局默认"的快照；离开会话时还原。非持久化字段：
-    // 刷新页面相当于重新走"进入会话"流程，自然会重新拍快照。
+    // Take a snapshot of the "global defaults" on entering a session and restore it on leaving. Not a persisted field:
+    // a page refresh is the same as entering the session again, so the snapshot is retaken naturally.
     _defaultsSnapshot: null as Settings | null,
-    /** 正在从 session.last_request_state 恢复输入栏，避免 agent 切换 watch 覆盖 KB 选择 */
+    /** Restoring the input bar from session.last_request_state, so the agent-switch watch does not overwrite the KB selection */
     _isApplyingSessionState: false,
     // Session-only preference: never written into global settings/localStorage.
     reasoningEffortOverride: '' as ReasoningLevel | '',
   }),
 
   getters: {
-    // Agent 是否启用
+    // Whether Agent is enabled
     isAgentEnabled: (state) => state.settings.isAgentEnabled || false,
 
-    // 当前是否为内置快速问答（优先看 selectedAgentId，避免与 isAgentEnabled 漂移）
+    // Whether this is the built-in quick answer (checks selectedAgentId first, so it does not drift from isAgentEnabled)
     isQuickAnswerMode: (state) =>
       (state.settings.selectedAgentId || BUILTIN_QUICK_ANSWER_ID) === BUILTIN_QUICK_ANSWER_ID,
 
-    // 是否走 Agent 流式管线（智能推理 / 自定义 Agent）；快速问答走 RAG 管线
+    // Whether to use the Agent streaming pipeline (smart reasoning / custom agents); quick answer uses the RAG pipeline
     isAgentStreamMode: (state) =>
       isAgentStreamAgentId(
         state.settings.selectedAgentId,
         state.settings.isAgentEnabled || false,
       ),
     
-    // Agent 是否就绪（配置完整）
-    // 需要满足：1) 配置了允许的工具 2) 设置了对话模型 3) 设置了重排模型
+    // Whether Agent is ready (config complete)
+    // Requires: 1) allowed tools configured 2) a chat model set 3) a rerank model set
     isAgentReady: (state) => {
       const config = state.settings.agentConfig || defaultSettings.agentConfig
       const models = state.settings.conversationModels || defaultSettings.conversationModels
@@ -151,8 +151,8 @@ export const useSettingsStore = defineStore("settings", {
       )
     },
     
-    // 普通模式（快速回答）是否就绪
-    // 需要满足：1) 设置了对话模型 2) 设置了重排模型
+    // Whether normal mode (quick answer) is ready
+    // Requires: 1) a chat model set 2) a rerank model set
     isNormalModeReady: (state) => {
       const models = state.settings.conversationModels || defaultSettings.conversationModels
       return Boolean(
@@ -161,62 +161,62 @@ export const useSettingsStore = defineStore("settings", {
       )
     },
     
-    // 获取 Agent 配置
+    // Get the Agent config
     agentConfig: (state) => state.settings.agentConfig || defaultSettings.agentConfig,
 
     conversationModels: (state) => state.settings.conversationModels || defaultSettings.conversationModels,
     
-    // 获取模型配置
+    // Get the model config
     modelConfig: (state) => state.settings.modelConfig || defaultSettings.modelConfig,
     
-    // 本轮查询来源
+    // Query source for this turn
     isLocalBrowserEnabled: (state) => state.settings.localBrowserEnabled === true,
     isWebSearchEnabled: (state) => state.settings.webSearchEnabled || false,
     
-    // 是否自动检查并下载更新
+    // Whether to check for and download updates automatically
     isAutoCheckUpdateEnabled: (state) => state.settings.autoCheckUpdate ?? true,
 
-    // 当前选中的智能体ID
+    // ID of the currently selected agent
     selectedAgentId: (state) => state.settings.selectedAgentId || BUILTIN_QUICK_ANSWER_ID,
-    // 共享智能体来源空间 ID（可选）
+    // Source space ID of a shared agent (optional)
     selectedAgentSourceTenantId: (state) => state.settings.selectedAgentSourceTenantId ?? null,
   },
 
   actions: {
-    // 保存设置
+    // Save settings
     saveSettings(settings: Settings) {
       this.settings = { ...settings };
-      // 保存到localStorage
+      // Save to localStorage
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
 
-    // 获取设置
+    // Get settings
     getSettings(): Settings {
       return this.settings;
     },
 
-    // 获取API端点
+    // Get the API endpoint
     getEndpoint(): string {
       return this.settings.endpoint || defaultSettings.endpoint;
     },
 
-    // 获取API Key
+    // Get the API key
     getApiKey(): string {
       return this.settings.apiKey;
     },
 
-    // 获取知识库ID
+    // Get the knowledge base ID
     getKnowledgeBaseId(): string {
       return this.settings.knowledgeBaseId;
     },
     
-    // 启用/禁用 Agent
+    // Enable/disable Agent
     toggleAgent(enabled: boolean) {
       this.settings.isAgentEnabled = enabled;
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 更新 Agent 配置
+    // Update the Agent config
     updateAgentConfig(config: Partial<AgentConfig>) {
       this.settings.agentConfig = { ...this.settings.agentConfig, ...config };
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
@@ -228,21 +228,21 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 更新模型配置
+    // Update the model config
     updateModelConfig(config: Partial<ModelConfig>) {
       this.settings.modelConfig = { ...this.settings.modelConfig, ...config };
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 添加模型
+    // Add a model
     addModel(type: 'chat' | 'embedding' | 'rerank' | 'vllm', model: ModelItem) {
       const key = `${type}Models` as keyof ModelConfig;
       const models = [...this.settings.modelConfig[key]] as ModelItem[];
-      // 如果设为默认，取消其他模型的默认状态
+      // If set as default, clear the default flag on the other models
       if (model.isDefault) {
         models.forEach(m => m.isDefault = false);
       }
-      // 如果是第一个模型，自动设为默认
+      // The first model becomes the default automatically
       if (models.length === 0) {
         model.isDefault = true;
       }
@@ -251,13 +251,13 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 更新模型
+    // Update a model
     updateModel(type: 'chat' | 'embedding' | 'rerank' | 'vllm', modelId: string, updates: Partial<ModelItem>) {
       const key = `${type}Models` as keyof ModelConfig;
       const models = [...this.settings.modelConfig[key]] as ModelItem[];
       const index = models.findIndex(m => m.id === modelId);
       if (index !== -1) {
-        // 如果要设为默认，取消其他模型的默认状态
+        // If it is being set as default, clear the default flag on the other models
         if (updates.isDefault) {
           models.forEach(m => m.isDefault = false);
         }
@@ -267,13 +267,13 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
     
-    // 删除模型
+    // Delete a model
     deleteModel(type: 'chat' | 'embedding' | 'rerank' | 'vllm', modelId: string) {
       const key = `${type}Models` as keyof ModelConfig;
       let models = [...this.settings.modelConfig[key]] as ModelItem[];
       const deletedModel = models.find(m => m.id === modelId);
       models = models.filter(m => m.id !== modelId);
-      // 如果删除的是默认模型，设置第一个为默认
+      // If the default model was deleted, make the first one the default
       if (deletedModel?.isDefault && models.length > 0) {
         models[0].isDefault = true;
       }
@@ -281,7 +281,7 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 设置默认模型
+    // Set the default model
     setDefaultModel(type: 'chat' | 'embedding' | 'rerank' | 'vllm', modelId: string) {
       const key = `${type}Models` as keyof ModelConfig;
       const models = [...this.settings.modelConfig[key]] as ModelItem[];
@@ -290,19 +290,19 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 更新 Ollama 配置
+    // Update the Ollama config
     updateOllamaConfig(config: Partial<OllamaConfig>) {
       this.settings.ollamaConfig = { ...this.settings.ollamaConfig, ...config };
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 选择知识库（替换整个列表）
+    // Select knowledge bases (replaces the whole list)
     selectKnowledgeBases(kbIds: string[]) {
       this.settings.selectedKnowledgeBases = kbIds;
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 添加单个知识库
+    // Add one knowledge base
     addKnowledgeBase(kbId: string) {
       if (!this.settings.selectedKnowledgeBases.includes(kbId)) {
         this.settings.selectedKnowledgeBases.push(kbId);
@@ -310,25 +310,25 @@ export const useSettingsStore = defineStore("settings", {
       }
     },
     
-    // 移除单个知识库
+    // Remove one knowledge base
     removeKnowledgeBase(kbId: string) {
       this.settings.selectedKnowledgeBases = 
         this.settings.selectedKnowledgeBases.filter((id: string) => id !== kbId);
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 清空知识库选择
+    // Clear the knowledge base selection
     clearKnowledgeBases() {
       this.settings.selectedKnowledgeBases = [];
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 获取选中的知识库列表
+    // Get the selected knowledge base list
     getSelectedKnowledgeBases(): string[] {
       return this.settings.selectedKnowledgeBases || [];
     },
     
-    // 本机浏览器与联网搜索可独立选择。
+    // The local browser and web search can be chosen independently.
     toggleLocalBrowser(enabled: boolean) {
       this.settings.localBrowserEnabled = enabled;
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
@@ -339,7 +339,7 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
 
-    // 启用/禁用自动检查更新
+    // Enable/disable automatic update checks
     toggleAutoCheckUpdate(enabled: boolean) {
       this.settings.autoCheckUpdate = enabled;
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
@@ -457,25 +457,25 @@ export const useSettingsStore = defineStore("settings", {
       };
     },
     
-    // 选择智能体（sourceTenantId 仅在使用共享智能体时传入）
+    // Select an agent (sourceTenantId is passed only for a shared agent)
     selectAgent(agentId: string, sourceTenantId?: string | null) {
       this.reasoningEffortOverride = '';
       this.settings.selectedAgentId = agentId;
       this.settings.selectedAgentSourceTenantId = (sourceTenantId != null && sourceTenantId !== "") ? sourceTenantId : null;
-      // 智能体配置只决定是否具备网络搜索能力，不替用户决定是否在本轮使用。
-      // 每次选择智能体都默认关闭，之后只能由用户从输入框主动开启。
+      // The agent config only decides whether web search is available, not whether to use it this turn for the user.
+      // It defaults to off on every agent selection, and only the user can turn it on from the input box afterwards.
       this.settings.webSearchEnabled = false;
       this.settings.localBrowserEnabled = false;
-      // 根据智能体类型自动切换 Agent 模式
+      // Switch Agent mode automatically by agent type
       if (agentId === BUILTIN_QUICK_ANSWER_ID) {
         this.settings.isAgentEnabled = false;
       } else if (agentId === BUILTIN_SMART_REASONING_ID) {
         this.settings.isAgentEnabled = true;
       }
-      // 自定义智能体需要根据其配置来决定
+      // A custom agent decides from its config
       
-      // 切换智能体时重置知识库和文件选择状态
-      // 因为不同智能体关联的知识库不同，需要清空用户之前的选择
+      // Reset the knowledge base and file selection when switching agents,
+      // because different agents link different knowledge bases, so the user's earlier selection must be cleared
       this.settings.selectedKnowledgeBases = [];
       this.settings.selectedFiles = [];
       this.settings.selectedFileKbMap = {};
@@ -485,48 +485,48 @@ export const useSettingsStore = defineStore("settings", {
       localStorage.setItem("AIKB_settings", JSON.stringify(this.settings));
     },
     
-    // 获取选中的智能体ID
+    // Get the selected agent ID
     getSelectedAgentId(): string {
       return this.settings.selectedAgentId || BUILTIN_QUICK_ANSWER_ID;
     },
 
-    // —— 会话级输入态恢复 —— //
+    // --- Per-session input state restore --- //
     //
-    // 输入栏的 agent / 模型 / KB / 联网 / MCP 等选择由本 store 持有，跨会话共享。
-    // 但用户的诉求是：点开旧会话时，能看到当时发起请求的那一套状态。
-    // 实现策略：进入会话时把"当前的全局默认"暂存到一个非持久化的 `_defaultsSnapshot`
-    // 字段里，然后用 session.last_request_state 覆盖 store；离开会话时从快照还原。
-    // 快照不写 localStorage，因为它只在「正处于某个旧会话」这段路由期内有意义；
-    // 刷新页面相当于"重新进入会话" → 重新拍快照 + 覆盖，不会丢失用户的全局默认。
+    // The input bar's agent / model / KB / web search / MCP selections live in this store and are shared across sessions.
+    // But users expect to see the state a request was sent with when they open an old session.
+    // Strategy: on entering a session, stash the "current global defaults" in a non-persisted `_defaultsSnapshot`
+    // field, then overwrite the store with session.last_request_state; on leaving the session, restore from the snapshot.
+    // The snapshot is not written to localStorage, because it only matters while the route is "inside an old session";
+    // a page refresh is the same as "entering the session again" -> retake the snapshot + overwrite, so the user's global defaults are not lost.
 
-    // 拍下当前 settings 作为"离开会话后要还原回去的默认"。
-    // 已存在快照时不覆盖，避免会话间切换（B→B'）把已恢复的 store 错当成默认。
+    // Snapshot the current settings as "the defaults to restore after leaving the session".
+    // An existing snapshot is not overwritten, so switching between sessions (B -> B') does not mistake the restored store for the defaults.
     snapshotAsDefaultsIfNeeded() {
       if (this._defaultsSnapshot) return;
       this._defaultsSnapshot = JSON.parse(JSON.stringify(this.settings));
     },
 
-    // 还原默认（如果有快照），用于离开会话或跨会话切换时。
+    // Restore the defaults (if there is a snapshot), when leaving a session or switching across sessions.
     restoreDefaultsIfSnapshotted() {
       this.reasoningEffortOverride = '';
       if (!this._defaultsSnapshot) return;
       this.settings = this._defaultsSnapshot;
       this._defaultsSnapshot = null;
-      // 不写 localStorage：默认值在快照之前已经写过 localStorage，这里恢复
-      // 的就是 localStorage 中既有的值，再写一次只会增加无意义的 IO。
+      // Do not write localStorage: the defaults were already written to localStorage before the snapshot, so what is restored here
+      // is the existing value in localStorage, and writing again would only add pointless IO.
     },
 
-    // 新会话首条发送沿用 createChat 的输入态，不能被异步返回的空/旧记录覆盖。
-    // preserveDraft 必须在请求 session 详情之前捕获，而不是响应返回时读取。
+    // The first send of a new session keeps createChat's input state, which an empty or stale record returned asynchronously must not overwrite.
+    // preserveDraft must be captured before requesting the session details, not read when the response returns.
     hydrateSessionInputState(state: SessionLastRequestStatePayload | null | undefined, preserveDraft = false) {
       if (!state || preserveDraft) return;
       this.snapshotAsDefaultsIfNeeded();
       this.applyLastRequestState(state);
     },
 
-    // 根据 session.last_request_state 覆盖输入栏相关字段。
-    // 只触碰本次记录的字段，**不**清空 store 中其它无关字段（如模型列表）。
-    // 按字段语义恢复，不将会话选择写入用户默认设置。
+    // Overwrite the input bar fields from session.last_request_state.
+    // Touch only the fields this record has, and do **not** clear other unrelated fields in the store (such as the model list).
+    // Restore by field meaning, without writing the session's selections into the user's default settings.
     applyLastRequestState(state: SessionLastRequestStatePayload | null | undefined) {
       if (!state) return;
       this._isApplyingSessionState = true;
@@ -537,23 +537,23 @@ export const useSettingsStore = defineStore("settings", {
         }
         if (typeof state.agent_id === "string" && state.agent_id) {
           this.settings.selectedAgentId = state.agent_id;
-          // 上次记录是自有 agent 还是共享 agent，目前服务端不区分回传 sourceTenantId。
-          // 与 selectAgent() 不同，这里**不**重置 KB/文件选择 —— 因为我们紧接着
-          // 就要用 state 里的 KB/文件覆盖，不需要先清空再写。
+          // The server does not yet say whether the last record was an own or a shared agent, so no sourceTenantId comes back.
+          // Unlike selectAgent(), this does **not** reset the KB/file selection, because the KB/files from state
+          // overwrite it right after, so there is no need to clear first.
         }
         if (state.model_id !== undefined) {
           const current = this.settings.conversationModels || defaultSettings.conversationModels;
           this.settings.conversationModels = { ...current, selectedChatModelId: state.model_id || "" };
         }
-        // 后端会用 omitempty 省略空列表，所以缺失值表示“本会话没有 KB 范围”，
-        // 而不是“保留上一个会话的选择”。后者会把过期的 @KB 继续发给服务端。
+        // The backend omits empty lists with omitempty, so a missing value means "this session has no KB scope",
+        // not "keep the previous session's selection". The latter would keep sending a stale @KB to the server.
         this.settings.selectedKnowledgeBases = Array.isArray(state.knowledge_base_ids)
           ? [...state.knowledge_base_ids]
           : [];
-        // 服务端省略空的选择项列表；保留现值会把其它会话或全局默认的
-        // 文件、标签和工具选择带入本会话。
+        // The server omits empty selection lists; keeping the current value would carry files, tags and tool selections
+        // from other sessions or the global defaults into this session.
         this.settings.selectedFiles = Array.isArray(state.knowledge_ids) ? [...state.knowledge_ids] : [];
-        // 保留仍选中文件的已知 KB 归属（共享文件需要它）；其它文件的缓存不跨会话带入。
+        // Keep the known KB ownership of files that are still selected (shared files need it); the cache for other files does not carry across sessions.
         this.settings.selectedFileKbMap = Object.fromEntries(
           Object.entries(this.settings.selectedFileKbMap || {})
             .filter(([id]) => this.settings.selectedFiles.includes(id))
@@ -601,23 +601,23 @@ export const useSettingsStore = defineStore("settings", {
           this.settings.webSearchEnabled = state.web_search_enabled;
         }
       } finally {
-        // 复位必须延后到下一次 flush 之后：监听 selectedAgentId 的 watcher 默认
-        // flush:'pre'，是异步执行的；若在此处同步复位，watcher 真正运行时标志早已
-        // 为 false，守卫形同虚设、恢复出来的 KB 仍会被 agent 配置覆盖。放到 nextTick
-        // 可保证本次状态变更触发的 watcher 在标志仍为 true 时执行。
+        // The reset must wait until after the next flush: the watcher on selectedAgentId defaults to
+        // flush:'pre' and runs asynchronously; resetting synchronously here would leave the flag already
+        // false when the watcher actually runs, the guard would do nothing, and the restored KB would still be overwritten by the agent config. nextTick
+        // guarantees the watcher this state change triggers runs while the flag is still true.
         nextTick(() => {
           this._isApplyingSessionState = false;
         });
       }
-      // 注意：故意不写 localStorage —— 旧会话的状态不应污染"用户默认"。
-      // 离开会话时 restoreDefaultsIfSnapshotted 会把 localStorage 里那份完整
-      // 的默认值再次同步回 this.settings。
+      // Note: deliberately not writing localStorage - an old session's state must not pollute the "user defaults".
+      // On leaving the session, restoreDefaultsIfSnapshotted syncs the complete
+      // defaults in localStorage back into this.settings.
     },
   },
 });
 
-// 后端 sessions.last_request_state JSON 形状（与 SessionLastRequestState 对齐）。
-// 字段全部可选——历史会话或新建会话首发前的请求没有这条记录。
+// JSON shape of the backend sessions.last_request_state (aligned with SessionLastRequestState).
+// Every field is optional: history sessions, and requests before a new session's first send, have no such record.
 export interface SessionLastRequestStatePayload {
   reasoning_effort?: string;
   agent_id?: string;

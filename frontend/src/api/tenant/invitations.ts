@@ -40,7 +40,7 @@ export interface TenantInvitation {
   is_share_link?: boolean
   // accepted_count counts how many users have completed registration
   // through this invitation. Surfaced in the management UI for
-  // share-link rows ("已加入 N 人").
+  // share-link rows ("N joined").
   accepted_count?: number
 }
 
@@ -102,7 +102,7 @@ export interface AcceptInvitationResponse {
   message?: string
 }
 
-// AcceptInvitationByTokenResponse：已登录用户用 token 加入空间的响应（tenant_name 供前端展示）。
+// AcceptInvitationByTokenResponse: response when a signed-in user joins a space with a token (tenant_name is for display).
 export interface AcceptInvitationByTokenResponse {
   success: boolean
   data?: {
@@ -211,8 +211,8 @@ export async function acceptInvitation(invId: number): Promise<AcceptInvitationR
 }
 
 /**
- * 已登录用户用共享链接 token 加入空间（需鉴权，不创建新账号）。
- * 用于 invite_only 模式下的邀请链接流程：链接导向登录而非注册，登录后再兑换 token。
+ * A signed-in user joins a space with a share-link token (requires auth, creates no account).
+ * For the invite_only invitation-link flow: the link leads to sign-in rather than sign-up, and the token is redeemed after sign-in.
  * Backend: POST /api/v1/me/invitations/accept-by-token (authenticated).
  */
 export async function acceptInvitationByToken(

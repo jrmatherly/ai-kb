@@ -13,7 +13,7 @@ const legacy: KnowledgeChunksListData = {
   total_chunks: 14,
 }
 const summary = 'Listed 14/14 chunks from Proposal.pptx (content omitted from history)'
-const citation = { chunkId: 'cited-chunk', documentTitle: 'Proposal.pptx', knowledgeBaseId: 'kb-1', anchorText: '一期功能' }
+const citation = { chunkId: 'cited-chunk', documentTitle: 'Proposal.pptx', knowledgeBaseId: 'kb-1', anchorText: 'Phase 1 features' }
 
 test('legacy compacted read_document resolves the actual citation without a saved KB id', () => {
   const refs = readDocumentReferences(legacy, summary, 'Read document')
@@ -22,7 +22,7 @@ test('legacy compacted read_document resolves the actual citation without a save
   assert.equal(source.knowledgeId, 'doc-1')
   assert.equal(source.knowledgeBaseId, 'kb-1')
   assert.equal(source.fileName, 'Proposal.pptx')
-  assert.equal(source.anchorText, '一期功能')
+  assert.equal(source.anchorText, 'Phase 1 features')
   assert.equal(source.content, undefined)
 })
 

@@ -48,7 +48,7 @@ export function getQueryText(args: unknown): string {
   queries.push(...collectQueryStrings(record.query))
   queries.push(...collectQueryStrings(record.queries))
 
-  return Array.from(new Set(queries)).join('，')
+  return Array.from(new Set(queries)).join(', ')
 }
 
 export function getWikiPageText(args: unknown): string {
@@ -70,7 +70,7 @@ export function getWikiPageText(args: unknown): string {
     ...collectQueryStrings(record.slug),
     ...collectQueryStrings(record.slugs),
   ]
-  return Array.from(new Set(slugs)).join('、')
+  return Array.from(new Set(slugs)).join(', ')
 }
 
 export function getRetrievalSearchSource(
@@ -192,7 +192,7 @@ export function getRagPipelineStepTitle(t: ComposerTranslation, event: RagPipeli
     }
 
     const baseTitle = event.success === false ? t(labels.doneFailed) : t(labels.done)
-    return query ? `${baseTitle}：「${query}」` : baseTitle
+    return query ? `${baseTitle}: "${query}"` : baseTitle
   }
 
   if (toolName === 'attachment_parsing') {

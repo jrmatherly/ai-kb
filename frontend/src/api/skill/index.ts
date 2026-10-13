@@ -1,7 +1,7 @@
 import { del, get, post, postUpload } from "../../utils/request";
 import type { ConfigSkillFileContent, ConfigSkillFileEntry } from "../system";
 
-// Skill信息
+// Skill info
 export interface SkillInfo {
   name: string;
   description: string;

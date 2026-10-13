@@ -31,7 +31,7 @@ export function getFileIcon(input: string | { type?: string; file_type?: string;
   if (['doc', 'docx'].includes(ext)) return 'file-word';
   if (['xls', 'xlsx', 'csv'].includes(ext)) return 'file-excel';
   if (['ppt', 'pptx'].includes(ext)) return 'file-powerpoint';
-  // TDesign 无稳定 `file-text` 字形时会导致空白，纯文类统一用 `file`
+  // TDesign has no stable `file-text` glyph and renders a blank, so all plain-text types use `file`
   if (['txt', 'md', 'markdown', 'json', 'log', 'yaml', 'yml', 'xml'].includes(ext)) return 'file';
   if (['py', 'pyc', 'pyo', 'js', 'mjs', 'cjs', 'ts', 'tsx', 'jsx', 'go', 'rs', 'java', 'c', 'cc', 'cpp', 'h', 'hpp', 'sh', 'bash', 'rb', 'php', 'sql', 'html', 'htm'].includes(ext)) return 'code';
   if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) return 'image';

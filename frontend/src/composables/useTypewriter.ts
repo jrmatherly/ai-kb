@@ -12,7 +12,8 @@ export interface TypewriterOptions {
   maxFrameSeconds?: number;
 }
 
-const NATURAL_BREAK_RE = /[\s，。！？；：、,.!?;:)\]】》」』\uFFFC]/u;
+// Natural break points include CJK punctuation and brackets.
+const NATURAL_BREAK_RE = /[\s\uff0c\u3002\uff01\uff1f\uff1b\uff1a\u3001,.!?;:)\]\u3011\u300b\u300d\u300f\uFFFC]/u;
 const CJK_RE = /[\u3400-\u9fff\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af]/u;
 const WORD_CHARACTER_RE = /[\p{L}\p{N}_]/u;
 

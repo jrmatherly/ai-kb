@@ -3,14 +3,15 @@ import assert from 'node:assert/strict'
 import { quotedSourceExcerpt, selectLocatorsForSentence, selectQuoteForSentence } from './sourceLocator.ts'
 import { sourceImageDigest } from './sourceImage.ts'
 test('a paraphrase with a verbatim quotation selects only supporting evidence', () => {
- const quote = '小家团圆美满，大国繁荣昌盛'
- const sentence = `物业在双节期间向业主致以节日祝福，倡导“${quote}”的家国情怀`
- const source = `开头问候。\n\n愿家国同辉：${quote}，双喜临门。`
+ // Chinese quotes exercise CJK quotation-mark matching.
+ const quote = '\u5c0f\u5bb6\u56e2\u5706\u7f8e\u6ee1\uff0c\u5927\u56fd\u7e41\u8363\u660c\u76db'
+ const sentence = `\u7269\u4e1a\u5728\u53cc\u8282\u671f\u95f4\u5411\u4e1a\u4e3b\u81f4\u4ee5\u8282\u65e5\u795d\u798f\uff0c\u5021\u5bfc\u201c${quote}\u201d\u7684\u5bb6\u56fd\u60c5\u6000`
+ const source = `\u5f00\u5934\u95ee\u5019\u3002\n\n\u613f\u5bb6\u56fd\u540c\u8f89\uff1a${quote}\uff0c\u53cc\u559c\u4e34\u95e8\u3002`
  assert.equal(quotedSourceExcerpt(source, sentence), quote)
  assert.deepEqual(selectQuoteForSentence(source, sentence), [quote])
- const locs = [{ type: 'docx', quote: '开头问候。' }, { type: 'docx', quote: source.split('\n\n')[1] }]
+ const locs = [{ type: 'docx', quote: '\u5f00\u5934\u95ee\u5019\u3002' }, { type: 'docx', quote: source.split('\n\n')[1] }]
  assert.deepEqual(selectLocatorsForSentence(locs, sentence), [locs[1]])
- assert.equal(quotedSourceExcerpt('其他内容。', sentence), undefined)
+ assert.equal(quotedSourceExcerpt('\u5176\u4ed6\u5185\u5bb9\u3002', sentence), undefined)
  assert.equal(quotedSourceExcerpt(`${source}\n${source}`, sentence), undefined)
 })
 test('quotation does not relax numeric matching', () => {

@@ -46,13 +46,13 @@ test('session header shows the project basename, not the absolute path', () => {
     hostWorkspaceHeaderText('/Users/dev/My Project', 'Temporary workspace'),
     'My Project',
   )
-  const label = hostWorkspaceHeaderText('/Users/dev/My Project', '临时工作区')
+  const label = hostWorkspaceHeaderText('/Users/dev/My Project', 'Temporary workspace')
   assert.equal(label.includes('/'), false)
   assert.equal(label.includes('\\'), false)
   assert.notEqual(label, '/Users/dev/My Project')
 })
 
 test('session header shows the temporary workspace label when unbound', () => {
-  assert.equal(hostWorkspaceHeaderText('', '临时工作区'), '临时工作区')
+  assert.equal(hostWorkspaceHeaderText('', 'Temporary workspace'), 'Temporary workspace')
   assert.equal(hostWorkspaceHeaderText(undefined, 'Temporary workspace'), 'Temporary workspace')
 })

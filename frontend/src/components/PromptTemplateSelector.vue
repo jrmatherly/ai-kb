@@ -1,7 +1,7 @@
 <template>
   <div class="prompt-template-selector" :class="{ 'position-corner': position === 'corner' }">
     <div class="template-btn-group">
-      <!-- 恢复默认按钮 -->
+      <!-- Restore default button -->
       <t-button
         variant="text"
         size="small"
@@ -12,7 +12,7 @@
         <t-icon name="rollback" />
         <span>{{ $t('promptTemplate.resetDefault') }}</span>
       </t-button>
-      <!-- 选择模板按钮 -->
+      <!-- Choose template button -->
       <t-popup
         v-if="showTemplatePicker"
         trigger="click"
@@ -82,12 +82,12 @@ const { t } = useI18n();
 const props = withDefaults(defineProps<{
   type: 'systemPrompt' | 'contextTemplate' | 'rewrite' | 'fallback' | 'agentSystemPrompt' | 'intentPrompt';
   hasKnowledgeBase?: boolean;
-  position?: 'inline' | 'corner';  // inline: 行内显示, corner: 输入框右下角
-  /** 用于 fallback 场景：区分固定回复和模型 prompt */
+  position?: 'inline' | 'corner';  // inline: shown inline, corner: bottom-right of the input box
+  /** For the fallback case: tells a fixed reply from a model prompt */
   fallbackMode?: 'fixed' | 'model';
-  /** intent 场景：当前选中的 intent id（对应 template.id） */
+  /** Intent case: the currently selected intent id (matches template.id) */
   intentId?: string;
-  /** 为 false 时只显示「恢复默认」，不显示「使用模板」 */
+  /** When false, only "Restore default" shows, not "Use template" */
   showTemplatePicker?: boolean;
 }>(), {
   showTemplatePicker: true,
@@ -101,13 +101,13 @@ const emit = defineEmits<{
 const popupVisible = ref(false);
 const loading = ref(false);
 const resettingDefault = ref(false);
-// 模板配置走 editorResources 共享快照：智能体编辑器打开时已预取，这里直接复用。
+// Template config uses the editorResources shared snapshot, already prefetched when the agent editor opens, so reuse it here.
 const editorResources = useEditorResourcesStore();
 const templatesConfig = computed<PromptTemplatesConfig | null>(() => editorResources.promptTemplates);
 
 const handleVisibleChange = async (visible: boolean) => {
   popupVisible.value = visible;
-  // 首次打开时加载模板
+  // Load templates on first open
   if (visible && !templatesConfig.value) {
     await loadTemplates();
   }
@@ -125,7 +125,7 @@ const loadTemplates = async () => {
   }
 };
 
-// 根据类型获取对应的模板列表
+// Get the template list for the type
 const templates = computed<PromptTemplate[]>(() => {
   if (!templatesConfig.value) return [];
   
@@ -202,9 +202,9 @@ const handleResetToDefault = async () => {
   }
 };
 
-// 预加载模板（可选）
+// Preload templates (optional)
 onMounted(() => {
-  // 可以在这里预加载，也可以等用户点击时再加载
+  // Templates can be preloaded here or loaded when the user clicks
   // loadTemplates();
 });
 </script>

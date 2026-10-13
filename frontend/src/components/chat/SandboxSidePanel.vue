@@ -8,7 +8,7 @@
         role="complementary"
         :aria-label="t('chat.sandbox.panelTitle')"
       >
-      <!-- 左缘拖拽把手：按住向左/右拖动调整面板宽度。 -->
+      <!-- Drag handle on the left edge: press and drag left or right to resize the panel. -->
       <PanelResizeHandle edge="left" :label="t('knowledgeStages.resizeDrawer')"
         :value="panel.width.value" :min="SANDBOX_PANEL_MIN_WIDTH" :max="SANDBOX_PANEL_MAX_WIDTH"
         @start="startResize" @resize="resizePanel" @end="resizing = false" />
@@ -57,7 +57,7 @@
           @deleted="emit('artifactDeleted', $event)"
         />
 
-        <!-- 终端：首次激活时惰性挂载；切 tab 用 v-show 保留实例（不丢 PTY）。 -->
+        <!-- Terminal: mounted lazily on first activation; tab switches use v-show to keep the instance (the PTY survives). -->
         <SandboxTerminal
           v-if="terminalMounted"
           v-show="panel?.activeTab.value === 'terminal'"
@@ -72,8 +72,8 @@
           <t-skeleton animation="gradient" :row-col="[{ width: '100%', height: '100%', type: 'rect' }]" />
         </div>
 
-        <!-- 桌面：与终端同样的惰性挂载 + v-show 保活。桌面的重连代价比终端高得多
-             （要重跑一遍 3–8 秒的懒启动），切 tab 断开是不可接受的。 -->
+        <!-- Desktop: the same lazy mount + v-show keep-alive as the terminal. Reconnecting the desktop costs far more than the terminal
+             (the 3 to 8 second lazy start runs again), so disconnecting on a tab switch is unacceptable. -->
         <SandboxDesktop
           v-if="desktopMounted && desktopTabVisible"
           v-show="panel?.activeTab.value === 'desktop'"
@@ -113,13 +113,13 @@ import type { SessionArtifactItem } from '@/utils/sessionArtifacts'
 const props = withDefaults(
   defineProps<{
     sessionId: string
-    /** 当前会话选中的 agent（首次连接时按其配置自动创建沙箱）。 */
+    /** The agent selected in the current session (the first connection creates a sandbox from its config). */
     agentId?: string
-    /** 共享智能体来源空间，缺省表示本空间自有 agent。 */
+    /** Source space of a shared agent; omitted means an agent owned by this space. */
     agentSourceTenantId?: string | number | null
-    /** 参考来源面板同开时整体左移，避免两块 fixed 面板重叠。 */
+    /** Shift the whole panel left while the references panel is open, so the two fixed panels do not overlap. */
     shifted?: boolean
-    /** 参考来源面板当前宽度（查看原文时会变宽），左移的距离。 */
+    /** Current width of the references panel (wider while viewing the original), which is how far to shift left. */
     shiftWidth?: number
     artifacts?: SessionArtifactItem[]
     artifactsCollecting?: boolean
@@ -171,8 +171,8 @@ const tabs = computed(() => {
   return list
 })
 
-// 终端 / 桌面惰性挂载（首次切到对应 tab 时），面板关闭即销毁（v-if），
-// 与 ChatReferencesDrawer 的开合行为一致；会话切换时由 :key 重建。
+// Terminal and desktop mount lazily (the first time their tab is selected) and are destroyed when the panel closes (v-if),
+// matching how ChatReferencesDrawer opens and closes; a session switch rebuilds them through :key.
 const terminalMounted = ref(false)
 const terminalRef = ref<{ focus?: () => void } | null>(null)
 const desktopMounted = ref(false)
@@ -230,7 +230,7 @@ watch(
   },
 )
 
-// --- 左缘拖拽调宽 -------------------------------------------------------
+// --- Drag the left edge to resize -------------------------------------------
 const resizing = ref(false)
 let resizeStartWidth = 0
 function startResize() {
@@ -273,7 +273,7 @@ function resizePanel(delta: number) {
     }
   }
 
-  // 拖拽调宽期间关闭过渡与文本选择，保证跟手。
+  // Turn off transitions and text selection while resizing, so it follows the pointer.
   &.is-resizing {
     transition: none;
     user-select: none;

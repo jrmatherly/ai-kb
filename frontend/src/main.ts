@@ -3,7 +3,7 @@ import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
 import TDesign from "tdesign-vue-next";
-// 引入组件库的少量全局样式变量
+// A few global style variables from the component library
 import "tdesign-vue-next/dist/tdesign.css";
 import "@/assets/theme/theme.css";
 import "@/assets/theme/tdesign-overrides.less";
@@ -20,7 +20,7 @@ import { installTDesignIconOfflineGuard } from "@/utils/tdesign-icon-offline";
 import { installAutofillGuard } from "@/utils/disable-autofill";
 import { useAuthStore } from "@/stores/auth";
 
-// 必须在 Vue 组件挂载之前执行，避免 tdesign-icons 运行时请求 tdesign.gtimg.com
+// Must run before Vue components mount, so tdesign-icons does not request tdesign.gtimg.com at run time
 installTDesignIconOfflineGuard();
 
 initTheme();
@@ -29,7 +29,7 @@ initFont();
 async function bootstrap() {
   const app = createApp(App);
 
-  // 全局错误处理：捕获未处理的组件错误，防止白屏
+  // Global error handling: catch unhandled component errors to prevent a blank screen
   app.config.errorHandler = (err, instance, info) => {
     console.error("[AI KB] Unhandled Vue error:", err, "\nComponent:", instance, "\nInfo:", info);
   };
@@ -52,7 +52,7 @@ async function bootstrap() {
   app.use(router);
   app.use(i18n);
 
-  // 等首屏路由（含导航守卫、Lite 自动登录）完成后再挂载，避免先闪默认页再跳转
+  // Mount after the first route (navigation guards and Lite auto-login included) resolves, so the default page does not flash before the redirect
   await router.isReady();
   app.mount("#app");
   installAutofillGuard();

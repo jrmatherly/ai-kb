@@ -25,8 +25,8 @@ export interface DeploymentCapability {
 export type DeploymentCapabilityMap = Partial<Record<DeploymentCapabilityKey, DeploymentCapability>>
 
 /**
- * 能力接口失败或旧版后端没有返回某个键时保持可见，避免一次探测失败把整个菜单清空。
- * 只有后端明确返回 supported: false 时才隐藏入口。
+ * Stay visible when the capability endpoint fails or an older backend omits a key, so one failed probe does not empty the whole menu.
+ * Hide an entry only when the backend explicitly returns supported: false.
  */
 export function isDeploymentCapabilitySupported(
   capabilities: DeploymentCapabilityMap,

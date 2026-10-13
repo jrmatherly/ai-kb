@@ -58,7 +58,7 @@ function compareNullable<T>(
   direction: 1 | -1,
   compare: (a: T, b: T) => number,
 ): number {
-  // 缺少时间或名称的旧数据始终排在末尾，避免切换升序后突然跑到最前面。
+  // Legacy rows missing a time or name always sort last, so switching to ascending does not jump them to the top.
   if (left === null && right === null) return 0
   if (left === null) return 1
   if (right === null) return -1

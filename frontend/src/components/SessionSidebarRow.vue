@@ -23,7 +23,7 @@
       :title="t('menu.sessionInProgress')"><span class="session-running-indicator__spinner" aria-hidden="true" /></span>
     <div v-if="!batchMode || item.parent_session_id" class="session-row-menu-wrap"
       :class="{ 'session-row-menu-wrap--fork': item.parent_session_id }" @click.stop>
-      <span v-if="item.parent_session_id" class="session-fork-indicator" role="img" aria-label="由其他会话分叉而来">
+      <span v-if="item.parent_session_id" class="session-fork-indicator" role="img" aria-label="Forked from another session">
         <t-icon name="git-branch" class="submenu_fork_icon" />
       </span>
       <t-popup v-if="!batchMode" v-model:visible="menuOpen" :overlay-class-name="menuOverlayClass" trigger="click" destroy-on-close
@@ -89,7 +89,7 @@ const props = defineProps<{
   selectedIds: string[]
   menuOptions: SessionMenuOption[]
   running?: boolean
-  /** 渠道文件夹下的会话（样式与聊天区会话共用文案列对齐） */
+  /** A session under a channel folder (styled to line up with the text column of chat sessions) */
   nested?: boolean
 }>()
 
@@ -119,10 +119,10 @@ const menuOverlayClass = computed(() => (
 ))
 
 /**
- * API/渠道会话的 owner 是合成主体（api_external_user:<tenant>:<EMP_ID> /
- * api_tenant_key:<tenant>:<keyID>），不是真实账号。为方便管理员稽核"这条是谁的"，
- * 在标题旁渲染一个小徽标：外部员工会话取 sub（可读标识），平台 key 会话标 generic。
- * 普通账号会话（user_id 为空或为真实用户 UUID）不显示。
+ * The owner of an API or channel session is a synthetic principal (api_external_user:<tenant>:<EMP_ID> /
+ * api_tenant_key:<tenant>:<keyID>), not a real account. To help admins audit "whose is this",
+ * a small badge renders next to the title: external employee sessions show sub (a readable ID), platform key sessions show generic.
+ * Ordinary account sessions (user_id empty or a real user UUID) show nothing.
  */
 interface ApiOwnerTag { kind: 'user' | 'key'; label: string; full: string }
 const API_EXTERNAL_USER_PREFIX = 'api_external_user:'
@@ -172,7 +172,7 @@ const cancelTitleEdit = (): void => {
 }
 
 const submitTitleEdit = (): void => {
-  // Enter 会先触发 form submit，随后 input blur 再进一次；必须同步退出编辑态防重入。
+  // Enter fires form submit first, then input blur fires again; leave edit mode synchronously to prevent re-entry.
   if (!titleEditing.value) return
   const nextTitle = normalizeSessionTitleDraft(titleDraft.value)
   const currentTitle = normalizeSessionTitleDraft(props.item.title || '')
@@ -342,8 +342,8 @@ const confirmDangerAction = (): void => {
   }
 }
 
-// 合成 owner（api_external_user / api_tenant_key）会话的"提问人"徽标。
-// 父级 .submenu_title 是 flex，故必须 flex:0 0 auto，标题省略号只压缩标题文本。
+// "Asker" badge for sessions with a synthetic owner (api_external_user / api_tenant_key).
+// The parent .submenu_title is flex, so this must be flex:0 0 auto and the ellipsis only shrinks the title text.
 .session-owner-tag {
   flex: 0 0 auto;
   margin-left: 8px;

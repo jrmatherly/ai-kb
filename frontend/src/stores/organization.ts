@@ -64,13 +64,13 @@ export const useOrganizationStore = defineStore('organization', () => {
   const previewData = ref<OrganizationPreview | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  /** 各空间内知识库/智能体数量（由 GET /organizations 的 resource_counts 填充，供列表侧栏使用） */
+  /** Knowledge base and agent counts per space (filled from resource_counts of GET /organizations, for the list sidebar) */
   const resourceCounts = ref<ResourceCountsByOrg | null>(null)
-  // 组织 / 共享资源列表不设 TTL：每次 fetch 都发请求（并发共用同一个），
-  // 写操作后 `fetch({ force: true })` 排在飞行中的请求之后再拉一次。
-  // 输入联想的搜索结果例外，按查询串短期记忆，写操作时整体清空。
+  // Organization and shared resource lists have no TTL: every fetch sends a request (concurrent calls share one),
+  // and after a write `fetch({ force: true })` queues after the in-flight request and fetches again.
+  // Type-ahead search results are the exception: kept briefly per query string and cleared entirely on writes.
   const SEARCHABLE_ORGANIZATION_TTL_MS = 5 * 60_000
-  /** 共享智能体含按请求语言本地化的内置名称；切换 UI 语言后快照随之失效 */
+  /** Shared agents include built-in names localized to the request language; the snapshot is invalidated when the UI language changes */
   let sharedAgentsLoadedLocale = ''
   let sharedAgentsInflightLocale = ''
   let searchableOrganizationsQuery = ''
@@ -90,7 +90,7 @@ export const useOrganizationStore = defineStore('organization', () => {
     organizations.value.filter(org => !org.is_owner)
   )
 
-  /** 当前用户作为管理员/创建者可见的待审批加入申请总数（用于侧栏提醒） */
+  /** Total pending join requests visible to the current user as admin or creator (for the sidebar reminder) */
   const totalPendingJoinRequestCount = computed(() =>
     organizations.value.reduce((sum, org) => sum + (org.pending_join_request_count ?? 0), 0)
   )
@@ -99,7 +99,7 @@ export const useOrganizationStore = defineStore('organization', () => {
 
   /**
    * Fetch all organizations the user belongs to.
-   * 并发去重，列表页与侧栏等多处共用。
+   * Deduplicated across concurrent calls; shared by the list page, the sidebar and others.
    */
   const organizationsRequest = createVersionedRequestCoordinator(
     async () => {
@@ -187,7 +187,7 @@ export const useOrganizationStore = defineStore('organization', () => {
       const response = await createOrganization({ name, description, avatar })
       if (response.success && response.data) {
         upsertOrganization(response.data)
-        // 创建接口不返回 resource_counts 等聚合字段，强刷一次列表补齐。
+        // The create endpoint does not return aggregate fields such as resource_counts, so force a list refresh to fill them.
         void fetchOrganizations({ force: true })
         return response.data
       } else {
@@ -436,7 +436,7 @@ export const useOrganizationStore = defineStore('organization', () => {
 
   /**
    * Fetch shared knowledge bases.
-   * 并发去重，避免对话页等多处同时重复请求。
+   * Deduplicated across concurrent calls, so the chat page and others do not repeat the request.
    */
   const sharedKnowledgeBasesRequest = createVersionedRequestCoordinator(
     async () => {
@@ -464,7 +464,7 @@ export const useOrganizationStore = defineStore('organization', () => {
 
   /**
    * Fetch shared agents (shared to me through organizations).
-   * 并发去重；快照只对拉取时的 UI 语言有效。
+   * Deduplicated across concurrent calls; the snapshot is valid only for the UI language at fetch time.
    */
   const sharedAgentsRequest = createVersionedRequestCoordinator(
     async () => {
@@ -495,7 +495,7 @@ export const useOrganizationStore = defineStore('organization', () => {
   async function fetchSharedAgents(options?: { force?: boolean }) {
     const locale = getCurrentLanguage()
     const force = options?.force ?? false
-    // 飞行中的请求是用另一种语言发起的：不能复用它，排在它后面再发一次。
+    // The in-flight request was sent in another language: it cannot be reused, so queue another one after it.
     const mustForce =
       force ||
       shouldForceLocalizedRefetch(

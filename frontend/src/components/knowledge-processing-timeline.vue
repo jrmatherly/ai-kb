@@ -123,7 +123,7 @@ const scrollRef = ref<HTMLElement | null>(null)
 // user explicitly hid stay hidden across polls, instead of being
 // reopened by the next fetch's re-evaluation pass.
 const userToggledRows = ref<Set<string>>(new Set())
-// Tracks consecutive fetch failures so the "更新于" caption can surface
+// Tracks consecutive fetch failures so the "Updated" caption can surface
 // staleness. When the parse_status is mid-flight but every fetch is
 // hitting an error, the loop keeps going silently — without this
 // indicator the user sees a spinning auto-refresh icon while the
@@ -408,7 +408,7 @@ async function fetchSpans(opts: { manual?: boolean } = {}) {
     emit('update:hasSpans', false)
   } finally {
     // Track every attempt, not just successful ones — otherwise a
-    // failing endpoint would leave "更新于 X 秒前" frozen forever while
+    // failing endpoint would leave "Updated X seconds ago" frozen forever while
     // the spinner spins. Pair with failedAttempts to render a "fetch
     // failed" hint when consecutive errors pile up.
     lastFetchedAt.value = Date.now()
@@ -1305,7 +1305,7 @@ interface HeadStat {
 }
 
 // v1 glued five unrelated facts into one dot-separated grey sentence —
-// "处理流水线 · 总耗时 494ms · 当前阶段 1/5 · 第 1 次尝试" — which reads
+// "Processing pipeline · total 494ms · current stage 1/5 · attempt 1" - which reads
 // as a run-on and buries the numbers among the words. Label/value pairs
 // with the numbers in tabular mono scan in one pass instead. The panel's
 // own name moves out of the sentence and onto the overline above the
@@ -1550,7 +1550,7 @@ const processConfigLines = computed<string[]>(() => {
           {{ t('knowledgeStages.totalDuration', { d: formatDuration(totalMs) }) }}
         </template>
         <template v-else>
-          <span>{{ t('knowledgeStages.title') }}：</span>
+          <span>{{ t('knowledgeStages.title') }}:</span>
           <span class="kp-stage-emph">{{ currentStageIndex }}/{{ stages.length }}</span>
           <span> · {{ currentStageLabel }}</span>
         </template>
@@ -2969,7 +2969,7 @@ const processConfigLines = computed<string[]>(() => {
   flex-shrink: 0;
 }
 
-/* Says WHERE it broke ("文档解析阶段失败"), which the raw code never did.
+/* Says WHERE it broke ("Document parsing stage failed"), which the raw code never did.
    Deliberately NOT --td-error-color: that tone lands around 3:1 against
    the card's own error tint in both themes. The red bar, glyph and
    border already say "error"; the words just have to be readable. */

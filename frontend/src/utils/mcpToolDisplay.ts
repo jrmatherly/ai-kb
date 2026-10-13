@@ -108,7 +108,7 @@ export function getMcpToolTitle(t: ComposerTranslation, event: {
   const describeName = mode === 'describe' ? data.name || args.tool_name : ''
   const serverName = typeof data.server_name === 'string' ? data.server_name : ''
   const suffix = describeName || ((mode === 'list_tools' || mode === 'search') ? serverName : '')
-  const title = suffix && typeof suffix === 'string' ? `${label}：${suffix}` : label
+  const title = suffix && typeof suffix === 'string' ? `${label}: ${suffix}` : label
   if (event.pending) return t('agentStream.toolStatus.calling', { name: title })
   if (event.success === false) return t('agentStream.toolStatus.calledFailed', { name: title })
   return title

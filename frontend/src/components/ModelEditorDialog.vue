@@ -64,15 +64,15 @@
       </section>
 
       <!--
-        Section 1 — 模型来源 + 模型名称（来源直接决定下方字段，所以放一节）
+        Section 1 - model source + model name (the source decides the fields below, so they share a section)
       -->
       <section class="setting-drawer__section">
         <h4 class="setting-drawer__section-title">{{ $t('model.editor.sectionSource') }}</h4>
 
         <div class="form-item">
           <!--
-            Section title already says 「模型来源」，所以这里不再重复 label，
-            直接把分段控件作为 section 的首个内容呈现，避免「双标题」感。
+            The section title already says "Model source", so the label is not repeated here;
+            the segmented control is the section's first content, avoiding a "double title" feel.
           -->
           <div class="source-options" role="radiogroup" :aria-label="$t('model.editor.sourceLabel')">
             <button
@@ -101,7 +101,7 @@
             </button>
           </div>
 
-          <!-- Ollama不可用时的提示信息 -->
+          <!-- Notice when Ollama is unavailable -->
           <div v-if="shouldShowOllamaUnavailableTip(formData.source, activeModelType, ollamaServiceStatus)"
             class="ollama-unavailable-tip">
             <t-icon name="error-circle-filled" class="tip-icon" />
@@ -113,7 +113,7 @@
           </div>
         </div>
 
-        <!-- Ollama 本地模型选择器 -->
+        <!-- Ollama local model picker -->
         <div v-if="formData.source === 'local'" class="form-item">
           <label class="form-label required">{{ $t('model.modelName') }}</label>
           <div class="model-select-row">
@@ -121,7 +121,7 @@
               :style="downloading ? `--progress: ${downloadProgress}%` : ''" filterable :filter="handleModelFilter"
               :placeholder="$t('model.searchPlaceholder')" @focus="loadOllamaModels"
               @visible-change="handleDropdownVisibleChange">
-              <!-- 已下载的模型 -->
+              <!-- Downloaded models -->
               <t-option v-for="model in filteredOllamaModels" :key="model.name" :value="model.name" :label="model.name">
                 <div class="model-option">
                   <t-icon name="check-circle-filled" class="downloaded-icon" />
@@ -130,7 +130,7 @@
                 </div>
               </t-option>
 
-              <!-- 下载新模型选项（仅当搜索词不在列表中时显示） -->
+              <!-- Download-new-model option (shown only when the search term is not in the list) -->
               <t-option v-if="showDownloadOption" :value="`__download__${searchKeyword}`"
                 :label="$t('model.editor.downloadLabel', { keyword: searchKeyword })" class="download-option">
                 <div class="model-option download">
@@ -139,7 +139,7 @@
                 </div>
               </t-option>
 
-              <!-- 下载进度后缀 -->
+              <!-- Download progress suffix -->
               <template v-if="downloading" #suffix>
                 <div class="download-suffix">
                   <t-icon name="loading" class="spinning" />
@@ -148,7 +148,7 @@
               </template>
             </t-select>
 
-            <!-- 刷新按钮 -->
+            <!-- Refresh button -->
             <t-button variant="text" size="small" :loading="loadingOllamaModels" @click="refreshOllamaModels"
               class="refresh-btn">
               <t-icon name="refresh" />
@@ -158,12 +158,12 @@
         </div>
       </section>
 
-      <!-- Remote API 配置 -->
+      <!-- Remote API config -->
       <template v-if="formData.source === 'remote'">
         <section class="setting-drawer__section">
           <h4 class="setting-drawer__section-title">{{ $t('model.editor.sectionProvider') }}</h4>
 
-          <!-- 厂商选择器 -->
+          <!-- Vendor picker -->
           <div class="form-item">
             <label class="form-label">{{ $t('model.editor.providerLabel') }}</label>
             <t-select v-model="formData.provider" :placeholder="$t('model.editor.providerPlaceholder')"
@@ -171,9 +171,9 @@
               @change="handleProviderChange"
               :popup-props="{ overlayClassName: 'wk-popover provider-select-popup', overlayInnerStyle: matchTriggerWidth }">
               <!--
-                已选值：图标 + 本地化名称（描述只在下拉里展示，避免输入框过长）。
-                目录里已经没有这个 provider 时（厂商下线 / 旧数据）退回显示原始 id，
-                否则输入框会整个空掉，看起来像"没选厂商"，但保存时仍会带上它。
+                Selected value: icon + localized name (the description shows only in the dropdown, so the input stays short).
+                When the catalog no longer has this provider (vendor removed / old data), fall back to the raw id,
+                otherwise the input goes blank and looks like "no vendor selected", while saving still sends it.
               -->
               <template #valueDisplay>
                 <span v-if="formData.provider" class="provider-value">
@@ -182,9 +182,9 @@
                 </span>
               </template>
               <!--
-                show-overflow-tooltip=false: TDesign 默认在 hover 时给选项浮一个
-                完整 label 的小气泡，但这里选项本身就是双行（主名 + 描述），不会
-                出现省略，tooltip 只会和已经命中的灰底打架。直接关掉。
+                show-overflow-tooltip=false: TDesign by default floats a small bubble with the
+                full label on hover, but the options here are already two lines (main name + description) and never
+                truncate, so the tooltip only clashes with the gray hit background. Turn it off.
               -->
               <t-option v-for="opt in providerOptions" :key="opt.value" :value="opt.value"
                 :label="providerDisplayLabel(opt)" :show-overflow-tooltip="false">
@@ -208,9 +208,9 @@
             </p>
           </div>
 
-          <!-- WeKnoraCloud 提示信息 -->
+          <!-- WeKnoraCloud notice -->
           <template v-if="formData.provider === 'weknoracloud'">
-            <!-- 凭证已配置 -->
+            <!-- Credentials configured -->
             <div v-if="wkcCredentialState === 'configured'" class="weknoracloud-hint weknoracloud-hint--ok">
               <t-icon name="check-circle-filled" class="hint-icon hint-icon--ok" />
               <div>
@@ -223,7 +223,7 @@
               </div>
             </div>
 
-            <!-- 未配置 / 失效 -->
+            <!-- Not configured / invalid -->
             <div v-else-if="wkcCredentialState !== 'loading'" class="weknoracloud-hint weknoracloud-hint--warn">
               <t-icon name="error-circle-filled" class="hint-icon hint-icon--warn" />
               <div style="flex: 1;">
@@ -243,7 +243,7 @@
               </div>
             </div>
 
-            <!-- 加载中 -->
+            <!-- Loading -->
             <div v-else class="weknoracloud-hint">
               <t-icon name="loading" class="spinning hint-icon hint-icon--loading" />
               <span>{{ $t('settings.weknoraCloud.checkingStatus') }}</span>
@@ -251,16 +251,16 @@
           </template>
 
           <!--
-            模型名称：厂商内置目录做候选，同时允许自由输入（filterable + creatable）。
-            选中目录内模型时自动带出上下文窗口 / 输出上限 / 视觉 / 维度（仅填空字段）。
+            Model name: the vendor's built-in catalog supplies candidates, and free input is allowed too (filterable + creatable).
+            Picking a catalog model fills in the context window / output limit / vision / dimension (empty fields only).
           -->
           <div class="form-item">
             <label class="form-label required">{{ $t('model.modelName') }}</label>
             <!--
-              没有内置目录时用纯输入框：TDesign 的 select 在零选项时会隐藏整个
-              浮层（hideEmptyPopup），连 creatable 的"创建"行也一并藏掉，于是
-              用户能打字、但没有任何方式提交，失焦后输入直接丢失。自定义
-              (OpenAI 兼容接口) 正是这种情况，所以那里根本填不进模型名。
+              Without a built-in catalog, use a plain input: TDesign's select hides the whole
+              popup when it has zero options (hideEmptyPopup), the creatable "Create" row included, so
+              the user can type but has no way to submit, and the input is lost on blur. Custom
+              (OpenAI-compatible API) is exactly that case, so no model name could be entered there.
             -->
             <t-input
               v-if="catalogModelOptions.length === 0"
@@ -318,7 +318,7 @@
               of the model — managed by the shared CredentialResource card,
               which now renders an INPUT-LOOKING row (32px tall, same border
               + radius as t-input) so it sits flush with the Base URL field
-              above and the 自定义请求头 controls below — no more
+              above and the Custom headers controls below - no more
               "card inside a card" feel.
               Create mode: the resource doesn't exist yet, so we render a
               plain password input with a leading lock icon; TDesign's password
@@ -335,8 +335,8 @@
           </div>
 
           <!--
-            厂商声明的 secret 额外字段（LKEAP / 火山引擎 Rerank 的 SecretKey 等）：
-            创建模式写入 app_secret；编辑模式由上面的 CredentialResource 卡片管理。
+            Secret extra fields the vendor declares (the SecretKey of LKEAP / Volcano Engine Rerank and so on):
+            create mode writes them to app_secret; edit mode manages them through the CredentialResource card above.
           -->
           <div v-if="secretExtraField && !isEdit && formData.provider !== 'weknoracloud'" class="form-item">
             <label class="form-label" :class="{ required: secretExtraField.required }">{{ extraFieldDisplayLabel(secretExtraField) }}</label>
@@ -347,7 +347,7 @@
             <p v-if="secretExtraField.placeholder" class="form-desc">{{ secretExtraField.placeholder }}</p>
           </div>
 
-          <!-- 厂商声明的其余额外字段：按 type 动态渲染，值存入 extra_config[key] -->
+          <!-- The vendor's other declared extra fields: rendered by type, values stored in extra_config[key] -->
           <div v-for="field in plainExtraFields" :key="field.key" class="form-item">
             <label class="form-label" :class="{ required: field.required }">{{ extraFieldDisplayLabel(field) }}</label>
             <div v-if="field.type === 'boolean'" class="vision-toggle">
@@ -374,7 +374,7 @@
               @update:model-value="(v: string) => setExtraConfig(field.key, v)" />
           </div>
 
-          <!-- 自定义 HTTP Header（类似 OpenAI Python SDK 的 extra_headers） -->
+          <!-- Custom HTTP headers (like extra_headers in the OpenAI Python SDK) -->
           <div v-if="formData.provider !== 'weknoracloud'" class="form-item">
             <div class="custom-headers-header">
               <label class="form-label" style="margin-bottom: 0;">{{ $t('model.editor.customHeadersLabel') }}</label>
@@ -399,10 +399,10 @@
           </div>
 
           <!--
-            接入诊断：由后端目录实时解析出的有效协议 / 思考格式 / 支持等级 /
-            是否目录内 / 上下文窗口，只读。厂商、模型名、Base URL 变化后 400ms 防抖刷新。
-            仅对话 / VLM 有意义——Embedding、ReRank、ASR 既没有思考等级也没有
-            上下文窗口，展示出来只会让人以为这些值对它们生效。
+            Access diagnostics: the effective protocol / thinking format / supported levels /
+            in-catalog flag / context window resolved live from the backend catalog, read-only. Refreshes with a 400ms debounce after the vendor, model name or Base URL changes.
+            Meaningful only for chat / VLM: embedding, rerank and ASR have neither thinking levels nor
+            a context window, and showing them would suggest these values apply to them.
           -->
           <div v-if="showResolvedPanel" class="form-item">
             <div class="resolved-panel" aria-live="polite">
@@ -412,7 +412,7 @@
                 <t-icon v-if="resolving" name="loading" class="spinning resolved-panel__loading" />
               </div>
               <p v-if="!resolved && !resolving && !resolveFailed" class="form-desc">{{ $t('model.editor.resolved.empty') }}</p>
-              <!-- 后端错误体形态不固定，取不到可读文案时只显示标题，不显示 [object Object] -->
+              <!-- The backend error body has no fixed shape; when no readable text is found, show only the title, not [object Object] -->
               <p v-else-if="resolveFailed" class="form-desc form-desc--warn">
                 {{ $t('model.editor.resolved.failed') }}<template v-if="resolveError">: {{ resolveError }}</template>
               </p>
@@ -465,18 +465,18 @@
         </section>
       </template>
 
-      <!-- Section 3 — 高级选项（仅在有内容时渲染，避免空 section 出现底部分隔线） -->
+      <!-- Section 3 - advanced options (rendered only when there is content, so an empty section does not show a bottom divider) -->
       <section v-if="['embedding', 'chat', 'vllm'].includes(activeModelType) || formData.source === 'remote'" class="setting-drawer__section">
         <h4 class="setting-drawer__section-title">{{ $t('model.editor.sectionAdvanced') }}</h4>
 
-        <!-- Embedding 专用：维度 -->
+        <!-- Embedding only: dimension -->
         <div v-if="activeModelType === 'embedding'" class="form-item">
           <label class="form-label">{{ $t('model.editor.dimensionLabel') }}</label>
           <div class="dimension-control">
             <t-input v-model.number="formData.dimension" type="number" :min="128" :max="4096"
               :placeholder="$t('model.editor.dimensionPlaceholder')"
               :disabled="!formData.supportsDimensionOverride || (formData.source === 'local' && checking)" />
-            <!-- Ollama 本地模型：自动检测维度按钮 -->
+            <!-- Ollama local model: auto-detect dimension button -->
             <t-button v-if="formData.source === 'local' && formData.modelName" variant="text" size="small"
               :loading="checking" @click="checkOllamaDimension" class="dimension-check-btn">
               <t-icon name="refresh" />
@@ -543,8 +543,8 @@
         </div>
 
         <!--
-          高级：协议覆盖 / 远端模型名 / 目录 compat 覆盖，以及仅旧数据才显示的
-          thinking_control 兼容选择。默认折叠，绝大多数用户无需触碰。
+          Advanced: protocol override / remote model name / catalog compat override, plus the legacy
+          thinking_control choice shown only for old data. Collapsed by default; most users never need it.
         -->
         <template v-if="formData.source === 'remote' && formData.provider !== 'weknoracloud'">
           <button type="button" class="advanced-toggle" :aria-expanded="advancedOpen" @click="advancedOpen = !advancedOpen">
@@ -554,8 +554,8 @@
 
           <template v-if="advancedOpen">
             <!--
-              extra_config.api 只选对话协议。embedding / rerank 行不读它：
-              embedding 的协议覆盖写在下面的 compat JSON 里（"api"），取值是向量协议。
+              extra_config.api only picks a chat protocol. Embedding / rerank rows do not read it:
+              the embedding protocol override goes in the compat JSON below ("api"), and its values are vector protocols.
             -->
             <div v-if="isChatLike" class="form-item">
               <label class="form-label">{{ $t('model.editor.advanced.api.label') }}</label>
@@ -575,7 +575,7 @@
               <p class="form-desc">{{ $t('model.editor.advanced.remoteModelName.desc') }}</p>
             </div>
 
-            <!-- 仅旧数据：extra_config.thinking_control 存在时才显示，可清空改走目录默认 -->
+            <!-- Old data only: shown when extra_config.thinking_control exists; can be cleared to use the catalog default -->
             <div v-if="showLegacyThinkingControl" class="form-item">
               <label class="form-label">{{ $t('model.editor.advanced.legacyThinking.label') }}</label>
               <t-select :model-value="formData.thinkingControl || ''"
@@ -671,11 +671,11 @@ interface ModelFormData {
   interfaceType?: 'ollama' | 'openai'
   isDefault: boolean
   supportsVision?: boolean
-  /** 对话/VLM 上下文窗口（token）。空/0 表示使用默认 200000。 */
+  /** Chat/VLM context window (tokens). Empty/0 means the default of 200000. */
   contextWindow?: number
-  /** 后台任务对该模型的并发上限；0/undefined 表示沿用全局默认。仅 chat/embedding/vllm 生效。 */
+  /** Concurrency cap for background tasks on this model; 0/undefined means the global default. Applies only to chat/embedding/vllm. */
   maxConcurrency?: number
-  /** 对话/VLM 单次输出上限（token）。空/0 表示使用目录默认。 */
+  /** Chat/VLM per-call output limit (tokens). Empty/0 means the catalog default. */
   maxOutputTokens?: number
   /**
    * Legacy extra_config.thinking_control (none | enable_thinking | thinking_type
@@ -693,9 +693,9 @@ interface ModelFormData {
   specCompat?: string
   /** Other parameters.spec fields preserved verbatim from the loaded row. */
   spec?: ModelSpecOverride | null
-  // 自定义 HTTP 请求头（类似 OpenAI Python SDK 的 extra_headers）
+  // Custom HTTP request headers (like extra_headers in the OpenAI Python SDK)
   customHeaders?: CustomHeaderItem[]
-  /** 第二段密钥（厂商 secret 额外字段，如 LKEAP / 火山引擎 Rerank 的 SecretKey）；创建时写入 app_secret */
+  /** Second key (a vendor secret extra field, such as the SecretKey of LKEAP / Volcano Engine Rerank); written to app_secret on create */
   appSecret?: string
 }
 
@@ -754,7 +754,7 @@ const modelTypeChoices = computed(() => ([
   { value: 'asr' as const, label: t('modelSettings.typeShort.asr'), icon: 'sound' },
 ]))
 
-// 厂商列表完全来自后端目录（store 按模型类型缓存）；前端不再维护任何厂商表。
+// The vendor list comes entirely from the backend catalog (the store caches it per model type); the frontend keeps no vendor table.
 const loadingProviders = computed(() => providersStore.isLoading(activeModelType.value))
 
 const loadProviders = async (force = false) => {
@@ -826,7 +826,7 @@ const apiKeyHint = computed(() => {
   return pickLocalized(label.hints, currentLocale.value, label.hint)
 })
 
-// 厂商额外字段：按当前模型类型过滤；secret 字段走 app_secret 凭证，其余进 extra_config。
+// Vendor extra fields: filtered by the current model type; secret fields go to the app_secret credential, the rest into extra_config.
 const visibleExtraFields = computed<ModelProviderExtraField[]>(() =>
   extraFieldsForModelType(selectedProvider.value?.extraFields, activeModelType.value)
     .filter(field => !RESERVED_EXTRA_CONFIG_KEYS.has(field.key)),
@@ -882,7 +882,7 @@ const applyExtraFieldDefaults = () => {
   }
 }
 
-// 内置模型目录 → 模型名下拉候选（可自由输入）
+// Built-in model catalog -> model name dropdown candidates (free input allowed)
 interface CatalogModelOption {
   value: string
   label: string
@@ -907,7 +907,7 @@ const catalogEntries = computed<ModelCatalogEntry[]>(() => {
   }
   // The list is already scoped: providers are fetched per model type, so the
   // backend returned exactly the entries that type can use. Filtering again
-  // here on entry.type was wrong for 视觉 — a VLM entry is a chat model that
+  // here on entry.type was wrong for vision - a VLM entry is a chat model that
   // accepts images, so it arrives typed "chat" and every one of them was
   // dropped, leaving the picker empty for every vendor.
   return entries
@@ -952,7 +952,7 @@ const vendorDocLink = computed(() => {
  * What applyCatalogEntry filled in for the model currently selected.
  *
  * Switching vendor has to take those values back — a context window from the
- * previous vendor's model is exactly the "填大会导致压缩不触发、上游直接拒绝"
+ * previous vendor's model is exactly the "too large means compression never triggers and the upstream rejects it outright"
  * case this field warns about — but it must not touch a number the operator
  * typed. Remembering what was filled, and only clearing a field that still
  * holds it, separates the two.
@@ -1025,7 +1025,7 @@ const handleCatalogModelChange = (value: unknown) => {
   if (entry) applyCatalogEntry(entry)
 }
 
-// 接入诊断（只读）：厂商 / 模型名 / Base URL / 协议覆盖变化后 400ms 防抖调用目录解析
+// Access diagnostics (read-only): call catalog resolution with a 400ms debounce after the vendor / model name / Base URL / protocol override changes
 const resolved = ref<ResolvedModelCatalog | null>(null)
 const resolving = ref(false)
 const resolveFailed = ref(false)
@@ -1034,7 +1034,7 @@ const resolveError = ref('')
 let resolveTimer: ReturnType<typeof setTimeout> | null = null
 let resolveRevision = 0
 
-/** 目录解析出的协议 / 思考等级 / 上下文窗口只对对话与 VLM 模型有意义。 */
+/** The protocol / thinking levels / context window resolved from the catalog only matter for chat and VLM models. */
 const isChatLike = computed(() => activeModelType.value === 'chat' || activeModelType.value === 'vllm')
 
 const showResolvedPanel = computed(() =>
@@ -1105,7 +1105,7 @@ const scheduleResolve = () => {
   }, 400)
 }
 
-// 高级折叠区
+// Advanced collapsible section
 const advancedOpen = ref(false)
 /** Set when the loaded row carried thinking_control, so the select stays visible after clearing it. */
 const legacyThinkingControlLoaded = ref(false)
@@ -1144,7 +1144,7 @@ const dialogVisible = computed({
   }
 })
 
-/** 正在从 modelData 灌入表单，忽略厂商/来源控件的程序化 change 副作用 */
+/** Filling the form from modelData; ignore the side effects of programmatic changes to the vendor/source controls */
 const hydratingForm = ref(false)
 
 // Header icon for the SettingDrawer — uses the same TDesign icon name table
@@ -1261,7 +1261,7 @@ const dimensionChecked = ref(false)
 const dimensionSuccess = ref(false)
 const dimensionMessage = ref('')
 
-// Ollama 模型状态
+// Ollama model status
 const ollamaModelList = ref<OllamaModelInfo[]>([])
 const loadingOllamaModels = ref(false)
 const searchKeyword = ref('')
@@ -1270,11 +1270,11 @@ const downloadProgress = ref(0)
 const currentDownloadModel = ref('')
 let downloadInterval: any = null
 
-// Ollama 服务状态
+// Ollama service status
 const ollamaServiceStatus = ref<boolean | null>(null)
 const checkingOllamaStatus = ref(false)
 
-// WeKnoraCloud 凭证状态
+// WeKnoraCloud credential status
 const wkcCredentialState = ref<'loading' | 'unconfigured' | 'configured' | 'expired'>('loading')
 
 const checkWkcCredentialStatus = async () => {
@@ -1354,7 +1354,7 @@ const rules = computed(() => ({
         if (!val || !val.trim()) {
           return { result: false, message: t('model.editor.validation.baseUrlEmpty') }
         }
-        // 简单的 URL 格式校验
+        // Simple URL format check
         try {
           new URL(val.trim())
           return { result: true }
@@ -1367,7 +1367,7 @@ const rules = computed(() => ({
   ]
 }))
 
-// 接入诊断的触发源：可见性 / 来源 / 厂商 / 模型名 / Base URL / 高级覆盖 / 模型类型
+// Triggers for access diagnostics: visibility / source / vendor / model name / Base URL / advanced overrides / model type
 watch(
   () => [
     props.visible, formData.value.source, formData.value.provider, formData.value.modelName,
@@ -1381,13 +1381,13 @@ watch(
   },
 )
 
-// 获取弹窗描述文字
+// Get the dialog description text
 const getModalDescription = () => {
   const key = `model.editor.description.${activeModelType.value}` as const
   return t(key) || t('model.editor.description.default')
 }
 
-// 获取模型名称占位符
+// Get the model name placeholder
 const getModelNamePlaceholder = () => {
   const catalogModel = catalogEntries.value[0]
   if (formData.value.source === 'remote' && catalogModel) return catalogModel.id
@@ -1414,47 +1414,47 @@ const getBaseUrlPlaceholder = () => {
   return t('model.editor.baseUrlPlaceholder')
 }
 
-// 检查Ollama服务状态
+// Check the Ollama service status
 const checkOllamaServiceStatus = async () => {
-  console.log('开始检查Ollama服务状态...')
+  console.log('Checking Ollama service status...')
   checkingOllamaStatus.value = true
   try {
     const result = await checkOllamaStatus()
     ollamaServiceStatus.value = result.available
-    console.log('Ollama服务状态检查完成:', result.available)
+    console.log('Ollama service status check done:', result.available)
   } catch (error) {
-    console.error('检查Ollama服务状态失败:', error)
+    console.error('Failed to check Ollama service status:', error)
     ollamaServiceStatus.value = false
   } finally {
     checkingOllamaStatus.value = false
   }
 
-  // Ollama 不可用时，新增场景下默认切换到 remote
+  // When Ollama is unavailable, default new models to remote
   if (ollamaServiceStatus.value === false && !isEdit.value && formData.value.source === 'local') {
     formData.value.source = 'remote'
   }
 }
 
-// 打开Ollama设置窗口
+// Open the Ollama settings window
 const goToOllamaSettings = async () => {
-  console.log('点击跳转到Ollama设置按钮')
-  // 关闭当前弹窗
+  console.log('Clicked the go-to-Ollama-settings button')
+  // Close the current dialog
   emit('update:visible', false)
 
-  // 先关闭设置弹窗（如果已打开）
+  // Close the settings dialog first (if it is open)
   if (uiStore.showSettingsModal) {
     uiStore.closeSettings()
-    // 等待 DOM 更新
+    // Wait for the DOM to update
     await nextTick()
   }
 
-  // 打开设置窗口并直接跳转到Ollama设置
-  console.log('调用uiStore.openSettings')
+  // Open the settings window and go straight to the Ollama settings
+  console.log('Calling uiStore.openSettings')
   uiStore.openSettings('ollama')
-  console.log('uiStore.openSettings调用完成')
+  console.log('uiStore.openSettings call done')
 }
 
-// 上一次打开时的 modelData id：用来判断切换模型/新增 vs. 同一次新增的连续打开
+// modelData id from the last open: tells switching models / adding vs. consecutive opens of the same add
 const lastOpenedModelId = ref<string | null>(null)
 
 const selectModelType = async (type: EditorModelType) => {
@@ -1470,7 +1470,7 @@ const selectModelType = async (type: EditorModelType) => {
   }
 }
 
-// 监听 visible 变化，初始化表单
+// Watch visible changes and initialize the form
 watch(() => props.visible, (val) => {
   if (val) {
     const typeChanged = draftModelType.value !== props.modelType
@@ -1478,13 +1478,13 @@ watch(() => props.visible, (val) => {
     // belong to another settings tab (including the initial chat default).
     draftModelType.value = props.modelType
 
-    // 检查Ollama服务状态
+    // Check the Ollama service status
     checkOllamaServiceStatus()
 
     advancedOpen.value = false
 
-    // 每次打开都清理上一次遗留的校验/检测结果，避免编辑别的模型时
-    // 直接显示上一次的“连接成功”
+    // Clear the leftover check/test results from the last open every time, so editing another model does not
+    // show the previous "Connected" straight away
     modelChecked.value = false
     modelAvailable.value = false
     remoteChecked.value = false
@@ -1499,7 +1499,7 @@ watch(() => props.visible, (val) => {
     hydratingForm.value = true
     try {
       if (props.modelData) {
-        // 编辑：始终用最新的 modelData 覆盖。apiKey field is left blank — in
+        // Edit: always overwrite with the latest modelData. apiKey field is left blank - in
         // edit mode the credential is owned by the <CredentialResource> card,
         // not by this form's apiKey field.
         const loadedExtra: Record<string, string> = {}
@@ -1523,19 +1523,19 @@ watch(() => props.visible, (val) => {
         }
         legacyThinkingControlLoaded.value = !!props.modelData.thinkingControl
       } else if (typeChanged || lastOpenedModelId.value !== null || !formData.value.id) {
-        // 切换类型、上次是编辑某个模型，或第一次新增 → 重置成空白
+        // Switching type, last time was editing a model, or the first add -> reset to blank
         resetForm()
       }
-      // 同一类型连续两次"新增"打开（中间是点遮罩/ESC 关闭的）→ 保留上次填写
+      // Two consecutive "add" opens of the same type (closed by clicking the overlay / ESC in between) -> keep what was entered
 
       lastOpenedModelId.value = currentId
 
-      // ReRank 模型强制使用 remote 来源（Ollama 不支持 ReRank）
+      // ReRank models force the remote source (Ollama does not support ReRank)
       if (activeModelType.value === 'rerank') {
         formData.value.source = 'remote'
       }
 
-      // 如果当前 provider 是 WeKnoraCloud，检查凭证状态
+      // If the current provider is WeKnoraCloud, check the credential status
       if (formData.value.provider === 'weknoracloud') {
         checkWkcCredentialStatus()
       }
@@ -1577,19 +1577,19 @@ watch(() => props.visible, () => {
   saveError.value = ''
 }, { flush: 'sync' })
 
-// 重置表单
+// Reset the form
 const resetForm = () => {
   legacyThinkingControlLoaded.value = false
   formData.value = {
     id: generateId(),
-    name: '', // 保留字段但不使用，保存时用 modelName
+    name: '', // field kept but unused; saving uses modelName
     source: 'remote',
     provider: 'generic',
     modelName: '',
     displayName: '',
     baseUrl: '',
     apiKey: '',
-    dimension: undefined, // 默认不填，让用户手动输入或通过检测按钮获取
+    dimension: undefined, // empty by default; the user types it or gets it from the detect button
     supportsDimensionOverride: false,
     interfaceType: undefined,
     isDefault: false,
@@ -1629,7 +1629,7 @@ const resetForm = () => {
   nextTick(() => formRef.value?.clearValidate?.())
 }
 
-// 处理厂商选择变化 (自动填充默认 URL)
+// Handle a vendor selection change (fills in the default URL)
 /**
  * Drop a model name the new vendor does not serve, along with whatever the
  * catalog filled in for it.
@@ -1676,31 +1676,31 @@ const handleProviderChange = (value: string) => {
   formData.value.baseUrl = provider?.defaultUrls?.[activeModelType.value]
     ?? provider?.defaultUrls?.chat
     ?? ''
-  // 重置校验状态：它描述的是上一家厂商的连通性，跟新厂商无关。放在 defaultUrls
-  // 判断之外，否则切到没有默认地址的厂商时会留着一条"连接正常"的旧结论。
+  // Reset the check state: it describes the previous vendor's connectivity, unrelated to the new vendor. It sits outside the defaultUrls
+  // check, otherwise switching to a vendor without a default URL would leave a stale "Connected" verdict.
   remoteChecked.value = false
   remoteAvailable.value = false
   remoteMessage.value = ''
-  // WeKnoraCloud: 检查凭证状态
+  // WeKnoraCloud: check the credential status
   if (value === 'weknoracloud') {
     checkWkcCredentialStatus()
   }
   if (hydratingForm.value) return
   resetModelSelectionForVendor()
-  // 换厂商：丢掉上一家的厂商字段（保留协议 / 远端模型名等高级覆盖），再灌入新厂商默认值
+  // Vendor change: drop the previous vendor's fields (keeping advanced overrides such as protocol / remote model name), then fill in the new vendor's defaults
   formData.value.extraConfig = keepVendorNeutralExtraConfig()
   formData.value.appSecret = ''
   applyExtraFieldDefaults()
 }
 
-// 监听来源变化，重置校验状态（已合并到下面的 watch）
+// Watch source changes and reset the check state (merged into the watch below)
 
-// 生成唯一ID
+// Generate a unique ID
 const generateId = () => {
   return `model_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
-// 自定义 HTTP Header 编辑
+// Custom HTTP header editing
 const addCustomHeader = () => {
   if (!Array.isArray(formData.value.customHeaders)) {
     formData.value.customHeaders = []
@@ -1713,7 +1713,7 @@ const removeCustomHeader = (idx: number) => {
   formData.value.customHeaders.splice(idx, 1)
 }
 
-// 过滤后的模型列表
+// Filtered model list
 const filteredOllamaModels = computed(() => {
   if (!searchKeyword.value) return ollamaModelList.value
   return ollamaModelList.value.filter(model =>
@@ -1721,25 +1721,25 @@ const filteredOllamaModels = computed(() => {
   )
 })
 
-// 是否显示"下载模型"选项
+// Whether to show the "Download model" option
 const showDownloadOption = computed(() => {
   if (!searchKeyword.value.trim()) return false
-  // 检查搜索词是否已存在于模型列表中
+  // Check whether the search term already exists in the model list
   const exists = ollamaModelList.value.some(model =>
     model.name.toLowerCase() === searchKeyword.value.toLowerCase()
   )
   return !exists
 })
 
-// 自定义过滤逻辑（捕获搜索关键词）
+// Custom filter logic (captures the search keyword)
 const handleModelFilter = (filterWords: string) => {
   searchKeyword.value = filterWords
-  return true // 让 TDesign 使用我们的 filteredOllamaModels
+  return true // let TDesign use our filteredOllamaModels
 }
 
-// 加载 Ollama 模型列表
+// Load the Ollama model list
 const loadOllamaModels = async () => {
-  // 只在选择 local 来源时加载
+  // Load only when the local source is selected
   if (formData.value.source !== 'local') return
 
   loadingOllamaModels.value = true
@@ -1754,46 +1754,46 @@ const loadOllamaModels = async () => {
   }
 }
 
-// 刷新模型列表
+// Refresh the model list
 const refreshOllamaModels = async () => {
-  ollamaModelList.value = [] // 清空以强制重新加载
+  ollamaModelList.value = [] // clear to force a reload
   await loadOllamaModels()
   MessagePlugin.success(t('model.editor.listRefreshed'))
 }
 
-// 监听下拉框可见性变化
+// Watch dropdown visibility changes
 const handleDropdownVisibleChange = (visible: boolean) => {
   if (!visible) {
     searchKeyword.value = ''
   }
 }
 
-// 格式化模型大小
+// Format the model size
 const formatModelSize = (bytes: number): string => {
   if (!bytes || bytes === 0) return ''
   const gb = bytes / (1024 * 1024 * 1024)
   return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / (1024 * 1024)).toFixed(0)} MB`
 }
 
-// 检查模型状态（Ollama本地模型）
+// Check the model status (Ollama local model)
 const checkModelStatus = async () => {
   if (!formData.value.modelName || formData.value.source !== 'local') {
     return
   }
 
   try {
-    // 调用真实 Ollama API 检查模型是否存在
+    // Call the real Ollama API to check whether the model exists
     const result = await checkOllamaModels([formData.value.modelName])
     modelChecked.value = true
     modelAvailable.value = result.models[formData.value.modelName] || false
   } catch (error) {
-    console.error('检查模型状态失败:', error)
+    console.error('Failed to check model status:', error)
     modelChecked.value = false
     modelAvailable.value = false
   }
 }
 
-// 检查 Ollama 本地 Embedding 模型维度
+// Check the dimension of an Ollama local embedding model
 const checkOllamaDimension = async () => {
   if (checking.value || saving.value) return
   if (!formData.value.modelName || formData.value.source !== 'local' || activeModelType.value !== 'embedding') {
@@ -1854,7 +1854,7 @@ const buildExtraConfig = (): Record<string, string> => {
   return out
 }
 
-// 检查 Remote API 连接（根据模型类型调用不同的接口）
+// Check the remote API connection (calls a different endpoint per model type)
 const checkRemoteAPI = async () => {
   if (checking.value || saving.value) return
   if (!formData.value.modelName || (!formData.value.baseUrl && formData.value.provider !== 'weknoracloud')) {
@@ -1871,9 +1871,9 @@ const checkRemoteAPI = async () => {
   try {
     let result: any
 
-    // 把表单里 Key-Value 数组形式的自定义 Header 转成后端期望的 map。
-    // 跟 ModelSettings.vue 保存时一致，空行自动丢弃，保证测试连接与真正保存后的
-    // 生产调用使用完全相同的 Header 集合。
+    // Turn the custom headers in the form, a key-value array, into the map the backend expects.
+    // Same as ModelSettings.vue on save: empty rows are dropped, so the connection test and the production calls after a real save
+    // use exactly the same header set.
     const customHeaders: Record<string, string> = {}
     if (Array.isArray(formData.value.customHeaders)) {
       for (const item of formData.value.customHeaders) {
@@ -1882,21 +1882,21 @@ const checkRemoteAPI = async () => {
         if (key && value) customHeaders[key] = value
       }
     }
-    // 只在非空时带上字段，避免在 URL query / 日志里出现空对象
+    // Send the field only when non-empty, so no empty object shows up in URL queries / logs
     const headerPayload = Object.keys(customHeaders).length > 0
       ? { customHeaders }
       : {}
 
-    // 根据模型类型调用不同的校验接口
-    // 编辑模式下 apiKey 由 <CredentialResource> 独立管理、不在 formData 里。
-    // 把 modelId 透传给后端，让它在 apiKey 为空时自动用存储的解密值兜底，
-    // 避免出现"测试连接没带 apiKey 直接失败"的情况。
+    // Call a different check endpoint per model type
+    // In edit mode the apiKey is managed separately by <CredentialResource> and is not in formData.
+    // Pass modelId through to the backend so it falls back to the stored decrypted value when apiKey is empty,
+    // avoiding a "connection test fails because it sent no apiKey".
     const idPayload = isEdit.value && props.modelData?.id
       ? { modelId: props.modelData.id as string }
       : {}
 
-    // extra_config 与真正保存时完全一致（厂商字段 + 高级覆盖 + 旧 thinking_control），
-    // 使测试连接走与生产调用相同的目录解析路径。
+    // extra_config exactly as on a real save (vendor fields + advanced overrides + legacy thinking_control),
+    // so the connection test takes the same catalog resolution path as production calls.
     const extraConfig = buildExtraConfig()
     const extraPayload = {
       spec: buildSpec(),
@@ -1906,7 +1906,7 @@ const checkRemoteAPI = async () => {
 
     switch (activeModelType.value) {
       case 'chat':
-        // 对话模型（KnowledgeQA）
+        // Chat model (KnowledgeQA)
         result = await checkRemoteModel({
           modelName: formData.value.modelName,
           baseUrl: formData.value.baseUrl || '',
@@ -1919,7 +1919,7 @@ const checkRemoteAPI = async () => {
         break
 
       case 'embedding':
-        // Embedding 模型
+        // Embedding model
         result = await testEmbeddingModel({
           source: 'remote',
           modelName: formData.value.modelName,
@@ -1932,7 +1932,7 @@ const checkRemoteAPI = async () => {
           ...headerPayload,
           ...extraPayload,
         })
-        // 如果测试成功且返回了维度，自动填充
+        // If the test succeeded and returned a dimension, fill it in
         if (revision !== connectionRevision) return
         if (result.available && result.dimension) applyDetectedDimension(result.dimension)
         break
@@ -1950,8 +1950,8 @@ const checkRemoteAPI = async () => {
         break
 
       case 'vllm':
-        // VLLM 模型（多模态）
-        // VLLM 使用 checkRemoteModel 进行基础连接测试
+        // VLLM model (multimodal)
+        // VLLM uses checkRemoteModel for a basic connection test
         result = await checkRemoteModel({
           modelName: formData.value.modelName,
           baseUrl: formData.value.baseUrl || '',
@@ -1964,7 +1964,7 @@ const checkRemoteAPI = async () => {
         break
 
       case 'asr':
-        // ASR 模型（语音识别）— 使用专用的 ASR 测试接口（/v1/audio/transcriptions）
+        // ASR model (speech recognition) - uses the dedicated ASR test endpoint (/v1/audio/transcriptions)
         result = await checkASRModel({
           modelName: formData.value.modelName,
           baseUrl: formData.value.baseUrl || '',
@@ -1997,14 +1997,14 @@ const checkRemoteAPI = async () => {
   }
 }
 
-// 确认保存
+// Confirm save
 const handleConfirm = async () => {
   if (saving.value) return
   saving.value = true
   if (checking.value) invalidateConnectionTest()
   saveError.value = ''
   try {
-    // 手动校验必填字段
+    // Check required fields by hand
     if (!formData.value.modelName || !formData.value.modelName.trim()) {
       MessagePlugin.warning(t('model.editor.validation.modelNameRequired'))
       return
@@ -2015,14 +2015,14 @@ const handleConfirm = async () => {
       return
     }
 
-    // 如果是 remote 类型且非 WeKnoraCloud，必须填写 baseUrl
+    // For a remote type other than WeKnoraCloud, baseUrl is required
     if (formData.value.source === 'remote' && formData.value.provider !== 'weknoracloud') {
       if (!formData.value.baseUrl || !formData.value.baseUrl.trim()) {
         MessagePlugin.warning(t('model.editor.remoteBaseUrlRequired'))
         return
       }
 
-      // 校验 Base URL 格式
+      // Check the Base URL format
       try {
         new URL(formData.value.baseUrl.trim())
       } catch {
@@ -2032,7 +2032,7 @@ const handleConfirm = async () => {
     }
 
     if (formData.value.source === 'remote' && formData.value.provider !== 'weknoracloud') {
-      // 厂商声明的必填额外字段
+      // Required extra fields the vendor declares
       for (const field of plainExtraFields.value) {
         if (field.required && !(formData.value.extraConfig?.[field.key] || '').trim()) {
           MessagePlugin.warning(t('model.editor.validation.extraFieldRequired', { name: extraFieldDisplayLabel(field) }))
@@ -2050,7 +2050,7 @@ const handleConfirm = async () => {
       }
     }
 
-    // 执行表单验证
+    // Run form validation
     const validation = await formRef.value?.validate()
     if (validation !== undefined && validation !== true) return
 
@@ -2058,7 +2058,7 @@ const handleConfirm = async () => {
     // CredentialResource card (it confirms + DELETEs to /credentials), so
     // the main save flow no longer needs to confirm or handle clear flags.
 
-    // 如果是新增且没有 id，生成一个
+    // When adding without an id, generate one
     if (!formData.value.id) {
       formData.value.id = generateId()
     }
@@ -2070,10 +2070,10 @@ const handleConfirm = async () => {
     })
     emit('update:visible', false)
     invalidateConnectionTest(false)
-    // 保存成功后重置草稿，下次打开新增模型时是空白
+    // Reset the draft after a successful save, so the next add-model open is blank
     resetForm()
     lastOpenedModelId.value = null
-    // 移除此处的成功提示，由父组件统一处理
+    // No success message here; the parent handles it
   } catch (error: any) {
     saveError.value = error?.message || t('modelSettings.toasts.saveFailed')
   } finally {
@@ -2081,72 +2081,72 @@ const handleConfirm = async () => {
   }
 }
 
-// 监听模型选择变化（处理下载逻辑和自动维度检测提示）
+// Watch model selection changes (download logic and the auto dimension detection hint)
 watch(() => formData.value.modelName, async (newValue, oldValue) => {
   if (!newValue) return
 
-  // 处理下载逻辑
+  // Download logic
   if (newValue.startsWith('__download__')) {
-    // 提取模型名称
+    // Extract the model name
     const modelName = newValue.replace('__download__', '')
 
-    // 重置选择（避免显示 __download__ 前缀）
+    // Reset the selection (so the __download__ prefix is not shown)
     formData.value.modelName = ''
 
-    // 开始下载
+    // Start the download
     await startDownload(modelName)
     return
   }
 
-  // 如果是 embedding 模型且选择的是 Ollama 本地模型，且模型名称发生了实际变化
+  // For an embedding model with an Ollama local model selected, when the model name actually changed
   if (activeModelType.value === 'embedding' &&
     formData.value.source === 'local' &&
     newValue !== oldValue &&
     oldValue !== '') {
-    // 提示用户可以检测维度
+    // Hint that the user can detect the dimension
     MessagePlugin.info(t('model.editor.dimensionHint'))
   }
 })
 
-// 开始下载模型
+// Start downloading the model
 const startDownload = async (modelName: string) => {
   downloading.value = true
   downloadProgress.value = 0
   currentDownloadModel.value = modelName
 
   try {
-    // 启动下载
+    // Start the download
     const result = await downloadOllamaModel(modelName)
     const taskId = result.taskId
 
     MessagePlugin.success(t('model.editor.downloadStarted', { name: modelName }))
 
-    // 轮询下载进度
+    // Poll the download progress
     downloadInterval = setInterval(async () => {
       try {
         const progress = await getDownloadProgress(taskId)
         downloadProgress.value = progress.progress
 
         if (progress.status === 'completed') {
-          // 下载完成
+          // Download complete
           clearInterval(downloadInterval)
           downloadInterval = null
           downloading.value = false
 
           MessagePlugin.success(t('model.editor.downloadCompleted', { name: modelName }))
 
-          // 刷新模型列表
+          // Refresh the model list
           await loadOllamaModels()
 
-          // 自动选中新下载的模型
+          // Select the newly downloaded model automatically
           formData.value.modelName = modelName
 
-          // 重置状态
+          // Reset state
           downloadProgress.value = 0
           currentDownloadModel.value = ''
 
         } else if (progress.status === 'failed') {
-          // 下载失败
+          // Download failed
           clearInterval(downloadInterval)
           downloadInterval = null
           downloading.value = false
@@ -2155,9 +2155,9 @@ const startDownload = async (modelName: string) => {
           currentDownloadModel.value = ''
         }
       } catch (error) {
-        console.error('获取下载进度失败:', error)
+        console.error('Failed to get download progress:', error)
       }
-    }, 1000) // 每秒查询一次
+    }, 1000) // query once per second
 
   } catch (error: any) {
     downloading.value = false
@@ -2168,7 +2168,7 @@ const startDownload = async (modelName: string) => {
   }
 }
 
-// 组件卸载时清理定时器
+// Clear the timer on component unmount
 onUnmounted(() => {
   window.removeEventListener('keydown', handleSaveEscape, true)
   invalidateConnectionTest(false)
@@ -2182,9 +2182,9 @@ onUnmounted(() => {
   }
 })
 
-// 监听来源变化，清理所有状态
+// Watch source changes and clear all state
 watch(() => formData.value.source, () => {
-  // 重置校验状态
+  // Reset the check state
   modelChecked.value = false
   modelAvailable.value = false
   remoteChecked.value = false
@@ -2194,7 +2194,7 @@ watch(() => formData.value.source, () => {
   dimensionSuccess.value = false
   dimensionMessage.value = ''
 
-  // 清理下载状态
+  // Clear the download state
   searchKeyword.value = ''
   if (downloadInterval) {
     clearInterval(downloadInterval)
@@ -2205,14 +2205,14 @@ watch(() => formData.value.source, () => {
   currentDownloadModel.value = ''
 })
 
-// 监听模型名称变化，清理维度检测状态
+// Watch model name changes and clear the dimension detection state
 watch(() => formData.value.modelName, () => {
   dimensionChecked.value = false
   dimensionSuccess.value = false
   dimensionMessage.value = ''
 })
 
-// 取消（点击底部"取消"按钮触发；点遮罩/ESC 不触发，从而保留草稿）
+// Cancel (fired by the footer "Cancel" button; clicking the overlay / ESC does not fire it, so the draft is kept)
 const handleCancel = () => {
   if (saving.value) return
   resetForm()
@@ -2239,14 +2239,14 @@ const handleCancel = () => {
   }
 }
 
-// 原生 t-form-item 容器置空（本组件使用自定义 .form-item + 手写 label）
+// Empty the native t-form-item container (this component uses a custom .form-item + hand-written label)
 :deep(.t-form) {
   .t-form-item {
     display: none;
   }
 }
 
-// 表单项样式
+// Form item styles
 .form-item {
   // No bottom margin — vertical rhythm is owned by the parent
   // .setting-drawer__section's `gap`. That keeps the spacing inside a section
@@ -2280,9 +2280,9 @@ const handleCancel = () => {
   gap: 8px;
 }
 
-// 「模型类型」和「模型来源」都是单选，就用同一种按钮。模型来源原本是灰底轨道
-// 的 segmented：#e7e7e7 的轨道在浅色表单里是一整块深灰，白色药丸又浮不起来，
-// 而且紧挨着的模型类型是另一套长相。取消轨道后两组自然成为一族。
+// "Model type" and "Model source" are both single choice, so they use the same button. The model source used to be a gray-track
+// segmented control: the #e7e7e7 track is a solid dark gray block in a light form, the white pill does not float above it,
+// and the model type right next to it looked different. Without the track, the two groups naturally form one family.
 .model-type-option,
 .source-option {
   display: inline-flex;
@@ -2314,9 +2314,9 @@ const handleCancel = () => {
     color: var(--td-text-color-primary);
   }
 
-  // 选中态与下面的「模型来源」分段一致：白底 + 主题色描边 + 主题色文字。
-  // 原先还铺了一层 10% 的主题色底，五个按钮里那一块是整屏最重的色块，而且
-  // 和下拉里刚去掉的整行绿底是同一个毛病。
+  // The selected state matches the "Model source" segments below: white background + theme-color border + theme-color text.
+  // It used to also lay a 10% theme-color background; that block was the heaviest color on the screen among the five buttons, and
+  // the same problem as the full-row green background just removed from the dropdown.
   &.is-active {
     border-color: var(--td-brand-color);
     background: var(--td-bg-color-container);
@@ -2333,15 +2333,15 @@ const handleCancel = () => {
 
 
 .source-option {
-  // 外观来自上面那条共用规则；这里只补禁用态（Ollama 未就绪 / rerank 不支持）。
+  // The look comes from the shared rule above; this only adds the disabled state (Ollama not ready / rerank not supported).
   &.is-disabled {
     cursor: not-allowed;
     opacity: 0.45;
   }
 }
 
-// 输入框样式：只在最外层 .t-input 上调字号，避免在内部 wrap/inner 上重复加边
-// 与 border-radius，造成视觉上"嵌套圆角容器"的错觉
+// Input styles: set the font size only on the outer .t-input, to avoid adding borders
+// and border-radius again on the inner wrap/inner, which looks like "nested rounded containers"
 :deep(.t-input),
 :deep(.t-select),
 :deep(.t-textarea),
@@ -2350,10 +2350,10 @@ const handleCancel = () => {
   font-size: var(--app-text-md);
 }
 
-// 厂商选择器样式 — 移至非 scoped 块，因为 t-select popup 渲染到 body 下
-// .provider-option 样式见文件末尾
+// Vendor picker styles - moved to a non-scoped block, because the t-select popup renders under body
+// see the end of the file for .provider-option styles
 
-// 复选框
+// Checkbox
 :deep(.t-checkbox) {
   font-size: var(--app-text-md);
 
@@ -2363,9 +2363,9 @@ const handleCancel = () => {
   }
 }
 
-// API Key 输入：前置 lock 图标 + 后置可点击的"显示/隐藏"小眼睛。
-// TDesign 默认会让 prefix-icon 显示成灰色，这里没动；suffix 上的眼睛
-// 用 placeholder 色，hover 时切到主文本色，避免抢戏。
+// API key input: a leading lock icon + a trailing clickable "show/hide" eye.
+// TDesign shows prefix-icon in gray by default, left unchanged; the eye in the suffix
+// uses the placeholder color and switches to the main text color on hover, so it does not steal attention.
 .api-key-input {
   :deep(.t-input__prefix) {
     color: var(--td-text-color-placeholder);
@@ -2377,10 +2377,10 @@ const handleCancel = () => {
 
 }
 
-// API 测试区域 — 弱卡片化：用浅底 + dashed 边把"操作 + 反馈"框成一块，
-// 让用户视觉上把它当成一个独立的"动作单元"，而不是又一个普通字段。
-// （历史样式保留：仅当某个分支仍以 inline 方式渲染测试块时使用；当前 RemoteAPI
-// 测试已上移到 SettingDrawer footer-left 槽，主流程不再走这块。）
+// API test area - a light card: a light background + dashed border frame "action + feedback" as one block,
+// so users see it as a separate "action unit" rather than another ordinary field.
+// (Legacy styles kept: used only when some branch still renders the test block inline; the current RemoteAPI
+// test moved up to the SettingDrawer footer-left slot, so the main flow no longer uses this block.)
 .api-test-section {
   display: flex;
   align-items: center;
@@ -2480,7 +2480,7 @@ const handleCancel = () => {
   }
 }
 
-// WeKnoraCloud 提示信息
+// WeKnoraCloud notice
 .weknoracloud-hint {
   display: flex;
   align-items: flex-start;
@@ -2523,7 +2523,7 @@ const handleCancel = () => {
   }
 }
 
-// Ollama 模型选择器样式
+// Ollama model picker styles
 .model-option {
   display: flex;
   align-items: center;
@@ -2563,7 +2563,7 @@ const handleCancel = () => {
   }
 }
 
-// 下载进度后缀样式
+// Download progress suffix styles
 .download-suffix {
   display: flex;
   align-items: center;
@@ -2583,7 +2583,7 @@ const handleCancel = () => {
   }
 }
 
-// 下载中的选择框进度条效果
+// Progress bar effect on the picker while downloading
 :deep(.t-select.downloading) {
   .t-input {
     position: relative;
@@ -2625,7 +2625,7 @@ const handleCancel = () => {
   flex-shrink: 0;
 }
 
-// 维度控制样式
+// Dimension control styles
 .dimension-control {
   display: flex;
   align-items: center;
@@ -2651,7 +2651,7 @@ const handleCancel = () => {
   }
 }
 
-// 自定义 HTTP Header 区域
+// Custom HTTP header area
 .custom-headers-header {
   display: flex;
   align-items: center;
@@ -2729,7 +2729,7 @@ const handleCancel = () => {
   }
 }
 
-// 已选厂商：图标 + 名称，嵌在 t-select 的 valueDisplay 里
+// Selected vendor: icon + name, inside the t-select valueDisplay
 .provider-value {
   display: inline-flex;
   align-items: center;
@@ -2762,7 +2762,7 @@ const handleCancel = () => {
   }
 }
 
-// 目录内 / 推理 / 视觉 等弱化徽标（与卡片上的 chip 同调）
+// Subdued badges such as in-catalog / reasoning / vision (same tone as the chips on cards)
 .catalog-badge {
   display: inline-flex;
   align-items: center;
@@ -2785,7 +2785,7 @@ const handleCancel = () => {
   }
 }
 
-// 接入诊断面板：只读、浅底，避免与可编辑字段混淆
+// Access diagnostics panel: read-only, light background, so it is not confused with editable fields
 .resolved-panel {
   padding: 10px 12px;
   border: 1px dashed var(--td-component-stroke);
@@ -2845,7 +2845,7 @@ const handleCancel = () => {
   }
 }
 
-// 高级折叠：与知识库分块设置里的 advanced-toggle 保持同一视觉
+// Advanced collapse: same look as the advanced-toggle in the knowledge base chunking settings
 .advanced-toggle {
   display: inline-flex;
   align-items: center;
@@ -2894,7 +2894,7 @@ const handleCancel = () => {
   gap: 8px;
 }
 
-// Ollama不可用提示样式
+// Ollama unavailable notice styles
 .ollama-unavailable-tip {
   display: flex;
   align-items: center;
@@ -2971,7 +2971,7 @@ const handleCancel = () => {
 }
 </style>
 
-<!-- 非 scoped 样式：t-select popup 渲染到 body 下，scoped 样式无法覆盖 -->
+<!-- Non-scoped styles: the t-select popup renders under body, where scoped styles cannot reach -->
 <style lang="less">
 .catalog-model-select-popup {
   padding: 4px;
@@ -3035,14 +3035,14 @@ const handleCancel = () => {
 }
 
 .provider-select-popup {
-  // 容器留点呼吸：避免选项贴着 popup 圆角
+  // Give the container some room, so options do not touch the popup's rounded corners
   padding: 4px;
 
-  // TDesign 给 select 浮层写死 max-height: 300px，而这里的选项是双行的
-  // （约 56px），正好只露出五条——下面还有二十多家厂商，但 macOS 的悬浮滚
-  // 动条不滚不显形，看上去就像"只有这几个"。放高到一屏能看到八九条，滚动
-  // 条也常驻，列表还有后续这件事才成立。&.wk-popover 只是为了压过 TDesign
-  // 自己那条同样两级的选择器。
+  // TDesign hard-codes max-height: 300px on the select popup, and the options here are two lines
+  // (about 56px), so exactly five show; there are twenty-odd more vendors below, but macOS overlay scrollbars
+  // stay invisible until scrolled, so it looks like "there are only these few". Raised to show eight or nine on one screen, with the scrollbar
+  // always visible, so it is clear the list continues. &.wk-popover is only there to beat TDesign's
+  // own two-level selector.
   &.wk-popover .t-popup__content {
     max-height: min(480px, 60vh);
     // Scrolling itself is restored for every skinned select in
@@ -3053,9 +3053,9 @@ const handleCancel = () => {
     scrollbar-width: thin;
   }
 
-  // TDesign 默认会在 t-select-option 上挂一个 overflow tooltip（浮在右侧
-  // 显示完整 label）。我们的选项排版是「主名称 + 次描述」两行，永远不会
-  // 触发省略，tooltip 反而成了视觉噪音 → 直接隐藏 popup 自带的提示。
+  // TDesign by default attaches an overflow tooltip to t-select-option (floating on the right
+  // with the full label). Our options are laid out as "main name + secondary description" on two lines and never
+  // truncate, so the tooltip is only visual noise -> hide the popup's built-in hint.
   + .t-popup .t-tooltip,
   ~ .t-popup .t-tooltip {
     display: none !important;
@@ -3077,10 +3077,10 @@ const handleCancel = () => {
 
   }
 
-  // 命中态不在这里定义：assets/theme/tdesign-overrides.less 已经把 TDesign
-  // 默认那条整行铺满的 --td-brand-color-light 换成了中性底色 + 一个主题色小
-  // 对勾，全站一致。这里再写一版只会让这个下拉跟「模型类型 / 模型来源」那两
-  // 排筛选对不上。选中行的主名称仍然点一下主题色，作为双行排版里的锚点。
+  // The hit state is not defined here: assets/theme/tdesign-overrides.less already replaced TDesign's
+  // default full-row --td-brand-color-light with a neutral background + a small theme-color
+  // check mark, consistent across the site. Another version here would only make this dropdown disagree with the "Model type / Model source"
+  // filter rows. The main name of the selected row still gets a touch of the theme color, as the anchor in the two-line layout.
   .t-select-option.t-is-selected .provider-name {
     color: var(--td-brand-color);
   }
@@ -3114,7 +3114,7 @@ const handleCancel = () => {
       display: flex;
       flex-direction: column;
       gap: 2px;
-      // 允许收缩，描述才能在浮层宽度内省略（浮层宽度由 matchTriggerWidth 钉死）。
+      // Allow shrinking so the description can truncate within the popup width (the popup width is pinned by matchTriggerWidth).
       min-width: 0;
       flex: 1;
     }

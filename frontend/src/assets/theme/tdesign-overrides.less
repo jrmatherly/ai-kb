@@ -1,7 +1,7 @@
-// 对 TDesign 组件的全局意图覆盖。组件内只做局部微调，不要在 scoped 样式里用 !important 和 TDesign 打架。
+// Global intent overrides for TDesign components. Components only make local tweaks; do not fight TDesign with !important in scoped styles.
 
-// 悬浮面板皮肤：给 t-popup / t-select 等的 overlayClassName 加上 `wk-popover` 即可。
-// 用两级选择器压过 TDesign 默认的 .t-popup__content，不需要 !important。
+// Floating panel skin: add `wk-popover` to the overlayClassName of t-popup, t-select and the like.
+// Two-level selectors beat TDesign's default .t-popup__content without !important.
 .wk-popover .t-popup__content {
   padding: 0;
   border-radius: var(--app-radius-xl);

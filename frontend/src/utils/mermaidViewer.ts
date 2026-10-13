@@ -1,19 +1,19 @@
 /**
- * Mermaid 图表全屏查看器
- * 支持：点击放大、滚轮缩放、鼠标拖拽、高清导出
+ * Full-screen viewer for Mermaid diagrams
+ * Supports click to enlarge, wheel zoom, mouse drag and high-resolution export
  */
 import i18n from '@/i18n';
 
 /**
- * 下载 SVG 为 PNG 图片（使用实际渲染尺寸）
+ * Download the SVG as a PNG image (at the actual rendered size)
  */
 const downloadSvgAsImage = async (svgElement: SVGElement, filename = 'mermaid-diagram.png'): Promise<void> => {
-  // 获取 SVG 实际渲染尺寸
+  // Actual rendered size of the SVG
   const bbox = svgElement.getBoundingClientRect()
   const w = Math.round(bbox.width)
   const h = Math.round(bbox.height)
 
-  // 克隆 SVG
+  // Clone the SVG
   const svgClone = svgElement.cloneNode(true) as SVGElement
   svgClone.setAttribute('width', String(w))
   svgClone.setAttribute('height', String(h))
@@ -49,7 +49,7 @@ const downloadSvgAsImage = async (svgElement: SVGElement, filename = 'mermaid-di
 }
 
 /**
- * 显示按钮操作反馈提示
+ * Show feedback for a button action
  */
 const showBtnFeedback = (btn: HTMLElement, success: boolean, text?: string): void => {
   const origColor = btn.style.color
@@ -63,7 +63,7 @@ const showBtnFeedback = (btn: HTMLElement, success: boolean, text?: string): voi
 }
 
 /**
- * 打开 Mermaid 全屏查看器
+ * Open the full-screen Mermaid viewer
  */
 export const openMermaidFullscreen = (svgHtml: string): void => {
   let scale = 1
@@ -76,11 +76,11 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
   let dragStartTY = 0
   const STEP = 0.2
 
-  // 创建遮罩层
+  // Create the overlay
   const overlay = document.createElement('div')
   overlay.style.cssText = 'position:fixed;inset:0;zIndex:9999;background:rgba(0,0,0,0.65);overflow:hidden;cursor:grab;'
 
-  // 创建工具栏
+  // Create the toolbar
   const toolbar = document.createElement('div')
   toolbar.style.cssText = 'position:fixed;top:20px;right:20px;display:flex;gap:6px;zIndex:10001;'
 
@@ -102,7 +102,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
   const closeBtn = createBtn(t('mermaid.close'), '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>')
   toolbar.append(zoomInBtn, zoomOutBtn, resetBtn, downloadBtn, closeBtn)
 
-  // 创建内容区域
+  // Create the content area
   const content = document.createElement('div')
   content.style.cssText = 'position:absolute;left:50%;top:50%;background:#fff;border-radius:12px;padding:32px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transformOrigin:0 0;'
   content.innerHTML = svgHtml
@@ -116,7 +116,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
   overlay.appendChild(content)
   document.body.appendChild(overlay)
 
-  // 自动适配大小
+  // Fit to size automatically
   const margin = 60
   const viewW = window.innerWidth - margin * 2
   const viewH = window.innerHeight - margin * 2
@@ -125,18 +125,18 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
     scale = Math.max(0.5, Math.min(fitScale, 10))
   }
 
-  // 应用变换
+  // Apply the transform
   const applyTransform = () => {
     content.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`
   }
   applyTransform()
 
-  // 缩放按钮事件
+  // Zoom button events
   zoomInBtn.onclick = (e) => { e.stopPropagation(); scale = Math.min(10, scale + STEP); applyTransform() }
   zoomOutBtn.onclick = (e) => { e.stopPropagation(); scale = Math.max(0.2, scale - STEP); applyTransform() }
   resetBtn.onclick = (e) => { e.stopPropagation(); scale = 1; translateX = 0; translateY = 0; applyTransform() }
 
-  // 下载 - 使用实际渲染尺寸
+  // Download - at the actual rendered size
   downloadBtn.onclick = (e) => {
     e.stopPropagation()
     if (!svgEl) return
@@ -144,7 +144,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
     showBtnFeedback(downloadBtn, true, t('mermaid.downloading'))
   }
 
-  // 关闭函数
+  // Close function
   let isClosed = false
   const close = () => {
     if (isClosed) return
@@ -162,7 +162,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
   }
   document.addEventListener('keydown', onEsc)
 
-  // 滚轮缩放
+  // Wheel zoom
   overlay.onwheel = (e) => {
     e.preventDefault()
     const oldScale = scale
@@ -176,7 +176,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
     applyTransform()
   }
 
-  // 拖拽
+  // Drag
   const onMouseMove = (e: MouseEvent) => {
     if (!isDragging) return
     translateX = dragStartTX + (e.clientX - dragStartX)
@@ -201,7 +201,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
     e.preventDefault()
   }
 
-  // 点击遮罩层关闭
+  // Click the overlay to close
   overlay.onclick = (e) => {
     const target = e.target as Element
     if (target === overlay) {
@@ -214,7 +214,7 @@ export const openMermaidFullscreen = (svgHtml: string): void => {
 }
 
 /**
- * 为 Mermaid 图表绑定点击全屏事件
+ * Bind the click-to-full-screen event on Mermaid diagrams
  */
 export const bindMermaidClickEvents = (container: HTMLElement): void => {
   if (!container) return

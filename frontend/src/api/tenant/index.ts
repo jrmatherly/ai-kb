@@ -3,7 +3,7 @@ import i18n from '@/i18n'
 
 const t = (key: string) => i18n.global.t(key)
 
-// 空间信息接口
+// Space info API
 export interface TenantInfo {
   id: number
   name: string
@@ -126,7 +126,7 @@ export interface UpdateTenantAPIKeyPayload {
   expires_at_unix?: number
 }
 
-// 搜索空间参数
+// Search-space params
 export interface SearchTenantsParams {
   keyword?: string
   tenant_id?: number
@@ -134,7 +134,7 @@ export interface SearchTenantsParams {
   page_size?: number
 }
 
-// 搜索空间响应
+// Search-space response
 export interface SearchTenantsResponse {
   success: boolean
   data?: {
@@ -147,8 +147,8 @@ export interface SearchTenantsResponse {
 }
 
 /**
- * 获取所有空间列表（需要跨空间访问权限）
- * @deprecated 建议使用 searchTenants 代替，支持分页和搜索
+ * List all spaces (requires cross-space access)
+ * @deprecated Use searchTenants instead, which supports pagination and search
  */
 export async function listAllTenants(): Promise<{ success: boolean; data?: { items: TenantInfo[] }; message?: string }> {
   try {
@@ -235,7 +235,7 @@ export async function createTenantAPIKey(
   }
 }
 
-/** 更新已创建租户 API Key 的授权范围和其他可配置属性。 */
+/** Update the scopes and other configurable properties of an existing tenant API key. */
 export async function updateTenantAPIKey(
   tenantId: number,
   keyId: number,
@@ -268,10 +268,10 @@ export async function deleteTenantAPIKey(
 }
 
 /**
- * 更新空间信息（目前暴露名称、描述两个字段的编辑入口）。
- * 后端 `PUT /tenants/:id` 用指针字段区分"未传"和"显式空串"，未传的列不会
- * 被改动；这里也按需选择性传 `name` / `description`，互不影响。
- * 权限：owner（与 router.go 中的 g.Owner() 守卫保持一致）。
+ * Update space info (the editable fields exposed today are name and description).
+ * The backend `PUT /tenants/:id` uses pointer fields to tell "not sent" from "explicit empty string", and unsent columns are
+ * left unchanged; this sends `name` / `description` selectively too, independent of each other.
+ * Permission: owner (matches the g.Owner() guard in router.go).
  */
 export async function updateTenant(
   tenantId: number,
@@ -289,7 +289,7 @@ export async function updateTenant(
 }
 
 /**
- * 删除当前工作区。权限：owner。
+ * Delete the current workspace. Permission: owner.
  */
 export async function deleteTenant(
   tenantId: number,
@@ -306,10 +306,10 @@ export async function deleteTenant(
 }
 
 /**
- * 创建新工作区（任意已登录用户均可调用）。
- * 后端会自动把调用者写成新空间的 Owner，并填充默认 storage_quota
- * 等服务端字段；API Key 由用户在集成页手动创建。
- * 路由：POST /api/v1/tenants（router 上不挂 g.CrossTenant()，自助场景使用）。
+ * Create a new workspace (any signed-in user may call it).
+ * The backend makes the caller the Owner of the new space and fills server-side fields such as the default storage_quota;
+ * the user creates API keys by hand on the integrations page.
+ * Route: POST /api/v1/tenants (no g.CrossTenant() on the router, for the self-service case).
  */
 export async function createTenant(
   payload: { name: string; description?: string },
@@ -329,7 +329,7 @@ export async function createTenant(
 }
 
 /**
- * 搜索空间（支持分页、关键词搜索和空间ID过滤）
+ * Search spaces (supports pagination, keyword search and filtering by space ID)
  */
 export async function searchTenants(params: SearchTenantsParams = {}): Promise<SearchTenantsResponse> {
   try {

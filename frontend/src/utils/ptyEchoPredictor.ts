@@ -14,7 +14,8 @@ export type PtyEchoWrite = (chunk: string | Uint8Array) => void
 
 export function looksLikeSecretPrompt(text: string): boolean {
   const line = (text.split(/\r\n|\n|\r/).pop() ?? '').trimEnd()
-  if (/(?:password|passphrase|密码)/i.test(line)) {
+  // Matches the Chinese word for "password" in prompts.
+  if (/(?:password|passphrase|\u5bc6\u7801)/i.test(line)) {
     return true
   }
   return /\bpin\s*:?\s*$/i.test(line)

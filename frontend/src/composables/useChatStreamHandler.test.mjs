@@ -193,19 +193,19 @@ test('a new answer round does not inherit text from live prior answer events', (
   const message = { agentEventStream: [], _eventMap: new Map(), content: '' }
 
   // Round 1 streams to completion.
-  process(message, { content: '第一点' }, { event_id: 'r1' })
+  process(message, { content: 'Point one' }, { event_id: 'r1' })
   process(message, { content: '' }, { event_id: 'r1', done: true })
 
   // Round 2 starts with no tool_call in between (the issue's exact sequence).
-  process(message, { content: '第二点' }, { event_id: 'r2' })
+  process(message, { content: 'Point two' }, { event_id: 'r2' })
   process(message, { content: '' }, { event_id: 'r2', done: true })
 
   const r1 = message._eventMap.get('r1')
   const r2 = message._eventMap.get('r2')
-  assert.equal(r1.content, '第一点')
-  assert.equal(r2.content, '第二点')
-  assert.equal(message.content, '第一点第二点')
-  assert.equal(state.fullContent.value, '第一点第二点')
+  assert.equal(r1.content, 'Point one')
+  assert.equal(r2.content, 'Point two')
+  assert.equal(message.content, 'Point onePoint two')
+  assert.equal(state.fullContent.value, 'Point onePoint two')
 })
 
 test('seeding still recovers a resumption whose text lives only in message.content', () => {
@@ -214,23 +214,23 @@ test('seeding still recovers a resumption whose text lives only in message.conte
     agentEventStream: [],
     _eventMap: new Map(),
     // Resume path: content was restored from history but no answer event exists.
-    content: '已恢复的文本',
+    content: 'Restored text',
   }
-  process(message, { content: ' 续写' }, { event_id: 'r' })
-  assert.equal(message._eventMap.get('r').content, '已恢复的文本 续写')
-  assert.equal(message.content, '已恢复的文本 续写')
+  process(message, { content: ' continued' }, { event_id: 'r' })
+  assert.equal(message._eventMap.get('r').content, 'Restored text continued')
+  assert.equal(message.content, 'Restored text continued')
 })
 
 test('a superseded prior round does not block or re-seed the new round', () => {
   const { process } = runAnswerCase()
-  const prior = { type: 'answer', event_id: 'r1', content: '旧稿', done: true, superseded: true }
+  const prior = { type: 'answer', event_id: 'r1', content: 'Old draft', done: true, superseded: true }
   const message = { agentEventStream: [prior], _eventMap: new Map(), content: '' }
 
-  process(message, { content: '正式答案' }, { event_id: 'r2' })
+  process(message, { content: 'Final answer' }, { event_id: 'r2' })
 
-  assert.equal(prior.content, '旧稿')
-  assert.equal(message._eventMap.get('r2').content, '正式答案')
-  assert.equal(message.content, '正式答案')
+  assert.equal(prior.content, 'Old draft')
+  assert.equal(message._eventMap.get('r2').content, 'Final answer')
+  assert.equal(message.content, 'Final answer')
 })
 
 // A round the completion cap cut off marks its agent step. History is rebuilt

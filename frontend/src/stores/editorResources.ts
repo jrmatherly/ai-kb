@@ -58,9 +58,9 @@ type EditorResourceKey =
   | 'systemInfo'
 
 /**
- * 智能体编辑器 / 知识库页面共用的配置类资源快照。
- * 与 chatResources 同一套约定：无 TTL，每次 ensure 发一次请求（并发共用），
- * 写操作后显式 `ensureX(true)` 或 `invalidate()`。
+ * Config resource snapshot shared by the agent editor and the knowledge base pages.
+ * Same conventions as chatResources: no TTL, each ensure sends one request (shared when concurrent),
+ * and writes call `ensureX(true)` or `invalidate()` explicitly afterwards.
  */
 export const useEditorResourcesStore = defineStore('editorResources', () => {
   const storageConfig = ref<Awaited<ReturnType<typeof getStorageEngineConfig>>['data'] | null>(null)
@@ -250,7 +250,7 @@ export const useEditorResourcesStore = defineStore('editorResources', () => {
 
   async function ensureMcpServices(agent?: AgentScope, force = false): Promise<void> {
     const key = scopeKey('', agent)
-    // 换了作用域：作废飞行中的旧请求，且必须排在它后面重新发。
+    // Scope changed: void the in-flight old request, and the new one must queue after it.
     if (key !== mcpServicesRequestScope.key) {
       mcpServicesResource.invalidate()
       force = true
@@ -302,7 +302,7 @@ export const useEditorResourcesStore = defineStore('editorResources', () => {
     return systemInfoResource.ensure(force)
   }
 
-  /** 智能体编辑器打开时预取的依赖（不含 IM channels / 单 KB shares） */
+  /** Dependencies prefetched when the agent editor opens (excluding IM channels and per-KB shares) */
   async function prefetchAgentEditorDeps(force = false): Promise<void> {
     await Promise.all([
       // The editor only edits this workspace's agents, so its MCP services

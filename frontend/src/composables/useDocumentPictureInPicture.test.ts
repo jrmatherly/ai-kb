@@ -68,9 +68,9 @@ test('PiP preserves task selection, synchronizes title/theme and releases window
     assert.equal(h.pip.target.value, windows[0]!.document.body)
     assert.equal(windows[0]!.document.documentElement.getAttribute('class'), 'dark')
     assert.ok(windows[0]!.document.nodes.some(node => node.tag === 'link' && node.href === '/assets/app.css'))
-    h.title.value = '预览'
+    h.title.value = 'Preview'
     await nextTick()
-    assert.equal(windows[0]!.document.title, '预览')
+    assert.equal(windows[0]!.document.title, 'Preview')
     h.source.documentElement.setAttribute('class', 'light')
     h.observers[0]!.callback()
     assert.equal(windows[0]!.document.documentElement.getAttribute('class'), 'light')

@@ -1,29 +1,29 @@
 /**
- * 阻断 tdesign-icons-vue-next 对外网 CDN 的 iconfont 请求。
+ * Block the iconfont requests that tdesign-icons-vue-next sends to the external CDN.
  *
- * 背景（issue #867 / #897）：
- *   tdesign-icons-vue-next 的 Icon / IconFont 组件在 onMounted 时会通过
- *   `checkScriptAndLoad` / `checkLinkAndLoad` 往 document 里注入指向
- *   `https://tdesign.gtimg.com/icon/<version>/fonts/index.(js|css)` 的
- *   <script> / <link>。在无外网环境下请求会失败，导致图标全部不渲染。
+ * Background (issue #867 / #897):
+ *   The Icon / IconFont components of tdesign-icons-vue-next use
+ *   `checkScriptAndLoad` / `checkLinkAndLoad` in onMounted to inject into document a
+ *   <script> / <link> pointing at `https://tdesign.gtimg.com/icon/<version>/fonts/index.(js|css)`.
+ *   Without internet access the request fails and no icon renders.
  *
- * 处理方式：在 Vue app 挂载之前预先插入符合 tdesign 匹配规则的占位节点，
- *   让 `checkScriptAndLoad` / `checkLinkAndLoad` 的去重判断命中、直接返回，
- *   不再追加指向 CDN 的真实节点。
+ * Fix: before the Vue app mounts, insert placeholder nodes that match tdesign's matching rules,
+ *   so the dedupe check in `checkScriptAndLoad` / `checkLinkAndLoad` hits and returns early
+ *   without appending real nodes that point at the CDN.
  *
- *   - 匹配选择器来源：tdesign-icons-vue-next/esm/utils/check-url-and-load.js
+ *   - Source of the matching selectors: tdesign-icons-vue-next/esm/utils/check-url-and-load.js
  *       `.t-svg-js-stylesheet--unique-class[src="<url>"]`
  *       `.t-iconfont-stylesheet--unique-class[href="<url>"]`
- *   - 占位 <script> / <link> 使用非标准 type / rel，浏览器不会真正发起网络请求。
+ *   - The placeholder <script> / <link> use a non-standard type / rel, so the browser sends no network request.
  *
- * SVG sprite 的符号则通过 index.html 中的 <script src="/tdesign-icons/.../index.js"></script>
- * 在本地提前注册，因此 <t-icon name="..."> 仍可正常渲染。
+ * The SVG sprite symbols are registered locally up front by <script src="/tdesign-icons/.../index.js"></script> in index.html,
+ * so <t-icon name="..."> still renders.
  */
 
 const SVG_SCRIPT_CLASS = "t-svg-js-stylesheet--unique-class";
 const ICONFONT_LINK_CLASS = "t-iconfont-stylesheet--unique-class";
 
-// 对齐 tdesign-icons-vue-next 0.4.x 内部硬编码的地址；多版本号并存以兼容潜在升级。
+// Matches the URLs hard-coded inside tdesign-icons-vue-next 0.4.x; several versions side by side cover a possible upgrade.
 const BLOCKED_ICON_VERSIONS = ["0.4.0", "0.4.1", "0.4.2", "0.4.3", "0.4.4"];
 
 const BLOCKED_SCRIPT_URLS = BLOCKED_ICON_VERSIONS.map(
@@ -59,7 +59,7 @@ export function installTDesignIconOfflineGuard(): void {
     const stub = document.createElement("script");
     stub.setAttribute("class", SVG_SCRIPT_CLASS);
     stub.setAttribute("src", src);
-    // 非标准 MIME 类型会让浏览器跳过脚本的 fetch/执行阶段
+    // A non-standard MIME type makes the browser skip fetching and running the script
     stub.setAttribute("type", "text/no-load");
     stub.setAttribute("data-ai-kb-blocked-cdn", "tdesign-icons");
     body.appendChild(stub);
@@ -73,7 +73,7 @@ export function installTDesignIconOfflineGuard(): void {
     const stub = document.createElement("link");
     stub.setAttribute("class", ICONFONT_LINK_CLASS);
     stub.setAttribute("href", href);
-    // 不声明 rel="stylesheet"，浏览器不会发起样式表请求
+    // Without rel="stylesheet" the browser sends no stylesheet request
     stub.setAttribute("rel", "preload-blocked");
     stub.setAttribute("data-ai-kb-blocked-cdn", "tdesign-icons");
     document.head.appendChild(stub);

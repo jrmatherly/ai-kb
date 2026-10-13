@@ -54,22 +54,22 @@ test('getAgentToolIconName maps Wiki tools to semantic search and reading icons'
 })
 
 test('getQueryText joins unique query strings', () => {
-  assert.equal(getQueryText({ query: 'foo', queries: ['foo', 'bar'] }), 'foo，bar')
+  assert.equal(getQueryText({ query: 'foo', queries: ['foo', 'bar'] }), 'foo, bar')
 })
 
 test('getQueryText parses JSON-encoded queries string', () => {
   assert.equal(
     getQueryText({
-      queries: '["合力天胜游泳俱乐部介绍", "合力天胜游泳训练机构", "合力天胜游泳队"]',
+      queries: '["Helix swim club overview", "Helix swim training center", "Helix swim team"]',
     }),
-    '合力天胜游泳俱乐部介绍，合力天胜游泳训练机构，合力天胜游泳队',
+    'Helix swim club overview, Helix swim training center, Helix swim team',
   )
 })
 
 test('getWikiPageText supports persisted slugs arrays', () => {
   assert.equal(
-    getWikiPageText({ slugs: ['entity/知识助理', 'concept/API管理'] }),
-    'entity/知识助理、concept/API管理',
+    getWikiPageText({ slugs: ['entity/knowledge-assistant', 'concept/API-management'] }),
+    'entity/knowledge-assistant, concept/API-management',
   )
   assert.equal(getWikiPageText('{"slug":"index"}'), 'index')
 })
@@ -100,9 +100,9 @@ test('getRagPipelineStepTitle uses query-aware search labels', () => {
   const title = getRagPipelineStepTitle(t, {
     tool_name: 'knowledge_search',
     pending: true,
-    arguments: { query: '讯飞开放平台' },
+    arguments: { query: 'iFlytek open platform' },
   })
-  assert.equal(title, 'searching 讯飞开放平台')
+  assert.equal(title, 'searching iFlytek open platform')
 })
 
 test('getRagPipelineStepTitle uses web labels when search_source is web', () => {

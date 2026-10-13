@@ -47,7 +47,7 @@
     text-overflow: ellipsis;
   }
 
-  // 引用标签只用浅底色区分，不加描边，避免像按钮一样抢正文
+  // Citation tags differ only by a light background, no border, so they do not compete with the body text like buttons
   :deep(.citation-kb),
   :deep(.citation-web) {
     background: color-mix(in srgb, var(--td-text-color-primary) 6%, transparent);
@@ -172,7 +172,7 @@
     }
   }
 
-  // 摘录只展示前几行，完整内容点击引用后在侧栏查看
+  // The excerpt shows only the first few lines; the full content opens in the side panel on click
   &__body {
     display: -webkit-box;
     -webkit-box-orient: vertical;

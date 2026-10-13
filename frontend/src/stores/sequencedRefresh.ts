@@ -1,12 +1,12 @@
 /**
- * 「刷新」语义的请求排序器（/auth/me 这类单例读取用）。
+ * Request sequencer with "refresh" semantics (for singleton reads such as /auth/me).
  *
- * - `refresh()`：结果必须来自本次调用之后发出的请求。已有请求在飞行时，
- *   排一个新请求在它之后，多次并发的 refresh 共用同一个排队请求。
- * - `share()`：只要有请求在飞行就直接复用，否则发一个新的。首屏多个消费者
- *   同时要同一份数据时用它。
- * - `invalidate()`：让飞行中的请求作废。`run` 拿到的 `isCurrent()` 在 await 之后
- *   返回 false，调用方据此跳过落库；登出时用，避免迟到的响应把会话写回来。
+ * - `refresh()`: the result must come from a request sent after this call. When a request is in flight,
+ *   queue a new one after it; concurrent refresh calls share the same queued request.
+ * - `share()`: reuse any in-flight request, otherwise send a new one. Use it when several first-screen consumers
+ *   want the same data at once.
+ * - `invalidate()`: void in-flight requests. The `isCurrent()` that `run` receives returns false after await,
+ *   so the caller skips storing the result; used on logout so a late response does not write the session back.
  */
 export interface SequencedRefresh<T> {
   refresh: () => Promise<T>

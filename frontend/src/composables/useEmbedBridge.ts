@@ -188,7 +188,7 @@ export function useEmbedBridge(channelId: Ref<string>) {
   }
 
   // Discard the current conversation and start a fresh signed session. Backing
-  // the "新建对话" affordance — also the privacy escape hatch on shared devices.
+  // the "New chat" affordance - also the privacy escape hatch on shared devices.
   const startNewSession = async () => {
     const id = channelId.value
     const apiToken = token.value

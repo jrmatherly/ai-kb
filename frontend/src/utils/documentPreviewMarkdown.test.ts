@@ -57,7 +57,7 @@ test('isSafePreviewImageHref matches the shared DOMPurify image URI policy', () 
 })
 
 test('preview Markdown keeps the marked-katex extension when using an image renderer', () => {
-  const html = renderDocumentPreviewMarkdown('公式 $E = mc^2$', value => value)
+  const html = renderDocumentPreviewMarkdown('Formula $E = mc^2$', value => value)
 
   assert.match(html, /katex/)
 })

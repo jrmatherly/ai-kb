@@ -9,7 +9,7 @@ import {
 } from './mermaidStreaming.ts'
 
 const LOADING = `<div class="chat-mermaid-block chat-mermaid-block--loading">
-  <div class="chat-mermaid-block__header"><span class="chat-mermaid-block__badge">图表</span></div>
+  <div class="chat-mermaid-block__header"><span class="chat-mermaid-block__badge">Diagram</span></div>
   <div class="streaming-mermaid-loading" aria-hidden="true"><span class="streaming-mermaid-loading__skeleton"></span></div>
 </div>`
 
@@ -77,7 +77,7 @@ test('injectCachedMermaidSvg maps cached SVGs onto loading placeholders 1:1', ()
 test('injectCachedMermaidSvg does not swallow a cached diagram when a later skeleton exists', () => {
   const html = `
     <div class="chat-mermaid-block">
-      <div class="chat-mermaid-block__header"><span class="chat-mermaid-block__badge">图表</span></div>
+      <div class="chat-mermaid-block__header"><span class="chat-mermaid-block__badge">Diagram</span></div>
       <pre class="chat-mermaid-block__canvas mermaid" data-mermaid="cached"><svg id="kept"></svg></pre>
     </div>
     <p>between</p>

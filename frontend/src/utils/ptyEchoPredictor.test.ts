@@ -52,10 +52,10 @@ test('does not locally echo control sequences', () => {
 
 test('echoes CJK locally and strips the matching remote bytes', () => {
   const { predictor, text } = collect()
-  predictor.onLocal('你')
-  assert.equal(text(), '你')
-  predictor.onRemote(new TextEncoder().encode('你'))
-  assert.equal(text(), '你')
+  predictor.onLocal('\u4f60')
+  assert.equal(text(), '\u4f60')
+  predictor.onRemote(new TextEncoder().encode('\u4f60'))
+  assert.equal(text(), '\u4f60')
 })
 
 test('locally erases a predicted character on backspace', () => {
@@ -68,7 +68,7 @@ test('locally erases a predicted character on backspace', () => {
 test('looksLikeSecretPrompt detects sudo and localized prompts', () => {
   assert.equal(looksLikeSecretPrompt('[sudo] password for alice: '), true)
   assert.equal(looksLikeSecretPrompt('Password:'), true)
-  assert.equal(looksLikeSecretPrompt('请输入密码:'), true)
+  assert.equal(looksLikeSecretPrompt('\u8bf7\u8f93\u5165\u5bc6\u7801:'), true)
   assert.equal(looksLikeSecretPrompt('user@host:~$ '), false)
 })
 

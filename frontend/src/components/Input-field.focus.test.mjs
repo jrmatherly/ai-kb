@@ -70,7 +70,7 @@ test('new-session focus survives consumption of the first query and runs on chil
   const autoFocus = vm.runInNewContext(`${snapshot}\nfirstQuery.value = ''; focusComposerOnMount`, { firstQuery })
   assert.equal(autoFocus, true)
   assert.match(page, /:auto-focus="focusComposerOnMount"/)
-  const mountStart = source.slice(source.indexOf('onMounted(() => {'), source.indexOf('// Embed 渠道'))
+  const mountStart = source.slice(source.indexOf('onMounted(() => {'), source.indexOf('// Embed channel'))
   let mounted, focused = false
   vm.runInNewContext(`${mountStart}\n});`, {
     props: { autoFocus }, onMounted: fn => { mounted = fn }, focusInput: () => { focused = true },

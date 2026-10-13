@@ -11,7 +11,7 @@ export type ArtifactPanelFocusState = ArtifactPanelFocus & {
   nonce: number
 }
 
-// 面板宽度可拖拽调整，持久化到 localStorage。
+// The panel width is resizable by drag and persisted to localStorage.
 export const SANDBOX_PANEL_MIN_WIDTH = 320
 export const SANDBOX_PANEL_MAX_WIDTH = 1200
 export const SANDBOX_PANEL_DEFAULT_WIDTH = 420

@@ -87,10 +87,11 @@ onMounted(async () => {
     return
   }
   for (const fixture of [
-    { name: 'citation anchor retains all sentences preceding the marker', html: '<p>第一句说明原目录保留文件。第二句说明回到主仓库开发。<span class="citation">[1]</span></p>', want: '第一句说明原目录保留文件。第二句说明回到主仓库开发。' },
-    { name: 'citation anchor stops at the previous citation', html: '<p>先前的内容属于另一个来源。<span class="citation">[1]</span>本条引用包括操作原理。以及后续开发所在的目录。<span class="citation">[2]</span></p>', want: '本条引用包括操作原理。以及后续开发所在的目录。' },
-    { name: 'adjacent citations share the same preceding passage', html: '<p>两个来源共同支撑这段完整的解释。<span class="citation">[1]</span> <span class="citation">[2]</span></p>', want: '两个来源共同支撑这段完整的解释。' },
-    { name: 'citation anchor retains inline code without citation labels', html: '<p><code>git switch --detach</code> 让原目录停在当前提交。后续开发在主仓库进行即可。<span class="citation-kb">filename.md</span></p>', want: 'git switch --detach 让原目录停在当前提交。后续开发在主仓库进行即可。' },
+    // Chinese inputs exercise CJK sentence splitting.
+    { name: 'citation anchor retains all sentences preceding the marker', html: '<p>\u7b2c\u4e00\u53e5\u8bf4\u660e\u539f\u76ee\u5f55\u4fdd\u7559\u6587\u4ef6\u3002\u7b2c\u4e8c\u53e5\u8bf4\u660e\u56de\u5230\u4e3b\u4ed3\u5e93\u5f00\u53d1\u3002<span class="citation">[1]</span></p>', want: '\u7b2c\u4e00\u53e5\u8bf4\u660e\u539f\u76ee\u5f55\u4fdd\u7559\u6587\u4ef6\u3002\u7b2c\u4e8c\u53e5\u8bf4\u660e\u56de\u5230\u4e3b\u4ed3\u5e93\u5f00\u53d1\u3002' },
+    { name: 'citation anchor stops at the previous citation', html: '<p>\u5148\u524d\u7684\u5185\u5bb9\u5c5e\u4e8e\u53e6\u4e00\u4e2a\u6765\u6e90\u3002<span class="citation">[1]</span>\u672c\u6761\u5f15\u7528\u5305\u62ec\u64cd\u4f5c\u539f\u7406\u3002\u4ee5\u53ca\u540e\u7eed\u5f00\u53d1\u6240\u5728\u7684\u76ee\u5f55\u3002<span class="citation">[2]</span></p>', want: '\u672c\u6761\u5f15\u7528\u5305\u62ec\u64cd\u4f5c\u539f\u7406\u3002\u4ee5\u53ca\u540e\u7eed\u5f00\u53d1\u6240\u5728\u7684\u76ee\u5f55\u3002' },
+    { name: 'adjacent citations share the same preceding passage', html: '<p>\u4e24\u4e2a\u6765\u6e90\u5171\u540c\u652f\u6491\u8fd9\u6bb5\u5b8c\u6574\u7684\u89e3\u91ca\u3002<span class="citation">[1]</span> <span class="citation">[2]</span></p>', want: '\u4e24\u4e2a\u6765\u6e90\u5171\u540c\u652f\u6491\u8fd9\u6bb5\u5b8c\u6574\u7684\u89e3\u91ca\u3002' },
+    { name: 'citation anchor retains inline code without citation labels', html: '<p><code>git switch --detach</code> \u8ba9\u539f\u76ee\u5f55\u505c\u5728\u5f53\u524d\u63d0\u4ea4\u3002\u540e\u7eed\u5f00\u53d1\u5728\u4e3b\u4ed3\u5e93\u8fdb\u884c\u5373\u53ef\u3002<span class="citation-kb">filename.md</span></p>', want: 'git switch --detach \u8ba9\u539f\u76ee\u5f55\u505c\u5728\u5f53\u524d\u63d0\u4ea4\u3002\u540e\u7eed\u5f00\u53d1\u5728\u4e3b\u4ed3\u5e93\u8fdb\u884c\u5373\u53ef\u3002' },
   ]) {
     try {
       const root = document.createElement('div')
@@ -127,12 +128,12 @@ onMounted(async () => {
   const htmlCode = 'Literal code: `<Widget>` and `x < 1.5`.\n\n~~~html\n<section>example</section>\n~~~'
   await runOther('Markdown literal tags and tilde code fences survive projection', new Blob([htmlCode]), 'md', { sourceMarkdown: htmlCode }, r => assert(r.precise, JSON.stringify(r)))
   await runOther('Markdown changed numeric evidence is rejected', new Blob([htmlCode]), 'md', { sourceMarkdown: htmlCode.replace('1.5', '15') }, r => assert(!r.found, JSON.stringify(r)))
-  const multiParagraph = '- **操作**：在原目录执行 `git switch --detach` 释放分支。\n- **原理**：`--detach` 让工作目录保留当前提交，现有文件仍然保留。\n- **后续**：完成操作以后可以回到主仓库继续开发。'
+  const multiParagraph = '- **\u64cd\u4f5c**\uff1a\u5728\u539f\u76ee\u5f55\u6267\u884c `git switch --detach` \u91ca\u653e\u5206\u652f\u3002\n- **\u539f\u7406**\uff1a`--detach` \u8ba9\u5de5\u4f5c\u76ee\u5f55\u4fdd\u7559\u5f53\u524d\u63d0\u4ea4\uff0c\u73b0\u6709\u6587\u4ef6\u4ecd\u7136\u4fdd\u7559\u3002\n- **\u540e\u7eed**\uff1a\u5b8c\u6210\u64cd\u4f5c\u4ee5\u540e\u53ef\u4ee5\u56de\u5230\u4e3b\u4ed3\u5e93\u7ee7\u7eed\u5f00\u53d1\u3002'
   await runOther('Markdown multi-sentence paraphrase locates both supported paragraphs', new Blob([multiParagraph]), 'md', {
-    sourceMarkdown: multiParagraph, sentence: 'git switch --detach 让工作目录保留当前提交（detached HEAD），文件内容仍然保留。完成操作以后可以回到主仓库继续开发即可。',
+    sourceMarkdown: multiParagraph, sentence: 'git switch --detach \u8ba9\u5de5\u4f5c\u76ee\u5f55\u4fdd\u7559\u5f53\u524d\u63d0\u4ea4\uff08detached HEAD\uff09\uff0c\u6587\u4ef6\u5185\u5bb9\u4ecd\u7136\u4fdd\u7559\u3002\u5b8c\u6210\u64cd\u4f5c\u4ee5\u540e\u53ef\u4ee5\u56de\u5230\u4e3b\u4ed3\u5e93\u7ee7\u7eed\u5f00\u53d1\u5373\u53ef\u3002',
   }, r => {
     assert(r.found && !r.precise && r.granularity === 'block', JSON.stringify(r))
-    assert(highlightedText() === '原理：--detach 让工作目录保留当前提交，现有文件仍然保留后续：完成操作以后可以回到主仓库继续开发', highlightedText())
+    assert(highlightedText() === '\u539f\u7406\uff1a--detach \u8ba9\u5de5\u4f5c\u76ee\u5f55\u4fdd\u7559\u5f53\u524d\u63d0\u4ea4\uff0c\u73b0\u6709\u6587\u4ef6\u4ecd\u7136\u4fdd\u7559\u540e\u7eed\uff1a\u5b8c\u6210\u64cd\u4f5c\u4ee5\u540e\u53ef\u4ee5\u56de\u5230\u4e3b\u4ed3\u5e93\u7ee7\u7eed\u5f00\u53d1', highlightedText())
   })
   const boundaryParagraph = 'Client only uses `api.example.test` for read-only requests. Tokens stay in the local keychain and never sync to the cloud.'
   const boundaryPrefix = '# Account settings\n\nChoose the personal repository.\n\nClient only uses `api.example.test`'

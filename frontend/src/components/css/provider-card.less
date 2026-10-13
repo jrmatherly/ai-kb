@@ -1,5 +1,5 @@
-// 设置区「提供方卡片」（模型 / 向量库 / 网络搜索 / 存储后端 / 解析引擎 / 沙箱 / MCP / 技能）共用的视觉规范。
-// 页面保留自己的 BEM 前缀（.model-card__badge 等），把重复声明换成这里的 mixin。
+// Shared visual rules for the "provider cards" in settings (models / vector stores / web search / storage backends / parsing engines / sandboxes / MCP / skills).
+// Pages keep their own BEM prefix (.model-card__badge and so on) and swap repeated declarations for the mixins here.
 //
 //   @import (reference) '@/components/css/provider-card.less';
 //   .model-card { .provider-card(); &--add { .provider-card-add(); } }
@@ -19,7 +19,7 @@
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-// 可点击（进入编辑）的卡片 hover / focus 反馈
+// Hover / focus feedback on clickable cards (they open the editor)
 .provider-card-interactive() {
   cursor: pointer;
 
@@ -34,7 +34,7 @@
   }
 }
 
-// 虚线「新增」卡片
+// Dashed "Add" card
 .provider-card-add() {
   flex-direction: column;
   align-items: center;
@@ -56,7 +56,7 @@
   }
 }
 
-// 左侧徽标：默认 36px；MCP / 技能等紧凑卡片传 26px
+// Left badge: 36px by default; compact cards such as MCP and skills pass 26px
 .provider-card-badge(@size: 36px, @radius: 9px) {
   flex-shrink: 0;
   display: flex;
@@ -93,7 +93,7 @@
   }
 }
 
-// 厂商品牌色：前景向文字主色靠拢（深色模式下自动变亮），底色为同色 12% 透明叠加
+// Vendor brand color: the foreground leans toward the main text color (brightens in dark mode), the background is the same color at 12% opacity
 .provider-card-badge-color(@c) {
   color: color-mix(in srgb, @c 75%, var(--td-text-color-primary));
   background: color-mix(in srgb, @c 12%, transparent);
@@ -145,7 +145,7 @@
   color: var(--td-text-color-secondary);
 }
 
-// 右上角「更多」：hover / 聚焦时显现
+// Top-right "More": shown on hover / focus
 .provider-card-more() {
   flex-shrink: 0;
   padding: 2px;

@@ -2,7 +2,7 @@ import { MessagePlugin } from "tdesign-vue-next";
 import i18n from '@/i18n';
 import { shouldRejectKnowledgeFileType } from "./fileTypeVerification";
 
-// 声明全局运行时配置类型
+// Global runtime config type
 declare global {
   interface Window {
     __RUNTIME_CONFIG__?: {
@@ -18,8 +18,8 @@ function positiveMegabytes(value: unknown, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback
 }
 
-// 从运行时配置获取最大文件大小(MB)，支持 Docker 环境动态配置
-// 优先级：运行时配置 > 构建时环境变量 > 默认值 50MB
+// Max file size (MB) from the runtime config, so Docker deployments can set it at run time
+// Precedence: runtime config > build-time env var > default 50MB
 export const MAX_FILE_SIZE_MB = positiveMegabytes(
   window.__RUNTIME_CONFIG__?.MAX_FILE_SIZE_MB ?? import.meta.env.VITE_MAX_FILE_SIZE_MB,
   50,

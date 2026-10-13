@@ -3,7 +3,7 @@ import i18n from '@/i18n'
 
 const t = (key: string) => i18n.global.t(key)
 
-// 用户登录接口
+// User login API
 export interface LoginRequest {
   email: string
   password: string
@@ -68,7 +68,7 @@ export interface OIDCConfigResponse {
   message?: string
 }
 
-// 用户注册接口
+// User registration API
 export interface RegisterRequest {
   username: string
   email: string
@@ -91,26 +91,26 @@ export interface RegisterResponse {
   }
 }
 
-// 用户偏好（与后端 types.UserPreferences 对齐，字段可选 = 没显式设置过）。
-// 新加 key 时记得：后端 service.UpdateUserPreferences 也要在 merge 分支里
-// 处理；前端调用方按需读 / 默认值降级。
+// User preferences (aligned with the backend types.UserPreferences; an optional field means never set explicitly).
+// When adding a key, remember: the backend service.UpdateUserPreferences must also handle it in the merge branch;
+// frontend callers read it as needed and fall back to a default.
 export interface UserPreferences {
   browser_search_instructions?: string | null
-  // last_active_tenant_id 持久化「刷新 / 换设备 / 重新登录后回到上次的空间」
-  // 偏好；后端在 Login / RefreshToken 时校验 membership 有效后才会沿用，
-  // 否则回退到 home 并清掉这个字段。传 0 给 PATCH 表示「清除偏好」。
+  // last_active_tenant_id persists the "return to the last space after refresh / a device change / re-login"
+  // preference; the backend keeps using it on Login / RefreshToken only after checking the membership is valid,
+  // otherwise it falls back to home and clears the field. Sending 0 to PATCH means "clear the preference".
   last_active_tenant_id?: number | null
-  // oidc_only_login 为 true 表示账号由 OIDC 自动开通且用户尚未设置已知密码。
+  // oidc_only_login true means the account was provisioned automatically by OIDC and the user has not set a known password.
   oidc_only_login?: boolean
-  // gallery 记录图库的个人状态：搜索激活模式与逐字段开/关（按属性 ID）。
-  // 每次变更整体覆盖该块；后端会校验 mode 与 status 取值。
+  // gallery stores the user's gallery state: the search activation mode and per-field on/off (keyed by property ID).
+  // Each change overwrites the whole block; the backend validates the mode and status values.
   gallery?: {
     mode?: 'all' | 'custom'
     status?: Record<string, string>
   }
 }
 
-// 用户信息接口
+// User info API
 export interface UserInfo {
   id: string
   username: string
@@ -125,22 +125,22 @@ export interface UserInfo {
 }
 
 /**
- * 把后端返回的 user JSON 规范化成前端 UserInfo。
+ * Normalize the user JSON returned by the backend into the frontend UserInfo.
  *
- * 历史上有 4 处独立的 setUser 调用（Login、autoSetup、token rehydrate、
- * /auth/me 主动 refresh）各自手写字段白名单，每加一个 user 字段都要在
- * 4 处同步——否则该字段就被悄悄过滤掉。is_system_admin 上线时就因为
- * 漏拷一处而看不到「系统管理」入口；这个工厂存在的目的就是杜绝同类
- * 漏拷再发生。**新增 user 字段请只改这里**。
+ * There used to be 4 separate setUser calls (Login, autoSetup, token rehydrate,
+ * the proactive /auth/me refresh), each with its own hand-written field allowlist, so every new user field had to be
+ * synced in 4 places, or the field was silently filtered out. When is_system_admin shipped, one missed copy
+ * hid the "System admin" entry; this factory exists to keep that kind of
+ * missed copy from happening again. **Add new user fields only here**.
  *
- * fallbackTenantId 是 tenant_id 缺失时的兜底来源——
- *   - autoSetup 响应顶层有 tenant.id，但 user 对象上没有 tenant_id
- *   - /auth/me 偶发只返回 user 不带 tenant 时也走兜底
- * 调用方按需传入；不传则保持空字符串（与历史行为一致）。
+ * fallbackTenantId is the fallback source when tenant_id is missing:
+ *   - the autoSetup response has tenant.id at the top level, but the user object has no tenant_id
+ *   - /auth/me occasionally returns only user without tenant, which also uses the fallback
+ * Callers pass it as needed; without it the value stays an empty string (matching past behavior).
  *
- * 字段读取统一走 `=== true` 而不是 `|| false`，对偶发非 boolean
- * 类型（后端某天传 1/0 或字符串）做严格收敛，避免把 truthy 字符串
- * 误判为权限通过。
+ * Fields are read with `=== true` rather than `|| false`, to strictly normalize the occasional non-boolean
+ * type (the backend one day sending 1/0 or a string), so a truthy string is not
+ * mistaken for a permission grant.
  */
 export function userInfoFromApi(
   u: any,
@@ -165,7 +165,7 @@ export function userInfoFromApi(
   }
 }
 
-// 空间信息接口
+// Space info API
 export interface TenantInfo {
   id: string
   name: string
@@ -180,7 +180,7 @@ export interface TenantInfo {
   knowledge_bases?: KnowledgeBaseInfo[]
 }
 
-// 知识库信息接口
+// Knowledge base info API
 export interface KnowledgeBaseInfo {
   id: string
   name: string
@@ -190,8 +190,8 @@ export interface KnowledgeBaseInfo {
   // Set by PR 5 of the multi-tenant RBAC series; nullable for legacy
   // KBs created before that migration backfilled the column.
   creator_id?: string
-  // creator_name 由后端 list 接口批量回填（username 优先，退化到 email），
-  // 仅用于列表卡片来源徽章；缺失代表无法解析（已删除 / 老数据）。
+  // creator_name is backfilled in bulk by the backend list endpoint (username first, falling back to email),
+  // used only for the origin badge on list cards; missing means it could not be resolved (deleted or old data).
   creator_name?: string
   created_at: string
   updated_at: string
@@ -199,7 +199,7 @@ export interface KnowledgeBaseInfo {
   chunk_count?: number
 }
 
-// 模型信息接口
+// Model info API
 export interface ModelInfo {
   id: string
   name: string
@@ -212,7 +212,7 @@ export interface ModelInfo {
 }
 
 /**
- * 用户登录
+ * User login
  */
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   try {
@@ -227,7 +227,7 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 }
 
 /**
- * 获取 OIDC 登录跳转地址
+ * Get the OIDC login redirect URL
  */
 export async function getOIDCAuthorizationURL(redirectURI: string): Promise<OIDCAuthURLResponse> {
   try {
@@ -242,7 +242,7 @@ export async function getOIDCAuthorizationURL(redirectURI: string): Promise<OIDC
 }
 
 /**
- * 获取 OIDC 登录配置
+ * Get the OIDC login config
  */
 export async function getOIDCConfig(): Promise<OIDCConfigResponse> {
   try {
@@ -258,14 +258,14 @@ export async function getOIDCConfig(): Promise<OIDCConfigResponse> {
 }
 
 /**
- * 获取认证配置（仅返回前端渲染需要的公开字段，例如注册模式）。
+ * Get the auth config (only the public fields the frontend needs to render, such as the registration mode).
  *
- * 后端通过 `auth.registration_mode` 控制是否允许自助注册：
- *   - "self_serve"  保留现有自助注册入口（默认）
- *   - "invite_register" 仅持有效邀请链接可注册
- *   - "invite_only" 禁止注册，已有账号仍可接受邀请
+ * The backend controls self-service registration through `auth.registration_mode`:
+ *   - "self_serve"  keeps the existing self-service registration entry (default)
+ *   - "invite_register" only holders of a valid invitation link can register
+ *   - "invite_only" registration is off; existing accounts can still accept invitations
  *
- * 失败时隐藏注册入口，避免误展示不允许的注册流程。
+ * On failure, hide the registration entry so a disallowed registration flow is not shown.
  */
 export interface AuthConfigResponse {
   success: boolean
@@ -283,7 +283,7 @@ export async function getAuthConfig(): Promise<AuthConfigResponse> {
 }
 
 /**
- * 用户注册
+ * User registration
  */
 export async function register(data: RegisterRequest): Promise<RegisterResponse> {
   try {
@@ -298,7 +298,7 @@ export async function register(data: RegisterRequest): Promise<RegisterResponse>
 }
 
 /**
- * Lite 版自动初始化（创建默认用户/空间 + 签发令牌）
+ * Lite auto-initialization (creates the default user and space and issues tokens)
  */
 let autoSetupPromise: Promise<LoginResponse> | null = null
 
@@ -344,7 +344,7 @@ export interface MembershipInfo {
 }
 
 /**
- * 获取当前用户信息
+ * Get the current user info
  */
 export interface AuthCapabilities {
   can_create_tenant: boolean
@@ -364,8 +364,8 @@ export async function getCurrentUser(): Promise<{ success: boolean; data?: { use
 }
 
 /**
- * 更新当前用户的偏好设置（PATCH 语义：只发要改的字段，后端只覆盖发了的 key，
- * 其它 key 保持不变）。后端会返回更新后的完整 preferences 对象。
+ * Update the current user's preferences (PATCH semantics: send only the fields to change; the backend overwrites only the keys sent
+ * and leaves the other keys unchanged). The backend returns the full updated preferences object.
  */
 export async function updateMyPreferences(
   patch: Partial<UserPreferences>,
@@ -382,7 +382,7 @@ export async function updateMyPreferences(
 }
 
 /**
- * 获取当前空间信息
+ * Get the current space info
  */
 export async function getCurrentTenant(): Promise<{ success: boolean; data?: TenantInfo; message?: string }> {
   try {
@@ -397,7 +397,7 @@ export async function getCurrentTenant(): Promise<{ success: boolean; data?: Ten
 }
 
 /**
- * 刷新Token
+ * Refresh the token
  */
 export async function refreshToken(refreshToken: string): Promise<{ success: boolean; data?: { token: string; refreshToken: string }; message?: string }> {
   try {
@@ -414,7 +414,7 @@ export async function refreshToken(refreshToken: string): Promise<{ success: boo
       }
     }
 
-    // 其他情况直接返回原始消息
+    // Otherwise return the original message as is
     return {
       success: false,
       message: response?.message || t('error.auth.refreshTokenFailed')
@@ -428,7 +428,7 @@ export async function refreshToken(refreshToken: string): Promise<{ success: boo
 }
 
 /**
- * 用户登出
+ * User logout
  */
 export async function logout(): Promise<{ success: boolean; message?: string }> {
   try {
@@ -489,7 +489,7 @@ export async function changePassword(
 }
 
 /**
- * 验证Token有效性
+ * Validate the token
  */
 export async function validateToken(): Promise<{ success: boolean; valid?: boolean; message?: string }> {
   try {

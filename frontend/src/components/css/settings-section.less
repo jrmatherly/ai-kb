@@ -1,6 +1,6 @@
-// 设置区（views/settings、views/system、views/integrations）各页面共用的版式 mixin：
-// 页面标题块、设置行、行内说明 / 控件列、行内保存状态。
-// 页面保留自己的 class 名，只把重复声明换成 mixin 调用，需要偏离时在调用后覆盖。
+// Layout mixins shared by the settings pages (views/settings, views/system, views/integrations):
+// page title block, setting row, inline description and control column, inline save status.
+// Pages keep their own class names and only swap repeated declarations for mixin calls; override after the call to deviate.
 //
 //   @import (reference) '@/components/css/settings-section.less';
 //   .section-header { .settings-section-header(); }
@@ -26,7 +26,7 @@
     line-height: 1.5;
   }
 
-  // 标题左、操作按钮右
+  // Title on the left, action buttons on the right
   &__top {
     display: flex;
     align-items: center;
@@ -81,7 +81,7 @@
   gap: 8px;
 }
 
-// 改即存设置项的行内反馈（替代 toast）
+// Inline feedback for save-on-change settings (instead of a toast)
 .setting-save-state() {
   display: inline-flex;
   align-items: center;
@@ -96,7 +96,7 @@
   }
 }
 
-// 标题旁的补充说明入口，保持设置页标题本身的字号与字重。
+// Entry for extra notes next to the title; keeps the settings page title's own size and weight.
 .settings-title-help() {
   display: inline-flex;
   align-items: center;
@@ -122,7 +122,7 @@
   }
 }
 
-// 资源管理类设置页：固定顶部工具栏，列表在剩余空间内滚动。
+// Resource management settings pages: fixed top toolbar, the list scrolls in the remaining space.
 .settings-list-page() {
   width: 100%;
   height: 100%;

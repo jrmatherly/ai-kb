@@ -29,7 +29,7 @@ export async function listKnowledgeBaseActivity(
   return (await get(`/api/v1/knowledge-bases/${id}/activity${qs ? `?${qs}` : ''}`)) as unknown as ListAuditLogResponse;
 }
 
-// 知识库管理 API（列表、创建、获取、更新、删除、复制）
+// Knowledge base management API (list, create, get, update, delete, copy)
 export function listKnowledgeBases(params?: {
   agent_id?: string;
   agent_source_tenant_id?: string;
@@ -380,12 +380,12 @@ export function duplicateKnowledgeBase(id: string) {
   return post(`/api/v1/knowledge-bases/${id}/duplicate`);
 }
 
-// 获取可移动目标知识库列表（同类型、同Embedding模型）
+// List the knowledge bases knowledge can move to (same type, same embedding model)
 export function listMoveTargets(sourceKbId: string) {
   return get(`/api/v1/knowledge-bases/${sourceKbId}/move-targets`);
 }
 
-// 移动知识到其他知识库
+// Move knowledge to another knowledge base
 export function moveKnowledge(data: {
   knowledge_ids: string[];
   source_kb_id: string;
@@ -395,7 +395,7 @@ export function moveKnowledge(data: {
   return post('/api/v1/knowledge/move', data);
 }
 
-// 获取知识移动进度
+// Get knowledge move progress
 export function getKnowledgeMoveProgress(taskId: string) {
   return get(`/api/v1/knowledge/move/progress/${taskId}`);
 }
@@ -404,8 +404,8 @@ export function togglePinKnowledgeBase(id: string) {
   return put(`/api/v1/knowledge-bases/${id}/pin`);
 }
 
-// 知识文件 API（基于具体知识库）
-// data.tag_ids: 可选，指定知识所属的多个标签 ID
+// Knowledge file API (scoped to a knowledge base)
+// data.tag_ids: optional, the tag IDs the knowledge belongs to
 export function uploadKnowledgeFile(
   kbId: string,
   data: {
@@ -433,8 +433,8 @@ export function uploadKnowledgeFile(
   return postUpload(`/api/v1/knowledge-bases/${kbId}/knowledge/file`, formData, onProgress, config);
 }
 
-// 从URL创建知识
-// data.tag_ids: 可选，指定知识所属的多个标签 ID
+// Create knowledge from a URL
+// data.tag_ids: optional, the tag IDs the knowledge belongs to
 export function createKnowledgeFromURL(
   kbId: string,
   data: { url: string; enable_multimodel?: boolean; tag_ids?: string[]; process_config?: KnowledgeProcessOverrides },
@@ -442,8 +442,8 @@ export function createKnowledgeFromURL(
   return post(`/api/v1/knowledge-bases/${kbId}/knowledge/url`, data);
 }
 
-// 手工创建知识
-// data.tag_ids: 可选，指定知识所属的标签 ID
+// Create knowledge by hand
+// data.tag_ids: optional, the tag IDs the knowledge belongs to
 export function createManualKnowledge(
   kbId: string,
   data: {
@@ -473,10 +473,10 @@ export interface ListKnowledgeFilesParams {
   sort_by?: KnowledgeListSortField;
   sort_order?: KnowledgeListSortOrder;
   /**
-   * 当前浏览的目录。空字符串表示知识库根目录；未定义时不按目录筛选。
+   * The folder being browsed. An empty string means the knowledge base root; undefined means no folder filter.
    */
   folder_path?: string;
-  /** 是否同时包含 folder_path 下所有子目录中的文档。 */
+  /** Whether to also include documents in every subfolder of folder_path. */
   folder_recursive?: boolean;
 }
 
@@ -559,7 +559,7 @@ export function delKnowledgeDetails(id: string) {
   return del(`/api/v1/knowledge/${id}`);
 }
 
-// 批量删除（同一知识库内）。后端会校验所有 id 隶属于 kb_id 且具有编辑权限。
+// Batch delete (within one knowledge base). The backend checks that every id belongs to kb_id and has edit permission.
 export function batchDeleteKnowledge(kbId: string, ids: string[]) {
   return post(`/api/v1/knowledge/batch-delete`, { kb_id: kbId, ids });
 }
@@ -568,7 +568,7 @@ export function downKnowledgeDetails(id: string) {
   return getDown(`/api/v1/knowledge/${id}/download`);
 }
 
-// 使用已有登录和租户请求头下载 ZIP，不将凭据放入下载链接。
+// Download the ZIP with the existing sign-in and tenant request headers, without putting credentials in the download link.
 export function batchDownloadKnowledge(kbId: string, ids: string[], signal?: AbortSignal): Promise<Blob> {
   return post<Blob>(`/api/v1/knowledge-bases/${encodeURIComponent(kbId)}/knowledge/batch-download`, { ids }, {
     responseType: 'blob',

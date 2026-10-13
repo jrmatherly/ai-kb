@@ -2,12 +2,12 @@ export type GuidePlacement = 'right' | 'left' | 'bottom' | 'top'
 
 export interface SpotlightGuideStep {
   key: string
-  /** 高亮目标的 CSS 选择器；缺省表示居中卡片 */
+  /** CSS selector of the highlighted target; omitted means a centered card */
   target?: string
   placement?: GuidePlacement
   before?: () => void | Promise<void>
-  /** 目标不存在时是否跳过该步骤 */
+  /** Whether to skip this step when the target does not exist */
   optional?: boolean
-  /** 为 true 时引导用户直接点击高亮区域，不展示「下一步」 */
+  /** When true, the guide has the user click the highlighted area directly and shows no "Next" */
   interact?: boolean
 }

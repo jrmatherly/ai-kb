@@ -85,7 +85,7 @@ onMounted(() => { if (!props.hideScopes) orgStore.fetchOrganizations() })
   gap: var(--app-space-3);
   min-width: 0;
 }
-// 与右侧 32px 的下拉框、搜索框同高：3px 内边距 × 2 + 26px 按钮
+// Same height as the 32px dropdown and search box on the right: 3px padding x 2 + 26px button
 .category-tabs {
   .artifact-filter-tabs();
   button { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; }

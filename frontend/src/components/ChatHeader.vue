@@ -194,7 +194,7 @@ function cancelTitleEdit(): void {
 }
 
 async function submitTitleEdit(): Promise<void> {
-  // Enter 会先触发 form submit，随后 input blur 再进一次；必须同步退出编辑态防重入。
+  // Enter fires form submit first, then input blur fires again; leave edit mode synchronously to prevent re-entry.
   if (!titleEditing.value || busyAction.value) return
   const session = props.session
   if (!session) {

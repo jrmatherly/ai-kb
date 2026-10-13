@@ -52,7 +52,7 @@ export interface WorkspaceNotifyContentOptions {
   template: string
   /** Workspace display name. Rendered as bold inline text. */
   name: string
-  /** Human-readable role label, e.g. "所有者" / "Owner". Omit for the no-role variant. */
+  /** Human-readable role label, e.g. "Owner". Omit for the no-role variant. */
   roleLabel?: string
   /** Raw role enum value, e.g. "owner". Drives the tag theme colour. */
   roleEnum?: string

@@ -145,9 +145,9 @@ test('buildReferenceList uses domain instead of raw url title', () => {
       knowledge_title: 'http://bj.bendibao.com/xiuxian/202671/384250.shtm',
       metadata: {
         url: 'http://bj.bendibao.com/xiuxian/202671/384250.shtm',
-        snippet: '根据提供的网页内容...',
+        snippet: 'Based on the web page content provided...',
       },
-      content: '根据提供的网页内容...',
+      content: 'Based on the web page content provided...',
     },
   ])
 

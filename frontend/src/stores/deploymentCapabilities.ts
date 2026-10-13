@@ -26,7 +26,7 @@ export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilitie
         capabilities.value = response.data?.capabilities || {}
         loadError.value = ''
       } catch (error) {
-        // 能力探测失败时保持 fail-open；权限仍由后端路由最终校验。
+        // Fail open when the capability probe fails; the backend routes still enforce permissions.
         capabilities.value = {}
         loadError.value = error instanceof Error ? error.message : String(error)
       } finally {

@@ -66,7 +66,7 @@
         <template #description>
           <p v-if="affectedSessionCount">{{ $t('settings.sandbox.affectedSessions', { count: affectedSessionCount }) }}</p>
           <p v-if="conflict.inventory?.agent_names?.length">
-            {{ $t('settings.sandbox.affectedAgents', { names: conflict.inventory.agent_names.join('、') }) }}
+            {{ $t('settings.sandbox.affectedAgents', { names: conflict.inventory.agent_names.join(', ') }) }}
           </p>
           <p>{{ $t('settings.sandbox.blockedHint') }}</p>
         </template>
@@ -751,7 +751,7 @@
         </li>
       </ul>
       <p v-if="pendingCheckNames.length" class="check-result__hint">
-        {{ $t('settings.sandbox.checkPendingHint', { names: pendingCheckNames.join('、') }) }}
+        {{ $t('settings.sandbox.checkPendingHint', { names: pendingCheckNames.join(', ') }) }}
       </p>
     </div>
 
@@ -1066,7 +1066,7 @@ const egressRestrictedByPolicy = computed(() => (checkResult.value?.checks || []
   (item) => item.reason === EGRESS_RESTRICTED_REASON,
 ))
 
-// Says which layer the verdict covers, so "检测通过" is not read as "everything
+// Says which layer the verdict covers, so "Check passed" is not read as "everything
 // works" after a connection-only probe, or after egress was skipped because
 // the config denies outbound access by policy.
 const checkScopeHint = computed(() => {

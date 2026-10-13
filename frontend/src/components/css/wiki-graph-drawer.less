@@ -1,6 +1,6 @@
-// Wiki 图谱/阅读抽屉的全局样式。抽屉通过 attach="body" 传送，无法用 scoped 覆盖。
-// 同时被 views/chat/components/AgentStreamDisplay.vue 与 views/knowledge/wiki/WikiBrowser.vue 引入，
-// 保证任一页面先加载时样式都存在。
+// Global styles for the Wiki graph and reader drawer. The drawer teleports with attach="body", so scoped styles cannot reach it.
+// Imported by both views/chat/components/AgentStreamDisplay.vue and views/knowledge/wiki/WikiBrowser.vue,
+// so the styles exist whichever page loads first.
 .wiki-graph-drawer {
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
 

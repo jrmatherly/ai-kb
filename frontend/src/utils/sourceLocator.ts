@@ -120,7 +120,8 @@ export function findNormalizedMatches(haystack: string, quote: string): Normaliz
   if (exact.length) return exact
   // A source list label may have been omitted by a renderer. This is the
   // only tolerated prefix difference; never extend a short fuzzy anchor.
-  const withoutLabel = quote.replace(/^\s*[（(][一二三四五六七八九十百\d]+[)）]\s*/u, '')
+  // Strips a leading CJK or ASCII parenthesized list label such as "(1)" or a fullwidth one with Chinese numerals.
+  const withoutLabel = quote.replace(/^\s*[\uff08(][\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e\d]+[)\uff09]\s*/u, '')
   if (withoutLabel === quote) return []
   needle = normalizeForMatch(withoutLabel)
   return needle.length >= 8 ? search(needle) : []
@@ -151,7 +152,8 @@ export function findInText(text: string, quote: string): { start: number; end: n
 /** Explicit quotations can survive a paraphrased sentence without fuzzy matching. */
 export function quotedSourceExcerpt(content: string, sentence: string): string | undefined {
   const source = sourceQuoteText(content)
-  const candidates = [...sentence.matchAll(/[“「『"]([^”」』"\n]{8,})[”」』"]/gu)]
+  // Quoted spans in CJK or ASCII quotation marks.
+  const candidates = [...sentence.matchAll(/[\u201c\u300c\u300e"]([^\u201d\u300d\u300f"\n]{8,})[\u201d\u300d\u300f"]/gu)]
     .map(m => m[1]!).filter(q => normalizeForMatch(q).length >= 8 && findInText(source, q))
   return candidates.length === 1 ? candidates[0] : undefined
 }
@@ -211,7 +213,8 @@ export function textFragmentUrl(url: string, quote: string): string {
     // start,end form keeps the URL short for long passages.
     const head = clean.slice(0, 40).trim()
     const tail = clean.slice(-40).trim()
-    fragment = words.length > 1 || /[　-鿿]/u.test(clean)
+    // Any CJK character counts as a fragment.
+    fragment = words.length > 1 || /[\u3000-\u9fff]/u.test(clean)
       ? `${encodeTextFragment(head)},${encodeTextFragment(tail)}`
       : encodeTextFragment(head)
   }

@@ -5,9 +5,9 @@ export interface TenantModelReadiness {
   embeddingCount: number
   hasChat: boolean
   hasEmbedding: boolean
-  /** 文档库默认开启向量/关键词检索时所需的模型是否齐备 */
+  /** Whether the models a document knowledge base needs for its default vector and keyword retrieval are all configured */
   isReadyForDocumentKb: boolean
-  /** 创建智能体至少需要对话模型 */
+  /** Creating an agent needs at least a chat model */
   isReadyForAgent: boolean
 }
 

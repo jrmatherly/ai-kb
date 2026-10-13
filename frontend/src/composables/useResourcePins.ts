@@ -40,7 +40,7 @@ const RECENTS_CAP = 30
 // hydration step in the list views joins recent entries against the
 // current tenant's KB/Agent index, so a recent from tenant A would
 // silently drop out of the rendered list but still count in the sidebar
-// badge ("最近 (2)" but empty body). Keying the storage by tenant
+// badge ("Recent (2)" but empty body). Keying the storage by tenant
 // prevents that mismatch entirely.
 //
 // `tenantSegmentForKey` returns "" when no tenant is resolvable (e.g.

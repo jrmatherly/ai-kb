@@ -2,7 +2,7 @@
  * The answer passage a citation marker supports: the text of the marker's
  * block (paragraph, list item, table cell) up to the marker, without other
  * citation markers, starting after the preceding marker. A marker on a line of its
- * own ("依据：[1]") borrows the blocks just before it.
+ * own ("Source: [1]") borrows the blocks just before it.
  */
 
 const BLOCK_SELECTOR = 'li, p, td, th, blockquote, h1, h2, h3, h4, h5, h6, dd, dt'
@@ -20,7 +20,8 @@ function letterCount(text: string): number {
 export function lastSentence(text: string): string {
   const pieces = String(text || '')
     .replace(/\s+/g, ' ')
-    .split(/(?<=[。！？!?；;])/u)
+    // Sentence ends, CJK and ASCII.
+    .split(/(?<=[\u3002\uff01\uff1f!?\uff1b;])/u)
     .map((s) => s.trim())
     .filter(Boolean)
   let out = ''

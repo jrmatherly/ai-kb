@@ -1,14 +1,14 @@
 /**
- * 受保护文件（provider:// / resource:// 等）的访问上下文。
+ * Access context for protected files (provider://, resource:// and so on).
  *
- * 后端按访问主体拆分文件代理，鉴权模型互不相同：
- *   - `/files`                                → 登录态 Bearer + X-Tenant-ID
- *   - `/api/v1/knowledge-bases/:id/files`     → 知识库访问权限（跨租户共享库）
- *   - `/api/v1/sessions/:id/messages/:mid/files` → 会话消息归属 + 共享智能体权限
- *   - `/api/v1/embed/:channel_id/files`       → 嵌入访客的 Embed token
+ * The backend splits the file proxy by access principal, and each has its own auth model:
+ *   - `/files`                                -> signed-in Bearer + X-Tenant-ID
+ *   - `/api/v1/knowledge-bases/:id/files`     -> knowledge base access (cross-tenant shared bases)
+ *   - `/api/v1/sessions/:id/messages/:mid/files` -> session message ownership + shared agent permission
+ *   - `/api/v1/embed/:channel_id/files`       -> the embed visitor's Embed token
  *
- * 选哪条代理取决于当前请求的鉴权平面，而不是取决于哪个组件在渲染图片。
- * 这里把该决策收敛成单一真相源，渲染组件只需声明作用域，不再各自拼 URL。
+ * Which proxy to use depends on the auth plane of the current request, not on which component renders the image.
+ * This collapses that decision into one source of truth; rendering components only declare a scope instead of building URLs themselves.
  */
 
 export const PROVIDER_SCHEME_PATTERN = 'resource|local|minio|cos|tos|s3|oss|ks3|obs';
@@ -24,13 +24,13 @@ const EMBED_FILE_PROXY_PATH_RE = /^\/api\/v1\/embed\/[^/]+\/files$/;
 const MESSAGE_FILE_PROXY_PATH_RE = /^\/api\/v1\/sessions\/[^/]+\/messages\/[^/]+\/files$/;
 
 export type ProtectedFileAccessContext =
-  /** 登录态用户：Bearer + 选中租户。 */
+  /** Signed-in user: Bearer + selected tenant. */
   | { mode: 'tenant' }
-  /** 嵌入访客：只持有 Embed token，无 Bearer、无租户上下文。 */
+  /** Embed visitor: holds only an Embed token, with no Bearer and no tenant context. */
   | { mode: 'embed'; channelId: string; token: string }
-  /** 知识库作用域：登录态用户读取共享库中归属其他租户的对象。 */
+  /** Knowledge base scope: a signed-in user reads objects in a shared base that belong to another tenant. */
   | { mode: 'knowledgeBase'; kbId: string }
-  /** 消息作用域：登录态用户读取共享智能体回复中的源空间资源。 */
+  /** Message scope: a signed-in user reads source-space resources in a shared agent's reply. */
   | { mode: 'message'; sessionId: string; messageId: string };
 
 export interface ProtectedFileRequest {
@@ -44,8 +44,8 @@ interface ProtectedFileAccessState {
   current: ProtectedFileAccessContext;
 }
 
-// 与 blob 缓存同样挂在 window 上：Vite 热更新会替换模块但不会重建文档，
-// 模块级变量会丢失嵌入应用启动时注册的上下文。
+// Kept on window like the blob cache: Vite hot reload replaces the module but does not rebuild the document,
+// so a module-level variable would lose the context the embed app registered at startup.
 const accessState: ProtectedFileAccessState = (() => {
   const fresh = (): ProtectedFileAccessState => ({ current: TENANT_ACCESS });
   if (typeof window === 'undefined') return fresh();
@@ -57,8 +57,8 @@ const accessState: ProtectedFileAccessState = (() => {
 })();
 
 /**
- * 注册当前文档的默认访问上下文。由应用入口调用一次（嵌入应用在拿到
- * channelId/token 后注册），此后所有受保护文件请求自动走对应代理。
+ * Register the default access context for the current document. The app entry calls it once (the embed app registers after it gets
+ * channelId/token), and from then on every protected file request uses the matching proxy.
  */
 export function setDefaultProtectedFileAccess(
   access: ProtectedFileAccessContext | null,
@@ -71,11 +71,11 @@ export function getDefaultProtectedFileAccess(): ProtectedFileAccessContext {
 }
 
 /**
- * 合并默认上下文与组件传入的作用域。
+ * Merge the default context with the scope a component passes in.
  *
- * 默认上下文携带的是鉴权平面（嵌入访客 vs 登录态用户），组件级 override 只能
- * 在同一平面内细化作用域。嵌入访客没有 Bearer，若让 `knowledgeBase` override
- * 覆盖 embed 平面，请求会落到需要登录态的代理上并返回 401。
+ * The default context carries the auth plane (embed visitor vs signed-in user); a component override can only
+ * narrow the scope within the same plane. An embed visitor has no Bearer, so letting a `knowledgeBase` override
+ * replace the embed plane would send the request to a proxy that needs sign-in and return 401.
  */
 export function resolveProtectedFileAccess(
   override?: ProtectedFileAccessContext | null,
@@ -90,13 +90,13 @@ export function resolveProtectedFileAccess(
   return override;
 }
 
-/** 是否为需要经代理拉取的存储路径（provider:// 或 storage://<backend>/provider://）。 */
+/** Whether this is a storage path that must be fetched through a proxy (provider:// or storage://<backend>/provider://). */
 export function isProviderFileURL(url: string): boolean {
   const trimmed = url.trim();
   return PROVIDER_FILE_SCHEME_RE.test(trimmed) || STORAGE_BACKEND_FILE_SCHEME_RE.test(trimmed);
 }
 
-/** 是否为受保护文件代理之一的路径。 */
+/** Whether this is a path of one of the protected file proxies. */
 export function isProtectedFileProxyPath(pathname: string): boolean {
   return (
     pathname === '/files'
@@ -131,8 +131,8 @@ function tenantRequestHeaders(): Record<string, string> {
 }
 
 /**
- * 为一个存储路径构造代理请求。返回 null 表示当前上下文无法发起该请求
- * （非存储路径，或嵌入上下文尚未拿到 token），调用方应跳过并稍后重试。
+ * Build the proxy request for a storage path. Returns null when the current context cannot send it
+ * (not a storage path, or the embed context has no token yet); the caller should skip it and retry later.
  */
 export function buildProtectedFileRequest(
   sourceURL: string,
@@ -146,8 +146,8 @@ export function buildProtectedFileRequest(
   if (access.mode === 'embed') {
     const channelId = access.channelId.trim();
     const token = access.token.trim();
-    // 嵌入访客只有 Embed token 这一种凭据；缺失时退回 /files 只会得到 401，
-    // 不如跳过等待 bootstrap 完成后的下一次水合。
+    // An embed visitor's only credential is the Embed token; falling back to /files without it only gets a 401,
+    // so skip and wait for the next hydration after bootstrap completes.
     if (!channelId || !token) return null;
     return {
       url: `/api/v1/embed/${encodeURIComponent(channelId)}/files?${query}`,

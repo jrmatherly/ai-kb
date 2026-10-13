@@ -21,7 +21,7 @@
           >{{ formatContextWindow(selectedModel.parameters?.context_window) }}</span>
         </span>
       </template>
-      <!-- 已有的模型选项 -->
+      <!-- Existing model options -->
       <t-option
         v-for="model in models"
         :key="model.id"
@@ -43,7 +43,7 @@
         </div>
       </t-option>
       
-      <!-- 添加模型选项（在底部） -->
+      <!-- Add-model option (at the bottom) -->
       <t-option
         v-if="!disabled"
         value="__add_model__"
@@ -79,7 +79,7 @@ interface Props {
   placeholder?: string
   status?: 'default' | 'success' | 'warning' | 'error'
   clearable?: boolean
-  // 可选：外部传入的所有模型列表，如果提供则不调用API
+  // Optional: the full model list passed in from outside; when provided, the API is not called
   allModels?: ModelConfig[]
 }
 
@@ -118,7 +118,7 @@ const contextWindowTitle = (tokens?: number) => {
   return t('model.editor.contextWindowTokens', { count: effectiveContextWindow(tokens) })
 }
 
-// 外部传入 allModels 时跟着 prop 走；否则用空间级缓存，设置页改完窗口立刻能看见。
+// Follow the prop when allModels is passed in; otherwise use the space-level cache, so a change in settings shows up here at once.
 watch(
   () => [props.allModels, props.modelType, chatResources.allModels] as const,
   ([newModels]) => {
@@ -133,7 +133,7 @@ const selectedModel = computed(() => {
   return models.value.find(m => m.id === props.selectedModelId)
 })
 
-// 加载模型列表（仅在未提供 allModels 时调用）
+// Load the model list (only when allModels is not provided)
 const loadModels = async () => {
   if (props.allModels) {
     return
@@ -152,9 +152,9 @@ const loadModels = async () => {
   }
 }
 
-// 处理模型选择变化
+// Handle a model selection change
 const handleModelChange = (value?: string) => {
-  // 如果选择的是添加模型选项，触发添加事件而不更新选中值
+  // If the add-model option was picked, emit the add event without changing the selected value
   if (value === '__add_model__') {
     emit('add-model')
     return
@@ -162,13 +162,13 @@ const handleModelChange = (value?: string) => {
   emit('update:selectedModelId', value || '')
 }
 
-// 暴露刷新方法给父组件
+// Expose the refresh method to the parent
 defineExpose({
   refresh: loadModels
 })
 
 onMounted(() => {
-  // 只有在没有提供 allModels 时才加载
+  // Load only when allModels is not provided
   if (!props.allModels) {
     loadModels()
   }

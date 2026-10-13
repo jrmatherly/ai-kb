@@ -7,15 +7,17 @@ const MANUAL_TITLE_MAX = 32
 const MANUAL_TITLE_MIN = 12
 
 /** Punctuation that reads as noise at the end of a document title. */
-const TRAILING_PUNCTUATION_RE = /[?？!！。.,，、;；:：\s]+$/
+// Trailing ASCII and fullwidth CJK punctuation.
+const TRAILING_PUNCTUATION_RE = /[?\uff1f!\uff01\u3002.,\uff0c\u3001;\uff1b:\uff1a\s]+$/
 
 /** Clause boundaries we prefer to cut a long question on. */
-const TITLE_BOUNDARIES = ['，', '。', '；', '：', '？', '！', '、', ',', ';', ':', ' ']
+// CJK and ASCII clause boundaries.
+const TITLE_BOUNDARIES = ['\uff0c', '\u3002', '\uff1b', '\uff1a', '\uff1f', '\uff01', '\u3001', ',', ';', ':', ' ']
 
 /**
  * Turn the asked question into a document title.
  *
- * A question mark and a hard cut mid-word ("……的多样性和创新...") both read as
+ * A question mark and a hard cut mid-word ("...the diversity and innovation of...") both read as
  * an unfinished sentence in a knowledge list, so we drop the trailing
  * punctuation and, when the question is too long, cut it on the last clause
  * boundary instead of appending an ellipsis.

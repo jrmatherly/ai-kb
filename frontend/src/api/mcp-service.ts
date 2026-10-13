@@ -140,12 +140,12 @@ export async function deleteMCPService(id: string): Promise<void> {
 // Test MCP service connection
 export async function testMCPService(id: string): Promise<MCPTestResult> {
   const response: any = await post(`/api/v1/mcp-services/${id}/test`, {})
-  // 后端返回格式: { success: true, data: MCPTestResult }
-  // response interceptor 已经返回了 data，所以 response 就是 { success: true, data: {...} }
+  // Backend format: { success: true, data: MCPTestResult }
+  // The response interceptor already returns data, so response is { success: true, data: {...} }
   if (response && response.data) {
     return response.data
   }
-  // 如果格式不对，尝试直接返回 response（可能是直接返回的数据）
+  // If the shape is unexpected, return response as is (it may be the data itself)
   return response
 }
 

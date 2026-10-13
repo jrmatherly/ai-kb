@@ -14,8 +14,8 @@ import {
 } from './skillToolDisplay.ts'
 
 test('formatToolTitleWithDetail quotes a skill or path detail', () => {
-  assert.equal(formatToolTitleWithDetail('读取技能', 'pdf-processing'), '读取技能：「pdf-processing」')
-  assert.equal(formatToolTitleWithDetail('读取技能', '  '), '读取技能')
+  assert.equal(formatToolTitleWithDetail('Read skill', 'pdf-processing'), 'Read skill: "pdf-processing"')
+  assert.equal(formatToolTitleWithDetail('Read skill', '  '), 'Read skill')
 })
 
 test('getReadSkillTarget prefers skill/file from tool_data over arguments', () => {

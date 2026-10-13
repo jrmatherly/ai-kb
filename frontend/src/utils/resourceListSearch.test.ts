@@ -3,15 +3,15 @@ import test from 'node:test'
 import { matchesResourceQuery } from './resourceListSearch'
 
 test('search accepts empty queries and resources without descriptions', () => {
-  assert.equal(matchesResourceQuery({ name: '知识库' }, '  '), true)
-  assert.equal(matchesResourceQuery({ name: '知识库' }, '知识'), true)
-  assert.equal(matchesResourceQuery(undefined, '知识'), false)
+  assert.equal(matchesResourceQuery({ name: 'Knowledge base' }, '  '), true)
+  assert.equal(matchesResourceQuery({ name: 'Knowledge base' }, 'knowledge'), true)
+  assert.equal(matchesResourceQuery(undefined, 'knowledge'), false)
 })
 
 test('search matches all terms across the visible name and description', () => {
-  const resource = { name: 'Wiki 数据分析', description: 'Sales REPORT' }
+  const resource = { name: 'Wiki data analysis', description: 'Sales REPORT' }
   assert.equal(matchesResourceQuery(resource, '  wiki   report '), true)
-  assert.equal(matchesResourceQuery(resource, '数据 分析'), true)
+  assert.equal(matchesResourceQuery(resource, 'data analysis'), true)
   assert.equal(matchesResourceQuery(resource, 'wiki missing'), false)
 })
 

@@ -40,8 +40,8 @@
       <template v-if="stateOf(field.key) === 'configured'">
         <!--
           Two possible looks:
-          a) default — ✓ 已配置 + [更换 | 移除]
-          b) confirm-remove pending — ⚠ 确认移除？此操作不可撤销 + [取消 | 确认移除]
+          a) default - Configured + [Replace | Remove]
+          b) confirm-remove pending - Confirm removal? This cannot be undone + [Cancel | Confirm removal]
 
           We use a sub-state instead of a global modal because the modal
           forces the user to context-switch to the screen center, then back
@@ -93,7 +93,7 @@
           <!--
             Right after a successful remove we hold the row in place but swap
             the icon + placeholder text for a brief success state. After
-            ~2.4s the row fades back to its plain "未配置" prompt. This
+            ~2.4s the row fades back to its plain "Not configured" prompt. This
             keeps feedback anchored to where the user just clicked, instead
             of asking them to glance at a global toast somewhere else.
           -->
@@ -287,7 +287,7 @@ async function onSave(field: CredentialFieldDef) {
 // click actually fires DELETE. We deliberately do NOT use a global modal
 // here — the row is also the place where the result will appear, and a
 // modal forces an unnecessary screen-center detour. The danger-themed
-// "确认移除" button on a tinted-warning row gives the same protection
+// "Confirm removal" button on a tinted-warning row gives the same protection
 // against fat-fingered destructive clicks without that detour.
 //
 // Errors still surface via global MessagePlugin so the user can't miss them.
@@ -353,7 +353,7 @@ onBeforeUnmount(() => {
     - same border (--td-component-border) + radius (6px) + bg
     - 0 12px horizontal padding
   This makes the credential card stop looking like "a card inside a card"
-  when it sits between Base URL and 自定义请求头 — it reads as a normal
+  when it sits between Base URL and Custom headers - it reads as a normal
   field, just one that doesn't accept typed input.
 */
 .credential-faux-input {
@@ -385,7 +385,7 @@ onBeforeUnmount(() => {
     Just-removed flash state: brief tinted background + brand-color border
     so the row gives the user clear, anchored confirmation that the remove
     actually happened — no need for them to find a corner toast. Auto-fades
-    after ~2.4s back to plain "未配置" via the inlineToast timer.
+    after ~2.4s back to plain "Not configured" via the inlineToast timer.
   */
   &.is-just-removed {
     background: var(--td-success-color-light);

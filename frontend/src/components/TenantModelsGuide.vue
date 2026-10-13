@@ -17,7 +17,7 @@ import type { SpotlightGuideStep } from '@/types/spotlightGuide'
 const props = withDefaults(
   defineProps<{
     when: boolean
-    /** documentKb：需对话+Embedding；agent：仅需对话模型 */
+    /** documentKb: needs chat + embedding; agent: needs only a chat model */
     variant?: 'documentKb' | 'agent'
   }>(),
   { variant: 'documentKb' },

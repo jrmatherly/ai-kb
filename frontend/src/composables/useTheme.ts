@@ -24,7 +24,7 @@ function getSystemTheme(): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-/** Wails：与原生窗口底色 / 系统深浅色一致，减轻 Ctrl+R 整窗白闪（浅色与 --td-bg-color-page #eee 对齐） */
+/** Wails: match the native window background and the system light/dark mode to reduce the full-window white flash on Ctrl+R (light matches --td-bg-color-page #eee) */
 function syncWailsNativeChrome(effective: 'light' | 'dark') {
   const bg = effective === 'dark' ? '#181818' : '#eeeeee'
   document.documentElement.style.background = bg
@@ -56,7 +56,7 @@ function syncWailsNativeChrome(effective: 'light' | 'dark') {
       w.WindowSetBackgroundColour(238, 238, 238, 255)
     }
   } catch {
-    /* 非桌面壳或未注入 runtime */
+    /* Not the desktop shell, or the runtime was not injected */
   }
 }
 

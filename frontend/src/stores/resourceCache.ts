@@ -1,19 +1,19 @@
 import { createVersionedRequestCoordinator } from './versionedRequest'
 
 /**
- * 空间级资源的读取原语。不设 TTL：
+ * Read primitives for space-level resources. No TTL:
  *
- * - `ensure()`：同一资源同一时刻只有一个请求在飞行，并发调用共用它；没有在飞行的
- *   就发一个新请求。返回的 Promise 在最新数据写入 store 后才 resolve，所以
- *   `await ensure()` 之后读到的一定是本次请求的结果，而不是旧快照。
- * - `ensure(true)`：写操作之后调用。若此刻有请求在飞行，会在其结束后再发一次，
- *   保证拿到的是写操作之后的数据。
- * - `invalidate()`：丢弃快照并让飞行中的旧响应作废；下一次 `ensure()` 必然发新请求。
- * - `markLoaded()`：调用方已经用别的接口拿到了最新列表并写回 store（如设置页
- *   `replaceModels`），把飞行中的旧请求作废，避免它把旧数据写回来。
+ * - `ensure()`: at most one request per resource is in flight at a time, and concurrent calls share it; when none is in flight
+ *   it sends a new one. The returned Promise resolves only after the latest data is written to the store, so
+ *   a read after `await ensure()` always sees this request's result, not an old snapshot.
+ * - `ensure(true)`: call after a write. If a request is in flight, another one is sent after it finishes,
+ *   so the data reflects the write.
+ * - `invalidate()`: drop the snapshot and void the in-flight old response; the next `ensure()` always sends a new request.
+ * - `markLoaded()`: the caller already fetched the latest list through another endpoint and wrote it to the store (such as
+ *   `replaceModels` in settings); void the in-flight old request so it does not write old data back.
  *
- * 旧快照仍然留在 store 的 ref 里供页面立即渲染；数据的新鲜度只由「是否刚发过请求」
- * 和显式失效决定，不再有 60s 内一律读缓存的窗口。
+ * The old snapshot stays in the store's ref so pages can render at once; freshness depends only on "was a request just sent"
+ * and explicit invalidation, with no 60s window that always reads the cache.
  */
 export interface CachedResource {
   ensure: (force?: boolean) => Promise<void>
@@ -28,8 +28,8 @@ export function createCachedResource<T>(
   apply: (value: T) => void,
 ): CachedResource {
   let loaded = false
-  // invalidate 之后若仍有旧请求在飞行，下一次 ensure 必须排在它之后重新发，
-  // 否则调用方会 await 到一个结果已被作废的 Promise。
+  // If an old request is still in flight after invalidate, the next ensure must queue after it and send again,
+  // otherwise the caller would await a Promise whose result was already voided.
   let needsFreshRequest = false
 
   const coordinator = createVersionedRequestCoordinator(request, (value) => {
@@ -59,15 +59,15 @@ export function createCachedResource<T>(
 }
 
 /**
- * 按 key 缓存的单条资源（知识库详情、智能体可见知识库等）。
- * 这类数据不随每次 ensure 重新拉取：拿到过就一直用，直到显式失效。
- * 调用方在循环里逐条 ensure（如 @ 提及列表补 count），不能每次都打接口。
+ * Per-key cached single resources (knowledge base details, knowledge bases visible to an agent and so on).
+ * This data is not refetched on every ensure: once fetched it is reused until explicitly invalidated.
+ * Callers ensure entries one by one in a loop (such as filling counts for the @ mention list), so it cannot hit the API every time.
  */
 export function createKeyedSnapshotCache<T>(load: (key: string) => Promise<T>) {
   const snapshots = new Map<string, T>()
   const inflight = new Map<string, { promise: Promise<T>; revision: number }>()
-  // 每个 key 一个代际；invalidate / force 都会推进它。请求返回时代际已变，
-  // 说明中途发生过失效或有更新的请求，这次响应只交给调用方，不落快照。
+  // One generation per key; invalidate and force both advance it. If the generation changed when a request returns,
+  // an invalidation or a newer request happened meanwhile, so this response goes only to the caller, not into the snapshot.
   const revisions = new Map<string, number>()
 
   const bump = (key: string) => {
@@ -86,7 +86,7 @@ export function createKeyedSnapshotCache<T>(load: (key: string) => Promise<T>) {
         try {
           const value = await load(key)
           const stillCurrent = (revisions.get(key) ?? 0) === revision
-          // 加载失败以 null 表示时不落快照，下次读取会重试。
+          // A load failure, represented as null, is not stored, so the next read retries.
           if (stillCurrent && value != null) snapshots.set(key, value)
           return value
         } finally {

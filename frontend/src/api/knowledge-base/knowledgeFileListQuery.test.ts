@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { buildListKnowledgeFilesQuery } from './knowledgeFileListQuery';
 
-test('知识文件列表请求会传递排序字段和方向', () => {
+test('the knowledge file list request passes the sort field and direction', () => {
   const query = new URLSearchParams(buildListKnowledgeFilesQuery({
     page: 2,
     page_size: 35,

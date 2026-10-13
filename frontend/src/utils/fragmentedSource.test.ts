@@ -8,8 +8,9 @@ import { preprocessCitationTags } from './citationMarkdown'
 
 test('Agent grouping retains every cited chunk identity and resolves the exact document', () => {
   const refs = mergeDocumentReferences([
-    { id: 'first', knowledge_id: 'doc', knowledge_title: '微信&企微.docx', content: 'first evidence' },
-    { id: 'second', knowledge_id: 'doc', knowledge_title: '微信&企微.docx', content: 'second evidence' },
+    // Chinese inputs exercise CJK fragment matching and file names.
+    { id: 'first', knowledge_id: 'doc', knowledge_title: '\u5fae\u4fe1&\u4f01\u5fae.docx', content: 'first evidence' },
+    { id: 'second', knowledge_id: 'doc', knowledge_title: '\u5fae\u4fe1&\u4f01\u5fae.docx', content: 'second evidence' },
   ])
   assert.deepEqual(refs[0]?.chunk_ids, ['first', 'second'])
   const source = resolveReferenceSource(refs, { chunkId: 'second', openSource: true })
@@ -19,48 +20,48 @@ test('Agent grouping retains every cited chunk identity and resolves the exact d
 })
 
 test('encoded citation titles are decoded once before HTML escaping', () => {
-  const html = preprocessCitationTags('<kb doc="微信&amp;企微.docx" id="kb" chunk_id="chunk"/>')
+  const html = preprocessCitationTags('<kb doc="\u5fae\u4fe1&amp;\u4f01\u5fae.docx" id="kb" chunk_id="chunk"/>')
   assert.ok(!html.includes('&amp;amp;'))
-  assert.ok(html.includes('微信&amp;企微.docx'))
+  assert.ok(html.includes('\u5fae\u4fe1&amp;\u4f01\u5fae.docx'))
 })
 
 test('column-serialized table identifies a row-serialized page by independent cells', async () => {
-  const pages = ['机器人研究社（周四） 张老师 教室A\n天文观测社（周四） 李老师 教室B', '机器人研究社（周四） 张老师 操场']
-  const scope = '|课程|老师|地点|\n|机器人研究社（周四） 天文观测社（周四）|张老师 李老师|教室A 教室B|'
-  const result = await resolvePdfSource({ token: 1, quotes: [], locators: [], scope, sentence: '天文观测社每周四开课。' }, pages.length, async p => pages[p - 1]!)
+  const pages = ['\u673a\u5668\u4eba\u7814\u7a76\u793e\uff08\u5468\u56db\uff09 \u5f20\u8001\u5e08 \u6559\u5ba4A\n\u5929\u6587\u89c2\u6d4b\u793e\uff08\u5468\u56db\uff09 \u674e\u8001\u5e08 \u6559\u5ba4B', '\u673a\u5668\u4eba\u7814\u7a76\u793e\uff08\u5468\u56db\uff09 \u5f20\u8001\u5e08 \u64cd\u573a']
+  const scope = '|\u8bfe\u7a0b|\u8001\u5e08|\u5730\u70b9|\n|\u673a\u5668\u4eba\u7814\u7a76\u793e\uff08\u5468\u56db\uff09 \u5929\u6587\u89c2\u6d4b\u793e\uff08\u5468\u56db\uff09|\u5f20\u8001\u5e08 \u674e\u8001\u5e08|\u6559\u5ba4A \u6559\u5ba4B|'
+  const result = await resolvePdfSource({ token: 1, quotes: [], locators: [], scope, sentence: '\u5929\u6587\u89c2\u6d4b\u793e\u6bcf\u5468\u56db\u5f00\u8bfe\u3002' }, pages.length, async p => pages[p - 1]!)
   assert.equal(result.reason, 'partial')
   assert.equal(result.targets[0]?.page, 1)
-  assert.ok(result.targets[0]?.quote?.includes('天文观测社'))
+  assert.ok(result.targets[0]?.quote?.includes('\u5929\u6587\u89c2\u6d4b\u793e'))
   assert.ok(result.targets.every(t => t.page === 1))
 })
 
 test('a conjunction of repeated cells must identify a unique page', () => {
-  const scope = '|机器人研究社（周四） 天文观测社（周四）|'
-  const pages = ['机器人研究社（周四） 张老师 天文观测社（周四） 李老师', '机器人研究社（周四）', '天文观测社（周四）']
+  const scope = '|\u673a\u5668\u4eba\u7814\u7a76\u793e\uff08\u5468\u56db\uff09 \u5929\u6587\u89c2\u6d4b\u793e\uff08\u5468\u56db\uff09|'
+  const pages = ['\u673a\u5668\u4eba\u7814\u7a76\u793e\uff08\u5468\u56db\uff09 \u5f20\u8001\u5e08 \u5929\u6587\u89c2\u6d4b\u793e\uff08\u5468\u56db\uff09 \u674e\u8001\u5e08', '\u673a\u5668\u4eba\u7814\u7a76\u793e\uff08\u5468\u56db\uff09', '\u5929\u6587\u89c2\u6d4b\u793e\uff08\u5468\u56db\uff09']
   assert.equal(findSourceFragments(pages, scope).length, 2)
   assert.deepEqual(findSourceFragments([pages[0]!, pages[0]!], scope), [])
 })
 
 test('fragment recovery cannot claim a missing numeric value or a coincidental opening', () => {
   assert.deepEqual(findSourceFragments(['Shared opening. Different conclusion.'], 'Shared opening. Missing conclusion.'), [])
-  assert.deepEqual(findSourceFragments(['甲项目温度15度\n乙项目限值20毫米'], '|甲项目温度1.5度|乙项目限值2.0毫米|'), [])
+  assert.deepEqual(findSourceFragments(['\u7532\u9879\u76ee\u6e29\u5ea615\u5ea6\n\u4e59\u9879\u76ee\u9650\u503c20\u6beb\u7c73'], '|\u7532\u9879\u76ee\u6e29\u5ea61.5\u5ea6|\u4e59\u9879\u76ee\u9650\u503c2.0\u6beb\u7c73|'), [])
 })
 
 test('parser artifacts retain only verified sentences and explicitly report partial coverage', async () => {
-  const scope = '绑定手机：点击账号à选择个人中心。\n\n学生选课开始时间为周一上午十一点。小学部高年级选课在周一下午一点开始。'
-  const pages = ['绑定手机：点击账号→选择个人中心。学生选课开始时间为周一上午十一点。小学部高年级选课在周一下午一点开始。']
+  const scope = '\u7ed1\u5b9a\u624b\u673a\uff1a\u70b9\u51fb\u8d26\u53f7à\u9009\u62e9\u4e2a\u4eba\u4e2d\u5fc3\u3002\n\n\u5b66\u751f\u9009\u8bfe\u5f00\u59cb\u65f6\u95f4\u4e3a\u5468\u4e00\u4e0a\u5348\u5341\u4e00\u70b9\u3002\u5c0f\u5b66\u90e8\u9ad8\u5e74\u7ea7\u9009\u8bfe\u5728\u5468\u4e00\u4e0b\u5348\u4e00\u70b9\u5f00\u59cb\u3002'
+  const pages = ['\u7ed1\u5b9a\u624b\u673a\uff1a\u70b9\u51fb\u8d26\u53f7→\u9009\u62e9\u4e2a\u4eba\u4e2d\u5fc3\u3002\u5b66\u751f\u9009\u8bfe\u5f00\u59cb\u65f6\u95f4\u4e3a\u5468\u4e00\u4e0a\u5348\u5341\u4e00\u70b9\u3002\u5c0f\u5b66\u90e8\u9ad8\u5e74\u7ea7\u9009\u8bfe\u5728\u5468\u4e00\u4e0b\u5348\u4e00\u70b9\u5f00\u59cb\u3002']
   const result = await resolvePdfSource({ token: 1, quotes: [], locators: [], scope }, 1, async () => pages[0]!)
   assert.equal(result.reason, 'partial')
   assert.equal(result.targets.length, 3)
   assert.ok(result.targets.every(t => !t.quote?.includes('à')))
-  assert.ok(result.targets.some(t => t.quote === '绑定手机：点击账号'))
+  assert.ok(result.targets.some(t => t.quote === '\u7ed1\u5b9a\u624b\u673a\uff1a\u70b9\u51fb\u8d26\u53f7'))
 })
 
 test('OCR image context requires exact resource identity and at least one neighboring paragraph', () => {
-  const md = '前一段明确来源。\n\n![descript](resource://image)\n\n后一段明确来源。'
-  assert.deepEqual(sourceImageContext(md, ['resource://image']), { before: '前一段明确来源。', after: '后一段明确来源。' })
+  const md = '\u524d\u4e00\u6bb5\u660e\u786e\u6765\u6e90\u3002\n\n![descript](resource://image)\n\n\u540e\u4e00\u6bb5\u660e\u786e\u6765\u6e90\u3002'
+  assert.deepEqual(sourceImageContext(md, ['resource://image']), { before: '\u524d\u4e00\u6bb5\u660e\u786e\u6765\u6e90\u3002', after: '\u540e\u4e00\u6bb5\u660e\u786e\u6765\u6e90\u3002' })
   assert.equal(sourceImageContext(md, ['resource://another-image']), undefined)
-  assert.deepEqual(sourceImageContext(md.replace('后一段明确来源。', ''), ['resource://image']), { before: '前一段明确来源。', after: '' })
+  assert.deepEqual(sourceImageContext(md.replace('\u540e\u4e00\u6bb5\u660e\u786e\u6765\u6e90\u3002', ''), ['resource://image']), { before: '\u524d\u4e00\u6bb5\u660e\u786e\u6765\u6e90\u3002', after: '' })
   assert.equal(sourceImageContext(md + '\n\n' + md, ['resource://image']), undefined)
   assert.equal(sourceQuoteText(md).includes('descript'), false)
 })

@@ -9,9 +9,9 @@ import {
 } from './skillTarget'
 
 test('host skill target record carries the reserved id and type', () => {
-  const record = hostSkillTargetRecord('本机')
+  const record = hostSkillTargetRecord('This machine')
   assert.equal(record.id, HOST_SKILL_TARGET_ID)
-  assert.equal(record.name, '本机')
+  assert.equal(record.name, 'This machine')
   assert.equal(record.sandbox_type, 'host')
 })
 

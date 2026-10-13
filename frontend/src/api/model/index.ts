@@ -45,7 +45,7 @@ export interface ModelSpecOverride {
   compat?: Record<string, unknown>;
 }
 
-// 模型类型定义
+// Model type definitions
 export interface ModelConfig {
   id?: string;
   tenant_id?: number;
@@ -63,18 +63,18 @@ export interface ModelConfig {
       truncate_prompt_tokens?: number;
       supports_dimension_override?: boolean;
     };
-    interface_type?: 'ollama' | 'openai'; // VLLM专用
-    parameter_size?: string; // Ollama模型参数大小 (e.g., "7B", "13B", "70B")
+    interface_type?: 'ollama' | 'openai'; // VLLM only
+    parameter_size?: string; // Ollama model parameter size (e.g., "7B", "13B", "70B")
     extra_config?: Record<string, string>; // Provider-specific configuration
-    // 自定义 HTTP 请求头（类似 Python OpenAI SDK 的 extra_headers），
-    // 会在调用远程模型 API 时附加到每个请求上。Authorization、Content-Type 等保留头会被忽略。
+    // Custom HTTP request headers (like extra_headers in the Python OpenAI SDK),
+    // added to every request when calling the remote model API. Reserved headers such as Authorization and Content-Type are ignored.
     custom_headers?: Record<string, string>;
     supports_vision?: boolean; // Whether the model accepts image/multimodal input
-    // 对话/VLM 的上下文窗口（token）。0 或不填表示使用后端默认 200000。
+    // Context window (tokens) for chat and VLM. 0 or unset means the backend default of 200000.
     context_window?: number;
     max_output_tokens?: number;
-    // 后台任务（入库/富化）对该模型的并发上限，按模型 ID 全副本共享。
-    // 0 或不填表示沿用全局默认（model.max_concurrency）；仅对 chat/embedding/vllm 生效。
+    // Concurrency cap for background tasks (ingestion, enrichment) on this model, shared by model ID across all replicas.
+    // 0 or unset means the global default (model.max_concurrency); applies only to chat, embedding and vllm.
     max_concurrency?: number;
     app_id?: string;
     // Secret fields (api_key, app_secret) are never returned by the server in
@@ -99,7 +99,7 @@ export interface ModelConfig {
   deleted_at?: string | null;
 }
 
-// 复制模型。只提交展示名；name 与凭证由服务端从源模型复制。
+// Copy a model. Only the display name is sent; the server copies name and credentials from the source model.
 export function copyModelConfig(id: string, displayName: string): Promise<ModelConfig> {
   return new Promise((resolve, reject) => {
     post(`/api/v1/models/${id}/copy`, { display_name: displayName })
@@ -117,7 +117,7 @@ export function copyModelConfig(id: string, displayName: string): Promise<ModelC
   });
 }
 
-// 创建模型
+// Create a model
 export function createModel(data: ModelConfig): Promise<ModelConfig> {
   return new Promise((resolve, reject) => {
     post('/api/v1/models', data)
@@ -135,7 +135,7 @@ export function createModel(data: ModelConfig): Promise<ModelConfig> {
   });
 }
 
-// 获取模型列表
+// List models
 export function listModels(type?: string): Promise<ModelConfig[]> {
   return new Promise((resolve, reject) => {
     const url = `/api/v1/models`;
@@ -152,14 +152,14 @@ export function listModels(type?: string): Promise<ModelConfig[]> {
       })
       .catch((error: any) => {
         console.error('Failed to list models:', error);
-        // 抛出而非吞掉：调用方（含缓存层）才能区分「真失败」与「成功但无模型」，
-        // 避免把一次瞬时失败的空结果缓存下来。各 UI 调用点均已 try/catch 兜底。
+        // Throw instead of swallowing, so callers (the cache layer included) can tell a real failure from "succeeded with no models"
+        // and do not cache the empty result of a transient failure. Every UI call site already catches it.
         reject(error);
       });
   });
 }
 
-// 获取单个模型
+// Get one model
 export function getModel(id: string): Promise<ModelConfig> {
   return new Promise((resolve, reject) => {
     get(`/api/v1/models/${id}`)
@@ -177,7 +177,7 @@ export function getModel(id: string): Promise<ModelConfig> {
   });
 }
 
-// 更新模型
+// Update a model
 export function updateModel(id: string, data: Partial<ModelConfig>): Promise<ModelConfig> {
   return new Promise((resolve, reject) => {
     put(`/api/v1/models/${id}`, data)
@@ -195,7 +195,7 @@ export function updateModel(id: string, data: Partial<ModelConfig>): Promise<Mod
   });
 }
 
-// 删除模型
+// Delete a model
 export function deleteModel(id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     del(`/api/v1/models/${id}`)
@@ -303,7 +303,7 @@ export interface InitializeWeKnoraCloudRequest {
   app_secret: string
 }
 
-// 仅保存 WeKnoraCloud 凭证，不自动创建模型
+// Save only the WeKnoraCloud credentials, without creating models
 export function saveWeKnoraCloudCredentials(data: InitializeWeKnoraCloudRequest): Promise<{ success: boolean; message: string }> {
   return new Promise((resolve, reject) => {
     post('/api/v1/weknoracloud/credentials', data)
@@ -311,7 +311,7 @@ export function saveWeKnoraCloudCredentials(data: InitializeWeKnoraCloudRequest)
         if (response.success) {
           resolve(response)
         } else {
-          reject(new Error(response.message || response.error || '凭证保存失败'))
+          reject(new Error(response.message || response.error || 'Failed to save credentials'))
         }
       })
       .catch((error: any) => {
@@ -331,7 +331,7 @@ export function getWeKnoraCloudStatus(): Promise<WeKnoraCloudStatusResult> {
   return new Promise((resolve, reject) => {
     get('/api/v1/models/weknoracloud/status')
       .then((response: any) => {
-        // status 接口直接返回对象，不包在 success/data 中
+        // The status endpoint returns the object directly, not wrapped in success/data
         if (response && typeof response.has_models === 'boolean') {
           resolve(response)
         } else if (response?.success && response?.data) {

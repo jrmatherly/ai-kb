@@ -8,7 +8,7 @@ import { supportedLevels, levelLabelKey, levelFromLegacy, clampLevel } from '../
 
 const source = readFileSync(new URL('./Input-field.vue', import.meta.url), 'utf8')
 const start = source.indexOf('const selectedModel = computed(')
-const end = source.indexOf('// 模型展示名', start)
+const end = source.indexOf('// Model display name', start)
 assert.ok(start > 0 && end > start)
 const compiled = ts.transpileModule(source.slice(start, end), {
   compilerOptions: { target: ts.ScriptTarget.ES2022 },

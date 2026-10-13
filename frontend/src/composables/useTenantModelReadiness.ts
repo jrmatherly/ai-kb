@@ -3,10 +3,10 @@ import { useChatResourcesStore } from '@/stores/chatResources'
 import { evaluateTenantModelReadiness } from '@/utils/tenantModelReadiness'
 
 /**
- * 当前空间是否已配置好创建知识库 / 智能体所需的模型。
+ * Whether the current space has the models needed to create a knowledge base or an agent.
  *
- * 直接从 chatResources 的模型快照推导：设置页增删模型后会 `replaceModels`，
- * 这里的 computed 随之更新，不需要再监听「设置弹窗关闭」之类的间接信号去重拉。
+ * Derived straight from the chatResources model snapshot: adding or removing a model in settings calls `replaceModels`,
+ * so this computed updates with it and needs no indirect signal such as "settings dialog closed" to refetch.
  */
 export function useTenantModelReadiness() {
   const chatResources = useChatResourcesStore()

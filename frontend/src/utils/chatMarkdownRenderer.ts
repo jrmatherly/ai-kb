@@ -89,15 +89,16 @@ const LEGACY_IMAGE_CAPTION_RE = /<image_caption>([\s\S]*?)<\/image_caption>/i
 const LEGACY_IMAGE_OCR_RE = /<image_ocr>([\s\S]*?)<\/image_ocr>/i
 const COMPLETE_MARKDOWN_CODE_RE = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`)/g
 const IMAGE_URL_SCHEME = '(?:https?|resource|storage|local|minio|s3|cos|tos|oss|obs|ks3)'
-const FULLWIDTH_IMAGE_OPEN_RE = new RegExp(`(!\\[[^\\]\\n]*\\])（(?=${IMAGE_URL_SCHEME}://)`, 'gi')
+// Fullwidth parentheses, which models emit around image URLs.
+const FULLWIDTH_IMAGE_OPEN_RE = new RegExp(`(!\\[[^\\]\\n]*\\])\uff08(?=${IMAGE_URL_SCHEME}://)`, 'gi')
 const FULLWIDTH_IMAGE_CLOSE_RE = new RegExp(
-  `(!\\[[^\\]\\n]*\\]\\(${IMAGE_URL_SCHEME}://[^）\\n]*?)）`,
+  `(!\\[[^\\]\\n]*\\]\\(${IMAGE_URL_SCHEME}://[^\uff09\\n]*?)\uff09`,
   'gi',
 )
 
 /**
  * Repair image Markdown when a model localizes its destination parentheses:
- * `![alt]（resource://…）` -> `![alt](resource://…)`.
+ * `![alt]` + fullwidth `(resource://...)` -> `![alt](resource://...)`.
  *
  * The rewrite is limited to supported image URL schemes and skips code, so
  * ordinary Chinese punctuation and literal Markdown examples stay unchanged.
@@ -105,7 +106,7 @@ const FULLWIDTH_IMAGE_CLOSE_RE = new RegExp(
  * lets the existing incomplete-image skeleton suppress the unstable tail.
  */
 export function normalizeFullwidthMarkdownImageParentheses(content: string): string {
-  if (!content || (!content.includes('（') && !content.includes('）'))) return content
+  if (!content || (!content.includes('\uff08') && !content.includes('\uff09'))) return content
 
   const parts = content.split(COMPLETE_MARKDOWN_CODE_RE)
   for (let i = 0; i < parts.length; i += 2) {
@@ -217,12 +218,12 @@ function isOdd(text: string, marker: RegExp): boolean {
  *
  * Two distinct mid-stream artifacts are smoothed out:
  *
- *  - A marker run with **nothing after it yet** (`… 实验**\n5. *`, or a bare
+ *  - A marker run with **nothing after it yet** (`... experiment**\n5. *`, or a bare
  *    trailing `**`) is ambiguous — it might open bold, italic, or be the start
  *    of the next `**`. Rendering it shows literal `*`/`~` that vanish a frame
  *    later, so it is hidden until real content follows (like the citation/image
  *    guards).
- *  - A marker run **with content after it** but no closer (`**平台地址：…`) is a
+ *  - A marker run **with content after it** but no closer (`**Platform address: ...`) is a
  *    genuinely opened emphasis; its closer is appended so marked renders it as
  *    emphasis from the first frame instead of showing raw `**` and then snapping
  *    to bold (and, for a standalone bold line, also gaining the subtitle
@@ -292,7 +293,7 @@ const FLANKING_ITALIC = /(?<![*\p{L}\p{N}])\*(?=\S)([^*\n]*?\p{P})\*(?=[\p{L}\p{
 
 // Opening-delimiter variant of the rule above. CommonMark also refuses to *open*
 // emphasis when the run is preceded by a letter/number and immediately followed
-// by punctuation, so `知识库中**《手册》**整理` stays literal even though the
+// by punctuation, so a bold run that opens on a CJK book-title mark right after a Han character stays literal even though the
 // closing `**` is fine. The `(?=\p{P})` guard keeps exponent/glob/math markers
 // like `x**2`, `2**3**4`, and `**/*.js` untouched (those are followed by a
 // number or slash-as-content, not an emphasis-opening punctuation run).
@@ -313,10 +314,10 @@ function repairFlankingEmphasisSegment(segment: string): string {
  *
  * CommonMark's flanking rule rejects a closing `**`/`*`/`~~` that is preceded by
  * punctuation and immediately followed by a letter/number, so a very common
- * model pattern like `**XBRL（…语言）**是一种` (and even ASCII `**a)**b`) renders
+ * model pattern like `**XBRL(...language)**is a` with fullwidth parentheses and Han text (and even ASCII `**a)**b`) renders
  * as literal asterisks — both mid-stream and when complete. The mirror case is
  * an *opening* `**`/`~~` preceded by a letter/number and immediately followed by
- * punctuation (`知识库中**《手册》**整理`), which CommonMark also refuses to open.
+ * punctuation (a Han character followed by `**` and a CJK book-title mark), which CommonMark also refuses to open.
  * We convert just those blocked patterns into explicit HTML so they bold
  * reliably. Code spans/fences are skipped so their literal markers are untouched.
  */
@@ -343,7 +344,7 @@ export function repairFlankingEmphasis(text: string): string {
  * A trailing line that is only a number (`…\n1`) is the start of an ordered
  * marker before its `.`/`)` arrives; rendering it shows a bare unstyled "1" that
  * disappears a frame later, so it is hidden too. Because the line must be only
- * the number, in-sentence numbers (`值是 1`) are unaffected.
+ * the number, in-sentence numbers (`value is 1`) are unaffected.
  */
 export function stripTrailingStreamingListMarker(text: string): string {
   if (!text) return text
@@ -428,7 +429,7 @@ const STANDALONE_STRONG_PARAGRAPH_RE =
 
 /**
  * Tag paragraphs whose entire content is a single bold run (e.g. a model that
- * emits `**小节标题：**` instead of a real heading) so they can be styled as a
+ * emits `**Section title:**` instead of a real heading) so they can be styled as a
  * subtitle deterministically.
  *
  * This replaces the CSS `p:has(> strong:only-child)` heuristic, which was

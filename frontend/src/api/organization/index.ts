@@ -313,9 +313,9 @@ export interface SharedAgentInfo {
   shared_at: string
   shared_by_user_id?: string
   shared_by_username?: string
-  /** 由后端在源空间解析，不与当前空间的搜索引擎列表比较 */
+  /** Resolved by the backend in the source space, not compared with the current space's search engine list */
   web_search_ready: boolean
-  /** 当前用户是否已停用该共享智能体（仅影响本人对话下拉显示） */
+  /** Whether the current user has disabled this shared agent (affects only their own chat dropdown) */
   disabled_by_me?: boolean
 }
 
@@ -713,7 +713,7 @@ export async function listOrganizationSharedAgents(orgId: string): Promise<ApiRe
   }
 }
 
-/** 设置当前用户对某共享智能体的停用状态（仅影响本人对话下拉显示） */
+/** Set the current user's disabled state for a shared agent (affects only their own chat dropdown) */
 export async function setSharedAgentDisabledByMe(
   agentId: string,
   disabled: boolean

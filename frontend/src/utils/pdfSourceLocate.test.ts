@@ -8,28 +8,29 @@ const resolve = (pages: string[], request: Partial<Parameters<typeof resolvePdfS
 
 test('decimal, negative, percentage and comparison differences never match', () => {
   for (const [source, quote] of [
-    ['限值为15毫米', '限值为1.5毫米'], ['温度为5度', '温度为-5度'],
-    ['增长为5', '增长为5%'], ['值小于<5', '值小于>5'], ['时间12:30', '时间1230'],
-    ['比例为1/2', '比例为12'], ['阈值≤5', '阈值≥5'],
+    // Chinese inputs exercise CJK text matching against PDF text.
+    ['\u9650\u503c\u4e3a15\u6beb\u7c73', '\u9650\u503c\u4e3a1.5\u6beb\u7c73'], ['\u6e29\u5ea6\u4e3a5\u5ea6', '\u6e29\u5ea6\u4e3a-5\u5ea6'],
+    ['\u589e\u957f\u4e3a5', '\u589e\u957f\u4e3a5%'], ['\u503c\u5c0f\u4e8e<5', '\u503c\u5c0f\u4e8e>5'], ['\u65f6\u95f412:30', '\u65f6\u95f41230'],
+    ['\u6bd4\u4f8b\u4e3a1/2', '\u6bd4\u4f8b\u4e3a12'], ['\u9608\u503c≤5', '\u9608\u503c≥5'],
   ]) assert.equal(findInText(source!, quote!), null, `${source} / ${quote}`)
-  assert.ok(findInText('限值为１.５毫米', '限值为1.5毫米'))
+  assert.ok(findInText('\u9650\u503c\u4e3a\uff11.\uff15\u6beb\u7c73', '\u9650\u503c\u4e3a1.5\u6beb\u7c73'))
 })
 
 test('partial common opening does not manufacture a full quote', () => {
-  const common = '设备进入施工现场以后必须按照规定检查所有安全措施'
-  assert.equal(findInText(common + '本次验收没有通过', common + '本次验收已经通过'), null)
+  const common = '\u8bbe\u5907\u8fdb\u5165\u65bd\u5de5\u73b0\u573a\u4ee5\u540e\u5fc5\u987b\u6309\u7167\u89c4\u5b9a\u68c0\u67e5\u6240\u6709\u5b89\u5168\u63aa\u65bd'
+  assert.equal(findInText(common + '\u672c\u6b21\u9a8c\u6536\u6ca1\u6709\u901a\u8fc7', common + '\u672c\u6b21\u9a8c\u6536\u5df2\u7ecf\u901a\u8fc7'), null)
 })
 
 test('duplicates are ambiguous and supplementary characters have correct UTF-16 ranges', () => {
-  assert.equal(findInText('重复原文。重复原文。', '重复原文'), null)
-  assert.equal(findTextMatches('重复原文。重复原文。', '重复原文').length, 2)
-  const text = '前文𠀀原文片段𠀁后文'
-  const hit = findInText(text, '𠀀原文片段𠀁')!
-  assert.equal(text.slice(hit.start, hit.end), '𠀀原文片段𠀁')
+  assert.equal(findInText('\u91cd\u590d\u539f\u6587\u3002\u91cd\u590d\u539f\u6587\u3002', '\u91cd\u590d\u539f\u6587'), null)
+  assert.equal(findTextMatches('\u91cd\u590d\u539f\u6587\u3002\u91cd\u590d\u539f\u6587\u3002', '\u91cd\u590d\u539f\u6587').length, 2)
+  const text = '\u524d\u6587\u{20000}\u539f\u6587\u7247\u6bb5\u{20001}\u540e\u6587'
+  const hit = findInText(text, '\u{20000}\u539f\u6587\u7247\u6bb5\u{20001}')!
+  assert.equal(text.slice(hit.start, hit.end), '\u{20000}\u539f\u6587\u7247\u6bb5\u{20001}')
 })
 
 test('a paraphrase retains full source context rather than an unrelated opening', () => {
-  const source = '第一部分讨论背景。第二部分试验失败。'
+  const source = '\u7b2c\u4e00\u90e8\u5206\u8ba8\u8bba\u80cc\u666f\u3002\u7b2c\u4e8c\u90e8\u5206\u8bd5\u9a8c\u5931\u8d25\u3002'
   assert.deepEqual(selectQuoteForSentence(source, 'The experiment failed.'), [source])
 })
 
@@ -48,43 +49,43 @@ test('all pages are considered, including page 501', async () => {
 })
 
 test('duplicate passages on different pages are not silently selected', async () => {
-  const result = await resolve(['设备验收合格后方可使用。', '设备验收合格后方可使用。'], { scope: '设备验收合格后方可使用。' })
+  const result = await resolve(['\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002', '\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002'], { scope: '\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002' })
   assert.deepEqual(result, { targets: [], reason: 'ambiguous' })
 })
 
 test('full chunk context disambiguates a repeated sentence and retains occurrence', async () => {
-  const result = await resolve(['第一章。设备验收合格后方可使用。第二章。设备验收合格后方可使用。'], {
-    scope: '第二章。设备验收合格后方可使用。', sentence: '设备验收合格后方可使用。',
+  const result = await resolve(['\u7b2c\u4e00\u7ae0\u3002\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002\u7b2c\u4e8c\u7ae0\u3002\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002'], {
+    scope: '\u7b2c\u4e8c\u7ae0\u3002\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002', sentence: '\u8bbe\u5907\u9a8c\u6536\u5408\u683c\u540e\u65b9\u53ef\u4f7f\u7528\u3002',
   })
   assert.equal(result.targets[0]?.page, 1)
   assert.equal(result.targets[0]?.occurrence, 1)
 })
 
 test('legacy wrong-page bbox is revalidated against original text', async () => {
-  const result = await resolve(['第一段正确文本。', '第二段实际内容。'], {
-    scope: '第二段实际内容。', locators: [{ type: 'pdf', page: 1, bbox: [0, 0, 1, 1], quote: '第二段实际内容。' }],
+  const result = await resolve(['\u7b2c\u4e00\u6bb5\u6b63\u786e\u6587\u672c\u3002', '\u7b2c\u4e8c\u6bb5\u5b9e\u9645\u5185\u5bb9\u3002'], {
+    scope: '\u7b2c\u4e8c\u6bb5\u5b9e\u9645\u5185\u5bb9\u3002', locators: [{ type: 'pdf', page: 1, bbox: [0, 0, 1, 1], quote: '\u7b2c\u4e8c\u6bb5\u5b9e\u9645\u5185\u5bb9\u3002' }],
   })
   assert.equal(result.targets[0]?.page, 2)
   assert.equal(result.targets[0]?.bbox, undefined)
 })
 
 test('legacy matching page does not override ambiguity elsewhere', async () => {
-  const result = await resolve(['相同的原文段落。', '相同的原文段落。'], {
-    locators: [{ type: 'pdf', page: 1, quote: '相同的原文段落。' }], scope: '相同的原文段落。',
+  const result = await resolve(['\u76f8\u540c\u7684\u539f\u6587\u6bb5\u843d\u3002', '\u76f8\u540c\u7684\u539f\u6587\u6bb5\u843d\u3002'], {
+    locators: [{ type: 'pdf', page: 1, quote: '\u76f8\u540c\u7684\u539f\u6587\u6bb5\u843d\u3002' }], scope: '\u76f8\u540c\u7684\u539f\u6587\u6bb5\u843d\u3002',
   })
   assert.equal(result.reason, 'ambiguous')
 })
 
 test('mixed bbox and page targets are both resolved', async () => {
-  const result = await resolve(['', '第二页的引用文本。'], { locators: [
-    { type: 'pdf', page: 1, mapping: 'exact', bbox: [0.1, 0.2, 0.9, 0.4], quote: '扫描页的原文' },
-    { type: 'pdf', page: 2, mapping: 'exact', quote: '第二页的引用文本。' },
+  const result = await resolve(['', '\u7b2c\u4e8c\u9875\u7684\u5f15\u7528\u6587\u672c\u3002'], { locators: [
+    { type: 'pdf', page: 1, mapping: 'exact', bbox: [0.1, 0.2, 0.9, 0.4], quote: '\u626b\u63cf\u9875\u7684\u539f\u6587' },
+    { type: 'pdf', page: 2, mapping: 'exact', quote: '\u7b2c\u4e8c\u9875\u7684\u5f15\u7528\u6587\u672c\u3002' },
   ] })
   assert.deepEqual(result.targets.map((t) => [t.page, t.granularity]), [[1, 'block'], [2, 'text']])
 })
 
 test('scanned page without text retains verified block geometry', async () => {
-  const result = await resolve([''], { locators: [{ type: 'pdf', page: 1, mapping: 'exact', bbox: [0.1, 0.2, 0.8, 0.5], quote: 'OCR 文本' }] })
+  const result = await resolve([''], { locators: [{ type: 'pdf', page: 1, mapping: 'exact', bbox: [0.1, 0.2, 0.8, 0.5], quote: 'OCR \u6587\u672c' }] })
   assert.equal(result.targets[0]?.granularity, 'block')
 })
 
@@ -126,7 +127,7 @@ test('native DOMRect prototype getters survive rectangle merging', () => {
 })
 
 test('a number cannot match part of a different numeric value', () => {
-  for (const [source, quote] of [['增长为5%', '增长为5'], ['115', '15'], ['1.5', '15'], ['15.5', '15'], ['-15', '15']]) {
+  for (const [source, quote] of [['\u589e\u957f\u4e3a5%', '\u589e\u957f\u4e3a5'], ['115', '15'], ['1.5', '15'], ['15.5', '15'], ['-15', '15']]) {
     assert.equal(findInText(source!, quote!), null, `${source} / ${quote}`)
   }
 })
@@ -141,7 +142,7 @@ test('partially mapped chunks cannot claim complete precise evidence', async () 
 
 
 test('HTML entities preserve comparisons and are decoded only once', () => {
-  assert.equal(sourceQuoteText('<td>限值&#x3c;1.5</td>'), '限值<1.5')
+  assert.equal(sourceQuoteText('<td>\u9650\u503c&#x3c;1.5</td>'), '\u9650\u503c<1.5')
   assert.equal(sourceQuoteText('&amp;lt;'), '&lt;')
   assert.equal(findInText('temperature 5 C', 'temperature - 5 C'), null)
   assert.ok(findInText('temperature - 5 C', 'temperature -5 C'))

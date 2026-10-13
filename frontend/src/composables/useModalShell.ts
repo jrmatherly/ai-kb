@@ -3,29 +3,28 @@ import { DialogPlugin } from 'tdesign-vue-next'
 import { useI18n } from 'vue-i18n'
 
 /**
- * 全屏"设置类"弹窗（Settings / AgentEditor / OrganizationSettings / KnowledgeBaseEditor）
- * 共用的壳层交互：
- *   - Esc 关闭（当有 TDesign 弹窗 / 抽屉 / 弹层叠在上面时不响应，让它们先关）
- *   - 遮罩点击关闭
- *   - 有未保存更改时先弹二次确认
+ * Shell behavior shared by the full-screen "settings-style" dialogs (Settings / AgentEditor / OrganizationSettings / KnowledgeBaseEditor):
+ *   - Esc closes (ignored while a TDesign dialog / drawer / popup is open on top, so those close first)
+ *   - Clicking the overlay closes
+ *   - Unsaved changes ask for confirmation first
  *
- * 用法：
+ * Usage:
  *   const shell = useModalShell({
  *     visible: () => props.visible,
  *     close: () => emit('update:visible', false),
- *     snapshot: () => formData.value,   // 可选：参与 dirty 比较的数据
+ *     snapshot: () => formData.value,   // optional: data compared for dirty state
  *   })
- *   // 数据加载完成 / 保存成功后：shell.markClean()
- *   // 模板：@click.self="shell.requestClose"，关闭按钮 @click="shell.requestClose"
+ *   // After data loads or a save succeeds: shell.markClean()
+ *   // Template: @click.self="shell.requestClose", close button @click="shell.requestClose"
  */
 export interface ModalShellOptions {
   visible: () => boolean
   close: () => void
-  /** 参与 dirty 比较的数据；不传则不做未保存提示 */
+  /** Data compared for dirty state; without it there is no unsaved-changes prompt */
   snapshot?: () => unknown
-  /** 加载期间表单不可编辑，初始化赋值不算未保存修改 */
+  /** The form is not editable while loading, and initial assignment does not count as an unsaved change */
   loading?: () => boolean
-  /** 返回 true 时跳过 Esc（例如组件内部自绘的弹层正打开） */
+  /** Skip Esc when it returns true (for example while a popup drawn by the component itself is open) */
   ignoreEscape?: () => boolean
 }
 
@@ -37,7 +36,7 @@ function serialize(value: unknown): string {
   }
 }
 
-/** 页面上是否有 TDesign 的弹窗 / 抽屉 / 弹层处于打开状态 */
+/** Whether a TDesign dialog / drawer / popup is open on the page */
 function hasOpenTDesignOverlay(): boolean {
   if (typeof document === 'undefined') return false
   const dialogCtx = document.querySelector<HTMLElement>('.t-dialog__ctx')

@@ -20,7 +20,7 @@ export function humanizeCron(cron: string, t: (key: string) => string): string {
 }
 
 /**
- * Format a timestamp as relative time (e.g. "3小时前", "2天前").
+ * Format a timestamp as relative time (e.g. "3 hours ago", "2 days ago").
  * Falls back to locale date string for timestamps older than 30 days.
  */
 export function relativeTime(ts: string | null, t: (key: string, params?: Record<string, string | number>) => string): string {

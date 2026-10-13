@@ -149,7 +149,7 @@
               :autosize="{ minRows: 2, maxRows: 4 }"
             />
           </div>
-          <!-- 思考强度：由模型 capabilities.thinking_levels 决定；不能思考的模型不显示 -->
+          <!-- Thinking effort: set by the model's capabilities.thinking_levels; hidden for models that cannot think -->
           <div v-if="supportsThinking" class="form-item">
             <label class="form-label">{{ $t('modelSettings.debug.reasoningEffort') }}</label>
             <t-select v-model="reasoningEffort" :popup-props="{ overlayClassName: 'reasoning-level-select-popup' }">
@@ -900,7 +900,7 @@ onBeforeUnmount(() => {
 }
 </style>
 
-<!-- 非 scoped：t-select popup 渲染到 body 下 -->
+<!-- Not scoped: the t-select popup renders under body -->
 <style lang="less">
 .reasoning-level-select-popup {
   padding: 4px;

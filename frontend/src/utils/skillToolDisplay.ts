@@ -53,7 +53,7 @@ export function isSkillScriptPath(path: string): boolean {
 export function formatToolTitleWithDetail(baseTitle: string, detail: string): string {
   const trimmed = detail.trim()
   if (!trimmed) return baseTitle
-  return `${baseTitle}：「${trimmed}」`
+  return `${baseTitle}: "${trimmed}"`
 }
 
 export function getEventSkillName(event: ToolEventLike | null | undefined): string {

@@ -13,7 +13,7 @@ import { useAuthStore } from '@/stores/auth'
 
 /**
  * ResourceOriginBadge – a unified, compact label that explains *where* a
- * KB or Agent comes from. Replaces the ad-hoc "我的" / "shared-by-me-badge"
+ * KB or Agent comes from. Replaces the ad-hoc "Mine" / "shared-by-me-badge"
  * / org_name pills scattered across KnowledgeBaseList and AgentList. The
  * variants below cover the five origin shapes the list views actually
  * surface; future origins (e.g. "system" / "imported") should add a new
@@ -24,15 +24,15 @@ import { useAuthStore } from '@/stores/auth'
  *  - tenant      : owned by the current tenant but created by someone else
  *                  — label shows tenant name; use when context doesn't say
  *  - creator     : same data shape as `tenant`, but the surrounding section
- *                  header already names the tenant ("本空间 · 仅查看"), so
+ *                  header already names the tenant ("This space · View only"), so
  *                  the badge only carries the creator name to avoid the
- *                  duplicated "本空间 / wizardchen's Workspace" pill on
+ *                  duplicated "This space / wizardchen's Workspace" pill on
  *                  every card. Falls back to the i18n label when the
  *                  creator name is unknown.
  *  - space       : reached through a cross-tenant space (organization)
  *  - shared      : cross-tenant share without a useful org name to show
  *
- * Pass `creatorName` to surface "by 张三" in the tooltip for the `tenant`
+ * Pass `creatorName` to surface "by Jane Doe" in the tooltip for the `tenant`
  * variant, or to drive the visible label of the `creator` variant; omit it
  * for the `mine` / `space` / `shared` variants where the subject is implicit.
  */
@@ -80,9 +80,9 @@ const displayText = computed(() => {
       // resource lives, not a vague "tenant" label. Falls back to i18n.
       return authStore.currentTenantName || t('resourceOrigin.tenant')
     case 'creator':
-      // Section header already provides the「本空间」context, so we just
+      // Section header already provides the "This space" context, so we just
       // show who created it. Fall back to a generic label when the user
-      // can't be resolved (creator_name 缺失，例如已删除账号 / 老数据)。
+      // can't be resolved (creator_name missing, e.g. a deleted account or old data).
       return props.creatorName || t('resourceOrigin.tenant')
     case 'space':
       return props.spaceName || t('resourceOrigin.space')
@@ -103,7 +103,7 @@ const tooltipText = computed(() => {
       }
       return t('resourceOrigin.tenantTooltip')
     case 'creator':
-      // 卡片标签只露名字；tooltip 把完整含义补回来。
+      // The card tag shows only the name; the tooltip restores the full meaning.
       if (props.creatorName) {
         return t('resourceOrigin.tenantTooltipWithCreator', { creator: props.creatorName })
       }

@@ -1,6 +1,6 @@
 <template>
     <div class="aside_box" :class="{ 'aside_box--collapsed': uiStore.sidebarCollapsed, 'aside_box--resizing': uiStore.sidebarResizing }">
-        <!-- 展开时：Logo + 搜索/折叠按钮同行 -->
+        <!-- Expanded: logo + search/collapse buttons on one row -->
         <div class="logo_row" v-if="!uiStore.sidebarCollapsed">
             <div class="logo_box" @click="router.push('/platform/knowledge-bases')" style="cursor: pointer;">
                 <img class="logo" src="@/assets/img/aikb.png" alt="">
@@ -29,7 +29,7 @@
                 </div>
             </div>
         </div>
-        <!-- 折叠时：展开按钮 -->
+        <!-- Collapsed: expand button -->
         <t-tooltip v-else :content="t('menu.expandSidebar')" placement="right">
             <div class="menu_item sidebar-toggle-item" @click="uiStore.toggleSidebar">
                 <div class="menu_item-box">
@@ -49,18 +49,18 @@
             </div>
         </t-tooltip>
 
-        <!-- 空间选择器：仅在用户可切换空间时显示 -->
+        <!-- Space selector: shown only when the user can switch spaces -->
         <TenantSelector v-if="canAccessAllTenants && !uiStore.sidebarCollapsed" />
 
-        <!-- 侧栏边缘拖拽调宽，拖窄时自动收缩 -->
+        <!-- Drag the sidebar edge to resize; it collapses automatically when dragged narrow -->
         <PanelResizeHandle edge="right" :label="t('knowledgeStages.resizeDrawer')"
             :value="uiStore.sidebarDisplayWidth" :min="SIDEBAR_COLLAPSED_WIDTH" :max="SIDEBAR_MAX_WIDTH"
             @start="startSidebarResize" @resize="resizeSidebar" @end="uiStore.sidebarResizing = false" />
 
-        <!-- 上半部分：新对话吸顶 + 知识库/智能体/共享空间/历史会话随滚动一起滚走 -->
+        <!-- Upper part: New chat sticks to the top, and knowledge bases / agents / shared spaces / history scroll away together -->
         <div class="menu_top" ref="scrollContainer" @scroll="handleScroll">
-            <!-- 全局搜索入口：点击打开命令面板（⌘K）。展开态移至顶部 logo_row 的图标按钮；
-                 折叠态在此处保留为图标项 + 深色 tooltip。 -->
+            <!-- Global search entry: opens the command palette (⌘K) on click. In the expanded state it moves to an icon button in the top logo_row;
+                 in the collapsed state it stays here as an icon item + dark tooltip. -->
             <div class="menu_box menu_box--cmdk" v-if="uiStore.sidebarCollapsed">
                 <t-tooltip placement="right">
                     <template #content>
@@ -114,7 +114,7 @@
                 </t-tooltip>
             </div>
 
-            <!-- 历史会话：按来源筛选后统一按日期分组展示 -->
+            <!-- Chat history: filtered by source, then grouped by date -->
             <div class="submenu" v-if="!uiStore.sidebarCollapsed">
                 <!-- Stable, always-mounted source filter: reserving its row here
                      (instead of embedding it in the first date group, which
@@ -185,7 +185,7 @@
             </div>
         </div>
 
-        <!-- 批量管理底部操作条：固定在侧栏底部、用户头像上方 -->
+        <!-- Bulk management action bar: pinned to the bottom of the sidebar, above the user avatar -->
         <div v-if="batchMode && !uiStore.sidebarCollapsed" class="batch-inline-footer">
             <div class="batch-footer-left">
                 <t-checkbox :checked="isAllBatchSelected" :indeterminate="isBatchIndeterminate"
@@ -204,7 +204,7 @@
             </div>
         </div>
 
-        <!-- 下半部分：用户菜单 -->
+        <!-- Lower part: user menu -->
         <div class="menu_bottom">
             <UserMenu />
         </div>
@@ -383,7 +383,7 @@ const { menuArr, visibleMenuArr } = storeToRefs(usemenuStore);
 let activeSubmenu = ref<string>('');
 const isLiteEdition = ref(false);
 
-// 批量管理状态
+// Bulk management state
 const batchMode = ref(false)
 const batchSelectedIds = ref<string[]>([])
 const batchDeleting = ref(false)
@@ -406,36 +406,36 @@ const batchDisplayCount = computed(() =>
     isAllBatchSelected.value ? total.value : batchSelectedIds.value.length
 )
 
-// 是否可以访问所有空间
+// Whether all spaces are accessible
 const canAccessAllTenants = computed(() => authStore.canAccessAllTenants);
 
-// 是否处于知识库详情页（不包括全局聊天）
+// Whether on a knowledge base details page (global chat excluded)
 const isInKnowledgeBase = computed<boolean>(() => {
     return route.name === 'knowledgeBaseDetail' ||
         route.name === 'kbCreatChat' ||
         route.name === 'knowledgeBaseSettings';
 });
 
-// 是否在知识库列表页面
+// Whether on the knowledge base list page
 const isInKnowledgeBaseList = computed<boolean>(() => {
     return route.name === 'knowledgeBaseList';
 });
 
-// 是否在创建聊天页面
+// Whether on the create-chat page
 const isInCreatChat = computed<boolean>(() => {
     return route.name === 'globalCreatChat' || route.name === 'kbCreatChat';
 });
 
-// 是否在对话详情页
+// Whether on a chat details page
 const isInChatDetail = computed<boolean>(() => route.name === 'chat');
 
-// 是否在智能体列表页面
+// Whether on the agent list page
 const isInAgentList = computed<boolean>(() => route.name === 'agentList');
 
-// 是否在组织列表页面
+// Whether on the organization list page
 const isInOrganizationList = computed<boolean>(() => route.name === 'organizationList');
 
-// 统一的菜单项激活状态判断
+// Shared active-state check for menu items
 const isMenuItemActive = (itemPath: string): boolean => {
     const currentRoute = route.name;
 
@@ -461,7 +461,7 @@ const isMenuItemActive = (itemPath: string): boolean => {
     }
 };
 
-// 统一的图标激活状态判断
+// Shared active-state check for icons
 const getIconActiveState = (itemPath: string) => {
     const currentRoute = route.name;
 
@@ -477,7 +477,7 @@ const getIconActiveState = (itemPath: string) => {
     };
 };
 
-// 分离上下两部分菜单（使用 visibleMenuArr 以便 lite 模式过滤 logout）
+// Split the menu into upper and lower parts (uses visibleMenuArr so lite mode can filter out logout)
 const TOP_MENU_PATHS = new Set(['creatChat', 'knowledge-bases', 'artifacts', 'agents', 'toolbox', 'organizations']);
 
 const topMenuItems = computed<MenuItem[]>(() => {
@@ -488,14 +488,14 @@ const bottomMenuItems = computed<MenuItem[]>(() => {
     return (visibleMenuArr.value as unknown as MenuItem[]).filter((item: MenuItem) => !TOP_MENU_PATHS.has(item.path));
 });
 
-// 当前知识库信息
+// Current knowledge base info
 const currentKbName = ref<string>('')
 const currentKbInfo = ref<any>(null)
 
-// 进行中的置顶/取消置顶请求，避免重复点击
+// Pin/unpin requests in progress, to avoid duplicate clicks
 const pinningIds = ref<Set<string>>(new Set())
 
-// 「聊天」区内按日期分组（当前筛选来源）
+// Date groups within the "Chat" section (for the current source filter)
 const dateBucketLabels = computed<Record<DateBucketKey, string>>(() => ({
     pinned: t('time.pinned'),
     today: t('time.today'),
@@ -565,7 +565,7 @@ const refreshSessionListScrollability = async () => {
     sessionListCanScroll.value = !!container && container.scrollHeight > container.clientHeight + 1;
 };
 
-/** 列表未撑满滚动区时自动续页（按当前可见 DOM 测量，避免折叠导致误判） */
+/** Load the next page automatically when the list does not fill the scroll area (measured on the visible DOM, so collapsing does not mislead it) */
 const ensureBucketFillsViewport = async (key: string) => {
     const MAX_ITERATIONS = 20;
     for (let i = 0; i < MAX_ITERATIONS; i++) {
@@ -679,7 +679,7 @@ const handleSessionMenuClick = (data: { value: string }, item: any) => {
     }
 };
 
-// 基于会话来源推导展示用的短标签已经被 platformLogo(<img>) 取代，Web 会话没有图标。
+// The short source label derived from the session source was replaced by platformLogo (<img>); web sessions have no icon.
 
 const buildSessionMenuOptions = (item: any) => {
     const options: any[] = [];
@@ -802,7 +802,7 @@ const menuChildToSessionRow = (item: Record<string, unknown>): SessionForGroupin
 const sessionExistsInBuckets = (sessionId: string) =>
     Object.values(sessionBuckets.value).some((bucket) => bucket.items.some((row) => row.id === sessionId));
 
-/** 创建会话后 menuStore 已乐观写入，但列表实际渲染自 sessionBuckets，需补齐。 */
+/** After a session is created, menuStore is written optimistically, but the list actually renders from sessionBuckets, so fill it in. */
 const ensureSessionInSidebar = (sessionId: string) => {
     if (!sessionId || sessionExistsInBuckets(sessionId)) return;
 
@@ -833,7 +833,7 @@ const rebuildBucketDefinitions = () => buildBucketDefinitions(
     { includeAdminChannelBuckets: authStore.hasRole('admin') },
 );
 
-/** 首屏轻量探测各渠道是否有会话（page_size=1 只取 total），避免展示空文件夹 */
+/** Lightweight first-screen probe of whether each channel has sessions (page_size=1 reads only total), so empty folders are not shown */
 const probeChannelBucketCounts = async (keys: string[], token: number) => {
     const targets = keys.filter((key) => isChannelBucketKey(key));
     await Promise.all(
@@ -955,7 +955,7 @@ const initSessionBuckets = async () => {
     }
     sessionBuckets.value = buckets;
 
-    // 首屏：拉 web 会话 + 轻量探测各渠道 count（不拉完整列表）；有会话的渠道才展示文件夹
+    // First screen: fetch web sessions + a lightweight count probe per channel (not the full lists); only channels with sessions show a folder
     const channelKeys = defs.map((def) => def.key).filter((key) => isChannelBucketKey(key));
     await Promise.all([
         loadBucketPage('web', 1, token),
@@ -974,7 +974,7 @@ const getMessageList = async () => {
     await initSessionBuckets();
 };
 
-// 滚动到底时为当前筛选来源加载下一页
+// At the bottom of the scroll, load the next page for the current source filter
 const checkScrollBottom = async () => {
     const container = scrollContainer.value;
     const key = activeSessionBucketKey.value;
@@ -1076,7 +1076,7 @@ onMounted(async () => {
         ensureSessionInSidebar(initialChatId);
         await syncActiveBucketFromChat(initialChatId);
     }
-    // 若组织列表未加载则拉取一次，用于侧栏「待审批」角标
+    // Fetch the organization list once if it has not loaded, for the sidebar "pending approval" badge
     if (deploymentCapabilities.isSupported('organizations') && orgStore.organizations.length === 0) {
         orgStore.fetchOrganizations();
     }
@@ -1098,18 +1098,18 @@ watch([() => route.name, () => route.params], (newvalue, oldvalue) => {
         currentSecondpath.value = "";
     }
 
-    // 创建新会话时 creatChat 会先 updataMenuChildren，再跳转 chat/:id。
-    // 侧栏实际渲染 sessionBuckets，需按 buckets 判断是否缺失，不能把 menuStore 当真相来源。
+    // When a new session is created, creatChat first calls updataMenuChildren, then navigates to chat/:id.
+    // The sidebar actually renders sessionBuckets, so check for a missing session against the buckets; menuStore is not the source of truth.
     const newChatId = (newvalue[1] as any)?.chatid as string | undefined;
     if (nameStr === 'chat' && newChatId) {
         ensureSessionInSidebar(newChatId);
         void syncActiveBucketFromChat(newChatId);
     }
 
-    // 路由变化时更新图标状态和知识库信息（不涉及对话列表）
+    // On route change, update the icon state and knowledge base info (the chat list is not involved)
     getIcon(nameStr);
 
-    // 如果切换了知识库，更新知识库名称但不重新加载对话列表
+    // If the knowledge base changed, update its name without reloading the chat list
     if (newvalue[1].kbId !== oldvalue?.[1]?.kbId) {
         loadCurrentKbInfo((newvalue[1] as any)?.kbId as string);
     }
@@ -1124,7 +1124,7 @@ let toolboxIcon = ref('toolbox.svg');
 let organizationIcon = ref('organization.svg');
 let pathPrefix = ref(route.name)
 const getIcon = (path: string) => {
-    // 根据当前路由状态更新所有图标
+    // Update every icon from the current route state
     const kbActiveState = getIconActiveState('knowledge-bases');
     const creatChatActiveState = getIconActiveState('creatChat');
     const settingsActiveState = getIconActiveState('settings');
@@ -1132,33 +1132,33 @@ const getIcon = (path: string) => {
     const artifactsActiveState = route.name === 'artifactLibrary';
     const organizationsActiveState = route.name === 'organizationList';
 
-    // 知识库图标：只在知识库页面显示绿色
+    // Knowledge base icon: green only on knowledge base pages
     knowledgeIcon.value = kbActiveState.isKbActive ? 'zhishiku-green.svg' : 'zhishiku.svg';
 
-    // 智能体图标：只在智能体页面显示绿色
+    // Agent icon: green only on agent pages
     agentIcon.value = agentsActiveState ? 'agent-green.svg' : 'agent.svg';
 
-    // 产物图标：只在产物页面显示绿色
+    // Artifact icon: green only on artifact pages
     artifactIcon.value = artifactsActiveState ? 'artifact-green.svg' : 'artifact.svg';
 
     toolboxIcon.value = route.name === 'toolbox' ? 'toolbox-green.svg' : 'toolbox.svg';
 
-    // 组织图标：只在组织页面显示绿色
+    // Organization icon: green only on organization pages
     organizationIcon.value = organizationsActiveState ? 'organization-green.svg' : 'organization.svg';
 
-    // 对话图标：只在对话创建页面显示绿色，其他情况显示默认
+    // Chat icon: green only on the create-chat page, default otherwise
     prefixIcon.value = creatChatActiveState.isCreatChatActive ? 'prefixIcon-green.svg' : 'prefixIcon.svg';
 
-    // 设置图标：只在设置页面显示绿色
+    // Settings icon: green only on the settings page
     settingIcon.value = settingsActiveState.isSettingsActive ? 'setting-green.svg' : 'setting.svg';
 
-    // 退出图标：始终显示默认
+    // Logout icon: always default
     logoutIcon.value = 'logout.svg';
 }
 getIcon(typeof route.name === 'string' ? route.name as string : (route.name ? String(route.name) : ''))
 const handleMenuClick = async (path: string) => {
     if (path === 'knowledge-bases') {
-        // 知识库菜单项：如果在知识库内部，跳转到当前知识库文件页；否则跳转到知识库列表
+        // Knowledge base menu item: inside a knowledge base, go to its file page; otherwise go to the knowledge base list
         const kbId = await getCurrentKbId()
         if (kbId) {
             router.push(`/platform/knowledge-bases/${kbId}`)
@@ -1168,10 +1168,10 @@ const handleMenuClick = async (path: string) => {
     } else if (path === 'agents') {
         router.push('/platform/agents')
     } else if (path === 'organizations') {
-        // 组织菜单项：跳转到组织列表
+        // Organization menu item: go to the organization list
         router.push('/platform/organizations')
     } else if (path === 'settings') {
-        // 设置菜单项：打开设置弹窗并跳转路由
+        // Settings menu item: open the settings dialog and update the route
         uiStore.openSettings()
         router.push('/platform/settings')
     } else {
@@ -1179,7 +1179,7 @@ const handleMenuClick = async (path: string) => {
     }
 }
 
-// 处理退出登录确认
+// Handle the logout confirmation
 const handleLogout = () => {
     gotopage('logout')
 }
@@ -1194,27 +1194,27 @@ const getCurrentKbId = async (): Promise<string | null> => {
 
 const gotopage = async (path: string) => {
     pathPrefix.value = path;
-    // 处理退出登录
+    // Handle logout
     if (path === 'logout') {
         try {
-            // 调用后端API注销
+            // Call the backend logout API
             await logoutApi();
         } catch (error) {
-            // 即使API调用失败，也继续执行本地清理
-            console.error('注销API调用失败:', error);
+            // Continue with local cleanup even if the API call fails
+            console.error('Logout API call failed:', error);
         }
-        // 清理所有状态和本地存储
+        // Clear all state and local storage
         authStore.logout();
         MessagePlugin.success(t('menu.logoutSuccess'));
         router.push('/login');
         return;
     } else {
         if (path === 'creatChat') {
-            // 如果在知识库详情页，跳转到全局对话创建页
+            // On a knowledge base details page, go to the global create-chat page
             if (isInKnowledgeBase.value) {
                 router.push('/platform/creatChat')
             } else {
-                // 如果不在知识库内，进入对话创建页
+                // Outside a knowledge base, go to the create-chat page
                 router.push(`/platform/creatChat`)
             }
         } else {
@@ -1252,7 +1252,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
 </script>
 <style lang="less" scoped>
 .aside_box {
-    // 侧栏水平栅格：图标列与文案列统一对齐（Logo / 菜单 / 会话分组 / 会话行）
+    // Horizontal sidebar grid: the icon column and the text column align everywhere (logo / menu / session groups / session rows)
     --sidebar-inset-x: 10px;
     --sidebar-icon-size: 18px;
     --sidebar-channel-icon: 14px;
@@ -1278,7 +1278,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
     transition: width 0.25s ease, min-width 0.25s ease;
     position: relative;
 
-    // macOS Wails 桌面：红绿灯位于 HiddenInset 标题栏区域，需让出顶部空间
+    // macOS Wails desktop: the traffic lights sit in the HiddenInset title bar area, so leave room at the top
     html.wails-desktop & {
         padding-top: 30px;
     }
@@ -1334,7 +1334,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        // 保留侧栏顶部留白，让 Logo 和操作按钮与窗口顶边保持舒适间距
+        // Keep the sidebar's top whitespace so the logo and action buttons sit at a comfortable distance from the window's top edge
         height: 39px;
         margin: 0 0 4px;
         flex-shrink: 0;
@@ -1391,12 +1391,12 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         overflow-y: auto;
         overflow-x: hidden;
         min-height: 0;
-        // 抵消 .aside_box 的右内边距，让滚动条贴近面板右缘；
-        // 等量 padding 补回，保证列表文字位置不变。
+        // Cancel the right padding of .aside_box so the scrollbar hugs the panel's right edge;
+        // equal padding adds it back, so the list text does not move.
         margin-right: -4px;
         padding-right: 4px;
 
-        // Claude 风格细滚动条：默认透明，悬浮时显示一条圆角细灰条
+        // Claude-style thin scrollbar: transparent by default, a thin rounded gray bar on hover
         scrollbar-width: thin;
         scrollbar-color: transparent transparent;
         transition: scrollbar-color var(--app-motion-base) ease;
@@ -1438,8 +1438,8 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         display: flex;
         flex-direction: column;
 
-        // 「新对话」吸顶：作为滚动容器(.menu_top)的直接子级，滚动时钉在顶部，
-        // 知识库/智能体/共享空间及历史列表一起从其下方滚走。背景遮挡滚动内容。
+        // "New chat" is sticky: as a direct child of the scroll container (.menu_top) it pins to the top while scrolling,
+        // and knowledge bases / agents / shared spaces and the history list scroll away beneath it. The background covers the scrolled content.
         &--sticky {
             position: sticky;
             top: 0;
@@ -1515,7 +1515,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
             overflow: hidden;
         }
 
-        // 图形几乎占满画布的图标缩小显示，否则会比其他图标大一圈
+        // Icons whose shape nearly fills the canvas are shown smaller, otherwise they look a size larger than the others
         &.menu_icon--zhishiku .icon,
         &.menu_icon--organization .icon,
         .icon.icon--toggle {
@@ -1562,8 +1562,8 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         vertical-align: middle;
         object-fit: contain;
         flex-shrink: 0;
-        // 默认淡化处理，避免未选中状态下彩色图标与灰色标题不协调；
-        // 悬浮或选中时恢复彩色，交互时才引人注意。
+        // Dimmed by default, so colored icons do not clash with gray titles in the unselected state;
+        // color returns on hover or selection, drawing attention only on interaction.
         filter: grayscale(1);
         opacity: 0.55;
         transition: filter var(--app-motion-fast) ease, opacity var(--app-motion-fast) ease;
@@ -1575,7 +1575,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         opacity: 1;
     }
 
-    // 列表行统一栅格：左缘 inset-x + 图标槽 18px + 间距 8px → 文案列与主菜单文字对齐
+    // Shared list row grid: left inset-x + 18px icon slot + 8px gap -> the text column aligns with the main menu text
     .session-list-row {
         display: flex;
         align-items: center;
@@ -1601,7 +1601,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         overflow: hidden;
     }
 
-    // 聊天区分组标题 / 会话行：与「聊天」节标题同列左对齐，不再预留图标槽
+    // Chat group titles / session rows: left-aligned in the same column as the "Chat" section title, with no icon slot
     .session-list-row--flat {
         padding-left: var(--sidebar-inset-x);
         gap: 0;
@@ -1631,7 +1631,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
     }
 
     // Stable filter control: always mounted and absolutely pinned to the list's
-    // top-right so it visually sits on the first row (e.g. beside "近30天") and
+    // top-right so it visually sits on the first row (e.g. beside "Last 30 days") and
     // never jumps when switching session type reloads a bucket. It overlays the
     // empty right side of the first header row, so it needs no reserved height.
     .session-list-scope-header {
@@ -1706,7 +1706,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
         }
     }
 
-    // SessionSidebarRow 为子组件，需 :deep 才能让标题省略号生效
+    // SessionSidebarRow is a child component, so :deep is needed for the title ellipsis to apply
     :deep(.submenu_item) {
         cursor: pointer;
         display: flex;
@@ -1813,7 +1813,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
     user-select: none;
 }
 
-// 顶部 logo_row 右侧的图标按钮组（搜索 + 折叠），与折叠按钮风格一致
+// Icon button group on the right of the top logo_row (search + collapse), styled like the collapse button
 .logo_actions {
     display: flex;
     align-items: center;
@@ -1845,7 +1845,7 @@ const resizeSidebar = (delta: number, keyboard: boolean) => {
     }
 }
 
-// 深色 tooltip 内容：标签 + 浅灰快捷键内联
+// Dark tooltip content: label + light gray inline shortcut
 .cmdk-tip {
     display: inline-flex;
     align-items: center;
@@ -1982,7 +1982,7 @@ html[theme-mode="dark"] .aside_box .logo_box .logo {
     filter: invert(1) hue-rotate(180deg);
 }
 
-// Dark mode: 滚动条在深色背景下需要更亮的颜色才看得见
+// Dark mode: the scrollbar needs a brighter color to be visible on a dark background
 html[theme-mode="dark"] .aside_box .menu_top:hover {
     scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
 }
@@ -2027,9 +2027,9 @@ html[theme-mode="dark"] .aside_box .menu_item_active .menu_icon img.icon {
     opacity: 1;
 }
 
-// 下拉菜单样式已统一至 @/assets/dropdown-menu.less
+// Dropdown menu styles are unified in @/assets/dropdown-menu.less
 
-// 退出登录确认框样式
+// Logout confirmation dialog styles
 :deep(.t-popconfirm) {
     .t-popconfirm__content {
         background: var(--td-bg-color-container);

@@ -41,10 +41,10 @@ export interface ToolRequirement {
    */
   auxiliary?: boolean;
   /**
-   * Whether this tool can use user-provided file references (via @ 提及) as
+   * Whether this tool can use user-provided file references (via @ mentions) as
    * an additional retrieval scope. Tools with `consumesFiles: false` ignore
    * `knowledge_ids`; we use this flag in the chat `@` dropdown to decide
-   * whether to even offer the "文件" tab to the user.
+   * whether to even offer the "Files" tab to the user.
    */
   consumesFiles?: boolean;
 }
@@ -260,7 +260,7 @@ export function kbSatisfiesToolRequirements(
 /**
  * True iff any of the agent's allowed tools can consume user-provided file
  * references (`knowledge_ids`). Used by the chat `@` menu to decide whether
- * showing the "文件" list makes sense at all — e.g. a pure Wiki agent has no
+ * showing the "Files" list makes sense at all - e.g. a pure Wiki agent has no
  * tool that would read an arbitrary file the user picks, so we don't offer
  * it. `undefined`/`null`/empty → true (permissive fallback: if we don't
  * know, show files).

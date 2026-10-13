@@ -5,7 +5,7 @@ export type AgentWebSearchConfig = {
   web_search_provider_id?: string;
 };
 
-/** 解析智能体实际会使用的搜索引擎 ID（与后端 agent > tenant default 逻辑一致） */
+/** Resolve the search engine ID the agent will actually use (matches the backend's agent > tenant default logic) */
 export function resolveAgentWebSearchProviderId(
   config: AgentWebSearchConfig | undefined,
   providers: WebSearchProviderEntity[],
@@ -22,7 +22,7 @@ export function isAgentWebSearchEnabled(config: AgentWebSearchConfig | undefined
   return config?.web_search_enabled === true;
 }
 
-/** 智能体已启用网络搜索，且能解析到可用搜索引擎 */
+/** The agent has web search enabled and a usable search engine resolves */
 export function isAgentWebSearchReady(
   config: AgentWebSearchConfig | undefined,
   providers: WebSearchProviderEntity[],
@@ -33,7 +33,7 @@ export function isAgentWebSearchReady(
   return resolveAgentWebSearchProviderId(config, providers) !== null;
 }
 
-/** 空间级默认搜索引擎是否可用（无智能体约束时） */
+/** Whether the space-level default search engine is usable (when no agent constrains it) */
 export function isTenantWebSearchReady(providers: WebSearchProviderEntity[]): boolean {
   return providers.some((p) => p.is_default);
 }

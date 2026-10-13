@@ -330,9 +330,9 @@ async function renderText(blob: Blob, fileType: string) {
 async function renderMarkdown(blob: Blob) {
   const text = await blob.text();
 
-  // 校验文本内容是否有效
+  // Check that the text content is usable
   if (!text || typeof text !== 'string') {
-    markdownHtml.value = '<p style="color: var(--td-text-color-disabled); text-align: center; padding: 20px;">文档内容为空</p>';
+    markdownHtml.value = '<p style="color: var(--td-text-color-disabled); text-align: center; padding: 20px;">The document is empty</p>';
     return;
   }
 
@@ -1526,28 +1526,28 @@ onUnmounted(() => {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: auto; // 如果内容过宽，允许水平滚动而不是溢出
+  overflow-x: auto; // Scroll horizontally instead of overflowing when the content is too wide
   
-  // 约束所有子元素的宽度
+  // Constrain the width of every child
   * {
     max-width: 100%;
     box-sizing: border-box;
   }
   
-  // 特别处理表格
+  // Tables need special handling
   table {
     width: 100%;
     table-layout: auto;
     word-wrap: break-word;
   }
   
-  // 处理图片
+  // Images
   img {
     max-width: 100%;
     height: auto;
   }
   
-  // 处理可能的固定宽度元素
+  // Elements that may have a fixed width
   [style*="width"] {
     max-width: 100% !important;
   }

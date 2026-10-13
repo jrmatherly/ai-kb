@@ -29,6 +29,6 @@ test('live percent hides a closed stream that never reported progress', () => {
 })
 
 test('busy status appends a live percent when one exists', () => {
-  assert.equal(formatBusyInstallStatus('安装中', null), '安装中')
-  assert.equal(formatBusyInstallStatus('安装中', 37), '安装中 · 37%')
+  assert.equal(formatBusyInstallStatus('Installing', null), 'Installing')
+  assert.equal(formatBusyInstallStatus('Installing', 37), 'Installing · 37%')
 })

@@ -14,7 +14,7 @@ export interface COSCredentialStatus {
     secretKey?: boolean;
 }
 
-// 初始化配置数据类型
+// Initialization config data types
 export interface InitializationConfig {
     llm: {
         source: string;
@@ -30,7 +30,7 @@ export interface InitializationConfig {
         baseUrl?: string;
         /** @deprecated Use credentials.apiKey from GET responses */
         apiKey?: string;
-        dimension?: number; // 添加embedding维度字段
+        dimension?: number; // embedding dimension field
         credentials?: ModelCredentialStatus;
     };
     rerank: {
@@ -92,7 +92,7 @@ export interface InitializationConfig {
     }
 }
 
-// 下载任务状态类型
+// Download task status type
 export interface DownloadTask {
     id: string;
     modelName: string;
@@ -103,7 +103,7 @@ export interface DownloadTask {
     endTime?: string;
 }
 
-// 简化版知识库配置更新接口（只传模型ID）
+// Simplified knowledge base config update API (model IDs only)
 export interface KBModelConfigRequest {
     llmModelId: string
     embeddingModelId: string
@@ -146,7 +146,7 @@ export interface KBModelConfigRequest {
     multimodal: {
         enabled: boolean
     }
-    /** 存储引擎选择："local" | "minio" | "cos" | "obs" 等，影响文档上传与文档内图片存储 */
+    /** Storage engine choice: "local" | "minio" | "cos" | "obs" and so on; affects document uploads and storage of images inside documents */
     storageBackendId?: string
     storageProvider?: string
     nodeExtract: {
@@ -179,7 +179,7 @@ export function updateKBConfig(kbId: string, config: KBModelConfigRequest): Prom
     });
 }
 
-// 根据知识库ID执行配置更新（旧版，保留兼容性）
+// Run a config update by knowledge base ID (legacy, kept for compatibility)
 export function initializeSystemByKB(kbId: string, config: InitializationConfig): Promise<any> {
     return new Promise((resolve, reject) => {
         console.log('Starting KB config update...', kbId, config);
@@ -195,7 +195,7 @@ export function initializeSystemByKB(kbId: string, config: InitializationConfig)
     });
 }
 
-// 检查Ollama服务状态
+// Check the Ollama service status
 export function checkOllamaStatus(): Promise<{ available: boolean; version?: string; error?: string; baseUrl?: string }> {
     return new Promise((resolve, reject) => {
         get('/api/v1/initialization/ollama/status')
@@ -209,7 +209,7 @@ export function checkOllamaStatus(): Promise<{ available: boolean; version?: str
     });
 }
 
-// Ollama 模型详细信息接口
+// Ollama model details API
 export interface OllamaModelInfo {
     name: string;
     size: number;
@@ -217,7 +217,7 @@ export interface OllamaModelInfo {
     modified_at: string;
 }
 
-// 列出已安装的 Ollama 模型（详细信息）
+// List installed Ollama models (with details)
 export function listOllamaModels(): Promise<OllamaModelInfo[]> {
     return new Promise((resolve, reject) => {
         get('/api/v1/initialization/ollama/models')
@@ -231,7 +231,7 @@ export function listOllamaModels(): Promise<OllamaModelInfo[]> {
     });
 }
 
-// 检查Ollama模型状态
+// Check the Ollama model status
 export function checkOllamaModels(models: string[]): Promise<{ models: Record<string, boolean> }> {
     return new Promise((resolve, reject) => {
         post('/api/v1/initialization/ollama/models/check', { models })
@@ -245,7 +245,7 @@ export function checkOllamaModels(models: string[]): Promise<{ models: Record<st
     });
 }
 
-// 启动Ollama模型下载（异步）
+// Start an Ollama model download (async)
 export function downloadOllamaModel(modelName: string): Promise<{ taskId: string; modelName: string; status: string; progress: number }> {
     return new Promise((resolve, reject) => {
         post('/api/v1/initialization/ollama/models/download', { modelName })
@@ -259,7 +259,7 @@ export function downloadOllamaModel(modelName: string): Promise<{ taskId: string
     });
 }
 
-// 查询下载进度
+// Query download progress
 export function getDownloadProgress(taskId: string): Promise<DownloadTask> {
     return new Promise((resolve, reject) => {
         get(`/api/v1/initialization/ollama/download/progress/${taskId}`)
@@ -273,7 +273,7 @@ export function getDownloadProgress(taskId: string): Promise<DownloadTask> {
     });
 }
 
-// 获取所有下载任务
+// Get all download tasks
 export function listDownloadTasks(): Promise<DownloadTask[]> {
     return new Promise((resolve, reject) => {
         get('/api/v1/initialization/ollama/download/tasks')
@@ -301,26 +301,26 @@ export function getCurrentConfigByKB(kbId: string): Promise<InitializationConfig
     });
 }
 
-// 所有"测试连接"接口共用的通用可选参数。
-// customHeaders / extraConfig / interfaceType 对应后端 ModelTestRequest 里的同名字段，
-// 会被透传给真正的模型装配流程，保证测试连接与生产调用走完全相同的路径。
+// Shared optional params for every "test connection" API.
+// customHeaders / extraConfig / interfaceType match the fields of the same name in the backend ModelTestRequest,
+// and are passed through to the real model assembly flow, so the connection test takes exactly the same path as production calls.
 interface BaseModelTestPayload {
     spec?: ModelSpecOverride;
     customHeaders?: Record<string, string>;
     extraConfig?: Record<string, string>;
     interfaceType?: string;
-    /** 第二段密钥（如 LKEAP Rerank 的腾讯云 SecretKey） */
+    /** Second key (such as the Tencent Cloud SecretKey for LKEAP Rerank) */
     appSecret?: string;
 }
 
-// 检查远程API模型
+// Check a remote API model
 export function checkRemoteModel(modelConfig: {
     modelName: string;
     baseUrl: string;
     apiKey?: string;
     provider?: string;
-    // 编辑已存在模型时传 modelId，后端会自动从存储中带出 apiKey
-    // （前端不再回显明文密钥，所以测试连接必须用这个回填路径）
+    // When editing an existing model, send modelId and the backend fills in the apiKey from storage
+    // (the frontend no longer shows the plaintext key, so the connection test must use this backfill path)
     modelId?: string;
 } & BaseModelTestPayload): Promise<{
     available: boolean;
@@ -338,7 +338,7 @@ export function checkRemoteModel(modelConfig: {
     });
 }
 
-// 测试 Embedding 模型（本地/远程）是否可用
+// Test whether an embedding model (local or remote) works
 export function testEmbeddingModel(modelConfig: {
     source: 'local' | 'remote';
     modelName: string;
@@ -384,7 +384,7 @@ export function checkRerankModel(modelConfig: {
     });
 }
 
-// 检查 ASR 模型连接（通过 /v1/audio/transcriptions 端点测试）
+// Check the ASR model connection (tested through the /v1/audio/transcriptions endpoint)
 export function checkASRModel(modelConfig: {
     modelName: string;
     baseUrl: string;
@@ -464,22 +464,22 @@ export function testMultimodalFunction(testData: {
         formData.append('chunk_overlap', testData.chunk_overlap.toString());
         formData.append('separators', JSON.stringify(testData.separators));
 
-        // 获取鉴权Token
+        // Get the auth token
         const token = localStorage.getItem('aikb_token');
         const headers: Record<string, string> = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        // 跨空间访问请求头：直接附，避免 short-circuit "selectedTenantId
-        // === defaultTenantId 时不附" 在某些边角下让 header 静默丢失。
-        // 与 utils/request.ts、api/chat/streame.ts 行为一致。
+        // Cross-space access header: always send it, to avoid the short-circuit "do not send when selectedTenantId
+        // === defaultTenantId", which in some edge cases silently drops the header.
+        // Same behavior as utils/request.ts and api/chat/streame.ts.
         const selectedTenantId = localStorage.getItem('aikb_selected_tenant_id');
         if (selectedTenantId) {
             headers['X-Tenant-ID'] = selectedTenantId;
         }
 
-        // 使用原生fetch因为需要发送FormData
+        // Use native fetch because FormData must be sent
         fetch('/api/v1/initialization/multimodal/test', {
             method: 'POST',
             headers,
@@ -500,7 +500,7 @@ export function testMultimodalFunction(testData: {
     });
 }
 
-// 文本内容关系提取接口
+// Text relation extraction API
 export interface TextRelationExtractionRequest {
     text: string;
     tags: string[];
@@ -523,7 +523,7 @@ export interface TextRelationExtractionResponse {
     relations: Relation[];
 }
 
-// 文本内容关系提取
+// Text relation extraction
 export function extractTextRelations(request: TextRelationExtractionRequest): Promise<TextRelationExtractionResponse> {
     return new Promise((resolve, reject) => {
         post('/api/v1/initialization/extract/text-relation', request, { timeout: 60000 })
@@ -546,7 +546,7 @@ export interface FabriTextResponse {
     text: string;
 }
 
-// 文本内容生成
+// Text generation
 export function fabriText(request: FabriTextRequest): Promise<FabriTextResponse> {
     return new Promise((resolve, reject) => {
         post('/api/v1/initialization/extract/fabri-text', request)
@@ -567,7 +567,7 @@ export interface FabriTagResponse {
     tags: string[];
 }
 
-// 标签生成
+// Tag generation
 export function fabriTag(request: FabriTagRequest): Promise<FabriTagResponse> {
     return new Promise((resolve, reject) => {
         post('/api/v1/initialization/extract/fabri-tag', request)
@@ -581,7 +581,7 @@ export function fabriTag(request: FabriTagRequest): Promise<FabriTagResponse> {
     });
 }
 
-// 厂商额外配置字段（Azure api_version、LKEAP secret_key 等）。
+// Vendor extra config fields (Azure api_version, LKEAP secret_key and so on).
 // Mirrors internal/models/catalog.ExtraField.
 export interface ModelProviderExtraFieldOption {
     label: string;
@@ -623,7 +623,7 @@ export interface ModelProviderExtraField {
     secret?: boolean;
 }
 
-// 厂商内置模型目录条目。Mirrors handler.ModelCatalogEntryDTO.
+// Vendor built-in model catalog entry. Mirrors handler.ModelCatalogEntryDTO.
 export interface ModelCatalogEntry {
     id: string;
     name: string;
@@ -645,21 +645,21 @@ export interface ModelProviderThinking {
     levels: ReasoningEffortLevel[];
 }
 
-// 模型厂商信息类型。Mirrors handler.ModelProviderDTO — the frontend keeps no
+// Model vendor info type. Mirrors handler.ModelProviderDTO - the frontend keeps no
 // vendor table of its own; everything rendered for a vendor comes from here.
 export interface ModelProviderOption {
-    value: string;        // provider 标识符
-    label: string;        // 显示名称（英文 / 默认）
-    labels?: Record<string, string>;  // 按 locale 的显示名称
-    description: string;  // 描述
+    value: string;        // provider identifier
+    label: string;        // display name (English / default)
+    labels?: Record<string, string>;  // display names per locale
+    description: string;  // description
     descriptions?: Record<string, string>;
     website?: string;
-    icon?: string;        // data:image/svg+xml;base64,... 可直接用于 <img src>
+    icon?: string;        // data:image/svg+xml;base64,... usable directly in <img src>
     api?: string;
     auth?: string;
     requiresAuth?: boolean;
-    defaultUrls: Record<string, string>;  // 按模型类型区分的默认 URL
-    modelTypes: string[]; // 支持的模型类型
+    defaultUrls: Record<string, string>;  // default URL per model type
+    modelTypes: string[]; // supported model types
     extraFields?: ModelProviderExtraField[];
     credentialLabels?: ModelProviderCredentialLabel[];
     models?: ModelCatalogEntry[];
@@ -667,11 +667,11 @@ export interface ModelProviderOption {
     order?: number;
 }
 
-// 获取模型厂商列表。
+// List model vendors.
 //
-// 失败时 reject（不再吞成空数组）：唯一的调用方 stores/modelProviders 需要
-// 区分「后端真的没有厂商」和「这次请求挂了」——把失败当成空列表缓存下来，
-// 会让厂商下拉在整个会话里一直空着，直到用户刷新页面。
+// Rejects on failure (no longer swallowed into an empty array): the only caller, stores/modelProviders, must
+// tell "the backend really has no vendors" from "this request failed"; caching a failure as an empty list
+// would leave the vendor dropdown empty for the whole session until the user refreshes the page.
 export function listModelProviders(modelType?: string): Promise<ModelProviderOption[]> {
     const url = modelType
         ? `/api/v1/models/providers?model_type=${encodeURIComponent(modelType)}`
@@ -705,7 +705,7 @@ export interface ResolveModelCatalogParams {
     [extraField: string]: string | ModelSpecOverride | undefined;
 }
 
-// 目录解析结果。Mirrors handler.ResolveModelCatalog response data.
+// Catalog resolution result. Mirrors handler.ResolveModelCatalog response data.
 export interface ResolvedModelCatalog {
     provider: string;
     api: string;
@@ -722,7 +722,7 @@ export interface ResolvedModelCatalog {
     capabilities: ModelCapabilities;
 }
 
-// 解析模型的有效接入配置（协议、思考等级、上下文窗口等），供编辑器实时展示。
+// Resolve a model's effective access config (protocol, thinking levels, context window and so on) for live display in the editor.
 export function resolveModelCatalog(params: ResolveModelCatalogParams): Promise<ResolvedModelCatalog> {
     return new Promise((resolve, reject) => {
         post(`/api/v1/models/catalog/resolve`, params)

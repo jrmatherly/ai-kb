@@ -6,7 +6,8 @@ import { findTextMatches, normalizeForMatch, type TextMatch } from './sourceLoca
  */
 export function findSourceFragments(pages: string[], scope: string): Array<TextMatch & { page: number; quote: string }> {
   const table = scope.includes('|')
-  const parts = table ? scope.split(/[|\n]/u) : scope.split(/(?<=[。！？；!?;])|\n+|(?<=[\p{Script=Han}】）])\s*[à→\uE000-\uF8FF]\s*/u)
+  // Splits on CJK sentence punctuation and on the Han-text arrow markers that PDF extraction leaves between fragments.
+  const parts = table ? scope.split(/[|\n]/u) : scope.split(/(?<=[\u3002\uff01\uff1f\uff1b!?;])|\n+|(?<=[\p{Script=Han}\u3011\uff09])\s*[à→\uE000-\uF8FF]\s*/u)
   const candidates = new Set<string>()
   for (const part of parts) {
     const clean = part.trim()

@@ -27,7 +27,7 @@ test('old output-only discovery and schema records remain readable', () => {
   const data = parseMcpDiscovery(JSON.stringify({ mode: 'list_tools', tools: [{ name: 'get_log', tool_ref: 'legacy', description: 'Logs' }], total: 2, has_more: true }))
   assert.deepEqual(mcpDiscoveryRows(data), [{ name: 'get_log', description: 'Logs', status: '', serverName: '' }])
   const output = JSON.stringify({ name: 'get_log', input_schema: { type: 'object' } })
-  assert.equal(getMcpToolTitle(t, { tool_name: 'discover_mcp_tools', output }), 'agentStream.mcp.describeTool：get_log')
+  assert.equal(getMcpToolTitle(t, { tool_name: 'discover_mcp_tools', output }), 'agentStream.mcp.describeTool: get_log')
   assert.deepEqual(parseMcpDiscovery('Parameter validation failed'), {})
   assert.deepEqual(mcpDiscoveryRows({ tools: [null, 'broken', { name: 'valid' }] }), [{ name: 'valid', description: '', status: '', serverName: '' }])
   const listed = JSON.stringify({ mode: 'list_tools', tools: [{ name: 'get_log' }], total: 1 })
@@ -37,7 +37,7 @@ test('old output-only discovery and schema records remain readable', () => {
   assert.equal(getMcpToolTitle(t, {
     tool_name: 'discover_mcp_tools',
     output: JSON.stringify({ mode: 'list_tools', server_name: 'Svrlog Mcp Server', tools: [{ name: 'get_log' }], total: 1 }),
-  }), 'agentStream.mcp.listTools：Svrlog Mcp Server')
+  }), 'agentStream.mcp.listTools: Svrlog Mcp Server')
 })
 
 test('schema preview preserves required and union types without inferring undocumented requirements', () => {
@@ -66,10 +66,10 @@ test('mode-aware titles handle pending and failed proxy events', () => {
 })
 
 test('list and define views keep a one-line lead instead of dumping markdown', () => {
-  const markdown = '按条件查日志。\n\n## 使用场景\n用户给了模块名时再调用。'
-  assert.equal(mcpDescriptionLead(markdown), '按条件查日志。')
-  assert.equal(mcpDescriptionLead('根据过滤条件生成 URL。\n## 使用场景\n配合 lookup 使用。'), '根据过滤条件生成 URL。')
-  assert.equal(mcpDescriptionLead('## 返回值\nJSON 列表'), '返回值 JSON 列表')
+  const markdown = 'Query logs by condition.\n\n## When to use\nCall it once the user gives a module name.'
+  assert.equal(mcpDescriptionLead(markdown), 'Query logs by condition.')
+  assert.equal(mcpDescriptionLead('Build a URL from the filter conditions.\n## When to use\nUse with lookup.'), 'Build a URL from the filter conditions.')
+  assert.equal(mcpDescriptionLead('## Returns\nJSON list'), 'Returns JSON list')
   assert.equal(mcpDescriptionNeedsExpand(markdown), true)
-  assert.equal(mcpDescriptionNeedsExpand('短描述'), false)
+  assert.equal(mcpDescriptionNeedsExpand('Short description'), false)
 })

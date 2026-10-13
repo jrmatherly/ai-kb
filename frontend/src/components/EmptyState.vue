@@ -18,8 +18,8 @@
 
 <script setup lang="ts">
 /**
- * 统一的空状态：图标 / 标题 / 描述 / 操作区。
- * 列表页用 `icon`（TDesign 图标名），需要插图时用 `image`；`compact` 用于抽屉、卡片等小容器。
+ * Shared empty state: icon / title / description / actions.
+ * List pages use `icon` (a TDesign icon name), `image` when an illustration is needed; `compact` is for drawers, cards and other small containers.
  */
 withDefaults(
   defineProps<{

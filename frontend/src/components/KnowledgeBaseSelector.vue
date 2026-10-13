@@ -1,7 +1,7 @@
 <template>
   <div v-if="visible" class="kb-overlay" @click="close">
     <div class="kb-dropdown" @click.stop @wheel.stop :style="dropdownStyle">
-      <!-- 搜索 -->
+      <!-- Search -->
       <div class="kb-search">
         <input
           ref="searchInput"
@@ -16,7 +16,7 @@
         />
       </div>
 
-      <!-- 列表 -->
+      <!-- List -->
       <div class="kb-list" ref="kbList" @wheel.stop>
         <div
           v-for="(kb, index) in filteredKnowledgeBases"
@@ -53,7 +53,7 @@
         </div>
       </div>
 
-      <!-- 底部操作 -->
+      <!-- Footer actions -->
       <div class="kb-actions">
         <button @click="selectAll" class="kb-btn">{{ $t('common.selectAll') }}</button>
         <button @click="clearAll" class="kb-btn">{{ $t('common.clear') }}</button>
@@ -83,7 +83,7 @@ const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
-  anchorEl?: any | null // 支持 DOM 节点、ref、组件实例
+  anchorEl?: any | null // accepts a DOM node, a ref or a component instance
   dropdownWidth?: number
   offsetY?: number
 }>()
@@ -92,7 +92,7 @@ const emit = defineEmits(['close', 'update:visible'])
 
 const settingsStore = useSettingsStore()
 
-// 本地状态
+// Local state
 const searchQuery = ref('')
 const highlightedIndex = ref(0)
 const chatResources = useChatResourcesStore()
@@ -101,11 +101,11 @@ const searchInput = ref<HTMLInputElement | null>(null)
 const kbList = ref<HTMLElement | null>(null)
 const dropdownStyle = ref<Record<string, string>>({})
 
-// props 默认
+// Prop defaults
 const dropdownWidth = props.dropdownWidth ?? 300
 const offsetY = props.offsetY ?? 8
 
-// 过滤：只显示已初始化（有 embedding & summary）的
+// Filter: show only initialized bases (with embedding & summary)
 const filteredKnowledgeBases = computed(() => {
   const valid = knowledgeBases.value.filter(
     k => k.embedding_model_id && k.summary_model_id
@@ -117,20 +117,20 @@ const filteredKnowledgeBases = computed(() => {
 
 const selectedKbIds = computed(() => settingsStore.settings.selectedKnowledgeBases || [])
 
-// helper: 从 props.anchorEl 获取真实 DOM 元素（支持多种传入形式）
+// helper: get the real DOM element from props.anchorEl (accepts several forms)
 const resolveAnchorEl = () => {
   const a = props.anchorEl
   if (!a) return null
-  // 如果是 Vue ref：取 .value
+  // A Vue ref: take .value
   if (typeof a === 'object' && 'value' in a) {
     return a.value ?? null
   }
-  // 如果是组件实例（可能有 $el）
+  // A component instance (may have $el)
   if (typeof a === 'object' && '$el' in a) {
     // @ts-ignore
     return a.$el ?? null
   }
-  // 直接 DOM 节点或 DOMRect
+  // A DOM node or DOMRect directly
   return a
 }
 
@@ -172,7 +172,7 @@ const loadKnowledgeBases = async () => {
   }
 }
 
-// 计算下拉位置：水平居中对齐到按钮中点，处理视口边界
+// Compute the dropdown position: center horizontally on the button's midpoint, handle viewport edges
 const updateDropdownPosition = () => {
   const anchor = resolveAnchorEl()
   
@@ -181,7 +181,7 @@ const updateDropdownPosition = () => {
   const zoom = getRootZoom()
   const { width: vwFallback, height: vhFallback } = cssViewportSize(zoom)
 
-  // fallback 函数
+  // fallback function
   const applyFallback = () => {
     const topFallback = Math.max(80, vhFallback / 2 - 160);
     dropdownStyle.value = {
@@ -200,7 +200,7 @@ const updateDropdownPosition = () => {
     return
   }
 
-  // 获取 anchor 的 bounding rect（相对于视口）
+  // The anchor's bounding rect (relative to the viewport)
   let rawRect: { top: number; left: number; right: number; bottom: number; width: number; height: number } | null = null
   try {
     if (typeof anchor.getBoundingClientRect === 'function') {
@@ -226,22 +226,22 @@ const updateDropdownPosition = () => {
   const vw = vwFallback
   const vh = vhFallback
   
-  // 左对齐到触发元素的左边缘
-  // 使用 Math.floor 而不是 Math.round，避免像素对齐问题
+  // Left-align with the trigger element's left edge
+  // Math.floor instead of Math.round to avoid pixel alignment issues
   let left = Math.floor(rect.left)
   
-  // 边界处理：不超出视口左右（留 16px margin）
+  // Edge handling: stay inside the viewport on the left and right (16px margin)
   const minLeft = 16
   const maxLeft = Math.max(16, vw - dropdownWidth - 16)
   left = Math.max(minLeft, Math.min(maxLeft, left))
 
-  // 垂直定位：紧贴按钮，使用合理的高度避免空白
-  const preferredDropdownHeight = 280 // 优选高度（紧凑且够用）
-  const maxDropdownHeight = 360 // 最大高度
-  const minDropdownHeight = 200 // 最小高度
-  const topMargin = 20 // 顶部留白
-  const spaceBelow = vh - rect.bottom // 下方剩余空间
-  const spaceAbove = rect.top // 上方剩余空间
+  // Vertical position: hug the button, with a reasonable height to avoid blank space
+  const preferredDropdownHeight = 280 // preferred height (compact but enough)
+  const maxDropdownHeight = 360 // max height
+  const minDropdownHeight = 200 // min height
+  const topMargin = 20 // top margin
+  const spaceBelow = vh - rect.bottom // space left below
+  const spaceAbove = rect.top // space left above
   
   console.log('[KB Selector] Space check:', {
     spaceBelow,
@@ -252,29 +252,29 @@ const updateDropdownPosition = () => {
   let actualHeight: number
   let shouldOpenBelow: boolean
   
-  // 优先考虑下方空间
+  // Prefer the space below
   if (spaceBelow >= minDropdownHeight + offsetY) {
-    // 下方有足够空间，向下弹出
+    // Enough space below: open downward
     actualHeight = Math.min(preferredDropdownHeight, spaceBelow - offsetY - 16)
     shouldOpenBelow = true
     console.log('[KB Selector] Position: below button', { actualHeight })
   } else {
-    // 向上弹出，优先使用 preferredHeight，必要时才扩展到 maxHeight
+    // Open upward, preferring preferredHeight and growing to maxHeight only when needed
     const availableHeight = spaceAbove - offsetY - topMargin
     if (availableHeight >= preferredDropdownHeight) {
-      // 有足够空间显示优选高度
+      // Enough space for the preferred height
       actualHeight = preferredDropdownHeight
     } else {
-      // 空间不够，使用可用空间（但不小于最小高度）
+      // Not enough space: use the available space (but not less than the min height)
       actualHeight = Math.max(minDropdownHeight, availableHeight)
     }
     shouldOpenBelow = false
     console.log('[KB Selector] Position: above button', { actualHeight })
   }
   
-  // 根据弹出方向使用不同的定位方式
+  // Use a different positioning for each direction
   if (shouldOpenBelow) {
-    // 向下弹出：使用 top 定位
+    // Opening downward: position with top
     const top = Math.floor(rect.bottom + offsetY)
     console.log('[KB Selector] Opening below, top:', top)
     dropdownStyle.value = {
@@ -288,7 +288,7 @@ const updateDropdownPosition = () => {
       padding: '0'
     }
   } else {
-    // 向上弹出：使用 bottom 定位
+    // Opening upward: position with bottom
     const bottom = vh - rect.top + offsetY
     console.log('[KB Selector] Opening above, bottom:', bottom)
     dropdownStyle.value = {
@@ -304,17 +304,17 @@ const updateDropdownPosition = () => {
   }
 }
 
-// 事件监听器引用，用于清理
+// Event listener refs, for cleanup
 let resizeHandler: (() => void) | null = null
 let scrollHandler: (() => void) | null = null
 
-// 当 visible 变化时处理
+// Handle visible changes
 watch(() => props.visible, async (v) => {
   if (v) {
     await loadKnowledgeBases();
-    // 等 DOM 渲染完再计算位置
+    // Compute the position after the DOM renders
     await nextTick();
-    // 多次更新位置确保准确
+    // Update the position several times to make sure it is accurate
     requestAnimationFrame(() => {
       updateDropdownPosition();
       requestAnimationFrame(() => {
@@ -324,9 +324,9 @@ watch(() => props.visible, async (v) => {
         }, 50);
       });
     });
-    // 确保 focus
+    // Make sure of focus
     nextTick(() => searchInput.value?.focus());
-    // 监听 resize/scroll 做微调（使用 passive 提高性能）
+    // Listen to resize/scroll for fine adjustments (passive for performance)
     resizeHandler = () => updateDropdownPosition();
     scrollHandler = () => updateDropdownPosition();
     window.addEventListener('resize', resizeHandler, { passive: true });
@@ -334,7 +334,7 @@ watch(() => props.visible, async (v) => {
   } else {
     searchQuery.value = '';
     highlightedIndex.value = 0;
-    // 清理事件监听器
+    // Remove the event listeners
     if (resizeHandler) {
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;
@@ -348,7 +348,7 @@ watch(() => props.visible, async (v) => {
 </script>
 
 <style scoped lang="less">
-// 确保所有元素使用 border-box 盒模型
+// Make every element use the border-box box model
 .kb-overlay,
 .kb-overlay *,
 .kb-overlay *::before,
@@ -361,11 +361,11 @@ watch(() => props.visible, async (v) => {
   inset: 0;
   z-index: 9999;
   background: transparent;
-  /* 不阻止点击穿透，但防止触摸滚动 */
+  /* Do not block click-through, but prevent touch scrolling */
   touch-action: none;
 }
 
-/* 下拉面板使用 fixed 定位，相对于视口 */
+/* The dropdown panel is position: fixed, relative to the viewport */
 .kb-dropdown {
   position: fixed !important;
   background: var(--td-bg-color-container);
@@ -376,13 +376,13 @@ watch(() => props.visible, async (v) => {
   animation: fadeIn 0.15s ease-out;
   z-index: 10000;
   margin: 0;
-  /* 确保定位准确，动画使用 scale 而不是 translate */
+  /* Keep positioning accurate; the animation uses scale rather than translate */
   transform-origin: top left;
   display: flex;
   flex-direction: column;
 }
 
-/* 宽度由 JS 控制（dropdownWidth），这里只做内部样式 */
+/* Width is set by JS (dropdownWidth); this only styles the inside */
 .kb-search {
   padding: 8px 10px;
   border-bottom: .5px solid var(--td-component-stroke);
@@ -404,11 +404,11 @@ watch(() => props.visible, async (v) => {
 
 .kb-list {
   flex: 1;
-  min-height: 0; /* 允许 flex 子元素缩小 */
+  min-height: 0; /* lets flex children shrink */
   max-height: 260px;
   overflow-y: auto;
   padding: 6px 8px;
-  /* 确保滚动限制在此容器内 */
+  /* Keep scrolling inside this container */
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }

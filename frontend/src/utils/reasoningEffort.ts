@@ -87,7 +87,7 @@ export function supportedLevels(capabilities?: ThinkingCapabilities | null): Rea
  * When the model reports capabilities, `thinking_levels` is authoritative and
  * is followed EXACTLY — including the absence of `off`. Always-on reasoning
  * models (deepseek-reasoner, qwq-plus, the gemini-3 family, ...) map `off` to
- * null in the catalog, so offering "关闭" there would promise something the
+ * null in the catalog, so offering "Off" there would promise something the
  * backend cannot deliver: no switch is sent and the model thinks anyway.
  *
  * With no capabilities at all (model list not loaded, local/Ollama model, ...)
@@ -105,7 +105,7 @@ export function optionsFor(capabilities?: ThinkingCapabilities | null): Reasonin
 
 /**
  * Whether the model reports capabilities but cannot be switched off — the UI
- * must say so, otherwise the absence of a "关闭" option looks like a bug.
+ * must say so, otherwise the absence of an "Off" option looks like a bug.
  */
 export function modelCannotDisableThinking(capabilities?: ThinkingCapabilities | null): boolean {
   if (!capabilities || !Array.isArray(capabilities.thinking_levels)) return false

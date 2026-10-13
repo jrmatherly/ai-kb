@@ -137,9 +137,9 @@ test('nearestTickId picks the closest tick to the pointer', () => {
 })
 
 test('questionDisplayText uses trimmed content, else the placeholder', () => {
-  assert.equal(questionDisplayText('  hello\nworld  ', '(附件)'), 'hello world')
-  assert.equal(questionDisplayText('   ', '(附件)'), '(附件)')
-  assert.equal(questionDisplayText(undefined, '(附件)'), '(附件)')
+  assert.equal(questionDisplayText('  hello\nworld  ', '(attachment)'), 'hello world')
+  assert.equal(questionDisplayText('   ', '(attachment)'), '(attachment)')
+  assert.equal(questionDisplayText(undefined, '(attachment)'), '(attachment)')
 })
 
 test('offsetFromScrollContent is viewport-relative plus scrollTop', () => {

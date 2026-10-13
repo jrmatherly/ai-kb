@@ -53,7 +53,7 @@
           </div>
         </div>
 
-        <!-- 自助创建入口与 /auth/me 返回的后端能力保持一致。 -->
+        <!-- The self-service create entry follows the backend capabilities returned by /auth/me. -->
         <div v-if="authStore.canCreateTenant" class="tenant-create-action" @click="openCreateDialog">
           <t-icon name="add" class="tenant-create-icon" />
           <span class="tenant-create-label">{{ $t('tenant.create.action') }}</span>
@@ -61,10 +61,10 @@
       </div>
     </Transition>
 
-    <!-- 遮罩层 -->
+    <!-- Overlay -->
     <div v-if="showDropdown" class="tenant-overlay" @click="closeDropdown"></div>
 
-    <!-- 创建工作区弹窗：复用共享组件，TenantSelector 与 UserMenu 都用它 -->
+    <!-- Create-workspace dialog: reuses the shared component that both TenantSelector and UserMenu use -->
     <CreateTenantDialog v-model:visible="createDialogVisible" @created="onTenantCreated" />
   </div>
 </template>
@@ -94,7 +94,7 @@ const selectorRef = ref<HTMLElement | null>(null)
 const tenantListRef = ref<HTMLElement | null>(null)
 const searchInput = ref<HTMLInputElement | null>(null)
 
-// 分页相关
+// Pagination
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
@@ -102,9 +102,9 @@ const loading = ref(false)
 const searchTimer = ref<number | null>(null)
 
 const selectedTenantId = computed(() => authStore.selectedTenantId)
-// home 空间 id 来自 user.tenant_id（注册时分配、永不变）。不要读
-// authStore.tenant.id —— 那是当前激活空间，会随 X-Tenant-ID 切换；用它
-// 当 home 会让「切回 home」分支错判，详见 useHomeTenant() 注释。
+// The home space id comes from user.tenant_id (assigned at sign-up, never changes). Do not read
+// authStore.tenant.id - that is the currently active space, which changes with X-Tenant-ID; using it
+// as home makes the "switch back to home" branch misjudge, see the useHomeTenant() comment.
 const defaultTenantId = computed(() =>
   authStore.user?.tenant_id ? Number(authStore.user.tenant_id) : null,
 )
@@ -115,14 +115,14 @@ const currentTenantId = computed(() => {
 
 const currentTenantName = computed(() => {
   if (!currentTenantId.value) return t('tenant.unknown')
-  // 首先从当前加载的空间列表中查找
+  // Look in the currently loaded space list first
   const tenant = tenants.value.find(t => t.id === currentTenantId.value)
   if (tenant) return tenant.name
-  // 如果是选中的空间，使用保存的空间名称
+  // For the selected space, use the saved space name
   if (selectedTenantId.value && authStore.selectedTenantName) {
     return authStore.selectedTenantName
   }
-  // 最后使用默认空间名称
+  // Finally fall back to the default space name
   return authStore.tenant?.name || t('tenant.unknown')
 })
 
@@ -165,16 +165,16 @@ const clearSearch = () => {
 }
 
 const selectTenant = (tenantId: number) => {
-  // 找到选中的空间信息
+  // Find the selected space info
   const selectedTenant = tenants.value.find(t => t.id === tenantId)
 
-  // 始终写入 override，让 request.ts 永远附 X-Tenant-ID 覆盖 JWT；不要因为
-  // 切到 home 就清空（详见 UserMenu.switchToTenant 同名注释）。服务端持久化
-  // 偏好仍然区分对待——切到 home 时清 last_active，让下次干净重登回到 home。
+  // Always write the override so request.ts always sends X-Tenant-ID over the JWT; do not clear it
+  // when switching to home (see the comment of the same name in UserMenu.switchToTenant). The server-side persisted
+  // preference still treats it differently: switching to home clears last_active, so the next clean sign-in lands on home.
   const switchingToHome = tenantId === defaultTenantId.value
-  // 切到 home 时，selectedTenant 可能因为分页 / 搜索没把 home 加载进列表，
-  // 退而求其次从 memberships 上挑名字。注意不要回退到 authStore.tenant?.name
-  // —— 那是当前激活空间的名字，在 active != home 的会话里就是 peer 的名字。
+  // When switching to home, selectedTenant may not have home loaded in the list because of pagination or search,
+  // so fall back to picking the name from memberships. Do not fall back to authStore.tenant?.name
+  // - that is the name of the currently active space, which in a session where active != home is the peer's name.
   const homeNameFallback = switchingToHome
     ? (authStore.memberships ?? []).find((m) => Number(m.tenant_id) === tenantId)?.tenant_name
       || null
@@ -189,7 +189,7 @@ const selectTenant = (tenantId: number) => {
   // empty/raw value.
   const membership = (authStore.memberships ?? []).find((m) => Number(m.tenant_id) === tenantId)
   const roleLabel = membership ? formatRole(membership.role) : ''
-  // Toast 在 reload 后由 App.vue 弹出（直接在这里弹会被 hard reload 干掉）。
+  // The toast is shown by App.vue after the reload (showing it here would be wiped by the hard reload).
   stashTenantSwitchToast({
     name: displayName,
     role: roleLabel || undefined,
@@ -198,7 +198,7 @@ const selectTenant = (tenantId: number) => {
   // Persist "last active tenant" preference (switching to home clears
   // it). Fire-and-forget, but race it against the existing 500ms grace
   // window so most writes finish before the hard reload tears the page
-  // down. 切换空间后跳转到新空间下安全的入口（详见 tenantSwitch.ts 注释）。
+  // down. After a space switch, go to a safe entry point in the new space (see the tenantSwitch.ts comment).
   const persist = persistLastActiveTenantPreference(switchingToHome ? null : tenantId)
   Promise.race([persist, new Promise((r) => setTimeout(r, 500))])
     .finally(() => navigateAfterTenantSwitch())
@@ -212,8 +212,8 @@ const loadTenants = async (append = false) => {
     const keyword = searchQuery.value.trim()
     let tenantID: number | undefined = undefined
 
-    // 如果是纯数字，同时作为 tenant_id 和 keyword 搜索
-    // 这样既能精确匹配空间ID，也能模糊匹配名称中包含数字的空间
+    // A purely numeric query searches as both tenant_id and keyword,
+    // so it matches the space ID exactly and also fuzzy-matches names that contain the digits
     if (keyword && /^\d+$/.test(keyword)) {
       tenantID = Number(keyword)
     }
@@ -269,8 +269,8 @@ const handleScroll = () => {
   }
 }
 
-// ---- 创建新工作区 ----
-// dialog 由共享组件 CreateTenantDialog 渲染，这里只负责打开 / 接收创建结果。
+// ---- Create a new workspace ----
+// The dialog is rendered by the shared CreateTenantDialog component; this only opens it and receives the result.
 const createDialogVisible = ref(false)
 
 const openCreateDialog = () => {
@@ -283,9 +283,9 @@ const openCreateDialog = () => {
 }
 
 const onTenantCreated = async (newTenant: TenantInfo) => {
-  // 把新空间合并进当前列表并切过去。和 selectTenant 走同一条链路：
-  // setSelectedTenant + navigateAfterTenantSwitch。后端 X-Tenant-ID 中
-  // 间件会查 tenant_members 校验，EnsureOwner 已经在后端写好 owner 行。
+  // Merge the new space into the current list and switch to it, through the same path as selectTenant:
+  // setSelectedTenant + navigateAfterTenantSwitch. The backend X-Tenant-ID middleware
+  // checks tenant_members, and EnsureOwner has already written the owner row on the backend.
   tenants.value = [newTenant, ...tenants.value.filter(t => t.id !== newTenant.id)]
   total.value = total.value + 1
   authStore.setAllTenants(tenants.value)
@@ -299,7 +299,7 @@ const onTenantCreated = async (newTenant: TenantInfo) => {
 }
 
 onMounted(() => {
-  // 预加载空间列表
+  // Preload the space list
   loadTenants()
 })
 
@@ -605,7 +605,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-// 下拉动画
+// Dropdown animation
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition: all var(--app-motion-base) cubic-bezier(0.4, 0, 0.2, 1);

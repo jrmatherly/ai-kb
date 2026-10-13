@@ -1,18 +1,18 @@
 /**
- * 全局统一下拉菜单样式
+ * Global shared dropdown menu styles
  * 
- * 适用于所有场景的 popup/dropdown 菜单，包括：
- * - 卡片操作菜单（知识库、智能体、组织）
- * - 文档操作菜单
- * - 对话会话菜单
- * - 上传操作菜单
+ * For popup and dropdown menus in every context, including:
+ * - Card action menus (knowledge bases, agents, organizations)
+ * - Document action menus
+ * - Chat session menus
+ * - Upload action menus
  * 
- * 使用方式：
- * 1. <t-popup> + .popup-menu 自定义内容模式: overlayClassName="card-more-popup"
- * 2. <t-dropdown> TDesign 下拉模式: 自动匹配全局样式
+ * Usage:
+ * 1. <t-popup> + .popup-menu custom content mode: overlayClassName="card-more-popup"
+ * 2. <t-dropdown> TDesign dropdown mode: matches the global styles automatically
  */
 
-/* 弹出动画 */
+/* Pop-in animation */
 @keyframes dropdownSlideIn {
   from {
     opacity: 0;
@@ -36,7 +36,7 @@
 }
 
 /* ============================================
-   一、Popup 容器统一样式（<t-popup> 模式）
+   1. Shared popup container styles (<t-popup> mode)
    ============================================ */
 .card-more-popup {
   z-index: 99 !important;
@@ -57,7 +57,7 @@
 }
 
 /* ============================================
-   二、自定义菜单项统一样式（.popup-menu 模式）
+   2. Shared custom menu item styles (.popup-menu mode)
    ============================================ */
 .popup-menu {
   display: flex;
@@ -136,7 +136,7 @@
 }
 
 /* ============================================
-   三、文档操作菜单统一样式（.card-more 容器）
+   3. Shared document action menu styles (.card-more container)
    ============================================ */
 .card-more {
   z-index: 99 !important;
@@ -352,8 +352,8 @@
 }
 
 /* ============================================
-   四、TDesign Dropdown 统一样式
-   适用于 <t-dropdown> 组件（挂载到 body 上）
+   4. Shared TDesign Dropdown styles
+   For the <t-dropdown> component (mounted on body)
    ============================================ */
 .t-popup__content.t-dropdown {
   border: 1px solid var(--td-component-stroke);
@@ -468,7 +468,7 @@
       &.t-dropdown__item--active { color: var(--td-brand-color); }
     }
 
-    /* TDesign error 主题项（删除操作） */
+    /* TDesign error theme items (delete actions) */
     &.t-dropdown__item--theme-error {
       color: var(--td-error-color-6) !important;
       margin-top: 4px;
@@ -509,7 +509,7 @@
 
 
 /* ============================================
-   五、锚定表单/确认弹层（成员邀请、Wiki 移动/删除等）
+   5. Anchored form and confirmation popups (member invitation, Wiki move and delete and so on)
    ============================================ */
 .anchored-form-popup-overlay {
   z-index: 3500 !important;
@@ -574,7 +574,7 @@
 }
 
 /* ============================================
-   六、暗色模式增强
+   6. Dark mode enhancements
    ============================================ */
 :root[theme-mode="dark"] {
   .card-more-popup .t-popup__content,

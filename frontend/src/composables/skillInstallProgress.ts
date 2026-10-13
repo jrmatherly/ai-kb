@@ -25,7 +25,7 @@ export function installRunFinished(event: { done?: boolean; stage?: string } | u
 }
 
 // A stream without Redis used to close immediately with done=true and percent=0.
-// That is not a real progress reading, so the catalog row keeps "安装中".
+// That is not a real progress reading, so the catalog row keeps "Installing".
 export function liveInstallPercent(
   event: InstallProgressEvent | undefined,
 ): number | null {

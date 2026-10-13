@@ -74,7 +74,7 @@ export function useCmdkSearch(options: {
   chunkLimit?: number
   /** Debounce delay in ms. */
   debounceMs?: number
-  /** 当前部署是否提供智能体路由；不提供时不发起预加载请求。 */
+  /** Whether this deployment offers agent routes; skip the preload request when it does not. */
   agentsEnabled?: () => boolean
 }) {
   const debounceMs = options.debounceMs ?? 350

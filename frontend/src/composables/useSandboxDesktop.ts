@@ -4,28 +4,28 @@ import { post } from '@/utils/request'
 
 export type SandboxDesktopStatus =
   | 'idle'
-  /** 懒启动中：start-desktop.sh 通常要 3–8 秒。 */
+  /** Lazy start in progress: start-desktop.sh usually takes 3 to 8 seconds. */
   | 'starting'
   | 'connected'
   | 'disconnected'
-  /** 501：后端不支持中继，或镜像里没有桌面。 */
+  /** 501: the backend does not support the relay, or the image has no desktop. */
   | 'unsupported'
-  /** 409 DESKTOP_BUSY：本会话已有一个桌面连接。 */
+  /** 409 DESKTOP_BUSY: this session already has a desktop connection. */
   | 'busy'
-  /** 503：镜像对但桌面没起来，可重试。 */
+  /** 503: the image is right but the desktop did not come up; retryable. */
   | 'start_failed'
-  /** 沙箱在连接期间被技能安装重建了。 */
+  /** The sandbox was rebuilt by a skill install during the connection. */
   | 'rebuilt'
-  /** 409 SANDBOX_NOT_BOUND：会话还没有沙箱。 */
+  /** 409 SANDBOX_NOT_BOUND: the session has no sandbox yet. */
   | 'needs_provision'
-  /** 409 SANDBOX_PAUSED：会话有沙箱但已暂停，唤醒需要确认。 */
+  /** 409 SANDBOX_PAUSED: the session has a sandbox but it is paused; waking it needs confirmation. */
   | 'paused'
   | 'unauthorized'
   | 'error'
 
 const RECONNECT_BASE_DELAY_MS = 1000
 const RECONNECT_MAX_DELAY_MS = 30000
-// 活动上报只在 opcode 解析降级时才是唯一信号，所以宁可稀疏也不要吵。
+// Activity reports are the only signal only when opcode parsing degrades, so sparse is better than noisy.
 const ACTIVITY_REPORT_MIN_INTERVAL_MS = 30000
 
 // X11 keysyms. Linux guests paste/copy with Ctrl, not the Super key a Mac
@@ -117,8 +117,8 @@ async function mintDesktopTicket(sessionId: string): Promise<string> {
 }
 
 /**
- * post() 拒绝值：非枚举 `$httpStatus` + gin `{ error: "<code>" }`。
- * 409 同时表示 DESKTOP_BUSY 和 SANDBOX_NOT_BOUND，必须看 error 才能区分。
+ * post() rejection value: a non-enumerable `$httpStatus` + gin `{ error: "<code>" }`.
+ * 409 means both DESKTOP_BUSY and SANDBOX_NOT_BOUND, so error must be read to tell them apart.
  */
 function statusFromHttpStatus(
   status: number,
@@ -156,11 +156,11 @@ function httpStatusFromRejected(err: unknown): number | undefined {
 }
 
 /**
- * Ticket POST 失败走 HTTP 状态码（statusFromHttpStatus）。Ensure 失败
- * （SANDBOX_NOT_BOUND / SANDBOX_PAUSED 等）在升级后用 close reason 下发，
- * 因为浏览器 WebSocket API 读不到握手 HTTP 状态。升级之后的可预期关闭
- * （SANDBOX_REBUILT / IDLE_DISCONNECTED 等）同样走 CloseEvent.reason，
- * 不是 noVNC 1.7 的 disconnect detail（只有 `{ clean }`）。
+ * A failed ticket POST goes by the HTTP status code (statusFromHttpStatus). An Ensure failure
+ * (SANDBOX_NOT_BOUND / SANDBOX_PAUSED and so on) is delivered after the upgrade as the close reason,
+ * because the browser WebSocket API cannot read the handshake HTTP status. Expected closes after the upgrade
+ * (SANDBOX_REBUILT / IDLE_DISCONNECTED and so on) also use CloseEvent.reason,
+ * not the disconnect detail of noVNC 1.7 (which only has `{ clean }`).
  */
 function statusFromCloseReason(reason: string): SandboxDesktopStatus | null {
   switch (reason) {
@@ -201,7 +201,7 @@ export function useSandboxDesktop(
   let lastActivityReport = 0
   let everConnected = false
   let detachClipboard: (() => void) | null = null
-  // 当前这次连接是否带创建意图。只由 connect(..., { provision: true }) 置真。
+  // Whether this connection carries creation intent. Set true only by connect(..., { provision: true }).
   let allowProvision = false
 
   function clearClipboardBridge() {
@@ -221,7 +221,7 @@ export function useSandboxDesktop(
   function scheduleReconnect() {
     if (disposed || !wanted || !target) return
     clearReconnectTimer()
-    // 自动重连不得复活已被回收或暂停的沙箱：只有用户点击才携带创建意图。
+    // An automatic reconnect must not revive a reclaimed or paused sandbox: only a user click carries creation intent.
     allowProvision = false
     const delay = Math.min(
       RECONNECT_BASE_DELAY_MS * 2 ** reconnectAttempt,
@@ -255,7 +255,7 @@ export function useSandboxDesktop(
     if (!sid) return
 
     opening = true
-    // 懒启动跑完要 3–8 秒，期间必须有明确反馈，否则用户以为卡死。
+    // The lazy start takes 3 to 8 seconds, so there must be clear feedback meanwhile, or the user thinks it froze.
     status.value = 'starting'
     let socket: WebSocket | undefined
     try {
@@ -263,7 +263,7 @@ export function useSandboxDesktop(
       if (disposed || !wanted || !target) return
 
       socket = new WebSocket(buildUrl(ticket), ['binary'])
-      // 必须用 addEventListener：noVNC Websock.attach 会覆盖 socket.onclose。
+      // Must use addEventListener: noVNC Websock.attach overwrites socket.onclose.
       let nativeCloseReason = ''
       socket.addEventListener('close', (event: CloseEvent) => {
         nativeCloseReason = typeof event.reason === 'string' ? event.reason : ''
@@ -274,14 +274,14 @@ export function useSandboxDesktop(
       }
 
       const client = new RFB(target, socket, {
-        // 故意不传 credentials：RFB 安全类型是 None，认证在 websockify 那一跳，
-        // 由后端加 Authorization 头完成。
-        // 不传 wsProtocols：子协议已在 new WebSocket(..., ['binary']) 里协商。
+        // Deliberately no credentials: the RFB security type is None; auth happens at the websockify hop,
+        // where the backend adds the Authorization header.
+        // No wsProtocols: the subprotocol is already negotiated in new WebSocket(..., ['binary']).
       })
       client.scaleViewport = true
-      // 必须为 false。它同时是后端中继不解析 RFB opcode 251 的前提条件
-      // （internal/handler/session/sandbox_desktop_rfb.go 的 rfbClientMessageSize）。
-      // 为了「自适应分辨率」打开它，坏掉的是空闲判定而不是画面。
+      // Must be false. It is also the precondition for the backend relay not parsing RFB opcode 251
+      // (rfbClientMessageSize in internal/handler/session/sandbox_desktop_rfb.go).
+      // Turning it on for "adaptive resolution" breaks the idle detection, not the picture.
       client.resizeSession = false
       client.background = '#1e1e1e'
       client.focusOnClick = true
@@ -368,9 +368,9 @@ export function useSandboxDesktop(
       status.value = 'idle'
     },
     /**
-     * 上报键鼠活动。它只在后端 opcode 解析降级（遇到未知 opcode）时才是唯一的
-     * 活动来源，正常情况下是冗余的——这也是它不能作为主信号的原因：不上报就能
-     * 白嫖沙箱 TTL。
+     * Report keyboard and mouse activity. It is the only activity source only when the backend's opcode parsing degrades (an unknown opcode);
+     * normally it is redundant, which is also why it cannot be the main signal: not reporting would get
+     * the sandbox TTL for free.
      */
     reportActivity() {
       const now = Date.now()
@@ -380,7 +380,7 @@ export function useSandboxDesktop(
         `/api/v1/sessions/${encodeURIComponent(sessionId.value)}/sandbox/desktop/activity`,
         {},
       ).catch(() => {
-        // 上报失败不影响画面，也不该打扰用户。
+        // A failed report does not affect the picture and should not bother the user.
       })
     },
     dispose() {

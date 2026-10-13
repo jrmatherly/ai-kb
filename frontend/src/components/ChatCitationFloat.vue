@@ -38,7 +38,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const loadingText = t('common.loading')
 
-// 预览只放纯文本摘录，去掉 Markdown 标记和多余空行
+// The preview holds only a plain-text excerpt, without Markdown markup or extra blank lines
 const plainContent = computed(() => props.float.content
   .replace(/^\s*([-*_])\1{2,}\s*$/gm, '')
   .replace(/^#{1,6}\s+/gm, '')

@@ -26,8 +26,9 @@ function spanningLabel(scope: string): string {
 export function tableFragmentPages(pages: string[], scope: string): string[] {
   const qualifier = spanningLabel(scope)
   if (!scope.includes('|') || !qualifier) return pages
-  const ordinal = qualifier.match(/^[一二三四五六七八九十百]+(.+)$/u)
-  const heading = ordinal ? new RegExp(`^[一二三四五六七八九十百]+${ordinal[1]}`) : null
+  // Chinese ordinal prefixes (one to ten, hundred) on table headings.
+  const ordinal = qualifier.match(/^[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e]+(.+)$/u)
+  const heading = ordinal ? new RegExp(`^[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e]+${ordinal[1]}`) : null
   let active = false
   return pages.map(page => page.split('\n').map(line => {
     const norm = normalizeForMatch(line)
@@ -58,8 +59,8 @@ export function findTableSource(pages: string[], scope: string): TableSourceMatc
       return row
     })
   })
-  const ordinalLabel = qualifier.match(/^[一二三四五六七八九十百]+(.+)$/u)
-  const heading = ordinalLabel ? new RegExp(`^[一二三四五六七八九十百]+${ordinalLabel[1]}`) : null
+  const ordinalLabel = qualifier.match(/^[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e]+(.+)$/u)
+  const heading = ordinalLabel ? new RegExp(`^[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u5341\u767e]+${ordinalLabel[1]}`) : null
   let active = !qualifier
   const allowed = rows.map(row => {
     const label = heading ? row.norm.match(heading)?.[0] : row.norm.startsWith(qualifier) ? qualifier : undefined

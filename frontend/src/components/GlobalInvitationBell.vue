@@ -1,10 +1,10 @@
 <template>
-  <!-- 全局右上角"待处理邀请"铃铛。
-       - 与原先 UserMenu 中铃铛的逻辑一致：只在 pendingInvitationCount > 0 时渲染，
-         空收件箱场景不占用角落像素。
-       - 固定定位、z-index 远低于 t-drawer 默认 2500，业务页面右侧抽屉（FAQ、KB 调试、
-         Tenant 审计、SettingDrawer 等）弹出时会自然覆盖铃铛，不需要特意联动隐藏。
-       - 点击铃铛复用同一份 MyInvitationsDialog，行为与之前一致。 -->
+  <!-- Global top-right "pending invitations" bell.
+       - Same logic as the bell that used to live in UserMenu: renders only when pendingInvitationCount > 0,
+         so an empty inbox takes no corner pixels.
+       - Fixed position with a z-index far below t-drawer's default 2500, so right-side drawers on business pages (FAQ, KB debugging,
+         tenant audit, SettingDrawer and so on) naturally cover the bell with no explicit hide logic.
+       - Clicking the bell reuses the same MyInvitationsDialog, with unchanged behavior. -->
   <template v-if="pendingInvitationCount > 0">
     <t-badge :count="pendingInvitationCount" :max-count="99" :offset="[6, 4]"
       class="global-invitation-bell">
@@ -37,8 +37,8 @@ const openDialog = () => {
   position: fixed;
   top: 12px;
   right: 16px;
-  /* 远低于 TDesign 抽屉的默认 z-index (2500)，确保业务页右侧抽屉弹出时能正常盖住铃铛。
-     高于普通页面内容（一般 0~10），避免被列表卡片覆盖。 */
+  /* Far below the TDesign drawer's default z-index (2500), so right-side drawers on business pages cover the bell.
+     Above ordinary page content (usually 0 to 10), so list cards do not cover it. */
   z-index: 100;
 }
 
@@ -51,7 +51,7 @@ const openDialog = () => {
   padding: 0;
   border: 1px solid var(--td-component-stroke);
   border-radius: var(--app-radius-lg);
-  /* 用 container 背景而非透明，铃铛悬在内容区上方时和不同颜色的页面背景都能看清。 */
+  /* Container background instead of transparent, so the bell stays legible over page backgrounds of any color. */
   background: var(--td-bg-color-container);
   color: var(--td-text-color-secondary);
   cursor: pointer;

@@ -13,7 +13,7 @@ import { useEditorResourcesStore } from '@/stores/editorResources'
 import { useOrganizationStore } from '@/stores/organization'
 import { createSequencedRefresh } from '@/stores/sequencedRefresh'
 
-/** 登出时丢弃 Pinia 内的空间级资源缓存，避免 SPA 重登复用上一账号数据。 */
+/** On logout, drop the space-level resource caches in Pinia so an SPA re-login does not reuse the previous account's data. */
 function clearSessionResourceCaches() {
   useChatResourcesStore().invalidate()
   useEditorResourcesStore().invalidate()
@@ -30,7 +30,7 @@ function reloadUserPreferences() {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  // 状态
+  // State
   const user = ref<UserInfo | null>(null)
   const tenant = ref<TenantInfo | null>(null)
   const token = ref<string>('')
@@ -62,7 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const autoAcceptInvitation = ref(false)
 
-  // 计算属性
+  // Getters
   const isLoggedIn = computed(() => {
     return !!token.value && !!user.value
   })
@@ -182,15 +182,15 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const effectiveTenantId = computed(() => {
-    // 如果选择了其他空间，使用选择的空间ID，否则使用用户默认空间ID
+    // Use the selected space ID if another space was chosen, otherwise the user's default space ID
     return selectedTenantId.value || (tenant.value?.id ? Number(tenant.value.id) : null)
   })
 
-  // 操作方法
+  // Actions
   const setUser = (userData: UserInfo) => {
     const previousId = user.value?.id
     user.value = userData
-    // 保存到localStorage
+    // Save to localStorage
     localStorage.setItem('aikb_user', JSON.stringify(userData))
     if (previousId !== userData.id) {
       reloadUserPreferences()
@@ -218,7 +218,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const setKnowledgeBases = (kbList: KnowledgeBaseInfo[]) => {
-    // 确保输入是数组
+    // Make sure the input is an array
     knowledgeBases.value = Array.isArray(kbList) ? kbList : []
     localStorage.setItem('aikb_knowledge_bases', JSON.stringify(knowledgeBases.value))
   }
@@ -339,12 +339,12 @@ export const useAuthStore = defineStore('auth', () => {
   // hydrateSessionFromToken when isLoggedIn is already true — so inviting
   // flows or revokes would leave the sidebar switcher stale until reload.
   //
-  // 请求排序：refreshFromAuthMe 是「刷新」，结果必须来自本次调用之后发出的请求
-  // （接受邀请 / 建空间 / 改空间信息之后调用，不能吃到侧栏悬停早先发出的那次响应）；
-  // ensureAuthMe 是「首屏共用」，有请求在飞行就直接复用。登出会作废飞行中的请求，
-  // 迟到的响应不再把会话写回来。
-  // 本次会话是否已经用 /auth/me 校准过。登录响应 / 自动初始化只写入登录时的快照，
-  // 之后第一次进入平台布局仍需校准一次；此后由写操作显式 refresh。
+  // Request ordering: refreshFromAuthMe is a "refresh", whose result must come from a request sent after this call
+  // (called after accepting an invitation, creating a space or editing space info, so it must not take the response of an earlier sidebar-hover request);
+  // ensureAuthMe is "shared on first screen" and reuses any in-flight request. Logout voids in-flight requests,
+  // so a late response no longer writes the session back.
+  // Whether this session has been calibrated with /auth/me. The login response and auto-initialization write only the snapshot from sign-in,
+  // so the first entry into the platform layout still calibrates once; after that, writes refresh explicitly.
   let authMeSynced = false
 
   const authMeRequest = createSequencedRefresh<boolean>(async (isCurrent) => {
@@ -360,7 +360,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const refreshFromAuthMe = (): Promise<boolean> => authMeRequest.refresh()
 
-  /** 会话内已校准过就直接返回，否则复用飞行中的 /auth/me，没有就拉一次。 */
+  /** Returns at once if already calibrated in this session, otherwise reuses the in-flight /auth/me, or fetches once. */
   const ensureAuthMe = (): Promise<boolean> => {
     if (authMeSynced) return Promise.resolve(true)
     return authMeRequest.share()
@@ -407,8 +407,8 @@ export const useAuthStore = defineStore('auth', () => {
     return true
   }
 
-  // 用 token 加入空间并刷新成员关系、切到新空间。token 无效时返回 ok:false（不抛异常），
-  // 提示与跳转交给调用方（store 不碰 router）。
+  // Join a space with a token, refresh memberships and switch to the new space. An invalid token returns ok:false (no throw);
+  // the message and navigation are left to the caller (the store does not touch the router).
   const acceptInvitationByTokenAndRefresh = async (
     token: string,
   ): Promise<{ ok: boolean; tenantId?: number; tenantName?: string }> => {
@@ -420,7 +420,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       const tenantId = resp.data.membership.tenant_id
       const tenantName = resp.data.tenant_name
-      // 刷新成员关系，并切到刚加入的空间。
+      // Refresh memberships and switch to the space just joined.
       await refreshFromAuthMe()
       setSelectedTenant(tenantId, tenantName ?? null)
       return { ok: true, tenantId, tenantName }
@@ -443,7 +443,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const logout = () => {
-    // 清空状态
+    // Clear state
     user.value = null
     tenant.value = null
     token.value = ''
@@ -458,11 +458,11 @@ export const useAuthStore = defineStore('auth', () => {
     canCreateTenant.value = false
     autoAcceptInvitation.value = false
     authMeSynced = false
-    // 飞行中的 /auth/me 作废：登出之后才返回的响应不能再 setUser / setTenant。
+    // Void the in-flight /auth/me: a response that arrives after logout must not setUser / setTenant again.
     authMeRequest.invalidate()
     clearSessionResourceCaches()
 
-    // 清空localStorage
+    // Clear localStorage
     localStorage.removeItem('aikb_user')
     localStorage.removeItem('aikb_tenant')
     localStorage.removeItem('aikb_token')
@@ -483,7 +483,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const initFromStorage = () => {
-    // 从localStorage恢复状态
+    // Restore state from localStorage
     const storedUser = localStorage.getItem('aikb_user')
     const storedTenant = localStorage.getItem('aikb_tenant')
     const storedToken = localStorage.getItem('aikb_token')
@@ -495,10 +495,10 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (storedUser) {
       try {
-        // 走 userInfoFromApi 把老 localStorage（可能缺新字段，如
-        // is_system_admin）规范化一遍，避免「我新加了字段、但老登录态
-        // 没经过登录响应处理过、字段就永远是 undefined」的死角。
-        // 这是「漏拷 4 处」之外的第 5 个隐藏入口，专门给页面刷新走的。
+        // Normalize old localStorage (possibly missing new fields such as
+        // is_system_admin) through userInfoFromApi, to avoid the blind spot where "I added a field, but an old sign-in
+        // never went through the login response handling, so the field stays undefined forever".
+        // This is the fifth hidden entry point beyond the "missed 4 copies", specifically for page refreshes.
         user.value = userInfoFromApi(JSON.parse(storedUser))
       } catch (e) {
         console.error(i18n.global.t('authStore.errors.parseUserFailed'), e)
@@ -566,11 +566,11 @@ export const useAuthStore = defineStore('auth', () => {
     isLiteMode.value = localStorage.getItem('aikb_lite_mode') === 'true'
   }
 
-  // 初始化时从localStorage恢复状态
+  // Restore state from localStorage on init
   initFromStorage()
 
   return {
-    // 状态
+    // State
     user,
     tenant,
     token,
@@ -585,7 +585,7 @@ export const useAuthStore = defineStore('auth', () => {
     canCreateTenant,
     autoAcceptInvitation,
 
-    // 计算属性
+    // Getters
     isLoggedIn,
     hasValidTenant,
     currentTenantId,
@@ -598,7 +598,7 @@ export const useAuthStore = defineStore('auth', () => {
     effectiveTenantId,
     isLiteMode,
 
-    // 方法
+    // Methods
     setUser,
     setTenant,
     setToken,

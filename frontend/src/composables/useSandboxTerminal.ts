@@ -3,14 +3,14 @@ import { post } from '@/utils/request'
 import { readStoredPtyId, writeStoredPtyId } from '@/utils/sandboxPtyId'
 
 export type SandboxTerminalStatus =
-  /** 查询到会话沙箱已暂停；唤醒需要用户确认。 */
+  /** The session's sandbox was found paused; waking it needs the user's confirmation. */
   | 'paused'
   | 'connecting'
   | 'ready'
-  /** 查到会话没有运行中的沙箱；创建需要用户确认。 */
+  /** The session has no running sandbox; creating one needs the user's confirmation. */
   | 'needs_provision'
   | 'exited'
-  /** 用户已确认创建，但后端无处可建（智能体没配沙箱后端）。 */
+  /** The user confirmed creation, but the backend has nowhere to create it (the agent has no sandbox backend). */
   | 'no_sandbox'
   | 'unsupported'
   | 'idle'
@@ -33,9 +33,9 @@ const RECONNECT_BASE_DELAY_MS = 1000
 const RECONNECT_MAX_DELAY_MS = 30000
 const APP_PING_INTERVAL_MS = 25000
 const PENDING_OUTPUT_MAX_BYTES = 1024 * 1024
-// 服务端对单个输入帧设了 4 KiB 上限（terminalMaxInputBytes）；gorilla 超限时
-// 直接关闭连接，而 xterm 的 paste 是整段进 onData 的，粘一段脚本就会掉线。
-// 按字节切片后再发：PTY 是字节流，切在多字节字符中间也会被原样按序重组。
+// The server caps a single input frame at 4 KiB (terminalMaxInputBytes); gorilla closes the connection
+// when it is exceeded, and xterm delivers a paste to onData as one chunk, so pasting a script would disconnect.
+// Slice by bytes before sending: the PTY is a byte stream, so a cut inside a multi-byte character is reassembled in order as is.
 const INPUT_FRAME_MAX_BYTES = 2048
 
 function resolveWsBase(): string {
@@ -57,8 +57,8 @@ async function mintTerminalTicket(sessionId: string): Promise<string> {
 }
 
 /**
- * provisionAttempted 决定 SANDBOX_NOT_BOUND 的含义：没带创建意图时只是"还没
- * 有沙箱，要不要建一个"，带了还失败才是真的无处可建。
+ * provisionAttempted decides what SANDBOX_NOT_BOUND means: without creation intent it only means "there is no
+ * sandbox yet, create one?"; failing with it means there is truly nowhere to create one.
  */
 function statusFromErrorCode(
   code: string | undefined,
@@ -67,8 +67,8 @@ function statusFromErrorCode(
   if (code === 'SANDBOX_NOT_BOUND') {
     return provisionAttempted ? 'no_sandbox' : 'needs_provision'
   }
-  // SANDBOX_STOPPED 是不会暂停的后端（Docker）的同一状态：同样要用户确认才
-  // 启动，只是提示文案不同，见 sandboxMayBeReclaimed。
+  // SANDBOX_STOPPED is the same state for a backend that cannot pause (Docker): starting it also needs the user's confirmation,
+  // only the prompt text differs, see sandboxMayBeReclaimed.
   if (code === 'SANDBOX_PAUSED' || code === 'SANDBOX_STOPPED') return 'paused'
   if (code === 'TERMINAL_UNSUPPORTED') return 'unsupported'
   if (code === 'IDLE_DISCONNECTED') return 'idle'
@@ -79,43 +79,43 @@ function statusFromErrorCode(
 export type SandboxTerminalSession = {
   status: Ref<SandboxTerminalStatus>
   /**
-   * status 为 paused 时，沙箱是否可能已被回收（后端回的是 SANDBOX_STOPPED）。
-   * Docker 没有暂停：没在运行的容器要么是停止了，要么已被空闲回收删掉，
-   * 启动后可能是一个全新的沙箱，不能对用户说"唤醒"。
+   * When status is paused, whether the sandbox may have been reclaimed (the backend returned SANDBOX_STOPPED).
+   * Docker has no pause: a container that is not running is either stopped or already deleted by idle reclamation,
+   * and starting it may give a brand-new sandbox, so the user must not be told it is "waking".
    */
   sandboxMayBeReclaimed: Ref<boolean>
   /**
-   * 最近一次 ready 帧声明的：断线后重连能否接回同一个 shell。Docker 为
-   * false：断开即结束 shell，重连只会得到新 shell，所以不自动重连，
-   * 由用户点"重新连接"。
+   * Declared by the latest ready frame: whether a reconnect after a disconnect can reattach the same shell. Docker is
+   * false: disconnecting ends the shell and a reconnect only gets a new shell, so there is no automatic reconnect;
+   * the user clicks "Reconnect".
    */
   reattachable: Ref<boolean>
   /**
-   * 由 SandboxTerminal.vue 注入：PTY 输出写入 xterm。
-   * 在 handler 注册前到达的二进制帧会先入队，避免 bash 提示符在 xterm
-   * 挂载前被丢弃。传入 null 可在卸载时重新开始缓冲。
+   * Injected by SandboxTerminal.vue: writes PTY output to xterm.
+   * Binary frames that arrive before the handler registers are queued, so the bash prompt is not dropped before xterm
+   * mounts. Pass null on unmount to start buffering again.
    */
   onOutput: (handler: ((data: Uint8Array) => void) | null) => void
   /**
-   * 连接并打开终端；已在连接中时幂等。
+   * Connect and open the terminal; idempotent while already connecting.
    *
-   * provision 表示"这是用户的显式动作，允许后端创建或唤醒沙箱"。只有点击
-   * 按钮才应该传 true：创建/唤醒沙箱是要计费的真实基础设施。打开面板时的
-   * 自动连接一律不带：运行中的沙箱直接挂上，暂停或尚未创建则退回让用户确认。
+   * provision means "this is an explicit user action, so the backend may create or wake a sandbox". Only a button
+   * click should pass true: creating or waking a sandbox is billed, real infrastructure. The automatic connect when the panel opens
+   * never passes it: a running sandbox attaches directly, and a paused or not-yet-created one falls back to asking the user.
    */
   connect: (options?: { provision?: boolean; cols?: number; rows?: number }) => void
-  /** 发送键盘输入（xterm onData 的原始字符串）。 */
+  /** Send keyboard input (the raw string from xterm onData). */
   sendInput: (data: string) => void
-  /** 同步终端尺寸；ready 后调用。 */
+  /** Sync the terminal size; call after ready. */
   resize: (cols: number, rows: number) => void
-  /** 断开并停止重连（组件卸载 / 会话切换时调用）。 */
+  /** Disconnect and stop reconnecting (call on component unmount or session switch). */
   dispose: () => void
 }
 
 /**
- * 三个参数都必须是活的 ref（`toRef(props, …)`），不能是 `ref(props.x)` 那样的
- * 快照：每次 openSocket 都会重读它们，用户切换 agent（含共享来源空间）后的
- * 下一次连接才能按新 agent 的沙箱配置去创建沙箱。
+ * All three params must be live refs (`toRef(props, ...)`), not snapshots like `ref(props.x)`:
+ * every openSocket rereads them, so after the user switches agents (shared source spaces included) the
+ * next connection creates the sandbox from the new agent's sandbox config.
  */
 export function useSandboxTerminal(
   sessionId: Ref<string>,
@@ -128,8 +128,8 @@ export function useSandboxTerminal(
 
   let ws: WebSocket | null = null
   let opening = false
-  // 当前这条连接是否已收到 ready。ready 之前断线时服务端未必开了 shell，
-  // 照常自动重连；ready 之后断线是否重连取决于 reattachable。
+  // Whether this connection has received ready. Before ready, the server may not have opened a shell when the connection drops,
+  // so reconnect automatically as usual; after ready, whether to reconnect depends on reattachable.
   let readyReceived = false
   let outputHandler: ((data: Uint8Array) => void) | null = null
   let pendingOutput: Uint8Array[] = []
@@ -140,9 +140,9 @@ export function useSandboxTerminal(
   let pingTimer: ReturnType<typeof setInterval> | null = null
   let pendingResize: { cols: number; rows: number } | null = null
   let pendingGeometry: { cols: number; rows: number } | null = null
-  // 刷新 / 关面板会拆掉这个闭包；PID 写在 sessionStorage，重挂时才能带 pty_id。
+  // A refresh or closing the panel tears down this closure; the PID lives in sessionStorage so a remount can send pty_id.
   let lastPid: number | null = readStoredPtyId(sessionId.value)
-  // 当前这次连接是否带创建意图。只由 connect({ provision: true }) 置真。
+  // Whether this connection carries creation intent. Set true only by connect({ provision: true }).
   let allowProvision = false
 
   const textEncoder = new TextEncoder()
@@ -169,8 +169,8 @@ export function useSandboxTerminal(
   function scheduleReconnect() {
     if (disposed) return
     clearReconnectTimer()
-    // 自动重连不得复活已被回收的沙箱：只有用户点击才携带创建意图。掉线期间
-    // 沙箱如果被回收，重连会拿到 needs_provision，由用户决定是否重建。
+    // An automatic reconnect must not revive a reclaimed sandbox: only a user click carries creation intent. If the
+    // sandbox is reclaimed while disconnected, the reconnect gets needs_provision and the user decides whether to rebuild it.
     allowProvision = false
     const delay = Math.min(
       RECONNECT_BASE_DELAY_MS * 2 ** reconnectAttempt,
@@ -197,7 +197,7 @@ export function useSandboxTerminal(
       const query = new URLSearchParams({ ticket })
       if (allowProvision) {
         query.set('provision', '1')
-        // agent_id 只在允许创建时才有意义：它是首次创建沙箱所用的配置来源。
+        // agent_id matters only when creation is allowed: it is the config source for creating the sandbox the first time.
         const agent = agentId.value
         if (agent && agent !== 'builtin-quick-answer') {
           query.set('agent_id', agent)
@@ -273,8 +273,8 @@ export function useSandboxTerminal(
         } else if (status.value === 'ready' || status.value === 'connecting') {
           status.value = 'error'
         }
-        // idle / unauthorized / paused：shell 还在沙箱里，PID 必须留下才能重挂。
-        // 沙箱没了或后端不支持：PID 已无效，清掉以免下次 Create 撞上死进程。
+        // idle / unauthorized / paused: the shell is still in the sandbox, so the PID must stay for a reattach.
+        // The sandbox is gone or the backend does not support it: the PID is invalid, so clear it to keep the next Create from hitting a dead process.
         if (status.value !== 'idle' && status.value !== 'unauthorized' && status.value !== 'paused') {
           rememberPid(null)
         }
@@ -296,7 +296,7 @@ export function useSandboxTerminal(
     }
 
     ws.onerror = () => {
-      // onclose 会随后触发，统一在那里处理。
+      // onclose fires next and handles it in one place.
     }
   }
 
@@ -314,9 +314,9 @@ export function useSandboxTerminal(
         reattachable.value = frame.reattachable !== false
         rememberPid(typeof frame.pty_id === 'number' ? frame.pty_id : null)
         reconnectAttempt = 0
-        // 创建意图到此为止。它只用来解释 SANDBOX_NOT_BOUND：连上之前是"还没
-        // 有沙箱，要不要建"，连上之后再收到就一定是"沙箱被回收了"。不复位会
-        // 把回收误判成 no_sandbox（"智能体没配后端"），文案和真实原因无关。
+        // Creation intent ends here. It only explains SANDBOX_NOT_BOUND: before connecting it means "there is no
+        // sandbox yet, create one?", and after connecting it always means "the sandbox was reclaimed". Without the reset,
+        // a reclamation would be misread as no_sandbox ("the agent has no backend"), and the message would not match the real cause.
         allowProvision = false
         if (pendingResize) {
           sendResize(pendingResize.cols, pendingResize.rows)
@@ -383,8 +383,8 @@ export function useSandboxTerminal(
     },
     connect(options) {
       if (disposed || ws || opening) return
-      // 丢掉待触发的自动重连，否则它稍后会带着 provision=false 再拨一次，
-      // 和用户这次点击抢连接。
+      // Drop any pending automatic reconnect, otherwise it would later dial again with provision=false
+      // and compete with the connection from this user click.
       clearReconnectTimer()
       allowProvision = options?.provision === true
       reconnectAttempt = 0

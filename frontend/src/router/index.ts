@@ -10,7 +10,7 @@ import i18n from '@/i18n'
 import { normalizeSettingsSection } from '@/config/settingsRoute'
 import { isToolboxSection, toolboxLocation } from '@/config/toolbox'
 
-/** Lite /桌面 WebView 硬刷新时可能只打开 `/`，用 session 记住上次页面以便恢复 */
+/** A hard refresh in the Lite / desktop WebView may open only `/`; the session remembers the last page so it can be restored */
 const LITE_LAST_PATH_KEY = 'aikb_lite_last_path'
 
 // views/platform/index.vue always mounts the settings modal and opens it when
@@ -75,7 +75,7 @@ const router = createRouter({
     {
       path: "/join",
       name: "joinOrganization",
-      // 重定向到组织列表页，并将 code 参数转换为 invite_code
+      // Redirect to the organization list, converting the code param to invite_code
       redirect: (to) => {
         const code = to.query.code as string
         return {
@@ -122,7 +122,7 @@ const router = createRouter({
         },
         {
           path: "knowledge-search",
-          // 旧路径保留为重定向，打开全局命令面板（⌘K），带上可选的 q 参数
+          // The old path stays as a redirect that opens the global command palette (⌘K) with the optional q param
           redirect: (to) => {
             const q = to.query.q
             return {
@@ -229,7 +229,7 @@ const router = createRouter({
   ],
 });
 
-// 持久化 auto-setup / login 返回的认证信息到 store
+// Persist the auth info returned by auto-setup / login to the store
 function persistLoginResponse(authStore: ReturnType<typeof useAuthStore>, response: any) {
   const activeTenant = response.active_tenant || response.tenant
   if (response.user && response.token) {
@@ -269,20 +269,20 @@ async function hydrateSessionFromToken(authStore: ReturnType<typeof useAuthStore
     authStore.setRefreshToken(storedRefreshToken)
   }
 
-  // /auth/me 的落库逻辑只在 auth store 里维护一份（user / tenant / memberships /
-  // capabilities），这里只负责先把 token 放进 store。请求本身与启动、侧栏共用去重。
+  // The /auth/me storage logic lives only in the auth store (user / tenant / memberships /
+  // capabilities); this only puts the token in the store first. The request itself is deduplicated with startup and the sidebar.
   return authStore.refreshFromAuthMe()
 }
 
 let autoSetupAttempted = false
 let liteDeepLinkRestoreDone = false
 
-// 路由守卫：检查认证状态和系统初始化状态
+// Route guard: check auth state and system initialization state
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // OIDC 回跳登录结果依赖 App.vue 在挂载后消费 URL hash。
-  // 如果这里先按“未登录”拦截到 /login，会导致回调结果没有机会落盘。
+  // The OIDC callback login result depends on App.vue consuming the URL hash after mount.
+  // Redirecting to /login here as "not signed in" first would leave the callback result no chance to persist.
   if (hasPendingOIDCCallback()) {
     next()
     return
@@ -295,7 +295,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // Lite：硬刷新后若落在默认首页，恢复本次会话中最后访问的 /platform 子路径
+  // Lite: after a hard refresh that lands on the default home page, restore the last /platform sub-path visited in this session
   if (!liteDeepLinkRestoreDone) {
     liteDeepLinkRestoreDone = true
     if (isLiteEdition(authStore)) {
@@ -327,9 +327,9 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 如果访问的是登录页面或初始化页面，直接放行
+  // Let the login and initialization pages through directly
   if (to.meta.requiresAuth === false || to.meta.requiresInit === false) {
-    // 如果已登录用户访问登录页面，重定向到知识库列表页面
+    // A signed-in user visiting the login page is redirected to the knowledge base list
     if (to.path === '/login' && authStore.isLoggedIn) {
       next(authStore.hasValidTenant ? '/platform/knowledge-bases' : '/onboarding/workspace')
       return
@@ -338,7 +338,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 检查用户认证状态
+  // Check the user's auth state
   if (to.meta.requiresAuth !== false) {
     if (!authStore.isLoggedIn) {
       const restored = await hydrateSessionFromToken(authStore)
@@ -376,8 +376,8 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 部署能力只描述“后端是否提供该功能”，不反映服务健康或是否已配置。
-  // 探测失败时 Store 会 fail-open，真正的权限和可用性仍由后端接口校验。
+  // Deployment capabilities describe only "does the backend offer this feature", not service health or whether it is configured.
+  // When the probe fails the store fails open; the backend endpoints still enforce permissions and availability.
   const deploymentCapabilities = useDeploymentCapabilitiesStore()
   await deploymentCapabilities.ensureLoaded()
   const requiredCapability = to.meta.requiredCapability as DeploymentCapabilityKey | undefined
