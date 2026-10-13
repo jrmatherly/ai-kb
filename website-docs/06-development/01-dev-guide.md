@@ -16,8 +16,8 @@ AI KB is made of three processes that are developed independently, plus a CLI:
 Recommended extra development tools:
 
 ```bash
-# Database migration CLI (required by scripts/migrate.sh)
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+# Database migration CLI (required by scripts/migrate.sh), at the golang-migrate version go.mod pins
+go install -tags postgres "github.com/golang-migrate/migrate/v4/cmd/migrate@$(go list -m -f '{{.Version}}' github.com/golang-migrate/migrate/v4)"
 
 # Linter (called by make lint)
 # Install golangci-lint v2.14.0 (the version CI pins) from https://golangci-lint.run; the configuration is .golangci.yml in the repository root

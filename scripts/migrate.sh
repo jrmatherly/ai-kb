@@ -41,7 +41,8 @@ MIGRATIONS_DIR="${MIGRATIONS_DIR:-$PROJECT_ROOT/migrations/versioned}"
 # Check if migrate tool is installed
 if ! command -v migrate &> /dev/null; then
     echo "Error: migrate tool is not installed"
-    echo "Install it with: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+    echo "Install the version go.mod pins, from the repository root:"
+    echo "  go install -tags postgres \"github.com/golang-migrate/migrate/v4/cmd/migrate@\$(go list -m -f '{{.Version}}' github.com/golang-migrate/migrate/v4)\""
     exit 1
 fi
 
