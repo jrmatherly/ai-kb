@@ -33,7 +33,7 @@ To give another team access to a knowledge base or an agent, first add the sourc
 
 ## Configure an API key for a program
 
-To let a script or service call the API, create an API key in workspace settings and pick the retrieve, chat, ingest or manage capabilities the task needs; to limit the material it can reach, name the allowed knowledge bases. The program sends the credential in the `X-API-Key` request header. The capabilities and resource limits are in the reference section.
+To let a script or service call the API, create an API key in workspace settings (Settings → Publish & Integrations → API Integration) and pick the retrieve, chat, ingest or manage capabilities the task needs; to limit the material it can reach, name the allowed knowledge bases. Copy the key from the dialog that opens after creation: the full key is shown only once, and the key list shows it masked afterwards. The program sends the credential in the `X-API-Key` request header. The capabilities and resource limits are in the reference section.
 
 ## Manage workspace and platform permissions
 
@@ -676,6 +676,7 @@ type TenantAPIKey struct {
 ```
 
 - **Encryption at rest**: with `SYSTEM_AES_KEY` configured, the `BeforeSave` hook stores the `api_key` column AES-GCM encrypted and `AfterFind` decrypts it; a failed encryption aborts the write rather than storing plaintext. Lookup always goes through the irreversible `KeyHash`.
+- **Responses**: only the create response carries the full key. List and update responses mask `api_key` to its first 7 and last 4 characters (`sk-Ab12...wxyz`), so a lost key is replaced, not recovered.
 - **Validation flow**: the request carries `X-API-Key` → the hash is computed → the row is loaded by `KeyHash` → `RevokedAt` / `ExpiresAt` are checked → `TenantAPIKeyScope{KeyID, ScopeType, FullAccess, KnowledgeBaseIDs, Capabilities}` is injected into the context and later read with `types.TenantAPIKeyScopeFromContext`; `last_used_at` is refreshed asynchronously.
 
 #### Organization (shared space)

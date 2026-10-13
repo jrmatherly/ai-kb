@@ -129,7 +129,7 @@ curl -X PUT $BASE/api/v1/tenants/kv/web-search-config -H "Authorization: Bearer 
 
 Purpose: list the workspace's active API keys (revoked keys are omitted). Permission: Owner, JWT only (API keys are denied by default). Handler: `internal/handler/tenant.go`
 
-Response: 200 `{"success":true,"data":[{id,scope_type,name,api_key,full_access,knowledge_base_ids,capabilities,last_used_at,expires_at,created_at}]}`. `api_key` is the key itself (stored AES-encrypted at rest and decrypted on read, not masked).
+Response: 200 `{"success":true,"data":[{id,scope_type,name,api_key,full_access,knowledge_base_ids,capabilities,last_used_at,expires_at,created_at}]}`. `api_key` is masked: the first 7 characters, `...`, and the last 4 (for example `sk-Ab12...wxyz`). The full key is returned only by POST.
 
 ```bash
 curl $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN"
@@ -147,7 +147,7 @@ Purpose: create a workspace API key. Permission: Owner, JWT only. Handler: `inte
 | `capabilities` | []string | no | Capability list (see the [API overview](./01-api-overview.md)); unknown entries are dropped |
 | `expires_at_unix` | *int64 | no | Expiry timestamp; must be in the future |
 
-Response: 201 `{"success":true,"data":{...,"api_key":"<key>","token":"<key>"}}` (both fields carry the same plaintext key).
+Response: 201 `{"success":true,"data":{...,"api_key":"<key>","token":"<key>"}}` (both fields carry the same plaintext key). This is the only response that carries the full key; store it on receipt. A lost key cannot be retrieved: delete it and create a new one.
 
 ```bash
 curl -X POST $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN" \
@@ -159,7 +159,7 @@ curl -X POST $BASE/api/v1/tenants/1/api-keys -H "Authorization: Bearer $TOKEN" \
 
 Owner, JWT only. Updates an existing key's `name`, `full_access`, `knowledge_base_ids`, `capabilities` and `expires_at_unix`. The grant fields are submitted as a whole; this is not a one-field PATCH. An omitted or `null` `expires_at_unix` clears the existing expiry. A client that keeps using the same token gets the new grants on its next authenticated request. Handler: `internal/handler/tenant.go`
 
-Response: 200 `{"success":true,"data":{APIKeyResponse}}` (same fields as the list). Invalid capabilities or an unknown knowledge base return 400, a knowledge base outside the workspace 403, a missing key 404.
+Response: 200 `{"success":true,"data":{APIKeyResponse}}` (same fields as the list, `api_key` masked). Invalid capabilities or an unknown knowledge base return 400, a knowledge base outside the workspace 403, a missing key 404.
 
 ```bash
 curl -X PUT "$BASE/api/v1/tenants/1/api-keys/5" \

@@ -7364,6 +7364,8 @@ export default {
       createApiKeyFailed: 'Failed to create API key',
       loadApiKeysFailed: 'Failed to load API keys',
       apiKeyCreated: 'API key created',
+      apiKeyCreatedDesc: 'Copy and store this key now. The full value will not be shown again.',
+      copyApiKey: 'Copy key',
       principalMode: 'User identity mode',
       principalModeDesc: 'Choose how API requests identify the end user. This identity scopes both conversation sessions and MCP tool authorization per user.',
       principalScope: 'End-user identity isolates sessions and MCP OAuth. Operation permissions and knowledge-base scope are controlled by API Keys above.',
@@ -7416,7 +7418,9 @@ export default {
       playgroundRequestPreview: 'Request preview (secrets masked)',
       playgroundRun: 'Run test',
       playgroundStop: 'Stop',
-      playgroundNeedApiKey: 'This workspace has no API key.',
+      playgroundApiKey: 'API key',
+      playgroundApiKeyPlaceholder: 'Paste an API key (shown in full only when created)',
+      playgroundNeedApiKey: 'Enter an API key.',
       playgroundNeedAgent: 'Select a test agent.',
       playgroundNeedQuestion: 'Enter a test question.',
       playgroundNeedExternalUser: 'Enter an external user ID.',
@@ -7484,7 +7488,7 @@ export default {
       steps: {
         api: {
           title: 'Get API credentials',
-          desc: 'Copy your API Key and base URL from Settings → API Info.'
+          desc: 'Copy the base URL from Settings → API Info and create an API key there. Copy the key when it is created: it is shown in full only once.'
         },
         port: {
           title: 'Desktop: fixed port (recommended)',
@@ -7536,7 +7540,7 @@ export default {
       steps: {
         api: {
           title: 'Get API credentials',
-          desc: 'Copy API Key and base URL from Settings → API Info.'
+          desc: 'Copy the base URL from Settings → API Info and create an API key there. Copy the key when it is created: it is shown in full only once.'
         },
         env: {
           title: 'Configure environment',

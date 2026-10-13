@@ -126,7 +126,7 @@
                         <span class="api-key-name">{{ key.name }}</span>
                       </td>
                       <td>
-                        <code class="api-key-fingerprint">{{ formatKeyMaskedValue(key) }}</code>
+                        <code class="api-key-fingerprint">{{ key.api_key || '-' }}</code>
                       </td>
                       <td>
                         <div class="api-key-access-cell" :title="formatApiKeyCapabilitiesTitle(key)">
@@ -164,14 +164,6 @@
                             @click="openEditAPIKeyScope(key)"
                           >
                             <t-icon name="edit-1" />
-                          </t-button>
-                          <t-button
-                            shape="square"
-                            variant="text"
-                            :title="$t('integrations.api.copy')"
-                            @click="copy(key.api_key)"
-                          >
-                            <t-icon name="file-copy" />
                           </t-button>
                           <t-button
                             shape="square"
@@ -364,6 +356,16 @@
 
       <section class="setting-drawer__section">
         <h4 class="setting-drawer__section-title">{{ $t('integrations.api.playgroundSectionRequest') }}</h4>
+
+        <div class="drawer-form-item">
+          <label class="drawer-form-label">{{ $t('integrations.api.playgroundApiKey') }}</label>
+          <t-input
+            v-model="apiKey"
+            type="password"
+            class="mono-input"
+            :placeholder="$t('integrations.api.playgroundApiKeyPlaceholder')"
+          />
+        </div>
 
         <div class="drawer-form-item">
           <label class="drawer-form-label">{{ $t('integrations.api.playgroundAgent') }}</label>
@@ -667,6 +669,17 @@
       </div>
     </SettingDrawer>
 
+    <t-dialog
+      v-model:visible="createdAPIKeyVisible"
+      :header="$t('integrations.api.apiKeyCreated')"
+      :confirm-btn="{ content: $t('integrations.api.copyApiKey'), theme: 'primary' }"
+      :cancel-btn="null"
+      :close-on-overlay-click="false"
+      @confirm="copyCreatedAPIKey"
+    >
+      <p>{{ $t('integrations.api.apiKeyCreatedDesc') }}</p>
+      <t-textarea :value="apiKey" readonly autosize class="mono-input" />
+    </t-dialog>
   </div>
 </template>
 
@@ -720,6 +733,7 @@ const config = ref<APIPrincipalConfig | null>(null)
 const apiKeys = ref<TenantAPIKey[]>([])
 const apiKeysLoading = ref(false)
 const apiKeyDialogVisible = ref(false)
+const createdAPIKeyVisible = ref(false)
 const apiKeyCreating = ref(false)
 const apiKeyScopeDialogVisible = ref(false)
 const apiKeyScopeSaving = ref(false)
@@ -1175,9 +1189,6 @@ async function loadAPIKeys() {
       throw new Error(resp.message || t('integrations.api.loadApiKeysFailed'))
     }
     apiKeys.value = resp.data || []
-    if (!apiKey.value && apiKeys.value.length > 0) {
-      apiKey.value = apiKeys.value[0].api_key || ''
-    }
   } catch (err: any) {
     MessagePlugin.error(err?.message || t('integrations.api.loadApiKeysFailed'))
   } finally {
@@ -1311,6 +1322,10 @@ async function saveIfNeeded(options: { showSuccess?: boolean } = {}) {
 
 async function copy(text: string) {
   await copyWithToast(text, 'integrations.api.copySuccess')
+}
+
+async function copyCreatedAPIKey() {
+  if (await copyWithToast(apiKey.value, 'integrations.api.copySuccess')) createdAPIKeyVisible.value = false
 }
 
 async function tryLoadWailsApiBaseURL() {
@@ -1465,12 +1480,12 @@ async function createScopedAPIKey() {
       // Capabilities only matter below full access; full access already covers them all.
       capabilities: apiKeyFullAccessEnabled.value ? [] : selectedCapabilities(),
     })
-    if (!resp.success || !resp.data?.api_key) {
+    if (!resp.success || !resp.data?.token) {
       throw new Error(resp.message || t('integrations.api.createApiKeyFailed'))
     }
     apiKeyDialogVisible.value = false
-    apiKey.value = resp.data.api_key
-    MessagePlugin.success(t('integrations.api.apiKeyCreated'))
+    apiKey.value = resp.data.token
+    createdAPIKeyVisible.value = true
     await loadAPIKeys()
   } catch (err: any) {
     MessagePlugin.error(err?.message || t('integrations.api.createApiKeyFailed'))
@@ -1561,17 +1576,6 @@ function formatKeyKnowledgeScope(ids: readonly string[] | null | undefined) {
   if (!normalizedIDs.length) return t('integrations.api.allKnowledgeBases')
   const names = normalizedIDs.map((id) => knowledgeBases.value.find((kb) => kb.id === id)?.name || id)
   return names.join(', ')
-}
-
-function formatKeyMaskedValue(key: TenantAPIKey) {
-  const value = key.api_key || ''
-  if (!value) return '-'
-  return maskAPIKey(value)
-}
-
-function maskAPIKey(value: string) {
-  if (value.length <= 12) return '*'.repeat(value.length)
-  return `${value.slice(0, 8)}${'*'.repeat(8)}${value.slice(-6)}`
 }
 
 function formatDate(value?: string) {

@@ -76,7 +76,8 @@ const (
 	TenantAPIKeyRoleAdmin       TenantAPIKeyRole = "admin"
 )
 
-// TenantAPIKey is the API key metadata returned by list/create APIs.
+// TenantAPIKey is the API key metadata returned by list/create/update APIs.
+// APIKey is masked (for example "sk-Ab12...wxyz") everywhere except the create response.
 type TenantAPIKey struct {
 	ID               uint64           `json:"id"`
 	TenantID         uint64           `json:"tenant_id"`
@@ -112,8 +113,8 @@ type UpdateTenantAPIKeyRequest struct {
 	ExpiresAtUnix    *int64   `json:"expires_at_unix"`
 }
 
-// CreatedTenantAPIKey includes the created API key. Token is kept for
-// backward-compatible clients; APIKey is also returned by list APIs.
+// CreatedTenantAPIKey is the create response, the only one that carries the
+// plaintext key: Token and APIKey both hold it. Save it on receipt.
 type CreatedTenantAPIKey struct {
 	TenantAPIKey
 	Token string `json:"token,omitempty"`

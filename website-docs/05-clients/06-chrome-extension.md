@@ -26,7 +26,7 @@ This section connects the extension to your instance with an API key.
 
 Settings → Publish & Integrations → Chrome Extension shows the setup steps and the API address of the current instance, ready to copy. Connect in this order:
 
-1. **Get API credentials.** Copy the API key and API address from Settings → Publish & Integrations → API Integration. The Open API Info button on the setup page goes straight there. Create a dedicated key and narrow its capabilities to what the extension needs, at least retrieve and ingest (see [Configure an API key for a program](../03-features/01-tenant-auth.md#configure-an-api-key-for-a-program)).
+1. **Get API credentials.** Copy the API address from Settings → Publish & Integrations → API Integration, and create an API key there. Copy the key from the dialog that opens: the full key is shown only once. The Open API Info button on the setup page goes straight there. Create a dedicated key and narrow its capabilities to what the extension needs, at least retrieve and ingest (see [Configure an API key for a program](../03-features/01-tenant-auth.md#configure-an-api-key-for-a-program)).
 2. **Desktop app: fix the port first.** With the AI KB desktop app, set a fixed port on the API Integration page (for example 37841). Otherwise the port changes on every start and the extension cannot connect.
 3. **Install the extension** from the Chrome Web Store.
 4. **Connect in the extension.** Open the extension settings, choose the enterprise/developer mode, and enter the API address and API key.

@@ -20,7 +20,7 @@ Before the mini program can call the server, you give it the server address and 
 - **Defaults**: when `miniprogram/app.js` finds no settings in `onLaunch`, it writes the default `baseUrl: "http://localhost:8080"`, an empty `apiKey` and an empty `selectedKnowledgeBaseId`. The default only helps local development; set the real address on the Settings page before use.
 - **Reading, writing and normalization**: `miniprogram/utils/config.js` provides `getSettings()` and `saveSettings()`. `normalizeBaseUrl()` trims surrounding whitespace and trailing `/` characters.
 - **Authentication uses an API key**: every request from `miniprogram/utils/request.js` carries these headers:
-  - `X-API-Key: <the API key you entered>`. Get it in AI KB under Settings → Publish & Integrations → API Integration; it looks like `sk-...`.
+  - `X-API-Key: <the API key you entered>`. Create it in AI KB under Settings → Publish & Integrations → API Integration and copy it when it is shown (only once, at creation); it looks like `sk-...`.
   - `X-Request-ID: mp-<timestamp>-<random string>`, so the server can trace the request.
   - `Content-Type: application/json`.
 - **Pre-flight check**: if `baseUrl` or `apiKey` is missing, the request is rejected right away with an error asking you to configure the AI KB API base URL or API key first. `onShow` in `pages/index/index.js` uses the same check to show a prompt that leads to the Settings page.
@@ -49,7 +49,7 @@ This section takes you from the source directory to a published mini program. Th
 
 1. **Import the project**: in WeChat DevTools choose "Import Project" and point it at the repository's `miniprogram/` directory. DevTools reads `project.config.json` (project name "AI KB Mini Program").
 2. **Configure the AppID**: copy `miniprogram/project.private.config.json.example` to `project.private.config.json` and replace `appid` with your mini program's AppID. `project.private.config.json` is personal configuration, is ignored by `.gitignore` and should not be committed.
-3. **Configure the backend connection**: run the mini program, open the Settings tab, enter the API Base URL (for example `https://ai-kb.example.com`) and the AI KB API key (from Settings → Publish & Integrations → API Integration), then save.
+3. **Configure the backend connection**: run the mini program, open the Settings tab, enter the API Base URL (for example `https://ai-kb.example.com`) and the AI KB API key (the one you copied when you created it under Settings → Publish & Integrations → API Integration), then save.
 4. **Local debugging**: `project.config.json` sets `urlCheck: true`, so DevTools blocks requests to domains that are not on the allowlist, such as `localhost`. For local testing, tick "Do not verify valid domain names" in DevTools, or expose the AI KB server on an HTTPS development domain.
 5. **Release**: before release, add the AI KB API domain (it must be HTTPS) to the request domain allowlist in the mini program admin console on the WeChat Official Accounts Platform. Then click "Upload" in DevTools to submit the code, and submit it for review and release in the admin console.
 

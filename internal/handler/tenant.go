@@ -713,12 +713,11 @@ func (h *TenantHandler) CreateAPIKey(c *gin.Context) {
 		c.Error(errors.NewInternalServerError("Failed to create API key").WithDetails(err.Error()))
 		return
 	}
+	item := tenantAPIKeyForResponse(result.APIKey)
+	item.APIKey = result.Token
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
-		"data": tenantAPIKeyCreateResponse{
-			tenantAPIKeyResponse: tenantAPIKeyForResponse(result.APIKey),
-			Token:                result.Token,
-		},
+		"data":    tenantAPIKeyCreateResponse{tenantAPIKeyResponse: item, Token: result.Token},
 	})
 }
 
@@ -781,6 +780,7 @@ func (h *TenantHandler) DeleteAPIKey(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
+// tenantAPIKeyForResponse masks api_key: the plaintext goes out only once, in the create response.
 func tenantAPIKeyForResponse(key *types.TenantAPIKey) tenantAPIKeyResponse {
 	if key == nil {
 		return tenantAPIKeyResponse{}
@@ -789,7 +789,7 @@ func tenantAPIKeyForResponse(key *types.TenantAPIKey) tenantAPIKeyResponse {
 		ID:               key.ID,
 		ScopeType:        types.NormalizeAPIKeyScopeType(key.ScopeType),
 		Name:             key.Name,
-		APIKey:           key.APIKey,
+		APIKey:           maskManagedAPIKey(key.APIKey),
 		FullAccess:       key.FullAccess,
 		KnowledgeBaseIDs: key.KnowledgeBaseIDs,
 		Capabilities:     types.NormalizeAPIKeyCapabilities(key.Capabilities),
@@ -797,6 +797,14 @@ func tenantAPIKeyForResponse(key *types.TenantAPIKey) tenantAPIKeyResponse {
 		ExpiresAt:        key.ExpiresAt,
 		CreatedAt:        key.CreatedAt,
 	}
+}
+
+func maskManagedAPIKey(token string) string {
+	token = strings.TrimSpace(token)
+	if len(token) <= 12 {
+		return "***"
+	}
+	return token[:7] + "..." + token[len(token)-4:]
 }
 
 func validateTenantAPIKeyRequest(
