@@ -11,7 +11,7 @@
 # area each check is its own command and the first failure ends that area (set -e). The summary lists
 # each area as passed, failed or skipped, then every check that did not run and why; the exit status
 # is 1 when any area failed. A check whose tool is missing (golangci-lint, cargo, cargo-audit, helm,
-# docker, pnpm, npx) is skipped and listed, never silently passed.
+# docker, pnpm, npx, shellcheck) is skipped and listed, never silently passed.
 #
 # golangci-lint reports only issues new since the base, as go-lint.yml did, because the upstream seed
 # carries lint debt. HOOK_SKIP_TEST=1 skips the Go tests. AIKB_E2E_HOST and AIKB_E2E_TOKEN enable the
@@ -71,6 +71,7 @@ if has 'internal/models/catalog/data/*' 'scripts/model-catalog/*'; then areas+=(
 if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-only.sh scripts/check-emdash.sh \
   scripts/emdash-allowlist.txt .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
+if has '*.sh' 'scripts/git-hooks/*'; then areas+=(shell); fi
 if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md; then areas+=(licenses); fi
 if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastructure/docparser/*'; then areas+=(anydoc); fi
 if has 'helm/*'; then areas+=(helm); fi
@@ -190,6 +191,17 @@ area_model-catalog() {
 
 area_git-hooks() {
   bash scripts/test-git-hooks.sh
+}
+
+# Only the changed scripts: the tree is clean at -S warning, so any finding is new.
+area_shell() {
+  need shellcheck || return "$SKIPPED"
+  local p files=()
+  for p in "${changed[@]}"; do
+    [[ -f "$p" && ( "$p" == *.sh || "$p" == scripts/git-hooks/* ) ]] && files+=("$p")
+  done
+  [ ${#files[@]} -eq 0 ] || shellcheck -S warning "${files[@]}"
+  log_ok "shellcheck -S warning: ${#files[@]} file(s)"
 }
 
 area_start-all() {

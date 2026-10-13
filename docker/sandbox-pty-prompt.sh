@@ -14,6 +14,8 @@
 # appends PS1='\w $ '; PROMPT_COMMAND reapplies this prompt so that cannot
 # stick. No-op for non-bash (Debian /etc/profile is also read by dash).
 
+# Sourced, not executed, so no shebang; everything past this guard is bash.
+# shellcheck shell=bash
 [ -n "${BASH_VERSION-}" ] || return 0
 
 aikb_set_pty_prompt() {

@@ -287,7 +287,7 @@ When you add or upgrade a third-party dependency or change a data file shipped w
 
 ### Validation and contribution workflow
 
-CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, model-catalog, git-hooks and licenses; miniprogram and markdown run only locally), plus `guards.yml` (English-only, em dash, rebrand and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
+CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, model-catalog, git-hooks and licenses; miniprogram, markdown and shell run only locally), plus `guards.yml` (English-only, em dash, rebrand and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
 
 ```bash
 scripts/validate.sh                 # working tree and untracked files against HEAD
@@ -305,6 +305,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | docreader | `docreader/**`, `go.mod`, `go.sum`, `testdata/`, the docreader Dockerfiles | `uv sync --locked`, compileall, Playwright WebKit install, the unittest suite, then the Go client tests against a DocReader server the script starts on port 50051 |
 | model-catalog | `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `generate.py --check`, `go test ./internal/models/...` |
 | git-hooks | `scripts/git-hooks/**`, `scripts/test-git-hooks.sh`, `scripts/check-english-only.sh`, `scripts/check-emdash.sh`, `scripts/emdash-allowlist.txt`, `.claude/hooks/post-edit.sh` | `scripts/test-git-hooks.sh` |
+| shell | any `*.sh`, the hooks in `scripts/git-hooks/` | `shellcheck -S warning` on the changed scripts |
 | licenses | `licenses/**`, license scripts, `LICENSE`, `THIRD_PARTY_NOTICES.md` | `check-license-bundle.sh`, `test-license-bundle.sh` |
 | anydoc | `third_party/anydoc-go/**`, `scripts/build-anydoc-lib.sh`, `internal/infrastructure/docparser/**` | builds the Rust archive, `cargo audit`, vet, test and build with `-tags anydoc` |
 | helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |
