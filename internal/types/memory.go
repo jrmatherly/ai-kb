@@ -292,10 +292,10 @@ type MemoryItem struct {
 	Kind      string `json:"kind"       gorm:"type:varchar(32);not null"`
 	Content   string `json:"content"    gorm:"not null"`
 	// Topic is the readable subject the statement is about, as the extraction
-	// model named it ("在用的数据库"). It is kept verbatim next to the
+	// model named it ("database in use"). It is kept verbatim next to the
 	// normalized key because it is the best retrieval handle available: a
 	// question often names the topic while the statement itself only carries
-	// the value ("已经迁到 PostgreSQL").
+	// the value ("moved to PostgreSQL already").
 	Topic string `json:"topic" gorm:"type:varchar(255);not null;default:''"`
 	// NormalizedKey identifies the topic this item is about. A new item with
 	// the same key as an active one supersedes it, which is how contradictions
@@ -370,7 +370,7 @@ type MemoryConfig struct {
 	// when an embedding model is reachable.
 	//
 	// Lexical matching alone cannot find a memory the user has re-worded, which
-	// is most of them: "回答直接给结论" and "别铺垫那么多" share no tokens. The
+	// is most of them: "lead with the conclusion" and "skip the long preamble" share no tokens. The
 	// cost is one embedding call per turn, bounded and degraded to lexical on
 	// failure, so the feature never becomes a reason a chat is slow.
 	VectorRecall *bool `json:"vector_recall"`
@@ -542,8 +542,8 @@ func (c *MemoryConfig) MemoryEnabled() bool {
 
 // MemoryItemKey derives the conflict-detection key for a stored memory.
 //
-// A memory's identity is its topic, not its wording: "生产库用的是 MySQL" and
-// "生产库用的是 PostgreSQL" are the same note with a corrected value, and the
+// A memory's identity is its topic, not its wording: "the production DB runs MySQL" and
+// "the production DB runs PostgreSQL" are the same note with a corrected value, and the
 // second has to replace the first rather than sit beside it. That only works if
 // two labels for the same subject produce the same key, which is why this uses
 // the topic normaliser rather than the character-bag key below — the same
@@ -592,7 +592,7 @@ func NormalizeMemoryKey(key, content string) string {
 	flush()
 
 	// Sorting and de-duplicating makes the key insensitive to word order, so
-	// "偏好 数据库" and "数据库 偏好" describe the same topic.
+	// "preference database" and "database preference" describe the same topic.
 	seen := make(map[string]struct{}, len(words))
 	unique := words[:0]
 	for _, w := range words {
@@ -634,10 +634,13 @@ var sensitivePatterns = []*regexp.Regexp{
 	// so a greedy \S+ would swallow the rest of the sentence and redact a whole
 	// legitimate memory along with the secret.
 	regexp.MustCompile(`(?i)\b(password|passwd|pwd|secret|token|api[_\- ]?key|access[_\- ]?key)\b` +
-		`\s*[:=＝：]\s*[^\s，。、；：！？,;]+`),
+		"\\s*[:=\uff1d\uff1a]\\s*[^\\s\uff0c\u3002\u3001\uff1b\uff1a\uff01\uff1f,;]+"),
+	// The Chinese words for password, passcode and secret key (two spellings),
+	// optionally followed by a fullwidth = or :, or by "is" / "as".
 	// No \b here: Go's word boundary is ASCII-only, so it never matches before
 	// a CJK character and would silently disable this rule.
-	regexp.MustCompile(`(密码|口令|密钥|秘钥)\s*[:=＝：是为]?\s*[^\s，。、；：！？,;]+`),
+	regexp.MustCompile("(\u5bc6\u7801|\u53e3\u4ee4|\u5bc6\u94a5|\u79d8\u94a5)\\s*[:=\uff1d\uff1a\u662f\u4e3a]?" +
+		"\\s*[^\\s\uff0c\u3002\u3001\uff1b\uff1a\uff01\uff1f,;]+"),
 	// Mainland China resident ID: anchored on a plausible birth date so long
 	// order numbers and other 18-digit strings are not caught.
 	regexp.MustCompile(`\b[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]\b`),
@@ -652,7 +655,7 @@ var sensitivePatterns = []*regexp.Regexp{
 // RedactedMemoryPlaceholder replaces removed material. It is visible on purpose:
 // a user reading their memory list should be able to tell that something was
 // dropped rather than silently mangled.
-const RedactedMemoryPlaceholder = "【已隐藏】"
+const RedactedMemoryPlaceholder = "[redacted]"
 
 // RedactSensitive removes credentials and identity numbers from a statement.
 // The second return value reports whether anything was removed.
@@ -824,7 +827,7 @@ type MemoryTombstone struct {
 	//
 	// The fingerprint alone is not enough: distillation re-reads that same
 	// message minutes later and usually words the statement slightly
-	// differently ("生产库是 X" versus "我们的生产库是 X"), which hashes
+	// differently ("the production DB is X" versus "our production DB is X"), which hashes
 	// differently and slips through. Remembering the message is content-free
 	// and closes that path exactly, while anything the user says afterwards
 	// comes from a later message and is still allowed through.
@@ -1138,10 +1141,15 @@ func UsedMemoriesFromItems(items []*MemoryItem) UsedMemories {
 // explicit-write path deterministic: in the default explicit_only mode nothing
 // is ever stored that the user did not literally ask to store, and no model
 // call stands between the request and the record.
+// The Chinese prefixes are "remember", "please remember" and "help me
+// remember", each followed by a fullwidth colon, colon, fullwidth comma,
+// comma, space or nothing.
 var explicitMemoryPrefixes = []string{
-	"记住：", "记住:", "记住，", "记住,", "记住 ", "记住",
-	"请记住：", "请记住:", "请记住，", "请记住,", "请记住 ", "请记住",
-	"帮我记住：", "帮我记住:", "帮我记住，", "帮我记住,", "帮我记住 ", "帮我记住",
+	"\u8bb0\u4f4f\uff1a", "\u8bb0\u4f4f:", "\u8bb0\u4f4f\uff0c", "\u8bb0\u4f4f,", "\u8bb0\u4f4f ", "\u8bb0\u4f4f",
+	"\u8bf7\u8bb0\u4f4f\uff1a", "\u8bf7\u8bb0\u4f4f:", "\u8bf7\u8bb0\u4f4f\uff0c", "\u8bf7\u8bb0\u4f4f,",
+	"\u8bf7\u8bb0\u4f4f ", "\u8bf7\u8bb0\u4f4f",
+	"\u5e2e\u6211\u8bb0\u4f4f\uff1a", "\u5e2e\u6211\u8bb0\u4f4f:", "\u5e2e\u6211\u8bb0\u4f4f\uff0c",
+	"\u5e2e\u6211\u8bb0\u4f4f,", "\u5e2e\u6211\u8bb0\u4f4f ", "\u5e2e\u6211\u8bb0\u4f4f",
 	"remember that ", "remember: ", "remember, ", "please remember that ",
 	"please remember: ", "note that ", "keep in mind that ",
 }
@@ -1160,7 +1168,8 @@ func DetectExplicitMemory(query string) (string, bool) {
 			continue
 		}
 		statement := SanitizeMemoryContent(strings.TrimSpace(trimmed[len(prefix):]))
-		statement = strings.TrimLeft(statement, "：:，, ")
+		// Fullwidth colon, colon, fullwidth comma, comma, space.
+		statement = strings.TrimLeft(statement, "\uff1a:\uff0c, ")
 		if len([]rune(statement)) < 2 {
 			return "", false
 		}
@@ -1195,18 +1204,23 @@ func MergeUsedMemories(existing, additional []UsedMemory) []UsedMemory {
 }
 
 // topicNoiseRunes are characters that carry no subject information on their
-// own. They are dropped from a topic key so "门店的排班管理" and
-// "门店排班管理" are recognised as the same subject.
+// own. They are dropped from a topic key so a label with the possessive
+// particle "de" and the same label without it are recognised as the same
+// subject. The set holds Chinese particles and function words: de, le, di,
+// de (complement), zhi, yu, he, ji, zai, shi, you, ge, deng, dui, yu.
 var topicNoiseRunes = map[rune]struct{}{
-	'的': {}, '了': {}, '地': {}, '得': {}, '之': {}, '与': {}, '和': {}, '及': {},
-	'在': {}, '是': {}, '有': {}, '个': {}, '等': {}, '对': {}, '于': {},
+	'\u7684': {}, '\u4e86': {}, '\u5730': {}, '\u5f97': {}, '\u4e4b': {}, '\u4e0e': {}, '\u548c': {}, '\u53ca': {},
+	'\u5728': {}, '\u662f': {}, '\u6709': {}, '\u4e2a': {}, '\u7b49': {}, '\u5bf9': {}, '\u4e8e': {},
 }
 
 // topicNoiseWords are trailing qualifiers people and models add to the same
-// subject interchangeably: "PostgreSQL 连接池" and "PostgreSQL 连接池问题" are
-// one topic, not two.
+// subject interchangeably: "PostgreSQL connection pool" and "PostgreSQL
+// connection pool issue" are one topic, not two. The Chinese words are
+// "related issue", "related", "issue", "aspect", "situation", "matter",
+// "work" and "direction".
 var topicNoiseWords = []string{
-	"相关问题", "相关", "问题", "方面", "情况", "事宜", "工作", "方向",
+	"\u76f8\u5173\u95ee\u9898", "\u76f8\u5173", "\u95ee\u9898", "\u65b9\u9762", "\u60c5\u51b5", "\u4e8b\u5b9c",
+	"\u5de5\u4f5c", "\u65b9\u5411",
 }
 
 // NormalizeTopicKey reduces a topic label to a stable identity key.
@@ -1214,8 +1228,8 @@ var topicNoiseWords = []string{
 // This is deliberately NOT NormalizeMemoryKey, which sorts and de-duplicates
 // characters. That behaviour is defensible for a memory item — where word order
 // should not matter and a containment check catches what it misses — but as a
-// topic identity it is wrong in both directions: it treats "门店排班管理"
-// and "门店的排班管理" as different subjects because of one extra
+// topic identity it is wrong in both directions: it treats a label with and
+// without the particle "de" as different subjects because of one extra
 // character, and it would treat two anagrams as the same one.
 //
 // Order is preserved here, and only genuinely uninformative characters and
@@ -1259,7 +1273,7 @@ func NormalizeTopicKey(topic string) string {
 // Bigrams rather than whole words because Chinese has no word separators, and
 // Dice rather than Jaccard because it is more forgiving of one label being
 // longer than the other — which is the common case when a model elaborates
-// ("排班管理" vs "门店排班管理").
+// ("shift scheduling" vs "store shift scheduling").
 func TopicSimilarity(a, b string) float64 {
 	left, right := topicBigrams(a), topicBigrams(b)
 	if len(left) == 0 || len(right) == 0 {
@@ -1346,7 +1360,7 @@ func TopicLabelIsAnImprovement(canonical, incoming, proposed string) bool {
 //
 // A subject has to recur to be worth anything: it is counted, and only becomes
 // a memory once several conversations touch it. A label like
-// "v2.3版本orders接口分页参数默认值查询" can only ever match
+// "v2.3 orders API pagination parameter default value lookup" can only ever match
 // itself, so it is counted once and then sits at one hit forever — the counting
 // mechanism is dead and nothing says so.
 //

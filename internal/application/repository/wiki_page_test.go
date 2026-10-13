@@ -209,7 +209,7 @@ func TestList_CategoryPathFilterMatchesOnSQLite(t *testing.T) {
 	pages := []*types.WikiPage{
 		makeCategorizedWikiPage("kb-c", "entity/in-ai", entity, published, "AI"),
 		makeCategorizedWikiPage("kb-c", "entity/in-ai-llm", entity, published, "AI", "LLM"),
-		makeCategorizedWikiPage("kb-c", "entity/in-people", entity, published, "人物"),
+		makeCategorizedWikiPage("kb-c", "entity/in-people", entity, published, "People"),
 		makeWikiPage("kb-c", "entity/root", entity, published),
 	}
 	for _, p := range pages {
@@ -233,7 +233,7 @@ func TestList_CategoryPathFilterMatchesOnSQLite(t *testing.T) {
 	got, total, err = repo.List(ctx, &types.WikiPageListRequest{
 		KnowledgeBaseID: "kb-c",
 		PageType:        types.WikiPageTypeEntity,
-		CategoryPath:    types.StringArray{"人物"},
+		CategoryPath:    types.StringArray{"People"},
 		Page:            1,
 		PageSize:        10,
 	})
@@ -259,13 +259,13 @@ func TestFolderTree_CRUDAndChildListing(t *testing.T) {
 		}
 	}
 	ai := mk("f-ai", types.WikiFolderRootID, "AI", "AI", 1)
-	people := mk("f-people", types.WikiFolderRootID, "人物", "人物", 1)
+	people := mk("f-people", types.WikiFolderRootID, "People", "People", 1)
 	llm := mk("f-llm", "f-ai", "LLM", "AI/LLM", 2)
 	for _, f := range []*types.WikiFolder{ai, people, llm} {
 		require.NoError(t, repo.CreateFolder(ctx, f))
 	}
 
-	// Root children: AI, 人物 (ordered by name within equal sort_order).
+	// Root children: AI, People (ordered by name within equal sort_order).
 	roots, err := repo.ListChildFolders(ctx, "kb-f", types.WikiFolderRootID)
 	require.NoError(t, err)
 	require.Len(t, roots, 2)
@@ -299,7 +299,7 @@ func TestFolderTree_CRUDAndChildListing(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, paths, []string{"AI"})
 	assert.Contains(t, paths, []string{"AI", "LLM"})
-	assert.Contains(t, paths, []string{"人物"})
+	assert.Contains(t, paths, []string{"People"})
 
 	// Pages can be fetched by their folder ids for subtree recompute.
 	pages, err := repo.ListPagesByFolderIDs(ctx, "kb-f", []string{"f-ai", "f-llm"})
@@ -790,26 +790,26 @@ func TestSearchAcross_RanksTitleAboveContentAndStaysInRequestedKBs(t *testing.T)
 	ctx := context.Background()
 
 	titleHit := makeWikiPage("kb-b", "entity/wangxin", types.WikiPageTypeEntity, types.WikiPageStatusPublished)
-	titleHit.Title = "王新"
+	titleHit.Title = "Wang Xin"
 	titleHit.Content = "unrelated body"
 	titleHit.UpdatedAt = time.Now().Add(-time.Hour)
 
 	contentHit := makeWikiPage("kb-a", "entity/huawei", types.WikiPageTypeEntity, types.WikiPageStatusPublished)
-	contentHit.Title = "华为"
-	contentHit.Content = "mentions 王新 in passing"
+	contentHit.Title = "Huawei"
+	contentHit.Content = "mentions Wang Xin in passing"
 	contentHit.UpdatedAt = time.Now()
 
 	archived := makeWikiPage("kb-a", "entity/wangxin-old", types.WikiPageTypeEntity, types.WikiPageStatusArchived)
-	archived.Title = "王新"
+	archived.Title = "Wang Xin"
 
 	outside := makeWikiPage("kb-c", "entity/wangxin-other", types.WikiPageTypeEntity, types.WikiPageStatusPublished)
-	outside.Title = "王新"
+	outside.Title = "Wang Xin"
 
 	for _, p := range []*types.WikiPage{titleHit, contentHit, archived, outside} {
 		require.NoError(t, repo.Create(ctx, p))
 	}
 
-	pages, err := repo.SearchAcross(ctx, []string{"kb-a", "kb-b"}, "王新", 10)
+	pages, err := repo.SearchAcross(ctx, []string{"kb-a", "kb-b"}, "Wang Xin", 10)
 	require.NoError(t, err)
 	require.Len(t, pages, 2)
 	assert.Equal(t, titleHit.ID, pages[0].ID, "title match in another KB must outrank a newer body mention")
@@ -822,13 +822,13 @@ func TestSearch_UsesSharedAcrossQueryForSingleKB(t *testing.T) {
 	ctx := context.Background()
 
 	hit := makeWikiPage("kb-a", "concept/deploy", types.WikiPageTypeConcept, types.WikiPageStatusPublished)
-	hit.Title = "部署"
+	hit.Title = "Deploy"
 	miss := makeWikiPage("kb-b", "concept/deploy-other", types.WikiPageTypeConcept, types.WikiPageStatusPublished)
-	miss.Title = "部署"
+	miss.Title = "Deploy"
 	require.NoError(t, repo.Create(ctx, hit))
 	require.NoError(t, repo.Create(ctx, miss))
 
-	pages, err := repo.Search(ctx, "kb-a", "部署", 10)
+	pages, err := repo.Search(ctx, "kb-a", "Deploy", 10)
 	require.NoError(t, err)
 	require.Len(t, pages, 1)
 	assert.Equal(t, hit.ID, pages[0].ID)

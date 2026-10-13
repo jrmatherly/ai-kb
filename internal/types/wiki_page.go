@@ -18,11 +18,12 @@ import (
 // stored paths and queried paths are always cleaned identically.
 const WikiCategoryMaxDepth = 3
 
-var wikiCategorySeparatorReplacer = strings.NewReplacer("／", "/", "｜", "/", "|", "/")
+// fullwidth slash and bar
+var wikiCategorySeparatorReplacer = strings.NewReplacer("\uff0f", "/", "\uff5c", "/", "|", "/")
 
 // CleanWikiCategoryPart normalizes a single raw category label that may itself
 // carry embedded separators, wrapping quotes/brackets, or page-type noise, and
-// returns the cleaned sub-labels (type labels such as "entity"/"实体" dropped).
+// returns the cleaned sub-labels (type labels such as "entity" and its Chinese forms dropped).
 func CleanWikiCategoryPart(part string) []string {
 	part = strings.TrimSpace(part)
 	if part == "" {
@@ -33,7 +34,8 @@ func CleanWikiCategoryPart(part string) []string {
 	cleaned := make([]string, 0, len(rawParts))
 	for _, raw := range rawParts {
 		label := strings.TrimSpace(raw)
-		label = strings.Trim(label, `"'“”‘’[]（）()`)
+		// ASCII, curly and fullwidth quotes and brackets
+		label = strings.Trim(label, "\"'\u201c\u201d\u2018\u2019[]\uff08\uff09()")
 		label = strings.TrimSpace(label)
 		if label == "" || isWikiTypeCategoryLabel(label) {
 			continue
@@ -67,7 +69,7 @@ func CleanWikiCategoryPath(parts []string) []string {
 // blank entries. Folder names are validated on creation (no separators), and
 // the folder tree is the source of truth for a page's placement, so unlike
 // CleanWikiCategoryPath no page-type filtering, deduplication, or depth cap
-// applies: a user may legitimately name a folder "概念" or "Concepts".
+// applies: a user may legitimately name a folder "Concepts" or its Chinese equivalent.
 func TrimWikiFolderSegments(parts []string) []string {
 	out := make([]string, 0, len(parts))
 	for _, part := range parts {
@@ -116,7 +118,11 @@ func isWikiTypeCategoryLabel(label string) bool {
 	normalized := strings.ToLower(strings.TrimSpace(label))
 	normalized = strings.TrimSuffix(normalized, "s")
 	switch normalized {
-	case "entity", "实体", "實體", "concept", "概念", "summary", "摘要", "wiki", "页面", "頁面":
+	// The Chinese labels are entity, concept, summary and page, simplified and traditional.
+	case "entity", "\u5b9e\u4f53", "\u5be6\u9ad4",
+		"concept", "\u6982\u5ff5",
+		"summary", "\u6458\u8981",
+		"wiki", "\u9875\u9762", "\u9801\u9762":
 		return true
 	default:
 		return false
@@ -221,7 +227,7 @@ type WikiPage struct {
 	// queries don't have to join wiki_folders.
 	FolderID string `json:"folder_id,omitempty" gorm:"column:folder_id;type:varchar(36);index;default:''"`
 	// CategoryPath is the directory breadcrumb that groups this page in the
-	// wiki browser, e.g. ["AI", "LLM 应用", "RAG"]. Derived cache of the
+	// wiki browser, e.g. ["AI", "LLM applications", "RAG"]. Derived cache of the
 	// folder chain identified by FolderID.
 	CategoryPath StringArray `json:"category_path,omitempty" gorm:"type:json"`
 	// WikiPath is a normalized, sortable path derived from page_type,

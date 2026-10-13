@@ -188,11 +188,11 @@ type SearchResult struct {
 	// Metadata
 	Metadata map[string]string `                              json:"metadata"`
 
-	// Chunk 类型
+	// Chunk type
 	ChunkType string `json:"chunk_type"`
-	// 父 Chunk ID
+	// Parent chunk ID
 	ParentChunkID string `json:"parent_chunk_id"`
-	// 图片信息 (JSON 格式)
+	// Image info (JSON)
 	ImageInfo string `json:"image_info"`
 	// MatchedImages survives merging, deduplication and stored reference replay.
 	// It contains storage references, never image bytes.

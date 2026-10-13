@@ -6,8 +6,8 @@ import (
 )
 
 func TestNormalizeMemoryKeyIsOrderInsensitive(t *testing.T) {
-	a := NormalizeMemoryKey("", "用户偏好 数据库")
-	b := NormalizeMemoryKey("", "数据库 用户偏好")
+	a := NormalizeMemoryKey("", "\u7528\u6237\u504f\u597d \u6570\u636e\u5e93")
+	b := NormalizeMemoryKey("", "\u6570\u636e\u5e93 \u7528\u6237\u504f\u597d")
 	if a != b {
 		t.Fatalf("key should not depend on word order: %q vs %q", a, b)
 	}
@@ -19,16 +19,17 @@ func TestNormalizeMemoryKeyIsOrderInsensitive(t *testing.T) {
 func TestNormalizeMemoryKeyPrefersExplicitTopic(t *testing.T) {
 	// Two contradicting statements about the same topic must collide, which is
 	// what lets the newer one supersede the older instead of piling up.
-	old := NormalizeMemoryKey("在用的数据库", "我用的是 MySQL")
-	updated := NormalizeMemoryKey("在用的数据库", "我已经迁移到 PostgreSQL")
+	old := NormalizeMemoryKey("\u5728\u7528\u7684\u6570\u636e\u5e93", "\u6211\u7528\u7684\u662f MySQL")
+	updated := NormalizeMemoryKey("\u5728\u7528\u7684\u6570\u636e\u5e93",
+		"\u6211\u5df2\u7ecf\u8fc1\u79fb\u5230 PostgreSQL")
 	if old != updated {
 		t.Fatalf("same topic must produce the same key: %q vs %q", old, updated)
 	}
 }
 
 func TestNormalizeMemoryKeyDistinguishesDifferentTopics(t *testing.T) {
-	a := NormalizeMemoryKey("在用的数据库", "我用 PostgreSQL")
-	b := NormalizeMemoryKey("常用的编程语言", "我写 Go")
+	a := NormalizeMemoryKey("\u5728\u7528\u7684\u6570\u636e\u5e93", "\u6211\u7528 PostgreSQL")
+	b := NormalizeMemoryKey("\u5e38\u7528\u7684\u7f16\u7a0b\u8bed\u8a00", "\u6211\u5199 Go")
 	if a == b {
 		t.Fatal("different topics must not collide")
 	}
@@ -37,17 +38,17 @@ func TestNormalizeMemoryKeyDistinguishesDifferentTopics(t *testing.T) {
 func TestSanitizeMemoryContentCollapsesStructure(t *testing.T) {
 	// A memory is injected into the system prompt, so it must not be able to
 	// introduce line structure of its own.
-	got := SanitizeMemoryContent("第一行\n\n第二行\t结尾  ")
+	got := SanitizeMemoryContent("\u7b2c\u4e00\u884c\n\n\u7b2c\u4e8c\u884c\t\u7ed3\u5c3e  ")
 	if strings.ContainsAny(got, "\n\r\t") {
 		t.Fatalf("sanitized content still contains structure: %q", got)
 	}
-	if got != "第一行 第二行 结尾" {
+	if got != "\u7b2c\u4e00\u884c \u7b2c\u4e8c\u884c \u7ed3\u5c3e" {
 		t.Fatalf("unexpected sanitized content: %q", got)
 	}
 }
 
 func TestSanitizeMemoryContentEnforcesLengthBudget(t *testing.T) {
-	got := SanitizeMemoryContent(strings.Repeat("记", MemoryContentMaxRunes+50))
+	got := SanitizeMemoryContent(strings.Repeat("\u8bb0", MemoryContentMaxRunes+50))
 	if runes := []rune(got); len(runes) > MemoryContentMaxRunes {
 		t.Fatalf("content exceeds the budget: %d runes", len(runes))
 	}
@@ -55,12 +56,19 @@ func TestSanitizeMemoryContentEnforcesLengthBudget(t *testing.T) {
 
 func TestRenderMemoryBlockGroupsAndRespectsBudget(t *testing.T) {
 	items := []*MemoryItem{
-		{Kind: MemoryKindProfile, Content: "在一家做医疗影像的公司写后端"},
-		{Kind: MemoryKindPreference, Content: "回答请直接给结论，不要铺垫"},
-		{Kind: MemoryKindPreference, Content: strings.Repeat("很长的偏好", 300)},
+		{
+			Kind:    MemoryKindProfile,
+			Content: "\u5728\u4e00\u5bb6\u505a\u533b\u7597\u5f71\u50cf\u7684\u516c\u53f8\u5199\u540e\u7aef",
+		},
+		{
+			Kind:    MemoryKindPreference,
+			Content: "\u56de\u7b54\u8bf7\u76f4\u63a5\u7ed9\u7ed3\u8bba\uff0c\u4e0d\u8981\u94fa\u57ab",
+		},
+		{Kind: MemoryKindPreference, Content: strings.Repeat("\u5f88\u957f\u7684\u504f\u597d", 300)},
 	}
 	block := RenderMemoryBlock(items)
-	if !strings.Contains(block, "在一家做医疗影像的公司写后端") {
+	if !strings.Contains(block,
+		"\u5728\u4e00\u5bb6\u505a\u533b\u7597\u5f71\u50cf\u7684\u516c\u53f8\u5199\u540e\u7aef") {
 		t.Fatalf("profile item missing from block: %q", block)
 	}
 	if !strings.Contains(block, "About the user:") || !strings.Contains(block, "Preferences:") {
@@ -78,7 +86,7 @@ func TestWrapMemoryForPromptEmptyInput(t *testing.T) {
 }
 
 func TestWrapMemoryForPromptLabelsContentAsData(t *testing.T) {
-	got := WrapMemoryForPrompt("About the user:\n- 写 Go", "")
+	got := WrapMemoryForPrompt("About the user:\n- \u5199 Go", "")
 	if !strings.Contains(got, "<user_memory>") || !strings.Contains(got, "</user_memory>") {
 		t.Fatalf("memory is not delimited: %q", got)
 	}
@@ -96,13 +104,22 @@ func TestDetectExplicitMemory(t *testing.T) {
 		want  string
 		ok    bool
 	}{
-		{"chinese colon", "记住：我们的生产库是 PostgreSQL 17", "我们的生产库是 PostgreSQL 17", true},
-		{"chinese polite", "请记住我每周五要交周报", "我每周五要交周报", true},
-		{"chinese helper", "帮我记住，接口超时统一设 30 秒", "接口超时统一设 30 秒", true},
+		{
+			"chinese colon", "\u8bb0\u4f4f\uff1a\u6211\u4eec\u7684\u751f\u4ea7\u5e93\u662f PostgreSQL 17",
+			"\u6211\u4eec\u7684\u751f\u4ea7\u5e93\u662f PostgreSQL 17", true,
+		},
+		{
+			"chinese polite", "\u8bf7\u8bb0\u4f4f\u6211\u6bcf\u5468\u4e94\u8981\u4ea4\u5468\u62a5",
+			"\u6211\u6bcf\u5468\u4e94\u8981\u4ea4\u5468\u62a5", true,
+		},
+		{
+			"chinese helper", "\u5e2e\u6211\u8bb0\u4f4f\uff0c\u63a5\u53e3\u8d85\u65f6\u7edf\u4e00\u8bbe 30 \u79d2",
+			"\u63a5\u53e3\u8d85\u65f6\u7edf\u4e00\u8bbe 30 \u79d2", true,
+		},
 		{"english", "Remember that I prefer short answers", "I prefer short answers", true},
 		{"english note", "note that our staging cluster is in Frankfurt", "our staging cluster is in Frankfurt", true},
-		{"not a directive", "你还记得我上次问的问题吗", "", false},
-		{"bare directive", "记住", "", false},
+		{"not a directive", "\u4f60\u8fd8\u8bb0\u5f97\u6211\u4e0a\u6b21\u95ee\u7684\u95ee\u9898\u5417", "", false},
+		{"bare directive", "\u8bb0\u4f4f", "", false},
 		{"empty", "   ", "", false},
 	}
 	for _, tc := range cases {
@@ -126,16 +143,16 @@ func TestRedactSensitiveRemovesCredentials(t *testing.T) {
 		name  string
 		input string
 	}{
-		{"openai key", "我的 key 是 sk-abcdefghijklmnop0123456789ABCDEF"},
-		{"github token", "用 ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345 拉代码"},
-		{"aws key", "AKIAIOSFODNN7EXAMPLE 是我们的 access key"},
-		{"password assignment", "登录用 password: hunter2xyz"},
-		{"chinese password", "数据库密码是 Tiger#2024"},
-		{"private key header", "-----BEGIN RSA PRIVATE KEY----- 开头那段"},
-		{"id card", "我的身份证号是 110101199003078515"},
-		{"bank card", "工资卡 6222 0202 0001 2345 678"},
-		{"mobile", "我的手机号 13800138000"},
-		{"opaque token", "token 是 abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH"},
+		{"openai key", "\u6211\u7684 key \u662f sk-abcdefghijklmnop0123456789ABCDEF"},
+		{"github token", "\u7528 ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ012345 \u62c9\u4ee3\u7801"},
+		{"aws key", "AKIAIOSFODNN7EXAMPLE \u662f\u6211\u4eec\u7684 access key"},
+		{"password assignment", "\u767b\u5f55\u7528 password: hunter2xyz"},
+		{"chinese password", "\u6570\u636e\u5e93\u5bc6\u7801\u662f Tiger#2024"},
+		{"private key header", "-----BEGIN RSA PRIVATE KEY----- \u5f00\u5934\u90a3\u6bb5"},
+		{"id card", "\u6211\u7684\u8eab\u4efd\u8bc1\u53f7\u662f 110101199003078515"},
+		{"bank card", "\u5de5\u8d44\u5361 6222 0202 0001 2345 678"},
+		{"mobile", "\u6211\u7684\u624b\u673a\u53f7 13800138000"},
+		{"opaque token", "token \u662f abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -154,12 +171,12 @@ func TestRedactSensitiveRemovesCredentials(t *testing.T) {
 // ordinary long numbers while still leaving part of an ID card in place.
 func TestRedactSensitiveLeavesOrdinaryStatementsAlone(t *testing.T) {
 	cases := []string{
-		"生产数据库是 PostgreSQL 17，部署在法兰克福",
-		"订单号 20260809 的那笔要加急",
-		"我在做医疗影像方向的后端开发",
-		"回答请直接给结论，不要铺垫",
-		"联系邮箱是 alice@example.com",
-		"服务跑在 10.0.12.7 的 8080 端口",
+		"\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b\u798f",
+		"\u8ba2\u5355\u53f7 20260809 \u7684\u90a3\u7b14\u8981\u52a0\u6025",
+		"\u6211\u5728\u505a\u533b\u7597\u5f71\u50cf\u65b9\u5411\u7684\u540e\u7aef\u5f00\u53d1",
+		"\u56de\u7b54\u8bf7\u76f4\u63a5\u7ed9\u7ed3\u8bba\uff0c\u4e0d\u8981\u94fa\u57ab",
+		"\u8054\u7cfb\u90ae\u7bb1\u662f alice@example.com",
+		"\u670d\u52a1\u8dd1\u5728 10.0.12.7 \u7684 8080 \u7aef\u53e3",
 	}
 	for _, input := range cases {
 		t.Run(input, func(t *testing.T) {
@@ -176,19 +193,22 @@ func TestIsMostlyRedacted(t *testing.T) {
 	if !IsMostlyRedacted(redacted) {
 		t.Fatal("a statement that was only a credential must not be stored")
 	}
-	kept, _ := RedactSensitive("生产库的密码是 hunter2xyz，库跑在法兰克福")
+	kept, _ := RedactSensitive(
+		"\u751f\u4ea7\u5e93\u7684\u5bc6\u7801\u662f hunter2xyz\uff0c\u5e93\u8dd1\u5728\u6cd5\u5170\u514b\u798f")
 	if IsMostlyRedacted(kept) {
 		t.Fatal("a statement with real content left must survive redaction")
 	}
 }
 
 func TestMemoryFingerprintIgnoresFormatting(t *testing.T) {
-	a := MemoryFingerprint("生产数据库是 PostgreSQL 17，部署在法兰克福")
-	b := MemoryFingerprint("生产数据库是 postgresql 17 部署在法兰克福")
+	a := MemoryFingerprint(
+		"\u751f\u4ea7\u6570\u636e\u5e93\u662f PostgreSQL 17\uff0c\u90e8\u7f72\u5728\u6cd5\u5170\u514b\u798f")
+	b := MemoryFingerprint(
+		"\u751f\u4ea7\u6570\u636e\u5e93\u662f postgresql 17 \u90e8\u7f72\u5728\u6cd5\u5170\u514b\u798f")
 	if a != b {
 		t.Fatal("a fingerprint must survive spacing, case and punctuation changes")
 	}
-	if a == MemoryFingerprint("生产数据库是 MySQL 8") {
+	if a == MemoryFingerprint("\u751f\u4ea7\u6570\u636e\u5e93\u662f MySQL 8") {
 		t.Fatal("different statements must not share a fingerprint")
 	}
 	if MemoryFingerprint("   ") != "" {

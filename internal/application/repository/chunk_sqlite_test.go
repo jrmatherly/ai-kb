@@ -68,17 +68,18 @@ func TestCreateChunks_CleansContextHeaderBeforePersistence(t *testing.T) {
 	db := setupChunkTestDB(t)
 	repo := NewChunkRepository(db)
 	chunk := makeChunk(uuid.New().String(), uuid.New().String(), types.ChunkTypeText)
-	chunk.ContextHeader = "# \x00投资评级说明\xff"
+	// "Investment rating notes" in Chinese: valid multibyte text must survive cleaning
+	chunk.ContextHeader = "# \x00\u6295\u8d44\u8bc4\u7ea7\u8bf4\u660e\xff"
 
 	require.NoError(t, repo.CreateChunks(context.Background(), []*types.Chunk{chunk}))
 
-	require.Equal(t, "# 投资评级说明", chunk.ContextHeader)
+	require.Equal(t, "# \u6295\u8d44\u8bc4\u7ea7\u8bf4\u660e", chunk.ContextHeader)
 	require.NotContains(t, chunk.ContextHeader, "\x00")
 	require.True(t, utf8.ValidString(chunk.ContextHeader))
 
 	var saved types.Chunk
 	require.NoError(t, db.First(&saved, "id = ?", chunk.ID).Error)
-	assert.Equal(t, "# 投资评级说明", saved.ContextHeader)
+	assert.Equal(t, "# \u6295\u8d44\u8bc4\u7ea7\u8bf4\u660e", saved.ContextHeader)
 	assert.NotContains(t, saved.ContextHeader, "\x00")
 	assert.True(t, utf8.ValidString(saved.ContextHeader))
 }

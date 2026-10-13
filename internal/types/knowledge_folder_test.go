@@ -50,7 +50,7 @@ func TestNormalizeKnowledgeFolderPathKeepsSegmentsValidUTF8(t *testing.T) {
 	// 43rd character. The stored folder_path has to stay valid UTF-8: an
 	// invalid one no longer survives a JSON round trip, so the path the client
 	// gets back never matches the row again on rename or move.
-	segment := strings.Repeat("中", 60)
+	segment := strings.Repeat("\u4e2d", 60)
 	normalized := NormalizeKnowledgeFolderPath(segment)
 
 	assert.True(t, utf8.ValidString(normalized),

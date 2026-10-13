@@ -22,19 +22,19 @@ type RetrievalData struct {
 	RetrievalType   string                 `json:"retrieval_type"` // vector, keyword, entity
 	ResultCount     int                    `json:"result_count"`
 	Results         interface{}            `json:"results,omitempty"`
-	Duration        int64                  `json:"duration_ms,omitempty"` // 检索耗时（毫秒）
+	Duration        int64                  `json:"duration_ms,omitempty"` // retrieval time (ms)
 	Extra           map[string]interface{} `json:"extra,omitempty"`
 }
 
 // RerankData represents reranking event data
 type RerankData struct {
 	Query       string                 `json:"query"`
-	InputCount  int                    `json:"input_count"`  // 输入的候选数量
-	OutputCount int                    `json:"output_count"` // 输出的结果数量
+	InputCount  int                    `json:"input_count"`  // candidates in
+	OutputCount int                    `json:"output_count"` // results out
 	ModelID     string                 `json:"model_id"`
 	Threshold   float64                `json:"threshold"`
 	Results     interface{}            `json:"results,omitempty"`
-	Duration    int64                  `json:"duration_ms,omitempty"` // 排序耗时（毫秒）
+	Duration    int64                  `json:"duration_ms,omitempty"` // rerank time (ms)
 	Extra       map[string]interface{} `json:"extra,omitempty"`
 }
 
@@ -64,7 +64,7 @@ type ChatData struct {
 type ErrorData struct {
 	Error     string                 `json:"error"`
 	ErrorCode string                 `json:"error_code,omitempty"`
-	Stage     string                 `json:"stage"` // 错误发生的阶段
+	Stage     string                 `json:"stage"` // stage where the error happened
 	SessionID string                 `json:"session_id"`
 	Query     string                 `json:"query,omitempty"`
 	Extra     map[string]interface{} `json:"extra,omitempty"`

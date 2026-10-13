@@ -8,8 +8,8 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-// 字段名常量。Doris 是 SQL 库，字段名要在 SELECT/WHERE/INSERT 多处复用，
-// 用常量统一防止笔误。
+// Column name constants. Doris is a SQL store and column names repeat across
+// SELECT/WHERE/INSERT, so constants guard against typos.
 const (
 	fieldID              = "id"
 	fieldContent         = "content"
@@ -23,45 +23,45 @@ const (
 	fieldEmbedding       = "embedding"
 )
 
-// columns 是 INSERT / SELECT 时使用的标准列序。
+// columns is the standard column order for INSERT and SELECT.
 var columns = []string{
 	fieldID, fieldContent, fieldSourceID, fieldSourceType,
 	fieldChunkID, fieldKnowledgeID, fieldKnowledgeBaseID, fieldTagID,
 	fieldIsEnabled, fieldEmbedding,
 }
 
-// columnsForRetrieve 是 Retrieve 时 SELECT 的列序，
-// 不包含 embedding（向量本身查询结果中无需返回，省带宽）。
+// columnsForRetrieve is the SELECT column order for Retrieve. It omits
+// embedding: the vector is not needed in results and costs bandwidth.
 var columnsForRetrieve = []string{
 	fieldID, fieldContent, fieldSourceID, fieldSourceType,
 	fieldChunkID, fieldKnowledgeID, fieldKnowledgeBaseID, fieldTagID,
 	fieldIsEnabled,
 }
 
-// columnsForCopy 是 CopyIndices 中分页 SELECT 时使用的列序，
-// 比 columnsForRetrieve 多 embedding，因为复制目的是搬运向量本身。
+// columnsForCopy is the column order for the paginated SELECT in CopyIndices.
+// It adds embedding to columnsForRetrieve because copying moves the vector itself.
 var columnsForCopy = []string{
 	fieldID, fieldContent, fieldSourceID, fieldSourceType,
 	fieldChunkID, fieldKnowledgeID, fieldKnowledgeBaseID, fieldTagID,
 	fieldIsEnabled, fieldEmbedding,
 }
 
-// whereCond 表示一个 WHERE 子条件：clause 是参数化 SQL 片段（带 ? 占位），
-// args 是对应顺序的参数值。所有用户输入字段（IDs）必须通过 args 传入，
-// 严禁拼到 clause 字符串里。
+// whereCond is one WHERE sub-condition: clause is a parameterized SQL fragment (with ? placeholders)
+// and args holds the values in order. Every user-supplied field (IDs) must go through args,
+// never into the clause string.
 type whereCond struct {
 	clause string
 	args   []any
 }
 
-// whereBuilder 用于把 RetrieveParams 中的过滤条件翻译成 SQL WHERE 子句。
+// whereBuilder translates the filters in RetrieveParams into a SQL WHERE clause.
 //
-// 每个 add* 方法对应一种 IN / NOT IN / = 算子；最终 build() 用 AND 拼接。
+// Each add* method maps to one IN / NOT IN / = operator; build() joins them with AND.
 type whereBuilder struct {
 	conds []whereCond
 }
 
-// addEqual 追加一个 field = ? 条件。
+// addEqual appends a field = ? condition.
 func (w *whereBuilder) addEqual(field string, value any) {
 	w.conds = append(w.conds, whereCond{
 		clause: field + " = ?",
@@ -69,7 +69,7 @@ func (w *whereBuilder) addEqual(field string, value any) {
 	})
 }
 
-// addIn 追加一个 field IN (?, ?, ...) 条件。values 为空时不追加任何东西。
+// addIn appends a field IN (?, ?, ...) condition. Empty values append nothing.
 func (w *whereBuilder) addIn(field string, values []string) {
 	if len(values) == 0 {
 		return
@@ -86,7 +86,7 @@ func (w *whereBuilder) addIn(field string, values []string) {
 	})
 }
 
-// addNotIn 追加一个 field NOT IN (?, ?, ...) 条件。
+// addNotIn appends a field NOT IN (?, ?, ...) condition.
 func (w *whereBuilder) addNotIn(field string, values []string) {
 	if len(values) == 0 {
 		return
@@ -103,8 +103,8 @@ func (w *whereBuilder) addNotIn(field string, values []string) {
 	})
 }
 
-// build 返回 WHERE 子句（不含 "WHERE " 前缀）和参数数组。
-// 没有任何条件时返回 ("1 = 1", nil)，方便调用方无脑拼接。
+// build returns the WHERE clause (without the "WHERE " prefix) and its args.
+// With no conditions it returns ("1 = 1", nil) so callers can concatenate unconditionally.
 func (w *whereBuilder) build() (string, []any) {
 	if len(w.conds) == 0 {
 		return "1 = 1", nil
@@ -118,9 +118,9 @@ func (w *whereBuilder) build() (string, []any) {
 	return strings.Join(parts, " AND "), args
 }
 
-// buildBaseFilter 将 RetrieveParams 中的过滤条件翻译为 whereBuilder。
-// 默认追加 is_enabled = TRUE，与 Qdrant/Milvus/Weaviate 保持一致：
-// 关闭的 chunk 不参与检索。
+// buildBaseFilter translates the filters in RetrieveParams into a whereBuilder.
+// It always appends is_enabled = TRUE, matching Qdrant/Milvus/Weaviate:
+// disabled chunks are excluded from retrieval.
 func buildBaseFilter(params types.RetrieveParams) *whereBuilder {
 	w := &whereBuilder{}
 	w.addEqual(fieldIsEnabled, true)
@@ -143,11 +143,11 @@ func buildBaseFilter(params types.RetrieveParams) *whereBuilder {
 	return w
 }
 
-// parseEmbeddingLiteral 解析 Doris ARRAY<FLOAT> 通过 MySQL 协议返回的
-// 字面量字符串（形如 "[1,2,3]"）为 []float32。
+// parseEmbeddingLiteral parses the literal string Doris returns for ARRAY<FLOAT>
+// over the MySQL protocol (such as "[1,2,3]") into []float32.
 //
-// CopyIndices 路径需要从源行读出向量本身再写回目标行；此处的解析容错优先：
-// 不带 [] 也接受、空数组返回 nil。
+// CopyIndices reads the vector from the source row and writes it to the target row, so parsing is lenient:
+// input without [] is accepted and an empty array returns nil.
 func parseEmbeddingLiteral(raw []byte) ([]float32, error) {
 	s := strings.TrimSpace(string(raw))
 	if s == "" {
@@ -174,12 +174,12 @@ func parseEmbeddingLiteral(raw []byte) ([]float32, error) {
 	return out, nil
 }
 
-// validateEmbedding 校验向量元素均为有限值。
+// validateEmbedding checks that every vector element is finite.
 //
-// strconv.FormatFloat 对 NaN/±Inf 会输出 "NaN"/"+Inf"/"-Inf"，
-// 这些字面量会让 Doris 拼出来的 SQL 报语法错误（或在某些版本下产生未定义结果）。
-// 上游（嵌入模型）正常情况下不会输出非有限值，但 GPU OOM、上游 bug、
-// 测试桩都可能触发；这里 fail-fast 比悄悄写脏数据安全。
+// strconv.FormatFloat renders NaN/+-Inf as "NaN"/"+Inf"/"-Inf",
+// which make the generated Doris SQL a syntax error (or undefined behavior on some versions).
+// The embedding model should never emit non-finite values, but GPU OOM, upstream bugs
+// and test stubs can; failing fast is safer than silently writing bad data.
 func validateEmbedding(vec []float32) error {
 	for i, v := range vec {
 		if f := float64(v); math.IsNaN(f) || math.IsInf(f, 0) {
@@ -211,8 +211,8 @@ func normalizeEmbedding(vec []float32) []float32 {
 	return normalized
 }
 
-// errInvalidEmbedding 描述哪个下标含非有限值；用结构体而非 fmt.Errorf
-// 是为了让上层在日志里能拿到下标做问题定位。
+// errInvalidEmbedding names the index holding a non-finite value; a struct rather than fmt.Errorf
+// lets callers log the index for diagnosis.
 type errInvalidEmbedding struct {
 	index int
 	value float32
@@ -223,17 +223,17 @@ func (e errInvalidEmbedding) Error() string {
 		"] is not finite: " + strconv.FormatFloat(float64(e.value), 'g', -1, 32)
 }
 
-// embeddingLiteral 把 []float32 转为 Doris ARRAY<FLOAT> 字面量字符串：
+// embeddingLiteral converts []float32 to a Doris ARRAY<FLOAT> literal string:
 // "[1.23,4.56,...]"。
 //
-// 为何不用占位符：go-sql-driver/mysql 不支持 ARRAY 类型的参数绑定，
-// Doris 端也只接受字面量形式。这里用 strconv.FormatFloat（'g' + bitSize=32）
-// 而不是 fmt.Sprintf("%f", v)，原因有二：
-//  1. fmt 在某些 locale 下会用千分位分隔符，破坏 SQL 语法；
-//  2. 'g' 比 'f' 短且不会丢精度。
+// Why no placeholder: go-sql-driver/mysql cannot bind ARRAY parameters,
+// and Doris accepts only the literal form. strconv.FormatFloat ('g', bitSize=32)
+// is used instead of fmt.Sprintf("%f", v) for two reasons:
+//  1. fmt can use thousands separators under some locales, breaking SQL syntax;
+//  2. 'g' is shorter than 'f' and loses no precision.
 //
-// 注入风险：[]float32 元素是嵌入模型输出的有限位数浮点数，序列化后只可能
-// 包含 [0-9eE+-.\s] 字符，不会逃逸出字面量上下文。
+// Injection risk: the elements are finite floats from the embedding model; serialized they can only
+// contain [0-9eE+-.\s] characters, so they cannot escape the literal context.
 func embeddingLiteral(vec []float32) string {
 	if len(vec) == 0 {
 		return "[]"

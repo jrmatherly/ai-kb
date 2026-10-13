@@ -13,49 +13,50 @@ import (
 // EventType represents the type of event in the system
 type EventType string
 
+// Event types, grouped by pipeline stage.
 const (
 	// Query processing events
-	EventQueryReceived   EventType = "query.received"   // 用户查询到达
-	EventQueryValidated  EventType = "query.validated"  // 查询验证完成
-	EventQueryPreprocess EventType = "query.preprocess" // 查询预处理
-	EventQueryRewrite    EventType = "query.rewrite"    // 查询改写
-	EventQueryRewritten  EventType = "query.rewritten"  // 查询改写完成
+	EventQueryReceived   EventType = "query.received"   // user query arrived
+	EventQueryValidated  EventType = "query.validated"  // query validated
+	EventQueryPreprocess EventType = "query.preprocess" // query preprocessing
+	EventQueryRewrite    EventType = "query.rewrite"    // query rewrite
+	EventQueryRewritten  EventType = "query.rewritten"  // query rewrite done
 
 	// Retrieval events
-	EventRetrievalStart    EventType = "retrieval.start"    // 检索开始
-	EventRetrievalVector   EventType = "retrieval.vector"   // 向量检索
-	EventRetrievalKeyword  EventType = "retrieval.keyword"  // 关键词检索
-	EventRetrievalEntity   EventType = "retrieval.entity"   // 实体检索
-	EventRetrievalComplete EventType = "retrieval.complete" // 检索完成
+	EventRetrievalStart    EventType = "retrieval.start"    // retrieval started
+	EventRetrievalVector   EventType = "retrieval.vector"   // vector retrieval
+	EventRetrievalKeyword  EventType = "retrieval.keyword"  // keyword retrieval
+	EventRetrievalEntity   EventType = "retrieval.entity"   // entity retrieval
+	EventRetrievalComplete EventType = "retrieval.complete" // retrieval done
 
 	// Rerank events
-	EventRerankStart    EventType = "rerank.start"    // 排序开始
-	EventRerankComplete EventType = "rerank.complete" // 排序完成
+	EventRerankStart    EventType = "rerank.start"    // rerank started
+	EventRerankComplete EventType = "rerank.complete" // rerank done
 
 	// Merge events
-	EventMergeStart    EventType = "merge.start"    // 合并开始
-	EventMergeComplete EventType = "merge.complete" // 合并完成
+	EventMergeStart    EventType = "merge.start"    // merge started
+	EventMergeComplete EventType = "merge.complete" // merge done
 
 	// Chat completion events
-	EventChatStart    EventType = "chat.start"    // 聊天生成开始
-	EventChatComplete EventType = "chat.complete" // 聊天生成完成
-	EventChatStream   EventType = "chat.stream"   // 聊天流式输出
+	EventChatStart    EventType = "chat.start"    // chat generation started
+	EventChatComplete EventType = "chat.complete" // chat generation done
+	EventChatStream   EventType = "chat.stream"   // chat streaming output
 
 	// Agent events
-	EventAgentQuery    EventType = "agent.query"    // Agent 查询开始
-	EventAgentPlan     EventType = "agent.plan"     // Agent 计划生成
-	EventAgentStep     EventType = "agent.step"     // Agent 步骤执行
-	EventAgentTool     EventType = "agent.tool"     // Agent 工具调用
-	EventAgentComplete EventType = "agent.complete" // Agent 完成
+	EventAgentQuery    EventType = "agent.query"    // agent query started
+	EventAgentPlan     EventType = "agent.plan"     // agent plan generated
+	EventAgentStep     EventType = "agent.step"     // agent step executed
+	EventAgentTool     EventType = "agent.tool"     // agent tool call
+	EventAgentComplete EventType = "agent.complete" // agent done
 
 	// Agent streaming events (for real-time feedback)
-	EventAgentThought       EventType = "thought"        // Agent 思考过程
+	EventAgentThought       EventType = "thought"        // agent thinking
 	EventAgentCommandOutput EventType = "command_output" // bounded command output
-	EventAgentToolCall      EventType = "tool_call"      // 工具调用通知
-	EventAgentToolResult    EventType = "tool_result"    // 工具结果
-	EventAgentReflection    EventType = "reflection"     // Agent 反思
-	EventAgentReferences    EventType = "references"     // 知识引用
-	EventAgentFinalAnswer   EventType = "final_answer"   // 最终答案
+	EventAgentToolCall      EventType = "tool_call"      // tool call notification
+	EventAgentToolResult    EventType = "tool_result"    // tool result
+	EventAgentReflection    EventType = "reflection"     // agent reflection
+	EventAgentReferences    EventType = "references"     // knowledge citations
+	EventAgentFinalAnswer   EventType = "final_answer"   // final answer
 
 	// MCP tool human approval (issue #1173)
 	EventToolApprovalRequired EventType = "tool_approval_required"
@@ -69,7 +70,7 @@ const (
 	EventMCPOAuthResolved EventType = "mcp_oauth_resolved"
 
 	// Error events
-	EventError EventType = "error" // 错误事件
+	EventError EventType = "error" // error event
 
 	// Long-term memory recalled for this turn. Emitted once, before the answer
 	// streams, so the UI can show which memories the answer saw.
@@ -85,20 +86,20 @@ const (
 	EventUserMessageInjected EventType = "user_message_injected"
 
 	// Session events
-	EventSessionTitle EventType = "session_title" // 会话标题更新
+	EventSessionTitle EventType = "session_title" // session title updated
 
 	// Control events
-	EventStop EventType = "stop" // 停止对话生成
+	EventStop EventType = "stop" // stop generating the reply
 )
 
 // Event represents an event in the system
 type Event struct {
-	ID        string                 // 事件ID (自动生成UUID，用于流式更新追踪)
-	Type      EventType              // 事件类型
-	SessionID string                 // 会话ID
-	Data      interface{}            // 事件数据
-	Metadata  map[string]interface{} // 事件元数据
-	RequestID string                 // 请求ID
+	ID        string                 // event ID (UUID generated when empty, used to track streaming updates)
+	Type      EventType              // event type
+	SessionID string                 // session ID
+	Data      interface{}            // event data
+	Metadata  map[string]interface{} // event metadata
+	RequestID string                 // request ID
 }
 
 // EventHandler is a function that handles events
@@ -108,7 +109,7 @@ type EventHandler func(ctx context.Context, event Event) error
 type EventBus struct {
 	mu        sync.RWMutex
 	handlers  map[EventType][]EventHandler
-	asyncMode bool // 是否异步处理事件
+	asyncMode bool // handle events asynchronously
 }
 
 // NewEventBus creates a new EventBus instance

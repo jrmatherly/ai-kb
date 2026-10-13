@@ -11,9 +11,9 @@ func TestApplyBuiltinAgentLocalizationOverlaysYAMLLocale(t *testing.T) {
 			ID:     BuiltinQuickAnswerID,
 			Avatar: "quick.png",
 			I18n: map[string]BuiltinAgentI18n{
-				"default": {Name: "快速问答", Description: "中文 RAG"},
+				"default": {Name: "Default name", Description: "Default description"},
 				"en-US":   {Name: "Quick Answer", Description: "Knowledge base RAG Q&A"},
-				"zh-CN":   {Name: "快速问答", Description: "中文 RAG"},
+				"zh-CN":   {Name: "zh-CN name", Description: "zh-CN description"},
 			},
 		},
 	})
@@ -21,8 +21,8 @@ func TestApplyBuiltinAgentLocalizationOverlaysYAMLLocale(t *testing.T) {
 
 	agent := &CustomAgent{
 		ID:          BuiltinQuickAnswerID,
-		Name:        "快速问答",
-		Description: "中文 RAG",
+		Name:        "Default name",
+		Description: "Default description",
 		Avatar:      "",
 		IsBuiltin:   true,
 		TenantID:    1,

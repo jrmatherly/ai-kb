@@ -1,4 +1,4 @@
--- Migration: Create "未分类" tag for each knowledge base that has untagged entries
+-- Migration: Create "Untagged" tag for each knowledge base that has untagged entries
 -- and update chunks, knowledges, and embeddings to reference the new tag
 DO $$
 BEGIN
@@ -35,23 +35,23 @@ BEGIN
             AND (k.tag_id = '' OR k.tag_id IS NULL)
         ) AS untagged
     LOOP
-        -- Check if "未分类" tag already exists for this knowledge base
+        -- Check if "Untagged" tag already exists for this knowledge base
         SELECT id INTO new_tag_id
         FROM knowledge_tags
         WHERE tenant_id = kb_record.tenant_id 
         AND knowledge_base_id = kb_record.knowledge_base_id 
-        AND name = '未分类'
+        AND name = 'Untagged'
         LIMIT 1;
 
         -- If not exists, create the tag
         IF new_tag_id IS NULL THEN
             new_tag_id := gen_random_uuid()::VARCHAR(36);
             INSERT INTO knowledge_tags (id, tenant_id, knowledge_base_id, name, color, sort_order, created_at, updated_at)
-            VALUES (new_tag_id, kb_record.tenant_id, kb_record.knowledge_base_id, '未分类', '', 0, NOW(), NOW());
-            RAISE NOTICE '[Migration 000008] Created "未分类" tag (id: %) for tenant_id: %, kb_id: %', 
+            VALUES (new_tag_id, kb_record.tenant_id, kb_record.knowledge_base_id, 'Untagged', '', 0, NOW(), NOW());
+            RAISE NOTICE '[Migration 000008] Created "Untagged" tag (id: %) for tenant_id: %, kb_id: %', 
                 new_tag_id, kb_record.tenant_id, kb_record.knowledge_base_id;
         ELSE
-            RAISE NOTICE '[Migration 000008] "未分类" tag already exists (id: %) for tenant_id: %, kb_id: %', 
+            RAISE NOTICE '[Migration 000008] "Untagged" tag already exists (id: %) for tenant_id: %, kb_id: %', 
                 new_tag_id, kb_record.tenant_id, kb_record.knowledge_base_id;
         END IF;
 

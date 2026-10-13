@@ -15,13 +15,18 @@ func TestDetectAnalyzerName(t *testing.T) {
 	}{
 		{
 			name: "Chinese",
-			text: "Transformer中多头注意力的三种使用方式及解码器自注意力掩码原因",
+			// Chinese sentence about multi-head attention
+			text: "Transformer\u4e2d\u591a\u5934\u6ce8\u610f\u529b\u7684\u4e09\u79cd\u4f7f\u7528\u65b9\u5f0f" +
+				"\u53ca\u89e3\u7801\u5668\u81ea\u6ce8\u610f\u529b\u63a9\u7801\u539f\u56e0",
 			want: milvusAnalyzerChinese,
 		},
 		{name: "English", text: "How does multi-head attention work", want: milvusAnalyzerEnglish},
-		{name: "ChineseWithTechnicalTerm", text: "AI 注意力", want: milvusAnalyzerChinese},
-		{name: "JapaneseKanjiWithKana", text: "東京都の設定", want: milvusAnalyzerDefault},
-		{name: "KoreanHangul", text: "서울 설정", want: milvusAnalyzerDefault},
+		// "AI attention"
+		{name: "ChineseWithTechnicalTerm", text: "AI \u6ce8\u610f\u529b", want: milvusAnalyzerChinese},
+		// "Tokyo settings"
+		{name: "JapaneseKanjiWithKana", text: "\u6771\u4eac\u90fd\u306e\u8a2d\u5b9a", want: milvusAnalyzerDefault},
+		// "Seoul settings"
+		{name: "KoreanHangul", text: "\uc11c\uc6b8 \uc124\uc815", want: milvusAnalyzerDefault},
 		{name: "Symbols", text: "12345 --", want: milvusAnalyzerDefault},
 		{name: "Empty", text: "", want: milvusAnalyzerDefault},
 	}
@@ -57,10 +62,10 @@ func TestNormalizeAnalyzerName(t *testing.T) {
 func TestAnalyzerNameForUpsert(t *testing.T) {
 	require.Equal(t, milvusAnalyzerDefault, analyzerNameForUpsert(nil))
 	require.Equal(t, milvusAnalyzerChinese, analyzerNameForUpsert(&MilvusVectorEmbedding{
-		Content: "AI 注意力",
+		Content: "AI \u6ce8\u610f\u529b", // "AI attention" in Chinese
 	}))
 	require.Equal(t, milvusAnalyzerEnglish, analyzerNameForUpsert(&MilvusVectorEmbedding{
-		Content:  "AI 注意力",
+		Content:  "AI \u6ce8\u610f\u529b",
 		Language: "en",
 	}))
 	require.Equal(t, milvusAnalyzerEnglish, analyzerNameForUpsert(&MilvusVectorEmbedding{

@@ -147,21 +147,21 @@ type Session struct {
 	ForkBootstrap *ForkBootstrap `json:"-" gorm:"type:jsonb;column:fork_bootstrap"`
 
 	// // Strategy configuration
-	// KnowledgeBaseID   string              `json:"knowledge_base_id"`                    // 关联的知识库ID
-	// MaxRounds         int                 `json:"max_rounds"`                           // 多轮保持轮数
-	// EnableRewrite     bool                `json:"enable_rewrite"`                       // 多轮改写开关
-	// FallbackStrategy  FallbackStrategy    `json:"fallback_strategy"`                    // 兜底策略
-	// FallbackResponse  string              `json:"fallback_response"`                    // 固定回复内容
-	// EmbeddingTopK     int                 `json:"embedding_top_k"`                      // 向量召回TopK
-	// KeywordThreshold  float64             `json:"keyword_threshold"`                    // 关键词召回阈值
-	// VectorThreshold   float64             `json:"vector_threshold"`                     // 向量召回阈值
-	// RerankModelID     string              `json:"rerank_model_id"`                      // 排序模型ID
-	// RerankTopK        int                 `json:"rerank_top_k"`                         // 排序TopK
-	// RerankThreshold   float64             `json:"rerank_threshold"`                     // 排序阈值
-	// SummaryModelID    string              `json:"summary_model_id"`                     // 总结模型ID
-	// SummaryParameters *SummaryConfig      `json:"summary_parameters" gorm:"type:json"`  // 总结模型参数
-	// AgentConfig       *SessionAgentConfig `json:"agent_config"       gorm:"type:jsonb"` // Agent 配置（会话级别，仅存储enabled和knowledge_bases）
-	// ContextConfig     *ContextConfig      `json:"context_config"     gorm:"type:jsonb"` // 上下文管理配置（可选）
+	// KnowledgeBaseID   string              `json:"knowledge_base_id"`                    // knowledge base ID
+	// MaxRounds         int                 `json:"max_rounds"`                           // rounds kept in multi-turn
+	// EnableRewrite     bool                `json:"enable_rewrite"`                       // multi-turn rewrite switch
+	// FallbackStrategy  FallbackStrategy    `json:"fallback_strategy"`                    // fallback strategy
+	// FallbackResponse  string              `json:"fallback_response"`                    // fixed reply text
+	// EmbeddingTopK     int                 `json:"embedding_top_k"`                      // vector retrieval TopK
+	// KeywordThreshold  float64             `json:"keyword_threshold"`                    // keyword threshold
+	// VectorThreshold   float64             `json:"vector_threshold"`                     // vector retrieval threshold
+	// RerankModelID     string              `json:"rerank_model_id"`                      // rerank model ID
+	// RerankTopK        int                 `json:"rerank_top_k"`                         // rerank TopK
+	// RerankThreshold   float64             `json:"rerank_threshold"`                     // rerank threshold
+	// SummaryModelID    string              `json:"summary_model_id"`                     // summary model ID
+	// SummaryParameters *SummaryConfig      `json:"summary_parameters" gorm:"type:json"`  // summary model parameters
+	// AgentConfig       *SessionAgentConfig `json:"agent_config"       gorm:"type:jsonb"` // session agent config
+	// ContextConfig     *ContextConfig      `json:"context_config"     gorm:"type:jsonb"` // context config
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

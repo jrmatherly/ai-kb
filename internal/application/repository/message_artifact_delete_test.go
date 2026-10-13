@@ -188,7 +188,7 @@ func TestListArtifactLibraryHidesDeletedArtifacts(t *testing.T) {
 	repo := NewMessageRepository(db)
 	ctx := context.Background()
 	base := time.Date(2026, 9, 1, 2, 0, 0, 0, time.UTC)
-	mine := createSession(t, db, &types.Session{TenantID: 7, UserID: "alice", Title: "我的会话"})
+	mine := createSession(t, db, &types.Session{TenantID: 7, UserID: "alice", Title: "My session"})
 
 	first, err := repo.CreateMessage(ctx, &types.Message{
 		SessionID: mine, RequestID: "r1", Role: "assistant", CreatedAt: base,

@@ -99,7 +99,7 @@ func detectAnalyzerName(text string) string {
 		return milvusAnalyzerDefault
 	}
 	// Any remaining Han character makes the text Chinese-oriented. This is
-	// important for technical queries such as "AI 注意力": choosing English just
+	// important for technical queries such as "AI attention" written in Chinese: choosing English just
 	// because ASCII characters are more numerous would drop the Chinese terms.
 	if hanCount > 0 {
 		return milvusAnalyzerChinese

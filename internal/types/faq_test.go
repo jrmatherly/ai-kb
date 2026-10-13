@@ -8,7 +8,7 @@ func TestCalculateFAQContentHash_NormalizeIsApplied(t *testing.T) {
 	// The core bug: CalculateFAQContentHash must normalize the input so that
 	// sanitized-only data and pre-normalized data produce the same hash.
 	meta := &FAQChunkMetadata{
-		StandardQuestion: "  你好，World？ ",
+		StandardQuestion: "  \u4f60\u597d\uff0cWorld\uff1f ",
 		SimilarQuestions: []string{"Hello World", "hello world"},
 		Answers:          []string{"answer1"},
 		AnswerStrategy:   AnswerStrategyAll,
@@ -21,7 +21,7 @@ func TestCalculateFAQContentHash_NormalizeIsApplied(t *testing.T) {
 
 	// Path 2: what calculateReplaceOperations does (hash directly from sanitized data)
 	sanitized := &FAQChunkMetadata{
-		StandardQuestion: "  你好，World？ ",
+		StandardQuestion: "  \u4f60\u597d\uff0cWorld\uff1f ",
 		SimilarQuestions: []string{"Hello World", "hello world"},
 		Answers:          []string{"answer1"},
 		AnswerStrategy:   AnswerStrategyAll,
@@ -39,9 +39,9 @@ func TestCalculateFAQContentHash_NormalizeIsApplied(t *testing.T) {
 func TestCalculateFAQContentHash_ConsistentViaSetFAQMetadata(t *testing.T) {
 	// Simulate the full write path then read-path comparison
 	meta := &FAQChunkMetadata{
-		StandardQuestion: "如何退款？",
-		SimilarQuestions: []string{"怎么退款", "退款流程"},
-		Answers:          []string{"请联系客服"},
+		StandardQuestion: "\u5982\u4f55\u9000\u6b3e\uff1f",
+		SimilarQuestions: []string{"\u600e\u4e48\u9000\u6b3e", "\u9000\u6b3e\u6d41\u7a0b"},
+		Answers:          []string{"\u8bf7\u8054\u7cfb\u5ba2\u670d"},
 		AnswerStrategy:   AnswerStrategyAll,
 		Version:          1,
 		Source:           "faq",
@@ -58,9 +58,9 @@ func TestCalculateFAQContentHash_ConsistentViaSetFAQMetadata(t *testing.T) {
 
 	// Read path: calculateReplaceOperations calls sanitize + CalculateFAQContentHash
 	readMeta := &FAQChunkMetadata{
-		StandardQuestion: "如何退款？",
-		SimilarQuestions: []string{"怎么退款", "退款流程"},
-		Answers:          []string{"请联系客服"},
+		StandardQuestion: "\u5982\u4f55\u9000\u6b3e\uff1f",
+		SimilarQuestions: []string{"\u600e\u4e48\u9000\u6b3e", "\u9000\u6b3e\u6d41\u7a0b"},
+		Answers:          []string{"\u8bf7\u8054\u7cfb\u5ba2\u670d"},
 		AnswerStrategy:   AnswerStrategyAll,
 		Version:          1,
 		Source:           "faq",
@@ -80,7 +80,7 @@ func TestCalculateFAQContentHash_CaseAndPunctuationInvariant(t *testing.T) {
 		Answers:          []string{"answer"},
 	}
 	meta2 := &FAQChunkMetadata{
-		StandardQuestion: "hello world？",
+		StandardQuestion: "hello world\uff1f",
 		Answers:          []string{"answer"},
 	}
 
@@ -95,23 +95,24 @@ func TestCalculateFAQContentHash_CaseAndPunctuationInvariant(t *testing.T) {
 
 func TestCalculateFAQContentHash_TraditionalSimplifiedInvariant(t *testing.T) {
 	meta1 := &FAQChunkMetadata{
-		StandardQuestion: "如何退款",
-		Answers:          []string{"请联系客服"},
+		StandardQuestion: "\u5982\u4f55\u9000\u6b3e",
+		Answers:          []string{"\u8bf7\u8054\u7cfb\u5ba2\u670d"},
 	}
 	meta2 := &FAQChunkMetadata{
-		StandardQuestion: "如何退款",            // simplified
-		Answers:          []string{"請聯繫客服"}, // traditional in answers — answers only sanitize, not normalize
+		StandardQuestion: "\u5982\u4f55\u9000\u6b3e", // simplified
+		// traditional in answers; answers only sanitize, not normalize
+		Answers: []string{"\u8acb\u806f\u7e6b\u5ba2\u670d"},
 	}
 
 	// Questions should normalize, but answers only sanitize.
 	// So answers in traditional vs simplified WILL produce different hashes (by design).
 	// But standard questions with t2s should match.
 	metaTraditionalQ := &FAQChunkMetadata{
-		StandardQuestion: "開發環境",
+		StandardQuestion: "\u958b\u767c\u74b0\u5883",
 		Answers:          []string{"answer"},
 	}
 	metaSimplifiedQ := &FAQChunkMetadata{
-		StandardQuestion: "开发环境",
+		StandardQuestion: "\u5f00\u53d1\u73af\u5883",
 		Answers:          []string{"answer"},
 	}
 
@@ -129,12 +130,12 @@ func TestCalculateFAQContentHash_TraditionalSimplifiedInvariant(t *testing.T) {
 
 func TestCalculateFAQContentHash_SortInvariant(t *testing.T) {
 	meta1 := &FAQChunkMetadata{
-		StandardQuestion: "问题",
+		StandardQuestion: "\u95ee\u9898",
 		SimilarQuestions: []string{"a", "b", "c"},
 		Answers:          []string{"x", "y", "z"},
 	}
 	meta2 := &FAQChunkMetadata{
-		StandardQuestion: "问题",
+		StandardQuestion: "\u95ee\u9898",
 		SimilarQuestions: []string{"c", "a", "b"},
 		Answers:          []string{"z", "x", "y"},
 	}
@@ -162,7 +163,7 @@ func TestCalculateFAQContentHash_NilAndEmpty(t *testing.T) {
 
 func TestCalculateFAQContentHash_FullWidthHalfWidthInvariant(t *testing.T) {
 	metaFull := &FAQChunkMetadata{
-		StandardQuestion: "Ｈｅｌｌｏ　Ｗｏｒｌｄ",
+		StandardQuestion: "\uff28\uff45\uff4c\uff4c\uff4f\u3000\uff37\uff4f\uff52\uff4c\uff44",
 		Answers:          []string{"answer"},
 	}
 	metaHalf := &FAQChunkMetadata{

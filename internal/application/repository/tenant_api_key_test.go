@@ -41,8 +41,9 @@ func TestTenantAPIKeyRepositoryPersistsUTCExpiry(t *testing.T) {
 	require.True(t, loaded.ExpiresAt.Equal(expiresAt))
 }
 
-// TestTenantAPIKeyRepositoryUpdateIsTenantScoped 验证通用更新不会越过租户边界。
-// 输入同租户和其他租户的 Key；前者更新全部可配置字段，后者必须返回未找到。
+// TestTenantAPIKeyRepositoryUpdateIsTenantScoped checks that the general update cannot cross a workspace boundary.
+// It takes a key in the same workspace and one in another: the first gets every
+// configurable field updated, the second must return not found.
 func TestTenantAPIKeyRepositoryUpdateIsTenantScoped(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
 	require.NoError(t, err)

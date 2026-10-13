@@ -44,7 +44,7 @@ func TestNewQdrantValueMapSanitizesInvalidUTF8AndNUL(t *testing.T) {
 }
 
 func TestNewQdrantValueMapPreservesValidUTF8(t *testing.T) {
-	valid := "valid UTF-8 中文内容"
+	valid := "valid UTF-8 \u4e2d\u6587\u5185\u5bb9" // multibyte Chinese text
 	payload := newQdrantValueMap(map[string]any{
 		fieldContent: valid,
 	})

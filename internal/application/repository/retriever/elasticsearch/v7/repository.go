@@ -191,52 +191,49 @@ func (e *elasticsearchRepository) Support() []typesLocal.RetrieverType {
 	return []typesLocal.RetrieverType{typesLocal.KeywordsRetrieverType}
 }
 
-// EstimateStorageSize 估算存储空间大小
+// EstimateStorageSize estimates the storage size
 func (e *elasticsearchRepository) EstimateStorageSize(ctx context.Context,
 	indexInfoList []*typesLocal.IndexInfo, params map[string]any,
 ) int64 {
 	log := logger.GetLogger(ctx)
 	log.Infof("[ElasticsearchV7] Estimating storage size for %d indices", len(indexInfoList))
 
-	// 计算总存储大小
 	var totalStorageSize int64 = 0
 	for _, indexInfo := range indexInfoList {
 		embeddingDB := elasticsearchRetriever.ToDBVectorEmbedding(indexInfo, params)
-		// 计算单个文档的存储大小并累加
 		totalStorageSize += e.calculateStorageSize(embeddingDB)
 	}
 
-	// 记录存储大小
 	log.Infof("[ElasticsearchV7] Estimated storage size: %d bytes (%d MB) for %d indices",
 		totalStorageSize, totalStorageSize/(1024*1024), len(indexInfoList))
 	return totalStorageSize
 }
 
-// 计算单个索引的存储占用大小(Bytes)
+// calculateStorageSize estimates the storage footprint of one index entry in bytes
 func (e *elasticsearchRepository) calculateStorageSize(embedding *elasticsearchRetriever.VectorEmbedding) int64 {
-	// 1. 文本内容大小
+	// 1. Text content size
 	contentSizeBytes := int64(len(embedding.Content))
 
-	// 2. 向量存储大小
+	// 2. Vector storage size
 	var vectorSizeBytes int64 = 0
 	if embedding.Embedding != nil {
-		// 4字节/维度 (全精度浮点数)
+		// 4 bytes per dimension (full-precision float)
 		vectorSizeBytes = int64(len(embedding.Embedding) * 4)
 	}
 
-	// 3. 元数据大小 (ID、时间戳等固定开销)
-	metadataSizeBytes := int64(250) // 约250字节的元数据
+	// 3. Metadata size (fixed overhead for ID, timestamps and so on)
+	metadataSizeBytes := int64(250) // about 250 bytes of metadata
 
-	// 4. 索引开销 (ES索引的放大系数约为1.5)
+	// 4. Index overhead (ES index amplification is about 1.5x)
 	indexOverheadBytes := (contentSizeBytes + vectorSizeBytes) * 5 / 10
 
-	// 总大小 (字节)
+	// Total size in bytes
 	totalSizeBytes := contentSizeBytes + vectorSizeBytes + metadataSizeBytes + indexOverheadBytes
 
 	return totalSizeBytes
 }
 
-// Save 保存索引
+// Save saves an index entry
 func (e *elasticsearchRepository) Save(ctx context.Context,
 	embedding *typesLocal.IndexInfo, additionalParams map[string]any,
 ) error {
@@ -1116,14 +1113,14 @@ func (e *elasticsearchRepository) querySourceBatch(ctx context.Context,
 		return nil, fmt.Errorf("failed to query source index data: %s", response.String())
 	}
 
-	// 解析搜索结果
+	// Parse the search results
 	var searchResult map[string]interface{}
 	if err := json.NewDecoder(response.Body).Decode(&searchResult); err != nil {
 		log.Errorf("[ElasticsearchV7] Failed to parse query result: %v", err)
 		return nil, err
 	}
 
-	// 提取结果列表
+	// Extract the result list
 	hitsObj, ok := searchResult["hits"].(map[string]interface{})
 	if !ok {
 		log.Errorf("[ElasticsearchV7] Invalid search result format: 'hits' object missing")

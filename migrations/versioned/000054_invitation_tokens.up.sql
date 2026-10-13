@@ -18,7 +18,7 @@
 --   * accepted_count counts how many users have completed registration
 --     through the row. Per-user invitations cap at 1 and flip to
 --     accepted in the same step; share-link rows accumulate — surfaced
---     in the management UI as "N 人已加入" so Owners can tell whether
+--     in the management UI as "N joined" so Owners can tell whether
 --     a link is fresh or has already been used widely.
 --
 -- Index changes:

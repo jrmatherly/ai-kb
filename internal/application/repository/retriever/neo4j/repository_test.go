@@ -16,7 +16,7 @@ import (
 // hits, and both LIMITs are preceded by the same ordering key so a truncated
 // result keeps the neighbourhoods of the highest-ranked seeds.
 func TestGraphSearchCypherBoundsAndOrders(t *testing.T) {
-	query, params := graphSearchCypher("ENTITY_kb", []string{"安恒"})
+	query, params := graphSearchCypher("ENTITY_kb", []string{"Acme"})
 
 	for _, want := range []string{
 		"EXISTS { (n)--() }",
@@ -62,8 +62,8 @@ func TestGraphSearchCypherBoundsAndOrders(t *testing.T) {
 	if params["maxRows"] != graphSearchMaxRows {
 		t.Errorf("maxRows = %v, want %d", params["maxRows"], graphSearchMaxRows)
 	}
-	if got, ok := params["nodes"].([]string); !ok || len(got) != 1 || got[0] != "安恒" {
-		t.Errorf("nodes param = %#v, want []string{\"安恒\"}", params["nodes"])
+	if got, ok := params["nodes"].([]string); !ok || len(got) != 1 || got[0] != "Acme" {
+		t.Errorf("nodes param = %#v, want []string{\"Acme\"}", params["nodes"])
 	}
 
 	// The label expression is interpolated rather than parameterised, so it has

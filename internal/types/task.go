@@ -231,29 +231,32 @@ type WorkerServerStat struct {
 	Queues      map[string]int
 }
 
+// Asynq task types.
 const (
-	TypeChunkExtract             = "chunk:extract"
-	TypeDocumentProcess          = "document:process"           // 文档处理任务
-	TypeFAQImport                = "faq:import"                 // FAQ导入任务（包含dry run模式）
-	TypeQuestionGeneration       = "question:generation"        // 问题生成任务
-	TypeSummaryGeneration        = "summary:generation"         // 摘要生成任务
-	TypeKBClone                  = "kb:clone"                   // 知识库复制任务
-	TypeIndexDelete              = "index:delete"               // 索引删除任务
-	TypeKBDelete                 = "kb:delete"                  // 知识库删除任务
-	TypeKnowledgeListDelete      = "knowledge:list_delete"      // 批量删除知识任务
-	TypeKnowledgeListReparse     = "knowledge:list_reparse"     // 批量重解析知识任务
-	TypeKnowledgeMove            = "knowledge:move"             // 知识移动任务
-	TypeDataTableSummary         = "datatable:summary"          // 表格摘要任务
-	TypeImageMultimodal          = "image:multimodal"           // 图片多模态处理任务（OCR + VLM Caption）
-	TypeKnowledgePostProcess     = "knowledge:post_process"     // 知识后处理任务（统一调度）
-	TypeKnowledgeAutoTag         = "knowledge:auto_tag"         // 文档自动关联知识库已有标签
-	TypeKnowledgeBaseProfile     = "kb:profile"                 // 知识库描述（画像）生成任务
-	TypeManualProcess            = "manual:process"             // 手工知识更新任务（cleanup + 重新索引）
-	TypeDataSourceSync           = "datasource:sync"            // 数据源同步任务
-	TypeWikiIngest               = "wiki:ingest"                // Wiki 页面同步任务
-	TypeWikiFinalize             = "wiki:finalize"              // Wiki KB 级收尾任务（防抖：索引重建/死链清理/交叉链接）
-	TypeTemporaryDocumentProcess = "temporary_document:process" // 会话临时文档解析任务
-	// TypeMemoryExtract 长期记忆抽取任务（会话轮次防抖后异步执行）
+	TypeChunkExtract         = "chunk:extract"
+	TypeDocumentProcess      = "document:process"       // document processing
+	TypeFAQImport            = "faq:import"             // FAQ import (dry run mode included)
+	TypeQuestionGeneration   = "question:generation"    // question generation
+	TypeSummaryGeneration    = "summary:generation"     // summary generation
+	TypeKBClone              = "kb:clone"               // knowledge base copy
+	TypeIndexDelete          = "index:delete"           // index deletion
+	TypeKBDelete             = "kb:delete"              // knowledge base deletion
+	TypeKnowledgeListDelete  = "knowledge:list_delete"  // batch knowledge item deletion
+	TypeKnowledgeListReparse = "knowledge:list_reparse" // batch knowledge item reparse
+	TypeKnowledgeMove        = "knowledge:move"         // knowledge item move
+	TypeDataTableSummary     = "datatable:summary"      // table summary
+	TypeImageMultimodal      = "image:multimodal"       // multimodal image processing (OCR + VLM caption)
+	TypeKnowledgePostProcess = "knowledge:post_process" // knowledge item post-processing (single dispatcher)
+	// TypeKnowledgeAutoTag auto-tags a document with the knowledge base's existing tags.
+	TypeKnowledgeAutoTag     = "knowledge:auto_tag"
+	TypeKnowledgeBaseProfile = "kb:profile"      // knowledge base description (profile) generation
+	TypeManualProcess        = "manual:process"  // manual knowledge item update (cleanup + reindex)
+	TypeDataSourceSync       = "datasource:sync" // data source sync
+	TypeWikiIngest           = "wiki:ingest"     // wiki page sync
+	// TypeWikiFinalize is the debounced KB-level wiki finalize: index rebuild, dead-link cleanup, cross-links.
+	TypeWikiFinalize             = "wiki:finalize"
+	TypeTemporaryDocumentProcess = "temporary_document:process" // session temporary document parsing
+	// TypeMemoryExtract extracts long-term memory (async, debounced per conversation turn)
 	TypeMemoryExtract = "memory:extract"
 )
 
@@ -303,15 +306,15 @@ type DocumentProcessPayload struct {
 	TenantID                 uint64   `json:"tenant_id"`
 	KnowledgeID              string   `json:"knowledge_id"`
 	KnowledgeBaseID          string   `json:"knowledge_base_id"`
-	FilePath                 string   `json:"file_path,omitempty"` // 文件路径（文件导入时使用）
-	FileName                 string   `json:"file_name,omitempty"` // 文件名（文件导入时使用）
-	FileType                 string   `json:"file_type,omitempty"` // 文件类型（文件导入时使用）
-	URL                      string   `json:"url,omitempty"`       // URL（URL导入时使用）
-	FileURL                  string   `json:"file_url,omitempty"`  // 文件资源链接（file_url导入时使用）
-	Passages                 []string `json:"passages,omitempty"`  // 文本段落（文本导入时使用）
+	FilePath                 string   `json:"file_path,omitempty"` // file path (file import)
+	FileName                 string   `json:"file_name,omitempty"` // file name (file import)
+	FileType                 string   `json:"file_type,omitempty"` // file type (file import)
+	URL                      string   `json:"url,omitempty"`       // URL (URL import)
+	FileURL                  string   `json:"file_url,omitempty"`  // file resource link (file_url import)
+	Passages                 []string `json:"passages,omitempty"`  // text passages (text import)
 	EnableMultimodel         bool     `json:"enable_multimodel"`
-	EnableQuestionGeneration bool     `json:"enable_question_generation"` // 是否启用问题生成
-	QuestionCount            int      `json:"question_count,omitempty"`   // 每个chunk生成的问题数量
+	EnableQuestionGeneration bool     `json:"enable_question_generation"` // enable question generation
+	QuestionCount            int      `json:"question_count,omitempty"`   // questions generated per chunk
 	Language                 string   `json:"language,omitempty"`         // Request locale for {{language}} in prompt templates
 	// Attempt is the per-knowledge attempt number this task belongs to.
 	// Set on enqueue (initial parse → attempt 1; reparse → max+1) so
@@ -328,13 +331,13 @@ type FAQImportPayload struct {
 	TenantID    uint64            `json:"tenant_id"`
 	TaskID      string            `json:"task_id"`
 	KBID        string            `json:"kb_id"`
-	KnowledgeID string            `json:"knowledge_id,omitempty"` // 仅非 dry run 模式需要
-	Entries     []FAQEntryPayload `json:"entries,omitempty"`      // 小数据量时直接存储在 payload 中
-	EntriesURL  string            `json:"entries_url,omitempty"`  // 大数据量时存储到对象存储，这里存储 URL
-	EntryCount  int               `json:"entry_count,omitempty"`  // 条目总数（使用 EntriesURL 时需要）
+	KnowledgeID string            `json:"knowledge_id,omitempty"` // required outside dry run only
+	Entries     []FAQEntryPayload `json:"entries,omitempty"`      // stored inline in the payload when small
+	EntriesURL  string            `json:"entries_url,omitempty"`  // object storage URL when large
+	EntryCount  int               `json:"entry_count,omitempty"`  // total entries (required with EntriesURL)
 	Mode        string            `json:"mode"`
-	DryRun      bool              `json:"dry_run"`     // dry run 模式只验证不导入
-	EnqueuedAt  int64             `json:"enqueued_at"` // 任务入队时间戳，用于区分同一 TaskID 的不同次提交
+	DryRun      bool              `json:"dry_run"`     // dry run validates without importing
+	EnqueuedAt  int64             `json:"enqueued_at"` // enqueue timestamp, tells apart submissions that share a TaskID
 	InstanceID  string            `json:"instance_id,omitempty"`
 	Initiator   TaskInitiator     `json:"initiator,omitempty"`
 }
@@ -480,13 +483,13 @@ type KnowledgeMoveProgress struct {
 	TargetKBID string            `json:"target_kb_id"`
 	Status     KBCloneTaskStatus `json:"status"`
 	Progress   int               `json:"progress"`   // 0-100
-	Total      int               `json:"total"`      // 总知识数
-	Processed  int               `json:"processed"`  // 已处理数
-	Failed     int               `json:"failed"`     // 失败数
-	Message    string            `json:"message"`    // 状态消息
-	Error      string            `json:"error"`      // 错误信息
-	CreatedAt  int64             `json:"created_at"` // 任务创建时间
-	UpdatedAt  int64             `json:"updated_at"` // 最后更新时间
+	Total      int               `json:"total"`      // total knowledge items
+	Processed  int               `json:"processed"`  // processed
+	Failed     int               `json:"failed"`     // failed
+	Message    string            `json:"message"`    // status message
+	Error      string            `json:"error"`      // error message
+	CreatedAt  int64             `json:"created_at"` // task creation time
+	UpdatedAt  int64             `json:"updated_at"` // last update time
 }
 
 // ManualProcessPayload represents the manual knowledge processing task payload.
@@ -597,10 +600,10 @@ type KBCloneProgress struct {
 	TargetID  string            `json:"target_id"`
 	Status    KBCloneTaskStatus `json:"status"`
 	Progress  int               `json:"progress"`   // 0-100
-	Total     int               `json:"total"`      // 总知识数
-	Processed int               `json:"processed"`  // 已处理数
-	Message   string            `json:"message"`    // 状态消息
-	Error     string            `json:"error"`      // 错误信息
-	CreatedAt int64             `json:"created_at"` // 任务创建时间
-	UpdatedAt int64             `json:"updated_at"` // 最后更新时间
+	Total     int               `json:"total"`      // total knowledge items
+	Processed int               `json:"processed"`  // processed
+	Message   string            `json:"message"`    // status message
+	Error     string            `json:"error"`      // error message
+	CreatedAt int64             `json:"created_at"` // task creation time
+	UpdatedAt int64             `json:"updated_at"` // last update time
 }

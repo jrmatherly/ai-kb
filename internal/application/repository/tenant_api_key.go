@@ -56,8 +56,8 @@ func (r *tenantAPIKeyRepository) ListPlatformAPIKeys(ctx context.Context) ([]*ty
 	return keys, err
 }
 
-// UpdateAPIKey 更新租户 API Key 的可配置属性。
-// tenant_id 和 scope_type 同时参与条件，避免跨租户或误改平台级 Key。
+// UpdateAPIKey updates the configurable attributes of a workspace API key.
+// Both tenant_id and scope_type are in the condition, so it cannot cross workspaces or modify a platform-level key.
 func (r *tenantAPIKeyRepository) UpdateAPIKey(
 	ctx context.Context, tenantID uint64, id uint64, update *types.TenantAPIKey,
 ) (*types.TenantAPIKey, error) {

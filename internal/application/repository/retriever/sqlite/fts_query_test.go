@@ -12,7 +12,8 @@ func TestSanitizeFTS5QueryScopesToContent(t *testing.T) {
 	// Quotes never reach an FTS string unescaped.
 	assert.Equal(t, `content : ("say" OR "hi")`, sanitizeFTS5Query(`say"hi"`))
 	// A lone Han character matches bigrams that start with it.
-	assert.Equal(t, `content : ("A" OR "股"*)`, sanitizeFTS5Query("A股"))
+	// "A-shares": Latin letter plus one Han character
+	assert.Equal(t, "content : (\"A\" OR \"\u80a1\"*)", sanitizeFTS5Query("A\u80a1"))
 	assert.Equal(t, "", sanitizeFTS5Query("   "))
 }
 

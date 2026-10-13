@@ -6,27 +6,27 @@ import (
 	"sync"
 )
 
-// dorisRepository 是 Apache Doris 4.1 的检索引擎仓储实现。
+// dorisRepository is the retrieval engine repository for Apache Doris 4.1.
 //
-// 通信通道：
-//   - 读写主链路：MySQL 协议（database/sql + go-sql-driver/mysql），FE 默认 9030 端口。
-//   - Stream Load：HTTP（FE 默认 8030 端口），legacy 模式用于 partial update。
+// Channels:
+//   - main read/write path: MySQL protocol (database/sql + go-sql-driver/mysql), FE port 9030 by default.
+//   - Stream Load: HTTP (FE port 8030 by default), used for partial update in legacy mode.
 //
-// 表结构按维度分表：<tableBaseName>_<dim>。
-// 兼容模式由 DORIS_COMPAT_MODE 决定：
-//   - legacy：UNIQUE KEY(id) + cosine_distance ANN + Stream Load partial update
-//   - inner_product_duplicate：DUPLICATE KEY(id) + normalized inner product + delete/insert rewrite
+// Tables are split by dimension: <tableBaseName>_<dim>.
+// DORIS_COMPAT_MODE selects the compat mode:
+//   - legacy: UNIQUE KEY(id) + cosine_distance ANN + Stream Load partial update
+//   - inner_product_duplicate: DUPLICATE KEY(id) + normalized inner product + delete/insert rewrite
 //
-// 该设置在 embedding 表创建后不可直接互换；切换模式前需要重建这些表。
+// The mode cannot be switched once the embedding tables exist; rebuild those tables before switching.
 //
-// 与 Qdrant/Milvus/Weaviate 一样，initializedTables 缓存"已确保存在"的维度，
-// 避免每次写入都打 SHOW TABLES。
+// As in Qdrant/Milvus/Weaviate, initializedTables caches the dimensions already ensured to exist,
+// so writes do not run SHOW TABLES every time.
 type dorisRepository struct {
 	db *sql.DB
 
 	httpClient *http.Client
-	// fe HTTP base，例如 "http://doris-fe:8030"。Stream Load 路径
-	// 由 streamLoadURL(table) 拼接：<feHTTPBase>/api/<database>/<table>/_stream_load。
+	// FE HTTP base, such as "http://doris-fe:8030". streamLoadURL(table) builds the Stream Load path:
+	// <feHTTPBase>/api/<database>/<table>/_stream_load.
 	feHTTPBase string
 
 	username string
@@ -41,14 +41,14 @@ type dorisRepository struct {
 	compatResolveOnce   sync.Once
 	compatResolveErr    error
 
-	// 已经确保过 ensureTable 的维度集合：dim -> true。
+	// Dimensions that already passed ensureTable: dim -> true.
 	initializedTables sync.Map
 }
 
-// DorisVectorEmbedding 是落到 Doris 表里的一行的领域模型。
+// DorisVectorEmbedding is the domain model of one row in a Doris table.
 //
-// 字段顺序与 schema.go 中的 INSERT 列序保持一致，
-// 调整时需要同时更新 createInsert 与 columns。
+// Field order matches the column order in columns (query.go);
+// change insertRows and columns together.
 type DorisVectorEmbedding struct {
 	ID              string
 	Content         string
@@ -62,8 +62,8 @@ type DorisVectorEmbedding struct {
 	Embedding       []float32
 }
 
-// DorisVectorEmbeddingWithScore 是检索结果的领域模型，
-// Score 在向量检索时按当前 compat mode 计算，在关键词检索时统一赋 1.0。
+// DorisVectorEmbeddingWithScore is the domain model of a retrieval result.
+// Score follows the current compat mode in vector retrieval and is 1.0 in keyword retrieval.
 type DorisVectorEmbeddingWithScore struct {
 	DorisVectorEmbedding
 	Score float64

@@ -1,13 +1,13 @@
--- 迁移脚本：从PostgreSQL迁移到ParadeDB
--- 注意：在执行此脚本前，请确保已经备份了数据
+-- Migration script: move from PostgreSQL to ParadeDB.
+-- Back up the data before running this script.
 
--- 1. 导出数据（在PostgreSQL中执行）
+-- 1. Export the data (run on PostgreSQL)
 -- pg_dump -U postgres -h localhost -p 5432 -d your_database > backup.sql
 
--- 2. 导入数据（在ParadeDB中执行）
+-- 2. Import the data (run on ParadeDB)
 -- psql -U postgres -h localhost -p 5432 -d your_database < backup.sql
 
--- 3. 验证数据
+-- 3. Verify the data
 
 
 -- Insert some sample data
@@ -34,9 +34,9 @@ SELECT COUNT(*) FROM knowledge_bases;
 SELECT COUNT(*) FROM knowledges;
 
 
--- 测试中文全文搜索
+-- Test Chinese full-text search
 
--- 创建文档表
+-- Create the documents table
 CREATE TABLE chinese_documents (
     id SERIAL PRIMARY KEY,
     title TEXT,
@@ -44,7 +44,7 @@ CREATE TABLE chinese_documents (
     published_date DATE
 );
 
--- 在表上创建 BM25 索引，使用结巴分词器支持中文
+-- BM25 index with a Chinese tokenizer (chinese_lindera)
 CREATE INDEX idx_documents_bm25 ON chinese_documents
 USING bm25 (id, content)
 WITH (
@@ -56,13 +56,14 @@ WITH (
     }'
 );
 
+-- Chinese sample rows for the tokenizer, written as U& escapes (needs standard_conforming_strings on)
 INSERT INTO chinese_documents (title, content, published_date)
 VALUES 
-('人工智能的发展', '人工智能技术正在快速发展，影响了我们生活的方方面面。大语言模型是最近的一个重要突破。', '2023-01-15'),
-('机器学习基础', '机器学习是人工智能的一个重要分支，包括监督学习、无监督学习和强化学习等方法。', '2023-02-20'),
-('深度学习应用', '深度学习在图像识别、自然语言处理和语音识别等领域有广泛应用。', '2023-03-10'),
-('自然语言处理技术', '自然语言处理允许计算机理解、解释和生成人类语言，是人工智能的核心技术之一。', '2023-04-05'),
-('计算机视觉入门', '计算机视觉让机器能够"看到"并理解视觉世界，广泛应用于安防、医疗等领域。', '2023-05-12');
+(U&'\4EBA\5DE5\667A\80FD\7684\53D1\5C55', U&'\4EBA\5DE5\667A\80FD\6280\672F\6B63\5728\5FEB\901F\53D1\5C55\FF0C\5F71\54CD\4E86\6211\4EEC\751F\6D3B\7684\65B9\65B9\9762\9762\3002\5927\8BED\8A00\6A21\578B\662F\6700\8FD1\7684\4E00\4E2A\91CD\8981\7A81\7834\3002', '2023-01-15'),
+(U&'\673A\5668\5B66\4E60\57FA\7840', U&'\673A\5668\5B66\4E60\662F\4EBA\5DE5\667A\80FD\7684\4E00\4E2A\91CD\8981\5206\652F\FF0C\5305\62EC\76D1\7763\5B66\4E60\3001\65E0\76D1\7763\5B66\4E60\548C\5F3A\5316\5B66\4E60\7B49\65B9\6CD5\3002', '2023-02-20'),
+(U&'\6DF1\5EA6\5B66\4E60\5E94\7528', U&'\6DF1\5EA6\5B66\4E60\5728\56FE\50CF\8BC6\522B\3001\81EA\7136\8BED\8A00\5904\7406\548C\8BED\97F3\8BC6\522B\7B49\9886\57DF\6709\5E7F\6CDB\5E94\7528\3002', '2023-03-10'),
+(U&'\81EA\7136\8BED\8A00\5904\7406\6280\672F', U&'\81EA\7136\8BED\8A00\5904\7406\5141\8BB8\8BA1\7B97\673A\7406\89E3\3001\89E3\91CA\548C\751F\6210\4EBA\7C7B\8BED\8A00\FF0C\662F\4EBA\5DE5\667A\80FD\7684\6838\5FC3\6280\672F\4E4B\4E00\3002', '2023-04-05'),
+(U&'\8BA1\7B97\673A\89C6\89C9\5165\95E8', U&'\8BA1\7B97\673A\89C6\89C9\8BA9\673A\5668\80FD\591F"\770B\5230"\5E76\7406\89E3\89C6\89C9\4E16\754C\FF0C\5E7F\6CDB\5E94\7528\4E8E\5B89\9632\3001\533B\7597\7B49\9886\57DF\3002', '2023-05-12');
 
 INSERT INTO chinese_documents (title, content, published_date)
 VALUES 

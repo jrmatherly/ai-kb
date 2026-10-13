@@ -79,8 +79,8 @@ DO $$ BEGIN RAISE NOTICE '[Migration 000006] Migrating tenant config to built-in
 INSERT INTO custom_agents (id, name, description, avatar, is_builtin, tenant_id, config, created_at, updated_at)
 SELECT 
     'builtin-quick-answer',
-    '快速问答',
-    '基于知识库的 RAG 问答，快速准确地回答问题',
+    'Quick Answer',
+    'Knowledge base RAG Q&A for fast and accurate answers',
     '💬',
     true,
     t.id,
@@ -127,8 +127,8 @@ ON CONFLICT (id, tenant_id) DO UPDATE SET
 INSERT INTO custom_agents (id, name, description, avatar, is_builtin, tenant_id, config, created_at, updated_at)
 SELECT 
     'builtin-smart-reasoning',
-    '智能推理',
-    'ReAct 推理框架，支持多步思考和工具调用',
+    'Smart Reasoning',
+    'ReAct reasoning framework with multi-step thinking and tool calling',
     '🤖',
     true,
     t.id,

@@ -10,7 +10,7 @@ func TestJSONUnmarshalCopiesInput(t *testing.T) {
 		Value JSON `json:"value"`
 	}
 
-	input := []byte(`{"value":{"generated_questions":[{"id":"q1","question":"今晚吃啥"}]}}`)
+	input := []byte(`{"value":{"generated_questions":[{"id":"q1","question":"what to eat tonight"}]}}`)
 
 	var got wrapper
 	if err := json.Unmarshal(input, &got); err != nil {

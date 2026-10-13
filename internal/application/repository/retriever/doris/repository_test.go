@@ -20,10 +20,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// newTestRepo 构造一个共享 sqlmock 的 dorisRepository，
-// 默认绕过 ensureTable（initializedTables 已置位），便于专注测试 SQL 形态。
+// newTestRepo builds a dorisRepository sharing one sqlmock.
+// It skips ensureTable by default (initializedTables is preset) so tests focus on the SQL shape.
 //
-// 返回的 cleanup 用 defer 调用即可。
+// Call the returned cleanup with defer.
 func newTestRepo(t *testing.T) (*dorisRepository, sqlmock.Sqlmock, *httptest.Server, func()) {
 	t.Helper()
 	// httptest binds to loopback, which production SSRF policy correctly blocks.
@@ -36,7 +36,7 @@ func newTestRepo(t *testing.T) (*dorisRepository, sqlmock.Sqlmock, *httptest.Ser
 	require.NoError(t, err)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 默认行为：成功，回 1 行。
+		// Default: success, 1 row affected.
 		body, _ := io.ReadAll(r.Body)
 		_ = body
 		w.Header().Set("Content-Type", "application/json")
@@ -72,7 +72,7 @@ func primeCompatMode(repo *dorisRepository, mode dorisCompatMode, err error) {
 }
 
 // ---------------------------------------------------------------------------
-// query.go：whereBuilder / embeddingLiteral / parseEmbeddingLiteral
+// query.go: whereBuilder / embeddingLiteral / parseEmbeddingLiteral
 // ---------------------------------------------------------------------------
 
 func TestEmbeddingLiteralRoundTrip(t *testing.T) {
@@ -83,7 +83,7 @@ func TestEmbeddingLiteralRoundTrip(t *testing.T) {
 
 	t.Run("does not contain locale-sensitive separators", func(t *testing.T) {
 		s := embeddingLiteral([]float32{1.5, -2.25, 0.001})
-		// 必须只包含数字 / 点 / 负号 / e / 逗号 / 方括号
+		// Only digits, dot, minus, e, comma and square brackets are allowed
 		assert.Regexp(t, regexp.MustCompile(`^\[[\-+0-9eE.,]+\]$`), s)
 	})
 
@@ -141,7 +141,7 @@ func TestWhereBuilder(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// streamload.go：chunkRows / partialUpdateRows
+// streamload.go: chunkRows / partialUpdateRows
 // ---------------------------------------------------------------------------
 
 func TestChunkRows(t *testing.T) {
@@ -158,7 +158,7 @@ func TestChunkRows(t *testing.T) {
 	})
 
 	t.Run("splits when exceeding maxBytes", func(t *testing.T) {
-		// 给一个非常小的上限，强制每行单独成段
+		// A tiny cap forces one row per segment
 		batches := chunkRows(rows, 16)
 		assert.GreaterOrEqual(t, len(batches), 2)
 
@@ -174,7 +174,7 @@ func TestPartialUpdateRows_HappyPath(t *testing.T) {
 	repo, _, _, cleanup := newTestRepo(t)
 	defer cleanup()
 
-	// 自定义 server 验证请求形态。
+	// Custom server that checks the request shape.
 	var captured *http.Request
 	var capturedBody []byte
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -341,7 +341,7 @@ func TestDorisStreamLoadHTTPClient_RedirectLimit(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// repository.go：SQL 形态
+// repository.go: SQL shape
 // ---------------------------------------------------------------------------
 
 func TestDeleteByChunkIDList_SQLShape(t *testing.T) {
@@ -362,7 +362,7 @@ func TestDeleteByKnowledgeIDList_NoOpOnEmpty(t *testing.T) {
 	defer cleanup()
 
 	require.NoError(t, repo.DeleteByKnowledgeIDList(context.Background(), nil, 768, ""))
-	// 空列表不应触发任何 query
+	// An empty list must not run any query
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -459,17 +459,17 @@ func TestKeywordsRetrieve_SQLShape(t *testing.T) {
 	// LIMIT is inlined (see VectorRetrieve), so only is_enabled and the
 	// MATCH_ANY query string are bound arguments.
 	mock.ExpectQuery(`MATCH_ANY \?`).
-		WithArgs(true, "你好").
+		WithArgs(true, "hello").
 		WillReturnRows(
 			sqlmock.NewRows([]string{
 				"id", "content", "source_id", "source_type",
 				"chunk_id", "knowledge_id", "knowledge_base_id", "tag_id",
 				"is_enabled",
-			}).AddRow("id1", "你好世界", "src", 0, "c1", "k1", "kb1", "", true),
+			}).AddRow("id1", "hello world", "src", 0, "c1", "k1", "kb1", "", true),
 		)
 
 	results, err := repo.KeywordsRetrieve(context.Background(), types.RetrieveParams{
-		Query:         "你好",
+		Query:         "hello",
 		TopK:          3,
 		RetrieverType: types.KeywordsRetrieverType,
 	})
@@ -546,14 +546,14 @@ func TestEnsureTable_DDLShape(t *testing.T) {
 	}
 	primeCompatMode(repo, dorisCompatModeInnerProductDuplicate, nil)
 
-	// 表不存在
+	// Table does not exist
 	mock.ExpectQuery(`SELECT COUNT\(1\) FROM information_schema.tables`).
 		WithArgs("aikb", "aikb_embeddings_768").
 		WillReturnRows(sqlmock.NewRows([]string{"c"}).AddRow(0))
-	// CREATE TABLE 应包含关键属性和 Doris 支持的 inner_product ANN metric
+	// CREATE TABLE must include the key properties and the inner_product ANN metric Doris supports
 	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS .*aikb_embeddings_768.*metric_type"="inner_product".*DUPLICATE KEY\(id\).*BUCKETS 5.*replication_num.*=.*2`).
 		WillReturnResult(sqlmock.NewResult(0, 0))
-	// SHOW INDEX 一次即返回 ANN 已 FINISHED
+	// SHOW INDEX reports the ANN index FINISHED on the first call
 	mock.ExpectQuery(`SHOW INDEX FROM .*aikb_embeddings_768.*`).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"Table", "Key_name", "State"}).
@@ -561,7 +561,7 @@ func TestEnsureTable_DDLShape(t *testing.T) {
 		)
 
 	require.NoError(t, repo.ensureTable(context.Background(), 768))
-	// waitANNReady 在后台 goroutine 里执行，轮询 ExpectationsWereMet 直到 SHOW INDEX 也被消费。
+	// waitANNReady runs in a background goroutine; poll ExpectationsWereMet until SHOW INDEX is consumed too.
 	require.Eventually(t, func() bool {
 		return mock.ExpectationsWereMet() == nil
 	}, 2*time.Second, 10*time.Millisecond, "expectations should be met after async ANN poll")
@@ -609,7 +609,7 @@ func TestBatchSave_SQLShape(t *testing.T) {
 		tableBaseName: "aikb_embeddings",
 	}
 	primeCompatMode(repo, dorisCompatModeInnerProductDuplicate, nil)
-	repo.initializedTables.Store(3, true) // 跳过 ensureTable
+	repo.initializedTables.Store(3, true) // skip ensureTable
 
 	mock.ExpectExec(`DELETE FROM .*aikb_embeddings_3.* WHERE id IN \(\?\)`).
 		WithArgs("src1").
@@ -739,7 +739,7 @@ func TestRetrieve_DispatchesByType(t *testing.T) {
 	repo, mock, _, cleanup := newTestRepo(t)
 	defer cleanup()
 
-	// invalid retriever type -> error，不会触发任何 SQL
+	// invalid retriever type -> error, without running any SQL
 	_, err := repo.Retrieve(context.Background(), types.RetrieveParams{
 		RetrieverType: "unknown",
 	})
@@ -763,7 +763,7 @@ func TestTranslateSourceID(t *testing.T) {
 	t.Run("unrecognized source falls back to fresh uuid", func(t *testing.T) {
 		got := translateSourceID("totally-other", "c1", "tc1")
 		assert.NotEqual(t, "totally-other", got)
-		assert.Len(t, got, 36) // UUID 长度
+		assert.Len(t, got, 36) // UUID length
 	})
 }
 
@@ -782,7 +782,7 @@ func TestEstimateStorageSize(t *testing.T) {
 	assert.Greater(t, out, int64(0))
 }
 
-// 保证 *sql.Rows 错误不会被吞掉。
+// *sql.Rows errors must not be swallowed.
 func TestScanRetrieveRows_Error(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
@@ -793,7 +793,7 @@ func TestScanRetrieveRows_Error(t *testing.T) {
 
 	rows, err := db.Query("SELECT 1")
 	if err != nil {
-		// query 直接失败也算预期
+		// a failed query is also expected
 		assert.Equal(t, "boom", err.Error())
 		return
 	}

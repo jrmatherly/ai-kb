@@ -143,7 +143,7 @@ func NewTooManyRequestsError(message string) *AppError {
 // NewInternalServerError creates an internal server error
 func NewInternalServerError(message string) *AppError {
 	if message == "" {
-		message = "服务器内部错误"
+		message = "internal server error"
 	}
 	return &AppError{
 		Code:     ErrInternalServer,
@@ -156,7 +156,7 @@ func NewInternalServerError(message string) *AppError {
 // error. Used for transient failures where the caller can retry.
 func NewServiceUnavailableError(message string) *AppError {
 	if message == "" {
-		message = "服务暂时不可用"
+		message = "service temporarily unavailable"
 	}
 	return &AppError{
 		Code:     ErrServiceUnavailable,
@@ -178,7 +178,7 @@ func NewValidationError(message string) *AppError {
 func NewTenantNotFoundError() *AppError {
 	return &AppError{
 		Code:     ErrTenantNotFound,
-		Message:  "空间不存在",
+		Message:  "workspace not found",
 		HTTPCode: http.StatusNotFound,
 	}
 }
@@ -187,7 +187,7 @@ func NewTenantNotFoundError() *AppError {
 func NewTenantAlreadyExistsError() *AppError {
 	return &AppError{
 		Code:     ErrTenantAlreadyExists,
-		Message:  "空间已存在",
+		Message:  "workspace already exists",
 		HTTPCode: http.StatusConflict,
 	}
 }
@@ -196,7 +196,7 @@ func NewTenantAlreadyExistsError() *AppError {
 func NewTenantInactiveError() *AppError {
 	return &AppError{
 		Code:     ErrTenantInactive,
-		Message:  "空间已停用",
+		Message:  "workspace is disabled",
 		HTTPCode: http.StatusForbidden,
 	}
 }
@@ -215,7 +215,7 @@ func NewTenantCreationDisabledError() *AppError {
 func NewAgentMissingThinkingModelError() *AppError {
 	return &AppError{
 		Code:     ErrAgentMissingThinkingModel,
-		Message:  "启用Agent模式前，请先选择思考模型",
+		Message:  "select a thinking model before enabling agent mode",
 		HTTPCode: http.StatusBadRequest,
 	}
 }
@@ -223,7 +223,7 @@ func NewAgentMissingThinkingModelError() *AppError {
 func NewAgentMissingAllowedToolsError() *AppError {
 	return &AppError{
 		Code:     ErrAgentMissingAllowedTools,
-		Message:  "至少需要选择一个允许的工具",
+		Message:  "select at least one allowed tool",
 		HTTPCode: http.StatusBadRequest,
 	}
 }
@@ -231,7 +231,7 @@ func NewAgentMissingAllowedToolsError() *AppError {
 func NewAgentInvalidMaxIterationsError() *AppError {
 	return &AppError{
 		Code:     ErrAgentInvalidMaxIterations,
-		Message:  "最大迭代次数须为正整数，或 -1 表示不限制",
+		Message:  "max iterations must be a positive integer, or -1 for no limit",
 		HTTPCode: http.StatusBadRequest,
 	}
 }
@@ -239,7 +239,7 @@ func NewAgentInvalidMaxIterationsError() *AppError {
 func NewAgentInvalidTemperatureError() *AppError {
 	return &AppError{
 		Code:     ErrAgentInvalidTemperature,
-		Message:  "温度参数必须在0-2之间",
+		Message:  "temperature must be between 0 and 2",
 		HTTPCode: http.StatusBadRequest,
 	}
 }

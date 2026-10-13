@@ -187,7 +187,8 @@ type AgentShareService interface {
 	SetSharedAgentDisabledByMe(ctx context.Context, tenantID uint64, agentID string, sourceTenantID uint64, disabled bool) error
 	// GetSharedAgentForTenant returns the shared agent by agentID if the caller's tenant has access; used to resolve KB scope for @ mention.
 	GetSharedAgentForTenant(ctx context.Context, tenantID uint64, callerTenantRole types.TenantRole, agentID string, sourceTenantID ...uint64) (*types.CustomAgent, error)
-	// TenantCanAccessKBViaSomeSharedAgent returns true if the caller's tenant has at least one shared agent that can access the given KB (for opening KB detail from "通过智能体可见" list without passing agent_id).
+	// TenantCanAccessKBViaSomeSharedAgent returns true if the caller's tenant has at least one shared agent
+	// that can access the given KB (for opening KB detail from the "visible via agent" list without passing agent_id).
 	TenantCanAccessKBViaSomeSharedAgent(ctx context.Context, tenantID uint64, callerTenantRole types.TenantRole, kb *types.KnowledgeBase) (bool, error)
 	GetShare(ctx context.Context, shareID string) (*types.AgentShare, error)
 	GetShareByAgentAndOrg(ctx context.Context, agentID string, orgID string) (*types.AgentShare, error)

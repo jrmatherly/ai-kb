@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS tenants (
     retriever_engines JSONB NOT NULL DEFAULT '[]',
     status VARCHAR(50) DEFAULT 'active',
     business VARCHAR(255) NOT NULL,
-    storage_quota BIGINT NOT NULL DEFAULT 10737418240, -- 默认10GB配额(Bytes)
-    storage_used BIGINT NOT NULL DEFAULT 0, -- 已使用的存储空间(Bytes)
+    storage_quota BIGINT NOT NULL DEFAULT 10737418240, -- default 10 GB quota (bytes)
+    storage_used BIGINT NOT NULL DEFAULT 0, -- storage used (bytes)
     agent_config JSONB DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS knowledges (
     file_size BIGINT,
     file_path TEXT,
     file_hash VARCHAR(64),
-    storage_size BIGINT NOT NULL DEFAULT 0, -- 存储大小(Byte)
+    storage_size BIGINT NOT NULL DEFAULT 0, -- storage size (bytes)
     metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     max_rounds INTEGER NOT NULL DEFAULT 5,
     enable_rewrite BOOLEAN NOT NULL DEFAULT true,
     fallback_strategy VARCHAR(255) NOT NULL DEFAULT 'fixed',
-    fallback_response TEXT NOT NULL DEFAULT '很抱歉，我暂时无法回答这个问题。',
+    fallback_response TEXT NOT NULL DEFAULT 'Sorry, I am unable to answer this question.',
     keyword_threshold FLOAT NOT NULL DEFAULT 0.5,
     vector_threshold FLOAT NOT NULL DEFAULT 0.5,
     rerank_model_id VARCHAR(64),

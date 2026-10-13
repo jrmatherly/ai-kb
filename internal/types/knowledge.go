@@ -25,16 +25,16 @@ const (
 	ChannelAPI              = "api"               // External API call
 	ChannelBrowserExtension = "browser_extension" // Browser extension / plugin
 	ChannelWechat           = "wechat"            // WeChat
-	ChannelWecom            = "wecom"             // WeCom (企业微信)
+	ChannelWecom            = "wecom"             // WeCom
 	ChannelFeishu           = "feishu"            // Feishu / Lark
-	ChannelFeishuDrive      = "feishu_drive"      // Feishu Drive (云盘)
+	ChannelFeishuDrive      = "feishu_drive"      // Feishu Drive
 	ChannelLarkDrive        = "lark_drive"        // Lark Drive (international)
 	ChannelDingtalk         = "dingtalk"          // DingTalk
 	ChannelSlack            = "slack"             // Slack
 	ChannelIM               = "im"                // Generic IM channel
 	ChannelNotion           = "notion"            // Notion
 	ChannelConfluence       = "confluence"        // Atlassian Confluence
-	ChannelYuque            = "yuque"             // Yuque (语雀)
+	ChannelYuque            = "yuque"             // Yuque
 	ChannelRSS              = "rss"               // RSS / Atom feed
 	ChannelIMA              = "ima"               // Tencent IMA (ima.qq.com)
 	ChannelSeafile          = "seafile"           // Seafile
@@ -118,25 +118,25 @@ type KnowledgeListFilter struct {
 	// FolderScope selects whether FolderPath matches exactly or includes
 	// descendant folders. FolderScopeAny (the default) ignores folders.
 	FolderScope KnowledgeFolderScope
-	// SortBy 指定列表排序字段；公开列表接口会显式提供默认值。
+	// SortBy is the list sort field; the public list API always supplies a default.
 	SortBy KnowledgeListSortField
-	// SortOrder 指定升序或降序；零值与 desc 等价。
+	// SortOrder is ascending or descending; the zero value means desc.
 	SortOrder KnowledgeListSortOrder
 }
 
-// KnowledgeListSortField 是知识文件列表允许使用的排序字段。
+// KnowledgeListSortField is a sort field allowed for the knowledge file list.
 type KnowledgeListSortField string
 
 const (
-	// KnowledgeListSortByUpdatedAt 表示按最后更新时间排序。
+	// KnowledgeListSortByUpdatedAt sorts by last update time.
 	KnowledgeListSortByUpdatedAt KnowledgeListSortField = "updated_at"
-	// KnowledgeListSortByCreatedAt 表示按创建时间排序。
+	// KnowledgeListSortByCreatedAt sorts by creation time.
 	KnowledgeListSortByCreatedAt KnowledgeListSortField = "created_at"
-	// KnowledgeListSortByFileName 表示按展示文件名排序。
+	// KnowledgeListSortByFileName sorts by display file name.
 	KnowledgeListSortByFileName KnowledgeListSortField = "file_name"
 )
 
-// Valid 返回排序字段是否属于公开接口允许的白名单。
+// Valid reports whether the sort field is on the public API allowlist.
 func (field KnowledgeListSortField) Valid() bool {
 	switch field {
 	case KnowledgeListSortByUpdatedAt, KnowledgeListSortByCreatedAt, KnowledgeListSortByFileName:
@@ -146,17 +146,17 @@ func (field KnowledgeListSortField) Valid() bool {
 	}
 }
 
-// KnowledgeListSortOrder 是知识文件列表允许使用的排序方向。
+// KnowledgeListSortOrder is a sort direction allowed for the knowledge file list.
 type KnowledgeListSortOrder string
 
 const (
-	// KnowledgeListSortAscending 表示按升序排列。
+	// KnowledgeListSortAscending sorts in ascending order.
 	KnowledgeListSortAscending KnowledgeListSortOrder = "asc"
-	// KnowledgeListSortDescending 表示按降序排列。
+	// KnowledgeListSortDescending sorts in descending order.
 	KnowledgeListSortDescending KnowledgeListSortOrder = "desc"
 )
 
-// Valid 返回排序方向是否属于公开接口允许的白名单。
+// Valid reports whether the sort direction is on the public API allowlist.
 func (order KnowledgeListSortOrder) Valid() bool {
 	return order == KnowledgeListSortAscending || order == KnowledgeListSortDescending
 }

@@ -10,7 +10,7 @@ import (
 func ClarifyArtifactVersions(content string, current, previous MessageArtifacts, language string) string {
 	oldLabel, newLabel := "Referenced previous version", "File generated this turn"
 	if strings.HasPrefix(language, "zh") {
-		oldLabel, newLabel = "正文引用的历史版本", "本轮生成的文件"
+		oldLabel, newLabel = "Referenced previous version", "File generated this turn"
 	}
 	seen := make(map[string]bool)
 	for _, old := range previous {

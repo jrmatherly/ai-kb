@@ -10,7 +10,9 @@ import (
 // empty text; only model input uses this question.
 func UploadOnlyQuestion(locale string) string {
 	if strings.HasPrefix(locale, "zh") {
-		return "请根据我上传的内容回答。"
+		// "Please answer based on what I uploaded." in Chinese; asserted verbatim in
+		// internal/handler/session/qa_query_validation_test.go.
+		return "\u8bf7\u6839\u636e\u6211\u4e0a\u4f20\u7684\u5185\u5bb9\u56de\u7b54\u3002"
 	}
 	return "Please answer based on what I uploaded."
 }

@@ -1,9 +1,9 @@
 -- Rollback: This migration cannot be fully rolled back as we don't know which entries
 -- were originally untagged. We can only clear the tag_id for entries that reference
--- a "未分类" tag, but this may affect entries that were intentionally tagged.
+-- an "Untagged" tag, but this may affect entries that were intentionally tagged.
 
 -- WARNING: This rollback is destructive and should only be used if absolutely necessary.
--- It will set tag_id to empty string for all chunks, knowledges, and embeddings that reference "未分类" tags.
+-- It will set tag_id to empty string for all chunks, knowledges, and embeddings that reference "Untagged" tags.
 
 DO $$
 DECLARE
@@ -12,13 +12,13 @@ DECLARE
     updated_chunks INT;
     updated_knowledges INT;
 BEGIN
-    RAISE NOTICE '[Migration 000008 Rollback] WARNING: This rollback will clear tag_id for all entries referencing "未分类" tags';
+    RAISE NOTICE '[Migration 000008 Rollback] WARNING: This rollback will clear tag_id for all entries referencing "Untagged" tags';
     
-    -- Find all "未分类" tags
+    -- Find all "Untagged" tags
     FOR kb_record IN 
         SELECT id, tenant_id, knowledge_base_id 
         FROM knowledge_tags
-        WHERE name = '未分类'
+        WHERE name = 'Untagged'
     LOOP
         untagged_tag_id := kb_record.id;
         
@@ -51,9 +51,9 @@ BEGIN
             WHERE tag_id = untagged_tag_id;
         END IF;
 
-        -- Delete the "未分类" tag
+        -- Delete the "Untagged" tag
         DELETE FROM knowledge_tags WHERE id = untagged_tag_id;
-        RAISE NOTICE '[Migration 000008 Rollback] Deleted "未分类" tag: %', untagged_tag_id;
+        RAISE NOTICE '[Migration 000008 Rollback] Deleted "Untagged" tag: %', untagged_tag_id;
     END LOOP;
 
     RAISE NOTICE '[Migration 000008 Rollback] Completed rollback';

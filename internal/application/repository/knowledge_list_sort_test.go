@@ -50,7 +50,7 @@ func TestListPagedKnowledgeSortModes(t *testing.T) {
 	insertKnowledgeSortSeed(t, db, knowledgeSortSeed{
 		id: "doc-b", fileName: "alpha.txt", title: "Alpha", createdAt: feb, updatedAt: jan,
 	})
-	// file_name 为空时，名称排序应使用前端同样会展示的 title。
+	// With file_name empty, name sorting must use title, as the frontend displays.
 	insertKnowledgeSortSeed(t, db, knowledgeSortSeed{
 		id: "doc-c", fileName: "", title: "Bravo note", createdAt: mar, updatedAt: feb,
 	})
@@ -61,42 +61,42 @@ func TestListPagedKnowledgeSortModes(t *testing.T) {
 		want   []string
 	}{
 		{
-			name: "更新时间从新到旧",
+			name: "updated time, newest first",
 			filter: types.KnowledgeListFilter{
 				SortBy: types.KnowledgeListSortByUpdatedAt, SortOrder: types.KnowledgeListSortDescending,
 			},
 			want: []string{"doc-a", "doc-c", "doc-b"},
 		},
 		{
-			name: "更新时间从旧到新",
+			name: "updated time, oldest first",
 			filter: types.KnowledgeListFilter{
 				SortBy: types.KnowledgeListSortByUpdatedAt, SortOrder: types.KnowledgeListSortAscending,
 			},
 			want: []string{"doc-b", "doc-c", "doc-a"},
 		},
 		{
-			name: "创建时间从新到旧",
+			name: "created time, newest first",
 			filter: types.KnowledgeListFilter{
 				SortBy: types.KnowledgeListSortByCreatedAt, SortOrder: types.KnowledgeListSortDescending,
 			},
 			want: []string{"doc-c", "doc-b", "doc-a"},
 		},
 		{
-			name: "创建时间从旧到新",
+			name: "created time, oldest first",
 			filter: types.KnowledgeListFilter{
 				SortBy: types.KnowledgeListSortByCreatedAt, SortOrder: types.KnowledgeListSortAscending,
 			},
 			want: []string{"doc-a", "doc-b", "doc-c"},
 		},
 		{
-			name: "文件名称从 A 到 Z 且忽略大小写",
+			name: "file name A to Z, case-insensitive",
 			filter: types.KnowledgeListFilter{
 				SortBy: types.KnowledgeListSortByFileName, SortOrder: types.KnowledgeListSortAscending,
 			},
 			want: []string{"doc-b", "doc-c", "doc-a"},
 		},
 		{
-			name: "文件名称从 Z 到 A 且忽略大小写",
+			name: "file name Z to A, case-insensitive",
 			filter: types.KnowledgeListFilter{
 				SortBy: types.KnowledgeListSortByFileName, SortOrder: types.KnowledgeListSortDescending,
 			},
@@ -144,7 +144,7 @@ func TestListPagedKnowledgeSortUsesStableIDTieBreaker(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []string{"doc-a", "doc-b"}, knowledgeIDs(rows))
 
-	// 每页只取一条，确认相同排序值的文档跨页不会重复或遗漏。
+	// One row per page, to confirm documents with equal sort values are neither repeated nor skipped across pages.
 	for page, wantID := range []string{"doc-a", "doc-b"} {
 		rows, total, err := repo.ListPagedKnowledgeByKnowledgeBaseID(
 			context.Background(), 1, "kb-sort",

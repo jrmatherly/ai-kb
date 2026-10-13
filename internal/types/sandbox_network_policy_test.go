@@ -274,7 +274,7 @@ func TestValidateSandboxNetworkPolicyRejectsDuplicateInjectHeaders(t *testing.T)
 	})
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "Authorization")
-	require.Contains(t, err.Error(), "重复")
+	require.Contains(t, err.Error(), "duplicated")
 }
 
 func TestValidateSandboxNetworkPolicyRejectsInjectedHeaderCRLF(t *testing.T) {
@@ -282,15 +282,15 @@ func TestValidateSandboxNetworkPolicyRejectsInjectedHeaderCRLF(t *testing.T) {
 
 	crlfName := valid
 	crlfName.Inject = []CubeHeaderInject{{Header: "X-Key\r\nX-Smuggled", Secret: "v"}}
-	requireRuleRejected(t, crlfName, "header 名")
+	requireRuleRejected(t, crlfName, "header name")
 
 	spaceName := valid
 	spaceName.Inject = []CubeHeaderInject{{Header: "X Key", Secret: "v"}}
-	requireRuleRejected(t, spaceName, "header 名")
+	requireRuleRejected(t, spaceName, "header name")
 
 	crlfValue := valid
 	crlfValue.Inject = []CubeHeaderInject{{Header: "Authorization", Secret: "tok\r\nX-Smuggled: 1"}}
-	requireRuleRejected(t, crlfValue, "不能包含换行")
+	requireRuleRejected(t, crlfValue, "must not contain line breaks")
 
 	crlfFormat := valid
 	crlfFormat.Inject = []CubeHeaderInject{{
@@ -310,7 +310,7 @@ func TestValidateSandboxNetworkPolicyRejectsInjectedHeaderCRLF(t *testing.T) {
 		},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "header 名")
+	require.Contains(t, err.Error(), "header name")
 }
 
 func TestValidateSandboxNetworkPolicyE2BHostRuleNeedsAllowOut(t *testing.T) {
@@ -369,7 +369,7 @@ func TestValidateSandboxNetworkPolicyE2BLimits(t *testing.T) {
 		},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "最多 20 个 header")
+	require.Contains(t, err.Error(), "at most 20 headers")
 
 	domains := make([]string, e2bMaxRuleDomains+1)
 	rules := make([]E2BHostRule, e2bMaxRuleDomains+1)
@@ -386,7 +386,7 @@ func TestValidateSandboxNetworkPolicyE2BLimits(t *testing.T) {
 		},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "最多 10 个 host 规则域名")
+	require.Contains(t, err.Error(), "at most 10 host rule domains")
 
 	longHost := strings.Repeat("a", 63) + "." + strings.Repeat("b", 63) + ".com"
 	err = ValidateSandboxNetworkPolicy(&TenantSandboxConfig{
@@ -397,13 +397,13 @@ func TestValidateSandboxNetworkPolicyE2BLimits(t *testing.T) {
 		},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "超过 128 字符")
+	require.Contains(t, err.Error(), "exceeds 128 characters")
 
 	for _, tc := range []struct {
 		name, value, want string
 	}{
-		{strings.Repeat("h", e2bMaxHeaderNameLength+1), "v", "header 名超过 64 字符"},
-		{"X-Key", strings.Repeat("v", e2bMaxHeaderValueLen+1), "header 值超过 2048 字符"},
+		{strings.Repeat("h", e2bMaxHeaderNameLength+1), "v", "header name exceeds 64 characters"},
+		{"X-Key", strings.Repeat("v", e2bMaxHeaderValueLen+1), "header value exceeds 2048 characters"},
 	} {
 		err = ValidateSandboxNetworkPolicy(&TenantSandboxConfig{
 			SandboxType: "e2b",
@@ -434,8 +434,8 @@ func TestValidateSandboxNetworkPolicyRejectsDuplicateRules(t *testing.T) {
 		},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "e2b host 规则")
-	require.Contains(t, err.Error(), "重复")
+	require.Contains(t, err.Error(), "e2b host rule")
+	require.Contains(t, err.Error(), "duplicated")
 
 	err = ValidateSandboxNetworkPolicy(&TenantSandboxConfig{
 		SandboxType: "cube",
@@ -445,7 +445,7 @@ func TestValidateSandboxNetworkPolicyRejectsDuplicateRules(t *testing.T) {
 		}},
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), `cube HTTP 规则 name "allow-api" 重复`)
+	require.Contains(t, err.Error(), `cube HTTP rule name "allow-api" is duplicated`)
 }
 
 func TestValidateSandboxNetworkPolicyDockerRejectsFineGrained(t *testing.T) {

@@ -1,40 +1,42 @@
-# 事件系统使用示例
+# Event system usage examples
 
-## 在 Chat Pipeline 中集成事件系统
+## Wiring the event system into the chat pipeline
 
-### 1. 在服务初始化时设置事件总线
+These are sketches, not current code. Nothing outside `internal/event` emits the query, retrieval, rerank, merge or chat stage events today: the chat pipeline emits only the agent streaming events (`thought`, `tool_call`, `final_answer` and the rest) through the per-request `chatManage.EventBus`. `event.NewMonitoringHandler` and `event.NewAnalyticsHandler` do not exist, and the plugin helpers called below (`performSearch`, `rewriteQuery`, `performRerank`) are placeholders.
+
+### 1. Set up the event bus at service startup
 
 ```go
-// internal/container/container.go 或 main.go
+// internal/container/container.go or main.go
 
 import (
     "github.com/jrmatherly/ai-kb/internal/event"
 )
 
 func InitializeEventSystem() {
-    // 获取全局事件总线
+    // Get the global event bus
     bus := event.GetGlobalEventBus()
     
-    // 注册监控处理器
+    // Register a monitoring handler (does not exist yet)
     event.NewMonitoringHandler(bus)
     
-    // 注册分析处理器
+    // Register an analytics handler (does not exist yet)
     event.NewAnalyticsHandler(bus)
     
-    // 或者注册自定义处理器
+    // Or register a custom handler
     bus.On(event.EventQueryReceived, func(ctx context.Context, e event.Event) error {
-        // 自定义处理逻辑
+        // Custom handling
         return nil
     })
 }
 ```
 
-### 2. 在查询处理服务中发送事件
+### 2. Emit events from the query pipeline
 
-#### 示例：在 search.go 中添加事件
+#### Example: events in search.go
 
 ```go
-// internal/application/service/chat_pipline/search.go
+// internal/application/service/chat_pipeline/search.go
 
 import (
     "github.com/jrmatherly/ai-kb/internal/event"
@@ -47,7 +49,7 @@ func (p *PluginSearch) OnEvent(
     chatManage *types.ChatManage,
     next func() *PluginError,
 ) *PluginError {
-    // 发送检索开始事件
+    // Emit retrieval start
     startTime := time.Now()
     event.Emit(ctx, event.NewEvent(event.EventRetrievalStart, event.RetrievalData{
         Query:           chatManage.ProcessedQuery,
@@ -56,10 +58,10 @@ func (p *PluginSearch) OnEvent(
         RetrievalType:   "vector",
     }).WithSessionID(chatManage.SessionID))
     
-    // 执行检索逻辑
+    // Run the retrieval
     results, err := p.performSearch(ctx, chatManage)
     if err != nil {
-        // 发送错误事件
+        // Emit an error event
         event.Emit(ctx, event.NewEvent(event.EventError, event.ErrorData{
             Error:     err.Error(),
             Stage:     "retrieval",
@@ -69,7 +71,7 @@ func (p *PluginSearch) OnEvent(
         return ErrSearch.WithError(err)
     }
     
-    // 发送检索完成事件
+    // Emit retrieval complete
     event.Emit(ctx, event.NewEvent(event.EventRetrievalComplete, event.RetrievalData{
         Query:           chatManage.ProcessedQuery,
         KnowledgeBaseID: chatManage.KnowledgeBaseID,
@@ -85,10 +87,10 @@ func (p *PluginSearch) OnEvent(
 }
 ```
 
-#### 示例：在 rewrite.go 中添加事件
+#### Example: events in a query rewrite plugin
 
 ```go
-// internal/application/service/chat_pipline/rewrite.go
+// The pipeline has no rewrite.go; rewriting lives in query_understand.go.
 
 func (p *PluginRewriteQuery) OnEvent(
     ctx context.Context,
@@ -96,19 +98,19 @@ func (p *PluginRewriteQuery) OnEvent(
     chatManage *types.ChatManage,
     next func() *PluginError,
 ) *PluginError {
-    // 发送改写开始事件
+    // Emit rewrite start
     event.Emit(ctx, event.NewEvent(event.EventQueryRewrite, event.QueryData{
         OriginalQuery: chatManage.Query,
         SessionID:     chatManage.SessionID,
     }).WithSessionID(chatManage.SessionID))
     
-    // 执行查询改写
+    // Rewrite the query
     rewrittenQuery, err := p.rewriteQuery(ctx, chatManage)
     if err != nil {
         return ErrRewrite.WithError(err)
     }
     
-    // 发送改写完成事件
+    // Emit rewrite complete
     event.Emit(ctx, event.NewEvent(event.EventQueryRewritten, event.QueryData{
         OriginalQuery:  chatManage.Query,
         RewrittenQuery: rewrittenQuery,
@@ -120,10 +122,10 @@ func (p *PluginRewriteQuery) OnEvent(
 }
 ```
 
-#### 示例：在 rerank.go 中添加事件
+#### Example: events in rerank.go
 
 ```go
-// internal/application/service/chat_pipline/rerank.go
+// internal/application/service/chat_pipeline/rerank.go
 
 func (p *PluginRerank) OnEvent(
     ctx context.Context,
@@ -131,7 +133,7 @@ func (p *PluginRerank) OnEvent(
     chatManage *types.ChatManage,
     next func() *PluginError,
 ) *PluginError {
-    // 发送排序开始事件
+    // Emit rerank start
     startTime := time.Now()
     inputCount := len(chatManage.SearchResult)
     
@@ -141,13 +143,13 @@ func (p *PluginRerank) OnEvent(
         ModelID:    chatManage.RerankModelID,
     }).WithSessionID(chatManage.SessionID))
     
-    // 执行排序
+    // Run the rerank
     rerankResults, err := p.performRerank(ctx, chatManage)
     if err != nil {
         return ErrRerank.WithError(err)
     }
     
-    // 发送排序完成事件
+    // Emit rerank complete
     event.Emit(ctx, event.NewEvent(event.EventRerankComplete, event.RerankData{
         Query:       chatManage.ProcessedQuery,
         InputCount:  inputCount,
@@ -162,10 +164,10 @@ func (p *PluginRerank) OnEvent(
 }
 ```
 
-#### 示例：在 chat_completion.go 中添加事件
+#### Example: events in chat_completion.go
 
 ```go
-// internal/application/service/chat_pipline/chat_completion.go
+// internal/application/service/chat_pipeline/chat_completion.go
 
 func (p *PluginChatCompletion) OnEvent(
     ctx context.Context,
@@ -173,7 +175,7 @@ func (p *PluginChatCompletion) OnEvent(
     chatManage *types.ChatManage,
     next func() *PluginError,
 ) *PluginError {
-    // 发送聊天开始事件
+    // Emit chat start
     startTime := time.Now()
     event.Emit(ctx, event.NewEvent(event.EventChatStart, event.ChatData{
         Query:    chatManage.Query,
@@ -181,7 +183,7 @@ func (p *PluginChatCompletion) OnEvent(
         IsStream: false,
     }).WithSessionID(chatManage.SessionID))
     
-    // 准备模型和消息
+    // Prepare the model and messages
     chatModel, opt, err := prepareChatModel(ctx, p.modelService, chatManage)
     if err != nil {
         return ErrGetChatModel.WithError(err)
@@ -189,7 +191,7 @@ func (p *PluginChatCompletion) OnEvent(
     
     chatMessages := prepareMessagesWithHistory(chatManage)
     
-    // 调用模型
+    // Call the model
     chatResponse, err := chatModel.Chat(ctx, chatMessages, opt)
     if err != nil {
         event.Emit(ctx, event.NewEvent(event.EventError, event.ErrorData{
@@ -201,7 +203,7 @@ func (p *PluginChatCompletion) OnEvent(
         return ErrModelCall.WithError(err)
     }
     
-    // 发送聊天完成事件
+    // Emit chat complete
     event.Emit(ctx, event.NewEvent(event.EventChatComplete, event.ChatData{
         Query:      chatManage.Query,
         ModelID:    chatManage.ChatModelID,
@@ -216,7 +218,7 @@ func (p *PluginChatCompletion) OnEvent(
 }
 ```
 
-### 3. 在 Handler 层发送请求接收事件
+### 3. Emit the query-received event from the handler layer
 
 ```go
 // internal/handler/message.go
@@ -224,25 +226,25 @@ func (p *PluginChatCompletion) OnEvent(
 func (h *MessageHandler) SendMessage(c *gin.Context) {
     ctx := c.Request.Context()
     
-    // 解析请求
+    // Parse the request
     var req types.SendMessageRequest
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
     
-    // 发送查询接收事件
+    // Emit query received
     event.Emit(ctx, event.NewEvent(event.EventQueryReceived, event.QueryData{
         OriginalQuery: req.Content,
         SessionID:     req.SessionID,
         UserID:        c.GetString("user_id"),
     }).WithSessionID(req.SessionID).WithRequestID(c.GetString("request_id")))
     
-    // 处理消息...
+    // Handle the message...
 }
 ```
 
-### 4. 自定义监控处理器
+### 4. Custom monitoring handler
 
 ```go
 // internal/monitoring/event_monitor.go
@@ -281,7 +283,7 @@ func init() {
 func SetupEventMonitoring() {
     bus := event.GetGlobalEventBus()
     
-    // 监控检索性能
+    // Track retrieval performance
     bus.On(event.EventRetrievalComplete, func(ctx context.Context, e event.Event) error {
         data := e.Data.(event.RetrievalData)
         retrievalDuration.WithLabelValues(
@@ -291,7 +293,7 @@ func SetupEventMonitoring() {
         return nil
     })
     
-    // 监控排序性能
+    // Track rerank performance
     bus.On(event.EventRerankComplete, func(ctx context.Context, e event.Event) error {
         data := e.Data.(event.RerankData)
         rerankDuration.WithLabelValues(data.ModelID).Observe(float64(data.Duration))
@@ -300,7 +302,7 @@ func SetupEventMonitoring() {
 }
 ```
 
-### 5. 日志记录处理器
+### 5. Logging handler
 
 ```go
 // internal/logging/event_logger.go
@@ -317,7 +319,9 @@ import (
 func SetupEventLogging() {
     bus := event.GetGlobalEventBus()
     
-    // 对所有事件进行结构化日志记录
+    // Structured logging for every event.
+    // WithTiming writes duration_ms to the metadata after this handler returns,
+    // so the log line below never contains it.
     logHandler := event.ApplyMiddleware(
         func(ctx context.Context, e event.Event) error {
             data, _ := json.Marshal(e.Data)
@@ -328,7 +332,7 @@ func SetupEventLogging() {
         event.WithTiming(),
     )
     
-    // 注册到所有关键事件
+    // Register on the key events
     bus.On(event.EventQueryReceived, logHandler)
     bus.On(event.EventQueryRewritten, logHandler)
     bus.On(event.EventRetrievalComplete, logHandler)
@@ -338,82 +342,81 @@ func SetupEventLogging() {
 }
 ```
 
-### 6. 完整的初始化流程
+### 6. Full initialization
 
 ```go
-// cmd/server/main.go 或 internal/container/container.go
+// cmd/server/main.go or internal/container/container.go
 
 func Initialize() {
-    // 1. 初始化事件系统
+    // 1. Initialize the event system
     eventBus := event.GetGlobalEventBus()
     
-    // 2. 设置监控
+    // 2. Set up monitoring (handler does not exist yet)
     event.NewMonitoringHandler(eventBus)
     
-    // 3. 设置分析
+    // 3. Set up analytics (handler does not exist yet)
     event.NewAnalyticsHandler(eventBus)
     
-    // 4. 设置 Prometheus 监控（如果需要）
+    // 4. Set up Prometheus monitoring (if needed)
     // monitoring.SetupEventMonitoring()
     
-    // 5. 设置结构化日志（如果需要）
+    // 5. Set up structured logging (if needed)
     // logging.SetupEventLogging()
     
-    // 6. 其他初始化...
+    // 6. Other initialization...
 }
 ```
 
-## 测试事件系统
+## Testing with the event system
 
 ```go
-// 在测试中使用独立的事件总线
+// Use a dedicated event bus in tests
 func TestMyService(t *testing.T) {
     ctx := context.Background()
     
-    // 创建测试专用的事件总线
+    // Create a bus for this test
     testBus := event.NewEventBus()
     
-    // 注册测试监听器
+    // Register a test listener
     var receivedEvents []event.Event
     testBus.On(event.EventQueryReceived, func(ctx context.Context, e event.Event) error {
         receivedEvents = append(receivedEvents, e)
         return nil
     })
     
-    // 执行测试...
+    // Run the test...
     testBus.Emit(ctx, event.NewEvent(event.EventQueryReceived, event.QueryData{
         OriginalQuery: "test",
     }))
     
-    // 验证事件
+    // Check the events
     if len(receivedEvents) != 1 {
         t.Errorf("Expected 1 event, got %d", len(receivedEvents))
     }
 }
 ```
 
-## 异步处理示例
+## Async example
 
 ```go
-// 对于不影响主流程的事件，可以使用异步模式
+// Use async mode for events the main flow does not depend on
 func SetupAsyncAnalytics() {
     asyncBus := event.NewAsyncEventBus()
     
     asyncBus.On(event.EventQueryReceived, func(ctx context.Context, e event.Event) error {
-        // 异步发送到分析平台，不阻塞主流程
+        // Send to the analytics platform without blocking the main flow
         // sendToAnalyticsPlatform(e)
         return nil
     })
     
-    // 使用异步总线发送事件
+    // Emit on the async bus
     // asyncBus.Emit(ctx, event)
 }
 ```
 
-## 性能优化建议
+## Performance tips
 
-1. **避免在关键路径上使用同步事件总线**：对于不影响业务逻辑的监控、日志等，使用异步模式
-2. **合理使用中间件**：只在需要的地方使用中间件，避免不必要的开销
-3. **控制事件数据大小**：避免在事件中传递大量数据，特别是在异步模式下
-4. **使用专用的监听器**：不要在一个监听器中做太多事情，保持单一职责
-
+1. **Keep the sync bus off the hot path.** Use async mode for monitoring and logging that business logic does not depend on. An async handler runs in its own goroutine with no ordering and its error is dropped.
+2. **Use middleware only where needed.** Each layer adds overhead.
+3. **Keep event data small**, especially in async mode.
+4. **Keep each listener to one job.**

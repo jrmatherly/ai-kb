@@ -26,10 +26,10 @@ func newOwnerScopeDB(t *testing.T, name string) (*gorm.DB, map[string]string) {
 		t.Fatalf("migrate: %v", err)
 	}
 	sessions := map[string]*types.Session{
-		"alice":  {TenantID: 7, UserID: "web_user:alice", Title: "Alice 的会话"},
-		"bob":    {TenantID: 7, UserID: "web_user:bob", Title: "Bob 的会话"},
-		"legacy": {TenantID: 7, Title: "API 建的会话"},
-		"other":  {TenantID: 8, UserID: "web_user:alice", Title: "别的工作区"},
+		"alice":  {TenantID: 7, UserID: "web_user:alice", Title: "Alice's session"},
+		"bob":    {TenantID: 7, UserID: "web_user:bob", Title: "Bob's session"},
+		"legacy": {TenantID: 7, Title: "Session created via API"},
+		"other":  {TenantID: 8, UserID: "web_user:alice", Title: "Other workspace"},
 	}
 	ids := make(map[string]string, len(sessions))
 	for label, session := range sessions {

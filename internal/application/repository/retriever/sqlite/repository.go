@@ -659,7 +659,7 @@ func (r *sqliteRepository) vectorRetrieve(ctx context.Context, params types.Retr
 
 	tbl := vecTableName(dim)
 
-	// ⚠️ sqlite-vec 要求必须有 k = ?
+	// sqlite-vec requires k = ?
 	vecSQL := fmt.Sprintf(`
 		SELECT v.rowid, v.distance,
 			e.source_id, e.source_type, e.chunk_id,
@@ -677,16 +677,16 @@ func (r *sqliteRepository) vectorRetrieve(ctx context.Context, params types.Retr
 
 	args := []interface{}{
 		queryBlob,
-		params.TopK, // 这里就是 k
+		params.TopK, // k
 	}
 
-	// 追加过滤条件
+	// Append the filter conditions
 	for _, wp := range buildFilterWhere(params, "filtered") {
 		vecSQL += " AND " + wp.clause
 		args = append(args, wp.args...)
 	}
 
-	// ⚠️ 这里仍然建议加 ORDER BY，虽然 vec0 已经按距离返回
+	// ORDER BY is still recommended even though vec0 already returns rows by distance
 	vecSQL += ") ORDER BY v.distance ASC"
 
 	type row struct {
@@ -975,7 +975,8 @@ func sanitizeFTS5Query(q string) string {
 		}
 		term := `"` + strings.ReplaceAll(f, `"`, `""`) + `"`
 		// The index holds CJK text as bigrams, so a lone Han character
-		// (the 股 of "A股") was never a token; match bigrams starting with it.
+		// (such as the Han half of "A-shares" written as A plus one character)
+		// was never a token; match bigrams starting with it.
 		if runes := []rune(f); len(runes) == 1 && unicode.Is(unicode.Han, runes[0]) {
 			term += "*"
 		}

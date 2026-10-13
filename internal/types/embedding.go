@@ -23,12 +23,12 @@ const (
 	MatchTypeKeywords
 	MatchTypeNearByChunk
 	MatchTypeHistory
-	MatchTypeParentChunk   // 父Chunk匹配类型
-	MatchTypeRelationChunk // 关系Chunk匹配类型
+	MatchTypeParentChunk   // parent chunk match
+	MatchTypeRelationChunk // relation chunk match
 	MatchTypeGraph
-	MatchTypeWebSearch    // 网络搜索匹配类型
+	MatchTypeWebSearch    // web search match
 	MatchTypeDirectLoad   // Deprecated: reserved to preserve serialized enum values
-	MatchTypeDataAnalysis // 数据分析匹配类型
+	MatchTypeDataAnalysis // data analysis match
 )
 
 // IndexInfo contains information about indexed content
