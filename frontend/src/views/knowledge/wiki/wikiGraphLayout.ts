@@ -89,7 +89,7 @@ export function graphCommunities(neighbors: readonly (readonly number[])[]): num
 /** Landmark caption text: summary pages carry their source file name. */
 export function graphLandmarkTitle(title: string): string {
   const name = title.replace(/\s*-\s*Summary$/i, '')
-    .replace(/\.(pdf|docx?|pptx?|xlsx?|csv|md|txt|html?|json|ya?ml|xml|png|jpe?g)$/i, '')
+    .replace(/\.(pdf|docx?|pptx?|xls[xb]?|csv|md|txt|html?|json|ya?ml|xml|png|jpe?g)$/i, '')
     .replace(/\s*[(\uff08]\d+[)\uff09]$/, '').trim() // trailing "(2)" in ASCII or fullwidth parentheses
   return name || title
 }

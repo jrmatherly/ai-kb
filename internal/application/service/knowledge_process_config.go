@@ -22,6 +22,10 @@ func applyParserRuleOverrides(
 		return
 	}
 	rule := config.ResolveParserEngineRule(fileType)
+	if rule == nil && fileType == "xlsb" {
+		// Excel rules saved before xlsb was accepted list only xlsx and xls.
+		rule = config.ResolveParserEngineRule("xlsx")
+	}
 	if rule == nil || rule.XLSXFirstRowAsHeader == nil {
 		return
 	}

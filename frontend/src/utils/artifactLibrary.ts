@@ -16,7 +16,7 @@ export const ARTIFACT_CATEGORIES: ArtifactCategory[] = [
 
 const CATEGORY_EXTENSIONS: Record<Exclude<ArtifactCategory, 'all'>, string[]> = {
   document: ['.pdf', '.doc', '.docx', '.md', '.txt', '.rtf', '.odt'],
-  spreadsheet: ['.xlsx', '.xls', '.csv', '.tsv', '.ods'],
+  spreadsheet: ['.xlsx', '.xls', '.xlsb', '.csv', '.tsv', '.ods'],
   presentation: ['.pptx', '.ppt', '.key', '.odp'],
   image: ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp'],
   web: ['.html', '.htm'],

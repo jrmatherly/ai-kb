@@ -83,3 +83,14 @@ func encryptWeComTestPayload(t *testing.T, key []byte, corpID string, message []
 	cipher.NewCBCEncrypter(block, key[:aes.BlockSize]).CryptBlocks(ciphertext, plaintext)
 	return base64.StdEncoding.EncodeToString(ciphertext), padLen
 }
+
+func TestContentTypeToExtMatchesXLSBCaseInsensitively(t *testing.T) {
+	for _, ct := range []string{
+		"application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+		"application/vnd.ms-excel.sheet.binary.macroenabled.12; charset=binary",
+	} {
+		if got := contentTypeToExt(ct); got != "xlsb" {
+			t.Errorf("contentTypeToExt(%q) = %q, want xlsb", ct, got)
+		}
+	}
+}

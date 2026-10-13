@@ -511,7 +511,7 @@
                     </t-dropdown>
                   </div>
                   <div class="file-upload-wrapper">
-                    <input ref="fileInputRef" type="file" accept=".json,.csv,.xlsx,.xls" @change="handleFileChange"
+                    <input ref="fileInputRef" type="file" accept=".json,.csv,.xlsx,.xls,.xlsb" @change="handleFileChange"
                       class="file-input-hidden" />
                     <div class="file-upload-area" :class="{ 'has-file': importState.file }"
                       @click="fileInputRef?.click()" @dragover.prevent @dragenter.prevent
@@ -1681,7 +1681,7 @@ const processFile = async (file: File) => {
       parsed = await parseJSONFile(file)
     } else if (file.name.endsWith('.csv')) {
       parsed = await parseCSVFile(file)
-    } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+    } else if (/\.xls[xb]?$/i.test(file.name)) {
       parsed = await parseExcelFile(file)
     } else {
       MessagePlugin.warning(t('knowledgeEditor.faqImport.unsupportedFormat'))
