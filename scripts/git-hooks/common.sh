@@ -21,6 +21,11 @@ log_fail() {
   printf '✗ %s\n' "$*" >&2
 }
 
+# The one markdownlint-cli2 pin, run as `npx --yes "$MARKDOWNLINT_CLI2"` by validate.sh and pre-commit;
+# .claude/hooks/post-edit.sh reads it from this line.
+# shellcheck disable=SC2034
+MARKDOWNLINT_CLI2=markdownlint-cli2@0.23.3
+
 # File types we expect hand-edited in PRs (skip sample-data / generated blobs).
 WHITESPACE_PATHSPECS=(
   '*.go'

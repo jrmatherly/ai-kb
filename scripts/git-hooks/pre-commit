@@ -38,4 +38,21 @@ if [[ ${#staged_go[@]} -gt 0 ]]; then
   fi
 fi
 
+# Lints the working-tree file, like gofmt above. Never --fix here: some fixers damage content (MD018, MD029,
+# MD037, MD038). The config's ignores still apply to named files, so the changelogs need no filter.
+staged_md=()
+while IFS= read -r line; do
+  [[ -n "$line" ]] && staged_md+=("$line")
+done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.md' || true)
+
+if [[ ${#staged_md[@]} -gt 0 ]]; then
+  if command -v npx >/dev/null 2>&1; then
+    log_step "markdownlint (${#staged_md[@]} staged Markdown file(s))"
+    npx --yes "$MARKDOWNLINT_CLI2" --no-globs -- "${staged_md[@]}"
+    log_ok "markdownlint"
+  else
+    log_step "npx not installed; skip markdownlint"
+  fi
+fi
+
 log_ok "pre-commit passed"

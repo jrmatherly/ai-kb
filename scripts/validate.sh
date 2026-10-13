@@ -11,7 +11,7 @@
 # area each check is its own command and the first failure ends that area (set -e). The summary lists
 # each area as passed, failed or skipped, then every check that did not run and why; the exit status
 # is 1 when any area failed. A check whose tool is missing (golangci-lint, cargo, cargo-audit, helm,
-# docker, pnpm) is skipped and listed, never silently passed.
+# docker, pnpm, npx) is skipped and listed, never silently passed.
 #
 # golangci-lint reports only issues new since the base, as go-lint.yml did, because the upstream seed
 # carries lint debt. HOOK_SKIP_TEST=1 skips the Go tests. AIKB_E2E_HOST and AIKB_E2E_TOKEN enable the
@@ -68,7 +68,8 @@ if has 'client/*' .golangci.yml; then areas+=(client); fi
 if has 'frontend/*' scripts/build_frontend_dist.sh scripts/test_embed_nginx.py scripts/verify_frontend_pr.sh; then areas+=(frontend); fi
 if has 'docreader/*' go.mod go.sum 'testdata/*' docker/Dockerfile.docreader docker/Dockerfile.odl-hybrid; then areas+=(docreader); fi
 if has 'internal/models/catalog/data/*' 'scripts/model-catalog/*'; then areas+=(model-catalog); fi
-if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-only.sh; then areas+=(git-hooks); fi
+if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-only.sh \
+  .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
 if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md; then areas+=(licenses); fi
 if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastructure/docparser/*'; then areas+=(anydoc); fi
@@ -77,6 +78,7 @@ if has 'mcp-server/*'; then areas+=(mcp-server); fi
 if has 'packages/dsh-ai-kb/*'; then areas+=(dsh-plugin); fi
 if has 'miniprogram/*' 'tests/miniprogram/*'; then areas+=(miniprogram); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
+if has '*.md' .markdownlint-cli2.jsonc; then areas+=(markdown); fi
 areas+=(english-only)
 if [ ${#forced[@]} -gt 0 ]; then areas=("${forced[@]}"); fi
 
@@ -288,6 +290,12 @@ area_website-docs() {
   node website-docs/scripts/check-anchors.mjs
   npm --prefix website-docs run --silent check:mermaid
   npm --prefix website-docs run --silent build:docs
+}
+
+# The whole tree, not only the changed files: it takes seconds, and a config change can affect any file.
+area_markdown() {
+  need npx || return "$SKIPPED"
+  npx --yes "$MARKDOWNLINT_CLI2"
 }
 
 # Lines added since base, committed or not; untracked files are covered by the PostToolUse hook and pre-commit.

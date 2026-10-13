@@ -278,7 +278,7 @@ The formatting standard golangci-lint enforces is **gofumpt** (stricter than gof
 
 The repository ships Git hooks. `./scripts/install-git-hooks.sh` points `core.hooksPath` at `scripts/git-hooks`:
 
-- pre-commit checks whitespace, blocks CJK text in added lines (`scripts/check-english-only.sh --diff`), runs gofmt with auto-fix on staged Go files outside `cli/`, and runs golangci-lint on the changed packages when it is installed.
+- pre-commit checks whitespace, blocks CJK text in added lines (`scripts/check-english-only.sh --diff`), runs gofmt with auto-fix on staged Go files outside `cli/`, runs golangci-lint on the changed packages when it is installed, and lints staged `.md` files with markdownlint-cli2 (report only, no auto-fix).
 - pre-push checks whitespace on the pushed commits, then runs `scripts/validate.sh --base <push base>`, which checks every validation area below that the push touches. It refuses to push a commit other than `HEAD`, because the checks run on the working tree.
 
 `SKIP_HOOKS=1` skips the hooks once. `HOOK_SKIP_TEST=1` skips only the Go tests.
@@ -304,7 +304,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | frontend | `frontend/**`, `scripts/build_frontend_dist.sh`, `scripts/test_embed_nginx.py` | `scripts/verify_frontend_pr.sh` (`npm ci` when stale, test, type-check, build), then the UI image build and `scripts/test_embed_nginx.py` when Docker is running |
 | docreader | `docreader/**`, `go.mod`, `go.sum`, `testdata/`, the docreader Dockerfiles | `uv sync --locked`, compileall, Playwright WebKit install, the unittest suite, then the Go client tests against a DocReader server the script starts on port 50051 |
 | model-catalog | `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `generate.py --check`, `go test ./internal/models/...` |
-| git-hooks | `scripts/git-hooks/**`, `scripts/test-git-hooks.sh`, `scripts/check-english-only.sh` | `scripts/test-git-hooks.sh` |
+| git-hooks | `scripts/git-hooks/**`, `scripts/test-git-hooks.sh`, `scripts/check-english-only.sh`, `.claude/hooks/post-edit.sh` | `scripts/test-git-hooks.sh` |
 | licenses | `licenses/**`, license scripts, `LICENSE`, `THIRD_PARTY_NOTICES.md` | `check-license-bundle.sh`, `test-license-bundle.sh` |
 | anydoc | `third_party/anydoc-go/**`, `scripts/build-anydoc-lib.sh`, `internal/infrastructure/docparser/**` | builds the Rust archive, `cargo audit`, vet, test and build with `-tags anydoc` |
 | helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |
@@ -312,6 +312,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | dsh-plugin | `packages/dsh-ai-kb/**` | typecheck, build, unit and contract tests (Node and Go), tarball file list, end-to-end run inside the pinned dsh release |
 | miniprogram | `miniprogram/**`, `tests/miniprogram/**` | `npm --prefix miniprogram test` |
 | website-docs | `website-docs/**` | link and anchor checks, Mermaid check, `build:docs` |
+| markdown | any `*.md`, `.markdownlint-cli2.jsonc` | markdownlint-cli2 over the whole tree, with the root `.markdownlint-cli2.jsonc` |
 
 Every run ends with the English-only gate on the lines added since the base. Every touched area runs even after one fails, and the summary lists each area as passed, failed or skipped, with every check that did not run and why (a missing tool such as `cargo` or `helm`, or a stopped Docker daemon). Image pushes, release builds and package publishing are not run locally.
 

@@ -96,4 +96,31 @@ for f in "$repo/a.md" "$fixture/wt/a.md"; do
   grep -q '^3: added' "$fixture/post-edit.log"
 done
 
+# markdownlint: pre-commit passes a clean staged .md and fails a bad one; post-edit reports the bad one.
+md="$fixture/md"
+mkdir -p "$md/scripts/git-hooks" && git -C "$md" init -q
+cp "$repo_root/scripts/git-hooks/pre-commit" "$repo_root/scripts/git-hooks/common.sh" "$md/scripts/git-hooks/"
+cp "$repo_root/scripts/check-english-only.sh" "$md/scripts/"
+cp "$repo_root/.markdownlint-cli2.jsonc" "$md/"
+printf '# Good\n\nText.\n' > "$md/good.md"
+git -C "$md" add good.md
+if ! "$md/scripts/git-hooks/pre-commit" > "$fixture/md.log" 2>&1; then
+  cat "$fixture/md.log" >&2
+  echo "pre-commit rejected a clean Markdown file" >&2
+  exit 1
+fi
+grep -q 'markdownlint (1 staged' "$fixture/md.log"
+printf '# Bad\n#296 starts a line\n' > "$md/bad.md"
+git -C "$md" add bad.md
+if "$md/scripts/git-hooks/pre-commit" > "$fixture/md.log" 2>&1; then
+  echo "pre-commit accepted a Markdown file with lint errors" >&2
+  exit 1
+fi
+grep -q '^bad.md:2:1 error MD018/' "$fixture/md.log"
+if post_edit "$md/bad.md" 2> "$fixture/post-edit.log"; then
+  echo "post-edit missed the markdownlint error in bad.md" >&2
+  exit 1
+fi
+grep -q 'bad.md:2:1 error MD018/' "$fixture/post-edit.log"
+
 echo 'Git hook coverage checks passed'
