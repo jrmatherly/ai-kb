@@ -184,7 +184,7 @@ const deploymentCapabilities = useDeploymentCapabilitiesStore()
 const { open, initialQuery, recentQueries } = storeToRefs(commandPaletteStore)
 const { startChat } = useStartChat()
 
-// Per-group display caps — keep the palette compact.
+// Per-group display caps - keep the palette compact.
 const CHUNK_LIMIT = 5
 const MSG_LIMIT = 4
 
@@ -272,7 +272,7 @@ const allCommands = computed(() => {
 
 const filteredCommands = computed(() => filterCommands(allCommands.value, query.value))
 
-// Stable index layout — keep group order consistent so flatIndexFor is cheap.
+// Stable index layout - keep group order consistent so flatIndexFor is cheap.
 // Groups always render in the same order; individual groups hide themselves
 // when their backing list is empty, so users with nothing to show don't see
 // empty headers.
@@ -441,7 +441,7 @@ const openKb = (kbId: string) => {
 }
 
 // Agents have no standalone detail route; the natural "jump" is opening a new
-// chat pre-scoped to that agent — the agent editor is a modal that requires
+// chat pre-scoped to that agent - the agent editor is a modal that requires
 // more context (permissions, edit intent) so we don't trigger it from ⌘K.
 const openAgent = (agentId: string) => {
   commandPaletteStore.pushRecent(query.value)
@@ -509,7 +509,7 @@ const onKeyDown = (e: KeyboardEvent) => {
     (e.metaKey || e.ctrlKey) &&
     e.key >= '1' && e.key <= '9'
   ) {
-    // ⌘1-9 — jump straight to the Nth visible item (shortcut badge on each
+    // ⌘1-9 - jump straight to the Nth visible item (shortcut badge on each
     // row reveals the binding). No modifier combos with ⌘Enter: digits take
     // precedence because ⌘+digit can't be confused with ⌘+enter.
     const n = parseInt(e.key, 10)
@@ -529,7 +529,7 @@ const onKeyDown = (e: KeyboardEvent) => {
 
 // Keys handled specifically on the input element. Main purpose: let the user
 // escape a KB scope chip with the keyboard. Mirrors how chat apps treat
-// pill/tag tokens — Backspace on an empty input removes the preceding chip.
+// pill/tag tokens - Backspace on an empty input removes the preceding chip.
 const onInputKeyDown = (e: KeyboardEvent) => {
   if (
     e.key === 'Backspace' &&
@@ -575,7 +575,7 @@ const onGlobalKey = (e: KeyboardEvent) => {
 
 // When the palette opens programmatically (from router redirect or elsewhere),
 // sync the query and initialize scope. Focus is moved to the input by
-// `onDialogOpened` once the dialog's enter animation has finished — doing it
+// `onDialogOpened` once the dialog's enter animation has finished - doing it
 // here in a plain `nextTick` is too early for t-dialog (the input may not be
 // attached to the document yet, so `.focus()` silently no-ops).
 watch(open, (val) => {
@@ -604,7 +604,7 @@ watch(open, (val) => {
   }
 })
 
-// Fired by t-dialog after its open animation finishes — DOM is guaranteed
+// Fired by t-dialog after its open animation finishes - DOM is guaranteed
 // attached, focus sticks. We also schedule a couple of retries because
 // some browsers defer focus when the dialog is mid-layout; costs nothing.
 const focusInputWithRetry = () => {
@@ -848,7 +848,7 @@ onUnmounted(() => {
 </style>
 
 <style lang="less">
-/* Unscoped overrides — dialog renders in teleport. */
+/* Unscoped overrides - dialog renders in teleport. */
 .cmdk-dialog {
   .t-dialog__body {
     padding: 0;

@@ -1,7 +1,7 @@
 <template>
   <!-- "My invitations" inbox as a dialog. The previous version of
        this was a full /platform/invitations route, but the inbox is
-       intrinsically transient — open it, act, dismiss — and a modal
+       intrinsically transient - open it, act, dismiss - and a modal
        keeps the user in whatever context the bell icon was clicked
        from rather than yanking them to a separate page. The trigger
        lives in UserMenu's avatar-row bell. -->
@@ -82,7 +82,7 @@ import {
 } from '@/api/tenant/invitations'
 import type { TenantRole } from '@/api/tenant/members'
 
-// v-model:visible — the parent (UserMenu) owns the open/close state
+// v-model:visible - the parent (UserMenu) owns the open/close state
 // so the bell icon stays the single source of truth. Reload is run
 // on every open transition so the list reflects accept/decline
 // actions taken in another tab while the dialog was closed.
@@ -115,7 +115,7 @@ function roleTagTheme(role: TenantRole): 'primary' | 'warning' | 'success' | 'de
 }
 
 function inviterDisplay(row: TenantInvitation): string {
-  return row.inviter_name?.trim() || row.inviter_email?.trim() || row.invited_by || '—'
+  return row.inviter_name?.trim() || row.inviter_email?.trim() || row.invited_by || '-'
 }
 
 function formatDate(s: string): string {

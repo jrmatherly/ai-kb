@@ -6,7 +6,7 @@
 // Design choices:
 //
 //   * The workspace name is the primary anchor of the sentence, so it
-//     is rendered as plain bold text (no chip / background) — the
+//     is rendered as plain bold text (no chip / background) - the
 //     surrounding sentence already frames it and another box around
 //     would be double-emphasis.
 //   * The role is a categorical attribute and benefits from a visible
@@ -15,7 +15,7 @@
 //     "what an owner / admin / contributor / viewer looks like"
 //     consistent across the product instead of inventing a parallel
 //     chip palette.
-//   * No forced wrapping — let the Notify width drive line breaks
+//   * No forced wrapping - let the Notify width drive line breaks
 //     naturally so the sentence reads as one phrase whenever it fits.
 //
 // The renderer interpolates a template string carrying `{name}` and
@@ -107,7 +107,7 @@ export function renderWorkspaceNotifyContent(
           )
         }
         // If template has {role} but no label was passed, drop the
-        // marker silently — caller should pick the no-role template
+        // marker silently - caller should pick the no-role template
         // instead, but this guards against the raw "{role}" leaking
         // through if they forget.
       } else if (tok) {

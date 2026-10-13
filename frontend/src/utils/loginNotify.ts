@@ -3,7 +3,7 @@
 // and OIDC (App.vue handleGlobalOIDCCallback) login paths so the two
 // flows feel identical to the user.
 //
-// Kept as a free function — not a composable — because the caller
+// Kept as a free function - not a composable - because the caller
 // already has `t`, `formatRole` and `roleIcon` in scope from useI18n /
 // useRoleLabel and there is no per-instance state worth tracking.
 
@@ -11,7 +11,7 @@ import { NotifyPlugin } from 'tdesign-vue-next'
 import { renderWorkspaceNotifyContent } from './workspaceNotifyContent'
 
 type Translator = (key: string, params?: Record<string, unknown>) => string
-// TemplateResolver returns the raw i18n message verbatim — placeholders
+// TemplateResolver returns the raw i18n message verbatim - placeholders
 // like `{name}` are left untouched. Pass `tm` from useI18n (which does
 // no interpolation), not `t` (which would replace unspecified named
 // placeholders with empty strings and strand the renderer with nothing

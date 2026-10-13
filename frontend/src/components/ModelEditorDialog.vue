@@ -315,7 +315,7 @@
             <label class="form-label" :class="{ required: apiKeyRequired }">{{ apiKeyLabel }}</label>
             <!--
               Edit mode: credentials live behind the /credentials subresource
-              of the model — managed by the shared CredentialResource card,
+              of the model - managed by the shared CredentialResource card,
               which now renders an INPUT-LOOKING row (32px tall, same border
               + radius as t-input) so it sits flush with the Base URL field
               above and the Custom headers controls below - no more
@@ -787,8 +787,8 @@ const selectedProviderDisplayLabel = computed(() => (
  * Pin a select's dropdown to the width of its input.
  *
  * TDesign sizes a select popup as max(popup content, trigger)
- * (select-input/hooks/useOverlayInnerStyle), so one long option — a vendor
- * whose description lists half a dozen model ids — stretches the whole menu
+ * (select-input/hooks/useOverlayInnerStyle), so one long option - a vendor
+ * whose description lists half a dozen model ids - stretches the whole menu
  * past the field it belongs to, leaving a wide band of empty space and
  * pushing the tick mark far from the text. Passing a function here replaces
  * that matching outright (the hook keeps a function as-is), and the option
@@ -935,8 +935,8 @@ const findCatalogEntry = (name: string) => catalogEntries.value.find(m => m.id =
 /**
  * Where to read about what is configured right now.
  *
- * Prefer the page the selected model's facts were taken from — that is the
- * page listing its context window, thinking levels and price — and fall back
+ * Prefer the page the selected model's facts were taken from - that is the
+ * page listing its context window, thinking levels and price - and fall back
  * to the vendor's own site when the model is not in the catalog. Both come
  * from the catalog, so a new vendor gets the link without a UI change.
  */
@@ -951,9 +951,9 @@ const vendorDocLink = computed(() => {
 /**
  * What applyCatalogEntry filled in for the model currently selected.
  *
- * Switching vendor has to take those values back — a context window from the
+ * Switching vendor has to take those values back - a context window from the
  * previous vendor's model is exactly the "too large means compression never triggers and the upstream rejects it outright"
- * case this field warns about — but it must not touch a number the operator
+ * case this field warns about - but it must not touch a number the operator
  * typed. Remembering what was filled, and only clearing a field that still
  * holds it, separates the two.
  */
@@ -1069,8 +1069,8 @@ const runResolve = async () => {
       api: formData.value.extraConfig?.api || '',
       thinking_control: formData.value.thinkingControl || '',
       remote_model_name: formData.value.extraConfig?.remote_model_name || '',
-      // Vendor fields decide the request too — Azure's api_version picks
-      // between the v1 data plane and the dated deployments path — so the
+      // Vendor fields decide the request too - Azure's api_version picks
+      // between the v1 data plane and the dated deployments path - so the
       // preview has to see them or it describes a different request than
       // the one this row will make. Secret fields never travel in a query
       // string; plainExtraFields already excludes them.
@@ -1147,7 +1147,7 @@ const dialogVisible = computed({
 /** Filling the form from modelData; ignore the side effects of programmatic changes to the vendor/source controls */
 const hydratingForm = ref(false)
 
-// Header icon for the SettingDrawer — uses the same TDesign icon name table
+// Header icon for the SettingDrawer - uses the same TDesign icon name table
 // as the model card list, so the drawer's leading badge visually matches the
 // card the user just clicked on.
 const modelTypeIcon = computed(() => {
@@ -1634,8 +1634,8 @@ const resetForm = () => {
  * Drop a model name the new vendor does not serve, along with whatever the
  * catalog filled in for it.
  *
- * The same id does exist at several vendors — deepseek-v4-pro is sold by
- * DeepSeek, Aliyun, Volcengine and the gateways — so switching between them
+ * The same id does exist at several vendors - deepseek-v4-pro is sold by
+ * DeepSeek, Aliyun, Volcengine and the gateways - so switching between them
  * should keep the selection. Anything else is a name from the previous
  * vendor: left in place it is saved verbatim, resolves as an uncatalogued
  * model and fails at the first call.
@@ -2248,7 +2248,7 @@ const handleCancel = () => {
 
 // Form item styles
 .form-item {
-  // No bottom margin — vertical rhythm is owned by the parent
+  // No bottom margin - vertical rhythm is owned by the parent
   // .setting-drawer__section's `gap`. That keeps the spacing inside a section
   // tight and the gap between sections visually distinct.
   margin-bottom: 0;
@@ -2685,7 +2685,7 @@ const handleCancel = () => {
     flex: 1;
   }
 
-  // Ghost icon button — matches the model-card "more" affordance: invisible
+  // Ghost icon button - matches the model-card "more" affordance: invisible
   // until hover/focus, then a subtle background pops in. Avoids painting a
   // permanent red splotch next to every header row.
   .custom-header-remove {
@@ -2710,7 +2710,7 @@ const handleCancel = () => {
   line-height: 1.5;
   color: var(--td-text-color-placeholder);
 
-  // Inline with switches/checkboxes — drops the top margin so the label and
+  // Inline with switches/checkboxes - drops the top margin so the label and
   // helper text sit on the same baseline.
   &--inline {
     margin: 0;

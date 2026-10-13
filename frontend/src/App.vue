@@ -204,7 +204,7 @@ const showPendingTenantSwitchToast = () => {
   const templateKey = pending.role
     ? 'tenant.switchSuccessContentWithRole'
     : 'tenant.switchSuccessContent'
-  // Use tm() not t() — vue-i18n v11's `t()` replaces unspecified named
+  // Use tm() not t() - vue-i18n v11's `t()` replaces unspecified named
   // placeholders with empty strings, which would strip {name}/{role}
   // before the chip renderer can split on them. tm() returns the raw
   // message verbatim.

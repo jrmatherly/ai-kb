@@ -2,7 +2,7 @@
  * Hand-written types for @novnc/novnc.
  *
  * The package ships no .d.ts. Only the surface SandboxDesktop.vue uses is
- * declared here — adding a member is cheap, and a wrong guess about a member
+ * declared here - adding a member is cheap, and a wrong guess about a member
  * we do not call would be worse than not having it.
  *
  * `"exports"` is the string `"./core/rfb.js"`, so the only valid import

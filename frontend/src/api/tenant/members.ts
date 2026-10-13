@@ -104,7 +104,7 @@ export async function fetchAllTenantMembers(tenantId: number): Promise<TenantMem
  * Invite an existing user (by email) to the tenant with the given role.
  * Backend: POST /api/v1/tenants/:id/members (Owner+).
  *
- * Returns 404 when the email does not match any registered user — the
+ * Returns 404 when the email does not match any registered user - the
  * caller should ask the invitee to register first. PR 3 does not yet
  * support email-based invites for users who don't have an account.
  */
@@ -144,7 +144,7 @@ export async function removeMember(
 
 /**
  * Quit the tenant on your own. Same last-Owner invariant as
- * removeMember, but does NOT require Owner+ — any active member can
+ * removeMember, but does NOT require Owner+ - any active member can
  * call it.
  * Backend: POST /api/v1/tenants/:id/leave (Viewer+).
  */

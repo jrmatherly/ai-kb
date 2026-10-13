@@ -78,7 +78,7 @@ export interface ModelConfig {
     max_concurrency?: number;
     app_id?: string;
     // Secret fields (api_key, app_secret) are never returned by the server in
-    // this shape — they live behind the /credentials subresource. They are
+    // this shape - they live behind the /credentials subresource. They are
     // kept on the type so create-mode payloads can still carry them in the
     // initial POST body.
     app_secret?: string;

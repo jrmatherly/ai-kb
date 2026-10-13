@@ -2,7 +2,7 @@
 // 000047 and internal/handler/user_resource_favorite.go).
 //
 // The backend authoritatively scopes favorites to the active (user, tenant)
-// pair from the auth context — these helpers therefore never pass user_id
+// pair from the auth context - these helpers therefore never pass user_id
 // or tenant_id, and a tenant switch automatically points reads at the
 // right namespace.
 

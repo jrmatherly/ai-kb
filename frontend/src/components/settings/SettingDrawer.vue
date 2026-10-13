@@ -14,7 +14,7 @@
       Custom header. We replace TDesign's default header so we can put a leading
       icon badge and an optional subtitle (description) right next to the title,
       keeping the body uncluttered. The close affordance is the slide-out drawer
-      itself + the underlying overlay click — TDesign already wires those up,
+      itself + the underlying overlay click - TDesign already wires those up,
       so we don't need a redundant X button.
     -->
     <template #header>
@@ -496,7 +496,7 @@ const handleCancel = () => {
   align-items: center;
   gap: 8px;
 
-  /* A subtle leading bar — replaces the previous all-caps + letter-spacing
+  /* A subtle leading bar - replaces the previous all-caps + letter-spacing
      trick (which mangles Chinese). Gives the section title a consistent
      visual anchor without yelling at the user. */
   &::before {
@@ -542,7 +542,7 @@ const handleCancel = () => {
 <!--
   Non-scoped block: t-drawer renders header/footer wrappers outside the
   scoped style boundary in some TDesign builds, so we tweak chrome (border,
-  padding) at the global level — namespaced under `.setting-drawer` to avoid
+  padding) at the global level - namespaced under `.setting-drawer` to avoid
   bleeding into other drawers in the app.
 -->
 <style lang="less">
@@ -574,7 +574,7 @@ const handleCancel = () => {
   }
 }
 
-/* Visible resize handle — teleported to body, aligned with drawer left edge. */
+/* Visible resize handle - teleported to body, aligned with drawer left edge. */
 .setting-drawer-resize-handle {
   position: fixed;
   top: 0;

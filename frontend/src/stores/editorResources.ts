@@ -83,7 +83,7 @@ export const useEditorResourcesStore = defineStore('editorResources', () => {
     async () => {
       const [configRes, statusRes] = await Promise.all([
         // The config endpoint is admin-only (it carries integration secrets),
-        // while every creator — Contributors included — needs the status list
+        // while every creator - Contributors included - needs the status list
         // to pick a usable provider. A permission rejection on the config
         // call must therefore degrade to "no admin config", not break the
         // whole editor dependency chain (#2991).

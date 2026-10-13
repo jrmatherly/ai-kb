@@ -78,7 +78,7 @@ export function readStoredGroupMode(): SessionGroupMode {
   if (typeof localStorage === 'undefined') return DEFAULT_SESSION_GROUP_MODE
   const raw = localStorage.getItem(SESSION_GROUP_MODE_STORAGE_KEY)
   if (raw === 'none' || raw === 'date') return raw
-  // Legacy "source" mode — channels are now separate folders like OpenAI projects.
+  // Legacy "source" mode - channels are now separate folders like OpenAI projects.
   if (raw === 'source') return 'none'
   return DEFAULT_SESSION_GROUP_MODE
 }

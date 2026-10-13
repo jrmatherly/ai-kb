@@ -94,7 +94,7 @@ watchEffect(() => {
 onUnmounted(() => setDefaultProtectedFileAccess(null))
 
 const handleNewChat = () => {
-  // The current session is already empty — reuse it instead of spawning yet
+  // The current session is already empty - reuse it instead of spawning yet
   // another blank session (which would otherwise pile up server-side).
   if (!chatHasMessages.value) return
   sessionTitle.value = ''

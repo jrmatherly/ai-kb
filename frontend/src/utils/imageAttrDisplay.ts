@@ -9,7 +9,7 @@ import type {
 // Display text for the image-attribute panel.
 //
 // The registry returned by GET /image-attrs/schema is the single source of
-// truth — it carries the attribute's name, what it measures, and what each of
+// truth - it carries the attribute's name, what it measures, and what each of
 // its values means. That is what lets a non-technical operator read
 // "Text in the image: a block of body text" instead of
 // "contain.text: block", and it is why adding an attribute to the backend shows
@@ -50,7 +50,7 @@ export interface ImageAttrDisplay {
 export interface ImageAttrConditionDisplay {
   /** e.g. "Text in the image = a block of body text" */
   label: string
-  /** e.g. "contain.text = block" — keeps the panel aligned with the trace. */
+  /** e.g. "contain.text = block" - keeps the panel aligned with the trace. */
   raw: string
 }
 
@@ -65,7 +65,7 @@ function specValues(attr: ImageAttrSpec): ImageAttrValue[] {
  *
  * vue-i18n resolves a key by walking it segment by segment on the dots, so a
  * literal `'contain.text'` message key is unreachable through
- * `imageAttr.contain.text.label` — the lookup goes looking for `imageAttr` →
+ * `imageAttr.contain.text.label` - the lookup goes looking for `imageAttr` →
  * `contain` → `text` and stops. Attribute names therefore escape their dots
  * (`contain.text` → `contain_text`) to become a single resolvable segment. The
  * same mapping is applied in every locale bundle, so a new attribute only needs

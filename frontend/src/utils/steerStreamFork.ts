@@ -43,7 +43,7 @@ export function reconcileSteerMessageId(list: ChatMessage[], clientId: string, s
  * A turn that absorbed a mid-run message is shown as several assistant
  * segments, and every segment after the first carries a synthetic id so Vue
  * can key the list. Only the persisted id addresses a real message, so
- * anything that talks to the backend — continue-stream, stop, artifacts —
+ * anything that talks to the backend - continue-stream, stop, artifacts -
  * must resolve through here rather than reading `id` directly.
  */
 export function persistedAssistantId(message: ChatMessage | undefined): string {
@@ -81,7 +81,7 @@ export function forkAfterInjectedUser(
   // duplicate the bubble and seal the segment that is still streaming.
   //
   // "Already split" means the bubble sits *between* two segments of this turn.
-  // A bubble merely sitting above the live assistant is the opposite case —
+  // A bubble merely sitting above the live assistant is the opposite case -
   // it still has to be moved underneath it.
   userMessage.isSteer = true
   delete userMessage._steerPending
@@ -239,7 +239,7 @@ export function expandSteerForksInHistory(messages: ChatMessage[]): ChatMessage[
       (typeof item.id === 'string' ? item.id : '')
     // Segment 0 reuses the original object, and sealing it overwrites fields
     // the later segments still need. Snapshot first so every segment is built
-    // from the message as it arrived — most importantly `is_completed`: a
+    // from the message as it arrived - most importantly `is_completed`: a
     // trailing segment that inherits the prefix's sealed `true` tells the chat
     // view the turn is over, so a still-running agent is never resumed.
     const original: ChatMessage = { ...item }

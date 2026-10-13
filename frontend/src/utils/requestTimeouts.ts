@@ -15,7 +15,7 @@ export const UPLOAD_TIMEOUT_FLOOR_MS = 5 * 60 * 1000
 
 /**
  * Worst-case sustained uplink we budget for: 10MB per minute (~170KB/s).
- * Deliberately pessimistic — the timeout is a ceiling that only matters when a
+ * Deliberately pessimistic - the timeout is a ceiling that only matters when a
  * transfer stalls, so an over-generous budget costs nothing on healthy links.
  */
 const UPLOAD_BYTES_PER_MINUTE = 10 * 1024 * 1024

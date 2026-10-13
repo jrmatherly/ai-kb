@@ -219,7 +219,7 @@ function isOdd(text: string, marker: RegExp): boolean {
  * Two distinct mid-stream artifacts are smoothed out:
  *
  *  - A marker run with **nothing after it yet** (`... experiment**\n5. *`, or a bare
- *    trailing `**`) is ambiguous — it might open bold, italic, or be the start
+ *    trailing `**`) is ambiguous - it might open bold, italic, or be the start
  *    of the next `**`. Rendering it shows literal `*`/`~` that vanish a frame
  *    later, so it is hidden until real content follows (like the citation/image
  *    guards).
@@ -227,7 +227,7 @@ function isOdd(text: string, marker: RegExp): boolean {
  *    genuinely opened emphasis; its closer is appended so marked renders it as
  *    emphasis from the first frame instead of showing raw `**` and then snapping
  *    to bold (and, for a standalone bold line, also gaining the subtitle
- *    margin) — the jump reported on streamed bold lists/headings.
+ *    margin) - the jump reported on streamed bold lists/headings.
  *
  * Inline/fenced code and leading list bullets are masked so their literal
  * `*`/`` ` `` are never treated as emphasis, and an open fenced block is left
@@ -315,7 +315,7 @@ function repairFlankingEmphasisSegment(segment: string): string {
  * CommonMark's flanking rule rejects a closing `**`/`*`/`~~` that is preceded by
  * punctuation and immediately followed by a letter/number, so a very common
  * model pattern like `**XBRL(...language)**is a` with fullwidth parentheses and Han text (and even ASCII `**a)**b`) renders
- * as literal asterisks — both mid-stream and when complete. The mirror case is
+ * as literal asterisks - both mid-stream and when complete. The mirror case is
  * an *opening* `**`/`~~` preceded by a letter/number and immediately followed by
  * punctuation (a Han character followed by `**` and a CJK book-title mark), which CommonMark also refuses to open.
  * We convert just those blocked patterns into explicit HTML so they bold
@@ -336,7 +336,7 @@ export function repairFlankingEmphasis(text: string): string {
  * While streaming, the moment a nested bullet's dash arrives before its text
  * (`1. **AAAAA**\n   - `), marked reads the lone `-` as a setext underline and
  * renders the previous line as a giant `<h2>`, which collapses back to bold text
- * once the bullet content streams in — a large layout swing. An ordered marker
+ * once the bullet content streams in - a large layout swing. An ordered marker
  * with no content (`text\n1. `) and bare setext underlines (`==`/`--`) cause the
  * same fl/flicker. Dropping the dangling marker line defers it by a token until
  * it is unambiguous; a real list/heading still renders once content follows.
@@ -358,7 +358,7 @@ const TAIL_TEXT_RE = />([^<>]+)</g
  *
  * While the answer streams, the newest tail text is wrapped in a
  * `stream-fade-tail` span so CSS can fade its trailing edge (the newest words
- * are faint and settle to full color as more text arrives — the "tail reveal"
+ * are faint and settle to full color as more text arrives - the "tail reveal"
  * look). Runs on the final HTML so the span is never touched by the markdown
  * parser or sanitizer, and only the innermost last text run is wrapped.
  */
@@ -436,7 +436,7 @@ const STANDALONE_STRONG_PARAGRAPH_RE =
  * streaming-unstable: CSS `:only-child` ignores text nodes, so a normal
  * paragraph that momentarily contained exactly one completed `**bold**` run
  * (surrounded by plenty of body text) matched it and gained a large top margin,
- * then lost it once a second bold run finished — a visible spacing jump
+ * then lost it once a second bold run finished - a visible spacing jump
  * mid-stream. Matching the whole paragraph content here only fires when the
  * bold run truly is the entire paragraph.
  */

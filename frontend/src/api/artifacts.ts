@@ -55,7 +55,7 @@ export interface ArtifactDeleteResult {
 
 /**
  * Deletes a file from the artifact library, along with every earlier version of
- * it in the same session — a library row is the file, not one regeneration of
+ * it in the same session - a library row is the file, not one regeneration of
  * it, so leaving the older versions behind would leave the row in place.
  *
  * The stored bytes are reclaimed unless something else still references them,

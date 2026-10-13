@@ -796,7 +796,7 @@ const navItems = computed(() => {
   const items: { key: string; icon: string; label: string; badge?: number }[] = [
     { key: 'basic', icon: 'info-circle', label: t('knowledgeEditor.sidebar.basic') },
     { key: 'models', icon: 'control-platform', label: t('knowledgeEditor.sidebar.models') },
-    // VectorStore binding section — present in both create and edit
+    // VectorStore binding section - present in both create and edit
     // modes. Create mode shows a dropdown; edit mode shows the bound
     // store read-only with an immutability hint.
     { key: 'vectorStore', icon: 'data-base', label: t('knowledgeEditor.sidebar.vectorStore') }
@@ -924,7 +924,7 @@ const initFormData = (type: 'document' | 'faq' = 'document') => {
     },
     chunkingConfig: {
       chunkSize: 512,
-      // 80 ≈ 15% of chunkSize — community-recommended sweet spot.
+      // 80 ≈ 15% of chunkSize - community-recommended sweet spot.
       // Aligned with chunker.DefaultChunkOverlap on the backend.
       chunkOverlap: 80,
       // CJK full stop, exclamation, question mark and semicolon (\u3002 \uff01 \uff1f \uff1b) split Chinese text.
@@ -1348,7 +1348,7 @@ const handleVectorStoreIdUpdate = (id: string) => {
   if (formData.value) {
     // Empty string here means "use system default" (env-store fallback).
     // The create-payload assembly below converts this back to `omit` so
-    // the backend stores NULL — keeping the wire shape identical to
+    // the backend stores NULL - keeping the wire shape identical to
     // pre-Phase-2 clients.
     formData.value.vectorStoreId = id || ''
   }
@@ -1458,7 +1458,7 @@ const buildSubmitData = () => {
       parent_chunk_size: formData.value.chunkingConfig.parentChunkSize,
       child_chunk_size: formData.value.chunkingConfig.childChunkSize,
       // Adaptive chunking fields are always sent (empty/zero values
-      // included) so the user can clear them — backend uses pointer DTOs
+      // included) so the user can clear them - backend uses pointer DTOs
       // to distinguish "not in payload" from "explicitly empty".
       strategy: formData.value.chunkingConfig.strategy ?? '',
       token_limit: formData.value.chunkingConfig.tokenLimit ?? 0,
@@ -1475,7 +1475,7 @@ const buildSubmitData = () => {
   // Vector-store binding. Only attach the field when the user actively
   // selected a non-default store. The server treats an empty string as
   // NULL, but keeping the field absent on the wire matches what a
-  // client that doesn't know about this binding would send — which
+  // client that doesn't know about this binding would send - which
   // makes A/B response diffs easier to read.
   if (formData.value.vectorStoreId) {
     data.vector_store_id = formData.value.vectorStoreId
@@ -1714,7 +1714,7 @@ const doSubmit = async () => {
           enableParentChild: data.chunking_config.enable_parent_child || false,
           parentChunkSize: data.chunking_config.parent_chunk_size || 4096,
           childChunkSize: data.chunking_config.child_chunk_size || 384,
-          // Always send strategy / tokenLimit / languages — backend treats
+          // Always send strategy / tokenLimit / languages - backend treats
           // empty/0/[] as a valid clear, so we must include them in the
           // payload to let users reset back to defaults.
           strategy: formData.value?.chunkingConfig.strategy ?? '',

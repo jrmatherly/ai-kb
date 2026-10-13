@@ -375,7 +375,7 @@ const providerForm = ref<{
 
 // Invalidate the cached test result whenever the user edits a connection
 // field. Set up after providerForm is declared so the watch's source
-// function — which dereferences providerForm.value on first run — doesn't
+// function - which dereferences providerForm.value on first run - doesn't
 // hit a TDZ ReferenceError. proxy_url is excluded because the upstream
 // call doesn't actually use it for credential validation.
 watch(
@@ -421,7 +421,7 @@ const credentialMeta = computed(() => editingProvider.value?.credentials ?? {
   api_key: { configured: false },
 })
 
-// Per-provider class on the drawer — the non-scoped CSS block at the
+// Per-provider class on the drawer - the non-scoped CSS block at the
 // bottom uses .websearch-drawer--{id} to color the header-icon container
 // to match the matching list-card badge.
 const drawerClass = computed(() => {
@@ -548,7 +548,7 @@ const editProvider = (entity: WebSearchProviderEntity) => {
     provider: entity.provider,
     description: entity.description || '',
     parameters: {
-      // Never pre-fill the api_key — even the redacted placeholder from the
+      // Never pre-fill the api_key - even the redacted placeholder from the
       // server is ignored so that "non-empty means user typed it" holds.
       api_key: '',
       engine_id: entity.parameters?.engine_id || '',
@@ -576,7 +576,7 @@ const saveProvider = async () => {
   saving.value = true
   try {
     // Build the parameters payload. api_key only flows in on initial
-    // create — edit mode commits credentials through <CredentialResource>
+    // create - edit mode commits credentials through <CredentialResource>
     // (a dedicated PUT /credentials call) before this save runs.
     const paramsOut: WebSearchProviderEntity['parameters'] = {
       engine_id: providerForm.value.parameters.engine_id,
@@ -1029,7 +1029,7 @@ onMounted(async () => {
 
 <!--
   Non-scoped block: per-provider header-icon coloring + color-logo
-  background tweak. Same pattern as Storage/Parser drawers — these rules
+  background tweak. Same pattern as Storage/Parser drawers - these rules
   must be global so they always reach the t-drawer panel even if its
   scoped data-attribute is dropped in some builds. Each rule mirrors the
   matching .provider-card--{id} .provider-card__badge from the scoped

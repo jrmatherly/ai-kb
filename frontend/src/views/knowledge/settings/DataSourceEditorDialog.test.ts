@@ -345,7 +345,7 @@ test('a DingTalk data source reports the uploaded-file switch, defaulting to off
   const off = await fixture({ type: 'dingtalk', settings: {} })
   try {
     // The connector treats a missing key as false, so an existing source that
-    // predates this control must render as off — and stay untouched.
+    // predates this control must render as off - and stay untouched.
     assert.equal(off.vm.dingtalkIncludeUploadedFiles, false)
     assert.equal(off.vm.form.config.settings.include_uploaded_files, undefined)
   } finally { off.close() }

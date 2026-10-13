@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
  * Format a tenant role enum value ('viewer' | 'contributor' | 'admin' | 'owner')
  * into the user-facing label declared under tenantMember.role.* in the i18n
  * bundle. Falls back to the raw role string when the locale does not carry
- * the key — same behaviour as the inline helper this used to live in
+ * the key - same behaviour as the inline helper this used to live in
  * (UserMenu.vue), now extracted so role-aware UI gates across views can
  * share one implementation.
  *
@@ -36,13 +36,13 @@ export function useRoleLabel() {
 
 /**
  * Derive home-tenant identity helpers off the auth store. The home tenant
- * is the tenant the user was registered into — the row id stored on the
+ * is the tenant the user was registered into - the row id stored on the
  * users table at signup time, exposed via `authStore.user.tenant_id` and
  * never mutated by /auth/switch-tenant.
  *
  * IMPORTANT: do NOT read `authStore.tenant?.id` here. That field is the
  * *active* tenant returned by /auth/me (see internal/handler/auth.go
- * GetCurrentUser — it deliberately reflects the X-Tenant-ID override).
+ * GetCurrentUser - it deliberately reflects the X-Tenant-ID override).
  * After a tenant switch, `authStore.tenant.id` becomes the peer tenant
  * id; treating it as "home" makes the home badge follow the user across
  * switches and incorrectly mark whichever tenant they're currently in.

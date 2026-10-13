@@ -8,7 +8,7 @@
  *
  * Instead, round the tick interval to a 1 / 2 / 2.5 / 5 x 10^n step and
  * extend the axis maximum up to a whole number of steps. Bars are then
- * positioned against `maxMs` — never the raw total — so what the bars
+ * positioned against `maxMs` - never the raw total - so what the bars
  * show and what the ruler claims always agree.
  */
 

@@ -423,7 +423,7 @@ const formData = ref({
   enabled: true,
   transport_type: 'sse' as 'sse' | 'http-streamable',
   url: '',
-  // Custom HTTP headers attached to every MCP request — edited as key/value
+  // Custom HTTP headers attached to every MCP request - edited as key/value
   // rows here, serialised to a Record<string,string> on submit (top-level
   // `headers`). Independent of the auth strategy.
   headers: [] as { key: string; value: string }[],
@@ -676,7 +676,7 @@ async function startAuthorize(serviceId: string) {
 // backend sees auth_type=oauth before issuing the authorization request.
 // Without this, a brand-new service or one just switched to OAuth fails with
 // "MCP service is not configured to use OAuth". The drawer stays open the whole
-// time — the parent re-binds the (now saved) service via the `created` event.
+// time - the parent re-binds the (now saved) service via the `created` event.
 async function handleAuthorize() {
   const saved = await saveConnection()
   if (saved) await startAuthorize(saved.id)
@@ -780,7 +780,7 @@ const advancedRetryDelayText = computed<string>({
   set: (v) => { formData.value.advanced_config.retry_delay = parseSloppyInt(v) ?? 1 },
 })
 
-// Permissive int parser — keeps '' / NaN inputs as null instead of 0 so the
+// Permissive int parser - keeps '' / NaN inputs as null instead of 0 so the
 // field can stay visually empty while the user is still typing. Negative
 // numbers and non-int chars are rejected (returns null).
 function parseSloppyInt(raw: string): number | null {
@@ -803,7 +803,7 @@ function onAdvancedNumberBlur(
     formData.value.advanced_config[field] = fallback
     return
   }
-  // Clamp to [min, max] on blur — gives the input "settled" feedback even
+  // Clamp to [min, max] on blur - gives the input "settled" feedback even
   // though native type=number doesn't enforce its own min/max attribute
   // for typed values (only for stepper buttons).
   formData.value.advanced_config[field] = Math.min(max, Math.max(min, cur))
@@ -883,7 +883,7 @@ watch(
 )
 
 // Build the request body from the form. `asCreate` controls whether initial
-// secret credentials ride along (POST only — edits route secrets through the
+// secret credentials ride along (POST only - edits route secrets through the
 // /credentials subresource).
 function buildPayload(asCreate: boolean): Partial<MCPService> {
   // Custom headers: trim, drop blank rows, collapse to a Record. Always send

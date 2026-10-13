@@ -219,7 +219,7 @@
                     class="permission-allowed" role="img" :aria-label="$t('common.yes')" :title="$t('common.yes')">
                     <t-icon name="check" size="16px" />
                   </span>
-                  <span v-else class="permission-unavailable" role="img" :aria-label="$t('common.no')" :title="$t('common.no')">—</span>
+                  <span v-else class="permission-unavailable" role="img" :aria-label="$t('common.no')" :title="$t('common.no')">-</span>
                 </td>
               </tr>
             </tbody>
@@ -502,7 +502,7 @@
               </template>
               <template #message="{ row }">
                 <span class="join-request-message" :title="row.message || undefined">
-                  {{ row.message || '—' }}
+                  {{ row.message || '-' }}
                 </span>
               </template>
               <template #created_at="{ row }">{{ formatDate(row.created_at) }}</template>
@@ -611,7 +611,7 @@
                 <span class="resource-name" :title="row.knowledge_base_name">{{ row.knowledge_base_name }}</span>
               </template>
               <template #shared_by="{ row }">
-                <span class="resource-meta">{{ row.shared_by_username || '—' }}</span>
+                <span class="resource-meta">{{ row.shared_by_username || '-' }}</span>
               </template>
               <template #created_at="{ row }">{{ formatDate(row.created_at) }}</template>
               <template #space_permission="{ row }">
@@ -702,7 +702,7 @@
                   row.agent_id }}</span>
               </template>
               <template #shared_by="{ row }">
-                <span class="resource-meta">{{ row.shared_by_username || '—' }}</span>
+                <span class="resource-meta">{{ row.shared_by_username || '-' }}</span>
               </template>
               <template #created_at="{ row }">{{ formatDate(row.created_at) }}</template>
               <template #scope_kb="{ row }">
@@ -1122,7 +1122,7 @@ const sharedAgentColumns = computed(() => {
 })
 
 function agentKbScopeLabel(share: AgentShareResponse): string {
-  if (share.scope_kb === undefined || share.scope_kb === '') return '—'
+  if (share.scope_kb === undefined || share.scope_kb === '') return '-'
   if (share.scope_kb === 'all') return t('agent.shareScope.kbAll')
   if (share.scope_kb === 'selected' && (share.scope_kb_count ?? 0) > 0) {
     return t('agent.shareScope.kbSelected', { count: share.scope_kb_count })
@@ -1131,12 +1131,12 @@ function agentKbScopeLabel(share: AgentShareResponse): string {
 }
 
 function agentWebSearchScopeLabel(share: AgentShareResponse): string {
-  if (share.scope_web_search === undefined) return '—'
+  if (share.scope_web_search === undefined) return '-'
   return share.scope_web_search ? t('agent.shareScope.enabled') : t('agent.shareScope.disabled')
 }
 
 function agentMcpScopeLabel(share: AgentShareResponse): string {
-  if (share.scope_mcp === undefined || share.scope_mcp === '') return '—'
+  if (share.scope_mcp === undefined || share.scope_mcp === '') return '-'
   if (share.scope_mcp === 'all') return t('agent.shareScope.mcpAll')
   if (share.scope_mcp === 'selected' && (share.scope_mcp_count ?? 0) > 0) {
     return t('agent.shareScope.mcpSelected', { count: share.scope_mcp_count })
@@ -1197,7 +1197,7 @@ const memberSecondaryLabel = (m: OrganizationMember): string => {
 // pinned owner_tenant_id (migration 000046) is the authority on which
 // row in the per-tenant members list represents the owner. Falling
 // back to owner_id (user-id) only matters for legacy rows where
-// owner_tenant_id wasn't backfilled — in that case the old per-user
+// owner_tenant_id wasn't backfilled - in that case the old per-user
 // rule is still better than nothing.
 const isOwnerMember = (member: OrganizationMember): boolean => {
   const ownerTenantID = orgInfo.value?.owner_tenant_id

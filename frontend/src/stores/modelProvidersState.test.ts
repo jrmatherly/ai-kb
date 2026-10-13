@@ -226,8 +226,8 @@ test('credentialLabelForModelType follows the vendor declaration, not a hardcode
 })
 
 // Select options and placeholders used to render their raw English string.
-// That was invisible while every option was an identifier — LKEAP's region
-// codes — and became a gap as soon as one was prose.
+// That was invisible while every option was an identifier - LKEAP's region
+// codes - and became a gap as soon as one was prose.
 test('extraFieldOptionLabel resolves the locale, falling back to label then value', () => {
   const option = {
     label: '0..1 relevance (BGE class)',

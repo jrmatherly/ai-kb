@@ -69,8 +69,8 @@ const attrVerdicts = ref<Record<string, Record<string, string>>>({})
 // ---------------------------------------------------------------------------
 // Gallery contract (self-describing, fetched once per mount)
 //
-// Everything the UI offers — filter sections, searchable fields, sort
-// options — comes from the contract. No gallery rule is hardcoded here, so
+// Everything the UI offers - filter sections, searchable fields, sort
+// options - comes from the contract. No gallery rule is hardcoded here, so
 // new backend attributes and runtime policy edits light up on reload.
 // ---------------------------------------------------------------------------
 const configLoaded = ref(false)
@@ -83,7 +83,7 @@ const config = ref<GalleryConfig>({
 const searchMode = ref<'all' | 'custom'>('all')
 // Per-attribute search toggle, keyed by namespaced attr id ("on"/"off").
 // Unrecorded fields are off in custom mode; source declarations carry no
-// on/off — activation is always the user's own record.
+// on/off - activation is always the user's own record.
 const searchStatus = ref<Record<string, string>>({})
 
 const filterAttrs = computed(() => config.value.attributes.filter((a) => a.usage.in_filter))
@@ -384,7 +384,7 @@ function onSourceDocsChange(ids: string[]): void {
 //
 // Ticking every field is the same as "all" mode, so the panel needs no
 // separate switch: the mode follows the ticks. The last ticked field cannot
-// be unticked — a search over no field would find nothing.
+// be unticked - a search over no field would find nothing.
 // ---------------------------------------------------------------------------
 let prefsTimer: ReturnType<typeof setTimeout> | undefined
 function persistSearchPrefs() {
@@ -622,7 +622,7 @@ async function initGallery() {
     configLoaded.value = true
   } catch {
     if (token !== initToken) return
-    // Degraded mode: no contract, no attribute UI — builtin listing and
+    // Degraded mode: no contract, no attribute UI - builtin listing and
     // default search still work.
   }
   if (!sortBy.value && sortAttrs.value.length) {
@@ -1072,7 +1072,7 @@ watch(
   }
 }
 
-// Filter panel — same frame and type scale as .doc-filter-panel.
+// Filter panel - same frame and type scale as .doc-filter-panel.
 .ig-filter-panel {
   width: 360px;
   max-width: calc(100vw - 32px);
@@ -1213,7 +1213,7 @@ watch(
   }
 }
 
-// Sort panel — same shape as .document-sort-panel.
+// Sort panel - same shape as .document-sort-panel.
 .ig-sort-panel {
   width: 280px;
   max-width: calc(100vw - 32px);

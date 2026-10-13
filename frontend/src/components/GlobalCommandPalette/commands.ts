@@ -4,7 +4,7 @@ import { openNewUserGuide } from '@/config/contextualGuides'
 
 /**
  * A single command that can be searched and invoked from the palette.
- * Kept intentionally minimal — commands are "just do something now", not
+ * Kept intentionally minimal - commands are "just do something now", not
  * entities with detail pages.
  */
 export interface CmdkCommand {
@@ -27,7 +27,7 @@ export interface CommandContext {
 }
 
 /**
- * Build the flat command list. Commands are intentionally static — dynamic
+ * Build the flat command list. Commands are intentionally static - dynamic
  * entities (KBs / agents / sessions) live in their own result groups.
  */
 export function buildCommands(ctx: CommandContext): CmdkCommand[] {

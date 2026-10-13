@@ -255,7 +255,7 @@ export default {
     "usageStep3Title": "Describe the task in chat",
     "usageStep3Text": "Turn on Local browser in the conversation input bar before sending a web task. Pairing does not enable this option automatically. Tasks run in a separate Agent Window.",
     "usageStep4Title": "Preview, locate, and resume",
-    "usageStep4Text": "A small preview appears in the conversation. Click it to find the task tab. Interrupted tasks stay paused after reconnect — resume them from the preview. Existing tabs require your permission.",
+    "usageStep4Text": "A small preview appears in the conversation. Click it to find the task tab. Interrupted tasks stay paused after reconnect. Resume them from the preview. Existing tabs require your permission.",
     "running": "Running",
     "locateWindow": "Show browser",
     "reconnectShort": "Waiting to reconnect",
@@ -408,7 +408,7 @@ export default {
       },
       done: {
         title: 'You are all set',
-        desc: 'You now know the essentials — start building your knowledge assistant! Revisit this tour anytime from the help button next to your name in this menu.'
+        desc: 'You now know the essentials. Start building your knowledge assistant! Revisit this tour anytime from the help button next to your name in this menu.'
       }
     }
   },
@@ -534,7 +534,7 @@ export default {
         },
         agentType: {
           title: 'Choose an agent type',
-          desc: 'Presets fill in the system prompt, recommended tools, and knowledge scope (e.g. Wiki builder, data analysis). Switch by scenario—name and description update accordingly.'
+          desc: 'Presets fill in the system prompt, recommended tools, and knowledge scope (e.g. Wiki builder, data analysis). Switch by scenario. The name and description update accordingly.'
         },
         name: {
           title: 'Name and description',
@@ -1080,7 +1080,7 @@ export default {
     copied: 'Copied to clipboard',
     close: 'Close',
     live: 'LIVE',
-    liveTooltip: 'Parsing in progress — auto-refreshes every 2s',
+    liveTooltip: 'Parsing in progress. Auto-refreshes every 2s',
     autoRefreshOn: 'Auto-refreshing',
     fetchFailedShort: 'fetch failed',
     viewTrace: 'View trace',
@@ -1401,7 +1401,7 @@ export default {
       skillsConfigDesc: 'Select a running sandbox, then pick skills below. Skills not on that sandbox show Install and can only be checked after they are installed.',
       hostSkillsConfigDesc: 'Pick skills that are already installed on this computer. Others show Install and can be checked only after that.',
       hostSkillsSelectionDesc: 'Workspace skills are listed here. Ones installed on this computer can be used now; install the others first.',
-      hostSelectSkillsDesc: 'Check the skills this agent should use. Skills that are not on this computer cannot be checked — click Install first.',
+      hostSelectSkillsDesc: 'Check the skills this agent should use. Skills that are not on this computer cannot be checked. Click Install first.',
       hostSkillsAllListHint: 'All includes only skills already installed on this computer. Others are left out until you install them.',
       hostInstallToThisComputer: 'Install on this computer',
       hostUpgradeOnThisComputer: 'Upgrade the skill on this computer to the catalog version',
@@ -1412,7 +1412,7 @@ export default {
       skillsSelected: 'Selected',
       skillsNone: 'Disabled',
       selectSkills: 'Select skills',
-      selectSkillsDesc: 'Check the skills this agent should use. Uninstalled skills cannot be checked — click Install on the right first.',
+      selectSkillsDesc: 'Check the skills this agent should use. Uninstalled skills cannot be checked. Click Install on the right first.',
       skillsAllListHint: 'All only includes skills already installed on this sandbox. Uninstalled skills are not added until you install them.',
       skillsGroupAvailable: 'Available',
       skillsGroupUnavailable: 'Unavailable',
@@ -1560,7 +1560,7 @@ export default {
       inventoryFailed: 'Failed to load sandbox usage',
       sandboxCount: 'Sandboxes',
       sandboxCountUnknown: 'Unknown (backend unreachable)',
-      inventoryUnverifiableHint: 'The backend is unreachable, so the sandbox count is unknown — that is not the same as none.',
+      inventoryUnverifiableHint: 'The backend is unreachable, so the sandbox count is unknown, which is not the same as none.',
       inventorySessions: 'Sessions',
       inventorySessionKind: 'Conversation',
       inventoryEmpty: 'No occupying sessions',
@@ -1582,7 +1582,7 @@ export default {
       disableScripts: 'Disable sandbox execution',
       enableScripts: 'Enable sandbox execution',
       disableScriptsConfirm:
-        'All agents in this workspace — will no longer run skill scripts in a sandbox. They can still read skill content. Existing remote sandboxes are not destroyed automatically; end or delete the related sessions to release them. Continue?',
+        'All agents in this workspace will no longer run skill scripts in a sandbox. They can still read skill content. Existing remote sandboxes are not destroyed automatically; end or delete the related sessions to release them. Continue?',
       scriptsDisabled: 'Sandbox execution disabled for this workspace',
       scriptsEnabled: 'Sandbox execution restored for this workspace',
       policySaveFailed: 'Failed to update sandbox execution policy',
@@ -1658,7 +1658,7 @@ export default {
       howToBuildTemplate: 'Sandbox cluster setup and template guide',
       noEnvVars: 'No additional environment variables.',
       fieldRequired: 'Required',
-      cubeApiKeyOptional: 'Optional — leave empty for an unauthenticated self-hosted CubeSandbox',
+      cubeApiKeyOptional: 'Optional. Leave empty for an unauthenticated self-hosted CubeSandbox',
       cubeApiKeyWhere: 'How to enable auth on a self-hosted cluster',
       cubeDnsServers: 'DNS servers',
       cubeDnsServersHelp: 'Optional. Nameserver IPs written into the AI KB standard template. Leave empty to use the cluster default (commonly 119.29.29.29). If UDP/53 to public resolvers is blocked, use reachable addresses from the Cube host\'s /etc/resolv.conf, excluding 10/8, 172.16/12, and 192.168/16. Existing standard templates take effect only after Rebuild on the template card.',
@@ -1667,9 +1667,9 @@ export default {
       e2bApiKeyWhere: 'Get an API key from the E2B dashboard',
       apiKeyPlaceholder: 'Paste the API key',
       secretConfigured: 'Key configured (not shown again); enter a new value to rotate',
-      secretKeepHint: 'Configured — leave empty to keep it',
-      e2bApiUrlOptional: 'Optional — the SDK default is used when empty',
-      e2bDomainOptional: 'Optional — the SDK default is used when empty',
+      secretKeepHint: 'Configured. Leave empty to keep it',
+      e2bApiUrlOptional: 'Optional. The SDK default is used when empty',
+      e2bDomainOptional: 'Optional. The SDK default is used when empty',
       e2bProxyUrlOptional: 'Data-plane gateway of a self-hosted E2B-compatible cluster. Leave empty to reach sandboxes through the sandbox domain, as E2B Cloud expects.',
       backends: {
         disabled: 'Disabled',
@@ -1805,7 +1805,7 @@ export default {
       imageInfoUnset: 'Not set',
       skillTranscript: 'View install run',
       skillTranscriptLive: 'Install log',
-      skillTranscriptLiveHint: 'Installing — click to watch',
+      skillTranscriptLiveHint: 'Installing. Click to watch',
       skillTranscriptTitle: 'Install run',
       skillTranscriptHide: 'Hide install run',
       skillGuidance: {
@@ -1872,7 +1872,7 @@ export default {
     skills: {
       title: 'Skill Management',
       description: 'Skills live in the workspace catalog. Register them first, then install onto one or more sandboxes. An agent can only enable skills that are ready on its sandbox.',
-      helpTooltip: 'A catalog skill does not have to be installed anywhere. Scripts only run after the skill is installed into the sandbox image the agent uses. Docker, Cube, and E2B images are not interchangeable — install once per sandbox.',
+      helpTooltip: 'A catalog skill does not have to be installed anywhere. Scripts only run after the skill is installed into the sandbox image the agent uses. Docker, Cube, and E2B images are not interchangeable, so install once per sandbox.',
       hostTarget: 'This computer',
       host: {
         description: 'Skills live in the workspace catalog. An agent can enable one after it is installed on this computer.',
@@ -1917,7 +1917,7 @@ export default {
       installToSandbox: 'Install onto sandbox',
       installToSandboxDesc: 'Each sandbox backend needs its own install. Docker, Cube, and E2B images are not interchangeable.',
       pickSandboxes: 'Install onto sandboxes',
-      pickSandboxesHint: 'The skill is written into the image used by each selected sandbox. Docker, Cube, and E2B images are not interchangeable — install once per sandbox. You can skip this and install later from the catalog.',
+      pickSandboxesHint: 'The skill is written into the image used by each selected sandbox. Docker, Cube, and E2B images are not interchangeable, so install once per sandbox. You can skip this and install later from the catalog.',
       noSandboxToInstall: 'No sandbox is available to install into.',
       noInstalls: 'Not installed on any sandbox',
       installedOn: 'Installed on',
@@ -2200,7 +2200,7 @@ export default {
     testConnection: 'Test Connection',
     testing: 'Testing...',
     immutableNotice: 'Engine type, connection, and index settings cannot be changed after creation.\nTo change these, delete and recreate.',
-    insecureSkipVerifyWarning: 'Disabling TLS certificate verification exposes the connection to man-in-the-middle attacks. Use only for self-signed development clusters — never in production.',
+    insecureSkipVerifyWarning: 'Disabling TLS certificate verification exposes the connection to man-in-the-middle attacks. Use only for self-signed development clusters, never in production.',
     validation: {
       nameRequired: 'Name is required',
       engineTypeRequired: 'Engine type is required',
@@ -2293,7 +2293,7 @@ export default {
     stopTrackingDocumentSuccess: 'Stopped tracking this source',
     stopTrackingDocumentFailed: 'Failed to stop tracking',
     trackingProgress: 'Asked {hits} times; becomes a long-term interest at {threshold}',
-    trackingReady: 'Threshold reached — you can save this as a long-term interest',
+    trackingReady: 'Threshold reached. You can save this as a long-term interest',
     trackingAliases: 'Also asked as: {aliases}',
     promoteTopic: 'Save as interest',
     dismissTopic: 'Stop watching',
@@ -2420,7 +2420,7 @@ export default {
   },
   memoryWorkspaceSettings: {
     title: 'Long-term memory',
-    description: 'Let the assistant remember what members tell it — who they are, how they like to work, stable facts and what they are working on — across conversations.',
+    description: 'Let the assistant remember what members tell it across conversations: who they are, how they like to work, stable facts and what they are working on.',
     introTitle: 'Off by default, you have to turn it on',
     introDescription: 'Long-term memory retains what members say in conversations, so it does not arrive enabled. Once on, each member has their own isolated memory space and can review, edit, delete or switch it off entirely under "My memory". Active profile and preference memories are included in every later turn; facts and ongoing tasks are recalled only when the question is related.',
     enableLabel: 'Enable long-term memory in this workspace',
@@ -2436,9 +2436,9 @@ export default {
     extractDelayLabel: 'Distillation delay',
     extractDelayDescription: 'How long a finished turn waits before distillation runs. Waiting lets one model call cover the several messages a user usually sends in a row.',
     extractMinIntervalLabel: 'Minimum interval between runs',
-    extractMinIntervalDescription: 'The floor between two distillation runs for one person, used to bound cost. Messages produced inside the interval are not dropped — they are carried over to the next run.',
+    extractMinIntervalDescription: 'The floor between two distillation runs for one person, used to bound cost. Messages produced inside the interval are not dropped. They are carried over to the next run.',
     vectorRecallLabel: 'Match memory by meaning',
-    vectorRecallDescription: 'Adds semantic matching on top of wording, so a memory still surfaces after the user re-phrases the subject — and most memories get re-phrased eventually. Costs one embedding call per turn, and falls back to wording-only matching on timeout.',
+    vectorRecallDescription: 'Adds semantic matching on top of wording, so a memory still surfaces after the user re-phrases the subject, and most memories get re-phrased eventually. Costs one embedding call per turn, and falls back to wording-only matching on timeout.',
     embeddingModelLabel: 'Memory embedding model',
     embeddingModelDescription: 'Semantic recall uses this one model, independent of whichever embedding models knowledge bases bind. Leave blank for wording-only matching. After a change, new memories use the new model immediately; existing ones stay wording-only until they are re-embedded.',
     conditioningLabel: 'Let memory shape retrieval',
@@ -2446,7 +2446,7 @@ export default {
     interestThresholdLabel: 'Questions before a topic becomes an interest',
     interestThresholdDescription: 'A subject is recorded only after it has come up this many times. Setting it to 1 records every passing question, which is usually too noisy.',
     instructionsLabel: 'Custom distillation rules',
-    instructionsDescription: 'Workspace rules appended to the distillation prompt, for policies the product cannot guess — for example "never record customer names".',
+    instructionsDescription: 'Workspace rules appended to the distillation prompt, for policies the product cannot guess, for example "never record customer names".',
     instructionsPlaceholder: 'One rule per line, for example: never record customer names',
     maxItemsLabel: 'Memories per member',
     maxItemsDescription: 'Beyond this, the lowest ranked memories are archived by importance and recency. Archived memories stay visible under "My memory".',
@@ -2490,7 +2490,7 @@ export default {
   },
   graphSettings: {
     title: 'Knowledge Graph Configuration',
-    description: 'Configure entity-relationship extraction to automatically build a knowledge graph from text (note: this is different from the "page-link graph" inside the Wiki — that one shows references between Wiki pages, while this one is an LLM-extracted entity-relationship graph)',
+    description: 'Configure entity-relationship extraction to automatically build a knowledge graph from text (note: this is different from the "page-link graph" inside the Wiki: that one shows references between Wiki pages, while this one is an LLM-extracted entity-relationship graph)',
     enableLabel: 'Enable Entity-Relationship Extraction',
     enableDescription: 'Automatically extract entities and relationships from text when enabled',
     tagsLabel: 'Relationship Types',
@@ -2563,7 +2563,7 @@ export default {
     confirmPassword: 'Confirm password',
     submit: 'Complete registration',
     submitting: 'Submitting…',
-    success: 'Registration successful — entering workspace…',
+    success: 'Registration successful. Entering workspace…',
     joined: 'You have joined the team.',
     failed: 'Registration failed; please try again later',
     usernameRequired: 'Display name is required',
@@ -2594,7 +2594,7 @@ export default {
     firstTime: 'New to AI KB?',
     registerSuccess: 'Registration successful. Please sign in',
     registerFailed: 'Registration failed',
-    subtitle: 'RAG Q&A, ReAct Agent and Wiki — an LLM-powered enterprise knowledge framework',
+    subtitle: 'RAG Q&A, ReAct Agent and Wiki: an LLM-powered enterprise knowledge framework',
     registerSubtitle: 'Create your account and start using AI KB',
     emailPlaceholder: 'Enter email address',
     passwordPlaceholder: 'Enter password',
@@ -2685,7 +2685,7 @@ export default {
     website: 'Official Website',
     clawhubSkill: 'Claw Skill',
     github: 'GitHub',
-    githubStarTip: 'Open the repo on GitHub — star it if you find it useful',
+    githubStarTip: 'Open the repo on GitHub and star it if you find it useful',
     on: 'On',
     off: 'Off',
     confirmDelete: 'Confirm Delete',
@@ -2886,7 +2886,7 @@ export default {
     goToAgentSettings: 'Go to agent settings'
   },
   createChat: {
-    title: 'Hi, I am AI KB — your knowledge, within reach',
+    title: 'Hi, I am AI KB. Your knowledge, within reach',
     newSessionTitle: 'New Session',
     openProject: 'Select project',
     clearProject: 'Clear',
@@ -2973,14 +2973,14 @@ export default {
     widgetCode: 'Widget script',
     copyCode: 'Copy code',
     channelKey: 'Channel key',
-    channelKeyDesc: 'Long-lived secret for third-party site integration—store it safely',
+    channelKeyDesc: 'Long-lived secret for third-party site integration. Store it safely',
     channelKeyHint: 'Failed to load the channel key. Close and reopen this channel, or refresh the page.',
     channelKeyLoadFailed: 'Failed to load channel key',
     channelKeyUnavailable: 'Key unavailable',
     resetKeyTitle: 'Reset channel key',
     resetKeyConfirmOk: 'Reset',
     resetKeyConfirmBody: 'After reset, the old channel key is revoked immediately. Every deployed embed snippet must use the new key to keep working. This cannot be undone.',
-    resetKeySuccess: 'Channel key reset—the new key is shown in the input field',
+    resetKeySuccess: 'Channel key reset. The new key is shown in the input field',
     resetKeyFailed: 'Failed to reset channel key',
     copyChannelKeyTitle: 'Copy channel key',
     revealKey: 'Reveal key',
@@ -3006,7 +3006,7 @@ export default {
     rateLimitDesc: 'Per visitor IP, max embed API requests per minute; excess requests are temporarily rejected. Default 30.',
     rateLimitDayLabel: 'Daily request cap',
     rateLimitDayDesc: 'Channel-wide total requests allowed per day (across all visitor IPs); bounds abuse cost if the publish token is copied. Default 10000.',
-    publishTokenWarning: 'The publish token appears in plain text in the embed page source — anyone visiting the host site can read it. Treat it as a publishable key, not a secret: never embed an agent that exposes sensitive data, always configure the origin allowlist and request caps, and rotate the token immediately if it leaks.',
+    publishTokenWarning: 'The publish token appears in plain text in the embed page source, so anyone visiting the host site can read it. Treat it as a publishable key, not a secret: never embed an agent that exposes sensitive data, always configure the origin allowlist and request caps, and rotate the token immediately if it leaks.',
     primaryColor: 'Primary color',
     pageTitle: 'Page title',
     pageTitleDesc: 'Shown to visitors in chat header and browser tab; takes priority over name',
@@ -3016,7 +3016,7 @@ export default {
     headerTitleModeSession: 'Follow session title',
     headerTitleModeDesc: 'Fixed: always show the page title. Session: auto-title from the first message; falls back to page title until generated.',
     tokenHint: 'Failed to load the channel key. Close and reopen this channel.',
-    createdWithToken: 'Embed channel created — the channel key is shown below',
+    createdWithToken: 'Embed channel created. The channel key is shown below',
     created: 'Embed channel created',
     updated: 'Embed channel updated',
     saveFailed: 'Save failed',
@@ -3345,7 +3345,7 @@ export default {
       newPageFailed: 'Failed to create page',
       revisionCurrent: 'Current',
       revisionSelectHint: 'Select a version on the left',
-      revisionEmpty: 'No history yet — snapshots are recorded automatically when the content changes',
+      revisionEmpty: 'No history yet. Snapshots are recorded automatically when the content changes',
       revisionDiff: 'Diff vs current',
       revisionRaw: 'Raw content',
       revisionDiffIncremental: 'Version change',
@@ -3363,7 +3363,7 @@ export default {
       revisionLoadFailed: 'Failed to load revision history',
       revisionNotRetained: 'This version has no retained snapshot or it was cleaned up',
       revisionNotRetainedRange: 'v{ver} · full content',
-      revisionNotRetainedHint: 'No snapshot is retained for the previous version v{prev} (versions from before the upgrade were not snapshotted; old snapshots may also have been pruned) — showing the full content of v{ver} from scratch.',
+      revisionNotRetainedHint: 'No snapshot is retained for the previous version v{prev} (versions from before the upgrade were not snapshotted; old snapshots may also have been pruned). Showing the full content of v{ver} from scratch.',
       revertBtn: 'Revert to this version',
       revertConfirm: 'Revert to v{ver}? The current content is snapshotted first, so the revert itself can be undone.',
       revertSuccess: 'Reverted to v{ver}',
@@ -3547,7 +3547,7 @@ export default {
       showUnlinked: 'Show unlinked pages ({count})',
       neighborsNone: 'This page has no linked neighbors',
       neighborsCenterUnreachable: 'Showing {visible} of {total} neighbors ({hidden} unreachable: dead links, filtered, or deleted)',
-      neighborsOverviewHidden: 'Showing {visible} of {total} neighbors ({hidden} outside the overview — click Expand to pivot here)',
+      neighborsOverviewHidden: 'Showing {visible} of {total} neighbors ({hidden} outside the overview; click Expand to pivot here)',
       backToOverview: 'Back to overview',
       queueStatus: '{count} pending tasks in Wiki queue',
       issueTitle: 'This page has {count} pending knowledge conflicts or errors',
@@ -3628,7 +3628,7 @@ export default {
         separate: 'Separate'
       },
       standardQuestion: 'Primary Question',
-      standardQuestionDesc: 'Set the standard phrasing of the question — this is the most common way users ask it.',
+      standardQuestionDesc: 'Set the standard phrasing of the question: the most common way users ask it.',
       answers: 'Answers',
       answersDesc: 'Provide complete and accurate answer content. Multiple answers can be added to cover different scenarios.',
       similarQuestions: 'Similar Questions',
@@ -3717,12 +3717,12 @@ export default {
     },
     chunking: {
       title: 'Chunking Settings',
-      description: 'Controls how uploaded documents are split before embedding. Defaults work for most cases — tune only when retrieval quality is off.',
+      description: 'Controls how uploaded documents are split before embedding. Defaults work for most cases. Tune only when retrieval quality is off.',
       sizeLabel: 'Chunk Size',
       sizeDescription: 'Maximum characters per chunk (100–4000). Default 512 ≈ 100–130 English tokens. Smaller for FAQs (200–400), larger for narrative documents (1000–2000).',
       characters: 'characters',
       overlapLabel: 'Chunk Overlap',
-      overlapDescription: 'Characters shared between adjacent chunks (0–500). Default 80 ≈ 15% of size — sweet spot per current research. Use 0 for FAQs/structured data, 150–200 for long-form narratives.',
+      overlapDescription: 'Characters shared between adjacent chunks (0–500). Default 80 ≈ 15% of size, the sweet spot per current research. Use 0 for FAQs/structured data, 150–200 for long-form narratives.',
       separatorsLabel: 'Separators',
       separatorsDescription: 'Characters or strings the splitter prefers when cutting. Higher-priority separators are tried first; the default order favors paragraph → sentence → punctuation breaks.',
       separatorsPlaceholder: 'Select or customize separators',
@@ -3741,7 +3741,7 @@ export default {
       parentChunkSizeLabel: 'Parent Chunk Size',
       parentChunkSizeDescription: 'Size of the context chunk returned to the LLM (512–8192). Default 4096 ≈ 1000 English tokens, fits comfortably in any modern LLM context window.',
       childChunkSizeLabel: 'Child Chunk Size',
-      childChunkSizeDescription: 'Size of the embedded chunk used for vector match (64–2048). Default 384 ≈ 80 tokens — sweet spot for sentence-transformer / BGE-style embedders.',
+      childChunkSizeDescription: 'Size of the embedded chunk used for vector match (64–2048). Default 384 ≈ 80 tokens, the sweet spot for sentence-transformer / BGE-style embedders.',
       strategyLabel: 'Chunking Strategy',
       strategyDescription: 'Choose how documents are split into chunks. The Automatic mode profiles each document and picks the best strategy.',
       strategyPlaceholder: 'Select a chunking strategy (splits by length if left empty)',
@@ -3760,13 +3760,13 @@ export default {
         },
         legacy: {
           label: 'Length-based',
-          tooltip: 'Ignores structure; splits recursively by character count and separators — the original behavior. Use when the structure-aware strategies misbehave on your content.'
+          tooltip: 'Ignores structure; splits recursively by character count and separators (the original behavior). Use when the structure-aware strategies misbehave on your content.'
         }
       },
-      overlapWarning: 'Overlap is large compared to chunk size — chunks will share most of their content.',
+      overlapWarning: 'Overlap is large compared to chunk size, so chunks will share most of their content.',
       advancedLabel: 'Advanced options',
       tokenLimitLabel: 'Token limit per chunk',
-      tokenLimitDescription: 'Hard token cap per chunk (0–8192). 0 = off (chunk size in characters only). Activate when your embedding model has a small token limit: 200 for MiniLM (256 tok), 400 for BGE/Cohere (512 tok). Modern embedders (OpenAI, Voyage, Jina-v3) accept >2000 tokens — leave at 0.',
+      tokenLimitDescription: 'Hard token cap per chunk (0–8192). 0 = off (chunk size in characters only). Activate when your embedding model has a small token limit: 200 for MiniLM (256 tok), 400 for BGE/Cohere (512 tok). Modern embedders (OpenAI, Voyage, Jina-v3) accept >2000 tokens, so leave it at 0.',
       languagesLabel: 'Language hints',
       languagesDescription: 'Restricts heuristic patterns to the chosen languages (DE/EN/ZH). Empty = auto-detect from sample. Set explicitly for homogeneous corpora to avoid false-positive matches across languages.',
       languagesPlaceholder: 'Auto-detect',
@@ -3793,7 +3793,7 @@ export default {
         selectedTier: 'Selected strategy',
         rejected: 'Rejected tiers',
         contextHeader: 'Context header',
-        fallbackWarning: 'Strategy chain fell through — content does not split intelligently with current settings',
+        fallbackWarning: 'Strategy chain fell through: content does not split intelligently with current settings',
         profile: {
           lines: 'lines',
           chars: 'chars',
@@ -4231,7 +4231,7 @@ export default {
       desktopPortSaveFailed: 'Save failed',
       desktopPortInvalid: 'Enter a port between 0 and 65535',
       desktopBindPublicLabel: 'Allow LAN access to the API',
-      desktopBindPublicDescription: 'When enabled, the embedded server listens on 0.0.0.0 so other devices on your LAN can reach the API via the address below. This increases exposure—use host firewalls and routing rules as needed. Restart the app after changing this.',
+      desktopBindPublicDescription: 'When enabled, the embedded server listens on 0.0.0.0 so other devices on your LAN can reach the API via the address below. This increases exposure, so use host firewalls and routing rules as needed. Restart the app after changing this.',
       desktopBindPublicSaved: 'Saved. Restart the app for it to take effect.',
       desktopBindPublicSaveFailed: 'Save failed',
       lanUrlLabel: 'LAN API base URL',
@@ -4297,7 +4297,7 @@ export default {
       tagInputPlaceholder: 'Press Enter to add an entry, e.g. example.com / *.foo.com / 10.0.0.0/8',
       priorityHint: {
         disclosure: 'Configuration source and priority',
-        tier1: 'Items saved on this page (marked "Overridden") always win — the environment variable is ignored for them.',
+        tier1: 'Items saved on this page (marked "Overridden") always win; the environment variable is ignored for them.',
         tier2: 'Items not saved here fall back to the environment variable, or to the built-in default if no env var is set.',
         tier3: 'To put an item back under environment-variable control, click the "Reset" button on its row.'
       },
@@ -4332,7 +4332,7 @@ export default {
         loading: 'Loading...',
         retry: 'Retry',
         unavailableTitle: 'Task queues unavailable',
-        unavailable: 'This deployment has no Redis / asynq queue (Lite mode) — nothing to display.',
+        unavailable: 'This deployment has no Redis / asynq queue (Lite mode). Nothing to display.',
         empty: 'No queue data available',
         detailsTitle: 'Queue details',
         detailsDescription: 'Live load and wait time for every processing lane. “Failed (stopped)” means the task exceeded its retry limit and will not run automatically again.',
@@ -4388,7 +4388,7 @@ export default {
           empty: 'This queue has no {state} tasks',
           loadError: 'Failed to load task details',
           loadMore: 'Load more',
-          loadedSummary: '{count} loaded — scroll or tap to load more',
+          loadedSummary: '{count} loaded. Scroll or tap to load more',
           loadedAll: 'All {count} loaded',
           loadingMore: 'Loading more…',
           attempts: 'Attempt {current}/{max}',
@@ -4420,7 +4420,7 @@ export default {
           deleteRecord: 'Clear record',
           deleteConfirm: 'This only removes the record from this queue. It will not run or complete the original task, and historical logs remain. Clear it?',
           purgeArchived: 'Clear all failed tasks',
-          purgeArchivedConfirm: 'Remove all {count} failed records from this queue at once. This only clears failed tasks in the queue — it does not affect running or pending tasks, nor does it roll back the business status of documents that already failed. Clear them?',
+          purgeArchivedConfirm: 'Remove all {count} failed records from this queue at once. This only clears failed tasks in the queue. It does not affect running or pending tasks, nor does it roll back the business status of documents that already failed. Clear them?',
           purgeArchivedSuccess: 'Cleared {count} failed tasks',
           purgeArchivedError: 'Failed to clear failed tasks',
           stateFilter: 'Filter by task state',
@@ -4577,7 +4577,7 @@ export default {
         tenant: {
           max_owned_per_user: 'Maximum number of workspaces a non-superuser may own via self-service creation. Read on every workspace creation and takes effect immediately after saving. 0 uses the built-in default of 10; a negative value disables the cap entirely (not recommended on public deployments).',
           self_service_creation_enabled: 'Whether non-superusers may create workspaces themselves. When disabled, regular users can only join existing workspaces by invitation; cross-workspace superusers remain exempt. Takes effect immediately.',
-          default_storage_quota_gb: 'Default storage quota (GB) assigned when a new workspace is created, covering vectors, originals, text, indexes, and related data. Read only at creation time — changes apply to newly created workspaces only and do not retroactively update existing workspaces. 0 or a negative value uses the built-in default of 10 GB.',
+          default_storage_quota_gb: 'Default storage quota (GB) assigned when a new workspace is created, covering vectors, originals, text, indexes, and related data. Read only at creation time: changes apply to newly created workspaces only and do not retroactively update existing workspaces. 0 or a negative value uses the built-in default of 10 GB.',
           auto_create_api_key: 'Automatically creates a full_access API key for a new workspace and returns its plaintext token in the create response. Use only for integrations that depend on the legacy behavior; it is disabled by default and explicit API-key creation is recommended.',
           auto_accept_invitation: 'When enabled, inviting a registered user by email adds them as a member immediately instead of waiting for inbox confirmation. When off, the invitee must accept from their inbox. Takes effect immediately.'
         },
@@ -4610,7 +4610,7 @@ export default {
         confirmBtn: 'Confirm save',
         cancelBtn: 'Cancel',
         emptyValue: '(empty)',
-        bodyAuthRegistrationMode: 'About to change "{label}" to: {value}\n\nIf switched to self_serve, anyone on the public internet can register an account — please confirm this is intended.',
+        bodyAuthRegistrationMode: 'About to change "{label}" to: {value}\n\nIf switched to self_serve, anyone on the public internet can register an account. Please confirm this is intended.',
         bodySandboxDockerEnabled: 'Once on, workspace admins can point a sandbox at the local Docker daemon. A local docker.sock is equivalent to root on the host. Use this only on a private single-node install that mounts the daemon or uses a TLS-protected remote tcp:// endpoint.'
       },
       listConfirm: {
@@ -4692,7 +4692,7 @@ export default {
       createUser: {
         action: 'Create user',
         dialogTitle: 'Create a new user',
-        warning: 'This is a high-risk action. Verify the username and email carefully — they are how the new user will sign in.',
+        warning: 'This is a high-risk action. Verify the username and email carefully. They are how the new user will sign in.',
         usernameLabel: 'Username',
         usernamePlaceholder: '2-50 characters',
         emailLabel: 'Email',
@@ -4986,7 +4986,7 @@ export default {
       embeddingImageInputDesc: 'The model embeds images into the same vector space as text. Catalogued models are detected automatically; declare it for custom models',
       contextWindowLabel: 'Context Window',
       contextWindowPlaceholder: 'Default {value}',
-      contextWindowDesc: 'How many tokens this model can take in one request. Agent history compaction uses this limit. Leave empty for the default 200000 (200K). Use the provider’s real window — a larger guess means compaction never fires and the provider rejects the request.',
+      contextWindowDesc: 'How many tokens this model can take in one request. Agent history compaction uses this limit. Leave empty for the default 200000 (200K). Use the provider’s real window. A larger guess means compaction never fires and the provider rejects the request.',
       contextWindowDefaultHint: 'Unset, using default {value}',
       contextWindowTokens: '{count} tokens',
       maxConcurrencyLabel: 'Background concurrency limit',
@@ -5055,7 +5055,7 @@ export default {
     monoFont: 'Code Font',
     monoFontDescription: 'Used for code blocks, terminal commands, API keys, file paths and other technical text. Every character has the same width so you can tell 0 from O and 1 from l.',
     selectFont: 'Select font',
-    sansPreview: 'The quick brown fox jumps — Aa Gg Oo 0123',
+    sansPreview: 'The quick brown fox jumps - Aa Gg Oo 0123',
     monoPreview: 'const msg = \'Hello\'; // 0O1l',
     sans: {
       system: 'System Default',
@@ -5087,7 +5087,7 @@ export default {
   },
   platform: {
     subtitle: 'LLM-Powered Enterprise Knowledge Framework',
-    description: 'RAG retrieval, agentic reasoning and Wiki knowledge bases — so your documents are truly understood and put to work',
+    description: 'RAG retrieval, agentic reasoning and Wiki knowledge bases, so your documents are truly understood and put to work',
     rag: 'RAG Enhanced Generation',
     agent: 'ReAct Agent',
     wiki: 'Wiki Knowledge Base',
@@ -5748,7 +5748,7 @@ export default {
     },
     settings: {
       editTitle: 'Shared Space Settings',
-      membersDesc: 'View and manage shared space members and their roles. Each member represents a workspace — all users in the same workspace share access to this shared space.',
+      membersDesc: 'View and manage shared space members and their roles. Each member represents a workspace: all users in the same workspace share access to this shared space.',
       permissionsIconHint: 'View role permissions',
       sharedDesc: 'View all knowledge bases shared to this shared space',
       noSharedKB: 'No shared knowledge bases yet',
@@ -5981,7 +5981,7 @@ export default {
   kbSettings: {
     vectorStore: {
       title: 'Vector Store',
-      description: 'Choose which vector store this knowledge base writes to. The binding is permanent — to move an existing KB to a different store, create a new KB and re-index.',
+      description: 'Choose which vector store this knowledge base writes to. The binding is permanent. To move an existing KB to a different store, create a new KB and re-index.',
       loading: 'Loading vector stores...',
       engineLabel: 'Vector store',
       engineDesc: 'Pick a store from the global Vector Stores configuration, or leave as System default to use the workspace-wide RETRIEVE_DRIVER engine.',
@@ -6443,8 +6443,8 @@ export default {
       kbMetricWiki: 'Wiki KBs',
       statusInactive: '{count} ticked tool(s) cannot take effect with the current config',
       effectiveLabel: 'Effective Tools',
-      effectiveDesc: 'Computed from the current config — these are the tools the agent will actually be able to call',
-      effectiveEmpty: 'No tool available — the agent will fall back to plain model chat'
+      effectiveDesc: 'Computed from the current config: these are the tools the agent will actually be able to call',
+      effectiveEmpty: 'No tool available. The agent will fall back to plain model chat'
     },
     embed: {
       title: 'Web Page Embed',
@@ -6915,10 +6915,10 @@ export default {
     yuqueFolderModeNone: 'Keep everything flat',
     yuqueFolderModeHint: 'Files documents by their Yuque table-of-contents path. Note: folder moves made in the knowledge base afterwards are overwritten by the Yuque structure the next time that document syncs.',
     yuqueTOCOnly: 'Sync only documents visible in the Yuque TOC',
-    yuqueTOCOnlyHint: 'Requires the "Mirror the Yuque TOC" layout. Documents already in the knowledge base are untouched — one the Yuque TOC does not list is simply no longer added, never deleted.',
+    yuqueTOCOnlyHint: 'Requires the "Mirror the Yuque TOC" layout. Documents already in the knowledge base are untouched. One the Yuque TOC does not list is simply no longer added, never deleted.',
     dingtalkIngestLabel: 'DingTalk ingestion scope',
     dingtalkIncludeUploadedFiles: 'Ingest uploaded files (docx / pptx / xlsx / pdf)',
-    dingtalkIncludeUploadedFilesHint: 'Off by default. When on, Word / PowerPoint / Excel / PDF files uploaded to the selected scope are downloaded and parsed into the knowledge base, up to 64 MiB per file; their text counts towards storage and embedding cost. When off they are simply skipped — the sync log says the switch is not enabled, and copies already in the knowledge base are kept.',
+    dingtalkIncludeUploadedFilesHint: 'Off by default. When on, Word / PowerPoint / Excel / PDF files uploaded to the selected scope are downloaded and parsed into the knowledge base, up to 64 MiB per file; their text counts towards storage and embedding cost. When off they are simply skipped: the sync log says the switch is not enabled, and copies already in the knowledge base are kept.',
     prereqBarText_dingtalk: 'First time? Click to see the DingTalk app setup guide',
     prereqStep1Brief_dingtalk: 'Create an internal enterprise app',
     prereqStep1Desc_dingtalk: 'Create an internal app in DingTalk Open Platform and copy its Client ID and Client Secret.',
@@ -7160,7 +7160,7 @@ export default {
       capabilityManageKbs: 'Manage knowledge bases',
       capabilityManageKbsHint: 'Let this key manage the full knowledge-base lifecycle: create, copy, update, and delete knowledge bases and change their initialization/configuration. Operations on existing knowledge bases (copy/update/delete) stay bounded by the selected scope; creating a new knowledge base is unrestricted (the new KB belongs to this space).',
       capabilityManageAgents: 'Manage agents',
-      capabilityManageAgentsHint: 'Let this key create, update, delete and copy agents. Agent config can carry sensitive model/MCP bindings, so this is off by default — enable only when needed.',
+      capabilityManageAgentsHint: 'Let this key create, update, delete and copy agents. Agent config can carry sensitive model/MCP bindings, so this is off by default. Enable only when needed.',
       capabilityMessageHistory: 'Message history',
       capabilityMessageHistoryHint: 'Let this key search workspace chat history and read chat-history stats. It does not grant workspace configuration access.',
       capabilityManageModels: 'Manage models',
@@ -7213,16 +7213,16 @@ export default {
       directWarning: 'Direct user ID trusts the caller-supplied header. Use only for trusted server-to-server calls.',
       directWarningDetail: 'Anyone with the API key can change the user ID header to impersonate another external user and reuse or hijack that user\'s MCP OAuth authorization. Do not use this from browsers or untrusted clients; use Signed token for end-user apps.',
       signedRecommended: 'Recommended for user-facing apps: your backend signs a short-lived HS256 JWT for the external user.',
-      signedFlowDetail: 'Keep the HMAC secret only on AI KB and your trusted backend—never put it in requests or ship it to browsers. The request header carries the JWT string signed with that secret (it changes on each issuance or after expiry), not the secret itself. JWT must include sub (external user ID), tenant_id, aud=aikb, and exp (max 24h lifetime).',
+      signedFlowDetail: 'Keep the HMAC secret only on AI KB and your trusted backend. Never put it in requests or ship it to browsers. The request header carries the JWT string signed with that secret (it changes on each issuance or after expiry), not the secret itself. JWT must include sub (external user ID), tenant_id, aud=aikb, and exp (max 24h lifetime).',
       directHeader: 'User ID header',
       requireDirectHeader: 'Require user ID header',
       requireDirectHeaderDesc: 'When enabled, API Key requests without the user ID header are rejected; when disabled, all requests are treated as the whole workspace with no per-user distinction.',
       tokenHeader: 'Token header',
       tokenHeaderDesc: 'Clients send the backend-signed JWT in this fixed header.',
       hmacSecret: 'HMAC secret',
-      hmacSecretDesc: 'Same secret stored in AI KB; used only on your backend to sign JWTs—never send it as a request header.',
+      hmacSecretDesc: 'Same secret stored in AI KB; used only on your backend to sign JWTs. Never send it as a request header.',
       secretConfigured: 'Secret configured (not shown again); enter a new value to rotate',
-      secretSavedCopyHint: 'Secret saved. Copy it to your backend now — you will not be able to view it again after leaving this page.',
+      secretSavedCopyHint: 'Secret saved. Copy it to your backend now. You will not be able to view it again after leaving this page.',
       generateSecret: 'Generate secret',
       hmacSecretResetConfirmTitle: 'Reset HMAC secret?',
       hmacSecretResetConfirmBody: 'After reset, the old HMAC secret is revoked immediately. Every backend service signing JWTs with the old secret must switch to the new secret to keep signed-token calls working. This action cannot be undone.',
@@ -7230,7 +7230,7 @@ export default {
       hmacSecretResetConfirmCancel: 'Cancel',
       tokenSignExample: 'Backend JWT signing example (Go)',
       signedRequestStep0: '# 0. Sign JWT on your backend (HS256, aud=aikb, sub=user id, tenant_id={tenantId}, exp<=24h)',
-      signedRequestStep0Hint: '#    Put the JWT in {headerName} — not the HMAC secret',
+      signedRequestStep0Hint: '#    Put the JWT in {headerName}, not the HMAC secret',
       requestExampleCreateSession: '# 1. Create a session',
       requestExampleAgentChat: '# 2. Agent chat (SSE; replace <session_id> with the id from step 1)',
       requestExampleJwtPlaceholder: '<JWT signed by your backend>',
@@ -7301,7 +7301,7 @@ export default {
       capabilities: {
         qa: {
           title: 'Knowledge-base Q&A',
-          desc: 'Sidebar chat with multi-KB switching and fast/deep/precise answer modes—ask without leaving the page.'
+          desc: 'Sidebar chat with multi-KB switching and fast/deep/precise answer modes. Ask without leaving the page.'
         },
         clip: {
           title: 'One-click web capture',
@@ -7350,7 +7350,7 @@ export default {
     },
     claw: {
       title: 'AI KB Skill',
-      subtitle: 'Import documents and run hybrid retrieval (vector + keyword) via the AI KB REST API—for uploads, URL imports, Markdown entries, and cross-KB search.',
+      subtitle: 'Import documents and run hybrid retrieval (vector + keyword) via the AI KB REST API, for uploads, URL imports, Markdown entries, and cross-KB search.',
       capabilitiesTitle: 'Skill capabilities',
       capabilities: {
         upload: {
@@ -7363,7 +7363,7 @@ export default {
         },
         manual: {
           title: 'Write Markdown',
-          desc: 'Create or edit knowledge entries as Markdown—ideal for meeting notes.'
+          desc: 'Create or edit knowledge entries as Markdown, ideal for meeting notes.'
         },
         search: {
           title: 'Hybrid search',
@@ -7382,7 +7382,7 @@ export default {
         },
         env: {
           title: 'Configure environment',
-          desc: 'Set WEKNORA_BASE_URL and WEKNORA_API_KEY in your shell or ~/.zshrc / ~/.bashrc. The example below uses your current API base URL—replace the API Key with your actual value.'
+          desc: 'Set WEKNORA_BASE_URL and WEKNORA_API_KEY in your shell or ~/.zshrc / ~/.bashrc. The example below uses your current API base URL. Replace the API Key with your actual value.'
         },
         install: {
           title: 'Install the skill',
@@ -7566,7 +7566,7 @@ export default {
       description: 'Generate a multi-use registration link you can drop in a group chat. Anyone who opens it registers with their own email and joins this workspace. Expires in {days} days, or revoke it any time from the list.',
       generate: 'Generate link',
       resultTitle: 'Invitation link ready',
-      resultBody: 'Copy the link below and share it via any private channel. It\'s also saved in the list — you can re-copy or revoke it later.',
+      resultBody: 'Copy the link below and share it via any private channel. It\'s also saved in the list, so you can re-copy or revoke it later.',
       revokeConfirm: 'Revoking will block anyone who hasn\'t registered yet from using this link. Generate a new one to re-share.'
     },
     revoke: {
@@ -7679,8 +7679,8 @@ export default {
       description: 'How much body text the picture itself carries. Decides whether reading its text is worth a separate OCR pass.',
       values: {
         none: { label: 'None', description: 'no text at all' },
-        sparse: { label: 'Sparse', description: 'a few words — a logo, a road sign, a single label' },
-        block: { label: 'Block', description: 'a block of body text — a screenshot, a table, a document page' }
+        sparse: { label: 'Sparse', description: 'a few words: a logo, a road sign, a single label' },
+        block: { label: 'Block', description: 'a block of body text: a screenshot, a table, a document page' }
       }
     },
     contain_data_visual: {

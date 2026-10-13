@@ -361,7 +361,7 @@ async function loadArtifactBlobURL(ctx: ArtifactRefContext, index: number): Prom
     task = (async () => {
       try {
         // Imported lazily so parsing/rendering stays free of the axios
-        // transport — those parts run in plain Node during unit tests.
+        // transport - those parts run in plain Node during unit tests.
         const { downloadArtifact } = await import('@/api/chat');
         const blob = await downloadArtifact(ctx.sessionId, ctx.messageId, index);
         const blobURL = URL.createObjectURL(blob);

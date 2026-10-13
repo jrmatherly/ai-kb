@@ -388,7 +388,7 @@
         <h4 class="setting-drawer__section-title">{{ $t('settings.sandbox.sectionRuntime') }}</h4>
         <div class="runtime-fields">
           <!--
-            Each number keeps its own label and its own sentence — the reason
+            Each number keeps its own label and its own sentence - the reason
             these were one-per-row originally was that three unlabelled numbers
             side by side shared a single footnote. Moving the sentence into the
             field's own tips keeps that fixed while halving the height.
@@ -1022,7 +1022,7 @@ const hasInFlightSkill = computed(() => inFlightFromSkills.value)
 const retargetFrozen = computed(() => hasSkillSnapshot.value || hasInFlightSkill.value)
 
 // Jumping is what separates editing from creating. A config that does not exist
-// yet has to be built in order — its connection has to check out before there
+// yet has to be built in order - its connection has to check out before there
 // are templates to choose from. Once it exists, every step is just a page of
 // its settings, so all of them open directly; steps already visited stay
 // clickable during creation so the rail works as a way back.

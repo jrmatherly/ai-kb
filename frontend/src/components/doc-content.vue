@@ -323,7 +323,7 @@ watch(() => props.details?.id, () => {
 });
 
 function formatTimelineDuration(ms: number): string {
-  if (!ms || ms < 0) return '—';
+  if (!ms || ms < 0) return '-';
   if (ms < 1000) return `${Math.round(ms)}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`;
   const mins = Math.floor(ms / 60000);
@@ -3229,7 +3229,7 @@ const handleChunkPageChange = (pageInfo: { current: number }) => {
 
 <!-- Non-scoped padding/background overrides for the secondary drawer.
      Width is now controlled via the :size prop on <t-drawer> (see
-     timelineDrawerSize in <script>) — that puts width on element.style
+     timelineDrawerSize in <script>) - that puts width on element.style
      rather than fighting !important CSS rules. We only keep these
      non-scoped rules because TDesign's default body padding and
      content background need to be flushed for the timeline to fill

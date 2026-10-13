@@ -646,7 +646,7 @@ watch(customInput, () => {
   }
 }
 
-// Chat answer markdown — shared with botmsg / AgentStreamDisplay / embed
+// Chat answer markdown - shared with botmsg / AgentStreamDisplay / embed
 .markdown-content {
   // Dev page intentionally uses the same chat Markdown mixin as runtime chat.
   // Keep visual changes in chat-markdown.less so this page remains a regression target.

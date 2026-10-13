@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
   // addressed to the current user. Renders as a badge next to the
   // avatar; updated by fetchPendingInvitationCount, which runs after
   // login, after tenant switch, and on a polling interval. Polling
-  // (vs SSE) is fine — the count is checked rarely and a 1-2 minute
+  // (vs SSE) is fine - the count is checked rarely and a 1-2 minute
   // staleness window is acceptable for an inbox indicator.
   const pendingInvitationCount = ref<number>(0)
   // Authoritative deployment capability returned by /auth/me. Defaults to
@@ -109,11 +109,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   // isSystemAdmin reflects the platform-wide system-administrator flag
   // (User.IsSystemAdmin on the server). It is independent of per-tenant
-  // Owner/Admin/Contributor/Viewer roles — a system admin can manage
+  // Owner/Admin/Contributor/Viewer roles - a system admin can manage
   // global settings, built-in models, and other system admins regardless
   // of which tenant they're currently scoped into.
   //
-  // SECURITY: same caveat as currentTenantRole — this value is hydrated
+  // SECURITY: same caveat as currentTenantRole - this value is hydrated
   // from localStorage on reload and is therefore tamper-prone client-side.
   // Use it ONLY to gate UI visibility (menu entries, route guards). All
   // real authorisation lives in the server-side RequireSystemAdmin
@@ -132,11 +132,11 @@ export const useAuthStore = defineStore('auth', () => {
   // the user's home tenant (set once on login from /auth/me's tenant
   // field); selectedTenantId is the active override applied by the
   // tenant switcher. Reading the wrong field used to leak Owner-level
-  // UI to a Viewer who switched into a tenant where they were a Viewer
-  // — every gate above (`hasRole(...)`) returned the home-tenant role.
+  // UI to a Viewer who switched into a tenant where they were a Viewer -
+  // every gate above (`hasRole(...)`) returned the home-tenant role.
   //
   // SECURITY: This value is read from localStorage (`aikb_memberships`)
-  // and therefore MUST be treated as UI-rendering-only — any user can
+  // and therefore MUST be treated as UI-rendering-only - any user can
   // tamper with localStorage and grant themselves "owner" here. All real
   // authorisation decisions live on the server (auth middleware resolves
   // the role from tenant_members on every request). Never branch
@@ -155,7 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
     // backend auth.go resolveTenantRole step2 grants a temporary Admin
     // role without writing tenant_members. Mirror that here so mutation
     // UIs aren't hidden in tenants the superuser switched into. Never
-    // surface Owner — the backend caps the temporary grant at Admin too
+    // surface Owner - the backend caps the temporary grant at Admin too
     // (Owner-only ops like tenant deletion stay reserved for a real
     // Owner inside the target tenant).
     if (canAccessAllTenants.value) return 'admin'
@@ -168,7 +168,7 @@ export const useAuthStore = defineStore('auth', () => {
   // matrix in middleware/rbac.go so a v-if here lines up with the 403 the
   // backend would return.
   //
-  // SECURITY: shares the same caveat as currentTenantRole — derived from
+  // SECURITY: shares the same caveat as currentTenantRole - derived from
   // localStorage, MUST be treated as UI-rendering-only. Never rely on
   // hasRole() for security decisions; the server is the source of truth.
   const ROLE_LEVEL: Record<string, number> = {
@@ -236,7 +236,7 @@ export const useAuthStore = defineStore('auth', () => {
   // These keys are NOT tenant-scoped in storage; after a tenant switch they
   // would otherwise be reloaded verbatim and the chat input would post under
   // the new tenant with an Agent / model id that only existed in the old
-  // tenant — backend 403s or "model not found". Called from setSelectedTenant
+  // tenant - backend 403s or "model not found". Called from setSelectedTenant
   // only on an actual tenant change, so logout / init paths are not touched.
   const clearTenantScopedClientState = () => {
     try {
@@ -262,7 +262,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
     } catch (e) {
-      // localStorage may be disabled or contain malformed JSON — best effort.
+      // localStorage may be disabled or contain malformed JSON - best effort.
       console.warn('[auth] failed to clear tenant-scoped client state', e)
     }
   }
@@ -315,7 +315,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // fetchPendingInvitationCount hits the dedicated /me/invitations/
   // pending-count endpoint and updates the store. Errors are
-  // swallowed — the badge degrades to its last-known value instead
+  // swallowed - the badge degrades to its last-known value instead
   // of nagging the user with a toast. The caller can choose to fire
   // and forget (login flow) or await (manual refresh button).
   const fetchPendingInvitationCount = async () => {
@@ -336,7 +336,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Reconcile user / home tenant / memberships with GET /api/v1/auth/me.
   // Login only populated memberships once; SPA navigations skip
-  // hydrateSessionFromToken when isLoggedIn is already true — so inviting
+  // hydrateSessionFromToken when isLoggedIn is already true - so inviting
   // flows or revokes would leave the sidebar switcher stale until reload.
   //
   // Request ordering: refreshFromAuthMe is a "refresh", whose result must come from a request sent after this call

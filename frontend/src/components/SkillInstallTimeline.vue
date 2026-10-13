@@ -160,7 +160,7 @@ const fullContent = ref('')
 let controller: AbortController | null = null
 let closed = false
 // stop() / a newer open() bump this so an in-flight live loop cannot keep
-// calling follow() after closed is reset — that would replay a finished run.
+// calling follow() after closed is reset - that would replay a finished run.
 let openRun = 0
 
 // The timeline grows inside the drawer's own scroll container, so following the

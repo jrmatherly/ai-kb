@@ -843,7 +843,7 @@ let uploadRefreshTimer: ReturnType<typeof setTimeout> | null = null
 
 // Shared knowledge bases (everything cross-tenant shared to me, including
 // viewer-only). Used by the per-space views and the "all" aggregate so
-// readers still see read-only shares — those are valid resources, just
+// readers still see read-only shares - those are valid resources, just
 // not editable.
 const sharedKbs = computed<SharedKnowledgeBase[]>(() => orgStore.sharedKnowledgeBases || [])
 
@@ -851,7 +851,7 @@ const allKnowledgeBases = computed(() => kbs.value.length + sharedKbs.value.leng
 
 // The current selection is a shared space ID (not all, mine, or a pseudo scope such as favorites/recent)
 // NB: keep the reserved-scope list in sync with ResourceListToolbar's
-// non-org buckets — otherwise a new pseudo-scope (e.g. "favorites")
+// non-org buckets - otherwise a new pseudo-scope (e.g. "favorites")
 // falls through here and triggers the per-space code paths, which
 // renders an extra "no shared KB" empty state on top of the real view.
 const RESERVED_SCOPES = new Set(['all', 'mine', 'favorites', 'recents'])
@@ -916,7 +916,7 @@ const effectiveSharedCountByOrg = computed<Record<string, number>>(() => {
 // Favorites / Recents views: hydrate pin entries by id against every KB
 // the user can already see in this page (own + cross-tenant shared). KBs
 // the user no longer has access to (deleted / share revoked) are dropped
-// silently — the pin survives until the next mutation, which keeps the
+// silently - the pin survives until the next mutation, which keeps the
 // composable simple at the cost of harmless ghost entries.
 //
 // Order:
@@ -1096,8 +1096,8 @@ const unsearchedFilteredKnowledgeBases = computed(() => {
     return []
   }
   // The "All" scope merges own + shared KBs. The card template keys each
-  // row by `kb.id`, so the same KB surfacing twice — owned *and* shared
-  // back, or shared into the caller's view through two different orgs —
+  // row by `kb.id`, so the same KB surfacing twice - owned *and* shared
+  // back, or shared into the caller's view through two different orgs -
   // produced duplicate `v-for` keys and blanked the list once there were
   // ≥2 entries (#795). mergeAllScopeKnowledgeBases de-duplicates by KB id
   // (owned wins; most-privileged share kept) while preserving the existing
@@ -1244,7 +1244,7 @@ const handleSettings = (kb: KB) => {
 }
 
 // canManageKBCard mirrors KnowledgeBase.vue's `canManage`, gating the
-// destructive items of the per-card menu — Settings, Delete — so a
+// destructive items of the per-card menu - Settings, Delete - so a
 // Viewer cannot click into them for a KB they don't own. The server
 // still rejects the call (PR 5 guards every such mutation with
 // OwnedKBOrAdmin) but the UI shouldn't surface buttons the user has
@@ -1262,7 +1262,7 @@ function canManageKBCard(kb: KB): boolean {
   // Shared-space cards carry the org-share permission; when it exists it is
   // the only signal that counts. A read-only (viewer) or editor share must
   // not surface Settings/Delete even when the browsing user is an admin of
-  // their own personal workspace — the backend 3-D permission cap would 403
+  // their own personal workspace - the backend 3-D permission cap would 403
   // the call anyway (#3098).
   const sharePermission = (kb as any).permission as string | undefined
   if (sharePermission) return permissionCanManageKB(sharePermission)
@@ -1472,7 +1472,7 @@ const hasUninitializedKbs = computed(() => {
 })
 
 const handleCardClick = (kb: KB) => {
-  // Track this open in the per-user "recent" list before navigating —
+  // Track this open in the per-user "recent" list before navigating -
   // matches the user mental model "this is what I last worked on".
   pins.touchRecent('kb', kb.id)
   if (isInitialized(kb)) {

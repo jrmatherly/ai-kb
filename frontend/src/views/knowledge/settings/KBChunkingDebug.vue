@@ -68,7 +68,7 @@
           </div>
         </section>
 
-        <!-- Loading state — explicit so the user sees something is happening
+        <!-- Loading state - explicit so the user sees something is happening
              even if the result block hasn't appeared yet. -->
         <div v-if="loading" class="debug-loading">
           <t-loading size="small" />
@@ -145,7 +145,7 @@
               <div class="cell-label">{{ $t('knowledgeEditor.chunking.debug.profile.chapterMarkers') }}</div>
             </div>
             <div class="profile-cell">
-              <div class="cell-value">{{ (result.profile.detected_langs || []).join(', ') || '—' }}</div>
+              <div class="cell-value">{{ (result.profile.detected_langs || []).join(', ') || '-' }}</div>
               <div class="cell-label">{{ $t('knowledgeEditor.chunking.debug.profile.languages') }}</div>
             </div>
           </div>
@@ -169,7 +169,7 @@
             </span>
           </div>
 
-          <!-- Chunks list — no inner scroll; the drawer body handles scrolling
+          <!-- Chunks list - no inner scroll; the drawer body handles scrolling
                so expanded cards always show their full content. -->
           <ol class="chunks-list">
             <li
@@ -366,7 +366,7 @@ const tierTheme = (tier: StrategyTier) => {
 }
 
 // TDesign's primary text-button renders a filled hover background that
-// looks out of place in this right-aligned slot — it reads as a floating
+// looks out of place in this right-aligned slot - it reads as a floating
 // color block rather than a link. Strip the hover/focus/active surfaces
 // and just shift the text colour, giving the trigger a lightweight
 // "inline link" feel that matches the rest of the secondary actions.

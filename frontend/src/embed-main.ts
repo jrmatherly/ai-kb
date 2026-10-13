@@ -22,7 +22,7 @@ const router = createRouter({
   ],
 })
 
-// Runtime-only Vue build cannot compile string templates — use a render fn.
+// Runtime-only Vue build cannot compile string templates - use a render fn.
 const app = createApp({ render: () => [h(RouterView), h(ProtectedResourcePreview)] })
 
 app.use(TDesign)

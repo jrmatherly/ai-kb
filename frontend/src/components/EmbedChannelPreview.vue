@@ -58,11 +58,11 @@ const props = defineProps<{
   /**
    * Bumped by the parent every time a preview is (re)opened. Folded into the
    * iframe URL so the embed page fully reloads and re-fetches the latest saved
-   * config — otherwise re-previewing after an edit shows stale content until a
+   * config - otherwise re-previewing after an edit shows stale content until a
    * full page refresh.
    */
   refreshKey?: number
-  /** Channel default locale — passed in the iframe URL so the first paint uses the right language. */
+  /** Channel default locale - passed in the iframe URL so the first paint uses the right language. */
   locale?: string
 }>()
 
@@ -72,7 +72,7 @@ const emit = defineEmits<{
 
 const mode = computed(() => props.mode || 'iframe')
 const widgetOpen = ref(true)
-/** Defer iframe until the drawer has laid out — avoids embed autosize measuring a 0-size frame. */
+/** Defer iframe until the drawer has laid out - avoids embed autosize measuring a 0-size frame. */
 const iframeReady = ref(false)
 
 const iframeSrc = computed(() => {

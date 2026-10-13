@@ -4,7 +4,7 @@ import { del, get, put } from '@/utils/request'
  * Which value an execution would actually use for one variable.
  *
  * `unset` means nothing is stored anywhere, `workspace` means an admin filled
- * it in for everyone, `user` means the caller filled in their own — which wins
+ * it in for everyone, `user` means the caller filled in their own - which wins
  * over the workspace one for this caller only.
  */
 export type EnvVarSource = 'unset' | 'workspace' | 'user'

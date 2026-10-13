@@ -39,7 +39,7 @@ export function listKnowledgeBases(params?: {
    *   - "others" → only KBs created by someone else in this tenant
    *   - omitted/"all" → no filter
    * KBs predating the RBAC backfill (creator_id="") never match
-   * mine/others — they fall out of both views by design.
+   * mine/others - they fall out of both views by design.
    */
   creator?: 'all' | 'mine' | 'others';
 }) {
@@ -155,8 +155,8 @@ export const FALLBACK_IMAGE_ATTR_SCHEMA: ImageAttrSchema = {
       type: 'extent',
       values: [
         { value: 'none', label: 'None', description: 'no text at all' },
-        { value: 'sparse', label: 'Sparse', description: 'a few words — a logo, a road sign, a single label' },
-        { value: 'block', label: 'Block', description: 'a block of body text — a screenshot, a table, a document page' },
+        { value: 'sparse', label: 'Sparse', description: 'a few words: a logo, a road sign, a single label' },
+        { value: 'block', label: 'Block', description: 'a block of body text: a screenshot, a table, a document page' },
       ],
       question: '',
       label: 'Text in the image',
@@ -248,7 +248,7 @@ export function createKnowledgeBase(data: {
   auto_tag_config?: { enabled: boolean; model_id?: string; max_tags?: number; skip_if_tagged?: boolean };
   // Opt-in binding to a specific tenant-owned VectorStore. Omit (or
   // send undefined / empty string) to fall back to the env-configured
-  // store. Immutable after creation — UpdateKnowledgeBase intentionally
+  // store. Immutable after creation - UpdateKnowledgeBase intentionally
   // does not accept this field.
   vector_store_id?: string;
   // Concrete tenant-owned storage instance. When omitted, the tenant default

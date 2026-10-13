@@ -197,7 +197,7 @@ const shareColumns = computed(() => [
 ])
 
 function formatShareDate(dateStr?: string) {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   const date = new Date(dateStr)
   if (Number.isNaN(date.getTime())) return dateStr
   return date.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' })

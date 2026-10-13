@@ -91,7 +91,7 @@ test('maps rewind HTTP conflicts onto dedicated copy', () => {
 })
 
 // The transcript resolves every row's control from this one set, so it has to
-// answer exactly what the per-message check answers — and only walk once.
+// answer exactly what the per-message check answers - and only walk once.
 test('resolves every rewindable id in a single pass', () => {
   const messages = [
     { id: 'u1', role: 'user' },

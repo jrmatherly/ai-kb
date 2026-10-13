@@ -55,7 +55,7 @@ test('the 494ms failure case rules to round hundreds', () => {
 test('one unit for the whole ruler, picked from the axis maximum', () => {
   assert.equal(formatAxisLabel(0, 500), '0ms')
   assert.equal(formatAxisLabel(250, 500), '250ms')
-  // Seconds once the axis reaches 1s — including the zero tick, which
+  // Seconds once the axis reaches 1s - including the zero tick, which
   // would otherwise read "0ms" next to "10s".
   assert.equal(formatAxisLabel(0, 50000), '0s')
   assert.equal(formatAxisLabel(10000, 50000), '10s')

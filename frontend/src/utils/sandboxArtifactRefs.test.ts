@@ -252,7 +252,7 @@ test('a deleted image artifact degrades to the card instead of a broken img', ()
 
 test('a deleted artifact is not mistaken for a foreign handle', () => {
   // Dropping tombstones before rendering would make the handle unresolvable,
-  // and an unresolved handle falls through to protected-image rendering — a
+  // and an unresolved handle falls through to protected-image rendering - a
   // broken image rather than an honest "deleted" card.
   const live = artifacts.filter((_, i) => i !== 0)
   assert.equal(renderArtifactReference({ href: refFor(0), artifacts: live, labels }), null)

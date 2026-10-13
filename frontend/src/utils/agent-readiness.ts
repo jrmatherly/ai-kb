@@ -90,7 +90,7 @@ export function resolveAgentNotReadySection(reasons: AgentNotReadyReasonKey[]): 
   return 'model'
 }
 
-/** First missing item — used to highlight the corresponding editor field after navigation. */
+/** First missing item - used to highlight the corresponding editor field after navigation. */
 export function resolveAgentNotReadyHighlight(
   reasons: AgentNotReadyReasonKey[],
 ): AgentNotReadyReasonKey | undefined {

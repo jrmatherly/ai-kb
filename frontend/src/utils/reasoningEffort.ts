@@ -85,7 +85,7 @@ export function supportedLevels(capabilities?: ThinkingCapabilities | null): Rea
  * Options for a reasoning-level selector.
  *
  * When the model reports capabilities, `thinking_levels` is authoritative and
- * is followed EXACTLY — including the absence of `off`. Always-on reasoning
+ * is followed EXACTLY - including the absence of `off`. Always-on reasoning
  * models (deepseek-reasoner, qwq-plus, the gemini-3 family, ...) map `off` to
  * null in the catalog, so offering "Off" there would promise something the
  * backend cannot deliver: no switch is sent and the model thinks anyway.
@@ -104,7 +104,7 @@ export function optionsFor(capabilities?: ThinkingCapabilities | null): Reasonin
 }
 
 /**
- * Whether the model reports capabilities but cannot be switched off — the UI
+ * Whether the model reports capabilities but cannot be switched off - the UI
  * must say so, otherwise the absence of an "Off" option looks like a bug.
  */
 export function modelCannotDisableThinking(capabilities?: ThinkingCapabilities | null): boolean {
@@ -118,8 +118,8 @@ export function clampLevel(level: string | null | undefined, options: ReadonlyAr
   if (options.length === 0) return 'off'
   const normalized = typeof level === 'string' ? level.trim().toLowerCase() : ''
   if (isReasoningLevel(normalized) && options.includes(normalized)) return normalized
-  // A stored level the model does not accept — an unsupported rung, or `off`
-  // on an always-on reasoning model — becomes the vendor default.
+  // A stored level the model does not accept - an unsupported rung, or `off`
+  // on an always-on reasoning model - becomes the vendor default.
   if (normalized && options.includes('auto')) return 'auto'
   return options.includes('off') ? 'off' : options[0]
 }

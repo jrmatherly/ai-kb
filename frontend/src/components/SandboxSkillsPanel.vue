@@ -895,7 +895,7 @@ watch(
 // The locators are written only after the installer sandbox is up and the
 // agent has a message to stream into. The row itself is already "installing"
 // the moment the upload is accepted, and that is when the button has to
-// appear — waiting for the locators would hide it for the first minute.
+// appear - waiting for the locators would hide it for the first minute.
 function hasTranscript(skill: ConfigSkill): boolean {
   if (skill.status === 'installing') return true
   return Boolean(skill.install_session_id && skill.install_message_id)

@@ -80,9 +80,9 @@ export interface PromptTemplate {
 export interface PromptTemplatesConfig {
   system_prompt: PromptTemplate[]
   context_template: PromptTemplate[]
-  // Rewrite templates — each template contains both content (system) + user fields
+  // Rewrite templates - each template contains both content (system) + user fields
   rewrite: PromptTemplate[]
-  // Fallback templates — fixed responses + model fallback prompts (mode: "model")
+  // Fallback templates - fixed responses + model fallback prompts (mode: "model")
   fallback: PromptTemplate[]
 
   generate_session_title?: PromptTemplate[]
@@ -300,14 +300,14 @@ export interface SystemAdminUser {
  * accepts whichever is provided; user_id wins when both are set.
  *
  * Backend handler (system.go) returns the updated UserInfo directly as
- * the response body — no {data: ...} wrapping. The shared axios
+ * the response body - no {data: ...} wrapping. The shared axios
  * interceptor in utils/request.ts unwraps response.data at the
  * interceptor layer, so the resolved value here IS the UserInfo.
  *
  * The `as unknown as T` cast is the project-wide pattern for telling
- * TS "trust me, the interceptor unwraps this" — see api/auth/index.ts
+ * TS "trust me, the interceptor unwraps this" - see api/auth/index.ts
  * for the same convention. A naked `Promise<T>` annotation would
- * compile (sometimes — vue-tsc is inconsistent on AxiosResponse vs
+ * compile (sometimes - vue-tsc is inconsistent on AxiosResponse vs
  * inline interface assignability) but is fragile.
  */
 export interface PromoteUserToSystemAdminRequest {
@@ -434,7 +434,7 @@ export async function createSystemUser(req: CreateSystemUserRequest): Promise<Cr
 /**
  * SystemSettingItem mirrors types.SystemSetting on the backend, exactly
  * as the JSON API serialises it (no `data: ...` wrapping; see
- * utils/request.ts:97 — the axios interceptor unwraps response.data
+ * utils/request.ts:97 - the axios interceptor unwraps response.data
  * project-wide). New fields here MUST also be added to backend
  * types/system_setting.go.
  *
@@ -445,18 +445,18 @@ export async function createSystemUser(req: CreateSystemUserRequest): Promise<Cr
 export interface SystemSettingItem {
   id: number
   key: string
-  /** Raw JSON value — narrow via value_type before rendering. */
+  /** Raw JSON value - narrow via value_type before rendering. */
   value: unknown
   value_type: 'int' | 'string' | 'bool' | 'string_list'
   category: string
   description: string
-  /** P3+ — currently always false. UI may surface a "redacted" state when true. */
+  /** P3+ - currently always false. UI may surface a "redacted" state when true. */
   is_secret: boolean
-  /** P3+ — currently always false. UI may show "needs restart to take effect" badge when true. */
+  /** P3+ - currently always false. UI may show "needs restart to take effect" badge when true. */
   requires_restart: boolean
   last_modified_by: string
   /**
-   * Display label resolved from last_modified_by (UUID) on the server —
+   * Display label resolved from last_modified_by (UUID) on the server -
    * username when known, email as a fallback. Empty/undefined for
    * virtual rows that were never persisted; UI then falls back to the
    * UUID prefix.
@@ -512,7 +512,7 @@ export async function updateSystemSetting(
 
 /**
  * Reset a system setting back to its ENV / built-in default by deleting
- * the DB override row. Idempotent — resetting a key that was never
+ * the DB override row. Idempotent - resetting a key that was never
  * persisted resolves successfully.
  */
 export async function resetSystemSetting(key: string): Promise<void> {
@@ -545,7 +545,7 @@ export async function applyDefaultStorageQuotaToAllTenants(): Promise<ApplyDefau
 // ---- Platform Audit Log (system-scope) ----
 
 // We reuse the AuditLog / ListAuditLogParams types from the tenant
-// audit-log module — the row shape is identical, only the route
+// audit-log module - the row shape is identical, only the route
 // differs (tenant_id=0 rows aren't visible via the per-tenant endpoint).
 // Re-exported here so SystemSettings.vue doesn't need to cross-import
 // from a tenant-specific module to consume system-scope feeds.
@@ -564,7 +564,7 @@ import type { ListAuditLogParams, ListAuditLogResponse } from '@/api/tenant/audi
  *
  * Backend: GET /api/v1/system/admin/audit-log (SystemAdmin only).
  * Covers system.setting_changed / system.admin_promoted /
- * system.admin_revoked etc. — events emitted by SystemAdmin actions.
+ * system.admin_revoked etc. - events emitted by SystemAdmin actions.
  *
  * Cursor-paginated by descending id: the first call should pass no
  * cursor, each subsequent page should pass `after_id =
@@ -590,7 +590,7 @@ export async function listSystemAuditLog(
  * QueueStat mirrors types.QueueStat on the backend: a read-only depth
  * snapshot of one asynq queue. `pool` identifies the independent worker pool;
  * `weight` is the queue's scheduling weight within that pool.
- * Counts follow asynq.QueueInfo semantics — `active` is the number of
+ * Counts follow asynq.QueueInfo semantics - `active` is the number of
  * tasks currently being processed (the closest thing to "workers busy"),
  * `pending` is the backlog waiting to be picked up.
  */
@@ -632,7 +632,7 @@ export interface ModelRuntimeStat {
 
 /**
  * Runtime queue dashboard payload. `available` is false in Lite mode
- * (no Redis/asynq) — render an "unavailable in this deployment" state
+ * (no Redis/asynq) - render an "unavailable in this deployment" state
  * rather than an empty table. Each pool includes both configured per-process
  * concurrency and live cluster capacity/active workers aggregated from asynq
  * server heartbeats.
@@ -693,7 +693,7 @@ export interface RuntimeTasksResponse {
 /**
  * Fetch the live asynq queue depths + worker-pool concurrency.
  * Backend: GET /api/v1/system/admin/runtime/queues (SystemAdmin only).
- * Returns the object directly — no {data: ...} wrapping (see
+ * Returns the object directly - no {data: ...} wrapping (see
  * utils/request.ts interceptor).
  */
 export async function getRuntimeQueues(): Promise<RuntimeQueuesResponse> {
@@ -724,7 +724,7 @@ export async function mutateRuntimeTask(
 
 /**
  * Clear every archived (finally-failed) task in one queue in a single call.
- * Only touches the archived dead-letter set — live tasks are never affected.
+ * Only touches the archived dead-letter set - live tasks are never affected.
  * Backend: DELETE /api/v1/system/admin/runtime/queues/{queue}/archived.
  * Returns the object directly (no {data: ...} wrapping, see request.ts).
  */
@@ -918,7 +918,7 @@ export interface SandboxConfigUpsert {
  * until it reaches zero.
  *
  * `unverifiable` means the provider could not be reached, so the count is
- * UNKNOWN rather than zero — never render it as "0 sandboxes".
+ * UNKNOWN rather than zero - never render it as "0 sandboxes".
  */
 export interface SandboxInventory {
   sandbox_count: number
@@ -996,7 +996,7 @@ export function getSandboxConfigInventory(id: string): Promise<{ data: SandboxIn
  * Fetch templates using the connection currently entered in the drawer.
  * `ensure_standard` starts a provider-side CLI build when that AI KB
  * template is missing. `ensure_desktop` does the same for the XFCE image, but
- * the settings UI only sends it when the admin clicks Create — listing must
+ * the settings UI only sends it when the admin clicks Create - listing must
  * not provision a desktop template as a side effect. `replace_standard` /
  * `replace_desktop` rebuild the matching template so a new spec (DNS, image)
  * can take effect; they require `config_id`. The returned building item can
@@ -1040,7 +1040,7 @@ export function checkSandboxConfig(payload: {
  * `sandboxes_still_live` says the backend counted live sandboxes, so the only
  * ways forward are ending the owning sessions or creating a second config;
  * `sandbox_inventory_unverifiable` says the backend is unreachable, so nothing
- * could be counted — the one case a force delete may override.
+ * could be counted - the one case a force delete may override.
  */
 export type SandboxConflictCode =
   | 'sandboxes_still_live'
@@ -1060,7 +1060,7 @@ export interface SandboxConflict {
  *
  * The interceptor spreads the response body onto the rejection, so the code
  * sits at `err.error.code`. Parsing it in one place keeps callers from
- * hard-coding that shape — and from confusing the two conflicts, which drive
+ * hard-coding that shape - and from confusing the two conflicts, which drive
  * different recovery paths in the UI.
  */
 export function parseSandboxConflict(err: unknown): SandboxConflict | null {
@@ -1177,7 +1177,7 @@ export function stopConfigSkill(
 
 /**
  * Partial update: an absent field is left alone. `envs` names only the
- * variables to write — an entry with an empty string clears the stored value
+ * variables to write - an entry with an empty string clears the stored value
  * while keeping the declaration, and undeclared names are ignored server-side.
  */
 export function patchConfigSkill(

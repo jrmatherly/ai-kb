@@ -952,7 +952,7 @@ const enabledAgents = computed(() =>
 
 // LAST_CHAT_MODEL_KEY scopes the per-user "last selected chat model"
 // to localStorage. The previous implementation wrote this back to the
-// tenant-level KV /tenants/kv/conversation-config — which (a) required
+// tenant-level KV /tenants/kv/conversation-config - which (a) required
 // Admin+ to mutate, so a Viewer/Contributor switching models in the
 // chat input got a 403, and (b) silently overwrote the tenant default
 // for everyone else. localStorage is per-user-per-browser, which is
@@ -1085,7 +1085,7 @@ const handleModelChange = (value: string | number | Array<string | number> | und
 
   // The chat-level model picker now persists per-user-per-browser via
   // localStorage instead of writing to the tenant-shared KV. This is what
-  // "remember my last pick" should always have meant — the previous PUT
+  // "remember my last pick" should always have meant - the previous PUT
   // /tenants/kv/conversation-config required Admin+, so a Viewer or
   // Contributor switching models from the chat input got a 403.
   writeLastChatModelID(val);
@@ -2027,13 +2027,13 @@ const createSession = async (
   if (props.isReplying) {
     if (!props.canSteer) {
       // Quick-answer turns have no round boundary to take a message at, and
-      // no follow-up handoff on teardown — queueing here would park the
+      // no follow-up handoff on teardown - queueing here would park the
       // message until it expired. Stop first.
       MessagePlugin.info(t('input.messages.replying'));
       return;
     }
     // Queue the selected delivery mode until its next safe boundary.
-    // Attachments are intentionally not allowed on the steer path — the
+    // Attachments are intentionally not allowed on the steer path - the
     // running turn already resolved its own scope.
     if (uploadedAttachments.value.some(item => item.status === 'uploading')) {
       MessagePlugin.warning(t('input.messages.steerAttachmentPending'));
@@ -2343,7 +2343,7 @@ const handleSelectAgent = async (agent: CustomAgent, sourceTenantId?: string) =>
   showAgentModeSelector.value = false;
 
   // Only the two "mode-entry" built-ins are re-branded as "Normal / Agent Mode"
-  // in the dropdown — the switched-on/off toasts only make sense for them.
+  // in the dropdown - the switched-on/off toasts only make sense for them.
   // Other built-ins (wiki researcher, data analyst, etc.) share `is_builtin`
   // but should fall back to the generic agentSelected toast like custom agents,
   // otherwise selecting e.g. the Wiki Questioner incorrectly says
@@ -2678,7 +2678,7 @@ defineExpose({
   },
   /**
    * Puts text in the composer WITHOUT sending it. Session fork uses this so
-   * the user lands on the branch with the original question ready to edit —
+   * the user lands on the branch with the original question ready to edit -
    * the whole point of branching at a user message.
    */
   prefill(text: string) {

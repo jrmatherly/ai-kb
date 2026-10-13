@@ -170,7 +170,7 @@ const reverting = ref(false)
 const diffLoading = ref(false)
 const diffPair = ref<DiffPair | null>(null)
 // True when the selected version's own snapshot is gone (e.g. pruned between
-// list load and click) — the diff pane shows a hint instead of a diff.
+// list load and click) - the diff pane shows a hint instead of a diff.
 const snapshotMissing = ref(false)
 
 // A null value caches "known not retained" so the 404 is not re-fetched on
@@ -313,7 +313,7 @@ function snapshotFromRevisionData(data: WikiPageRevision, content: string): Wiki
   }
 }
 
-// Returns null when the version has no retained snapshot — versions
+// Returns null when the version has no retained snapshot - versions
 // superseded before the revision feature existed were never snapshotted, and
 // old machine-authored snapshots get pruned. Both are expected states, not
 // errors, so callers degrade instead of surfacing a failure.
@@ -393,7 +393,7 @@ async function loadDiffPair() {
     if (seq !== diffRequestSeq) return
     if (!to) {
       // The selected version's own snapshot vanished (e.g. pruned while the
-      // drawer was open) — nothing to diff, show the hint pane instead of a
+      // drawer was open) - nothing to diff, show the hint pane instead of a
       // misleading "no differences" empty state.
       snapshotMissing.value = true
       diffPair.value = null

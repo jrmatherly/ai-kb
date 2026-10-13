@@ -140,7 +140,7 @@ function morphChildren(currentParent: ParentNode, nextParent: ParentNode): void 
 /**
  * Patch sanitized streaming HTML in place.
  *
- * Replacing innerHTML — or moving decoded images through a detached template —
+ * Replacing innerHTML - or moving decoded images through a detached template -
  * makes Chromium briefly drop the image's painted layer on every typewriter
  * frame. This directive morphs text and surrounding markup without detaching a
  * matching loaded <img> node.

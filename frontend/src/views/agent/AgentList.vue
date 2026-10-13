@@ -1147,7 +1147,7 @@ const checkAndOpenEditModal = async () => {
   }
 }
 
-// Also re-run when the query mutates while this view is already mounted —
+// Also re-run when the query mutates while this view is already mounted -
 // e.g. the IM overview dialog navigating here via router.push lands on the
 // same route, so onMounted alone never fires and the editor would only open
 // after a manual refresh.
@@ -1204,7 +1204,7 @@ onUnmounted(() => {
 
 const handleCardClick = (agent: DisplayAgent | AgentWithUI) => {
   if (openMoreAgentId.value === agent.id) return
-  // Track recency before any branch — Recents should reflect what the
+  // Track recency before any branch - Recents should reflect what the
   // user *looked at*, not only what they edited.
   pins.touchRecent('agent', agent.id)
   if ('isMine' in agent && !agent.isMine) {

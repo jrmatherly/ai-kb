@@ -1,5 +1,5 @@
 <!--
-  CredentialResource — per-field "configured / unconfigured / editing" card.
+  CredentialResource - per-field "configured / unconfigured / editing" card.
 
   Why this component exists:
     The previous UX (PR #990) showed a password input pre-filled with a redacted
@@ -17,7 +17,7 @@
         immediately. No "save form to apply" intermediate state.
 
     `meta` is the source of truth and comes from the parent resource's main
-    GET response (`<resource>.credentials` on every DTO) — there is no
+    GET response (`<resource>.credentials` on every DTO) - there is no
     dedicated GET /credentials endpoint. After a successful save/remove the
     component derives the new local state from the save's return value (or,
     for remove, by setting the field to unconfigured) and emits 'changed' so
@@ -150,7 +150,7 @@ export interface CredentialFieldDef<K extends string = string> {
 }
 
 export interface CredentialResourceApi<K extends string = string> {
-  // PUT /credentials — body keyed by field name, value is the new secret.
+  // PUT /credentials - body keyed by field name, value is the new secret.
   // Returns the updated per-field configured map.
   save: (patch: Partial<Record<K, string>>) => Promise<Record<K, { configured: boolean }>>
   // DELETE /credentials/:field
@@ -212,7 +212,7 @@ function flashInlineToast(key: string, kind: InlineToastKind, ms = 2400) {
 
 function deriveStatesFromMeta(meta: Record<string, { configured: boolean }>) {
   for (const f of props.fields) {
-    // Preserve in-progress edits across parent re-renders — `meta` describes
+    // Preserve in-progress edits across parent re-renders - `meta` describes
     // server state, the editing flag is user intent.
     if (states[f.key] === 'editing') continue
     states[f.key] = meta[f.key]?.configured ? 'configured' : 'unconfigured'
@@ -249,7 +249,7 @@ function enterEdit(key: string) {
   pendingRemove[key] = false
 }
 
-// Cancel returns directly to whatever the parent told us via props.meta —
+// Cancel returns directly to whatever the parent told us via props.meta -
 // no async re-fetch needed, and no risk of staying stuck in 'editing'
 // because the previous implementation's refresh was a no-op when state
 // was already 'editing'.
@@ -285,7 +285,7 @@ async function onSave(field: CredentialFieldDef) {
 
 // Two-step remove. First click flips the row to a confirm state; second
 // click actually fires DELETE. We deliberately do NOT use a global modal
-// here — the row is also the place where the result will appear, and a
+// here - the row is also the place where the result will appear, and a
 // modal forces an unnecessary screen-center detour. The danger-themed
 // "Confirm removal" button on a tinted-warning row gives the same protection
 // against fat-fingered destructive clicks without that detour.
@@ -334,7 +334,7 @@ onBeforeUnmount(() => {
 }
 
 .credential-row {
-  /* Empty wrapper now — each state owns its own outer styling so the
+  /* Empty wrapper now - each state owns its own outer styling so the
      "configured" and "unconfigured" rows can mimic a t-input exactly,
      and the editing state can defer the chrome to t-input itself. */
 }
@@ -384,7 +384,7 @@ onBeforeUnmount(() => {
   /*
     Just-removed flash state: brief tinted background + brand-color border
     so the row gives the user clear, anchored confirmation that the remove
-    actually happened — no need for them to find a corner toast. Auto-fades
+    actually happened - no need for them to find a corner toast. Auto-fades
     after ~2.4s back to plain "Not configured" via the inlineToast timer.
   */
   &.is-just-removed {
@@ -475,7 +475,7 @@ onBeforeUnmount(() => {
 
 /*
   Inline action buttons inside the faux input. We use `variant="text"` so
-  they read as inline text affordances — same visual weight as the eye
+  they read as inline text affordances - same visual weight as the eye
   toggle on the create-mode API key input. A 1px divider between Update
   and Remove gives them just enough separation without adding boxes.
 */
@@ -501,7 +501,7 @@ onBeforeUnmount(() => {
 }
 
 /*
-  Editing state — let t-input own its frame; we just stack a tiny
+  Editing state - let t-input own its frame; we just stack a tiny
   end-aligned action row underneath. No border on this wrapper.
 */
 .credential-edit {

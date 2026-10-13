@@ -3,8 +3,8 @@
 // Helpers for normalising LLM-emitted final answers before rendering.
 //
 // Background: the agent ends a turn by writing its answer as plain assistant
-// text. Many models — especially smaller ones or those SFT'd on different
-// conventions — wrap that answer inside <answer>…</answer>,
+// text. Many models - especially smaller ones or those SFT'd on different
+// conventions - wrap that answer inside <answer>…</answer>,
 // <final_answer>…</final_answer>, or prefix it with "Final Answer:" /
 // "Final Answer:" written in Chinese. When the agent loop accepts such a natural-stop response as the
 // final answer, those wrappers leak into the rendered output. This module

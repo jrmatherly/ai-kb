@@ -147,7 +147,7 @@ const computeStatus = (item: KnowledgeItem): StatusInfo => {
   // While in this phase, prefer the specific "summary generating" copy
   // when summary is what's actually outstanding (preserves the old UX
   // where this label was tied to completed+summary_pending). Otherwise
-  // fall back to the generic "finalizing" label — covers question gen
+  // fall back to the generic "finalizing" label - covers question gen
   // and graph extract, which the user historically had no visibility on.
   if (item.parse_status === 'finalizing') {
     if (item.summary_status === 'pending' || item.summary_status === 'processing') {
@@ -253,7 +253,7 @@ const handleAction = (action: 'download' | 'edit' | 'reparse' | 'cancel-parse' |
     folderPickerItemId.value = item.id;
     return;
   }
-  // Don't close popup for move — it triggers the move sub-flow
+  // Don't close popup for move - it triggers the move sub-flow
   if (action !== 'move') {
     moreOpen.value = null;
   }

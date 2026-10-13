@@ -1521,7 +1521,7 @@ const showIntermediateSteps = ref(false);
 // Track whether a non-superseded answer is streaming. Plain content streams
 // optimistically as an `answer` event (rendered answer-style in the answer
 // area). If the round turns out to be a tool round, that event is marked
-// `superseded` and retracted into the steps — so a superseded segment must NOT
+// `superseded` and retracted into the steps - so a superseded segment must NOT
 // count as "answer started", otherwise the answer-only view would stick after
 // the preamble was retracted.
 const hasAnswerStarted = computed(() => {
@@ -1530,7 +1530,7 @@ const hasAnswerStarted = computed(() => {
   return stream.some((e: any) => e.type === 'answer' && !e.superseded && e.content && e.content.trim());
 });
 
-// Whether ANY answer text has ever appeared this turn — including a preamble
+// Whether ANY answer text has ever appeared this turn - including a preamble
 // that was later superseded (its content stays in the stream). Used to release
 // the live container's height cap. Unlike hasAnswerStarted this is monotonic:
 // it does not flip back when a preamble is retracted, so the container does not
@@ -1670,8 +1670,8 @@ const hasPendingStreamingActivity = computed(() => {
 
 // Before any answer text appears, keep a native timeline placeholder whenever
 // nothing is currently pending. This covers both the initial wait (no events
-// yet) and the gap between rounds — the previous tool finished but the model
-// has not emitted the next step/answer — which would otherwise show a static,
+// yet) and the gap between rounds - the previous tool finished but the model
+// has not emitted the next step/answer - which would otherwise show a static,
 // feedback-less timeline. Once a real pending step exists it carries its own
 // shimmer, and once answer text starts the stream itself is enough feedback.
 const showAgentActivityIndicator = computed(() => {
@@ -1728,7 +1728,7 @@ const finalContent = computed(() => {
   }
 
   // Do NOT fall back to re-rendering the last thinking event when the
-  // intermediate-steps tree already shows it — that would duplicate the
+  // intermediate-steps tree already shows it - that would duplicate the
   // thinking card below the tree. The fallback is only meaningful for
   // legacy conversations where the tree is absent. Also skip for
   // user-stopped conversations which have no final answer to fall back to.
@@ -1814,7 +1814,7 @@ const intermediateStepsSummaryHtml = computed(() => {
 });
 
 // Should show the collapsed steps indicator (tree root). Collapse ONLY once the
-// conversation is done. RAG quick-answer mode never shows the tool tree —
+// conversation is done. RAG quick-answer mode never shows the tool tree -
 // intermediate progress is handled by RagPipelineProgress and disappears once
 // references or the answer arrive.
 const shouldShowCollapsedSteps = computed(() => {
@@ -1823,7 +1823,7 @@ const shouldShowCollapsedSteps = computed(() => {
   return hasSteps && isConversationDone.value;
 });
 
-// Once the steps collapse, the memory row travels with them into the tree —
+// Once the steps collapse, the memory row travels with them into the tree -
 // showing it here as well would leave two rows saying the same thing. In
 // quick-answer mode the pipeline component owns the timeline and its memory row.
 const showMemoryRow = computed(
@@ -1831,7 +1831,7 @@ const showMemoryRow = computed(
 );
 
 // Memory leads the timeline, so it is only the last node while nothing has
-// followed it yet — and a lone node has no trunk line to draw below it.
+// followed it yet - and a lone node has no trunk line to draw below it.
 const memoryIsLast = computed(
   () => lastStreamingTimelineEventIndex.value === -1 && !showAgentActivityIndicator.value,
 );
@@ -1901,7 +1901,7 @@ const buildFullEventList = (stream: any[]) => {
           continue;
         }
         if (curContent && prevContent && curContent.includes(prevContent)) {
-          // Current fully contains previous — replace instead of appending
+          // Current fully contains previous - replace instead of appending
           result[result.length - 1] = {
             type: 'thinking',
             event_id: prev.event_id,
@@ -1930,8 +1930,8 @@ const buildFullEventList = (stream: any[]) => {
     result.push(event);
   }
 
-  // Relocate each retracted (superseded) answer — a tool round's optimistic
-  // preamble that was pulled out of the answer area — into that round's
+  // Relocate each retracted (superseded) answer - a tool round's optimistic
+  // preamble that was pulled out of the answer area - into that round's
   // thinking card as its TITLE, with the reasoning as the body (one card per
   // round). A lone preamble (model has no separate reasoning channel) becomes a
   // title-only thinking card. Non-superseded answers stay as `answer` and are
@@ -1976,7 +1976,7 @@ const buildFullEventList = (stream: any[]) => {
 // IDs of thinking events that should NOT be rendered in the intermediate-
 // steps tree because their content is already shown as the final answer.
 // Two cases produce duplicates:
-//   1. `promotedThinkingEventId` — agent loop ended via natural-stop with
+//   1. `promotedThinkingEventId` - agent loop ended via natural-stop with
 //      no answer event at all; we promote the trailing thinking into a
 //      virtual answer card (see displayEvents) and must hide the source
 //      thinking from the tree.
@@ -2000,7 +2000,7 @@ const hiddenThinkingEventIds = computed<Set<string>>(() => {
     }
   }
 
-  // Case 2: natural-stop duplicates — answer events carry the same content
+  // Case 2: natural-stop duplicates - answer events carry the same content
   // already streamed as thinking chunks. Compare merged thinking events
   // against the concatenated answer content and hide on match. Superseded
   // preambles are excluded: they are the retracted tool-round narration, not
@@ -2015,7 +2015,7 @@ const hiddenThinkingEventIds = computed<Set<string>>(() => {
       if (e.type !== 'thinking' || !e.event_id) continue;
       if (hidden.has(e.event_id)) continue;
       // Hide a step card that duplicates the final answer. Match the body, or a
-      // title-only card (a relocated preamble) whose title equals the answer —
+      // title-only card (a relocated preamble) whose title equals the answer -
       // but keep cards that still carry a distinct reasoning body so the
       // reasoning stays visible.
       const bodyMatches = e.content && thinkingEqualsAnswer(e.content, answerContent);
@@ -2039,7 +2039,7 @@ const intermediateEvents = computed(() => {
   return result.filter((e: any) => {
     if (e.type === 'answer' || e.type === 'agent_complete') return false;
     // Mid-run injected user messages render as normal user bubbles in the
-    // message list, not inside the steps tree — the tree template has no
+    // message list, not inside the steps tree - the tree template has no
     // branch for this type and would otherwise emit an empty node.
     if (e.type === 'user_message_injected') return false;
     if (e.type === 'thinking' && e.event_id && hidden.has(e.event_id)) return false;
@@ -2061,7 +2061,7 @@ const displayEvents = computed(() => {
 
   const result = buildFullEventList(stream).filter(
     // Injected user messages render as normal user bubbles in the message
-    // list — never inside the agent timeline (the template has no branch for
+    // list - never inside the agent timeline (the template has no branch for
     // the type and would render an empty card).
     (e: any) => e.type !== 'user_message_injected',
   );
@@ -2259,7 +2259,7 @@ const handleCitationActivate = (el: HTMLElement) => {
 const getKbIdForWiki = (slug: string): string => {
   if (route.params.kbId) return route.params.kbId as string;
 
-  // The backend ships `found_kbs` as a map<slug, string[]> — a single slug can
+  // The backend ships `found_kbs` as a map<slug, string[]> - a single slug can
   // legitimately resolve to more than one KB when multiple wiki KBs are in
   // scope. For navigation we just pick the first one; cross-KB disambiguation
   // (if ever needed) can layer on top. We also defensively handle the legacy
@@ -2506,7 +2506,7 @@ onUpdated(() => {
     // typewriter reveals their <img> into the DOM, so they show in real time
     // mid-stream instead of waiting for the turn to finish. Hydration is cheap
     // and idempotent: blob results are cached per URL, in-flight fetches are
-    // de-duped, and failures back off for a cooldown — so a not-yet-ready file
+    // de-duped, and failures back off for a cooldown - so a not-yet-ready file
     // simply retries later (and the answerFullyRendered pass is the backstop).
     await hydrateProtectedFileImages(rootElement.value, protectedFileAccess.value);
     await hydrateArtifactImages(rootElement.value, artifactRefContext.value);
@@ -2519,8 +2519,8 @@ agentRenderer.code = createMermaidCodeRenderer('mermaid-agent');
 
 // Files the agent generated in its sandbox carry the same `resource://` handle
 // as any other stored file, so they are matched against this reply's artifacts
-// before marked's default <img>. Everything else — including a handle that
-// belongs to a knowledge-base image rather than to this reply — keeps the
+// before marked's default <img>. Everything else - including a handle that
+// belongs to a knowledge-base image rather than to this reply - keeps the
 // default output, which protectProviderImageSrcInHTML still rewrites.
 const defaultImageRenderer = new marked.Renderer().image;
 agentRenderer.image = function agentImageRenderer(token) {

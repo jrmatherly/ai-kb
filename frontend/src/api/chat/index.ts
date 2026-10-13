@@ -98,14 +98,14 @@ export async function clearSessionMessages(session_id: string) {
 //
 // The backend keeps the physical storage path private and indexes each file by
 // its position (:index) in the owning assistant message. The list endpoints
-// return metadata only — clients must go through downloadArtifact to fetch
+// return metadata only - clients must go through downloadArtifact to fetch
 // the actual bytes so ownership checks always run server-side.
 // ---------------------------------------------------------------------------
 
 export interface ArtifactMeta {
   index: number;
   /**
-   * `resource://<handle>` — the artifact's stable identity, and the destination
+   * `resource://<handle>` - the artifact's stable identity, and the destination
    * the answer body references. Empty when the deployment runs without a
    * resource catalog, in which case the body references files by name.
    */
@@ -118,7 +118,7 @@ export interface ArtifactMeta {
   created_at: string;
   /**
    * Set when the user deleted the file. The entry stays in the list so the
-   * artifacts after it keep their index — which is their download address —
+   * artifacts after it keep their index - which is their download address -
    * so clients filter on this rather than on position.
    */
   deleted_at?: string;

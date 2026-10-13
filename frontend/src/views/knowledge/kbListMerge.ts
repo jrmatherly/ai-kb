@@ -1,7 +1,7 @@
 // Pure helpers backing the "All" scope of the knowledge-base list.
 //
 // The list template renders every card with `:key="kb.id"`. Vue requires
-// `v-for` keys to be unique within a list — duplicate keys corrupt the
+// `v-for` keys to be unique within a list - duplicate keys corrupt the
 // virtual-DOM patch and the list renders empty or partial. The same
 // knowledge base can legitimately show up more than once in the source
 // data:
@@ -57,7 +57,7 @@ export type MergedKnowledgeBase =
   | MergedSharedKnowledgeBase;
 
 // Permissions that grant write access. Mirrors EDITABLE_PERMS in
-// KnowledgeBaseList.vue — kept local so this module stays free of any
+// KnowledgeBaseList.vue - kept local so this module stays free of any
 // component/store imports and remains trivially unit-testable.
 const EDITABLE_PERMS = new Set(['admin', 'editor']);
 

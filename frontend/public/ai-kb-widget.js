@@ -1,5 +1,5 @@
 /**
- * AI KB embed widget SDK — floating chat launcher.
+ * AI KB embed widget SDK - floating chat launcher.
  *
  * Programmatic:
  *   AIKB.init({ channel, token, position, primaryColor, title, baseUrl })
@@ -14,7 +14,7 @@
  *   AIKB.setLocale('en-US')
  *     Switch embed UI language (zh-CN | zh-TW | en-US | ko-KR | ja-JP | ru-RU).
  *
- * Secure mode (recommended): instead of `token`, pass `tokenEndpoint` — a URL on
+ * Secure mode (recommended): instead of `token`, pass `tokenEndpoint` - a URL on
  * your own backend that returns { token: "ems_...", expiresIn: 1800 }. Your
  * backend mints that short-lived session token by exchanging the publish token
  * (kept server-side) against POST /api/v1/embed/:channel/exchange. The publish

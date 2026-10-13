@@ -79,7 +79,7 @@ const isInitializing = ref(true)
 const initialConfig = ref<ChatHistoryConfig | null>(null)
 const stats = ref<ChatHistoryKBStats | null>(null)
 
-// Whether the embedding model is locked (has indexed messages — cannot change)
+// Whether the embedding model is locked (has indexed messages - cannot change)
 const modelLocked = ref(false)
 
 // Load tenant config

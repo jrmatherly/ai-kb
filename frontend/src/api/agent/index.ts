@@ -315,7 +315,7 @@ export function listIMChannels(agentId: string) {
   return get<{ data: IMChannel[] }>(`/api/v1/agents/${agentId}/im-channels`);
 }
 
-// Tenant-wide overview row. Credentials are intentionally omitted — use
+// Tenant-wide overview row. Credentials are intentionally omitted - use
 // listIMChannels(agentId) when you need to edit a specific channel.
 export interface IMChannelOverview {
   id: string;

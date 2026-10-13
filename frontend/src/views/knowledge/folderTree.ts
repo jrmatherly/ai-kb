@@ -4,8 +4,8 @@ import type { KnowledgeFolderNode, KnowledgeFolderTree } from '@/api/knowledge-b
  * Pure helpers behind the knowledge base folder sidebar.
  *
  * A folder selection is just a path, where the empty string is the knowledge
- * base root. The root is a real node of the tree — every top-level folder is
- * its child — so there is no separate "all documents" pseudo-row: what the root
+ * base root. The root is a real node of the tree - every top-level folder is
+ * its child - so there is no separate "all documents" pseudo-row: what the root
  * row lists is decided by the same recursive switch as any other folder.
  */
 export const ROOT_FOLDER_PATH = ''
@@ -72,7 +72,7 @@ export function buildUploadFileName(
 
 /**
  * Breadcrumb entries for a folder path, from the top level down to the leaf.
- * The root has no crumbs of its own — callers render it as the leading item.
+ * The root has no crumbs of its own - callers render it as the leading item.
  */
 export function folderBreadcrumbs(path: string): Array<{ name: string; path: string }> {
   if (!path) return []
@@ -175,7 +175,7 @@ export function childFolders(
  * comes from what the user is already doing instead of from a mode switch they
  * have to understand:
  *
- * - Browsing (no filter active) lists the selected folder's own contents — its
+ * - Browsing (no filter active) lists the selected folder's own contents - its
  *   sub-folders as entries plus the documents directly inside it, the way a file
  *   manager does. A document uploaded on its own therefore sits at the top level
  *   next to the folders, which is exactly where it belongs.

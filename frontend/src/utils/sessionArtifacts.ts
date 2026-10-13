@@ -88,7 +88,7 @@ export function formatArtifactSize(size: number | undefined | null): string {
 }
 
 export function formatArtifactDateTime(raw: string | undefined | null): string {
-  if (!raw) return '—'
+  if (!raw) return '-'
   const parsed = new Date(raw)
   if (Number.isNaN(parsed.getTime())) return String(raw)
   const pad = (n: number) => String(n).padStart(2, '0')

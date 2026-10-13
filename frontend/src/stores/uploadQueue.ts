@@ -8,8 +8,8 @@ import {
 } from './uploadTasksState'
 
 /**
- * The upload queue's behaviour — bounded concurrent transfers, cancel, retry
- * and polling the created rows until parsing settles — with the network and
+ * The upload queue's behaviour - bounded concurrent transfers, cancel, retry
+ * and polling the created rows until parsing settles - with the network and
  * timers injected, so the store only wires it to the API and Vue.
  *
  * `items` and `batches` are mutated in place (never reassigned) so a reactive

@@ -63,7 +63,7 @@ test('formatArtifactSize matches the former drawer copy', () => {
 })
 
 test('formatArtifactDateTime renders a stable local timestamp', () => {
-  assert.equal(formatArtifactDateTime(''), '—')
+  assert.equal(formatArtifactDateTime(''), '-')
   assert.equal(formatArtifactDateTime('not-a-date'), 'not-a-date')
   assert.match(formatArtifactDateTime('2026-09-08T04:05:00Z'), /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
 })

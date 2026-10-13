@@ -129,7 +129,7 @@ test('an in-flight turn stays in-flight after being split', () => {
 })
 
 // The completed turn's trailing segment carries the answer, so it must not
-// inherit the sealed-prefix flags either — steerForked there suppresses the
+// inherit the sealed-prefix flags either - steerForked there suppresses the
 // answer toolbar and follow-up suggestions.
 test('the trailing segment does not inherit sealed-prefix flags', () => {
   const messages = [

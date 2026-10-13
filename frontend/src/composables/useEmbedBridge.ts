@@ -63,7 +63,7 @@ function writeStoredSession(channelId: string, session: StoredSession | null) {
 
 // A stored session may have been deleted/expired server-side, or its signed
 // handle invalidated by a channel token rotation. Probe it cheaply (limit=1)
-// with the stored signature before reusing — the backend rejects stale/foreign
+// with the stored signature before reusing - the backend rejects stale/foreign
 // ids and bad signatures with 4xx, which surfaces here as a thrown error.
 async function isStoredSessionValid(
   channelId: string,
@@ -116,7 +116,7 @@ export function useEmbedBridge(channelId: Ref<string>) {
     try {
       let apiToken = embedToken
       // Secure mode: the host already handed us a short-lived session token
-      // (minted server-side from the publish token). Use it directly — the
+      // (minted server-side from the publish token). Use it directly - the
       // exchange endpoint only accepts publish tokens and would reject this.
       if (!isEmbedSessionToken(embedToken)) {
         try {

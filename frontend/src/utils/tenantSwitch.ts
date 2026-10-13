@@ -74,13 +74,13 @@ export function consumePendingTenantSwitchToast(): PendingTenantSwitchToast | nu
  * Conventions:
  *   - Pass the target tenant id when switching to a peer tenant.
  *   - Pass `null` (which sends `0`) when switching back to the home
- *     tenant — that clears the preference and reverts the user to the
+ *     tenant - that clears the preference and reverts the user to the
  *     "always start at home" default.
  *
  * Fire-and-forget: callers usually trigger a full-page reload right
  * after; this returns the in-flight promise so callers can race it
  * against a small budget if they want best-effort completion before
- * navigation. Failures are logged but never thrown — losing one
+ * navigation. Failures are logged but never thrown - losing one
  * persist is recoverable on the next switch.
  */
 export function persistLastActiveTenantPreference(

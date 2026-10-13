@@ -26,7 +26,7 @@ import {
 // devices; the runtime picker just hides the non-matching subset. A user
 // who moves a localStorage value (e.g. "pingfang") to a Windows machine
 // gets it validated against SANS_STACKS (which still contains the key) and
-// the font stack still works — the browser just falls back to yahei on
+// the font stack still works - the browser just falls back to yahei on
 // its own. Only truly unknown keys fall through to DEFAULT_SANS.
 export type FontKey =
   | 'system'
@@ -114,7 +114,7 @@ export type Platform = 'mac' | 'windows' | 'linux'
 /**
  * Detect the host OS so the font picker can offer options the user will
  * actually see. Prefers navigator.userAgentData (modern Chromium, Edge,
- * current Wails WebView) and falls back to the UA string — older Safari
+ * current Wails WebView) and falls back to the UA string - older Safari
  * and some Firefox builds still don't expose userAgentData.
  *
  * Unknown platforms fall back to Mac, which is the most common development
@@ -225,7 +225,7 @@ function applyFont() {
   }
   if (lastApplied.scale !== scale) {
     // Apply size via CSS zoom on <html> so the multiplier reaches every
-    // element — including the ~1000+ hard-coded `font-size: NNpx` rules
+    // element - including the ~1000+ hard-coded `font-size: NNpx` rules
     // scattered across the frontend. The previous approach set
     // `--app-font-scale` and relied on `calc(NNpx * var(--app-font-scale))`,
     // but calc() only runs where the variable is consumed (a few TDesign

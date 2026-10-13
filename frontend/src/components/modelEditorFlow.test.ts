@@ -1014,8 +1014,8 @@ test('an explicitly empty type URL clears the old endpoint without inheriting th
   } finally { f.close() }
 })
 
-// A VLM entry is a chat model that accepts images, so the backend — which
-// already scopes the provider list to the requested model type — returns it
+// A VLM entry is a chat model that accepts images, so the backend - which
+// already scopes the provider list to the requested model type - returns it
 // typed "chat". Re-filtering on that type in the editor emptied the picker
 // for every vendor under Vision.
 const vlmProviders = [{

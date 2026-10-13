@@ -9,7 +9,7 @@ import "@/assets/theme/theme.css";
 import "@/assets/theme/tdesign-overrides.less";
 import "@/assets/dropdown-menu.less";
 import "@/components/css/chat-hljs-dark.less";
-// vue-virtual-scroller ships its own tiny stylesheet — required for
+// vue-virtual-scroller ships its own tiny stylesheet - required for
 // RecycleScroller/DynamicScroller to size their viewport correctly.
 // Without it the scroller computes 0 height and renders no items.
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
@@ -39,7 +39,7 @@ async function bootstrap() {
   app.use(pinia);
 
   // Capabilities (can_create_tenant, auto_accept_invitation) are not cached
-  // in localStorage — reconcile once before first paint when a session exists.
+  // in localStorage - reconcile once before first paint when a session exists.
   const authStore = useAuthStore();
   if (localStorage.getItem("aikb_token")) {
     try {

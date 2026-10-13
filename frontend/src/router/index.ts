@@ -387,7 +387,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // SystemAdmin gate — checked AFTER auth so a non-admin who's logged
+  // SystemAdmin gate - checked AFTER auth so a non-admin who's logged
   // out gets redirected to /login first (consistent with how the rest
   // of the auth flow works), and only an authenticated non-admin sees
   // the bounce. This is UI-only; the server enforces the real check.

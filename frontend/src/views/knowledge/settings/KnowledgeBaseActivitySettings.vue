@@ -157,7 +157,7 @@
                 <div class="audit-target">
                   <span v-if="targetSubject(row)" class="audit-target-key">{{ targetSubject(row) }}</span>
                   <span v-if="targetDiff(row)" class="audit-target-diff">{{ targetDiff(row) }}</span>
-                  <span v-else-if="!targetSubject(row)" class="audit-target-empty">—</span>
+                  <span v-else-if="!targetSubject(row)" class="audit-target-empty">-</span>
                 </div>
               </template>
               <template #actor="{ row }">
@@ -467,7 +467,7 @@ function targetSubject(entry: KnowledgeBaseActivity): string {
     return t('knowledgeEditor.activity.titleWithCount', { title: label, count })
   }
   if (label) return label
-  // Aggregate / clone / share events carry no human-readable name — fall back
+  // Aggregate / clone / share events carry no human-readable name - fall back
   // to the localized object-type label so the column always has a meaningful
   // primary subject instead of being blank or showing a raw identifier.
   return targetLabel(entry.target_type)
@@ -502,7 +502,7 @@ function targetDiff(entry: KnowledgeBaseActivity): string {
   if (count > 0 && !String(value.title || value.name || '').trim()) {
     return t('knowledgeEditor.activity.countItems', { count })
   }
-  // Deliberately no raw target_id here — identifiers live in the detail drawer.
+  // Deliberately no raw target_id here - identifiers live in the detail drawer.
   return ''
 }
 
@@ -541,7 +541,7 @@ function activityAPIKeyId(entry: KnowledgeBaseActivity): string {
 }
 
 function formatDatePart(value: string): string {
-  if (!value) return '—'
+  if (!value) return '-'
   try {
     return new Intl.DateTimeFormat(locale.value || 'en-US', {
       year: 'numeric',

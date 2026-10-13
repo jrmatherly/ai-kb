@@ -268,7 +268,7 @@ const goToParserSettings = () => {
 //
 // "Owner" here is "the original creator of this KB" (PR 5 introduced
 // CreatorID). The previous version compared kb.tenant_id to the active
-// tenant id, which only answers "is this KB inside our tenant" — that
+// tenant id, which only answers "is this KB inside our tenant" - that
 // is true even for a Viewer in someone else's tenant, so the gate
 // silently bypassed every role check below. Now we require an explicit
 // creator match, and the role-aware fallbacks below decide whether a
@@ -292,11 +292,11 @@ const currentSharedKb = computed(() =>
 // Accessed via organization share: when the KB shows up in our
 // sharedKnowledgeBases list it means we reached it through a shared space,
 // not because we own/manage it in our tenant. In that case the user's local
-// tenant role does NOT grant edit/manage — only the share grant does.
+// tenant role does NOT grant edit/manage - only the share grant does.
 // Without this guard a local tenant Admin would see edit/upload entries on
 // a read-only shared KB and get 403'd by the backend on click.
 //
-// Note: tenant_id comparison alone is unreliable — a user can be a member of
+// Note: tenant_id comparison alone is unreliable - a user can be a member of
 // both the source and receiving tenants, and currentTenantId reflects the
 // active switcher rather than "how this KB became visible to me". Presence
 // in the share list is the authoritative signal.
@@ -308,7 +308,7 @@ const isViaShare = computed(() => !!currentSharedKb.value);
 const effectiveKBPermission = computed(() => orgStore.getKBPermission(kbId.value) || kbInfo.value?.my_permission || '');
 
 // Can edit: when accessed via an organization share, ONLY the share grant
-// counts — even if the current user happens to be the original creator of
+// counts - even if the current user happens to be the original creator of
 // the KB. The backend's RBAC middleware authorizes based on the active
 // tenant, not on creator_id, so a creator viewing their own KB from a
 // different tenant context will be 403'd on write. Otherwise: KB creator
@@ -320,7 +320,7 @@ const effectiveKBPermission = computed(() => orgStore.getKBPermission(kbId.value
 // admin browsing a read-only shared KB saw edit entries that only led to 403s
 // (#3098).
 //
-// hasRole('contributor') is intentionally NOT here — being a Contributor
+// hasRole('contributor') is intentionally NOT here - being a Contributor
 // in a tenant does not by itself grant edit on someone else's KB.
 const canEdit = computed(() => {
   const permission = effectiveKBPermission.value;
@@ -332,7 +332,7 @@ const canEdit = computed(() => {
 });
 
 // Can manage (delete, settings, etc.): same permission-first rule. For
-// shared KBs only an 'admin' share grant qualifies — editor/viewer (and
+// shared KBs only an 'admin' share grant qualifies - editor/viewer (and
 // even being the creator viewed via share) never grant delete/settings.
 const canManage = computed(() => {
   const permission = effectiveKBPermission.value;
@@ -351,7 +351,7 @@ const canManage = computed(() => {
 // in their tenant on top of having KB edit permission. Without the extra
 // role check, an org-share-editor whose tenant role is Viewer would see
 // the "Move" / "Batch manage" entries and 403 on click. For shared KBs
-// the local tenant role is irrelevant — canEdit already encodes the share
+// the local tenant role is irrelevant - canEdit already encodes the share
 // grant, so trust it.
 const canMutateKnowledge = computed(() => {
   if (!canEdit.value) return false;
@@ -440,7 +440,7 @@ let pageSize = 35;
 let scrollLoading = false;
 const resetPage = () => { page = 1; scrollLoading = false; };
 
-// Move state — inline in card menu
+// Move state - inline in card menu
 const moveMenuMode = ref<'normal' | 'targets' | 'confirm'>('normal');
 const moveKnowledgeId = ref('');
 const moveTargetKbs = ref<any[]>([]);
@@ -451,7 +451,7 @@ const moveMode = ref<'reuse_vectors' | 'reparse'>('reuse_vectors');
 const moveSubmitting = ref(false);
 let movePollTimer: ReturnType<typeof setInterval> | null = null;
 
-// View mode (grid / list) — persisted per browser
+// View mode (grid / list) - persisted per browser
 type DocViewMode = 'grid' | 'list';
 const VIEW_MODE_KEY = 'aikb.kb.docs.viewMode';
 const initViewMode = (): DocViewMode => {
@@ -464,7 +464,7 @@ watch(viewMode, (v) => {
   try { localStorage.setItem(VIEW_MODE_KEY, v); } catch { /* ignore */ }
 });
 
-// Multi-select state — shared between grid and list views.
+// Multi-select state - shared between grid and list views.
 // Vue 3.5 tracks Set#add/delete natively, so direct mutation is reactive.
 const selectedIds = ref<Set<string>>(new Set());
 let lastSelectedIndex = -1;
@@ -1261,7 +1261,7 @@ const handleKnowledgeFileDrop = (event: CustomEvent) => {
 // Auto-open document detail when navigated with ?knowledge_id=xxx.
 // Note: this runs both when the KB page mounts with a query param AND when a
 // subsequent in-page navigation (e.g. from the global command palette) only
-// changes the query without re-mounting the component — in that case kbId is
+// changes the query without re-mounting the component - in that case kbId is
 // the same and cardList may already be populated, so relying solely on the
 // cardList watcher misses the trigger.
 const pendingKnowledgeId = ref<string | null>(
@@ -1312,7 +1312,7 @@ watch(
 );
 
 // Dispatched by the global command palette when the user picks a chunk that
-// lives in the KB they are already viewing — vue-router dedupes identical
+// lives in the KB they are already viewing - vue-router dedupes identical
 // navigations, so we rely on this event instead of a URL change.
 const handleOpenKnowledgeEvent = (e: Event) => {
   const detail = (e as CustomEvent<{ kbId: string; knowledgeId: string }>).detail;
@@ -1827,7 +1827,7 @@ const handleManualEdit = (index: number, item: KnowledgeCard) => {
   });
 };
 
-// Opens ONLY the trace drawer for this card — does NOT pop the
+// Opens ONLY the trace drawer for this card - does NOT pop the
 // document detail drawer behind it. The trace drawer attaches to
 // body so it renders independent of its host's visibility; we just
 // need `details` populated so the timeline component knows which
@@ -1862,7 +1862,7 @@ const confirmRebuildKnowledge = async (index: number, item: KnowledgeCard) => {
   }
   closeCardMoreMenu(index);
 
-  // No KB context to seed the dialog defaults — fall back to a direct reparse
+  // No KB context to seed the dialog defaults - fall back to a direct reparse
   // that reuses the overrides stored at upload time.
   if (!kbInfo.value) {
     await submitReparse(item.id);
@@ -2007,7 +2007,7 @@ watch(viewMode, (mode) => {
     batchMode.value = true;
   }
 });
-// Triggered from a card / row "..." menu — match the session-list UX where
+// Triggered from a card / row "..." menu - match the session-list UX where
 // the menu item simply opens batch mode (no auto-selection).
 const handleEnterBatchFromCard = (item: any) => {
   if (item) item.isMore = false;

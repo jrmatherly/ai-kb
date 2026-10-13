@@ -263,7 +263,7 @@ export function useChatStreamHandler(options: UseChatStreamHandlerOptions) {
     if (Array.isArray(session.knowledge_references) && session.knowledge_references.length > 0) {
       return true
     }
-    // A turn can carry its answer as plain content with no timeline events —
+    // A turn can carry its answer as plain content with no timeline events -
     // most visibly after a steer fork, where the events are split across
     // segments and one segment can end up holding only the answer text.
     // Hiding that row loses the reply entirely on reload.
@@ -980,7 +980,7 @@ export function useChatStreamHandler(options: UseChatStreamHandlerOptions) {
           const injectedId = dataPayload?.user_message_id as string | undefined
           // Resuming a turn replays this event from the start of the log, by
           // which point history has already loaded the persisted row. Reuse
-          // it — synthesizing here would show the same message twice.
+          // it - synthesizing here would show the same message twice.
           injectedUser = messagesList.find(
             (item) =>
               item.role === 'user' &&
@@ -1032,7 +1032,7 @@ export function useChatStreamHandler(options: UseChatStreamHandlerOptions) {
         fullContent.value = ''
         currentAssistantMessageId.value = ''
         // Hydrate skill-generated artifacts as soon as the SSE completion
-        // event arrives — without this the download button only appears
+        // event arrives - without this the download button only appears
         // after a page refresh (the assistant message row is fetched via
         // getMessageList which does include the artifacts JSON column).
         // botmsg.vue / AgentStreamDisplay.vue read `message.artifacts`

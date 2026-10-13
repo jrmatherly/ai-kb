@@ -13,7 +13,7 @@ import {
 /**
  * Vendor catalog cache. Every component that renders a vendor (model
  * editor, model cards, debug drawer) reads through this store so the
- * frontend keeps no vendor table or naming heuristics of its own — the
+ * frontend keeps no vendor table or naming heuristics of its own - the
  * backend catalog (GET /api/v1/models/providers) is the single source.
  *
  * Providers are fetched once per model type (the backend filters the

@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-// Icon: Lucide "book-open-text" (ISC) — https://lucide.dev/icons/book-open-text
+// Icon: Lucide "book-open-text" (ISC) - https://lucide.dev/icons/book-open-text
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

@@ -17,7 +17,7 @@ export interface DataSource {
   last_sync_at: string | null
   last_sync_result: any
   error_message: string
-  // Single-field "credentials" map from the main response — DataSource
+  // Single-field "credentials" map from the main response - DataSource
   // credentials are a per-connector atomic set.
   credentials?: { credentials: { configured: boolean } }
   created_at: string

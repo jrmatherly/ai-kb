@@ -54,7 +54,7 @@ export interface CmdkMsgGroup {
 }
 
 /**
- * useCmdkSearch — debounced, cancellable search that fans out to
+ * useCmdkSearch - debounced, cancellable search that fans out to
  *   • /api/v1/knowledge-search (chunks / files)
  *   • /api/v1/messages/search  (chat history)
  * and produces three client-side groups: kbs / files / messages.
@@ -205,7 +205,7 @@ export function useCmdkSearch(options: {
 
   // Sessions: no dedicated list API; we re-use whatever menuStore already has
   // cached (the sidebar already paginates them). Good enough for "jump to a
-  // session I've seen recently" — not a substitute for message-content search.
+  // session I've seen recently" - not a substitute for message-content search.
   const sessionList = computed<CmdkSessionItem[]>(() => {
     const chatMenu = (menuStore.menuArr as any[]).find((m: any) => m.path === 'creatChat')
     const children = (chatMenu?.children as any[]) || []
@@ -219,7 +219,7 @@ export function useCmdkSearch(options: {
     const q = query.value.trim().toLowerCase()
     if (!q) return []
     // If a session already appears in the message-content group, suppress it
-    // here — showing the same session title twice (once with a message hit,
+    // here - showing the same session title twice (once with a message hit,
     // once by title match) is noise. The message-group entry is strictly
     // more informative (it shows which message matched), so it wins.
     const coveredBySession = new Set(messageGroups.value.map(g => g.sessionId))

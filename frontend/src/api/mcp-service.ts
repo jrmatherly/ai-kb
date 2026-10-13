@@ -16,7 +16,7 @@ export interface MCPService {
     // dynamic client registration).
     auth_type?: '' | 'api_key' | 'bearer' | 'oauth'
     // Secret fields (api_key, token) are NEVER returned by the server in
-    // this shape — they live behind the /credentials subresource. The
+    // this shape - they live behind the /credentials subresource. The
     // optional-property typing remains so create-mode payloads can still
     // carry them in the initial POST body.
     api_key?: string
@@ -83,7 +83,7 @@ export interface MCPTestResult {
   message?: string
   description?: string
   // Set when the server requires OAuth (RFC 9728) but the service was not
-  // configured for it — the UI guides the user to switch to OAuth 2.0.
+  // configured for it - the UI guides the user to switch to OAuth 2.0.
   oauth_required?: boolean
   tools?: MCPTool[]
   resources?: MCPResource[]
@@ -101,9 +101,9 @@ export interface MCPAgentScope {
 //
 // With a shared agent, the result is the services THAT agent can be @mentioned
 // with: they live in its owner's workspace and none of their ids match anything
-// in the caller's. Those rows also carry a narrowed field set — no URL,
+// in the caller's. Those rows also carry a narrowed field set - no URL,
 // headers or credential metadata, which describe how the owner wired the
-// service up — since the picker needs nothing more.
+// service up - since the picker needs nothing more.
 export async function listMCPServices(agent?: MCPAgentScope): Promise<MCPService[]> {
   const params: Record<string, string> = {}
   if (agent?.agentId && agent?.sourceTenantId) {
@@ -183,7 +183,7 @@ export async function setMCPToolEnabled(serviceId: string, toolName: string, ena
 // Secrets travel through a dedicated /credentials endpoint instead of the
 // main MCP PUT body. "Is this configured?" metadata is embedded on the main
 // MCPService response (MCPService.credentials), so there is no GET on this
-// endpoint — only PUT (write) and DELETE (clear). Both trigger an MCP
+// endpoint - only PUT (write) and DELETE (clear). Both trigger an MCP
 // client reconnect server-side.
 // ----------------------------------------------------------------------------
 

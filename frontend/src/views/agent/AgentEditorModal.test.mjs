@@ -36,7 +36,7 @@ test('shows a post-create hint after the first successful save', () => {
 })
 
 // Locate a settings row by the i18n key of its label and return the attributes
-// that sit before class="setting-row" — i.e. whatever v-if guards that row.
+// that sit before class="setting-row" - i.e. whatever v-if guards that row.
 // Anchoring on the label keeps these assertions stable across reformatting.
 function settingRowGuard(labelKey) {
   const key = labelKey.replace(/\./g, '\\.')

@@ -45,7 +45,7 @@
     }
   }
 
-  // Citation-only paragraphs from marked (tag on its own line) — keep compact.
+  // Citation-only paragraphs from marked (tag on its own line) - keep compact.
   :deep(p:has(> .citation:only-child)) {
     margin: 0.125em 0 0.375em;
     line-height: 1.625;
@@ -640,7 +640,7 @@
   // is referenced inline as a card instead of being embedded: the artifacts are
   // self-contained pages up to a megabyte, and an iframe per reference would be
   // both slow and an active-content risk. Clicking opens the artifact drawer's
-  // sandboxed preview. It must stay inline — Markdown wraps the reference in a
+  // sandboxed preview. It must stay inline - Markdown wraps the reference in a
   // paragraph, and a block element would be hoisted out of it by the parser.
   :deep(.artifact-ref-card) {
     display: inline-flex;

@@ -30,7 +30,7 @@ test('small uploads still get the floor', () => {
 })
 
 test('large uploads scale past the floor', () => {
-  // 100MB at the budgeted 10MB/min is 10 minutes — comfortably past the 5min
+  // 100MB at the budgeted 10MB/min is 10 minutes - comfortably past the 5min
   // floor, and far past the 30s default that silently aborted these uploads.
   const tenMinutes = 10 * 60 * 1000
   assert.equal(uploadTimeoutMs(formDataWith(100 * 1024 * 1024)), tenMinutes)

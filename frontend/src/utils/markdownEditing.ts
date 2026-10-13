@@ -2,7 +2,7 @@
  * Keyboard behaviours a plain <textarea> does not give a Markdown author:
  * continuing a list on Enter and indenting a block with Tab.
  *
- * Everything here is a pure string transform — the component owns the DOM and
+ * Everything here is a pure string transform - the component owns the DOM and
  * only applies the returned value/selection.
  */
 
@@ -35,7 +35,7 @@ const lineEndAt = (value: string, index: number): number => {
 /**
  * Enter inside a list item keeps the list going.
  *
- * An item that is still empty ends the list instead — the same escape hatch
+ * An item that is still empty ends the list instead - the same escape hatch
  * every Markdown editor has, so Enter twice gets you back to a paragraph.
  */
 export function continueListOnEnter({ value, start, end }: EditorState): EditorPatch {
@@ -86,7 +86,7 @@ function mapSelectedLines(
 /**
  * Tab indents, Shift+Tab outdents.
  *
- * Only claimed when it would actually mean something — a multi-line selection,
+ * Only claimed when it would actually mean something - a multi-line selection,
  * or a caret sitting in a list item. Anywhere else Tab still moves focus, which
  * is the only way out of the textarea for keyboard users.
  */

@@ -282,7 +282,7 @@ import { useEditorResourcesStore } from '@/stores/editorResources';
 
 const chatResources = useChatResourcesStore();
 const editorResources = useEditorResourcesStore();
-// Platform logos reused from IMChannelsOverviewPanel — keeps the session list
+// Platform logos reused from IMChannelsOverviewPanel - keeps the session list
 // visually consistent with the channels admin view.
 import wecomLogo from '@/assets/img/im/wecom.svg';
 import feishuLogo from '@/assets/img/im/feishu.svg';

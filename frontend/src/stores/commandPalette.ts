@@ -26,7 +26,7 @@ export const useCommandPaletteStore = defineStore('commandPalette', () => {
   const initialQuery = ref('')
   const recentQueries = ref<string[]>([])
 
-  // Lazily resolve the auth store inside actions / watchers — at store
+  // Lazily resolve the auth store inside actions / watchers - at store
   // setup time pinia may not have finished registering peer stores yet.
   const currentRecentKey = (): string => {
     const auth = useAuthStore()

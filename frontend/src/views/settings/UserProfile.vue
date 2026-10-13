@@ -78,7 +78,7 @@
         </div>
         <div class="setting-control">
           <template v-if="oidcOnlyLogin">
-            <span class="info-value info-value--muted">—</span>
+            <span class="info-value info-value--muted">-</span>
           </template>
           <template v-else>
             <span class="info-value password-mask" aria-hidden="true">••••••••</span>
@@ -319,7 +319,7 @@ const submitPasswordChange = async () => {
     try {
       await logoutApi()
     } catch {
-      /* ignore — local cleanup still proceeds */
+      /* ignore - local cleanup still proceeds */
     }
     authStore.logout()
     router.push('/login')

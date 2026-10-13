@@ -323,7 +323,7 @@ const overlapTooHigh = computed(
   () => localChunkOverlap.value > 0 && localChunkOverlap.value >= localChunkSize.value / 2
 )
 
-// Live config snapshot for the debug panel — uses current local form values
+// Live config snapshot for the debug panel - uses current local form values
 // so the panel reflects edits immediately without waiting for save.
 const debugConfig = computed(() => ({
   chunkSize: localChunkSize.value,

@@ -30,7 +30,7 @@ function shared(
   }
 }
 
-// Render keys must be unique — duplicate `:key` values are exactly what
+// Render keys must be unique - duplicate `:key` values are exactly what
 // blanks the list in #795.
 function keys(list: MergedKnowledgeBase[]): string[] {
   return list.map((kb) => kb.id)
@@ -80,8 +80,8 @@ test('renders exactly one card per KB when several owned KBs are also shared bac
 })
 
 test('collapses the same KB shared through multiple orgs into one card', () => {
-  // Two distinct shares (different share_id) but the same knowledge_base.id
-  // — the real-world trigger for duplicate keys once there are ≥2 rows.
+  // Two distinct shares (different share_id) but the same knowledge_base.id -
+  // the real-world trigger for duplicate keys once there are ≥2 rows.
   const result = mergeAllScopeKnowledgeBases(
     [],
     [

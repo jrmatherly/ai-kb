@@ -40,7 +40,7 @@ export function deriveManualTitle(question: string, fallback: string): string {
  * Build the Markdown body seeded into the manual editor from a chat answer.
  *
  * The raw answer carries inline `<kb/>` citation tags whose chunk/kb UUIDs are
- * meaningless once the text leaves the conversation — they used to land in the
+ * meaningless once the text leaves the conversation - they used to land in the
  * editor verbatim and had to be deleted by hand. Strip them, keep `<web/>`
  * citations as real links, and list the cited documents once at the bottom so
  * the provenance survives.

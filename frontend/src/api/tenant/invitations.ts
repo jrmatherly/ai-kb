@@ -174,7 +174,7 @@ export async function revokeInvitation(
 }
 
 /**
- * List MY invitations. Defaults to pending only — the inbox page
+ * List MY invitations. Defaults to pending only - the inbox page
  * filters terminal rows by default; pass includeTerminal=true for a
  * history view if/when the UI grows one.
  * Backend: GET /api/v1/me/invitations (authenticated).

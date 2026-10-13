@@ -21,8 +21,8 @@ import { useAuthStore } from '@/stores/auth'
  *
  * Variants:
  *  - mine        : created by the current user in the current tenant
- *  - tenant      : owned by the current tenant but created by someone else
- *                  — label shows tenant name; use when context doesn't say
+ *  - tenant      : owned by the current tenant but created by someone else -
+ *                  label shows tenant name; use when context doesn't say
  *  - creator     : same data shape as `tenant`, but the surrounding section
  *                  header already names the tenant ("This space · View only"), so
  *                  the badge only carries the creator name to avoid the
@@ -39,7 +39,7 @@ import { useAuthStore } from '@/stores/auth'
 const props = withDefaults(
   defineProps<{
     variant: 'mine' | 'tenant' | 'creator' | 'space' | 'shared'
-    /** Used in `space` variant — the organization (space) display name. */
+    /** Used in `space` variant - the organization (space) display name. */
     spaceName?: string
     /** Optional creator display name, surfaces in tooltip for `tenant` variant. */
     creatorName?: string

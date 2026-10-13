@@ -142,7 +142,7 @@ function failedItems(log: SyncLog): SyncItemError[] {
 // Render one failure sample. The backend sends a stable i18n `code` (+ params)
 // so the reason is localised to the viewer's language; `message` is the fallback
 // for old logs / codes this client doesn't know. The document title is kept
-// separate and prefixed as "title — reason".
+// separate and prefixed as "title - reason".
 function formatSyncError(e: SyncItemError): string {
   let reason = ''
   if (e.code) {
@@ -152,7 +152,7 @@ function formatSyncError(e: SyncItemError): string {
   } else {
     reason = e.message || ''
   }
-  return e.title ? (reason ? `${e.title} — ${reason}` : e.title) : reason
+  return e.title ? (reason ? `${e.title} - ${reason}` : e.title) : reason
 }
 
 // Group logs by date

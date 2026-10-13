@@ -470,7 +470,7 @@ const formRules = computed(() => {
           ]
         }
       }
-      // Index name/collection string fields: pattern validation (optional — empty is allowed)
+      // Index name/collection string fields: pattern validation (optional - empty is allowed)
       for (const field of (selectedType.value.index_fields || [])) {
         if (field.type === 'string') {
           rules[`index_config.${field.name}`] = [
@@ -494,7 +494,7 @@ const indexNamePattern = /^[a-zA-Z][a-zA-Z0-9_-]{0,127}$/
 const fieldLabel = (name: string): string => {
   const key = `vectorStoreSettings.fields.${name}`
   const translated = t(key)
-  // If i18n key not found, vue-i18n returns the key itself — fall back to field name
+  // If i18n key not found, vue-i18n returns the key itself - fall back to field name
   return translated === key ? name : translated
 }
 
@@ -574,7 +574,7 @@ function ensureNumberProxy(
 }
 
 // Vue templates can't call ensureNumberProxy on every render without the
-// keys multiplying — wrap in a Proxy so `connectionNumberText[name].value`
+// keys multiplying - wrap in a Proxy so `connectionNumberText[name].value`
 // from the template lazily creates the proxy on first read.
 const connectionNumberTextProxy = new Proxy(connectionNumberText, {
   get: (target, name: string) => ensureNumberProxy(target, form.value.connection_config, name),
@@ -1162,7 +1162,7 @@ onMounted(async () => {
 
 <!--
   Non-scoped block: per-engine header-icon coloring + color-logo background
-  tweak. Same pattern as Storage/Parser/WebSearch drawers — these rules
+  tweak. Same pattern as Storage/Parser/WebSearch drawers - these rules
   must be global so they reach the t-drawer panel even if its scoped
   data-attribute is dropped in some builds. Each rule mirrors the matching
   .store-card--{engine} .store-card__badge from the scoped block above so

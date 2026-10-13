@@ -661,9 +661,9 @@ function taskStateCount(row: QueueStat | null, state: RuntimeTaskState): number 
 }
 
 function formatTaskTime(value?: string): string {
-  if (!value) return '—'
+  if (!value) return '-'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
+  if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleString(locale.value, {
     year: 'numeric',
     month: '2-digit',
@@ -744,7 +744,7 @@ function poolUtilization(pool: RuntimeWorkerPool): number {
 }
 
 function formatLatency(ms: number): string {
-  if (!ms || ms <= 0) return '—'
+  if (!ms || ms <= 0) return '-'
   if (ms < 1000) return `${ms} ms`
   const s = ms / 1000
   if (s < 60) return `${s.toFixed(1)} s`
@@ -928,7 +928,7 @@ function startPolling() {
   stopPolling()
   if (!autoRefresh.value) return
   pollTimer = setInterval(() => {
-    // Silent background refresh — no spinner so the table doesn't flash.
+    // Silent background refresh - no spinner so the table doesn't flash.
     if (!loading.value) load(false)
   }, POLL_INTERVAL_MS)
 }

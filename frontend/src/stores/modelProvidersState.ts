@@ -53,7 +53,7 @@ export function extraFieldsForModelType(
 /**
  * The credential naming to use at one model type, or null when the vendor
  * takes a plain API key. First match wins, and an entry without a
- * `model_types` filter applies everywhere — same rule as extra fields.
+ * `model_types` filter applies everywhere - same rule as extra fields.
  */
 export function credentialLabelForModelType(
   labels: ReadonlyArray<ModelProviderCredentialLabel> | null | undefined,
@@ -142,7 +142,7 @@ export function sortProviders(providers: ReadonlyArray<ModelProviderOption>): Mo
  * `cacheable` is false for a failed or malformed response so the caller keeps
  * no cache entry and the next component to mount retries; caching a transient
  * failure would blank the vendor dropdown for the rest of the session.
- * An empty-but-valid list IS cacheable — that is a real answer.
+ * An empty-but-valid list IS cacheable - that is a real answer.
  */
 export async function loadProvidersForType(
   fetcher: (modelType?: string) => Promise<unknown>,

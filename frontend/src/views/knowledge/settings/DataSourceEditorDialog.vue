@@ -34,7 +34,7 @@ const step = ref(0)
 const submitting = ref(false)
 
 // In edit mode the credential "configured?" flag travels on the main
-// DataSource response (DataSource.credentials.credentials.configured —
+// DataSource response (DataSource.credentials.credentials.configured -
 // server-side dto.DataSourceResponse.Credentials). True iff a credential
 // map is currently stored server-side.
 const credentialsConfigured = ref(false)
@@ -206,7 +206,7 @@ const form = ref({
 })
 
 // Yuque folder layout. The key lives in the raw settings bag, and a data source
-// created before this control existed carries no folder_mode at all — the
+// created before this control existed carries no folder_mode at all - the
 // getter therefore reports the connector's own default (flat) rather than
 // rendering the select blank. Writing back is a no-op until the user picks
 // something, so opening an existing source can never change its behaviour.
@@ -218,7 +218,7 @@ const yuqueFolderMode = computed({
 })
 
 // toc_only is an admission filter, and the connector only reads the table of
-// contents when folder_mode is 'toc' — under the flat layout the flag has no
+// contents when folder_mode is 'toc' - under the flat layout the flag has no
 // effect at all, which is why the control is disabled there.
 const yuqueTOCOnly = computed({
   get: () => form.value.config.settings?.toc_only === true,
@@ -229,7 +229,7 @@ const yuqueTOCOnly = computed({
 
 // DingTalk ingestion of uploaded Office/PDF files. Like the Yuque switches the
 // key lives in the raw settings bag, and a data source created before this
-// control existed carries no key at all — the getter therefore reports the
+// control existed carries no key at all - the getter therefore reports the
 // connector default (off) instead of rendering the checkbox blank, and nothing
 // is written back until the user toggles it, so merely opening an existing
 // source never changes what it syncs.
@@ -413,7 +413,7 @@ function classifyDriveLoadError(e: any): string {
   return raw || t('datasource.resourceLoadFailed')
 }
 
-// Shared children/parent indexes — used by tree rendering and selection logic
+// Shared children/parent indexes - used by tree rendering and selection logic
 const childrenMap = computed(() => {
   const map = new Map<string, Resource[]>()
   for (const r of resources.value) {
@@ -436,7 +436,7 @@ const parentMap = computed(() => {
 
 // `selectedResourceIds` is a MINIMAL COVER SET: only the roots of fully-selected
 // subtrees. Sending this to the backend gives "sync these IDs and all descendants"
-// semantics — including any pages added later under a selected parent.
+// semantics - including any pages added later under a selected parent.
 type CheckState = 'checked' | 'indeterminate' | 'unchecked'
 
 const checkStates = computed(() => {
@@ -606,7 +606,7 @@ const connectorDefs = computed<ConnectorDef[]>(() => [
   },
   {
     // Lark is Feishu's international cloud. Same wiki/docx/drive APIs and the
-    // same scope identifiers, but a separate console, tenant and app — an app
+    // same scope identifiers, but a separate console, tenant and app - an app
     // created on open.feishu.cn cannot read a Lark wiki.
     type: 'lark',
     available: true,
@@ -1204,7 +1204,7 @@ function prevStep() {
 // Create mode: credentials flow inline so the initial data source row
 // already carries them.
 //
-// Edit mode: credentials NEVER flow through the main PUT — they go via the
+// Edit mode: credentials NEVER flow through the main PUT - they go via the
 // /credentials subresource, committed before the main submit (see
 // commitCredentialsIfNeeded). Sending an empty map keeps the backend
 // validator happy.
@@ -1288,7 +1288,7 @@ async function handleSubmit() {
     }
 
     emit('saved')
-    // Clear before close — otherwise the visible watcher treats the just-saved
+    // Clear before close - otherwise the visible watcher treats the just-saved
     // row as an abandoned temp draft and DELETEs it (loadResources creates the
     // row early at step 2 with tempDsId).
     tempDsId.value = ''
@@ -2949,7 +2949,7 @@ const drawerConfirmText = computed(() => {
 </style>
 
 <!--
-  Drawer header logo — same white badge as the data-source list cards.
+  Drawer header logo - same white badge as the data-source list cards.
 -->
 <style lang="less">
 .datasource-editor-drawer .setting-drawer__header-icon:has(.datasource-header-icon__img) {

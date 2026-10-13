@@ -104,8 +104,8 @@
           </template>
           <template #tokens="{ row }">
             <span class="catalog-num"
-              :title="`${row.model.context_window?.toLocaleString() || '—'} / ${row.model.max_output_tokens?.toLocaleString() || '—'}`">
-              {{ formatTokens(row.model.context_window) || '—' }}<span class="catalog-muted"> / </span>{{ formatTokens(row.model.max_output_tokens) || '—' }}
+              :title="`${row.model.context_window?.toLocaleString() || '-'} / ${row.model.max_output_tokens?.toLocaleString() || '-'}`">
+              {{ formatTokens(row.model.context_window) || '-' }}<span class="catalog-muted"> / </span>{{ formatTokens(row.model.max_output_tokens) || '-' }}
             </span>
           </template>
           <template #capabilities="{ row }">
@@ -113,7 +113,7 @@
               <span v-for="cap in capabilities(row.model)" :key="cap" class="catalog-cap">
                 {{ t(`modelCatalog.capability.${cap}`) }}
               </span>
-              <span v-if="capabilities(row.model).length === 0" class="catalog-muted">—</span>
+              <span v-if="capabilities(row.model).length === 0" class="catalog-muted">-</span>
             </div>
           </template>
           <template #source="{ row }">
@@ -313,7 +313,7 @@
             <span class="history-row__meta">{{ overrideSummary(revision.overlay) }}</span>
           </div>
           <div class="history-row__side">
-            <span class="history-row__meta">{{ revision.updated_by || '—' }} · {{ formatDate(revision.updated_at) }}</span>
+            <span class="history-row__meta">{{ revision.updated_by || '-' }} · {{ formatDate(revision.updated_at) }}</span>
             <t-popconfirm :content="t('modelCatalog.historyRestoreConfirm', { version: revision.version })"
               :confirm-btn="{ content: t('modelCatalog.historyRestore'), theme: 'primary' }"
               :cancel-btn="{ content: t('common.cancel') }" placement="bottom-right"
@@ -603,7 +603,7 @@ function displayField(kind: FieldKind, value: unknown) {
   return String(value)
 }
 function layerValue(layer: Layer, field: FieldDef) {
-  if (!selected.value || !layerIndexes.value[layer].get(selected.value.key)) return '—'
+  if (!selected.value || !layerIndexes.value[layer].get(selected.value.key)) return '-'
   return displayField(field.kind, fieldValue(layer, selected.value, field.key))
 }
 
@@ -751,7 +751,7 @@ const overrideSummary = (overlay: CatalogOverlay) => {
 }
 
 function formatDate(value?: string) {
-  if (!value) return '—'
+  if (!value) return '-'
   const date = new Date(value)
   const pad = (part: number) => String(part).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`

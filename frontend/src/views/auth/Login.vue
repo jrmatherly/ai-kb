@@ -481,7 +481,7 @@ const toggleMode = () => {
 const persistLoginResponse = async (response: any, skipRedirect = false) => {
   // Backend renamed `tenant` to `active_tenant` and added `memberships`
   // when tenant-level RBAC landed (issue #1303). The two are otherwise
-  // identical — `active_tenant` is the tenant whose ID is encoded in the
+  // identical - `active_tenant` is the tenant whose ID is encoded in the
   // JWT, defaulting to the user's home tenant on a fresh login.
   const activeTenant = response.active_tenant || response.tenant
   if (response.user && response.token) {
@@ -660,7 +660,7 @@ const handleRegister = async () => {
       MessagePlugin.success(t('auth.registerSuccess'))
       // register-by-invite returns the same shape as login (token +
       // active_tenant + memberships), so reuse the login persistence
-      // path — same store writes, same redirect target.
+      // path - same store writes, same redirect target.
       await persistLoginResponse(response)
       return
     }
@@ -1191,7 +1191,7 @@ onMounted(async () => {
 
 /* Share-link invitation banner. Sits above the register form when the
  * user arrived via /register?token=xxx; gives them confirmation of who
- * invited them before they fill anything in. Subtle, neutral card —
+ * invited them before they fill anything in. Subtle, neutral card -
  * the page background is heavily brand-coloured already, so a loud
  * tinted banner clashes; we lean on the form's own surface tokens. */
 .invite-banner {

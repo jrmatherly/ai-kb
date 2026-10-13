@@ -74,7 +74,7 @@
               <div class="audit-target">
                 <span v-if="auditTargetKey(row)" class="audit-target-key">{{ auditTargetKey(row) }}</span>
                 <span v-if="auditTargetDiff(row)" class="audit-target-diff">{{ auditTargetDiff(row) }}</span>
-                <span v-else-if="!auditTargetKey(row)" class="audit-target-empty">—</span>
+                <span v-else-if="!auditTargetKey(row)" class="audit-target-empty">-</span>
               </div>
             </template>
             <template #outcome="{ row }">
@@ -399,7 +399,7 @@ function formatSettingDiff(details: Record<string, unknown>): string {
 }
 
 function formatAuditDateTime(s: string | undefined): string {
-  if (!s) return '—'
+  if (!s) return '-'
   const date = formatAuditDatePart(s)
   const time = formatAuditTimePart(s)
   return time ? `${date} ${time}` : date

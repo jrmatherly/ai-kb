@@ -1,4 +1,4 @@
-# Production image — two-stage build (no host-side npm required).
+# Production image - two-stage build (no host-side npm required).
 # Mirrors scripts/build_frontend_dist.sh:
 #   npm ci + VITE_IS_DOCKER=true + VITE_FRONTEND_COMMIT
 #

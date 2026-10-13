@@ -23,7 +23,7 @@ export type SteerQueueItem = {
  * - delivery 'after' (default): waits until the current run exits, then starts a follow-up turn.
  * - delivery 'inject': the running engine injects it at the next round boundary.
  * - 'new_run': no run is live; the caller should fall back to a normal send.
- * Lookup failures (503) reject rather than returning new_run — treating them
+ * Lookup failures (503) reject rather than returning new_run - treating them
  * as idle would start a second turn on top of the one still generating.
  */
 export async function steerSession(

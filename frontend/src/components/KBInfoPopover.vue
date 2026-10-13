@@ -179,7 +179,7 @@ const props = defineProps<{
   kbInfo: any
   // Optional pre-computed list of supported file extensions (e.g.
   // ["pdf", "docx", …]). The popover does not fetch parser engines on
-  // its own — call sites that already know which formats are reachable
+  // its own - call sites that already know which formats are reachable
   // pass them in; FAQ KBs simply omit the prop.
   supportedFileTypes?: string[]
 }>()
@@ -189,7 +189,7 @@ const orgStore = useOrganizationStore()
 const authStore = useAuthStore()
 
 // "Owner" here mirrors the per-page guards: the original creator
-// (creator_id) — not "in my tenant". creator_id is unset for legacy
+// (creator_id) - not "in my tenant". creator_id is unset for legacy
 // KBs created before that gate existed; those fall through to the
 // role/share check.
 const isOwner = computed<boolean>(() => {

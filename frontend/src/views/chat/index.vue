@@ -551,7 +551,7 @@ const isReplying = ref(false);
 const currentAssistantMessageId = ref(''); // ID of the assistant message being generated
 // True only while attaching to an in-flight *IM-originated* reply via continue-stream.
 // Such replies are generated on the IM side and never stream through this server, so
-// continue-stream always fails even though the answer is coming — recover by polling
+// continue-stream always fails even though the answer is coming - recover by polling
 // instead of erroring. Web/api replies are left on the original error path.
 const isAttachingImStream = ref(false);
 let recoverPollTimer = null;
@@ -974,7 +974,7 @@ const {
             // path: their answer is generated on the IM side and never streams through
             // this server, so continue-stream always 404s even though the reply *is*
             // coming. Web/api replies keep the original behaviour (a real failure to
-            // resume the stream still surfaces as an error) — we don't touch them.
+            // resume the stream still surfaces as an error) - we don't touch them.
             isAttachingImStream.value = lastMessage.channel === 'im';
             await startStream({
                 session_id: session_id.value,
@@ -1333,7 +1333,7 @@ const attachSteerFollowUp = async (completedAssistantId) => {
                 for (const steerId of claimed) dropSteerQueueItem(steerId);
                 if (sessionChanged()) return;
                 // Then reconcile with the server, which owns the backlog that
-                // moved to the new run — but only once that run is visible.
+                // moved to the new run - but only once that run is visible.
                 await hydrateSteerQueue({ onlyWhenLive: true });
                 if (sessionChanged()) return;
 
@@ -1561,7 +1561,7 @@ const sendMsg = async (value, modelId = '', mentionedItems = [], imageFiles = []
 // Quietly recover an in-flight IM reply we couldn't attach to (it's generated on
 // the IM side, so it never streamed through this server). Poll until it completes,
 // then reload the thread so it renders via the normal path. Bounded so an IM reply
-// that genuinely died (e.g. the bot crashed) doesn't spin forever — on timeout we
+// that genuinely died (e.g. the bot crashed) doesn't spin forever - on timeout we
 // surface the original error so the failure isn't hidden.
 const RECOVER_POLL_INTERVAL = 2500;
 const RECOVER_POLL_MAX_ATTEMPTS = 48; // ~2 min
@@ -1592,7 +1592,7 @@ const recoverIncompleteMessage = () => {
             console.warn('[Continue Stream] recovery poll failed:', e);
         }
         if (attempts >= RECOVER_POLL_MAX_ATTEMPTS) {
-            // The IM reply never completed — don't hide it; surface the standard
+            // The IM reply never completed - don't hide it; surface the standard
             // stream-failure message (reuses the existing i18n key, no raw HTTP code).
             MessagePlugin.error(t('error.streamFailed'));
             isReplying.value = false;
@@ -1608,7 +1608,7 @@ const recoverIncompleteMessage = () => {
 // Watch for stream errors and show message
 watch(error, (newError) => {
     if (!newError) return;
-    // A failed attach to an in-flight IM reply isn't a real error — the answer is
+    // A failed attach to an in-flight IM reply isn't a real error - the answer is
     // produced on the IM side and never streams here. Recover quietly by polling to
     // completion instead of flashing a "stream failed" toast. Web/api replies fall
     // through to the normal error toast below, unchanged.
@@ -1754,7 +1754,7 @@ onBeforeRouteUpdate((to, from, next) => {
     box-sizing: border-box;
     flex: 1;
     // The parent .platform-route-outlet is a flex column with min-height:0
-    // and overflow:hidden — we also need min-height:0 here so that our
+    // and overflow:hidden - we also need min-height:0 here so that our
     // own flex:1 child (.chat_thread) can shrink below its content height.
     min-height: 0;
     position: relative;

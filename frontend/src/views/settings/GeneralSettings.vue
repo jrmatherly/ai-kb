@@ -169,7 +169,7 @@ const monoFontOptions = computed<{ value: MonoFontKey; label: string; preview: s
 )
 
 // Live preview stacks, driven by the local form refs so the preview row
-// updates immediately on selection — even before handleSansFontChange
+// updates immediately on selection - even before handleSansFontChange
 // commits the choice to the global store and writes the CSS variable.
 const currentSansStack = computed(() => SANS_STACKS[localSansFont.value] ?? SANS_STACKS.system)
 const currentMonoStack = computed(() => MONO_STACKS[localMonoFont.value] ?? MONO_STACKS.system)

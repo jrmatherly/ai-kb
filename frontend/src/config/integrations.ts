@@ -27,7 +27,7 @@ export type IntegrationPreviewIcon =
   | { type: 'icon'; name: string }
   | { type: 'emoji'; value: string }
 
-/** Sidebar hover preview + Integrations modal nav — add new entries here. */
+/** Sidebar hover preview + Integrations modal nav - add new entries here. */
 export const INTEGRATION_PREVIEW_ITEMS: Array<{
   key: IntegrationTab
   icon: IntegrationPreviewIcon

@@ -3,7 +3,7 @@
  * TypeScript interfaces for all tool result types
  */
 
-// Relevance levels — values match the backend API response.
+// Relevance levels - values match the backend API response.
 // Display labels are resolved via i18n in SearchResults.vue and GraphQueryResults.vue.
 export type RelevanceLevel = 'High Relevance' | 'Medium Relevance' | 'Low Relevance' | 'Weak Relevance';
 
@@ -265,7 +265,7 @@ export interface GrepKnowledgeResult {
     distinct_patterns: number;
 }
 
-// Per-chunk grep hit (preferred for UI — one row per FAQ entry or chunk)
+// Per-chunk grep hit (preferred for UI - one row per FAQ entry or chunk)
 export interface GrepChunkResult {
     chunk_id: string;
     faq_id?: string;

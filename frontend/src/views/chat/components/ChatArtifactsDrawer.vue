@@ -1,6 +1,6 @@
 <template>
     <!--
-        ChatArtifactsDrawer — right-side drawer that lists every skill-generated
+        ChatArtifactsDrawer - right-side drawer that lists every skill-generated
         file attached to the surrounding assistant message, and opens an inline
         preview that reuses DocumentPreview (same renderer as knowledge files
         and chat attachments).
@@ -160,7 +160,7 @@
  * Design notes:
  *   - The drawer is stateless w.r.t. the download itself; it delegates to
  *     the chat API's downloadArtifact() helper which uses the axios blob
- *     transport (getDown) so the Bearer token stays attached — plain
+ *     transport (getDown) so the Bearer token stays attached - plain
  *     <a href> would drop it and hit 401.
  *   - Preview reuses DocumentPreview so HTML charts, CSV tables, PDFs,
  *     images, office docs, audio/video, mermaid, and unlabeled text all
@@ -227,7 +227,7 @@ const fetched = ref<ArtifactMeta[]>([])
 const downloading = reactive<Record<number, boolean>>({})
 const previewItem = ref<ArtifactMeta | null>(null)
 // Opening the drawer from an inline artifact card jumps straight to the
-// preview, so there is no list behind it to pop back to — overlay/Esc should
+// preview, so there is no list behind it to pop back to - overlay/Esc should
 // dismiss the whole drawer. Coming from the list, they pop back to it.
 const previewOpenedDirectly = ref(false)
 const previewWidth = ref(PREVIEW_DEFAULT_WIDTH)
@@ -391,7 +391,7 @@ function formatFileSize(size: number): string {
 }
 
 function formatDateTime(raw: string): string {
-    if (!raw) return '—'
+    if (!raw) return '-'
     const d = new Date(raw)
     if (Number.isNaN(d.getTime())) return raw
     const pad = (n: number) => String(n).padStart(2, '0')

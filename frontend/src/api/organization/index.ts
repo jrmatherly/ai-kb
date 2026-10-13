@@ -104,7 +104,7 @@ export interface SharedKnowledgeBase {
 export interface SourceFromAgentInfo {
   agent_id: string
   agent_name: string
-  /** "all" | "selected" | "none" — for showing agent's KB strategy in the drawer */
+  /** "all" | "selected" | "none" - for showing agent's KB strategy in the drawer */
   kb_selection_mode?: string
 }
 

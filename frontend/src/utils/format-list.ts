@@ -5,7 +5,7 @@ export function formatLocalizedList(items: string[], locale = 'en-US'): string {
     try {
       return new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(items)
     } catch {
-      // Unsupported locale — fall through.
+      // Unsupported locale - fall through.
     }
   }
   return items.join(', ')

@@ -40,7 +40,7 @@ interface SpansResponse {
 }
 
 // IMPORTANT: Vue 3 coerces missing Boolean props to `false`, NOT
-// `undefined` — so an optional boolean parent omits is indistinguishable
+// `undefined` - so an optional boolean parent omits is indistinguishable
 // from one explicitly set to false. That bit us: every parent that
 // didn't pass auto-poll silently got polling disabled. Use withDefaults
 // to make the intent explicit: polling is ON unless a parent opts out.
@@ -52,16 +52,16 @@ const props = withDefaults(
     compact?: boolean
     // gracePoll selects the polling rule. See shouldPollNow() for
     // the full semantics:
-    //   true  — follow parse_status + any running subspan + a
+    //   true  - follow parse_status + any running subspan + a
     //           QUIESCE_GRACE_MS grace window after the tree quiesces.
     //           This is what the user-visible drawer mount wants:
     //           late-arriving subspans (wiki has a 30s debounce, etc.)
     //           surface without forcing a manual refresh.
-    //   false — strict mode. Poll ONLY while parse_status itself is
+    //   false - strict mode. Poll ONLY while parse_status itself is
     //           non-terminal; ignore post-pipeline async subspans.
     //           This is what background mounts (the hidden badge
     //           driver in doc-content.vue) want, so they stop firing
-    //           /spans the instant parsing finishes — async wiki/
+    //           /spans the instant parsing finishes - async wiki/
     //           summary work doesn't keep a headless poller alive
     //           after the user closed the trace drawer.
     gracePoll?: boolean
@@ -99,7 +99,7 @@ const selectedAttempt = ref<number | undefined>(undefined)
 const expandedRows = ref<Set<string>>(new Set(['__root__']))
 const selectedSpanId = ref<string | null>(null)
 // Guards the one-shot auto-selection below. Cleared once the panel has
-// opened itself, or the moment the user closes it — a 2s poll must never
+// opened itself, or the moment the user closes it - a 2s poll must never
 // reopen a panel the user just dismissed.
 const autoSelectPending = ref(true)
 const expandedJsonKeys = ref<Set<string>>(new Set())
@@ -109,7 +109,7 @@ const lastFetchedAt = ref<number>(0)
 const scrollRef = ref<HTMLElement | null>(null)
 // Stages the user has explicitly toggled (in either direction). Once
 // a stage is in this set, the auto-expand-when-children-appear rule
-// stops applying to it — the user's last action wins forever.
+// stops applying to it - the user's last action wins forever.
 //
 // Why this beats the old "firstLoadDone once" approach:
 //   - Old logic only auto-expanded on the very first fetch. If a stage
@@ -125,7 +125,7 @@ const scrollRef = ref<HTMLElement | null>(null)
 const userToggledRows = ref<Set<string>>(new Set())
 // Tracks consecutive fetch failures so the "Updated" caption can surface
 // staleness. When the parse_status is mid-flight but every fetch is
-// hitting an error, the loop keeps going silently — without this
+// hitting an error, the loop keeps going silently - without this
 // indicator the user sees a spinning auto-refresh icon while the
 // caption ages without explanation.
 const failedAttempts = ref<number>(0)
@@ -150,7 +150,7 @@ const attemptStatuses = reactive<Map<number, string>>(new Map())
 let pollTimer: ReturnType<typeof setInterval> | null = null
 let nowTimer: ReturnType<typeof setInterval> | null = null
 let unmounted = false
-// Drops overlapping fetches. Does NOT gate the polling decision —
+// Drops overlapping fetches. Does NOT gate the polling decision -
 // the tick callback owns scheduling. If fetchInFlight is stuck (e.g.
 // network black hole), the worst case is one stuck request blocking
 // retries until axios timeout (30s); the loop itself stays alive.
@@ -185,7 +185,7 @@ const currentStageIndex = computed(() => {
 })
 
 function formatDuration(ms?: number): string {
-  if (ms === undefined || ms === null || isNaN(ms) || ms < 0) return '—'
+  if (ms === undefined || ms === null || isNaN(ms) || ms < 0) return '-'
   if (ms < 1000) return `${Math.round(ms)}ms`
   if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`
   const mins = Math.floor(ms / 60000)
@@ -194,7 +194,7 @@ function formatDuration(ms?: number): string {
 }
 
 function formatRelativeTime(ts: number): string {
-  if (!ts) return '—'
+  if (!ts) return '-'
   const sec = Math.max(0, Math.floor((nowTick.value - ts) / 1000))
   if (sec < 1) return t('knowledgeStages.justNow')
   if (sec < 60) return t('knowledgeStages.secondsAgo', { n: sec })
@@ -205,12 +205,12 @@ function formatRelativeTime(ts: number): string {
 // A skipped stage did not execute. Its tiny bookkeeping interval is not
 // processing time, so do not present it as (for example) multimodal time.
 function formatSpanDuration(node: SpanNode): string {
-  if (node.status === 'skipped' || node.status === 'pending') return '—'
+  if (node.status === 'skipped' || node.status === 'pending') return '-'
   return formatDuration(node.duration_ms)
 }
 
 function isPolling(status?: string): boolean {
-  // finalizing is the post-process fan-out window — subspans
+  // finalizing is the post-process fan-out window - subspans
   // (summary / question / graph.chunk[*]) are still actively producing
   // events, so we must keep polling and drawing LIVE.
   return status === 'pending' || status === 'processing' || status === 'finalizing'
@@ -225,7 +225,7 @@ function isHardTerminal(status?: string): boolean {
 }
 
 // True if any node in the trace is still running/pending. Crucial for
-// postprocess — its subspans (summary/question/graph.chunk[*]) run
+// postprocess - its subspans (summary/question/graph.chunk[*]) run
 // asynchronously AFTER the main pipeline closes, so parse_status
 // flips to 'completed' while there's plenty of work still happening.
 // Without checking the tree we'd stop polling at that moment and
@@ -289,7 +289,7 @@ function spanTreeLastActivity(node?: SpanNode): number {
 
 // Async post-pipeline tasks (summary, question, graph.chunk[*],
 // wiki) open their postprocess.* subspans AFTER the parse pipeline
-// has finalised — wiki in particular fires 30s after enqueue thanks
+// has finalised - wiki in particular fires 30s after enqueue thanks
 // to wikiIngestDelay. At that exact moment parse_status is already
 // 'completed' AND every existing span is 'done', so isLive flips to
 // false and polling stops. The user is then stranded watching a
@@ -315,13 +315,13 @@ const isWithinQuiesceGrace = computed<boolean>(() => {
 })
 
 // shouldPollNow encodes the per-tick "do I fetch?" decision. Split
-// from isLive (which also drives the LIVE badge — its semantics are
+// from isLive (which also drives the LIVE badge - its semantics are
 // "trace is actually running") so the polling rules can diverge from
 // the badge rules without entangling them.
 //
 // Two modes, selected by the gracePoll prop:
 //
-//   gracePoll = true  (default — for the visible drawer mount):
+//   gracePoll = true  (default - for the visible drawer mount):
 //     Follow the trace through everything the user might want to see
 //     live: the main parse pipeline (parse_status), any running
 //     subspan (traceActive), AND the QUIESCE_GRACE_MS window after
@@ -332,7 +332,7 @@ const isWithinQuiesceGrace = computed<boolean>(() => {
 //     hidden badge driver):
 //     Strict mode. Poll ONLY while the parse pipeline itself is
 //     non-terminal. Post-pipeline async work (wiki / summary /
-//     question / graph subspans) is intentionally ignored —
+//     question / graph subspans) is intentionally ignored -
 //     otherwise the hidden mount would keep firing /spans every
 //     2s until those finish, even though the user has closed the
 //     trace drawer and is only looking at the header badge (whose
@@ -368,9 +368,9 @@ async function fetchSpans(opts: { manual?: boolean } = {}) {
       //   - Row has no children → leave whatever state it was in
       //   - User has toggled the row (either direction) → don't touch
       // Walking the full depth (not just stages) is what makes deep
-      // subspans like postprocess.wiki — whose own children like
+      // subspans like postprocess.wiki - whose own children like
       // postprocess.wiki.extract / .summary / .classify / .page[*]
-      // appear later in the run — surface automatically. Without this
+      // appear later in the run - surface automatically. Without this
       // the user would click the chevron on postprocess.wiki and see
       // nothing change, because the row would default to collapsed
       // and the auto-expand pass would skip it.
@@ -402,12 +402,12 @@ async function fetchSpans(opts: { manual?: boolean } = {}) {
       emit('update:hasSpans', false)
     }
   } catch (e) {
-    // Surface the error in the console — silent failures here is
+    // Surface the error in the console - silent failures here is
     // exactly what hid the polling-stalled bug from us before.
     console.warn('[KnowledgeTimeline] fetchSpans failed', e)
     emit('update:hasSpans', false)
   } finally {
-    // Track every attempt, not just successful ones — otherwise a
+    // Track every attempt, not just successful ones - otherwise a
     // failing endpoint would leave "Updated X seconds ago" frozen forever while
     // the spinner spins. Pair with failedAttempts to render a "fetch
     // failed" hint when consecutive errors pile up.
@@ -583,7 +583,7 @@ onMounted(() => {
   fetchSpans()
   fetchProcessOverrides()
   // One permanent interval for the entire component lifetime. The
-  // tick decides whether to actually fetch — no clearing, no
+  // tick decides whether to actually fetch - no clearing, no
   // re-arming, no watchers wired into it. If this interval ever
   // stops firing, the entire JS event loop is wedged (in which case
   // nothing else would work either).
@@ -691,7 +691,7 @@ const tEnd = computed<number | null>(() => {
     candidate = candidate === null ? max : Math.max(candidate, max)
   }
   // Extend the right edge to "now" whenever the trace is still
-  // actively producing spans — this covers both parse_status mid-flight
+  // actively producing spans - this covers both parse_status mid-flight
   // AND the postprocess-async case where the top-level status closes
   // but subspans keep ticking. Both conditions are captured by isLive.
   if (isLive.value) {
@@ -705,7 +705,7 @@ const totalMs = computed<number>(() => {
   if (t0.value === null || tEnd.value === null) return 0
   // The trace's own duration_ms only covers the parsing pipeline up to
   // FinalizeAttempt. Async post-processing subspans (summary / question /
-  // graph) keep producing rows AFTER the root closes — so the time axis
+  // graph) keep producing rows AFTER the root closes - so the time axis
   // must scale to the latest descendant end, otherwise their bars get
   // clipped past the right edge. Take the max of (root duration, observed
   // span tail) regardless of polling state.
@@ -788,7 +788,7 @@ const flatRows = computed<FlatRow[]>(() => {
         isStage: false,
         parentKey,
       })
-      // Honour the expand/collapse state for subspans too — without
+      // Honour the expand/collapse state for subspans too - without
       // this gate, clicking the chevron on a subspan (e.g.
       // postprocess.wiki) only rotated the icon but the children
       // were always rendered, so the toggle looked broken.
@@ -815,7 +815,7 @@ function barStyle(node: SpanNode): Record<string, string> {
   const start = nodeStart(node)
   if (start === null) return { display: 'none' }
   // For a span with no recorded finished_at, use "now" as the end
-  // whenever it's plausibly still running — either the trace overall
+  // whenever it's plausibly still running - either the trace overall
   // is live, or this individual span's status says it's in flight.
   // Without the second clause, postprocess subspans that survived past
   // parse_status='completed' would collapse to zero width.
@@ -829,7 +829,7 @@ function barStyle(node: SpanNode): Record<string, string> {
   }
 }
 
-// Wrapping outline bar — when a span's children extend past the parent's
+// Wrapping outline bar - when a span's children extend past the parent's
 // own finished_at (typical for postprocess: stage closes in ~9ms but its
 // async summary/question subspans run for tens of seconds), we render a
 // faint outline from the parent's start to the latest descendant end.
@@ -853,7 +853,7 @@ function wrapStyle(node: SpanNode): Record<string, string> | null {
   const childEnd = descendantMaxEnd(node)
   if (childEnd === null) return null
   // Only render the wrapping bar when descendants extend at least 50ms
-  // past the parent — otherwise the outline is indistinguishable from
+  // past the parent - otherwise the outline is indistinguishable from
   // the solid self-bar and only adds visual noise.
   if (childEnd - selfEnd < 50) return null
   const leftPct = ((start - t0.value) / total) * 100
@@ -901,7 +901,7 @@ const traceTerminal = computed<boolean>(
 )
 
 // A synthesized stage still marked 'pending' on a finished trace never
-// ran and never will — docreader failed, so chunking/embedding/... were
+// ran and never will - docreader failed, so chunking/embedding/... were
 // abandoned. v1 rendered them as ordinary pending rows with a dashed
 // stub pinned to the right edge of the track, which reads as leftover
 // rendering junk. Say "not run" in words and let the row recede.
@@ -947,7 +947,7 @@ function toggleTree(row: FlatRow, ev?: MouseEvent) {
   touched.add(row.key)
   userToggledRows.value = touched
   // Expanding via chevron should also surface the detail panel for
-  // this stage/span — otherwise the name column only toggles the tree.
+  // this stage/span - otherwise the name column only toggles the tree.
   if (!wasExpanded && next.has(row.key)) {
     selectRow(row)
   }
@@ -1042,7 +1042,7 @@ function isJsonExpanded(section: string, key: string): boolean {
 }
 
 function formatTime(s?: string | null): string {
-  if (!s) return '—'
+  if (!s) return '-'
   const ts = Date.parse(s)
   if (Number.isNaN(ts)) return s
   const d = new Date(ts)
@@ -1076,7 +1076,7 @@ interface KvEntry {
   kind: 'scalar' | 'bool' | 'array' | 'object'
   display: string
   raw: any
-  // True for short payloads — the panel skips the click-to-expand
+  // True for short payloads - the panel skips the click-to-expand
   // affordance and renders the JSON inline directly so users see the
   // values without an extra click. Long payloads stay folded so the
   // panel doesn't blow up vertically when an output has hundreds of
@@ -1093,8 +1093,8 @@ function buildKvEntries(obj: any): KvEntry[] {
   return entries
 }
 
-// Threshold for inline auto-expansion. Short payloads — small arrays /
-// shallow objects — render inline directly. Anything larger keeps the
+// Threshold for inline auto-expansion. Short payloads - small arrays /
+// shallow objects - render inline directly. Anything larger keeps the
 // click-to-expand summary so the detail panel doesn't grow without bound.
 const KV_INLINE_ARRAY_LIMIT = 8
 const KV_INLINE_OBJECT_KEY_LIMIT = 8
@@ -1124,7 +1124,7 @@ function shouldInlineExpand(value: any): boolean {
 function toKvEntry(key: string, value: any): KvEntry {
   const label = humanizeKey(key)
   if (value === null || value === undefined) {
-    return { key, label, kind: 'scalar', display: '—', raw: value, defaultExpanded: false }
+    return { key, label, kind: 'scalar', display: '-', raw: value, defaultExpanded: false }
   }
   if (typeof value === 'boolean') {
     return { key, label, kind: 'bool', display: value ? 'true' : 'false', raw: value, defaultExpanded: false }
@@ -1202,7 +1202,7 @@ const viewingLatestAttempt = computed<boolean>(() => {
 
 // The authoritative status for the header badge. During the async
 // post-pipeline window (summary / question / graph / wiki), the latest
-// attempt's ROOT span closes — so trace.status reads 'done' — while
+// attempt's ROOT span closes - so trace.status reads 'done' - while
 // those subspans can still be running or can later make the knowledge fail.
 // The latest knowledge row is therefore authoritative for ALL statuses,
 // including terminal ones. Historical attempts keep their own root status.
@@ -1245,7 +1245,7 @@ const failedStage = computed<SpanNode | null>(
 )
 
 // v1's headline was localizedErrorTitle(code), which falls back to the
-// raw code when no translation exists — so the card printed
+// raw code when no translation exists - so the card printed
 // DOCREADER_PARSE_FAILED as its title AND again as the chip beside it,
 // while the one line that actually explains the failure
 // ("Unsupported file type: htm") sat at the bottom in 11px grey mono.
@@ -1304,7 +1304,7 @@ interface HeadStat {
   note?: boolean
 }
 
-// v1 glued five unrelated facts into one dot-separated grey sentence —
+// v1 glued five unrelated facts into one dot-separated grey sentence -
 // "Processing pipeline · total 494ms · current stage 1/5 · attempt 1" - which reads
 // as a run-on and buries the numbers among the words. Label/value pairs
 // with the numbers in tabular mono scan in one pass instead. The panel's
@@ -1538,7 +1538,7 @@ const processConfigLines = computed<string[]>(() => {
 <template>
   <div class="kp-timeline" :class="{ 'kp-compact': compact }">
     <!-- =========================================================
-         COMPACT MODE — used by the card hover popover. Untouched.
+         COMPACT MODE - used by the card hover popover. Untouched.
          ========================================================= -->
     <template v-if="compact">
       <div class="kp-compact-row">
@@ -1558,7 +1558,7 @@ const processConfigLines = computed<string[]>(() => {
     </template>
 
     <!-- =========================================================
-         FULL MODE — Langfuse-style waterfall, lives inside the
+         FULL MODE - Langfuse-style waterfall, lives inside the
          secondary drawer. Bottom-docked detail panel.
          ========================================================= -->
     <template v-else>
@@ -1939,7 +1939,7 @@ const processConfigLines = computed<string[]>(() => {
                         <div class="kp-breakdown-bar" :class="['kp-bar-' + s.status]" :style="{ width: s.pct + '%' }" />
                       </div>
                       <span class="kp-breakdown-dur kp-mono">{{ s.status === 'skipped' || s.status === 'pending'
-                        ? '—'
+                        ? '-'
                         : formatDuration(s.duration_ms) }}</span>
                     </div>
                   </div>
@@ -2125,7 +2125,7 @@ const processConfigLines = computed<string[]>(() => {
   flex-shrink: 0;
 }
 
-/* LIVE badge — sits next to the title while polling, telegraphs the
+/* LIVE badge - sits next to the title while polling, telegraphs the
    pipeline is actively refreshing. Pulsing dot + uppercase mono label. */
 .kp-live-badge {
   display: inline-flex;
@@ -2241,7 +2241,7 @@ const processConfigLines = computed<string[]>(() => {
   opacity: 0.4;
 }
 
-/* Stop-parse control — stays a quiet placeholder icon until hover, then
+/* Stop-parse control - stays a quiet placeholder icon until hover, then
    reveals its destructive intent with the error tint. Matches the other
    header icon buttons rather than shouting with a full outline button. */
 .kp-icon-btn-danger:hover:not(:disabled) {
@@ -2253,7 +2253,7 @@ const processConfigLines = computed<string[]>(() => {
   animation: wk-spin 0.9s linear infinite;
 }
 
-/* Slow rotation while auto-polling — visually distinct from the
+/* Slow rotation while auto-polling - visually distinct from the
    manual-refresh fast spin. Tells the user "refresh is happening on
    its own" without an extra label or badge. */
 .kp-icon-btn-autoflow :deep(.t-icon) {
@@ -2356,7 +2356,7 @@ const processConfigLines = computed<string[]>(() => {
   background: var(--td-bg-color-container);
 }
 
-/* Sized by its rows once the detail panel is open — see .kp-detail. */
+/* Sized by its rows once the detail panel is open - see .kp-detail. */
 .kp-body-with-detail {
   flex: 0 0 auto;
   max-height: 60%;
@@ -2381,7 +2381,7 @@ const processConfigLines = computed<string[]>(() => {
   color: var(--td-text-color-placeholder);
 }
 
-/* Ruler — pinned above .kp-scroll, not inside the scroller */
+/* Ruler - pinned above .kp-scroll, not inside the scroller */
 .kp-ruler {
   flex: 0 0 auto;
   display: grid;
@@ -2637,7 +2637,7 @@ const processConfigLines = computed<string[]>(() => {
   border-right: none;
 }
 
-/* Vertical "now" cursor — animates left during polling so the user can
+/* Vertical "now" cursor - animates left during polling so the user can
    visually confirm time is advancing even when the running bar grows
    slowly toward the right edge of the trace. */
 .kp-now-marker {
@@ -2724,10 +2724,10 @@ const processConfigLines = computed<string[]>(() => {
   top: calc(100% + 8px);
 }
 
-/* Status palette — NOT all green. The project brand color happens
+/* Status palette - NOT all green. The project brand color happens
    to be green, which made done/running visually identical (both
    solid green). Done stays green (universal "success" semantic);
-   running goes amber + striped (CI-style "in progress" — recognized
+   running goes amber + striped (CI-style "in progress" - recognized
    everywhere from GitHub Actions to Jenkins). The two are now
    unmistakably different at a glance. */
 .kp-bar-done {
@@ -2756,7 +2756,7 @@ const processConfigLines = computed<string[]>(() => {
 
 .kp-bar-running {
   /* Muted amber base. The diagonal stripes do the "in flight"
-     signaling — the tone just supplies a subtle hint. Earlier
+     signaling - the tone just supplies a subtle hint. Earlier
      iteration used full --td-warning-color + halo shadow + hard
      white stripes; users found that visually screaming. */
   background-color: var(--td-warning-color-3);
@@ -2778,7 +2778,7 @@ const processConfigLines = computed<string[]>(() => {
   }
 }
 
-/* Wrapping outline bar — shows the full window from this span's start
+/* Wrapping outline bar - shows the full window from this span's start
    to the latest descendant end. Used when async children extend past
    the parent's own finished_at (e.g. postprocess stage closes fast but
    its summary/question subspans run for a long time). */
@@ -2820,7 +2820,7 @@ const processConfigLines = computed<string[]>(() => {
   border-color: rgba(229, 87, 64, 0.3);
 }
 
-/* Indeterminate sweep on the running bar — gives obvious motion while
+/* Indeterminate sweep on the running bar - gives obvious motion while
    waiting for the next poll. */
 .kp-bar-running-anim {
   position: relative;
@@ -2935,7 +2935,7 @@ const processConfigLines = computed<string[]>(() => {
    v1 stacked this the wrong way up: the headline was the error code, a
    solid red pill repeated that same code on the right, the generic
    "check the logs" filler sat in the middle at body size, and the one
-   line that actually explains the failure — the backend's message —
+   line that actually explains the failure - the backend's message -
    was last, smallest and greyest. v2 leads with the message, states the
    code once quietly, and puts the recovery action in the card. */
 .kp-last-error {
@@ -3041,7 +3041,7 @@ const processConfigLines = computed<string[]>(() => {
   margin-top: 10px;
 }
 
-/* Recovery, not destruction — hence the outline rather than a solid
+/* Recovery, not destruction - hence the outline rather than a solid
    danger fill. It also replaces v1's brand-green outline button, which
    sat in the toolbar glowing green against a red failure. */
 .kp-err-btn {
@@ -3157,7 +3157,7 @@ const processConfigLines = computed<string[]>(() => {
 }
 
 /* flex-basis 0 (not auto) so the detail claims the remaining space
-   instead of its own content height — otherwise a tall detail body
+   instead of its own content height - otherwise a tall detail body
    squeezes the waterfall back out of view. */
 .kp-detail-open {
   flex: 1 1 0;
@@ -3220,7 +3220,7 @@ const processConfigLines = computed<string[]>(() => {
   flex-shrink: 0;
 }
 
-/* Status chip — soft tinted background using the brand/error/success
+/* Status chip - soft tinted background using the brand/error/success
    palette. Matches TDesign tag aesthetics. */
 .kp-status-chip {
   display: inline-flex;
@@ -3398,7 +3398,7 @@ const processConfigLines = computed<string[]>(() => {
   color: var(--td-text-color-anti);
 }
 
-/* KV grid — TDesign description list aesthetic. White card on the gray
+/* KV grid - TDesign description list aesthetic. White card on the gray
    page bg, soft 1px row separators, key/label color hierarchy. */
 .kp-kv {
   display: flex;
@@ -3533,7 +3533,7 @@ const processConfigLines = computed<string[]>(() => {
   min-width: 0;
 }
 
-/* Same vertical layout as collapsible, but with no toggle button —
+/* Same vertical layout as collapsible, but with no toggle button -
    used for short payloads that auto-expand inline. */
 .kp-kv-inline {
   display: flex;

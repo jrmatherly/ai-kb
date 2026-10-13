@@ -151,7 +151,7 @@
 
     <!--
       Same SettingDrawer chrome as the skill editor. The list is chat sessions
-      that still hold a live sandbox for this config — their titles often look
+      that still hold a live sandbox for this config - their titles often look
       like skill names, so the section label has to say "session".
     -->
     <SettingDrawer
@@ -374,7 +374,7 @@ function endpointHost(record: SandboxConfigRecord): string {
 }
 
 // Agent references never block deletion, but the admin has to see which agents
-// will start failing — otherwise the breakage is discovered mid-conversation.
+// will start failing - otherwise the breakage is discovered mid-conversation.
 // The lookup happens when the confirmation opens, so the warning appears in the
 // same popup without every card probing its backend on page load.
 function deleteConfirmText(record: SandboxConfigRecord): string {
@@ -555,8 +555,8 @@ async function removeRecord(record: SandboxConfigRecord, force = false) {
     const refusal = parseSandboxConflict(e)
     // Both refusals are about what the config still occupies, so both land in
     // the occupancy drawer where that state is spelled out. Counted sandboxes
-    // are never overridable — forcing the row away would leave paused instances
-    // nobody can reach, billing indefinitely — so only the unverifiable case
+    // are never overridable - forcing the row away would leave paused instances
+    // nobody can reach, billing indefinitely - so only the unverifiable case
     // offers a force option there.
     if (refusal?.code === 'sandboxes_still_live') {
       showRefusal(record, 'blocked', refusal.inventory)

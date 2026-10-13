@@ -497,7 +497,7 @@ const drawerTitle = computed(() => {
 
 // Whether the footer test-connection button should appear. Engines without
 // configurable fields and that aren't the builtin DocReader (whose connection
-// status is the whole point of the drawer) skip the test affordance — for
+// status is the whole point of the drawer) skip the test affordance - for
 // e.g. simple/markitdown there's nothing to validate beyond presence.
 const needsTestButton = computed(() => {
   if (!currentEngine.value) return false

@@ -109,7 +109,7 @@ export function clearSkillEnvSaveInFlight(
 /**
  * Names the sandbox refuses, mirroring `reservedEnvNames` in
  * `internal/application/service/tenant_skill_env_declare.go`. Rejecting them
- * in the browser is not a security boundary — the server checks again — it
+ * in the browser is not a security boundary - the server checks again - it
  * just turns a 400 into an inline hint before the user hits save.
  */
 export const RESERVED_ENV_NAMES: Set<string> = new Set([
@@ -172,7 +172,7 @@ export function sortedConfigGroups(groups: ConfigEnvGroup[]): ConfigEnvGroup[] {
 
 /**
  * Sandbox-wide extras the member already stored. Empty configs stay off the
- * settings page — listing every backend as a blank card is noise.
+ * settings page - listing every backend as a blank card is noise.
  */
 export function sandboxGroupsWithVars(groups: ConfigEnvGroup[]): ConfigEnvGroup[] {
   return groups.filter((group) => (group.vars?.length ?? 0) > 0)

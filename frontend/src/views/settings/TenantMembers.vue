@@ -437,7 +437,7 @@
                   <div class="audit-target">
                     <span v-if="auditTargetSubject(row)" class="audit-target-key">{{ auditTargetSubject(row) }}</span>
                     <span v-if="auditTargetDiff(row)" class="audit-target-diff">{{ auditTargetDiff(row) }}</span>
-                    <span v-else-if="!auditTargetSubject(row)" class="audit-target-empty">—</span>
+                    <span v-else-if="!auditTargetSubject(row)" class="audit-target-empty">-</span>
                   </div>
                 </template>
                 <template #request_path="{ row }">
@@ -445,7 +445,7 @@
                     <span v-if="row.request_method" class="audit-method">{{ row.request_method }}</span>
                     {{ row.request_path }}
                   </span>
-                  <span v-else class="audit-target-empty">—</span>
+                  <span v-else class="audit-target-empty">-</span>
                 </template>
                 <template #outcome="{ row }">
                   <t-tag :theme="auditOutcomeTheme(row.outcome)" size="small" variant="light">
@@ -457,7 +457,7 @@
                     <div class="audit-expanded-grid">
                       <div class="audit-expanded-cell">
                         <span class="audit-expanded-label">{{ $t('tenantMember.audit.expanded.actorId') }}</span>
-                        <span class="audit-expanded-value mono">{{ row.actor_user_id || '—' }}</span>
+                        <span class="audit-expanded-value mono">{{ row.actor_user_id || '-' }}</span>
                       </div>
                       <div v-if="row.target_user_id" class="audit-expanded-cell">
                         <span class="audit-expanded-label">{{ $t('tenantMember.audit.expanded.targetUserId') }}</span>
@@ -551,7 +551,7 @@ const adding = ref(false)
 /** Invite flow: a popover anchored next to the list header "+" button (not a centered modal). */
 const invitePopupVisible = ref(false)
 // share-link generator state (separate popup next to the email
-// invite). shareLinkResult is non-null after a successful create —
+// invite). shareLinkResult is non-null after a successful create -
 // the popup then switches into "here's your link, copy it" mode.
 const shareLinkPopupVisible = ref(false)
 const shareLinkForm = reactive<{ role: TenantRole }>({ role: 'contributor' })
@@ -579,7 +579,7 @@ const invitationsPageSize = ref(20)
 const memberDisplayByUserId = reactive<Record<string, { username?: string; email?: string }>>({})
 
 // Pending invitations live alongside members but in a distinct section
-// at the top of the Members tab — they're "people we've asked to
+// at the top of the Members tab - they're "people we've asked to
 // join but haven't yet accepted", and conflating them with the
 // authoritative roster would mislead an Owner trying to see who
 // actually has access. The load happens on the same trigger as the
@@ -597,7 +597,7 @@ const MEMBERS_PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 const INVITATIONS_PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
 // Audit log moved out of t-tabs into a right-side drawer; this flag
-// controls its visibility. Default closed — most operators come here
+// controls its visibility. Default closed - most operators come here
 // to manage members, not to audit. Lazy-load logic is wired through
 // openAuditDrawer() rather than a watch() on the visibility flag so a
 // re-open of the drawer doesn't re-trigger a fetch the user didn't ask
@@ -620,7 +620,7 @@ const auditScrollRoot = ref<HTMLElement | null>(null)
 const auditLoadSentinelEl = ref<HTMLElement | null>(null)
 let auditScrollObserver: IntersectionObserver | null = null
 
-// Add dialog model — reset on each open. Default role is contributor:
+// Add dialog model - reset on each open. Default role is contributor:
 // inviting a fresh member with viewer is too restrictive for the
 // expected "let them collaborate on KBs" use case, and admin/owner
 // should be a deliberate promote step after the user accepts.
@@ -732,7 +732,7 @@ const columns = computed(() => [
 ])
 
 function memberPrimary(row: { username?: string; email?: string }) {
-  return row.username?.trim() || row.email?.trim() || '—'
+  return row.username?.trim() || row.email?.trim() || '-'
 }
 
 function memberSecondary(row: { username?: string; email?: string }) {
@@ -885,12 +885,12 @@ function inviteePrimary(row: TenantInvitation): string {
 }
 
 function inviterPrimary(row: TenantInvitation): string {
-  return row.inviter_name?.trim() || row.inviter_email?.trim() || row.invited_by || '—'
+  return row.inviter_name?.trim() || row.inviter_email?.trim() || row.invited_by || '-'
 }
 
 // loadInvitations is called from the same trigger as loadMembers so
 // the Members tab can render the pending section without an extra
-// round-trip latency budget. canManage gates the fetch — viewers /
+// round-trip latency budget. canManage gates the fetch - viewers /
 // contributors / admins-without-management see no pending section at
 // all (the route returns 200 but listing pending invites to those
 // roles would be UX noise; the route layer is Viewer+ for the read
@@ -943,7 +943,7 @@ function onInvitationsPageChange() {
 
 // doRevokeInvitation is wired to the t-popconfirm @confirm event in
 // the table template. The popconfirm itself owns the yes/no surface,
-// so this function is the post-confirmation action only — no nested
+// so this function is the post-confirmation action only - no nested
 // modal. Errors surface as toasts and the row stays in place for retry.
 async function doRevokeInvitation(row: TenantInvitation) {
   try {
@@ -968,7 +968,7 @@ async function doRevokeInvitation(row: TenantInvitation) {
 
 // ---- Audit-log helpers --------------------------------------------------
 
-// Stacked "date / time" cell — mirrors SystemSettings audit table. When
+// Stacked "date / time" cell - mirrors SystemSettings audit table. When
 // 50 events fall in the same minute, ellipsing a flat string makes them
 // indistinguishable; splitting on two lines keeps the seconds visible
 // without eating horizontal budget the diff column needs.
@@ -981,7 +981,7 @@ const auditColumns = computed(() => [
     colKey: 'target',
     title: t('tenantMember.audit.columns.target'),
     // No fixed width / no ellipsis: this is where the role-diff and
-    // denied-action context live. Wrap rather than clip — losing the
+    // denied-action context live. Wrap rather than clip - losing the
     // "Owner → Admin" half of a role change defeats the point.
     minWidth: 200,
   },
@@ -1103,7 +1103,7 @@ function auditTargetDiff(row: AuditLog): string {
   return ''
 }
 
-// Expanded row state — local set of ids the user has opened. We keep
+// Expanded row state - local set of ids the user has opened. We keep
 // it ephemeral (not persisted) so reopening the drawer always starts
 // in the collapsed view.
 const auditExpandedRowKeys = ref<number[]>([])
@@ -1197,7 +1197,7 @@ function reloadAuditLog() {
 
 // Lazy-load the audit log the first time the drawer is opened. We
 // avoid watching `auditDrawerVisible` so closing+reopening the drawer
-// doesn't re-fetch behind the user's back — refresh is an explicit
+// doesn't re-fetch behind the user's back - refresh is an explicit
 // action via the drawer's "Refresh" button.
 function openAuditDrawer() {
   auditDrawerVisible.value = true
@@ -1284,7 +1284,7 @@ async function submitShareLink() {
 }
 
 // Live display strings for the in-place confirm step. Recomputed
-// every time the user goes Back, tweaks the form, and re-advances —
+// every time the user goes Back, tweaks the form, and re-advances -
 // the summary always mirrors the current form state.
 const addConfirmEmail = computed(() => addForm.email.trim())
 const addConfirmRoleLabel = computed(() => t('tenantMember.role.' + addForm.role))
@@ -1330,7 +1330,7 @@ async function sendInvitation(email: string, role: TenantRole) {
       const autoJoined = !!resp.data && 'user_id' in resp.data
       invitePopupVisible.value = false
       if (autoJoined) {
-        // The invitee is already a member — refresh the roster so they
+        // The invitee is already a member - refresh the roster so they
         // appear immediately. No toast: the new row is the feedback.
         await loadMembers()
       } else {
@@ -1378,7 +1378,7 @@ async function onRoleChange(row: TenantMember, newRole: string) {
       // assigning `row.role = next` in place. The `row` argument here
       // is the row object handed in by t-table's slot scope, which in
       // some TDesign versions is a shallow copy that doesn't share
-      // reactivity with the `members` array — assigning `row.role`
+      // reactivity with the `members` array - assigning `row.role`
       // updates the local handle but not the rendered cell, so the
       // select keeps showing the previous value until a refresh.
       // Splicing a fresh object into the source array guarantees the
@@ -1405,7 +1405,7 @@ async function onRoleChange(row: TenantMember, newRole: string) {
       MessagePlugin.error(err?.message || t('tenantMember.errors.generic'))
     }
     // The t-select is bound via :model-value (one-way), so its rendered
-    // value stays at `prev` automatically — no DOM hack needed.
+    // value stays at `prev` automatically - no DOM hack needed.
   }
 }
 
@@ -1435,7 +1435,7 @@ async function removeRow(row: TenantMember) {
 
 // Re-load whenever the active tenant resolves (or changes via the
 // tenant switcher). onMounted alone would race with auth-store
-// hydration — currentTenantId is often 0 at the moment this component
+// hydration - currentTenantId is often 0 at the moment this component
 // mounts on a cold reload.
 watch(
   activeTenantId,
@@ -1953,7 +1953,7 @@ watch(
   margin-top: 16px;
 }
 
-/* Share-link result panel — single-row layout: input field stretches,
+/* Share-link result panel - single-row layout: input field stretches,
  * copy button stays fixed-width. Mirrors the rounded card style of
  * the surrounding popup. */
 .share-link-result {

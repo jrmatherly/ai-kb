@@ -102,9 +102,9 @@ import VectorStoreBadge from '@/components/VectorStoreBadge.vue'
 
 const props = defineProps<{
   mode: 'create' | 'edit'
-  // create mode — current selection (empty string for env-default)
+  // create mode - current selection (empty string for env-default)
   vectorStoreId?: string
-  // edit mode — bound store info already on the KB
+  // edit mode - bound store info already on the KB
   boundSource?: VectorStoreSource
   boundName?: string
   boundEngineType?: string

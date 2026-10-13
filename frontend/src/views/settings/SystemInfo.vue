@@ -251,7 +251,7 @@ function formatUptime(totalSeconds: number): string {
 const troubleshootingDocsURL = docsUrl('troubleshootingMigrations')
 
 // Pre-fills a new issue with the current migration error so users don't have to
-// paste it manually. Body is intentionally minimal — the bug template will fill
+// paste it manually. Body is intentionally minimal - the bug template will fill
 // in the rest. Encode aggressively to survive newlines / quotes.
 const reportIssueURL = computed(() => {
   const base = 'https://github.com/jrmatherly/ai-kb/issues/new'

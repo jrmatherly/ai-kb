@@ -325,7 +325,7 @@ const KB_INLINE_TAG_RE = /[ \t]*<kb\b[^>]*?\s*\/?>/g
  * Strip chat-only citation markup so an answer can live on as standalone
  * Markdown (e.g. saved into a knowledge base by "add to knowledge").
  *
- * `<web/>` becomes a plain Markdown link — the URL still means something
+ * `<web/>` becomes a plain Markdown link - the URL still means something
  * outside the chat. `<kb/>` points at chunk UUIDs that do not, so it is dropped
  * and its document name is returned instead, for the caller to render as a
  * source list. Removal stays local to the tags: no whitespace elsewhere in the

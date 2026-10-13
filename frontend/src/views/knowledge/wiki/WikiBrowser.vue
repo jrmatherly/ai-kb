@@ -234,7 +234,7 @@
 
           <template v-else>
             <!-- Index overview (pinned at top). Rendered lazily from a
-                 structured API response — never loads the full directory
+                 structured API response - never loads the full directory
                  as markdown. -->
             <div v-if="indexAvailable" :class="['wiki-nav-item', { active: activeSystemView === 'index' }]"
               @click="openIndexView">
@@ -968,7 +968,7 @@ const pagesByType = ref<Record<string, PageTypeBucket>>({})
 const collapsedDirectories = ref<Set<string>>(new Set())
 const touchedDirectories = ref<Set<string>>(new Set())
 // Index view state. The reader renders an incrementally-built markdown
-// string rather than a structured list — opening the view loads intro
+// string rather than a structured list - opening the view loads intro
 // only, and "Load more" appends one directory section at a time in a
 // fixed order (Summary → Entity → Concept → Synthesis → Comparison).
 // Once the last section exhausts its pages, indexHasMore flips off.
@@ -982,7 +982,7 @@ const indexLoading = ref(false)
 const indexAvailable = ref(false)
 // Per-section pagination cursor. Empty string = not yet loaded; empty
 // cursor AFTER a load = that section is exhausted. `indexSectionIdx`
-// tracks which section in INDEX_SECTION_ORDER is "next to load" — we
+// tracks which section in INDEX_SECTION_ORDER is "next to load" - we
 // advance to the following section only when the current one runs out.
 const indexSections = ref<Record<string, { loaded: boolean; cursor: string; total: number }>>({})
 const indexSectionIdx = ref(0)
@@ -1048,7 +1048,7 @@ function toggleUnlinkedNodes() {
 // Graph filtering
 const graphFilterTypes = ref<Set<string>>(new Set(['summary', 'entity', 'concept', 'synthesis', 'comparison', 'index']))
 
-// Graph slicing state. The backend caps an overview fetch at 500 nodes —
+// Graph slicing state. The backend caps an overview fetch at 500 nodes -
 // tens-of-thousands-page wikis would otherwise crash the browser trying to
 // render 100k SVG elements. `graphMode` tracks whether we're on the
 // overview landing or drilled into an ego neighborhood so the UI can offer
@@ -1182,7 +1182,7 @@ function fitGraphToView() {
 
   for (const node of graphNodes) {
     // Every node in graphNodes is a visible candidate now that filtering
-    // is server-side — no need to recheck the client-side allow-list.
+    // is server-side - no need to recheck the client-side allow-list.
     minX = Math.min(minX, node.x)
     minY = Math.min(minY, node.y)
     maxX = Math.max(maxX, node.x)
@@ -1234,7 +1234,7 @@ const navHistory = ref<WikiPage[]>([])
 // navFromSystemView remembers that the user was viewing the Index when they
 // clicked into a slug, so goBack can restore it
 // once the page-level history stack is empty. We keep this parallel to
-// navHistory rather than widening its element type — navHistory is
+// navHistory rather than widening its element type - navHistory is
 // consumed everywhere as `WikiPage[]` and that contract stays cleaner
 // if the system-view sentinel lives in its own ref.
 const navFromSystemView = ref<'' | 'index'>('')
@@ -1257,7 +1257,7 @@ const CONTENT_TABS = [KNOWLEDGE_TAB, 'summary']
 // tabPageTypes maps a sidebar tab onto the comma-separated page_type filter the
 // backend expects. The knowledge tab folds every non-summary content type into
 // one request so the server returns a single merged list and directory
-// skeleton — no per-type fan-out on the client.
+// skeleton - no per-type fan-out on the client.
 function tabPageTypes(tab: string): string {
   return tab === KNOWLEDGE_TAB ? KNOWLEDGE_TYPES.join(',') : tab
 }
@@ -1324,7 +1324,7 @@ const groupedPages = computed(() => {
 // hasContentPages is the sidebar's empty-state gate. The old version
 // looked at `contentPages.length === 0`, which forced a full load to
 // decide whether the wiki was truly empty. Now we check bucket totals
-// reported by the backend — zero everywhere means no content pages.
+// reported by the backend - zero everywhere means no content pages.
 const hasContentPages = computed(() => {
   for (const bucket of Object.values(pagesByType.value)) {
     if (bucket.total > 0 || bucket.categoryPaths.length > 0) return true
@@ -1393,18 +1393,18 @@ const graphDrawerContent = computed(() => {
 // accounting is subtler than a simple "shown vs link_count" because three
 // different situations produce different interpretations of a gap:
 //
-//   ego center — the backend already returned every neighbor reachable
+//   ego center - the backend already returned every neighbor reachable
 //     through BFS at depth 1+. Any difference between `link_count` and
 //     the visible degree is pages that couldn't be traversed (dead refs,
 //     type-filtered pages, soft-deleted neighbors), NOT pages we can
 //     still fetch. Expanding or blooming from the center does nothing
 //     useful, so we flag it as fullyExplored and disable the buttons.
 //
-//   ego non-center — difference IS "neighbors not yet loaded". The user
+//   ego non-center - difference IS "neighbors not yet loaded". The user
 //     can bloom to pull them in. This is the main signal for the dashed
 //     expansion ring.
 //
-//   overview — difference is "neighbors that didn't make top-500", and
+//   overview - difference is "neighbors that didn't make top-500", and
 //     the fix isn't bloom (overview doesn't bloom) but pivoting to ego.
 //     We still disable Bloom (it's an ego-only op) but leave Expand
 //     enabled so the user can drill down.
@@ -1418,7 +1418,7 @@ const graphDrawerNeighborStatus = computed(() => {
     // Drawer is open on a page that isn't currently on the canvas (e.g.
     // the user just clicked a wiki-link that triggered an ego pivot and
     // we're between data update and re-render). Treat as unknown so the
-    // button stays enabled — the pivot will populate neighbors shortly.
+    // button stays enabled - the pivot will populate neighbors shortly.
     return null
   }
   // Undirected degree within the current subgraph. Both incoming and
@@ -1431,7 +1431,7 @@ const graphDrawerNeighborStatus = computed(() => {
   }
   const visible = neighbors.size
   const total = node.link_count || 0
-  // hidden can go negative in a rare corner case — a neighbor might be
+  // hidden can go negative in a rare corner case - a neighbor might be
   // visible via an edge that the link_count counter didn't know about
   // (e.g. a broken-link cleanup happened after the snapshot). Clamp.
   const hidden = Math.max(0, total - visible)
@@ -1459,7 +1459,7 @@ const graphDrawerNeighborHint = computed(() => {
   }
   if (status.visible >= status.total) {
     // All neighbors already visible. Expand still does something useful
-    // though — it pivots the canvas to just this node's neighborhood,
+    // though - it pivots the canvas to just this node's neighborhood,
     // giving the user a focused N-node view instead of wading through
     // the 500-node overview. Say so rather than sounding like a dead end.
     return t('knowledgeEditor.wikiBrowser.neighborsAllShown', { total: status.total })
@@ -1502,7 +1502,7 @@ const graphDrawerCanBloom = computed(() => {
 
 // graphFrontierCount powers the legend's "Grow frontier (N)" button. It
 // counts nodes on the current ego canvas that the user can still expand
-// outward from — matches the filter used by growFrontier() itself so
+// outward from - matches the filter used by growFrontier() itself so
 // the button count can never disagree with what the click actually
 // expands. Hidden when 0 so the button disappears once the local
 // neighborhood is fully explored (or only Index/Log super-nodes remain).
@@ -1530,7 +1530,7 @@ const graphFamiliarCount = computed(() => graphData.value?.meta?.familiar_count 
 //
 // The old design ("centered on A · 1 hop · 7 nodes" / "showing 500 / 40000,
 // click a node to expand neighbors") crammed four pieces of info into a
-// single line of running prose — the most important bit (what page the
+// single line of running prose - the most important bit (what page the
 // user is focused on) got lost between the jargon ("1 hop") and the
 // imperative tail ("click a node...").
 //
@@ -1542,11 +1542,11 @@ const graphFamiliarCount = computed(() => graphData.value?.meta?.familiar_count 
 //   secondary → optional subline with type badge / hint / progress
 //
 // We also resolve `meta.center` (a slug) to the actual page title via
-// graphData.nodes so users see "Beijing Changping Vocational..." instead of "entity/beijing-..."
-// — a common complaint with the old hint.
+// graphData.nodes so users see "Beijing Changping Vocational..." instead of "entity/beijing-..." -
+// a common complaint with the old hint.
 // graphHelpRows is the content of the ? popup. Keeping it in a computed
 // rather than the template lets us i18n each action/description in one
-// place and also makes it trivially extensible — new shortcuts land as
+// place and also makes it trivially extensible - new shortcuts land as
 // one row addition each rather than a full template rewrite. The order
 // below is "most common → rarest"; users don't typically read past the
 // first few rows.
@@ -1569,7 +1569,7 @@ const graphStatusCard = computed((): { icon: string; title: string; primary: str
     const centerTitle = centerNode?.title || meta.center
     const typeLabel = centerNode ? getTypeLabel(centerNode.page_type) : ''
     // Subtract 1 so the count means "related nodes" (excluding the
-    // center itself) — matches how users count "connections". If the
+    // center itself) - matches how users count "connections". If the
     // count is 0 the center is an isolated page.
     const relatedCount = Math.max(0, meta.returned - 1)
     const secondaryParts: string[] = []
@@ -1658,7 +1658,7 @@ function handleGraphDrawerClick(e: MouseEvent) {
 // activeTab drives which page_type's list is visible in the sidebar.
 // Pre-tabbed UX stacked collapsible groups, but on a 40k-page KB the
 // expanded groups left multiple virtualized viewports and scroll events got
-// ambiguous — "which list am I scrolling?" The tabbed version removes
+// ambiguous - "which list am I scrolling?" The tabbed version removes
 // that ambiguity by mounting exactly one scroller at a time.
 const activeTab = ref<string>('')
 type SidebarViewMode = 'tree' | 'list'
@@ -2014,7 +2014,7 @@ const WIKI_PAGE_ITEM_HEIGHT = 100
 // can sit in the MIDDLE of the list, so we observe each of them. When a
 // row scrolls into view it fires its loader instead of waiting for a
 // manual click. Re-attaching on every activeTreeRows change also drains
-// the case the user asked about — "current page loaded but more remain,
+// the case the user asked about - "current page loaded but more remain,
 // and the row never reached the bottom": observe() re-fires for any row
 // still intersecting after the previous batch rendered, and the loader
 // guards stop the cascade once the directory is exhausted or the row is
@@ -2257,7 +2257,7 @@ async function loadCategoriesForType(type: string, opts: { reset?: boolean; pare
 
   const parentId = isRoot ? '' : bucket.folderIdByPath[parentPath.join('/')]
   // A deeper level whose parent folder id we have not yet recorded cannot be
-  // resolved against the (id-based) folders endpoint — skip until it loads.
+  // resolved against the (id-based) folders endpoint - skip until it loads.
   if (!isRoot && parentId === undefined) return
 
   let state = bucket.categoryPages[parentKey]
@@ -2284,7 +2284,7 @@ async function loadCategoriesForType(type: string, opts: { reset?: boolean; pare
       }))
       .filter(entry => entry.path.length > 0)
       // Summary is a single page_type; empty folders belong in the merged
-      // knowledge view only (backend filters too — belt-and-suspenders).
+      // knowledge view only (backend filters too - belt-and-suspenders).
       .filter(entry => type !== 'summary' || entry.count > 0)
 
     const existing = new Map((opts.reset ? [] : bucket.categoryPaths)
@@ -2340,7 +2340,7 @@ async function reloadDirectoryForType(
 }
 
 // --- Drag-and-drop: move a page or folder into a folder ------------------
-// draggedItem holds whatever is being dragged — a page (move into folder) or a
+// draggedItem holds whatever is being dragged - a page (move into folder) or a
 // folder (reparent). dropTargetKey is the row highlighted as the hover target
 // ("__root__" for the toolbar drop zone). Both clear on dragend / drop so a
 // cancelled drag leaves no sticky highlight.
@@ -2353,7 +2353,7 @@ const dropTargetKey = ref<string>('')
 // primeDragData sets dataTransfer so the native HTML5 drag actually starts.
 // Firefox refuses to initiate a drag unless some data is set, and without an
 // explicit effectAllowed/dropEffect the cursor shows "no-drop" and the drop
-// event never fires — which is why the move felt impossible to trigger.
+// event never fires - which is why the move felt impossible to trigger.
 function primeDragData(e: DragEvent) {
   if (!e.dataTransfer) return
   e.dataTransfer.effectAllowed = 'move'
@@ -2388,7 +2388,7 @@ function onDirectoryDragOver(e: DragEvent, pathKey: string) {
 
 // onRootDragOver fires on the list container itself. Folder rows stop their
 // dragover from bubbling here, so reaching this handler means the cursor is
-// over empty list space (or a page row) — i.e. a "move to root" target.
+// over empty list space (or a page row) - i.e. a "move to root" target.
 function onRootDragOver(e: DragEvent) {
   if (!draggedItem.value) return
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
@@ -2691,7 +2691,7 @@ async function loadPagesForType(
 
 // loadIndex probes the wiki index so the sidebar knows to show the pinned
 // Index entry. We ask the backend for intro only (zero
-// group types) — a bounded response regardless of KB size. Sections are
+// group types) - a bounded response regardless of KB size. Sections are
 // fetched lazily after the user actually opens the Index view; see
 // loadMoreIndexSection.
 // stripLegacyIndexDirectory removes the inline "## Summary (N)\n[[...]]
@@ -2711,7 +2711,7 @@ function stripLegacyIndexDirectory(intro: string): string {
 
 async function loadIndex() {
   try {
-    // We only need intro on the initial probe — the directory groups
+    // We only need intro on the initial probe - the directory groups
     // are fetched lazily once the user opens the Index view. Passing
     // an unknown type filter yields a cheap single count(*) + 0 rows
     // on the backend instead of scanning every directory group, and
@@ -2744,7 +2744,7 @@ async function openIndexView() {
     }
   }
   // Observer is mounted/unmounted from a watch on activeSystemView
-  // + indexSentinelRef below, so nothing else to do here — entering
+  // + indexSentinelRef below, so nothing else to do here - entering
   // the view is a render-time concern.
 }
 
@@ -2765,7 +2765,7 @@ function appendIndexDirectoryLines(items: WikiIndexEntryDTO[]): string {
     const display = entry.title || entry.slug
     const indent = '  '.repeat(path.length)
     if (entry.summary) {
-      out += `${indent}[[${entry.slug}|${display}]] — ${entry.summary}\n`
+      out += `${indent}[[${entry.slug}|${display}]] - ${entry.summary}\n`
     } else {
       out += `${indent}[[${entry.slug}|${display}]]\n`
     }
@@ -2780,7 +2780,7 @@ function appendIndexDirectoryLines(items: WikiIndexEntryDTO[]): string {
 // round trip that appends a markdown block to indexMarkdown.
 //
 // Rendering is append-only markdown rather than a structured list so
-// the viewer feels like a regular wiki page — [[wiki-link]] clicks flow
+// the viewer feels like a regular wiki page - [[wiki-link]] clicks flow
 // through handleContentClick just like every other page body. Entries
 // are rendered as plain lines (not list items) so the reader doesn't
 // carry list bullets next to every link.
@@ -2899,7 +2899,7 @@ onUnmounted(() => {
 // loadPages is the sidebar's top-level initialization. It wires up the
 // empty buckets (so groupedPages produces stable group slots even
 // before any fetch completes), pulls the pinned system pages, and then
-// kicks off the first page of each content type bucket in parallel —
+// kicks off the first page of each content type bucket in parallel -
 // cheap because each bucket caps at WIKI_SIDEBAR_PAGE_SIZE rows.
 //
 // Historically this function looped listWikiPages({page:1..50}) and
@@ -2934,7 +2934,7 @@ async function loadPages() {
     }
 
     // Auto-select based on query string or default to the index
-    // overview. The index is the natural landing view — it shows
+    // overview. The index is the natural landing view - it shows
     // intro + a paginated directory of every page type.
     if (!selectedPage.value && activeSystemView.value === '') {
       if (route.query.slug && typeof route.query.slug === 'string') {
@@ -2991,7 +2991,7 @@ async function loadStats() {
 const editingPage = ref(false)
 const savingPage = ref(false)
 const editForm = ref({ title: '', summary: '', content: '' })
-// Version the user started editing from — the optimistic-lock guard sent
+// Version the user started editing from - the optimistic-lock guard sent
 // with the save. 409 → someone (or the pipeline) edited in between.
 const editBaseVersion = ref(0)
 const editConflictVersion = ref<number | null>(null)
@@ -3232,7 +3232,7 @@ async function refreshSelectedPage() {
 // `undefined` when every known type is selected (in which case we want
 // the backend to rank over the full page population, not a subset).
 // Callers must check for "no types selected at all" separately and avoid
-// the fetch — passing an empty string list to the backend is ambiguous
+// the fetch - passing an empty string list to the backend is ambiguous
 // there (empty == no filter == return everything, the opposite of what
 // the user meant).
 function graphFilterTypesToArray(): string[] | undefined {
@@ -3253,7 +3253,7 @@ async function loadGraph() {
   graphMode.value = 'overview'
   graphCenter.value = ''
   if (graphFilterSelectsNothing()) {
-    // User has deselected every type — render an empty canvas without
+    // User has deselected every type - render an empty canvas without
     // hitting the backend.
     graphData.value = { nodes: [], edges: [], meta: { mode: 'overview', total: 0, returned: 0, truncated: false } }
     await nextTick()
@@ -3269,8 +3269,8 @@ async function loadGraph() {
     })
     graphData.value = (res as any).data || res as any
     // Seed the search dropdown's empty-state with this overview snapshot
-    // so opening the select without typing shows the top-500 by link_count
-    // — matching what the old client-filter dropdown used to surface.
+    // so opening the select without typing shows the top-500 by link_count -
+    // matching what the old client-filter dropdown used to surface.
     // We re-seed on every overview load so filter toggles / KB changes
     // propagate; ego loads intentionally skip seeding so drilling into a
     // neighborhood doesn't shrink the default dropdown to a 20-node subgraph.
@@ -3325,7 +3325,7 @@ async function loadEgoGraph(slug: string, depth = GRAPH_EGO_DEFAULT_DEPTH) {
     graphMode.value = 'ego'
     graphCenter.value = slug
     // Entering (or re-entering) a fresh ego view resets the bloom
-    // generation counter — we're no longer accumulating on top of the
+    // generation counter - we're no longer accumulating on top of the
     // previous canvas, so every node belongs to generation 0.
     resetBloomGenerations(graphData.value?.nodes)
     // Select before rendering so the new center also receives its highlight.
@@ -3348,7 +3348,7 @@ async function loadEgoGraph(slug: string, depth = GRAPH_EGO_DEFAULT_DEPTH) {
 // While loadEgoGraph replaces the canvas with a fresh ego view, bloom lets
 // the user add a second (or Nth) ego around a neighbor WITHOUT losing the
 // nodes already on screen. This matches how humans explore a knowledge
-// graph interactively — "show me what's around A", "now also show me
+// graph interactively - "show me what's around A", "now also show me
 // what's around B, but keep A visible for context".
 //
 // Three pieces of state cooperate:
@@ -3358,7 +3358,7 @@ async function loadEgoGraph(slug: string, depth = GRAPH_EGO_DEFAULT_DEPTH) {
 //     generation, oldest first.
 //   - BLOOM_MAX_NODES: hard cap on rendered nodes. Past this point each
 //     bloom triggers LRU eviction to keep the force simulation responsive.
-//   - We reuse the existing graphData.value as the accumulator — new ego
+//   - We reuse the existing graphData.value as the accumulator - new ego
 //     responses are merged into it in place, then handed back to renderGraph
 //     in preserveLayout mode.
 const BLOOM_MAX_NODES = 1500
@@ -3379,7 +3379,7 @@ async function loadBloomNeighbors(anchorSlug: string, depth = GRAPH_EGO_DEFAULT_
   if (!graphData.value) return
   if (graphMode.value !== 'ego') {
     // Bloom only makes sense on top of an ego view. If we're still on the
-    // overview, reuse loadEgoGraph to pivot cleanly — that's a less
+    // overview, reuse loadEgoGraph to pivot cleanly - that's a less
     // surprising outcome than no-oping.
     await loadEgoGraph(anchorSlug, depth)
     return
@@ -3400,7 +3400,7 @@ async function loadBloomNeighbors(anchorSlug: string, depth = GRAPH_EGO_DEFAULT_
     const merged = mergeGraphData(graphData.value, incoming, bloomCurrentGeneration)
     // Evict the oldest bloom generations if we've blown through the cap.
     // We never evict the ego center (the original anchor of the session),
-    // the most recent bloom anchor, or the currently selected node — the
+    // the most recent bloom anchor, or the currently selected node - the
     // user's mental anchors must stay on screen.
     const protect = new Set<string>([
       graphCenter.value,
@@ -3470,7 +3470,7 @@ function mergeGraphData(
 // (plus their incident edges) until the total fits under BLOOM_MAX_NODES.
 // `protect` holds slugs that must never be evicted (current center, most
 // recent bloom anchor, current selection). Generation-0 nodes are
-// protected too — those are the original ego view the user started with.
+// protected too - those are the original ego view the user started with.
 function evictBloomOverflow(data: WikiGraphData, protect: Set<string>) {
   if (data.nodes.length <= BLOOM_MAX_NODES) return
 
@@ -3514,7 +3514,7 @@ const GROW_FRONTIER_CONCURRENCY = 6
 // GRAPH_SYSTEM_PAGE_TYPES are wiki page types that act as index-of-the-
 // whole-KB rather than content nodes. They link out to every document
 // page by design, so treating them as part of the frontier would cause
-// one "Grow frontier" click to dump the entire wiki onto the canvas —
+// one "Grow frontier" click to dump the entire wiki onto the canvas -
 // exactly the opposite of what the user asked for ("show me more of the
 // interesting neighborhood"). We keep them visible and individually
 // expandable (double-click / shift-click / ⊕ all still work), but they
@@ -3535,7 +3535,7 @@ function isFrontierCandidate(
 // every visible node that currently has an expansion ring (visible < link_count,
 // not the ego center, not an Index/Log super-node), fires parallel ego
 // fetches for them, merges all responses together and repaints the canvas
-// preserving layout. This is the batch cousin of loadBloomNeighbors —
+// preserving layout. This is the batch cousin of loadBloomNeighbors -
 // one click grows the canvas along every branch instead of 100 individual
 // click-by-click iterations.
 async function growFrontier() {
@@ -3567,7 +3567,7 @@ async function growFrontier() {
   graphLoading.value = true
   try {
     // Concurrency-limited fan-out. We collect responses in order of
-    // completion (doesn't matter — merge is commutative on the edge /
+    // completion (doesn't matter - merge is commutative on the edge /
     // node sets) and ignore individual failures so one slow/broken node
     // doesn't sink the whole batch.
     const responses: WikiGraphData[] = []
@@ -3598,7 +3598,7 @@ async function growFrontier() {
 
     if (responses.length === 0) return
 
-    // All new arrivals belong to a single bloom generation — the user
+    // All new arrivals belong to a single bloom generation - the user
     // performed one logical action, so LRU should evict them together.
     bloomCurrentGeneration += 1
     const gen = bloomCurrentGeneration
@@ -3658,7 +3658,7 @@ async function navigateToSlug(slug: string) {
     if (selectedPage.value && selectedPage.value.slug !== slug) {
       navHistory.value.push(selectedPage.value)
     } else if (!selectedPage.value && activeSystemView.value) {
-      // Clicking a [[slug]] from inside Index / Log — same rationale
+      // Clicking a [[slug]] from inside Index / Log - same rationale
       // as selectPage above: record the system-view origin so the
       // reader's back arrow can return to it.
       navFromSystemView.value = activeSystemView.value
@@ -3680,7 +3680,7 @@ function goBack() {
     return
   }
   // History stack is empty but we remember the page was opened from
-  // a system view — restore that instead of leaving the reader empty.
+  // a system view - restore that instead of leaving the reader empty.
   if (navFromSystemView.value) {
     const view = navFromSystemView.value
     navFromSystemView.value = ''
@@ -4179,7 +4179,7 @@ function renderGraph(opts: RenderGraphOpts = {}) {
 
     const r = nodeRadius(n)
 
-    // Expansion hint ring — dashed outer circle that appears when the
+    // Expansion hint ring - dashed outer circle that appears when the
     // node has neighbors the user hasn't loaded yet. Without this signal
     // users have no way to tell a fully-explored node from one that's
     // still hiding 80 more connections just out of view, so they either
@@ -4263,7 +4263,7 @@ function renderGraph(opts: RenderGraphOpts = {}) {
     text.textContent = n.title.length > 14 ? n.title.substring(0, 14) + '…' : n.title
     g.appendChild(text)
 
-    // Hover bloom button — the ⊕ badge floating off the node's upper-right.
+    // Hover bloom button - the ⊕ badge floating off the node's upper-right.
     // Invisible by default; fades in on mouseenter when bloom would
     // actually do something (node has hidden neighbors and isn't the ego
     // center / isn't on overview). Clicking it skips the drawer round-trip
@@ -4296,7 +4296,7 @@ function renderGraph(opts: RenderGraphOpts = {}) {
       btnBg.setAttribute('stroke-width', '1.5')
       bloomBtn.appendChild(btnBg)
 
-      // ⊕ drawn as two short lines — cross-browser-safer than a text glyph
+      // ⊕ drawn as two short lines - cross-browser-safer than a text glyph
       const btnCrossV = document.createElementNS('http://www.w3.org/2000/svg', 'line')
       btnCrossV.setAttribute('x1', String(btnX))
       btnCrossV.setAttribute('x2', String(btnX))
@@ -4376,12 +4376,12 @@ function renderGraph(opts: RenderGraphOpts = {}) {
     // Drawer is by far the slower path (page fetch + render), so adding
     // canvas-direct expand / bloom removes a 2-3 second round-trip from
     // every exploration step. We still want shift+click to be
-    // discoverable, so the drawer's buttons remain — they're the
+    // discoverable, so the drawer's buttons remain - they're the
     // keyboard-free fallback.
     //
     // Implementation note: we listen to click AND dblclick. The browser
     // fires both click events of a dblclick too, but we debounce via
-    // `pendingSingleClick` — the first click sets a 220ms timer to open
+    // `pendingSingleClick` - the first click sets a 220ms timer to open
     // the drawer; dblclick arriving inside that window cancels the
     // timer and runs expand instead. `event.detail` (click count) is
     // less portable across synthetic events, so we track state explicitly.
@@ -4390,7 +4390,7 @@ function renderGraph(opts: RenderGraphOpts = {}) {
       e.stopPropagation()
 
       if (e.shiftKey) {
-        // Shift = Bloom. Skip the drawer entirely, skip selection — the
+        // Shift = Bloom. Skip the drawer entirely, skip selection - the
         // user's intent is "bring in the neighbors", not "read this page".
         // Center / isOverview cases are handled inside loadBloomNeighbors
         // (center no-ops, overview pivots to ego).
@@ -4896,7 +4896,7 @@ function clearHighlight(
 
 // graphSearchOptions drives the search select dropdown. When the input is
 // empty we fall back to the overview top-500 snapshot so users can still
-// browse the most-connected pages without typing — matching the old
+// browse the most-connected pages without typing - matching the old
 // client-filter UX. Once the user types we switch to a remote full-text
 // search against the wiki API so the dropdown can reach pages that sit
 // outside the canvas (up to the whole 40k-page KB).
@@ -4933,7 +4933,7 @@ async function handleGraphRemoteSearch(keyword: string) {
     graphSearchDebounce = null
   }
   if (!q) {
-    // No keyword — clear keyword-specific results; the computed
+    // No keyword - clear keyword-specific results; the computed
     // graphSearchEffectiveOptions will fall back to the top-500 snapshot.
     graphSearchOptions.value = []
     graphSearchLoading.value = false
@@ -4965,7 +4965,7 @@ let graphEdgeElsRef: { line: SVGLineElement; source: string; target: string; bid
 let graphAdjacencyRef = new Map<string, Set<string>>()
 
 // handleGraphSearchSelect is the single entry point every "jump to this
-// slug" path funnels through — the graph search select, drawer wiki-link
+// slug" path funnels through - the graph search select, drawer wiki-link
 // clicks, the ?slug= query param, and the global issues "Resolve" button.
 // On a 40k-page wiki, the current render contains at most GRAPH_OVERVIEW_LIMIT
 // (500) nodes, so most of the wiki is NOT on screen at any given moment.
@@ -4984,7 +4984,7 @@ async function handleGraphSearchSelect(value: string) {
 
   let node = graphNodes.find(n => n.slug === value)
   if (!node) {
-    // Target is outside the current subgraph — pivot to an ego view.
+    // Target is outside the current subgraph - pivot to an ego view.
     // loadEgoGraph repopulates graphNodes as a side effect.
     await loadEgoGraph(value)
     node = graphNodes.find(n => n.slug === value)
@@ -5000,7 +5000,7 @@ async function handleGraphSearchSelect(value: string) {
   }
 
   // Under server-side filtering, every node currently in graphNodes has
-  // already passed the active type filter — there is no longer a path
+  // already passed the active type filter - there is no longer a path
   // where we need to re-enable a filter to make the target visible.
 
   if (graphPanZoomRef) {
@@ -5035,7 +5035,7 @@ async function handleGraphSearchEnter(context: { inputValue: string }) {
   const value = context.inputValue?.trim()
   if (!value) return
 
-  // First try the already-loaded remote suggestions — if the user picked a
+  // First try the already-loaded remote suggestions - if the user picked a
   // keyword whose results are on screen, fire the first match immediately.
   const match = graphSearchOptions.value.find(opt =>
     opt.label.toLowerCase().includes(value.toLowerCase()) ||
@@ -5063,7 +5063,7 @@ async function handleGraphSearchEnter(context: { inputValue: string }) {
 // Load graph when switching to graph view
 // Reload all pages when search query is cleared (backspace or clear button).
 // `searchResults = null` snaps back to the bucketed view without refetching
-// anything — the buckets still hold whatever the user scrolled in before
+// anything - the buckets still hold whatever the user scrolled in before
 // they started searching.
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 watch(searchQuery, (val) => {
@@ -6285,7 +6285,7 @@ onUnmounted(() => {
 // The index view renders as markdown through the same pipeline as a
 // normal wiki page, so it inherits .wiki-reader-body styling automatically.
 // We use a sentinel below the body to drive auto-pagination via
-// IntersectionObserver — the user never sees a "Load more" button.
+// IntersectionObserver - the user never sees a "Load more" button.
 .wiki-index-sentinel {
   display: flex;
   align-items: center;

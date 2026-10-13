@@ -26,7 +26,7 @@ test('uses confirmed tags for file and URL imports instead of reading the list f
 })
 
 // Browsing a folder pre-fills the upload destination, so the dialog must show it
-// and the batch must use the folder the user confirmed there — never the sidebar
+// and the batch must use the folder the user confirmed there - never the sidebar
 // selection as it stands when the uploads actually start.
 test('takes the upload destination folder from the confirmation result', () => {
   assert.match(host, /:target-folder="uploadConfirmStore\.targetFolder"/)

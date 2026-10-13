@@ -193,7 +193,7 @@ export interface GalleryAttrUsage {
  *
  * Display text is deliberately split: `label` is the short name that fits a
  * filter checkbox, `description` is the sentence shown where there is room
- * (a tooltip). `value` stays the raw machine value — it is what gets
+ * (a tooltip). `value` stays the raw machine value - it is what gets
  * filtered and searched, and it is never localized.
  */
 export interface GalleryAttrValue {

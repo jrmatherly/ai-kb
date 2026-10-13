@@ -8,7 +8,7 @@
  * detail payload). When such a grant exists it is the ONLY thing that
  * counts: the browsing user's local tenant role (e.g. being an admin of
  * their own personal workspace) must never upgrade it, because the
- * backend RBAC cap would 403 the mutation anyway — showing the buttons
+ * backend RBAC cap would 403 the mutation anyway - showing the buttons
  * just produces dead ends (#3098).
  */
 

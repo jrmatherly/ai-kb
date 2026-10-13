@@ -6,7 +6,7 @@
  * - `composables/useFont.ts` writes `zoom: <scale>` onto `<html>` to honor the
  *   user's font-size preference. That zoom multiplies everything inside.
  * - `getBoundingClientRect()`, `window.innerWidth/innerHeight`, `MouseEvent.clientX/Y`
- *   and similar APIs return values in **visual (device-like) pixels** — already
+ *   and similar APIs return values in **visual (device-like) pixels** - already
  *   scaled by zoom.
  * - CSS lengths written to a fixed/absolute element living inside the zoom
  *   context (anywhere under `<html>`) are interpreted in **CSS pixels** and

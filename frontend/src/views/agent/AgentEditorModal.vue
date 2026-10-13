@@ -1928,7 +1928,7 @@ const props = defineProps<{
   // card to inspect its config doesn't see an "OK" that 403s on the
   // backend update endpoint. Field-level disable is intentionally NOT
   // wired here yet (the modal has 3000+ lines of form inputs); instead
-  // we just remove the only mutation surface — the footer button.
+  // we just remove the only mutation surface - the footer button.
   readOnly?: boolean;
 }>();
 

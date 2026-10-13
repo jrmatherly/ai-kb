@@ -16,7 +16,7 @@ import { listKnowledgeFiles } from '@/api/knowledge-base'
 // most recent RECENT_WINDOW documents are listed; a keyword hit list beyond
 // SAFE_HITS cannot be select-all-ed (the user is asked to narrow the
 // keyword), which also keeps one select-all fetch within the backend's
-// page_size ceiling — the same 1000 the POST /images body cap enforces.
+// page_size ceiling - the same 1000 the POST /images body cap enforces.
 const props = defineProps<{
   kbId: string
   visible: boolean

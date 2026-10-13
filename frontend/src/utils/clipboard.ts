@@ -6,7 +6,7 @@ import i18n from '@/i18n'
  * document.execCommand('copy') when the async Clipboard API is unavailable
  * (e.g. on non-secure HTTP origins) or rejects (e.g. permission denied).
  *
- * Returns true on success, false otherwise. This helper is UI-agnostic —
+ * Returns true on success, false otherwise. This helper is UI-agnostic -
  * callers own any feedback. Use copyWithToast for the common "copy + toast"
  * case; call this directly when you need custom feedback (e.g. inline DOM
  * state) or none at all.

@@ -6,7 +6,7 @@
 
     <!-- A turn that only recalled memory has no pipeline to draw. It borrows
          this component for the memory row alone, so anything derived from the
-         agent event stream must stay out of the way — the agent timeline is
+         agent event stream must stay out of the way - the agent timeline is
          rendering those same steps itself. -->
     <ChatMemoryStep
       v-if="memoryOnly"

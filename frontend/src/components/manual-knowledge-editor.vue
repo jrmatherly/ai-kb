@@ -489,7 +489,7 @@ const applyPatch = (patch: { value: string; start: number; end: number }) => {
   setSelectionRange(patch.start, patch.end)
 }
 
-/** Read the live caret off the event target — it is ahead of our cached range. */
+/** Read the live caret off the event target - it is ahead of our cached range. */
 const readEditorState = (event: KeyboardEvent) => {
   const textarea = event.currentTarget instanceof HTMLTextAreaElement ? event.currentTarget : null
   return {
@@ -558,7 +558,7 @@ const counterText = computed(() =>
     lines: contentStats.value.lines,
   }),
 )
-/** Rows behind the status bar's keyboard button — a full list, not a cropped line. */
+/** Rows behind the status bar's keyboard button - a full list, not a cropped line. */
 const shortcutRows = computed(() => [
   { keys: `${modifierLabel.value}B`, label: t('manualEditor.toolbar.bold') },
   { keys: `${modifierLabel.value}I`, label: t('manualEditor.toolbar.italic') },

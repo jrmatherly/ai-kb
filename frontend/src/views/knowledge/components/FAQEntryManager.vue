@@ -835,7 +835,7 @@ const chatResources = useChatResourcesStore()
 //
 // isOwner used to compare kbInfo.tenant_id against the user's effective tenant id,
 // which silently treated "any KB visible to me in my current tenant" as "I created
-// it" — Viewer / Contributor in their home tenant ended up showing every FAQ
+// it" - Viewer / Contributor in their home tenant ended up showing every FAQ
 // CRUD entry on every KB and 403'ing when they clicked. Mirror the rule we settled
 // on in KnowledgeBase.vue: explicit creator_id match, with role / org-share fallbacks
 // inside canEdit / canManage. Legacy KBs with empty creator_id stay tenant-owned
@@ -855,13 +855,13 @@ const currentSharedKb = computed(() =>
 
 // Accessed via organization share: presence in the sharedKnowledgeBases list
 // means we reached this KB through a shared space, so the user's local tenant
-// role is irrelevant — only the share grant counts. tenant_id comparison
+// role is irrelevant - only the share grant counts. tenant_id comparison
 // alone is unreliable (a user can be a member of both source and receiving
 // tenants); share-list presence is the authoritative signal.
 const isViaShare = computed(() => !!currentSharedKb.value)
 
 // Can edit: when accessed via an organization share, ONLY the share grant
-// counts — even if the current user happens to be the original creator of
+// counts - even if the current user happens to be the original creator of
 // the KB. The backend's RBAC middleware authorizes based on the active
 // tenant, not on creator_id, so a creator viewing their own KB from a
 // different tenant context will be 403'd on write. Otherwise: KB creator
@@ -874,7 +874,7 @@ const canEdit = computed(() => {
 })
 
 // Can manage (delete, settings, share): same isViaShare-first rule. For
-// shared KBs only an 'admin' share grant qualifies — editor/viewer (and
+// shared KBs only an 'admin' share grant qualifies - editor/viewer (and
 // even being the creator viewed via share) never grant delete/settings.
 const canManage = computed(() => {
   if (isViaShare.value) return orgStore.canManageKB(props.kbId, false)

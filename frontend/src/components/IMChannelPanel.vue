@@ -297,7 +297,7 @@
               </template>
             </template>
 
-            <!-- Feishu / Lark credentials — same fields, different open platform -->
+            <!-- Feishu / Lark credentials - same fields, different open platform -->
             <template v-if="formData.platform === 'feishu' || formData.platform === 'lark'">
               <div class="platform-link-hint">
                 <a :href="openPlatformConsole.url" target="_blank" rel="noopener noreferrer" class="doc-link">
@@ -464,7 +464,7 @@
               </div>
               <div class="form-item">
                 <label class="form-label">Bot User ID</label>
-                <t-input v-model="formData.credentials.bot_user_id" placeholder="Optional — filter bot self-messages" />
+                <t-input v-model="formData.credentials.bot_user_id" placeholder="Optional - filter bot self-messages" />
               </div>
               <div class="settings-group">
                 <div class="setting-row setting-row--last">

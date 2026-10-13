@@ -2508,7 +2508,7 @@ const handleConfirm = () => {
 </style>
 
 <style lang="less">
-// Must sit above the upload modal (z-index 3000). Do not reuse card-more-popup here —
+// Must sit above the upload modal (z-index 3000). Do not reuse card-more-popup here -
 // its global z-index: 99 !important would hide the menu behind the modal overlay.
 .upload-destination-popup {
   z-index: 3100 !important;

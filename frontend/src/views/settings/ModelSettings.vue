@@ -401,7 +401,7 @@ const backendTypeToModelType: Record<string, ModelType> = {
 
 // Convert the backend model format to the old frontend format (with _modelType for rendering)
 // apiKey is always blank here: the server's main GET response does not
-// include it (see internal/handler/dto/model.go — ModelParametersDTO omits
+// include it (see internal/handler/dto/model.go - ModelParametersDTO omits
 // secret fields). Credential read/write happens inside the editor dialog
 // via the dedicated /credentials subresource.
 function convertToLegacyFormat(model: ModelConfig) {
@@ -487,7 +487,7 @@ const sourceLabel = (type: ModelType) => {
 // to the vendor's localized name from the backend catalog (modelProviders
 // store), so the model card and the editor dropdown always agree. Falls
 // back to the raw id when the catalog has not loaded yet, and to '' when
-// the backend didn't store a provider — caller falls back to sourceLabel().
+// the backend didn't store a provider - caller falls back to sourceLabel().
 const providerLabel = (model: any): string => {
   const id = model.provider
   if (!id) return ''
@@ -683,7 +683,7 @@ const handleModelSave = async (modelData: any) => {
     // PUT /models/:id restores the stored map when the field is absent
     // (internal/handler/model.go), so omitting it would make "clear the last
     // vendor field / protocol override" silently no-op. Local rows keep the
-    // omit-when-empty behaviour — this form never edits their extra_config.
+    // omit-when-empty behaviour - this form never edits their extra_config.
     const extraConfigFields = modelData.source === 'remote'
       ? { extra_config: extraConfig }
       : {}
@@ -840,7 +840,7 @@ const getModelOptions = (type: ModelType, model: any) => {
 
   // Models are tenant-wide infrastructure (LLM credentials); the
   // backend gates every mutation behind Admin+ (see RegisterModelRoutes).
-  // Non-Admins get an empty action menu — viewing is fine, but editing,
+  // Non-Admins get an empty action menu - viewing is fine, but editing,
   // copying (POST /models/:id/copy), and deleting are not.
   if (!authStore.hasRole('admin')) {
     return options
@@ -1228,7 +1228,7 @@ onMounted(() => {
 
 /*
   Built-in lock indicator. Most cards in a typical install ARE built-in,
-  so loud styling everywhere becomes noise — instead the lock is muted
+  so loud styling everywhere becomes noise - instead the lock is muted
   and small by default, and lights up on hover. The signal that matters
   to users is "which models did I add" → user-added cards stand out by
   the absence of the lock.
@@ -1256,8 +1256,8 @@ onMounted(() => {
 
 .model-card__subtitle {
   // A flex row, not inline text: .model-card__vendor is an inline-flex box
-  // whose baseline comes from its first item — the 14px icon, whose baseline
-  // is its bottom edge — so as inline content it sat a couple of pixels off
+  // whose baseline comes from its first item - the 14px icon, whose baseline
+  // is its bottom edge - so as inline content it sat a couple of pixels off
   // the "· 200K" beside it. Aligning the row by centre instead of by
   // baseline puts every part of the line on one optical line.
   display: flex;

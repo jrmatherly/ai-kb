@@ -163,7 +163,7 @@ function primaryMissKind(c: KBCapability): RequirementMissKind {
  * on a scope consisting of just that KB.
  *
  * Used by Step 3 so presets don't have to hand-maintain `kb_filter` next
- * to their `allowed_tools` — the two are always derived from the same map.
+ * to their `allowed_tools` - the two are always derived from the same map.
  *
  * Returns `null` when none of the input tools have any KB requirement
  * (i.e. any KB is acceptable).
@@ -222,7 +222,7 @@ export function deriveKbFilterForAgent(
  * Agent-mode aware version of `kbSatisfiesToolRequirements`: ALSO honours
  * the implicit capability requirement of `agentMode` (quick-answer needs
  * vector or keyword indexing). Use this anywhere the user is choosing a
- * KB for an agent — agent editor "specified KB" dropdown, chat `@`
+ * KB for an agent - agent editor "specified KB" dropdown, chat `@`
  * mention list, etc.
  */
 export function kbSatisfiesAgentRequirements(
@@ -240,7 +240,7 @@ export function kbSatisfiesAgentRequirements(
  * Decide whether a single KB is compatible with an agent's tool set.
  *
  * "Compatible" here means: at least ONE tool in `allowedTools` requires a
- * capability that this KB exposes — i.e. the agent has SOMETHING useful to
+ * capability that this KB exposes - i.e. the agent has SOMETHING useful to
  * do against this KB. Tools with no KB requirement don't contribute.
  *
  * If `allowedTools` contains no KB-dependent tool, every KB is considered

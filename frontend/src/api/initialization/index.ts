@@ -134,8 +134,8 @@ export interface KBModelConfigRequest {
         // The backend uses pointer-based DTOs for these three fields:
         // - undefined / not set in payload → no change on server
         // - "" / 0 / [] explicitly sent     → clears the value
-        // Send the field whenever the user has opened the editor — even
-        // empty values — so the user can always reset back to defaults.
+        // Send the field whenever the user has opened the editor - even
+        // empty values - so the user can always reset back to defaults.
         strategy?: string
         // Approximate token budget per chunk; 0 = char-based.
         tokenLimit?: number

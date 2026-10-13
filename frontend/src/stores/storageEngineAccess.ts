@@ -2,7 +2,7 @@
  * Whether a storage-engine config request was rejected for permissions.
  *
  * The tenant KV key `storage-engine-config` is admin-only (it carries
- * integration secrets), while every agent creator — Contributors included —
+ * integration secrets), while every agent creator - Contributors included -
  * needs the Viewer-safe status list to pick a usable provider. The store's
  * ensureStorageEngine therefore downgrades a permission rejection on the
  * config call to "no admin config" instead of failing the whole editor

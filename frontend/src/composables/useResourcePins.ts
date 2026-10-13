@@ -4,7 +4,7 @@
 // Favorites are DB-backed (see migration 000047) so they sync across
 // devices and survive a logout. They are scoped per (user, tenant) on
 // the server, which means switching tenants automatically re-points the
-// reads — see `refresh()` and the tenant-change watcher inside the
+// reads - see `refresh()` and the tenant-change watcher inside the
 // composable.
 //
 // Recents stay in localStorage. They're a personal navigation aid, not a
@@ -36,7 +36,7 @@ export interface PinEntry {
 const RECENTS_SUFFIX = 'resource_recents'
 const RECENTS_CAP = 30
 
-// Recents are scoped by (user, tenant) — same rationale as favorites. The
+// Recents are scoped by (user, tenant) - same rationale as favorites. The
 // hydration step in the list views joins recent entries against the
 // current tenant's KB/Agent index, so a recent from tenant A would
 // silently drop out of the rendered list but still count in the sidebar
@@ -95,7 +95,7 @@ const favoritesByType: Record<ResourceType, Ref<PinEntry[]>> = {
 const loaded: Record<ResourceType, boolean> = { kb: false, agent: false }
 const inFlight: Record<ResourceType, Promise<void> | null> = { kb: null, agent: null }
 
-// recents revision counter — same bump-to-invalidate pattern as before.
+// recents revision counter - same bump-to-invalidate pattern as before.
 const recentsRevision = ref(0)
 function bumpRecents() {
   recentsRevision.value++
@@ -134,7 +134,7 @@ async function fetchFavorites(type: ResourceType): Promise<void> {
   return inFlight[type]!
 }
 
-// Invalidate caches when the active tenant changes — favorites are
+// Invalidate caches when the active tenant changes - favorites are
 // (user, tenant)-scoped on the server, so a tenant switch means the
 // currently loaded list belongs to the *previous* tenant. We trigger one
 // watcher at module load so any later switch refetches automatically.
@@ -205,7 +205,7 @@ export function useResourcePins(): UseResourcePinsResult {
     // Optimistic update first so the star animation feels instant; on
     // network failure we roll back to the previous state. Errors are
     // swallowed here (logged + rollback) because callers wire this to a
-    // click handler that can't surface a useful message — the rolled-back
+    // click handler that can't surface a useful message - the rolled-back
     // UI itself is the error indication.
     if (idx >= 0) {
       const removed = list[idx]

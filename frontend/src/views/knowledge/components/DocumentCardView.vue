@@ -315,7 +315,7 @@ const handleAction = (action: 'download' | 'edit' | 'view-trace' | 'reparse' | '
     folderPickerItemId.value = item.id;
     return;
   }
-  // Don't close menu for move — it triggers the sub-flow
+  // Don't close menu for move - it triggers the sub-flow
   if (action !== 'move') {
     if (item.isMore !== undefined) item.isMore = false;
     activeMenuIndex.value = -1;

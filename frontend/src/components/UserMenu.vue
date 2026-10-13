@@ -98,7 +98,7 @@
           <span>{{ $t('general.allSettings') }}</span>
         </div>
         <!--
-          System administration entry — visible only to users with the
+          System administration entry - visible only to users with the
           platform-wide is_system_admin flag. Hidden for everyone else,
           including tenant Owners. Real authorisation lives server-side
           (RequireSystemAdmin middleware); this is UI gating only.
@@ -139,7 +139,7 @@
       </div>
     </Transition>
 
-    <!-- Tenant switcher floating panel — shares the same teleport rationale
+    <!-- Tenant switcher floating panel - shares the same teleport rationale
          as the IM submenu. Data comes from authStore.memberships, kept fresh via
          GET /auth/me when the submenu opens (throttled) and after invite/create. -->
     <Teleport to="body">
@@ -345,7 +345,7 @@ const onTenantCreated = async (newTenant: TenantInfo) => {
 // authStore.memberships (refreshed from /auth/me when the submenu opens and
 // after membership-changing actions). PR 4 of #1303 relaxed the X-Tenant-ID
 // gate in middleware/auth.go to accept active membership rows, so flipping
-// authStore.selectedTenantId here is enough — the next page reload re-issues
+// authStore.selectedTenantId here is enough - the next page reload re-issues
 // every request with the new header and the server resolves the role server-side.
 type Membership = {
   tenant_id: number
@@ -361,7 +361,7 @@ const switchableMemberships = computed<Membership[]>(() => {
   return authStore.memberships ?? []
 })
 
-// Rendered whenever the user has at least one membership — even single-
+// Rendered whenever the user has at least one membership - even single-
 // tenant users need this submenu to discover the "create new workspace"
 // entry at the bottom. Multi-tenant users additionally use it to switch
 // between memberships. Cross-tenant superusers keep using the sidebar
@@ -445,7 +445,7 @@ const scheduleHideTenantSubmenu = () => {
 const positionTenantSubmenu = () => {
   const el = tenantMenuItemRef.value
   if (!el) return
-  // Submenu is rendered with `position: fixed` under the root zoom — see
+  // Submenu is rendered with `position: fixed` under the root zoom - see
   // `.tenant-submenu-floating` styles. Anchor coords come from a visual-pixel
   // rect; normalize to CSS pixels before writing them back to CSS.
   const zoom = getRootZoom()
@@ -1058,7 +1058,7 @@ onUnmounted(() => {
 </style>
 
 <style lang="less">
-// Tenant switcher submenu — teleported to <body>.
+// Tenant switcher submenu - teleported to <body>.
 // All styling for the panel itself lives here (not in a child component) so
 // the markup in UserMenu.vue stays self-contained.
 .tenant-submenu-floating {

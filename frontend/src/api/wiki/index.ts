@@ -185,7 +185,7 @@ export function getWikiPage(kbId: string, slug: string) {
 }
 
 // WikiPageUpdatePayload is a partial update: absent fields keep their stored
-// value. `version` is the optimistic-lock guard — send the version the page
+// value. `version` is the optimistic-lock guard - send the version the page
 // had when the user started editing; the backend answers 409 (with
 // `current_version` in the body) when someone else edited in between.
 export interface WikiPageUpdatePayload {
@@ -235,7 +235,7 @@ export interface WikiRevisionListResponse {
 
 // listWikiRevisions returns the page's historical snapshots newest-first
 // (content omitted) plus the current version number. The current version has
-// no revision row — it is the page itself.
+// no revision row - it is the page itself.
 export function listWikiRevisions(kbId: string, slug: string, params?: { limit?: number; offset?: number }) {
   const query = new URLSearchParams();
   if (params?.limit !== undefined) query.set('limit', String(params.limit));

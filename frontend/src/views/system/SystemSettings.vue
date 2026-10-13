@@ -1,6 +1,6 @@
 <template>
   <!--
-    SystemSettings — platform-wide tunables (system_settings table) for
+    SystemSettings - platform-wide tunables (system_settings table) for
     SystemAdmin. Gated server-side by RequireSystemAdmin middleware;
     the route also has meta.requiresSystemAdmin so non-admins never
     reach this component (see frontend/src/router/index.ts).
@@ -17,7 +17,7 @@
                                                  option IS the commit
                                                  signal; there's no
                                                  "in-progress" state.
-      - Input / InputNumber                   → @blur (not @change —
+      - Input / InputNumber                   → @blur (not @change -
                                                  t-input-number fires
                                                  @change on every digit).
       - SSRF whitelist (string_list)          → controlled tag-input +
@@ -199,7 +199,7 @@
               <div v-if="hasOverride(item) || hasBulkAction(item)" class="setting-control-actions">
                 <!--
               Per-key bulk action. Currently only one key
-              (tenant.default_storage_quota_gb) carries one — clicking
+              (tenant.default_storage_quota_gb) carries one - clicking
               writes the current setting value onto every existing
               tenant. We do this as a separate explicit action rather
               than auto-cascade on save so a SystemAdmin who tweaks the
@@ -283,7 +283,7 @@ function settingDescription(item: { key: string; description?: string }): string
 }
 
 // Enum keys whose change triggers a whole-value inline popconfirm before
-// PUT. ssrf.whitelist is not here — it uses per-tag confirm instead.
+// PUT. ssrf.whitelist is not here - it uses per-tag confirm instead.
 const HIGH_RISK_KEYS = new Set<string>([
   'auth.registration_mode',
   'sandbox.docker_enabled',
@@ -520,7 +520,7 @@ function modifiedMeta(item: SystemSettingItem): string {
   // Prefer the resolved username/email the server enriches via
   // last_modified_by_name. Fall back to the UUID's first 8 chars when
   // the user can't be resolved (deleted account, transient lookup
-  // failure) — the full ID is still in the audit log.
+  // failure) - the full ID is still in the audit log.
   const actor = item.last_modified_by_name && item.last_modified_by_name.trim() !== ''
     ? item.last_modified_by_name
     : (item.last_modified_by || '').slice(0, 8)
@@ -607,7 +607,7 @@ async function loadSettings() {
   try {
     const list = await listSystemSettings()
     settings.value = list
-    // Reset edit values to the canonical state on every load — no
+    // Reset edit values to the canonical state on every load - no
     // partial drafts survive a refresh, which avoids the "I came back
     // and my unsaved edits look saved" trap.
     for (const item of list) {
@@ -632,7 +632,7 @@ async function onChange(item: SystemSettingItem) {
   if (!currentItem) return
   if (!isDirty(currentItem)) return
 
-  // SSRF whitelist gets the per-entry confirm flow — same shape as the
+  // SSRF whitelist gets the per-entry confirm flow - same shape as the
   // admin tag-input above. Adding or removing each host/CIDR is its
   // own privileged change (a single bad CIDR can punch a hole through
   // the egress firewall), so we ask once per delta instead of once
@@ -791,7 +791,7 @@ function highRiskConfirmBody(item: SystemSettingItem, value: unknown): string {
 
 // hasBulkAction tells the template whether the current row carries an
 // extra "apply to existing data" action beyond plain save/reset.
-// Currently only `tenant.default_storage_quota_gb` does — saving the
+// Currently only `tenant.default_storage_quota_gb` does - saving the
 // setting only affects future tenants, so the bulk button is the
 // escape hatch for "rewrite all current tenants too".
 function hasBulkAction(item: SystemSettingItem): boolean {

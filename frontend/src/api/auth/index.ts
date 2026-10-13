@@ -333,7 +333,7 @@ export function autoSetup(): Promise<LoginResponse> {
 /**
  * Membership row returned alongside /auth/me. Mirrors the LoginResponse
  * shape so the frontend can refresh `currentTenantRole` on every page
- * load — without it, role changes after login (e.g. an Owner demoting
+ * load - without it, role changes after login (e.g. an Owner demoting
  * us in a peer tenant) stay invisible until the user logs out and back
  * in.
  */
@@ -511,7 +511,7 @@ export async function validateToken(): Promise<{ success: boolean; valid?: boole
 // ---- share-link registration --------------------------------------------
 
 // InviteLookup is the public projection of a share-link row used by
-// /register?token=xxx — enough to render the registration page header
+// /register?token=xxx - enough to render the registration page header
 // ("X invited you to Y") without leaking sensitive inviter fields.
 export interface InviteLookup {
   tenant_id: number
@@ -552,7 +552,7 @@ export async function getInvitationByToken(token: string): Promise<InviteLookupR
 
 /**
  * Complete registration via a share-link token. The invitee supplies
- * their own email — the token is the authorisation, not an identity
+ * their own email - the token is the authorisation, not an identity
  * lock.
  */
 export async function registerByInvite(data: RegisterByInviteRequest): Promise<LoginResponse> {
