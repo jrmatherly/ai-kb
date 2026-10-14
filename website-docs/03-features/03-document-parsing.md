@@ -176,7 +176,6 @@ Inherits `Docx2Parser` and tries, in order:
 
 1. `_parse_with_docx`: LibreOffice (`soffice --headless --convert-to docx`, separate profile plus 3 retries) converts the DOC to DOCX, then the parent DOCX chain parses it (**the only path that extracts images**).
 2. `_parse_with_antiword`: plain-text extraction with the `antiword` command line tool, run through `SandboxExecutor`, which injects proxy variables (default `http://128.0.0.1:1`, a "black hole" proxy that blocks unexpected outbound connections from the subprocess).
-3. `_parse_with_textract`: **disabled** (textract has an SSRF vulnerability; the code is kept but commented out).
 
 **Dependencies**: LibreOffice (soffice) and antiword (both installed in the image); lookup paths can be overridden with `LIBREOFFICE_PATH`/`ANTIWORD_PATH`. External commands time out after 60 seconds by default; on timeout the whole process group is terminated (including children spawned by soffice) so stray processes do not occupy docreader workers. **Limit**: without LibreOffice it degrades to antiword plain text (no images, no table structure).
 
@@ -427,7 +426,7 @@ The base image is `python:3.10.18-bookworm`, built in two stages (the builder in
 
 `scripts/` holds two tools: `generate_proto.sh` (runs grpc_tools.protoc to generate the Python and Go code and fixes import paths) and `parse_local.py` (calls the Parser directly for local debugging without gRPC, with `--engine`, `--scanned` and `--out` to export the markdown and images).
 
-Python dependencies (`pyproject.toml`, locked by `uv.lock`): `grpcio`, `pypdfium2`, `markitdown[docx,pdf,xls,xlsx,pptx]`, `opendataloader-pdf`, `python-docx`, `pandas`/`openpyxl`/`xlrd`, `playwright`, `trafilatura`, `beautifulsoup4`/`markdownify`/`lxml`, `ebooklib`, `pillow`, `pydantic`, `textract` (disabled path) and others.
+Python dependencies (`pyproject.toml`, locked by `uv.lock`): `grpcio`, `pypdfium2`, `markitdown[docx,pdf,xls,xlsx,pptx]`, `opendataloader-pdf`, `python-docx`, `pandas`/`openpyxl`/`xlrd`, `playwright`, `trafilatura`, `beautifulsoup4`/`markdownify`/`lxml`, `ebooklib`, `pillow`, `pydantic` and others.
 
 #### Scaling and tuning
 
