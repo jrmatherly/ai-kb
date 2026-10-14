@@ -331,7 +331,12 @@ function formatTimelineDuration(ms: number): string {
   return `${mins}m${rem}s`;
 }
 
+// The chunk popups are controlled and only close on an outside pointer event,
+// so a keyboard or programmatic open would leave them above the drawer.
 function openTimeline() {
+  chunkHistoryPopup.value = '';
+  parentContextPopup.value = '';
+  questionPopupChunk.value = '';
   timelineDrawerVisible.value = true;
 }
 
