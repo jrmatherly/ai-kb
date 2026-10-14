@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -56,7 +57,7 @@ func TestRunRemoveProducesANewSnapshotWithoutTheSkillDir(t *testing.T) {
 	require.Len(t, rows, 3, "the two seeded rows are kept and the removal adds its own")
 	for _, row := range rows {
 		switch row.SnapshotID {
-		case "snap-old":
+		case "snap-old", "snap-old-sk-1":
 			require.Equal(t, types.SkillSnapshotStateSuperseded, row.State,
 				"a snapshot nothing points at any more is superseded, never deleted")
 		case "snap-1":
@@ -410,4 +411,78 @@ func TestRunRemoveDeletesTheSnapshotWhenSwitchFails(t *testing.T) {
 	skill, _ := fx.skillRepo.GetSkill(context.Background(), 7, "cfg-1", "sk-1")
 	require.NotNil(t, skill)
 	require.Equal(t, types.SkillStatusReady, skill.Status)
+}
+
+// markNeverInstalled turns the fixture's sk-1 into a failed install queued for
+// removal: no snapshot ever carried it.
+func (f *installFixture) markNeverInstalled() {
+	f.t.Helper()
+	require.NoError(f.t, f.svc.updateSkillFields(context.Background(), 7, "cfg-1", "sk-1",
+		func(e *types.TenantSkillEntity) {
+			e.InstalledSnapshotID = ""
+			e.Error = "runtime prerequisite missing"
+			e.Status = types.SkillStatusRemoving
+		}))
+}
+
+// A failed install never reached the image other skills built, so removing it
+// must not spend a snapshot or rebuild every live sandbox of the config.
+func TestRunRemoveDeletesANeverInstalledSkillWithoutTouchingTheImage(t *testing.T) {
+	fx := newInstallFixture(t)
+	fx.seedInstalledSkill("sk-2", "snap-old", 2)
+	fx.markNeverInstalled()
+
+	require.NoError(t, fx.svc.runRemove(context.Background(), 7, "cfg-1", "sk-1"))
+
+	skill, err := fx.skillRepo.GetSkill(context.Background(), 7, "cfg-1", "sk-1")
+	require.NoError(t, err)
+	require.Nil(t, skill)
+	require.Empty(t, fx.sessionCalls, "no maintenance sandbox for a skill the image never carried")
+	require.Empty(t, fx.commands)
+	require.Nil(t, fx.configRepo.saved, "the image pointer and generation stay put")
+	require.Empty(t, fx.staleMarks, "no live sandbox can be out of date over this skill")
+	rows := listSnapshotRows(t, fx)
+	require.Len(t, rows, 1)
+	require.Equal(t, "row-sk-2", rows[0].ID)
+	require.Equal(t, types.SkillSnapshotStateActive, rows[0].State)
+}
+
+// A failed re-install leaves the previous version's files in the image, so its
+// removal still has to build an image without them.
+func TestRunRemoveRebuildsTheImageForAFailedReinstallStillInIt(t *testing.T) {
+	fx := newInstallFixture(t)
+	ctx := context.Background()
+	require.NoError(t, fx.skillRepo.CreateSnapshotRow(ctx, &types.TenantSkillSnapshotEntity{
+		ID: "row-a", TenantID: 7, SandboxConfigID: "cfg-1", SkillID: "sk-1",
+		SnapshotID: "snap-a", Generation: 1,
+		Trigger: types.SkillSnapshotTriggerInstall, State: types.SkillSnapshotStateSuperseded,
+	}))
+	fx.seedInstalledSkill("sk-2", "snap-b", 2)
+	require.NoError(t, fx.skillRepo.CreateSnapshotRow(ctx, &types.TenantSkillSnapshotEntity{
+		ID: "row-sk-2", TenantID: 7, SandboxConfigID: "cfg-1", SkillID: "sk-2",
+		SnapshotID: "snap-b", ParentSnapshotID: "snap-a", Generation: 2,
+		Trigger: types.SkillSnapshotTriggerInstall, State: types.SkillSnapshotStateActive,
+	}))
+	fx.markNeverInstalled()
+
+	require.NoError(t, fx.svc.runRemove(ctx, 7, "cfg-1", "sk-1"))
+
+	require.Equal(t, []string{"CreateSession"}, fx.sessionCalls)
+	require.Contains(t, fx.commands, removeSkillDirCommand)
+	require.Equal(t, 3, fx.configRepo.saved.Config.SkillImage.Generation)
+	require.Len(t, listSnapshotRows(t, fx), 3)
+	require.NotEmpty(t, fx.staleMarks)
+}
+
+// An unreadable ledger cannot prove the skill absent, so the removal takes the
+// path that is correct either way.
+func TestRunRemoveRebuildsTheImageWhenTheLedgerIsUnreadable(t *testing.T) {
+	fx := newInstallFixture(t)
+	fx.seedInstalledSkill("sk-2", "snap-old", 2)
+	fx.markNeverInstalled()
+	fx.skillRepo.listSnapshotsErr = errors.New("ledger unavailable")
+
+	_ = fx.svc.runRemove(context.Background(), 7, "cfg-1", "sk-1")
+
+	require.Equal(t, []string{"CreateSession"}, fx.sessionCalls)
 }

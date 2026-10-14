@@ -2157,9 +2157,20 @@ func (f *installFixture) seedInstalledSkill(skillID, snapshotID string, generati
 	skill.BundleRef = "file://" + skillID + ".zip"
 	require.NoError(f.t, f.skillRepo.CreateSkill(ctx, skill))
 
+	// Every real snapshot has one ledger row. Seeding a second skill on the
+	// same snapshot moves the earlier row to a parent snapshot, so the chain
+	// skillFilesInLiveImage walks still reaches every seeded skill.
+	parent := ""
+	for _, row := range f.skillRepo.snapshots {
+		if row.SandboxConfigID == "cfg-1" && row.SnapshotID == snapshotID {
+			parent = snapshotID + "-" + row.SkillID
+			row.SnapshotID = parent
+			row.State = types.SkillSnapshotStateSuperseded
+		}
+	}
 	require.NoError(f.t, f.skillRepo.CreateSnapshotRow(ctx, &types.TenantSkillSnapshotEntity{
 		ID: "row-" + skillID, TenantID: 7, SandboxConfigID: "cfg-1", SkillID: skillID,
-		SnapshotID: snapshotID, Generation: generation,
+		SnapshotID: snapshotID, ParentSnapshotID: parent, Generation: generation,
 		Trigger: types.SkillSnapshotTriggerInstall, State: types.SkillSnapshotStateActive,
 	}))
 
