@@ -297,7 +297,8 @@ func (s *TenantSkillService) DeleteCatalog(
 			continue
 		}
 		return apperrors.NewConflictError(
-			"remove this skill from every sandbox before deleting it from the catalog")
+			"uninstall this skill from every sandbox first (click its sandbox chip, then " +
+				"Uninstall from sandbox), then remove it from the catalog")
 	}
 	ref := strings.TrimSpace(catalog.BundleRef)
 	if err := s.skills.DeleteCatalog(ctx, tenantID, catalogID); err != nil {

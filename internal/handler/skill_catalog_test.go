@@ -194,7 +194,7 @@ func TestInstallCatalogIncludesPerConfigErrors(t *testing.T) {
 
 func TestDeleteCatalogRefusesWhileInstalled(t *testing.T) {
 	catalog := &fakeSkillCatalog{
-		deleteErr: apperrors.NewConflictError("remove this skill from every sandbox"),
+		deleteErr: apperrors.NewConflictError("uninstall this skill from every sandbox first"),
 	}
 	router := newCatalogRouter(NewSkillHandler(&fakeUsableSkillLister{}, catalog, nil))
 

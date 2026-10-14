@@ -1933,7 +1933,7 @@ export default {
       manageUninstallConfirm: 'Uninstall “{name}” from this sandbox?',
       deleteCatalog: 'Remove from catalog',
       deleteCatalogConfirm: 'Remove “{name}” from the catalog? Uninstall it from every sandbox first.',
-      deleteCatalogBlocked: 'Uninstall this skill from every sandbox first.',
+      deleteCatalogBlocked: 'Uninstall this skill from every sandbox first. Click its sandbox chip, then Uninstall from sandbox.',
       deleteSuccess: 'Removed from catalog',
       registerAccepted: 'Added to catalog',
       installAccepted: 'Install started',
