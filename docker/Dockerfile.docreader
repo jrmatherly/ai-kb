@@ -65,10 +65,10 @@ RUN if [ -z "$TARGETARCH" ]; then \
 
 # Copy dependency files
 COPY docreader/pyproject.toml docreader/uv.lock ./
-# uv comes from pyproject.toml's [tool.uv] required-version, the single pin.
-RUN UV_PIN="$(sed -n 's/^required-version = "\(==[^"]*\)"$/\1/p' pyproject.toml)" && \
-    test -n "$UV_PIN" && \
-    pip install "uv${UV_PIN}" --break-system-packages && \
+# uv comes from pyproject.toml's [tool.uv] required-version, the single floor.
+RUN UV_SPEC="$(sed -n 's/^required-version = "\([^"]*\)"$/\1/p' pyproject.toml)" && \
+    test -n "$UV_SPEC" && \
+    pip install "uv${UV_SPEC}" --break-system-packages && \
     python -m uv sync --locked --no-dev
 
 # Copy source code and generation scripts
