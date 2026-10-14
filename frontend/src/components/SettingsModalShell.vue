@@ -8,12 +8,6 @@
             <t-loading size="medium" :text="$t('common.loading')" />
           </div>
 
-          <button class="close-btn" type="button" @click="emit('close')" :aria-label="$t('common.close')">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
-          </button>
-
           <div class="settings-container">
             <aside class="settings-sidebar">
               <div class="sidebar-header">
@@ -39,6 +33,13 @@
             </aside>
 
             <div class="settings-content">
+              <div class="settings-content-header">
+                <button class="close-btn" type="button" @click="emit('close')" :aria-label="$t('common.close')">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </div>
               <div class="settings-body">
                 <slot />
               </div>
@@ -159,15 +160,19 @@ function showBadge(item: SettingsModalNavItem): boolean {
     background: var(--td-bg-color-container);
   }
 
+  // Its own row, so the button never covers right-aligned controls in the scrolling body.
+  .settings-content-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 16px 8px;
+    flex-shrink: 0;
+  }
+
   .close-btn {
-    position: absolute;
-    top: 16px;
-    right: 16px;
     width: 32px;
     height: 32px;
     border: none;
-    // Opaque so content scrolling beneath the floating button does not show through it.
-    background: var(--td-bg-color-container);
+    background: none;
     border-radius: var(--app-radius-sm);
     cursor: pointer;
     display: flex;
@@ -175,7 +180,6 @@ function showBadge(item: SettingsModalNavItem): boolean {
     justify-content: center;
     color: var(--td-text-color-secondary);
     transition: background var(--app-motion-base) ease, color var(--app-motion-base) ease;
-    z-index: 10;
 
     &:hover {
       background: var(--td-bg-color-container-hover);
