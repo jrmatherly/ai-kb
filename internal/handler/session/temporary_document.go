@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -186,9 +187,19 @@ func sessionIDParam(c *gin.Context) string {
 	return c.Param("id")
 }
 
+// fileTypeFamilies lists the extensions an agent's supported_file_types entry
+// also admits. The agent editor stores one value per option ("xlsx" for
+// "Excel (.xlsx/.xls/.xlsb)"), so the family is what the label promises.
+var fileTypeFamilies = map[string][]string{
+	"xlsx": {"xls", "xlsb", "xlsm"},
+	"docx": {"doc"},
+	"jpg":  {"jpeg", "png"},
+}
+
 func containsFileType(supported []string, ext string) bool {
 	for _, item := range supported {
-		if strings.TrimPrefix(strings.ToLower(strings.TrimSpace(item)), ".") == ext {
+		item = strings.TrimPrefix(strings.ToLower(strings.TrimSpace(item)), ".")
+		if item == ext || slices.Contains(fileTypeFamilies[item], ext) {
 			return true
 		}
 	}

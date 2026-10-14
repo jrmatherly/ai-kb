@@ -6642,7 +6642,7 @@ export default {
       text: 'Plain Text Files (.txt)',
       markdown: 'Markdown Documents',
       csv: 'Comma-Separated Value Files',
-      excel: 'Excel Spreadsheets (.xlsx/.xls)',
+      excel: 'Excel Spreadsheets (.xlsx/.xls/.xlsb)',
       imageLabel: 'Images',
       image: 'Image Files (.jpg/.jpeg/.png)'
     }

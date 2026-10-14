@@ -130,7 +130,7 @@ The parameters below are for administrators and integration developers. Day-to-d
 | `AIKB_CHAT_ATTACHMENT_OCR_CONCURRENCY` | 8 | OCR concurrency |
 | `AIKB_CHAT_ATTACHMENT_OCR_MAX_PAGES` | 8 | Maximum number of pages sent to OCR |
 
-In the agent configuration, `supported_file_types` limits the upload types, `attachment_image_understanding` toggles image understanding and `chat_parser_engine_rules` selects the attachment parsing engine.
+In the agent configuration, `supported_file_types` limits the upload types (an entry also admits its family: `xlsx` covers `.xls`, `.xlsb` and `.xlsm`, `docx` covers `.doc`, `jpg` covers `.jpeg` and `.png`), `attachment_image_understanding` toggles image understanding and `chat_parser_engine_rules` selects the attachment parsing engine.
 
 The attachment API lives under the `/api/v1/sessions` prefix:
 
