@@ -686,7 +686,7 @@ onBeforeUnmount(() => {
 }
 
 .form-desc code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: var(--app-text-xs);
 }
 
@@ -858,7 +858,7 @@ onBeforeUnmount(() => {
 
   &__score {
     color: var(--td-text-color-secondary);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     text-align: right;
   }
 }
@@ -888,7 +888,7 @@ onBeforeUnmount(() => {
   border-radius: var(--app-radius-md);
   background: var(--td-bg-color-secondarycontainer);
   color: var(--td-text-color-primary);
-  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: pre-wrap;
   word-break: break-word;
 }

@@ -86,12 +86,12 @@ export const SANS_STACKS: Record<FontKey, string> = {
 
 export const MONO_STACKS: Record<MonoFontKey, string> = {
   system:
-    'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace',
   // Mac
-  menlo: 'Menlo, Monaco, Consolas, "Courier New", monospace',
+  menlo: 'Menlo, Consolas, "Courier New", monospace',
   monaco: 'Monaco, Menlo, Consolas, "Courier New", monospace',
   // Windows
-  consolas: 'Consolas, "Courier New", Menlo, Monaco, monospace',
+  consolas: 'Consolas, "Courier New", Menlo, monospace',
   cascadia:
     '"Cascadia Code", "Cascadia Mono", Consolas, "Courier New", monospace',
   // Linux
