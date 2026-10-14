@@ -6728,7 +6728,7 @@ export default {
     connected: 'Connected',
     connectionFailed: 'Connection failed',
     isRequired: 'is required',
-    credentialsLabel: 'credentials',
+    credentialsLabel: 'Credentials',
     gitlab: {
       baseUrl: 'GitLab URL', accessToken: 'Personal access token', projects: 'GitLab projects',
       projectsHint: 'Enter a project ID or namespace path (for example group/project), with optional branch and directories.',
