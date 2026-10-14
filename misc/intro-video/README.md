@@ -48,7 +48,7 @@ The product UI is rebuilt in HTML rather than screenshotted, so the text stays s
 
 ## When to update
 
-- **Version:** the release shown in the browser scene (`v0.8.2`) and the text typed into the form.
+- **Version:** the release shown in the browser scene (`v2026.10.13`) and the text typed into the form.
 - **Counts:** the model provider count in the ecosystem scene ("27 providers").
 - **Lists:** the data sources and channels, when integrations are added or removed.
 
