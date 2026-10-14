@@ -635,6 +635,8 @@ onUnmounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  // Keeps the refresh button clear of the settings modal's floating close button.
+  padding-right: 24px;
 }
 
 .audit-page-header h2 {

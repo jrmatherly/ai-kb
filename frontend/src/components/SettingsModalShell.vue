@@ -166,7 +166,8 @@ function showBadge(item: SettingsModalNavItem): boolean {
     width: 32px;
     height: 32px;
     border: none;
-    background: transparent;
+    // Opaque so content scrolling beneath the floating button does not show through it.
+    background: var(--td-bg-color-container);
     border-radius: var(--app-radius-sm);
     cursor: pointer;
     display: flex;

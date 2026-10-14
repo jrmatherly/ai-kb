@@ -589,7 +589,7 @@ const columns = computed(() => [
   { colKey: 'archived', title: t('system.globalSettings.runtime.columns.archived'), width: 96, align: 'center' as const },
   { colKey: 'completed', title: t('system.globalSettings.runtime.columns.completed'), width: 84, align: 'center' as const },
   { colKey: 'latency_ms', title: t('system.globalSettings.runtime.columns.latency'), width: 104, align: 'center' as const },
-  { colKey: 'status', title: t('system.globalSettings.runtime.columns.status'), width: 96 },
+  { colKey: 'status', title: t('system.globalSettings.runtime.columns.status'), width: 128 },
 ])
 const modelColumns = computed(() => [
   { colKey: 'model_id', title: t('system.globalSettings.runtime.models.columns.model'), minWidth: 240 },
@@ -997,6 +997,8 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 24px;
+  // Keeps the actions clear of the settings modal's floating close button.
+  padding-right: 24px;
 
   h2 {
     margin: 0 0 8px;
