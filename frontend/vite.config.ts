@@ -101,6 +101,7 @@ export default defineConfig({
         embed: resolve(__dirname, 'embed.html'),
       },
       output: {
+        experimentalMinChunkSize: 20000,
         // Match package directories, not substrings: tdesign-icons ships highlight.js and
         // mermaid.js icon modules. A manual chunk also absorbs shared deps it reaches, so
         // helpers used everywhere are pinned to vendor-shared; otherwise the entry would
