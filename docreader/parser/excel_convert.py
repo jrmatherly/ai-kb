@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import os
 import subprocess
@@ -24,7 +25,8 @@ def detect_excel_format(content: bytes) -> str | None:
     # Private pandas helper, absent from pandas' type stubs.
     from pandas.io.excel._base import inspect_excel_format  # pyrefly: ignore[missing-module-attribute]
 
-    ext = inspect_excel_format(content_or_path=content)
+    # pandas 3 accepts a path or a buffer here, not raw bytes.
+    ext = inspect_excel_format(content_or_path=io.BytesIO(content))
     if ext in ("xlsx", "xls", "xlsb", "ods"):
         return ext
     if ext == "zip":
