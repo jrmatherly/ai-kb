@@ -104,6 +104,27 @@ func (p *GRPCDocumentReader) Close() error {
 
 var errNotConnected = status.Error(codes.Unavailable, "docreader service not connected")
 
+// convertSpreadsheetTimeout outlasts docreader's own 100 s conversion limit.
+const convertSpreadsheetTimeout = 2 * time.Minute
+
+// ConvertSpreadsheet asks docreader to rewrite an .xls or .xlsb workbook as .xlsx.
+func (p *GRPCDocumentReader) ConvertSpreadsheet(ctx context.Context, content []byte, fileType string) ([]byte, error) {
+	p.mu.RLock()
+	client := p.client
+	p.mu.RUnlock()
+	if client == nil {
+		return nil, errNotConnected
+	}
+	ctx, cancel := context.WithTimeout(ctx, convertSpreadsheetTimeout)
+	defer cancel()
+	req := &proto.ConvertSpreadsheetRequest{FileContent: content, FileType: fileType}
+	resp, err := client.ConvertSpreadsheet(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("gRPC ConvertSpreadsheet failed: %w", err)
+	}
+	return resp.GetXlsxContent(), nil
+}
+
 func (p *GRPCDocumentReader) Read(ctx context.Context, req *types.ReadRequest) (*types.ReadResult, error) {
 	p.mu.RLock()
 	client := p.client

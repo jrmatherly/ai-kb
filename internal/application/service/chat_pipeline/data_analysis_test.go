@@ -154,3 +154,14 @@ func TestRunDataAnalysisRejectsUnparseablePlan(t *testing.T) {
 		t.Fatal("executor must not run on an unparseable plan")
 	}
 }
+
+func TestIsDataFileUsesTheDataTableTypes(t *testing.T) {
+	for name, want := range map[string]bool{
+		"q3.csv": true, "Q3.XLSX": true, "legacy.xls": true, "binary.xlsb": true,
+		"notes.pdf": false, "xlsb": false, "archive.xlsb.zip": false,
+	} {
+		if got := isDataFile(name); got != want {
+			t.Errorf("isDataFile(%q) = %v, want %v", name, got, want)
+		}
+	}
+}

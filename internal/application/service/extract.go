@@ -172,7 +172,7 @@ func enqueueDataTableSummaryIfNeeded(
 	if ft == "" && fileName != "" {
 		ft = getFileType(fileName)
 	}
-	if !isDataTableFileType(ft) {
+	if !tools.IsDataTableFileType(ft) {
 		return
 	}
 	if err := NewDataTableSummaryTask(ctx, client, tenantID, knowledgeID, summaryModelID, embeddingModelID); err != nil {
@@ -438,6 +438,7 @@ type DataTableSummaryService struct {
 	ownership            retriever.TenantStoreOwnership
 	sqlDB                *sql.DB
 	storageResolver      interfaces.StorageBackendResolver
+	documentReader       interfaces.DocumentReader
 }
 
 // NewDataTableSummaryService creates a new DataTableSummaryService
@@ -452,6 +453,7 @@ func NewDataTableSummaryService(
 	ownership retriever.TenantStoreOwnership,
 	sqlDB *sql.DB,
 	storageResolver interfaces.StorageBackendResolver,
+	documentReader interfaces.DocumentReader,
 ) interfaces.TaskHandler {
 	return &DataTableSummaryService{
 		modelService:         modelService,
@@ -464,6 +466,7 @@ func NewDataTableSummaryService(
 		ownership:            ownership,
 		sqlDB:                sqlDB,
 		storageResolver:      storageResolver,
+		documentReader:       documentReader,
 	}
 }
 
@@ -550,7 +553,7 @@ func (s *DataTableSummaryService) prepareResources(
 
 	// Validate the file type
 	fileType := strings.ToLower(knowledge.FileType)
-	if fileType != "csv" && fileType != "xlsx" && fileType != "xls" {
+	if !tools.IsDataTableFileType(fileType) {
 		logger.Warnf(ctx, "knowledge %s is not a CSV or Excel file, skipping table summary", payload.KnowledgeID)
 		return nil, fmt.Errorf("unsupported file type: %s", fileType)
 	}
@@ -645,7 +648,9 @@ func (s *DataTableSummaryService) processTableData(ctx context.Context, resource
 	// Create a DuckDB session and load the data
 	sessionID := fmt.Sprintf("table_summary_%s", resources.knowledge.ID)
 	fileSvc := s.resolveFileServiceForKnowledge(ctx, resources)
-	duckdbTool := tools.NewDataAnalysisTool(s.knowledgeBaseService, s.knowledgeService, s.tenantService, fileSvc, s.sqlDB, sessionID, s.storageResolver)
+	duckdbTool := tools.NewDataAnalysisTool(
+		s.knowledgeBaseService, s.knowledgeService, s.tenantService, fileSvc, s.sqlDB, sessionID, s.storageResolver,
+	).WithDocumentReader(s.documentReader)
 	defer duckdbTool.Cleanup(ctx)
 
 	// Use knowledge.ID as the table name; the loader is chosen by file type

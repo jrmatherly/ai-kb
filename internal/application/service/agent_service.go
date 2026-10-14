@@ -108,6 +108,7 @@ type agentService struct {
 	fileService           interfaces.FileService
 	chunkService          interfaces.ChunkService
 	duckdb                *sql.DB
+	documentReader        interfaces.DocumentReader
 	wikiPageService       interfaces.WikiPageService
 	tenantService         interfaces.TenantService
 	messageService        interfaces.MessageService
@@ -153,6 +154,7 @@ func NewAgentService(
 	browserSkill *browserskill.Manager,
 	userRepo interfaces.UserRepository,
 	graphRepo interfaces.RetrieveGraphRepository,
+	documentReader interfaces.DocumentReader,
 ) interfaces.AgentService {
 	svc := &agentService{
 		browserSkill:         browserSkill,
@@ -170,6 +172,7 @@ func NewAgentService(
 		db:                   db,
 		webSearchService:     webSearchService,
 		duckdb:               duckdb,
+		documentReader:       documentReader,
 		wikiPageService:      wikiPageService,
 		tenantService:        tenantService,
 		messageService:       messageService,
@@ -1274,7 +1277,8 @@ func (s *agentService) registerTools(
 
 		case tools.ToolDataAnalysis:
 			toolToRegister = tools.NewDataAnalysisTool(s.knowledgeBaseService, s.knowledgeService, s.tenantService, s.fileService, s.duckdb, sessionID, s.storageResolver).
-				WithSearchTargets(config.SearchTargets)
+				WithSearchTargets(config.SearchTargets).
+				WithDocumentReader(s.documentReader)
 			logger.Infof(ctx, "Registered data_analysis tool for session: %s", sessionID)
 
 		case tools.ToolDataSchema:

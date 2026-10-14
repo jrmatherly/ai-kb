@@ -25,12 +25,6 @@ import (
 // unknownFileType is returned by getFileType when a name carries no extension.
 const unknownFileType = "unknown"
 
-// dataTableFileExtensions are the spreadsheet formats that get an extra
-// table-summary task after their document-process task.
-var dataTableFileExtensions = map[string]struct{}{
-	"csv": {}, "xlsx": {}, "xls": {},
-}
-
 // normalizeFileExtension delegates to the shared helper; kept so the many
 // package-private call sites stay untouched.
 func normalizeFileExtension(ext string) string {
@@ -47,12 +41,6 @@ func isSupportedImportExtension(ext string) bool {
 // isValidFileType checks if a filename's extension is supported for import.
 func isValidFileType(filename string) bool {
 	return isSupportedImportExtension(getFileType(filename))
-}
-
-// isDataTableFileType reports whether an extension is a spreadsheet format.
-func isDataTableFileType(ext string) bool {
-	_, ok := dataTableFileExtensions[normalizeFileExtension(ext)]
-	return ok
 }
 
 // validateImportFileType applies the extension constraints shared by every

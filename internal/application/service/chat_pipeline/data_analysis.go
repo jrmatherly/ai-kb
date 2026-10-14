@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -24,6 +25,7 @@ type PluginDataAnalysis struct {
 	chunkRepo            interfaces.ChunkRepository
 	tenantService        interfaces.TenantService
 	db                   *sql.DB
+	documentReader       interfaces.DocumentReader
 }
 
 func NewPluginDataAnalysis(
@@ -35,8 +37,10 @@ func NewPluginDataAnalysis(
 	chunkRepo interfaces.ChunkRepository,
 	tenantService interfaces.TenantService,
 	db *sql.DB,
+	documentReader interfaces.DocumentReader,
 ) *PluginDataAnalysis {
 	p := &PluginDataAnalysis{
+		documentReader:       documentReader,
 		modelService:         modelService,
 		knowledgeBaseService: knowledgeBaseService,
 		knowledgeService:     knowledgeService,
@@ -89,7 +93,9 @@ func (p *PluginDataAnalysis) OnEvent(
 	}
 
 	// Initialize DataAnalysisTool
-	tool := tools.NewDataAnalysisTool(p.knowledgeBaseService, p.knowledgeService, p.tenantService, p.fileService, p.db, chatManage.SessionID)
+	tool := tools.NewDataAnalysisTool(
+		p.knowledgeBaseService, p.knowledgeService, p.tenantService, p.fileService, p.db, chatManage.SessionID,
+	).WithDocumentReader(p.documentReader)
 	defer tool.Cleanup(ctx)
 
 	// Load data into DuckDB
@@ -261,8 +267,7 @@ func parseDataAnalysisPlan(content string) (*dataAnalysisPlan, error) {
 }
 
 func isDataFile(filename string) bool {
-	lower := strings.ToLower(filename)
-	return strings.HasSuffix(lower, ".csv") || strings.HasSuffix(lower, ".xlsx") || strings.HasSuffix(lower, ".xls")
+	return tools.IsDataTableFileType(filepath.Ext(filename))
 }
 
 // filterOutTableChunks filters out table column and table summary chunks from search results

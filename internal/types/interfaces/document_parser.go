@@ -23,3 +23,10 @@ type DocumentReader interface {
 	// newly added engines without Go code changes.
 	ListEngines(ctx context.Context, overrides map[string]string) ([]types.ParserEngineInfo, error)
 }
+
+// SpreadsheetConverter rewrites a legacy (.xls) or binary (.xlsb) workbook as
+// .xlsx, the only Excel format DuckDB reads. The gRPC docreader client
+// implements it; the HTTP readers do not.
+type SpreadsheetConverter interface {
+	ConvertSpreadsheet(ctx context.Context, content []byte, fileType string) ([]byte, error)
+}

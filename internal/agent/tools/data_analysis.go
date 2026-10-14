@@ -6,8 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"os"
+	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	filesvc "github.com/jrmatherly/ai-kb/internal/application/service/file"
@@ -156,6 +159,15 @@ type DataAnalysisTool struct {
 	storageResolver interfaces.StorageBackendResolver
 	searchTargets   types.SearchTargets
 	scopeEnforced   bool
+	// nil when docreader uses the HTTP transport; .xls and .xlsb then fail to load.
+	spreadsheetConverter interfaces.SpreadsheetConverter
+}
+
+// WithDocumentReader lets the tool load .xls and .xlsb files, which docreader
+// converts to .xlsx, when the reader can convert spreadsheets.
+func (t *DataAnalysisTool) WithDocumentReader(reader interfaces.DocumentReader) *DataAnalysisTool {
+	t.spreadsheetConverter, _ = reader.(interfaces.SpreadsheetConverter)
+	return t
 }
 
 // WithSearchTargets enables the Agent-only authorization boundary. Other
@@ -651,16 +663,65 @@ func (t *DataAnalysisTool) LoadFromKnowledge(ctx context.Context, knowledge *typ
 	}
 	defer cleanup()
 
-	switch fileType {
-	case "csv":
-		return t.LoadFromCSV(ctx, localPath, tableName)
-	case "xlsx", "xls":
-		return t.LoadFromExcel(ctx, localPath, tableName)
-	default:
+	load, ok := dataTableLoaders[fileType]
+	if !ok {
 		logger.Warnf(ctx, "[Tool][DataAnalysis] Unsupported file type '%s' for knowledge '%s' in session %s",
 			fileType, knowledge.ID, t.sessionID)
-		return nil, fmt.Errorf("unsupported file type: %s (supported types: csv, xlsx, xls)", fileType)
+		return nil, fmt.Errorf("unsupported file type: %s (supported types: %s)", fileType, dataTableTypeList)
 	}
+	return load(t, ctx, localPath, tableName)
+}
+
+// dataTableLoaders is the one list of file types loadable as data tables: the
+// table-summary task, the chat data-analysis step and the agent tool all gate on it.
+var dataTableLoaders = map[string]func(*DataAnalysisTool, context.Context, string, string) (*TableSchema, error){
+	"csv":  (*DataAnalysisTool).LoadFromCSV,
+	"xlsx": (*DataAnalysisTool).LoadFromExcel,
+	"xls":  (*DataAnalysisTool).loadConvertedExcel,
+	"xlsb": (*DataAnalysisTool).loadConvertedExcel,
+}
+
+var dataTableTypeList = strings.Join(slices.Sorted(maps.Keys(dataTableLoaders)), ", ")
+
+// IsDataTableFileType reports whether a file extension, with or without the
+// dot and in any case, can be loaded as a data table.
+func IsDataTableFileType(ext string) bool {
+	_, ok := dataTableLoaders[utils.NormalizeImportExtension(ext)]
+	return ok
+}
+
+// loadConvertedExcel loads a workbook DuckDB cannot read (.xls, .xlsb) by
+// having docreader rewrite it as .xlsx first. The file type comes from the
+// extension materializeKnowledgeFile gave the temp file.
+func (t *DataAnalysisTool) loadConvertedExcel(ctx context.Context, filename, tableName string) (*TableSchema, error) {
+	if t.loadedTables[tableName] {
+		return t.LoadFromTable(ctx, tableName)
+	}
+	fileType := strings.TrimPrefix(filepath.Ext(filename), ".")
+	if t.spreadsheetConverter == nil {
+		return nil, fmt.Errorf("loading .%s needs docreader on the gRPC transport, which is not configured", fileType)
+	}
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	xlsx, err := t.spreadsheetConverter.ConvertSpreadsheet(ctx, content, fileType)
+	if err != nil {
+		return nil, fmt.Errorf("convert .%s to .xlsx: %w", fileType, err)
+	}
+	converted, err := os.CreateTemp("", "ai-kb-data-analysis-*.xlsx")
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = os.Remove(converted.Name()) }()
+	_, err = converted.Write(xlsx)
+	if closeErr := converted.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
+		return nil, err
+	}
+	return t.LoadFromExcel(ctx, converted.Name(), tableName)
 }
 
 // materializeKnowledgeFile copies the knowledge's backing blob into a fresh
