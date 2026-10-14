@@ -43,7 +43,7 @@ flowchart TB
 - **Building from source**: Go 1.26 (the builder stage in `docker/Dockerfile.app` is `golang:1.26-bookworm`), CGO (needs `libsqlite3-dev`), Node.js + npm (frontend), Python 3.14 + uv (docreader).
 - **Kubernetes**: >= 1.25.0 (`helm/Chart.yaml`).
 
-Starting with `v0.22.6-pg17`, the ParadeDB image used by Compose targets the `x86-64-v2` CPU baseline (SSE4.2, POPCNT) and no longer requires AVX2 (the v0.22.6 release notes list paradedb#4673, which lowered the x86_64 target from `x86-64-v3` to `x86-64-v2`). For newer image versions, the ParadeDB release notes are authoritative. This says nothing about every ARM CPU or about the other optional services.
+Since ParadeDB v0.24.0 the prebuilt `pg_search` binaries set no minimum CPU target (paradedb#4920 reverted the earlier `x86-64-v3` and `x86-64-v2` targets), so the `v0.25.11-pg17` image used by Compose does not require AVX2. For newer image versions, the ParadeDB release notes are authoritative. This says nothing about every ARM CPU or about the other optional services.
 
 ## Docker Compose standard deployment (docker-compose.yml)
 

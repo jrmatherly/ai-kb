@@ -130,7 +130,7 @@ Attachments are staged in `/workspace/input`, working scripts go in `/workspace`
   src="/screenshots/skill-sandbox-chat.png"
   caption="A Word file generated in the sandbox, previewed and downloaded in the conversation" />
 
-While a command runs, the tool card in the conversation shows the last few lines of its output live, which helps judge the progress of a long command; this intermediate output is not written into the model context.
+While a command runs on a Docker or E2B sandbox, the tool card shows the command, its elapsed time and the most recent output (the last 8 KiB of stdout and stderr, refreshed about every half second), which helps judge the progress of a long command. CubeSandbox and the desktop host sandbox show only the command and elapsed time. This intermediate output is not written into the model context.
 
 ### Sandbox panel
 

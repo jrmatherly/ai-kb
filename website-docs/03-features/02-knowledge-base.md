@@ -577,7 +577,7 @@ The Activity tab in the knowledge base settings records configuration changes, d
 - **Sample titles for batch operations**: `kbActivityAppendSampleTitles` attaches at most 5 deduplicated titles to a batch operation (the first as `title`, the rest in the `titles` array), keeping the stream readable and bounded;
 - **Suppression**: `withKBActivitySuppressed(ctx)` lets internal cascades skip duplicate activity records.
 
-Query endpoint: `GET /knowledge-bases/:id/activity` (OwnedKBOrAdmin, JWT users only, not available to API keys).
+Query endpoint: `GET /knowledge-bases/:id/activity` (OwnedKBOrAdmin, JWT users only; an `X-API-Key` request, even with a full-access key, gets 403).
 
 ## Implementation reference
 
