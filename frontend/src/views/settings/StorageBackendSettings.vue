@@ -155,7 +155,7 @@
           </div>
         </section>
 
-        <section class="setting-drawer__section">
+        <section v-if="form.provider !== 'local'" class="setting-drawer__section">
           <h4 class="setting-drawer__section-title">{{ t('settings.storageBackend.connectionSection') }}</h4>
           <div v-if="needsEndpoint" class="form-item">
             <label class="form-label required">Endpoint</label>
