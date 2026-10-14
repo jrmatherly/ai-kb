@@ -111,6 +111,7 @@ export default function (knowledgeBaseId?: string) {
     });
     getKnowledgeDetails(item.id)
       .then((result: any) => {
+        if (activeKnowledgeId !== item.id) return;
         if (result.success && result.data) {
           const { data } = result;
           Object.assign(details, {
