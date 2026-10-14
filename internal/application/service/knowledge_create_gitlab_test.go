@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -108,4 +110,49 @@ func TestCreateKnowledgeFromFileConfluencePreservesCopiedPages(t *testing.T) {
 	var dupErr *types.DuplicateKnowledgeError
 	require.ErrorAs(t, err, &dupErr)
 	require.Equal(t, second.ID, duplicate.ID)
+}
+
+func TestCreateKnowledgeDuplicateKeepsExistingCreatedAt(t *testing.T) {
+	db := setupKnowledgeSharedAccessDB(t)
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = sqlDB.Close() })
+	svc := &knowledgeService{
+		repo:      &gitLabKnowledgeRepo{KnowledgeRepository: repository.NewKnowledgeRepository(db)},
+		kbService: &createKnowledgeFileKBServiceStub{kb: &types.KnowledgeBase{ID: "kb-1"}},
+		fileSvc:   &createKnowledgeFileServiceStub{},
+		task:      &createKnowledgeTaskEnqueuerStub{},
+	}
+	ctx := newCreateKnowledgeFileContext()
+	created := time.Date(2026, 10, 14, 17, 17, 56, 0, time.UTC)
+	createdAt := func(id string) time.Time {
+		t.Helper()
+		var k types.Knowledge
+		require.NoError(t, db.First(&k, "id = ?", id).Error)
+		return k.CreatedAt.UTC()
+	}
+	var dupErr *types.DuplicateKnowledgeError
+
+	createRSS := func(source string) (*types.Knowledge, error) {
+		return svc.CreateKnowledgeFromFile(ctx, "kb-1", newMultipartFileHeader(t, "b11612.md", "# release notes"),
+			map[string]string{"datasource_id": source, "external_id": "b11612"}, nil, "b11612.md", nil,
+			types.ChannelRSS, nil)
+	}
+	owned, err := createRSS("ds-a")
+	require.NoError(t, err)
+	require.NoError(t, db.Model(&types.Knowledge{}).Where("id = ?", owned.ID).Update("created_at", created).Error)
+	_, err = createRSS("ds-b")
+	require.ErrorAs(t, err, &dupErr)
+	require.Equal(t, created, createdAt(owned.ID), "a duplicate from another source must not rewrite created_at")
+
+	const page = "https://93.184.216.34/post"
+	t.Setenv("SSRF_WHITELIST", "93.184.216.34")
+	secutils.ResetSSRFWhitelistForTest()
+	t.Cleanup(secutils.ResetSSRFWhitelistForTest)
+	first, err := svc.CreateKnowledgeFromURL(ctx, "kb-1", page, "", "", nil, "", nil, "", nil)
+	require.NoError(t, err)
+	require.NoError(t, db.Model(&types.Knowledge{}).Where("id = ?", first.ID).Update("created_at", created).Error)
+	_, err = svc.CreateKnowledgeFromURL(ctx, "kb-1", page, "", "", nil, "", nil, "", nil)
+	require.ErrorAs(t, err, &dupErr)
+	require.Equal(t, created, createdAt(first.ID), "re-adding a URL must not rewrite created_at")
 }
