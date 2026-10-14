@@ -62,12 +62,6 @@ test/data/mswag.txt
 *_key
 *_secret
 
-# Large archives / compressed files
-packages/protoc-*.zip
-!packages/protoc-*-linux-x86_64.zip
-!packages/protoc-*-linux-aarch_64.zip
-!packages/protoc-*-linux-arm.zip
-
 # Local test scripts
 configure-ollama.sh
 fix-docker.sh
