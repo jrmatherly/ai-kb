@@ -819,7 +819,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMenuStore } from '@/stores/menu'
 import { useSettingsStore } from '@/stores/settings'
@@ -841,7 +841,6 @@ import { resolveWikiBacklinkTitle } from './wikiBacklinkTitles'
 import { buildGraphLayout, graphNodeRadius, stepGraphLayout, visibleGraphLabels, graphPointBounds, initialGraphViewport, graphClusterOutline, graphLandmarkTitle, type GraphBounds, type GraphCluster } from './wikiGraphLayout'
 import { getKnowledgeDetails } from '@/api/knowledge-base'
 import { createSessions } from '@/api/chat'
-import ChatView from '@/views/chat/index.vue'
 import {
   listWikiPages,
   listWikiFolders,
@@ -867,6 +866,8 @@ import {
   type WikiIndexGroup,
   type WikiIndexEntryDTO,
 } from '@/api/wiki'
+
+const ChatView = defineAsyncComponent(() => import('@/views/chat/index.vue'))
 
 const router = useRouter()
 const route = useRoute()

@@ -782,7 +782,6 @@ import {
   getFAQImportProgress,
   updateFAQImportResultDisplayStatus,
 } from '@/api/knowledge-base'
-import * as XLSX from 'xlsx'
 import {
   type FAQEntryPayload,
   parseFAQImportCSV,
@@ -2178,7 +2177,8 @@ const downloadCSVExample = () => {
 }
 
 // Download the Excel example
-const downloadExcelExample = () => {
+const downloadExcelExample = async () => {
+  const XLSX = await import('xlsx')
   const worksheet = XLSX.utils.json_to_sheet(
     exampleData.map((item) => ({
       'tag_name(required)': item.tag_name || '',

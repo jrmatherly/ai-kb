@@ -1,5 +1,4 @@
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
 
 export type FAQAnswerStrategy = 'all' | 'random'
 
@@ -101,7 +100,8 @@ export const parseFAQImportCSV = (text: string): FAQEntryPayload[] => {
   return results.data.map(mapFAQImportRow)
 }
 
-export const parseFAQImportWorkbook = (data: ArrayBuffer): FAQEntryPayload[] => {
+export const parseFAQImportWorkbook = async (data: ArrayBuffer): Promise<FAQEntryPayload[]> => {
+  const XLSX = await import('xlsx')
   const workbook = XLSX.read(data, { type: 'array' })
   const worksheet = workbook.Sheets[workbook.SheetNames[0]]
   return XLSX.utils.sheet_to_json<Record<string, string>>(worksheet, { defval: '', raw: false }).map(mapFAQImportRow)

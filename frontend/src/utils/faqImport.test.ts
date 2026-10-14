@@ -60,10 +60,10 @@ test('a JSON export re-imports with its answer strategy and recommendation flags
   assert.deepEqual(parseFAQImportJSON(exportedJSON), expected)
 })
 
-test('a CSV export saved as Excel re-imports with its flags', () => {
+test('a CSV export saved as Excel re-imports with its flags', async () => {
   const workbook = XLSX.read(exportedCSV, { type: 'string' })
   const bytes: ArrayBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' })
-  assert.deepEqual(parseFAQImportWorkbook(bytes), expected)
+  assert.deepEqual(await parseFAQImportWorkbook(bytes), expected)
 })
 
 test('a template row without the optional flag columns leaves them to the server defaults', () => {
