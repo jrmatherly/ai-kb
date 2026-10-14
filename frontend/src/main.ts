@@ -19,6 +19,7 @@ import { initFont } from "@/composables/useFont";
 import { installTDesignIconOfflineGuard } from "@/utils/tdesign-icon-offline";
 import { installAutofillGuard } from "@/utils/disable-autofill";
 import { useAuthStore } from "@/stores/auth";
+import { useDeploymentCapabilitiesStore } from "@/stores/deploymentCapabilities";
 
 // Must run before Vue components mount, so tdesign-icons does not request tdesign.gtimg.com at run time
 installTDesignIconOfflineGuard();
@@ -42,11 +43,17 @@ async function bootstrap() {
   // in localStorage - reconcile once before first paint when a session exists.
   const authStore = useAuthStore();
   if (localStorage.getItem("aikb_token")) {
-    try {
-      await authStore.refreshFromAuthMe();
-    } catch {
-      // best-effort; capabilities stay at defaults until the next refresh
+    // best-effort; capabilities stay at defaults until the next refresh
+    const authMe = authStore.refreshFromAuthMe().catch(() => {});
+    // The router guard sends this same request next (auth/me does not change its headers); starting it now overlaps the two.
+    void useDeploymentCapabilitiesStore().ensureLoaded();
+    // Fetch the landing route's lazy chunks meanwhile instead of after the router guard.
+    for (const record of router.resolve(location.pathname + location.search).matched) {
+      for (const component of Object.values(record.components ?? {})) {
+        if (typeof component === "function") (component as () => Promise<unknown>)().catch(() => {});
+      }
     }
+    await authMe;
   }
 
   app.use(router);
