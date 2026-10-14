@@ -1644,7 +1644,10 @@ func (v *sqlValidator) validateNode(node *pg_query.Node, result *SQLValidationRe
 		}
 		if tc.TypeName != nil {
 			typeName := v.getTypeName(tc.TypeName)
-			if strings.HasPrefix(strings.ToLower(typeName), "pg_") {
+			// The parser qualifies built-in types (INTEGER is pg_catalog.int4), so
+			// judge the bare name: pg_* and the reg* OID aliases are system types.
+			bare := strings.TrimPrefix(strings.ToLower(typeName), "pg_catalog.")
+			if strings.HasPrefix(bare, "pg_") || strings.HasPrefix(bare, "reg") {
 				return fmt.Errorf("casting to system type '%s' is not allowed", typeName)
 			}
 		}
