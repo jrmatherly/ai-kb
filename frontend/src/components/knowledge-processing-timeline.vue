@@ -150,11 +150,12 @@ const attemptStatuses = reactive<Map<number, string>>(new Map())
 let pollTimer: ReturnType<typeof setInterval> | null = null
 let nowTimer: ReturnType<typeof setInterval> | null = null
 let unmounted = false
-// Drops overlapping fetches. Does NOT gate the polling decision -
-// the tick callback owns scheduling. If fetchInFlight is stuck (e.g.
-// network black hole), the worst case is one stuck request blocking
-// retries until axios timeout (30s); the loop itself stays alive.
+// Keeps the poll tick from stacking requests; only the tick reads it.
+// If it is stuck (network black hole), the worst case is one request
+// blocking poll retries until axios timeout (30s); the loop stays alive.
 let fetchInFlight = false
+// Identifies the latest fetchSpans call; older responses are dropped.
+let fetchSeq = 0
 
 const stages = computed<SpanNode[]>(() => {
   const trace = data.value?.trace
@@ -349,13 +350,17 @@ function shouldPollNow(): boolean {
 
 async function fetchSpans(opts: { manual?: boolean } = {}) {
   if (!props.knowledgeId) return
-  if (fetchInFlight) return
+  // Every call supersedes the one in flight: a knowledge-id change or an
+  // attempt switch must not be dropped behind an older request, and the
+  // older response must not land under the new id.
+  const seq = ++fetchSeq
   fetchInFlight = true
   if (opts.manual) refreshing.value = true
   if (!data.value) loading.value = true
   let attemptOk = false
   try {
     const res: any = await getKnowledgeSpans(props.knowledgeId, selectedAttempt.value)
+    if (seq !== fetchSeq) return
     if (res?.success && res.data) {
       data.value = res.data as SpansResponse
       attemptOk = true
@@ -402,36 +407,41 @@ async function fetchSpans(opts: { manual?: boolean } = {}) {
       emit('update:hasSpans', false)
     }
   } catch (e) {
+    if (seq !== fetchSeq) return
     // Surface the error in the console - silent failures here is
     // exactly what hid the polling-stalled bug from us before.
     console.warn('[KnowledgeTimeline] fetchSpans failed', e)
     emit('update:hasSpans', false)
   } finally {
-    // Track every attempt, not just successful ones - otherwise a
-    // failing endpoint would leave "Updated X seconds ago" frozen forever while
-    // the spinner spins. Pair with failedAttempts to render a "fetch
-    // failed" hint when consecutive errors pile up.
-    lastFetchedAt.value = Date.now()
-    lastFetchOk.value = attemptOk
-    if (attemptOk) {
-      failedAttempts.value = 0
-    } else {
-      failedAttempts.value += 1
+    // A superseded call leaves the shared state to the newer one.
+    if (seq === fetchSeq) {
+      // Track every attempt, not just successful ones - otherwise a
+      // failing endpoint would leave "Updated X seconds ago" frozen forever while
+      // the spinner spins. Pair with failedAttempts to render a "fetch
+      // failed" hint when consecutive errors pile up.
+      lastFetchedAt.value = Date.now()
+      lastFetchOk.value = attemptOk
+      if (attemptOk) {
+        failedAttempts.value = 0
+      } else {
+        failedAttempts.value += 1
+      }
+      loading.value = false
+      refreshing.value = false
+      fetchInFlight = false
     }
-    loading.value = false
-    refreshing.value = false
-    fetchInFlight = false
   }
 }
 
 function ensureAttemptStatuses() {
   const latest = data.value?.latest_attempt || 0
   if (latest <= 1) return
+  const id = props.knowledgeId
   for (let n = 1; n <= latest; n++) {
     if (attemptStatuses.has(n)) continue
-    getKnowledgeSpans(props.knowledgeId, n)
+    getKnowledgeSpans(id, n)
       .then((res: any) => {
-        if (res?.success && res.data?.trace) {
+        if (id === props.knowledgeId && res?.success && res.data?.trace) {
           attemptStatuses.set(n, resolveTimelineHeaderStatus({
             parseStatus: res.data.parse_status,
             traceStatus: res.data.trace?.status,
@@ -565,8 +575,10 @@ function onKeydown(ev: KeyboardEvent) {
 
 async function fetchProcessOverrides() {
   if (props.compact || !props.knowledgeId) return
+  const id = props.knowledgeId
   try {
-    const res: any = await getKnowledgeDetails(props.knowledgeId)
+    const res: any = await getKnowledgeDetails(id)
+    if (id !== props.knowledgeId) return
     if (res?.success && res.data) {
       processOverrides.value = res.data.metadata?.process_overrides ?? null
       currentKnowledgeFileType.value = normalizeFileType(
@@ -574,6 +586,7 @@ async function fetchProcessOverrides() {
       )
     }
   } catch {
+    if (id !== props.knowledgeId) return
     processOverrides.value = null
     currentKnowledgeFileType.value = ''
   }
@@ -1709,6 +1722,13 @@ const processConfigLines = computed<string[]>(() => {
           <div v-if="loading && !data" class="kp-state">
             <t-loading size="small" />
           </div>
+          <div v-else-if="!data && !loading && !lastFetchOk" class="kp-state kp-state-empty kp-state-error">
+            <span>{{ t('knowledgeStages.fetchFailed') }}</span>
+            <button type="button" class="kp-err-btn" @click="onManualRefresh">
+              <t-icon name="refresh" size="14px" />
+              <span>{{ t('knowledgeStages.refresh') }}</span>
+            </button>
+          </div>
           <div v-else-if="!data && !loading" class="kp-state kp-state-empty">
             <span>{{ t('knowledgeStages.noActivity') }}</span>
           </div>
@@ -2379,6 +2399,11 @@ const processConfigLines = computed<string[]>(() => {
   padding: 56px 20px;
   font-size: var(--app-text-md);
   color: var(--td-text-color-placeholder);
+}
+
+.kp-state-error {
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* Ruler - pinned above .kp-scroll, not inside the scroller */

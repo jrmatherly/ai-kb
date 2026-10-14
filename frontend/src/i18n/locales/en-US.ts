@@ -1092,6 +1092,7 @@ export default {
     secondsAgo: '{n}s ago',
     minutesAgo: '{n}m ago',
     noActivity: 'No parsing activity yet',
+    fetchFailed: "Couldn't load the parsing trace.",
     totalDuration: 'Total: {d}',
     stall: {
       title: 'No progress for {minutes} minutes; this may be stuck',
