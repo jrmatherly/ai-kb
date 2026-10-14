@@ -1,6 +1,6 @@
 # Local Browser: connection and deployment
 
-AI KB connects the browser on a user's computer to Smart Reasoning conversations through the BrowserSkill daemon (`bsk`) and the [BrowserSkill](https://github.com/Tencent/BrowserSkill) browser extension. The extension supports Chrome and Microsoft Edge (Chromium 125 or later). Other Chromium browsers are not guaranteed to work. The browser runs on the user's computer and the daemon runs next to the AI KB app, so no skills sandbox is needed. Web clipping and knowledge base Q&A in the side panel use a different extension, the [knowledge assistant](06-chrome-extension.md).
+AI KB connects the browser on a user's computer to Smart Reasoning conversations through the BrowserSkill daemon (`bsk`) and the [BrowserSkill](https://github.com/Tencent/BrowserSkill) browser extension. The extension supports Chrome and Microsoft Edge (Chromium 125 or later). Other Chromium browsers are not guaranteed to work. The browser runs on the user's computer and the daemon runs next to the AI KB app, so no skills sandbox is needed.
 
 ## Install the extension
 

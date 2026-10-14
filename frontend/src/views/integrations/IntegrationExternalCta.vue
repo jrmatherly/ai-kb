@@ -21,9 +21,9 @@ withDefaults(
   defineProps<{
     label: string
     hint?: string
-    variant?: 'chrome' | 'claw'
+    variant?: 'claw'
   }>(),
-  { variant: 'chrome' },
+  { variant: 'claw' },
 )
 
 const emit = defineEmits<{

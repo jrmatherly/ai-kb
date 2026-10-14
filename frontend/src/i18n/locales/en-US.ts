@@ -4225,7 +4225,7 @@ export default {
       createdAtLabel: 'Registration Time',
       createdAtDescription: 'Time when the account was created',
       desktopPortLabel: 'Local API port (desktop)',
-      desktopPortDescription: 'Use a fixed port (e.g. 37841) so tools like the Chrome extension can keep the same API URL. 0 means a random port each launch. Restart the app after saving.',
+      desktopPortDescription: 'Use a fixed port (e.g. 37841) so API clients can keep the same URL. 0 means a random port each launch. Restart the app after saving.',
       desktopPortSave: 'Save',
       desktopPortSaved: 'Saved. Restart the app for it to take effect.',
       desktopPortSaveFailed: 'Save failed',
@@ -7121,7 +7121,6 @@ export default {
       im: 'IM Integration',
       embed: 'Web Embed',
       api: 'API Integration',
-      chrome: 'Chrome Extension',
       cli: 'CLI',
       claw: 'Claw Skill',
       mcpserver: 'MCP Server'
@@ -7302,60 +7301,6 @@ export default {
     agentEditor: {
       label: 'Publish channels',
       desc: 'Publish this agent to IM platforms or websites. Manage in Integrations.'
-    },
-    chrome: {
-      title: 'Knowledge Assistant',
-      subtitle: 'For self-hosted AI KB: ask questions in a sidebar, clip web pages, and save Markdown notes into your knowledge bases while you browse.',
-      capabilitiesTitle: 'Core capabilities',
-      capabilities: {
-        qa: {
-          title: 'Knowledge-base Q&A',
-          desc: 'Sidebar chat with multi-KB switching and fast/deep/precise answer modes. Ask without leaving the page.'
-        },
-        clip: {
-          title: 'One-click web capture',
-          desc: 'Save page URLs, AI-extract main content, or manually select regions into a target knowledge base.'
-        },
-        notes: {
-          title: 'Markdown quick notes',
-          desc: 'Built-in Markdown editor for ideas and notes, saved to your knowledge base in one click.'
-        },
-        shortcuts: {
-          title: 'Keyboard shortcuts',
-          desc: 'Customize shortcuts to ask questions, open the sidebar, and speed up daily workflows.'
-        }
-      },
-      scenarios: {
-        research: 'Daily research',
-        learning: 'Study notes',
-        tech: 'Technical references',
-        work: 'Work knowledge'
-      },
-      stepsTitle: 'Setup steps',
-      steps: {
-        api: {
-          title: 'Get API credentials',
-          desc: 'Copy the base URL from Settings → API Info and create an API key there. Copy the key when it is created: it is shown in full only once.'
-        },
-        port: {
-          title: 'Desktop: fixed port (recommended)',
-          desc: 'On AI KB Desktop, set a fixed API port (e.g. 37841) in API Info so the URL stays stable across restarts.'
-        },
-        install: {
-          title: 'Install the extension',
-          desc: 'Install “Knowledge Assistant” from the Chrome Web Store.'
-        },
-        connect: {
-          title: 'Connect in the extension',
-          desc: 'Open extension settings, choose enterprise/developer mode, and enter the service API URL and API Key. Your current API URL is shown below.'
-        }
-      },
-      openApiSettings: 'Open API Info',
-      copy: 'Copy',
-      copySuccess: 'API URL copied',
-      installCta: 'Chrome Web Store',
-      installCtaHint: 'Official extension · opens in a new tab',
-      storeMeta: 'Chrome Web Store · v1.0.0'
     },
     claw: {
       title: 'AI KB Skill',

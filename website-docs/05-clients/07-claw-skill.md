@@ -63,4 +63,4 @@ These pages cover narrowing credentials, the underlying API and the other ways t
 
 - Credentials and narrowing capabilities: [Workspaces, users and authentication](../03-features/01-tenant-auth.md)
 - The underlying API: [API overview](../04-api/01-api-overview.md)
-- Other integrations: [Chrome extension](06-chrome-extension.md), [MCP integration](../03-features/08-mcp.md)
+- Other integrations: [MCP integration](../03-features/08-mcp.md)
