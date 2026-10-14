@@ -24,7 +24,7 @@ func newTestDuckDB(t *testing.T) *sql.DB {
 	t.Cleanup(func() { _ = db.Close() })
 
 	ctx := context.Background()
-	for _, ext := range []string{"spatial", "excel"} {
+	for _, ext := range []string{"excel"} {
 		if _, err := db.ExecContext(ctx, fmt.Sprintf("INSTALL %s;", ext)); err != nil {
 			t.Skipf("cannot install duckdb %s extension (network required): %v", ext, err)
 		}

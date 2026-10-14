@@ -1,5 +1,5 @@
 .PHONY: help build run test clean docker-build-app docker-build-docreader docker-build-frontend docker-build-all docker-run migrate-up migrate-down docker-restart docker-stop start-all stop-all start-ollama start-docker build-images build-images-app build-images-docreader build-images-frontend clean-images check-env list-containers pull-images show-platform dev-start dev-stop dev-restart dev-logs dev-status dev-app dev-frontend docs install-swagger build-lite run-lite package-lite anydoc-lib build-anydoc \
-	migrate-version migrate-create migrate-force migrate-goto fmt lint deps build-prod package-mac-app download_spatial clean-db
+	migrate-version migrate-create migrate-force migrate-goto fmt lint deps build-prod package-mac-app download_duckdb_extensions clean-db
 
 # Show help
 help:
@@ -368,7 +368,7 @@ package-lite:
 package-mac-app:
 	./scripts/package-mac-app.sh
 
-download_spatial:
+download_duckdb_extensions:
 	go run cmd/download/duckdb/duckdb.go
 
 # Compose prefixes volume names with the project name: COMPOSE_PROJECT_NAME, else

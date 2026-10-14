@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -11,10 +12,18 @@ import (
 	"strings"
 )
 
-// filterEmptyExcelSheets checks cell content rather than DuckDB's inferred row
-// count: header-only sheets and uncached formulas must keep their columns.
-func filterEmptyExcelSheets(ctx context.Context, filename string, names []string) ([]string, error) {
+// excelDataSheets returns, in workbook order, the worksheets that hold a value
+// or formula. It reads the workbook in Go, so .xls, .xlsb and corrupt files
+// fail here before DuckDB sees them: spatial's st_read_meta segfaulted on them
+// and read_xlsx spins on a truncated zip without honoring cancellation. Cell
+// content, not DuckDB's inferred row count, decides emptiness, so header-only
+// sheets and uncached formulas keep their columns. Chart and dialog sheets are
+// skipped because read_xlsx cannot read them.
+func excelDataSheets(ctx context.Context, filename string) ([]string, error) {
 	book, err := zip.OpenReader(filename)
+	if errors.Is(err, zip.ErrFormat) {
+		return nil, fmt.Errorf("not an .xlsx workbook: %w", err)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -28,6 +37,7 @@ func filterEmptyExcelSheets(ctx context.Context, filename string, names []string
 	var relationships struct {
 		Items []struct {
 			ID     string `xml:"Id,attr"`
+			Type   string `xml:"Type,attr"`
 			Target string `xml:"Target,attr"`
 			Mode   string `xml:"TargetMode,attr"`
 		} `xml:"Relationship"`
@@ -35,12 +45,12 @@ func filterEmptyExcelSheets(ctx context.Context, filename string, names []string
 	readXML := func(name string, out any) error {
 		r, openErr := book.Open(name)
 		if openErr != nil {
-			return openErr
+			return fmt.Errorf("not an .xlsx workbook: %w", openErr)
 		}
 		decodeErr := xml.NewDecoder(r).Decode(out)
 		closeErr := r.Close()
 		if decodeErr != nil {
-			return decodeErr
+			return fmt.Errorf("read %s: %w", name, decodeErr)
 		}
 		return closeErr
 	}
@@ -50,19 +60,9 @@ func filterEmptyExcelSheets(ctx context.Context, filename string, names []string
 	if err := readXML("xl/_rels/workbook.xml.rels", &relationships); err != nil {
 		return nil, err
 	}
-	wanted := make(map[string]bool, len(names))
-	for _, name := range names {
-		wanted[name] = true
-	}
-	wantedIDs := make(map[string]bool, len(names))
-	for _, sheet := range workbook.Sheets {
-		if wanted[sheet.Name] {
-			wantedIDs[sheet.ID] = true
-		}
-	}
 	targets := make(map[string]string, len(relationships.Items))
 	for _, rel := range relationships.Items {
-		if !wantedIDs[rel.ID] || rel.Mode == "External" || rel.Target == "" {
+		if !strings.HasSuffix(rel.Type, "/worksheet") || rel.Mode == "External" || rel.Target == "" {
 			continue
 		}
 		target, err := url.Parse(rel.Target)
@@ -78,29 +78,29 @@ func filterEmptyExcelSheets(ctx context.Context, filename string, names []string
 			targets[rel.ID] = path.Join("xl", target.Path)
 		}
 	}
-	sheets := make(map[string]string, len(workbook.Sheets))
+	kept := make([]string, 0, len(workbook.Sheets))
 	for _, sheet := range workbook.Sheets {
-		sheets[sheet.Name] = targets[sheet.ID]
-	}
-	kept := make([]string, 0, len(names))
-	for _, name := range names {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		r, err := book.Open(sheets[name])
+		target, ok := targets[sheet.ID]
+		if !ok || strings.TrimSpace(sheet.Name) == "" {
+			continue
+		}
+		r, err := book.Open(target)
 		if err != nil {
-			return nil, fmt.Errorf("open worksheet %q: %w", name, err)
+			return nil, fmt.Errorf("open worksheet %q: %w", sheet.Name, err)
 		}
 		hasContent, scanErr := excelSheetHasContent(ctx, r)
 		closeErr := r.Close()
 		if scanErr != nil {
-			return nil, fmt.Errorf("read worksheet %q: %w", name, scanErr)
+			return nil, fmt.Errorf("read worksheet %q: %w", sheet.Name, scanErr)
 		}
 		if closeErr != nil {
 			return nil, closeErr
 		}
 		if hasContent {
-			kept = append(kept, name)
+			kept = append(kept, sheet.Name)
 		}
 	}
 	return kept, nil

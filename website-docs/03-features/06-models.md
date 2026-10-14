@@ -455,7 +455,7 @@ The local model lifecycle is managed by `OllamaService` in `internal/models/util
 | `POST /initialization/ollama/models/download` | Asynchronous download (`downloadModelAsync` + `pullModelWithProgress`, writes model `status=downloading`) |
 | `GET /initialization/ollama/download/progress/:taskId`, `GET /initialization/ollama/download/tasks` | Download progress / task list |
 
-> Note: `cmd/download/duckdb/duckdb.go` is unrelated to models. It pre-downloads DuckDB's `spatial` and `excel` extensions at image build time for the data analysis tool. Model weights are downloaded only on the Ollama path.
+> Note: `cmd/download/duckdb/duckdb.go` is unrelated to models. It pre-downloads DuckDB's `excel` extension at image build time for the data analysis tool. Model weights are downloaded only on the Ollama path.
 
 ### Deployment overlay `config/models.json`
 

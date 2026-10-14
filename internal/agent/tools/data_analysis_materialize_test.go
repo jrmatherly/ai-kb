@@ -78,7 +78,7 @@ func TestMaterializeKnowledgeFile_HandlesLocalScheme(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	// Path must be a real filesystem path (no provider scheme) so DuckDB
-	// can st_read / read_xlsx / read_csv_auto it directly.
+	// can read_xlsx / read_csv_auto it directly.
 	if strings.Contains(path, "://") {
 		t.Fatalf("expected bare filesystem path, got scheme URL: %q", path)
 	}

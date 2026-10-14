@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -112,9 +113,7 @@ func TestFilterExcelMalformedSheetIsNotSkipped(t *testing.T) {
 		}
 		return name, data
 	})
-	// Exercise the preflight directly too: GDAL may reject/omit malformed sheets
-	// before LoadFromExcel receives their names.
-	_, err := filterEmptyExcelSheets(context.Background(), file, []string{"Data", "Broken"})
+	_, err := excelDataSheets(context.Background(), file)
 	require.Error(t, err)
 }
 
@@ -148,12 +147,12 @@ func TestFilterExcelRelationshipsAndOrder(t *testing.T) {
 		}
 		return name, data
 	})
-	kept, err := filterEmptyExcelSheets(context.Background(), file, []string{"Headers", "Empty", "Data"})
+	kept, err := excelDataSheets(context.Background(), file)
 	require.NoError(t, err)
-	require.Equal(t, []string{"Headers", "Data"}, kept)
+	require.Equal(t, []string{"Data", "Headers"}, kept)
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	_, err = filterEmptyExcelSheets(ctx, file, []string{"Data"})
+	_, err = excelDataSheets(ctx, file)
 	require.ErrorIs(t, err, context.Canceled)
 }
 
@@ -186,4 +185,21 @@ func BenchmarkExcelSheetContentCheck(b *testing.B) {
 			}
 		})
 	}
+}
+
+func TestExcelDataSheetsSkipsChartSheets(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "chart.xlsx")
+	writeWorkbook(t, file, map[string][][]any{"Data": {{"id"}, {1}}, "Chart": {{"x"}, {2}}}, []string{"Data", "Chart"})
+	rewriteExcelParts(t, file, func(name string, data []byte) (string, []byte) {
+		if name == "xl/_rels/workbook.xml.rels" {
+			chartRel := regexp.MustCompile(`<Relationship [^>]*sheet3\.xml"[^>]*>`)
+			data = chartRel.ReplaceAllFunc(data, func(rel []byte) []byte {
+				return []byte(strings.Replace(string(rel), `/worksheet"`, `/chartsheet"`, 1))
+			})
+		}
+		return name, data
+	})
+	kept, err := excelDataSheets(context.Background(), file)
+	require.NoError(t, err)
+	require.Equal(t, []string{"Data"}, kept)
 }

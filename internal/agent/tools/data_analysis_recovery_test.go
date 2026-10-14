@@ -50,15 +50,15 @@ func TestDataAnalysisRegistryRetriesFailedCSVLoad(t *testing.T) {
 	}
 }
 
-func TestLoadFromExcelRetriesFailedCreate(t *testing.T) {
+func TestLoadFromExcelRetriesFailedLoad(t *testing.T) {
 	ctx := context.Background()
 	tool := &DataAnalysisTool{db: newTestDuckDB(t), sessionID: "test-excel-load-retry"}
 	t.Cleanup(func() { tool.Cleanup(ctx) })
 	path := filepath.Join(t.TempDir(), "retry.xlsx")
 
 	if _, err := tool.LoadFromExcel(ctx, path, "excel_retry"); err == nil ||
-		!strings.Contains(err.Error(), "failed to create table from Excel") {
-		t.Fatalf("first call must fail during CREATE: %v", err)
+		!strings.Contains(err.Error(), "load Excel file") {
+		t.Fatalf("first call must fail while the workbook is missing: %v", err)
 	}
 	writeWorkbook(t, path, map[string][][]any{
 		"Sales": {{"id", "amount"}, {1, 10}, {2, 20}},
@@ -165,8 +165,9 @@ func TestDataAnalysisLoadRetainsReadyTableAfterSchemaError(t *testing.T) {
 			path := "source." + format
 			if format == "xlsx" {
 				load = tool.LoadFromExcel
-				mock.ExpectQuery(`SELECT UNNEST\(layers\).name FROM st_read_meta`).WillReturnRows(
-					sqlmock.NewRows([]string{"name"}).AddRow("Sales"))
+				// Sheet names come from the workbook itself, so it must exist.
+				path = filepath.Join(t.TempDir(), path)
+				writeWorkbook(t, path, map[string][][]any{"Sales": {{"id"}, {1}, {2}}}, []string{"Sales"})
 			}
 			readErr := errors.New("temporary schema read failure")
 			mock.ExpectExec(`CREATE TABLE "ready" AS SELECT`).WillReturnResult(sqlmock.NewResult(0, 2))

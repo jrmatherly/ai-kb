@@ -186,7 +186,7 @@ Details are in [Database and migrations](02-database-schema.md).
 | `dev-app` | Local backend: Air (`.air.toml`) when installed, otherwise `go run ./cmd/server` with version ldflags |
 | `dev-frontend` | Local `npm run dev` |
 | `build-lite` / `run-lite` / `package-lite` / `package-mac-app` | Lite mode build, run and packaging (see [Lite mode](#lite-mode-no-external-dependencies)) |
-| `download_spatial` | `go run cmd/download/duckdb/duckdb.go` downloads the DuckDB spatial extension (used by the data analysis tools) |
+| `download_duckdb_extensions` | `go run cmd/download/duckdb/duckdb.go` downloads the DuckDB `excel` extension (`read_xlsx`, used by the data analysis tools) |
 
 ### Model vendor catalog
 

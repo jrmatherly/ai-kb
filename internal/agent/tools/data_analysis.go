@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -545,36 +544,18 @@ func (t *DataAnalysisTool) LoadFromCSV(ctx context.Context, filename string, tab
 //   - *TableSchema: schema information of the created table
 //   - error: any error that occurred during the operation
 //
-// Note: requires the DuckDB 'excel' extension (for read_xlsx) and the
-// 'spatial' extension (for st_read_meta used to enumerate sheets).
+// Note: requires the DuckDB 'excel' extension (for read_xlsx).
 func (t *DataAnalysisTool) LoadFromExcel(ctx context.Context, filename string, tableName string) (*TableSchema, error) {
 	logger.Infof(ctx, "[Tool][DataAnalysis] Loading Excel file '%s' into table '%s' for session %s", filename, tableName, t.sessionID)
 
 	if !t.loadedTables[tableName] {
 		t.recordCreatedTable(tableName)
-		sheetNames, enumErr := t.listExcelSheets(ctx, filename)
-		if enumErr != nil {
-			logger.Warnf(ctx,
-				"[Tool][DataAnalysis] Could not enumerate sheets for '%s' (session=%s): %v. Falling back to first sheet only.",
-				filename, t.sessionID, enumErr,
-			)
+		sheetNames, err := excelDataSheets(ctx, filename)
+		if err != nil {
+			return nil, fmt.Errorf("load Excel file: %w", err)
 		}
-		if enumErr == nil && len(sheetNames) > 0 && strings.EqualFold(filepath.Ext(filename), ".xlsx") {
-			filtered, err := filterEmptyExcelSheets(ctx, filename, sheetNames)
-			switch {
-			case err != nil && ctx.Err() != nil:
-				return nil, fmt.Errorf("inspect Excel worksheets: %w", err)
-			case err != nil:
-				// The preflight is best-effort: keep loading every sheet as before.
-				logger.Warnf(ctx,
-					"[Tool][DataAnalysis] Could not inspect worksheets of '%s' (session=%s): %v. Keeping all sheets.",
-					filename, t.sessionID, err,
-				)
-			case len(filtered) == 0:
-				return nil, fmt.Errorf("excel workbook contains no non-empty worksheets")
-			default:
-				sheetNames = filtered
-			}
+		if len(sheetNames) == 0 {
+			return nil, fmt.Errorf("excel workbook contains no non-empty worksheets")
 		}
 
 		createTableSQL := buildExcelCreateTableSQL(tableName, filename, sheetNames)
@@ -593,42 +574,6 @@ func (t *DataAnalysisTool) LoadFromExcel(ctx context.Context, filename string, t
 
 	// Get and return the table schema
 	return t.LoadFromTable(ctx, tableName)
-}
-
-// listExcelSheets returns the names of every sheet (layer) inside the given
-// Excel workbook by querying DuckDB's spatial st_read_meta table function.
-// The returned slice preserves the on-disk order of sheets.
-//
-// st_read_meta returns a single row whose `layers` column is a LIST of
-// STRUCTs (one per layer / sheet). We UNNEST that list and project the
-// struct's `name` field to get a flat list of sheet names.
-func (t *DataAnalysisTool) listExcelSheets(ctx context.Context, filename string) ([]string, error) {
-	metaSQL := fmt.Sprintf(
-		"SELECT UNNEST(layers).name FROM st_read_meta('%s')",
-		sqlSingleQuoteEscape(filename),
-	)
-
-	rows, err := t.db.QueryContext(ctx, metaSQL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query sheet metadata: %w", err)
-	}
-	defer rows.Close()
-
-	var names []string
-	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
-			return nil, fmt.Errorf("failed to scan sheet name: %w", err)
-		}
-		if strings.TrimSpace(name) == "" {
-			continue
-		}
-		names = append(names, name)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating sheet metadata rows: %w", err)
-	}
-	return names, nil
 }
 
 // buildExcelCreateTableSQL assembles the CREATE TABLE statement used by
@@ -677,7 +622,7 @@ func buildExcelCreateTableSQL(tableName, filename string, sheetNames []string) s
 // It automatically determines the file type and calls the appropriate loading method.
 //
 // The source file is first materialized to a local temp file via FileService.GetFile
-// so DuckDB's st_read / read_xlsx / read_csv_auto can open it directly. This
+// so DuckDB's read_xlsx / read_csv_auto can open it directly. This
 // side-steps provider-specific URL schemes (e.g. the local:// URL returned by
 // the local file service) that DuckDB's extensions cannot resolve on their own.
 //

@@ -85,7 +85,7 @@ mp3 wav m4a flac ogg
 
 URL import used to keep a shorter list of its own, so a direct `xlsx` upload worked while an `xlsx` URL import was rejected. Both paths now go through `isSupportedImportExtension()` / `validateImportFileType()` in `internal/application/service/knowledge_util.go`, and video files are rejected with the error "Uploading video files is not supported".
 
-Spreadsheet extensions (`csv` / `xlsx` / `xls`, `dataTableFileExtensions`) get one extra table summary task after the document processing task (`enqueueDataTableSummaryIfNeeded`). A binary `xlsb` workbook is parsed as a document only: DuckDB, which loads the data tables, reads neither it (`read_xlsx`) nor its sheet list (`st_read_meta`).
+Spreadsheet extensions (`csv` / `xlsx` / `xls`, `dataTableFileExtensions`) get one extra table summary task after the document processing task (`enqueueDataTableSummaryIfNeeded`). DuckDB loads the data tables with `read_xlsx`, which reads only OOXML `.xlsx`; the loader takes the sheet list from `xl/workbook.xml` in Go and rejects anything that is not an `.xlsx` zip before DuckDB opens it, so an `.xls` table summary fails with an error. A binary `xlsb` workbook is parsed as a document only.
 
 The extra pre-checks for image and audio files (is the object storage configuration complete, is a VLM / ASR model configured) and the `process_config` validation are collected in `resolveFileImportProcessConfig()`, shared by upload and URL import.
 

@@ -9,10 +9,8 @@ import (
 )
 
 // duckdbExtensions is the list of DuckDB extensions required by AI KB's
-// data analysis tool. `spatial` is used for layer metadata (st_read_meta)
-// so we can enumerate sheet names from Excel files, while `excel` provides
-// the dedicated read_xlsx reader with proper type inference.
-var duckdbExtensions = []string{"spatial", "excel"}
+// data analysis tool: `excel` provides read_xlsx with type inference.
+var duckdbExtensions = []string{"excel"}
 
 func downloadExtensions() {
 	ctx := context.Background()
