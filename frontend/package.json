@@ -41,7 +41,7 @@
     "vue": "^3.5.43",
     "vue-demi": "^0.14.10",
     "vue-i18n": "^11.4.14",
-    "vue-router": "^5.3.1",
+    "vue-router": "5.4.0",
     "vue-virtual-scroller": "^3.0.5",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
