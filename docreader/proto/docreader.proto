@@ -14,6 +14,20 @@ service DocReader {
   // with bounded memory on both ends.
   rpc ReadStream(ReadRequest) returns (stream ReadStreamResponse) {}
   rpc ListEngines(ListEnginesRequest) returns (ListEnginesResponse) {}
+  // ConvertSpreadsheet rewrites an .xls or .xlsb workbook as .xlsx so DuckDB,
+  // which reads only .xlsx, can load it. Errors are gRPC statuses:
+  // INVALID_ARGUMENT for unsupported, unreadable or oversized workbooks.
+  rpc ConvertSpreadsheet(ConvertSpreadsheetRequest) returns (ConvertSpreadsheetResponse) {}
+}
+
+message ConvertSpreadsheetRequest {
+  bytes file_content = 1;
+  // "xls" or "xlsb".
+  string file_type = 2;
+}
+
+message ConvertSpreadsheetResponse {
+  bytes xlsx_content = 1;
 }
 
 message ReadConfig {

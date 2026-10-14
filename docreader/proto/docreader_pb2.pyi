@@ -6,6 +6,20 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class ConvertSpreadsheetRequest(_message.Message):
+    __slots__ = ("file_content", "file_type")
+    FILE_CONTENT_FIELD_NUMBER: _ClassVar[int]
+    FILE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    file_content: bytes
+    file_type: str
+    def __init__(self, file_content: _Optional[bytes] = ..., file_type: _Optional[str] = ...) -> None: ...
+
+class ConvertSpreadsheetResponse(_message.Message):
+    __slots__ = ("xlsx_content",)
+    XLSX_CONTENT_FIELD_NUMBER: _ClassVar[int]
+    xlsx_content: bytes
+    def __init__(self, xlsx_content: _Optional[bytes] = ...) -> None: ...
+
 class ReadConfig(_message.Message):
     __slots__ = ("parser_engine", "parser_engine_overrides")
     class ParserEngineOverridesEntry(_message.Message):

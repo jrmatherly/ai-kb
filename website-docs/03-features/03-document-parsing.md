@@ -41,7 +41,7 @@ class BaseParser(ABC):
 
 The entry point is `docreader/main.py`. It starts a single gRPC server (`grpc.server` + `ThreadPoolExecutor`), listens on port `50051` by default, and registers the standard gRPC Health service (`grpc_health.v1`) so Kubernetes and Docker can probe it (together with the `grpc_health_probe` binary in the image). **There is no HTTP interface.**
 
-The proto is `docreader/proto/docreader.proto`, with three RPCs:
+The proto is `docreader/proto/docreader.proto`, with four RPCs:
 
 ```protobuf
 service DocReader {
@@ -50,6 +50,8 @@ service DocReader {
   // Keeps large scanned PDFs (hundreds of page images) under the unary message-size cap (RESOURCE_EXHAUSTED).
   rpc ReadStream(ReadRequest) returns (stream ReadStreamResponse) {}
   rpc ListEngines(ListEnginesRequest) returns (ListEnginesResponse) {}
+  // Rewrites an .xls or .xlsb workbook as .xlsx, the only Excel format DuckDB reads.
+  rpc ConvertSpreadsheet(ConvertSpreadsheetRequest) returns (ConvertSpreadsheetResponse) {}
 }
 ```
 
@@ -60,6 +62,8 @@ service DocReader {
 What `ReadStream` buys (see `main.py::ReadStream` and `_iter_image_refs`): every frame is small and independent. The server decodes base64 and `images.pop(ref_path)` releases the source data as it goes, so neither side holds every image at once. That solves the peak memory and message-size problems of large scanned PDFs. On the Go side `internal/infrastructure/docparser/grpc_parser.go` calls `ReadStream` first and falls back to unary `Read` when an older docreader answers `Unimplemented`.
 
 `ListEngines` is kept for backward compatibility. The comment in the registry states that the engine list is now managed on the Go side in `internal/infrastructure/docparser/engine_registry.go` (`docparser.ListAllEngines`), the Go App no longer calls this RPC, and remote engines such as MinerU are handled natively in Go.
+
+`ConvertSpreadsheet` serves the data-analysis path, not parsing: the Go `data_analysis` loader calls it for `.xls` and `.xlsb` data tables and hands the `.xlsx` it gets back to DuckDB. `excel_convert.py::convert_spreadsheet_to_xlsx` reads every sheet with python-calamine and writes it with openpyxl, keeping sheet names, order, cell positions and typed numbers and dates (formulas become their cached values). Bad input comes back as `INVALID_ARGUMENT`: a type other than `xls`/`xlsb`, an unreadable workbook, a file or result larger than `DOCREADER_GRPC_MAX_FILE_SIZE_MB`, or more than 5,000,000 cells. The conversion runs in a child process limited to 2 GiB of address space and 100 seconds, because calamine allocates a sheet's whole bounding box up front and a few-kilobyte file can claim the full 1,048,576 x 16,384 grid. A 4.8M-cell sheet peaked at about 1.3 GB of address space and 575 MB resident, so the docreader container's memory limit (512Mi in the Helm chart's defaults) is the practical ceiling; the child raises its own `oom_score_adj` so the kernel kills it, not the server, when that limit is hit.
 
 #### Authentication and TLS (auth.py)
 
@@ -200,7 +204,7 @@ The switch is configured through the knowledge base's `parser_engine_rules[].xls
 
 Three helper modules deal with messy real-world files:
 
-- **`excel_convert.py`**: detects the real format by magic number / `inspect_excel_format` (xlsx/xls/xlsb/ods) and picks the pandas engine per format (`xlrd`/`openpyxl`/`odf`). Unrecognized files (WPS `.et`, a renamed CSV) are normalized with LibreOffice `convert-to xlsx` (`normalize_excel_bytes` tries the `.xlsx/.xls/.et/.csv` suffixes in turn).
+- **`excel_convert.py`**: detects the real format by magic number / `inspect_excel_format` (xlsx/xls/xlsb/ods) and picks the pandas engine per format (`xlrd`/`openpyxl`/`odf`). Unrecognized files (WPS `.et`, a renamed CSV) are normalized with LibreOffice `convert-to xlsx` (`normalize_excel_bytes` tries the `.xlsx/.xls/.et/.csv` suffixes in turn). It also holds `convert_spreadsheet_to_xlsx`, the `ConvertSpreadsheet` RPC's converter.
 - **`xlsx_merge.py`**: `fill_merged_cells_xlsx` unmerges cells and **copies the top-left value into every cell of the merged range**. openpyxl stores the value only in the top-left cell and pandas reads the rest as NaN; after filling, row-based RAG chunks keep their context.
 - **`xlsx_repair.py`**: repairs common XLSX packaging problems. A `sharedStrings.xml` with non-standard path case or location is renamed into place; when the manifest references sharedStrings but the package lacks it and the sheets use only inline strings, the reference is stripped from `[Content_Types].xml` and the workbook rels so openpyxl can read the file.
 
@@ -514,7 +518,7 @@ Details of the V1 flow:
 
 ### Appendix: key facts at a glance
 
-- **External interface**: gRPC only, port `50051` (`DOCREADER_GRPC_PORT`/`PORT`); RPCs `Read` / `ReadStream` / `ListEngines` plus the standard Health service.
+- **External interface**: gRPC only, port `50051` (`DOCREADER_GRPC_PORT`/`PORT`); RPCs `Read` / `ReadStream` / `ListEngines` / `ConvertSpreadsheet` plus the standard Health service.
 - **File formats docreader handles directly**: `pdf`, `docx`, `doc`, `xlsx`, `xls`, `xlsb`, `pptx`, `ppt`, `xmind` (the markitdown engine adds `csv`), `md`/`markdown`, `epub`, `html`/`htm`, `mhtml`, images `jpg/jpeg/png/gif/bmp/tiff/webp`, and URL capture; `txt`/`csv`/`json`, images and audio are handled natively on the Go side by `SimpleFormatReader` in the main path and never reach this service.
 - **OCR / VLM**: zero OCR and zero VLM inside docreader; scanned pages and figures return as images, and OCR (PaddleOCR-VL) and captions happen in the Go App.
 - **Image return**: inline bytes (`ImageRef.image_data`); persistence to local/minio/cos/tos is Go's job.

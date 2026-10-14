@@ -1,14 +1,19 @@
 package client
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
+	"io"
 	"log"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/jrmatherly/ai-kb/docreader/proto"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/resolver"
+	"google.golang.org/grpc/status"
 )
 
 func TestNewClientDoesNotChangeGlobalGRPCResolver(t *testing.T) {
@@ -74,6 +79,42 @@ func TestReadURL(t *testing.T) {
 		t.Error("Expected non-empty markdown content")
 	}
 	log.Printf("INFO: content_len=%d, images=%d", len(resp.MarkdownContent), len(resp.ImageRefs))
+}
+
+func TestConvertSpreadsheet(t *testing.T) {
+	client := requireLiveDocReaderClient(t)
+
+	xlsb, err := os.ReadFile("../tests/fixtures/pandas-test1.xlsb")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := client.ConvertSpreadsheet(context.Background(), &proto.ConvertSpreadsheetRequest{
+		FileContent: xlsb, FileType: "xlsb",
+	})
+	if err != nil {
+		t.Fatalf("ConvertSpreadsheet: %v", err)
+	}
+	book, err := zip.NewReader(bytes.NewReader(resp.XlsxContent), int64(len(resp.XlsxContent)))
+	if err != nil {
+		t.Fatalf("response is not an .xlsx: %v", err)
+	}
+	f, err := book.Open("xl/workbook.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	workbook, _ := io.ReadAll(f)
+	for _, sheet := range []string{`name="Sheet1"`, `name="Sheet2"`, `name="Sheet3"`, `name="Sheet4"`} {
+		if !bytes.Contains(workbook, []byte(sheet)) {
+			t.Errorf("xl/workbook.xml lacks %s", sheet)
+		}
+	}
+
+	_, err = client.ConvertSpreadsheet(context.Background(), &proto.ConvertSpreadsheetRequest{
+		FileContent: []byte("not a workbook"), FileType: "xls",
+	})
+	if status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("garbage input: err = %v, want InvalidArgument", err)
+	}
 }
 
 func TestReadFile(t *testing.T) {

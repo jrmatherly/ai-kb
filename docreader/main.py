@@ -15,9 +15,11 @@ from docreader.auth import AuthInterceptor, TLSConfigError, load_tls_credentials
 from docreader import config
 from docreader.config import CONFIG
 from docreader.parser import Parser
+from docreader.parser.excel_convert import convert_spreadsheet_to_xlsx
 from docreader.proto import docreader_pb2_grpc
 from docreader.parser.registry import registry
 from docreader.proto.docreader_pb2 import (
+    ConvertSpreadsheetResponse,
     ReadRequest,
     ReadResponse,
     ImageRef,
@@ -291,6 +293,21 @@ class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
             for e in engines_data
         ]
         return ListEnginesResponse(engines=engines)
+
+    def ConvertSpreadsheet(self, request, context):  # pyrefly: ignore[bad-override]
+        logger.info(
+            "ConvertSpreadsheet: type=%s, size=%d bytes",
+            request.file_type,
+            len(request.file_content),
+        )
+        try:
+            xlsx = convert_spreadsheet_to_xlsx(
+                request.file_content, request.file_type, CONFIG.grpc_max_file_size_mb
+            )
+        except ValueError as e:
+            logger.warning("ConvertSpreadsheet failed: %s", e)
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(e))
+        return ConvertSpreadsheetResponse(xlsx_content=xlsx)
 
 
 def main():

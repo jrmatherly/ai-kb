@@ -49,6 +49,11 @@ class DocReaderStub:
                 request_serializer=docreader__pb2.ListEnginesRequest.SerializeToString,
                 response_deserializer=docreader__pb2.ListEnginesResponse.FromString,
                 _registered_method=True)
+        self.ConvertSpreadsheet = channel.unary_unary(
+                '/docreader.DocReader/ConvertSpreadsheet',
+                request_serializer=docreader__pb2.ConvertSpreadsheetRequest.SerializeToString,
+                response_deserializer=docreader__pb2.ConvertSpreadsheetResponse.FromString,
+                _registered_method=True)
 
 
 class DocReaderServicer:
@@ -78,6 +83,15 @@ class DocReaderServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ConvertSpreadsheet(self, request, context):
+        """ConvertSpreadsheet rewrites an .xls or .xlsb workbook as .xlsx so DuckDB,
+        which reads only .xlsx, can load it. Errors are gRPC statuses:
+        INVALID_ARGUMENT for unsupported, unreadable or oversized workbooks.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DocReaderServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -95,6 +109,11 @@ def add_DocReaderServicer_to_server(servicer, server):
                     servicer.ListEngines,
                     request_deserializer=docreader__pb2.ListEnginesRequest.FromString,
                     response_serializer=docreader__pb2.ListEnginesResponse.SerializeToString,
+            ),
+            'ConvertSpreadsheet': grpc.unary_unary_rpc_method_handler(
+                    servicer.ConvertSpreadsheet,
+                    request_deserializer=docreader__pb2.ConvertSpreadsheetRequest.FromString,
+                    response_serializer=docreader__pb2.ConvertSpreadsheetResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -178,6 +197,33 @@ class DocReader:
             '/docreader.DocReader/ListEngines',
             docreader__pb2.ListEnginesRequest.SerializeToString,
             docreader__pb2.ListEnginesResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ConvertSpreadsheet(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/docreader.DocReader/ConvertSpreadsheet',
+            docreader__pb2.ConvertSpreadsheetRequest.SerializeToString,
+            docreader__pb2.ConvertSpreadsheetResponse.FromString,
             options,
             channel_credentials,
             insecure,
