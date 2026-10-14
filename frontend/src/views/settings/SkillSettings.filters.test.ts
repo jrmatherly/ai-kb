@@ -124,3 +124,17 @@ for (const host of [false, true]) {
     } finally { f.close() }
   })
 }
+
+test('install chip names the status of a single install that is not ready', async () => {
+  const f = await fixture([])
+  try {
+    const summary = (status: string) => {
+      const row = item('one', [status])
+      return f.vm.installSummary(row, f.vm.installsView(row))
+    }
+    assert.equal(summary('ready'), 'settings.skills.installedOnName')
+    assert.equal(summary('failed'), 'sandbox-0 · settings.sandbox.skillStatusFailed')
+    assert.equal(summary('installing'), 'sandbox-0 · settings.sandbox.skillStatusInstalling')
+    assert.equal(summary('removing'), 'sandbox-0 · settings.sandbox.skillStatusRemoving')
+  } finally { f.close() }
+})

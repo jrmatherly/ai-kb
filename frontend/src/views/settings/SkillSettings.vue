@@ -815,7 +815,9 @@ function upgradeTooltip(item: SkillCatalogItem, view: ReturnType<typeof installs
 function installSummary(item: SkillCatalogItem, view: ReturnType<typeof installsView>): string {
   if (view.installs.length === 0) return skillText('installToSandbox')
   if (view.installs.length === 1) {
-    return skillText('installedOnName', { name: installName(view.installs[0]) })
+    const inst = view.installs[0]
+    if (inst.status !== 'ready') return `${installName(inst)} · ${installStatusText(inst)}`
+    return skillText('installedOnName', { name: installName(inst) })
   }
   return t('settings.skills.installedCount', { count: view.installs.length })
 }
