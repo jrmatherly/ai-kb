@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 # The one uv pin: uv refuses other versions, docker/Dockerfile.docreader installs this one and the docreader
-# workflow's setup-uv reads it (version-file). 0.13.0 wrote uv.lock revision 5; bump it with the lockfile.
+# and mcp-server workflows' setup-uv read it (version-file). 0.13.0 wrote uv.lock revision 5; bump it with the lockfile.
 [tool.uv]
 required-version = "==0.13.0"
 
