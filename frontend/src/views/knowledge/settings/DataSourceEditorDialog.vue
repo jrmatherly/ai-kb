@@ -9,8 +9,8 @@ import {
   validateConnection,
   validateCredentials,
   listResources,
+  listResourcesForConfig,
   resolveResourceAncestors,
-  deleteDataSource,
   putDataSourceCredentials,
   deleteDataSourceCredentials,
   getConnectorTypes,
@@ -336,25 +336,15 @@ async function loadDriveRoot() {
   driveRootLoaded.value = false
   loadingResources.value = true
   try {
-    if (!tempDsId.value) {
-      const res = await createDataSource({
-        ...form.value,
-        knowledge_base_id: props.kbId,
-        status: 'paused',
-      } as any)
-      const created = res?.data || res
-      tempDsId.value = created.id
-    } else {
-      // Edit mode OR a previously-created temp row: persist the new folder_token
-      // so listResources sees the updated config. Previously this branch skipped
-      // updates in edit mode, leaving listResources reading the old folder_token.
-      await updateDataSource(tempDsId.value, {
+    if (editId.value) {
+      // The id route lists from the saved config, so persist the new folder_token first.
+      await updateDataSource(editId.value, {
         ...form.value,
         knowledge_base_id: props.kbId,
       } as any)
     }
 
-    const res = await listResources(tempDsId.value)
+    const res = await fetchResources()
     resources.value = res?.data || res || []
     if (resources.value.length > 0) {
       // Mirror loadResources' tree initialization: index parents that already
@@ -480,7 +470,6 @@ function toggleExpand(id: string) {
 // no-op when the connector already delivered the whole tree in one call (e.g.
 // Notion) or when this node's children have already been fetched.
 async function ensureChildrenLoaded(id: string) {
-  if (!tempDsId.value) return
   if (loadedChildrenIds.value.has(id) || loadingChildrenIds.value.has(id)) return
   if (treeFullyLoaded.value) {
     loadedChildrenIds.value = new Set(loadedChildrenIds.value).add(id)
@@ -489,7 +478,7 @@ async function ensureChildrenLoaded(id: string) {
 
   loadingChildrenIds.value = new Set(loadingChildrenIds.value).add(id)
   try {
-    const res = await listResources(tempDsId.value, id)
+    const res = await fetchResources(id)
     const children: Resource[] = res?.data || res || []
     if (children.length > 0) {
       const existing = new Set(resources.value.map(r => r.external_id))
@@ -554,9 +543,19 @@ const testErrorMsg = ref('')
 // Collapsible prereq in Step 1
 const prereqExpanded = ref(false)
 
+// Edit mode lists from the saved row; create mode sends the unsaved config so
+// nothing is persisted before Finish.
+const editId = computed(() => props.dataSource?.id || '')
 
-// Temp data source for resource listing
-const tempDsId = ref('')
+function fetchResources(parentId?: string) {
+  if (editId.value) return listResources(editId.value, parentId)
+  return listResourcesForConfig({
+    type: form.value.type,
+    credentials: form.value.config.credentials,
+    settings: form.value.config.settings,
+    resource_ids: form.value.config.resource_ids,
+  }, parentId)
+}
 
 // Schedule presets
 const schedulePresets = computed(() => [
@@ -780,22 +779,11 @@ const displayedCredentialFields = computed(() => {
 })
 
 // --- Drawer lifecycle ---
-watch(visible, async (v) => {
-  if (!v) {
-    if (!isEdit.value && tempDsId.value) {
-      try {
-        await deleteDataSource(tempDsId.value)
-      } catch {
-        // Ignore cleanup errors
-      }
-      tempDsId.value = ''
-    }
-    return
-  }
+watch(visible, (v) => {
+  if (!v) return
   step.value = isEdit.value ? 1 : 0
   testResult.value = ''
   testErrorMsg.value = ''
-  tempDsId.value = ''
   prereqExpanded.value = false
   pendingRemoveCredentials.value = false
   resources.value = []
@@ -855,7 +843,6 @@ watch(visible, async (v) => {
         driveFolderToken.value = rids[0].split(':')[0]
       }
     }
-    tempDsId.value = props.dataSource.id
   } else {
     replaceCredentialsMode.value = false
     credentialsConfigured.value = false
@@ -946,12 +933,12 @@ async function testConnection() {
     // The main update endpoint ignores credentials. Only use the saved
     // connection when keeping its credentials; test replacements directly
     // without persisting them until the user saves the data source.
-    if (isEdit.value && tempDsId.value && !needsConnectionTest()) {
-      await updateDataSource(tempDsId.value, {
+    if (editId.value && !needsConnectionTest()) {
+      await updateDataSource(editId.value, {
         ...form.value,
         knowledge_base_id: props.kbId,
       } as any)
-      await validateConnection(tempDsId.value)
+      await validateConnection(editId.value)
     } else {
       const creds = { ...form.value.config.credentials }
       if (form.value.type === 'rss') {
@@ -975,22 +962,7 @@ async function loadResources() {
   loadingResources.value = true
   try {
     syncConfluencePublicFieldsToSettings()
-    if (!tempDsId.value) {
-      const res = await createDataSource({
-        ...form.value,
-        knowledge_base_id: props.kbId,
-        status: 'paused',
-      } as any)
-      const created = res?.data || res
-      tempDsId.value = created.id
-    } else if (!isEdit.value) {
-      await updateDataSource(tempDsId.value, {
-        ...form.value,
-        knowledge_base_id: props.kbId,
-      } as any)
-    }
-
-    const res = await listResources(tempDsId.value)
+    const res = await fetchResources()
     resources.value = res?.data || res || []
     // Any parent that already arrived with children (connectors returning the
     // full tree, e.g. Notion) needs no further lazy fetch.
@@ -1027,9 +999,9 @@ async function loadResources() {
 // surface the current (possibly deeply nested) selection, then loads each level
 // so the saved selection becomes visible and correctly checked in the tree.
 async function revealExistingSelections(hiddenIds: string[]) {
-  if (!tempDsId.value || hiddenIds.length === 0) return
+  if (!editId.value || hiddenIds.length === 0) return
   try {
-    const res = await resolveResourceAncestors(tempDsId.value, hiddenIds)
+    const res = await resolveResourceAncestors(editId.value, hiddenIds)
     const ancestors: string[] = res?.data?.ancestors || res?.ancestors || []
     if (ancestors.length === 0) return
     const expanded = new Set(expandedResourceIds.value)
@@ -1250,18 +1222,18 @@ async function handleSubmit() {
   form.value.config.resource_ids = selectedResourceIds.value
   submitting.value = true
   try {
-    let dataSourceId = tempDsId.value
+    let dataSourceId = editId.value
 
-    if (tempDsId.value) {
+    if (dataSourceId) {
       // Commit credential replacement BEFORE the main PUT so a validation
       // failure on credentials doesn't leave us with an updated row that
       // still points at the old broken token.
-      const credsOk = await commitCredentialsIfNeeded(tempDsId.value)
+      const credsOk = await commitCredentialsIfNeeded(dataSourceId)
       if (!credsOk) {
         submitting.value = false
         return
       }
-      await updateDataSource(tempDsId.value, {
+      await updateDataSource(dataSourceId, {
         ...form.value,
         config: buildConfigPayload(),
         knowledge_base_id: props.kbId,
@@ -1276,7 +1248,6 @@ async function handleSubmit() {
       } as any)
       const created = res?.data || res
       dataSourceId = created.id
-      tempDsId.value = created.id
     }
 
     if (isEdit.value) {
@@ -1291,10 +1262,6 @@ async function handleSubmit() {
     }
 
     emit('saved')
-    // Clear before close - otherwise the visible watcher treats the just-saved
-    // row as an abandoned temp draft and DELETEs it (loadResources creates the
-    // row early at step 2 with tempDsId).
-    tempDsId.value = ''
     visible.value = false
   } catch (e: any) {
     MessagePlugin.error(e?.message || e?.error || t('datasource.saveFailed'))

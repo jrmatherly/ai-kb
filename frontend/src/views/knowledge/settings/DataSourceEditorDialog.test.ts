@@ -68,6 +68,16 @@ async function fixture({
       calls.push({ method: 'listResources', args: [id, parentId] })
       return { data: resources.filter(r => (parentId ? r.parent_id === parentId : !r.parent_id)) }
     },
+    async listResourcesForConfig(config: any, parentId?: string) {
+      calls.push({ method: 'listResourcesForConfig', args: [JSON.parse(JSON.stringify(config)), parentId] })
+      return { data: resources.filter(r => (parentId ? r.parent_id === parentId : !r.parent_id)) }
+    },
+    async deleteDataSource(id: string) {
+      calls.push({ method: 'deleteDataSource', args: [id] })
+    },
+    async triggerSync(id: string) {
+      calls.push({ method: 'triggerSync', args: [id] })
+    },
     async resolveResourceAncestors(id: string, ids: string[]) {
       calls.push({ method: 'resolveResourceAncestors', args: [id, ids] })
       return { data: { ancestors: [] } }
@@ -227,7 +237,11 @@ test('Seafile picker lists libraries lazily and shows the library icon', async (
   const f = await seafileFixture()
   try {
     assert.equal(f.vm.step, 2)
-    assert.deepEqual(f.calls.map(call => call.method), ['createDataSource', 'listResources'])
+    assert.deepEqual(f.calls.map(call => call.method), ['listResourcesForConfig'])
+    assert.deepEqual(f.calls[0].args, [{
+      type: 'seafile', credentials: { base_url: 'https://seafile.example.com', api_token: 'rotated-token' },
+      settings: {}, resource_ids: [],
+    }, undefined])
     assert.deepEqual([...f.vm.resources].map((r: any) => r.external_id), [`${seafileRepoA}:/`, `${seafileRepoB}:/`])
     assert.equal(f.vm.resourceIconName(f.vm.resources[0]), 'root-list')
     assert.equal(f.vm.resourceTypeLabel('library'), 'datasource.resourceType.library')
@@ -236,6 +250,28 @@ test('Seafile picker lists libraries lazily and shows the library icon', async (
     assert.equal(f.vm.resourceIconName(f.vm.resources.find((r: any) => r.name === 'guides')), 'folder')
     assert.equal(f.vm.resourceIconName(f.vm.resources.find((r: any) => r.name === 'a.pdf')), 'file')
   } finally { f.close() }
+})
+
+test('the create wizard persists nothing until Finish, which creates exactly once', async () => {
+  const browsed = await seafileFixture()
+  try {
+    await browsed.vm.ensureChildrenLoaded(`${seafileRepoA}:/`)
+    browsed.vm.visible = false
+    await flush()
+    assert.deepEqual(browsed.calls.map(call => call.method), ['listResourcesForConfig', 'listResourcesForConfig'])
+    assert.equal(browsed.calls[1].args[1], `${seafileRepoA}:/`)
+  } finally { browsed.close() }
+
+  const finished = await seafileFixture()
+  try {
+    finished.vm.toggleResource(`${seafileRepoA}:/`)
+    await finished.vm.nextStep()
+    await finished.vm.handleSubmit()
+    await flush()
+    assert.deepEqual(finished.calls.map(call => call.method), ['listResourcesForConfig', 'createDataSource', 'triggerSync'])
+    assert.deepEqual(finished.calls[1].args[0].config.resource_ids, [`${seafileRepoA}:/`])
+    assert.equal(finished.calls[1].args[0].status, 'active')
+  } finally { finished.close() }
 })
 
 test('Seafile selection stays within one library until it is cleared', async () => {

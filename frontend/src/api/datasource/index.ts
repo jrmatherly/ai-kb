@@ -141,6 +141,15 @@ export function listResources(id: string, parentId?: string) {
   return get(`/api/v1/datasource/${id}/resources${query}`, { timeout: 120000 })
 }
 
+// listResourcesForConfig is listResources for an unsaved config: the create
+// wizard browses the external system without persisting a draft data source.
+export function listResourcesForConfig(
+  config: { type: string; credentials: Record<string, any>; settings: Record<string, any>; resource_ids: string[] },
+  parentId?: string,
+) {
+  return post('/api/v1/datasource/list-resources', { ...config, parent_id: parentId || '' }, { timeout: 120000 })
+}
+
 // resolveResourceAncestors returns the ExternalIDs of every parent that must be
 // expanded to reveal the given (possibly deeply nested) selections in a lazily
 // loaded picker. Used when editing a data source to restore an existing selection.
