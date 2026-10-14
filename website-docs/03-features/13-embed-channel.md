@@ -218,7 +218,7 @@ When creating or updating a channel (`embedChannelRequest` in `internal/handler/
 | `widget_position` | string | `bottom-right` | `bottom-right` \| `bottom-left` \| `top-right` \| `top-left` |
 | `allow_web_search` | bool | `false` | Whether visitors get a web search toggle |
 | `allow_file_upload` | bool | `false` | Whether visitors can upload images and files |
-| `default_locale` | string | empty | `en-US`, `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR` or `ru-RU`; any other value returns 400, as for IM channels. The widget renders in `en-US` whatever the value, and the admin UI has no picker for it |
+| `default_locale` | string | empty | `en-US` or empty; any other value returns 400. The widget ships only `en-US`, and the admin UI has no picker for it |
 | `webhook_url` | string | empty | Event callback URL; **must be `http(s)` and pass the SSRF check** (private and link-local addresses are refused) |
 | `webhook_secret` | string | empty | Webhook signing secret (never returned by the API) |
 

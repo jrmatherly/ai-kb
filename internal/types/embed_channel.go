@@ -126,10 +126,17 @@ type EmbedChannelPublicConfig struct {
 	DefaultLocale           string `json:"default_locale,omitempty"`
 }
 
-// NormalizeEmbedDefaultLocale returns a supported locale tag or empty string
-// (meaning follow browser / host widget locale).
+// EmbedLocale is the only locale the embed widget ships.
+const EmbedLocale = "en-US"
+
+// NormalizeEmbedDefaultLocale returns EmbedLocale or empty (follow the browser
+// or host widget locale). IM channels keep the wider set because their locale
+// is the reply language, which the model can produce in any of them.
 func NormalizeEmbedDefaultLocale(locale string) string {
-	return NormalizeSupportedLocale(locale)
+	if strings.TrimSpace(locale) == EmbedLocale {
+		return EmbedLocale
+	}
+	return ""
 }
 
 // EmbedSessionMarkerPrefix tags sessions created through an embed channel.

@@ -32,7 +32,7 @@ func (localeEmbedSvc) Update(
 	return ch, nil
 }
 
-// An unsupported default_locale is rejected like the IM channel locale, not
+// The widget ships only en-US, so any other default_locale is rejected, not
 // stored as empty.
 func TestEmbedChannelDefaultLocaleIsValidated(t *testing.T) {
 	h := &EmbedChannelHandler{embedSvc: localeEmbedSvc{}}
@@ -43,7 +43,7 @@ func TestEmbedChannelDefaultLocaleIsValidated(t *testing.T) {
 	engine.PUT("/embed-channels/:channel_id", h.UpdateEmbedChannel)
 
 	const wantError = `{"success":false,"error":{"code":1000,` +
-		`"message":"locale must be one of: 'en-US', 'ja-JP', 'ko-KR', 'ru-RU', 'zh-CN', 'zh-TW'"}}`
+		`"message":"default_locale must be 'en-US' or empty"}}`
 	cases := []struct {
 		name, method, path, body string
 		wantCode                 int
@@ -56,6 +56,10 @@ func TestEmbedChannelDefaultLocaleIsValidated(t *testing.T) {
 		{
 			"update with unsupported locale", http.MethodPut, "/embed-channels/c-1",
 			`{"default_locale":"fr-FR"}`, http.StatusBadRequest, wantError,
+		},
+		{
+			"create with an IM-only reply locale", http.MethodPost, "/agents/a-1/embed-channels",
+			`{"allowed_origins":["https://example.com"],"default_locale":"zh-CN"}`, http.StatusBadRequest, wantError,
 		},
 		{
 			"create with supported locale", http.MethodPost, "/agents/a-1/embed-channels",

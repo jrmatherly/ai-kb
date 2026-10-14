@@ -128,7 +128,7 @@ func (h *EmbedChannelHandler) CreateEmbedChannel(c *gin.Context) {
 		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
 	}
-	defaultLocale, err := normalizeLocale(stringOrEmpty(req.DefaultLocale))
+	defaultLocale, err := normalizeEmbedLocale(stringOrEmpty(req.DefaultLocale))
 	if err != nil {
 		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		return
@@ -224,7 +224,7 @@ func (h *EmbedChannelHandler) UpdateEmbedChannel(c *gin.Context) {
 		}
 	}
 	if req.DefaultLocale != nil {
-		locale, err := normalizeLocale(*req.DefaultLocale)
+		locale, err := normalizeEmbedLocale(*req.DefaultLocale)
 		if err != nil {
 			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 			return
@@ -839,4 +839,14 @@ func writeEmbedMgmtError(c *gin.Context, err error) {
 		logger.Error(c.Request.Context(), "embed channel management failed", err)
 		_ = c.Error(apperrors.NewInternalServerError("operation failed"))
 	}
+}
+
+func normalizeEmbedLocale(locale string) (string, error) {
+	if strings.TrimSpace(locale) == "" {
+		return "", nil
+	}
+	if normalized := types.NormalizeEmbedDefaultLocale(locale); normalized != "" {
+		return normalized, nil
+	}
+	return "", errors.New("default_locale must be 'en-US' or empty")
 }
