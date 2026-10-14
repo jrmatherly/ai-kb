@@ -496,6 +496,10 @@ func (t *spanTracker) FailSpan(ctx context.Context, span *Span, errorCode, error
 	if span == nil {
 		return
 	}
+	// A span usually fails because its context expired; recording that needs a
+	// live one.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+	defer cancel()
 	now := time.Now()
 	dur := durationSince(t, span, now)
 	detail := ""

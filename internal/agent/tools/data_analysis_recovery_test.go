@@ -215,3 +215,26 @@ func TestDataAnalysisCleanupIncludesFailedCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// A timed-out summary task runs its deferred Cleanup on an expired context;
+// the tables must still go, or the retry fails with "table already exists".
+func TestDataAnalysisCleanupDropsTablesAfterDeadline(t *testing.T) {
+	tool := &DataAnalysisTool{db: newPlainDuckDB(t), sessionID: "test-cleanup-after-deadline"}
+	if _, err := tool.db.ExecContext(context.Background(), `CREATE TABLE "leaky" (id INTEGER)`); err != nil {
+		t.Fatal(err)
+	}
+	tool.recordCreatedTable("leaky")
+
+	expired, cancel := context.WithCancel(context.Background())
+	cancel()
+	tool.Cleanup(expired)
+
+	var n int
+	if err := tool.db.QueryRowContext(context.Background(),
+		`SELECT count(*) FROM information_schema.tables WHERE table_name = 'leaky'`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 0 {
+		t.Fatalf("table survived Cleanup on an expired context")
+	}
+}

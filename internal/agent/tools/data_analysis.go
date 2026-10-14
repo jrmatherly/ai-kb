@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	filesvc "github.com/jrmatherly/ai-kb/internal/application/service/file"
 
@@ -236,6 +237,10 @@ func (t *DataAnalysisTool) Cleanup(ctx context.Context) {
 
 	logger.Infof(ctx, "[Tool][DataAnalysis] Cleaning up %d tables for session: %s", len(t.createdTables), t.sessionID)
 
+	// Cleanup usually runs deferred, after a task deadline has passed; a DROP on
+	// that context never runs and the retry fails with "table already exists".
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+	defer cancel()
 	for _, tableName := range t.createdTables {
 		dropSQL := fmt.Sprintf("DROP TABLE IF EXISTS \"%s\"", tableName)
 		if _, err := t.db.ExecContext(ctx, dropSQL); err != nil {

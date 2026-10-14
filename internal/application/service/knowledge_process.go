@@ -1541,6 +1541,10 @@ func (s *knowledgeService) ProcessSummaryGeneration(ctx context.Context, t *asyn
 
 	summaryMetadataVersion := string(knowledge.CustomMetadata)
 	handleRetryableSummaryFailure := func(generationErr error) error {
+		// The attempt often failed on its own deadline; recording the outcome
+		// needs a live context that keeps the task's values (retry count).
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+		defer cancel()
 		summaryErr = generationErr
 		summaryOut["error"] = previewText(generationErr.Error(), 500)
 		summaryOut["error_type"] = fmt.Sprintf("%T", generationErr)
