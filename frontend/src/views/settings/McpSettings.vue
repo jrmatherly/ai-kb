@@ -117,6 +117,7 @@
       :initial-step="dialogInitialStep"
       @success="handleDialogSuccess"
       @created="handleDialogCreated"
+      @refreshed="applyMetadataRefresh(services, $event)"
     />
   </div>
 </template>
@@ -136,6 +137,7 @@ import McpServiceDialog from './components/McpServiceDialog.vue'
 import { useConfirmDelete } from '@/components/settings/useConfirmDelete'
 import { useAuthStore } from '@/stores/auth'
 import { matchesResourceQuery } from '@/utils/resourceListSearch'
+import { applyMetadataRefresh } from '@/utils/mcpCatalog'
 
 const emit = defineEmits<{ count: [value: number] }>()
 const { t } = useI18n()

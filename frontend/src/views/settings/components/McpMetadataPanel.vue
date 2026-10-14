@@ -82,7 +82,11 @@ import { getMCPMetadata, refreshMCPMetadata, type MCPMetadata } from '@/api/mcp-
 import McpToolsList from './McpToolsList.vue'
 
 const props = defineProps<{ serviceId: string; disabled?: boolean }>()
-const emit = defineEmits<{ (e: 'busy', value: boolean): void; (e: 'synced', value: boolean): void }>()
+const emit = defineEmits<{
+  (e: 'busy', value: boolean): void
+  (e: 'synced', value: boolean): void
+  (e: 'refreshed', value: MCPMetadata): void
+}>()
 const { t } = useI18n()
 const snapshot = ref<MCPMetadata | null>(null)
 const loading = ref(false)
@@ -122,6 +126,7 @@ async function refreshFrom(current: number) {
   try {
     const saved = await refreshMCPMetadata(props.serviceId)
     if (current === generation) setSnapshot(saved)
+    emit('refreshed', saved)
   } catch (e) {
     if (current === generation) error.value = errorText(e)
   } finally {

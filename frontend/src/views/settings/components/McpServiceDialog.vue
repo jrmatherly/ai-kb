@@ -348,7 +348,8 @@
           </div>
         </section>
         <McpMetadataPanel v-if="currentService?.id" :key="currentService.id" :service-id="currentService.id"
-          :disabled="submitting || generatingUsage" @busy="metadataBusy = $event" @synced="toolsSynced = $event" />
+          :disabled="submitting || generatingUsage" @busy="metadataBusy = $event" @synced="toolsSynced = $event"
+          @refreshed="emit('refreshed', $event)" />
       </template>
     </t-form>
   </SettingDrawer>
@@ -370,6 +371,7 @@ import {
   getMCPOAuthStatus,
   revokeMCPOAuthToken,
   MCP_OAUTH_CALLBACK_PATH,
+  type MCPMetadata,
   type MCPService,
   type McpCredentialField,
   type MCPOAuthTokenState,
@@ -394,6 +396,7 @@ interface Emits {
   // Emitted after a successful create; carries the newly created service so
   // the parent can transition the drawer to edit mode without closing it.
   (e: 'created', service: MCPService): void
+  (e: 'refreshed', metadata: MCPMetadata): void
 }
 
 const props = defineProps<Props>()
