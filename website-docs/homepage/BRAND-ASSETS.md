@@ -22,4 +22,6 @@ The upstream screenshots showed the upstream logo and a Chinese UI, so they were
 
 Captured on 2026-10-13 from the development stack with the `website-docs/sample-data/` corpus: `mcp-server-endpoint.png`, `skill-catalog.png` and `agent-chat.png`, the video poster (a Quick Answer turn with its sources panel; the answer text quotes the sample product manual and FAQ).
 
-Still pending: `local-browser-task.png` and `browser-connection.png` (need a paired BrowserSkill browser), `chat-steer-queue.png` (needs a Smart Reasoning run with queued messages), `wiki-graph.png`, `wiki-browser.png` and `wiki-revision-history.png` (need a generated wiki), and `skill-sandbox-chat.png`, `sandbox-desktop.png` and `sandbox-terminal.png` (need a configured sandbox).
+Captured on 2026-10-14 the same way: `chat-steer-queue.png` (a Smart Reasoning run with queued messages), `wiki-browser.png`, `wiki-graph.png` and `wiki-revision-history.png` (a generated wiki), `skill-sandbox-chat.png` and `sandbox-terminal.png` (a Docker sandbox).
+
+Still pending: `local-browser-task.png` and `browser-connection.png` (need a paired BrowserSkill browser) and `sandbox-desktop.png` (needs a Cube or E2B sandbox with a desktop template; Docker sandboxes have no desktop).
