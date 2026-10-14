@@ -20,6 +20,7 @@ import { buildQueryWithHostContext } from '@/utils/embedContext'
 import { fileToDataURI } from '@/utils/embedFile'
 import { useI18n } from 'vue-i18n'
 import { useChatStreamHandler } from '@/composables/useChatStreamHandler'
+import { isTurnOpen, serverTurnDone } from '@/composables/embedStreamRecovery'
 import { useStickyBottomOnResize } from '@/composables/useStickyBottomOnResize'
 
 export function useEmbedChatSession(options: {
@@ -226,7 +227,32 @@ export function useEmbedChatSession(options: {
       })
   }
 
+  // Bumped by every send, stop and session reset so a closing stream or a
+  // pending history poll from an older turn cannot touch the current one.
+  let turnSeq = 0
+
+  // ponytail: fixed 5s x 24 poll, then reload regardless; push a completion
+  // event to the embed if this shows up in traffic.
+  const reloadWhenServerTurnDone = async (seq: number) => {
+    for (let i = 0; i < 24; i++) {
+      const res = await getEmbedMessageList(
+        options.channelId,
+        options.token,
+        options.sessionId.value,
+        1,
+        undefined,
+        options.sessionSig.value,
+      ).catch(() => null)
+      if (seq !== turnSeq) return
+      if (serverTurnDone(res?.data as Record<string, unknown>[] | undefined)) break
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      if (seq !== turnSeq) return
+    }
+    resetAndLoad(options.sessionId.value)
+  }
+
   const handleStopGeneration = () => {
+    turnSeq++
     stopStream()
     markInFlightAssistantStopped(currentAssistantMessageId.value)
     const messageId = currentAssistantMessageId.value
@@ -247,6 +273,7 @@ export function useEmbedChatSession(options: {
     value: string,
     opts: { webSearchEnabled?: boolean; imageFiles?: File[]; attachmentFiles?: File[] } = {},
   ) => {
+    const seq = ++turnSeq
     stopStream()
     prepareForNewOutgoingMessage()
     const outboundQuery = buildQueryWithHostContext(value, options.hostContext?.value)
@@ -326,6 +353,16 @@ export function useEmbedChatSession(options: {
       embed_session_sig: options.sessionSig.value,
       embed_visitor_id: options.visitorId.value,
     })
+
+    // The embed has no continue-stream route: a stream that closes before its
+    // terminal event leaves the turn open forever. Close it locally, then swap
+    // in the server's copy once the server has finished the answer.
+    if (seq !== turnSeq || !isTurnOpen(isReplying.value, messagesList)) return
+    markInFlightAssistantStopped(currentAssistantMessageId.value)
+    loading.value = false
+    isReplying.value = false
+    currentAssistantMessageId.value = ''
+    void reloadWhenServerTurnDone(seq)
   }
 
   watch(error, (newError) => {
@@ -349,6 +386,7 @@ export function useEmbedChatSession(options: {
   })
 
   const resetAndLoad = (sid: string) => {
+    turnSeq++
     messagesList.splice(0)
     historyLoading.value = true
     historyLoadingMore.value = false
@@ -379,6 +417,7 @@ export function useEmbedChatSession(options: {
   })
 
   onUnmounted(() => {
+    turnSeq++
     stopStream()
     fullContent.value = ''
   })
