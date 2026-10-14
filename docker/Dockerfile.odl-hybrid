@@ -5,7 +5,7 @@
 # still runs without EasyOCR (avoids libGL + heavy OCR stack in slim images).
 # For scanned PDFs use builtin docreader OCR, MinerU, or override with
 # ODL_HYBRID_EXTRA_ARGS="--force-ocr" (requires extra system/Python deps).
-FROM python:3.10.18-bookworm
+FROM python:3.14-bookworm
 
 # Docling table/layout models import cv2 (OpenCV), which needs libGL at runtime
 # even when hybrid runs with --no-ocr.
