@@ -113,6 +113,12 @@ Backup rule for every deletion above: copy the file to `private/removed/<origina
 
 Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --diff` on added lines today (install with `scripts/install-git-hooks.sh`; `git cherry-pick` does not run pre-commit, hence step 6). The tree-wide scan is a CI gate (`guards.yml`, `scripts/check-english-only.sh` with no base).
 
+## Upstream behavior we removed on purpose
+
+A conflict in these spots keeps ours, even though the general rule is to take upstream's logic.
+
+- Duplicate knowledge no longer rewrites the existing row's `created_at` (2026-10-14; upstream `d6c11feb7` did it to bump a re-upload to the top). Across data sources it falsified another source's creation time and reordered its documents. Pinned by `TestCreateKnowledgeDuplicateKeepsExistingCreatedAt` in `internal/application/service/knowledge_create_gitlab_test.go`.
+
 ## Name translations when porting
 
 Every name changed on 2026-10-12: product "AI KB", repo and Go modules `github.com/jrmatherly/ai-kb` (`.../cli`, `.../client`), images `ghcr.io/jrmatherly/ai-kb-*`, env prefix `AIKB_`, binary `ai-kb`, containers `ai-kb-*`, docs host `ai-kb-docs.matherly.net`, CLI `aikb` (`~/.config/aikb`, `.aikb/project.yaml`), Lite home `~/.aikb`, Helm chart `ai-kb`, MCP tools `aikb_*`, tables `aikb_*`, database `ai_kb`, headers `X-AIKB-*`, code identifiers `AIKB*`. The contract is `scripts/rebrand/map.tsv` (column 1 an upstream Perl regex, column 2 ours); `scripts/rebrand/unchanged.md` lists what keeps upstream's spelling (WeKnoraCloud, BrowserSkill, provenance, history).
