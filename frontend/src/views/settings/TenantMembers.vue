@@ -976,7 +976,7 @@ async function doRevokeInvitation(row: TenantInvitation) {
 const auditColumns = computed(() => [
   { colKey: 'created_at', title: t('tenantMember.audit.columns.time'), width: 120 },
   { colKey: 'actor', title: t('tenantMember.audit.columns.actor'), width: 180 },
-  { colKey: 'action', title: t('tenantMember.audit.columns.action'), width: 130 },
+  { colKey: 'action', title: t('tenantMember.audit.columns.action'), width: 156 },
   {
     colKey: 'target',
     title: t('tenantMember.audit.columns.target'),

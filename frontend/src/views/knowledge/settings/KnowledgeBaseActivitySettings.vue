@@ -332,7 +332,7 @@ const columns = computed(() => [
   {
     colKey: 'action',
     title: 'action-title',
-    width: 132,
+    width: 208,
   },
   { colKey: 'target', title: t('knowledgeEditor.activity.columns.target'), minWidth: 180 },
   { colKey: 'actor', title: t('knowledgeEditor.activity.columns.actor'), width: 132 },

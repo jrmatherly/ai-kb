@@ -210,7 +210,7 @@ const selectedAuditEntry = ref<AuditLog | null>(null)
 const auditColumns = computed(() => [
   { colKey: 'created_at', title: t('system.globalSettings.audit.columns.time'), width: 120 },
   { colKey: 'actor', title: t('system.globalSettings.audit.columns.actor'), width: 180 },
-  { colKey: 'action', title: t('system.globalSettings.audit.columns.action'), width: 150 },
+  { colKey: 'action', title: t('system.globalSettings.audit.columns.action'), width: 192 },
   {
     colKey: 'target',
     title: t('system.globalSettings.audit.columns.target'),
