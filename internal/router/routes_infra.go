@@ -309,6 +309,8 @@ func RegisterDataSourceRoutes(
 
 		// Validate credentials without persistence (for "Test Connection" button) - Admin+
 		ds.POST("/validate-credentials", g.Admin(), handler.ValidateCredentials)
+		// List resources for an unsaved config (create wizard) - Admin+
+		ds.POST("/list-resources", g.Admin(), handler.ListResourcesForConfig)
 
 		// CRUD operations
 		ds.POST("", g.Admin(), handler.CreateDataSource)

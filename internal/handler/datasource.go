@@ -334,6 +334,59 @@ func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "connected"})
 }
 
+// ListResourcesForConfig godoc
+// @Summary List resources for an unsaved data source config (no persistence)
+// @Description Lists resources for an unsaved config without creating a record (create wizard).
+// @Description Pass parent_id to load the direct children of a resource.
+// @Tags DataSource
+// @Accept json
+// @Produce json
+// @Param request body listResourcesForConfigRequest true "Unsaved config and optional parent_id"
+// @Success 200 {object} []types.Resource
+// @Failure 400 {object} apperrors.ErrorResponse
+// @Router /datasource/list-resources [post]
+func (h *DataSourceHandler) ListResourcesForConfig(c *gin.Context) {
+	ctx := c.Request.Context()
+	tenantID := h.getTenantID(c)
+	if tenantID == 0 {
+		_ = c.Error(apperrors.NewUnauthorizedError("unauthorized"))
+		return
+	}
+
+	var req listResourcesForConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(apperrors.NewBadRequestError("invalid request: type and credentials are required"))
+		return
+	}
+
+	resources, err := h.service.ListResourcesForConfig(ctx, &types.DataSourceConfig{
+		Type:        req.Type,
+		Credentials: req.Credentials,
+		ResourceIDs: req.ResourceIDs,
+		Settings:    req.Settings,
+	}, req.ParentID)
+	if err != nil {
+		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		return
+	}
+
+	if resources == nil {
+		resources = make([]types.Resource, 0)
+	}
+	c.JSON(http.StatusOK, resources)
+}
+
+// listResourcesForConfigRequest is the body for ListResourcesForConfig.
+// resource_ids carries the Drive root folder_token, which those connectors
+// list from instead of a top-level API.
+type listResourcesForConfigRequest struct {
+	Type        string                 `json:"type" binding:"required"`
+	Credentials map[string]interface{} `json:"credentials" binding:"required"`
+	Settings    map[string]interface{} `json:"settings"`
+	ResourceIDs []string               `json:"resource_ids"`
+	ParentID    string                 `json:"parent_id"`
+}
+
 // @Summary List available resources in data source
 // @Description List resources available for sync in the external system. Pass parent_id to lazily load the direct children of a resource (used for large hierarchical sources such as Feishu wiki).
 // @Tags DataSource

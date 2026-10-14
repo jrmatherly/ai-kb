@@ -211,6 +211,7 @@ Routes are registered in `RegisterDataSourceRoutes` in `internal/router/routes_i
 | --- | --- | --- |
 | `GET /api/v1/datasource/types` | Viewer | Metadata of the available connectors (`ListAvailableConnectors`, sorted by Priority) |
 | `POST /api/v1/datasource/validate-credentials` | Admin | Test connectivity with raw credentials (nothing is persisted); backs the "Test connection" button of the creation wizard |
+| `POST /api/v1/datasource/list-resources` | Admin | List the selectable resources from an unsaved configuration (`type`, `credentials`, `settings`, `resource_ids`, `parent_id`; nothing is persisted); backs the resource step of the creation wizard |
 | `POST /api/v1/datasource` | Admin | Create a data source (check the KB belongs to the workspace, check the connector type, online Validate, persist, register the cron entry) |
 | `GET /api/v1/datasource?kb_id=` | Viewer | List the data sources of a knowledge base (with the latest SyncLog) |
 | `GET /api/v1/datasource/:id` | Viewer | Detail |
@@ -224,6 +225,8 @@ Routes are registered in `RegisterDataSourceRoutes` in `internal/router/routes_i
 | `POST /api/v1/datasource/:id/sync` | Admin | Trigger a sync by hand (creates a SyncLog and enqueues an Asynq task); the optional body `{"allow_mass_deletion": true}` lifts the mass-deletion guard for that run only |
 | `POST /api/v1/datasource/:id/pause` / `resume` | Admin | Pause or resume (removes or re-registers the cron entry) |
 | `GET /api/v1/datasource/:id/logs`, `GET /api/v1/datasource/logs/:log_id` | Viewer | Sync history |
+
+The creation wizard persists nothing before its final step: "Test connection" calls `validate-credentials`, the resource tree comes from `list-resources`, and `POST /api/v1/datasource` runs once on Finish. Editing an existing source uses the `:id` routes.
 
 Every `:id` path first goes through `getOwnedDataSource` and `getOwnedKnowledgeBase` for **workspace isolation** (the data source's KB must belong to the current workspace and pass the API key's KB authorization check).
 

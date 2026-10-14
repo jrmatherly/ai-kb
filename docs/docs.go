@@ -2066,6 +2066,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/datasource/list-resources": {
+            "post": {
+                "description": "Lists resources for an unsaved config without creating a record (create wizard).\nPass parent_id to load the direct children of a resource.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DataSource"
+                ],
+                "summary": "List resources for an unsaved data source config (no persistence)",
+                "parameters": [
+                    {
+                        "description": "Unsaved config and optional parent_id",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.listResourcesForConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_types.Resource"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/datasource/logs/{log_id}": {
             "get": {
                 "description": "Retrieve a specific sync log entry",
@@ -27667,6 +27710,35 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "tenant_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.listResourcesForConfigRequest": {
+            "type": "object",
+            "required": [
+                "credentials",
+                "type"
+            ],
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "resource_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "settings": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "type": {
                     "type": "string"
                 }
             }

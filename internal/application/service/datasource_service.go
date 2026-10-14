@@ -402,20 +402,31 @@ func (s *DataSourceService) ListAvailableResources(
 	if err != nil {
 		return nil, err
 	}
-
-	// Get connector
-	connector, err := s.connectorRegistry.Get(ds.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse configuration
 	config, err := ds.ParseConfig()
 	if err != nil {
 		return nil, datasource.ErrInvalidConfig
 	}
+	return s.listResources(ctx, ds.Type, config, parentID)
+}
 
-	// List resources
+// ListResourcesForConfig lists resources for an unsaved config, so the create
+// wizard can browse the external system without persisting a draft row.
+// Credentials are normalized the way CreateDataSource stores them, so the
+// listing matches what the saved source will see.
+func (s *DataSourceService) ListResourcesForConfig(
+	ctx context.Context, config *types.DataSourceConfig, parentID string,
+) ([]types.Resource, error) {
+	config.StripNonSecretCredentials(config.Type)
+	return s.listResources(ctx, config.Type, config, parentID)
+}
+
+func (s *DataSourceService) listResources(
+	ctx context.Context, connectorType string, config *types.DataSourceConfig, parentID string,
+) ([]types.Resource, error) {
+	connector, err := s.connectorRegistry.Get(connectorType)
+	if err != nil {
+		return nil, err
+	}
 	resources, err := connector.ListResources(ctx, config, parentID)
 	if err != nil {
 		logger.Errorf(ctx, "failed to list resources: %v", err)

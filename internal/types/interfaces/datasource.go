@@ -47,6 +47,12 @@ type DataSourceService interface {
 	// parentID enables lazy loading: "" lists the top level, a resource ExternalID lists its children.
 	ListAvailableResources(ctx context.Context, dsID string, parentID string) ([]types.Resource, error)
 
+	// ListResourcesForConfig is ListAvailableResources for an unsaved config
+	// (the create wizard); nothing is persisted.
+	ListResourcesForConfig(
+		ctx context.Context, config *types.DataSourceConfig, parentID string,
+	) ([]types.Resource, error)
+
 	// ResolveResourceAncestors returns the deduplicated ExternalIDs of every
 	// ancestor that must be expanded to reveal the given (possibly deeply nested)
 	// resources in a lazily-loaded picker. Used to restore an existing selection

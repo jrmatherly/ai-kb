@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"slices"
@@ -19,6 +20,13 @@ type stubDataSourceService struct {
 	getSyncLogs   func(ctx context.Context, dsID string, limit int, offset int) ([]*types.SyncLog, error)
 	getDataSource func(ctx context.Context, id string) (*types.DataSource, error)
 	manualSyncs   []bool
+	listForConfig func(ctx context.Context, config *types.DataSourceConfig, parentID string) ([]types.Resource, error)
+}
+
+func (s *stubDataSourceService) ListResourcesForConfig(
+	ctx context.Context, config *types.DataSourceConfig, parentID string,
+) ([]types.Resource, error) {
+	return s.listForConfig(ctx, config, parentID)
 }
 
 func (s *stubDataSourceService) ManualSync(
@@ -66,6 +74,7 @@ func newDataSourceTestRouter(h *DataSourceHandler) *gin.Engine {
 	})
 	r.GET("/datasource/:id/logs", h.GetSyncLogs)
 	r.POST("/datasource/:id/sync", h.ManualSync)
+	r.POST("/datasource/list-resources", h.ListResourcesForConfig)
 	return r
 }
 
@@ -319,5 +328,65 @@ func TestDataSource_GetSyncLogs_NegativeLimitRejected(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for negative limit, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestDataSource_ListResourcesForConfig(t *testing.T) {
+	var gotConfig *types.DataSourceConfig
+	var gotParent string
+	dsSvc := &stubDataSourceService{
+		listForConfig: func(
+			_ context.Context, config *types.DataSourceConfig, parentID string,
+		) ([]types.Resource, error) {
+			gotConfig, gotParent = config, parentID
+			if parentID == "boom" {
+				return nil, errors.New("upstream refused")
+			}
+			if parentID == "leaf" {
+				return nil, nil
+			}
+			return []types.Resource{{ExternalID: "feed-1", Name: "Feed"}}, nil
+		},
+	}
+	router := newDataSourceTestRouter(NewDataSourceHandler(dsSvc, &stubKBServiceForDS{}))
+	post := func(body string, tenantID uint64) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/datasource/list-resources", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(w, withDSCtx(req, tenantID))
+		return w
+	}
+
+	w := post(`{"type":"rss","credentials":{"auth_headers":"X: y"},`+
+		`"settings":{"feed_urls":"https://example.com/feed"},"resource_ids":["root"],"parent_id":"p1"}`, 1)
+	wantBody := `[{"external_id":"feed-1","name":"Feed","type":"","description":"","url":"",` +
+		`"modified_at":"0001-01-01T00:00:00Z"}]`
+	if w.Code != http.StatusOK || w.Body.String() != wantBody {
+		t.Fatalf("status %d body %s", w.Code, w.Body.String())
+	}
+	if gotParent != "p1" || gotConfig.Type != "rss" || gotConfig.Credentials["auth_headers"] != "X: y" ||
+		gotConfig.Settings["feed_urls"] != "https://example.com/feed" ||
+		!slices.Equal(gotConfig.ResourceIDs, []string{"root"}) {
+		t.Fatalf("service got config %+v parent %q", gotConfig, gotParent)
+	}
+
+	w = post(`{"type":"rss","credentials":{},"parent_id":"leaf"}`, 1)
+	if w.Code != http.StatusOK || w.Body.String() != `[]` {
+		t.Fatalf("empty listing: status %d body %s", w.Code, w.Body.String())
+	}
+
+	for _, c := range []struct {
+		name, body string
+		tenantID   uint64
+		wantCode   int
+	}{
+		{"missing type", `{"credentials":{}}`, 1, http.StatusBadRequest},
+		{"missing credentials", `{"type":"rss"}`, 1, http.StatusBadRequest},
+		{"connector error", `{"type":"rss","credentials":{},"parent_id":"boom"}`, 1, http.StatusBadRequest},
+		{"no tenant", `{"type":"rss","credentials":{}}`, 0, http.StatusUnauthorized},
+	} {
+		if w := post(c.body, c.tenantID); w.Code != c.wantCode {
+			t.Fatalf("%s: status %d, want %d (%s)", c.name, w.Code, c.wantCode, w.Body.String())
+		}
 	}
 }

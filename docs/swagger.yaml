@@ -6929,6 +6929,26 @@ definitions:
       tenant_name:
         type: string
     type: object
+  internal_handler.listResourcesForConfigRequest:
+    properties:
+      credentials:
+        additionalProperties: true
+        type: object
+      parent_id:
+        type: string
+      resource_ids:
+        items:
+          type: string
+        type: array
+      settings:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
+    required:
+    - credentials
+    - type
+    type: object
   internal_handler.manualSyncRequest:
     properties:
       allow_mass_deletion:
@@ -8982,6 +9002,36 @@ paths:
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test data source connection
+      tags:
+      - DataSource
+  /datasource/list-resources:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Lists resources for an unsaved config without creating a record (create wizard).
+        Pass parent_id to load the direct children of a resource.
+      parameters:
+      - description: Unsaved config and optional parent_id
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.listResourcesForConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.Resource'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+      summary: List resources for an unsaved data source config (no persistence)
       tags:
       - DataSource
   /datasource/logs/{log_id}:

@@ -328,6 +328,25 @@ curl -X POST $BASE/api/v1/datasource/validate-credentials -H "Authorization: Bea
   -H 'Content-Type: application/json' -d '{"type":"notion","credentials":{"api_key":"ntn_xxx"}}'
 ```
 
+### POST /api/v1/datasource/list-resources
+
+Purpose: browse the external resource tree from an unsaved configuration (the creation wizard's resource step; nothing is saved). Permission: Admin+.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `type` | string | yes (`binding:"required"`) | Connector type |
+| `credentials` | map | yes (`binding:"required"`) | Credentials (an empty map is accepted) |
+| `settings` | map | no | Connector settings, for example RSS `feed_urls` |
+| `resource_ids` | []string | no | Feishu and Lark Drive read the root `folder_token` from the first entry |
+| `parent_id` | string | no | Empty lists the top level, a resource `external_id` lists its children |
+
+Response: 200 `[{external_id,name,type,description,url,modified_at,parent_id,has_children,metadata}]`; failure 400 with the error envelope
+
+```bash
+curl -X POST $BASE/api/v1/datasource/list-resources -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"type":"notion","credentials":{"api_key":"ntn_xxx"}}'
+```
+
 ### POST /api/v1/datasource
 
 Purpose: create a data source. Permission: Admin+. Request body (`types.DataSource`):
