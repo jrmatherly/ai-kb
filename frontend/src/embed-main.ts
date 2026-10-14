@@ -1,7 +1,7 @@
 import { createApp, h } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHistory, RouterView } from 'vue-router'
-import TDesign, { ConfigProvider } from 'tdesign-vue-next'
+import TDesign, { ConfigProvider, type GlobalConfigProvider } from 'tdesign-vue-next'
 import enUSConfig from 'tdesign-vue-next/esm/locale/en_US'
 import 'tdesign-vue-next/es/style/index.css'
 import '@/assets/theme/theme.css'
@@ -24,8 +24,9 @@ const router = createRouter({
 })
 
 // Runtime-only Vue build cannot compile string templates - use a render fn.
+// The locale module is typed with readonly tuples that GlobalConfigProvider declares as mutable.
 const app = createApp({
-  render: () => h(ConfigProvider, { globalConfig: enUSConfig }, () => [h(RouterView), h(ProtectedResourcePreview)]),
+  render: () => h(ConfigProvider, { globalConfig: enUSConfig as unknown as GlobalConfigProvider }, () => [h(RouterView), h(ProtectedResourcePreview)]),
 })
 
 app.use(TDesign)
