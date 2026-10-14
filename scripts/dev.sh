@@ -487,6 +487,11 @@ start_app() {
             export LANGFUSE_HOST="http://127.0.0.1:${LANGFUSE_WEB_PORT:-3000}"
         fi
     fi
+    # The SSRF guard blocks private and loopback hosts, including the MinIO, Qdrant
+    # and Milvus endpoints exported above; compose allowlists its service names the
+    # same way through SSRF_WHITELIST_EXTRA.
+    local infra_host="${DEV_REMOTE_HOST:-127.0.0.1}"
+    export SSRF_WHITELIST_EXTRA="${SSRF_WHITELIST_EXTRA:+$SSRF_WHITELIST_EXTRA,}$infra_host"
     export DOCREADER_TRANSPORT="${DOCREADER_TRANSPORT:-grpc}"
 
     if ! check_remote_dev_connectivity; then
