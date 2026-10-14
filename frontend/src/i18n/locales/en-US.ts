@@ -3727,8 +3727,8 @@ export default {
       separatorsDescription: 'Characters or strings the splitter prefers when cutting. Higher-priority separators are tried first; the default order favors paragraph → sentence → punctuation breaks.',
       separatorsPlaceholder: 'Select or customize separators',
       separators: {
-        doubleNewline: 'Double newline ()',
-        singleNewline: 'Single newline ()',
+        doubleNewline: 'Double newline (\\n\\n)',
+        singleNewline: 'Single newline (\\n)',
         periodCn: 'Chinese period (\u3002)',
         exclamationCn: 'Full-width exclamation mark (\uFF01)',
         questionCn: 'Full-width question mark (\uFF1F)',
