@@ -13,6 +13,14 @@
     <meta name="description" content="AI KB is a document understanding and semantic retrieval framework built on large language models, designed for documents with complex structure and heterogeneous content."/>
     <link rel="shortcut icon" type="image/png" href="./public/favicon.ico"/>
     <link rel="apple-touch-icon" sizes="120x120" type="image/png" href="./public/favicon.ico"/>
+    <style>
+      /* Boot placeholder inside #app; Vue's mount replaces it. theme-mode is set before #app parses. */
+      .aikb-boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; color: rgba(0, 0, 0, .55); }
+      html[theme-mode="dark"] .aikb-boot { color: rgba(255, 255, 255, .55); }
+      .aikb-boot-spinner { width: 24px; height: 24px; box-sizing: border-box; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: aikb-boot-spin .8s linear infinite; }
+      @keyframes aikb-boot-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .aikb-boot-spinner { animation-duration: 2.4s; } }
+    </style>
 </head>
 <body>
 <script>
@@ -56,14 +64,8 @@
   } catch (e) {}
 })();
 </script>
-<script src="/config.js"></script>
-<!--
-  Offline deployment: load the tdesign-icons SVG sprite locally up front, so tdesign-vue-next's
-  <t-icon> does not request https://tdesign.gtimg.com at run time (see issue #867 / #897).
-  When upgrading tdesign-icons-vue-next, also update public/tdesign-icons/<version>/fonts/index.js.
--->
-<script src="/tdesign-icons/0.4.1/fonts/index.js"></script>
-<div id="app"></div>
+<!-- Above the blocking scripts below, so the placeholder paints while they download. -->
+<div id="app"><div class="aikb-boot" role="status"><div class="aikb-boot-spinner"></div>Loading AI KB</div></div>
 <script>
 (function(){
   var t=localStorage.getItem('AIKB_theme')||'light';
@@ -73,6 +75,13 @@
   if(el){ el.style.background=bg; el.style.minHeight='100%'; }
 })();
 </script>
+<script src="/config.js"></script>
+<!--
+  Offline deployment: load the tdesign-icons SVG sprite locally up front, so tdesign-vue-next's
+  <t-icon> does not request https://tdesign.gtimg.com at run time (see issue #867 / #897).
+  When upgrading tdesign-icons-vue-next, also update public/tdesign-icons/<version>/fonts/index.js.
+-->
+<script src="/tdesign-icons/0.4.1/fonts/index.js"></script>
 <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
