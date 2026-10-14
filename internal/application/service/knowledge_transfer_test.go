@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/hibiken/asynq"
 	"github.com/jrmatherly/ai-kb/internal/application/access"
+	"github.com/jrmatherly/ai-kb/internal/application/service/retriever"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/redis/go-redis/v9"
@@ -540,4 +542,53 @@ func TestCloneCopiesImageVectorsOnlyIntoKBsThatTakeThem(t *testing.T) {
 				"nor its index row: CopyIndices copies only the rows of mapped chunks")
 		})
 	}
+}
+
+// tableCleanupEngine records the vector entries a failed table summary removes.
+type tableCleanupEngine struct {
+	interfaces.RetrieveEngineService
+	deleted []string
+}
+
+func (e *tableCleanupEngine) EngineType() types.RetrieverEngineType {
+	return types.PostgresRetrieverEngineType
+}
+
+func (e *tableCleanupEngine) Support() []types.RetrieverType {
+	return []types.RetrieverType{types.VectorRetrieverType}
+}
+
+func (e *tableCleanupEngine) DeleteBySourceIDList(_ context.Context, ids []string, _ int, _ string) error {
+	e.deleted = append(e.deleted, ids...)
+	return nil
+}
+
+// Document processing touches the row while a table summary runs; a stale
+// snapshot must not leave the attempt's unindexed chunks behind.
+func TestTableSummaryCleanupRemovesChunksAfterRowChanged(t *testing.T) {
+	f := newDocumentWriteFixture(t)
+	row, err := f.repo.GetKnowledgeByID(f.ctx, 7, "doc")
+	require.NoError(t, err)
+	chunk, err := f.chunkRepo.GetChunkByID(f.ctx, 7, "chunk")
+	require.NoError(t, err)
+	require.NoError(t, f.db.Model(&types.Knowledge{}).Where("id = ?", "doc").
+		Update("updated_at", row.UpdatedAt.Add(time.Minute)).Error)
+	recorder := &tableCleanupEngine{}
+	engine, err := retriever.NewCompositeRetrieveEngine(parentChildRetrieveRegistry{engine: recorder},
+		[]types.RetrieverEngineParams{{
+			RetrieverEngineType: types.PostgresRetrieverEngineType, RetrieverType: types.VectorRetrieverType,
+		}})
+	require.NoError(t, err)
+
+	worker := &DataTableSummaryService{knowledgeService: f.svc, chunkService: f.chunks}
+	worker.cleanupOnFailure(f.ctx, &extractionResources{
+		knowledge: row, retrieveEngine: engine, embeddingModel: parentChildEmbedder{},
+	}, []*types.Chunk{chunk}, errors.New("index failed"))
+
+	_, err = f.chunkRepo.GetChunkByID(f.ctx, 7, "chunk")
+	require.Error(t, err, "the attempt's chunk must be deleted")
+	require.Equal(t, []string{"chunk"}, recorder.deleted)
+	current, err := f.repo.GetKnowledgeByID(f.ctx, 7, "doc")
+	require.NoError(t, err)
+	require.Equal(t, types.ParseStatusFailed, current.ParseStatus)
 }

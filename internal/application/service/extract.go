@@ -800,37 +800,35 @@ func (s *DataTableSummaryService) indexToVectorDB(
 	return nil
 }
 
-// cleanupOnFailure runs when indexing fails: it deletes the chunks already
-// created and their vector index entries so no partial data is left behind
+// cleanupOnFailure runs when indexing fails: it deletes the chunks this attempt
+// created and their vector index entries, then marks the knowledge failed.
 func (s *DataTableSummaryService) cleanupOnFailure(ctx context.Context, resources *extractionResources, chunks []*types.Chunk, indexErr error) {
 	logger.Warnf(ctx, "Starting cleanup due to failure: %v", indexErr)
+	// The attempt may have failed on its own deadline.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+	defer cancel()
 
-	// 1. Mark the knowledge item as failed
-	before, after := *resources.knowledge, *resources.knowledge
-	after.ParseStatus = types.ParseStatusFailed
-	after.ErrorMessage = indexErr.Error()
-	if err := s.knowledgeService.GetRepository().UpdateKnowledgeForTransfer(ctx, &before, &after); err != nil {
-		logger.Warnf(ctx, "Table summary cleanup skipped after knowledge changed: %v", err)
+	// Judge against the current row, not the task's snapshot: document
+	// processing touches updated_at meanwhile, which used to skip the cleanup
+	// and leave unindexed chunks behind. A document moved to another knowledge
+	// base took these chunks with it, so then nothing is touched.
+	repo := s.knowledgeService.GetRepository()
+	current, err := repo.GetKnowledgeByID(ctx, resources.knowledge.TenantID, resources.knowledge.ID)
+	if err != nil || current == nil || current.KnowledgeBaseID != resources.knowledge.KnowledgeBaseID {
+		logger.Warnf(ctx, "Table summary cleanup skipped: knowledge moved or is gone (err=%v)", err)
 		return
 	}
 
-	// Collect the chunk IDs
 	chunkIDs := make([]string, 0, len(chunks))
 	for _, chunk := range chunks {
 		chunkIDs = append(chunkIDs, chunk.ID)
 	}
-
-	// Delete the chunks already created
 	if len(chunkIDs) > 0 {
-		if err := s.chunkService.GetRepository().DeleteChunks(ctx, resources.knowledge.TenantID, chunkIDs); err != nil {
+		if err := s.chunkService.GetRepository().DeleteChunks(ctx, current.TenantID, chunkIDs); err != nil {
 			logger.Errorf(ctx, "Failed to delete chunks: %v", err)
 		} else {
 			logger.Infof(ctx, "Deleted %d chunks", len(chunkIDs))
 		}
-	}
-
-	// Delete their vector index entries
-	if len(chunkIDs) > 0 {
 		if err := resources.retrieveEngine.DeleteBySourceIDList(
 			ctx, chunkIDs, resources.embeddingModel.GetDimensions(), types.KnowledgeBaseTypeDocument,
 		); err != nil {
@@ -840,6 +838,13 @@ func (s *DataTableSummaryService) cleanupOnFailure(ctx context.Context, resource
 		}
 	}
 
+	after := *current
+	after.ParseStatus = types.ParseStatusFailed
+	after.ErrorMessage = indexErr.Error()
+	if err := repo.UpdateKnowledgeForTransfer(ctx, current, &after); err != nil {
+		logger.Warnf(ctx, "Table summary failure not recorded on the knowledge: %v", err)
+		return
+	}
 	logger.Infof(ctx, "Cleanup completed")
 }
 
