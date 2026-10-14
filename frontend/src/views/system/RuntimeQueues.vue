@@ -1808,16 +1808,16 @@ onUnmounted(() => {
 }
 
 .rq-failed-row-refs {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 8px;
   margin: 2px 0 0;
 }
 
 .rq-failed-ref {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 8px;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: baseline;
   margin: 0;
 
