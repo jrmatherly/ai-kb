@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, shallowRef } from 'vue'
-import DocumentPreview from './document-preview.vue'
+import { defineAsyncComponent, onMounted, onUnmounted, ref, shallowRef } from 'vue'
 import { RESOURCE_PREVIEW_EVENT, type LoadedProtectedFile } from '@/utils/protectedResource'
+
+// The listener must exist from first mount; only the viewer (highlight.js and friends) loads on demand.
+const DocumentPreview = defineAsyncComponent(() => import('./document-preview.vue'))
 
 const file = shallowRef<LoadedProtectedFile | null>(null)
 const visible = ref(false)

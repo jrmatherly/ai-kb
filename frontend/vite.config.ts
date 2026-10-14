@@ -101,17 +101,19 @@ export default defineConfig({
         embed: resolve(__dirname, 'embed.html'),
       },
       output: {
+        // Match package directories, not substrings: tdesign-icons ships highlight.js and
+        // mermaid.js icon modules. A manual chunk also absorbs shared deps it reaches, so
+        // helpers used everywhere are pinned to vendor-shared; otherwise the entry would
+        // statically import the heavy chunks to get Vue, lodash-es or the preload helper.
         manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          if (id.includes('mermaid') || id.includes('/dagre') || id.includes('cytoscape')) {
+          if (id.includes('vite/preload-helper') || id.includes('commonjsHelpers')) return 'vendor-shared'
+          if (!id.includes('/node_modules/')) return
+          if (/\/node_modules\/(mermaid|@mermaid-js|cytoscape[^/]*|dagre-d3-es|layout-base|cose-base)\//.test(id)) {
             return 'vendor-mermaid'
           }
-          if (id.includes('marked') || id.includes('katex')) {
-            return 'vendor-markdown'
-          }
-          if (id.includes('highlight.js')) {
-            return 'vendor-highlight'
-          }
+          if (/\/node_modules\/(marked|marked-katex-extension|katex)\//.test(id)) return 'vendor-markdown'
+          if (/\/node_modules\/highlight\.js\//.test(id)) return 'vendor-highlight'
+          if (/\/node_modules\/(lodash-es|dompurify|es-toolkit)\//.test(id)) return 'vendor-shared'
         },
       },
     },
