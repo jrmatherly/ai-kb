@@ -676,6 +676,7 @@ function formatShortTime(iso?: string): string {
 
 .wiki-rev-detail-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
@@ -685,8 +686,10 @@ function formatShortTime(iso?: string): string {
 }
 
 .wiki-rev-detail-context {
+  /* English control labels are wide; below this the controls wrap instead of
+     squeezing the range and hint to a word per line. */
+  flex: 1 1 220px;
   min-width: 0;
-  flex: 1;
 }
 
 .wiki-rev-detail-range {
