@@ -1009,9 +1009,8 @@ onUnmounted(() => {
   flex: 1;
   min-width: 0;
   display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-wrap: wrap;
+  gap: 0 16px;
 }
 
 .settings-toolbar { flex-shrink: 0; }
