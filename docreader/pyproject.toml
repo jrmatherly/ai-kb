@@ -26,13 +26,15 @@ dependencies = [
     "python-docx>=1.2.0",
     "requests>=2.33.0",
     "trafilatura>=2.0.0",
-    "python-calamine>=0.8.3",
+    "python-calamine>=0.8.2",
 ]
 
 # The one uv floor: uv refuses older versions; docker/Dockerfile.docreader and the workflows' setup-uv (version-file)
 # install the newest version that satisfies it. 0.13.0 wrote uv.lock revision 5; raise it when a newer uv rewrites the lockfile.
 [tool.uv]
 required-version = ">=0.13.0"
+# Supply-chain cooldown: resolution skips releases younger than 7 days (stored as a span, so uv.lock stays stable).
+exclude-newer = "7 days"
 
 # The code imports itself as the `docreader` package, so the import root is the repository root.
 # The interpreter is the uv environment (`uv sync --project docreader`), not whatever python3 is first on PATH.

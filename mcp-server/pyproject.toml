@@ -69,6 +69,10 @@ include-package-data = true
 [tool.setuptools.package-data]
 "*" = ["*.md", "*.txt", "*.yml", "*.yaml"]
 
+# Supply-chain cooldown: resolution skips releases younger than 7 days (stored as a span, so uv.lock stays stable).
+[tool.uv]
+exclude-newer = "7 days"
+
 [tool.black]
 line-length = 88
 target-version = ['py311']

@@ -6,6 +6,7 @@
 !.gitkeep
 !.markdownlint-cli2.jsonc
 !.shellcheckrc
+!.npmrc
 !docreader/.python-version
 !.github/
 
