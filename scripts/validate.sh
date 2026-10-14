@@ -20,7 +20,7 @@
 # Not run here: docker-image.yml and release-lite.yml build and publish images and release binaries,
 # the publish jobs of mcp-server.yml and dsh-plugin.yml upload to PyPI and npm, dsh-plugin.yml's
 # weekly drift job against dsh@latest is advisory, and go-lint-cache.yml only warms a CI cache.
-# Matrices (cli on three OSes, mcp-server on Python 3.10-3.13) run on this machine's platform only.
+# Matrices (cli on three OSes, mcp-server on Python 3.11-3.14) run on this machine's platform only.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

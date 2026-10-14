@@ -497,7 +497,7 @@ Clients that only support stdio:
 The Python service under `mcp-server/` predates the built-in MCP server: each process is bound to one API key, can reach one workspace, and maps tools one-to-one onto REST calls. New deployments use the built-in MCP server above. This section is only for users still running the old approach; a later version removes the directory.
 :::
 
-`mcp-server/` is a standalone Python package named **`ai-kb-mcp`** (version 1.1.1, Python >= 3.10, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/aikb_mcp_server.py`: `AIKBClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("ai-kb-server", version="1.1.1")` registers the tools and serves them over the selected transport.
+`mcp-server/` is a standalone Python package named **`ai-kb-mcp`** (version 1.1.1, Python >= 3.11, depending on `mcp>=2,<3`, `requests>=2.31.0`, `starlette` and `uvicorn`). The core is `mcp-server/aikb_mcp_server.py`: `AIKBClient` calls the AI KB REST API with a `requests.Session` carrying `X-API-Key`, and `MCPServer("ai-kb-server", version="1.1.1")` registers the tools and serves them over the selected transport.
 
 ::: warning Package name and API changes (v1.1.x)
 
@@ -536,7 +536,7 @@ pip install -e .          # development mode; or pip install .
 ai-kb-mcp-server
 ```
 
-**Docker** (`mcp-server/Dockerfile`, based on `python:3.11-slim`, starts with the Streamable HTTP transport and exposes port 8000):
+**Docker** (`mcp-server/Dockerfile`, based on `python:3.14-slim`, starts with the Streamable HTTP transport and exposes port 8000):
 
 ```dockerfile
 ENV MCP_HOST=0.0.0.0

@@ -117,7 +117,7 @@ It shows:
 If you hit an `ImportError`, make sure that:
 
 - All dependencies are installed: `pip install -r requirements.txt`
-- Your Python version is compatible (3.10+ recommended)
+- Your Python version is compatible (3.11 or newer)
 - There are no file name conflicts
 
 ### 2. Connection errors
@@ -181,7 +181,7 @@ python main.py --verbose
 Create a `Dockerfile`:
 
 ```dockerfile
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 COPY requirements.txt .

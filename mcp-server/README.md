@@ -177,7 +177,7 @@ exceeding the cap returns an error and closes the response connection.
 If you hit import errors, make sure that:
 
 1. All required dependencies are installed
-2. Your Python version is compatible (3.10+ recommended)
+2. Your Python version is compatible (3.11 or newer)
 3. No file name conflicts (do not name a file `mcp.py`)
 
 ## Example output

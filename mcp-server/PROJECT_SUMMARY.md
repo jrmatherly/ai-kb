@@ -201,9 +201,10 @@ Results: 6/6 passed
 
 ### Python versions
 
-- ✅ Python 3.10+
 - ✅ Python 3.11
 - ✅ Python 3.12
+- ✅ Python 3.13
+- ✅ Python 3.14
 
 ### Operating systems
 
@@ -242,7 +243,7 @@ ai-kb-mcp-server
 ### 3. Docker deployment
 
 ```dockerfile
-FROM python:3.11-slim
+FROM python:3.14-slim
 WORKDIR /app
 COPY . .
 RUN pip install .
