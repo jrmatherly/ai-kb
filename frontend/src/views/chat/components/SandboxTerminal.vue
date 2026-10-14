@@ -268,6 +268,10 @@ watch(isDarkTheme, (dark) => {
     if (xterm) xterm.options.theme = xtermTheme(dark);
 });
 
+// xterm 6 no longer paints its viewport with the theme background, so the
+// stylesheet's #000 showed as a strip below the last row.
+const terminalBackground = computed(() => xtermTheme(isDarkTheme.value).background);
+
 // Mount xterm after ready; leaving the ready state resets the instance (reconnect = new PTY).
 watch(status, (next, prev) => {
     if (next === 'ready' && prev !== 'ready') {
@@ -392,6 +396,7 @@ defineExpose({
 
     :deep(.xterm-viewport) {
         overflow-y: auto;
+        background-color: v-bind(terminalBackground);
     }
 
     :deep(.xterm-helper-textarea) {
