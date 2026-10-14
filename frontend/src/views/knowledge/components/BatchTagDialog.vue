@@ -78,9 +78,13 @@ function handleClose() {
   padding: 0 20px 20px;
 }
 
+/* The header is a flex row, so the close button needs absolute positioning to pin it to the title line. */
 .batch-tag-dialog .t-dialog__close {
-  top: 16px;
+  position: absolute;
+  top: 17px;
   right: 16px;
+  box-sizing: border-box;
+  justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: var(--app-radius-xs);
