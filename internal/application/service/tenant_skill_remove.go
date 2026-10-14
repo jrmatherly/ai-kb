@@ -151,6 +151,12 @@ func (s *TenantSkillService) runRemove(
 	if currentSnapshotID(cfgEntity) == "" {
 		return s.finishRemoval(cleanupBase, tenantID, configID, skillID, false)
 	}
+	// The same holds when the image exists but the ledger proves this skill
+	// never reached it, as with an install that failed before its snapshot.
+	// An unreadable ledger proves nothing, so it takes the full path.
+	if _, serving, known := s.skillFilesInLiveImage(ctx, existing); known && !serving {
+		return s.finishRemoval(cleanupBase, tenantID, configID, skillID, false)
+	}
 
 	// Everything below either creates provider resources or moves the image
 	// pointer, and the fallback moves it without taking a snapshot first. A
