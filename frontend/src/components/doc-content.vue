@@ -6,7 +6,6 @@ import 'katex/dist/katex.min.css';
 
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
-import mermaid from "mermaid";
 import { onMounted, ref, nextTick, onUnmounted, watch, computed } from "vue";
 import {
   downKnowledgeDetails, deleteGeneratedQuestion, getChunkByIdOnly, previewKnowledgeFile,
@@ -211,33 +210,40 @@ const showSummarySection = computed(() =>
 // Mermaid init counter, used to generate unique IDs
 let mermaidRenderCount = 0;
 
-// Initialize Mermaid
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'strict',
-  fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif',
-  flowchart: {
-    useMaxWidth: true,
-    htmlLabels: true,
-    curve: 'basis'
-  },
-  sequence: {
-    useMaxWidth: true,
-    diagramMarginX: 8,
-    diagramMarginY: 8,
-    actorMargin: 50,
-    width: 150,
-    height: 65
-  },
-  gantt: {
-    useMaxWidth: true,
-    leftPadding: 75,
-    gridLineStartPadding: 35,
-    barHeight: 20,
-    barGap: 4,
-    topPadding: 50
-  }
+// Mermaid is ~0.9 MB gzipped, so it loads only when a document contains a diagram.
+let mermaidLoad: Promise<typeof import("mermaid").default> | null = null;
+const loadMermaid = () => mermaidLoad ??= import("mermaid").then(({ default: mermaid }) => {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'strict',
+    fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif',
+    flowchart: {
+      useMaxWidth: true,
+      htmlLabels: true,
+      curve: 'basis'
+    },
+    sequence: {
+      useMaxWidth: true,
+      diagramMarginX: 8,
+      diagramMarginY: 8,
+      actorMargin: 50,
+      width: 150,
+      height: 65
+    },
+    gantt: {
+      useMaxWidth: true,
+      leftPadding: 75,
+      gridLineStartPadding: 35,
+      barHeight: 20,
+      barGap: 4,
+      topPadding: 50
+    }
+  });
+  return mermaid;
+}).catch((err) => {
+  mermaidLoad = null;
+  throw err;
 });
 const props = defineProps(["visible", "details", "knowledgeType", "sourceInfo", "canEditKB", "canDownloadKB", "parse_status", "kbId"]);
 const emit = defineEmits(["closeDoc", "getDoc", "questionDeleted", "summaryStateChange"]);
@@ -752,24 +758,6 @@ const canPreview = (): boolean => {
   return isKnownPreviewableExt(ft);
 };
 
-// When the document details finish loading, file types switch to "Preview" automatically; audio uses merged + the player
-watch(() => props.details?.id, (newId) => {
-  // Clean up the old audio
-  if (audioBlobUrl.value) {
-    URL.revokeObjectURL(audioBlobUrl.value);
-    audioBlobUrl.value = '';
-  }
-  if (!newId) return;
-  if (isAudioFile(props.details?.file_type)) {
-    viewMode.value = 'merged'; // audio defaults to the full-text view; the player is embedded
-    loadAudioPreview();
-  } else if (props.details?.type === 'file' && canPreview()) {
-    viewMode.value = 'preview';
-  } else {
-    viewMode.value = 'merged';
-  }
-});
-
 const isTextFile = (fileType?: string): boolean => {
   if (!fileType) return false;
   const textTypes = ['txt', 'md', 'markdown', 'json', 'xml', 'html', 'css', 'js', 'ts', 'py', 'java', 'go', 'cpp', 'c', 'h', 'sh', 'yaml', 'yml', 'ini', 'conf', 'log'];
@@ -802,6 +790,24 @@ const loadAudioPreview = async () => {
     audioLoading.value = false;
   }
 };
+
+// When the document details finish loading, file types switch to "Preview" automatically; audio uses merged + the player
+watch(() => props.details?.id, (newId) => {
+  // Clean up the old audio
+  if (audioBlobUrl.value) {
+    URL.revokeObjectURL(audioBlobUrl.value);
+    audioBlobUrl.value = '';
+  }
+  if (!newId) return;
+  if (isAudioFile(props.details?.file_type)) {
+    viewMode.value = 'merged'; // audio defaults to the full-text view; the player is embedded
+    loadAudioPreview();
+  } else if (props.details?.type === 'file' && canPreview()) {
+    viewMode.value = 'preview';
+  } else {
+    viewMode.value = 'merged';
+  }
+}, { immediate: true });
 const runMarkdownPostRenderPipeline = async () => {
   await nextTick();
   const renderRoot = getMarkdownRenderRoot();
@@ -855,7 +861,7 @@ const renderMermaidDiagrams = async () => {
     const mermaidElements = getMarkdownRenderRoot()?.querySelectorAll('.mermaid');
     console.log('[Mermaid] Found mermaid elements:', mermaidElements?.length);
     if (mermaidElements && mermaidElements.length > 0) {
-      await mermaid.run({
+      await (await loadMermaid()).run({
         nodes: mermaidElements
       });
       console.log('[Mermaid] Rendering complete');

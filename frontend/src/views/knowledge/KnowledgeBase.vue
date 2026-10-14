@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, reactive, computed, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, watch, reactive, computed, nextTick, defineAsyncComponent } from "vue";
 import { MessagePlugin } from "tdesign-vue-next";
-import DocContent from "@/components/doc-content.vue";
 import useKnowledgeBase from '@/hooks/useKnowledgeBase';
 import { useRoute, useRouter } from 'vue-router';
 import EmptyKnowledge from '@/components/empty-knowledge.vue';
@@ -43,7 +42,6 @@ import {
 import { isBatchDownloadableKnowledge } from './knowledgeDownloadFileName';
 import { waitForKnowledgeDeletion } from '@/utils/knowledgeDeletion';
 import { knowledgeSpansPayloadHasTrace } from '@/utils/knowledgeTrace';
-import FAQEntryManager from './components/FAQEntryManager.vue';
 import DocumentListView from './components/DocumentListView.vue';
 import DocumentCardView from './components/DocumentCardView.vue';
 import DocumentBatchBar from './components/DocumentBatchBar.vue';
@@ -53,8 +51,11 @@ import BatchTagDialog from './components/BatchTagDialog.vue';
 import type { KnowledgeProcessOverrides } from '@/types/knowledgeProcess';
 import { useUploadConfirmStore, type UploadConfirmResult } from '@/stores/uploadConfirm';
 import { useUploadTasksStore } from '@/stores/uploadTasks';
-import WikiBrowser from './wiki/WikiBrowser.vue';
-import ImageGallery from './gallery/ImageGallery.vue';
+// Async so their highlight.js, mermaid, xlsx and chat chunks stay out of the route's first paint.
+const DocContent = defineAsyncComponent(() => import('@/components/doc-content.vue'));
+const FAQEntryManager = defineAsyncComponent(() => import('./components/FAQEntryManager.vue'));
+const WikiBrowser = defineAsyncComponent(() => import('./wiki/WikiBrowser.vue'));
+const ImageGallery = defineAsyncComponent(() => import('./gallery/ImageGallery.vue'));
 import { getWikiStats } from '@/api/wiki';
 import {
   isKnowledgeParseInFlight,
@@ -1833,6 +1834,15 @@ const handleManualEdit = (index: number, item: KnowledgeCard) => {
 // right after the call to avoid the brief empty-id window that
 // would otherwise prevent the drawer from mounting.
 const docContentRef = ref<any>(null);
+// DocContent mounts on first use; a timeline request waits until its chunk has loaded.
+const docContentUsed = ref(false);
+const timelineRequested = ref(false);
+watch(isCardDetails, (open) => { if (open) docContentUsed.value = true; });
+watch([docContentRef, timelineRequested], ([doc, requested]) => {
+  if (!doc || !requested) return;
+  timelineRequested.value = false;
+  doc.openTimeline?.();
+}, { flush: 'post' });
 const handleViewTrace = (index: number, item: KnowledgeCard) => {
   if (cardList.value[index]) {
     cardList.value[index].isMore = false;
@@ -1841,9 +1851,8 @@ const handleViewTrace = (index: number, item: KnowledgeCard) => {
   getCardDetails(item);
   details.id = item.id;
   details.parse_status = item.parse_status;
-  nextTick(() => {
-    docContentRef.value?.openTimeline?.();
-  });
+  docContentUsed.value = true;
+  timelineRequested.value = true;
 };
 
 const confirmRebuildKnowledge = async (index: number, item: KnowledgeCard) => {
@@ -2606,7 +2615,7 @@ const handleKBEditorSuccess = (kbIdValue: string) => {
       </template>
 
       <!-- DocContent drawer (shared by documents tab and wiki source refs) -->
-      <DocContent ref="docContentRef" :visible="isCardDetails" :details="details" :canEditKB="canEdit"
+      <DocContent v-if="docContentUsed" ref="docContentRef" :visible="isCardDetails" :details="details" :canEditKB="canEdit"
         :canDownloadKB="canDownloadKnowledge" :kbId="kbId"
         @closeDoc="closeDoc" @getDoc="getDoc" @summaryStateChange="syncDocumentSummaryState">
       </DocContent>
