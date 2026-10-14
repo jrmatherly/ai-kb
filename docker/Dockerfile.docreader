@@ -1,7 +1,7 @@
 # =========================
 # Build stage (lightweight: document parsing and image extraction only, no OCR/VLM)
 # =========================
-FROM python:3.10.18-bookworm AS builder
+FROM python:3.14-bookworm AS builder
 
 ARG APT_MIRROR=""
 RUN if [ -n "$APT_MIRROR" ]; then \
@@ -82,7 +82,7 @@ RUN chmod +x docreader/scripts/generate_proto.sh && \
 # =========================
 # Runtime stage (lightweight)
 # =========================
-FROM python:3.10.18-bookworm AS runner
+FROM python:3.14-bookworm AS runner
 
 ARG APT_MIRROR=""
 RUN if [ -n "$APT_MIRROR" ]; then \

@@ -9,7 +9,7 @@ AI KB is made of three processes that are developed independently, plus a CLI:
 | Component | Directory | Language / runtime | Required version (source) |
 | --- | --- | --- | --- |
 | Main backend `app` | `cmd/server` + `internal/` | Go | **Go 1.26.0** (`go 1.26.0` in `go.mod`). Needs CGO (DuckDB and sqlite-vec bindings) |
-| Document parsing service `docreader` | `docreader/` | Python + gRPC | **Python >= 3.10.18** (`requires-python` in `docreader/pyproject.toml`). Dependencies are managed with **uv** (the repository has `uv.lock`; the Docker image runs `uv sync --locked`) |
+| Document parsing service `docreader` | `docreader/` | Python + gRPC | **Python >= 3.14** (`requires-python` in `docreader/pyproject.toml`). Dependencies are managed with **uv** (the repository has `uv.lock`; the Docker image runs `uv sync --locked`) |
 | Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (the `frontend/Dockerfile` builder is `node:24-bookworm-slim`; `package.json` declares no `engines`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign, package version `0.8.2` |
 | CLI | `cli/` (separate Go module) | Go | Go 1.26 (`go 1.26.0` in `cli/go.mod`) |
 

@@ -6,7 +6,7 @@ Guidance to Claude Code when working in this repository.
 
 **AI KB**: a copy of [Tencent/WeKnora](https://github.com/Tencent/WeKnora) (knowledge-base and agent platform), taken at upstream commit `97796c637` (2026-10-12, v0.8.2 + 268 commits). Not a fork: no shared git history. Remote `origin` is `jrmatherly/ai-kb`, single branch `main`. See "Upstream" below.
 
-**Stack** (verified in the manifests): Go 1.26 server (`cmd/server`, `internal/`; Gin, GORM, gRPC, go-redis, MinIO), Vue 3 + TypeScript + Vite frontend (`frontend/`, Less, `vue-i18n` bundles in `frontend/src/i18n/locales/`), Python 3.10+ `docreader` gRPC service (`docreader/`, managed with `uv`), separate Go modules `cli/` and `client/`, SQL migrations per backend in `migrations/{mysql,paradedb,sqlite,versioned}`, Helm chart in `helm/`, docs site in `website-docs/`.
+**Stack** (verified in the manifests): Go 1.26 server (`cmd/server`, `internal/`; Gin, GORM, gRPC, go-redis, MinIO), Vue 3 + TypeScript + Vite frontend (`frontend/`, Less, `vue-i18n` bundles in `frontend/src/i18n/locales/`), Python 3.14 `docreader` gRPC service (`docreader/`, managed with `uv`), separate Go modules `cli/` and `client/`, SQL migrations per backend in `migrations/{mysql,paradedb,sqlite,versioned}`, Helm chart in `helm/`, docs site in `website-docs/`.
 
 ## Deviations from upstream
 

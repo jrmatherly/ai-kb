@@ -6,6 +6,7 @@
 !.gitkeep
 !.markdownlint-cli2.jsonc
 !.shellcheckrc
+!docreader/.python-version
 !.github/
 
 # Sensitive files

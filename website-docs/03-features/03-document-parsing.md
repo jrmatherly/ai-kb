@@ -415,7 +415,7 @@ For large files, leave headroom from the inside out, for example PaddleOCR-VL or
 
 #### Image and system dependencies (docker/Dockerfile.docreader)
 
-The base image is `python:3.10.18-bookworm`, built in two stages (the builder installs dependencies with `uv sync --locked --no-dev` and generates the protobuf code with `docreader/scripts/generate_proto.sh`; the runner copies the venv), with `EXPOSE 50051` and `CMD ["/app/.venv/bin/python", "-m", "docreader.main"]`. Runtime system dependencies:
+The base image is `python:3.14-bookworm`, built in two stages (the builder installs dependencies with `uv sync --locked --no-dev` and generates the protobuf code with `docreader/scripts/generate_proto.sh`; the runner copies the venv), with `EXPOSE 50051` and `CMD ["/app/.venv/bin/python", "-m", "docreader.main"]`. Runtime system dependencies:
 
 - **LibreOffice** (doc→docx, ppt→pptx and odd spreadsheet→xlsx conversion) plus a set of X and font libraries (libxinerama1, libfontconfig1, libcairo2, libcups2 and others);
 - **antiword** (plain-text fallback for .doc);
