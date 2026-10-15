@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.10.15.1] - 2026-10-15
+
+### Security
+
+- **FIXED**: Spreadsheet parsing moves to excelize `6258dceb`, which fixes 16 advisories where a crafted workbook could crash the server or keep it busy for days. echo 4.15.4 and ebpf 0.22.0 clear the remaining Go advisories.
+- **FIXED**: mermaid 12.2.0 brings katex 0.18, clearing GHSA-238p-pmpm-9mq7 in the frontend and docs site.
+
+### Bug Fixes
+
+- **FIXED**: The Go SDK's `SearchOrganizations` sends `q` and `limit` and reads the result list, so searches no longer fail to decode. Its signature is now `(ctx, query, limit)`.
+- **FIXED**: CLI output truncation no longer splits emoji sequences or flags.
+- **FIXED**: The Windows desktop installer is built again (sqlite-vec's `sqlite3.h`, NSIS on `PATH`), and the Linux desktop tarball no longer ships its staging directory alongside.
+
+### Dependencies
+
+- Frontend: vue 3.5.44, tdesign-vue-next 1.20.10, marked 18.1.1, mermaid 12.2.0. Docs site: mermaid 12.2.0, vue 3.5.44. Homepage: next 16.4.1, react 19.3.1. CLI: go-runewidth 0.0.31.
+
 ## [2026.10.15] - 2026-10-15
 
 ### Bug Fixes
