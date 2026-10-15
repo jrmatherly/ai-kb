@@ -907,7 +907,7 @@ watch(visible, async (val) => {
   } else {
     resetForm()
   }
-})
+}, { immediate: true })
 
 onBeforeUnmount(() => {
   editorAreaObserver?.disconnect()

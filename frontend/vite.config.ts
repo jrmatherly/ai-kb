@@ -108,6 +108,8 @@ export default defineConfig({
         // statically import the heavy chunks to get Vue, lodash-es or the preload helper.
         manualChunks(id) {
           if (id.includes('vite/preload-helper') || id.includes('commonjsHelpers')) return 'vendor-shared'
+          // Shared by four lazy views; left alone, experimentalMinChunkSize merges it into a startup chunk and marked follows.
+          if (id.includes('/src/utils/markedLiteralTilde')) return 'vendor-markdown'
           if (!id.includes('/node_modules/')) return
           // Mermaid 12 bundles ELK (~1.5 MB) behind a dynamic import; we render with dagre, so keep it out.
           if (/\/node_modules\/(elkjs\/|mermaid\/dist\/chunks\/[^/]+\/elk-)/.test(id)) return

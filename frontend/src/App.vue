@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { MessagePlugin, NotifyPlugin } from 'tdesign-vue-next'
 import ProtectedResourcePreview from '@/components/ProtectedResourcePreview.vue'
-import ManualKnowledgeEditor from '@/components/manual-knowledge-editor.vue'
 import UploadConfirmHost from '@/components/UploadConfirmHost.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
+import { useUIStore } from '@/stores/ui'
 import { getCurrentUser, userInfoFromApi } from '@/api/auth'
 import { consumePendingTenantSwitchToast } from '@/utils/tenantSwitch'
 import { useRoleLabel } from '@/composables/useRoleLabel'
@@ -21,6 +21,11 @@ const { formatRole, roleIcon } = useRoleLabel()
 const router = useRouter()
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
+// Async and mounted on first open: the editor pulls in marked (~90 KB gz), which no page needs at startup.
+const ManualKnowledgeEditor = defineAsyncComponent(() => import('@/components/manual-knowledge-editor.vue'))
+const uiStore = useUIStore()
+const manualEditorUsed = ref(false)
+watch(() => uiStore.manualEditorVisible, (open) => { if (open) manualEditorUsed.value = true })
 
 
 const decodeOIDCResult = (encoded: string) => {
@@ -263,7 +268,7 @@ onUnmounted(() => {
   <t-config-provider :globalConfig="enUSConfig">
     <div id="app">
       <RouterView />
-      <ManualKnowledgeEditor />
+      <ManualKnowledgeEditor v-if="manualEditorUsed" />
       <ProtectedResourcePreview />
       <UploadConfirmHost />
     </div>
