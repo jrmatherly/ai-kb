@@ -27,3 +27,5 @@ patches/browserskill/*.patch whitespace=-blank-at-eol
 .claude/skills/translate-code/SKILL.md -english-only
 # Traditional-to-Simplified Chinese conversion tables (internal/textconv) are data, not prose
 internal/textconv/data/*.txt -english-only
+# gojieba's dictionaries, embedded byte-for-byte (internal/types/jieba.go)
+internal/types/jiebadict/*.utf8 -english-only -text

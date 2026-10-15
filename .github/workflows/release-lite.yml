@@ -232,6 +232,9 @@ jobs:
           fi
           if [ "$RUNNER_OS" = "Windows" ]; then
             NSIS_FLAG="-nsis"
+            # gojieba is C++: link the MinGW runtime in, so neither the bindings step nor a user's
+            # machine loads whichever libstdc++-6.dll comes first on PATH.
+            export CGO_LDFLAGS="-static"
           fi
 
           bash ./scripts/check-license-bundle.sh

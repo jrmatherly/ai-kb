@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026.10.15] - 2026-10-15
+
+### Bug Fixes
+
+- **FIXED**: Lite and desktop builds no longer panic on startup looking for gojieba's dictionaries in the build machine's Go module cache. The dictionaries are embedded and written to the user cache directory on first start; `JIEBA_DICT_DIR` still overrides.
+- **FIXED**: The Windows desktop build links the MinGW C++ runtime statically.
+
 ## [2026.10.13] - 2026-10-13
+
+Container images only; the Lite and desktop builds of this version could not start.
 
 First AI KB release, from upstream WeKnora 0.8.2 plus later upstream commits. Entries below this section are upstream's history, with upstream's names and environment variables as they were then.
 
