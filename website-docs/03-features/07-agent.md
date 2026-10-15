@@ -46,6 +46,8 @@ You want to control which knowledge bases, skills and services an agent may use.
 
 An agent can use all, selected or no knowledge bases and skills. Mentions in a conversation select the material for that turn or mark a preferred skill; they cannot bypass existing authorization. The @skill and @MCP menus in the input box only list resources available to the agent that actually runs this turn; for a shared agent they list the source workspace's skills and the MCP services the agent explicitly selected. Web search is bound by both the agent configuration and the per-request switch.
 
+A custom agent must name its own chat model, and its own rerank model when knowledge search can run. A built-in agent may leave either slot empty: it then runs on the workspace's default model of that type (a workspace model marked `is_default`), else on the built-in default declared in `config/builtin_models.yaml`. With neither declared it is not ready, as a custom agent would be; a configured model that no longer exists is reported, never replaced by a default. `summary_model_id` in a request can still pick another chat model once the agent has one.
+
 When an agent is shared through an organization, the receiving side uses the source workspace's models and material within the granted scope. Shared agents are read-only; the receiving side cannot change their configuration. When the receiving side uses one:
 
 - the agent's configured model is always used, and `summary_model_id` in the request is ignored;

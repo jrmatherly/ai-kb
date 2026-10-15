@@ -7,7 +7,7 @@ Complete the [installation](02-installation.md) first and have a chat model, an 
 ## Before you start
 
 - Start the services. After the steps in [Installation](./02-installation.md), the frontend is at `http://localhost` and the backend at `http://localhost:8080`.
-- Prepare model connection details: a local Ollama (default address from inside the container `http://host.docker.internal:11434`), or the `base_url` and `api_key` of any OpenAI-compatible service. You need a chat model, an embedding model and a rerank model: the built-in Quick Answer agent will not answer until it has a chat model and a rerank model. A model server on `localhost` or a private address is blocked by the SSRF check until its host is in `SSRF_WHITELIST_EXTRA` (see [Configuration](./04-configuration.md)).
+- Prepare model connection details: a local Ollama (default address from inside the container `http://host.docker.internal:11434`), or the `base_url` and `api_key` of any OpenAI-compatible service. You need a chat model and an embedding model; a rerank model improves the order of knowledge base results. The built-in Quick Answer agent will not answer until it has a chat model, set on the agent or declared as the default. A model server on `localhost` or a private address is blocked by the SSRF check until its host is in `SSRF_WHITELIST_EXTRA` (see [Configuration](./04-configuration.md)).
 - Check backend health: `curl http://localhost:8080/health` returns `{"status":"ok"}`.
 
 ## Register and log in
@@ -39,9 +39,9 @@ Models are registered once per workspace under Settings → Model Management; ea
 1. Open Settings → Model Management and click Add Model. Pick the model type (Chat, Embedding, ReRank, Vision or Speech), the source (API or Ollama) and the provider, enter the model name and Base URL (plus the API key when the service needs one), click Test Connection, then Save and close. Add at least:
    - a **Chat** model, which generates answers;
    - an **Embedding** model, which turns documents into vectors (changing it later requires rebuilding the index);
-   - a **ReRank** model, which the built-in Quick Answer agent requires.
+   - a **ReRank** model, which reorders knowledge base search results. Quick Answer runs without one and keeps the retrieval order; Smart Reasoning needs one whenever its knowledge search can run.
 2. On the Knowledge Base page click Create Knowledge Base, enter a name and pick a type: Document-based or FAQ Q&A. Under Model Configuration choose the LLM model and the Embedding model; RAG Search needs the embedding model. Image processing (VLM), audio (ASR), the knowledge graph and question generation are optional settings in the same dialog.
-3. Open Agents → Quick Answer → Model Config, choose the chat model under Model and the rerank model under ReRank Model, then Save and Close. Until both are set, sending a message shows "Agent "Quick Answer" is not ready".
+3. Open Agents → Quick Answer → Model Config, choose the chat model under Model and the rerank model under ReRank Model, then Save and Close. A built-in agent left without a model uses the declared default model of that type (`is_default: true` in `config/builtin_models.yaml`, see [Built-in model mechanism](../03-features/06-models.md#built-in-model-mechanism)); the field then shows "Workspace default (name)". Without a model and without a declared default chat model, sending a message shows "Agent "Quick Answer" is not ready".
 
 <Screenshot
   src="/screenshots/quickstart-init-wizard.png"

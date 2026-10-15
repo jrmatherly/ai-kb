@@ -118,6 +118,7 @@ Gate placement: `scripts/git-hooks/pre-commit` runs `check-english-only.sh --dif
 A conflict in these spots keeps ours, even though the general rule is to take upstream's logic.
 
 - Duplicate knowledge no longer rewrites the existing row's `created_at` (2026-10-14; upstream `d6c11feb7` did it to bump a re-upload to the top). Across data sources it falsified another source's creation time and reordered its documents. Pinned by `TestCreateKnowledgeDuplicateKeepsExistingCreatedAt` in `internal/application/service/knowledge_create_gitlab_test.go`.
+- A built-in agent's empty chat or rerank model slot no longer refuses the send (2026-10-14; upstream rejects every silent model fallback, Tencent/WeKnora#1813 and the maintainer comment on Tencent/WeKnora#2934). It resolves at request time to the workspace's `is_default` model of that type, else the built-in `is_default` one, else refuses as before. Custom agents, shared runs and stale configured ids are unchanged, and nothing is written to agent rows. One backend rule, `agentModelSlot` in `internal/application/service/session_qa_helpers.go`, mirrored by `resolveBuiltinDefaultModelId` in `frontend/src/utils/modelDefaults.ts`. Pinned by `TestResolveChatModelIDBuiltinAgentUsesDeclaredDefault` and `TestAgentModelSlotRerankForBuiltinSmartReasoning` in `internal/application/service/session_model_requirement_test.go` and the built-in cases in `frontend/src/utils/agent-readiness.test.mjs`.
 
 ## Name translations when porting
 

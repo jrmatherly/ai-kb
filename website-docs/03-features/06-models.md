@@ -422,6 +422,7 @@ Key behavior (`LoadBuiltinModelsConfig`):
 - **Drift cleanup**: rows with `managed_by='yaml'` whose id is no longer in the file are soft-deleted; removing an entry from the YAML is the supported way to retire a built-in model.
 - Once an administrator takes over a row at runtime (`managed_by` cleared), the YAML loader skips it ("preserving runtime override").
 - An `is_default: true` entry first clears other defaults in the same `(tenant_id, type)` bucket, keeping the single-default invariant shared with the API path.
+- A built-in agent with an empty chat or rerank model slot runs on the default of that type: a workspace model marked `is_default` first, then an `is_default` built-in model (`agentModelSlot` in `internal/application/service/session_qa_helpers.go`). Custom agents never fall back to a default.
 - Validation: a non-empty id of at most 64 characters (`ModelIDMaxLen`), a type among `KnowledgeQA | Embedding | Rerank | VLLM | ASR`, a valid or empty status; a YAML parse failure aborts the reconciliation (no drift cleanup).
 - `parameters` go through the same catalog validation as the REST API (`runtime.ValidateRow`): rows that cannot be resolved (unknown protocol, misspelled compat key, invalid effort level) only log a WARN and do not block startup.
 
