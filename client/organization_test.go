@@ -82,3 +82,28 @@ func TestInviteMemberByUserID(t *testing.T) {
 		t.Errorf("body = %s, want %s", body, want)
 	}
 }
+
+// Mirrors internal/handler/organization.go SearchOrganizations: q and limit in,
+// a top-level data array of searchable items out.
+func TestSearchOrganizations(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method != http.MethodGet || r.URL.Path != "/api/v1/organizations/search" {
+			t.Errorf("request = %s %s, want GET /api/v1/organizations/search", r.Method, r.URL.Path)
+		}
+		if q := r.URL.Query(); q.Get("q") != "eng" || q.Get("limit") != "5" {
+			t.Errorf("query = %s, want q=eng&limit=5", r.URL.RawQuery)
+		}
+		_, _ = w.Write([]byte(`{"success":true,"total":1,"data":[` +
+			`{"id":"org-1","name":"Eng","member_count":3,"is_already_member":true}]}`))
+	}))
+	defer srv.Close()
+
+	got, err := NewClient(srv.URL).SearchOrganizations(context.Background(), "eng", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].ID != "org-1" || got[0].MemberCount != 3 {
+		t.Errorf("organizations = %+v, want one org-1 with 3 members", got)
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -262,32 +263,41 @@ func (c *Client) SubmitJoinRequest(ctx context.Context, inviteCode, message, rol
 	return parseResponse(resp, nil)
 }
 
-// SearchOrganizations searches for discoverable organizations
-func (c *Client) SearchOrganizations(ctx context.Context, keyword string, page, pageSize int) ([]OrganizationResponse, error) {
+// SearchableOrganization mirrors internal/types.SearchableOrganizationItem.
+type SearchableOrganization struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Description     string `json:"description"`
+	Avatar          string `json:"avatar,omitempty"`
+	MemberCount     int    `json:"member_count"`
+	MemberLimit     int    `json:"member_limit"` // 0 = unlimited
+	ShareCount      int    `json:"share_count"`
+	AgentShareCount int    `json:"agent_share_count"`
+	IsAlreadyMember bool   `json:"is_already_member"`
+	RequireApproval bool   `json:"require_approval"`
+}
+
+// SearchOrganizations searches discoverable organizations by name or
+// description. The server uses 20 for a limit outside 1..100.
+func (c *Client) SearchOrganizations(ctx context.Context, query string, limit int) ([]SearchableOrganization, error) {
 	q := url.Values{}
-	if keyword != "" {
-		q.Set("keyword", keyword)
+	if query != "" {
+		q.Set("q", query)
 	}
-	if page > 0 {
-		q.Set("page", fmt.Sprintf("%d", page))
-	}
-	if pageSize > 0 {
-		q.Set("page_size", fmt.Sprintf("%d", pageSize))
+	if limit > 0 {
+		q.Set("limit", strconv.Itoa(limit))
 	}
 	resp, err := c.doRequest(ctx, http.MethodGet, "/api/v1/organizations/search", nil, q)
 	if err != nil {
 		return nil, err
 	}
 	var result struct {
-		Success bool `json:"success"`
-		Data    struct {
-			Organizations []OrganizationResponse `json:"organizations"`
-		} `json:"data"`
+		Data []SearchableOrganization `json:"data"`
 	}
 	if err := parseResponse(resp, &result); err != nil {
 		return nil, err
 	}
-	return result.Data.Organizations, nil
+	return result.Data, nil
 }
 
 // JoinByOrganizationID joins a searchable organization by its ID
