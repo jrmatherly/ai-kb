@@ -35,19 +35,21 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-          cache-dependency-path: website-docs/package-lock.json
+          cache-dependency-path: |
+            website-docs/package-lock.json
+            website-docs/homepage/package-lock.json
 
       - name: 📦 Install dependencies
-        run: npm --prefix website-docs ci --no-audit --no-fund
-
-      - name: 🔎 Check links
-        run: node website-docs/scripts/check-links.mjs
+        run: |
+          npm --prefix website-docs ci --no-audit --no-fund
+          npm --prefix website-docs/homepage ci --no-audit --no-fund
 
       - name: 🔎 Check anchors
         run: node website-docs/scripts/check-anchors.mjs
 
-      - name: 🔎 Check mermaid diagrams
-        run: npm --prefix website-docs run --silent check:mermaid
+      - name: 🔎 Lint homepage
+        run: npm --prefix website-docs/homepage run --silent lint
 
-      - name: 🏗️ Build docs
-        run: npm --prefix website-docs run --silent build:docs
+      # Builds the homepage and docs, runs the link and mermaid checks, the homepage audit and the site check.
+      - name: 🏗️ Build site
+        run: npm --prefix website-docs run --silent build

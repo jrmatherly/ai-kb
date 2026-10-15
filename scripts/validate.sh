@@ -295,10 +295,11 @@ area_miniprogram() {
 
 area_website-docs() {
   ensure_npm_deps website-docs
-  node website-docs/scripts/check-links.mjs
+  ensure_npm_deps website-docs/homepage
   node website-docs/scripts/check-anchors.mjs
-  npm --prefix website-docs run --silent check:mermaid
-  npm --prefix website-docs run --silent build:docs
+  npm --prefix website-docs/homepage run --silent lint
+  # Builds the homepage and docs, runs the link and mermaid checks, the homepage audit and the site check.
+  npm --prefix website-docs run --silent build
 }
 
 # The whole tree, not only the changed files: it takes seconds, and a config change can affect any file.
