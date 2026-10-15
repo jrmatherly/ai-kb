@@ -23,7 +23,7 @@
 # Pin by digest: compiled JS is shipped in the runtime image, so a floating
 # node tag could change production assets. This index includes linux/amd64
 # and linux/arm64 (Node 24 / Debian bookworm slim).
-FROM --platform=$BUILDPLATFORM node:24-bookworm-slim@sha256:ba849c60be29959425b8734d57b8b4b7d56f98edd9504c9af091d5281095a71e AS builder
+FROM --platform=$BUILDPLATFORM node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS builder
 
 WORKDIR /frontend
 
