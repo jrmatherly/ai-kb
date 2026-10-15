@@ -1,6 +1,6 @@
 # Production image - two-stage build (no host-side npm required).
 # Mirrors scripts/build_frontend_dist.sh:
-#   npm ci + VITE_IS_DOCKER=true + VITE_FRONTEND_COMMIT
+#   npm ci + VITE_FRONTEND_COMMIT
 #
 # Dist is architecture-independent. The builder uses $BUILDPLATFORM so
 # multi-arch CI (linux/amd64,linux/arm64) compiles Vite once on the runner
@@ -30,7 +30,6 @@ WORKDIR /frontend
 ARG NPM_REGISTRY=
 ARG NODE_MAX_OLD_SPACE_SIZE=4096
 
-ENV VITE_IS_DOCKER=true
 # Vite production builds of this SPA routinely exceed Node's default heap.
 ENV NODE_OPTIONS="--max-old-space-size=${NODE_MAX_OLD_SPACE_SIZE}"
 

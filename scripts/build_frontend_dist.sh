@@ -12,8 +12,6 @@ if [ -z "${VITE_FRONTEND_COMMIT:-}" ]; then
 	export VITE_FRONTEND_COMMIT="${COMMIT_ID:-unknown}"
 fi
 
-export VITE_IS_DOCKER="${VITE_IS_DOCKER:-true}"
-
 cd "$PROJECT_ROOT/frontend"
 npm ci
 npm run build
