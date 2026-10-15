@@ -624,7 +624,7 @@ The SSE and HTTP transports are authenticated by `MCPAuthMiddleware` (an ASGI mi
 
 | Tool | Parameters | Description |
 | --- | --- | --- |
-| `create_model` | `name`\*, `type`\*, `description`\*, `source` ("local"), `base_url`, `api_key`, `is_default` (false) | Create a model configuration; `type` is KnowledgeQA, Embedding or Rerank |
+| `create_model` | `name`\*, `type`\*, `description`\*, `source` ("local"), `base_url`, `api_key` | Create a model configuration; `type` is KnowledgeQA, Embedding or Rerank |
 | `list_models` | none | List all models |
 | `get_model` | `model_id`\* | Model details |
 

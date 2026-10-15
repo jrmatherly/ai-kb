@@ -5,6 +5,11 @@ All notable changes to this project are recorded in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Removed
+- `create_model` no longer takes `is_default`. The server's create-model request has no such field, so the flag was always ignored.
+
 ## [1.1.2] - 2026-10-15
 
 1.1.2 changes only the docs. The 1.1.1 upload to PyPI (2026-10-15), the first under the `ai-kb-mcp` name, already shipped this section's Added entries and the AI KB rename.

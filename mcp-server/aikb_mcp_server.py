@@ -432,7 +432,6 @@ class AIKBClient:
         source: str,
         description: str,
         parameters: Dict,
-        is_default: bool = False,
     ) -> Dict:
         """Create a new AI model configuration"""
         data = {
@@ -441,7 +440,6 @@ class AIKBClient:
             "source": source,  # local, openai, etc.
             "description": description,
             "parameters": parameters,  # API keys, base URLs, etc.
-            "is_default": is_default,  # Set as default model for this type
         }
         return self._request("POST", "/models", json=data)
 
@@ -892,11 +890,10 @@ def create_model(
     source: str = "local",
     base_url: str = "",
     api_key: str = "",
-    is_default: bool = False,
 ) -> dict:
     """Create a new model configuration (type: KnowledgeQA, Embedding, or Rerank)."""
     parameters = {"base_url": base_url, "api_key": api_key}
-    return client.create_model(name, type, source, description, parameters, is_default)
+    return client.create_model(name, type, source, description, parameters)
 
 
 @mcp.tool()
