@@ -79,7 +79,7 @@ python main.py                        # same options as ai-kb-mcp-server
 
 # Or install the checkout
 pip install .                         # pip install -e . for development
-uvx --from ./mcp-server ai-kb-mcp-server   # from the repository root, without installing
+uvx --from . ai-kb-mcp-server         # without installing
 ```
 
 `python run_server.py`, `python run.py`, `python aikb_mcp_server.py` and `python -m aikb_mcp_server` also start the server.

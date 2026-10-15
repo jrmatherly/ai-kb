@@ -68,7 +68,6 @@
   },
   "resolutions": {
     "lightningcss": "none",
-    "tdesign-icons-vue-next": "0.4.11",
-    "mermaid/katex": "^0.18.10"
+    "tdesign-icons-vue-next": "0.4.11"
   }
 }
