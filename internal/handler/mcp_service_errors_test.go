@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/application/service"
+	"github.com/jrmatherly/ai-kb/internal/mcp"
 	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -81,6 +82,33 @@ func TestMCPServiceCallerErrorsReturn4xx(t *testing.T) {
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, request)
 			require.Equal(t, tc.want, w.Code, w.Body.String())
+		})
+	}
+}
+
+func TestMCPServiceClientFailuresKeepTheirCause(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &mcpServiceRepoStub{services: map[string]*types.MCPService{
+		"off": {ID: "off", Name: "probe-svc", TenantID: 7, TransportType: types.MCPTransportSSE},
+	}}
+	manager := mcp.NewMCPManager(nil)
+	t.Cleanup(manager.Shutdown)
+	h := &MCPServiceHandler{mcpServiceService: service.NewMCPServiceService(repo, manager, nil)}
+
+	router := gin.New()
+	router.Use(middleware.ErrorHandler(), func(c *gin.Context) {
+		c.Set(types.TenantIDContextKey.String(), uint64(7))
+		c.Next()
+	})
+	router.GET("/mcp-services/:id/tools", h.GetMCPServiceTools)
+	router.GET("/mcp-services/:id/resources", h.GetMCPServiceResources)
+
+	for _, path := range []string{"/mcp-services/off/tools", "/mcp-services/off/resources"} {
+		t.Run(path, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))
+			require.Equal(t, http.StatusInternalServerError, w.Code, w.Body.String())
+			require.Contains(t, w.Body.String(), "MCP service probe-svc is not enabled")
 		})
 	}
 }
