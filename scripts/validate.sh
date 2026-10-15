@@ -66,7 +66,7 @@ if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-onl
   scripts/emdash-allowlist.txt .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
 if has '*.sh' 'scripts/git-hooks/*'; then areas+=(shell); fi
-if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md; then areas+=(licenses); fi
+if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md go.mod; then areas+=(licenses); fi
 if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastructure/docparser/*'; then areas+=(anydoc); fi
 if has 'helm/*'; then areas+=(helm); fi
 if has 'mcp-server/*'; then areas+=(mcp-server); fi

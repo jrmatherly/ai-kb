@@ -11,7 +11,7 @@ Windows installers place them next to the installed executable.
 
 ## Go MySQL Driver
 
-- Component: `github.com/go-sql-driver/mysql`, version `v1.10.0`.
+- Component: `github.com/go-sql-driver/mysql`, version `v1.10.1`.
 - Used in backend and desktop binaries, including the Doris MySQL protocol driver.
 - License: Mozilla Public License 2.0, reproduced in
   [`licenses/go-sql-driver-mysql-MPL-2.0.txt`](licenses/go-sql-driver-mysql-MPL-2.0.txt).
@@ -19,9 +19,9 @@ Windows installers place them next to the installed executable.
   `AUTHORS` are preserved in the accompanying source archive.
 - Modifications by AI KB: none. Dialer configuration is in separate AI KB files.
 - Corresponding source, available under MPL-2.0, is included in binary releases
-  as `licenses/sources/mysql-v1.10.0.zip`. Source repository users can obtain it from the
-  [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.0.zip)
-  and [upstream repository](https://github.com/go-sql-driver/mysql/tree/v1.10.0).
+  as `licenses/sources/mysql-v1.10.1.zip`. Source repository users can obtain it from the
+  [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.1.zip)
+  and [upstream repository](https://github.com/go-sql-driver/mysql/tree/v1.10.1).
 
 ## go-m1cpu
 
