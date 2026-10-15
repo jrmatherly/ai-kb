@@ -88,6 +88,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The tests clone this checkout and push tags back to it, which git refuses from a shallow clone.
+          fetch-depth: 0
 
       - name: 🔎 Check every version string against VERSION and its library
         run: python3 scripts/version.py check
