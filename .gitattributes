@@ -5,6 +5,9 @@
 # acceptance/contract envelope tests.
 *.go text eol=lf
 cli/acceptance/testdata/**/*.json text eol=lf
+# check-license-bundle.sh reads these on the Windows release runner; a CR breaks its field matches.
+go.mod text eol=lf
+*.tsv text eol=lf
 
 # Trellis: append-only developer journals should merge cleanly across
 # parallel sessions/worktrees - each session only appends a new block, so
