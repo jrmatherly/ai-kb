@@ -655,7 +655,9 @@
                 {{ $t('agent.editor.rerankModelDesc') }}
                 <template v-if="!needsRerankModel">
                   <br />
-                  <span class="hint">{{ $t('agent.editor.rerankModelOptionalHint') }}</span>
+                  <span class="hint">{{ isBuiltinAgent
+                    ? $t('agent.editor.rerankModelOptionalHintBuiltin')
+                    : $t('agent.editor.rerankModelOptionalHint') }}</span>
                 </template>
               </p>
             </div>
@@ -1696,8 +1698,8 @@
             </div>
           </div>
 
-          <!-- Rerank TopK (shown only when a Rerank model is configured) -->
-          <div v-if="formData.config.rerank_model_id" class="setting-row">
+          <!-- Rerank TopK (shown only when a Rerank model is configured or defaulted) -->
+          <div v-if="hasEffectiveRerankModel" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.rerankTopK') }}</label>
               <p class="desc">{{ $t('agentEditor.desc.rerankTopK') }}</p>
@@ -1707,8 +1709,8 @@
             </div>
           </div>
 
-          <!-- Rerank threshold (shown only when a Rerank model is configured) -->
-          <div v-if="formData.config.rerank_model_id" class="setting-row">
+          <!-- Rerank threshold (shown only when a Rerank model is configured or defaulted) -->
+          <div v-if="hasEffectiveRerankModel" class="setting-row">
             <div class="setting-info">
               <label>{{ $t('agent.editor.rerankThreshold') }}</label>
               <p class="desc">{{ $t('agentEditor.desc.rerankThreshold') }}</p>
@@ -3478,7 +3480,7 @@ const isBuiltinAgent = computed(() => {
 });
 
 // A built-in agent's empty model slot runs on the declared default (backend
-// agentModelSlot). Show it as the placeholder; never write it into the form.
+// types.AgentModelSlot). Show it as the placeholder; never write it into the form.
 const builtinDefaultModel = (type: 'KnowledgeQA' | 'Rerank') => {
   if (!isBuiltinAgent.value) return undefined;
   const id = resolveBuiltinDefaultModelId(allModels.value, type);
@@ -3492,6 +3494,9 @@ const workspaceDefaultPlaceholder = (type: 'KnowledgeQA' | 'Rerank', fallbackKey
 };
 const chatModelPlaceholder = computed(() => workspaceDefaultPlaceholder('KnowledgeQA', 'agent.editor.modelPlaceholder'));
 const rerankModelPlaceholder = computed(() => workspaceDefaultPlaceholder('Rerank', 'agent.editor.rerankModelPlaceholder'));
+const hasEffectiveRerankModel = computed(
+  () => Boolean(formData.value.config.rerank_model_id) || Boolean(builtinDefaultModel('Rerank')),
+);
 
 // System prompt placeholder
 const systemPromptPlaceholder = computed(() => {

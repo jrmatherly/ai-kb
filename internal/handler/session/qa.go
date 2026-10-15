@@ -427,7 +427,7 @@ func (h *Handler) parseQARequest(c *gin.Context, logPrefix string) (*qaRequestCo
 		ctx,
 		customAgent,
 		effectiveTenantID,
-		request.SummaryModelID,
+		h.messageChatModelID(ctx, customAgent, sharedAgentReadOnly, request.SummaryModelID),
 		secutils.SanitizeForLogArray(kbIDs),
 		secutils.SanitizeForLogArray(knowledgeIDs),
 		secutils.SanitizeForLogArray(tagIDs),
@@ -517,11 +517,37 @@ func decodeAndValidateAttachmentUploads(
 	return decoded, nil
 }
 
+// messageChatModelID is the chat model the answer runs on, recorded on the
+// message for follow-ups, the title and memory extraction: a valid request
+// override, else the agent's chat slot (types.AgentModelSlot). Without an agent
+// the override is kept for the KB/system fallback.
+func (h *Handler) messageChatModelID(
+	ctx context.Context, agent *types.CustomAgent, sharedReadOnly bool, override string,
+) string {
+	override = strings.TrimSpace(override)
+	if agent == nil {
+		return override
+	}
+	if override != "" {
+		if m, err := h.modelService.GetModelByID(ctx, override); err == nil && m != nil &&
+			m.Type == types.ModelTypeKnowledgeQA {
+			return override
+		}
+	}
+	id, err := types.AgentModelSlot(
+		ctx, h.modelService, agent, sharedReadOnly, agent.Config.ModelID, types.ModelTypeKnowledgeQA,
+	)
+	if err != nil {
+		logger.Warnf(ctx, "Chat model unresolved for agent %s: %v", agent.ID, err)
+	}
+	return id
+}
+
 func buildMessageExecutionContext(
 	ctx context.Context,
 	agent *types.CustomAgent,
 	effectiveTenantID uint64,
-	modelOverride string,
+	modelID string,
 	knowledgeBaseIDs []string,
 	knowledgeIDs []string,
 	tagIDs []string,
@@ -544,13 +570,9 @@ func buildMessageExecutionContext(
 		LangfuseTraceparent: langfuse.TraceparentFromContext(ctx),
 	}
 	if agent == nil {
-		return snapshot, "", effectiveTenantID, modelOverride
+		return snapshot, "", effectiveTenantID, modelID
 	}
 
-	modelID := modelOverride
-	if modelID == "" {
-		modelID = agent.Config.ModelID
-	}
 	agentTenantID := effectiveTenantID
 	if agentTenantID == 0 {
 		agentTenantID = agent.TenantID
@@ -827,10 +849,7 @@ func (h *Handler) setupSSEStream(reqCtx *qaRequestContext, generateTitle bool, m
 	// Generate title if needed
 	if generateTitle && reqCtx.session.Title == "" {
 		// Use the same model as the conversation for title generation
-		modelID := ""
-		if reqCtx.customAgent != nil && reqCtx.customAgent.Config.ModelID != "" {
-			modelID = reqCtx.customAgent.Config.ModelID
-		}
+		modelID := reqCtx.assistantMessage.ModelID
 		logger.Infof(reqCtx.ctx, "Session has no title, starting async title generation, session ID: %s, model: %s", reqCtx.sessionID, modelID)
 		h.sessionService.GenerateTitleAsync(asyncCtx, reqCtx.session, reqCtx.query, modelID, eventBus)
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/models/api"
 	"github.com/jrmatherly/ai-kb/internal/types"
-	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
@@ -126,63 +125,9 @@ func (s *sessionService) restrictTagScopesToAgentScope(
 	return filtered
 }
 
-// agentModelSlot returns the model an agent runs with for one model slot
-// (chat model_id, rerank_model_id). A configured ID is returned as is, stale or
-// not, so callers keep failing on it. An empty slot of the caller's own
-// built-in agent resolves to declaredDefaultModelID; every other empty slot
-// stays empty. The wiki fixer keeps its KB/system fallback instead.
-func agentModelSlot(
-	ctx context.Context,
-	models interfaces.ModelService,
-	req *types.QARequest,
-	configured string,
-	modelType types.ModelType,
-) (string, error) {
-	if id := strings.TrimSpace(configured); id != "" {
-		return id, nil
-	}
-	agent := req.CustomAgent
-	if req.SharedAgentReadOnly || !isBuiltinAgent(agent) || agent.ID == types.BuiltinWikiFixerID {
-		return "", nil
-	}
-	id, err := declaredDefaultModelID(ctx, models, modelType)
-	if err != nil {
-		return "", fmt.Errorf("resolve default %s model for agent %s: %w", modelType, agent.ID, err)
-	}
-	if id != "" {
-		logger.Infof(ctx, "Agent %s has no %s model set, using the declared default %s", agent.ID, modelType, id)
-	}
-	return id, nil
-}
-
-// declaredDefaultModelID returns the workspace's own is_default model of
-// modelType, else the built-in is_default one, else "". It never picks an
-// undeclared model.
-func declaredDefaultModelID(
-	ctx context.Context, models interfaces.ModelService, modelType types.ModelType,
-) (string, error) {
-	list, err := models.ListModels(ctx)
-	if err != nil {
-		return "", err
-	}
-	builtin := ""
-	for _, m := range list {
-		if m == nil || m.Type != modelType || !m.IsDefault {
-			continue
-		}
-		if !m.IsBuiltin {
-			return m.ID, nil
-		}
-		if builtin == "" {
-			builtin = m.ID
-		}
-	}
-	return builtin, nil
-}
-
 // resolveChatModelID resolves the effective chat model ID for a QA request.
 //
-// When an agent is selected, its chat model slot (see agentModelSlot) must
+// When an agent is selected, its chat model slot (see types.AgentModelSlot) must
 // name a valid chat model. The internal wiki fixer is the one exception: it is
 // not exposed in the agent UI, so an empty model_id falls back to KB/system
 // model selection. A request-level override may choose another valid model for
@@ -210,8 +155,9 @@ func (s *sessionService) resolveChatModelID(
 
 	if customAgent != nil {
 		var err error
-		configuredAgentModelID, err = agentModelSlot(
-			ctx, s.modelService, req, customAgent.Config.ModelID, types.ModelTypeKnowledgeQA,
+		configuredAgentModelID, err = types.AgentModelSlot(
+			ctx, s.modelService, customAgent, req.SharedAgentReadOnly, customAgent.Config.ModelID,
+			types.ModelTypeKnowledgeQA,
 		)
 		if err != nil {
 			return "", err
@@ -279,6 +225,7 @@ func (s *sessionService) resolveRetrievalTenantID(
 func (s *sessionService) applyAgentOverridesToChatManage(
 	ctx context.Context,
 	customAgent *types.CustomAgent,
+	sharedReadOnly bool,
 	cm *types.ChatManage,
 ) {
 	if customAgent == nil {
@@ -332,8 +279,15 @@ func (s *sessionService) applyAgentOverridesToChatManage(
 		cm.RerankTopK = customAgent.Config.RerankTopK
 	}
 	cm.RerankThreshold = customAgent.Config.RerankThreshold
-	if customAgent.Config.RerankModelID != "" {
-		cm.RerankModelID = customAgent.Config.RerankModelID
+	// An empty result leaves the pipeline to skip reranking.
+	rerankModelID, err := types.AgentModelSlot(
+		ctx, s.modelService, customAgent, sharedReadOnly, customAgent.Config.RerankModelID, types.ModelTypeRerank,
+	)
+	if err != nil {
+		logger.Warnf(ctx, "Rerank model unresolved for agent %s, skipping rerank: %v", customAgent.ID, err)
+	}
+	if rerankModelID != "" {
+		cm.RerankModelID = rerankModelID
 	}
 
 	// Override rewrite settings

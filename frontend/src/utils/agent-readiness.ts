@@ -57,7 +57,7 @@ export function getAgentNotReadyReasonKeys(
   options: { isAgentMode: boolean; isSharedAgent: boolean; isBuiltinAgent: boolean },
 ): AgentNotReadyReasonKey[] {
   const reasons: AgentNotReadyReasonKey[] = []
-  // Mirrors backend agentModelSlot: only the caller's own built-in agents
+  // Mirrors backend types.AgentModelSlot: only the caller's own built-in agents
   // resolve an empty slot to the declared default.
   const slot = (configured: string | undefined, type: ModelConfig['type']) =>
     configured?.trim() || (options.isBuiltinAgent && !options.isSharedAgent

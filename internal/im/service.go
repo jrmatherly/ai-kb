@@ -293,6 +293,7 @@ type Service struct {
 	messageService interfaces.MessageService
 	tenantService  interfaces.TenantService
 	agentService   interfaces.CustomAgentService
+	modelService   interfaces.ModelService
 
 	// knowledgeService is used for saving IM file messages to knowledge bases.
 	knowledgeService interfaces.KnowledgeService
@@ -564,7 +565,9 @@ func buildIMQARequest(
 	}
 }
 
-func buildIMLastRequestState(agentID string, customAgent *types.CustomAgent, kbIDs []string) *types.SessionLastRequestState {
+func buildIMLastRequestState(
+	agentID string, customAgent *types.CustomAgent, kbIDs []string, modelID string,
+) *types.SessionLastRequestState {
 	state := &types.SessionLastRequestState{
 		AgentID:          agentID,
 		KnowledgeBaseIDs: append([]string(nil), kbIDs...),
@@ -576,7 +579,7 @@ func buildIMLastRequestState(agentID string, customAgent *types.CustomAgent, kbI
 		state.AgentID = customAgent.ID
 	}
 	state.AgentEnabled = customAgent.IsAgentMode()
-	state.ModelID = customAgent.Config.ModelID
+	state.ModelID = modelID
 	state.WebSearchEnabled = customAgent.Config.WebSearchEnabled
 	if len(state.KnowledgeBaseIDs) == 0 && len(customAgent.Config.KnowledgeBases) > 0 {
 		state.KnowledgeBaseIDs = append([]string(nil), customAgent.Config.KnowledgeBases...)
@@ -851,6 +854,7 @@ func NewService(
 	messageService interfaces.MessageService,
 	tenantService interfaces.TenantService,
 	agentService interfaces.CustomAgentService,
+	modelService interfaces.ModelService,
 	knowledgeService interfaces.KnowledgeService,
 	kbService interfaces.KnowledgeBaseService,
 	streamManager interfaces.StreamManager,
@@ -879,6 +883,7 @@ func NewService(
 		messageService:   messageService,
 		tenantService:    tenantService,
 		agentService:     agentService,
+		modelService:     modelService,
 		knowledgeService: knowledgeService,
 		kbService:        kbService,
 		streamManager:    streamManager,
@@ -1835,6 +1840,8 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 		}
 	}
 
+	chatModelID := s.agentChatModelID(sessionCtx, customAgent)
+
 	// Title an untitled IM session from its first text message, like web chats.
 	// GenerateTitleAsync self-guards on a non-empty title and persists to the DB;
 	// nil eventBus is fine (IM has no live stream - the sidebar reloads it).
@@ -1842,14 +1849,10 @@ func (s *Service) HandleMessage(ctx context.Context, msg *IncomingMessage, chann
 		// Copy the session: the async title goroutine writes Title while the QA
 		// worker below shares the same *session.
 		sessionForTitle := *session
-		titleModelID := ""
-		if customAgent != nil && customAgent.Config.ModelID != "" {
-			titleModelID = customAgent.Config.ModelID
-		}
-		s.sessionService.GenerateTitleAsync(sessionCtx, &sessionForTitle, msg.Content, titleModelID, nil)
+		s.sessionService.GenerateTitleAsync(sessionCtx, &sessionForTitle, msg.Content, chatModelID, nil)
 	}
 
-	s.persistIMLastRequestState(sessionCtx, session.ID, agentID, customAgent, nil)
+	s.persistIMLastRequestState(sessionCtx, session.ID, agentID, customAgent, nil, chatModelID)
 
 	// 5. Enqueue the QA request into the bounded worker pool.
 	// The worker pool controls LLM concurrency and provides backpressure.
@@ -1929,8 +1932,25 @@ func emptyIncomingMessageReply(msg *IncomingMessage) (string, bool) {
 	}
 }
 
-func (s *Service) persistIMLastRequestState(ctx context.Context, sessionID, agentID string, customAgent *types.CustomAgent, kbIDs []string) {
-	state := buildIMLastRequestState(agentID, customAgent, kbIDs)
+// agentChatModelID is the chat model an IM answer runs on (types.AgentModelSlot;
+// IM runs only the workspace's own agents). "" leaves the choice to the callee.
+func (s *Service) agentChatModelID(ctx context.Context, agent *types.CustomAgent) string {
+	if agent == nil {
+		return ""
+	}
+	id, err := types.AgentModelSlot(
+		ctx, s.modelService, agent, false, agent.Config.ModelID, types.ModelTypeKnowledgeQA,
+	)
+	if err != nil {
+		logger.Warnf(ctx, "[IM] chat model unresolved for agent %s: %v", agent.ID, err)
+	}
+	return id
+}
+
+func (s *Service) persistIMLastRequestState(
+	ctx context.Context, sessionID, agentID string, customAgent *types.CustomAgent, kbIDs []string, modelID string,
+) {
+	state := buildIMLastRequestState(agentID, customAgent, kbIDs, modelID)
 	if err := s.sessionService.UpdateSessionLastRequestState(logger.CloneContext(context.WithoutCancel(ctx)), sessionID, state); err != nil {
 		logger.Warnf(ctx, "[IM] persist last_request_state failed for session %s: %v", sessionID, err)
 	}

@@ -120,9 +120,10 @@ func (s *sessionService) AgentQA(
 	var rerankModel rerank.Reranker
 	if agentRequiresRerankModel(req.CustomAgent) {
 		// The agent declares its own rerank model; only a built-in agent's
-		// empty slot resolves to the declared default (agentModelSlot).
-		rerankModelID, err := agentModelSlot(
-			ctx, s.modelService, req, req.CustomAgent.Config.RerankModelID, types.ModelTypeRerank,
+		// empty slot resolves to the declared default (types.AgentModelSlot).
+		rerankModelID, err := types.AgentModelSlot(
+			ctx, s.modelService, req.CustomAgent, req.SharedAgentReadOnly, req.CustomAgent.Config.RerankModelID,
+			types.ModelTypeRerank,
 		)
 		if err != nil {
 			return err

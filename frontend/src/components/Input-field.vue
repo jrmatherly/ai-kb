@@ -52,7 +52,7 @@ import {
   canLocallyConfigureAgent,
   type AgentNotReadyReasonKey,
 } from '@/utils/agent-readiness';
-import { resolveBuiltinDefaultModelId } from '@/utils/modelDefaults';
+import { initialChatModelId, resolveBuiltinDefaultModelId } from '@/utils/modelDefaults';
 import { formatLocalizedList } from '@/utils/format-list';
 import { SKILL_ICON, type MentionItem, type MentionItemType, type MentionRequestItem } from '@/types/mention';
 import { toolboxLocation } from '@/config/toolbox';
@@ -320,7 +320,7 @@ const isMentionDisabled = computed(() => {
 });
 
 // Model the agent runs with: its model_id, or for this workspace's own
-// built-in agent the declared default (backend agentModelSlot).
+// built-in agent the declared default (backend types.AgentModelSlot).
 const agentModelId = computed(() => {
   if (!hasAgentConfig.value) return null;
   const configured = currentAgentConfig.value?.model_id?.trim();
@@ -986,16 +986,19 @@ const writeLastChatModelID = (id: string) => {
   }
 }
 
-// Initial chat-model selection priority: per-user last pick
-// (localStorage) > current store value (e.g. carried over from
-// settings page) > the agent's effective model. The tenant-level
-// conversation-config used to feed summary_model_id/rerank_model_id
-// into the dropdown, but those fields were removed: per-user last pick
-// belongs in localStorage, agent-level model belongs on the agent.
+// Initial chat-model selection: empty when the agent has no effective
+// model, else the per-user last pick (localStorage) or the current store
+// value (e.g. carried over from settings page) when still available, else
+// the agent's model. Per-user last pick belongs in localStorage,
+// agent-level model belongs on the agent.
+const pickInitialChatModel = () => initialChatModelId(
+  agentModelId.value,
+  [readLastChatModelID(), settingsStore.conversationModels.selectedChatModelId],
+  availableModels.value.map(model => model.id || ''),
+);
+
 const initChatModelSelection = () => {
-  const lastPick = readLastChatModelID();
-  const currentSelectedModel = settingsStore.conversationModels.selectedChatModelId;
-  const initialSelection = lastPick || currentSelectedModel || '';
+  const initialSelection = pickInitialChatModel();
   settingsStore.updateConversationModels({
     summaryModelId: initialSelection,
     selectedChatModelId: initialSelection,
@@ -1024,10 +1027,9 @@ const loadChatModels = async (force = false) => {
 // Never guess a model: an agent without an effective model stays empty and
 // shows "Not configured", as the backend refuses to run it.
 const ensureModelSelection = () => {
-  if (selectedModelId.value || !agentModelId.value) {
-    return;
+  if (!selectedModelId.value) {
+    selectedModelId.value = pickInitialChatModel();
   }
-  selectedModelId.value = readLastChatModelID() || agentModelId.value;
 };
 
 // When the agent identity or its data arrives, sync the chat model to the model_id configured on the agent.
@@ -1039,6 +1041,10 @@ watch(
   [selectedAgentId, () => settingsStore.selectedAgentSourceTenantId, agentModelId],
   ([, sourceTenantId, newModelId]) => {
     if (!newModelId || newModelId.trim() === '') return;
+    if (!selectedModelId.value) {
+      selectedModelId.value = pickInitialChatModel();
+      return;
+    }
 
     const lastPick = readLastChatModelID();
     const isSharedAgent = !!sourceTenantId;
@@ -2332,15 +2338,7 @@ const handleSelectAgent = async (agent: CustomAgent, sourceTenantId?: string) =>
 
   // Sync the model (the selected chat model follows the agent switch, shared agents included).
   // selectAgent already reset web search to off; the agent config only controls whether the toggle is available.
-  const agentModel = agent.config?.model_id;
-  if (agentModel && agentModel.trim() !== '') {
-    selectedModelId.value = agentModel;
-  } else {
-    const lastPick = readLastChatModelID();
-    if (lastPick) {
-      selectedModelId.value = lastPick;
-    }
-  }
+  selectedModelId.value = agent.config?.model_id?.trim() || pickInitialChatModel();
 
   showAgentModeSelector.value = false;
 

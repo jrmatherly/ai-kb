@@ -171,7 +171,7 @@ func (s *sessionService) KnowledgeQA(
 
 	// Apply custom agent overrides (system prompt, temperature, retrieval params,
 	// rewrite, fallback, FAQ strategy, history turns)
-	s.applyAgentOverridesToChatManage(ctx, req.CustomAgent, chatManage)
+	s.applyAgentOverridesToChatManage(ctx, req.CustomAgent, req.SharedAgentReadOnly, chatManage)
 	applyRequestReasoningEffort(
 		req.ReasoningEffort, &chatManage.SummaryConfig.Thinking, &chatManage.SummaryConfig.ReasoningEffort,
 	)
