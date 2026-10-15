@@ -75,8 +75,9 @@ Buffer TTL:
 After TTL expiry the CLI surfaces local.sse_stream_aborted.
 
 Typical use cases:
-  - Network blip mid-stream: re-attach with the same session_id + message_id
-    from the original 'session ask' / 'chat' init event.
+  - Network blip mid-stream: re-attach with the same session_id and the
+    assistant_message_id that 'chat' returned (or from
+    'aikb message list --session <id>').
   - Long-running agent invocation: poll progress without blocking the original
     stream.
   - Post-mortem inspection: replay the full event history of a completed
@@ -109,21 +110,18 @@ silently treated as NDJSON.`,
 		},
 	}
 	cmd.Flags().StringVarP(&opts.MessageID, "message", "m", "",
-		"Assistant message ID to resume (from the init or agent_query event of the original stream)")
+		"Assistant message ID to resume (the assistant_message_id `chat` returns, or `aikb message list`)")
 	_ = cmd.MarkFlagRequired("message")
 	cmdutil.AddFormatFlag(cmd, resumeFields...)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
 		UsedFor: "Resume an SSE event stream for an in-progress or completed assistant message. " +
 			"Produces an NDJSON event stream: init line (session_id, message_id) then raw SDK " +
 			"StreamResponse events.",
-		RequiredFlags: []string{"<session-id> (positional)", "--message (persisted assistant message " +
-			"id - get it from " +
-			"`aikb message list --session <id>`; a live stream's assistant_message_id is not resumable " +
-			"once the message " +
-			"persists)"},
+		RequiredFlags: []string{"<session-id> (positional)", "--message (the assistant_message_id " +
+			"`chat` returns, or from `aikb message list --session <id>`)"},
 		Examples: []string{
 			"aikb session resume sess_xyz --message msg_abc --format json",
-			"# Get the message id from: aikb message list --session <session-id> (the persisted assistant message)",
+			"# Get the message id from: aikb message list --session <session-id> (the assistant message)",
 		},
 		Output: "NDJSON stream: {type:init, session_id, message_id, profile} then SDK StreamResponse events (response_type, content, done, knowledge_references, assistant_message_id, ...)",
 		Warnings: []string{

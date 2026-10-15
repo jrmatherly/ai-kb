@@ -29,7 +29,8 @@ type logoutResult struct {
 }
 
 // NewCmdLogout builds `aikb auth logout`. Clears stored credentials
-// (keyring + file fallback) and removes the profile entry from config.yaml.
+// (keyring + file fallback) and keeps the profile entry in config.yaml so
+// `auth login` can re-auth it.
 // No server-side revocation - local-only credential clear.
 func NewCmdLogout(f *cmdutil.Factory) *cobra.Command {
 	opts := &LogoutOptions{}
@@ -37,7 +38,8 @@ func NewCmdLogout(f *cmdutil.Factory) *cobra.Command {
 		Use:   "logout",
 		Short: "Remove stored credentials for a profile",
 		Long: `Clear keyring + file-fallback secrets for one profile (or all of
-them with --all) and drop the profile entry from ~/.config/aikb/config.yaml.
+them with --all). The profile entry stays in ~/.config/aikb/config.yaml so
+'auth login' can re-auth it; 'profile remove' deletes it.
 
 Note: this does NOT revoke the credential server-side - for API keys, you
 must rotate them in the server UI; for JWT, the token will continue to be

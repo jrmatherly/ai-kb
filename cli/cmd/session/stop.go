@@ -5,8 +5,8 @@
 // generating and billing tokens), this tells the server to stop.
 //
 // This is the symmetric counterpart to `session resume`: both key on
-// (session_id, message_id). The message_id comes from the init event of the
-// original chat / session ask / resume stream.
+// (session_id, message_id): the assistant_message_id that `chat` returns, or
+// `aikb message list --session <id>`.
 
 package sessioncmd
 
@@ -77,15 +77,20 @@ Symmetric with 'session resume': both key on (session_id, message_id).`,
 		},
 	}
 	cmd.Flags().StringVarP(&opts.MessageID, "message", "m", "",
-		"Assistant message id to stop (from the init event of the stream you're stopping)")
+		"Assistant message id to stop (the assistant_message_id `chat` returns, or `aikb message list`)")
 	_ = cmd.MarkFlagRequired("message")
 	cmdutil.AddFormatFlag(cmd, stopFields...)
 	cmdutil.AddDryRunFlag(cmd, &opts.DryRun)
 	cmdutil.SetAgentHelp(cmd, cmdutil.AgentHelp{
-		UsedFor:       "Stop server-side generation for an in-flight assistant message (counterpart to resume). The message_id comes from the init event of the chat / session ask / resume stream you're stopping.",
-		RequiredFlags: []string{"<session-id> (positional)", "--message (message_id from the init event of the stream you're stopping)"},
-		Examples:      []string{"aikb session stop sess_xyz --message msg_abc"},
-		Output:        "envelope {session_id, message_id, stopped:true}",
+		UsedFor: "Stop server-side generation for an in-flight assistant message (counterpart to resume). " +
+			"The message_id is the assistant_message_id that `chat` returns, or the latest assistant " +
+			"message in `aikb message list --session <id>`.",
+		RequiredFlags: []string{
+			"<session-id> (positional)",
+			"--message (the assistant_message_id `chat` returns, or from `aikb message list --session <id>`)",
+		},
+		Examples: []string{"aikb session stop sess_xyz --message msg_abc"},
+		Output:   "envelope {session_id, message_id, stopped:true}",
 	})
 	return cmd
 }
