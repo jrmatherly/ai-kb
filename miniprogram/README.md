@@ -1,8 +1,8 @@
 # AI KB Mini Program
 
-This directory contains a WeChat Mini Program plugin for AI KB. It gives mobile users a lightweight entry point to:
+This directory contains a WeChat Mini Program client for AI KB. It gives mobile users a lightweight entry point to:
 
-- configure an AI KB API endpoint and tenant API key;
+- configure an AI KB API endpoint and workspace API key;
 - list available knowledge bases;
 - import a URL into a selected knowledge base;
 - ask a selected knowledge base through AI KB knowledge chat.
@@ -10,10 +10,10 @@ This directory contains a WeChat Mini Program plugin for AI KB. It gives mobile 
 ## Getting started
 
 1. Open `miniprogram/` in WeChat DevTools.
-2. Copy `project.private.config.json.example` to `project.private.config.json` and set your real Mini Program AppID. The shared `project.config.json` intentionally does not include an AppID to avoid forcing maintainers into a placeholder project.
+2. Copy `project.private.config.json.example` to `project.private.config.json` and set your real Mini Program AppID. The shared `project.config.json` ships WeChat's `touristappid`; the private file overrides it with yours.
 3. Open the **Settings** tab and fill in:
    - API Base URL, for example `https://ai-kb.example.com`;
-   - API Key from the AI KB tenant settings page.
+   - API Key created in AI KB under Settings → Publish & Integrations → API Integration (shown once, `sk-...`).
 4. Open the **Knowledge** tab, refresh knowledge bases, and select the target knowledge base.
 5. Import a URL or switch to **Chat** to ask questions.
 
