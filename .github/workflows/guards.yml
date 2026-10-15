@@ -99,5 +99,9 @@ jobs:
           version-file: docreader/pyproject.toml
           enable-cache: false
 
+      # The tests run uv offline, so docreader's interpreter has to be installed first.
+      - name: 🐍 Install docreader's Python
+        run: uv python install "$(cat docreader/.python-version)"
+
       - name: 🧪 Test the version tooling
         run: python3 scripts/test_version.py
