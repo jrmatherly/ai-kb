@@ -67,6 +67,7 @@ TOUCHPOINTS = [
     Touchpoint("product", "helm/Chart.yaml", r'^appVersion: "v(?P<v>[^"]+)"$'),
     Touchpoint("product", "cmd/desktop/wails.json", rf"^    \"productVersion\": {Q}", day_only=True),
     Touchpoint("product", "README.md", r"img\.shields\.io/badge/release-v(?P<v>[^-]+)-"),
+    Touchpoint("product", "website-docs/05-clients/04-miniprogram.md", r"`ai-kb-miniprogram` \(version `(?P<v>[^`]+)`\)"),
     *npm("dsh-ai-kb", "packages/dsh-ai-kb"),
     *uv("mcp-server", "mcp-server", "ai-kb-mcp"),
     Touchpoint("mcp-server", "mcp-server/setup.py", rf"^    version={Q}"),
@@ -75,6 +76,10 @@ TOUCHPOINTS = [
         "mcp-server", "mcp-server/aikb_mcp_server.py", r'MCPServer\("ai-kb-server", version="(?P<v>[^"]+)"\)'
     ),
     Touchpoint("mcp-server", "mcp-server/main.py", r'version="AI KB MCP Server (?P<v>[^"]+)"'),
+    Touchpoint("mcp-server", "website-docs/03-features/08-mcp.md", r"\*\*`ai-kb-mcp`\*\* \(version (?P<v>[^,]+),"),
+    Touchpoint(
+        "mcp-server", "website-docs/03-features/08-mcp.md", r'`MCPServer\("ai-kb-server", version="(?P<v>[^"]+)"\)`'
+    ),
     Touchpoint("helm-chart", "helm/Chart.yaml", r"^version: (?P<v>\S+)$"),
 ]
 # The tag each publish workflow expects; None: nothing publishes it.

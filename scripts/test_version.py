@@ -129,6 +129,7 @@ class VersionTest(unittest.TestCase):
                 "helm/Chart.yaml",
                 "miniprogram/package-lock.json",
                 "miniprogram/package.json",
+                "website-docs/05-clients/04-miniprogram.md",
                 "website-docs/VERSION",
                 "website-docs/homepage/package-lock.json",
                 "website-docs/homepage/package.json",
@@ -177,7 +178,7 @@ class VersionTest(unittest.TestCase):
         before, version = self.head(), self.text("VERSION")
         r = self.run_tool("bump", self.next_version(1))
         self.assertEqual(r.returncode, 2)
-        self.assertIn("restored 15 file(s) to their original bytes", r.stderr)
+        self.assertIn("restored 16 file(s) to their original bytes", r.stderr)
         self.assertEqual(self.head(), before)
         self.assertEqual(self.text("VERSION"), version)
         self.assertEqual(sh("git", "status", "--porcelain", cwd=self.repo), "")
@@ -229,6 +230,14 @@ class VersionTest(unittest.TestCase):
             sh("git", "diff", "--name-only", "HEAD~2", cwd=self.repo).split(),
             ["packages/dsh-ai-kb/package-lock.json", "packages/dsh-ai-kb/package.json"],
         )
+
+    def test_bump_lib_mcp_server_updates_its_docs_page(self):
+        r = self.run_tool("bump-lib", "mcp-server", "99.0.0")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        page = self.text("website-docs/03-features/08-mcp.md")
+        self.assertIn("**`ai-kb-mcp`** (version 99.0.0,", page)
+        self.assertIn('`MCPServer("ai-kb-server", version="99.0.0")`', page)
+        self.assertIn("website-docs/03-features/08-mcp.md", sh("git", "diff", "--name-only", "HEAD~1", cwd=self.repo).split())
 
 
 if __name__ == "__main__":
