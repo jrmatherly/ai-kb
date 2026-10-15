@@ -24,7 +24,7 @@ const SVG_SCRIPT_CLASS = "t-svg-js-stylesheet--unique-class";
 const ICONFONT_LINK_CLASS = "t-iconfont-stylesheet--unique-class";
 
 // Matches the URLs hard-coded inside tdesign-icons-vue-next 0.4.x; several versions side by side cover a possible upgrade.
-const BLOCKED_ICON_VERSIONS = ["0.4.0", "0.4.1", "0.4.2", "0.4.3", "0.4.4"];
+const BLOCKED_ICON_VERSIONS = ["0.4.0", "0.4.1", "0.4.2", "0.4.3", "0.4.4", "0.4.5"];
 
 const BLOCKED_SCRIPT_URLS = BLOCKED_ICON_VERSIONS.map(
   (version) => `https://tdesign.gtimg.com/icon/${version}/fonts/index.js`,

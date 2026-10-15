@@ -36,7 +36,7 @@
     "pdfjs-dist": "^6.4.299",
     "pinia": "^4.0.3",
     "swiper": "^14.3.0",
-    "tdesign-icons-vue-next": "0.4.4",
+    "tdesign-icons-vue-next": "0.4.11",
     "tdesign-vue-next": "^1.20.9",
     "vue": "^3.5.43",
     "vue-demi": "^0.14.10",
@@ -61,10 +61,10 @@
   },
   "overrides": {
     "lightningcss": "none",
-    "tdesign-icons-vue-next": "0.4.4"
+    "tdesign-icons-vue-next": "0.4.11"
   },
   "resolutions": {
     "lightningcss": "none",
-    "tdesign-icons-vue-next": "0.4.4"
+    "tdesign-icons-vue-next": "0.4.11"
   }
 }
