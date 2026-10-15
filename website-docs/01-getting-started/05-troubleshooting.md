@@ -68,8 +68,6 @@ WHERE name IN ('pg_trgm', 'vector', 'pg_search');
 
 Extension files that are not installed and insufficient SQL privileges are different problems. `CREATE EXTENSION IF NOT EXISTS` neither installs operating system packages nor upgrades an extension that already exists. Create only the extensions this deployment needs, so that a deployment with an external retrieval engine is not accidentally turned into PostgreSQL retrieval.
 
-Image and extension upgrades for an existing ParadeDB database: [ParadeDB upgrade](06-paradedb-upgrade.md).
-
 ### Dirty state
 
 `AUTO_RECOVER_DIRTY` is on by default. At startup the application tries to reset the migration version and rerun. This is a retry mechanism; it cannot fix a missing extension, a full disk or a schema drift caused by manual edits.

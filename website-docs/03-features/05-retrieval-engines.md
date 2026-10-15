@@ -323,11 +323,9 @@ Use this table to find the source for each part of the retrieval path.
 | Tenant default engines | `internal/types/tenant.go` (`GetDefaultRetrieverEngines`) |
 | Environment variable list | `.env.example` (section C1), `docker-compose.yml` |
 
-## Local testing and upgrades
+## Local testing
 
-This section covers testing an engine against the development compose stack and upgrading the default engine in place.
-
-- [ParadeDB upgrade of an existing database](../01-getting-started/06-paradedb-upgrade.md): keep the data volume, upgrade the extension SQL, and recover.
+This section covers testing an engine against the development compose stack.
 
 ### OpenSearch local testing {#opensearch-local-testing}
 

@@ -71,8 +71,6 @@ After startup, open `http://localhost` in a browser for the frontend (the port f
 
 If you have an existing deployment and downloaded a newer release:
 
-> If the database still runs ParadeDB `v0.22.2-pg17`, first follow [Upgrading an existing ParadeDB database](06-paradedb-upgrade.md): stop writes, back up, swap the image while keeping the data volume, and complete the `pg_search` extension upgrade before bringing the application back. Replacing the image alone does not update the extension SQL in an existing database. On the current image, migration `000115` upgrades `pg_search` from any 0.22.x to 0.25.x version to 0.25.11 in the AI KB database (`migrations/versioned/000115_pg_search_02511.up.sql`); migration `000099` targets the older 0.22.6 image and returns early when only 0.25.11 is available. Other databases on the same server still need a separate check.
-
 ```bash
 # In .env set AIKB_VERSION to the target version (for example 2026.10.13), or keep latest
 docker compose pull

@@ -431,7 +431,7 @@ The `migrate` CLI needs a DSN in URL form, so a password with characters such as
 
 The BM25 index (`USING bm25`, Lindera tokenizer) is available only on ParadeDB. A plain Postgres deployment needs the conditional branches of the relevant migrations to apply, or an external retrieval engine such as Elasticsearch. To move an existing plain Postgres database to ParadeDB, see `migrations/paradedb/01-migrate-to-paradedb.sql`.
 
-The default image is `paradedb/paradedb:v0.25.11-pg17` (earlier releases used `v0.22.6-pg17`). When the server ships the matching extension packages, migration 000115 upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4. The older migration 000099 applies only while the `v0.22.6-pg17` image is still in use. Other release lines are never upgraded or downgraded automatically. The extension catalog must match the image version, or calling some extension functions can crash the database. For a manual upgrade see [Upgrading an existing ParadeDB database](../01-getting-started/06-paradedb-upgrade.md), and do not run `ALTER EXTENSION pg_search UPDATE TO '0.22.6'` on the new image.
+The default image is `paradedb/paradedb:v0.25.11-pg17`. When the server ships the matching extension packages, migration 000115 upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4. The older migration 000099 applies only to the `v0.22.6-pg17` image. Other release lines are never upgraded or downgraded automatically. The extension catalog must match the image version, or calling some extension functions can crash the database.
 
 ### Version file conflicts
 
