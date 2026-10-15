@@ -1,16 +1,24 @@
-# Changelog - `weknora` CLI
+# Changelog - `aikb` CLI
 
-All notable changes to the `weknora` CLI (the binary under `cli/` in this
-repository) will be documented in this file.
+All notable changes to the `aikb` CLI (the binary under `cli/` in this
+repository) are documented in this file, in the
+[Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and the CLI follows [Semantic Versioning](https://semver.org/) independently
-of the WeKnora server / frontend release cadence.
-
-CLI history before v0.3 is recorded in the project root
+The CLI has no version of its own: it ships under the product's dated CalVer
+release tag (`vYYYY.M.D[.MICRO]`). Entries from `[0.9.0]` down are upstream
+WeKnora's CLI history, kept verbatim; their `weknora` / `WEKNORA_*` names map to
+`aikb` / `AIKB_*`. CLI history before v0.3 is recorded in the project root
 [CHANGELOG.md](../CHANGELOG.md) under the release that introduced the CLI.
 
 ## [Unreleased]
+
+### Changed
+- **Renamed to AI KB.** Binary `weknora` → `aikb`, environment prefix
+  `WEKNORA_*` → `AIKB_*`, config and secrets under `$XDG_CONFIG_HOME/aikb/`,
+  directory link `.weknora/project.yaml` → `.aikb/project.yaml`, Go module
+  `github.com/jrmatherly/ai-kb/cli`.
+- Versioning follows the product's CalVer release tag; skill
+  `tested_against` values use that tag.
 
 ### Breaking
 - `chat` and `session ask` now distinguish JSON from NDJSON: the default
@@ -38,8 +46,8 @@ CLI history before v0.3 is recorded in the project root
   embedding model is bound); `kb create` hints the fix when it is false.
 - `model create` / `model update` / `model delete` (`update` rotates key /
   base-url in place, preserving the id).
-- Stateless env-credential auth: `WEKNORA_API_KEY` / `WEKNORA_TOKEN` +
-  `WEKNORA_HOST`, a zero-disk path for headless / agent use. `auth logout` now
+- Stateless env-credential auth: `AIKB_API_KEY` / `AIKB_TOKEN` +
+  `AIKB_HOST`, a zero-disk path for headless / agent use. `auth logout` now
   keeps the profile registered (use `profile remove` to delete it entirely).
 - `meta.total_count` on paginated list / search output (full result size before
   client-side `--limit` truncation).

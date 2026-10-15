@@ -12,7 +12,8 @@ aikb chat "<query>" --kb <name-or-id> [--session <id>]
 aikb session ask "<query>" --agent <agent-id> [--session <id>]
 ```
 
-- `--kb` (chat) is required name-or-id. `--agent` (session ask) is required.
+- `--kb` (chat) is a name or id, falling back to `AIKB_KB_ID` or the linked
+  directory. `--agent` (session ask) is required.
 - `--session <id>` continues an existing conversation; omit to start a new one.
 - `--format json` returns one `{ok,data:{events:[...]}}` envelope; `--format
   text` streams the same projection as readable text; `--format ndjson` emits
@@ -40,7 +41,9 @@ events through verbatim:
 - `knowledge_references` carry the grounding chunks (source attribution).
 - **Keep `init.session_id`** to continue the chat (`--session`). The
   `assistant_message_id` needed for `session stop` / `session resume`
-  rides on the SDK's `agent_query` frame, not on `init` - scan for it.
+  rides on the SDK's `agent_query` frame, not on `init` - scan for it. In
+  default JSON mode, `chat` returns it as `data.assistant_message_id`; for
+  `session ask`, read it from `aikb message list --session <id>`.
 - On failure mid-stream you get `response_type:"error"`; a transport/HTTP error
   surfaces as the normal error envelope on stderr with a typed code.
 

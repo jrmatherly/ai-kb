@@ -48,11 +48,15 @@ For contributing to the CLI source, see [AGENTS.md](AGENTS.md).
 Requires Go 1.26+.
 
 ```bash
-git clone https://github.com/jrmatherly/ai-kb.git
+git clone https://github.com/jrmatherly/ai-kb.git   # once the repository is published
 cd ai-kb/cli
-go build -o aikb .
-sudo mv aikb /usr/local/bin/   # or anywhere on $PATH
+make build                      # bin/aikb, with version metadata
+sudo mv bin/aikb /usr/local/bin/   # or anywhere on $PATH
 ```
+
+A plain `go build -o aikb .` works too but reports version `dev`, which
+weakens `aikb doctor`'s version-skew check. The CLI has no version of its
+own: it carries the product's CalVer release tag (`git describe --tags`).
 
 ### Pre-built binaries
 
@@ -168,8 +172,9 @@ aikb skills list --format json           # what would be installed
 
 Existing files are left untouched without `--force`; `--dry-run` previews the
 file list. Each skill's frontmatter records the CLI version it was
-`tested_against`; a CI parity test (`internal/skillparity`) fails if a skill
-ever references a command, flag, or MCP tool the CLI no longer has.
+`tested_against`; a CI parity test (`internal/skillparity`) fails if a fenced
+`aikb` example in a skill uses a command path or long flag the CLI no longer has
+(inline prose and MCP tool names are not checked).
 
 ---
 
@@ -228,8 +233,8 @@ symmetric envelope `{ok, data, meta?}` - `data` is an array for `list` /
 against the whole envelope, so reach into list items with `.data[]`:
 
 ```bash
-aikb kb list --format json                              # {"ok":true,"data":[{"id":"kb_x",…}],"meta":{"count":1,…}}
-aikb kb view kb_x --format json                         # {"ok":true,"data":{"id":"kb_x","name":"Eng",…}}
+aikb kb list --format json                              # {"ok":true,"data":[{"id":"<uuid>",…}],"meta":{"count":1,…}}
+aikb kb view <uuid> --format json                       # {"ok":true,"data":{"id":"<uuid>","name":"Eng",…}}
 aikb kb list --format json --jq '.data[] | {id, name}'  # project listed fields out of each item
 aikb kb list --format json --jq '.data[].id'            # ids only
 aikb kb list --format json --jq '.meta.count'           # number returned
@@ -261,7 +266,7 @@ hint: run `aikb auth login`
 
 Under `--format json` the same failure is the typed error envelope on stderr
 (`{ok:false, error:{type, exit_code, hint?, retry_argv?, …}}`) - see
-[AGENTS.md §1.4](AGENTS.md) for the field-by-field contract and the full code
+[AGENTS.md "Stderr (error path)"](AGENTS.md#stderr-error-path) for the field-by-field contract and the full code
 taxonomy.
 
 ### Exit codes
@@ -282,11 +287,10 @@ taxonomy.
 
 Run `aikb exit-codes` for the machine-readable matrix (JSON); `aikb help exit-codes` for the human-readable table.
 
-**Exit 10** is the wire-level signal for "destructive write needs
-explicit confirmation". Pass `-y/--yes` on `kb delete` /
-`doc delete` (including `--all --kb=<id>`) / `session delete` /
-`profile remove` (on the current profile) / `agent delete` /
-`chunk delete` when running headless.
+**Exit 10** is the wire-level signal for "high-risk write needs
+explicit confirmation". It applies to every command whose `--help` starts
+with a `Risk:` line (`aikb schema <cmd>` reports it as `risk`), to
+`profile remove` on the current profile, and to `aikb api -X DELETE`.
 **Never auto-add `-y` without the user's explicit go-ahead** - exit 10
 is the guard against unintended writes.
 
@@ -298,8 +302,8 @@ is the guard against unintended writes.
   the unmodified raw stream.
 - `--format json` composes with the global `--profile <name>` for
   single-shot profile overrides without disk writes.
-- `aikb mcp serve` exposes a curated read-only tool surface over
-  stdio MCP for any MCP-compatible client.
+- `aikb mcp serve` exposes a curated read + chat tool surface (no
+  destructive tools) over stdio MCP for any MCP-compatible client.
 - `aikb schema` enumerates every command with its `used_for`, and
   `aikb schema <cmd path>` (e.g. `aikb schema doc update`) prints that
   command's full contract - `used_for`, `required_flags`, `examples`,
@@ -336,11 +340,11 @@ operations that intentionally go through `aikb api`:
 
 ## Dry-run preview
 
-Add `--dry-run` to any mutation command to preview the would-be action without executing it. Useful for verifying flag/arg parsing before committing to a destructive operation, or for agent-side action planning.
+Add `--dry-run` to any mutation command (every one except `auth login`) to preview the would-be action without executing it. Useful for verifying flag/arg parsing before committing to a destructive operation, or for agent-side action planning.
 
 ```bash
 # Preview a kb create without actually creating
-aikb kb create --name "test-kb" --description "for review" --dry-run
+aikb kb create "test-kb" --description "for review" --dry-run
 
 # Output (single line; pretty-printed here for readability):
 # {
@@ -361,8 +365,8 @@ dry-run is **offline**: no network calls, no file IO, no credential touches. Wor
 For destructive commands, dry-run does NOT trigger the exit-10 confirmation flow:
 
 ```bash
-aikb kb delete kb_xxxx --dry-run   # exit 0, no prompt
-aikb kb delete kb_xxxx             # exit 10, prompts for -y
+aikb kb delete my-kb --dry-run   # exit 0, no prompt
+aikb kb delete my-kb             # exit 10 without -y in JSON / non-TTY mode
 ```
 
 For the `api` command, dry-run requires explicit write method (POST/PUT/PATCH/DELETE); GET returns FlagError:
@@ -379,9 +383,10 @@ aikb api /api/v1/knowledge-bases --dry-run                                      
 The `aikb session resume` command resumes an SSE event stream for an existing assistant message. Useful for network-blip recovery or polling long-running agent invocations:
 
 ```bash
-# Original streaming call captures session_id + message_id from init event:
+# Original streaming call: session_id comes from the init line, the message id
+# from the agent_query frame's assistant_message_id (or `aikb message list --session`):
 aikb session ask "..." --agent ag_xxxx --format ndjson | tee /tmp/stream.ndjson
-# {"type":"init","session_id":"sess_abc","message_id":"msg_xyz"}
+# {"type":"init","session_id":"sess_abc","agent_id":"ag_xxxx","profile":"prod"}
 # ... events flow ...
 # [network blip]
 
@@ -400,7 +405,7 @@ An agent run may pause the stream on a tool-approval event until a human approve
 # 2. Surface the pending tool call to the user; get explicit go-ahead.
 aikb session tool-approval resolve pend_xxx -y                      # approve
 # aikb session tool-approval resolve pend_xxx --reject --reason "..." -y  # reject
-# 3. Resume the stream - server replays + tails from where the run was blocked.
+# 3. Resume the stream - server replays from the first event, then tails new ones.
 aikb session resume sess_abc --message msg_xyz
 ```
 
@@ -458,7 +463,8 @@ macOS / Windows × Go 1.26, path-filtered to changes under `cli/`.
 ## Contributing / Reporting issues
 
 - **Bugs and feature requests**: file an issue at
-  [github.com/jrmatherly/ai-kb/issues](https://github.com/jrmatherly/ai-kb/issues).
+  [github.com/jrmatherly/ai-kb/issues](https://github.com/jrmatherly/ai-kb/issues)
+  once the repository is published.
 - **Security disclosures**: see the repository-level
   [SECURITY.md](../SECURITY.md). Do not file public issues for
   security findings.

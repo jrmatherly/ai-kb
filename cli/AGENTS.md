@@ -35,18 +35,15 @@ fields are `omitempty`, so they only appear when populated:
 {"ok": true, "profile": "prod"}
 ```
 
-`data` is omitted on mutation-only success (no payload). `meta` carries list
-counters (`count`, `has_more`) and batch successes/failures, and is omitted
-when empty. `meta.next_cursor`, `meta.total_count`, and `meta.request_id` are
-reserved and not currently populated. They are planned for v0.8 when the SDK exposes
-pagination cursors and response headers. `_notice` is reserved - open-map
-infrastructure is in place for deprecation / version_skew / security notices;
-the field is omitted until a producer is wired in v0.8. `profile` echoes the
-resolved profile name and is omitted when no profile is configured.
+`data` is omitted on mutation-only success (no payload). `meta` carries
+`count`, `has_more`, `total_count` (result size before client-side `--limit`),
+batch `successes`/`failures`, `hint`, and `dry_run`/`plan`, and is omitted
+when empty. `profile` echoes the resolved profile name and is omitted when no
+profile is configured.
 
 ### Stderr (error path)
 
-Errors emit an error envelope on stderr (`--format json`) or prose
+Errors emit an error envelope on stderr (`--format json`, the default) or prose
 `code: message\nhint: ...\nretry: ...` (`--format text`):
 
 ```json
@@ -55,17 +52,17 @@ Errors emit an error envelope on stderr (`--format json`) or prose
   "error": {
     "type": "auth.unauthenticated",
     "message": "fetch current user: HTTP error 401",
+    "exit_code": 3,
     "hint": "run `aikb auth login`",
     "retry_argv": ["aikb", "auth", "login"],
     "retry_after_seconds": 0,
     "risk": {"level": "destructive", "action": "noun.verb"},
     "detail": {}
-  },
-  "_notice": {}
+  }
 }
 ```
 
-`type` is the typed code (see [Error code reference](#error-code-reference)
+`type` is the typed code and `exit_code` the process exit code (see [Error code reference](#error-code-reference)
 below). `hint` is prose; `retry_argv` is the suggested next argv as a JSON
 string array. For non-destructive errors agents may execute it; on exit-10
 (`input.confirmation_required`) it is informational only - the human must
@@ -75,30 +72,24 @@ details.
 `detail` carries structured per-error context (e.g. `unknown_subcommand`'s
 `available[]` list).
 
-### NDJSON event stream (chat / session ask)
+### Chat / session ask output
 
-`--format json` and `--format ndjson` both produce one JSON event per line -
-no envelope wrapping. The CLI injects exactly one event (`init`) at the head;
-all subsequent events pass through verbatim from the SDK:
+The default `--format json` buffers a bounded answer-event projection into one
+envelope (`{ok:true,data:{events:[...],session_id,...}}`); `--reference` and
+`--verbose` widen it. `--format ndjson` emits one JSON object per line with no
+envelope: the CLI injects one `init` line at the head, then SDK
+`StreamResponse` objects pass through verbatim:
 
 ```jsonl
-{"type":"init","session_id":"...","kb_id":"...","profile":"...","agent_id":"..."}
-{"type":"thinking","content":"..."}
-{"type":"answer","content":"Hello"}
-{"type":"tool_call","name":"...","input":{}}
-{"type":"complete","done":true}
+{"type":"init","session_id":"...","kb_id":"...","profile":"..."}
+{"response_type":"thinking","content":"..."}
+{"response_type":"tool_call","tool_calls":[]}
+{"response_type":"answer","content":"Hello"}
+{"response_type":"complete","done":true}
 ```
 
-For prose rendering, pass `--format text`.
-
-### `_notice` evolution policy
-
-`_notice` is an open map. New keys are **additive non-breaking**; agents MUST
-ignore unknown keys. v0.7 reserves three keys: `deprecation` / `version_skew` /
-`security`. New keys follow snake_case convention. The `_notice` field is
-currently always empty - producer wiring is planned for v0.8 when the SDK
-exposes version metadata. The wire infrastructure is in place so adding a
-producer in v0.8 will not change the envelope shape.
+`session ask` puts `agent_id` in `init` instead of `kb_id`. For prose
+rendering, pass `--format text`.
 
 ### CLI vs server SDK contract boundary
 
@@ -106,7 +97,7 @@ CLI 1.0 contract covers:
 
 - ✅ Envelope wire shape (success + error)
 - ✅ CLI-injected events (`init` only)
-- ✅ NDJSON line shape (bare `{type:...,...}`)
+- ✅ NDJSON line shape (one bare JSON object per line)
 - ✅ Passthrough discipline (CLI doesn't rename SDK events)
 
 CLI 1.0 contract does NOT cover:
@@ -127,6 +118,9 @@ Make errors structured, actionable, and specific.
 
 | Variable | Purpose |
 | --- | --- |
+| `AIKB_HOST` | Server base URL for stateless env-credential auth (with `AIKB_API_KEY` or `AIKB_TOKEN`); no profile or `auth login` needed. |
+| `AIKB_API_KEY` | API key sent as `X-API-Key`. Zero-disk; `auth token` echoes it with `profile: "(env)"`. |
+| `AIKB_TOKEN` | Bearer JWT, the alternative to `AIKB_API_KEY`. |
 | `AIKB_PROFILE` | Active profile name. Equivalent to the global `--profile <name>` flag; overridden by `--profile`. Useful in CI scripts that cannot pass global flags. |
 | `AIKB_FORMAT` | Default `--format` value (`text \| json \| ndjson`). Overridden by explicit `--format`; overrides config.yaml `defaults.format`. Invalid values ignored silently. `--jq` still selects JSON over a `text` default. |
 | `AIKB_KB_ID` | Default KB ID for commands that accept `--kb`. Overridden by `--kb`. |
@@ -137,7 +131,7 @@ Make errors structured, actionable, and specific.
 > and `--help` flag on the root command bypass `--format json` and always emit
 > prose (cobra built-in paths). For machine-readable output use the `version`
 > subcommand (`aikb version --format json`) or `AIKB_AGENT_HELP=1
-> aikb <cmd> --help`. Planned fix for v0.8.
+> aikb <cmd> --help` (or `aikb schema <cmd>`).
 
 ## Design decisions worth flagging
 
@@ -170,7 +164,7 @@ is or isn't aligned with.
 
 | | |
 | --- | --- |
-| **AI KB** | streaming commands (`chat`, `session ask`) emit bare `{type:...}` per line; no envelope |
+| **AI KB** | under `--format ndjson`, streaming commands (`chat`, `session ask`, `session resume`) emit one bare JSON object per line; no envelope |
 | **Rationale** | This matches established practice across NDJSON-emitting CLIs and webhook protocols. A streaming envelope requires unwrap before dispatch - net burden with no benefit. |
 
 ### 5. No `schema_version` field in payload
@@ -178,18 +172,19 @@ is or isn't aligned with.
 | | |
 | --- | --- |
 | **Mainstream** | some APIs (Anthropic / OpenAI) embed a `version` field in payload |
-| **AI KB** | version identity via CLI binary semver + CHANGELOG `### BREAKING` + skill `tested_against` + CI parity tests |
+| **AI KB** | version identity via the binary's version (the product CalVer tag) + CHANGELOG `### Breaking` + skill `tested_against` + CI parity tests |
 | **Rationale** | Mainstream CLIs don't embed version in payload. Agents have complete version awareness via `aikb --version` and skill version binding. |
 
-## Pre-1.0 breaking policy
+## Versioning and breaking changes
 
-CLI is in `v0.x` pre-release. Breaking changes ship together in concentrated
-batches (v0.5 / v0.6 / v0.7) rather than scattered across patch releases.
-After 1.0, any breaking change requires a 2-version deprecation period.
+The CLI has no version of its own. It ships under the product's dated CalVer
+release tag (`vYYYY.M.D[.MICRO]`): `make build` stamps `git describe --tags`
+into the binary, and a plain `go build` reports `dev`. `scripts/version.py`
+has no CLI row.
 
-`CHANGELOG.md` `### BREAKING` section is authoritative.
+`CHANGELOG.md` `### Breaking` sections are authoritative.
 
-For agents: pin the CLI version in your skill's `tested_against` field; bump
+For agents: pin the release tag in your skill's `tested_against` field; bump
 `tested_against` only after manually validating against the new CLI.
 
 ## Build, Test, and Lint
@@ -207,7 +202,7 @@ Both `go test -count=1 ./...` and `go vet ./...` must pass before committing.
 
 ## Architecture
 
-Entry point: `cmd/main.go` → `cmd.Execute()` → `cmd.NewRootCmd(cmdutil.New())`.
+Entry point: `main.go` → `cmd.Execute(ctx)` → `cmd.NewRootCmd(cmdutil.New())`.
 
 Key packages:
 
@@ -268,7 +263,7 @@ if err != nil { return err }
 fopts.ResolveDefault(iostreams.IO.IsStdoutTTY())
 // ...
 if fopts.WantsJSON() {
-    return fopts.Emit(iostreams.IO.Out, result)
+    return fopts.Emit(iostreams.IO.Out, result, meta) // meta: *output.Meta or nil
 }
 ```
 
@@ -276,7 +271,7 @@ if fopts.WantsJSON() {
 
 ### Destructive Writes
 
-Commands that delete / empty / overwrite call `cmdutil.ConfirmDestructive(p, opts.Yes, fopts.WantsJSON(), what, id)` before mutation. In non-TTY OR JSON-output mode without `-y`, it returns `CodeInputConfirmationRequired` → exit 10. See `internal/cmdutil/confirm.go`.
+Commands that delete / empty / overwrite call `cmdutil.ConfirmDestructive(p, yes, fopts.WantsJSON(), verb, what, id, action, retryArgv)` before mutation (tagged with `cmdutil.SetRisk`); reversible updates call `cmdutil.ConfirmWrite` with the same arguments (tagged with `cmdutil.SetWriteRisk`). In non-TTY OR JSON-output mode without `-y`, it returns `CodeInputConfirmationRequired` → exit 10. See `internal/cmdutil/confirm.go`.
 
 ## Testing
 
@@ -355,7 +350,7 @@ Typed error helpers in `internal/cmdutil/errors.go`:
 - `cmdutil.SilentError` - exit 1 without printing (when output already emitted)
 - `cmd.MarkFlagsMutuallyExclusive("a", "b")` - cobra-level mutex
 
-Errors print to STDERR via `cmdutil.PrintError(w, err)` as `code: msg\nhint: ...`. STDOUT stays bare JSON or empty on failure, so `--json | jq` pipelines never have to filter error shapes.
+Errors print to STDERR via `cmdutil.PrintError(w, err)` as `code: msg\nhint: ...`. STDOUT stays bare JSON or empty on failure, so `--format json | jq` pipelines never have to filter error shapes.
 
 User-facing exit-code mapping lives in [README.md "Exit codes"](README.md#exit-codes). When adding a new `ErrorCode` constant, also append to `AllCodes()` so the acceptance contract picks it up.
 
@@ -364,14 +359,16 @@ User-facing exit-code mapping lives in [README.md "Exit codes"](README.md#exit-c
 > **Audience:** AI agents and scripted callers parsing `aikb` stderr.
 > Code authors writing new error sites - see [`## Error Handling`](#error-handling) above.
 
-When `aikb` exits non-zero, stderr carries a structured triplet:
+When `aikb` exits non-zero under the default `--format json`, stderr carries
+the error envelope above: branch on `error.type` and `error.exit_code`. Under
+`--format text` it is a structured triplet:
 
 ```text
 <code>: <message>
 hint: <actionable next step>
 ```
 
-Agents parse the first colon to extract the typed code. The exit code class (see [`README.md` "Exit codes"](README.md#exit-codes)) controls retry / surface decisions; the typed code disambiguates within a class.
+Text-mode consumers parse the first colon to extract the typed code. The exit code class (see [`README.md` "Exit codes"](README.md#exit-codes)) controls retry / surface decisions; the typed code disambiguates within a class.
 
 <!-- ERROR_REFERENCE_START -->
 <!-- DO NOT EDIT manually below this marker. Add new codes to
@@ -468,7 +465,7 @@ The server **replays all stored events from the start** of the assistant message
 ### Agent contract
 
 1. **Dedupe by message_id** (or maintain a per-message event hash set). Naively processing all received events causes duplicate side effects (re-running tool calls, re-rendering answers).
-2. **Capture message_id from the init event** of the original `chat` or `session ask` invocation - the CLI injects `{"event":"init", "session_id":"...", "message_id":"..."}` as the first NDJSON line.
+2. **Capture the ids from the original stream.** `session_id` is on the CLI's `{"type":"init","session_id":"..."}` first NDJSON line. The message id is the `assistant_message_id` on the SDK's `agent_query` frame (`chat` JSON output also returns it as `data.assistant_message_id`), or read the persisted one from `aikb message list --session <id>`.
 3. **Handle `local.sse_stream_aborted` typed error**: server-side buffer expired (TTL exceeded) or process restarted (memory mode). The message is no longer recoverable; restart the original query.
 
 ### Server-side buffer TTL
@@ -482,7 +479,7 @@ After TTL, `aikb session resume` returns the typed error `local.sse_stream_abort
 
 ## Dry-run contract
 
-The `--dry-run` flag is available on every mutation cobra command (`kb create/edit/delete`, `agent create/edit/delete`, `doc create/upload/fetch/delete`, `chunk delete`, `session delete`, `auth refresh/logout`, `link/unlink`, `profile add/remove`) and on `aikb api` (POST/PUT/PATCH/DELETE only; GET rejected with FlagError exit 2).
+The `--dry-run` flag is available on every mutation cobra command except `auth login` (`aikb <cmd> --help` lists it) and on `aikb api` (POST/PUT/PATCH/DELETE only; GET rejected with FlagError exit 2).
 
 ### Envelope shape on dry-run
 
@@ -510,8 +507,8 @@ The dry-run path is **offline** - no SDK calls, no Factory.Client() init, no Res
 | `--dry-run` + `-y` | Equivalent to single `--dry-run`; `-y` is no-op (dry-run early-exits before ConfirmDestructive) |
 | `--dry-run` + `api -X GET` (or default GET) | FlagError exit 2: "--dry-run requires explicit -X POST/PUT/PATCH/DELETE; default GET is read-only with no side effect to preview" |
 | `--dry-run` + `--jq <expr>` | jq applied to envelope output normally |
-| `--dry-run` + `kb edit my-kb` | plan.args contains user raw input (NOT ResolveKB-resolved); agent verifies kb name correctness |
-| `--dry-run` + fetch-then-update (`kb edit / agent edit`) | plan.args contains user-explicit fields ONLY; agent infers server-side fetch-then-update preserves unmentioned fields |
+| `--dry-run` + `kb update my-kb` | plan.args contains user raw input (NOT ResolveKB-resolved); agent verifies kb name correctness |
+| `--dry-run` + fetch-then-update (`kb update / agent update`) | plan.args contains user-explicit fields ONLY; agent infers server-side fetch-then-update preserves unmentioned fields |
 | `--dry-run` + body containing secrets (`--input` payload) | **plan.body echoes the full body to stdout** so the agent can verify what would be sent; avoid piping secret-bearing bodies through dry-run for inspection |
 
 ### Streaming commands explicitly excluded
@@ -519,16 +516,16 @@ The dry-run path is **offline** - no SDK calls, no Factory.Client() init, no Res
 `session ask` and `chat` do NOT support `--dry-run` (streaming and dry-run have a semantic mismatch). For prompt-formation preview, use:
 
 ```bash
-echo '{"query":"...","kb":"..."}' | aikb api -X POST /api/v1/sessions/<id>/agent-qa --input - --dry-run
+echo '{"query":"...","agent_id":"..."}' | aikb api -X POST /api/v1/agent-chat/<session-id> --input - --dry-run
 ```
 
 ## Risk metadata
 
 Agents see the same `risk.action` string (in the form `noun.verb`) on three independent surfaces:
 
-1. **Error envelope** - `envelope.error.risk.action` on an exit-10 confirmation-required error, so the agent can decide whether to escalate to the user. 11 unique values: `kb.delete`, `kb.edit`, `agent.delete`, `agent.edit`, `doc.delete`, `doc.delete_all`, `session.delete`, `chunk.delete`, `profile.remove`, `auth.logout`, `api.delete`.
+1. **Error envelope** - `envelope.error.risk` (`{level, action}`) on an exit-10 confirmation-required error, so the agent can decide whether to escalate to the user. `level` is `destructive` or `write` (reversible updates). `aikb schema <cmd>` reports each command's `risk`; `doc.delete_all` and `api.delete` appear only in the envelope.
 
-2. **Help text** - a `Risk: <action> (destructive)` line prepended to the top of `--help` output on the 9 destructive cobra commands. `aikb api` is intentionally excluded: it is a generic HTTP passthrough whose risk depends on the method, so a static Risk: line would mislead for non-DELETE methods.
+2. **Help text** - a `Risk: <action> (<level>)` line prepended to the top of `--help` output on every gated cobra command. `aikb api` is intentionally excluded: it is a generic HTTP passthrough whose risk depends on the method, so a static Risk: line would mislead for non-DELETE methods.
 
 3. **MCP tool annotations** - `Tool.Annotations.destructiveHint` / `readOnlyHint` / `idempotentHint` / `openWorldHint` on every tool returned by `aikb mcp serve`.
 
@@ -536,7 +533,7 @@ The three surfaces do not auto-sync: each is wired separately so agents that onl
 
 ## MCP Tool Surface
 
-AI KB's MCP server exposes a curated read-only tool surface. Many MCP servers in the wild ship write / mutation operations on by default and rely on credential-scope or sandbox restrictions for safety. AI KB opts for curation instead: the server side doesn't yet enforce per-token scope, so an agent holding a user's token has full write access. Until server-side scope ships, the CLI keeps mutation tools out of the MCP surface as a belt-and-braces second line of defense. When server scope arrives this stance can loosen.
+AI KB's MCP server exposes a curated read + chat tool surface with no destructive tools. Many MCP servers in the wild ship write / mutation operations on by default and rely on credential-scope or sandbox restrictions for safety. AI KB opts for curation as well: API keys can be capability-scoped server-side (`internal/router/rbac.go`), but a user JWT or full-access key still has write access, so the CLI keeps mutation tools out of the MCP surface as a second line of defense.
 
 The curated 10 tools (`cli/internal/mcp/tools.go`):
 
@@ -576,7 +573,7 @@ Required-input idioms in this codebase:
 
 - Positional required: `cobra.ExactArgs(N)` or `cobra.MinimumNArgs(1)`
 - Flag required: `cmd.MarkFlagRequired("flag")`
-- Custom required (e.g., `agent edit` needs at-least-one-edit-flag): RunE-level validation that returns `input.invalid_argument`
+- Custom required (e.g., `agent update` needs at-least-one-edit-flag): RunE-level validation that returns `input.invalid_argument`
 - Mutex: `cmd.MarkFlagsMutuallyExclusive("a", "b")`
 
 Reasons hard-required-flags is the v0.5+ default:
@@ -590,8 +587,8 @@ Reasons hard-required-flags is the v0.5+ default:
   JSON used_for / required_flags / examples / output / warnings shape.
   Activated by `AIKB_AGENT_HELP=1` at `--help` time. Warnings are
   always rendered in human help (stderr, not env-gated). Applied to
-  `chat`, `kb list`, `session ask`, and all destructive commands.
-  Extending to another command requires touching only that command's `NewCmd`.
+  every leaf command; `aikb schema` enumerates them. A new command adds
+  its own call in its `NewCmd`.
 
 ## Status / check verb pair pattern
 

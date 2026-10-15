@@ -2,7 +2,7 @@
 name: ai-kb-rag-search
 description: Use when retrieving from or asking questions against an AI KB knowledge base via the `aikb` CLI - and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
 metadata:
-  tested_against: v0.10
+  tested_against: v2026.10.13
 ---
 
 # AI KB - retrieval & RAG queries
@@ -51,7 +51,9 @@ one wastes turns or returns the wrong shape. Use the decision table.
 - A stalled stream is not stopped by Ctrl-C (that just drops your local
   connection; the server keeps generating + billing). Stop it server-side:
   `aikb session stop <session-id> --message <message-id>` (session_id from
-  `data.session_id`, or from `init` under `--format ndjson`).
+  `data.session_id`, or from `init` under `--format ndjson`; message id from
+  `data.assistant_message_id` for `chat`, or `aikb message list --session <id>`
+  for `session ask`, or the `agent_query` frame under `--format ndjson`).
   Re-attach to a stream with `aikb session resume <session-id>
   --message <message-id>`.
 - `search chunks --limit` defaults to **8** (tuned for an LLM context window);

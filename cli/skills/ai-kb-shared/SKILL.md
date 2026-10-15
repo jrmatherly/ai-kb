@@ -2,7 +2,7 @@
 name: ai-kb-shared
 description: Use when driving an AI KB RAG server through the `aikb` CLI as an agent - authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
 metadata:
-  tested_against: v0.10
+  tested_against: v2026.10.13
 ---
 
 # AI KB CLI - shared base
@@ -46,18 +46,20 @@ aikb auth status          # verify: who am I, which tenant
 
 ## 2. Selecting a knowledge base (`--kb`)
 
-`--kb` accepts a **name or a UUID** (resolved server-side). Resolution order:
+`--kb` accepts a **name or a UUID**. A non-UUID value is matched client-side
+against `kb list` names (exact, case-sensitive). Resolution order:
 `--kb` flag → `AIKB_KB_ID` env → directory link (`aikb link --kb X` binds
-the cwd) → error. Read/create commands that operate "inside a project" inherit
-the link; **`search *` and destructive `--all` operations always require an
-explicit `--kb`** (so an agent never silently hits the wrong corpus).
+the cwd) → error. `chat`, `search chunks` and `search docs` inherit the link
+too; **only `doc delete --all` always requires an explicit `--kb`** (so a bulk
+delete never silently hits the wrong corpus).
 
 **A KB must have an embedding model bound to be searchable.** A freshly created
 KB is `retrieval_ready:false` - uploaded docs stay unindexed and `search`/`chat`
 return nothing until you bind models. Create it ready in one step
 (`kb create --embedding-model <m> --chat-model <m>`, discover ids with
 `aikb model list`) or bind after the fact
-(`kb config set <kb> --embedding-model <m> --chat-model <m>`). `kb status` /
+(`kb config set <kb> --embedding-model <m> --chat-model <m>`; high-risk, exits
+10 without `-y`, see §5). `kb status` /
 `kb check` report `retrieval_ready`, and `kb create` hints the fix when it is
 false - so an unconfigured KB is never silently "healthy".
 
@@ -69,8 +71,8 @@ Default output is `--format json`: a single envelope.
 | --- | --- |
 | `ok` | `true`/`false` - branch on this first (see batch/wait caveat below) |
 | `data` | success payload (object or array; absent on mutation-only success) |
-| `meta` | `count` / `has_more` / `dry_run` / `plan` … |
-| `error` | on failure: `{type, message, hint?, retry_argv?, retryable?, risk?}` |
+| `meta` | `count` / `has_more` / `total_count` / `hint` / `dry_run` / `plan` … |
+| `error` | on failure: `{type, message, exit_code, hint?, retry_argv?, retry_after_seconds?, retryable?, risk?, detail?}` |
 | `profile` | active profile name |
 
 - `error.type` is a **stable typed code** (e.g. `local.kb_not_found`,
@@ -121,14 +123,19 @@ exits **5** (adjust the value, retry). Branch on the exit code to tell them apar
 
 ## 5. Destructive writes (exit 10) - hard rule
 
-Destructive commands (`kb/doc/chunk/session/agent delete`, `kb/agent update`,
-`auth logout`, `doc delete --all`, …) without `-y` exit **10** with
-`error.type = input.confirmation_required` and `error.risk = {level, action}`:
+Every command whose `--help` starts with a `Risk:` line (`aikb schema <cmd>`
+shows it as `risk`), plus `aikb api -X DELETE`, exits **10** without `-y`, with
+`error.type = input.confirmation_required` and `error.risk = {level, action}`.
+`level` is `destructive` (deletes, `kb config set`, `auth logout`,
+`session tool-approval resolve`) or `write` (`kb/agent/doc/model update`);
+both are the same gate:
 
 ```jsonc
 {"ok":false,"error":{"type":"input.confirmation_required",
-  "message":"delete knowledge base X requires explicit confirmation: re-run with -y",
-  "retry_argv":["aikb","kb","delete","X","-y"],"risk":{"level":"destructive","action":"kb.delete"}}}
+  "message":"delete knowledge base X requires explicit confirmation: re-run with -y/--yes",
+  "exit_code":10,"hint":"high-risk write - re-run with -y/--yes after the user explicitly approves",
+  "retry_argv":["aikb","kb","delete","X","-y"],"retryable":false,
+  "risk":{"level":"destructive","action":"kb.delete"}}}
 ```
 
 **Surface this to the user and get explicit approval. Re-run with `-y` ONLY
@@ -136,7 +143,7 @@ after they approve. Never add `-y` on your own initiative.**
 
 ## 6. Preview before acting - `--dry-run`
 
-Any mutation accepts `--dry-run`: it resolves the request, prints
+Every mutation except `auth login` accepts `--dry-run`: it resolves the request, prints
 `meta.plan = {action, args}`, makes **zero** server/side-effect changes, exits 0.
 Use it to confirm a command is well-formed (and what it would do) before running
 it for real - especially before destructive or bulk operations.
@@ -146,7 +153,7 @@ it for real - especially before destructive or bulk operations.
 Mutations return the new resource id in `data.id`. Chain with it:
 
 ```bash
-KB=$(aikb kb create "Docs" --jq '.data.id' --format json | tr -d '"')
+KB=$(aikb kb create "Docs" --jq '.data.id')   # --jq prints bare strings
 aikb doc upload ./manual.pdf --kb "$KB"
 ```
 
@@ -170,7 +177,7 @@ An agent run pauses mid-stream on a tool-approval event when the server requires
 ## 8. Resource model & command map
 
 ```text
-kb        knowledge bases   list/view/create/update/delete/pin/unpin/status/check
+kb        knowledge bases   list/view/create/update/delete/pin/unpin/status/check/config set
 doc       documents in a KB list/view/create/upload/fetch/download/reparse/update/delete/wait
 chunk     retrieval units   list/view/delete   (RAG debug; not search)
 session   conversations     list/view/delete/ask/stop/resume/tool-approval resolve
@@ -181,6 +188,8 @@ search    retrieval         chunks / docs / kb / sessions
 chat      one-shot KB RAG Q&A (streaming)
 api       raw HTTP passthrough to any server endpoint (escape hatch)
 link/unlink  bind cwd to a KB        mcp serve  expose aikb as MCP tools
+profile / auth / config view / doctor / version   connection and health
+schema / exit-codes / skills                      self-description
 ```
 
 **chat vs session ask vs search** - the most common confusion: see the
@@ -200,7 +209,9 @@ take raw ids (no name resolution); resolve names via `kb_list` first.
 
 Run `aikb <command> --help`. With `AIKB_AGENT_HELP=1` set, `--help` emits a
 JSON blob (`used_for` / `required_flags` / `examples`) instead of prose - parse
-that to learn a command without scraping the human help table.
+that to learn a command without scraping the human help table. `aikb schema`
+lists every command with its `used_for`; `aikb schema <cmd path>` prints one
+command's full contract (flags, output, risk) as the standard envelope.
 
 ## Common mistakes
 
