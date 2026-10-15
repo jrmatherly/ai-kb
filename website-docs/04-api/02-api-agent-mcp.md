@@ -118,6 +118,8 @@ curl "$BASE/api/v1/agents/agent-1/suggested-questions?limit=6" -H "X-API-Key: $A
 
 Workspace-level integration of external tool servers. Read: Viewer+; write, test and approval policy: Admin+. API key: `manage_mcp_services` or full. Handler: `internal/handler/mcp_service.go`
 
+A route that addresses a service by `:id` answers 500 with a generic message when the stored service cannot be read; the cause is logged, not returned.
+
 ### POST /api/v1/mcp-services
 
 Purpose: create an MCP service. Permission: Admin+.
@@ -159,7 +161,7 @@ curl $BASE/api/v1/mcp-services -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/mcp-services/:id
 
-Purpose: details. Permission: Viewer+. Response: 200 `{"success":true,"data":{MCPServiceResponse}}`
+Purpose: details. Permission: Viewer+. Response: 200 `{"success":true,"data":{MCPServiceResponse}}`. 404 when the ID is unknown.
 
 ```bash
 curl $BASE/api/v1/mcp-services/mcp-1 -H "Authorization: Bearer $TOKEN"
@@ -198,7 +200,7 @@ curl -X DELETE $BASE/api/v1/mcp-services/mcp-1 -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/mcp-services/:id/test
 
-Purpose: connection test (probes the external service). Permission: Admin+. Response: 200 `{"success":true,"data":{"success","message","oauth_required","tools":[...],"resources":[...]}}`. A failed connection still answers 200 with `success:false` in `data`; 404 when the ID is unknown.
+Purpose: connection test (probes the external service). Permission: Admin+. Response: 200 `{"success":true,"data":{"success","message","oauth_required","tools":[...],"resources":[...]}}`. A failed connection still answers 200 with `success:false` in `data`; 404 when the ID is unknown; 500 when the stored service cannot be read.
 
 ```bash
 curl -X POST $BASE/api/v1/mcp-services/mcp-1/test -H "Authorization: Bearer $TOKEN"
@@ -301,7 +303,7 @@ Purpose: generate a per-user authorization URL. Permission: Viewer+.
 | `redirect_uri` | string | yes | Backend callback URL (absolute) |
 | `frontend_redirect` | string | no | Frontend path to open after the callback (default `/`) |
 
-Response: 200 `{"success":true,"data":{"authorization_url","authorization_attempt"}}`
+Response: 200 `{"success":true,"data":{"authorization_url","authorization_attempt"}}`. 404 when the ID is unknown.
 
 ```bash
 curl -X POST $BASE/api/v1/mcp-services/mcp-1/oauth/authorize-url -H "Authorization: Bearer $TOKEN" \

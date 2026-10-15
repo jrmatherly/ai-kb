@@ -74,6 +74,8 @@ type mcpOAuthAuthorizeRequest struct {
 // @Param        request  body      map[string]interface{}    true  "{redirect_uri: string, frontend_redirect?: string}"
 // @Success      200      {object}  map[string]interface{}    "{authorization_url: string, authorization_attempt: string}"
 // @Failure      400      {object}  errors.ErrorResponse
+// @Failure      404      {object}  errors.ErrorResponse    "MCP service not found"
+// @Failure      500      {object}  errors.ErrorResponse    "Internal server error"
 // @Security     Bearer
 // @Router       /mcp-services/{id}/oauth/authorize-url [post]
 func (h *MCPOAuthHandler) AuthorizeURL(c *gin.Context) {
@@ -101,8 +103,10 @@ func (h *MCPOAuthHandler) AuthorizeURL(c *gin.Context) {
 	}
 
 	service, err := h.svc.GetMCPServiceByID(ctx, tenantID, serviceID)
-	if err != nil || service == nil {
-		c.Error(errors.NewNotFoundError("MCP service not found"))
+	if err != nil {
+		writeMCPServiceError(c, err, "failed to get MCP service", logger.Fields{
+			"service_id": secutils.SanitizeForLog(serviceID),
+		})
 		return
 	}
 	if !service.AuthConfig.IsOAuth() {

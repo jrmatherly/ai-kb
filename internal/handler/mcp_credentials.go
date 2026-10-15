@@ -62,6 +62,7 @@ type mcpCredentialsPutRequest struct {
 // @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Failure      403      {object}  errors.ErrorResponse         "Built-in MCP service credentials are read-only"
 // @Failure      404      {object}  errors.ErrorResponse         "Service not found"
+// @Failure      500      {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/credentials [put]
@@ -84,8 +85,10 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 	// state and return it. Client treats this identically to a real save.
 	if req.APIKey == nil && req.Token == nil {
 		svc, err := h.svc.GetMCPServiceByID(ctx, tenantID, serviceID)
-		if err != nil || svc == nil {
-			c.Error(errors.NewNotFoundError("MCP service not found"))
+		if err != nil {
+			writeMCPServiceError(c, err, "failed to get MCP service", logger.Fields{
+				"service_id": secutils.SanitizeForLog(serviceID),
+			})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "data": dto.CredentialsResponse{
@@ -128,6 +131,7 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 // @Failure      400  {object}  errors.ErrorResponse  "Invalid field name"
 // @Failure      403  {object}  errors.ErrorResponse  "Built-in MCP service credentials are read-only"
 // @Failure      404  {object}  errors.ErrorResponse  "Service not found"
+// @Failure      500  {object}  errors.ErrorResponse  "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/credentials/{field} [delete]

@@ -11,9 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/models/chat"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
+	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
 
 const mcpUsagePrompt = `Write concise usage instructions for an MCP service,
@@ -46,8 +48,9 @@ func (h *MCPServiceHandler) GenerateMCPUsageInstructions(c *gin.Context) {
 	}
 	id := c.Param("id")
 	service, err := h.mcpServiceService.GetMCPServiceByID(ctx, tenant, id)
-	if err != nil || service == nil {
-		_ = c.Error(errors.NewNotFoundError("MCP service not found"))
+	if err != nil {
+		writeMCPServiceError(c, err, "Failed to get MCP service",
+			logger.Fields{"service_id": secutils.SanitizeForLog(id)})
 		return
 	}
 	metadataService, ok := h.mcpServiceService.(interfaces.MCPMetadataService)

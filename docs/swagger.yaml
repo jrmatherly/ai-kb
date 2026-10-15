@@ -13533,6 +13533,10 @@ paths:
           description: Service not found
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13573,6 +13577,10 @@ paths:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: MCP service not found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
@@ -13621,6 +13629,10 @@ paths:
           description: Service not found
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -13657,6 +13669,10 @@ paths:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: Service not found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
@@ -13746,6 +13762,10 @@ paths:
           description: Connection config changed during the refresh
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "503":
           description: Metadata store unavailable
           schema:
@@ -13786,6 +13806,14 @@ paths:
             type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "404":
+          description: MCP service not found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
@@ -13889,7 +13917,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Test result
+          description: Test result; a failed connection is data.success=false
           schema:
             additionalProperties: true
             type: object
@@ -13899,6 +13927,10 @@ paths:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "404":
           description: MCP service not found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:

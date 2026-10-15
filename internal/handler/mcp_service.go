@@ -67,7 +67,8 @@ func (h *MCPServiceHandler) mcpServiceResponses(
 }
 
 // writeMCPServiceError forwards a service-layer AppError with its own status and
-// reports anything else as a 500 prefixed with fallbackMsg.
+// reports anything else as a 500 carrying only fallbackMsg: the raw error can hold
+// repository or driver text, so it goes to the log, not the client.
 func writeMCPServiceError(c *gin.Context, err error, fallbackMsg string, fields logger.Fields) {
 	ctx := c.Request.Context()
 	if appErr, ok := errors.IsAppError(err); ok {
@@ -76,7 +77,7 @@ func writeMCPServiceError(c *gin.Context, err error, fallbackMsg string, fields 
 		return
 	}
 	logger.ErrorWithFields(ctx, err, fields)
-	_ = c.Error(errors.NewInternalServerError(fallbackMsg + ": " + err.Error()))
+	_ = c.Error(errors.NewInternalServerError(fallbackMsg))
 }
 
 // CreateMCPService godoc
@@ -239,6 +240,7 @@ func (h *MCPServiceHandler) listSharedAgentMCPServices(c *gin.Context, agent *ty
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "MCP service details"
 // @Failure      404  {object}  errors.ErrorResponse         "Service not found"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id} [get]
@@ -255,8 +257,8 @@ func (h *MCPServiceHandler) GetMCPService(c *gin.Context) {
 
 	service, err := h.mcpServiceService.GetMCPServiceByID(ctx, tenantID, serviceID)
 	if err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		c.Error(errors.NewNotFoundError("MCP service not found"))
+		writeMCPServiceError(c, err, "Failed to get MCP service",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 
@@ -281,6 +283,7 @@ func (h *MCPServiceHandler) GetMCPService(c *gin.Context) {
 // @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Failure      403      {object}  errors.ErrorResponse         "Built-in MCP services cannot be updated"
 // @Failure      404      {object}  errors.ErrorResponse         "MCP service not found"
+// @Failure      500      {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id} [put]
@@ -473,7 +476,8 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 	// and respond with the full current state via the secret-free DTO.
 	stored, err := h.mcpServiceService.GetMCPServiceByID(ctx, tenantID, serviceID)
 	if err != nil {
-		c.Error(errors.NewInternalServerError("Failed to fetch updated MCP service: " + err.Error()))
+		writeMCPServiceError(c, err, "Failed to fetch updated MCP service",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -527,9 +531,10 @@ func (h *MCPServiceHandler) DeleteMCPService(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
-// @Success      200  {object}  map[string]interface{}  "Test result"
+// @Success      200  {object}  map[string]interface{}  "Test result; a failed connection is data.success=false"
 // @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
 // @Failure      404  {object}  errors.ErrorResponse         "MCP service not found"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/test [post]
@@ -548,19 +553,8 @@ func (h *MCPServiceHandler) TestMCPService(c *gin.Context) {
 
 	result, err := h.mcpServiceService.TestMCPService(ctx, tenantID, serviceID)
 	if err != nil {
-		if _, ok := errors.IsAppError(err); ok {
-			writeMCPServiceError(c, err, "Failed to test MCP service",
-				logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
-			return
-		}
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"data": types.MCPTestResult{
-				Success: false,
-				Message: "Test failed: " + err.Error(),
-			},
-		})
+		writeMCPServiceError(c, err, "Failed to test MCP service",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 

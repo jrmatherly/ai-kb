@@ -45,6 +45,7 @@ func (h *MCPServiceHandler) GetMCPMetadata(c *gin.Context) { h.mcpMetadata(c, fa
 // @Failure      403  {object}  errors.ErrorResponse         "A static-auth catalog must be refreshed by an admin"
 // @Failure      404  {object}  errors.ErrorResponse         "Service not found"
 // @Failure      409  {object}  errors.ErrorResponse         "Connection config changed during the refresh"
+// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Failure      503  {object}  errors.ErrorResponse         "Metadata store unavailable"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -68,12 +69,9 @@ func (h *MCPServiceHandler) mcpMetadata(c *gin.Context, refresh bool) {
 	var err error
 	if refresh {
 		service, getErr := h.mcpServiceService.GetMCPServiceByID(ctx, tenant, id)
-		if getErr != nil || service == nil {
-			logger.ErrorWithFields(ctx, getErr, map[string]interface{}{
-				"service_id": secutils.SanitizeForLog(id),
-				"refresh":    true,
-			})
-			_ = c.Error(mcpMetadataAppError(types.ErrMCPServiceNotFound, true))
+		if getErr != nil {
+			writeMCPServiceError(c, getErr, "Failed to get MCP service",
+				logger.Fields{"service_id": secutils.SanitizeForLog(id), "refresh": true})
 			return
 		}
 		if !service.AuthConfig.IsOAuth() && !mayWriteSharedMCPMetadata(ctx) {

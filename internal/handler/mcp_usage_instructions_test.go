@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/middleware"
 	"github.com/jrmatherly/ai-kb/internal/models/chat"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -31,6 +32,9 @@ type usageMCPService struct {
 
 func (s *usageMCPService) GetMCPServiceByID(_ context.Context, tenant uint64, _ string) (*types.MCPService, error) {
 	s.tenant = tenant
+	if s.service == nil {
+		return nil, apperrors.NewNotFoundError("MCP service not found")
+	}
 	return s.service, nil
 }
 

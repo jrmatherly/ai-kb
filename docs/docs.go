@@ -9425,6 +9425,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             },
@@ -9488,6 +9494,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "MCP service not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -9617,6 +9629,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -9673,6 +9691,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Service not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -9807,6 +9831,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
                     "503": {
                         "description": "Metadata store unavailable",
                         "schema": {
@@ -9863,6 +9893,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "MCP service not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -10027,7 +10069,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Test result",
+                        "description": "Test result; a failed connection is data.success=false",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -10041,6 +10083,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "MCP service not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
