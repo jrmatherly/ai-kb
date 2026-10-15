@@ -1,6 +1,7 @@
 package errors
 
 import (
+	stderrors "errors"
 	"net/http"
 )
 
@@ -281,8 +282,10 @@ func NewVectorStoreUnavailableError(message string) *AppError {
 	}
 }
 
-// IsAppError checks if the error is an AppError type
+// IsAppError returns the first *AppError in err's wrap chain, so a service
+// that adds context with fmt.Errorf("...: %w", appErr) keeps its status.
 func IsAppError(err error) (*AppError, bool) {
-	appErr, ok := err.(*AppError)
+	var appErr *AppError
+	ok := stderrors.As(err, &appErr)
 	return appErr, ok
 }
