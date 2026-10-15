@@ -146,18 +146,25 @@ class VersionTest(unittest.TestCase):
         sh("git", "remote", "set-url", "origin", str(origin), cwd=self.repo)
         t = datetime.date.today()
         today = f"{t.year}.{t.month}.{t.day}"
-        if self.text("VERSION").strip() != today:
+        # The clone carries the real release tags; today's would shift every expectation below.
+        for tag in sh("git", "tag", "-l", f"v{today}", f"v{today}.*", cwd=self.repo).split():
+            sh("git", "tag", "-d", tag, cwd=self.repo)
+        current = self.text("VERSION").strip()
+        if current.split(".")[:3] == today.split("."):
+            micro = int(current.split(".")[3]) if current.count(".") == 3 else 0
+        else:
             self.assertEqual(self.run_tool("bump").returncode, 0)
             self.assertEqual(self.text("VERSION"), f"{today}\n")
+            micro = 0
         self.assertEqual(self.run_tool("bump").returncode, 0)
-        self.assertEqual(self.text("VERSION"), f"{today}.1\n")
-        sh("git", "-c", "tag.gpgsign=false", "tag", f"v{today}.2", cwd=self.repo)
-        sh("git", "-c", "tag.gpgsign=false", "tag", f"v{today}.3", cwd=self.repo)
-        sh("git", "push", "-q", "origin", f"v{today}.3", cwd=self.repo)
-        sh("git", "tag", "-d", f"v{today}.3", cwd=self.repo)
+        self.assertEqual(self.text("VERSION"), f"{today}.{micro + 1}\n")
+        sh("git", "-c", "tag.gpgsign=false", "tag", f"v{today}.{micro + 2}", cwd=self.repo)
+        sh("git", "-c", "tag.gpgsign=false", "tag", f"v{today}.{micro + 3}", cwd=self.repo)
+        sh("git", "push", "-q", "origin", f"v{today}.{micro + 3}", cwd=self.repo)
+        sh("git", "tag", "-d", f"v{today}.{micro + 3}", cwd=self.repo)
         self.assertEqual(self.run_tool("bump").returncode, 0)
-        self.assertEqual(self.text("VERSION"), f"{today}.4\n")
-        self.assertEqual(self.head_subject(), f"chore(release): v{today}.4")
+        self.assertEqual(self.text("VERSION"), f"{today}.{micro + 4}\n")
+        self.assertEqual(self.head_subject(), f"chore(release): v{today}.{micro + 4}")
 
     def test_explicit_version_with_an_existing_tag_is_refused(self):
         target = self.next_version(1)
