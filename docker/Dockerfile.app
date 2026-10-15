@@ -1,5 +1,8 @@
+# Node 24 for the BrowserSkill build and for the runtime's node/npm/npx.
+FROM node:24-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS node-base
+
 # Build extension and daemon from the same pinned source on the runtime architecture.
-FROM node:24-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS browserskill
+FROM node-base AS browserskill
 # A failed curl must fail the curl | sh steps, not pipe an empty script.
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /build
@@ -135,7 +138,6 @@ RUN if [ -n "$APK_MIRROR_ARG" ]; then \
     build-essential postgresql-client default-mysql-client tzdata sed curl bash vim wget \
     libsqlite3-0 \
     python3 python3-pip python3-dev libffi-dev libssl-dev \
-    nodejs npm \
     gosu \
     ffmpeg && \
     python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip setuptools wheel && \
@@ -146,6 +148,14 @@ RUN if [ -n "$APK_MIRROR_ARG" ]; then \
     chmod +x /usr/local/bin/uvx && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Node for stdio MCP servers (npx) and skill scripts. Debian bookworm packages Node 18, which is end-of-life.
+COPY --from=node-base /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-base /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s node /usr/local/bin/nodejs && \
+    ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
+    ln -s ../lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack
 
 # Create data directories and set permissions
 RUN mkdir -p /data/files && \
