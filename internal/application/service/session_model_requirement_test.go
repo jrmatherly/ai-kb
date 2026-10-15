@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/jrmatherly/ai-kb/internal/config"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -302,6 +303,7 @@ func TestResolveChatModelIDBuiltinAgentUsesDeclaredDefault(t *testing.T) {
 			wantErr: "configured chat model deleted-chat is unavailable for agent builtin-quick-answer",
 		},
 		{
+			// Defensive: built-in agents cannot be shared (ErrBuiltinAgentNotShareable).
 			name:    "shared read-only run gets no fallback",
 			agent:   quickAnswer(),
 			models:  []*types.Model{tenantDefault},
@@ -358,50 +360,31 @@ func TestResolveChatModelIDBuiltinDefaultAllowsSummaryOverride(t *testing.T) {
 	assert.Equal(t, "override-chat", modelID)
 }
 
-// The rerank requirement of a smart-reasoning agent reads the same slot rule.
-func TestAgentModelSlotRerankForBuiltinSmartReasoning(t *testing.T) {
-	tenantDefault := &types.Model{ID: "tenant-rerank", Type: types.ModelTypeRerank, IsDefault: true}
-	builtinDefault := &types.Model{
-		ID: "builtin-rerank", Type: types.ModelTypeRerank, IsDefault: true, IsBuiltin: true,
-	}
+// Quick Answer reranks with the declared default when its rerank slot is
+// empty; without one the pipeline keeps skipping rerank.
+func TestApplyAgentOverridesResolvesBuiltinRerankSlot(t *testing.T) {
+	defaultRerank := &types.Model{ID: "default-rerank", Type: types.ModelTypeRerank, IsDefault: true}
 	plainRerank := &types.Model{ID: "plain-rerank", Type: types.ModelTypeRerank}
-	defaultChat := &types.Model{ID: "default-chat", Type: types.ModelTypeKnowledgeQA, IsDefault: true}
-	smart := func(rerankID string) *types.CustomAgent {
-		return &types.CustomAgent{
-			ID: types.BuiltinSmartReasoningID, IsBuiltin: true,
-			Config: types.CustomAgentConfig{AgentMode: types.AgentModeSmartReasoning, RerankModelID: rerankID},
-		}
-	}
-	custom := &types.CustomAgent{
-		ID: "agent-1", Config: types.CustomAgentConfig{AgentMode: types.AgentModeSmartReasoning},
-	}
+	quickAnswer := &types.CustomAgent{ID: types.BuiltinQuickAnswerID, IsBuiltin: true}
 
 	tests := []struct {
 		name   string
 		agent  *types.CustomAgent
 		models []*types.Model
-		shared bool
 		want   string
 	}{
-		{"tenant default", smart(""), []*types.Model{plainRerank, tenantDefault}, false, "tenant-rerank"},
-		{"only builtin default", smart(""), []*types.Model{plainRerank, builtinDefault}, false, "builtin-rerank"},
-		{"tenant default wins", smart(""), []*types.Model{builtinDefault, tenantDefault}, false, "tenant-rerank"},
-		{"no default declared", smart(""), []*types.Model{plainRerank, defaultChat}, false, ""},
-		{"configured id kept as is", smart("stale-rerank"), []*types.Model{tenantDefault}, false, "stale-rerank"},
-		{"shared read-only run", smart(""), []*types.Model{tenantDefault}, true, ""},
-		{"custom agent", custom, []*types.Model{tenantDefault}, false, ""},
+		{"builtin uses the declared default", quickAnswer, []*types.Model{plainRerank, defaultRerank}, "default-rerank"},
+		{"builtin without a default skips rerank", quickAnswer, []*types.Model{plainRerank}, ""},
+		{"custom agent keeps an empty slot", &types.CustomAgent{ID: "agent-1"}, []*types.Model{defaultRerank}, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ms := &stubModelService{availableModels: tt.models}
-			req := &types.QARequest{CustomAgent: tt.agent, SharedAgentReadOnly: tt.shared}
+			svc := &sessionService{cfg: &config.Config{}, modelService: &stubModelService{availableModels: tt.models}}
+			cm := &types.ChatManage{}
 
-			modelID, err := agentModelSlot(
-				context.Background(), ms, req, tt.agent.Config.RerankModelID, types.ModelTypeRerank,
-			)
+			svc.applyAgentOverridesToChatManage(context.Background(), tt.agent, false, cm)
 
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, modelID)
+			assert.Equal(t, tt.want, cm.RerankModelID)
 		})
 	}
 }

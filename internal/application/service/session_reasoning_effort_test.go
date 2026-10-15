@@ -35,7 +35,7 @@ func TestRequestReasoningEffortPrecedence(t *testing.T) {
 			// The RAG pipeline starts with the agent defaults and applies the same
 			// request override to its summary options.
 			cm := &types.ChatManage{}
-			svc.applyAgentOverridesToChatManage(tagTargetContext(), agent, cm)
+			svc.applyAgentOverridesToChatManage(tagTargetContext(), agent, false, cm)
 			applyRequestReasoningEffort(
 				req.ReasoningEffort, &cm.SummaryConfig.Thinking, &cm.SummaryConfig.ReasoningEffort,
 			)

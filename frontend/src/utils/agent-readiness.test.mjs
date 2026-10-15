@@ -175,6 +175,7 @@ test('a built-in agent with a stale model_id is not masked by the default', () =
   assert.deepEqual(getAgentNotReadyReasonKeys({ model_id: 'deleted-chat' }, [tenantChat], builtinOwn), ['summary_model'])
 })
 
+// Defensive: built-in agents cannot be shared (backend ErrBuiltinAgentNotShareable).
 test('a shared built-in agent does not use the receiving workspace default', () => {
   assert.deepEqual(getAgentNotReadyReasonKeys(
     {},

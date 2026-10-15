@@ -162,7 +162,7 @@ func TestBuildIMLastRequestStateFromAgent(t *testing.T) {
 		},
 	}
 
-	state := buildIMLastRequestState(agent.ID, agent, nil)
+	state := buildIMLastRequestState(agent.ID, agent, nil, "model-1")
 
 	if state.AgentID != "agent-1" {
 		t.Fatalf("AgentID = %q, want agent-1", state.AgentID)
@@ -191,7 +191,7 @@ func TestBuildIMLastRequestStateKeepsExplicitKBs(t *testing.T) {
 		},
 	}
 
-	state := buildIMLastRequestState(agent.ID, agent, []string{"kb-explicit"})
+	state := buildIMLastRequestState(agent.ID, agent, []string{"kb-explicit"}, "model-1")
 
 	if state.AgentEnabled {
 		t.Fatal("AgentEnabled = true, want false for quick-answer agent")

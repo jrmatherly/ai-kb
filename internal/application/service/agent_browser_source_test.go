@@ -126,10 +126,10 @@ func TestAgentPromptReferencesReachBothRuntimePaths(t *testing.T) {
 	a.Config.AgentMode = types.AgentModeQuickAnswer
 	a.Config.SystemPromptID = "normal"
 	cm := &types.ChatManage{}
-	svc.applyAgentOverridesToChatManage(t.Context(), a, cm)
+	svc.applyAgentOverridesToChatManage(t.Context(), a, false, cm)
 	require.Equal(t, "Latest normal template", cm.SummaryConfig.Prompt)
 	require.Equal(t, "Latest {{contexts}}", cm.SummaryConfig.ContextTemplate)
 	a.Config.SystemPrompt = "My custom prompt"
-	svc.applyAgentOverridesToChatManage(t.Context(), a, cm)
+	svc.applyAgentOverridesToChatManage(t.Context(), a, false, cm)
 	require.Equal(t, "My custom prompt", cm.SummaryConfig.Prompt)
 }
