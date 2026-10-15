@@ -18,6 +18,7 @@ cd "$ROOT"
 
 remote="${1:-origin}"
 head="$(git rev-parse HEAD)"
+checked=" "
 while read -r _local_ref local_sha remote_ref remote_sha; do
   if [[ "$local_sha" =~ ^0+$ ]]; then
     continue
@@ -27,6 +28,13 @@ while read -r _local_ref local_sha remote_ref remote_sha; do
     log_ok "pre-push: nothing new to push"
     continue
   fi
+  # An annotated tag names its own object; check the commit it points to, once per push.
+  local_sha="$(git rev-parse "${local_sha}^{commit}")"
+  if [[ "$checked" == *" $local_sha "* ]]; then
+    log_ok "pre-push: ${local_sha:0:12} already checked in this push"
+    continue
+  fi
+  checked+="$local_sha "
   if [[ "$local_sha" != "$head" ]]; then
     log_fail "pushing ${local_sha:0:12}, which is not HEAD: validate.sh checks the working tree, so check it out and push again (SKIP_HOOKS=1 skips the hooks)"
     exit 1
