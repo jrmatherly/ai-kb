@@ -1,6 +1,5 @@
 # AI KB Helm Chart
 
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/aikb)](https://artifacthub.io/packages/helm/aikb/aikb)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Helm chart for deploying [AI KB](https://github.com/jrmatherly/ai-kb) - an AI-powered Knowledge RAG Platform.
@@ -22,6 +21,10 @@ AI KB is an intelligent knowledge base platform that combines:
 - Ingress controller (nginx-ingress recommended) for external access
 
 ## Quick Start
+
+No `ghcr.io/jrmatherly/ai-kb-*` images are published yet. Until the first release,
+build them (`make build-images`), push them to your registry and point `app.image`,
+`frontend.image` and `docreader.image` at your registry.
 
 ```bash
 # Add required secrets
@@ -268,6 +271,8 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `frontend.replicaCount` | Number of replicas | `1` |
 | `frontend.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-ui` |
 | `frontend.image.tag` | Image tag | `""` (uses appVersion) |
+| `frontend.appHost` | Backend host the frontend proxies to | App Service name |
+| `frontend.appPort` | Backend port the frontend proxies to | `app.service.port` |
 
 ### DocReader
 
@@ -314,20 +319,50 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | ----------- | ------------- | --------- |
 | `secrets.dbUser` | Database username | `postgres` |
 | `secrets.dbPassword` | Database password | `""` (required) |
-| `secrets.dbName` | Database name | `aikb` |
+| `secrets.dbName` | Database name | `ai_kb` |
+| `secrets.redisUsername` | Redis ACL username (Redis 6.0+) | `""` |
 | `secrets.redisPassword` | Redis password | `""` (required) |
 | `secrets.jwtSecret` | JWT signing secret | `""` (required) |
+| `secrets.systemAesKey` | 32-byte AES key for database field encryption | `""` (generated) |
 | `secrets.existingSecret` | Use existing secret | `""` |
 
-### Optional Components
+Set `secrets.systemAesKey` explicitly in production. When it is empty, the chart
+generates a random key on first install and reuses it on upgrade by looking up
+the existing Secret. If that Secret is ever deleted or recreated, a new key is
+generated and data encrypted with the old one cannot be decrypted.
 
-These map to docker-compose profiles:
+An `existingSecret` must contain `DB_USER`, `DB_PASSWORD`, `DB_NAME`,
+`REDIS_USERNAME`, `REDIS_PASSWORD`, `JWT_SECRET` and `SYSTEM_AES_KEY`, plus
+`NEO4J_USERNAME` and `NEO4J_PASSWORD` when `neo4j.enabled` is true.
+
+### Data Files
 
 | Parameter | Description | Default |
 | ----------- | ------------- | --------- |
-| `minio.enabled` | Enable MinIO storage | `false` |
-| `neo4j.enabled` | Enable Neo4j (GraphRAG) | `false` |
-| `qdrant.enabled` | Enable Qdrant vector DB | `false` |
+| `dataFiles.persistence.enabled` | Persist uploaded files at `/data/files` | `true` |
+| `dataFiles.persistence.size` | PVC size | `10Gi` |
+| `dataFiles.persistence.existingClaim` | Use an existing PVC | `""` |
+
+### Neo4j (GraphRAG)
+
+Equivalent to the `neo4j` docker-compose profile. Enabling it sets `NEO4J_ENABLE=true` on the app.
+
+| Parameter | Description | Default |
+| ----------- | ------------- | --------- |
+| `neo4j.enabled` | Enable Neo4j | `false` |
+| `neo4j.username` | Neo4j username | `neo4j` |
+| `neo4j.password` | Neo4j password | `""` (required if enabled) |
+| `neo4j.persistence.size` | PVC size | `10Gi` |
+
+The chart has no MinIO or Qdrant components. Run them separately and configure
+the app through `app.env` / `app.extraEnv` (`STORAGE_TYPE`, `RETRIEVE_DRIVER` and
+the provider's variables).
+
+### Ingress annotations
+
+`ingress.annotations` defaults to ingress-nginx timeouts and
+`proxy-body-size: 100m`. That body limit is independent of
+`global.maxFileSizeMB`; raise both together.
 
 ## Security Best Practices
 
@@ -356,17 +391,16 @@ These map to docker-compose profiles:
 
 ### Pod Security
 
-The chart follows CNCF security best practices:
-
-- Runs as non-root user
-- Read-only root filesystem where possible
-- Drops all capabilities
-- Uses seccomp profiles
+Every Pod uses the `RuntimeDefault` seccomp profile and every container sets
+`allowPrivilegeEscalation: false`. The images run as root and need a writable
+root filesystem, so the chart does not set `runAsNonRoot` or
+`readOnlyRootFilesystem`. Tighten them through `global.podSecurityContext`,
+`global.containerSecurityContext` and each component's `securityContext`.
 
 ## Upgrading
 
 ```bash
-helm upgrade aikb ./helm \
+helm upgrade ai-kb ./helm \
   --namespace ai-kb \
   --reuse-values
 ```
@@ -374,7 +408,7 @@ helm upgrade aikb ./helm \
 ## Uninstalling
 
 ```bash
-helm uninstall aikb --namespace ai-kb
+helm uninstall ai-kb --namespace ai-kb
 
 # Optional: Remove PVCs
 kubectl delete pvc -n ai-kb -l app.kubernetes.io/instance=ai-kb
@@ -414,10 +448,6 @@ kubectl logs -n ai-kb -l app.kubernetes.io/component=frontend -f
 
 - Verify secrets are correct
 - Check PostgreSQL logs: `kubectl logs -n ai-kb -l app.kubernetes.io/component=database`
-
-## Contributing
-
-See [CONTRIBUTING.md](https://github.com/jrmatherly/ai-kb/blob/main/CONTRIBUTING.md) in the main repository.
 
 ## References
 

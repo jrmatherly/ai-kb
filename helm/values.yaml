@@ -237,9 +237,6 @@ docreader:
     # runAsNonRoot: true  # Disabled - official images run as root
     allowPrivilegeEscalation: false
 
-  # -- Environment variables
-  env:
-    STORAGE_TYPE: local
 
   # -- Service configuration
   service:
@@ -432,34 +429,16 @@ secrets:
   # a new random value will be generated and any data encrypted with the old
   # key becomes UNRECOVERABLE (the UI will display ciphertext like "enc:v1:..."
   # instead of plaintext).
-  # NOTE: TENANT_AES_KEY is deprecated since v0.4.0 - encryption now uses
-  # SYSTEM_AES_KEY exclusively. The Go app no longer reads TENANT_AES_KEY and
-  # it has been removed from the Secret.
   systemAesKey: ""
 
   # -- Use existing secret instead of creating one
-  # The secret must contain keys: DB_USER, DB_PASSWORD, DB_NAME, REDIS_USERNAME, REDIS_PASSWORD, JWT_SECRET, SYSTEM_AES_KEY
+  # The secret must contain keys: DB_USER, DB_PASSWORD, DB_NAME, REDIS_USERNAME, REDIS_PASSWORD, JWT_SECRET, SYSTEM_AES_KEY,
+  # plus NEO4J_USERNAME and NEO4J_PASSWORD when neo4j.enabled is true
   existingSecret: ""
 
 # -----------------------------------------------------------------------------
 # Optional Components (Profiles from docker-compose)
 # -----------------------------------------------------------------------------
-
-# -- MinIO configuration (S3-compatible storage)
-# Equivalent to: docker compose --profile minio
-minio:
-  # -- Enable MinIO
-  enabled: false
-  image:
-    repository: pgsty/minio
-    tag: latest
-  # -- Root user
-  rootUser: minioadmin
-  # -- Root password (REQUIRED if enabled)
-  rootPassword: ""
-  persistence:
-    enabled: true
-    size: 20Gi
 
 # -- Neo4j configuration (Knowledge Graph)
 # Equivalent to: docker compose --profile neo4j
@@ -513,15 +492,3 @@ neo4j:
 
   # -- Affinity rules
   affinity: {}
-
-# -- Qdrant configuration (Vector Database)
-# Equivalent to: docker compose --profile qdrant
-qdrant:
-  # -- Enable Qdrant as alternative vector store
-  enabled: false
-  image:
-    repository: qdrant/qdrant
-    tag: latest
-  persistence:
-    enabled: true
-    size: 10Gi
