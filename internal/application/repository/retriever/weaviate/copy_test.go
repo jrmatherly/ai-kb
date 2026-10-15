@@ -43,6 +43,7 @@ func copySourceRow(id, chunkID, sourceID string) map[string]any {
 		fieldKnowledgeID:     "know-1",
 		fieldKnowledgeBaseID: "kb-src",
 		fieldTagID:           "",
+		fieldIsEnabled:       true,
 		"_additional": map[string]any{
 			"id": id, "vectors": map[string]any{fieldEmbedding: []any{0.5, 0.25}},
 		},
@@ -80,6 +81,9 @@ type copyPageServer struct {
 	// omitCollection answers with a Get object that carries no key for the
 	// queried collection.
 	omitCollection bool
+	// objectError, when set, is the per-object error every batch write
+	// reports inside its HTTP 200 response.
+	objectError string
 
 	queries    int
 	limits     []int
@@ -170,7 +174,16 @@ func (s *copyPageServer) handle(w http.ResponseWriter, r *http.Request) {
 				targetChunkID: fmt.Sprint(obj.Properties[fieldChunkID]),
 			})
 		}
+		objectError := s.objectError
 		s.mu.Unlock()
+		if objectError != "" {
+			_ = json.NewEncoder(w).Encode([]any{map[string]any{
+				"result": map[string]any{"errors": map[string]any{
+					"error": []any{map[string]any{"message": objectError}},
+				}},
+			}})
+			return
+		}
 		_, _ = w.Write([]byte(`[]`))
 	case r.Method == http.MethodGet && r.URL.Path == "/v1/meta":
 		_, _ = w.Write([]byte(`{"version":"1.37.3"}`))
@@ -457,6 +470,17 @@ func TestCopyIndicesReportsAQueryError(t *testing.T) {
 	require.ErrorContains(t, copyTestRun(t, source, repo, copyTestChunkMap(1)), failure)
 	assert.Equal(t, 1, source.queryCount(), "the walk must stop on the failed query")
 	assert.Zero(t, len(source.writtenObjects()), "a failed query must not be reported as a finished copy")
+}
+
+// Weaviate reports a rejected object inside a successful batch response; the
+// copy must fail so the caller rolls the target back.
+func TestCopyIndicesReportsAnObjectError(t *testing.T) {
+	const failure = "vector lengths don't match"
+	source := copyTestSingleVectorChunks("chunk-0")
+	source.objectError = failure
+	repo := source.serve(t)
+
+	require.ErrorContains(t, copyTestRun(t, source, repo, copyTestChunkMap(1)), failure)
 }
 
 // A response the walk cannot read must be reported, not turned into a panic by

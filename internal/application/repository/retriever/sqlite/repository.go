@@ -7,12 +7,12 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode"
 
 	sqlite_vec "github.com/asg017/sqlite-vec-go-bindings/cgo"
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/common"
 	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/searchutil"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"gorm.io/gorm"
@@ -164,7 +164,7 @@ func (r *sqliteRepository) initFTS5() error {
 			return err
 		}
 		for _, row := range rows {
-			if err := tx.Exec(fts5InsertSQL, row.ID, tokenizeCJKBigram(row.Content), row.SourceID,
+			if err := tx.Exec(fts5InsertSQL, row.ID, searchutil.CJKBigrams(row.Content), row.SourceID,
 				row.ChunkID, row.KnowledgeID, row.KnowledgeBaseID).Error; err != nil {
 				return err
 			}
@@ -857,7 +857,7 @@ func (r *sqliteRepository) syncFTS5Insert(db *gorm.DB, row *sqliteEmbedding) err
 	if row.ID == 0 {
 		return fmt.Errorf("[SQLite] cannot index chunk %s: row has no id", row.SourceID)
 	}
-	if err := db.Exec(fts5InsertSQL, row.ID, tokenizeCJKBigram(row.Content), row.SourceID, row.ChunkID,
+	if err := db.Exec(fts5InsertSQL, row.ID, searchutil.CJKBigrams(row.Content), row.SourceID, row.ChunkID,
 		row.KnowledgeID, row.KnowledgeBaseID).Error; err != nil {
 		return fmt.Errorf("[SQLite] failed to insert keyword index row for %s: %w", row.SourceID, err)
 	}
@@ -908,55 +908,6 @@ func toInterfaceSlice(ss []string) []interface{} {
 	return out
 }
 
-// tokenizeCJKBigram splits continuous CJK character sequences into overlapping bigrams.
-// Non-CJK words are kept intact. This approach maximizes recall for CJK search.
-func tokenizeCJKBigram(text string) string {
-	var parts []string
-	var currentCJK []rune
-	var currentNonCJK strings.Builder
-
-	flushCJK := func() {
-		if len(currentCJK) == 0 {
-			return
-		}
-		if len(currentCJK) == 1 {
-			parts = append(parts, string(currentCJK[0]))
-		} else {
-			for i := 0; i < len(currentCJK)-1; i++ {
-				parts = append(parts, string(currentCJK[i])+string(currentCJK[i+1]))
-			}
-		}
-		currentCJK = currentCJK[:0]
-	}
-
-	flushNonCJK := func() {
-		if currentNonCJK.Len() > 0 {
-			parts = append(parts, currentNonCJK.String())
-			currentNonCJK.Reset()
-		}
-	}
-
-	for _, r := range text {
-		// unicode.Han covers Chinese characters
-		if unicode.Is(unicode.Han, r) {
-			flushNonCJK()
-			currentCJK = append(currentCJK, r)
-		} else if unicode.IsSpace(r) || unicode.IsPunct(r) || unicode.IsSymbol(r) {
-			// Delimiters
-			flushCJK()
-			flushNonCJK()
-		} else {
-			// Alphanumeric or other languages
-			flushCJK()
-			currentNonCJK.WriteRune(r)
-		}
-	}
-	flushCJK()
-	flushNonCJK()
-
-	return strings.Join(parts, " ")
-}
-
 // sanitizeFTS5Query builds an FTS5 query from user input by applying bigram tokenization.
 func sanitizeFTS5Query(q string) string {
 	q = strings.TrimSpace(q)
@@ -965,7 +916,7 @@ func sanitizeFTS5Query(q string) string {
 	}
 
 	// Tokenize input query with bigrams (same as during indexing)
-	tokenized := tokenizeCJKBigram(q)
+	tokenized := searchutil.CJKBigrams(q)
 	fields := strings.Fields(tokenized)
 
 	var parts []string
@@ -974,10 +925,10 @@ func sanitizeFTS5Query(q string) string {
 			continue
 		}
 		term := `"` + strings.ReplaceAll(f, `"`, `""`) + `"`
-		// The index holds CJK text as bigrams, so a lone Han character
+		// The index holds CJK text as bigrams, so a lone CJK character
 		// (such as the Han half of "A-shares" written as A plus one character)
 		// was never a token; match bigrams starting with it.
-		if runes := []rune(f); len(runes) == 1 && unicode.Is(unicode.Han, runes[0]) {
+		if runes := []rune(f); len(runes) == 1 && searchutil.IsCJK(runes[0]) {
 			term += "*"
 		}
 		parts = append(parts, term)

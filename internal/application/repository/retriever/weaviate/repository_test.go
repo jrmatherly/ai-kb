@@ -215,3 +215,11 @@ func TestBatchUpdateChunkEnabledStatusMergesIntoEveryObjectOfTheChunk(t *testing
 		"obj-c": {fieldIsEnabled: true},
 	}, patched)
 }
+
+func TestCollectionNameMatchesWeaviateCapitalization(t *testing.T) {
+	t.Setenv("WEAVIATE_COLLECTION", "kb_embeddings")
+	repo := NewWeaviateRetrieveEngineRepository(nil, nil).(*weaviateRepository)
+	require.Equal(t, "Kb_embeddings_768", repo.getCollectionName(768))
+	require.True(t, repo.ownsCollection("Kb_embeddings_768"))
+	require.False(t, repo.ownsCollection("Kb_embeddings2_768"))
+}

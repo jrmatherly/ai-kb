@@ -10,23 +10,29 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/logger"
+	"github.com/jrmatherly/ai-kb/internal/searchutil"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate"
+	"github.com/weaviate/weaviate-go-client/v5/weaviate/batch"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate/fault"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate/filters"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
 	envWeaviateCollection = "WEAVIATE_COLLECTION"
 	defaultCollectionName = "Aikb_embeddings"
 	fieldContent          = "content"
+	fieldContentBigram    = "content_bigram"
 	fieldSourceID         = "source_id"
 	fieldSourceType       = "source_type"
 	fieldChunkID          = "chunk_id"
@@ -36,6 +42,9 @@ const (
 	fieldEmbedding        = "embedding"
 	fieldIsEnabled        = "is_enabled"
 	fieldID               = "id"
+
+	// mergeConcurrency bounds the PATCHes mergeChunkProperties keeps in flight.
+	mergeConcurrency = 8
 
 	// defaultCopyQueryLimit is the row limit CopyIndices reads source vectors
 	// with. Weaviate caps a single query at QUERY_MAXIMUM_RESULTS, 10000 by
@@ -55,7 +64,12 @@ func NewWeaviateRetrieveEngineRepository(client *weaviate.Client, indexCfg *type
 	log := logger.GetLogger(context.Background())
 	log.Info("[Weaviate] Initializing Weaviate retriever engine repository")
 
+	// Weaviate capitalizes the first letter of a class name; matching it here
+	// keeps the names this repository builds equal to the ones it lists.
 	collectionBaseName := types.ResolveCollectionName(indexCfg, envWeaviateCollection, defaultCollectionName)
+	if first, size := utf8.DecodeRuneInString(collectionBaseName); size > 0 {
+		collectionBaseName = string(unicode.ToUpper(first)) + collectionBaseName[size:]
+	}
 
 	res := &weaviateRepository{
 		client:             client,
@@ -88,7 +102,7 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 		log.Errorf("[Weaviate] Failed to check collection existence: %v", err)
 		return fmt.Errorf("failed to check collection existence: %w", err)
 	}
-	enabled := true
+	enabled, disabled := true, false
 	if !exists {
 		log.Infof("[Weaviate] Creating collection %s with dimension %d", collectionName, dimension)
 
@@ -112,11 +126,19 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 			},
 			Properties: []*models.Property{
 				{
-					Name:     fieldContent,
-					DataType: []string{"text"},
-					// Not gse or gse_ch: the official images (1.38-1.40) lack
-					// their dictionaries, so BM25 on them matches nothing.
-					Tokenization: "word",
+					// Stored for results and copies; keyword search uses content_bigram.
+					Name:            fieldContent,
+					DataType:        []string{"text"},
+					IndexSearchable: &disabled,
+				},
+				{
+					// Keyword search runs on this: searchutil.CJKBigramsAndUnigrams of
+					// content. Weaviate has no CJK bigram tokenizer, and gse/gse_ch
+					// fail to load their dictionaries in the official images
+					// (weaviate/weaviate#10097) and split English into letters.
+					Name:         fieldContentBigram,
+					DataType:     []string{"text"},
+					Tokenization: "lowercase",
 				},
 				{
 					Name:     fieldSourceID,
@@ -209,6 +231,25 @@ func hasStatus(err error, code int) bool {
 // ownsCollection reports whether name is one of getCollectionName's collections.
 func (w *weaviateRepository) ownsCollection(name string) bool {
 	return strings.HasPrefix(name, w.collectionBaseName+"_")
+}
+
+// doBatch writes a batch and fails on any object Weaviate rejected, which it
+// reports inside a successful response.
+func doBatch(ctx context.Context, batcher *batch.ObjectsBatcher) error {
+	resp, err := batcher.Do(ctx)
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, obj := range resp {
+		if obj.Result == nil || obj.Result.Errors == nil {
+			continue
+		}
+		for _, item := range obj.Result.Errors.Error {
+			errs = append(errs, fmt.Errorf("object %s: %s", obj.ID, item.Message))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func (w *weaviateRepository) EngineType() types.RetrieverEngineType {
@@ -305,7 +346,7 @@ func (w *weaviateRepository) BatchSave(ctx context.Context,
 			batcher.WithObjects(obj)
 		}
 		// Flush batch
-		if _, err := batcher.Do(ctx); err != nil {
+		if err := doBatch(ctx, batcher); err != nil {
 			log.Errorf("[Weaviate] Failed to execute batch operation for dimension %d: %v", dimension, err)
 			return fmt.Errorf("failed to batch save (dimension %d): %w", dimension, err)
 		}
@@ -438,36 +479,51 @@ func (w *weaviateRepository) mergeChunkProperties(ctx context.Context, updates m
 	}
 	fields := []graphql.Field{{Name: fieldChunkID}, {Name: "_additional", Fields: []graphql.Field{{Name: "id"}}}}
 	chunkIDs := slices.Sorted(maps.Keys(updates))
-	for _, collectionName := range collections {
-		if !w.ownsCollection(collectionName) {
-			continue
-		}
-		reader := newCopySourceReader(w, collectionName, fields)
-		for batch := range slices.Chunk(chunkIDs, 64) {
-			rows, err := reader.readBatch(ctx, "", batch)
-			if err != nil {
-				return err
+	// Weaviate has no batch merge (weaviate/weaviate#2124), so each object is
+	// one PATCH; bounded concurrency keeps a large toggle off the serial path.
+	g, gctx := errgroup.WithContext(ctx)
+	g.SetLimit(mergeConcurrency)
+	readErr := func() error {
+		for _, collectionName := range collections {
+			if !w.ownsCollection(collectionName) {
+				continue
 			}
-			for _, row := range rows {
-				data, _ := row.(map[string]any)
-				additional, _ := data["_additional"].(map[string]any)
-				id, _ := additional["id"].(string)
-				chunkID, _ := data[fieldChunkID].(string)
-				if id == "" || updates[chunkID] == nil {
-					return fmt.Errorf("weaviate: unexpected chunk row %v in %s", row, collectionName)
+			reader := newCopySourceReader(w, collectionName, fields)
+			for ids := range slices.Chunk(chunkIDs, 64) {
+				rows, err := reader.readBatch(gctx, "", ids)
+				if err != nil {
+					return err
 				}
-				if err := w.client.Data().Updater().
-					WithClassName(collectionName).
-					WithID(id).
-					WithMerge().
-					WithProperties(updates[chunkID]).
-					Do(ctx); err != nil && !hasStatus(err, http.StatusNotFound) {
-					return fmt.Errorf("failed to update chunk %s in %s: %w", chunkID, collectionName, err)
+				for _, row := range rows {
+					data, _ := row.(map[string]any)
+					additional, _ := data["_additional"].(map[string]any)
+					id, _ := additional["id"].(string)
+					chunkID, _ := data[fieldChunkID].(string)
+					if id == "" || updates[chunkID] == nil {
+						return fmt.Errorf("weaviate: unexpected chunk row %v in %s", row, collectionName)
+					}
+					g.Go(func() error {
+						err := w.client.Data().Updater().
+							WithClassName(collectionName).
+							WithID(id).
+							WithMerge().
+							WithProperties(updates[chunkID]).
+							Do(gctx)
+						if err != nil && !hasStatus(err, http.StatusNotFound) {
+							return fmt.Errorf("failed to update chunk %s in %s: %w", chunkID, collectionName, err)
+						}
+						return nil
+					})
 				}
 			}
 		}
+		return nil
+	}()
+	// A failed PATCH cancels gctx, so the read error is then only its echo.
+	if err := g.Wait(); err != nil {
+		return err
 	}
-	return nil
+	return readErr
 }
 
 func (w *weaviateRepository) getBaseFilter(params types.RetrieveParams) *filters.WhereBuilder {
@@ -631,8 +687,8 @@ func (w *weaviateRepository) KeywordsRetrieve(ctx context.Context,
 
 		//bm25 search
 		bm25 := w.client.GraphQL().Bm25ArgBuilder().
-			WithQuery(params.Query).
-			WithProperties([]string{fieldContent}...)
+			WithQuery(searchutil.CJKBigrams(params.Query)).
+			WithProperties(fieldContentBigram)
 
 		fields := getKeywordsFields()
 
@@ -783,34 +839,34 @@ func (w *weaviateRepository) CopyIndices(ctx context.Context,
 				vector[i] = float32(v.(float64))
 			}
 
-			isEnabled := true
+			isEnabled, ok := data[fieldIsEnabled].(bool)
+			if !ok {
+				isEnabled = true // a row written without the flag reads as enabled
+			}
+			content, _ := data[fieldContent].(string)
+			sourceType, _ := data[fieldSourceType].(float64)
+			tagID, _ := data[fieldTagID].(string)
 			newObj := &models.Object{
 				Class: collectionName,
 				ID:    strfmt.UUID(objectID(targetSourceID)),
-				Properties: map[string]interface{}{
-					fieldContent:         data[fieldContent],
-					fieldSourceID:        targetSourceID,
-					fieldSourceType:      data[fieldSourceType],
-					fieldChunkID:         targetChunkID,
-					fieldKnowledgeID:     targetKnowledgeID,
-					fieldKnowledgeBaseID: targetKnowledgeBaseID,
-					fieldTagID:           data[fieldTagID],
-					fieldIsEnabled:       isEnabled,
-				},
+				Properties: createPayload(&WeaviateVectorEmbedding{
+					Content:         content,
+					SourceID:        targetSourceID,
+					SourceType:      int(sourceType),
+					ChunkID:         targetChunkID,
+					KnowledgeID:     targetKnowledgeID,
+					KnowledgeBaseID: targetKnowledgeBaseID,
+					TagID:           tagID,
+					IsEnabled:       isEnabled,
+				}),
 				Vectors: models.Vectors{fieldEmbedding: vector},
 			}
 			targetObjects = append(targetObjects, newObj)
 		}
 
 		if len(targetObjects) > 0 {
-			resp, err := w.client.Batch().ObjectsBatcher().WithObjects(targetObjects...).Do(ctx)
-			if err != nil {
+			if err := doBatch(ctx, w.client.Batch().ObjectsBatcher().WithObjects(targetObjects...)); err != nil {
 				return fmt.Errorf("batch upsert failed: %w", err)
-			}
-			for _, r := range resp {
-				if r.Result.Errors != nil {
-					log.Errorf("[Weaviate] Object error: %v", r.Result.Errors.Error[0].Message)
-				}
 			}
 			totalCopied += len(targetObjects)
 			log.Infof("[Weaviate] Successfully copied batch, total: %d", totalCopied)
@@ -995,6 +1051,7 @@ func (w *weaviateRepository) ListCollections(ctx context.Context) ([]string, err
 func createPayload(embedding *WeaviateVectorEmbedding) map[string]interface{} {
 	payload := map[string]any{
 		fieldContent:         embedding.Content,
+		fieldContentBigram:   searchutil.CJKBigramsAndUnigrams(embedding.Content),
 		fieldSourceID:        embedding.SourceID,
 		fieldSourceType:      int64(embedding.SourceType),
 		fieldChunkID:         embedding.ChunkID,
@@ -1064,6 +1121,7 @@ func getVectorFields() []graphql.Field {
 		{Name: fieldKnowledgeID},
 		{Name: fieldKnowledgeBaseID},
 		{Name: fieldTagID},
+		{Name: fieldIsEnabled},
 		{
 			Name: "_additional",
 			Fields: []graphql.Field{
