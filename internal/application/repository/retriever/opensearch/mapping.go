@@ -383,11 +383,11 @@ func extractEmbeddingFingerprint(body []byte) (embFingerprint, error) {
 // response and pulls out the embedding-field HNSW fingerprint for the
 // given index.
 func extractMappingFingerprintFromResp(resp *osapi.MappingGetResp, index string) (embFingerprint, error) {
-	indexMapping, ok := resp.Indices[index]
+	indexMapping, ok := resp.GetIndices()[index]
 	if !ok {
 		return embFingerprint{}, fmt.Errorf("index %s not in mapping response", index)
 	}
-	// MappingGetResp.Indices[index].Mappings is a json.RawMessage in
+	// MappingGetResp.GetIndices()[index].Mappings is a json.RawMessage in
 	// the SDK - we decode the inner properties shape ourselves.
 	var m struct {
 		Properties map[string]any `json:"properties"`

@@ -44,7 +44,7 @@ require (
 	github.com/neo4j/neo4j-go-driver/v6 v6.3.0
 	github.com/ollama/ollama v0.40.1
 	github.com/open-dingtalk/dingtalk-stream-sdk-go v0.9.2-beta.1
-	github.com/opensearch-project/opensearch-go/v4 v4.6.0
+	github.com/opensearch-project/opensearch-go/v4 v4.7.3
 	github.com/panjf2000/ants/v2 v2.12.1
 	github.com/parquet-go/parquet-go v0.32.0
 	github.com/pganalyze/pg_query_go/v6 v6.2.5

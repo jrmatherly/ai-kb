@@ -851,8 +851,8 @@ github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJw
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/opencontainers/runtime-spec v1.0.2 h1:UfAcuLBJB9Coz72x1hgl8O5RVzTdNiaglX6v2DM6FI0=
 github.com/opencontainers/runtime-spec v1.0.2/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
-github.com/opensearch-project/opensearch-go/v4 v4.6.0 h1:Ac8aLtDSmLEyOmv0r1qhQLw3b4vcUhE42NE9k+Z4cRc=
-github.com/opensearch-project/opensearch-go/v4 v4.6.0/go.mod h1:3iZtb4SNt3IzaxavKq0dURh1AmtVgYW71E4XqmYnIiQ=
+github.com/opensearch-project/opensearch-go/v4 v4.7.3 h1:JzETy7bYnnSDj4gueUh8t4EYBhs9rhKsgeVsoul77rA=
+github.com/opensearch-project/opensearch-go/v4 v4.7.3/go.mod h1:+iikkyLrVC8ZvyfKv2sua1Ze1LbpWL7eZe4IkHqNGtg=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=
 github.com/openzipkin/zipkin-go v0.2.5/go.mod h1:KpXfKdgRDnnhsxw4pNIH9Md5lyFqKUa4YDFlwRYAMyE=
@@ -1129,8 +1129,8 @@ github.com/volcengine/vikingdb-go-sdk v0.0.14/go.mod h1:CIV/UI0KcUk+aY9/vTuZuwXJ
 github.com/volcengine/volc-sdk-golang v1.0.243/go.mod h1:zHJlaqiMbIB+0mcrsZPTwOb3FB7S/0MCfqlnO8R7hlM=
 github.com/volcengine/volc-sdk-golang v1.0.252 h1:Gtyj+E0k5KV2oQhHs47Op4uMQhR+RYGwhpEHkukwk/4=
 github.com/volcengine/volc-sdk-golang v1.0.252/go.mod h1:zHJlaqiMbIB+0mcrsZPTwOb3FB7S/0MCfqlnO8R7hlM=
-github.com/wI2L/jsondiff v0.7.0 h1:1lH1G37GhBPqCfp/lrs91rf/2j3DktX6qYAKZkLuCQQ=
-github.com/wI2L/jsondiff v0.7.0/go.mod h1:KAEIojdQq66oJiHhDyQez2x+sRit0vIzC9KeK0yizxM=
+github.com/wI2L/jsondiff v0.7.1 h1:Fg9+yj+1/x3UtPBJhR91TKEzRkrEEWcAcLbg9dzEaNM=
+github.com/wI2L/jsondiff v0.7.1/go.mod h1:yAt2W7U6Jd4HK0RA8DGSGk0zDtfEtOUUJVnH/xICpjo=
 github.com/wailsapp/go-webview2 v1.0.22 h1:YT61F5lj+GGaat5OB96Aa3b4QA+mybD0Ggq6NZijQ58=
 github.com/wailsapp/go-webview2 v1.0.22/go.mod h1:qJmWAmAmaniuKGZPWwne+uor3AHMB5PFhqiK0Bbj8kc=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=
