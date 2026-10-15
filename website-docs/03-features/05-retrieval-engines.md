@@ -26,7 +26,7 @@ Use this table to compare what each engine provides before choosing one.
 | OpenSearch | `opensearch` | k-NN plugin knn (HNSW) | match (BM25) | BM25 | OS analyzer | Declarative knn_vector mapping + fingerprint check | k-NN native | Medium | Production ES-family setups that need audit, aliases and reindex; version 2.11+ / 3.x |
 | Qdrant | `qdrant` | Native HNSW cosine | Full-text index MatchText (token OR) | No score (Scroll returns hits, rank comes from RRF) | Multilingual tokenizer | One collection per dimension | score_threshold native | Medium | Vector-first workloads that need payload filtering |
 | Milvus | `milvus` | HNSW (IP / COSINE / L2) | BM25 function over sparse vectors | BM25 | Milvus analyzer | One collection per dimension | Application side | Medium to high | Large vector volumes with native BM25 hybrid retrieval |
-| Weaviate | `weaviate` | nearVector (certainty) | Native BM25 | BM25 | Weaviate tokenizer | Dynamic class | certainty native | Medium | GraphQL ecosystem, replication and sharding configuration |
+| Weaviate | `weaviate` | nearVector (certainty) | Native BM25 | BM25 | None: `word` tokenization keeps a CJK run as one token | One class per dimension | certainty native | Medium | GraphQL ecosystem, replication and sharding configuration |
 | Doris | `doris` | ANN HNSW inner_product / cosine | Inverted index MATCH_ANY | Inverted index hit | Chinese parser declared at table creation | One table per dimension | Inside SQL | High | Existing Doris warehouse, retrieval and analytics in one system |
 | Tencent Cloud VectorDB | `tencent_vectordb` | HNSW COSINE | Sparse vector BM25 (SPARSE_INVERTED) | BM25 | SDK SparseEncoder | One collection per dimension | Application side | Low (cloud managed) | Managed on Tencent Cloud, no operations |
 
@@ -189,7 +189,8 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 - **Class management**: classes are created dynamically (from `WEAVIATE_COLLECTION`), with ReplicationConfig / ShardingConfig support.
 - **Vector retrieval**: GraphQL `nearVector` with certainty threshold pushdown; certainty = `(2-distance)/2 = (1+cos)/2`. The driver pushes `(1+threshold)/2` and converts results back to cosine similarity (`2*certainty-1`), the same scale as the other engines.
-- **Keyword retrieval**: the GraphQL **BM25** query (`Bm25ArgBuilder`).
+- **Keyword retrieval**: the GraphQL **BM25** query (`Bm25ArgBuilder`) over `content`, which uses `word` tokenization. The `gse` tokenizers match nothing in the official images (1.38 to 1.40 lack their dictionaries).
+- **Object IDs**: a UUID derived from the row's source ID, so a chunk and each of its generated questions are separate objects. Enable and tag updates find a chunk's objects by `chunk_id` and merge the property.
 - **Filters**: GraphQL where filters on KB / knowledge / tag / is_enabled.
 - Configuration: `WEAVIATE_HOST` / `WEAVIATE_GRPC_ADDRESS` / `WEAVIATE_SCHEME` / `WEAVIATE_AUTH_ENABLED` + `WEAVIATE_API_KEY`.
 

@@ -112,9 +112,11 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 			},
 			Properties: []*models.Property{
 				{
-					Name:         fieldContent,
-					DataType:     []string{"text"},
-					Tokenization: "gse",
+					Name:     fieldContent,
+					DataType: []string{"text"},
+					// Not gse or gse_ch: the official images (1.38-1.40) lack
+					// their dictionaries, so BM25 on them matches nothing.
+					Tokenization: "word",
 				},
 				{
 					Name:     fieldSourceID,
@@ -171,7 +173,7 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 			// create with 422, worded differently depending on where it lost,
 			// so look again rather than parse the message. The class is
 			// created whole, so if it exists there is nothing left to do.
-			if isUnprocessableEntity(err) {
+			if hasStatus(err, http.StatusUnprocessableEntity) {
 				exists, _ = w.client.Schema().ClassExistenceChecker().WithClassName(collectionName).Do(ctx)
 			}
 			if !exists {
@@ -187,11 +189,26 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 	return nil
 }
 
-// isUnprocessableEntity reports whether err is Weaviate answering 422, which is
-// how it refuses a schema change it cannot apply.
-func isUnprocessableEntity(err error) bool {
+// objectIDNamespace keys objectID; changing it orphans every stored object.
+var objectIDNamespace = uuid.MustParse("4b0ad3c5-7c4e-4f5a-9a51-3f1e0d6c2a71")
+
+// objectID is the Weaviate object ID of the index row for sourceID. A chunk and
+// its generated questions share a chunk_id but not a source_id, so keying on
+// the chunk would let each question overwrite the chunk's own row; keying on
+// the source keeps a re-save of the same row an upsert.
+func objectID(sourceID string) string {
+	return uuid.NewSHA1(objectIDNamespace, []byte(sourceID)).String()
+}
+
+// hasStatus reports whether err is Weaviate answering with the HTTP status code.
+func hasStatus(err error, code int) bool {
 	var clientErr *fault.WeaviateClientError
-	return errors.As(err, &clientErr) && clientErr.StatusCode == http.StatusUnprocessableEntity
+	return errors.As(err, &clientErr) && clientErr.StatusCode == code
+}
+
+// ownsCollection reports whether name is one of getCollectionName's collections.
+func (w *weaviateRepository) ownsCollection(name string) bool {
+	return strings.HasPrefix(name, w.collectionBaseName+"_")
 }
 
 func (w *weaviateRepository) EngineType() types.RetrieverEngineType {
@@ -231,28 +248,8 @@ func (w *weaviateRepository) Save(ctx context.Context,
 		return err
 	}
 
-	dimension := len(embeddingDB.Embedding)
-	if err := w.ensureCollection(ctx, dimension); err != nil {
-		return err
-	}
-	collectionName := w.getCollectionName(dimension)
-	dataSchema := createPayload(embeddingDB)
-
-	id := embedding.ChunkID
-	// Create point in Weaviate
-	_, err := w.client.Data().Creator().
-		WithClassName(collectionName).
-		WithID(id).
-		WithProperties(dataSchema).
-		WithVector(embeddingDB.Embedding).
-		Do(ctx)
-
-	if err != nil {
-		log.Errorf("[Weaviate] Failed to save index: %v", err)
-		return err
-	}
-	log.Infof("[Weaviate] Successfully saved index for chunk ID: %s", embedding.ChunkID)
-	return nil
+	// The batch endpoint upserts; a create would refuse a re-save of the row.
+	return w.BatchSave(ctx, []*types.IndexInfo{embedding}, additionalParams)
 }
 
 // BatchSave stores multiple points in Milvus using batch insert
@@ -301,9 +298,9 @@ func (w *weaviateRepository) BatchSave(ctx context.Context,
 
 			obj := &models.Object{
 				Class:      collectionName,
-				ID:         strfmt.UUID(embeddingDB.ChunkID),
+				ID:         strfmt.UUID(objectID(embeddingDB.SourceID)),
 				Properties: dataSchema,
-				Vector:     embeddingDB.Embedding,
+				Vectors:    models.Vectors{fieldEmbedding: embeddingDB.Embedding},
 			}
 			batcher.WithObjects(obj)
 		}
@@ -412,101 +409,65 @@ func (w *weaviateRepository) DeleteBySourceIDList(ctx context.Context,
 
 // BatchUpdateChunkEnabledStatus updates the enabled status of chunks in batch
 func (w *weaviateRepository) BatchUpdateChunkEnabledStatus(ctx context.Context, chunkStatusMap map[string]bool) error {
-	log := logger.GetLogger(ctx)
-	if len(chunkStatusMap) == 0 {
-		log.Warn("[Weaviate] Empty chunk status map provided, skipping")
-		return nil
+	updates := make(map[string]map[string]any, len(chunkStatusMap))
+	for chunkID, enabled := range chunkStatusMap {
+		updates[chunkID] = map[string]any{fieldIsEnabled: enabled}
 	}
-
-	log.Infof("[Weaviate] Batch updating chunk enabled status, count: %d", len(chunkStatusMap))
-
-	// Get all collections
-	collections, err := w.ListCollections(ctx)
-	if err != nil {
-		log.Errorf("[Weaviate] Failed to list collections: %v", err)
-		return fmt.Errorf("failed to list collections: %w", err)
-	}
-
-	// Update in all matching collections
-	for _, collectionName := range collections {
-		// Only process collections that start with our base name
-		if len(collectionName) <= len(w.collectionBaseName) ||
-			collectionName[:len(w.collectionBaseName)] != w.collectionBaseName {
-			continue
-		}
-		for chunkID, enabled := range chunkStatusMap {
-			if err != nil {
-				log.Errorf("[Weaviate] Failed to search ID by chunk ID %s in %s: %v", chunkID, collectionName, err)
-				continue
-			}
-			err = w.client.Data().Updater().
-				WithClassName(collectionName).
-				WithID(chunkID).
-				WithProperties(map[string]interface{}{
-					fieldIsEnabled: enabled,
-				}).
-				Do(ctx)
-
-			isEnabled := "enabled"
-			if !enabled {
-				isEnabled = "disabled"
-			}
-
-			if err != nil {
-				log.Errorf("[Weaviate] Failed to update chunk %s status in %s: %v", isEnabled, collectionName, err)
-				continue
-			}
-		}
-	}
-	log.Infof("[Weaviate] Batch update chunk enabled status completed")
-	return nil
+	return w.mergeChunkProperties(ctx, updates)
 }
 
 // BatchUpdateChunkTagID updates the tag ID of chunks in batch
 func (w *weaviateRepository) BatchUpdateChunkTagID(ctx context.Context, chunkTagMap map[string]string) error {
-	log := logger.GetLogger(ctx)
-	if len(chunkTagMap) == 0 {
-		log.Warn("[Weaviate] Empty chunk tag map provided, skipping")
+	updates := make(map[string]map[string]any, len(chunkTagMap))
+	for chunkID, tagID := range chunkTagMap {
+		updates[chunkID] = map[string]any{fieldTagID: tagID}
+	}
+	return w.mergeChunkProperties(ctx, updates)
+}
+
+// mergeChunkProperties merges properties into every object of each chunk: its
+// own row and one row per generated question, all sharing its chunk_id. A PUT
+// would replace the whole object and drop its content and vector, hence merge.
+func (w *weaviateRepository) mergeChunkProperties(ctx context.Context, updates map[string]map[string]any) error {
+	if len(updates) == 0 {
 		return nil
 	}
-
-	log.Infof("[Weaviate] Batch updating chunk tag ID, count: %d", len(chunkTagMap))
-
-	// Get all collections
 	collections, err := w.ListCollections(ctx)
 	if err != nil {
-		log.Errorf("[Weaviate] Failed to list collections: %v", err)
 		return fmt.Errorf("failed to list collections: %w", err)
 	}
-
+	fields := []graphql.Field{{Name: fieldChunkID}, {Name: "_additional", Fields: []graphql.Field{{Name: "id"}}}}
+	chunkIDs := slices.Sorted(maps.Keys(updates))
 	for _, collectionName := range collections {
-		// Only process collections that start with our base name
-		if len(collectionName) <= len(w.collectionBaseName) ||
-			collectionName[:len(w.collectionBaseName)] != w.collectionBaseName {
+		if !w.ownsCollection(collectionName) {
 			continue
 		}
-
-		for chunkID, tagID := range chunkTagMap {
+		reader := newCopySourceReader(w, collectionName, fields)
+		for batch := range slices.Chunk(chunkIDs, 64) {
+			rows, err := reader.readBatch(ctx, "", batch)
 			if err != nil {
-				log.Warnf("[Weaviate] Failed to search ID by chunk ID %s in %s: %v", chunkID, collectionName, err)
-				continue
+				return err
 			}
-			err = w.client.Data().Updater().
-				WithClassName(collectionName).
-				WithID(chunkID).
-				WithProperties(map[string]interface{}{
-					fieldTagID: tagID,
-				}).
-				Do(ctx)
-			if err != nil {
-				log.Warnf("[Weaviate] Failed to update chunk %s tag ID in %s: %v", chunkID, collectionName, err)
-				continue
+			for _, row := range rows {
+				data, _ := row.(map[string]any)
+				additional, _ := data["_additional"].(map[string]any)
+				id, _ := additional["id"].(string)
+				chunkID, _ := data[fieldChunkID].(string)
+				if id == "" || updates[chunkID] == nil {
+					return fmt.Errorf("weaviate: unexpected chunk row %v in %s", row, collectionName)
+				}
+				if err := w.client.Data().Updater().
+					WithClassName(collectionName).
+					WithID(id).
+					WithMerge().
+					WithProperties(updates[chunkID]).
+					Do(ctx); err != nil && !hasStatus(err, http.StatusNotFound) {
+					return fmt.Errorf("failed to update chunk %s in %s: %w", chunkID, collectionName, err)
+				}
 			}
 		}
 	}
-	log.Infof("[Weaviate] Batch update chunk tag ID completed")
 	return nil
-
 }
 
 func (w *weaviateRepository) getBaseFilter(params types.RetrieveParams) *filters.WhereBuilder {
@@ -611,6 +572,7 @@ func (w *weaviateRepository) VectorRetrieve(ctx context.Context,
 		WithFields(fields...).
 		WithNearVector(w.client.GraphQL().NearVectorArgBuilder().
 			WithVector(params.Embedding).
+			WithTargetVectors(fieldEmbedding).
 			WithCertainty(scoreThreshold)).
 		Do(ctx)
 
@@ -660,9 +622,7 @@ func (w *weaviateRepository) KeywordsRetrieve(ctx context.Context,
 
 	for _, collectionName := range collections {
 		log.Debugf("[Weaviate] Checking collection: %s", collectionName)
-		// Only process collections that start with our base name
-		if len(collectionName) <= len(w.collectionBaseName) ||
-			collectionName[:len(w.collectionBaseName)] != w.collectionBaseName {
+		if !w.ownsCollection(collectionName) {
 			log.Debugf("[Weaviate] Skipping collection %s (doesn't match base name %s)", collectionName, w.collectionBaseName)
 			continue
 		}
@@ -811,9 +771,12 @@ func (w *weaviateRepository) CopyIndices(ctx context.Context,
 				targetSourceID = uuid.New().String()
 			}
 
-			vectorRaw, ok := additional["vector"].([]interface{})
-			if !ok {
-				continue
+			// The collection's vector is named, so the unnamed _additional.vector
+			// is always empty.
+			vectors, _ := additional["vectors"].(map[string]interface{})
+			vectorRaw, _ := vectors[fieldEmbedding].([]interface{})
+			if len(vectorRaw) == 0 {
+				return fmt.Errorf("weaviate: copy indices source chunk %s has no vector", sourceChunkID)
 			}
 			vector := make([]float32, len(vectorRaw))
 			for i, v := range vectorRaw {
@@ -823,7 +786,7 @@ func (w *weaviateRepository) CopyIndices(ctx context.Context,
 			isEnabled := true
 			newObj := &models.Object{
 				Class: collectionName,
-				ID:    strfmt.UUID(uuid.New().String()),
+				ID:    strfmt.UUID(objectID(targetSourceID)),
 				Properties: map[string]interface{}{
 					fieldContent:         data[fieldContent],
 					fieldSourceID:        targetSourceID,
@@ -834,7 +797,7 @@ func (w *weaviateRepository) CopyIndices(ctx context.Context,
 					fieldTagID:           data[fieldTagID],
 					fieldIsEnabled:       isEnabled,
 				},
-				Vector: vector,
+				Vectors: models.Vectors{fieldEmbedding: vector},
 			}
 			targetObjects = append(targetObjects, newObj)
 		}
@@ -890,7 +853,8 @@ func newCopySourceReader(repo *weaviateRepository, collectionName string, fields
 	}
 }
 
-// readBatch returns every source vector whose chunk_id is in chunkIDs.
+// readBatch returns every source vector whose chunk_id is in chunkIDs, in
+// sourceKnowledgeBaseID unless that is empty.
 func (r *copySourceReader) readBatch(ctx context.Context,
 	sourceKnowledgeBaseID string, chunkIDs []string,
 ) ([]interface{}, error) {
@@ -912,7 +876,7 @@ func (r *copySourceReader) readBatch(ctx context.Context,
 		return nil, fmt.Errorf(
 			"weaviate: source chunk %q returned a full query page of %d vectors, "+
 				"which reaches the server's query limit (QUERY_MAXIMUM_RESULTS); "+
-				"the chunk cannot be read completely and the copy was stopped",
+				"the chunk cannot be read completely",
 			chunkIDs[0], r.limit)
 	}
 
@@ -936,20 +900,24 @@ func (r *copySourceReader) query(ctx context.Context,
 	sourceKnowledgeBaseID string, chunkIDs []string,
 ) ([]interface{}, error) {
 	log := logger.GetLogger(ctx)
-	result, err := r.repo.client.GraphQL().Get().
-		WithClassName(r.collectionName).
-		WithWhere(filters.Where().
+	where := filters.Where().
+		WithPath([]string{fieldChunkID}).
+		WithOperator(filters.ContainsAny).
+		WithValueText(chunkIDs...)
+	if sourceKnowledgeBaseID != "" {
+		where = filters.Where().
 			WithOperator(filters.And).
 			WithOperands([]*filters.WhereBuilder{
 				filters.Where().
 					WithPath([]string{fieldKnowledgeBaseID}).
 					WithOperator(filters.Equal).
 					WithValueString(sourceKnowledgeBaseID),
-				filters.Where().
-					WithPath([]string{fieldChunkID}).
-					WithOperator(filters.ContainsAny).
-					WithValueText(chunkIDs...),
-			})).
+				where,
+			})
+	}
+	result, err := r.repo.client.GraphQL().Get().
+		WithClassName(r.collectionName).
+		WithWhere(where).
 		WithLimit(r.limit).
 		WithFields(r.fields...).
 		Do(ctx)
@@ -973,20 +941,20 @@ func (r *copySourceReader) query(ctx context.Context,
 			r.limit = serverLimit
 			return r.query(ctx, sourceKnowledgeBaseID, chunkIDs)
 		}
-		log.Errorf("[Weaviate] Failed to query source points: %s", queryError)
+		log.Errorf("[Weaviate] Failed to query chunk rows: %s", queryError)
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("weaviate: copy indices query failed: %s", queryError)
+		return nil, fmt.Errorf("weaviate: chunk row query failed: %s", queryError)
 	}
 
 	get, ok := result.Data["Get"].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("weaviate: copy indices invalid response")
+		return nil, fmt.Errorf("weaviate: chunk row query: invalid response")
 	}
 	objects, ok := get[r.collectionName].([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("weaviate: copy indices invalid response for collection %s", r.collectionName)
+		return nil, fmt.Errorf("weaviate: chunk row query: invalid response for collection %s", r.collectionName)
 	}
 	return objects, nil
 }
@@ -1100,7 +1068,7 @@ func getVectorFields() []graphql.Field {
 			Name: "_additional",
 			Fields: []graphql.Field{
 				{Name: "id"},
-				{Name: "vector"},
+				{Name: "vectors", Fields: []graphql.Field{{Name: fieldEmbedding}}},
 			},
 		},
 	}

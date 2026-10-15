@@ -751,9 +751,6 @@ services:
     environment:
       - PERSISTENCE_DATA_PATH=/var/lib/weaviate
       - CLUSTER_HOSTNAME=node1
-      # The retriever's collections tokenize content with gse, which Weaviate
-      # rejects at collection creation unless this tokenizer is loaded.
-      - ENABLE_TOKENIZER_GSE=true
       - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
       - CLUSTER_GOSSIP_BIND_PORT=7000
       - CLUSTER_DATA_BIND_PORT=7001

@@ -162,3 +162,56 @@ func TestEnsureCollectionDoesNotRecheckOtherFailures(t *testing.T) {
 	require.Error(t, repo.ensureCollection(context.Background(), 1024))
 	assert.Equal(t, 1, server.probes)
 }
+
+func TestBatchUpdateChunkEnabledStatusMergesIntoEveryObjectOfTheChunk(t *testing.T) {
+	var mu sync.Mutex
+	patched := map[string]map[string]any{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case r.URL.Path == "/v1/meta":
+			_, _ = w.Write([]byte(`{"version":"1.40.1"}`))
+		case r.URL.Path == "/v1/schema":
+			_, _ = w.Write([]byte(`{"classes":[{"class":"Kb_3"},{"class":"Kb_4"},{"class":"Kbx_4"}]}`))
+		case r.URL.Path == "/v1/graphql":
+			var body struct {
+				Query string `json:"query"`
+			}
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			class, rows := "Kb_3", `[]`
+			if strings.Contains(body.Query, "Kb_4") {
+				class = "Kb_4"
+				// The chunk's own row and its generated question share chunk-1.
+				rows = `[{"chunk_id":"chunk-1","_additional":{"id":"obj-a"}},` +
+					`{"chunk_id":"chunk-1","_additional":{"id":"obj-b"}},` +
+					`{"chunk_id":"chunk-2","_additional":{"id":"obj-c"}}]`
+			}
+			assert.NotContains(t, body.Query, "Kbx_4")
+			_, _ = w.Write([]byte(`{"data":{"Get":{"` + class + `":` + rows + `}}}`))
+		case r.Method == http.MethodPatch && strings.HasPrefix(r.URL.Path, "/v1/objects/Kb_4/"):
+			var body struct {
+				Properties map[string]any `json:"properties"`
+			}
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			mu.Lock()
+			patched[strings.TrimPrefix(r.URL.Path, "/v1/objects/Kb_4/")] = body.Properties
+			mu.Unlock()
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}))
+	defer server.Close()
+	client, err := sdk.NewClient(sdk.Config{Scheme: "http", Host: strings.TrimPrefix(server.URL, "http://")})
+	require.NoError(t, err)
+	repo := &weaviateRepository{client: client, collectionBaseName: "Kb"}
+
+	require.NoError(t, repo.BatchUpdateChunkEnabledStatus(context.Background(),
+		map[string]bool{"chunk-1": false, "chunk-2": true}))
+	require.Equal(t, map[string]map[string]any{
+		"obj-a": {fieldIsEnabled: false},
+		"obj-b": {fieldIsEnabled: false},
+		"obj-c": {fieldIsEnabled: true},
+	}, patched)
+}

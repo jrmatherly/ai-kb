@@ -43,7 +43,9 @@ func copySourceRow(id, chunkID, sourceID string) map[string]any {
 		fieldKnowledgeID:     "know-1",
 		fieldKnowledgeBaseID: "kb-src",
 		fieldTagID:           "",
-		"_additional":        map[string]any{"id": id, "vector": []any{0.5, 0.25}},
+		"_additional": map[string]any{
+			"id": id, "vectors": map[string]any{fieldEmbedding: []any{0.5, 0.25}},
+		},
 	}
 }
 
