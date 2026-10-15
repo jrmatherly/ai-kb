@@ -88,20 +88,22 @@ VITE_DEV_PROXY_TARGET=https://kb.example.com npm run dev
 
 | Service | Image | Ports (default) | Started when |
 | --- | --- | --- | --- |
-| `postgres` | `paradedb/paradedb:v0.25.11-pg17` (bundles pg_search/BM25) | `5432` | Always |
-| `redis` | `redis:7.0-alpine` (`--requirepass`) | `6379` | Always |
+| `postgres` | `paradedb/paradedb:v0.26.1-pg18` (bundles pg_search/BM25) | `5432` | Always |
+| `redis` | `redis:8.10.2-alpine` (`--requirepass`) | `6379` | Always |
 | `docreader` | Built locally from `docker/Dockerfile.docreader` | `50051` (gRPC) | Always |
-| `searxng` (+`searxng-init`) | `searxng/searxng:latest` | `127.0.0.1:8888` | `--full` (compose profile `searxng` or `full`; `dev.sh` has no `--searxng` flag) |
-| `minio` | `pgsty/minio:latest` | `9000` / console `9001` | `--minio` / `--full` |
-| `qdrant` | `qdrant/qdrant:v1.16.2` | `6333` / `6334` | `--qdrant` / `--full` |
-| `opensearch` | `opensearchproject/opensearch:3.3.2` (security plugin off, plain HTTP) | `9200` | Profile `opensearch` / `full` |
-| `opensearch-dashboards` | `opensearchproject/opensearch-dashboards:3.3.0` | `5601` | Profile `opensearch-ui` (start it separately when needed) |
-| `milvus` | `milvusdb/milvus:v2.6.11` (standalone, embedded etcd) | `19530` / `9091` | Profile `milvus` / `full` |
-| `neo4j` | `neo4j:latest` (APOC plugin) | `7474` / `7687` | `--neo4j` / `--full` |
-| `dex` | `dexidp/dex:latest` (OIDC test identity provider, config `misc/dex-config.yaml`) | `5556` | `--dex` / `--full` |
-| `langfuse-web` / `langfuse-worker` / `langfuse-clickhouse` / `langfuse-minio` / `langfuse-db-init` | Self-hosted Langfuse v3 stack. Reuses the dev postgres (separate `langfuse` database) and redis (DB 1) | web `3000`, minio `9100/9101` | `--langfuse` (on by default in `dev.sh`, `--no-langfuse` turns it off) / `--full` |
+| `searxng` (+`searxng-init`) | `searxng/searxng:2026.10.15-b00212a83` | `127.0.0.1:8888` | `--full` (compose profile `searxng` or `full`; `dev.sh` has no `--searxng` flag) |
+| `minio` | `pgsty/minio:RELEASE.2026-08-04T00-00-00Z` | `9000` / console `9001` | `--minio` / `--full` |
+| `qdrant` | `qdrant/qdrant:v1.19.2` | `6333` / `6334` | `--qdrant` / `--full` |
+| `opensearch` | `opensearchproject/opensearch:3.9.0` (security plugin off, plain HTTP) | `9200` | Profile `opensearch` / `full` |
+| `opensearch-dashboards` | `opensearchproject/opensearch-dashboards:3.9.0` | `5601` | Profile `opensearch-ui` (start it separately when needed) |
+| `milvus` | `milvusdb/milvus:v3.0.3` (standalone, embedded etcd; the one-shot `milvus-volume-init` hands the volume to the image's non-root user) | `19530` / `9091` | Profile `milvus` / `full` |
+| `neo4j` | `neo4j:2026.09.0` (APOC plugin) | `7474` / `7687` | `--neo4j` / `--full` |
+| `dex` | `dexidp/dex:v2.46.0` (OIDC test identity provider, config `misc/dex-config.yaml`) | `5556` | `--dex` / `--full` |
+| `langfuse-web` / `langfuse-worker` / `langfuse-clickhouse` / `langfuse-minio` / `langfuse-db-init` | Self-hosted Langfuse v4 stack (`langfuse/langfuse:4.59.0`, ClickHouse `26.8.28`). Reuses the dev postgres (separate `langfuse` database) and redis (DB 1) | web `3000`, minio `9100/9101` | `--langfuse` (on by default in `dev.sh`, `--no-langfuse` turns it off) / `--full` |
 | `odl-hybrid` | Built locally from `docker/Dockerfile.odl-hybrid` (Docling PDF backend) | `5002` | `--odl-hybrid` (large image, start on demand) |
 | `sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` (sandbox for skill scripts; build/pull only, not a long-running service) | - | Profile `full` |
+
+The images moved to new major versions on 2026-10-15 (PostgreSQL 18, Qdrant 1.19, Weaviate 1.40, Milvus 3.0, Langfuse 4 with ClickHouse 26.8). Dev volumes created before that do not start or open on the new images; reset them once with `docker compose -f docker-compose.dev.yml --profile '*' down -v` (without `--profile '*'`, services started through a profile keep their volumes).
 
 `dev.sh start` options: `--minio`, `--qdrant`, `--neo4j`, `--dex`, `--langfuse` (on by default), `--no-langfuse`, `--odl-hybrid`, `--full` (all optional services except odl-hybrid, Langfuse included). Pass them through the Makefile with `make dev-start DEV_ARGS=--odl-hybrid`, or combine them: `make dev-start DEV_ARGS="--full --odl-hybrid"`. `dev-stop` stops every service of the dev project, whichever profiles started it.
 

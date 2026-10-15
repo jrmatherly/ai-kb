@@ -549,14 +549,14 @@ services:
 
   # Modified PostgreSQL configuration
   postgres:
-    image: paradedb/paradedb:v0.25.11-pg17
+    image: paradedb/paradedb:v0.26.1-pg18
     container_name: ai-kb-postgres
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     networks:
       - ai-kb-network
     healthcheck:
@@ -570,7 +570,7 @@ services:
     stop_grace_period: 1m
 
   redis:
-    image: redis:7.0-alpine
+    image: redis:8.10.2-alpine
     container_name: ai-kb-redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     restart: always
@@ -583,7 +583,7 @@ services:
   # repo file directly would write the resolved SEARXNG_SECRET back into the
   # working tree (and prevent re-templating on subsequent restarts).
   searxng-init:
-    image: busybox:1.36
+    image: busybox:1.38.0
     container_name: ai-kb-searxng-init
     command: ["sh", "-c", "cp /template/settings.yml /etc/searxng/settings.yml && chmod 0644 /etc/searxng/settings.yml"]
     volumes:
@@ -597,7 +597,7 @@ services:
       - full
 
   searxng:
-    image: searxng/searxng:latest
+    image: searxng/searxng:2026.10.15-b00212a83
     container_name: ai-kb-searxng
     # Bind to loopback by default; override SEARXNG_BIND=0.0.0.0 only after
     # rotating SEARXNG_SECRET and (optionally) re-enabling limiter in settings.yml.
@@ -653,7 +653,7 @@ services:
       - full
 
   neo4j:
-    image: neo4j:2025.10.1
+    image: neo4j:2026.09.0
     container_name: ai-kb-neo4j
     volumes:
       - neo4j-data:/data
@@ -662,7 +662,7 @@ services:
       - NEO4J_apoc_export_file_enabled=true
       - NEO4J_apoc_import_file_enabled=true
       - NEO4J_apoc_import_file_use__neo4j__config=true
-      - NEO4JLABS_PLUGINS=["apoc"]
+      - NEO4J_PLUGINS=["apoc"]
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -674,7 +674,7 @@ services:
       - full
 
   qdrant:
-    image: qdrant/qdrant:v1.16.2
+    image: qdrant/qdrant:v1.19.2
     container_name: ai-kb-qdrant
     ports:
       - "${QDRANT_REST_PORT:-6333}:6333"
@@ -688,12 +688,41 @@ services:
       - qdrant
       - full
 
+  # Milvus 3 runs as the image's non-root milvus user and refuses to start on
+  # a volume written by the root-run 2.6 image. Hand the volume over once.
+  milvus-volume-init:
+    image: milvusdb/milvus:v3.0.3
+    container_name: ai-kb-milvus-volume-init
+    user: "0:0"
+    network_mode: none
+    read_only: true
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        uid="$$(id -u milvus)"
+        gid="$$(id -g milvus)"
+        marker="/var/lib/milvus/.milvus-volume-owner-$${uid}-$${gid}"
+        if [ ! -e "$${marker}" ]; then
+          chown -R "$${uid}:$${gid}" /var/lib/milvus
+          touch "$${marker}"
+          chown "$${uid}:$${gid}" "$${marker}"
+        fi
+    volumes:
+      - milvus_data:/var/lib/milvus
+    profiles:
+      - milvus
+
   milvus:
-    image: milvusdb/milvus:v2.6.11
+    image: milvusdb/milvus:v3.0.3
     container_name: ai-kb-milvus
     security_opt:
       - seccomp:unconfined
     command: ["milvus", "run", "standalone"]
+    depends_on:
+      milvus-volume-init:
+        condition: service_completed_successfully
     environment:
       - ETCD_USE_EMBED=true
       - ETCD_DATA_DIR=/var/lib/milvus/etcd
@@ -717,13 +746,14 @@ services:
       - milvus
 
   weaviate:
-    image: semitechnologies/weaviate:1.28.4
+    image: semitechnologies/weaviate:1.40.1
     container_name: ai-kb-weaviate
     environment:
       - PERSISTENCE_DATA_PATH=/var/lib/weaviate
       - CLUSTER_HOSTNAME=node1
-      - DEFAULT_VECTORIZER_MODULE=none
-      - ENABLE_MODULES=none
+      # The retriever's collections tokenize content with gse, which Weaviate
+      # rejects at collection creation unless this tokenizer is loaded.
+      - ENABLE_TOKENIZER_GSE=true
       - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
       - CLUSTER_GOSSIP_BIND_PORT=7000
       - CLUSTER_DATA_BIND_PORT=7001
@@ -756,7 +786,7 @@ services:
   # Data persists in the doris_fe_data / doris_be_data volumes.
   # ---------------------------------------------------------------------------
   doris-fe:
-    image: apache/doris:fe-4.1.0
+    image: apache/doris:fe-4.1.5
     container_name: ai-kb-doris-fe
     hostname: doris-fe
     environment:
@@ -775,7 +805,7 @@ services:
       - doris
 
   doris-be:
-    image: apache/doris:be-4.1.0
+    image: apache/doris:be-4.1.5
     container_name: ai-kb-doris-be
     hostname: doris-be
     environment:
@@ -795,7 +825,7 @@ services:
       - doris
 
   dex:
-    image: dexidp/dex:latest
+    image: dexidp/dex:v2.46.0
     container_name: dex
     ports:
       - "5556:5556"
@@ -827,7 +857,7 @@ services:
   # One-off init script: creates the langfuse database in the existing ai-kb-postgres (idempotent, skipped if the database exists)
   # Reuses the ParadeDB image of ai-kb-postgres to avoid pulling another postgres image
   langfuse-db-init:
-    image: paradedb/paradedb:v0.25.11-pg17
+    image: paradedb/paradedb:v0.26.1-pg18
     container_name: ai-kb-langfuse-db-init
     depends_on:
       postgres:
@@ -860,7 +890,7 @@ services:
       - full
 
   langfuse-clickhouse:
-    image: clickhouse/clickhouse-server:24.8
+    image: clickhouse/clickhouse-server:26.8.28
     container_name: ai-kb-langfuse-clickhouse
     restart: unless-stopped
     user: "101:101"
@@ -912,7 +942,7 @@ services:
       - full
 
   langfuse-worker:
-    image: langfuse/langfuse-worker:3
+    image: langfuse/langfuse-worker:4.59.0
     container_name: ai-kb-langfuse-worker
     restart: unless-stopped
     depends_on: &langfuse-depends-on
@@ -984,7 +1014,7 @@ services:
       - full
 
   langfuse-web:
-    image: langfuse/langfuse:3
+    image: langfuse/langfuse:4.59.0
     container_name: ai-kb-langfuse-web
     restart: unless-stopped
     depends_on: *langfuse-depends-on

@@ -25,7 +25,7 @@ The code reads the three connection variables without defaults; the `app` servic
 
 `initNeo4jClient` retries up to 30 times (2 s apart) at startup to open and verify the connection. When the graph is not enabled it returns a `nil` driver, and every `Neo4jRepository` method degrades to a no-op (log line `NOT SUPPORT RETRIEVE GRAPH`). The `GET /system/info` endpoint reports `"Neo4j"` or `"Not Enabled"` through `getGraphDatabaseEngine()` (`internal/handler/system.go`).
 
-The `neo4j` service in `docker-compose.yml` preinstalls APOC with `NEO4JLABS_PLUGINS=["apoc"]`. Graph writes depend on `apoc.merge.node` and `apoc.merge.relationship`; deletion depends on `apoc.periodic.iterate`.
+The `neo4j` service in `docker-compose.yml` preinstalls APOC with `NEO4J_PLUGINS=["apoc"]`. Graph writes depend on `apoc.merge.node` and `apoc.merge.relationship`; deletion depends on `apoc.periodic.iterate`.
 
 ### Knowledge base switch: IndexingStrategy and ExtractConfig
 

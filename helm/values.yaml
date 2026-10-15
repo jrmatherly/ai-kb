@@ -269,7 +269,7 @@ postgresql:
     # -- Image repository (ParadeDB for vector search)
     repository: paradedb/paradedb
     # -- Image tag
-    tag: v0.18.9-pg17
+    tag: v0.26.1-pg18
 
   # -- Resource requests and limits
   resources:
@@ -319,7 +319,7 @@ redis:
     # -- Image repository
     repository: redis
     # -- Image tag
-    tag: 7-alpine
+    tag: 8.10.2-alpine
 
   # -- Resource requests and limits
   resources:
@@ -455,7 +455,7 @@ neo4j:
     # -- Image repository
     repository: neo4j
     # -- Image tag (matches docker-compose.yml)
-    tag: "2025.10.1"
+    tag: "2026.09.0"
 
   # -- Neo4j authentication username
   username: neo4j

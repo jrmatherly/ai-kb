@@ -289,7 +289,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | ----------- | ------------- | --------- |
 | `postgresql.enabled` | Enable PostgreSQL | `true` |
 | `postgresql.image.repository` | Image repository | `paradedb/paradedb` |
-| `postgresql.image.tag` | Image tag | `v0.18.9-pg17` |
+| `postgresql.image.tag` | Image tag | `v0.26.1-pg18` |
 | `postgresql.persistence.enabled` | Enable persistence | `true` |
 | `postgresql.persistence.size` | PVC size | `10Gi` |
 
@@ -299,7 +299,7 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | ----------- | ------------- | --------- |
 | `redis.enabled` | Enable Redis | `true` |
 | `redis.image.repository` | Image repository | `redis` |
-| `redis.image.tag` | Image tag | `7-alpine` |
+| `redis.image.tag` | Image tag | `8.10.2-alpine` |
 | `redis.persistence.enabled` | Enable persistence | `true` |
 | `redis.persistence.size` | PVC size | `1Gi` |
 
@@ -404,6 +404,8 @@ helm upgrade ai-kb ./helm \
   --namespace ai-kb \
   --reuse-values
 ```
+
+The chart's PostgreSQL moved from `v0.18.9-pg17` to `v0.26.1-pg18`, a PostgreSQL major version. PostgreSQL 18 does not start on a PostgreSQL 17 data directory, so `pg_dumpall` from the old pod first and restore into the new one on an empty PVC. `--reuse-values` keeps a previously set `postgresql.image.tag`; pass `--set postgresql.image.tag=v0.26.1-pg18` or drop the override to pick up the new default.
 
 ## Uninstalling
 

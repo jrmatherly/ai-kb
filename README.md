@@ -121,6 +121,8 @@ docker compose up -d    # Recreate containers with the new images
 > [!NOTE]
 > `docker compose up -d` alone reuses the images already built and may leave the UI version out of sync with the checkout.
 
+**Major version changes.** Releases after `2026.10.15.1` move PostgreSQL from 17 to 18 and the optional vector stores and Langfuse to new major versions. Existing volumes need a dump and restore or a re-index; see [Upgrading](https://ai-kb-docs.matherly.net/docs/01-getting-started/02-installation#upgrading) in the installation guide.
+
 ### Other ways to deploy
 
 | Option | When to use it |

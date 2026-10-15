@@ -43,7 +43,7 @@ flowchart TB
 - **Building from source**: Go 1.26 (the builder stage in `docker/Dockerfile.app` is `golang:1.26-bookworm`), CGO (needs `libsqlite3-dev`), Node.js + npm (frontend), Python 3.14 + uv (docreader).
 - **Kubernetes**: >= 1.25.0 (`helm/Chart.yaml`).
 
-Since ParadeDB v0.24.0 the prebuilt `pg_search` binaries set no minimum CPU target (paradedb#4920 reverted the earlier `x86-64-v3` and `x86-64-v2` targets), so the `v0.25.11-pg17` image used by Compose does not require AVX2. For newer image versions, the ParadeDB release notes are authoritative. This says nothing about every ARM CPU or about the other optional services.
+Since ParadeDB v0.24.0 the prebuilt `pg_search` binaries set no minimum CPU target (paradedb#4920 reverted the earlier `x86-64-v3` and `x86-64-v2` targets), so the `v0.25.11-pg17` image did not require AVX2. Compose now uses `v0.26.1-pg18`; for its CPU targets, the ParadeDB release notes are authoritative. The optional Langfuse profile's ClickHouse `26.8` does need AVX2 on x86-64: its amd64 build targets x86-64-v3 from 26.6 on. This says nothing about every ARM CPU or about the other optional services.
 
 ## Docker Compose standard deployment (docker-compose.yml)
 
@@ -79,6 +79,12 @@ docker compose up -d
 
 > Running only `docker compose up -d` reuses the locally cached images, so the version shown in the web UI may not match the downloaded release.
 
+Releases after `2026.10.15.1` move the bundled data services to new major versions, and their old volumes do not carry over:
+
+- PostgreSQL 17 to 18 (`paradedb/paradedb:v0.26.1-pg18`). The data volume now mounts at `/var/lib/postgresql`, and PostgreSQL 18 refuses to start on a PostgreSQL 17 volume ("in 18+, these Docker images are configured to store database data in a ... subdirectory"). Before upgrading, run `pg_dumpall` against the old `postgres` container, then start the new image on an empty volume and restore the dump. The restore creates `pg_search` and `vector` at the image's versions.
+- Qdrant 1.19, Weaviate 1.40 and Milvus 3.0 are not guaranteed to open volumes written several minor versions back (Qdrant and Weaviate support upgrading one minor version at a time). Drop those volumes and re-index the knowledge bases that use them. Milvus 3 also runs as a non-root user; the `milvus-volume-init` service hands an existing volume over once.
+- Langfuse v4 needs ClickHouse 25.12 or newer (Compose ships 26.8, which needs AVX2 on x86-64). Existing Langfuse v3 data needs Langfuse's own [v3 to v4 procedure](https://langfuse.com/self-hosting/upgrade/upgrade-guides/upgrade-v3-to-v4); for a fresh start, drop the `langfuse_clickhouse_*` volumes.
+
 ### Core services (started by default)
 
 | Service | Image | Ports (host:container) | Depends on | Notes |
@@ -86,8 +92,8 @@ docker compose up -d
 | `frontend` | `ghcr.io/jrmatherly/ai-kb-ui:${AIKB_VERSION:-latest}` | `${FRONTEND_PORT:-80}:80` | app (healthy) | Nginx serves the SPA and proxies to app; `APP_HOST`/`APP_BACKEND_PORT`/`APP_SCHEME` can point at a remote backend |
 | `app` | `ghcr.io/jrmatherly/ai-kb-app` | `${APP_PORT:-8080}:8080` | postgres (healthy), redis, docreader (healthy) | Go backend; mounts `./config/config.yaml` and the `data-files` volume; health check `GET /health` |
 | `docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` | `expose: 50051` only (not published to the host) | - | Document parsing gRPC service; health check `grpc_health_probe`; shares the `docreader-tmp` volume with app to hand over images |
-| `postgres` | `paradedb/paradedb:v0.25.11-pg17` | No host port | - | ParadeDB = PostgreSQL 17 + BM25 and vector extensions, the default retrieval engine |
-| `redis` | `redis:7.0-alpine` | No host port | - | `--appendonly yes --requirepass ${REDIS_PASSWORD}` |
+| `postgres` | `paradedb/paradedb:v0.26.1-pg18` | No host port | - | ParadeDB = PostgreSQL 18 + BM25 and vector extensions, the default retrieval engine |
+| `redis` | `redis:8.10.2-alpine` | No host port | - | `--appendonly yes --requirepass ${REDIS_PASSWORD}` |
 
 ### Optional services and profiles
 
@@ -190,7 +196,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 
 `helm/Chart.yaml`: apiVersion v2, chart name `ai-kb`, appVersion follows the release tag (for example v2026.10.13), requires Kubernetes >= 1.25.0.
 
-The chart contains five components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.18.9-pg17`, which differs from the Compose version) and `redis` (`redis:7-alpine`), plus optional `minio` and `neo4j`.
+The chart contains five components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.26.1-pg18`, the same as Compose) and `redis` (`redis:8.10.2-alpine`), plus optional `minio` and `neo4j`.
 
 Key settings in `helm/values.yaml`:
 

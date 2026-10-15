@@ -8,7 +8,7 @@ The main application connects to its database through GORM, and the environment 
 
 | `DB_DRIVER` | Description |
 | --- | --- |
-| `postgres` | Standard mode. Works with plain PostgreSQL (+pgvector) and with **ParadeDB** (a PostgreSQL distribution with built-in `pg_search`/BM25; the Compose files default to `paradedb/paradedb:v0.25.11-pg17`). The GORM DSN is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` and forces `sslmode=disable` and `TimeZone=UTC` |
+| `postgres` | Standard mode. Works with plain PostgreSQL (+pgvector) and with **ParadeDB** (a PostgreSQL distribution with built-in `pg_search`/BM25; the Compose files default to `paradedb/paradedb:v0.26.1-pg18`). The GORM DSN is built from `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` and forces `sslmode=disable` and `TimeZone=UTC` |
 | `sqlite` | Lite mode. The path comes from `DB_PATH` (default `./data/aikb.db`), the DSN appends `_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on`, and the `sqlite-vec` extension is loaded (`sqlite_vec.Auto()`) for vector retrieval |
 | Any other value | Fails immediately with `unsupported database driver` |
 
@@ -431,7 +431,7 @@ The `migrate` CLI needs a DSN in URL form, so a password with characters such as
 
 The BM25 index (`USING bm25`, Lindera tokenizer) is available only on ParadeDB. A plain Postgres deployment needs the conditional branches of the relevant migrations to apply, or an external retrieval engine such as Elasticsearch. To move an existing plain Postgres database to ParadeDB, see `migrations/paradedb/01-migrate-to-paradedb.sql`.
 
-The default image is `paradedb/paradedb:v0.25.11-pg17`. When the server ships the matching extension packages, migration 000115 upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4. The older migration 000099 applies only to the `v0.22.6-pg17` image. Other release lines are never upgraded or downgraded automatically. The extension catalog must match the image version, or calling some extension functions can crash the database.
+The default image is `paradedb/paradedb:v0.26.1-pg18`. A new database gets the image's extension versions from `CREATE EXTENSION`, and the migrations below leave them alone. When the server ships the matching extension packages, migration 000115 upgrades an installed pg_search 0.22.x–0.25.x to 0.25.11 and pgvector 0.8.0–0.8.3 to 0.8.4. The older migration 000099 applies only to the `v0.22.6-pg17` image. Other release lines are never upgraded or downgraded automatically. The extension catalog must match the image version, or calling some extension functions can crash the database.
 
 ### Version file conflicts
 

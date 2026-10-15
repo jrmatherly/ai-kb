@@ -20,7 +20,7 @@ import (
 // both spellings need the same assertions. For example:
 //
 //	docker run -d --rm -e POSTGRES_PASSWORD=pg -e POSTGRES_DB=ai_kb -p 55432:5432 \
-//	  paradedb/paradedb:v0.25.11-pg17
+//	  paradedb/paradedb:v0.26.1-pg18
 //	AIKB_REPOSITORY_TEST_POSTGRES_DSN=postgres://postgres:pg@localhost:55432/aikb?sslmode=disable
 //
 // Both runs apply the real chunk_images migration, so the triggers and the

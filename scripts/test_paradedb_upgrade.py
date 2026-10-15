@@ -1,8 +1,12 @@
-"""Verify a ParadeDB patch upgrade using disposable Docker volumes and real migrations.
+"""Legacy: verify a PostgreSQL 17 ParadeDB patch upgrade using disposable Docker volumes and real migrations.
 
 Requires Python 3 and Docker; no database credentials or running AI KB needed.
 Run: python3 scripts/test_paradedb_upgrade.py [--to 0.25.11|0.22.6]
 Artifacts (snapshots, plans, logs and a synthetic-data backup) are kept in /tmp.
+
+Covers the PostgreSQL 17 image line only (data mounted at /var/lib/postgresql/data).
+The PostgreSQL 18 images keep data under /var/lib/postgresql and cannot open these
+volumes, so a 17 -> 18 move is a dump and restore, not a patch upgrade.
 """
 import argparse
 import hashlib

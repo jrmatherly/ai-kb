@@ -13,8 +13,8 @@ AI KB runs as three core processes, the main service, the frontend and the docum
 | `app` | `ghcr.io/jrmatherly/ai-kb-app` (`docker/Dockerfile.app`, Go) | `8080` | Main backend: REST API, RAG retrieval, agent engine, async task workers, IM and embed channels. Health check `GET /health` |
 | `frontend` | `ghcr.io/jrmatherly/ai-kb-ui` (`frontend/`, NGINX + Vue 3 static build) | `80` | Web UI. NGINX also acts as the reverse proxy and forwards `/api` to `app` (`APP_HOST`, `APP_BACKEND_PORT` and `APP_SCHEME` can point it at a remote backend) |
 | `docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` (`docker/Dockerfile.docreader`, Python) | `50051` (exposed inside the Compose network only, not mapped to the host) | Document parsing microservice: a gRPC server that parses and renders more than 20 file types (PDF, DOCX, Excel, EPUB, web pages and others). Health check `grpc_health_probe` |
-| `postgres` | `paradedb/paradedb:v0.25.11-pg17` | `5432` (network only) | Primary database. The ParadeDB distribution ships BM25 full-text search and pgvector, so **the default deployment needs no separate vector database** (`RETRIEVE_DRIVER=postgres`) |
-| `redis` | `redis:7.0-alpine` (`appendonly` + `requirepass`) | `6379` (network only) | Asynq task queue, SSE stream management across instances, `system_settings` publish/subscribe, rate limiting and the distributed per-model concurrency gate |
+| `postgres` | `paradedb/paradedb:v0.26.1-pg18` | `5432` (network only) | Primary database. The ParadeDB distribution ships BM25 full-text search and pgvector, so **the default deployment needs no separate vector database** (`RETRIEVE_DRIVER=postgres`) |
+| `redis` | `redis:8.10.2-alpine` (`appendonly` + `requirepass`) | `6379` (network only) | Asynq task queue, SSE stream management across instances, `system_settings` publish/subscribe, rate limiting and the distributed per-model concurrency gate |
 | `sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` (`docker/Dockerfile.sandbox`) | - | The standard runtime image. It is used directly by the workspace Docker backend; with CubeSandbox or E2B it is registered through their template API and used for Agent Skills |
 
 `app` and `docreader` also share the `docreader-tmp` volume (mounted at `/tmp/docreader`) to hand over parsed images; `app` keeps local file storage in the `data-files` volume (`/data/files`).
@@ -104,8 +104,8 @@ graph LR
         FE["frontend: NGINX + static assets (:80)"]
         APP["app: Go main service (:8080)<br/>Gin REST + SSE / agent engine / Asynq workers"]
         DR["docreader: Python gRPC (:50051)<br/>PDF / DOCX / Excel / web parsing"]
-        PG[("postgres: ParadeDB pg17<br/>business data + BM25 + pgvector")]
-        RD[("redis 7<br/>Asynq queues / stream manager / PubSub / rate limits")]
+        PG[("postgres: ParadeDB pg18<br/>business data + BM25 + pgvector")]
+        RD[("redis 8<br/>Asynq queues / stream manager / PubSub / rate limits")]
         SBX["Docker session sandbox (off by default)"]
         subgraph Optional["Optional profiles"]
             SX["searxng (web search)"]

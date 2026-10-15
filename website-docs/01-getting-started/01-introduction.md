@@ -124,8 +124,8 @@ flowchart TB
 | app (backend) | Go / Gin | `cmd/server`, `internal/` | 8080 | REST API, retrieval and answering, agent engine, async tasks (Asynq) |
 | frontend | Vue 3 + Nginx | `frontend/` | 80 | Web console; Nginx proxies `/api` to app |
 | docreader | Python / gRPC | `docreader/` | 50051 (container network only) | File to Markdown conversion, web page capture, image extraction |
-| postgres | ParadeDB (PostgreSQL 17 + BM25 and vector extensions) | image `paradedb/paradedb` | 5432 | Primary database and default hybrid retrieval engine (`RETRIEVE_DRIVER=postgres`) |
-| redis | Redis 7 | - | 6379 | Stream management (SSE recovery), Asynq task queue |
+| postgres | ParadeDB (PostgreSQL 18 + BM25 and vector extensions) | image `paradedb/paradedb` | 5432 | Primary database and default hybrid retrieval engine (`RETRIEVE_DRIVER=postgres`) |
+| redis | Redis 8 | - | 6379 | Stream management (SSE recovery), Asynq task queue |
 | sandbox | Python 3.12 + Node 24 | `docker/Dockerfile.sandbox` | - | Session sandbox image for Agent Skills |
 | Optional: qdrant / milvus / weaviate / doris | - | `docker-compose.yml` profiles | 6334 / 19530 / 9035 / 9030 | Alternative or additional vector retrieval engines (`RETRIEVE_DRIVER`) |
 | Optional: opensearch | - | `docker-compose.dev.yml` only | 9200 | Development only; production needs your own cluster |
@@ -133,7 +133,7 @@ flowchart TB
 | Optional: neo4j | Neo4j | profile `neo4j` | 7474 / 7687 | Knowledge graph storage (GraphRAG) |
 | Optional: minio | MinIO | profile `minio` | 9000 / 9001 | S3-compatible object storage (`STORAGE_TYPE=minio`) |
 | Optional: searxng | SearXNG | profile `searxng` | 8888 | Self-hosted web search engine |
-| Optional: langfuse stack | Langfuse 3 + ClickHouse + MinIO | profile `langfuse` | 3000 | LLM observability |
+| Optional: langfuse stack | Langfuse 4 + ClickHouse + MinIO | profile `langfuse` | 3000 | LLM observability |
 | Optional: mcp (deprecated) | Python | `mcp-server/`, profile `full` | 8082 | The legacy standalone MCP server; new deployments use the MCP server endpoints built into app |
 | Optional: odl-hybrid | Docling | profile `odl-hybrid` | 5002 | OpenDataLoader PDF hybrid parsing backend |
 
