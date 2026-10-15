@@ -2,6 +2,8 @@ package types
 
 import "strings"
 
+// supportedLocales are IM channel reply languages (the language the model
+// writes in), not UI locales: the UI and the embed widget ship only en-US.
 var supportedLocales = map[string]struct{}{
 	"zh-CN": {},
 	"zh-TW": {},

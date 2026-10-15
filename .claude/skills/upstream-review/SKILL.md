@@ -110,7 +110,7 @@ Upstream commits touching translated files show `~`: port a docs hunk in English
 | WeKnora names | AI KB names | landed 2026-10-12 | See "Name translations when porting". |
 | upstream semver | dated CalVer | landed 2026-10-13 | See "Version and changelog". |
 | `.github/` | our own CI | landed | See "Rules for this repo". |
-| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | landed | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
+| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | landed | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the embed channel `default_locale` (`10fcf0e33`). The IM channel `locale` keeps all six tags (`internal/types/locale.go`): it is the language the model replies in, not a UI bundle. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
 | `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | landed | Upstream commits touching them: SKIP. |
 
 Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
