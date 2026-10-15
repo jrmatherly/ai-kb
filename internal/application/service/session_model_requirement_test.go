@@ -373,7 +373,7 @@ func TestApplyAgentOverridesResolvesBuiltinRerankSlot(t *testing.T) {
 		models []*types.Model
 		want   string
 	}{
-		{"builtin uses the declared default", quickAnswer, []*types.Model{plainRerank, defaultRerank}, "default-rerank"},
+		{"builtin uses the default", quickAnswer, []*types.Model{plainRerank, defaultRerank}, "default-rerank"},
 		{"builtin without a default skips rerank", quickAnswer, []*types.Model{plainRerank}, ""},
 		{"custom agent keeps an empty slot", &types.CustomAgent{ID: "agent-1"}, []*types.Model{defaultRerank}, ""},
 	}
