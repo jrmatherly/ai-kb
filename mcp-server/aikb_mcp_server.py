@@ -678,7 +678,7 @@ class AIKBClient:
 # Initialize MCP server instance (mcp 2.x high-level API).
 # MCPServer (formerly FastMCP) builds input schemas from function type hints
 # and serializes plain return values automatically.
-mcp = MCPServer("ai-kb-server", version="1.1.1")
+mcp = MCPServer("ai-kb-server", version="1.1.2")
 # Initialize AI KB API client with configuration
 client = AIKBClient(AIKB_BASE_URL, AIKB_API_KEY)
 

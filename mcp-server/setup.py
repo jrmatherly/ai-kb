@@ -31,7 +31,7 @@ def read_requirements():
 
 setup(
     name="ai-kb-mcp",
-    version="1.1.1",
+    version="1.1.2",
     author="AI KB Team",
     author_email="support@matherly.net",
     description="AI KB MCP Server - Model Context Protocol server for AI KB API",

@@ -84,7 +84,7 @@ Environment variables:
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
 
     parser.add_argument(
-        "--version", action="version", version="AI KB MCP Server 1.1.1"
+        "--version", action="version", version="AI KB MCP Server 1.1.2"
     )
 
     parser.add_argument(
