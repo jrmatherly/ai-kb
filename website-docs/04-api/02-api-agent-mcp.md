@@ -118,7 +118,7 @@ curl "$BASE/api/v1/agents/agent-1/suggested-questions?limit=6" -H "X-API-Key: $A
 
 Workspace-level integration of external tool servers. Read: Viewer+; write, test and approval policy: Admin+. API key: `manage_mcp_services` or full. Handler: `internal/handler/mcp_service.go`
 
-A route that addresses a service by `:id` answers 500 with a generic message when the stored service cannot be read; the cause is logged, not returned.
+When the stored service cannot be read or saved, `GET`, `PUT` and `DELETE /:id`, `/:id/test`, `/:id/tools`, `/:id/resources`, `/:id/metadata/refresh`, `/:id/usage-instructions/generate`, `/:id/credentials` and `/:id/oauth/authorize-url` answer 500 with a generic message; the database cause is logged, not returned. A failure reaching the MCP server itself keeps its cause in the message.
 
 ### POST /api/v1/mcp-services
 

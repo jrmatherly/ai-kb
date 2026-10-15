@@ -58,8 +58,7 @@ func (s *mcpServiceService) CreateMCPService(ctx context.Context, service *types
 	service.UpdatedAt = time.Now()
 
 	if err := s.mcpServiceRepo.Create(ctx, service); err != nil {
-		logger.GetLogger(ctx).Errorf("Failed to create MCP service: %v", err)
-		return fmt.Errorf("failed to create MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to save MCP service", err)
 	}
 
 	return nil
@@ -79,14 +78,20 @@ func (s *mcpServiceService) GetMCPServiceByID(
 ) (*types.MCPService, error) {
 	service, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		logger.GetLogger(ctx).Errorf("Failed to get MCP service: %v", err)
-		return nil, fmt.Errorf("failed to get MCP service: %w", err)
+		return nil, mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 
 	if service == nil {
 		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 	return service, nil
+}
+
+// mcpRepoError logs a repository failure and returns a generic 500. The raw
+// error can carry driver text (hosts, SQL), which must not reach the client.
+func mcpRepoError(ctx context.Context, msg string, err error) error {
+	logger.GetLogger(ctx).Errorf("%s: %v", msg, err)
+	return apperrors.NewInternalServerError(msg)
 }
 
 // ListMCPServices lists all MCP services for a tenant.
@@ -96,8 +101,7 @@ func (s *mcpServiceService) GetMCPServiceByID(
 func (s *mcpServiceService) ListMCPServices(ctx context.Context, tenantID uint64) ([]*types.MCPService, error) {
 	services, err := s.mcpServiceRepo.List(ctx, tenantID)
 	if err != nil {
-		logger.GetLogger(ctx).Errorf("Failed to list MCP services: %v", err)
-		return nil, fmt.Errorf("failed to list MCP services: %w", err)
+		return nil, mcpRepoError(ctx, "failed to list MCP services", err)
 	}
 	return services, nil
 }
@@ -114,8 +118,7 @@ func (s *mcpServiceService) ListMCPServicesByIDs(
 
 	services, err := s.mcpServiceRepo.ListByIDs(ctx, tenantID, ids)
 	if err != nil {
-		logger.GetLogger(ctx).Errorf("Failed to list MCP services by IDs: %v", err)
-		return nil, fmt.Errorf("failed to list MCP services by IDs: %w", err)
+		return nil, mcpRepoError(ctx, "failed to list MCP services", err)
 	}
 
 	return services, nil
@@ -130,7 +133,7 @@ func (s *mcpServiceService) UpdateMCPService(
 	// Check if service exists
 	existing, err := s.mcpServiceRepo.GetByID(ctx, service.TenantID, service.ID)
 	if err != nil {
-		return fmt.Errorf("failed to get MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if existing == nil {
 		return apperrors.NewNotFoundError("MCP service not found")
@@ -263,8 +266,7 @@ func (s *mcpServiceService) UpdateMCPService(
 	existing.UpdatedAt = time.Now()
 
 	if err := s.mcpServiceRepo.Update(ctx, existing); err != nil {
-		logger.GetLogger(ctx).Errorf("Failed to update MCP service: %v", err)
-		return fmt.Errorf("failed to update MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to save MCP service", err)
 	}
 
 	// Check if critical configuration changed (URL / StdioConfig / transport
@@ -333,7 +335,7 @@ func (s *mcpServiceService) DeleteMCPService(ctx context.Context, tenantID uint6
 	// Check if service exists
 	existing, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return fmt.Errorf("failed to get MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if existing == nil {
 		return apperrors.NewNotFoundError("MCP service not found")
@@ -348,8 +350,7 @@ func (s *mcpServiceService) DeleteMCPService(ctx context.Context, tenantID uint6
 	s.mcpManager.CloseClient(id)
 
 	if err := s.mcpServiceRepo.Delete(ctx, tenantID, id); err != nil {
-		logger.GetLogger(ctx).Errorf("Failed to delete MCP service: %v", err)
-		return fmt.Errorf("failed to delete MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to delete MCP service", err)
 	}
 
 	logger.GetLogger(ctx).Infof("MCP service deleted: %s (ID: %s)", secutils.SanitizeForLog(existing.Name), id)
@@ -385,7 +386,7 @@ func (s *mcpServiceService) TestMCPService(
 	// Get service
 	service, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get MCP service: %w", err)
+		return nil, mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if service == nil {
 		return nil, apperrors.NewNotFoundError("MCP service not found")
@@ -469,7 +470,7 @@ func (s *mcpServiceService) GetMCPServiceTools(
 	// Get service
 	service, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get MCP service: %w", err)
+		return nil, mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if service == nil {
 		return nil, apperrors.NewNotFoundError("MCP service not found")
@@ -508,7 +509,7 @@ func (s *mcpServiceService) UpdateMCPCredentials(
 ) (*types.MCPService, error) {
 	existing, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get MCP service: %w", err)
+		return nil, mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if existing == nil {
 		return nil, apperrors.NewNotFoundError("MCP service not found")
@@ -535,7 +536,7 @@ func (s *mcpServiceService) UpdateMCPCredentials(
 
 	existing.UpdatedAt = time.Now()
 	if err := s.mcpServiceRepo.Update(ctx, existing); err != nil {
-		return nil, fmt.Errorf("failed to update MCP service: %w", err)
+		return nil, mcpRepoError(ctx, "failed to save MCP service", err)
 	}
 
 	// Credential changed → recycle client so the next call reconnects.
@@ -554,7 +555,7 @@ func (s *mcpServiceService) ClearMCPCredential(
 ) error {
 	existing, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return fmt.Errorf("failed to get MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if existing == nil {
 		return apperrors.NewNotFoundError("MCP service not found")
@@ -587,7 +588,7 @@ func (s *mcpServiceService) ClearMCPCredential(
 
 	existing.UpdatedAt = time.Now()
 	if err := s.mcpServiceRepo.Update(ctx, existing); err != nil {
-		return fmt.Errorf("failed to update MCP service: %w", err)
+		return mcpRepoError(ctx, "failed to save MCP service", err)
 	}
 
 	s.mcpManager.CloseClient(id)
@@ -607,7 +608,7 @@ func (s *mcpServiceService) GetMCPServiceResources(
 	// Get service
 	service, err := s.mcpServiceRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get MCP service: %w", err)
+		return nil, mcpRepoError(ctx, "failed to load MCP service", err)
 	}
 	if service == nil {
 		return nil, apperrors.NewNotFoundError("MCP service not found")
