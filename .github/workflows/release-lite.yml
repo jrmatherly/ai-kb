@@ -198,9 +198,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
 
+      # Chocolatey doesn't put NSIS on PATH, and wails -nsis needs makensis there.
       - name: 📦 Install NSIS
         if: runner.os == 'Windows'
-        run: choco install nsis -y
+        shell: pwsh
+        run: |
+          choco install nsis -y
+          Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files (x86)\NSIS"
 
       # sqlite-vec includes sqlite3.h but doesn't ship it, and MinGW has none. Use the header of
       # the SQLite that go-sqlite3 compiles in, so the declarations match the linked library.
