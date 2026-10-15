@@ -10,7 +10,7 @@ AI KB runs under Docker Compose, Kubernetes Helm, as a single Lite binary, or as
 | Docker Compose (development) | `docker-compose.dev.yml` | Same (only the infrastructure runs in containers) | Same | Local development: app and frontend run on the host |
 | Helm | `helm/` | ParadeDB (bundled in the chart) | Redis (bundled in the chart) | Kubernetes >= 1.25 |
 | Lite single binary | `make build-lite` / `scripts/package-lite.sh` | SQLite (FTS5 + sqlite-vec) | In memory (no Redis) | Personal, offline or low-resource environments |
-| Desktop application (**not released yet**) | `cmd/desktop` (Wails v2) + `scripts/package-mac-app.sh` | SQLite | In memory | Single-machine desktop use with a GUI and a local data directory |
+| Desktop application | `cmd/desktop` (Wails v2) + `scripts/package-mac-app.sh` | SQLite | In memory | Single-machine desktop use with a GUI and a local data directory |
 
 ```mermaid
 flowchart TB
@@ -254,8 +254,8 @@ The single binary, when used through a browser, requires registration and login 
 
 The desktop application is the GUI way to run AI KB locally: double-click to start, the backend and SQLite live inside the process, and data lands in the system's application data directory. It adds desktop-only features such as a port setting, LAN binding and update checks. Its runtime capabilities match the [Lite runtime (no external dependencies)](#lite-runtime-no-external-dependencies).
 
-::: warning Not released yet
-The desktop application currently **ships no installer with a release**. Build it yourself with the steps below. This repository has no release workflow yet, so there are no cross-platform build jobs for it, and no release carries desktop artifacts.
+::: tip Download
+Releases from v2026.10.15 on carry desktop builds on [GitHub Releases](https://github.com/jrmatherly/ai-kb/releases): macOS DMGs (`ai-kb-lite-app_<version>_macOS_{amd64,arm64,universal}.dmg`), a Linux tarball (`..._linux_amd64.tar.gz`) and a Windows installer (`..._windows_amd64_setup.exe`). The builds are not code-signed, so macOS Gatekeeper and Windows SmartScreen warn on first launch. To build it yourself, follow the steps below.
 :::
 
 - Entry point `cmd/desktop/main.go` + `cmd/desktop/wails.json`. `cmd/desktop/app.go` exposes bindings to the frontend: `GetAPIBaseURL` (returns `http://127.0.0.1:PORT/api/v1`), the HTTP port and "bind to LAN" settings, and `CheckForUpdates` for automatic update checks.

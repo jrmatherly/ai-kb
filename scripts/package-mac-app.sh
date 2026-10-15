@@ -45,7 +45,8 @@ echo ">> Building Wails Desktop App..."
 # Remind the user to install the wails CLI if it is missing
 if ! command -v wails >/dev/null 2>&1; then
     echo "Wails CLI not found. Please install it first:"
-    echo "go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0"
+    # The CLI must match the wails library version go.mod builds against.
+    echo "go install github.com/wailsapp/wails/v2/cmd/wails@\$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)"
     exit 1
 fi
 

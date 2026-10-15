@@ -14,20 +14,20 @@ From `frontend/package.json`:
 
 | Category | Choice | Version | Notes |
 | --- | --- | --- | --- |
-| Framework | Vue | ^3.5.34 | Composition API, `<script setup>` style |
+| Framework | Vue | ^3.5.44 | Composition API, `<script setup>` style |
 | Language | TypeScript | ~6.0.3 | `vue-tsc` type checking (`npm run type-check`) |
-| Build tool | Vite | ^7.3.5 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx` |
-| UI component library | TDesign (tdesign-vue-next) | ^1.19.2 | With `tdesign-icons-vue-next` 0.4.4 (version locked by overrides) |
-| State management | Pinia | ^3.0.4 | Every store lives in `frontend/src/stores/` |
-| Routing | Vue Router | ^4.5.0 | `createWebHistory`, see `frontend/src/router/index.ts` |
-| Localization | vue-i18n | ^11.4.2 | `en-US` |
-| HTTP | axios | ^1.16.0 | One shared instance in `frontend/src/utils/request.ts` |
+| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx` |
+| UI component library | TDesign (tdesign-vue-next) | ^1.20.10 | With `tdesign-icons-vue-next` 0.4.11 (version locked by overrides) |
+| State management | Pinia | ^4.0.3 | Every store lives in `frontend/src/stores/` |
+| Routing | Vue Router | 5.4.0 | `createWebHistory`, see `frontend/src/router/index.ts` |
+| Localization | vue-i18n | ^11.4.14 | `en-US` |
+| HTTP | axios | ^1.20.0 | One shared instance in `frontend/src/utils/request.ts` |
 | SSE streaming | @microsoft/fetch-event-source | ^2.0.1 | Streamed chat replies, see `frontend/src/api/chat/streame.ts` |
 | Markdown rendering | marked / marked-katex-extension / katex / highlight.js / mermaid | - | Rich text for chat answers (formulas, code highlighting, diagrams) |
-| Security | dompurify | ^3.4.11 | Sanitizes all v-html content (`frontend/src/utils/markdownDomPurify.ts`) |
+| Security | dompurify | ^3.4.17 | Sanitizes all v-html content (`frontend/src/utils/markdownDomPurify.ts`) |
 | Document preview | docx-preview / @vue-office/pptx / xlsx / papaparse | - | In-app preview of Word, PowerPoint, Excel and CSV |
-| Long lists | vue-virtual-scroller | ^2.0.0-beta.8 | Virtual scrolling for the message list |
-| Styling | Less + CSS variables | less ^4.6.4 | Theme variables in `frontend/src/assets/theme/theme.css` |
+| Long lists | vue-virtual-scroller | ^3.0.5 | Virtual scrolling for the message list |
+| Styling | Less + CSS variables | less ^4.9.1 | Theme variables in `frontend/src/assets/theme/theme.css` |
 
 Dependency details worth knowing:
 

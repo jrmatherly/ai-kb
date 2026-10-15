@@ -1,7 +1,7 @@
 # Desktop client (AI KB Lite Desktop)
 
-::: warning Not released yet
-The desktop application ships no installer with a release. Build it yourself as described in [Installation](../01-getting-started/02-installation.md#desktop-application-cmd-desktop-wails-v2). This repository has no release workflow yet, so no release carries desktop artifacts.
+::: tip Download
+Releases from v2026.10.15 on carry desktop builds on [GitHub Releases](https://github.com/jrmatherly/ai-kb/releases): macOS DMGs (`ai-kb-lite-app_<version>_macOS_{amd64,arm64,universal}.dmg`), a Linux tarball (`..._linux_amd64.tar.gz`) and a Windows installer (`..._windows_amd64_setup.exe`). The builds are not code-signed, so macOS Gatekeeper and Windows SmartScreen warn on first launch. To build it yourself, see [Installation](../01-getting-started/02-installation.md#desktop-application-cmd-desktop-wails-v2).
 :::
 
 The AI KB Lite desktop application is built on [Wails v2](https://wails.io). It runs the Go backend inside the desktop process with SQLite and local file storage. After it starts you can manage knowledge bases and ask questions, with no Docker and no external database. The source is in `cmd/desktop/`. Its features match the [single Lite binary](../01-getting-started/02-installation.md). The desktop build adds startup without a login and, on macOS, a [host sandbox](../03-features/22-skills-sandbox.md#lite-host) that runs agent commands on the local machine.
@@ -140,7 +140,7 @@ The desktop build needs no registration or login at startup:
 
 ## Automatic updates (cmd/desktop/update.go)
 
-This section describes how the update check finds, downloads and installs a new version. This repository has no release workflow yet, so no release carries desktop artifacts and the check has nothing to install.
+This section describes how the update check finds, downloads and installs a new version from the desktop artifacts that Release Lite (`.github/workflows/release-lite.yml`) attaches to each release.
 
 `checkUpdate(ctx, currentVersion, showUpToDate, autoDownload)` runs in a goroutine:
 
@@ -204,7 +204,7 @@ SKIP_FRONTEND=1 ./scripts/package-mac-app.sh
 What the script does:
 
 1. **Frontend build**: `cd frontend && npm ci --prefer-offline && npm run build`, then replaces the repository root's `web/` with `frontend/dist` (the Lite backend serves the SPA from `./web`).
-2. **Wails build**: the Wails CLI must be installed first (`go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0`). The script sets environment variables such as `EDITION=lite`, `GONOSUMDB=git.sr.ht/*` and `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn` (which avoids the `common.proto` descriptor registration conflict between the Milvus and Qdrant gRPC generated code), takes the version from `scripts/get_version.sh` into ldflags, then runs:
+2. **Wails build**: the Wails CLI must be installed first, at the version `go.mod` pins for `github.com/wailsapp/wails/v2` (<span v-pre>`go install github.com/wailsapp/wails/v2/cmd/wails@$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)`</span>). The script sets environment variables such as `EDITION=lite`, `GONOSUMDB=git.sr.ht/*` and `GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn` (which avoids the `common.proto` descriptor registration conflict between the Milvus and Qdrant gRPC generated code), takes the version from `scripts/get_version.sh` into ldflags, then runs:
 
    ```bash
    cd cmd/desktop && wails build -clean -tags "sqlite_fts5" -ldflags="$LDFLAGS" -o "AI KB Lite"
@@ -213,4 +213,4 @@ What the script does:
    The effective build tags are `desktop` from `wails.json` plus `sqlite_fts5` from the command line. The command's binding generation step compiles `main_bindings.go` alone with `-tags bindings` (no database connection) and refreshes the binding files under `frontend/src/wailsjs/`.
 3. **Assembly**: copies `cmd/desktop/build/bin/AI KB Lite.app` to `dist/` and places the third-party licenses (`scripts/copy-licenses.sh`), `.env` (from `.env.lite.example`), `config/`, `migrations/sqlite/` and the `web/` frontend in `.app/Contents/Resources/`.
 
-The result is `dist/AI KB Lite.app`; double-click it to run. Windows and Linux builds are possible with `wails build` in `cmd/desktop` (the update logic already handles `.exe` and `xdg-open`), but the repository ships only the macOS packaging script and `build/darwin` resources. The host sandbox exists only on macOS: the Windows backend is not implemented and reports itself unavailable, and Linux has none.
+The result is `dist/AI KB Lite.app`; double-click it to run. Locally, the repository ships only this macOS packaging script. The Release Lite workflow (`.github/workflows/release-lite.yml`) builds every desktop target with `wails build`: macOS DMGs (Intel, Apple Silicon, universal), a Linux tarball and a Windows NSIS installer (`ai-kb-lite-app_<version>_windows_amd64_setup.exe`), which the update logic above finds and installs. The host sandbox exists only on macOS: the Windows backend is not implemented and reports itself unavailable, and Linux has none.

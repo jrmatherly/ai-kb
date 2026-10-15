@@ -273,6 +273,8 @@ Two request fields changed in v0.8.2:
 
 Since v0.8.2 the server resolves invitation candidates only by **full workspace ID** and no longer searches by workspace name, user name or email. `SearchTenantsForInvite(ctx, orgID, workspaceID)` calls `GET /api/v1/organizations/{id}/search-tenants?q=<workspace ID>` and returns a `[]TenantInviteCandidate` (`tenant_id`, `tenant_name`). The list is empty when the ID is unknown or the workspace is already a member. `InviteTenant(ctx, orgID, tenantID, role)` adds a candidate's workspace directly (`POST /api/v1/organizations/{id}/invite` with `tenant_id` and `role`). `InviteMember(ctx, orgID, userID, role)` sends `user_id` instead, and the server adds that user's workspace.
 
+`SearchOrganizations(ctx, query, limit)` calls `GET /api/v1/organizations/search?q=<query>&limit=<limit>` and returns the discoverable organizations as `[]SearchableOrganization` (`id`, `name`, `description`, `member_count`, `member_limit`, `share_count`, `agent_share_count`, `is_already_member`, `require_approval`). A non-empty query matches name, description or organization ID; an empty one returns the newest discoverable organizations. A limit outside 1 to 100 falls back to 20.
+
 ### FAQ: `client/faq.go`
 
 | Method | Description |

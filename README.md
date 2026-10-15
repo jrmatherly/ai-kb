@@ -142,6 +142,10 @@ All options, hardware requirements and deployment topologies: [Installation guid
 
 ## What's New
 
+### 2026.10.15.1 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+Security fixes for spreadsheet parsing (16 excelize advisories) and the remaining Go and katex advisories, Lite and desktop builds that start (2026.10.15 embeds gojieba's dictionaries), a Windows installer and Linux tarball on every release, and the `ai-kb-mcp` package on PyPI.
+
 ### 2026.10.13 <sub>· [changelog](./CHANGELOG.md)</sub>
 
 The first AI KB release: the rename (images `ghcr.io/jrmatherly/ai-kb-*`, CLI `aikb`, env prefix `AIKB_`), English-only UI, dated CalVer versions, a uniform `{success, error}` error envelope, hash-only API keys, `.xls` / `.xlsb` workbooks and held-back mass deletions in data-source syncs.
