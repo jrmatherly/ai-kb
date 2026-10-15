@@ -142,6 +142,62 @@ test('getAgentNotReadyReasonKeys treats empty allowed_tools as ready via backend
   ), [])
 })
 
+const tenantChat = { id: 'tenant-chat', type: 'KnowledgeQA', is_default: true }
+const builtinChat = { id: 'builtin-chat', type: 'KnowledgeQA', is_default: true, is_builtin: true }
+const tenantRerank = { id: 'tenant-rerank', type: 'Rerank', is_default: true }
+const builtinRerank = { id: 'builtin-rerank', type: 'Rerank', is_default: true, is_builtin: true }
+const smartConfig = { agent_mode: 'smart-reasoning', kb_selection_mode: 'all', allowed_tools: ['search_knowledge'] }
+const builtinOwn = { isAgentMode: false, isSharedAgent: false, isBuiltinAgent: true }
+const builtinOwnAgentMode = { isAgentMode: true, isSharedAgent: false, isBuiltinAgent: true }
+
+test('a built-in agent with no model_id is ready on the workspace default chat model', () => {
+  assert.deepEqual(getAgentNotReadyReasonKeys({}, [tenantChat], builtinOwn), [])
+  assert.deepEqual(getAgentNotReadyReasonKeys({}, [builtinChat], builtinOwn), [])
+})
+
+test('a built-in agent is not ready on a chat model that is not the declared default', () => {
+  assert.deepEqual(getAgentNotReadyReasonKeys(
+    {},
+    [{ id: 'builtin-chat', type: 'KnowledgeQA', is_builtin: true }],
+    builtinOwn,
+  ), ['summary_model'])
+})
+
+test('a custom agent still needs an explicit chat model when a default exists', () => {
+  assert.deepEqual(getAgentNotReadyReasonKeys(
+    {},
+    [tenantChat, builtinChat],
+    { isAgentMode: false, isSharedAgent: false, isBuiltinAgent: false },
+  ), ['summary_model'])
+})
+
+test('a built-in agent with a stale model_id is not masked by the default', () => {
+  assert.deepEqual(getAgentNotReadyReasonKeys({ model_id: 'deleted-chat' }, [tenantChat], builtinOwn), ['summary_model'])
+})
+
+test('a shared built-in agent does not use the receiving workspace default', () => {
+  assert.deepEqual(getAgentNotReadyReasonKeys(
+    {},
+    [tenantChat],
+    { isAgentMode: false, isSharedAgent: true, isBuiltinAgent: true },
+  ), ['summary_model'])
+})
+
+test('a built-in smart-reasoning agent resolves its rerank slot to the declared default', () => {
+  assert.deepEqual(getAgentNotReadyReasonKeys(smartConfig, [tenantChat, tenantRerank], builtinOwnAgentMode), [])
+  assert.deepEqual(getAgentNotReadyReasonKeys(smartConfig, [builtinChat, builtinRerank], builtinOwnAgentMode), [])
+  assert.deepEqual(getAgentNotReadyReasonKeys(
+    smartConfig,
+    [tenantChat, { id: 'plain-rerank', type: 'Rerank' }],
+    builtinOwnAgentMode,
+  ), ['rerank_model'])
+  assert.deepEqual(getAgentNotReadyReasonKeys(
+    { ...smartConfig, rerank_model_id: 'deleted-rerank' },
+    [tenantChat, tenantRerank],
+    builtinOwnAgentMode,
+  ), ['rerank_model'])
+})
+
 test('canLocallyConfigureAgent is false for shared agents', () => {
   assert.equal(canLocallyConfigureAgent('42'), false)
   assert.equal(canLocallyConfigureAgent(undefined), true)
