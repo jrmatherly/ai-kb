@@ -6,7 +6,7 @@ Guidance to Claude Code when working in this repository.
 
 **AI KB**: a copy of [Tencent/WeKnora](https://github.com/Tencent/WeKnora) (knowledge-base and agent platform), taken at upstream commit `97796c637` (2026-10-12, v0.8.2 + 268 commits). Not a fork: no shared git history. Remote `origin` is `jrmatherly/ai-kb`, single branch `main`. See "Upstream" below.
 
-**Stack** (verified in the manifests): Go 1.26 server (`cmd/server`, `internal/`; Gin, GORM, gRPC, go-redis, MinIO), Vue 3 + TypeScript + Vite frontend (`frontend/`, Less, `vue-i18n` bundles in `frontend/src/i18n/locales/`), Python 3.14 `docreader` gRPC service (`docreader/`, managed with `uv`), separate Go modules `cli/` and `client/`, SQL migrations per backend in `migrations/{mysql,paradedb,sqlite,versioned}`, Helm chart in `helm/`, docs site in `website-docs/`.
+**Stack** (verified in the manifests): Go 1.26 server (`cmd/server`, `internal/`; Gin, GORM, gRPC, go-redis, MinIO), Vue 3 + TypeScript + Vite frontend (`frontend/`, Less, `vue-i18n` bundles in `frontend/src/i18n/locales/`), Python 3.14 `docreader` gRPC service (`docreader/`, managed with `uv`), separate Go modules `cli/` and `client/`, Python `mcp-server/` (deprecated), npm `packages/dsh-ai-kb/`, `miniprogram/`, SQL migrations per backend in `migrations/{mysql,paradedb,sqlite,versioned}`, Helm chart in `helm/`, docs site in `website-docs/`.
 
 ## Deviations from upstream
 
@@ -27,9 +27,9 @@ Upstream changes are reviewed and adopted only through the `upstream-review` ski
 make dev-start && make dev-app && make dev-frontend   # infra, backend (Air hot reload), frontend (Vite)
 ```
 
-Validation commands per area (Go root module with the docreader filter, cli, client, frontend, docreader, model catalog, hooks) are `scripts/validate.sh` (`--base <rev>` for a range, `--list` to see the areas; it always ends with the English-only gate on lines added since the base); the `validate` skill says when to run it. Generated and committed outputs (swagger `docs/`, model catalog, docreader proto stubs) are regenerated, never merged by hand: the upstream-review skill lists the generators and a PreToolUse hook blocks hand edits to them.
+Validation commands per area (Go root module with the docreader filter, cli, client, frontend, docreader, model catalog, hooks, start-all, shell, licenses, anydoc, Helm, mcp-server, dsh plugin, miniprogram, website-docs, Markdown) are `scripts/validate.sh` (`--base <rev>` for a range, `--list` to print the areas a change touches, `--area <name>` to force one; it always ends with the English-only, em dash and version gates); the `validate` skill says when to run it. Generated and committed outputs (swagger `docs/`, model catalog, docreader proto stubs) are regenerated, never merged by hand: the upstream-review skill lists the generators and a PreToolUse hook blocks hand edits to them.
 
-Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, English-only gate on added lines, gofmt, golangci-lint on changed packages) and `pre-push` (CI-aligned checks).
+Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, English-only gate on added lines, em dash gate on the index, gofmt, golangci-lint on changed packages, markdownlint on staged Markdown) and `pre-push` (CI-aligned checks).
 
 ## Git
 

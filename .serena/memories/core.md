@@ -1,6 +1,6 @@
 # AI KB (ai-kb, copy of Tencent/WeKnora)
 
-- Product name "AI KB" (rebrand applied 2026-10-12, contract `scripts/rebrand/map.tsv`; "WeKnora" remains only where it names upstream). Copy of `Tencent/WeKnora@97796c637` (2026-10-12, v0.8.2+268), identical at the copy except `.github/` (removed) and `.gitignore`. No shared git history with upstream. Remote `origin` = `jrmatherly/ai-kb`, branch `main`. Provenance, markers, decided deviations and the review workflow: `mem:upstream`.
+- Product name "AI KB" (rebrand applied 2026-10-12, contract `scripts/rebrand/map.tsv`; "WeKnora" remains only where it names upstream). Copy of `Tencent/WeKnora@97796c637` (2026-10-12, v0.8.2+268), identical at the copy except `.github/` (removed) and `.gitignore`. `.github/` is now our own SHA-pinned CI (`scripts/check-workflows.sh`), local equivalent `scripts/validate.sh`; dated CalVer since 2026.10.13. No shared git history with upstream. Remote `origin` = `jrmatherly/ai-kb`, branch `main`. Provenance, markers, decided deviations and the review workflow: `mem:upstream`.
 - Standing deviation: **English only**. No CJK text in code, comments, strings, prompts, docs, UI. Scanner and the adoption rules that follow from it: `mem:upstream`. The translation pass and the removal of the non-English UI bundles and READMEs landed 2026-10-12; `scripts/check-english-only.sh` keeps it that way.
 - `CLAUDE.md` (= `AGENTS.md` symlink) written 2026-10-12 for this copy.
 - Source map (root Go module `github.com/jrmatherly/ai-kb`):

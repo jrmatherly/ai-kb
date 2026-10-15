@@ -1,6 +1,6 @@
 ---
 name: translate-code
-description: Translate one batch of this repo's code (Go, Vue/TS, Python, SQL, YAML, shell) from Chinese to English without changing behavior, and prove it. Use for "translate the code", "English-only pass", "translate internal/<pkg>", "remove the Chinese from <file>", any batch of the CJK cleanup outside website-docs/, or when a delegate is handed a package or file list to translate. Encodes which Chinese must stay (as \u escapes), the persisted and wire-coupled strings, the decided defaults, the proof tool and the gates.
+description: Translate Chinese text that a cherry-pick or port brings into this repo's code (Go, Vue/TS, Python, SQL, YAML, shell) to English without changing behavior, and prove it. Use for "translate the code", "remove the Chinese from <file>", a `check-english-only.sh --diff` hit after an upstream pick outside website-docs/, or when a delegate is handed files to translate. Encodes which Chinese must stay (as \u escapes), the persisted and wire-coupled strings, the decided defaults, the proof tool and the gates.
 argument-hint: "<package dir or file list>"
 allowed-tools: Bash(scripts/check-english-only.sh *) Bash(go run ./scripts/translation-check *) Bash(scripts/validate.sh *) Bash(make docs) Bash(git grep *) Bash(git diff *) Bash(git show *) Bash(rg *) Read Grep Glob Edit Write
 ---
@@ -9,7 +9,7 @@ allowed-tools: Bash(scripts/check-english-only.sh *) Bash(go run ./scripts/trans
 
 A batch is one Go package, one frontend area, or one producer plus every consumer of its strings. The goal is English text with byte-identical behavior: identifiers, keys, format verbs, placeholders and control flow never change. Terms follow the glossary in `.claude/skills/translate-docs/SKILL.md`, so the code and the docs say the same thing.
 
-Find the work: `scripts/check-english-only.sh -n <pathspec>`.
+The tree is CJK-free, so the work is what a pick added: `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD`.
 
 ## What each kind of Chinese becomes
 
@@ -25,13 +25,12 @@ Find the work: `scripts/check-english-only.sh -n <pathspec>`.
 | Test inputs that exercise CJK handling (splitters, truncation, tokenizers) | Keep the value as `\u` escapes. |
 | Test assertions on a production string you translated | Change in the same batch. |
 | Data files of Chinese text (`internal/textconv/data/*.txt`) | Keep; exempt the path with `-english-only` in `.gitattributes`. |
-| Persisted values (`types.UntaggedTagName`, `fallback_response` defaults, built-in agent seeds) | This is greenfield: no database has applied the migrations. Translate the constant and the migrations that write or match it (`000008`, the four init schemas, `000006`) in place, in one batch. |
+| Persisted values (`types.UntaggedTagName`, `fallback_response` defaults, built-in agent seeds) | Translate the constant together with every migration that writes or matches it, in one batch. |
 | FAQ CSV/Excel headers and yes/no values | Export English. Import keeps accepting the Chinese aliases (`问题`, `是`/`否`), written as `\u` escapes. |
-| Frontend locale bundles other than `en-US.ts`, miniprogram `zh`, non-English READMEs | Delete in their own batch, after copying each file to `private/removed/<path>`; rewire `frontend/src/i18n/index.ts` and `embed.ts`. |
 
 ## Coupled strings
 
-A string is coupled when other code depends on its exact text. Translate both ends in one batch or neither. Known pairs: `internal/handler/session/qa.go` attachment summary with the regexes in `frontend/src/utils/attachmentParsingDisplay.ts`; `types.UntaggedTagName` with its lookups and migration `000008`. Four frontend tests slice source files at a Chinese comment (`Input-field.focus.test.mjs`, `Input-field.reasoning.test.ts`, `modelEditorFlow.test.ts`, `views/platform/fileDrop.test.mjs`); when you translate that comment, update the anchor string in the test.
+A string is coupled when other code depends on its exact text. Translate both ends in one batch or neither. Known pair: `internal/handler/session/qa.go` attachment summary with the regexes in `frontend/src/utils/attachmentParsingDisplay.ts`. Four frontend tests slice source files at a Chinese comment (`Input-field.focus.test.mjs`, `Input-field.reasoning.test.ts`, `modelEditorFlow.test.ts`, `views/platform/fileDrop.test.mjs`); when you translate that comment, update the anchor string in the test.
 
 ## Proof
 

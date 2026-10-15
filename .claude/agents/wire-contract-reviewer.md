@@ -11,7 +11,7 @@ For each route the diff touches, or that a touched consumer calls:
 
 1. Find its registration in `internal/router/` (method and path) and its handler. Read how the handler binds input: `c.Param`, `c.Query`, `c.ShouldBindJSON` into which struct, and that struct's `json`/`form` tags.
 2. Find every consumer: `rg -n '<distinctive path fragment>' client cli frontend/src/api mcp-server`. For each, compare method, path (including path parameters), query keys, body field names and response fields read.
-3. A route or field that changed on one side only is a finding. So is a consumer path the router does not register. Known example: `client/chunk.go:180` calls `/chunks/:id/delete-question`, which no route serves; `client/organization.go:367` sends `keyword` where the handler reads `q`.
+3. A route or field that changed on one side only is a finding. So is a consumer path the router does not register. Known example: `client/organization.go` `SearchOrganizations` sends `keyword`, `page` and `page_size` to `GET /organizations/search`, whose handler (`internal/handler/organization.go` `SearchOrganizations`) reads `q` and `limit`.
 
 Also check: swagger annotations on a changed handler match its binding (`make docs` must be rerun), and the `website-docs/04-api/` page for that route still matches.
 

@@ -5,7 +5,7 @@
 #   scripts/validate.sh                 working tree + untracked files vs HEAD
 #   scripts/validate.sh --base <rev>    everything since <rev>: commits, working tree, untracked
 #   scripts/validate.sh --list          print the areas and stop
-#   scripts/validate.sh --area <name>   run only that area (repeatable), whatever changed; for CI jobs
+#   scripts/validate.sh --area <name>   run only that area (repeatable), whatever changed
 #
 # Every touched area runs even when an earlier one fails, so one run reports every failure. Inside an
 # area each check is its own command and the first failure ends that area (set -e). The summary lists

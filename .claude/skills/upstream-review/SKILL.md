@@ -69,9 +69,9 @@ For a large window (more than about 20 commits), dispatch one reviewer subagent 
 
 - Keep `-x` on every cherry-pick so the log line "cherry picked from commit" carries provenance. Upstream `#NNNN` issue and PR numbers autolink to the wrong repo on GitHub; rewrite them to `Tencent/WeKnora#NNNN` in the picked commit message (`git commit --amend`) and in the decision log.
 - Upstream commits that touch `.github/` are never cherry-picked: ours is a rebranded, SHA-pinned port (GHCR, tag-only publishing) that diverges on every line. Read them for new or changed validation commands and port those by hand into `.github/workflows/` and `scripts/validate.sh`, keeping our conventions (`scripts/check-workflows.sh`). Record the decision in the log.
-- **English only.** This copy carries no Chinese (or other CJK) text: comments, log and error messages, prompts, docs, UI copy, fixtures. At the seed about 1,100 files contain CJK text (`scripts/check-english-only.sh --summary`); in Go about 9,200 lines, of which 3,690 are full-line comments (1,700 of them swag annotations) and the rest mostly string literals (counted 2026-10-12). Consequences for review:
+- **English only.** This copy carries no Chinese (or other CJK) text: comments, log and error messages, prompts, docs, UI copy, fixtures. The tree is CJK-free (`scripts/check-english-only.sh --summary` is empty), so any hit after a pick is new. Consequences for review:
   - Translated files show `~` for every upstream commit that touches them. That is expected. Cherry-pick anyway: hunks that do not overlap a translated line merge cleanly, and a conflict is confined to the lines both sides changed. Resolve by taking upstream's logic and our language.
-  - A pick never lands CJK text. After a batch, `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD` is the gate (whole-file mode would also report the seed's untranslated text in those files). Translate every hit before the batch lands.
+  - A pick never lands CJK text. After a batch, `scripts/check-english-only.sh --diff <sha-before-batch>..HEAD` is the gate. Translate every hit before the batch lands, with the `translate-code` skill (its `translation-check` proof).
   - Upstream commits whose only content is Chinese prose (docs under `website-docs/`, `README_CN.md`, comment edits) are SKIP unless they document behavior we adopted; then write the English equivalent.
 - Generated files are regenerated, never merged by hand. A conflict in one means the source changed; resolve the source, rerun the generator, `git add` the output:
   - `docs/docs.go`, `docs/swagger.json`, `docs/swagger.yaml` from `make docs` (swag over `cmd/server/main.go`; `docs/swagger_contract_test.go` checks it).
@@ -100,14 +100,18 @@ Since 2026-10-13 this copy runs its own upgrade policy (plan and holds in `priva
 
 Cooldown: an ordinary upgrade takes only releases at least 7 days old. Dependabot's `cooldown.default-days: 7` covers version PRs, each npm project's `.npmrc` sets `min-release-age=7` (npm >= 11.10; `npm ci` still installs the lockfile as is) and each uv project's `[tool.uv] exclude-newer = "7 days"` covers `uv lock`. Go has no setting: pick a version at least 7 days old by hand. A release that fixes a published advisory (including a repository advisory not yet in the npm audit database) skips the cooldown when it needs no refactor: `npm install pkg@x --min-release-age=0`, `uv lock -P pkg --exclude-newer false`.
 
-## Deviations decided 2026-10-12 (planned, not landed)
+## Deviations decided
 
-The rename landed 2026-10-12 and moved to "Name translations when porting" below; CalVer landed 2026-10-13 and moved to "Version and changelog". `website-docs/` is translated, `sample-data/` included; the root config, compose files and Makefile are translated (2026-10-12). Upstream commits touching them show `~`: port a docs hunk in English with the `translate-docs` skill, a config hunk by taking the logic and keeping our English. When a row below lands, move it into the next section with the status removed, and add any deleted path to "Deleted or moved paths".
+Upstream commits touching translated files show `~`: port a docs hunk in English with the `translate-docs` skill, a code or config hunk by taking the logic and keeping our English. A new deviation gets a row here; a deleted path also gets a line in "Deleted or moved paths".
 
-| Upstream | Ours | Notes |
-| --- | --- | --- |
-| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
-| `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | Upstream commits touching them: SKIP. |
+| Upstream | Ours | Status | Notes |
+| --- | --- | --- | --- |
+| Chinese text in code, docs and config | English only | landed | `scripts/check-english-only.sh` gates it (pre-commit, `guards.yml`). |
+| WeKnora names | AI KB names | landed 2026-10-12 | See "Name translations when porting". |
+| upstream semver | dated CalVer | landed 2026-10-13 | See "Version and changelog". |
+| `.github/` | our own CI | landed | See "Rules for this repo". |
+| locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | landed | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the Go side of per-channel IM reply locale. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |
+| `README_CN.md`, `README_JA.md`, `README_KO.md`, `client/README.md` (Chinese) | removed; `client/README_EN.md` becomes `client/README.md` | landed | Upstream commits touching them: SKIP. |
 
 Backup rule for every deletion above: copy the file to `private/removed/<original path>` (gitignored) before `git rm`, so the migration can be audited against the originals. The archived clone keeps every version too: `git --git-dir=private/OLD-.git show <sha>:<path>`.
 

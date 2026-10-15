@@ -15,8 +15,8 @@ case "$rel" in
     gen="make model-catalog-generate (edit seed.json or overrides.json instead)" ;;
   docreader/proto/*.pb.go|docreader/proto/*_pb2.py|docreader/proto/*_pb2.pyi|docreader/proto/*_pb2_grpc.py)
     gen="make -C docreader proto (edit docreader/proto/docreader.proto instead)" ;;
-  go.sum|*/go.sum|package-lock.json|*/package-lock.json|uv.lock|*/uv.lock)
-    gen="the package manager (go mod tidy, npm install, uv lock)" ;;
+  go.sum|*/go.sum|package-lock.json|*/package-lock.json|uv.lock|*/uv.lock|*/Cargo.lock)
+    gen="the package manager (go mod tidy, npm install, uv lock, cargo update)" ;;
   private/OLD-.git/*)
     gen="nothing: it is the archived upstream clone, read it with git --git-dir" ;;
   *) exit 0 ;;

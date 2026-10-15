@@ -3,10 +3,11 @@
 Dev loop
 
 - `make dev-start` infra containers; `make dev-app` backend with Air; `make dev-frontend` Vite dev server; `make dev-stop|dev-restart|dev-logs|dev-status` (all wrap `scripts/dev.sh`).
-- `make build` -> `./ai-kb` binary; `make run`; `make build-lite` / `run-lite` (single-binary Lite edition with embedded `web/`).
+- `make build` -> `./ai-kb` binary; `make run`; `make build-lite` -> `./ai-kb-lite` (frontend copied to `./web` and served from disk, `AIKB_WEB_DIR` overrides); `run-lite` needs `.env.lite`.
 
 Validate
 
+- All areas a change touches: `scripts/validate.sh [--base <rev>] [--list] [--area <name>]`; the per-area commands below are what it runs.
 - Go: `go vet $(go list ./... | grep -v /docreader/) && go test $(go list ./... | grep -v /docreader/)`; `go test -tags desktop ./internal/container`; `go build ./cmd/server`; `golangci-lint run`; `make fmt` (go fmt).
 - Model catalog: `make model-catalog-check` (= `python3 scripts/model-catalog/generate.py --check` + `go test ./internal/models/...`); regenerate with `make model-catalog-generate`.
 - Frontend: `npm --prefix frontend test`, `npm --prefix frontend run type-check`, `npm --prefix frontend run build`; i18n: `npm --prefix frontend run check-i18n`.
@@ -16,10 +17,14 @@ Validate
 - Swagger: `make docs` (regenerates `docs/`).
 - Migrations: `make migrate-up|migrate-down|migrate-version|migrate-create|migrate-force|migrate-goto` (wrap `scripts/migrate.sh`).
 
+Release
+
+- `make bump-version [VERSION=YYYY.M.D[.MICRO]]`, `make bump-lib LIB=dsh-ai-kb|mcp-server|helm-chart PART=patch|minor|major`, `make check-version`.
+
 Upstream and English-only
 
 - `.claude/skills/upstream-review/scripts/upstream-review.sh [--stat|--urls|--show <sha>|--diverged|--advance <sha>]`.
-- `scripts/check-english-only.sh [-n|--summary] [path...]` exits 1 while CJK text remains.
+- `scripts/check-english-only.sh [-n|--summary] [path...]` exits 1 while CJK text remains; `scripts/check-emdash.sh [--cached]`; `scripts/check-workflows.sh`.
 
 Darwin notes
 

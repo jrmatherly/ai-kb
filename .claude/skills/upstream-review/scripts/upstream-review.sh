@@ -128,6 +128,7 @@ case "$cmd" in
       "$STATE" > "$tmp" && cat "$tmp" > "$STATE" && rm -f "$tmp"
     echo "[upstream-review] watermark -> $NEWSHORT ($NEWDATE). Commit .upstream-review/ to share it." >&2
     exit 0 ;;
+  -h|--help) sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   list|--stat|--urls) ;;
   *) die "unknown option '$cmd' (see header)" ;;
 esac
