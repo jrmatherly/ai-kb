@@ -21,7 +21,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-`start.sh` creates `.venv` and installs the dependencies. It listens on `http://127.0.0.1:8010/mcp` by default, with auth token `ai-kb-demo-token`.
+`start.sh` creates `.venv` and installs the dependencies. It listens on `http://127.0.0.1:8010/mcp` by default (set `MCP_HOST` to change the bind address), with auth token `ai-kb-demo-token`.
 
 To customize:
 
@@ -45,20 +45,31 @@ It should list 6 tools and resolve 6 `lookup_policy` topics.
 
 ## 3. Connect AI KB
 
-1. Open **Settings → MCP Services → New**.
+AI KB refuses MCP service URLs on loopback and private hosts (SSRF check), so `127.0.0.1` is rejected, and inside the Docker `app` container it would point at the container anyway. Allow the demo host first, for example with AI KB in Docker:
+
+```bash
+# AI KB .env, then restart the app container
+SSRF_WHITELIST_EXTRA=host.docker.internal
+# demo: listen on all interfaces
+MCP_HOST=0.0.0.0 ./start.sh
+```
+
+1. Open **Toolbox → MCP Service → Add Service**.
 2. Fill in:
 
    | Field | Value |
    | --- | --- |
-   | Name | `Local MCP Demo` |
-   | Transport | **HTTP Streamable** |
-   | URL | `http://127.0.0.1:8010/mcp` |
-   | Auth | **Bearer** |
-   | Token | `ai-kb-demo-token` (same as `MCP_SERVER_AUTH_TOKEN`) |
+   | Service Name | `Local MCP Demo` |
+   | Transport Type | **HTTP Streamable** |
+   | Service URL | `http://host.docker.internal:8010/mcp` |
+   | Auth Method | **API Key / Token** |
+   | Header Name | `Authorization` |
+   | Secret / Token | `Bearer ai-kb-demo-token` (same token as `MCP_SERVER_AUTH_TOKEN`) |
 
-3. Save, then click **Test Connection**. It should find 6 tools.
-4. In the **agent** settings, select this MCP service (or all tools).
-5. (Optional) Turn on **Require human approval** for `send_demo_alert`. The agent then asks for confirmation before it calls the tool.
+3. Click **Save and continue**. The **Tools and usage** step should list 6 tools.
+4. (Optional) Turn on **Require approval** for `send_demo_alert`. The agent then asks for confirmation before it calls the tool.
+5. Add usage instructions (or generate them), then **Save**.
+6. In the **agent** settings, select this MCP service (or all tools).
 
 ## 4. Questions to try
 
@@ -73,7 +84,7 @@ If you also imported the documents in `website-docs/sample-data/`, you can check
 ## 5. Notes
 
 - The AI KB UI **does not support the stdio** transport. Use **HTTP Streamable** or **SSE**.
-- The demo binds only to `127.0.0.1`. Do not expose it to the internet.
+- The demo binds to `127.0.0.1` unless `MCP_HOST` says otherwise. Do not expose it to the internet.
 - `send_demo_alert` sends nothing. It only returns a simulated result.
 
 ## 6. SSE mode (optional)
@@ -82,4 +93,4 @@ If you also imported the documents in `website-docs/sample-data/`, you can check
 MCP_TRANSPORT=sse MCP_PORT=8011 ./start.sh
 ```
 
-In AI KB choose the **SSE** transport and set the URL to `http://127.0.0.1:8011/sse`.
+In AI KB choose the **SSE** transport and set the URL to `http://host.docker.internal:8011/sse`.

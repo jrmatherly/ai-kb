@@ -12,6 +12,10 @@ and this project follows [Semantic Versioning](https://semver.org/).
 - `update_knowledge_from_text` tool: updates manual Markdown knowledge through the existing `PUT /knowledge/manual/{id}` endpoint. Re-indexes by default and can save as a draft instead, completing Tencent/WeKnora#2378.
 - The README tool list now includes the existing `create_knowledge_from_file`.
 
+### Changed
+- Renamed for AI KB: distribution `ai-kb-mcp` (not on PyPI), module `aikb_mcp_server`, commands `ai-kb-mcp-server` / `ai-kb-server`, environment variables `AIKB_BASE_URL`, `AIKB_API_KEY`, `AIKB_CHAT_TIMEOUT` and `AIKB_VERIFY_SSL`. The SSE and HTTP transports require `MCP_SERVER_AUTH_TOKEN`.
+- Entries from 1.1.1 down describe the upstream Tencent/WeKnora package and its names.
+
 ## [1.1.1] - 2026-07-30
 
 ### Changed

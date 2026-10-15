@@ -2,7 +2,7 @@
 
 > **⚠️ Deprecated**
 >
-> AI KB now ships a built-in MCP server: create endpoints under "Settings → Publish & Integrations → MCP Server", each with its own token, knowledge-base scope and tool list, and connect clients to `/mcp/<endpoint_id>` over Streamable HTTP. This Python package is kept only for existing deployments and will be removed in a future release.
+> AI KB now ships a built-in MCP server: create endpoints under "Settings → Publish & Integrations → MCP Server", each with its own token, knowledge-base scope and tool list, and connect clients to `/mcp/<endpoint_id>` over Streamable HTTP. Prefer the built-in endpoint; this Python package may be removed in a future release.
 
 A Model Context Protocol (MCP) server that gives access to the AI KB knowledge management API.
 
@@ -31,6 +31,19 @@ $env:AIKB_API_KEY="your_api_key_here"
 set AIKB_BASE_URL=http://localhost:8080/api/v1
 set AIKB_API_KEY=your_api_key_here
 ```
+
+Create the API key under Settings → Publish & Integrations → API Integration → API Keys.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `AIKB_BASE_URL` | `http://localhost:8080/api/v1` | AI KB API base URL |
+| `AIKB_API_KEY` | empty | API key, sent as `X-API-Key` |
+| `AIKB_CHAT_TIMEOUT` | `300` | Chat stream read timeout in seconds |
+| `AIKB_VERIFY_SSL` | `true` | `false` disables TLS verification (development only) |
+| `MCP_TRANSPORT` | `stdio` | `stdio`, `sse` or `http` (same as `--transport`) |
+| `MCP_HOST` / `MCP_PORT` | `127.0.0.1` / `8000` | Bind address for `sse` and `http` |
+| `MCP_SERVER_AUTH_TOKEN` | empty | Required for `sse` and `http`; the server refuses to start without it |
+| `MCP_ALLOWED_UPLOAD_DIRS` | working directory | Extra roots for local file uploads (see below) |
 
 ### 3. Run the server
 
@@ -63,7 +76,17 @@ python main.py --help                 # show help
 python main.py --check-only           # check the environment configuration only
 python main.py --verbose              # enable verbose logging
 python main.py --version              # show the version
+python main.py --transport http --port 8000   # Streamable HTTP (needs MCP_SERVER_AUTH_TOKEN)
 ```
+
+### Network transports
+
+```bash
+MCP_SERVER_AUTH_TOKEN=change_me ai-kb-mcp-server --transport http --host 0.0.0.0 --port 8000
+```
+
+The Streamable HTTP endpoint is `/mcp`; the SSE transport serves `/sse` and `/sse/messages/`.
+Clients send `Authorization: Bearer <token>` or `X-MCP-Auth-Token: <token>`.
 
 ## Install as a Python package
 
@@ -132,6 +155,7 @@ The MCP server provides these tools:
 - `create_knowledge_base` - create a knowledge base
 - `list_knowledge_bases` - list knowledge bases
 - `get_knowledge_base` - get knowledge base details
+- `list_shared_knowledge_bases` - list knowledge bases shared with you
 - `delete_knowledge_base` - delete a knowledge base
 - `hybrid_search` - hybrid search
 
@@ -167,10 +191,21 @@ Both chat tools assemble events on SSE blank-line boundaries, so one event can s
 An event still open when the connection ends (no blank line seen yet) is dropped. Each event's data buffer is capped at 8 MiB;
 exceeding the cap returns an error and closes the response connection.
 
+### Agents
+
+- `list_agents` - list agents
+- `get_agent` - get agent details
+
 ### Chunk management
 
 - `list_chunks` - list knowledge chunks
 - `delete_chunk` - delete a knowledge chunk
+
+### Wiki
+
+- `wiki_search` - search a knowledge base's wiki pages
+- `wiki_read_page` - read one wiki page by slug
+- `wiki_index_view` - show a knowledge base's wiki index
 
 ## Troubleshooting
 
@@ -179,10 +214,6 @@ If you hit import errors, make sure that:
 1. All required dependencies are installed
 2. Your Python version is compatible (3.11 or newer)
 3. No file name conflicts (do not name a file `mcp.py`)
-
-## Example output
-
-<img width="950" height="2063" alt="118d078426f42f3d4983c13386085d7f" src="https://github.com/user-attachments/assets/09111ec8-0489-415c-969d-aa3835778e14" />
 
 ### Local upload directory boundary
 

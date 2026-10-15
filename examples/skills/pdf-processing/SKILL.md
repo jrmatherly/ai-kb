@@ -34,6 +34,8 @@ with pdfplumber.open("document.pdf") as pdf:
 - Run `scripts/analyze_form.py` to extract form fields
 - Run `scripts/extract_text.py` to extract text from a PDF
 
+Both scripts are mocks that print sample output; the Quick Start code is illustrative and needs pdfplumber or pypdf installed.
+
 ## Best Practices
 
 1. Always validate PDF files before processing

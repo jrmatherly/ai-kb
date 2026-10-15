@@ -3,7 +3,7 @@
 AI KB local MCP demo server
 
 A minimal external MCP server for testing the client connection in AI KB under
-Settings → MCP Services. By default it serves Streamable HTTP at http://127.0.0.1:8010/mcp
+Toolbox → MCP Service. By default it serves Streamable HTTP at http://127.0.0.1:8010/mcp
 
 Start:
   export MCP_SERVER_AUTH_TOKEN=ai-kb-demo-token
@@ -12,7 +12,7 @@ Start:
 AI KB settings:
   Transport: HTTP Streamable
   URL: http://127.0.0.1:8010/mcp
-  Auth: Bearer, token equal to MCP_SERVER_AUTH_TOKEN
+  Auth: API Key / Token, header Authorization, value "Bearer <MCP_SERVER_AUTH_TOKEN>"
 """
 
 from __future__ import annotations

@@ -23,11 +23,9 @@ python main.py --verbose
 # Set environment variables
 export AIKB_BASE_URL="http://localhost:8080/api/v1"
 export AIKB_API_KEY="your_api_key_here"
-
-# Or set them in a .env file
-echo "AIKB_BASE_URL=http://localhost:8080/api/v1" > .env
-echo "AIKB_API_KEY=your_api_key_here" >> .env
 ```
+
+The server does not read a `.env` file; export the variables or set them in the MCP client's `env` block.
 
 ## MCP tool examples
 
@@ -196,8 +194,7 @@ Omitting `title` or passing an empty string keeps the original title. Set `statu
     "source": "openai",
     "description": "OpenAI GPT-4 model for knowledge Q&A",
     "base_url": "https://api.openai.com/v1",
-    "api_key": "sk-...",
-    "is_default": true
+    "api_key": "sk-..."
   }
 }
 ```
@@ -437,30 +434,11 @@ python main.py --verbose
 
 ## Integration
 
-### Claude Desktop
+### Claude Desktop and other MCP clients
 
-Add this to the Claude Desktop configuration file:
-
-```json
-{
-  "mcpServers": {
-    "aikb": {
-      "command": "python",
-      "args": ["path/to/main.py"],
-      "env": {
-        "AIKB_BASE_URL": "http://localhost:8080/api/v1",
-        "AIKB_API_KEY": "your_api_key"
-      }
-    }
-  }
-}
-```
+See [MCP_CONFIG.md](./MCP_CONFIG.md) for client configuration.
 
 Project repository: <https://github.com/jrmatherly/ai-kb/tree/main/mcp-server>
-
-### Other MCP clients
-
-See each client's documentation to configure the server launch command and environment variables.
 
 ## Troubleshooting
 

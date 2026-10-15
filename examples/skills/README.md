@@ -1,6 +1,6 @@
 # Skills examples
 
-This directory holds examples for the Agent Skills feature.
+This directory holds examples for the Agent Skills feature. The server does not load skills from here: add a skill as a ZIP or source link under Toolbox → Skill Management and install it into a sandbox.
 
 ## Layout
 
@@ -10,22 +10,22 @@ skills/
 └── pdf-processing/        # example PDF processing skill
     ├── SKILL.md           # main file (Level 2)
     ├── FORMS.md           # supplementary doc (Level 3)
-    └── scripts/           # executable scripts
+    └── scripts/           # mock scripts (print sample output)
         ├── analyze_form.py
         └── extract_text.py
 ```
 
 ## Quick start
 
-### Run the demo
+### Check the example loads
 
 ```bash
-go run ./cmd/skills-demo/main.go
+go test ./internal/agent/skills/ -run TestExampleSkillsIntegration -v
 ```
 
 ### Create a new skill
 
-1. Create a folder in this directory:
+1. Create a folder:
 
    ```bash
    mkdir my-new-skill
@@ -51,6 +51,8 @@ go run ./cmd/skills-demo/main.go
    # add your scripts
    ```
 
+4. Zip the folder and add it under Toolbox → Skill Management, then install it into a sandbox.
+
 ## Full documentation
 
 See the [Agent Skills docs](../../website-docs/03-features/22-skills-sandbox.md).
@@ -61,7 +63,7 @@ A complete example skill that shows:
 
 - **SKILL.md**: the main file with YAML frontmatter
 - **FORMS.md**: a supplementary reference doc
-- **scripts/**: Python scripts that run in the sandbox
+- **scripts/**: mock Python scripts that print sample output (no real PDF parsing)
 
 ### Skill description
 

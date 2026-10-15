@@ -7,7 +7,7 @@ This guide covers how to fill PDF forms programmatically.
 Install required packages:
 
 ```bash
-pip install pypdf pdfrw
+pip install pypdf
 ```
 
 ## Basic Form Filling
@@ -18,14 +18,14 @@ from pypdf import PdfReader, PdfWriter
 def fill_form(input_path, output_path, field_data):
     reader = PdfReader(input_path)
     writer = PdfWriter()
-    
+
     # Clone the original PDF
     writer.clone_document_from_reader(reader)
-    
+
     # Fill form fields
     for page in writer.pages:
         writer.update_page_form_field_values(page, field_data)
-    
+
     # Save the filled PDF
     with open(output_path, "wb") as f:
         writer.write(f)

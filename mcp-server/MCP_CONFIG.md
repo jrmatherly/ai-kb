@@ -1,6 +1,8 @@
 # Run the AI KB MCP server with uv
 
-> We recommend `uv` for running Python-based MCP servers.
+> Prefer the built-in endpoint (Settings → Publish & Integrations → MCP Server). Its connection dialog gives ready-made snippets for Cursor, VS Code, Claude Desktop and Claude Code.
+>
+> For this package, we recommend `uv` for running Python-based MCP servers.
 >
 > You can also install the package from the checkout with `pip install ./mcp-server`, or run `uvx --from ./mcp-server ai-kb-mcp-server`. The `ai-kb-mcp` distribution is not published on PyPI.
 
@@ -45,7 +47,7 @@ Add this to the Claude Desktop settings:
 
 ### Cursor
 
-In Cursor, edit the MCP configuration file (usually `~/.cursor/mcp-config.json`):
+In Cursor, edit `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` in the project:
 
 ```json
 {

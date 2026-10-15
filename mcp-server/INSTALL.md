@@ -24,6 +24,8 @@ set AIKB_BASE_URL=http://localhost:8080/api/v1
 set AIKB_API_KEY=your_api_key_here
 ```
 
+Create the API key under Settings → Publish & Integrations → API Integration → API Keys. The full variable list is in [README.md](./README.md#2-set-environment-variables).
+
 ### 3. Run the server
 
 There are several ways to run the server:
@@ -94,6 +96,7 @@ python main.py --help                 # show help
 python main.py --check-only           # check the environment configuration only
 python main.py --verbose              # enable verbose logging
 python main.py --version              # show the version
+python main.py --transport http --host 127.0.0.1 --port 8000   # Streamable HTTP (needs MCP_SERVER_AUTH_TOKEN)
 ```
 
 ## Environment check
@@ -104,11 +107,7 @@ Run this command to check the environment configuration:
 python main.py --check-only
 ```
 
-It shows:
-
-- The AI KB API base URL
-- Whether the API key is set
-- Whether the dependencies are installed
+It shows the base URL and whether the API key is set, and exits with an error if `mcp` or `requests` is missing.
 
 ## Troubleshooting
 
@@ -144,15 +143,23 @@ If you hit authentication problems:
 ai-kb/mcp-server/
 ├── __init__.py              # package init
 ├── main.py                  # main entry point
-├── run_server.py           # original launch script
-├── aikb_mcp_server.py   # MCP server implementation
-├── requirements.txt        # dependency list
-├── setup.py               # install script
-├── pyproject.toml         # project metadata (package ai-kb-mcp, not on PyPI)
-├── MANIFEST.in            # package file manifest
-├── LICENSE                # license
-├── README.md              # project overview
-└── INSTALL.md             # installation guide
+├── run_server.py            # original launch script
+├── run.py                   # quick launch script
+├── aikb_mcp_server.py       # MCP server implementation
+├── upload_paths.py          # local upload directory boundary
+├── requirements.txt         # dependency list
+├── setup.py                 # install script
+├── pyproject.toml           # project metadata (package ai-kb-mcp, not on PyPI)
+├── uv.lock                  # locked dependencies
+├── MANIFEST.in              # package file manifest
+├── Dockerfile               # container image (Streamable HTTP)
+├── test_*.py, tests/        # tests
+├── LICENSE                  # license
+├── README.md                # project overview
+├── INSTALL.md               # installation guide
+├── MCP_CONFIG.md            # MCP client configuration
+├── EXAMPLES.md              # usage examples
+└── CHANGELOG.md             # changelog
 ```
 
 ### Adding a feature
@@ -178,23 +185,14 @@ python main.py --verbose
 
 ### Docker
 
-Create a `Dockerfile`:
+Build and run the bundled `Dockerfile`, which serves Streamable HTTP on port 8000:
 
-```dockerfile
-FROM python:3.14-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-RUN pip install -e .
-
-ENV AIKB_BASE_URL=http://localhost:8080/api/v1
-EXPOSE 8000
-
-CMD ["ai-kb-mcp-server"]
+```bash
+docker build -t ai-kb-mcp mcp-server
+docker run -e AIKB_API_KEY=your_api_key -e MCP_SERVER_AUTH_TOKEN=change_me -p 8000:8000 ai-kb-mcp
 ```
+
+The image defaults to `AIKB_BASE_URL=http://app:8080/api/v1`; override it when AI KB runs elsewhere. The MCP endpoint is `http://<host>:8000/mcp`.
 
 ### System service
 
@@ -211,7 +209,8 @@ User=aikb
 WorkingDirectory=/opt/ai-kb-mcp
 Environment=AIKB_BASE_URL=http://localhost:8080/api/v1
 Environment=AIKB_API_KEY=your_api_key
-ExecStart=/usr/local/bin/ai-kb-mcp-server
+Environment=MCP_SERVER_AUTH_TOKEN=change_me
+ExecStart=/usr/local/bin/ai-kb-mcp-server --transport http --host 127.0.0.1 --port 8000
 Restart=always
 
 [Install]

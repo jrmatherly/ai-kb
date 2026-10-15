@@ -26,10 +26,10 @@ echo "  transport : ${MCP_TRANSPORT}"
 echo "  endpoint  : http://${MCP_HOST}:${MCP_PORT}/$([ "$MCP_TRANSPORT" = http ] && echo mcp || echo sse)"
 echo "  auth token: ${MCP_SERVER_AUTH_TOKEN}"
 echo
-echo "AI KB UI → Settings → MCP Services → New"
-echo "  Transport: HTTP Streamable"
-echo "  URL : http://${MCP_HOST}:${MCP_PORT}/mcp"
-echo "  Auth: Bearer / ${MCP_SERVER_AUTH_TOKEN}"
+echo "AI KB UI → Toolbox → MCP Service → Add Service"
+echo "  Transport : HTTP Streamable"
+echo "  URL       : http://<host reachable from AI KB, allowed by SSRF_WHITELIST_EXTRA>:${MCP_PORT}/mcp"
+echo "  Auth      : API Key / Token, header Authorization, value \"Bearer ${MCP_SERVER_AUTH_TOKEN}\""
 echo
 
 exec python server.py --transport "$MCP_TRANSPORT" --host "$MCP_HOST" --port "$MCP_PORT"
