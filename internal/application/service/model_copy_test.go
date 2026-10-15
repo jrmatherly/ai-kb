@@ -41,10 +41,6 @@ func (s *stubCopyModelRepo) Update(context.Context, *types.Model) error {
 
 func (s *stubCopyModelRepo) Delete(context.Context, uint64, string) error { return nil }
 
-func (s *stubCopyModelRepo) ClearDefaultByType(context.Context, uint, types.ModelType, string) error {
-	return nil
-}
-
 func TestCopyModel_CopiesCredentialsAndKeepsName(t *testing.T) {
 	source := &types.Model{
 		ID:          "src",

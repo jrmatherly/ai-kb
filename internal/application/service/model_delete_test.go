@@ -135,9 +135,6 @@ func (s *stubModelRepoForDelete) Delete(_ context.Context, _ uint64, id string) 
 	}
 	return nil
 }
-func (s *stubModelRepoForDelete) ClearDefaultByType(context.Context, uint, types.ModelType, string) error {
-	return nil
-}
 
 func TestDeleteModel_RejectsWhenReferenced(t *testing.T) {
 	ctx := context.WithValue(context.Background(), types.TenantIDContextKey, uint64(1))

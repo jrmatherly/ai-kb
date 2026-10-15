@@ -76,24 +76,3 @@ func (r *modelRepository) Delete(ctx context.Context, tenantID uint64, id string
 		"id = ? AND tenant_id = ?", id, tenantID,
 	).Delete(&types.Model{}).Error
 }
-
-// ClearDefaultByType clears the default flag for all models of a specific type
-// This is a batch operation that updates all matching records in one query
-func (r *modelRepository) ClearDefaultByType(
-	ctx context.Context,
-	tenantID uint,
-	modelType types.ModelType,
-	excludeID string,
-) error {
-	query := r.db.WithContext(ctx).Model(&types.Model{}).Where(
-		"tenant_id = ? AND type = ? AND is_default = ?", tenantID, modelType, true,
-	)
-
-	// If excludeID is provided, exclude that model from the update
-	if excludeID != "" {
-		query = query.Where("id != ?", excludeID)
-	}
-
-	// Batch update: set is_default to false for all matching records
-	return query.Update("is_default", false).Error
-}
