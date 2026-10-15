@@ -5,7 +5,7 @@ import { Icon } from "./ui";
 import { getThemeSnapshot, subscribeToTheme, toggleTheme } from "./theme";
 import { siteNavigation, repositoryUrl, headerIcons, homeAssets } from "../../shared/header";
 import s from "./home.module.css";
-const videoUrl = "https://github.com/user-attachments/assets/2819598d-3140-4623-814a-8162a22b653c";
+const videoUrl = "https://github.com/user-attachments/assets/6e6f5950-e479-4268-a3eb-76f69b93af63";
 
 function HeaderIcon({ name }: { name: string }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={headerIcons[name]} /></svg>;
@@ -45,12 +45,12 @@ export function ProductVideo() {
     }
   }
   return <figure id="demo" className={s.videoFigure}>
-    <div className={s.videoTop}><span>Product demo <span className={s.videoDot}>/</span> PRODUCT FILM</span><span>02:25 <span className={s.videoDot}>/</span> 1080P</span></div>
+    <div className={s.videoTop}><span>Product demo <span className={s.videoDot}>/</span> PRODUCT FILM</span><span>01:52 <span className={s.videoDot}>/</span> 1080P</span></div>
     <div className={s.videoStage}>
-      <video ref={player} controls={started} playsInline preload="none" poster={`${homeAssets}/product/agent-chat.png`} aria-label="AI KB product introduction, English narration, English and Chinese subtitles" aria-describedby="video-caption" tabIndex={started ? 0 : -1} onError={() => setFailed(true)} />
-      {!started && <button className={s.videoCover} onClick={play} aria-label="Play the AI KB product introduction video, 2 minutes 25 seconds"><span className={s.playCircle}><Icon name="play" /></span><span className={s.videoCoverTitle}>AI KB product demo</span><span className={s.videoCoverHint}>Play the introduction · 2 min 25 s</span></button>}
+      <video ref={player} controls={started} playsInline preload="none" poster={`${homeAssets}/product/agent-chat.png`} aria-label="AI KB product introduction, no narration, English on-screen text" aria-describedby="video-caption" tabIndex={started ? 0 : -1} onError={() => setFailed(true)} />
+      {!started && <button className={s.videoCover} onClick={play} aria-label="Play the AI KB product introduction video, 1 minute 52 seconds"><span className={s.playCircle}><Icon name="play" /></span><span className={s.videoCoverTitle}>AI KB product demo</span><span className={s.videoCoverHint}>Play the introduction · 1 min 52 s</span></button>}
       {failed && <div className={s.videoError} role="status"><p>The video cannot be loaded right now</p><a href={videoUrl} target="_blank" rel="noreferrer">Open the original video on GitHub <Icon name="external" /></a></div>}
     </div>
-    <figcaption id="video-caption" className={s.videoCaption}><span>Knowledge Q&amp;A, agent reasoning and Wiki organization</span><a href={videoUrl} target="_blank" rel="noreferrer">README product video · English narration / English and Chinese subtitles <Icon name="external" /></a></figcaption>
+    <figcaption id="video-caption" className={s.videoCaption}><span>Knowledge Q&amp;A, agent reasoning and Wiki organization</span><a href={videoUrl} target="_blank" rel="noreferrer">README product video · No narration, English on-screen text <Icon name="external" /></a></figcaption>
   </figure>;
 }

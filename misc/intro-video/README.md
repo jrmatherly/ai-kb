@@ -21,7 +21,17 @@ npm run stills -- 9.5 22 57 81          # PNGs in stills/
 
 To preview in a browser, open `index.html?t=22` for one frame, or `index.html?play` to play from the start (`?play=40` starts at 40 s). Open it from the repository checkout, because the brand icons are loaded from `website-docs/homepage/public/docs/_home/brands/`.
 
-For a README upload under GitHub's 10 MB attachment limit, re-encode:
+## Publish
+
+`README.md` and the docs homepage (`website-docs/homepage/app/interactive.tsx`) embed the same `https://github.com/user-attachments/assets/<id>` URL; the homepage audit fails if they differ. Upload by posting an issue with the file attached:
+
+```bash
+gh issue create --title "Asset: AI KB intro video (YYYY-MM-DD)" --body "Hosts the intro video embedded in README.md and the docs homepage. Do not delete." --attach misc/intro-video/ai-kb-intro.mp4
+```
+
+Take the URL from the issue body, check it without credentials (`curl -sIL <url>` ends in `200` and `video/mp4`), then close and lock the issue. Never delete it: the asset belongs to the issue. A file dragged into a comment box that is never submitted stays private to the uploader and returns 404 to everyone else.
+
+Videos over 10 MB need a paid GitHub plan on the repository owner. To fit under 10 MB, re-encode:
 
 ```bash
 ffmpeg -i ai-kb-intro.mp4 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart ai-kb-intro-lite.mp4

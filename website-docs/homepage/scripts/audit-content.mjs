@@ -13,7 +13,9 @@ for (const term of ['Three plans', 'Choose a plan', 'Legacy demo', '18K+', 'Turn
   assert.ok(!visible.includes(term), `Retired content still visible: ${term}`);
 }
 assert.match(html, /<video[^>]+preload="none"/, 'Video should not load before user interaction');
-assert.match(html, /https:\/\/github.com\/user-attachments\/assets\/2819598d-3140-4623-814a-8162a22b653c/, 'Use the README video');
+const readmeVideo = (await readFile(join(process.cwd(), '..', '..', 'README.md'), 'utf8')).match(/https:\/\/github\.com\/user-attachments\/assets\/[0-9a-f-]+/)?.[0];
+assert.ok(readmeVideo, 'README.md must embed the product video');
+assert.ok(html.includes(readmeVideo), `Use the README video: ${readmeVideo}`);
 assert.ok(!/<video[^>]+autoplay/i.test(html), 'Do not autoplay the product film');
 const wiki = html.match(/<section id="wiki"[\s\S]*?<\/section>/)?.[0];
 assert.ok(wiki, 'The homepage must include a dedicated Wiki section');
