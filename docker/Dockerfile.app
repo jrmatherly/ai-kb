@@ -149,7 +149,8 @@ RUN if [ -n "$APK_MIRROR_ARG" ]; then \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Node for stdio MCP servers (npx) and skill scripts. Debian bookworm packages Node 18, which is end-of-life.
+# Node 24 instead of Debian bookworm's end-of-life Node 18. The server itself does not run node, npm or
+# npx (stdio MCP is disabled; skill scripts run in the sandbox image).
 COPY --from=node-base /usr/local/bin/node /usr/local/bin/node
 COPY --from=node-base /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s node /usr/local/bin/nodejs && \
