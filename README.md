@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <a href="https://ai-kb-docs.matherly.net"><img alt="Website" src="https://img.shields.io/badge/website-ai-kb-docs.matherly.net-b8863b?style=flat-square&labelColor=101f38"></a>
+  <a href="https://ai-kb-docs.matherly.net"><img alt="Website" src="https://img.shields.io/badge/website-ai--kb--docs.matherly.net-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="https://ai-kb-docs.matherly.net/docs/"><img alt="Docs" src="https://img.shields.io/badge/docs-read-b8863b?style=flat-square&labelColor=101f38"></a>
-  <a href="./CHANGELOG.md"><img alt="Release" src="https://img.shields.io/badge/release-v2026.10.13-b8863b?style=flat-square&labelColor=101f38"></a>
+  <a href="./CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/release-v2026.10.13-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="https://github.com/jrmatherly/ai-kb/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/jrmatherly/ai-kb?style=flat-square&labelColor=101f38&color=b8863b"></a>
   <br/>
@@ -26,10 +26,6 @@
   <a href="#clients-and-integrations">Clients</a> ·
   <a href="#documentation">Docs</a> ·
   <a href="#development">Development</a>
-</p>
-
-<p align="center">
-  <a href="https://trendshift.io/repositories/15289"><img src="https://trendshift.io/api/badge/repositories/15289" alt="jrmatherly/ai-kb | Trendshift" width="220" height="48"/></a>
 </p>
 
 ## Overview
@@ -78,7 +74,7 @@ docker compose up -d    # Start core services
 > [!NOTE]
 > No release images are published under `ghcr.io/jrmatherly/ai-kb-*` yet, so `docker compose pull` fails with `denied`. Build the images from the checkout as above; the first build takes a while.
 >
-> `.env.example` ships default `JWT_SECRET` and `SYSTEM_AES_KEY` values so the first start works, and the server logs a warning for each until you replace them. Replace both before you store real credentials: `openssl rand -hex 32` for `JWT_SECRET`, `openssl rand -hex 16` for `SYSTEM_AES_KEY` (exactly 32 characters). The server refuses to start if either is empty.
+> `.env.example` ships default `JWT_SECRET` and `SYSTEM_AES_KEY` values so the first start works, and the server logs a warning for each until you replace them. Replace both before you store real credentials: `openssl rand -hex 32` for `JWT_SECRET`, `openssl rand -hex 16` for `SYSTEM_AES_KEY` (exactly 32 characters). The server refuses to start if `JWT_SECRET` is empty or `SYSTEM_AES_KEY` is not exactly 32 bytes. The shipped `JWT_SECRET` is never used to sign: the server stores a per-install secret instead. Embed sessions and presigned file links stay off until you set `SYSTEM_SIGNING_KEY` or a real `SYSTEM_AES_KEY`.
 
 Then open **<http://localhost>** and follow the onboarding guide. A walkthrough with sample data is in the [Quickstart](https://ai-kb-docs.matherly.net/docs/01-getting-started/03-quickstart).
 
@@ -89,7 +85,7 @@ Then open **<http://localhost>** and follow the onboarding guide. A walkthrough 
 | --------- | ----- |
 | Web UI | `http://localhost` |
 | Backend API | `http://localhost:8080` |
-| Langfuse Tracing | `http://localhost:3000` |
+| Langfuse Tracing (`langfuse` or `full` profile) | `http://localhost:3000` |
 
 ### Optional services
 
@@ -98,10 +94,14 @@ Add `--profile` flags to enable additional components; multiple profiles can be 
 | Profile | Adds |
 | --------- | ------ |
 | *(default)* | Core services |
-| `full` | All features |
+| `full` | Every profile below except `milvus`, `weaviate`, `doris` and `odl-hybrid`, plus the sandbox image and the deprecated Python MCP server (port 8082) |
 | `neo4j` | Knowledge Graph (Neo4j) |
 | `minio` | Object Storage (MinIO) |
 | `langfuse` | Tracing (Langfuse) |
+| `qdrant` / `milvus` / `weaviate` / `doris` | Vector databases |
+| `searxng` | Web search (SearXNG) |
+| `odl-hybrid` | OpenDataLoader hybrid PDF parsing |
+| `dex` | OIDC test provider (Dex) |
 
 ```bash
 docker compose --profile neo4j --profile minio up -d
@@ -119,7 +119,7 @@ docker compose up -d    # Recreate containers with the new images
 ```
 
 > [!NOTE]
-> `docker compose up -d` alone reuses the images already built and may leave the UI version out of sync with the checkout. Read the [upgrade notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#upgrade-notes) before moving from v0.8.0.
+> `docker compose up -d` alone reuses the images already built and may leave the UI version out of sync with the checkout.
 
 ### Other ways to deploy
 
@@ -142,7 +142,13 @@ All options, hardware requirements and deployment topologies: [Installation guid
 
 ## What's New
 
-### v0.8.2 <sub>· 2026-09-24 · [release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2)</sub>
+### 2026.10.13 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+The first AI KB release: the rename (images `ghcr.io/jrmatherly/ai-kb-*`, CLI `aikb`, env prefix `AIKB_`), English-only UI, dated CalVer versions, a uniform `{success, error}` error envelope, hash-only API keys, `.xls` / `.xlsb` workbooks and held-back mass deletions in data-source syncs.
+
+The releases below are upstream [Tencent/WeKnora](https://github.com/Tencent/WeKnora) history that AI KB starts from.
+
+### Upstream v0.8.2 <sub>· 2026-09-24 · [release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2)</sub>
 
 Agents can operate the browser on your computer, knowledge bases can be published to other AI tools over MCP, and a running conversation can be steered, forked or rewound.
 
@@ -151,12 +157,9 @@ Agents can operate the browser on your computer, knowledge bases can be publishe
 - **[Conversation control](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#conversation-control)**: append requirements to a running turn, fork from any earlier question, rewind in place with sandbox checkpoints, and pick reasoning effort per session. Generated files are collected in a new artifacts library.
 - **[Sandbox](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#sandbox)**: interactive terminal and graphical desktop; macOS Lite host sandbox with project folders; a sidebar Toolbox for skills, MCP services and the browser connection.
 - **[Models](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#models)**: rebuilt model catalog (27 built-in vendors with generated context-window, max-output, reasoning and vision metadata). Agent retrieval tools are consolidated into `search_knowledge` / `read_document` / `list_documents`.
-- **[Knowledge and platform](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#knowledge)**: Confluence and DingTalk Docs data sources; Bocha and Serply web search; Japanese UI; per-channel IM reply language; whitelist-only outbound mode.
+- **[Knowledge and platform](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#knowledge)**: Confluence and DingTalk Docs data sources; Bocha and Serply web search; Japanese UI (not in AI KB, which is English only); per-channel IM reply language; whitelist-only outbound mode.
 
-> [!IMPORTANT]
-> **Breaking:** DingTalk channels are Stream-only, and sandbox commands run as `root`. See the [upgrade notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#upgrade-notes).
-
-### v0.8.0 <sub>· [release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.0)</sub>
+### Upstream v0.8.0 <sub>· [release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.0)</sub>
 
 - **Skill sandbox runtime**: session-persistent Docker / E2B / Cube backends with per-tenant network policy; the Local host-process backend is removed and Docker is opt-in.
 - **Tenant skill catalog**: install from ClawHub / SkillHub / git / zip, with per-sandbox snapshots, live progress, file browse/edit, and personal and workspace env vars.
@@ -167,7 +170,7 @@ Agents can operate the browser on your computer, knowledge bases can be publishe
 - **Security**: OIDC JWKS verification, optional complex passwords, document auto-tagging, and broad sandbox/security hardening.
 
 <details>
-<summary><b>Earlier releases (v0.2.0 – v0.7.2)</b></summary>
+<summary><b>Earlier upstream releases (v0.2.0 – v0.7.2)</b></summary>
 
 <br/>
 
@@ -181,13 +184,13 @@ Agents can operate the browser on your computer, knowledge bases can be publishe
 - **v0.5.2**: Wiki ingest scales to 40k-document KBs (task queue + DLQ); MCP human-in-the-loop tool approval; Anthropic / Apache Doris / Tencent VectorDB / KS3 / SearXNG backends; adaptive 3-tier chunking with live preview; global ⌘K command palette; Yuque connector + WeChat Mini Program; `aikb` CLI preview.
 - **v0.5.1**: Knowledge-base batch management; workspace-wide IM channels overview; session search + user-scoped pinning; unified Model / Web Search / MCP settings cards; per-agent LLM timeout; desktop workspace switching.
 - **v0.5.0**: Wiki Mode GA. Agents auto-generate structured, interlinked Markdown wiki pages with a knowledge graph; wiki browser + visual graph in the UI.
-- **v0.4.0**: AI KB Cloud (hosted LLM + parsing); Chrome Extension; ClawHub Skill; WeChat IM; attachment processing; Azure OpenAI / Alibaba OSS; Notion connector; Baidu + Ollama web search; VectorStore management.
+- **v0.4.0**: WeKnoraCloud (hosted LLM + parsing); Chrome Extension; ClawHub Skill; WeChat IM; attachment processing; Azure OpenAI / Alibaba OSS; Notion connector; Baidu + Ollama web search; VectorStore management.
 - **v0.3.6**: ASR (audio); Feishu data-source auto-sync; OIDC; IM quote-reply context + thread-based sessions; document summarization; Tavily search; parallel tool calling; agent @mention scope restriction.
 - **v0.3.5**: Telegram / DingTalk / Mattermost IM; IM slash commands + QA queue; suggested questions; VLM auto-describe MCP tool images; Novita AI; channel tracking.
 - **v0.3.4**: WeCom / Feishu / Slack IM; multimodal image support; NVIDIA model API; Weaviate; AWS S3; AES-256-GCM API-key encryption; built-in MCP service; hybrid-search optimization; `final_answer` tool.
 - **v0.3.3**: Parent-child chunking; KB pinning; fallback response; passage cleaning for rerank; storage auto-creation; Milvus.
 - **v0.3.2**: Knowledge Search entry; per-source parser & storage engine config; image rendering in local storage; document preview; Volcengine TOS; Mermaid rendering; batch session management; memory graph preview.
-- **v0.3.0**: Shared Space; Agent Skills + sandboxed execution; custom agents; Data Analyst agent; thinking mode; Bing / Google web search; API Key auth; Helm chart; Korean i18n; Qdrant.
+- **v0.3.0**: Shared Space; Agent Skills + sandboxed execution; custom agents; Data Analyst agent; thinking mode; Bing / Google web search; API Key auth; Helm chart; Korean i18n (not in AI KB); Qdrant.
 - **v0.2.0**: Agent Mode (ReACT); multi-type knowledge bases (FAQ + document); conversation strategy config; DuckDuckGo web search; MCP tool integration; new UI with agent mode switching; MQ async task management.
 
 Full history: [`CHANGELOG.md`](./CHANGELOG.md).

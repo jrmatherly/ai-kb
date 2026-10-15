@@ -15,7 +15,7 @@ publish = false
 [lib]
 crate-type = ["staticlib"]
 
-# Standalone crate: it lives inside the WeKnora tree, not the anydoc
+# Standalone crate: it lives inside the AI KB tree, not the anydoc
 # workspace, so it takes the published crate rather than a path dependency.
 # Pinned exactly: the C ABI mirrors this version's error and format enums.
 [dependencies]

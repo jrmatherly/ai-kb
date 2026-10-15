@@ -25,17 +25,17 @@ npm run build
 npm run package:site
 ```
 
-`build` compiles the homepage, checks documentation links and Mermaid diagrams, compiles the documentation and validates resource paths in the merged output. When every step passes it replaces `static-site/`. `package:site` packs `static-site/` into an archive under `releases/`.
+`build` compiles the homepage, checks documentation links and Mermaid diagrams, compiles the documentation, audits the homepage content and validates resource paths in the merged output. When every step passes it replaces `static-site/`. `package:site` packs `static-site/` into an archive under `releases/`.
 
 ### 2. Upload and extract
 
 Upload only the archive to the server. The server needs neither Node.js nor the AI KB backend nor a separate documentation service.
 
-Extract each release into a new, empty directory so that files from an older site do not mix in. `20260915-1` below is an example release number; use a new one for each release:
+Extract each release into a new, empty directory so that files from an older site do not mix in. `20261013-1` below is an example release number; use a new one for each release:
 
 ```bash
-sudo mkdir -p /srv/www/aikb/releases/20260915-1
-sudo tar -xzf ai-kb-site-v2026.10.13.tar.gz -C /srv/www/aikb/releases/20260915-1
+sudo mkdir -p /srv/www/aikb/releases/20261013-1
+sudo tar -xzf ai-kb-site-v2026.10.13.tar.gz -C /srv/www/aikb/releases/20261013-1
 ```
 
 After extraction the directory contains `index.html`, `404.html` and `docs/` directly, with no extra `static-site/` level.
@@ -46,7 +46,7 @@ Add a site configuration based on the [deploy/nginx.conf](deploy/nginx.conf) tem
 
 ```nginx
 server_name your-domain;
-root /srv/www/aikb/releases/20260915-1;
+root /srv/www/aikb/releases/20261013-1;
 ```
 
 If the domain already has an HTTPS configuration, keep its certificate and listen settings and merge the template's `root`, `index` and `location` rules into the existing site configuration. The domain must resolve to this server.
@@ -98,7 +98,7 @@ To change only the port exposed on the host, change the host side of `-p`, for e
 
 You can also copy just the `website-docs/` directory and run `docker build -t ai-kb-site:2026.10.13 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
 
-When migrating from the old documentation image, change the container port in the port mapping or the reverse proxy target from `8081` to `80` (choose any host port, for example `-p 8081:80`). The domain root `/` now serves the homepage and `/docs/` serves the documentation, so the reverse proxy must cover the whole site and keep the request path.
+The domain root `/` serves the homepage and `/docs/` serves the documentation, so the reverse proxy must cover the whole site and keep the request path.
 
 After building, you can run the following check on a machine with Node.js 24 and Docker; it needs no npm dependencies. It starts temporary containers, cleans them up, and checks routing for both parts of the site, static assets, 404 pages, compression and response headers:
 
@@ -144,4 +144,4 @@ For hot reload during development, use `npm run dev:homepage` (homepage) and `np
 - `deploy/`, `Dockerfile`: Nginx and Docker deployment configuration.
 - `releases/`: generated release archives.
 
-Brand asset sources are listed in [homepage/BRAND-ASSETS.md](homepage/BRAND-ASSETS.md). The product video plays from a GitHub attachment URL, so playback needs access to GitHub. Pages, documentation and screenshots ship in the archive.
+Brand asset sources are listed in [homepage/BRAND-ASSETS.md](homepage/BRAND-ASSETS.md). The product video plays from a GitHub attachment URL (`videoUrl` in `homepage/app/interactive.tsx`, currently an upstream upload that differs from the repository README's video), so playback needs access to GitHub. Pages, documentation and screenshots ship in the archive.

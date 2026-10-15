@@ -60,16 +60,16 @@ Clickable documentation links in environment variable examples, frontend help an
 
 ## Scope of this review
 
-The migration was checked against the repository's current routes, handlers, sandbox and browser implementations, data source services, migration SQL and deploy scripts. The site ran its link check, Mermaid check and documentation build. This documentation pass did not run a production database upgrade, a cloud image cleanup, a real sandbox cluster or an IM platform integration.
+The migration was checked against the repository's current routes, handlers, sandbox and browser implementations, data source services, migration SQL and deploy scripts. The site ran its link check, Mermaid check and documentation build. This documentation pass did not run a cloud image cleanup, a real sandbox cluster or an IM platform integration.
 
 ## Accuracy and necessity review
 
-The migration added six standalone pages: general troubleshooting, upgrading an existing ParadeDB database, Feishu Drive, Local Browser, sandbox deployment and prompt maintenance. They cover cross-chapter troubleshooting, a stateful upgrade, authorization and parsing choices, deploying a separate client, sandbox operations and a development contract. Existing pages keep only a summary and links.
+The migration added five standalone pages: general troubleshooting, Feishu Drive, Local Browser, sandbox deployment and prompt maintenance. They cover cross-chapter troubleshooting, authorization and parsing choices, deploying a separate client, sandbox operations and a development contract. Existing pages keep only a summary and links.
 
 - OpenSearch local testing was merged into the retrieval engines page and cloud image maintenance into the development guide, to avoid standalone tutorials with little content or no hands-on testing yet.
 - The prompts page was checked against `prompts.go`, `observe.go`, `finalize.go` and `config/agent_prompts.go`. The same pass fixed the date format, the scope of MCP mentions and the role of the closing message in the old agent section, and removed a duplicate description of the browser's internal protocol.
 - Feishu Drive was checked against the shared `core/engine.go`, `core/shared.go` and the data source service. The page no longer promises that a full sync fills in deletions. Third-party permission requests are left to the official API documentation, so no permission list that this pass did not verify on the platform is fixed in the page.
 - OpenSearch was checked against the driver configuration and the index implementation. The invalid zero-replica example was removed and the old page's single-index dimension description was fixed.
-- Database upgrade steps distinguish the production and development Compose files. The sandbox page distinguishes the desktop host from the three server-side named configurations. The cloud image section states the fixed systemd paths and when the first-boot marker is actually written.
+- The sandbox page distinguishes the desktop host from the three server-side named configurations. The cloud image section states the fixed systemd paths and when the first-boot marker is actually written.
 
 These checks were against source code and configuration. They are not the same as a real platform integration or a production upgrade acceptance test.

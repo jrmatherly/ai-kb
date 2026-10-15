@@ -4,12 +4,36 @@ All notable changes to this project will be documented in this file.
 
 ## [2026.10.13] - 2026-10-13
 
-First AI KB release, from upstream WeKnora 0.8.2 plus later upstream commits. Entries below this section are upstream's history.
+First AI KB release, from upstream WeKnora 0.8.2 plus later upstream commits. Entries below this section are upstream's history, with upstream's names and environment variables as they were then.
 
 ### Changes
 
 - **CHANGED**: **Dated CalVer versioning** - versions are `YYYY.M.D[.MICRO]` (a second release on the same day adds `.1`), release tags are `vYYYY.M.D[.MICRO]`, and images are tagged with both the tag and the bare version.
 - **CHANGED**: **Renamed to AI KB** - images `ghcr.io/jrmatherly/ai-kb-*`, binary `ai-kb`, CLI `aikb`, environment prefix `AIKB_`, Helm chart `ai-kb`.
+- **CHANGED**: **English only** - the UI ships one locale, `en-US` (the `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR` and `ru-RU` bundles are removed), and code, prompts and docs are in English.
+- **CHANGED**: `JWT_SECRET` and `SYSTEM_AES_KEY` are required. `.env.example` ships working defaults and the server warns about each; the default `JWT_SECRET` is replaced by a per-install secret stored in the database (migration `000116`).
+- **CHANGED**: Built-in agents with an empty model slot use the model marked `is_default`.
+- **REMOVED**: The third-party Knowledge Assistant Chrome extension integration, and docreader's unused `textract` dependency.
+
+### New Features
+
+- **NEW**: `.xls` and `.xlsb` workbooks can be uploaded, previewed and loaded as data-analysis tables; docreader converts them to xlsx.
+- **NEW**: Data-source full syncs reconcile deletions and hold back mass deletions until a one-run override; an edit that narrows the sync scope warns first.
+
+### Bug Fixes
+
+- **FIXED**: MCP service caller errors return 4xx; repository failures return 500 without driver detail, and MCP client failures keep their cause.
+
+### Breaking Changes
+
+- **BREAKING**: Every error response uses the `{"success": false, "error": {"code", "message"}}` envelope, from handlers, middleware and file routes alike.
+- **BREAKING**: Tenant API keys are stored as a hash plus a display hint and returned in plaintext only at creation (migration `000117`).
+
+### Infrastructure & Build
+
+- **BUILD**: docreader runs on Python 3.14; Node 24 is the floor for the frontend, the app image and the docs site.
+- **BUILD**: npm and uv skip releases younger than 7 days (`frontend/.npmrc`, `docreader/pyproject.toml`).
+- **BUILD**: Our own CI in `.github/workflows/` (SHA-pinned actions, GHCR images, tag-only PyPI and npm publishing), with `scripts/validate.sh` as the local equivalent.
 
 ## [0.8.2] - 2026-09-24
 

@@ -14,7 +14,7 @@ A comprehensive tool for sampling QA datasets and generating answers using OpenA
 
 ### Prerequisites
 
-- Python 3.7+
+- Python 3.10+ (tested with 3.14)
 - OpenAI API key
 
 ### Install Dependencies
@@ -22,6 +22,8 @@ A comprehensive tool for sampling QA datasets and generating answers using OpenA
 ```bash
 pip install pandas pyarrow openai
 ```
+
+Or run without installing: `uv run --no-project --with pandas --with pyarrow --with openai python dataset/qa_dataset.py ...`
 
 ### Set Environment Variables
 
@@ -31,11 +33,9 @@ export OPENAI_API_KEY="your-openai-api-key"
 export OPENAI_BASE_URL="https://api.openai.com/v1"
 ```
 
-### Parpare dataset
+### Prepare dataset
 
-We provide pre-processed samples from popular QA datasets:
-
-MarkrAI/msmarco_sample_autorag
+Pre-processed MS MARCO samples: [MarkrAI/msmarco_sample_autorag](https://huggingface.co/datasets/MarkrAI/msmarco_sample_autorag). A small sampled set with generated answers is in `dataset/samples/`.
 
 ## Quick Start
 
@@ -62,7 +62,7 @@ python dataset/qa_dataset.py generate \
   --output_dir ./dataset/samples
 ```
 
-The script uses `gpt-5.6-sol` by default.
+The script uses `gpt-5.6-sol` by default; pass `--model` to choose another model on the OpenAI-compatible endpoint.
 
 ### 3. View Results
 
@@ -116,6 +116,7 @@ python dataset/qa_dataset.py generate [OPTIONS]
 
 **Optional Parameters:**
 - `--output_dir`: Output directory for generated answers (default: ./save)
+- `--model`: Model for answer generation (default: `gpt-5.6-sol`). A resumed run reuses saved answers even when the model changes, so use a new `--output_dir` when you switch models.
 
 **Features:**
 - **Resume Support**: Automatically continues from where it left off if interrupted
@@ -187,17 +188,15 @@ After running all commands, your output directory will contain:
 
 ### Custom OpenAI Configuration
 
-You can use different OpenAI models or endpoints:
+Point the client at any OpenAI-compatible endpoint and pick its model:
 
 ```bash
-# Use GPT-4 Turbo
 export OPENAI_API_KEY="your-key"
-python dataset/qa_dataset.py generate --input_dir ./samples
-
-# Use Azure OpenAI
-export OPENAI_API_KEY="azure-key"
-export OPENAI_BASE_URL="https://your-resource.openai.azure.com/openai/deployments/gpt-4"
-python dataset/qa_dataset.py generate --input_dir ./samples
+export OPENAI_BASE_URL="https://your-endpoint/v1"
+python dataset/qa_dataset.py generate \
+  --input_dir ./samples \
+  --output_dir ./samples-my-model \
+  --model my-model
 ```
 
 ### Large Dataset Sampling
@@ -206,12 +205,14 @@ For very large datasets, consider sampling in batches:
 
 ```bash
 # First batch
-python dataset/qa_dataset.py sample --nq 1000 --output_dir ./batch1
-python dataset/qa_dataset.py generate --input_dir ./batch1
+python dataset/qa_dataset.py sample --queries queries.parquet --corpus corpus.parquet \
+  --qrels qrels.parquet --nq 1000 --output_dir ./batch1
+python dataset/qa_dataset.py generate --input_dir ./batch1 --output_dir ./batch1
 
 # Second batch
-python dataset/qa_dataset.py sample --nq 1000 --output_dir ./batch2
-python dataset/qa_dataset.py generate --input_dir ./batch2
+python dataset/qa_dataset.py sample --queries queries.parquet --corpus corpus.parquet \
+  --qrels qrels.parquet --nq 1000 --output_dir ./batch2
+python dataset/qa_dataset.py generate --input_dir ./batch2 --output_dir ./batch2
 ```
 
 ## Troubleshooting
@@ -266,10 +267,17 @@ python dataset/qa_dataset.py show \
   -n 10
 ```
 
+## Tests
+
+```bash
+uv run --no-project --with pandas --with pyarrow --with openai \
+  python -m unittest discover -s dataset/tests
+```
+
 ## Contributing
 
 Feel free to submit issues and enhancement requests!
 
 ## License
 
-MIT License - feel free to use this tool for your research and projects.
+MIT, see the repository [LICENSE](../LICENSE).

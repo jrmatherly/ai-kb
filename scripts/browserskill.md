@@ -2,7 +2,7 @@
 
 The extension and daemon are based on the official `ext-v0.3.1` tag, commit
 `da6bf4eed2dd7256567e152df8c903c87f6598c3` (including the
-upstream PRs #291, #296, #297 and #318 that AI KB previously pinned from `main`). Both report
+upstream PRs `Tencent/BrowserSkill#291`, `#296`, `#297` and `#318` that AI KB previously pinned from `main`). Both report
 version `0.3.1`; the exact source baseline is recorded in
 `scripts/browserskill-release.json`. The daemon is built with
 `cargo build --locked --release -p bsk` from the same commit because upstream
@@ -10,6 +10,8 @@ has not published a matching CLI 0.3.1 binary. The store builds of extension
 0.3.1 match this baseline. Native builds
 require Rust/Cargo and a C compiler (plus CMake on Linux). Docker builds on the
 target architecture.
+
+PR numbers in this file refer to `Tencent/BrowserSkill`.
 
 `scripts/build_browserskill.sh` builds the unmodified upstream checkout. No
 BrowserSkill patches are applied or maintained downstream.
@@ -134,6 +136,8 @@ BROWSERSKILL_TEST_CHROMIUM=/path/to/test-chromium \
 BROWSERSKILL_TEST_PLAYWRIGHT=/path/to/playwright-core/index.mjs \
   go test ./internal/browserskill -run '^TestRealExtension$' -count=1 -v
 ```
+
+Set `BROWSERSKILL_TEST_PREVIEW_FILE=/path/to/preview.jpg` to also save the captured task preview frame.
 
 Upstream references: [PR #227](https://github.com/Tencent/BrowserSkill/pull/227),
 [PR #291](https://github.com/Tencent/BrowserSkill/pull/291),

@@ -30,6 +30,7 @@ export AIKB_BASE_URL=https://ai-kb.example.com   # or http://localhost:8080
 export AIKB_API_KEY=sk-...                          # an AI KB API key with `retrieve` (+ `chat` for ask)
 export AIKB_KNOWLEDGE_BASE_IDS=kb-123,kb-456        # optional default scope
 export AIKB_RESOURCE_URLS=public                    # default; `handle` keeps internal file refs
+export AIKB_AGENT_ID=                               # optional; a custom agent id routes aikb_ask to it
 dsh web
 ```
 
@@ -122,7 +123,7 @@ URLs. Copy those Markdown images into the assistant reply and the dsh web UI wil
 knowledge-base-restricted API key cannot receive public URLs (AI KB answers 403); the plugin retries that call in
 handle mode and keeps using handles afterwards.
 
-The shipped configuration layer also reads `AIKB_RESOURCE_URLS` (`public` or `handle`).
+The shipped configuration layer also reads `AIKB_AGENT_ID` and `AIKB_RESOURCE_URLS` (`public` or `handle`).
 
 ## Configuration reference
 
@@ -144,7 +145,7 @@ The shipped configuration layer also reads `AIKB_RESOURCE_URLS` (`public` or `ha
 ## Development
 
 ```sh
-npm install
+npm ci
 npm test          # builds, then runs the unit and contract tests
 npm run typecheck
 ```
@@ -174,7 +175,7 @@ types still accept and serve them, so a rename on either side fails CI instead o
 
 ## Compatibility
 
-Verified against dsh `0.1.0-rc.8` (the pin in `test/e2e/run-in-dsh.mjs`; bump both together) and AI KB `0.8.0`. dsh is in developer preview and states that breaking changes
+Verified against dsh `0.1.0-rc.8` (the pin in `test/e2e/run-in-dsh.mjs`; bump both together) and the AI KB server in this repository (`contract/contract_test.go` runs against it in CI). dsh is in developer preview and states that breaking changes
 will happen; this package deliberately has **no runtime dependencies** and hands `ctx.tools.register()` a plain object,
 so it does not pin any harness package version. If a harness release changes the tool-definition contract, open an issue
 against this repository.

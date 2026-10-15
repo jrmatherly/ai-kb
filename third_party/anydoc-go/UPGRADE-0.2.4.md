@@ -34,7 +34,7 @@ The dependency lock keeps `pdf-inspector=1.14.2` and `lopdf=0.42.0` and removes 
 - `go test -race -tags anydoc -count=1 ./internal/infrastructure/docparser/...`: passes. The Go race detector does not cover Rust memory access.
 - `go test -count=1 ./internal/infrastructure/docparser/...`: the path without the engine linked passes.
 - `go vet -tags anydoc ./internal/infrastructure/docparser/...`: passes.
-- `go build -tags anydoc -o /tmp/weknora-anydoc-server ./cmd/server`: the full server compiles.
+- `go build -tags anydoc -o /tmp/ai-kb-anydoc-server ./cmd/server`: the full server compiles.
 - The existing regressions (4,000 concurrent error details, deeply nested malicious PDFs, TJ lookback): pass.
 - `cargo audit --file third_party/anydoc-go/Cargo.lock`: no known vulnerabilities; the unmaintained warning `RUSTSEC-2026-0192` for `ttf-parser 0.25.1` remains.
 

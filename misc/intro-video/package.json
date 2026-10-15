@@ -2,6 +2,9 @@
   "name": "ai-kb-intro-video",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "description": "Source for the AI KB intro video: an HTML animation rendered frame by frame to MP4.",
   "scripts": {
     "render": "node render.mjs video",

@@ -1,7 +1,7 @@
 [project]
 name = "docreader"
 version = "2026.10.13"
-description = "Add your description here"
+description = "AI KB document parsing gRPC service"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

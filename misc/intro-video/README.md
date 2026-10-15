@@ -4,7 +4,7 @@ The source for the product intro video (about 1:52, 1920×1080 at 30 fps, Englis
 
 ## Render
 
-Requires Node 18+, ffmpeg and a Chromium build for Playwright.
+Requires Node 24+, ffmpeg and a Chromium build for Playwright.
 
 ```bash
 cd misc/intro-video
@@ -49,7 +49,7 @@ The product UI is rebuilt in HTML rather than screenshotted, so the text stays s
 ## When to update
 
 - **Version:** the release shown in the browser scene (`v2026.10.13`) and the text typed into the form.
-- **Counts:** the model provider count in the ecosystem scene ("27 providers").
+- **Counts:** the model provider count in the ecosystem scene ("29 providers").
 - **Lists:** the data sources and channels, when integrations are added or removed.
 
 `assets/logo-light.png` (black lettering, for paper backgrounds) and `assets/logo-dark.png` (white lettering, for navy backgrounds) come from `node scripts/brand/generate.mjs` at the repository root.

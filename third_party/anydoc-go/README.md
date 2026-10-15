@@ -2,7 +2,7 @@
 
 Go bindings for [anydoc](https://github.com/firecrawl/anydoc), the Rust library
 that converts Word, PowerPoint, Excel, OpenDocument, RTF, EPUB, CSV, and PDF
-documents to GitHub-Flavored Markdown. WeKnora links them through cgo so office
+documents to GitHub-Flavored Markdown. AI KB links them through cgo so office
 documents can be parsed inside the Go process, without the Python docreader
 service.
 
@@ -21,7 +21,7 @@ replace github.com/firecrawl/anydoc/go => ./third_party/anydoc-go
 When an upstream module is published, first verify that it includes the local
 safety fixes, the 0.2.x model/error additions, and the asset-link rendering API
 listed below. Only then replace this directory and the `replace` directive.
-WeKnora's backend calls our additional `ToDocumentWithAssetLinks` API, so the
+AI KB's backend calls our additional `ToDocumentWithAssetLinks` API, so the
 original PR cannot replace this fork unchanged.
 
 ## Provenance
@@ -33,13 +33,13 @@ original PR cannot replace this fork unchanged.
 | Rebased onto | `4e3089b` (`chore: release v0.1.8`) |
 | anydoc crate | `0.2.4` (from crates.io, pinned with `=`) |
 | Upstream release commit | `42bf1c5ecdde9eb0d96d6bd75a9e6698cf93b14c` |
-| Last upstream check | 2026-09-29: PR #30 is open, unmerged, and conflicting; head unchanged |
+| Last upstream check | 2026-10-15: PR #30 is open, unmerged, and conflicting; head unchanged; v0.2.4 is the latest release |
 | License | MIT (see LICENSE) |
 
 The PR branched before anydoc 0.1.7, so it was rebased onto v0.1.8 before
-vendoring. The rebase conflicts were all release bookkeeping — the workspace
+vendoring. The rebase conflicts were all release bookkeeping: the workspace
 member list, the README binding sections, and the version-agreement script,
-which the wasm bindings had touched in the meantime — plus the binding's own
+which the wasm bindings had touched in the meantime, plus the binding's own
 version, bumped from 0.1.3 to 0.1.8. Taking v0.1.8 also picks up the
 `pdf-inspector` 0.1.8 bump that fixes [RUSTSEC-2026-0187](https://rustsec.org/advisories/RUSTSEC-2026-0187.html),
 the `lopdf` stack overflow that aborts the process on a hostile PDF.
@@ -66,9 +66,9 @@ changes the document model and parsing behavior:
 - 0.2.4 returns `NeedsOcr` for PDFs containing scanned pages, including mixed
   PDFs that previously returned incomplete text. The Go ABI now has a distinct
   `needs_ocr` error; page numbers remain in `ConvertError.Detail`. `NeedsOCR()`
-  lets WeKnora recognize wrapped errors without matching English messages.
+  lets AI KB recognize wrapped errors without matching English messages.
 
-Node/Python/CLI hosted OCR is outside the Rust crate. WeKnora continues using
+Node/Python/CLI hosted OCR is outside the Rust crate. AI KB continues using
 its existing builtin docreader fallback and does not send documents to Firecrawl.
 The PDF default engine remains builtin. See [upgrade verification and benchmarks](UPGRADE-0.2.4.md).
 
@@ -82,13 +82,13 @@ Those seven bound work that had no bound at all: Form XObject expansion per
 page, CID `/W` ranges, Encoding `cidrange` and ToUnicode `bfrange` expansion,
 content-stream decode before operators are allocated, the detector's `Tj`/`TJ`
 operand lookback, and disjoint-rect table clustering. Every one sits on the path
-`pdf_inspector::process_pdf_mem` takes — the only way anydoc converts a PDF —
+`pdf_inspector::process_pdf_mem` takes (the only way anydoc converts a PDF),
 and every one is driven by nothing but the bytes of the uploaded file.
 
 This is the class of bug the `guarded()` panic catcher explicitly cannot
 contain, for the same reason `RUSTSEC-2026-0187` could not be: unbounded CPU
 never panics, and an allocation failure aborts. The detector lookback is the
-cheapest to demonstrate — before 1.14.2, each `Tj`/`TJ` whose operand was
+cheapest to demonstrate. Before 1.14.2, each `Tj`/`TJ` whose operand was
 missing rescanned the whole content stream, so a stream of bare `] TJ` tokens
 was quadratic:
 
@@ -102,7 +102,7 @@ was quadratic:
 One run on a 4-core VM, same Go code either side, only the linked archive
 differing. Quadrupling the input cost 16× the time before the fix and roughly
 4× after. A 2 MB upload holding a core for nearly two minutes needs no
-privilege and no malformed container — the file parses fine, it just takes
+privilege and no malformed container. The file parses fine, it just takes
 forever, and every concurrent upload takes a core of its own.
 `TestDetectorLookbackStaysLinear` in `internal/infrastructure/docparser/anydoc`
 fails if a bump reintroduces it.
@@ -111,16 +111,16 @@ Two commits improve extraction rather than bound it, and both change what gets
 indexed: text inside Form XObjects now tracks the text line matrix and honors
 `T*`, `TL`, `'`, `"`, `Tc`, and `Tw`, so nested form text keeps its line breaks
 and spacing instead of running together, and small-caps runs merge instead of
-being read as extra table columns — a spurious column reaches the model as a
+being read as extra table columns. A spurious column reaches the model as a
 misaligned markdown table.
 
-Nothing else in the range reaches WeKnora, which is worth recording so the next
+Nothing else in the range reaches AI KB, which is worth recording so the next
 upgrade does not go looking for it. The crate published as 0.1.8 was cut at
 `pdf-inspector`'s `packages-2026-08-10` tag, one release behind 1.14.1, so 0.1.9
-formally spans that release too — but its two functional commits both miss this
+formally spans that release too, but its two functional commits both miss this
 binding. One only touches the Node and Python surfaces. The other serves
 invisible (`Tr 3`) OCR text layers instead of reporting `needs_ocr`, which
-sounds like it would spare WeKnora an OCR round trip, except that it landed in
+sounds like it would spare AI KB an OCR round trip, except that it landed in
 `extract_text_in_regions`; anydoc uses the positioned-text path, which already
 retried with invisible text included. Scanned PDFs still come back as "OCR is
 required" and still fall back to the docreader.
@@ -130,11 +130,11 @@ required" and still fall back to the docreader.
 Keep this list current: it is the diff a future upgrade has to re-apply. Items
 2–4 are bugs in the upstream PR and are worth sending back to it.
 
-1. `Cargo.toml` — depends on the published `anydoc = "=0.2.4"` crate instead of
+1. `Cargo.toml` depends on the published `anydoc = "=0.2.4"` crate instead of
    the workspace path dependency, declares its own empty `[workspace]`, and
    repeats the upstream release profile (`lto`, `strip`), which it would
    otherwise inherit from the anydoc workspace.
-2. `anydoc.go` — every ABI call runs inside `call()`, which pins the goroutine
+2. `anydoc.go`: every ABI call runs inside `call()`, which pins the goroutine
    with `runtime.LockOSThread` for the duration. The ABI reports the error
    message through a thread-local slot that a *second* call
    (`anydoc_last_error`) reads, and Go may resume a goroutine on a different OS
@@ -143,19 +143,19 @@ Keep this list current: it is the diff a future upgrade has to re-apply. Items
    it landed on. Reproduced at roughly 1 in 1500 concurrent conversions; the
    regression test is `TestErrorDetailSurvivesConcurrency` in
    `internal/infrastructure/docparser/anydoc`.
-3. `model.go` — decoder preallocations are bounded by the bytes left in the
+3. `model.go`: decoder preallocations are bounded by the bytes left in the
    buffer (`capFor`), and `need` rejects a negative length. A count taken
    straight from the buffer is only trustworthy while the Rust encoder and this
    decoder agree; on a skew, `make([]Block, 0, n)` would exhaust memory before
    the first bounds check, turning a version mismatch into a dead process.
-4. `src/lib.rs` — conversion entry points run inside `guarded()`,
+4. `src/lib.rs`: conversion entry points run inside `guarded()`,
    which catches a panic and reports it as a malformed document. A panic
-   escaping an `extern "C"` function aborts the process, and WeKnora parses
+   escaping an `extern "C"` function aborts the process, and AI KB parses
    untrusted uploads in the same process that serves the API. Note the limit:
    this cannot contain a stack overflow or an allocation failure, which is why
    the dependency pin below matters as much as the guard.
 5. Removed the upstream CLI (`cmd/anydoc`) and the binding test suite, which
-   reads fixtures from the anydoc repository. WeKnora's own tests live in
+   reads fixtures from the anydoc repository. AI KB's own tests live in
    `internal/infrastructure/docparser/anydoc`.
 6. `scripts/build-anydoc-lib.sh` copies the pinned anydoc release to
    `patched-anydoc/` (gitignored) and re-exports `document_to_markdown`, which
@@ -188,8 +188,8 @@ Keep this list current: it is the diff a future upgrade has to re-apply. Items
 `cargo audit` against it, because the crate that fails here is the one parsing
 untrusted uploads inside the API process.
 
-That matters concretely: with `lopdf` 0.41 — what the upstream PR's own
-lockfile resolved to — a ~100 KB PDF holding a deeply nested catalog array
+That matters concretely: with `lopdf` 0.41 (what the upstream PR's own
+lockfile resolved to), a ~100 KB PDF holding a deeply nested catalog array
 kills the process with a stack overflow (`RUSTSEC-2026-0187`), which neither
 `guarded()` nor Go's `recover` can contain. anydoc 0.1.8 moved to `lopdf` 0.42
 and the same input comes back as an ordinary error;
@@ -216,7 +216,7 @@ failing the job.
 
 Markdown rendering drops embedded images: `ImageSource::Asset` renders as its
 alt text, and the bytes are only reachable through the document model. The
-renderer (`document_to_markdown`) is also crate-private. WeKnora keeps that
+renderer (`document_to_markdown`) is also crate-private. AI KB keeps that
 serializer: `scripts/build-anydoc-lib.sh` re-exports the one function, then
 `anydoc_to_markdown_with_asset_links` rewrites `Asset` images to
 `ImageSource::External("images/image-N.ext")` so the official GFM output
@@ -233,11 +233,14 @@ scripts/build-anydoc-lib.sh                          # host platform
 TARGET=aarch64-unknown-linux-musl scripts/build-anydoc-lib.sh
 ```
 
-Then build WeKnora with the engine linked in:
+Then build AI KB with the engine linked in:
 
 ```bash
 make build-anydoc          # or: go build -tags anydoc ./cmd/server
 ```
+
+A musl archive is linked only with the `musl` tag as well:
+`go build -tags "anydoc musl" ./cmd/server`.
 
 Builds without the `anydoc` tag need no Rust toolchain and no archive; the
 engine simply reports itself as unavailable.
