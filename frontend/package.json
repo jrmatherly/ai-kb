@@ -31,7 +31,7 @@
     "katex": "^0.18.10",
     "marked": "^18.1.1",
     "marked-katex-extension": "^5.1.13",
-    "mermaid": "12.1.0",
+    "mermaid": "12.2.0",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^6.4.299",
     "pinia": "^4.0.3",
@@ -61,10 +61,7 @@
   },
   "overrides": {
     "lightningcss": "none",
-    "tdesign-icons-vue-next": "0.4.11",
-    "mermaid": {
-      "katex": "$katex"
-    }
+    "tdesign-icons-vue-next": "0.4.11"
   },
   "resolutions": {
     "lightningcss": "none",
