@@ -109,6 +109,8 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('vite/preload-helper') || id.includes('commonjsHelpers')) return 'vendor-shared'
           if (!id.includes('/node_modules/')) return
+          // Mermaid 12 bundles ELK (~1.5 MB) behind a dynamic import; we render with dagre, so keep it out.
+          if (/\/node_modules\/(elkjs\/|mermaid\/dist\/chunks\/[^/]+\/elk-)/.test(id)) return
           if (/\/node_modules\/(mermaid|@mermaid-js|cytoscape[^/]*|dagre-d3-es|layout-base|cose-base)\//.test(id)) {
             return 'vendor-mermaid'
           }

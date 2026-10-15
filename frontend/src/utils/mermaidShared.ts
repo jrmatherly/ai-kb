@@ -120,6 +120,9 @@ function resolveMermaidThemeVariables() {
 const MERMAID_CONFIG = {
   startOnLoad: false,
   theme: 'base' as const,
+  // mermaid 12 defaults to ELK, the neo look and 120px label wrapping; these keep the 11.x rendering.
+  layout: 'dagre',
+  look: 'classic' as const,
   securityLevel: 'strict' as const,
   fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif',
   flowchart: {
@@ -127,6 +130,12 @@ const MERMAID_CONFIG = {
     htmlLabels: true,
     curve: 'basis',
     padding: 16,
+    wrappingWidth: 200,
+    minNodeWidth: 0,
+  },
+  state: {
+    wrappingWidth: 200,
+    minNodeWidth: 0,
   },
   sequence: {
     useMaxWidth: true,

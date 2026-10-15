@@ -161,6 +161,11 @@ export default withMermaid(
 
     mermaid: {
       theme: 'base',
+      // mermaid 12 defaults to ELK, the neo look and 120px label wrapping; these keep the 11.x rendering.
+      layout: 'dagre',
+      look: 'classic',
+      flowchart: { wrappingWidth: 200, minNodeWidth: 0 },
+      state: { wrappingWidth: 200, minNodeWidth: 0 },
       fontFamily:
         '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", ui-sans-serif, sans-serif',
       themeVariables: {

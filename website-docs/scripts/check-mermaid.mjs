@@ -19,7 +19,7 @@ Object.defineProperty(globalThis, 'navigator', {
 })
 
 const { default: mermaid } = await import('mermaid')
-mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' })
+mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', layout: 'dagre', look: 'classic' })
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
