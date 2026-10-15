@@ -3,8 +3,8 @@ package milvus
 import (
 	"sync"
 
-	"github.com/milvus-io/milvus/client/v2/entity"
-	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/milvus-io/milvus/client/v3/entity"
+	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 )
 
 type milvusRepository struct {

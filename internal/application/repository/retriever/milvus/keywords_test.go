@@ -9,10 +9,10 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
-	"github.com/milvus-io/milvus-proto/go-api/v2/commonpb"
-	"github.com/milvus-io/milvus-proto/go-api/v2/milvuspb"
-	"github.com/milvus-io/milvus-proto/go-api/v2/schemapb"
-	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/milvus-io/milvus-proto/go-api/v3/commonpb"
+	"github.com/milvus-io/milvus-proto/go-api/v3/milvuspb"
+	"github.com/milvus-io/milvus-proto/go-api/v3/schemapb"
+	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )

@@ -17,7 +17,7 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
-	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/qdrant/go-client/qdrant"
 	"github.com/tencent/vectordatabase-sdk-go/tcvectordb"
 	"github.com/weaviate/weaviate-go-client/v5/weaviate"

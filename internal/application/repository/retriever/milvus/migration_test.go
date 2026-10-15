@@ -3,10 +3,10 @@ package milvus
 import (
 	"testing"
 
-	"github.com/milvus-io/milvus/client/v2/column"
-	"github.com/milvus-io/milvus/client/v2/entity"
-	"github.com/milvus-io/milvus/client/v2/index"
-	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/milvus-io/milvus/client/v3/column"
+	"github.com/milvus-io/milvus/client/v3/entity"
+	"github.com/milvus-io/milvus/client/v3/index"
+	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/stretchr/testify/require"
 )
 

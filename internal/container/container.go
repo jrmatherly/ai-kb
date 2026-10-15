@@ -25,7 +25,7 @@ import (
 	esv7 "github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v8"
 	_ "github.com/go-sql-driver/mysql" // registers the MySQL protocol driver for Doris (database/sql)
-	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/neo4j/neo4j-go-driver/v6/neo4j"
 	"github.com/panjf2000/ants/v2"
 	"github.com/qdrant/go-client/qdrant"

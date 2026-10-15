@@ -23,22 +23,6 @@ Windows installers place them next to the installed executable.
   [Go module proxy](https://proxy.golang.org/github.com/go-sql-driver/mysql/@v/v1.10.1.zip)
   and [upstream repository](https://github.com/go-sql-driver/mysql/tree/v1.10.1).
 
-## go-m1cpu
-
-- Component: `github.com/shoenig/go-m1cpu`, version `v0.1.6`.
-- Used by the macOS backend/desktop dependency chain through gopsutil. It is
-  absent from Linux backend build dependencies. Its source is included in all
-  notice bundles for consistent packaging; this does not imply Linux linkage.
-- License: Mozilla Public License 2.0, reproduced in
-  [`licenses/go-m1cpu-MPL-2.0.txt`](licenses/go-m1cpu-MPL-2.0.txt).
-- Attribution: the go-m1cpu project and its contributors. The complete original
-  source and notices are preserved in the accompanying archive.
-- Modifications by AI KB: none.
-- Corresponding source, available under MPL-2.0, is included in binary releases
-  as `licenses/sources/go-m1cpu-v0.1.6.zip`. Source repository users can obtain it from the
-  [Go module proxy](https://proxy.golang.org/github.com/shoenig/go-m1cpu/@v/v0.1.6.zip)
-  and [upstream repository](https://github.com/shoenig/go-m1cpu/tree/v0.1.6).
-
 ## OpenCC dictionary data
 
 - Files: `internal/textconv/data/TSPhrases.txt` and `TSCharacters.txt`, copied

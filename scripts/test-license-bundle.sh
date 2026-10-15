@@ -19,10 +19,11 @@ checksum() {
     fi
 }
 
-# Supply two deterministic stand-ins for downloaded archives. This test verifies
+# Supply deterministic stand-ins for downloaded archives; the second module is
+# synthetic, so the manifest loop is exercised over more than one row. This test verifies
 # the packager's integrity gate, not Go's module download implementation.
 export LICENSE_TEST_CACHE="${fixture}/module cache"
-for pin in 'github.com/go-sql-driver/mysql v1.10.0' 'github.com/shoenig/go-m1cpu v0.1.6'; do
+for pin in 'github.com/go-sql-driver/mysql v1.10.0' 'example.com/license-fixture v0.1.0'; do
     read -r module version <<< "${pin}"
     cache_dir="${LICENSE_TEST_CACHE}/cache/download/${module}/@v"
     mkdir -p "${cache_dir}"
@@ -45,9 +46,8 @@ export PATH="${fixture}/bin:${PATH}"
 
 bash "${fixture}/scripts/check-license-bundle.sh"
 bash "${fixture}/scripts/copy-licenses.sh" "${fixture}/release with spaces"
-for pin in 'mysql v1.10.0' 'go-m1cpu v0.1.6'; do
-    read -r name version <<< "${pin}"
-    test -s "${fixture}/release with spaces/licenses/sources/${name}-${version}.zip"
+for archive in mysql-v1.10.0 license-fixture-v0.1.0; do
+    test -s "${fixture}/release with spaces/licenses/sources/${archive}.zip"
 done
 cmp "${fixture}/LICENSE" "${fixture}/release with spaces/LICENSE"
 cmp "${fixture}/THIRD_PARTY_NOTICES.md" "${fixture}/release with spaces/THIRD_PARTY_NOTICES.md"

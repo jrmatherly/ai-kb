@@ -12,7 +12,7 @@ import (
 	"time"
 
 	milvusRepo "github.com/jrmatherly/ai-kb/internal/application/repository/retriever/milvus"
-	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 )
 
 func main() {

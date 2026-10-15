@@ -10,11 +10,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/milvus-io/milvus-proto/go-api/v2/commonpb"
-	"github.com/milvus-io/milvus-proto/go-api/v2/milvuspb"
-	"github.com/milvus-io/milvus-proto/go-api/v2/schemapb"
-	"github.com/milvus-io/milvus/client/v2/entity"
-	client "github.com/milvus-io/milvus/client/v2/milvusclient"
+	"github.com/milvus-io/milvus-proto/go-api/v3/commonpb"
+	"github.com/milvus-io/milvus-proto/go-api/v3/milvuspb"
+	"github.com/milvus-io/milvus-proto/go-api/v3/schemapb"
+	"github.com/milvus-io/milvus/client/v3/entity"
+	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )

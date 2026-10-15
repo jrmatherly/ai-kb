@@ -37,7 +37,7 @@ while read -r module_name module_version checksum; do
 done < licenses/sources/modules.tsv
 
 for file in LICENSE THIRD_PARTY_NOTICES.md licenses/OpenCC-Apache-2.0.txt \
-    licenses/go-sql-driver-mysql-MPL-2.0.txt licenses/go-m1cpu-MPL-2.0.txt \
+    licenses/go-sql-driver-mysql-MPL-2.0.txt \
     licenses/Wails-MIT.txt; do
     test -s "${file}"
 done

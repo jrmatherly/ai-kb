@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	milvusclient "github.com/milvus-io/milvus/client/v2/milvusclient"
+	milvusclient "github.com/milvus-io/milvus/client/v3/milvusclient"
 
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
