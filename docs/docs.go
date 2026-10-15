@@ -9479,6 +9479,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "403": {
+                        "description": "Built-in MCP services cannot be updated",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "MCP service not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             },
@@ -9517,6 +9529,18 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Built-in MCP services cannot be deleted",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "MCP service not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
                     },
                     "500": {

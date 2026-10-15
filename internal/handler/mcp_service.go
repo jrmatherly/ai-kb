@@ -112,6 +112,10 @@ func (h *MCPServiceHandler) CreateMCPService(c *gin.Context) {
 
 	if err := h.mcpServiceService.CreateMCPService(ctx, &service); err != nil {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_name": secutils.SanitizeForLog(service.Name)})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("Failed to create MCP service: " + err.Error()))
 		return
 	}
@@ -266,6 +270,8 @@ func (h *MCPServiceHandler) GetMCPService(c *gin.Context) {
 // @Param        request  body      object  true  "Fields to update"
 // @Success      200      {object}  map[string]interface{}  "Updated MCP service"
 // @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse         "Built-in MCP services cannot be updated"
+// @Failure      404      {object}  errors.ErrorResponse         "MCP service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id} [put]
@@ -448,6 +454,10 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 
 	if err := h.mcpServiceService.UpdateMCPService(ctx, &service, updateFields); err != nil {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("Failed to update MCP service: " + err.Error()))
 		return
 	}
@@ -475,6 +485,8 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Deleted"
+// @Failure      403  {object}  errors.ErrorResponse         "Built-in MCP services cannot be deleted"
+// @Failure      404  {object}  errors.ErrorResponse         "MCP service not found"
 // @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -492,6 +504,10 @@ func (h *MCPServiceHandler) DeleteMCPService(c *gin.Context) {
 
 	if err := h.mcpServiceService.DeleteMCPService(ctx, tenantID, serviceID); err != nil {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("Failed to delete MCP service: " + err.Error()))
 		return
 	}
@@ -531,6 +547,10 @@ func (h *MCPServiceHandler) TestMCPService(c *gin.Context) {
 	result, err := h.mcpServiceService.TestMCPService(ctx, tenantID, serviceID)
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data": types.MCPTestResult{
@@ -574,6 +594,10 @@ func (h *MCPServiceHandler) GetMCPServiceTools(c *gin.Context) {
 	tools, err := h.mcpServiceService.GetMCPServiceTools(ctx, tenantID, serviceID)
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("Failed to get MCP service tools: " + err.Error()))
 		return
 	}
@@ -610,6 +634,10 @@ func (h *MCPServiceHandler) GetMCPServiceResources(c *gin.Context) {
 	resources, err := h.mcpServiceService.GetMCPServiceResources(ctx, tenantID, serviceID)
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("Failed to get MCP service resources: " + err.Error()))
 		return
 	}

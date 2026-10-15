@@ -13493,6 +13493,14 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "403":
+          description: Built-in MCP services cannot be deleted
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "404":
+          description: MCP service not found
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -13557,6 +13565,14 @@ paths:
             type: object
         "400":
           description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "403":
+          description: Built-in MCP services cannot be updated
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "404":
+          description: MCP service not found
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:

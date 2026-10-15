@@ -8,6 +8,7 @@ import (
 	"slices"
 	"time"
 
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/mcp"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -39,7 +40,9 @@ func NewMCPServiceService(
 func (s *mcpServiceService) CreateMCPService(ctx context.Context, service *types.MCPService) error {
 	// Stdio transport is disabled for security reasons
 	if service.TransportType == types.MCPTransportStdio {
-		return fmt.Errorf("stdio transport is disabled for security reasons; please use SSE or HTTP Streamable transport instead")
+		return apperrors.NewBadRequestError(
+			"stdio transport is disabled for security reasons; " +
+				"please use SSE or HTTP Streamable transport instead")
 	}
 	if err := mcp.ValidateServiceOutboundURLs(service); err != nil {
 		return err
@@ -81,7 +84,7 @@ func (s *mcpServiceService) GetMCPServiceByID(
 	}
 
 	if service == nil {
-		return nil, fmt.Errorf("MCP service not found")
+		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 	return service, nil
 }
@@ -130,12 +133,12 @@ func (s *mcpServiceService) UpdateMCPService(
 		return fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if existing == nil {
-		return fmt.Errorf("MCP service not found")
+		return apperrors.NewNotFoundError("MCP service not found")
 	}
 
 	// Builtin MCP services cannot be updated
 	if existing.IsBuiltin {
-		return fmt.Errorf("builtin MCP services cannot be updated")
+		return apperrors.NewForbiddenError("builtin MCP services cannot be updated")
 	}
 
 	// Determine the final transport type after merge
@@ -146,7 +149,9 @@ func (s *mcpServiceService) UpdateMCPService(
 
 	// Stdio transport is disabled for security reasons
 	if finalTransportType == types.MCPTransportStdio {
-		return fmt.Errorf("stdio transport is disabled for security reasons; please use SSE or HTTP Streamable transport instead")
+		return apperrors.NewBadRequestError(
+			"stdio transport is disabled for security reasons; " +
+				"please use SSE or HTTP Streamable transport instead")
 	}
 
 	if updateFields["usage_instructions"] {
@@ -332,12 +337,12 @@ func (s *mcpServiceService) DeleteMCPService(ctx context.Context, tenantID uint6
 		return fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if existing == nil {
-		return fmt.Errorf("MCP service not found")
+		return apperrors.NewNotFoundError("MCP service not found")
 	}
 
 	// Builtin MCP services cannot be deleted
 	if existing.IsBuiltin {
-		return fmt.Errorf("builtin MCP services cannot be deleted")
+		return apperrors.NewForbiddenError("builtin MCP services cannot be deleted")
 	}
 
 	// Close client connection
@@ -384,7 +389,7 @@ func (s *mcpServiceService) TestMCPService(
 		return nil, fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if service == nil {
-		return nil, fmt.Errorf("MCP service not found")
+		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 
 	// Create temporary client for testing. For OAuth services, wire the
@@ -468,7 +473,7 @@ func (s *mcpServiceService) GetMCPServiceTools(
 		return nil, fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if service == nil {
-		return nil, fmt.Errorf("MCP service not found")
+		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 
 	// Get or create client
@@ -507,10 +512,10 @@ func (s *mcpServiceService) UpdateMCPCredentials(
 		return nil, fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if existing == nil {
-		return nil, fmt.Errorf("MCP service not found")
+		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 	if existing.IsBuiltin {
-		return nil, fmt.Errorf("builtin MCP services cannot have credentials modified")
+		return nil, apperrors.NewForbiddenError("builtin MCP services cannot have credentials modified")
 	}
 
 	if existing.AuthConfig == nil {
@@ -553,10 +558,10 @@ func (s *mcpServiceService) ClearMCPCredential(
 		return fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if existing == nil {
-		return fmt.Errorf("MCP service not found")
+		return apperrors.NewNotFoundError("MCP service not found")
 	}
 	if existing.IsBuiltin {
-		return fmt.Errorf("builtin MCP services cannot have credentials modified")
+		return apperrors.NewForbiddenError("builtin MCP services cannot have credentials modified")
 	}
 	if existing.AuthConfig == nil {
 		return nil // nothing to clear
@@ -606,7 +611,7 @@ func (s *mcpServiceService) GetMCPServiceResources(
 		return nil, fmt.Errorf("failed to get MCP service: %w", err)
 	}
 	if service == nil {
-		return nil, fmt.Errorf("MCP service not found")
+		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 
 	// Get or create client

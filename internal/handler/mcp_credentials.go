@@ -101,6 +101,10 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
 			"service_id": secutils.SanitizeForLog(serviceID),
 		})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("failed to update credentials: " + err.Error()))
 		return
 	}
@@ -149,6 +153,10 @@ func (h *MCPCredentialsHandler) DeleteField(c *gin.Context) {
 			"service_id": secutils.SanitizeForLog(serviceID),
 			"field":      field,
 		})
+		if appErr, ok := errors.IsAppError(err); ok {
+			_ = c.Error(appErr)
+			return
+		}
 		c.Error(errors.NewInternalServerError("failed to clear credential: " + err.Error()))
 		return
 	}

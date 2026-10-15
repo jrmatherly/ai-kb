@@ -42,6 +42,7 @@ func TestMCPServiceCallerErrorsReturn4xx(t *testing.T) {
 	router.POST("/mcp-services", h.CreateMCPService)
 	router.PUT("/mcp-services/:id", h.UpdateMCPService)
 	router.DELETE("/mcp-services/:id", h.DeleteMCPService)
+	router.POST("/mcp-services/:id/test", h.TestMCPService)
 	router.GET("/mcp-services/:id/tools", h.GetMCPServiceTools)
 	router.GET("/mcp-services/:id/resources", h.GetMCPServiceResources)
 	router.PUT("/mcp-services/:id/credentials", creds.Put)
@@ -60,6 +61,7 @@ func TestMCPServiceCallerErrorsReturn4xx(t *testing.T) {
 		{"update builtin", http.MethodPut, "/mcp-services/builtin", `{"name":"n"}`, 403},
 		{"delete unknown", http.MethodDelete, "/mcp-services/missing", "", 404},
 		{"delete builtin", http.MethodDelete, "/mcp-services/builtin", "", 403},
+		{"test unknown", http.MethodPost, "/mcp-services/missing/test", "", 404},
 		{"tools unknown", http.MethodGet, "/mcp-services/missing/tools", "", 404},
 		{"resources unknown", http.MethodGet, "/mcp-services/missing/resources", "", 404},
 		{"credentials unknown", http.MethodPut, "/mcp-services/missing/credentials", `{"token":"t"}`, 404},
