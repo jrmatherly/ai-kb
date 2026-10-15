@@ -305,6 +305,8 @@ jobs:
           mkdir -p "${ARCHIVE}/migrations/sqlite"
           cp -r migrations/sqlite/* "${ARCHIVE}/migrations/sqlite/"
           tar czf "${ARCHIVE}.tar.gz" "${ARCHIVE}"
+          # The upload globs ai-kb-lite-app_*, which would otherwise ship this directory too.
+          rm -rf "${ARCHIVE}"
           shasum -a 256 "${ARCHIVE}.tar.gz" > "${ARCHIVE}.tar.gz.sha256"
 
       - name: 📦 Package Windows app
