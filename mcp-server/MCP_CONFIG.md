@@ -4,7 +4,7 @@
 >
 > For this package, we recommend `uv` for running Python-based MCP servers.
 >
-> You can also install the package from the checkout with `pip install ./mcp-server`, or run `uvx --from ./mcp-server ai-kb-mcp-server`. The `ai-kb-mcp` distribution is not published on PyPI.
+> The snippets below run the server from a checkout. To use the PyPI package instead, set `"command": "uvx"` and `"args": ["--from", "ai-kb-mcp", "ai-kb-mcp-server"]`.
 
 ## 1. Install uv
 

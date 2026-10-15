@@ -5,7 +5,7 @@ All notable changes to this project are recorded in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.1.2] - 2026-10-15
 
 ### Added
 - `create_knowledge_from_text` tool: creates a knowledge entry from manual Markdown text through the existing `/knowledge-bases/{id}/knowledge/manual` endpoint, completing the "text" part of Tencent/WeKnora#323. Defaults to `status="publish"`, so the entry enters parsing and indexing on creation and becomes searchable. Pass `status="draft"` to save it without indexing.
@@ -13,7 +13,9 @@ and this project follows [Semantic Versioning](https://semver.org/).
 - The README tool list now includes the existing `create_knowledge_from_file`.
 
 ### Changed
-- Renamed for AI KB: distribution `ai-kb-mcp` (not on PyPI), module `aikb_mcp_server`, commands `ai-kb-mcp-server` / `ai-kb-server`, environment variables `AIKB_BASE_URL`, `AIKB_API_KEY`, `AIKB_CHAT_TIMEOUT` and `AIKB_VERIFY_SSL`. The SSE and HTTP transports require `MCP_SERVER_AUTH_TOKEN`.
+- The README links to the MCP configuration guide by absolute URL, so the link works on PyPI, and leads with the `pip install ai-kb-mcp` install. Source-checkout steps moved to their own section.
+- The docs no longer say the package is unpublished; 1.1.1 was the first PyPI upload and already carried the Added entries and the rename in this section.
+- Renamed for AI KB: distribution `ai-kb-mcp`, module `aikb_mcp_server`, commands `ai-kb-mcp-server` / `ai-kb-server`, environment variables `AIKB_BASE_URL`, `AIKB_API_KEY`, `AIKB_CHAT_TIMEOUT` and `AIKB_VERIFY_SSL`. The SSE and HTTP transports require `MCP_SERVER_AUTH_TOKEN`.
 - Entries from 1.1.1 down describe the upstream Tencent/WeKnora package and its names.
 
 ## [1.1.1] - 2026-07-30

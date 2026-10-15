@@ -1,6 +1,6 @@
 # AI KB MCP Server runnable package - project summary
 
-> **Deprecated.** AI KB ships a built-in MCP server; see [README.md](./README.md). This package (`ai-kb-mcp`) is not published on PyPI.
+> **Deprecated.** AI KB ships a built-in MCP server; see [README.md](./README.md). This package is published on PyPI as `ai-kb-mcp`.
 
 ## 📁 Project layout
 

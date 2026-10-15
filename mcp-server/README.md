@@ -8,13 +8,18 @@ A Model Context Protocol (MCP) server that gives access to the AI KB knowledge m
 
 ## Quick start
 
-> We recommend following the [MCP configuration guide](./MCP_CONFIG.md) instead of the steps below.
+> We recommend following the [MCP configuration guide](https://github.com/jrmatherly/ai-kb/blob/main/mcp-server/MCP_CONFIG.md) instead of the steps below.
 
-### 1. Install dependencies
+### 1. Install
 
 ```bash
-pip install -r requirements.txt
+pip install ai-kb-mcp
+# Or run it with uvx without installing
+uvx --from ai-kb-mcp ai-kb-mcp-server
 ```
+
+The distribution is **`ai-kb-mcp`**; its command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
+The MCP packages on PyPI under the upstream project's name belong to that project and read its own variable names, not `AIKB_*`.
 
 ### 2. Set environment variables
 
@@ -47,36 +52,12 @@ Create the API key under Settings → Publish & Integrations → API Integration
 
 ### 3. Run the server
 
-**Recommended: the main entry point:**
-
 ```bash
-python main.py
-```
-
-**Other ways to run it:**
-
-```bash
-# Original launch script
-python run_server.py
-
-# Quick launch script
-python run.py
-
-# Run the server module directly
-python aikb_mcp_server.py
-
-# Run as a Python module
-python -m aikb_mcp_server
-```
-
-### 4. Command-line options
-
-```bash
-python main.py --help                 # show help
-python main.py --check-only           # check the environment configuration only
-python main.py --verbose              # enable verbose logging
-python main.py --version              # show the version
-python main.py --transport http --port 8000   # Streamable HTTP (needs MCP_SERVER_AUTH_TOKEN)
+ai-kb-mcp-server                      # stdio, for MCP clients that launch the server
+ai-kb-mcp-server --help               # show help
+ai-kb-mcp-server --check-only         # check the environment configuration only
+ai-kb-mcp-server --verbose            # enable verbose logging
+ai-kb-mcp-server --version            # show the version
 ```
 
 ### Network transports
@@ -88,54 +69,29 @@ MCP_SERVER_AUTH_TOKEN=change_me ai-kb-mcp-server --transport http --host 0.0.0.0
 The Streamable HTTP endpoint is `/mcp`; the SSE transport serves `/sse` and `/sse/messages/`.
 Clients send `Authorization: Bearer <token>` or `X-MCP-Auth-Token: <token>`.
 
-## Install as a Python package
+## Run from a source checkout
 
-### From the checkout
-
-```bash
-pip install ./mcp-server
-# Or run it with uvx without installing
-uvx --from ./mcp-server ai-kb-mcp-server
-```
-
-> The distribution is named **`ai-kb-mcp`** (`setup.py`, `pyproject.toml`) and is not published on PyPI, so install it from this repository.
-> The MCP packages on PyPI under the upstream project's name belong to that project and read its own variable names, not `AIKB_*`.
-> The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
-
-### Development install
+From the `mcp-server/` directory of the [repository](https://github.com/jrmatherly/ai-kb/tree/main/mcp-server):
 
 ```bash
-pip install -e .
+pip install -r requirements.txt
+python main.py                        # same options as ai-kb-mcp-server
+
+# Or install the checkout
+pip install .                         # pip install -e . for development
+uvx --from ./mcp-server ai-kb-mcp-server   # from the repository root, without installing
 ```
 
-After installation you can use the command-line tools:
-
-```bash
-ai-kb-mcp-server
-# or
-ai-kb-server
-```
-
-### Production install
-
-```bash
-pip install .
-```
+`python run_server.py`, `python run.py`, `python aikb_mcp_server.py` and `python -m aikb_mcp_server` also start the server.
 
 ### Build distribution packages
 
 ```bash
-# With setuptools
-python setup.py sdist bdist_wheel
-
-# With modern build tooling
 pip install build
 python -m build
 ```
 
-## Test the module
-
-Run the test script to check that the module works:
+### Test the module
 
 ```bash
 python test_module.py

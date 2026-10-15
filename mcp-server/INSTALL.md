@@ -5,6 +5,7 @@
 ### 1. Install dependencies
 
 ```bash
+pip install ai-kb-mcp            # from PyPI; or, in a checkout of mcp-server/:
 pip install -r requirements.txt
 ```
 
@@ -149,7 +150,7 @@ ai-kb/mcp-server/
 ├── upload_paths.py          # local upload directory boundary
 ├── requirements.txt         # dependency list
 ├── setup.py                 # install script
-├── pyproject.toml           # project metadata (package ai-kb-mcp, not on PyPI)
+├── pyproject.toml           # project metadata (package ai-kb-mcp on PyPI)
 ├── uv.lock                  # locked dependencies
 ├── MANIFEST.in              # package file manifest
 ├── Dockerfile               # container image (Streamable HTTP)

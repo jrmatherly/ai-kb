@@ -501,7 +501,7 @@ The Python service under `mcp-server/` predates the built-in MCP server: each pr
 
 ::: warning Package name and API changes (v1.1.x)
 
-- The package name is `ai-kb-mcp` (`mcp-server/pyproject.toml`). It is not published on PyPI yet, so install it from the repository as shown below. The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
+- The package name is `ai-kb-mcp` (`mcp-server/pyproject.toml`). It is published on PyPI as `ai-kb-mcp`. The command-line entry points are `ai-kb-mcp-server` and `ai-kb-server`.
 - The implementation uses the high-level API of mcp 2.x: a tool is a plain function with the `@mcp.tool()` decorator, its parameter JSON Schema is derived from the type annotations, the description comes from the docstring, and the return value is serialized automatically. The old `handle_list_tools()` / `handle_call_tool()` dispatch is gone; adding a tool means adding one decorated function.
 - Blocking network I/O (`chat` and `agent_chat`) runs in a thread pool and does not block the asyncio event loop.
 :::
@@ -518,15 +518,17 @@ pip install -r requirements.txt
 python main.py            # or python run.py / python run_server.py
 ```
 
-**Install from the repository** (two console entry points, `ai-kb-mcp-server` and `ai-kb-server`). The `ai-kb-mcp` package is not on PyPI yet, so `pip install ai-kb-mcp` fails; point pip or uvx at the `mcp-server/` directory of a checkout instead:
+**Install from PyPI** (two console entry points, `ai-kb-mcp-server` and `ai-kb-server`):
 
 ```bash
-pip install ./mcp-server
+pip install ai-kb-mcp
 ai-kb-mcp-server
 
 # Or run without installing, through uvx
-uvx --from ./mcp-server ai-kb-mcp-server
+uvx --from ai-kb-mcp ai-kb-mcp-server
 ```
+
+**Install from the repository**: `pip install ./mcp-server` or `uvx --from ./mcp-server ai-kb-mcp-server` from a checkout.
 
 **Local development install**:
 
@@ -680,14 +682,14 @@ The stdio transport (`claude_desktop_config.json` in Claude Desktop):
 }
 ```
 
-After `pip install ./mcp-server`, `command` can be `ai-kb-mcp-server` directly. Or use `uvx` without installing, with `--from` set to the absolute path of the `mcp-server/` directory (the package is not on PyPI yet):
+After `pip install ai-kb-mcp`, `command` can be `ai-kb-mcp-server` directly. Or use `uvx` without installing (for a checkout, set `--from` to the absolute path of its `mcp-server/` directory):
 
 ```json
 {
   "mcpServers": {
     "aikb": {
       "command": "uvx",
-      "args": ["--from", "/path/to/ai-kb/mcp-server", "ai-kb-mcp-server"],
+      "args": ["--from", "ai-kb-mcp", "ai-kb-mcp-server"],
       "env": {
         "AIKB_BASE_URL": "http://localhost:8080/api/v1",
         "AIKB_API_KEY": "your-api-key"
