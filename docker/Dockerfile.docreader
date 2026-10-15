@@ -12,7 +12,7 @@ RUN if [ -n "$APT_MIRROR" ]; then \
 WORKDIR /app
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     libjpeg-dev \
@@ -29,7 +29,7 @@ COPY docreader/pyproject.toml docreader/uv.lock ./
 # uv comes from pyproject.toml's [tool.uv] required-version, the single floor.
 RUN UV_SPEC="$(sed -n 's/^required-version = "\([^"]*\)"$/\1/p' pyproject.toml)" && \
     test -n "$UV_SPEC" && \
-    pip install "uv${UV_SPEC}" --break-system-packages && \
+    pip install --no-cache-dir "uv${UV_SPEC}" --break-system-packages && \
     python -m uv sync --locked --no-dev
 
 # Copy source code and generation scripts
@@ -54,6 +54,9 @@ RUN if [ -n "$APT_MIRROR" ]; then \
 WORKDIR /app
 
 # Install runtime dependencies (OCR/PaddleOCR dependencies removed)
+# Keep recommends: they bring the metric-compatible fonts (Carlito, Caladea, Liberation)
+# LibreOffice needs to convert Office documents without reflowing them.
+# hadolint ignore=DL3015
 RUN apt-get update && apt-get install -y \
     libjpeg62-turbo \
     wget \
@@ -80,7 +83,7 @@ RUN apt-get update && apt-get install -y \
 ARG TARGETARCH
 # Works with BuildKit and the legacy builder: if TARGETARCH is empty, detect it with uname
 RUN if [ -z "$TARGETARCH" ]; then \
-        case $(uname -m) in \
+        case "$(uname -m)" in \
             "x86_64") TARGETARCH="amd64" ;; \
             "aarch64") TARGETARCH="arm64" ;; \
             "armv7l") TARGETARCH="arm" ;; \
@@ -91,13 +94,13 @@ RUN if [ -z "$TARGETARCH" ]; then \
         echo "[BuildKit] arch: $TARGETARCH"; \
     fi && \
     GRPC_HEALTH_PROBE_VERSION=v0.4.24 && \
-    case $TARGETARCH in \
+    case "$TARGETARCH" in \
         "amd64") ARCH="amd64" ;; \
         "arm64") ARCH="arm64" ;; \
         "arm") ARCH="arm" ;; \
         *) echo "Unsupported architecture: $TARGETARCH" && exit 1 ;; \
     esac && \
-    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-${ARCH} && \
+    wget -qO/bin/grpc_health_probe "https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-${ARCH}" && \
     chmod +x /bin/grpc_health_probe
 
 # Copy the installed dependencies and generated code from the build stage

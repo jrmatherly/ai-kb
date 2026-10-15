@@ -33,6 +33,8 @@ RUN apk add --no-cache bash
 ARG WEBSITE_NGINX_PORT=80
 ENV WEBSITE_NGINX_PORT=${WEBSITE_NGINX_PORT}
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# The template keeps a literal ${WEBSITE_NGINX_PORT} for the nginx entrypoint's envsubst.
+# hadolint ignore=SC2016
 RUN mkdir -p /etc/nginx/templates \
     && sed 's/listen 80;/listen ${WEBSITE_NGINX_PORT};/' /etc/nginx/conf.d/default.conf \
       > /etc/nginx/templates/default.conf.template \

@@ -1,3 +1,4 @@
+# check=skip=RedundantTargetPlatform
 # AI KB Sandbox Image
 # Pre-built environment for executing agent skill scripts in Docker sandbox
 # Multi-stage build, minimal dependencies
@@ -113,6 +114,9 @@ RUN echo '. /etc/aikb/pty-prompt.sh' > /etc/profile.d/zz-ai-kb-prompt.sh && \
     echo '. /etc/aikb/pty-prompt.sh' >> /home/user/.bashrc
 
 WORKDIR /workspace
+# Root by default by design: the Docker backend and Cube envd pick the account per request,
+# and `user` (UID 1000) stays available for explicit selection.
+# hadolint ignore=DL3002,DL3066
 USER root
 
 # Stage 3: Cube template image
@@ -129,12 +133,15 @@ FROM --platform=${TARGETPLATFORM:-linux/amd64} ghcr.io/tencentcloud/cubesandbox-
 
 FROM runtime AS cube
 
+# hadolint ignore=DL3002,DL3066
 USER root
 COPY --from=cube-base /usr/bin/envd /usr/bin/envd
 COPY --from=cube-base /usr/local/bin/cube-entrypoint.sh /usr/local/bin/cube-entrypoint.sh
 # Compare envd with the rootfs rather than trusting TARGETARCH: the legacy
 # builder leaves TARGETARCH empty, and a mixed image is exactly what this
 # guard exists to stop.
+# No pipefail needed: a failing `file` leaves grep -q nothing to match, so the guard fails closed.
+# hadolint ignore=DL4006
 RUN arch="$(dpkg --print-architecture)"; \
     case "$arch" in amd64) elf=x86-64 ;; arm64) elf=aarch64 ;; *) elf="$arch" ;; esac; \
     if ! file -bL /usr/bin/envd | grep -q "$elf"; then \
@@ -155,6 +162,7 @@ ENTRYPOINT ["/usr/local/bin/cube-entrypoint.sh"]
 # procps supplies pgrep for the start script; util-linux supplies flock.
 FROM runtime AS desktop-runtime
 
+# hadolint ignore=DL3002,DL3066
 USER root
 # DISPLAY is exported by start-desktop.sh when the desktop actually starts.
 # Do not bake it into the image ENV: Cube copies image ENV onto the cubebox
@@ -206,9 +214,12 @@ EXPOSE 6080
 # Stage 6: desktop + Cube envd. Same platforms and envd check as cube.
 FROM desktop-runtime AS desktop-cube
 
+# hadolint ignore=DL3002,DL3066
 USER root
 COPY --from=cube-base /usr/bin/envd /usr/bin/envd
 COPY --from=cube-base /usr/local/bin/cube-entrypoint.sh /usr/local/bin/cube-entrypoint.sh
+# No pipefail needed: a failing `file` leaves grep -q nothing to match, so the guard fails closed.
+# hadolint ignore=DL4006
 RUN arch="$(dpkg --print-architecture)"; \
     case "$arch" in amd64) elf=x86-64 ;; arm64) elf=aarch64 ;; *) elf="$arch" ;; esac; \
     if ! file -bL /usr/bin/envd | grep -q "$elf"; then \

@@ -1,5 +1,7 @@
 # Build extension and daemon from the same pinned source on the runtime architecture.
-FROM --platform=$TARGETPLATFORM node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS browserskill
+FROM node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS browserskill
+# A failed curl must fail the curl | sh steps, not pipe an empty script.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /build
 # Use the same optional Debian mirror as the Go builder and runtime stages.
 ARG APK_MIRROR_ARG
@@ -7,10 +9,10 @@ ARG APK_MIRROR_ARG
 # Debian source before swapping in a mirror: mirrors.tencent.com redirects
 # apt to HTTPS, and that handshake fails without a trust store.
 RUN if [ -n "$APK_MIRROR_ARG" ]; then \
-        apt-get update && \
-        apt-get install -y --no-install-recommends ca-certificates && \
-        rm -rf /var/lib/apt/lists/* && \
-        sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
     fi && \
     apt-get update && \
     apt-get install -y --no-install-recommends git python3 ca-certificates curl build-essential cmake pkg-config && \
@@ -25,26 +27,31 @@ RUN bash scripts/build_browserskill.sh /opt/ai-kb/browserskill "${TARGETOS}/${TA
 
 # Build stage
 FROM golang:1.26-bookworm AS builder
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /app
 
-# Receive secrets through build args
+# Go module settings for private modules or a mirror. Not for secrets: build args
+# are visible in the build history. Empty values keep Go's defaults
+# (proxy.golang.org, sum.golang.org); pass GOSUMDB_ARG=off only where the
+# checksum database is unreachable.
+# hadolint ignore=DL3064
 ARG GOPRIVATE_ARG
 ARG GOPROXY_ARG
-ARG GOSUMDB_ARG=off
+ARG GOSUMDB_ARG
 ARG APK_MIRROR_ARG
 
-# Go environment variables
+# hadolint ignore=DL3064
 ENV GOPRIVATE=${GOPRIVATE_ARG}
 ENV GOPROXY=${GOPROXY_ARG}
 ENV GOSUMDB=${GOSUMDB_ARG}
 
 # Install dependencies
 RUN if [ -n "$APK_MIRROR_ARG" ]; then \
-        sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
+    sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
     fi && \
     apt-get update && \
-    apt-get install -y git build-essential libsqlite3-dev curl
+    apt-get install -y --no-install-recommends git build-essential libsqlite3-dev curl
 
 # Copy go mod files. go.mod replace-points anydoc at ./third_party/anydoc-go,
 # so that module's go.mod must exist before `go mod download`.
@@ -52,10 +59,12 @@ COPY go.mod go.sum ./
 COPY third_party/anydoc-go/go.mod third_party/anydoc-go/go.mod
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
 # The migrate CLI must match the golang-migrate library version the module builds against.
+# hadolint ignore=DL3062
 RUN --mount=type=cache,target=/go/pkg/mod \
     go install -tags 'postgres' \
     "github.com/golang-migrate/migrate/v4/cmd/migrate@$(go list -m -f '{{.Version}}' github.com/golang-migrate/migrate/v4)"
 COPY cmd/download cmd/download
+# hadolint ignore=DL3062
 RUN go run cmd/download/duckdb/duckdb.go
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod bash ./scripts/copy-licenses.sh /license-bundle
@@ -82,22 +91,23 @@ ENV PATH=/usr/local/cargo/bin:$PATH
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     if [ "$WITH_ANYDOC" = "1" ]; then \
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-            | sh -s -- -y --profile minimal --default-toolchain stable && \
-        ./scripts/build-anydoc-lib.sh; \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --default-toolchain stable && \
+    ./scripts/build-anydoc-lib.sh; \
     fi
 
 # Build the application with version info
 RUN --mount=type=cache,target=/go/pkg/mod \
     if [ "$WITH_ANYDOC" = "1" ]; then \
-        make build-prod GO_BUILD_TAGS=anydoc; \
+    make build-prod GO_BUILD_TAGS=anydoc; \
     else \
-        make build-prod; \
+    make build-prod; \
     fi
 RUN --mount=type=cache,target=/go/pkg/mod cp -r /go/pkg/mod/github.com/yanyiwu/ /app/yanyiwu/
 
 # Final stage
-FROM debian:12.12-slim
+FROM debian:12.15-slim
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /app
 
@@ -118,17 +128,17 @@ RUN apt-get update && \
 
 # Then switch to mirror if specified and install other packages
 RUN if [ -n "$APK_MIRROR_ARG" ]; then \
-        sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
+    sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
     fi && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        build-essential postgresql-client default-mysql-client tzdata sed curl bash vim wget \
-        libsqlite3-0 \
-        python3 python3-pip python3-dev libffi-dev libssl-dev \
-        nodejs npm \
-        gosu \
-        ffmpeg && \
-    python3 -m pip install --break-system-packages --upgrade pip setuptools wheel && \
+    build-essential postgresql-client default-mysql-client tzdata sed curl bash vim wget \
+    libsqlite3-0 \
+    python3 python3-pip python3-dev libffi-dev libssl-dev \
+    nodejs npm \
+    gosu \
+    ffmpeg && \
+    python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip setuptools wheel && \
     mkdir -p /home/appuser/.local/bin && \
     curl -LsSf https://astral.sh/uv/install.sh | CARGO_HOME=/home/appuser/.cargo UV_INSTALL_DIR=/home/appuser/.local/bin sh && \
     chown -R appuser:appuser /home/appuser && \

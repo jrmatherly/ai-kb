@@ -139,7 +139,7 @@ build_app_image() {
         --platform "$PLATFORM" \
         --build-arg GOPRIVATE_ARG="${GOPRIVATE:-}" \
         --build-arg GOPROXY_ARG="${GOPROXY:-}" \
-        --build-arg GOSUMDB_ARG="${GOSUMDB:-off}" \
+        --build-arg GOSUMDB_ARG="${GOSUMDB:-}" \
         --build-arg APK_MIRROR_ARG="${APK_MIRROR_ARG:-}" \
         --build-arg VERSION_ARG="$VERSION" \
         --build-arg COMMIT_ID_ARG="$COMMIT_ID" \
