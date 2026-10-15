@@ -1,13 +1,15 @@
 import type { CustomAgentConfig } from '@/api/agent'
 import type { ModelConfig } from '@/api/model'
 import { allowedToolsInclude } from './legacy-tool-names'
+import { resolveBuiltinDefaultModelId } from './modelDefaults'
 
 export type AgentNotReadyReasonKey = 'summary_model' | 'rerank_model' | 'allowed_tools'
 
 /**
- * An agent is chat-ready only when it explicitly references a usable chat
- * model. Merely having some built-in/default model in the tenant must not hide
- * incomplete agent configuration.
+ * An agent is chat-ready only when it references a usable chat model. For a
+ * custom agent that reference must be explicit: some model in the tenant must
+ * not hide incomplete configuration. getAgentNotReadyReasonKeys lets the
+ * caller's own built-in agents fill an empty slot with the declared default.
  *
  * For shared agents the model belongs to the source tenant, so the caller can
  * require a non-empty ID but must leave existence validation to the backend.
@@ -51,17 +53,27 @@ export function getAgentNotReadyReasonKeys(
     CustomAgentConfig,
     'model_id' | 'rerank_model_id' | 'kb_selection_mode' | 'allowed_tools' | 'agent_mode'
   > | undefined,
-  models: Pick<ModelConfig, 'id' | 'type'>[],
-  options: { isAgentMode: boolean; isSharedAgent: boolean },
+  models: Pick<ModelConfig, 'id' | 'type' | 'is_default' | 'is_builtin'>[],
+  options: { isAgentMode: boolean; isSharedAgent: boolean; isBuiltinAgent: boolean },
 ): AgentNotReadyReasonKey[] {
   const reasons: AgentNotReadyReasonKey[] = []
+  // Mirrors backend agentModelSlot: only the caller's own built-in agents
+  // resolve an empty slot to the declared default.
+  const slot = (configured: string | undefined, type: ModelConfig['type']) =>
+    configured?.trim() || (options.isBuiltinAgent && !options.isSharedAgent
+      ? resolveBuiltinDefaultModelId(models, type) ?? ''
+      : '')
 
-  if (!agentHasConfiguredChatModel(config, models, options.isSharedAgent)) {
+  if (!agentHasConfiguredChatModel(
+    { model_id: slot(config?.model_id, 'KnowledgeQA') },
+    models,
+    options.isSharedAgent,
+  )) {
     reasons.push('summary_model')
   }
 
   if (options.isAgentMode && agentRequiresRerankModel(config)) {
-    const rerankModelID = config?.rerank_model_id?.trim()
+    const rerankModelID = slot(config?.rerank_model_id, 'Rerank')
     const rerankExists = !!rerankModelID && (
       options.isSharedAgent
       || models.some(model => model.type === 'Rerank' && model.id === rerankModelID)

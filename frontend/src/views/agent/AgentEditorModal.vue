@@ -561,7 +561,7 @@
               <ModelSelector model-type="KnowledgeQA" :selected-model-id="formData.config.model_id"
                 :all-models="allModels"
                 @update:selected-model-id="(val: string) => formData.config.model_id = val"
-                @add-model="handleAddModel('llm')" :placeholder="$t('agent.editor.modelPlaceholder')" />
+                @add-model="handleAddModel('llm')" :placeholder="chatModelPlaceholder" />
             </div>
           </div>
 
@@ -665,7 +665,7 @@
                 :clearable="!needsRerankModel"
                 @update:selected-model-id="(val: string) => formData.config.rerank_model_id = val"
                 @add-model="handleAddModel('rerank')"
-                :placeholder="$t('agent.editor.rerankModelPlaceholder')" />
+                :placeholder="rerankModelPlaceholder" />
             </div>
           </div>
 
@@ -1834,7 +1834,7 @@ import {
   markContextualGuideDone,
 } from '@/config/contextualGuides';
 import { useI18n } from 'vue-i18n';
-import { selectInitialModelId } from '@/utils/modelDefaults';
+import { resolveBuiltinDefaultModelId, selectInitialModelId } from '@/utils/modelDefaults';
 import { hydrateAgentPromptRefs, serializeAgentPrompts } from '@/utils/agentPromptTemplates';
 import { copyWithToast } from '@/utils/clipboard';
 import { MessagePlugin } from 'tdesign-vue-next';
@@ -3477,6 +3477,22 @@ const isBuiltinAgent = computed(() => {
   return formData.value.is_builtin === true;
 });
 
+// A built-in agent's empty model slot runs on the declared default (backend
+// agentModelSlot). Show it as the placeholder; never write it into the form.
+const builtinDefaultModel = (type: 'KnowledgeQA' | 'Rerank') => {
+  if (!isBuiltinAgent.value) return undefined;
+  const id = resolveBuiltinDefaultModelId(allModels.value, type);
+  return id ? allModels.value.find(model => model.id === id) : undefined;
+};
+const workspaceDefaultPlaceholder = (type: 'KnowledgeQA' | 'Rerank', fallbackKey: string) => {
+  const model = builtinDefaultModel(type);
+  return model
+    ? t('agent.editor.workspaceDefaultModel', { name: model.display_name?.trim() || model.name })
+    : t(fallbackKey);
+};
+const chatModelPlaceholder = computed(() => workspaceDefaultPlaceholder('KnowledgeQA', 'agent.editor.modelPlaceholder'));
+const rerankModelPlaceholder = computed(() => workspaceDefaultPlaceholder('Rerank', 'agent.editor.rerankModelPlaceholder'));
+
 // System prompt placeholder
 const systemPromptPlaceholder = computed(() => {
   return t('agent.editor.systemPromptPlaceholder');
@@ -4929,7 +4945,7 @@ const handleSave = async () => {
     }
   }
 
-  if (!formData.value.config.model_id) {
+  if (!formData.value.config.model_id && !builtinDefaultModel('KnowledgeQA')) {
     MessagePlugin.error(t('agent.editor.modelRequired'));
     currentSection.value = 'model';
     return;

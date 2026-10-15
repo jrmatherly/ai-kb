@@ -52,6 +52,7 @@ import {
   canLocallyConfigureAgent,
   type AgentNotReadyReasonKey,
 } from '@/utils/agent-readiness';
+import { resolveBuiltinDefaultModelId } from '@/utils/modelDefaults';
 import { formatLocalizedList } from '@/utils/format-list';
 import { SKILL_ICON, type MentionItem, type MentionItemType, type MentionRequestItem } from '@/types/mention';
 import { toolboxLocation } from '@/config/toolbox';
@@ -318,10 +319,16 @@ const isMentionDisabled = computed(() => {
   return isKnowledgeBaseLockedByAgent.value && !settingsStore.isAgentStreamMode;
 });
 
-// Model ID configured on the agent
+// Model the agent runs with: its model_id, or for this workspace's own
+// built-in agent the declared default (backend agentModelSlot).
 const agentModelId = computed(() => {
   if (!hasAgentConfig.value) return null;
-  return currentAgentConfig.value?.model_id || null;
+  const configured = currentAgentConfig.value?.model_id?.trim();
+  if (configured) return configured;
+  if (selectedAgent.value?.is_builtin && !settingsStore.selectedAgentSourceTenantId) {
+    return resolveBuiltinDefaultModelId(allModels.value, 'KnowledgeQA');
+  }
+  return null;
 });
 
 // File types the agent supports (an empty array means all types)
@@ -981,7 +988,7 @@ const writeLastChatModelID = (id: string) => {
 
 // Initial chat-model selection priority: per-user last pick
 // (localStorage) > current store value (e.g. carried over from
-// settings page) > first available model. The tenant-level
+// settings page) > the agent's effective model. The tenant-level
 // conversation-config used to feed summary_model_id/rerank_model_id
 // into the dropdown, but those fields were removed: per-user last pick
 // belongs in localStorage, agent-level model belongs on the agent.
@@ -1014,18 +1021,13 @@ const loadChatModels = async (force = false) => {
   }
 };
 
+// Never guess a model: an agent without an effective model stays empty and
+// shows "Not configured", as the backend refuses to run it.
 const ensureModelSelection = () => {
-  if (selectedModelId.value) {
+  if (selectedModelId.value || !agentModelId.value) {
     return;
   }
-  const lastPick = readLastChatModelID();
-  if (lastPick) {
-    selectedModelId.value = lastPick;
-    return;
-  }
-  if (availableModels.value.length > 0) {
-    selectedModelId.value = availableModels.value[0].id || '';
-  }
+  selectedModelId.value = readLastChatModelID() || agentModelId.value;
 };
 
 // When the agent identity or its data arrives, sync the chat model to the model_id configured on the agent.
@@ -2517,6 +2519,7 @@ const collectAgentNotReadyReasons = (
   const keys = getAgentNotReadyReasonKeys(agent.config, allModels.value, {
     isAgentMode,
     isSharedAgent,
+    isBuiltinAgent: !!agent.is_builtin,
   });
   return {
     keys,
