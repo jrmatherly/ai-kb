@@ -202,6 +202,18 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install nsis -y
 
+      # sqlite-vec includes sqlite3.h but doesn't ship it, and MinGW has none. Use the header of
+      # the SQLite that go-sqlite3 compiles in, so the declarations match the linked library.
+      - name: 📦 Provide sqlite3.h (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          inc="$RUNNER_TEMP/sqlite-include"
+          mkdir -p "$inc"
+          go mod download github.com/mattn/go-sqlite3
+          cp "$(go list -m -f '{{.Dir}}' github.com/mattn/go-sqlite3)/sqlite3-binding.h" "$inc/sqlite3.h"
+          echo "C_INCLUDE_PATH=$(cygpath -w "$inc")" >> "$GITHUB_ENV"
+
       - name: 🐹 Pre-compile Go packages (Windows)
         if: runner.os == 'Windows'
         shell: bash
