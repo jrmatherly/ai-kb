@@ -307,7 +307,8 @@ class DocReaderServicer(docreader_pb2_grpc.DocReaderServicer):
         except ValueError as e:
             logger.warning("ConvertSpreadsheet failed: %s", e)
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(e))
-        return ConvertSpreadsheetResponse(xlsx_content=xlsx)
+        else:
+            return ConvertSpreadsheetResponse(xlsx_content=xlsx)
 
 
 def main():
