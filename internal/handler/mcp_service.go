@@ -66,6 +66,19 @@ func (h *MCPServiceHandler) mcpServiceResponses(
 	return resp
 }
 
+// writeMCPServiceError forwards a service-layer AppError with its own status and
+// reports anything else as a 500 prefixed with fallbackMsg.
+func writeMCPServiceError(c *gin.Context, err error, fallbackMsg string, fields logger.Fields) {
+	ctx := c.Request.Context()
+	if appErr, ok := errors.IsAppError(err); ok {
+		logger.WarnWithFields(ctx, fields, fallbackMsg+": "+appErr.Message)
+		_ = c.Error(appErr)
+		return
+	}
+	logger.ErrorWithFields(ctx, err, fields)
+	_ = c.Error(errors.NewInternalServerError(fallbackMsg + ": " + err.Error()))
+}
+
 // CreateMCPService godoc
 // @Summary      Create MCP service
 // @Description  Create a new MCP service config
@@ -74,7 +87,7 @@ func (h *MCPServiceHandler) mcpServiceResponses(
 // @Produce      json
 // @Param        request  body      types.MCPService  true  "MCP service config"
 // @Success      200      {object}  map[string]interface{}  "Created MCP service"
-// @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      400      {object}  errors.ErrorResponse         "Invalid parameters, stdio transport or blocked URL"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services [post]
@@ -111,12 +124,8 @@ func (h *MCPServiceHandler) CreateMCPService(c *gin.Context) {
 	}
 
 	if err := h.mcpServiceService.CreateMCPService(ctx, &service); err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_name": secutils.SanitizeForLog(service.Name)})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("Failed to create MCP service: " + err.Error()))
+		writeMCPServiceError(c, err, "Failed to create MCP service",
+			logger.Fields{"service_name": secutils.SanitizeForLog(service.Name)})
 		return
 	}
 
@@ -453,12 +462,8 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 	}
 
 	if err := h.mcpServiceService.UpdateMCPService(ctx, &service, updateFields); err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("Failed to update MCP service: " + err.Error()))
+		writeMCPServiceError(c, err, "Failed to update MCP service",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 
@@ -503,12 +508,8 @@ func (h *MCPServiceHandler) DeleteMCPService(c *gin.Context) {
 	}
 
 	if err := h.mcpServiceService.DeleteMCPService(ctx, tenantID, serviceID); err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("Failed to delete MCP service: " + err.Error()))
+		writeMCPServiceError(c, err, "Failed to delete MCP service",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 
@@ -528,6 +529,7 @@ func (h *MCPServiceHandler) DeleteMCPService(c *gin.Context) {
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Test result"
 // @Failure      400  {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      404  {object}  errors.ErrorResponse         "MCP service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/test [post]
@@ -546,11 +548,12 @@ func (h *MCPServiceHandler) TestMCPService(c *gin.Context) {
 
 	result, err := h.mcpServiceService.TestMCPService(ctx, tenantID, serviceID)
 	if err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
+		if _, ok := errors.IsAppError(err); ok {
+			writeMCPServiceError(c, err, "Failed to test MCP service",
+				logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 			return
 		}
+		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data": types.MCPTestResult{
@@ -577,6 +580,7 @@ func (h *MCPServiceHandler) TestMCPService(c *gin.Context) {
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Tool list"
 // @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
+// @Failure      404  {object}  errors.ErrorResponse         "MCP service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/tools [get]
@@ -593,12 +597,8 @@ func (h *MCPServiceHandler) GetMCPServiceTools(c *gin.Context) {
 
 	tools, err := h.mcpServiceService.GetMCPServiceTools(ctx, tenantID, serviceID)
 	if err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("Failed to get MCP service tools: " + err.Error()))
+		writeMCPServiceError(c, err, "Failed to get MCP service tools",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 
@@ -617,6 +617,7 @@ func (h *MCPServiceHandler) GetMCPServiceTools(c *gin.Context) {
 // @Param        id   path      string  true  "MCP service ID"
 // @Success      200  {object}  map[string]interface{}  "Resource list"
 // @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
+// @Failure      404  {object}  errors.ErrorResponse         "MCP service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /mcp-services/{id}/resources [get]
@@ -633,12 +634,8 @@ func (h *MCPServiceHandler) GetMCPServiceResources(c *gin.Context) {
 
 	resources, err := h.mcpServiceService.GetMCPServiceResources(ctx, tenantID, serviceID)
 	if err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": secutils.SanitizeForLog(serviceID)})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("Failed to get MCP service resources: " + err.Error()))
+		writeMCPServiceError(c, err, "Failed to get MCP service resources",
+			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
 

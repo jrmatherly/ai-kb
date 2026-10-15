@@ -135,7 +135,7 @@ Purpose: create an MCP service. Permission: Admin+.
 | `advanced_config` | object | no | `{timeout,retry_count,retry_delay}`, defaults 30 seconds / 3 retries / 1 second; a `timeout` above 60 seconds also extends the window an agent waits for one call to this service's tools |
 | `stdio_config` / `env_vars` | object | no | Kept only for legacy data; stdio is disabled and they have no effect |
 
-Response: 200 `{"success":true,"data":{MCPServiceResponse}}` (includes `credentials:{api_key:{configured},token:{configured}}`; a service with a synced tool directory also carries `catalog:{tool_count,stale,synced_at}`)
+Response: 200 `{"success":true,"data":{MCPServiceResponse}}` (includes `credentials:{api_key:{configured},token:{configured}}`; a service with a synced tool directory also carries `catalog:{tool_count,stale,synced_at}`). 400 when `transport_type` is `stdio` or the service URL or OAuth metadata URL fails SSRF validation.
 
 ```bash
 curl -X POST $BASE/api/v1/mcp-services -H "Authorization: Bearer $TOKEN" \
@@ -171,7 +171,7 @@ Purpose: partial update (map semantics; `auth_config` must not carry `api_key` o
 
 When `usage_instructions` is sent it must be a non-empty string after trimming, at most 16000 characters. It can be omitted when only the connection or enabled state changes; the stored value is kept.
 
-Response: 200 `{"success":true,"data":{MCPServiceResponse}}`
+Response: 200 `{"success":true,"data":{MCPServiceResponse}}`. 400 when the merged transport type is `stdio` or a merged outbound URL (service URL or OAuth metadata URL, including one already stored) fails SSRF validation; 403 for a built-in service; 404 when the ID is unknown.
 
 ```bash
 curl -X PUT $BASE/api/v1/mcp-services/mcp-1 -H "Authorization: Bearer $TOKEN" \
@@ -190,7 +190,7 @@ Response: 200 `{"success":true,"data":{"usage_instructions":"Query remote logs b
 
 ### DELETE /api/v1/mcp-services/:id
 
-Purpose: delete. Permission: Admin+. Response: 200 `{"success":true,"message":"MCP service deleted successfully"}`
+Purpose: delete. Permission: Admin+. Response: 200 `{"success":true,"message":"MCP service deleted successfully"}`. 403 for a built-in service; 404 when the ID is unknown.
 
 ```bash
 curl -X DELETE $BASE/api/v1/mcp-services/mcp-1 -H "Authorization: Bearer $TOKEN"
@@ -198,7 +198,7 @@ curl -X DELETE $BASE/api/v1/mcp-services/mcp-1 -H "Authorization: Bearer $TOKEN"
 
 ### POST /api/v1/mcp-services/:id/test
 
-Purpose: connection test (probes the external service). Permission: Admin+. Response: 200 `{"success":true,"data":{"success","message","oauth_required","tools":[...],"resources":[...]}}`
+Purpose: connection test (probes the external service). Permission: Admin+. Response: 200 `{"success":true,"data":{"success","message","oauth_required","tools":[...],"resources":[...]}}`. A failed connection still answers 200 with `success:false` in `data`; 404 when the ID is unknown.
 
 ```bash
 curl -X POST $BASE/api/v1/mcp-services/mcp-1/test -H "Authorization: Bearer $TOKEN"
@@ -226,7 +226,7 @@ curl -X POST $BASE/api/v1/mcp-services/mcp-1/metadata/refresh -H "Authorization:
 
 ### GET /api/v1/mcp-services/:id/tools
 
-Purpose: tool list. Permission: Viewer+. Response: 200 `{"success":true,"data":[{name,description,inputSchema,require_approval}]}`
+Purpose: tool list. Permission: Viewer+. Response: 200 `{"success":true,"data":[{name,description,inputSchema,require_approval}]}`. 404 when the ID is unknown.
 
 ```bash
 curl $BASE/api/v1/mcp-services/mcp-1/tools -H "Authorization: Bearer $TOKEN"
@@ -234,7 +234,7 @@ curl $BASE/api/v1/mcp-services/mcp-1/tools -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/mcp-services/:id/resources
 
-Purpose: resource list. Permission: Viewer+. Response: 200 `{"success":true,"data":[{uri,name,description,mimeType}]}`
+Purpose: resource list. Permission: Viewer+. Response: 200 `{"success":true,"data":[{uri,name,description,mimeType}]}`. 404 when the ID is unknown.
 
 ```bash
 curl $BASE/api/v1/mcp-services/mcp-1/resources -H "Authorization: Bearer $TOKEN"
@@ -244,7 +244,7 @@ curl $BASE/api/v1/mcp-services/mcp-1/resources -H "Authorization: Bearer $TOKEN"
 
 Purpose: set secrets (`api_key` / `token`, pointer fields; an omitted field is kept). Permission: Admin+. Handler: `internal/handler/mcp_credentials.go`
 
-Response: 200 `{"success":true,"data":{"fields":{"api_key":{"configured"},"token":{"configured"}}}}`
+Response: 200 `{"success":true,"data":{"fields":{"api_key":{"configured"},"token":{"configured"}}}}`. 403 for a built-in service; 404 when the ID is unknown.
 
 ```bash
 curl -X PUT $BASE/api/v1/mcp-services/mcp-1/credentials -H "Authorization: Bearer $TOKEN" \
@@ -253,7 +253,7 @@ curl -X PUT $BASE/api/v1/mcp-services/mcp-1/credentials -H "Authorization: Beare
 
 ### DELETE /api/v1/mcp-services/:id/credentials/:field
 
-Purpose: remove one credential field (`api_key` or `token`). Permission: Admin+. Response: 204.
+Purpose: remove one credential field (`api_key` or `token`). Permission: Admin+. Response: 204. 400 for any other field name; 403 for a built-in service; 404 when the ID is unknown.
 
 ```bash
 curl -X DELETE $BASE/api/v1/mcp-services/mcp-1/credentials/token -H "Authorization: Bearer $TOKEN"

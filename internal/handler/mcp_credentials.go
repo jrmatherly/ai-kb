@@ -60,6 +60,7 @@ type mcpCredentialsPutRequest struct {
 // @Param        request  body      map[string]interface{}  true  "{api_key?: string, token?: string}"
 // @Success      200      {object}  map[string]interface{}  "Credential status after the write"
 // @Failure      400      {object}  errors.ErrorResponse         "Invalid request parameters"
+// @Failure      403      {object}  errors.ErrorResponse         "Built-in MCP service credentials are read-only"
 // @Failure      404      {object}  errors.ErrorResponse         "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -98,14 +99,9 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 
 	updated, err := h.svc.UpdateMCPCredentials(ctx, tenantID, serviceID, req.APIKey, req.Token)
 	if err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{
+		writeMCPServiceError(c, err, "failed to update credentials", logger.Fields{
 			"service_id": secutils.SanitizeForLog(serviceID),
 		})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("failed to update credentials: " + err.Error()))
 		return
 	}
 
@@ -130,6 +126,7 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 // @Param        field  path      string  true  "Field name (api_key | token)"
 // @Success      204
 // @Failure      400  {object}  errors.ErrorResponse  "Invalid field name"
+// @Failure      403  {object}  errors.ErrorResponse  "Built-in MCP service credentials are read-only"
 // @Failure      404  {object}  errors.ErrorResponse  "Service not found"
 // @Security     Bearer
 // @Security     ApiKeyAuth
@@ -149,15 +146,10 @@ func (h *MCPCredentialsHandler) DeleteField(c *gin.Context) {
 	}
 
 	if err := h.svc.ClearMCPCredential(ctx, tenantID, serviceID, field); err != nil {
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{
+		writeMCPServiceError(c, err, "failed to clear credential", logger.Fields{
 			"service_id": secutils.SanitizeForLog(serviceID),
 			"field":      field,
 		})
-		if appErr, ok := errors.IsAppError(err); ok {
-			_ = c.Error(appErr)
-			return
-		}
-		c.Error(errors.NewInternalServerError("failed to clear credential: " + err.Error()))
 		return
 	}
 	c.Status(http.StatusNoContent)

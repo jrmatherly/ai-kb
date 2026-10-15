@@ -45,7 +45,7 @@ func (s *mcpServiceService) CreateMCPService(ctx context.Context, service *types
 				"please use SSE or HTTP Streamable transport instead")
 	}
 	if err := mcp.ValidateServiceOutboundURLs(service); err != nil {
-		return err
+		return apperrors.NewBadRequestError(err.Error())
 	}
 
 	// Set default advanced config if not provided
@@ -257,9 +257,8 @@ func (s *mcpServiceService) UpdateMCPService(
 		existing.AdvancedConfig = service.AdvancedConfig
 	}
 
-	// Update timestamp
 	if err := mcp.ValidateServiceOutboundURLs(existing); err != nil {
-		return err
+		return apperrors.NewBadRequestError(err.Error())
 	}
 	existing.UpdatedAt = time.Now()
 

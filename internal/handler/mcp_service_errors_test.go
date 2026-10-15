@@ -29,6 +29,10 @@ func TestMCPServiceCallerErrorsReturn4xx(t *testing.T) {
 	repo := &mcpServiceRepoStub{services: map[string]*types.MCPService{
 		"custom":  {ID: "custom", TenantID: 7, TransportType: types.MCPTransportSSE},
 		"builtin": {ID: "builtin", IsBuiltin: true, TransportType: types.MCPTransportSSE},
+		"blocked-url": {
+			ID: "blocked-url", TenantID: 7, TransportType: types.MCPTransportSSE,
+			URL: func() *string { u := "gopher://127.0.0.1/"; return &u }(),
+		},
 	}}
 	svc := service.NewMCPServiceService(repo, nil, nil)
 	h := &MCPServiceHandler{mcpServiceService: svc}
@@ -57,6 +61,7 @@ func TestMCPServiceCallerErrorsReturn4xx(t *testing.T) {
 	}{
 		{"create stdio", http.MethodPost, "/mcp-services", `{"name":"s","transport_type":"stdio"}`, 400},
 		{"update to stdio", http.MethodPut, "/mcp-services/custom", `{"transport_type":"stdio"}`, 400},
+		{"update with blocked stored url", http.MethodPut, "/mcp-services/blocked-url", `{"enabled":false}`, 400},
 		{"update unknown", http.MethodPut, "/mcp-services/missing", `{"name":"n"}`, 404},
 		{"update builtin", http.MethodPut, "/mcp-services/builtin", `{"name":"n"}`, 403},
 		{"delete unknown", http.MethodDelete, "/mcp-services/missing", "", 404},
