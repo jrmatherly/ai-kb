@@ -198,6 +198,14 @@ test('locale messages compile with vue-i18n syntax rules', () => {
   assert.deepEqual(summary, [], summary.slice(0, 20).join('\n'))
 })
 
+function assertLocalized(keys: string[]) {
+  for (const key of keys) {
+    for (const [locale, bundle] of Object.entries(LOCALE_BUNDLES)) {
+      assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
+    }
+  }
+}
+
 test('Seafile picker texts and sync error codes are localized', () => {
   const seafileErrors = [
     'permission_denied', 'not_found', 'file_too_large', 'empty_file',
@@ -212,11 +220,15 @@ test('Seafile picker texts and sync error codes are localized', () => {
     ...seafileErrors.map(code => `syncError.seafile_${code}`),
   ].map(key => `datasource.${key}`)
   keys.push('knowledgeBase.channelSeafile')
-  for (const key of keys) {
-    for (const [locale, bundle] of Object.entries(LOCALE_BUNDLES)) {
-      assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
-    }
-  }
+  assertLocalized(keys)
+})
+
+test('Feishu sync error codes are localized', () => {
+  const codes = [
+    'sync_failed', 'feishu_auth_or_permission', 'feishu_not_found', 'feishu_rate_limited',
+    'feishu_timeout', 'feishu_server_unavailable', 'feishu_api_error', 'feishu_api_error_generic',
+  ]
+  assertLocalized(codes.map(code => `datasource.syncError.${code}`))
 })
 
 test('DingTalk configuration and sync failures are localized', () => {
@@ -227,11 +239,7 @@ test('DingTalk configuration and sync failures are localized', () => {
     ...[1, 2, 3].flatMap(step => [`prereqStep${step}Brief_dingtalk`, `prereqStep${step}Desc_dingtalk`]),
     'syncError.dingtalk_document_failed', 'syncError.dingtalk_resource_failed',
   ].map(key => `datasource.${key}`)
-  for (const key of keys) {
-    for (const [locale, bundle] of Object.entries(LOCALE_BUNDLES)) {
-      assert.equal(typeof getLocaleValueAtPath(bundle, key), 'string', `${locale}: missing ${key}`)
-    }
-  }
+  assertLocalized(keys)
 })
 
 const SRC_ROOT = fileURLToPath(new URL('..', import.meta.url))

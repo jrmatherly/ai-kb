@@ -359,6 +359,10 @@ func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
 		{&APIError{Code: 1061003}, datasource.ErrResourceNotFound},
 		{&APIError{Status: http.StatusBadRequest, Code: 131006}, datasource.ErrPermissionDenied},
 		{&APIError{Status: http.StatusBadRequest, Code: 131005}, datasource.ErrResourceNotFound},
+		{&APIError{Status: http.StatusForbidden, Code: 1770032}, datasource.ErrPermissionDenied},
+		{&APIError{Status: http.StatusNotFound, Code: 1770002}, datasource.ErrResourceNotFound},
+		{&APIError{Code: 1254302}, datasource.ErrPermissionDenied},
+		{&APIError{Code: 1254040}, datasource.ErrResourceNotFound},
 	} {
 		if !errors.Is(fmt.Errorf("wrapped: %w", tc.err), tc.want) {
 			t.Errorf("%v does not match %v", tc.err, tc.want)

@@ -140,19 +140,17 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("%s: code=%d msg=%s", e.Op, e.Code, e.Msg)
 }
 
-// Is maps Feishu failures to the datasource sentinels. 1061004 is Drive's "app
-// not shared this folder", 99991672 a missing app scope, 1061005 Drive's auth
-// failure and 1061003 an unknown folder token; 131006 and 131005 are the wiki
-// API's permission denied and not found. A bare 404 is left unmapped: it can be
-// a retired route or a proxy, not the user's selection.
+// Is maps Feishu failures to the datasource sentinels; 1061005 is Drive's auth
+// failure. A bare 404 is left unmapped: it can be a retired route or a proxy,
+// not the user's selection.
 func (e *APIError) Is(target error) bool {
 	switch target {
 	case datasource.ErrPermissionDenied:
-		return e.Status == http.StatusForbidden || e.Code == 1061004 || e.Code == 99991672 || e.Code == 131006
+		return e.Status == http.StatusForbidden || feishuPermissionCodes[e.Code]
 	case datasource.ErrInvalidCredentials:
 		return e.Status == http.StatusUnauthorized || e.Code == 1061005
 	case datasource.ErrResourceNotFound:
-		return e.Code == 1061003 || e.Code == 131005
+		return feishuNotFoundCodes[e.Code]
 	}
 	return false
 }
@@ -178,6 +176,14 @@ func (e *exportJobError) Is(target error) bool {
 	}
 	return false
 }
+
+var (
+	// Drive folder not shared with the app, missing app scope, then the wiki,
+	// docx and bitable permission-denied codes.
+	feishuPermissionCodes = map[int]bool{1061004: true, 99991672: true, 131006: true, 1770032: true, 1254302: true}
+	// Drive unknown folder token, then wiki, docx and bitable not found.
+	feishuNotFoundCodes = map[int]bool{1061003: true, 131005: true, 1770002: true, 1254040: true}
+)
 
 // newAPIError builds the APIError for a non-200 response, reading the Feishu
 // code from the body when it has one.

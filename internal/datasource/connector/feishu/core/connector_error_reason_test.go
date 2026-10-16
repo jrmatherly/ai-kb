@@ -38,6 +38,11 @@ func TestFeishuFailure(t *testing.T) {
 			noLeak:   []string{"body=", "{"},
 		},
 		{
+			name:     "a not-found code on a 5xx is still a server fault",
+			err:      newAPIError("feishu server error", http.StatusBadGateway, []byte(`{"code":131005}`)),
+			wantCode: "feishu_server_unavailable",
+		},
+		{
 			name:     "rate limit code over HTTP 400",
 			err:      newAPIError("feishu rate limited", http.StatusBadRequest, []byte(`{"code":99991400}`)),
 			wantCode: "feishu_rate_limited",
@@ -81,6 +86,12 @@ func TestFeishuFailure(t *testing.T) {
 			name:     "export job without permission",
 			err:      &exportJobError{Status: 110, Msg: "no permission"},
 			wantCode: "feishu_auth_or_permission",
+		},
+		{
+			name:        "deleted document",
+			err:         &exportJobError{Status: 123, Msg: "not exist"},
+			wantCode:    "feishu_not_found",
+			fallbackHas: []string{"next sync"},
 		},
 		{
 			name:     "export job timed out",
@@ -155,7 +166,8 @@ func TestFeishuFailureFromClientErrors(t *testing.T) {
 		{"wiki 131006 over HTTP 400", http.StatusBadRequest, `{"code":131006}`, false, "feishu_auth_or_permission"},
 		{"api 400 with a code", http.StatusBadRequest, `{"code":1254000,"msg":"bad"}`, false, "feishu_api_error"},
 		{"download 403", http.StatusForbidden, "", true, "feishu_auth_or_permission"},
-		{"download 404 with a code", http.StatusNotFound, `{"code":1061003}`, true, "feishu_api_error"},
+		{"download 404 with a code", http.StatusNotFound, `{"code":1061003}`, true, "feishu_not_found"},
+		{"download 400 with an unmapped code", http.StatusBadRequest, `{"code":999}`, true, "feishu_api_error"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			path := "/target"

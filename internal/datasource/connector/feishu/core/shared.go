@@ -97,11 +97,16 @@ func feishuFailure(err error) (code, codeValue, fallback string) {
 	case errors.Is(err, datasource.ErrInvalidCredentials),
 		errors.Is(err, datasource.ErrPermissionDenied),
 		isAPIErr && feishuTokenCodes[apiErr.Code]:
-		return "feishu_auth_or_permission", "", "Authentication or permission error; check credentials and app scopes"
+		return "feishu_auth_or_permission", "",
+			"Authentication or permission error; check the app credentials, its scopes and its access to the document."
 	case isAPIErr && apiErr.Status >= http.StatusInternalServerError:
 		return "feishu_server_unavailable", "", "Feishu service temporarily unavailable; will retry on the next sync"
 	case isAPIErr && (apiErr.Status == http.StatusTooManyRequests || apiErr.Code == feishuRateLimitCode):
 		return "feishu_rate_limited", "", "Feishu API rate limited; will retry on the next sync"
+	case errors.Is(err, datasource.ErrResourceNotFound):
+		return "feishu_not_found", "",
+			"The Feishu document or folder was not found; it may have been deleted or moved, " +
+				"or its token is wrong. The next sync retries it."
 	case errors.Is(err, errExportPollsExhausted),
 		errors.Is(err, context.DeadlineExceeded),
 		isNetErr && netErr.Timeout(),
