@@ -82,6 +82,24 @@ func (m *milvusRepository) getCollectionName(dimension int) string {
 	return fmt.Sprintf("%s_%d", m.collectionBaseName, dimension)
 }
 
+// deleteTarget returns the dimension's collection name and whether it exists.
+// The first upload into a fresh store deletes before it writes, and Milvus
+// refuses a delete on a collection nobody has created yet.
+func (m *milvusRepository) deleteTarget(ctx context.Context, dimension int) (string, bool, error) {
+	collectionName := m.getCollectionName(dimension)
+	if _, ok := m.initializedCollections.Load(dimension); ok {
+		return collectionName, true, nil
+	}
+	exists, err := m.client.HasCollection(ctx, client.NewHasCollectionOption(collectionName))
+	if err != nil {
+		return collectionName, false, fmt.Errorf("failed to check collection existence: %w", err)
+	}
+	if !exists {
+		logger.GetLogger(ctx).Infof("[Milvus] Collection %s does not exist, nothing to delete", collectionName)
+	}
+	return collectionName, exists, nil
+}
+
 // collectionAnalyzerMode inspects a collection once and caches whether it
 // uses the multilingual schema. Older AI KB collections do not have the
 // language field, so they must continue using the legacy upsert and search
@@ -400,12 +418,15 @@ func (m *milvusRepository) DeleteByChunkIDList(ctx context.Context, chunkIDList 
 		return nil
 	}
 
-	collectionName := m.getCollectionName(dimension)
+	collectionName, ok, err := m.deleteTarget(ctx, dimension)
+	if err != nil || !ok {
+		return err
+	}
 	log.Infof("[Milvus] Deleting indices by chunk IDs from %s, count: %d", collectionName, len(chunkIDList))
 
 	deleteOpt := client.NewDeleteOption(collectionName)
 	deleteOpt.WithStringIDs(fieldChunkID, chunkIDList)
-	_, err := m.client.Delete(ctx, deleteOpt)
+	_, err = m.client.Delete(ctx, deleteOpt)
 	if err != nil {
 		log.Errorf("[Milvus] Failed to delete by chunk IDs: %v", err)
 		return fmt.Errorf("failed to delete by chunk IDs: %w", err)
@@ -425,12 +446,15 @@ func (m *milvusRepository) DeleteByKnowledgeIDList(ctx context.Context,
 		return nil
 	}
 
-	collectionName := m.getCollectionName(dimension)
+	collectionName, ok, err := m.deleteTarget(ctx, dimension)
+	if err != nil || !ok {
+		return err
+	}
 	log.Infof("[Milvus] Deleting indices by knowledge IDs from %s, count: %d", collectionName, len(knowledgeIDList))
 
 	deleteOpt := client.NewDeleteOption(collectionName)
 	deleteOpt.WithStringIDs(fieldKnowledgeID, knowledgeIDList)
-	_, err := m.client.Delete(ctx, deleteOpt)
+	_, err = m.client.Delete(ctx, deleteOpt)
 	if err != nil {
 		log.Errorf("[Milvus] Failed to delete by knowledge IDs: %v", err)
 		return fmt.Errorf("failed to delete by knowledge IDs: %w", err)
@@ -450,12 +474,15 @@ func (m *milvusRepository) DeleteBySourceIDList(ctx context.Context,
 		return nil
 	}
 
-	collectionName := m.getCollectionName(dimension)
+	collectionName, ok, err := m.deleteTarget(ctx, dimension)
+	if err != nil || !ok {
+		return err
+	}
 	log.Infof("[Milvus] Deleting indices by source IDs from %s, count: %d", collectionName, len(sourceIDList))
 
 	deleteOpt := client.NewDeleteOption(collectionName)
 	deleteOpt.WithStringIDs(fieldSourceID, sourceIDList)
-	_, err := m.client.Delete(ctx, deleteOpt)
+	_, err = m.client.Delete(ctx, deleteOpt)
 	if err != nil {
 		log.Errorf("[Milvus] Failed to delete by source IDs: %v", err)
 		return fmt.Errorf("failed to delete by source IDs: %w", err)

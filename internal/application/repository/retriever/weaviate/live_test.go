@@ -36,6 +36,11 @@ func TestLiveRoundTrip(t *testing.T) {
 		_ = repo.DeleteByKnowledgeIDList(ctx, []string{k3}, 3, "")
 	})
 
+	// No collection has dimension 5: the delete-before-write of a first upload.
+	require.NoError(t, repo.DeleteByChunkIDList(ctx, []string{c1}, 5, ""))
+	require.NoError(t, repo.DeleteBySourceIDList(ctx, []string{c1}, 5, ""))
+	require.NoError(t, repo.DeleteByKnowledgeIDList(ctx, []string{k1}, 5, ""))
+
 	// A second collection that holds neither chunk, so updates must skip it.
 	require.NoError(t, repo.BatchSave(ctx, []*types.IndexInfo{{
 		SourceID: other, ChunkID: other, KnowledgeID: k3, KnowledgeBaseID: kb, IsEnabled: true,

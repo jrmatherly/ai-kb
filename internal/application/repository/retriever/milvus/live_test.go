@@ -39,6 +39,10 @@ func TestLiveRoundTrip(t *testing.T) {
 		},
 	}
 	t.Cleanup(func() { _ = repo.DeleteByKnowledgeIDList(ctx, []string{k1, k2}, 4, "") })
+	// No collection has dimension 5: the delete-before-write of a first upload.
+	require.NoError(t, repo.DeleteByChunkIDList(ctx, []string{"c1"}, 5, ""))
+	require.NoError(t, repo.DeleteBySourceIDList(ctx, []string{"s1"}, 5, ""))
+	require.NoError(t, repo.DeleteByKnowledgeIDList(ctx, []string{k1}, 5, ""))
 	vectors := map[string][]float32{"s1": {1, 0, 0, 0}, "s2": {0, 1, 0, 0}}
 	require.NoError(t, repo.BatchSave(ctx, items, map[string]any{fieldEmbedding: vectors}))
 
