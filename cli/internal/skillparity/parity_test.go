@@ -20,9 +20,71 @@ import (
 )
 
 var (
-	codeFence = regexp.MustCompile("(?s)```[a-zA-Z]*\\n(.*?)```")
-	longFlag  = regexp.MustCompile(`--[a-zA-Z][a-zA-Z0-9-]*`)
+	codeFence  = regexp.MustCompile("(?s)```[a-zA-Z]*\\n(.*?)```")
+	inlineSpan = regexp.MustCompile("`aikb ([^`\\n]+)`")
+	longFlag   = regexp.MustCompile(`--[a-zA-Z][a-zA-Z0-9-]*`)
 )
+
+// invocations returns the text after "aikb" for every fenced line that names
+// the binary and for every inline `aikb ...` span outside the fences.
+func invocations(content string) []string {
+	var out []string
+	for _, block := range codeFence.FindAllStringSubmatch(content, -1) {
+		for _, line := range strings.Split(block[1], "\n") {
+			if idx := strings.Index(line, "aikb "); idx >= 0 {
+				out = append(out, strings.TrimSpace(line[idx+len("aikb"):]))
+			}
+		}
+	}
+	for _, span := range inlineSpan.FindAllStringSubmatch(codeFence.ReplaceAllString(content, ""), -1) {
+		out = append(out, strings.TrimSpace(span[1]))
+	}
+	return out
+}
+
+// checkInvocation resolves one invocation against the command tree and
+// returns every problem: a long flag the tree does not know, or a token that
+// follows a resolved command group without naming one of its subcommands.
+// A placeholder command (`<command> --help`) is not checked.
+func checkInvocation(root *cobra.Command, flags, globals map[string]bool, inv string) []string {
+	toks := strings.Fields(inv)
+	// Skip leading global flags (and their value tokens).
+	i := 0
+	for i < len(toks) && strings.HasPrefix(toks[i], "-") {
+		tok := toks[i]
+		if eq := strings.Index(tok, "="); eq >= 0 {
+			tok = tok[:eq]
+		}
+		i++
+		if globals[tok] && i < len(toks) {
+			i++
+		}
+	}
+	if i < len(toks) && strings.HasPrefix(toks[i], "<") {
+		return nil
+	}
+	var problems []string
+	curr := root
+	for i < len(toks) {
+		sub := findSub(curr, toks[i])
+		if sub == nil {
+			// Groups are Runnable (they print help), so only the subcommand list says what they take.
+			if curr != root && curr.HasSubCommands() &&
+				!strings.HasPrefix(toks[i], "-") && !strings.HasPrefix(toks[i], "<") {
+				problems = append(problems, "unknown subcommand "+curr.Name()+" "+toks[i])
+			}
+			break
+		}
+		curr = sub
+		i++
+	}
+	for _, m := range longFlag.FindAllString(inv, -1) {
+		if name := strings.TrimPrefix(m, "--"); !flags[name] {
+			problems = append(problems, "unknown flag --"+name+" (renamed/removed?)")
+		}
+	}
+	return problems
+}
 
 func skillsRoot(t *testing.T) string {
 	_, file, _, ok := runtime.Caller(0)
@@ -89,53 +151,13 @@ func TestSkillsReferenceLiveCommandsAndFlags(t *testing.T) {
 		// OS-independent rather than depend on checkout line endings.
 		content := strings.ReplaceAll(string(raw), "\r\n", "\n")
 		rel, _ := filepath.Rel(skillsRoot(t), path)
-		for _, block := range codeFence.FindAllStringSubmatch(content, -1) {
-			for _, line := range strings.Split(block[1], "\n") {
-				idx := strings.Index(line, "aikb ")
-				if idx < 0 {
-					continue
-				}
-				inv := line[idx+len("aikb"):]
-				toks := strings.Fields(inv)
-				if len(toks) == 0 {
-					continue
-				}
-				// Skip leading global flags (and their value tokens).
-				i := 0
-				for i < len(toks) && strings.HasPrefix(toks[i], "-") {
-					tok := toks[i]
-					if eq := strings.Index(tok, "="); eq >= 0 {
-						tok = tok[:eq]
-					}
-					i++
-					if globals[tok] && i < len(toks) {
-						i++ // consume the value
-					}
-				}
-				// Placeholder command (e.g. `aikb <command> --help`) → skip.
-				if i < len(toks) && strings.HasPrefix(toks[i], "<") {
-					continue
-				}
-				// Greedily descend subcommands while the next token is one.
-				curr := root
-				for i < len(toks) {
-					sub := findSub(curr, toks[i])
-					if sub == nil {
-						break
-					}
-					curr = sub
-					i++
-				}
-				if curr != root {
-					checkedAny = true
-				}
-				// Every long flag in the invocation must exist somewhere in the tree.
-				for _, m := range longFlag.FindAllString(inv, -1) {
-					name := strings.TrimPrefix(m, "--")
-					if !flags[name] {
-						t.Errorf("%s: skill references unknown flag --%s (renamed/removed? line: %q)", rel, name, strings.TrimSpace(line))
-					}
-				}
+		for _, inv := range invocations(content) {
+			if inv == "" {
+				continue
+			}
+			checkedAny = true
+			for _, problem := range checkInvocation(root, flags, globals, inv) {
+				t.Errorf("%s: skill references %s (invocation: %q)", rel, problem, inv)
 			}
 		}
 	}
@@ -173,4 +195,24 @@ func skillMarkdownFiles(t *testing.T, root string) []string {
 		t.Fatalf("walk %s: %v", root, err)
 	}
 	return out
+}
+
+func TestInvocationsIncludeInlineSpans(t *testing.T) {
+	content := "Run `aikb kb list --json` first, never `aikb` alone.\n\n```bash\naikb kb view my-kb\n```\n"
+	got := invocations(content)
+	want := []string{"kb view my-kb", "kb list --json"}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Fatalf("invocations = %q, want %q", got, want)
+	}
+}
+
+func TestParityFailsOnUnknownSubcommand(t *testing.T) {
+	root := cmd.NewRootCmd(&cmdutil.Factory{})
+	flags, globals := allFlagNames(root), globalTakesValue(root)
+	if problems := checkInvocation(root, flags, globals, "kb frobnicate"); len(problems) == 0 {
+		t.Fatal("an unknown subcommand after a resolved group must be reported")
+	}
+	if problems := checkInvocation(root, flags, globals, "kb view my-kb"); len(problems) != 0 {
+		t.Fatalf("a leaf command with a positional argument must pass, got %q", problems)
+	}
 }
