@@ -178,10 +178,14 @@ func (c *client) callAPIAt(
 		bodyPreview := truncate(string(respBody), 500)
 		logger.Infof(ctx, "[IMA] POST %s → status=%d bodyLen=%d", label, resp.StatusCode, len(respBody))
 
-		// HTTP-level auth failures: surface as ErrInvalidCredentials.
-		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		// HTTP-level auth failures: 401 is a bad key, 403 a key without the permission.
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
 			return fmt.Errorf("%w: status=%d body=%s",
 				datasource.ErrInvalidCredentials, resp.StatusCode, bodyPreview)
+		case http.StatusForbidden:
+			return fmt.Errorf("%w: status=%d body=%s",
+				datasource.ErrPermissionDenied, resp.StatusCode, bodyPreview)
 		}
 
 		if resp.StatusCode == http.StatusTooManyRequests {
@@ -217,8 +221,8 @@ func (c *client) callAPIAt(
 		}
 
 		// Business-level errors.
-		// 110030 (no permission) is mapped to ErrInvalidCredentials so the service marks
-		// the source in `error` state and stops scheduling until re-authenticated.
+		// 110030 (no permission) is a credential problem: the service marks the
+		// source in `error` state and stops scheduling until re-authenticated.
 		// 110021 (rate limited) is retried. Everything else - including 110001 (invalid parameter),
 		// which is a bug on our side rather than a credential problem - surfaces
 		// verbatim so the user sees IMA's own message.

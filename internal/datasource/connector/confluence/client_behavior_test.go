@@ -3,10 +3,13 @@ package confluence
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 )
 
 func TestPaginateRejectsLoop(t *testing.T) {
@@ -67,6 +70,39 @@ func TestPingUsesEditionEndpoint(t *testing.T) {
 			}
 			if path != tc.want {
 				t.Fatalf("ping path = %q, want %q", path, tc.want)
+			}
+		})
+	}
+}
+
+func TestGetMapsAuthStatusesToSentinels(t *testing.T) {
+	for _, tc := range []struct {
+		status     int
+		credential bool
+		permission bool
+	}{
+		{http.StatusUnauthorized, true, false},
+		{http.StatusForbidden, false, true},
+		{http.StatusNotFound, false, false},
+	} {
+		t.Run(http.StatusText(tc.status), func(t *testing.T) {
+			client := &client{
+				cfg: config{baseURL: "https://confluence.test", username: "reader", secret: "secret"},
+				http: &http.Client{Transport: roundTripper(func(*http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: tc.status, Header: make(http.Header), Body: io.NopCloser(bytes.NewBufferString("")),
+					}, nil
+				})},
+			}
+			err := client.get(context.Background(), "/rest/api/space?limit=1", nil)
+			if err == nil {
+				t.Fatal("get() error = nil")
+			}
+			if got := errors.Is(err, datasource.ErrInvalidCredentials); got != tc.credential {
+				t.Errorf("errors.Is(err, ErrInvalidCredentials) = %v, want %v (%v)", got, tc.credential, err)
+			}
+			if got := errors.Is(err, datasource.ErrPermissionDenied); got != tc.permission {
+				t.Errorf("errors.Is(err, ErrPermissionDenied) = %v, want %v (%v)", got, tc.permission, err)
 			}
 		})
 	}

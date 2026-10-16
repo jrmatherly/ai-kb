@@ -161,3 +161,14 @@ func TestConnectorBatchWrappers(t *testing.T) {
 	}
 	assertPaths(t, items, "/docs/a.pdf")
 }
+
+func TestConnectorForbiddenDirectoryIsPermissionDenied(t *testing.T) {
+	f := newFakeSeafile(t)
+	f.addRepo(testRepoID, "Zulu", "repo", false)
+	f.addDir(testRepoID, "/private")
+	f.forbidden["/private"] = true
+	_, err := NewConnector().ListResources(t.Context(), syncConfig(f), testRepoID+":/private")
+	if !errors.Is(err, datasource.ErrPermissionDenied) || !errors.Is(err, datasource.ErrFetchFailed) {
+		t.Fatalf("forbidden directory = %v, want ErrPermissionDenied wrapped with ErrFetchFailed", err)
+	}
+}

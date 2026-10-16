@@ -156,10 +156,12 @@ func (c *client) doRequest(ctx context.Context, method, path string, result inte
 			return lastErr
 		}
 
-		// 401/403 → surface as ErrInvalidCredentials so DataSourceService can
-		// distinguish bad-token from transient failures and auto-flag the source.
-		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		// 401 is a bad token, 403 a token without the permission.
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
 			return fmt.Errorf("%w: status=%d body=%s", datasource.ErrInvalidCredentials, resp.StatusCode, bodyPreview)
+		case http.StatusForbidden:
+			return fmt.Errorf("%w: status=%d body=%s", datasource.ErrPermissionDenied, resp.StatusCode, bodyPreview)
 		}
 
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {

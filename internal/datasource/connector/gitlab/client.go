@@ -79,6 +79,18 @@ func (e *apiError) Error() string {
 	return fmt.Sprintf("gitlab API %s: status %d", e.endpoint, e.status)
 }
 
+// Is maps 401 and 403 to the datasource sentinels. A 404 stays unmapped: the
+// ping treats it as a wrong URL, not a missing resource.
+func (e *apiError) Is(target error) bool {
+	switch target {
+	case datasource.ErrInvalidCredentials:
+		return e.status == http.StatusUnauthorized
+	case datasource.ErrPermissionDenied:
+		return e.status == http.StatusForbidden
+	}
+	return false
+}
+
 type project struct {
 	ID                int64  `json:"id"`
 	PathWithNamespace string `json:"path_with_namespace"`

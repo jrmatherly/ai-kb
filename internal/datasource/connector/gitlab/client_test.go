@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jrmatherly/ai-kb/internal/datasource"
+
 	"github.com/jrmatherly/ai-kb/internal/types"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
 )
@@ -689,5 +691,30 @@ func TestCompareRejectsPayloadAboveCompareCap(t *testing.T) {
 	if !strings.Contains(err.Error(), "exceeds maximum size") ||
 		!strings.Contains(err.Error(), fmt.Sprint(compareLimit)) {
 		t.Fatalf("error = %v, want an explicit over-limit error naming %d", err, compareLimit)
+	}
+}
+
+func TestConnectorValidateMapsAuthStatusesToSentinels(t *testing.T) {
+	allowLocalGitLabServer(t)
+	for _, tc := range []struct {
+		status   int
+		sentinel error
+	}{
+		{http.StatusUnauthorized, datasource.ErrInvalidCredentials},
+		{http.StatusForbidden, datasource.ErrPermissionDenied},
+	} {
+		t.Run(http.StatusText(tc.status), func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				http.Error(w, "nope", tc.status)
+			}))
+			defer server.Close()
+
+			err := NewConnector().Validate(context.Background(), &types.DataSourceConfig{
+				Credentials: map[string]interface{}{"base_url": server.URL, "access_token": "token"},
+			})
+			if !errors.Is(err, tc.sentinel) {
+				t.Fatalf("Validate() error = %v, want %v", err, tc.sentinel)
+			}
+		})
 	}
 }

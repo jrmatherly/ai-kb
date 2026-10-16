@@ -12,6 +12,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 )
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
@@ -634,5 +636,25 @@ func TestDocumentBlocksReadsMultiplePagesAndAcceptsEmptyDocument(t *testing.T) {
 	blocks, err = c.documentBlocks(context.Background(), "empty")
 	if err != nil || len(blocks) != 0 {
 		t.Fatalf("empty document: %#v, %v", blocks, err)
+	}
+}
+
+func TestClientMapsForbiddenToPermissionDenied(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"code":"Forbidden","message":"no scope"}`))
+	}))
+	defer server.Close()
+	client := testClient(server)
+	client.token = "cached-token"
+	client.tokenExpiry = time.Now().Add(time.Hour)
+
+	err := client.doJSON(context.Background(), http.MethodGet, "/forbidden", nil, true, nil)
+	if !errors.Is(err, datasource.ErrPermissionDenied) {
+		t.Fatalf("403 error = %v, want datasource.ErrPermissionDenied", err)
+	}
+	if errors.Is(err, datasource.ErrInvalidCredentials) {
+		t.Fatalf("403 error = %v, must not be datasource.ErrInvalidCredentials", err)
 	}
 }

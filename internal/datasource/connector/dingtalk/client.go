@@ -355,8 +355,11 @@ func (c *client) doJSON(
 
 		if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 			apiErr := c.redactAPIError(decodeAPIError(resp.StatusCode, responseBody))
-			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			switch resp.StatusCode {
+			case http.StatusUnauthorized:
 				return fmt.Errorf("%w: %w", datasource.ErrInvalidCredentials, apiErr)
+			case http.StatusForbidden:
+				return fmt.Errorf("%w: %w", datasource.ErrPermissionDenied, apiErr)
 			}
 			return apiErr
 		}

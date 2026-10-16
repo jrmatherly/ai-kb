@@ -163,15 +163,16 @@ func listDirectory(ctx context.Context, client *client, parentID string) ([]type
 }
 
 // mapDirError classifies a directory listing failure: 404 means the resource
-// is gone, 403 is a permission scoping problem rather than a bad token. The
-// 403 message carries the reason code so the sync log names the cause the
-// same way error items do.
+// is gone, 403 is a permission scoping problem rather than a bad token, so it
+// carries ErrPermissionDenied inside ErrFetchFailed. The 403 message carries
+// the reason code so the sync log names the cause the same way error items do.
 func mapDirError(err error, p string) error {
 	switch statusOf(err) {
 	case http.StatusNotFound:
 		return fmt.Errorf("%w: Seafile path %s", datasource.ErrResourceNotFound, p)
 	case http.StatusForbidden:
-		return fmt.Errorf("%w: %s: Seafile path %s", datasource.ErrFetchFailed, reasonPermissionDenied, p)
+		return fmt.Errorf("%w: %w: %s: Seafile path %s",
+			datasource.ErrFetchFailed, datasource.ErrPermissionDenied, reasonPermissionDenied, p)
 	default:
 		return err
 	}

@@ -99,7 +99,7 @@ func TestClient_Ping_401(t *testing.T) {
 	}
 }
 
-func TestClient_Ping_403WrapsInvalidCredentials(t *testing.T) {
+func TestClient_Ping_403WrapsPermissionDenied(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
 		_, _ = io.WriteString(w, `{"message":"Forbidden"}`)
@@ -111,8 +111,11 @@ func TestClient_Ping_403WrapsInvalidCredentials(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error on 403")
 	}
-	if !errors.Is(err, datasource.ErrInvalidCredentials) {
-		t.Errorf("403 should wrap ErrInvalidCredentials, got: %v", err)
+	if !errors.Is(err, datasource.ErrPermissionDenied) {
+		t.Errorf("403 should wrap ErrPermissionDenied, got: %v", err)
+	}
+	if errors.Is(err, datasource.ErrInvalidCredentials) {
+		t.Errorf("403 must not wrap ErrInvalidCredentials, got: %v", err)
 	}
 }
 

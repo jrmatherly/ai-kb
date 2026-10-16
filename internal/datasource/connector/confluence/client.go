@@ -55,6 +55,18 @@ func (e *apiError) Error() string {
 	return fmt.Sprintf("confluence API %s: status %d body=%q", e.endpoint, e.status, e.excerpt)
 }
 
+// Is maps 401 and 403 to the datasource sentinels. A 404 stays unmapped: the
+// ping treats it as a wrong URL, not a missing resource.
+func (e *apiError) Is(target error) bool {
+	switch target {
+	case datasource.ErrInvalidCredentials:
+		return e.status == http.StatusUnauthorized
+	case datasource.ErrPermissionDenied:
+		return e.status == http.StatusForbidden
+	}
+	return false
+}
+
 type client struct {
 	cfg  config
 	http *http.Client
