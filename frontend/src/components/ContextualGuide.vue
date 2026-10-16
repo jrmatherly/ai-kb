@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
 import SpotlightGuide from '@/components/SpotlightGuide.vue'
-import { shouldOpenGuide } from '@/utils/guideDeferral'
+import { isEditable } from '@/utils/guideDeferral'
 import {
   CONTEXTUAL_GUIDE_TOURS,
   isContextualGuideDone,
@@ -26,11 +26,13 @@ const active = ref(false)
 
 let openTimer: ReturnType<typeof setTimeout> | null = null
 let waitGlobalTimer: ReturnType<typeof setTimeout> | null = null
-// Set by any keydown or input between scheduling and the delay firing; the
-// guide then stays closed instead of stealing the composer (see guideDeferral).
+// Set by typing (input, or a key pressed in an editable field) between scheduling
+// and the delay firing; the guide then stays closed, not marked done, and re-arms
+// on the next mount instead of stealing the composer. Tab, Escape and shortcuts
+// outside a field, or a plain click into the composer, do not defer it.
 let inputSeen = false
-const noteInput = () => {
-  inputSeen = true
+const noteInput = (e: Event) => {
+  if (e.type === 'input' || isEditable(e.target as Element | null)) inputSeen = true
 }
 const watchInput = () => {
   inputSeen = false
@@ -64,7 +66,7 @@ const tryOpen = () => {
   openTimer = setTimeout(() => {
     unwatchInput()
     if (!props.when || isContextualGuideDone(props.tour) || active.value) return
-    if (!shouldOpenGuide({ inputSeen })) return
+    if (inputSeen) return
     active.value = true
   }, config.openDelayMs)
 }
