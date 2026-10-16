@@ -6,7 +6,7 @@ const output = join(process.cwd(), 'out');
 const html = await readFile(join(output, 'index.html'), 'utf8');
 const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, '');
 assert.equal((html.match(/<h1\b/g) || []).length, 1, 'The homepage must have one main heading');
-for (const term of ['Find the answers', 'then put knowledge to work', 'v0.8.2', 'RAG', 'Agent', 'Wiki', 'ClawHub', 'SkillHub', 'Docker', 'E2B', 'Cube', 'Long-term memory', 'Interactive terminal', 'Graphical desktop', 'Local Browser', 'BrowserSkill', 'MCP Server', 'Conversation control', 'Confluence', 'DingTalk', 'GitLab', 'Tencent IMA', 'LiteLLM', 'DeepSeek Harness']) {
+for (const term of ['Find the answers', 'then put knowledge to work', 'RAG', 'Agent', 'Wiki', 'ClawHub', 'SkillHub', 'Docker', 'E2B', 'Cube', 'Long-term memory', 'Interactive terminal', 'Graphical desktop', 'Local Browser', 'BrowserSkill', 'MCP Server', 'Conversation control', 'Confluence', 'DingTalk', 'GitLab', 'Tencent IMA', 'LiteLLM', 'DeepSeek Harness']) {
   assert.ok(visible.includes(term), `Missing product content: ${term}`);
 }
 for (const term of ['Three plans', 'Choose a plan', 'Legacy demo', '18K+', 'Turn into action', 'From scattered documents', 'To living knowledge', 'Japanese UI', 'WeChat Dialog Open Platform', 'Tencent Cloud Lighthouse']) {

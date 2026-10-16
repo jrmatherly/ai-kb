@@ -383,8 +383,8 @@ func TestRerankScoreScalesMatchTheVendorDocs(t *testing.T) {
 // TestQwen3RerankUsesNativeDashScopeProtocol keeps qwen3-rerank on the
 // native text-rerank endpoint. Alibaba also documents a flat
 // /compatible-api/v1/reranks shape for it, but the native endpoint serves the
-// same model with identical scores (#3558), and v0.8.0 deployments already
-// have rows that name it - refusing it would break them on upgrade.
+// same model with identical scores (#3558), and existing rows name it, so
+// refusing it would break them.
 func TestQwen3RerankUsesNativeDashScopeProtocol(t *testing.T) {
 	v, ok := modelruntime.Get("aliyun")
 	require.True(t, ok)

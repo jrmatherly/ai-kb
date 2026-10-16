@@ -155,7 +155,7 @@ This section lists every public `Client` method by resource, so you can find the
 | `PreviewKnowledgeFile` | Previews a knowledge file (returns the raw `*http.Response`) |
 | `BatchUpdateKnowledgeTags` | Updates the tags of several knowledge items |
 
-Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at` / `created_at` / `file_name`) and `sort_order` (`asc` / `desc`); the default is still `created_at desc`. `KnowledgeListFilter` has no fields for them yet. For a custom sort order call `Raw`; the parameters are described in the [knowledge API](../04-api/02-api-knowledge.md).
+The server's knowledge list endpoint accepts `sort_by` (`updated_at` / `created_at` / `file_name`) and `sort_order` (`asc` / `desc`); the default is still `created_at desc`. `KnowledgeListFilter` has no fields for them yet. For a custom sort order call `Raw`; the parameters are described in the [knowledge API](../04-api/02-api-knowledge.md).
 
 ### Chunks: `client/chunk.go`
 
@@ -221,7 +221,7 @@ Since v0.8.2 the server's knowledge list endpoint accepts `sort_by` (`updated_at
 | `GetAgentPlaceholders` | Returns the agent configuration placeholders |
 | `GetSuggestedQuestions` | Returns an agent's suggested questions |
 
-Two request fields changed in v0.8.2:
+Two request fields to note:
 
 - `UpdateAgentRequest.Avatar` changed from `string` to `*string`. With `nil` the field is not sent and the stored avatar is kept; a pointer to an empty string clears the avatar. After upgrading the SDK, adjust assignments (for example `Avatar: &avatar`).
 - The suggested question type `SuggestedQuestion` gained `KnowledgeID` (the source document). When a user picks a suggested question, send its source back in `QuestionOrigin` (`KnowledgeBaseID`, `KnowledgeID`) of `KnowledgeQARequest` or `AgentQARequest`. The server searches that source first before answering. It is only a hint and never widens the request's own retrieval scope.
@@ -271,7 +271,7 @@ Two request fields changed in v0.8.2:
 | `ShareAgent` / `ListAgentShares` / `RemoveAgentShare` | Agent sharing |
 | `ListOrgShares` / `ListOrgAgentShares` / `ListSharedKnowledgeBases` / `ListSharedAgents` | Shared resource queries |
 
-Since v0.8.2 the server resolves invitation candidates only by **full workspace ID** and no longer searches by workspace name, user name or email. `SearchTenantsForInvite(ctx, orgID, workspaceID)` calls `GET /api/v1/organizations/{id}/search-tenants?q=<workspace ID>` and returns a `[]TenantInviteCandidate` (`tenant_id`, `tenant_name`). The list is empty when the ID is unknown or the workspace is already a member. `InviteTenant(ctx, orgID, tenantID, role)` adds a candidate's workspace directly (`POST /api/v1/organizations/{id}/invite` with `tenant_id` and `role`). `InviteMember(ctx, orgID, userID, role)` sends `user_id` instead, and the server adds that user's workspace.
+The server resolves invitation candidates only by **full workspace ID**, never by workspace name, user name or email. `SearchTenantsForInvite(ctx, orgID, workspaceID)` calls `GET /api/v1/organizations/{id}/search-tenants?q=<workspace ID>` and returns a `[]TenantInviteCandidate` (`tenant_id`, `tenant_name`). The list is empty when the ID is unknown or the workspace is already a member. `InviteTenant(ctx, orgID, tenantID, role)` adds a candidate's workspace directly (`POST /api/v1/organizations/{id}/invite` with `tenant_id` and `role`). `InviteMember(ctx, orgID, userID, role)` sends `user_id` instead, and the server adds that user's workspace.
 
 `SearchOrganizations(ctx, query, limit)` calls `GET /api/v1/organizations/search?q=<query>&limit=<limit>` and returns the discoverable organizations as `[]SearchableOrganization` (`id`, `name`, `description`, `member_count`, `member_limit`, `share_count`, `agent_share_count`, `is_already_member`, `require_approval`). A non-empty query matches name, description or organization ID; an empty one returns the newest discoverable organizations. A limit outside 1 to 100 falls back to 20.
 

@@ -49,7 +49,7 @@ System administrators can also:
 
 ### Create a user
 
-Since v0.8.0 a system administrator can open a local account from Settings → System Settings → Registration & access with "Create user": enter a username (2-50 characters) and an email, and either keep "Auto-generate a random password" on or turn it off and type a password that meets the password policy. This covers deployments that disable public registration and let administrators open accounts. Workspace assignment follows `auth.default_tenant_mode`: `create_personal` creates a personal workspace, `tenantless` waits for the user to join one.
+A system administrator can open a local account from Settings → System Settings → Registration & access with "Create user": enter a username (2-50 characters) and an email, and either keep "Auto-generate a random password" on or turn it off and type a password that meets the password policy. This covers deployments that disable public registration and let administrators open accounts. Workspace assignment follows `auth.default_tenant_mode`: `create_personal` creates a personal workspace, `tenantless` waits for the user to join one.
 
 <Screenshot
   src="/screenshots/system-admin-create-user.png"

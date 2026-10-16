@@ -309,7 +309,7 @@ services:
       # WeKnoraCloud.AppSecret and more. The app refuses to start when it is missing or not exactly 32 bytes; a different key cannot
       # decrypt fields saved under the old one (the UI shows them empty and they must be entered again). Replace the shipped default from
       # .env.example and keep the key safe. If it is lost, no encrypted data can be recovered.
-      # (TENANT_AES_KEY / CRYPTO_MASTER_KEY / CRYPTO_SALT are deprecated: since v0.4.0 encryption uses
+      # (TENANT_AES_KEY / CRYPTO_MASTER_KEY / CRYPTO_SALT are deprecated: encryption uses
       #   SYSTEM_AES_KEY only, and the Go app no longer reads those three variables.)
       - SYSTEM_AES_KEY=${SYSTEM_AES_KEY:-}
       - SYSTEM_SIGNING_KEY=${SYSTEM_SIGNING_KEY:-}

@@ -134,7 +134,7 @@ For hot reload during development, use `npm run dev:homepage` (homepage) and `np
 ## Project layout (relative to website-docs)
 
 - `homepage/`: the Next.js homepage source, brand assets and its own dependency lock file.
-- `01-getting-started/` to `07-releases/`: documentation pages; their paths are unchanged.
+- `01-getting-started/` to `06-development/`: documentation pages; their paths are unchanged.
 - `.vitepress/`: documentation site configuration and theme.
 - `public/`: documentation screenshots and static files.
 - `sample-data/`: demo documents for trying out a knowledge base, paired with the MCP demo server in `examples/mcp-demo/server.py`.

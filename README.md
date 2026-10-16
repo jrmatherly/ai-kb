@@ -152,56 +152,7 @@ Security fixes for spreadsheet parsing (16 excelize advisories) and the remainin
 
 The first AI KB release: the rename (images `ghcr.io/jrmatherly/ai-kb-*`, CLI `aikb`, env prefix `AIKB_`), English-only UI, dated CalVer versions, a uniform `{success, error}` error envelope, hash-only API keys, `.xls` / `.xlsb` workbooks and held-back mass deletions in data-source syncs.
 
-The releases below are upstream [Tencent/WeKnora](https://github.com/Tencent/WeKnora) history that AI KB starts from.
-
-### Upstream v0.8.2 <sub>· 2026-09-24 · [release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2)</sub>
-
-Agents can operate the browser on your computer, knowledge bases can be published to other AI tools over MCP, and a running conversation can be steered, forked or rewound.
-
-- **[Local Browser (BrowserSkill)](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#local-browser)**: agents drive the user's own Chrome / Edge through the open-source BrowserSkill extension, with a live task preview, pause / resume and hand-off for logins and CAPTCHAs.
-- **[Built-in MCP Server](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#mcp-server)**: per-workspace `/mcp/<endpoint_id>` endpoints over Streamable HTTP, each with its own token, knowledge-base scope, rate limit and tool groups. The Python `mcp-server/` is deprecated.
-- **[Conversation control](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#conversation-control)**: append requirements to a running turn, fork from any earlier question, rewind in place with sandbox checkpoints, and pick reasoning effort per session. Generated files are collected in a new artifacts library.
-- **[Sandbox](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#sandbox)**: interactive terminal and graphical desktop; macOS Lite host sandbox with project folders; a sidebar Toolbox for skills, MCP services and the browser connection.
-- **[Models](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#models)**: rebuilt model catalog (27 built-in vendors with generated context-window, max-output, reasoning and vision metadata). Agent retrieval tools are consolidated into `search_knowledge` / `read_document` / `list_documents`.
-- **[Knowledge and platform](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2#knowledge)**: Confluence and DingTalk Docs data sources; Bocha and Serply web search; Japanese UI (not in AI KB, which is English only); per-channel IM reply language; whitelist-only outbound mode.
-
-### Upstream v0.8.0 <sub>· [release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.0)</sub>
-
-- **Skill sandbox runtime**: session-persistent Docker / E2B / Cube backends with per-tenant network policy; the Local host-process backend is removed and Docker is opt-in.
-- **Tenant skill catalog**: install from ClawHub / SkillHub / git / zip, with per-sandbox snapshots, live progress, file browse/edit, and personal and workspace env vars.
-- **Cross-session long-term memory**: profile / preference / fact / task / interest, auto-extracted with user confirmation, plus `search_memory`.
-- **Parsing and sources**: in-process anydoc office parser; GitLab and Tencent IMA data sources; XMind parsing.
-- **Ecosystem**: official DeepSeek Harness plugin `@jrmatherly/dsh-ai-kb`; LiteLLM; Exa and Metaso web search.
-- **Chat**: chat artifacts, question outline and timestamps; context compaction and provider prompt-cache markers.
-- **Security**: OIDC JWKS verification, optional complex passwords, document auto-tagging, and broad sandbox/security hardening.
-
-<details>
-<summary><b>Earlier upstream releases (v0.2.0 – v0.7.2)</b></summary>
-
-<br/>
-
-- **v0.7.2**: Product documentation site; knowledge base folder tree; chunk editing with revision history; wiki page revisions; directly loadable file URLs (`resource_urls=public`); Feishu Drive data source; batch tagging; MCP Server 1.1 (29 tools); AWS S3 default credential chain.
-- **v0.7.1**: Yunzhijia IM; Volcengine rerank; Zhipu AI web search; platform-scoped API keys; per-KB activity audit; FAQ filtering, tagging and export; Langfuse OTLP tracing; one-click Markdown export.
-- **v0.7.0**: Scoped API keys and principal model; task-queue dashboard and worker-pool governance; multiple storage instances per workspace; temporary chat attachments; `@Skill / @MCP` mentions; mid-conversation MCP OAuth; QQBot and Lark IM; Redis TLS; `aikb` CLI v0.10.
-- **v0.6.3**: Website embed widget & Integrations Center (secure-mode token exchange + rate limits); chat experience overhaul (citation popovers, RAG pipeline progress, streaming markdown); document multi-tag & batch reparse; Wiki folders & hierarchy navigation; RSS data source; MCP OAuth2; EPUB / MHTML parsing; agent model-readiness checks; model test debugger; session source filter; workspace deletion UI.
-- **v0.6.2**: Per-upload process configuration with upload-confirm dialog; document reparse with `process_config`; `aikb` CLI v0.9 (bundled Agent Skills, `session stop`, auth/profile harmonization); KB marquee multi-select; HNSW index for 1024-dim pgvector embeddings; chat resources store refactor; Langfuse-only tracing (Jaeger removed).
-- **v0.6.1**: Document parsing trace timeline (Langfuse-style span tree with stage-by-stage progress + stop-parse); OpenSearch vector store driver; declarative built-in models via YAML; system admin & consolidated platform settings + audit log; new-user onboarding guide; settings UI redesign; `aikb` CLI v0.7 / v0.8 (agent-first wire contract, NDJSON, `--dry-run`); OpenDataLoader + PaddleOCR-VL parsers; MCP server multi-transport (stdio / SSE / HTTP); per-model thinking-mode config; Tencent LKEAP rerank + native Gemini embeddings + MiniMax-M3.
-- **v0.6.0**: Workspace RBAC (4-tier role matrix `Owner` / `Admin` / `Contributor` / `Viewer` + per-KB ownership + per-workspace audit log), workspace member management & multi-workspace UX, self-service workspaces; `aikb` CLI v0.4 GA with `mcp serve`; KB retrieval fan-out across vector stores; AES-256-GCM credential encryption + docreader gRPC TLS + Token; Zhipu embedder + Huawei OBS; server-side user preferences; Go 1.26.0. See [Tenants & auth](https://ai-kb-docs.matherly.net/docs/03-features/01-tenant-auth).
-- **v0.5.2**: Wiki ingest scales to 40k-document KBs (task queue + DLQ); MCP human-in-the-loop tool approval; Anthropic / Apache Doris / Tencent VectorDB / KS3 / SearXNG backends; adaptive 3-tier chunking with live preview; global ⌘K command palette; Yuque connector + WeChat Mini Program; `aikb` CLI preview.
-- **v0.5.1**: Knowledge-base batch management; workspace-wide IM channels overview; session search + user-scoped pinning; unified Model / Web Search / MCP settings cards; per-agent LLM timeout; desktop workspace switching.
-- **v0.5.0**: Wiki Mode GA. Agents auto-generate structured, interlinked Markdown wiki pages with a knowledge graph; wiki browser + visual graph in the UI.
-- **v0.4.0**: WeKnoraCloud (hosted LLM + parsing); Chrome Extension; ClawHub Skill; WeChat IM; attachment processing; Azure OpenAI / Alibaba OSS; Notion connector; Baidu + Ollama web search; VectorStore management.
-- **v0.3.6**: ASR (audio); Feishu data-source auto-sync; OIDC; IM quote-reply context + thread-based sessions; document summarization; Tavily search; parallel tool calling; agent @mention scope restriction.
-- **v0.3.5**: Telegram / DingTalk / Mattermost IM; IM slash commands + QA queue; suggested questions; VLM auto-describe MCP tool images; Novita AI; channel tracking.
-- **v0.3.4**: WeCom / Feishu / Slack IM; multimodal image support; NVIDIA model API; Weaviate; AWS S3; AES-256-GCM API-key encryption; built-in MCP service; hybrid-search optimization; `final_answer` tool.
-- **v0.3.3**: Parent-child chunking; KB pinning; fallback response; passage cleaning for rerank; storage auto-creation; Milvus.
-- **v0.3.2**: Knowledge Search entry; per-source parser & storage engine config; image rendering in local storage; document preview; Volcengine TOS; Mermaid rendering; batch session management; memory graph preview.
-- **v0.3.0**: Shared Space; Agent Skills + sandboxed execution; custom agents; Data Analyst agent; thinking mode; Bing / Google web search; API Key auth; Helm chart; Korean i18n (not in AI KB); Qdrant.
-- **v0.2.0**: Agent Mode (ReACT); multi-type knowledge bases (FAQ + document); conversation strategy config; DuckDuckGo web search; MCP tool integration; new UI with agent mode switching; MQ async task management.
-
-Full history: [`CHANGELOG.md`](./CHANGELOG.md).
-
-</details>
+AI KB started from [Tencent/WeKnora](https://github.com/Tencent/WeKnora) at v0.8.2 plus 268 commits on 2026-10-12; everything since is in [CHANGELOG.md](./CHANGELOG.md).
 
 ## Product Tour
 
@@ -347,7 +298,7 @@ The full product documentation lives at **[ai-kb-docs.matherly.net/docs](https:/
 | [Configuration](https://ai-kb-docs.matherly.net/docs/01-getting-started/04-configuration) | Environment variables and models |
 | [Troubleshooting FAQ](https://ai-kb-docs.matherly.net/docs/01-getting-started/05-troubleshooting) | Common problems and fixes |
 | [API reference](https://ai-kb-docs.matherly.net/docs/04-api/01-api-overview) | REST API overview |
-| [Release notes](https://ai-kb-docs.matherly.net/docs/07-releases/v0.8.2) | What changed in each release |
+| [Changelog](./CHANGELOG.md) | What changed in each release |
 
 ## Development
 

@@ -94,7 +94,7 @@ Existing instances do not pick up a changed policy automatically; verify after c
 
 ### Lite host sandbox (host) {#lite-host}
 
-Since v0.8.2 the [Lite desktop app](../05-clients/05-desktop.md) on macOS uses the system Seatbelt sandbox to isolate the agent's command and file tools. An agent with a Docker, E2B or Cube configuration selected still uses that remote sandbox; the host sandbox is used only when no sandbox configuration is selected. Windows and Linux do not provide this capability yet, so there an agent without a configuration cannot run commands.
+The [Lite desktop app](../05-clients/05-desktop.md) on macOS uses the system Seatbelt sandbox to isolate the agent's command and file tools. An agent with a Docker, E2B or Cube configuration selected still uses that remote sandbox; the host sandbox is used only when no sandbox configuration is selected. Windows and Linux do not provide this capability yet, so there an agent without a configuration cannot run commands.
 
 - **Working directory**: on the new conversation page, click "Select project" and choose the project folder in the system directory picker; the conversation title bar shows the project name. Without a selection the title shows "Temporary workspace" and a session directory is created under `~/Documents/AIKBLite/<date>/session-*`. The home directory itself, a directory that contains it, and directories under `~/Library` cannot be selected.
 - **Paths**: the workspace is a real local path; there is no `/workspace`, `/workspace/input` or `/workspace/output`. The agent edits files in the project directly, those files do not enter the conversation's artifact list, and deleting the conversation does not delete the local directory.

@@ -37,7 +37,7 @@ To let a script or service call the API, create an API key in workspace settings
 
 ## Manage workspace and platform permissions
 
-To remove a workspace or administer the deployment, you need the right identity. Deleting a workspace is done by its Owner. The workspace record and the membership rows are soft-deleted and every member loses access at once; the knowledge bases, models and other data inside it are not physically removed right away, but since v0.8.2 queued Wiki tasks of a deleted workspace no longer call a model. Global settings, the platform task queues and cross-workspace audit are managed by the system administrator, see [Platform administration and system administrators](20-platform-admin.md).
+To remove a workspace or administer the deployment, you need the right identity. Deleting a workspace is done by its Owner. The workspace record and the membership rows are soft-deleted and every member loses access at once; the knowledge bases, models and other data inside it are not physically removed right away, and queued Wiki tasks of a deleted workspace do not call a model. Global settings, the platform task queues and cross-workspace audit are managed by the system administrator, see [Platform administration and system administrators](20-platform-admin.md).
 
 ## Concept overview
 
@@ -192,7 +192,7 @@ A link stays valid until it expires or is revoked. Together with `register-by-in
 
 #### Invitation candidates: exact workspace ID resolution
 
-Organization invitations target workspaces. `GET /organizations/:id/search-tenants?q=<workspace ID>` needs a tenant Admin+ caller whose workspace is an organization admin. Since v0.8.2 it resolves candidates only by an **exact workspace ID**, with no cross-workspace search by name (which would let a caller enumerate other workspaces' names): when `q` is not a valid ID, the workspace is already in the organization, or it does not exist, an empty list is returned; otherwise the single `{tenant_id, tenant_name}`. The invited side can find its workspace ID in its own workspace settings and tell the organization admin; the organization invite code or an invitation link also work.
+Organization invitations target workspaces. `GET /organizations/:id/search-tenants?q=<workspace ID>` needs a tenant Admin+ caller whose workspace is an organization admin. It resolves candidates only by an **exact workspace ID**, with no cross-workspace search by name (which would let a caller enumerate other workspaces' names): when `q` is not a valid ID, the workspace is already in the organization, or it does not exist, an empty list is returned; otherwise the single `{tenant_id, tenant_name}`. The invited side can find its workspace ID in its own workspace settings and tell the organization admin; the organization invite code or an invitation link also work.
 
 The old endpoint `GET /organizations/:id/search-users` is kept as a compatibility alias with the same behavior as `search-tenants`.
 

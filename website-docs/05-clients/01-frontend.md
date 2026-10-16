@@ -158,7 +158,7 @@ Routes are defined in `frontend/src/router/index.ts` with `createWebHistory`. Ev
 
 The integration tabs are registered by `INTEGRATION_TABS` / `INTEGRATION_PREVIEW_ITEMS` in `frontend/src/config/integrations.ts`, and every section value has the form `integration-<tab>`. An old `/platform/integrations?tab=<tab>` is normalized to the matching section.
 
-Since v0.8.2, skills, MCP services and the browser connection are no longer settings sections. They moved to the [Toolbox](#toolbox). The route guard redirects an old bookmark `/platform/settings?section=skills|mcp|browserconnection` to `/platform/toolbox/<section>` (`skills` keeps its `sandboxId` parameter).
+Skills, MCP services and the browser connection are not settings sections; they live in the [Toolbox](#toolbox). The route guard redirects an old bookmark `/platform/settings?section=skills|mcp|browserconnection` to `/platform/toolbox/<section>` (`skills` keeps its `sandboxId` parameter).
 
 Three sets of rules decide visibility, and **the frontend only narrows what it shows; the backend route guards are authoritative**:
 
@@ -211,7 +211,7 @@ Many settings are **not in the settings center but in the knowledge base edit di
 2. **Old toolbox bookmarks**: `/platform/settings?section=skills|mcp|browserconnection` redirects to `/platform/toolbox/<section>`.
 3. **Lite / desktop deep-link restore**: when a hard refresh in Lite mode lands on the default home page, the guard restores the last visited `/platform` sub-path from `sessionStorage` (never to the organizations page).
 4. **Session restore**: when not logged in, the guard first uses `aikb_token` from `localStorage` to call `getCurrentUser()` and restore the session (also refreshing memberships, so role changes are not stale).
-5. **Desktop auto-login**: if restore fails, the guard tries `autoSetup()` once per page load. Since v0.8.2 it only works in the native desktop app: it gets the process's random credential through the Wails binding `GetAutoSetupToken()`, then calls `POST /api/v1/auth/auto-setup` with the `X-AIKB-Desktop-Token` header. Lite opened in a browser has no such binding and goes straight to the normal registration / login.
+5. **Desktop auto-login**: if restore fails, the guard tries `autoSetup()` once per page load. It only works in the native desktop app: it gets the process's random credential through the Wails binding `GetAutoSetupToken()`, then calls `POST /api/v1/auth/auto-setup` with the `X-AIKB-Desktop-Token` header. Lite opened in a browser has no such binding and goes straight to the normal registration / login.
 6. **Workspace gate**: logged in but without a valid workspace, the user goes to `/onboarding/workspace`.
 7. **Deployment capability gate**: when the route's `meta.requiredCapability` (such as `agents`, `organizations` or `settings.sandbox`) is not supported by the current deployment, the guard shows a warning and returns to the knowledge base list. If the capability probe fails, the navigation proceeds and the backend endpoints have the final say.
 8. **SystemAdmin gate**: `requiresSystemAdmin` routes send non-system-administrators back to the knowledge base list (a UI-only check; the server enforces its own).
@@ -334,7 +334,7 @@ Key points of `frontend/vite.config.ts`:
 
 `frontend/Dockerfile`:
 
-- Since v0.8.2 it is a two-stage build. A digest-pinned `node:24-bookworm-slim` runs `npm ci` + `npm run build` on `$BUILDPLATFORM`, then `dist/` is copied into the runtime stage. The host no longer needs Node / npm, and `dist/` does not have to be built beforehand (`scripts/build_frontend_dist.sh` is still used for Lite and desktop packaging).
+- It is a two-stage build. A digest-pinned `node:24-bookworm-slim` runs `npm ci` + `npm run build` on `$BUILDPLATFORM`, then `dist/` is copied into the runtime stage. The host no longer needs Node / npm, and `dist/` does not have to be built beforehand (`scripts/build_frontend_dist.sh` is still used for Lite and desktop packaging).
 - The runtime base image is a digest-pinned `nginx:1.30.3-alpine`. A comment forbids switching back to a floating tag: newer Alpine 3.24+ bases fail to start on old CentOS 7 kernels, which broke v0.7.0.
 - `nginx.conf` goes in as the template `/etc/nginx/templates/default.conf.template`. The proxy settings shared by `/api/`, `/mcp/` and skill uploads are in `nginx-api-proxy.conf` (copied verbatim to `/etc/nginx/api-proxy.conf`). The http-level snippet `nginx-http.conf` (the `api_no_query` log format, which drops query strings) is copied to `/etc/nginx/conf.d/00-ai-kb-http.conf`. The image exposes port 80 and its entrypoint is `docker-entrypoint.sh`.
 

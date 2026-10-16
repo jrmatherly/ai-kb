@@ -18,7 +18,6 @@
 :!.serena
 :!cli/CHANGELOG.md
 :!mcp-server/CHANGELOG.md
-:!website-docs/07-releases
 :!scripts/rebrand/map.tsv
 :!scripts/rebrand/unchanged.md
 :!scripts/rebrand/scope.txt

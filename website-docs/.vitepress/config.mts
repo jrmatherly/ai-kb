@@ -7,15 +7,13 @@ import { repoVersionLabel } from './version'
 
 const root = resolve(import.meta.dirname, '..')
 
-const sections: { dir: string; label: string; newestFirst?: boolean }[] = [
+const sections: { dir: string; label: string }[] = [
   { dir: '01-getting-started', label: 'Getting started' },
   { dir: '02-architecture', label: 'Architecture' },
   { dir: '03-features', label: 'Features' },
   { dir: '04-api', label: 'API reference' },
   { dir: '05-clients', label: 'Clients' },
   { dir: '06-development', label: 'Development' },
-  // One page per release (v0.8.2.md), newest first.
-  { dir: '07-releases', label: 'Releases', newestFirst: true },
 ]
 
 /** Sidebar entry text is the page's H1, verbatim. */
@@ -24,19 +22,9 @@ function itemText(dir: string, file: string): string {
   return (raw.match(/^#\s+(.+)$/m)?.[1] ?? file.replace(/\.md$/, '')).trim()
 }
 
-/** Compare versions numerically so v0.10.0 sorts after v0.9.0. */
-function compareVersions(a: string, b: string): number {
-  const parts = (f: string) => f.replace(/^v|\.md$/g, '').split('.').map(Number)
-  const [x, y] = [parts(a), parts(b)]
-  for (let i = 0; i < Math.max(x.length, y.length); i++) {
-    if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) - (y[i] ?? 0)
-  }
-  return 0
-}
-
-function itemsOf(dir: string, newestFirst = false): DefaultTheme.SidebarItem[] {
+function itemsOf(dir: string): DefaultTheme.SidebarItem[] {
   const files = readdirSync(resolve(root, dir)).filter((f) => f.endsWith('.md'))
-  return (newestFirst ? files.sort(compareVersions).reverse() : files.sort())
+  return files.sort()
     .map((f) => ({
       text: itemText(dir, f),
       link: `/${dir}/${f.replace(/\.md$/, '')}`,
@@ -46,7 +34,7 @@ function itemsOf(dir: string, newestFirst = false): DefaultTheme.SidebarItem[] {
 const sidebar: DefaultTheme.SidebarItem[] = sections.map((s) => ({
   text: s.label,
   collapsed: false,
-  items: itemsOf(s.dir, s.newestFirst),
+  items: itemsOf(s.dir),
 }))
 
 const repo = 'https://github.com/jrmatherly/ai-kb'

@@ -19,10 +19,6 @@
 .skipLink:focus { top: 12px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--ink); flex-shrink: 0; }
 .hero { padding-top: 51px; }
-.releaseLink { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 13px; color: var(--soft); font-size: 14px; }
-.releaseLink > span { border: 1px solid var(--wk-accent-border); padding: 3px 10px; color: var(--wk-accent-text); font-family: ui-monospace, monospace; font-size: 12px; }
-.releaseLink svg { width: 17px; height: 17px; transition: transform .2s; }
-.releaseLink:hover svg { transform: translateX(4px); }
 .heroGrid { display: grid; grid-template-columns: 1.2fr 1fr; align-items: end; gap: 6vw; margin: 28px 0 50px; }
 .hero h1 { font-family: var(--serif); font-size: clamp(42px, 4.5vw, 80px); font-weight: 500; line-height: 1.17; letter-spacing: -.045em; margin: 0; }
 .hero h1 em { font-style: normal; color: var(--gold); }
@@ -91,9 +87,6 @@
 .artifactImage img { display: block; width: 100%; height: auto; }
 .artifactFigure figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 14px 20px; font-size: 12px; color: var(--soft); border-top: 1px solid var(--rule); }
 .artifactFigure figcaption > span:last-child { color: var(--mute); }
-.releaseExtras { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; padding-top: 29px; margin-top: 48px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--soft); }
-.releaseExtras > span { color: var(--mute); }
-.releaseExtras p { margin: 0; }
 .site .wiki { border-bottom: 1px solid var(--rule); padding-block: 48px; scroll-margin-top: 64px; }
 .site section.wiki[id] { scroll-margin-top: 64px; }
 .wiki .sectionHeading { margin-bottom: 24px; }
@@ -218,8 +211,6 @@
   .tags { margin-bottom: 17px; }
   .release { padding-block: 65px 35px; }
   .sandboxTopic { padding-bottom: 65px; }
-  .releaseExtras { justify-content: flex-start; margin-top: 28px; padding-top: 23px; }
-  .releaseExtras > span { flex-basis: 100%; }
   .ecosystem { grid-template-columns: 1fr 1fr; gap: 32px; }
   .ecosystemCore { grid-row: 1; grid-column: 1 / -1; border-inline: 0; border-bottom: 1px solid var(--rule); padding-bottom: 30px; }
   .ecosystemColumn h3 { font-size: 22px; }
@@ -238,7 +229,6 @@
   .wiki .sectionHeading h2 { font-size: 28px; }
   .shell { width: calc(100% - 40px); }
   .hero h1 { font-size: clamp(28px, 7.9vw, 38px); }
-  .releaseLink { font-size: 12px; gap: 8px; }
   .heroDescription br { display: none; }
   .videoTop { letter-spacing: 0; padding-inline: 10px; }
   .videoTop > span { gap: 6px; }

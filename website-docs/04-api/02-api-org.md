@@ -182,7 +182,7 @@ curl -X POST $BASE/api/v1/organizations/org-1/invite-code -H "Authorization: Bea
 
 ### GET /api/v1/organizations/:id/search-tenants
 
-Purpose: resolve a workspace that can be invited, by workspace ID. Permission: Admin+, and the caller's workspace must be an organization `admin` (otherwise 403). Since v0.8.2 it accepts only a full workspace ID; there is no cross-workspace search by name, and the `limit` parameter is gone.
+Purpose: resolve a workspace that can be invited, by workspace ID. Permission: Admin+, and the caller's workspace must be an organization `admin` (otherwise 403). It accepts only a full workspace ID; there is no cross-workspace search by name, and the `limit` parameter is gone.
 
 | Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |

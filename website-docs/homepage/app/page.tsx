@@ -17,7 +17,6 @@ const modes = [
   { number: "02", icon: "agent", label: "Agent", title: "Get tasks done with knowledge and tools", description: "Agents search knowledge bases and the web, call MCP tools and skills, process files and run scripts in a sandbox, drive the browser on your computer, and, with long-term memory on, remember the preferences you confirm across sessions.", tags: ["Multi-step reasoning", "Skills and sandbox", "Local Browser", "MCP tools", "Long-term memory"], link: "03-features/07-agent" },
   { number: "03", icon: "wiki", label: "Wiki", title: "Turn documents into a Wiki", description: "Generates interlinked Wiki pages and a graph of their links from your documents, with browsing, editing and version rollback.", tags: ["Automatic organization", "Wiki graph", "Version rollback"], link: "03-features/14-wiki" },
 ];
-const releaseExtras = ["Confluence and DingTalk Docs data sources", "27 built-in model providers", "Bocha and Serply web search", "Allowlist-only egress"];
 
 const productShotExists = (src: string) => existsSync(join(process.cwd(), "public", src));
 type SlideSource = Omit<GallerySlide, "shots"> & ({ image: string; alt: string } | { shots: Omit<GalleryShot, "available">[] });
@@ -25,7 +24,7 @@ const withAvailability = (slide: SlideSource): GallerySlide => {
   const shots = "shots" in slide ? slide.shots : [{ image: slide.image, alt: slide.alt }];
   return { name: slide.name, icon: slide.icon, title: slide.title, description: slide.description, link: slide.link, external: slide.external, shots: shots.map(shot => ({ ...shot, available: productShotExists(`${homeAssets}/product/${shot.image}.png`) })) };
 };
-const releaseSlides = [
+const agentSlides = [
   { name: "Local Browser", icon: "browser", shots: [
     { label: "Run a task", icon: "browser", image: "local-browser-task", alt: "Product screenshot: a Smart Reasoning conversation driving the local browser, with the task preview and pause, resume and end controls in the chat" },
     { label: "Connect the extension", icon: "plug", image: "browser-connection", alt: "Product screenshot: the Toolbox browser connection page, with the BrowserSkill extension connected and the web actions the agent can take listed" },
@@ -53,7 +52,6 @@ export default function Home() {
     <Header />
     <main id="main">
       <section className={`${s.shell} ${s.hero}`} aria-labelledby="hero-title">
-        <a href="#release" className={s.releaseLink}><span>v0.8.2</span> Local Browser, MCP Server and conversation forks <Icon name="arrow" /></a>
         <div className={s.heroGrid}>
           <h1 id="hero-title">Find the answers,<br /><em>then put knowledge to work.</em></h1>
           <div className={s.heroAside}>
@@ -74,10 +72,9 @@ export default function Home() {
           <a className={s.textLink} href={mode.label === "Wiki" ? "#wiki" : guide(mode.link)}>Learn about {mode.label} <Icon name="arrow" /></a>
         </article>)}</div>
       </section>
-      <section id="release" className={s.release} aria-labelledby="release-title"><div className={s.shell}>
-        <div className={s.sectionHeading}><div><p className={s.eyebrow}>02 / INTRODUCING v0.8.2</p><h2 id="release-title">Agents drive your browser.<br />Knowledge bases plug into other AI tools.</h2></div><a className={s.textLink} href={guide("07-releases/v0.8.2")}>Read the release notes <Icon name="arrow" /></a></div>
-        <ProductGallery id="release-gallery" label="v0.8.2" slides={releaseSlides} />
-        <div className={s.releaseExtras}><span>Also in this release</span>{releaseExtras.map(item => <p key={item}>{item}</p>)}</div>
+      <section id="agents" className={s.release} aria-labelledby="agents-title"><div className={s.shell}>
+        <div className={s.sectionHeading}><div><p className={s.eyebrow}>02 / AGENTS AT WORK</p><h2 id="agents-title">Agents drive your browser.<br />Knowledge bases plug into other AI tools.</h2></div><a className={s.textLink} href={guide("05-clients/09-local-browser")}>Learn about the Local Browser <Icon name="arrow" /></a></div>
+        <ProductGallery id="agents-gallery" label="Agents at work" slides={agentSlides} />
       </div></section>
       <section id="skills-sandbox" className={`${s.release} ${s.sandboxTopic}`} aria-labelledby="skills-sandbox-title"><div className={s.shell}>
         <div className={s.sectionHeading}><div><p className={s.eyebrow}>03 / SKILLS &amp; SANDBOX</p><h2 id="skills-sandbox-title">Agents run skills<br />and generate files.</h2></div><a className={s.textLink} href={guide("03-features/22-skills-sandbox")}>Learn about skills and sandboxes <Icon name="arrow" /></a></div>

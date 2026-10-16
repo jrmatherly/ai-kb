@@ -22,6 +22,6 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
 
 Outside `scope.txt`, so the check does not cover them:
 
-- History: `CHANGELOG.md`, `cli/CHANGELOG.md`, `mcp-server/CHANGELOG.md`, `website-docs/07-releases/`.
+- History: `CHANGELOG.md`, `cli/CHANGELOG.md`, `mcp-server/CHANGELOG.md`.
 - Generated: proto stubs, lockfiles and the `docs/` swagger are regenerated, never rewritten (swagger: pinned swag v1.16.6, `make docs`).
 - `third_party/` (vendored firecrawl anydoc; only its benchmark logs mention upstream), `docs/images/` (art).

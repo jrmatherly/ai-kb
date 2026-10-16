@@ -59,7 +59,7 @@ try {
   assert.match(await page.locator('.VPDoc h1').innerText(), /Quickstart/);
   assert.equal(await page.getByRole('link', { name: 'Docs home', exact: true }).count(), 0);
   assert.deepEqual((await headerGeometry(page)).controls, masthead.controls);
-  assert.deepEqual((await headerGeometry(page)).links.map(link => link[0]), ['Quickstart', 'Architecture', 'Features', 'API', 'Clients', 'Develop', 'Releases', 'GitHub']);
+  assert.deepEqual((await headerGeometry(page)).links.map(link => link[0]), ['Quickstart', 'Architecture', 'Features', 'API', 'Clients', 'Develop', 'GitHub']);
   assert.equal(await page.locator('.wk-header').evaluate(el => el.getBoundingClientRect().height), 64);
   assert.equal(context.pages().length, 1);
   // Switching distant sections must reveal the selected sidebar item in both directions.
@@ -91,11 +91,11 @@ try {
   await expectTheme(page, false);
   assert.equal(context.pages().length, 1);
 
-  // Navigation to new v0.8.2 docs, returning through the explicit home link.
-  await page.locator('#release').getByRole('link', { name: 'Learn more', exact: true }).last().click();
+  // Navigation from a homepage section into the docs, returning through the explicit home link.
+  await page.locator('#skills-sandbox').getByRole('link', { name: 'Learn about skills and sandboxes' }).click();
   await page.waitForSelector('.VPDoc h1');
-  assert.equal(new URL(page.url()).pathname, '/docs/03-features/18-chat-experience.html');
-  assert.match(await page.locator('.VPDoc h1').innerText(), /Conversation experience/);
+  assert.equal(new URL(page.url()).pathname, '/docs/03-features/22-skills-sandbox.html');
+  assert.match(await page.locator('.VPDoc h1').innerText(), /Skills and sandboxes/);
   await page.locator('.wk-brand').click();
   await homepage();
   assert.equal(context.pages().length, 1);

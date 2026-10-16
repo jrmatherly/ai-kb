@@ -189,7 +189,7 @@ The four URL forms and how each channel obtains them are described in [External 
 | `DORIS_ADDR/HTTP_PORT/DATABASE/USERNAME/PASSWORD/TABLE_PREFIX/COMPAT_MODE` | empty | Apache Doris 4.1+ |
 | `TENCENT_VECTORDB_ADDR/USERNAME/API_KEY/DATABASE/COLLECTION/REPLICA_NUMBER` | empty | Tencent Cloud VectorDB |
 | `MULTI_STORE_RETRIEVE_TIMEOUT_SEC` | empty | Timeout for parallel multi-engine retrieval |
-| `NEO4J_ENABLE` / `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` | empty / bolt://neo4j:7687 / neo4j / password | The only knowledge graph switch (`ENABLE_GRAPH_RAG` has been deprecated since v0.1.6) |
+| `NEO4J_ENABLE` / `NEO4J_URI` / `NEO4J_USERNAME` / `NEO4J_PASSWORD` | empty / bolt://neo4j:7687 / neo4j / password | The only knowledge graph switch (`ENABLE_GRAPH_RAG` is deprecated) |
 
 ### File storage
 
@@ -223,7 +223,7 @@ The embedding model name is not set by an environment variable. In the model rec
 | Name | Default | Description |
 | --- | --- | --- |
 | `JWT_SECRET` | `aikb-default-jwt-secret-change-me` in `.env.example` | JWT signing key (required; generate one with `openssl rand -hex 32`). The server refuses to start when it is empty. The shipped default (and the older placeholders `ai-kb-jwt-secret`, `CHANGE-ME-jwt-secret`) never signs: the server generates a per-install secret once, stores it in the `system_secrets` table, uses it on every start and warns until you set your own. Multiple replicas must share the same value |
-| `SYSTEM_AES_KEY` | `aikb-default-aes-key-change-me!!` in `.env.example` | AES-256 master key for encrypting sensitive fields at rest, **must be 32 bytes** (generate one with `openssl rand -hex 16`). The server refuses to start when it is empty or another length, and warns while the shipped default is in use: that key is public, so replace it before storing real credentials (values saved under it must be re-entered after the change). If it is lost, encrypted data (model keys, vector store credentials and so on) cannot be recovered; keep the same value across upgrades. Replaces `TENANT_AES_KEY`/`CRYPTO_MASTER_KEY`/`CRYPTO_SALT` since v0.4.0 |
+| `SYSTEM_AES_KEY` | `aikb-default-aes-key-change-me!!` in `.env.example` | AES-256 master key for encrypting sensitive fields at rest, **must be 32 bytes** (generate one with `openssl rand -hex 16`). The server refuses to start when it is empty or another length, and warns while the shipped default is in use: that key is public, so replace it before storing real credentials (values saved under it must be re-entered after the change). If it is lost, encrypted data (model keys, vector store credentials and so on) cannot be recovered; keep the same value across upgrades. Replaces `TENANT_AES_KEY`/`CRYPTO_MASTER_KEY`/`CRYPTO_SALT` |
 | `SYSTEM_SIGNING_KEY` | empty (falls back to `SYSTEM_AES_KEY`) | Signing key for embed sessions and presigned file links (generate one with `openssl rand -hex 32`). `SYSTEM_AES_KEY` is used when unset; when both are missing, shorter than 16 characters or an example value (the shipped default AES key included), signed links and embed sessions cannot be issued. Rotating it invalidates issued links; multiple replicas must share the same value |
 | `DISABLE_REGISTRATION` | false | When true, forces `registration_mode=invite_only` |
 | `AIKB_AUTH_DEFAULT_TENANT_MODE` | create_personal | Workspace policy after registration (`create_personal` / `tenantless`) |
