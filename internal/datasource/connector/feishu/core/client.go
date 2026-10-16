@@ -193,9 +193,14 @@ func (c *Client) GetTenantAccessToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("decode token response: %w", err)
 	}
 	if result.Code != 0 {
-		// A rate limit or server fault is not the user's credentials.
-		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500 {
-			return "", fmt.Errorf("feishu auth error: status=%d code=%d msg=%s",
+		// A rate limit or server fault is not the user's credentials; the
+		// prefixes are the ones feishuFailure reads for sync item reasons.
+		switch {
+		case resp.StatusCode == http.StatusTooManyRequests:
+			return "", fmt.Errorf("feishu rate limited: token status=%d code=%d msg=%s",
+				resp.StatusCode, result.Code, result.Msg)
+		case resp.StatusCode >= 500:
+			return "", fmt.Errorf("feishu server error: token status=%d code=%d msg=%s",
 				resp.StatusCode, result.Code, result.Msg)
 		}
 		return "", fmt.Errorf("feishu auth error: code=%d msg=%s: %w",
@@ -376,7 +381,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 			_ = json.Unmarshal(respBody, &parsed)
 			return &APIError{
 				Op: "feishu api error", Status: resp.StatusCode, Code: parsed.Code, Msg: parsed.Msg,
-				Body: truncate(string(respBody), 500),
+				Body: truncateUTF8(string(respBody), 500),
 			}
 		}
 

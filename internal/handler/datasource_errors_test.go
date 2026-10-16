@@ -13,6 +13,7 @@ import (
 
 	"github.com/jrmatherly/ai-kb/internal/application/service"
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	feishu "github.com/jrmatherly/ai-kb/internal/datasource/connector/feishu/core"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -37,7 +38,9 @@ func TestListResourcesClassifiesConnectorFailures(t *testing.T) {
 		"secret":    fmt.Errorf("%w: client_secret is required", datasource.ErrInvalidCredentials),
 		"missing":   fmt.Errorf("%w: folder missing", datasource.ErrResourceNotFound),
 		"text":      errors.New("author field not found"),
-		"timeout":   errors.New("dial tcp 10.0.0.1:443: i/o timeout"),
+		"drive": fmt.Errorf("list folder: %w",
+			&feishu.APIError{Op: "list drive files error", Code: 1061004, Msg: "no access"}),
+		"timeout": errors.New("dial tcp 10.0.0.1:443: i/o timeout"),
 	}}))
 	svc := service.NewDataSourceService(nil, nil, nil, nil, nil, registry, nil, nil, nil, nil)
 	r := newDataSourceTestRouter(NewDataSourceHandler(svc, nil))
@@ -61,6 +64,11 @@ func TestListResourcesClassifiesConnectorFailures(t *testing.T) {
 			"not found", `{"type":"fake","credentials":{},"parent_id":"missing"}`, http.StatusBadRequest,
 			`{"success":false,"error":{"code":1000,"message":"resource not found in source system: folder missing",` +
 				`"details":{"code":"not_found"}}}`,
+		},
+		{
+			"feishu drive not shared", `{"type":"fake","credentials":{},"parent_id":"drive"}`, http.StatusBadRequest,
+			`{"success":false,"error":{"code":1000,"message":"list folder: list drive files error: code=1061004 ` +
+				`msg=no access","details":{"code":"permission_denied"}}}`,
 		},
 		{
 			"auth and not-found words in plain text", `{"type":"fake","credentials":{},"parent_id":"text"}`,

@@ -378,16 +378,27 @@ func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
 	}
 }
 
-func TestGetTenantAccessToken_RateLimitIsNotInvalidCredentials(t *testing.T) {
-	resetFeishuRequestGates(t)
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusTooManyRequests)
-		writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: 99991400, Msg: "rate limited"}})
-	}))
-	defer ts.Close()
-
-	_, err := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL}).GetTenantAccessToken(context.Background())
-	if err == nil || errors.Is(err, datasource.ErrInvalidCredentials) {
-		t.Fatalf("error = %v, want a failure that is not datasource.ErrInvalidCredentials", err)
+func TestGetTenantAccessToken_TransientFailureIsNotInvalidCredentials(t *testing.T) {
+	for _, tc := range []struct {
+		status int
+		reason string
+	}{
+		{http.StatusTooManyRequests, "feishu_rate_limited"},
+		{http.StatusBadGateway, "feishu_server_unavailable"},
+	} {
+		resetFeishuRequestGates(t)
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(tc.status)
+			writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: 99991400, Msg: "try later"}})
+		}))
+		c := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL})
+		_, err := c.GetTenantAccessToken(context.Background())
+		ts.Close()
+		if err == nil || errors.Is(err, datasource.ErrInvalidCredentials) {
+			t.Fatalf("status %d: error = %v, want a non-credentials failure", tc.status, err)
+		}
+		if reason, _, _ := feishuFailure(err); reason != tc.reason {
+			t.Errorf("status %d: feishuFailure reason = %q, want %q", tc.status, reason, tc.reason)
+		}
 	}
 }
