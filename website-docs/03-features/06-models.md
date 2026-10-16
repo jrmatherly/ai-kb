@@ -105,7 +105,7 @@ This override ranks above the provider defaults and the model catalog; the legac
 
 | Field | Type | Protocol default | Description |
 | --- | --- | --- | --- |
-| `max_tokens_field` | string | `max_completion_tokens` | Field name for the output cap: `max_tokens` or `max_completion_tokens`; only one is sent |
+| `max_tokens_field` | string | `max_completion_tokens` | Field name for the output cap: `max_tokens` or `max_completion_tokens`; only one is sent. The built-in providers follow their own documentation: hunyuan, modelscope, qiniu, requesty, longcat and novita send `max_tokens`; moonshot and aliyun send `max_completion_tokens` |
 | `thinking_format` | string | `none` | How the thinking switch is written: `none` sends nothing; `openai` sends only `reasoning_effort`; `thinking-type` sends `{"thinking": {"type": ...}}`; `enable-thinking` sends `enable_thinking` (with the budget field); `chat-template-kwargs` sends `chat_template_kwargs.enable_thinking` (vLLM / SGLang); `openrouter` sends `{"reasoning": ...}` |
 | `thinking_enabled_value` | string | `enabled` | The `type` value sent when enabling thinking in `thinking-type` format (MiniMax uses `adaptive`) |
 | `thinking_always_send` | bool | false | Send the switch even when no thinking preference is set |
@@ -281,6 +281,35 @@ Find out which provider to choose for each model type. There are 30 built-in pro
 "Vision" in the table means the provider can be chosen under the vision model type; whether a chat model itself accepts images is decided by the model catalog and the "Supports vision / multimodal" switch. WeKnoraCloud needs its credentials saved in Settings first; the model name is one of `chat`, `embedding`, `rerank`, `vlm`.
 
 The provider list, default endpoints and model catalog are served by the backend (`GET /api/v1/models/providers`); operators can change or add providers through the [deployment overlay](#deployment-overlay-config-models-json).
+
+### Embedding providers
+
+Per-provider behavior pinned by `internal/models/embedding/wire_test.go`:
+
+- **NVIDIA NIM**: retrieval queries are sent with `input_type: query` and documents with `passage`; overlong input is truncated server-side with `truncate: END`; `dimensions` is not sent.
+- **Alibaba Cloud DashScope** routes by model: text models use `/compatible-mode/v1/embeddings`; `qwen3-vl-embedding`, `qwen2.5-vl-embedding`, `tongyi-embedding-vision*` and `multimodal-embedding*` use the native multimodal API. A `base_url` that is only a host, the international site or a workspace domain keeps that host. `text-embedding-v1` and `text-embedding-v2` take at most 25 inputs per request and are fixed at 1536 dimensions, so `dimensions` is not sent.
+- **Volcengine Ark**: `doubao-embedding-text*` and `doubao-embedding-large-text*` use the archived text API at `/api/v3/embeddings`; every other model uses the multimodal API.
+- **Google Gemini**: dimension reduction is sent as `embedContentConfig.outputDimensionality`.
+- **SiliconFlow** takes at most 32 inputs per request; larger sets are split automatically.
+- Task-type fields (Jina's `task`, Gemini's `taskType`, OpenRouter's `input_type`, Volcengine's `instructions`, DashScope native `text_type` / `instruct`) are never sent, so every vector in a knowledge base stays in one space.
+
+### Rerank providers
+
+Per-provider behavior pinned by `internal/models/rerank/wire_test.go`:
+
+- **OpenAI** has no rerank API and is not a rerank provider; a relay behind an OpenAI-style URL that offers rerank is created as a `generic` row.
+- **Volcengine** sends at most 200 documents per request (larger sets are split automatically), and its default instruction is the console's text `Whether the document answers the query or matches the content retrieval intent`; an `instruction` saved in the extra fields replaces it.
+
+### Speech providers
+
+Per-provider behavior pinned by `internal/models/asr/wire_test.go`:
+
+- The OpenAI-compatible multipart upload serves openai, siliconflow, gpustack, generic, Zhipu (`glm-asr-2512`, one file of at most 30 seconds), MiniMax (`asr-1.0`), OpenRouter, Requesty and LiteLLM. Alibaba Cloud `qwen3-asr-flash` and Xiaomi `mimo-v2.5-asr` carry the audio inside a chat request; other Alibaba Cloud speech model names are refused with a reason.
+- `response_format=verbose_json` is sent only to models documented to return segments (OpenAI `whisper-1`); a self-hosted row that needs segments sets `{"response_format": "verbose_json"}` in `spec.compat`.
+- Size and format are checked against the provider's documentation before upload: OpenAI, Zhipu and OpenRouter 25 MB, Requesty 32 MB, SiliconFlow and MiniMax 50 MB; Alibaba Cloud and Xiaomi count 10 MB of the base64 `data:` URI. Zhipu and Xiaomi accept wav and mp3 only.
+- A reply without a `text` field is an error; silent audio returns an empty `text` string and is handled normally.
+- The knowledge base's audio language hint is sent to OpenAI, Requesty, OpenRouter, GPUStack, generic, MiniMax, Alibaba Cloud and Xiaomi; Zhipu, SiliconFlow and LiteLLM do not take the parameter and never receive it. `auto` equals empty.
+- Not connected for speech transcription: Volcengine Doubao speech, Qianfan, Qiniu, Novita, Tencent Cloud ASR, NVIDIA Riva, Gemini and Azure OpenAI (its audio transcription exists only in the v1 preview API).
 
 ### Cohere rerank
 
@@ -544,51 +573,13 @@ Effort levels are unified internally as `off / auto / minimal / low / medium / h
 
 #### Protocol selection
 
-Anthropic uses the Messages protocol; Gemini defaults to native `generateContent` (a `base_url` pointing at `/v1beta/openai` keeps OpenAI compatibility); OpenAI uses the Responses protocol on `api.openai.com` while relays and proxies keep Chat Completions; any provider whose `base_url` ends in `/anthropic` switches to the Messages protocol automatically (the Anthropic-compatible endpoints of MiniMax, Zhipu and Kimi). An explicit `spec.api` on the row beats URL and provider inference; the legacy `extra_config.api` still has the highest priority. `extra_config.api` forces the chat protocol and applies to chat / VLM rows only; an embedding row's protocol override goes into `"api"` inside `spec.compat`, with an embedding protocol value (`openai-embeddings`, `dashscope-embeddings`, `ark-embeddings`, `google-embeddings`).
+Anthropic uses the Messages protocol; Gemini defaults to native `generateContent` (a `base_url` pointing at `/v1beta/openai` keeps OpenAI compatibility); OpenAI uses the Responses protocol on `api.openai.com` while relays and proxies keep Chat Completions; any provider whose `base_url` ends in `/anthropic` switches to the Messages protocol automatically (the Anthropic-compatible endpoints of MiniMax, Zhipu and Kimi). An explicit `spec.api` on the row beats URL and provider inference; the legacy `extra_config.api` still has the highest priority. `extra_config.api` is a reserved key whose valid values are `openai-completions`, `openai-responses`, `anthropic-messages`, `google-generative-ai` and `ollama`; any other value is rejected with 400 on create and update. `extra_config.api` forces the chat protocol and applies to chat / VLM rows only; an embedding row's protocol override goes into `"api"` inside `spec.compat`, with an embedding protocol value (`openai-embeddings`, `dashscope-embeddings`, `ark-embeddings`, `google-embeddings`).
 
 Catalog entries are looked up by model type: an embedding row only matches embedding entries and never picks up a chat wildcard with the same prefix (such as DashScope's `qwen3*` or OpenAI's `gpt-5*`) and its chat compat. New ids not yet in the catalog and dated snapshots resolve with the provider defaults as usual.
 
 The write side has a gate too: `runtime.ValidateRow` resolves the row (every model type) when a model is created or updated (REST) and when `config/builtin_models.yaml` loads (startup); an unknown protocol, a misspelled compat key or an invalid effort level is rejected at write time (YAML rows only WARN and do not block startup, so one restart cannot take production models offline).
 
 The development workflow for adding a provider and maintaining the model catalog and provider behavior: [Extension points](../06-development/03-extension-points.md#add-a-model-provider-internal-models-providers).
-
-### Behavior changes when upgrading from v0.8.0
-
-Model rows in an existing database **need no migration**: the `parameters` column only gained the optional `spec` field, every v0.8.0 `provider` value is still registered, the historical `extra_config` keys (every `thinking_control` value, `remote_model_name`, `api_version`, `secret_key`, `region`, `instruction`, `truncate_prompt_tokens`) keep their meaning, and model ids no longer in the catalog (custom fine-tunes, retired models) still resolve and keep their thinking switch. `internal/models/runtime/legacy_rows_test.go` and `internal/types/legacy_persisted_json_test.go` pin this.
-
-The runtime behavior of the following existing rows changes, and users should be told when upgrading.
-
-Chat models (per-provider assertions in `internal/models/parity/parity_test.go`):
-
-1. **`extra_config.api` is now a reserved key.** It is the protocol selector (`openai-completions` / `openai-responses` / `anthropic-messages` / `google-generative-ai` / `ollama`), and an invalid value returns 400 on create and update. Only rows produced by hand through REST or YAML are affected; delete the key or set a valid value before upgrading.
-2. **Azure OpenAI rows without `api_version` move to the `/openai/v1` GA data plane**, no longer `/openai/deployments/{model}/...?api-version=2024-10-21`. To keep the old path, set an explicit `api_version` in the extra fields.
-3. **First-party traffic to `api.openai.com` moves to the Responses protocol.** Relays and gateways keep Chat Completions.
-4. **The output cap field of 7 providers is corrected per their documentation**: hunyuan, modelscope, qiniu, requesty, longcat and novita go back from `max_completion_tokens` to `max_tokens`; moonshot goes the other way to `max_completion_tokens`. aliyun keeps `max_completion_tokens`.
-
-Rerank models (per-provider outbound requests in `internal/models/rerank/wire_test.go`):
-
-1. **OpenAI no longer appears in the rerank provider list.** OpenAI has no rerank API; a relay behind an OpenAI-style URL that offers rerank should be created as a `generic` row. Existing rows resolve as before.
-2. **Volcengine rerank sends at most 200 documents per request** (the old implementation split at 50), and the default instruction is the console's text `Whether the document answers the query or matches the content retrieval intent`. Rows that already saved an instruction in the extra fields are unaffected.
-
-Embedding models (per-provider outbound requests in `internal/models/embedding/wire_test.go`):
-
-1. **Managed providers no longer receive `truncate_prompt_tokens`**; `generic` and `gpustack` still send it.
-2. **NVIDIA NIM retrieval queries use `input_type: query`** (documents stay `passage`, so existing indexes are unaffected), overlong input is truncated with `truncate: END`, and `dimensions` is no longer sent; the catalog dropped NVIDIA's retired `nv-embed-v1`, `llama-3.2-nemoretriever-300m-embed-v1` and `baai/bge-m3`.
-3. **Alibaba Cloud routes by model**: text models use `/compatible-mode/v1/embeddings`; `qwen3-vl-embedding`, `qwen2.5-vl-embedding`, `tongyi-embedding-vision*` and `multimodal-embedding*` use the native multimodal API. A `base_url` that is only a host, the international site or a workspace domain keeps that host.
-4. **Volcengine Ark's text embedding API is archived.** Rows still using `doubao-embedding-text*` / `doubao-embedding-large-text*` go to the archived documentation's `/api/v3/embeddings`; the rest use the multimodal API.
-5. **Gemini's dimension reduction moves into `embedContentConfig.outputDimensionality`**, no longer a top-level `output_dimensionality` in the request.
-6. **SiliconFlow sends at most 32 inputs per request and DashScope `text-embedding-v1/v2` at most 25**, split automatically; v1/v2 are fixed at 1536 dimensions and `dimensions` is not sent.
-7. **Jina's `task`, Gemini's `taskType`, OpenRouter's `input_type`, Volcengine's `instructions` and DashScope native `text_type` / `instruct` are not sent**, so old and new vectors in one knowledge base stay in the same space.
-
-Speech models (per-provider outbound forms in `internal/models/asr/wire_test.go`):
-
-1. **`response_format=verbose_json` is no longer sent unconditionally.** Only models documented to support it (OpenAI `whisper-1`) return segments; a self-hosted row that needs segments can set `{"response_format": "verbose_json"}` in `spec.compat`.
-2. **Size and format are checked against the provider's documentation before upload**: OpenAI / Zhipu / OpenRouter 25 MB, Requesty 32 MB, SiliconFlow / MiniMax 50 MB; Alibaba Cloud and Xiaomi count 10 MB of the base64 `data:` URI. Zhipu and Xiaomi accept wav/mp3 only.
-3. **A reply without a `text` field is an error**; silent audio returns an empty `text` string and is handled normally.
-4. **Providers newly supporting speech**: OpenAI-compatible shape (multipart upload) for openai, siliconflow, gpustack, generic, Zhipu (`glm-asr-2512`, one file of at most 30 seconds), MiniMax (`asr-1.0`), OpenRouter, Requesty and LiteLLM; audio through the chat API for Alibaba Cloud `qwen3-asr-flash` and Xiaomi `mimo-v2.5-asr`. Other Alibaba Cloud speech model names are refused with a reason.
-5. **The knowledge base "audio language hint" is sent to providers that support it** (OpenAI / Requesty / OpenRouter / GPUStack / generic / MiniMax / Alibaba Cloud / Xiaomi); Zhipu, SiliconFlow and LiteLLM do not support the parameter and never receive it. `auto` equals empty.
-
-Not yet connected for speech transcription: Volcengine Doubao speech, Qianfan, Qiniu, Novita, Tencent Cloud ASR, NVIDIA Riva, Gemini and Azure OpenAI (its audio transcription exists only in the v1 preview API).
 
 ### Model call chain
 
