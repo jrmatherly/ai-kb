@@ -94,7 +94,7 @@ func (w *weaviateRepository) deleteTarget(ctx context.Context, dimension int) (s
 	if _, ok := w.initializedCollections.Load(dimension); ok {
 		return collectionName, true, nil
 	}
-	exists, err := w.client.Schema().ClassExistenceChecker().WithClassName(collectionName).Do(ctx)
+	exists, err := w.classExists(ctx, collectionName)
 	if err != nil {
 		return collectionName, false, fmt.Errorf("failed to check collection existence: %w", err)
 	}
@@ -102,6 +102,38 @@ func (w *weaviateRepository) deleteTarget(ctx context.Context, dimension int) (s
 		logger.GetLogger(ctx).Infof("[Weaviate] Collection %s does not exist, nothing to delete", collectionName)
 	}
 	return collectionName, exists, nil
+}
+
+// classExists reports whether the class is in the schema. ClassExistenceChecker
+// answers false for every non-200 status, a 500 included, so a delete would
+// skip a class that is still there; only a 404 means missing.
+func (w *weaviateRepository) classExists(ctx context.Context, className string) (bool, error) {
+	_, err := w.client.Schema().ClassGetter().WithClassName(className).Do(ctx)
+	if hasStatus(err, http.StatusNotFound) {
+		return false, nil
+	}
+	return err == nil, err
+}
+
+// deleteObjects runs a batch delete and treats a missing class as a no-op. The
+// initialized cache can outlive a class dropped behind this process, so it is
+// dropped too and the following write recreates the class. Weaviate answers a
+// missing class with 422, but also a malformed match, so only a re-probe that
+// finds the class gone counts as missing.
+func (w *weaviateRepository) deleteObjects(
+	ctx context.Context, dimension int, deleter *batch.ObjectsBatchDeleter,
+) error {
+	_, err := deleter.Do(ctx)
+	if !hasStatus(err, http.StatusUnprocessableEntity) {
+		return err
+	}
+	collectionName := w.getCollectionName(dimension)
+	if exists, probeErr := w.classExists(ctx, collectionName); probeErr != nil || exists {
+		return err
+	}
+	w.initializedCollections.Delete(dimension)
+	logger.GetLogger(ctx).Infof("[Weaviate] Collection %s does not exist, nothing to delete", collectionName)
+	return nil
 }
 
 func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int) error {
@@ -115,7 +147,7 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 	log := logger.GetLogger(ctx)
 
 	//Check if collection exists
-	exists, err := w.client.Schema().ClassExistenceChecker().WithClassName(collectionName).Do(ctx)
+	exists, err := w.classExists(ctx, collectionName)
 	if err != nil {
 		log.Errorf("[Weaviate] Failed to check collection existence: %v", err)
 		return fmt.Errorf("failed to check collection existence: %w", err)
@@ -214,7 +246,7 @@ func (w *weaviateRepository) ensureCollection(ctx context.Context, dimension int
 			// so look again rather than parse the message. The class is
 			// created whole, so if it exists there is nothing left to do.
 			if hasStatus(err, http.StatusUnprocessableEntity) {
-				exists, _ = w.client.Schema().ClassExistenceChecker().WithClassName(collectionName).Do(ctx)
+				exists, _ = w.classExists(ctx, collectionName)
 			}
 			if !exists {
 				log.Errorf("[Weaviate] Failed to create collection: %v", err)
@@ -400,7 +432,7 @@ func (w *weaviateRepository) DeleteByChunkIDList(ctx context.Context, chunkIDLis
 		WithOutput("minimal")
 
 	// Execute deletion
-	if _, err := filter.Do(ctx); err != nil {
+	if err := w.deleteObjects(ctx, dimension, filter); err != nil {
 		log.Errorf("[Weaviate] Failed to delete by chunk IDs: %v", err)
 		return fmt.Errorf("failed to delete by chunk IDs: %w", err)
 	}
@@ -434,7 +466,7 @@ func (w *weaviateRepository) DeleteByKnowledgeIDList(ctx context.Context,
 		WithOutput("minimal")
 
 	// Execute deletion
-	if _, err := filter.Do(ctx); err != nil {
+	if err := w.deleteObjects(ctx, dimension, filter); err != nil {
 		log.Errorf("[Weaviate] Failed to delete by knowledge IDs: %v", err)
 		return fmt.Errorf("failed to delete by knowledge IDs: %w", err)
 	}
@@ -467,7 +499,7 @@ func (w *weaviateRepository) DeleteBySourceIDList(ctx context.Context,
 		WithOutput("minimal")
 
 	// Execute deletion
-	if _, err := filter.Do(ctx); err != nil {
+	if err := w.deleteObjects(ctx, dimension, filter); err != nil {
 		log.Errorf("[Weaviate] Failed to delete by source IDs: %v", err)
 		return fmt.Errorf("failed to delete by source IDs: %w", err)
 	}
@@ -629,7 +661,7 @@ func (w *weaviateRepository) VectorRetrieve(ctx context.Context,
 	collectionName := w.getCollectionName(dimension)
 
 	// Check if collection exists
-	hasCollection, err := w.client.Schema().ClassExistenceChecker().WithClassName(collectionName).Do(ctx)
+	hasCollection, err := w.classExists(ctx, collectionName)
 	if err != nil {
 		log.Errorf("[Weaviate] Failed to check collection existence: %v", err)
 		return nil, fmt.Errorf("failed to check collection: %w", err)

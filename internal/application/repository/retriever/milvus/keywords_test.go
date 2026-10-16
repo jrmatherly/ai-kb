@@ -3,7 +3,6 @@ package milvus
 import (
 	"bytes"
 	"context"
-	"net"
 	"os"
 	"testing"
 
@@ -12,9 +11,7 @@ import (
 	"github.com/milvus-io/milvus-proto/go-api/v3/commonpb"
 	"github.com/milvus-io/milvus-proto/go-api/v3/milvuspb"
 	"github.com/milvus-io/milvus-proto/go-api/v3/schemapb"
-	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 )
 
 // fakeMilvusService answers the three RPCs KeywordsRetrieve needs. The
@@ -71,20 +68,7 @@ func newKeywordsMilvusHarness(t *testing.T, collections []string,
 	t.Helper()
 	fake := &fakeMilvusService{collections: collections, search: search}
 
-	lis, err := net.Listen("tcp", "127.0.0.1:0")
-	require.NoError(t, err)
-	grpcSrv := grpc.NewServer()
-	milvuspb.RegisterMilvusServiceServer(grpcSrv, fake)
-	go func() { _ = grpcSrv.Serve(lis) }()
-	t.Cleanup(grpcSrv.Stop)
-
-	// DisableConn skips the Connect handshake, which this fake does not serve.
-	c, err := client.New(context.Background(), &client.ClientConfig{
-		Address:     lis.Addr().String(),
-		DisableConn: true,
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = c.Close(context.Background()) })
+	c := newFakeMilvusClient(t, fake)
 
 	return &keywordsMilvusHarness{
 		repo: &milvusRepository{client: c, collectionBaseName: "aikb_embeddings"},

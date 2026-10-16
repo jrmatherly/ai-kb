@@ -3,7 +3,6 @@ package milvus
 import (
 	"context"
 	"fmt"
-	"net"
 	"slices"
 	"strconv"
 	"strings"
@@ -14,9 +13,7 @@ import (
 	"github.com/milvus-io/milvus-proto/go-api/v3/milvuspb"
 	"github.com/milvus-io/milvus-proto/go-api/v3/schemapb"
 	"github.com/milvus-io/milvus/client/v3/entity"
-	client "github.com/milvus-io/milvus/client/v3/milvusclient"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -315,20 +312,7 @@ func newCopyMilvusHarness(t *testing.T, rows []copyTestRow) *copyMilvusHarness {
 	t.Helper()
 	fake := &fakeMilvusCopyService{rows: rows}
 
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	require.NoError(t, err)
-	grpcServer := grpc.NewServer()
-	milvuspb.RegisterMilvusServiceServer(grpcServer, fake)
-	go func() { _ = grpcServer.Serve(listener) }()
-	t.Cleanup(grpcServer.Stop)
-
-	// DisableConn skips the Connect handshake, which this fake does not serve.
-	c, err := client.New(context.Background(), &client.ClientConfig{
-		Address:     listener.Addr().String(),
-		DisableConn: true,
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = c.Close(context.Background()) })
+	c := newFakeMilvusClient(t, fake)
 
 	return &copyMilvusHarness{
 		repo: &milvusRepository{

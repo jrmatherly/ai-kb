@@ -66,4 +66,11 @@ func TestLiveRoundTrip(t *testing.T) {
 	require.NoError(t, got[0].Error)
 	require.NotEmpty(t, got[0].Results)
 	require.Equal(t, "c1", got[0].Results[0].ChunkID)
+
+	// A released collection refuses filter deletes ("collection not loaded"),
+	// and a fresh process has nothing cached that would have loaded it.
+	collectionName := repo.(*milvusRepository).getCollectionName(4)
+	require.NoError(t, c.ReleaseCollection(ctx, client.NewReleaseCollectionOption(collectionName)))
+	fresh := NewMilvusRetrieveEngineRepository(c, nil)
+	require.NoError(t, fresh.DeleteByKnowledgeIDList(ctx, []string{k2}, 4, ""))
 }

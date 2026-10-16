@@ -96,8 +96,29 @@ func (m *milvusRepository) deleteTarget(ctx context.Context, dimension int) (str
 	}
 	if !exists {
 		logger.GetLogger(ctx).Infof("[Milvus] Collection %s does not exist, nothing to delete", collectionName)
+		return collectionName, false, nil
 	}
-	return collectionName, exists, nil
+	// A filter delete on a released collection fails with "collection not
+	// loaded", so load it the way the write path would.
+	if err := m.ensureCollection(ctx, dimension); err != nil {
+		return collectionName, false, err
+	}
+	return collectionName, true, nil
+}
+
+// deleteRows runs a delete and treats a missing collection as a no-op. The
+// initialized cache can outlive a collection dropped behind this process, so
+// the caches are dropped too and the following write recreates it.
+func (m *milvusRepository) deleteRows(ctx context.Context, dimension int, deleteOpt client.DeleteOption) error {
+	_, err := m.client.Delete(ctx, deleteOpt)
+	if !errors.Is(err, client.ErrCollectionNotFound) {
+		return err
+	}
+	collectionName := m.getCollectionName(dimension)
+	m.initializedCollections.Delete(dimension)
+	m.collectionAnalyzerModes.Delete(collectionName)
+	logger.GetLogger(ctx).Infof("[Milvus] Collection %s does not exist, nothing to delete", collectionName)
+	return nil
 }
 
 // collectionAnalyzerMode inspects a collection once and caches whether it
@@ -426,7 +447,7 @@ func (m *milvusRepository) DeleteByChunkIDList(ctx context.Context, chunkIDList 
 
 	deleteOpt := client.NewDeleteOption(collectionName)
 	deleteOpt.WithStringIDs(fieldChunkID, chunkIDList)
-	_, err = m.client.Delete(ctx, deleteOpt)
+	err = m.deleteRows(ctx, dimension, deleteOpt)
 	if err != nil {
 		log.Errorf("[Milvus] Failed to delete by chunk IDs: %v", err)
 		return fmt.Errorf("failed to delete by chunk IDs: %w", err)
@@ -454,7 +475,7 @@ func (m *milvusRepository) DeleteByKnowledgeIDList(ctx context.Context,
 
 	deleteOpt := client.NewDeleteOption(collectionName)
 	deleteOpt.WithStringIDs(fieldKnowledgeID, knowledgeIDList)
-	_, err = m.client.Delete(ctx, deleteOpt)
+	err = m.deleteRows(ctx, dimension, deleteOpt)
 	if err != nil {
 		log.Errorf("[Milvus] Failed to delete by knowledge IDs: %v", err)
 		return fmt.Errorf("failed to delete by knowledge IDs: %w", err)
@@ -482,7 +503,7 @@ func (m *milvusRepository) DeleteBySourceIDList(ctx context.Context,
 
 	deleteOpt := client.NewDeleteOption(collectionName)
 	deleteOpt.WithStringIDs(fieldSourceID, sourceIDList)
-	_, err = m.client.Delete(ctx, deleteOpt)
+	err = m.deleteRows(ctx, dimension, deleteOpt)
 	if err != nil {
 		log.Errorf("[Milvus] Failed to delete by source IDs: %v", err)
 		return fmt.Errorf("failed to delete by source IDs: %w", err)
