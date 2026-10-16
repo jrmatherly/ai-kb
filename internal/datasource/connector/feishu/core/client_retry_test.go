@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -423,5 +424,88 @@ func TestGetTenantAccessToken_TransientFailureIsNotInvalidCredentials(t *testing
 		if reason, _ := feishuFailure(err); reason != tc.reason {
 			t.Errorf("status %d: feishuFailure reason = %q, want %q", tc.status, reason, tc.reason)
 		}
+	}
+}
+
+// refreshTestServer hands out token-1, token-2, ... on each auth call and records
+// the bearer token each hit on target carried, so a test can tell a token refresh
+// from a plain retry.
+func refreshTestServer(t *testing.T, target string, h http.HandlerFunc) (*httptest.Server, *Config, *[]string) {
+	t.Helper()
+	resetFeishuRequestGates(t)
+	var tokenFetches atomic.Int32
+	var tokensSeen []string
+	mux := http.NewServeMux()
+	mux.HandleFunc("/open-apis/auth/v3/tenant_access_token/internal", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, TokenResponse{
+			ApiResponse:       ApiResponse{Code: 0},
+			TenantAccessToken: fmt.Sprintf("token-%d", tokenFetches.Add(1)),
+			Expire:            7200,
+		})
+	})
+	mux.HandleFunc(target, func(w http.ResponseWriter, r *http.Request) {
+		tokensSeen = append(tokensSeen, strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "))
+		h(w, r)
+	})
+	ts := httptest.NewServer(mux)
+	return ts, &Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL}, &tokensSeen
+}
+
+func rejectTokenOnce(attempts *atomic.Int32, then http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if attempts.Add(1) == 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, `{"code":99991663,"msg":"tenant access token invalid"}`)
+			return
+		}
+		then(w, r)
+	}
+}
+
+func TestDoRequest_TokenInvalidRefreshesTokenOnce(t *testing.T) {
+	var attempts atomic.Int32
+	ok := func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, ApiResponse{Code: 0}) }
+	ts, cfg, tokensSeen := refreshTestServer(t, "/target", rejectTokenOnce(&attempts, ok))
+	defer ts.Close()
+
+	if err := NewClient(cfg).DoRequest(context.Background(), http.MethodGet, "/target", nil, nil); err != nil {
+		t.Fatalf("expected success after a token refresh, got %v", err)
+	}
+	if want := []string{"token-1", "token-2"}; !slices.Equal(*tokensSeen, want) {
+		t.Errorf("tokens sent = %v, want %v", *tokensSeen, want)
+	}
+}
+
+func TestDoRequest_TokenInvalidTwiceFails(t *testing.T) {
+	var attempts atomic.Int32
+	ts, cfg := retryTestServer(t, "/target", func(w http.ResponseWriter, _ *http.Request) {
+		attempts.Add(1)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, `{"code":99991663,"msg":"tenant access token invalid"}`)
+	})
+	defer ts.Close()
+
+	err := NewClient(cfg).DoRequest(context.Background(), http.MethodGet, "/target", nil, nil)
+	apiErr, ok := errors.AsType[*APIError](err)
+	if !ok || apiErr.Code != 99991663 {
+		t.Fatalf("error = %#v, want *APIError with code 99991663", err)
+	}
+	if n := attempts.Load(); n != 2 {
+		t.Errorf("attempts = %d, want 2 (one refresh, then fail)", n)
+	}
+}
+
+func TestDownloadRawBytes_TokenInvalidRefreshesTokenOnce(t *testing.T) {
+	var attempts atomic.Int32
+	payload := func(w http.ResponseWriter, _ *http.Request) { _, _ = io.WriteString(w, "payload") }
+	ts, cfg, tokensSeen := refreshTestServer(t, "/file", rejectTokenOnce(&attempts, payload))
+	defer ts.Close()
+
+	got, err := NewClient(cfg).downloadRawBytes(context.Background(), "/file")
+	if err != nil || string(got) != "payload" {
+		t.Fatalf("downloadRawBytes = %q, %v; want payload after a token refresh", got, err)
+	}
+	if want := []string{"token-1", "token-2"}; !slices.Equal(*tokensSeen, want) {
+		t.Errorf("tokens sent = %v, want %v", *tokensSeen, want)
 	}
 }
