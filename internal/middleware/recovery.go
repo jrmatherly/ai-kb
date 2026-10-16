@@ -6,7 +6,6 @@ import (
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
-	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/sirupsen/logrus"
 )
@@ -31,9 +30,7 @@ func Recovery() gin.HandlerFunc {
 				// Recovery wraps ErrorHandler, and a panic skips ErrorHandler's post-Next code,
 				// so the envelope is written here. The panic value stays in the log: it can
 				// carry internal state the client must not see.
-				c.AbortWithStatusJSON(http.StatusInternalServerError, apperrors.ErrorResponse{
-					Error: *apperrors.NewInternalServerError("Internal Server Error"),
-				})
+				c.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(c, internalServerError()))
 			}
 		}()
 

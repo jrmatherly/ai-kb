@@ -420,16 +420,16 @@ func (h *IMHandler) IMCallback(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Errorf(ctx, "[IM] Channel not found for callback: %s", channelID)
-			c.JSON(http.StatusNotFound, gin.H{"error": "channel not found"})
+			_ = c.Error(apperrors.NewNotFoundError("channel not found"))
 			return
 		}
 		if errors.Is(err, im.ErrChannelDisabled) {
 			logger.Errorf(ctx, "[IM] Channel disabled for callback: %s", channelID)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "channel is disabled"})
+			_ = c.Error(apperrors.NewServiceUnavailableError("channel is disabled"))
 			return
 		}
 		logger.Errorf(ctx, "[IM] Channel unavailable for callback %s: %v", channelID, err)
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "channel not available"})
+		_ = c.Error(apperrors.NewServiceUnavailableError("channel not available"))
 		return
 	}
 
@@ -439,7 +439,7 @@ func (h *IMHandler) IMCallback(c *gin.Context) {
 	}
 	if im.ResolveMode(channel, defaultMode) != "webhook" ||
 		channel.Platform == "qqbot" || channel.Platform == "wechat" || channel.Platform == "dingtalk" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "HTTP callbacks are disabled for this channel"})
+		_ = c.Error(apperrors.NewForbiddenError("HTTP callbacks are disabled for this channel"))
 		return
 	}
 
@@ -453,7 +453,7 @@ func (h *IMHandler) IMCallback(c *gin.Context) {
 	// Verify callback signature
 	if err := adapter.VerifyCallback(c); err != nil {
 		logger.Errorf(ctx, "[IM] Callback verification failed for channel %s: %v", channelID, err)
-		c.JSON(http.StatusForbidden, gin.H{"error": "verification failed"})
+		_ = c.Error(apperrors.NewForbiddenError("verification failed"))
 		return
 	}
 
@@ -461,7 +461,7 @@ func (h *IMHandler) IMCallback(c *gin.Context) {
 	msg, err := adapter.ParseCallback(c)
 	if err != nil {
 		logger.Errorf(ctx, "[IM] Parse callback failed for channel %s: %v", channelID, err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "parse failed"})
+		_ = c.Error(apperrors.NewBadRequestError("parse failed"))
 		return
 	}
 

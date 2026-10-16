@@ -110,7 +110,7 @@ func TestChunkQuestionAndDeleteRoutesKeepServiceStatus(t *testing.T) {
 		},
 		{
 			"regenerate when the model fails", types.OrgRoleEditor, http.MethodPost,
-			"/chunks/by-id/text/questions/regenerate", "", http.StatusInternalServerError, "model call failed",
+			"/chunks/by-id/text/questions/regenerate", "", http.StatusInternalServerError, "Internal server error",
 		},
 		{
 			"delete chunk without write access", types.OrgRoleViewer, http.MethodDelete, "/chunks/k-1/text", "",

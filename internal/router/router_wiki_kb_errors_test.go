@@ -61,7 +61,7 @@ func TestWikiRoutesReportKBLookupFailureStatus(t *testing.T) {
 		wantError string
 	}{
 		{"deleted knowledge base", apprepo.ErrKnowledgeBaseNotFound, http.StatusNotFound, "Knowledge base not found"},
-		{"database failure", errors.New("connection refused"), http.StatusInternalServerError, "connection refused"},
+		{"database failure", errors.New("connection refused"), http.StatusInternalServerError, "Internal server error"},
 	}
 	for _, tc := range cases {
 		wikiHandler := handler.NewWikiPageHandler(nil, &wikiHandlerKBService{err: tc.lookupErr}, nil, nil, nil)

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -351,15 +350,6 @@ func matchPrefix(err error, prefix string) bool {
 	return strings.HasPrefix(string(e.Code), prefix)
 }
 
-// serverNotFoundRE matches the AI KB server's structured error-envelope body
-// for the typed "not found" code (1003 = ErrNotFound). Server's 1007 is the
-// generic ErrInternalServer bucket - including it would mis-classify every
-// validation / DB failure (e.g. SQLSTATE 22001 "value too long") as
-// resource.not_found, sending agents down the wrong recovery path.
-// Matching the structured "code":1003 anchor avoids the free-substring false
-// positive (e.g. a stack trace containing "config file not found").
-var serverNotFoundRE = regexp.MustCompile(`"code":1003\b`)
-
 // ClassifyHTTPStatus maps an HTTP status code to the canonical ErrorCode.
 // Single source of truth so error codes stay aligned whether the failure
 // was detected by the SDK (string-formatted error) or by the CLI directly
@@ -415,18 +405,7 @@ func ClassifyHTTPError(err error) ErrorCode {
 	if perr != nil {
 		return CodeServerError
 	}
-	base := ClassifyHTTPStatus(status)
-	// Server-side 500-misclassification rescue: some servers return HTTP 500
-	// for logical "not found" cases (e.g. code 1007 "knowledge base not found",
-	// code 1003 "Knowledge not found") instead of 404. Match the server's known
-	// error-code envelope precisely to avoid false-positive rescues on generic
-	// 500 bodies that happen to contain "not found" (e.g. "config file not found
-	// in stack trace"). The free-substring match would over-match.
-	body := rest[end+1:]
-	if base == CodeServerError && serverNotFoundRE.MatchString(body) {
-		return CodeResourceNotFound
-	}
-	return base
+	return ClassifyHTTPStatus(status)
 }
 
 // AllCodes returns the registered error code set.

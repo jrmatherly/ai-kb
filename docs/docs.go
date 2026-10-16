@@ -19216,6 +19216,7 @@ const docTemplate = `{
                 1008,
                 1009,
                 1010,
+                1011,
                 2000,
                 2001,
                 2002,
@@ -19242,6 +19243,7 @@ const docTemplate = `{
                 "ErrServiceUnavailable",
                 "ErrTimeout",
                 "ErrValidation",
+                "ErrBadGateway",
                 "ErrTenantNotFound",
                 "ErrTenantAlreadyExists",
                 "ErrTenantInactive",
@@ -19262,6 +19264,10 @@ const docTemplate = `{
             "properties": {
                 "error": {
                     "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.AppError"
+                },
+                "request_id": {
+                    "description": "RequestID matches the X-Request-ID header and the request_id log field, so a\nclient can quote it for a 500 whose cause is only in the logs.",
+                    "type": "string"
                 },
                 "success": {
                     "type": "boolean",

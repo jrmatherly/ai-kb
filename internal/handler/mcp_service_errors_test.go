@@ -107,7 +107,7 @@ func TestMCPServiceClientFailuresKeepTheirCause(t *testing.T) {
 		t.Run(path, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))
-			require.Equal(t, http.StatusInternalServerError, w.Code, w.Body.String())
+			require.Equal(t, http.StatusBadGateway, w.Code, w.Body.String())
 			require.Contains(t, w.Body.String(), "MCP service probe-svc is not enabled")
 		})
 	}

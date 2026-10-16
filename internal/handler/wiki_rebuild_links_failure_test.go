@@ -90,8 +90,8 @@ func TestRebuildLinksHandlerReportsPartialWriteFailure(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, recorder.Code,
 		"a half-rebuilt link graph must not answer 200")
 	require.NotContains(t, recorder.Body.String(), "Links rebuilt successfully")
-	require.Contains(t, recorder.Body.String(), "concept/b")
-	require.Contains(t, recorder.Body.String(), "injected wiki metadata write failure")
+	require.NotContains(t, recorder.Body.String(), "injected wiki metadata write failure",
+		"the cause stays in the server log")
 }
 
 func TestRebuildLinksHandlerReportsSuccessWhenEveryPageIsWritten(t *testing.T) {

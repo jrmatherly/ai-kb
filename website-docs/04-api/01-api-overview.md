@@ -125,10 +125,12 @@ List endpoints usually add `total`, `page` and `page_size`. Exceptions: some rea
 Errors are rendered by `internal/middleware/error_handler.go` from an `AppError` (`internal/errors/errors.go`):
 
 ```json
-{ "success": false, "error": { "code": 1003, "message": "...", "details": { ... } } }
+{ "success": false, "error": { "code": 1003, "message": "...", "details": { ... } }, "request_id": "..." }
 ```
 
-`details` is present only when the error carries some. The swagger schema for this body is `errors.ErrorResponse`.
+`details` is present only when the error carries some. `request_id` repeats the `X-Request-ID` response header (the incoming header when the client sent one), so a report can be matched to the server log. The swagger schema for this body is `errors.ErrorResponse`.
+
+A 500 always reads `{"code": 1007, "message": "Internal server error"}` with no `details`, whatever the handler attached: its cause can carry SQL, storage endpoints or upstream responses, so it is written only to the server log with the same `request_id`. A failure in an upstream the user configured, such as an MCP server, is a 502 (code 1011) whose message keeps the cause.
 
 The middleware layer (authentication, RBAC, API key gate, embed and MCP endpoint auth, panic recovery) returns the same envelope. A rejection that needs more than the numeric code carries it in `details`: the 409 for a request with no workspace has `"details": {"reason": "TENANT_REQUIRED"}`.
 
@@ -145,6 +147,7 @@ The middleware layer (authentication, RBAC, API key gate, embed and MCP endpoint
 | 1008 | ErrServiceUnavailable | 503 |
 | 1009 | ErrTimeout | 504 (chunker preview) |
 | 1010 | ErrValidation, parameter validation failed | 400 |
+| 1011 | ErrBadGateway, a configured upstream (MCP server) failed | 502 |
 | 2000-2005 | Workspace: not found / already exists / inactive / name required / invalid status / self-service creation disabled | 404 / 409 / 403 / - / - / 403 (2003 and 2004 are defined but no constructor raises them) |
 | 2100-2103 | Agent: missing thinking model / missing allowed tools / invalid max iterations (1-20) / invalid temperature (0-2) | 400 |
 | 2200-2201 | Vector store binding invalid / currently unavailable | 400 |

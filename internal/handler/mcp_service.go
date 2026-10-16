@@ -67,9 +67,9 @@ func (h *MCPServiceHandler) mcpServiceResponses(
 }
 
 // writeMCPServiceError forwards a service-layer AppError with its own status and
-// reports anything else as a 500 prefixed with fallbackMsg. Unwrapped errors are
-// MCP client causes the user needs; the service turns repository failures into
-// generic AppErrors before they get here.
+// reports anything else as a 502 prefixed with fallbackMsg. Unwrapped errors are
+// MCP client causes the user needs, and a 500 would have them scrubbed; the service
+// turns repository failures into generic AppErrors before they get here.
 func writeMCPServiceError(c *gin.Context, err error, fallbackMsg string, fields logger.Fields) {
 	ctx := c.Request.Context()
 	if appErr, ok := errors.IsAppError(err); ok {
@@ -78,7 +78,7 @@ func writeMCPServiceError(c *gin.Context, err error, fallbackMsg string, fields 
 		return
 	}
 	logger.ErrorWithFields(ctx, err, fields)
-	_ = c.Error(errors.NewInternalServerError(fallbackMsg + ": " + err.Error()))
+	_ = c.Error(errors.NewBadGatewayError(fallbackMsg + ": " + err.Error()))
 }
 
 // CreateMCPService godoc

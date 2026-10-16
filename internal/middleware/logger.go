@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/url"
 	"regexp"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	secutils "github.com/jrmatherly/ai-kb/internal/utils"
@@ -279,6 +281,10 @@ func Logger() gin.HandlerFunc {
 		}
 		if last := c.Errors.Last(); last != nil && last.Err != nil {
 			logMsg = logMsg.WithField("error", secutils.SanitizeForLog(last.Err.Error()))
+			// ErrorHandler drops a 500's details from the response, so this is their only record.
+			if appErr, ok := apperrors.IsAppError(last.Err); ok && statusCode >= 500 && appErr.Details != nil {
+				logMsg = logMsg.WithField("error_details", secutils.SanitizeForLog(fmt.Sprint(appErr.Details)))
+			}
 		}
 		switch {
 		case statusCode >= 500:

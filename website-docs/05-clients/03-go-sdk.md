@@ -448,7 +448,7 @@ if errors.As(err, &apiErr) {
 }
 ```
 
-`Code` is the structured error code from `error.code` in the `{"success":false,"error":{"code":N,"message":"..."}}` response body (a top-level `{"code":N}` is still read). It is 0 when the body is not JSON or `error` is a plain string. The package defines the constants `ServerErrBadRequest` (1000) through `ServerErrValidation` (1010). `Error()` keeps the old `"HTTP error <status>: <body>"` format for consumers that match on the string.
+`Code` is the structured error code from `error.code` in the `{"success":false,"error":{"code":N,"message":"..."}}` response body (a top-level `{"code":N}` is still read). It is 0 when the body is not JSON or `error` is a plain string. The package defines the constants `ServerErrBadRequest` (1000) through `ServerErrBadGateway` (1011). `Error()` keeps the old `"HTTP error <status>: <body>"` format for consumers that match on the string.
 
 ### Stream layer: `SSEStreamError` (`client/stream_errors.go`)
 

@@ -331,9 +331,9 @@ type AppError struct {
 }
 ```
 
-- **Code ranges**: 1000-1999 generic HTTP semantics (`ErrBadRequest=1000`, `ErrUnauthorized=1001`, `ErrForbidden=1002`, `ErrNotFound=1003`, `ErrTooManyRequests=1006`, `ErrServiceUnavailable=1008`); 2000-2099 workspace; 2100-2199 agent; 2200-2299 vector store.
+- **Code ranges**: 1000-1999 generic HTTP semantics (`ErrBadRequest=1000`, `ErrUnauthorized=1001`, `ErrForbidden=1002`, `ErrNotFound=1003`, `ErrTooManyRequests=1006`, `ErrServiceUnavailable=1008`, `ErrBadGateway=1011`); 2000-2099 workspace; 2100-2199 agent; 2200-2299 vector store.
 - **Constructors**: `NewBadRequestError` / `NewUnauthorizedError` / `NewForbiddenError` / `NewNotFoundError` / `NewValidationError` / `NewConflictError` / `NewTooManyRequestsError` / `NewServiceUnavailableError` and others.
-- **How they fit together**: a Handler or middleware attaches the error with `c.Error(appErr)`, the `ErrorHandler` middleware renders the `{success:false, error:{code,message,details}}` envelope at the end, and the frontend localizes on `error.code`. Anything that is not an `AppError` becomes a 500.
+- **How they fit together**: a Handler or middleware attaches the error with `c.Error(appErr)`, the `ErrorHandler` middleware renders the `{success:false, error:{code,message,details}, request_id}` envelope at the end, and the frontend localizes on `error.code`. Anything that is not an `AppError` becomes a 500, and every 500 is sent as a fixed "Internal server error" with no details: the `Logger` middleware records the real cause under the same `request_id`.
 - `session.go` provides the session domain sentinel errors (`ErrSessionNotFound` and others). `parse_error_codes.go` defines the string error codes of the document parsing stage (`DOCREADER_TIMEOUT`, `EMBEDDING_RATE_LIMIT`, `VECTORSTORE_WRITE_FAILED`, `TASK_TIMEOUT` and others), stored in `Knowledge.ErrorMessage` for the frontend to translate and display.
 
 ## Logging (internal/logger)

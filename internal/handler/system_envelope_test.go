@@ -43,7 +43,7 @@ func TestSystemAreaHandlersReturnErrorEnvelope(t *testing.T) {
 	}{
 		{
 			http.MethodGet, "/models/weknoracloud/status", "", http.StatusInternalServerError,
-			`{"success":false,"error":{"code":1007,"message":"credential store unreachable"}}`,
+			`{"success":false,"error":{"code":1007,"message":"Internal server error"}}`,
 		},
 		{
 			http.MethodPost, "/wechat/qrcode/status", `{}`, http.StatusBadRequest,

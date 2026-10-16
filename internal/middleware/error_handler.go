@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
 // ErrorHandler is middleware that handles application errors
@@ -20,14 +21,21 @@ func ErrorHandler() gin.HandlerFunc {
 			err := c.Errors.Last().Err
 
 			appErr, ok := errors.IsAppError(err)
-			if !ok {
-				appErr = &errors.AppError{
-					Code:     errors.ErrInternalServer,
-					Message:  "Internal server error",
-					HTTPCode: http.StatusInternalServerError,
-				}
+			if !ok || appErr.HTTPCode == http.StatusInternalServerError {
+				// A 500's message and details are wrapped internal errors (SQL, storage
+				// endpoints, upstream bodies). The Logger middleware records them with
+				// the request ID the client receives.
+				appErr = internalServerError()
 			}
-			c.JSON(appErr.HTTPCode, errors.ErrorResponse{Error: *appErr})
+			c.JSON(appErr.HTTPCode, errorResponse(c, appErr))
 		}
 	}
+}
+
+func internalServerError() *errors.AppError {
+	return errors.NewInternalServerError("Internal server error")
+}
+
+func errorResponse(c *gin.Context, appErr *errors.AppError) errors.ErrorResponse {
+	return errors.ErrorResponse{Error: *appErr, RequestID: c.GetString(types.RequestIDContextKey.String())}
 }

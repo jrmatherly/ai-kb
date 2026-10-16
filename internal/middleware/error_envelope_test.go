@@ -104,7 +104,7 @@ func TestMiddlewareRejectionsWriteEnvelope(t *testing.T) {
 			name:     "panic",
 			handlers: []gin.HandlerFunc{func(*gin.Context) { panic("db password is hunter2") }},
 			status:   http.StatusInternalServerError,
-			body:     `{"success":false,"error":{"code":1007,"message":"Internal Server Error"}}`,
+			body:     `{"success":false,"error":{"code":1007,"message":"Internal server error"}}`,
 		},
 	}
 	for _, tc := range cases {

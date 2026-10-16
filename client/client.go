@@ -261,6 +261,7 @@ const (
 	ServerErrServiceUnavailable = 1008
 	ServerErrTimeout            = 1009
 	ServerErrValidation         = 1010
+	ServerErrBadGateway         = 1011
 )
 
 // newAPIError builds an *APIError from a non-2xx response's status and raw body,

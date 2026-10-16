@@ -22,6 +22,7 @@ const (
 	ErrServiceUnavailable ErrorCode = 1008
 	ErrTimeout            ErrorCode = 1009
 	ErrValidation         ErrorCode = 1010
+	ErrBadGateway         ErrorCode = 1011
 
 	// Tenant related error codes (2000-2099)
 	ErrTenantNotFound         ErrorCode = 2000
@@ -64,6 +65,9 @@ type AppError struct {
 type ErrorResponse struct {
 	Success bool     `json:"success" example:"false"`
 	Error   AppError `json:"error"`
+	// RequestID matches the X-Request-ID header and the request_id log field, so a
+	// client can quote it for a 500 whose cause is only in the logs.
+	RequestID string `json:"request_id,omitempty"`
 }
 
 // Error returns the message alone: callers paste it into agent tool results
@@ -169,6 +173,19 @@ func NewServiceUnavailableError(message string) *AppError {
 		Code:     ErrServiceUnavailable,
 		Message:  message,
 		HTTPCode: http.StatusServiceUnavailable,
+	}
+}
+
+// NewBadGatewayError creates a 502 for a failure in an upstream the user
+// configured (such as an MCP server); the message may carry its cause.
+func NewBadGatewayError(message string) *AppError {
+	if message == "" {
+		message = "upstream service failed"
+	}
+	return &AppError{
+		Code:     ErrBadGateway,
+		Message:  message,
+		HTTPCode: http.StatusBadGateway,
 	}
 }
 
