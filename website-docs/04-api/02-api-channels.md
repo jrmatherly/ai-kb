@@ -448,7 +448,7 @@ Purpose: diagnostic endpoint that returns the presigned HTTP URL the server woul
 
 `file_path` must belong to the current workspace, exactly as on `/files`: a `resource://` handle must resolve to a resource of this workspace, and a storage path must carry this workspace's ID in its tenant segment; otherwise 403 and no URL is issued.
 
-Response: 200 `{"file_path","provider","url","rewritten":bool,"hint"}`. When the storage config cannot be resolved (400), `error.details` carries `provider` and `hint`. When signing fails the response is a plain 500 and the cause is in the server log; for local storage it usually means `APP_EXTERNAL_URL` is unset.
+Response: 200 `{"file_path","provider","url","rewritten":bool,"hint"}`. When the storage config cannot be resolved (400), `error.details` carries `provider` and `hint`. When the backend fails to sign the URL the response is a plain 500 with the cause in the server log. Local storage without `APP_EXTERNAL_URL` does not fail: it answers 200 with `rewritten:false` and a hint.
 
 ```bash
 curl "$BASE/api/v1/files/presigned-preview?file_path=local://1/x.png" -H "Authorization: Bearer $TOKEN"

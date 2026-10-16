@@ -1192,9 +1192,9 @@ func (s *userService) generateTokensForTenant(
 // token pair whose later refresh would bounce to a different workspace.
 //
 // Returns ErrMembershipNotFound when the user is not a member of the
-// target tenant. Cross-tenant superuser access (CanAccessAllTenants)
-// is allowed without a membership row, mirroring the auth middleware's
-// resolveTenantRole behaviour.
+// target tenant, or when the target tenant does not exist. Cross-tenant
+// superuser access (CanAccessAllTenants) is allowed without a membership
+// row, mirroring the auth middleware's resolveTenantRole behaviour.
 func (s *userService) SwitchTenant(
 	ctx context.Context,
 	user *types.User,
@@ -1224,6 +1224,10 @@ func (s *userService) SwitchTenant(
 	}
 
 	tenant, err := s.tenantService.GetTenantByID(ctx, targetTenantID)
+	if errors.Is(err, apprepo.ErrTenantNotFound) {
+		// Only a superuser gets here without a membership row.
+		return nil, ErrMembershipNotFound
+	}
 	if err != nil {
 		return nil, fmt.Errorf("load target workspace: %w", err)
 	}

@@ -45,8 +45,8 @@ func ResolveComplexPasswordEnabled(
 }
 
 // IsPasswordPolicyError reports whether err is a documented password-policy
-// failure. Handlers map both the simple and complex sentinels to the same
-// machine-readable details token so the SPA can localize them.
+// failure: the simple, complex and too-long sentinels. ChangePassword maps
+// them to the same machine-readable details token so the SPA can localize them.
 func IsPasswordPolicyError(err error) bool {
 	return errors.Is(err, ErrPasswordPolicy) || errors.Is(err, ErrComplexPasswordPolicy) ||
 		errors.Is(err, ErrPasswordTooLong)

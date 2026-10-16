@@ -229,6 +229,8 @@ Purpose: create a provider configuration. Permission: Admin+.
 
 Response: 201 `{"success":true,"data":{WebSearchProviderResponse}}`
 
+An unknown `provider` type or missing required parameters (such as the API key a provider needs) returns 400 with the reason.
+
 ```bash
 curl -X POST $BASE/api/v1/web-search-providers -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"name":"tavily-main","provider":"tavily"}'
@@ -255,6 +257,8 @@ curl $BASE/api/v1/web-search-providers/wsp-1 -H "Authorization: Bearer $TOKEN"
 Purpose: update. An empty `name` or `description` and an omitted `extra_config` keep the stored values; the stored `api_key` is always kept (one in the body is ignored); `provider` is immutable; `is_default` is taken from the body as sent (omitted means false). Permission: Admin+. Request body: `name/description/parameters/is_default` (all optional).
 
 Response: 200 `{"success":true,"data":{...}}`
+
+Invalid parameters return 400 with the reason, and the other providers keep their default flag.
 
 ```bash
 curl -X PUT $BASE/api/v1/web-search-providers/wsp-1 -H "Authorization: Bearer $TOKEN" \

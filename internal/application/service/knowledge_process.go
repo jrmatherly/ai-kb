@@ -2631,9 +2631,6 @@ func (s *knowledgeService) RegenerateChunkQuestions(
 	return generated, nil
 }
 
-// RegenerateKnowledgeSummary refreshes both the knowledge description and the
-// summary chunk(s), then reindexes only those summary chunks. It is
-// intentionally idempotent.
 // modelCallError blames the configured model for a failed call, unless the
 // request's own deadline or cancellation ended it.
 func modelCallError(prefix string, err error) error {
@@ -2643,8 +2640,9 @@ func modelCallError(prefix string, err error) error {
 	return werrors.NewBadGatewayError(prefix + err.Error())
 }
 
-// summaryModelCall reports a failed summary request as a 502 on the refresh
-// path only; the ingestion task keeps the raw error for its trace span.
+// summaryModelCall reports a failed summary request as a 502 for
+// regenerateKnowledgeSummary (the refresh endpoint and its summary task);
+// ingestion's getSummary keeps the raw error for its trace span.
 type summaryModelCall struct{ model chat.Chat }
 
 func (m summaryModelCall) Chat(
@@ -2665,6 +2663,9 @@ func (m summaryModelCall) ChatStream(
 func (m summaryModelCall) GetModelName() string { return m.model.GetModelName() }
 func (m summaryModelCall) GetModelID() string   { return m.model.GetModelID() }
 
+// RegenerateKnowledgeSummary refreshes both the knowledge description and the
+// summary chunk(s), then reindexes only those summary chunks. It is
+// intentionally idempotent.
 func (s *knowledgeService) RegenerateKnowledgeSummary(
 	ctx context.Context, knowledgeID string,
 ) (*types.Knowledge, error) {

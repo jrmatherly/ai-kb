@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	apprepo "github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -236,5 +237,28 @@ func TestSwitchTenantNonMemberWritesNoPreference(t *testing.T) {
 	}
 	if repo.updateCalls != 0 {
 		t.Fatalf("UpdateUser calls = %d, want 0 (no preference write before validation)", repo.updateCalls)
+	}
+}
+
+type missingTenantService struct{ provisioningTenantService }
+
+func (*missingTenantService) GetTenantByID(context.Context, uint64) (*types.Tenant, error) {
+	return nil, apprepo.ErrTenantNotFound
+}
+
+func TestSwitchTenantSuperuserToMissingWorkspaceIsMembershipError(t *testing.T) {
+	ctx := context.Background()
+	repo := &switchTenantUserRepo{users: map[string]types.User{
+		"alice": {ID: "alice", TenantID: 7, CanAccessAllTenants: true},
+	}}
+	svc := newSwitchTenantTestService(repo, &membershipLookupService{byTenant: map[uint64]*types.TenantMember{}})
+	svc.tenantService = &missingTenantService{}
+	user, _ := repo.GetUserByID(ctx, "alice")
+
+	if _, err := svc.SwitchTenant(ctx, user, 404, ""); !errors.Is(err, ErrMembershipNotFound) {
+		t.Fatalf("SwitchTenant to a missing workspace = %v, want ErrMembershipNotFound", err)
+	}
+	if repo.updateCalls != 0 {
+		t.Fatalf("UpdateUser calls = %d, want 0", repo.updateCalls)
 	}
 }

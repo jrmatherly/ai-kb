@@ -688,10 +688,8 @@ func servePresignedPreview(
 
 			httpURL, err := fileSvc.GetFileURL(ctx, filePath)
 			if err != nil {
-				_ = c.Error(apperrors.NewInternalServerError(err.Error()).WithDetails(gin.H{
-					"provider": resolvedProvider,
-					"hint":     "GetFileURL failed; for local storage this usually means APP_EXTERNAL_URL is unset",
-				}))
+				_ = c.Error(apperrors.NewInternalServerError(err.Error()).
+					WithDetails(gin.H{"provider": resolvedProvider}))
 				return
 			}
 
