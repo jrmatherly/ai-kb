@@ -363,6 +363,12 @@ func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
 		{&APIError{Status: http.StatusNotFound, Code: 1770002}, datasource.ErrResourceNotFound},
 		{&APIError{Code: 1254302}, datasource.ErrPermissionDenied},
 		{&APIError{Code: 1254040}, datasource.ErrResourceNotFound},
+		{&APIError{Status: http.StatusBadRequest, Code: 1310213}, datasource.ErrPermissionDenied},
+		{&APIError{Status: http.StatusBadRequest, Code: 1310214}, datasource.ErrResourceNotFound},
+		{&APIError{Status: http.StatusBadRequest, Code: 1310249}, datasource.ErrResourceNotFound},
+		{&APIError{Code: 99991662}, datasource.ErrPermissionDenied},
+		{&APIError{Code: 99991673}, datasource.ErrPermissionDenied},
+		{&APIError{Code: 99991676}, datasource.ErrPermissionDenied},
 	} {
 		if !errors.Is(fmt.Errorf("wrapped: %w", tc.err), tc.want) {
 			t.Errorf("%v does not match %v", tc.err, tc.want)
@@ -372,7 +378,14 @@ func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
 			t.Errorf("partial listing with %v does not match %v", tc.err, tc.want)
 		}
 	}
-	unmapped := []*APIError{{Status: http.StatusBadRequest, Code: 1}, {Status: http.StatusNotFound}, {Code: 99991663}}
+	unmapped := []*APIError{
+		{Status: http.StatusBadRequest, Code: 1},
+		{Status: http.StatusNotFound},
+		{Code: 99991663},
+		{Code: 99991661},
+		{Code: 99991664},
+		{Code: 99991668},
+	}
 	for _, other := range unmapped {
 		for _, sentinel := range []error{
 			datasource.ErrPermissionDenied, datasource.ErrInvalidCredentials, datasource.ErrResourceNotFound,

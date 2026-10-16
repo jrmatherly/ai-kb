@@ -178,11 +178,18 @@ func (e *exportJobError) Is(target error) bool {
 }
 
 var (
-	// Drive folder not shared with the app, missing app scope, then the wiki,
-	// docx and bitable permission-denied codes.
-	feishuPermissionCodes = map[int]bool{1061004: true, 99991672: true, 131006: true, 1770032: true, 1254302: true}
-	// Drive unknown folder token, then wiki, docx and bitable not found.
-	feishuNotFoundCodes = map[int]bool{1061003: true, 131005: true, 1770002: true, 1254040: true}
+	// Drive folder not shared with the app (1061004); app disabled, missing a
+	// scope, not installed, or its token lacks the permission (99991662/72/73/76);
+	// then the wiki, docx, bitable and sheets permission-denied codes.
+	feishuPermissionCodes = map[int]bool{
+		1061004: true, 99991662: true, 99991672: true, 99991673: true, 99991676: true,
+		131006: true, 1770032: true, 1254302: true, 1310213: true,
+	}
+	// Drive unknown folder token, then wiki, docx, bitable not found and the
+	// sheets not-found and deleted codes.
+	feishuNotFoundCodes = map[int]bool{
+		1061003: true, 131005: true, 1770002: true, 1254040: true, 1310214: true, 1310249: true,
+	}
 )
 
 // newAPIError builds the APIError for a non-200 response, reading the Feishu

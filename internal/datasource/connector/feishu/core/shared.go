@@ -73,11 +73,10 @@ func (t *fetchTally) summary() string {
 		t.discovered, t.fetched, t.failed, t.skipped(), t.skippedByType)
 }
 
-// feishuTokenCodes are the missing (99991661) and invalid tenant, app and user
-// token codes (99991663, 99991664, 99991668). 99991663 also means "endpoint
-// does not take a tenant token", so APIError.Is leaves them unmapped; for a sync
-// item either way the fix is the app's credentials or scopes.
-var feishuTokenCodes = map[int]bool{99991661: true, 99991663: true, 99991664: true, 99991668: true}
+// feishuTenantTokenInvalid is "tenant token invalid", which also means "endpoint
+// does not take a tenant token", so APIError.Is leaves it unmapped. On a sync
+// item either reading points at the app's credentials, so it counts as auth.
+const feishuTenantTokenInvalid = 99991663
 
 // feishuFailure classifies a raw connector/API error into a stable i18n code
 // (mapped to a localized string on the frontend), an optional numeric Feishu
@@ -96,7 +95,7 @@ func feishuFailure(err error) (code, codeValue, fallback string) {
 		return "sync_failed", "", "Sync failed; will retry on the next sync"
 	case errors.Is(err, datasource.ErrInvalidCredentials),
 		errors.Is(err, datasource.ErrPermissionDenied),
-		isAPIErr && feishuTokenCodes[apiErr.Code]:
+		isAPIErr && apiErr.Code == feishuTenantTokenInvalid:
 		return "feishu_auth_or_permission", "",
 			"Authentication or permission error; check the app credentials, its scopes and its access to the document."
 	case isAPIErr && apiErr.Status >= http.StatusInternalServerError:
