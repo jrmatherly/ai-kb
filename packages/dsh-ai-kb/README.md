@@ -175,7 +175,7 @@ types still accept and serve them, so a rename on either side fails CI instead o
 
 ## Compatibility
 
-Verified against dsh `0.1.0-rc.8` (the pin in `test/e2e/run-in-dsh.mjs`; bump both together) and the AI KB server in this repository (`contract/contract_test.go` runs against it in CI). dsh is in developer preview and states that breaking changes
+Verified against dsh `0.2.0-rc.2` (the pin in `test/e2e/run-in-dsh.mjs`; bump both together) and the AI KB server in this repository (`contract/contract_test.go` runs against it in CI). dsh is in developer preview and states that breaking changes
 will happen; this package deliberately has **no runtime dependencies** and hands `ctx.tools.register()` a plain object,
 so it does not pin any harness package version. If a harness release changes the tool-definition contract, open an issue
 against this repository.

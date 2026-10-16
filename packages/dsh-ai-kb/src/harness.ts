@@ -6,7 +6,7 @@
  * not require a republish of this plugin.
  *
  * The shapes mirror `@deepseek-ai/dsh-tools` (`ToolDefinition`) and
- * `@deepseek-ai/dsh-llm` (`ContentBlock`, `ToolSchema`) as of dsh 0.1.0-rc.8.
+ * `@deepseek-ai/dsh-llm` (`ContentBlock`, `ToolSchema`) as of dsh 0.2.0-rc.2.
  */
 
 /** Supported subset of JSON Schema that the harness tool registry accepts. */

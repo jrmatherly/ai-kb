@@ -18,7 +18,7 @@ export AIKB_RESOURCE_URLS=public
 dsh web
 ```
 
-To run unreleased changes, install from a checkout instead: `(cd packages/dsh-ai-kb && npm ci)` builds the entry point `dist/index.js` through the `prepare` script, then `dsh plugin --profile web add ./packages/dsh-ai-kb` from the repository root. The plugin itself requires Node 24 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.1.0-rc.8 and the AI KB copy of 2026-10-12. For other versions, confirm compatibility against the dsh plugin interface.
+To run unreleased changes, install from a checkout instead: `(cd packages/dsh-ai-kb && npm ci)` builds the entry point `dist/index.js` through the `prepare` script, then `dsh plugin --profile web add ./packages/dsh-ai-kb` from the repository root. The plugin itself requires Node 24 or later. The dsh runtime the repository tested needs a Node build with zstd (22.15 or later, or 24 or later) and pnpm 10 or later. The tested versions are dsh 0.2.0-rc.2 and the AI KB copy of 2026-10-12. For other versions, confirm compatibility against the dsh plugin interface.
 
 The service address may include `/api/v1`. When it does not, the plugin appends it. The API key is sent in `X-API-Key` and needs the `retrieve` capability. Calling `ask` also needs `chat`. With a platform key, set `tenantId`, which requests send as `X-Tenant-ID`.
 

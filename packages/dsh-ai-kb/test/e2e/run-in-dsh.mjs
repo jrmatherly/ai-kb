@@ -40,10 +40,11 @@ import { startFakeModel } from './fake-model.mjs'
 import { startMockAikb } from '../helpers/mock-ai-kb.mjs'
 
 // The harness release this package is verified against; bump it with the Compatibility note in
-// the README. rc.8 leaves its dependency ranges open and later cordis releases (4.0.4,
-// cordis-plugin-hmr 1.0.19) break its boot, so its tree is resolved as of its release day.
-const PINNED_SPEC = '@deepseek-ai/dsh@0.1.0-rc.8'
-const PINNED_BEFORE = '2026-08-20T00:00:00Z'
+// the README. The harness leaves its dependency ranges open, so its tree is resolved as of the
+// day after its release (0.2.0-rc.2 was published 2026-09-29) and later cordis releases cannot
+// change what the pinned harness boots with.
+const PINNED_SPEC = '@deepseek-ai/dsh@0.2.0-rc.2'
+const PINNED_BEFORE = '2026-09-30T00:00:00Z'
 
 const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const dshSpec = process.env.DSH_PACKAGE_SPEC ?? PINNED_SPEC
