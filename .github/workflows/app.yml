@@ -72,7 +72,8 @@ on:
     - cron: "41 6 * * 1" # weekly: a new advisory needs no commit to be caught
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # The weekly scan runs in its own group so a push to main does not cancel it.
+  group: ${{ github.workflow }}-${{ github.event_name == 'schedule' && 'schedule' || github.ref }}
   cancel-in-progress: true
 
 permissions:
