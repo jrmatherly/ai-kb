@@ -57,7 +57,7 @@ WORKDIR /app
 # Keep recommends: they bring the metric-compatible fonts (Carlito, Caladea, Liberation)
 # LibreOffice needs to convert Office documents without reflowing them.
 # hadolint ignore=DL3015
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libjpeg62-turbo \
     wget \
     gnupg \

@@ -142,7 +142,7 @@ Differences from the production orchestration:
 | `docker/Dockerfile.sandbox` | `ghcr.io/jrmatherly/ai-kb-sandbox` | Agent session sandbox image. Base: Python 3.12-slim + Node 24 + uv/pnpm, runs as `root` by default and keeps `user` (UID 1000) for explicit selection. The default build target `sandbox` serves the Docker backend; other targets are `cube` (with Cube envd) and `desktop` / `desktop-cube` (with a graphical desktop), see [Sandbox deployment](../06-development/04-sandbox-deployment.md) |
 | `frontend/Dockerfile` | `ghcr.io/jrmatherly/ai-kb-ui` | Two stages: a digest-pinned `node:24-bookworm-slim` (`$BUILDPLATFORM`, so multi-arch CI does not run Vite under QEMU) runs `npm ci` + `npm run build` (`VITE_FRONTEND_COMMIT`), with optional `NPM_REGISTRY` / `NODE_MAX_OLD_SPACE_SIZE`; the runtime layer is a digest-pinned `nginx:1.30.3-alpine` (compatible with old CentOS 7 kernels). No host-side `dist/` build needed |
 
-The Docker Images workflow rebuilds the newest release every Monday with a fresh base image and no layer cache, so a version tag (`v2026.10.15.1` and `2026.10.15.1` alike) and `latest` can carry a newer digest than the one first published. Pin a digest when an exact image matters.
+The Docker Images workflow rebuilds every image of the newest release every Monday with a fresh base and no layer cache, applying the base image's package updates, so a version tag (`v2026.10.15.1` and `2026.10.15.1` alike) and `latest` can carry a newer digest than the one first published. Pin a digest when an exact image matters.
 
 Build every image from source:
 

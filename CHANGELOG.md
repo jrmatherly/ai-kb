@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Security
 
-- **FIXED**: The app image runtime is `debian:12.15-slim` with ca-certificates, curl, gosu and tzdata, upgraded at build time; node, uv, python3, build-essential, ffmpeg and the database clients are gone (2.1 GB to 0.6 GB). The Docker Images workflow rebuilds the newest release every Monday with a fresh base and no layer cache and re-pushes its tags and `latest`.
+- **FIXED**: The app image runtime is `debian:12.15-slim` with ca-certificates, curl, gosu and tzdata, upgraded at build time; node, uv, python3, build-essential, ffmpeg and the database clients are gone (2.1 GB to 0.6 GB). Every image applies its base's package updates at build time (`apt-get upgrade`, `apk upgrade` for nginx), and the Docker Images workflow rebuilds the newest release every Monday with a fresh base and no layer cache and re-pushes its tags and `latest`.
 - **FIXED**: Called govulncheck findings gate the Go CI job against a cited allowlist (`scripts/govulncheck-allowlist.txt`), weekly as well as on every Go change.
 - **FIXED**: A 500 response no longer carries wrapped internal errors (SQL, storage endpoints, upstream bodies). Clients get `{"code":1007,"message":"Internal server error"}` and every error body carries `request_id`, the `X-Request-ID` the server logs the cause under.
 - **FIXED**: 4xx responses no longer forward repository, storage, queue or driver text. Data sources, system settings, attachments, sandbox config, summaries, auth token, workspace switches and the presigned preview now answer with authored 4xx messages.

@@ -73,7 +73,7 @@ RUN npm install -g pnpm
 # here because skill bundles and their assets arrive archived. git backs
 # per-turn workspace checkpoints (object store at /var/lib/aikb/workspace.git,
 # work tree /workspace) that session fork and rewind roll back to.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     jq \
     curl \
     ca-certificates \
