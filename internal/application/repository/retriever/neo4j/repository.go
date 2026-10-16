@@ -1,3 +1,4 @@
+// Package neo4j stores and searches extracted knowledge graphs in Neo4j.
 package neo4j
 
 import (
@@ -124,6 +125,16 @@ func (n *Neo4jRepository) addGraph(ctx context.Context, namespace types.NameSpac
 	return nil
 }
 
+// delGraphCypher deletes one knowledge's nodes and their relationships in
+// batches. CALL ... IN TRANSACTIONS commits per batch, so it needs an
+// auto-commit session (session.Run), not a managed transaction.
+func delGraphCypher(labelExpr string) string {
+	return `
+		MATCH (n:` + labelExpr + ` {kg: $knowledge_id})
+		CALL (n) { DETACH DELETE n } IN TRANSACTIONS OF 1000 ROWS
+	`
+}
+
 // DelGraph deletes a graph from the Neo4j repository
 func (n *Neo4jRepository) DelGraph(ctx context.Context, namespaces []types.NameSpace) error {
 	if n.driver == nil {
@@ -133,40 +144,19 @@ func (n *Neo4jRepository) DelGraph(ctx context.Context, namespaces []types.NameS
 	session := n.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
-	result, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
-		for _, namespace := range namespaces {
-			labelExpr := n.Label(namespace)
-
-			deleteRelsQuery := `
-				CALL apoc.periodic.iterate(
-					"MATCH (n:` + labelExpr + ` {kg: $knowledge_id})-[r]-(m:` + labelExpr + ` {kg: $knowledge_id}) RETURN r",
-					"DELETE r",
-					{batchSize: 1000, parallel: true, params: {knowledge_id: $knowledge_id}}
-				) YIELD batches, total
-				RETURN total
-        	`
-			if _, err := tx.Run(ctx, deleteRelsQuery, map[string]interface{}{"knowledge_id": namespace.Knowledge}); err != nil {
-				return nil, fmt.Errorf("failed to delete relationships: %v", err)
-			}
-
-			deleteNodesQuery := `
-				CALL apoc.periodic.iterate(
-					"MATCH (n:` + labelExpr + ` {kg: $knowledge_id}) RETURN n",
-					"DELETE n",
-					{batchSize: 1000, parallel: true, params: {knowledge_id: $knowledge_id}}
-				) YIELD batches, total
-				RETURN total
-        	`
-			if _, err := tx.Run(ctx, deleteNodesQuery, map[string]interface{}{"knowledge_id": namespace.Knowledge}); err != nil {
-				return nil, fmt.Errorf("failed to delete nodes: %v", err)
-			}
+	for _, namespace := range namespaces {
+		params := map[string]interface{}{"knowledge_id": namespace.Knowledge}
+		res, err := session.Run(ctx, delGraphCypher(n.Label(namespace)), params)
+		if err != nil {
+			return fmt.Errorf("failed to delete graph: %w", err)
 		}
-		return nil, nil
-	})
-	if err != nil {
-		return err
+		summary, err := res.Consume(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to delete graph: %w", err)
+		}
+		logger.Infof(ctx, "delete graph result: nodes=%d relationships=%d",
+			summary.Counters().NodesDeleted(), summary.Counters().RelationshipsDeleted())
 	}
-	logger.Infof(ctx, "delete graph result: %v", result)
 	return nil
 }
 
