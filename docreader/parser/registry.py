@@ -206,10 +206,9 @@ def _build_default_registry() -> ParserEngineRegistry:
         unavailable_hint="Install opendataloader-pdf and Java 11+",
     )
 
-    # NOTE: Engine listing is managed by Go-side engine registry
-    # (docparser.ListAllEngines). The Python list_engines method is kept for
-    # backward compatibility with the gRPC ListEngines RPC but the Go app
-    # no longer calls it. MinerU engines are handled natively by Go.
+    # The Go app merges this list into its own engine registry
+    # (docparser.ListAllEngines) through the ListEngines RPC. MinerU engines
+    # are handled natively by Go.
 
     return reg
 

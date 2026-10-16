@@ -29,7 +29,7 @@ const MESSAGES = {
   chatFailed: "Chat failed",
   sessionIdMissing: "The session API did not return a session id.",
   settingsTitle: "Connect AI KB",
-  settingsSubtitle: "Use your AI KB API endpoint and tenant API key.",
+  settingsSubtitle: "Use your AI KB API endpoint and workspace API key.",
   apiBaseUrl: "API Base URL",
   apiBaseUrlPlaceholder: "https://your-ai-kb.example.com",
   apiKey: "API Key",

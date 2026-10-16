@@ -17,7 +17,7 @@ const modes = [
   { number: "02", icon: "agent", label: "Agent", title: "Get tasks done with knowledge and tools", description: "Agents search knowledge bases and the web, call MCP tools and skills, process files and run scripts in a sandbox, drive the browser on your computer, and, with long-term memory on, remember the preferences you confirm across sessions.", tags: ["Multi-step reasoning", "Skills and sandbox", "Local Browser", "MCP tools", "Long-term memory"], link: "03-features/07-agent" },
   { number: "03", icon: "wiki", label: "Wiki", title: "Turn documents into a Wiki", description: "Generates interlinked Wiki pages and a graph of their links from your documents, with browsing, editing and version rollback.", tags: ["Automatic organization", "Wiki graph", "Version rollback"], link: "03-features/14-wiki" },
 ];
-const releaseExtras = ["Confluence and DingTalk Docs data sources", "27 built-in model providers", "Bocha and Serply web search", "Allowlist-only egress"];
+const releaseExtras = ["Confluence and DingTalk Docs data sources", "30 built-in model providers", "Bocha and Serply web search", "Allowlist-only egress"];
 
 const productShotExists = (src: string) => existsSync(join(process.cwd(), "public", src));
 type SlideSource = Omit<GallerySlide, "shots"> & ({ image: string; alt: string } | { shots: Omit<GalleryShot, "available">[] });
