@@ -919,7 +919,7 @@ func (s *DataSourceService) applyFetchedItem(
 			result.DeletionFailed++
 			recordSyncError(result, types.SyncItemError{
 				Title:   item.Title,
-				Code:    "deletion_lookup_failed",
+				Code:    types.SyncCodeDeletionLookupFailed,
 				Message: "Failed to look up the item before deletion; see server logs",
 			})
 			return
@@ -939,7 +939,7 @@ func (s *DataSourceService) applyFetchedItem(
 				existing.ID, item.ExternalID, ds.ID, deleteErr)
 			recordSyncError(result, types.SyncItemError{
 				Title:   item.Title,
-				Code:    "deletion_failed",
+				Code:    types.SyncCodeDeletionFailed,
 				Message: "Deletion failed; see server logs",
 			})
 			return
@@ -951,7 +951,7 @@ func (s *DataSourceService) applyFetchedItem(
 				existing.ID, item.ExternalID, ds.ID, herr)
 			recordSyncError(result, types.SyncItemError{
 				Title:   item.Title,
-				Code:    "deletion_failed",
+				Code:    types.SyncCodeDeletionFailed,
 				Message: "Deletion failed; see server logs",
 			})
 			return
@@ -996,7 +996,7 @@ func (s *DataSourceService) applyFetchedItem(
 			result.Failed++
 			recordSyncError(result, types.SyncItemError{
 				Title:   item.Title,
-				Code:    "ingest_failed",
+				Code:    types.SyncCodeIngestFailed,
 				Message: "Ingest failed; see server logs",
 			})
 		}

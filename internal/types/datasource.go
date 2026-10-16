@@ -511,6 +511,24 @@ type DataSourceItemRef struct {
 	SourceResourceID string
 }
 
+// Sync item reason codes the sync service itself emits (connectors emit their
+// own); each is a datasource.syncError.<code> key in the frontend.
+const (
+	SyncCodeDeletionLookupFailed       = "deletion_lookup_failed"
+	SyncCodeDeletionFailed             = "deletion_failed"
+	SyncCodeIngestFailed               = "ingest_failed"
+	SyncCodeDeletionGuardTripped       = "deletion_guard_tripped"
+	SyncCodeReconcileListingEmpty      = "reconcile_listing_empty"
+	SyncCodeReconcileListingIncomplete = "reconcile_listing_incomplete"
+)
+
+// SyncReasonCodes lists the service's own codes for the parity test in
+// internal/datasource/syncreason.
+var SyncReasonCodes = []string{
+	SyncCodeDeletionLookupFailed, SyncCodeDeletionFailed, SyncCodeIngestFailed,
+	SyncCodeDeletionGuardTripped, SyncCodeReconcileListingEmpty, SyncCodeReconcileListingIncomplete,
+}
+
 // SyncItemError is one user-facing failure sample. It carries a stable i18n
 // Code (+ interpolation Params) so the frontend localises it to the viewer's
 // language, plus a Message fallback for clients without the key. The raw API

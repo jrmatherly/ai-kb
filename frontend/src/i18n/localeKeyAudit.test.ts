@@ -206,38 +206,26 @@ function assertLocalized(keys: string[]) {
   }
 }
 
-test('Seafile picker texts and sync error codes are localized', () => {
-  const seafileErrors = [
-    'permission_denied', 'not_found', 'file_too_large', 'empty_file',
-    'source_changed', 'invalid_response', 'ssrf_blocked', 'fetch_failed',
-  ]
+// datasource.syncError.* keys are checked against the backend emitters by
+// internal/datasource/syncreason/parity_test.go.
+test('Seafile picker texts are localized', () => {
   const keys = [
     'connector.seafile', 'connectorDesc.seafile',
     'seafile.baseUrl', 'seafile.apiToken', 'seafile.apiTokenHint',
     'seafile.singleLibraryOnly', 'seafile.selectionRequired',
     'resourceType.library', 'noResourcesDesc_seafile',
     ...[1, 2, 3].map(step => `guideStep${step}_seafile`),
-    ...seafileErrors.map(code => `syncError.seafile_${code}`),
   ].map(key => `datasource.${key}`)
   keys.push('knowledgeBase.channelSeafile')
   assertLocalized(keys)
 })
 
-test('Feishu sync error codes are localized', () => {
-  const codes = [
-    'sync_failed', 'feishu_auth_or_permission', 'feishu_not_found', 'feishu_rate_limited',
-    'feishu_timeout', 'feishu_server_unavailable', 'feishu_api_error', 'feishu_api_error_generic',
-  ]
-  assertLocalized(codes.map(code => `datasource.syncError.${code}`))
-})
-
-test('DingTalk configuration and sync failures are localized', () => {
+test('DingTalk configuration texts are localized', () => {
   const keys = [
     'connector.dingtalk', 'connectorDesc.dingtalk',
     'field.clientId', 'field.clientSecret', 'field.operatorId', 'field.operatorIdHint',
     'prereqBarText_dingtalk', 'prereqOpenConsole_dingtalk',
     ...[1, 2, 3].flatMap(step => [`prereqStep${step}Brief_dingtalk`, `prereqStep${step}Desc_dingtalk`]),
-    'syncError.dingtalk_document_failed', 'syncError.dingtalk_resource_failed',
   ].map(key => `datasource.${key}`)
   assertLocalized(keys)
 })

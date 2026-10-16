@@ -153,7 +153,7 @@ func TestGetTenantAccessToken_FailureIsInvalidCredentials(t *testing.T) {
 	if !errors.Is(err, datasource.ErrInvalidCredentials) {
 		t.Fatalf("error = %v, want datasource.ErrInvalidCredentials", err)
 	}
-	if code, _, _ := feishuFailure(err); code != "feishu_auth_or_permission" {
+	if code, _ := feishuFailure(err); code != "feishu_auth_or_permission" {
 		t.Errorf("feishuFailure code = %q, want feishu_auth_or_permission", code)
 	}
 }
@@ -420,7 +420,7 @@ func TestGetTenantAccessToken_TransientFailureIsNotInvalidCredentials(t *testing
 		if err == nil || errors.Is(err, datasource.ErrInvalidCredentials) {
 			t.Fatalf("status %d: error = %v, want a non-credentials failure", tc.status, err)
 		}
-		if reason, _, _ := feishuFailure(err); reason != tc.reason {
+		if reason, _ := feishuFailure(err); reason != tc.reason {
 			t.Errorf("status %d: feishuFailure reason = %q, want %q", tc.status, reason, tc.reason)
 		}
 	}

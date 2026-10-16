@@ -1284,6 +1284,18 @@ func trimSuffixFold(value, suffix string) (string, bool) {
 	return value[:len(value)-len(suffix)], true
 }
 
+const (
+	reasonDocumentFailed = "dingtalk_document_failed"
+	reasonResourceFailed = "dingtalk_resource_failed"
+)
+
+// SyncReasonTexts maps every sync item reason code this connector emits to its
+// English fallback; the frontend localises the code as datasource.syncError.<code>.
+var SyncReasonTexts = map[string]string{
+	reasonDocumentFailed: "DingTalk document could not be read; retry on the next sync",
+	reasonResourceFailed: "DingTalk resource is unavailable; check access and the saved selection, then retry",
+}
+
 func failedDocument(
 	sourceResourceID string,
 	workspaceID string,
@@ -1299,8 +1311,8 @@ func failedDocument(
 			"workspace_id":      workspaceID,
 			"node_id":           document.ID,
 			"error":             err.Error(),
-			"error_reason_code": "dingtalk_document_failed",
-			"error_reason":      "DingTalk document could not be read; retry on the next sync",
+			"error_reason_code": reasonDocumentFailed,
+			"error_reason":      SyncReasonTexts[reasonDocumentFailed],
 		},
 	}
 }
@@ -1312,8 +1324,8 @@ func failedResource(resourceID string, err error) types.FetchedItem {
 		Metadata: map[string]string{
 			"channel":           types.ChannelDingtalk,
 			"error":             err.Error(),
-			"error_reason_code": "dingtalk_resource_failed",
-			"error_reason":      "DingTalk resource is unavailable; check access and the saved selection, then retry",
+			"error_reason_code": reasonResourceFailed,
+			"error_reason":      SyncReasonTexts[reasonResourceFailed],
 		},
 	}
 }

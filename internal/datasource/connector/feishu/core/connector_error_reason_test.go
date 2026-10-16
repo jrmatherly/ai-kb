@@ -130,7 +130,8 @@ func TestFeishuFailure(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			code, codeValue, fallback := feishuFailure(tc.err)
+			code, codeValue := feishuFailure(tc.err)
+			fallback := feishuReason(code, codeValue)
 			if code != tc.wantCode {
 				t.Errorf("code = %q, want %q", code, tc.wantCode)
 			}
@@ -187,7 +188,7 @@ func TestFeishuFailureFromClientErrors(t *testing.T) {
 			} else {
 				err = c.DoRequest(context.Background(), http.MethodGet, path, nil, nil)
 			}
-			if code, _, _ := feishuFailure(err); code != tc.want {
+			if code, _ := feishuFailure(err); code != tc.want {
 				t.Errorf("feishuFailure(%v) = %q, want %q", err, code, tc.want)
 			}
 		})

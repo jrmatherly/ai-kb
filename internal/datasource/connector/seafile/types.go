@@ -203,7 +203,7 @@ type dirent struct {
 }
 
 // Error reason codes surfaced on error items; the frontend localises them via
-// datasource.syncError.<code>.
+// datasource.syncError.<code> and SyncReasonTexts holds the English fallbacks.
 const (
 	reasonPermissionDenied = "seafile_permission_denied"
 	reasonNotFound         = "seafile_not_found"
@@ -215,7 +215,8 @@ const (
 	reasonFetchFailed      = "seafile_fetch_failed"
 )
 
-var reasonText = map[string]string{
+// SyncReasonTexts maps every reason code to its English fallback.
+var SyncReasonTexts = map[string]string{
 	reasonPermissionDenied: "Permission to access the Seafile resource was denied",
 	reasonNotFound:         "The Seafile resource was not found",
 	reasonFileTooLarge:     "The Seafile file exceeds the configured size limit",
@@ -228,8 +229,8 @@ var reasonText = map[string]string{
 
 // errorReason returns the English fallback text for a reason code.
 func errorReason(code string) string {
-	if text, ok := reasonText[code]; ok {
+	if text, ok := SyncReasonTexts[code]; ok {
 		return text
 	}
-	return reasonText[reasonFetchFailed]
+	return SyncReasonTexts[reasonFetchFailed]
 }

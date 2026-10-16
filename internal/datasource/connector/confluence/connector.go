@@ -575,7 +575,7 @@ func hasPages(spacePages map[string]map[string]string) bool {
 }
 
 func failedPageItem(resourceID string, summary page, err error) types.FetchedItem {
-	code, reason := classifyConfluenceError(err)
+	code := classifyConfluenceError(err)
 	return types.FetchedItem{
 		ExternalID:       summary.ID,
 		Title:            summary.Title,
@@ -584,32 +584,41 @@ func failedPageItem(resourceID string, summary page, err error) types.FetchedIte
 			"channel":           types.ChannelConfluence,
 			"error":             err.Error(),
 			"error_reason_code": code,
-			"error_reason":      reason,
+			"error_reason":      SyncReasonTexts[code],
 			"page_id":           summary.ID,
 		},
 	}
 }
 
-func classifyConfluenceError(err error) (code, reason string) {
+// SyncReasonTexts maps every sync item reason code this connector emits to its
+// English fallback; the frontend localises the code as datasource.syncError.<code>.
+var SyncReasonTexts = map[string]string{
+	"confluence_auth_or_permission": "Authentication or permission error; check credentials and space permissions",
+	"confluence_not_found":          "Confluence page was not found; will retry on the next sync",
+	"confluence_rate_limited":       "Confluence API rate limited; will retry on the next sync",
+	"confluence_server_unavailable": "Confluence service temporarily unavailable; will retry on the next sync",
+	"confluence_api_error":          "Confluence API error; see server logs",
+	"confluence_sync_failed":        "Confluence page could not be synced; see server logs",
+}
+
+func classifyConfluenceError(err error) string {
 	var api *apiError
 	if errors.As(err, &api) {
 		switch api.status {
 		case http.StatusUnauthorized, http.StatusForbidden:
-			return "confluence_auth_or_permission",
-				"Authentication or permission error; check credentials and space permissions"
+			return "confluence_auth_or_permission"
 		case http.StatusNotFound:
-			return "confluence_not_found", "Confluence page was not found; will retry on the next sync"
+			return "confluence_not_found"
 		case http.StatusTooManyRequests:
-			return "confluence_rate_limited", "Confluence API rate limited; will retry on the next sync"
+			return "confluence_rate_limited"
 		default:
 			if api.status >= 500 {
-				return "confluence_server_unavailable",
-					"Confluence service temporarily unavailable; will retry on the next sync"
+				return "confluence_server_unavailable"
 			}
-			return "confluence_api_error", "Confluence API error; see server logs"
+			return "confluence_api_error"
 		}
 	}
-	return "confluence_sync_failed", "Confluence page could not be synced; see server logs"
+	return "confluence_sync_failed"
 }
 
 func markdownItem(

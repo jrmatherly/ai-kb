@@ -78,58 +78,74 @@ func (t *fetchTally) summary() string {
 // item either reading points at the app's credentials, so it counts as auth.
 const feishuTenantTokenInvalid = 99991663
 
-// feishuFailure classifies a raw connector/API error into a stable i18n code
-// (mapped to a localized string on the frontend), an optional numeric Feishu
-// error code for interpolation, and an English fallback message for clients
-// without the i18n key. The raw status/JSON body/log_id is never returned here -
-// it stays in the server logs. Dumping it in the UI is the anti-pattern
-// Airbyte/Fivetran/Onyx warn against. Transient errors are retried next sync
-// (the cursor is retained); auth/permission errors point at the fix instead.
-func feishuFailure(err error) (code, codeValue, fallback string) {
+// SyncReasonTexts maps every sync item reason code this connector emits to its
+// English fallback; the frontend localises the code as datasource.syncError.<code>
+// and interpolates {code}. The parity test in internal/datasource/syncreason keeps
+// the two in step.
+var SyncReasonTexts = map[string]string{
+	"sync_failed": "Sync failed; will retry on the next sync",
+	"feishu_auth_or_permission": "Authentication or permission error; " +
+		"check the app credentials, its scopes and its access to the document.",
+	"feishu_not_found": "The Feishu document or folder was not found; it may have been deleted or moved, " +
+		"or its token is wrong. The next sync retries it.",
+	"feishu_rate_limited":       "Feishu API rate limited; will retry on the next sync",
+	"feishu_timeout":            "Export or request timed out; will retry on the next sync",
+	"feishu_server_unavailable": "Feishu service temporarily unavailable; will retry on the next sync",
+	"feishu_api_error":          "Feishu API error (code={code}); will retry on the next sync",
+	"feishu_api_error_generic":  "Feishu API error; will retry on the next sync",
+}
+
+// feishuFailure classifies a connector error into a SyncReasonTexts code and,
+// for feishu_api_error, the numeric Feishu code. The raw status, body and
+// log_id never reach the UI; they stay in the server logs. Transient errors
+// are retried next sync (the cursor is retained); auth and permission errors
+// point at the fix instead.
+func feishuFailure(err error) (code, codeValue string) {
 	apiErr, isAPIErr := errors.AsType[*APIError](err)
 	netErr, isNetErr := errors.AsType[net.Error](err)
 	exportErr, isExportErr := errors.AsType[*exportJobError](err)
 
 	switch {
 	case err == nil:
-		return "sync_failed", "", "Sync failed; will retry on the next sync"
+		return "sync_failed", ""
 	case errors.Is(err, datasource.ErrInvalidCredentials),
 		errors.Is(err, datasource.ErrPermissionDenied),
 		isAPIErr && apiErr.Code == feishuTenantTokenInvalid:
-		return "feishu_auth_or_permission", "",
-			"Authentication or permission error; check the app credentials, its scopes and its access to the document."
+		return "feishu_auth_or_permission", ""
 	case isAPIErr && apiErr.Status >= http.StatusInternalServerError:
-		return "feishu_server_unavailable", "", "Feishu service temporarily unavailable; will retry on the next sync"
+		return "feishu_server_unavailable", ""
 	case isAPIErr && (apiErr.Status == http.StatusTooManyRequests || apiErr.Code == feishuRateLimitCode):
-		return "feishu_rate_limited", "", "Feishu API rate limited; will retry on the next sync"
+		return "feishu_rate_limited", ""
 	case errors.Is(err, datasource.ErrResourceNotFound):
-		return "feishu_not_found", "",
-			"The Feishu document or folder was not found; it may have been deleted or moved, " +
-				"or its token is wrong. The next sync retries it."
+		return "feishu_not_found", ""
 	case errors.Is(err, errExportPollsExhausted),
 		errors.Is(err, context.DeadlineExceeded),
 		isNetErr && netErr.Timeout(),
 		isExportErr && exportErr.Status == 108:
-		return "feishu_timeout", "", "Export or request timed out; will retry on the next sync"
+		return "feishu_timeout", ""
 	case isAPIErr && apiErr.Code != 0:
-		v := strconv.Itoa(apiErr.Code)
-		return "feishu_api_error", v, fmt.Sprintf("Feishu API error (code=%s); will retry on the next sync", v)
+		return "feishu_api_error", strconv.Itoa(apiErr.Code)
 	case isAPIErr, isExportErr:
-		return "feishu_api_error_generic", "", "Feishu API error; will retry on the next sync"
+		return "feishu_api_error_generic", ""
 	default:
-		return "sync_failed", "", "Sync failed; will retry on the next sync"
+		return "sync_failed", ""
 	}
+}
+
+// feishuReason is the English fallback for a feishuFailure result.
+func feishuReason(code, codeValue string) string {
+	return strings.ReplaceAll(SyncReasonTexts[code], "{code}", codeValue)
 }
 
 // FeishuErrorItemMeta builds the metadata for a failed item: the raw error (for
 // server logs) plus the classified i18n code / param / fallback (for a
 // localisable SyncItemError in the UI), merged with any caller-supplied extras.
 func FeishuErrorItemMeta(err error, extra map[string]string) map[string]string {
-	code, codeValue, fallback := feishuFailure(err)
+	code, codeValue := feishuFailure(err)
 	m := map[string]string{
 		"error":             err.Error(),
 		"error_reason_code": code,
-		"error_reason":      fallback,
+		"error_reason":      feishuReason(code, codeValue),
 	}
 	if codeValue != "" {
 		m["error_reason_code_value"] = codeValue

@@ -13,14 +13,6 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
-// Sync-log codes for a run that deleted nothing on purpose; the frontend
-// localizes each as datasource.syncError.<code>.
-const (
-	syncCodeDeletionGuardTripped       = "deletion_guard_tripped"
-	syncCodeReconcileListingEmpty      = "reconcile_listing_empty"
-	syncCodeReconcileListingIncomplete = "reconcile_listing_incomplete"
-)
-
 // The mass-deletion guard holds back a run that would delete at least
 // deletionGuardMaxCount items, or at least deletionGuardMinCount items that are
 // also deletionGuardPercent of what the data source owns. 10% is the Algolia
@@ -157,7 +149,7 @@ func (s *DataSourceService) settleDeletions(
 	if reconcile && (next == nil || !next.CompleteListing) {
 		reconcile = false
 		incomplete = &types.SyncItemError{
-			Code:    syncCodeReconcileListingIncomplete,
+			Code:    types.SyncCodeReconcileListingIncomplete,
 			Message: "Deletions were not reconciled: the connector could not confirm a complete listing",
 		}
 	}
@@ -222,7 +214,7 @@ func (s *DataSourceService) settleDeletions(
 	case reconcile && len(d.seen) == 0 && ownedCount > 0:
 		// An empty listing more likely means lost access than an emptied source.
 		report.Held = &types.SyncItemError{
-			Code:   syncCodeReconcileListingEmpty,
+			Code:   types.SyncCodeReconcileListingEmpty,
 			Params: map[string]string{"owned": strconv.Itoa(ownedCount)},
 			Message: fmt.Sprintf("Deletions held back: the listing returned nothing while the data source "+
 				"owns %d item(s)", ownedCount),
@@ -230,7 +222,7 @@ func (s *DataSourceService) settleDeletions(
 	case len(doomed) > 0 && (d.held || deletionGuardTrips(len(doomed), ownedCount)):
 		percent := len(doomed) * 100 / ownedCount
 		report.Held = &types.SyncItemError{
-			Code: syncCodeDeletionGuardTripped,
+			Code: types.SyncCodeDeletionGuardTripped,
 			Params: map[string]string{
 				"count": strconv.Itoa(len(doomed)), "owned": strconv.Itoa(ownedCount),
 				"percent": strconv.Itoa(percent), "deselected": strconv.Itoa(report.Deselected),
