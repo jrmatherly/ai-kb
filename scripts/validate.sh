@@ -106,7 +106,7 @@ area_go() {
   if go_tests; then go test -count=1 -tags desktop ./internal/container; fi
   go build -o /dev/null ./cmd/server
   log_ok "go build ./cmd/server"
-  bash scripts/test-check-govulncheck.sh
+  if need jq; then bash scripts/test-check-govulncheck.sh; fi
   if need govulncheck jq; then scripts/check-govulncheck.sh; fi
 }
 
