@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Security
 
 - **FIXED**: The app image runtime is `debian:12.15-slim` with ca-certificates, curl, gosu and tzdata, upgraded at build time; node, uv, python3, build-essential, ffmpeg and the database clients are gone (2.1 GB to 0.6 GB). Every image applies its base's package updates at build time (`apt-get upgrade`, `apk upgrade` for nginx), and the Docker Images workflow rebuilds the newest release every Monday with a fresh base and no layer cache and re-pushes its tags and `latest`.
-- **FIXED**: Called govulncheck findings gate the Go CI job against a cited allowlist (`scripts/govulncheck-allowlist.txt`), weekly as well as on every Go change.
+- **FIXED**: Called govulncheck findings in the root, `cli` and `client` modules gate the Go CI job against a cited allowlist (`scripts/govulncheck-allowlist.txt`), weekly as well as on every Go change.
 - **FIXED**: A 500 response no longer carries wrapped internal errors (SQL, storage endpoints, upstream bodies). Clients get `{"code":1007,"message":"Internal server error"}` and every error body carries `request_id`, the `X-Request-ID` the server logs the cause under.
 - **FIXED**: 4xx responses no longer forward repository, storage, queue or driver text. Data sources, system settings, attachments, sandbox config, summaries, auth token, workspace switches and the presigned preview now answer with authored 4xx messages.
 
@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 - **FIXED**: Neo4j graph deletion runs `CALL (n) { DETACH DELETE n } IN TRANSACTIONS` instead of the deprecated `apoc.periodic.iterate` (Neo4j 5.23 or later).
 - **FIXED**: Feishu errors shown to users name the status, code and message instead of the raw response body; token endpoint codes are classified (10005, 10015, 99991543 credentials; 10014 permission; the rest upstream errors).
 - **FIXED**: Confluence, GitLab, DingTalk, Yuque, IMA and Seafile report a 403 as a permission problem and a 401 as bad credentials, so a data source with a scoped token is not flagged as misconfigured.
-- **FIXED**: Local Browser failures answer 503 for a store failure, 403 for an invalid grant and 502 for a daemon or owner-replica failure, across replicas too.
+- **FIXED**: Local Browser failures answer 503 for a store failure, 403 for an invalid grant and 502 for an owner-replica failure or an incompatible daemon, across replicas too; a daemon's own task error keeps the endpoint's status.
 - **FIXED**: RSS keeps the feed's own body when the extracted article page is shorter, so releases whose page extracts to a signature line are no longer skipped as duplicates.
 - **FIXED**: The chat onboarding tour no longer opens over a composer the user has started typing in; it waits for the next New Chat.
 - **FIXED**: Switching to a workspace that does not exist answers 403, as a missing membership does, instead of 500 for a superuser.
@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 
 - **CHANGED**: The compose default time zone is UTC (`TZ` in `.env` overrides it).
 - **CHANGED**: The compose redis service has a healthcheck and app, langfuse-web and langfuse-worker wait for it.
+- **CHANGED**: `dataset/` is a uv project (`pyproject.toml`, `uv.lock`, 7-day release cooldown); its tests and `qa_dataset.py` run through `uv run --project dataset --locked`.
 - **CHANGED**: Milvus uses the Go SDK `client/v3`, verified against Milvus 2.6.11 and 3.0.3 servers.
 
 ### Dependencies
