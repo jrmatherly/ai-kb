@@ -30,3 +30,4 @@ Darwin notes
 
 - `sed -i ''` (BSD sed needs the empty suffix). `rg` is installed (Homebrew); prefer it over grep for the CJK scan's `--pcre2`.
 - Upstream history for `git --git-dir=private/OLD-.git log ...` (archived clone, gitignored).
+- Live retriever round trips (skipped unless their env var is set): Milvus `AIKB_MILVUS_TEST_ADDR=127.0.0.1:19530`, Weaviate `AIKB_WEAVIATE_TEST_HOST=127.0.0.1:18080` (plain `semitechnologies/weaviate` container), Doris `AIKB_DORIS_TEST_ADDR=doris-fe:9030` run inside a `golang` container on the compose network (`docker compose --profile doris up -d`), since the package needs cgo and the FE names `doris-be`. `go test -run TestLiveRoundTrip ./internal/application/repository/retriever/<engine>/`.

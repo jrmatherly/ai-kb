@@ -250,7 +250,7 @@ aikb profile list --format json
 | Subcommand | Use | Description |
 | --- | --- | --- |
 | login | `login` | Authenticates the **active profile**: interactive email and password, or `--with-token` to read an API key from stdin (checked against `/auth/me` before it is stored) |
-| logout | `logout` | Clears the stored credentials of a profile; `--all` clears every profile |
+| logout | `logout` | Clears the stored credentials of a profile; `--all` clears every profile. The profile entry stays in `config.yaml`; `profile remove` deletes it |
 | list | `list` | Lists authentication profiles |
 | status | `status` | Shows the active profile, the principal and the token state |
 | refresh | `refresh` | Exchanges the stored refresh token for a new JWT access token |

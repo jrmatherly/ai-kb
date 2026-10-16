@@ -27,7 +27,7 @@ AI KB runs as three core processes, the main service, the frontend and the docum
 | `neo4j` | `neo4j` / `full` | Knowledge graph storage (GraphRAG), switched on with `NEO4J_ENABLE`, Bolt on `7687` |
 | `minio` | `minio` / `full` | Object storage (`STORAGE_TYPE=minio`) |
 | `qdrant` / `milvus` / `weaviate` | profile of the same name | Standalone vector databases (selected with `RETRIEVE_DRIVER`) |
-| `doris-fe` + `doris-be` | `doris` | Apache Doris 4.1 retrieval engine (FE MySQL 9030 / FE HTTP 8030 Stream Load / BE 8040) |
+| `doris-fe` + `doris-be` | `doris` | Apache Doris 4.1 retrieval engine (FE MySQL 9030 / FE HTTP 8030, Stream Load in `legacy` mode only / BE 8040) |
 | `odl-hybrid` | `odl-hybrid` | OpenDataLoader PDF hybrid parsing backend (docreader calls it over HTTP on `:5002`) |
 | `dex` | `dex` / `full` | OIDC test IdP (used with `OIDC_AUTH_ENABLE`) |
 | `langfuse-*` (web/worker/clickhouse/minio/db-init) | `langfuse` | Self-hosted LLM observability stack; reuses the AI KB `postgres` (a new `langfuse` database) and `redis` (DB 1) |
@@ -81,7 +81,7 @@ Besides the standard Docker Compose deployment, the repository supports:
 | `app` ↔ `redis` | RESP (TLS supported) | (1) Asynq task queue (document parsing, enrichment, Wiki, memory and other tasks); (2) the Stream Manager for SSE reconnection (`STREAM_MANAGER_TYPE`); (3) `system_settings` change Pub/Sub; (4) embed channel rate limiting; (5) distributed per-model concurrency semaphore |
 | `app` → `neo4j` | Bolt (`bolt://neo4j:7687`) | GraphRAG entity and relationship storage |
 | `app` → `searxng` / web search providers | HTTP | SSRF allowlist check (`SSRF_WHITELIST_EXTRA` admits the Compose hosts `searxng,qdrant,milvus,weaviate,doris-fe,doris-be,minio` by default; with `SSRF_DNS_WHITELIST_ONLY` on, only allowlisted egress is permitted) |
-| `app` → vector databases / object storage / LLM providers | Each vendor's SDK (HTTP, gRPC or MySQL protocol) | Doris uses the MySQL protocol plus Stream Load over HTTP |
+| `app` → vector databases / object storage / LLM providers | Each vendor's SDK (HTTP, gRPC or MySQL protocol) | Doris uses the MySQL protocol; `legacy` compat mode adds Stream Load over HTTP for partial updates |
 | `app` → sandbox backends | Docker Engine API / Cube and E2B control and data planes | Session execution, skill installation and file artifacts; chosen by the workspace sandbox configuration |
 | MCP clients → `app` | Streamable HTTP (`/mcp/:endpoint_id`, one Bearer token per endpoint) | The built-in MCP server exposes a workspace's knowledge base search and other capabilities to external MCP clients, see [MCP integration](../03-features/08-mcp.md) |
 | Chrome extension ↔ `app` | WebSocket (`/api/v1/local-browser/extension`, WSS for remote deployments) | Local Browser: the `app` process hosts the BrowserSkill daemon and the extension runs web tasks in the user's browser, see [Local Browser](../05-clients/09-local-browser.md) |

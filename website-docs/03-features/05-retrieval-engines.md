@@ -187,7 +187,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 `internal/application/repository/retriever/weaviate/repository.go`. HTTP and gRPC channels.
 
-- **Class management**: classes are created dynamically (from `WEAVIATE_COLLECTION`), with ReplicationConfig / ShardingConfig support.
+- **Class management**: classes are created dynamically as `{WEAVIATE_COLLECTION|Aikb_embeddings}_{dim}`, first letter upper-cased as Weaviate stores class names, with ReplicationConfig / ShardingConfig support.
 - **Vector retrieval**: GraphQL `nearVector` with certainty threshold pushdown; certainty = `(2-distance)/2 = (1+cos)/2`. The driver pushes `(1+threshold)/2` and converts results back to cosine similarity (`2*certainty-1`), the same scale as the other engines.
 - **Keyword retrieval**: the GraphQL **BM25** query (`Bm25ArgBuilder`) over `content_bigram`, which stores `content` with every Han, Kana and Hangul run split into overlapping bigrams plus single characters (`searchutil.CJKBigramsAndUnigrams`), under `lowercase` tokenization. The query is split into bigrams the same way (`searchutil.CJKBigrams`), so two-character words, longer phrases and single characters all match without a dictionary, and English words stay whole. Weaviate's own `gse` tokenizers are not used: the official images (1.34 to 1.40) cannot load their dictionaries (weaviate/weaviate#10097), and they split English into letters.
 - **Object IDs**: a UUID derived from the row's source ID, so a chunk and each of its generated questions are separate objects. Enable and tag updates find a chunk's objects by `chunk_id` and merge the property, 8 PATCHes in flight (Weaviate has no batch merge, weaviate/weaviate#2124).
@@ -197,7 +197,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 
 #### Apache Doris (4.1+)
 
-`internal/application/repository/retriever/doris/` (`repository.go` plus `schema.go` and `structs.go`). The MySQL protocol connects to the FE (9030); HTTP (8030) is used for Stream Load (SSRF-safe client).
+`internal/application/repository/retriever/doris/` (`repository.go` plus `schema.go` and `structs.go`). The MySQL protocol connects to the FE (9030); HTTP (8030) is used for Stream Load in `legacy` mode (SSRF-safe client).
 
 - **Table creation**: one table per dimension (prefix `DORIS_TABLE_PREFIX|aikb_embeddings`); `schema.go` generates the DDL: ANN index HNSW + `inner_product` (vectors are normalized before writes and queries, which equals cosine); the content column gets an **inverted index with the chinese parser** (no application-side tokenization). After the DDL, the driver polls until the ANN index is ready.
 - **Compat mode** `DORIS_COMPAT_MODE`: `auto` (probe) / `inner_product_duplicate` (DUPLICATE KEY table + `inner_product_approximate`) / `legacy` (`1 - cosine_distance_approximate`); not interchangeable once tables exist.
