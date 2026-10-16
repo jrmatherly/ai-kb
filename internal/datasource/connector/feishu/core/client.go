@@ -133,9 +133,11 @@ type APIError struct {
 	Body   string
 }
 
+// Error names the status, code and msg; the body is logged where the response
+// is read and never shown to users (a gateway's HTML page is not a message).
 func (e *APIError) Error() string {
 	if e.Status != 0 {
-		return fmt.Sprintf("%s: status=%d body=%s", e.Op, e.Status, e.Body)
+		return fmt.Sprintf("%s: status=%d code=%d msg=%s", e.Op, e.Status, e.Code, e.Msg)
 	}
 	return fmt.Sprintf("%s: code=%d msg=%s", e.Op, e.Code, e.Msg)
 }
@@ -148,7 +150,7 @@ func (e *APIError) Is(target error) bool {
 	case datasource.ErrPermissionDenied:
 		return e.Status == http.StatusForbidden || feishuPermissionCodes[e.Code]
 	case datasource.ErrInvalidCredentials:
-		return e.Status == http.StatusUnauthorized || e.Code == 1061005
+		return e.Status == http.StatusUnauthorized || feishuCredentialCodes[e.Code]
 	case datasource.ErrResourceNotFound:
 		return feishuNotFoundCodes[e.Code]
 	}
@@ -178,12 +180,21 @@ func (e *exportJobError) Is(target error) bool {
 }
 
 var (
-	// Drive folder not shared with the app (1061004); app disabled, missing a
-	// scope, not installed, or its token lacks the permission (99991662/72/73/76);
-	// then the wiki, docx, bitable and sheets permission-denied codes.
+	// Drive folder not shared with the app (1061004); app disabled by the
+	// tenant (10014, token endpoint); missing a scope, not installed, or the
+	// token lacks the permission (99991662/72/73/76); then the wiki, docx,
+	// bitable and sheets permission-denied codes.
 	feishuPermissionCodes = map[int]bool{
-		1061004: true, 99991662: true, 99991672: true, 99991673: true, 99991676: true,
+		1061004: true, 10014: true, 99991662: true, 99991672: true, 99991673: true, 99991676: true,
 		131006: true, 1770032: true, 1254302: true, 1310213: true,
+	}
+	// Token endpoint: app_id not found (10005), app_secret invalid (10015),
+	// app_id or app_secret invalid (99991543); then Drive's auth failure
+	// (1061005). Every other token code (10012, 10013 included) is a Feishu-side
+	// error, not the user's configuration. Source: Feishu's common error table,
+	// https://open.feishu.cn/document/ukTMukTMukTM/ugjM14COyUjL4ITN
+	feishuCredentialCodes = map[int]bool{
+		10005: true, 10015: true, 99991543: true, 1061005: true,
 	}
 	// Drive unknown folder token, then wiki, docx, bitable not found and the
 	// sheets not-found and deleted codes.
@@ -244,8 +255,7 @@ func (c *Client) GetTenantAccessToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("decode token response: %w", err)
 	}
 	if result.Code != 0 {
-		return "", fmt.Errorf("feishu auth error: code=%d msg=%s: %w",
-			result.Code, result.Msg, datasource.ErrInvalidCredentials)
+		return "", &APIError{Op: "feishu token", Code: result.Code, Msg: result.Msg}
 	}
 
 	c.tokenCache = result.TenantAccessToken

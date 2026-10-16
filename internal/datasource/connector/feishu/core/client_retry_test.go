@@ -138,24 +138,44 @@ func TestDoRequest_4xxReturnsAPIErrorWithBodyCode(t *testing.T) {
 	if !errors.Is(err, datasource.ErrPermissionDenied) {
 		t.Error("code 1061004 does not match datasource.ErrPermissionDenied")
 	}
-	if want := "feishu api error: status=400 body=" + body; err.Error() != want {
+	if want := "feishu api error: status=400 code=1061004 msg=forbidden"; err.Error() != want {
 		t.Errorf("error text = %q, want %q", err.Error(), want)
 	}
 }
 
-func TestGetTenantAccessToken_FailureIsInvalidCredentials(t *testing.T) {
-	resetFeishuRequestGates(t)
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: 10014, Msg: "app secret invalid"}})
-	}))
-	defer ts.Close()
+// Token endpoint codes per Feishu's common error table: 10015 is a bad
+// secret, 10014 an app the tenant disabled, 10012 an upstream error.
+func TestGetTenantAccessToken_TokenEndpointCodes(t *testing.T) {
+	for _, tc := range []struct {
+		code       int
+		sentinel   error
+		reasonCode string
+	}{
+		{10015, datasource.ErrInvalidCredentials, "feishu_auth_or_permission"},
+		{10014, datasource.ErrPermissionDenied, "feishu_auth_or_permission"},
+		{10012, nil, "feishu_api_error"},
+	} {
+		t.Run(fmt.Sprint(tc.code), func(t *testing.T) {
+			resetFeishuRequestGates(t)
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: tc.code, Msg: "token endpoint"}})
+			}))
+			defer ts.Close()
 
-	_, err := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL}).GetTenantAccessToken(context.Background())
-	if !errors.Is(err, datasource.ErrInvalidCredentials) {
-		t.Fatalf("error = %v, want datasource.ErrInvalidCredentials", err)
-	}
-	if code, _ := feishuFailure(err); code != "feishu_auth_or_permission" {
-		t.Errorf("feishuFailure code = %q, want feishu_auth_or_permission", code)
+			client := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL})
+			_, err := client.GetTenantAccessToken(context.Background())
+			if err == nil {
+				t.Fatal("error = nil, want a token failure")
+			}
+			for _, sentinel := range []error{datasource.ErrInvalidCredentials, datasource.ErrPermissionDenied} {
+				if got, want := errors.Is(err, sentinel), sentinel == tc.sentinel; got != want {
+					t.Errorf("errors.Is(err, %v) = %v, want %v (err = %v)", sentinel, got, want, err)
+				}
+			}
+			if code, _ := feishuFailure(err); code != tc.reasonCode {
+				t.Errorf("feishuFailure code = %q, want %q", code, tc.reasonCode)
+			}
+		})
 	}
 }
 

@@ -117,3 +117,27 @@ func TestGetSyncLogsRepositoryFailureIsScrubbed500(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, w.Code)
 	require.JSONEq(t, `{"success":false,"error":{"code":1007,"message":"Internal server error"}}`, w.Body.String())
 }
+
+// A Feishu failure that only carries an HTTP status and body (a gateway page)
+// reaches the client as status, code and msg; the body is logged, never shown.
+func TestListResourcesKeepsFeishuBodyOutOfErrorText(t *testing.T) {
+	registry := datasource.NewConnectorRegistry()
+	require.NoError(t, registry.Register(failingConnector{errs: map[string]error{
+		"gateway": fmt.Errorf("list folder: %w",
+			&feishu.APIError{
+				Op: "list drive files error", Status: http.StatusBadGateway, Body: "<html>bad gateway</html>",
+			}),
+	}}))
+	svc := service.NewDataSourceService(nil, nil, nil, nil, nil, registry, nil, nil, nil, nil)
+	r := newDataSourceTestRouter(NewDataSourceHandler(svc, nil))
+
+	req := httptest.NewRequest(http.MethodPost, "/datasource/list-resources",
+		strings.NewReader(`{"type":"fake","credentials":{},"parent_id":"gateway"}`))
+	req = req.WithContext(context.WithValue(req.Context(), types.TenantIDContextKey, uint64(1)))
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	require.Equal(t, http.StatusBadGateway, w.Code, w.Body.String())
+	require.Contains(t, w.Body.String(), "status=502")
+	require.NotContains(t, w.Body.String(), "<")
+	require.NotContains(t, w.Body.String(), "bad gateway")
+}
