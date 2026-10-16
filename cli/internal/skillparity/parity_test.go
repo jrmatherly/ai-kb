@@ -23,6 +23,9 @@ var (
 	codeFence  = regexp.MustCompile("(?s)```[a-zA-Z]*\\n(.*?)```")
 	inlineSpan = regexp.MustCompile("`aikb ([^`\\n]+)`")
 	longFlag   = regexp.MustCompile(`--[a-zA-Z][a-zA-Z0-9-]*`)
+	// A cobra command name: what a token after a resolved group must look like
+	// before it can be an unknown subcommand.
+	commandToken = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
 )
 
 // invocations returns the text after "aikb" for every fenced line that names
@@ -69,8 +72,9 @@ func checkInvocation(root *cobra.Command, flags, globals map[string]bool, inv st
 		sub := findSub(curr, toks[i])
 		if sub == nil {
 			// Groups are Runnable (they print help), so only the subcommand list says what they take.
-			if curr != root && curr.HasSubCommands() &&
-				!strings.HasPrefix(toks[i], "-") && !strings.HasPrefix(toks[i], "<") {
+			// Only a token shaped like a command name is a candidate subcommand; "...",
+			// "|" or a bare argument after a group is prose, not a typo.
+			if curr != root && curr.HasSubCommands() && commandToken.MatchString(toks[i]) {
 				problems = append(problems, "unknown subcommand "+curr.Name()+" "+toks[i])
 			}
 			break
@@ -214,5 +218,10 @@ func TestParityFailsOnUnknownSubcommand(t *testing.T) {
 	}
 	if problems := checkInvocation(root, flags, globals, "kb view my-kb"); len(problems) != 0 {
 		t.Fatalf("a leaf command with a positional argument must pass, got %q", problems)
+	}
+	for _, inv := range []string{"kb ...", "kb | jq .", "kb <subcommand>"} {
+		if problems := checkInvocation(root, flags, globals, inv); len(problems) != 0 {
+			t.Fatalf("prose after a group must pass: %q got %q", inv, problems)
+		}
 	}
 }
