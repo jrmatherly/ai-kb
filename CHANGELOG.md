@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Security
+
+- **FIXED**: The app image runtime is `debian:12.15-slim` with ca-certificates, curl, gosu and tzdata, upgraded at build time; node, uv, python3, build-essential, ffmpeg and the database clients are gone (2.1 GB to 0.6 GB). The Docker Images workflow rebuilds the newest release every Monday with a fresh base and no layer cache and re-pushes its tags and `latest`.
+- **FIXED**: Called govulncheck findings gate the Go CI job against a cited allowlist (`scripts/govulncheck-allowlist.txt`), weekly as well as on every Go change.
+- **FIXED**: A 500 response no longer carries wrapped internal errors (SQL, storage endpoints, upstream bodies). Clients get `{"code":1007,"message":"Internal server error"}` and every error body carries `request_id`, the `X-Request-ID` the server logs the cause under.
+- **FIXED**: 4xx responses no longer forward repository, storage, queue or driver text. Data sources, system settings, attachments, sandbox config, summaries, auth token, workspace switches and the presigned preview now answer with authored 4xx messages.
+
+### Bug Fixes
+
+- **FIXED**: Moving a knowledge base's indices no longer fails on a Milvus or Weaviate collection that was never created, and Weaviate deletes skip the extra schema probe.
+- **FIXED**: Neo4j graph deletion runs `CALL (n) { DETACH DELETE n } IN TRANSACTIONS` instead of the deprecated `apoc.periodic.iterate` (Neo4j 5.23 or later).
+- **FIXED**: Feishu errors shown to users name the status, code and message instead of the raw response body; token endpoint codes are classified (10005, 10015, 99991543 credentials; 10014 permission; the rest upstream errors).
+- **FIXED**: Confluence, GitLab, DingTalk, Yuque, IMA and Seafile report a 403 as a permission problem and a 401 as bad credentials, so a data source with a scoped token is not flagged as misconfigured.
+- **FIXED**: Local Browser failures answer 503 for a store failure, 403 for an invalid grant and 502 for a daemon or owner-replica failure, across replicas too.
+- **FIXED**: RSS keeps the feed's own body when the extracted article page is shorter, so releases whose page extracts to a signature line are no longer skipped as duplicates.
+- **FIXED**: The chat onboarding tour no longer opens over a composer the user has started typing in; it waits for the next New Chat.
+- **FIXED**: Switching to a workspace that does not exist answers 403, as a missing membership does, instead of 500 for a superuser.
+- **FIXED**: Feishu sync failures are classified by typed error, not message text. Permission, credential and not-found faults across Drive, wiki, docx, bitable and sheets are client errors (400) with specific sync reasons, and the Feishu reasons are localized.
+- **FIXED**: A rate-limited or failing Feishu token endpoint reads "feishu rate limited" or "feishu server error" instead of an auth failure, and API error bodies are cut on a UTF-8 boundary.
+- **FIXED**: A Feishu tenant token revoked before its expiry (99991663) is refetched once, instead of failing every remaining request of the sync.
+- **FIXED**: Weaviate keeps a chunk's generated-question rows apart from the chunk row, merges enable and tag updates, copies vectors correctly and fixes BM25 scoring.
+- **FIXED**: The first upload into a fresh Milvus or Weaviate store no longer fails on the delete-before-write, and a collection dropped behind the process is no longer retried forever.
+- **FIXED**: The Doris compose profile starts: FE and BE run in FQDN mode, the BE creates `DORIS_DATABASE`, and the bootstrap uses `DORIS_USERNAME` and `DORIS_PASSWORD`.
+- **FIXED**: docreader returns the converted spreadsheet only when conversion succeeds.
+- **FIXED**: The MCP server no longer sends the `create_model` `is_default` parameter the server ignores.
+- **FIXED**: CLI help text for `logout`, `resume` and `stop` matches what the commands do.
+
+### Features
+
+- **NEW**: Weaviate keyword search handles CJK text through app-side bigrams (`content_bigram`). A collection created before this change has no such property; drop it and re-index.
+- **NEW**: Every datasource sync reason code is tabled once per connector (Feishu, Confluence, DingTalk, Seafile) and checked against the frontend `datasource.syncError` keys.
+
+### Changes
+
+- **CHANGED**: The compose default time zone is UTC (`TZ` in `.env` overrides it).
+- **CHANGED**: The compose redis service has a healthcheck and app, langfuse-web and langfuse-worker wait for it.
+- **CHANGED**: Milvus uses the Go SDK `client/v3`, verified against Milvus 2.6.11 and 3.0.3 servers.
+
+### Dependencies
+
+- Compose and Helm service images: ParadeDB v0.26.1-pg18 (the compose data mount moves to `/var/lib/postgresql`), Redis 8.10.2, Milvus v3.0.3 (with a one-shot `milvus-volume-init`), Weaviate 1.40.1 (`ENABLE_TOKENIZER_GSE`), Qdrant 1.19.2, OpenSearch 3.9.0, Neo4j 2026.09.0. Frontend: pinia 4.1.0, @types/node 24.19.2.
+
 ## [2026.10.15.1] - 2026-10-15
 
 ### Security
