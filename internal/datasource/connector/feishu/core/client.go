@@ -122,9 +122,9 @@ func NewClient(config *Config) *Client {
 	}
 }
 
-// APIError is a Feishu API failure: a non-200 response (Status and Body set,
-// Code read from the body when it has one) or a 200 whose body carries a
-// nonzero Code. Its text keeps the status=/code= form feishuFailure reads.
+// APIError is a Feishu API failure: a response with Status and Body set (any
+// non-200, or a 200 carrying the rate-limit code; Code read from the body when
+// it has one) or a 200 whose body carries a nonzero Code.
 type APIError struct {
 	Op     string
 	Status int
@@ -142,18 +142,52 @@ func (e *APIError) Error() string {
 
 // Is maps Feishu failures to the datasource sentinels. 1061004 is Drive's "app
 // not shared this folder", 99991672 a missing app scope, 1061005 Drive's auth
-// failure and 1061003 an unknown folder token. A bare 404 is left unmapped: it
-// can be a retired route or a proxy, not the user's selection.
+// failure and 1061003 an unknown folder token; 131006 and 131005 are the wiki
+// API's permission denied and not found. A bare 404 is left unmapped: it can be
+// a retired route or a proxy, not the user's selection.
 func (e *APIError) Is(target error) bool {
 	switch target {
 	case datasource.ErrPermissionDenied:
-		return e.Status == http.StatusForbidden || e.Code == 1061004 || e.Code == 99991672
+		return e.Status == http.StatusForbidden || e.Code == 1061004 || e.Code == 99991672 || e.Code == 131006
 	case datasource.ErrInvalidCredentials:
 		return e.Status == http.StatusUnauthorized || e.Code == 1061005
 	case datasource.ErrResourceNotFound:
-		return e.Code == 1061003
+		return e.Code == 1061003 || e.Code == 131005
 	}
 	return false
+}
+
+// exportJobError is an export job Feishu reports as failed; Status is its
+// job_status. 109 and 110 are missing permission, 111 and 123 a deleted or
+// missing document, 108 a processing timeout.
+type exportJobError struct {
+	Status int
+	Msg    string
+}
+
+func (e *exportJobError) Error() string {
+	return fmt.Sprintf("export task failed: status=%d msg=%s", e.Status, e.Msg)
+}
+
+func (e *exportJobError) Is(target error) bool {
+	switch target {
+	case datasource.ErrPermissionDenied:
+		return e.Status == 109 || e.Status == 110
+	case datasource.ErrResourceNotFound:
+		return e.Status == 111 || e.Status == 123
+	}
+	return false
+}
+
+// newAPIError builds the APIError for a non-200 response, reading the Feishu
+// code from the body when it has one.
+func newAPIError(op string, status int, body []byte) *APIError {
+	var parsed ApiResponse
+	_ = json.Unmarshal(body, &parsed)
+	return &APIError{
+		Op: op, Status: status, Code: parsed.Code, Msg: parsed.Msg,
+		Body: truncateUTF8(string(body), 500),
+	}
 }
 
 // GetTenantAccessToken retrieves (or returns cached) tenant access token.
@@ -188,21 +222,15 @@ func (c *Client) GetTenantAccessToken(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("read token response: %w", err)
 	}
+	// A rate limit or server fault is not the user's credentials.
+	if resp.StatusCode >= 500 || isFeishuRateLimited(resp.StatusCode, respBody) {
+		return "", newAPIError("feishu token", resp.StatusCode, respBody)
+	}
 	var result TokenResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
 		return "", fmt.Errorf("decode token response: %w", err)
 	}
 	if result.Code != 0 {
-		// A rate limit or server fault is not the user's credentials; the
-		// prefixes are the ones feishuFailure reads for sync item reasons.
-		switch {
-		case resp.StatusCode == http.StatusTooManyRequests:
-			return "", fmt.Errorf("feishu rate limited: token status=%d code=%d msg=%s",
-				resp.StatusCode, result.Code, result.Msg)
-		case resp.StatusCode >= 500:
-			return "", fmt.Errorf("feishu server error: token status=%d code=%d msg=%s",
-				resp.StatusCode, result.Code, result.Msg)
-		}
 		return "", fmt.Errorf("feishu auth error: code=%d msg=%s: %w",
 			result.Code, result.Msg, datasource.ErrInvalidCredentials)
 	}
@@ -357,8 +385,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 			gate.cooldown(wait)
 			logger.Warnf(ctx, "[Feishu] rate limited: api=%q wait=%s attempt=%d/%d",
 				gate.api, wait, attempt, maxRetries)
-			lastErr = fmt.Errorf("feishu rate limited: status=%d body=%s",
-				resp.StatusCode, truncate(string(respBody), 500))
+			lastErr = newAPIError("feishu rate limited", resp.StatusCode, respBody)
 			if attempt < maxRetries {
 				continue
 			}
@@ -366,7 +393,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 		}
 
 		if resp.StatusCode >= 500 && resp.StatusCode < 600 {
-			lastErr = fmt.Errorf("feishu server error: status=%d body=%s", resp.StatusCode, truncate(string(respBody), 500))
+			lastErr = newAPIError("feishu server error", resp.StatusCode, respBody)
 			if attempt < max5xxRetries {
 				if sErr := sleepCtx(ctx, retry5xxDelay); sErr != nil {
 					return sErr
@@ -377,12 +404,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			var parsed ApiResponse
-			_ = json.Unmarshal(respBody, &parsed)
-			return &APIError{
-				Op: "feishu api error", Status: resp.StatusCode, Code: parsed.Code, Msg: parsed.Msg,
-				Body: truncateUTF8(string(respBody), 500),
-			}
+			return newAPIError("feishu api error", resp.StatusCode, respBody)
 		}
 
 		if result != nil {
@@ -721,7 +743,7 @@ func (c *Client) getExportTaskStatus(ctx context.Context, ticket string, token s
 	case 1, 2: // initializing, processing
 		return "", "", nil // not ready yet
 	default:
-		return "", "", fmt.Errorf("export task failed: status=%d msg=%s", r.JobStatus, r.JobErrorMsg)
+		return "", "", &exportJobError{Status: r.JobStatus, Msg: r.JobErrorMsg}
 	}
 }
 
@@ -865,15 +887,13 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 			if !isFeishuRateLimited(resp.StatusCode, body) {
 				logger.Errorf(ctx, "[Feishu] download GET %s → status=%d body=%s",
 					path, resp.StatusCode, truncate(string(body), 500))
-				return nil, fmt.Errorf("download failed: status=%d body=%s",
-					resp.StatusCode, truncate(string(body), 500))
+				return nil, newAPIError("download failed", resp.StatusCode, body)
 			}
 			wait := feishuRateLimitWait(resp.Header, time.Now())
 			gate.cooldown(wait)
 			logger.Warnf(ctx, "[Feishu] download rate limited: api=%q wait=%s attempt=%d/%d",
 				gate.api, wait, attempt, feishuMaxRetries)
-			lastErr = fmt.Errorf("download rate limited: status=%d body=%s",
-				resp.StatusCode, truncate(string(body), 500))
+			lastErr = newAPIError("download rate limited", resp.StatusCode, body)
 			if attempt < feishuMaxRetries {
 				continue
 			}
@@ -883,7 +903,7 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 		if resp.StatusCode >= 500 && resp.StatusCode < 600 {
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, maxFeishuErrorPreviewBytes))
 			resp.Body.Close()
-			lastErr = fmt.Errorf("download server error: status=%d body=%s", resp.StatusCode, truncate(string(body), 500))
+			lastErr = newAPIError("download server error", resp.StatusCode, body)
 			if attempt < feishuMax5xxRetries {
 				if sErr := sleepCtx(ctx, feishuRetry5xxDelay); sErr != nil {
 					return nil, sErr
@@ -897,7 +917,7 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, maxFeishuErrorPreviewBytes))
 			resp.Body.Close()
 			logger.Errorf(ctx, "[Feishu] download GET %s → status=%d body=%s", path, resp.StatusCode, truncate(string(body), 500))
-			return nil, fmt.Errorf("download failed: status=%d body=%s", resp.StatusCode, truncate(string(body), 500))
+			return nil, newAPIError("download failed", resp.StatusCode, body)
 		}
 
 		data, readErr := io.ReadAll(io.LimitReader(resp.Body, maxFeishuDownloadBytes+1))

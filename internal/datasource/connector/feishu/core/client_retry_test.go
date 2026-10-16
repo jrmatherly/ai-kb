@@ -357,6 +357,8 @@ func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
 		{&APIError{Code: 1061005}, datasource.ErrInvalidCredentials},
 		{&APIError{Code: 99991672}, datasource.ErrPermissionDenied},
 		{&APIError{Code: 1061003}, datasource.ErrResourceNotFound},
+		{&APIError{Status: http.StatusBadRequest, Code: 131006}, datasource.ErrPermissionDenied},
+		{&APIError{Status: http.StatusBadRequest, Code: 131005}, datasource.ErrResourceNotFound},
 	} {
 		if !errors.Is(fmt.Errorf("wrapped: %w", tc.err), tc.want) {
 			t.Errorf("%v does not match %v", tc.err, tc.want)
@@ -379,17 +381,21 @@ func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
 }
 
 func TestGetTenantAccessToken_TransientFailureIsNotInvalidCredentials(t *testing.T) {
+	rateLimited := `{"code":99991400,"msg":"try later"}`
 	for _, tc := range []struct {
 		status int
+		body   string
 		reason string
 	}{
-		{http.StatusTooManyRequests, "feishu_rate_limited"},
-		{http.StatusBadGateway, "feishu_server_unavailable"},
+		{http.StatusTooManyRequests, rateLimited, "feishu_rate_limited"},
+		{http.StatusBadRequest, rateLimited, "feishu_rate_limited"},
+		{http.StatusBadGateway, rateLimited, "feishu_server_unavailable"},
+		{http.StatusBadGateway, "<html>bad gateway</html>", "feishu_server_unavailable"},
 	} {
 		resetFeishuRequestGates(t)
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(tc.status)
-			writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: 99991400, Msg: "try later"}})
+			_, _ = io.WriteString(w, tc.body)
 		}))
 		c := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL})
 		_, err := c.GetTenantAccessToken(context.Background())

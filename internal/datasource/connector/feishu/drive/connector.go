@@ -512,8 +512,8 @@ func listDriveFilesForResource(
 // isDriveNotFolderError reports whether err indicates the token was not a
 // folder (1061002 params error from the list API when a file token is passed).
 func isDriveNotFolderError(err error) bool {
-	s := strings.ToLower(err.Error())
-	return strings.Contains(s, "1061002") || strings.Contains(s, "params error")
+	apiErr, ok := errors.AsType[*core.APIError](err)
+	return ok && apiErr.Code == 1061002
 }
 
 // filterDriveFileByToken returns only the entries whose Token matches token.

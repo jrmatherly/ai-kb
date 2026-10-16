@@ -1,7 +1,12 @@
 package core
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"strings"
 	"testing"
 )
@@ -21,41 +26,82 @@ func TestFeishuFailure(t *testing.T) {
 	}{
 		{
 			name:        "rate limited",
-			err:         errors.New("feishu rate limited: status=429 body={\"code\":99991400,\"msg\":\"too many request\"}"),
+			err:         newAPIError("feishu rate limited", http.StatusTooManyRequests, []byte(`{"code":99991400}`)),
 			wantCode:    "feishu_rate_limited",
-			fallbackHas: []string{"retry"},
-			noLeak:      []string{"body=", "{", "99991400"},
+			fallbackHas: []string{"retry", "next sync"},
+			noLeak:      []string{"body=", "{", "99991400", "automatically"},
 		},
 		{
 			name:     "server 5xx",
-			err:      errors.New("feishu server error: status=500 body={\"code\":1663}"),
+			err:      newAPIError("download server error", http.StatusInternalServerError, []byte(`{"code":1663}`)),
 			wantCode: "feishu_server_unavailable",
 			noLeak:   []string{"body=", "{"},
 		},
 		{
-			name: "export timeout",
-			err: errors.New("export \u5b63\u5ea6\u62a5\u544a (docx): export task timed out after 60s " +
-				"(ticket=abc)"),
+			name:     "rate limit code over HTTP 400",
+			err:      newAPIError("feishu rate limited", http.StatusBadRequest, []byte(`{"code":99991400}`)),
+			wantCode: "feishu_rate_limited",
+		},
+		{
+			name:     "export polls exhausted",
+			err:      fmt.Errorf("export report (docx): %w after 60 polls (ticket=abc)", errExportPollsExhausted),
 			wantCode: "feishu_timeout",
 			noLeak:   []string{"ticket=", "abc"},
 		},
 		{
-			name:          "api error carries the feishu code as a param",
-			err:           errors.New("feishu api error: status=500 body={\"code\":1663,\"msg\":\"internal error\",\"Error\":{\"log_id\":\"20260\"}}"),
+			name:     "request deadline",
+			err:      fmt.Errorf("execute request: %w", context.DeadlineExceeded),
+			wantCode: "feishu_timeout",
+		},
+		{
+			name:     "network timeout",
+			err:      fmt.Errorf("download request: %w", os.ErrDeadlineExceeded),
+			wantCode: "feishu_timeout",
+		},
+		{
+			name: "api error carries the feishu code as a param",
+			err: fmt.Errorf("list children of n1: %w", &APIError{
+				Op: "list wiki nodes error", Code: 1663, Msg: "internal error log_id=20260",
+			}),
 			wantCode:      "feishu_api_error",
 			wantCodeValue: "1663",
-			noLeak:        []string{"log_id", "body=", "{"},
+			noLeak:        []string{"log_id", "internal error"},
 		},
 		{
 			name:     "api error without a code is generic",
-			err:      errors.New("feishu api error: status=502 body=bad gateway"),
+			err:      &APIError{Op: "download failed", Status: http.StatusNotFound, Body: "not found"},
 			wantCode: "feishu_api_error_generic",
 		},
 		{
-			name:     "auth failure is actionable, not a retry",
-			err:      errors.New("feishu auth error: code=99991663 msg=Invalid access token"),
+			name:     "failed export task is generic",
+			err:      fmt.Errorf("export report (docx): %w", &exportJobError{Status: 3, Msg: "internal"}),
+			wantCode: "feishu_api_error_generic",
+		},
+		{
+			name:     "export job without permission",
+			err:      &exportJobError{Status: 110, Msg: "no permission"},
+			wantCode: "feishu_auth_or_permission",
+		},
+		{
+			name:     "export job timed out",
+			err:      &exportJobError{Status: 108},
+			wantCode: "feishu_timeout",
+		},
+		{
+			name:     "invalid tenant token is actionable, not a retry",
+			err:      &APIError{Op: "get wiki node error", Code: 99991663, Msg: "Invalid access token"},
 			wantCode: "feishu_auth_or_permission",
 			noLeak:   []string{"Invalid access token", "99991663"},
+		},
+		{
+			name:     "wiki permission denied",
+			err:      &APIError{Op: "list wiki nodes error", Code: 131006, Msg: "permission denied"},
+			wantCode: "feishu_auth_or_permission",
+		},
+		{
+			name:     "download forbidden",
+			err:      &APIError{Op: "download failed", Status: http.StatusForbidden},
+			wantCode: "feishu_auth_or_permission",
 		},
 		{
 			name:     "unknown error falls back to sync_failed",
@@ -64,21 +110,10 @@ func TestFeishuFailure(t *testing.T) {
 			noLeak:   []string{"totally unexpected"},
 		},
 		{
-			// "decode"/"encode"/"unicode" all contain the substring "code" but
-			// are not Feishu API errors - they must not be classified as one.
-			name:     "decode error is not a feishu api error",
-			err:      errors.New("failed to decode response body"),
+			// Only typed errors classify; keywords in plain text do not.
+			name:     "keyword in plain text is not a classification",
+			err:      errors.New("failed to decode response: permission timeout api error"),
 			wantCode: "sync_failed",
-		},
-		{
-			// The failed item is retried on the next sync (the cursor is not
-			// advanced), which for a manual-only source is not automatic. The
-			// message must not promise an unconditional automatic retry.
-			name:        "transient message promises retry on next sync, not automatic",
-			err:         errors.New("feishu rate limited: status=429"),
-			wantCode:    "feishu_rate_limited",
-			fallbackHas: []string{"next sync"},
-			noLeak:      []string{"automatically"},
 		},
 	}
 
@@ -103,6 +138,45 @@ func TestFeishuFailure(t *testing.T) {
 				if strings.Contains(code, s) || strings.Contains(fallback, s) {
 					t.Errorf("raw detail %q leaked into code/fallback (code=%q fallback=%q)", s, code, fallback)
 				}
+			}
+		})
+	}
+}
+
+// The client's real failures reach feishuFailure through its typed errors.
+func TestFeishuFailureFromClientErrors(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		status   int
+		body     string
+		download bool
+		want     string
+	}{
+		{"wiki 131006 over HTTP 400", http.StatusBadRequest, `{"code":131006}`, false, "feishu_auth_or_permission"},
+		{"api 400 with a code", http.StatusBadRequest, `{"code":1254000,"msg":"bad"}`, false, "feishu_api_error"},
+		{"download 403", http.StatusForbidden, "", true, "feishu_auth_or_permission"},
+		{"download 404 with a code", http.StatusNotFound, `{"code":1061003}`, true, "feishu_api_error"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			path := "/target"
+			if tc.download {
+				path = "/open-apis/drive/v1/files/f/download"
+			}
+			ts, cfg := retryTestServer(t, path, func(w http.ResponseWriter, _ *http.Request) {
+				w.WriteHeader(tc.status)
+				_, _ = io.WriteString(w, tc.body)
+			})
+			defer ts.Close()
+
+			c := NewClient(cfg)
+			var err error
+			if tc.download {
+				_, err = c.DownloadDriveFile(context.Background(), "f")
+			} else {
+				err = c.DoRequest(context.Background(), http.MethodGet, path, nil, nil)
+			}
+			if code, _, _ := feishuFailure(err); code != tc.want {
+				t.Errorf("feishuFailure(%v) = %q, want %q", err, code, tc.want)
 			}
 		})
 	}

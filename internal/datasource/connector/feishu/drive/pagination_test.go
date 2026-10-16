@@ -143,3 +143,33 @@ func TestClientDriveListFilesPagination(t *testing.T) {
 		})
 	}
 }
+
+// A selected file is not a folder: listing it answers 1061002, so the walk falls
+// back to the root folder and keeps only the selected file.
+func TestListDriveFilesForResource_FileSelectionFallsBackToRoot(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/open-apis/auth/v3/tenant_access_token/internal", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, core.TokenResponse{TenantAccessToken: "fake-token", Expire: 7200})
+	})
+	mux.HandleFunc("/open-apis/drive/v1/files", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("folder_token") == "file1" {
+			w.WriteHeader(http.StatusBadRequest)
+			writeJSON(w, core.ApiResponse{Code: 1061002, Msg: "params error."})
+			return
+		}
+		writeJSON(w, core.DriveFileListResponse{Data: core.DriveFileListData{
+			Files: []core.DriveFile{{Token: "file1", Type: "docx"}, {Token: "file2", Type: "docx"}},
+		}})
+	})
+	ts := httptest.NewServer(mux)
+	defer ts.Close()
+
+	client := core.NewClient(&core.Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL})
+	files, err := listDriveFilesForResource(context.Background(), client, makeDriveResourceID("root", "file1"))
+	if err != nil {
+		t.Fatalf("listDriveFilesForResource() error = %v", err)
+	}
+	if len(files) != 1 || files[0].Token != "file1" {
+		t.Fatalf("files = %+v, want only file1", files)
+	}
+}

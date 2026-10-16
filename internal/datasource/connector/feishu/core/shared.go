@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -73,16 +73,11 @@ func (t *fetchTally) summary() string {
 		t.discovered, t.fetched, t.failed, t.skipped(), t.skippedByType)
 }
 
-var reFeishuErrorCode = regexp.MustCompile(`code["\s]*[:=]\s*(\d+)`)
-
-// feishuErrorCode extracts the numeric Feishu error code from a raw error string
-// (e.g. `body={"code":1663,...}` or `code=1663`), best-effort.
-func feishuErrorCode(raw string) string {
-	if m := reFeishuErrorCode.FindStringSubmatch(raw); len(m) == 2 {
-		return m[1]
-	}
-	return ""
-}
+// feishuTokenCodes are the missing (99991661) and invalid tenant, app and user
+// token codes (99991663, 99991664, 99991668). 99991663 also means "endpoint
+// does not take a tenant token", so APIError.Is leaves them unmapped; for a sync
+// item either way the fix is the app's credentials or scopes.
+var feishuTokenCodes = map[int]bool{99991661: true, 99991663: true, 99991664: true, 99991668: true}
 
 // feishuFailure classifies a raw connector/API error into a stable i18n code
 // (mapped to a localized string on the frontend), an optional numeric Feishu
@@ -92,33 +87,30 @@ func feishuErrorCode(raw string) string {
 // Airbyte/Fivetran/Onyx warn against. Transient errors are retried next sync
 // (the cursor is retained); auth/permission errors point at the fix instead.
 func feishuFailure(err error) (code, codeValue, fallback string) {
-	if err == nil {
-		return "sync_failed", "", "Sync failed; will retry on the next sync"
-	}
-	s := strings.ToLower(err.Error())
+	apiErr, isAPIErr := errors.AsType[*APIError](err)
+	netErr, isNetErr := errors.AsType[net.Error](err)
+	exportErr, isExportErr := errors.AsType[*exportJobError](err)
 
 	switch {
-	case strings.Contains(s, "auth error"),
-		strings.Contains(s, "invalid access token"),
-		strings.Contains(s, "permission"),
-		strings.Contains(s, "forbidden"),
-		strings.Contains(s, "status=403"):
+	case err == nil:
+		return "sync_failed", "", "Sync failed; will retry on the next sync"
+	case errors.Is(err, datasource.ErrInvalidCredentials),
+		errors.Is(err, datasource.ErrPermissionDenied),
+		isAPIErr && feishuTokenCodes[apiErr.Code]:
 		return "feishu_auth_or_permission", "", "Authentication or permission error; check credentials and app scopes"
-	case strings.Contains(s, "rate limited"), strings.Contains(s, "status=429"):
+	case isAPIErr && apiErr.Status >= http.StatusInternalServerError:
+		return "feishu_server_unavailable", "", "Feishu service temporarily unavailable; will retry on the next sync"
+	case isAPIErr && (apiErr.Status == http.StatusTooManyRequests || apiErr.Code == feishuRateLimitCode):
 		return "feishu_rate_limited", "", "Feishu API rate limited; will retry on the next sync"
 	case errors.Is(err, errExportPollsExhausted),
-		strings.Contains(s, "timed out"),
-		strings.Contains(s, "timeout"),
-		strings.Contains(s, "deadline exceeded"):
+		errors.Is(err, context.DeadlineExceeded),
+		isNetErr && netErr.Timeout(),
+		isExportErr && exportErr.Status == 108:
 		return "feishu_timeout", "", "Export or request timed out; will retry on the next sync"
-	case strings.Contains(s, "server error"):
-		return "feishu_server_unavailable", "", "Feishu service temporarily unavailable; will retry on the next sync"
-	case strings.Contains(s, "api error"),
-		strings.Contains(s, "export task failed"),
-		strings.Contains(s, "download failed"):
-		if v := feishuErrorCode(err.Error()); v != "" {
-			return "feishu_api_error", v, fmt.Sprintf("Feishu API error (code=%s); will retry on the next sync", v)
-		}
+	case isAPIErr && apiErr.Code != 0:
+		v := strconv.Itoa(apiErr.Code)
+		return "feishu_api_error", v, fmt.Sprintf("Feishu API error (code=%s); will retry on the next sync", v)
+	case isAPIErr, isExportErr:
 		return "feishu_api_error_generic", "", "Feishu API error; will retry on the next sync"
 	default:
 		return "sync_failed", "", "Sync failed; will retry on the next sync"
