@@ -40,6 +40,7 @@ type fakeFeed struct {
 	server             *httptest.Server
 	feedTitle          string
 	itemContent        string // optional <description>/content for items
+	articleBody        string // article page body; longArticleBody when empty
 	articleAuthHeaders []string
 	articleFetches     atomic.Int32
 	failFeed           atomic.Bool
@@ -60,7 +61,7 @@ func newFakeFeed(t *testing.T) *fakeFeed {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprintf(w, `<!DOCTYPE html><html><head><title>%s</title></head>`+
 			`<body><nav>menu</nav><article><h1>Heading</h1>%s</article><footer>foot</footer></body></html>`,
-			"Full "+r.URL.Path, longArticleBody)
+			"Full "+r.URL.Path, firstNonEmpty(f.articleBody, longArticleBody))
 	})
 
 	mux.HandleFunc("/feed.xml", func(w http.ResponseWriter, r *http.Request) {
@@ -75,6 +76,9 @@ func newFakeFeed(t *testing.T) *fakeFeed {
 		w.Header().Set("Content-Type", "application/rss+xml")
 		base := "http://" + r.Host
 		desc := "summary fallback"
+		if f.itemContent != "" && f.itemContent != "needs-auth" {
+			desc = f.itemContent
+		}
 		fmt.Fprintf(w, `<?xml version="1.0"?>
 <rss version="2.0"><channel>
 <title>%s</title>
@@ -436,5 +440,42 @@ func TestResolveItem_FileNamePolicy(t *testing.T) {
 				t.Fatalf("source title changed: %q", result.item.Title)
 			}
 		})
+	}
+}
+
+const longFeedBody = `<p>The feed carries the whole release note inline: a first paragraph that explains what ` +
+	`changed in this version, why the maintainers made the change, and what operators should check before upgrading ` +
+	`their deployments.</p><p>A second paragraph lists the compatibility notes in enough detail that nobody needs to ` +
+	`open the page, which is exactly the case where the feed body is the richer source and must be kept.</p>`
+
+// The feed's own body wins when the page extracts less (a signature sentence
+// instead of the article), measured on llama.cpp releases on 2026-10-16.
+func TestResolveItemPrefersLongerFeedContent(t *testing.T) {
+	f := newFakeFeed(t)
+	f.itemContent = longFeedBody
+	f.articleBody = "<p>Short.</p>"
+	items, err := NewConnector().FetchAll(context.Background(), makeConfig(f.feedURL(), ""), nil)
+	if err != nil {
+		t.Fatalf("FetchAll error: %v", err)
+	}
+	if len(items) != 2 {
+		t.Fatalf("expected 2 items, got %d", len(items))
+	}
+	content := string(items[0].Content)
+	if !strings.Contains(content, "whole release note inline") || strings.Contains(content, "Short.") {
+		t.Errorf("expected the feed body to win over the shorter article, got: %q", content)
+	}
+}
+
+// The extracted page still wins when it carries more than the feed summary.
+func TestResolveItemKeepsRicherArticle(t *testing.T) {
+	f := newFakeFeed(t)
+	items, err := NewConnector().FetchAll(context.Background(), makeConfig(f.feedURL(), ""), nil)
+	if err != nil {
+		t.Fatalf("FetchAll error: %v", err)
+	}
+	content := string(items[0].Content)
+	if !strings.Contains(content, "first paragraph") || strings.Contains(content, "summary fallback") {
+		t.Errorf("expected the article text to win over the feed summary, got: %q", content)
 	}
 }

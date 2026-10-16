@@ -328,12 +328,17 @@ func (c *Connector) resolveItem(
 ) resolvedFeedItem {
 	title := firstNonEmpty(item.Title, "untitled")
 
-	// Prefer full article text; fall back to feed-provided content on failure.
-	contentHTML := feedContent
+	// Fetch the article page and keep whichever Markdown is longer, the page's
+	// or the feed's own body: readability can return a signature sentence for a
+	// page whose feed entry carries the whole text.
+	content := htmlToMarkdown(feedContent)
 	articleFailed := false
 	if strings.TrimSpace(item.Link) != "" {
 		if articleHTML, articleTitle, err := cli.extractArticle(ctx, item.Link); err == nil {
-			contentHTML = articleHTML
+			article := htmlToMarkdown(articleHTML)
+			if len(strings.TrimSpace(article)) > len(strings.TrimSpace(content)) {
+				content = article
+			}
 			if item.Title == "" && articleTitle != "" {
 				title = articleTitle
 			}
@@ -342,8 +347,6 @@ func (c *Connector) resolveItem(
 			logger.Warnf(ctx, "[RSS] full-text fetch failed for %s (using feed content): %v", item.Link, err)
 		}
 	}
-
-	content := htmlToMarkdown(contentHTML)
 
 	updatedAt := time.Now().UTC()
 	switch {
