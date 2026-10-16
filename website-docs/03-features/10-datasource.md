@@ -202,6 +202,7 @@ Confluence Server / Data Center and Confluence Cloud are both supported, both wi
 - **Fetching**: `gofeed` parses RSS, Atom and JSON feeds. When an entry has a link, the article page is fetched and run through the readability extractor; on success the full text wins, on failure the feed's own content (`content:encoded` / `description`) is used. HTML is converted to Markdown with `html-to-markdown/v2`. The entry ID is the first non-empty of `GUID > Link > Title`.
 - **Incremental logic**: two-level fingerprint. The feed-side signal fingerprint (`feedSignalFingerprint`) is compared first, and an unchanged entry is not even fetched; then the SHA-256 of the fetched content is compared. **Deletion sync is not supported** (feeds roll old entries off naturally).
 - **Partial failure**: when one feed fails to fetch or parse, its old cursor is kept (`copyFeedCursor`) and the other feeds continue; the result is reported as `datasource.PartialFetchError` (the SyncLog records `partial`). Only when every feed fails is the whole sync an error.
+- **Deduplication**: entries are deduplicated by content within a knowledge base. If two RSS data sources in the same knowledge base fetch an identical entry, the first source owns the document and the second counts it as skipped; use one data source with several feed URLs to avoid overlap.
 
 ### Data source lifecycle and REST API
 

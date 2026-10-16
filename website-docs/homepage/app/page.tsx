@@ -91,11 +91,11 @@ export default function Home() {
         <ProductGallery id="wiki-gallery" label="Wiki" slides={wikiSlides} />
       </section>
       <section id="ecosystem" className={`${s.shell} ${s.section}`} aria-labelledby="ecosystem-title">
-        <div className={s.sectionHeading}><div><p className={s.eyebrow}>05 / INTEGRATIONS</p><h2 id="ecosystem-title">Data sources and tool integrations</h2></div><p>Sync material from Feishu, Confluence, GitLab and other platforms,<br />then query and use it through IM, browser extensions, MCP or the API.</p></div>
+        <div className={s.sectionHeading}><div><p className={s.eyebrow}>05 / INTEGRATIONS</p><h2 id="ecosystem-title">Data sources and tool integrations</h2></div><p>Sync material from Feishu, Confluence, GitLab and other platforms,<br />then query and use it through IM, MCP or the API.</p></div>
         <div className={s.ecosystem}>
           <div className={s.ecosystemColumn}><Icon name="sources" /><h3>Import and sync material</h3><p>Upload files, import web pages or connect external data sources.</p><div className={s.integrations}>{dataSources.map(item => <span key={item.name}><IntegrationMark item={item} /></span>)}</div><a className={s.textLink} href={guide("03-features/10-datasource")}>Data source integration <Icon name="arrow" /></a></div>
           <div className={s.ecosystemCore}><BrandLogo /><span>Team knowledge base and agents</span><div>Understand · Retrieve · Reason · Act</div></div>
-          <div className={s.ecosystemColumn}><Icon name="channels" /><h3>Use it from the tools you already have</h3><p>IM Q&amp;A, browser extensions, MCP clients and developer tool integrations.</p><div className={s.integrations}>{clients.map(item => <span key={item.name}><IntegrationMark item={item} /></span>)}</div><a className={s.textLink} href={guide("03-features/12-im-integration")}>Clients and channels <Icon name="arrow" /></a></div>
+          <div className={s.ecosystemColumn}><Icon name="channels" /><h3>Use it from the tools you already have</h3><p>IM Q&amp;A, MCP clients and developer tool integrations.</p><div className={s.integrations}>{clients.map(item => <span key={item.name}><IntegrationMark item={item} /></span>)}</div><a className={s.textLink} href={guide("03-features/12-im-integration")}>Clients and channels <Icon name="arrow" /></a></div>
         </div>
         <div className={s.models}><span>Your choice of models · 30 built-in providers plus Ollama <a className={s.textLink} href={guide("03-features/06-models")}>See all <Icon name="arrow" /></a></span>{modelProviders.map(item => <p key={item.name}><IntegrationMark item={item} /></p>)}</div>
       </section>
