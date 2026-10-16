@@ -25,6 +25,7 @@ Upstream and English-only
 
 - `.claude/skills/upstream-review/scripts/upstream-review.sh [--stat|--urls|--show <sha>|--diverged|--advance <sha>]`.
 - `scripts/check-english-only.sh [-n|--summary] [path...]` exits 1 while CJK text remains; `scripts/check-emdash.sh [--cached]`; `scripts/check-workflows.sh`.
+- Vulnerabilities: `scripts/check-govulncheck.sh` (symbol-level findings against `scripts/govulncheck-allowlist.txt`, needs govulncheck and jq; `bash scripts/test-check-govulncheck.sh` tests the gate).
 
 Darwin notes
 

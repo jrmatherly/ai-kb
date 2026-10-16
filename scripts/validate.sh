@@ -58,7 +58,8 @@ areas=()
 if any_root_go || has Makefile 'config/*' 'migrations/*' 'skills/preloaded/*' 'testdata/*' docker/Dockerfile.app \
   'internal/textconv/data/*' 'internal/models/catalog/data/*' 'internal/models/parity/testdata/*' \
   'internal/models/providers/assets/*' cmd/desktop/build/windows/installer/project.nsi .golangci.yml \
-  frontend/src/i18n/locales/en-US.ts; then areas+=(go); fi
+  frontend/src/i18n/locales/en-US.ts scripts/check-govulncheck.sh scripts/test-check-govulncheck.sh \
+  scripts/govulncheck-allowlist.txt; then areas+=(go); fi
 if has 'cli/*' .golangci.yml; then areas+=(cli); fi
 if has 'client/*' .golangci.yml; then areas+=(client); fi
 if has 'frontend/*' scripts/build_frontend_dist.sh scripts/test_embed_nginx.py scripts/verify_frontend_pr.sh; then areas+=(frontend); fi
@@ -105,6 +106,8 @@ area_go() {
   if go_tests; then go test -count=1 -tags desktop ./internal/container; fi
   go build -o /dev/null ./cmd/server
   log_ok "go build ./cmd/server"
+  bash scripts/test-check-govulncheck.sh
+  if need govulncheck jq; then scripts/check-govulncheck.sh; fi
 }
 
 area_cli() {

@@ -31,6 +31,9 @@ on:
       - "scripts/*license*.sh"
       - "scripts/git-hooks/**"
       - "scripts/test-git-hooks.sh"
+      - "scripts/check-govulncheck.sh"
+      - "scripts/test-check-govulncheck.sh"
+      - "scripts/govulncheck-allowlist.txt"
       - "cmd/desktop/build/windows/installer/project.nsi"
       - ".github/workflows/app.yml"
   pull_request:
@@ -59,9 +62,14 @@ on:
       - "scripts/*license*.sh"
       - "scripts/git-hooks/**"
       - "scripts/test-git-hooks.sh"
+      - "scripts/check-govulncheck.sh"
+      - "scripts/test-check-govulncheck.sh"
+      - "scripts/govulncheck-allowlist.txt"
       - "cmd/desktop/build/windows/installer/project.nsi"
       - ".github/workflows/app.yml"
   workflow_dispatch:
+  schedule:
+    - cron: "41 6 * * 1" # weekly: a new advisory needs no commit to be caught
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -147,6 +155,12 @@ jobs:
           go vet "${pkgs[@]}"
           go test "${pkgs[@]}"
           go test -tags desktop ./internal/container
+
+      - name: 🔎 govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
+          bash scripts/test-check-govulncheck.sh
+          scripts/check-govulncheck.sh
 
       - name: 🏗️ Build server
         run: go build ./cmd/server

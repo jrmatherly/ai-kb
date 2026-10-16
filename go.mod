@@ -43,6 +43,7 @@ require (
 	github.com/minio/minio-go/v7 v7.3.0
 	github.com/mmcdole/gofeed v1.5.0
 	github.com/neo4j/neo4j-go-driver/v6 v6.3.0
+	// govulncheck: 8 module-wide ollama entries accepted, see scripts/govulncheck-allowlist.txt
 	github.com/ollama/ollama v0.40.1
 	github.com/open-dingtalk/dingtalk-stream-sdk-go v0.9.2-beta.1
 	github.com/opensearch-project/opensearch-go/v4 v4.7.3
