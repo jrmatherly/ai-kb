@@ -23,6 +23,11 @@ on:
       - "SECURITY.md"
       - "CLAUDE.md"
       - "AGENTS.md"
+  # Weekly rebuild of the newest release with a fresh base image, so Debian security updates reach the
+  # images operators pull. Also on demand.
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,6 +40,34 @@ env:
   IMAGE_PREFIX: ghcr.io/jrmatherly/ai-kb
 
 jobs:
+  release:
+    name: 🏷️ Release tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: 📥 Checkout
+        if: github.event_name != 'push'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # A push builds the triggering ref and leaves both outputs empty. A scheduled or dispatched run
+      # builds the newest release tag and re-pushes it under the tag, the bare version and latest.
+      - name: 🏷️ Newest release tag
+        id: release
+        if: github.event_name != 'push'
+        run: |
+          tag=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          [ -n "$tag" ] || { echo "no v* tag found" >&2; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
   build-ui:
     name: 🐳 ui image
     runs-on: ubuntu-latest
@@ -42,11 +75,14 @@ jobs:
     permissions:
       contents: read
       packages: write
+    needs: [release]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Empty on a push (the triggering ref); the newest release on a scheduled or dispatched run.
+          ref: ${{ needs.release.outputs.tag }}
 
       - name: 🏷️ Prepare version info
         id: version
@@ -71,13 +107,18 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-ui
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
 
       - name: 🐳 Build and push ui image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           push: true
           platforms: linux/amd64,linux/arm64
           file: frontend/Dockerfile
@@ -96,6 +137,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+    needs: [release]
     steps:
       - name: 🛑 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
@@ -113,6 +155,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Empty on a push (the triggering ref); the newest release on a scheduled or dispatched run.
+          ref: ${{ needs.release.outputs.tag }}
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -131,13 +175,18 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-docreader
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
 
       - name: 🐳 Build and push docreader image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           push: true
           platforms: linux/amd64,linux/arm64
           file: docker/Dockerfile.docreader
@@ -154,11 +203,14 @@ jobs:
     permissions:
       contents: read
       packages: write
+    needs: [release]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Empty on a push (the triggering ref); the newest release on a scheduled or dispatched run.
+          ref: ${{ needs.release.outputs.tag }}
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -177,13 +229,18 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
 
       - name: 🐳 Build and push sandbox image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           push: true
           platforms: linux/amd64,linux/arm64
           file: docker/Dockerfile.sandbox
@@ -203,15 +260,20 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
           flavor: |
             suffix=-cube,onlatest=true
 
       - name: 🐳 Build and push sandbox Cube image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           push: true
           platforms: linux/amd64,linux/arm64
           file: docker/Dockerfile.sandbox
@@ -229,15 +291,20 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
           flavor: |
             suffix=-desktop,onlatest=true
 
       - name: 🐳 Build and push sandbox desktop image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           push: true
           platforms: linux/amd64,linux/arm64
           file: docker/Dockerfile.sandbox
@@ -255,15 +322,20 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-sandbox
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
           flavor: |
             suffix=-desktop-cube,onlatest=true
 
       - name: 🐳 Build and push sandbox desktop Cube image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           push: true
           platforms: linux/amd64,linux/arm64
           file: docker/Dockerfile.sandbox
@@ -290,11 +362,14 @@ jobs:
     permissions:
       contents: read
       packages: write
+    needs: [release]
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # Empty on a push (the triggering ref); the newest release on a scheduled or dispatched run.
+          ref: ${{ needs.release.outputs.tag }}
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -313,9 +388,12 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-app
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
 
       - name: 🏷️ Prepare version info
         id: version
@@ -336,6 +414,8 @@ jobs:
         id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
           platforms: ${{ matrix.platform }}
           file: docker/Dockerfile.app
           context: .
@@ -371,6 +451,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs:
+      - release
       - build-app
     permissions:
       contents: read
@@ -400,9 +481,12 @@ jobs:
           images: ${{ env.IMAGE_PREFIX }}-app
           # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
             type=ref,event=tag
             type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ needs.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
 
       - name: 🚀 Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
