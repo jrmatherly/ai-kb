@@ -87,6 +87,7 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 - `.github/**`: replaced by our own CI, not removed; port command changes by hand (see above). Upstream's originals are archived in `private/OLD-.github/`.
 - 36 paths renamed by `map.tsv` on 2026-10-12 (`cli/skills/weknora-*`, `packages/dsh-weknora`, `Formula/weknora-lite.rb`, `frontend/public/weknora-widget.js`, systemd units, `mcp-server/weknora_mcp_server.py`, `frontend/src/assets/img/weknora.png`): an upstream change to the old path is ported to the path the map gives it.
 - `mcp-server/*.egg-info/` (2026-10-13): setuptools build metadata, regenerated from `mcp-server/README.md` and `pyproject.toml` by every build, so the tracked copy went stale and `validate.sh` dirtied the tree. Now gitignored; an upstream change there needs no port.
+- `examples/mcp-demo/requirements.txt` (2026-10-16): replaced by `pyproject.toml` and `uv.lock` so the demo gets the 7-day cooldown; original in `private/removed/`.
 - Add a line here for every later removal, with where the content went or why it is gone.
 
 ## Version and changelog
@@ -96,7 +97,7 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 
 ## Dependencies
 
-Since 2026-10-13 this copy runs its own upgrade policy (plan and holds in `private/findings/2026-10-13-dependency-upgrades.md`): `go.mod`, `go.sum`, every `package.json` and `package-lock.json`, `docreader/uv.lock`, `mcp-server/uv.lock` and the `cli/` and `client/` module files are ours, and every lockfile shows `~`. A dependency-only upstream commit is SKIP unless it fixes an advisory or a bug we have; then take the version, never the hunk: `go get`, `npm install` or `uv lock -P` the named package, and rerun the area's validate checks. Never merge an upstream lockfile hunk.
+Since 2026-10-13 this copy runs its own upgrade policy (plan and holds in `private/findings/2026-10-13-dependency-upgrades.md`): `go.mod`, `go.sum`, every `package.json` and `package-lock.json`, `docreader/uv.lock`, `mcp-server/uv.lock`, `examples/mcp-demo/uv.lock` and the `cli/` and `client/` module files are ours, and every lockfile shows `~`. A dependency-only upstream commit is SKIP unless it fixes an advisory or a bug we have; then take the version, never the hunk: `go get`, `npm install` or `uv lock -P` the named package, and rerun the area's validate checks. Never merge an upstream lockfile hunk.
 
 Cooldown: an ordinary upgrade takes only releases at least 7 days old. Dependabot's `cooldown.default-days: 7` covers version PRs, each npm project's `.npmrc` sets `min-release-age=7` (npm >= 11.10; `npm ci` still installs the lockfile as is) and each uv project's `[tool.uv] exclude-newer = "7 days"` covers `uv lock`. Go has no setting: pick a version at least 7 days old by hand. A release that fixes a published advisory (including a repository advisory not yet in the npm audit database) skips the cooldown when it needs no refactor: `npm install pkg@x --min-release-age=0`, `uv lock -P pkg --exclude-newer false`.
 

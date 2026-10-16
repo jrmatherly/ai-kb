@@ -21,7 +21,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-`start.sh` creates `.venv` and installs the dependencies. It listens on `http://127.0.0.1:8010/mcp` by default (set `MCP_HOST` to change the bind address), with auth token `ai-kb-demo-token`.
+`start.sh` runs the server with `uv run`, which creates the environment from `uv.lock`. It listens on `http://127.0.0.1:8010/mcp` by default (set `MCP_HOST` to change the bind address), with auth token `ai-kb-demo-token`.
 
 To customize:
 
@@ -37,8 +37,7 @@ In another terminal:
 
 ```bash
 cd examples/mcp-demo
-source .venv/bin/activate
-python test_tools.py
+uv run python test_tools.py
 ```
 
 It should list 6 tools and resolve 6 `lookup_policy` topics.

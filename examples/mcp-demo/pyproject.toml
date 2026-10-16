@@ -1,0 +1,13 @@
+[project]
+name = "ai-kb-mcp-demo"
+version = "0.1.0"
+description = "Example MCP server for connecting to AI KB"
+requires-python = ">=3.11"
+dependencies = ["mcp>=2,<3", "uvicorn>=0.24.0"]
+
+[dependency-groups]
+dev = ["httpx>=0.27.0"]
+
+[tool.uv]
+required-version = ">=0.13.0"
+exclude-newer = "7 days"
