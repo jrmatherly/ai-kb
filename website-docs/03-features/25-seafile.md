@@ -83,6 +83,8 @@ Sync log error codes:
 | `seafile_ssrf_blocked` | The download URL was blocked by the SSRF policy |
 | `seafile_fetch_failed` | Any other fetch failure; retried in the next sync |
 
+The frontend localizes each code as `datasource.syncError.<code>`; `SyncReasonTexts` in `connector/seafile/types.go` holds the English fallbacks, and a Go test checks the two lists agree.
+
 ## Notes
 
 Keep these limits in mind when you change a data source or clean up after one.

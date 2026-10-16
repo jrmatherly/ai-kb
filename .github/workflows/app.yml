@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - "**/*.go"
+      - "frontend/src/i18n/locales/en-US.ts" # datasource.syncError keys, checked by internal/datasource/syncreason
       - "!cli/**"
       - "!client/**"
       - "!docreader/**"
@@ -35,6 +36,7 @@ on:
   pull_request:
     paths:
       - "**/*.go"
+      - "frontend/src/i18n/locales/en-US.ts" # datasource.syncError keys, checked by internal/datasource/syncreason
       - "!cli/**"
       - "!client/**"
       - "!docreader/**"

@@ -52,11 +52,13 @@ root_go() { [[ "$1" == *.go || "$1" == go.mod || "$1" == go.sum ]] && [[ "$1" !=
 any_root_go() { local p; for p in "${changed[@]}"; do root_go "$p" && return 0; done; return 1; }
 
 # Trigger paths are the workflows' `paths:` filters. app.yml also triggered on license, hook and
-# model-catalog files; those have their own, faster areas below.
+# model-catalog files; those have their own, faster areas below. The locale bundle is a Go trigger
+# because internal/datasource/syncreason checks its datasource.syncError keys.
 areas=()
 if any_root_go || has Makefile 'config/*' 'migrations/*' 'skills/preloaded/*' 'testdata/*' docker/Dockerfile.app \
   'internal/textconv/data/*' 'internal/models/catalog/data/*' 'internal/models/parity/testdata/*' \
-  'internal/models/providers/assets/*' cmd/desktop/build/windows/installer/project.nsi .golangci.yml; then areas+=(go); fi
+  'internal/models/providers/assets/*' cmd/desktop/build/windows/installer/project.nsi .golangci.yml \
+  frontend/src/i18n/locales/en-US.ts; then areas+=(go); fi
 if has 'cli/*' .golangci.yml; then areas+=(cli); fi
 if has 'client/*' .golangci.yml; then areas+=(client); fi
 if has 'frontend/*' scripts/build_frontend_dist.sh scripts/test_embed_nginx.py scripts/verify_frontend_pr.sh; then areas+=(frontend); fi
