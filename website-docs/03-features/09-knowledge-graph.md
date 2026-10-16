@@ -123,7 +123,7 @@ CALL apoc.merge.node(row.labels, {name: row.name, kg: row.knowledge_id}, row.pro
 SET node.chunks = apoc.coll.union(node.chunks, row.chunks)
 ```
 
-- Deleting a knowledge item or knowledge base (`knowledge_delete.go`, `knowledgebase.go`), reparsing (`knowledge_process.go`) and moving (`knowledge_clone_move.go`) call `DelGraph`, which removes relationships and then nodes with `apoc.periodic.iterate` in parallel batches of 1000.
+- Deleting a knowledge item or knowledge base (`knowledge_delete.go`, `knowledgebase.go`), reparsing (`knowledge_process.go`) and moving (`knowledge_clone_move.go`) call `DelGraph`, which runs `CALL (n) { DETACH DELETE n } IN TRANSACTIONS OF 1000 ROWS` over the knowledge base's nodes in one pass (relationships go with their nodes, no APOC).
 - The `SearchNode` query has two caps so that a short or common entity name cannot pull back the whole graph:
   - Only entities with at least one relationship can be expansion seeds, at most 200 of them. Exact name matches rank first, then shorter names, then alphabetical order.
   - At most 2000 (entity, relationship) rows are returned in the same order, so a truncated result keeps the neighbourhoods of the top-ranked seeds. Hitting the row cap writes a Warn log saying the result was truncated.
