@@ -127,7 +127,7 @@ func (m *Manager) Close() {
 }
 
 func (m *Manager) start(ctx context.Context) (*daemon, error) {
-	home, err := os.MkdirTemp("/tmp", "wkb-")
+	home, err := os.MkdirTemp("/tmp", "aikb-")
 	if err != nil {
 		return nil, err
 	}

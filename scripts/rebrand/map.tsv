@@ -79,3 +79,6 @@ Weknora(?=[A-Z])	Aikb
 (?<![A-Za-z0-9_/.-])WeKnora(?![A-Za-z0-9_-])	AI KB
 # English article for the new name: "a WeKnora" became "a AI KB".
 \b([Aa]) AI KB\b	$1n AI KB
+# --- BrowserSkill frame prefix and daemon temp dir (decided 2026-10-16) ---
+wk-ui-	aikb-ui-
+"wkb-"	"aikb-"

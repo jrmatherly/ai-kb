@@ -54,7 +54,7 @@ Only authenticated remote sockets handle these request frames; they bypass the
 native automation queue and never start a session:
 
 ```json
-{"id":"wk-ui-unique","method":"ui.task_preview","params":{"session_id":"server-owned-session"}}
+{"id":"aikb-ui-unique","method":"ui.task_preview","params":{"session_id":"server-owned-session"}}
 ```
 
 - `ui.task_preview`: returns `image_base64`, `format: "jpeg"`, `tab_id`,
