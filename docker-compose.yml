@@ -777,12 +777,11 @@ services:
   #   - 8030 (FE HTTP): entry point for Stream Load partial updates.
   #   - 8040 (BE)     : BE heartbeat and data transfer; FE redirects stream load to BE.
   #
-  # The nodes run in FQDN mode (enable_fqdn_mode), so they register as doris-fe
-  # and doris-be and the FE's Stream Load redirect names doris-be, which the
-  # app's SSRF_WHITELIST_EXTRA already trusts. The images' own entrypoints accept
-  # only IP addresses (FE_SERVERS, BE_ADDR), which would need a fixed subnet on
-  # ai-kb-network: BUILD_TYPE=k8s makes init_fe.sh start the FE as configured,
-  # and the BE start below registers the node itself.
+  # The nodes run in FQDN mode (enable_fqdn_mode) and register as doris-fe and
+  # doris-be. The images' own entrypoints accept only IP addresses (FE_SERVERS,
+  # BE_ADDR), which would need a fixed subnet on ai-kb-network: BUILD_TYPE=k8s
+  # makes init_fe.sh start the FE as configured, and the BE start below
+  # registers the node itself.
   #
   # To enable:
   #   docker compose --profile doris up -d
@@ -821,13 +820,17 @@ services:
       # The host checks (vm.max_map_count, open files) are skipped, as the
       # image's own entrypoint does.
       - SKIP_CHECK_ULIMIT=true
+      - DORIS_USERNAME=${DORIS_USERNAME:-root}
+      - DORIS_PASSWORD=${DORIS_PASSWORD:-}
     entrypoint: ["bash", "-c"]
     command:
       - |
         # Once the FE answers: register this node, then create the database
         # AI KB connects to (it creates its tables itself). Both are no-ops
         # on later starts.
-        fe() { mysql -hdoris-fe -P9030 -uroot -e "$$1" 2>/dev/null; }
+        # Errors stay visible in the container log; the FE refuses
+        # connections for its first seconds.
+        fe() { MYSQL_PWD="$${DORIS_PASSWORD}" mysql -hdoris-fe -P9030 -u"$${DORIS_USERNAME:-root}" -e "$$1"; }
         (until fe 'SHOW BACKENDS' | grep -q doris-be || fe "ALTER SYSTEM ADD BACKEND 'doris-be:9050'"; do
           sleep 2
         done

@@ -15,21 +15,34 @@ import (
 )
 
 // TestLiveRoundTrip runs the repository against a real, disposable Doris
-// cluster, which sqlmock cannot stand in for. Run it on the compose network so doris-be resolves: for
-// example `docker compose --profile doris up -d`, then run the test binary in
-// a container on ai-kb-network with AIKB_DORIS_TEST_ADDR=doris-fe:9030 and
-// SSRF_WHITELIST_EXTRA=doris-fe,doris-be.
+// cluster, which sqlmock cannot stand in for. It writes to its own table
+// prefix and drops that table afterwards, so it leaves nothing for the app's
+// compat-mode detection to find. For example: `docker compose --profile doris
+// up -d`, then run the test in a container on ai-kb-network with
+// AIKB_DORIS_TEST_ADDR=doris-fe:9030. DORIS_DATABASE, DORIS_USERNAME and
+// DORIS_PASSWORD are honored as the app honors them.
 func TestLiveRoundTrip(t *testing.T) {
 	addr := os.Getenv("AIKB_DORIS_TEST_ADDR")
 	if addr == "" {
 		t.Skip("set AIKB_DORIS_TEST_ADDR to run against a live Doris cluster")
 	}
+	env := func(key, fallback string) string {
+		if v := os.Getenv(key); v != "" {
+			return v
+		}
+		return fallback
+	}
+	database, user := env("DORIS_DATABASE", "aikb"), env("DORIS_USERNAME", "root")
+	password := os.Getenv("DORIS_PASSWORD")
 	ctx := context.Background()
-	db, err := sql.Open("mysql", "root:@tcp("+addr+")/aikb?parseTime=true&interpolateParams=true")
+	db, err := sql.Open("mysql", user+":"+password+"@tcp("+addr+")/"+database+"?parseTime=true&interpolateParams=true")
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = db.Close() })
+	const prefix = "aikb_live_test"
+	t.Cleanup(func() { _, _ = db.ExecContext(ctx, "DROP TABLE IF EXISTS `"+prefix+"_4`") })
 	host, _, _ := strings.Cut(addr, ":")
-	repo := NewDorisRetrieveEngineRepository(db, "http://"+host+":8030", "root", "", "aikb", nil)
+	repo := NewDorisRetrieveEngineRepository(db, "http://"+host+":8030", user, password, database,
+		&types.IndexConfig{CollectionPrefix: prefix})
 
 	kb := "kb-" + uuid.NewString()
 	k1, k2 := kb+"-k1", kb+"-k2"
@@ -46,7 +59,8 @@ func TestLiveRoundTrip(t *testing.T) {
 		},
 	}, map[string]any{fieldEmbedding: map[string][]float32{c1: {1, 0, 0, 0}, c2: {0, 1, 0, 0}}}))
 
-	// The enabled flag is written through Stream Load, which the FE redirects to the BE.
+	// On Doris 4.1 the auto compat mode rewrites rows over SQL; Stream Load is
+	// legacy mode only, which 4.1 rejects, so this test does not reach it.
 	require.NoError(t, repo.BatchUpdateChunkEnabledStatus(ctx, map[string]bool{c2: false}))
 
 	var got []*types.RetrieveResult
@@ -64,6 +78,7 @@ func TestLiveRoundTrip(t *testing.T) {
 		RetrieverType: types.KeywordsRetrieverType,
 	})
 	require.NoError(t, err)
+	require.Len(t, got, 1)
 	require.NoError(t, got[0].Error)
 	require.Len(t, got[0].Results, 1)
 	require.Equal(t, c1, got[0].Results[0].ChunkID)

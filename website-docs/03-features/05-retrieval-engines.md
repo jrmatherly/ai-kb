@@ -205,7 +205,7 @@ The engine type constants are in `internal/types/retriever.go`: `postgres`, `ela
 - **Keyword retrieval**: `content MATCH_ANY ?` through the inverted index.
 - **Writes**: DUPLICATE KEY tables keep replacement semantics with an explicit delete + insert by id. Enabled and tag updates rewrite the chunk's rows over SQL in `inner_product_duplicate` mode (what `auto` picks on Doris 4.1), and use Stream Load partial update only in `legacy` mode, whose UNIQUE KEY cosine ANN index Doris 4.1 rejects.
 - **Database**: AI KB creates its tables but not the database. The compose `doris` profile creates `DORIS_DATABASE` (default `aikb`) once the FE is up; on an existing Doris cluster, create it first (`CREATE DATABASE aikb`).
-- **Compose profile**: FE and BE run in FQDN mode (`enable_fqdn_mode`) and register as `doris-fe` / `doris-be`, because the images' own entrypoints accept only IP addresses. A Stream Load redirect therefore names `doris-be`, which `SSRF_WHITELIST_EXTRA` already trusts.
+- **Compose profile**: FE and BE run in FQDN mode (`enable_fqdn_mode`) and register as `doris-fe` / `doris-be`, because the images' own entrypoints accept only IP addresses and our services address each other by name. The BE start registers the node and creates the database with `DORIS_USERNAME` / `DORIS_PASSWORD`. If a `legacy` cluster is used, its Stream Load redirect names `doris-be`, which `SSRF_WHITELIST_EXTRA` already trusts.
 - Configuration: `DORIS_ADDR` / `DORIS_HTTP_PORT` / `DORIS_DATABASE` / `DORIS_USERNAME` / `DORIS_PASSWORD` / `DORIS_TABLE_PREFIX` / `DORIS_COMPAT_MODE`.
 
 #### Tencent Cloud VectorDB
