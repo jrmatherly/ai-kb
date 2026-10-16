@@ -19,6 +19,9 @@ var ErrLeaseHeld = errors.New("browser connection is owned by another node; reco
 // ErrStore wraps a database failure in the connection store, whose text is not for API clients.
 var ErrStore = errors.New("browser connection store failed")
 
+// ErrUpstream wraps a daemon or owner-replica failure; the handler answers 502.
+var ErrUpstream = errors.New("browser upstream failed")
+
 const (
 	pairingLifetime = 5 * time.Minute
 	deviceLifetime  = 90 * 24 * time.Hour

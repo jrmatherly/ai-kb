@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -127,4 +128,63 @@ func TestInternalRPCRejectsForgeryAndReplay(t *testing.T) {
 	sig := signRPC(m.clusterSecret, timestamp+"\n"+nonce, body)
 	require.Equal(t, 200, call(sig))
 	require.Equal(t, 409, call(sig))
+}
+
+// The owning replica names the failure kind so the follower maps it to the same
+// sentinel a local failure produces; a pre-kind owner is matched on the store
+// message, and a transport failure is an upstream error.
+func TestRouteMapsOwnerErrorKindsToSentinels(t *testing.T) {
+	store := testStore(t)
+	scope := Scope{1, "alice"}
+	var mu sync.Mutex
+	reply := clusterResponse{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(reply)
+	}))
+	defer server.Close()
+	now := time.Now()
+	require.NoError(t, store.db.Create(&DeviceRecord{
+		ScopeKey: scope.key(), ID: "device-1", Tenant: 1, User: "alice", TokenHash: "hash-1",
+		ExpiresAt: now.Add(time.Hour), Owner: "other-node", LeaseKey: "lease", OwnerURL: server.URL,
+		LeaseUntil: now.Add(time.Hour),
+	}).Error)
+	m := NewManager(store)
+	t.Cleanup(m.Close)
+	m.clusterSecret = strings.Repeat("cluster-secret-", 3)
+	route := func() error {
+		_, forwarded, err := m.route(context.Background(), scope, "chat", "call", "navigate", nil)
+		require.True(t, forwarded)
+		return err
+	}
+	for _, tc := range []struct {
+		name  string
+		reply clusterResponse
+		want  error
+	}{
+		{"store kind", clusterResponse{Error: "owner store text", Kind: "store"}, ErrStore},
+		{"authorization kind", clusterResponse{Error: "owner auth text", Kind: "authorization"}, ErrAuthorization},
+		{
+			"upstream kind",
+			clusterResponse{Error: ErrUpstream.Error() + ": BrowserSkill daemon unavailable", Kind: "upstream"},
+			ErrUpstream,
+		},
+		{"pre-kind owner store message", clusterResponse{Error: ErrStore.Error()}, ErrStore},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mu.Lock()
+			reply = tc.reply
+			mu.Unlock()
+			err := route()
+			require.ErrorIs(t, err, tc.want)
+			if tc.reply.Kind == "upstream" {
+				require.EqualError(t, err, "browser upstream failed: BrowserSkill daemon unavailable",
+					"the prefix is not doubled")
+			}
+		})
+	}
+	server.Close()
+	require.ErrorIs(t, route(), ErrUpstream, "a transport failure is an upstream error")
 }

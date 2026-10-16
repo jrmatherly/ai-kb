@@ -274,7 +274,7 @@ func (m *Manager) acquireDevice(ctx context.Context, s Scope, reserve bool) (*de
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.closed || runtime.exited() {
-		return nil, errors.New("BrowserSkill daemon unavailable")
+		return nil, fmt.Errorf("%w: BrowserSkill daemon unavailable", ErrUpstream)
 	}
 	self := s.key()
 	for key, old := range m.devices {
@@ -669,7 +669,7 @@ type rpcReply struct {
 func rpc(ctx context.Context, d *device, method string, params any) (json.RawMessage, error) {
 	conn, err := (&net.Dialer{}).DialContext(ctx, "unix", filepath.Join(d.runtime.home, "run", "daemon.sock"))
 	if err != nil {
-		return nil, errors.New("BrowserSkill daemon unavailable")
+		return nil, fmt.Errorf("%w: BrowserSkill daemon unavailable", ErrUpstream)
 	}
 	defer func() { _ = conn.Close() }()
 	timeout := 35 * time.Second

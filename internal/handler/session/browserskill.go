@@ -196,12 +196,19 @@ func (h *Handler) BrowserSkillConnection(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": status})
 }
 
-// browserSkillError forwards the manager's own messages (authorization, routing,
-// daemon RPC errors) through newErr and replaces a store failure with a fixed 503.
+// browserSkillError maps the manager's sentinels to statuses: a store failure is a
+// fixed 503 (cause logged), an invalid grant 403, a daemon or owner-replica failure
+// 502 with its text; every other message keeps the call site's status.
 func browserSkillError(ctx context.Context, err error, newErr func(string) *errors.AppError) *errors.AppError {
-	if stderrors.Is(err, browserskill.ErrStore) {
+	var rpcErr *browserskill.RPCError
+	switch {
+	case stderrors.Is(err, browserskill.ErrStore):
 		logger.Errorf(ctx, "browser skill store failed: %v", err)
 		return errors.NewServiceUnavailableError("browser connection status unavailable")
+	case stderrors.Is(err, browserskill.ErrAuthorization):
+		return errors.NewForbiddenError(err.Error())
+	case stderrors.Is(err, browserskill.ErrUpstream), stderrors.As(err, &rpcErr):
+		return errors.NewBadGatewayError(err.Error())
 	}
 	return newErr(err.Error())
 }

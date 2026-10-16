@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -32,9 +33,12 @@ type (
 	}
 )
 
+// clusterResponse carries a sentinel failure as Kind ("store", "authorization",
+// "upstream") so the follower maps it the way a local failure is mapped.
 type clusterResponse struct {
 	Data     json.RawMessage `json:"data,omitempty"`
 	Error    string          `json:"error,omitempty"`
+	Kind     string          `json:"kind,omitempty"`
 	RPCError *RPCError       `json:"rpc_error,omitempty"`
 }
 
@@ -140,20 +144,31 @@ func (m *Manager) route(
 	request.Header.Set("X-Browser-Signature", signRPC(m.clusterSecret, timestamp+"\n"+nonce, body))
 	response, err := m.forwardClient.Do(request)
 	if err != nil {
-		return nil, true, errors.New("browser owner unavailable; do not replay interrupted operations")
+		return nil, true, fmt.Errorf("%w: browser owner unavailable; do not replay interrupted operations", ErrUpstream)
 	}
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode != 200 {
-		return nil, true, errors.New("browser owner rejected the request; refresh connection status")
+		return nil, true, fmt.Errorf("%w: browser owner rejected the request; refresh connection status", ErrUpstream)
 	}
 	var result clusterResponse
 	if json.NewDecoder(io.LimitReader(response.Body, maxFrame)).Decode(&result) != nil {
-		return nil, true, errors.New("invalid browser owner response")
+		return nil, true, fmt.Errorf("%w: invalid browser owner response", ErrUpstream)
 	}
 	if result.RPCError != nil {
 		result.RPCError.BoundDetails()
 		return nil, true, result.RPCError
 	}
+	switch result.Kind {
+	case "store":
+		return nil, true, ErrStore
+	case "authorization":
+		return nil, true, ErrAuthorization
+	case "upstream":
+		// The owner's text already carries the sentinel prefix.
+		return nil, true, fmt.Errorf("%w: %s", ErrUpstream, strings.TrimPrefix(result.Error, ErrUpstream.Error()+": "))
+	}
+	// An owner from before Kind existed names the store failure by its text only; drop
+	// this fallback one release after Kind ships (every replica then sends it).
 	if result.Error == ErrStore.Error() {
 		return nil, true, ErrStore
 	}
@@ -252,9 +267,15 @@ func (m *Manager) InternalHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		err = errors.New("unsupported browser operation")
 	}
-	if errors.Is(err, ErrStore) {
+	switch {
+	case errors.Is(err, ErrStore):
 		logger.Errorf(ctx, "browser skill store failed: %v", err)
 		err = ErrStore
+		result.Kind = "store"
+	case errors.Is(err, ErrAuthorization):
+		result.Kind = "authorization"
+	case errors.Is(err, ErrUpstream):
+		result.Kind = "upstream"
 	}
 	if err != nil {
 		result.Error = err.Error()

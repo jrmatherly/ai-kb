@@ -43,8 +43,24 @@ func TestBrowserSkillErrorStatus(t *testing.T) {
 			`{"success":false,"error":{"code":1008,"message":"browser connection status unavailable"}}`,
 		},
 		{
-			"authored error on the 409 path", browserskill.ErrAuthorization, apperrors.NewConflictError, 409,
-			`{"success":false,"error":{"code":1005,"message":"browser authorization is invalid or expired"}}`,
+			"authorization is 403 on the 409 path", browserskill.ErrAuthorization, apperrors.NewConflictError, 403,
+			`{"success":false,"error":{"code":1002,"message":"browser authorization is invalid or expired"}}`,
+		},
+		{
+			"upstream failure is 502", fmt.Errorf("%w: BrowserSkill daemon unavailable", browserskill.ErrUpstream),
+			apperrors.NewServiceUnavailableError, 502,
+			`{"success":false,"error":{"code":1011,` +
+				`"message":"browser upstream failed: BrowserSkill daemon unavailable"}}`,
+		},
+		{
+			"daemon RPC error is 502", &browserskill.RPCError{Code: "not_found", Message: "fixture ref missing"},
+			apperrors.NewConflictError, 502,
+			`{"success":false,"error":{"code":1011,"message":"not_found: fixture ref missing"}}`,
+		},
+		{
+			"other errors keep the call site's status", errors.New("browser disconnected; wait for reconnection"),
+			apperrors.NewConflictError, 409,
+			`{"success":false,"error":{"code":1005,"message":"browser disconnected; wait for reconnection"}}`,
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
