@@ -142,7 +142,7 @@ The variables below come from the app and docreader `environment` blocks of `doc
 | `GIN_MODE` | release | `debug` for development (enables Swagger) / `release` for production |
 | `LOG_LEVEL` / `LOG_PATH` / `LOG_FORMAT` | debug / empty / empty | Log level, log file path (stdout only when empty), custom format |
 | `LLM_DEBUG_LOG` | false | When true, writes `llm_debug.log` next to `LOG_PATH` |
-| `TZ` | Asia/Shanghai | Time zone |
+| `TZ` | UTC | Time zone |
 | `DEFAULT_LOCALE` | empty | Default UI language of the frontend container. The UI ships in English only, so `en-US` is the only accepted value; anything else is ignored. It only affects users who have never switched language; precedence: the user's saved choice > this variable > `en-US`. Restart the frontend container after changing it; no image rebuild is needed |
 | `AIKB_LANGUAGE` | empty | Document processing language (question and summary generation). Precedence: this variable > the request's `Accept-Language` > the built-in default. The built-in default is `en-US` in the code (`internal/types/context_helpers.go`). The document processing language is independent of the UI language, for example an English UI processing Korean documents. IM channels with no reply language configured also use this variable (the built-in default when unset) as their default reply language |
 | `AUTO_MIGRATE` | true | Run database migrations at startup |

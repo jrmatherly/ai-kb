@@ -111,6 +111,7 @@ Upstream commits touching translated files show `~`: port a docs hunk in English
 | Chinese text in code, docs and config | English only | landed | `scripts/check-english-only.sh` gates it (pre-commit, `guards.yml`). |
 | WeKnora names | AI KB names | landed 2026-10-12 | See "Name translations when porting". |
 | upstream release pages and "since v0.8.x" wording | none; `CHANGELOG.md` is the only release record | landed 2026-10-16 | AI KB is greenfield; an upstream docs hunk that adds version-upgrade wording is ported as present-tense behavior. |
+| compose TZ default Asia/Shanghai | UTC | landed 2026-10-16 | Override with TZ in .env. |
 | upstream semver | dated CalVer | landed 2026-10-13 | See "Version and changelog". |
 | `.github/` | our own CI | landed | See "Rules for this repo". |
 | locale bundles `zh-CN`, `zh-TW`, `ja-JP`, `ko-KR`, `ru-RU` | removed; `en-US` only | landed | Also `BUILT_IN_DEFAULT`, `SUPPORTED_LOCALES`, the parity test's `LOCALE_BUNDLES`, `AIKB_LANGUAGE` / `DEFAULT_LOCALE` defaults, and the embed channel `default_locale` (`10fcf0e33`). The IM channel `locale` keeps all six tags (`internal/types/locale.go`): it is the language the model replies in, not a UI bundle. Upstream commits that only touch removed bundles: SKIP. Commits adding `en-US` keys: ADOPT. |

@@ -279,7 +279,7 @@ services:
       - docreader-tmp-dev:/tmp/docreader
     environment:
       # ========== Basics ==========
-      - TZ=${TZ:-Asia/Shanghai}
+      - TZ=${TZ:-UTC}
       - LOG_LEVEL=${LOG_LEVEL:-}
       - DOCREADER_IMAGE_OUTPUT_DIR=/tmp/docreader
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-}

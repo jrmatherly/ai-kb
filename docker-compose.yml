@@ -91,8 +91,8 @@ services:
       # gin mod
       # Values: debug (development mode, verbose logs), release (production mode, Swagger docs disabled)
       - GIN_MODE=${GIN_MODE:-release}
-      # Time zone, default Asia/Shanghai
-      - TZ=${TZ:-Asia/Shanghai}
+      # Time zone, default UTC
+      - TZ=${TZ:-UTC}
       # Language for document processing (question and summary generation). Precedence: this variable (deployment-wide override, applies when non-empty)
       # > Accept-Language request header > built-in default (zh-CN). Empty follows the caller's Accept-Language.
       - AIKB_LANGUAGE=${AIKB_LANGUAGE:-}
@@ -444,7 +444,7 @@ services:
       - docreader-tmp:/tmp/docreader
     environment:
       # ========== Basics ==========
-      - TZ=${TZ:-Asia/Shanghai}
+      - TZ=${TZ:-UTC}
       - LOG_LEVEL=${LOG_LEVEL:-}
       - DOCREADER_IMAGE_OUTPUT_DIR=/tmp/docreader
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-}
