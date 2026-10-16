@@ -12,7 +12,10 @@ func (m *milvusRepository) MoveKnowledgeIndices(
 	dimension int,
 	_ string,
 ) error {
-	collection := m.getCollectionName(dimension)
+	collection, ok, err := m.existingCollection(ctx, dimension)
+	if err != nil || !ok {
+		return err
+	}
 	filter := &universalFilterCondition{Operator: operatorAnd, Value: []*universalFilterCondition{
 		{Field: fieldKnowledgeBaseID, Operator: operatorEqual, Value: sourceKB},
 		{Field: fieldKnowledgeID, Operator: operatorEqual, Value: knowledgeID},

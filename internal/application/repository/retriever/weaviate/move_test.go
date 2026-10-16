@@ -30,6 +30,8 @@ func TestMoveKnowledgeIndicesDrainsBeyondOffsetLimitAndRetries(t *testing.T) {
 		defer mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		switch {
+		case r.Method == http.MethodGet && r.URL.Path == "/v1/schema/Move_3":
+			_, _ = w.Write([]byte(`{"class":"Move_3"}`))
 		case r.URL.Path == "/v1/graphql":
 			queries++
 			var body struct {
@@ -108,6 +110,8 @@ func TestMoveKnowledgeIndicesRejectsNoProgress(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
+		case "/v1/schema/Move_3":
+			_, _ = w.Write([]byte(`{"class":"Move_3"}`))
 		case "/v1/graphql":
 			_, _ = w.Write(
 				[]byte(`{"data":{"Get":{"Move_3":[{"_additional":{"id":"00000000-0000-0000-0000-000000000001"}}]}}}`),
@@ -127,4 +131,13 @@ func TestMoveKnowledgeIndicesRejectsNoProgress(t *testing.T) {
 		repo.MoveKnowledgeIndices(context.Background(), "source", "target", "doc", nil, 3, ""),
 		"no progress",
 	)
+}
+
+// A never-created collection has nothing to move: the guard probes the schema
+// once and never queries GraphQL (the test server fails on any other request).
+func TestWeaviateMoveSkipsMissingCollection(t *testing.T) {
+	repo, server := newDeleteTestServer(t)
+
+	require.NoError(t, repo.MoveKnowledgeIndices(context.Background(), "source", "target", "doc", nil, 1024, ""))
+	require.Equal(t, []string{deleteTestClass}, server.probes)
 }

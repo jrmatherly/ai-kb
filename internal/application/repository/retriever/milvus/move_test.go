@@ -80,3 +80,14 @@ func TestMoveRowsRejectsUnacknowledgedProgress(t *testing.T) {
 	)
 	require.ErrorContains(t, err, "repeated")
 }
+
+// A never-created collection has nothing to move: one Describe answers that it
+// is missing and no Query follows (the fake has no Query method, so the call
+// count proves it).
+func TestMilvusMoveSkipsMissingCollection(t *testing.T) {
+	repo, fake := newDeleteMilvusHarness(t)
+
+	require.NoError(t, repo.MoveKnowledgeIndices(context.Background(), "source", "target", "doc", nil, 1024, ""))
+	require.Equal(t, []string{deleteTestCollection}, fake.describes)
+	require.Equal(t, 1, fake.calls)
+}

@@ -107,14 +107,16 @@ func deleteOperations() []struct {
 	}
 }
 
+// The batch delete goes out without a pre-probe; Weaviate answers 422 for the
+// missing class, the re-probe sees 404, and the delete is a no-op.
 func TestWeaviateDeletesSkipMissingCollection(t *testing.T) {
 	for _, operation := range deleteOperations() {
 		t.Run(operation.name, func(t *testing.T) {
 			repo, server := newDeleteTestServer(t)
 
 			require.NoError(t, operation.run(context.Background(), repo))
+			require.Equal(t, []string{deleteTestClass}, server.deletes)
 			require.Equal(t, []string{deleteTestClass}, server.probes)
-			require.Empty(t, server.deletes)
 		})
 	}
 }
@@ -128,29 +130,6 @@ func TestWeaviateDeletesIssueWhenCollectionExists(t *testing.T) {
 			require.Equal(t, []string{deleteTestClass}, server.deletes)
 		})
 	}
-}
-
-func TestWeaviateDeletePropagatesCollectionCheckFailure(t *testing.T) {
-	for _, operation := range deleteOperations() {
-		t.Run(operation.name, func(t *testing.T) {
-			repo, server := newDeleteTestServer(t, deleteTestClass)
-			server.probeStatus = http.StatusInternalServerError
-
-			require.ErrorContains(t, operation.run(context.Background(), repo), "failed to check collection existence")
-			require.Empty(t, server.deletes)
-		})
-	}
-}
-
-func TestWeaviateDeleteSkipsProbeForInitializedDimension(t *testing.T) {
-	repo, server := newDeleteTestServer(t, deleteTestClass)
-	repo.initializedCollections.Store(1024, true)
-
-	require.NoError(t, repo.DeleteByKnowledgeIDList(
-		context.Background(), []string{"knowledge-1"}, 1024, types.KnowledgeBaseTypeDocument,
-	))
-	require.Empty(t, server.probes)
-	require.Equal(t, []string{deleteTestClass}, server.deletes)
 }
 
 func TestWeaviateDeleteWithEmptyIDListSkipsAllRequests(t *testing.T) {

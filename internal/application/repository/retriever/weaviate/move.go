@@ -17,6 +17,13 @@ func (w *weaviateRepository) MoveKnowledgeIndices(
 	_ string,
 ) error {
 	collection := w.getCollectionName(dimension)
+	// A never-created collection has nothing to move; a warm process skips the probe.
+	if _, ok := w.initializedCollections.Load(dimension); !ok {
+		exists, err := w.classExists(ctx, collection)
+		if err != nil || !exists {
+			return err
+		}
+	}
 	where := filters.Where().WithOperator(filters.And).WithOperands([]*filters.WhereBuilder{
 		filters.Where().WithPath([]string{fieldKnowledgeBaseID}).WithOperator(filters.Equal).WithValueString(sourceKB),
 		filters.Where().WithPath([]string{fieldKnowledgeID}).WithOperator(filters.Equal).WithValueString(knowledgeID),

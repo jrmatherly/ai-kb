@@ -82,10 +82,10 @@ func (m *milvusRepository) getCollectionName(dimension int) string {
 	return fmt.Sprintf("%s_%d", m.collectionBaseName, dimension)
 }
 
-// deleteTarget returns the dimension's collection name and whether it exists.
-// The first upload into a fresh store deletes before it writes, and Milvus
-// refuses a delete on a collection nobody has created yet.
-func (m *milvusRepository) deleteTarget(ctx context.Context, dimension int) (string, bool, error) {
+// existingCollection returns the dimension's collection name and whether it
+// exists, loaded. The first upload into a fresh store deletes before it writes,
+// and Milvus refuses a delete or a query on a collection nobody has created yet.
+func (m *milvusRepository) existingCollection(ctx context.Context, dimension int) (string, bool, error) {
 	collectionName := m.getCollectionName(dimension)
 	if _, ok := m.initializedCollections.Load(dimension); ok {
 		return collectionName, true, nil
@@ -439,7 +439,7 @@ func (m *milvusRepository) DeleteByChunkIDList(ctx context.Context, chunkIDList 
 		return nil
 	}
 
-	collectionName, ok, err := m.deleteTarget(ctx, dimension)
+	collectionName, ok, err := m.existingCollection(ctx, dimension)
 	if err != nil || !ok {
 		return err
 	}
@@ -467,7 +467,7 @@ func (m *milvusRepository) DeleteByKnowledgeIDList(ctx context.Context,
 		return nil
 	}
 
-	collectionName, ok, err := m.deleteTarget(ctx, dimension)
+	collectionName, ok, err := m.existingCollection(ctx, dimension)
 	if err != nil || !ok {
 		return err
 	}
@@ -495,7 +495,7 @@ func (m *milvusRepository) DeleteBySourceIDList(ctx context.Context,
 		return nil
 	}
 
-	collectionName, ok, err := m.deleteTarget(ctx, dimension)
+	collectionName, ok, err := m.existingCollection(ctx, dimension)
 	if err != nil || !ok {
 		return err
 	}

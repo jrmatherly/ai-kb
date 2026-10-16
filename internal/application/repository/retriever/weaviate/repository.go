@@ -86,24 +86,6 @@ func (w *weaviateRepository) getCollectionName(dimension int) string {
 	return fmt.Sprintf("%s_%d", w.collectionBaseName, dimension)
 }
 
-// deleteTarget returns the dimension's collection name and whether it exists.
-// The first upload into a fresh store deletes before it writes, and Weaviate
-// refuses a batch delete on a class nobody has created yet.
-func (w *weaviateRepository) deleteTarget(ctx context.Context, dimension int) (string, bool, error) {
-	collectionName := w.getCollectionName(dimension)
-	if _, ok := w.initializedCollections.Load(dimension); ok {
-		return collectionName, true, nil
-	}
-	exists, err := w.classExists(ctx, collectionName)
-	if err != nil {
-		return collectionName, false, fmt.Errorf("failed to check collection existence: %w", err)
-	}
-	if !exists {
-		logger.GetLogger(ctx).Infof("[Weaviate] Collection %s does not exist, nothing to delete", collectionName)
-	}
-	return collectionName, exists, nil
-}
-
 // classExists reports whether the class is in the schema. ClassExistenceChecker
 // answers false for every non-200 status, a 500 included, so a delete would
 // skip a class that is still there; only a 404 means missing.
@@ -416,10 +398,7 @@ func (w *weaviateRepository) DeleteByChunkIDList(ctx context.Context, chunkIDLis
 		return nil
 	}
 
-	collectionName, ok, err := w.deleteTarget(ctx, dimension)
-	if err != nil || !ok {
-		return err
-	}
+	collectionName := w.getCollectionName(dimension)
 	log.Infof("[Weaviate] Deleting indices by chunk IDs from %s, count: %d", collectionName, len(chunkIDList))
 
 	//define filter
@@ -450,10 +429,7 @@ func (w *weaviateRepository) DeleteByKnowledgeIDList(ctx context.Context,
 		return nil
 	}
 
-	collectionName, ok, err := w.deleteTarget(ctx, dimension)
-	if err != nil || !ok {
-		return err
-	}
+	collectionName := w.getCollectionName(dimension)
 	log.Infof("[Weaviate] Deleting indices by knowledge IDs from %s, count: %d", collectionName, len(knowledgeIDList))
 
 	//define filter
@@ -483,10 +459,7 @@ func (w *weaviateRepository) DeleteBySourceIDList(ctx context.Context,
 		log.Warn("[Weaviate] Empty Source ID list provided for deletion, skipping")
 		return nil
 	}
-	collectionName, ok, err := w.deleteTarget(ctx, dimension)
-	if err != nil || !ok {
-		return err
-	}
+	collectionName := w.getCollectionName(dimension)
 	log.Infof("[Weaviate] Deleting indices by source IDs from %s, count: %d", collectionName, len(sourceIDList))
 
 	//define filter
