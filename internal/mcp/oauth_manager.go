@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -100,23 +101,23 @@ func (m *OAuthManager) StartAuthorization(
 
 	frontendRedirect, err = validateFrontendRedirect(frontendRedirect)
 	if err != nil {
-		return "", "", err
+		return "", "", apperrors.NewBadRequestError(err.Error())
 	}
 
 	h, err := m.newHandler(ctx, service, tenantID, principal, redirectURI)
 	if err != nil {
-		return "", "", err
+		return "", "", apperrors.NewBadRequestError(err.Error())
 	}
 
 	// Register a client dynamically if we don't have one yet for this service.
 	existing, _ := m.repo.GetClient(ctx, tenantID, service.ID)
 	if existing == nil {
 		if err := h.RegisterClient(ctx, clientRegistrationName); err != nil {
-			return "", "", fmt.Errorf("dynamic client registration failed: %w", err)
+			return "", "", apperrors.NewBadGatewayError("dynamic client registration failed: " + err.Error())
 		}
 		clientID := h.GetClientID()
 		if clientID == "" {
-			return "", "", fmt.Errorf("dynamic client registration returned an empty client_id")
+			return "", "", apperrors.NewBadGatewayError("dynamic client registration returned an empty client_id")
 		}
 		// The code exchange and later refreshes run with a handler rebuilt
 		// from this row, so a secret issued with the client has to be kept.
@@ -143,7 +144,7 @@ func (m *OAuthManager) StartAuthorization(
 
 	authURL, err := h.GetAuthorizationURL(ctx, state, challenge)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to build authorization URL: %w", err)
+		return "", "", apperrors.NewBadGatewayError("failed to build authorization URL: " + err.Error())
 	}
 
 	if err := m.states.Put(ctx, state, OAuthState{

@@ -677,7 +677,9 @@ func servePresignedPreview(
 			backendID, provider := parseStorageTarget(filePath)
 			fileSvc, resolvedProvider, err := resolveFileService(ctx, tenant, backendID, provider, absDir, storageResolver)
 			if err != nil {
-				_ = c.Error(apperrors.NewBadRequestError(err.Error()).WithDetails(gin.H{
+				logger.Warnf(ctx, "[Router] presigned preview storage resolution failed: provider=%s err=%v",
+					provider, err)
+				_ = c.Error(apperrors.NewBadRequestError("storage backend is unavailable").WithDetails(gin.H{
 					"provider": provider,
 					"hint":     "workspace storage config is missing or incomplete for this provider",
 				}))

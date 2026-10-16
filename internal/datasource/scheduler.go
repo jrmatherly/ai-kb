@@ -27,7 +27,7 @@ func ValidateSyncSchedule(schedule string) error {
 		return nil
 	}
 	if _, err := syncScheduleParser.Parse(schedule); err != nil {
-		return fmt.Errorf("invalid cron expression %q: %w", schedule, err)
+		return fmt.Errorf("%w %q: %w", ErrInvalidSyncSchedule, schedule, err)
 	}
 	return nil
 }

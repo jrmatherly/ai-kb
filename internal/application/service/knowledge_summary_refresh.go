@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -107,7 +109,7 @@ func enqueueSummaryRefresh(
 	}
 	if kb.SummaryModelID == "" {
 		markFailed()
-		return fmt.Errorf("summary model is not configured")
+		return apperrors.NewBadRequestError("summary model is not configured")
 	}
 	if tracker == nil {
 		tracker = noopSpanTracker{}

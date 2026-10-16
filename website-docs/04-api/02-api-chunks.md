@@ -134,7 +134,7 @@ curl -X PUT $BASE/api/v1/chunks/by-id/c-1/questions -H "Authorization: Bearer $T
 
 ### POST /api/v1/chunks/by-id/:id/questions/regenerate
 
-Purpose: regenerate the retrieval questions from the chunk's current content. A content edit does not delete the existing questions; they are marked stale (their revision no longer matches the current body) and this endpoint refreshes them. Only `text` chunks qualify, and the knowledge base needs a summary model; otherwise 400. An edit to the chunk while the questions are being generated returns 409.
+Purpose: regenerate the retrieval questions from the chunk's current content. A content edit does not delete the existing questions; they are marked stale (their revision no longer matches the current body) and this endpoint refreshes them. Only `text` chunks qualify, and the knowledge base needs a summary model; otherwise 400. An edit to the chunk while the questions are being generated returns 409. A failed call to the summary model returns 502 (code 1011) with the model's error in the message.
 
 Response: 200 `{"success":true,"data":[{GeneratedQuestion}]}`
 

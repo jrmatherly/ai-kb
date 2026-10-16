@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jrmatherly/ai-kb/internal/logger"
 )
 
 const internalPath = "/api/v1/local-browser/internal"
@@ -152,6 +154,9 @@ func (m *Manager) route(
 		result.RPCError.BoundDetails()
 		return nil, true, result.RPCError
 	}
+	if result.Error == ErrStore.Error() {
+		return nil, true, ErrStore
+	}
 	if result.Error != "" {
 		return nil, true, errors.New(result.Error)
 	}
@@ -246,6 +251,10 @@ func (m *Manager) InternalHTTP(w http.ResponseWriter, r *http.Request) {
 		m.forgetLocal(input.Scope, []string{input.Session})
 	default:
 		err = errors.New("unsupported browser operation")
+	}
+	if errors.Is(err, ErrStore) {
+		logger.Errorf(ctx, "browser skill store failed: %v", err)
+		err = ErrStore
 	}
 	if err != nil {
 		result.Error = err.Error()

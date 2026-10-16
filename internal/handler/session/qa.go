@@ -295,7 +295,10 @@ func (h *Handler) parseQARequest(c *gin.Context, logPrefix string) (*qaRequestCo
 		agentStorageProvider := customAgent.Config.ImageStorageProvider
 		if err := h.saveImageAttachments(ctx, request.Images, tenantID, agentStorageProvider); err != nil {
 			logger.Errorf(ctx, "[%s] Failed to save images: %v", logPrefix, err)
-			return nil, nil, errors.NewBadRequestError(fmt.Sprintf("Image save failed: %v", err))
+			if appErr, ok := errors.IsAppError(err); ok {
+				return nil, nil, errors.NewBadRequestError("Image save failed: " + appErr.Message)
+			}
+			return nil, nil, err
 		}
 
 		// VLM analysis is always deferred to after SSE stream is up:
@@ -359,7 +362,15 @@ func (h *Handler) parseQARequest(c *gin.Context, logPrefix string) (*qaRequestCo
 					attachmentRuntimeCtx, decodedAttachments[idx], att.FileName, int64(len(decodedAttachments[idx])), tenantID, asrModelID,
 				)
 				if err != nil {
-					errChan <- fmt.Errorf("attachment %d processing failed: %w", idx+1, err)
+					logger.Errorf(ctx, "[%s] attachment %d processing failed: %v", logPrefix, idx+1, err)
+					if appErr, ok := errors.IsAppError(err); ok {
+						err = &errors.AppError{
+							Code:     appErr.Code,
+							Message:  fmt.Sprintf("attachment %d: %s", idx+1, appErr.Message),
+							HTTPCode: appErr.HTTPCode,
+						}
+					}
+					errChan <- err
 					return
 				}
 
@@ -371,9 +382,7 @@ func (h *Handler) parseQARequest(c *gin.Context, logPrefix string) (*qaRequestCo
 		close(errChan)
 
 		if len(errChan) > 0 {
-			err := <-errChan
-			logger.Errorf(ctx, "[%s] attachment processing failed: %v", logPrefix, err)
-			return nil, nil, errors.NewBadRequestError(fmt.Sprintf("attachment processing failed: %v", err))
+			return nil, nil, <-errChan
 		}
 
 		logger.Infof(ctx, "[%s] all attachments processed", logPrefix)

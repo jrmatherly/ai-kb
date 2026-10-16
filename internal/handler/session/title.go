@@ -63,7 +63,7 @@ func (h *Handler) GenerateTitle(c *gin.Context) {
 	title, err := h.sessionService.GenerateTitle(ctx, session, request.Messages, "")
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 

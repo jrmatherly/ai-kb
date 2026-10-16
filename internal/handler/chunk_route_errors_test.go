@@ -38,10 +38,13 @@ type routeErrorsKnowledgeService struct{ interfaces.KnowledgeService }
 func (routeErrorsKnowledgeService) RegenerateChunkQuestions(
 	_ context.Context, chunkID string,
 ) ([]types.GeneratedQuestion, error) {
-	if chunkID == "forbidden" {
+	switch chunkID {
+	case "forbidden":
 		return nil, apperrors.NewForbiddenError("No permission to modify this knowledge base")
+	case "text":
+		return nil, apperrors.NewBadGatewayError("failed to generate questions: model call failed")
 	}
-	return nil, stderrors.New("model call failed")
+	return nil, stderrors.New("update chunk: database is locked")
 }
 
 func newChunkRouteErrorsEngine(permission types.OrgMemberRole) *gin.Engine {
@@ -110,7 +113,12 @@ func TestChunkQuestionAndDeleteRoutesKeepServiceStatus(t *testing.T) {
 		},
 		{
 			"regenerate when the model fails", types.OrgRoleEditor, http.MethodPost,
-			"/chunks/by-id/text/questions/regenerate", "", http.StatusInternalServerError, "Internal server error",
+			"/chunks/by-id/text/questions/regenerate", "", http.StatusBadGateway,
+			"failed to generate questions: model call failed",
+		},
+		{
+			"regenerate when the repository fails", types.OrgRoleEditor, http.MethodPost,
+			"/chunks/by-id/db/questions/regenerate", "", http.StatusInternalServerError, "Internal server error",
 		},
 		{
 			"delete chunk without write access", types.OrgRoleViewer, http.MethodDelete, "/chunks/k-1/text", "",

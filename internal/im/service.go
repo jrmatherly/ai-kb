@@ -3250,7 +3250,7 @@ func relocalizeBuiltinChannelAgentNames(ctx context.Context, rows []ChannelWithA
 }
 
 // CreateChannel creates a new IM channel and optionally starts it.
-// Returns a duplicate_bot error if the bot identity is already used by another channel.
+// Returns a 409 AppError if the bot identity is already used by another channel.
 func (s *Service) CreateChannel(channel *IMChannel) error {
 	if err := validateChannelTransport(channel); err != nil {
 		return err
@@ -3312,7 +3312,7 @@ func (s *Service) SetChannelKnowledgeBaseID(ctx context.Context, channel *IMChan
 }
 
 // UpdateChannel updates a channel and restarts it if needed.
-// Returns a duplicate_bot error if the bot identity is already used by another channel.
+// Returns a 409 AppError if the bot identity is already used by another channel.
 func (s *Service) UpdateChannel(channel *IMChannel) error {
 	if err := validateChannelTransport(channel); err != nil {
 		return err
@@ -3414,7 +3414,15 @@ func (s *Service) checkDuplicateBot(channel *IMChannel, excludeID string) error 
 		}
 		return fmt.Errorf("check duplicate bot: %w", err)
 	}
-	return fmt.Errorf("duplicate_bot: this bot is already bound to channel %q (%s); each bot can only be connected to one channel", existing.Name, existing.ID)
+	// The lookup spans tenants because a bot can serve only one channel, but
+	// another tenant's channel name and ID are not the caller's to see.
+	if existing.TenantID != channel.TenantID {
+		return apperrors.NewConflictError(
+			"this bot is already bound to another channel; each bot can only be connected to one channel")
+	}
+	return apperrors.NewConflictError(fmt.Sprintf(
+		"this bot is already bound to channel %q (%s); each bot can only be connected to one channel",
+		existing.Name, existing.ID))
 }
 
 // ── File message handling ──────────────────────────────────────────────

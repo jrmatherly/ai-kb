@@ -104,7 +104,7 @@ func (h *WebSearchProviderHandler) CreateProvider(c *gin.Context) {
 
 	if err := h.service.CreateProvider(ctx, provider); err != nil {
 		logger.Warnf(ctx, "Failed to create web search provider: %v", err)
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -255,7 +255,7 @@ func (h *WebSearchProviderHandler) UpdateProvider(c *gin.Context) {
 
 	if err := h.service.UpdateProvider(ctx, provider); err != nil {
 		logger.Warnf(ctx, "Failed to update web search provider %s: %v", id, err)
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 

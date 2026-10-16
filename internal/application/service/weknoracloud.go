@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/models/providers"
 	modelsutils "github.com/jrmatherly/ai-kb/internal/models/utils"
@@ -37,14 +38,14 @@ func IsWeKnoraCloudDocReaderAddr(addr string) bool {
 // SaveCredentials stores only the APPID/APPSECRET credentials; it does not create models.
 func (s *weKnoraCloudService) SaveCredentials(ctx context.Context, appID, appSecret string) error {
 	if appID == "" {
-		return fmt.Errorf("app_id is required")
+		return apperrors.NewBadRequestError("app_id is required")
 	}
 	if appSecret == "" {
-		return fmt.Errorf("app_secret is required")
+		return apperrors.NewBadRequestError("app_secret is required")
 	}
 
 	if err := s.verifyCredentials(ctx, appID, appSecret); err != nil {
-		return fmt.Errorf("credential verification failed: %w", err)
+		return err
 	}
 
 	tenantID := types.MustTenantIDFromContext(ctx)
@@ -80,15 +81,17 @@ func (s *weKnoraCloudService) verifyCredentials(ctx context.Context, appID, appS
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.Warnf(ctx, "credential verification HTTP failed: url=%s err=%v", healthURL, err)
-		return fmt.Errorf("service unreachable: %w", err)
+		return apperrors.NewBadGatewayError("credential verification failed: service unreachable: " + err.Error())
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return fmt.Errorf("invalid APPID or APPSECRET (HTTP %d)", resp.StatusCode)
+		return apperrors.NewBadRequestError(fmt.Sprintf(
+			"credential verification failed: invalid APPID or APPSECRET (HTTP %d)", resp.StatusCode))
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("invalid response status code: %d", resp.StatusCode)
+		return apperrors.NewBadGatewayError(fmt.Sprintf(
+			"credential verification failed: invalid response status code: %d", resp.StatusCode))
 	}
 	return nil
 }

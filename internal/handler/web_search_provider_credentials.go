@@ -68,7 +68,7 @@ func (h *WebSearchProviderCredentialsHandler) Put(c *gin.Context) {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
 			"provider_id": secutils.SanitizeForLog(id),
 		})
-		c.Error(errors.NewInternalServerError("failed to update credentials: " + err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	resp := dto.CredentialsResponse{
@@ -97,7 +97,7 @@ func (h *WebSearchProviderCredentialsHandler) DeleteField(c *gin.Context) {
 			"provider_id": secutils.SanitizeForLog(id),
 			"field":       field,
 		})
-		c.Error(errors.NewInternalServerError("failed to clear credential: " + err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)

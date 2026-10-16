@@ -130,7 +130,7 @@ Errors are rendered by `internal/middleware/error_handler.go` from an `AppError`
 
 `details` is present only when the error carries some. `request_id` repeats the `X-Request-ID` response header (the incoming header when the client sent one), so a report can be matched to the server log. The swagger schema for this body is `errors.ErrorResponse`.
 
-A 500 always reads `{"code": 1007, "message": "Internal server error"}` with no `details`, whatever the handler attached: its cause can carry SQL, storage endpoints or upstream responses, so it is written only to the server log with the same `request_id`. A failure in an upstream the user configured, such as an MCP server, is a 502 (code 1011) whose message keeps the cause.
+A 500 always reads `{"code": 1007, "message": "Internal server error"}` with no `details`, whatever the handler attached: its cause can carry SQL, storage endpoints or upstream responses, so it is written only to the server log with the same `request_id`. A failure in an upstream the user configured, such as an MCP server, is a 502 (code 1011) whose message keeps the cause. A model call that ends on the request's own deadline or cancellation is not the upstream's fault and returns the generic 500.
 
 The middleware layer (authentication, RBAC, API key gate, embed and MCP endpoint auth, panic recovery) returns the same envelope. A rejection that needs more than the numeric code carries it in `details`: the 409 for a request with no workspace has `"details": {"reason": "TENANT_REQUIRED"}`.
 

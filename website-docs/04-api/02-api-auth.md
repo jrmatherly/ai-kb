@@ -233,7 +233,7 @@ Purpose: change the password. Requires a logged-in user. Handler: `internal/hand
 
 Response: 200 `{"success":true,"message":"Password changed successfully"}`
 
-The current password must be correct and the new password must differ from it; these two checks run before the policy check, so a wrong current password is never masked by a policy error. On success every session is revoked and the user must log in again, and an `oidc_only_login` flag is cleared. The default policy is 8 to 32 characters with letters and digits; complex mode requires upper and lower case letters, digits and a special character. The error detail is `invalid_old_password`, `password_policy` or `same_password`, all with status 400.
+The current password must be correct and the new password must differ from it; these two checks run before the policy check, so a wrong current password is never masked by a policy error. On success every session is revoked and the user must log in again, and an `oidc_only_login` flag is cleared. The default policy is 8 to 32 characters with letters and digits; complex mode requires upper and lower case letters, digits and a special character. A new password longer than 72 bytes in UTF-8 (bcrypt's input limit, reachable with multi-byte characters inside 32 characters) fails the policy with the message `Password must be at most 72 bytes`. The error detail is `invalid_old_password`, `password_policy` or `same_password`, all with status 400.
 
 ```bash
 curl -X POST $BASE/api/v1/auth/change-password -H "Authorization: Bearer $TOKEN" \

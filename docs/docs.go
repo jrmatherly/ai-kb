@@ -982,6 +982,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -1534,7 +1540,13 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "No membership in the workspace, or the preference write failed",
+                        "description": "No membership in the workspace",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error, including a failed preference write",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -2062,6 +2074,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -2102,6 +2120,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -2206,6 +2230,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -2283,6 +2313,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -2451,6 +2487,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -2492,6 +2534,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -2605,6 +2653,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "The connected system failed; details.code classifies it",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -3577,8 +3631,8 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
+                    "502": {
+                        "description": "Ollama unreachable or failing",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -3639,6 +3693,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
+                    },
+                    "502": {
+                        "description": "Ollama unreachable or failing",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -3690,6 +3750,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Ollama unreachable or failing",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }
@@ -19007,7 +19073,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request parameters",
+                        "description": "Invalid request parameters or rejected credentials",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "WeKnoraCloud unreachable or failing",
                         "schema": {
                             "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
                         }

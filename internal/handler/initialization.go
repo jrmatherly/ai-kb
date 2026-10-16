@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
+	"github.com/jrmatherly/ai-kb/internal/application/service"
 	chatpipeline "github.com/jrmatherly/ai-kb/internal/application/service/chat_pipeline"
 	"github.com/jrmatherly/ai-kb/internal/assets"
 	"github.com/jrmatherly/ai-kb/internal/config"
@@ -1102,6 +1103,7 @@ func (h *InitializationHandler) CheckOllamaStatus(c *gin.Context) {
 // @Param        request  body      object{models=[]string}  true  "Model names"
 // @Success      200      {object}  map[string]interface{}   "Model status"
 // @Failure      400      {object}  errors.ErrorResponse          "Invalid request parameters"
+// @Failure      502      {object}  errors.ErrorResponse          "Ollama unreachable or failing"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/models/check [post]
@@ -1124,7 +1126,7 @@ func (h *InitializationHandler) CheckOllamaModels(c *gin.Context) {
 		err := h.ollamaService.StartService(ctx)
 		if err != nil {
 			logger.ErrorWithFields(ctx, err, nil)
-			_ = c.Error(errors.NewInternalServerError("Ollama service unavailable: " + err.Error()))
+			_ = c.Error(errors.NewBadGatewayError("Ollama service unavailable: " + err.Error()))
 			return
 		}
 	}
@@ -1162,6 +1164,7 @@ func (h *InitializationHandler) CheckOllamaModels(c *gin.Context) {
 // @Param        request  body      object{modelName=string}  true  "Model name"
 // @Success      200      {object}  map[string]interface{}    "Download task"
 // @Failure      400      {object}  errors.ErrorResponse           "Invalid request parameters"
+// @Failure      502      {object}  errors.ErrorResponse          "Ollama unreachable or failing"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/models/download [post]
@@ -1184,14 +1187,14 @@ func (h *InitializationHandler) DownloadOllamaModel(c *gin.Context) {
 		err := h.ollamaService.StartService(ctx)
 		if err != nil {
 			logger.ErrorWithFields(ctx, err, nil)
-			_ = c.Error(errors.NewInternalServerError("Ollama service unavailable: " + err.Error()))
+			_ = c.Error(errors.NewBadGatewayError("Ollama service unavailable: " + err.Error()))
 			return
 		}
 	}
 
 	available, err := h.ollamaService.IsModelAvailable(ctx, req.ModelName)
 	if err != nil {
-		_ = c.Error(errors.NewInternalServerError("Failed to check model status: " + err.Error()))
+		_ = c.Error(errors.NewBadGatewayError("Failed to check model status: " + err.Error()))
 		return
 	}
 
@@ -1327,7 +1330,7 @@ func (h *InitializationHandler) ListDownloadTasks(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "Model list"
-// @Failure      500  {object}  errors.ErrorResponse         "Internal server error"
+// @Failure      502  {object}  errors.ErrorResponse         "Ollama unreachable or failing"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /initialization/ollama/models [get]
@@ -1339,7 +1342,7 @@ func (h *InitializationHandler) ListOllamaModels(c *gin.Context) {
 	if !h.ollamaService.IsAvailable() {
 		if err := h.ollamaService.StartService(ctx); err != nil {
 			logger.ErrorWithFields(ctx, err, nil)
-			_ = c.Error(errors.NewInternalServerError("Ollama service unavailable: " + err.Error()))
+			_ = c.Error(errors.NewBadGatewayError("Ollama service unavailable: " + err.Error()))
 			return
 		}
 	}
@@ -1348,7 +1351,7 @@ func (h *InitializationHandler) ListOllamaModels(c *gin.Context) {
 	models, err := h.ollamaService.ListModelsDetailed(ctx)
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		_ = c.Error(errors.NewInternalServerError("Failed to list models: " + err.Error()))
+		_ = c.Error(errors.NewBadGatewayError("Failed to list models: " + err.Error()))
 		return
 	}
 
@@ -2591,14 +2594,14 @@ func (h *InitializationHandler) ExtractTextRelations(c *gin.Context) {
 	chatModel, err := h.modelService.GetChatModel(ctx, req.ModelID)
 	if err != nil {
 		logger.Error(ctx, "Failed to get model", err)
-		_ = c.Error(errors.NewBadRequestError("Failed to get model: " + err.Error()))
+		_ = c.Error(chatModelLookupError(err))
 		return
 	}
 
 	result, err := h.extractRelationsFromText(ctx, req.Text, req.Tags, chatModel)
 	if err != nil {
 		logger.Error(ctx, "Text relation extraction failed", err)
-		_ = c.Error(errors.NewInternalServerError("Text relation extraction failed: " + err.Error()))
+		_ = c.Error(errors.NewBadGatewayError("Text relation extraction failed: " + err.Error()))
 		return
 	}
 
@@ -2673,14 +2676,14 @@ func (h *InitializationHandler) FabriText(c *gin.Context) {
 	chatModel, err := h.modelService.GetChatModel(ctx, req.ModelID)
 	if err != nil {
 		logger.Error(ctx, "Failed to get model", err)
-		_ = c.Error(errors.NewBadRequestError("Failed to get model: " + err.Error()))
+		_ = c.Error(chatModelLookupError(err))
 		return
 	}
 
 	result, err := h.fabriText(ctx, req.Tags, chatModel)
 	if err != nil {
 		logger.Error(ctx, "failed to generate fabri text", err)
-		c.Error(errors.NewInternalServerError("failed to generate fabri text: " + err.Error()))
+		_ = c.Error(errors.NewBadGatewayError("failed to generate fabri text: " + err.Error()))
 		return
 	}
 
@@ -2757,4 +2760,13 @@ func RandomSelect(strs []string, n int) []string {
 		n = len(strs)
 	}
 	return result[:n]
+}
+
+// chatModelLookupError keeps the 400 for an unknown model ID; other
+// causes are repository or client-construction failures (500).
+func chatModelLookupError(err error) error {
+	if stderrors.Is(err, service.ErrModelNotFound) {
+		return errors.NewBadRequestError("Failed to get model: " + err.Error())
+	}
+	return err
 }

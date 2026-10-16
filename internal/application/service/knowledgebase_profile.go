@@ -295,7 +295,7 @@ func (s *KnowledgeBaseProfileService) GenerateKnowledgeBaseProfile(
 
 	generated, err := s.describeAggregate(ctx, chatModel, kb, agg)
 	if err != nil {
-		return s.persistFailure(ctx, kb, agg, err)
+		return s.persistFailure(ctx, kb, agg, modelCallError("", err))
 	}
 	generated.Stats = agg.Stats
 	generated.AggregateHash = agg.Hash

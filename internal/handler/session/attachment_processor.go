@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jrmatherly/ai-kb/internal/common"
+	"github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -64,12 +65,12 @@ func (p *AttachmentProcessor) ProcessAttachment(
 	// Validate filename (injection / path-traversal checks)
 	safeFileName, isValid := secutils.ValidateInput(fileName)
 	if !isValid {
-		return nil, fmt.Errorf("invalid characters in file name")
+		return nil, errors.NewBadRequestError("invalid characters in file name")
 	}
 
 	baseName, err := secutils.SafeFileName(safeFileName)
 	if err != nil {
-		return nil, fmt.Errorf("unsafe file name: %w", err)
+		return nil, errors.NewBadRequestError("unsafe file name: " + err.Error())
 	}
 
 	ext := strings.ToLower(filepath.Ext(baseName))
@@ -78,7 +79,7 @@ func (p *AttachmentProcessor) ProcessAttachment(
 	}
 
 	if !isValidFileType(baseName) {
-		return nil, fmt.Errorf("unsupported file type: %s", ext)
+		return nil, errors.NewBadRequestError("unsupported file type: " + ext)
 	}
 
 	uniqueFileName := fmt.Sprintf("attachment_%s%s", uuid.New().String()[:12], ext)

@@ -93,7 +93,7 @@ func (h *Handler) UploadTemporaryDocument(c *gin.Context) {
 		fileHeader.Filename, fileHeader.Header.Get("Content-Type"), fileHeader.Size, file, options,
 	)
 	if err != nil {
-		c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"success": true, "data": document})

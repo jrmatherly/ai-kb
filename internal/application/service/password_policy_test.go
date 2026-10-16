@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/jrmatherly/ai-kb/internal/config"
@@ -31,6 +32,7 @@ func TestValidatePasswordPolicy(t *testing.T) {
 		{name: "simple too short", password: "Ab1defg", want: ErrPasswordPolicy},
 		{name: "simple too long", password: "Abcdefg1" + "xxxxxxxxxxxxxxxxxxxxxxxxx", want: ErrPasswordPolicy},
 		{name: "simple ok", password: "password1"},
+		{name: "over bcrypt's 72 bytes", password: "Ab1" + strings.Repeat("\u20ac", 27), want: ErrPasswordTooLong},
 		{name: "simple unicode letter is not ASCII", password: "Ä1234567", want: ErrPasswordPolicy},
 		{name: "complex missing special", password: "NewSecure9", complex: true, want: ErrComplexPasswordPolicy},
 		{name: "complex missing upper", password: "newsecure9!", complex: true, want: ErrComplexPasswordPolicy},
@@ -84,7 +86,8 @@ func TestResolveComplexPasswordEnabled(t *testing.T) {
 
 func TestIsPasswordPolicyError(t *testing.T) {
 	t.Parallel()
-	if !IsPasswordPolicyError(ErrPasswordPolicy) || !IsPasswordPolicyError(ErrComplexPasswordPolicy) {
+	if !IsPasswordPolicyError(ErrPasswordPolicy) || !IsPasswordPolicyError(ErrComplexPasswordPolicy) ||
+		!IsPasswordPolicyError(ErrPasswordTooLong) {
 		t.Fatal("policy sentinels should match")
 	}
 	if IsPasswordPolicyError(ErrSamePassword) {

@@ -292,7 +292,7 @@ func (s *StorageBackendService) hydrateTenantStorage(ctx context.Context, tenant
 
 func (s *StorageBackendService) ResolveBackend(ctx context.Context, tenant *types.Tenant, backendID, provider string) (*types.StorageBackend, error) {
 	if tenant == nil {
-		return nil, fmt.Errorf("workspace context missing")
+		return nil, apperrors.NewBadRequestError("workspace context missing")
 	}
 	tenant = s.hydrateTenantStorage(ctx, tenant)
 	backendID = strings.TrimSpace(backendID)
@@ -312,10 +312,10 @@ func (s *StorageBackendService) ResolveBackend(ctx context.Context, tenant *type
 			return nil, err
 		}
 		if backend == nil {
-			return nil, fmt.Errorf("storage backend not found")
+			return nil, apperrors.NewBadRequestError("storage backend not found")
 		}
 		if backend.Status != types.StorageBackendStatusActive {
-			return nil, fmt.Errorf("storage backend is not active")
+			return nil, apperrors.NewBadRequestError("storage backend is not active")
 		}
 		return backend, nil
 	}

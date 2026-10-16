@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -62,6 +63,7 @@ func (s *stubAuthTokenRepo) GetTokenByID(_ context.Context, id string) (*types.A
 	}
 	return nil, errors.New("token not found")
 }
+
 func (s *stubAuthTokenRepo) GetTokensByUserID(context.Context, string) ([]*types.AuthToken, error) {
 	return nil, nil
 }
@@ -86,9 +88,11 @@ func (s *stubUserRepoForAuth) GetUserByID(_ context.Context, id string) (*types.
 	}
 	return user, nil
 }
+
 func (s *stubUserRepoForAuth) GetUsersByIDs(context.Context, []string) (map[string]*types.User, error) {
 	return nil, nil
 }
+
 func (s *stubUserRepoForAuth) GetUserByEmail(_ context.Context, email string) (*types.User, error) {
 	for _, user := range s.users {
 		if user != nil && user.Email == email {
@@ -101,9 +105,11 @@ func (s *stubUserRepoForAuth) GetUserByEmail(_ context.Context, email string) (*
 func (s *stubUserRepoForAuth) GetUserByUsername(context.Context, string) (*types.User, error) {
 	return nil, nil
 }
+
 func (s *stubUserRepoForAuth) GetUserByTenantID(context.Context, uint64) (*types.User, error) {
 	return nil, nil
 }
+
 func (s *stubUserRepoForAuth) UpdateUser(context.Context, *types.User) error {
 	s.updateCalls++
 	return nil
@@ -112,12 +118,15 @@ func (s *stubUserRepoForAuth) DeleteUser(context.Context, string) error { return
 func (s *stubUserRepoForAuth) ListUsers(context.Context, int, int) ([]*types.User, error) {
 	return nil, nil
 }
+
 func (s *stubUserRepoForAuth) ListSystemAdmins(context.Context, int, int) ([]*types.User, int64, error) {
 	return nil, 0, nil
 }
+
 func (s *stubUserRepoForAuth) RevokeSystemAdmin(context.Context, string, string) (*types.User, error) {
 	return nil, nil
 }
+
 func (s *stubUserRepoForAuth) SearchUsers(context.Context, string, int) ([]*types.User, error) {
 	return nil, nil
 }
@@ -293,6 +302,11 @@ func TestChangePasswordRequiresPolicyAndRevokesSessions(t *testing.T) {
 
 	if err := svc.ChangePassword(ctx, "user-1", "OldSecure9", "weak"); !errors.Is(err, ErrPasswordPolicy) {
 		t.Fatalf("ChangePassword(weak) err = %v, want ErrPasswordPolicy", err)
+	}
+	// 30 characters, 84 bytes: within the character limit, past bcrypt's.
+	overBcrypt := "Ab1" + strings.Repeat("\u20ac", 27)
+	if err := svc.ChangePassword(ctx, "user-1", "OldSecure9", overBcrypt); !errors.Is(err, ErrPasswordTooLong) {
+		t.Fatalf("ChangePassword(84 bytes) err = %v, want ErrPasswordTooLong", err)
 	}
 	if repo.updateCalls != 0 || len(tokenRepo.revokedUserIDs) != 0 {
 		t.Fatalf("weak password caused side effects: updates=%d revocations=%v",

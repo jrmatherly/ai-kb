@@ -860,7 +860,7 @@ func (s *sessionService) GenerateTitle(ctx context.Context,
 	// Ensure a user message was found
 	if message == nil {
 		logger.Error(ctx, "No user message found, cannot generate title")
-		return "", stderrors.New("no user message found")
+		return "", apperrors.NewBadRequestError("no user message found")
 	}
 
 	// Use provided modelID, or fallback to first available KnowledgeQA model
@@ -882,7 +882,7 @@ func (s *sessionService) GenerateTitle(ctx context.Context,
 		}
 		if modelID == "" {
 			logger.Error(ctx, "No KnowledgeQA model found")
-			return "", stderrors.New("no KnowledgeQA model available for title generation")
+			return "", apperrors.NewBadRequestError("no KnowledgeQA model available for title generation")
 		}
 	} else {
 		logger.Infof(ctx, "Using specified model for title generation: %s", modelID)
@@ -910,7 +910,7 @@ func (s *sessionService) GenerateTitle(ctx context.Context,
 	})
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		return "", err
+		return "", modelCallError("failed to generate title: ", err)
 	}
 
 	// Process and store the generated title

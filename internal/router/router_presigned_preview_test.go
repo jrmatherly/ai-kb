@@ -75,7 +75,7 @@ func TestPresignedPreviewUnconfiguredProviderReturnsEnvelope(t *testing.T) {
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
 	}
-	want := `{"success":false,"error":{"code":1000,"message":"missing minio config","details":` +
+	want := `{"success":false,"error":{"code":1000,"message":"storage backend is unavailable","details":` +
 		`{"hint":"workspace storage config is missing or incomplete for this provider","provider":"minio"}}}`
 	if got := strings.TrimSpace(recorder.Body.String()); got != want {
 		t.Fatalf("body:\n got %s\nwant %s", got, want)

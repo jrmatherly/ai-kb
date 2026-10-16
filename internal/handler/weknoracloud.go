@@ -34,7 +34,8 @@ type weKnoraCloudCredentialsRequest struct {
 // @Produce      json
 // @Param        request  body      map[string]interface{}  true  "{app_id, app_secret}"
 // @Success      200      {object}  map[string]interface{}  "success: true"
-// @Failure      400      {object}  apperrors.ErrorResponse  "Invalid request parameters"
+// @Failure      400      {object}  apperrors.ErrorResponse  "Invalid request parameters or rejected credentials"
+// @Failure      502      {object}  apperrors.ErrorResponse  "WeKnoraCloud unreachable or failing"
 // @Security     Bearer
 // @Security     ApiKeyAuth
 // @Router       /weknoracloud/credentials [post]
@@ -46,7 +47,7 @@ func (h *WeKnoraCloudHandler) SaveCredentials(c *gin.Context) {
 	}
 
 	if err := h.svc.SaveCredentials(c.Request.Context(), req.AppID, req.AppSecret); err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 

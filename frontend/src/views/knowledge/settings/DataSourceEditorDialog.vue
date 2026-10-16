@@ -377,32 +377,19 @@ async function loadDriveRoot() {
   loadingResources.value = false
 }
 
-// classifyDriveLoadError turns a raw Drive list error into an actionable i18n
-// message. The Feishu list API returns 403 with code=1061004 when the app has
-// not been shared the target folder; without this the user sees "forbidden"
-// and has no idea what to do.
+// classifyDriveLoadError turns a Drive list error into an actionable i18n
+// message from the server's details.code. A Feishu folder the app has not been
+// shared otherwise reads as a bare "forbidden" the user cannot act on.
 function classifyDriveLoadError(e: any): string {
-  const raw = String(e?.message || e?.error || '')
-  const lower = raw.toLowerCase()
-  // 403 / forbidden / 1061004 -> the app lacks access to this specific folder;
-  // the user must share it with the app's group in Feishu Drive.
-  if (
-    lower.includes('status=403') ||
-    lower.includes('forbidden') ||
-    lower.includes('"code":1061004') ||
-    lower.includes('code=1061004')
-  ) {
-    return t('datasource.drive.loadForbiddenHint')
+  switch (e?.error?.details?.code) {
+    case 'permission_denied':
+      return t('datasource.drive.loadForbiddenHint')
+    case 'auth_failed':
+      return t('datasource.drive.loadAuthHint')
+    case 'not_found':
+      return t('datasource.drive.loadNotFoundHint')
   }
-  // 401 / auth -> app credentials wrong or app lacks the drive scopes.
-  if (lower.includes('status=401') || lower.includes('auth') || lower.includes('1061005')) {
-    return t('datasource.drive.loadAuthHint')
-  }
-  // Invalid / not-found folder_token.
-  if (lower.includes('1061003') || lower.includes('not found')) {
-    return t('datasource.drive.loadNotFoundHint')
-  }
-  return raw || t('datasource.resourceLoadFailed')
+  return String(e?.message || '') || t('datasource.resourceLoadFailed')
 }
 
 // Shared children/parent indexes - used by tree rendering and selection logic

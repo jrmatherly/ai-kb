@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	filesvc "github.com/jrmatherly/ai-kb/internal/application/service/file"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -28,7 +29,7 @@ func (h *Handler) saveImageAttachments(ctx context.Context, images []ImageAttach
 		return nil
 	}
 	if len(images) > maxImagesCount {
-		return fmt.Errorf("too many images, max %d", maxImagesCount)
+		return apperrors.NewBadRequestError(fmt.Sprintf("too many images, max %d", maxImagesCount))
 	}
 
 	fileSvc := h.resolveImageFileService(ctx, storageProvider)
@@ -41,10 +42,11 @@ func (h *Handler) saveImageAttachments(ctx context.Context, images []ImageAttach
 
 		imgBytes, ext, err := decodeDataURI(img.Data)
 		if err != nil {
-			return fmt.Errorf("decode image %d: %w", i, err)
+			return apperrors.NewBadRequestError(fmt.Sprintf("decode image %d: %v", i, err))
 		}
 		if len(imgBytes) > maxImageSize {
-			return fmt.Errorf("image %d too large (%d bytes, max %d)", i, len(imgBytes), maxImageSize)
+			return apperrors.NewBadRequestError(
+				fmt.Sprintf("image %d too large (%d bytes, max %d)", i, len(imgBytes), maxImageSize))
 		}
 
 		storedName := fmt.Sprintf("chat-images/%s%s", uuid.New().String(), ext)

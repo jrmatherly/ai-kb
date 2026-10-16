@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
 
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
@@ -27,7 +27,7 @@ func (s *mcpToolApprovalService) ListByService(ctx context.Context, tenantID uin
 		return nil, err
 	}
 	if svc == nil {
-		return nil, fmt.Errorf("mcp service not found")
+		return nil, apperrors.NewNotFoundError("MCP service not found")
 	}
 	return s.repo.ListByService(ctx, tenantID, serviceID)
 }
@@ -36,17 +36,17 @@ func (s *mcpToolApprovalService) SetPolicy(
 	ctx context.Context, tenantID uint64, serviceID, toolName string, requireApproval, enabled *bool,
 ) error {
 	if toolName == "" {
-		return fmt.Errorf("tool_name is required")
+		return apperrors.NewBadRequestError("tool_name is required")
 	}
 	if requireApproval == nil && enabled == nil {
-		return fmt.Errorf("require_approval or enabled is required")
+		return apperrors.NewBadRequestError("require_approval or enabled is required")
 	}
 	svc, err := s.mcpRepo.GetByID(ctx, tenantID, serviceID)
 	if err != nil {
 		return err
 	}
 	if svc == nil {
-		return fmt.Errorf("mcp service not found")
+		return apperrors.NewNotFoundError("MCP service not found")
 	}
 	return s.repo.UpsertPolicy(ctx, tenantID, serviceID, toolName, types.MCPToolPolicyPatch{
 		RequireApproval: requireApproval,

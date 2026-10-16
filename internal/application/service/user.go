@@ -24,6 +24,7 @@ import (
 
 	apprepo "github.com/jrmatherly/ai-kb/internal/application/repository"
 	"github.com/jrmatherly/ai-kb/internal/config"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -58,6 +59,10 @@ var (
 	ErrComplexPasswordPolicy = errors.New(
 		"password must be 8-32 characters and must contain uppercase and lowercase " +
 			"letters, numbers, and special characters")
+
+	// ErrPasswordTooLong is the policy failure for a password within 32
+	// characters whose UTF-8 form exceeds bcrypt's 72-byte input limit.
+	ErrPasswordTooLong = errors.New("password must be at most 72 bytes")
 
 	// ErrInvalidOldPassword is returned by ChangePassword when the supplied
 	// current password does not match the stored hash. Handlers map this to
@@ -663,10 +668,10 @@ func (s *userService) UpdateUserPreferences(
 	if patch.BrowserSearchInstructions != nil {
 		value := strings.TrimSpace(*patch.BrowserSearchInstructions)
 		if utf8.RuneCountInString(value) > types.MaxBrowserSearchInstructionsLength {
-			return types.UserPreferences{}, fmt.Errorf(
+			return types.UserPreferences{}, apperrors.NewBadRequestError(fmt.Sprintf(
 				"browser search instructions must not exceed %d characters",
 				types.MaxBrowserSearchInstructionsLength,
-			)
+			))
 		}
 		merged.BrowserSearchInstructions = nil
 		if value != "" && value != types.DefaultBrowserSearchInstructions {
@@ -1200,7 +1205,7 @@ func (s *userService) SwitchTenant(
 		return nil, errors.New("user is required")
 	}
 	if targetTenantID == 0 {
-		return nil, errors.New("target workspace ID is required")
+		return nil, apperrors.NewBadRequestError("target workspace ID is required")
 	}
 
 	// Verify membership unless the caller is a cross-tenant superuser
@@ -1293,24 +1298,24 @@ func (s *userService) ValidateToken(ctx context.Context, tokenString string) (*t
 	})
 
 	if err != nil || !token.Valid {
-		return nil, 0, errors.New("invalid token")
+		return nil, 0, apperrors.NewUnauthorizedError("invalid token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, 0, errors.New("invalid token claims")
+		return nil, 0, apperrors.NewUnauthorizedError("invalid token claims")
 	}
 
 	userID, ok := claims["user_id"].(string)
 	if !ok {
-		return nil, 0, errors.New("invalid user ID in token")
+		return nil, 0, apperrors.NewUnauthorizedError("invalid user ID in token")
 	}
 
 	if isRefreshTokenClaims(claims) {
-		return nil, 0, errors.New("refresh token cannot be used as access token")
+		return nil, 0, apperrors.NewUnauthorizedError("refresh token cannot be used as access token")
 	}
 	if isSandboxTerminalTicketClaims(claims) {
-		return nil, 0, errors.New("terminal ticket cannot be used as access token")
+		return nil, 0, apperrors.NewUnauthorizedError("terminal ticket cannot be used as access token")
 	}
 
 	// Check if token is revoked. A failed lookup is an infrastructure error and
@@ -1321,13 +1326,16 @@ func (s *userService) ValidateToken(ctx context.Context, tokenString string) (*t
 		return nil, 0, fmt.Errorf("look up token: %w", err)
 	}
 	if tokenRecord == nil || tokenRecord.IsRevoked {
-		return nil, 0, errors.New("token is revoked")
+		return nil, 0, apperrors.NewUnauthorizedError("token is revoked")
 	}
 	if tokenRecord.TokenType == "refresh_token" {
-		return nil, 0, errors.New("refresh token cannot be used as access token")
+		return nil, 0, apperrors.NewUnauthorizedError("refresh token cannot be used as access token")
 	}
 
 	user, err := s.userRepo.GetUserByID(ctx, userID)
+	if isUserLookupNotFound(err) {
+		return nil, 0, apperrors.NewUnauthorizedError("user not found")
+	}
 	if err != nil {
 		return nil, 0, err
 	}
@@ -1336,7 +1344,7 @@ func (s *userService) ValidateToken(ctx context.Context, tokenString string) (*t
 	// stop working even if revocation missed it. Login also rejects disabled
 	// accounts, but long-lived access tokens are checked here per request.
 	if !user.IsActive {
-		return nil, 0, errors.New("account is disabled")
+		return nil, 0, apperrors.NewUnauthorizedError("account is disabled")
 	}
 
 	// Extract active tenant from the JWT. Anything missing or unparseable
@@ -1459,22 +1467,22 @@ func (s *userService) RefreshToken(
 	})
 
 	if err != nil || !token.Valid {
-		return "", "", errors.New("invalid refresh token")
+		return "", "", apperrors.NewUnauthorizedError("invalid refresh token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", "", errors.New("invalid token claims")
+		return "", "", apperrors.NewUnauthorizedError("invalid token claims")
 	}
 
 	tokenType, ok := claims["type"].(string)
 	if !ok || tokenType != "refresh" {
-		return "", "", errors.New("not a refresh token")
+		return "", "", apperrors.NewUnauthorizedError("not a refresh token")
 	}
 
 	userID, ok := claims["user_id"].(string)
 	if !ok {
-		return "", "", errors.New("invalid user ID in token")
+		return "", "", apperrors.NewUnauthorizedError("invalid user ID in token")
 	}
 
 	// Check if token is revoked. See ValidateToken: a lookup failure must not be
@@ -1484,14 +1492,17 @@ func (s *userService) RefreshToken(
 		return "", "", fmt.Errorf("look up refresh token: %w", err)
 	}
 	if tokenRecord == nil || tokenRecord.IsRevoked {
-		return "", "", errors.New("refresh token is revoked")
+		return "", "", apperrors.NewUnauthorizedError("refresh token is revoked")
 	}
 	if tokenRecord.TokenType != "refresh_token" {
-		return "", "", errors.New("not a refresh token")
+		return "", "", apperrors.NewUnauthorizedError("not a refresh token")
 	}
 
 	// Get user
 	user, err := s.userRepo.GetUserByID(ctx, userID)
+	if isUserLookupNotFound(err) {
+		return "", "", apperrors.NewUnauthorizedError("user not found")
+	}
 	if err != nil {
 		return "", "", err
 	}
@@ -1599,7 +1610,7 @@ func validateOIDCEndpoints(cfg *config.OIDCAuthConfig) error {
 
 func (s *userService) getOIDCConfig(ctx context.Context) (*config.OIDCAuthConfig, error) {
 	if s.config == nil || s.config.OIDCAuth == nil || !s.config.OIDCAuth.Enable {
-		return nil, errors.New("OIDC login is disabled")
+		return nil, apperrors.NewForbiddenError("OIDC login is disabled")
 	}
 	cfg := *s.config.OIDCAuth
 	if cfg.UserInfoMapping == nil {
@@ -1622,7 +1633,7 @@ func (s *userService) populateOIDCEndpoints(ctx context.Context, cfg *config.OID
 	if oidcNeedsDiscovery(cfg) {
 		if strings.TrimSpace(cfg.DiscoveryURL) == "" {
 			if strings.TrimSpace(cfg.AuthorizationEndpoint) == "" || strings.TrimSpace(cfg.TokenEndpoint) == "" {
-				return errors.New("OIDC discovery_url or explicit endpoints are required")
+				return apperrors.NewForbiddenError("OIDC discovery_url or explicit endpoints are required")
 			}
 		} else if err := s.applyOIDCDiscoveryDocument(ctx, cfg); err != nil {
 			return err

@@ -18,6 +18,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 	"github.com/jrmatherly/ai-kb/internal/common"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/chunker"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/logger"
@@ -151,15 +152,15 @@ func (s *temporaryDocumentService) Create(
 	options types.TemporaryDocumentCreateOptions,
 ) (*types.TemporaryDocument, error) {
 	if tenantID == 0 || strings.TrimSpace(sessionID) == "" {
-		return nil, fmt.Errorf("invalid attachment scope")
+		return nil, apperrors.NewBadRequestError("invalid attachment scope")
 	}
 	safeName, valid := secutils.ValidateInput(fileName)
 	if !valid {
-		return nil, fmt.Errorf("invalid characters in file name")
+		return nil, apperrors.NewBadRequestError("invalid characters in file name")
 	}
 	baseName, err := secutils.SafeFileName(safeName)
 	if err != nil {
-		return nil, fmt.Errorf("unsafe file name: %w", err)
+		return nil, apperrors.NewBadRequestError("unsafe file name: " + err.Error())
 	}
 	ext := strings.ToLower(filepath.Ext(baseName))
 	resourceTenantID := options.ResourceTenantID
@@ -167,18 +168,20 @@ func (s *temporaryDocumentService) Create(
 		resourceTenantID = tenantID
 	}
 	if !s.supportsExtension(ctx, resourceTenantID, ext) {
-		return nil, fmt.Errorf("unsupported file type: %s", ext)
+		return nil, apperrors.NewBadRequestError("unsupported file type: " + ext)
 	}
 	maxSize := secutils.GetMaxFileSizeMB() * 1024 * 1024
 	if fileSize <= 0 || fileSize > maxSize {
-		return nil, fmt.Errorf("file size must be between 1 byte and %dMB", secutils.GetMaxFileSizeMB())
+		return nil, apperrors.NewBadRequestError(
+			fmt.Sprintf("file size must be between 1 byte and %dMB", secutils.GetMaxFileSizeMB()))
 	}
 	data, err := io.ReadAll(io.LimitReader(reader, maxSize+1))
 	if err != nil {
 		return nil, fmt.Errorf("read attachment: %w", err)
 	}
 	if int64(len(data)) > maxSize {
-		return nil, fmt.Errorf("file exceeds size limit of %dMB", secutils.GetMaxFileSizeMB())
+		return nil, apperrors.NewBadRequestError(
+			fmt.Sprintf("file exceeds size limit of %dMB", secutils.GetMaxFileSizeMB()))
 	}
 	if int64(len(data)) != fileSize {
 		fileSize = int64(len(data))

@@ -79,7 +79,7 @@ func (h *DataSourceCredentialsHandler) Put(c *gin.Context) {
 		logger.ErrorWithFields(c.Request.Context(), err, map[string]interface{}{
 			"data_source_id": secutils.SanitizeForLog(ds.ID),
 		})
-		c.Error(errors.NewBadRequestError("failed to update credentials: " + err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	configured := false

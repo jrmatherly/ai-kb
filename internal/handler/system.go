@@ -1865,7 +1865,7 @@ func (h *SystemHandler) CreateSystemUser(c *gin.Context) {
 				"idempotent":         true,
 			})
 			c.JSON(http.StatusOK, CreateSystemUserResponse{User: user.ToUserInfo()})
-		case errors.Is(err, service.ErrPasswordPolicy):
+		case service.IsPasswordPolicyError(err):
 			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		case errors.Is(err, service.ErrUserIdentityConflict):
 			_ = c.Error(apperrors.NewConflictError(err.Error()))
@@ -2443,10 +2443,7 @@ func (h *SystemHandler) GetSystemSetting(c *gin.Context) {
 	key := c.Param("key")
 	row, err := h.systemSettingSvc.Get(ctx, key)
 	if err != nil {
-		// Service-layer "unknown key" surfaces as a generic error here;
-		// distinguish via the error string rather than typed errors so
-		// we don't grow a sentinel package for a single error class.
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	if row == nil {
@@ -2498,10 +2495,7 @@ func (h *SystemHandler) UpdateSystemSetting(c *gin.Context) {
 
 	row, err := h.systemSettingSvc.Update(ctx, key, req.Value)
 	if err != nil {
-		// Whether this is "unknown key" / "type mismatch" / "DB error"
-		// is encoded in the error message at the service layer; surface
-		// it verbatim. UI captures it as the toast text.
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	h.enrichSettingsModifiedBy(ctx, []*types.SystemSetting{row})
@@ -2589,11 +2583,7 @@ func (h *SystemHandler) ResetSystemSetting(c *gin.Context) {
 	ctx := logger.CloneContext(c.Request.Context())
 	key := c.Param("key")
 	if err := h.systemSettingSvc.Reset(ctx, key); err != nil {
-		// Service surfaces "unknown key" as a plain error string; treat
-		// every error as 400 so the UI captures it as a toast. A real
-		// DB failure here is rare and indistinguishable from "bad key"
-		// at this layer - operators see the message either way.
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})

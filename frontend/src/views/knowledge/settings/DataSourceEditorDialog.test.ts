@@ -506,3 +506,16 @@ test('connectors that keep deselected items never show the scope notice', async 
     assert.equal(f.vm.scopeNarrowed, false)
   } finally { f.close() }
 })
+
+test('Drive load errors map the server details.code to a hint', async () => {
+  const f = await fixture({ create: true })
+  try {
+    const rejection = (code?: string, message = 'failed to list resources: feishu api error: status=403') =>
+      ({ status: 502, message, error: { code: 1011, message, details: code ? { code } : undefined } })
+    assert.equal(f.vm.classifyDriveLoadError(rejection('permission_denied')), 'datasource.drive.loadForbiddenHint')
+    assert.equal(f.vm.classifyDriveLoadError(rejection('auth_failed')), 'datasource.drive.loadAuthHint')
+    assert.equal(f.vm.classifyDriveLoadError(rejection('not_found')), 'datasource.drive.loadNotFoundHint')
+    assert.equal(f.vm.classifyDriveLoadError(rejection('upstream_error', 'boom')), 'boom')
+    assert.equal(f.vm.classifyDriveLoadError(rejection(undefined, '')), 'datasource.resourceLoadFailed')
+  } finally { f.close() }
+})

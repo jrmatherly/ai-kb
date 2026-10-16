@@ -90,6 +90,7 @@ func (h *DataSourceHandler) getOwnedDataSource(
 // @Param request body types.DataSource true "Data source configuration"
 // @Success 201 {object} types.DataSource
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource [post]
 func (h *DataSourceHandler) CreateDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -117,7 +118,7 @@ func (h *DataSourceHandler) CreateDataSource(c *gin.Context) {
 
 	ds, err := h.service.CreateDataSource(ctx, &req)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -198,6 +199,7 @@ func (h *DataSourceHandler) ListDataSources(c *gin.Context) {
 // @Param request body types.DataSource true "Updated configuration"
 // @Success 200 {object} types.DataSource
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource/{id} [put]
 func (h *DataSourceHandler) UpdateDataSource(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -226,7 +228,7 @@ func (h *DataSourceHandler) UpdateDataSource(c *gin.Context) {
 	req.KnowledgeBaseID = existing.KnowledgeBaseID
 	ds, err := h.service.UpdateDataSource(ctx, &req)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -271,6 +273,7 @@ func (h *DataSourceHandler) DeleteDataSource(c *gin.Context) {
 // @Param id path string true "Data source ID"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource/{id}/validate [post]
 func (h *DataSourceHandler) ValidateConnection(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -288,7 +291,7 @@ func (h *DataSourceHandler) ValidateConnection(c *gin.Context) {
 	}
 
 	if err := h.service.ValidateConnection(ctx, id); err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -308,6 +311,7 @@ func (h *DataSourceHandler) ValidateConnection(c *gin.Context) {
 // @Param request body object true "type and credentials"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource/validate-credentials [post]
 func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -327,7 +331,7 @@ func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 	}
 
 	if err := h.service.ValidateCredentials(ctx, req.Type, req.Credentials); err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -344,6 +348,7 @@ func (h *DataSourceHandler) ValidateCredentials(c *gin.Context) {
 // @Param request body listResourcesForConfigRequest true "Unsaved config and optional parent_id"
 // @Success 200 {object} []types.Resource
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource/list-resources [post]
 func (h *DataSourceHandler) ListResourcesForConfig(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -366,7 +371,7 @@ func (h *DataSourceHandler) ListResourcesForConfig(c *gin.Context) {
 		Settings:    req.Settings,
 	}, req.ParentID)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -395,6 +400,7 @@ type listResourcesForConfigRequest struct {
 // @Param parent_id query string false "Parent resource ExternalID; empty lists the top level"
 // @Success 200 {object} []types.Resource
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource/{id}/resources [get]
 func (h *DataSourceHandler) ListAvailableResources(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -414,7 +420,7 @@ func (h *DataSourceHandler) ListAvailableResources(c *gin.Context) {
 
 	resources, err := h.service.ListAvailableResources(ctx, id, parentID)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -433,6 +439,7 @@ func (h *DataSourceHandler) ListAvailableResources(c *gin.Context) {
 // @Param request body resolveAncestorsRequest true "Resource IDs to resolve"
 // @Success 200 {object} map[string][]string
 // @Failure 400 {object} apperrors.ErrorResponse
+// @Failure 502 {object} apperrors.ErrorResponse "The connected system failed; details.code classifies it"
 // @Router /datasource/{id}/resource-ancestors [post]
 func (h *DataSourceHandler) ResolveResourceAncestors(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -457,7 +464,7 @@ func (h *DataSourceHandler) ResolveResourceAncestors(c *gin.Context) {
 
 	ancestors, err := h.service.ResolveResourceAncestors(ctx, id, req.ResourceIDs)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -513,7 +520,7 @@ func (h *DataSourceHandler) ManualSync(c *gin.Context) {
 
 	syncLog, err := h.service.ManualSync(ctx, id, req.AllowMassDeletion)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -544,7 +551,7 @@ func (h *DataSourceHandler) PauseDataSource(c *gin.Context) {
 	}
 
 	if err := h.service.PauseDataSource(ctx, id); err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -575,7 +582,7 @@ func (h *DataSourceHandler) ResumeDataSource(c *gin.Context) {
 	}
 
 	if err := h.service.ResumeDataSource(ctx, id); err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 
@@ -628,7 +635,7 @@ func (h *DataSourceHandler) GetSyncLogs(c *gin.Context) {
 
 	logs, err := h.service.GetSyncLogs(ctx, id, limit, offset)
 	if err != nil {
-		_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 

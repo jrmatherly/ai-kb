@@ -303,7 +303,7 @@ Purpose: generate a per-user authorization URL. Permission: Viewer+.
 | `redirect_uri` | string | yes | Backend callback URL (absolute) |
 | `frontend_redirect` | string | no | Frontend path to open after the callback (default `/`) |
 
-Response: 200 `{"success":true,"data":{"authorization_url","authorization_attempt"}}`. 404 when the ID is unknown.
+Response: 200 `{"success":true,"data":{"authorization_url","authorization_attempt"}}`. 404 when the ID is unknown; 400 for an invalid `frontend_redirect` or service URL; 502 (code 1011) with the cause when the authorization server's metadata or dynamic client registration fails.
 
 ```bash
 curl -X POST $BASE/api/v1/mcp-services/mcp-1/oauth/authorize-url -H "Authorization: Bearer $TOKEN" \

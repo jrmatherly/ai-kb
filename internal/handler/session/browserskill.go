@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	stderrors "errors"
 	"net"
 	"net/http"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jrmatherly/ai-kb/internal/browserskill"
 	"github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
 )
 
@@ -147,7 +149,7 @@ func (h *Handler) BrowserSkillConnection(c *gin.Context) {
 	if c.Request.Method == http.MethodGet {
 		status, err := h.browserSkill.GetStatus(ctx, scope, id)
 		if err != nil {
-			_ = c.Error(errors.NewServiceUnavailableError(err.Error()))
+			_ = c.Error(browserSkillError(ctx, err, errors.NewServiceUnavailableError))
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "data": status})
@@ -183,15 +185,25 @@ func (h *Handler) BrowserSkillConnection(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		_ = c.Error(errors.NewConflictError(err.Error()))
+		_ = c.Error(browserSkillError(ctx, err, errors.NewConflictError))
 		return
 	}
 	status, err := h.browserSkill.GetStatus(ctx, scope, id)
 	if err != nil {
-		_ = c.Error(errors.NewServiceUnavailableError(err.Error()))
+		_ = c.Error(browserSkillError(ctx, err, errors.NewServiceUnavailableError))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": status})
+}
+
+// browserSkillError forwards the manager's own messages (authorization, routing,
+// daemon RPC errors) through newErr and replaces a store failure with a fixed 503.
+func browserSkillError(ctx context.Context, err error, newErr func(string) *errors.AppError) *errors.AppError {
+	if stderrors.Is(err, browserskill.ErrStore) {
+		logger.Errorf(ctx, "browser skill store failed: %v", err)
+		return errors.NewServiceUnavailableError("browser connection status unavailable")
+	}
+	return newErr(err.Error())
 }
 
 // BrowserSkillExtension upgrades a device-authenticated extension connection.
@@ -236,7 +248,7 @@ func (h *Handler) BrowserSkillAccount(c *gin.Context) {
 	case "pair":
 		link, err := h.browserSkill.Pair(ctx, scope, pairingOrigin(c.Request, input.Origin))
 		if err != nil {
-			_ = c.Error(errors.NewConflictError(err.Error()))
+			_ = c.Error(browserSkillError(ctx, err, errors.NewConflictError))
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "data": gin.H{"pairing_link": link}})

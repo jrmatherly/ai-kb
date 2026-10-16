@@ -1389,7 +1389,7 @@ func (s *knowledgeService) ProcessSummaryGeneration(ctx context.Context, t *asyn
 		var err error
 		ctx, err = restoreSummaryRefreshTenantInfo(ctx, s.tenantRepo, payload.TenantID)
 		if err == nil {
-			_, err = s.RegenerateKnowledgeSummary(ctx, payload.KnowledgeID)
+			_, err = s.regenerateKnowledgeSummary(ctx, payload.KnowledgeID)
 		}
 		if err != nil {
 			if errors.Is(err, ErrSummaryRefreshStale) {
@@ -2522,7 +2522,7 @@ func (s *knowledgeService) generateQuestionsWithContext(ctx context.Context,
 		Thinking:    &thinking,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate questions: %w", err)
+		return nil, modelCallError("failed to generate questions: ", err)
 	}
 
 	// Parse response
@@ -2634,7 +2634,50 @@ func (s *knowledgeService) RegenerateChunkQuestions(
 // RegenerateKnowledgeSummary refreshes both the knowledge description and the
 // summary chunk(s), then reindexes only those summary chunks. It is
 // intentionally idempotent.
+// modelCallError blames the configured model for a failed call, unless the
+// request's own deadline or cancellation ended it.
+func modelCallError(prefix string, err error) error {
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return err
+	}
+	return werrors.NewBadGatewayError(prefix + err.Error())
+}
+
+// summaryModelCall reports a failed summary request as a 502 on the refresh
+// path only; the ingestion task keeps the raw error for its trace span.
+type summaryModelCall struct{ model chat.Chat }
+
+func (m summaryModelCall) Chat(
+	ctx context.Context, messages []chat.Message, opts *chat.ChatOptions,
+) (*types.ChatResponse, error) {
+	response, err := m.model.Chat(ctx, messages, opts)
+	if err != nil {
+		return nil, modelCallError("failed to generate summary: ", err)
+	}
+	return response, nil
+}
+
+func (m summaryModelCall) ChatStream(
+	ctx context.Context, messages []chat.Message, opts *chat.ChatOptions,
+) (<-chan types.StreamResponse, error) {
+	return m.model.ChatStream(ctx, messages, opts)
+}
+func (m summaryModelCall) GetModelName() string { return m.model.GetModelName() }
+func (m summaryModelCall) GetModelID() string   { return m.model.GetModelID() }
+
 func (s *knowledgeService) RegenerateKnowledgeSummary(
+	ctx context.Context, knowledgeID string,
+) (*types.Knowledge, error) {
+	knowledge, err := s.regenerateKnowledgeSummary(ctx, knowledgeID)
+	if errors.Is(err, errInsufficientSummaryContent) || errors.Is(err, ErrSummaryRefreshStale) {
+		err = werrors.NewBadRequestError(err.Error())
+	}
+	return knowledge, err
+}
+
+// regenerateKnowledgeSummary returns the summary sentinels unconverted for the
+// task handler, which tells them apart with errors.Is.
+func (s *knowledgeService) regenerateKnowledgeSummary(
 	ctx context.Context, knowledgeID string,
 ) (*types.Knowledge, error) {
 	tenantID := types.MustTenantIDFromContext(ctx)
@@ -2647,7 +2690,7 @@ func (s *knowledgeService) RegenerateKnowledgeSummary(
 		return nil, err
 	}
 	if kb.SummaryModelID == "" {
-		return nil, fmt.Errorf("summary model is not configured")
+		return nil, werrors.NewBadRequestError("summary model is not configured")
 	}
 	allChunks, err := s.chunkRepo.ListChunksByKnowledgeID(ctx, tenantID, knowledgeID)
 	if err != nil {
@@ -2720,7 +2763,7 @@ func (s *knowledgeService) RegenerateKnowledgeSummary(
 	if err != nil {
 		return handleGenerationFailure(fmt.Errorf("get chat model: %w", err))
 	}
-	summaryResult, err := s.getSummary(ctx, chatModel, knowledge, textChunks)
+	summaryResult, err := s.getSummary(ctx, summaryModelCall{chatModel}, knowledge, textChunks)
 	if err != nil {
 		return handleGenerationFailure(err)
 	}

@@ -3,6 +3,7 @@ package browserskill
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -14,6 +15,9 @@ var ErrAuthorization = errors.New("browser authorization is invalid or expired")
 
 // ErrLeaseHeld indicates that another replica still owns the device connection.
 var ErrLeaseHeld = errors.New("browser connection is owned by another node; reconnect shortly")
+
+// ErrStore wraps a database failure in the connection store, whose text is not for API clients.
+var ErrStore = errors.New("browser connection store failed")
 
 const (
 	pairingLifetime = 5 * time.Minute
@@ -93,7 +97,7 @@ func (s *Store) member(ctx context.Context, scope Scope) error {
 		Count(&count).
 		Error
 	if err != nil {
-		return err
+		return storeErr(err)
 	}
 	if count == 0 {
 		return ErrAuthorization
@@ -105,10 +109,10 @@ func (s *Store) createPair(ctx context.Context, p PairingRecord) error {
 	if err := s.member(ctx, Scope{p.Tenant, p.User}); err != nil {
 		return err
 	}
-	return s.db.WithContext(ctx).
+	return storeErr(s.db.WithContext(ctx).
 		Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "scope_key"}}, UpdateAll: true}).
 		Create(&p).
-		Error
+		Error)
 }
 
 func (s *Store) exchange(ctx context.Context, oldHash string, r DeviceRecord) (*DeviceRecord, error) {
@@ -136,7 +140,7 @@ func (s *Store) exchange(ctx context.Context, oldHash string, r DeviceRecord) (*
 			Create(&r).
 			Error
 	})
-	return &r, err
+	return &r, storeErr(err)
 }
 
 func (s *Store) account(ctx context.Context, scope Scope) (*DeviceRecord, error) {
@@ -145,7 +149,10 @@ func (s *Store) account(ctx context.Context, scope Scope) (*DeviceRecord, error)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
-	return &r, err
+	if err != nil {
+		return nil, storeErr(err)
+	}
+	return &r, nil
 }
 
 func (s *Store) authenticate(ctx context.Context, hash string) (*DeviceRecord, error) {
@@ -160,7 +167,7 @@ func (s *Store) authenticate(ctx context.Context, hash string) (*DeviceRecord, e
 		return nil, ErrAuthorization
 	}
 	if err != nil {
-		return nil, err
+		return nil, storeErr(err)
 	}
 	if err = s.member(ctx, r.scope()); err != nil {
 		return nil, err
@@ -191,7 +198,7 @@ func (s *Store) renew(ctx context.Context, oldHash, nextHash string) (*DeviceRec
 			"expires_at": now.Add(deviceLifetime), "renew_after": now.Add(renewalInterval),
 		})
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, storeErr(result.Error)
 	}
 	if result.RowsAffected != 1 {
 		return nil, ErrAuthorization
@@ -200,7 +207,7 @@ func (s *Store) renew(ctx context.Context, oldHash, nextHash string) (*DeviceRec
 }
 
 func (s *Store) revoke(ctx context.Context, scope Scope) error {
-	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	return storeErr(s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("scope_key = ?", scope.key()).Delete(&PairingRecord{}).Error; err != nil {
 			return err
 		}
@@ -208,7 +215,7 @@ func (s *Store) revoke(ctx context.Context, scope Scope) error {
 			Where("scope_key = ?", scope.key()).
 			Updates(map[string]any{"revoked_at": time.Now(), "owner": "", "owner_url": "", "lease_until": time.Time{}}).
 			Error
-	})
+	}))
 }
 
 func (s *Store) claim(ctx context.Context, r *DeviceRecord, owner, url, leaseKey string) error {
@@ -221,7 +228,7 @@ func (s *Store) claim(ctx context.Context, r *DeviceRecord, owner, url, leaseKey
 			"lease_until": now.Add(leaseLifetime), "last_seen_at": now,
 		})
 	if result.Error != nil {
-		return result.Error
+		return storeErr(result.Error)
 	}
 	if result.RowsAffected != 1 {
 		return ErrLeaseHeld
@@ -234,7 +241,7 @@ func (s *Store) heartbeat(ctx context.Context, id, leaseKey string) (*DeviceReco
 	if err := s.db.WithContext(ctx).Where(
 		"id = ? AND lease_key = ? AND revoked_at IS NULL AND expires_at > ?", id, leaseKey, time.Now(),
 	).First(&r).Error; err != nil {
-		return nil, err
+		return nil, storeErr(err)
 	}
 	if err := s.member(ctx, r.scope()); err != nil {
 		return nil, err
@@ -244,7 +251,7 @@ func (s *Store) heartbeat(ctx context.Context, id, leaseKey string) (*DeviceReco
 		Where("id = ? AND lease_key = ? AND revoked_at IS NULL AND lease_until > ?", id, leaseKey, time.Now()).
 		Updates(map[string]any{"lease_until": time.Now().Add(leaseLifetime), "last_seen_at": time.Now()})
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, storeErr(result.Error)
 	}
 	if result.RowsAffected != 1 {
 		return nil, ErrAuthorization
@@ -253,37 +260,47 @@ func (s *Store) heartbeat(ctx context.Context, id, leaseKey string) (*DeviceReco
 }
 
 func (s *Store) release(ctx context.Context, id, leaseKey string) error {
-	return s.db.WithContext(ctx).
+	return storeErr(s.db.WithContext(ctx).
 		Model(&DeviceRecord{}).
 		Where("id = ? AND lease_key = ?", id, leaseKey).
 		Updates(map[string]any{"owner": "", "owner_url": "", "lease_until": time.Time{}}).
-		Error
+		Error)
 }
 
 func (s *Store) tasks(ctx context.Context, scope Scope) ([]TaskRecord, error) {
 	var rows []TaskRecord
-	err := s.db.WithContext(ctx).Where("scope_key = ?", scope.key()).Find(&rows).Error
-	return rows, err
+	if err := s.db.WithContext(ctx).Where("scope_key = ?", scope.key()).Find(&rows).Error; err != nil {
+		return nil, storeErr(err)
+	}
+	return rows, nil
 }
 
 func (s *Store) markTask(ctx context.Context, scope Scope, session string) error {
-	return s.db.WithContext(ctx).
+	return storeErr(s.db.WithContext(ctx).
 		Clauses(clause.OnConflict{DoNothing: true}).
 		Create(&TaskRecord{scope.key(), session}).
-		Error
+		Error)
 }
 
 func (s *Store) clearTask(ctx context.Context, scope Scope, session string) error {
-	return s.db.WithContext(ctx).
+	return storeErr(s.db.WithContext(ctx).
 		Where("scope_key = ? AND session = ?", scope.key(), session).
 		Delete(&TaskRecord{}).
-		Error
+		Error)
 }
 
 func (s *Store) releaseOwner(ctx context.Context, owner string) error {
-	return s.db.WithContext(ctx).
+	return storeErr(s.db.WithContext(ctx).
 		Model(&DeviceRecord{}).
 		Where("owner = ?", owner).
 		Updates(map[string]any{"owner": "", "owner_url": "", "lease_until": time.Time{}}).
-		Error
+		Error)
+}
+
+// storeErr marks a database failure with ErrStore and passes the store's own sentinels through.
+func storeErr(err error) error {
+	if err == nil || errors.Is(err, ErrAuthorization) || errors.Is(err, ErrLeaseHeld) || errors.Is(err, ErrStore) {
+		return err
+	}
+	return fmt.Errorf("%w: %w", ErrStore, err)
 }

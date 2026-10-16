@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/hibiken/asynq"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/models/chat"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
@@ -492,4 +494,21 @@ func TestBuildSummaryChunkContent(t *testing.T) {
 		buildSummaryChunkContent("Body.", &types.KnowledgeProfile{Gist: "Gist"}))
 	assert.Equal(t, "# Summary\nBody.", buildSummaryChunkContent("Body.", &types.KnowledgeProfile{Gist: "body."}),
 		"a gist identical to the summary is not repeated")
+}
+
+func TestKnowledgeBaseProfileGenerateModelErrorStatus(t *testing.T) {
+	f := newKBProfileFixture(kbProfileResponse)
+	f.chatModel.err = errors.New("upstream 503")
+	_, err := f.service.GenerateKnowledgeBaseProfile(context.Background(), f.kb, false)
+	appErr, ok := apperrors.IsAppError(err)
+	require.True(t, ok)
+	assert.Equal(t, http.StatusBadGateway, appErr.HTTPCode)
+	assert.Equal(t, "generate knowledge base description: upstream 503", appErr.Message)
+
+	f = newKBProfileFixture(kbProfileResponse)
+	f.chatModel.err = context.DeadlineExceeded
+	_, err = f.service.GenerateKnowledgeBaseProfile(context.Background(), f.kb, false)
+	_, ok = apperrors.IsAppError(err)
+	assert.False(t, ok)
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
 }

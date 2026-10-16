@@ -193,7 +193,7 @@ curl -X POST $BASE/api/v1/knowledge-bases/kb-1/duplicate -H "Authorization: Bear
 
 ### POST /api/v1/knowledge-bases/:id/profile/generate
 
-Purpose: regenerate the knowledge base's AI description (`generated_profile`) now. Runs one document profile aggregation and one small model call synchronously; the hand-written `description` is untouched. Permission: same as updating a knowledge base (creator or Admin with KB write); API key `manage_kbs` or full access. No request body. Document type only; 400 when no model is configured.
+Purpose: regenerate the knowledge base's AI description (`generated_profile`) now. Runs one document profile aggregation and one small model call synchronously; the hand-written `description` is untouched. Permission: same as updating a knowledge base (creator or Admin with KB write); API key `manage_kbs` or full access. No request body. Document type only; 400 when no model is configured; 502 (code 1011) with the cause when the model call fails or returns no usable description.
 
 Response: 200 `{"success":true,"data":{"gist","topics":[...],"typical_questions":[...],"stats":{"document_count",...},"status":"ready","model_id","generated_at"}}`
 
@@ -518,7 +518,7 @@ Purpose: regenerate a document's summary after its chunks or custom metadata wer
 
 Two behaviors: a document with no summary yet (`summary_status` empty or `none`) generates one synchronously; a document with a summary queues a refresh task instead, `summary_status` becomes `pending`, and `knowledge_summary_refresh.go` runs it asynchronously.
 
-Response: 200 `{"success":true,"data":{Knowledge}}`
+Response: 200 `{"success":true,"data":{Knowledge}}`. 400 when the knowledge base has no summary model, the document has too little text, or a newer edit superseded the run; 502 (code 1011) with the model's error when the synchronous summary model call fails; other failures return the generic 500.
 
 ```bash
 curl -X POST $BASE/api/v1/knowledge/k-1/regenerate-summary -H "Authorization: Bearer $TOKEN"

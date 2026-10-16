@@ -171,3 +171,29 @@ func TestChangePassword_MapsPasswordPolicyDetail(t *testing.T) {
 		t.Fatalf("details = %q, want %q", resp.Error.Details, service.DetailPasswordPolicy)
 	}
 }
+
+func TestChangePassword_MapsPasswordTooLong(t *testing.T) {
+	h := &AuthHandler{
+		userService: &stubChangePasswordUserService{
+			getCurrentUser: func(_ context.Context) (*types.User, error) {
+				return &types.User{ID: "user-1", Email: "alice@example.com"}, nil
+			},
+			changePassword: func(_ context.Context, _, _, _ string) error {
+				return service.ErrPasswordTooLong
+			},
+		},
+	}
+
+	w := doChangePassword(t, newChangePasswordTestRouter(h), map[string]string{
+		"old_password": "OldSecure9",
+		"new_password": "NewSecure9",
+	})
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d body=%s", w.Code, http.StatusBadRequest, w.Body.String())
+	}
+	want := `{"error":{"code":1010,"details":"password_policy","message":"Password must be at most 72 bytes"},` +
+		`"success":false}`
+	if w.Body.String() != want {
+		t.Fatalf("body = %s, want %s", w.Body.String(), want)
+	}
+}

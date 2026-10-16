@@ -3,11 +3,18 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/hibiken/asynq"
 	"github.com/jrmatherly/ai-kb/internal/application/repository"
+	"github.com/jrmatherly/ai-kb/internal/config"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
+	"github.com/jrmatherly/ai-kb/internal/models/chat"
 	"github.com/jrmatherly/ai-kb/internal/types"
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 	"github.com/stretchr/testify/assert"
@@ -112,7 +119,10 @@ func TestRegenerateKnowledgeSummaryWritesOnlySummaryColumns(t *testing.T) {
 
 	_, err := svc.RegenerateKnowledgeSummary(ctx, "k-1")
 
-	require.ErrorIs(t, err, errInsufficientSummaryContent)
+	appErr, ok := apperrors.IsAppError(err)
+	require.True(t, ok, "insufficient content is a client error, got %v", err)
+	assert.Equal(t, http.StatusBadRequest, appErr.HTTPCode)
+	assert.Equal(t, "insufficient text content for summary generation", appErr.Message)
 	assertSummaryColumnsOnly(t, repo.writes)
 }
 
@@ -206,4 +216,63 @@ func TestTriggerManualProcessingFailsEmptyContent(t *testing.T) {
 	assert.Equal(t, types.ParseStatusFailed, row.ParseStatus)
 	assert.NotEmpty(t, row.ErrorMessage)
 	assert.True(t, row.UpdatedAt.After(before))
+}
+
+type summaryTextChunkRepo struct {
+	interfaces.ChunkRepository
+	chunk *types.Chunk
+}
+
+func (r summaryTextChunkRepo) ListChunksByKnowledgeID(context.Context, uint64, string) ([]*types.Chunk, error) {
+	return []*types.Chunk{r.chunk}, nil
+}
+
+func (summaryTextChunkRepo) ListChunksByParentIDs(context.Context, uint64, []string) ([]*types.Chunk, error) {
+	return nil, nil
+}
+
+func (r summaryTextChunkRepo) GetChunkByID(context.Context, uint64, string) (*types.Chunk, error) {
+	return r.chunk, nil
+}
+
+type erroringChat struct {
+	cadenceChat
+	err error
+}
+
+func (c erroringChat) Chat(context.Context, []chat.Message, *chat.ChatOptions) (*types.ChatResponse, error) {
+	return nil, c.err
+}
+
+func TestRegenerateKnowledgeSummaryModelFailure(t *testing.T) {
+	regenerate := func(t *testing.T, modelErr error) error {
+		svc := &knowledgeService{
+			config: &config.Config{Conversation: &config.ConversationConfig{
+				GenerateSummaryPrompt: "Summarize the document.",
+			}},
+			repo:      &summaryColumnsRepo{t: t, knowledge: summaryKnowledge()},
+			kbService: &reparseFailureKBService{kb: summaryKB()},
+			chunkRepo: summaryTextChunkRepo{chunk: &types.Chunk{
+				ID: "c-1", ChunkType: types.ChunkTypeText, IsEnabled: true,
+				Content: strings.Repeat("The quarterly report covers revenue and costs. ", 10),
+			}},
+			modelService: tableSummaryModelService{model: erroringChat{err: modelErr}},
+		}
+		ctx := context.WithValue(context.Background(), types.TenantIDContextKey, uint64(1))
+		_, err := svc.RegenerateKnowledgeSummary(ctx, "k-1")
+		return err
+	}
+
+	t.Run("provider error is a 502", func(t *testing.T) {
+		appErr, ok := apperrors.IsAppError(regenerate(t, errors.New("401 Unauthorized: invalid api key")))
+		require.True(t, ok)
+		assert.Equal(t, http.StatusBadGateway, appErr.HTTPCode)
+		assert.Equal(t, "failed to generate summary: 401 Unauthorized: invalid api key", appErr.Message)
+	})
+	t.Run("request deadline stays a 500", func(t *testing.T) {
+		err := regenerate(t, fmt.Errorf("post chat completion: %w", context.DeadlineExceeded))
+		_, ok := apperrors.IsAppError(err)
+		assert.False(t, ok)
+		assert.EqualError(t, err, "post chat completion: context deadline exceeded")
+	})
 }

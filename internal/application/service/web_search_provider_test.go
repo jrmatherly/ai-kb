@@ -1,9 +1,14 @@
 package service
 
 import (
+	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/types"
+	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
 func TestValidateProviderParametersZhipu(t *testing.T) {
@@ -96,4 +101,26 @@ func TestValidateProviderParametersSerply(t *testing.T) {
 	if err := validateProviderParameters(types.WebSearchProviderTypeSerply, blank); err == nil {
 		t.Fatal("blank Serply API key was accepted")
 	}
+}
+
+type clearDefaultRecorder struct {
+	interfaces.WebSearchProviderRepository
+	clears int
+}
+
+func (r *clearDefaultRecorder) ClearDefault(context.Context, uint64, string) error {
+	r.clears++
+	return nil
+}
+
+func TestUpdateProviderRejectedKeepsDefault(t *testing.T) {
+	repo := &clearDefaultRecorder{}
+	err := NewWebSearchProviderService(repo).UpdateProvider(context.Background(), &types.WebSearchProviderEntity{
+		ID: "p-2", TenantID: 1, Provider: types.WebSearchProviderTypeBrave, IsDefault: true,
+	})
+	appErr, ok := apperrors.IsAppError(err)
+	require.True(t, ok, "%v", err)
+	require.Equal(t, 400, appErr.HTTPCode)
+	require.Equal(t, "API key is required for Brave provider", appErr.Message)
+	require.Equal(t, 0, repo.clears)
 }

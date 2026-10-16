@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	infra_web_search "github.com/jrmatherly/ai-kb/internal/infrastructure/web_search"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -28,11 +29,11 @@ func (s *webSearchProviderService) CreateProvider(ctx context.Context, provider 
 	}
 
 	if !isValidProviderType(provider.Provider) {
-		return fmt.Errorf("invalid provider type: %s", provider.Provider)
+		return apperrors.NewBadRequestError(fmt.Sprintf("invalid provider type: %s", provider.Provider))
 	}
 
 	if err := validateProviderParameters(provider.Provider, provider.Parameters); err != nil {
-		return err
+		return apperrors.NewBadRequestError(err.Error())
 	}
 
 	if provider.IsDefault {
@@ -53,18 +54,18 @@ func (s *webSearchProviderService) UpdateProvider(ctx context.Context, provider 
 
 	// Validate provider type if set
 	if provider.Provider != "" && !isValidProviderType(provider.Provider) {
-		return fmt.Errorf("invalid provider type: %s", provider.Provider)
+		return apperrors.NewBadRequestError(fmt.Sprintf("invalid provider type: %s", provider.Provider))
+	}
+
+	if provider.Provider != "" {
+		if err := validateProviderParameters(provider.Provider, provider.Parameters); err != nil {
+			return apperrors.NewBadRequestError(err.Error())
+		}
 	}
 
 	if provider.IsDefault {
 		if err := s.repo.ClearDefault(ctx, provider.TenantID, provider.ID); err != nil {
 			logger.Warnf(ctx, "Failed to clear default providers: %v", err)
-		}
-	}
-
-	if provider.Provider != "" {
-		if err := validateProviderParameters(provider.Provider, provider.Parameters); err != nil {
-			return err
 		}
 	}
 
@@ -83,7 +84,7 @@ func (s *webSearchProviderService) UpdateProviderCredentials(
 		return nil, err
 	}
 	if existing == nil {
-		return nil, fmt.Errorf("web search provider not found")
+		return nil, apperrors.NewNotFoundError("web search provider not found")
 	}
 
 	if apiKey != nil && *apiKey != "" && *apiKey != existing.Parameters.APIKey {
@@ -101,14 +102,14 @@ func (s *webSearchProviderService) ClearProviderCredential(
 	ctx context.Context, tenantID uint64, id, field string,
 ) error {
 	if field != "api_key" {
-		return fmt.Errorf("unknown credential field: %s", field)
+		return apperrors.NewBadRequestError("unknown credential field: " + field)
 	}
 	existing, err := s.repo.GetByID(ctx, tenantID, id)
 	if err != nil {
 		return err
 	}
 	if existing == nil {
-		return fmt.Errorf("web search provider not found")
+		return apperrors.NewNotFoundError("web search provider not found")
 	}
 	if existing.Parameters.APIKey == "" {
 		return nil

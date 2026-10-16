@@ -36,7 +36,7 @@ Purpose: create an IM channel for an agent. Permission: Admin+.
 | `credentials` | object | no | Platform credentials |
 | `enabled` | bool | no | Default true |
 
-Response: 200 `{"data":{IMChannel}}`; 409 when a bot with the same credentials already exists.
+Response: 200 `{"data":{IMChannel}}`; 400 for a `dingtalk` channel whose mode is not `websocket` (Stream); 409 when a bot with the same credentials already exists.
 
 ```bash
 curl -X POST $BASE/api/v1/agents/agent-1/im-channels -H "Authorization: Bearer $TOKEN" \
@@ -67,7 +67,7 @@ curl $BASE/api/v1/im-channels -H "Authorization: Bearer $TOKEN"
 
 Purpose: update a channel (partial update: `name/mode/output_mode/locale/session_mode/knowledge_base_id/credentials/enabled/agent_id` are all optional; an empty `knowledge_base_id` unlinks the knowledge base, an empty `locale` restores the default language). Permission: Admin+.
 
-Response: 200 `{"data":{IMChannel}}`; 409 on a duplicate bot.
+Response: 200 `{"data":{IMChannel}}`; 400 for a `dingtalk` channel whose mode is not `websocket` (Stream); 409 on a duplicate bot.
 
 ```bash
 curl -X PUT $BASE/api/v1/im-channels/ch-1 -H "Authorization: Bearer $TOKEN" \

@@ -134,11 +134,7 @@ func (h *IMHandler) CreateIMChannel(c *gin.Context) {
 
 	if err := h.imService.CreateChannel(channel); err != nil {
 		logger.Errorf(c.Request.Context(), "[IM] Create channel failed: %v", err)
-		if strings.HasPrefix(err.Error(), "duplicate_bot:") {
-			_ = c.Error(apperrors.NewConflictError(strings.TrimPrefix(err.Error(), "duplicate_bot: ")))
-			return
-		}
-		_ = c.Error(apperrors.NewInternalServerError("failed to create channel"))
+		_ = c.Error(err)
 		return
 	}
 
@@ -284,11 +280,7 @@ func (h *IMHandler) UpdateIMChannel(c *gin.Context) {
 
 	if err := h.imService.UpdateChannel(channel); err != nil {
 		logger.Errorf(c.Request.Context(), "[IM] Update channel failed: %v", err)
-		if strings.HasPrefix(err.Error(), "duplicate_bot:") {
-			_ = c.Error(apperrors.NewConflictError(strings.TrimPrefix(err.Error(), "duplicate_bot: ")))
-			return
-		}
-		_ = c.Error(apperrors.NewInternalServerError("failed to update channel"))
+		_ = c.Error(err)
 		return
 	}
 

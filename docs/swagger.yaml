@@ -8014,6 +8014,10 @@ paths:
           description: Invalid request parameters
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       summary: Change password
@@ -8396,7 +8400,11 @@ paths:
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
         "403":
-          description: No membership in the workspace, or the preference write failed
+          description: No membership in the workspace
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "500":
+          description: Internal server error, including a failed preference write
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
@@ -8737,6 +8745,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Create a new data source
       tags:
       - DataSource
@@ -8806,6 +8818,10 @@ paths:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_types.DataSource'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Update a data source
@@ -8901,6 +8917,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Resolve resource ancestors
       tags:
       - DataSource
@@ -8930,6 +8950,10 @@ paths:
             type: array
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: List available resources in data source
@@ -9008,6 +9032,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test data source connection
       tags:
       - DataSource
@@ -9036,6 +9064,10 @@ paths:
             type: array
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: List resources for an unsaved data source config (no persistence)
@@ -9102,6 +9134,10 @@ paths:
             type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: The connected system failed; details.code classifies it
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Test connection with raw credentials (no persistence)
@@ -9715,8 +9751,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
-        "500":
-          description: Internal server error
+        "502":
+          description: Ollama unreachable or failing
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
@@ -9754,6 +9790,10 @@ paths:
           description: Invalid request parameters
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: Ollama unreachable or failing
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
       - Bearer: []
       - ApiKeyAuth: []
@@ -9785,6 +9825,10 @@ paths:
             type: object
         "400":
           description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: Ollama unreachable or failing
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:
@@ -19828,7 +19872,11 @@ paths:
             additionalProperties: true
             type: object
         "400":
-          description: Invalid request parameters
+          description: Invalid request parameters or rejected credentials
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
+        "502":
+          description: WeKnoraCloud unreachable or failing
           schema:
             $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       security:

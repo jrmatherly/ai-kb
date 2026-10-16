@@ -18,6 +18,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/jrmatherly/ai-kb/internal/config"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/models/limiter"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
@@ -847,7 +848,7 @@ func (s *systemSettingService) List(ctx context.Context) ([]*types.SystemSetting
 func (s *systemSettingService) Get(ctx context.Context, key string) (*types.SystemSetting, error) {
 	spec, ok := registry[key]
 	if !ok {
-		return nil, fmt.Errorf("unknown setting key %q", key)
+		return nil, apperrors.NewBadRequestError(fmt.Sprintf("unknown setting key %q", key))
 	}
 	row, err := s.repo.Get(ctx, key)
 	if err != nil {
@@ -974,12 +975,13 @@ func jsonEqual(a, b types.JSON) bool {
 func (s *systemSettingService) Update(ctx context.Context, key string, rawValue any) (*types.SystemSetting, error) {
 	spec, ok := registry[key]
 	if !ok {
-		return nil, fmt.Errorf("unknown setting key %q", key)
+		return nil, apperrors.NewBadRequestError(fmt.Sprintf("unknown setting key %q", key))
 	}
 
 	encoded, err := encodeForType(spec.Type, rawValue)
 	if err != nil {
-		return nil, fmt.Errorf("invalid value for %q (expected %s): %w", key, spec.Type, err)
+		return nil, apperrors.NewBadRequestError(
+			fmt.Sprintf("invalid value for %q (expected %s): %v", key, spec.Type, err))
 	}
 
 	// Enum check: only meaningful for "string". Compare the decoded
@@ -1000,7 +1002,8 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 			}
 		}
 		if !allowed {
-			return nil, fmt.Errorf("invalid value for %q: %q not in %v", key, str, spec.Enum)
+			return nil, apperrors.NewBadRequestError(
+				fmt.Sprintf("invalid value for %q: %q not in %v", key, str, spec.Enum))
 		}
 	}
 
@@ -1012,7 +1015,7 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 	// mis-classify input. Reject with 400 so the UI can show a clear
 	// inline error instead of "saved" + nothing happens.
 	if err := validateRegistryEntry(key, rawValue); err != nil {
-		return nil, fmt.Errorf("invalid value for %q: %w", key, err)
+		return nil, apperrors.NewBadRequestError(fmt.Sprintf("invalid value for %q: %v", key, err))
 	}
 
 	// Capture pre-image for the audit log - pulled fresh, not from
@@ -1098,7 +1101,7 @@ func (s *systemSettingService) Update(ctx context.Context, key string, rawValue 
 func (s *systemSettingService) Reset(ctx context.Context, key string) error {
 	spec, ok := registry[key]
 	if !ok {
-		return fmt.Errorf("unknown setting key %q", key)
+		return apperrors.NewBadRequestError(fmt.Sprintf("unknown setting key %q", key))
 	}
 
 	// Capture pre-image for the audit log before the row vanishes.

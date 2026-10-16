@@ -100,7 +100,7 @@ Purpose: generate a session title from context messages. Handler: `internal/hand
 | --- | --- | --- | --- |
 | `messages` | []Message | Yes (`binding:"required"`) | Messages used as context |
 
-Response: 200 `{"success":true,"data":"generated title"}`
+Response: 200 `{"success":true,"data":"generated title"}`. 400 when there is no user message or no chat model; 502 (code 1011) with the model's error when the title model call fails.
 
 ```bash
 curl -X POST $BASE/api/v1/sessions/s-1/generate_title -H "Authorization: Bearer $TOKEN" \
@@ -386,7 +386,7 @@ Body (shared by KnowledgeQA and AgentQA):
 | `mentioned_items` | []object | No | @mentions (type/kb_id/kb_name/service_id/skill_name) |
 | `disable_title` | bool | No | Disable automatic titling |
 | `images` | []object | No | Images (`data` base64 / `url` / `caption`) |
-| `attachment_uploads` | []object | No | Inline attachments (`data` base64, `file_name`, `file_size`) |
+| `attachment_uploads` | []object | No | Inline attachments (`data` base64, `file_name`, `file_size`); a rejected file name or type returns 400 `attachment N: <reason>` |
 | `attachment_ids` | []string | No | IDs of already uploaded session attachments |
 | `channel` | string | No | Source channel |
 | `suggestion_attribution` | object | No | Attribution of a clicked suggestion |

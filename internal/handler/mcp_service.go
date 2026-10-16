@@ -655,14 +655,7 @@ func (h *MCPServiceHandler) ListMCPToolApprovals(c *gin.Context) {
 	}
 	rows, err := h.mcpToolApprovalService.ListByService(ctx, tenantID, serviceID)
 	if err != nil {
-		// Distinguish "service not found" from internal errors so the client
-		// gets an accurate status code instead of an opaque 404.
-		if strings.Contains(err.Error(), "not found") {
-			c.Error(errors.NewNotFoundError(err.Error()))
-			return
-		}
-		logger.ErrorWithFields(ctx, err, map[string]interface{}{"service_id": serviceID})
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": rows})
@@ -719,11 +712,7 @@ func (h *MCPServiceHandler) SetMCPToolApproval(c *gin.Context) {
 	if err := h.mcpToolApprovalService.SetPolicy(
 		ctx, tenantID, serviceID, toolName, body.RequireApproval, body.Enabled,
 	); err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			c.Error(errors.NewNotFoundError(err.Error()))
-			return
-		}
-		c.Error(errors.NewInternalServerError(err.Error()))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})

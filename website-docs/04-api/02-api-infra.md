@@ -300,6 +300,8 @@ curl -X POST $BASE/api/v1/web-search-providers/wsp-1/test -H "Authorization: Bea
 
 External content connectors (Feishu, Notion, Yuque and others) whose sync jobs write into a knowledge base. Handler: `internal/handler/datasource.go`. Most successful responses in this group are raw objects or arrays (no `success` envelope); errors use the standard error envelope (`{"success":false,"error":{"code":...,"message":"..."}}`, see [Response format and error codes](./01-api-overview.md#response-format-and-error-codes)). Every route checks that the data source's knowledge base belongs to the caller's workspace (404 when the data source is unknown, 403 when the knowledge base belongs to another workspace or is outside the API key's allow-list).
 
+Errors from the connected service (validating a connection or credentials, listing resources, resolving ancestors) keep the connector's cause in the message: 400 when it rejects the configuration or credentials, 502 (code 1011) when it fails or cannot be reached. `details.code` classifies the cause as `permission_denied`, `auth_failed`, `not_found`, `invalid_config` or `upstream_error`. A database or queue failure returns the generic 500.
+
 12 connector types are registered: feishu, lark, feishu_drive, lark_drive, notion, confluence, yuque, dingtalk, ima, rss, gitlab and seafile. The credentials, resource selection and sync limits of each connector are in [Data sources](../03-features/10-datasource.md). With `sync_deletions` on, knowledge items that belong to the data source and were deleted at the source are really deleted; `source_created_at` and `source_updated_at` are stored in the knowledge item metadata.
 
 ### GET /api/v1/datasource/types
@@ -321,7 +323,7 @@ Purpose: validate raw credentials (the 'Test connection' button; nothing is save
 | `type` | string | yes (`binding:"required"`) | Connector type |
 | `credentials` | map | yes (`binding:"required"`) | Credentials |
 
-Response: 200 `{"status":"connected"}`; failure 400 with the error envelope
+Response: 200 `{"status":"connected"}`; failure 400 or 502 with the error envelope (see the connector errors above)
 
 ```bash
 curl -X POST $BASE/api/v1/datasource/validate-credentials -H "Authorization: Bearer $TOKEN" \
@@ -340,7 +342,7 @@ Purpose: browse the external resource tree from an unsaved configuration (the cr
 | `resource_ids` | []string | no | Feishu and Lark Drive read the root `folder_token` from the first entry |
 | `parent_id` | string | no | Empty lists the top level, a resource `external_id` lists its children |
 
-Response: 200 `[{external_id,name,type,description,url,modified_at,parent_id,has_children,metadata}]`; failure 400 with the error envelope
+Response: 200 `[{external_id,name,type,description,url,modified_at,parent_id,has_children,metadata}]`; failure 400 or 502 with the error envelope (see the connector errors above)
 
 ```bash
 curl -X POST $BASE/api/v1/datasource/list-resources -H "Authorization: Bearer $TOKEN" \
@@ -393,7 +395,7 @@ curl $BASE/api/v1/datasource/ds-1 -H "Authorization: Bearer $TOKEN"
 
 Purpose: update (`id`, `tenant_id` and `knowledge_base_id` are locked to their stored values). Permission: Admin+. Request body: same as create.
 
-Send the whole object: GET the detail first, change it, and send it back (`name`, `type`, `config`, `sync_schedule`, `sync_mode`, `conflict_strategy`, `sync_deletions`, `sync_log_retention_days`, `status` and so on). `sync_schedule` and `sync_deletions` are always written from the request body: omitting `sync_schedule` clears it to an empty string (manual sync only; an existing cron entry is removed), and omitting `sync_deletions` sets it to false. Other fields that are omitted or zero-valued keep their stored value (the repository update skips zero values). Credentials are not changed through this route: `config.credentials` in the body is ignored and the stored credentials are kept, while `config.type`, `config.resource_ids` and `config.settings` are applied. When the non-credential configuration changed and credentials are stored, the connector validates the new configuration against the live service (400 on failure).
+Send the whole object: GET the detail first, change it, and send it back (`name`, `type`, `config`, `sync_schedule`, `sync_mode`, `conflict_strategy`, `sync_deletions`, `sync_log_retention_days`, `status` and so on). `sync_schedule` and `sync_deletions` are always written from the request body: omitting `sync_schedule` clears it to an empty string (manual sync only; an existing cron entry is removed), and omitting `sync_deletions` sets it to false. Other fields that are omitted or zero-valued keep their stored value (the repository update skips zero values). Credentials are not changed through this route: `config.credentials` in the body is ignored and the stored credentials are kept, while `config.type`, `config.resource_ids` and `config.settings` are applied. When the non-credential configuration changed and credentials are stored, the connector validates the new configuration against the live service (400 or 502 on failure, see above).
 
 Response: 200 `DataSourceResponse`
 
@@ -435,7 +437,7 @@ curl -X DELETE $BASE/api/v1/datasource/ds-1/credentials/credentials -H "Authoriz
 
 ### POST /api/v1/datasource/:id/validate
 
-Purpose: validate the connection of a saved data source. Permission: Admin+. Response: 200 `{"status":"connected"}`; failure 400 with the error envelope
+Purpose: validate the connection of a saved data source. Permission: Admin+. Response: 200 `{"status":"connected"}`; failure 400 or 502 with the error envelope (see the connector errors above)
 
 ```bash
 curl -X POST $BASE/api/v1/datasource/ds-1/validate -H "Authorization: Bearer $TOKEN"

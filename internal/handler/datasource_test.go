@@ -382,7 +382,7 @@ func TestDataSource_ListResourcesForConfig(t *testing.T) {
 	}{
 		{"missing type", `{"credentials":{}}`, 1, http.StatusBadRequest},
 		{"missing credentials", `{"type":"rss"}`, 1, http.StatusBadRequest},
-		{"connector error", `{"type":"rss","credentials":{},"parent_id":"boom"}`, 1, http.StatusBadRequest},
+		{"service error", `{"type":"rss","credentials":{},"parent_id":"boom"}`, 1, http.StatusInternalServerError},
 		{"no tenant", `{"type":"rss","credentials":{}}`, 0, http.StatusUnauthorized},
 	} {
 		if w := post(c.body, c.tenantID); w.Code != c.wantCode {

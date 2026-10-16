@@ -870,7 +870,7 @@ func (h *KnowledgeBaseHandler) GenerateKnowledgeBaseProfile(c *gin.Context) {
 			stderrors.Is(err, types.ErrKnowledgeBaseProfileModelNotConfigured):
 			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
 		default:
-			_ = c.Error(apperrors.NewInternalServerError(err.Error()))
+			_ = c.Error(err)
 		}
 		return
 	}

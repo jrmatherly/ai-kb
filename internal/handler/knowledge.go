@@ -2407,12 +2407,7 @@ func (h *KnowledgeHandler) RegenerateKnowledgeSummary(c *gin.Context) {
 	}
 	if err != nil {
 		logger.ErrorWithFields(ctx, err, nil)
-		var appErr *errors.AppError
-		if goerrors.As(err, &appErr) {
-			_ = c.Error(appErr)
-		} else {
-			_ = c.Error(errors.NewBadRequestError(err.Error()))
-		}
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": knowledge})

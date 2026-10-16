@@ -121,7 +121,7 @@ func (h *MCPOAuthHandler) AuthorizeURL(c *gin.Context) {
 		logger.ErrorWithFields(ctx, err, map[string]interface{}{
 			"service_id": secutils.SanitizeForLog(serviceID),
 		})
-		c.Error(errors.NewInternalServerError("failed to start authorization: " + err.Error()))
+		_ = c.Error(err)
 		return
 	}
 

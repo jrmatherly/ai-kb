@@ -19,8 +19,9 @@ var (
 	ErrDataSourceNotActive = errors.New("data source is not active")
 
 	// Configuration errors
-	ErrInvalidConfig      = errors.New("invalid configuration")
-	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidConfig       = errors.New("invalid configuration")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrInvalidSyncSchedule = errors.New("invalid cron expression")
 
 	// Sync errors
 	ErrSyncFailed       = errors.New("sync operation failed")

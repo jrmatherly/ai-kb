@@ -120,7 +120,7 @@ func (h *SystemHandler) CheckSandboxConfig(c *gin.Context) {
 		}
 		entity, err := h.sandboxConfigSvc.Get(ctx, tenant.ID, req.ConfigID)
 		if err != nil {
-			_ = c.Error(apperrors.NewBadRequestError(err.Error()))
+			_ = c.Error(err)
 			return
 		}
 		if entity == nil {

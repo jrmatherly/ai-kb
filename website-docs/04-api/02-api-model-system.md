@@ -196,7 +196,7 @@ Handler: `internal/handler/weknoracloud.go`. API key: `manage_models`/full.
 
 Purpose: save the WeKnoraCloud SaaS credentials. Permission: Admin+. Body: `{"app_id":"...","app_secret":"..."}` (both `binding:"required"`).
 
-Response: 200 `{"success":true,"message":"Credentials saved"}`
+Response: 200 `{"success":true,"message":"Credentials saved"}`. Credentials the WeKnoraCloud check rejects (HTTP 401 or 403) return 400; an unreachable or failing WeKnoraCloud returns 502 (code 1011) with the cause in the message.
 
 ```bash
 curl -X POST $BASE/api/v1/weknoracloud/credentials -H "Authorization: Bearer $TOKEN" \
@@ -283,7 +283,7 @@ curl $BASE/api/v1/initialization/ollama/status -H "Authorization: Bearer $TOKEN"
 
 ### GET /api/v1/initialization/ollama/models
 
-Purpose: list local Ollama models. Permission: Viewer+.
+Purpose: list local Ollama models. Permission: Viewer+. This route and the model check and download routes below return 502 (code 1011) with the cause when Ollama cannot be reached or fails.
 
 Response: 200 `{"success":true,"data":{"models":[...]}}`
 

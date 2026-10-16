@@ -48,7 +48,8 @@ func ResolveComplexPasswordEnabled(
 // failure. Handlers map both the simple and complex sentinels to the same
 // machine-readable details token so the SPA can localize them.
 func IsPasswordPolicyError(err error) bool {
-	return errors.Is(err, ErrPasswordPolicy) || errors.Is(err, ErrComplexPasswordPolicy)
+	return errors.Is(err, ErrPasswordPolicy) || errors.Is(err, ErrComplexPasswordPolicy) ||
+		errors.Is(err, ErrPasswordTooLong)
 }
 
 // ValidatePasswordPolicy keeps registration, self-service rotation and
@@ -60,6 +61,9 @@ func ValidatePasswordPolicy(password string, complexPasswordEnabled bool) error 
 	length := utf8.RuneCountInString(password)
 	if length < 8 || length > 32 {
 		return ErrPasswordPolicy
+	}
+	if len(password) > 72 {
+		return ErrPasswordTooLong
 	}
 
 	var (

@@ -16,6 +16,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jrmatherly/ai-kb/internal/application/access"
 	"github.com/jrmatherly/ai-kb/internal/datasource"
+	apperrors "github.com/jrmatherly/ai-kb/internal/errors"
 	"github.com/jrmatherly/ai-kb/internal/logger"
 	"github.com/jrmatherly/ai-kb/internal/tracing/langfuse"
 	"github.com/jrmatherly/ai-kb/internal/types"
@@ -65,7 +66,10 @@ func NewDataSourceService(
 }
 
 // CreateDataSource creates a new data source configuration
-func (s *DataSourceService) CreateDataSource(ctx context.Context, ds *types.DataSource) (*types.DataSource, error) {
+func (s *DataSourceService) CreateDataSource(
+	ctx context.Context, ds *types.DataSource,
+) (_ *types.DataSource, err error) {
+	defer func() { err = clientError(err) }()
 	if ds == nil {
 		return nil, datasource.ErrDataSourceInvalid
 	}
@@ -148,7 +152,10 @@ func (s *DataSourceService) ListDataSources(ctx context.Context, kbID string) ([
 }
 
 // UpdateDataSource updates an existing data source
-func (s *DataSourceService) UpdateDataSource(ctx context.Context, ds *types.DataSource) (*types.DataSource, error) {
+func (s *DataSourceService) UpdateDataSource(
+	ctx context.Context, ds *types.DataSource,
+) (_ *types.DataSource, err error) {
+	defer func() { err = clientError(err) }()
 	if ds == nil || ds.ID == "" {
 		return nil, datasource.ErrDataSourceInvalid
 	}
@@ -163,7 +170,7 @@ func (s *DataSourceService) UpdateDataSource(ctx context.Context, ds *types.Data
 		ds.KnowledgeBaseID = existing.KnowledgeBaseID
 	}
 	if ds.KnowledgeBaseID != existing.KnowledgeBaseID {
-		return nil, fmt.Errorf("changing knowledge base is not allowed")
+		return nil, apperrors.NewBadRequestError("changing knowledge base is not allowed")
 	}
 
 	if ds.TenantID == 0 {
@@ -245,7 +252,8 @@ func (s *DataSourceService) UpdateDataSource(ctx context.Context, ds *types.Data
 // so the caller learns immediately if the new credentials are wrong.
 func (s *DataSourceService) UpdateDataSourceCredentials(
 	ctx context.Context, id string, credentials map[string]interface{},
-) (*types.DataSource, error) {
+) (_ *types.DataSource, err error) {
+	defer func() { err = clientError(err) }()
 	if id == "" {
 		return nil, datasource.ErrDataSourceInvalid
 	}
@@ -355,7 +363,8 @@ func (s *DataSourceService) DeleteDataSource(ctx context.Context, id string) err
 }
 
 // ValidateConnection tests the connection to an external data source
-func (s *DataSourceService) ValidateConnection(ctx context.Context, dsID string) error {
+func (s *DataSourceService) ValidateConnection(ctx context.Context, dsID string) (err error) {
+	defer func() { err = clientError(err) }()
 	ds, err := s.GetDataSource(ctx, dsID)
 	if err != nil {
 		return err
@@ -379,7 +388,7 @@ func (s *DataSourceService) ValidateConnection(ctx context.Context, dsID string)
 		ds.Status = types.DataSourceStatusError
 		ds.ErrorMessage = err.Error()
 		_ = s.dsRepo.Update(ctx, ds)
-		return err
+		return connectorError("connection validation failed", err)
 	}
 
 	// Clear error if it was previously in error state
@@ -397,7 +406,8 @@ func (s *DataSourceService) ValidateConnection(ctx context.Context, dsID string)
 // list the top level, or a resource's ExternalID to list only its direct children.
 func (s *DataSourceService) ListAvailableResources(
 	ctx context.Context, dsID string, parentID string,
-) ([]types.Resource, error) {
+) (_ []types.Resource, err error) {
+	defer func() { err = clientError(err) }()
 	ds, err := s.GetDataSource(ctx, dsID)
 	if err != nil {
 		return nil, err
@@ -415,7 +425,8 @@ func (s *DataSourceService) ListAvailableResources(
 // listing matches what the saved source will see.
 func (s *DataSourceService) ListResourcesForConfig(
 	ctx context.Context, config *types.DataSourceConfig, parentID string,
-) ([]types.Resource, error) {
+) (_ []types.Resource, err error) {
+	defer func() { err = clientError(err) }()
 	config.StripNonSecretCredentials(config.Type)
 	return s.listResources(ctx, config.Type, config, parentID)
 }
@@ -430,7 +441,7 @@ func (s *DataSourceService) listResources(
 	resources, err := connector.ListResources(ctx, config, parentID)
 	if err != nil {
 		logger.Errorf(ctx, "failed to list resources: %v", err)
-		return nil, err
+		return nil, connectorError("failed to list resources", err)
 	}
 
 	return resources, nil
@@ -440,7 +451,8 @@ func (s *DataSourceService) listResources(
 // given resources in a lazily-loaded picker (see the connector method for details).
 func (s *DataSourceService) ResolveResourceAncestors(
 	ctx context.Context, dsID string, resourceIDs []string,
-) ([]string, error) {
+) (_ []string, err error) {
+	defer func() { err = clientError(err) }()
 	if len(resourceIDs) == 0 {
 		return []string{}, nil
 	}
@@ -463,7 +475,7 @@ func (s *DataSourceService) ResolveResourceAncestors(
 	ancestors, err := connector.ResolveResourceAncestors(ctx, config, resourceIDs)
 	if err != nil {
 		logger.Errorf(ctx, "failed to resolve resource ancestors: %v", err)
-		return nil, err
+		return nil, connectorError("failed to resolve resource ancestors", err)
 	}
 
 	return ancestors, nil
@@ -473,7 +485,8 @@ func (s *DataSourceService) ResolveResourceAncestors(
 // lifts the mass-deletion guard for this run only.
 func (s *DataSourceService) ManualSync(
 	ctx context.Context, dsID string, allowMassDeletion bool,
-) (*types.SyncLog, error) {
+) (_ *types.SyncLog, err error) {
+	defer func() { err = clientError(err) }()
 	ds, err := s.GetDataSource(ctx, dsID)
 	if err != nil {
 		return nil, err
@@ -569,7 +582,8 @@ func (s *DataSourceService) PauseDataSource(ctx context.Context, id string) erro
 }
 
 // ResumeDataSource resumes a paused data source
-func (s *DataSourceService) ResumeDataSource(ctx context.Context, id string) error {
+func (s *DataSourceService) ResumeDataSource(ctx context.Context, id string) (err error) {
+	defer func() { err = clientError(err) }()
 	ds, err := s.GetDataSource(ctx, id)
 	if err != nil {
 		return err
@@ -1252,7 +1266,10 @@ func allFetchedItemsFailedError(result *types.SyncResult) error {
 }
 
 // ValidateCredentials tests connectivity using raw credentials without persisting anything.
-func (s *DataSourceService) ValidateCredentials(ctx context.Context, connectorType string, credentials map[string]interface{}) error {
+func (s *DataSourceService) ValidateCredentials(
+	ctx context.Context, connectorType string, credentials map[string]interface{},
+) (err error) {
+	defer func() { err = clientError(err) }()
 	connector, err := s.connectorRegistry.Get(connectorType)
 	if err != nil {
 		return err
@@ -1262,7 +1279,7 @@ func (s *DataSourceService) ValidateCredentials(ctx context.Context, connectorTy
 		Credentials: credentials,
 	}
 	if err := connector.Validate(ctx, config); err != nil {
-		return err
+		return connectorError("connection validation failed", err)
 	}
 
 	return nil
@@ -1281,7 +1298,85 @@ func (s *DataSourceService) validateDataSourceConfig(ctx context.Context, ds *ty
 		return datasource.ErrInvalidConfig
 	}
 
-	return connector.Validate(ctx, config)
+	if err := connector.Validate(ctx, config); err != nil {
+		return connectorError("connection validation failed", err)
+	}
+	return nil
+}
+
+// connectorError reports a failure in the external system the user connected.
+// Config and credential faults are the caller's to fix (400); anything else is
+// the upstream failing (502). Both carry the cause, which describes the user's
+// own setup, plus a details code the data source editor maps to a hint.
+func connectorError(op string, err error) error {
+	details := map[string]string{"code": classifyConnectorError(err)}
+	if isClientError(err) {
+		return apperrors.NewBadRequestError(err.Error()).WithDetails(details)
+	}
+	return apperrors.NewBadGatewayError(op + ": " + err.Error()).WithDetails(details)
+}
+
+// clientErrors are the datasource sentinels whose text describes the caller's
+// own input or setup, so an API response can show it.
+var clientErrors = []error{
+	datasource.ErrConnectorTypeEmpty, datasource.ErrConnectorNotFound,
+	datasource.ErrDataSourceInvalid, datasource.ErrDataSourceNotActive,
+	datasource.ErrInvalidConfig, datasource.ErrInvalidCredentials, datasource.ErrInvalidSyncSchedule,
+	datasource.ErrResourceNotFound, datasource.ErrKnowledgeBaseNotFound,
+}
+
+func isClientError(err error) bool {
+	for _, sentinel := range clientErrors {
+		if errors.Is(err, sentinel) {
+			return true
+		}
+	}
+	return false
+}
+
+// clientError turns a client sentinel into a 400 at the service's exported
+// edge; AppErrors (connector failures) and internal errors pass through.
+func clientError(err error) error {
+	if isClientError(err) {
+		return apperrors.NewBadRequestError(err.Error())
+	}
+	return err
+}
+
+// Connector error codes returned in details.code.
+const (
+	connectorErrPermissionDenied = "permission_denied"
+	connectorErrAuthFailed       = "auth_failed"
+	connectorErrNotFound         = "not_found"
+	connectorErrInvalidConfig    = "invalid_config"
+	connectorErrUpstream         = "upstream_error"
+)
+
+// classifyConnectorError reads the connector's error text because the Feishu
+// client reports API failures as formatted strings (status=, code=), not types.
+// 1061004 is Feishu Drive's "app not shared this folder", 1061005 its auth
+// failure and 1061003 an unknown folder token.
+func classifyConnectorError(err error) string {
+	msg := strings.ToLower(err.Error())
+	containsAny := func(subs ...string) bool {
+		for _, sub := range subs {
+			if strings.Contains(msg, sub) {
+				return true
+			}
+		}
+		return false
+	}
+	switch {
+	case containsAny("status=403", "forbidden", `"code":1061004`, "code=1061004"):
+		return connectorErrPermissionDenied
+	case errors.Is(err, datasource.ErrInvalidCredentials), containsAny("status=401", "auth", "1061005"):
+		return connectorErrAuthFailed
+	case errors.Is(err, datasource.ErrResourceNotFound), containsAny("1061003", "not found"):
+		return connectorErrNotFound
+	case errors.Is(err, datasource.ErrInvalidConfig):
+		return connectorErrInvalidConfig
+	}
+	return connectorErrUpstream
 }
 
 // ingestItem writes a single FetchedItem into the knowledge base.

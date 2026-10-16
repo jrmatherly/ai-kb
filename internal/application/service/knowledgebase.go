@@ -200,7 +200,10 @@ func (s *knowledgeBaseService) applyAndValidateStorageBackend(ctx context.Contex
 	}
 	backend, err := s.storageResolver.ResolveBackend(ctx, tenant, id, provider)
 	if err != nil {
-		return apperrors.NewBadRequestError("storage backend is unavailable").WithDetails(err.Error())
+		if cause, ok := apperrors.IsAppError(err); ok {
+			return apperrors.NewBadRequestError("storage backend is unavailable").WithDetails(cause.Message)
+		}
+		return err
 	}
 	if backend == nil {
 		return nil

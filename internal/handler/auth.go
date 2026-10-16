@@ -282,8 +282,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	response, err := h.userService.Login(ctx, &req)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to login user: %v", err)
-		appErr := errors.NewUnauthorizedError("Login failed").WithDetails(err.Error())
-		c.Error(appErr)
+		_ = c.Error(errors.NewUnauthorizedError("Login failed"))
 		return
 	}
 
@@ -323,8 +322,8 @@ func (h *AuthHandler) GetOIDCAuthorizationURL(c *gin.Context) {
 	resp, err := h.userService.GetOIDCAuthorizationURL(ctx, redirectURI)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to generate OIDC authorization URL: %v", err)
-		appErr := errors.NewForbiddenError("OIDC authorization unavailable").WithDetails(err.Error())
-		c.Error(appErr)
+		appErr := errors.NewForbiddenError("OIDC authorization unavailable")
+		_ = c.Error(authoredError(appErr, err, appErr))
 		return
 	}
 
@@ -372,8 +371,8 @@ func (h *AuthHandler) OIDCStart(c *gin.Context) {
 	resp, err := h.userService.GetOIDCAuthorizationURL(ctx, oidcCallbackURL(c))
 	if err != nil {
 		logger.Errorf(ctx, "Failed to generate OIDC authorization URL: %v", err)
-		appErr := errors.NewForbiddenError("OIDC authorization unavailable").WithDetails(err.Error())
-		c.Error(appErr)
+		appErr := errors.NewForbiddenError("OIDC authorization unavailable")
+		_ = c.Error(authoredError(appErr, err, appErr))
 		return
 	}
 	setOIDCNonceCookie(c, resp.Nonce)
@@ -593,8 +592,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	accessToken, newRefreshToken, err := h.userService.RefreshToken(ctx, req.RefreshToken)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to refresh token: %v", err)
-		appErr := errors.NewUnauthorizedError("Token refresh failed").WithDetails(err.Error())
-		c.Error(appErr)
+		_ = c.Error(authoredError(errors.NewUnauthorizedError("Token refresh failed"), err, err))
 		return
 	}
 
@@ -728,8 +726,7 @@ func (h *AuthHandler) UpdateMyPreferences(c *gin.Context) {
 	prefs, err := h.userService.UpdateUserPreferences(ctx, user.ID, patch)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to update preferences for user %s: %v", user.Email, err)
-		appErr := errors.NewBadRequestError("Failed to update preferences").WithDetails(err.Error())
-		c.Error(appErr)
+		_ = c.Error(authoredError(errors.NewBadRequestError("Failed to update preferences"), err, err))
 		return
 	}
 
@@ -750,6 +747,7 @@ func (h *AuthHandler) UpdateMyPreferences(c *gin.Context) {
 // @Param        request  body      object{old_password=string,new_password=string}  true  "Password change request"
 // @Success      200      {object}  map[string]interface{}                           "Changed"
 // @Failure      400      {object}  errors.ErrorResponse                                  "Invalid request parameters"
+// @Failure      500      {object}  errors.ErrorResponse                                  "Internal server error"
 // @Security     Bearer
 // @Router       /auth/change-password [post]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
@@ -784,6 +782,10 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	err = h.userService.ChangePassword(ctx, user.ID, req.OldPassword, req.NewPassword)
 	if err != nil {
 		switch {
+		case stderrors.Is(err, service.ErrPasswordTooLong):
+			_ = c.Error(errors.NewValidationError("Password must be at most 72 bytes").
+				WithDetails(service.DetailPasswordPolicy))
+			return
 		case service.IsPasswordPolicyError(err):
 			appErr := errors.NewValidationError("Password policy violation").
 				WithDetails(service.DetailPasswordPolicy)
@@ -801,8 +803,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 			return
 		default:
 			logger.Errorf(ctx, "Failed to change password: %v", err)
-			appErr := errors.NewBadRequestError("Password change failed").WithDetails(err.Error())
-			c.Error(appErr)
+			_ = c.Error(err)
 			return
 		}
 	}
@@ -859,7 +860,8 @@ func (h *AuthHandler) GetAuthConfig(c *gin.Context) {
 // @Param        request  body      object{tenant_id=integer,refresh_token=string}  true  "Switch request"
 // @Success      200      {object}  types.LoginResponse
 // @Failure      400      {object}  errors.ErrorResponse  "Invalid parameters"
-// @Failure  403  {object}  errors.ErrorResponse  "No membership in the workspace, or the preference write failed"
+// @Failure      403      {object}  errors.ErrorResponse  "No membership in the workspace"
+// @Failure      500      {object}  errors.ErrorResponse  "Internal server error, including a failed preference write"
 // @Security     Bearer
 // @Router       /auth/switch-tenant [post]
 //
@@ -889,8 +891,12 @@ func (h *AuthHandler) SwitchTenant(c *gin.Context) {
 	resp, err := h.userService.SwitchTenant(ctx, user, req.TenantID, req.RefreshToken)
 	if err != nil {
 		logger.Errorf(ctx, "SwitchTenant failed user=%s target=%d: %v", user.ID, req.TenantID, err)
-		appErr := errors.NewForbiddenError("workspace switch failed").WithDetails(err.Error())
-		c.Error(appErr)
+		appErr := errors.NewForbiddenError("workspace switch failed")
+		if stderrors.Is(err, service.ErrMembershipNotFound) {
+			_ = c.Error(appErr.WithDetails(service.ErrMembershipNotFound.Error()))
+			return
+		}
+		_ = c.Error(authoredError(appErr, err, err))
 		return
 	}
 
@@ -1031,8 +1037,7 @@ func (h *AuthHandler) ValidateToken(c *gin.Context) {
 	user, _, err := h.userService.ValidateToken(ctx, token)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to validate token: %v", err)
-		appErr := errors.NewUnauthorizedError("Token validation failed").WithDetails(err.Error())
-		c.Error(appErr)
+		_ = c.Error(authoredError(errors.NewUnauthorizedError("Token validation failed"), err, err))
 		return
 	}
 
@@ -1042,4 +1047,16 @@ func (h *AuthHandler) ValidateToken(c *gin.Context) {
 		"message": "Token is valid",
 		"user":    user.ToUserInfo(),
 	})
+}
+
+// authoredError returns appErr carrying the service's message as details when
+// the service authored err as an AppError, and fallback for any other cause.
+// A fallback of err sends an internal failure (repository, token signing) out
+// as the scrubbed 500; OIDC setup falls back to its bare 403 instead, since
+// discovery errors carry the provider URL and body.
+func authoredError(appErr *errors.AppError, err, fallback error) error {
+	if cause, ok := errors.IsAppError(err); ok {
+		return appErr.WithDetails(cause.Message)
+	}
+	return fallback
 }
