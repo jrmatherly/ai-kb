@@ -83,7 +83,7 @@ Drive app permissions, folder authorization, resource selection and the `FEISHU_
 
 Feishu and Lark (the international edition at open.larksuite.com) are the same product on two isolated clouds with identical Wiki, docx and drive APIs, so they **share one connector implementation**. The `Region` struct in `feishu/core/region.go` selects the cloud (`RegionFeishu` / `RegionLark`, mapped to the types `feishu` / `lark` and the API hosts `open.feishu.cn` / `open.larksuite.com`). The `base_url` credential field can override the host explicitly, which keeps older data sources that pointed the feishu connector at larksuite working.
 
-- **Authentication** (`core/client.go`): `POST /open-apis/auth/v3/tenant_access_token/internal` exchanges the app credentials for a tenant_access_token, cached behind a mutex and refreshed on expiry.
+- **Authentication** (`core/client.go`): `POST /open-apis/auth/v3/tenant_access_token/internal` exchanges the app credentials for a tenant_access_token, cached behind a mutex and refreshed on expiry, or once when a request answers 99991663 (tenant token invalid).
 - **Resource listing** (`ListResources`): three lazy levels. `parentID==""` lists Wiki spaces; `parentID==spaceID` lists the space's top-level nodes; `parentID=="spaceID:nodeToken"` lists that node's children. Early versions recursed through the whole tree up front, which timed out on large wikis; recursion now happens only during sync. `ResolveResourceAncestors` walks up through `GetWikiNode`'s `parent_node_token`, O(depth), to re-display deep selections.
 - **Content fetching** (`fetchNodeContent`) dispatches on `obj_type`:
   - `docx` / `doc`: asynchronous export API (`POST /drive/v1/export_tasks`) producing `.docx`;

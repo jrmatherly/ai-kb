@@ -18,7 +18,7 @@ From `frontend/package.json`:
 | Language | TypeScript | ~6.0.3 | `vue-tsc` type checking (`npm run type-check`) |
 | Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx` |
 | UI component library | TDesign (tdesign-vue-next) | ^1.20.10 | With `tdesign-icons-vue-next` 0.4.11 (version locked by overrides) |
-| State management | Pinia | ^4.0.3 | Every store lives in `frontend/src/stores/` |
+| State management | Pinia | ^4.1.0 | Every store lives in `frontend/src/stores/` |
 | Routing | Vue Router | 5.4.0 | `createWebHistory`, see `frontend/src/router/index.ts` |
 | Localization | vue-i18n | ^11.4.14 | `en-US` |
 | HTTP | axios | ^1.20.0 | One shared instance in `frontend/src/utils/request.ts` |
