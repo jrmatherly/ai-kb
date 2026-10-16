@@ -269,6 +269,18 @@ func (c *Client) GetTenantAccessToken(ctx context.Context) (string, error) {
 	return c.tokenCache, nil
 }
 
+// invalidateToken drops the cached tenant token so the next request fetches a
+// fresh one, unless another goroutine already replaced the rejected token.
+// ponytail: an endpoint that rejects tenant tokens outright makes every call
+// refetch; none the connector uses does, add a token-age guard if one appears.
+func (c *Client) invalidateToken(rejected string) {
+	c.tokenMu.Lock()
+	defer c.tokenMu.Unlock()
+	if c.tokenCache == rejected {
+		c.tokenCache = ""
+	}
+}
+
 // waitForRequestToken authenticates before pacing and rechecks the cached token
 // afterwards. A refresh must happen before rejoining the gate, otherwise requests
 // that have already been paced can pile up behind tokenMu and then burst together.
@@ -341,6 +353,7 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 
 	url := c.baseURL + path
 	var lastErr error
+	refreshedToken := false
 	gate := c.requestGate(method, path)
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {
@@ -417,7 +430,16 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return newAPIError("feishu api error", resp.StatusCode, respBody)
+			apiErr := newAPIError("feishu api error", resp.StatusCode, respBody)
+			// The cached token can be revoked before its expiry, so refetch it once;
+			// a repeat means the endpoint rejects tenant tokens, which is returned as is.
+			if apiErr.Code == feishuTenantTokenInvalid && !refreshedToken && attempt < maxRetries {
+				refreshedToken = true
+				c.invalidateToken(token)
+				logger.Warnf(ctx, "[Feishu] tenant token rejected, refreshing: %s %s", method, path)
+				continue
+			}
+			return apiErr
 		}
 
 		if result != nil {
@@ -863,6 +885,7 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 
 	url := c.baseURL + path
 	var lastErr error
+	refreshedToken := false
 	gate := c.requestGate(http.MethodGet, path)
 
 	for attempt := 0; attempt <= feishuMaxRetries; attempt++ {
@@ -894,25 +917,6 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 			return nil, lastErr
 		}
 
-		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusBadRequest {
-			body, _ := io.ReadAll(io.LimitReader(resp.Body, maxFeishuErrorPreviewBytes))
-			resp.Body.Close()
-			if !isFeishuRateLimited(resp.StatusCode, body) {
-				logger.Errorf(ctx, "[Feishu] download GET %s → status=%d body=%s",
-					path, resp.StatusCode, truncate(string(body), 500))
-				return nil, newAPIError("download failed", resp.StatusCode, body)
-			}
-			wait := feishuRateLimitWait(resp.Header, time.Now())
-			gate.cooldown(wait)
-			logger.Warnf(ctx, "[Feishu] download rate limited: api=%q wait=%s attempt=%d/%d",
-				gate.api, wait, attempt, feishuMaxRetries)
-			lastErr = newAPIError("download rate limited", resp.StatusCode, body)
-			if attempt < feishuMaxRetries {
-				continue
-			}
-			return nil, lastErr
-		}
-
 		if resp.StatusCode >= 500 && resp.StatusCode < 600 {
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, maxFeishuErrorPreviewBytes))
 			resp.Body.Close()
@@ -929,8 +933,26 @@ func (c *Client) downloadRawBytes(ctx context.Context, path string) ([]byte, err
 		if resp.StatusCode != http.StatusOK {
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, maxFeishuErrorPreviewBytes))
 			resp.Body.Close()
+			if isFeishuRateLimited(resp.StatusCode, body) {
+				wait := feishuRateLimitWait(resp.Header, time.Now())
+				gate.cooldown(wait)
+				logger.Warnf(ctx, "[Feishu] download rate limited: api=%q wait=%s attempt=%d/%d",
+					gate.api, wait, attempt, feishuMaxRetries)
+				lastErr = newAPIError("download rate limited", resp.StatusCode, body)
+				if attempt < feishuMaxRetries {
+					continue
+				}
+				return nil, lastErr
+			}
+			apiErr := newAPIError("download failed", resp.StatusCode, body)
+			if apiErr.Code == feishuTenantTokenInvalid && !refreshedToken && attempt < feishuMaxRetries {
+				refreshedToken = true
+				c.invalidateToken(token)
+				logger.Warnf(ctx, "[Feishu] tenant token rejected, refreshing: download GET %s", path)
+				continue
+			}
 			logger.Errorf(ctx, "[Feishu] download GET %s → status=%d body=%s", path, resp.StatusCode, truncate(string(body), 500))
-			return nil, newAPIError("download failed", resp.StatusCode, body)
+			return nil, apiErr
 		}
 
 		data, readErr := io.ReadAll(io.LimitReader(resp.Body, maxFeishuDownloadBytes+1))
