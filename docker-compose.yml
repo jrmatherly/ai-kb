@@ -770,25 +770,37 @@ services:
   # Apache Doris 4.1 (FE + BE single-instance standalone deployment, opt-in via `--profile doris`)
   #
   # Version requirement: must be >= 3.0 (HNSW ANN index, cosine_distance_approximate,
-  # Stream Load partial_columns). This compose file uses the official stable 4.1 tag.
+  # Stream Load partial_columns).
   #
   # Ports:
   #   - 9030 (FE MySQL): AI KB's main read/write path and SQL queries use this port.
   #   - 8030 (FE HTTP): entry point for Stream Load partial updates.
   #   - 8040 (BE)     : BE heartbeat and data transfer; FE redirects stream load to BE.
   #
+  # The nodes run in FQDN mode (enable_fqdn_mode), so they register as doris-fe
+  # and doris-be and the FE's Stream Load redirect names doris-be, which the
+  # app's SSRF_WHITELIST_EXTRA already trusts. The images' own entrypoints accept
+  # only IP addresses (FE_SERVERS, BE_ADDR), which would need a fixed subnet on
+  # ai-kb-network: BUILD_TYPE=k8s makes init_fe.sh start the FE as configured,
+  # and the BE start below registers the node itself.
+  #
   # To enable:
   #   docker compose --profile doris up -d
   #
-  # Data persists in the doris_fe_data / doris_be_data volumes.
+  # Data persists in the doris_fe_meta / doris_be_storage volumes.
   # ---------------------------------------------------------------------------
   doris-fe:
-    image: apache/doris:fe-4.1.5
+    image: apache/doris:fe-4.1.4.1
     container_name: ai-kb-doris-fe
     hostname: doris-fe
     environment:
-      - FE_SERVERS=fe1:doris-fe:9010
-      - FE_ID=1
+      - BUILD_TYPE=k8s
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        conf=/opt/apache-doris/fe/conf/fe.conf
+        grep -q '^enable_fqdn_mode' "$$conf" || echo 'enable_fqdn_mode = true' >> "$$conf"
+        exec bash /usr/local/bin/init_fe.sh
     ports:
       - "${DORIS_FE_HTTP_PORT:-8030}:8030"
       - "${DORIS_FE_MYSQL_PORT:-9030}:9030"
@@ -802,12 +814,25 @@ services:
       - doris
 
   doris-be:
-    image: apache/doris:be-4.1.5
+    image: apache/doris:be-4.1.4.1
     container_name: ai-kb-doris-be
     hostname: doris-be
     environment:
-      - FE_SERVERS=fe1:doris-fe:9010
-      - BE_ADDR=doris-be:9050
+      # The host checks (vm.max_map_count, open files) are skipped, as the
+      # image's own entrypoint does.
+      - SKIP_CHECK_ULIMIT=true
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        # Once the FE answers: register this node, then create the database
+        # AI KB connects to (it creates its tables itself). Both are no-ops
+        # on later starts.
+        fe() { mysql -hdoris-fe -P9030 -uroot -e "$$1" 2>/dev/null; }
+        (until fe 'SHOW BACKENDS' | grep -q doris-be || fe "ALTER SYSTEM ADD BACKEND 'doris-be:9050'"; do
+          sleep 2
+        done
+        until fe 'CREATE DATABASE IF NOT EXISTS `${DORIS_DATABASE:-aikb}`'; do sleep 2; done) &
+        exec /opt/apache-doris/be/bin/start_be.sh --console
     depends_on:
       - doris-fe
     ports:
