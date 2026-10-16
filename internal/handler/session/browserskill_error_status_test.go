@@ -53,9 +53,16 @@ func TestBrowserSkillErrorStatus(t *testing.T) {
 				`"message":"browser upstream failed: BrowserSkill daemon unavailable"}}`,
 		},
 		{
-			"daemon RPC error is 502", &browserskill.RPCError{Code: "not_found", Message: "fixture ref missing"},
+			"incompatible daemon reply is 502",
+			&browserskill.RPCError{Code: "daemon_incompatible", Message: "rebuild bsk and the extension"},
 			apperrors.NewConflictError, 502,
-			`{"success":false,"error":{"code":1011,"message":"not_found: fixture ref missing"}}`,
+			`{"success":false,"error":{"code":1011,"message":"daemon_incompatible: rebuild bsk and the extension"}}`,
+		},
+		{
+			"daemon RPC error keeps the call site's status",
+			&browserskill.RPCError{Code: "not_found", Message: "fixture ref missing"},
+			apperrors.NewConflictError, 409,
+			`{"success":false,"error":{"code":1005,"message":"not_found: fixture ref missing"}}`,
 		},
 		{
 			"other errors keep the call site's status", errors.New("browser disconnected; wait for reconnection"),

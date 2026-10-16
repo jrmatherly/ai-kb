@@ -197,8 +197,10 @@ func (h *Handler) BrowserSkillConnection(c *gin.Context) {
 }
 
 // browserSkillError maps the manager's sentinels to statuses: a store failure is a
-// fixed 503 (cause logged), an invalid grant 403, a daemon or owner-replica failure
-// 502 with its text; every other message keeps the call site's status.
+// fixed 503 (cause logged), an invalid grant 403, an owner-replica failure or an
+// incompatible daemon reply 502 with its text. A daemon RPC error is the daemon's
+// own answer about the task (not_found, task_paused, a validation code), so it
+// keeps the call site's status like every other message.
 func browserSkillError(ctx context.Context, err error, newErr func(string) *errors.AppError) *errors.AppError {
 	var rpcErr *browserskill.RPCError
 	switch {
@@ -207,7 +209,8 @@ func browserSkillError(ctx context.Context, err error, newErr func(string) *erro
 		return errors.NewServiceUnavailableError("browser connection status unavailable")
 	case stderrors.Is(err, browserskill.ErrAuthorization):
 		return errors.NewForbiddenError(err.Error())
-	case stderrors.Is(err, browserskill.ErrUpstream), stderrors.As(err, &rpcErr):
+	case stderrors.Is(err, browserskill.ErrUpstream),
+		stderrors.As(err, &rpcErr) && rpcErr.Code == "daemon_incompatible":
 		return errors.NewBadGatewayError(err.Error())
 	}
 	return newErr(err.Error())
