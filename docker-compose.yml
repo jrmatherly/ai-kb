@@ -397,7 +397,7 @@ services:
       - FEISHU_DOCX_PARSE_MODE=${FEISHU_DOCX_PARSE_MODE:-export}
     depends_on:
       redis:
-        condition: service_started
+        condition: service_healthy
       postgres:
         condition: service_healthy
       docreader:
@@ -574,6 +574,12 @@ services:
     container_name: ai-kb-redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     restart: always
+    # PONG through auth, so app and langfuse start against a redis that answers commands.
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ${REDIS_PASSWORD:+-a ${REDIS_PASSWORD}} --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - ai-kb-network
 
@@ -975,7 +981,7 @@ services:
       langfuse-db-init:
         condition: service_completed_successfully
       redis:
-        condition: service_started
+        condition: service_healthy
       langfuse-clickhouse:
         condition: service_healthy
       langfuse-minio:

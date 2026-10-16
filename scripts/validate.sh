@@ -74,6 +74,7 @@ if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastru
 if has 'helm/*'; then areas+=(helm); fi
 if has 'mcp-server/*'; then areas+=(mcp-server); fi
 if has 'packages/dsh-ai-kb/*'; then areas+=(dsh-plugin); fi
+if has 'dataset/*' .github/workflows/dataset.yml; then areas+=(dataset); fi
 if has 'miniprogram/*' 'tests/miniprogram/*'; then areas+=(miniprogram); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
 if has '*.md' .markdownlint-cli2.jsonc; then areas+=(markdown); fi
@@ -267,6 +268,11 @@ sys.exit(0 if "upload_paths.py" in names else "upload_paths.py is missing from t
 PY
   rm -rf "$dist"
   log_ok "mcp-server wheel contains upload_paths.py"
+}
+
+area_dataset() {
+  need uv || return "$SKIPPED"
+  uv run --no-project --with pandas --with pyarrow --with openai python -m unittest discover -s dataset/tests
 }
 
 area_dsh-plugin() {

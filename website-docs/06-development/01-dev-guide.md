@@ -303,7 +303,7 @@ When you add or upgrade a third-party dependency or change a data file shipped w
 
 ### Validation and contribution workflow
 
-CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, govulncheck against `scripts/govulncheck-allowlist.txt`, model-catalog, git-hooks and licenses; miniprogram, markdown and shell run only locally), plus `guards.yml` (English-only, em dash, rebrand, `scripts/version.py check` with `scripts/test_version.py`, and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). Docker Images also runs every Monday: it checks out the newest release tag, rebuilds with `--pull` and no layer cache so Debian security updates land, and re-pushes it under the tag, the bare version and `latest`. `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
+CI lives in `.github/workflows/`: check workflows for the areas below, each triggered by `paths:` filters (`app.yml` covers go, govulncheck against `scripts/govulncheck-allowlist.txt`, model-catalog, git-hooks and licenses; `dataset.yml` the dataset tests; miniprogram, markdown and shell run only locally), plus `guards.yml` (English-only, em dash, rebrand, `scripts/version.py check` with `scripts/test_version.py`, and `scripts/check-workflows.sh`, which requires SHA-pinned actions, a top-level `concurrency` and emoji-led names) and the publishing workflows (`docker-image.yml`, `release-lite.yml`, `mcp-server.yml`, `dsh-plugin.yml`). Docker Images also runs every Monday: it checks out the newest release tag, rebuilds with `--pull` and no layer cache so Debian security updates land, and re-pushes it under the tag, the bare version and `latest`. `scripts/validate.sh` runs the same checks locally. It maps each changed path to an area with the same `paths:` filters and runs that area's commands:
 
 ```bash
 scripts/validate.sh                 # working tree and untracked files against HEAD
@@ -327,6 +327,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |
 | mcp-server | `mcp-server/**` | unittest and pytest suites, wheel build containing `upload_paths.py` |
 | dsh-plugin | `packages/dsh-ai-kb/**` | typecheck, build, unit and contract tests (Node and Go), tarball file list, end-to-end run inside the pinned dsh release |
+| dataset | `dataset/**` | the 12 offline `dataset/tests` cases through `uv run --no-project` with pandas, pyarrow and openai |
 | miniprogram | `miniprogram/**`, `tests/miniprogram/**` | `npm --prefix miniprogram test` |
 | website-docs | `website-docs/**` | link and anchor checks, Mermaid check, `build:docs` |
 | markdown | any `*.md`, `.markdownlint-cli2.jsonc` | markdownlint-cli2 over the whole tree, with the root `.markdownlint-cli2.jsonc` |
