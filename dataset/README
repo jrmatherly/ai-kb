@@ -14,16 +14,18 @@ A comprehensive tool for sampling QA datasets and generating answers using OpenA
 
 ### Prerequisites
 
-- Python 3.10+ (tested with 3.14)
+- Python 3.11+ (tested with 3.14)
 - OpenAI API key
 
 ### Install Dependencies
 
+`dataset/pyproject.toml` pins the dependencies (`uv.lock`, 7-day release cooldown like the other uv projects in this repo); run the tool through it from the repository root:
+
 ```bash
-pip install pandas pyarrow openai
+uv run --project dataset --locked python dataset/qa_dataset.py ...
 ```
 
-Or run without installing: `uv run --no-project --with pandas --with pyarrow --with openai python dataset/qa_dataset.py ...`
+Or install them yourself: `pip install pandas pyarrow openai`
 
 ### Set Environment Variables
 

@@ -272,7 +272,7 @@ PY
 
 area_dataset() {
   need uv || return "$SKIPPED"
-  uv run --no-project --with pandas --with pyarrow --with openai python -m unittest discover -s dataset/tests
+  uv run --project dataset --locked python -m unittest discover -s dataset/tests
 }
 
 area_dsh-plugin() {

@@ -327,7 +327,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |
 | mcp-server | `mcp-server/**` | unittest and pytest suites, wheel build containing `upload_paths.py` |
 | dsh-plugin | `packages/dsh-ai-kb/**` | typecheck, build, unit and contract tests (Node and Go), tarball file list, end-to-end run inside the pinned dsh release |
-| dataset | `dataset/**` | the 12 offline `dataset/tests` cases through `uv run --no-project` with pandas, pyarrow and openai |
+| dataset | `dataset/**` | the 12 offline `dataset/tests` cases through `uv run --project dataset --locked` (pandas, pyarrow and openai from `dataset/uv.lock`) |
 | miniprogram | `miniprogram/**`, `tests/miniprogram/**` | `npm --prefix miniprogram test` |
 | website-docs | `website-docs/**` | link and anchor checks, Mermaid check, `build:docs` |
 | markdown | any `*.md`, `.markdownlint-cli2.jsonc` | markdownlint-cli2 over the whole tree, with the root `.markdownlint-cli2.jsonc` |
