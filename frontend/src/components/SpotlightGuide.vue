@@ -53,6 +53,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { SpotlightGuideStep } from '@/types/spotlightGuide'
+import { isEditable } from '@/utils/guideDeferral'
 
 const CARD_WIDTH = 340
 const GAP = 16
@@ -322,7 +323,8 @@ const goTo = async (i: number) => {
   }
   await locate()
   await nextTick()
-  rootRef.value?.focus()
+  // Keep the caret where the user is typing.
+  if (!isEditable(document.activeElement)) rootRef.value?.focus()
 }
 
 const next = () => goTo(index.value + 1)

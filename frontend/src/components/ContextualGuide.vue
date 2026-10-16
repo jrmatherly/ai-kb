@@ -6,6 +6,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
 import SpotlightGuide from '@/components/SpotlightGuide.vue'
+import { shouldOpenGuide } from '@/utils/guideDeferral'
 import {
   CONTEXTUAL_GUIDE_TOURS,
   isContextualGuideDone,
@@ -25,8 +26,24 @@ const active = ref(false)
 
 let openTimer: ReturnType<typeof setTimeout> | null = null
 let waitGlobalTimer: ReturnType<typeof setTimeout> | null = null
+// Set by any keydown or input between scheduling and the delay firing; the
+// guide then stays closed instead of stealing the composer (see guideDeferral).
+let inputSeen = false
+const noteInput = () => {
+  inputSeen = true
+}
+const watchInput = () => {
+  inputSeen = false
+  document.addEventListener('keydown', noteInput, true)
+  document.addEventListener('input', noteInput, true)
+}
+const unwatchInput = () => {
+  document.removeEventListener('keydown', noteInput, true)
+  document.removeEventListener('input', noteInput, true)
+}
 
 const clearTimers = () => {
+  unwatchInput()
   if (openTimer) {
     clearTimeout(openTimer)
     openTimer = null
@@ -43,8 +60,11 @@ const tryOpen = () => {
   if (isContextualGuideDone(props.tour)) return
   if (!isGlobalUserGuideDone()) return
 
+  watchInput()
   openTimer = setTimeout(() => {
+    unwatchInput()
     if (!props.when || isContextualGuideDone(props.tour) || active.value) return
+    if (!shouldOpenGuide({ inputSeen })) return
     active.value = true
   }, config.openDelayMs)
 }
