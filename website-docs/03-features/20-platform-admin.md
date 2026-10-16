@@ -49,12 +49,12 @@ System administrators can also:
 
 ### Create a user
 
-A system administrator can open a local account from Settings → System Settings → Registration & access with "Create user": enter a username (2-50 characters) and an email, and either keep "Auto-generate a random password" on or turn it off and type a password that meets the password policy. This covers deployments that disable public registration and let administrators open accounts. Workspace assignment follows `auth.default_tenant_mode`: `create_personal` creates a personal workspace, `tenantless` waits for the user to join one.
+A system administrator can open a local account from Settings → System Settings → User management with "Create user": enter a username (2-50 characters) and an email, and either keep "Auto-generate a random password" on or turn it off and type a password that meets the password policy. This covers deployments that disable public registration and let administrators open accounts. Workspace assignment follows `auth.default_tenant_mode`: `create_personal` creates a personal workspace, `tenantless` waits for the user to join one.
 
 <Screenshot
   src="/screenshots/system-admin-create-user.png"
   caption="A system administrator creates a user: account details and the one-time password"
-  hint="The 'Create user' dialog under Settings → System Settings → Registration & access, showing the username, email and 'Auto-generate a random password' fields; optionally the result view after creation with the one-time password and the 'Copy account details' button." />
+  hint="The 'Create user' dialog under Settings → System Settings → User management, showing the username, email and 'Auto-generate a random password' fields; optionally the result view after creation with the one-time password and the 'Copy account details' button." />
 
 A generated password is shown only in this result view, so copy the full account details right away; the dialog cannot be closed until you acknowledge it, and the plaintext cannot be retrieved afterwards. Every creation writes a system audit entry (`system.user_created`). If the identity already exists the existing user is returned and its password is unchanged; if the email and the username point to two different users the request is rejected. Endpoints are in the [System API](../04-api/02-api-system.md).
 

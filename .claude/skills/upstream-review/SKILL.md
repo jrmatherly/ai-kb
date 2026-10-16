@@ -89,6 +89,7 @@ An `x` marker means we removed the path, not always that the change is irrelevan
 - `mcp-server/*.egg-info/` (2026-10-13): setuptools build metadata, regenerated from `mcp-server/README.md` and `pyproject.toml` by every build, so the tracked copy went stale and `validate.sh` dirtied the tree. Now gitignored; an upstream change there needs no port.
 - `examples/mcp-demo/requirements.txt` (2026-10-16): replaced by `pyproject.toml` and `uv.lock` so the demo gets the 7-day cooldown; original in `private/removed/`.
 - `website-docs/07-releases/` (2026-10-16): upstream's v0.8.0 and v0.8.2 release pages; `CHANGELOG.md` is the only release record. Originals in `private/removed/`.
+- `website-docs/public/screenshots/embed-channel-preview.png` (2026-10-16): no page referenced it; original in `private/removed/`.
 - Add a line here for every later removal, with where the content went or why it is gone.
 
 ## Version and changelog
