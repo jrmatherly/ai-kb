@@ -1,4 +1,4 @@
-# Node 24 for the BrowserSkill build and for the runtime's node/npm/npx.
+# Node 24 for the BrowserSkill build.
 FROM node:24-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS node-base
 
 # Build extension and daemon from the same pinned source on the runtime architecture.
@@ -134,29 +134,10 @@ RUN if [ -n "$APK_MIRROR_ARG" ]; then \
     sed -i "s@deb.debian.org@${APK_MIRROR_ARG}@g" /etc/apt/sources.list.d/debian.sources; \
     fi && \
     apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential postgresql-client default-mysql-client tzdata sed curl bash vim wget \
-    libsqlite3-0 \
-    python3 python3-pip python3-dev libffi-dev libssl-dev \
-    gosu \
-    ffmpeg && \
-    python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip setuptools wheel && \
-    mkdir -p /home/appuser/.local/bin && \
-    curl -LsSf https://astral.sh/uv/install.sh | CARGO_HOME=/home/appuser/.cargo UV_INSTALL_DIR=/home/appuser/.local/bin sh && \
-    chown -R appuser:appuser /home/appuser && \
-    ln -sf /home/appuser/.local/bin/uvx /usr/local/bin/uvx && \
-    chmod +x /usr/local/bin/uvx && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends ca-certificates curl gosu tzdata && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Node 24 instead of Debian bookworm's end-of-life Node 18. The server itself does not run node, npm or
-# npx (stdio MCP is disabled; skill scripts run in the sandbox image).
-COPY --from=node-base /usr/local/bin/node /usr/local/bin/node
-COPY --from=node-base /usr/local/lib/node_modules /usr/local/lib/node_modules
-RUN ln -s node /usr/local/bin/nodejs && \
-    ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
-    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
-    ln -s ../lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack
 
 # Create data directories and set permissions
 RUN mkdir -p /data/files && \
