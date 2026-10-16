@@ -78,6 +78,18 @@ type PartialWikiNodeListError struct {
 	Failures []WikiNodeListFailure
 }
 
+// Unwrap exposes each failure so errors.Is reaches the APIErrors inside.
+func (e *PartialWikiNodeListError) Unwrap() []error {
+	if e == nil {
+		return nil
+	}
+	errs := make([]error, 0, len(e.Failures))
+	for _, failure := range e.Failures {
+		errs = append(errs, failure.Err)
+	}
+	return errs
+}
+
 func (e *PartialWikiNodeListError) Error() string {
 	if e == nil || len(e.Failures) == 0 {
 		return "partial wiki node listing failed"
@@ -108,6 +120,40 @@ func NewClient(config *Config) *Client {
 		httpClient: datasource.NewConnectorHTTPClient(30 * time.Second),
 		jsonLimit:  maxJSONResponseBytes,
 	}
+}
+
+// APIError is a Feishu API failure: a non-200 response (Status and Body set,
+// Code read from the body when it has one) or a 200 whose body carries a
+// nonzero Code. Its text keeps the status=/code= form feishuFailure reads.
+type APIError struct {
+	Op     string
+	Status int
+	Code   int
+	Msg    string
+	Body   string
+}
+
+func (e *APIError) Error() string {
+	if e.Status != 0 {
+		return fmt.Sprintf("%s: status=%d body=%s", e.Op, e.Status, e.Body)
+	}
+	return fmt.Sprintf("%s: code=%d msg=%s", e.Op, e.Code, e.Msg)
+}
+
+// Is maps Feishu failures to the datasource sentinels. 1061004 is Drive's "app
+// not shared this folder", 99991672 a missing app scope, 1061005 Drive's auth
+// failure and 1061003 an unknown folder token. A bare 404 is left unmapped: it
+// can be a retired route or a proxy, not the user's selection.
+func (e *APIError) Is(target error) bool {
+	switch target {
+	case datasource.ErrPermissionDenied:
+		return e.Status == http.StatusForbidden || e.Code == 1061004 || e.Code == 99991672
+	case datasource.ErrInvalidCredentials:
+		return e.Status == http.StatusUnauthorized || e.Code == 1061005
+	case datasource.ErrResourceNotFound:
+		return e.Code == 1061003
+	}
+	return false
 }
 
 // GetTenantAccessToken retrieves (or returns cached) tenant access token.
@@ -147,7 +193,13 @@ func (c *Client) GetTenantAccessToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("decode token response: %w", err)
 	}
 	if result.Code != 0 {
-		return "", fmt.Errorf("feishu auth error: code=%d msg=%s", result.Code, result.Msg)
+		// A rate limit or server fault is not the user's credentials.
+		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500 {
+			return "", fmt.Errorf("feishu auth error: status=%d code=%d msg=%s",
+				resp.StatusCode, result.Code, result.Msg)
+		}
+		return "", fmt.Errorf("feishu auth error: code=%d msg=%s: %w",
+			result.Code, result.Msg, datasource.ErrInvalidCredentials)
 	}
 
 	c.tokenCache = result.TenantAccessToken
@@ -320,7 +372,12 @@ func (c *Client) DoRequest(ctx context.Context, method, path string, body interf
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("feishu api error: status=%d body=%s", resp.StatusCode, string(respBody))
+			var parsed ApiResponse
+			_ = json.Unmarshal(respBody, &parsed)
+			return &APIError{
+				Op: "feishu api error", Status: resp.StatusCode, Code: parsed.Code, Msg: parsed.Msg,
+				Body: truncate(string(respBody), 500),
+			}
 		}
 
 		if result != nil {
@@ -376,7 +433,7 @@ func (c *Client) ListWikiSpaces(ctx context.Context) ([]WikiSpace, error) {
 		}
 		if resp.Code != 0 {
 			logger.Errorf(ctx, "[Feishu] ListWikiSpaces error: code=%d msg=%s", resp.Code, resp.Msg)
-			return nil, fmt.Errorf("list wiki spaces error: code=%d msg=%s", resp.Code, resp.Msg)
+			return nil, &APIError{Op: "list wiki spaces error", Code: resp.Code, Msg: resp.Msg}
 		}
 
 		logger.Infof(ctx, "[Feishu] ListWikiSpaces: got %d spaces, has_more=%v", len(resp.Data.Items), resp.Data.HasMore)
@@ -424,7 +481,7 @@ func (c *Client) ListWikiNodes(ctx context.Context, spaceID string, parentNodeTo
 			return nil, fmt.Errorf("list wiki nodes: %w", err)
 		}
 		if resp.Code != 0 {
-			return nil, fmt.Errorf("list wiki nodes error: code=%d msg=%s", resp.Code, resp.Msg)
+			return nil, &APIError{Op: "list wiki nodes error", Code: resp.Code, Msg: resp.Msg}
 		}
 
 		for _, node := range resp.Data.Items {
@@ -462,7 +519,7 @@ func (c *Client) GetWikiNode(ctx context.Context, spaceID string, nodeToken stri
 		return WikiNode{}, fmt.Errorf("get wiki node: %w", err)
 	}
 	if resp.Code != 0 {
-		return WikiNode{}, fmt.Errorf("get wiki node error: code=%d msg=%s", resp.Code, resp.Msg)
+		return WikiNode{}, &APIError{Op: "get wiki node error", Code: resp.Code, Msg: resp.Msg}
 	}
 
 	node := resp.Data.Node
@@ -595,7 +652,7 @@ func (c *Client) getDocumentRawContent(ctx context.Context, documentID string) (
 		return "", fmt.Errorf("get document raw content: %w", err)
 	}
 	if resp.Code != 0 {
-		return "", fmt.Errorf("get document raw content error: code=%d msg=%s", resp.Code, resp.Msg)
+		return "", &APIError{Op: "get document raw content error", Code: resp.Code, Msg: resp.Msg}
 	}
 
 	return resp.Data.Content, nil
@@ -632,7 +689,7 @@ func (c *Client) createExportTask(ctx context.Context, token, objType, fileExten
 		return "", fmt.Errorf("create export task: %w", err)
 	}
 	if resp.Code != 0 {
-		return "", fmt.Errorf("create export task error: code=%d msg=%s", resp.Code, resp.Msg)
+		return "", &APIError{Op: "create export task error", Code: resp.Code, Msg: resp.Msg}
 	}
 
 	return resp.Data.Ticket, nil
@@ -649,7 +706,7 @@ func (c *Client) getExportTaskStatus(ctx context.Context, ticket string, token s
 		return "", "", fmt.Errorf("get export task status: %w", err)
 	}
 	if resp.Code != 0 {
-		return "", "", fmt.Errorf("get export task status error: code=%d msg=%s", resp.Code, resp.Msg)
+		return "", "", &APIError{Op: "get export task status error", Code: resp.Code, Msg: resp.Msg}
 	}
 
 	r := resp.Data.Result
@@ -897,7 +954,7 @@ func (c *Client) listDriveFiles(
 		return nil, "", false, fmt.Errorf("list drive files: %w", err)
 	}
 	if resp.Code != 0 {
-		return nil, "", false, fmt.Errorf("list drive files error: code=%d msg=%s", resp.Code, resp.Msg)
+		return nil, "", false, &APIError{Op: "list drive files error", Code: resp.Code, Msg: resp.Msg}
 	}
 
 	logger.Infof(ctx, "[FeishuDrive] listDriveFiles: folder=%s got %d files, has_more=%v",
@@ -920,7 +977,7 @@ func (c *Client) GetDriveFolderMeta(ctx context.Context, folderToken string) (dr
 		return resp, fmt.Errorf("get drive folder meta: %w", err)
 	}
 	if resp.Code != 0 {
-		return resp, fmt.Errorf("get drive folder meta error: code=%d msg=%s", resp.Code, resp.Msg)
+		return resp, &APIError{Op: "get drive folder meta error", Code: resp.Code, Msg: resp.Msg}
 	}
 	return resp, nil
 }

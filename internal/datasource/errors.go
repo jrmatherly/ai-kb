@@ -21,6 +21,7 @@ var (
 	// Configuration errors
 	ErrInvalidConfig       = errors.New("invalid configuration")
 	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrPermissionDenied    = errors.New("permission denied by source system")
 	ErrInvalidSyncSchedule = errors.New("invalid cron expression")
 
 	// Sync errors

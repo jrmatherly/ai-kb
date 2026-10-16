@@ -137,7 +137,7 @@ func (c *Client) listDocumentBlocks(ctx context.Context, documentID string) ([]D
 			return nil, fmt.Errorf("list document blocks: %w", err)
 		}
 		if resp.Code != 0 {
-			return nil, fmt.Errorf("list document blocks error: code=%d msg=%s", resp.Code, resp.Msg)
+			return nil, &APIError{Op: "list document blocks error", Code: resp.Code, Msg: resp.Msg}
 		}
 		all = append(all, resp.Data.Items...)
 		if len(resp.Data.Items) == 0 {
@@ -199,7 +199,7 @@ func (c *Client) readSheetRange(ctx context.Context, embedToken string) ([][]str
 		return nil, false, fmt.Errorf("read sheet range: %w", err)
 	}
 	if resp.Code != 0 {
-		return nil, false, fmt.Errorf("read sheet range error: code=%d msg=%s", resp.Code, resp.Msg)
+		return nil, false, &APIError{Op: "read sheet range error", Code: resp.Code, Msg: resp.Msg}
 	}
 	raw, truncated := capRows(resp.Data.ValueRange.Values)
 	return stringifyMatrix(raw), truncated, nil
@@ -396,7 +396,7 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 			return nil, false, fmt.Errorf("read bitable fields: %w", err)
 		}
 		if fieldsResp.Code != 0 {
-			return nil, false, fmt.Errorf("read bitable fields error: code=%d msg=%s", fieldsResp.Code, fieldsResp.Msg)
+			return nil, false, &APIError{Op: "read bitable fields error", Code: fieldsResp.Code, Msg: fieldsResp.Msg}
 		}
 		for _, f := range fieldsResp.Data.Items {
 			formatter := ""
@@ -458,7 +458,7 @@ func (c *Client) readBitableRecords(ctx context.Context, embedToken string) ([][
 			return nil, false, fmt.Errorf("search bitable records: %w", err)
 		}
 		if rec.Code != 0 {
-			return nil, false, fmt.Errorf("read bitable records error: code=%d msg=%s", rec.Code, rec.Msg)
+			return nil, false, &APIError{Op: "read bitable records error", Code: rec.Code, Msg: rec.Msg}
 		}
 		for _, item := range rec.Data.Items {
 			row := make([]string, len(cols))

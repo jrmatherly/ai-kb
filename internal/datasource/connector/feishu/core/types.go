@@ -334,6 +334,18 @@ type PartialDriveFileListError struct {
 	Failures []DriveFileListFailure
 }
 
+// Unwrap exposes each failure so errors.Is reaches the APIErrors inside.
+func (e *PartialDriveFileListError) Unwrap() []error {
+	if e == nil {
+		return nil
+	}
+	errs := make([]error, 0, len(e.Failures))
+	for _, failure := range e.Failures {
+		errs = append(errs, failure.Err)
+	}
+	return errs
+}
+
 func (e *PartialDriveFileListError) Error() string {
 	if e == nil || len(e.Failures) == 0 {
 		return "partial drive file listing failed"

@@ -1322,6 +1322,7 @@ var clientErrors = []error{
 	datasource.ErrConnectorTypeEmpty, datasource.ErrConnectorNotFound,
 	datasource.ErrDataSourceInvalid, datasource.ErrDataSourceNotActive,
 	datasource.ErrInvalidConfig, datasource.ErrInvalidCredentials, datasource.ErrInvalidSyncSchedule,
+	datasource.ErrPermissionDenied,
 	datasource.ErrResourceNotFound, datasource.ErrKnowledgeBaseNotFound,
 }
 
@@ -1352,26 +1353,15 @@ const (
 	connectorErrUpstream         = "upstream_error"
 )
 
-// classifyConnectorError reads the connector's error text because the Feishu
-// client reports API failures as formatted strings (status=, code=), not types.
-// 1061004 is Feishu Drive's "app not shared this folder", 1061005 its auth
-// failure and 1061003 an unknown folder token.
+// classifyConnectorError maps a connector failure to a details code through
+// the datasource sentinels the connector's errors match.
 func classifyConnectorError(err error) string {
-	msg := strings.ToLower(err.Error())
-	containsAny := func(subs ...string) bool {
-		for _, sub := range subs {
-			if strings.Contains(msg, sub) {
-				return true
-			}
-		}
-		return false
-	}
 	switch {
-	case containsAny("status=403", "forbidden", `"code":1061004`, "code=1061004"):
+	case errors.Is(err, datasource.ErrPermissionDenied):
 		return connectorErrPermissionDenied
-	case errors.Is(err, datasource.ErrInvalidCredentials), containsAny("status=401", "auth", "1061005"):
+	case errors.Is(err, datasource.ErrInvalidCredentials):
 		return connectorErrAuthFailed
-	case errors.Is(err, datasource.ErrResourceNotFound), containsAny("1061003", "not found"):
+	case errors.Is(err, datasource.ErrResourceNotFound):
 		return connectorErrNotFound
 	case errors.Is(err, datasource.ErrInvalidConfig):
 		return connectorErrInvalidConfig

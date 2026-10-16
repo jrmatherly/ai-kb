@@ -3,6 +3,8 @@ package core
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +12,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/jrmatherly/ai-kb/internal/datasource"
 )
 
 // retryTestServer builds a server that always answers the auth-token call and
@@ -111,6 +115,46 @@ func TestDoRequest_4xxNotRetried(t *testing.T) {
 	}
 	if attempts.Load() != 1 {
 		t.Errorf("attempts = %d, want 1 (non-429/5xx 4xx must not retry)", attempts.Load())
+	}
+}
+
+func TestDoRequest_4xxReturnsAPIErrorWithBodyCode(t *testing.T) {
+	body := `{"code":1061004,"msg":"forbidden"}`
+	ts, cfg := retryTestServer(t, "/target", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, body)
+	})
+	defer ts.Close()
+
+	err := NewClient(cfg).DoRequest(context.Background(), http.MethodGet, "/target", nil, nil)
+	apiErr, ok := errors.AsType[*APIError](err)
+	if !ok {
+		t.Fatalf("error = %#v, want *APIError", err)
+	}
+	if apiErr.Status != http.StatusBadRequest || apiErr.Code != 1061004 {
+		t.Errorf("status, code = %d, %d, want 400, 1061004", apiErr.Status, apiErr.Code)
+	}
+	if !errors.Is(err, datasource.ErrPermissionDenied) {
+		t.Error("code 1061004 does not match datasource.ErrPermissionDenied")
+	}
+	if want := "feishu api error: status=400 body=" + body; err.Error() != want {
+		t.Errorf("error text = %q, want %q", err.Error(), want)
+	}
+}
+
+func TestGetTenantAccessToken_FailureIsInvalidCredentials(t *testing.T) {
+	resetFeishuRequestGates(t)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: 10014, Msg: "app secret invalid"}})
+	}))
+	defer ts.Close()
+
+	_, err := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL}).GetTenantAccessToken(context.Background())
+	if !errors.Is(err, datasource.ErrInvalidCredentials) {
+		t.Fatalf("error = %v, want datasource.ErrInvalidCredentials", err)
+	}
+	if code, _, _ := feishuFailure(err); code != "feishu_auth_or_permission" {
+		t.Errorf("feishuFailure code = %q, want feishu_auth_or_permission", code)
 	}
 }
 
@@ -299,5 +343,51 @@ func TestDownloadRawBytes_BoundsErrorBodies(t *testing.T) {
 				t.Fatalf("read %d bytes of error bodies, want a bounded preview per response", got)
 			}
 		})
+	}
+}
+
+func TestAPIErrorMatchesDatasourceSentinels(t *testing.T) {
+	for _, tc := range []struct {
+		err  *APIError
+		want error
+	}{
+		{&APIError{Status: http.StatusForbidden}, datasource.ErrPermissionDenied},
+		{&APIError{Code: 1061004}, datasource.ErrPermissionDenied},
+		{&APIError{Status: http.StatusUnauthorized}, datasource.ErrInvalidCredentials},
+		{&APIError{Code: 1061005}, datasource.ErrInvalidCredentials},
+		{&APIError{Code: 99991672}, datasource.ErrPermissionDenied},
+		{&APIError{Code: 1061003}, datasource.ErrResourceNotFound},
+	} {
+		if !errors.Is(fmt.Errorf("wrapped: %w", tc.err), tc.want) {
+			t.Errorf("%v does not match %v", tc.err, tc.want)
+		}
+		partial := &PartialDriveFileListError{Failures: []DriveFileListFailure{{Err: tc.err}}}
+		if !errors.Is(partial, tc.want) {
+			t.Errorf("partial listing with %v does not match %v", tc.err, tc.want)
+		}
+	}
+	unmapped := []*APIError{{Status: http.StatusBadRequest, Code: 1}, {Status: http.StatusNotFound}, {Code: 99991663}}
+	for _, other := range unmapped {
+		for _, sentinel := range []error{
+			datasource.ErrPermissionDenied, datasource.ErrInvalidCredentials, datasource.ErrResourceNotFound,
+		} {
+			if errors.Is(other, sentinel) {
+				t.Errorf("%v matches %v", other, sentinel)
+			}
+		}
+	}
+}
+
+func TestGetTenantAccessToken_RateLimitIsNotInvalidCredentials(t *testing.T) {
+	resetFeishuRequestGates(t)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusTooManyRequests)
+		writeJSON(w, TokenResponse{ApiResponse: ApiResponse{Code: 99991400, Msg: "rate limited"}})
+	}))
+	defer ts.Close()
+
+	_, err := NewClient(&Config{AppID: "a", AppSecret: "b", BaseURL: ts.URL}).GetTenantAccessToken(context.Background())
+	if err == nil || errors.Is(err, datasource.ErrInvalidCredentials) {
+		t.Fatalf("error = %v, want a failure that is not datasource.ErrInvalidCredentials", err)
 	}
 }

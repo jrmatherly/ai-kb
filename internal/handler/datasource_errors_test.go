@@ -33,9 +33,10 @@ func (c failingConnector) ListResources(_ context.Context, _ *types.DataSourceCo
 func TestListResourcesClassifiesConnectorFailures(t *testing.T) {
 	registry := datasource.NewConnectorRegistry()
 	require.NoError(t, registry.Register(failingConnector{errs: map[string]error{
-		"forbidden": errors.New(`feishu api error: status=403 body={"code":1061004}`),
+		"forbidden": fmt.Errorf("list folder: %w", datasource.ErrPermissionDenied),
 		"secret":    fmt.Errorf("%w: client_secret is required", datasource.ErrInvalidCredentials),
-		"missing":   errors.New("list wiki nodes error: code=1061003 msg=folder missing"),
+		"missing":   fmt.Errorf("%w: folder missing", datasource.ErrResourceNotFound),
+		"text":      errors.New("author field not found"),
 		"timeout":   errors.New("dial tcp 10.0.0.1:443: i/o timeout"),
 	}}))
 	svc := service.NewDataSourceService(nil, nil, nil, nil, nil, registry, nil, nil, nil, nil)
@@ -47,9 +48,9 @@ func TestListResourcesClassifiesConnectorFailures(t *testing.T) {
 		want       string
 	}{
 		{
-			"permission", `{"type":"fake","credentials":{},"parent_id":"forbidden"}`, http.StatusBadGateway,
-			`{"success":false,"error":{"code":1011,"message":"failed to list resources: feishu api error: ` +
-				`status=403 body={\"code\":1061004}","details":{"code":"permission_denied"}}}`,
+			"permission", `{"type":"fake","credentials":{},"parent_id":"forbidden"}`, http.StatusBadRequest,
+			`{"success":false,"error":{"code":1000,"message":"list folder: permission denied by source system",` +
+				`"details":{"code":"permission_denied"}}}`,
 		},
 		{
 			"credentials", `{"type":"fake","credentials":{},"parent_id":"secret"}`, http.StatusBadRequest,
@@ -57,9 +58,15 @@ func TestListResourcesClassifiesConnectorFailures(t *testing.T) {
 				`"details":{"code":"auth_failed"}}}`,
 		},
 		{
-			"not found", `{"type":"fake","credentials":{},"parent_id":"missing"}`, http.StatusBadGateway,
-			`{"success":false,"error":{"code":1011,"message":"failed to list resources: list wiki nodes error: ` +
-				`code=1061003 msg=folder missing","details":{"code":"not_found"}}}`,
+			"not found", `{"type":"fake","credentials":{},"parent_id":"missing"}`, http.StatusBadRequest,
+			`{"success":false,"error":{"code":1000,"message":"resource not found in source system: folder missing",` +
+				`"details":{"code":"not_found"}}}`,
+		},
+		{
+			"auth and not-found words in plain text", `{"type":"fake","credentials":{},"parent_id":"text"}`,
+			http.StatusBadGateway,
+			`{"success":false,"error":{"code":1011,"message":"failed to list resources: author field not found",` +
+				`"details":{"code":"upstream_error"}}}`,
 		},
 		{
 			"unclassified", `{"type":"fake","credentials":{},"parent_id":"timeout"}`, http.StatusBadGateway,
