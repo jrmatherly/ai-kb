@@ -46,7 +46,7 @@ for (const file of pages) {
     }
   }
   if (/11\.141\.160\.83/.test(html)) failures.push(`${route}: stale private docs host`);
-  if (route.startsWith('/docs/') && !route.endsWith('/404.html') && !/class="wk-brand"[^>]*href="\/"[^>]*target="_self"/.test(html)) failures.push(`${route}: documentation logo must navigate to the main site`);
+  if (route.startsWith('/docs/') && !route.endsWith('/404.html') && !/class="wk-brand"[^>]*href="\/docs\/"[^>]*target="_self"/.test(html)) failures.push(`${route}: documentation logo must navigate to the documentation home`);
 }
 for (const path of ['/docs/', '/docs/03-features/22-skills-sandbox.html', '/docs/03-features/23-memory.html']) assert.ok(await resolveSiteFile(root, path), path);
 assert.equal(failures.length, 0, [...new Set(failures)].join('\n'));

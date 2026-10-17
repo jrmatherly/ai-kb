@@ -8,7 +8,7 @@ Product, deployment, API and development documentation is maintained here. The s
 - `/docs/`: redirects straight to the quick start.
 - `/docs/...`: the full documentation, with category navigation, search and sidebar.
 
-The site uses only these two paths. The site root contains only `index.html`, `404.html` and `docs/`. The homepage scripts, styles and images live under `/docs/_home/`, so an upstream gateway only needs to forward `/` (exact match) and the `/docs/` prefix. `build` rejects any page that references a resource outside these two paths.
+In production the documentation is path-mounted on the application host: `ai-kb.matherly.net/` is the AI KB web UI and the gateway forwards only the `/docs/` prefix to this site, so the homepage is not served there and the documentation logo links to `/docs/`. The site uses only these two paths. The site root contains only `index.html`, `404.html` and `docs/`. The homepage scripts, styles and images live under `/docs/_home/`, so an upstream gateway only needs to forward `/` (exact match) and the `/docs/` prefix. `build` rejects any page that references a resource outside these two paths.
 
 The top bar is 64px tall and spans the full width. Both the homepage and the documentation show the logo from the repository README and share colors, fonts and the light or dark preference. The logo returns to the homepage in the current tab. The homepage and the documentation each have navigation suited to their pages.
 

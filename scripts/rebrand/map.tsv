@@ -7,7 +7,9 @@ Tencent/WeKnora(?!#\d|/(issues|pull|discussions)/)	jrmatherly/ai-kb
 (?:docker(?:\.m\.daocloud)?\.io/)?wechatopenai/weknora-(app|docreader|ui|sandbox)	ghcr.io/jrmatherly/ai-kb-$1
 # The host is also the WeKnoraCloud model API (bare host and /api paths), which stays; only website links move.
 weknora\.weixin\.qq\.com(?=/docs)	ai-kb.matherly.net
-(href="https?://|\]\(https?://|\+https?://|badge/website-)weknora\.weixin\.qq\.com	$1ai-kb.matherly.net
+(href="https?://|\]\(https?://)weknora\.weixin\.qq\.com/?(?=["\)])	$1ai-kb.matherly.net/docs/
+badge/website-weknora\.weixin\.qq\.com	badge/website-ai--kb.matherly.net%2Fdocs
+\+https?://weknora\.weixin\.qq\.com	+https://ai-kb.matherly.net
 # --- environment prefix ---
 \bWEKNORA_	AIKB_
 # --- directories, containers, network, desktop app name (before the product-name rule) ---
@@ -55,7 +57,7 @@ chart name `weknora`	chart name `ai-kb`
 \b(?:Weknora|WEKNORA)\b(?!_)	AI KB
 tencent-weknora-mcp	ai-kb-mcp
 @wxg-prc-cpg/dsh-weknora	@jrmatherly/dsh-ai-kb
-docs\.weknora\.com	https://ai-kb.matherly.net/docs
+(?:https?://)?docs\.weknora\.com/?	https://ai-kb.matherly.net/docs/
 (?m)^name: weknora$	name: ai-kb
 (instance=|--namespace |namespace: )weknora\b	$1ai-kb
 (POSTGRES_DB=|dbName: |-d )weknora\b	$1ai_kb

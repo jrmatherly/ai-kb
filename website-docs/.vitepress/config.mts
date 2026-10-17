@@ -84,7 +84,7 @@ export default withMermaid(
     },
 
     themeConfig: {
-      logoLink: { link: '/', target: '_self' },
+      logoLink: { link: '/docs/', target: '_self' },
       siteTitle: 'AI KB',
 
       nav: [],

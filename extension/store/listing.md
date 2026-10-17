@@ -20,9 +20,9 @@ Chat. Open the side panel and ask the chat agents configured on your server abou
 
 Clip. Smart clip extracts the main article as Markdown and opens it in the editor, where you check the title and text, pick a knowledge base and save. Select clip saves the text you selected, or lets you drag a rectangle over the part of the page you want. Quick note opens an empty note with no page attached. The Recent tab lists your last captures with their parsing status.
 
-Quick clip. Turn it on in the options page and the right-click menu items and keyboard shortcuts save straight to your last used knowledge base, without opening the editor.
+Quick clip. Turn it on in the options page and the right-click menu items and the clip shortcuts save straight to your last used knowledge base, without opening the editor.
 
-Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S clips the selection and Alt+Shift+N writes a note (Option+Shift on a Mac). Change them at chrome://extensions/shortcuts.
+Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S clips the selection and Alt+Shift+N writes a note (Option+Shift on a Mac). Change them at chrome://extensions/shortcuts (edge://extensions/shortcuts in Edge).
 
 Sign in. Connect with an API key, with your email and password, or through your server's identity provider when the server has single sign-on enabled.
 
@@ -32,8 +32,8 @@ Server setup is documented at <https://ai-kb.matherly.net/docs/>.
 
 ## Category
 
-- Chrome Web Store: **Workflow & Planning**. Google replaced Productivity in 2023; its successors are Education, Functionality & UI, Household, Privacy & Security, Tools and Workflow & Planning, and Workflow & Planning is defined as "extensions to help users perform their tasks more efficiently", with document editors among its examples (<https://developer.chrome.com/docs/webstore/best-practices>). The Notion and Evernote web clippers are listed there.
-- Microsoft Edge Add-ons: **Productivity**. Edge still uses its own list (Accessibility, Blogging, Communication, Developer tools, Entertainment, News & weather, Photos, Productivity, Search tools, Shopping, Social, Sports).
+- Chrome Web Store: **Workflow & Planning**. Google replaced Productivity in 2023; its successors are Education, Functionality & UI, Household, Privacy & Security, Tools and Workflow & Planning, and Workflow & Planning is defined as "extensions to help users perform their tasks more efficiently", with document editors among its examples (<https://developer.chrome.com/docs/webstore/best-practices>). The Notion and Evernote web clippers are listed there (<https://chromewebstore.google.com/detail/notion-web-clipper/knheggckgoiihginacbkhaalnibhilkk>, <https://chromewebstore.google.com/detail/evernote-web-clipper/pioclpoplcdbaefihamjohnefbikjilc>).
+- Microsoft Edge Add-ons: **Productivity**. Edge still uses its own list (Accessibility, Blogging, Communication, Developer tools, Entertainment, News & weather, Photos, Productivity, Search tools, Shopping, Social, Sports, read from <https://microsoftedge.microsoft.com/addons/category/Productivity> on 2026-10-17).
 
 ## Links
 
