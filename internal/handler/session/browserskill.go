@@ -200,7 +200,8 @@ func (h *Handler) BrowserSkillConnection(c *gin.Context) {
 // fixed 503 (cause logged), an invalid grant 403, an owner-replica failure or an
 // incompatible daemon reply 502 with its text. A daemon RPC error is the daemon's
 // own answer about the task (not_found, task_paused, a validation code), so it
-// keeps the call site's status like every other message.
+// keeps the call site's status like every other message. gateway_ui_unsupported
+// is the user's extension being out of date, so it stays with the call site too.
 func browserSkillError(ctx context.Context, err error, newErr func(string) *errors.AppError) *errors.AppError {
 	var rpcErr *browserskill.RPCError
 	switch {

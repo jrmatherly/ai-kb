@@ -272,8 +272,7 @@ python dataset/qa_dataset.py show \
 ## Tests
 
 ```bash
-uv run --no-project --with pandas --with pyarrow --with openai \
-  python -m unittest discover -s dataset/tests
+uv run --project dataset --locked python -m unittest discover -s dataset/tests
 ```
 
 ## Contributing

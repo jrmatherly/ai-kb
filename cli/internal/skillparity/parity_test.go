@@ -73,7 +73,7 @@ func checkInvocation(root *cobra.Command, flags, globals map[string]bool, inv st
 		if sub == nil {
 			// Groups are Runnable (they print help), so only the subcommand list says what they take.
 			// Only a token shaped like a command name is a candidate subcommand; "...",
-			// "|" or a bare argument after a group is prose, not a typo.
+			// "|" or a placeholder after a group is prose, not a typo.
 			if curr != root && curr.HasSubCommands() && commandToken.MatchString(toks[i]) {
 				problems = append(problems, "unknown subcommand "+curr.Name()+" "+toks[i])
 			}

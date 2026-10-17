@@ -23,4 +23,4 @@ Captured on 2026-10-13 from the development stack with the `website-docs/sample-
 
 Captured on 2026-10-14 the same way: `chat-steer-queue.png` (a Smart Reasoning run with queued messages), `wiki-browser.png`, `wiki-graph.png` and `wiki-revision-history.png` (a generated wiki), `skill-sandbox-chat.png` and `sandbox-terminal.png` (a Docker sandbox).
 
-Still pending: `local-browser-task.png` and `browser-connection.png` (need a paired BrowserSkill browser) and `sandbox-desktop.png` (needs a Cube or E2B sandbox with a desktop template; Docker sandboxes have no desktop).
+Captured on 2026-10-16 from the slim app image: `browser-connection.png` (the Browser connection tab before pairing). Still pending: `local-browser-task.png` (needs a paired BrowserSkill browser running a task) and `sandbox-desktop.png` (needs a Cube or E2B sandbox with a desktop template; Docker sandboxes have no desktop).
