@@ -2,10 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2026.10.17] - 2026-10-17
 
 ### Security
 
+- **FIXED**: The browser extension renders answers and clip previews through an explicit tag and attribute allow-list, so remote markup (video, srcset, poster, inline styles, svg images, image inputs, forms) no longer fetches on render; images still load on click. Its pages declare a Content Security Policy with form-action, frame-src and base-uri set to none.
+- **CHANGED**: The Chrome Web Store publish job holds no stored secret: it trades its GitHub OIDC token for a 30-minute Google service account token through Workload Identity Federation.
 - **FIXED**: The app image runtime is `debian:12.15-slim` with ca-certificates, curl, gosu and tzdata, upgraded at build time; node, uv, python3, build-essential, ffmpeg and the database clients are gone (2.1 GB to 0.6 GB). Every image applies its base's package updates at build time (`apt-get upgrade`, `apk upgrade` for nginx), and the Docker Images workflow rebuilds the newest release every Monday with a fresh base and no layer cache and re-pushes its tags and `latest`.
 - **FIXED**: Called govulncheck findings in the root, `cli` and `client` modules gate the Go CI job against a cited allowlist (`scripts/govulncheck-allowlist.txt`), weekly as well as on every Go change.
 - **FIXED**: A 500 response no longer carries wrapped internal errors (SQL, storage endpoints, upstream bodies). Clients get `{"code":1007,"message":"Internal server error"}` and every error body carries `request_id`, the `X-Request-ID` the server logs the cause under.
@@ -13,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **FIXED**: Browser extension: a context-menu or shortcut clip that cannot run (a browser page, a page that refuses injection) now says so in the side panel instead of leaving it idle; the panel reloads when the connection changes and shows the signed-out notice on a 401; updating an existing capture keeps it in its own knowledge base; a broken image URL in an answer no longer breaks the whole render.
 - **FIXED**: Moving a knowledge base's indices no longer fails on a Milvus or Weaviate collection that was never created, and Weaviate deletes skip the extra schema probe.
 - **FIXED**: Neo4j graph deletion runs `CALL (n) { DETACH DELETE n } IN TRANSACTIONS` instead of the deprecated `apoc.periodic.iterate` (Neo4j 5.23 or later).
 - **FIXED**: Feishu errors shown to users name the status, code and message instead of the raw response body; token endpoint codes are classified (10005, 10015, 99991543 credentials; 10014 permission; the rest upstream errors).
@@ -33,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- **NEW**: The website and documentation ship as `ghcr.io/jrmatherly/ai-kb-website`, built by the Website Docs workflow with the same tag scheme as the other images.
 - **NEW**: The AI KB browser extension for Chrome and Edge (`extension/`): ask agents about the current page in a side panel, and clip pages, selections and notes into a knowledge base, signed in with an API key, email and password, or the server's identity provider. Settings → Publish & Integrations has a Browser Extension tab, and the docs have a [Browser extension](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension) page.
 - **NEW**: `GET /api/v1/auth/oidc/start` accepts an optional `return_to` that must exactly match an entry of `OIDC_AUTH_EXTENSION_RETURN_URLS` (empty by default, which turns it off); when OIDC is enabled, any other value is a 400 before the IdP redirect. The callback then redirects there instead of `/`, for success and errors alike.
 - **NEW**: Weaviate keyword search handles CJK text through app-side bigrams (`content_bigram`). A collection created before this change has no such property; drop it and re-index.
@@ -40,6 +44,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- **CHANGED**: The documentation lives at `ai-kb.matherly.net/docs/`, path-mounted on the application host; every link in the app, the extension, the README and the packages points there.
 - **CHANGED**: The main web app (not the embed entry) registers TDesign components per template (`unplugin-vue-components`) and bundles the ones in use into one `vendor-tdesign` chunk instead of installing the whole library at startup: the knowledge list's cold load on Fast 4G goes from about 2.9 s to 2.5 s LCP behind the production nginx.
 - **CHANGED**: The compose default time zone is UTC (`TZ` in `.env` overrides it).
 - **CHANGED**: The compose redis service has a healthcheck and app, langfuse-web and langfuse-worker wait for it.
