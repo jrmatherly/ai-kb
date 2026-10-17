@@ -4,7 +4,7 @@ export type HeadersReply = { serverUrl: string; headers: Record<string, string>;
 export type RefreshOutcome = 'refreshed' | 'signed_out' | 'not_bearer';
 export type ExtractMode = 'article' | 'select';
 export type ExtractResult = { draft: CaptureDraft } | { draft: null; reason: 'cancelled' };
-export type ExtractReply = ExtractResult | { error: 'unreachable' | 'no_access' };
+export type ExtractReply = ExtractResult | { error: 'unreachable' | 'no_access' } | { error: 'failed'; message: string };
 export type TabAccessReply = { url: string; title: string } | { access: false };
 export type CommandsReply = Array<{ name: string; shortcut: string }>;
 

@@ -37,6 +37,18 @@ export function patchConnection(patch: Partial<Omit<Connection, 'auth'>>, store:
   });
 }
 
+export function replaceConnection(connection: Connection, store: Store = localStore): Promise<void> {
+  return serialized(() => store.save(connection));
+}
+
+// Signing out keeps the server and preferences unless the server is forgotten too.
+export function signOut(forgetServer: boolean, store: Store = localStore): Promise<void> {
+  return serialized(async () => {
+    const current = await store.load();
+    await store.save(forgetServer || !current ? null : { ...current, auth: { kind: 'signed_out' } });
+  });
+}
+
 export function authHeaders(connection: Connection): Record<string, string> {
   const headers: Record<string, string> = {};
   const { auth } = connection;
