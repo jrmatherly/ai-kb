@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2026.10.17.1] - 2026-10-17
 
 ### Security
 
