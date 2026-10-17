@@ -11,6 +11,11 @@ on:
       - "frontend/src/i18n/locales/en-US.ts" # datasource.syncError keys, checked by internal/datasource/syncreason
       - "!cli/**"
       - "!client/**"
+      # Their own workflows test cli and client; a dependency change still runs the govulncheck gate here.
+      - "cli/go.mod"
+      - "cli/go.sum"
+      - "client/go.mod"
+      - "client/go.sum"
       - "!docreader/**"
       - "!third_party/anydoc-go/**"
       - "go.mod"
@@ -42,6 +47,11 @@ on:
       - "frontend/src/i18n/locales/en-US.ts" # datasource.syncError keys, checked by internal/datasource/syncreason
       - "!cli/**"
       - "!client/**"
+      # Their own workflows test cli and client; a dependency change still runs the govulncheck gate here.
+      - "cli/go.mod"
+      - "cli/go.sum"
+      - "client/go.mod"
+      - "client/go.sum"
       - "!docreader/**"
       - "!third_party/anydoc-go/**"
       - "go.mod"

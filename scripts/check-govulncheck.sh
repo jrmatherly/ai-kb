@@ -16,7 +16,8 @@ trap 'rm -f "$stream"' EXIT
 for dir in "${modules[@]}"; do
   govulncheck -C "$dir" -format json ./... >> "$stream"
 done
-jq -e 'select(.config)' "$stream" >/dev/null || { echo "check-govulncheck: no config record in the govulncheck stream" >&2; exit 1; }
+configs=$(jq -c 'select(.config)' "$stream" | wc -l | tr -d ' ')
+[ "$configs" -eq "${#modules[@]}" ] || { echo "check-govulncheck: $configs config records for ${#modules[@]} modules in the govulncheck stream" >&2; exit 1; }
 unlisted=$(LC_ALL=C comm -23 \
   <(jq -r 'select(.finding) | select(.finding.trace[0].function != null) | .finding.osv' "$stream" | LC_ALL=C sort -u) \
   <(grep -v '^#' scripts/govulncheck-allowlist.txt | cut -f1 | LC_ALL=C sort -u))
