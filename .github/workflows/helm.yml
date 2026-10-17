@@ -1,5 +1,16 @@
 name: ⎈ Helm
 
+# Lint and render the chart on every change; publish it to GHCR when a new chart version lands on main.
+#
+# Jobs:
+#   chart    helm lint, the render tests and the image-tag checks
+#   publish  on main (push or dispatch), package helm/ at the version in Chart.yaml and push it to
+#            oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb unless that version is already there, so a plain
+#            edit under helm/ republishes nothing and `make bump-lib LIB=helm-chart` plus a push is a
+#            chart release. The chart's appVersion names the image tag the release pins; it moves with
+#            `make bump-version`, never here. A cluster references the chart by its version (Flux
+#            OCIRepository `ref.tag`).
+
 on:
   push:
     branches: [main]
@@ -82,3 +93,40 @@ jobs:
           test "$docreader_override" = "ghcr.io/jrmatherly/ai-kb-docreader:reader-test"
           website_override="$(render_image templates/website.yaml --set website.image.tag=site-test)"
           test "$website_override" = "ghcr.io/jrmatherly/ai-kb-website:site-test"
+
+  publish:
+    name: ☸️ Push chart to GHCR
+    needs: chart
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write # pushes oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: ⎈ Set up Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+
+      - name: ☸️ Package and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*"; exit 1; }
+          version="$(awk '$1 == "version:" { print $2; exit }' helm/Chart.yaml)"
+          [ -n "$version" ] || fail "no version in helm/Chart.yaml"
+          registry="oci://ghcr.io/$GITHUB_REPOSITORY/charts"
+          echo "$GITHUB_TOKEN" | helm registry login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          # helm push replaces an existing tag without complaint; a cluster may already run that version.
+          if helm show chart "$registry/ai-kb" --version "$version" > /dev/null 2>&1; then
+            echo "Chart ai-kb $version is already published; nothing pushed." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          helm package helm --version "$version" --destination "$RUNNER_TEMP"
+          helm push "$RUNNER_TEMP/ai-kb-$version.tgz" "$registry"
+          echo "Pushed chart ai-kb $version (appVersion $(awk '$1 == "appVersion:" { print $2; exit }' helm/Chart.yaml)) to $registry" >> "$GITHUB_STEP_SUMMARY"

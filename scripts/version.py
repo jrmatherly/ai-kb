@@ -265,7 +265,7 @@ def bump(group, target, remote):
         raise
     print(f"committed chore(release): {name} ({len(paths)} files)")
     if prefix is None:
-        print(f"no tag: no workflow publishes the {group} (helm.yml only lints and renders it)")
+        print(f"no tag: helm.yml pushes the {group} to oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb when this commit lands on main")
         return
     branch = git("rev-parse", "--abbrev-ref", "HEAD").strip()
     print(

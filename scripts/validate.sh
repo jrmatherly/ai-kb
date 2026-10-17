@@ -17,7 +17,7 @@
 # carries lint debt. HOOK_SKIP_TEST=1 skips the Go tests. AIKB_E2E_HOST and AIKB_E2E_TOKEN enable the
 # CLI end-to-end suite (cli-e2e.yml), which needs a live server.
 #
-# Not run here: docker-image.yml, website-docs.yml's image job and release-lite.yml build and publish images and release binaries,
+# Not run here: docker-image.yml, website-docs.yml's image job, helm.yml's chart push and release-lite.yml publish images, the chart and release binaries,
 # the publish jobs of mcp-server.yml and dsh-plugin.yml upload to PyPI and npm, dsh-plugin.yml's
 # weekly drift job against dsh@latest is advisory, and go-lint-cache.yml only warms a CI cache.
 # Matrices (cli on three OSes, mcp-server on Python 3.11-3.14) run on this machine's platform only.

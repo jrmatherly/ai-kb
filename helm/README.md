@@ -22,6 +22,18 @@ AI KB is an intelligent knowledge base platform that combines:
 
 ## Quick Start
 
+The chart is published to GHCR on every chart version bump:
+
+```bash
+helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.2.0 \
+  --set secrets.dbPassword=<secure-password> \
+  --set secrets.redisPassword=<secure-password> \
+  --set secrets.jwtSecret=<secure-random-string>
+```
+
+Flux users reference the same path from an `OCIRepository` with `ref.tag` set to the chart
+version. The commands below install from a checkout instead.
+
 The chart pulls `ghcr.io/jrmatherly/ai-kb-{app,ui,website,docreader}` at the tag in
 `Chart.appVersion`. To use your own registry, build the images (`make build-images`),
 push them and point `app.image`, `frontend.image`, `website.image` and `docreader.image`
