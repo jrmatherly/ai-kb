@@ -2,7 +2,6 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
-import TDesign from "tdesign-vue-next";
 // A few global style variables from the component library
 import "tdesign-vue-next/dist/tdesign.css";
 import "@/assets/theme/theme.css";
@@ -35,7 +34,6 @@ async function bootstrap() {
     console.error("[AI KB] Unhandled Vue error:", err, "\nComponent:", instance, "\nInfo:", info);
   };
 
-  app.use(TDesign);
   const pinia = createPinia();
   app.use(pinia);
 

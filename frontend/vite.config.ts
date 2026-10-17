@@ -6,6 +6,8 @@ import { createRequire } from 'node:module'
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import Components from 'unplugin-vue-components/vite'
+import { TDesignResolver } from 'unplugin-vue-components/resolvers'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const require = createRequire(import.meta.url)
@@ -126,6 +128,11 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
+    // Registers only the TDesign components a template uses, instead of app.use(TDesign) installing
+    // all of them (the shared startup chunk drops from 545 to 311 KB gzip). Styles stay global
+    // (tdesign.css in main.ts). dts is off: with typed globals vue-tsc reports 92 template
+    // mismatches (handler signatures, placement strings) that predate this; enable it when they are fixed.
+    Components({ resolvers: [TDesignResolver({ library: 'vue-next' })], dts: false }),
     embedHtmlDevFallback(),
   ],
   resolve: {
