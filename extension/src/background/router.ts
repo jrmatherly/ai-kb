@@ -1,4 +1,5 @@
 import type { CommandsReply, ExtractMode, ExtractReply, ExtractResult, HeadersReply, RefreshOutcome, Request, TabAccessReply } from '../shared/messages';
+import type { ClipError } from '../shared/session';
 import type { CaptureDraft, Connection, Intent } from '../shared/types';
 import { authHeaders, patchConnection, replaceConnection, signOut } from './auth';
 
@@ -14,6 +15,7 @@ export type Deps = {
   readIntent: (tabId: number) => Promise<Intent | null>;
   writeClip: (tabId: number, intent: Intent, draft: CaptureDraft) => Promise<void>;
   writeComposer: (tabId: number, text: string | null) => Promise<void>;
+  writeClipError: (tabId: number, error: ClipError) => Promise<void>;
   pageSelection: (tabId: number) => Promise<string>;
   extensionId: string;
   extensionOrigin: string;
@@ -84,12 +86,13 @@ async function fromGesture(tabId: number, deps: Deps, work: () => Promise<void>)
   await opened;
 }
 
-// A draft arrives through storage; when nothing can arrive, the intent is cleared so the panel does not wait.
+// A draft arrives through storage; when nothing can arrive, the intent is cleared so the panel does not wait,
+// and a page that could not be read is reported so the panel shows why.
 // A clip intent is written only with its draft: on its own the panel would start a second extraction.
 export function clipFromGesture(tabId: number, mode: ExtractMode, deps: Deps): Promise<void> {
   return fromGesture(tabId, deps, async () => {
     const tab = await deps.tabInfo(tabId);
-    if (tab.url && isUnreachableUrl(tab.url)) return;
+    if (tab.url && isUnreachableUrl(tab.url)) return deps.writeClipError(tabId, { error: 'unreachable', url: tab.url });
     // The extraction is the slow part, so it runs while the intent is decided and written.
     const extracting = extract(tabId, mode, deps);
     const intent = quickClipIntent(await deps.load(), mode);
@@ -98,6 +101,7 @@ export function clipFromGesture(tabId: number, mode: ExtractMode, deps: Deps): P
     const result = await extracting;
     if ('draft' in result && result.draft) await deps.writeClip(tabId, intent, result.draft);
     else if (early && (await deps.readIntent(tabId)) === intent) await deps.writeIntent(tabId, null);
+    if ('error' in result) await deps.writeClipError(tabId, { ...result, url: tab.url ?? null });
   });
 }
 

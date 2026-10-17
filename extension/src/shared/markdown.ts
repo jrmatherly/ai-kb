@@ -9,8 +9,28 @@ const INLINE = /^data:image\//i;
 
 const marked = new Marked({ gfm: true, breaks: true });
 
-// Every image, from Markdown or raw HTML, passes through the sanitizer, so the policy lives in one hook
-// that runs before URI filtering strips the storage schemes.
+// Pages only: the worker has no window and never renders Markdown.
+const purifier = DOMPurify(window);
+// What marked emits plus common inline HTML. Nothing here fetches on render except img, which the policy
+// below gates; style, srcset, poster, background and data attributes stay out for the same reason.
+purifier.setConfig({
+  ALLOWED_TAGS: ['a', 'b', 'blockquote', 'br', 'code', 'del', 'details', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input', 'kbd', 'li', 'mark', 'ol', 'p', 'pre', 's', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul'],
+  ALLOWED_ATTR: ['align', 'alt', 'checked', 'class', 'disabled', 'href', 'open', 'src', 'start', 'title', 'type'],
+  ALLOW_DATA_ATTR: false,
+  RETURN_DOM: true,
+});
+// The URI filter would strip the storage schemes, which the panel resolves itself.
+purifier.addHook('uponSanitizeAttribute', (node, data) => {
+  if (data.attrName === 'src' && node.nodeName === 'IMG' && STORAGE_REF.test(data.attrValue)) data.forceKeepAttr = true;
+});
+purifier.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'A' && node.hasAttribute('href') && !node.getAttribute('href')?.startsWith('#')) {
+    node.setAttribute('target', '_blank');
+    node.setAttribute('rel', 'noopener');
+  }
+});
+
+// Runs on the sanitized tree, so the buttons it makes are the only ones and data attributes are its own.
 function imagePolicy(node: Element): void {
   const src = node.getAttribute('src') ?? '';
   if (STORAGE_REF.test(src)) {
@@ -20,31 +40,23 @@ function imagePolicy(node: Element): void {
     return;
   }
   if (INLINE.test(src)) return;
-  const doc = node.ownerDocument;
-  if (!REMOTE.test(src)) {
-    node.replaceWith(doc.createTextNode(node.getAttribute('alt') ?? ''));
+  const url = REMOTE.test(src) && URL.canParse(src) ? new URL(src) : null;
+  if (!url) {
+    node.replaceWith(node.getAttribute('alt') ?? '');
     return;
   }
-  const button = doc.createElement('button');
+  const button = node.ownerDocument.createElement('button');
   button.setAttribute('type', 'button');
   button.className = 'aikb-remote-image';
   button.dataset.src = src;
-  button.textContent = `Load image from ${new URL(src).host}`;
+  button.textContent = `Load image from ${url.host}`;
   node.replaceWith(button);
 }
 
-// Pages only: the worker has no window and never renders Markdown.
-const purifier = DOMPurify(window);
-purifier.addHook('uponSanitizeElement', (node, data) => {
-  if (data.tagName === 'img') imagePolicy(node as Element);
-});
-purifier.addHook('afterSanitizeAttributes', (node) => {
-  if (node.tagName === 'A' && node.hasAttribute('href') && !node.getAttribute('href')?.startsWith('#')) {
-    node.setAttribute('target', '_blank');
-    node.setAttribute('rel', 'noopener');
-  }
-});
-
 export function renderMarkdown(md: string): string {
-  return purifier.sanitize(marked.parse(md, { async: false }));
+  const body = purifier.sanitize(marked.parse(md, { async: false })) as unknown as HTMLElement;
+  // Only an img may carry a src: an input of type image would load it.
+  for (const input of body.querySelectorAll('input:not([type="checkbox"])')) input.remove();
+  for (const img of body.querySelectorAll('img')) imagePolicy(img);
+  return body.innerHTML;
 }

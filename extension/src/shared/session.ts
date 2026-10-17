@@ -1,4 +1,5 @@
 import type { ApiClient } from './api';
+import type { ExtractError } from './messages';
 import { resyncCaptures } from './capture';
 import type { Capture, CaptureDraft, Intent } from './types';
 
@@ -19,7 +20,13 @@ export const readIntent = (tabId: number) => read<Intent>(`intent:${tabId}`);
 export const writeIntent = (tabId: number, intent: Intent | null) => write(`intent:${tabId}`, intent);
 export const readComposer = (tabId: number) => read<string>(`composer:${tabId}`);
 export const writeComposer = (tabId: number, text: string | null) => write(`composer:${tabId}`, text);
-export const clearTabKeys = (tabId: number, names: Array<'draft' | 'intent'>) => chrome.storage.session.remove(names.map((name) => `${name}:${tabId}`));
+// The page the error describes; the panel drops it once the tab shows another.
+export type ClipError = ExtractError & { url: string | null };
+export const readClipError = (tabId: number) => read<ClipError>(`clipError:${tabId}`);
+export const writeClipError = (tabId: number, error: ClipError) => write(`clipError:${tabId}`, error);
+export const TAB_KEYS = ['draft', 'intent', 'clipError'] as const;
+export type TabKey = (typeof TAB_KEYS)[number];
+export const clearTabKeys = (tabId: number, names: TabKey[]) => chrome.storage.session.remove(names.map((name) => `${name}:${tabId}`));
 
 // Removals are skipped: they are a page clearing what it already took.
 export function onSessionChange(callback: (key: string) => void): () => void {

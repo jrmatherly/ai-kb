@@ -22,6 +22,9 @@
     "page": "options.html",
     "open_in_tab": true
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; form-action 'none'; frame-src 'none'; base-uri 'none'"
+  },
   "permissions": ["storage", "sidePanel", "activeTab", "scripting", "contextMenus", "identity"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
   "commands": {

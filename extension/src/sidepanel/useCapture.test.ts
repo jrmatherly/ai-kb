@@ -5,6 +5,7 @@ import { installFakeChrome, tick } from '../../test/fakeChrome';
 import { ApiError, type ApiClient } from '../shared/api';
 import { pollParse } from '../shared/capture';
 import type { ExtractReply, Request, TabAccessReply } from '../shared/messages';
+import type { ClipError } from '../shared/session';
 import type { Capture, CaptureDraft, Connection, Intent, Knowledge } from '../shared/types';
 import { type Editor, useCapture } from './useCapture';
 
@@ -25,12 +26,14 @@ type Opts = {
   realPoll?: boolean;
   knowledge?: Knowledge | Error;
   kbError?: Error;
+  clipError?: ClipError;
 };
 
 function harness(opts: Opts = {}) {
   const { session, local, listeners } = installFakeChrome();
   if (opts.draft) session.set('draft:7', opts.draft);
   if (opts.intent) session.set('intent:7', opts.intent);
+  if (opts.clipError) session.set('clipError:7', opts.clipError);
   for (const c of opts.recent ?? []) local.set(`capture:${c.knowledgeId}`, c);
   const saves: unknown[][] = [];
   const sent: Request[] = [];
@@ -186,9 +189,9 @@ test('a failed knowledge base load shows in the editor instead of rejecting', as
 
 test('startClip maps the extract errors to page states', async () => {
   for (const [extract, pageError] of [
-    [{ error: 'unreachable' }, { kind: 'unreachable' }],
-    [{ error: 'no_access' }, { kind: 'cold' }],
-    [{ error: 'failed', message: 'boom' }, { kind: 'failed', message: 'boom' }],
+    [{ error: 'unreachable'}, { kind: 'unreachable' }],
+    [{ error: 'no_access'}, { kind: 'cold' }],
+    [{ error: 'failed', message: 'boom'}, { kind: 'failed', message: 'boom' }],
   ] as const) {
     const { capture, sent } = harness({ extract });
     await capture.startClip('article');
@@ -409,4 +412,57 @@ test('a repeated intent bumps intentSeq, and opening the editor keeps the intent
   assert.equal(capture.state.intent, 'quick:article');
   await capture.editCapture(saved('k0'));
   assert.equal(capture.state.intent, 'quick:article');
+});
+
+test('a clip error from a menu or command shows as the page state, once', async () => {
+  for (const [clipError, pageError] of [
+    [{ error: 'unreachable', url: 'https://e.com/p' }, { kind: 'unreachable' }],
+    [{ error: 'no_access', url: 'https://e.com/p' }, { kind: 'cold' }],
+    [{ error: 'failed', message: 'boom', url: 'https://e.com/p' }, { kind: 'failed', message: 'boom' }],
+  ] as const) {
+    const { capture, session } = harness({ clipError });
+    await capture.loadFromSession();
+    assert.deepEqual(capture.pageState.value, pageError);
+    assert.equal(session.has('clipError:7'), false);
+    assert.equal(capture.state.editor.phase, 'idle');
+  }
+});
+
+test('a clip error written while the panel is open reaches the page state', async () => {
+  const { capture } = harness();
+  await chrome.storage.session.set({ 'clipError:7': { error: 'unreachable', url: 'https://e.com/p' } });
+  for (let i = 0; i < 20 && capture.pageState.value.kind === 'ok'; i++) await tick();
+  assert.deepEqual(capture.pageState.value, { kind: 'unreachable' });
+});
+
+test('a clip error waits for the tab it describes and is dropped once the tab shows another page', async () => {
+  const { capture, access } = harness({ access: { access: false }, clipError: { error: 'unreachable', url: 'chrome://newtab' } });
+  await capture.loadFromSession();
+  assert.deepEqual(capture.pageState.value, { kind: 'cold' }, 'the tab is not known yet');
+  access.value = { url: 'chrome://newtab', title: 'New tab' };
+  assert.deepEqual(capture.pageState.value, { kind: 'unreachable' });
+  access.value = { url: 'https://e.com/other', title: 'Other' };
+  assert.deepEqual(capture.pageState.value, { kind: 'ok' });
+});
+
+test('editing a Recent entry locks the picker to its base and leaves lastKbId alone', async () => {
+  const { capture, saves, sent } = harness({ knowledge: { id: 'k0', title: 'Old', parse_status: 'completed', metadata: { content: 'old body text' } } });
+  await capture.loadFromSession();
+  assert.equal(capture.state.kbId, 'kb1');
+  await capture.editCapture(saved('k0', 'https://e.com/p', 'kb2'));
+  assert.equal(capture.lockedKbId.value, 'kb2');
+  capture.state.kbId = 'kb1';
+  await capture.save(false);
+  assert.equal((saves[0][3] as Capture).kbId, 'kb2');
+  assert.deepEqual(sent, [], 'an update writes no lastKbId');
+  assert.equal(capture.lockedKbId.value, 'kb2', 'the saved entry stays locked to its base');
+});
+
+test('the picker is free for a new entry and for Save as new on a duplicate', async () => {
+  const { capture } = harness({ draft: article, recent: [saved('k0', 'https://e.com/p', 'kb2')] });
+  await capture.loadFromSession();
+  assert.equal(phase(capture, 'editing').duplicate?.knowledgeId, 'k0');
+  assert.equal(capture.lockedKbId.value, null);
+  capture.newNote();
+  assert.equal(capture.lockedKbId.value, null);
 });

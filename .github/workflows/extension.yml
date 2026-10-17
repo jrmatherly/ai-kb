@@ -22,12 +22,11 @@ name: 🧩 Browser Extension
 # smaller supply-chain bet. Each publish step writes every HTTP status and body to files under
 # $RUNNER_TEMP before branching on them.
 #
-# A store that is still reviewing the previous version rejects the new one: Chrome at upload or
-# publish, Edge with an operation that fails with errorCode InProgressSubmission. Both end the job
+# A store that is still reviewing the previous version rejects the new one. Chrome is asked first:
+# fetchStatus reporting submittedItemRevisionStatus.state PENDING_REVIEW skips the upload. Edge
+# reports it as an operation that fails with errorCode InProgressSubmission. Both end the job
 # green with a warning and a run-summary line; any other failure fails the job with the response
-# body. The step matches a Chrome body naming ITEM_NOT_UPDATABLE, FAILED_PRECONDITION or "pending
-# review": the exact v2 body for a pending item is unconfirmed (the only report is a v1-era CLI
-# log), so paste the first real one here and narrow the match to it.
+# body.
 # Edge has no API to cancel a review. Chrome's cancelSubmission runs only from a manual dispatch
 # on the tag with `cancel_pending_chrome` checked, once, before the upload; each publisher can
 # cancel at most six reviews a day (https://developer.chrome.com/docs/webstore/cancel-review).
@@ -195,12 +194,6 @@ jobs:
           call() { local n="$1"; shift; curl -sS -o "$out.$n.body" -w '%{http_code}' "$@" > "$out.$n.status"; }
           ok() { [[ "$(cat "$out.$1.status")" == 2?? ]]; }
           fail() { echo "::error::Chrome $1 failed with HTTP $(cat "$out.$1.status")"; cat "$out.$1.body"; echo; exit 1; }
-          pending() {
-            grep -qiE 'ITEM_NOT_UPDATABLE|FAILED_PRECONDITION|pending review' "$out.$1.body" || return 0
-            echo "::warning::Chrome Web Store: a review is pending; nothing published for $GITHUB_REF_NAME."
-            echo "Chrome: a review is pending, nothing published for $GITHUB_REF_NAME" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          }
 
           printf '%s' "$CHROME_CLIENT_ID" > "$out.client_id"
           printf '%s' "$CHROME_CLIENT_SECRET" > "$out.client_secret"
@@ -221,10 +214,21 @@ jobs:
             echo "Chrome: cancelled the pending review before uploading $GITHUB_REF_NAME" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+          # The store may still report PENDING_REVIEW right after a cancel, so the gate is skipped then.
+          if [ "$CANCEL_PENDING" != true ]; then
+            call review -H @"$out.h" "$api/v2/$item:fetchStatus"
+            ok review || fail review
+            if [ "$(jq -r '.submittedItemRevisionStatus.state // empty' "$out.review.body")" = PENDING_REVIEW ]; then
+              echo "::warning::Chrome Web Store: a review is pending; nothing published for $GITHUB_REF_NAME."
+              echo "Chrome: a review is pending, nothing published for $GITHUB_REF_NAME" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          fi
+
           # The X-Goog-Upload headers are what fregante/chrome-webstore-upload sends against v2.
           call upload -X POST -H @"$out.h" -H "X-Goog-Upload-Protocol: raw" -H "X-Goog-Upload-File-Name: $zip" \
             --data-binary "@$zip" "$api/upload/v2/$item:upload"
-          ok upload || { pending upload; fail upload; }
+          ok upload || fail upload
           last=upload
           state="$(jq -r .uploadState "$out.upload.body")"
           deadline=$((SECONDS + 600))
@@ -238,13 +242,12 @@ jobs:
             state="$(jq -r .lastAsyncUploadState "$out.status.body")"
           done
           if [ "$state" != SUCCEEDED ]; then
-            pending "$last"
             echo "::error::Chrome upload ended in state $state"; cat "$out.$last.body"; echo; exit 1
           fi
 
           call publish -X POST -H @"$out.h" -H "Content-Type: application/json" \
             -d '{"publishType":"DEFAULT_PUBLISH"}' "$api/v2/$item:publish"
-          ok publish || { pending publish; fail publish; }
+          ok publish || fail publish
           echo "Chrome: submitted $GITHUB_REF_NAME for review (state $(jq -r .state "$out.publish.body"))" >> "$GITHUB_STEP_SUMMARY"
 
   publish-edge:

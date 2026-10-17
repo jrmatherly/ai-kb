@@ -66,7 +66,7 @@ An operator enables extension sign-in once per server:
    OIDC_AUTH_EXTENSION_RETURN_URLS=https://<chrome-id>.chromiumapp.org/oidc,https://<edge-id>.chromiumapp.org/oidc
    ```
 
-   Add the return URL of any unpacked development build as well.
+   On a development server, also add the return URL of your unpacked build. Do not list development IDs on a production server: any side-loaded extension can claim an unpacked ID and receive tokens for a signed-in user.
 3. Restart the server.
 4. With several replicas, give every replica the same `JWT_SECRET`. It signs the sign-in state, so a sign-in started on one replica and finished on another fails when the secrets differ.
 

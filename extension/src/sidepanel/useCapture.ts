@@ -3,7 +3,7 @@ import { ApiError, errorMessage, type ApiClient } from '../shared/api';
 import {
   checkLimits, codePoints, draftToBody, findRecentByUrl, pollParse, resyncCaptures, saveCapture, trimDraft, writableKnowledgeBases, type Clock, type LimitCheck,
 } from '../shared/capture';
-import type { ExtractMode, ExtractReply, Request, TabAccessReply } from '../shared/messages';
+import type { ExtractError, ExtractMode, ExtractReply, Request, TabAccessReply } from '../shared/messages';
 import { serial } from '../shared/serial';
 import * as session from '../shared/session';
 import type { Capture, CaptureDraft, Connection, Intent, KnowledgeBase } from '../shared/types';
@@ -56,6 +56,9 @@ function saveErrorOf(error: unknown): SaveError {
 
 const today = () => new Date().toLocaleDateString('en-CA');
 
+const pageErrorOf = (e: ExtractError): PageError =>
+  e.error === 'failed' ? { kind: 'failed', message: e.message } : { kind: e.error === 'no_access' ? 'cold' : 'unreachable' };
+
 export function useCapture(deps: Deps) {
   const { api, send } = deps;
   const flow = deps.flow ?? realFlow;
@@ -71,12 +74,18 @@ export function useCapture(deps: Deps) {
     // Bumped on every intent read, so a repeat of the same intent still reaches the view.
     intentSeq: 0,
   });
-  // An extract error describes the page it was read from; a navigation or tab switch replaces that reply.
-  let errorAccess: TabAccessReply | null = null;
+  // An extract error describes one page; it shows while the tab is on that page, which may be known only later.
+  const accessUrl = () => { const access = deps.tabAccess(); return 'url' in access ? access.url : null; };
+  let errorUrl: string | null = null;
   const pageState = computed<PageState>(() => {
-    const access = deps.tabAccess();
-    if (state.pageError && toRaw(access) === errorAccess) return state.pageError;
-    return 'url' in access ? { kind: 'ok' } : { kind: 'cold' };
+    if (state.pageError && accessUrl() === errorUrl) return state.pageError;
+    return accessUrl() ? { kind: 'ok' } : { kind: 'cold' };
+  });
+  // An update stays in its entry's base, so the picker shows that base and cannot change it.
+  // A duplicate leaves it free, for Save as new.
+  const lockedKbId = computed(() => {
+    const e = state.editor;
+    return e.phase !== 'idle' && e.existing && (e.phase === 'saved' || !e.duplicate) ? e.existing.kbId : null;
   });
   const charCount = computed(() => (state.editor.phase === 'idle' ? 0 : codePoints(draftToBody(state.editor.draft).content)));
   // Two loads must not both take the same draft.
@@ -102,8 +111,8 @@ export function useCapture(deps: Deps) {
     state.editor = { phase: 'editing', draft, existing: target.existing, duplicate: target.duplicate, limit, saveError };
   }
 
-  function failPage(error: PageError): void {
-    errorAccess = toRaw(deps.tabAccess());
+  function failPage(error: PageError, url = accessUrl()): void {
+    errorUrl = url;
     state.pageError = error;
   }
 
@@ -116,18 +125,20 @@ export function useCapture(deps: Deps) {
   // Clears only the keys it read, so a clip written after the read is still there for the next load.
   const take = () => takeSession(async () => {
     const tabId = deps.tabId();
-    const [draft, intent] = await Promise.all([session.readDraft(tabId), session.readIntent(tabId)]);
-    const taken = [...(draft ? ['draft' as const] : []), ...(intent ? ['intent' as const] : [])];
+    const [draft, intent, clipError] = await Promise.all([session.readDraft(tabId), session.readIntent(tabId), session.readClipError(tabId)]);
+    const got = { draft, intent, clipError };
+    const taken = session.TAB_KEYS.filter((key) => got[key]);
     if (taken.length > 0) await session.clearTabKeys(tabId, taken);
-    return { draft, intent };
+    return got;
   });
 
   // The connection is read before the draft is taken, so a failed read never loses a clip.
   async function loadFromSession(): Promise<void> {
     const connection = await deps.loadConnection();
-    const { draft, intent } = await take();
+    const { draft, intent, clipError } = await take();
     storedLastKbId = connection?.lastKbId ?? null;
     state.kbId ??= storedLastKbId;
+    if (clipError) failPage(pageErrorOf(clipError), clipError.url);
     if (intent) {
       state.intent = intent;
       state.intentDraft = !!draft;
@@ -150,7 +161,7 @@ export function useCapture(deps: Deps) {
     if (!('url' in deps.tabAccess())) return failPage({ kind: 'cold' });
     const kbs = loadKbs();
     const reply = await send<ExtractReply>({ type: 'EXTRACT', tabId: deps.tabId(), mode });
-    if ('error' in reply) return failPage(reply.error === 'failed' ? { kind: 'failed', message: reply.message } : { kind: reply.error === 'no_access' ? 'cold' : 'unreachable' });
+    if ('error' in reply) return failPage(pageErrorOf(reply));
     if (!reply.draft) return;
     await openDraft(reply.draft);
     await showKbs(kbs);
@@ -217,7 +228,7 @@ export function useCapture(deps: Deps) {
       const [, , lastStatus] = await Promise.all([
         session.rememberCapture(capture).then(() => showInRecent(capture)),
         // The entry is saved; a failed preference write only means the picker forgets this base.
-        kbId && kbId !== storedLastKbId ? send({ type: 'PATCH_CONNECTION', patch: { lastKbId: kbId } }).then(() => { storedLastKbId = kbId; }, () => undefined) : undefined,
+        !existing && kbId && kbId !== storedLastKbId ? send({ type: 'PATCH_CONNECTION', patch: { lastKbId: kbId } }).then(() => { storedLastKbId = kbId; }, () => undefined) : undefined,
         // A poll that cannot reach the server leaves the status to the next resync.
         flow.pollParse(api, capture.knowledgeId, POLL, flow.clock, polling.signal).catch((): ParseResult => ({ status: 'timeout' })),
       ]);
@@ -244,8 +255,8 @@ export function useCapture(deps: Deps) {
   // tabId is read at event time, so the subscription follows the tab the panel follows.
   const stop = session.onSessionChange((key) => {
     const tabId = deps.tabId();
-    if (key === `draft:${tabId}` || key === `intent:${tabId}`) loadFromSession().catch(deps.onError);
+    if (session.TAB_KEYS.some((name) => key === `${name}:${tabId}`)) loadFromSession().catch(deps.onError);
   });
 
-  return { state, charCount, pageState, loadFromSession, startClip, newNote, editCapture, trim, save, resync, cancel, stop };
+  return { state, lockedKbId, charCount, pageState, loadFromSession, startClip, newNote, editCapture, trim, save, resync, cancel, stop };
 }

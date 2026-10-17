@@ -16,6 +16,12 @@ export class ApiError extends Error {
 export const errorMessage = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 
 export type StreamErrorKind = 'unauthorized' | 'server' | 'network' | 'incomplete';
+
+// A 401 has already been through the worker's refresh, so it means signed out.
+export function errorKind(error: unknown): StreamErrorKind {
+  if (error instanceof ApiError) return error.status === 401 ? 'unauthorized' : 'server';
+  return error instanceof TypeError ? 'network' : 'server';
+}
 export type StreamHandlers = { onEvent(event: StreamEvent): void; onError(kind: StreamErrorKind, message?: string): void };
 export type ManualBody = { title: string; content: string };
 export type Target = { serverUrl: string; headers: Record<string, string> };
@@ -242,9 +248,8 @@ export class ApiClient {
     try {
       await this.withSession(open);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 401) handlers.onError('unauthorized');
-      else if (error instanceof ApiError) handlers.onError('server', error.message);
-      else handlers.onError('network', error instanceof Error ? error.message : String(error));
+      const kind = errorKind(error);
+      handlers.onError(kind, kind === 'unauthorized' ? undefined : errorMessage(error));
       return;
     }
     if (!ended && !signal.aborted) handlers.onError('incomplete');

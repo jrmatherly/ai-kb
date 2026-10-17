@@ -21,6 +21,7 @@ function deps(overrides: Partial<Deps> = {}) {
     readIntent: async () => null,
     writeClip: async (tabId, intent, draft) => { calls.push(`clip ${tabId} ${intent} ${draft.title}`); },
     writeComposer: async (tabId, text) => { calls.push(`composer ${tabId} ${text}`); },
+    writeClipError: async (tabId, error) => { calls.push(`error ${tabId} ${JSON.stringify(error)}`); },
     pageSelection: async () => 'picked',
     extensionId: 'ext',
     extensionOrigin: 'chrome-extension://ext/',
@@ -130,22 +131,25 @@ test('clipFromGesture writes an editor clip intent only with its draft', async (
   assert.deepEqual(d.calls, ['open 3', 'inject 3 article', 'clip 3 clip:article P']);
 });
 
-test('clipFromGesture on an unreachable page opens the panel and leaves no intent behind', async () => {
+test('clipFromGesture on an unreachable page opens the panel and reports the page without an intent', async () => {
   const d = deps({ tabInfo: async () => ({ url: 'chrome://newtab', title: 'New tab' }) });
   await clipFromGesture(3, 'article', d);
-  assert.deepEqual(d.calls, ['open 3']);
+  assert.deepEqual(d.calls, ['open 3', 'error 3 {"error":"unreachable","url":"chrome://newtab"}']);
 });
 
-test('clipFromGesture clears its intent when the injection fails or is cancelled', async () => {
+test('clipFromGesture clears its intent and reports the failure when the injection fails', async () => {
   const failing = deps({ inject: async () => { throw new Error('Cannot access contents of the page.'); }, readIntent: async () => 'quick:article' });
   await clipFromGesture(3, 'article', failing);
-  assert.deepEqual(failing.calls, ['open 3', 'intent 3 quick:article', 'intent 3 null']);
+  assert.deepEqual(failing.calls, ['open 3', 'intent 3 quick:article', 'intent 3 null', 'error 3 {"error":"no_access","url":"https://e.com/p"}']);
+  const editor = deps({ load: async () => ({ ...bearer, quickClip: false }), inject: async () => { throw new Error('boom'); } });
+  await clipFromGesture(3, 'article', editor);
+  assert.deepEqual(editor.calls, ['open 3', 'error 3 {"error":"failed","message":"boom","url":"https://e.com/p"}'], 'an editor intent was never written, so nothing is cleared');
+});
+
+test('clipFromGesture clears its intent silently when the picker is cancelled', async () => {
   const cancelled = deps({ inject: async () => ({ draft: null, reason: 'cancelled' }), readIntent: async () => 'quick:select' });
   await clipFromGesture(3, 'select', cancelled);
   assert.deepEqual(cancelled.calls, ['open 3', 'intent 3 quick:select', 'intent 3 null']);
-  const editor = deps({ load: async () => ({ ...bearer, quickClip: false }), inject: async () => { throw new Error('Cannot access contents of the page.'); } });
-  await clipFromGesture(3, 'article', editor);
-  assert.deepEqual(editor.calls, ['open 3'], 'an editor intent was never written, so nothing is cleared');
 });
 
 test('askFromGesture opens the panel, writes the ask intent and the selection', async () => {

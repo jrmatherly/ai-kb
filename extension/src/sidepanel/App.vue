@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
-import { errorMessage } from '../shared/api';
-import { loadConnection } from '../shared/connection';
+import { errorKind, errorMessage } from '../shared/api';
+import { loadConnection, onIdentityChange } from '../shared/connection';
 import { send, workerApi, type CommandsReply, type HeadersReply, type TabAccessReply } from '../shared/messages';
 import { onSessionChange, readComposer, writeComposer } from '../shared/session';
 import type { Capture } from '../shared/types';
@@ -33,8 +33,16 @@ const error = ref('');
 const chat = shallowRef<ReturnType<typeof useChat> | null>(null);
 const capture = shallowRef<ReturnType<typeof useCapture> | null>(null);
 
-// Children report null when the action that failed is retried.
-const report = (e: unknown) => (error.value = e === null ? '' : errorMessage(e));
+// Children report null when the action that failed is retried. Signed out takes the panel's place.
+function report(e: unknown) {
+  if (e === null) return void (error.value = '');
+  const kind = errorKind(e);
+  if (kind === 'unauthorized' && headers.value) return void (headers.value = { ...headers.value, authKind: 'signed_out' });
+  error.value = kind === 'network' ? `Cannot reach ${headers.value?.serverUrl ?? 'the server'}` : errorMessage(e);
+}
+
+// Every part of the panel is built for one connection, so connecting, signing out or switching rebuilds it.
+const stopIdentityWatch = onIdentityChange(() => location.reload());
 
 const shortcut = computed(() => {
   const name = capture.value?.state.intent?.endsWith(':select') ? 'select-clip' : 'smart-clip';
@@ -129,6 +137,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  stopIdentityWatch();
   stopSessionWatch();
   capture.value?.stop();
   chrome.tabs.onActivated.removeListener(onActivated);
@@ -141,7 +150,7 @@ onUnmounted(() => {
   <main class="shell">
     <ConnectionNotice :headers="headers" />
 
-    <template v-if="chat && capture && headers">
+    <template v-if="chat && capture && headers && headers.authKind !== 'signed_out'">
       <nav class="tabs" role="tablist">
         <button
           v-for="t in TABS"

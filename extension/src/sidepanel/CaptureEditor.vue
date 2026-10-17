@@ -60,7 +60,13 @@ const save = (asNew: boolean) => void props.capture.save(asNew);
       <button v-if="cleanedTitle !== undefined" type="button" class="offer" @click="editor.draft.title = cleanedTitle">Use cleaned title</button>
       <p v-if="editor.draft.url" class="muted url">{{ editor.draft.url }}</p>
       <div ref="picker">
-        <KbPicker aria-label="Knowledge base" :kbs="state.kbs" :model-value="state.kbId ?? ''" @update:model-value="state.kbId = $event || null" />
+        <KbPicker
+          aria-label="Knowledge base"
+          :kbs="state.kbs"
+          :disabled="capture.lockedKbId.value !== null"
+          :model-value="capture.lockedKbId.value ?? state.kbId ?? ''"
+          @update:model-value="state.kbId = $event || null"
+        />
       </div>
 
       <div class="body-head">

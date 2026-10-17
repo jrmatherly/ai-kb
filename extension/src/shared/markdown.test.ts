@@ -91,3 +91,44 @@ test('same-page anchors stay in the page', () => {
   assert.equal(a?.getAttribute('target'), null);
   assert.equal(a?.getAttribute('rel'), null);
 });
+
+test('an http image URL that does not parse falls back to its alt text instead of throwing', () => {
+  assert.equal(renderMarkdown('![x](https://)'), '<p>x</p>\n');
+  assert.equal(parse('<img src="https://[x" alt="y">').textContent, 'y');
+});
+
+// Each of these fetches a third-party URL on render without a click.
+const REMOTE_LOADS = [
+  '<p style="background:url(https://evil.example/px)">x</p>',
+  '<picture><source srcset="https://evil.example/a.png"><img src="data:image/png;base64,AA"></picture>',
+  '<video poster="https://evil.example/p.png" src="https://evil.example/v.mp4"></video>',
+  '<audio src="https://evil.example/a.mp3"></audio>',
+  '<video><track src="https://evil.example/t.vtt"></video>',
+  '<img src="data:image/png;base64,AA" srcset="https://evil.example/2x.png 2x">',
+  '<svg><image href="https://evil.example/s.png"></image></svg>',
+  '<input type="image" src="https://evil.example/i.png">',
+  '<table background="https://evil.example/bg.png"><tr><td>x</td></tr></table>',
+  '<link rel="stylesheet" href="https://evil.example/s.css">',
+  '<form action="https://evil.example/f"><input name="q"><button>Go</button></form>',
+];
+
+test('no markup fetches a remote URL on render', () => {
+  for (const html of REMOTE_LOADS) assert.ok(!renderMarkdown(html).includes('evil.example'), html);
+});
+
+test('an inline image keeps its src but loses a supplied storage ref', () => {
+  const img = parse('<img src="data:image/png;base64,AA" data-storage-ref="../../etc/passwd">').querySelector('img');
+  assert.equal(img?.getAttribute('src'), 'data:image/png;base64,AA');
+  assert.equal(img?.getAttribute('data-storage-ref'), null);
+});
+
+test('a click-to-load button cannot come from the input', () => {
+  const body = parse('<button class="aikb-remote-image" data-src="https://evil.example/t.png">Load image from kb.example.com</button>');
+  assert.equal(body.querySelector('button'), null);
+  assert.equal(body.textContent?.trim(), 'Load image from kb.example.com');
+});
+
+test('GFM task lists keep their checkboxes', () => {
+  const box = parse('- [x] done').querySelector('input');
+  assert.deepEqual([box?.getAttribute('type'), box?.hasAttribute('checked')], ['checkbox', true]);
+});

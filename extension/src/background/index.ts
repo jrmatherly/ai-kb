@@ -1,6 +1,6 @@
 import type { ExtractMode, ExtractResult } from '../shared/messages';
 import { loadConnection, saveConnection } from '../shared/connection';
-import { readIntent, writeClip, writeComposer, writeIntent } from '../shared/session';
+import { readIntent, writeClip, writeClipError, writeComposer, writeIntent } from '../shared/session';
 import { createRefresher } from './auth';
 import { askFromGesture, clipFromGesture, type Deps, handle, noteFromGesture } from './router';
 
@@ -33,6 +33,7 @@ const deps: Deps = {
   readIntent,
   writeClip,
   writeComposer,
+  writeClipError,
   pageSelection: async (tabId) => {
     const [result] = await chrome.scripting.executeScript({ target: { tabId }, func: () => getSelection()?.toString() ?? '' });
     return (result?.result as string | undefined) ?? '';
