@@ -9,7 +9,7 @@
         variant="claw"
         :label="$t('integrations.claw.installCta')"
         :hint="$t('integrations.claw.installCtaHint')"
-        @click="openClawHub"
+        @click="openExternal(CLAWHUB_SKILL_URL)"
       >
         <template #icon>
           <span class="ext-cta-emoji" role="img" :aria-label="$t('common.clawhubSkill')">🦞</span>
@@ -105,15 +105,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { copyWithToast } from '@/utils/clipboard'
-import { useRouter } from 'vue-router'
 import { CLAWHUB_SKILL_URL } from '@/config/integrations'
 import { useApiBaseUrlDisplay } from '@/composables/useApiBaseUrlDisplay'
-import { useUIStore } from '@/stores/ui'
 import IntegrationLandingLayout from './IntegrationLandingLayout.vue'
 import IntegrationExternalCta from './IntegrationExternalCta.vue'
+import { useIntegrationNav } from './useIntegrationNav'
 
-const router = useRouter()
-const uiStore = useUIStore()
+const { openExternal, openApiSettings } = useIntegrationNav()
 const { apiBaseUrlDisplay } = useApiBaseUrlDisplay()
 
 const capabilityKeys = ['upload', 'url', 'manual', 'search', 'browse'] as const
@@ -133,15 +131,6 @@ const envExample = computed(() => {
   const base = apiBaseUrlDisplay.value || 'https://your-server.com/api/v1'
   return `export WEKNORA_BASE_URL="${base}"\nexport WEKNORA_API_KEY="sk-your-api-key"`
 })
-
-const openClawHub = () => {
-  window.open(CLAWHUB_SKILL_URL, '_blank', 'noopener,noreferrer')
-}
-
-const openApiSettings = () => {
-  router.push({ path: '/platform/settings', query: { section: 'integration-api' } })
-  uiStore.openSettings('integration-api')
-}
 
 const copyEnvExample = () => copyWithToast(envExample.value, 'integrations.claw.copyEnvSuccess')
 const copyInstallCommand = () => copyWithToast(installCommand, 'integrations.claw.copyCmdSuccess')

@@ -2,9 +2,11 @@ import type { DeploymentCapabilityKey } from './deploymentCapabilities'
 
 export const CLAWHUB_SKILL_URL = 'https://clawhub.ai/lyingbug/weknora'
 
-export type IntegrationTab = 'im' | 'embed' | 'api' | 'mcpserver' | 'cli' | 'claw'
+export const EXTENSION_RELEASES_URL = 'https://github.com/jrmatherly/ai-kb/releases?q=extension-v'
 
-export const INTEGRATION_TABS: IntegrationTab[] = ['im', 'embed', 'api', 'mcpserver', 'cli', 'claw']
+export type IntegrationTab = 'im' | 'embed' | 'api' | 'mcpserver' | 'cli' | 'browser' | 'claw'
+
+export const INTEGRATION_TABS: IntegrationTab[] = ['im', 'embed', 'api', 'mcpserver', 'cli', 'browser', 'claw']
 
 /** Aligns with Settings.vue SECTION_MIN_ROLE.api and router.go g.Owner() on /api-principal-config. */
 export type IntegrationTabRole = 'viewer' | 'contributor' | 'admin' | 'owner'
@@ -34,5 +36,6 @@ export const INTEGRATION_PREVIEW_ITEMS: Array<{
   { key: 'api', icon: { type: 'icon', name: 'secured' } },
   { key: 'mcpserver', icon: { type: 'icon', name: 'tools' } },
   { key: 'cli', icon: { type: 'icon', name: 'code' } },
+  { key: 'browser', icon: { type: 'icon', name: 'browse' } },
   { key: 'claw', icon: { type: 'emoji', value: '🦞' } },
 ]

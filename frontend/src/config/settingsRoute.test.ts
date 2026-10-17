@@ -58,6 +58,7 @@ test('legacy api / integrations / bare-tab query strings normalize to nav keys',
   assert.equal(isIntegrationSection('integration-claw'), true)
   // The third-party Chrome extension page was removed.
   assert.equal(isIntegrationSection('integration-chrome'), false)
+  assert.equal(isIntegrationSection('integration-browser'), true)
   assert.equal(isIntegrationSection('integration-cli'), true)
   assert.equal(isIntegrationSection('models'), false)
   assert.equal(isIntegrationSection('integration-unknown'), false)

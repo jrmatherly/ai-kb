@@ -202,15 +202,15 @@ How to add a vendor: [Extension points](03-extension-points.md).
 
 ### Versions and releases
 
-The product version is dated CalVer, `YYYY.M.D[.MICRO]` unpadded, tagged `vYYYY.M.D[.MICRO]`. `packages/dsh-ai-kb`, `mcp-server` and the Helm chart's own `version` keep their own semver. Every file that carries a version is one row in the `TOUCHPOINTS` table of `scripts/version.py`.
+The product version is dated CalVer, `YYYY.M.D[.MICRO]` unpadded, tagged `vYYYY.M.D[.MICRO]`. `packages/dsh-ai-kb`, `extension`, `mcp-server` and the Helm chart's own `version` keep their own semver. Every file that carries a version is one row in the `TOUCHPOINTS` table of `scripts/version.py`.
 
 | Target | Action |
 | --- | --- |
 | `check-version` | `scripts/version.py check`: fails, naming file, line and value, when a product version string differs from `VERSION` or a library's strings disagree with each other |
 | `bump-version` | Sets the product version everywhere and makes one signed `chore(release): v<ver>` commit. The default is today's date, then `.1`, `.2` while that version is current or its tag exists locally or on `origin`; `VERSION=YYYY.M.D[.MICRO]` picks one, which must be greater than the current version and untagged. Pass `VERSION` after `make`: an exported `VERSION` makes the bump fail rather than pin it |
-| `bump-lib LIB=dsh-ai-kb\|mcp-server\|helm-chart PART=patch\|minor\|major` | The same for one library (`VERSION=x.y.z` instead of `PART`), committed as `chore(release): <lib> v<ver>` |
+| `bump-lib LIB=dsh-ai-kb\|extension\|mcp-server\|helm-chart PART=patch\|minor\|major` | The same for one library (`VERSION=x.y.z` instead of `PART`), committed as `chore(release): <lib> v<ver>` |
 
-Bumps rewrite only the version token in each file (lockfile dependencies stay untouched) and refuse a dirty working tree. When a step after the edits fails (the lockfile check, the version check, or the commit, such as a failing hook or a missing signing key), every file gets its original bytes back. They never tag or push: they print the next commands. The `v<ver>` tag triggers `docker-image.yml`; `release-lite.yml` is started by hand with the tag. `dsh-ai-kb-v<ver>` publishes the dsh plugin and `mcp-server-v<ver>` the MCP server. Nothing publishes the Helm chart, so its bump prints no tag.
+Bumps rewrite only the version token in each file (lockfile dependencies stay untouched) and refuse a dirty working tree. When a step after the edits fails (the lockfile check, the version check, or the commit, such as a failing hook or a missing signing key), every file gets its original bytes back. They never tag or push: they print the next commands. The `v<ver>` tag triggers `docker-image.yml`; `release-lite.yml` is started by hand with the tag. `dsh-ai-kb-v<ver>` publishes the dsh plugin and `mcp-server-v<ver>` the MCP server. `extension-v<ver>` builds the browser extension, attaches the zip to a GitHub release and, when the store variables are set, publishes to the Chrome Web Store and Edge Add-ons. Nothing publishes the Helm chart, so its bump prints no tag.
 
 ## Tests
 
@@ -326,6 +326,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | anydoc | `third_party/anydoc-go/**`, `scripts/build-anydoc-lib.sh`, `internal/infrastructure/docparser/**` | builds the Rust archive, `cargo audit`, vet, test and build with `-tags anydoc` |
 | helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |
 | mcp-server | `mcp-server/**` | unittest and pytest suites, wheel build containing `upload_paths.py` |
+| extension | `extension/**` | `npm --prefix extension` test, type-check, build (with the manifest check) and zip |
 | dsh-plugin | `packages/dsh-ai-kb/**` | typecheck, build, unit and contract tests (Node and Go), tarball file list, end-to-end run inside the pinned dsh release |
 | dataset | `dataset/**` | the 12 offline `dataset/tests` cases through `uv run --project dataset --locked` (pandas, pyarrow and openai from `dataset/uv.lock`) |
 | miniprogram | `miniprogram/**`, `tests/miniprogram/**` | `npm --prefix miniprogram test` |

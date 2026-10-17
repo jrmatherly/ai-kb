@@ -13,6 +13,7 @@ export const DOC_PAGES = {
   knowledgeGraph: '03-features/09-knowledge-graph',
   imIntegration: '03-features/12-im-integration',
   apiOverview: '04-api/01-api-overview',
+  browserExtension: '05-clients/06-browser-extension',
   troubleshootingMigrations: '01-getting-started/05-troubleshooting#database-migrations',
   sandboxDeployment: '06-development/04-sandbox-deployment',
 } as const

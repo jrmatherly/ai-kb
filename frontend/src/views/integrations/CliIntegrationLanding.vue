@@ -8,7 +8,7 @@
       <IntegrationExternalCta
         :label="$t('integrations.cli.docs')"
         :hint="$t('integrations.cli.docsHint')"
-        @click="openDocs"
+        @click="openExternal(CLI_README_URL)"
       >
         <template #icon><t-icon name="code" /></template>
       </IntegrationExternalCta>
@@ -77,6 +77,10 @@ import { copyWithToast } from '@/utils/clipboard'
 import IntegrationLandingLayout from './IntegrationLandingLayout.vue'
 import IntegrationExternalCta from './IntegrationExternalCta.vue'
 import { buildCLIConnectCommand } from './cliIntegration'
+import { useIntegrationNav } from './useIntegrationNav'
+
+const CLI_README_URL = 'https://github.com/jrmatherly/ai-kb/blob/main/cli/README.md'
+const { openExternal } = useIntegrationNav()
 
 const { apiBaseUrlDisplay } = useApiBaseUrlDisplay()
 const steps = computed(() => [
@@ -103,7 +107,4 @@ const examples = [
 ]
 
 const copy = (command: string) => copyWithToast(command, 'integrations.cli.copied')
-const openDocs = () => {
-  window.open('https://github.com/jrmatherly/ai-kb/blob/main/cli/README.md', '_blank', 'noopener,noreferrer')
-}
 </script>

@@ -128,7 +128,7 @@ No login required. Returns 302 with a `Location` pointing at the identity provid
 | --- | --- | --- | --- |
 | `return_to` | string | no | Exact URL from `OIDC_AUTH_EXTENSION_RETURN_URLS`; the callback redirects here instead of `/` |
 
-A `return_to` that is not allow-listed, or any value while the list is empty, returns 400.
+With OIDC enabled, a `return_to` that is not allow-listed, or any value while the list is empty, returns 400.
 
 ```bash
 curl -i "$BASE/api/v1/auth/oidc/start"

@@ -7139,6 +7139,7 @@ export default {
       embed: 'Web Embed',
       api: 'API Integration',
       cli: 'CLI',
+      browser: 'Browser Extension',
       claw: 'Claw Skill',
       mcpserver: 'MCP Server'
     },
@@ -7318,6 +7319,62 @@ export default {
     agentEditor: {
       label: 'Publish channels',
       desc: 'Publish this agent to IM platforms or websites. Manage in Integrations.'
+    },
+    browser: {
+      title: 'AI KB browser extension',
+      subtitle: 'Ask your knowledge bases about the page you are reading, and clip pages, selections and notes into a knowledge base from Chrome or Edge.',
+      installCta: 'Get the extension',
+      installHint: 'Opens the release page in a new tab',
+      featuresTitle: 'What it does',
+      features: {
+        qa: {
+          title: 'Ask about a page',
+          desc: 'Chat with an agent in the side panel, with the current page title and address one click away.'
+        },
+        clip: {
+          title: 'Clip a page',
+          desc: 'Extract the article of the current page as Markdown, review it, and save it to a knowledge base.'
+        },
+        select: {
+          title: 'Clip a selection',
+          desc: 'Save only the text you selected, with the page address as its source.'
+        },
+        note: {
+          title: 'Quick note',
+          desc: 'Write a Markdown note in the side panel and save it to a knowledge base.'
+        },
+        shortcuts: {
+          title: 'Shortcuts and menus',
+          desc: 'Keyboard shortcuts and right-click menu items. With Quick clip on, they save straight to the last used knowledge base.'
+        }
+      },
+      capabilitiesTitle: 'API key capabilities',
+      capabilitiesDesc: 'A scoped API key needs these capabilities. Signing in with email and password or single sign-on needs no key.',
+      capabilities: {
+        chat: 'Chat with agents in the side panel.',
+        retrieve: 'List and read knowledge bases.',
+        ingest: 'Save clips and notes to knowledge bases.'
+      },
+      stepsTitle: 'Setup steps',
+      steps: {
+        install: {
+          title: 'Install the extension',
+          desc: 'Install it for Chrome or Edge, then open its options page.'
+        },
+        key: {
+          title: 'Choose how to sign in',
+          desc: 'Create an API key with the chat, retrieve and ingest capabilities, or use your email and password or single sign-on.'
+        },
+        connect: {
+          title: 'Connect to this server',
+          desc: 'Paste this server URL into the options page and click Connect. The browser asks once for access to this server.'
+        }
+      },
+      openApiSettings: 'Open API Info',
+      copy: 'Copy',
+      copySuccess: 'Server URL copied',
+      footerNote: 'Sign-in through your identity provider needs the extension return URLs in OIDC_AUTH_EXTENSION_RETURN_URLS on the server.',
+      docs: 'Browser extension documentation'
     },
     claw: {
       title: 'AI KB Skill',

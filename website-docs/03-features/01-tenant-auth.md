@@ -447,7 +447,7 @@ r.GET("/auth/oidc/start",    handler.OIDCStart)              // start the login 
 r.GET("/auth/oidc/callback", handler.OIDCRedirectCallback)    // authorization code callback
 ```
 
-An enterprise portal can link straight to `/api/v1/auth/oidc/start`; the backend answers 302 to the IdP and builds the callback address from the request origin (`X-Forwarded-Proto` and `Host`). Behind a reverse proxy, pass the external scheme and host through correctly and register the matching callback address with the IdP. The endpoint accepts no arbitrary post-login redirect target. The one exception is the optional `return_to` query parameter, which must exactly match an entry of `extension_return_urls`; any other value gets 400. When it is set, the callback redirects there instead of `/`, for success and error outcomes alike, so the browser extension's auth window always closes.
+An enterprise portal can link straight to `/api/v1/auth/oidc/start`; the backend answers 302 to the IdP and builds the callback address from the request origin (`X-Forwarded-Proto` and `Host`). Behind a reverse proxy, pass the external scheme and host through correctly and register the matching callback address with the IdP. The endpoint accepts no arbitrary post-login redirect target. The one exception is the optional `return_to` query parameter, which must exactly match an entry of `extension_return_urls`; with OIDC enabled, any other value gets 400. When it is set, the callback redirects there instead of `/`, for success and error outcomes alike, so the browser extension's auth window always closes.
 
 #### Flow and security design
 

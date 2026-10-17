@@ -33,9 +33,9 @@ withDefaults(
   defineProps<{
     title: string
     subtitle?: string
-    variant?: 'claw' | 'cli'
+    variant?: 'default' | 'claw' | 'cli'
   }>(),
-  { variant: 'claw' },
+  { variant: 'default' },
 )
 </script>
 
