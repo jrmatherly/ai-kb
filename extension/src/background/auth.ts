@@ -17,13 +17,24 @@ export async function saveConnection(connection: Connection | null): Promise<voi
 type Store = { load: () => Promise<Connection | null>; save: (connection: Connection | null) => Promise<void> };
 const localStore: Store = { load: loadConnection, save: saveConnection };
 
+// Reads and writes of the connection run one at a time, so a slow read cannot be saved back over a
+// refresh that finished meanwhile.
+let queue: Promise<unknown> = Promise.resolve();
+function serialized<T>(work: () => Promise<T>): Promise<T> {
+  const run = queue.then(work, work);
+  queue = run.catch(() => undefined);
+  return run;
+}
+
 // Every partial write goes through here so a page's stale copy never overwrites rotated tokens.
-export async function patchConnection(patch: Partial<Omit<Connection, 'auth'>>, store: Store = localStore): Promise<Connection | null> {
-  const current = await store.load();
-  if (!current) return null;
-  const next = { ...current, ...patch };
-  await store.save(next);
-  return next;
+export function patchConnection(patch: Partial<Omit<Connection, 'auth'>>, store: Store = localStore): Promise<Connection | null> {
+  return serialized(async () => {
+    const current = await store.load();
+    if (!current) return null;
+    const next = { ...current, ...patch };
+    await store.save(next);
+    return next;
+  });
 }
 
 export function authHeaders(connection: Connection): Record<string, string> {
@@ -43,9 +54,11 @@ export function createRefresher(deps: RefresherDeps): () => Promise<RefreshOutco
 
   // Only auth is written back, and only while the stored session is still the one the refresh
   // started from: the options page may have changed preferences or signed in again meanwhile.
-  async function setAuth(startedFrom: string, auth: Connection['auth']): Promise<void> {
-    const current = await deps.load();
-    if (current?.auth.kind === 'bearer' && current.auth.refreshToken === startedFrom) await deps.save({ ...current, auth });
+  function setAuth(startedFrom: string, auth: Connection['auth']): Promise<void> {
+    return serialized(async () => {
+      const current = await deps.load();
+      if (current?.auth.kind === 'bearer' && current.auth.refreshToken === startedFrom) await deps.save({ ...current, auth });
+    });
   }
 
   async function refresh(): Promise<RefreshOutcome> {

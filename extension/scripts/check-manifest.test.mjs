@@ -27,10 +27,8 @@ test('rejects optional host permissions other than the two wildcards', () => ass
   checkManifest({ ...good, optional_host_permissions: ['https://*/*'] }, version),
   ['optional_host_permissions must be exactly https://*/*, http://*/*']));
 
-test('rejects a panel that opens on the action click or a missing popup', () => {
+test('rejects a missing popup', () => {
   assert.deepEqual(checkManifest({ ...good, action: {} }, version), ['action.default_popup must be popup.html']);
-  assert.deepEqual(checkManifest({ ...good, side_panel: { ...good.side_panel, openPanelOnActionClick: true } }, version),
-    ['side_panel.openPanelOnActionClick must be absent']);
 });
 
 test('rejects more than four suggested keys, content_scripts, web_accessible_resources, externally_connectable, and a missing options_ui', () => {

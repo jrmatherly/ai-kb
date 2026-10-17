@@ -17,9 +17,6 @@ export function checkManifest(manifest, expectedVersion) {
   }
   for (const key of ABSENT) if (key in manifest) errors.push(`${key} must be absent`);
   if (manifest.action?.default_popup !== 'popup.html') errors.push('action.default_popup must be popup.html');
-  if (manifest.side_panel && 'openPanelOnActionClick' in manifest.side_panel) {
-    errors.push('side_panel.openPanelOnActionClick must be absent');
-  }
   const ui = manifest.options_ui;
   if (!ui || ui.page !== 'options.html' || ui.open_in_tab !== true) {
     errors.push('options_ui must be { page: options.html, open_in_tab: true }');

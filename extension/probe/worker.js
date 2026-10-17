@@ -47,7 +47,7 @@ chrome.runtime.onMessage.addListener((req, sender, reply) => {
   return true;
 });
 
-// The gesture does not survive an await in the worker (recorded 2026-10-17), so open first.
+// The gesture does not survive an await in the worker, so open first.
 chrome.commands.onCommand.addListener((command, tab) => {
   if (!tab?.id) return;
   const opened = chrome.sidePanel.open({ tabId: tab.id });

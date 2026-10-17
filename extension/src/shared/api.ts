@@ -133,7 +133,7 @@ export class ApiClient {
 
   async suggestedQuestions(agentId: string, limit = 6): Promise<string[]> {
     const data = await this.request<{ questions?: Array<{ question: string }> }>('GET', `/agents/${agentId}/suggested-questions?limit=${limit}`);
-    return (data.questions ?? []).map((q) => q.question);
+    return (data?.questions ?? []).map((q) => q.question);
   }
 
   async createSession(): Promise<string> {
@@ -199,7 +199,7 @@ export class ApiClient {
     handlers: StreamHandlers,
     signal: AbortSignal,
   ): Promise<void> {
-    let complete = false;
+    let ended = false;
     const open = (target: Target) =>
       this.fetchEventSourceFn(`${apiBase(target.serverUrl)}/${kind}/${sessionId}`, {
         method: 'POST',
@@ -218,7 +218,7 @@ export class ApiClient {
           } catch {
             return;
           }
-          if (event.response_type === 'complete') complete = true;
+          if (event.response_type === 'complete' || event.response_type === 'error') ended = true;
           handlers.onEvent(event);
         },
         // The library retries unless onerror throws; every failure here is final.
@@ -233,6 +233,6 @@ export class ApiClient {
       else handlers.onError('network', error instanceof Error ? error.message : String(error));
       return;
     }
-    if (!complete && !signal.aborted) handlers.onError('incomplete');
+    if (!ended && !signal.aborted) handlers.onError('incomplete');
   }
 }

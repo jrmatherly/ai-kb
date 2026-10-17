@@ -302,3 +302,15 @@ test('chatStream: an abort during the stream is not reported as incomplete', asy
   await api.chatStream('knowledge-chat', 's1', {}, { ...handlers, onEvent: () => controller.abort() }, controller.signal);
   assert.deepEqual(errors, []);
 });
+
+test('chatStream: a terminal error event ends the stream without an incomplete report', async () => {
+  const { api, errors, events, handlers } = streamClient([{ kind: 'open', status: 200, events: [JSON.stringify({ response_type: 'error', done: true, content: 'model down' })] }], async () => 'not_bearer');
+  await api.chatStream('knowledge-chat', 's1', {}, handlers, new AbortController().signal);
+  assert.equal(events.length, 1);
+  assert.deepEqual(errors, []);
+});
+
+test('suggestedQuestions returns [] when the reply carries no data', async () => {
+  const { api } = client([{ status: 200, body: { success: true } }]);
+  assert.deepEqual(await api.suggestedQuestions('ag1'), []);
+});

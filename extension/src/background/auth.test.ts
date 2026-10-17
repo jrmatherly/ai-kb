@@ -127,3 +127,23 @@ test('patchConnection merges into the stored connection and leaves auth alone', 
   assert.deepEqual(s.get(), { ...bearer, lastKbId: 'kb2', quickClip: false });
   assert.equal(await patchConnection({ lastKbId: 'kb3' }, store(null)), null);
 });
+
+test('a patch that read the store before a refresh finished does not write the old tokens back', async () => {
+  const calls: Call[] = [];
+  let releaseFetch!: () => void;
+  const fetchGate = new Promise<void>((r) => { releaseFetch = r; });
+  const s = store(bearer);
+  const refresh = createRefresher({ ...s, fetchFn: fakeFetch(200, { success: true, access_token: 'a2', refresh_token: 'r2' }, calls, fetchGate) });
+  const pending = refresh();
+  await Promise.resolve();
+  // A slow read that captured the pre-refresh connection, as chrome.storage.local.get can.
+  let releaseLoad!: () => void;
+  const loadGate = new Promise<void>((r) => { releaseLoad = r; });
+  const slow = { load: async () => { const seen = s.get(); await loadGate; return seen; }, save: s.save };
+  const patched = patchConnection({ lastKbId: 'kb9' }, slow);
+  releaseFetch();
+  await new Promise((r) => setTimeout(r, 5));
+  releaseLoad();
+  await Promise.all([pending, patched]);
+  assert.deepEqual(s.get(), { ...bearer, lastKbId: 'kb9', auth: { kind: 'bearer', token: 'a2', refreshToken: 'r2' } });
+});
