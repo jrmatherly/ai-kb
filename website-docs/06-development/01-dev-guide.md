@@ -10,7 +10,7 @@ AI KB is made of three processes that are developed independently, plus a CLI:
 | --- | --- | --- | --- |
 | Main backend `app` | `cmd/server` + `internal/` | Go | **Go 1.26.0** (`go 1.26.0` in `go.mod`). Needs CGO (DuckDB and sqlite-vec bindings) |
 | Document parsing service `docreader` | `docreader/` | Python + gRPC | **Python >= 3.14** (`requires-python` in `docreader/pyproject.toml`). Dependencies are managed with **uv** (the repository has `uv.lock`; the Docker image runs `uv sync --locked`) |
-| Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (the `frontend/Dockerfile` builder is `node:24-bookworm-slim`; `package.json` declares no `engines`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign, package version `0.8.2` |
+| Frontend `frontend` | `frontend/` | Node.js + Vue 3 | Node.js 24 (the `frontend/Dockerfile` builder is `node:24-bookworm-slim`; `package.json` declares no `engines`). Vite 7 + TypeScript ~6.0 + Vue 3.5 + TDesign; the package version follows the root `VERSION` |
 | CLI | `cli/` (separate Go module) | Go | Go 1.26 (`go 1.26.0` in `cli/go.mod`) |
 
 Recommended extra development tools:
@@ -314,7 +314,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 
 | Area | Runs when these change | Checks |
 | --- | --- | --- |
-| go | root-module `*.go`, `go.mod`, `go.sum`, `Makefile`, `config/`, `migrations/`, `skills/preloaded/`, `testdata/`, embedded data under `internal/`, `.golangci.yml` | gofmt, `go mod tidy -diff`, golangci-lint (new issues only), `go vet` and `go test` over every app package, `go test -tags desktop ./internal/container`, `go build ./cmd/server` |
+| go | root-module `*.go`, `go.mod`, `go.sum`, `Makefile`, `config/`, `migrations/`, `skills/preloaded/`, `testdata/`, embedded data under `internal/`, `.golangci.yml`, `frontend/src/i18n/locales/en-US.ts`, `scripts/check-govulncheck.sh`, `scripts/test-check-govulncheck.sh`, `scripts/govulncheck-allowlist.txt` | gofmt, `go mod tidy -diff`, golangci-lint (new issues only), `go vet` and `go test` over every app package, `go test -tags desktop ./internal/container`, `go build ./cmd/server`, `scripts/test-check-govulncheck.sh` (needs jq) and `scripts/check-govulncheck.sh` (needs govulncheck and jq; symbol-level findings against `scripts/govulncheck-allowlist.txt`) |
 | cli | `cli/**`, `.golangci.yml` | `go mod tidy -diff`, build, vet, `go test -race`, golangci-lint, `check-skill-wire-vocab.sh`, `check-secret-tokens.sh`; the acceptance e2e suite only with `AIKB_E2E_HOST` and `AIKB_E2E_TOKEN` set |
 | client | `client/**`, `.golangci.yml` | `go mod tidy -diff`, vet, test, golangci-lint |
 | frontend | `frontend/**`, `scripts/build_frontend_dist.sh`, `scripts/test_embed_nginx.py` | `scripts/verify_frontend_pr.sh` (`npm ci` when stale, test, type-check, build), then the UI image build and `scripts/test_embed_nginx.py` when Docker is running |

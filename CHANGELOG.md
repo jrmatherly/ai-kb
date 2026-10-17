@@ -38,7 +38,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
-- **CHANGED**: The web app registers TDesign components per template (`unplugin-vue-components`) and bundles the ones in use into one `vendor-tdesign` chunk instead of installing the whole library at startup: the knowledge list's cold load on Fast 4G goes from about 2.9 s to 2.5 s LCP behind the production nginx.
+- **CHANGED**: The main web app (not the embed entry) registers TDesign components per template (`unplugin-vue-components`) and bundles the ones in use into one `vendor-tdesign` chunk instead of installing the whole library at startup: the knowledge list's cold load on Fast 4G goes from about 2.9 s to 2.5 s LCP behind the production nginx.
 - **CHANGED**: The compose default time zone is UTC (`TZ` in `.env` overrides it).
 - **CHANGED**: The compose redis service has a healthcheck and app, langfuse-web and langfuse-worker wait for it.
 - **CHANGED**: `dataset/` is a uv project (`pyproject.toml`, `uv.lock`, 7-day release cooldown); its tests and `qa_dataset.py` run through `uv run --project dataset --locked`.

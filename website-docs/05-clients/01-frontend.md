@@ -16,7 +16,7 @@ From `frontend/package.json`:
 | --- | --- | --- | --- |
 | Framework | Vue | ^3.5.44 | Composition API, `<script setup>` style |
 | Language | TypeScript | ~6.0.3 | `vue-tsc` type checking (`npm run type-check`) |
-| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx` |
+| Build tool | Vite | ^7.3.7 | Plugins: `@vitejs/plugin-vue`, `@vitejs/plugin-vue-jsx`, `unplugin-vue-components` (registers the TDesign components each template uses through `TDesignResolver`; `dts` is off until the 92 template type mismatches are fixed) |
 | UI component library | TDesign (tdesign-vue-next) | ^1.20.10 | With `tdesign-icons-vue-next` 0.4.11 (version locked by overrides) |
 | State management | Pinia | ^4.1.0 | Every store lives in `frontend/src/stores/` |
 | Routing | Vue Router | 5.4.0 | `createWebHistory`, see `frontend/src/router/index.ts` |
@@ -84,8 +84,8 @@ flowchart TB
 
 | Directory | Responsibility |
 | --- | --- |
-| `frontend/src/main.ts` | Main SPA entry: installs TDesign, Pinia, the router and i18n, initializes theme and font, installs the TDesign icon offline guard (`installTDesignIconOfflineGuard`, so nothing requests `tdesign.gtimg.com` at runtime), and waits for `router.isReady()` before mounting so the first screen does not flash |
-| `frontend/src/embed-main.ts` | Embed entry: a separate Vue app with its own router (only `/embed/:channelId`), mounted on `#embed-app`, with its own i18n (`src/i18n/embed.ts`) |
+| `frontend/src/main.ts` | Main SPA entry: loads `tdesign.css` globally and installs Pinia, the router and i18n (TDesign components are registered per template by `unplugin-vue-components`, not with `app.use(TDesign)`), initializes theme and font, installs the TDesign icon offline guard (`installTDesignIconOfflineGuard`, so nothing requests `tdesign.gtimg.com` at runtime), and waits for `router.isReady()` before mounting so the first screen does not flash |
+| `frontend/src/embed-main.ts` | Embed entry: a separate Vue app with its own router (only `/embed/:channelId`), mounted on `#embed-app`, with its own i18n (`src/i18n/embed.ts`); it still installs the whole TDesign library with `app.use(TDesign)` |
 | `frontend/src/views/` | Page-level components, one directory per business area (see the route tables below) |
 | `frontend/src/components/` | Components shared across pages (message bubbles, the upload overlay, the command palette and so on) |
 | `frontend/src/stores/` | Pinia state (see the store table below) |
@@ -324,7 +324,7 @@ Use this section to run the frontend locally, build the production image and con
 Key points of `frontend/vite.config.ts`:
 
 - **Two build inputs**: `rollupOptions.input` builds both `index.html` (main SPA) and `embed.html` (embed page). In development the custom plugin `embedHtmlDevFallback()` rewrites `/embed/:channelId` requests to `/embed.html`, matching nginx.
-- **Code splitting**: `manualChunks` splits mermaid/dagre/cytoscape, marked/katex and highlight.js into `vendor-mermaid`, `vendor-markdown` and `vendor-highlight`. The embed entry filters the heavy chat chunks out through `modulePreload.resolveDependencies`, so the embed page's first screen loads only the code needed for the token exchange.
+- **Code splitting**: `manualChunks` splits mermaid/dagre/cytoscape, marked/katex and highlight.js into `vendor-mermaid`, `vendor-markdown` and `vendor-highlight`, every TDesign component in use into one `vendor-tdesign` chunk (one file beat 65 per-component chunks under HTTP/1.1: knowledge list cold LCP 2.5 s against 3.0 s), and lodash-es, dompurify and es-toolkit into `vendor-shared`. The embed entry filters the heavy chat chunks out through `modulePreload.resolveDependencies`, so the embed page's first screen loads only the code needed for the token exchange.
 - **Version injection**: `__FRONTEND_VERSION__` (the package.json version) and `__FRONTEND_COMMIT__` (`VITE_FRONTEND_COMMIT` / `GITHUB_SHA` / `git rev-parse`) are injected at build time.
 - **Dev proxy**: the dev server (port 5173) and preview (port 4173) both proxy `/api`, `/files` and `/mcp/` to `VITE_DEV_PROXY_TARGET` (or `FRONTEND_BACKEND_URL`, default `http://localhost:8080`). `/api` forwards WebSockets (sandbox terminals and the like) with the timeout raised to 180s. `/mcp/` carries the built-in MCP Server's long-lived Streamable HTTP connections with a 1-hour timeout.
 - **Aliases**: `@` → `frontend/src`, plus entry-file detection for `@vue-office/pptx`.
