@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { ApiClient } from './api';
 import {
-  SERVER_REJECT_PATTERNS, checkLimits, draftToBody, findRecentByUrl, pollParse, rememberCapture, resyncCaptures, saveCapture, trimDraft, writableKnowledgeBases,
+  MAX_CONTENT_CHARS, SERVER_REJECT_PATTERNS, checkLimits, codePoints, draftToBody, findRecentByUrl, pollParse, resyncCaptures, saveCapture, trimDraft, trimToLimit, writableKnowledgeBases,
 } from './capture';
 import type { Capture, CaptureDraft, Knowledge, KnowledgeBase, SharedKnowledgeBase } from './types';
 
@@ -32,13 +32,29 @@ test('checkLimits measures the whole body for the limit and the markdown alone f
 
 test('trimDraft keeps the whole body within the limit and cuts at a line break when one is near', () => {
   const trimmed = trimDraft({ ...draft, markdown: 'y'.repeat(250000) });
-  assert.equal(Array.from(draftToBody(trimmed).content).length, 200000);
+  assert.equal(codePoints(draftToBody(trimmed).content), 200000);
   const lines = Array.from({ length: 3000 }, (_, i) => `line ${i} ${'z'.repeat(90)}`).join('\n');
   const atBreak = trimDraft({ ...draft, markdown: lines });
-  assert.ok(Array.from(draftToBody(atBreak).content).length <= 200000);
+  assert.ok(codePoints(draftToBody(atBreak).content) <= 200000);
   assert.ok(atBreak.markdown.endsWith('z'), 'ends on a whole line');
   assert.ok(!atBreak.markdown.endsWith('\n'));
   assert.equal(trimDraft(draft), draft);
+});
+
+test('trimToLimit cuts at the last line break in the final 2,000 characters, else at the limit', () => {
+  const limit = MAX_CONTENT_CHARS;
+  assert.equal(trimToLimit(`${'x'.repeat(199990)}\n${'x'.repeat(19)}`, limit), 'x'.repeat(199990));
+  assert.equal(trimToLimit('x'.repeat(200010), limit), 'x'.repeat(200000));
+  assert.equal(trimToLimit(`${'x'.repeat(197000)}\n${'x'.repeat(3010)}`, limit), `${'x'.repeat(197000)}\n${'x'.repeat(2999)}`);
+  assert.equal(trimToLimit(`${'\u{1F600}'.repeat(199990)}\n${'x'.repeat(19)}`, limit), '\u{1F600}'.repeat(199990));
+  assert.equal(trimToLimit('\u{1F600}'.repeat(200010), limit), '\u{1F600}'.repeat(200000));
+  assert.equal(trimToLimit('short\n', limit), 'short\n');
+  assert.equal(trimToLimit('x'.repeat(200000), limit), 'x'.repeat(200000));
+});
+
+test('trimToLimit with no room left returns nothing', () => {
+  assert.equal(trimToLimit('anything', 0), '');
+  assert.equal(trimToLimit('anything', -5), '');
 });
 
 test('draftToBody prefixes the source lines', () => {
@@ -130,6 +146,14 @@ test('pollParse reports failed with the message, maps deleting to cancelled, and
   assert.equal(timing.slept.length, 60);
 });
 
+test('pollParse stops before its next request once aborted', async () => {
+  const api = fakeApi();
+  const stop = new AbortController();
+  const clock = { sleep: async () => { stop.abort(new Error('left')); }, now: () => 0 };
+  await assert.rejects(pollParse(api, 'k1', { intervalMs: 2000, timeoutMs: 120000 }, clock, stop.signal), /left/);
+  assert.deepEqual(api.calls, ['get k1']);
+});
+
 const capture = (knowledgeId: string, url: string, status: Capture['status'] = 'completed'): Capture =>
   ({ knowledgeId, kbId: 'kb1', title: 'T', url, savedAt: '2026-10-17T00:00:00Z', status });
 
@@ -138,16 +162,6 @@ test('findRecentByUrl ignores a trailing slash and the fragment', () => {
   assert.equal(findRecentByUrl(list, 'https://e.com/p/#top')?.knowledgeId, 'k1');
   assert.equal(findRecentByUrl(list, 'https://e.com/q'), undefined);
   assert.equal(findRecentByUrl(list, ''), undefined);
-});
-
-test('rememberCapture keeps the newest 50 and replaces by knowledgeId', () => {
-  let list: Capture[] = [];
-  for (let i = 0; i < 55; i++) list = rememberCapture(list, capture(`k${i}`, `https://e.com/${i}`));
-  assert.equal(list.length, 50);
-  assert.equal(list[0].knowledgeId, 'k54');
-  list = rememberCapture(list, capture('k54', 'https://e.com/54', 'failed'));
-  assert.equal(list.length, 50);
-  assert.equal(list[0].status, 'failed');
 });
 
 test('resyncCaptures asks about the pending and timed-out ones and drops what the server no longer has', async () => {

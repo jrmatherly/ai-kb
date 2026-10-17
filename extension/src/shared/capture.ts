@@ -3,7 +3,6 @@ import type { Capture, CaptureDraft, KnowledgeBase, SharedKnowledgeBase } from '
 
 export const MAX_CONTENT_CHARS = 200000;
 const MIN_ARTICLE_CHARS = 50;
-const RECENT_LIMIT = 50;
 
 // internal/utils/security.go xssPatterns, which the server applies to titles; kept in the same order.
 export const SERVER_REJECT_PATTERNS: RegExp[] = [
@@ -28,7 +27,9 @@ export const SERVER_REJECT_PATTERNS: RegExp[] = [
 const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/;
 const STRIP_PATTERNS = [...SERVER_REJECT_PATTERNS.map((p) => new RegExp(p.source, 'gi')), new RegExp(CONTROL_CHARS.source, 'g')];
 
-function codePoints(text: string): number {
+export function codePoints(text: string): number {
+  // Without a high surrogate every UTF-16 unit is one code point, so the counter stays cheap on plain text.
+  if (!/[\uD800-\uDBFF]/.test(text)) return text.length;
   let n = 0;
   for (const _ of text) n++;
   return n;
@@ -66,15 +67,26 @@ export function draftToBody(draft: CaptureDraft): ManualBody {
 
 const BREAK_SEARCH = 2000;
 
-// Trims the Markdown so the whole body, source lines included, fits the server limit,
-// cutting at the last line break near the limit so no word, link or fence is split.
+// Cuts at the last line break near the limit so no word, link or fence is split. Indexes are
+// UTF-16 offsets, counted alongside the code points the limit measures.
+export function trimToLimit(markdown: string, limit: number): string {
+  if (limit <= 0) return '';
+  let count = 0;
+  let index = 0;
+  let lastBreak = -1;
+  for (const char of markdown) {
+    if (count === limit) return markdown.slice(0, lastBreak >= 0 ? lastBreak : index).trimEnd();
+    if (char === '\n' && count >= limit - BREAK_SEARCH) lastBreak = index;
+    count++;
+    index += char.length;
+  }
+  return markdown;
+}
+
+// Trims the Markdown so the whole body, source lines included, fits the server limit.
 export function trimDraft(draft: CaptureDraft): CaptureDraft {
-  const room = MAX_CONTENT_CHARS - codePoints([...sourceLines(draft), ''].join('\n'));
-  if (codePoints(draft.markdown) <= room) return draft;
-  const chars = Array.from(draft.markdown).slice(0, room);
-  const lastBreak = chars.lastIndexOf('\n');
-  const cut = lastBreak >= room - BREAK_SEARCH ? lastBreak : room;
-  return { ...draft, markdown: chars.slice(0, cut).join('').trimEnd() };
+  const markdown = trimToLimit(draft.markdown, MAX_CONTENT_CHARS - codePoints([...sourceLines(draft), ''].join('\n')));
+  return markdown === draft.markdown ? draft : { ...draft, markdown };
 }
 
 const isDocumentBase = (kb: KnowledgeBase | null): kb is KnowledgeBase => !!kb && (!kb.type || kb.type === 'document');
@@ -114,20 +126,23 @@ const TERMINAL: Record<string, Capture['status']> = {
   deleting: 'cancelled',
 };
 
-export type Clock = { sleep: (ms: number) => Promise<void>; now: () => number };
+export type Clock = { sleep: (ms: number, signal?: AbortSignal) => Promise<void>; now: () => number };
 
+// An abort rejects with the signal's reason, before the next request or out of the sleep.
 export async function pollParse(
   api: ApiClient,
   knowledgeId: string,
   opts: { intervalMs: number; timeoutMs: number },
   clock: Clock,
+  signal?: AbortSignal,
 ): Promise<{ status: Capture['status']; message?: string }> {
   const started = clock.now();
   while (clock.now() - started < opts.timeoutMs) {
+    signal?.throwIfAborted();
     const knowledge = await api.getKnowledge(knowledgeId);
     const status = TERMINAL[knowledge.parse_status];
     if (status) return status === 'failed' && knowledge.error_message ? { status, message: knowledge.error_message } : { status };
-    await clock.sleep(opts.intervalMs);
+    await clock.sleep(opts.intervalMs, signal);
   }
   return { status: 'timeout' };
 }
@@ -138,10 +153,6 @@ export function findRecentByUrl(captures: Capture[], url: string): Capture | und
   if (!url) return undefined;
   const wanted = canonicalUrl(url);
   return captures.find((c) => canonicalUrl(c.url) === wanted);
-}
-
-export function rememberCapture(captures: Capture[], capture: Capture): Capture[] {
-  return [capture, ...captures.filter((c) => c.knowledgeId !== capture.knowledgeId)].slice(0, RECENT_LIMIT);
 }
 
 export async function resyncCaptures(api: ApiClient, captures: Capture[]): Promise<Capture[]> {

@@ -12,7 +12,7 @@ export type Deps = {
   openPanel: (tabId: number) => Promise<void>;
   writeIntent: (tabId: number, intent: Intent | null) => Promise<void>;
   readIntent: (tabId: number) => Promise<Intent | null>;
-  writeDraft: (tabId: number, draft: CaptureDraft | null) => Promise<void>;
+  writeClip: (tabId: number, intent: Intent, draft: CaptureDraft) => Promise<void>;
   writeComposer: (tabId: number, text: string | null) => Promise<void>;
   pageSelection: (tabId: number) => Promise<string>;
   extensionId: string;
@@ -85,6 +85,7 @@ async function fromGesture(tabId: number, deps: Deps, work: () => Promise<void>)
 }
 
 // A draft arrives through storage; when nothing can arrive, the intent is cleared so the panel does not wait.
+// A clip intent is written only with its draft: on its own the panel would start a second extraction.
 export function clipFromGesture(tabId: number, mode: ExtractMode, deps: Deps): Promise<void> {
   return fromGesture(tabId, deps, async () => {
     const tab = await deps.tabInfo(tabId);
@@ -92,10 +93,11 @@ export function clipFromGesture(tabId: number, mode: ExtractMode, deps: Deps): P
     // The extraction is the slow part, so it runs while the intent is decided and written.
     const extracting = extract(tabId, mode, deps);
     const intent = quickClipIntent(await deps.load(), mode);
-    await deps.writeIntent(tabId, intent);
+    const early = intent.startsWith('quick:');
+    if (early) await deps.writeIntent(tabId, intent);
     const result = await extracting;
-    if ('draft' in result && result.draft) await deps.writeDraft(tabId, result.draft);
-    else if ((await deps.readIntent(tabId)) === intent) await deps.writeIntent(tabId, null);
+    if ('draft' in result && result.draft) await deps.writeClip(tabId, intent, result.draft);
+    else if (early && (await deps.readIntent(tabId)) === intent) await deps.writeIntent(tabId, null);
   });
 }
 

@@ -19,7 +19,7 @@ function deps(overrides: Partial<Deps> = {}) {
     openPanel: (tabId) => { calls.push(`open ${tabId}`); return Promise.resolve(); },
     writeIntent: async (tabId, intent) => { calls.push(`intent ${tabId} ${intent}`); },
     readIntent: async () => null,
-    writeDraft: async (tabId, draft) => { calls.push(`draft ${tabId} ${draft?.title ?? null}`); },
+    writeClip: async (tabId, intent, draft) => { calls.push(`clip ${tabId} ${intent} ${draft.title}`); },
     writeComposer: async (tabId, text) => { calls.push(`composer ${tabId} ${text}`); },
     pageSelection: async () => 'picked',
     extensionId: 'ext',
@@ -118,10 +118,16 @@ test('GET_COMMANDS returns the bindings', async () => {
   assert.deepEqual(await handle({ type: 'GET_COMMANDS' }, sender, deps()), [{ name: 'quick-ask', description: 'Ask about this page', shortcut: 'Alt+Shift+A' }]);
 });
 
-test('clipFromGesture opens the panel first, writes the intent, then the draft', async () => {
+test('clipFromGesture opens the panel first, writes a quick intent early, then the draft together with its intent', async () => {
   const d = deps();
   await clipFromGesture(3, 'article', d);
-  assert.deepEqual(d.calls, ['open 3', 'inject 3 article', 'intent 3 quick:article', 'draft 3 P']);
+  assert.deepEqual(d.calls, ['open 3', 'inject 3 article', 'intent 3 quick:article', 'clip 3 quick:article P']);
+});
+
+test('clipFromGesture writes an editor clip intent only with its draft', async () => {
+  const d = deps({ load: async () => ({ ...bearer, quickClip: false }) });
+  await clipFromGesture(3, 'article', d);
+  assert.deepEqual(d.calls, ['open 3', 'inject 3 article', 'clip 3 clip:article P']);
 });
 
 test('clipFromGesture on an unreachable page opens the panel and leaves no intent behind', async () => {
@@ -137,6 +143,9 @@ test('clipFromGesture clears its intent when the injection fails or is cancelled
   const cancelled = deps({ inject: async () => ({ draft: null, reason: 'cancelled' }), readIntent: async () => 'quick:select' });
   await clipFromGesture(3, 'select', cancelled);
   assert.deepEqual(cancelled.calls, ['open 3', 'intent 3 quick:select', 'intent 3 null']);
+  const editor = deps({ load: async () => ({ ...bearer, quickClip: false }), inject: async () => { throw new Error('Cannot access contents of the page.'); } });
+  await clipFromGesture(3, 'article', editor);
+  assert.deepEqual(editor.calls, ['open 3'], 'an editor intent was never written, so nothing is cleared');
 });
 
 test('askFromGesture opens the panel, writes the ask intent and the selection', async () => {

@@ -1,31 +1,16 @@
 import type { RefreshOutcome } from '../shared/messages';
 import { browserFetch } from '../shared/browserFetch';
+import { loadConnection, saveConnection } from '../shared/connection';
+import { serial } from '../shared/serial';
 import { apiBase } from '../shared/serverUrl';
 import type { Connection, RefreshResponse } from '../shared/types';
-
-const KEY = 'connection';
-
-export async function loadConnection(): Promise<Connection | null> {
-  const stored = await chrome.storage.local.get(KEY);
-  return (stored[KEY] as Connection | undefined) ?? null;
-}
-
-export async function saveConnection(connection: Connection | null): Promise<void> {
-  if (connection) await chrome.storage.local.set({ [KEY]: connection });
-  else await chrome.storage.local.remove(KEY);
-}
 
 type Store = { load: () => Promise<Connection | null>; save: (connection: Connection | null) => Promise<void> };
 const localStore: Store = { load: loadConnection, save: saveConnection };
 
 // Reads and writes of the connection run one at a time, so a slow read cannot be saved back over a
 // refresh that finished meanwhile.
-let queue: Promise<unknown> = Promise.resolve();
-function serialized<T>(work: () => Promise<T>): Promise<T> {
-  const run = queue.then(work, work);
-  queue = run.catch(() => undefined);
-  return run;
-}
+const serialized = serial();
 
 // Every partial write goes through here so a page's stale copy never overwrites rotated tokens.
 export function patchConnection(patch: Partial<Omit<Connection, 'auth'>>, store: Store = localStore): Promise<Connection | null> {

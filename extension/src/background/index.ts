@@ -1,6 +1,7 @@
 import type { ExtractMode, ExtractResult } from '../shared/messages';
-import { readIntent, writeComposer, writeDraft, writeIntent } from '../shared/session';
-import { createRefresher, loadConnection, saveConnection } from './auth';
+import { loadConnection, saveConnection } from '../shared/connection';
+import { readIntent, writeClip, writeComposer, writeIntent } from '../shared/session';
+import { createRefresher } from './auth';
 import { askFromGesture, clipFromGesture, type Deps, handle, noteFromGesture } from './router';
 
 // content.js is 700 KB, so it is injected once per page and reused while the page lives.
@@ -30,7 +31,7 @@ const deps: Deps = {
   openPanel: (tabId) => chrome.sidePanel.open({ tabId }),
   writeIntent,
   readIntent,
-  writeDraft,
+  writeClip,
   writeComposer,
   pageSelection: async (tabId) => {
     const [result] = await chrome.scripting.executeScript({ target: { tabId }, func: () => getSelection()?.toString() ?? '' });
