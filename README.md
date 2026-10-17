@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://ai-kb.matherly.net/docs/"><img alt="Website" src="https://img.shields.io/badge/website-ai--kb.matherly.net%2Fdocs-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="https://ai-kb.matherly.net/docs/"><img alt="Docs" src="https://img.shields.io/badge/docs-read-b8863b?style=flat-square&labelColor=101f38"></a>
-  <a href="./CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/release-v2026.10.17-b8863b?style=flat-square&labelColor=101f38"></a>
+  <a href="./CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/release-v2026.10.17.1-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-b8863b?style=flat-square&labelColor=101f38"></a>
   <a href="https://github.com/jrmatherly/ai-kb/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/jrmatherly/ai-kb?style=flat-square&labelColor=101f38&color=b8863b"></a>
   <br/>
