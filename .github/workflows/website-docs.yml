@@ -1,8 +1,23 @@
 name: 📚 Website Docs
 
+# Check and build the website and documentation (website-docs/), then publish the image.
+#
+# Jobs:
+#   verify       anchors, homepage lint, the site build with its link, mermaid and route checks
+#   build-image  ghcr.io/jrmatherly/ai-kb-website from website-docs/Dockerfile, on every push to main
+#                (tag `main`), on a `v*` tag (the tag and the bare version), and weekly or on demand
+#                (the newest release tag, re-pushed under the tag, the version and `latest`, with a
+#                fresh base image). The image lives here, not in docker-image.yml, because that
+#                workflow ignores website-docs/** on purpose: a docs change must not rebuild the app,
+#                ui, docreader and sandbox images. Tag scheme and the weekly rebuild match that file.
+#   The site is path-mounted on the app host in production (ai-kb.matherly.net/docs/, see
+#   website-docs/README.md), so the gateway forwards only the /docs/ prefix to this image.
+
 on:
   push:
     branches: [main]
+    tags:
+      - "v*"
     paths:
       - "website-docs/**"
       - ".github/workflows/website-docs.yml"
@@ -10,6 +25,8 @@ on:
     paths:
       - "website-docs/**"
       - ".github/workflows/website-docs.yml"
+  schedule:
+    - cron: "17 6 * * 1"
   workflow_dispatch:
 
 concurrency:
@@ -31,7 +48,8 @@ jobs:
           persist-credentials: false
 
       - name: 🟢 Set up Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        # The npm cache feeds only this check; the published image builds inside Docker from a clean checkout.
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # zizmor: ignore[cache-poisoning] v7.1.0
         with:
           node-version: "24"
           cache: npm
@@ -53,3 +71,68 @@ jobs:
       # Builds the homepage and docs, runs the link and mermaid checks, the homepage audit and the site check.
       - name: 🏗️ Build site
         run: npm --prefix website-docs run --silent build
+
+  build-image:
+    name: 🐳 website image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [verify]
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write # pushes ghcr.io/jrmatherly/ai-kb-website
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # A push builds the triggering ref; a scheduled or dispatched run needs the tags to pick the newest release.
+          fetch-depth: ${{ github.event_name == 'push' && 1 || 0 }}
+
+      - name: 🏷️ Newest release tag
+        id: release
+        if: github.event_name != 'push'
+        run: |
+          tag=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          [ -n "$tag" ] || { echo "no v* tag found" >&2; exit 1; }
+          git checkout --quiet "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: 🔐 Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ghcr.io/jrmatherly/ai-kb-website
+          # Not type=semver: a CalVer MICRO version (v2026.10.13.1) has four parts, which semver drops.
+          tags: |
+            type=ref,event=branch,enable=${{ github.event_name == 'push' }}
+            type=ref,event=tag
+            type=match,pattern=^v(.+)$,group=1
+            type=raw,value=${{ steps.release.outputs.tag }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=${{ steps.release.outputs.version }},enable=${{ github.event_name != 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name != 'push' }}
+
+      - name: 🐳 Build and push website image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          pull: true
+          no-cache: ${{ github.event_name != 'push' }}
+          push: true
+          platforms: linux/amd64,linux/arm64
+          file: website-docs/Dockerfile
+          context: ./website-docs
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=build-website
+          cache-to: type=gha,scope=build-website,mode=max

@@ -11,4 +11,4 @@
 - Model catalog: pinned JSON in `internal/models/catalog/data/`, generator `scripts/model-catalog/generate.py` (`--check` in CI), diff tool `scripts/model_catalog_diff.py` (models.dev, dev aid only).
 - API docs: swag (`make docs`, `make install-swagger`), output `docs/`, contract test `docs/swagger_contract_test.go`.
 - Databases via migrations dir: MySQL, ParadeDB (Postgres), SQLite; `versioned/` for golang-migrate (`scripts/migrate.sh`).
-- Website: `website-docs/` Node 24 project (`npm run setup && npm run build && npm run preview`).
+- Website: `website-docs/` Node 24 project (`npm run setup && npm run build && npm run preview`); image `ghcr.io/jrmatherly/ai-kb-website` from `website-docs.yml`; in production path-mounted at `ai-kb.matherly.net/docs/` beside the app (the app owns `/`), so the docs logo links to `/docs/`.

@@ -9,6 +9,7 @@ on:
     # Only files no image build reads. Not LICENSE or THIRD_PARTY_NOTICES.md
     # (scripts/copy-licenses.sh bundles them into the app image), and no
     # `**/*.md` wildcard: docreader/pyproject.toml names README.md as its readme.
+    # The website image is built by website-docs.yml on its own paths, with this file's tag scheme.
     paths-ignore:
       - "website-docs/**"
       - "docs/**/*.md"

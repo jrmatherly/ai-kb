@@ -77,7 +77,7 @@ For later updates, repeat the build, package and upload into a new directory, th
 
 The image builds from a clean checkout. The host needs no Node.js and no pre-generated static files. The Dockerfile has two stages: a Node.js 24 stage installs dependencies from both lock files and builds the homepage and the documentation, and the final Nginx image holds only the static output and the server configuration.
 
-From the repository root:
+CI publishes the image as `ghcr.io/jrmatherly/ai-kb-website` (the Website Docs workflow): `main` on every push to main, the release tag and bare version on a `v*` tag, and `latest` from the weekly rebuild of the newest release. To build it yourself, from the repository root:
 
 ```bash
 docker build -t ai-kb-site:2026.10.13 website-docs

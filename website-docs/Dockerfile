@@ -5,7 +5,8 @@
 # No host Node.js installation or prebuilt static-site/ is required.
 # WEBSITE_NGINX_PORT is written into default.conf at build time. The intranet
 # platform starts `nginx; sleep infinity` and does not run docker-entrypoint.sh.
-FROM node:24-bookworm-slim AS builder
+# The output is static files, so the builder runs on the build host and multi-arch CI never runs Node under QEMU.
+FROM --platform=$BUILDPLATFORM node:24-bookworm-slim AS builder
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*

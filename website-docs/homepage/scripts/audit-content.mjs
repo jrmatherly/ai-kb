@@ -13,9 +13,17 @@ for (const term of ['Three plans', 'Choose a plan', 'Legacy demo', '18K+', 'Turn
   assert.ok(!visible.includes(term), `Retired content still visible: ${term}`);
 }
 assert.match(html, /<video[^>]+preload="none"/, 'Video should not load before user interaction');
-const readmeVideo = (await readFile(join(process.cwd(), '..', '..', 'README.md'), 'utf8')).match(/https:\/\/github\.com\/user-attachments\/assets\/[0-9a-f-]+/)?.[0];
-assert.ok(readmeVideo, 'README.md must embed the product video');
-assert.ok(html.includes(readmeVideo), `Use the README video: ${readmeVideo}`);
+const videoPattern = /https:\/\/github\.com\/user-attachments\/assets\/[0-9a-f-]+/;
+// The image builds from website-docs/ alone, without the repository README; the README comparison then waits for CI.
+const readme = await readFile(join(process.cwd(), '..', '..', 'README.md'), 'utf8').catch((error) => { if (error.code === 'ENOENT') return null; throw error; });
+if (readme === null) {
+  assert.match(html, videoPattern, 'The homepage must embed the product video');
+  console.warn('README.md is outside the build context; the README video comparison is skipped.');
+} else {
+  const readmeVideo = readme.match(videoPattern)?.[0];
+  assert.ok(readmeVideo, 'README.md must embed the product video');
+  assert.ok(html.includes(readmeVideo), `Use the README video: ${readmeVideo}`);
+}
 assert.ok(!/<video[^>]+autoplay/i.test(html), 'Do not autoplay the product film');
 const wiki = html.match(/<section id="wiki"[\s\S]*?<\/section>/)?.[0];
 assert.ok(wiki, 'The homepage must include a dedicated Wiki section');
