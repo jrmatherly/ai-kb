@@ -1,37 +1,36 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
 
-// jsdom caps selectors at 2048 characters with no public knob, and Defuddle's selectors are longer.
-// Widen it on the document implementation's prototype so the clone Defuddle parses is covered too.
-const require = createRequire(import.meta.url);
-const idlUtils = require('jsdom/lib/generated/idl/utils.js');
-const { DOMSelector } = require('@asamuzakjp/dom-selector');
-const base = new JSDOM('');
-const docImplProto = Object.getPrototypeOf(idlUtils.implForWrapper(base.window.document));
-docImplProto._getDOMSelector = function () {
-  this.__wideSelector ??= new DOMSelector(this._globalObject, this, { idlUtils, maxLength: 1_000_000 });
-  return this.__wideSelector;
+const read = (name: string) => readFileSync(new URL(`../../test/fixtures/${name}`, import.meta.url), 'utf8');
+
+// Defuddle's selectors exceed jsdom's hard-coded cap, so its tests run on linkedom, the DOM Defuddle is
+// tested against. The picker tests need Range, Selection and real events, which jsdom provides.
+const linked = (name: string, url: string) => {
+  const { document } = parseHTML(read(name));
+  Object.defineProperty(document, 'location', { value: { href: url } });
+  return document as unknown as Document;
 };
+const fixture = (name: string, url: string) => new JSDOM(read(name), { url });
+
 // Defuddle's Markdown converter reads the global document, as a content script would.
-Object.assign(globalThis, { window: base.window, document: base.window.document });
+const base = parseHTML('<!doctype html><html><body></body></html>');
+Object.assign(globalThis, { window: base.window, document: base.document });
 
 const { extractArticle, extractSelect, htmlToMarkdown, startRegionPicker } = await import('./extract');
 
-const fixture = (name: string, url: string) => new JSDOM(readFileSync(new URL(`../../test/fixtures/${name}`, import.meta.url), 'utf8'), { url });
-
 test('extractArticle keeps the body, drops the chrome, and leaves the live page alone', () => {
-  const dom = fixture('article.html', 'https://fixture.example/post');
-  const draft = extractArticle(dom.window.document);
+  const doc = linked('article.html', 'https://fixture.example/post');
+  const draft = extractArticle(doc);
   assert.equal(draft.kind, 'article');
   assert.equal(draft.title, 'Fixture Title');
   assert.equal(draft.url, 'https://fixture.example/post');
   assert.ok(draft.markdown.includes('Body paragraph one.'), draft.markdown);
   assert.ok(!draft.markdown.includes('Skip to content'), draft.markdown);
   assert.equal(draft.meta.author, 'Fixture Author');
-  assert.ok(dom.window.document.querySelector('nav'), 'the live nav survived');
+  assert.ok(doc.querySelector('nav'), 'the live nav survived');
 });
 
 test('htmlToMarkdown converts inline markup', () => {
