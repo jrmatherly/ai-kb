@@ -1,3 +1,4 @@
+import type { RefreshOutcome } from '../shared/messages';
 import { apiBase } from '../shared/serverUrl';
 import type { Connection, RefreshResponse } from '../shared/types';
 
@@ -33,8 +34,6 @@ export function authHeaders(connection: Connection): Record<string, string> {
   if (connection.tenantId != null) headers['X-Tenant-ID'] = String(connection.tenantId);
   return headers;
 }
-
-export type RefreshOutcome = 'refreshed' | 'signed_out' | 'not_bearer';
 
 type RefresherDeps = Store & { fetchFn: typeof fetch };
 
