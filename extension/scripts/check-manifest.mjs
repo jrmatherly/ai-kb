@@ -1,6 +1,6 @@
 // Asserts the manifest constraints the design relies on (no tabs, no per-site grants, popup-opening action).
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const PERMISSIONS = ['storage', 'sidePanel', 'activeTab', 'scripting', 'contextMenus', 'identity'];
 const OPTIONAL_HOSTS = ['https://*/*', 'http://*/*'];
@@ -29,7 +29,7 @@ export function checkManifest(manifest, expectedVersion) {
   return errors;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === new URL(import.meta.url).pathname) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const path = process.argv[2];
   if (!path) {
     console.error('usage: check-manifest.mjs <manifest.json>');

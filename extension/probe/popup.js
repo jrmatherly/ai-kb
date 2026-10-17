@@ -1,5 +1,4 @@
 let tabId = null;
-const out = (v) => (document.getElementById('out').textContent += `${JSON.stringify(v)}\n`);
 
 chrome.tabs.query({ active: true, currentWindow: true }).then(([t]) => {
   tabId = t.id;

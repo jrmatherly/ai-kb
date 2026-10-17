@@ -1,4 +1,3 @@
-const out = (v) => (document.getElementById('out').textContent += `${JSON.stringify(v)}\n`);
 const originPattern = () => `${new URL(document.getElementById('server').value).origin}/*`;
 
 document.getElementById('redirect').textContent = `redirect URL: ${chrome.identity.getRedirectURL('oidc')}`;

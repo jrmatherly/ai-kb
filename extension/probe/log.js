@@ -6,3 +6,4 @@ globalThis.probeLog = async (name, value) => {
   return value;
 };
 globalThis.errText = (e) => (e && e.message) || String(e);
+globalThis.out = (v) => (document.getElementById('out').textContent += `${JSON.stringify(v)}\n`);

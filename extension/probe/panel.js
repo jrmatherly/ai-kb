@@ -1,8 +1,8 @@
 let tabId = null;
-const out = (v) => (document.getElementById('out').textContent += `${JSON.stringify(v)}\n`);
 
 async function refresh(reason) {
   const [t] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!t) return;
   tabId = t.id;
   const access = await chrome.runtime.sendMessage({ type: 'TAB_ACCESS', tabId });
   document.getElementById('access').textContent = `TAB_ACCESS(${tabId}): ${JSON.stringify(access)}`;

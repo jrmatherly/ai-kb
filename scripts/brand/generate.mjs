@@ -95,10 +95,7 @@ const OUTPUTS = [
   { path: 'misc/intro-video/assets/logo-dark.png', svg: () => lockup({ theme: 'dark', w: 945, h: 238 }) },
   { path: 'frontend/src/assets/img/aikb.png', svg: () => lockup({ theme: 'light', w: 400, h: 126 }) },
   { path: 'frontend/src/assets/img/aikb-dark.png', svg: () => lockup({ theme: 'dark', w: 400, h: 126 }) },
-  { path: 'extension/public/icons/16.png', svg: () => icon({ size: 16 }) },
-  { path: 'extension/public/icons/32.png', svg: () => icon({ size: 32 }) },
-  { path: 'extension/public/icons/48.png', svg: () => icon({ size: 48 }) },
-  { path: 'extension/public/icons/128.png', svg: () => icon({ size: 128 }) },
+  ...[16, 32, 48, 128].map((n) => ({ path: `extension/public/icons/${n}.png`, svg: () => icon({ size: n }) })),
 ];
 
 function bandOnCanvas() {
