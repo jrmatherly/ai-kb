@@ -238,6 +238,14 @@ class VersionTest(unittest.TestCase):
             ["packages/dsh-ai-kb/package-lock.json", "packages/dsh-ai-kb/package.json"],
         )
 
+    def test_bump_lib_extension_patch(self):
+        r = self.run_tool("bump-lib", "extension", "patch")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.lock_versions("extension"), ["1.0.1"] * 3)
+        self.assertIn('\n  "version": "1.0.1",\n', self.text("extension/manifest.json"))
+        self.assertEqual(self.head_subject(), "chore(release): extension v1.0.1")
+        self.assertIn("git tag -s extension-v1.0.1 -m extension-v1.0.1", r.stdout)
+
     def test_bump_lib_mcp_server_updates_its_docs_page(self):
         r = self.run_tool("bump-lib", "mcp-server", "99.0.0")
         self.assertEqual(r.returncode, 0, r.stderr)
