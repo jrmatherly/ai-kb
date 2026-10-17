@@ -440,7 +440,9 @@ func synthFallbackMembership(user *types.User, activeTenant *types.Tenant) []typ
 }
 
 // GetOIDCAuthorizationURL builds the OIDC authorization URL.
-func (s *userService) GetOIDCAuthorizationURL(ctx context.Context, redirectURI string) (*types.OIDCAuthURLResponse, error) {
+func (s *userService) GetOIDCAuthorizationURL(
+	ctx context.Context, redirectURI, returnTo string,
+) (*types.OIDCAuthURLResponse, error) {
 	cfg, err := s.getOIDCConfig(ctx)
 	if err != nil {
 		return nil, err
@@ -457,6 +459,7 @@ func (s *userService) GetOIDCAuthorizationURL(ctx context.Context, redirectURI s
 	state, err := secutils.SignOIDCState(&secutils.OIDCStatePayload{
 		Nonce:       nonce,
 		RedirectURI: strings.TrimSpace(redirectURI),
+		ReturnTo:    returnTo,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode OIDC state: %w", err)

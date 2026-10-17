@@ -196,3 +196,22 @@ func TestValidateInvitationRegistrationMode(t *testing.T) {
 		t.Fatalf("invitation registration mode rejected: %v", err)
 	}
 }
+
+func TestValidateExtensionReturnURLs(t *testing.T) {
+	good := &Config{OIDCAuth: &OIDCAuthConfig{
+		ExtensionReturnURLs: []string{"https://abc.chromiumapp.org/oidc", "http://127.0.0.1:5173/x"},
+	}}
+	if err := ValidateConfig(good); err != nil {
+		t.Fatalf("valid return URLs rejected: %v", err)
+	}
+	bad := []string{
+		"abc.chromiumapp.org/oidc", "/oidc", "https://abc.chromiumapp.org/oidc#x",
+		"https://u:p@abc.chromiumapp.org/oidc", "ftp://abc/oidc",
+	}
+	for _, bad := range bad {
+		cfg := &Config{OIDCAuth: &OIDCAuthConfig{ExtensionReturnURLs: []string{bad}}}
+		if err := ValidateConfig(cfg); err == nil {
+			t.Errorf("%q accepted, want a validation error", bad)
+		}
+	}
+}

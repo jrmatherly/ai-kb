@@ -1288,9 +1288,23 @@ const docTemplate = `{
                     "Auth"
                 ],
                 "summary": "Start OIDC login (direct 302)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Exact URL from OIDC_AUTH_EXTENSION_RETURN_URLS to redirect to",
+                        "name": "return_to",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "302": {
                         "description": "Found"
+                    },
+                    "400": {
+                        "description": "return_to is not allow-listed",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse"
+                        }
                     }
                 }
             }

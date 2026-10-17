@@ -124,8 +124,15 @@ curl $BASE/api/v1/auth/oidc/config
 
 No login required. Returns 302 with a `Location` pointing at the identity provider, so an enterprise portal can link to it directly. No prior request for the JSON authorization URL is needed; the callback is built from the request origin as `/api/v1/auth/oidc/callback`. The login result after the callback is the same as the regular OIDC flow. OIDC disabled returns 403.
 
+| Query parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `return_to` | string | no | Exact URL from `OIDC_AUTH_EXTENSION_RETURN_URLS`; the callback redirects here instead of `/` |
+
+A `return_to` that is not allow-listed, or any value while the list is empty, returns 400.
+
 ```bash
 curl -i "$BASE/api/v1/auth/oidc/start"
+curl -i "$BASE/api/v1/auth/oidc/start?return_to=https://<extension-id>.chromiumapp.org/oidc"
 ```
 
 ### GET /api/v1/auth/oidc/url
@@ -150,7 +157,7 @@ Purpose: OIDC authorization callback (entered through a browser redirect). No au
 
 Query parameters: `code`, `state`, `error`, `error_description` (all returned by the OIDC provider).
 
-Response: 302 redirect to the frontend. On success the fragment is `#oidc_result=<base64url>` (a JSON object with `user`, `tenant`, `memberships`, `token`, `refresh_token` and `is_new_user`); on failure it is `#oidc_error=...`, with `&oidc_error_description=...` when the provider or the login step supplied one. Error values: the provider's own error code, `invalid_state`, `missing_code`, `login_failed`, `payload_encode_failed`.
+Response: 302 redirect to the frontend (`/`), or to the allow-listed `return_to` carried in the signed state, with the same fragment. On success the fragment is `#oidc_result=<base64url>` (a JSON object with `user`, `tenant`, `memberships`, `token`, `refresh_token` and `is_new_user`); on failure it is `#oidc_error=...`, with `&oidc_error_description=...` when the provider or the login step supplied one. Error values: the provider's own error code, `invalid_state`, `missing_code`, `login_failed`, `payload_encode_failed`.
 
 An account auto-provisioned by OIDC gets a 32-byte random password it never receives and the `oidc_only_login` preference, which the profile UI uses to hide self-service password rotation until `change-password` sets a known password.
 

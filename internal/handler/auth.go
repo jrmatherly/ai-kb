@@ -9,6 +9,7 @@ import (
 	stderrors "errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -319,7 +320,7 @@ func (h *AuthHandler) GetOIDCAuthorizationURL(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.userService.GetOIDCAuthorizationURL(ctx, redirectURI)
+	resp, err := h.userService.GetOIDCAuthorizationURL(ctx, redirectURI, "")
 	if err != nil {
 		logger.Errorf(ctx, "Failed to generate OIDC authorization URL: %v", err)
 		appErr := errors.NewForbiddenError("OIDC authorization unavailable")
@@ -364,11 +365,19 @@ func oidcCallbackURL(c *gin.Context) string {
 // @Description  can link to it directly to start the OIDC authorization code flow; the IdP's SSO session
 // @Description  spares the user another password prompt.
 // @Tags         Auth
+// @Param        return_to  query  string  false  "Exact URL from OIDC_AUTH_EXTENSION_RETURN_URLS to redirect to"
 // @Success      302
+// @Failure      400  {object}  errors.ErrorResponse  "return_to is not allow-listed"
 // @Router       /auth/oidc/start [get]
 func (h *AuthHandler) OIDCStart(c *gin.Context) {
 	ctx := c.Request.Context()
-	resp, err := h.userService.GetOIDCAuthorizationURL(ctx, oidcCallbackURL(c))
+	returnTo := strings.TrimSpace(c.Query("return_to"))
+	// With OIDC off the service answers 403 below, which names the real cause.
+	if returnTo != "" && oidcEnabled(h.configInfo) && !allowedReturnTo(h.configInfo, returnTo) {
+		_ = c.Error(errors.NewBadRequestError("return_to is not an allowed extension return URL"))
+		return
+	}
+	resp, err := h.userService.GetOIDCAuthorizationURL(ctx, oidcCallbackURL(c), returnTo)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to generate OIDC authorization URL: %v", err)
 		appErr := errors.NewForbiddenError("OIDC authorization unavailable")
@@ -418,7 +427,11 @@ func (h *AuthHandler) GetOIDCConfig(c *gin.Context) {
 // @Router       /auth/oidc/callback [get]
 func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 	ctx := c.Request.Context()
-	frontendRedirectURI := "/"
+	state := strings.TrimSpace(c.Query("state"))
+	payload, stateErr := secutils.VerifyOIDCState(state)
+	// The extension's auth window only closes on its own return URL, so every
+	// outcome, errors included, lands there when the state names one.
+	frontendRedirectURI := h.oidcReturnTarget(state)
 
 	if providerError := strings.TrimSpace(c.Query("error")); providerError != "" {
 		redirectURL := frontendRedirectURI + "#oidc_error=" + urlQueryEscape(providerError)
@@ -429,10 +442,11 @@ func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 		return
 	}
 
-	state := strings.TrimSpace(c.Query("state"))
-	decodedState, err := decodeOIDCState(state, c.Request)
-	if err != nil {
-		logger.Errorf(ctx, "Failed to decode OIDC state: %v", err)
+	if stateErr == nil {
+		stateErr = verifyOIDCNonce(payload, c.Request)
+	}
+	if stateErr != nil {
+		logger.Errorf(ctx, "Failed to decode OIDC state: %v", stateErr)
 		c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_error="+urlQueryEscape("invalid_state"))
 		return
 	}
@@ -445,7 +459,9 @@ func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.userService.LoginWithOIDC(ctx, code, strings.TrimSpace(decodedState.RedirectURI), h.resolveDefaultTenantMode(ctx))
+	resp, err := h.userService.LoginWithOIDC(
+		ctx, code, strings.TrimSpace(payload.RedirectURI), h.resolveDefaultTenantMode(ctx),
+	)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to complete OIDC login via redirect callback: %v", err)
 		c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_error="+urlQueryEscape("login_failed")+"&oidc_error_description="+urlQueryEscape(err.Error()))
@@ -456,14 +472,35 @@ func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 		return
 	}
 
-	payload, err := encodeOIDCCallbackPayload(resp)
+	encoded, err := encodeOIDCCallbackPayload(resp)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to encode OIDC callback payload: %v", err)
 		c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_error="+urlQueryEscape("payload_encode_failed"))
 		return
 	}
 
-	c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_result="+urlQueryEscape(payload))
+	c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_result="+urlQueryEscape(encoded))
+}
+
+func oidcEnabled(cfg *config.Config) bool {
+	return cfg != nil && cfg.OIDCAuth != nil && cfg.OIDCAuth.Enable
+}
+
+// allowedReturnTo accepts only an exact entry of the configured list; an empty
+// list rejects every value.
+func allowedReturnTo(cfg *config.Config, value string) bool {
+	return cfg != nil && cfg.OIDCAuth != nil && slices.Contains(cfg.OIDCAuth.ExtensionReturnURLs, value)
+}
+
+// oidcReturnTarget is "/" unless the state names a return URL that is still
+// allow-listed. The signature is not consulted: the allow-list is what makes the
+// redirect safe, and a stranded auth window would never report an expired login.
+func (h *AuthHandler) oidcReturnTarget(state string) string {
+	payload, err := secutils.DecodeOIDCStateUnverified(state)
+	if err != nil || !allowedReturnTo(h.configInfo, payload.ReturnTo) {
+		return "/"
+	}
+	return payload.ReturnTo
 }
 
 func encodeOIDCCallbackPayload(resp *types.OIDCCallbackResponse) (string, error) {
@@ -474,27 +511,16 @@ func encodeOIDCCallbackPayload(resp *types.OIDCCallbackResponse) (string, error)
 	return base64.RawURLEncoding.EncodeToString(payload), nil
 }
 
-type oidcStatePayload struct {
-	Nonce       string
-	RedirectURI string
-}
-
-func decodeOIDCState(raw string, req *http.Request) (*oidcStatePayload, error) {
-	payload, err := secutils.VerifyOIDCState(raw)
-	if err != nil {
-		return nil, err
-	}
+// verifyOIDCNonce binds a verified state to the browser that started the login.
+func verifyOIDCNonce(payload *secutils.OIDCStatePayload, req *http.Request) error {
 	cookieNonce, err := req.Cookie(oidcNonceCookieName)
 	if err != nil || cookieNonce == nil || strings.TrimSpace(cookieNonce.Value) == "" {
-		return nil, errors.NewValidationError("oidc nonce cookie missing")
+		return errors.NewValidationError("oidc nonce cookie missing")
 	}
 	if cookieNonce.Value != payload.Nonce {
-		return nil, errors.NewValidationError("oidc nonce mismatch")
+		return errors.NewValidationError("oidc nonce mismatch")
 	}
-	return &oidcStatePayload{
-		Nonce:       payload.Nonce,
-		RedirectURI: strings.TrimSpace(payload.RedirectURI),
-	}, nil
+	return nil
 }
 
 func urlQueryEscape(value string) string {

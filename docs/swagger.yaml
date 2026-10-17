@@ -8228,9 +8228,18 @@ paths:
         authorization page, with no frontend JS. An external platform (such as a company portal)
         can link to it directly to start the OIDC authorization code flow; the IdP's SSO session
         spares the user another password prompt.
+      parameters:
+      - description: Exact URL from OIDC_AUTH_EXTENSION_RETURN_URLS to redirect to
+        in: query
+        name: return_to
+        type: string
       responses:
         "302":
           description: Found
+        "400":
+          description: return_to is not allow-listed
+          schema:
+            $ref: '#/definitions/github_com_jrmatherly_ai-kb_internal_errors.ErrorResponse'
       summary: Start OIDC login (direct 302)
       tags:
       - Auth

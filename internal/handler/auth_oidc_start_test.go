@@ -13,16 +13,34 @@ import (
 	"github.com/jrmatherly/ai-kb/internal/types/interfaces"
 )
 
-// stubOIDCStartUserService only implements GetOIDCAuthorizationURL; every
-// other UserService call panics via the nil interface embedding. Keeps the
-// test focused on the OIDCStart handler's branching logic.
+// stubOIDCStartUserService implements GetOIDCAuthorizationURL and
+// LoginWithOIDC; every other UserService call panics via the nil interface
+// embedding. Keeps the tests focused on the two redirect handlers.
 type stubOIDCStartUserService struct {
 	interfaces.UserService
 	getOIDCAuthorizationURL func(ctx context.Context, redirectURI string) (*types.OIDCAuthURLResponse, error)
+	loginWithOIDC           func(ctx context.Context, code, redirectURI string) (*types.OIDCCallbackResponse, error)
+	calls                   int
+	lastReturnTo            string
 }
 
-func (s *stubOIDCStartUserService) GetOIDCAuthorizationURL(ctx context.Context, redirectURI string) (*types.OIDCAuthURLResponse, error) {
+func (s *stubOIDCStartUserService) GetOIDCAuthorizationURL(
+	ctx context.Context, redirectURI, returnTo string,
+) (*types.OIDCAuthURLResponse, error) {
+	s.calls++
+	s.lastReturnTo = returnTo
+	if s.getOIDCAuthorizationURL == nil {
+		return &types.OIDCAuthURLResponse{
+			Success: true, AuthorizationURL: "http://idp/authorize", State: "s", Nonce: "nonce456",
+		}, nil
+	}
 	return s.getOIDCAuthorizationURL(ctx, redirectURI)
+}
+
+func (s *stubOIDCStartUserService) LoginWithOIDC(
+	ctx context.Context, code, redirectURI string, _ types.TenantProvisioningMode,
+) (*types.OIDCCallbackResponse, error) {
+	return s.loginWithOIDC(ctx, code, redirectURI)
 }
 
 func newOIDCStartTestRouter(h *AuthHandler) *gin.Engine {
@@ -30,7 +48,17 @@ func newOIDCStartTestRouter(h *AuthHandler) *gin.Engine {
 	r := gin.New()
 	r.Use(errorCapture())
 	r.GET("/auth/oidc/start", h.OIDCStart)
+	r.GET("/auth/oidc/callback", h.OIDCRedirectCallback)
 	return r
+}
+
+func hasNonceCookie(w *httptest.ResponseRecorder) bool {
+	for _, ck := range w.Result().Cookies() {
+		if ck.Name == oidcNonceCookieName && ck.Value != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // TestOIDCStart_RedirectsToAuthProvider: on success the handler must 302
@@ -62,14 +90,11 @@ func TestOIDCStart_RedirectsToAuthProvider(t *testing.T) {
 	if loc := w.Header().Get("Location"); loc != authURL {
 		t.Errorf("Location = %q, want %q", loc, authURL)
 	}
-	var hasNonce bool
-	for _, ck := range w.Result().Cookies() {
-		if ck.Name == oidcNonceCookieName && ck.Value == "nonce456" {
-			hasNonce = true
-		}
-	}
-	if !hasNonce {
+	if !hasNonceCookie(w) {
 		t.Errorf("expected %s cookie to be set with the nonce", oidcNonceCookieName)
+	}
+	if us.lastReturnTo != "" {
+		t.Errorf("returnTo = %q, want empty without a return_to parameter", us.lastReturnTo)
 	}
 }
 

@@ -21,7 +21,10 @@ const oidcStateMaxAge = 10 * time.Minute
 type OIDCStatePayload struct {
 	Nonce       string `json:"nonce"`
 	RedirectURI string `json:"redirect_uri,omitempty"`
-	IssuedAt    int64  `json:"iat"`
+	// ReturnTo is where the callback sends the browser instead of "/", set only
+	// for an allow-listed browser extension return URL.
+	ReturnTo string `json:"return_to,omitempty"`
+	IssuedAt int64  `json:"iat"`
 }
 
 var (
@@ -68,29 +71,45 @@ func SignOIDCState(payload *OIDCStatePayload) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(raw) + "." + base64.RawURLEncoding.EncodeToString(sig), nil
 }
 
+// parseOIDCState splits and decodes a state token without checking it.
+func parseOIDCState(raw string) (payloadBytes, sigBytes []byte, payload *OIDCStatePayload, err error) {
+	parts := strings.Split(strings.TrimSpace(raw), ".")
+	if len(parts) != 2 {
+		return nil, nil, nil, errors.New("invalid oidc state format")
+	}
+	payloadBytes, err = base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("decode oidc state payload: %w", err)
+	}
+	sigBytes, err = base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("decode oidc state signature: %w", err)
+	}
+	payload = &OIDCStatePayload{}
+	if err := json.Unmarshal(payloadBytes, payload); err != nil {
+		return nil, nil, nil, fmt.Errorf("unmarshal oidc state: %w", err)
+	}
+	return payloadBytes, sigBytes, payload, nil
+}
+
+// DecodeOIDCStateUnverified returns the payload without checking the signature
+// or freshness. Only for values that are checked against an allow-list anyway,
+// such as choosing where an expired login lands.
+func DecodeOIDCStateUnverified(raw string) (*OIDCStatePayload, error) {
+	_, _, payload, err := parseOIDCState(raw)
+	return payload, err
+}
+
 // VerifyOIDCState validates the HMAC and freshness of a state token.
 func VerifyOIDCState(raw string) (*OIDCStatePayload, error) {
-	raw = strings.TrimSpace(raw)
-	parts := strings.Split(raw, ".")
-	if len(parts) != 2 {
-		return nil, errors.New("invalid oidc state format")
-	}
-	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
+	payloadBytes, sigBytes, payload, err := parseOIDCState(raw)
 	if err != nil {
-		return nil, fmt.Errorf("decode oidc state payload: %w", err)
-	}
-	sigBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return nil, fmt.Errorf("decode oidc state signature: %w", err)
+		return nil, err
 	}
 	mac := hmac.New(sha256.New, []byte(oidcStateSigningKey()))
 	mac.Write(payloadBytes)
 	if !hmac.Equal(mac.Sum(nil), sigBytes) {
 		return nil, errors.New("oidc state signature mismatch")
-	}
-	var payload OIDCStatePayload
-	if err := json.Unmarshal(payloadBytes, &payload); err != nil {
-		return nil, fmt.Errorf("unmarshal oidc state: %w", err)
 	}
 	if strings.TrimSpace(payload.RedirectURI) == "" {
 		return nil, errors.New("state.redirect_uri is required")
@@ -102,5 +121,5 @@ func VerifyOIDCState(raw string) (*OIDCStatePayload, error) {
 	if time.Since(issuedAt) > oidcStateMaxAge || time.Until(issuedAt) > time.Minute {
 		return nil, errors.New("oidc state expired or invalid timestamp")
 	}
-	return &payload, nil
+	return payload, nil
 }

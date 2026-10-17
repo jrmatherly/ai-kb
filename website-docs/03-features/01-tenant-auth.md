@@ -434,6 +434,7 @@ Other hard limits: the platform API key routes (`/system/admin/api-keys`) are re
 | `authorization_endpoint` / `token_endpoint` / `user_info_endpoint` | Explicit endpoints |
 | `scopes` | The requested scopes (default `openid profile email`) |
 | `user_info_mapping.username` / `.email` | Claim field mapping (default `name` / `email`) |
+| `extension_return_urls` | Exact return URLs the browser extension may pass as `return_to` to `/auth/oidc/start`; env `OIDC_AUTH_EXTENSION_RETURN_URLS`, comma-separated; empty (the default) disables `return_to` |
 
 The authorization and token endpoints can be set explicitly; even when both are filled in, discovery is still used to complete the verification data whenever the issuer or `jwks_uri` is missing. Without reliable verification data a login must not be completed from the id_token payload alone.
 
@@ -446,13 +447,13 @@ r.GET("/auth/oidc/start",    handler.OIDCStart)              // start the login 
 r.GET("/auth/oidc/callback", handler.OIDCRedirectCallback)    // authorization code callback
 ```
 
-An enterprise portal can link straight to `/api/v1/auth/oidc/start`; the backend answers 302 to the IdP and builds the callback address from the request origin (`X-Forwarded-Proto` and `Host`). Behind a reverse proxy, pass the external scheme and host through correctly and register the matching callback address with the IdP. The endpoint accepts no arbitrary post-login redirect target.
+An enterprise portal can link straight to `/api/v1/auth/oidc/start`; the backend answers 302 to the IdP and builds the callback address from the request origin (`X-Forwarded-Proto` and `Host`). Behind a reverse proxy, pass the external scheme and host through correctly and register the matching callback address with the IdP. The endpoint accepts no arbitrary post-login redirect target. The one exception is the optional `return_to` query parameter, which must exactly match an entry of `extension_return_urls`; any other value gets 400. When it is set, the callback redirects there instead of `/`, for success and error outcomes alike, so the browser extension's auth window always closes.
 
 #### Flow and security design
 
 `internal/application/service/user.go`:
 
-- `GetOIDCAuthorizationURL`: generates a 24-byte random `nonce` and **signs `{nonce, redirect_uri, iat}` into the state** with `SignOIDCState` (`internal/utils/oidc_state.go`, HMAC-SHA256 keyed by `JWT_SECRET` or a per-process random key; prevents CSRF, replay and callback address tampering); the nonce is delivered in an HttpOnly cookie (omitted from the response JSON with `json:"-"`) and the cookie is cleared once the callback has checked it.
+- `GetOIDCAuthorizationURL`: generates a 24-byte random `nonce` and **signs `{nonce, redirect_uri, iat}` into the state** (plus `return_to` when `/auth/oidc/start` was given one; the callback checks it against the allow-list again before redirecting) with `SignOIDCState` (`internal/utils/oidc_state.go`, HMAC-SHA256 keyed by `JWT_SECRET` or a per-process random key; prevents CSRF, replay and callback address tampering); the nonce is delivered in an HttpOnly cookie (omitted from the response JSON with `json:"-"`) and the cookie is cleared once the callback has checked it.
 - `LoginWithOIDC`: exchange the code for tokens → when an id_token is used, verify its signature, issuer, audience and validity against the JWKS first → merge the UserInfo endpoint's data (mapped by `user_info_mapping`) → **match the local user by email**; when none is found, `provisionOIDCUser` creates the account automatically → issue the same local JWT pair as a password login.
 
 With only an access_token the identity comes from UserInfo; without a JWKS the unverified id_token claims are never used, but with an access_token and a UserInfo endpoint the UserInfo path still works. A verified id_token serves as the fallback when the UserInfo request fails.

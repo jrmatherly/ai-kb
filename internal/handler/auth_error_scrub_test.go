@@ -34,7 +34,9 @@ func (s errScrubUserService) Login(context.Context, *types.LoginRequest) (*types
 	return nil, s.err
 }
 
-func (s errScrubUserService) GetOIDCAuthorizationURL(context.Context, string) (*types.OIDCAuthURLResponse, error) {
+func (s errScrubUserService) GetOIDCAuthorizationURL(
+	context.Context, string, string,
+) (*types.OIDCAuthURLResponse, error) {
 	return nil, s.err
 }
 

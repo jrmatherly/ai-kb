@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -327,6 +328,10 @@ type OIDCAuthConfig struct {
 	JwksURI               string               `yaml:"jwks_uri"               json:"jwks_uri"`
 	Scopes                []string             `yaml:"scopes"                 json:"scopes"`
 	UserInfoMapping       *OIDCUserInfoMapping `yaml:"user_info_mapping"      json:"user_info_mapping"`
+	// ExtensionReturnURLs lists, by exact string, the return_to values the
+	// browser extension may pass to /auth/oidc/start. Empty disables the
+	// parameter; each store (Chrome, Edge) has its own extension ID and URL.
+	ExtensionReturnURLs []string `yaml:"extension_return_urls" json:"extension_return_urls"`
 }
 
 // PromptTemplateI18n holds localized name and description for a prompt template.
@@ -621,6 +626,25 @@ func LoadConfig() (*Config, error) {
 	return &cfg, nil
 }
 
+// validateReturnURL accepts an absolute http(s) URL with no fragment and no
+// credentials, since the callback appends its own fragment to it.
+func validateReturnURL(entry string) error {
+	parsed, err := url.Parse(entry)
+	if err != nil {
+		return err
+	}
+	if (parsed.Scheme != "https" && parsed.Scheme != "http") || parsed.Host == "" {
+		return fmt.Errorf("must be an absolute http or https URL")
+	}
+	if strings.Contains(entry, "#") {
+		return fmt.Errorf("must not carry a fragment")
+	}
+	if parsed.User != nil {
+		return fmt.Errorf("must not carry credentials")
+	}
+	return nil
+}
+
 // ValidateConfig performs basic validation of the loaded configuration.
 // It checks for obviously invalid or missing values that would cause runtime failures.
 func ValidateConfig(cfg *Config) error {
@@ -636,6 +660,13 @@ func ValidateConfig(cfg *Config) error {
 		if strings.TrimSpace(cfg.OIDCAuth.DiscoveryURL) == "" &&
 			(strings.TrimSpace(cfg.OIDCAuth.AuthorizationEndpoint) == "" || strings.TrimSpace(cfg.OIDCAuth.TokenEndpoint) == "") {
 			errs = append(errs, "oidc_auth.discovery_url or both oidc_auth.authorization_endpoint and oidc_auth.token_endpoint are required when OIDC is enabled")
+		}
+	}
+	if cfg.OIDCAuth != nil {
+		for _, entry := range cfg.OIDCAuth.ExtensionReturnURLs {
+			if err := validateReturnURL(entry); err != nil {
+				errs = append(errs, fmt.Sprintf("oidc_auth.extension_return_urls entry %q: %v", entry, err))
+			}
 		}
 	}
 
@@ -739,6 +770,9 @@ func applyOIDCEnvOverrides(cfg *Config) {
 	}
 	if value := strings.TrimSpace(os.Getenv("OIDC_AUTH_SCOPES")); value != "" {
 		cfg.OIDCAuth.Scopes = strings.Fields(strings.ReplaceAll(value, ",", " "))
+	}
+	if value := strings.TrimSpace(os.Getenv("OIDC_AUTH_EXTENSION_RETURN_URLS")); value != "" {
+		cfg.OIDCAuth.ExtensionReturnURLs = strings.Fields(strings.ReplaceAll(value, ",", " "))
 	}
 	if value := strings.TrimSpace(os.Getenv("OIDC_USER_INFO_MAPPING_USER_NAME")); value != "" {
 		cfg.OIDCAuth.UserInfoMapping.Username = value
