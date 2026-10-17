@@ -2,7 +2,9 @@ import type { Auth, CaptureDraft, Connection } from './types';
 
 export type HeadersReply = { serverUrl: string; headers: Record<string, string>; authKind: Auth['kind'] } | null;
 export type RefreshOutcome = 'refreshed' | 'signed_out' | 'not_bearer';
-export type ExtractReply = { draft: CaptureDraft } | { draft: null; reason: 'cancelled' } | { error: 'unreachable' | 'no_access' };
+export type ExtractMode = 'article' | 'select';
+export type ExtractResult = { draft: CaptureDraft } | { draft: null; reason: 'cancelled' };
+export type ExtractReply = ExtractResult | { error: 'unreachable' | 'no_access' };
 export type TabAccessReply = { url: string; title: string } | { access: false };
 export type CommandsReply = Array<{ name: string; shortcut: string }>;
 
@@ -12,7 +14,7 @@ export type Request =
   | { type: 'SET_CONNECTION'; connection: Connection }
   | { type: 'PATCH_CONNECTION'; patch: Partial<Omit<Connection, 'auth'>> }
   | { type: 'CLEAR_CONNECTION'; forgetServer: boolean }
-  | { type: 'EXTRACT'; tabId: number; mode: 'article' | 'select' }
+  | { type: 'EXTRACT'; tabId: number; mode: ExtractMode }
   | { type: 'TAB_ACCESS'; tabId: number }
   | { type: 'GET_COMMANDS' };
 
