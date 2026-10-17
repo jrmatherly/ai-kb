@@ -206,6 +206,53 @@ frontend:
   affinity: {}
 
 # -----------------------------------------------------------------------------
+# Website (documentation, served under /docs on the same host as the frontend)
+# -----------------------------------------------------------------------------
+website:
+  # -- Enable the website component. The Ingress forwards /docs to it; the frontend keeps /.
+  enabled: true
+
+  # -- Number of replicas
+  replicaCount: 1
+
+  image:
+    # -- Image repository
+    repository: ghcr.io/jrmatherly/ai-kb-website
+    # -- Image tag (defaults to Chart.appVersion if empty)
+    tag: ""
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+  # -- Resource requests and limits
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  # -- Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+
+  # -- Service configuration
+  service:
+    # -- Service name override (empty keeps "website")
+    name: ""
+    type: ClusterIP
+    port: 80
+
+  # -- Node selector
+  nodeSelector: {}
+
+  # -- Tolerations
+  tolerations: []
+
+  # -- Affinity rules
+  affinity: {}
+
+# -----------------------------------------------------------------------------
 # Docreader (Document Parser - gRPC)
 # -----------------------------------------------------------------------------
 docreader:

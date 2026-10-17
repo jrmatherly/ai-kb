@@ -22,6 +22,9 @@ Version: {{ .Chart.AppVersion }}
 AI KB is accessible via Ingress:
 
   URL: {{ if .Values.ingress.tls.enabled }}https{{ else }}http{{ end }}://{{ .Values.ingress.host }}
+{{- if .Values.website.enabled }}
+  Docs: {{ if .Values.ingress.tls.enabled }}https{{ else }}http{{ end }}://{{ .Values.ingress.host }}/docs/
+{{- end }}
 
 {{- else }}
 
@@ -54,6 +57,9 @@ Components deployed:
 {{- end }}
 {{- if .Values.frontend.enabled }}
   - Frontend UI ({{ include "ai-kb.frontend.image" . }})
+{{- end }}
+{{- if .Values.website.enabled }}
+  - Website and documentation ({{ include "ai-kb.website.image" . }})
 {{- end }}
 {{- if .Values.docreader.enabled }}
   - Document Reader ({{ include "ai-kb.docreader.image" . }})

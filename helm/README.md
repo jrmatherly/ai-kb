@@ -22,9 +22,10 @@ AI KB is an intelligent knowledge base platform that combines:
 
 ## Quick Start
 
-No `ghcr.io/jrmatherly/ai-kb-*` images are published yet. Until the first release,
-build them (`make build-images`), push them to your registry and point `app.image`,
-`frontend.image` and `docreader.image` at your registry.
+The chart pulls `ghcr.io/jrmatherly/ai-kb-{app,ui,website,docreader}` at the tag in
+`Chart.appVersion`. To use your own registry, build the images (`make build-images`),
+push them and point `app.image`, `frontend.image`, `website.image` and `docreader.image`
+at it.
 
 ```bash
 # Add required secrets
@@ -49,7 +50,9 @@ helm install ai-kb ./helm \
     ┌─────────────┐                 ┌─────────────┐
     │  Frontend   │                 │   Backend   │
     │  (Vue.js)   │                 │   (Go/Gin)  │
-    └─────────────┘                 └──────┬──────┘
+    │  + Website  │                 └──────┬──────┘
+    │  (/docs)    │                        │
+    └─────────────┘                        │
                                            │
                     ┌──────────────────────┼──────────────────────┐
                     │                      │                      │
@@ -201,6 +204,7 @@ Optional Service name overrides preserve the following defaults:
 | ----------- | ------------------------------- |
 | `app.service.name` | `app` |
 | `frontend.service.name` | `frontend` |
+| `website.service.name` | `website` |
 | `postgresql.service.name` | `postgres` |
 | `redis.service.name` | `redis` |
 | `docreader.service.name` | `docreader` |
@@ -211,6 +215,7 @@ For example, save this as `service-names.yaml`:
 ```yaml
 app:        {service: {name: ai-kb-app}}
 frontend:   {service: {name: ai-kb-frontend}}
+website:    {service: {name: ai-kb-website}}
 postgresql: {service: {name: ai-kb-postgres}}
 redis:      {service: {name: ai-kb-redis}}
 docreader:  {service: {name: ai-kb-docreader}}
@@ -273,6 +278,18 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `frontend.image.tag` | Image tag | `""` (uses appVersion) |
 | `frontend.appHost` | Backend host the frontend proxies to | App Service name |
 | `frontend.appPort` | Backend port the frontend proxies to | `app.service.port` |
+
+### Website
+
+The documentation image. The Ingress forwards `/docs` to it and everything else to the
+frontend, so the docs share the application's host (`https://<ingress.host>/docs/`).
+
+| Parameter | Description | Default |
+| ----------- | ------------- | --------- |
+| `website.enabled` | Enable the website | `true` |
+| `website.replicaCount` | Number of replicas | `1` |
+| `website.image.repository` | Image repository | `ghcr.io/jrmatherly/ai-kb-website` |
+| `website.image.tag` | Image tag | `""` (uses appVersion) |
 
 ### DocReader
 

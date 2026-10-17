@@ -247,10 +247,13 @@ area_helm() {
   app_tag="${app_tag##*:}"
   expect_eq "frontend image tag follows the app tag" "$(helm_image templates/frontend.yaml | sed 's/.*://')" "$app_tag"
   expect_eq "docreader image tag follows the app tag" "$(helm_image templates/docreader.yaml | sed 's/.*://')" "$app_tag"
+  expect_eq "website image tag follows the app tag" "$(helm_image templates/website.yaml | sed 's/.*://')" "$app_tag"
   expect_eq "frontend image override" "$(helm_image templates/frontend.yaml --set frontend.image.tag=ui-test)" \
     ghcr.io/jrmatherly/ai-kb-ui:ui-test
   expect_eq "docreader image override" "$(helm_image templates/docreader.yaml --set docreader.image.tag=reader-test)" \
     ghcr.io/jrmatherly/ai-kb-docreader:reader-test
+  expect_eq "website image override" "$(helm_image templates/website.yaml --set website.image.tag=site-test)" \
+    ghcr.io/jrmatherly/ai-kb-website:site-test
   log_ok "helm image tags"
 }
 

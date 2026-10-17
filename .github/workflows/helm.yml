@@ -68,13 +68,17 @@ jobs:
           app_image="$(render_image templates/app.yaml)"
           frontend_image="$(render_image templates/frontend.yaml)"
           docreader_image="$(render_image templates/docreader.yaml)"
+          website_image="$(render_image templates/website.yaml)"
           app_tag="${app_image##*:}"
 
           test "${frontend_image##*:}" = "$app_tag"
           test "${docreader_image##*:}" = "$app_tag"
+          test "${website_image##*:}" = "$app_tag"
 
           frontend_override="$(render_image templates/frontend.yaml --set frontend.image.tag=ui-test)"
           docreader_override="$(render_image templates/docreader.yaml --set docreader.image.tag=reader-test)"
 
           test "$frontend_override" = "ghcr.io/jrmatherly/ai-kb-ui:ui-test"
           test "$docreader_override" = "ghcr.io/jrmatherly/ai-kb-docreader:reader-test"
+          website_override="$(render_image templates/website.yaml --set website.image.tag=site-test)"
+          test "$website_override" = "ghcr.io/jrmatherly/ai-kb-website:site-test"

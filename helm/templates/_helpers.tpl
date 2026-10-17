@@ -135,6 +135,15 @@ Defaults to Chart.appVersion if tag is not specified.
 {{- end }}
 
 {{/*
+Return the website image with tag.
+Defaults to Chart.appVersion if tag is not specified.
+*/}}
+{{- define "ai-kb.website.image" -}}
+{{- $tag := default .Chart.AppVersion .Values.website.image.tag }}
+{{- printf "%s:%s" .Values.website.image.repository $tag }}
+{{- end }}
+
+{{/*
 Return the docreader image with tag.
 Defaults to Chart.appVersion if tag is not specified.
 */}}

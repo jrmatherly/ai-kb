@@ -199,7 +199,7 @@ PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=https://your-playwright-mirror.example.com \
 
 `helm/Chart.yaml`: apiVersion v2, chart name `ai-kb`, appVersion follows the release tag (for example v2026.10.13), requires Kubernetes >= 1.25.0.
 
-The chart contains five components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.26.1-pg18`, the same as Compose) and `redis` (`redis:8.10.2-alpine`), plus optional `minio` and `neo4j`.
+The chart contains six components: `app` (`ghcr.io/jrmatherly/ai-kb-app`), `frontend` (`ghcr.io/jrmatherly/ai-kb-ui`), `website` (`ghcr.io/jrmatherly/ai-kb-website`, the documentation, reached at `/docs/` on the Ingress host; `website.enabled: false` drops it), `docreader`, `postgresql` (ParadeDB image; the chart default is `paradedb/paradedb:v0.26.1-pg18`, the same as Compose) and `redis` (`redis:8.10.2-alpine`), plus optional `minio` and `neo4j`.
 
 Key settings in `helm/values.yaml`:
 
