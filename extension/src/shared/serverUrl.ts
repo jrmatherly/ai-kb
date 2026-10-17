@@ -20,3 +20,5 @@ export function normalizeServerUrl(input: string): NormalizedServerUrl {
 }
 
 export const apiBase = (serverUrl: string): string => `${serverUrl}/api/v1`;
+export const kbUrl = (serverUrl: string, kbId: string): string => `${serverUrl}/platform/knowledge-bases/${kbId}`;
+export const sessionUrl = (serverUrl: string, sessionId: string): string => `${serverUrl}/platform/chat/${sessionId}`;

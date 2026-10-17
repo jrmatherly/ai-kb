@@ -52,7 +52,8 @@ body {
 }
 
 input:not([type='checkbox']),
-select {
+select,
+textarea {
   padding: var(--aikb-space-1) var(--aikb-space-2);
   border: 1px solid var(--aikb-border);
   border-radius: var(--aikb-radius);
@@ -61,7 +62,8 @@ select {
   font: inherit;
 }
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   outline: 1px solid var(--aikb-brand);
   border-color: var(--aikb-brand);
 }
@@ -85,4 +87,61 @@ button.primary:hover {
 button:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--aikb-border);
+}
+.tabs button {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+}
+.tabs button.active {
+  border-bottom-color: var(--aikb-brand);
+  color: var(--aikb-brand);
+}
+.signed-out {
+  margin: 0;
+  padding: var(--aikb-space-2) var(--aikb-space-3);
+  border-radius: var(--aikb-radius-medium);
+  background: var(--aikb-warning-soft);
+  color: var(--aikb-warning);
+}
+.muted {
+  margin: 0;
+  color: var(--aikb-text-secondary);
+}
+.signed-out a {
+  margin-left: var(--aikb-space-2);
+  color: var(--aikb-brand);
+}
+.notice {
+  margin: 0;
+  padding: var(--aikb-space-2) var(--aikb-space-3);
+  border-radius: var(--aikb-radius-medium);
+  background: var(--aikb-warning-soft);
+}
+.notice a {
+  margin-left: var(--aikb-space-2);
+  color: var(--aikb-brand);
+}
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+}
+.markdown img {
+  max-width: 100%;
+}
+.markdown pre {
+  overflow: auto;
+}
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

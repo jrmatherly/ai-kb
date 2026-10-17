@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { loadConnection } from '../background/auth';
-import { ApiClient } from '../shared/api';
-import { send, type CommandsReply, type HeadersReply, type RefreshOutcome } from '../shared/messages';
+import { loadConnection } from '../shared/connection';
+import { send, workerApi, type CommandsReply } from '../shared/messages';
 import { normalizeServerUrl } from '../shared/serverUrl';
 import KbPicker from '../ui/KbPicker.vue';
 import Toast from '../ui/Toast.vue';
@@ -11,10 +10,7 @@ import { useOidc } from './useOidc';
 
 const DOCS_URL = 'https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension';
 
-const api = new ApiClient({
-  getHeaders: () => send<HeadersReply>({ type: 'GET_HEADERS' }),
-  refresh: () => send<RefreshOutcome>({ type: 'REFRESH' }),
-});
+const api = workerApi();
 const oidc = useOidc({
   launch: (details) => chrome.identity.launchWebAuthFlow(details),
   redirectUrl: () => chrome.identity.getRedirectURL('oidc'),
@@ -93,7 +89,7 @@ onMounted(() => void load());
           <span>API key</span>
           <input v-model="state.apiKey" type="password" autocomplete="off" />
         </label>
-        <p class="help">Conversations are shared with everyone who uses this key</p>
+        <p class="muted">Conversations are shared with everyone who uses this key</p>
       </div>
 
       <div v-else-if="state.mode === 'password'" class="panel">
@@ -115,7 +111,7 @@ onMounted(() => void load());
             <button type="button" @click="copyReturnTo">Copy</button>
           </span>
         </label>
-        <p class="help">Your server must list this URL in OIDC_AUTH_EXTENSION_RETURN_URLS</p>
+        <p class="muted">Your server must list this URL in OIDC_AUTH_EXTENSION_RETURN_URLS</p>
       </div>
 
       <label v-if="state.needsTenant" class="field">
@@ -152,7 +148,7 @@ onMounted(() => void load());
         <input type="checkbox" :checked="state.quickClip" @change="setQuickClip(($event.target as HTMLInputElement).checked)" />
         Quick clip
       </label>
-      <p class="help">Context menu items and the clip shortcuts save straight to the last used knowledge base. The popup and the side panel always open the editor.</p>
+      <p class="muted">Context menu items and the clip shortcuts save straight to the last used knowledge base. The popup and the side panel always open the editor.</p>
     </section>
 
     <section class="card">
@@ -213,21 +209,6 @@ h2 {
 .row input {
   flex: 1;
 }
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--aikb-border);
-}
-.tabs button {
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  background: none;
-}
-.tabs button.active {
-  border-bottom-color: var(--aikb-brand);
-  color: var(--aikb-brand);
-}
 .panel {
   display: grid;
   gap: var(--aikb-space-3);
@@ -236,20 +217,8 @@ h2 {
   display: flex;
   gap: var(--aikb-space-2);
 }
-.help,
-.muted {
-  margin: 0;
-  color: var(--aikb-text-secondary);
-}
 .warning {
   margin: 0;
-  color: var(--aikb-warning);
-}
-.signed-out {
-  margin: 0;
-  padding: var(--aikb-space-2) var(--aikb-space-3);
-  border-radius: var(--aikb-radius-medium);
-  background: var(--aikb-warning-soft);
   color: var(--aikb-warning);
 }
 .toast a {

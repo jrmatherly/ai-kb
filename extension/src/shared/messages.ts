@@ -1,3 +1,4 @@
+import { ApiClient } from './api';
 import type { Auth, CaptureDraft, Connection } from './types';
 
 export type HeadersReply = { serverUrl: string; headers: Record<string, string>; authKind: Auth['kind'] } | null;
@@ -24,3 +25,6 @@ export async function send<T>(request: Request): Promise<T> {
   if (reply === undefined) throw new Error(`no reply to ${request.type}`);
   return reply;
 }
+
+// Pages get their headers from the worker, which alone holds and refreshes the connection.
+export const workerApi = () => new ApiClient({ getHeaders: () => send<HeadersReply>({ type: 'GET_HEADERS' }), refresh: () => send<RefreshOutcome>({ type: 'REFRESH' }) });
