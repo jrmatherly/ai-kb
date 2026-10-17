@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "AI KB platform probe",
+  "description": "Records the MV3 behaviors the AI KB extension design relies on.",
+  "version": "0.0.1",
+  "action": { "default_popup": "popup.html" },
+  "side_panel": { "default_path": "panel.html" },
+  "background": { "service_worker": "worker.js" },
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "permissions": ["storage", "sidePanel", "activeTab", "scripting", "contextMenus", "identity"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "commands": {
+    "probe-command": {
+      "suggested_key": { "default": "Alt+Shift+Y" },
+      "description": "Probe: open the panel after a command"
+    }
+  }
+}

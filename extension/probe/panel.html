@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><title>Probe panel</title></head>
+<body style="font: 13px system-ui">
+  <p id="access">TAB_ACCESS: ?</p>
+  <button id="inject">P1/P6: inject content.js and extract</button><br />
+  <input id="server" size="40" value="http://127.0.0.1:5173" />
+  <button id="fetch">L1: fetch /api/v1/auth/oidc/config</button>
+  <button id="drop">L2: remove the origin grant</button><br />
+  <input id="oidc" size="60" value="" placeholder="OIDC start URL" />
+  <button id="auth">O2: launchWebAuthFlow from the panel</button>
+  <pre id="out"></pre>
+  <script src="log.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>

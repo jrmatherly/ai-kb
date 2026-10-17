@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><title>Probe options</title></head>
+<body style="font: 13px system-ui">
+  <p id="redirect">redirect URL: ?</p>
+  <p id="contains">P9 contains on load: ?</p>
+  <input id="server" size="40" value="http://127.0.0.1:5173" />
+  <button id="connect">P9: Connect (permissions.request first)</button><br />
+  <input id="oidc" size="60" value="" placeholder="OIDC start URL" />
+  <button id="auth">O1: launchWebAuthFlow from the options page</button>
+  <button id="dump">Show the recorded outcomes</button>
+  <pre id="out"></pre>
+  <script src="log.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
