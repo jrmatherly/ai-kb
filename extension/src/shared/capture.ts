@@ -79,10 +79,22 @@ export function trimDraft(draft: CaptureDraft): CaptureDraft {
 
 const isDocumentBase = (kb: KnowledgeBase | null): kb is KnowledgeBase => !!kb && (!kb.type || kb.type === 'document');
 
-export function writableKnowledgeBases(own: KnowledgeBase[], shared: SharedKnowledgeBase[]): KnowledgeBase[] {
+export function uniqueById<T extends { id: string }>(items: T[]): T[] {
   const seen = new Set<string>();
-  const sharedWritable = shared.filter((s) => s.permission === 'editor' || s.permission === 'admin').map((s) => s.knowledge_base);
-  return [...own, ...sharedWritable].filter(isDocumentBase).filter((kb) => !seen.has(kb.id) && !!seen.add(kb.id));
+  const unique: T[] = [];
+  for (const item of items) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    unique.push(item);
+  }
+  return unique;
+}
+
+export const sharedBases = (shared: SharedKnowledgeBase[]): KnowledgeBase[] => shared.flatMap((s) => (s.knowledge_base ? [s.knowledge_base] : []));
+
+export function writableKnowledgeBases(own: KnowledgeBase[], shared: SharedKnowledgeBase[]): KnowledgeBase[] {
+  const writable = shared.filter((s) => s.permission === 'editor' || s.permission === 'admin');
+  return uniqueById([...own, ...sharedBases(writable)].filter(isDocumentBase));
 }
 
 // An update keeps the knowledge where it already lives, whatever base the picker shows.
