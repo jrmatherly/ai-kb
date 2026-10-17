@@ -23,8 +23,8 @@ This section pairs one browser with your account and turns it on for a conversat
 
 <Screenshot
   src="/screenshots/browser-connection.png"
-  caption="Toolbox → Browser connection: pairing link, connection status and extension install options"
-  hint="A paired, online browser: the connection status on the tab, device information, the pairing link area, the Chrome and Edge store links with 'Install manually (alternative)', and the 'Show connection status in the sidebar' switch. A green status dot is visible next to Toolbox in the sidebar." />
+  caption="Toolbox → Browser connection: extension install options, pairing link and connection status"
+  hint="The Browser connection tab before pairing: the Not paired status on the tab and the BrowserSkill card, the Chrome Web Store and Edge Add-ons buttons with Install manually (alternative), the Copy pairing link button, the Browser search instructions editor and the four How to use steps. After pairing the status reads Connected and a green dot appears next to Toolbox in the sidebar." />
 
 The Browser connection tab shows the connection status: Connected, Offline or Not paired. Once paired, the small browser icon to the right of Toolbox in the sidebar also shows a status dot, green for connected and orange for offline. To hide it, turn off "Show connection status in the sidebar" on the Browser connection page. That setting is stored only in the current browser. The same page also has "Browser search instructions", which set your preferred search engine and search URL (up to 4000 characters, saved to your user account).
 
