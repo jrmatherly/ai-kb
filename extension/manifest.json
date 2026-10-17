@@ -3,6 +3,7 @@
   "name": "AI KB",
   "description": "Ask your AI KB about any page, and clip pages, selections and notes into a knowledge base.",
   "version": "1.0.1",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuD0XK7F0qnt34biBYN4tYdJRQP9UqpLj0CXUI9a8fMm8+3ptQ9JvQvWPL+/mXEd8P1me0A5zI+cxqBOeJMHWIYO6sk+29svbWz6YS2v7lZ8sjmSn/E9Yyp+uhMZavLKJ1eSf4VCoK6Q4Jj+Alm4NqqBS9yxEmhcNEJ1Z5X+quqXA600g0tdo9s8SE+MqjQmCHL05ktpD236UgFTTy98TZY1NOCZOTUV13JZPoAAdGxFwfOBd6Yk2XNlxSxalZ5ty7QCVMV87utVl9wnzQC4mdZcqUEXZVYKmQqhtI+EzX2iSsWPwC2mGuiSCoPF+aOFg/MPoFrHM4BSo3bcqjC8pWQIDAQAB",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
