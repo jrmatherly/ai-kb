@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "AI KB",
+  "description": "Ask your AI KB about any page, and clip pages, selections and notes into a knowledge base.",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "permissions": ["storage", "sidePanel", "activeTab", "scripting", "contextMenus", "identity"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "commands": {
+    "open-sidepanel": {
+      "description": "Open the AI KB side panel"
+    },
+    "quick-ask": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "Ask about this page"
+    },
+    "smart-clip": {
+      "suggested_key": { "default": "Alt+Shift+C" },
+      "description": "Clip this page"
+    },
+    "select-clip": {
+      "suggested_key": { "default": "Alt+Shift+S" },
+      "description": "Clip the selection"
+    },
+    "quick-note": {
+      "suggested_key": { "default": "Alt+Shift+N" },
+      "description": "Write a note"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
+}

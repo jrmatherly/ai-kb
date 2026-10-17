@@ -60,7 +60,7 @@ help:
 	@echo ""
 	@echo "Versions and releases:"
 	@echo "  bump-version      Bump the product CalVer and commit (default today, then .1 ...; VERSION=YYYY.M.D[.MICRO])"
-	@echo "  bump-lib          Bump a library semver and commit (LIB=dsh-ai-kb|mcp-server|helm-chart PART=patch|minor|major or VERSION=x.y.z)"
+	@echo "  bump-lib          Bump a library semver and commit (LIB=dsh-ai-kb|extension|mcp-server|helm-chart PART=patch|minor|major or VERSION=x.y.z)"
 	@echo "  check-version     Fail when a version string disagrees with VERSION or its library"
 	@echo ""
 	@echo "Environment checks:"

@@ -74,6 +74,7 @@ if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastru
 if has 'helm/*'; then areas+=(helm); fi
 if has 'mcp-server/*'; then areas+=(mcp-server); fi
 if has 'packages/dsh-ai-kb/*'; then areas+=(dsh-plugin); fi
+if has 'extension/*'; then areas+=(extension); fi
 if has 'dataset/*' .github/workflows/dataset.yml; then areas+=(dataset); fi
 if has 'miniprogram/*' 'tests/miniprogram/*'; then areas+=(miniprogram); fi
 if has 'website-docs/*'; then areas+=(website-docs); fi
@@ -296,6 +297,15 @@ area_dsh-plugin() {
   if need pnpm; then
     (cd "$dir" && env -u DSH_PACKAGE_SPEC -u npm_config_before -u DSH_INSTALL_DIR node test/e2e/run-in-dsh.mjs)
   fi
+}
+
+area_extension() {
+  need node npm zip || return "$SKIPPED"
+  ensure_npm_deps extension
+  npm --prefix extension run --silent test
+  npm --prefix extension run --silent type-check
+  npm --prefix extension run --silent build
+  npm --prefix extension run --silent zip
 }
 
 # No archived workflow ran these; they are the package's own tests (no dependencies to install).

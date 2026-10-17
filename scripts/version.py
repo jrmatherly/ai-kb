@@ -69,6 +69,8 @@ TOUCHPOINTS = [
     Touchpoint("product", "README.md", r"img\.shields\.io/badge/release-v(?P<v>[^-]+)-"),
     Touchpoint("product", "website-docs/05-clients/04-miniprogram.md", r"`ai-kb-miniprogram` \(version `(?P<v>[^`]+)`\)"),
     *npm("dsh-ai-kb", "packages/dsh-ai-kb"),
+    *npm("extension", "extension"),
+    Touchpoint("extension", "extension/manifest.json", rf"^  \"version\": {Q}"),
     *uv("mcp-server", "mcp-server", "ai-kb-mcp"),
     Touchpoint("mcp-server", "mcp-server/setup.py", rf"^    version={Q}"),
     Touchpoint("mcp-server", "mcp-server/__init__.py", rf"^__version__ = {Q}"),
@@ -83,7 +85,13 @@ TOUCHPOINTS = [
     Touchpoint("helm-chart", "helm/Chart.yaml", r"^version: (?P<v>\S+)$"),
 ]
 # The tag each publish workflow expects; None: nothing publishes it.
-TAG_PREFIX = {"product": "v", "dsh-ai-kb": "dsh-ai-kb-v", "mcp-server": "mcp-server-v", "helm-chart": None}
+TAG_PREFIX = {
+    "product": "v",
+    "dsh-ai-kb": "dsh-ai-kb-v",
+    "extension": "extension-v",
+    "mcp-server": "mcp-server-v",
+    "helm-chart": None,
+}
 # Lockfiles uv can verify offline after their version line changes.
 UV_PROJECTS = {"product": ["docreader"], "mcp-server": ["mcp-server"]}
 

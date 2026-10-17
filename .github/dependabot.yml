@@ -114,6 +114,21 @@ updates:
         applies-to: security-updates
         patterns: ["*"]
 
+  - package-ecosystem: npm
+    directory: "/extension"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+    groups:
+      extension-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
   - package-ecosystem: uv
     directory: "/docreader"
     schedule:
