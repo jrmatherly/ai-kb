@@ -5,7 +5,7 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
 
 - **WeKnoraCloud**, Tencent's hosted model and document service: the provider id `weknoracloud`, the
   `WeKnoraCloud*` names, `AIKB_WEKNORACLOUD_*` settings, and its API host `weknora.weixin.qq.com` (bare host
-  and `/api` paths). Only `/docs` and website links on that host moved to `ai-kb-docs.matherly.net`.
+  and `/api` paths). Only `/docs` and website links on that host moved to `ai-kb.matherly.net` (`/docs` on the app host).
 - **ClawHub skill `@lyingbug/weknora`** (third party): its package name and the `WEKNORA_BASE_URL` / `WEKNORA_API_KEY`
   variables it reads, shielded per path by `keep.tsv`.
 - **BrowserSkill**: `Tencent/BrowserSkill`, the `bsk` daemon, its upstream build output

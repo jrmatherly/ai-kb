@@ -33,7 +33,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-- **NEW**: The AI KB browser extension for Chrome and Edge (`extension/`): ask agents about the current page in a side panel, and clip pages, selections and notes into a knowledge base, signed in with an API key, email and password, or the server's identity provider. Settings → Publish & Integrations has a Browser Extension tab, and the docs have a [Browser extension](https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension) page.
+- **NEW**: The AI KB browser extension for Chrome and Edge (`extension/`): ask agents about the current page in a side panel, and clip pages, selections and notes into a knowledge base, signed in with an API key, email and password, or the server's identity provider. Settings → Publish & Integrations has a Browser Extension tab, and the docs have a [Browser extension](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension) page.
 - **NEW**: `GET /api/v1/auth/oidc/start` accepts an optional `return_to` that must exactly match an entry of `OIDC_AUTH_EXTENSION_RETURN_URLS` (empty by default, which turns it off); when OIDC is enabled, any other value is a 400 before the IdP redirect. The callback then redirects there instead of `/`, for success and errors alike.
 - **NEW**: Weaviate keyword search handles CJK text through app-side bigrams (`content_bigram`). A collection created before this change has no such property; drop it and re-index.
 - **NEW**: Every datasource sync reason code is tabled once per connector (Feishu, Confluence, DingTalk, Seafile) and checked against the frontend `datasource.syncError` keys.

@@ -103,7 +103,7 @@
 
     <!-- Header Links - Top Right -->
     <div class="header-links">
-      <a href="https://ai-kb-docs.matherly.net" target="_blank" class="header-link" :title="$t('common.website')">
+      <a href="https://ai-kb.matherly.net/docs/" target="_blank" class="header-link" :title="$t('common.website')">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
           stroke-linecap="round">
           <circle cx="12" cy="12" r="10" />

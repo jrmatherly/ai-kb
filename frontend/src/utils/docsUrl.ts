@@ -1,5 +1,5 @@
 /** Public deployment of website-docs (VitePress, base `/docs/`). */
-export const DOCS_BASE_URL = 'https://ai-kb-docs.matherly.net/docs/'
+export const DOCS_BASE_URL = 'https://ai-kb.matherly.net/docs/'
 
 /**
  * Doc pages linked from the UI, as website-docs paths without the `.md`

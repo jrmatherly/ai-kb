@@ -8,7 +8,7 @@ import Toast from '../ui/Toast.vue';
 import { useConnection, type Mode } from './useConnection';
 import { useOidc } from './useOidc';
 
-const DOCS_URL = 'https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension';
+const DOCS_URL = 'https://ai-kb.matherly.net/docs/05-clients/06-browser-extension';
 
 const api = workerApi();
 const oidc = useOidc({

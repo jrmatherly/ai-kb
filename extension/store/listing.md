@@ -1,6 +1,6 @@
 # Store listing
 
-Text for the Chrome Web Store and Microsoft Edge Add-ons listings. Both stores get the same text. Every claim below matches `extension/manifest.json` and the [extension docs](https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension).
+Text for the Chrome Web Store and Microsoft Edge Add-ons listings. Both stores get the same text. Every claim below matches `extension/manifest.json` and the [extension docs](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension).
 
 ## Title
 
@@ -26,9 +26,9 @@ Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S cl
 
 Sign in. Connect with an API key, with your email and password, or through your server's identity provider when the server has single sign-on enabled.
 
-Privacy. The extension reads a page only after you click its icon, press a shortcut or use its right-click menu on that page. It requests access to one website, your server, when you click Connect. It has no analytics and no telemetry. The full privacy policy is at <https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension#privacy>.
+Privacy. The extension reads a page only after you click its icon, press a shortcut or use its right-click menu on that page. It requests access to one website, your server, when you click Connect. It has no analytics and no telemetry. The full privacy policy is at <https://ai-kb.matherly.net/docs/05-clients/06-browser-extension#privacy>.
 
-Server setup is documented at <https://ai-kb-docs.matherly.net>.
+Server setup is documented at <https://ai-kb.matherly.net/docs/>.
 
 ## Category
 
@@ -37,7 +37,7 @@ Server setup is documented at <https://ai-kb-docs.matherly.net>.
 
 ## Links
 
-- Homepage and website: <https://ai-kb-docs.matherly.net>
+- Homepage and website: <https://ai-kb.matherly.net/docs/>
 - Support: <https://github.com/jrmatherly/ai-kb/issues>
 
 ## Single purpose
@@ -46,7 +46,7 @@ Ask and save pages to your own AI KB server
 
 ## Privacy policy URL
 
-<https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension#privacy>
+<https://ai-kb.matherly.net/docs/05-clients/06-browser-extension#privacy>
 
 ## Permission justifications
 
