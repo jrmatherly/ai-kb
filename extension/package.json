@@ -11,7 +11,8 @@
     "build": "vite build && vite build -c vite.scripts.config.ts --mode background && vite build -c vite.scripts.config.ts --mode content && node scripts/check-manifest.mjs dist/manifest.json",
     "type-check": "vue-tsc --noEmit",
     "test": "tsx --test \"src/**/*.test.ts\" \"scripts/*.test.mjs\"",
-    "zip": "node scripts/zip.mjs"
+    "zip": "node scripts/zip.mjs",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@microsoft/fetch-event-source": "2.0.1",
