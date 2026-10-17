@@ -14,25 +14,31 @@ Ask your AI KB about any page, and clip pages, selections and notes into a knowl
 
 ## Long description
 
-AI KB connects your browser to an AI KB server that you or your organization run. It talks to that one server and to nothing else.
+AI KB connects your browser to an AI KB server that you or your organization run. You need such a server to use this extension; the extension talks to that one server and to nothing else.
 
-Chat. Open the side panel and ask the agents on your server about anything, or click "Ask about this page" to ask about the page you are reading. Answers stream in with numbered citations that open the cited knowledge base in the web UI.
+Chat. Open the side panel and ask the chat agents configured on your server about anything, or click "Ask about this page" to ask about the page you are reading. Answers stream in with numbered citations that open the cited knowledge base in the web UI.
 
 Clip. Smart clip extracts the main article as Markdown and opens it in the editor, where you check the title and text, pick a knowledge base and save. Select clip saves the text you selected, or lets you drag a rectangle over the part of the page you want. Quick note opens an empty note with no page attached. The Recent tab lists your last captures with their parsing status.
 
 Quick clip. Turn it on in the options page and the right-click menu items and keyboard shortcuts save straight to your last used knowledge base, without opening the editor.
 
-Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S clips the selection and Alt+Shift+N writes a note. Change them at chrome://extensions/shortcuts.
+Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S clips the selection and Alt+Shift+N writes a note (Option+Shift on a Mac). Change them at chrome://extensions/shortcuts.
 
 Sign in. Connect with an API key, with your email and password, or through your server's identity provider when the server has single sign-on enabled.
 
-Privacy. The extension reads a page only after you click its icon, press a shortcut or use its right-click menu on that page. It requests access to one website, your server, when you click Connect. It has no analytics and no telemetry. The full privacy policy is at <https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension#privacy.>
+Privacy. The extension reads a page only after you click its icon, press a shortcut or use its right-click menu on that page. It requests access to one website, your server, when you click Connect. It has no analytics and no telemetry. The full privacy policy is at <https://ai-kb-docs.matherly.net/docs/05-clients/06-browser-extension#privacy>.
 
-You need an AI KB server to use this extension. Server setup is documented at <https://ai-kb-docs.matherly.net.>
+Server setup is documented at <https://ai-kb-docs.matherly.net>.
 
 ## Category
 
-Productivity
+- Chrome Web Store: **Workflow & Planning**. Google replaced Productivity in 2023; its successors are Education, Functionality & UI, Household, Privacy & Security, Tools and Workflow & Planning, and Workflow & Planning is defined as "extensions to help users perform their tasks more efficiently", with document editors among its examples (<https://developer.chrome.com/docs/webstore/best-practices>). The Notion and Evernote web clippers are listed there.
+- Microsoft Edge Add-ons: **Productivity**. Edge still uses its own list (Accessibility, Blogging, Communication, Developer tools, Entertainment, News & weather, Photos, Productivity, Search tools, Shopping, Social, Sports).
+
+## Links
+
+- Homepage and website: <https://ai-kb-docs.matherly.net>
+- Support: <https://github.com/jrmatherly/ai-kb/issues>
 
 ## Single purpose
 
