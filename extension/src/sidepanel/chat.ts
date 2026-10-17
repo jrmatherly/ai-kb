@@ -1,5 +1,5 @@
 import type { StreamErrorKind } from '../shared/api';
-import type { Agent, Reference, StreamEvent } from '../shared/types';
+import type { Agent, KnowledgeBase, Reference, StreamEvent } from '../shared/types';
 import { toolLabel } from './toolLabels';
 
 // Card identity follows the server (internal/handler/session/agent_stream_handler.go): thinking cards by
@@ -110,3 +110,54 @@ export function applyError(msg: UiMessage, kind: StreamErrorKind, message?: stri
 }
 
 export const quickAnswer = (agent: Agent): boolean => agent.id === 'builtin-quick-answer' || agent.config.agent_mode === 'quick-answer';
+
+export type KbChoice = { show: boolean; locked: boolean; kbs: KnowledgeBase[] };
+
+// `selected` agents carry their own bases (selectAgent copies them into kbIds), so the picker shows them locked.
+export function kbChoice(agent: Agent | undefined, kbs: KnowledgeBase[], kbIds: string[]): KbChoice {
+  const mode = agent?.config.kb_selection_mode;
+  if (!agent || mode === 'none') return { show: false, locked: false, kbs: [] };
+  if (mode === 'selected') return { show: true, locked: true, kbs: kbs.filter((kb) => kbIds.includes(kb.id)) };
+  return { show: true, locked: false, kbs };
+}
+
+const TAG_RE = /<(kb|web)\b([^>]*?)\s*\/?>/g;
+const ENTITIES: Record<string, string> = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', '#39': "'", '#34': '"' };
+// Entity decoding mirrors parseTagAttributes in frontend/src/utils/citationMarkdown.ts.
+const attr = (attrs: string, name: string) =>
+  new RegExp(`(?:^|\\s)${name}\\s*=\\s*"([^"]*)"`).exec(attrs)?.[1].replace(/&(amp|quot|apos|lt|gt|#39|#34);/g, (_m, e: string) => ENTITIES[e]);
+
+// Mirrors frontend/src/utils/citationMarkdown.ts: a tag still streaming in is hidden until it closes.
+function stripOpenTag(markdown: string): string {
+  const start = markdown.lastIndexOf('<');
+  if (start < 0 || markdown.slice(start).includes('>')) return markdown;
+  return /^<(k(b(\s[\s\S]*)?)?|w(e(b(\s[\s\S]*)?)?)?)?$/i.test(markdown.slice(start)) ? markdown.slice(0, start) : markdown;
+}
+
+// The model often cites by context position (DOC-1, FAQ-2, 1) or by document title instead of the chunk id.
+function citedIndex(attrs: string, references: Reference[]): number {
+  const chunkId = attr(attrs, 'chunk_id') ?? '';
+  const byId = references.findIndex((r) => r.id === chunkId);
+  if (byId >= 0) return byId;
+  const n = Number(/^(?:[a-z]+-)?(\d+)$/i.exec(chunkId.trim())?.[1]);
+  if (n >= 1 && n <= references.length) return n - 1;
+  const doc = attr(attrs, 'doc');
+  return doc ? references.findIndex((r) => r.knowledge_title === doc) : -1;
+}
+
+// Turns the server's inline <kb chunk_id=.../> and <web url=.../> tags into numbered markers that match the references list.
+export function inlineCitations(markdown: string, references: Reference[], anchor = 'cite'): string {
+  return stripOpenTag(markdown).replace(TAG_RE, (_m, kind: string, attrs: string) => {
+    if (kind === 'web') {
+      try {
+        const url = new URL(attr(attrs, 'url') ?? '');
+        // An angle-bracket destination keeps `)` and spaces intact through marked.
+        return ` [${url.hostname}](<${url.href}>)`;
+      } catch {
+        return '';
+      }
+    }
+    const index = citedIndex(attrs, references);
+    return index < 0 ? '' : ` [[${index + 1}]](#${anchor}-${index + 1})`;
+  });
+}

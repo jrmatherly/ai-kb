@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Agent, Reference, StreamEvent } from '../shared/types';
-import { APPROVAL_TEXT, applyError, applyEvent, quickAnswer, type UiMessage } from './chat';
+import { APPROVAL_TEXT, applyError, applyEvent, inlineCitations, kbChoice, quickAnswer, type UiMessage } from './chat';
 import { toolLabel } from './toolLabels';
 
 const empty = (): UiMessage => ({ id: 'a1', role: 'assistant', markdown: '', cards: [], references: [], done: false });
@@ -140,4 +140,38 @@ test('toolLabel uses the web UI label and falls back to the spaced raw name', ()
   assert.equal(toolLabel('knowledge_search'), 'Knowledge Search');
   assert.equal(toolLabel('todo_write'), 'Make Plan');
   assert.equal(toolLabel('web_fetch_page'), 'web fetch page');
+});
+
+test('inlineCitations numbers kb tags by reference, links web tags and hides an open tag', () => {
+  const refs: Reference[] = [{ ...ref, id: 'c1' }, { ...ref, id: 'c2', knowledge_title: 'Other' }];
+  const text = 'Teal.<kb doc="Zephyr lab note" chunk_id="c2" kb_id="kb1" /> Monthly.<kb doc="x" chunk_id="c1"/> See <web url="https://docs.example.com/a" title="Docs" />.';
+  assert.equal(inlineCitations(text, refs), 'Teal. [[2]](#cite-2) Monthly. [[1]](#cite-1) See  [docs.example.com](<https://docs.example.com/a>).');
+  assert.equal(inlineCitations('Unknown.<kb doc="x" chunk_id="zz" />', refs), 'Unknown.');
+  assert.equal(inlineCitations('Streaming <kb doc="x" chunk_', refs), 'Streaming ');
+  assert.equal(inlineCitations('Streaming <w', refs), 'Streaming ');
+  assert.equal(inlineCitations('a < b and <strong>c</strong>', refs), 'a < b and <strong>c</strong>');
+});
+
+test('inlineCitations resolves positional and title citations like the web UI', () => {
+  const refs: Reference[] = [{ ...ref, id: 'u1', knowledge_title: 'Alpha' }, { ...ref, id: 'u2', knowledge_title: 'Beta' }];
+  assert.equal(inlineCitations('A<kb doc="x" chunk_id="DOC-1" />', refs), 'A [[1]](#cite-1)');
+  assert.equal(inlineCitations('A<kb doc="x" chunk_id="FAQ-2" />', refs), 'A [[2]](#cite-2)');
+  assert.equal(inlineCitations('A<kb doc="x" chunk_id="2" />', refs), 'A [[2]](#cite-2)');
+  assert.equal(inlineCitations('A<kb doc="Beta" chunk_id="DOC-9" />', refs), 'A [[2]](#cite-2)');
+  assert.equal(inlineCitations('A<kb doc="Gamma" chunk_id="DOC-9" />', refs), 'A');
+});
+
+test('inlineCitations decodes entities in web urls and keeps a ) inside the link', () => {
+  assert.equal(inlineCitations('<web url="https://e.com/s?a=1&amp;b=2" />', []), ' [e.com](<https://e.com/s?a=1&b=2>)');
+  assert.equal(inlineCitations('<web url="https://en.wikipedia.org/wiki/Foo_(bar)" />', []), ' [en.wikipedia.org](<https://en.wikipedia.org/wiki/Foo_(bar)>)');
+  assert.equal(inlineCitations('<web url="not a url" />', []), '');
+});
+
+test('kbChoice hides for none, locks selected to the agent bases and lists all otherwise', () => {
+  const kbs = [{ id: 'kb1', name: 'Docs' }, { id: 'kb9', name: 'Lab' }];
+  const agent = (kb_selection_mode: Agent['config']['kb_selection_mode']): Agent => ({ id: 'a', name: 'A', config: { agent_mode: 'smart-reasoning', kb_selection_mode } });
+  assert.deepEqual(kbChoice(agent('none'), kbs, ['kb1']), { show: false, locked: false, kbs: [] });
+  assert.deepEqual(kbChoice(agent('selected'), kbs, ['kb9']), { show: true, locked: true, kbs: [{ id: 'kb9', name: 'Lab' }] });
+  assert.deepEqual(kbChoice(agent('all'), kbs, ['kb9']), { show: true, locked: false, kbs });
+  assert.deepEqual(kbChoice(undefined, kbs, []), { show: false, locked: false, kbs: [] });
 });

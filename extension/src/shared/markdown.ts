@@ -39,7 +39,7 @@ purifier.addHook('uponSanitizeElement', (node, data) => {
   if (data.tagName === 'img') imagePolicy(node as Element);
 });
 purifier.addHook('afterSanitizeAttributes', (node) => {
-  if (node.tagName === 'A' && node.hasAttribute('href')) {
+  if (node.tagName === 'A' && node.hasAttribute('href') && !node.getAttribute('href')?.startsWith('#')) {
     node.setAttribute('target', '_blank');
     node.setAttribute('rel', 'noopener');
   }

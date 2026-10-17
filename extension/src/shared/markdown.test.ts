@@ -84,3 +84,10 @@ test('every provider scheme and the storage backend form count as storage refs',
 test('the button carries an explicit type attribute', () => {
   assert.equal(parse('![a](https://e.com/i.png)').querySelector('button')?.getAttribute('type'), 'button');
 });
+
+test('same-page anchors stay in the page', () => {
+  const a = parse('[1](#cite-a1-1)').querySelector('a');
+  assert.equal(a?.getAttribute('href'), '#cite-a1-1');
+  assert.equal(a?.getAttribute('target'), null);
+  assert.equal(a?.getAttribute('rel'), null);
+});

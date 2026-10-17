@@ -1,16 +1,10 @@
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { ApiError, type ApiClient } from '../shared/api';
 import { sharedBases, uniqueById } from '../shared/capture';
 import type { Agent, Auth, KnowledgeBase, Message } from '../shared/types';
-import { applyError, applyEvent, quickAnswer, type UiMessage } from './chat';
+import { applyError, applyEvent, kbChoice, quickAnswer, type UiMessage } from './chat';
 
-type Deps = {
-  api: ApiClient;
-  authKind: Auth['kind'];
-  serverUrl: string;
-  // A getter: the App swaps its cached headers after every refresh, and stop must send the current token.
-  getHeaders: () => Record<string, string>;
-};
+type Deps = { api: ApiClient; authKind: Auth['kind'] };
 
 const fromHistory = (m: Message): UiMessage => ({
   id: m.id,
@@ -37,6 +31,12 @@ export function useChat(deps: Deps) {
     historyMode: (deps.authKind === 'bearer' ? 'public' : 'handle') as 'handle' | 'public',
   });
   let controller: AbortController | null = null;
+  const agent = computed(() => state.agents.find((a) => a.id === state.agentId));
+  const choice = computed(() => kbChoice(agent.value, state.kbs, state.kbIds));
+
+  function setKbIds(ids: string[]) {
+    state.kbIds = ids;
+  }
 
   async function loadPage(sessionId: string, beforeTime?: string): Promise<UiMessage[]> {
     const page = (resourceUrls: 'handle' | 'public') => deps.api.loadMessages(sessionId, { ...(beforeTime ? { beforeTime } : {}), resourceUrls });
@@ -66,8 +66,7 @@ export function useChat(deps: Deps) {
   async function ask(query: string) {
     if (state.streaming) return;
     state.streaming = true;
-    const agent = state.agents.find((a) => a.id === state.agentId);
-    const quick = agent ? quickAnswer(agent) : false;
+    const quick = agent.value ? quickAnswer(agent.value) : false;
     try {
       state.sessionId ??= await deps.api.createSession();
     } catch (e) {
@@ -75,10 +74,15 @@ export function useChat(deps: Deps) {
       throw e;
     }
     state.messages.push({ id: crypto.randomUUID(), role: 'user', markdown: query, cards: [], references: [], done: true });
-    state.messages.push({ id: crypto.randomUUID(), role: 'assistant', markdown: '', cards: [], references: [], done: false });
-    // Late events land in this conversation's list even after newConversation replaces state.messages.
+    const answerId = crypto.randomUUID();
+    state.messages.push({ id: answerId, role: 'assistant', markdown: '', cards: [], references: [], done: false });
+    // Late events land in this conversation's list even after newConversation replaces state.messages, and
+    // by id, because loadOlder prepends to the same list mid-stream.
     const list = state.messages;
-    const index = list.length - 1;
+    const update = (apply: (m: UiMessage) => UiMessage) => {
+      const i = list.findIndex((m) => m.id === answerId);
+      if (i >= 0) list[i] = apply(list[i]);
+    };
     state.assistantMessageId = null;
     controller = new AbortController();
     try {
@@ -88,14 +92,14 @@ export function useChat(deps: Deps) {
         { query, channel: 'browser_extension', knowledge_base_ids: [...state.kbIds], agent_id: state.agentId, agent_enabled: !quick },
         {
           onEvent: (e) => {
-            const applied = applyEvent(list[index], e);
-            list[index] = applied.msg;
-            if (applied.sessionTitle) state.sessionTitle = applied.sessionTitle;
-            if (applied.assistantMessageId) state.assistantMessageId = applied.assistantMessageId;
+            update((m) => {
+              const applied = applyEvent(m, e);
+              if (applied.sessionTitle) state.sessionTitle = applied.sessionTitle;
+              if (applied.assistantMessageId) state.assistantMessageId = applied.assistantMessageId;
+              return applied.msg;
+            });
           },
-          onError: (kind, message) => {
-            list[index] = applyError(list[index], kind, message, deps.serverUrl);
-          },
+          onError: (kind, message) => update((m) => applyError(m, kind, message, deps.api.lastTarget?.serverUrl)),
         },
         controller.signal,
       );
@@ -110,14 +114,11 @@ export function useChat(deps: Deps) {
     if (last && !last.done) state.messages[state.messages.length - 1] = applyEvent(last, { response_type: 'stop' }).msg;
   }
 
-  async function stop(opts?: { keepalive: boolean }) {
+  async function stop(opts: { keepalive?: boolean } = {}) {
     controller?.abort();
     settleOpen();
     if (!state.sessionId || !state.assistantMessageId) return;
-    await deps.api.stopSession(state.sessionId, state.assistantMessageId, {
-      keepalive: opts?.keepalive,
-      direct: { serverUrl: deps.serverUrl, headers: deps.getHeaders() },
-    });
+    await deps.api.stopSession(state.sessionId, state.assistantMessageId, opts);
   }
 
   function newConversation() {
@@ -145,8 +146,8 @@ export function useChat(deps: Deps) {
     if (!state.sessionId || !oldest) return;
     const sessionId = state.sessionId;
     const page = await loadPage(sessionId, oldest);
-    if (state.sessionId === sessionId) state.messages = [...page, ...state.messages];
+    if (state.sessionId === sessionId) state.messages.unshift(...page);
   }
 
-  return { state, load, selectAgent, ask, stop, newConversation, clear, openSession, loadOlder };
+  return { state, api: deps.api, agent, kbChoice: choice, setKbIds, load, selectAgent, ask, stop, newConversation, clear, openSession, loadOlder };
 }

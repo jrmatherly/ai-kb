@@ -33,13 +33,14 @@ function fake(opts: { events?: StreamEvent[]; loadMessages?: (calls: Call[]) => 
     suggestedQuestions: async (id: string) => { calls.push(['suggestedQuestions', id]); return ['What is new?']; },
     listAgents: async () => { calls.push(['listAgents']); return [quick, smart]; },
     listKnowledgeBases: async () => [{ id: 'kb1', name: 'Docs' }],
+    lastTarget: { serverUrl: 'https://kb.example.com', headers: {} },
     listSharedKnowledgeBases: async () => [{ knowledge_base: { id: 'kb1', name: 'Docs' }, permission: 'viewer' }, { knowledge_base: { id: 'kb2', name: 'Shared' }, permission: 'viewer' }, { knowledge_base: null, permission: 'viewer' }],
   } as unknown as ApiClient;
   return { api, calls };
 }
 
-function chat(api: ApiClient, authKind: Auth['kind'] = 'api_key', getHeaders: () => Record<string, string> = () => ({ 'X-API-Key': 'sk-1' })) {
-  return useChat({ api, authKind, serverUrl: 'https://kb.example.com', getHeaders });
+function chat(api: ApiClient, authKind: Auth['kind'] = 'api_key') {
+  return useChat({ api, authKind });
 }
 
 const named = (calls: Call[], name: string) => calls.filter((c) => c[0] === name);
@@ -89,8 +90,7 @@ test('ask records the session title and routes a stream failure through applyErr
   assert.deepEqual([c.state.messages[1].markdown, c.state.messages[1].error], ['Hi', 'Cannot reach https://kb.example.com']);
 });
 
-test('stop after agent_query aborts and stops with the headers the getter returns at that moment', async () => {
-  let headers: Record<string, string> = { Authorization: 'Bearer a1' };
+test('stop after agent_query aborts and asks the client for a keepalive stop', async () => {
   let signal: AbortSignal | undefined;
   const { api, calls } = fake();
   let release!: () => void;
@@ -99,17 +99,16 @@ test('stop after agent_query aborts and stops with the headers the getter return
     handlers.onEvent({ response_type: 'agent_query', assistant_message_id: 'am1', data: { assistant_message_id: 'am1' } });
     return new Promise<void>((resolve) => { release = resolve; });
   };
-  const c = chat(api, 'bearer', () => headers);
+  const c = chat(api, 'bearer');
   c.state.agents = [smart];
   c.state.agentId = smart.id;
   const asking = c.ask('q');
   await Promise.resolve();
-  headers = { Authorization: 'Bearer a2' };
   assert.equal(c.state.streaming, true);
   await c.stop({ keepalive: true });
   assert.equal(signal?.aborted, true);
   assert.deepEqual(named(calls, 'stopSession'), [
-    ['stopSession', 's1', 'am1', { keepalive: true, direct: { serverUrl: 'https://kb.example.com', headers: { Authorization: 'Bearer a2' } } }],
+    ['stopSession', 's1', 'am1', { keepalive: true }],
   ]);
   release();
   await asking;
@@ -158,6 +157,43 @@ test('loadOlder pages back from the oldest loaded message and prepends', async (
   await c.loadOlder();
   assert.deepEqual(named(calls, 'loadMessages')[1], ['loadMessages', 's7', { beforeTime: '2026-10-17T10:00:00Z', resourceUrls: 'handle' }]);
   assert.deepEqual(c.state.messages.map((m) => m.id), ['m0', 'm1', 'm2']);
+});
+
+test('loadOlder during a stream keeps the streamed answer on the visible message', async () => {
+  const { api } = fake({ loadMessages: (cs) => (named(cs, 'loadMessages').length === 1 ? history : older) });
+  let handlers!: StreamHandlers;
+  let release!: () => void;
+  (api as unknown as { chatStream: unknown }).chatStream = (_k: string, _s: string, _b: unknown, h: StreamHandlers) => {
+    handlers = h;
+    return new Promise<void>((resolve) => { release = resolve; });
+  };
+  const c = chat(api);
+  await c.openSession('s7');
+  const asking = c.ask('q');
+  await new Promise((r) => setTimeout(r, 0));
+  await c.loadOlder();
+  handlers.onEvent({ response_type: 'answer', content: 'Streamed' });
+  handlers.onEvent({ response_type: 'complete', done: true });
+  release();
+  await asking;
+  assert.deepEqual(c.state.messages.map((m) => [m.role, m.markdown, m.done]), [
+    ['assistant', 'Earlier', true], ['user', 'Q', true], ['assistant', 'A', true], ['user', 'q', true], ['assistant', 'Streamed', true],
+  ]);
+});
+
+test('agent, kbChoice and setKbIds follow the selected agent', async () => {
+  const { api } = fake();
+  const c = chat(api);
+  c.state.agents = [quick, smart, silent];
+  c.state.kbs = [{ id: 'kb1', name: 'Docs' }, { id: 'kb9', name: 'Lab' }];
+  await c.selectAgent('a2');
+  assert.equal(c.agent.value?.id, 'a2');
+  assert.deepEqual(c.kbChoice.value, { show: true, locked: true, kbs: [{ id: 'kb9', name: 'Lab' }] });
+  await c.selectAgent('builtin-quick-answer');
+  c.setKbIds(['kb1']);
+  assert.deepEqual([c.state.kbIds, c.kbChoice.value.locked, c.kbChoice.value.kbs.length], [['kb1'], false, 2]);
+  await c.selectAgent('a3');
+  assert.equal(c.kbChoice.value.show, false);
 });
 
 test('selectAgent sets the KBs per kb_selection_mode and loads suggestions', async () => {

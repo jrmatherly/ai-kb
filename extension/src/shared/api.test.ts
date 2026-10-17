@@ -290,6 +290,23 @@ test('stopSession without a direct target goes through request with keepalive', 
   assert.equal(calls[0].headers['X-API-Key'], 'sk-1');
 });
 
+test('a keepalive stopSession reuses the headers of the last replay without asking for headers again', async () => {
+  let headerCalls = 0;
+  const bearer = rotatingBearer();
+  const { api, calls } = client(
+    [{ status: 401 }, { status: 200, body: { success: true, data: [] } }, { status: 200, body: { success: true } }],
+    { getHeaders: () => { headerCalls++; return bearer(); }, refresh: async () => 'refreshed' },
+  );
+  await api.listSessions();
+  assert.equal(headerCalls, 2);
+  await api.stopSession('s1', 'am1', { keepalive: true });
+  assert.equal(headerCalls, 2);
+  assert.equal(calls[2].url, 'https://kb.example.com/api/v1/sessions/s1/stop');
+  assert.equal(calls[2].headers.Authorization, 'Bearer a2');
+  assert.equal(calls[2].keepalive, true);
+  assert.deepEqual(api.lastTarget?.headers, { Authorization: 'Bearer a2' });
+});
+
 test('probeCapabilities runs both probes concurrently', async () => {
   const { api, calls } = client([{ status: 200, body: { success: true, data: [] } }, { status: 200, body: { success: true, data: [] } }]);
   await api.probeCapabilities();

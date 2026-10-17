@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { ApiError, type ApiClient } from '../shared/api';
+import { ApiError, errorMessage, type ApiClient } from '../shared/api';
 import { writableKnowledgeBases } from '../shared/capture';
 import type { CommandsReply, Request } from '../shared/messages';
 import { normalizeServerUrl } from '../shared/serverUrl';
@@ -57,7 +57,7 @@ const fromTokens = (r: { token: string; refresh_token: string; memberships?: Mem
 
 function errorText(error: unknown): string {
   if (error instanceof OidcError) return OIDC_TEXT[error.code] ?? error.description ?? `Sign-in failed (${error.code})`;
-  return error instanceof Error ? error.message : String(error);
+  return errorMessage(error);
 }
 
 export function useConnection(deps: Deps) {

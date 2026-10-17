@@ -13,6 +13,8 @@ export class ApiError extends Error {
   }
 }
 
+export const errorMessage = (e: unknown): string => (e instanceof Error ? e.message : String(e));
+
 export type StreamErrorKind = 'unauthorized' | 'server' | 'network' | 'incomplete';
 export type StreamHandlers = { onEvent(event: StreamEvent): void; onError(kind: StreamErrorKind, message?: string): void };
 export type ManualBody = { title: string; content: string };
@@ -63,6 +65,7 @@ const published = (body: ManualBody) => ({ ...body, status: 'publish', channel: 
 export class ApiClient {
   private readonly fetchFn: typeof fetch;
   private readonly fetchEventSourceFn: typeof fetchEventSource;
+  private last: Target | null = null;
 
   constructor(private readonly deps: Deps) {
     this.fetchFn = deps.fetchFn ?? browserFetch;
@@ -72,7 +75,14 @@ export class ApiClient {
   private async session(): Promise<Target> {
     const reply = await this.deps.getHeaders();
     if (!reply) throw new ApiError(401, 'signed_out');
+    this.last = reply;
     return reply;
+  }
+
+  // The headers of the newest request, the replay after a refresh included: a keepalive stop on pagehide
+  // cannot wait for the worker.
+  get lastTarget(): Target | null {
+    return this.last;
   }
 
   // The one place the 401 rule lives: refresh once, replay once with fresh headers, never with the old token.
@@ -155,7 +165,10 @@ export class ApiClient {
   }
 
   async stopSession(sessionId: string, assistantMessageId: string, opts?: { keepalive?: boolean; direct?: Target }): Promise<void> {
-    await this.request('POST', `/sessions/${sessionId}/stop`, { message_id: assistantMessageId }, { keepalive: opts?.keepalive, target: opts?.direct });
+    await this.request('POST', `/sessions/${sessionId}/stop`, { message_id: assistantMessageId }, {
+      keepalive: opts?.keepalive,
+      target: opts?.direct ?? (opts?.keepalive ? this.last ?? undefined : undefined),
+    });
   }
 
   createManual(kbId: string, body: ManualBody): Promise<Knowledge> {
