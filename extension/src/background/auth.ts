@@ -1,4 +1,5 @@
 import type { RefreshOutcome } from '../shared/messages';
+import { browserFetch } from '../shared/browserFetch';
 import { apiBase } from '../shared/serverUrl';
 import type { Connection, RefreshResponse } from '../shared/types';
 
@@ -58,7 +59,7 @@ export function authHeaders(connection: Connection): Record<string, string> {
   return headers;
 }
 
-type RefresherDeps = Store & { fetchFn: typeof fetch };
+type RefresherDeps = Store & { fetchFn?: typeof fetch };
 
 // The refresh token rotates, so two pages hitting a 401 together must share one request.
 export function createRefresher(deps: RefresherDeps): () => Promise<RefreshOutcome> {
@@ -77,7 +78,7 @@ export function createRefresher(deps: RefresherDeps): () => Promise<RefreshOutco
     const connection = await deps.load();
     if (!connection || connection.auth.kind !== 'bearer') return 'not_bearer';
     const startedFrom = connection.auth.refreshToken;
-    const response = await deps.fetchFn(`${apiBase(connection.serverUrl)}/auth/refresh`, {
+    const response = await (deps.fetchFn ?? browserFetch)(`${apiBase(connection.serverUrl)}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: startedFrom }),

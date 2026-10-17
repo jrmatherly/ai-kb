@@ -15,7 +15,7 @@ function deps(overrides: Partial<Deps> = {}) {
     refresh: async () => { calls.push('refresh'); return 'refreshed'; },
     tabInfo: async () => ({ url: 'https://e.com/p', title: 'P' }),
     inject: async (tabId, mode) => { calls.push(`inject ${tabId} ${mode}`); return { draft: { kind: mode, title: 'P', url: 'https://e.com/p', markdown: 'x', meta: {} } }; },
-    commands: async () => [{ name: 'quick-ask', shortcut: 'Alt+Shift+A' }],
+    commands: async () => [{ name: 'quick-ask', description: 'Ask about this page', shortcut: 'Alt+Shift+A' }],
     openPanel: (tabId) => { calls.push(`open ${tabId}`); return Promise.resolve(); },
     writeIntent: async (tabId, intent) => { calls.push(`intent ${tabId} ${intent}`); },
     readIntent: async () => null,
@@ -115,7 +115,7 @@ test('quick clip without lastKbId writes the editor intent', () => {
 });
 
 test('GET_COMMANDS returns the bindings', async () => {
-  assert.deepEqual(await handle({ type: 'GET_COMMANDS' }, sender, deps()), [{ name: 'quick-ask', shortcut: 'Alt+Shift+A' }]);
+  assert.deepEqual(await handle({ type: 'GET_COMMANDS' }, sender, deps()), [{ name: 'quick-ask', description: 'Ask about this page', shortcut: 'Alt+Shift+A' }]);
 });
 
 test('clipFromGesture opens the panel first, writes the intent, then the draft', async () => {

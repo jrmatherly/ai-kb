@@ -1,5 +1,6 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import type { HeadersReply, RefreshOutcome } from './messages';
+import { browserFetch } from './browserFetch';
 import { apiBase } from './serverUrl';
 import type {
   Agent, Knowledge, KnowledgeBase, LoginResponse, Me, Message, OidcConfig, Session, SharedKnowledgeBase, StreamEvent,
@@ -64,7 +65,7 @@ export class ApiClient {
   private readonly fetchEventSourceFn: typeof fetchEventSource;
 
   constructor(private readonly deps: Deps) {
-    this.fetchFn = deps.fetchFn ?? fetch;
+    this.fetchFn = deps.fetchFn ?? browserFetch;
     this.fetchEventSourceFn = deps.fetchEventSourceFn ?? fetchEventSource;
   }
 

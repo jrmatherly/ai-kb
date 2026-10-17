@@ -1,0 +1,88 @@
+/* Values copied from frontend/src/assets/theme/theme.css (TDesign light and dark blocks). */
+:root {
+  --aikb-brand: #049b38;
+  --aikb-brand-hover: #06b04d;
+  --aikb-text: rgba(0, 0, 0, 0.9);
+  --aikb-text-secondary: rgba(0, 0, 0, 0.6);
+  --aikb-text-on-brand: #ffffff;
+  --aikb-bg-page: #eeeeee;
+  --aikb-bg: #ffffff;
+  --aikb-bg-secondary: #f3f3f3;
+  --aikb-border: #dcdcdc;
+  --aikb-error: #e34d59;
+  --aikb-error-soft: #fdecee;
+  --aikb-warning: #d35a21;
+  --aikb-warning-soft: #fef3e6;
+  --aikb-radius: 3px;
+  --aikb-radius-medium: 6px;
+  --aikb-space-1: 4px;
+  --aikb-space-2: 8px;
+  --aikb-space-3: 12px;
+  --aikb-space-4: 16px;
+  --aikb-space-5: 24px;
+  --aikb-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --aikb-font-size: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --aikb-brand: #06b04d;
+    --aikb-brand-hover: #07c05f;
+    --aikb-text: rgba(255, 255, 255, 0.9);
+    --aikb-text-secondary: rgba(255, 255, 255, 0.55);
+    --aikb-text-on-brand: rgba(255, 255, 255, 0.9);
+    --aikb-bg-page: #181818;
+    --aikb-bg: #242424;
+    --aikb-bg-secondary: #2c2c2c;
+    --aikb-border: #5e5e5e;
+    --aikb-error: #c64751;
+    --aikb-error-soft: #472324;
+    --aikb-warning: #dc7633;
+    --aikb-warning-soft: #4f2a1d;
+    color-scheme: dark;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--aikb-bg-page);
+  color: var(--aikb-text);
+  font: var(--aikb-font-size) / 1.5 var(--aikb-font);
+}
+
+input:not([type='checkbox']),
+select {
+  padding: var(--aikb-space-1) var(--aikb-space-2);
+  border: 1px solid var(--aikb-border);
+  border-radius: var(--aikb-radius);
+  background: var(--aikb-bg);
+  color: var(--aikb-text);
+  font: inherit;
+}
+input:focus,
+select:focus {
+  outline: 1px solid var(--aikb-brand);
+  border-color: var(--aikb-brand);
+}
+button {
+  padding: var(--aikb-space-1) var(--aikb-space-3);
+  border: 1px solid var(--aikb-border);
+  border-radius: var(--aikb-radius);
+  background: var(--aikb-bg);
+  color: var(--aikb-text);
+  font: inherit;
+  cursor: pointer;
+}
+button.primary {
+  background: var(--aikb-brand);
+  border-color: var(--aikb-brand);
+  color: var(--aikb-text-on-brand);
+}
+button.primary:hover {
+  background: var(--aikb-brand-hover);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

@@ -23,10 +23,10 @@ async function inject(tabId: number, mode: ExtractMode): Promise<ExtractResult> 
 const deps: Deps = {
   load: loadConnection,
   save: saveConnection,
-  refresh: createRefresher({ load: loadConnection, save: saveConnection, fetchFn: fetch }),
+  refresh: createRefresher({ load: loadConnection, save: saveConnection }),
   tabInfo: (tabId) => chrome.tabs.get(tabId),
   inject,
-  commands: async () => (await chrome.commands.getAll()).map((c) => ({ name: c.name ?? '', shortcut: c.shortcut ?? '' })),
+  commands: async () => (await chrome.commands.getAll()).map((c) => ({ name: c.name ?? '', description: c.description ?? '', shortcut: c.shortcut ?? '' })),
   openPanel: (tabId) => chrome.sidePanel.open({ tabId }),
   writeIntent,
   readIntent,

@@ -6,7 +6,7 @@ export type ExtractMode = 'article' | 'select';
 export type ExtractResult = { draft: CaptureDraft } | { draft: null; reason: 'cancelled' };
 export type ExtractReply = ExtractResult | { error: 'unreachable' | 'no_access' } | { error: 'failed'; message: string };
 export type TabAccessReply = { url: string; title: string } | { access: false };
-export type CommandsReply = Array<{ name: string; shortcut: string }>;
+export type CommandsReply = Array<{ name: string; description: string; shortcut: string }>;
 
 export type Request =
   | { type: 'GET_HEADERS' }
