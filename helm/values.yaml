@@ -25,18 +25,14 @@ global:
   # limit). Same knob as MAX_FILE_SIZE_MB in docker-compose.yml.
   maxFileSizeMB: 50
 
-  # -- Default security context for all pods
-  # Note: Official images (nginx, postgres, redis) run as root by default
-  # Enable runAsNonRoot only if using non-root compatible images
-  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # -- Default pod security context. Every AI KB image and the bundled postgres and redis run as a
+  # non-root user with a read-only root filesystem, so the chart fits the `restricted` Pod Security
+  # Standard; each component sets its own user and emptyDirs under its securityContext.
+  # Ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
   podSecurityContext:
+    runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
-
-  # -- Default security context for all containers
-  # Note: readOnlyRootFilesystem disabled as images require writable filesystem
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
 
 # -- ServiceAccount configuration
 # Ref: https://helm.sh/docs/chart_best_practices/rbac/
@@ -89,13 +85,25 @@ app:
       memory: 1Gi
 
   # -- Pod security context override
-  podSecurityContext: {}
+  # -- Pod security context: the data-files volume is group-writable for appuser (1000). A mounted
+  # Docker socket for the sandbox needs its group id under supplementalGroups.
+  podSecurityContext:
+    runAsNonRoot: true
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
 
-  # -- Container security context override
-  # Note: App requires write access for file storage
+  # -- Container security context: the image runs as appuser (1000) with a read-only root filesystem
+  # and writes only to /tmp (an emptyDir) and the data-files volume. Opt-in log or dump paths
+  # (LOG_PATH, LLM_DEBUG_LOG, AIKB_LLM_STREAM_RAW_DUMP) must point at one of those.
   securityContext:
-    # runAsNonRoot: true  # Disabled - official images run as root
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
   # -- Environment variables for the app container
   # Ref: https://github.com/jrmatherly/ai-kb/blob/main/docker-compose.yml
@@ -183,11 +191,16 @@ frontend:
       cpu: 200m
       memory: 256Mi
 
-  # -- Container security context
+  # -- Container security context: nginx runs as its own user (101) on port 8080 with a read-only root
+  # filesystem and writes only under /tmp (an emptyDir; nginx buffers upload bodies there, so it is unbounded)
   securityContext:
-    # runAsNonRoot: true  # Disabled - official images run as root
-    # readOnlyRootFilesystem: true  # Disabled - images require writable fs
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
   # -- Service configuration
   service:
@@ -232,9 +245,16 @@ website:
       cpu: 100m
       memory: 128Mi
 
-  # -- Container security context
+  # -- Container security context: nginx runs as its own user (101) on port 8080 with a read-only root
+  # filesystem and writes only under /tmp (an emptyDir)
   securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
   # -- Service configuration
   service:
@@ -279,10 +299,16 @@ docreader:
       cpu: 500m
       memory: 512Mi
 
-  # -- Container security context
+  # -- Container security context: the image runs as uid 1000 with a read-only root filesystem and
+  # writes only under /tmp (an emptyDir)
   securityContext:
-    # runAsNonRoot: true  # Disabled - official images run as root
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
 
   # -- Service configuration
@@ -327,11 +353,23 @@ postgresql:
       cpu: 500m
       memory: 512Mi
 
-  # -- Container security context
-  # Note: PostgreSQL requires specific user permissions
+  # -- Pod security context (the data volume is group-writable for the postgres user)
+  podSecurityContext:
+    runAsNonRoot: true
+    fsGroup: 999
+    seccompProfile:
+      type: RuntimeDefault
+
+  # -- Container security context: the image runs as the postgres user (999) with a read-only root
+  # filesystem; /var/run/postgresql and /tmp are emptyDirs
   securityContext:
-    # runAsNonRoot: true  # Disabled - official images run as root
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
   # -- Persistence configuration
   persistence:
@@ -377,11 +415,23 @@ redis:
       cpu: 200m
       memory: 256Mi
 
-  # -- Container security context
+  # -- Pod security context (the data volume is group-writable for the redis user)
+  podSecurityContext:
+    runAsNonRoot: true
+    fsGroup: 999
+    seccompProfile:
+      type: RuntimeDefault
+
+  # -- Container security context: the image runs as the redis user (999) with a read-only root
+  # filesystem; it writes only under /data
   securityContext:
-    # runAsNonRoot: true  # Disabled - official images run as root
-    # readOnlyRootFilesystem: true  # Disabled - images require writable fs
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
   # -- Persistence configuration
   persistence:
@@ -517,6 +567,13 @@ neo4j:
     limits:
       cpu: "1"
       memory: 2Gi
+
+  # -- Pod security context. Neo4j is optional and not part of the restricted hardening: its image
+  # starts as root, so this override leaves runAsNonRoot unset. A cluster that enforces `restricted`
+  # must keep neo4j disabled or run it elsewhere.
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Container security context
   securityContext:

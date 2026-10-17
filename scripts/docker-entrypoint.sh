@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Started non-root (Kubernetes runAsUser, read-only rootfs): no chown, no
+# group edits and no gosu are possible, so run the app as this user.
+if [ "$(id -u)" != "0" ]; then
+    exec "$@"
+fi
+
 # ─── Fix ownership of bind-mounted directories ───
 # When users bind-mount host directories (e.g. ./data/files),
 # the mount inherits the host UID/GID which may differ from the

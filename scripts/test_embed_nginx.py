@@ -64,18 +64,22 @@ def check():
             }
         }
         """
-        (work / "nginx.conf").write_text(
-            "events {}\nhttp {\n" + (ROOT / "frontend/nginx-http.conf").read_text() + config + fixture + "\n}"
-        )
+        # The image's real main config (pid and temp paths under /tmp), with its
+        # includes replaced by the checked server blocks.
+        main = (ROOT / "frontend/nginx-main.conf").read_text()
+        includes = "include /etc/nginx/conf.d/*.conf;\n    include /tmp/nginx/conf.d/*.conf;"
+        assert includes in main, "nginx-main.conf includes changed"
+        (work / "nginx.conf").write_text(main.replace(
+            includes, (ROOT / "frontend/nginx-http.conf").read_text() + config + fixture))
         # The Nginx worker runs as an unprivileged user in the container.
         work.chmod(0o755)
-        cid = docker("create", "-p", "127.0.0.1::80",
+        cid = docker("create", "-p", "127.0.0.1::8080",
                      "--entrypoint", "nginx", IMAGE, "-c", "/check/nginx.conf", "-g", "daemon off;")
         try:
             docker("cp", str(work), cid + ":/check")
             docker("start", cid)
             info = json.loads(docker("inspect", cid))[0]
-            port = info["NetworkSettings"]["Ports"]["80/tcp"][0]["HostPort"]
+            port = info["NetworkSettings"]["Ports"]["8080/tcp"][0]["HostPort"]
             base = f"http://127.0.0.1:{port}"
 
             def request(path, method="GET", headers=None):

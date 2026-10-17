@@ -29,7 +29,7 @@ spec:
     spec:
       {{- include "ai-kb.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "ai-kb.serviceAccountName" . }}
-      {{- with .Values.global.podSecurityContext }}
+      {{- with (.Values.docreader.podSecurityContext | default .Values.global.podSecurityContext) }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -50,6 +50,10 @@ spec:
               value: {{ .Values.global.maxFileSizeMB | quote }}
           resources:
             {{- toYaml .Values.docreader.resources | nindent 12 }}
+          # The root filesystem is read-only; temp files, the LibreOffice profile and the WebKit caches land here.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           # gRPC health check using grpc_health_probe
           livenessProbe:
             exec:
@@ -69,6 +73,9 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
+      volumes:
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.docreader.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

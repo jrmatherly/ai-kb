@@ -11,7 +11,7 @@ AI KB runs as three core processes, the main service, the frontend and the docum
 | Service | Image / build | Port | Role |
 | --- | --- | --- | --- |
 | `app` | `ghcr.io/jrmatherly/ai-kb-app` (`docker/Dockerfile.app`, Go) | `8080` | Main backend: REST API, RAG retrieval, agent engine, async task workers, IM and embed channels. Health check `GET /health` |
-| `frontend` | `ghcr.io/jrmatherly/ai-kb-ui` (`frontend/`, NGINX + Vue 3 static build) | `80` | Web UI. NGINX also acts as the reverse proxy and forwards `/api` to `app` (`APP_HOST`, `APP_BACKEND_PORT` and `APP_SCHEME` can point it at a remote backend) |
+| `frontend` | `ghcr.io/jrmatherly/ai-kb-ui` (`frontend/`, NGINX + Vue 3 static build) | `8080` (compose maps `FRONTEND_PORT`, default 80, onto it) | Web UI. NGINX also acts as the reverse proxy and forwards `/api` to `app` (`APP_HOST`, `APP_BACKEND_PORT` and `APP_SCHEME` can point it at a remote backend) |
 | `docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` (`docker/Dockerfile.docreader`, Python) | `50051` (exposed inside the Compose network only, not mapped to the host) | Document parsing microservice: a gRPC server that parses and renders more than 20 file types (PDF, DOCX, Excel, EPUB, web pages and others). Health check `grpc_health_probe` |
 | `postgres` | `paradedb/paradedb:v0.26.1-pg18` | `5432` (network only) | Primary database. The ParadeDB distribution ships BM25 full-text search and pgvector, so **the default deployment needs no separate vector database** (`RETRIEVE_DRIVER=postgres`) |
 | `redis` | `redis:8.10.2-alpine` (`appendonly` + `requirepass`) | `6379` (network only) | Asynq task queue, SSE stream management across instances, `system_settings` publish/subscribe, rate limiting and the distributed per-model concurrency gate |
@@ -101,7 +101,7 @@ graph LR
     end
 
     subgraph Compose["Docker Compose: ai-kb-network"]
-        FE["frontend: NGINX + static assets (:80)"]
+        FE["frontend: NGINX + static assets (:8080)"]
         APP["app: Go main service (:8080)<br/>Gin REST + SSE / agent engine / Asynq workers"]
         DR["docreader: Python gRPC (:50051)<br/>PDF / DOCX / Excel / web parsing"]
         PG[("postgres: ParadeDB pg18<br/>business data + BM25 + pgvector")]

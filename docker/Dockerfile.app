@@ -121,8 +121,9 @@ ENV BROWSERSKILL_BINARY=/opt/ai-kb/browserskill/bsk \
     BROWSERSKILL_EXTENSION_PATH=/opt/ai-kb/browserskill/browser-skill-ai-kb-0.3.1.zip
 COPY --from=browserskill /opt/ai-kb/browserskill /opt/ai-kb/browserskill
 
-# Create a non-root user first
-RUN useradd -m -s /bin/bash appuser
+# Fixed uid/gid 1000: the Helm chart's runAsUser/runAsGroup/fsGroup rely on it.
+RUN groupadd -g 1000 appuser && \
+    useradd -m -u 1000 -g 1000 -s /bin/bash appuser
 
 # First, install ca-certificates without mirror to ensure HTTPS works
 RUN apt-get update && \
@@ -159,8 +160,14 @@ COPY --from=builder /license-bundle/ ./
 # Copy and make entrypoint script executable
 COPY --from=builder /app/scripts/docker-entrypoint.sh ./scripts/docker-entrypoint.sh
 
-# Make scripts executable
-RUN chmod +x ./scripts/*.sh
+# Make scripts executable. DuckDB spills larger-than-memory queries to ".tmp"
+# under the cwd; point it at /tmp so a read-only /app still works.
+RUN chmod +x ./scripts/*.sh && \
+    ln -s /tmp /app/.tmp
+
+# Pin HOME so DuckDB finds the prebaked ~/.duckdb extensions under any uid
+# (an unknown uid gets HOME=/, and INSTALL then needs network and a writable root).
+ENV HOME=/home/appuser
 
 # Expose ports
 EXPOSE 8080

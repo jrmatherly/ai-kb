@@ -81,20 +81,20 @@ CI publishes the image as `ghcr.io/jrmatherly/ai-kb-website` (the Website Docs w
 
 ```bash
 docker build -t ai-kb-site:2026.10.13 website-docs
-docker run -d --name ai-kb-site --restart unless-stopped -p 8080:80 ai-kb-site:2026.10.13
+docker run -d --name ai-kb-site --restart unless-stopped -p 8080:8080 ai-kb-site:2026.10.13
 ```
 
 Open `http://<server-address>:8080/`. For a domain with HTTPS, have the existing reverse proxy forward to that port. The image already contains the homepage, the documentation and the Nginx routing configuration.
 
-Nginx in the container listens on port 80 by default. The image's `/docker-entrypoint.sh` writes the port from the `WEBSITE_NGINX_PORT` environment variable into the Nginx configuration at startup, so you can change it without rebuilding. Set it when you use `--network host` or when the platform requires the container to listen on a given port:
+Nginx in the container runs as the unprivileged `nginx` user (uid 101) and listens on port 8080 by default. It writes only to `/tmp`, so the container can run with a read-only root filesystem (`--read-only --tmpfs /tmp`). The image's `/docker-entrypoint.sh` writes the port from the `WEBSITE_NGINX_PORT` environment variable into the Nginx configuration under `/tmp` at startup, so you can change it without rebuilding. Set it when you use `--network host` or when the platform requires the container to listen on a given port:
 
 ```bash
-docker run -d --name ai-kb-site --restart unless-stopped -e WEBSITE_NGINX_PORT=8080 -p 8080:8080 ai-kb-site:2026.10.13
+docker run -d --name ai-kb-site --restart unless-stopped -e WEBSITE_NGINX_PORT=9000 -p 9000:9000 ai-kb-site:2026.10.13
 ```
 
-A platform that replaces the entrypoint with its own startup command skips that substitution. In that case bake the port in at build time with `--build-arg WEBSITE_NGINX_PORT=8080`.
+A platform that replaces the entrypoint with its own startup command skips that substitution. In that case bake the port in at build time with `--build-arg WEBSITE_NGINX_PORT=9000`.
 
-To change only the port exposed on the host, change the host side of `-p`, for example `-p 9000:80`.
+To change only the port exposed on the host, change the host side of `-p`, for example `-p 9000:8080`.
 
 You can also copy just the `website-docs/` directory and run `docker build -t ai-kb-site:2026.10.13 .` inside it. The build context must be `website-docs/`. `.dockerignore` excludes host dependencies, old build output and release archives.
 

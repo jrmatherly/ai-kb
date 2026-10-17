@@ -29,7 +29,7 @@ spec:
     spec:
       {{- include "ai-kb.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "ai-kb.serviceAccountName" . }}
-      {{- with .Values.global.podSecurityContext }}
+      {{- with (.Values.neo4j.podSecurityContext | default .Values.global.podSecurityContext) }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}

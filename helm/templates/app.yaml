@@ -158,6 +158,9 @@ spec:
           volumeMounts:
             - name: data-files
               mountPath: /data/files
+            # The root filesystem is read-only; downloads, imports and DuckDB spill files land here.
+            - name: tmp
+              mountPath: /tmp
           resources:
             {{- toYaml .Values.app.resources | nindent 12 }}
           {{- with .Values.app.livenessProbe }}
@@ -176,6 +179,8 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.app.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -114,8 +114,8 @@ var registry = map[string]settingSpec{
 	//      MAX_FILE_SIZE_MB env at python startup).
 	//   3. The frontend client-side check (utils/index.ts) reads
 	//      window.__RUNTIME_CONFIG__.MAX_FILE_SIZE_MB which is
-	//      written into /usr/share/nginx/html/config.js by the
-	//      docker-entrypoint at container start.
+	//      written into /tmp/nginx/config.js (served as /config.js) by
+	//      the docker-entrypoint at container start.
 	// Surfacing a UI knob whose effect is silently capped by nginx /
 	// docreader / the in-page bundle is worse than not having it.
 	// Keep MAX_FILE_SIZE_MB as a deploy-time env var until all four

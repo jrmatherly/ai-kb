@@ -29,18 +29,19 @@ async function waitReady(origin, label) {
 }
 
 try {
-  docker('run', '-d', '--name', name, '-e', 'PORT=9999', '-p', '127.0.0.1::80', image);
-  const origin = `http://${docker('port', name, '80/tcp')}`;
+  docker('run', '-d', '--name', name, '--read-only', '--tmpfs', '/tmp', '--cap-drop', 'ALL',
+    '--security-opt', 'no-new-privileges:true', '-e', 'PORT=9999', '-p', '127.0.0.1::8080', image);
+  const origin = `http://${docker('port', name, '8080/tcp')}`;
   docker('exec', name, 'nginx', '-t');
   docker('exec', name, 'sh', '-c', '! command -v node && test ! -d /build && test ! -e /usr/share/nginx/html/package.json');
   await waitReady(origin, 'Container');
 
   // An unrelated PORT must not affect the default or overridden listener.
-  // WEBSITE_NGINX_PORT moves the listen port without a rebuild; the default stays 80.
-  docker('run', '-d', '--name', portName, '-e', 'WEBSITE_NGINX_PORT=8080', '-e', 'PORT=9999', '-p', '127.0.0.1::8080', image);
-  const portOrigin = `http://${docker('port', portName, '8080/tcp')}`;
-  await waitReady(portOrigin, 'Container with WEBSITE_NGINX_PORT=8080');
-  assert.match(docker('exec', portName, 'cat', '/etc/nginx/conf.d/default.conf'), /listen 8080;/);
+  // WEBSITE_NGINX_PORT moves the listen port without a rebuild; the default stays 8080.
+  docker('run', '-d', '--name', portName, '-e', 'WEBSITE_NGINX_PORT=8081', '-e', 'PORT=9999', '-p', '127.0.0.1::8081', image);
+  const portOrigin = `http://${docker('port', portName, '8081/tcp')}`;
+  await waitReady(portOrigin, 'Container with WEBSITE_NGINX_PORT=8081');
+  assert.match(docker('exec', portName, 'cat', '/tmp/nginx/conf.d/default.conf'), /listen 8081;/);
   assert.equal((await fetch(portOrigin + '/docs/')).status, 200);
 
   // Deployment platforms may replace the image entrypoint with /bin/bash -c.
@@ -50,9 +51,9 @@ try {
     '-p', '127.0.0.1::8088', image, '-c', 'exec /docker-entrypoint.sh');
   const bashOrigin = `http://${docker('port', bashName, '8088/tcp')}`;
   await waitReady(bashOrigin, 'Container launched through Bash');
-  docker('exec', bashName, 'nginx', '-t');
-  assert.match(docker('exec', bashName, 'cat', '/etc/nginx/conf.d/default.conf'), /listen 8088;/);
-  assert.match(docker('exec', bashName, 'cat', '/etc/nginx/conf.d/default.conf'), /try_files \$uri \$uri\.html/);
+  docker('exec', bashName, 'nginx', '-t', '-c', '/etc/nginx/nginx-runtime.conf');
+  assert.match(docker('exec', bashName, 'cat', '/tmp/nginx/conf.d/default.conf'), /listen 8088;/);
+  assert.match(docker('exec', bashName, 'cat', '/tmp/nginx/conf.d/default.conf'), /try_files \$uri \$uri\.html/);
   assert.equal((await fetch(bashOrigin + '/docs/')).status, 200);
   assert.equal((await fetch(bashOrigin + '/docs/03-features/14-wiki')).status, 200);
 

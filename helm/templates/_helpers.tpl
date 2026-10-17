@@ -195,27 +195,3 @@ storageClassName: {{ .Values.global.storageClass | quote }}
 {{- end }}
 {{- end }}
 {{- end }}
-
-{{/*
-Pod security context.
-Merges global defaults with component-specific overrides.
-*/}}
-{{- define "ai-kb.podSecurityContext" -}}
-{{- $global := .Values.global.podSecurityContext | default dict }}
-{{- $component := .componentSecurityContext | default dict }}
-{{- $merged := merge $component $global }}
-{{- if $merged }}
-securityContext:
-{{- toYaml $merged | nindent 2 }}
-{{- end }}
-{{- end }}
-
-{{/*
-Container security context.
-*/}}
-{{- define "ai-kb.containerSecurityContext" -}}
-{{- if . }}
-securityContext:
-{{- toYaml . | nindent 2 }}
-{{- end }}
-{{- end }}

@@ -111,6 +111,8 @@ ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Install the Playwright browser (for web page parsing). The build can switch to an internal artifact repository or a mirror.
+# Outside /root so the non-root runtime user can read it from a read-only root filesystem.
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
 ARG PLAYWRIGHT_DOWNLOAD_HOST=""
 ARG PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST=""
 RUN if [ -n "$PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST" ]; then \
@@ -125,8 +127,15 @@ RUN python -m playwright install-deps webkit
 COPY docreader/pyproject.toml docreader/uv.lock ./
 COPY --from=builder /app/docreader docreader
 
-# Shared temp directory for images
-RUN mkdir -p /tmp/docreader
+# Owned by the runtime user so a fresh compose named volume mounted here inherits that ownership.
+RUN groupadd --gid 1000 docreader && \
+    useradd --uid 1000 --gid 1000 --no-create-home --home-dir /tmp --shell /usr/sbin/nologin docreader && \
+    install -d -o 1000 -g 1000 /tmp/docreader
+
+# The root filesystem is read-only under the restricted profile: HOME points every per-user cache and
+# config writer (fontconfig, Mesa and GStreamer under WebKit, LibreOffice) at /tmp, the only writable mount.
+ENV HOME=/tmp
+USER 1000:1000
 
 # Expose the gRPC port
 EXPOSE 50051

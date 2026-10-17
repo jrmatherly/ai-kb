@@ -62,6 +62,9 @@ RUN apk upgrade --no-cache
 
 COPY --from=builder /frontend/dist /usr/share/nginx/html
 
+# The base default.conf would serve a second site on port 80.
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx-main.conf /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copied outside templates/ on purpose: envsubst would eat $host and the other
@@ -74,6 +77,9 @@ RUN chmod +x /docker-entrypoint.sh
 
 ENV MAX_FILE_SIZE_MB=50
 
-EXPOSE 80
+EXPOSE 8080
+
+# The base image's nginx user. Writes go to /tmp only (see nginx-main.conf).
+USER 101:101
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

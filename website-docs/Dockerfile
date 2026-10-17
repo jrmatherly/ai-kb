@@ -3,8 +3,10 @@
 #     --build-arg WEBSITE_NGINX_PORT=8080 \
 #     -t ai-kb-site website-docs
 # No host Node.js installation or prebuilt static-site/ is required.
-# WEBSITE_NGINX_PORT is written into default.conf at build time. The intranet
-# platform starts `nginx; sleep infinity` and does not run docker-entrypoint.sh.
+# WEBSITE_NGINX_PORT (default 8080, unprivileged) is written into the baked
+# default.conf at build time. The intranet platform starts `nginx; sleep infinity`
+# and does not run docker-entrypoint.sh; the entrypoint renders a runtime
+# override under /tmp instead (see deploy/nginx-main.conf).
 # The output is static files, so the builder runs on the build host and multi-arch CI never runs Node under QEMU.
 FROM --platform=$BUILDPLATFORM node:24-bookworm-slim AS builder
 RUN apt-get update \
@@ -31,12 +33,16 @@ FROM nginx:1.30.3-alpine@sha256:0d3b80406a13a767339fbe2f41406d6c7da727ab89cf8fae
 RUN apk add --no-cache bash
 # Baked into default.conf below. Entrypoint still honors a runtime override
 # when it actually runs; the platform path does not.
-ARG WEBSITE_NGINX_PORT=80
+ARG WEBSITE_NGINX_PORT=8080
 ENV WEBSITE_NGINX_PORT=${WEBSITE_NGINX_PORT}
+COPY deploy/nginx-main.conf /etc/nginx/nginx.conf
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 # The template keeps a literal ${WEBSITE_NGINX_PORT} for the nginx entrypoint's envsubst.
 # hadolint ignore=SC2016
-RUN mkdir -p /etc/nginx/templates \
+RUN sed 's#include /etc/nginx/conf.d/\*.conf;#include /tmp/nginx/conf.d/*.conf;#' \
+      /etc/nginx/nginx.conf > /etc/nginx/nginx-runtime.conf \
+    && grep -q 'include /tmp/nginx/conf.d/\*.conf;' /etc/nginx/nginx-runtime.conf \
+    && mkdir -p /etc/nginx/templates \
     && sed 's/listen 80;/listen ${WEBSITE_NGINX_PORT};/' /etc/nginx/conf.d/default.conf \
       > /etc/nginx/templates/default.conf.template \
     && sed "s/listen 80;/listen ${WEBSITE_NGINX_PORT};/" /etc/nginx/conf.d/default.conf \
@@ -48,4 +54,6 @@ COPY --from=builder /build/static-site/ /usr/share/nginx/html/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 EXPOSE ${WEBSITE_NGINX_PORT}
+# The base image's nginx user. Writes go to /tmp only (see deploy/nginx-main.conf).
+USER 101:101
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -89,7 +89,7 @@ Releases after `2026.10.15.1` move the bundled data services to new major versio
 
 | Service | Image | Ports (host:container) | Depends on | Notes |
 | --- | --- | --- | --- | --- |
-| `frontend` | `ghcr.io/jrmatherly/ai-kb-ui:${AIKB_VERSION:-latest}` | `${FRONTEND_PORT:-80}:80` | app (healthy) | Nginx serves the SPA and proxies to app; `APP_HOST`/`APP_BACKEND_PORT`/`APP_SCHEME` can point at a remote backend |
+| `frontend` | `ghcr.io/jrmatherly/ai-kb-ui:${AIKB_VERSION:-latest}` | `${FRONTEND_PORT:-80}:8080` | app (healthy) | Nginx serves the SPA and proxies to app; `APP_HOST`/`APP_BACKEND_PORT`/`APP_SCHEME` can point at a remote backend |
 | `app` | `ghcr.io/jrmatherly/ai-kb-app` | `${APP_PORT:-8080}:8080` | postgres (healthy), redis, docreader (healthy) | Go backend; mounts `./config/config.yaml` and the `data-files` volume; health check `GET /health` |
 | `docreader` | `ghcr.io/jrmatherly/ai-kb-docreader` | `expose: 50051` only (not published to the host) | - | Document parsing gRPC service; health check `grpc_health_probe`; shares the `docreader-tmp` volume with app to hand over images |
 | `postgres` | `paradedb/paradedb:v0.26.1-pg18` | No host port | - | ParadeDB = PostgreSQL 18 + BM25 and vector extensions, the default retrieval engine |

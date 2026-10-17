@@ -254,8 +254,9 @@ pre-existing Service name does not automatically transfer its ownership to Helm.
 | `global.storageClass` | Storage class for PVCs | `""` |
 | `global.imagePullSecrets` | Image pull secrets | `[]` |
 | `global.maxFileSizeMB` | Maximum upload size in MB (frontend, app, docreader) | `50` |
-| `global.podSecurityContext` | Pod security context | See values.yaml |
-| `global.containerSecurityContext` | Container security context | See values.yaml |
+| `global.podSecurityContext` | Default pod security context (`runAsNonRoot`, seccomp) | See values.yaml |
+| `<component>.podSecurityContext` | Per-component pod override (`fsGroup`) | See values.yaml |
+| `<component>.securityContext` | Per-component container context (user, read-only root, dropped capabilities) | See values.yaml |
 
 ### ServiceAccount
 
@@ -420,11 +421,23 @@ the provider's variables).
 
 ### Pod Security
 
-Every Pod uses the `RuntimeDefault` seccomp profile and every container sets
-`allowPrivilegeEscalation: false`. The images run as root and need a writable
-root filesystem, so the chart does not set `runAsNonRoot` or
-`readOnlyRootFilesystem`. Tighten them through `global.podSecurityContext`,
-`global.containerSecurityContext` and each component's `securityContext`.
+The chart fits the `restricted` Pod Security Standard out of the box. Every pod runs as
+non-root with the `RuntimeDefault` seccomp profile, and every container sets its user,
+`allowPrivilegeEscalation: false`, drops all capabilities and runs on a read-only root
+filesystem, with emptyDirs for the paths each image writes:
+
+| Component | User | Port | Writable paths |
+| ----------- | ------ | ------ | ---------------- |
+| app | 1000 | 8080 | `/tmp`, the data-files volume |
+| frontend | 101 | 8080 | `/tmp` (upload bodies are buffered here) |
+| website | 101 | 8080 | `/tmp` |
+| docreader | 1000 | 50051 | `/tmp` |
+| postgresql | 999 | 5432 | the data volume, `/var/run/postgresql`, `/tmp` |
+| redis | 999 | 6379 | the data volume |
+
+Neo4j (optional, off by default) is not hardened: its image starts as root, so enable it only
+in a namespace that allows the `baseline` standard. Override any of this through
+`<component>.podSecurityContext` and `<component>.securityContext`.
 
 ## Upgrading
 

@@ -122,7 +122,7 @@ flowchart TB
 | Component | Stack | Source | Default port | Role |
 | --- | --- | --- | --- | --- |
 | app (backend) | Go / Gin | `cmd/server`, `internal/` | 8080 | REST API, retrieval and answering, agent engine, async tasks (Asynq) |
-| frontend | Vue 3 + Nginx | `frontend/` | 80 | Web console; Nginx proxies `/api` to app |
+| frontend | Vue 3 + Nginx | `frontend/` | 8080 | Web console; Nginx proxies `/api` to app |
 | docreader | Python / gRPC | `docreader/` | 50051 (container network only) | File to Markdown conversion, web page capture, image extraction |
 | postgres | ParadeDB (PostgreSQL 18 + BM25 and vector extensions) | image `paradedb/paradedb` | 5432 | Primary database and default hybrid retrieval engine (`RETRIEVE_DRIVER=postgres`) |
 | redis | Redis 8 | - | 6379 | Stream management (SSE recovery), Asynq task queue |
@@ -139,7 +139,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    Browser["Browser / SDK / CLI"] --> FE["frontend (Nginx :80)"]
+    Browser["Browser / SDK / CLI"] --> FE["frontend (Nginx :8080)"]
     FE -- "/api reverse proxy" --> APP["app backend (Go :8080)"]
     Browser -. "direct API + X-API-Key" .-> APP
     APP -- "gRPC :50051" --> DR["docreader (Python document parsing)"]

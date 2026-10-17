@@ -29,7 +29,7 @@ spec:
     spec:
       {{- include "ai-kb.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "ai-kb.serviceAccountName" . }}
-      {{- with .Values.global.podSecurityContext }}
+      {{- with (.Values.frontend.podSecurityContext | default .Values.global.podSecurityContext) }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -49,7 +49,7 @@ spec:
             - name: MAX_FILE_SIZE_MB
               value: {{ .Values.global.maxFileSizeMB | quote }}
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: http
               protocol: TCP
           resources:
@@ -70,16 +70,12 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
-          # nginx requires writable directories for temp files
+          # The root filesystem is read-only; nginx keeps its pid, temp files and the rendered config under /tmp.
           volumeMounts:
-            - name: nginx-cache
-              mountPath: /var/cache/nginx
-            - name: nginx-run
-              mountPath: /var/run
+            - name: tmp
+              mountPath: /tmp
       volumes:
-        - name: nginx-cache
-          emptyDir: {}
-        - name: nginx-run
+        - name: tmp
           emptyDir: {}
       {{- with .Values.frontend.nodeSelector }}
       nodeSelector:

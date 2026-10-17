@@ -16,7 +16,10 @@ if [ "$SKILL_MB" -gt 512 ] 2>/dev/null; then
   SKILL_MB=512
 fi
 
-cat > /usr/share/nginx/html/config.js << EOF
+# Everything rendered lives under /tmp so the root filesystem can stay read-only.
+mkdir -p /tmp/nginx/conf.d
+
+cat > /tmp/nginx/config.js << EOF
 window.__RUNTIME_CONFIG__ = {
   MAX_FILE_SIZE_MB: ${FILE_MB},
   MAX_SKILL_BUNDLE_SIZE_MB: ${SKILL_MB},
@@ -34,6 +37,6 @@ export APP_HOST=${APP_HOST:-app}
 export APP_PORT=${APP_PORT:-8080}
 export APP_SCHEME=${APP_SCHEME:-http}
 envsubst '${MAX_FILE_SIZE} ${MAX_SKILL_BUNDLE_SIZE} ${APP_HOST} ${APP_PORT} ${APP_SCHEME}' \
-  < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
+  < /etc/nginx/templates/default.conf.template > /tmp/nginx/conf.d/default.conf
 
 exec nginx -g 'daemon off;'

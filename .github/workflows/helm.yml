@@ -123,9 +123,12 @@ jobs:
           registry="oci://ghcr.io/$GITHUB_REPOSITORY/charts"
           echo "$GITHUB_TOKEN" | helm registry login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
           # helm push replaces an existing tag without complaint; a cluster may already run that version.
-          if helm show chart "$registry/ai-kb" --version "$version" > /dev/null 2>&1; then
+          # Only a definite "not found" means unpublished: a registry or token error must not turn into a push.
+          if helm show chart "$registry/ai-kb" --version "$version" > /dev/null 2> "$RUNNER_TEMP/show.err"; then
             echo "Chart ai-kb $version is already published; nothing pushed." >> "$GITHUB_STEP_SUMMARY"
             exit 0
+          elif ! grep -qiE 'not found|MANIFEST_UNKNOWN|NAME_UNKNOWN' "$RUNNER_TEMP/show.err"; then
+            cat "$RUNNER_TEMP/show.err"; fail "could not tell whether chart $version exists"
           fi
           helm package helm --version "$version" --destination "$RUNNER_TEMP"
           helm push "$RUNNER_TEMP/ai-kb-$version.tgz" "$registry"
