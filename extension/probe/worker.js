@@ -47,16 +47,13 @@ chrome.runtime.onMessage.addListener((req, sender, reply) => {
   return true;
 });
 
-chrome.commands.onCommand.addListener(async (command, tab) => {
+// The gesture does not survive an await in the worker (recorded 2026-10-17), so open first.
+chrome.commands.onCommand.addListener((command, tab) => {
   if (!tab?.id) return;
-  await probeLog('P1-command', { command, url: tab.url ?? null, title: tab.title ?? null });
-  await chrome.storage.session.set({ [`intent:${tab.id}`]: 'command' });
-  try {
-    await chrome.sidePanel.open({ tabId: tab.id });
-    await probeLog('P1-command-open', 'opened after one await');
-  } catch (e) {
-    await probeLog('P1-command-open', `rejected: ${errText(e)}`);
-  }
+  const opened = chrome.sidePanel.open({ tabId: tab.id });
+  chrome.storage.session.set({ [`intent:${tab.id}`]: 'command' });
+  probeLog('P1-command', { command, url: tab.url ?? null, title: tab.title ?? null });
+  opened.then(() => probeLog('P1-command-open', 'opened as the first statement'), (e) => probeLog('P1-command-open', `rejected: ${errText(e)}`));
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
