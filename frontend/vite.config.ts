@@ -120,6 +120,8 @@ export default defineConfig({
           }
           if (/\/node_modules\/(marked|marked-katex-extension|katex)\//.test(id)) return 'vendor-markdown'
           if (/\/node_modules\/highlight\.js\//.test(id)) return 'vendor-highlight'
+          // One file for the TDesign components the app uses, instead of one small chunk per component.
+          if (/\/node_modules\/tdesign-vue-next\//.test(id)) return 'vendor-tdesign'
           if (/\/node_modules\/(lodash-es|dompurify|es-toolkit)\//.test(id)) return 'vendor-shared'
         },
       },
