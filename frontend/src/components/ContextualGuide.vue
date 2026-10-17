@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
 import SpotlightGuide from '@/components/SpotlightGuide.vue'
-import { isEditable } from '@/utils/guideDeferral'
+import { countsAsTyping } from '@/utils/guideDeferral'
 import {
   CONTEXTUAL_GUIDE_TOURS,
   isContextualGuideDone,
@@ -32,7 +32,7 @@ let waitGlobalTimer: ReturnType<typeof setTimeout> | null = null
 // outside a field, or a plain click into the composer, do not defer it.
 let inputSeen = false
 const noteInput = (e: Event) => {
-  if (e.type === 'input' || isEditable(e.target as Element | null)) inputSeen = true
+  if (countsAsTyping(e)) inputSeen = true
 }
 const watchInput = () => {
   inputSeen = false
