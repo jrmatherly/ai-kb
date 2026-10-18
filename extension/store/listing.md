@@ -81,5 +81,5 @@ Certifications:
 
 Filled in after the first upload (plan Task 18, Step 3).
 
-- Chrome Web Store extension ID: `<chrome extension id>`
+- Chrome Web Store extension ID: `beamnnjkmfepmlfpbcchiiooimoloiod`
 - Edge Add-ons product ID: `<edge product id>`

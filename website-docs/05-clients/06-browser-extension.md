@@ -15,7 +15,7 @@ This section installs the extension from a release build or from source.
   npm run build
   ```
 
-  Open `chrome://extensions` (`edge://extensions` in Edge), turn on Developer mode, choose Load unpacked and pick `extension/dist`. An unpacked build gets its own extension ID, derived from the folder path, so its sign-in return URL differs from a store build's (see [Sign in with your identity provider](#sign-in-with-your-identity-provider)).
+  Open `chrome://extensions` (`edge://extensions` in Edge), turn on Developer mode, choose Load unpacked and pick `extension/dist`. The manifest carries the Chrome Web Store item's public key, so an unpacked build has the Chrome Web Store ID and the same sign-in return URL (see [Sign in with your identity provider](#sign-in-with-your-identity-provider)).
 
 ## Connect
 
@@ -63,10 +63,10 @@ An operator enables extension sign-in once per server:
 2. List every return URL, comma-separated, in `OIDC_AUTH_EXTENSION_RETURN_URLS` (or `oidc_auth.extension_return_urls` in `config.yaml`):
 
    ```bash
-   OIDC_AUTH_EXTENSION_RETURN_URLS=https://<chrome-id>.chromiumapp.org/oidc,https://<edge-id>.chromiumapp.org/oidc
+   OIDC_AUTH_EXTENSION_RETURN_URLS=https://beamnnjkmfepmlfpbcchiiooimoloiod.chromiumapp.org/oidc,https://<edge-id>.chromiumapp.org/oidc
    ```
 
-   On a development server, also add the return URL of your unpacked build. Do not list development IDs on a production server: any side-loaded extension can claim an unpacked ID and receive tokens for a signed-in user.
+   An unpacked build from this repository already has the Chrome store ID. A build that changes or removes `key` in `manifest.json`, such as a fork, gets its own ID, derived from the folder path; on a development server, also add that build's return URL. Do not list development IDs on a production server: any side-loaded extension can claim an unpacked ID and receive tokens for a signed-in user.
 3. Restart the server.
 4. With several replicas, give every replica the same `JWT_SECRET`. It signs the sign-in state, so a sign-in started on one replica and finished on another fails when the secrets differ.
 

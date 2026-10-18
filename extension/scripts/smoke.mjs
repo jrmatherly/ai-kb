@@ -8,14 +8,6 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-// The private half was discarded: an unpacked load needs only the public key, which pins the extension id.
-const PUBLIC_KEY = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArLt4YQFUuxze/EtzMnfff4rh8ekHatvBWKnt1xZfBvpVy9TM/MYdM6mcSG/wVhcVdm0hRj5G91Ad71VI5pkxQqAjVgW41FtzP4VHNvS0njKdoulO7hMUdElpQkxHRqhpfojLN7y7rn/FNtM1gb0IAWM32835QjLqAQrDDdd29TXKF4Vz2/QvH/94jmW+Qi2mCKD4EPjsTMdBT2f+81pa7nOj4ksrlxnMFOnr6bKauM29C8fQ5tThvAFJvdUHTAL8fnYsu2amxQXdUBUyRrePYFWUqfQVJYR6abxjFjyEQKcu3bbXLRwPgDo5rqle5x71Guca2vnpLNAbzQ/4Kr9lvQIDAQAB';
-const EXTENSION_ID = [...createHash('sha256').update(Buffer.from(PUBLIC_KEY, 'base64')).digest('hex').slice(0, 32)]
-  .map((c) => String.fromCharCode(97 + parseInt(c, 16)))
-  .join('');
-const REDIRECT_URL = `https://${EXTENSION_ID}.chromiumapp.org/oidc`;
-const ORIGIN = `chrome-extension://${EXTENSION_ID}`;
-
 const IDENTITIES = {
   // restricted differs from full only in the key's scope; the steps and the history mode are the same.
   restricted: { tab: 'API key', env: ['AIKB_SMOKE_API_KEY'], history: 'handle' },
@@ -38,6 +30,23 @@ if (missing.length) {
   process.exit(2);
 }
 const [credential, secret] = identity.env.map((name) => process.env[name]);
+// dist/manifest.json carries the store item's public key, so the smoke copy runs under the store ID and its OIDC return URL.
+let PUBLIC_KEY;
+try {
+  ({ key: PUBLIC_KEY } = JSON.parse(readFileSync(new URL('../dist/manifest.json', import.meta.url), 'utf8')));
+} catch {
+  console.error('dist/manifest.json is missing; run npm run build first');
+  process.exit(2);
+}
+if (!PUBLIC_KEY) {
+  console.error('dist/manifest.json has no key, so the extension ID cannot be derived');
+  process.exit(2);
+}
+const EXTENSION_ID = [...createHash('sha256').update(Buffer.from(PUBLIC_KEY, 'base64')).digest('hex').slice(0, 32)]
+  .map((c) => String.fromCharCode(97 + parseInt(c, 16)))
+  .join('');
+const REDIRECT_URL = `https://${EXTENSION_ID}.chromiumapp.org/oidc`;
+const ORIGIN = `chrome-extension://${EXTENSION_ID}`;
 const server = (process.env.AIKB_SMOKE_SERVER ?? 'http://127.0.0.1:8080').replace(/\/+$/, '');
 const kbName = process.env.AIKB_SMOKE_KB ?? 'Clips';
 
@@ -192,11 +201,11 @@ async function run() {
   fixture = createServer((_, res) => res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(fixtureHtml)).listen(fixturePort, '127.0.0.1');
   const fixtureUrl = `http://127.0.0.1:${fixturePort}/article.html`;
 
-  await step('copy dist with host permissions and the smoke key', () => {
+  await step('copy dist with host permissions', () => {
     cpSync(join(root, 'dist'), copy, { recursive: true });
     const manifestPath = join(copy, 'manifest.json');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-    writeFileSync(manifestPath, J({ ...manifest, key: PUBLIC_KEY, host_permissions: [`${new URL(server).origin}/*`, `${new URL(fixtureUrl).origin}/*`] }, null, 2));
+    writeFileSync(manifestPath, J({ ...manifest, host_permissions: [`${new URL(server).origin}/*`, `${new URL(fixtureUrl).origin}/*`] }, null, 2));
     return `version ${manifest.version}`;
   });
 
