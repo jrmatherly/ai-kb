@@ -4744,7 +4744,7 @@ export default {
         retry: 'Retry',
         loading: 'Loading…',
         end: 'End of feed.',
-        empty: 'No platform-level audit events yet.',
+        empty: "No system events yet. Knowledge base activity is listed on each knowledge base's Activity tab.",
         forbidden: 'Not allowed to view the platform audit log.',
         systemActor: 'System',
         errors: {
@@ -7535,7 +7535,7 @@ export default {
       description: 'Records every membership change and access denial in this workspace. Newest first. Repeated denials within a minute are deduplicated.',
       refresh: 'Refresh',
       end: 'End of log.',
-      empty: 'No audit events yet.',
+      empty: "No workspace events yet. Knowledge base activity is listed on each knowledge base's Activity tab.",
       forbidden: 'You do not have permission to view the audit log.',
       systemActor: 'System',
       requiredRole: 'Required role: {role}',
