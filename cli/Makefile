@@ -13,7 +13,7 @@ BINARY      := aikb
 BUILD_DIR   := bin
 PKG         := github.com/jrmatherly/ai-kb/cli
 
-VERSION     := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+VERSION     := $(shell git describe --tags --match 'v[0-9]*' --always --dirty 2>/dev/null || echo dev)
 COMMIT      := $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 DATE        := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 

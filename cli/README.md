@@ -48,7 +48,7 @@ For contributing to the CLI source, see [AGENTS.md](AGENTS.md).
 Requires Go 1.26+.
 
 ```bash
-git clone https://github.com/jrmatherly/ai-kb.git   # once the repository is published
+git clone https://github.com/jrmatherly/ai-kb.git
 cd ai-kb/cli
 make build                      # bin/aikb, with version metadata
 sudo mv bin/aikb /usr/local/bin/   # or anywhere on $PATH
@@ -60,9 +60,10 @@ own: it carries the product's CalVer release tag (`git describe --tags`).
 
 ### Pre-built binaries
 
-Building from source is the supported install method today. Pre-built binaries,
-`go install`, and a Homebrew formula are planned to accompany a tagged release;
-until then, use the from-source build above.
+Building from source is the supported install method today. Release archives
+with checksums and a Homebrew tap (`jrmatherly/homebrew-ai-kb`) arrive with the
+next product release; `go install` is not supported (the module lives in
+`cli/` and release tags are dated CalVer).
 
 ---
 
@@ -463,8 +464,7 @@ macOS / Windows × Go 1.26, path-filtered to changes under `cli/`.
 ## Contributing / Reporting issues
 
 - **Bugs and feature requests**: file an issue at
-  [github.com/jrmatherly/ai-kb/issues](https://github.com/jrmatherly/ai-kb/issues)
-  once the repository is published.
+  [github.com/jrmatherly/ai-kb/issues](https://github.com/jrmatherly/ai-kb/issues).
 - **Security disclosures**: see the repository-level
   [SECURITY.md](../SECURITY.md). Do not file public issues for
   security findings.
