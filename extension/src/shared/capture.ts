@@ -2,6 +2,7 @@ import type { ApiClient, ManualBody } from './api';
 import type { Capture, CaptureDraft, KnowledgeBase, SharedKnowledgeBase } from './types';
 
 export const MAX_CONTENT_CHARS = 200000;
+export const CLIP_HINT = 'Smart clip saves the main article. Select clip saves the selected text, or an area you drag.';
 const MIN_ARTICLE_CHARS = 50;
 
 // internal/utils/security.go xssPatterns, which the server applies to titles; kept in the same order.

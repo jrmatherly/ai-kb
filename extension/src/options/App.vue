@@ -61,7 +61,11 @@ onMounted(() => void load());
 
 <template>
   <main class="page">
-    <h1>AI KB</h1>
+    <header class="head">
+      <h1>AI KB</h1>
+      <a :href="DOCS_URL" target="_blank" rel="noopener">Setup guide</a>
+    </header>
+    <p class="muted">Clip pages into your knowledge bases and chat with your agents. Enter your server's address, then sign in.</p>
 
     <p v-if="state.status === 'signed_out'" class="signed-out">Signed out elsewhere. Sign in again.</p>
 
@@ -69,6 +73,7 @@ onMounted(() => void load());
       <label class="field">
         <span>Server URL</span>
         <input v-model="state.serverUrl" type="url" placeholder="https://kb.example.com" @change="checkServer(state.serverUrl)" />
+        <span class="hint">The AI KB web UI's address, without /platform or anything after it</span>
       </label>
       <p v-if="state.insecure" class="warning">Your key, password or sign-in will travel unencrypted</p>
 
@@ -88,6 +93,7 @@ onMounted(() => void load());
         <label class="field">
           <span>API key</span>
           <input v-model="state.apiKey" type="password" autocomplete="off" />
+          <span class="hint">Create it in the web UI under Settings &gt; Publish &amp; Integrations &gt; API Integration, with the chat, retrieve and ingest capabilities</span>
         </label>
         <p class="muted">Conversations are shared with everyone who uses this key</p>
       </div>
@@ -121,10 +127,11 @@ onMounted(() => void load());
           <option v-for="m in state.memberships" :key="m.tenant_id" :value="m.tenant_id">{{ m.tenant_name }}</option>
         </select>
         <input v-else v-model.number="state.tenantId" type="number" min="1" placeholder="Workspace ID" />
+        <span v-if="!state.memberships.length" class="hint">Find it under Settings &gt; Workspace Info in the web UI</span>
       </label>
 
       <div class="actions">
-        <button type="button" class="primary" :disabled="state.status === 'checking'" @click="onConnect">Connect</button>
+        <button type="button" class="primary" :disabled="state.status === 'checking'" @click="onConnect">{{ state.status === 'checking' ? 'Connecting...' : 'Connect' }}</button>
       </div>
 
       <Toast v-if="state.error" kind="error" :message="state.error">
@@ -179,6 +186,14 @@ onMounted(() => void load());
   display: grid;
   gap: var(--aikb-space-4);
 }
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.head a {
+  color: var(--aikb-brand);
+}
 h1 {
   margin: 0;
   font-size: 20px;
@@ -194,13 +209,6 @@ h2 {
   background: var(--aikb-bg);
   border: 1px solid var(--aikb-border);
   border-radius: var(--aikb-radius-medium);
-}
-.field {
-  display: grid;
-  gap: var(--aikb-space-1);
-}
-.field > span:first-child {
-  color: var(--aikb-text-secondary);
 }
 .row {
   display: flex;

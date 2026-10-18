@@ -115,6 +115,18 @@ button:disabled {
   margin: 0;
   color: var(--aikb-text-secondary);
 }
+.field {
+  display: grid;
+  gap: var(--aikb-space-1);
+}
+.field > span:first-child {
+  color: var(--aikb-text-secondary);
+}
+.hint {
+  margin: 0;
+  color: var(--aikb-text-secondary);
+  font-size: 12px;
+}
 .signed-out a {
   margin-left: var(--aikb-space-2);
   color: var(--aikb-brand);

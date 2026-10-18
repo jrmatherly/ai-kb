@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { errorMessage } from '../shared/api';
+import { CLIP_HINT } from '../shared/capture';
 import { send, workerApi, type HeadersReply } from '../shared/messages';
 import { readRecent, resyncRecent, writeComposer, writeIntent } from '../shared/session';
 import type { Capture, Intent, Me } from '../shared/types';
@@ -81,6 +82,7 @@ onMounted(async () => {
       <button type="button" :disabled="tabId === undefined" @click="start('clip:select')">Select clip</button>
       <button type="button" :disabled="tabId === undefined" @click="start('note')">Quick note</button>
     </div>
+    <p class="hint">{{ CLIP_HINT }}</p>
     <button type="button" :disabled="tabId === undefined" @click="openPanel">Open side panel</button>
 
     <CaptureList v-if="headers && recent.length" :captures="recent" :server-url="headers.serverUrl" />

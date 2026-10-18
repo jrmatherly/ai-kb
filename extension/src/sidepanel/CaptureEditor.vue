@@ -56,10 +56,14 @@ const save = (asNew: boolean) => void props.capture.save(asNew);
 
     <fieldset v-else :disabled="editor.phase === 'saving'">
       <Toast v-if="saveError" kind="error" :message="saveError.text" />
-      <input v-model="editor.draft.title" aria-label="Title" placeholder="Title" />
+      <label class="field">
+        <span>Title</span>
+        <input v-model="editor.draft.title" aria-label="Title" />
+      </label>
       <button v-if="cleanedTitle !== undefined" type="button" class="offer" @click="editor.draft.title = cleanedTitle">Use cleaned title</button>
       <p v-if="editor.draft.url" class="muted url">{{ editor.draft.url }}</p>
-      <div ref="picker">
+      <label ref="picker" class="field">
+        <span>Knowledge base</span>
         <KbPicker
           aria-label="Knowledge base"
           :kbs="state.kbs"
@@ -67,14 +71,17 @@ const save = (asNew: boolean) => void props.capture.save(asNew);
           :model-value="capture.lockedKbId.value ?? state.kbId ?? ''"
           @update:model-value="state.kbId = $event || null"
         />
-      </div>
+      </label>
 
       <div class="body-head">
-        <button type="button" :class="{ active: preview }" :aria-pressed="preview" @click="preview = !preview">Preview</button>
-        <span class="count" :class="{ over }">{{ capture.charCount.value.toLocaleString('en-US') }} / {{ LIMIT }}</span>
+        <label :for="preview ? undefined : 'capture-markdown'" class="muted">Markdown</label>
+        <span class="tools">
+          <span class="count" :class="{ over }">{{ capture.charCount.value.toLocaleString('en-US') }} / {{ LIMIT }}</span>
+          <button type="button" :class="{ active: preview }" :aria-pressed="preview" @click="preview = !preview">Preview</button>
+        </span>
       </div>
       <div v-if="preview" class="preview markdown" v-html="previewHtml"></div>
-      <textarea v-else v-model="editor.draft.markdown" rows="14" aria-label="Markdown"></textarea>
+      <textarea v-else id="capture-markdown" v-model="editor.draft.markdown" rows="14" aria-label="Markdown"></textarea>
       <p class="muted note">HTML forms, scripts and embedded frames are removed by the server</p>
       <p v-if="limit?.reason === 'too_short'" class="error">There is too little content to save</p>
 
@@ -121,6 +128,11 @@ fieldset {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--aikb-space-2);
 }
 .body-head button.active {
   border-color: var(--aikb-brand);

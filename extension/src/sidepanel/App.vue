@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
 import { errorKind, errorMessage } from '../shared/api';
+import { CLIP_HINT } from '../shared/capture';
 import { loadConnection, onIdentityChange } from '../shared/connection';
 import { send, workerApi, type CommandsReply, type HeadersReply, type TabAccessReply } from '../shared/messages';
 import { onSessionChange, readComposer, writeComposer } from '../shared/session';
@@ -165,20 +166,26 @@ onUnmounted(() => {
 
       <section v-if="tab === 'chat'" class="chat">
         <div class="controls">
-          <select :value="chat.state.agentId ?? ''" aria-label="Agent" @change="chat.selectAgent(($event.target as HTMLSelectElement).value)">
-            <option v-for="a in chat.state.agents" :key="a.id" :value="a.id">{{ a.name }}</option>
-          </select>
+          <label class="field">
+            <span>Agent</span>
+            <select :value="chat.state.agentId ?? ''" aria-label="Agent" @change="chat.selectAgent(($event.target as HTMLSelectElement).value)">
+              <option v-for="a in chat.state.agents" :key="a.id" :value="a.id">{{ a.name }}</option>
+            </select>
+          </label>
           <button type="button" :class="{ active: history }" @click="history = !history">History</button>
         </div>
-        <KbPicker
-          v-if="chat.kbChoice.value.show"
-          multiple
-          aria-label="Knowledge bases"
-          :disabled="chat.kbChoice.value.locked"
-          :kbs="chat.kbChoice.value.kbs"
-          :model-value="chat.state.kbIds"
-          @update:model-value="chat.setKbIds"
-        />
+        <label v-if="chat.kbChoice.value.show" class="field">
+          <span>Knowledge bases</span>
+          <KbPicker
+            multiple
+            aria-label="Knowledge bases"
+            :disabled="chat.kbChoice.value.locked"
+            :kbs="chat.kbChoice.value.kbs"
+            :model-value="chat.state.kbIds"
+            @update:model-value="chat.setKbIds"
+          />
+          <span class="hint">{{ chat.kbChoice.value.locked ? 'Set by this agent' : 'None selected means all the agent can use. Ctrl or Cmd-click selects several.' }}</span>
+        </label>
         <SessionList v-if="history" :chat="chat" @picked="history = false" @error="report" />
         <ChatView
           v-show="!history"
@@ -194,8 +201,9 @@ onUnmounted(() => {
         <CaptureEditor v-if="capture.state.editor.phase !== 'idle'" :capture="capture" :server-url="headers.serverUrl" />
         <div v-else class="starts">
           <template v-if="pageState.kind === 'ok'">
-            <button type="button" class="primary" @click="clip('article')">Clip this page</button>
-            <button type="button" class="primary" @click="clip('select')">Clip selection</button>
+            <button type="button" class="primary" @click="clip('article')">Smart clip</button>
+            <button type="button" class="primary" @click="clip('select')">Select clip</button>
+            <p class="hint">{{ CLIP_HINT }}</p>
           </template>
           <p v-else-if="pageHint" class="notice">{{ pageHint }}</p>
           <button type="button" class="primary" @click="capture.newNote()">New note</button>
@@ -250,9 +258,10 @@ onUnmounted(() => {
 }
 .controls {
   display: flex;
+  align-items: end;
   gap: var(--aikb-space-2);
 }
-.controls select {
+.controls .field {
   flex: 1;
   min-width: 0;
 }

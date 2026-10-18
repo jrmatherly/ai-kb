@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, shallowRef, watch } from 'vue';
 import { renderMarkdown } from '../shared/markdown';
-import { inlineCitations, type UiMessage } from './chat';
+import { inlineCitations, STATUS_LABEL, type UiMessage } from './chat';
 import type { TabAccessReply } from '../shared/messages';
 import { kbUrl, sessionUrl } from '../shared/serverUrl';
 import type { useChat } from './useChat';
@@ -127,11 +127,11 @@ onUnmounted(() => {
         <template v-else>
           <template v-for="card in m.cards" :key="card.kind + card.id">
             <details v-if="card.kind === 'thinking'" class="card">
-              <summary>Thinking <span class="status muted">{{ card.status }}</span></summary>
+              <summary>Thinking <span class="status muted">{{ STATUS_LABEL[card.status] }}</span></summary>
               <p class="text">{{ card.text }}</p>
             </details>
             <div v-else-if="card.kind === 'tool'" class="card">
-              {{ card.name }} <span class="status muted" :class="card.status">{{ card.status }}</span>
+              {{ card.name }} <span class="status muted" :class="card.status">{{ STATUS_LABEL[card.status] }}</span>
             </div>
             <div v-else class="card approval">
               {{ card.text }}
@@ -158,7 +158,11 @@ onUnmounted(() => {
     <div class="composer">
       <button v-if="tabAccess && 'url' in tabAccess" type="button" class="chip" @click="askAboutPage">Ask about this page</button>
       <p v-else-if="tabAccess" class="muted">{{ coldHint }}</p>
-      <textarea v-model="draft" rows="3" placeholder="Ask a question" @keydown.enter.exact="onEnter"></textarea>
+      <label class="field">
+        <span>Question</span>
+        <textarea v-model="draft" rows="3" placeholder="Ask a question" @keydown.enter.exact="onEnter"></textarea>
+      </label>
+      <p class="hint">Enter sends, Shift+Enter adds a line</p>
       <div class="actions">
         <button v-if="state.streaming" type="button" @click="stop">Stop</button>
         <button type="button" class="primary" :disabled="state.streaming || !draft.trim()" @click="ask(draft)">Send</button>

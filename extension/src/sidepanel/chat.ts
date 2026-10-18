@@ -12,6 +12,13 @@ export type Card = {
   status: 'running' | 'done' | 'failed' | 'waiting';
 };
 
+export const STATUS_LABEL: Record<Card['status'], string> = {
+  running: 'Running',
+  done: 'Done',
+  failed: 'Failed',
+  waiting: 'Waiting for approval',
+};
+
 export type UiMessage = {
   id: string;
   role: 'user' | 'assistant';
