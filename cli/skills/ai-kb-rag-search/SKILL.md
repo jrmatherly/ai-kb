@@ -1,6 +1,6 @@
 ---
 name: ai-kb-rag-search
-description: Use when retrieving from or asking questions against an AI KB knowledge base via the `aikb` CLI - and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
+description: Use when answering a question from an AI KB knowledge base or pulling source passages out of one with the `aikb` CLI - grounded answers with `chat`, custom-agent answers with `session ask`, raw hybrid retrieval with `search chunks`, finding documents, knowledge bases or sessions by name, continuing a conversation, or stopping and resuming a stream. Read it whenever you are unsure which of those commands fits the task.
 metadata:
   tested_against: v2026.10.13
   openclaw:
@@ -16,74 +16,104 @@ metadata:
         description: Workspace API key with the retrieve capability
 ---
 
-# AI KB - retrieval & RAG queries
+# AI KB - answers and retrieval
 
-**REQUIRED BACKGROUND:** read the `ai-kb-shared` skill first (auth, `--kb`
-resolution, the JSON envelope, exit codes, streaming/NDJSON output).
+**REQUIRED BACKGROUND:** `ai-kb-shared` (connection, `--kb` resolution, the
+envelope, exit codes). Adding material is `ai-kb-ingest`.
 
-AI KB gives you several ways to "ask about a knowledge base." Picking the wrong
-one wastes turns or returns the wrong shape. Use the decision table.
+Three commands look alike and are not: `chat` writes an answer from one
+knowledge base, `session ask` hands the question to a custom agent, and
+`search chunks` returns passages with no model in the loop. Choosing by
+reflex costs a turn and often the wrong output shape, so start here.
 
-## Pick the command by your goal
+## Decide in two questions
 
-| Your goal | Command | LLM synthesis? | Returns |
+**Do you want prose, or evidence to reason over yourself?**
+
+- Evidence: `search chunks "<query>" --kb <kb>`. You get ranked passages with
+  their source document and no synthesis. Choose this when you will combine
+  sources, quote verbatim, or check a claim.
+- Prose: one of the two answer commands below.
+
+**Plain knowledge base, or an agent the user configured?**
+
+- `chat "<question>" --kb <kb>` retrieves from one knowledge base and answers.
+- `session ask --agent <id> "<question>"` runs a custom agent with whatever
+  knowledge bases, tools and web access it was given. When the user has set
+  one up for the job, prefer it; `aikb agent list` shows the ids.
+
+| Need | Command | Model involved | `data` |
 | --- | --- | --- | --- |
-| Natural-language **answer** grounded in a KB | `chat "<q>" --kb <kb>` | yes | bounded answer events; `--reference` adds citations; `--verbose` adds execution detail |
-| Answer via a **custom agent** (its own KB scope, tools, web search) | `session ask --agent <id> "<q>"` | yes (+ tools) | bounded answer events; `--reference` adds citations; `--verbose` adds execution detail |
-| **Raw context chunks** to reason over yourself (no answer) | `search chunks "<q>" --kb <kb>` | no | ranked chunk list |
-| Which **documents** match a keyword (title/filename) | `search docs "<q>" --kb <kb>` | no | document list |
-| Find a **knowledge base** by name | `search kb "<q>"` | no | KB list |
-| Find a past **session** by title | `search sessions "<q>"` | no | session list |
+| An answer from one knowledge base | `chat "<q>" --kb <kb>` | yes | `events`, `session_id`, `assistant_message_id`, `kb_id`, `query` |
+| An answer from a configured agent | `session ask --agent <id> "<q>"` | yes, plus the agent's tools | `events`, `session_id`, `agent_id`, `query` |
+| Passages to read yourself | `search chunks "<q>" --kb <kb>` | no | array of chunks, `meta.count`, `meta.has_more` |
+| Documents whose title or file name contains a word | `search docs "<q>" --kb <kb>` | no | array of documents, `meta.total_count` |
+| A knowledge base by name or description | `search kb "<q>"` | no | array of knowledge bases |
+| An earlier session by title | `search sessions "<q>"` | no | array of sessions |
+| A past question and its answer | `message search "<q>"` | no | grouped `query_content` / `answer_content` pairs |
 
-### The three decisions that matter
+## Continuing a conversation
 
-1. **Answer vs raw context.** Want a written answer → `chat` / `session ask`.
-   Want chunks to feed into your *own* reasoning (e.g. you'll synthesize across
-   sources) → `search chunks`. Don't call `chat` just to read source text.
-2. **`chat` vs `session ask`.** `chat` = plain KB RAG Q&A. `session ask --agent
-   <id>` = invoke a *configured custom agent* (it may scope its own KBs, call
-   tools, do web search). If the user set up an agent for this, prefer it
-   (`aikb agent list` to find ids); otherwise `chat`.
-3. **One-shot vs multi-turn.** Both `chat` and `session ask` return a
-   `data.session_id` in default JSON output. Pass `--session <id>` on the next
-   call to continue the conversation. In NDJSON mode, read it from `init`.
+`chat` and `session ask` create a session on the first call and report it as
+`data.session_id`. Pass `--session <id>` on the next call to keep context; omit
+it and each call starts fresh. In `--format ndjson` the id is on the leading
+`init` line. `aikb message list --session <id>` reads the history back.
 
-## Safety / Gotchas
+## Shaping the answer output
 
-- `chat`, `search chunks`, `search docs` need a KB: pass `--kb <id-or-name>`, or
-  set `AIKB_KB_ID`, or `aikb link` the directory (resolved in that order).
-  If none resolves it's exit 1 (`local.kb_id_required`); a bad name is exit 1
-  (`local.kb_not_found`). Resolve names with `aikb kb list` / `search kb`.
-  (`search kb` / `search sessions` are tenant-wide and take no `--kb`.)
-- `chat` / `session ask` return one buffered JSON envelope with answer
-  events by default. Add `--reference` for indexed citations and `--verbose`
-  for execution detail; use `--format ndjson` for raw events or `--format
-  text` for the live human-readable projection.
-- A stalled stream is not stopped by Ctrl-C (that just drops your local
-  connection; the server keeps generating + billing). Stop it server-side:
-  `aikb session stop <session-id> --message <message-id>` (session_id from
-  `data.session_id`, or from `init` under `--format ndjson`; message id from
-  `data.assistant_message_id` for `chat`, or `aikb message list --session <id>`
-  for `session ask`, or the `agent_query` frame under `--format ndjson`).
-  Re-attach to a stream with `aikb session resume <session-id>
-  --message <message-id>`.
-- `search chunks --limit` defaults to **8** (tuned for an LLM context window);
-  the `search docs/kb/sessions` lists default to 30. Tune retrieval with
-  `--vector-threshold` / `--keyword-threshold`, or `--no-vector`/`--no-keyword`
-  to disable a channel. Details: `references/search-chunks.md`.
+By default both answer commands buffer the stream into one envelope whose
+`data.events` holds the answer fragments. Join them with
+`--jq '[.data.events[].content] | join("")'`.
 
-## Quick examples
+- `--reference` adds citation events with `kb_id` and `chunk_id` indexes.
+- `--verbose` adds reasoning, tool and lifecycle events.
+- `--format text` prints the answer live for a person watching.
+- `--format ndjson` emits the raw server events, one per line, for your own
+  parser. `references/chat.md` lists the event types.
+
+## Gotchas
+
+- **The knowledge base comes from `--kb`, then `AIKB_KB_ID`, then the linked
+  directory.** No source means exit 1 `local.kb_id_required`; an unknown name
+  means exit 1 `local.kb_not_found`. Names match exactly, case included;
+  `aikb kb list` or `search kb` gives the spelling. `search kb` and
+  `search sessions` span the tenant and take no `--kb`.
+- **An empty result on a new knowledge base is usually indexing, not a bad
+  query.** `meta.hint` says so when the CLI suspects it; `kb status` shows
+  `retrieval_ready`. See `ai-kb-shared`.
+- **Ctrl-C does not stop generation.** The server keeps producing and billing.
+  Run `aikb session stop <session-id> --message <assistant-message-id>`.
+  `chat` returns the message id as `data.assistant_message_id`; for
+  `session ask` read the latest assistant message from
+  `aikb message list --session <id>`.
+- **A dropped stream can be replayed.**
+  `aikb session resume <session-id> --message <assistant-message-id>` replays
+  every stored event from the start, then tails. Details and the buffer
+  lifetime are in `references/chat.md`.
+- **`search chunks --limit` defaults to 8**, sized for a model context, with
+  a hard range of 1 to 1000; the other `search` lists default to 30.
+  `--vector-threshold`, `--keyword-threshold`, `--no-vector` and `--no-keyword`
+  tune the two channels. `references/search-chunks.md` has the flag table and
+  the output shape.
+- **Reading a document's chunks is not search.** `chunk list --doc <id>` lists
+  a document in stored order for debugging; `search chunks` ranks by relevance.
+
+## Examples
 
 ```bash
-# raw retrieval to reason over
-aikb search chunks "retry backoff policy" --kb engineering --limit 12
+# evidence first: pull passages, then reason over them
+aikb search chunks "on-call escalation after 15 minutes" --kb ops-runbooks --limit 10 \
+  --jq '.data[] | {score, knowledge_title, content}'
 
-# grounded answer (human transcript)
-aikb chat "How do we handle retries?" --kb engineering --format text
+# a grounded answer with citations, as one JSON envelope
+aikb chat "Who is paged when the primary does not acknowledge?" --kb ops-runbooks --reference
 
-# continue the conversation (session id from data.session_id above)
-aikb chat "And the max attempts?" --kb engineering --session sess_abc
+# keep the thread: session id from data.session_id of the call above
+aikb chat "And on weekends?" --kb ops-runbooks --session sess_7d2
 
-# answer via a custom agent
-aikb session ask --agent ag_123 "Summarize this quarter's incidents"
+# the user's configured agent, which may call tools
+aikb session ask --agent ag_triage "Draft the incident summary for INC-4821"
+
+# recover a stream that dropped
+aikb session resume sess_7d2 --message msg_c41
 ```

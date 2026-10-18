@@ -1,46 +1,60 @@
-# `search chunks` - hybrid retrieval (no LLM)
+# `search chunks`: ranked passages, no model
 
-Raw vector + keyword retrieval against one knowledge base. Returns ranked chunks
-for you to reason over; it does NOT synthesize an answer (use `chat` for that).
+Use this when the task needs the source text itself: quoting, cross-checking,
+or building your own context before answering. If the user wants a written
+answer, `chat` already does retrieval and synthesis in one call.
 
-## Command & flags
+## Invocation
 
 ```text
-aikb search chunks "<query>" --kb <name-or-id> [flags]
+aikb search chunks "<query>" [--kb <uuid-or-name>] [flags]
 ```
 
-| Flag | Default | Meaning |
+| Flag | Default | Effect |
 | --- | --- | --- |
-| `--kb` | `AIKB_KB_ID`, else the linked dir | KB name or UUID |
-| `--limit`, `-L` | 8 | max chunks returned (1..1000); 8 is tuned for an LLM context window |
-| `--vector-threshold` | 0 (off) | min vector similarity, per-channel pre-fusion |
-| `--keyword-threshold` | 0 (off) | min keyword score, per-channel pre-fusion |
-| `--no-vector` | false | disable the vector channel (keyword-only) |
-| `--no-keyword` | false | disable the keyword channel (vector-only) |
+| `--kb` | `AIKB_KB_ID`, then the linked directory | knowledge base to search |
+| `--limit`, `-L` | 8 | results to return, 1 to 1000; the CLI trims client-side after the server responds |
+| `--vector-threshold` | 0 | minimum similarity for the vector channel before fusion; 0 disables the floor |
+| `--keyword-threshold` | 0 | minimum score for the keyword channel before fusion; 0 disables the floor |
+| `--no-vector` | false | keyword channel only |
+| `--no-keyword` | false | vector channel only |
 
-You cannot disable both channels. `--limit` is a hard cap on returned chunks
-applied client-side (the server may internally retrieve a larger pool for recall,
-then the CLI trims).
+Disabling both channels is rejected. The default of 8 keeps the result inside a
+model's context window; raise it when you will filter the passages yourself.
 
-## Output (`--format json`)
+## Output
 
-`data` is an array of chunk objects; `meta.count` is the number returned.
+`data` is an array of chunk objects, `meta.count` is how many came back, and
+`meta.has_more` is true when the server returned more than `--limit` and the CLI trimmed the list. An empty
+result carries `meta.hint` when the CLI suspects the knowledge base has no
+embedding model bound.
 
-```jsonc
-{"ok":true,"meta":{"count":3},"data":[
-  {"id":"chunk_…","content":"…","knowledge_id":"doc_…","knowledge_title":"…",
-   "chunk_index":4,"score":0.82,"match_type":"hybrid","chunk_type":"text"}
-]}
+Fields on each chunk, from `aikb search chunks --help`:
+
+| Field | Use |
+| --- | --- |
+| `id` | chunk id, for `chunk view <id>` |
+| `content` | the passage text |
+| `matched_content` | the matched span when the server reports one |
+| `score` | the retrieval score; enrichment chunks the server adds for context carry 0 |
+| `match_type` | an integer: 0 vector, 1 keyword, 2 nearby chunk, 4 parent chunk, 5 related chunk |
+| `knowledge_id`, `knowledge_title`, `knowledge_filename` | the source document |
+| `chunk_index`, `seq`, `start_at`, `end_at` | position inside the document |
+| `chunk_type`, `image_info`, `metadata` | chunk kind and extra data |
+
+Project what you need:
+
+```bash
+aikb search chunks "rotation schedule" --kb ops-runbooks --limit 12 \
+  --jq '.data[] | {score, match_type, knowledge_title, content}'
 ```
 
-- `score` is the fused rank; `match_type` indicates which channel(s) hit.
-- `knowledge_id` / `knowledge_title` attribute the chunk to its source document.
-- Project just what you need with `--jq`, e.g.
-  `aikb search chunks "q" --kb eng --jq '.data[] | {score,content}'`.
+## Neighbouring commands
 
-## When to use vs alternatives
-
-- Need an **answer** → `chat` (it does retrieval + synthesis internally).
-- Building your **own** prompt/context from sources → `search chunks` (this).
-- Finding **which documents** exist by keyword → `search docs --kb <kb>`.
-- Inspecting/debugging a specific document's chunks → `chunk list --doc <id>`.
+- `chat "<q>" --kb <kb>` when an answer is wanted, not passages.
+- `search docs "<q>" --kb <kb>` when you want documents whose title or file
+  name contains the query; it filters server-side and does not rank by meaning.
+- `chunk list --doc <id>` to read one document's chunks in stored order; it is
+  a debugging view, not retrieval.
+- `message search "<q>"` to find a previous question and answer rather than
+  document text.

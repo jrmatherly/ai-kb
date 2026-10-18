@@ -1,6 +1,6 @@
 ---
 name: ai-kb-shared
-description: Use when driving an AI KB RAG server through the `aikb` CLI as an agent - authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
+description: Use whenever an agent runs the `aikb` CLI against an AI KB server - connecting with an API key, picking a knowledge base, reading the JSON envelope and exit codes, handling the exit-10 confirmation gate, previewing writes with --dry-run, or managing knowledge bases, documents, sessions, agents and models. Load this first; the other ai-kb-* skills assume it.
 metadata:
   tested_against: v2026.10.13
   openclaw:
@@ -16,220 +16,229 @@ metadata:
         description: Workspace API key (or AIKB_TOKEN with a session token)
 ---
 
-# AI KB CLI - shared base
+# AI KB CLI - the contract every command follows
 
-`aikb` is the agent-first CLI for an AI KB RAG server. Every command prints
-a JSON envelope and uses a typed exit code, so you branch on machine-readable
-output, not prose. Read this skill before any task-specific `ai-kb-*` skill.
+`aikb` was built for agents. Each command writes one JSON object to stdout and
+ends with an exit code that names the class of outcome, so a script decides
+what to do next from two values and never parses prose. This skill is that
+contract. `ai-kb-rag-search` covers retrieval and chat; `ai-kb-ingest` covers
+adding material.
 
-## 1. Authenticate (do this first - order matters)
+## Read the exit code, then the envelope
 
-**Agents usually skip profiles entirely:** set `AIKB_API_KEY` (or
-`AIKB_TOKEN`) + `AIKB_HOST` and every command authenticates statelessly and
-zero-disk - no `profile add` / `auth login` needed. `auth token` echoes that env
-credential; `auth status` / `doctor` confirm it. The steps below set up a
-**persistent named profile** instead (interactive / multi-environment use).
+Check `$?` first. It separates success, user error, auth, and transient failure
+without opening the output. Verified with `aikb exit-codes`, which prints this
+table as JSON.
 
-Authentication is a **two-step sequence**. `aikb auth login` operates on the
-*active profile*, so the profile must exist first:
-
-```bash
-# 1. register a connection target and make it active
-aikb profile add prod --host https://kb.example.com --use
-# 2a. API key (agent default - pipe the key on stdin, non-interactive):
-echo "$AIKB_API_KEY" | aikb auth login --with-token
-# 2b. OR email+password (interactive prompt only - no flags; not for agents)
-aikb auth login
-
-aikb auth status          # verify: who am I, which tenant
-```
-
-- Target a *non-active* profile for one command with the global `--profile NAME`
-  (e.g. `aikb --profile staging auth refresh`). There is no per-command
-  `--name`/`--host` on auth commands.
-- Get the raw token for scripting with `AIKB_TOKEN=$(aikb auth token)`
-  (raw token by default; works with an env credential too; `--format json` gives
-  the `{token, mode, profile}` envelope).
-- `aikb auth logout` clears a profile's stored credentials but **keeps the
-  profile registered** (re-auth later with `auth login`); use `profile remove`
-  to delete the profile entirely.
-- `aikb doctor` runs 4 health checks (reachability, credential, version, storage).
-
-## 2. Selecting a knowledge base (`--kb`)
-
-`--kb` accepts a **name or a UUID**. A non-UUID value is matched client-side
-against `kb list` names (exact, case-sensitive). Resolution order:
-`--kb` flag → `AIKB_KB_ID` env → directory link (`aikb link --kb X` binds
-the cwd) → error. `chat`, `search chunks` and `search docs` inherit the link
-too; **only `doc delete --all` always requires an explicit `--kb`** (so a bulk
-delete never silently hits the wrong corpus).
-
-**A KB must have an embedding model bound to be searchable.** A freshly created
-KB is `retrieval_ready:false` - uploaded docs stay unindexed and `search`/`chat`
-return nothing until you bind models. Create it ready in one step
-(`kb create --embedding-model <m> --chat-model <m>`, discover ids with
-`aikb model list`) or bind after the fact
-(`kb config set <kb> --embedding-model <m> --chat-model <m>`; high-risk, exits
-10 without `-y`, see §5). `kb status` /
-`kb check` report `retrieval_ready`, and `kb create` hints the fix when it is
-false - so an unconfigured KB is never silently "healthy".
-
-## 3. Output contract - every command
-
-Default output is `--format json`: a single envelope.
-
-| Field | Meaning |
-| --- | --- |
-| `ok` | `true`/`false` - branch on this first (see batch/wait caveat below) |
-| `data` | success payload (object or array; absent on mutation-only success) |
-| `meta` | `count` / `has_more` / `total_count` / `hint` / `dry_run` / `plan` … |
-| `error` | on failure: `{type, message, exit_code, hint?, retry_argv?, retry_after_seconds?, retryable?, risk?, detail?}` |
-| `profile` | active profile name |
-
-- `error.type` is a **stable typed code** (e.g. `local.kb_not_found`,
-  `input.invalid_argument`, `input.confirmation_required`, `server.error`).
-  Branch on it; `error.hint` usually tells you the next action.
-- `--format text` = a live human-readable projection. `chat` and `session ask`
-  buffer a bounded answer-event projection into one JSON envelope by default;
-  pass `--reference` for indexed citations, `--verbose` for execution detail,
-  or `--format ndjson` for raw event lines. `session resume` remains
-  an NDJSON streaming command.
-- `--jq '<expr>'` filters the envelope (e.g. `aikb kb list --jq '.data[].id'`).
-- Exception: `aikb auth token` emits the **raw token** by default (it's a
-  scripting helper); pass `--format json` for the `{token, mode, profile}` envelope.
-- **Batch / wait caveat:** multi-item commands come in two shapes, but for
-  **both you branch on the exit code, not `ok`**:
-  - `doc/chunk/session delete` with several ids → a **batch** envelope:
-    `status` is `success`/`partial`/`error`, `ok` is `true` *only* when every
-    item succeeded (**`ok:false` on any failure**), `data` is a per-item array
-    `[{id, ok, result|error}]`, and `meta.successes`/`failures` count the split.
-    Exit 1 if any item failed.
-  - `doc wait` → a normal `ok:true` envelope whose `data` partitions the ids
-    into `{completed, failed, timeout}`; `ok` stays `true` even with failures
-    (to avoid a contradictory envelope). Exit 1 if any doc failed, 124 on timeout.
-  Either way, read the **exit code** first, then `data` for which items failed.
-
-## 4. Exit codes (branch on these)
-
-| Code | Meaning (typed code class) | Agent action |
+| Exit | Error types | What to do |
 | --- | --- | --- |
-| 0 | success (incl. `--dry-run`) | proceed |
-| 1 | `local.*` / unclassified (incl. `local.kb_not_found`) | read `error`, decide retry/abort |
-| 2 | flag / argument validation (bad/unknown/missing-required flag) | re-check `aikb <cmd> --help` |
-| 3 | `auth.*` (missing / expired / forbidden) | re-auth, then retry |
-| 4 | `resource.not_found` (a server resource id) | verify the id |
-| 5 | `input.*` (other than confirmation_required) | adjust args, retry |
-| 6 | `server.rate_limited` | back off, retry |
-| 7 | `server.*` / `network.*` | transient - retry with backoff |
-| **10** | **`input.confirmation_required` (destructive)** | **see §5 - never auto-bypass** |
-| 124 | `operation.timeout` | raise `--timeout` or check the job |
-| 130 | `operation.cancelled` (SIGINT/SIGTERM) | stop, don't retry |
+| 0 | none | continue (also returned by `--dry-run`) |
+| 1 | `local.*`, `operation.failed`, `operation.cancelled`, `server.session_create_failed`, `internal.error` | read `error.message`, decide whether a retry can help |
+| 2 | `input.invalid_argument` from flag parsing (unknown flag, wrong arg count) | fix the invocation; `aikb <command> --help` |
+| 3 | `auth.*` | re-authenticate, then retry |
+| 4 | `resource.not_found` | the server id is wrong; look it up again |
+| 5 | `input.*` other than confirmation (a value rejected after parsing, such as a bad `--jq` program) | change the value, retry |
+| 6 | `server.rate_limited` | wait, then retry |
+| 7 | other `server.*`, `network.*` | transient; retry with backoff |
+| 10 | `input.confirmation_required` | stop and ask the user (next section) |
+| 124 | `operation.timeout` | raise `--timeout` or inspect the job |
+| 130 | cancelled by SIGINT or SIGTERM | stop; do not retry |
 
-Note: a server resource id that doesn't exist → exit 4 (`resource.not_found`);
-a `--kb` *name* that doesn't resolve client-side → exit 1 (`local.kb_not_found`).
-`input.invalid_argument` spans two exit codes - a malformed *invocation*
-(unknown/missing flag, wrong arg count) exits **2** (fix the command, re-check
-`--help`), while a value rejected *after* parsing (e.g. a bad `--jq` expression)
-exits **5** (adjust the value, retry). Branch on the exit code to tell them apart.
+`input.invalid_argument` appears under both 2 and 5. The envelope carries
+`error.exit_code` for exactly this reason: one JSON read tells them apart.
 
-## 5. Destructive writes (exit 10) - hard rule
+Then read the envelope. A success looks like `{ok:true, data, meta?, profile}`;
+a failure looks like `{ok:false, error}`.
 
-Every command whose `--help` starts with a `Risk:` line (`aikb schema <cmd>`
-shows it as `risk`), plus `aikb api -X DELETE`, exits **10** without `-y`, with
-`error.type = input.confirmation_required` and `error.risk = {level, action}`.
-`level` is `destructive` (deletes, `kb config set`, `auth logout`,
-`session tool-approval resolve`) or `write` (`kb/agent/doc/model update`);
-both are the same gate:
+- `data` holds the payload: an object for one resource, an array for a list.
+  Every create command puts the new id in `data.id`.
+- `meta` carries `count`, `total_count` and `has_more` on lists, `hint` when a
+  success deserves a note (an empty search against an unindexed KB, for
+  example), and `dry_run` plus `plan` on previews.
+- `error` carries `type`, `message`, `exit_code`, and optionally `hint`,
+  `retry_argv` (an argv array you can exec as-is), `retry_after_seconds`,
+  `retryable`, and `risk`.
+- `--jq '<program>'` projects the envelope and prints bare strings, so
+  `ID=$(aikb kb create "Handbook" --jq .data.id)` needs no quote stripping.
+- `--format text` renders for a human; `--format ndjson` streams events for
+  `chat`, `session ask` and `doc wait`. `AIKB_FORMAT` sets the default.
+- `aikb auth token` is the one command that prints no envelope: it writes the
+  bare credential for `TOKEN=$(aikb auth token)`. `--format json` restores the
+  envelope with `{token, mode, profile}`.
+
+### Commands that report several outcomes at once
+
+Two command shapes carry per-item results, and for both the exit code is the
+summary while `data` is the detail.
+
+`doc delete`, `chunk delete` and `session delete` with several ids, and
+`doc upload --recursive`, emit a batch envelope: top-level `status` is
+`success`, `partial` or `error`; `ok` is true only when nothing failed; `data`
+is `[{id, ok, result|error}]`; `meta.successes` and `meta.failures` give the
+counts. One failed item means exit 1, so iterate `data[]` for the ids to retry.
+
+`doc wait` instead keeps `ok:true` whenever the wait reached a terminal state
+and partitions ids into `data.completed`, `data.failed` and `data.timeout`.
+Exit 1 means at least one document failed to parse, 124 means the timeout
+fired. Do not treat `ok:true` as "every document parsed".
+
+## Exit 10: the user decides, not you
+
+Any command whose `--help` opens with a `Risk:` line (and `aikb schema <cmd>`
+reports under `risk`) refuses to run without `-y`, writing exit 10 and
+`error.type = input.confirmation_required`. `error.risk.level` is `destructive`
+for deletes, `kb config set`, `auth logout`, `profile remove` and
+`session tool-approval resolve`, and `write` for `kb update`, `agent update`,
+`doc update` and `model update`. `aikb api` applies the same gate to
+`-X DELETE` (destructive) and `-X PUT` / `-X PATCH` (write). Both levels block
+the same way; the label only tells you whether the change is reversible.
 
 ```jsonc
 {"ok":false,"error":{"type":"input.confirmation_required",
-  "message":"delete knowledge base X requires explicit confirmation: re-run with -y/--yes",
-  "exit_code":10,"hint":"high-risk write - re-run with -y/--yes after the user explicitly approves",
-  "retry_argv":["aikb","kb","delete","X","-y"],"retryable":false,
+  "message":"delete knowledge base kb_9f3 requires explicit confirmation: re-run with -y/--yes",
+  "exit_code":10,
+  "hint":"high-risk write - re-run with -y/--yes after the user explicitly approves",
+  "retry_argv":["aikb","kb","delete","kb_9f3","-y"],
+  "retryable":false,
   "risk":{"level":"destructive","action":"kb.delete"}}}
 ```
 
-**Surface this to the user and get explicit approval. Re-run with `-y` ONLY
-after they approve. Never add `-y` on your own initiative.**
+Show the user what the command would change and wait for a yes. Only then run
+`retry_argv`. Adding `-y` because the gate is "in the way" defeats the one
+safeguard between an agent and an irreversible delete.
 
-## 6. Preview before acting - `--dry-run`
+## Preview with --dry-run before any write
 
-Every mutation except `auth login` accepts `--dry-run`: it resolves the request, prints
-`meta.plan = {action, args}`, makes **zero** server/side-effect changes, exits 0.
-Use it to confirm a command is well-formed (and what it would do) before running
-it for real - especially before destructive or bulk operations.
+Every command that changes server or local state accepts `--dry-run`, with one
+exception: `auth login`. A dry run resolves arguments, prints
+`meta.dry_run:true` and `meta.plan:{action, args}`, performs no network call or
+file write, and exits 0. Use it to show the user a bulk upload or a delete
+before it happens, and to catch a malformed invocation while it is still free.
 
-## 7. Chaining (mutation → id)
+## Connecting
 
-Mutations return the new resource id in `data.id`. Chain with it:
+Set two variables and every command authenticates on its own, with nothing
+written to disk:
 
 ```bash
-KB=$(aikb kb create "Docs" --jq '.data.id')   # --jq prints bare strings
-aikb doc upload ./manual.pdf --kb "$KB"
+export AIKB_HOST=https://kb.example.com
+export AIKB_API_KEY=...        # or AIKB_TOKEN with a bearer token; AIKB_TOKEN wins if both are set
+aikb auth status               # who the server thinks you are, and which tenant
+aikb doctor                    # base URL, credential, server version, credential storage
 ```
 
-## 7a. Reliability patterns for long-running agent runs
+This is the normal agent path. Profiles exist for people who switch between
+servers; use them only when the user asks for a stored connection:
 
-### Inspecting prior messages
-
-Use `aikb message list --session <sess-id>` to review the message history of a session (e.g., after a stream drops) before deciding whether to re-ask or continue. Use `aikb message search "<query>"` to locate a prior Q&A exchange across all sessions - prefer this over re-running an expensive query when the answer may already exist.
-
-### Tool-approval unlock
-
-An agent run pauses mid-stream on a tool-approval event when the server requires human sign-off before executing a tool call. The pattern:
-
-1. The stream emits a tool-approval event; capture the `pending_id`.
-2. **Surface the pending tool call to the user** (show tool name + proposed args). Do not auto-approve.
-3. After explicit user go-ahead: `aikb session tool-approval resolve <pending-id> -y` to approve, or add `--reject --reason "..."` to reject.
-4. Resume the answer: `aikb session resume <sess-id> --message <msg-id>`.
-
-`--modified-args '{"key":"val"}'` replaces the tool arguments on approve (non-empty JSON object required). This is an exit-10 interaction - see §5.
-
-## 8. Resource model & command map
-
-```text
-kb        knowledge bases   list/view/create/update/delete/pin/unpin/status/check/config set
-doc       documents in a KB list/view/create/upload/fetch/download/reparse/update/delete/wait
-chunk     retrieval units   list/view/delete   (RAG debug; not search)
-session   conversations     list/view/delete/ask/stop/resume/tool-approval resolve
-message   session messages  list/search/delete
-agent     custom agents     list/view/create/update/delete/status/check
-model     configured models list/view/create/update/delete   (update rotates key / base-url in place, id preserved)
-search    retrieval         chunks / docs / kb / sessions
-chat      one-shot KB RAG Q&A (streaming)
-api       raw HTTP passthrough to any server endpoint (escape hatch)
-link/unlink  bind cwd to a KB        mcp serve  expose aikb as MCP tools
-profile / auth / config view / doctor / version   connection and health
-schema / exit-codes / skills                      self-description
+```bash
+aikb profile add staging --host https://staging.example.com --use
+printf '%s' "$AIKB_API_KEY" | aikb auth login --with-token   # key on stdin, never on argv
 ```
 
-**chat vs session ask vs search** - the most common confusion: see the
-`ai-kb-rag-search` skill for the decision table. Briefly: `chat` = one-shot
-KB Q&A with an LLM; `session ask --agent <id>` = invoke a *custom agent*;
-`search chunks` = raw hybrid retrieval (no LLM).
+`auth login` has no host, user or name flag; it authenticates whichever profile
+is active, so `profile add ... --use` must come first. Without `--with-token`
+it prompts for email and password, which an agent cannot answer. A password
+profile holds a JWT that `auth refresh` renews; API-key profiles are rejected by
+`auth refresh`. The global `--profile <name>` aims one invocation at another
+profile without changing the default. `auth logout` clears credentials but
+leaves the profile registered; `profile remove` deletes it.
 
-## 9. CLI vs MCP
+## Choosing the knowledge base
 
-For your own scripted control, use the CLI (richer: dry-run, exit-10, all verbs).
-For an IDE/host agent that speaks MCP, `aikb mcp serve` exposes a curated
-read+chat tool set: `kb_list`, `kb_view`, `doc_list`, `doc_view`, `doc_download`,
-`search_chunks`, `chunk_list`, `agent_list`, `chat`, `session_ask`. MCP tools
-take raw ids (no name resolution); resolve names via `kb_list` first.
+Commands that act inside a knowledge base (`chat`, `search chunks`,
+`search docs`, `doc upload`, `doc fetch`, `doc create`, `doc list`) find it in
+this order:
 
-## 10. Agent self-help
+1. `--kb <value>`
+2. `AIKB_KB_ID`
+3. `.aikb/project.yaml`, written by `aikb link <kb>` and found by walking up
+   from the current directory
 
-Run `aikb <command> --help`. With `AIKB_AGENT_HELP=1` set, `--help` emits a
-JSON blob (`used_for` / `required_flags` / `examples`) instead of prose - parse
-that to learn a command without scraping the human help table. `aikb schema`
-lists every command with its `used_for`; `aikb schema <cmd path>` prints one
-command's full contract (flags, output, risk) as the standard envelope.
+When none applies the command exits 1 with `local.kb_id_required`. The value
+may be a UUID or a name. A name is resolved by listing the tenant's knowledge
+bases and taking the exact, case-sensitive match; no match is exit 1 with
+`local.kb_not_found`. `doc delete --all` ignores the fallbacks and demands an
+explicit `--kb`, so a mass delete can never land on a linked directory's
+knowledge base by accident. `search kb` and `search sessions` are tenant-wide
+and take no `--kb`.
 
-## Common mistakes
+A knowledge base answers nothing until an embedding model is bound. `kb status`
+and `kb check` expose this as `retrieval_ready`; `kb create` adds a
+`meta.hint` naming the fix when it created an unready KB. Bind at creation
+(`kb create "Handbook" --embedding-model <id-or-name> --chat-model <id-or-name>`)
+or afterwards with `kb config set <kb> --embedding-model ... --chat-model ...`,
+which is exit-10 gated. `aikb model list` shows the ids.
 
-| Mistake | Fix |
+## Streams: stopping, resuming, approving
+
+Ctrl-C on `chat` or `session ask` closes your socket; the server keeps
+generating. To stop it, run
+`aikb session stop <session-id> --message <assistant-message-id>`. To re-attach
+after a dropped connection, run
+`aikb session resume <session-id> --message <assistant-message-id>`, which
+replays the stored events from the first one, so dedupe anything you already
+consumed. `chat` returns the id as `data.assistant_message_id`; for
+`session ask`, take the latest assistant message from
+`aikb message list --session <id>`.
+
+An agent run may pause when a tool call needs human sign-off. The stream
+carries a pending id and the run blocks. Show the user the tool and its
+arguments, and after their explicit go-ahead run
+`aikb session tool-approval resolve <pending-id> -y`
+(`--reject --reason "..."` to refuse, `--modified-args '{...}'` to approve with
+changed arguments), then `session resume` to collect the answer. Approving
+executes the tool with the user's authority, which is why the command sits
+behind exit 10.
+
+`aikb message search "<query>"` finds a past question and answer across all
+sessions. Check it before re-running an expensive query the user may already
+have asked.
+
+## Command families
+
+| Group | Verbs | Notes |
+| --- | --- | --- |
+| `kb` | list, view, create, update, delete, pin, unpin, status, check, config set | `status` is one HTTP call; `check` also counts failed documents |
+| `doc` | list, view, create, upload, fetch, download, reparse, update, delete, wait | `update` edits title and description only; content changes need a re-upload |
+| `chunk` | list, view, delete | stored order, for debugging; retrieval is `search chunks` |
+| `search` | chunks, docs, kb, sessions | only `chunks` ranks by relevance |
+| `chat` | | one question, grounded in one knowledge base |
+| `session` | list, view, delete, ask, stop, resume, tool-approval resolve | `ask --agent <id>` runs a custom agent |
+| `message` | list, search, delete | message history within sessions |
+| `agent` | list, view, create, update, delete, status, check | configuration only; invoke through `session ask` |
+| `model` | list, view, create, update, delete | `update` keeps the id, so KB and agent references survive a key rotation |
+| `api` | | raw request to any server path when no verb fits |
+| `link`, `unlink` | | bind or unbind the current directory |
+| `profile`, `auth`, `config view`, `doctor`, `version` | | connection and health |
+| `schema`, `exit-codes`, `skills` | | self-description |
+
+## CLI vs MCP
+
+Drive the CLI yourself whenever you can: it has `--dry-run`, the exit-10 gate,
+name resolution and every verb. `aikb mcp serve` exists for a host that speaks
+MCP and exposes a smaller read-and-ask surface: `kb_list`, `kb_view`,
+`doc_list`, `doc_view`, `doc_download`, `search_chunks`, `chunk_list`,
+`agent_list`, `chat`, `session_ask`. Those tools accept ids only; resolve a
+name through `kb_list` first.
+
+## Learn a command without guessing
+
+- `aikb schema` lists every command with a one-line `used_for`;
+  `aikb schema <command path>` returns one command's flags, required flags,
+  output shape, examples and risk as a normal envelope.
+- `AIKB_AGENT_HELP=1 aikb <command> --help` prints the same contract as JSON
+  instead of the human help page.
+- Plain `--help` lists the `.data` fields a command emits, so you can write a
+  `--jq` projection before the first live call.
+
+## Mistakes to avoid
+
+| Symptom | Cause and fix |
 | --- | --- |
-| `aikb auth login` before any profile exists | `profile add <n> --host <url> --use` first (§1) |
-| Passing `--host` or `--name` to `auth login` | `auth login` takes neither - host comes from the profile; use `profile add <n> --host <url> --use`, then `auth login` |
-| Auto-adding `-y` to clear an exit-10 | Never; get user approval first (§5) |
-| Need the raw `chat` event stream | pass `--format ndjson`; use `--format text` for a live projected transcript |
-| `search chunks "q"` → exit 1 `local.kb_id_required` | Pass `--kb <name-or-id>`, set `AIKB_KB_ID`, or `aikb link` the dir |
+| Exit 10 "cleared" by appending `-y` | The gate is the user's decision. Surface `error.message`, wait for approval, then run `retry_argv`. |
+| `auth login` fails with no profile | Agents should set `AIKB_HOST` and `AIKB_API_KEY` instead; if a profile is wanted, `profile add <name> --host <url> --use` first. |
+| `--host` passed to `auth login` | Host belongs to the profile or `AIKB_HOST`; `auth login` has only `--with-token`. |
+| Batch delete reported `ok:false` yet some ids are gone | Expected. Read `data[].ok`; retry only the failed ids. |
+| `doc wait` exit 1 with `ok:true` | A document failed to parse. Read `data.failed[]`; `doc reparse <id>` after fixing the source. |
+| `search chunks` returns nothing on a fresh KB | `kb status` shows `retrieval_ready:false`. Bind models with `kb config set` (exit-10 gated). |
+| Exit 1 `local.kb_not_found` for a name that exists | Names match exactly and case-sensitively; copy it from `aikb kb list`. |

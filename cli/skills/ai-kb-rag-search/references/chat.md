@@ -1,58 +1,91 @@
-# `chat` and `session ask` - RAG answers and raw streams
+# Answer commands: `chat`, `session ask`, and the event stream
 
-Both return one buffered JSON envelope with answer events by default.
-`--reference` adds lookup-index references; `--verbose` adds execution events.
-They share the raw SSE vocabulary under `--format ndjson`; `chat` does plain KB
-RAG, `session ask` invokes a custom agent.
+Read this when you need the exact shape of what `chat` or `session ask` emits,
+want to parse the raw event stream, or have to stop or resume a running answer.
 
-## Commands & flags
+## Invocation
 
 ```text
-aikb chat "<query>" --kb <name-or-id> [--session <id>]
-aikb session ask "<query>" --agent <agent-id> [--session <id>]
+aikb chat "<question>" [--kb <uuid-or-name>] [--session <id>] [--reference] [--verbose]
+aikb session ask "<question>" --agent <agent-id> [--session <id>] [--reference] [--verbose]
 ```
 
-- `--kb` (chat) is a name or id, falling back to `AIKB_KB_ID` or the linked
-  directory. `--agent` (session ask) is required.
-- `--session <id>` continues an existing conversation; omit to start a new one.
-- `--format json` returns one `{ok,data:{events:[...]}}` envelope; `--format
-  text` streams the same projection as readable text; `--format ndjson` emits
-  the raw event stream.
-- `--reference` adds bounded reference indexes to JSON/text.
-- `--verbose` adds thinking, reflection, tool, metadata, and lifecycle events.
-- Combine them when both provenance and execution detail are needed.
+| Flag | `chat` | `session ask` |
+| --- | --- | --- |
+| `--kb` | knowledge base; falls back to `AIKB_KB_ID`, then the linked directory | not accepted |
+| `--agent`, `-a` | not accepted | required agent id |
+| `--session` | continue this session instead of creating one | same |
+| `--reference` | add citation events (`kb_id`, `chunk_id` indexes) | same |
+| `--verbose` | add reasoning, tool and lifecycle events | same |
 
-## Event stream (`--format ndjson`)
+## Three output modes
 
-Under `--format ndjson`, the CLI emits an `init` line first, then passes SDK
-events through verbatim:
+| `--format` | What you get |
+| --- | --- |
+| `json` (default) | one envelope: `{ok, data:{events:[...], session_id, query, kb_id or agent_id}}`; `chat` also sets `data.assistant_message_id` |
+| `text` | the selected events rendered live for a reader |
+| `ndjson` | an `init` line, then the server's events verbatim, one JSON object per line |
+
+`data.events` holds answer fragments by default; `--reference` and `--verbose`
+add their event kinds to the same array. The final answer is the concatenation
+of the `content` fields of events whose `response_type` is `answer`:
+
+```bash
+aikb chat "What is the retention period?" --kb policies --jq '[.data.events[].content] | join("")'
+```
+
+## The raw stream (`--format ndjson`)
+
+The first line is written by the CLI:
 
 ```jsonc
-{"type":"init","session_id":"sess_abc","kb_id":"…","profile":"prod"}   // session ask: agent_id instead of kb_id
-{"response_type":"thinking","content":"…"}
-{"response_type":"tool_call","tool_calls":[…]}        // agent only
-{"response_type":"tool_result","content":"…"}         // agent only
-{"response_type":"references","knowledge_references":[…]}
-{"response_type":"answer","content":"partial text…"}   // streamed in pieces
-{"response_type":"complete","done":true}
+{"type":"init","session_id":"sess_7d2","kb_id":"3b1e...","profile":"dev"}   // session ask carries agent_id instead of kb_id
 ```
 
-- Accumulate `response_type:"answer"` `content` pieces for the final answer.
-- `knowledge_references` carry the grounding chunks (source attribution).
-- **Keep `init.session_id`** to continue the chat (`--session`). The
-  `assistant_message_id` needed for `session stop` / `session resume`
-  rides on the SDK's `agent_query` frame, not on `init` - scan for it. In
-  default JSON mode, `chat` returns it as `data.assistant_message_id`; for
-  `session ask`, read it from `aikb message list --session <id>`.
-- On failure mid-stream you get `response_type:"error"`; a transport/HTTP error
-  surfaces as the normal error envelope on stderr with a typed code.
+Every following line is a server event. Values of `response_type` you will see:
 
-## Recovery
+| `response_type` | Meaning |
+| --- | --- |
+| `agent_query` | the opening metadata frame; carries `session_id` and `assistant_message_id` |
+| `thinking`, `reflection` | model reasoning, when the model produces it |
+| `tool_call`, `tool_result` | an agent's tool activity (`session ask`) |
+| `references` | grounding chunks in `knowledge_references` |
+| `answer` | a fragment of the answer in `content`; concatenate in order |
+| `error` | the run failed mid-stream |
+| `complete` | the terminal event |
 
-- **Stop server-side generation:** `aikb session stop <session-id> --message
-  <message-id>`. Ctrl-C only closes your local connection - the server keeps
-  generating (and billing) until told to stop.
-- **Re-attach after a dropped connection:** `aikb session resume
-  <session-id> --message <message-id>`. The server replays the event log from
-  index 0 then tails new events, so **dedupe by message_id** if you already
-  consumed some events. Buffer TTL is ~1h (redis) or process-lifetime (memory).
+Only `complete` ends the stream. Other frames may carry `done:true` for
+themselves (the `agent_query` frame does), so do not stop reading on `done`.
+A transport or HTTP failure is reported as the usual error envelope on stderr
+with a typed code, not as a stream event.
+
+Keep two ids from the stream: `session_id` for `--session`, and
+`assistant_message_id` from the `agent_query` frame for `session stop` and
+`session resume`.
+
+## Stopping and resuming
+
+Closing the connection (Ctrl-C, a killed process) leaves the server
+generating. Stop it explicitly:
+
+```bash
+aikb session stop sess_7d2 --message msg_c41
+```
+
+Re-attach to a stream that dropped, or replay a finished one for inspection:
+
+```bash
+aikb session resume sess_7d2 --message msg_c41
+```
+
+`session resume` always writes NDJSON (`--format` and `--jq` have no effect):
+an `init` line with `session_id`, `message_id` and `profile`, then the stored
+events. The server replays from the first event rather than from where you
+left off, so a consumer that already processed part of the stream must dedupe.
+The buffer lives one hour when the server uses Redis and for the server
+process's lifetime when it uses memory; after that the CLI returns
+`local.sse_stream_aborted`.
+
+The message id is `data.assistant_message_id` from `chat`, the `agent_query`
+frame in NDJSON mode, or the newest assistant message in
+`aikb message list --session <id>`.
