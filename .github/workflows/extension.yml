@@ -313,7 +313,8 @@ jobs:
             code="$(curl -sS -o "$out.poll.body" -w '%{http_code}' \
               -H @"$out.h" \
               "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package/operations/$OPERATION")"
-            [ "$code" = 200 ] || { echo "::error::Edge upload status failed with HTTP $code"; cat "$out.poll.body"; exit 1; }
+            # The operation endpoints answer 202 while the operation is InProgress and 200 once it has settled.
+            case "$code" in 200|202) ;; *) echo "::error::Edge upload status failed with HTTP $code"; cat "$out.poll.body"; exit 1 ;; esac
             case "$(jq -r .status "$out.poll.body")/$(jq -r '.errorCode // ""' "$out.poll.body")" in
               Succeeded/*) exit 0 ;;
               Failed/InProgressSubmission)
@@ -333,14 +334,19 @@ jobs:
         env:
           EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
           EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          # Notes for certification: the reviewer's demo server, key and steps (extension/store/test-instructions.md
+          # with the placeholders filled). A secret because the key is in it. Empty falls back to a version line.
+          EDGE_CERT_NOTES: ${{ secrets.EDGE_CERT_NOTES }}
         run: |
           set -euo pipefail
           out="$RUNNER_TEMP/edge"
           printf 'Authorization: ApiKey %s\nX-ClientID: %s\n' "$EDGE_API_KEY" "$EDGE_CLIENT_ID" > "$out.h"
           base="https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions"
+          notes="${EDGE_CERT_NOTES:-AI KB browser extension ${GITHUB_REF_NAME#extension-v}, built from $GITHUB_SHA.}"
+          jq -n --arg notes "$notes" '{notes: $notes}' > "$out.notes.json"
           code="$(curl -sS -o "$out.publish.body" -D "$out.publish.headers" -w '%{http_code}' -X POST \
-            -H @"$out.h" -H "Content-Type: text/plain" \
-            --data-binary "AI KB browser extension ${GITHUB_REF_NAME#extension-v}, built from $GITHUB_SHA." "$base")"
+            -H @"$out.h" -H "Content-Type: application/json" \
+            --data-binary @"$out.notes.json" "$base")"
           [ "$code" = 202 ] || { echo "::error::Edge publish failed with HTTP $code"; cat "$out.publish.body"; exit 1; }
           location="$(tr -d '\r' < "$out.publish.headers" | awk 'tolower($1) == "location:" {print $2}')"
           [ -n "$location" ] || { echo "::error::Edge publish returned 202 without a Location header"; cat "$out.publish.headers"; exit 1; }
@@ -349,7 +355,7 @@ jobs:
           while :; do
             code="$(curl -sS -o "$out.poll.body" -w '%{http_code}' \
               -H @"$out.h" "$base/operations/$operation")"
-            [ "$code" = 200 ] || { echo "::error::Edge publish status failed with HTTP $code"; cat "$out.poll.body"; exit 1; }
+            case "$code" in 200|202) ;; *) echo "::error::Edge publish status failed with HTTP $code"; cat "$out.poll.body"; exit 1 ;; esac
             case "$(jq -r .status "$out.poll.body")/$(jq -r '.errorCode // ""' "$out.poll.body")" in
               Succeeded/*)
                 echo "Edge: submitted $GITHUB_REF_NAME for certification" >> "$GITHUB_STEP_SUMMARY"
