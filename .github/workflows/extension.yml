@@ -159,7 +159,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh release create "$GITHUB_REF_NAME" --verify-tag \
+          gh release create "$GITHUB_REF_NAME" --verify-tag --latest=false \
             --title "AI KB browser extension ${GITHUB_REF_NAME#extension-v}" \
             --notes "Load the zip unpacked from chrome://extensions or edge://extensions, or install from the Chrome Web Store or Edge Add-ons." \
             ai-kb-extension-*.zip ||

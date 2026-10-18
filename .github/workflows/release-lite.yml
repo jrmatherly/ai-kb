@@ -413,7 +413,7 @@ jobs:
             gh release upload "$TAG" --clobber \
               ai-kb-lite_*.tar.gz ai-kb-lite_*.tar.gz.sha256 ai-kb-lite-app_*
           else
-            gh release create "$TAG" \
+            gh release create "$TAG" --latest \
               --target "$GITHUB_SHA" \
               --title "AI KB Lite $TAG" \
               --notes-file notes.md \
