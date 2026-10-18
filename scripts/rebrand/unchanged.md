@@ -19,6 +19,8 @@ proves it over the paths `scope.txt` selects. These keep upstream's spelling on 
   footer and the docs footer's "Based on Tencent/WeKnora" links, shielded by `keep.tsv`.
 - Provenance: upstream issue and PR links (`Tencent/WeKnora#NNNN`, `/issues/`, `/pull/`, `/discussions/`),
   `.upstream-review/`, the upstream-review skill, `CLAUDE.md`.
+- The git remote: Tencent/WeKnora is fetched as the remote `weknora`, so refs like `weknora/main` are ours and
+  `keep.tsv` shields them.
 
 Outside `scope.txt`, so the check does not cover them:
 

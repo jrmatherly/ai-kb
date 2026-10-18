@@ -1,4 +1,6 @@
-# Shielded from map.tsv: "<path glob>\t<regex>". Use only for names a third party defines; each row says why.
+# Shielded from map.tsv: "<path glob>\t<regex>". Use only for names a third party defines or a git ref this repo chose; each row says why.
+# The Tencent/WeKnora git remote is named weknora (gh ranks a remote called upstream above origin), so weknora/<branch> is a ref, not a leftover.
+**	weknora/(?:main|v[\d.]+)
 # ClawHub skill @lyingbug/weknora: its package name, and the WEKNORA_BASE_URL / WEKNORA_API_KEY variables it reads.
 **	lyingbug/weknora
 frontend/src/i18n/locales/*.ts	WEKNORA_(?:BASE_URL|API_KEY)
