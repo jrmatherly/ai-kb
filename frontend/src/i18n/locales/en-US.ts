@@ -7525,7 +7525,7 @@ export default {
     },
     audit: {
       tabLabel: 'Audit log',
-      description: 'Records every membership change and access denial in this workspace. Newest first. Repeated denials within a minute are deduplicated.',
+      description: 'Records logins, membership changes, access denials and configuration changes (API keys, models, agents, MCP servers, web search providers, storage backends) in this workspace, plus knowledge base activity. Newest first. Repeated denials within a minute are deduplicated.',
       refresh: 'Refresh',
       end: 'End of log.',
       empty: 'No workspace events yet.',
@@ -7550,11 +7550,26 @@ export default {
         'rbac.invitation_accepted': 'Invitation accepted',
         'rbac.invitation_declined': 'Invitation declined',
         'rbac.invitation_revoked': 'Invitation revoked',
-        'rbac.invitation_expired': 'Invitation expired'
+        'rbac.invitation_expired': 'Invitation expired',
+        'auth.login_succeeded': 'Login',
+        'auth.login_failed': 'Login failed',
+        'auth.logout': 'Logout',
+        'tenant_api_key.created': 'API key created',
+        'tenant_api_key.updated': 'API key updated',
+        'tenant_api_key.deleted': 'API key deleted',
+        'model.changed': 'Model changed',
+        'agent.changed': 'Agent changed',
+        'mcp_service.changed': 'MCP server changed',
+        'web_search_provider.changed': 'Web search provider changed',
+        'storage_backend.changed': 'Storage backend changed'
       },
       outcome: {
         success: 'Success',
-        denied: 'Denied'
+        denied: 'Denied',
+        accepted: 'Accepted',
+        failed: 'Failed',
+        partial: 'Partial',
+        canceled: 'Canceled'
       },
       expanded: {
         actorId: 'Actor ID',

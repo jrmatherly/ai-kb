@@ -128,7 +128,8 @@ func (h *StorageBackendHandler) Create(c *gin.Context) {
 		return
 	}
 	emitAudit(c.Request.Context(), h.auditSvc, changeRow(
-		types.AuditActionStorageBackendChanged, "storage_backend", backend.ID, "created", "provider", "status",
+		types.AuditActionStorageBackendChanged, "storage_backend", backend.ID, "created",
+		"name", "provider", "config", "status",
 	))
 	c.JSON(http.StatusCreated, gin.H{"success": true, "data": types.NewStorageBackendResponse(backend)})
 }
@@ -165,7 +166,8 @@ func (h *StorageBackendHandler) Update(c *gin.Context) {
 		return
 	}
 	emitAudit(c.Request.Context(), h.auditSvc, changeRow(
-		types.AuditActionStorageBackendChanged, "storage_backend", backend.ID, "updated", "config", "status",
+		types.AuditActionStorageBackendChanged, "storage_backend", backend.ID, "updated",
+		"name", "provider", "config", "status",
 	))
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": types.NewStorageBackendResponse(updated)})
 }

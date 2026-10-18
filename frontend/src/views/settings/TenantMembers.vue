@@ -1030,6 +1030,7 @@ function auditActionTheme(
 ): 'success' | 'warning' | 'danger' | 'primary' | 'default' {
   switch (action) {
     case 'rbac.access_denied':
+    case 'auth.login_failed':
       return 'danger'
     case 'rbac.member_added':
       return 'success'
@@ -1050,8 +1051,13 @@ function auditOutcomeTheme(o: AuditOutcome): 'success' | 'danger' | 'default' {
 
 // i18n keys contain dots (rbac.member_added). t(path) splits them as a path
 // and misses tenantMember.audit.action['rbac.*'], so use tm with the literal key.
+// Knowledge base rows share this feed, so their labels are the second root.
 function formatAuditAction(action: AuditAction): string {
-  return auditActionLabel({ tm }, AUDIT_ACTION_I18N_ROOTS.tenantMember, action)
+  return auditActionLabel(
+    { tm },
+    [AUDIT_ACTION_I18N_ROOTS.tenantMember, AUDIT_ACTION_I18N_ROOTS.kbActivity],
+    action,
+  )
 }
 
 // Resolve a user id to a display label: prefer members on the current page,

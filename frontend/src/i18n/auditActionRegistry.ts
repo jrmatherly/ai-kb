@@ -15,7 +15,7 @@ export const AUDIT_ACTION_I18N_ROOTS = {
   kbActivity: 'knowledgeEditor.activity.actions',
 } as const
 
-/** Workspace membership / invitation audit events (tenantMember drawer). */
+/** Workspace audit feed: membership, invitation, auth and configuration-change events. */
 export const TENANT_MEMBER_AUDIT_ACTIONS = [
   'rbac.member_added',
   'rbac.member_removed',
@@ -27,6 +27,17 @@ export const TENANT_MEMBER_AUDIT_ACTIONS = [
   'rbac.invitation_declined',
   'rbac.invitation_revoked',
   'rbac.invitation_expired',
+  'auth.login_succeeded',
+  'auth.login_failed',
+  'auth.logout',
+  'tenant_api_key.created',
+  'tenant_api_key.updated',
+  'tenant_api_key.deleted',
+  'model.changed',
+  'agent.changed',
+  'mcp_service.changed',
+  'web_search_provider.changed',
+  'storage_backend.changed',
 ] as const
 
 /** Platform control-plane audit events (system settings → audit tab). */

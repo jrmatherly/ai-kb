@@ -67,7 +67,13 @@ func (s loginUserService) Login(context.Context, *types.LoginRequest) (*types.Lo
 func TestLoginEmitsSucceededAndFailedAuditRows(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	audit := &recordingAudit{}
-	ok := &types.LoginResponse{Success: true, User: &types.User{ID: "u1"}, ActiveTenant: &types.Tenant{ID: 7}}
+	ok := &types.LoginResponse{
+		Success: true, User: &types.User{ID: "u1"}, ActiveTenant: &types.Tenant{ID: 7},
+		Memberships: []types.Membership{
+			{TenantID: 3, Role: types.TenantRoleViewer},
+			{TenantID: 7, Role: types.TenantRoleOwner},
+		},
+	}
 	h := NewAuthHandler(&config.Config{Auth: &config.AuthConfig{}}, loginUserService{resp: ok}, nil, nil, nil, audit)
 	r := gin.New()
 	r.Use(middleware.ErrorHandler())
@@ -79,6 +85,7 @@ func TestLoginEmitsSucceededAndFailedAuditRows(t *testing.T) {
 	require.Equal(t, "u1", row.ActorUserID)
 	require.Equal(t, "u1", row.TargetUserID)
 	require.Equal(t, uint64(7), row.TenantID)
+	require.Equal(t, string(types.TenantRoleOwner), row.ActorRole)
 	require.Equal(t, types.AuditOutcomeSuccess, row.Outcome)
 
 	audit.entries = nil

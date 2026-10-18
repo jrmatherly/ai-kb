@@ -11,12 +11,15 @@ import type { FlatKeyBagPath } from './auditActionRegistry.ts'
  */
 export function auditActionLabel(
   i18n: Pick<Composer, 'tm'>,
-  root: FlatKeyBagPath,
+  root: FlatKeyBagPath | readonly FlatKeyBagPath[],
   action: string,
 ): string {
-  const bag = i18n.tm(root) as unknown
-  if (bag !== null && typeof bag === 'object' && typeof (bag as Record<string, string>)[action] === 'string') {
-    return (bag as Record<string, string>)[action]
+  const roots = typeof root === 'string' ? [root] : root
+  for (const r of roots) {
+    const bag = i18n.tm(r) as unknown
+    if (bag !== null && typeof bag === 'object' && typeof (bag as Record<string, string>)[action] === 'string') {
+      return (bag as Record<string, string>)[action]
+    }
   }
   return action
 }

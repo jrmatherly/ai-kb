@@ -155,6 +155,17 @@ type tenantAPIKeyUpdateRequest struct {
 	ExpiresAt        *int64   `json:"expires_at_unix"`
 }
 
+// tenantAPIKeyFieldNames lists the settings a create or update request carried,
+// for the audit row: the scope fields are always present (full_access and the
+// knowledge base list are one setting), expires_at only when the request set it.
+func tenantAPIKeyFieldNames(req tenantAPIKeyUpdateRequest) []string {
+	names := []string{"name", "capabilities", "knowledge_base_ids"}
+	if req.ExpiresAt != nil {
+		names = append(names, "expires_at")
+	}
+	return names
+}
+
 type tenantAPIKeyResponse struct {
 	ID               uint64                `json:"id"`
 	ScopeType        types.APIKeyScopeType `json:"scope_type"`
@@ -721,7 +732,7 @@ func (h *TenantHandler) CreateAPIKey(c *gin.Context) {
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
 		TenantID: id, Action: types.AuditActionTenantAPIKeyCreated, TargetType: "tenant_api_key",
 		TargetID: strconv.FormatUint(result.APIKey.ID, 10),
-		Details:  changeDetails("created", "capabilities", "knowledge_base_ids", "expires_at"),
+		Details:  changeDetails("created", tenantAPIKeyFieldNames(tenantAPIKeyUpdateRequest(req))...),
 	})
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
@@ -769,7 +780,7 @@ func (h *TenantHandler) UpdateAPIKey(c *gin.Context) {
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
 		TenantID: tenantID, Action: types.AuditActionTenantAPIKeyUpdated, TargetType: "tenant_api_key",
 		TargetID: strconv.FormatUint(keyID, 10),
-		Details:  changeDetails("updated", "capabilities", "knowledge_base_ids", "expires_at"),
+		Details:  changeDetails("updated", tenantAPIKeyFieldNames(req)...),
 	})
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": tenantAPIKeyForResponse(updated)})
 }

@@ -298,7 +298,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		_ = c.Error(errors.NewUnauthorizedError(response.Message))
 		return
 	}
-	h.emitLoginSucceeded(ctx, c, "password", response.User, response.ActiveTenant)
+	h.emitLoginSucceeded(ctx, c, "password", response.User, response.ActiveTenant, response.Memberships)
 
 	// User is already in the correct format from service
 
@@ -479,7 +479,7 @@ func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 		c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_error="+urlQueryEscape("login_failed")+"&oidc_error_description="+urlQueryEscape(resp.Message))
 		return
 	}
-	h.emitLoginSucceeded(ctx, c, "oidc", resp.User, resp.Tenant)
+	h.emitLoginSucceeded(ctx, c, "oidc", resp.User, resp.Tenant, resp.Memberships)
 
 	encoded, err := encodeOIDCCallbackPayload(resp)
 	if err != nil {
@@ -603,19 +603,29 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 }
 
 // emitLoginSucceeded records a completed login as the user it created a
-// session for; the tenant is the workspace the token is scoped to.
+// session for; the tenant is the workspace the token is scoped to and the
+// role is the user's membership role there ("user" when no membership row
+// names it, such as the viewer fallback of a partial DI graph).
 func (h *AuthHandler) emitLoginSucceeded(
 	ctx context.Context, c *gin.Context, method string, user *types.User, tenant *types.Tenant,
+	memberships []types.Membership,
 ) {
 	if user == nil {
 		return
 	}
 	var tenantID uint64
+	role := "user"
 	if tenant != nil {
 		tenantID = tenant.ID
+		for _, m := range memberships {
+			if m.TenantID == tenant.ID && m.Role != "" {
+				role = string(m.Role)
+				break
+			}
+		}
 	}
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
-		TenantID: tenantID, ActorUserID: user.ID, ActorRole: "user",
+		TenantID: tenantID, ActorUserID: user.ID, ActorRole: role,
 		Action: types.AuditActionAuthLoginSucceeded, TargetType: "user", TargetUserID: user.ID,
 		RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
 		Details: changeDetails("login", method),
@@ -624,7 +634,9 @@ func (h *AuthHandler) emitLoginSucceeded(
 
 // emitLoginFailed records a rejected login without any identity: the row says
 // that a login failed at this path and why (bad credentials or a service
-// error), not whose.
+// error), not whose. Rows are not deduplicated on purpose: the count of
+// failures is the brute-force signal, and PublicAuthRateLimit already caps
+// the write rate at 30 per minute per IP.
 func (h *AuthHandler) emitLoginFailed(ctx context.Context, c *gin.Context, method, reason string) {
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
 		ActorRole: "anonymous", Action: types.AuditActionAuthLoginFailed, TargetType: "user",
