@@ -59,11 +59,11 @@ The list is empty by default, and an empty list turns extension sign-in off. The
 
 An operator enables extension sign-in once per server:
 
-1. Find each extension ID. In Chrome, read it at `chrome://extensions` with Developer mode on, or take the last part of the Chrome Web Store listing URL. In Edge, read it from the product page in Partner Center, or at `edge://extensions` with Developer mode on. The Return URL field on the options page shows the same ID.
+1. Find each extension ID. In Chrome, read it at `chrome://extensions` with Developer mode on, or take the last part of the Chrome Web Store listing URL. In Edge, read it from the product page in Partner Center; an Edge store install has the Edge ID, while an unpacked build loaded in Edge keeps the Chrome ID from the manifest key. The Return URL field on the options page shows the ID of the build you are running.
 2. List every return URL, comma-separated, in `OIDC_AUTH_EXTENSION_RETURN_URLS` (or `oidc_auth.extension_return_urls` in `config.yaml`):
 
    ```bash
-   OIDC_AUTH_EXTENSION_RETURN_URLS=https://beamnnjkmfepmlfpbcchiiooimoloiod.chromiumapp.org/oidc,https://<edge-id>.chromiumapp.org/oidc
+   OIDC_AUTH_EXTENSION_RETURN_URLS=https://beamnnjkmfepmlfpbcchiiooimoloiod.chromiumapp.org/oidc,https://eminfjejkcandcdbcjhdeobhhjidapdc.chromiumapp.org/oidc
    ```
 
    An unpacked build from this repository already has the Chrome store ID. A build that changes or removes `key` in `manifest.json`, such as a fork, gets its own ID, derived from the folder path; on a development server, also add that build's return URL. Do not list development IDs on a production server: any side-loaded extension can claim an unpacked ID and receive tokens for a signed-in user.

@@ -79,7 +79,7 @@ Certifications:
 
 ## Store IDs
 
-Filled in after the first upload (plan Task 18, Step 3).
+Both store items exist as drafts (plan Task 18, Step 3).
 
-- Chrome Web Store extension ID: `beamnnjkmfepmlfpbcchiiooimoloiod`
-- Edge Add-ons product ID: `<edge product id>`
+- Chrome Web Store extension ID: `beamnnjkmfepmlfpbcchiiooimoloiod` (the manifest carries this item's public key, so unpacked builds share it)
+- Edge Add-ons product ID: `0b6ec0d7-22da-4ab8-8d9e-a6bbdb1e6880`, store ID `0RDCK9LCK8BW`, extension ID of store installs `eminfjejkcandcdbcjhdeobhhjidapdc`
