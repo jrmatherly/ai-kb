@@ -3,6 +3,17 @@ name: ai-kb-rag-search
 description: Use when retrieving from or asking questions against an AI KB knowledge base via the `aikb` CLI - and especially when unsure whether to use `chat`, `session ask`, or `search chunks` for a given goal.
 metadata:
   tested_against: v2026.10.13
+  openclaw:
+    requires:
+      bins: [aikb]
+    primaryEnv: AIKB_API_KEY
+    envVars:
+      - name: AIKB_HOST
+        required: true
+        description: Base URL of the AI KB server, for example https://kb.example.com
+      - name: AIKB_API_KEY
+        required: true
+        description: Workspace API key with the retrieve capability
 ---
 
 # AI KB - retrieval & RAG queries

@@ -7391,6 +7391,10 @@ export default {
         answer: {
           title: 'Answer with citations',
           desc: 'Grounded answers through chat or a custom agent, with references on request and multi-turn sessions.'
+        },
+        ingest: {
+          title: 'Ingest files, URLs and notes',
+          desc: 'Upload local files or directories, fetch a web page by URL, write a Markdown note, and wait for parsing before searching.'
         }
       },
       stepsTitle: 'Setup steps',
@@ -7401,7 +7405,7 @@ export default {
         },
         install: {
           title: 'Install the skills',
-          desc: 'Writes ai-kb-shared and ai-kb-rag-search in the Agent Skills format (SKILL.md) that Claude Code, Codex, Cursor and other agents read. Pass any skills directory with --dir.'
+          desc: 'Writes ai-kb-shared, ai-kb-rag-search and ai-kb-ingest in the Agent Skills format (SKILL.md) that Claude Code, Codex, Cursor and OpenClaw read. Pass any skills directory with --dir.'
         },
         mcp: {
           title: 'Or connect over MCP',

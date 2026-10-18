@@ -1,6 +1,6 @@
 # Agent skill
 
-The Agent skill gives a coding agent retrieval over your knowledge bases through the `aikb` CLI. The skills ship inside the `aikb` binary in the open Agent Skills format (a `SKILL.md` per skill), which Claude Code, Codex, Cursor and other agents read, so one install serves every agent on the machine.
+The Agent skill gives a coding agent retrieval over, and ingestion into, your knowledge bases through the `aikb` CLI. The skills ship inside the `aikb` binary in the open Agent Skills format (a `SKILL.md` per skill), which Claude Code, Codex, Cursor and other agents read, so one install serves every agent on the machine.
 
 ## What the skills do
 
@@ -10,6 +10,7 @@ This section lists what an agent can do once the skills are installed.
 | --- | --- |
 | `ai-kb-shared` | The background every other skill needs: authentication, how `--kb` resolves a knowledge base, the JSON envelope, exit codes and streaming output |
 | `ai-kb-rag-search` | Picks the right command for a goal: `search chunks` for ranked chunks to reason over, `chat` for a grounded answer with references, `session ask --agent` for a custom agent, `search kb` to find a knowledge base |
+| `ai-kb-ingest` | Adds material: `doc upload` for local files and directories, `doc fetch` for a URL, `doc create` for a Markdown note, and `doc wait` so a search runs only after parsing finishes |
 
 The skills call the CLI, so they can do only what the CLI's API key allows. Narrow the key to the knowledge bases the agent should see, as [Workspaces, users and authentication](../03-features/01-tenant-auth.md) describes.
 
@@ -29,10 +30,10 @@ Settings → Publish & Integrations → Agent skill shows the same steps and let
    The command prints what it wrote:
 
    ```json
-   {"ok":true,"data":{"dir":"~/.claude/skills","installed":["~/.claude/skills/ai-kb-rag-search/SKILL.md","~/.claude/skills/ai-kb-rag-search/references/chat.md","~/.claude/skills/ai-kb-rag-search/references/search-chunks.md","~/.claude/skills/ai-kb-shared/SKILL.md"],"skills":["ai-kb-rag-search","ai-kb-shared"]}}
+   {"ok":true,"data":{"dir":"~/.claude/skills","installed":["~/.claude/skills/ai-kb-ingest/SKILL.md","~/.claude/skills/ai-kb-rag-search/SKILL.md","~/.claude/skills/ai-kb-rag-search/references/chat.md","~/.claude/skills/ai-kb-rag-search/references/search-chunks.md","~/.claude/skills/ai-kb-shared/SKILL.md"],"skills":["ai-kb-ingest","ai-kb-rag-search","ai-kb-shared"]}}
    ```
 
-   `aikb skills install --dry-run` lists the files without writing them; `--force` overwrites an earlier install.
+   `aikb skills install --dry-run` lists the files without writing them; `--force` overwrites an earlier install. Without the CLI's installer, `npx skills add jrmatherly/ai-kb --skill ai-kb-shared` (the `skills` CLI from vercel-labs) finds the same three skills under `cli/skills` in this repository, and each `SKILL.md` carries an `openclaw` metadata block so OpenClaw reads them too.
 
 3. **Verify.** Ask the agent which knowledge bases it can see, then one question with references, to confirm the credentials and that the server is reachable.
 
@@ -46,7 +47,7 @@ This section helps you choose between the skills and the built-in MCP server.
 | Installation | `aikb skills install` into the agent's skills directory | Nothing extra to deploy. Create an endpoint under Settings → Publish & Integrations → MCP Server, and the client connects to `/mcp/<endpoint_id>` |
 | Authentication | The CLI profile's API key | One token per endpoint, which can be rotated or disabled |
 | Transport | The CLI calls the REST API | Streamable HTTP. Clients that only support stdio bridge through `mcp-remote` |
-| Capabilities | Retrieval, grounded answers and knowledge base lookup | Chosen per endpoint: retrieval and reading, question answering, Wiki, write. Can be limited to certain knowledge bases |
+| Capabilities | Retrieval, grounded answers, knowledge base lookup, and ingestion of files, URLs and notes | Chosen per endpoint: retrieval and reading, question answering, Wiki, write. Can be limited to certain knowledge bases |
 | Documentation | This page and the [CLI page](02-cli.md) | [MCP integration](../03-features/08-mcp.md) |
 
 Use the MCP server when the client speaks MCP or you want tools limited per endpoint. Use the skills when the agent works from a terminal and should decide for itself when to search.

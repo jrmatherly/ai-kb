@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-//go:embed all:ai-kb-shared all:ai-kb-rag-search
+//go:embed all:ai-kb-shared all:ai-kb-rag-search all:ai-kb-ingest
 var fsys embed.FS
 
 // Skill is one bundled skill: its directory name, the description parsed from

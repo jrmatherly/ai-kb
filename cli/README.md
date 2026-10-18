@@ -159,6 +159,8 @@ under [`skills/`](skills/) that teach an agent to drive AI KB without trial and 
 - [`ai-kb-shared`](skills/ai-kb-shared/SKILL.md) - **read first**: auth/profile
   sequence, `--kb` resolution, the JSON-envelope + exit-code contract, the exit-10
   protocol, `--dry-run`, and CLI-vs-MCP selection.
+- [`ai-kb-ingest`](skills/ai-kb-ingest/SKILL.md) - upload files, fetch a URL,
+  write a Markdown note, and `doc wait` before searching
 - [`ai-kb-rag-search`](skills/ai-kb-rag-search/SKILL.md) - when to use `chat`
   vs `session ask` vs `search chunks`, plus retrieval gotchas.
 

@@ -89,13 +89,14 @@ import { useIntegrationNav } from './useIntegrationNav'
 
 const { openIntegrationTab } = useIntegrationNav()
 
-const capabilityKeys = ['search', 'bases', 'answer'] as const
+const capabilityKeys = ['search', 'bases', 'answer', 'ingest'] as const
 const stepKeys = ['cli', 'install', 'mcp', 'verify'] as const
 
 const capabilityIcons: Record<(typeof capabilityKeys)[number], string> = {
   search: 'search',
   bases: 'view-list',
   answer: 'chat',
+  ingest: 'upload',
 }
 
 const installCommand = 'aikb skills install --dir ~/.claude/skills'

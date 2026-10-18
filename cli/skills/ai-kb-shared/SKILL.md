@@ -3,6 +3,17 @@ name: ai-kb-shared
 description: Use when driving an AI KB RAG server through the `aikb` CLI as an agent - authenticating, managing knowledge bases / documents / sessions / agents, running search or chat, or interpreting the CLI's JSON envelopes and exit codes. Read this before any other ai-kb-* skill.
 metadata:
   tested_against: v2026.10.13
+  openclaw:
+    requires:
+      bins: [aikb]
+    primaryEnv: AIKB_API_KEY
+    envVars:
+      - name: AIKB_HOST
+        required: true
+        description: Base URL of the AI KB server, for example https://kb.example.com
+      - name: AIKB_API_KEY
+        required: true
+        description: Workspace API key (or AIKB_TOKEN with a session token)
 ---
 
 # AI KB CLI - shared base
