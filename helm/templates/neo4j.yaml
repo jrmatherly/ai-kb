@@ -73,6 +73,19 @@ spec:
           volumeMounts:
             - name: neo4j-data
               mountPath: /data
+            # The root filesystem is read-only. The entrypoint renders neo4j.conf from the NEO4J_*
+            # variables into conf/ and copies APOC from labs/ into plugins/; JNA maps a native
+            # library from /tmp, so it must allow exec (an emptyDir does).
+            - name: tmp
+              mountPath: /tmp
+            - name: logs
+              mountPath: /logs
+            - name: conf
+              mountPath: /var/lib/neo4j/conf
+            - name: plugins
+              mountPath: /var/lib/neo4j/plugins
+            - name: import
+              mountPath: /var/lib/neo4j/import
           resources:
             {{- toYaml .Values.neo4j.resources | nindent 12 }}
           livenessProbe:
@@ -99,6 +112,16 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: conf
+          emptyDir: {}
+        - name: plugins
+          emptyDir: {}
+        - name: import
+          emptyDir: {}
       {{- with .Values.neo4j.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

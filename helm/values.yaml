@@ -84,7 +84,6 @@ app:
       cpu: "1"
       memory: 1Gi
 
-  # -- Pod security context override
   # -- Pod security context: the data-files volume is group-writable for appuser (1000). A mounted
   # Docker socket for the sandbox needs its group id under supplementalGroups.
   podSecurityContext:
@@ -568,16 +567,22 @@ neo4j:
       cpu: "1"
       memory: 2Gi
 
-  # -- Pod security context. Neo4j is optional and not part of the restricted hardening: its image
-  # starts as root, so this override leaves runAsNonRoot unset. A cluster that enforces `restricted`
-  # must keep neo4j disabled or run it elsewhere.
+  # -- Pod security context: the data volume is group-writable for the neo4j user (7474)
   podSecurityContext:
+    runAsNonRoot: true
+    fsGroup: 7474
     seccompProfile:
       type: RuntimeDefault
 
-  # -- Container security context
+  # -- Container security context: the neo4j user (7474) on a read-only root filesystem
   securityContext:
+    runAsNonRoot: true
+    runAsUser: 7474
+    runAsGroup: 7474
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
   # -- Persistence configuration
   persistence:

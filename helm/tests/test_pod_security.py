@@ -20,7 +20,7 @@ def pods(values=None):
 class PodSecurityTests(unittest.TestCase):
     def test_every_pod_is_restricted_and_read_only(self):
         seen = []
-        for name, spec in pods({"ingress": {"enabled": False}, "redis": {"enabled": False}}):
+        for name, spec in pods({"ingress": {"enabled": False}, "redis": {"enabled": False}, "neo4j": {"enabled": True}}):
             seen.append(name)
             pod = spec.get("securityContext") or {}
             self.assertTrue(pod.get("runAsNonRoot"), f"{name}: pod runAsNonRoot")
@@ -34,7 +34,7 @@ class PodSecurityTests(unittest.TestCase):
                 self.assertEqual((ctx.get("capabilities") or {}).get("drop"), ["ALL"], f"{label}: capabilities")
                 self.assertNotIn("add", ctx.get("capabilities") or {}, f"{label}: no added capabilities")
                 self.assertIs(ctx.get("readOnlyRootFilesystem"), True, f"{label}: readOnlyRootFilesystem")
-        self.assertEqual(sorted(seen), sorted(["audit-ai-kb-app", "audit-ai-kb-docreader", "audit-ai-kb-frontend", "audit-ai-kb-postgres", "audit-ai-kb-website"]))
+        self.assertEqual(sorted(seen), sorted(["audit-ai-kb-app", "audit-ai-kb-docreader", "audit-ai-kb-frontend", "audit-ai-kb-neo4j", "audit-ai-kb-postgres", "audit-ai-kb-website"]))
 
     def test_bundled_redis_is_restricted_too(self):
         [(name, spec)] = [(n, s) for n, s in pods() if n.endswith("-redis")]

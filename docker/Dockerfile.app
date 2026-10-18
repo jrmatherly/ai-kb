@@ -169,6 +169,9 @@ RUN chmod +x ./scripts/*.sh && \
 # (an unknown uid gets HOME=/, and INSTALL then needs network and a writable root).
 ENV HOME=/home/appuser
 
+# No USER: compose starts as root for the entrypoint's chown and gosu step. An orchestrator must set
+# runAsUser 1000 (the chart does); runAsNonRoot alone fails with CreateContainerConfigError.
+
 # Expose ports
 EXPOSE 8080
 

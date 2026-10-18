@@ -25,14 +25,15 @@ AI KB is an intelligent knowledge base platform that combines:
 The chart is published to GHCR on every chart version bump:
 
 ```bash
-helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.2.0 \
+helm install ai-kb oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb --version 0.3.0 \
   --set secrets.dbPassword=<secure-password> \
   --set secrets.redisPassword=<secure-password> \
   --set secrets.jwtSecret=<secure-random-string>
 ```
 
 Flux users reference the same path from an `OCIRepository` with `ref.tag` set to the chart
-version. The commands below install from a checkout instead.
+version. `make bump-version` also bumps the chart patch version, so each product release
+publishes a chart that pins its image tag. The commands below install from a checkout instead.
 
 The chart pulls `ghcr.io/jrmatherly/ai-kb-{app,ui,website,docreader}` at the tag in
 `Chart.appVersion`. To use your own registry, build the images (`make build-images`),
@@ -434,9 +435,9 @@ filesystem, with emptyDirs for the paths each image writes:
 | docreader | 1000 | 50051 | `/tmp` |
 | postgresql | 999 | 5432 | the data volume, `/var/run/postgresql`, `/tmp` |
 | redis | 999 | 6379 | the data volume |
+| neo4j (optional) | 7474 | 7474, 7687 | the data volume, `/tmp`, `/logs`, `/var/lib/neo4j/{conf,plugins,import}` |
 
-Neo4j (optional, off by default) is not hardened: its image starts as root, so enable it only
-in a namespace that allows the `baseline` standard. Override any of this through
+Override any of this through
 `<component>.podSecurityContext` and `<component>.securityContext`.
 
 ## Upgrading

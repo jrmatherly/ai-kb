@@ -6,9 +6,9 @@ name: ⎈ Helm
 #   chart    helm lint, the render tests and the image-tag checks
 #   publish  on main (push or dispatch), package helm/ at the version in Chart.yaml and push it to
 #            oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb unless that version is already there, so a plain
-#            edit under helm/ republishes nothing and `make bump-lib LIB=helm-chart` plus a push is a
-#            chart release. The chart's appVersion names the image tag the release pins; it moves with
-#            `make bump-version`, never here. A cluster references the chart by its version (Flux
+#            edit under helm/ republishes nothing and a pushed `make bump-lib LIB=helm-chart` or
+#            `make bump-version` commit is a chart release (the product bump raises the chart patch
+#            with the appVersion image tag). A cluster references the chart by its version (Flux
 #            OCIRepository `ref.tag`).
 
 on:
@@ -111,6 +111,8 @@ jobs:
 
       - name: ⎈ Set up Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: v3.22.0
 
       - name: ☸️ Package and push
         env:
