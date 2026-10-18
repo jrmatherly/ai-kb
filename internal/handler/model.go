@@ -28,7 +28,8 @@ import (
 // ModelHandler handles HTTP requests for model-related operations
 // It implements the necessary methods to create, retrieve, update, and delete models
 type ModelHandler struct {
-	service interfaces.ModelService
+	service  interfaces.ModelService
+	auditSvc interfaces.AuditLogService
 }
 
 // NewModelHandler creates a new instance of ModelHandler
@@ -37,8 +38,8 @@ type ModelHandler struct {
 //   - service: An implementation of the ModelService interface
 //
 // Returns a pointer to the newly created ModelHandler
-func NewModelHandler(service interfaces.ModelService) *ModelHandler {
-	return &ModelHandler{service: service}
+func NewModelHandler(service interfaces.ModelService, auditSvc interfaces.AuditLogService) *ModelHandler {
+	return &ModelHandler{service: service, auditSvc: auditSvc}
 }
 
 // Per-response redaction/stripping for Model now lives in
@@ -129,6 +130,9 @@ func (h *ModelHandler) CreateModel(c *gin.Context) {
 		secutils.SanitizeForLog(model.Name),
 	)
 
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionModelChanged, "model", model.ID, "created", "type", "provider",
+	))
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"data":    dto.NewModelResponse(ctx, model),
@@ -870,6 +874,7 @@ func (h *ModelHandler) UpdateModel(c *gin.Context) {
 
 	logger.Infof(ctx, "Model updated successfully, ID: %s", id)
 
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionModelChanged, "model", id, "updated", "parameters"))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    dto.NewModelResponse(ctx, model),
@@ -918,6 +923,7 @@ func (h *ModelHandler) DeleteModel(c *gin.Context) {
 	}
 
 	logger.Infof(ctx, "Model deleted successfully, ID: %s", id)
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionModelChanged, "model", id, "deleted"))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Model deleted",

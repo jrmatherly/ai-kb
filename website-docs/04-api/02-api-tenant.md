@@ -354,7 +354,7 @@ Handler: `internal/handler/audit_log.go`. Cursor pagination: rows are sorted by 
 
 ### GET /api/v1/tenants/:id/audit-log
 
-Purpose: the workspace audit log (denied actions included). Permission: Admin+, JWT only.
+Purpose: the workspace audit log: workspace-level events (members, access denials, sign-ins and sign-outs, API key and configuration changes) and the knowledge base activity of every knowledge base in the workspace. Denied actions are included. Permission: Admin+, JWT only.
 
 | Query parameter | Type | Required | Description |
 | --- | --- | --- | --- |

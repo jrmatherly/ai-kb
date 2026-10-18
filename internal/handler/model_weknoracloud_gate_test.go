@@ -18,7 +18,7 @@ import (
 func listedProviderValues(t *testing.T) []string {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	h := NewModelHandler(nil)
+	h := NewModelHandler(nil, nil)
 	r := gin.New()
 	r.GET("/models/providers", h.ListModelProviders)
 	rec := httptest.NewRecorder()
@@ -48,7 +48,7 @@ func TestListModelProvidersHidesWeKnoraCloudWhenDisabled(t *testing.T) {
 func TestCreateModelRefusesWeKnoraCloudWhenDisabled(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Setenv(docparser.WeKnoraCloudEnabledEnv, "")
-	h := NewModelHandler(nil)
+	h := NewModelHandler(nil, nil)
 	r := gin.New()
 	r.Use(middleware.ErrorHandler())
 	r.POST("/models", func(c *gin.Context) {

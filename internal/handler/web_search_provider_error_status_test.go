@@ -35,7 +35,7 @@ func TestWebSearchProviderErrorStatus(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := webSearchRepoStub{}
 	svc := service.NewWebSearchProviderService(repo)
-	providers := NewWebSearchProviderHandler(repo, svc, nil)
+	providers := NewWebSearchProviderHandler(repo, svc, nil, nil)
 	credentials := NewWebSearchProviderCredentialsHandler(repo, svc)
 	r := gin.New()
 	r.Use(middleware.ErrorHandler(), func(c *gin.Context) {

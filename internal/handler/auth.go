@@ -48,6 +48,7 @@ type AuthHandler struct {
 	// fixtures - the share-link endpoints respond 503 rather than
 	// blocking the rest of the auth surface.
 	invitationSvc interfaces.TenantInvitationService
+	auditSvc      interfaces.AuditLogService
 }
 
 // NewAuthHandler creates a new auth handler instance with the provided services
@@ -66,6 +67,7 @@ func NewAuthHandler(configInfo *config.Config,
 	userService interfaces.UserService, tenantService interfaces.TenantService,
 	systemSettingSvc interfaces.SystemSettingService,
 	invitationSvc interfaces.TenantInvitationService,
+	auditSvc interfaces.AuditLogService,
 ) *AuthHandler {
 	// Boot-time guard: a nil-or-empty Auth section silently disables the
 	// invite_only gate (see Register below). Emit a loud one-shot log
@@ -83,6 +85,7 @@ func NewAuthHandler(configInfo *config.Config,
 		tenantService:    tenantService,
 		systemSettingSvc: systemSettingSvc,
 		invitationSvc:    invitationSvc,
+		auditSvc:         auditSvc,
 	}
 }
 
@@ -283,6 +286,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	response, err := h.userService.Login(ctx, &req)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to login user: %v", err)
+		h.emitLoginFailed(ctx, c)
 		_ = c.Error(errors.NewUnauthorizedError("Login failed"))
 		return
 	}
@@ -290,8 +294,20 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Check if login was successful
 	if !response.Success {
 		logger.Warnf(ctx, "Login failed: %s", response.Message)
+		h.emitLoginFailed(ctx, c)
 		_ = c.Error(errors.NewUnauthorizedError(response.Message))
 		return
+	}
+	if response.User != nil {
+		var tenantID uint64
+		if response.ActiveTenant != nil {
+			tenantID = response.ActiveTenant.ID
+		}
+		emitAudit(ctx, h.auditSvc, &types.AuditLog{
+			TenantID: tenantID, ActorUserID: response.User.ID, ActorRole: "user",
+			Action: types.AuditActionAuthLoginSucceeded, TargetType: "user", TargetUserID: response.User.ID,
+			RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
+		})
 	}
 
 	// User is already in the correct format from service
@@ -582,9 +598,24 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	logger.Info(ctx, "User logged out successfully")
+	actorID, _ := types.UserIDFromContext(ctx)
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		Action: types.AuditActionAuthLogout, TargetType: "user", TargetUserID: actorID,
+		RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
+	})
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Logout successful",
+	})
+}
+
+// emitLoginFailed records a rejected password login without any identity:
+// the row says that a login failed at this path, not whose.
+func (h *AuthHandler) emitLoginFailed(ctx context.Context, c *gin.Context) {
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		ActorRole: "anonymous", Action: types.AuditActionAuthLoginFailed, TargetType: "user",
+		Outcome: types.AuditOutcomeDenied, RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
+		Details: changeDetails("login", "invalid_credentials"),
 	})
 }
 

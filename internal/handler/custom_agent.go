@@ -28,6 +28,7 @@ type sandboxConfigLookup interface {
 
 // CustomAgentHandler defines the HTTP handler for custom agent operations
 type CustomAgentHandler struct {
+	auditSvc     interfaces.AuditLogService
 	service      interfaces.CustomAgentService
 	imService    *im.Service
 	disabledRepo interfaces.TenantDisabledSharedAgentRepository
@@ -48,8 +49,10 @@ func NewCustomAgentHandler(
 	userService interfaces.UserService,
 	sandboxConfigs *service.TenantSandboxConfigService,
 	host service.HostSandboxManager,
+	auditSvc interfaces.AuditLogService,
 ) *CustomAgentHandler {
 	return &CustomAgentHandler{
+		auditSvc:       auditSvc,
 		service:        service,
 		imService:      imService,
 		disabledRepo:   disabledRepo,
@@ -157,6 +160,7 @@ func (h *CustomAgentHandler) CreateAgent(c *gin.Context) {
 
 	logger.Infof(ctx, "Custom agent created successfully, ID: %s, name: %s",
 		secutils.SanitizeForLog(createdAgent.ID), secutils.SanitizeForLog(createdAgent.Name))
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionAgentChanged, "agent", createdAgent.ID, "created"))
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"data":    createdAgent,
@@ -441,6 +445,7 @@ func (h *CustomAgentHandler) UpdateAgent(c *gin.Context) {
 	}
 
 	logger.Infof(ctx, "Custom agent updated successfully, ID: %s", secutils.SanitizeForLog(id))
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionAgentChanged, "agent", id, "updated", "config"))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    updatedAgent,
@@ -512,6 +517,7 @@ func (h *CustomAgentHandler) DeleteAgent(c *gin.Context) {
 	}
 
 	logger.Infof(ctx, "Custom agent deleted successfully, ID: %s", secutils.SanitizeForLog(id))
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionAgentChanged, "agent", id, "deleted"))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Agent deleted successfully",

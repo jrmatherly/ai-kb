@@ -67,7 +67,7 @@ func TestTenantAPIKeyStoredAsHashAndHint(t *testing.T) {
 		c.Next()
 	})
 	v1 := r.Group("/api/v1")
-	tenantHandler := handler.NewTenantHandler(nil, keys, nil, nil, nil, cfg, nil)
+	tenantHandler := handler.NewTenantHandler(nil, keys, nil, nil, nil, cfg, nil, nil)
 	RegisterTenantRoutes(v1, tenantHandler, nil, nil, nil, &rbacGuards{cfg: cfg})
 	v1.GET("/whoami", func(c *gin.Context) {
 		scope, _ := types.TenantAPIKeyScopeFromContext(c.Request.Context())

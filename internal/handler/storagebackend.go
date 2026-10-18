@@ -24,12 +24,19 @@ func storageTestErrorMessage(err error) string {
 }
 
 type StorageBackendHandler struct {
-	repo    interfaces.StorageBackendRepository
-	service interfaces.StorageBackendService
+	repo     interfaces.StorageBackendRepository
+	service  interfaces.StorageBackendService
+	auditSvc interfaces.AuditLogService
 }
 
-func NewStorageBackendHandler(repo interfaces.StorageBackendRepository, service interfaces.StorageBackendService) *StorageBackendHandler {
-	return &StorageBackendHandler{repo: repo, service: service}
+// NewStorageBackendHandler wires the storage backend routes to their
+// repository, service and the audit writer.
+func NewStorageBackendHandler(
+	repo interfaces.StorageBackendRepository,
+	service interfaces.StorageBackendService,
+	auditSvc interfaces.AuditLogService,
+) *StorageBackendHandler {
+	return &StorageBackendHandler{repo: repo, service: service, auditSvc: auditSvc}
 }
 
 type storageBackendRequest struct {
@@ -120,6 +127,9 @@ func (h *StorageBackendHandler) Create(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	emitAudit(c.Request.Context(), h.auditSvc, changeRow(
+		types.AuditActionStorageBackendChanged, "storage_backend", backend.ID, "created", "provider", "status",
+	))
 	c.JSON(http.StatusCreated, gin.H{"success": true, "data": types.NewStorageBackendResponse(backend)})
 }
 
@@ -154,6 +164,9 @@ func (h *StorageBackendHandler) Update(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	emitAudit(c.Request.Context(), h.auditSvc, changeRow(
+		types.AuditActionStorageBackendChanged, "storage_backend", backend.ID, "updated", "config", "status",
+	))
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": types.NewStorageBackendResponse(updated)})
 }
 
@@ -175,6 +188,9 @@ func (h *StorageBackendHandler) Delete(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	emitAudit(c.Request.Context(), h.auditSvc, changeRow(
+		types.AuditActionStorageBackendChanged, "storage_backend", c.Param("id"), "deleted",
+	))
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
@@ -196,6 +212,9 @@ func (h *StorageBackendHandler) SetDefault(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	emitAudit(c.Request.Context(), h.auditSvc, changeRow(
+		types.AuditActionStorageBackendChanged, "storage_backend", c.Param("id"), "set_default",
+	))
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 

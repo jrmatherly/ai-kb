@@ -24,7 +24,7 @@ func startWithReturnTo(
 ) (*httptest.ResponseRecorder, *stubOIDCStartUserService) {
 	t.Helper()
 	us := &stubOIDCStartUserService{}
-	r := newOIDCStartTestRouter(NewAuthHandler(cfg, us, nil, nil, nil))
+	r := newOIDCStartTestRouter(NewAuthHandler(cfg, us, nil, nil, nil, nil))
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/start?return_to="+urlQueryEscape(returnTo), nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -150,7 +150,7 @@ func TestOIDCRedirectCallback_RedirectsToReturnTo(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			us := &stubOIDCStartUserService{loginWithOIDC: tc.login}
-			r := newOIDCStartTestRouter(NewAuthHandler(tc.cfg, us, nil, nil, nil))
+			r := newOIDCStartTestRouter(NewAuthHandler(tc.cfg, us, nil, nil, nil, nil))
 			req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?"+tc.query, nil)
 			if tc.cookie {
 				req.AddCookie(&http.Cookie{Name: oidcNonceCookieName, Value: "nonce456"})

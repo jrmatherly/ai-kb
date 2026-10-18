@@ -5,7 +5,7 @@ Logs and traces explain request errors, latency and model usage. The audit log r
 | What you want to check | Where to look |
 | --- | --- |
 | What one answer retrieved, how many model calls it made, how many tokens it used | The full call tree in Langfuse, once Langfuse is connected |
-| Changes to a knowledge base, to members or to system settings | "Activity" in the knowledge base settings, and Settings → Audit log |
+| Changes to a knowledge base, to members, to workspace configuration (models, agents, MCP services, web search providers, storage backends, API keys) or to system settings, and sign-ins | "Activity" in the knowledge base settings, and Settings → Audit log |
 | Whether background parsing, summary or Wiki tasks are piling up or failing | Settings → Task Queues |
 | Whether the service is alive | `GET /health` |
 | Service log lines that belong to one request | Search the logs for the `X-Request-ID` response header value |
@@ -201,6 +201,9 @@ The `audit_logs` table is **append-only** (no UpdatedAt, no soft delete). The mo
 | Knowledge | `knowledge.created`, `knowledge.updated`, `knowledge.deleted`, `knowledge.batch_deleted`, `knowledge.reparse_started`, `knowledge.parse_canceled`, `knowledge.move_started`, `knowledge.move_completed`, `knowledge.move_failed` |
 | Tags / data sources | `tag.created`, `tag.updated`, `tag.deleted`, `datasource.created`, `datasource.updated`, `datasource.deleted`, `datasource.sync_started`, `datasource.sync_completed`, `datasource.sync_failed`, `datasource.paused`, `datasource.resumed` |
 | Wiki / FAQ | `wiki.content_changed`, `faq.import_started`, `faq.import_completed`, `faq.import_failed` |
+| Authentication | `auth.login_succeeded` (actor and target are the user, tenant is the active workspace), `auth.login_failed` (outcome `denied`, no identity recorded, so the log cannot enumerate accounts), `auth.logout` |
+| Workspace API keys | `tenant_api_key.created`, `tenant_api_key.updated`, `tenant_api_key.deleted` (target `tenant_api_key`; details name the fields touched, never the key) |
+| Configuration changes | `model.changed`, `agent.changed`, `mcp_service.changed`, `web_search_provider.changed`, `storage_backend.changed`; details carry `op` (`created`, `updated`, `deleted`, `set_default`) and the names of the fields touched, never their values |
 
 #### Write path (service and middleware)
 
@@ -212,7 +215,7 @@ The `audit_logs` table is **append-only** (no UpdatedAt, no soft delete). The mo
 
 | Route | Permission | Description |
 | --- | --- | --- |
-| `GET /api/v1/tenants/:id/audit-log` | PathTenantMatch + Admin | The workspace audit stream; returns only workspace-level rows with `scope_type=''` (`UnscopedOnly`) |
+| `GET /api/v1/tenants/:id/audit-log` | PathTenantMatch + Admin | The workspace audit stream: workspace-level rows and the knowledge base activity rows (`scope_type=knowledge_base`) of every knowledge base in the workspace |
 | `GET /api/v1/knowledge-bases/:id/activity` | The KB creator or a workspace Admin, and only in the owner workspace (organization-shared consumers cannot read it) | The KB activity projection: `scope_type=knowledge_base` plus `scope_id=kbID` |
 | `GET /api/v1/system/admin/audit-log` | SystemAdmin (or a platform API key with `system_audit_read`) | Platform-level events with `tenant_id=0` (settings, promotions, queue operations and so on) |
 

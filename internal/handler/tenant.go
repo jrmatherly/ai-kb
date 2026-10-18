@@ -25,6 +25,7 @@ import (
 // Provides functionality for creating, retrieving, updating, and deleting tenants
 // through the REST API endpoints
 type TenantHandler struct {
+	auditSvc      interfaces.AuditLogService
 	service       interfaces.TenantService
 	apiKeyService interfaces.TenantAPIKeyService
 	userService   interfaces.UserService
@@ -63,8 +64,10 @@ func NewTenantHandler(
 	kbService interfaces.KnowledgeBaseService,
 	config *config.Config,
 	systemSettingSvc interfaces.SystemSettingService,
+	auditSvc interfaces.AuditLogService,
 ) *TenantHandler {
 	return &TenantHandler{
+		auditSvc:         auditSvc,
 		service:          service,
 		apiKeyService:    apiKeyService,
 		userService:      userService,
@@ -715,6 +718,11 @@ func (h *TenantHandler) CreateAPIKey(c *gin.Context) {
 	}
 	item := tenantAPIKeyForResponse(result.APIKey)
 	item.APIKey = result.Token
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		TenantID: id, Action: types.AuditActionTenantAPIKeyCreated, TargetType: "tenant_api_key",
+		TargetID: strconv.FormatUint(result.APIKey.ID, 10),
+		Details:  changeDetails("created", "capabilities", "knowledge_base_ids", "expires_at"),
+	})
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"data":    tenantAPIKeyCreateResponse{tenantAPIKeyResponse: item, Token: result.Token},
@@ -758,6 +766,11 @@ func (h *TenantHandler) UpdateAPIKey(c *gin.Context) {
 		c.Error(errors.NewNotFoundError("API key not found"))
 		return
 	}
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		TenantID: tenantID, Action: types.AuditActionTenantAPIKeyUpdated, TargetType: "tenant_api_key",
+		TargetID: strconv.FormatUint(keyID, 10),
+		Details:  changeDetails("updated", "capabilities", "knowledge_base_ids", "expires_at"),
+	})
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": tenantAPIKeyForResponse(updated)})
 }
 
@@ -777,6 +790,10 @@ func (h *TenantHandler) DeleteAPIKey(c *gin.Context) {
 		c.Error(errors.NewNotFoundError("API key not found"))
 		return
 	}
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		TenantID: tenantID, Action: types.AuditActionTenantAPIKeyDeleted, TargetType: "tenant_api_key",
+		TargetID: strconv.FormatUint(keyID, 10), Details: changeDetails("deleted"),
+	})
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 

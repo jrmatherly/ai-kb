@@ -561,8 +561,9 @@ func BuildContainer(container *dig.Container) *dig.Container {
 		gate *approval.Gate,
 		models interfaces.ModelService,
 		agents interfaces.AgentShareService,
+		audit interfaces.AuditLogService,
 	) *handler.MCPServiceHandler {
-		return handler.NewMCPServiceHandler(mcpService, toolApprovals, gate, models, agents)
+		return handler.NewMCPServiceHandler(mcpService, toolApprovals, gate, models, agents, audit)
 	}))
 	must(container.Provide(handler.NewMCPCredentialsHandler))
 	must(container.Provide(handler.NewMCPOAuthHandler))

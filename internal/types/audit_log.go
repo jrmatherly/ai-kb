@@ -132,6 +132,22 @@ const (
 	AuditActionSystemAPIKeyCreated AuditAction = "system.api_key_created"
 	AuditActionSystemAPIKeyRevoked AuditAction = "system.api_key_revoked"
 
+	// AuditActionAuthLoginSucceeded and the actions below it are audit Tier 1:
+	// authentication and configuration changes. Rows carry ids and field names
+	// only, never credentials or content; a failed login records no identity at
+	// all, so the log cannot be used to enumerate accounts.
+	AuditActionAuthLoginSucceeded       AuditAction = "auth.login_succeeded"
+	AuditActionAuthLoginFailed          AuditAction = "auth.login_failed"
+	AuditActionAuthLogout               AuditAction = "auth.logout"
+	AuditActionTenantAPIKeyCreated      AuditAction = "tenant_api_key.created"
+	AuditActionTenantAPIKeyUpdated      AuditAction = "tenant_api_key.updated"
+	AuditActionTenantAPIKeyDeleted      AuditAction = "tenant_api_key.deleted"
+	AuditActionModelChanged             AuditAction = "model.changed"
+	AuditActionAgentChanged             AuditAction = "agent.changed"
+	AuditActionMCPServiceChanged        AuditAction = "mcp_service.changed"
+	AuditActionWebSearchProviderChanged AuditAction = "web_search_provider.changed"
+	AuditActionStorageBackendChanged    AuditAction = "storage_backend.changed"
+
 	// Runtime queue mutations are privileged SystemAdmin actions. Retrying an
 	// archived task can repeat its original side effects; deleting one removes
 	// the Redis failure record. Both must leave a platform audit trail.

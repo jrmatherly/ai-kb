@@ -20,6 +20,7 @@ type WebSearchProviderHandler struct {
 	repo     interfaces.WebSearchProviderRepository
 	service  interfaces.WebSearchProviderService
 	registry *infra_web_search.Registry
+	auditSvc interfaces.AuditLogService
 }
 
 // NewWebSearchProviderHandler creates a new handler
@@ -27,8 +28,9 @@ func NewWebSearchProviderHandler(
 	repo interfaces.WebSearchProviderRepository,
 	service interfaces.WebSearchProviderService,
 	registry *infra_web_search.Registry,
+	auditSvc interfaces.AuditLogService,
 ) *WebSearchProviderHandler {
-	return &WebSearchProviderHandler{repo: repo, service: service, registry: registry}
+	return &WebSearchProviderHandler{auditSvc: auditSvc, repo: repo, service: service, registry: registry}
 }
 
 // --- request DTOs ---
@@ -108,6 +110,10 @@ func (h *WebSearchProviderHandler) CreateProvider(c *gin.Context) {
 		return
 	}
 
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionWebSearchProviderChanged, "web_search_provider", provider.ID,
+		"created", "provider", "is_default",
+	))
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"data":    dto.NewWebSearchProviderResponse(ctx, provider),
@@ -259,6 +265,9 @@ func (h *WebSearchProviderHandler) UpdateProvider(c *gin.Context) {
 		return
 	}
 
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionWebSearchProviderChanged, "web_search_provider", id, "updated", "parameters", "is_default",
+	))
 	// Re-fetch to get the full stored state
 	updated, _ := h.repo.GetByID(ctx, tenantID, id)
 	if updated != nil {
@@ -304,6 +313,9 @@ func (h *WebSearchProviderHandler) DeleteProvider(c *gin.Context) {
 		return
 	}
 
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionWebSearchProviderChanged, "web_search_provider", id, "deleted",
+	))
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 

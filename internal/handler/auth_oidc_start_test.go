@@ -76,7 +76,7 @@ func TestOIDCStart_RedirectsToAuthProvider(t *testing.T) {
 			}, nil
 		},
 	}
-	h := NewAuthHandler(&config.Config{}, us, nil, nil, nil)
+	h := NewAuthHandler(&config.Config{}, us, nil, nil, nil, nil)
 	r := newOIDCStartTestRouter(h)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/start", nil)
@@ -109,7 +109,7 @@ func TestOIDCStart_BuildsCallbackURLFromRequestOrigin(t *testing.T) {
 			return &types.OIDCAuthURLResponse{Success: true, AuthorizationURL: "http://idp", Nonce: "n"}, nil
 		},
 	}
-	h := NewAuthHandler(&config.Config{}, us, nil, nil, nil)
+	h := NewAuthHandler(&config.Config{}, us, nil, nil, nil, nil)
 	r := newOIDCStartTestRouter(h)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/start", nil)
@@ -135,7 +135,7 @@ func TestOIDCStart_ServiceErrorReturnsNonRedirect(t *testing.T) {
 			return nil, fmt.Errorf("idp unavailable")
 		},
 	}
-	h := NewAuthHandler(&config.Config{}, us, nil, nil, nil)
+	h := NewAuthHandler(&config.Config{}, us, nil, nil, nil, nil)
 	r := newOIDCStartTestRouter(h)
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/start", nil)

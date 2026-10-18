@@ -22,6 +22,7 @@ import (
 
 // MCPServiceHandler handles MCP service related HTTP requests
 type MCPServiceHandler struct {
+	auditSvc               interfaces.AuditLogService
 	mcpServiceService      interfaces.MCPServiceService
 	mcpToolApprovalService interfaces.MCPToolApprovalService
 	toolApprovalGate       *approval.Gate
@@ -38,8 +39,10 @@ func NewMCPServiceHandler(
 	toolApprovalGate *approval.Gate,
 	modelService interfaces.ModelService,
 	agents access.SharedAgentLookup,
+	auditSvc interfaces.AuditLogService,
 ) *MCPServiceHandler {
 	return &MCPServiceHandler{
+		auditSvc:               auditSvc,
 		mcpServiceService:      mcpServiceService,
 		mcpToolApprovalService: mcpToolApprovalService,
 		toolApprovalGate:       toolApprovalGate,
@@ -133,6 +136,7 @@ func (h *MCPServiceHandler) CreateMCPService(c *gin.Context) {
 
 	// Response uses dto.MCPServiceResponse which omits secret fields by
 	// construction - no runtime redaction needed.
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionMCPServiceChanged, "mcp_service", service.ID, "created"))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    dto.NewMCPServiceResponse(ctx, &service),
@@ -481,6 +485,9 @@ func (h *MCPServiceHandler) UpdateMCPService(c *gin.Context) {
 			logger.Fields{"service_id": secutils.SanitizeForLog(serviceID)})
 		return
 	}
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionMCPServiceChanged, "mcp_service", serviceID, "updated", auditFieldNames(updateFields)...,
+	))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    h.mcpServiceResponses(ctx, tenantID, []*types.MCPService{stored})[0],
@@ -519,6 +526,7 @@ func (h *MCPServiceHandler) DeleteMCPService(c *gin.Context) {
 	}
 
 	logger.Infof(ctx, "MCP service deleted successfully: %s", secutils.SanitizeForLog(serviceID))
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionMCPServiceChanged, "mcp_service", serviceID, "deleted"))
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "MCP service deleted successfully",

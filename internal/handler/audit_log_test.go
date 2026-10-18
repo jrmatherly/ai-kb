@@ -100,8 +100,8 @@ func TestAuditLogHandler_PassesQueryFiltersThrough(t *testing.T) {
 			if q.ActorUserID != "u-probing" {
 				t.Fatalf("expected actor=u-probing, got %q", q.ActorUserID)
 			}
-			if !q.UnscopedOnly {
-				t.Fatalf("tenant audit feed must exclude resource-scoped activity rows")
+			if q.UnscopedOnly {
+				t.Fatalf("tenant audit feed must include resource-scoped activity rows")
 			}
 			return nil, nil
 		},

@@ -77,12 +77,11 @@ func (h *AuditLogHandler) ListTenantAuditLog(c *gin.Context) {
 	}
 
 	q := &interfaces.AuditLogQuery{
-		AfterID:      afterID,
-		Limit:        limit,
-		Action:       types.AuditAction(c.Query("action")),
-		Outcome:      types.AuditOutcome(c.Query("outcome")),
-		ActorUserID:  c.Query("actor"),
-		UnscopedOnly: true,
+		AfterID:     afterID,
+		Limit:       limit,
+		Action:      types.AuditAction(c.Query("action")),
+		Outcome:     types.AuditOutcome(c.Query("outcome")),
+		ActorUserID: c.Query("actor"),
 	}
 
 	entries, err := h.auditService.List(ctx, tenantID, q)
