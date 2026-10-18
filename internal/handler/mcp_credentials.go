@@ -28,12 +28,15 @@ import (
 //     response (MCPServiceResponse.Credentials) - no separate GET endpoint
 //     needed. Only PUT and DELETE live here.
 type MCPCredentialsHandler struct {
-	svc interfaces.MCPServiceService
+	svc      interfaces.MCPServiceService
+	auditSvc interfaces.AuditLogService
 }
 
 // NewMCPCredentialsHandler constructs the handler.
-func NewMCPCredentialsHandler(svc interfaces.MCPServiceService) *MCPCredentialsHandler {
-	return &MCPCredentialsHandler{svc: svc}
+func NewMCPCredentialsHandler(
+	svc interfaces.MCPServiceService, auditSvc interfaces.AuditLogService,
+) *MCPCredentialsHandler {
+	return &MCPCredentialsHandler{svc: svc, auditSvc: auditSvc}
 }
 
 // mcpCredentialsPutRequest is the body shape for PUT /credentials. Both
@@ -114,6 +117,10 @@ func (h *MCPCredentialsHandler) Put(c *gin.Context) {
 			"token":   {Configured: updated.AuthConfig != nil && updated.AuthConfig.Token != ""},
 		},
 	}
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionMCPServiceChanged, "mcp_service", serviceID, "credentials_updated",
+		credentialFieldNames(req.APIKey, req.Token, "api_key", "token")...,
+	))
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": resp})
 }
 
@@ -156,5 +163,8 @@ func (h *MCPCredentialsHandler) DeleteField(c *gin.Context) {
 		})
 		return
 	}
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionMCPServiceChanged, "mcp_service", serviceID, "credentials_cleared", field,
+	))
 	c.Status(http.StatusNoContent)
 }

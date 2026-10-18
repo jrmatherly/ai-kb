@@ -286,7 +286,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	response, err := h.userService.Login(ctx, &req)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to login user: %v", err)
-		h.emitLoginFailed(ctx, c)
+		h.emitLoginFailed(ctx, c, "password", "service_error")
 		_ = c.Error(errors.NewUnauthorizedError("Login failed"))
 		return
 	}
@@ -294,21 +294,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Check if login was successful
 	if !response.Success {
 		logger.Warnf(ctx, "Login failed: %s", response.Message)
-		h.emitLoginFailed(ctx, c)
+		h.emitLoginFailed(ctx, c, "password", "invalid_credentials")
 		_ = c.Error(errors.NewUnauthorizedError(response.Message))
 		return
 	}
-	if response.User != nil {
-		var tenantID uint64
-		if response.ActiveTenant != nil {
-			tenantID = response.ActiveTenant.ID
-		}
-		emitAudit(ctx, h.auditSvc, &types.AuditLog{
-			TenantID: tenantID, ActorUserID: response.User.ID, ActorRole: "user",
-			Action: types.AuditActionAuthLoginSucceeded, TargetType: "user", TargetUserID: response.User.ID,
-			RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
-		})
-	}
+	h.emitLoginSucceeded(ctx, c, "password", response.User, response.ActiveTenant)
 
 	// User is already in the correct format from service
 
@@ -480,13 +470,16 @@ func (h *AuthHandler) OIDCRedirectCallback(c *gin.Context) {
 	)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to complete OIDC login via redirect callback: %v", err)
+		h.emitLoginFailed(ctx, c, "oidc", "service_error")
 		c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_error="+urlQueryEscape("login_failed")+"&oidc_error_description="+urlQueryEscape(err.Error()))
 		return
 	}
 	if !resp.Success {
+		h.emitLoginFailed(ctx, c, "oidc", "invalid_credentials")
 		c.Redirect(http.StatusFound, frontendRedirectURI+"#oidc_error="+urlQueryEscape("login_failed")+"&oidc_error_description="+urlQueryEscape(resp.Message))
 		return
 	}
+	h.emitLoginSucceeded(ctx, c, "oidc", resp.User, resp.Tenant)
 
 	encoded, err := encodeOIDCCallbackPayload(resp)
 	if err != nil {
@@ -609,13 +602,34 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	})
 }
 
-// emitLoginFailed records a rejected password login without any identity:
-// the row says that a login failed at this path, not whose.
-func (h *AuthHandler) emitLoginFailed(ctx context.Context, c *gin.Context) {
+// emitLoginSucceeded records a completed login as the user it created a
+// session for; the tenant is the workspace the token is scoped to.
+func (h *AuthHandler) emitLoginSucceeded(
+	ctx context.Context, c *gin.Context, method string, user *types.User, tenant *types.Tenant,
+) {
+	if user == nil {
+		return
+	}
+	var tenantID uint64
+	if tenant != nil {
+		tenantID = tenant.ID
+	}
+	emitAudit(ctx, h.auditSvc, &types.AuditLog{
+		TenantID: tenantID, ActorUserID: user.ID, ActorRole: "user",
+		Action: types.AuditActionAuthLoginSucceeded, TargetType: "user", TargetUserID: user.ID,
+		RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
+		Details: changeDetails("login", method),
+	})
+}
+
+// emitLoginFailed records a rejected login without any identity: the row says
+// that a login failed at this path and why (bad credentials or a service
+// error), not whose.
+func (h *AuthHandler) emitLoginFailed(ctx context.Context, c *gin.Context, method, reason string) {
 	emitAudit(ctx, h.auditSvc, &types.AuditLog{
 		ActorRole: "anonymous", Action: types.AuditActionAuthLoginFailed, TargetType: "user",
 		Outcome: types.AuditOutcomeDenied, RequestPath: c.FullPath(), RequestMethod: c.Request.Method,
-		Details: changeDetails("login", "invalid_credentials"),
+		Details: changeDetails("login", method, reason),
 	})
 }
 

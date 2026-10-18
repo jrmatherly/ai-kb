@@ -63,3 +63,16 @@ func auditFieldNames(fields map[string]bool) []string {
 	sort.Strings(names)
 	return names
 }
+
+// credentialFieldNames returns the names of the credential fields a request
+// carried (non-nil pointers), never their values.
+func credentialFieldNames(first, second *string, firstName, secondName string) []string {
+	var names []string
+	if first != nil {
+		names = append(names, firstName)
+	}
+	if second != nil {
+		names = append(names, secondName)
+	}
+	return names
+}

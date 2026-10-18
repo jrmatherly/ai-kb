@@ -201,9 +201,9 @@ The `audit_logs` table is **append-only** (no UpdatedAt, no soft delete). The mo
 | Knowledge | `knowledge.created`, `knowledge.updated`, `knowledge.deleted`, `knowledge.batch_deleted`, `knowledge.reparse_started`, `knowledge.parse_canceled`, `knowledge.move_started`, `knowledge.move_completed`, `knowledge.move_failed` |
 | Tags / data sources | `tag.created`, `tag.updated`, `tag.deleted`, `datasource.created`, `datasource.updated`, `datasource.deleted`, `datasource.sync_started`, `datasource.sync_completed`, `datasource.sync_failed`, `datasource.paused`, `datasource.resumed` |
 | Wiki / FAQ | `wiki.content_changed`, `faq.import_started`, `faq.import_completed`, `faq.import_failed` |
-| Authentication | `auth.login_succeeded` (actor and target are the user, tenant is the active workspace), `auth.login_failed` (outcome `denied`, no identity recorded, so the log cannot enumerate accounts), `auth.logout` |
+| Authentication | `auth.login_succeeded` (actor and target are the user, tenant is the active workspace), `auth.login_failed` (outcome `denied`, no identity recorded, so the log cannot enumerate accounts), `auth.logout`; the password and OIDC paths both write them, and details carry the method (`password`, `oidc`) and, on failure, the reason (`invalid_credentials` or `service_error`) |
 | Workspace API keys | `tenant_api_key.created`, `tenant_api_key.updated`, `tenant_api_key.deleted` (target `tenant_api_key`; details name the fields touched, never the key) |
-| Configuration changes | `model.changed`, `agent.changed`, `mcp_service.changed`, `web_search_provider.changed`, `storage_backend.changed`; details carry `op` (`created`, `updated`, `deleted`, `set_default`) and the names of the fields touched, never their values |
+| Configuration changes | `model.changed`, `agent.changed`, `mcp_service.changed`, `web_search_provider.changed`, `storage_backend.changed`; details carry `op` (`created`, `updated`, `deleted`, `copied`, `set_default`, `credentials_updated`, `credentials_cleared`) and the names of the fields touched, never their values |
 
 #### Write path (service and middleware)
 

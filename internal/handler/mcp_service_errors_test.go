@@ -38,7 +38,7 @@ func TestMCPServiceCallerErrorsReturn4xx(t *testing.T) {
 	}}
 	svc := service.NewMCPServiceService(repo, nil, nil)
 	h := &MCPServiceHandler{mcpServiceService: svc}
-	creds := NewMCPCredentialsHandler(svc)
+	creds := NewMCPCredentialsHandler(svc, nil)
 
 	router := gin.New()
 	router.Use(middleware.ErrorHandler(), func(c *gin.Context) {
@@ -125,7 +125,7 @@ func TestMCPServiceRepositoryFailuresReturn500WithoutDriverText(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	svc := service.NewMCPServiceService(mcpServiceRepoFailing{}, nil, nil)
 	h := &MCPServiceHandler{mcpServiceService: svc}
-	creds := NewMCPCredentialsHandler(svc)
+	creds := NewMCPCredentialsHandler(svc, nil)
 	oauth := NewMCPOAuthHandler(nil, nil, svc, nil)
 
 	router := gin.New()

@@ -204,6 +204,7 @@ func (h *ModelHandler) CopyModel(c *gin.Context) {
 		secutils.SanitizeForLog(model.ID),
 		secutils.SanitizeForLog(model.Name),
 	)
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionModelChanged, "model", model.ID, "copied", "source_id"))
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"data":    dto.NewModelResponse(ctx, model),

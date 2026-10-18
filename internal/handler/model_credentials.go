@@ -19,11 +19,16 @@ import (
 //
 // Recognized fields: "api_key" (every provider), "app_secret" (AI KB Cloud).
 type ModelCredentialsHandler struct {
-	svc interfaces.ModelService
+	svc      interfaces.ModelService
+	auditSvc interfaces.AuditLogService
 }
 
-func NewModelCredentialsHandler(svc interfaces.ModelService) *ModelCredentialsHandler {
-	return &ModelCredentialsHandler{svc: svc}
+// NewModelCredentialsHandler wires the model credential routes to the model
+// service and the audit writer.
+func NewModelCredentialsHandler(
+	svc interfaces.ModelService, auditSvc interfaces.AuditLogService,
+) *ModelCredentialsHandler {
+	return &ModelCredentialsHandler{svc: svc, auditSvc: auditSvc}
 }
 
 type modelCredentialsPutRequest struct {
@@ -81,6 +86,10 @@ func (h *ModelCredentialsHandler) Put(c *gin.Context) {
 			"app_secret": {Configured: updated.Parameters.AppSecret != ""},
 		},
 	}
+	emitAudit(ctx, h.auditSvc, changeRow(
+		types.AuditActionModelChanged, "model", id, "credentials_updated",
+		credentialFieldNames(req.APIKey, req.AppSecret, "api_key", "app_secret")...,
+	))
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": resp})
 }
 
@@ -113,5 +122,6 @@ func (h *ModelCredentialsHandler) DeleteField(c *gin.Context) {
 		c.Error(errors.NewInternalServerError("failed to clear credential: " + err.Error()))
 		return
 	}
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionModelChanged, "model", id, "credentials_cleared", field))
 	c.Status(http.StatusNoContent)
 }

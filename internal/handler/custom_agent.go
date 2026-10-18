@@ -594,6 +594,7 @@ func (h *CustomAgentHandler) CopyAgent(c *gin.Context) {
 
 	logger.Infof(ctx, "Custom agent copied successfully, source ID: %s, new ID: %s",
 		secutils.SanitizeForLog(id), secutils.SanitizeForLog(copiedAgent.ID))
+	emitAudit(ctx, h.auditSvc, changeRow(types.AuditActionAgentChanged, "agent", copiedAgent.ID, "copied", "source_id"))
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"data":    copiedAgent,
