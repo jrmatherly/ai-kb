@@ -2686,7 +2686,6 @@ export default {
     all: 'All',
     clear: 'Clear',
     website: 'Official Website',
-    clawhubSkill: 'Claw Skill',
     github: 'GitHub',
     githubStarTip: 'Open the repo on GitHub and star it if you find it useful',
     on: 'On',
@@ -7140,7 +7139,7 @@ export default {
       api: 'API Integration',
       cli: 'CLI',
       browser: 'Browser Extension',
-      claw: 'Claw Skill',
+      claw: 'Agent skill',
       mcpserver: 'MCP Server'
     },
     api: {
@@ -7377,58 +7376,48 @@ export default {
       docs: 'Browser extension documentation'
     },
     claw: {
-      title: 'AI KB Skill',
-      subtitle: 'Import documents and run hybrid retrieval (vector + keyword) via the AI KB REST API, for uploads, URL imports, Markdown entries, and cross-KB search.',
-      capabilitiesTitle: 'Skill capabilities',
+      title: 'Agent skill',
+      subtitle: 'Give a coding agent retrieval over your knowledge bases.',
+      capabilitiesTitle: 'What the skill does',
       capabilities: {
-        upload: {
-          title: 'Upload files',
-          desc: 'Upload PDF, Word, Excel, and more; automatic parsing and vectorization.'
-        },
-        url: {
-          title: 'Import URLs',
-          desc: 'Fetch web pages by URL into a knowledge base with parse-status polling.'
-        },
-        manual: {
-          title: 'Write Markdown',
-          desc: 'Create or edit knowledge entries as Markdown, ideal for meeting notes.'
-        },
         search: {
-          title: 'Hybrid search',
-          desc: 'Per-KB hybrid-search and cross-KB knowledge-search combining vector and keyword recall.'
+          title: 'Search chunks',
+          desc: 'Ranked chunks from one knowledge base for the agent to reason over, with no answer generated.'
         },
-        browse: {
-          title: 'Browse knowledge',
-          desc: 'List knowledge bases and entries, view details, and manage imported content.'
+        bases: {
+          title: 'List knowledge bases',
+          desc: 'Find a knowledge base by name and address it by id or name in later calls.'
+        },
+        answer: {
+          title: 'Answer with citations',
+          desc: 'Grounded answers through chat or a custom agent, with references on request and multi-turn sessions.'
         }
       },
       stepsTitle: 'Setup steps',
       steps: {
-        api: {
-          title: 'Get API credentials',
-          desc: 'Copy the base URL from Settings → API Info and create an API key there. Copy the key when it is created: it is shown in full only once.'
-        },
-        env: {
-          title: 'Configure environment',
-          desc: 'Set WEKNORA_BASE_URL and WEKNORA_API_KEY in your shell or ~/.zshrc / ~/.bashrc. The example below uses your current API base URL. Replace the API Key with your actual value.'
+        cli: {
+          title: 'Install and connect the CLI',
+          desc: 'The skills run through the aikb command. Install it and point it at this server with an API key, as the CLI tab describes.'
         },
         install: {
-          title: 'Install the skill',
-          desc: 'Run the command below in an environment with the OpenClaw CLI installed, or follow the ClawHub page instructions.'
+          title: 'Install the skills',
+          desc: 'Writes ai-kb-shared and ai-kb-rag-search in the Agent Skills format (SKILL.md) that Claude Code, Codex, Cursor and other agents read. Pass any skills directory with --dir.'
+        },
+        mcp: {
+          title: 'Or connect over MCP',
+          desc: 'Clients that speak MCP need no files: create an endpoint on the MCP Server tab and connect the client to it.'
         },
         verify: {
-          title: 'Verify connection',
-          desc: 'Ask the agent to list knowledge bases or run a search to confirm credentials and connectivity.'
+          title: 'Verify',
+          desc: 'Ask the agent which knowledge bases it can see, then one question with references, to confirm credentials and reach.'
         }
       },
-      openApiSettings: 'Open API Info',
+      openCli: 'Open CLI tab',
+      openMcp: 'Open MCP Server tab',
       copy: 'Copy',
-      copyEnvSuccess: 'Environment example copied',
       copyCmdSuccess: 'Install command copied',
-      ecosystemNote: 'Skill hosted on ClawHub ({\'@\'}lyingbug/weknora). See the ClawHub page for full API docs and version history.',
-      installCta: 'Open ClawHub',
-      installCtaHint: 'Install AI KB Skill · opens in a new tab',
-      hubMeta: 'ClawHub · {\'@\'}lyingbug/weknora · MIT-0'
+      ecosystemNote: 'The skills ship inside the aikb binary and use the open Agent Skills format, so they work with any agent that reads SKILL.md.',
+      hubMeta: 'Bundled with aikb · MIT'
     }
   },
   credential: {

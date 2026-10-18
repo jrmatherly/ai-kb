@@ -1,7 +1,5 @@
 import type { DeploymentCapabilityKey } from './deploymentCapabilities'
 
-export const CLAWHUB_SKILL_URL = 'https://clawhub.ai/lyingbug/weknora'
-
 export const EXTENSION_RELEASES_URL = 'https://github.com/jrmatherly/ai-kb/releases?q=extension'
 
 export type IntegrationTab = 'im' | 'embed' | 'api' | 'mcpserver' | 'cli' | 'browser' | 'claw'
@@ -37,5 +35,5 @@ export const INTEGRATION_PREVIEW_ITEMS: Array<{
   { key: 'mcpserver', icon: { type: 'icon', name: 'tools' } },
   { key: 'cli', icon: { type: 'icon', name: 'code' } },
   { key: 'browser', icon: { type: 'icon', name: 'browse' } },
-  { key: 'claw', icon: { type: 'emoji', value: '🦞' } },
+  { key: 'claw', icon: { type: 'icon', name: 'app' } },
 ]

@@ -9,10 +9,13 @@ export function useIntegrationNav() {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
-  const openApiSettings = () => {
-    router.push({ path: '/platform/settings', query: { section: 'integration-api' } })
-    uiStore.openSettings('integration-api')
+  const openIntegrationTab = (tab: 'api' | 'cli' | 'mcpserver') => {
+    const section = `integration-${tab}`
+    router.push({ path: '/platform/settings', query: { section } })
+    uiStore.openSettings(section)
   }
 
-  return { openExternal, openApiSettings }
+  const openApiSettings = () => openIntegrationTab('api')
+
+  return { openExternal, openApiSettings, openIntegrationTab }
 }

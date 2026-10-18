@@ -44,7 +44,7 @@
         <McpServerIntegrationSettings />
       </div>
 
-      <ClawSkillLanding v-if="tab === 'claw'" />
+      <AgentSkillLanding v-if="tab === 'claw'" />
       <CliIntegrationLanding v-if="tab === 'cli'" />
       <BrowserExtensionLanding v-if="tab === 'browser'" />
     </div>
@@ -58,7 +58,7 @@ import IMChannelPanel from '@/components/IMChannelPanel.vue'
 import AgentEmbedChannelPanel from '@/components/AgentEmbedChannelPanel.vue'
 import ApiIntegrationSettings from '@/views/integrations/ApiIntegrationSettings.vue'
 import McpServerIntegrationSettings from '@/views/integrations/McpServerIntegrationSettings.vue'
-import ClawSkillLanding from '@/views/integrations/ClawSkillLanding.vue'
+import AgentSkillLanding from '@/views/integrations/AgentSkillLanding.vue'
 import CliIntegrationLanding from '@/views/integrations/CliIntegrationLanding.vue'
 import BrowserExtensionLanding from '@/views/integrations/BrowserExtensionLanding.vue'
 import type { IntegrationTab } from '@/config/integrations'
