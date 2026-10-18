@@ -2,7 +2,7 @@
 """Check and bump every version string in the repository from one table.
 
   version.py check                         product strings equal VERSION; each library agrees with itself
-  version.py bump [YYYY.M.D[.MICRO]]       product CalVer bump (default: today, then .1, .2 ...), one commit
+  version.py bump [YYYY.M.D[.MICRO]]       product CalVer bump (default: today, then .1, .2 ...) plus a helm-chart patch, one commit
   version.py bump-lib <lib> <part|x.y.z>   library semver bump (part: patch, minor, major), one commit
 
 Each touchpoint is a regex whose group `v` must match exactly once, so a file that changes shape fails
@@ -83,6 +83,7 @@ TOUCHPOINTS = [
         "mcp-server", "website-docs/03-features/08-mcp.md", r'`MCPServer\("ai-kb-server", version="(?P<v>[^"]+)"\)`'
     ),
     Touchpoint("helm-chart", "helm/Chart.yaml", r"^version: (?P<v>\S+)$"),
+    Touchpoint("helm-chart", "helm/README.md", r"charts/ai-kb --version (?P<v>\S+)"),
 ]
 # The tag each publish workflow expects; None: nothing publishes it.
 TAG_PREFIX = {
@@ -242,11 +243,17 @@ def bump(group, target, remote):
     if prefix and tag_taken(prefix + target, remote):
         raise Fail(f"tag {prefix}{target} already exists (locally or on origin); pick another version")
     name = f"v{target}" if group == "product" else f"{group} v{target}"
-    paths = sorted({tp.path for tp in tps})
+    writes = [(tp, form(tp, target)) for tp in tps]
+    if group == "product":
+        # Helm needs a new chart version for any chart change, so the new appVersion ships with one.
+        chart = rows("helm-chart")
+        chart_version = next_semver(read(chart[0]), "patch")
+        writes += [(tp, chart_version) for tp in chart]
+    paths = sorted({tp.path for tp, _ in writes})
     original = {p: (ROOT / p).read_bytes() for p in paths}
     try:
-        for tp in tps:
-            write(tp, form(tp, target))
+        for tp, value in writes:
+            write(tp, value)
         for project in UV_PROJECTS.get(group, []):
             subprocess.run(["uv", "lock", "--check", "--offline", "--project", project], cwd=ROOT, check=True)
         errors = check()

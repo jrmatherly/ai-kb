@@ -5,6 +5,7 @@ python3 scripts/test_version.py
 """
 
 import datetime
+import importlib.util
 import json
 import os
 import re
@@ -15,6 +16,9 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent / "version.py"
 ROOT = SCRIPT.parents[1]
+spec = importlib.util.spec_from_file_location("version", SCRIPT)
+version = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(version)
 
 
 def sh(*args, cwd):
@@ -39,8 +43,9 @@ class VersionTest(unittest.TestCase):
             ("core.hooksPath", "/dev/null"),
         ]:
             sh("git", "config", k, v, cwd=self.repo)
-        # The make targets run the clone's own Makefile and script, so test the working tree's.
-        for f in ["Makefile", "scripts/version.py"]:
+        # The make targets run the clone's own Makefile and script, so test the working tree's, plus
+        # every file its table reads, so an uncommitted touchpoint is exercised too.
+        for f in sorted({"Makefile", "scripts/version.py", *(tp.path for tp in version.TOUCHPOINTS)}):
             (self.repo / f).write_bytes((ROOT / f).read_bytes())
         sh(
             "git",
@@ -84,6 +89,11 @@ class VersionTest(unittest.TestCase):
             ["make", *args], cwd=self.repo, capture_output=True, text=True, env=env, check=False
         )
 
+    def next_chart_version(self):
+        """The clone's chart version with its patch part incremented."""
+        major, minor, patch = re.search(r"^version: (\d+)\.(\d+)\.(\d+)$", self.text("helm/Chart.yaml"), re.MULTILINE).groups()
+        return f"{major}.{minor}.{int(patch) + 1}"
+
     def head(self):
         return sh("git", "rev-parse", "HEAD", cwd=self.repo).strip()
 
@@ -98,7 +108,7 @@ class VersionTest(unittest.TestCase):
 
         target = self.next_version(3)
         day = target.rsplit(".", 1)[0]
-        chart_version = re.search(r"^version: .*$", self.text("helm/Chart.yaml"), re.MULTILINE)[0]
+        chart = self.next_chart_version()
         r = self.run_tool("bump", target)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn(f"git tag -s v{target} -m v{target}", r.stdout)
@@ -108,7 +118,8 @@ class VersionTest(unittest.TestCase):
             self.assertEqual(self.lock_versions(d), [target] * 3, d)
         self.assertIn(f'\nversion = "{target}"\n', self.text("docreader/pyproject.toml"))
         self.assertIn(f'name = "docreader"\nversion = "{target}"\n', self.text("docreader/uv.lock"))
-        self.assertIn(f'\n{chart_version}\nappVersion: "v{target}"\n', self.text("helm/Chart.yaml"))
+        self.assertIn(f'\nversion: {chart}\nappVersion: "v{target}"\n', self.text("helm/Chart.yaml"))
+        self.assertIn(f"/charts/ai-kb --version {chart} \\\n", self.text("helm/README.md"))
         self.assertEqual(json.loads(self.text("cmd/desktop/wails.json"))["info"]["productVersion"], day)
         self.assertIn(f"img.shields.io/badge/release-v{target}-b8863b", self.text("README.md"))
 
@@ -127,6 +138,7 @@ class VersionTest(unittest.TestCase):
                 "frontend/package-lock.json",
                 "frontend/package.json",
                 "helm/Chart.yaml",
+                "helm/README.md",
                 "miniprogram/package-lock.json",
                 "miniprogram/package.json",
                 "website-docs/05-clients/04-miniprogram.md",
@@ -185,7 +197,7 @@ class VersionTest(unittest.TestCase):
         before, version = self.head(), self.text("VERSION")
         r = self.run_tool("bump", self.next_version(1))
         self.assertEqual(r.returncode, 2)
-        self.assertIn("restored 16 file(s) to their original bytes", r.stderr)
+        self.assertIn("restored 17 file(s) to their original bytes", r.stderr)
         self.assertEqual(self.head(), before)
         self.assertEqual(self.text("VERSION"), version)
         self.assertEqual(sh("git", "status", "--porcelain", cwd=self.repo), "")
@@ -255,6 +267,26 @@ class VersionTest(unittest.TestCase):
         self.assertIn("**`ai-kb-mcp`** (version 99.0.0,", page)
         self.assertIn('`MCPServer("ai-kb-server", version="99.0.0")`', page)
         self.assertIn("website-docs/03-features/08-mcp.md", sh("git", "diff", "--name-only", "HEAD~1", cwd=self.repo).split())
+
+    def test_bump_lib_helm_chart_patch_rewrites_the_readme_and_check_names_it(self):
+        chart = self.next_chart_version()
+        r = self.run_tool("bump-lib", "helm-chart", "patch")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn(f"\nversion: {chart}\n", self.text("helm/Chart.yaml"))
+        self.assertIn(f"/charts/ai-kb --version {chart} \\\n", self.text("helm/README.md"))
+        self.assertEqual(self.head_subject(), f"chore(release): helm-chart v{chart}")
+        self.assertIn("no tag: helm.yml pushes the helm-chart", r.stdout)
+        self.assertEqual(
+            sh("git", "diff", "--name-only", "HEAD~1", cwd=self.repo).split(), ["helm/Chart.yaml", "helm/README.md"]
+        )
+        readme = self.repo / "helm/README.md"
+        readme.write_text(readme.read_text().replace(f"--version {chart} ", "--version 9.9.9 "))
+        r = self.run_tool("check")
+        self.assertEqual(r.returncode, 1)
+        self.assertRegex(
+            r.stderr, rf'^helm/README\.md:\d+: "9\.9\.9", want "{re.escape(chart)}" \(helm-chart, from helm/Chart\.yaml\)$'
+        )
+        self.assertEqual(len(r.stderr.splitlines()), 1, r.stderr)
 
 
 if __name__ == "__main__":
