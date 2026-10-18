@@ -33,6 +33,21 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      # The conf emptyDir hides the image's neo4j.conf, server-logs.xml and user-logs.xml, and the
+      # entrypoint only appends NEO4J_* settings, so an empty directory changes the defaults
+      # (CYPHER_5 instead of CYPHER_25, no JVM flags). Seed it from the image first.
+      initContainers:
+        - name: copy-conf
+          image: {{ include "aikb.neo4j.image" . }}
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.neo4j.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command: ["cp", "-r", "/var/lib/neo4j/conf/.", "/conf-rw/"]
+          volumeMounts:
+            - name: conf
+              mountPath: /conf-rw
       containers:
         - name: neo4j
           image: {{ include "aikb.neo4j.image" . }}
@@ -73,9 +88,9 @@ spec:
           volumeMounts:
             - name: neo4j-data
               mountPath: /data
-            # The root filesystem is read-only. The entrypoint renders neo4j.conf from the NEO4J_*
-            # variables into conf/ and copies APOC from labs/ into plugins/; JNA maps a native
-            # library from /tmp, so it must allow exec (an emptyDir does).
+            # The root filesystem is read-only. The entrypoint appends NEO4J_* settings to conf/
+            # and copies APOC from labs/ into plugins/; JNA maps a native library from /tmp, so
+            # it must allow exec (an emptyDir does).
             - name: tmp
               mountPath: /tmp
             - name: logs

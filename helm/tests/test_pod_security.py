@@ -36,6 +36,16 @@ class PodSecurityTests(unittest.TestCase):
                 self.assertIs(ctx.get("readOnlyRootFilesystem"), True, f"{label}: readOnlyRootFilesystem")
         self.assertEqual(sorted(seen), sorted(["audit-ai-kb-app", "audit-ai-kb-docreader", "audit-ai-kb-frontend", "audit-ai-kb-neo4j", "audit-ai-kb-postgres", "audit-ai-kb-website"]))
 
+    def test_neo4j_seeds_its_conf_and_mounts_every_writable_path(self):
+        [(_, spec)] = [(n, s) for n, s in pods({"neo4j": {"enabled": True}}) if n.endswith("-neo4j")]
+        [init] = spec["initContainers"]
+        self.assertEqual(init["command"], ["cp", "-r", "/var/lib/neo4j/conf/.", "/conf-rw/"])
+        self.assertEqual([m["mountPath"] for m in init["volumeMounts"]], ["/conf-rw"])
+        self.assertEqual(
+            sorted(m["mountPath"] for m in spec["containers"][0]["volumeMounts"]),
+            ["/data", "/logs", "/tmp", "/var/lib/neo4j/conf", "/var/lib/neo4j/import", "/var/lib/neo4j/plugins"],
+        )
+
     def test_bundled_redis_is_restricted_too(self):
         [(name, spec)] = [(n, s) for n, s in pods() if n.endswith("-redis")]
         ctx = spec["containers"][0]["securityContext"]
