@@ -1,4 +1,4 @@
-"""Tests for update_tap: run with `python3 -I -m unittest scripts/test_update_tap.py`."""
+"""Tests for update_tap: run with `python3 -I scripts/test_update_tap.py`."""
 
 import hashlib
 import json

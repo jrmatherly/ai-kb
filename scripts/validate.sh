@@ -69,6 +69,7 @@ if has 'scripts/git-hooks/*' scripts/test-git-hooks.sh scripts/check-english-onl
   scripts/emdash-allowlist.txt .claude/hooks/post-edit.sh; then areas+=(git-hooks); fi
 if has scripts/start_all.sh scripts/test-start-all.sh; then areas+=(start-all); fi
 if has '*.sh' 'scripts/git-hooks/*'; then areas+=(shell); fi
+if has scripts/update_tap.py scripts/test_update_tap.py .github/workflows/release-lite.yml; then areas+=(tap); fi
 if has 'licenses/*' 'scripts/*license*' LICENSE THIRD_PARTY_NOTICES.md go.mod; then areas+=(licenses); fi
 if has 'third_party/anydoc-go/*' scripts/build-anydoc-lib.sh 'internal/infrastructure/docparser/*'; then areas+=(anydoc); fi
 if has 'helm/*'; then areas+=(helm); fi
@@ -349,6 +350,11 @@ area_emdash() {
 # Every version string against VERSION and each library against itself: milliseconds, and a bump or a hand
 # edit anywhere can break it. The tests clone HEAD and drive the make targets, so they run only when the
 # tool or the Makefile changes; guards.yml runs them in CI.
+# The tap updater writes the hashes every brew and scoop install checks.
+area_tap() {
+  python3 -I scripts/test_update_tap.py
+}
+
 area_version() {
   python3 scripts/version.py check
   if has scripts/version.py scripts/test_version.py Makefile && need uv ssh-keygen make; then

@@ -21,7 +21,7 @@ VERSION_RE = re.compile(r'^(\s*version\s+")([^"]+)(")\s*$')
 
 
 def fail(message):
-    print(f"update-tap: {message}", file=sys.stderr)
+    print(f"update_tap: {message}", file=sys.stderr)
     raise SystemExit(1)
 
 
@@ -91,7 +91,7 @@ def main(argv):
         result = unittest.TextTestRunner().run(suite)
         return 0 if result.wasSuccessful() else 1
     if len(argv) != 4:
-        print("usage: update-tap.py <tag> <sha256-dir> <tap-dir> | --self-check", file=sys.stderr)
+        print("usage: update_tap.py <tag> <sha256-dir> <tap-dir> | --self-check", file=sys.stderr)
         return 2
     for rel in update_tap(argv[1], argv[2], argv[3]):
         print(rel)

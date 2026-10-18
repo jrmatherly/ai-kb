@@ -322,6 +322,7 @@ scripts/validate.sh --area helm     # run only the named area (repeatable), what
 | model-catalog | `internal/models/catalog/data/**`, `scripts/model-catalog/**` | `generate.py --check`, `go test ./internal/models/...` |
 | git-hooks | `scripts/git-hooks/**`, `scripts/test-git-hooks.sh`, `scripts/check-english-only.sh`, `scripts/check-emdash.sh`, `scripts/emdash-allowlist.txt`, `.claude/hooks/post-edit.sh` | `scripts/test-git-hooks.sh` |
 | shell | any `*.sh`, the hooks in `scripts/git-hooks/` | `shellcheck -S warning` on the changed scripts |
+| tap | `scripts/update_tap.py`, `scripts/test_update_tap.py`, `.github/workflows/release-lite.yml` | `python3 -I scripts/test_update_tap.py`: the updater that writes the tap formulas and the Scoop manifest on each release |
 | licenses | `licenses/**`, license scripts, `LICENSE`, `THIRD_PARTY_NOTICES.md` | `check-license-bundle.sh`, `test-license-bundle.sh` |
 | anydoc | `third_party/anydoc-go/**`, `scripts/build-anydoc-lib.sh`, `internal/infrastructure/docparser/**` | builds the Rust archive, `cargo audit`, vet, test and build with `-tags anydoc` |
 | helm | `helm/**` | `helm lint`, `helm/tests`, image tag rendering |

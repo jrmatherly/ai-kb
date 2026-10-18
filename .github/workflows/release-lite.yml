@@ -146,6 +146,15 @@ jobs:
       id-token: write
       attestations: write
     steps:
+      # Checked here too: this job does not wait for build-frontend, and a bad
+      # tag must not be built and attested before the release job rejects it.
+      - name: 🔎 Check the tag
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9A-Za-z._-]+$ ]]; then
+            echo "::error::tag '$TAG' must match ^v[0-9A-Za-z._-]+\$"
+            exit 1
+          fi
+
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
