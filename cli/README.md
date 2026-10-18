@@ -60,10 +60,22 @@ own: it carries the product's CalVer release tag (`git describe --tags`).
 
 ### Pre-built binaries
 
-Building from source is the supported install method today. Release archives
-with checksums and a Homebrew tap (`jrmatherly/homebrew-ai-kb`) arrive with the
-next product release; `go install` is not supported (the module lives in
-`cli/` and release tags are dated CalVer).
+```bash
+brew install jrmatherly/ai-kb/aikb          # macOS and Linux
+```
+
+```powershell
+scoop bucket add ai-kb https://github.com/jrmatherly/homebrew-ai-kb
+scoop install ai-kb/aikb                    # Windows
+```
+
+Every product release also carries `aikb_<tag>_<os>_<arch>.tar.gz` and
+`aikb_<tag>_windows_<arch>.zip` archives with `.sha256` files and build
+provenance attestations (`gh attestation verify <file> -R jrmatherly/ai-kb`).
+The tap and the Scoop bucket are `jrmatherly/homebrew-ai-kb`, rewritten by
+the release workflow. `go install` is not supported (the module lives in
+`cli/` and release tags are dated CalVer). Details and the Windows PATH steps:
+[the CLI docs](https://ai-kb.matherly.net/docs/05-clients/02-cli#installation).
 
 ---
 
@@ -125,7 +137,7 @@ aikb agent check ag_abc     # deep: probes every KB in the agent's scope
 
 For AI agents (any MCP-capable host) integrating AI KB:
 
-1. Install: build from source (see [Install](#install))
+1. Install: `brew install jrmatherly/ai-kb/aikb`, Scoop, or a release archive (see [Install](#install))
 2. Authenticate. In a sandbox / CI, the **stateless** path needs no `auth login`
    and writes nothing to disk - just set two env vars:
 

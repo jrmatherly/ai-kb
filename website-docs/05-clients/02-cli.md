@@ -6,7 +6,7 @@ The source is in `cli/`, a separate Go module (`github.com/jrmatherly/ai-kb/cli`
 
 The console page Settings → Publish & Integrations → CLI walks through setup and generates commands for the current deployment that you can copy:
 
-1. **Install**: build from source (needs Git and Go 1.26+; the example is for macOS and Linux).
+1. **Install**: Homebrew on macOS and Linux (`brew install jrmatherly/ai-kb/aikb`); Windows uses Scoop, and the Installation section below also covers release archives and building from source.
 2. **Connect**: `aikb profile add aikb --host '<current server address>' --use && aikb auth login` creates and activates a profile named `aikb`, then signs in with your email and password. The server address keeps any reverse proxy path prefix and does not end in `/api/v1`. If a profile with that name already exists, pick another name.
 3. **Verify**: run `aikb doctor` and `aikb kb list` to confirm that the server and the credential work.
 
@@ -59,9 +59,48 @@ flowchart TB
 
 ## Installation
 
-To get a `aikb` binary on your `PATH`, build it from source. There are no prebuilt CLI binaries and no supported `go install` path; the Homebrew formula in `Formula/` installs the Lite server, not the CLI.
+Every product release publishes `aikb` for macOS, Linux and Windows. The Homebrew tap and the Scoop bucket live in [`jrmatherly/homebrew-ai-kb`](https://github.com/jrmatherly/homebrew-ai-kb) and are rewritten by the release workflow; `go install` is not supported (the module lives in `cli/` and release tags are dated CalVer).
 
-### Build from source (the supported installation method)
+### Homebrew (macOS and Linux)
+
+```bash
+brew install jrmatherly/ai-kb/aikb
+aikb --version
+```
+
+Homebrew 7 taps `jrmatherly/ai-kb` for you and trusts that one formula. If `brew install aikb` after a manual `brew tap` answers `Refusing to load formula jrmatherly/ai-kb/aikb from untrusted tap`, run `brew trust --formula jrmatherly/ai-kb/aikb` (or `brew trust jrmatherly/ai-kb` for the whole tap) and install again. The Lite server installs the same way: `brew install jrmatherly/ai-kb/ai-kb-lite`.
+
+### Release archives (any platform)
+
+Each release carries `aikb_<tag>_<os>_<arch>.tar.gz` (darwin and linux, amd64 and arm64), `aikb_<tag>_windows_<arch>.zip`, a `.sha256` beside each archive, and a build provenance attestation per archive.
+
+```bash
+gh release download v2026.10.18 -R jrmatherly/ai-kb -p 'aikb_v2026.10.18_darwin_arm64.tar.gz*'
+gh attestation verify aikb_v2026.10.18_darwin_arm64.tar.gz -R jrmatherly/ai-kb   # or: shasum -a 256 -c aikb_v2026.10.18_darwin_arm64.tar.gz.sha256
+tar xzf aikb_v2026.10.18_darwin_arm64.tar.gz
+sudo mv aikb /usr/local/bin/   # or any directory on $PATH
+```
+
+### Windows
+
+With Scoop:
+
+```powershell
+scoop bucket add ai-kb https://github.com/jrmatherly/homebrew-ai-kb
+scoop install ai-kb/aikb
+aikb --version
+```
+
+From the release zip: download `aikb_<tag>_windows_amd64.zip` (or `arm64` on Windows on Arm), verify it with `gh attestation verify .\aikb_<tag>_windows_amd64.zip -R jrmatherly/ai-kb` or by comparing `(Get-FileHash .\aikb_<tag>_windows_amd64.zip).Hash` with the `.sha256` file, extract `aikb.exe` into a folder you own such as `$env:LOCALAPPDATA\Programs\aikb`, and add that folder to the user `PATH`:
+
+```powershell
+$user = [Environment]::GetEnvironmentVariable('Path', 'User')
+[Environment]::SetEnvironmentVariable('Path', "$user;$env:LOCALAPPDATA\Programs\aikb", 'User')
+```
+
+Open a new terminal and run `aikb --version`. SmartScreen may flag a browser-downloaded, unsigned `aikb.exe`; `Unblock-File .\aikb.exe` after verifying the attestation clears it. A winget package (`jrmatherly.aikb`) follows once its first manifest is accepted. Uninstall with `scoop uninstall aikb` (and `scoop bucket rm ai-kb`), or delete the folder and its `PATH` entry; stored credentials live in the OS keyring and are removed with `aikb auth logout` or `aikb profile remove <name>`.
+
+### Build from source
 
 ```bash
 git clone https://github.com/jrmatherly/ai-kb.git

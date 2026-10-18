@@ -7019,7 +7019,7 @@ export default {
       docsHint: 'Installation and complete command reference',
       quickstart: 'Quick start',
       installTitle: 'Install the CLI',
-      installDesc: 'Build from source with Git and Go 1.26+. This macOS / Linux example updates PATH for the current terminal only. For regular use, place the binary in a directory on PATH.',
+      installDesc: 'Homebrew on macOS and Linux installs from the jrmatherly/ai-kb tap. On Windows use Scoop (scoop bucket add ai-kb https://github.com/jrmatherly/homebrew-ai-kb, then scoop install ai-kb/aikb). Every release also ships archives with checksums and attestations, and the source builds with Go 1.26+; the README covers both.',
       connectTitle: 'Connect to this server',
       connectDesc: 'Create and activate a profile named aikb, then sign in with your email and password. If that profile already exists, choose another name and update the MCP example to match.',
       verifyTitle: 'Verify the connection',
