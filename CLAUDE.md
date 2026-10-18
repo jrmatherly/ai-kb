@@ -36,6 +36,7 @@ Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, Eng
 - Commit subjects follow upstream's conventional-commit form, `type(scope): imperative subject` (`fix(agent): ...`, `feat(gallery): ...`, `docs: ...`), single line unless a body is needed.
 - `git mv`, not `mv`, for renames. Never `git stash`.
 - Local commits when asked. **Never push**; the user manages remote writes.
+- A fresh clone has two remotes and `gh` picks `upstream` (Tencent/WeKnora) for `gh repo view`, `gh pr` and `gh run` until `gh repo set-default jrmatherly/ai-kb` is run once per clone (`gh variable` and `gh secret` resolve to `origin` either way). Pass `-R jrmatherly/ai-kb` when unsure.
 
 ## Writing style
 

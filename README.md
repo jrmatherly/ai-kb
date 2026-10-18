@@ -144,6 +144,14 @@ All options, hardware requirements and deployment topologies: [Installation guid
 
 ## What's New
 
+### 2026.10.17.1 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+Every image runs as a non-root user on a read-only root filesystem, the Helm chart fits the `restricted` Pod Security Standard, and the chart is published to GHCR.
+
+### 2026.10.17 <sub>· [changelog](./CHANGELOG.md)</sub>
+
+The AI KB browser extension for Chrome and Edge, error responses scrubbed of internal details, govulncheck findings gating Go CI, a 0.6 GB app image and weekly image rebuilds on fresh bases.
+
 ### 2026.10.15.1 <sub>· [changelog](./CHANGELOG.md)</sub>
 
 Security fixes for spreadsheet parsing (16 excelize advisories) and the remaining Go and katex advisories, Lite and desktop builds that start (2026.10.15 embeds gojieba's dictionaries), a Windows installer and Linux tarball on every release, and the `ai-kb-mcp` package on PyPI.

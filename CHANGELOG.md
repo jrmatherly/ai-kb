@@ -7,11 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Security
 
 - **CHANGED**: Every image runs as a non-root user on a read-only root filesystem: the app and docreader as uid 1000, the frontend and website as nginx's uid 101 on port 8080 (compose maps `FRONTEND_PORT` to 8080 inside the container). Each writes only to `/tmp` and, for the app, the data files volume. The app's entrypoint keeps today's root path for compose (bind-mount ownership, Docker socket group) and runs the binary directly when started non-root.
-- **CHANGED**: The Helm chart fits the `restricted` Pod Security Standard: every pod sets `runAsNonRoot` and the `RuntimeDefault` seccomp profile, every container its user, `allowPrivilegeEscalation: false`, dropped capabilities and `readOnlyRootFilesystem`, with emptyDirs for the paths each image writes. The bundled ParadeDB and Redis run as uid 999. Neo4j (optional) is not covered.
+- **CHANGED**: The Helm chart fits the `restricted` Pod Security Standard: every pod sets `runAsNonRoot` and the `RuntimeDefault` seccomp profile, every container its user, `allowPrivilegeEscalation: false`, dropped capabilities and `readOnlyRootFilesystem`, with emptyDirs for the paths each image writes. The bundled ParadeDB and Redis run as uid 999 and the optional Neo4j as uid 7474.
 
 ### Features
 
-- **NEW**: The Helm chart deploys the documentation image as the `website` component and routes `/docs` to it ahead of the frontend, and the chart is published to `oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb` on every chart version bump.
+- **NEW**: The Helm chart is published to `oci://ghcr.io/jrmatherly/ai-kb/charts/ai-kb` on every chart version bump, and `make bump-version` bumps the chart patch version, so each product release publishes a chart that pins its image tag.
 
 ## [2026.10.17] - 2026-10-17
 
@@ -48,6 +48,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - **NEW**: The website and documentation ship as `ghcr.io/jrmatherly/ai-kb-website`, built by the Website Docs workflow with the same tag scheme as the other images.
+- **NEW**: The Helm chart deploys the documentation image as the `website` component and routes `/docs` to it ahead of the frontend.
 - **NEW**: The AI KB browser extension for Chrome and Edge (`extension/`): ask agents about the current page in a side panel, and clip pages, selections and notes into a knowledge base, signed in with an API key, email and password, or the server's identity provider. Settings → Publish & Integrations has a Browser Extension tab, and the docs have a [Browser extension](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension) page.
 - **NEW**: `GET /api/v1/auth/oidc/start` accepts an optional `return_to` that must exactly match an entry of `OIDC_AUTH_EXTENSION_RETURN_URLS` (empty by default, which turns it off); when OIDC is enabled, any other value is a 400 before the IdP redirect. The callback then redirects there instead of `/`, for success and errors alike.
 - **NEW**: Weaviate keyword search handles CJK text through app-side bigrams (`content_bigram`). A collection created before this change has no such property; drop it and re-index.
