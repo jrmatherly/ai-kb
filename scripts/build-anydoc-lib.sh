@@ -49,6 +49,9 @@ if [ -z "$anydoc_version" ]; then
   exit 1
 fi
 
+# The zip version the patched crate is moved to; the lockfile must agree.
+zip_version=9.0.5
+
 # document_to_markdown is private in published anydoc. Copy the pinned version
 # and re-export that one function so anydoc-go can keep the official serializer.
 prepare_patched_anydoc() {
@@ -58,7 +61,7 @@ prepare_patched_anydoc() {
   # fail deep inside cargo's patch resolution instead of here. Cargo.toml is
   # required too: a truncated leftover with only the marker would otherwise
   # skip the copy and fail with "failed to read .../Cargo.toml".
-  if [ -f "$dest/.ai-kb-patched" ] && [ "$(cat "$dest/.ai-kb-patched")" = "$anydoc_version" ] && [ -f "$dest/Cargo.toml" ]; then
+  if [ -f "$dest/.ai-kb-patched" ] && [ "$(cat "$dest/.ai-kb-patched")" = "$anydoc_version+zip$zip_version" ] && [ -f "$dest/Cargo.toml" ]; then
     return
   fi
 
@@ -89,7 +92,21 @@ prepare_patched_anydoc() {
   fi
   sed -i.bak 's/^use render::markdown::document_to_markdown;/pub use render::markdown::document_to_markdown;/' "$dest/src/lib.rs"
   rm -f "$dest/src/lib.rs.bak"
-  printf '%s\n' "$anydoc_version" > "$dest/.ai-kb-patched"
+  # anydoc 0.2.4 pins zip 8.6.0 (RUSTSEC-2026-0367/0368/0369, all in the
+  # extract-to-disk paths anydoc never calls). It only uses the in-memory
+  # reader and writer, whose API is unchanged in zip 9, so the pin is raised
+  # here until a published anydoc does it.
+  if ! grep -q '^version = "8.6.0"$' "$dest/Cargo.toml"; then
+    echo "error: anydoc $anydoc_version Cargo.toml no longer pins zip 8.6.0; drop this patch or update it" >&2
+    exit 1
+  fi
+  sed -i.bak "/^\[dependencies.zip\]$/,/^$/ s/^version = \"8.6.0\"$/version = \"$zip_version\"/" "$dest/Cargo.toml"
+  rm -f "$dest/Cargo.toml.bak"
+  if ! grep -A1 '^\[dependencies.zip\]$' "$dest/Cargo.toml" | grep -q "^version = \"$zip_version\"$"; then
+    echo "error: failed to move the zip pin to $zip_version in $dest/Cargo.toml" >&2
+    exit 1
+  fi
+  printf '%s\n' "$anydoc_version+zip$zip_version" > "$dest/.ai-kb-patched"
   rm -rf "$crate_dir/.anydoc-unpack" "$crate_dir/.anydoc-$anydoc_version.crate"
 }
 
