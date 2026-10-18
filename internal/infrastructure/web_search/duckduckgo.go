@@ -72,7 +72,7 @@ func (p *DuckDuckGoProvider) searchHTML(
 	baseURL := "https://html.duckduckgo.com/html/"
 	params := url.Values{}
 	params.Set("q", query)
-	params.Set("kl", "cn-zh")
+	params.Set("kl", "wt-wt")
 
 	reqURL := baseURL + "?" + params.Encode()
 	req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
