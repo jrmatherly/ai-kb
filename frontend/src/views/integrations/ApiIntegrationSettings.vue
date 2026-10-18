@@ -1280,7 +1280,7 @@ async function generateSecret() {
 async function saveIfNeeded(options: { showSuccess?: boolean } = {}) {
   if (!hasUnsavedPrincipalChanges.value) return true
   if (!canAutoSave.value) {
-    MessagePlugin.error(t('integrations.api.autoSaveNeedSecret'))
+    MessagePlugin.warning(t('integrations.api.autoSaveNeedSecret'))
     return false
   }
   saving.value = true

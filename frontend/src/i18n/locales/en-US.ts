@@ -7302,7 +7302,7 @@ export default {
       loadFailed: 'Failed to load API integration settings',
       saveFailed: 'Failed to save API integration settings',
       saveSuccess: 'API integration settings saved',
-      autoSaveNeedSecret: 'Signed-token mode needs an HMAC secret before auto-save can run.'
+      autoSaveNeedSecret: 'Enter or generate an HMAC secret below to finish switching to signed-token mode.'
     },
     selectAgentPlaceholder: 'Choose an agent',
     selectAgentHint: 'Please select an agent first',
