@@ -1,6 +1,6 @@
 # Store listing
 
-Text for the Chrome Web Store and Microsoft Edge Add-ons listings. Both stores get the same text. Every claim below matches `extension/manifest.json` and the [extension docs](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension).
+Text for the Chrome Web Store and Microsoft Edge Add-ons listings. Both stores get the same text, and the long description names no browser: Edge's listing check rejects a description that mentions Chrome. Every claim below matches `extension/manifest.json` and the [extension docs](https://ai-kb.matherly.net/docs/05-clients/06-browser-extension).
 
 ## Title
 
@@ -22,7 +22,7 @@ Clip. Smart clip extracts the main article as Markdown and opens it in the edito
 
 Quick clip. Turn it on in the options page and the right-click menu items and the clip shortcuts save straight to your last used knowledge base, without opening the editor.
 
-Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S clips the selection and Alt+Shift+N writes a note (Option+Shift on a Mac). Change them at chrome://extensions/shortcuts (edge://extensions/shortcuts in Edge).
+Shortcuts. Alt+Shift+A asks about the page, Alt+Shift+C clips it, Alt+Shift+S clips the selection and Alt+Shift+N writes a note (Option+Shift on a Mac). Change them on the browser's extension shortcuts page.
 
 Sign in. Connect with an API key, with your email and password, or through your server's identity provider when the server has single sign-on enabled.
 
