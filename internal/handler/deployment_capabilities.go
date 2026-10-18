@@ -38,6 +38,9 @@ type DeploymentCapability struct {
 type DeploymentCapabilitiesData struct {
 	Edition      string                          `json:"edition"`
 	Capabilities map[string]DeploymentCapability `json:"capabilities"`
+	// IMPlatforms is the deployment's AIKB_IM_PLATFORMS allow-list. A client
+	// that does not find the field (an older backend) offers every platform.
+	IMPlatforms []string `json:"im_platforms"`
 }
 
 // DeploymentFeatureAvailability mirrors injected backend handlers/services.
@@ -45,6 +48,7 @@ type DeploymentFeatureAvailability struct {
 	Organizations bool
 	Agents        bool
 	IM            bool
+	IMPlatforms   []string
 	Embed         bool
 	API           bool
 	MCPServer     bool
@@ -103,17 +107,27 @@ func BuildDeploymentCapabilities(
 		sandboxRemote.Reason = "route_not_registered"
 	}
 
+	imPlatforms := available.IMPlatforms
+	if imPlatforms == nil {
+		imPlatforms = []string{}
+	}
+	imCap := supportedDeploymentCapability(available.IM)
+	if available.IM && len(imPlatforms) == 0 {
+		imCap = DeploymentCapability{Supported: false, Reason: "no_platform_enabled"}
+	}
+
 	weKnoraCloud := DeploymentCapability{Supported: available.WeKnoraCloud}
 	if !available.WeKnoraCloud {
 		weKnoraCloud.Reason = "disabled_by_deployment"
 	}
 
 	return DeploymentCapabilitiesData{
-		Edition: edition,
+		Edition:     edition,
+		IMPlatforms: imPlatforms,
 		Capabilities: map[string]DeploymentCapability{
 			"organizations":           organizations,
 			"agents":                  supportedDeploymentCapability(available.Agents),
-			"integrations.im":         supportedDeploymentCapability(available.IM),
+			"integrations.im":         imCap,
 			"integrations.embed":      supportedDeploymentCapability(available.Embed),
 			"integrations.api":        supportedDeploymentCapability(available.API),
 			"integrations.mcpserver":  supportedDeploymentCapability(available.MCPServer),

@@ -432,13 +432,16 @@ the provider's variables).
 
 Deployment gates that are not chart values also ride `app.extraEnv`, for example
 `AIKB_WEKNORACLOUD_ENABLED` (default off; set `true` only with WeKnoraCloud
-credentials):
+credentials) and `AIKB_IM_PLATFORMS` (the IM platforms offered to workspaces;
+unset means all):
 
 ```yaml
 app:
   extraEnv:
     - name: AIKB_WEKNORACLOUD_ENABLED
       value: "true"
+    - name: AIKB_IM_PLATFORMS
+      value: "slack,telegram,mattermost"
 ```
 
 ### Ingress annotations

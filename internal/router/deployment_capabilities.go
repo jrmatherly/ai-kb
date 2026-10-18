@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/jrmatherly/ai-kb/internal/handler"
+	"github.com/jrmatherly/ai-kb/internal/im"
 	"github.com/jrmatherly/ai-kb/internal/infrastructure/docparser"
 	"github.com/jrmatherly/ai-kb/internal/sandbox"
 )
@@ -11,6 +12,7 @@ func deploymentCapabilitiesFromRouter(params RouterParams) handler.DeploymentCap
 		Organizations: params.OrganizationHandler != nil,
 		Agents:        params.CustomAgentHandler != nil,
 		IM:            params.IMHandler != nil,
+		IMPlatforms:   im.EnabledPlatformNames(),
 		// Match RegisterEmbedChannelRoutes: management routes depend on handler only.
 		Embed: params.EmbedChannelHandler != nil,
 		// Match RegisterMCPEndpointRoutes / RegisterMCPServerRoutes.

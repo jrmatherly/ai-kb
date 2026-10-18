@@ -33,6 +33,21 @@ var invalidIMPlatformError = func() string {
 	return "platform must be one of: " + strings.Join(names, ", ")
 }()
 
+// disabledIMPlatformError is the 400 for a platform the deployment's
+// AIKB_IM_PLATFORMS allow-list excludes. Built per call: the list is read from
+// the environment at call time.
+func disabledIMPlatformError() string {
+	names := im.EnabledPlatformNames()
+	if len(names) == 0 {
+		return "no IM platform is enabled on this deployment (" + im.PlatformsEnv + ")"
+	}
+	quoted := make([]string, 0, len(names))
+	for _, n := range names {
+		quoted = append(quoted, "'"+n+"'")
+	}
+	return "platform must be one of the platforms enabled on this deployment: " + strings.Join(quoted, ", ")
+}
+
 // IMHandler handles IM platform callback requests and channel CRUD.
 type IMHandler struct {
 	imService *im.Service
@@ -79,6 +94,10 @@ func (h *IMHandler) CreateIMChannel(c *gin.Context) {
 
 	if !validIMPlatforms[req.Platform] {
 		_ = c.Error(apperrors.NewBadRequestError(invalidIMPlatformError))
+		return
+	}
+	if !im.PlatformEnabled(im.Platform(req.Platform)) {
+		_ = c.Error(apperrors.NewBadRequestError(disabledIMPlatformError()))
 		return
 	}
 	locale, err := normalizeLocale(req.Locale)

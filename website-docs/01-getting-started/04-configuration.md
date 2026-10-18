@@ -140,6 +140,7 @@ The variables below come from the app and docreader `environment` blocks of `doc
 | Name | Default | Description |
 | --- | --- | --- |
 | `GIN_MODE` | release | `debug` for development (enables Swagger) / `release` for production |
+| `AIKB_IM_PLATFORMS` | empty (all) | Comma-separated allow-list of IM platforms a workspace may connect (`wecom`, `feishu`, `lark`, `slack`, `telegram`, `dingtalk`, `mattermost`, `wechat`, `qqbot`, `yunzhijia`). Unset or empty offers all ten; a list naming only unknown values offers none. Excluded platforms get no adapter, leave the channel picker (`im_platforms` in `GET /system/capabilities`) and are refused with 400 on channel creation; stored channels for them stay listed but do not start |
 | `AIKB_CONFIG_FILE` | empty | Explicit path of the server config file. Empty keeps the search order (`./config.yaml`, `./config/config.yaml`, `$HOME/.appname`, `/etc/appname`). The Lite Homebrew wrapper sets it to `~/.config/aikb/config/config.yaml`, because the `aikb` CLI stores its own `config.yaml` in `~/.config/aikb`, which the search order would otherwise load as the server config |
 | `LOG_LEVEL` / `LOG_PATH` / `LOG_FORMAT` | debug / empty / empty | Log level, log file path (stdout only when empty), custom format |
 | `LLM_DEBUG_LOG` | false | When true, writes `llm_debug.log` next to `LOG_PATH` |

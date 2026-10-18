@@ -110,6 +110,8 @@ services:
       # make the storage backend publicly reachable (for example a public MINIO_ENDPOINT), or set this variable to serve <APP_EXTERNAL_URL>/r/<token> (needs nginx to proxy /r/).
       # The default internal MinIO deployment and the local backend need this variable.
       # - APP_EXTERNAL_URL=${APP_EXTERNAL_URL:-}
+      # IM platforms offered to workspaces (allow-list; empty means all ten, see .env.example for the values).
+      - AIKB_IM_PLATFORMS=${AIKB_IM_PLATFORMS:-}
       # External frontend origin for absolute URLs such as invitation links (empty: host-relative)
       - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
       # ========== Object storage - Tencent Cloud COS ==========

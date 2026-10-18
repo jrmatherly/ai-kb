@@ -53,6 +53,8 @@ export interface DeploymentCapability {
 export interface DeploymentCapabilitiesResponse {
   edition: string
   capabilities: Record<string, DeploymentCapability>
+  /** AIKB_IM_PLATFORMS allow-list; absent on older backends. */
+  im_platforms?: string[]
 }
 
 export function getDeploymentCapabilities(): Promise<{ data: DeploymentCapabilitiesResponse }> {

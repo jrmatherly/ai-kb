@@ -13,7 +13,7 @@ Platforms that support it can also import received files into a knowledge base, 
 
 ## Supported platforms and capabilities
 
-Use this table to pick the connection mode and gather the credentials a platform needs before you create its channel. `validIMPlatforms` in `internal/handler/im.go` defines the 10 accepted platforms. Capabilities below follow each adapter's `factory.go` and its compile-time interface assertions.
+Use this table to pick the connection mode and gather the credentials a platform needs before you create its channel. `validIMPlatforms` in `internal/handler/im.go` defines the 10 accepted platforms. A deployment can narrow that list with `AIKB_IM_PLATFORMS` (comma-separated, unset or empty means all ten): excluded platforms get no adapter at startup, disappear from the channel picker (the list travels as `im_platforms` in `GET /system/capabilities`), and creating a channel for one returns 400 naming the enabled platforms. A channel already stored for an excluded platform stays listed, keeps its platform in the edit form, and logs "no adapter factory for platform" instead of starting. Capabilities below follow each adapter's `factory.go` and its compile-time interface assertions.
 
 | Platform | Connection mode (default in bold) | Streaming replies (StreamSender) | File download (FileDownloader) | Threads or topics (ThreadID) | Main credential fields (credentials JSON) |
 | --- | --- | --- | --- | --- | --- |

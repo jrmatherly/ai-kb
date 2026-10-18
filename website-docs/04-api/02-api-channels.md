@@ -26,7 +26,7 @@ Purpose: create an IM channel for an agent. Permission: Admin+.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `platform` | string | yes | `wecom/feishu/lark/slack/telegram/dingtalk/mattermost/wechat/qqbot/yunzhijia`; any other value 400 |
+| `platform` | string | yes | `wecom/feishu/lark/slack/telegram/dingtalk/mattermost/wechat/qqbot/yunzhijia`; any other value 400. A known platform outside the deployment's `AIKB_IM_PLATFORMS` allow-list also returns 400, naming the enabled platforms (or "no IM platform is enabled on this deployment" when the list leaves none) |
 | `name` | string | no | Display name |
 | `mode` | string | no | `websocket` (default; `mattermost` and `yunzhijia` default to `webhook`) / `webhook` / `longpoll` (`wechat` is forced to `longpoll`) |
 | `output_mode` | string | no | `stream` (default) / `full` (`wechat` is forced to `full`) |

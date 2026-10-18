@@ -10,13 +10,13 @@ Handler: `internal/handler/system.go`. API key: `manage_vector_stores` or full a
 
 ### GET /api/v1/system/capabilities
 
-Viewer+; any API key can read it. Returns `{code:0,data:{edition,capabilities}}`; each capability carries `supported` and, when unsupported, a `reason`. The frontend uses the edition, the routes actually registered and the Docker switch to show or hide menu entries; a hidden menu does not replace the backend permission check.
+Viewer+; any API key can read it. Returns `{code:0,data:{edition,capabilities,im_platforms}}`; each capability carries `supported` and, when unsupported, a `reason`; `im_platforms` is the list of IM platforms this deployment allows (`AIKB_IM_PLATFORMS`; all ten when unset, `[]` when none). The frontend uses the edition, the routes actually registered and the Docker switch to show or hide menu entries; a hidden menu does not replace the backend permission check.
 
 ```bash
 curl "$BASE/api/v1/system/capabilities" -H "Authorization: Bearer $TOKEN"
 ```
 
-`settings.sandbox.host` in `capabilities` says whether this deployment can use the local operating-system sandbox. Today it is only supported in the native macOS desktop application (other platforms report `platform_unsupported`). `settings.sandbox.docker` is read live, so a System Settings toggle shows up without a restart. `settings.weknoracloud` says whether the deployment opted in to WeKnoraCloud through `AIKB_WEKNORACLOUD_ENABLED`; when off it reports `supported: false` with reason `disabled_by_deployment`, and the frontend hides the AI KB Cloud settings section.
+`settings.sandbox.host` in `capabilities` says whether this deployment can use the local operating-system sandbox. Today it is only supported in the native macOS desktop application (other platforms report `platform_unsupported`). `settings.sandbox.docker` is read live, so a System Settings toggle shows up without a restart. `settings.weknoracloud` says whether the deployment opted in to WeKnoraCloud through `AIKB_WEKNORACLOUD_ENABLED`; when off it reports `supported: false` with reason `disabled_by_deployment`, and the frontend hides the AI KB Cloud settings section. `integrations.im` reports `supported: false` with reason `no_platform_enabled` when `AIKB_IM_PLATFORMS` leaves no known platform enabled, which hides the IM tab.
 
 ### POST /api/v1/system/host-project-dir
 

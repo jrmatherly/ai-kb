@@ -930,7 +930,15 @@ func NewService(
 }
 
 // RegisterAdapterFactory registers a factory for creating adapters for a given platform.
+// A known platform outside the AIKB_IM_PLATFORMS allow-list gets no factory,
+// so a stored channel for it stays listed but cannot start. Names without an
+// adapter in this build (test doubles) are the caller's business.
 func (s *Service) RegisterAdapterFactory(platform string, factory AdapterFactory) {
+	if p := Platform(platform); KnownPlatform(p) && !PlatformEnabled(p) {
+		logger.Warnf(context.Background(),
+			"[IM] platform %s is not in %s, adapter not registered", platform, PlatformsEnv)
+		return
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.adapterFactories[platform] = factory

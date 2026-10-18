@@ -11,6 +11,7 @@ import {
 export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilities', () => {
   const edition = ref('')
   const capabilities = ref<DeploymentCapabilityMap>({})
+  const imPlatforms = ref<string[] | undefined>(undefined)
   const loaded = ref(false)
   const loadError = ref('')
   let loadingPromise: Promise<void> | null = null
@@ -24,10 +25,12 @@ export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilitie
         const response = await getDeploymentCapabilities()
         edition.value = response.data?.edition || ''
         capabilities.value = response.data?.capabilities || {}
+        imPlatforms.value = response.data?.im_platforms
         loadError.value = ''
       } catch (error) {
         // Fail open when the capability probe fails; the backend routes still enforce permissions.
         capabilities.value = {}
+        imPlatforms.value = undefined
         loadError.value = error instanceof Error ? error.message : String(error)
       } finally {
         loaded.value = true
@@ -49,6 +52,7 @@ export const useDeploymentCapabilitiesStore = defineStore('deploymentCapabilitie
   return {
     edition,
     capabilities,
+    imPlatforms,
     loaded,
     loadError,
     ensureLoaded,

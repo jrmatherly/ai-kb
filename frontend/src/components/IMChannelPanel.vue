@@ -594,6 +594,8 @@ import {
 import { useChatResourcesStore } from '@/stores/chatResources';
 import type { IMChannel } from '@/api/agent';
 import { useAuthStore } from '@/stores/auth';
+import { useDeploymentCapabilitiesStore } from '@/stores/deploymentCapabilities';
+import { filterPlatformOptions } from '@/config/imPlatforms';
 import SettingDrawer from '@/components/settings/SettingDrawer.vue';
 import IntegrationsAgentFilter from '@/components/IntegrationsAgentFilter.vue';
 import wecomLogo from '@/assets/img/im/wecom.svg';
@@ -627,6 +629,7 @@ const platformLogo = (platform: string): string => (platform ? PLATFORM_LOGO[pla
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const deploymentCapabilities = useDeploymentCapabilitiesStore();
 
 const filterAgentId = defineModel<string>('filterAgentId', { default: '' });
 
@@ -662,7 +665,7 @@ const drawerConfirmText = computed(() =>
   wizardStep.value < stepTitles.value.length - 1 ? t('common.next') : t('common.save'),
 );
 
-const platformOptions = computed(() => ([
+const allPlatformOptions = computed(() => ([
   { value: 'wecom' as IMPlatform, label: t('agentEditor.im.wecom'), logo: wecomLogo },
   { value: 'feishu' as IMPlatform, label: t('agentEditor.im.feishu'), logo: feishuLogo },
   { value: 'lark' as IMPlatform, label: t('agentEditor.im.lark'), logo: larkLogo },
@@ -674,6 +677,14 @@ const platformOptions = computed(() => ([
   { value: 'qqbot' as IMPlatform, label: t('agentEditor.im.qqbot'), logo: qqbotLogo },
   { value: 'yunzhijia' as IMPlatform, label: t('agentEditor.im.yunzhijia'), logo: yunzhijiaLogo },
 ]));
+
+// The deployment's AIKB_IM_PLATFORMS allow-list narrows the picker; a stored
+// channel on a hidden platform keeps its own entry while it is being edited.
+const platformOptions = computed(() => filterPlatformOptions(
+  allPlatformOptions.value,
+  deploymentCapabilities.imPlatforms,
+  editingChannel.value?.platform,
+));
 
 // Feishu and Lark are the same product on separate clouds, so each has its own
 // open platform console. Bots must be created on the one matching the channel.
