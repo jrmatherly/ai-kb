@@ -7,7 +7,7 @@
 # bound the work:
 #   seedSha          the upstream commit we copied from (fixed)
 #   lastReviewedSha  the last upstream commit we assessed (advances per review)
-# Neither is an ancestor of our HEAD, so ranges are always <sha>..upstream/<branch>, never a merge-base.
+# Neither is an ancestor of our HEAD, so ranges are always <sha>..<remote>/<branch> (weknora/main), never a merge-base.
 #
 # USAGE (from anywhere inside the repo)
 #   upstream-review.sh                 fetch upstream, list un-reviewed commits (oldest first)

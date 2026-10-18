@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Security
 
+- **CHANGED**: The browser extension manifest carries the Chrome Web Store item's public key, so unpacked builds and the smoke run share the store ID `beamnnjkmfepmlfpbcchiiooimoloiod` and its sign-in return URL; `npm run zip` leaves the key out of the uploaded package.
 - **CHANGED**: Every image runs as a non-root user on a read-only root filesystem: the app and docreader as uid 1000, the frontend and website as nginx's uid 101 on port 8080 (compose maps `FRONTEND_PORT` to 8080 inside the container). Each writes only to `/tmp` and, for the app, the data files volume. The app's entrypoint keeps today's root path for compose (bind-mount ownership, Docker socket group) and runs the binary directly when started non-root.
 - **CHANGED**: The Helm chart fits the `restricted` Pod Security Standard: every pod sets `runAsNonRoot` and the `RuntimeDefault` seccomp profile, every container its user, `allowPrivilegeEscalation: false`, dropped capabilities and `readOnlyRootFilesystem`, with emptyDirs for the paths each image writes. The bundled ParadeDB and Redis run as uid 999 and the optional Neo4j as uid 7474.
 

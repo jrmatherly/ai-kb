@@ -17,7 +17,7 @@ import (
 // additionalParams contract (verified against
 // elasticsearch/structs.go:ToDBVectorEmbedding and
 // keywords_vector_hybrid_indexer.go:concurrentBatchSave on
-// upstream/main):
+// weknora/main):
 //
 //	additionalParams["embedding"]     map[string][]float32  // keyed by IndexInfo.SourceID
 //	additionalParams["chunk_enabled"] map[string]bool       // keyed by IndexInfo.ChunkID
