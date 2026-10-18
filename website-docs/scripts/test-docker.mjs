@@ -38,7 +38,7 @@ try {
 
   // An unrelated PORT must not affect the default or overridden listener.
   // WEBSITE_NGINX_PORT moves the listen port without a rebuild; the default stays 8080.
-  docker('run', '-d', '--name', portName, '-e', 'WEBSITE_NGINX_PORT=8081', '-e', 'PORT=9999', '-p', '127.0.0.1::8081', image);
+  docker('run', '-d', '--name', portName, '--read-only', '--tmpfs', '/tmp', '--cap-drop', 'ALL', '-e', 'WEBSITE_NGINX_PORT=8081', '-e', 'PORT=9999', '-p', '127.0.0.1::8081', image);
   const portOrigin = `http://${docker('port', portName, '8081/tcp')}`;
   await waitReady(portOrigin, 'Container with WEBSITE_NGINX_PORT=8081');
   assert.match(docker('exec', portName, 'cat', '/tmp/nginx/conf.d/default.conf'), /listen 8081;/);
@@ -46,7 +46,7 @@ try {
 
   // Deployment platforms may replace the image entrypoint with /bin/bash -c.
   // The wrapped command must still render the Nginx template before serving.
-  docker('run', '-d', '--name', bashName, '--entrypoint', '/bin/bash',
+  docker('run', '-d', '--name', bashName, '--read-only', '--tmpfs', '/tmp', '--cap-drop', 'ALL', '--entrypoint', '/bin/bash',
     '-e', 'WEBSITE_NGINX_PORT=8088', '-e', 'uri=must-not-replace-nginx-uri',
     '-p', '127.0.0.1::8088', image, '-c', 'exec /docker-entrypoint.sh');
   const bashOrigin = `http://${docker('port', bashName, '8088/tcp')}`;
@@ -59,7 +59,7 @@ try {
 
   // Like frontend, our entrypoint always configures and runs Nginx, even when
   // the platform passes a shell command as image arguments instead of replacing it.
-  docker('run', '-d', '--name', argsName, '-e', 'WEBSITE_NGINX_PORT=8088',
+  docker('run', '-d', '--name', argsName, '--read-only', '--tmpfs', '/tmp', '--cap-drop', 'ALL', '-e', 'WEBSITE_NGINX_PORT=8088',
     '-p', '127.0.0.1::8088', image, '/bin/bash', '-c', 'nginx; sleep infinity');
   const argsOrigin = `http://${docker('port', argsName, '8088/tcp')}`;
   await waitReady(argsOrigin, 'Container with platform command arguments');
