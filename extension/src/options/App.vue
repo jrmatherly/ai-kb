@@ -93,7 +93,7 @@ onMounted(() => void load());
         <label class="field">
           <span>API key</span>
           <input v-model="state.apiKey" type="password" autocomplete="off" />
-          <span class="hint">Create it in the web UI under Settings &gt; Publish &amp; Integrations &gt; API Integration, with the chat, retrieve and ingest capabilities</span>
+          <span class="hint">Create it in the web UI under Settings &gt; Publish &amp; Integrations &gt; API Integration, with the Chat, Retrieve knowledge bases and Write KB content capabilities</span>
         </label>
         <p class="muted">Conversations are shared with everyone who uses this key</p>
       </div>
