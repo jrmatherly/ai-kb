@@ -2,7 +2,7 @@ import type { DeploymentCapabilityKey } from './deploymentCapabilities'
 
 export const CLAWHUB_SKILL_URL = 'https://clawhub.ai/lyingbug/weknora'
 
-export const EXTENSION_RELEASES_URL = 'https://github.com/jrmatherly/ai-kb/releases?q=extension-v'
+export const EXTENSION_RELEASES_URL = 'https://github.com/jrmatherly/ai-kb/releases?q=extension'
 
 export type IntegrationTab = 'im' | 'embed' | 'api' | 'mcpserver' | 'cli' | 'browser' | 'claw'
 

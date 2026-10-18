@@ -8,7 +8,7 @@ name: 🧩 Browser Extension
 #                   the version in extension/package.json (check-manifest.mjs, run by the
 #                   build, ties manifest.json to it)
 #   release         on an `extension-v*` tag only, attach the zip to the GitHub release for
-#                   that tag (the docs and the web UI link to releases?q=extension-v)
+#                   that tag (the docs and the web UI link to releases?q=extension)
 #   publish-chrome  on a tag, when vars.CHROME_EXTENSION_ID is set: Chrome Web Store API v2
 #                   upload, then publish
 #   publish-edge    on a tag, when vars.EDGE_PRODUCT_ID is set: Edge Add-ons API v1.1 upload,
