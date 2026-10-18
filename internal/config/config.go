@@ -504,15 +504,25 @@ func ConfigDir() string {
 	return "./config"
 }
 
+// ConfigFileEnv names the server config file explicitly. The Lite wrapper
+// sets it because it runs the server from the aikb config directory, where
+// the CLI keeps a config.yaml of its own that viper's search order would
+// otherwise load first.
+const ConfigFileEnv = "AIKB_CONFIG_FILE"
+
 // LoadConfig loads the configuration file
 func LoadConfig() (*Config, error) {
-	// Config file name and search paths
-	viper.SetConfigName("config")         // file name without extension
-	viper.SetConfigType("yaml")           // file type
-	viper.AddConfigPath(".")              // current directory
-	viper.AddConfigPath("./config")       // config subdirectory
-	viper.AddConfigPath("$HOME/.appname") // home directory
-	viper.AddConfigPath("/etc/appname/")  // /etc
+	viper.SetConfigType("yaml")
+	if explicit := strings.TrimSpace(os.Getenv(ConfigFileEnv)); explicit != "" {
+		viper.SetConfigFile(explicit)
+	} else {
+		// Config file name and search paths
+		viper.SetConfigName("config")         // file name without extension
+		viper.AddConfigPath(".")              // current directory
+		viper.AddConfigPath("./config")       // config subdirectory
+		viper.AddConfigPath("$HOME/.appname") // home directory
+		viper.AddConfigPath("/etc/appname/")  // /etc
+	}
 
 	// Let environment variables override keys
 	viper.AutomaticEnv()

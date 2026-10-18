@@ -66,6 +66,9 @@ class AiKbLite < Formula
       export DB_PATH="${DB_PATH:-$DATA_DIR/aikb.db}"
       export LOCAL_STORAGE_BASE_DIR="${LOCAL_STORAGE_BASE_DIR:-$DATA_DIR/files}"
       export AIKB_WEB_DIR="${AIKB_WEB_DIR:-#{pkgshare}/web}"
+      # The aikb CLI keeps its own config.yaml in $CONFIG_DIR; name the server
+      # config explicitly so the search order cannot pick that file up.
+      export AIKB_CONFIG_FILE="${AIKB_CONFIG_FILE:-$CONFIG_DIR/config/config.yaml}"
 
       cd "$CONFIG_DIR"
       exec "#{libexec}/ai-kb-lite" "$@"
