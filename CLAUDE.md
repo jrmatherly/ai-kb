@@ -19,7 +19,7 @@ The authoritative list, with each deviation's status and its effect on upstream 
 
 ## Upstream
 
-Upstream changes are reviewed and adopted only through the `upstream-review` skill (`.claude/skills/upstream-review/SKILL.md`): driver script, per-file divergence markers, tracked state in `.upstream-review/`. Never `git merge upstream/main` and never a merge-base; there is no shared history. Write upstream references as `Tencent/WeKnora#NNNN`.
+Upstream changes are reviewed and adopted only through the `upstream-review` skill (`.claude/skills/upstream-review/SKILL.md`): driver script, per-file divergence markers, tracked state in `.upstream-review/`. Never `git merge weknora/main` and never a merge-base; there is no shared history. Write upstream references as `Tencent/WeKnora#NNNN`.
 
 ## Development
 
@@ -36,7 +36,7 @@ Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, Eng
 - Commit subjects follow upstream's conventional-commit form, `type(scope): imperative subject` (`fix(agent): ...`, `feat(gallery): ...`, `docs: ...`), single line unless a body is needed.
 - `git mv`, not `mv`, for renames. Never `git stash`.
 - Local commits when asked. **Never push**; the user manages remote writes.
-- A fresh clone has two remotes and `gh` picks `upstream` (Tencent/WeKnora) for `gh repo view`, `gh pr` and `gh run` until `gh repo set-default jrmatherly/ai-kb` is run once per clone (`gh variable` and `gh secret` resolve to `origin` either way). Pass `-R jrmatherly/ai-kb` when unsure.
+- The Tencent/WeKnora remote is named `weknora`, never `upstream`: `gh` ranks a remote called `upstream` above `origin` and would send `gh pr`, `gh run` and `gh repo view` to WeKnora. The upstream-review driver adds it under that name from `.upstream-review/watermark.json`.
 
 ## Writing style
 

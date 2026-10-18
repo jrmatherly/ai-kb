@@ -9,8 +9,8 @@ allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/upstream-review.sh *) Bash(scrip
 
 This repo is a copy of `Tencent/WeKnora` taken at upstream commit `97796c637` (2026-10-12, `v0.8.2-268-g97796c637`, "fix(helm): configure app rollouts and document shared storage (#4180)"). It shares no git history with upstream. At the copy the tree was byte-identical to that commit except `.github/` (removed; archived in `private/OLD-.github/`) and `.gitignore`. Run `--diverged` for the current footprint. So:
 
-- `git merge` and `git merge-base` are useless. Every range is `<watermark>..upstream/main`.
-- `git cherry-pick -x <sha>` works once `upstream/main` is fetched: the 3-way merge uses the commit's own parent as the base. A hunk applies cleanly when our copy of those lines equals the parent's (the pre-image), and conflicts otherwise. The merge is per hunk, so a file we changed elsewhere still takes a non-overlapping upstream hunk.
+- `git merge` and `git merge-base` are useless. Every range is `<watermark>..weknora/main`.
+- `git cherry-pick -x <sha>` works once `weknora/main` is fetched: the 3-way merge uses the commit's own parent as the base. A hunk applies cleanly when our copy of those lines equals the parent's (the pre-image), and conflicts otherwise. The merge is per hunk, so a file we changed elsewhere still takes a non-overlapping upstream hunk.
 - The driver compares our HEAD with each commit's pre-image before you pick anything.
 
 ## Tooling
@@ -34,7 +34,7 @@ scripts/check-english-only.sh [-n | --summary] [pathspec...]   # tracked files; 
 scripts/check-english-only.sh --diff [<range>]                  # added lines only: staged by default, or <sha>..HEAD
 ```
 
-The first run adds the `upstream` remote and seeds `upstream/main` from `private/OLD-.git` (the archived upstream clone, gitignored) so the network fetch is incremental. Without that directory it fetches the full history once. The driver needs a commit on our side: `HEAD:<path>` is what it compares.
+The first run adds the `weknora` remote (named so that `gh` keeps `origin` as its default repo; it ranks a remote called `upstream` above `origin`) and seeds `weknora/main` from `private/OLD-.git` (the archived upstream clone, gitignored) so the network fetch is incremental. Without that directory it fetches the full history once. The driver needs a commit on our side: `HEAD:<path>` is what it compares.
 
 Markers in `--stat`, our HEAD vs the commit's parent (pre-image) for each file it touches:
 
@@ -146,7 +146,7 @@ So nearly every upstream commit shows `~` and is ADAPT. Cherry-pick, then run `s
 ```markdown
 # Upstream review - <YYYY-MM-DD>
 
-Window: `<from>..<full tip sha>` on upstream/main, N commits (M merges). Driver output: `--stat`.
+Window: `<from>..<full tip sha>` on weknora/main, N commits (M merges). Driver output: `--stat`.
 
 ## Headline
 One paragraph: what to adopt now, what to port, what to skip.
@@ -161,7 +161,7 @@ Cherry-picked SHAs in order, validation result per area, `check-english-only.sh 
 
 ## Red flags
 
-- `git merge upstream/main` or any merge-base based range. Use the watermark.
+- `git merge weknora/main` or any merge-base based range. Use the watermark.
 - Cherry-picking a `~` file without reading our side first.
 - Review state anywhere except `.upstream-review/`.
 - Advancing the watermark to a SHA other than the tip printed by the listing you classified.

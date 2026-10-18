@@ -1,6 +1,6 @@
 {
   "upstreamUrl": "https://github.com/Tencent/WeKnora.git",
-  "upstreamRemote": "upstream",
+  "upstreamRemote": "weknora",
   "upstreamBranch": "main",
   "seedSha": "97796c637aa53713edc846bd0a39470d687f0fdf",
   "seedDate": "2026-10-12",
