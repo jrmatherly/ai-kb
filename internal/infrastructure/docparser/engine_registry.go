@@ -110,6 +110,11 @@ func ListAllEngines(
 
 	for _, e := range localEngines {
 		name := e.Name()
+		// A deployment that disabled the cloud engine hides it rather than
+		// listing an unavailable card that points at a hidden settings section.
+		if name == WeKnoraCloudEngineName && !WeKnoraCloudEnabled() {
+			continue
+		}
 		seen[name] = true
 
 		fileTypes := e.FileTypes(docreaderConnected)

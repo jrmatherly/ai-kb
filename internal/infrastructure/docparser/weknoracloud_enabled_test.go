@@ -23,9 +23,9 @@ func TestWeKnoraCloudEngineUnavailableWhenDisabled(t *testing.T) {
 	overrides := map[string]string{"weknoracloud_app_id": "app"}
 
 	t.Setenv(WeKnoraCloudEnabledEnv, "")
-	off := weKnoraCloudEngineInfo(t, overrides)
-	require.False(t, off.Available)
-	require.Contains(t, off.UnavailableReason, WeKnoraCloudEnabledEnv)
+	available, reason := (&weKnoraCloudEngine{}).CheckAvailable(true, overrides)
+	require.False(t, available)
+	require.Contains(t, reason, WeKnoraCloudEnabledEnv)
 
 	t.Setenv(WeKnoraCloudEnabledEnv, "true")
 	on := weKnoraCloudEngineInfo(t, overrides)

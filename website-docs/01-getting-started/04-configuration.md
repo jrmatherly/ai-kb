@@ -277,7 +277,7 @@ These variables are only used when building the frontend image with `docker comp
 | Name | Default | Description |
 | --- | --- | --- |
 | `DOCREADER_ADDR` / `DOCREADER_TRANSPORT` | docreader:50051 / grpc | Address and transport (`grpc`/`http`) the app connects with |
-| `AIKB_WEKNORACLOUD_ENABLED` | false | Opt in to AI KB Cloud (upstream WeKnoraCloud), a hosted third-party parser and model provider. While off, the `weknoracloud` parser engine reports "disabled by this deployment", the Settings entry and the model provider are hidden, and its credential routes answer 400. Read at call time, no restart needed |
+| `AIKB_WEKNORACLOUD_ENABLED` | false | Opt in to AI KB Cloud (upstream WeKnoraCloud), a hosted third-party parser and model provider. While off, the `weknoracloud` parser engine is left out of the engine list and refuses to build a reader, the Settings entry and the model provider are hidden, model create and update refuse the provider, and its credential routes answer 400. Read at call time, no restart needed |
 | `DOCREADER_GRPC_MAX_WORKERS` / `DOCREADER_GRPC_PORT` / `DOCREADER_GRPC_MAX_FILE_SIZE_MB` | 4 / 50051 / follows MAX_FILE_SIZE_MB | gRPC server parameters |
 | `GRPC_TLS_ENABLED/CERT/KEY/CA/SERVER_NAME`, `GRPC_MTLS_REQUIRE_CLIENT_CERT`, `GRPC_AUTH_TOKEN` | false / empty | TLS/mTLS and token authentication on the app to docreader link |
 | `DOCREADER_PDF_RENDER_DPI` / `DOCREADER_PDF_JPEG_QUALITY` / `DOCREADER_PDF_RENDER_MAX_EDGE` | 200 / 85 / 2000 | PDF rendering |
