@@ -104,6 +104,11 @@ class AppStorageTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0, values)
             self.assertIn(message, result.stderr)
 
+    def test_external_database_port_defaults_when_omitted(self):
+        for external in ({"host": "db.example"}, {"host": "db.example", "port": None}):
+            env = self.env({"postgresql": {"enabled": False}, "externalDatabase": external})
+            self.assertEqual((env["DB_HOST"], env["DB_PORT"]), ("db.example", "5432"), external)
+
     def test_bundled_database_ignores_external_host(self):
         env = self.env({"externalDatabase": {"host": "db.example", "port": 5433}})
         self.assertEqual((env["DB_HOST"], env["DB_PORT"]), ("postgres", "5432"))

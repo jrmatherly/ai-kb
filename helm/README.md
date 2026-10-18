@@ -412,7 +412,7 @@ credential values, so changing one restarts the App on upgrade. The chart cannot
 | ----------- | ------------- | --------- |
 | `dataFiles.persistence.enabled` | Persist uploaded files at `/data/files` | `true` |
 | `dataFiles.persistence.size` | PVC size | `10Gi` |
-| `dataFiles.persistence.accessMode` | Access mode of the chart PVC; also describes an `existingClaim` for the strategy default | `ReadWriteOnce` |
+| `dataFiles.persistence.accessMode` | Access mode of the chart PVC; also describes an `existingClaim` for the strategy default. A PVC's access modes cannot change after creation, so an existing install moves to `ReadWriteMany` through `existingClaim` | `ReadWriteOnce` |
 | `dataFiles.persistence.existingClaim` | Use an existing PVC | `""` |
 
 ### Neo4j (GraphRAG)
@@ -494,7 +494,7 @@ The chart's PostgreSQL moved from `v0.18.9-pg17` to `v0.26.1-pg18`, a PostgreSQL
 Chart 0.4.0: `postgresql.enabled=false` now requires `externalDatabase.host` and
 `redis.enabled=false` requires `externalRedis.addr` (the App used to connect to the
 disabled component's Service name). An unset `app.strategy.type` now defaults to
-`Recreate` unless `dataFiles.persistence.accessMode` is `ReadWriteMany`, so App upgrades
+`Recreate` unless `dataFiles.persistence.accessMode` is `ReadWriteMany` or persistence is off, so App upgrades
 on the default install have a short downtime instead of a possible attach hang. The new
 `checksum/secret` annotation restarts the App once on the upgrade that introduces it.
 

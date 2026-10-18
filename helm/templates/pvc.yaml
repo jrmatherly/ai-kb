@@ -73,7 +73,7 @@ metadata:
     {{- include "ai-kb.componentLabels" (dict "component" "storage" "context" .) | nindent 4 }}
 spec:
   accessModes:
-    - {{ .Values.dataFiles.persistence.accessMode }}
+    - {{ .Values.dataFiles.persistence.accessMode | default "ReadWriteOnce" }}
   resources:
     requests:
       storage: {{ .Values.dataFiles.persistence.size }}
