@@ -13,3 +13,4 @@
 - Commit subjects: conventional commits with scope, `type(scope): imperative subject` (`fix(agent)`, `feat(gallery)`, `fix(datasource/gitlab)`, `docs`, `style`, `refactor`, `test`); upstream appends `(#PR)`. Upstream issue/PR numbers quoted here are written `Tencent/WeKnora#NNNN`.
 - Prose: no em dashes; terse; comments only for a non-obvious why.
 - Git: `git mv` for renames; no `git stash`; local commits on request; never push.
+- Rulesets (2026-10-17): `main` and `extension-v*` tags require verified signatures, no bypass. CI never `git push`es; it commits through the GitHub contents API as the Actions app (signed). `gh` needs `gh repo set-default jrmatherly/ai-kb` once per clone because two remotes exist. `scripts/rebrand/keep.tsv` shields `weknora/<branch>` git refs, which are ours.

@@ -36,7 +36,8 @@ Git hooks: `scripts/install-git-hooks.sh` installs `pre-commit` (whitespace, Eng
 - Commit subjects follow upstream's conventional-commit form, `type(scope): imperative subject` (`fix(agent): ...`, `feat(gallery): ...`, `docs: ...`), single line unless a body is needed.
 - `git mv`, not `mv`, for renames. Never `git stash`.
 - Local commits when asked. **Never push**; the user manages remote writes.
-- The Tencent/WeKnora remote is named `weknora`, never `upstream`: `gh` ranks a remote called `upstream` above `origin` and would send `gh pr`, `gh run` and `gh repo view` to WeKnora. The upstream-review driver adds it under that name from `.upstream-review/watermark.json`.
+- The Tencent/WeKnora remote is named `weknora`, never `upstream`: `gh` ranks a remote called `upstream` above `origin` and would send `gh pr`, `gh run` and `gh repo view` to WeKnora. The upstream-review driver adds it under that name from `.upstream-review/watermark.json`. With two remotes `gh` still wants a default, so run `gh repo set-default jrmatherly/ai-kb` once per clone (or pass `-R jrmatherly/ai-kb`).
+- `main` and the `extension-v*` tags require verified signatures (repository rulesets, no bypass). A workflow cannot `git push` a commit; CI writes through the contents API as the Actions app, which GitHub signs (`release-lite.yml`, the Homebrew formula).
 
 ## Writing style
 

@@ -79,7 +79,7 @@ Certifications:
 
 ## Store IDs
 
-Both store items exist as drafts (plan Task 18, Step 3).
+Both store items exist; version 1.0.2 went into review on both on 2026-10-18 (Chrome through `extension.yml`, Edge by hand in Partner Center).
 
 - Chrome Web Store extension ID: `beamnnjkmfepmlfpbcchiiooimoloiod` (the manifest carries this item's public key, so unpacked builds share it)
 - Edge Add-ons product ID: `0b6ec0d7-22da-4ab8-8d9e-a6bbdb1e6880`, store ID `0RDCK9LCK8BW`, extension ID of store installs `eminfjejkcandcdbcjhdeobhhjidapdc`

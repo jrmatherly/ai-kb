@@ -38,8 +38,9 @@ name: 🧩 Browser Extension
 #                <pool>/providers/<provider>) and CHROME_SERVICE_ACCOUNT (its email), the
 #                Google service account linked on the Developer Dashboard's Account page
 #   environment  extension-stores, with deployment tags limited to `extension-v*`, holding the
-#                two Edge secrets: EDGE_CLIENT_ID, EDGE_API_KEY (Partner Center API keys expire;
-#                renew before the date it shows)
+#                three Edge secrets: EDGE_CLIENT_ID, EDGE_API_KEY (Partner Center API keys expire;
+#                renew before the date it shows) and EDGE_CERT_NOTES, the certification notes the
+#                publish body carries (extension/store/test-instructions.md with the demo values filled)
 # Chrome holds no stored secret: the job trades its GitHub OIDC token for a 30-minute service
 # account token through Workload Identity Federation (the pool's attribute condition pins the
 # repository, the tag prefix and the environment). Secrets and tokens reach curl through files
